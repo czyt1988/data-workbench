@@ -1,0 +1,13 @@
+﻿#ifndef DACOMMONWIDGETSAPI_H
+#define DACOMMONWIDGETSAPI_H
+#include <QtCore/QtGlobal>
+#include "DAGlobals.h"
+
+#if defined(DACOMMONWIDGETS_BUILD)
+#define DACOMMONWIDGETS_API Q_DECL_EXPORT
+#else
+#define DACOMMONWIDGETS_API Q_DECL_IMPORT
+#endif
+
+// Q_DECL_IMPORT.
+#endif  // DACOMMONWIDGETSAPI_H

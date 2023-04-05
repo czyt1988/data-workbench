@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 21.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 200 200" style="enable-background:new 0 0 200 200;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#BFD1EB;stroke:#FFFFFF;stroke-miterlimit:10;}
+	.st1{fill:#BFD1EB;}
+	.st2{fill:#727272;}
+	.st3{fill:#497CAD;}
+</style>
+<g id="l_2">
+	<rect x="10.5" y="10.3" class="st0" width="41.8" height="27.3"/>
+	<rect x="60.3" y="10.3" class="st0" width="42" height="27.3"/>
+</g>
+<g id="l_1">
+	<path class="st1" d="M150,75h37.5v25H150V75z M100,75h37.5v25H100V75z"/>
+	<path class="st2" d="M50,137.5V150H12.5v-37.5H0V200h112.5v-75H100v25H62.5v-12.5H50z M50,187.5H12.5v-25H50V187.5z M100,162.5v25
+		H62.5v-25H100z M87.5,112.5H75V125h12.5V112.5z M200,62.5H87.5v50H200V62.5z M137.5,100H100V75h37.5V100z M187.5,100H150V75h37.5
+		V100z M0,0v50h25V37.5H12.5v-25H50v25h12.5v-25H100v25H62.5V50h50V0H0z"/>
+	<path class="st3" d="M63,125l-26.9-25H75V75H36.1L63,50H40.6L0.3,87.5L40.6,125H63z"/>
+</g>
+</svg>

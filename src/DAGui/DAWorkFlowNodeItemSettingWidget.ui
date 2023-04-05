@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DAWorkFlowNodeItemSettingWidget</class>
+ <widget class="QWidget" name="DAWorkFlowNodeItemSettingWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>276</width>
+    <height>414</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Node Setting</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>1</number>
+   </property>
+   <property name="leftMargin">
+    <number>1</number>
+   </property>
+   <property name="topMargin">
+    <number>1</number>
+   </property>
+   <property name="rightMargin">
+    <number>1</number>
+   </property>
+   <property name="bottomMargin">
+    <number>1</number>
+   </property>
+   <item>
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex">
+      <number>2</number>
+     </property>
+     <widget class="DA::DANodeSettingWidget" name="tabNodeSetting">
+      <attribute name="icon">
+       <iconset resource="icon.qrc">
+        <normaloff>:/icon/icon/setting-node.svg</normaloff>:/icon/icon/setting-node.svg</iconset>
+      </attribute>
+      <attribute name="title">
+       <string>Node</string>
+      </attribute>
+     </widget>
+     <widget class="DA::DANodeItemSettingWidget" name="tabItemSetting">
+      <attribute name="icon">
+       <iconset resource="icon.qrc">
+        <normaloff>:/icon/icon/setting-item.svg</normaloff>:/icon/icon/setting-item.svg</iconset>
+      </attribute>
+      <attribute name="title">
+       <string>Item</string>
+      </attribute>
+     </widget>
+     <widget class="DA::DANodeLinkItemSettingWidget" name="tabLinkSetting">
+      <attribute name="icon">
+       <iconset resource="icon.qrc">
+        <normaloff>:/icon/icon/setting-link.svg</normaloff>:/icon/icon/setting-link.svg</iconset>
+      </attribute>
+      <attribute name="title">
+       <string>Link</string>
+      </attribute>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>DA::DANodeSettingWidget</class>
+   <extends>QWidget</extends>
+   <header>DANodeSettingWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DA::DANodeItemSettingWidget</class>
+   <extends>QWidget</extends>
+   <header>DANodeItemSettingWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DA::DANodeLinkItemSettingWidget</class>
+   <extends>QWidget</extends>
+   <header>DANodeLinkItemSettingWidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="icon.qrc"/>
+ </resources>
+ <connections/>
+</ui>

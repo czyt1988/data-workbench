@@ -1,0 +1,12 @@
+﻿#ifndef DAPYSCRIPTSGLOBAL_H
+#define DAPYSCRIPTSGLOBAL_H
+#include <QtCore/QtGlobal>
+#include "DAGlobals.h"
+
+#if defined(DAPYSCRIPTS_BUILDLIB)
+#define DAPYSCRIPTS_API Q_DECL_EXPORT
+#else
+#define DAPYSCRIPTS_API Q_DECL_IMPORT
+#endif
+
+#endif  // DAPYDATAANALYSISGLOBAL_H

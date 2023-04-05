@@ -1,0 +1,96 @@
+﻿bin_*
+build*
+*.user
+*.autosave
+*.dll
+*.lib
+*.zip
+*.7z
+*.user.*
+#drawio的临时文件
+*.drawio.bkp
+# 顶层的临时文件夹不追踪
+tmp
+
+#翻译文件暂时不追踪
+*.qm
+
+# vscode 的隐藏文件
+/.vscode
+
+# This file is used to ignore files which are generated
+# ----------------------------------------------------------------------------
+
+*~
+*.autosave
+*.a
+*.core
+*.moc
+*.o
+*.obj
+*.orig
+*.rej
+*.so
+*.so.*
+*_pch.h.cpp
+*_resource.rc
+*.qm
+.#*
+*.*#
+core
+!core/
+tags
+.DS_Store
+.directory
+*.debug
+Makefile*
+*.prl
+*.app
+moc_*.cpp
+ui_*.h
+qrc_*.cpp
+Thumbs.db
+*.res
+*.rc
+/.qmake.cache
+/.qmake.stash
+
+# qtcreator generated files
+*.pro.user*
+
+# xemacs temporary files
+*.flc
+
+# Vim temporary files
+.*.swp
+
+# Visual Studio generated files
+*.ib_pdb_index
+*.idb
+*.ilk
+*.pdb
+*.sln
+*.suo
+*.vcproj
+*vcproj.*.*.user
+*.ncb
+*.sdf
+*.opensdf
+*.vcxproj
+*vcxproj.*
+.vscode
+
+# MinGW generated files
+*.Debug
+*.Release
+
+# Python byte code
+*.pyc
+.idea
+__pycache__
+
+# Binaries
+# --------
+*.dll
+*.exe
+

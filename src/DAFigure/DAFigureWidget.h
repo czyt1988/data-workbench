@@ -1,0 +1,112 @@
+﻿#ifndef DAFIGUREWIDGET_H
+#define DAFIGUREWIDGET_H
+#include "DAFigureAPI.h"
+#include <QWidget>
+#include <QPainter>
+#include "DAChartWidget.h"
+#include "DAFigureContainer.h"
+class QPaintEvent;
+class QFocusEvent;
+class QUndoCommand;
+class QUndoStack;
+class QwtPlotCurve;
+class QwtPlotItem;
+namespace DA
+{
+
+class DAFigureWidgetOverlayChartEditor;
+DA_IMPL_FORWARD_DECL(DAFigureWidget)
+/**
+ * @brief 绘图窗口
+ */
+class DAFIGURE_API DAFigureWidget : public DAFigureContainer
+{
+    Q_OBJECT
+    DA_IMPL(DAFigureWidget)
+    friend class SAFigureCreateSubWidgetCommand;
+    friend class SAFigureBackgroundCommand;
+    friend class SAFigureSubChartResizeCommand;
+
+public:
+    explicit DAFigureWidget(QWidget* parent = 0);
+    ~DAFigureWidget();
+
+    //添加一个2D chart
+    DAChartWidget* createChart();
+    DAChartWidget* createChart(float xPresent, float yPresent, float wPresent, float hPresent);
+    DAChartWidget* createChart_();
+    DAChartWidget* createChart_(float xPresent, float yPresent, float wPresent, float hPresent);
+    //移除chart，但不会delete
+    void removeChart(DAChartWidget* chart);
+    //添加一个已有的chart
+    void addChart(DAChartWidget* chart, float xPresent, float yPresent, float wPresent, float hPresent);
+    //获取所有的图表(注意次获取没有顺序)
+    QList< DAChartWidget* > getCharts() const;
+    //获取所有的图表安装显示顺序,这个顺序是在窗口显示最顶层的排位最前
+    QList< DAChartWidget* > getChartsOrdered() const;
+    //获取当前的2d绘图指针
+    DAChartWidget* getCurrentChart() const;
+    //设置当前的2dplot
+    bool setCurrentChart(DAChartWidget* p);
+
+    //返回当前光标下的widget
+    QWidget* getUnderCursorWidget() const;
+    //返回在当前光标下的2D图
+    DAChartWidget* getUnderCursorChart() const;
+
+    //清空所有图 会连续发送chartRemoved信号，此函数会销毁chart对象
+    void clearAllCharts();
+
+    //设置画布背景色 - 支持redo-undo
+    void setBackgroundColor(const QBrush& brush);
+    void setBackgroundColor(const QColor& clr);
+    const QBrush& getBackgroundColor() const;
+
+    //通过item查找对应的SAChart2D，如果没有返回nullptr
+    DAChartWidget* findChartFromItem(QwtPlotItem* item) const;
+
+    //开启子窗口编辑模式
+    void enableChartEditor(bool enable = true);
+    DAFigureWidgetOverlayChartEditor* getChartEditorOverlay() const;
+
+    //判断是否在进行子窗口编辑
+    bool isEnableChartEditor() const;
+    //推送一个命令
+    void push(QUndoCommand* cmd);
+    //获取Undo Stack
+    QUndoStack* getUndoStack();
+
+protected:
+    virtual void paintEvent(QPaintEvent* e) override;
+signals:
+    /**
+     * @brief 添加了chart
+     * @param chart指针
+     */
+    void chartAdded(DA::DAChartWidget* c);
+
+    /**
+     * @brief 绘图即将移除
+     * @param plot 即将移除的绘图，此时指针还有效
+     */
+    void chartWillRemove(DA::DAChartWidget* c);
+
+    //当前选中的发生改变
+    /**
+     * @brief 当前的绘图发生了变更
+     *
+     * 当前窗口是figure的默认窗口，任何对figure的动作会作用于当前绘图
+     * @param w
+     */
+    void currentChartChanged(DA::DAChartWidget* c);
+private slots:
+    //窗口的位置发生改变槽
+    void onWidgetGeometryChanged(QWidget* w, const QRect& oldGeometry, const QRect& newGeometry);
+    // DAFigureOverlayChartEditor的激活窗口变化
+    void onOverlayActiveWidgetChanged(QWidget* oldActive, QWidget* newActive);
+};
+
+DAFIGURE_API QDataStream& operator<<(QDataStream& out, const DAFigureWidget* p);
+DAFIGURE_API QDataStream& operator>>(QDataStream& in, DAFigureWidget* p);
+}  // end DA namespace
+#endif  // SAFIGUREWINDOW_H

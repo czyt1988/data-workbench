@@ -1,0 +1,138 @@
+﻿#ifndef DAAPPACTIONS_H
+#define DAAPPACTIONS_H
+#include "DAAppActionsInterface.h"
+class QActionGroup;
+namespace DA
+{
+/**
+ * @brief action管理
+ */
+class DAAppActions : public DAAppActionsInterface
+{
+    Q_OBJECT
+public:
+    DAAppActions(DAAppUIInterface* u);
+    ~DAAppActions();
+    //发生语言变更时会调用此函数
+    void retranslateUi() override;
+
+protected:
+    void buildActions();
+    //构建主actions
+    void buildMainAction();
+    //构建data相关的action
+    void buildDataAction();
+    //构建Chart相关的action
+    void buildChartAction();
+    //构建视图action
+    void buildViewAction();
+    //构建workflow action
+    void buildWorkflowAction();
+
+public:
+    //===================================================
+    // 主页标签 Main Category
+    //===================================================
+    QAction* actionOpen;           ///< 打开
+    QAction* actionSave;           ///< 保存
+    QAction* actionSaveAs;         ///< 另存为
+    QAction* actionAppendProject;  ///< 追加工程
+
+    QAction* actionRedo;
+    QAction* actionUndo;
+    QAction* actionSetting;        ///< 设置
+    QAction* actionPluginManager;  ///< 插件管理
+    //===================================================
+    // 数据标签 Data Category
+    //===================================================
+    QAction* actionAddData;        ///< 添加数据
+    QAction* actionRemoveData;     ///< 移除数据
+    QAction* actionAddDataFolder;  ///< 添加文件夹
+
+    //===================================================
+    // 数据操作的上下文标签 Data Operate Context Category
+    //===================================================
+    QAction* actionRemoveRow;           ///< 移除 一行
+    QAction* actionRemoveColumn;        ///< 移除 一列
+    QAction* actionRemoveCell;          ///< 移除单元格（设置为nan）
+    QAction* actionInsertRow;           ///< 向下插入 一行
+    QAction* actionInsertRowAbove;      ///< 向上插入 一行
+    QAction* actionInsertColumnLeft;    ///< 在左边插入列
+    QAction* actionInsertColumnRight;   ///< 在右边插入列
+    QAction* actionRenameColumns;       ///< 更改列名
+    QAction* actionCastToString;        ///<数据转换为文本
+    QAction* actionCastToNum;           ///<数据转换为数字
+    QAction* actionCastToDatetime;      ///<转换为日期
+    QAction* actionCreateDataDescribe;  ///<数据描述
+    QAction* actionChangeToIndex;       ///< 把某列转换为index
+
+    //===================================================
+    // workflow的上下文标签
+    //===================================================
+    QAction* actionWorkflowNew;                  ///< 新建工作流
+    QActionGroup* actionGroupWorkflowStartEdit;  ///< Start**的actionGroup
+    QAction* actionWorkflowStartDrawRect;        ///< 绘制矩形
+    QAction* actionWorkflowStartDrawText;        ///< 绘制文本框
+    // workflow的视图操作
+    QAction* actionWorkflowShowGrid;                      ///< 显示网格
+    QAction* actionWorkflowWholeView;                     ///< 全部可见
+    QAction* actionWorkflowZoomIn;                        ///< 放大
+    QAction* actionWorkflowZoomOut;                       ///< 缩小
+    QAction* actionWorkflowRun;                           ///< 运行工作流
+    QAction* actionWorkflowAddBackgroundPixmap;           ///< 添加背景图
+    QAction* actionWorkflowLockBackgroundPixmap;          ///< 锁定背景图
+    QAction* actionWorkflowEnableItemMoveWithBackground;  ///< 背景图跟随元件移动
+
+    //===================================================
+    // 绘图标签 Chart Category
+    //===================================================
+    QAction* actionAddFigure;               ///< 添加绘图
+    QAction* actionFigureResizeChart;       ///< 改变fig的chart大小
+    QAction* actionFigureNewXYAxis;         ///< 新增加一个2D绘图
+    QAction* actionChartEnableGrid;         ///< 网格显示总开关
+    QAction* actionChartEnableGridX;        ///< 网格显示X开关
+    QAction* actionChartEnableGridY;        ///< 网格显示Y开关
+    QAction* actionChartEnableGridXMin;     ///< 网格显示Xmin开关
+    QAction* actionChartEnableGridYMin;     ///< 网格显示Ymin开关
+    QAction* actionChartEnableZoom;         ///< 绘图允许缩放
+    QAction* actionChartZoomIn;             ///< 绘图放大
+    QAction* actionChartZoomOut;            ///< 绘图缩小
+    QAction* actionChartZoomAll;            ///< 显示全部
+    QAction* actionChartEnablePan;          ///< 绘图拖动
+    QActionGroup* actionGroupChartPickers;  ///< Chart Picker的actiongroup
+    QAction* actionChartEnablePickerCross;  ///< 十字标记
+    QAction* actionChartEnablePickerY;      ///< y拾取器
+    QAction* actionChartEnablePickerXY;     ///< xy拾取器
+    QAction* actionChartEnableLegend;       ///< legend
+
+    QActionGroup* actionGroupChartLegendAlignment;     ///< legend对齐的action group
+    QAction* actionChartLegendAlignmentInTopLeft;      ///< Qt::AlignTop|Qt::AlignLeft
+    QAction* actionChartLegendAlignmentInTop;          ///< Qt::AlignTop
+    QAction* actionChartLegendAlignmentInTopRight;     ///< Qt::AlignTop|Qt::AlignRight
+    QAction* actionChartLegendAlignmentInRight;        ///< Qt::AlignRight
+    QAction* actionChartLegendAlignmentInBottomRight;  ///< Qt::AlignBottom|Qt::AlignRight
+    QAction* actionChartLegendAlignmentInBottom;       ///< Qt::AlignBottom
+    QAction* actionChartLegendAlignmentInBottomLeft;   ///< Qt::AlignBottom|Qt::AlignLeft
+    QAction* actionChartLegendAlignmentInLeft;         ///< Qt::AlignLeft
+    //===================================================
+    // 视图标签 View Category
+    //===================================================
+    QAction* actionShowWorkFlowArea;  ///< 显示工作流区域
+    QAction* actionShowChartArea;
+    QAction* actionShowDataArea;
+    QAction* actionShowMessageLogView;
+    QAction* actionShowSettingWidget;
+};
+}  // namespace DA
+
+#ifndef DA_APP_ACTIONS
+/**
+ * @def 获取@sa DAAppCore 实例
+ * @note 使用此宏需要以下两个头文件：
+ * -# DAAppCore.h
+ * -# DAAppUI.h
+ */
+#define DA_APP_ACTIONS DA::DAAppCore::getInstance().getUi()->getActions()
+#endif
+
+#endif  // DAAPPACTIONS_H

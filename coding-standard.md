@@ -1,0 +1,200 @@
+# 命名规则
+
+原则上，全局属性变量以下划线命名，其他都以驼峰命名
+
+- 统一以驼峰命名
+- 局部变量和成员函数首字母小写
+- 类命名首字母大写
+- 类私有成员变量以_为开头，类公有成员变量以m开头
+- 全局变量以下划线分隔，以g_作为开头
+- 静态变量以下划线分隔，以s_作为开头
+- 全局函数以下划线分隔
+- 命名空间不宜过长，所有都大写，例如DataAnalysis应写为DA
+- 宏都大写，以下划线进行分隔
+- 命名以IDE最优搜索原则，方便开发过程让编译器快速找到对应变量、枚举、函数等
+
+以下为命名示例：
+
+```cpp
+int g_total_count;//全局变量以g开头，下划线命名
+
+class ExampleClass{//类名以驼峰命名，且首字母大写
+public:
+    ExampleClass();
+    void functionOne(int argOne,double argTwo);//类函数首字母小写，驼峰命名 ;变量参数驼峰命名，首字母小写
+    virtual void virtualFunction();
+public:
+    double mPublicMemberValue;//类公有成员变量以m开头，驼峰命名（不建议使用类公有成员变量）
+private:
+    double _resultValue;//类私有成员变量以下划线开头，驼峰命名
+};
+
+void ExampleClass::functionOne(int argOne,double argTwo){
+    static int s_exec_count = 0;//静态参数s_开头，下划线命名
+    int loopCount = argOne;// 局部变量小写开头，驼峰命名
+}
+
+void this_is_global_fucntion();//全局函数以下划线分隔
+void this_is_global_fucntion(){
+    int loopCount = 0;//局部变量小写开头，驼峰命名
+}
+
+/**
+ * @brief 定义了固定的dock窗口
+ * 
+ * 下面枚举的命名，使用了以IDE最优搜索原则，开发者输入Dock，即可联想到所有的枚举，
+ * 如果命名为WorkFlowOperateDockingArea，DataOperateDockingArea这样就不好进行联想
+ */
+enum DockingArea
+{
+    DockingAreaWorkFlowOperate,
+    DockingAreaDataOperate,
+    DockingAreaChartOperate,
+    DockingAreaWorkFlowManager,
+    DockingAreaDataManager,
+    DockingAreaChartManager,
+    DockingAreaSetting,
+    DockingAreaMessageLog
+};
+```
+
+另外在函数命名上因遵守如下原则：
+
+- 属性前面都带get/set，不省略get以便查找函数
+- get函数应返回值而不是引用
+- 若返回引用，不带get以和返回值的属性做区分
+
+
+```cpp
+class ExampleClass{
+public:
+    void setText(const std::string& v);//设置值以set开头
+    std::string getText() const;//获取值以get开头，且返回值
+    //以下是返回引用
+    std::string& text();//返回引用的不写get
+    const std::string& text() const;//返回引用的不写get
+}
+```
+
+针对虚函数的重写，按照C++11写法，后面必须接`override`,但为了更直观发现虚函数，重写的虚函数前面也加上`virtual`关键字
+
+```cpp
+class ChildClass : public ExampleClass{
+public:
+    ChildClass();
+    virtual void virtualFunction() override;//虚函数后面接override，为了更好发现，前面的virtual关键字不省略
+};
+```
+
+# 注释规范
+
+注释遵循`doxygen`注释规则
+
+- 头文件的类成员函数不使用`doxygen`注释，类成员函数的`doxygen`注释写在cpp文件中，除非此函数不在cpp中实现，如qt的信号函数
+- 函数的`doxygen`注释前空一行
+- 函数以`/**`开启`doxygen`注释，变量以`///<` 进行`doxygen`注释
+- 头文件中，get/set配对的函数注释可以写一个
+
+示例：（`//!`为示例的说明）
+
+```cpp
+class DAAbstractNode{
+    /////////////示例的说明////////////////
+    //! 头文件中不写doxygen注释
+    //! get/set配对的可以写一个注释
+    //////////////////////////////////////
+
+
+    //获取图标，图标是节点对应的图标
+    QIcon getIcon() const;
+    void setIcon(const QIcon& icon);
+    //获取节点的元数据
+    const DANodeMetaData& metaData() const;
+    DANodeMetaData& metaData();
+    //说明
+    QString getNodeTooltip() const;
+    void setNodeTooltip(const QString& tp);
+    //设置元数据
+    void setMetaData(const DANodeMetaData& metadata);
+    //返回自身智能指针
+    SharedPointer pointer();
+    // id操作
+    IdType getID() const;
+    void setID(const IdType& d);
+};
+
+class DAWorkFlow{
+    /////////////示例的说明////////////////
+    //! 信号没有cpp的实现，可以把doxygen注释写在头文件中
+    //////////////////////////////////////
+signals:
+    /**
+     * @brief 节点创建产生的信号
+     * @param node
+     */
+    void nodeCreated(DAAbstractNode::SharedPointer node);
+    /**
+     * @brief 节点添加的信号
+     * @param node
+     */
+    void nodeAdded(DAAbstractNode::SharedPointer node);
+};
+```
+
+cpp文件注释示范
+
+```cpp
+
+/**
+ * @brief 获取节点的说明
+ * @return 返回说明字符串
+ * @sa setNodeTooltip
+ */
+QString DAAbstractNode::getNodeTooltip() const
+{
+    return (d_ptr->_meta.getNodeTooltip());
+}
+            <--注意doxygen注释前空一行
+/**
+ * @brief 设置节点的说明
+ * @param tp 说明文本
+ * @sa getNodeTooltip
+ */
+void DAAbstractNode::setNodeTooltip(const QString& tp)
+{
+    d_ptr->_meta.setNodeTooltip(tp);
+}
+```
+
+对应内容的屏蔽不应该使用注释而应该使用宏，如下示例，在屏蔽打印不允许使用注释，而是定义一个宏来进行开关
+
+```cpp
+/**
+ * @def 此为1将开启打印辅助信息
+ */
+#define DA_DAABSTRACTNODE_DEBUG_PRINT 0
+
+int DAAbstractNode::getInputNodesCount() const
+{
+    int res = 0;
+#if DA_DAABSTRACTNODE_DEBUG_PRINT
+    qDebug() << getNodeName()
+             << "-> getInputNodesCount()\n"
+                "    _linksInfo:";
+#endif
+    for (const DAAbstractNodePrivate::LinkData& d : qAsConst(d_ptr->_linksInfo)) {
+#if DA_DAABSTRACTNODE_DEBUG_PRINT
+        qDebug() << "    outputKey=" << d.outputKey << "(" << d.outputNode.lock()->getNodeName()
+                 << ")--->inputKey=" << d.inputKey << "(" << d.inputNode.lock()->getNodeName() << ")";
+#endif
+        SharedPointer toNode = d.inputNode.lock();
+        if (toNode.get() == this) {
+            //说明这个是其他节点连接到自身的item
+            ++res;
+        }
+    }
+    return res;
+}
+```
+
+包括功能的调整，禁止使用注释而应该使用宏

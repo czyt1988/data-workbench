@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/plugin-node-icon">
+        <file>icon/filter.svg</file>
+        <file>icon/application.svg</file>
+        <file>icon/ok.svg</file>
+        <file>icon/question.svg</file>
+    </qresource>
+</RCC>

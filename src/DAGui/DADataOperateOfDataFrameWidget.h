@@ -1,0 +1,100 @@
+﻿#ifndef DADATAOPERATEOFDATAFRAMEWIDGET_H
+#define DADATAOPERATEOFDATAFRAMEWIDGET_H
+#include <QtWidgets/QWidget>
+#include <QUndoStack>
+#include "DAGuiAPI.h"
+#include "DAData.h"
+#include "DADataPyDataFrame.h"
+#include "numpy/DAPyDType.h"
+#include "DADataOperatePageWidget.h"
+namespace Ui
+{
+class DADataOperateOfDataFrameWidget;
+}
+
+namespace DA
+{
+class DAPyDataFrameTableModule;
+class DAAppRibbonArea;
+class DADialogDataframeColumnCastToNumeric;
+class DADialogDataframeColumnCastToDatetime;
+
+/**
+ * @brief 针对DataFrame的操作窗口
+ */
+class DAGUI_API DADataOperateOfDataFrameWidget : public DADataOperatePageWidget
+{
+    Q_OBJECT
+public:
+    virtual int getDataOperatePageType() const;
+
+public:
+    explicit DADataOperateOfDataFrameWidget(const DAData& d, QWidget* parent = nullptr);
+    ~DADataOperateOfDataFrameWidget();
+    //是否存在data
+    bool haveData() const;
+    //获取dataframe
+    DAPyDataFrame getDataframe() const;
+    //获取Data的引用
+    const DAData& data() const;
+    //创建dataframe的数据描述
+    DAPyDataFrame createDataDescribe();
+    //返回选中的列数，列数不会重复
+    QList< int > getSelectedDataframeCoumns(bool ensureInDataframe = true) const;
+    QList< int > getSelectedDataframeRows(bool ensureInDataframe = true) const;
+    QPair< QList< int >, QList< int > > getSelectedDataframeCells(bool ensureInDataframe = true) const;
+    int getSelectedOneDataframeRow(bool ensureInDataframe = true) const;
+    int getSelectedOneDataframeColumn(bool ensureInDataframe = true) const;
+    QUndoStack* getUndoStack() const;
+
+public slots:
+    void setDAData(const DA::DAData& d);
+    //在选中行后面插入行
+    void insertRowAboveBySelect();
+    void insertRowBelowBySelect();
+    void insertRowAt(int row);
+    void insertColumnRightBySelect();
+    void insertColumnLeftBySelect();
+    void insertColumnAt(int col);
+    //移除选中的行
+    int removeSelectRow();
+    //移除选择的列
+    int removeSelectColumn();
+    //设置选中单元格为nan,返回设置成功的个数
+    int removeSelectCell();
+    //激活此窗口的UndoStack
+    void activeUndoStack();
+    //列更名
+    void renameColumns();
+    //设置选择列的数据类型，发射信号columnTypeChanged
+    bool changeSelectColumnType(const DAPyDType& dt);
+    //把选择的行转换为数值，带交互
+    void castSelectToNum();
+    void castSelectToDatetime();
+    //把选择的列转换为索引
+    bool changeSelectColumnToIndex();
+signals:
+    /**
+     * @brief 选中的列或者类型发生了变化
+     * @param column 列 如果返回空说明影响的列不确定,如果多选，返回
+     * @param dt 类型
+     * @note 此函数主要是通知主界面ribbon上面的类型变化，调用setDataframeOperateCurrentDType
+     */
+    void selectTypeChanged(const QList< int >& column, DA::DAPyDType dt);
+private slots:
+    // 表格点击
+    void onTableViewClicked(const QModelIndex& index);
+
+protected:
+    void changeEvent(QEvent* e);
+
+private:
+    Ui::DADataOperateOfDataFrameWidget* ui;
+    DAData _data;
+    DAPyDataFrameTableModule* _model;
+    QUndoStack _undoStack;
+    DADialogDataframeColumnCastToNumeric* _dlgCastNumArgs;
+    DADialogDataframeColumnCastToDatetime* _dlgCastDatetimeArgs;
+};
+}  // end of namespace DA
+#endif  // DADATAOPERATEOFDATAFRAMEWIDGET_H

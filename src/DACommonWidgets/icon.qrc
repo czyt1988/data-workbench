@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/icon">
+        <file>icon/text-bold.svg</file>
+        <file>icon/text-italic.svg</file>
+        <file>icon/text-underline.svg</file>
+        <file>icon/font-size-add.svg</file>
+        <file>icon/font-size-sub.svg</file>
+        <file>icon/no-style.svg</file>
+    </qresource>
+</RCC>

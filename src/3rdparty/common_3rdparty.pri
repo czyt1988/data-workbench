@@ -1,0 +1,1 @@
+include($$PWD/../common.pri)

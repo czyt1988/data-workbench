@@ -1,0 +1,27 @@
+<RCC>
+    <qresource prefix="/da-figure">
+        <file>icon/figure.svg</file>
+        <file>icon/chart.svg</file>
+        <file>icon/chart-bar.svg</file>
+        <file>icon/chart-curve.svg</file>
+        <file>icon/chart-grid.svg</file>
+        <file>icon/chart-multibar.svg</file>
+        <file>icon/chart-OHLC.svg</file>
+        <file>icon/chart-scatter.svg</file>
+        <file>icon/chart-item.svg</file>
+        <file>icon/chart-shapes.svg</file>
+        <file>icon/chart-scale.svg</file>
+        <file>icon/chart-legend.svg</file>
+        <file>icon/chart-marker.svg</file>
+        <file>icon/chart-intervalcurve.svg</file>
+        <file>icon/chart-spectrogram.svg</file>
+        <file>icon/chart-spectrocurve.svg</file>
+        <file>icon/chart-graphic.svg</file>
+        <file>icon/chart-histogram.svg</file>
+        <file>icon/chart-textlabel.svg</file>
+        <file>icon/chart-zone.svg</file>
+        <file>icon/chart-vectorfield.svg</file>
+        <file>icon/chartitem-invisible.svg</file>
+        <file>icon/chartitem-visible.svg</file>
+    </qresource>
+</RCC>

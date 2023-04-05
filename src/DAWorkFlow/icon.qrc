@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/icon">
+        <file>icon/bottomSideIn.svg</file>
+        <file>icon/bottomSideOut.svg</file>
+        <file>icon/leftSideIn.svg</file>
+        <file>icon/leftSideOut.svg</file>
+        <file>icon/rightSideIn.svg</file>
+        <file>icon/rightSideOut.svg</file>
+        <file>icon/topSideIn.svg</file>
+        <file>icon/topSideOut.svg</file>
+        <file>icon/showDataInList.svg</file>
+        <file>icon/showDataInTree.svg</file>
+    </qresource>
+</RCC>

@@ -1,0 +1,33 @@
+<RCC>
+    <qresource prefix="/icon">
+        <file>icon/bottomSideIn.svg</file>
+        <file>icon/bottomSideOut.svg</file>
+        <file>icon/leftSideIn.svg</file>
+        <file>icon/leftSideOut.svg</file>
+        <file>icon/rightSideIn.svg</file>
+        <file>icon/rightSideOut.svg</file>
+        <file>icon/showDataInList.svg</file>
+        <file>icon/showDataInTree.svg</file>
+        <file>icon/topSideIn.svg</file>
+        <file>icon/topSideOut.svg</file>
+        <file>icon/folder.svg</file>
+        <file>icon/clear-message.svg</file>
+        <file>icon/copy.svg</file>
+        <file>icon/favorite.svg</file>
+        <file>icon/setting-node.svg</file>
+        <file>icon/setting-item.svg</file>
+        <file>icon/setting-link.svg</file>
+        <file>icon/removeFavorite.svg</file>
+        <file>icon/question.svg</file>
+        <file>icon/accept.svg</file>
+        <file>icon/cancel.svg</file>
+        <file>icon/insertColumnRight.svg</file>
+        <file>icon/renameColumns.svg</file>
+    </qresource>
+    <qresource prefix="/messageType">
+        <file>icon/messageType/messageTypeDebug.svg</file>
+        <file>icon/messageType/messageTypeError.svg</file>
+        <file>icon/messageType/messageTypeInfo.svg</file>
+        <file>icon/messageType/messageTypeWarning.svg</file>
+    </qresource>
+</RCC>
