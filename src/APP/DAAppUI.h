@@ -31,13 +31,15 @@ public:
 
 public:
     //获取core
-    DAAppCore* appCore();
+    DAAppCore* getAppCore();
     //减少一次dynamic_cast
-    DAAppActions* getActions();
+    DAAppActions* getAppActions();
     //减少一次dynamic_cast
     DAAppCommand* getAppCmd();
     //获取dock
     DAAppDockingArea* getAppDockingArea();
+    //获取ribbon
+    DAAppRibbonArea* getAppRibbonArea();
 
 protected:
     void createActions();

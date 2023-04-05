@@ -17,6 +17,7 @@ namespace DA
 class DAAppRibbonArea;
 class DAAppUI;
 class DAAppDockingArea;
+class DAAppController;
 class AppMainWindow : public SARibbonMainWindow
 {
     Q_OBJECT
@@ -44,9 +45,6 @@ private:
     //初始化工作流的节点
     void initWorkflowNodes();
 
-    //初始化信号槽
-    void initConnect();
-
 private slots:
     //
     void onWorkflowFinished(bool success);
@@ -54,6 +52,7 @@ private slots:
 private:
     DAAppUI* m_ui;
     DAAppDockingArea* m_dockArea;
+    DAAppController* _controller;
 };
 }  // namespace DA
 #endif  // METHODMAINWINDOW_H

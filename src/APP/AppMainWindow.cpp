@@ -10,11 +10,14 @@
 #include "DAAbstractPlugin.h"
 #include "DAAbstractNodePlugin.h"
 //界面相关
+#include "DAAppController.h"
 #include "DAAppCore.h"
 #include "DAAppUI.h"
 #include "DAAppDockingArea.h"
 #include "DAAppRibbonArea.h"
-
+#include "DAAppCommand.h"
+#include "DAAppActions.h"
+#include "DAAppDataManager.h"
 //对话框
 #include "DAPluginManagerDialog.h"
 
@@ -49,8 +52,19 @@ AppMainWindow::AppMainWindow(QWidget* parent) : SARibbonMainWindow(parent)
     //建立ribbonArea，此函数的构造函数会生成界面
     DAAppCore& core = DAAppCore::getInstance();
     core.createUi(this);
-    m_ui       = qobject_cast< DAAppUI* >(core.getUiInterface());
-    m_dockArea = qobject_cast< DAAppDockingArea* >(m_ui->getDockingArea());
+    m_ui        = qobject_cast< DAAppUI* >(core.getUiInterface());
+    m_dockArea  = m_ui->getAppDockingArea();
+    _controller = new DAAppController(this);
+    _controller
+            ->setAppMainWindow(this)                       // app
+            .setAppCore(&core)                             // core
+            .setAppActions(m_ui->getAppActions())          // action
+            .setAppCommand(m_ui->getAppCmd())              // cmd
+            .setAppDataManager(core.getAppDatas())         // data
+            .setAppDockingArea(m_ui->getAppDockingArea())  // dock
+            .setAppRibbonArea(m_ui->getAppRibbonArea())    // ribbon
+            ;
+    _controller->initialize();
     //首次调用此函数会加载插件，可放置在main函数中调用
     init();
     DAGraphicsItemFactory::initialization();
@@ -92,7 +106,6 @@ void AppMainWindow::init()
 {
     initPlugins();
     initWorkflowNodes();
-    initConnect();
 }
 
 void AppMainWindow::initPlugins()
@@ -117,10 +130,6 @@ void AppMainWindow::initWorkflowNodes()
     for (DAAbstractNodePlugin* plugin : nodeplugins) {
         plugin->afterLoadedNodes();
     }
-}
-
-void AppMainWindow::initConnect()
-{
 }
 
 void AppMainWindow::onWorkflowFinished(bool success)

@@ -27,6 +27,7 @@ SOURCES += \
     AppMainWindow.cpp \
     DAAppActions.cpp \
     DAAppCommand.cpp \
+    DAAppController.cpp \
     DAAppCore.cpp \
     DAAppDataManager.cpp \
     DAAppDockingArea.cpp \
@@ -46,6 +47,7 @@ HEADERS += \
     AppMainWindow.h \
     DAAppActions.h \
     DAAppCommand.h \
+    DAAppController.h \
     DAAppCore.h \
     DAAppDataManager.h \
     DAAppDockingArea.h \

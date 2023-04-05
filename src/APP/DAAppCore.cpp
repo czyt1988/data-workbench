@@ -123,7 +123,7 @@ bool DAAppCore::initializePythonEnv()
  * @brief 获取DAAppUI，省去qobject_cast
  * @return
  */
-DAAppUI* DAAppCore::getUi()
+DAAppUI* DAAppCore::getAppUi()
 {
     return m_appUI;
 }
@@ -131,7 +131,7 @@ DAAppUI* DAAppCore::getUi()
  * @brief 获取工程
  * @return
  */
-DAProject* DAAppCore::getProject()
+DAProject* DAAppCore::getAppProject()
 {
     return m_project;
 }
@@ -139,7 +139,7 @@ DAProject* DAAppCore::getProject()
  * @brief 直接获取数据
  * @return
  */
-DAAppDataManager* DAAppCore::getDatas()
+DAAppDataManager* DAAppCore::getAppDatas()
 {
     return m_dataManager;
 }
@@ -149,7 +149,7 @@ DAAppDataManager* DAAppCore::getDatas()
  * @note 此函数必须在@ref createUi 之后调用才有实际结果
  * @return
  */
-DAAppCommand* DAAppCore::getCmd()
+DAAppCommand* DAAppCore::getAppCmd()
 {
     return m_appCmd;
 }

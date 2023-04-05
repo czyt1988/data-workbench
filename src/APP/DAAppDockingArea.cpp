@@ -297,7 +297,7 @@ void DAAppDockingArea::buildDockingArea()
     m_dockmgr->setSplitterSizes(wfna.second, { leftwidth, centerwidth, rightwidth });
     //
     //把工作流操作窗口设置到工程中
-    DAProject* project = DA_APP_CORE.getProject();
+    DAProject* project = DA_APP_CORE.getAppProject();
     project->setWorkFlowOperateWidget(m_workFlowOperateWidget);
     initConnection();
     resetText();

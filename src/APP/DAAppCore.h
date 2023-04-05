@@ -42,13 +42,13 @@ public:  // python相关
 
 public:
     //获取DAAppUI，省去qobject_cast
-    DAAppUI* getUi();
+    DAAppUI* getAppUi();
     //获取DAProject
-    DAProject* getProject();
+    DAProject* getAppProject();
     //获取DAAppDataManager，省去qobject_cast
-    DAAppDataManager* getDatas();
+    DAAppDataManager* getAppDatas();
     //获取DAAppCommand，省去qobject_cast
-    DAAppCommand* getCmd();
+    DAAppCommand* getAppCmd();
 
 private:
     DAAppCommand* m_appCmd;

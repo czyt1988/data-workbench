@@ -50,20 +50,18 @@ void DAAppUI::createUi()
     createActions();  // Actions第二个创建
     createDockingArea();
     createRibbonArea();
-    //设置dockarea给RibbonArea
-    m_ribbonArea->setDockAreaInterface(m_dockingArea);
 }
 
 /**
  * @brief 获取app core
  * @return
  */
-DAAppCore* DAAppUI::appCore()
+DAAppCore* DAAppUI::getAppCore()
 {
     return qobject_cast< DAAppCore* >(core());
 }
 
-DAAppActions* DAAppUI::getActions()
+DAAppActions* DAAppUI::getAppActions()
 {
     return m_actions;
 }
@@ -76,6 +74,11 @@ DAAppCommand* DAAppUI::getAppCmd()
 DAAppDockingArea* DAAppUI::getAppDockingArea()
 {
     return m_dockingArea;
+}
+
+DAAppRibbonArea* DAAppUI::getAppRibbonArea()
+{
+    return m_ribbonArea;
 }
 
 void DAAppUI::createActions()
