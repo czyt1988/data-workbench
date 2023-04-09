@@ -69,6 +69,7 @@ void DAChartManageWidget::onFigureCloseing(DAFigureWidget* fig)
 
 void DAChartManageWidget::onCurrentFigureChanged(DAFigureWidget* fig, int index)
 {
+    Q_UNUSED(fig);
     ui->stackedWidget->setCurrentIndex(index);
 }
 

@@ -47,6 +47,8 @@ public:
 public:
     //获取选中的dtype
     DAPyDType selectedDType() const;
+    //通过char获取图标
+    static QIcon getIconByDtypeChar(char c);
 public slots:
     //设置当前的dtype
     void setCurrentDType(const DAPyDType& dt);

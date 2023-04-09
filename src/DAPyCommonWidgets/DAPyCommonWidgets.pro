@@ -20,11 +20,16 @@ $$saCopyLibToBin($${TARGET})
 
 HEADERS += \
     DAPyCommonWidgetsAPI.h \
-    DAPyDTypeComboBox.h \
+    DAPyDTypeComboBox.h \ \
+    DAPyDataframeColumnsListWidget.h
 
 
 SOURCES += \
-    DAPyDTypeComboBox.cpp
+    DAPyDTypeComboBox.cpp \
+    DAPyDataframeColumnsListWidget.cpp
+
+RESOURCES += \
+    resource.qrc
 
 
 

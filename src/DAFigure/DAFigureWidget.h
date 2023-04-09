@@ -46,31 +46,33 @@ public:
     QList< DAChartWidget* > getChartsOrdered() const;
     //获取当前的2d绘图指针
     DAChartWidget* getCurrentChart() const;
+    DAChartWidget* gca() const;
     //设置当前的2dplot
     bool setCurrentChart(DAChartWidget* p);
-
     //返回当前光标下的widget
     QWidget* getUnderCursorWidget() const;
     //返回在当前光标下的2D图
     DAChartWidget* getUnderCursorChart() const;
-
     //清空所有图 会连续发送chartRemoved信号，此函数会销毁chart对象
     void clearAllCharts();
-
     //设置画布背景色 - 支持redo-undo
     void setBackgroundColor(const QBrush& brush);
     void setBackgroundColor(const QColor& clr);
     const QBrush& getBackgroundColor() const;
-
     //通过item查找对应的SAChart2D，如果没有返回nullptr
     DAChartWidget* findChartFromItem(QwtPlotItem* item) const;
-
     //开启子窗口编辑模式
-    void enableChartEditor(bool enable = true);
-    DAFigureWidgetOverlayChartEditor* getChartEditorOverlay() const;
-
+    void enableSubChartEditor(bool enable = true);
+    DAFigureWidgetOverlayChartEditor* getSubChartEditor() const;
     //判断是否在进行子窗口编辑
-    bool isEnableChartEditor() const;
+    bool isEnableSubChartEditor() const;
+
+public:
+    //绘图相关
+    //支持redo/undo的addCurve，等同于gca()->addCurve
+    QwtPlotCurve* addCurve_(const QVector< QPointF >& xyDatas);
+
+public:
     //推送一个命令
     void push(QUndoCommand* cmd);
     //获取Undo Stack

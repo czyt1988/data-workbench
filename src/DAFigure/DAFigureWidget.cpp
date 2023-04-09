@@ -124,6 +124,54 @@ public:
     QRectF mNewPresent;
 };
 
+/**
+ * @brief 添加Item
+ */
+class DAFigureWidgetCommandAttachItem : public DAFigureWidgetCommandBase
+{
+public:
+    /**
+     * @brief 添加Item
+     * @param fig figure
+     * @param chart 对应的DAChartWidget指针
+     * @param item 对应的QwtPlotItem
+     * @param skipFirst 第一次跳过item->attach(chart);操作，后续的redo不会再跳过
+     * @param par
+     */
+    DAFigureWidgetCommandAttachItem(DAFigureWidget* fig, DAChartWidget* chart, QwtPlotItem* item, bool skipFirst = true, QUndoCommand* par = nullptr)
+        : DAFigureWidgetCommandBase(fig, par), mChart(chart), mItem(item), mSkipFirst(skipFirst), mNeedDelete(false)
+    {
+        setText(QObject::tr("add item in chart"));  // cn:设置绘图中窗体的尺寸
+    }
+    ~DAFigureWidgetCommandAttachItem()
+    {
+        if (mNeedDelete) {
+            if (mItem) {
+                delete mItem;
+            }
+        }
+    }
+    void redo() override
+    {
+        if (mSkipFirst) {
+            mSkipFirst = false;
+        } else {
+            mItem->attach(mChart);
+            mNeedDelete = false;
+        }
+    }
+    void undo() override
+    {
+        mItem->detach();
+        mNeedDelete = true;
+    }
+
+public:
+    DAChartWidget* mChart;
+    QwtPlotItem* mItem;
+    bool mSkipFirst;
+    bool mNeedDelete;
+};
 //===================================================
 // DAFigureWidgetPrivate
 //===================================================
@@ -302,6 +350,15 @@ DAChartWidget* DAFigureWidget::getCurrentChart() const
 }
 
 /**
+ * @brief like matlab/matplotlib api gca
+ * @return
+ */
+DAChartWidget* DAFigureWidget::gca() const
+{
+    return getCurrentChart();
+}
+
+/**
  * @brief 清空同时删除
  */
 void DAFigureWidget::clearAllCharts()
@@ -363,7 +420,10 @@ bool DAFigureWidget::setCurrentChart(DAChartWidget* p)
     d_ptr->_currentChart = p;
     // setFocusProxy(p);
     //如果在进行子窗口编辑模式，此时需要重新设置编辑
-    if (isEnableChartEditor()) {
+    if (isEnableSubChartEditor()) {
+        //避免信号重复触发，虽然不影响
+        QSignalBlocker bl(d_ptr->_chartEditorOverlay);
+        Q_UNUSED(bl);
         d_ptr->_chartEditorOverlay->setActiveWidget(p);
     }
     emit currentChartChanged(p);
@@ -394,7 +454,7 @@ DAChartWidget* DAFigureWidget::findChartFromItem(QwtPlotItem* item) const
 /// \param enable
 /// \param ptr 通过此参数可以指定自定义的编辑器，若为nullptr，将使用默认的编辑器，此指针的管理权将移交SAFigureWindow
 ///
-void DAFigureWidget::enableChartEditor(bool enable)
+void DAFigureWidget::enableSubChartEditor(bool enable)
 {
     if (enable) {
         if (nullptr == d_ptr->_chartEditorOverlay) {
@@ -423,7 +483,7 @@ void DAFigureWidget::enableChartEditor(bool enable)
 /// 此指针的管理权在SAFigureWindow上，不要在外部对此指针进行释放
 /// \return
 ///
-DAFigureWidgetOverlayChartEditor* DAFigureWidget::getChartEditorOverlay() const
+DAFigureWidgetOverlayChartEditor* DAFigureWidget::getSubChartEditor() const
 {
     return (d_ptr->_chartEditorOverlay);
 }
@@ -432,12 +492,27 @@ DAFigureWidgetOverlayChartEditor* DAFigureWidget::getChartEditorOverlay() const
  * @brief SAFigureWindow::isSubWindowEditingMode
  * @return
  */
-bool DAFigureWidget::isEnableChartEditor() const
+bool DAFigureWidget::isEnableSubChartEditor() const
 {
     if (d_ptr->_chartEditorOverlay) {
         return (d_ptr->_chartEditorOverlay->isVisible());
     }
     return (false);
+}
+
+/**
+ * @brief 支持redo/undo的addCurve，等同于gca()->addCurve
+ * @param xyDatas
+ * @return 如果添加失败，返回一个nullptr
+ */
+QwtPlotCurve* DAFigureWidget::addCurve_(const QVector< QPointF >& xyDatas)
+{
+    if (DAChartWidget* chart = gca()) {
+        QwtPlotCurve* item = chart->addCurve(xyDatas);
+        push(new DAFigureWidgetCommandAttachItem(this, chart, item));
+        return item;
+    }
+    return nullptr;
 }
 
 /**

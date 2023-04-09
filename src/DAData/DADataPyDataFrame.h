@@ -25,6 +25,14 @@ public:
     //获取dataframe
     DAPyDataFrame& dataframe();
     const DAPyDataFrame& dataframe() const;
+    //以下是一些wrapper
+    QList< QString > columns() const;
+
+public:
+    //一些qt操作wrapper
+
+    //获取为QVector< double >，如果无法转换，返回一个空的vector
+    QVector< double > getSeriesByVector(const QString& name) const;
 
 protected:
     DAPyDataFrame _df;

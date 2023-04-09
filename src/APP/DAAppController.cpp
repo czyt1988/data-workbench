@@ -897,6 +897,7 @@ void DAAppController::onActionAddFigureTriggered()
     chart->setXLabel("x");
     chart->setYLabel("y");
     chart->addCurve(x, y)->setTitle("curve");
+    chart->enableLegendPanel();
     _ribbon->updateFigureAboutRibbon(fig);
     _dock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
 }
@@ -912,7 +913,7 @@ void DAAppController::onActionFigureResizeChartTriggered(bool on)
         return;
     }
     _dock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
-    fig->enableChartEditor(on);
+    fig->enableSubChartEditor(on);
 }
 
 /**
@@ -1155,24 +1156,89 @@ void DAAppController::onChartLegendMaxColumnsValueChanged(int v)
     legend->setMaxColumns(v);
 }
 
+/**
+ * @brief legend的margin发生变化
+ * @param v
+ */
 void DAAppController::onChartLegendMarginValueChanged(int v)
 {
+    DAChartWidget* w = getCurrentChart();
+    if (!w) {
+        return;
+    }
+    QwtPlotLegendItem* legend = w->getLegend();
+    if (!legend) {
+        return;
+    }
+    legend->setMargin(v);
 }
 
+/**
+ * @brief legend的Spacing发生变化
+ * @param v
+ */
 void DAAppController::onChartLegendSpacingValueChanged(int v)
 {
+    DAChartWidget* w = getCurrentChart();
+    if (!w) {
+        return;
+    }
+    QwtPlotLegendItem* legend = w->getLegend();
+    if (!legend) {
+        return;
+    }
+    legend->setSpacing(v);
 }
 
+/**
+ * @brief legend的item margin发生变化
+ * @param v
+ */
 void DAAppController::onChartLegendItemMarginValueChanged(int v)
 {
+    DAChartWidget* w = getCurrentChart();
+    if (!w) {
+        return;
+    }
+    QwtPlotLegendItem* legend = w->getLegend();
+    if (!legend) {
+        return;
+    }
+    legend->setItemMargin(v);
 }
 
+/**
+ * @brief legend的item spacing发生变化
+ * @param v
+ */
 void DAAppController::onChartLegendItemSpacingValueChanged(int v)
 {
+    DAChartWidget* w = getCurrentChart();
+    if (!w) {
+        return;
+    }
+    QwtPlotLegendItem* legend = w->getLegend();
+    if (!legend) {
+        return;
+    }
+    legend->setItemSpacing(v);
 }
 
+/**
+ * @brief legend的圆角发生变化
+ * @param v
+ */
 void DAAppController::onChartLegendBorderRadiusValueChanged(double v)
 {
+    DAChartWidget* w = getCurrentChart();
+    if (!w) {
+        return;
+    }
+    QwtPlotLegendItem* legend = w->getLegend();
+    if (!legend) {
+        return;
+    }
+    legend->setBorderRadius(v);
 }
 
 /**

@@ -89,6 +89,15 @@ DAFigureWidget* DAChartOperateWidget::getCurrentFigure() const
 }
 
 /**
+ * @brief like matlab/matplotlib gcf api
+ * @return
+ */
+DAFigureWidget* DAChartOperateWidget::gcf() const
+{
+    return getCurrentFigure();
+}
+
+/**
  * @brief 根据索引获取fig
  * @param index
  * @return
@@ -119,6 +128,15 @@ DAChartWidget* DAChartOperateWidget::getCurrentChart() const
         return fig->getCurrentChart();
     }
     return nullptr;
+}
+
+/**
+ * @brief like matlab/matplotlib gca api
+ * @return
+ */
+DAChartWidget* DAChartOperateWidget::gca() const
+{
+    return getCurrentChart();
 }
 
 /**

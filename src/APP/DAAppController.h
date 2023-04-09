@@ -163,7 +163,7 @@ private slots:
     void onActionChartEnableLegendTriggered(bool on);
     //绘图图例对齐的actiongroup
     void onActionGroupChartLegendAlignmentTriggered(QAction* a);
-    //绘图图例的最大列数发生改变
+    //绘图图例的最大列数、margin、spacing等发生改变
     void onChartLegendMaxColumnsValueChanged(int v);
     void onChartLegendMarginValueChanged(int v);
     void onChartLegendSpacingValueChanged(int v);

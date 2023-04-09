@@ -39,6 +39,24 @@ public:
     //判断是否为series
     static bool isSeries(const pybind11::object& obj);
 
+public:
+    /**
+     * @brief 把series转换为一个容器数组
+     * @param begin
+     */
+    template< typename T, typename VectLikeIte >
+    void castTo(VectLikeIte begin)
+    {
+        std::size_t s            = size();
+        pybind11::object obj_iat = object().attr("iat");
+        for (std::size_t i = 0; i < s; ++i) {
+            pybind11::object obj_v = obj_iat[ pybind11::int_(i) ];
+            T v                    = obj_v.cast< T >();
+            *begin                 = v;
+            ++begin;
+        }
+    }
+
 protected:
     //检测是否为dataframe，如果不是将会设置为none
     void checkObjectValid();

@@ -33,12 +33,14 @@ public:
     DAFigureWidget* createFigure(const QString& title);
     //获取当前的fig，如果没有返回nullptr
     DAFigureWidget* getCurrentFigure() const;
+    DAFigureWidget* gcf() const;
     //获取figure
     DAFigureWidget* getFigure(int index) const;
     //获取fig在DAChartOperateWidget的索引
     int getFigureIndex(DAFigureWidget* f);
     //获取当前的chart，如果没有返回nullptr
     DAChartWidget* getCurrentChart() const;
+    DAChartWidget* gca() const;
 private slots:
     // tab窗口改变
     void onTabWidgetCurrentChanged(int index);

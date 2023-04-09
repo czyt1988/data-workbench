@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/PyCommonWidgets">
+        <file>icon/datetime.svg</file>
+        <file>icon/float.svg</file>
+        <file>icon/int.svg</file>
+        <file>icon/obj.svg</file>
+        <file>icon/str.svg</file>
+    </qresource>
+</RCC>

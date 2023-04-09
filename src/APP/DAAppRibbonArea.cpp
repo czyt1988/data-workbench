@@ -617,8 +617,10 @@ void DAAppRibbonArea::updateChartLegendAboutRibbon(DAChartWidget* chart)
     }
     QwtPlotLegendItem* legend = chart->getLegend();
     if (nullptr == legend) {
+        m_actions->actionChartEnableLegend->setChecked(false);
         return;
     }
+    m_actions->actionChartEnableLegend->setChecked(legend->isVisible());
     Qt::Alignment al    = legend->alignmentInCanvas();
     bool needIteActions = true;
     QAction* ca         = m_actions->actionGroupChartLegendAlignment->checkedAction();
