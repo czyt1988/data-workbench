@@ -57,6 +57,8 @@ public:
 
     void beginResetSubWidget();
     void endResetSubWidget();
+    //获取当前位置下的窗口
+    QWidget* getWidgetUnderPos(const QPoint& p, bool zorder = true);
 
 protected:
     //

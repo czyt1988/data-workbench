@@ -264,6 +264,31 @@ void DAFigureContainer::endResetSubWidget()
 {
     d_ptr->_isResetWidgetPos = false;
 }
+
+/**
+ * @brief 获取当前位置下的窗口
+ * @param p 相对DAFigureContainer的位置
+ * @param zorder 考虑z-order,考虑z会保证优先返回最上层的窗口
+ * @return 如果没有返回nullptr
+ */
+QWidget* DAFigureContainer::getWidgetUnderPos(const QPoint& p, bool zorder)
+{
+    if (zorder) {
+        QList< QWidget* > zw = getOrderedWidgetList();
+        for (QWidget* w : qAsConst(zw)) {
+            if (w->geometry().contains(p)) {
+                return w;
+            }
+        }
+    } else {
+        for (auto i = d_ptr->_widgetPosPreset.begin(); i != d_ptr->_widgetPosPreset.end(); ++i) {
+            if (i.key()->geometry().contains(p)) {
+                return i.key();
+            }
+        }
+    }
+    return nullptr;
+}
 /**
  * @brief DAFigureContainer::event
  * @param e

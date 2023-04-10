@@ -4,6 +4,10 @@
 #include <QTableView>
 #include "DAGuiAPI.h"
 #include "DAData.h"
+class QDragEnterEvent;
+class QDragLeaveEvent;
+class QDragMoveEvent;
+class QDropEvent;
 namespace DA
 {
 class DADataManager;
@@ -24,6 +28,13 @@ public:
     DAData getOneSelectData() const;
     //获取所有选中的数据
     QList< DAData > getSelectDatas() const;
+
+protected:
+    void dragEnterEvent(QDragEnterEvent* e) override;
+    void dragMoveEvent(QDragMoveEvent* e) override;
+    void dragLeaveEvent(QDragLeaveEvent* e) override;
+    void dropEvent(QDropEvent* e) override;
+    void startDrag(Qt::DropActions supportedActions) override;
 signals:
     /**
      * @brief 变量双击

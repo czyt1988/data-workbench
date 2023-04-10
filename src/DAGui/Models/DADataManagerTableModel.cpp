@@ -91,7 +91,7 @@ Qt::ItemFlags DADataManagerTableModel::flags(const QModelIndex& index) const
 {
     if (!index.isValid())
         return Qt::NoItemFlags;
-    return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+    return Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled;
 }
 
 void DADataManagerTableModel::setDataManager(DADataManager* dm)

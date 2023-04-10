@@ -57,9 +57,11 @@ include($${DA_SRC_DIR}/DAFigure/DAFigure.pri)
 # 子模块
 include($$PWD/Models/Models.pri)
 include($$PWD/Dialog/Dialog.pri)
+include($$PWD/MimeData/MimeData.pri)
 include($$PWD/Commands/Commands.pri)
 include($$PWD/SettingPages/SettingPages.pri)
 HEADERS +=\
+    DAAppFigureWidget.h \
     DADataOperatePageWidget.h \
     DAFigureFactory.h \
     DAGuiAPI.h \
@@ -90,6 +92,7 @@ HEADERS +=\
     DAXmlHelper.h
 
 SOURCES += \
+    DAAppFigureWidget.cpp \
     DAChartListView.cpp \
     DAChartManageWidget.cpp \
     DAChartOperateWidget.cpp \

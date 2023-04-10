@@ -1,9 +1,14 @@
 ﻿#include "DADataManageTableView.h"
 #include <QHeaderView>
 #include <QDebug>
+#include <QDrag>
+#include <QDragEnterEvent>
+#include <QDragLeaveEvent>
+#include <QDragMoveEvent>
+#include <QDropEvent>
 #include "DADataManagerTableModel.h"
 #include "DADataManager.h"
-
+#include "DAMimeDataForData.h"
 //===================================================
 // using DA namespace -- 禁止在头文件using!!
 //===================================================
@@ -16,7 +21,10 @@ namespace DA
 //===================================================
 DADataManageTableView::DADataManageTableView(QWidget* parent) : QTableView(parent)
 {
-    setModel(new DADataManagerTableModel(this));
+    DADataManagerTableModel* m = new DADataManagerTableModel(this);
+    setModel(m);
+    setDragEnabled(true);
+    setDragDropMode(QAbstractItemView::DragDrop);
     init();
 }
 
@@ -117,6 +125,46 @@ QList< DAData > DADataManageTableView::getSelectDatas() const
         res.append(d);
     }
     return res;
+}
+
+void DADataManageTableView::dragEnterEvent(QDragEnterEvent* e)
+{
+    // QTableView::dragEnterEvent(e);
+    e->accept();
+    qDebug() << "dragEnterEvent isAccepted:" << e->isAccepted();
+}
+
+void DADataManageTableView::dragMoveEvent(QDragMoveEvent* e)
+{
+    // QTableView::dragMoveEvent(e);
+    e->accept();
+    qDebug() << "dragMoveEvent isAccepted:" << e->isAccepted();
+}
+
+void DADataManageTableView::dragLeaveEvent(QDragLeaveEvent* e)
+{
+    // QTableView::dragLeaveEvent(e);
+    e->accept();
+    qDebug() << "dragLeaveEvent isAccepted:" << e->isAccepted();
+}
+
+void DADataManageTableView::dropEvent(QDropEvent* e)
+{
+    //    QTableView::dropEvent(e);
+    e->accept();
+    qDebug() << "dropEvent isAccepted:" << e->isAccepted();
+}
+
+void DADataManageTableView::startDrag(Qt::DropActions supportedActions)
+{
+    qDebug() << "startDrag:" << supportedActions;
+    DAData d                    = getOneSelectData();
+    DAMimeDataForData* mimedata = new DAMimeDataForData();
+    mimedata->setDAData(d);
+    QDrag* drag = new QDrag(this);
+    drag->setMimeData(mimedata);
+    Qt::DropActions r = drag->exec(Qt::CopyAction | Qt::MoveAction);
+    qDebug() << "end startDrag:" << r;
 }
 
 void DADataManageTableView::onTableViewDoubleClicked(const QModelIndex& index)

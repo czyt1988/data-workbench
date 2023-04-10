@@ -23,10 +23,6 @@ class DAFIGURE_API DAFigureWidget : public DAFigureContainer
 {
     Q_OBJECT
     DA_IMPL(DAFigureWidget)
-    friend class SAFigureCreateSubWidgetCommand;
-    friend class SAFigureBackgroundCommand;
-    friend class SAFigureSubChartResizeCommand;
-
 public:
     explicit DAFigureWidget(QWidget* parent = 0);
     ~DAFigureWidget();

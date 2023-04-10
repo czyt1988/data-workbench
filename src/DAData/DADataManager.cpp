@@ -172,7 +172,7 @@ int DADataManager::getDataCount() const
  *
  * 参数在变量管理器中有一个list来维护，这个索引就是链表的索引
  * @param d
- * @return
+ * @return 如果没有在管理器中找到data，返回-1
  */
 int DADataManager::getDataIndex(const DAData& d) const
 {

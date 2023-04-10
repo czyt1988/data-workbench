@@ -1,4 +1,5 @@
 ﻿#include "DAFigureFactory.h"
+#include "DAAppFigureWidget.h"
 namespace DA
 {
 
@@ -12,7 +13,7 @@ DAFigureFactory::~DAFigureFactory()
 
 DAFigureWidget* DAFigureFactory::createFigure(QWidget* par)
 {
-    return new DAFigureWidget(par);
+    return new DAAppFigureWidget(par);
 }
 
 }
