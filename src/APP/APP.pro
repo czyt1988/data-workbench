@@ -31,6 +31,8 @@ SOURCES += \
     DAAppCore.cpp \
     DAAppDataManager.cpp \
     DAAppDockingArea.cpp \
+    DAAppFigureFactory.cpp \
+    DAAppFigureWidget.cpp \
     DAAppPluginManager.cpp \
     DAAppRibbonArea.cpp \
     DAAppUI.cpp \
@@ -51,6 +53,8 @@ HEADERS += \
     DAAppCore.h \
     DAAppDataManager.h \
     DAAppDockingArea.h \
+    DAAppFigureFactory.h \
+    DAAppFigureWidget.h \
     DAAppPluginManager.h \
     DAAppRibbonArea.h \
     DAAppUI.h \

@@ -7,7 +7,7 @@ namespace DA
 /**
  * @brief 用于生成DAFigureWidget的工厂类，如果有继承的DAFigureWidget，则需要继承此工厂类提供DAFigureWidget*
  */
-class DAFigureFactory
+class DAGUI_API DAFigureFactory
 {
 public:
     DAFigureFactory();

@@ -130,28 +130,28 @@ QList< DAData > DADataManageTableView::getSelectDatas() const
 void DADataManageTableView::dragEnterEvent(QDragEnterEvent* e)
 {
     // QTableView::dragEnterEvent(e);
-    e->accept();
+    e->ignore();
     qDebug() << "dragEnterEvent isAccepted:" << e->isAccepted();
 }
 
 void DADataManageTableView::dragMoveEvent(QDragMoveEvent* e)
 {
     // QTableView::dragMoveEvent(e);
-    e->accept();
+    e->ignore();
     qDebug() << "dragMoveEvent isAccepted:" << e->isAccepted();
 }
 
 void DADataManageTableView::dragLeaveEvent(QDragLeaveEvent* e)
 {
     // QTableView::dragLeaveEvent(e);
-    e->accept();
+    e->ignore();
     qDebug() << "dragLeaveEvent isAccepted:" << e->isAccepted();
 }
 
 void DADataManageTableView::dropEvent(QDropEvent* e)
 {
     //    QTableView::dropEvent(e);
-    e->accept();
+    e->ignore();
     qDebug() << "dropEvent isAccepted:" << e->isAccepted();
 }
 

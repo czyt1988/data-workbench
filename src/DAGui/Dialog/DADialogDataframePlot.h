@@ -1,11 +1,11 @@
-﻿#ifndef DADIALOGDATAFRAMETOPOINTVECTOR_H
-#define DADIALOGDATAFRAMETOPOINTVECTOR_H
+﻿#ifndef DADIALOGDATAFRAMEPLOT_H
+#define DADIALOGDATAFRAMEPLOT_H
 #include "DAGuiAPI.h"
 #include <QDialog>
 #include "DAData.h"
 namespace Ui
 {
-class DADialogDataframeToPointVector;
+class DADialogDataframePlot;
 }
 
 namespace DA
@@ -22,12 +22,12 @@ class DADataManager;
  * }
  * @endcode
  */
-class DAGUI_API DADialogDataframeToPointVector : public QDialog
+class DAGUI_API DADialogDataframePlot : public QDialog
 {
     Q_OBJECT
 public:
-    explicit DADialogDataframeToPointVector(QWidget* parent = nullptr);
-    ~DADialogDataframeToPointVector();
+    explicit DADialogDataframePlot(QWidget* parent = nullptr);
+    ~DADialogDataframePlot();
     //设置datamanager,会把combox填入所有的dataframe
     void setDataManager(DADataManager* dmgr);
     //设置datafram
@@ -48,9 +48,9 @@ private slots:
     void onComboBoxCurrentIndexChanged(int i);
 
 private:
-    Ui::DADialogDataframeToPointVector* ui;
+    Ui::DADialogDataframePlot* ui;
     DADataManager* _dataMgr;
     DAData _currentData;
 };
 }  // end DA
-#endif  // DADIALOGDATAFRAMETOPOINTVECTOR_H
+#endif  // DADIALOGDATAFRAMEPLOT_H

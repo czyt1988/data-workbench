@@ -30,4 +30,16 @@
         <file>icon/messageType/messageTypeInfo.svg</file>
         <file>icon/messageType/messageTypeWarning.svg</file>
     </qresource>
+    <qresource prefix="/gui/chart-type">
+        <file>icon/chart-type/chart-bar.svg</file>
+        <file>icon/chart-type/chart-curve.svg</file>
+        <file>icon/chart-type/chart-histogram.svg</file>
+        <file>icon/chart-type/chart-intervalcurve.svg</file>
+        <file>icon/chart-type/chart-multibar.svg</file>
+        <file>icon/chart-type/chart-OHLC.svg</file>
+        <file>icon/chart-type/chart-scatter.svg</file>
+        <file>icon/chart-type/chart-spectrocurve.svg</file>
+        <file>icon/chart-type/chart-spectrogram.svg</file>
+        <file>icon/chart-type/chart-vectorfield.svg</file>
+    </qresource>
 </RCC>

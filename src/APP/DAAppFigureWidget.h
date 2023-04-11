@@ -9,16 +9,19 @@ class QDropEvent;
 
 namespace DA
 {
+class DADataManager;
+
 DA_IMPL_FORWARD_DECL(DAAppFigureWidget)
 /**
  * @brief DAFigureWidget的特例化，加入了拖曳等功能
  */
-class DAGUI_API DAAppFigureWidget : public DAFigureWidget
+class DAAppFigureWidget : public DAFigureWidget
 {
     DA_IMPL(DAAppFigureWidget)
 public:
     DAAppFigureWidget(QWidget* parent = 0);
     ~DAAppFigureWidget();
+    void setDataManager(DADataManager* mgr);
 
 protected:
     void dragEnterEvent(QDragEnterEvent* e) override;

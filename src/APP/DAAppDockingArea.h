@@ -108,7 +108,11 @@ public slots:
 private:
     //构建界面
     void buildDockingArea();
-
+    //创建各个相关的窗口
+    void buildWorkflowAboutWidgets();
+    void buildChartAboutWidgets();
+    void buildDataAboutWidgets();
+    void buildOtherWidgets();
     //初始化信号槽
     void initConnection();
 
@@ -117,7 +121,7 @@ private slots:
     void onSelectNodeItemChanged(DA::DAAbstractNodeGraphicsItem* i);
     void onDataManageWidgetDataDbClicked(const DA::DAData& data);
     // workflow窗口创建信号对应槽
-    void onWorkFlowOperateWidgetWorkflowCreated(DAWorkFlowEditWidget* wfw);
+    void onWorkFlowOperateWidgetWorkflowCreated(DA::DAWorkFlowEditWidget* wfw);
 
 private:
     AppMainWindow* m_app;

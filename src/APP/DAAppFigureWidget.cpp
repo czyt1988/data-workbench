@@ -4,9 +4,9 @@
 #include <QDragMoveEvent>
 #include <QDropEvent>
 #include <QDebug>
-#include "DAMimeDataForData.h"
-#include "DAMimeDataFormats.h"
-#include "DADialogDataframeToPointVector.h"
+#include "MimeData/DAMimeDataForData.h"
+#include "MimeData/DAMimeDataFormats.h"
+#include "Dialog/DADialogDataframePlot.h"
 namespace DA
 {
 class DAAppFigureWidgetPrivate
@@ -15,22 +15,23 @@ public:
     DA_IMPL_PUBLIC(DAAppFigureWidget)
     DAAppFigureWidgetPrivate(DAAppFigureWidget* p);
     //获取dlg指针，如果为nullptr，则创建
-    DADialogDataframeToPointVector* getDlgDataframeToPointVector();
+    DADialogDataframePlot* getDlgDataframeToPointVector();
 
 public:
     bool _isStartDrag { false };
-    DADialogDataframeToPointVector* _dlgDataframeToPointVector { nullptr };
+    DADialogDataframePlot* _dlgDataframePlot { nullptr };
+    DADataManager* _dataManager { nullptr };
 };
 DAAppFigureWidgetPrivate::DAAppFigureWidgetPrivate(DAAppFigureWidget* p) : q_ptr(p)
 {
 }
 
-DADialogDataframeToPointVector* DAAppFigureWidgetPrivate::getDlgDataframeToPointVector()
+DADialogDataframePlot* DAAppFigureWidgetPrivate::getDlgDataframeToPointVector()
 {
-    if (!_dlgDataframeToPointVector) {
-        _dlgDataframeToPointVector = new DADialogDataframeToPointVector(q_ptr);
+    if (!_dlgDataframePlot) {
+        _dlgDataframePlot = new DADialogDataframePlot(q_ptr);
     }
-    return _dlgDataframeToPointVector;
+    return _dlgDataframePlot;
 }
 //==============================================================
 // DAAppFigureWidget
@@ -47,28 +48,31 @@ DAAppFigureWidget::~DAAppFigureWidget()
 {
 }
 
+void DAAppFigureWidget::setDataManager(DADataManager* mgr)
+{
+    d_ptr->_dataManager = mgr;
+}
+
+/**
+ * @brief 拖曳进入
+ *
+ * 此事件需要accept,否则move事件不会触发
+ * @param e
+ */
 void DAAppFigureWidget::dragEnterEvent(QDragEnterEvent* e)
 {
     if (!e) {
         return;
     }
+    qDebug() << "DAAppFigureWidget::dragEnterEvent";
     if (e->source() == this || nullptr == e->source()) {
         return;
     }
     const QMimeData* mimeData = e->mimeData();
     if (mimeData->hasFormat(DAMIMEDATA_FORMAT_DADATA)) {
-        //数据
-        QWidget* w = getWidgetUnderPos(e->pos());
-        if (nullptr == w) {
-            e->ignore();
-            return;
-        }
-        if (DAChartWidget* chart = qobject_cast< DAChartWidget* >(w)) {
-            qDebug() << "dragEnterEvent setDropAction(Qt::CopyAction)";
-            e->setDropAction(Qt::CopyAction);
-            d_ptr->_isStartDrag = true;
-            e->accept();
-        }
+        e->acceptProposedAction();
+    } else {
+        qDebug() << "DAAppFigureWidget::dragEnterEvent get unknow format:" << mimeData->formats();
     }
 }
 
@@ -85,14 +89,17 @@ void DAAppFigureWidget::dragMoveEvent(QDragMoveEvent* e)
         //数据
         QWidget* w = getWidgetUnderPos(e->pos());
         if (nullptr == w) {
+            e->setDropAction(Qt::IgnoreAction);
             return;
         }
         if (DAChartWidget* chart = qobject_cast< DAChartWidget* >(w)) {
-            qDebug() << "dragMoveEvent setDropAction(Qt::CopyAction)";
+            Q_UNUSED(chart);
             e->setDropAction(Qt::CopyAction);
             e->accept();
+            return;
         }
     }
+    e->setDropAction(Qt::IgnoreAction);
 }
 
 void DAAppFigureWidget::dragLeaveEvent(QDragLeaveEvent* e)
@@ -101,6 +108,7 @@ void DAAppFigureWidget::dragLeaveEvent(QDragLeaveEvent* e)
         return;
     }
     d_ptr->_isStartDrag = false;
+    e->accept();
 }
 
 void DAAppFigureWidget::dropEvent(QDropEvent* e)
@@ -124,13 +132,22 @@ void DAAppFigureWidget::dropEvent(QDropEvent* e)
         }
         if (DAChartWidget* chart = qobject_cast< DAChartWidget* >(w)) {
             qDebug() << "dropEvent";
-            DADialogDataframeToPointVector* dlg = d_ptr->getDlgDataframeToPointVector();
+            DADialogDataframePlot* dlg = d_ptr->getDlgDataframeToPointVector();
+            dlg->setDataManager(d_ptr->_dataManager);
+            dlg->setCurrentData(datamime->getDAData());
             if (QDialog::Accepted != dlg->exec()) {
                 d_ptr->_isStartDrag = false;
-                e->accept();
+                e->ignore();
                 return;
             }
-            e->accept();
+            //获取数据
+            QVector< QPointF > p;
+            if (!dlg->getToVectorPointF(p) || p.empty()) {
+                e->ignore();
+                return;
+            }
+            addCurve_(p);
+            e->acceptProposedAction();
         }
     }
     d_ptr->_isStartDrag = false;

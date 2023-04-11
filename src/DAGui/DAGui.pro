@@ -61,8 +61,8 @@ include($$PWD/MimeData/MimeData.pri)
 include($$PWD/Commands/Commands.pri)
 include($$PWD/SettingPages/SettingPages.pri)
 HEADERS +=\
-    DAAppFigureWidget.h \
     DADataOperatePageWidget.h \
+    DADataframeToVectorPoint.h \
     DAFigureFactory.h \
     DAGuiAPI.h \
     DAChartListView.h \
@@ -92,7 +92,6 @@ HEADERS +=\
     DAXmlHelper.h
 
 SOURCES += \
-    DAAppFigureWidget.cpp \
     DAChartListView.cpp \
     DAChartManageWidget.cpp \
     DAChartOperateWidget.cpp \
@@ -103,6 +102,7 @@ SOURCES += \
     DADataOperatePageWidget.cpp \
     DADataOperateWidget.cpp \
     DADataOperateOfDataFrameWidget.cpp \
+    DADataframeToVectorPoint.cpp \
     DAFigureFactory.cpp \
     DAMessageLogViewWidget.cpp \
     DANodeItemSettingWidget.cpp \
@@ -127,6 +127,7 @@ FORMS += \
     DADataManageWidget.ui \
     DADataOperateOfDataFrameWidget.ui \
     DADataOperateWidget.ui \
+    DADataframeToVectorPoint.ui \
     DAMessageLogViewWidget.ui \
     DANodeItemSettingWidget.ui \
     DANodeLinkItemSettingWidget.ui \
