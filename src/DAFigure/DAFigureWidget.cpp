@@ -516,6 +516,21 @@ QwtPlotCurve* DAFigureWidget::addCurve_(const QVector< QPointF >& xyDatas)
 }
 
 /**
+ * @brief 支持redo/undo的addScatter，等同于gca()->addCurve
+ * @param xyDatas
+ * @return 如果添加失败，返回一个nullptr
+ */
+QwtPlotCurve* DAFigureWidget::addScatter_(const QVector< QPointF >& xyDatas)
+{
+    if (DAChartWidget* chart = gca()) {
+        QwtPlotCurve* item = chart->addScatter(xyDatas);
+        push(new DAFigureWidgetCommandAttachItem(this, chart, item));
+        return item;
+    }
+    return nullptr;
+}
+
+/**
  * @brief 推入一个命令
  * @param cmd
  */

@@ -101,8 +101,9 @@ int DAPyDataFrameTableModule::rowCount(const QModelIndex& parent) const
 
 QVariant DAPyDataFrameTableModule::data(const QModelIndex& index, int role) const
 {
-    if (!index.isValid() || d_ptr->_dataframe.isNone())
+    if (!index.isValid() || d_ptr->_dataframe.isNone()) {
         return QVariant();
+    }
     std::pair< std::size_t, std::size_t > shape = d_ptr->_dataframe.shape();
     if (index.row() >= (int)shape.first || index.column() >= (int)shape.second) {
         return QVariant();
@@ -138,7 +139,7 @@ bool DAPyDataFrameTableModule::setData(const QModelIndex& index, const QVariant&
     }
     QVariant olddata = d_ptr->_dataframe.iat(index.row(), index.column());
     std::unique_ptr< DACommandDataFrame_iat > cmd_iat(
-    new DACommandDataFrame_iat(d_ptr->_dataframe, index.row(), index.column(), olddata, value, this));
+            new DACommandDataFrame_iat(d_ptr->_dataframe, index.row(), index.column(), olddata, value, this));
     cmd_iat->redo();
     if (!cmd_iat->isSetSuccess()) {
         //没设置成功，退出

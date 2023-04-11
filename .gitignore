@@ -9,6 +9,7 @@ build*
 *.user.*
 #drawio的临时文件
 *.drawio.bkp
+.$*
 # 顶层的临时文件夹不追踪
 tmp
 

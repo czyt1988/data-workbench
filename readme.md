@@ -1,4 +1,4 @@
-# 简介
+﻿# 简介
 
 数据工作流设计器，这个软件的设计目标是实现工作流驱动数据的ETL，集成panda的数据处理能力，实现高效的交互式数据可视化以及能固定输出论文级别的图片，软件主要分三大块：work flow、data、chart，三大板块的关系如下图所示：
 
@@ -100,9 +100,11 @@ DA依赖python环境：
 ![](./doc/PIC/build-error-nopython.png)
 
 你要保证`bin_xx`目录下有Python环境，如下图所示
+
 ![](./doc/PIC/build-error-nopython-02.png)
 
 Python目录内部如下图所示
+
 ![](./doc/PIC/build-error-nopython-03.png)
 
 如果用其他版本的Python，也需要配置[./src/python_lib.pri](./src/python_lib.pri)文件
@@ -119,7 +121,7 @@ DA_PYTHON = python37
 
 ## 编译程序
 
-用Qt Creator 打开`./src/DataWorkFlow.pro`进行编译，编译过程会自动把文件编译到`bin_xx`目录下
+在确保完成了`src/3rdparty/3rdparty.pro`的编译，以及完成Python路径的配置，直接用Qt Creator 打开`./src/DataWorkFlow.pro`进行编译，编译过程会自动把文件编译到`bin_xx`目录下
 
 ## python脚本准备
 
@@ -136,3 +138,11 @@ DA_PYTHON = python37
 [3.工作流模块](./doc/zh/工作流.md)
 
 # 程序截图
+
+![动态演示](./doc/screenshot/screenshot1.gif)
+
+主体界面演示
+
+![01](./doc/screenshot/01.png)
+
+![02](./doc/screenshot/02.png)

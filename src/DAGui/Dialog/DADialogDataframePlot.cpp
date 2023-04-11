@@ -10,7 +10,9 @@ DADialogDataframePlot::DADialogDataframePlot(QWidget* parent)
     : QDialog(parent), ui(new Ui::DADialogDataframePlot), _dataMgr(nullptr)
 {
     ui->setupUi(this);
+    init();
     connect(ui->comboBoxDataFrame, QOverload< int >::of(&QComboBox::currentIndexChanged), this, &DADialogDataframePlot::onComboBoxCurrentIndexChanged);
+    connect(ui->listWidgetChartType, &QListWidget::itemChanged, this, &DADialogDataframePlot::onListWidgetItemChanged);
 }
 
 DADialogDataframePlot::~DADialogDataframePlot()
@@ -18,6 +20,14 @@ DADialogDataframePlot::~DADialogDataframePlot()
     delete ui;
 }
 
+void DADialogDataframePlot::init()
+{
+    QListWidgetItem* item = new QListWidgetItem(QIcon(":/gui/chart-type/icon/chart-type/chart-curve.svg"), tr("curve"));
+    item->setData(Qt::UserRole, (int)ChartCurve);
+    ui->listWidgetChartType->addItem(item);
+    ui->stackedWidget->setCurrentWidget(ui->pageCurve);
+    ui->listWidgetChartType->setCurrentRow(0);
+}
 /**
  * @brief 设置datamanager,会把combox填入所有的dataframe
  * @param dmgr
@@ -26,7 +36,7 @@ void DADialogDataframePlot::setDataManager(DADataManager* dmgr)
 {
     _dataMgr = dmgr;
     resetDataframeCombobox();
-    updateDataframeColumnList();
+    updateCurrentPageData();
 }
 
 /**
@@ -37,7 +47,7 @@ void DADialogDataframePlot::setCurrentData(const DAData& d)
 {
     _currentData = d;
     updateData();
-    updateDataframeColumnList();
+    updateCurrentPageData();
 }
 
 DAData DADialogDataframePlot::getCurrentData() const
@@ -57,10 +67,23 @@ bool DADialogDataframePlot::getToVectorPointF(QVector< QPointF >& res)
     return ui->pageCurve->getToVectorPointF(res);
 }
 
+/**
+ * @brief 获取当前的绘图类型
+ * @return
+ */
+DADialogDataframePlot::ChartType DADialogDataframePlot::getCurrentChartType() const
+{
+    QListWidgetItem* item = ui->listWidgetChartType->currentItem();
+    if (item == nullptr) {
+        return UnknowChartType;
+    }
+    return static_cast< ChartType >(item->data(Qt::UserRole).toInt());
+}
+
 void DADialogDataframePlot::updateData()
 {
     updateDataframeComboboxSelect();
-    updateDataframeColumnList();
+    updateCurrentPageData();
 }
 
 /**
@@ -108,9 +131,13 @@ void DADialogDataframePlot::updateDataframeComboboxSelect()
 /**
  * @brief 刷新x，y两个列选择listwidget
  */
-void DADialogDataframePlot::updateDataframeColumnList()
+void DADialogDataframePlot::updateCurrentPageData()
 {
-    ui->pageCurve->updateDataframeColumnList();
+    QWidget* currentPage = ui->stackedWidget->currentWidget();
+    if (DADataframeToVectorPoint* p = qobject_cast< DADataframeToVectorPoint* >(currentPage)) {
+        p->setCurrentData(_currentData);
+        p->updateDataframeColumnList();
+    }
 }
 
 void DADialogDataframePlot::onComboBoxCurrentIndexChanged(int i)
@@ -120,7 +147,19 @@ void DADialogDataframePlot::onComboBoxCurrentIndexChanged(int i)
     }
     DAData d = _dataMgr->getData(i);
     setCurrentData(d);
-    updateDataframeColumnList();
+    updateCurrentPageData();
+}
+
+void DADialogDataframePlot::onListWidgetItemChanged(QListWidgetItem* item)
+{
+    ChartType ct = static_cast< ChartType >(item->data(Qt::UserRole).toInt());
+    switch (ct) {
+    case ChartCurve:
+        ui->stackedWidget->setCurrentWidget(ui->pageCurve);
+        break;
+    default:
+        break;
+    }
 }
 
 }

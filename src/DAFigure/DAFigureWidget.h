@@ -67,6 +67,7 @@ public:
     //绘图相关
     //支持redo/undo的addCurve，等同于gca()->addCurve
     QwtPlotCurve* addCurve_(const QVector< QPointF >& xyDatas);
+    QwtPlotCurve* addScatter_(const QVector< QPointF >& xyDatas);
 
 public:
     //推送一个命令

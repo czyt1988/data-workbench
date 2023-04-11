@@ -8,6 +8,7 @@ namespace Ui
 class DADialogDataframePlot;
 }
 
+class QListWidgetItem;
 namespace DA
 {
 class DADataManager;
@@ -26,6 +27,17 @@ class DAGUI_API DADialogDataframePlot : public QDialog
 {
     Q_OBJECT
 public:
+    /**
+     * @brief 绘图类型
+     */
+    enum ChartType
+    {
+        ChartCurve,      ///< 曲线
+        ChartScatter,    ///< 散点
+        UnknowChartType  ///< 未知
+    };
+
+public:
     explicit DADialogDataframePlot(QWidget* parent = nullptr);
     ~DADialogDataframePlot();
     //设置datamanager,会把combox填入所有的dataframe
@@ -33,7 +45,11 @@ public:
     //设置datafram
     void setCurrentData(const DAData& d);
     DAData getCurrentData() const;
-    //获取为vector pointf
+    //获取当前的绘图类型
+    ChartType getCurrentChartType() const;
+
+public:
+    //获取为vector pointf 针对ChartCurve和ChartScatter
     bool getToVectorPointF(QVector< QPointF >& res);
 
 protected:
@@ -43,9 +59,14 @@ protected:
     //更新combobox的选则状态
     void updateDataframeComboboxSelect();
     //刷新x，y两个列选择listwidget
-    void updateDataframeColumnList();
+    void updateCurrentPageData();
 private slots:
     void onComboBoxCurrentIndexChanged(int i);
+    //选择绘图类型改变
+    void onListWidgetItemChanged(QListWidgetItem* item);
+
+private:
+    void init();
 
 private:
     Ui::DADialogDataframePlot* ui;

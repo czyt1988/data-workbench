@@ -2,12 +2,21 @@
 #include "ui_DADataframeToVectorPoint.h"
 #include <iterator>
 #include <vector>
+#include <QHeaderView>
+#include "Models/DAPySeriesTableModule.h"
 namespace DA
 {
 DADataframeToVectorPoint::DADataframeToVectorPoint(QWidget* parent)
     : QWidget(parent), ui(new Ui::DADataframeToVectorPoint)
 {
     ui->setupUi(this);
+    _model = new DAPySeriesTableModule(this);
+    _model->setHeaderLabel({ tr("x"), tr("y") });
+    ui->tableViewXY->setModel(_model);
+    QFontMetrics fm = fontMetrics();
+    ui->tableViewXY->verticalHeader()->setDefaultSectionSize(fm.lineSpacing() * 1.1);
+    connect(ui->listWidgetX, &DAPyDataframeColumnsListWidget::currentTextChanged, this, &DADataframeToVectorPoint::onListWidgetXCurrentTextChanged);
+    connect(ui->listWidgetY, &DAPyDataframeColumnsListWidget::currentTextChanged, this, &DADataframeToVectorPoint::onListWidgetYCurrentTextChanged);
 }
 
 DADataframeToVectorPoint::~DADataframeToVectorPoint()
@@ -66,6 +75,8 @@ void DADataframeToVectorPoint::updateDataframeColumnList()
 {
     ui->listWidgetX->clear();
     ui->listWidgetY->clear();
+    _xNeedInsert0 = false;
+    _model->clear();
     if (_currentData.isNull() || !_currentData.isDataFrame()) {
         return;
     }
@@ -75,5 +86,39 @@ void DADataframeToVectorPoint::updateDataframeColumnList()
     }
     ui->listWidgetX->setDataframe(df);
     ui->listWidgetY->setDataframe(df);
+}
+
+void DADataframeToVectorPoint::onListWidgetXCurrentTextChanged(const QString& n)
+{
+    DAPyDataFrame df = _currentData.toDataFrame();
+    if (df.isNone()) {
+        return;
+    }
+    DAPySeries s = df[ n ];
+    if (s.isNone()) {
+        return;
+    }
+    if (_xNeedInsert0) {
+        _xNeedInsert0 = false;
+        _model->insertSeries(0, s);
+    } else {
+        _model->setSeriesAt(0, s);
+    }
+}
+
+void DADataframeToVectorPoint::onListWidgetYCurrentTextChanged(const QString& n)
+{
+    DAPyDataFrame df = _currentData.toDataFrame();
+    if (df.isNone()) {
+        return;
+    }
+    DAPySeries s = df[ n ];
+    if (s.isNone()) {
+        return;
+    }
+    if (0 == _model->getSeriesCount()) {
+        _xNeedInsert0 = true;  //说明y先显示，这时x要插入0，而不是替换
+    }
+    _model->setSeriesAt(1, s);
 }
 }
