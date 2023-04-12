@@ -25,6 +25,10 @@ void DADialogDataframePlot::init()
     QListWidgetItem* item = new QListWidgetItem(QIcon(":/gui/chart-type/icon/chart-type/chart-curve.svg"), tr("curve"));
     item->setData(Qt::UserRole, (int)ChartCurve);
     ui->listWidgetChartType->addItem(item);
+    item = new QListWidgetItem(QIcon(":/gui/chart-type/icon/chart-type/chart-scatter.svg"), tr("scatter"));
+    item->setData(Qt::UserRole, (int)ChartScatter);
+    ui->listWidgetChartType->addItem(item);
+
     ui->stackedWidget->setCurrentWidget(ui->pageCurve);
     ui->listWidgetChartType->setCurrentRow(0);
 }
@@ -35,6 +39,7 @@ void DADialogDataframePlot::init()
 void DADialogDataframePlot::setDataManager(DADataManager* dmgr)
 {
     _dataMgr = dmgr;
+    ui->pageCurve->setDataManager(dmgr);
     resetDataframeCombobox();
     updateCurrentPageData();
 }
@@ -133,11 +138,6 @@ void DADialogDataframePlot::updateDataframeComboboxSelect()
  */
 void DADialogDataframePlot::updateCurrentPageData()
 {
-    QWidget* currentPage = ui->stackedWidget->currentWidget();
-    if (DADataframeToVectorPoint* p = qobject_cast< DADataframeToVectorPoint* >(currentPage)) {
-        p->setCurrentData(_currentData);
-        p->updateDataframeColumnList();
-    }
 }
 
 void DADialogDataframePlot::onComboBoxCurrentIndexChanged(int i)
@@ -155,6 +155,9 @@ void DADialogDataframePlot::onListWidgetItemChanged(QListWidgetItem* item)
     ChartType ct = static_cast< ChartType >(item->data(Qt::UserRole).toInt());
     switch (ct) {
     case ChartCurve:
+        ui->stackedWidget->setCurrentWidget(ui->pageCurve);
+        break;
+    case ChartScatter:
         ui->stackedWidget->setCurrentWidget(ui->pageCurve);
         break;
     default:

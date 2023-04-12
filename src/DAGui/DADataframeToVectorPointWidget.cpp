@@ -1,13 +1,13 @@
-﻿#include "DADataframeToVectorPoint.h"
-#include "ui_DADataframeToVectorPoint.h"
+﻿#include "DADataframeToVectorPointWidget.h"
+#include "ui_DADataframeToVectorPointWidget.h"
 #include <iterator>
 #include <vector>
 #include <QHeaderView>
 #include "Models/DAPySeriesTableModule.h"
 namespace DA
 {
-DADataframeToVectorPoint::DADataframeToVectorPoint(QWidget* parent)
-    : QWidget(parent), ui(new Ui::DADataframeToVectorPoint)
+DADataframeToVectorPointWidget::DADataframeToVectorPointWidget(QWidget* parent)
+    : QWidget(parent), ui(new Ui::DADataframeToVectorPointWidget)
 {
     ui->setupUi(this);
     _model = new DAPySeriesTableModule(this);
@@ -15,11 +15,11 @@ DADataframeToVectorPoint::DADataframeToVectorPoint(QWidget* parent)
     ui->tableViewXY->setModel(_model);
     QFontMetrics fm = fontMetrics();
     ui->tableViewXY->verticalHeader()->setDefaultSectionSize(fm.lineSpacing() * 1.1);
-    connect(ui->listWidgetX, &DAPyDataframeColumnsListWidget::currentTextChanged, this, &DADataframeToVectorPoint::onListWidgetXCurrentTextChanged);
-    connect(ui->listWidgetY, &DAPyDataframeColumnsListWidget::currentTextChanged, this, &DADataframeToVectorPoint::onListWidgetYCurrentTextChanged);
+    connect(ui->listWidgetX, &DAPyDataframeColumnsListWidget::currentTextChanged, this, &DADataframeToVectorPointWidget::onListWidgetXCurrentTextChanged);
+    connect(ui->listWidgetY, &DAPyDataframeColumnsListWidget::currentTextChanged, this, &DADataframeToVectorPointWidget::onListWidgetYCurrentTextChanged);
 }
 
-DADataframeToVectorPoint::~DADataframeToVectorPoint()
+DADataframeToVectorPointWidget::~DADataframeToVectorPointWidget()
 {
     delete ui;
 }
@@ -28,18 +28,18 @@ DADataframeToVectorPoint::~DADataframeToVectorPoint()
  * @brief 设置当前的数据
  * @param d
  */
-void DADataframeToVectorPoint::setCurrentData(const DAData& d)
+void DADataframeToVectorPointWidget::setCurrentData(const DAData& d)
 {
     _currentData = d;
     updateDataframeColumnList();
 }
 
-DAData DADataframeToVectorPoint::getCurrentData() const
+DAData DADataframeToVectorPointWidget::getCurrentData() const
 {
     return _currentData;
 }
 
-bool DADataframeToVectorPoint::getToVectorPointF(QVector< QPointF >& res)
+bool DADataframeToVectorPointWidget::getToVectorPointF(QVector< QPointF >& res)
 {
     if (!_currentData.isDataFrame() || _currentData.isNull()) {
         return false;
@@ -71,7 +71,7 @@ bool DADataframeToVectorPoint::getToVectorPointF(QVector< QPointF >& res)
     return true;
 }
 
-void DADataframeToVectorPoint::updateDataframeColumnList()
+void DADataframeToVectorPointWidget::updateDataframeColumnList()
 {
     ui->listWidgetX->clear();
     ui->listWidgetY->clear();
@@ -88,7 +88,7 @@ void DADataframeToVectorPoint::updateDataframeColumnList()
     ui->listWidgetY->setDataframe(df);
 }
 
-void DADataframeToVectorPoint::onListWidgetXCurrentTextChanged(const QString& n)
+void DADataframeToVectorPointWidget::onListWidgetXCurrentTextChanged(const QString& n)
 {
     DAPyDataFrame df = _currentData.toDataFrame();
     if (df.isNone()) {
@@ -106,7 +106,7 @@ void DADataframeToVectorPoint::onListWidgetXCurrentTextChanged(const QString& n)
     }
 }
 
-void DADataframeToVectorPoint::onListWidgetYCurrentTextChanged(const QString& n)
+void DADataframeToVectorPointWidget::onListWidgetYCurrentTextChanged(const QString& n)
 {
     DAPyDataFrame df = _currentData.toDataFrame();
     if (df.isNone()) {

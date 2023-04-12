@@ -1,11 +1,11 @@
-﻿#ifndef DADATAFRAMETOVECTORPOINT_H
-#define DADATAFRAMETOVECTORPOINT_H
+﻿#ifndef DADATAFRAMETOVECTORPOINTWIDGET_H
+#define DADATAFRAMETOVECTORPOINTWIDGET_H
 #include <QWidget>
 #include "DAGuiAPI.h"
 #include "DAData.h"
 namespace Ui
 {
-class DADataframeToVectorPoint;
+class DADataframeToVectorPointWidget;
 }
 
 namespace DA
@@ -14,13 +14,13 @@ class DAPySeriesTableModule;
 /**
  * @brief Dataframe To VectorPoint
  */
-class DAGUI_API DADataframeToVectorPoint : public QWidget
+class DAGUI_API DADataframeToVectorPointWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit DADataframeToVectorPoint(QWidget* parent = nullptr);
-    ~DADataframeToVectorPoint();
+    explicit DADataframeToVectorPointWidget(QWidget* parent = nullptr);
+    ~DADataframeToVectorPointWidget();
     //设置datafram
     void setCurrentData(const DAData& d);
     DAData getCurrentData() const;
@@ -34,11 +34,11 @@ private slots:
     void onListWidgetYCurrentTextChanged(const QString& n);
 
 private:
-    Ui::DADataframeToVectorPoint* ui;
+    Ui::DADataframeToVectorPointWidget* ui;
     DAData _currentData;
     DAPySeriesTableModule* _model;
     bool _xNeedInsert0 { false };
 };
 }
 
-#endif  // DADATAFRAMETOVECTORPOINT_H
+#endif  // DADATAFRAMETOVECTORPOINTWIDGET_H

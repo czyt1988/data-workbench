@@ -80,6 +80,9 @@ public:
     void setDataManager(DADataManager* p);
     //获取dataMgr
     DADataManager* getDataManager() const;
+    //如果DAData是dataframe，把dataframe展开，能看到底下的series，默认为false
+    void setExpandDataframeToSeries(bool on);
+    bool isExpandDataframeToSeries() const;
 
 public:
     virtual Qt::ItemFlags flags(const QModelIndex& index) const override;
@@ -92,6 +95,8 @@ protected:
 
 private:
     void init();
+    void doExpandDataframeToSeries(bool on);
+    void doExpandOneDataframeToSeries(DADataManagerTreeItem* dfItem, bool on);
 private slots:
     void onDataAdded(const DA::DAData& d);
     void onDataBeginRemoved(const DA::DAData& d, int dataIndex);

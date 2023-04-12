@@ -67,9 +67,7 @@
       <property name="currentIndex">
        <number>0</number>
       </property>
-      <widget class="DA::DADataframeToVectorPoint" name="pageCurve">
-       <layout class="QHBoxLayout" name="horizontalLayout_2"/>
-      </widget>
+      <widget class="DA::DAChartAddXYSeriesWidget" name="pageCurve"/>
      </widget>
     </widget>
    </item>
@@ -101,9 +99,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>DA::DADataframeToVectorPoint</class>
+   <class>DA::DAChartAddXYSeriesWidget</class>
    <extends>QWidget</extends>
-   <header>DADataframeToVectorPoint.h</header>
+   <header>DAChartAddXYSeriesWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

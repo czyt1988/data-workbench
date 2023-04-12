@@ -61,8 +61,10 @@ include($$PWD/MimeData/MimeData.pri)
 include($$PWD/Commands/Commands.pri)
 include($$PWD/SettingPages/SettingPages.pri)
 HEADERS +=\
+    DAChartAddXYSeriesWidget.h \
+    DADataManagerComboBox.h \
     DADataOperatePageWidget.h \
-    DADataframeToVectorPoint.h \
+    DADataframeToVectorPointWidget.h \
     DAFigureFactory.h \
     DAGuiAPI.h \
     DAChartListView.h \
@@ -92,6 +94,7 @@ HEADERS +=\
     DAXmlHelper.h
 
 SOURCES += \
+    DAChartAddXYSeriesWidget.cpp \
     DAChartListView.cpp \
     DAChartManageWidget.cpp \
     DAChartOperateWidget.cpp \
@@ -99,10 +102,11 @@ SOURCES += \
     DADataManageTableView.cpp \
     DADataManageTreeView.cpp \
     DADataManageWidget.cpp \
+    DADataManagerComboBox.cpp \
     DADataOperatePageWidget.cpp \
     DADataOperateWidget.cpp \
     DADataOperateOfDataFrameWidget.cpp \
-    DADataframeToVectorPoint.cpp \
+    DADataframeToVectorPointWidget.cpp \
     DAFigureFactory.cpp \
     DAMessageLogViewWidget.cpp \
     DANodeItemSettingWidget.cpp \
@@ -122,12 +126,13 @@ SOURCES += \
     DAXmlHelper.cpp
 
 FORMS += \
+    DAChartAddXYSeriesWidget.ui \
     DAChartManageWidget.ui \
     DAChartOperateWidget.ui \
     DADataManageWidget.ui \
     DADataOperateOfDataFrameWidget.ui \
     DADataOperateWidget.ui \
-    DADataframeToVectorPoint.ui \
+    DADataframeToVectorPointWidget.ui \
     DAMessageLogViewWidget.ui \
     DANodeItemSettingWidget.ui \
     DANodeLinkItemSettingWidget.ui \

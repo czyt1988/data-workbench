@@ -930,8 +930,8 @@ void DAAppController::onActionFigureNewXYAxisTriggered()
     w->enableGrid();
     w->enablePan();
     w->enableXYDataPicker();
-    w->addCurve({ 1e-4, 2e-4, 3e-4, 4e-4, 5e-4 }, { 3e-4, 5e-4, 8e-4, 0, -3e-4 })->setTitle("curve1");
-    w->addCurve({ 1e-4, 2e-4, 3e-4, 4e-4, 5e-4 }, { 5e-4, 7e-4, 0e-4, -1e-3, 1e-4 })->setTitle("curve2");
+    w->addCurve({ 1, 2, 3, 4, 5 }, { 3, 5, 8, 0, -3 })->setTitle("curve1");
+    w->addCurve({ 1, 2, 3, 4, 5 }, { 5, 7, 0, -1, 1 })->setTitle("curve2");
     _ribbon->updateChartAboutRibbon(w);
     _dock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
 }

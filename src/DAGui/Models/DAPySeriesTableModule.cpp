@@ -36,7 +36,6 @@ QVariant DAPySeriesTableModule::headerData(int section, Qt::Orientation orientat
     }
     //剩下都是DisplayRole
     if (Qt::Horizontal == orientation) {  //说明是水平表头
-
         if (section < d_ptr->_header.size()) {
             return d_ptr->_header[ section ];
         }
@@ -59,14 +58,17 @@ int DAPySeriesTableModule::columnCount(const QModelIndex& parent) const
 int DAPySeriesTableModule::rowCount(const QModelIndex& parent) const
 {
     Q_UNUSED(parent);
-    std::size_t r = 0;
+    int rcnt = 0;
     for (const DAPySeries& ser : qAsConst(d_ptr->_series)) {
-        std::size_t s = ser.size();
-        if (s > r) {
-            r = s;
+        int s = (int)ser.size();
+        if (s > rcnt) {
+            rcnt = s;
         }
     }
-    return (int)r;
+    if (rcnt <= 0) {
+        return 15;
+    }
+    return rcnt;
 }
 
 Qt::ItemFlags DAPySeriesTableModule::flags(const QModelIndex& index) const
@@ -78,6 +80,7 @@ Qt::ItemFlags DAPySeriesTableModule::flags(const QModelIndex& index) const
 
 QVariant DAPySeriesTableModule::data(const QModelIndex& index, int role) const
 {
+    qDebug() << "111";
     if (!index.isValid() || d_ptr->_series.empty()) {
         return QVariant();
     }
@@ -116,9 +119,9 @@ bool DAPySeriesTableModule::setData(const QModelIndex& index, const QVariant& va
  */
 void DAPySeriesTableModule::appendSeries(const DAPySeries& s)
 {
-    beginInsertColumns(QModelIndex(), d_ptr->_series.size(), d_ptr->_series.size());
+    beginResetModel();
     d_ptr->_series.append(s);
-    endInsertColumns();
+    endResetModel();
 }
 
 /**
@@ -132,16 +135,9 @@ void DAPySeriesTableModule::appendSeries(const DAPySeries& s)
 void DAPySeriesTableModule::insertSeries(int c, const DAPySeries& s)
 {
     //先看看要刷新哪里
-    int oldsize = d_ptr->_series.size();
-    if (c >= oldsize) {
-        beginInsertColumns(QModelIndex(), oldsize, oldsize);
-    } else if (c >= 0) {
-        beginInsertColumns(QModelIndex(), c, c);
-    } else {  //-1
-        beginInsertColumns(QModelIndex(), 0, 0);
-    }
+    beginResetModel();
     d_ptr->_series.insert(c, s);
-    endInsertColumns();
+    endResetModel();
 }
 
 /**
@@ -151,21 +147,19 @@ void DAPySeriesTableModule::insertSeries(int c, const DAPySeries& s)
  */
 void DAPySeriesTableModule::setSeriesAt(int c, const DAPySeries& s)
 {
+    beginResetModel();
     if (c < 0) {
-        beginInsertColumns(QModelIndex(), 0, 0);
         d_ptr->_series.prepend(s);
-        endInsertColumns();
     } else if (c < d_ptr->_series.size()) {
-        const DAPySeries& oldseries = d_ptr->_series[ c ];
-        int oldrow                  = (int)oldseries.size();
-        d_ptr->_series[ c ]         = s;
-        int newrow                  = (int)s.size();
-        emit dataChanged(index(0, c), index(std::max(oldrow, newrow), c));
+        //        const DAPySeries& oldseries = d_ptr->_series[ c ];
+        //        int oldrow                  = (int)oldseries.size();
+        d_ptr->_series[ c ] = s;
+        //        int newrow                  = (int)s.size();
+        //        emit dataChanged(index(0, c), index(std::max(oldrow, newrow), c));
     } else if (c >= d_ptr->_series.size()) {
-        beginInsertColumns(QModelIndex(), d_ptr->_series.size(), d_ptr->_series.size());
         d_ptr->_series.append(s);
-        endInsertColumns();
     }
+    endResetModel();
 }
 
 /**

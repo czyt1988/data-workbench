@@ -183,7 +183,9 @@ void DAAppRibbonArea::resetText()
     m_pannelWorkflowBackground->setPannelName(tr("Background"));           //背景
     m_pannelWorkflowView->setPannelName(tr("View"));                       //视图
     m_pannelWorkflowRun->setPannelName(tr("Run"));                         //运行
-    //绘图标签
+    //
+    m_categoryFigure->setCategoryName(tr("Figure"));  // cn:绘图
+    //绘图上下文标签
     m_contextChart->setContextTitle(tr("Chart"));                        // cn:绘图
     m_categoryChartEdit->setCategoryName(tr("Chart Edit"));              // cn:绘图编辑
     m_actionOfMenuChartLegendAlignmentSection->setText(tr("Location"));  // cn:方位
@@ -207,6 +209,7 @@ void DAAppRibbonArea::buildRibbon()
     buildRibbonDataCategory();
     buildRibbonViewCategory();
     buildRibbonEditCategory();
+    buildRibbonFigureCategory();
     buildRibbonQuickAccessBar();
     //上下文标签
     buildContextCategoryDataFrame();
@@ -391,6 +394,18 @@ void DAAppRibbonArea::buildRibbonEditCategory()
     ribbonBar()->addCategoryPage(m_categoryEdit);  //编辑
 }
 
+void DAAppRibbonArea::buildRibbonFigureCategory()
+{
+    m_categoryFigure = ribbonBar()->addCategoryPage(tr("Figure"));  // cn:绘图
+    m_categoryFigure->setObjectName(QStringLiteral("da-ribbon-category-figure"));
+    m_pannelFigureSetting = new SARibbonPannel(m_categoryFigure);
+    m_pannelFigureSetting->setObjectName(QStringLiteral("da-pannel-figure.fig_setting"));
+    m_pannelFigureSetting->addLargeAction(m_actions->actionAddFigure);
+    m_pannelFigureSetting->addLargeAction(m_actions->actionFigureResizeChart);
+    m_pannelFigureSetting->addLargeAction(m_actions->actionFigureNewXYAxis);  //新建坐标系
+    m_categoryFigure->addPannel(m_pannelFigureSetting);
+}
+
 void DAAppRibbonArea::buildContextCategoryWorkflowEdit()
 {
     m_contextWorkflow = ribbonBar()->addContextCategory(tr("Workflow"));
@@ -444,12 +459,12 @@ void DAAppRibbonArea::buildContextCategoryChart()
     m_categoryChartEdit = m_contextChart->addCategoryPage(tr("Chart Edit"));
     m_categoryChartEdit->setObjectName(QStringLiteral("da-ribbon-category-chart.edit"));
     // fig edit
-    m_pannelFigureSetting = new SARibbonPannel(m_categoryChartEdit);
-    m_pannelFigureSetting->setObjectName(QStringLiteral("da-pannel-context-chartedit.fig_setting"));
-    m_pannelFigureSetting->addLargeAction(m_actions->actionAddFigure);
-    m_pannelFigureSetting->addLargeAction(m_actions->actionFigureResizeChart);
-    m_pannelFigureSetting->addLargeAction(m_actions->actionFigureNewXYAxis);  //新建坐标系
-    m_categoryChartEdit->addPannel(m_pannelFigureSetting);
+    m_pannelFigureSettingForContext = new SARibbonPannel(m_categoryChartEdit);
+    m_pannelFigureSettingForContext->setObjectName(QStringLiteral("da-pannel-context-chartedit.fig_setting"));
+    m_pannelFigureSettingForContext->addLargeAction(m_actions->actionAddFigure);
+    m_pannelFigureSettingForContext->addLargeAction(m_actions->actionFigureResizeChart);
+    m_pannelFigureSettingForContext->addLargeAction(m_actions->actionFigureNewXYAxis);  //新建坐标系
+    m_categoryChartEdit->addPannel(m_pannelFigureSettingForContext);
     // chart edit
     m_pannelChartSetting = new SARibbonPannel(m_categoryChartEdit);
     m_pannelChartSetting->setObjectName(QStringLiteral("da-pannel-context-chartedit.chart_setting"));

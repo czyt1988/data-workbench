@@ -69,6 +69,8 @@ class DAWorkFlowOperateWidget;
  *     视图pannel:da-pannel-view.main
  * 编辑标签:da-ribbon-category-edit
  *     工作流编辑pannel:da-pannel-edit.workflow
+ * 绘图标签：da-ribbon-category-figure
+ *     绘图编辑：da-pannel-figure.fig_setting
  * 工作流编辑上下文标签：da-ribbon-contextcategory-workflow
  *  工作流编辑category：da-ribbon-category-workflow.edit
  *     条目pannel：da-pannel-context.workflow.item
@@ -150,6 +152,8 @@ private:
     void buildRibbonViewCategory();
     //构建编辑标签
     void buildRibbonEditCategory();
+    //构建绘图标签
+    void buildRibbonFigureCategory();
     //构建快速响应栏
     void buildRibbonQuickAccessBar();
     //构建DataFrame上下文标签
@@ -197,6 +201,9 @@ public:
     // view
     SARibbonCategory* m_categoryView;      ///< 视图标签
     SARibbonPannel* m_pannelViewMainView;  ///< 主要视图操作
+    // figure
+    SARibbonCategory* m_categoryFigure;     ///< 绘图标签
+    SARibbonPannel* m_pannelFigureSetting;  ///< 绘图的设置
     // Context - dataframe
     SARibbonContextCategory* m_contextDataFrame;                ///< 对应dataframe的上下文
     SARibbonCategory* m_categoryDataframeOperate;               ///< dataframe对应的category
@@ -221,7 +228,7 @@ public:
     // Context - chart
     SARibbonContextCategory* m_contextChart;                      ///< 对应Chart的上下文
     SARibbonCategory* m_categoryChartEdit;                        ///< Chart编辑
-    SARibbonPannel* m_pannelFigureSetting;                        ///< 绘图的设置
+    SARibbonPannel* m_pannelFigureSettingForContext;              ///< 绘图的设置
     SARibbonPannel* m_pannelChartSetting;                         ///< 图表的设置
     SARibbonButtonGroupWidget* m_chartGridDirActionsButtonGroup;  ///< grid的方向
     SARibbonButtonGroupWidget* m_chartGridMinActionsButtonGroup;  ///< grid的min设置
