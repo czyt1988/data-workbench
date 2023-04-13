@@ -10,6 +10,26 @@ class QMimeData;
 #ifndef DAAPPDATAMANAGERTREEITEM_USERTYPE
 #define DAAPPDATAMANAGERTREEITEM_USERTYPE (QStandardItem::UserType + 1)
 #endif
+
+/**
+ * @def 定义角色，是否为数据，数值为DADataManagerTreeItem::TreeItemType
+ */
+#ifndef DADATAMANAGERTREEMODEL_ROLE_ITEM_TYPE
+#define DADATAMANAGERTREEMODEL_ROLE_ITEM_TYPE (Qt::UserRole + 10)
+#endif
+/**
+ * @def 定义角色，记录数据id
+ */
+#ifndef DADATAMANAGERTREEMODEL_ROLE_DATA_ID
+#define DADATAMANAGERTREEMODEL_ROLE_DATA_ID (Qt::UserRole + 20)
+#endif
+/**
+ * @def 定义详细数据类型，目前只有在dataframe的series扩展用到
+ */
+#ifndef DADATAMANAGERTREEMODEL_ROLE_DETAIL_DATA_TYPE
+#define DADATAMANAGERTREEMODEL_ROLE_DETAIL_DATA_TYPE (Qt::UserRole + 30)
+#endif
+
 namespace DA
 {
 DA_IMPL_FORWARD_DECL(DADataManagerTreeModel)
@@ -61,6 +81,20 @@ class DAGUI_API DADataManagerTreeModel : public QStandardItemModel
 {
     Q_OBJECT
     DA_IMPL(DADataManagerTreeModel)
+public:
+    /**
+     * @brief 特殊数据类型标记，这个针对DAAPPDATAMANAGERTREE_ROLE_DETAIL_DATA_TYPE值进行标记
+     */
+    enum DetailDataTypeMark
+    {
+        /**
+         * @brief dataframe下的series，这个类型是树的扩展分支，并不会在DADataManager中，
+         * 而要通过data(DAAPPDATAMANAGERTREE_ROLE_DATA)获取data id,获取Datafram，
+         * 再通过名字获得到具体的series
+         */
+        SeriesInnerDataframe = 1
+    };
+
 public:
     DADataManagerTreeModel(QObject* parent = nullptr);
     DADataManagerTreeModel(DADataManager* p, QObject* parent = nullptr);

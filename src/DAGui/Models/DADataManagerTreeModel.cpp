@@ -12,24 +12,7 @@
 #include "pandas/DAPyDataFrame.h"
 //
 #include "DADataManagerTableModel.h"
-/**
- * @def 定义角色，是否为数据，（bool）
- */
-#ifndef DAAPPDATAMANAGERTREE_ROLE_ITEM_TYPE
-#define DAAPPDATAMANAGERTREE_ROLE_ITEM_TYPE (Qt::UserRole + 10)
-#endif
-/**
- * @def 定义角色，是否为文件夹，（bool）
- */
-#ifndef DAAPPDATAMANAGERTREE_ROLE_DATA
-#define DAAPPDATAMANAGERTREE_ROLE_DATA (Qt::UserRole + 20)
-#endif
-/**
- * @def 定义详细数据类型，目前只有在dataframe的series扩展用到
- */
-#ifndef DAAPPDATAMANAGERTREE_ROLE_DETAIL_DATA_TYPE
-#define DAAPPDATAMANAGERTREE_ROLE_DETAIL_DATA_TYPE (Qt::UserRole + 30)
-#endif
+
 namespace DA
 {
 class DADataManagerTreeModelPrivate
@@ -60,15 +43,15 @@ DADataManagerTreeModelPrivate::DADataManagerTreeModelPrivate(DADataManagerTreeMo
  */
 DADataManagerTreeItem::DADataManagerTreeItem() : QStandardItem()
 {
-    setData((int)ItemUnknow, DAAPPDATAMANAGERTREE_ROLE_ITEM_TYPE);
+    setData((int)ItemUnknow, DADATAMANAGERTREEMODEL_ROLE_ITEM_TYPE);
     setEditable(false);
 }
 
 DADataManagerTreeItem::DADataManagerTreeItem(const DAData& d) : QStandardItem(d.getName())
 {
     setIcon(DADataManagerTableModel::dataToIcon(d));
-    setData((int)ItemData, DAAPPDATAMANAGERTREE_ROLE_ITEM_TYPE);
-    setData(d.id(), DAAPPDATAMANAGERTREE_ROLE_DATA);
+    setData((int)ItemData, DADATAMANAGERTREEMODEL_ROLE_ITEM_TYPE);
+    setData(d.id(), DADATAMANAGERTREEMODEL_ROLE_DATA_ID);
     setEditable(false);
     setDropEnabled(false);
 }
@@ -80,7 +63,7 @@ DADataManagerTreeItem::DADataManagerTreeItem(const DAData& d) : QStandardItem(d.
 DADataManagerTreeItem::DADataManagerTreeItem(const QString& n) : QStandardItem(n)
 {
     setIcon(QIcon(":/icon/icon/folder.svg"));
-    setData((int)ItemFolder, DAAPPDATAMANAGERTREE_ROLE_ITEM_TYPE);
+    setData((int)ItemFolder, DADATAMANAGERTREEMODEL_ROLE_ITEM_TYPE);
     setEditable(false);
     setDropEnabled(true);
     setColumnCount(2);
@@ -100,7 +83,7 @@ DADataManagerTreeItem::~DADataManagerTreeItem()
  */
 DAData DADataManagerTreeItem::toData() const
 {
-    QVariant v = data(DAAPPDATAMANAGERTREE_ROLE_DATA);
+    QVariant v = data(DADATAMANAGERTREEMODEL_ROLE_DATA_ID);
     if (!v.isValid()) {
         return DAData();
     }
@@ -142,7 +125,7 @@ int DADataManagerTreeItem::depth() const
  */
 DADataManagerTreeItem::TreeItemType DADataManagerTreeItem::getTreeItemType() const
 {
-    QVariant v = data(DAAPPDATAMANAGERTREE_ROLE_ITEM_TYPE);
+    QVariant v = data(DADATAMANAGERTREEMODEL_ROLE_ITEM_TYPE);
     if (!v.isValid()) {
         return ItemUnknow;
     }
@@ -249,14 +232,16 @@ void DADataManagerTreeModel::doExpandOneDataframeToSeries(DADataManagerTreeItem*
     }
     if (on) {
         //需要添加
-        DAPyDataFrame df = dfItem->toData().toDataFrame();
+        DAData d         = dfItem->toData();
+        DAPyDataFrame df = d.toDataFrame();
         if (df.isNone()) {
             return;
         }
         QList< QString > sers = df.columns();
         for (const QString& name : qAsConst(sers)) {
             QStandardItem* sitem = new QStandardItem(name);
-            sitem->setData(1, DAAPPDATAMANAGERTREE_ROLE_DETAIL_DATA_TYPE);
+            sitem->setData((int)SeriesInnerDataframe, DADATAMANAGERTREEMODEL_ROLE_DETAIL_DATA_TYPE);
+            sitem->setData(d.id(), DADATAMANAGERTREEMODEL_ROLE_DATA_ID);  //把data id也记录
             dfItem->appendRow({ sitem });
         }
     }

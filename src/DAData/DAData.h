@@ -39,6 +39,8 @@ public:
     //以下操作符是为了实现业务的快速响应，会带来一定的耦合
     DAData(const DAPyDataFrame& d);
     DAData& operator=(const DAPyDataFrame& d);
+    DAData(const DAPySeries& d);
+    DAData& operator=(const DAPySeries& d);
 
 public:  // DAAbstractData Wrapper
     DAAbstractData::DataType getDataType() const;
@@ -61,10 +63,12 @@ public:  // DAAbstractData Wrapper
     IdType id() const;
     //是否为dataframe
     bool isDataFrame() const;
+    bool isSeries() const;
     //是否为datapackage
     bool isDataPackage() const;
     //转换为pyDataframe
     DAPyDataFrame toDataFrame() const;
+    DAPySeries toSeries() const;
     //转换为datapackage
     DADataPackage::Pointer toDataPackage() const;
     //数据类型转换为文字

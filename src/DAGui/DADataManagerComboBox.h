@@ -1,6 +1,6 @@
 ﻿#ifndef DADATAMANAGERCOMBOBOX_H
 #define DADATAMANAGERCOMBOBOX_H
-#include <QComboBox>
+#include "ctkTreeComboBox.h"
 #include "DAGuiAPI.h"
 #include "DADataManager.h"
 namespace DA
@@ -9,7 +9,7 @@ DA_IMPL_FORWARD_DECL(DADataManagerComboBox)
 /**
  * @brief 这是一个树形结构的combobox，以树形展开DataManager
  */
-class DAGUI_API DADataManagerComboBox : public QComboBox
+class DAGUI_API DADataManagerComboBox : public ctkTreeComboBox
 {
     Q_OBJECT
     DA_IMPL(DADataManagerComboBox)
@@ -22,6 +22,18 @@ public:
     //设置DADataManager，combobox不管理DADataManager的内存
     void setDataManager(DADataManager* dmgr);
     DADataManager* getDataManager() const;
+    //获取当前的Data
+    DAData getCurrentDAData() const;
+private slots:
+    void onCurrentIndexChanged(const QString& text);
+
+signals:
+    /**
+     * @brief dataframe的series改变
+     * @param data Dataframe
+     * @param seriesName 系列名
+     */
+    void currentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
 };
 }
 

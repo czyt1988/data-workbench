@@ -1,11 +1,12 @@
-﻿#ifndef DADIALOGDATAFRAMEPLOT_H
-#define DADIALOGDATAFRAMEPLOT_H
+﻿#ifndef DADIALOGCHARTGUIDE_H
+#define DADIALOGCHARTGUIDE_H
 #include "DAGuiAPI.h"
 #include <QDialog>
 #include "DAData.h"
+#include "qwt_plot_item.h"
 namespace Ui
 {
-class DADialogDataframePlot;
+class DADialogChartGuide;
 }
 
 class QListWidgetItem;
@@ -23,7 +24,7 @@ class DADataManager;
  * }
  * @endcode
  */
-class DAGUI_API DADialogDataframePlot : public QDialog
+class DAGUI_API DADialogChartGuide : public QDialog
 {
     Q_OBJECT
 public:
@@ -38,8 +39,8 @@ public:
     };
 
 public:
-    explicit DADialogDataframePlot(QWidget* parent = nullptr);
-    ~DADialogDataframePlot();
+    explicit DADialogChartGuide(QWidget* parent = nullptr);
+    ~DADialogChartGuide();
     //设置datamanager,会把combox填入所有的dataframe
     void setDataManager(DADataManager* dmgr);
     //设置datafram
@@ -47,10 +48,8 @@ public:
     DAData getCurrentData() const;
     //获取当前的绘图类型
     ChartType getCurrentChartType() const;
-
-public:
-    //获取为vector pointf 针对ChartCurve和ChartScatter
-    bool getToVectorPointF(QVector< QPointF >& res);
+    //获取绘图item，如果没有返回nullptr
+    QwtPlotItem* createPlotItem();
 
 protected:
     void updateData();
@@ -69,7 +68,7 @@ private:
     void init();
 
 private:
-    Ui::DADialogDataframePlot* ui;
+    Ui::DADialogChartGuide* ui;
     DADataManager* _dataMgr;
     DAData _currentData;
 };

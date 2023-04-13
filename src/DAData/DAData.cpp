@@ -1,6 +1,7 @@
 ﻿#include "DAData.h"
 #include "DADataPyObject.h"
 #include "DADataPyDataFrame.h"
+#include "DADataPySeries.h"
 #include "DADataManager.h"
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
@@ -37,6 +38,11 @@ DAData::DAData(const DAPyDataFrame& d) : _dmgr(nullptr)
     _data = std::static_pointer_cast< DAAbstractData >(std::make_shared< DADataPyDataFrame >(d));
 }
 
+DAData::DAData(const DAPySeries& d) : _dmgr(nullptr)
+{
+    _data = std::static_pointer_cast< DAAbstractData >(std::make_shared< DADataPySeries >(d));
+}
+
 DAData::~DAData()
 {
 }
@@ -65,6 +71,13 @@ DAData& DAData::operator=(const DAData& d)
 DAData& DAData::operator=(const DAPyDataFrame& d)
 {
     std::shared_ptr< DAAbstractData > p = std::static_pointer_cast< DAAbstractData >(std::make_shared< DADataPyDataFrame >(d));
+    _data                               = p;
+    return *this;
+}
+
+DAData& DAData::operator=(const DAPySeries& d)
+{
+    std::shared_ptr< DAAbstractData > p = std::static_pointer_cast< DAAbstractData >(std::make_shared< DADataPySeries >(d));
     _data                               = p;
     return *this;
 }
@@ -190,6 +203,14 @@ bool DAData::isDataFrame() const
     return (_data->getDataType() == DAAbstractData::TypePythonDataFrame);
 }
 
+bool DAData::isSeries() const
+{
+    if (!_data) {
+        return false;
+    }
+    return (_data->getDataType() == DAAbstractData::TypePythonSeries);
+}
+
 /**
  * @brief 是否为datapackage
  * @return
@@ -204,7 +225,7 @@ bool DAData::isDataPackage() const
 
 /**
  * @brief 转换为DAPyDataFrame
- * @return 如果内部维护的不是DAPyDataFrame，返回一个默认构造的DAPyDataFrame
+ * @return 如果内部维护的不是DAPyDataFrame，返回一个默认构造的DAPyDataFrame(isNone=true)
  */
 DAPyDataFrame DAData::toDataFrame() const
 {
@@ -213,6 +234,19 @@ DAPyDataFrame DAData::toDataFrame() const
         return df->dataframe();
     }
     return DAPyDataFrame();
+}
+
+/**
+ * @brief 转换为DAPySeries
+ * @return 如果内部维护的不是DAPySeries，返回一个默认构造的DAPySeries(isNone=true)
+ */
+DAPySeries DAData::toSeries() const
+{
+    if (isSeries()) {
+        DADataPySeries* ser = static_cast< DADataPySeries* >(_data.get());
+        return ser->series();
+    }
+    return DAPySeries();
 }
 
 /**

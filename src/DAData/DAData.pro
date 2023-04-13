@@ -30,7 +30,8 @@ HEADERS += \
     DADataPackage.h \
     DADataPyDataFrame.h \
     DADataPyObject.h  \
-    DACommandsDataManager.h
+    DACommandsDataManager.h \
+    DADataPySeries.h
 
 SOURCES += \
     DAAbstractData.cpp \
@@ -39,7 +40,8 @@ SOURCES += \
     DADataPackage.cpp \
     DADataPyDataFrame.cpp \
     DADataPyObject.cpp  \
-    DACommandsDataManager.cpp
+    DACommandsDataManager.cpp \
+    DADataPySeries.cpp
 
 
 

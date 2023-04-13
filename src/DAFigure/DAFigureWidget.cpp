@@ -501,6 +501,30 @@ bool DAFigureWidget::isEnableSubChartEditor() const
 }
 
 /**
+ * @brief 支持redo/undo的添加item
+ *
+ * 等同addItem_(gca(),item)
+ * @param item
+ */
+void DAFigureWidget::addItem_(QwtPlotItem* item)
+{
+    if (DAChartWidget* chart = gca()) {
+        addItem_(chart, item);
+    }
+}
+
+/**
+ * @brief 支持redo/undo的添加item
+ * @param chart
+ * @param item
+ */
+void DAFigureWidget::addItem_(DAChartWidget* chart, QwtPlotItem* item)
+{
+    //第四个参数为false，第一次不会跳过attach
+    push(new DAFigureWidgetCommandAttachItem(this, chart, item, false));
+}
+
+/**
  * @brief 支持redo/undo的addCurve，等同于gca()->addCurve
  * @param xyDatas
  * @return 如果添加失败，返回一个nullptr
@@ -509,7 +533,7 @@ QwtPlotCurve* DAFigureWidget::addCurve_(const QVector< QPointF >& xyDatas)
 {
     if (DAChartWidget* chart = gca()) {
         QwtPlotCurve* item = chart->addCurve(xyDatas);
-        push(new DAFigureWidgetCommandAttachItem(this, chart, item));
+        addItem_(chart, item);
         return item;
     }
     return nullptr;
@@ -524,7 +548,7 @@ QwtPlotCurve* DAFigureWidget::addScatter_(const QVector< QPointF >& xyDatas)
 {
     if (DAChartWidget* chart = gca()) {
         QwtPlotCurve* item = chart->addScatter(xyDatas);
-        push(new DAFigureWidgetCommandAttachItem(this, chart, item));
+        addItem_(chart, item);
         return item;
     }
     return nullptr;

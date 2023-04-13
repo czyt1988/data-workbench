@@ -65,6 +65,10 @@ public:
 
 public:
     //绘图相关
+
+    // redo/undo的additem
+    void addItem_(QwtPlotItem* item);
+    void addItem_(DAChartWidget* chart, QwtPlotItem* item);
     //支持redo/undo的addCurve，等同于gca()->addCurve
     QwtPlotCurve* addCurve_(const QVector< QPointF >& xyDatas);
     QwtPlotCurve* addScatter_(const QVector< QPointF >& xyDatas);

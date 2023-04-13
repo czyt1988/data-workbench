@@ -61,6 +61,7 @@ include($$PWD/MimeData/MimeData.pri)
 include($$PWD/Commands/Commands.pri)
 include($$PWD/SettingPages/SettingPages.pri)
 HEADERS +=\
+    DAAbstractChartAddItemWidget.h \
     DAChartAddXYSeriesWidget.h \
     DADataManagerComboBox.h \
     DADataOperatePageWidget.h \
@@ -94,6 +95,7 @@ HEADERS +=\
     DAXmlHelper.h
 
 SOURCES += \
+    DAAbstractChartAddItemWidget.cpp \
     DAChartAddXYSeriesWidget.cpp \
     DAChartListView.cpp \
     DAChartManageWidget.cpp \

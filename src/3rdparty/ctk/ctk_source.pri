@@ -8,6 +8,7 @@ HEADERS += \
     $$PWD/ctkColorDialog.h \
     $$PWD/ctkColorPickerButton.h \
     $$PWD/ctkPathLineEdit.h \
+    $$PWD/ctkTreeComboBox.h \
     $$PWD/ctkPimpl.h
 
 SOURCES += \
@@ -17,4 +18,5 @@ SOURCES += \
     $$PWD/ctkExpandButton.cpp \
     $$PWD/ctkColorDialog.cpp \
     $$PWD/ctkColorPickerButton.cpp \
-    $$PWD/ctkPathLineEdit.cpp
+    $$PWD/ctkPathLineEdit.cpp \
+    $$PWD/ctkTreeComboBox.cpp \

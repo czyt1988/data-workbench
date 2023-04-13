@@ -6,7 +6,7 @@
 #include <QDebug>
 #include "MimeData/DAMimeDataForData.h"
 #include "MimeData/DAMimeDataFormats.h"
-#include "Dialog/DADialogDataframePlot.h"
+#include "Dialog/DADialogChartGuide.h"
 #include "DAWaitCursorScoped.h"
 namespace DA
 {
@@ -16,30 +16,35 @@ public:
     DA_IMPL_PUBLIC(DAAppFigureWidget)
     DAAppFigureWidgetPrivate(DAAppFigureWidget* p);
     //获取dlg指针，如果为nullptr，则创建
-    DADialogDataframePlot* getDlgDataframeToPointVector();
+    DADialogChartGuide* getDlgDataframeToPointVector();
     //绘制,如果没成功，返回nullptr
     QwtPlotItem* plot(const DAData& data);
 
 public:
     bool _isStartDrag { false };
-    DADialogDataframePlot* _dlgDataframePlot { nullptr };
+    DADialogChartGuide* _dlgDataframePlot { nullptr };
     DADataManager* _dataManager { nullptr };
 };
 DAAppFigureWidgetPrivate::DAAppFigureWidgetPrivate(DAAppFigureWidget* p) : q_ptr(p)
 {
 }
 
-DADialogDataframePlot* DAAppFigureWidgetPrivate::getDlgDataframeToPointVector()
+DADialogChartGuide* DAAppFigureWidgetPrivate::getDlgDataframeToPointVector()
 {
     if (!_dlgDataframePlot) {
-        _dlgDataframePlot = new DADialogDataframePlot(q_ptr);
+        _dlgDataframePlot = new DADialogChartGuide(q_ptr);
     }
     return _dlgDataframePlot;
 }
 
+/**
+ * @brief 绘图，如果没有返回nullptr
+ * @param data
+ * @return
+ */
 QwtPlotItem* DAAppFigureWidgetPrivate::plot(const DAData& data)
 {
-    DADialogDataframePlot* dlg = getDlgDataframeToPointVector();
+    DADialogChartGuide* dlg = getDlgDataframeToPointVector();
     dlg->setDataManager(_dataManager);
     dlg->setCurrentData(data);
     if (QDialog::Accepted != dlg->exec()) {
@@ -47,25 +52,12 @@ QwtPlotItem* DAAppFigureWidgetPrivate::plot(const DAData& data)
     }
     DAWaitCursorScoped wait;
     Q_UNUSED(wait);
-    switch (dlg->getCurrentChartType()) {
-    case DADialogDataframePlot::ChartCurve: {
-        QVector< QPointF > p;
-        if (!dlg->getToVectorPointF(p) || p.empty()) {
-            return nullptr;
-        }
-        q_ptr->addCurve_(p);
-    } break;
-    case DADialogDataframePlot::ChartScatter: {
-        QVector< QPointF > p;
-        if (!dlg->getToVectorPointF(p) || p.empty()) {
-            return nullptr;
-        }
-        q_ptr->addScatter_(p);
-    } break;
-    default:
-        break;
+    QwtPlotItem* item = dlg->createPlotItem();
+    if (item) {
+        qDebug() << "DAAppFigureWidget get nullptr item";
+        q_ptr->addItem_(item);
     }
-    return nullptr;
+    return item;
 }
 
 //==============================================================
