@@ -14,29 +14,29 @@ $$commonProLibSet($${TARGET})
 $$saCopyLibToBin($${TARGET})
 
 HEADERS += \
-    DAAppActionsInterface.h \
-    DAAppDockingAreaInterface.h \
-    DAAppRibbonAreaInterface.h \
-    DAAppUIExtendInterface.h \
-    DAAppUIInterface.h \
+    DAActionsInterface.h \
     DABaseInterface.h \
     DACommandInterface.h \
     DACoreInterface.h \
     DADataManagerInterface.h \
+    DADockingAreaInterface.h \
     DAInterfaceAPI.h \
-    DAProjectInterface.h
+    DAProjectInterface.h \
+    DARibbonAreaInterface.h \
+    DAUIExtendInterface.h \
+    DAUIInterface.h
 
 SOURCES += \
-    DAAppActionsInterface.cpp \
-    DAAppDockingAreaInterface.cpp \
-    DAAppRibbonAreaInterface.cpp \
-    DAAppUIExtendInterface.cpp \
-    DAAppUIInterface.cpp \
+    DAActionsInterface.cpp \
     DABaseInterface.cpp \
     DACommandInterface.cpp \
     DACoreInterface.cpp \
     DADataManagerInterface.cpp \
-    DAProjectInterface.cpp
+    DADockingAreaInterface.cpp \
+    DAProjectInterface.cpp \
+    DARibbonAreaInterface.cpp \
+    DAUIExtendInterface.cpp \
+    DAUIInterface.cpp
 
 # gui  相关
 #DAGui

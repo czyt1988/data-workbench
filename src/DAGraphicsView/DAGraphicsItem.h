@@ -7,7 +7,6 @@ class QDomDocument;
 class QDomElement;
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DAGraphicsItem)
 /**
  * @brief DAGraphicsView的基本元件
  *
@@ -17,7 +16,7 @@ DA_IMPL_FORWARD_DECL(DAGraphicsItem)
 class DAGRAPHICSVIEW_API DAGraphicsItem : public QGraphicsObject, public DAXMLFileInterface
 {
     Q_OBJECT
-    DA_IMPL(DAGraphicsItem)
+    DA_DECLARE_PRIVATE(DAGraphicsItem)
 public:
     /**
      * @brief 适用qgraphicsitem_cast

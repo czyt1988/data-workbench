@@ -1,11 +1,16 @@
 ﻿#include "DABrushEditWidget.h"
 #include "ui_DABrushEditWidget.h"
+#include "colorWidgets/SAColorMenu.h"
 namespace DA
 {
 DABrushEditWidget::DABrushEditWidget(QWidget* parent) : QWidget(parent), ui(new Ui::DABrushEditWidget)
 {
     ui->setupUi(this);
-    connect(ui->pushButtonColor, &DAColorPickerButton::colorChanged, this, &DABrushEditWidget::onColorChanged);
+    ui->colorButton->setPopupMode(QToolButton::MenuButtonPopup);
+    mColorMenu = new SAColorMenu(this);
+    mColorMenu->bindToColorToolButton(ui->colorButton);
+    ui->colorButton->setColor(QColor());
+    connect(ui->colorButton, &DAColorPickerButton::colorChanged, this, &DABrushEditWidget::onColorChanged);
     connect(ui->comboBox, &DABrushStyleComboBox::currentBrushStyleChanged, this, &DABrushEditWidget::onBrushStyleChanged);
 }
 
@@ -16,27 +21,29 @@ DABrushEditWidget::~DABrushEditWidget()
 
 QBrush DABrushEditWidget::getCurrentBrush() const
 {
-    return _brush;
+    return mBrush;
 }
 
 void DABrushEditWidget::setCurrentBrush(const QBrush& b)
 {
-    QSignalBlocker b1(ui->pushButtonColor), b2(ui->comboBox);
-    _brush = b;
-    ui->pushButtonColor->setColor(b.color());
+    QSignalBlocker b1(ui->colorButton), b2(ui->comboBox);
+    mBrush = b;
+    ui->colorButton->setColor(b.color());
     ui->comboBox->setCurrentBrushStyle(b.style());
+    ui->colorButton->setEnabled(b.style() != Qt::NoBrush);
     emit brushChanged(b);
 }
 
 void DABrushEditWidget::onColorChanged(const QColor& c)
 {
-    _brush.setColor(c);
-    emit brushChanged(_brush);
+    mBrush.setColor(c);
+    emit brushChanged(mBrush);
 }
 
 void DABrushEditWidget::onBrushStyleChanged(Qt::BrushStyle s)
 {
-    _brush.setStyle(s);
-    emit brushChanged(_brush);
+    mBrush.setStyle(s);
+    ui->colorButton->setEnabled(s != Qt::NoBrush);
+    emit brushChanged(mBrush);
 }
 }

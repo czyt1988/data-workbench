@@ -1,4 +1,4 @@
-#ifndef DAWORKFLOWEXECUTER_H
+﻿#ifndef DAWORKFLOWEXECUTER_H
 #define DAWORKFLOWEXECUTER_H
 #include <QObject>
 #include "DAWorkFlowGlobal.h"
@@ -6,14 +6,13 @@
 
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DAWorkFlowExecuter)
 /**
  * @brief 工作流任务的执行者，执者和workflow通过信号传递信息，在workflow中，执行者是在一个单独线程中
  */
 class DAWORKFLOW_API DAWorkFlowExecuter : public QObject
 {
     Q_OBJECT
-    DA_IMPL(DAWorkFlowExecuter)
+    DA_DECLARE_PRIVATE(DAWorkFlowExecuter)
 public:
     DAWorkFlowExecuter(QObject* p = nullptr);
     ~DAWorkFlowExecuter();

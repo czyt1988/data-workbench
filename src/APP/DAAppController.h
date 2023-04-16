@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QAction>
 #include <QUndoStack>
+#include <QScopedPointer>
 #include "numpy/DAPyDType.h"
 #include "DADataManageWidget.h"
 #include "DAWorkFlowGraphicsScene.h"
@@ -35,7 +36,9 @@ class DADataManageWidget;
 class DAFigureWidget;
 class DAChartWidget;
 class DADataOperatePageWidget;
-
+class DAAppSettingDialog;
+class DAAppConfig;
+class DAWorkFlowEditWidget;
 /**
  * @brief 控制层负责逻辑的对接
  */
@@ -90,12 +93,17 @@ public:
     DADataManageWidget* getDataManageWidget() const;
     //获取当前的绘图,如果没有回返回nullptr
     DAFigureWidget* getCurrentFigure();
+    DAFigureWidget* gcf();
     //获取绘图操作窗口,如果没有回返回nullptr
     DAChartWidget* getCurrentChart() const;
+    DAChartWidget* gca() const;
     //判断当前是否是在绘图操作模式，就算绘图操作不在焦点，但绘图操作在前端，此函数也返回true
     bool isLastFocusedOnChartOptWidget() const;
     bool isLastFocusedOnWorkflowOptWidget() const;
     bool isLastFocusedOnDataOptWidget() const;
+    DAAppConfig* getConfig() const;
+    void setConfig(DAAppConfig* config);
+
 private slots:
 
     //===================================================
@@ -133,6 +141,11 @@ private slots:
     void onActionFigureResizeChartTriggered(bool on);
     //新坐标系
     void onActionFigureNewXYAxisTriggered();
+    //新坐标系
+    void onActionChartAddCurveTriggered();
+    //===================================================
+    // 绘图标签 Chart Context Category
+    //===================================================
     //允许网格
     void onActionChartEnableGridTriggered(bool on);
     //允许网格X
@@ -245,7 +258,8 @@ private slots:
     // DAWorkFlowOperateWidget的槽
     //===================================================
     void onSelectionItemChanged(QGraphicsItem* lastSelectItem);
-
+    void onWorkflowStartExecute(DA::DAWorkFlowEditWidget* wfw);
+    void onWorkflowFinished(DA::DAWorkFlowEditWidget* wfw, bool success);
     //===================================================
     // DAChartOperateWidget
     //===================================================
@@ -297,16 +311,19 @@ private:
     void initScripts();
 
 private:
-    AppMainWindow* _mainWindow { nullptr };
-    DAAppCore* _core { nullptr };
-    DAAppRibbonArea* _ribbon { nullptr };
-    DAAppDockingArea* _dock { nullptr };
-    DAAppCommand* _command { nullptr };
-    DAAppActions* _actions { nullptr };
-    DAAppDataManager* _datas { nullptr };
-    QStringList _fileReadFilters;  ///<包含支持的文件[Images (*.png *.xpm *.jpg)] [Text files (*.txt)]
+    AppMainWindow* mMainWindow { nullptr };
+    DAAppCore* mCore { nullptr };
+    DAAppRibbonArea* mRibbon { nullptr };
+    DAAppDockingArea* mDock { nullptr };
+    DAAppCommand* mCommand { nullptr };
+    DAAppActions* mActions { nullptr };
+    DAAppDataManager* mDatas { nullptr };
+    QStringList mFileReadFilters;  ///<包含支持的文件[Images (*.png *.xpm *.jpg)] [Text files (*.txt)]
     //
-    LastFocusedOpertateWidgets m_lastFocusedOpertateWidget;  ///< 最后获取焦点的操作窗口
+    LastFocusedOpertateWidgets mLastFocusedOpertateWidget;  ///< 最后获取焦点的操作窗口
+    //
+    DAAppSettingDialog* mSettingDialog { nullptr };  ///< 设置窗口
+    DAAppConfig* mConfig;                            ///< 设置类
 };
 }
 

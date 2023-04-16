@@ -59,7 +59,8 @@ include($$PWD/Models/Models.pri)
 include($$PWD/Dialog/Dialog.pri)
 include($$PWD/MimeData/MimeData.pri)
 include($$PWD/Commands/Commands.pri)
-include($$PWD/SettingPages/SettingPages.pri)
+include($$PWD/ChartSetting/ChartSetting.pri)
+
 HEADERS +=\
     DAAbstractChartAddItemWidget.h \
     DAChartAddXYSeriesWidget.h \

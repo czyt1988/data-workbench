@@ -1,14 +1,10 @@
 ﻿#include "DAColorPickerButton.h"
-//===================================================
-// using DA namespace -- 禁止在头文件using！！
-//===================================================
-
-using namespace DA;
-
+namespace DA
+{
 //===================================================
 // DAColorPickerButton
 //===================================================
-DAColorPickerButton::DAColorPickerButton(QWidget* parent) : ctkColorPickerButton(parent)
+DAColorPickerButton::DAColorPickerButton(QWidget* parent) : SAColorToolButton(parent)
 {
-    setDisplayColorName(false);
+}
 }

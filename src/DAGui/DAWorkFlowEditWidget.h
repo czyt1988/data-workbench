@@ -88,6 +88,21 @@ signals:
      * @param mf 已经执行完的鼠标动作
      */
     void mouseActionFinished(DAWorkFlowGraphicsScene::MouseActionFlag mf);
+    /**
+     * @brief 开始执行，exec函数调用后会触发此信号
+     */
+    void startExecute();
+    /**
+     * @brief 执行到某个节点发射的信号
+     * @param n
+     */
+    void nodeExecuteFinished(DAAbstractNode::SharedPointer n, bool state);
+
+    /**
+     * @brief 工作流执行完毕信号
+     * @param success 成功全部执行完成为true
+     */
+    void finished(bool success);
 
 private:
     //获取选中的文本

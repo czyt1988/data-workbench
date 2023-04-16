@@ -7,11 +7,11 @@
 #include "DAAbstractNodeFactory.h"
 namespace DA
 {
-class DAWorkFlowExecuterPrivate
+class DAWorkFlowExecuter::PrivateData
 {
-    DA_IMPL_PUBLIC(DAWorkFlowExecuter)
+    DA_DECLARE_PUBLIC(DAWorkFlowExecuter)
 public:
-    DAWorkFlowExecuterPrivate(DAWorkFlowExecuter* p);
+    PrivateData(DAWorkFlowExecuter* p);
     //查找开始节点，根据网结构， 查找到最终的顶层节点_isolatedNodes和_beginNodes通过此函数查找
     void prepareStartExec();
     //清空内容
@@ -21,26 +21,26 @@ public:
     void transmit(const QList< DAAbstractNode::LinkInfo >& outInfo);
 
 public:
-    QPointer< DAWorkFlow > _workflow;
-    DAAbstractNode::SharedPointer _startNode;
-    QList< DAWorkFlow::CallbackPrepareStartExecute > _callbackStart;
-    QList< DAWorkFlow::CallbackPrepareEndExecute > _callbackEnd;
+    QPointer< DAWorkFlow > mWorkflow;
+    DAAbstractNode::SharedPointer mStartNode;
+    QList< DAWorkFlow::CallbackPrepareStartExecute > mCallbackStart;
+    QList< DAWorkFlow::CallbackPrepareEndExecute > mCallbackEnd;
     /**
      * @brief 记录所有节点执行的入度数量
      *
      * 只有入度数量满足,才能触发节点的出度进行后续的传递，此变量用于解决多从入度和出度下的执行顺序问题
      */
-    QMap< DAAbstractNode::SharedPointer, int > _nodeIndegreeSetCount;
-    QList< DAAbstractNode::SharedPointer > _globalNodes;       ///< 全局节点
-    QList< DAAbstractNode::SharedPointer > _isolatedNodes;     ///< 孤立节点
-    QList< DAAbstractNode::SharedPointer > _beginNodes;        ///< 开始节点
-    QList< QPointer< DAAbstractNodeFactory > > _nodeFactorys;  ///< 记录本次工作流涉及到的工厂
+    QMap< DAAbstractNode::SharedPointer, int > mNodeIndegreeSetCount;
+    QList< DAAbstractNode::SharedPointer > mGlobalNodes;       ///< 全局节点
+    QList< DAAbstractNode::SharedPointer > mIsolatedNodes;     ///< 孤立节点
+    QList< DAAbstractNode::SharedPointer > mBeginNodes;        ///< 开始节点
+    QList< QPointer< DAAbstractNodeFactory > > mNodeFactorys;  ///< 记录本次工作流涉及到的工厂
 };
 
 //===================================================
 // DAWorkFlowExecuterPrivate
 //===================================================
-DAWorkFlowExecuterPrivate::DAWorkFlowExecuterPrivate(DAWorkFlowExecuter* p) : q_ptr(p)
+DAWorkFlowExecuter::PrivateData::PrivateData(DAWorkFlowExecuter* p) : q_ptr(p)
 {
 }
 
@@ -51,48 +51,48 @@ DAWorkFlowExecuterPrivate::DAWorkFlowExecuterPrivate(DAWorkFlowExecuter* p) : q_
  * - 入度和出度都没有的节点属于孤立节点，孤立节点先执行
  *
  */
-void DAWorkFlowExecuterPrivate::prepareStartExec()
+void DAWorkFlowExecuter::PrivateData::prepareStartExec()
 {
     //清空记录
     clear();
     //查找孤立节点和0入度节点
-    QList< DAAbstractNode::SharedPointer > nodes = _workflow->nodes();
+    QList< DAAbstractNode::SharedPointer > nodes = mWorkflow->nodes();
     QSet< DAAbstractNodeFactory* > factorys;
     for (const DAAbstractNode::SharedPointer& n : qAsConst(nodes)) {
         factorys.insert(n->factory());
         if (DAAbstractNode::GlobalNode == n->nodeType()) {
-            _globalNodes.append(n);
+            mGlobalNodes.append(n);
         }
         //全局节点的判断和隐式节点类型的判断不冲突，这里是if不是else if
         if (0 == n->getInputNodesCount()) {
             if (0 == n->getOutputNodesCount()) {
                 //孤立节点
-                if (!_globalNodes.contains(n)) {
+                if (!mGlobalNodes.contains(n)) {
                     //如果孤立节点是全局节点，那么不作为孤立节点
-                    _isolatedNodes.append(n);
+                    mIsolatedNodes.append(n);
                 }
             } else {
                 //否则为开始节点
-                _beginNodes.append(n);
+                mBeginNodes.append(n);
             }
         }
     }
     //记录工厂
     for (DAAbstractNodeFactory* f : factorys) {
-        _nodeFactorys.append(f);
+        mNodeFactorys.append(f);
     }
 }
 
 /**
  * @brief 清空
  */
-void DAWorkFlowExecuterPrivate::clear()
+void DAWorkFlowExecuter::PrivateData::clear()
 {
-    _nodeIndegreeSetCount.clear();
-    _globalNodes.clear();
-    _isolatedNodes.clear();
-    _beginNodes.clear();
-    _nodeFactorys.clear();
+    mNodeIndegreeSetCount.clear();
+    mGlobalNodes.clear();
+    mIsolatedNodes.clear();
+    mBeginNodes.clear();
+    mNodeFactorys.clear();
 }
 
 /**
@@ -103,15 +103,15 @@ void DAWorkFlowExecuterPrivate::clear()
  * @param n
  * @param outInfo
  */
-void DAWorkFlowExecuterPrivate::sendParam(DAAbstractNode::SharedPointer& n, const QList< DAAbstractNode::LinkInfo >& outInfo)
+void DAWorkFlowExecuter::PrivateData::sendParam(DAAbstractNode::SharedPointer& n, const QList< DAAbstractNode::LinkInfo >& outInfo)
 {
     for (const DAAbstractNode::LinkInfo& li : qAsConst(outInfo)) {
         QVariant v = n->getOutputData(li.key);
         for (const QPair< QString, DAAbstractNode::SharedPointer >& pair : qAsConst(li.nodes)) {
             pair.second->setInputData(pair.first, v);
-            auto ite = _nodeIndegreeSetCount.find(pair.second);
-            if (ite == _nodeIndegreeSetCount.end()) {
-                ite = _nodeIndegreeSetCount.insert(pair.second, 1);
+            auto ite = mNodeIndegreeSetCount.find(pair.second);
+            if (ite == mNodeIndegreeSetCount.end()) {
+                ite = mNodeIndegreeSetCount.insert(pair.second, 1);
             } else {
                 ++(ite.value());
             }
@@ -123,11 +123,11 @@ void DAWorkFlowExecuterPrivate::sendParam(DAAbstractNode::SharedPointer& n, cons
  * @brief 查询输出连接到的节点，并查看节点是否满足执行条件，如果满足则执行
  * @param outInfo
  */
-void DAWorkFlowExecuterPrivate::transmit(const QList< DAAbstractNode::LinkInfo >& outInfo)
+void DAWorkFlowExecuter::PrivateData::transmit(const QList< DAAbstractNode::LinkInfo >& outInfo)
 {
     for (const DAAbstractNode::LinkInfo& li : qAsConst(outInfo)) {
         for (const QPair< QString, DAAbstractNode::SharedPointer >& pair : qAsConst(li.nodes)) {
-            if (pair.second->getInputNodesCount() == _nodeIndegreeSetCount[ pair.second ]) {
+            if (pair.second->getInputNodesCount() == mNodeIndegreeSetCount[ pair.second ]) {
                 //达成执行条件
                 q_ptr->executeNode(pair.second);
             }
@@ -139,7 +139,7 @@ void DAWorkFlowExecuterPrivate::transmit(const QList< DAAbstractNode::LinkInfo >
 // DAWorkFlowExecuter
 //====================================
 
-DAWorkFlowExecuter::DAWorkFlowExecuter(QObject* p) : QObject(p), d_ptr(new DAWorkFlowExecuterPrivate(this))
+DAWorkFlowExecuter::DAWorkFlowExecuter(QObject* p) : QObject(p), DA_PIMPL_CONSTRUCT
 {
     qDebug() << "create DAWorkFlowExecuter";
 }
@@ -155,7 +155,7 @@ DAWorkFlowExecuter::~DAWorkFlowExecuter()
  */
 void DAWorkFlowExecuter::setStartNode(DAAbstractNode::SharedPointer n)
 {
-    d_ptr->_startNode = n;
+    d_ptr->mStartNode = n;
 }
 
 /**
@@ -164,9 +164,9 @@ void DAWorkFlowExecuter::setStartNode(DAAbstractNode::SharedPointer n)
  */
 void DAWorkFlowExecuter::setWorkFlow(DAWorkFlow* wf)
 {
-    d_ptr->_workflow      = wf;
-    d_ptr->_callbackStart = wf->getStartWorkflowCallback();
-    d_ptr->_callbackEnd   = wf->getEndWorkflowCallback();
+    d_ptr->mWorkflow      = wf;
+    d_ptr->mCallbackStart = wf->getStartWorkflowCallback();
+    d_ptr->mCallbackEnd   = wf->getEndWorkflowCallback();
 }
 
 /**
@@ -175,7 +175,7 @@ void DAWorkFlowExecuter::setWorkFlow(DAWorkFlow* wf)
  */
 QList< DAAbstractNode::SharedPointer > DAWorkFlowExecuter::getGlobalNodes() const
 {
-    return d_ptr->_globalNodes;
+    return d_ptr->mGlobalNodes;
 }
 
 /**
@@ -184,7 +184,7 @@ QList< DAAbstractNode::SharedPointer > DAWorkFlowExecuter::getGlobalNodes() cons
  */
 QList< DAAbstractNode::SharedPointer > DAWorkFlowExecuter::getIsolatedNodesNodes() const
 {
-    return d_ptr->_isolatedNodes;
+    return d_ptr->mIsolatedNodes;
 }
 
 /**
@@ -196,7 +196,7 @@ QList< DAAbstractNode::SharedPointer > DAWorkFlowExecuter::getIsolatedNodesNodes
 void DAWorkFlowExecuter::startExecute()
 {
     //! 首先执行注册的prepareStartexec回调
-    for (DAWorkFlow::CallbackPrepareStartExecute& fn : d_ptr->_callbackStart) {
+    for (DAWorkFlow::CallbackPrepareStartExecute& fn : d_ptr->mCallbackStart) {
         if (!fn(this)) {
             emit finished(false);
             return;
@@ -204,22 +204,22 @@ void DAWorkFlowExecuter::startExecute()
     }
 
     d_ptr->prepareStartExec();
-    if (d_ptr->_startNode) {
+    if (d_ptr->mStartNode) {
         //如果指定了开始节点，就从开始节点开始执行
-        executeNode(d_ptr->_startNode);
+        executeNode(d_ptr->mStartNode);
     } else {
         //否则自动查找节点开始执行
         //执行全局节点，全局节点只执行不传递，也就是说执行节点后，节点的连线并不会执行
-        for (const DAAbstractNode::SharedPointer& n : qAsConst(d_ptr->_globalNodes)) {
+        for (const DAAbstractNode::SharedPointer& n : qAsConst(d_ptr->mGlobalNodes)) {
             executeNodeNotTransmit(n);
         }
         //开始执行孤立节点
-        for (const DAAbstractNode::SharedPointer& n : qAsConst(d_ptr->_isolatedNodes)) {
+        for (const DAAbstractNode::SharedPointer& n : qAsConst(d_ptr->mIsolatedNodes)) {
             executeNode(n);
         }
         //开始执行开始节点
-        for (const DAAbstractNode::SharedPointer& n : qAsConst(d_ptr->_beginNodes)) {
-            if (!d_ptr->_globalNodes.contains(n)) {
+        for (const DAAbstractNode::SharedPointer& n : qAsConst(d_ptr->mBeginNodes)) {
+            if (!d_ptr->mGlobalNodes.contains(n)) {
                 //如果开始节点并不是全局节点，正常执行
                 executeNode(n);
             } else {
@@ -230,7 +230,7 @@ void DAWorkFlowExecuter::startExecute()
     }
 
     //! 最后执行注册的prepareEndexec回调
-    for (DAWorkFlow::CallbackPrepareEndExecute& fn : d_ptr->_callbackEnd) {
+    for (DAWorkFlow::CallbackPrepareEndExecute& fn : d_ptr->mCallbackEnd) {
         if (fn) {
             if (!fn(this)) {
                 emit finished(false);

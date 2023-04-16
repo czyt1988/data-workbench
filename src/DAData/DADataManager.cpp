@@ -10,11 +10,11 @@
 namespace DA
 {
 
-class DADataManagerPrivate
+class DADataManager::PrivateData
 {
-    DA_IMPL_PUBLIC(DADataManager)
+    DA_DECLARE_PUBLIC(DADataManager)
 public:
-    DADataManagerPrivate(DADataManager* p);
+    PrivateData(DADataManager* p);
     QList< DAData > _dataList;
     QMap< DAData::IdType, DAData > _dataMap;
     bool _dirtyFlag;               ///< 标记是否dirty
@@ -25,14 +25,14 @@ public:
 // DADataManagerPrivate
 //===================================================
 
-DADataManagerPrivate::DADataManagerPrivate(DADataManager* p) : q_ptr(p), _dirtyFlag(false)
+DADataManager::PrivateData::PrivateData(DADataManager* p) : q_ptr(p), _dirtyFlag(false)
 {
 }
 
 //===================================================
 // DADataManager
 //===================================================
-DADataManager::DADataManager(QObject* par) : QObject(par), d_ptr(new DADataManagerPrivate(this))
+DADataManager::DADataManager(QObject* par) : QObject(par), DA_PIMPL_CONSTRUCT
 {
 }
 

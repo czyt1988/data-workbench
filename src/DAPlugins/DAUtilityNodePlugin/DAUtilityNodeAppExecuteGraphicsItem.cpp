@@ -15,8 +15,9 @@ namespace DA
 DAUtilityNodeAppExecuteGraphicsItem::DAUtilityNodeAppExecuteGraphicsItem(DAUtilityNodeAppExecute* n, QGraphicsItem* p)
     : DAStandardNodeSvgGraphicsItem(n, p)
 {
+    static QSvgRenderer s_app_shared_rende(QString(RES_APP_SVG));
+    setSharedRenderer(&s_app_shared_rende);
     setBodySize(QSizeF(46, 46));
-
     setLinkPointShowType(DAAbstractNodeGraphicsItem::LinkPointShowOnHover);
     setBodyMinimumSize(QSize(20, 20));
     setText(n->getNodeName());
@@ -41,7 +42,7 @@ void DAUtilityNodeAppExecuteGraphicsItem::paintBody(QPainter* painter, const QSt
     static QSvgRenderer s_svg_question(QString(":/plugin-node-icon/icon/question.svg"));
     static QSvgRenderer s_svg_ok(QString(":/plugin-node-icon/icon/ok.svg"));
     QRectF checkRegin = bodyRect.adjusted(bodyRect.width() / 2, bodyRect.height() / 2, 0, 0);
-    if (_isCheck) {
+    if (mIsCheck) {
         s_svg_ok.render(painter, checkRegin);
     } else {
         s_svg_question.render(painter, checkRegin);
@@ -50,12 +51,12 @@ void DAUtilityNodeAppExecuteGraphicsItem::paintBody(QPainter* painter, const QSt
 
 void DAUtilityNodeAppExecuteGraphicsItem::setCheckShow(bool on)
 {
-    _isCheck = on;
+    mIsCheck = on;
     update();
 }
 #endif
 /**
- * @brief mouseDoubleClickEvent
+ * @brief 双击时单独执行节点，不用通过DAWorkflowExecute调度
  * @param event
  */
 void DAUtilityNodeAppExecuteGraphicsItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* e)

@@ -28,6 +28,7 @@ HEADERS += \
     DAChartCanvas.h \
     DAChartCrossTracker.h \
     DAChartEllipseRegionSelectEditor.h \
+    DAChartFactory.h \
     DAChartItemTableModel.h \
     DAChartPointMarker.h \
     DAChartPolygonRegionSelectEditor.h \
@@ -61,6 +62,7 @@ SOURCES += \
     DAChartCanvas.cpp \
     DAChartCrossTracker.cpp \
     DAChartEllipseRegionSelectEditor.cpp \
+    DAChartFactory.cpp \
     DAChartItemTableModel.cpp \
     DAChartPointMarker.cpp \
     DAChartPolygonRegionSelectEditor.cpp \

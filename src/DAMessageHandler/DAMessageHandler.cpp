@@ -15,16 +15,16 @@
 #include "spdlog/sinks/rotating_file_sink.h"
 
 #ifndef globalMessageHandleValues
-#define globalMessageHandleValues _DAMessageHandlerGlobalValues::getInstance()
+#define globalMessageHandleValues DAMessageHandlerGlobalValues_Private::getInstance()
 #endif
 namespace DA
 {
 /**
  * @brief 此单例管理DAMessageHandler的全局变量
  */
-class _DAMessageHandlerGlobalValues
+class DAMessageHandlerGlobalValues_Private
 {
-    _DAMessageHandlerGlobalValues();
+    DAMessageHandlerGlobalValues_Private();
 
 public:
     /**
@@ -39,7 +39,7 @@ public:
 
 public:
     //获取单例
-    static _DAMessageHandlerGlobalValues& getInstance();
+    static DAMessageHandlerGlobalValues_Private& getInstance();
     // spdlog日志
     void setLogger(const std::shared_ptr< spdlog::logger >& logger);
     spdlog::logger* logger();
@@ -92,70 +92,70 @@ private:
     std::atomic_bool _enableMsgHandle { true };
 };
 
-_DAMessageHandlerGlobalValues::_DAMessageHandlerGlobalValues()
-    : _recordMsgType(QtWarningMsg), _type(MsgHandleType::UnknowHandleType), _pattern("[{1}]({2}){5}")
+DAMessageHandlerGlobalValues_Private::DAMessageHandlerGlobalValues_Private()
+    : _recordMsgType(QtWarningMsg), _type(MsgHandleType::UnknowHandleType), _pattern("[{1}]{5}\n   ->({2}){3},{4}")
 {
     _enableSpdlog.store(true);
     _enableMsgHandle.store(true);
 }
 
-_DAMessageHandlerGlobalValues& _DAMessageHandlerGlobalValues::getInstance()
+DAMessageHandlerGlobalValues_Private& DAMessageHandlerGlobalValues_Private::getInstance()
 {
-    static _DAMessageHandlerGlobalValues s_msg_handle_values;
+    static DAMessageHandlerGlobalValues_Private s_msg_handle_values;
     return s_msg_handle_values;
 }
 
-void _DAMessageHandlerGlobalValues::setLogger(const std::shared_ptr< spdlog::logger >& logger)
+void DAMessageHandlerGlobalValues_Private::setLogger(const std::shared_ptr< spdlog::logger >& logger)
 {
     this->_daLogger = logger;
 }
 
-spdlog::logger* _DAMessageHandlerGlobalValues::logger()
+spdlog::logger* DAMessageHandlerGlobalValues_Private::logger()
 {
     return this->_daLogger.get();
 }
 
-void _DAMessageHandlerGlobalValues::setEnableMessageHandle(bool on)
+void DAMessageHandlerGlobalValues_Private::setEnableMessageHandle(bool on)
 {
     return this->_enableMsgHandle.store(on);
 }
 
-bool _DAMessageHandlerGlobalValues::enableMessageHandle() const
+bool DAMessageHandlerGlobalValues_Private::enableMessageHandle() const
 {
     return this->_enableMsgHandle.load();
 }
 
-void _DAMessageHandlerGlobalValues::setEnableSpdLog(bool on)
+void DAMessageHandlerGlobalValues_Private::setEnableSpdLog(bool on)
 {
     _enableSpdlog.store(on);
 }
 
-bool _DAMessageHandlerGlobalValues::enableSpdLog() const
+bool DAMessageHandlerGlobalValues_Private::enableSpdLog() const
 {
     return _enableSpdlog.load();
 }
 
-DAMessageQueueProxy& _DAMessageHandlerGlobalValues::msgQueue()
+DAMessageQueueProxy& DAMessageHandlerGlobalValues_Private::msgQueue()
 {
     return _msgQueue;
 }
 
-void _DAMessageHandlerGlobalValues::setMsgHandleType(_DAMessageHandlerGlobalValues::MsgHandleType t)
+void DAMessageHandlerGlobalValues_Private::setMsgHandleType(DAMessageHandlerGlobalValues_Private::MsgHandleType t)
 {
     _type = t;
 }
 
-_DAMessageHandlerGlobalValues::MsgHandleType _DAMessageHandlerGlobalValues::getMsgHandleType() const
+DAMessageHandlerGlobalValues_Private::MsgHandleType DAMessageHandlerGlobalValues_Private::getMsgHandleType() const
 {
     return _type;
 }
 
-QtMsgType _DAMessageHandlerGlobalValues::getMsgQueueRecordMsgType() const
+QtMsgType DAMessageHandlerGlobalValues_Private::getMsgQueueRecordMsgType() const
 {
     return _recordMsgType;
 }
 
-void _DAMessageHandlerGlobalValues::setMsgQueueRecordMsgType(QtMsgType t)
+void DAMessageHandlerGlobalValues_Private::setMsgQueueRecordMsgType(QtMsgType t)
 {
     _recordMsgType = t;
 }
@@ -181,7 +181,7 @@ void _initializeRotatingSpdlog(const std::string& filename,
  * @param context
  * @param msg
  */
-void _daMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg);
+void daMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg);
 
 /**
  * @brief 初始化控制台日志
@@ -268,7 +268,7 @@ void _initializeRotatingSpdlog(const std::string& filename, int maxfile_size, in
  * @param context
  * @param msg
  */
-void _daMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg)
+void daMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg)
 {
     DAMessageLogItem item(type, context, msg);
     if (type >= globalMessageHandleValues.getMsgQueueRecordMsgType()) {
@@ -314,8 +314,8 @@ void daUnregisterMessageHandler()
     qInstallMessageHandler(0);
     globalMessageHandleValues.setEnableSpdLog(false);
     switch (globalMessageHandleValues.getMsgHandleType()) {
-    case _DAMessageHandlerGlobalValues::MsgHandleType::HandleMsgRotateFile:
-    case _DAMessageHandlerGlobalValues::MsgHandleType::HandleMsgStdout: {
+    case DAMessageHandlerGlobalValues_Private::MsgHandleType::HandleMsgRotateFile:
+    case DAMessageHandlerGlobalValues_Private::MsgHandleType::HandleMsgStdout: {
         //这些需要调用spdlog
         spdlog::drop_all();
         spdlog::shutdown();
@@ -344,8 +344,8 @@ void daRegisterRotatingMessageHandler(const QString& filename, int maxfile_size,
 {
     _initializeRotatingSpdlog(filename.toStdString(), maxfile_size, maxfile_counts, flush_every_sec, output_stdout, async_logger);
     globalMessageHandleValues.setEnableSpdLog(true);
-    globalMessageHandleValues.setMsgHandleType(_DAMessageHandlerGlobalValues::MsgHandleType::HandleMsgRotateFile);
-    qInstallMessageHandler(_daMessageHandler);
+    globalMessageHandleValues.setMsgHandleType(DAMessageHandlerGlobalValues_Private::MsgHandleType::HandleMsgRotateFile);
+    qInstallMessageHandler(daMessageHandler);
 }
 
 /**
@@ -357,8 +357,8 @@ void daRegisterConsolMessageHandler(int flush_every_sec, bool async_logger)
 {
     _initializeConsolSpdlog(flush_every_sec, async_logger);
     globalMessageHandleValues.setEnableSpdLog(true);
-    globalMessageHandleValues.setMsgHandleType(_DAMessageHandlerGlobalValues::MsgHandleType::HandleMsgStdout);
-    qInstallMessageHandler(_daMessageHandler);
+    globalMessageHandleValues.setMsgHandleType(DAMessageHandlerGlobalValues_Private::MsgHandleType::HandleMsgStdout);
+    qInstallMessageHandler(daMessageHandler);
 }
 
 void daSetMsgQueueRecordMsgType(QtMsgType type)
@@ -384,7 +384,7 @@ void daSetMessagePattern(const QString& p)
  * - {msg}  对应{5}代表消息主体
  * @param p patter字符串，默认为[{datetime}][{line}]{msg}
  */
-void _DAMessageHandlerGlobalValues::setPattern(const QString& p)
+void DAMessageHandlerGlobalValues_Private::setPattern(const QString& p)
 {
     //对占位符进行替换
     QString s = p;
@@ -395,9 +395,10 @@ void _DAMessageHandlerGlobalValues::setPattern(const QString& p)
     s.replace("{file}", "{4}");
     s.replace("{msg}", "{5}");
     _pattern = s.toStdString();
+    //[{1}]{5}\n   ->({2}){3},{4}
 }
 
-const char* _DAMessageHandlerGlobalValues::getPatternChar() const
+const char* DAMessageHandlerGlobalValues_Private::getPatternChar() const
 {
     return _pattern.c_str();
 }

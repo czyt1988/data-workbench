@@ -36,7 +36,7 @@ protected:
     void finalizePythonInterpreter();
 
 private:
-    std::vector< callback_finalize > _finalizeCallbacks;
+    std::vector< callback_finalize > mFinalizeCallbacks;
 };
 }  // namespace DA
 #endif  // DAPYINTERPRETER_H

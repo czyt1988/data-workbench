@@ -65,6 +65,9 @@ SOURCES += \
     DAWorkFlow.cpp \
     DAWorkFlowExecuter.cpp
 
+DISTFILES += \
+    uml.qmodel
+
 
 
 

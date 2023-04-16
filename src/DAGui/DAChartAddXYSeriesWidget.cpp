@@ -1,4 +1,5 @@
 ﻿#include "DAChartAddXYSeriesWidget.h"
+#include <QMessageBox>
 #include "ui_DAChartAddXYSeriesWidget.h"
 #include "DADataManager.h"
 #include "Models/DADataManagerTreeModel.h"
@@ -29,6 +30,7 @@ DAChartAddXYSeriesWidget::DAChartAddXYSeriesWidget(QWidget* parent)
     : DAAbstractChartAddItemWidget(parent), ui(new Ui::DAChartAddXYSeriesWidget), d_ptr(new DAChartAddXYSeriesWidgetPrivate(this))
 {
     ui->setupUi(this);
+    ui->lineEditTitle->setText(tr("curve"));
     d_ptr->_model = new DAPySeriesTableModule(this);
     d_ptr->_model->setHeaderLabel({ tr("x"), tr("y") });
     ui->tableViewXY->setModel(d_ptr->_model);
@@ -113,11 +115,26 @@ void DAChartAddXYSeriesWidget::onComboBoxYCurrentDataframeSeriesChanged(const DA
     d_ptr->_model->setSeriesAt(1, s);
 }
 
+/**
+ * @brief 获取点序列
+ * @param res
+ * @return
+ */
 bool DAChartAddXYSeriesWidget::getToVectorPointF(QVector< QPointF >& res)
 {
     DAData xd = ui->comboBoxX->getCurrentDAData();
     DAData yd = ui->comboBoxY->getCurrentDAData();
-    if (!xd.isSeries() || !yd.isSeries()) {
+    if (!xd.isSeries()) {
+        QMessageBox::warning(this,
+                             tr("Warning"),            // cn:警告
+                             tr("x must be a series")  // cn:x必须是序列
+        );
+        return false;
+    }
+    if (!yd.isSeries()) {
+        QMessageBox::warning(this,
+                             tr("Warning"),              // cn:警告
+                             tr("y must be a series"));  // cn:y必须是序列
         return false;
     }
     DAPySeries x = xd.toSeries();

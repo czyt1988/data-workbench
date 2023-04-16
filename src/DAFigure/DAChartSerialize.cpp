@@ -21,17 +21,17 @@ void serialize_in_scale_widge(QDataStream& in, QwtPlot* chart, int axis);
 
 DABadSerializeExpection::DABadSerializeExpection()
 {
-    _why = QObject::tr("serialize error");
+    mWhy = QObject::tr("serialize error");
 }
 
 DABadSerializeExpection::DABadSerializeExpection(const char* why)
 {
-    _why = why;
+    mWhy = why;
 }
 
 DABadSerializeExpection::DABadSerializeExpection(const QString& why)
 {
-    _why = why;
+    mWhy = why;
 }
 
 DABadSerializeExpection::~DABadSerializeExpection()
@@ -40,7 +40,7 @@ DABadSerializeExpection::~DABadSerializeExpection()
 
 const char* DABadSerializeExpection::what() const noexcept
 {
-    return _why.toStdString().c_str();
+    return mWhy.toStdString().c_str();
 }
 
 void serialize_out_scale_widge(QDataStream& out, const QwtPlot* chart, int axis)

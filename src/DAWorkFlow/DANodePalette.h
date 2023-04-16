@@ -1,4 +1,4 @@
-#ifndef DANODEPALETTE_H
+﻿#ifndef DANODEPALETTE_H
 #define DANODEPALETTE_H
 #include <QtCore/qglobal.h>
 #include <QColor>
@@ -79,8 +79,8 @@ public:
     DANODEPALETTE_PROPERTY_BRUSH(OutLinkPointBrush, RoleOutLinkPointBrush)
 
 private:
-    QList< QColor > m_colors;  ///< 存放所有颜色
-    QList< QBrush > m_brushs;  ///< 存放所有填充颜色
+    QList< QColor > mColors;  ///< 存放所有颜色
+    QList< QBrush > mBrushs;  ///< 存放所有填充颜色
 };
 }  // end of namespace DA
 

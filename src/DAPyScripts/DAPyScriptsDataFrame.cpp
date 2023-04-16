@@ -3,11 +3,11 @@
 #include <QDebug>
 namespace DA
 {
-class DAPyScriptsDataFramePrivate
+class DAPyScriptsDataFrame::PrivateData
 {
-    DA_IMPL_PUBLIC(DAPyScriptsDataFrame)
+    DA_DECLARE_PUBLIC(DAPyScriptsDataFrame)
 public:
-    DAPyScriptsDataFramePrivate(DAPyScriptsDataFrame* p);
+    PrivateData(DAPyScriptsDataFrame* p);
 };
 }  // namespace DA
 
@@ -20,13 +20,13 @@ using namespace DA;
 //===================================================
 // DAPyScriptsDataFramePrivate
 //===================================================
-DAPyScriptsDataFramePrivate::DAPyScriptsDataFramePrivate(DAPyScriptsDataFrame* p) : q_ptr(p)
+DAPyScriptsDataFrame::PrivateData::PrivateData(DAPyScriptsDataFrame* p) : q_ptr(p)
 {
 }
 //===================================================
 // DAPyScriptsDataFrame
 //===================================================
-DAPyScriptsDataFrame::DAPyScriptsDataFrame() : DAPyModule(), d_ptr(new DAPyScriptsDataFramePrivate(this))
+DAPyScriptsDataFrame::DAPyScriptsDataFrame() : DAPyModule(), DA_PIMPL_CONSTRUCT
 {
 }
 

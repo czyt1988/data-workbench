@@ -13,6 +13,7 @@ namespace DA
 {
 class _DAPrivateWorkflowNodePluginData;
 class DAAbstractNodePlugin;
+class DAAbstractPlugin;
 class DAAbstractNodeFactory;
 /**
  * @brief 此app的插件管理类
@@ -30,6 +31,9 @@ public:
     //初始化加载所有插件
     void initLoadPlugins(DACoreInterface* c);
 
+    //获取所有的插件
+    QList< DAAbstractPlugin* > getAllPlugins() const;
+
     //获取所有的节点插件
     QList< DAAbstractNodePlugin* > getNodePlugins() const;
 
@@ -40,8 +44,9 @@ public:
     QList< DANodeMetaData > getAllNodeMetaDatas() const;
 
 private:
-    QList< _DAPrivateWorkflowNodePluginData* > m_nodePlugins;
-    QList< DANodeMetaData > _nodeMetaDatas;
+    QList< DAAbstractPlugin* > mPlugins;
+    QList< _DAPrivateWorkflowNodePluginData* > mNnodePlugins;
+    QList< DANodeMetaData > mNodeMetaDatas;
 };
 }  // namespace DA
 #endif  // FCMETHODEDITORPLUGINMANAGER_H

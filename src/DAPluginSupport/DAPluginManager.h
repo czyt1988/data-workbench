@@ -7,7 +7,6 @@
 #include <QDebug>
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DAPluginManager)
 
 /**
  * @brief 此类为插件管理类，作为单例，管理整个程序的插件加载和释放
@@ -15,7 +14,7 @@ DA_IMPL_FORWARD_DECL(DAPluginManager)
 class DAPLUGINSUPPORT_API DAPluginManager : public QObject
 {
     Q_OBJECT
-    DA_IMPL(DAPluginManager)
+    DA_DECLARE_PRIVATE(DAPluginManager)
     DAPluginManager(QObject* p = nullptr);
 
 public:
@@ -52,6 +51,7 @@ signals:
      */
     void beginLoadPlugin(const QString& pluginPath);
 };
+
 }  // namespace DA
 //格式化输出
 DAPLUGINSUPPORT_API QDebug operator<<(QDebug debug, const DA::DAPluginManager& fmg);

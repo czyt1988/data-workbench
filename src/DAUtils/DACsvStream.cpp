@@ -1,48 +1,49 @@
-#include "DACsvStream.h"
+﻿#include "DACsvStream.h"
 #include <QTextStream>
 #include <QFile>
 namespace DA
 {
-class DACsvStreamPrivate
+class DACsvStream::PrivateData
 {
-    DA_IMPL_PUBLIC(DACsvStream)
-    QTextStream* m_txt;
-    QScopedPointer< QTextStream > m_pfile;
-    bool m_isStartLine;
+    DA_DECLARE_PUBLIC(DACsvStream)
+private:
+    QTextStream* mTxt { nullptr };
+    bool mIsStartLine { true };
+    QScopedPointer< QTextStream > mTextStream;  ///< 这个是用来临时生成的stream，之所以要两个stream是因为这个是用于内部生成的临时stream，而mTxt是QTextStream的代理
 
 public:
-    DACsvStreamPrivate(DACsvStream* p) : q_ptr(p), m_txt(nullptr), m_pfile(nullptr), m_isStartLine(true)
+    PrivateData(DACsvStream* p) : q_ptr(p)
     {
     }
     void setTextStream(QTextStream* st)
     {
-        m_txt = st;
+        mTxt = st;
     }
     QTextStream* streamPtr()
     {
-        return m_txt;
+        return mTxt;
     }
     QTextStream& stream()
     {
-        return (*m_txt);
+        return (*mTxt);
     }
     const QTextStream& stream() const
     {
-        return (*m_txt);
+        return (*mTxt);
     }
     bool isStartLine() const
     {
-        return m_isStartLine;
+        return mIsStartLine;
     }
     void setStartLine(bool on)
     {
-        m_isStartLine = on;
+        mIsStartLine = on;
     }
 
     void setFile(QFile* txt)
     {
-        m_pfile.reset(new QTextStream(txt));
-        m_txt = m_pfile.data();
+        mTextStream.reset(new QTextStream(txt));
+        mTxt = mTextStream.data();
     }
 
     QTextStream& formatTextStream()
@@ -56,12 +57,16 @@ public:
     }
 };
 
-DACsvStream::DACsvStream(QTextStream* txt) : d_ptr(new DACsvStreamPrivate(this))
+//==============================================================
+// DACsvStream
+//==============================================================
+
+DACsvStream::DACsvStream(QTextStream* txt) : DA_PIMPL_CONSTRUCT
 {
     d_ptr->setTextStream(txt);
 }
 
-DACsvStream::DACsvStream(QFile* txt) : d_ptr(new DACsvStreamPrivate(this))
+DACsvStream::DACsvStream(QFile* txt) : DA_PIMPL_CONSTRUCT
 {
     d_ptr->setFile(txt);
 }

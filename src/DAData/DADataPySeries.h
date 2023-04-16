@@ -25,7 +25,7 @@ public:
     const DAPySeries& series() const;
 
 protected:
-    DAPySeries _ser;
+    DAPySeries mSeries;
 };
 }
 #endif  // DADATAPYSERIES_H

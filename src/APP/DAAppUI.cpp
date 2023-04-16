@@ -16,7 +16,7 @@ using namespace DA;
 //===================================================
 // DAAppUI
 //===================================================
-DAAppUI::DAAppUI(SARibbonMainWindow* m, DACoreInterface* c) : DAAppUIInterface(m, c)
+DAAppUI::DAAppUI(SARibbonMainWindow* m, DACoreInterface* c) : DAUIInterface(m, c)
 {
     //! 这里不进行createUi的调用，因为很多地方的窗口的构建需要DAAppActions，
     //! 而DAAppActions又依赖DAAppUI，在DAAppCore构建DAAppUI时，如果在DAAppUI的构造函数中调用createUi
@@ -34,12 +34,12 @@ QMainWindow* DAAppUI::getMainWindow() const
     return static_cast< QMainWindow* >(m_ribbonArea->app());
 }
 
-DAAppDockingAreaInterface* DAAppUI::getDockingArea()
+DADockingAreaInterface* DAAppUI::getDockingArea()
 {
     return m_dockingArea;
 }
 
-DAAppRibbonAreaInterface* DAAppUI::getRibbonArea()
+DARibbonAreaInterface* DAAppUI::getRibbonArea()
 {
     return m_ribbonArea;
 }

@@ -1,4 +1,4 @@
-#ifndef SATREE_H
+﻿#ifndef SATREE_H
 #define SATREE_H
 #include "DAUtilsAPI.h"
 #include "DATreeItem.h"
@@ -6,14 +6,13 @@
 
 namespace DA
 {
-class DATreePrivate;
 /**
  * @brief 通用树形结构数据存储
  * 支持任意拷贝和赋值
  */
 class DAUTILS_API DATree
 {
-    DA_IMPL(DATree)
+    DA_DECLARE_PRIVATE(DATree)
     friend class DATreeItem;
 
 public:

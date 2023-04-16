@@ -4,20 +4,20 @@
 namespace DA
 {
 
-class DABrushStyleComboBoxPrivate
+class DABrushStyleComboBox::PrivateData
 {
-    DA_IMPL_PUBLIC(DABrushStyleComboBox)
+    DA_DECLARE_PUBLIC(DABrushStyleComboBox)
 public:
-    DABrushStyleComboBoxPrivate(DABrushStyleComboBox* p);
-    bool _isShowNoBrush;
-    std::unique_ptr< QColor > _color;
-    std::unique_ptr< QGradient > _gradient;
-    std::unique_ptr< QPixmap > _pixmap;
-    Qt::BrushStyle _currentBrushStyle;  ///< 记录当前的style
+    PrivateData(DABrushStyleComboBox* p);
+    bool mIsShowNoBrush;
+    std::unique_ptr< QColor > mColor;
+    std::unique_ptr< QGradient > mGradient;
+    std::unique_ptr< QPixmap > mPixmap;
+    Qt::BrushStyle mCurrentBrushStyle;  ///< 记录当前的style
 };
 
-DABrushStyleComboBoxPrivate::DABrushStyleComboBoxPrivate(DABrushStyleComboBox* p)
-    : q_ptr(p), _isShowNoBrush(true), _currentBrushStyle(Qt::NoBrush)
+DABrushStyleComboBox::PrivateData::PrivateData(DABrushStyleComboBox* p)
+    : q_ptr(p), mIsShowNoBrush(true), mCurrentBrushStyle(Qt::NoBrush)
 {
 }
 
@@ -25,8 +25,7 @@ DABrushStyleComboBoxPrivate::DABrushStyleComboBoxPrivate(DABrushStyleComboBox* p
 // DABrushStyleComboBox
 //===================================================
 
-DABrushStyleComboBox::DABrushStyleComboBox(QWidget* parent)
-    : QComboBox(parent), d_ptr(new DABrushStyleComboBoxPrivate(this))
+DABrushStyleComboBox::DABrushStyleComboBox(QWidget* parent) : QComboBox(parent), DA_PIMPL_CONSTRUCT
 {
     setBrushColor(Qt::black);
     connect(this, QOverload< int >::of(&QComboBox::currentIndexChanged), this, &DABrushStyleComboBox::onCurrentIndexChanged);
@@ -89,8 +88,8 @@ QString DABrushStyleComboBox::brushStyleToString(Qt::BrushStyle s)
  */
 void DABrushStyleComboBox::setShowNoBrushStyle(bool v)
 {
-    if (d_ptr->_isShowNoBrush != v) {
-        d_ptr->_isShowNoBrush = v;
+    if (d_ptr->mIsShowNoBrush != v) {
+        d_ptr->mIsShowNoBrush = v;
         rebuildItems();
     }
 }
@@ -101,7 +100,7 @@ void DABrushStyleComboBox::setShowNoBrushStyle(bool v)
  */
 bool DABrushStyleComboBox::isShowNoBrushStyle() const
 {
-    return d_ptr->_isShowNoBrush;
+    return d_ptr->mIsShowNoBrush;
 }
 
 /**
@@ -110,7 +109,7 @@ bool DABrushStyleComboBox::isShowNoBrushStyle() const
  */
 bool DABrushStyleComboBox::isColorBrush() const
 {
-    return d_ptr->_color != nullptr;
+    return d_ptr->mColor != nullptr;
 }
 
 /**
@@ -119,12 +118,12 @@ bool DABrushStyleComboBox::isColorBrush() const
  */
 void DABrushStyleComboBox::setBrushColor(const QColor& v)
 {
-    if (d_ptr->_color) {
-        *(d_ptr->_color) = v;
+    if (d_ptr->mColor) {
+        *(d_ptr->mColor) = v;
     } else {
-        d_ptr->_color.reset(new QColor(v));
-        d_ptr->_gradient.reset();
-        d_ptr->_pixmap.reset();
+        d_ptr->mColor.reset(new QColor(v));
+        d_ptr->mGradient.reset();
+        d_ptr->mPixmap.reset();
         rebuildItems();
     }
 }
@@ -135,8 +134,8 @@ void DABrushStyleComboBox::setBrushColor(const QColor& v)
  */
 QColor DABrushStyleComboBox::getBrushColor() const
 {
-    if (d_ptr->_color) {
-        return *(d_ptr->_color);
+    if (d_ptr->mColor) {
+        return *(d_ptr->mColor);
     }
     return QColor();
 }
@@ -174,7 +173,7 @@ QIcon DABrushStyleComboBox::generateBrushStyleIcon(Qt::BrushStyle s)
     if (!iss.isValid()) {
         return QIcon();
     }
-    static QIcon s_noBrush = QIcon(":/icon/icon/no-style.svg");
+    static QIcon s_noBrush = QIcon(":/commonWidget/icon/icon/no-style.svg");
     switch (s) {
     case Qt::NoBrush:
         return s_noBrush;

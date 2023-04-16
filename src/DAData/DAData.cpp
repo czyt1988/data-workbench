@@ -12,35 +12,35 @@ using namespace DA;
 //===================================================
 // DAData
 //===================================================
-DAData::DAData() : _dmgr(nullptr)
+DAData::DAData() : mDataMgr(nullptr)
 {
 }
 
-DAData::DAData(const DAAbstractData::Pointer& d) : _dmgr(nullptr)
+DAData::DAData(const DAAbstractData::Pointer& d) : mDataMgr(nullptr)
 {
-    _data = d;
+    mData = d;
 }
 
 DAData::DAData(const DAData& d)
 {
-    _data = d._data;
-    _dmgr = d._dmgr;
+    mData = d.mData;
+    mDataMgr = d.mDataMgr;
 }
 
 DAData::DAData(DAData&& d)
 {
-    _data = std::move(d._data);
-    _dmgr = std::move(d._dmgr);
+    mData = std::move(d.mData);
+    mDataMgr = std::move(d.mDataMgr);
 }
 
-DAData::DAData(const DAPyDataFrame& d) : _dmgr(nullptr)
+DAData::DAData(const DAPyDataFrame& d) : mDataMgr(nullptr)
 {
-    _data = std::static_pointer_cast< DAAbstractData >(std::make_shared< DADataPyDataFrame >(d));
+    mData = std::static_pointer_cast< DAAbstractData >(std::make_shared< DADataPyDataFrame >(d));
 }
 
-DAData::DAData(const DAPySeries& d) : _dmgr(nullptr)
+DAData::DAData(const DAPySeries& d) : mDataMgr(nullptr)
 {
-    _data = std::static_pointer_cast< DAAbstractData >(std::make_shared< DADataPySeries >(d));
+    mData = std::static_pointer_cast< DAAbstractData >(std::make_shared< DADataPySeries >(d));
 }
 
 DAData::~DAData()
@@ -53,7 +53,7 @@ DAData::~DAData()
  */
 bool DAData::operator==(const DAData& d) const
 {
-    return _data == d._data;
+    return mData == d.mData;
 }
 
 bool DAData::operator<(const DAData& d) const
@@ -63,28 +63,28 @@ bool DAData::operator<(const DAData& d) const
 
 DAData& DAData::operator=(const DAData& d)
 {
-    _data = d._data;
-    _dmgr = d._dmgr;
+    mData = d.mData;
+    mDataMgr = d.mDataMgr;
     return *this;
 }
 
 DAData& DAData::operator=(const DAPyDataFrame& d)
 {
     std::shared_ptr< DAAbstractData > p = std::static_pointer_cast< DAAbstractData >(std::make_shared< DADataPyDataFrame >(d));
-    _data                               = p;
+    mData                               = p;
     return *this;
 }
 
 DAData& DAData::operator=(const DAPySeries& d)
 {
     std::shared_ptr< DAAbstractData > p = std::static_pointer_cast< DAAbstractData >(std::make_shared< DADataPySeries >(d));
-    _data                               = p;
+    mData                               = p;
     return *this;
 }
 
 DAData::operator bool() const
 {
-    return _data != nullptr;
+    return mData != nullptr;
 }
 
 /**
@@ -93,23 +93,23 @@ DAData::operator bool() const
  */
 bool DAData::isNull() const
 {
-    return _data == nullptr;
+    return mData == nullptr;
 }
 
 DAAbstractData::DataType DAData::getDataType() const
 {
-    if (!_data) {
+    if (!mData) {
         return DAAbstractData::TypeNone;
     }
-    return _data->getDataType();
+    return mData->getDataType();
 }
 
 QVariant DAData::value() const
 {
-    if (!_data) {
+    if (!mData) {
         return QVariant();
     }
-    return _data->toVariant();
+    return mData->toVariant();
 }
 /**
  * @brief 设置值
@@ -120,13 +120,13 @@ QVariant DAData::value() const
  */
 bool DAData::setValue(const QVariant& v) const
 {
-    if (!_data) {
+    if (!mData) {
         return false;
     }
-    bool r = _data->setValue(v);
+    bool r = mData->setValue(v);
     if (r) {
-        if (_dmgr) {
-            _dmgr->callDataChangedSignal(*this, DADataManager::ChangeValue);
+        if (mDataMgr) {
+            mDataMgr->callDataChangedSignal(*this, DADataManager::ChangeValue);
         }
     }
     return r;
@@ -134,81 +134,81 @@ bool DAData::setValue(const QVariant& v) const
 
 QString DAData::getName() const
 {
-    if (!_data) {
+    if (!mData) {
         return QString();
     }
-    return _data->getName();
+    return mData->getName();
 }
 
 void DAData::setName(const QString& n)
 {
-    if (!_data) {
+    if (!mData) {
         return;
     }
-    _data->setName(n);
-    if (_dmgr) {
-        _dmgr->callDataChangedSignal(*this, DADataManager::ChangeName);
+    mData->setName(n);
+    if (mDataMgr) {
+        mDataMgr->callDataChangedSignal(*this, DADataManager::ChangeName);
     }
 }
 
 QString DAData::getDescribe() const
 {
-    if (!_data) {
+    if (!mData) {
         return QString();
     }
-    return _data->getDescribe();
+    return mData->getDescribe();
 }
 
 void DAData::setDescribe(const QString& d)
 {
-    if (!_data) {
+    if (!mData) {
         return;
     }
-    _data->setDescribe(d);
-    if (_dmgr) {
-        _dmgr->callDataChangedSignal(*this, DADataManager::ChangeDescribe);
+    mData->setDescribe(d);
+    if (mDataMgr) {
+        mDataMgr->callDataChangedSignal(*this, DADataManager::ChangeDescribe);
     }
 }
 
 DAAbstractData* DAData::rawPointer()
 {
-    return _data.get();
+    return mData.get();
 }
 
 const DAAbstractData* DAData::rawPointer() const
 {
-    return _data.get();
+    return mData.get();
 }
 
 DAData::Pointer DAData::getPointer()
 {
-    return _data;
+    return mData;
 }
 
 const DAData::Pointer DAData::getPointer() const
 {
-    return _data;
+    return mData;
 }
 
 DAData::IdType DAData::id() const
 {
-    return _data->id();
+    return mData->id();
 }
 
 bool DAData::isDataFrame() const
 {
-    if (!_data) {
+    if (!mData) {
         return false;
     }
-    return (_data->getDataType() == DAAbstractData::TypePythonDataFrame);
+    return (mData->getDataType() == DAAbstractData::TypePythonDataFrame);
 }
 
 bool DAData::isSeries() const
 {
-    if (!_data) {
+    if (!mData) {
         return false;
     }
-    return (_data->getDataType() == DAAbstractData::TypePythonSeries);
+    return (mData->getDataType() == DAAbstractData::TypePythonSeries);
 }
 
 /**
@@ -217,10 +217,10 @@ bool DAData::isSeries() const
  */
 bool DAData::isDataPackage() const
 {
-    if (!_data) {
+    if (!mData) {
         return false;
     }
-    return (_data->getDataType() == DAAbstractData::TypeDataPackage);
+    return (mData->getDataType() == DAAbstractData::TypeDataPackage);
 }
 
 /**
@@ -230,7 +230,7 @@ bool DAData::isDataPackage() const
 DAPyDataFrame DAData::toDataFrame() const
 {
     if (isDataFrame()) {
-        DADataPyDataFrame* df = static_cast< DADataPyDataFrame* >(_data.get());
+        DADataPyDataFrame* df = static_cast< DADataPyDataFrame* >(mData.get());
         return df->dataframe();
     }
     return DAPyDataFrame();
@@ -243,7 +243,7 @@ DAPyDataFrame DAData::toDataFrame() const
 DAPySeries DAData::toSeries() const
 {
     if (isSeries()) {
-        DADataPySeries* ser = static_cast< DADataPySeries* >(_data.get());
+        DADataPySeries* ser = static_cast< DADataPySeries* >(mData.get());
         return ser->series();
     }
     return DAPySeries();
@@ -256,7 +256,7 @@ DAPySeries DAData::toSeries() const
 DADataPackage::Pointer DAData::toDataPackage() const
 {
     if (isDataPackage()) {
-        DADataPackage::Pointer d = std::static_pointer_cast< DADataPackage >(_data);
+        DADataPackage::Pointer d = std::static_pointer_cast< DADataPackage >(mData);
         return d;
     }
     return nullptr;
@@ -264,10 +264,10 @@ DADataPackage::Pointer DAData::toDataPackage() const
 
 QString DAData::typeToString() const
 {
-    if (!_data) {
+    if (!mData) {
         return DAAbstractData::typeToString(DAAbstractData::TypeNone);
     }
-    return DAAbstractData::typeToString(_data->getDataType());
+    return DAAbstractData::typeToString(mData->getDataType());
 }
 
 /**
@@ -276,7 +276,7 @@ QString DAData::typeToString() const
  */
 DADataManager* DAData::getDataManager() const
 {
-    return _dmgr;
+    return mDataMgr;
 }
 
 /**
@@ -286,7 +286,7 @@ DADataManager* DAData::getDataManager() const
  */
 void DAData::setDataManager(DADataManager* mgr)
 {
-    _dmgr = mgr;
+    mDataMgr = mgr;
 }
 
 namespace DA

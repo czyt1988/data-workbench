@@ -1,4 +1,4 @@
-#include "DANodeLinkPointDrawDelegate.h"
+﻿#include "DANodeLinkPointDrawDelegate.h"
 #include <QGraphicsItem>
 #include <QPainter>
 #include <QStyleOptionGraphicsItem>
@@ -7,12 +7,12 @@
 
 namespace DA
 {
-class DANodeLinkPointDrawDelegatePrivate
+class DANodeLinkPointDrawDelegate::PrivateData
 {
-    DA_IMPL_PUBLIC(DANodeLinkPointDrawDelegate)
+    DA_DECLARE_PUBLIC(DANodeLinkPointDrawDelegate)
 public:
-    DANodeLinkPointDrawDelegatePrivate(DANodeLinkPointDrawDelegate* p);
-    DAAbstractNodeGraphicsItem* _item;  ///< 绑定的item
+    PrivateData(DANodeLinkPointDrawDelegate* p);
+    DAAbstractNodeGraphicsItem* mItem;  ///< 绑定的item
 };
 }  // end of namespace DA
 
@@ -25,14 +25,13 @@ using namespace DA;
 //===================================================
 //
 //===================================================
-DANodeLinkPointDrawDelegatePrivate::DANodeLinkPointDrawDelegatePrivate(DANodeLinkPointDrawDelegate* p) : q_ptr(p)
+DANodeLinkPointDrawDelegate::PrivateData::PrivateData(DANodeLinkPointDrawDelegate* p) : q_ptr(p)
 {
 }
 
 ////////////////////////////////////
 
-DANodeLinkPointDrawDelegate::DANodeLinkPointDrawDelegate(DAAbstractNodeGraphicsItem* i)
-    : d_ptr(new DANodeLinkPointDrawDelegatePrivate(this))
+DANodeLinkPointDrawDelegate::DANodeLinkPointDrawDelegate(DAAbstractNodeGraphicsItem* i) : DA_PIMPL_CONSTRUCT
 {
     setItem(i);
 }
@@ -47,7 +46,7 @@ DANodeLinkPointDrawDelegate::~DANodeLinkPointDrawDelegate()
  */
 void DANodeLinkPointDrawDelegate::setItem(DAAbstractNodeGraphicsItem* i)
 {
-    d_ptr->_item = i;
+    d_ptr->mItem = i;
 }
 
 /**
@@ -56,7 +55,7 @@ void DANodeLinkPointDrawDelegate::setItem(DAAbstractNodeGraphicsItem* i)
  */
 DAAbstractNodeGraphicsItem* DANodeLinkPointDrawDelegate::getItem() const
 {
-    return d_ptr->_item;
+    return d_ptr->mItem;
 }
 
 /**
@@ -83,7 +82,7 @@ void DANodeLinkPointDrawDelegate::paintLinkPoints(QPainter* painter, const QStyl
  */
 QList< DANodeLinkPoint > DANodeLinkPointDrawDelegate::getLinkPoints() const
 {
-    return d_ptr->_item->getLinkPoints();
+    return d_ptr->mItem->getLinkPoints();
 }
 
 /**
@@ -130,7 +129,7 @@ void DANodeLinkPointDrawDelegate::paintLinkPoint(const DANodeLinkPoint& pl,
     painter->save();
     //连接点是一个长方形，6X8,点中心是长方形中心
     //先把painter坐标变换到点处
-    const DANodePalette& palette = d_ptr->_item->getNodePalette();
+    const DANodePalette& palette = d_ptr->mItem->getNodePalette();
     QRectF pointrange            = getlinkPointPainterRect(pl);  // 横版矩形，对应East，West
     painter->setPen(palette.getGlobalLinkPointBorderColor());
     painter->drawRect(pointrange);

@@ -4,28 +4,21 @@
 
 namespace DA
 {
-class DAAbstractNodeFactoryPrivate
+class DAAbstractNodeFactory::PrivateData
 {
-    DA_IMPL_PUBLIC(DAAbstractNodeFactory)
+    DA_DECLARE_PUBLIC(DAAbstractNodeFactory)
 public:
-    DAAbstractNodeFactoryPrivate(DAAbstractNodeFactory* p);
+    DAAbstractNodeFactory::PrivateData(DAAbstractNodeFactory* p);
 
 public:
-    QPointer< DAWorkFlow > _workflow;
+    QPointer< DAWorkFlow > mWorkflow;
 };
-}
-
-//////////////////////////////////////////////
-///
-//////////////////////////////////////////////
-///
-using namespace DA;
 
 //////////////////////////////////////////////
 /// DAAbstractNodeFactoryPrivate
 //////////////////////////////////////////////
 
-DAAbstractNodeFactoryPrivate::DAAbstractNodeFactoryPrivate(DAAbstractNodeFactory* p) : q_ptr(p)
+DAAbstractNodeFactory::PrivateData::PrivateData(DAAbstractNodeFactory* p) : q_ptr(p)
 {
 }
 
@@ -33,7 +26,7 @@ DAAbstractNodeFactoryPrivate::DAAbstractNodeFactoryPrivate(DAAbstractNodeFactory
 /// DAAbstractNodeFactory
 //////////////////////////////////////////////
 
-DAAbstractNodeFactory::DAAbstractNodeFactory(QObject* p) : QObject(p), d_ptr(new DAAbstractNodeFactoryPrivate(this))
+DAAbstractNodeFactory::DAAbstractNodeFactory(QObject* p) : QObject(p), DA_PIMPL_CONSTRUCT
 {
 }
 
@@ -47,7 +40,7 @@ DAAbstractNodeFactory::~DAAbstractNodeFactory()
  */
 void DAAbstractNodeFactory::registWorkflow(DAWorkFlow* wf)
 {
-    d_ptr->_workflow = wf;
+    d_ptr->mWorkflow = wf;
 }
 
 /**
@@ -56,7 +49,7 @@ void DAAbstractNodeFactory::registWorkflow(DAWorkFlow* wf)
  */
 DAWorkFlow* DAAbstractNodeFactory::getWorkFlow() const
 {
-    return d_ptr->_workflow.data();
+    return d_ptr->mWorkflow.data();
 }
 /**
  * @brief 节点加入workflow的回调
@@ -150,3 +143,4 @@ void DAAbstractNodeFactory::loadExternInfoFromXml(const QDomElement* factoryExte
 {
     Q_UNUSED(factoryExternElement);
 }
+}  // end DA

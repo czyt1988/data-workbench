@@ -3,35 +3,26 @@
 
 namespace DA
 {
-
-class DABaseInterfacePrivate
-{
-    DA_IMPL_PUBLIC(DABaseInterface)
-public:
-    DABaseInterfacePrivate(DABaseInterface* p, DACoreInterface* c);
-
-    DACoreInterface* _core;
-};
-}  // namespace DA
-
-//===================================================
-// using DA namespace -- 禁止在头文件using！！
-//===================================================
-
-using namespace DA;
-
 //===================================================
 // DABaseInterfacePrivate
 //===================================================
+class DABaseInterface::PrivateData
+{
+    DA_DECLARE_PUBLIC(DABaseInterface)
+public:
+    PrivateData(DABaseInterface* p, DACoreInterface* c);
 
-DABaseInterfacePrivate::DABaseInterfacePrivate(DABaseInterface* p, DACoreInterface* c) : q_ptr(p), _core(c)
+    DACoreInterface* mCore;
+};
+
+DABaseInterface::PrivateData::PrivateData(DABaseInterface* p, DACoreInterface* c) : q_ptr(p), mCore(c)
 {
 }
 //===================================================
 // DABaseInterface
 //===================================================
 DABaseInterface::DABaseInterface(DACoreInterface* c, QObject* par)
-    : QObject(par), d_ptr(new DABaseInterfacePrivate(this, c))
+    : QObject(par), d_ptr(std::make_unique< DABaseInterface::PrivateData >(this, c))
 {
 }
 
@@ -41,5 +32,6 @@ DABaseInterface::~DABaseInterface()
 
 DACoreInterface* DABaseInterface::core() const
 {
-    return d_ptr->_core;
+    return d_ptr->mCore;
 }
+}  // namespace DA

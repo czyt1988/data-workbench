@@ -6,13 +6,13 @@ namespace DA
 {
 DANodePalette::DANodePalette()
 {
-    m_colors                          //颜色初始化
+    mColors                          //颜色初始化
             << QColor(0, 0, 0)        // RoleText
             << QColor(128, 128, 147)  // RoleBorderColor
             << QColor(128, 128, 147)  // RoleLinkLine
             << QColor(128, 128, 147)  // RoleLinkPointBorderColor
             ;
-    m_brushs << QBrush(QColor(255, 255, 255))  // RoleBackgroundBrush
+    mBrushs << QBrush(QColor(255, 255, 255))  // RoleBackgroundBrush
              << QBrush(QColor(207, 69, 74))    // RoleInLinkPointBrush
              << QBrush(QColor(23, 115, 51))    // RoleOutLinkPointBrush
             ;
@@ -30,12 +30,12 @@ DANodePalette& DANodePalette::getGlobalPalette()
 
 QColor& DANodePalette::color(ColorRole r)
 {
-    return (m_colors[ int(r) ]);
+    return (mColors[ int(r) ]);
 }
 
 const QColor& DANodePalette::getColor(DANodePalette::ColorRole r) const
 {
-    return (m_colors[ int(r) ]);
+    return (mColors[ int(r) ]);
 }
 
 const QColor& DANodePalette::getGlobalColor(DANodePalette::ColorRole r)
@@ -45,12 +45,12 @@ const QColor& DANodePalette::getGlobalColor(DANodePalette::ColorRole r)
 
 QBrush& DANodePalette::brush(BrushRole r)
 {
-    return (m_brushs[ int(r) ]);
+    return (mBrushs[ int(r) ]);
 }
 
 const QBrush& DANodePalette::getBrush(BrushRole r) const
 {
-    return (m_brushs[ int(r) ]);
+    return (mBrushs[ int(r) ]);
 }
 /**
  * @brief DANodePalette::getGlobalBrush

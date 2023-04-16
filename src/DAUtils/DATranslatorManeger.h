@@ -1,11 +1,10 @@
-#ifndef DATRANSLATORMANEGER_H
+﻿#ifndef DATRANSLATORMANEGER_H
 #define DATRANSLATORMANEGER_H
 #include <QTranslator>
 #include <QObject>
 #include "DAUtilsAPI.h"
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DATranslatorManeger)
 /**
  * @brief 翻译器管理
  *
@@ -16,7 +15,7 @@ DA_IMPL_FORWARD_DECL(DATranslatorManeger)
  */
 class DAUTILS_API DATranslatorManeger
 {
-    DA_IMPL(DATranslatorManeger)
+    DA_DECLARE_PRIVATE(DATranslatorManeger)
 public:
     DATranslatorManeger();
     //指定前缀文件构造
@@ -24,6 +23,8 @@ public:
     ~DATranslatorManeger();
     //装载所以的翻译
     int installAllTranslator();
+    //根据langCode装载所以的翻译，如中文langCode=zh_CN
+    int installAllTranslator(const QString& langCode);
     //设置扫描文件路径
     void setTranslatorFilePaths(const QList< QString >& ps);
     QList< QString > getTranslatorFilePath() const;

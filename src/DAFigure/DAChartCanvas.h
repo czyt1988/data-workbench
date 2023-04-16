@@ -5,7 +5,6 @@
 class QPaintEvent;
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DAChartCanvas)
 
 /**
  * @brief 重写了paint背景的方法

@@ -3,42 +3,47 @@
 #include <QKeyEvent>
 namespace DA
 {
-class DAChartEllipseRegionSelectEditorPrivate
+class DAChartEllipseRegionSelectEditor::PrivateData
 {
-    DA_IMPL_PUBLIC(DAChartEllipseRegionSelectEditor)
+    DA_DECLARE_PUBLIC(DAChartEllipseRegionSelectEditor)
 public:
-    bool m_isStartDrawRegion;
-    DAChartSelectRegionShapeItem* m_tmpItem;
-    QPointF m_pressedPoint;
-    QRectF m_selectedRect;
-    QPainterPath m_lastPainterPath;
-    DAChartEllipseRegionSelectEditorPrivate(DAChartEllipseRegionSelectEditor* p)
-        : q_ptr(p), m_isStartDrawRegion(false), m_tmpItem(nullptr), m_selectedRect(QRectF())
+    bool mIsStartDrawRegion { false };
+    DAChartSelectRegionShapeItem* mTmpItem { nullptr };
+    QPointF mPressedPoint;
+    QRectF mSelectedRect;
+    QPainterPath mLastPainterPath;
+
+public:
+    PrivateData(DAChartEllipseRegionSelectEditor* p) : q_ptr(p)
     {
     }
-    ~DAChartEllipseRegionSelectEditorPrivate()
+    ~PrivateData()
     {
         releaseTmpItem();
     }
     void releaseTmpItem()
     {
-        if (m_tmpItem) {
-            m_tmpItem->detach();
-            delete m_tmpItem;
-            m_tmpItem = nullptr;
+        if (mTmpItem) {
+            mTmpItem->detach();
+            delete mTmpItem;
+            mTmpItem = nullptr;
         }
     }
     void createTmpItem()
     {
-        if (nullptr == m_tmpItem) {
-            m_tmpItem = new DAChartSelectRegionShapeItem("temp region");
-            m_tmpItem->attach(q_ptr->plot());
+        if (nullptr == mTmpItem) {
+            mTmpItem = new DAChartSelectRegionShapeItem("temp region");
+            mTmpItem->attach(q_ptr->plot());
         }
     }
 };
 
+//===================================================
+// DAChartEllipseRegionSelectEditor
+//===================================================
+
 DAChartEllipseRegionSelectEditor::DAChartEllipseRegionSelectEditor(QwtPlot* parent)
-    : DAAbstractRegionSelectEditor(parent), d_ptr(new DAChartEllipseRegionSelectEditorPrivate(this))
+    : DAAbstractRegionSelectEditor(parent), DA_PIMPL_CONSTRUCT
 {
     setEnabled(true);
     connect(parent, &QwtPlot::itemAttached, this, &DAChartEllipseRegionSelectEditor::onItemAttached);
@@ -50,12 +55,12 @@ DAChartEllipseRegionSelectEditor::~DAChartEllipseRegionSelectEditor()
 
 QPainterPath DAChartEllipseRegionSelectEditor::getSelectRegion() const
 {
-    return d_ptr->m_lastPainterPath;
+    return d_ptr->mLastPainterPath;
 }
 
 void DAChartEllipseRegionSelectEditor::setSelectRegion(const QPainterPath& shape)
 {
-    d_ptr->m_lastPainterPath = shape;
+    d_ptr->mLastPainterPath = shape;
 }
 
 void DAChartEllipseRegionSelectEditor::setSelectionMode(const DAAbstractRegionSelectEditor::SelectionMode& selectionMode)
@@ -77,15 +82,15 @@ int DAChartEllipseRegionSelectEditor::rtti() const
 void DAChartEllipseRegionSelectEditor::clear()
 {
     d_ptr->releaseTmpItem();
-    d_ptr->m_selectedRect    = QRectF();
-    d_ptr->m_lastPainterPath = QPainterPath();
+    d_ptr->mSelectedRect    = QRectF();
+    d_ptr->mLastPainterPath = QPainterPath();
 }
 
 void DAChartEllipseRegionSelectEditor::onItemAttached(QwtPlotItem* item, bool on)
 {
     if (!on) {
-        if (item == d_ptr->m_tmpItem) {
-            d_ptr->m_tmpItem = nullptr;
+        if (item == d_ptr->mTmpItem) {
+            d_ptr->mTmpItem = nullptr;
         }
     }
 }
@@ -95,14 +100,14 @@ bool DAChartEllipseRegionSelectEditor::mousePressEvent(const QMouseEvent* e)
     if (Qt::MidButton == e->button() || Qt::RightButton == e->button()) {
         return false;
     }
-    QPoint p                   = e->pos();
-    d_ptr->m_isStartDrawRegion = true;
-    d_ptr->m_pressedPoint      = invTransform(p);
+    QPoint p                  = e->pos();
+    d_ptr->mIsStartDrawRegion = true;
+    d_ptr->mPressedPoint      = invTransform(p);
     d_ptr->createTmpItem();
     switch (getSelectionMode()) {
     case SingleSelection:  //单一选择
     {
-        d_ptr->m_lastPainterPath = QPainterPath();
+        d_ptr->mLastPainterPath = QPainterPath();
         break;
     }
     default:
@@ -113,7 +118,7 @@ bool DAChartEllipseRegionSelectEditor::mousePressEvent(const QMouseEvent* e)
 
 bool DAChartEllipseRegionSelectEditor::mouseMovedEvent(const QMouseEvent* e)
 {
-    if (!d_ptr->m_isStartDrawRegion) {
+    if (!d_ptr->mIsStartDrawRegion) {
         return false;
     }
     if (Qt::MidButton == e->button() || Qt::RightButton == e->button()) {
@@ -121,12 +126,12 @@ bool DAChartEllipseRegionSelectEditor::mouseMovedEvent(const QMouseEvent* e)
     }
     QPoint p   = e->pos();
     QPointF pf = invTransform(p);
-    d_ptr->m_selectedRect.setX(d_ptr->m_pressedPoint.x());
-    d_ptr->m_selectedRect.setY(d_ptr->m_pressedPoint.y());
-    d_ptr->m_selectedRect.setWidth(pf.x() - d_ptr->m_pressedPoint.x());
-    d_ptr->m_selectedRect.setHeight(pf.y() - d_ptr->m_pressedPoint.y());
-    if (d_ptr->m_tmpItem) {
-        d_ptr->m_tmpItem->setEllipse(d_ptr->m_selectedRect);
+    d_ptr->mSelectedRect.setX(d_ptr->mPressedPoint.x());
+    d_ptr->mSelectedRect.setY(d_ptr->mPressedPoint.y());
+    d_ptr->mSelectedRect.setWidth(pf.x() - d_ptr->mPressedPoint.x());
+    d_ptr->mSelectedRect.setHeight(pf.y() - d_ptr->mPressedPoint.y());
+    if (d_ptr->mTmpItem) {
+        d_ptr->mTmpItem->setEllipse(d_ptr->mSelectedRect);
     }
     return true;
 }
@@ -138,41 +143,41 @@ bool DAChartEllipseRegionSelectEditor::mouseReleasedEvent(const QMouseEvent* e)
     }
     QPoint p   = e->pos();
     QPointF pf = invTransform(p);
-    if (pf == d_ptr->m_pressedPoint) {
+    if (pf == d_ptr->mPressedPoint) {
         //如果点击和松开是一个点，就取消当前的选区
         d_ptr->releaseTmpItem();
-        d_ptr->m_isStartDrawRegion = false;
+        d_ptr->mIsStartDrawRegion = false;
         return true;
     }
-    d_ptr->m_selectedRect.setX(d_ptr->m_pressedPoint.x());
-    d_ptr->m_selectedRect.setY(d_ptr->m_pressedPoint.y());
-    d_ptr->m_selectedRect.setWidth(pf.x() - d_ptr->m_pressedPoint.x());
-    d_ptr->m_selectedRect.setHeight(pf.y() - d_ptr->m_pressedPoint.y());
+    d_ptr->mSelectedRect.setX(d_ptr->mPressedPoint.x());
+    d_ptr->mSelectedRect.setY(d_ptr->mPressedPoint.y());
+    d_ptr->mSelectedRect.setWidth(pf.x() - d_ptr->mPressedPoint.x());
+    d_ptr->mSelectedRect.setHeight(pf.y() - d_ptr->mPressedPoint.y());
     QPainterPath painterPath;
-    painterPath.addEllipse(d_ptr->m_selectedRect);
+    painterPath.addEllipse(d_ptr->mSelectedRect);
     switch (getSelectionMode()) {
     case SingleSelection: {
-        d_ptr->m_lastPainterPath = painterPath;
+        d_ptr->mLastPainterPath = painterPath;
         break;
     }
     case AdditionalSelection: {
-        d_ptr->m_lastPainterPath = d_ptr->m_lastPainterPath.united(painterPath);
+        d_ptr->mLastPainterPath = d_ptr->mLastPainterPath.united(painterPath);
         break;
     }
     case SubtractionSelection: {
-        d_ptr->m_lastPainterPath = d_ptr->m_lastPainterPath.subtracted(painterPath);
+        d_ptr->mLastPainterPath = d_ptr->mLastPainterPath.subtracted(painterPath);
         break;
     }
     case IntersectionSelection: {
-        d_ptr->m_lastPainterPath = d_ptr->m_lastPainterPath.intersected(painterPath);
+        d_ptr->mLastPainterPath = d_ptr->mLastPainterPath.intersected(painterPath);
         break;
     }
     default:
         break;
     }
     d_ptr->releaseTmpItem();
-    d_ptr->m_isStartDrawRegion = false;
-    emit finishSelection(d_ptr->m_lastPainterPath);
+    d_ptr->mIsStartDrawRegion = false;
+    emit finishSelection(d_ptr->mLastPainterPath);
     return true;
 }
 }  // End Of Namespace DA

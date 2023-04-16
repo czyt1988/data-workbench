@@ -1,5 +1,6 @@
 ﻿#ifndef DACOLORPICKERBUTTON_H
 #define DACOLORPICKERBUTTON_H
+#include "colorWidgets/SAColorToolButton.h"
 #include "ctkColorPickerButton.h"
 #include "DACommonWidgetsAPI.h"
 namespace DA
@@ -7,7 +8,7 @@ namespace DA
 /**
  * @brief 颜色拾取按钮封装
  */
-class DACOMMONWIDGETS_API DAColorPickerButton : public ctkColorPickerButton
+class DACOMMONWIDGETS_API DAColorPickerButton : public SAColorToolButton
 {
     Q_OBJECT
 public:

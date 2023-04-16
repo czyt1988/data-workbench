@@ -10,7 +10,6 @@ class QDomElement;
 namespace DA
 {
 
-DA_IMPL_FORWARD_DECL(DAAbstractNodeFactory)
 class DAWorkFlow;
 /**
  * @brief FCAbstractNode的工厂基类，所有自定义的node集合最后都需要提供一个工厂
@@ -22,7 +21,7 @@ class DAWorkFlow;
 class DAWORKFLOW_API DAAbstractNodeFactory : public QObject
 {
     Q_OBJECT
-    DA_IMPL(DAAbstractNodeFactory)
+    DA_DECLARE_PRIVATE(DAAbstractNodeFactory)
 public:
     DAAbstractNodeFactory(QObject* p = nullptr);
     virtual ~DAAbstractNodeFactory();

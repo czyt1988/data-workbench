@@ -57,9 +57,9 @@ private:
     QAction* createAction(const char* objname, const char* iconpath);
 
 private:
-    DADataManagerTreeModel* _model;
-    QMenu* _menu;
-    QAction* actionAddDataFolder;  ///< 添加文件夹
+    DADataManagerTreeModel* mModel;
+    QMenu* mMenu;
+    QAction* mActionAddDataFolder;  ///< 添加文件夹
 };
 }  // end of namespace DA
 #endif  // DADATAMANAGETREEVIEW_H

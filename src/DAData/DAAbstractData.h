@@ -62,10 +62,10 @@ public:
     static QString typeToString(DataType d);
 
 private:
-    QString _name;      ///< 名称
-    QString _describe;  ///< 描述
-    Pointer _parent;    ///< 记录父级节点
-    IdType _id;         ///< id
+    QString mName;      ///< 名称
+    QString mDescribe;  ///< 描述
+    Pointer mParent;    ///< 记录父级节点
+    IdType mID;         ///< id
 };
 }  // namespace DA
 #endif  // DAABSTRACTDATA_H

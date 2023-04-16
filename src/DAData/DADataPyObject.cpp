@@ -15,7 +15,7 @@ DADataPyObject::DADataPyObject() : DAAbstractData()
 
 DADataPyObject::DADataPyObject(const DAPyObjectWrapper& d)
 {
-    _pyObject = d;
+    mPyObject = d;
 }
 
 DADataPyObject::~DADataPyObject()
@@ -29,7 +29,7 @@ DAAbstractData::DataType DADataPyObject::getDataType() const
 
 QVariant DADataPyObject::toVariant() const
 {
-    return DA::PY::toVariant(_pyObject.object());
+    return DA::PY::toVariant(mPyObject.object());
 }
 
 /**
@@ -40,7 +40,7 @@ QVariant DADataPyObject::toVariant() const
 bool DADataPyObject::setValue(const QVariant& v)
 {
     pybind11::object obj = DA::PY::toPyObject(v);
-    _pyObject.object()   = obj;
+    mPyObject.object()   = obj;
     return true;
 }
 
@@ -50,7 +50,7 @@ bool DADataPyObject::setValue(const QVariant& v)
  */
 bool DADataPyObject::isNull() const
 {
-    return _pyObject.isNone();
+    return mPyObject.isNone();
 }
 
 /**
@@ -59,10 +59,10 @@ bool DADataPyObject::isNull() const
  */
 DAPyObjectWrapper& DADataPyObject::object()
 {
-    return _pyObject;
+    return mPyObject;
 }
 
 const DAPyObjectWrapper& DADataPyObject::object() const
 {
-    return _pyObject;
+    return mPyObject;
 }

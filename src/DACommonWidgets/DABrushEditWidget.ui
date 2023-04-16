@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>101</width>
-    <height>31</height>
+    <width>95</width>
+    <height>24</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,22 +15,22 @@
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <property name="spacing">
-    <number>0</number>
+    <number>1</number>
    </property>
    <property name="leftMargin">
-    <number>0</number>
+    <number>1</number>
    </property>
    <property name="topMargin">
-    <number>0</number>
+    <number>1</number>
    </property>
    <property name="rightMargin">
-    <number>0</number>
+    <number>1</number>
    </property>
    <property name="bottomMargin">
-    <number>0</number>
+    <number>1</number>
    </property>
    <item>
-    <widget class="DA::DAColorPickerButton" name="pushButtonColor">
+    <widget class="DA::DAColorPickerButton" name="colorButton">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -39,6 +39,9 @@
      </property>
      <property name="text">
       <string/>
+     </property>
+     <property name="autoRaise">
+      <bool>true</bool>
      </property>
     </widget>
    </item>
@@ -56,14 +59,14 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>DA::DAColorPickerButton</class>
-   <extends>QPushButton</extends>
-   <header>DAColorPickerButton.h</header>
-  </customwidget>
-  <customwidget>
    <class>DA::DABrushStyleComboBox</class>
    <extends>QComboBox</extends>
    <header>DABrushStyleComboBox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>DA::DAColorPickerButton</class>
+   <extends>QToolButton</extends>
+   <header>DAColorPickerButton.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

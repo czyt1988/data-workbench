@@ -1,32 +1,25 @@
 ﻿#include "DACommandInterface.h"
-#include "DAAppUIInterface.h"
+#include "DAUIInterface.h"
 namespace DA
 {
-class DACommandInterfacePrivate
+class DACommandInterface::PrivateData
 {
-    DA_IMPL_PUBLIC(DACommandInterface)
+    DA_DECLARE_PUBLIC(DACommandInterface)
 public:
-    DACommandInterfacePrivate(DACommandInterface* p);
-    QUndoGroup _undoGroup;
+    PrivateData(DACommandInterface* p);
+    QUndoGroup mUndoGroup;
 };
-}  // namespace DA
-//===================================================
-// using DA namespace -- 禁止在头文件using！！
-//===================================================
-
-using namespace DA;
 
 //===================================================
 // DACommandInterfacePrivate
 //===================================================
-DACommandInterfacePrivate::DACommandInterfacePrivate(DACommandInterface* p) : q_ptr(p)
+DACommandInterface::PrivateData::PrivateData(DACommandInterface* p) : q_ptr(p)
 {
 }
 //===================================================
 // DACommandInterface
 //===================================================
-DACommandInterface::DACommandInterface(DAAppUIInterface* u)
-    : DABaseInterface(u->core(), u), d_ptr(new DACommandInterfacePrivate(this))
+DACommandInterface::DACommandInterface(DAUIInterface* u) : DABaseInterface(u->core(), u), DA_PIMPL_CONSTRUCT
 {
 }
 
@@ -40,7 +33,7 @@ DACommandInterface::~DACommandInterface()
  */
 QUndoGroup& DACommandInterface::undoGroup()
 {
-    return d_ptr->_undoGroup;
+    return d_ptr->mUndoGroup;
 }
 
 /**
@@ -49,5 +42,6 @@ QUndoGroup& DACommandInterface::undoGroup()
  */
 void DACommandInterface::addStack(QUndoStack* stack)
 {
-    d_ptr->_undoGroup.addStack(stack);
+    d_ptr->mUndoGroup.addStack(stack);
 }
+}  // namespace DA

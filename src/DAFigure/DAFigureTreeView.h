@@ -5,7 +5,6 @@
 namespace DA
 {
 class DAFigureWidget;
-DA_IMPL_FORWARD_DECL(DAFigureTreeView)
 
 /**
  * @brief 绘图树
@@ -13,7 +12,7 @@ DA_IMPL_FORWARD_DECL(DAFigureTreeView)
 class DAFIGURE_API DAFigureTreeView : public QTreeView
 {
     Q_OBJECT
-    DA_IMPL(DAFigureTreeView)
+    DA_DECLARE_PRIVATE(DAFigureTreeView)
 public:
     DAFigureTreeView(QWidget* parent = nullptr);
     ~DAFigureTreeView();

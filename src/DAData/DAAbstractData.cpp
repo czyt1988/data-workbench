@@ -10,7 +10,7 @@ using namespace DA;
 //===================================================
 // DAAbstractData
 //===================================================
-DAAbstractData::DAAbstractData() : _parent(nullptr)
+DAAbstractData::DAAbstractData() : mParent(nullptr)
 {
 }
 
@@ -24,7 +24,7 @@ DAAbstractData::~DAAbstractData()
  */
 QString DAAbstractData::getName() const
 {
-    return _name;
+    return mName;
 }
 
 /**
@@ -33,7 +33,7 @@ QString DAAbstractData::getName() const
  */
 void DAAbstractData::setName(const QString& n)
 {
-    _name = n;
+    mName = n;
 }
 
 /**
@@ -42,7 +42,7 @@ void DAAbstractData::setName(const QString& n)
  */
 QString DAAbstractData::getDescribe() const
 {
-    return _describe;
+    return mDescribe;
 }
 
 /**
@@ -51,7 +51,7 @@ QString DAAbstractData::getDescribe() const
  */
 void DAAbstractData::setDescribe(const QString& d)
 {
-    _describe = d;
+    mDescribe = d;
 }
 
 /**
@@ -60,7 +60,7 @@ void DAAbstractData::setDescribe(const QString& d)
  */
 DAAbstractData::Pointer DAAbstractData::getParent() const
 {
-    return _parent;
+    return mParent;
 }
 
 /**
@@ -69,15 +69,17 @@ DAAbstractData::Pointer DAAbstractData::getParent() const
  */
 void DAAbstractData::setParent(Pointer& p)
 {
-    _parent = p;
+    mParent = p;
 }
 
 void DAAbstractData::write(QDataStream& out)
 {
+    Q_UNUSED(out);
 }
 
 bool DAAbstractData::read(QDataStream& in)
 {
+    Q_UNUSED(in);
     return false;
 }
 /**

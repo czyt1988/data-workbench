@@ -18,7 +18,7 @@ public:
     void setDataManager(DADataManager* mgr);
 
 private:
-    DADataManager* _dataManager { nullptr };
+    DADataManager* mDataManager { nullptr };
 };
 }
 

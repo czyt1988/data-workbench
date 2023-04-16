@@ -6,7 +6,6 @@
 class QUndoStack;
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DADataManager)
 /**
  * @brief DAData的数据管理类，实现数据操作的一些通知例如数据添加、删除、改名、内容改变等等
  *
@@ -17,7 +16,7 @@ DA_IMPL_FORWARD_DECL(DADataManager)
 class DADATA_API DADataManager : public QObject
 {
     Q_OBJECT
-    DA_IMPL(DADataManager)
+    DA_DECLARE_PRIVATE(DADataManager)
     friend class DAData;
 
 public:

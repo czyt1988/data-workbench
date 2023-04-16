@@ -4,37 +4,30 @@
 #include <QObject>
 namespace DA
 {
-class DAPyModulePandasPrivate
+class DAPyModulePandas::PrivateData
 {
+    DA_DECLARE_PUBLIC(DAPyModulePandas)
 public:
-    DA_IMPL_PUBLIC(DAPyModulePandas)
-    DAPyModulePandasPrivate(DAPyModulePandas* p);
+    PrivateData(DAPyModulePandas* p);
 
     //释放模块
     void del();
 
 public:
-    QString _lastErrorString;
-    pybind11::object _seriesType;
-    pybind11::object _dataFrameType;
-    pybind11::object _indexType;
+    QString mLastErrorString;
+    pybind11::object mSeriesType;
+    pybind11::object mDataFrameType;
+    pybind11::object mIndexType;
 };
-}  // namespace DA
-
-//===================================================
-// using DA namespace -- 禁止在头文件using！！
-//===================================================
-
-using namespace DA;
 
 //===================================================
 // DAPyModulePandasPrivate
 //===================================================
-DAPyModulePandasPrivate::DAPyModulePandasPrivate(DAPyModulePandas* p) : q_ptr(p)
+DAPyModulePandas::PrivateData::PrivateData(DAPyModulePandas* p) : q_ptr(p)
 {
 }
 
-void DAPyModulePandasPrivate::del()
+void DAPyModulePandas::PrivateData::del()
 {
     if (!q_ptr->isImport()) {
         return;
@@ -44,15 +37,15 @@ void DAPyModulePandasPrivate::del()
 //===================================================
 // DAPyModulePandas
 //===================================================
-DAPyModulePandas::DAPyModulePandas() : DAPyModule(), d_ptr(new DAPyModulePandasPrivate(this))
+DAPyModulePandas::DAPyModulePandas() : DAPyModule(), DA_PIMPL_CONSTRUCT
 {
     import();
     try {
-        d_ptr->_seriesType    = attr("Series");
-        d_ptr->_dataFrameType = attr("DataFrame");
-        d_ptr->_indexType     = attr("Index");
+        d_ptr->mSeriesType    = attr("Series");
+        d_ptr->mDataFrameType = attr("DataFrame");
+        d_ptr->mIndexType     = attr("Index");
     } catch (const std::exception& e) {
-        d_ptr->_lastErrorString = e.what();
+        d_ptr->mLastErrorString = e.what();
     }
 }
 
@@ -77,7 +70,7 @@ void DAPyModulePandas::finalize()
  */
 QString DAPyModulePandas::getLastErrorString()
 {
-    return d_ptr->_lastErrorString;
+    return d_ptr->mLastErrorString;
 }
 
 /**
@@ -91,17 +84,17 @@ bool DAPyModulePandas::import()
 
 bool DAPyModulePandas::isInstanceSeries(const pybind11::object& obj) const
 {
-    return pybind11::isinstance(obj, d_ptr->_seriesType);
+    return pybind11::isinstance(obj, d_ptr->mSeriesType);
 }
 
 bool DAPyModulePandas::isInstanceDataFrame(const pybind11::object& obj) const
 {
-    return pybind11::isinstance(obj, d_ptr->_dataFrameType);
+    return pybind11::isinstance(obj, d_ptr->mDataFrameType);
 }
 
 bool DAPyModulePandas::isInstanceIndex(const pybind11::object& obj) const
 {
-    return pybind11::isinstance(obj, d_ptr->_indexType);
+    return pybind11::isinstance(obj, d_ptr->mIndexType);
 }
 
 bool DAPyModulePandas::isInstanceDataFrame_(const pybind11::object& obj)
@@ -175,7 +168,8 @@ DAPyDataFrame DAPyModulePandas::read_csv(const QString& path, const QVariantHash
         }
 
     } catch (const std::exception& e) {
-        d_ptr->_lastErrorString = e.what();
+        d_ptr->mLastErrorString = e.what();
     }
     return DAPyDataFrame();
 }
+}  // namespace DA

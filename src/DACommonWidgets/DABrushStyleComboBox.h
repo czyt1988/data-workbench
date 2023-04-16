@@ -8,7 +8,6 @@
 #include <QPixmap>
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DABrushStyleComboBox)
 /**
  * @brief Qt::BrushStyle for QComboBox
  * @todo 目前仅实现常规填充，渐变的还未实现
@@ -16,7 +15,7 @@ DA_IMPL_FORWARD_DECL(DABrushStyleComboBox)
 class DACOMMONWIDGETS_API DABrushStyleComboBox : public QComboBox
 {
     Q_OBJECT
-    DA_IMPL(DABrushStyleComboBox)
+    DA_DECLARE_PRIVATE(DABrushStyleComboBox)
 public:
     //默认构造以ShowNoBrushStyle|ShowPaintStyle构造，基本颜色为黑色
     DABrushStyleComboBox(QWidget* parent = Q_NULLPTR);

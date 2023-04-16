@@ -6,34 +6,29 @@
 #include <QSpinBox>
 #include "DAColorPickerButton.h"
 #include "DAPenStyleComboBox.h"
-
+#include "colorWidgets/SAColorMenu.h"
 namespace DA
 {
-class DAPenEditWidgetPrivate
+class DAPenEditWidget::PrivateData
 {
-    DA_IMPL_PUBLIC(DAPenEditWidget)
+    DA_DECLARE_PUBLIC(DAPenEditWidget)
 public:
-    DAPenEditWidgetPrivate(DAPenEditWidget* p);
+    PrivateData(DAPenEditWidget* p);
 
 public:
+    QPen mPen;
     QHBoxLayout* horizontalLayout;
-    DAColorPickerButton* pushButtonColor;
+    DAColorPickerButton* colorButton;
     DAPenStyleComboBox* comboBox;
     QSpinBox* spinBoxWidth;
+    SAColorMenu* mColorMenu { nullptr };
 };
-}  // namespace DA
-
-//===================================================
-// using DA namespace -- 禁止在头文件using！！
-//===================================================
-
-using namespace DA;
 
 //===================================================
 // DAPenEditWidgetPrivate
 //===================================================
 
-DAPenEditWidgetPrivate::DAPenEditWidgetPrivate(DAPenEditWidget* p) : q_ptr(p)
+DAPenEditWidget::PrivateData::PrivateData(DAPenEditWidget* p) : q_ptr(p)
 {
     if (p->objectName().isEmpty())
         p->setObjectName(QStringLiteral("DAPenEditWidget"));
@@ -42,10 +37,14 @@ DAPenEditWidgetPrivate::DAPenEditWidgetPrivate(DAPenEditWidget* p) : q_ptr(p)
     horizontalLayout->setSpacing(1);
     horizontalLayout->setObjectName(QStringLiteral("horizontalLayout"));
     horizontalLayout->setContentsMargins(1, 1, 1, 1);
-    pushButtonColor = new DAColorPickerButton(p);
-    pushButtonColor->setObjectName(QStringLiteral("pushButtonColor"));
-
-    horizontalLayout->addWidget(pushButtonColor);
+    colorButton = new DAColorPickerButton(p);
+    colorButton->setAutoRaise(true);
+    colorButton->setColor(QColor());
+    colorButton->setObjectName(QStringLiteral("pushButtonColor"));
+    colorButton->setPopupMode(QToolButton::MenuButtonPopup);
+    mColorMenu = new SAColorMenu(p);
+    mColorMenu->bindToColorToolButton(colorButton);
+    horizontalLayout->addWidget(colorButton);
 
     comboBox = new DAPenStyleComboBox(p);
     comboBox->setObjectName(QStringLiteral("comboBox"));
@@ -63,18 +62,21 @@ DAPenEditWidgetPrivate::DAPenEditWidgetPrivate(DAPenEditWidget* p) : q_ptr(p)
     horizontalLayout->addWidget(spinBoxWidth);
 }
 
-DAPenEditWidget::DAPenEditWidget(QWidget* parent) : QWidget(parent), d_ptr(new DAPenEditWidgetPrivate(this))
+//===================================================
+// DAPenEditWidget
+//===================================================
+
+DAPenEditWidget::DAPenEditWidget(QWidget* parent) : QWidget(parent), DA_PIMPL_CONSTRUCT
 {
     QPen p;
     p.setStyle(Qt::SolidLine);
-    p.setColor(Qt::black);
+    p.setColor(QColor());
     p.setWidth(1);
     setCurrentPen(p);
     init();
 }
 
-DAPenEditWidget::DAPenEditWidget(const QPen& p, QWidget* parent)
-    : QWidget(parent), d_ptr(new DAPenEditWidgetPrivate(this)), _pen(p)
+DAPenEditWidget::DAPenEditWidget(const QPen& p, QWidget* parent) : QWidget(parent), d_ptr(new PrivateData(this))
 {
     setCurrentPen(p);
     init();
@@ -84,21 +86,27 @@ DAPenEditWidget::~DAPenEditWidget()
 {
 }
 
+/**
+ * @brief 设置画笔,设置画笔会触发penChanged信号
+ * @param p
+ */
 void DAPenEditWidget::setCurrentPen(const QPen& p)
 {
-    QSignalBlocker bl(d_ptr->pushButtonColor);
+    QSignalBlocker bl(d_ptr->colorButton);
     QSignalBlocker bl2(d_ptr->comboBox);
     QSignalBlocker bl3(d_ptr->spinBoxWidth);
     Q_UNUSED(bl);
     Q_UNUSED(bl2);
     Q_UNUSED(bl3);
-    _pen = p;
-    d_ptr->pushButtonColor->setColor(_pen.color());
-    d_ptr->comboBox->setPenColor(_pen.color());
-    d_ptr->comboBox->setPenLineWidth(_pen.width());
+    d_ptr->mPen = p;
+    d_ptr->colorButton->setColor(d_ptr->mPen.color());
+    d_ptr->colorButton->setEnabled(d_ptr->mPen.style() != Qt::NoPen);
+    d_ptr->comboBox->setPenColor(d_ptr->mPen.color());
+    d_ptr->comboBox->setCurrentPenStyle(d_ptr->mPen.style());
+    d_ptr->comboBox->setPenLineWidth(d_ptr->mPen.width());
     d_ptr->comboBox->updateItems();
-    d_ptr->spinBoxWidth->setValue(_pen.width());
-    emit penChanged(_pen);
+    d_ptr->spinBoxWidth->setValue(d_ptr->mPen.width());
+    emit penChanged(d_ptr->mPen);
 }
 
 void DAPenEditWidget::retranslateUi()
@@ -109,37 +117,38 @@ void DAPenEditWidget::retranslateUi()
 
 QPen DAPenEditWidget::getCurrentPen() const
 {
-    return _pen;
+    return d_ptr->mPen;
 }
 
 void DAPenEditWidget::onColorChanged(const QColor& c)
 {
-    _pen.setColor(c);
+    d_ptr->mPen.setColor(c);
     d_ptr->comboBox->setPenColor(c);
     d_ptr->comboBox->updateItems();
-    emit penChanged(_pen);
+    emit penChanged(d_ptr->mPen);
 }
 
 void DAPenEditWidget::onPenWidthValueChanged(int w)
 {
-    _pen.setWidth(w);
+    d_ptr->mPen.setWidth(w);
     d_ptr->comboBox->setPenLineWidth(w);
     d_ptr->comboBox->updateItems();
-    emit penChanged(_pen);
+    emit penChanged(d_ptr->mPen);
 }
 
 void DAPenEditWidget::onPenStyleChanged(Qt::PenStyle s)
 {
-    _pen.setStyle(s);
-    emit penChanged(_pen);
+    d_ptr->mPen.setStyle(s);
+    emit penChanged(d_ptr->mPen);
 }
 
 void DAPenEditWidget::init()
 {
-    d_ptr->comboBox->setPenColor(_pen.color());
-    d_ptr->comboBox->setPenLineWidth(_pen.width());
+    d_ptr->comboBox->setPenColor(d_ptr->mPen.color());
+    d_ptr->comboBox->setPenLineWidth(d_ptr->mPen.width());
     d_ptr->comboBox->updateItems();
-    connect(d_ptr->pushButtonColor, &DAColorPickerButton::colorChanged, this, &DAPenEditWidget::onColorChanged);
+    connect(d_ptr->colorButton, &DAColorPickerButton::colorChanged, this, &DAPenEditWidget::onColorChanged);
     connect(d_ptr->spinBoxWidth, QOverload< int >::of(&QSpinBox::valueChanged), this, &DAPenEditWidget::onPenWidthValueChanged);
     connect(d_ptr->comboBox, &DAPenStyleComboBox::currentPenStyleChanged, this, &DAPenEditWidget::onPenStyleChanged);
 }
+}  // namespace DA

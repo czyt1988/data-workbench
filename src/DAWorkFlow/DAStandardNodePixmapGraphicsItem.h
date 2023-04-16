@@ -1,4 +1,4 @@
-#ifndef DASTANDARDNODEPIXMAPGRAPHICSITEM_H
+﻿#ifndef DASTANDARDNODEPIXMAPGRAPHICSITEM_H
 #define DASTANDARDNODEPIXMAPGRAPHICSITEM_H
 #include "DAWorkFlowGlobal.h"
 #include "DAAbstractNodeGraphicsItem.h"
@@ -7,7 +7,6 @@ class QDomDocument;
 class QDomElement;
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DAStandardNodePixmapGraphicsItem)
 
 /**
  * @brief 标准的可resize的pixmap GraphicsItem,可以作为节点的图片显示
@@ -15,7 +14,7 @@ DA_IMPL_FORWARD_DECL(DAStandardNodePixmapGraphicsItem)
 class DAWORKFLOW_API DAStandardNodePixmapGraphicsItem : public DAAbstractNodeGraphicsItem
 {
     Q_OBJECT
-    DA_IMPL(DAStandardNodePixmapGraphicsItem)
+    DA_DECLARE_PRIVATE(DAStandardNodePixmapGraphicsItem)
 public:
     enum
     {

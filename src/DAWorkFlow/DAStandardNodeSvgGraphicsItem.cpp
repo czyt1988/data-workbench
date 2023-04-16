@@ -11,12 +11,12 @@
 
 namespace DA
 {
-class DAStandardNodeSvgGraphicsItemPrivate
+class DAStandardNodeSvgGraphicsItem::PrivateData
 {
-    DA_IMPL_PUBLIC(DAStandardNodeSvgGraphicsItem)
+    DA_DECLARE_PUBLIC(DAStandardNodeSvgGraphicsItem)
 public:
-    DAStandardNodeSvgGraphicsItemPrivate(DAStandardNodeSvgGraphicsItem* p);
-    DAStandardNodeSvgGraphicsItemPrivate(DAStandardNodeSvgGraphicsItem* p, QSvgRenderer* sharedrenderer);
+    PrivateData(DAStandardNodeSvgGraphicsItem* p);
+    PrivateData(DAStandardNodeSvgGraphicsItem* p, QSvgRenderer* sharedrenderer);
     void updateDefaultSize();
     QSizeF getTextSize() const;
     void updateSvgPaintRect();
@@ -24,71 +24,64 @@ public:
     QSizeF getAspectRatioSize(const QSizeF& s) const;
 
 public:
-    bool _shared;
-    QSvgRenderer* _renderer;
-    QSize _defaultSize;
-    QString _elemId;
-    QRectF _nodeNameRect;
-    QRectF _svgPaintRect;
-    QMarginsF _margins;
-    QGraphicsSimpleTextItem* _itemText;
-    Qt::AspectRatioMode _aspectRatioMode;
+    bool mShared { false };
+    QSvgRenderer* mRenderer { nullptr };
+    QSize mDefaultSize;
+    QString mElemId;
+    QRectF mNodeNameRect;
+    QRectF mSvgPaintRect;
+    QMarginsF mMargins;
+    QGraphicsSimpleTextItem* mItemText { nullptr };
+    Qt::AspectRatioMode mAspectRatioMode { Qt::KeepAspectRatio };
 };
-}  // end of namespace DA
-
-//===================================================
-// using DA namespace -- 禁止在头文件using！！
-//===================================================
-
-using namespace DA;
 
 //===================================================
 // DAStandardNodeSvgGraphicsItemPrivate
 //===================================================
 
-DAStandardNodeSvgGraphicsItemPrivate::DAStandardNodeSvgGraphicsItemPrivate(DAStandardNodeSvgGraphicsItem* p)
-    : q_ptr(p), _shared(false), _aspectRatioMode(Qt::KeepAspectRatio)
+DAStandardNodeSvgGraphicsItem::PrivateData::PrivateData(DAStandardNodeSvgGraphicsItem* p) : q_ptr(p)
 {
-    _itemText = new QGraphicsSimpleTextItem(p);
-    _renderer = new QSvgRenderer(p);
-    QObject::connect(_renderer, &QSvgRenderer::repaintNeeded, p, &DAStandardNodeSvgGraphicsItem::repaintItem);
+    mItemText = new QGraphicsSimpleTextItem(p);
+    mRenderer = new QSvgRenderer(p);
+    QObject::connect(mRenderer, &QSvgRenderer::repaintNeeded, p, &DAStandardNodeSvgGraphicsItem::repaintItem);
     p->setCacheMode(QGraphicsItem::DeviceCoordinateCache);
 }
 
-DAStandardNodeSvgGraphicsItemPrivate::DAStandardNodeSvgGraphicsItemPrivate(DAStandardNodeSvgGraphicsItem* p, QSvgRenderer* sharedrenderer)
-    : q_ptr(p), _shared(true)
+DAStandardNodeSvgGraphicsItem::PrivateData::PrivateData(DAStandardNodeSvgGraphicsItem* p, QSvgRenderer* sharedrenderer)
+    : q_ptr(p)
 {
-    _itemText = new QGraphicsSimpleTextItem(p);
+    mItemText = new QGraphicsSimpleTextItem(p);
     p->setCacheMode(QGraphicsItem::DeviceCoordinateCache);
-    _renderer = sharedrenderer;
+    mShared   = true;
+    mRenderer = sharedrenderer;
 }
 /**
  * @brief _defaultSize可以记录最初的比例
  */
-void DAStandardNodeSvgGraphicsItemPrivate::updateDefaultSize()
+void DAStandardNodeSvgGraphicsItem::PrivateData::updateDefaultSize()
 {
-    if (_elemId.isEmpty()) {
-        _defaultSize = _renderer->defaultSize();
+    if (mElemId.isEmpty()) {
+        mDefaultSize = mRenderer->defaultSize();
     } else {
-        _defaultSize = _renderer->boundsOnElement(_elemId).size().toSize();
+        mDefaultSize = mRenderer->boundsOnElement(mElemId).size().toSize();
     }
 }
 
-QSizeF DAStandardNodeSvgGraphicsItemPrivate::getTextSize() const
+QSizeF DAStandardNodeSvgGraphicsItem::PrivateData::getTextSize() const
 {
-    return _itemText->boundingRect().size();
+    return mItemText->boundingRect().size();
 }
 
-void DAStandardNodeSvgGraphicsItemPrivate::updateSvgPaintRect()
+void DAStandardNodeSvgGraphicsItem::PrivateData::updateSvgPaintRect()
 {
     QRectF r      = q_ptr->getBodyRect();
-    _svgPaintRect = r.adjusted(_margins.left(), _margins.top(), -_margins.right(), -_margins.bottom());
+    mSvgPaintRect = r.adjusted(mMargins.left(), mMargins.top(), -mMargins.right(), -mMargins.bottom());
 }
 
-QSizeF DAStandardNodeSvgGraphicsItemPrivate::getAspectRatioSize(const QSizeF& s) const
+QSizeF DAStandardNodeSvgGraphicsItem::PrivateData::getAspectRatioSize(const QSizeF& s) const
 {
-    QSizeF newSize = _defaultSize;
-    newSize.scale(s, _aspectRatioMode);
+    QSizeF newSize = mDefaultSize;
+    newSize.scale(s, mAspectRatioMode);
     return newSize;
 }
 
@@ -97,7 +90,7 @@ QSizeF DAStandardNodeSvgGraphicsItemPrivate::getAspectRatioSize(const QSizeF& s)
 //==============================================================
 
 DAStandardNodeSvgGraphicsItem::DAStandardNodeSvgGraphicsItem(DAAbstractNode* n, QGraphicsItem* p)
-    : DAAbstractNodeGraphicsItem(n, p), d_ptr(new DAStandardNodeSvgGraphicsItemPrivate(this))
+    : DAAbstractNodeGraphicsItem(n, p), DA_PIMPL_CONSTRUCT
 {
     setEnableResize(true);
     setEnableMoveText(true);
@@ -105,7 +98,7 @@ DAStandardNodeSvgGraphicsItem::DAStandardNodeSvgGraphicsItem(DAAbstractNode* n, 
 }
 
 DAStandardNodeSvgGraphicsItem::DAStandardNodeSvgGraphicsItem(DAAbstractNode* n, const QString& svgfile, QGraphicsItem* p)
-    : DAAbstractNodeGraphicsItem(n, p), d_ptr(new DAStandardNodeSvgGraphicsItemPrivate(this))
+    : DAAbstractNodeGraphicsItem(n, p), DA_PIMPL_CONSTRUCT
 {
     setEnableResize(true);
     setEnableMoveText(true);
@@ -115,7 +108,8 @@ DAStandardNodeSvgGraphicsItem::DAStandardNodeSvgGraphicsItem(DAAbstractNode* n, 
 }
 
 DAStandardNodeSvgGraphicsItem::DAStandardNodeSvgGraphicsItem(DAAbstractNode* n, QSvgRenderer* sharedrender, QGraphicsItem* p)
-    : DAAbstractNodeGraphicsItem(n, p), d_ptr(new DAStandardNodeSvgGraphicsItemPrivate(this, sharedrender))
+    : DAAbstractNodeGraphicsItem(n, p)
+    , d_ptr(std::make_unique< DAStandardNodeSvgGraphicsItem::PrivateData >(this, sharedrender))
 {
     setEnableResize(true);
     setEnableMoveText(true);
@@ -141,17 +135,17 @@ void DAStandardNodeSvgGraphicsItem::setBodySize(const QSizeF& s)
     QSizeF ts = getTextSize();
     ss        = getBodySize();
     d_ptr->updateSvgPaintRect();
-    d_ptr->_itemText->setPos((ss.width() - ts.width()) / 2, ss.height() + 5);
+    d_ptr->mItemText->setPos((ss.width() - ts.width()) / 2, ss.height() + 5);
 }
 
 void DAStandardNodeSvgGraphicsItem::setEnableMoveText(bool on)
 {
-    d_ptr->_itemText->setFlag(ItemIsMovable, on);
+    d_ptr->mItemText->setFlag(ItemIsMovable, on);
 }
 
 bool DAStandardNodeSvgGraphicsItem::isEnableMoveText() const
 {
-    return d_ptr->_itemText->flags().testFlag(ItemIsMovable);
+    return d_ptr->mItemText->flags().testFlag(ItemIsMovable);
 }
 
 /**
@@ -160,16 +154,16 @@ bool DAStandardNodeSvgGraphicsItem::isEnableMoveText() const
  */
 QSvgRenderer* DAStandardNodeSvgGraphicsItem::renderer() const
 {
-    return d_ptr->_renderer;
+    return d_ptr->mRenderer;
 }
 
 void DAStandardNodeSvgGraphicsItem::setSharedRenderer(QSvgRenderer* renderer)
 {
-    if (!d_ptr->_shared)
-        delete d_ptr->_renderer;
+    if (!d_ptr->mShared)
+        delete d_ptr->mRenderer;
 
-    d_ptr->_renderer = renderer;
-    d_ptr->_shared   = true;
+    d_ptr->mRenderer = renderer;
+    d_ptr->mShared   = true;
 
     d_ptr->updateDefaultSize();
 
@@ -187,13 +181,13 @@ void DAStandardNodeSvgGraphicsItem::paintBody(QPainter* painter, const QStyleOpt
 {
     Q_UNUSED(widget);
     Q_UNUSED(bodyRect);
-    if (!d_ptr->_renderer->isValid())
+    if (!d_ptr->mRenderer->isValid())
         return;
 
-    if (d_ptr->_elemId.isEmpty())
-        d_ptr->_renderer->render(painter, d_ptr->_svgPaintRect);
+    if (d_ptr->mElemId.isEmpty())
+        d_ptr->mRenderer->render(painter, d_ptr->mSvgPaintRect);
     else
-        d_ptr->_renderer->render(painter, d_ptr->_elemId, d_ptr->_svgPaintRect);
+        d_ptr->mRenderer->render(painter, d_ptr->mElemId, d_ptr->mSvgPaintRect);
     //绘制连接点
     paintLinkPoints(painter, option, widget);
 }
@@ -204,14 +198,14 @@ void DAStandardNodeSvgGraphicsItem::paintBody(QPainter* painter, const QStyleOpt
  */
 void DAStandardNodeSvgGraphicsItem::setElementId(const QString& id)
 {
-    d_ptr->_elemId = id;
+    d_ptr->mElemId = id;
     d_ptr->updateDefaultSize();
     update();
 }
 
 QString DAStandardNodeSvgGraphicsItem::elementId() const
 {
-    return d_ptr->_elemId;
+    return d_ptr->mElemId;
 }
 
 void DAStandardNodeSvgGraphicsItem::setCachingEnabled(bool caching)
@@ -235,7 +229,7 @@ QSizeF DAStandardNodeSvgGraphicsItem::getTextSize() const
  */
 void DAStandardNodeSvgGraphicsItem::setText(const QString& t)
 {
-    d_ptr->_itemText->setText(t);
+    d_ptr->mItemText->setText(t);
 }
 
 /**
@@ -258,7 +252,7 @@ bool DAStandardNodeSvgGraphicsItem::setSvg(const QString& svgfile)
  */
 void DAStandardNodeSvgGraphicsItem::resetBodySize()
 {
-    setBodySize(d_ptr->_defaultSize);
+    setBodySize(d_ptr->mDefaultSize);
 }
 /**
  * @brief 设置图片变换时的比例
@@ -266,7 +260,7 @@ void DAStandardNodeSvgGraphicsItem::resetBodySize()
  */
 void DAStandardNodeSvgGraphicsItem::setAspectRatioMode(Qt::AspectRatioMode m)
 {
-    d_ptr->_aspectRatioMode = m;
+    d_ptr->mAspectRatioMode = m;
     setBodySize(getBodySize());
 }
 /**
@@ -275,7 +269,7 @@ void DAStandardNodeSvgGraphicsItem::setAspectRatioMode(Qt::AspectRatioMode m)
  */
 Qt::AspectRatioMode DAStandardNodeSvgGraphicsItem::getAspectRatioMode() const
 {
-    return d_ptr->_aspectRatioMode;
+    return d_ptr->mAspectRatioMode;
 }
 
 /**
@@ -284,13 +278,13 @@ Qt::AspectRatioMode DAStandardNodeSvgGraphicsItem::getAspectRatioMode() const
  */
 QGraphicsSimpleTextItem* DAStandardNodeSvgGraphicsItem::getTextItem() const
 {
-    return d_ptr->_itemText;
+    return d_ptr->mItemText;
 }
 
 void DAStandardNodeSvgGraphicsItem::prepareNodeNameChanged(const QString& name)
 {
-    if (d_ptr->_itemText) {
-        d_ptr->_itemText->setText(name);
+    if (d_ptr->mItemText) {
+        d_ptr->mItemText->setText(name);
     }
 }
 
@@ -302,11 +296,12 @@ void DAStandardNodeSvgGraphicsItem::repaintItem()
 QVariant DAStandardNodeSvgGraphicsItem::itemChange(GraphicsItemChange change, const QVariant& value)
 {
     if (QGraphicsItem::ItemSceneHasChanged == change) {
-        if (!(d_ptr->_svgPaintRect.isValid())) {
-            if (d_ptr->_defaultSize.isValid()) {
+        if (!(d_ptr->mSvgPaintRect.isValid())) {
+            if (d_ptr->mDefaultSize.isValid()) {
                 resetBodySize();
             }
         }
     }
     return (DAAbstractNodeGraphicsItem::itemChange(change, value));
 }
+}  // end of namespace DA

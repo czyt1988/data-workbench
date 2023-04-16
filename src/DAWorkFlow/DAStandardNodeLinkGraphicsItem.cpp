@@ -1,9 +1,6 @@
 ﻿#include "DAStandardNodeLinkGraphicsItem.h"
-//===================================================
-// using DA namespace -- 禁止在头文件using！！
-//===================================================
-
-using namespace DA;
+namespace DA
+{
 
 //===================================================
 // DAStandardNodeLinkGraphicsItem
@@ -16,3 +13,5 @@ DAStandardNodeLinkGraphicsItem::DAStandardNodeLinkGraphicsItem(DAAbstractNodeGra
     : DAAbstractNodeLinkGraphicsItem(from, pl, p)
 {
 }
+
+}  // end DA

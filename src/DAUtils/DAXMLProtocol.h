@@ -6,7 +6,6 @@
 #include "DAProperties.h"
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DAXMLProtocol)
 /**
  * @brief SA XML协议的读写类
  * sa xml协议主要用于保存qvariant类型数据，形如
@@ -47,7 +46,7 @@ DA_IMPL_FORWARD_DECL(DAXMLProtocol)
  */
 class DAUTILS_API DAXMLProtocol : public DAAbstractProtocol
 {
-    DA_IMPL(DAXMLProtocol)
+    DA_DECLARE_PRIVATE(DAXMLProtocol)
 public:
     DAXMLProtocol();
     DAXMLProtocol(const DAXMLProtocol& other);

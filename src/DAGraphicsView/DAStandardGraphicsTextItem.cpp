@@ -1,15 +1,12 @@
-#include "DAStandardGraphicsTextItem.h"
+﻿#include "DAStandardGraphicsTextItem.h"
 #include <QFont>
 #include <QDebug>
 #include <QTextCursor>
 #include <QGraphicsSceneMouseEvent>
 #include <QDomDocument>
 #include <QDomElement>
-//===================================================
-// using DA namespace -- 禁止在头文件using！！
-//===================================================
-
-using namespace DA;
+namespace DA
+{
 
 //===================================================
 // DAStandardGraphicsTextItem
@@ -110,4 +107,5 @@ void DAStandardGraphicsTextItem::initItem()
     setDefaultTextColor(Qt::black);  //设置字体颜色
     setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable | QGraphicsItem::ItemIsFocusable);
     setTextInteractionFlags(Qt::TextEditorInteraction);
+}
 }

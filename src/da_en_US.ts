@@ -60,26 +60,52 @@
     </message>
 </context>
 <context>
+    <name>DA</name>
+    <message>
+        <location filename="DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="36"/>
+        <source>Exception in get selected column:%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="52"/>
+        <source>Exception in get selected series:%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DA::AppMainWindow</name>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="126"/>
+        <location filename="APP/AppMainWindow.cpp" line="135"/>
         <source>untitle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="138"/>
-        <location filename="APP/AppMainWindow.cpp" line="140"/>
+        <location filename="APP/AppMainWindow.cpp" line="153"/>
+        <location filename="APP/AppMainWindow.cpp" line="155"/>
         <source>infomation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="138"/>
+        <location filename="APP/AppMainWindow.cpp" line="153"/>
         <source>Topology execution completed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="140"/>
+        <location filename="APP/AppMainWindow.cpp" line="155"/>
         <source>Topology execution failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAActionsInterface</name>
+    <message>
+        <location filename="DAInterface/DAActionsInterface.cpp" line="110"/>
+        <source>DAAppActionsInterface::recordAction get null action</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAInterface/DAActionsInterface.cpp" line="115"/>
+        <source>DAAppActionsInterface::recordAction(QAction objname=%1) receive same object name, and the previous record will be overwritten</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -117,32 +143,44 @@
     </message>
     <message>
         <location filename="APP/DAAppActions.cpp" line="176"/>
-        <source>Add Data</source>
+        <source>Add 
+Data</source>
+        <oldsource>Add Data</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppActions.cpp" line="177"/>
-        <source>Remove Data</source>
+        <source>Remove 
+Data</source>
+        <oldsource>Remove Data</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppActions.cpp" line="178"/>
-        <source>Add Folder</source>
+        <source>Add 
+Folder</source>
+        <oldsource>Add Folder</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppActions.cpp" line="180"/>
-        <source>Add Figure</source>
+        <source>Add 
+Figure</source>
+        <oldsource>Add Figure</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppActions.cpp" line="181"/>
-        <source>Resize Chart</source>
+        <source>Resize 
+Chart</source>
+        <oldsource>Resize Chart</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppActions.cpp" line="182"/>
-        <source>New XY Axis</source>
+        <source>New 
+XY Axis</source>
+        <oldsource>New XY Axis</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -177,7 +215,9 @@
     </message>
     <message>
         <location filename="APP/DAAppActions.cpp" line="191"/>
-        <source>Show All</source>
+        <source>Show 
+All</source>
+        <oldsource>Show All</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -262,7 +302,9 @@
     </message>
     <message>
         <location filename="APP/DAAppActions.cpp" line="209"/>
-        <source>Insert Row</source>
+        <source>Insert 
+Row</source>
+        <oldsource>Insert Row</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -272,7 +314,9 @@
     </message>
     <message>
         <location filename="APP/DAAppActions.cpp" line="211"/>
-        <source>Insert Column</source>
+        <source>Insert 
+Column</source>
+        <oldsource>Insert Column</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -322,27 +366,43 @@
     </message>
     <message>
         <location filename="APP/DAAppActions.cpp" line="222"/>
-        <source>New Workflow</source>
+        <source>New 
+Workflow</source>
+        <oldsource>New Workflow</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppActions.cpp" line="223"/>
-        <source>Draw Rect</source>
+        <source>Draw 
+Rect</source>
+        <oldsource>Draw Rect</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppActions.cpp" line="224"/>
-        <source>Draw Text</source>
+        <source>Draw 
+Text</source>
+        <oldsource>Draw Text</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppActions.cpp" line="225"/>
-        <source>Show Grid</source>
+        <source>Show 
+Grid</source>
+        <oldsource>Show Grid</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppActions.cpp" line="226"/>
-        <source>Whole View</source>
+        <source>Whole 
+View</source>
+        <oldsource>Whole View</oldsource>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppActions.cpp" line="241"/>
+        <source>Plugin 
+Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -359,12 +419,16 @@
     </message>
     <message>
         <location filename="APP/DAAppActions.cpp" line="229"/>
-        <source>Run Workflow</source>
+        <source>Run 
+Workflow</source>
+        <oldsource>Run Workflow</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppActions.cpp" line="231"/>
-        <source>Add Background</source>
+        <source>Add 
+Background</source>
+        <oldsource>Add Background</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -379,17 +443,23 @@
     </message>
     <message>
         <location filename="APP/DAAppActions.cpp" line="235"/>
-        <source>Show Work Flow Area</source>
+        <source>Show 
+Work Flow Area</source>
+        <oldsource>Show Work Flow Area</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppActions.cpp" line="236"/>
-        <source>Show Chart Area</source>
+        <source>Show 
+Chart Area</source>
+        <oldsource>Show Chart Area</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppActions.cpp" line="237"/>
-        <source>Show Table Area</source>
+        <source>Show 
+Table Area</source>
+        <oldsource>Show Table Area</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -398,153 +468,135 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="240"/>
+        <location filename="APP/DAAppActions.cpp" line="239"/>
         <source>Show Setting Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="242"/>
-        <source>Plugin Config</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="245"/>
+        <location filename="APP/DAAppActions.cpp" line="244"/>
         <source>Redo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="248"/>
+        <location filename="APP/DAAppActions.cpp" line="247"/>
         <source>Undo</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DA::DAAppActionsInterface</name>
-    <message>
-        <location filename="DAInterface/DAAppActionsInterface.cpp" line="111"/>
-        <source>DAAppActionsInterface::recordAction get null action</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAInterface/DAAppActionsInterface.cpp" line="116"/>
-        <source>DAAppActionsInterface::recordAction(QAction objname=%1) receive same object name, and the previous record will be overwritten</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="APP/DAAppController.cpp" line="502"/>
-        <location filename="APP/DAAppController.cpp" line="578"/>
+        <location filename="APP/DAAppController.cpp" line="532"/>
+        <location filename="APP/DAAppController.cpp" line="608"/>
         <source>project file(*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="517"/>
+        <location filename="APP/DAAppController.cpp" line="547"/>
         <source>Question</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="518"/>
+        <location filename="APP/DAAppController.cpp" line="548"/>
         <source>Another project already exists. Do you want to replace it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="532"/>
-        <location filename="APP/DAAppController.cpp" line="591"/>
+        <location filename="APP/DAAppController.cpp" line="562"/>
+        <location filename="APP/DAAppController.cpp" line="621"/>
         <source>failed to load project file:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="545"/>
-        <location filename="APP/DAAppController.cpp" line="613"/>
+        <location filename="APP/DAAppController.cpp" line="575"/>
+        <location filename="APP/DAAppController.cpp" line="643"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="547"/>
+        <location filename="APP/DAAppController.cpp" line="577"/>
         <source>project file (*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="557"/>
+        <location filename="APP/DAAppController.cpp" line="587"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="558"/>
+        <location filename="APP/DAAppController.cpp" line="588"/>
         <source>Whether to overwrite the file:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="567"/>
-        <location filename="APP/DAAppController.cpp" line="624"/>
+        <location filename="APP/DAAppController.cpp" line="597"/>
+        <location filename="APP/DAAppController.cpp" line="654"/>
         <source>Project saved failed!,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="571"/>
-        <location filename="APP/DAAppController.cpp" line="642"/>
+        <location filename="APP/DAAppController.cpp" line="601"/>
+        <location filename="APP/DAAppController.cpp" line="672"/>
         <source>Project saved successfully,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="615"/>
+        <location filename="APP/DAAppController.cpp" line="645"/>
         <source>Project Files (*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="659"/>
+        <location filename="APP/DAAppController.cpp" line="689"/>
         <source>Project load successfully,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="695"/>
+        <location filename="APP/DAAppController.cpp" line="725"/>
         <source>Image files (*.png *.jpg)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="696"/>
+        <location filename="APP/DAAppController.cpp" line="726"/>
         <source>Any files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="729"/>
+        <location filename="APP/DAAppController.cpp" line="759"/>
         <source>get null project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="735"/>
+        <location filename="APP/DAAppController.cpp" line="765"/>
         <source>warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="736"/>
+        <location filename="APP/DAAppController.cpp" line="766"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="916"/>
+        <location filename="APP/DAAppController.cpp" line="947"/>
         <source>Before creating a new coordinate,you need to create a figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1222"/>
+        <location filename="APP/DAAppController.cpp" line="1355"/>
         <source>%1_Describe</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1223"/>
+        <location filename="APP/DAAppController.cpp" line="1356"/>
         <source>Generate descriptive statistics that summarize the central tendency, dispersion and shape of a [%1]’s distribution, excluding NaN values</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1328"/>
+        <location filename="APP/DAAppController.cpp" line="1461"/>
         <source>new workflow name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1329"/>
+        <location filename="APP/DAAppController.cpp" line="1462"/>
         <source>new workflow name:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -593,68 +645,60 @@
 <context>
     <name>DA::DAAppDockingArea</name>
     <message>
-        <location filename="APP/DAAppDockingArea.cpp" line="60"/>
+        <location filename="APP/DAAppDockingArea.cpp" line="61"/>
         <source>workflow node</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppDockingArea.cpp" line="61"/>
+        <location filename="APP/DAAppDockingArea.cpp" line="62"/>
         <source>charts manager</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppDockingArea.cpp" line="62"/>
+        <location filename="APP/DAAppDockingArea.cpp" line="63"/>
         <source>datas manager</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppDockingArea.cpp" line="63"/>
+        <location filename="APP/DAAppDockingArea.cpp" line="64"/>
         <source>workflow operate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppDockingArea.cpp" line="64"/>
+        <location filename="APP/DAAppDockingArea.cpp" line="65"/>
         <source>chart operate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppDockingArea.cpp" line="65"/>
+        <location filename="APP/DAAppDockingArea.cpp" line="66"/>
         <source>data operate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppDockingArea.cpp" line="66"/>
+        <location filename="APP/DAAppDockingArea.cpp" line="67"/>
         <source>setting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppDockingArea.cpp" line="67"/>
+        <location filename="APP/DAAppDockingArea.cpp" line="68"/>
         <source>log</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppDockingArea.cpp" line="334"/>
+        <location filename="APP/DAAppDockingArea.cpp" line="367"/>
         <source>property</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DA::DAAppDockingAreaInterface</name>
-    <message>
-        <location filename="DAInterface/DAAppDockingAreaInterface.cpp" line="83"/>
-        <source>dock widget &quot;%1&quot; was closed and hide</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DA::DAAppPluginManager</name>
     <message>
-        <location filename="APP/DAAppPluginManager.cpp" line="89"/>
+        <location filename="APP/DAAppPluginManager.cpp" line="90"/>
         <source>%1 plugin create a null node factory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppPluginManager.cpp" line="94"/>
+        <location filename="APP/DAAppPluginManager.cpp" line="95"/>
         <source>succeed load plugin %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -662,240 +706,312 @@
 <context>
     <name>DA::DAAppRibbonArea</name>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="111"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="177"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="110"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="191"/>
         <source>Location</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="121"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="120"/>
         <source>Property</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="133"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="179"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="193"/>
         <source>Max Columns</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="143"/>
-        <source>File</source>
+        <location filename="APP/DAAppRibbonArea.cpp" line="135"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="194"/>
+        <source>Margin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppRibbonArea.cpp" line="137"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="195"/>
+        <source>Spacing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppRibbonArea.cpp" line="139"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="196"/>
+        <source>Item Margin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppRibbonArea.cpp" line="142"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="197"/>
+        <source>Item Spacing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="145"/>
-        <source>Main</source>
+        <location filename="APP/DAAppRibbonArea.cpp" line="198"/>
+        <source>Border Radius</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="146"/>
-        <source>File Operation</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="147"/>
-        <source>Config</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="148"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="166"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="233"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="379"/>
-        <source>Workflow</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="149"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="151"/>
-        <source>Data Operation</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="150"/>
-        <source>Data</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="153"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="172"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="406"/>
-        <source>View</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="154"/>
-        <source>Display</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="156"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="321"/>
-        <source>DataFrame</source>
+        <location filename="APP/DAAppRibbonArea.cpp" line="155"/>
+        <source>File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="157"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="323"/>
-        <source>Operate</source>
+        <source>Main</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="158"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="325"/>
-        <source>Axes</source>
+        <source>File Operation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="159"/>
+        <source>Config</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="160"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="335"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="339"/>
-        <source>Type</source>
+        <location filename="APP/DAAppRibbonArea.cpp" line="178"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="253"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="411"/>
+        <source>Workflow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="161"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="349"/>
-        <source>Statistic</source>
+        <location filename="APP/DAAppRibbonArea.cpp" line="163"/>
+        <source>Data Operation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="164"/>
-        <source>Edit</source>
+        <location filename="APP/DAAppRibbonArea.cpp" line="162"/>
+        <source>Data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppRibbonArea.cpp" line="165"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="184"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="438"/>
+        <source>View</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppRibbonArea.cpp" line="166"/>
+        <source>Display</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="168"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="381"/>
-        <source>Workflow Edit</source>
+        <location filename="APP/DAAppRibbonArea.cpp" line="341"/>
+        <source>DataFrame</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="169"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="385"/>
-        <source>Item</source>
+        <location filename="APP/DAAppRibbonArea.cpp" line="343"/>
+        <source>Operate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="170"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="393"/>
-        <source>Text</source>
+        <location filename="APP/DAAppRibbonArea.cpp" line="345"/>
+        <source>Axes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="171"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="399"/>
-        <source>Background</source>
+        <location filename="APP/DAAppRibbonArea.cpp" line="172"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="355"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="359"/>
+        <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="173"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="414"/>
-        <source>Run</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="175"/>
-        <source>Chart</source>
+        <location filename="APP/DAAppRibbonArea.cpp" line="369"/>
+        <source>Statistic</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="176"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="425"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="427"/>
-        <source>Chart Edit</source>
+        <source>Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="178"/>
-        <source>Legend</source>
+        <location filename="APP/DAAppRibbonArea.cpp" line="180"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="413"/>
+        <source>Workflow Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="181"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="417"/>
+        <source>Item</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppRibbonArea.cpp" line="182"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="425"/>
+        <source>Text</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppRibbonArea.cpp" line="183"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="431"/>
+        <source>Background</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppRibbonArea.cpp" line="185"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="446"/>
+        <source>Run</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppRibbonArea.cpp" line="187"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="399"/>
+        <source>Figure</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppRibbonArea.cpp" line="189"/>
+        <source>Chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppRibbonArea.cpp" line="190"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="457"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="459"/>
+        <source>Chart Edit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppRibbonArea.cpp" line="192"/>
+        <source>Legend</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppRibbonArea.cpp" line="200"/>
         <source>Data Work Flow</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAChartAddXYSeriesWidget</name>
+    <message>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="33"/>
+        <source>x</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="33"/>
+        <source>y</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="144"/>
+        <source>Exception occurred during extracting from pandas.Series to double vector:%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAChartCurveItemSettingWidget</name>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="20"/>
+        <source>Lines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="21"/>
+        <source>Steps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="22"/>
+        <source>Dots</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DA::DAChartItemTableModel</name>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="493"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="522"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="552"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="563"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="496"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="525"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="555"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="566"/>
         <source>x</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="495"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="524"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="554"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="565"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="498"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="527"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="557"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="568"/>
         <source>y</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="503"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="514"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="577"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="604"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="506"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="517"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="580"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="607"/>
         <source>value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="505"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="579"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="508"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="582"/>
         <source>min</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="507"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="581"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="510"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="584"/>
         <source>max</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="516"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="606"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="519"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="609"/>
         <source>set %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="526"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="567"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="529"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="570"/>
         <source>z</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="534"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="590"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="537"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="593"/>
         <source>time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="536"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="592"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="539"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="595"/>
         <source>open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="538"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="594"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="541"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="597"/>
         <source>high</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="540"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="596"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="543"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="599"/>
         <source>low</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="542"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="598"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="545"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="601"/>
         <source>close</source>
         <translation type="unfinished"></translation>
     </message>
@@ -921,30 +1037,136 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartOperateWidget.cpp" line="132"/>
+        <location filename="DAGui/DAChartOperateWidget.cpp" line="150"/>
         <source>chart operate widget&apos;s tab changed,but can not find figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartOperateWidget.cpp" line="145"/>
+        <location filename="DAGui/DAChartOperateWidget.cpp" line="163"/>
         <source>question</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartOperateWidget.cpp" line="145"/>
+        <location filename="DAGui/DAChartOperateWidget.cpp" line="163"/>
         <source>Whether to close the figure widget</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAChartPlotItemSettingWidget</name>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.cpp" line="23"/>
+        <source>Left Bottom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.cpp" line="25"/>
+        <source>Left Top</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.cpp" line="27"/>
+        <source>Right Bottom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.cpp" line="29"/>
+        <source>Right Top</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAChartSymbolComboBox</name>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartSymbolComboBox.cpp" line="38"/>
+        <source>No Symbol</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartSymbolComboBox.cpp" line="42"/>
+        <source>Ellipse</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartSymbolComboBox.cpp" line="47"/>
+        <source>Rectangle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartSymbolComboBox.cpp" line="52"/>
+        <source>Diamond</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartSymbolComboBox.cpp" line="57"/>
+        <source>Triangle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartSymbolComboBox.cpp" line="62"/>
+        <source>Down Triangle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartSymbolComboBox.cpp" line="67"/>
+        <source>Up Triangle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartSymbolComboBox.cpp" line="72"/>
+        <source>Left Triangle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartSymbolComboBox.cpp" line="77"/>
+        <source>Right Triangle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartSymbolComboBox.cpp" line="82"/>
+        <source>Cross</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartSymbolComboBox.cpp" line="87"/>
+        <source>Diagonal Cross</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartSymbolComboBox.cpp" line="92"/>
+        <source>Horizontal Line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartSymbolComboBox.cpp" line="97"/>
+        <source>Vertical Line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartSymbolComboBox.cpp" line="102"/>
+        <source>Star 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartSymbolComboBox.cpp" line="107"/>
+        <source>Star 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartSymbolComboBox.cpp" line="112"/>
+        <source>Hexagon</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DA::DAChartWidget</name>
     <message>
-        <location filename="DAFigure/DAChartWidget.cpp" line="1041"/>
+        <location filename="DAFigure/DAChartWidget.cpp" line="1005"/>
         <source>Before zoom in, the chart must setup a zoomer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartWidget.cpp" line="1070"/>
+        <location filename="DAFigure/DAChartWidget.cpp" line="1034"/>
         <source>Before zoom out, the chart must setup a zoomer</source>
         <translation type="unfinished"></translation>
     </message>
@@ -952,7 +1174,7 @@
 <context>
     <name>DA::DADataManageTableView</name>
     <message>
-        <location filename="DAGui/DADataManageTableView.cpp" line="80"/>
+        <location filename="DAGui/DADataManageTableView.cpp" line="88"/>
         <source>The item is selected in the data management table, but the corresponding data cannot be obtained</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1022,18 +1244,18 @@
 <context>
     <name>DA::DADataManagerTreeModel</name>
     <message>
-        <location filename="DAGui/Models/DADataManagerTreeModel.cpp" line="194"/>
+        <location filename="DAGui/Models/DADataManagerTreeModel.cpp" line="186"/>
         <source>name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Models/DADataManagerTreeModel.cpp" line="195"/>
+        <location filename="DAGui/Models/DADataManagerTreeModel.cpp" line="187"/>
         <source>property</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Models/DADataManagerTreeModel.cpp" line="509"/>
-        <location filename="DAGui/Models/DADataManagerTreeModel.cpp" line="521"/>
+        <location filename="DAGui/Models/DADataManagerTreeModel.cpp" line="587"/>
+        <location filename="DAGui/Models/DADataManagerTreeModel.cpp" line="599"/>
         <source>The data(%1) cannot find its corresponding item in the data management tree during the removal process</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1089,42 +1311,73 @@
     </message>
 </context>
 <context>
-    <name>DA::DADialogAppSetting</name>
+    <name>DA::DADataframeToVectorPointWidget</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogAppSetting.cpp" line="9"/>
-        <source>Common</source>
+        <location filename="DAGui/DADataframeToVectorPointWidget.cpp" line="14"/>
+        <source>x</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DADataframeToVectorPointWidget.cpp" line="14"/>
+        <source>y</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DADataframeToVectorPointWidget.cpp" line="68"/>
+        <source>Exception occurred during extracting from pandas.Series to double vector:%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogChartGuide</name>
+    <message>
+        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="26"/>
+        <source>curve</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="29"/>
+        <source>scatter</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADockingAreaInterface</name>
+    <message>
+        <location filename="DAInterface/DADockingAreaInterface.cpp" line="75"/>
+        <source>dock widget &quot;%1&quot; was closed and hide</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DA::DAFigureTreeModel</name>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="425"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="427"/>
         <source>receive legend data changed signal,but can not cast sender to qwt plot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="430"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="432"/>
         <source>can not conver info to qwt plot item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="445"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="447"/>
         <source>Unable to find the tree node corresponding to the chart widget</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="471"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="473"/>
         <source>name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="472"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="474"/>
         <source>property</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="473"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="475"/>
         <source>visible</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1230,24 +1483,24 @@
 <context>
     <name>DA::DAPluginManager</name>
     <message>
-        <location filename="DAPluginSupport/DAPluginManager.cpp" line="72"/>
+        <location filename="DAPluginSupport/DAPluginManager.cpp" line="65"/>
         <source>plugin dir is:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAPluginSupport/DAPluginManager.cpp" line="76"/>
+        <location filename="DAPluginSupport/DAPluginManager.cpp" line="69"/>
         <source> ignore invalid file:%1</source>
         <oldsource> ignore invalid file:%2</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAPluginSupport/DAPluginManager.cpp" line="82"/>
+        <location filename="DAPluginSupport/DAPluginManager.cpp" line="75"/>
         <source>can not load plugin:%1</source>
         <oldsource>start load plugin:%1</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAPluginSupport/DAPluginManager.cpp" line="139"/>
+        <location filename="DAPluginSupport/DAPluginManager.cpp" line="134"/>
         <source>Plugin Manager Info:is loaded=%1,plugin counts=%2</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1293,7 +1546,7 @@
 <context>
     <name>DA::DAProjectInterface</name>
     <message>
-        <location filename="DAInterface/DAProjectInterface.cpp" line="240"/>
+        <location filename="DAInterface/DAProjectInterface.cpp" line="295"/>
         <source>open failed,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1415,6 +1668,14 @@
     </message>
 </context>
 <context>
+    <name>DA::DASettingPageCommon</name>
+    <message>
+        <location filename="APP/SettingPages/DASettingPageCommon.cpp" line="44"/>
+        <source>common</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DA::DAToolBox</name>
     <message>
         <location filename="DAGui/DAToolBox.cpp" line="88"/>
@@ -1433,17 +1694,17 @@
 <context>
     <name>DA::DAWorkFlow</name>
     <message>
-        <location filename="DAWorkFlow/DAWorkFlow.cpp" line="358"/>
+        <location filename="DAWorkFlow/DAWorkFlow.cpp" line="363"/>
         <source>begin exec workflow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAWorkFlow.cpp" line="360"/>
+        <location filename="DAWorkFlow/DAWorkFlow.cpp" line="365"/>
         <source>empty workflow can not exec</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAWorkFlow.cpp" line="369"/>
+        <location filename="DAWorkFlow/DAWorkFlow.cpp" line="374"/>
         <source>workflow start run</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1527,7 +1788,7 @@
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="APP/DAAppController.cpp" line="54"/>
+        <location filename="APP/DAAppController.cpp" line="63"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1535,12 +1796,12 @@
 <context>
     <name>DAAppRibbonArea</name>
     <message>
-        <location filename="APP/DAAppController.cpp" line="61"/>
+        <location filename="APP/DAAppController.cpp" line="70"/>
         <source>warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="62"/>
+        <location filename="APP/DAAppController.cpp" line="71"/>
         <source>The current function is not implemented, only the UI is reserved, please pay attention: https://gitee.com/czyt1988/data-work-flow</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1550,6 +1811,67 @@
     <message>
         <location filename="DACommonWidgets/DABrushEditWidget.ui" line="14"/>
         <source>Brush Edit</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DAChartAddXYSeriesWidget</name>
+    <message>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="62"/>
+        <source>Y:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="75"/>
+        <source>Title:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="94"/>
+        <source>X:</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DAChartCurveItemSettingWidget</name>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="35"/>
+        <source>Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="45"/>
+        <source>Pen</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="62"/>
+        <source>Fill</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="74"/>
+        <source>base line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="81"/>
+        <source>The area between the curve and the baseline will be filled</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="94"/>
+        <source>Symbol</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1566,6 +1888,67 @@
     <message>
         <location filename="DAGui/DAChartOperateWidget.ui" line="14"/>
         <source>Chart Operate</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DAChartPlotItemSettingWidget</name>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="35"/>
+        <source>Axis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="48"/>
+        <source>z</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="58"/>
+        <source>Title</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="82"/>
+        <source>Set X on bottom and Y axis on left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="107"/>
+        <source>Set X on bottom and Y axis on right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="132"/>
+        <source>Set X on top and Y axis on left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="157"/>
+        <source>Set X on top and Y axis on right</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DAChartSymbolEditWidget</name>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartSymbolEditWidget.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartSymbolEditWidget.ui" line="38"/>
+        <source>Size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartSymbolEditWidget.ui" line="55"/>
+        <source>Fill Color</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1599,25 +1982,38 @@
     </message>
 </context>
 <context>
-    <name>DADialogAppSetting</name>
+    <name>DADataframeToVectorPointWidget</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogAppSetting.ui" line="14"/>
-        <source>Setting</source>
+        <location filename="DAGui/DADataframeToVectorPointWidget.ui" line="14"/>
+        <source>Form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogAppSetting.ui" line="45"/>
-        <source>Apply</source>
+        <location filename="DAGui/DADataframeToVectorPointWidget.ui" line="26"/>
+        <source>x:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogAppSetting.ui" line="52"/>
-        <source>OK</source>
+        <location filename="DAGui/DADataframeToVectorPointWidget.ui" line="44"/>
+        <source>y:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogAppSetting.ui" line="59"/>
-        <source>Cancel</source>
+        <location filename="DAGui/DADataframeToVectorPointWidget.ui" line="58"/>
+        <source>data view</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DADialogChartGuide</name>
+    <message>
+        <location filename="DAGui/Dialog/DADialogChartGuide.ui" line="14"/>
+        <source>Dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogChartGuide.ui" line="28"/>
+        <source>Data Frame</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1963,7 +2359,7 @@
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="DAFigure/DAFigureWidget.cpp" line="152"/>
+        <location filename="DAFigure/DAFigureWidget.cpp" line="200"/>
         <source>Figure</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2049,7 +2445,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DANodeItemSettingWidget.ui" line="267"/>
+        <location filename="DAGui/DANodeItemSettingWidget.ui" line="363"/>
         <source>Output Location</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2138,12 +2534,12 @@
 <context>
     <name>DAPenEditWidget</name>
     <message>
-        <location filename="DACommonWidgets/DAPenEditWidget.cpp" line="106"/>
+        <location filename="DACommonWidgets/DAPenEditWidget.cpp" line="109"/>
         <source>Pen Editor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DAPenEditWidget.cpp" line="107"/>
+        <location filename="DACommonWidgets/DAPenEditWidget.cpp" line="110"/>
         <source> px</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2198,33 +2594,63 @@
     </message>
 </context>
 <context>
+    <name>DASettingDialog</name>
+    <message>
+        <location filename="DACommonWidgets/DASettingDialog.ui" line="14"/>
+        <source>Setting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DACommonWidgets/DASettingDialog.ui" line="45"/>
+        <source>OK</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DACommonWidgets/DASettingDialog.ui" line="52"/>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DACommonWidgets/DASettingDialog.ui" line="59"/>
+        <source>Apply</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DASettingPageCommon</name>
     <message>
-        <location filename="DAGui/SettingPages/DASettingPageCommon.ui" line="14"/>
+        <location filename="APP/SettingPages/DASettingPageCommon.ui" line="14"/>
         <source>Form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/SettingPages/DASettingPageCommon.ui" line="26"/>
+        <location filename="APP/SettingPages/DASettingPageCommon.ui" line="28"/>
+        <source>Standard Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/SettingPages/DASettingPageCommon.ui" line="41"/>
+        <source>Standard Mode With 2 Row</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/SettingPages/DASettingPageCommon.ui" line="48"/>
+        <source>Compact Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/SettingPages/DASettingPageCommon.ui" line="55"/>
+        <source>Minimalist mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/SettingPages/DASettingPageCommon.ui" line="83"/>
         <source>Language</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/SettingPages/DASettingPageCommon.ui" line="44"/>
+        <location filename="APP/SettingPages/DASettingPageCommon.ui" line="20"/>
         <source>Ribbon Style</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/SettingPages/DASettingPageCommon.ui" line="52"/>
-        <location filename="DAGui/SettingPages/DASettingPageCommon.ui" line="59"/>
-        <location filename="DAGui/SettingPages/DASettingPageCommon.ui" line="66"/>
-        <location filename="DAGui/SettingPages/DASettingPageCommon.ui" line="73"/>
-        <source>RadioButton</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/SettingPages/DASettingPageCommon.ui" line="82"/>
-        <source>TextLabel</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2311,7 +2737,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAPyBindQt/pandas/DAPyModulePandas.cpp" line="167"/>
+        <location filename="DAPyBindQt/pandas/DAPyModulePandas.cpp" line="160"/>
         <source>use utf-8 open file %1 error,try to use ansi encoding</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2321,67 +2747,67 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAPyScripts/DAPyScripts.cpp" line="62"/>
+        <location filename="DAPyScripts/DAPyScripts.cpp" line="55"/>
         <source>Initialized import sys module error:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAPyScripts/DAPyScripts.cpp" line="82"/>
+        <location filename="DAPyScripts/DAPyScripts.cpp" line="75"/>
         <source>Initialized import py module error:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAData/DAAbstractData.cpp" line="96"/>
+        <location filename="DAData/DAAbstractData.cpp" line="98"/>
         <source>none</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAData/DAAbstractData.cpp" line="98"/>
+        <location filename="DAData/DAAbstractData.cpp" line="100"/>
         <source>object</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAData/DAAbstractData.cpp" line="100"/>
+        <location filename="DAData/DAAbstractData.cpp" line="102"/>
         <source>dataframe</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAData/DAAbstractData.cpp" line="102"/>
+        <location filename="DAData/DAAbstractData.cpp" line="104"/>
         <source>raw</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DAPenStyleComboBox.cpp" line="77"/>
+        <location filename="DACommonWidgets/DAPenStyleComboBox.cpp" line="58"/>
         <source>No Pen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DAPenStyleComboBox.cpp" line="79"/>
+        <location filename="DACommonWidgets/DAPenStyleComboBox.cpp" line="60"/>
         <source>Solid Line</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DAPenStyleComboBox.cpp" line="81"/>
+        <location filename="DACommonWidgets/DAPenStyleComboBox.cpp" line="62"/>
         <source>Dash Line</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DAPenStyleComboBox.cpp" line="83"/>
+        <location filename="DACommonWidgets/DAPenStyleComboBox.cpp" line="64"/>
         <source>Dot Line</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DAPenStyleComboBox.cpp" line="85"/>
+        <location filename="DACommonWidgets/DAPenStyleComboBox.cpp" line="66"/>
         <source>Dash Dot Line</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DAPenStyleComboBox.cpp" line="87"/>
+        <location filename="DACommonWidgets/DAPenStyleComboBox.cpp" line="68"/>
         <source>Dash Dot Dot Line</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DAPenStyleComboBox.cpp" line="89"/>
+        <location filename="DACommonWidgets/DAPenStyleComboBox.cpp" line="70"/>
         <source>Custom Dash Line</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2427,22 +2853,22 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAAbstractNodeLinkGraphicsItem.cpp" line="703"/>
+        <location filename="DAWorkFlow/DAAbstractNodeLinkGraphicsItem.cpp" line="704"/>
         <source>Item have not out put link point:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAAbstractNodeLinkGraphicsItem.cpp" line="709"/>
+        <location filename="DAWorkFlow/DAAbstractNodeLinkGraphicsItem.cpp" line="710"/>
         <source>Link from must attach an output point</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAAbstractNodeLinkGraphicsItem.cpp" line="747"/>
+        <location filename="DAWorkFlow/DAAbstractNodeLinkGraphicsItem.cpp" line="752"/>
         <source>Item have not in put link point:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAAbstractNodeLinkGraphicsItem.cpp" line="753"/>
+        <location filename="DAWorkFlow/DAAbstractNodeLinkGraphicsItem.cpp" line="758"/>
         <source>Link to must attach an input point</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2452,12 +2878,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DANodeGraphicsScene.cpp" line="291"/>
+        <location filename="DAWorkFlow/DANodeGraphicsScene.cpp" line="285"/>
         <source>can not create node,metadata name=%1(%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DACommandsForWorkFlowNodeGraphics.cpp" line="86"/>
+        <location filename="DAWorkFlow/DACommandsForWorkFlowNodeGraphics.cpp" line="85"/>
         <source>Remove Select Nodes</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2473,32 +2899,32 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAPluginSupport/DAPluginOption.cpp" line="91"/>
+        <location filename="DAPluginSupport/DAPluginOption.cpp" line="84"/>
         <source>Failed to load %1 (Reason: %2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAPluginSupport/DAPluginOption.cpp" line="98"/>
+        <location filename="DAPluginSupport/DAPluginOption.cpp" line="91"/>
         <source>Failed to create plugin instance %1 (Reason: %2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAPluginSupport/DAPluginOption.cpp" line="107"/>
+        <location filename="DAPluginSupport/DAPluginOption.cpp" line="100"/>
         <source>Failed to cast plugin to DA plugin %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAPluginSupport/DAPluginOption.cpp" line="112"/>
+        <location filename="DAPluginSupport/DAPluginOption.cpp" line="105"/>
         <source>loaded plugin:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAPluginSupport/DAPluginOption.cpp" line="116"/>
+        <location filename="DAPluginSupport/DAPluginOption.cpp" line="109"/>
         <source>success load plugin %1,but failed to initialize</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAPluginSupport/DAPluginOption.cpp" line="215"/>
+        <location filename="DAPluginSupport/DAPluginOption.cpp" line="208"/>
         <source>plugin file name:%1,iid:%2,name:%3,description:%4,version:%5,error string:%6</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2534,97 +2960,97 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="43"/>
+        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="42"/>
         <source>No Brush</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="45"/>
+        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="44"/>
         <source>Solid Pattern</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="47"/>
+        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="46"/>
         <source>Dense1 Pattern</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="49"/>
+        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="48"/>
         <source>Dense2 Pattern</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="51"/>
+        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="50"/>
         <source>Dense3 Pattern</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="53"/>
+        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="52"/>
         <source>Dense4 Pattern</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="55"/>
+        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="54"/>
         <source>Dense5 Pattern</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="57"/>
+        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="56"/>
         <source>Dense6 Pattern</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="59"/>
+        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="58"/>
         <source>Dense7 Pattern</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="61"/>
+        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="60"/>
         <source>Hor Pattern</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="63"/>
+        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="62"/>
         <source>Ver Pattern</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="65"/>
+        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="64"/>
         <source>Cross Pattern</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="67"/>
+        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="66"/>
         <source>Backward Diagonal Pattern</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="69"/>
+        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="68"/>
         <source>Forward Diagonal Pattern</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="71"/>
+        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="70"/>
         <source>Crossing Diagonal Pattern</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="73"/>
+        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="72"/>
         <source>Linear Gradient Pattern</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="75"/>
+        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="74"/>
         <source>Conical Gradient Pattern</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="77"/>
+        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="76"/>
         <source>Radial Gradient Pattern</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="79"/>
+        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="78"/>
         <source>Texture Pattern</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2644,7 +3070,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureWidget.cpp" line="555"/>
+        <location filename="DAFigure/DAFigureWidget.cpp" line="144"/>
+        <source>add item in chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAFigure/DAFigureWidget.cpp" line="669"/>
         <source>DAFigureWidget get invalid magic strat code</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2784,65 +3215,76 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="239"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="240"/>
         <source>node&apos;s id=%1 can not conver to qulonglong type ,will skip this node</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="248"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="253"/>
         <source>workflow can not create note by metadata(prototype=%1,name=%2,group=%3),will skip this node</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="326"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="350"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="331"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="355"/>
         <source>node(prototype=%1,name=%2,group=%3) %4 tag loss child tag &lt;name&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="436"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="441"/>
         <source>node metadata(prototype=%1,name=%2,group=%3) can not create graphics item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="524"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="531"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="529"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="536"/>
         <source>link info can not find node in workflow,id = %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="537"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="542"/>
         <source>can not get item by node</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="542"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="547"/>
+        <source>Unable to link to node %3&apos;s link point %4 through link point %2 of node %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="900"/>
         <source>link item can not attach from node item(%1) with key=%2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="546"/>
+        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="905"/>
         <source>link item can not attach to node item(%1) with key=%2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="629"/>
+        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="927"/>
+        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="932"/>
+        <source>Node %1 cannot find a connection point named %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAXmlHelper.cpp" line="630"/>
         <source>There is a item that is not a DA Graphics Item system and cannot be saved</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="662"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="673"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="663"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="674"/>
         <source>Unable to load item information from file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="669"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="670"/>
         <source>Cannot create item by class name:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="841"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="842"/>
         <source>The attribute %1=%2 under the tag %3 cannot be converted to double </source>
         <translation type="unfinished"></translation>
     </message>
@@ -2959,6 +3401,22 @@
     <message>
         <location filename="DAFigure/DAFigureTreeModel.cpp" line="284"/>
         <source>untitle-chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/SettingPages/DAAppConfig.cpp" line="44"/>
+        <location filename="APP/SettingPages/DAAppConfig.cpp" line="76"/>
+        <source>can not open config file &quot;%1&quot;,because %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/SettingPages/DAAppConfig.cpp" line="53"/>
+        <source>can not load config file &quot;%1&quot;,because %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/SettingPages/DAAppConfig.cpp" line="59"/>
+        <source>config file(%1) loss &lt;configs&gt; tag</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

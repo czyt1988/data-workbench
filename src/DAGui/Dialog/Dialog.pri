@@ -2,7 +2,6 @@ INCLUDEPATH += $$PWD
 DEPENDPATH += $$PWD
 
 HEADERS += \
-    $$PWD/DADialogAppSetting.h \
     $$PWD/DADialogChartGuide.h \
     $$PWD/DADialogDataframeColumnCastToDatetime.h \
     $$PWD/DADialogDataframeColumnCastToNumeric.h \
@@ -14,7 +13,6 @@ HEADERS += \
     
 
 SOURCES += \
-    $$PWD/DADialogAppSetting.cpp \
     $$PWD/DADialogChartGuide.cpp \
     $$PWD/DADialogDataframeColumnCastToDatetime.cpp \
     $$PWD/DADialogDataframeColumnCastToNumeric.cpp \
@@ -26,7 +24,6 @@ SOURCES += \
     
 
 FORMS += \
-    $$PWD/DADialogAppSetting.ui \
     $$PWD/DADialogChartGuide.ui \
     $$PWD/DADialogDataframeColumnCastToDatetime.ui \
     $$PWD/DADialogDataframeColumnCastToNumeric.ui \

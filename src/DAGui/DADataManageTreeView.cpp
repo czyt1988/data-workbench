@@ -29,15 +29,15 @@ DADataManageTreeView::DADataManageTreeView(QWidget* parent) : QTreeView(parent)
     setDragDropMode(QAbstractItemView::DragDrop);
 
     //装载数据
-    _model = new DADataManagerTreeModel();
-    setModel(_model);
+    mModel = new DADataManagerTreeModel();
+    setModel(mModel);
     //建立菜单
-    actionAddDataFolder = createAction("actionAddDataFolder", ":/icon/icon/folder.svg");
-    _menu               = new QMenu(this);
-    _menu->addAction(actionAddDataFolder);
+    mActionAddDataFolder = createAction("actionAddDataFolder", ":/icon/icon/folder.svg");
+    mMenu               = new QMenu(this);
+    mMenu->addAction(mActionAddDataFolder);
     //建立信号
     connect(this, &DADataManageTreeView::customContextMenuRequested, this, &DADataManageTreeView::onCustomContextMenuRequested);
-    connect(actionAddDataFolder, &QAction::triggered, this, &DADataManageTreeView::onActionAddDataFolderTriggered);
+    connect(mActionAddDataFolder, &QAction::triggered, this, &DADataManageTreeView::onActionAddDataFolderTriggered);
     retranslateUi();
 }
 
@@ -47,17 +47,17 @@ DADataManageTreeView::~DADataManageTreeView()
 
 void DADataManageTreeView::setDataManager(DADataManager* mgr)
 {
-    _model->setDataManager(mgr);
+    mModel->setDataManager(mgr);
 }
 
 DADataManager* DADataManageTreeView::getDataManager() const
 {
-    return _model->getDataManager();
+    return mModel->getDataManager();
 }
 
 void DADataManageTreeView::retranslateUi()
 {
-    actionAddDataFolder->setText(tr("Add Folder"));  // cn:新建文件夹
+    mActionAddDataFolder->setText(tr("Add Folder"));  // cn:新建文件夹
 }
 
 /**
@@ -73,11 +73,11 @@ DADataManagerTreeItem* DADataManageTreeView::addDataFolder(const QString& name)
     //获取当前选中的item
     DADataManagerTreeItem* parentFolder = getCurrentSelectFolder();
     //获取这个item下的所有名字
-    QSet< QString > names = QSet< QString >::fromList(_model->getChildItemNames(parentFolder));
+    QSet< QString > names = QSet< QString >::fromList(mModel->getChildItemNames(parentFolder));
     //获取唯一名字
     n = DA::makeUniqueString(names, n);
     //构建目录
-    return _model->addFolder(n, parentFolder);
+    return mModel->addFolder(n, parentFolder);
 }
 
 /**
@@ -89,7 +89,7 @@ void DADataManageTreeView::removeCurrentSelectDataFloder()
     if (nullptr == f) {
         return;
     }
-    _model->removeFolder(f);
+    mModel->removeFolder(f);
 }
 
 /**
@@ -101,7 +101,7 @@ DADataManagerTreeItem* DADataManageTreeView::getCurrentSelectFolder() const
     QItemSelectionModel* selModel = selectionModel();
     QModelIndexList sm            = selModel->selectedRows();
     for (const QModelIndex& i : qAsConst(sm)) {
-        QStandardItem* treeitem = _model->itemFromIndex(i);
+        QStandardItem* treeitem = mModel->itemFromIndex(i);
         if (nullptr == treeitem) {
             continue;
         }
@@ -125,7 +125,7 @@ QList< DADataManagerTreeItem* > DADataManageTreeView::getCurrentSelectDatas() co
     QItemSelectionModel* selModel = selectionModel();
     QModelIndexList sm            = selModel->selectedRows();
     for (const QModelIndex& i : qAsConst(sm)) {
-        QStandardItem* treeitem = _model->itemFromIndex(i);
+        QStandardItem* treeitem = mModel->itemFromIndex(i);
         if (nullptr == treeitem) {
             continue;
         }
@@ -181,7 +181,7 @@ void DADataManageTreeView::changeEvent(QEvent* e)
 
 void DADataManageTreeView::onCustomContextMenuRequested(const QPoint& pos)
 {
-    _menu->exec(mapToGlobal(pos));
+    mMenu->exec(mapToGlobal(pos));
 }
 
 void DADataManageTreeView::onActionAddDataFolderTriggered()

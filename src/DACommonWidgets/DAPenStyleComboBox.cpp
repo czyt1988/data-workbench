@@ -11,42 +11,25 @@
 //===================================================
 namespace DA
 {
-#if !DAPENSTYLECOMBOBOX_USE_DELEGATE
-class DAPenStyleComboBoxPrivate
+
+class DAPenStyleComboBox::PrivateData
 {
-    DA_IMPL_PUBLIC(DAPenStyleComboBox)
+    DA_DECLARE_PUBLIC(DAPenStyleComboBox)
 public:
-    DAPenStyleComboBoxPrivate(DAPenStyleComboBox* p);
-    QPen _drawPen;
+    PrivateData(DAPenStyleComboBox* p);
+    QPen mDrawPen { Qt::black };
 };
 
-DAPenStyleComboBoxPrivate::DAPenStyleComboBoxPrivate(DAPenStyleComboBox* p) : q_ptr(p), _drawPen(Qt::black)
+DAPenStyleComboBox::PrivateData::PrivateData(DAPenStyleComboBox* p) : q_ptr(p)
 {
-    _drawPen.setWidth(1);
+    mDrawPen.setWidth(1);
 }
-
-#endif
 
 //===================================================
 // DAPenStyleComboBox
 //===================================================
-#if DAPENSTYLECOMBOBOX_USE_DELEGATE
-DAPenStyleComboBox::DAPenStyleComboBox(QWidget* parent) : QComboBox(parent)
-{
-    setEditable(false);
-    setIconSize(QSize(40, 15));
-    setItemDelegate(new DAPenStyleComboBoxItemDelegate(this));
-    addItem(Qt::NoPen);
-    addItem(Qt::SolidLine);
-    addItem(Qt::DashLine);
-    addItem(Qt::DotLine);
-    addItem(Qt::DashDotLine);
-    addItem(Qt::DashDotDotLine);
-    connect(this, QOverload< int >::of(&QComboBox::currentIndexChanged), this, &DAPenStyleComboBox::onCurrentIndexChanged);
-}
-#else
 
-DAPenStyleComboBox::DAPenStyleComboBox(QWidget* parent) : QComboBox(parent), d_ptr(new DAPenStyleComboBoxPrivate(this))
+DAPenStyleComboBox::DAPenStyleComboBox(QWidget* parent) : QComboBox(parent), DA_PIMPL_CONSTRUCT
 {
     setEditable(false);
     setIconSize(QSize(40, 15));
@@ -62,8 +45,6 @@ DAPenStyleComboBox::DAPenStyleComboBox(QWidget* parent) : QComboBox(parent), d_p
 DAPenStyleComboBox::~DAPenStyleComboBox()
 {
 }
-
-#endif
 
 /**
  * @brief PenStyle转换为文本
@@ -99,28 +80,26 @@ QString DAPenStyleComboBox::penStyleToString(Qt::PenStyle s)
  */
 void DAPenStyleComboBox::setPenColor(const QColor& c)
 {
-#if DAPENSTYLECOMBOBOX_USE_DELEGATE
-    DAPenStyleComboBoxItemDelegate* d = qobject_cast< DAPenStyleComboBoxItemDelegate* >(itemDelegate());
-    if (d) {
-        d->setPenColor(c);
-    }
-#else
-    d_ptr->_drawPen.setColor(c);
+    d_ptr->mDrawPen.setColor(c);
     updateItems();
-#endif
 }
 
 void DAPenStyleComboBox::setPenLineWidth(int w)
 {
-#if DAPENSTYLECOMBOBOX_USE_DELEGATE
-    DAPenStyleComboBoxItemDelegate* d = qobject_cast< DAPenStyleComboBoxItemDelegate* >(itemDelegate());
-    if (d) {
-        d->setPenLineWidth(w);
-    }
-#else
-    d_ptr->_drawPen.setWidth(w);
+    d_ptr->mDrawPen.setWidth(w);
     updateItems();
-#endif
+}
+
+/**
+ * @brief 设置当前的画笔样式
+ * @param s
+ */
+void DAPenStyleComboBox::setCurrentPenStyle(Qt::PenStyle s)
+{
+    int i = findData(static_cast< int >(s));
+    if (i >= 0 && i < count()) {
+        setCurrentIndex(i);
+    }
 }
 
 /**
@@ -149,15 +128,15 @@ QIcon DAPenStyleComboBox::generatePenIcon(Qt::PenStyle s) const
     return QIcon(pixmap);
 #else
     if (Qt::NoPen == s) {
-        static QIcon s_noPenIcon(":/icon/icon/no-style.svg");
+        static QIcon s_noPenIcon(":/commonWidget/icon/icon/no-style.svg");
         return s_noPenIcon;
     }
     QSize iss = iconSize();
     QPixmap pixmap(iss);
     pixmap.fill(Qt::transparent);
     QPainter painter(&pixmap);
-    d_ptr->_drawPen.setStyle(s);
-    drawPenStyle(&painter, QRect(QPoint(0, 0), iss), d_ptr->_drawPen);
+    d_ptr->mDrawPen.setStyle(s);
+    drawPenStyle(&painter, QRect(QPoint(0, 0), iss), d_ptr->mDrawPen);
     return QIcon(pixmap);
 #endif
 }
@@ -179,6 +158,17 @@ void DAPenStyleComboBox::updateItems()
 }
 
 /**
+ * @brief 设置画笔
+ * @param p
+ */
+void DAPenStyleComboBox::setPen(const QPen& p)
+{
+    d_ptr->mDrawPen = p;
+    updateItems();
+    setCurrentPenStyle(p.style());
+}
+
+/**
  * @brief 添加item
  * @param s
  */
@@ -192,100 +182,4 @@ void DAPenStyleComboBox::onCurrentIndexChanged(int index)
     emit currentPenStyleChanged(static_cast< Qt::PenStyle >(itemData(index).toInt()));
 }
 
-//==============================================================
-// DAPenStyleComboBoxItemDelegate
-//==============================================================
-#if DAPENSTYLECOMBOBOX_USE_DELEGATE
-DAPenStyleComboBoxItemDelegate::DAPenStyleComboBoxItemDelegate(QObject* parent)
-    : QAbstractItemDelegate(parent), _penColor(Qt::black), _penWidth(4)
-{
-}
-
-void DAPenStyleComboBoxItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
-{
-    drawBackground(painter, option, index);
-    drawFocus(painter, option, index);
-    Qt::PenStyle s = (Qt::PenStyle)index.data(Qt::UserRole).toInt();
-    QPen p(_penColor);
-    p.setWidth(_penWidth);
-    p.setStyle(s);
-    DAPenStyleComboBox::drawPenStyle(painter, option.rect, p);
-}
-
-QSize DAPenStyleComboBoxItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
-{
-    Q_UNUSED(index);
-    int h = option.fontMetrics.height() + 4;
-    if (h < _penWidth) {
-        h = _penWidth + 2;
-    }
-    return QSize(option.rect.width(), h);
-}
-/**
- * @brief 设置画笔颜色
- * @param c
- */
-void DAPenStyleComboBoxItemDelegate::setPenColor(const QColor& c)
-{
-    _penColor = c;
-}
-/**
- * @brief 获取画笔颜色
- * @param c
- */
-QColor DAPenStyleComboBoxItemDelegate::getPenColor() const
-{
-    return _penColor;
-}
-/**
- * @brief 设置画笔宽度
- * @param c
- */
-void DAPenStyleComboBoxItemDelegate::setPenLineWidth(int w)
-{
-    _penWidth = w;
-}
-/**
- * @brief 获取画笔宽度
- * @param c
- */
-int DAPenStyleComboBoxItemDelegate::getPenLineWidth() const
-{
-    return _penWidth;
-}
-
-void DAPenStyleComboBoxItemDelegate::drawBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
-{
-    if (option.showDecorationSelected && (option.state & QStyle::State_Selected)) {
-        QPalette::ColorGroup cg = option.state & QStyle::State_Enabled ? QPalette::Normal : QPalette::Disabled;
-        if (cg == QPalette::Normal && !(option.state & QStyle::State_Active))
-            cg = QPalette::Inactive;
-        painter->fillRect(option.rect, option.palette.brush(cg, QPalette::Highlight));
-    } else {
-        QVariant value = index.data(Qt::BackgroundRole);
-        if (value.canConvert< QBrush >()) {
-            QPointF oldBO = painter->brushOrigin();
-            painter->setBrushOrigin(option.rect.topLeft());
-            painter->fillRect(option.rect, qvariant_cast< QBrush >(value));
-            painter->setBrushOrigin(oldBO);
-        }
-    }
-}
-
-void DAPenStyleComboBoxItemDelegate::drawFocus(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
-{
-    Q_UNUSED(index);
-    if ((option.state & QStyle::State_HasFocus) == 0)
-        return;
-    QStyleOptionFocusRect o;
-    o.QStyleOption::operator=(option);
-    o.state |= QStyle::State_KeyboardFocusChange;
-    o.state |= QStyle::State_Item;
-    QPalette::ColorGroup cg = (option.state & QStyle::State_Enabled) ? QPalette::Normal : QPalette::Disabled;
-    o.backgroundColor = option.palette.color(cg, (option.state & QStyle::State_Selected) ? QPalette::Highlight : QPalette::Window);
-    const QWidget* widget = qobject_cast< const QWidget* >(parent());
-    QStyle* style         = widget ? widget->style() : QApplication::style();
-    style->drawPrimitive(QStyle::PE_FrameFocusRect, &o, painter, widget);
-}
-#endif
 }  // DA

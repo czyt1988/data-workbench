@@ -18,12 +18,11 @@
 
 namespace DA
 {
-class DAAbstractNodeLinkGraphicsItemPrivate
+class DAAbstractNodeLinkGraphicsItem::PrivateData
 {
-    DA_IMPL_PUBLIC(DAAbstractNodeLinkGraphicsItem)
+    DA_DECLARE_PUBLIC(DAAbstractNodeLinkGraphicsItem)
 public:
-public:
-    DAAbstractNodeLinkGraphicsItemPrivate(DAAbstractNodeLinkGraphicsItem* p);
+    PrivateData(DAAbstractNodeLinkGraphicsItem* p);
     DANodeGraphicsScene* nodeScene() const;
     void setLinkPointNameVisible(bool on, DAAbstractNodeLinkGraphicsItem::Orientations o);
     bool isLinkPointNameVisible(DAAbstractNodeLinkGraphicsItem::Orientations o) const;
@@ -38,111 +37,104 @@ public:
     void updateTextPos();
 
 public:
-    DAAbstractNodeLinkGraphicsItem::LinkLineStyle _linkLineStyle;
-    DAAbstractNodeGraphicsItem* _fromItem;
-    DAAbstractNodeGraphicsItem* _toItem;
-    DANodeLinkPoint _fromPoint;
-    DANodeLinkPoint _toPoint;
-    QPointF _fromPos;
-    QPointF _toPos;
-    QRectF _boundingRect;         ///< 记录boundingRect
-    qreal _bezierControlScale;    ///<贝塞尔曲线的控制点的缩放比例
-    QPainterPath _linePath;       ///< 通过点得到的绘图线段
-    QPainterPath _lineShapePath;  ///_linePath的轮廓，用于shape函数
-    QPen _linePen;                ///< 线的画笔
-    QGraphicsSimpleTextItem* _fromTextItem;
-    QGraphicsSimpleTextItem* _toTextItem;
-    QPair< int, int > _pointTextPositionOffset;  ///< 记录文本和连接点的偏移量，默认为10
-    QGraphicsSimpleTextItem* _textItem;          ///< 文本item，文本item默认为false
-    QPointF _textPosProportion;                  ///< 文本位置占比
-    bool _autoDetachLink;                        ///< 默认为true，在析构时自动detach link
-    QPointF _linkCenterPoint;                    ///< 记录中心点
-    int _textItemSpace;                          ///< 文字离中心点的距离
+    DAAbstractNodeLinkGraphicsItem::LinkLineStyle mLinkLineStyle;
+    DAAbstractNodeGraphicsItem* mFromItem;
+    DAAbstractNodeGraphicsItem* mToItem;
+    DANodeLinkPoint mFromPoint;
+    DANodeLinkPoint mToPoint;
+    QPointF mFromPos;
+    QPointF mToPos;
+    QRectF mBoundingRect;         ///< 记录boundingRect
+    qreal mBezierControlScale;    ///<贝塞尔曲线的控制点的缩放比例
+    QPainterPath mLinePath;       ///< 通过点得到的绘图线段
+    QPainterPath mLineShapePath;  ///_linePath的轮廓，用于shape函数
+    QPen mLinePen;                ///< 线的画笔
+    QGraphicsSimpleTextItem* mFromTextItem;
+    QGraphicsSimpleTextItem* mToTextItem;
+    QPair< int, int > mPointTextPositionOffset;  ///< 记录文本和连接点的偏移量，默认为10
+    QGraphicsSimpleTextItem* mTextItem;          ///< 文本item，文本item默认为false
+    QPointF mTextPosProportion;                  ///< 文本位置占比
+    bool mAutoDetachLink;                        ///< 默认为true，在析构时自动detach link
+    QPointF mLinkCenterPoint;                    ///< 记录中心点
+    int mTextItemSpace;                          ///< 文字离中心点的距离
     //端点样式
-    DAAbstractNodeLinkGraphicsItem::EndPointType _fromEndPointType;  ///< from的端点样式
-    DAAbstractNodeLinkGraphicsItem::EndPointType _toEndPointType;    ///< to的端点样式
-    QPainterPath _fromEndPointPainterPath;                           ///< 记录from的端点样式
-    QPainterPath _toEndPointPainterPath;                             ///< 记录to的端点样式
-    int _endPointSize;                                               ///< 记录端点大小
+    DAAbstractNodeLinkGraphicsItem::EndPointType mFromEndPointType;  ///< from的端点样式
+    DAAbstractNodeLinkGraphicsItem::EndPointType mToEndPointType;    ///< to的端点样式
+    QPainterPath mFromEndPointPainterPath;                           ///< 记录from的端点样式
+    QPainterPath mToEndPointPainterPath;                             ///< 记录to的端点样式
+    int mEndPointSize;                                               ///< 记录端点大小
 };
-}  // end of namespace DA
-
-//===================================================
-// using DA namespace -- 禁止在头文件using！！
-//===================================================
-
-using namespace DA;
 
 //===================================================
 // DAAbstractNodeLinkGraphicsItemPrivate
 //===================================================
-DAAbstractNodeLinkGraphicsItemPrivate::DAAbstractNodeLinkGraphicsItemPrivate(DAAbstractNodeLinkGraphicsItem* p)
+DAAbstractNodeLinkGraphicsItem::PrivateData::PrivateData(DAAbstractNodeLinkGraphicsItem* p)
     : q_ptr(p)
-    , _linkLineStyle(DAAbstractNodeLinkGraphicsItem::LinkLineKnuckle)
-    , _fromItem(nullptr)
-    , _toItem(nullptr)
-    , _fromPos(0, 0)
-    , _toPos(100, 100)
-    , _boundingRect(0, 0, 100, 100)
-    , _bezierControlScale(0.25)
-    , _pointTextPositionOffset(10, 10)
-    , _textItem(nullptr)
-    , _textPosProportion(0.5, 0.5)
-    , _autoDetachLink(true)
-    , _linkCenterPoint(50, 50)
-    , _textItemSpace(5)
-    , _fromEndPointType(DAAbstractNodeLinkGraphicsItem::EndPointNone)
-    , _toEndPointType(DAAbstractNodeLinkGraphicsItem::EndPointNone)
-    , _endPointSize(12)
+    , mLinkLineStyle(DAAbstractNodeLinkGraphicsItem::LinkLineKnuckle)
+    , mFromItem(nullptr)
+    , mToItem(nullptr)
+    , mFromPos(0, 0)
+    , mToPos(100, 100)
+    , mBoundingRect(0, 0, 100, 100)
+    , mBezierControlScale(0.35)
+    , mPointTextPositionOffset(10, 10)
+    , mTextItem(nullptr)
+    , mTextPosProportion(0.5, 0.5)
+    , mAutoDetachLink(true)
+    , mLinkCenterPoint(50, 50)
+    , mTextItemSpace(5)
+    , mFromEndPointType(DAAbstractNodeLinkGraphicsItem::EndPointNone)
+    , mToEndPointType(DAAbstractNodeLinkGraphicsItem::EndPointNone)
+    , mEndPointSize(12)
 {
-    _linePen      = QPen(DANodePalette::getGlobalLinkLineColor());
-    _fromTextItem = new QGraphicsSimpleTextItem(p);
-    _toTextItem   = new QGraphicsSimpleTextItem(p);
+    mLinePen      = QPen(DANodePalette::getGlobalLinkLineColor());
+    mFromTextItem = new QGraphicsSimpleTextItem(p);
+    mToTextItem   = new QGraphicsSimpleTextItem(p);
     setLinkPointNameVisible(false, DAAbstractNodeLinkGraphicsItem::OrientationBoth);
 }
 
-DANodeGraphicsScene* DAAbstractNodeLinkGraphicsItemPrivate::nodeScene() const
+DANodeGraphicsScene* DAAbstractNodeLinkGraphicsItem::PrivateData::nodeScene() const
 {
     return (qobject_cast< DANodeGraphicsScene* >(q_ptr->scene()));
 }
 
-void DAAbstractNodeLinkGraphicsItemPrivate::setLinkPointNameVisible(bool on, DAAbstractNodeLinkGraphicsItem::Orientations o)
+void DAAbstractNodeLinkGraphicsItem::PrivateData::setLinkPointNameVisible(bool on, DAAbstractNodeLinkGraphicsItem::Orientations o)
 {
     switch (o) {
     case DAAbstractNodeLinkGraphicsItem::OrientationFrom:
-        _fromTextItem->setVisible(on);
+        mFromTextItem->setVisible(on);
         break;
 
     case DAAbstractNodeLinkGraphicsItem::OrientationTo:
-        _toTextItem->setVisible(on);
+        mToTextItem->setVisible(on);
         break;
 
     default:
-        _fromTextItem->setVisible(on);
-        _toTextItem->setVisible(on);
+        mFromTextItem->setVisible(on);
+        mToTextItem->setVisible(on);
         break;
     }
 }
 
-bool DAAbstractNodeLinkGraphicsItemPrivate::isLinkPointNameVisible(DAAbstractNodeLinkGraphicsItem::Orientations o) const
+bool DAAbstractNodeLinkGraphicsItem::PrivateData::isLinkPointNameVisible(DAAbstractNodeLinkGraphicsItem::Orientations o) const
 {
     switch (o) {
     case DAAbstractNodeLinkGraphicsItem::OrientationFrom:
-        return (_fromTextItem->isVisible());
+        return (mFromTextItem->isVisible());
 
     case DAAbstractNodeLinkGraphicsItem::OrientationTo:
-        return (_toTextItem->isVisible());
+        return (mToTextItem->isVisible());
 
     default:
         break;
     }
-    return (_fromTextItem->isVisible() && _toTextItem->isVisible());
+    return (mFromTextItem->isVisible() && mToTextItem->isVisible());
 }
 
-void DAAbstractNodeLinkGraphicsItemPrivate::updateLinkPointNameText(QGraphicsSimpleTextItem* item,
-                                                                    const QPointF& p,
-                                                                    const DANodeLinkPoint& pl,
-                                                                    int offset)
+void DAAbstractNodeLinkGraphicsItem::PrivateData::updateLinkPointNameText(QGraphicsSimpleTextItem* item,
+                                                                          const QPointF& p,
+                                                                          const DANodeLinkPoint& pl,
+                                                                          int offset)
 {
     item->setText(pl.name);
     int hoff = item->boundingRect().height();
@@ -176,38 +168,38 @@ void DAAbstractNodeLinkGraphicsItemPrivate::updateLinkPointNameText(QGraphicsSim
     }
 }
 
-void DAAbstractNodeLinkGraphicsItemPrivate::updateLinkPointNameText()
+void DAAbstractNodeLinkGraphicsItem::PrivateData::updateLinkPointNameText()
 {
-    updateLinkPointNameText(_fromTextItem, _fromPos, _fromPoint, _pointTextPositionOffset.first);
-    updateLinkPointNameText(_toTextItem, _toPos, _toPoint, _pointTextPositionOffset.second);
+    updateLinkPointNameText(mFromTextItem, mFromPos, mFromPoint, mPointTextPositionOffset.first);
+    updateLinkPointNameText(mToTextItem, mToPos, mToPoint, mPointTextPositionOffset.second);
 }
 
-void DAAbstractNodeLinkGraphicsItemPrivate::setPointTextColor(const QColor& c, DAAbstractNodeLinkGraphicsItem::Orientations o)
+void DAAbstractNodeLinkGraphicsItem::PrivateData::setPointTextColor(const QColor& c, DAAbstractNodeLinkGraphicsItem::Orientations o)
 {
     switch (o) {
     case DAAbstractNodeLinkGraphicsItem::OrientationFrom:
-        _fromTextItem->setBrush(c);
+        mFromTextItem->setBrush(c);
         break;
 
     case DAAbstractNodeLinkGraphicsItem::OrientationTo:
-        _toTextItem->setBrush(c);
+        mToTextItem->setBrush(c);
         break;
 
     default:
-        _fromTextItem->setBrush(c);
-        _toTextItem->setBrush(c);
+        mFromTextItem->setBrush(c);
+        mToTextItem->setBrush(c);
         break;
     }
 }
 
-QColor DAAbstractNodeLinkGraphicsItemPrivate::getPointTextColor(DAAbstractNodeLinkGraphicsItem::Orientations o) const
+QColor DAAbstractNodeLinkGraphicsItem::PrivateData::getPointTextColor(DAAbstractNodeLinkGraphicsItem::Orientations o) const
 {
     switch (o) {
     case DAAbstractNodeLinkGraphicsItem::OrientationFrom:
-        return (_fromTextItem->brush().color());
+        return (mFromTextItem->brush().color());
 
     case DAAbstractNodeLinkGraphicsItem::OrientationTo:
-        return (_toTextItem->brush().color());
+        return (mToTextItem->brush().color());
 
     default:
         break;
@@ -215,32 +207,32 @@ QColor DAAbstractNodeLinkGraphicsItemPrivate::getPointTextColor(DAAbstractNodeLi
     return (QColor());
 }
 
-void DAAbstractNodeLinkGraphicsItemPrivate::setPointTextPositionOffset(int offset, DAAbstractNodeLinkGraphicsItem::Orientations o)
+void DAAbstractNodeLinkGraphicsItem::PrivateData::setPointTextPositionOffset(int offset, DAAbstractNodeLinkGraphicsItem::Orientations o)
 {
     switch (o) {
     case DAAbstractNodeLinkGraphicsItem::OrientationFrom:
-        _pointTextPositionOffset.first = offset;
+        mPointTextPositionOffset.first = offset;
         break;
 
     case DAAbstractNodeLinkGraphicsItem::OrientationTo:
-        _pointTextPositionOffset.second = offset;
+        mPointTextPositionOffset.second = offset;
         break;
 
     default:
-        _pointTextPositionOffset.first  = offset;
-        _pointTextPositionOffset.second = offset;
+        mPointTextPositionOffset.first  = offset;
+        mPointTextPositionOffset.second = offset;
         break;
     }
 }
 
-int DAAbstractNodeLinkGraphicsItemPrivate::getPointTextPositionOffset(DAAbstractNodeLinkGraphicsItem::Orientations o) const
+int DAAbstractNodeLinkGraphicsItem::PrivateData::getPointTextPositionOffset(DAAbstractNodeLinkGraphicsItem::Orientations o) const
 {
     switch (o) {
     case DAAbstractNodeLinkGraphicsItem::OrientationFrom:
-        return (_pointTextPositionOffset.first);
+        return (mPointTextPositionOffset.first);
 
     case DAAbstractNodeLinkGraphicsItem::OrientationTo:
-        return (_pointTextPositionOffset.second);
+        return (mPointTextPositionOffset.second);
 
     default:
         break;
@@ -252,36 +244,35 @@ int DAAbstractNodeLinkGraphicsItemPrivate::getPointTextPositionOffset(DAAbstract
  * @brief 处于连接状态中，开始有，结束还未有
  * @return
  */
-bool DAAbstractNodeLinkGraphicsItemPrivate::isStartLinking() const
+bool DAAbstractNodeLinkGraphicsItem::PrivateData::isStartLinking() const
 {
-    return ((_fromItem != nullptr) && (_toItem == nullptr));
+    return ((mFromItem != nullptr) && (mToItem == nullptr));
 }
 
 /**
  * @brief 已经完成连接
  * @return
  */
-bool DAAbstractNodeLinkGraphicsItemPrivate::isLinked() const
+bool DAAbstractNodeLinkGraphicsItem::PrivateData::isLinked() const
 {
-    return ((_fromItem != nullptr) && (_toItem != nullptr));
+    return ((mFromItem != nullptr) && (mToItem != nullptr));
 }
 /**
  * @brief 更新文本位置
  */
-void DAAbstractNodeLinkGraphicsItemPrivate::updateTextPos()
+void DAAbstractNodeLinkGraphicsItem::PrivateData::updateTextPos()
 {
-    if (nullptr == _textItem) {
+    if (nullptr == mTextItem) {
         return;
     }
-    _textItem->setPos(_linkCenterPoint.x() + _textItemSpace, _linkCenterPoint.y());
+    mTextItem->setPos(mLinkCenterPoint.x() + mTextItemSpace, mLinkCenterPoint.y());
 }
 
 //////////////////////////////////////////////////////////////
 /// DAAbstractNodeLinkGraphicsItem
 //////////////////////////////////////////////////////////////
 
-DAAbstractNodeLinkGraphicsItem::DAAbstractNodeLinkGraphicsItem(QGraphicsItem* p)
-    : QGraphicsItem(p), d_ptr(new DAAbstractNodeLinkGraphicsItemPrivate(this))
+DAAbstractNodeLinkGraphicsItem::DAAbstractNodeLinkGraphicsItem(QGraphicsItem* p) : QGraphicsItem(p), DA_PIMPL_CONSTRUCT
 {
     setFlags(flags() | ItemIsSelectable);
     setEndPointType(OrientationFrom, EndPointNone);
@@ -292,7 +283,7 @@ DAAbstractNodeLinkGraphicsItem::DAAbstractNodeLinkGraphicsItem(QGraphicsItem* p)
 DAAbstractNodeLinkGraphicsItem::DAAbstractNodeLinkGraphicsItem(DAAbstractNodeGraphicsItem* from,
                                                                const DA::DANodeLinkPoint& pl,
                                                                QGraphicsItem* p)
-    : QGraphicsItem(p), d_ptr(new DAAbstractNodeLinkGraphicsItemPrivate(this))
+    : QGraphicsItem(p), d_ptr(new DAAbstractNodeLinkGraphicsItem::PrivateData(this))
 {
     setFlags(flags() | ItemIsSelectable);
     attachFrom(from, pl);
@@ -303,7 +294,7 @@ DAAbstractNodeLinkGraphicsItem::DAAbstractNodeLinkGraphicsItem(DAAbstractNodeGra
 DAAbstractNodeLinkGraphicsItem::~DAAbstractNodeLinkGraphicsItem()
 {
     //析构时d调用FCAbstractNodeGraphicsItem::callItemLinkIsDestroying移除item对应记录的link
-    if (d_ptr->_autoDetachLink) {
+    if (d_ptr->mAutoDetachLink) {
         detachFrom();
         detachTo();
     }
@@ -315,7 +306,7 @@ DAAbstractNodeLinkGraphicsItem::~DAAbstractNodeLinkGraphicsItem()
  */
 void DAAbstractNodeLinkGraphicsItem::setLinkLineStyle(LinkLineStyle s)
 {
-    d_ptr->_linkLineStyle = s;
+    d_ptr->mLinkLineStyle = s;
     updateBoundingRect();
 }
 
@@ -325,7 +316,7 @@ void DAAbstractNodeLinkGraphicsItem::setLinkLineStyle(LinkLineStyle s)
  */
 DAAbstractNodeLinkGraphicsItem::LinkLineStyle DAAbstractNodeLinkGraphicsItem::getLinkLineStyle() const
 {
-    return d_ptr->_linkLineStyle;
+    return d_ptr->mLinkLineStyle;
 }
 
 /**
@@ -336,11 +327,11 @@ void DAAbstractNodeLinkGraphicsItem::updatePos()
 {
     DANodeGraphicsScene* sc = d_ptr->nodeScene();
 
-    if ((nullptr == d_ptr->_fromItem) || (nullptr == sc)) {
+    if ((nullptr == d_ptr->mFromItem) || (nullptr == sc)) {
         return;
     }
-    setPos(d_ptr->_fromItem->mapToScene(d_ptr->_fromPoint.position));
-    if (d_ptr->_toItem) {
+    setPos(d_ptr->mFromItem->mapToScene(d_ptr->mFromPoint.position));
+    if (d_ptr->mToItem) {
         updateBoundingRect();
     }
 }
@@ -354,43 +345,53 @@ void DAAbstractNodeLinkGraphicsItem::updateBoundingRect()
     }
     //! 通过调用prepareGeometryChange()通知范围变更，避免出现残影
     prepareGeometryChange();
-    d_ptr->_fromPos = QPointF(0, 0);
-    d_ptr->_toPos   = QPointF(100, 100);
-    if ((d_ptr->_fromItem == nullptr) && (d_ptr->_toItem == nullptr)) {
+    d_ptr->mFromPos = QPointF(0, 0);
+    d_ptr->mToPos   = QPointF(100, 100);
+    if ((d_ptr->mFromItem == nullptr) && (d_ptr->mToItem == nullptr)) {
         //都是空退出
-        d_ptr->_fromPoint.direction = DANodeLinkPoint::East;
-        d_ptr->_toPoint.direction   = DANodeLinkPoint::West;
+        d_ptr->mFromPoint.direction = DANodeLinkPoint::East;
+        d_ptr->mToPoint.direction   = DANodeLinkPoint::West;
         generatePainterPath();
-        d_ptr->_boundingRect = d_ptr->_linePath.boundingRect().adjusted(-2, -2, 2, 2);  //留足选中后画笔变宽的绘制余量
+        d_ptr->mBoundingRect = d_ptr->mLinePath.boundingRect().adjusted(-2, -2, 2, 2);  //留足选中后画笔变宽的绘制余量
         return;
-    } else if ((d_ptr->_fromItem != nullptr) && (d_ptr->_toItem == nullptr)) {
+    } else if ((d_ptr->mFromItem != nullptr) && (d_ptr->mToItem == nullptr)) {
         //只设定了一个from
         // to要根据scene的鼠标位置实时刷新
-        d_ptr->_toPos = mapFromScene(sc->getCurrentMouseScenePos());
+        d_ptr->mToPos = mapFromScene(sc->getCurrentMouseScenePos());
         // 为了不覆盖点击，d_ptr->_toPos要做2像素偏移
-        if (d_ptr->_toPos.x() > d_ptr->_fromPos.x()) {
-            d_ptr->_toPos.rx() -= 2;
+        if (d_ptr->mToPos.x() > d_ptr->mFromPos.x()) {
+            d_ptr->mToPos.rx() -= 2;
         } else {
-            d_ptr->_toPos.rx() += 2;
+            d_ptr->mToPos.rx() += 2;
         }
-        if (d_ptr->_toPos.y() > d_ptr->_fromPos.y()) {
-            d_ptr->_toPos.ry() -= 2;
+        if (d_ptr->mToPos.y() > d_ptr->mFromPos.y()) {
+            d_ptr->mToPos.ry() -= 2;
         } else {
-            d_ptr->_toPos.ry() += 2;
+            d_ptr->mToPos.ry() += 2;
         }
-        d_ptr->_toPoint.direction = DANodeLinkPoint::oppositeDirection(d_ptr->_fromPoint.direction);
+        d_ptr->mToPoint.direction = DANodeLinkPoint::oppositeDirection(d_ptr->mFromPoint.direction);
         generatePainterPath();
-        d_ptr->_boundingRect = d_ptr->_linePath.boundingRect().adjusted(-2, -2, 2, 2);  //留足选中后画笔变宽的绘制余量
-    } else if ((d_ptr->_fromItem != nullptr) && (d_ptr->_toItem != nullptr)) {
+        d_ptr->mBoundingRect = d_ptr->mLinePath.boundingRect().adjusted(-2, -2, 2, 2);  //留足选中后画笔变宽的绘制余量
+    } else if ((d_ptr->mFromItem != nullptr) && (d_ptr->mToItem != nullptr)) {
         //两个都不为空
-        d_ptr->_toPos = mapFromItem(d_ptr->_toItem, d_ptr->_toPoint.position);
+        d_ptr->mToPos = mapFromItem(d_ptr->mToItem, d_ptr->mToPoint.position);
         generatePainterPath();
-        d_ptr->_boundingRect = d_ptr->_linePath.boundingRect().adjusted(-2, -2, 2, 2);  //留足选中后画笔变宽的绘制余量
+        d_ptr->mBoundingRect = d_ptr->mLinePath.boundingRect().adjusted(-2, -2, 2, 2);  //留足选中后画笔变宽的绘制余量
     } else {
         generatePainterPath();
-        d_ptr->_boundingRect = d_ptr->_linePath.boundingRect().adjusted(-2, -2, 2, 2);  //留足选中后画笔变宽的绘制余量
+        d_ptr->mBoundingRect = d_ptr->mLinePath.boundingRect().adjusted(-2, -2, 2, 2);  //留足选中后画笔变宽的绘制余量
         //        qDebug() << "occ unknow link type,please check!, from item:" << d_ptr->_fromItem << " to item:" << d_ptr->_toItem;
     }
+    boundingRectChanged(d_ptr->mBoundingRect);
+}
+
+/**
+ * @brief boundingRect改变的回调,此函数可以用户重载实现一些附加item的绘制
+ * @param boundrect
+ */
+void DAAbstractNodeLinkGraphicsItem::boundingRectChanged(const QRectF& boundrect)
+{
+    Q_UNUSED(boundrect);
     d_ptr->updateLinkPointNameText();
     d_ptr->updateTextPos();
 }
@@ -451,7 +452,7 @@ qreal DAAbstractNodeLinkGraphicsItem::pointLength(const QPointF& a, const QPoint
  */
 void DAAbstractNodeLinkGraphicsItem::setBezierControlScale(qreal rate)
 {
-    d_ptr->_bezierControlScale = rate;
+    d_ptr->mBezierControlScale = rate;
 }
 
 /**
@@ -460,7 +461,7 @@ void DAAbstractNodeLinkGraphicsItem::setBezierControlScale(qreal rate)
  */
 qreal DAAbstractNodeLinkGraphicsItem::getBezierControlScale() const
 {
-    return (d_ptr->_bezierControlScale);
+    return (d_ptr->mBezierControlScale);
 }
 
 /**
@@ -469,7 +470,7 @@ qreal DAAbstractNodeLinkGraphicsItem::getBezierControlScale() const
  */
 void DAAbstractNodeLinkGraphicsItem::setLinePen(const QPen& p)
 {
-    d_ptr->_linePen = p;
+    d_ptr->mLinePen = p;
 }
 
 /**
@@ -478,7 +479,7 @@ void DAAbstractNodeLinkGraphicsItem::setLinePen(const QPen& p)
  */
 QPen DAAbstractNodeLinkGraphicsItem::getLinePen() const
 {
-    return (d_ptr->_linePen);
+    return (d_ptr->mLinePen);
 }
 
 /**
@@ -541,30 +542,30 @@ int DAAbstractNodeLinkGraphicsItem::getLinkPointNamePositionOffset(DAAbstractNod
 
 QGraphicsSimpleTextItem* DAAbstractNodeLinkGraphicsItem::getFromTextItem() const
 {
-    return (d_ptr->_fromTextItem);
+    return (d_ptr->mFromTextItem);
 }
 
 QGraphicsSimpleTextItem* DAAbstractNodeLinkGraphicsItem::getToTextItem() const
 {
-    return (d_ptr->_toTextItem);
+    return (d_ptr->mToTextItem);
 }
 
 QRectF DAAbstractNodeLinkGraphicsItem::boundingRect() const
 {
-    return (d_ptr->_boundingRect);
+    return (d_ptr->mBoundingRect);
 }
 
 QPainterPath DAAbstractNodeLinkGraphicsItem::shape() const
 {
-    return (d_ptr->_lineShapePath);
+    return (d_ptr->mLineShapePath);
 }
 
 void DAAbstractNodeLinkGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
     painter->save();
-    paintLinkLine(painter, option, widget, d_ptr->_linePath);
-    paintEndPoint(painter, option, d_ptr->_fromPos, d_ptr->_fromPoint);
-    paintEndPoint(painter, option, d_ptr->_toPos, d_ptr->_toPoint);
+    paintLinkLine(painter, option, widget, d_ptr->mLinePath);
+    paintEndPoint(painter, option, d_ptr->mFromPos, d_ptr->mFromPoint);
+    paintEndPoint(painter, option, d_ptr->mToPos, d_ptr->mToPoint);
     painter->restore();
 }
 
@@ -581,7 +582,7 @@ void DAAbstractNodeLinkGraphicsItem::paintLinkLine(QPainter* painter,
                                                    const QPainterPath& linkPath)
 {
     Q_UNUSED(widget);
-    QPen pen = d_ptr->_linePen;
+    QPen pen = d_ptr->mLinePen;
 
     if (d_ptr->isStartLinking()) {
         pen.setStyle(Qt::DashLine);
@@ -613,12 +614,12 @@ void DAAbstractNodeLinkGraphicsItem::paintEndPoint(QPainter* painter,
                                                    const QPointF& p,
                                                    const DANodeLinkPoint& pl)
 {
-    if (d_ptr->_fromEndPointType == EndPointNone && d_ptr->_toEndPointType == EndPointNone) {
+    if (d_ptr->mFromEndPointType == EndPointNone && d_ptr->mToEndPointType == EndPointNone) {
         return;
     }
     //根据DANodeLinkPoint计算旋转的角度
     painter->save();
-    QPen pen = d_ptr->_linePen;
+    QPen pen = d_ptr->mLinePen;
     if (option->state.testFlag(QStyle::State_Selected)) {
         //说明选中了
         pen.setWidth(pen.width() + 2);
@@ -628,9 +629,9 @@ void DAAbstractNodeLinkGraphicsItem::paintEndPoint(QPainter* painter,
     painter->setBrush(pen.color());
     painter->translate(p);
     qreal rotate = 0;
-    if (d_ptr->_linkLineStyle == LinkLineStraight) {
+    if (d_ptr->mLinkLineStyle == LinkLineStraight) {
         //直线的角度需要计算
-        QLineF lf(d_ptr->_fromPos, d_ptr->_toPos);
+        QLineF lf(d_ptr->mFromPos, d_ptr->mToPos);
         if (pl.isOutput()) {
             rotate = 270 - lf.angle();
         } else {
@@ -655,10 +656,10 @@ void DAAbstractNodeLinkGraphicsItem::paintEndPoint(QPainter* painter,
         }
     }
     painter->rotate(rotate);
-    if (pl.isOutput() && d_ptr->_fromEndPointType != EndPointNone) {
-        painter->drawPath(d_ptr->_fromEndPointPainterPath);
-    } else if (pl.isInput() && d_ptr->_toEndPointType != EndPointNone) {
-        painter->drawPath(d_ptr->_toEndPointPainterPath);
+    if (pl.isOutput() && d_ptr->mFromEndPointType != EndPointNone) {
+        painter->drawPath(d_ptr->mFromEndPointPainterPath);
+    } else if (pl.isInput() && d_ptr->mToEndPointType != EndPointNone) {
+        painter->drawPath(d_ptr->mToEndPointPainterPath);
     }
     painter->restore();
 }
@@ -710,11 +711,15 @@ bool DAAbstractNodeLinkGraphicsItem::attachFrom(DAAbstractNodeGraphicsItem* item
         item->prepareLinkOutputFailed(pl);
         return (false);
     }
-    d_ptr->_fromItem  = item;
-    d_ptr->_fromPoint = pl;
+    d_ptr->mFromItem  = item;
+    d_ptr->mFromPoint = pl;
     d_ptr->updateLinkPointNameText();
     item->linked(this, pl);
     item->prepareLinkOutputSucceed(pl);
+    if (toNodeItem()) {
+        //终点已经链接
+        finishedLink();
+    }
     return (true);
 }
 
@@ -727,12 +732,12 @@ bool DAAbstractNodeLinkGraphicsItem::attachFrom(DAAbstractNodeGraphicsItem* item
  */
 void DAAbstractNodeLinkGraphicsItem::detachFrom()
 {
-    if (d_ptr->_fromItem) {
-        d_ptr->_fromItem->linkItemRemoved(this, d_ptr->_fromPoint);
-        d_ptr->_fromItem->node()->detachLink(d_ptr->_fromPoint.name);  //断开连接
-        d_ptr->_fromItem = nullptr;
+    if (d_ptr->mFromItem) {
+        d_ptr->mFromItem->linkItemRemoved(this, d_ptr->mFromPoint);
+        d_ptr->mFromItem->node()->detachLink(d_ptr->mFromPoint.name);  //断开连接
+        d_ptr->mFromItem = nullptr;
     }
-    d_ptr->_fromPoint = DANodeLinkPoint();
+    d_ptr->mFromPoint = DANodeLinkPoint();
 }
 
 bool DAAbstractNodeLinkGraphicsItem::attachTo(DAAbstractNodeGraphicsItem* item, const QString& name)
@@ -755,17 +760,21 @@ bool DAAbstractNodeLinkGraphicsItem::attachTo(DAAbstractNodeGraphicsItem* item, 
         return (false);
     }
     //这个函数才完成一个节点的连接
-    DAAbstractNode::SharedPointer fnode = d_ptr->_fromItem->node();
+    DAAbstractNode::SharedPointer fnode = d_ptr->mFromItem->node();
     DAAbstractNode::SharedPointer tnode = item->node();
-    if (!fnode->linkTo(d_ptr->_fromPoint.name, tnode, pl.name)) {
+    if (!fnode->linkTo(d_ptr->mFromPoint.name, tnode, pl.name)) {
         item->prepareLinkInputFailed(pl, this);
         return (false);
     }
-    d_ptr->_toItem  = item;
-    d_ptr->_toPoint = pl;
+    d_ptr->mToItem  = item;
+    d_ptr->mToPoint = pl;
     d_ptr->updateLinkPointNameText();
     item->linked(this, pl);
     item->prepareLinkInputSucceed(pl, this);
+    if (fromNodeItem()) {
+        //起点已经链接
+        finishedLink();
+    }
     return (true);
 }
 
@@ -777,12 +786,12 @@ bool DAAbstractNodeLinkGraphicsItem::attachTo(DAAbstractNodeGraphicsItem* item, 
  */
 void DAAbstractNodeLinkGraphicsItem::detachTo()
 {
-    if (d_ptr->_toItem) {
-        d_ptr->_toItem->linkItemRemoved(this, d_ptr->_toPoint);
-        d_ptr->_toItem->node()->detachLink(d_ptr->_toPoint.name);  //断开连接
-        d_ptr->_toItem = nullptr;
+    if (d_ptr->mToItem) {
+        d_ptr->mToItem->linkItemRemoved(this, d_ptr->mToPoint);
+        d_ptr->mToItem->node()->detachLink(d_ptr->mToPoint.name);  //断开连接
+        d_ptr->mToItem = nullptr;
     }
-    d_ptr->_toPoint = DANodeLinkPoint();
+    d_ptr->mToPoint = DANodeLinkPoint();
 }
 
 /**
@@ -799,7 +808,7 @@ bool DAAbstractNodeLinkGraphicsItem::isLinked() const
  */
 void DAAbstractNodeLinkGraphicsItem::updateFromLinkPointInfo(const DANodeLinkPoint& pl)
 {
-    d_ptr->_fromPoint = pl;
+    d_ptr->mFromPoint = pl;
     updatePos();
     updateBoundingRect();
 }
@@ -809,7 +818,7 @@ void DAAbstractNodeLinkGraphicsItem::updateFromLinkPointInfo(const DANodeLinkPoi
  */
 void DAAbstractNodeLinkGraphicsItem::updateToLinkPointInfo(const DANodeLinkPoint& pl)
 {
-    d_ptr->_toPoint = pl;
+    d_ptr->mToPoint = pl;
     updatePos();
     updateBoundingRect();
 }
@@ -822,30 +831,30 @@ void DAAbstractNodeLinkGraphicsItem::generatePainterPath()
 {
     switch (getLinkLineStyle()) {
     case LinkLineBezier:
-        d_ptr->_linePath = generateLinkLineBezierPainterPath(d_ptr->_fromPos,
-                                                             d_ptr->_fromPoint.direction,
-                                                             d_ptr->_toPos,
-                                                             d_ptr->_toPoint.direction);
+        d_ptr->mLinePath = generateLinkLineBezierPainterPath(d_ptr->mFromPos,
+                                                             d_ptr->mFromPoint.direction,
+                                                             d_ptr->mToPos,
+                                                             d_ptr->mToPoint.direction);
         break;
     case LinkLineStraight:
-        d_ptr->_linePath = generateLinkLineStraightPainterPath(d_ptr->_fromPos,
-                                                               d_ptr->_fromPoint.direction,
-                                                               d_ptr->_toPos,
-                                                               d_ptr->_toPoint.direction);
+        d_ptr->mLinePath = generateLinkLineStraightPainterPath(d_ptr->mFromPos,
+                                                               d_ptr->mFromPoint.direction,
+                                                               d_ptr->mToPos,
+                                                               d_ptr->mToPoint.direction);
         break;
     case LinkLineKnuckle:
-        d_ptr->_linePath = generateLinkLineKnucklePainterPath(d_ptr->_fromPos,
-                                                              d_ptr->_fromPoint.direction,
-                                                              d_ptr->_toPos,
-                                                              d_ptr->_toPoint.direction);
+        d_ptr->mLinePath = generateLinkLineKnucklePainterPath(d_ptr->mFromPos,
+                                                              d_ptr->mFromPoint.direction,
+                                                              d_ptr->mToPos,
+                                                              d_ptr->mToPoint.direction);
         break;
     default:
         break;
     }
-    int w = d_ptr->_linePen.width() + 2;
+    int w = d_ptr->mLinePen.width() + 2;
     QPainterPathStroker stroker;
     stroker.setWidth((w < 6) ? 6 : w);
-    d_ptr->_lineShapePath = stroker.createStroke(d_ptr->_linePath);
+    d_ptr->mLineShapePath = stroker.createStroke(d_ptr->mLinePath);
 }
 
 /**
@@ -875,7 +884,7 @@ QPainterPath DAAbstractNodeLinkGraphicsItem::generateLinkLineBezierPainterPath(c
     QPainterPath path;
     path.moveTo(fromPos);
     path.cubicTo(fromcCrtlPoint, toCrtlPoint, toPos);
-    d_ptr->_linkCenterPoint = path.pointAtPercent(0.5);
+    d_ptr->mLinkCenterPoint = path.pointAtPercent(0.5);
     return path;
 }
 
@@ -889,7 +898,7 @@ QPainterPath DAAbstractNodeLinkGraphicsItem::generateLinkLineStraightPainterPath
     QPainterPath path;
     path.moveTo(fromPos);
     path.lineTo(toPos);
-    d_ptr->_linkCenterPoint = path.pointAtPercent(0.5);
+    d_ptr->mLinkCenterPoint = path.pointAtPercent(0.5);
     return path;
 }
 
@@ -1004,7 +1013,7 @@ QPainterPath DAAbstractNodeLinkGraphicsItem::generateLinkLineKnucklePainterPath(
     }
     path.lineTo(extendTo);
     path.lineTo(toPos);
-    d_ptr->_linkCenterPoint = path.pointAtPercent(0.5);
+    d_ptr->mLinkCenterPoint = path.pointAtPercent(0.5);
     return path;
 }
 
@@ -1016,21 +1025,21 @@ void DAAbstractNodeLinkGraphicsItem::setText(const QString& t)
 {
     //设置null字符就销毁item
     if (t.isNull()) {
-        if (d_ptr->_textItem) {
-            delete d_ptr->_textItem;
-            d_ptr->_textItem = nullptr;
+        if (d_ptr->mTextItem) {
+            delete d_ptr->mTextItem;
+            d_ptr->mTextItem = nullptr;
             update();
         }
         return;
     }
-    if (d_ptr->_textItem == nullptr) {
-        d_ptr->_textItem = new QGraphicsSimpleTextItem(this);
-        d_ptr->_textItem->setFlag(ItemIsSelectable, true);
-        d_ptr->_textItem->setFlag(ItemIsMovable, false);
+    if (d_ptr->mTextItem == nullptr) {
+        d_ptr->mTextItem = new QGraphicsSimpleTextItem(this);
+        d_ptr->mTextItem->setFlag(ItemIsSelectable, true);
+        d_ptr->mTextItem->setFlag(ItemIsMovable, false);
         //默认位置在中间
         d_ptr->updateTextPos();
     }
-    d_ptr->_textItem->setText(t);
+    d_ptr->mTextItem->setText(t);
 }
 
 /**
@@ -1039,10 +1048,10 @@ void DAAbstractNodeLinkGraphicsItem::setText(const QString& t)
  */
 QString DAAbstractNodeLinkGraphicsItem::getText() const
 {
-    if (d_ptr->_textItem == nullptr) {
+    if (d_ptr->mTextItem == nullptr) {
         return QString();
     }
-    return d_ptr->_textItem->text();
+    return d_ptr->mTextItem->text();
 }
 
 /**
@@ -1051,7 +1060,7 @@ QString DAAbstractNodeLinkGraphicsItem::getText() const
  */
 QGraphicsSimpleTextItem* DAAbstractNodeLinkGraphicsItem::getTextItem()
 {
-    return d_ptr->_textItem;
+    return d_ptr->mTextItem;
 }
 
 /**
@@ -1060,7 +1069,7 @@ QGraphicsSimpleTextItem* DAAbstractNodeLinkGraphicsItem::getTextItem()
  */
 DAAbstractNodeGraphicsItem* DAAbstractNodeLinkGraphicsItem::fromNodeItem() const
 {
-    return d_ptr->_fromItem;
+    return d_ptr->mFromItem;
 }
 
 /**
@@ -1069,7 +1078,7 @@ DAAbstractNodeGraphicsItem* DAAbstractNodeLinkGraphicsItem::fromNodeItem() const
  */
 DAAbstractNodeGraphicsItem* DAAbstractNodeLinkGraphicsItem::toNodeItem() const
 {
-    return d_ptr->_toItem;
+    return d_ptr->mToItem;
 }
 /**
  * @brief from的连接点
@@ -1077,7 +1086,7 @@ DAAbstractNodeGraphicsItem* DAAbstractNodeLinkGraphicsItem::toNodeItem() const
  */
 DANodeLinkPoint DAAbstractNodeLinkGraphicsItem::fromNodeLinkPoint() const
 {
-    return d_ptr->_fromPoint;
+    return d_ptr->mFromPoint;
 }
 /**
  * @brief to的连接点
@@ -1085,7 +1094,7 @@ DANodeLinkPoint DAAbstractNodeLinkGraphicsItem::fromNodeLinkPoint() const
  */
 DANodeLinkPoint DAAbstractNodeLinkGraphicsItem::toNodeLinkPoint() const
 {
-    return d_ptr->_toPoint;
+    return d_ptr->mToPoint;
 }
 
 /**
@@ -1094,10 +1103,10 @@ DANodeLinkPoint DAAbstractNodeLinkGraphicsItem::toNodeLinkPoint() const
  */
 DAAbstractNode::SharedPointer DAAbstractNodeLinkGraphicsItem::fromNode() const
 {
-    if (nullptr == d_ptr->_fromItem) {
+    if (nullptr == d_ptr->mFromItem) {
         return nullptr;
     }
-    return d_ptr->_fromItem->node();
+    return d_ptr->mFromItem->node();
 }
 
 /**
@@ -1106,10 +1115,10 @@ DAAbstractNode::SharedPointer DAAbstractNodeLinkGraphicsItem::fromNode() const
  */
 DAAbstractNode::SharedPointer DAAbstractNodeLinkGraphicsItem::toNode() const
 {
-    if (nullptr == d_ptr->_toItem) {
+    if (nullptr == d_ptr->mToItem) {
         return nullptr;
     }
-    return d_ptr->_toItem->node();
+    return d_ptr->mToItem->node();
 }
 
 /**
@@ -1122,18 +1131,18 @@ void DAAbstractNodeLinkGraphicsItem::setEndPointType(DAAbstractNodeLinkGraphicsI
 {
     switch (o) {
     case OrientationFrom: {
-        if (d_ptr->_fromEndPointType == epType) {
+        if (d_ptr->mFromEndPointType == epType) {
             return;
         }
-        d_ptr->_fromEndPointType        = epType;
-        d_ptr->_fromEndPointPainterPath = generateEndPointPainterPath(epType, d_ptr->_endPointSize);
+        d_ptr->mFromEndPointType        = epType;
+        d_ptr->mFromEndPointPainterPath = generateEndPointPainterPath(epType, d_ptr->mEndPointSize);
     } break;
     case OrientationTo: {
-        if (d_ptr->_toEndPointType == epType) {
+        if (d_ptr->mToEndPointType == epType) {
             return;
         }
-        d_ptr->_toEndPointType        = epType;
-        d_ptr->_toEndPointPainterPath = generateEndPointPainterPath(epType, d_ptr->_endPointSize);
+        d_ptr->mToEndPointType        = epType;
+        d_ptr->mToEndPointPainterPath = generateEndPointPainterPath(epType, d_ptr->mEndPointSize);
     } break;
     case OrientationBoth: {
         setEndPointType(OrientationFrom, epType);
@@ -1153,13 +1162,13 @@ DAAbstractNodeLinkGraphicsItem::EndPointType DAAbstractNodeLinkGraphicsItem::get
 {
     switch (o) {
     case OrientationFrom:
-        return d_ptr->_fromEndPointType;
+        return d_ptr->mFromEndPointType;
     case OrientationTo:
-        return d_ptr->_toEndPointType;
+        return d_ptr->mToEndPointType;
     default:
         break;
     }
-    return (d_ptr->_fromEndPointType == d_ptr->_toEndPointType) ? d_ptr->_fromEndPointType : EndPointNone;
+    return (d_ptr->mFromEndPointType == d_ptr->mToEndPointType) ? d_ptr->mFromEndPointType : EndPointNone;
 }
 
 /**
@@ -1168,12 +1177,12 @@ DAAbstractNodeLinkGraphicsItem::EndPointType DAAbstractNodeLinkGraphicsItem::get
  */
 void DAAbstractNodeLinkGraphicsItem::setEndPointSize(int size)
 {
-    if (d_ptr->_endPointSize == size) {
+    if (d_ptr->mEndPointSize == size) {
         return;
     }
-    d_ptr->_endPointSize            = size;
-    d_ptr->_fromEndPointPainterPath = generateEndPointPainterPath(d_ptr->_fromEndPointType, size);
-    d_ptr->_toEndPointPainterPath   = generateEndPointPainterPath(d_ptr->_toEndPointType, size);
+    d_ptr->mEndPointSize            = size;
+    d_ptr->mFromEndPointPainterPath = generateEndPointPainterPath(d_ptr->mFromEndPointType, size);
+    d_ptr->mToEndPointPainterPath   = generateEndPointPainterPath(d_ptr->mToEndPointType, size);
 }
 
 /**
@@ -1182,7 +1191,16 @@ void DAAbstractNodeLinkGraphicsItem::setEndPointSize(int size)
  */
 int DAAbstractNodeLinkGraphicsItem::getEndPointSize() const
 {
-    return d_ptr->_endPointSize;
+    return d_ptr->mEndPointSize;
+}
+
+/**
+ * @brief 完成链接的回调函数，to和from都链接完成才算完成链接
+ *
+ * 默认不做任何处理
+ */
+void DAAbstractNodeLinkGraphicsItem::finishedLink()
+{
 }
 
 QVariant DAAbstractNodeLinkGraphicsItem::itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant& value)
@@ -1207,15 +1225,15 @@ QVariant DAAbstractNodeLinkGraphicsItem::itemChange(QGraphicsItem::GraphicsItemC
 
 void DAAbstractNodeLinkGraphicsItem::callItemIsDestroying(DAAbstractNodeGraphicsItem* item, const DA::DANodeLinkPoint& pl)
 {
-    if ((d_ptr->_fromItem == item) && (d_ptr->_fromPoint == pl)) {
+    if ((d_ptr->mFromItem == item) && (d_ptr->mFromPoint == pl)) {
         //说明from要取消
-        d_ptr->_fromItem  = nullptr;
-        d_ptr->_fromPoint = DANodeLinkPoint();
-    } else if ((d_ptr->_toItem == item) && (d_ptr->_toPoint == pl)) {
+        d_ptr->mFromItem  = nullptr;
+        d_ptr->mFromPoint = DANodeLinkPoint();
+    } else if ((d_ptr->mToItem == item) && (d_ptr->mToPoint == pl)) {
         //说明to要取消
         qDebug() << "d_ptr->_toItem = nullptr";
-        d_ptr->_toItem  = nullptr;
-        d_ptr->_toPoint = DANodeLinkPoint();
+        d_ptr->mToItem  = nullptr;
+        d_ptr->mToPoint = DANodeLinkPoint();
     }
     //如果from和to都为空，这时就需要自动销毁
     DANodeGraphicsScene* sc = d_ptr->nodeScene();
@@ -1224,9 +1242,6 @@ void DAAbstractNodeLinkGraphicsItem::callItemIsDestroying(DAAbstractNodeGraphics
         sc->callNodeItemLinkIsEmpty(this);
     }
 }
-
-namespace DA
-{
 
 /**
  * @brief DAAbstractNodeLinkGraphicsItem::EndPointType的枚举转换

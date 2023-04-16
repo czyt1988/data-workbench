@@ -1,17 +1,17 @@
 ﻿#ifndef DAAPPACTIONS_H
 #define DAAPPACTIONS_H
-#include "DAAppActionsInterface.h"
+#include "DAActionsInterface.h"
 class QActionGroup;
 namespace DA
 {
 /**
  * @brief action管理
  */
-class DAAppActions : public DAAppActionsInterface
+class DAAppActions : public DAActionsInterface
 {
     Q_OBJECT
 public:
-    DAAppActions(DAAppUIInterface* u);
+    DAAppActions(DAUIInterface* u);
     ~DAAppActions();
     //发生语言变更时会调用此函数
     void retranslateUi() override;
@@ -86,9 +86,11 @@ public:
     //===================================================
     // 绘图标签 Chart Category
     //===================================================
-    QAction* actionAddFigure;               ///< 添加绘图
-    QAction* actionFigureResizeChart;       ///< 改变fig的chart大小
-    QAction* actionFigureNewXYAxis;         ///< 新增加一个2D绘图
+    QAction* actionAddFigure;          ///< 添加绘图
+    QAction* actionFigureResizeChart;  ///< 改变fig的chart大小
+    QAction* actionFigureNewXYAxis;    ///< 新增加一个2D绘图
+    QAction* actionChartAddCurve;      ///< 添加曲线
+
     QAction* actionChartEnableGrid;         ///< 网格显示总开关
     QAction* actionChartEnableGridX;        ///< 网格显示X开关
     QAction* actionChartEnableGridY;        ///< 网格显示Y开关

@@ -75,7 +75,7 @@
        </property>
        <property name="icon">
         <iconset resource="icon.qrc">
-         <normaloff>:/icon/icon/text-bold.svg</normaloff>:/icon/icon/text-bold.svg</iconset>
+         <normaloff>:/commonWidget/icon/icon/text-bold.svg</normaloff>:/commonWidget/icon/icon/text-bold.svg</iconset>
        </property>
        <property name="checkable">
         <bool>true</bool>
@@ -104,7 +104,7 @@
        </property>
        <property name="icon">
         <iconset resource="icon.qrc">
-         <normaloff>:/icon/icon/text-italic.svg</normaloff>:/icon/icon/text-italic.svg</iconset>
+         <normaloff>:/commonWidget/icon/icon/text-italic.svg</normaloff>:/commonWidget/icon/icon/text-italic.svg</iconset>
        </property>
        <property name="checkable">
         <bool>true</bool>
@@ -133,7 +133,7 @@
        </property>
        <property name="icon">
         <iconset resource="icon.qrc">
-         <normaloff>:/icon/icon/text-underline.svg</normaloff>:/icon/icon/text-underline.svg</iconset>
+         <normaloff>:/commonWidget/icon/icon/text-underline.svg</normaloff>:/commonWidget/icon/icon/text-underline.svg</iconset>
        </property>
        <property name="checkable">
         <bool>true</bool>
@@ -144,7 +144,7 @@
       </widget>
      </item>
      <item>
-      <widget class="DA::DAColorPickerButton" name="pushButtonColor">
+      <widget class="DA::DAColorPickerButton" name="colorButton">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -159,6 +159,9 @@
        </property>
        <property name="text">
         <string/>
+       </property>
+       <property name="autoRaise">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -188,7 +191,7 @@
        </property>
        <property name="icon">
         <iconset resource="icon.qrc">
-         <normaloff>:/icon/icon/font-size-add.svg</normaloff>:/icon/icon/font-size-add.svg</iconset>
+         <normaloff>:/commonWidget/icon/icon/font-size-add.svg</normaloff>:/commonWidget/icon/icon/font-size-add.svg</iconset>
        </property>
        <property name="autoRaise">
         <bool>true</bool>
@@ -208,7 +211,7 @@
        </property>
        <property name="icon">
         <iconset resource="icon.qrc">
-         <normaloff>:/icon/icon/font-size-sub.svg</normaloff>:/icon/icon/font-size-sub.svg</iconset>
+         <normaloff>:/commonWidget/icon/icon/font-size-sub.svg</normaloff>:/commonWidget/icon/icon/font-size-sub.svg</iconset>
        </property>
        <property name="autoRaise">
         <bool>true</bool>
@@ -222,7 +225,7 @@
  <customwidgets>
   <customwidget>
    <class>DA::DAColorPickerButton</class>
-   <extends>QPushButton</extends>
+   <extends>QToolButton</extends>
    <header>DAColorPickerButton.h</header>
   </customwidget>
  </customwidgets>

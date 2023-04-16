@@ -22,10 +22,11 @@ $$commonProAppSet($${TARGET})
 
 
 include($${DA_SRC_DIR}/DAPluginSupport/DAPluginSupport.pri)
-
+include($$PWD/SettingPages/SettingPages.pri)
 SOURCES += \
     AppMainWindow.cpp \
     DAAppActions.cpp \
+    DAAppChartOperateWidget.cpp \
     DAAppCommand.cpp \
     DAAppController.cpp \
     DAAppCore.cpp \
@@ -34,20 +35,21 @@ SOURCES += \
     DAAppFigureFactory.cpp \
     DAAppFigureWidget.cpp \
     DAAppPluginManager.cpp \
+    DAAppProject.cpp \
     DAAppRibbonArea.cpp \
     DAAppUI.cpp \
     DAAppWorkFlowOperateWidget.cpp \
     DAGuideTabWidget.cpp \
-    DAWaitCursorScoped.cpp \
     DAWordWrapItemDelegate.cpp \
     DADataWorkFlow.cpp \
     DAPluginManagerDialog.cpp \
-    DAProject.cpp \
+    DAAppSettingDialog.cpp \
     main.cpp
 
 HEADERS += \
     AppMainWindow.h \
     DAAppActions.h \
+    DAAppChartOperateWidget.h \
     DAAppCommand.h \
     DAAppController.h \
     DAAppCore.h \
@@ -56,16 +58,16 @@ HEADERS += \
     DAAppFigureFactory.h \
     DAAppFigureWidget.h \
     DAAppPluginManager.h \
+    DAAppProject.h \
     DAAppRibbonArea.h \
     DAAppUI.h \
     DAAppWorkFlowOperateWidget.h \
     DADumpCapture.h \
     DAGuideTabWidget.h \
-    DAWaitCursorScoped.h \
     DAWordWrapItemDelegate.h \
     DADataWorkFlow.h \
     DAPluginManagerDialog.h \
-    DAProject.h
+    DAAppSettingDialog.h
 
 FORMS += \
     AppMainWindow.ui \

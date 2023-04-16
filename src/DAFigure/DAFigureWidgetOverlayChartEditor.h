@@ -5,14 +5,13 @@
 namespace DA
 {
 
-DA_IMPL_FORWARD_DECL(DAFigureWidgetOverlayChartEditor)
 ///
 /// \brief 用于辅助显示figure的子chart位置编辑的覆盖辅助窗体
 ///
 class DAFIGURE_API DAFigureWidgetOverlayChartEditor : public DAFigureWidgetOverlay
 {
     Q_OBJECT
-    DA_IMPL(DAFigureWidgetOverlayChartEditor)
+    DA_DECLARE_PRIVATE(DAFigureWidgetOverlayChartEditor)
 public:
     DAFigureWidgetOverlayChartEditor(DAFigureWidget* fig);
     ~DAFigureWidgetOverlayChartEditor();

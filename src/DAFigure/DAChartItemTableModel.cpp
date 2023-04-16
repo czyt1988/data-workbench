@@ -10,26 +10,29 @@
 #include "DAChartUtil.h"
 namespace DA
 {
-class DAChartItemTableModelPrivate
+class DAChartItemTableModel::PrivateData
 {
-    DA_IMPL_PUBLIC(DAChartItemTableModel)
+    DA_DECLARE_PUBLIC(DAChartItemTableModel)
 public:
-    QList< QwtPlotItem* > m_items;
-    QMap< QwtPlotItem*, int > m_itemsRowCount;
-    QMap< QwtPlotItem*, QColor > m_itemsColor;          ///< 记录item的颜色，以免频繁读取
-    QMap< QwtPlotItem*, int > m_itemsColumnStartIndex;  ///< 记录数据开始的那一列的索引
-    int m_rowCount;
-    bool m_enableBkColor;  ///< 是否允许背景色
-    int m_bkAlpha;         ///< 背景透明度
-    QMap< int, QPair< QwtPlotItem*, int > > m_columnMap;
-    DAChartItemTableModelPrivate(DAChartItemTableModel* d)
-        : q_ptr(d), m_rowCount(0), m_enableBkColor(true), m_bkAlpha(30)
+    bool mEnableBkColor { true };  ///< 是否允许背景色
+    int mRowCount { 0 };
+    int mBackgroundAlpha { 30 };  ///< 背景透明度
+    QList< QwtPlotItem* > mItems;
+    QMap< QwtPlotItem*, int > mItemsRowCount;
+    QMap< QwtPlotItem*, QColor > mItemsColor;          ///< 记录item的颜色，以免频繁读取
+    QMap< QwtPlotItem*, int > mItemsColumnStartIndex;  ///< 记录数据开始的那一列的索引
+    QMap< int, QPair< QwtPlotItem*, int > > mColumnMap;
+
+public:
+    PrivateData(DAChartItemTableModel* d) : q_ptr(d)
     {
     }
 };
 
-DAChartItemTableModel::DAChartItemTableModel(QObject* p)
-    : QAbstractTableModel(p), d_ptr(new DAChartItemTableModelPrivate(this))
+//===================================================
+// DAChartItemTableModel
+//===================================================
+DAChartItemTableModel::DAChartItemTableModel(QObject* p) : QAbstractTableModel(p), DA_PIMPL_CONSTRUCT
 {
 }
 
@@ -40,7 +43,7 @@ DAChartItemTableModel::~DAChartItemTableModel()
 void DAChartItemTableModel::setPlotItems(const QList< QwtPlotItem* >& items)
 {
     beginResetModel();
-    d_ptr->m_items = items;
+    d_ptr->mItems = items;
     updateRowCount();
     updateColumnCount();
     updateItemColor();
@@ -49,31 +52,31 @@ void DAChartItemTableModel::setPlotItems(const QList< QwtPlotItem* >& items)
 
 const QList< QwtPlotItem* >& DAChartItemTableModel::getPlotItems() const
 {
-    return d_ptr->m_items;
+    return d_ptr->mItems;
 }
 
 void DAChartItemTableModel::clear()
 {
     beginResetModel();
-    d_ptr->m_rowCount = 0;
-    d_ptr->m_items.clear();
-    d_ptr->m_itemsRowCount.clear();
-    d_ptr->m_itemsColor.clear();
-    d_ptr->m_itemsColumnStartIndex.clear();
-    d_ptr->m_columnMap.clear();
+    d_ptr->mRowCount = 0;
+    d_ptr->mItems.clear();
+    d_ptr->mItemsRowCount.clear();
+    d_ptr->mItemsColor.clear();
+    d_ptr->mItemsColumnStartIndex.clear();
+    d_ptr->mColumnMap.clear();
     endResetModel();
 }
 
 int DAChartItemTableModel::rowCount(const QModelIndex& parent) const
 {
     Q_UNUSED(parent);
-    return d_ptr->m_rowCount;
+    return d_ptr->mRowCount;
 }
 
 int DAChartItemTableModel::columnCount(const QModelIndex& parent) const
 {
     Q_UNUSED(parent);
-    return d_ptr->m_columnMap.size();
+    return d_ptr->mColumnMap.size();
 }
 
 QVariant DAChartItemTableModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -105,14 +108,14 @@ QVariant DAChartItemTableModel::data(const QModelIndex& index, int role) const
         if (!item)
             return QVariant();
 
-        int col = d_ptr->m_itemsColumnStartIndex.value(item, 0);
+        int col = d_ptr->mItemsColumnStartIndex.value(item, 0);
         col     = index.column() - col;
 
         if (index.row() >= getItemRowCount(item))
             return QVariant();
         return getItemData(index.row(), col, item);
     } else if (role == Qt::BackgroundColorRole) {
-        if (!d_ptr->m_enableBkColor)
+        if (!d_ptr->mEnableBkColor)
             return QVariant();
         QwtPlotItem* item = getItemFromCol(index.column());
         if (!item)
@@ -148,9 +151,9 @@ Qt::ItemFlags DAChartItemTableModel::flags(const QModelIndex& index) const
 void DAChartItemTableModel::enableBackgroundColor(bool enable, int alpha)
 {
     beginResetModel();
-    d_ptr->m_enableBkColor = enable;
-    d_ptr->m_bkAlpha       = alpha;
-    if (d_ptr->m_enableBkColor) {
+    d_ptr->mEnableBkColor   = enable;
+    d_ptr->mBackgroundAlpha = alpha;
+    if (d_ptr->mEnableBkColor) {
         updateItemColor();
     }
     endResetModel();
@@ -167,7 +170,7 @@ double DAChartItemTableModel::nan()
 ///
 int DAChartItemTableModel::getItemsColumnStartIndex(QwtPlotItem* item) const
 {
-    return d_ptr->m_itemsColumnStartIndex.value(item, -1);
+    return d_ptr->mItemsColumnStartIndex.value(item, -1);
 }
 ///
 /// \brief 获取item对应的列范围
@@ -206,14 +209,14 @@ int DAChartItemTableModel::calcPlotMultiBarChartDim(const QwtPlotMultiBarChart* 
 ///
 void DAChartItemTableModel::updateRowCount()
 {
-    d_ptr->m_rowCount = 0;
-    d_ptr->m_itemsRowCount.clear();
-    for (auto i = d_ptr->m_items.begin(); i != d_ptr->m_items.end(); ++i) {
+    d_ptr->mRowCount = 0;
+    d_ptr->mItemsRowCount.clear();
+    for (auto i = d_ptr->mItems.begin(); i != d_ptr->mItems.end(); ++i) {
         int dataCount = calcItemDataRowCount(*i);
-        if (dataCount > d_ptr->m_rowCount) {
-            d_ptr->m_rowCount = dataCount;
+        if (dataCount > d_ptr->mRowCount) {
+            d_ptr->mRowCount = dataCount;
         }
-        d_ptr->m_itemsRowCount[ *i ] = dataCount;
+        d_ptr->mItemsRowCount[ *i ] = dataCount;
     }
 }
 ///
@@ -221,15 +224,15 @@ void DAChartItemTableModel::updateRowCount()
 ///
 void DAChartItemTableModel::updateColumnCount()
 {
-    d_ptr->m_columnMap.clear();
-    d_ptr->m_itemsColumnStartIndex.clear();
-    for (auto i = d_ptr->m_items.begin(); i != d_ptr->m_items.end(); ++i) {
+    d_ptr->mColumnMap.clear();
+    d_ptr->mItemsColumnStartIndex.clear();
+    for (auto i = d_ptr->mItems.begin(); i != d_ptr->mItems.end(); ++i) {
         int dim = calcItemDataColumnCount(*i);
         if (dim > 0) {
-            int startIndex                       = d_ptr->m_columnMap.size();
-            d_ptr->m_itemsColumnStartIndex[ *i ] = startIndex;
+            int startIndex                      = d_ptr->mColumnMap.size();
+            d_ptr->mItemsColumnStartIndex[ *i ] = startIndex;
             for (int d = 0; d < dim; ++d) {
-                d_ptr->m_columnMap[ startIndex + d ] = qMakePair< QwtPlotItem*, int >(*i, d);
+                d_ptr->mColumnMap[ startIndex + d ] = qMakePair< QwtPlotItem*, int >(*i, d);
             }
         }
     }
@@ -239,16 +242,16 @@ void DAChartItemTableModel::updateColumnCount()
 ///
 void DAChartItemTableModel::updateItemColor()
 {
-    d_ptr->m_itemsColor.clear();
-    for (auto i = d_ptr->m_items.begin(); i != d_ptr->m_items.end(); ++i) {
+    d_ptr->mItemsColor.clear();
+    for (auto i = d_ptr->mItems.begin(); i != d_ptr->mItems.end(); ++i) {
         QColor c = DAChartUtil::getPlotItemColor(*i);
         if (!c.isValid()) {
             c = Qt::black;
         }
-        if (d_ptr->m_bkAlpha < 255) {
-            c.setAlpha(d_ptr->m_bkAlpha);
+        if (d_ptr->mBackgroundAlpha < 255) {
+            c.setAlpha(d_ptr->mBackgroundAlpha);
         }
-        d_ptr->m_itemsColor[ *i ] = c;
+        d_ptr->mItemsColor[ *i ] = c;
     }
 }
 
@@ -259,7 +262,7 @@ void DAChartItemTableModel::updateItemColor()
 ///
 QwtPlotItem* DAChartItemTableModel::getItemFromCol(int col, int* dataColumnDim) const
 {
-    QPair< QwtPlotItem*, int > pair = d_ptr->m_columnMap.value(col, qMakePair< QwtPlotItem*, int >(nullptr, 0));
+    QPair< QwtPlotItem*, int > pair = d_ptr->mColumnMap.value(col, qMakePair< QwtPlotItem*, int >(nullptr, 0));
     if (dataColumnDim) {
         *dataColumnDim = pair.second;
     }
@@ -817,12 +820,12 @@ bool DAChartItemTableModel::setPlotItemData(int row, int col, QwtPlotItem* item,
 ///
 QColor DAChartItemTableModel::getItemColor(QwtPlotItem* item) const
 {
-    return d_ptr->m_itemsColor.value(item, QColor());
+    return d_ptr->mItemsColor.value(item, QColor());
 }
 
 int DAChartItemTableModel::getItemRowCount(QwtPlotItem* item) const
 {
-    return d_ptr->m_itemsRowCount.value(item, 0);
+    return d_ptr->mItemsRowCount.value(item, 0);
 }
 
 ///

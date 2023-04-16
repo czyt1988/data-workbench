@@ -46,7 +46,7 @@ public:
     //添加一个背景图,如果多次调用，此函数返回的QGraphicsPixmapItem* 是一样的，也就是只会创建一个QGraphicsPixmapItem*
     DAGraphicsResizeablePixmapItem* setBackgroundPixmap(const QPixmap& pixmap);
     //获取背景图item，如果没有设置返回一个nullptr
-    DAGraphicsResizeablePixmapItem* getBackgroundPixmapItem();
+    DAGraphicsResizeablePixmapItem* getBackgroundPixmapItem() const;
 
     //设置文本字体
     QFont getDefaultTextFont() const;

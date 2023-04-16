@@ -6,14 +6,13 @@
 namespace DA
 {
 class _DAChartScrollZoomerScrollData;
-DA_IMPL_FORWARD_DECL(DAChartScrollZoomer)
 /**
  * @brief The DAChartScrollZoomer class
  */
 class DAFIGURE_API DAChartScrollZoomer : public QwtPlotZoomer
 {
     Q_OBJECT
-    DA_IMPL(DAChartScrollZoomer)
+    DA_DECLARE_PRIVATE(DAChartScrollZoomer)
 public:
     enum ScrollBarPosition
     {

@@ -7,6 +7,7 @@
 
 namespace DA
 {
+
 class _DANodeGraphicsSceneItemMoveingInfos
 {
 public:
@@ -22,36 +23,32 @@ public:
     void clear();
 };
 
-//////////////////////////////////////////////
+//===================================================
+// DAGraphicsSceneWithUndoStack::PrivateData
+//===================================================
 
-class DAGraphicsSceneWithUndoStackPrivate
+class DAGraphicsSceneWithUndoStack::PrivateData
 {
-    DA_IMPL_PUBLIC(DAGraphicsSceneWithUndoStack)
+    DA_DECLARE_PUBLIC(DAGraphicsSceneWithUndoStack)
 public:
-    DAGraphicsSceneWithUndoStackPrivate(DAGraphicsSceneWithUndoStack* p);
+    PrivateData(DAGraphicsSceneWithUndoStack* p);
     //绘制背景缓存
     void renderBackgroundCache();
     void renderBackgroundCache(QPainter* painter, const QRect& rect);
 
 public:
-    QUndoStack _undoStack;
-    bool _isMovingItems;  /// 正在进行item的移动
-    QPointF _lastMouseScenePos;
-    QPointF _lastMousePressScenePos;                    ///< 记录点击时的位置
-    _DANodeGraphicsSceneItemMoveingInfos _movingInfos;  ///< 记录移动的信息
-    bool _enableSnapToGrid;                             ///< 允许对齐网格
-    bool _showGridLine;                                 ///< 是否显示网格
-    QSize _gridSize;                                    ///< 网格大小
-    QPen _gridLinePen;                                  ///< 绘制网格的画笔
-    QPixmap _backgroundCache;                           ///< 背景缓存，不用每次都绘制
-    bool _isPaintBackgroundInCache;                     ///< 背景使用缓冲绘制
+    QUndoStack mUndoStack;
+    bool mIsMovingItems { false };  /// 正在进行item的移动
+    QPointF mLastMouseScenePos;
+    QPointF mLastMousePressScenePos;                    ///< 记录点击时的位置
+    _DANodeGraphicsSceneItemMoveingInfos mMovingInfos;  ///< 记录移动的信息
+    bool mEnableSnapToGrid { false };                   ///< 允许对齐网格
+    bool mShowGridLine { true };                        ///< 是否显示网格
+    QSize mGridSize { 10, 10 };                         ///< 网格大小
+    QPen mGridLinePen;                                  ///< 绘制网格的画笔
+    QPixmap mBackgroundCache;                           ///< 背景缓存，不用每次都绘制
+    bool mIsPaintBackgroundInCache { false };           ///< 背景使用缓冲绘制
 };
-}
-
-////////////////////////////////////////////////
-///
-////////////////////////////////////////////////
-using namespace DA;
 
 ////////////////////////////////////////////////
 /// _DANodeGraphicsSceneItemMoveingInfos
@@ -101,18 +98,17 @@ void _DANodeGraphicsSceneItemMoveingInfos::clear()
 //==============================
 ////////////////////////////////////////////////
 
-DAGraphicsSceneWithUndoStackPrivate::DAGraphicsSceneWithUndoStackPrivate(DAGraphicsSceneWithUndoStack* p)
-    : q_ptr(p), _isMovingItems(false), _enableSnapToGrid(true), _showGridLine(true), _gridSize(10, 10), _isPaintBackgroundInCache(false)
+DAGraphicsSceneWithUndoStack::PrivateData::PrivateData(DAGraphicsSceneWithUndoStack* p) : q_ptr(p)
 {
-    _gridLinePen.setStyle(Qt::SolidLine);
-    _gridLinePen.setColor(QColor(219, 219, 219));
-    _gridLinePen.setCapStyle(Qt::RoundCap);
-    _gridLinePen.setWidthF(0.5);
+    mGridLinePen.setStyle(Qt::SolidLine);
+    mGridLinePen.setColor(QColor(219, 219, 219));
+    mGridLinePen.setCapStyle(Qt::RoundCap);
+    mGridLinePen.setWidthF(0.5);
 }
 
-void DAGraphicsSceneWithUndoStackPrivate::renderBackgroundCache()
+void DAGraphicsSceneWithUndoStack::PrivateData::renderBackgroundCache()
 {
-    if (!_showGridLine) {
+    if (!mShowGridLine) {
         return;
     }
     QRectF sr = q_ptr->sceneRect();
@@ -122,44 +118,44 @@ void DAGraphicsSceneWithUndoStackPrivate::renderBackgroundCache()
     }
     QRect scr = sr.toRect();
     QPixmap pixmap(scr.width(), scr.height());
+    pixmap.fill(Qt::transparent);
     QPainter painter(&pixmap);
     painter.setRenderHint(QPainter::Antialiasing, true);
     renderBackgroundCache(&painter, pixmap.rect());
-    _backgroundCache = std::move(pixmap);
+    mBackgroundCache = std::move(pixmap);
 }
 
 /**
  * @brief 渲染背景缓存
  */
-void DAGraphicsSceneWithUndoStackPrivate::renderBackgroundCache(QPainter* painter, const QRect& rect)
+void DAGraphicsSceneWithUndoStack::PrivateData::renderBackgroundCache(QPainter* painter, const QRect& rect)
 {
-    painter->setPen(_gridLinePen);
-    qreal left = int(rect.left()) - (int(rect.left()) % _gridSize.width());
-    qreal top  = int(rect.top()) - (int(rect.top()) % _gridSize.height());
+    painter->setPen(mGridLinePen);
+    qreal left = int(rect.left()) - (int(rect.left()) % mGridSize.width());
+    qreal top  = int(rect.top()) - (int(rect.top()) % mGridSize.height());
 
-    for (qreal x = left; x < rect.right(); x += _gridSize.width()) {
+    for (qreal x = left; x < rect.right(); x += mGridSize.width()) {
         painter->drawLine(QPointF(x, rect.top()), QPointF(x, rect.bottom()));
     }
     //绘制横线
-    for (qreal y = top; y < rect.bottom(); y += _gridSize.height()) {
+    for (qreal y = top; y < rect.bottom(); y += mGridSize.height()) {
         painter->drawLine(QPointF(rect.left(), y), QPointF(rect.right(), y));
     }
 }
 
 ////////////////////////////////////////////////
 
-DAGraphicsSceneWithUndoStack::DAGraphicsSceneWithUndoStack(QObject* p)
-    : QGraphicsScene(p), d_ptr(new DAGraphicsSceneWithUndoStackPrivate(this))
+DAGraphicsSceneWithUndoStack::DAGraphicsSceneWithUndoStack(QObject* p) : QGraphicsScene(p), DA_PIMPL_CONSTRUCT
 {
 }
 
 DAGraphicsSceneWithUndoStack::DAGraphicsSceneWithUndoStack(const QRectF& sceneRect, QObject* p)
-    : QGraphicsScene(sceneRect, p), d_ptr(new DAGraphicsSceneWithUndoStackPrivate(this))
+    : QGraphicsScene(sceneRect, p), DA_PIMPL_CONSTRUCT
 {
 }
 
 DAGraphicsSceneWithUndoStack::DAGraphicsSceneWithUndoStack(qreal x, qreal y, qreal width, qreal height, QObject* p)
-    : QGraphicsScene(x, y, width, height, p), d_ptr(new DAGraphicsSceneWithUndoStackPrivate(this))
+    : QGraphicsScene(x, y, width, height, p), DA_PIMPL_CONSTRUCT
 {
 }
 
@@ -173,7 +169,7 @@ DAGraphicsSceneWithUndoStack::~DAGraphicsSceneWithUndoStack()
  */
 bool DAGraphicsSceneWithUndoStack::isMovingItems() const
 {
-    return d_ptr->_isMovingItems;
+    return d_ptr->mIsMovingItems;
 }
 
 /**
@@ -182,7 +178,7 @@ bool DAGraphicsSceneWithUndoStack::isMovingItems() const
  */
 QPointF DAGraphicsSceneWithUndoStack::getCurrentMouseScenePos() const
 {
-    return (d_ptr->_lastMouseScenePos);
+    return (d_ptr->mLastMouseScenePos);
 }
 
 /**
@@ -232,13 +228,28 @@ QUndoCommand* DAGraphicsSceneWithUndoStack::removeItem_(QGraphicsItem* item, boo
 }
 
 /**
+ * @brief 导出为pixmap
+ * @return
+ */
+QPixmap DAGraphicsSceneWithUndoStack::toPixamp()
+{
+    QRectF br = itemsBoundingRect();
+    QPixmap res(br.size().toSize() + QSize(10, 10));
+    res.fill(Qt::transparent);
+    QPainter painter(&res);
+    painter.setRenderHint(QPainter::SmoothPixmapTransform);
+    render(&painter, QRectF(10, 10, br.width(), br.height()), br);
+    return res;
+}
+
+/**
  * @brief 是否允许对齐网格
  * @param on
  * @note 此操作对未对齐的item是不会起作用
  */
 void DAGraphicsSceneWithUndoStack::setEnableSnapToGrid(bool on)
 {
-    d_ptr->_enableSnapToGrid = on;
+    d_ptr->mEnableSnapToGrid = on;
 }
 /**
  * @brief 是否允许对齐网格
@@ -246,7 +257,7 @@ void DAGraphicsSceneWithUndoStack::setEnableSnapToGrid(bool on)
  */
 bool DAGraphicsSceneWithUndoStack::isEnableSnapToGrid() const
 {
-    return d_ptr->_enableSnapToGrid;
+    return d_ptr->mEnableSnapToGrid;
 }
 /**
  * @brief 设置网格尺寸
@@ -254,7 +265,7 @@ bool DAGraphicsSceneWithUndoStack::isEnableSnapToGrid() const
  */
 void DAGraphicsSceneWithUndoStack::setGridSize(const QSize& gs)
 {
-    d_ptr->_gridSize = gs;
+    d_ptr->mGridSize = gs;
 }
 /**
  * @brief 网格尺寸
@@ -262,7 +273,7 @@ void DAGraphicsSceneWithUndoStack::setGridSize(const QSize& gs)
  */
 QSize DAGraphicsSceneWithUndoStack::getGridSize() const
 {
-    return d_ptr->_gridSize;
+    return d_ptr->mGridSize;
 }
 
 /**
@@ -271,7 +282,7 @@ QSize DAGraphicsSceneWithUndoStack::getGridSize() const
  */
 void DAGraphicsSceneWithUndoStack::showGridLine(bool on)
 {
-    d_ptr->_showGridLine = on;
+    d_ptr->mShowGridLine = on;
 }
 
 /**
@@ -304,7 +315,7 @@ void DAGraphicsSceneWithUndoStack::selectAll()
  */
 bool DAGraphicsSceneWithUndoStack::isShowGridLine()
 {
-    return d_ptr->_showGridLine;
+    return d_ptr->mShowGridLine;
 }
 /**
  * @brief 设置网格画笔
@@ -312,7 +323,7 @@ bool DAGraphicsSceneWithUndoStack::isShowGridLine()
  */
 void DAGraphicsSceneWithUndoStack::setGridLinePen(const QPen& p)
 {
-    d_ptr->_gridLinePen = p;
+    d_ptr->mGridLinePen = p;
 }
 /**
  * @brief 获取网格画笔
@@ -320,7 +331,7 @@ void DAGraphicsSceneWithUndoStack::setGridLinePen(const QPen& p)
  */
 QPen DAGraphicsSceneWithUndoStack::getGridLinePen() const
 {
-    return d_ptr->_gridLinePen;
+    return d_ptr->mGridLinePen;
 }
 
 /**
@@ -329,7 +340,7 @@ QPen DAGraphicsSceneWithUndoStack::getGridLinePen() const
  */
 void DAGraphicsSceneWithUndoStack::setPaintBackgroundInCache(bool on)
 {
-    d_ptr->_isPaintBackgroundInCache = on;
+    d_ptr->mIsPaintBackgroundInCache = on;
     if (on) {
         d_ptr->renderBackgroundCache();
     }
@@ -341,7 +352,7 @@ void DAGraphicsSceneWithUndoStack::setPaintBackgroundInCache(bool on)
  */
 bool DAGraphicsSceneWithUndoStack::isPaintBackgroundInCache() const
 {
-    return d_ptr->_isPaintBackgroundInCache;
+    return d_ptr->mIsPaintBackgroundInCache;
 }
 
 /**
@@ -350,12 +361,12 @@ bool DAGraphicsSceneWithUndoStack::isPaintBackgroundInCache() const
  */
 QUndoStack& DAGraphicsSceneWithUndoStack::undoStack()
 {
-    return d_ptr->_undoStack;
+    return d_ptr->mUndoStack;
 }
 
 const QUndoStack& DAGraphicsSceneWithUndoStack::undoStack() const
 {
-    return d_ptr->_undoStack;
+    return d_ptr->mUndoStack;
 }
 /**
  * @brief 获取undostack指针
@@ -363,7 +374,7 @@ const QUndoStack& DAGraphicsSceneWithUndoStack::undoStack() const
  */
 QUndoStack* DAGraphicsSceneWithUndoStack::getUndoStack() const
 {
-    return &(d_ptr->_undoStack);
+    return &(d_ptr->mUndoStack);
 }
 
 /**
@@ -371,8 +382,8 @@ QUndoStack* DAGraphicsSceneWithUndoStack::getUndoStack() const
  */
 void DAGraphicsSceneWithUndoStack::setUndoStackActive()
 {
-    if (!d_ptr->_undoStack.isActive()) {
-        d_ptr->_undoStack.setActive(true);
+    if (!d_ptr->mUndoStack.isActive()) {
+        d_ptr->mUndoStack.setActive(true);
     }
 }
 
@@ -382,7 +393,7 @@ void DAGraphicsSceneWithUndoStack::setUndoStackActive()
  */
 void DAGraphicsSceneWithUndoStack::push(QUndoCommand* cmd)
 {
-    d_ptr->_undoStack.push(cmd);
+    d_ptr->mUndoStack.push(cmd);
 }
 
 /**
@@ -464,20 +475,20 @@ void DAGraphicsSceneWithUndoStack::emitItemRotationChanged(DAGraphicsResizeableI
 void DAGraphicsSceneWithUndoStack::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
     //记录鼠标点击的位置
-    d_ptr->_lastMousePressScenePos = mouseEvent->scenePos();
+    d_ptr->mLastMousePressScenePos = mouseEvent->scenePos();
     //先传递下去使得能处理选中状态
     QGraphicsScene::mousePressEvent(mouseEvent);
     if (mouseEvent->buttons().testFlag(Qt::LeftButton)) {
-        QGraphicsItem* positem = itemAt(d_ptr->_lastMousePressScenePos, QTransform());
-        if (!isItemCanMove(positem, d_ptr->_lastMousePressScenePos)) {
-            d_ptr->_isMovingItems = false;
+        QGraphicsItem* positem = itemAt(d_ptr->mLastMousePressScenePos, QTransform());
+        if (!isItemCanMove(positem, d_ptr->mLastMousePressScenePos)) {
+            d_ptr->mIsMovingItems = false;
             return;
         }
         //说明这个是移动
         //获取选中的可移动单元
         QList< QGraphicsItem* > mits = getSelectedMovableItems();
         if (mits.isEmpty()) {
-            d_ptr->_isMovingItems = false;
+            d_ptr->mIsMovingItems = false;
             return;
         }
         // todo.如果点击的是链接和control point，不属于移动
@@ -487,16 +498,16 @@ void DAGraphicsSceneWithUndoStack::mousePressEvent(QGraphicsSceneMouseEvent* mou
                 if (DAGraphicsResizeableItem::NotUnderAnyControlType
                     != ri->getControlPointByPos(ri->mapFromScene(mouseEvent->scenePos()))) {
                     //说明点击在了控制点上，需要跳过
-                    d_ptr->_isMovingItems = false;
+                    d_ptr->mIsMovingItems = false;
                     return;
                 }
             }
         }
-        d_ptr->_isMovingItems = true;
+        d_ptr->mIsMovingItems = true;
         //
-        d_ptr->_movingInfos.clear();
+        d_ptr->mMovingInfos.clear();
         for (QGraphicsItem* its : qAsConst(mits)) {
-            d_ptr->_movingInfos.appendStartPos(its);
+            d_ptr->mMovingInfos.appendStartPos(its);
         }
     }
 }
@@ -506,7 +517,7 @@ void DAGraphicsSceneWithUndoStack::mouseMoveEvent(QGraphicsSceneMouseEvent* mous
     if (nullptr == mouseEvent) {
         return;
     }
-    d_ptr->_lastMouseScenePos = mouseEvent->scenePos();
+    d_ptr->mLastMouseScenePos = mouseEvent->scenePos();
     QGraphicsScene::mouseMoveEvent(mouseEvent);
 }
 
@@ -516,25 +527,25 @@ void DAGraphicsSceneWithUndoStack::mouseReleaseEvent(QGraphicsSceneMouseEvent* m
         return;
     }
     QGraphicsScene::mouseReleaseEvent(mouseEvent);
-    if (d_ptr->_isMovingItems) {
-        d_ptr->_isMovingItems = false;
+    if (d_ptr->mIsMovingItems) {
+        d_ptr->mIsMovingItems = false;
         QPointF releasePos    = mouseEvent->scenePos();
-        if (qFuzzyCompare(releasePos.x(), d_ptr->_lastMousePressScenePos.x())
-            && qFuzzyCompare(releasePos.y(), d_ptr->_lastMousePressScenePos.y())) {
+        if (qFuzzyCompare(releasePos.x(), d_ptr->mLastMousePressScenePos.x())
+            && qFuzzyCompare(releasePos.y(), d_ptr->mLastMousePressScenePos.y())) {
             //位置相等，不做处理
             return;
         }
         //位置不等，属于正常移动
-        d_ptr->_movingInfos.updateEndPos();
-        DA::DACommandsForGraphicsItemsMoved* cmd = new DA::DACommandsForGraphicsItemsMoved(d_ptr->_movingInfos.items,
-                                                                                           d_ptr->_movingInfos.startsPos,
-                                                                                           d_ptr->_movingInfos.endsPos,
+        d_ptr->mMovingInfos.updateEndPos();
+        DA::DACommandsForGraphicsItemsMoved* cmd = new DA::DACommandsForGraphicsItemsMoved(d_ptr->mMovingInfos.items,
+                                                                                           d_ptr->mMovingInfos.startsPos,
+                                                                                           d_ptr->mMovingInfos.endsPos,
                                                                                            true);
         push(cmd);
         //位置改变信号
         //        qDebug() << "emit itemsPositionChanged";
         //如果 移动 过程 鼠标移出scene在释放，可能无法捕获
-        emit itemsPositionChanged(d_ptr->_movingInfos.items, d_ptr->_movingInfos.startsPos, d_ptr->_movingInfos.endsPos);
+        emit itemsPositionChanged(d_ptr->mMovingInfos.items, d_ptr->mMovingInfos.startsPos, d_ptr->mMovingInfos.endsPos);
     }
 }
 
@@ -543,13 +554,13 @@ void DAGraphicsSceneWithUndoStack::drawBackground(QPainter* painter, const QRect
     QGraphicsScene::drawBackground(painter, rect);
     if (isShowGridLine()) {
         if (isPaintBackgroundInCache()) {
-            if (d_ptr->_backgroundCache.size() != sceneRect().toRect().size()) {
+            if (d_ptr->mBackgroundCache.size() != sceneRect().toRect().size()) {
                 d_ptr->renderBackgroundCache();
             }
             const QPointF& pixmapTopleft = rect.topLeft() - sceneRect().topLeft();
-            qreal x                      = int(pixmapTopleft.x()) - (int(pixmapTopleft.x()) % d_ptr->_gridSize.width());
-            qreal y = int(pixmapTopleft.y()) - (int(pixmapTopleft.y()) % d_ptr->_gridSize.height());
-            painter->drawPixmap(rect, d_ptr->_backgroundCache, QRectF(x, y, rect.width(), rect.height()));
+            qreal x                      = int(pixmapTopleft.x()) - (int(pixmapTopleft.x()) % d_ptr->mGridSize.width());
+            qreal y = int(pixmapTopleft.y()) - (int(pixmapTopleft.y()) % d_ptr->mGridSize.height());
+            painter->drawPixmap(rect, d_ptr->mBackgroundCache, QRectF(x, y, rect.width(), rect.height()));
 
         } else {
             d_ptr->renderBackgroundCache(painter, rect.toRect());
@@ -557,3 +568,5 @@ void DAGraphicsSceneWithUndoStack::drawBackground(QPainter* painter, const QRect
     }
     //直接绘制网格线在放大时很卡
 }
+
+}  // end DA

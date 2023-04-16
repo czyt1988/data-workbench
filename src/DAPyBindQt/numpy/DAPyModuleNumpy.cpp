@@ -3,40 +3,33 @@
 #include <QObject>
 namespace DA
 {
-class DAPyModuleNumpyPrivate
+class DAPyModuleNumpy::PrivateData
 {
+    DA_DECLARE_PUBLIC(DAPyModuleNumpy)
 public:
-    DA_IMPL_PUBLIC(DAPyModuleNumpy)
-    DAPyModuleNumpyPrivate(DAPyModuleNumpy* p);
+    PrivateData(DAPyModuleNumpy* p);
 
     //释放模块
     void del();
 
 public:
-    QString _lastErrorString;
-    pybind11::object _objDtype;
-    pybind11::object _objGeneric;
-    pybind11::object _objNumber;
-    pybind11::object _objInteger;
-    pybind11::object _objInexact;
+    QString mLastErrorString;
+    pybind11::object mObjDtype;
+    pybind11::object mObjGeneric;
+    pybind11::object mObjNumber;
+    pybind11::object mObjInteger;
+    pybind11::object mObjInexact;
 };
-}  // namespace DA
-
-//===================================================
-// using DA namespace -- 禁止在头文件using！！
-//===================================================
-
-using namespace DA;
 
 //===================================================
 // DAPyModuleNumpyPrivate
 //===================================================
 
-DAPyModuleNumpyPrivate::DAPyModuleNumpyPrivate(DAPyModuleNumpy* p) : q_ptr(p)
+DAPyModuleNumpy::PrivateData::PrivateData(DAPyModuleNumpy* p) : q_ptr(p)
 {
 }
 
-void DAPyModuleNumpyPrivate::del()
+void DAPyModuleNumpy::PrivateData::del()
 {
     if (!q_ptr->isImport()) {
         return;
@@ -44,17 +37,20 @@ void DAPyModuleNumpyPrivate::del()
     q_ptr->object() = pybind11::none();
 }
 
-DAPyModuleNumpy::DAPyModuleNumpy() : DAPyModule(), d_ptr(new DAPyModuleNumpyPrivate(this))
+//===================================================
+// DAPyModuleNumpy
+//===================================================
+DAPyModuleNumpy::DAPyModuleNumpy() : DAPyModule(), DA_PIMPL_CONSTRUCT
 {
     import();
     try {
-        d_ptr->_objDtype   = attr("dtype");
-        d_ptr->_objGeneric = attr("generic");
-        d_ptr->_objNumber  = attr("number");
-        d_ptr->_objInteger = attr("integer");
-        d_ptr->_objInexact = attr("inexact");
+        d_ptr->mObjDtype   = attr("dtype");
+        d_ptr->mObjGeneric = attr("generic");
+        d_ptr->mObjNumber  = attr("number");
+        d_ptr->mObjInteger = attr("integer");
+        d_ptr->mObjInexact = attr("inexact");
     } catch (const std::exception& e) {
-        d_ptr->_lastErrorString = e.what();
+        d_ptr->mLastErrorString = e.what();
     }
 }
 
@@ -75,7 +71,7 @@ void DAPyModuleNumpy::finalize()
 
 QString DAPyModuleNumpy::getLastErrorString()
 {
-    return d_ptr->_lastErrorString;
+    return d_ptr->mLastErrorString;
 }
 
 /**
@@ -85,30 +81,31 @@ QString DAPyModuleNumpy::getLastErrorString()
  */
 bool DAPyModuleNumpy::isInstanceGeneric(const pybind11::object& obj) const
 {
-    return pybind11::isinstance(obj, d_ptr->_objGeneric);
+    return pybind11::isinstance(obj, d_ptr->mObjGeneric);
 }
 
 bool DAPyModuleNumpy::isInstanceNumber(const pybind11::object& obj) const
 {
-    return pybind11::isinstance(obj, d_ptr->_objNumber);
+    return pybind11::isinstance(obj, d_ptr->mObjNumber);
 }
 
 bool DAPyModuleNumpy::isInstanceInteger(const pybind11::object& obj) const
 {
-    return pybind11::isinstance(obj, d_ptr->_objInteger);
+    return pybind11::isinstance(obj, d_ptr->mObjInteger);
 }
 
 bool DAPyModuleNumpy::isInstanceInexact(const pybind11::object& obj) const
 {
-    return pybind11::isinstance(obj, d_ptr->_objInexact);
+    return pybind11::isinstance(obj, d_ptr->mObjInexact);
 }
 
 bool DAPyModuleNumpy::isInstanceDtype(const pybind11::object& obj) const
 {
-    return pybind11::isinstance(obj, d_ptr->_objDtype);
+    return pybind11::isinstance(obj, d_ptr->mObjDtype);
 }
 
 bool DAPyModuleNumpy::import()
 {
     return DAPyModule::import("numpy");
 }
+}  // namespace DA

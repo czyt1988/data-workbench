@@ -7,21 +7,21 @@ namespace DA
 // DAFigureTreeViewPrivate
 //==============================================================
 
-class DAFigureTreeViewPrivate
+class DAFigureTreeView::PrivateData
 {
 public:
-    DA_IMPL_PUBLIC(DAFigureTreeView)
-    DAFigureTreeViewPrivate(DAFigureTreeView* p);
+    DA_DECLARE_PUBLIC(DAFigureTreeView)
+    PrivateData(DAFigureTreeView* p);
 };
 
-DAFigureTreeViewPrivate::DAFigureTreeViewPrivate(DAFigureTreeView* p) : q_ptr(p)
+DAFigureTreeView::PrivateData::PrivateData(DAFigureTreeView* p) : q_ptr(p)
 {
 }
 //==============================================================
 // DAFigureTreeView
 //==============================================================
 
-DAFigureTreeView::DAFigureTreeView(QWidget* parent) : QTreeView(parent), d_ptr(new DAFigureTreeViewPrivate(this))
+DAFigureTreeView::DAFigureTreeView(QWidget* parent) : QTreeView(parent), DA_PIMPL_CONSTRUCT
 {
     DAFigureTreeModel* m = new DAFigureTreeModel(this);
     setModel(m);

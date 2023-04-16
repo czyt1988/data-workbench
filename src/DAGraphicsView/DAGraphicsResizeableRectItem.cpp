@@ -5,40 +5,41 @@
 namespace DA
 {
 
-class DAGraphicsResizeableRectItemPrivate
+//===================================================
+// DAGraphicsResizeableRectItem::PrivateData
+//===================================================
+class DAGraphicsResizeableRectItem::PrivateData
 {
-    DA_IMPL_PUBLIC(DAGraphicsResizeableRectItem)
+    DA_DECLARE_PUBLIC(DAGraphicsResizeableRectItem)
 public:
-    DAGraphicsResizeableRectItemPrivate(DAGraphicsResizeableRectItem* p);
+    PrivateData(DAGraphicsResizeableRectItem* p);
     QPen getTextPen() const;
     void setTextPen(const QPen& p);
 
 public:
-    QString _text;
-    Qt::Alignment _textAl;
-    QPen _textPen;
+    QString mText;
+    Qt::Alignment mTextAlignment { Qt::AlignCenter };
+    QPen mTextPen { Qt::black };
 };
 
-DAGraphicsResizeableRectItemPrivate::DAGraphicsResizeableRectItemPrivate(DAGraphicsResizeableRectItem* p)
-    : q_ptr(p), _textAl(Qt::AlignCenter)
+DAGraphicsResizeableRectItem::PrivateData::PrivateData(DAGraphicsResizeableRectItem* p) : q_ptr(p)
 {
-    _textPen.setColor(Qt::black);
 }
 
-QPen DAGraphicsResizeableRectItemPrivate::getTextPen() const
+QPen DAGraphicsResizeableRectItem::PrivateData::getTextPen() const
 {
-    return _textPen;
+    return mTextPen;
 }
 
-void DAGraphicsResizeableRectItemPrivate::setTextPen(const QPen& p)
+void DAGraphicsResizeableRectItem::PrivateData::setTextPen(const QPen& p)
 {
-    _textPen = p;
+    mTextPen = p;
 }
 //===================================================
 // DAGraphicsResizeableRectItem
 //===================================================
 DAGraphicsResizeableRectItem::DAGraphicsResizeableRectItem(QGraphicsItem* parent)
-    : DAGraphicsResizeableItem(parent), d_ptr(new DAGraphicsResizeableRectItemPrivate(this))
+    : DAGraphicsResizeableItem(parent), DA_PIMPL_CONSTRUCT
 {
     setShowBackground(false);
     setShowBorder(true);
@@ -51,22 +52,22 @@ DAGraphicsResizeableRectItem::~DAGraphicsResizeableRectItem()
 
 void DAGraphicsResizeableRectItem::setText(const QString& t)
 {
-    d_ptr->_text = t;
+    d_ptr->mText = t;
 }
 
 QString DAGraphicsResizeableRectItem::getText() const
 {
-    return d_ptr->_text;
+    return d_ptr->mText;
 }
 
 void DAGraphicsResizeableRectItem::setTextAlignment(Qt::Alignment al)
 {
-    d_ptr->_textAl = al;
+    d_ptr->mTextAlignment = al;
 }
 
 Qt::Alignment DAGraphicsResizeableRectItem::getTextAlignment() const
 {
-    return d_ptr->_textAl;
+    return d_ptr->mTextAlignment;
 }
 
 QPen DAGraphicsResizeableRectItem::getTextPen() const
@@ -85,11 +86,11 @@ bool DAGraphicsResizeableRectItem::saveToXml(QDomDocument* doc, QDomElement* par
     QDomElement rectEle = doc->createElement("rect-info");
 
     QDomElement textEle = doc->createElement("text");
-    textEle.setAttribute("al", enumToString(d_ptr->_textAl));
-    textEle.appendChild(doc->createTextNode(d_ptr->_text));
+    textEle.setAttribute("al", enumToString(d_ptr->mTextAlignment));
+    textEle.appendChild(doc->createTextNode(d_ptr->mText));
     rectEle.appendChild(textEle);
     // text-pen
-    rectEle.appendChild(DAXMLFileInterface::makeElement(d_ptr->_textPen, "text-pen", doc));
+    rectEle.appendChild(DAXMLFileInterface::makeElement(d_ptr->mTextPen, "text-pen", doc));
     parentElement->appendChild(rectEle);
     return true;
 }
@@ -105,8 +106,8 @@ bool DAGraphicsResizeableRectItem::loadFromXml(const QDomElement* itemElement)
     }
     QDomElement textEle = itemElement->firstChildElement("text");
     if (!textEle.isNull()) {
-        d_ptr->_textAl = stringToEnum(textEle.attribute("al"), Qt::AlignCenter);
-        d_ptr->_text   = textEle.text();
+        d_ptr->mTextAlignment = stringToEnum(textEle.attribute("al"), Qt::AlignCenter);
+        d_ptr->mText          = textEle.text();
     }
     return true;
 }
@@ -116,9 +117,9 @@ void DAGraphicsResizeableRectItem::paintBody(QPainter* painter, const QStyleOpti
     Q_UNUSED(option);
     Q_UNUSED(widget);
     painter->save();
-    if (!(d_ptr->_text.isEmpty())) {
-        painter->setPen(d_ptr->_textPen);
-        painter->drawText(bodyRect, d_ptr->_textAl, d_ptr->_text);
+    if (!(d_ptr->mText.isEmpty())) {
+        painter->setPen(d_ptr->mTextPen);
+        painter->drawText(bodyRect, d_ptr->mTextAlignment, d_ptr->mText);
     }
     painter->restore();
 }

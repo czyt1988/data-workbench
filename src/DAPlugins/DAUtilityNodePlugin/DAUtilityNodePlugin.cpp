@@ -15,9 +15,9 @@
 #include "SARibbonPannel.h"
 // DA - interface
 #include "DACoreInterface.h"
-#include "DAAppUIInterface.h"
-#include "DAAppDockingAreaInterface.h"
-#include "DAAppRibbonAreaInterface.h"
+#include "DAUIInterface.h"
+#include "DADockingAreaInterface.h"
+#include "DARibbonAreaInterface.h"
 // DA
 #include "DAUtilityNodeFactory.h"
 #include "DAProjectInterface.h"
@@ -32,7 +32,7 @@
 #include "DAMessageLogViewWidget.h"
 #include "DANodeTreeWidget.h"
 
-#define ROLE_IID         (Qt::UserRole + 1)
+#define ROLE_IID (Qt::UserRole + 1)
 #define ROLE_FIX_PROJECT (Qt::UserRole + 2)
 
 namespace DA

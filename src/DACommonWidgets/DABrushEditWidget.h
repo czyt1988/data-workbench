@@ -3,6 +3,7 @@
 #include "DACommonWidgetsAPI.h"
 #include <QWidget>
 #include <QBrush>
+class SAColorMenu;
 namespace Ui
 {
 class DABrushEditWidget;
@@ -37,7 +38,8 @@ private slots:
 
 private:
     Ui::DABrushEditWidget* ui;
-    QBrush _brush;
+    QBrush mBrush;
+    SAColorMenu* mColorMenu { nullptr };
 };
 }
 

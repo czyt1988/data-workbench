@@ -6,7 +6,6 @@
 
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DAPenEditWidget)
 /**
  * @brief 画笔编辑窗口
  * 颜色按钮+线型选择+线宽
@@ -16,7 +15,7 @@ DA_IMPL_FORWARD_DECL(DAPenEditWidget)
 class DACOMMONWIDGETS_API DAPenEditWidget : public QWidget
 {
     Q_OBJECT
-    DA_IMPL(DAPenEditWidget)
+    DA_DECLARE_PRIVATE(DAPenEditWidget)
 public:
     explicit DAPenEditWidget(QWidget* parent = nullptr);
     explicit DAPenEditWidget(const QPen& p, QWidget* parent = nullptr);
@@ -41,9 +40,6 @@ protected slots:
 
 private:
     void init();
-
-private:
-    QPen _pen;
 };
 }  // namespace DA
 #endif  // DAPENEDITWIDGET_H

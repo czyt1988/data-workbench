@@ -6,7 +6,6 @@
 #include "DADataManager.h"
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DADataManagerInterface)
 class DACoreInterface;
 /**
  * @brief 数据管理接口
@@ -14,7 +13,7 @@ class DACoreInterface;
 class DAINTERFACE_API DADataManagerInterface : public DABaseInterface
 {
     Q_OBJECT
-    DA_IMPL(DADataManagerInterface)
+    DA_DECLARE_PRIVATE(DADataManagerInterface)
 public:
     DADataManagerInterface(DACoreInterface* c, QObject* par = nullptr);
     ~DADataManagerInterface();

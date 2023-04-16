@@ -15,7 +15,6 @@
 class QwtPlot;
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DAFigureTreeModel)
 class DAFigureWidget;
 class DAChartWidget;
 
@@ -89,7 +88,7 @@ private:
 class DAFIGURE_API DAFigureTreeModel : public QStandardItemModel
 {
     Q_OBJECT
-    DA_IMPL(DAFigureTreeModel)
+    DA_DECLARE_PRIVATE(DAFigureTreeModel)
 public:
     DAFigureTreeModel(QObject* parent = 0);
     ~DAFigureTreeModel();

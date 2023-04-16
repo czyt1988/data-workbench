@@ -13,12 +13,12 @@ DAAppFigureFactory::~DAAppFigureFactory()
 DAFigureWidget* DAAppFigureFactory::createFigure(QWidget* par)
 {
     DAAppFigureWidget* fig = new DAAppFigureWidget(par);
-    fig->setDataManager(_dataManager);
+    fig->setDataManager(mDataManager);
     return fig;
 }
 
 void DAAppFigureFactory::setDataManager(DADataManager* mgr)
 {
-    _dataManager = mgr;
+    mDataManager = mgr;
 }
 }

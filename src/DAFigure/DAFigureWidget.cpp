@@ -14,6 +14,7 @@
 #include <QVBoxLayout>
 #include <QUndoStack>
 #include <QDebug>
+#include <QScopedPointer>
 // chart
 #include "DAChartWidget.h"
 #include "DAChartSerialize.h"
@@ -176,17 +177,19 @@ public:
 // DAFigureWidgetPrivate
 //===================================================
 
-class DAFigureWidgetPrivate
+class DAFigureWidget::PrivateData
 {
-    DA_IMPL_PUBLIC(DAFigureWidget)
+    DA_DECLARE_PUBLIC(DAFigureWidget)
 public:
-    DAChartWidget* _currentChart;
-    DAFigureWidgetOverlayChartEditor* _chartEditorOverlay;  ///< 编辑模式
-    QBrush _backgroundBrush;                                ///< 背景
-    QUndoStack _undoStack;                                  ///<
-
-    DAFigureWidgetPrivate(DAFigureWidget* p) : q_ptr(p), _currentChart(nullptr), _chartEditorOverlay(nullptr)
+    DAChartWidget* mCurrentChart { nullptr };
+    DAFigureWidgetOverlayChartEditor* mChartEditorOverlay { nullptr };  ///< 编辑模式
+    QBrush mBackgroundBrush;                                            ///< 背景
+    QUndoStack mUndoStack;                                              ///<
+    QScopedPointer< DAChartFactory > mFactory;                          ///< 绘图创建的工厂
+public:
+    PrivateData(DAFigureWidget* p) : q_ptr(p)
     {
+        mFactory.reset(new DAChartFactory());
     }
 
     void setupUI()
@@ -204,7 +207,7 @@ public:
 //===================================================
 // DAFigureWidget
 //===================================================
-DAFigureWidget::DAFigureWidget(QWidget* parent) : DAFigureContainer(parent), d_ptr(new DAFigureWidgetPrivate(this))
+DAFigureWidget::DAFigureWidget(QWidget* parent) : DAFigureContainer(parent), DA_PIMPL_CONSTRUCT
 {
     d_ptr->setupUI();
     setFocusPolicy(Qt::ClickFocus);
@@ -219,6 +222,20 @@ DAFigureWidget::DAFigureWidget(QWidget* parent) : DAFigureContainer(parent), d_p
 DAFigureWidget::~DAFigureWidget()
 {
     // qDebug() << "SAFigureWindow destroy";
+}
+
+DAChartFactory* DAFigureWidget::getChartFactory() const
+{
+    return d_ptr->mFactory.get();
+}
+
+/**
+ * @brief 设置ChartFactory
+ * @param fac
+ */
+void DAFigureWidget::setupChartFactory(DAChartFactory* fac)
+{
+    d_ptr->mFactory.reset(fac);
 }
 
 /**
@@ -242,13 +259,13 @@ DAChartWidget* DAFigureWidget::createChart()
  */
 DAChartWidget* DAFigureWidget::createChart(float xPresent, float yPresent, float wPresent, float hPresent)
 {
-    DAChartWidget* chart = new DAChartWidget(this);
+    DAChartWidget* chart = d_ptr->mFactory->createChart(this);
     addChart(chart, xPresent, yPresent, wPresent, hPresent);
     //不加这句话，有时候不显示出来
     chart->show();
     //对于有Overlay，需要把Overlay提升到最前面，否则会被覆盖
-    if (d_ptr->_chartEditorOverlay) {
-        d_ptr->_chartEditorOverlay->raise();  //同时提升最前
+    if (d_ptr->mChartEditorOverlay) {
+        d_ptr->mChartEditorOverlay->raise();  //同时提升最前
     }
     return chart;
 }
@@ -282,7 +299,7 @@ DAChartWidget* DAFigureWidget::createChart_()
 DAChartWidget* DAFigureWidget::createChart_(float xPresent, float yPresent, float wPresent, float hPresent)
 {
     DAFigureWidgetCommandCreateChart* cmd = new DAFigureWidgetCommandCreateChart(this, xPresent, yPresent, wPresent, hPresent);
-    d_ptr->_undoStack.push(cmd);
+    d_ptr->mUndoStack.push(cmd);
     //必须先push再获取chart
     return cmd->mChart;
 }
@@ -299,7 +316,7 @@ DAChartWidget* DAFigureWidget::createChart_(float xPresent, float yPresent, floa
 void DAFigureWidget::addChart(DAChartWidget* chart, float xPresent, float yPresent, float wPresent, float hPresent)
 {
     addWidget(chart, xPresent, yPresent, wPresent, hPresent);
-    d_ptr->_currentChart = chart;
+    d_ptr->mCurrentChart = chart;
     emit chartAdded(chart);
     setFocusProxy(chart);
 }
@@ -346,7 +363,7 @@ QList< DAChartWidget* > DAFigureWidget::getChartsOrdered() const
  */
 DAChartWidget* DAFigureWidget::getCurrentChart() const
 {
-    return (d_ptr->_currentChart);
+    return (d_ptr->mCurrentChart);
 }
 
 /**
@@ -379,7 +396,7 @@ void DAFigureWidget::clearAllCharts()
  */
 void DAFigureWidget::setBackgroundColor(const QBrush& brush)
 {
-    d_ptr->_backgroundBrush = brush;
+    d_ptr->mBackgroundBrush = brush;
     repaint();
 }
 
@@ -389,8 +406,8 @@ void DAFigureWidget::setBackgroundColor(const QBrush& brush)
  */
 void DAFigureWidget::setBackgroundColor(const QColor& clr)
 {
-    d_ptr->_backgroundBrush.setStyle(Qt::SolidPattern);
-    d_ptr->_backgroundBrush.setColor(clr);
+    d_ptr->mBackgroundBrush.setStyle(Qt::SolidPattern);
+    d_ptr->mBackgroundBrush.setColor(clr);
     repaint();
 }
 
@@ -400,7 +417,7 @@ void DAFigureWidget::setBackgroundColor(const QColor& clr)
  */
 const QBrush& DAFigureWidget::getBackgroundColor() const
 {
-    return (d_ptr->_backgroundBrush);
+    return (d_ptr->mBackgroundBrush);
 }
 
 /**
@@ -411,20 +428,20 @@ const QBrush& DAFigureWidget::getBackgroundColor() const
  */
 bool DAFigureWidget::setCurrentChart(DAChartWidget* p)
 {
-    if (p == d_ptr->_currentChart) {
+    if (p == d_ptr->mCurrentChart) {
         return (true);
     }
     if (!isWidgetInContainer(p)) {
         return (false);
     }
-    d_ptr->_currentChart = p;
+    d_ptr->mCurrentChart = p;
     // setFocusProxy(p);
     //如果在进行子窗口编辑模式，此时需要重新设置编辑
     if (isEnableSubChartEditor()) {
         //避免信号重复触发，虽然不影响
-        QSignalBlocker bl(d_ptr->_chartEditorOverlay);
+        QSignalBlocker bl(d_ptr->mChartEditorOverlay);
         Q_UNUSED(bl);
-        d_ptr->_chartEditorOverlay->setActiveWidget(p);
+        d_ptr->mChartEditorOverlay->setActiveWidget(p);
     }
     emit currentChartChanged(p);
 
@@ -457,22 +474,22 @@ DAChartWidget* DAFigureWidget::findChartFromItem(QwtPlotItem* item) const
 void DAFigureWidget::enableSubChartEditor(bool enable)
 {
     if (enable) {
-        if (nullptr == d_ptr->_chartEditorOverlay) {
-            d_ptr->_chartEditorOverlay = new DAFigureWidgetOverlayChartEditor(this);
-            connect(d_ptr->_chartEditorOverlay, &DAFigureWidgetOverlayChartEditor::widgetGeometryChanged, this, &DAFigureWidget::onWidgetGeometryChanged);
-            connect(d_ptr->_chartEditorOverlay, &DAFigureWidgetOverlayChartEditor::activeWidgetChanged, this, &DAFigureWidget::onOverlayActiveWidgetChanged);
-            d_ptr->_chartEditorOverlay->show();
-            d_ptr->_chartEditorOverlay->raise();  //同时提升最前
+        if (nullptr == d_ptr->mChartEditorOverlay) {
+            d_ptr->mChartEditorOverlay = new DAFigureWidgetOverlayChartEditor(this);
+            connect(d_ptr->mChartEditorOverlay, &DAFigureWidgetOverlayChartEditor::widgetGeometryChanged, this, &DAFigureWidget::onWidgetGeometryChanged);
+            connect(d_ptr->mChartEditorOverlay, &DAFigureWidgetOverlayChartEditor::activeWidgetChanged, this, &DAFigureWidget::onOverlayActiveWidgetChanged);
+            d_ptr->mChartEditorOverlay->show();
+            d_ptr->mChartEditorOverlay->raise();  //同时提升最前
         } else {
-            if (d_ptr->_chartEditorOverlay->isHidden()) {
-                d_ptr->_chartEditorOverlay->show();
-                d_ptr->_chartEditorOverlay->raise();  //同时提升最前
+            if (d_ptr->mChartEditorOverlay->isHidden()) {
+                d_ptr->mChartEditorOverlay->show();
+                d_ptr->mChartEditorOverlay->raise();  //同时提升最前
             }
         }
     } else {
-        if (d_ptr->_chartEditorOverlay) {
-            delete d_ptr->_chartEditorOverlay;
-            d_ptr->_chartEditorOverlay = nullptr;
+        if (d_ptr->mChartEditorOverlay) {
+            delete d_ptr->mChartEditorOverlay;
+            d_ptr->mChartEditorOverlay = nullptr;
         }
     }
 }
@@ -485,7 +502,7 @@ void DAFigureWidget::enableSubChartEditor(bool enable)
 ///
 DAFigureWidgetOverlayChartEditor* DAFigureWidget::getSubChartEditor() const
 {
-    return (d_ptr->_chartEditorOverlay);
+    return (d_ptr->mChartEditorOverlay);
 }
 
 /**
@@ -494,8 +511,8 @@ DAFigureWidgetOverlayChartEditor* DAFigureWidget::getSubChartEditor() const
  */
 bool DAFigureWidget::isEnableSubChartEditor() const
 {
-    if (d_ptr->_chartEditorOverlay) {
-        return (d_ptr->_chartEditorOverlay->isVisible());
+    if (d_ptr->mChartEditorOverlay) {
+        return (d_ptr->mChartEditorOverlay->isVisible());
     }
     return (false);
 }
@@ -560,7 +577,7 @@ QwtPlotCurve* DAFigureWidget::addScatter_(const QVector< QPointF >& xyDatas)
  */
 void DAFigureWidget::push(QUndoCommand* cmd)
 {
-    d_ptr->_undoStack.push(cmd);
+    d_ptr->mUndoStack.push(cmd);
 }
 
 /**
@@ -569,7 +586,7 @@ void DAFigureWidget::push(QUndoCommand* cmd)
  */
 QUndoStack* DAFigureWidget::getUndoStack()
 {
-    return &(d_ptr->_undoStack);
+    return &(d_ptr->mUndoStack);
 }
 
 /**
@@ -600,8 +617,8 @@ void DAFigureWidget::paintEvent(QPaintEvent* e)
 {
     QPainter p(this);
 
-    p.setBrush(d_ptr->_backgroundBrush);
-    p.fillRect(0, 0, width(), height(), d_ptr->_backgroundBrush);
+    p.setBrush(d_ptr->mBackgroundBrush);
+    p.fillRect(0, 0, width(), height(), d_ptr->mBackgroundBrush);
     DAFigureContainer::paintEvent(e);
 }
 
@@ -620,8 +637,8 @@ void DAFigureWidget::onWidgetGeometryChanged(QWidget* w, const QRect& oldGeometr
     DAFigureWidgetCommandResizeWidget* cmd = new DAFigureWidgetCommandResizeWidget(this, w, oldPresent, newPresent);
     push(cmd);
     //由于设置geo会有一定误差，因此，这里需要更新一下overlay
-    if (d_ptr->_chartEditorOverlay) {
-        d_ptr->_chartEditorOverlay->updateOverlay();
+    if (d_ptr->mChartEditorOverlay) {
+        d_ptr->mChartEditorOverlay->updateOverlay();
     }
 }
 

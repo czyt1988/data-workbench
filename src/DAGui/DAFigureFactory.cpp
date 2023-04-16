@@ -13,7 +13,17 @@ DAFigureFactory::~DAFigureFactory()
 
 DAFigureWidget* DAFigureFactory::createFigure(QWidget* par)
 {
-    return new DAFigureWidget(par);
+    DAFigureWidget* fig      = new DAFigureWidget(par);
+    DAChartFactory* chartFac = createChartFactory();
+    if (chartFac) {
+        fig->setupChartFactory(chartFac);
+    }
+    return fig;
+}
+
+DAChartFactory* DAFigureFactory::createChartFactory()
+{
+    return nullptr;
 }
 
 }

@@ -29,34 +29,26 @@
 // unsigned int ChartWave_qwt::staticValue_nAutoLineID = 0;//静态变量初始化
 namespace DA
 {
-class DAChartWidgetPrivate
+class DAChartWidget::PrivateData
 {
-    DA_IMPL_PUBLIC(DAChartWidget)
+    DA_DECLARE_PUBLIC(DAChartWidget)
 public:
-    QScopedPointer< QwtPlotZoomer > _zoomer;
-    QScopedPointer< QwtPlotZoomer > _zoomerSecond;
-    QwtPlotGrid* _grid;
-    QwtPlotPicker* _picker;
-    QwtPlotPanner* _panner;
-    QwtPlotLegendItem* _legend;
-    QwtLegend* _legendPanel;
-    DAChartYDataPicker* _yDataPicker;
-    DAChartXYDataPicker* _xyDataPicker;
-    QColor _borderColor;
-    DAChartWidgetPrivate(DAChartWidget* p)
-        : q_ptr(p)
-        , _grid(nullptr)
-        , _picker(nullptr)
-        , _panner(nullptr)
-        , _legend(nullptr)
-        , _legendPanel(nullptr)
-        , _yDataPicker(nullptr)
-        , _xyDataPicker(nullptr)
+    QScopedPointer< QwtPlotZoomer > mZoomer;
+    QScopedPointer< QwtPlotZoomer > mZoomerSecond;
+    QwtPlotGrid* mGrid { nullptr };
+    QwtPlotPicker* mPicker { nullptr };
+    QwtPlotPanner* mPanner { nullptr };
+    QwtPlotLegendItem* mLegend { nullptr };
+    QwtLegend* mLegendPanel { nullptr };
+    DAChartYDataPicker* mYDataPicker { nullptr };
+    DAChartXYDataPicker* mXYDataPicker { nullptr };
+    QColor mBorderColor;
+    PrivateData(DAChartWidget* p) : q_ptr(p)
     {
     }
 };
 
-DAChartWidget::DAChartWidget(QWidget* parent) : QwtPlot(parent), d_ptr(new DAChartWidgetPrivate(this))
+DAChartWidget::DAChartWidget(QWidget* parent) : QwtPlot(parent), DA_PIMPL_CONSTRUCT
 {
     setAutoReplot(false);
     setAutoFillBackground(true);
@@ -110,7 +102,7 @@ void DAChartWidget::resizeEvent(QResizeEvent* event)
  */
 QwtPlotZoomer* DAChartWidget::getZoomer() const
 {
-    return (d_ptr->_zoomer.data());
+    return (d_ptr->mZoomer.data());
 }
 /**
  * @brief 获取缩放器2
@@ -118,8 +110,7 @@ QwtPlotZoomer* DAChartWidget::getZoomer() const
  */
 QwtPlotZoomer* DAChartWidget::getZoomerSecond()
 {
-    DA_D(DAChartWidget, d);
-    return (d->_zoomerSecond.data());
+    return (d_ptr->mZoomerSecond.data());
 }
 
 /**
@@ -128,14 +119,14 @@ QwtPlotZoomer* DAChartWidget::getZoomerSecond()
  */
 QwtPlotGrid* DAChartWidget::getGrid() const
 {
-    return (d_ptr->_grid);
+    return (d_ptr->mGrid);
 }
 
 void DAChartWidget::paintEvent(QPaintEvent* e)
 {
     QPainter painter(this);
-    if (d_ptr->_borderColor.isValid()) {
-        QPen pen(d_ptr->_borderColor);
+    if (d_ptr->mBorderColor.isValid()) {
+        QPen pen(d_ptr->mBorderColor);
         int lw = lineWidth();
         pen.setWidth(lw);
         painter.setPen(pen);
@@ -146,19 +137,17 @@ void DAChartWidget::paintEvent(QPaintEvent* e)
 
 bool DAChartWidget::isEnableGrid() const
 {
-    DA_DC(DAChartWidget, d);
-    if (d->_grid) {
-        return (d->_grid->isVisible());
+    if (d_ptr->mGrid) {
+        return (d_ptr->mGrid->isVisible());
     }
     return (false);
 }
 
 bool DAChartWidget::isEnableGridX() const
 {
-    DA_DC(DAChartWidget, d);
-    if (d->_grid) {
-        if (d->_grid->isVisible()) {
-            return (d->_grid->xEnabled());
+    if (d_ptr->mGrid) {
+        if (d_ptr->mGrid->isVisible()) {
+            return (d_ptr->mGrid->xEnabled());
         }
     }
     return (false);
@@ -166,10 +155,9 @@ bool DAChartWidget::isEnableGridX() const
 
 bool DAChartWidget::isEnableGridY() const
 {
-    DA_DC(DAChartWidget, d);
-    if (d->_grid) {
-        if (d->_grid->isVisible()) {
-            return (d->_grid->yEnabled());
+    if (d_ptr->mGrid) {
+        if (d_ptr->mGrid->isVisible()) {
+            return (d_ptr->mGrid->yEnabled());
         }
     }
     return (false);
@@ -177,10 +165,9 @@ bool DAChartWidget::isEnableGridY() const
 
 bool DAChartWidget::isEnableGridXMin() const
 {
-    DA_DC(DAChartWidget, d);
-    if (d->_grid) {
-        if (d->_grid->isVisible()) {
-            return (d->_grid->xMinEnabled());
+    if (d_ptr->mGrid) {
+        if (d_ptr->mGrid->isVisible()) {
+            return (d_ptr->mGrid->xMinEnabled());
         }
     }
     return (false);
@@ -188,10 +175,9 @@ bool DAChartWidget::isEnableGridXMin() const
 
 bool DAChartWidget::isEnableGridYMin() const
 {
-    DA_DC(DAChartWidget, d);
-    if (d->_grid) {
-        if (d->_grid->isVisible()) {
-            return (d->_grid->yMinEnabled());
+    if (d_ptr->mGrid) {
+        if (d_ptr->mGrid->isVisible()) {
+            return (d_ptr->mGrid->yMinEnabled());
         }
     }
     return (false);
@@ -199,45 +185,40 @@ bool DAChartWidget::isEnableGridYMin() const
 
 bool DAChartWidget::isEnablePanner() const
 {
-    DA_DC(DAChartWidget, d);
-    if (d->_panner) {
-        return (d->_panner->isEnabled());
+    if (d_ptr->mPanner) {
+        return (d_ptr->mPanner->isEnabled());
     }
     return (false);
 }
 
 bool DAChartWidget::isEnableLegend() const
 {
-    DA_DC(DAChartWidget, d);
-    if (d->_legend) {
-        return (d->_legend->isVisible());
+    if (d_ptr->mLegend) {
+        return (d_ptr->mLegend->isVisible());
     }
     return (false);
 }
 
 bool DAChartWidget::isEnableLegendPanel() const
 {
-    DA_DC(DAChartWidget, d);
-    if (d->_legendPanel) {
-        return (d->_legendPanel->isVisible());
+    if (d_ptr->mLegendPanel) {
+        return (d_ptr->mLegendPanel->isVisible());
     }
     return (false);
 }
 
 bool DAChartWidget::isEnableYDataPicker() const
 {
-    DA_DC(DAChartWidget, d);
-    if (d->_yDataPicker) {
-        return (d->_yDataPicker->isEnabled());
+    if (d_ptr->mYDataPicker) {
+        return (d_ptr->mYDataPicker->isEnabled());
     }
     return (false);
 }
 
 bool DAChartWidget::isEnableXYDataPicker() const
 {
-    DA_DC(DAChartWidget, d);
-    if (d->_xyDataPicker) {
-        return (d->_xyDataPicker->isEnabled());
+    if (d_ptr->mXYDataPicker) {
+        return (d_ptr->mXYDataPicker->isEnabled());
     }
     return (false);
 }
@@ -288,12 +269,12 @@ QwtPlotGrid* DAChartWidget::setupGrid(const QColor& color, qreal width, Qt::PenS
  */
 void DAChartWidget::setupGrid(QwtPlotGrid* g)
 {
-    if (d_ptr->_grid && d_ptr->_grid != g) {
-        d_ptr->_grid->detach();
-        delete d_ptr->_grid;
+    if (d_ptr->mGrid && d_ptr->mGrid != g) {
+        d_ptr->mGrid->detach();
+        delete d_ptr->mGrid;
     }
-    d_ptr->_grid = g;
-    d_ptr->_grid->attach(this);
+    d_ptr->mGrid = g;
+    d_ptr->mGrid->attach(this);
 }
 
 /**
@@ -302,7 +283,7 @@ void DAChartWidget::setupGrid(QwtPlotGrid* g)
  */
 QwtPlotLegendItem* DAChartWidget::getLegend() const
 {
-    return d_ptr->_legend;
+    return d_ptr->mLegend;
 }
 
 /**
@@ -310,13 +291,12 @@ QwtPlotLegendItem* DAChartWidget::getLegend() const
  */
 void DAChartWidget::deleteGrid()
 {
-    DA_D(DAChartWidget, d);
-    if (nullptr == d->_grid) {
+    if (nullptr == d_ptr->mGrid) {
         return;
     }
-    d->_grid->detach();
-    delete d->_grid;
-    d->_grid = nullptr;
+    d_ptr->mGrid->detach();
+    delete (d_ptr->mGrid);
+    d_ptr->mGrid = nullptr;
     replot();  //刷新，否则不显示
 }
 
@@ -329,23 +309,22 @@ void DAChartWidget::enableGrid(bool enable)
     if (enable == isEnableGrid()) {
         return;  //状态一致不动作
     }
-    DA_D(DAChartWidget, d);
     if (enable) {
-        if (nullptr == d->_grid) {
+        if (nullptr == d_ptr->mGrid) {
             setupGrid();
         }
-        d->_grid->enableX(true);
-        d->_grid->enableY(true);
-        d->_grid->show();
+        d_ptr->mGrid->enableX(true);
+        d_ptr->mGrid->enableY(true);
+        d_ptr->mGrid->show();
         emit enableGridXChanged(enable);
         emit enableGridYChanged(enable);
         emit enableGridChanged(enable);
         return;
     } else {
-        if (nullptr == d->_grid) {
+        if (nullptr == d_ptr->mGrid) {
             return;
         }
-        d->_grid->hide();
+        d_ptr->mGrid->hide();
     }
     replot();
     emit enableGridChanged(enable);
@@ -356,11 +335,10 @@ void DAChartWidget::enableGridX(bool enable)
     if (isEnableGridX() == enable) {
         return;  //状态一致不动作
     }
-    DA_D(DAChartWidget, d);
-    if (nullptr == d->_grid) {
+    if (nullptr == d_ptr->mGrid) {
         return;
     }
-    d->_grid->enableX(enable);
+    d_ptr->mGrid->enableX(enable);
     emit enableGridXChanged(enable);
 
     if (!enable) {
@@ -374,11 +352,10 @@ void DAChartWidget::enableGridY(bool enable)
     if (isEnableGridY() == enable) {
         return;  //状态一致不动作
     }
-    DA_D(DAChartWidget, d);
-    if (nullptr == d->_grid) {
+    if (nullptr == d_ptr->mGrid) {
         return;
     }
-    d->_grid->enableY(enable);
+    d_ptr->mGrid->enableY(enable);
     emit enableGridYChanged(enable);
 
     if (!enable) {
@@ -391,11 +368,10 @@ void DAChartWidget::enableGridXMin(bool enable)
     if (isEnableGridXMin() == enable) {
         return;  //状态一致不动作
     }
-    DA_D(DAChartWidget, d);
-    if (nullptr == d->_grid) {
+    if (nullptr == d_ptr->mGrid) {
         return;
     }
-    d->_grid->enableXMin(enable);
+    d_ptr->mGrid->enableXMin(enable);
     emit enableGridXMinChanged(enable);
 }
 
@@ -404,11 +380,10 @@ void DAChartWidget::enableGridYMin(bool enable)
     if (isEnableGridYMin() == enable) {
         return;  //状态一致不动作
     }
-    DA_D(DAChartWidget, d);
-    if (nullptr == d->_grid) {
+    if (nullptr == d_ptr->mGrid) {
         return;
     }
-    d->_grid->enableYMin(enable);
+    d_ptr->mGrid->enableYMin(enable);
     emit enableGridYMinChanged(enable);
 }
 
@@ -533,7 +508,7 @@ QBrush DAChartWidget::getChartBackBrush() const
  */
 QColor DAChartWidget::getChartBorderColor() const
 {
-    return d_ptr->_borderColor;
+    return d_ptr->mBorderColor;
 }
 
 /**
@@ -781,7 +756,7 @@ void DAChartWidget::setAllAxisMargin(int m)
  */
 void DAChartWidget::setChartBorderColor(const QColor& c)
 {
-    d_ptr->_borderColor = c;
+    d_ptr->mBorderColor = c;
     repaint();
 }
 /**
@@ -801,26 +776,24 @@ void DAChartWidget::setChartBackgroundBrush(const QBrush& b)
  */
 void DAChartWidget::setupCrossPicker()
 {
-    DA_D(DAChartWidget, d);
-    if (nullptr == d->_picker) {
-        d->_picker = new DAChartCrossTracker(this->canvas());
+    if (nullptr == d_ptr->mPicker) {
+        d_ptr->mPicker = new DAChartCrossTracker(this->canvas());
     }
 }
 
 void DAChartWidget::enableCrossPicker(bool enable)
 {
-    DA_D(DAChartWidget, d);
-    if (!enable && (nullptr == d->_picker)) {
+    if (!enable && (nullptr == d_ptr->mPicker)) {
         return;
     }
-    if (nullptr == d->_picker) {
+    if (nullptr == d_ptr->mPicker) {
         setupCrossPicker();
     }
-    d->_picker->setEnabled(enable);
-    if (d->_zoomer.isNull()) {
+    d_ptr->mPicker->setEnabled(enable);
+    if (d_ptr->mZoomer.isNull()) {
         if (isEnableZoomer()) {
             //如果缩放开启，缩放的TrackerMode和picker重复，这里就需要把TrackerMode取消
-            d->_zoomer->setTrackerMode((enable ? QwtPicker::AlwaysOff : QwtPicker::AlwaysOn));
+            d_ptr->mZoomer->setTrackerMode((enable ? QwtPicker::AlwaysOff : QwtPicker::AlwaysOn));
         }
     }
     emit enableCrossPickerChanged(enable);
@@ -833,17 +806,16 @@ void DAChartWidget::enableCrossPicker(bool enable)
  */
 void DAChartWidget::enablePan(bool enable)
 {
-    DA_D(DAChartWidget, d);
     if (isEnablePanner() == enable) {
         return;  //状态一致跳出
     }
-    if (nullptr == d->_panner) {
+    if (nullptr == d_ptr->mPanner) {
         if (!enable) {
             return;
         }
         setupPanner();
     }
-    d->_panner->setEnabled(enable);
+    d_ptr->mPanner->setEnabled(enable);
     if (enable) {
         // pan和zoom互斥
         if (isEnableZoomer()) {
@@ -859,21 +831,19 @@ void DAChartWidget::enablePan(bool enable)
 void DAChartWidget::setupPanner()
 {
     //设置拖动
-    DA_D(DAChartWidget, d);
-    if (nullptr == d->_panner) {
-        d->_panner = new QwtPlotPanner(canvas());
-        d->_panner->setCursor(QCursor(Qt::ClosedHandCursor));
-        d->_panner->setMouseButton(Qt::LeftButton);
+    if (nullptr == d_ptr->mPanner) {
+        d_ptr->mPanner = new QwtPlotPanner(canvas());
+        d_ptr->mPanner->setCursor(QCursor(Qt::ClosedHandCursor));
+        d_ptr->mPanner->setMouseButton(Qt::LeftButton);
     }
 }
 
 void DAChartWidget::deletePanner()
 {
-    DA_D(DAChartWidget, d);
-    if (nullptr != d->_panner) {
-        d->_panner->setParent(nullptr);  //断开和canvas()的父子连接
-        delete d->_panner;
-        d->_panner = nullptr;
+    if (nullptr != d_ptr->mPanner) {
+        d_ptr->mPanner->setParent(nullptr);  //断开和canvas()的父子连接
+        delete d_ptr->mPanner;
+        d_ptr->mPanner = nullptr;
     }
 }
 
@@ -887,19 +857,18 @@ void DAChartWidget::enableZoomer(bool enable)
     if (isEnableZoomer() == enable) {
         return;  //状态一致不动作
     }
-    DA_D(DAChartWidget, d);
     if (!enable) {
-        if (d->_zoomer.isNull()) {
+        if (d_ptr->mZoomer.isNull()) {
             return;
         }
     }
-    if (d->_zoomer.isNull() /*|| nullptr == _zoomerSecond*/) {
+    if (d_ptr->mZoomer.isNull() /*|| nullptr == _zoomerSecond*/) {
         setupZoomer();
     }
-    enableZoomer(d->_zoomer.data(), enable);
-    enableZoomer(d->_zoomerSecond.data(), enable);
+    enableZoomer(d_ptr->mZoomer.data(), enable);
+    enableZoomer(d_ptr->mZoomerSecond.data(), enable);
     if (isEnableCrossPicker()) {
-        d->_zoomer->setTrackerMode((enable ? QwtPicker::AlwaysOff : QwtPicker::ActiveOnly));
+        d_ptr->mZoomer->setTrackerMode((enable ? QwtPicker::AlwaysOff : QwtPicker::ActiveOnly));
     }
     if (enable) {
         if (isEnablePanner()) {
@@ -934,12 +903,11 @@ void DAChartWidget::enableZoomer(QwtPlotZoomer* zoomer, bool enable)
 ///
 void DAChartWidget::setZoomBase()
 {
-    DA_D(DAChartWidget, d);
-    if (!d->_zoomer.isNull()) {
-        d->_zoomer->setZoomBase(true);
+    if (!d_ptr->mZoomer.isNull()) {
+        d_ptr->mZoomer->setZoomBase(true);
     }
-    if (!d->_zoomerSecond.isNull()) {
-        d->_zoomerSecond->setZoomBase(true);
+    if (!d_ptr->mZoomerSecond.isNull()) {
+        d_ptr->mZoomerSecond->setZoomBase(true);
     }
 }
 
@@ -948,8 +916,7 @@ void DAChartWidget::setZoomBase()
  */
 void DAChartWidget::setupZoomer()
 {
-    DA_D(DAChartWidget, d);
-    if (d->_zoomer.isNull()) {
+    if (d_ptr->mZoomer.isNull()) {
         qDebug() << "setup zoom";
 #if 0
         Zoomer_qwt *zoom = new Zoomer_qwt(xBottom, yLeft, canvas());//Zoomer_qwt( QwtPlot::xBottom, QwtPlot::yLeft,canvas() );
@@ -967,27 +934,27 @@ void DAChartWidget::setupZoomer()
         zoom->setTrackerMode(QwtPicker::AlwaysOff);
         _zoomer = zoom;
 #else
-        d->_zoomer.reset(new QwtPlotZoomer(xBottom, yLeft, canvas()));
-        d->_zoomer->setKeyPattern(QwtEventPattern::KeyRedo, Qt::Key_I, Qt::ShiftModifier);
-        d->_zoomer->setKeyPattern(QwtEventPattern::KeyUndo, Qt::Key_O, Qt::ShiftModifier);
-        d->_zoomer->setKeyPattern(QwtEventPattern::KeyHome, Qt::Key_Home);
-        d->_zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::RightButton, Qt::ControlModifier);
-        d->_zoomer->setMousePattern(QwtEventPattern::MouseSelect3, Qt::RightButton);
-        d->_zoomer->setTrackerMode(QwtPicker::AlwaysOff);
-        d->_zoomer->setZoomBase(false);
-        d->_zoomer->setMaxStackDepth(20);
+        d_ptr->mZoomer.reset(new QwtPlotZoomer(xBottom, yLeft, canvas()));
+        d_ptr->mZoomer->setKeyPattern(QwtEventPattern::KeyRedo, Qt::Key_I, Qt::ShiftModifier);
+        d_ptr->mZoomer->setKeyPattern(QwtEventPattern::KeyUndo, Qt::Key_O, Qt::ShiftModifier);
+        d_ptr->mZoomer->setKeyPattern(QwtEventPattern::KeyHome, Qt::Key_Home);
+        d_ptr->mZoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::RightButton, Qt::ControlModifier);
+        d_ptr->mZoomer->setMousePattern(QwtEventPattern::MouseSelect3, Qt::RightButton);
+        d_ptr->mZoomer->setTrackerMode(QwtPicker::AlwaysOff);
+        d_ptr->mZoomer->setZoomBase(false);
+        d_ptr->mZoomer->setMaxStackDepth(20);
 #endif
     }
-    if (nullptr == d->_zoomerSecond) {
-        d->_zoomerSecond.reset(new QwtPlotZoomer(xTop, yRight, canvas()));
-        d->_zoomerSecond->setKeyPattern(QwtEventPattern::KeyRedo, Qt::Key_I, Qt::ShiftModifier);
-        d->_zoomerSecond->setKeyPattern(QwtEventPattern::KeyUndo, Qt::Key_O, Qt::ShiftModifier);
-        d->_zoomerSecond->setKeyPattern(QwtEventPattern::KeyHome, Qt::Key_Home);
-        d->_zoomerSecond->setMousePattern(QwtEventPattern::MouseSelect2, Qt::RightButton, Qt::ControlModifier);
-        d->_zoomerSecond->setMousePattern(QwtEventPattern::MouseSelect3, Qt::RightButton);
-        d->_zoomerSecond->setTrackerMode(QwtPicker::AlwaysOff);
-        d->_zoomerSecond->setZoomBase(false);
-        d->_zoomerSecond->setMaxStackDepth(20);
+    if (nullptr == d_ptr->mZoomerSecond) {
+        d_ptr->mZoomerSecond.reset(new QwtPlotZoomer(xTop, yRight, canvas()));
+        d_ptr->mZoomerSecond->setKeyPattern(QwtEventPattern::KeyRedo, Qt::Key_I, Qt::ShiftModifier);
+        d_ptr->mZoomerSecond->setKeyPattern(QwtEventPattern::KeyUndo, Qt::Key_O, Qt::ShiftModifier);
+        d_ptr->mZoomerSecond->setKeyPattern(QwtEventPattern::KeyHome, Qt::Key_Home);
+        d_ptr->mZoomerSecond->setMousePattern(QwtEventPattern::MouseSelect2, Qt::RightButton, Qt::ControlModifier);
+        d_ptr->mZoomerSecond->setMousePattern(QwtEventPattern::MouseSelect3, Qt::RightButton);
+        d_ptr->mZoomerSecond->setTrackerMode(QwtPicker::AlwaysOff);
+        d_ptr->mZoomerSecond->setZoomBase(false);
+        d_ptr->mZoomerSecond->setMaxStackDepth(20);
     }
     QwtPlotMagnifier* magnifier = new QwtPlotMagnifier(canvas());
     magnifier->setMouseButton(Qt::NoButton);
@@ -1000,20 +967,19 @@ void DAChartWidget::setupZoomer()
 void DAChartWidget::setupZoomer(QwtPlotZoomer* z, bool issecondZoom)
 {
     if (issecondZoom) {
-        d_ptr->_zoomerSecond.reset(z);
+        d_ptr->mZoomerSecond.reset(z);
     } else {
-        d_ptr->_zoomer.reset(z);
+        d_ptr->mZoomer.reset(z);
     }
 }
 
 void DAChartWidget::deleteZoomer()
 {
-    DA_D(DAChartWidget, d);
-    if (!d->_zoomer.isNull()) {
-        d->_zoomer.reset();
+    if (!d_ptr->mZoomer.isNull()) {
+        d_ptr->mZoomer.reset();
     }
-    if (!d->_zoomerSecond.isNull()) {
-        d->_zoomerSecond.reset();
+    if (!d_ptr->mZoomerSecond.isNull()) {
+        d_ptr->mZoomerSecond.reset();
     }
 }
 
@@ -1022,12 +988,11 @@ void DAChartWidget::deleteZoomer()
 ///
 void DAChartWidget::setZoomReset()
 {
-    DA_D(DAChartWidget, d);
-    if (!d->_zoomer.isNull()) {
-        d->_zoomer->zoom(0);
+    if (!d_ptr->mZoomer.isNull()) {
+        d_ptr->mZoomer->zoom(0);
     }
-    if (!d->_zoomerSecond.isNull()) {
-        d->_zoomerSecond->zoom(0);
+    if (!d_ptr->mZoomerSecond.isNull()) {
+        d_ptr->mZoomerSecond->zoom(0);
     }
 }
 
@@ -1036,13 +1001,12 @@ void DAChartWidget::setZoomReset()
  */
 void DAChartWidget::zoomIn()
 {
-    DA_D(DAChartWidget, d);
-    if (d->_zoomer.isNull()) {
+    if (d_ptr->mZoomer.isNull()) {
         qWarning() << tr("Before zoom in, the chart must setup a zoomer");  // cn:在放大图表之前需要先建立缩放器
         return;
     }
 
-    QRectF rect = d->_zoomer->zoomRect();
+    QRectF rect = d_ptr->mZoomer->zoomRect();
     double w    = rect.width() * 0.625;
     double h    = rect.height() * 0.625;
     double x    = rect.x() + (rect.width() - w) / 2.0;
@@ -1053,10 +1017,11 @@ void DAChartWidget::zoomIn()
     rect.setWidth(w);
     rect.setHeight(h);
     if (rect.isValid()) {
-        qDebug() << "zoom in from " << d->_zoomer->zoomRect() << " to " << rect;
-        d->_zoomer->zoom(rect);
+        qDebug() << "zoom in from " << d_ptr->mZoomer->zoomRect() << " to " << rect;
+        d_ptr->mZoomer->zoom(rect);
     } else {
-        qDebug() << "zoom in get invalid zoom rect,current zoom rect is " << d->_zoomer->zoomRect() << ",will zoom rect is " << rect;
+        qDebug() << "zoom in get invalid zoom rect,current zoom rect is " << d_ptr->mZoomer->zoomRect()
+                 << ",will zoom rect is " << rect;
     }
 }
 
@@ -1065,13 +1030,12 @@ void DAChartWidget::zoomIn()
  */
 void DAChartWidget::zoomOut()
 {
-    DA_D(DAChartWidget, d);
-    if (d->_zoomer.isNull()) {
+    if (d_ptr->mZoomer.isNull()) {
         qWarning() << tr("Before zoom out, the chart must setup a zoomer");  // cn:在缩小图表之前需要先建立缩放器
         return;
     }
 
-    QRectF rect = d->_zoomer->zoomRect();
+    QRectF rect = d_ptr->mZoomer->zoomRect();
     double w    = rect.width() * 1.6;
     double h    = rect.height() * 1.6;
     double x    = rect.x() - (w - rect.width()) / 2.0;
@@ -1082,10 +1046,10 @@ void DAChartWidget::zoomOut()
     rect.setWidth(w);
     rect.setHeight(h);
     if (rect.isValid()) {
-        qDebug() << "zoom out from " << d->_zoomer->zoomRect() << " to " << rect;
-        d->_zoomer->zoom(rect);
+        qDebug() << "zoom out from " << d_ptr->mZoomer->zoomRect() << " to " << rect;
+        d_ptr->mZoomer->zoom(rect);
     } else {
-        qDebug() << "zoom out get invalid zoom rect,current zoom rect is " << d->_zoomer->zoomRect()
+        qDebug() << "zoom out get invalid zoom rect,current zoom rect is " << d_ptr->mZoomer->zoomRect()
                  << ",will zoom rect is " << rect;
     }
 }
@@ -1097,7 +1061,7 @@ void DAChartWidget::zoomInCompatible()
 {
     QwtInterval intv[ axisCnt ];
     bool needdelete       = false;
-    QwtPlotZoomer* zoomer = d_ptr->_zoomer.data();
+    QwtPlotZoomer* zoomer = d_ptr->mZoomer.data();
     if (nullptr == zoomer) {
         zoomer     = new QwtPlotZoomer(xBottom, yLeft, canvas());
         needdelete = true;
@@ -1116,7 +1080,7 @@ void DAChartWidget::zoomInCompatible()
         delete zoomer;
     }
 
-    zoomer = d_ptr->_zoomerSecond.data();
+    zoomer = d_ptr->mZoomerSecond.data();
     if (zoomer) {
 
         int axx = zoomer->xAxis();
@@ -1148,16 +1112,16 @@ void DAChartWidget::zoomInCompatible()
 
 void DAChartWidget::setupLegend()
 {
-    if (nullptr == d_ptr->_legend) {
-        d_ptr->_legend = new QwtPlotLegendItem();
-        d_ptr->_legend->setRenderHint(QwtPlotItem::RenderAntialiased);
+    if (nullptr == d_ptr->mLegend) {
+        d_ptr->mLegend = new QwtPlotLegendItem();
+        d_ptr->mLegend->setRenderHint(QwtPlotItem::RenderAntialiased);
         QColor color(Qt::white);
-        d_ptr->_legend->setTextPen(color);
-        d_ptr->_legend->setBorderPen(color);
+        d_ptr->mLegend->setTextPen(color);
+        d_ptr->mLegend->setBorderPen(color);
         QColor c(Qt::gray);
         c.setAlpha(200);
-        d_ptr->_legend->setBackgroundBrush(c);
-        d_ptr->_legend->attach(this);
+        d_ptr->mLegend->setBackgroundBrush(c);
+        d_ptr->mLegend->attach(this);
     }
 }
 
@@ -1171,14 +1135,14 @@ void DAChartWidget::enableLegend(bool enable)
         return;  //状态一致不动作
     }
     if (enable) {
-        if (d_ptr->_legend) {
-            d_ptr->_legend->setVisible(true);
+        if (d_ptr->mLegend) {
+            d_ptr->mLegend->setVisible(true);
         } else {
             setupLegend();
         }
     } else {
-        if (d_ptr->_legend) {
-            d_ptr->_legend->setVisible(false);
+        if (d_ptr->mLegend) {
+            d_ptr->mLegend->setVisible(false);
         }
     }
     emit enableLegendChanged(enable);
@@ -1199,20 +1163,20 @@ void DAChartWidget::enableLegendPanel(bool enable)
 
 void DAChartWidget::setuplegendPanel()
 {
-    if (d_ptr->_legendPanel) {
+    if (d_ptr->mLegendPanel) {
         return;
     }
-    d_ptr->_legendPanel = new QwtLegend;
-    d_ptr->_legendPanel->setDefaultItemMode(QwtLegendData::Checkable);
-    insertLegend(d_ptr->_legendPanel, QwtPlot::RightLegend);
+    d_ptr->mLegendPanel = new QwtLegend;
+    d_ptr->mLegendPanel->setDefaultItemMode(QwtLegendData::Checkable);
+    insertLegend(d_ptr->mLegendPanel, QwtPlot::RightLegend);
     //	connect( _legendPanel, &QwtLegend::checked,&ChartWave_qwt::showItem);
-    connect(d_ptr->_legendPanel, SIGNAL(checked(const QVariant&, bool, int)), SLOT(showItem(const QVariant&, bool)));
+    connect(d_ptr->mLegendPanel, SIGNAL(checked(const QVariant&, bool, int)), SLOT(showItem(const QVariant&, bool)));
 
     QwtPlotItemList items = itemList(QwtPlotItem::Rtti_PlotCurve);
 
     for (int i = 0; i < items.size(); i++) {
         const QVariant itemInfo     = itemToInfo(items[ i ]);
-        QwtLegendLabel* legendLabel = qobject_cast< QwtLegendLabel* >(d_ptr->_legendPanel->legendWidget(itemInfo));
+        QwtLegendLabel* legendLabel = qobject_cast< QwtLegendLabel* >(d_ptr->mLegendPanel->legendWidget(itemInfo));
         if (legendLabel) {
             legendLabel->setChecked(items[ i ]->isVisible());
         }
@@ -1221,43 +1185,41 @@ void DAChartWidget::setuplegendPanel()
 
 void DAChartWidget::deletelegendPanel()
 {
-    DA_D(DAChartWidget, d);
     insertLegend(nullptr);  //内部会销毁
-    d->_legendPanel = nullptr;
+    d_ptr->mLegendPanel = nullptr;
 }
 
 void DAChartWidget::setupYDataPicker()
 {
-    if (nullptr == d_ptr->_yDataPicker) {
-        d_ptr->_yDataPicker = new DAChartYDataPicker(this->canvas());
-        d_ptr->_yDataPicker->setRubberBandPen(QPen("MediumOrchid"));
+    if (nullptr == d_ptr->mYDataPicker) {
+        d_ptr->mYDataPicker = new DAChartYDataPicker(this->canvas());
+        d_ptr->mYDataPicker->setRubberBandPen(QPen("MediumOrchid"));
     }
 }
 
 void DAChartWidget::deleteYDataPicker()
 {
-    if (nullptr != d_ptr->_yDataPicker) {
-        d_ptr->_yDataPicker->setParent(nullptr);  //断开和canvas()的父子连接
-        delete d_ptr->_yDataPicker;
-        d_ptr->_yDataPicker = nullptr;
+    if (nullptr != d_ptr->mYDataPicker) {
+        d_ptr->mYDataPicker->setParent(nullptr);  //断开和canvas()的父子连接
+        delete d_ptr->mYDataPicker;
+        d_ptr->mYDataPicker = nullptr;
     }
 }
 
 void DAChartWidget::setupXYDataPicker()
 {
-    if (nullptr == d_ptr->_xyDataPicker) {
-        d_ptr->_xyDataPicker = new DAChartXYDataPicker(this->canvas());
-        d_ptr->_xyDataPicker->setRubberBandPen(QPen("MediumOrchid"));
+    if (nullptr == d_ptr->mXYDataPicker) {
+        d_ptr->mXYDataPicker = new DAChartXYDataPicker(this->canvas());
+        d_ptr->mXYDataPicker->setRubberBandPen(QPen("MediumOrchid"));
     }
 }
 
 void DAChartWidget::deleteXYDataPicker()
 {
-    DA_D(DAChartWidget, d);
-    if (nullptr != d->_xyDataPicker) {
-        d->_xyDataPicker->setParent(nullptr);  //断开和canvas()的父子连接
-        delete d->_xyDataPicker;
-        d->_xyDataPicker = nullptr;
+    if (nullptr != d_ptr->mXYDataPicker) {
+        d_ptr->mXYDataPicker->setParent(nullptr);  //断开和canvas()的父子连接
+        delete d_ptr->mXYDataPicker;
+        d_ptr->mXYDataPicker = nullptr;
     }
 }
 
@@ -1311,12 +1273,11 @@ void DAChartWidget::setYLabel(const QString& label)
 ///
 bool DAChartWidget::isEnableZoomer() const
 {
-    DA_DC(DAChartWidget, d);
-    if (d->_zoomer) {
-        return (d->_zoomer->isEnabled());
+    if (d_ptr->mZoomer) {
+        return (d_ptr->mZoomer->isEnabled());
     }
-    if (d->_zoomerSecond) {
-        return (d->_zoomerSecond->isEnabled());
+    if (d_ptr->mZoomerSecond) {
+        return (d_ptr->mZoomerSecond->isEnabled());
     }
     return (false);
 }
@@ -1327,9 +1288,8 @@ bool DAChartWidget::isEnableZoomer() const
 ///
 bool DAChartWidget::isEnableCrossPicker() const
 {
-    DA_DC(DAChartWidget, d);
-    if (d->_picker) {
-        return (d->_picker->isEnabled());
+    if (d_ptr->mPicker) {
+        return (d_ptr->mPicker->isEnabled());
     }
     return (false);
 }

@@ -2,6 +2,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QScopedPointer>
 #include <QPointer>
+#include <QPainter>
 #include "DAGraphicsResizeablePixmapItem.h"
 #include "DAStandardNodeLinkGraphicsItem.h"
 #include "DACommandsForGraphics.h"
@@ -14,49 +15,41 @@
 #include "DAStandardGraphicsTextItem.h"
 namespace DA
 {
-class DANodeGraphicsScenePrivate
+class DANodeGraphicsScene::PrivateData
 {
-    DA_IMPL_PUBLIC(DANodeGraphicsScene)
+    DA_DECLARE_PUBLIC(DANodeGraphicsScene)
 public:
-    DANodeGraphicsScenePrivate(DANodeGraphicsScene* p);
+    PrivateData(DANodeGraphicsScene* p);
 
 public:
-    bool _isStartLink;  ///< 正在进行链接
-    QScopedPointer< DAStandardNodeLinkGraphicsItem > _linkingItem;
-    QPointer< DAWorkFlow > _workflow;
-    QPointF _lastMousePressPos;  ///< 记录鼠标点击的位置
+    bool mIsStartLink { false };  ///< 正在进行链接
+    QScopedPointer< DAAbstractNodeLinkGraphicsItem > mLinkingItem;
+    QPointer< DAWorkFlow > mWorkflow;
+    QPointF mLastMousePressPos;  ///< 记录鼠标点击的位置
 };
-}
 
 ////////////////////////////////////////////////
 ///
 ////////////////////////////////////////////////
-
-using namespace DA;
-
-////////////////////////////////////////////////
-///
-////////////////////////////////////////////////
-DANodeGraphicsScenePrivate::DANodeGraphicsScenePrivate(DANodeGraphicsScene* p) : q_ptr(p), _isStartLink(false)
+DANodeGraphicsScene::PrivateData::PrivateData(DANodeGraphicsScene* p) : q_ptr(p)
 {
 }
 
 ///////////////////////////////////
 
-DANodeGraphicsScene::DANodeGraphicsScene(QObject* p)
-    : DAGraphicsSceneWithUndoStack(p), d_ptr(new DANodeGraphicsScenePrivate(this))
+DANodeGraphicsScene::DANodeGraphicsScene(QObject* p) : DAGraphicsSceneWithUndoStack(p), DA_PIMPL_CONSTRUCT
 {
     initConnect();
 }
 
 DANodeGraphicsScene::DANodeGraphicsScene(const QRectF& sceneRect, QObject* p)
-    : DAGraphicsSceneWithUndoStack(sceneRect, p), d_ptr(new DANodeGraphicsScenePrivate(this))
+    : DAGraphicsSceneWithUndoStack(sceneRect, p), DA_PIMPL_CONSTRUCT
 {
     initConnect();
 }
 
 DANodeGraphicsScene::DANodeGraphicsScene(qreal x, qreal y, qreal width, qreal height, QObject* p)
-    : DAGraphicsSceneWithUndoStack(x, y, width, height, p), d_ptr(new DANodeGraphicsScenePrivate(this))
+    : DAGraphicsSceneWithUndoStack(x, y, width, height, p), DA_PIMPL_CONSTRUCT
 {
     initConnect();
 }
@@ -71,7 +64,7 @@ DANodeGraphicsScene::~DANodeGraphicsScene()
  */
 bool DANodeGraphicsScene::isStartLink() const
 {
-    return (d_ptr->_isStartLink);
+    return (d_ptr->mIsStartLink);
 }
 
 /**
@@ -79,9 +72,9 @@ bool DANodeGraphicsScene::isStartLink() const
  */
 void DANodeGraphicsScene::cancelLink()
 {
-    if (d_ptr->_isStartLink) {
+    if (d_ptr->mIsStartLink) {
         //除开左键的所有按键都是取消
-        DAAbstractNodeLinkGraphicsItem* linkItem = d_ptr->_linkingItem.get();
+        DAAbstractNodeLinkGraphicsItem* linkItem = d_ptr->mLinkingItem.get();
         if (linkItem) {
             removeItem(linkItem);
         }
@@ -93,8 +86,8 @@ void DANodeGraphicsScene::cancelLink()
         if (it) {
             it->prepareLinkInputFailed(linkItem->toNodeLinkPoint(), linkItem);
         }
-        d_ptr->_linkingItem.reset();
-        d_ptr->_isStartLink = false;
+        d_ptr->mLinkingItem.reset();
+        d_ptr->mIsStartLink = false;
     }
 }
 
@@ -105,10 +98,10 @@ void DANodeGraphicsScene::cancelLink()
  */
 void DANodeGraphicsScene::setWorkFlow(DAWorkFlow* wf)
 {
-    if (d_ptr->_workflow) {
-        disconnect(d_ptr->_workflow.data(), &DAWorkFlow::nodeNameChanged, this, &DANodeGraphicsScene::onNodeNameChanged);
+    if (d_ptr->mWorkflow) {
+        disconnect(d_ptr->mWorkflow.data(), &DAWorkFlow::nodeNameChanged, this, &DANodeGraphicsScene::onNodeNameChanged);
     }
-    d_ptr->_workflow = wf;
+    d_ptr->mWorkflow = wf;
     if (wf) {
         connect(wf, &DAWorkFlow::nodeNameChanged, this, &DANodeGraphicsScene::onNodeNameChanged);
     }
@@ -120,7 +113,7 @@ void DANodeGraphicsScene::setWorkFlow(DAWorkFlow* wf)
  */
 DAWorkFlow* DANodeGraphicsScene::getWorkflow()
 {
-    return d_ptr->_workflow.data();
+    return d_ptr->mWorkflow.data();
 }
 
 /**
@@ -276,22 +269,27 @@ int DANodeGraphicsScene::removeSelectedItems_()
 
 /**
  * @brief 创建节点（不带回退功能）
+ * @note 注意，节点会记录在工作流中,如果返回的是nullptr，则不会记录
  * @param md
  * @param pos
  * @return
  */
 DAAbstractNodeGraphicsItem* DANodeGraphicsScene::createNode(const DANodeMetaData& md, const QPointF& pos)
 {
-    if (nullptr == d_ptr->_workflow) {
+    if (nullptr == d_ptr->mWorkflow) {
         return nullptr;
     }
-    DAAbstractNode::SharedPointer n      = d_ptr->_workflow->createNode(md);
+    DAAbstractNode::SharedPointer n = d_ptr->mWorkflow->createNode(md);
+
     DAAbstractNodeGraphicsItem* nodeitem = nullptr;
     if (nullptr == n) {
         qCritical() << QObject::tr("can not create node,metadata name=%1(%2)").arg(md.getNodeName(), md.getNodePrototype());
     } else {
         nodeitem = n->createGraphicsItem();
-        nodeitem->setPos(pos);
+        if (nodeitem) {
+            nodeitem->setPos(pos);
+            d_ptr->mWorkflow->addNode(n);
+        }
     }
     return nodeitem;
 }
@@ -373,23 +371,25 @@ void DANodeGraphicsScene::onNodeItemLinkPointSelected(DA::DAAbstractNodeGraphics
     if (event->buttons().testFlag(Qt::LeftButton)) {
         if (isStartLink()) {
             //说明此时处于开始连接状态，接收到点击需要判断是否接受
-            if (lp.isOutput() && d_ptr->_linkingItem.isNull()) {
+            if (lp.isOutput() && d_ptr->mLinkingItem.isNull()) {
                 //连接的结束从in结束，out就退出
                 event->ignore();
                 return;
             }
             //此时连接到to点
-            if (d_ptr->_linkingItem->attachTo(item, lp)) {
-                //连接成功，把item脱离管理
-                DAAbstractNodeLinkGraphicsItem* linkitem = d_ptr->_linkingItem.take();
-                //通知item链接入口成功了
-                linkitem->updateBoundingRect();
-                //由于开始链接的的时候已经additem了，因此，这个cmd的第三个参数设置为false，也就是第一次执行redo不用additem
-                DA::DACommandsForWorkFlowCreateLink* cmd = new DA::DACommandsForWorkFlowCreateLink(linkitem, this, true);
-                push(cmd);
-                d_ptr->_isStartLink = false;
-                // qDebug() << "linkingItem success attach to " << item->rawNode()->getNodeName();
+            if (!(d_ptr->mLinkingItem->attachTo(item, lp))) {
+                //连接失败
+                return;
             }
+            //连接成功，把item脱离管理
+            DAAbstractNodeLinkGraphicsItem* linkitem = d_ptr->mLinkingItem.take();
+            //通知item链接入口成功了
+            linkitem->updateBoundingRect();
+            //由于开始链接的的时候已经additem了，因此，这个cmd的第三个参数设置为false，也就是第一次执行redo不用additem
+            DA::DACommandsForWorkFlowCreateLink* cmd = new DA::DACommandsForWorkFlowCreateLink(linkitem, this, true);
+            push(cmd);
+            d_ptr->mIsStartLink = false;
+            // qDebug() << "linkingItem success attach to " << item->rawNode()->getNodeName();
         } else {
             //说明此时处于正常状态，判断是否开始连线
             if (lp.isInput()) {
@@ -398,20 +398,25 @@ void DANodeGraphicsScene::onNodeItemLinkPointSelected(DA::DAAbstractNodeGraphics
                 return;
             }
             //此时说明开始进行连线
-            d_ptr->_isStartLink = true;
-            d_ptr->_linkingItem.reset(new DAStandardNodeLinkGraphicsItem());
-            if (!d_ptr->_linkingItem->attachFrom(item, lp)) {
+            d_ptr->mIsStartLink = true;
+            d_ptr->mLinkingItem.reset(item->createLinkItem(lp));
+            if (nullptr == d_ptr->mLinkingItem) {
                 //连接不成功
                 //通知item链接出口的时候失败了
-                d_ptr->_linkingItem.reset();
-                d_ptr->_isStartLink = false;
+                d_ptr->mIsStartLink = false;
+                d_ptr->mLinkingItem.reset();
+                return;
+            }
+            if (!(d_ptr->mLinkingItem->attachFrom(item, lp))) {
+                d_ptr->mIsStartLink = false;
+                d_ptr->mLinkingItem.reset();
                 return;
             }
             //把item加入
             //这里不能直接用addItem_，因为item的操作要反作用节点
-            addItem(d_ptr->_linkingItem.get());
-            d_ptr->_linkingItem->setPos(item->mapToScene(lp.position));
-            d_ptr->_linkingItem->updateBoundingRect();
+            addItem(d_ptr->mLinkingItem.get());
+            d_ptr->mLinkingItem->setPos(item->mapToScene(lp.position));
+            d_ptr->mLinkingItem->updateBoundingRect();
         }
     } else {
         //除开左键的所有按键都是取消
@@ -452,7 +457,7 @@ void DANodeGraphicsScene::onNodeNameChanged(DAAbstractNode::SharedPointer node, 
 
 void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
-    d_ptr->_lastMousePressPos = mouseEvent->scenePos();
+    d_ptr->mLastMousePressPos = mouseEvent->scenePos();
     if (mouseEvent->isAccepted()) {
         //说明上级已经接受了鼠标事件，这里不应该处理
         if (isStartLink()) {
@@ -468,7 +473,7 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
         }
     } else {
         //左键点击
-        QGraphicsItem* positem = itemAt(d_ptr->_lastMousePressPos, QTransform());
+        QGraphicsItem* positem = itemAt(d_ptr->mLastMousePressPos, QTransform());
         if (nullptr == positem) {
             DAGraphicsSceneWithUndoStack::mousePressEvent(mouseEvent);
             return;
@@ -481,10 +486,10 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
             return;
         }
         //如果点击到了DAAbstractNodeGraphicsItem，要看看是否点击到了连接点
-        QPointF itempos = nodeItem->mapFromScene(d_ptr->_lastMousePressPos);
+        QPointF itempos = nodeItem->mapFromScene(d_ptr->mLastMousePressPos);
         if (isStartLink()) {
             //开始链接状态，此时点击的是input
-            nodeItem->prepareLinkInput(itempos, d_ptr->_linkingItem.get());
+            nodeItem->prepareLinkInput(itempos, d_ptr->mLinkingItem.get());
         } else {
             //非开始链接状态，此时点击的是output
             nodeItem->prepareLinkOutput(itempos);
@@ -503,9 +508,9 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 
 void DANodeGraphicsScene::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
-    if (isStartLink() && !(d_ptr->_linkingItem.isNull())) {
+    if (isStartLink() && !(d_ptr->mLinkingItem.isNull())) {
         //此时正值连接中，把鼠标的位置发送到link中
-        d_ptr->_linkingItem->updateBoundingRect();
+        d_ptr->mLinkingItem->updateBoundingRect();
     }
     DAGraphicsSceneWithUndoStack::mouseMoveEvent(mouseEvent);
 }
@@ -514,3 +519,4 @@ void DANodeGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent
 {
     DAGraphicsSceneWithUndoStack::mouseReleaseEvent(mouseEvent);
 }
+}  // end DA

@@ -2,7 +2,7 @@
 #define DAFONTEDITPANNELWIDGET_H
 #include "DACommonWidgetsAPI.h"
 #include <QWidget>
-
+class SAColorMenu;
 namespace Ui
 {
 class DAFontEditPannelWidget;
@@ -46,7 +46,8 @@ signals:
 
 private:
     Ui::DAFontEditPannelWidget* ui;
-    int _fontPointSize;
+    int mFontPointSize;
+    SAColorMenu* mColorMenu;
 };
 }
 #endif  // DAFONTEDITPANNELWIDGET_H

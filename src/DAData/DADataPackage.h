@@ -36,7 +36,7 @@ public:
     bool isEmpty() const;
 
 private:
-    QList< DAAbstractData::Pointer > _children;
+    QList< DAAbstractData::Pointer > mChildren;
 };
 }  // namespace DA
 #endif  // DADATAPACKAGE_H

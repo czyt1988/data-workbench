@@ -6,7 +6,6 @@
 namespace DA
 {
 class DAGraphicsResizeableItem;
-DA_IMPL_FORWARD_DECL(DAGraphicsSceneWithUndoStack)
 /**
  * @brief 这是带着undostack的GraphicsScene
  * 此QGraphicsScene支持：
@@ -20,7 +19,7 @@ DA_IMPL_FORWARD_DECL(DAGraphicsSceneWithUndoStack)
 class DAGRAPHICSVIEW_API DAGraphicsSceneWithUndoStack : public QGraphicsScene
 {
     Q_OBJECT
-    DA_IMPL(DAGraphicsSceneWithUndoStack)
+    DA_DECLARE_PRIVATE(DAGraphicsSceneWithUndoStack)
     friend class DAGraphicsResizeableItem;
 
 public:
@@ -38,6 +37,8 @@ public:
     QUndoCommand* addItem_(QGraphicsItem* item, bool autopush = true);
     //等同removeItem，但使用redo/undo来添加，可以进行redo/undo操作
     QUndoCommand* removeItem_(QGraphicsItem* item, bool autopush = true);
+    //导出为pixmap
+    QPixmap toPixamp();
 
 public:
     //是否允许对齐网格

@@ -3,7 +3,7 @@
 #include "DAUtilityNodePluginAPI.h"
 #include "DAUtilityNodeAppExecute.h"
 #include "DAStandardNodeSvgGraphicsItem.h"
-#define DAUTILITYNODEPLUGIN_CHECK_PAINT 1
+#define DAUTILITYNODEPLUGIN_CHECK_PAINT 0
 
 class QPainter;
 class QStyleOptionGraphicsItem;
@@ -28,7 +28,7 @@ public:
     void setCheckShow(bool on);
 
 private:
-    bool _isCheck;
+    bool mIsCheck;
 #endif
 };
 }

@@ -54,20 +54,20 @@ DAGraphicsResizeablePixmapItem* DAWorkFlowGraphicsScene::setBackgroundPixmap(con
  * @brief 获取背景图item
  * @return 如果没有设置返回一个nullptr
  */
-DAGraphicsResizeablePixmapItem* DAWorkFlowGraphicsScene::getBackgroundPixmapItem()
+DAGraphicsResizeablePixmapItem* DAWorkFlowGraphicsScene::getBackgroundPixmapItem() const
 {
-    if (nullptr == _backgroundPixmapItem) {
-        return nullptr;
-    }
-    QList< QGraphicsItem* > its = items();
-    for (const QGraphicsItem* i : its) {
-        if (i == _backgroundPixmapItem) {
-            return _backgroundPixmapItem;
-        }
-    }
-    //在所有item中没有找到，说明_backgroundPixmapItem已经被删除，因此惰性赋值为nullptr
-    _backgroundPixmapItem = nullptr;
-    return nullptr;
+    return _backgroundPixmapItem;
+    //    if (nullptr == _backgroundPixmapItem) {
+    //        return nullptr;
+    //    }
+    //    QList< QGraphicsItem* > its = items();
+    //    for (const QGraphicsItem* i : qAsConst(its)) {
+    //        if (i == _backgroundPixmapItem) {
+    //            return _backgroundPixmapItem;
+    //        }
+    //    }
+    //    //在所有item中没有找到，说明_backgroundPixmapItem已经被删除
+    //    return nullptr;
 }
 
 /**
@@ -114,42 +114,53 @@ bool DAWorkFlowGraphicsScene::isMouseActionContinuoue() const
 
 /**
  * @brief 设置背景item，如果外部调用getBackgroundPixmapItem并删除，需要通过此函数把保存的item设置为null
- * @note 此函数不会对item执行additem操作，仅仅只是交由DAWorkFlowGraphicsScene保存
- * @param item
+ * @note 如果之前有设置item，会对之前的背景进行移除，但不会删除，这样如果用户不remove就是set可能会导致内存泄漏
+ * @param item 设置nullptr相当于移除背景
  */
 void DAWorkFlowGraphicsScene::setBackgroundPixmapItem(DAGraphicsResizeablePixmapItem* item)
 {
+    removeBackgroundPixmapItem();
     _backgroundPixmapItem = item;
+    if (item) {
 #if DA_USE_QGRAPHICSOBJECT
-    connect(_backgroundPixmapItem, &DAGraphicsResizeablePixmapItem::xChanged, this, &DAWorkFlowGraphicsScene::backgroundPixmapItemXChanged);
-    connect(_backgroundPixmapItem, &DAGraphicsResizeablePixmapItem::yChanged, this, &DAWorkFlowGraphicsScene::backgroundPixmapItemYChanged);
-    connect(_backgroundPixmapItem, &DAGraphicsResizeablePixmapItem::itemBodySizeChanged, this, &DAWorkFlowGraphicsScene::backgroundPixmapItemBodyItemBodySizeChanged);
+        connect(_backgroundPixmapItem, &DAGraphicsResizeablePixmapItem::xChanged, this, &DAWorkFlowGraphicsScene::backgroundPixmapItemXChanged);
+        connect(_backgroundPixmapItem, &DAGraphicsResizeablePixmapItem::yChanged, this, &DAWorkFlowGraphicsScene::backgroundPixmapItemYChanged);
+        connect(_backgroundPixmapItem,
+                &DAGraphicsResizeablePixmapItem::itemBodySizeChanged,
+                this,
+                &DAWorkFlowGraphicsScene::backgroundPixmapItemBodyItemBodySizeChanged);
 #endif
-    item->setZValue(-9999);
-    addItem(_backgroundPixmapItem);
+        item->setZValue(-9999);
+        addItem(_backgroundPixmapItem);
 #if DA_USE_QGRAPHICSOBJECT
-    _backgroundPixmapItemLastPos = _backgroundPixmapItem->pos();
-    _pixmapResizeLastPos         = _backgroundPixmapItem->pos();
+        _backgroundPixmapItemLastPos = _backgroundPixmapItem->pos();
+        _pixmapResizeLastPos         = _backgroundPixmapItem->pos();
 #endif
+    }
 }
 
 /**
  * @brief 移出当前的背景item
  * @note 不会对item进行删除操作
+ * @note 如果没有设置背景，此函数返回nullptr
+ * @return 返回pixmapitem
  */
 DAGraphicsResizeablePixmapItem* DAWorkFlowGraphicsScene::removeBackgroundPixmapItem()
 {
+    if (_backgroundPixmapItem) {
 #if DA_USE_QGRAPHICSOBJECT
-    disconnect(_backgroundPixmapItem, &DAGraphicsResizeablePixmapItem::xChanged, this, &DAWorkFlowGraphicsScene::backgroundPixmapItemXChanged);
-    disconnect(_backgroundPixmapItem, &DAGraphicsResizeablePixmapItem::yChanged, this, &DAWorkFlowGraphicsScene::backgroundPixmapItemYChanged);
-    disconnect(_backgroundPixmapItem,
-               &DAGraphicsResizeablePixmapItem::itemBodySizeChanged,
-               this,
-               &DAWorkFlowGraphicsScene::backgroundPixmapItemBodyItemBodySizeChanged);
+        disconnect(_backgroundPixmapItem, &DAGraphicsResizeablePixmapItem::xChanged, this, &DAWorkFlowGraphicsScene::backgroundPixmapItemXChanged);
+        disconnect(_backgroundPixmapItem, &DAGraphicsResizeablePixmapItem::yChanged, this, &DAWorkFlowGraphicsScene::backgroundPixmapItemYChanged);
+        disconnect(_backgroundPixmapItem,
+                   &DAGraphicsResizeablePixmapItem::itemBodySizeChanged,
+                   this,
+                   &DAWorkFlowGraphicsScene::backgroundPixmapItemBodyItemBodySizeChanged);
 #endif
-    removeItem(_backgroundPixmapItem);
-    _backgroundPixmapItem = nullptr;
-    return _backgroundPixmapItem;
+        removeItem(_backgroundPixmapItem);
+    }
+    DAGraphicsResizeablePixmapItem* oldItem = _backgroundPixmapItem;
+    _backgroundPixmapItem                   = nullptr;
+    return oldItem;
 }
 
 /**

@@ -5,7 +5,7 @@
 #include <QUndoStack>
 #include <QSpinBox>
 #include <QWidgetAction>
-#include "DAAppRibbonAreaInterface.h"
+#include "DARibbonAreaInterface.h"
 #include "numpy/DAPyDType.h"
 #include "DADataManageWidget.h"
 #include "DAWorkFlowGraphicsScene.h"
@@ -38,7 +38,7 @@ class DAPyDTypeComboBox;
 class DACommandInterface;
 class DAAppDataManager;
 class DADataOperateOfDataFrameWidget;
-class DAProject;
+class DAAppProject;
 //
 class DADataOperatePageWidget;
 //窗口
@@ -71,6 +71,7 @@ class DAWorkFlowOperateWidget;
  *     工作流编辑pannel:da-pannel-edit.workflow
  * 绘图标签：da-ribbon-category-figure
  *     绘图编辑：da-pannel-figure.fig_setting
+ *     添加绘图：da-pannel-figure.chart-add
  * 工作流编辑上下文标签：da-ribbon-contextcategory-workflow
  *  工作流编辑category：da-ribbon-category-workflow.edit
  *     条目pannel：da-pannel-context.workflow.item
@@ -84,7 +85,7 @@ class DAWorkFlowOperateWidget;
  *     绘图窗口设置pannel:da-pannel-context-chartedit.fig_setting
  *     图表设置pannel:da-pannel-context-chartedit.chart_setting
  */
-class DAAppRibbonArea : public DAAppRibbonAreaInterface
+class DAAppRibbonArea : public DARibbonAreaInterface
 {
     friend class AppMainWindow;
     Q_OBJECT
@@ -101,7 +102,7 @@ public:
     };
     Q_ENUM(ContextCategoryType)
 public:
-    DAAppRibbonArea(DAAppUIInterface* u);
+    DAAppRibbonArea(DAUIInterface* u);
     ~DAAppRibbonArea();
 
     //发生语言变更时会触发此函数
@@ -150,7 +151,7 @@ private:
     void buildRibbonDataCategory();
     //构建主页
     void buildRibbonViewCategory();
-    //构建编辑标签
+    //构建编辑标签，编辑标签是通用的编辑功能，例如添加文字，添加形状等
     void buildRibbonEditCategory();
     //构建绘图标签
     void buildRibbonFigureCategory();
@@ -204,6 +205,7 @@ public:
     // figure
     SARibbonCategory* m_categoryFigure;     ///< 绘图标签
     SARibbonPannel* m_pannelFigureSetting;  ///< 绘图的设置
+    SARibbonPannel* m_pannelChartAdd;       ///< 添加绘图
     // Context - dataframe
     SARibbonContextCategory* m_contextDataFrame;                ///< 对应dataframe的上下文
     SARibbonCategory* m_categoryDataframeOperate;               ///< dataframe对应的category

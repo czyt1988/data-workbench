@@ -6,7 +6,6 @@ class QSvgRenderer;
 class QGraphicsSimpleTextItem;
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DAStandardNodeSvgGraphicsItem)
 /**
  * @brief 标准的可resize的svg GraphicsItem,可以作为节点的图片显示
  *
@@ -16,7 +15,7 @@ DA_IMPL_FORWARD_DECL(DAStandardNodeSvgGraphicsItem)
 class DAWORKFLOW_API DAStandardNodeSvgGraphicsItem : public DAAbstractNodeGraphicsItem
 {
     Q_OBJECT
-    DA_IMPL(DAStandardNodeSvgGraphicsItem)
+    DA_DECLARE_PRIVATE(DAStandardNodeSvgGraphicsItem)
     Q_PROPERTY(QString elementId READ elementId WRITE setElementId)
 public:
     enum

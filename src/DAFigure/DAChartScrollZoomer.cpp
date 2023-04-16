@@ -32,23 +32,22 @@ public:
 //===================================================
 // name
 //===================================================
-class DAChartScrollZoomerPrivate
+class DAChartScrollZoomer::PrivateData
 {
-    DA_IMPL_PUBLIC(DAChartScrollZoomer)
+    DA_DECLARE_PUBLIC(DAChartScrollZoomer)
 public:
-    DAChartScrollZoomerPrivate(DAChartScrollZoomer* p);
-    QWidget* _cornerWidget;
+    PrivateData(DAChartScrollZoomer* p);
 
-    _DAChartScrollZoomerScrollData* _hScrollData;
-    _DAChartScrollZoomerScrollData* _vScrollData;
-
-    bool _inZoom;
-    bool _alignCanvasToScales[ QwtPlot::axisCnt ];
-    bool _isEnable;  ///< 标定是否显示滚动条
+public:
+    bool mInZoom { false };
+    bool mIsEnable { true };  ///< 标定是否显示滚动条
+    bool mAlignCanvasToScales[ QwtPlot::axisCnt ];
+    QWidget* mCornerWidget { nullptr };
+    _DAChartScrollZoomerScrollData* mHScrollData { nullptr };
+    _DAChartScrollZoomerScrollData* mVScrollData { nullptr };
 };
 
-DAChartScrollZoomerPrivate::DAChartScrollZoomerPrivate(DAChartScrollZoomer* p)
-    : q_ptr(p), _cornerWidget(nullptr), _hScrollData(nullptr), _vScrollData(nullptr), _inZoom(false), _isEnable(true)
+DAChartScrollZoomer::PrivateData::PrivateData(DAChartScrollZoomer* p) : q_ptr(p)
 {
 }
 //===================================================
@@ -56,41 +55,40 @@ DAChartScrollZoomerPrivate::DAChartScrollZoomerPrivate(DAChartScrollZoomer* p)
 //===================================================
 
 DAChartScrollZoomer::DAChartScrollZoomer(int xAxis, int yAxis, QWidget* canvas)
-    : QwtPlotZoomer(xAxis, yAxis, canvas), d_ptr(new DAChartScrollZoomerPrivate(this))
+    : QwtPlotZoomer(xAxis, yAxis, canvas), DA_PIMPL_CONSTRUCT
 
 {
     for (int axis = 0; axis < QwtPlot::axisCnt; axis++) {
-        d_ptr->_alignCanvasToScales[ axis ] = false;
+        d_ptr->mAlignCanvasToScales[ axis ] = false;
     }
 
     if (!canvas) {
         return;
     }
 
-    d_ptr->_hScrollData = new _DAChartScrollZoomerScrollData;
-    d_ptr->_vScrollData = new _DAChartScrollZoomerScrollData;
+    d_ptr->mHScrollData = new _DAChartScrollZoomerScrollData;
+    d_ptr->mVScrollData = new _DAChartScrollZoomerScrollData;
 }
 
-DAChartScrollZoomer::DAChartScrollZoomer(QWidget* canvas)
-    : QwtPlotZoomer(canvas), d_ptr(new DAChartScrollZoomerPrivate(this))
+DAChartScrollZoomer::DAChartScrollZoomer(QWidget* canvas) : QwtPlotZoomer(canvas), d_ptr(new PrivateData(this))
 {
     for (int axis = 0; axis < QwtPlot::axisCnt; axis++) {
-        d_ptr->_alignCanvasToScales[ axis ] = false;
+        d_ptr->mAlignCanvasToScales[ axis ] = false;
     }
 
     if (!canvas) {
         return;
     }
 
-    d_ptr->_hScrollData = new _DAChartScrollZoomerScrollData;
-    d_ptr->_vScrollData = new _DAChartScrollZoomerScrollData;
+    d_ptr->mHScrollData = new _DAChartScrollZoomerScrollData;
+    d_ptr->mVScrollData = new _DAChartScrollZoomerScrollData;
 }
 
 DAChartScrollZoomer::~DAChartScrollZoomer()
 {
-    delete d_ptr->_cornerWidget;
-    delete d_ptr->_vScrollData;
-    delete d_ptr->_hScrollData;
+    delete d_ptr->mCornerWidget;
+    delete d_ptr->mVScrollData;
+    delete d_ptr->mHScrollData;
 }
 
 void DAChartScrollZoomer::rescale()
@@ -99,20 +97,20 @@ void DAChartScrollZoomer::rescale()
     QwtScaleWidget* yScale = plot()->axisWidget(yAxis());
 
     if (zoomRectIndex() <= 0) {
-        if (d_ptr->_inZoom) {
+        if (d_ptr->mInZoom) {
             xScale->setMinBorderDist(0, 0);
             yScale->setMinBorderDist(0, 0);
 
             QwtPlotLayout* layout = plot()->plotLayout();
 
             for (int axis = 0; axis < QwtPlot::axisCnt; axis++) {
-                layout->setAlignCanvasToScale(axis, d_ptr->_alignCanvasToScales);
+                layout->setAlignCanvasToScale(axis, d_ptr->mAlignCanvasToScales);
             }
 
-            d_ptr->_inZoom = false;
+            d_ptr->mInZoom = false;
         }
     } else {
-        if (!d_ptr->_inZoom) {
+        if (!d_ptr->mInZoom) {
             /*
              * We set a minimum border distance.
              * Otherwise the canvas size changes when scrolling,
@@ -131,12 +129,12 @@ void DAChartScrollZoomer::rescale()
 
             QwtPlotLayout* layout = plot()->plotLayout();
             for (int axis = 0; axis < QwtPlot::axisCnt; axis++) {
-                d_ptr->_alignCanvasToScales[ axis ] = layout->alignCanvasToScale(axis);
+                d_ptr->mAlignCanvasToScales[ axis ] = layout->alignCanvasToScale(axis);
             }
 
             layout->setAlignCanvasToScales(false);
 
-            d_ptr->_inZoom = true;
+            d_ptr->mInZoom = true;
         }
     }
 
@@ -146,18 +144,18 @@ void DAChartScrollZoomer::rescale()
 
 bool DAChartScrollZoomer::isEnableScrollBar() const
 {
-    return (d_ptr->_isEnable);
+    return (d_ptr->mIsEnable);
 }
 
 void DAChartScrollZoomer::on_enable_scrollBar(bool enable)
 {
-    d_ptr->_isEnable = enable;
+    d_ptr->mIsEnable = enable;
     updateScrollBars();
 }
 
 DAChartScrollBar* DAChartScrollZoomer::scrollBar(Qt::Orientation orientation)
 {
-    DAChartScrollBar*& sb = (orientation == Qt::Vertical) ? d_ptr->_vScrollData->scrollBar : d_ptr->_hScrollData->scrollBar;
+    DAChartScrollBar*& sb = (orientation == Qt::Vertical) ? d_ptr->mVScrollData->scrollBar : d_ptr->mHScrollData->scrollBar;
 
     if (sb == NULL) {
         sb = new DAChartScrollBar(orientation, canvas());
@@ -169,18 +167,18 @@ DAChartScrollBar* DAChartScrollZoomer::scrollBar(Qt::Orientation orientation)
 
 DAChartScrollBar* DAChartScrollZoomer::horizontalScrollBar() const
 {
-    return (d_ptr->_hScrollData->scrollBar);
+    return (d_ptr->mHScrollData->scrollBar);
 }
 
 DAChartScrollBar* DAChartScrollZoomer::verticalScrollBar() const
 {
-    return (d_ptr->_vScrollData->scrollBar);
+    return (d_ptr->mVScrollData->scrollBar);
 }
 
 void DAChartScrollZoomer::setHScrollBarMode(Qt::ScrollBarPolicy mode)
 {
     if (hScrollBarMode() != mode) {
-        d_ptr->_hScrollData->mode = mode;
+        d_ptr->mHScrollData->mode = mode;
         updateScrollBars();
     }
 }
@@ -188,55 +186,55 @@ void DAChartScrollZoomer::setHScrollBarMode(Qt::ScrollBarPolicy mode)
 void DAChartScrollZoomer::setVScrollBarMode(Qt::ScrollBarPolicy mode)
 {
     if (vScrollBarMode() != mode) {
-        d_ptr->_vScrollData->mode = mode;
+        d_ptr->mVScrollData->mode = mode;
         updateScrollBars();
     }
 }
 
 Qt::ScrollBarPolicy DAChartScrollZoomer::hScrollBarMode() const
 {
-    return (d_ptr->_hScrollData->mode);
+    return (d_ptr->mHScrollData->mode);
 }
 
 Qt::ScrollBarPolicy DAChartScrollZoomer::vScrollBarMode() const
 {
-    return (d_ptr->_vScrollData->mode);
+    return (d_ptr->mVScrollData->mode);
 }
 
 void DAChartScrollZoomer::setHScrollBarPosition(ScrollBarPosition pos)
 {
-    if (d_ptr->_hScrollData->position != pos) {
-        d_ptr->_hScrollData->position = pos;
+    if (d_ptr->mHScrollData->position != pos) {
+        d_ptr->mHScrollData->position = pos;
         updateScrollBars();
     }
 }
 
 void DAChartScrollZoomer::setVScrollBarPosition(ScrollBarPosition pos)
 {
-    if (d_ptr->_vScrollData->position != pos) {
-        d_ptr->_vScrollData->position = pos;
+    if (d_ptr->mVScrollData->position != pos) {
+        d_ptr->mVScrollData->position = pos;
         updateScrollBars();
     }
 }
 
 DAChartScrollZoomer::ScrollBarPosition DAChartScrollZoomer::hScrollBarPosition() const
 {
-    return (d_ptr->_hScrollData->position);
+    return (d_ptr->mHScrollData->position);
 }
 
 DAChartScrollZoomer::ScrollBarPosition DAChartScrollZoomer::vScrollBarPosition() const
 {
-    return (d_ptr->_vScrollData->position);
+    return (d_ptr->mVScrollData->position);
 }
 
 void DAChartScrollZoomer::setCornerWidget(QWidget* w)
 {
-    if (w != d_ptr->_cornerWidget) {
+    if (w != d_ptr->mCornerWidget) {
         if (canvas()) {
-            delete d_ptr->_cornerWidget;
-            d_ptr->_cornerWidget = w;
-            if (d_ptr->_cornerWidget->parent() != canvas()) {
-                d_ptr->_cornerWidget->setParent(canvas());
+            delete d_ptr->mCornerWidget;
+            d_ptr->mCornerWidget = w;
+            if (d_ptr->mCornerWidget->parent() != canvas()) {
+                d_ptr->mCornerWidget->setParent(canvas());
             }
 
             updateScrollBars();
@@ -246,7 +244,7 @@ void DAChartScrollZoomer::setCornerWidget(QWidget* w)
 
 QWidget* DAChartScrollZoomer::cornerWidget() const
 {
-    return (d_ptr->_cornerWidget);
+    return (d_ptr->mCornerWidget);
 }
 
 bool DAChartScrollZoomer::eventFilter(QObject* object, QEvent* event)
@@ -268,12 +266,12 @@ bool DAChartScrollZoomer::eventFilter(QObject* object, QEvent* event)
         case QEvent::ChildRemoved: {
             const QObject* child = static_cast< QChildEvent* >(event)->child();
 
-            if (child == d_ptr->_cornerWidget) {
-                d_ptr->_cornerWidget = nullptr;
-            } else if (child == d_ptr->_hScrollData->scrollBar) {
-                d_ptr->_hScrollData->scrollBar = nullptr;
-            } else if (child == d_ptr->_vScrollData->scrollBar) {
-                d_ptr->_vScrollData->scrollBar = nullptr;
+            if (child == d_ptr->mCornerWidget) {
+                d_ptr->mCornerWidget = nullptr;
+            } else if (child == d_ptr->mHScrollData->scrollBar) {
+                d_ptr->mHScrollData->scrollBar = nullptr;
+            } else if (child == d_ptr->mVScrollData->scrollBar) {
+                d_ptr->mVScrollData->scrollBar = nullptr;
             }
             break;
         }
@@ -291,13 +289,13 @@ bool DAChartScrollZoomer::needScrollBar(Qt::Orientation orientation) const
     double zoomMin, zoomMax, baseMin, baseMax;
 
     if (orientation == Qt::Horizontal) {
-        mode    = d_ptr->_hScrollData->mode;
+        mode    = d_ptr->mHScrollData->mode;
         baseMin = zoomBase().left();
         baseMax = zoomBase().right();
         zoomMin = zoomRect().left();
         zoomMax = zoomRect().right();
     } else {
-        mode    = d_ptr->_vScrollData->mode;
+        mode    = d_ptr->mVScrollData->mode;
         baseMin = zoomBase().top();
         baseMax = zoomBase().bottom();
         zoomMin = zoomRect().top();
@@ -358,7 +356,7 @@ void DAChartScrollZoomer::updateScrollBars()
         sb->moveSlider(zoomRect().left(), zoomRect().right());
 
         if (!sb->isVisibleTo(canvas())) {
-            if (d_ptr->_isEnable) {
+            if (d_ptr->mIsEnable) {
                 sb->show();
             } else {
                 sb->hide();
@@ -383,7 +381,7 @@ void DAChartScrollZoomer::updateScrollBars()
         sb->moveSlider(zoomRect().top(), zoomRect().bottom());
 
         if (!sb->isVisibleTo(canvas())) {
-            if (d_ptr->_isEnable) {
+            if (d_ptr->mIsEnable) {
                 sb->show();
             } else {
                 sb->hide();
@@ -398,21 +396,21 @@ void DAChartScrollZoomer::updateScrollBars()
     }
 
     if (showHScrollBar && showVScrollBar) {
-        if (d_ptr->_isEnable) {
-            if (d_ptr->_cornerWidget == NULL) {
-                d_ptr->_cornerWidget = new QWidget(canvas());
-                d_ptr->_cornerWidget->setAutoFillBackground(true);
-                d_ptr->_cornerWidget->setPalette(plot()->palette());
+        if (d_ptr->mIsEnable) {
+            if (d_ptr->mCornerWidget == NULL) {
+                d_ptr->mCornerWidget = new QWidget(canvas());
+                d_ptr->mCornerWidget->setAutoFillBackground(true);
+                d_ptr->mCornerWidget->setPalette(plot()->palette());
             }
-            d_ptr->_cornerWidget->show();
+            d_ptr->mCornerWidget->show();
         } else {
-            if (d_ptr->_cornerWidget) {
-                d_ptr->_cornerWidget->hide();
+            if (d_ptr->mCornerWidget) {
+                d_ptr->mCornerWidget->hide();
             }
         }
     } else {
-        if (d_ptr->_cornerWidget) {
-            d_ptr->_cornerWidget->hide();
+        if (d_ptr->mCornerWidget) {
+            d_ptr->mCornerWidget->hide();
         }
     }
 
@@ -476,9 +474,9 @@ void DAChartScrollZoomer::layoutScrollBars(const QRect& rect)
         vScrollBar->setGeometry(x, y, vdim, h);
     }
     if (hScrollBar && hScrollBar->isVisible() && vScrollBar && vScrollBar->isVisible()) {
-        if (d_ptr->_cornerWidget) {
+        if (d_ptr->mCornerWidget) {
             QRect cornerRect(vScrollBar->pos().x(), hScrollBar->pos().y(), vdim, hdim);
-            d_ptr->_cornerWidget->setGeometry(cornerRect);
+            d_ptr->mCornerWidget->setGeometry(cornerRect);
         }
     }
 }

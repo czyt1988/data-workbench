@@ -5,14 +5,13 @@
 #include <QDebug>
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DAPluginOption)
 
 /**
  * @brief 用于插件的加载操作
  */
 class DAPLUGINSUPPORT_API DAPluginOption
 {
-    DA_IMPL(DAPluginOption)
+    DA_DECLARE_PRIVATE(DAPluginOption)
 public:
     DAPluginOption();
     DAPluginOption(const DAPluginOption& other);

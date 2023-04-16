@@ -7,8 +7,8 @@
 #include "DockAreaWidget.h"
 // API相关
 #include "DAAppCore.h"
-#include "DAProject.h"
-#include "DAAppUIInterface.h"
+#include "DAAppProject.h"
+#include "DAUIInterface.h"
 #include "DACommandInterface.h"
 #include "DAAppCommand.h"
 #include "DAAppDataManager.h"
@@ -16,6 +16,7 @@
 #include "DAChartManageWidget.h"
 #include "DAChartOperateWidget.h"
 #include "DAAppFigureFactory.h"
+#include "DAAppChartOperateWidget.h"
 // Data相关
 #include "DADataOperateWidget.h"
 #include "DADataManageWidget.h"
@@ -39,11 +40,11 @@ using namespace DA;
 //===================================================
 // DAAppDockingArea
 //===================================================
-DAAppDockingArea::DAAppDockingArea(DAAppUIInterface* u) : DAAppDockingAreaInterface(u)
+DAAppDockingArea::DAAppDockingArea(DAUIInterface* u) : DADockingAreaInterface(u)
 {
-    m_app     = qobject_cast< AppMainWindow* >(u->mainWindow());
-    m_appCmd  = qobject_cast< DAAppCommand* >(u->getCommandInterface());
-    m_dataMgr = qobject_cast< DAAppDataManager* >(core()->getDataManagerInterface());
+    mApp     = qobject_cast< AppMainWindow* >(u->mainWindow());
+    mAppCmd  = qobject_cast< DAAppCommand* >(u->getCommandInterface());
+    mDataMgr = qobject_cast< DAAppDataManager* >(core()->getDataManagerInterface());
     buildDockingArea();
 }
 
@@ -58,14 +59,14 @@ void DAAppDockingArea::retranslateUi()
 
 void DAAppDockingArea::resetText()
 {
-    m_workflowNodeListDock->setWindowTitle(tr("workflow node"));    // cn:节点
-    m_chartManageDock->setWindowTitle(tr("charts manager"));        // cn:绘图管理
-    m_dataManageDock->setWindowTitle(tr("datas manager"));          // cn:数据管理
-    m_workFlowOperateDock->setWindowTitle(tr("workflow operate"));  // cn:工作流操作
-    m_chartOperateDock->setWindowTitle(tr("chart operate"));        // cn:绘图操作
-    m_dataOperateDock->setWindowTitle(tr("data operate"));          // cn:数据操作
-    m_settingContainerDock->setWindowTitle(tr("setting"));          // cn:设置
-    m_messageLogDock->setWindowTitle(tr("log"));                    // cn:消息
+    mWorkflowNodeListDock->setWindowTitle(tr("workflow node"));    // cn:节点
+    mChartManageDock->setWindowTitle(tr("charts manager"));        // cn:绘图管理
+    mDataManageDock->setWindowTitle(tr("datas manager"));          // cn:数据管理
+    mWorkFlowOperateDock->setWindowTitle(tr("workflow operate"));  // cn:工作流操作
+    mChartOperateDock->setWindowTitle(tr("chart operate"));        // cn:绘图操作
+    mDataOperateDock->setWindowTitle(tr("data operate"));          // cn:数据操作
+    mSettingContainerDock->setWindowTitle(tr("setting"));          // cn:设置
+    mMessageLogDock->setWindowTitle(tr("log"));                    // cn:消息
 }
 
 /**
@@ -74,7 +75,7 @@ void DAAppDockingArea::resetText()
  */
 DAWorkFlowNodeListWidget* DAAppDockingArea::getWorkflowNodeListWidget() const
 {
-    return m_workflowNodeListWidget;
+    return mWorkflowNodeListWidget;
 }
 
 /**
@@ -83,7 +84,7 @@ DAWorkFlowNodeListWidget* DAAppDockingArea::getWorkflowNodeListWidget() const
  */
 DAWorkFlowOperateWidget* DAAppDockingArea::getWorkFlowOperateWidget() const
 {
-    return m_workFlowOperateWidget;
+    return mWorkFlowOperateWidget;
 }
 
 /**
@@ -92,7 +93,7 @@ DAWorkFlowOperateWidget* DAAppDockingArea::getWorkFlowOperateWidget() const
  */
 DAChartManageWidget* DAAppDockingArea::getChartManageWidget() const
 {
-    return m_chartManageWidget;
+    return mChartManageWidget;
 }
 
 /**
@@ -101,7 +102,7 @@ DAChartManageWidget* DAAppDockingArea::getChartManageWidget() const
  */
 DAChartOperateWidget* DAAppDockingArea::getChartOperateWidget() const
 {
-    return m_chartOperateWidget;
+    return mChartOperateWidget;
 }
 
 /**
@@ -110,7 +111,7 @@ DAChartOperateWidget* DAAppDockingArea::getChartOperateWidget() const
  */
 DADataManageWidget* DAAppDockingArea::getDataManageWidget() const
 {
-    return m_dataManageWidget;
+    return mDataManageWidget;
 }
 
 /**
@@ -119,7 +120,7 @@ DADataManageWidget* DAAppDockingArea::getDataManageWidget() const
  */
 DADataOperateWidget* DAAppDockingArea::getDataOperateWidget() const
 {
-    return m_dataOperateWidget;
+    return mDataOperateWidget;
 }
 
 /**
@@ -128,7 +129,7 @@ DADataOperateWidget* DAAppDockingArea::getDataOperateWidget() const
  */
 DAMessageLogViewWidget* DAAppDockingArea::getMessageLogViewWidget() const
 {
-    return m_messageLogViewWidget;
+    return mMessageLogViewWidget;
 }
 
 /**
@@ -137,7 +138,7 @@ DAMessageLogViewWidget* DAAppDockingArea::getMessageLogViewWidget() const
  */
 DASettingContainerWidget* DAAppDockingArea::getSettingContainerWidget() const
 {
-    return m_settingContainerWidget;
+    return mSettingContainerWidget;
 }
 
 /**
@@ -149,21 +150,21 @@ ads::CDockWidget* DAAppDockingArea::dockingAreaToDockWidget(DAAppDockingArea::Do
 {
     switch (area) {
     case DockingAreaChartManager:
-        return m_chartManageDock;
+        return mChartManageDock;
     case DockingAreaChartOperate:
-        return m_chartOperateDock;
+        return mChartOperateDock;
     case DockingAreaDataManager:
-        return m_dataManageDock;
+        return mDataManageDock;
     case DockingAreaDataOperate:
-        return m_dataOperateDock;
+        return mDataOperateDock;
     case DockingAreaMessageLog:
-        return m_messageLogDock;
+        return mMessageLogDock;
     case DockingAreaSetting:
-        return m_settingContainerDock;
+        return mSettingContainerDock;
     case DockingAreaWorkFlowManager:
-        return m_workflowNodeListDock;
+        return mWorkflowNodeListDock;
     case DockingAreaWorkFlowOperate:
-        return m_workFlowOperateDock;
+        return mWorkFlowOperateDock;
     default:
         break;
     }
@@ -206,7 +207,7 @@ bool DAAppDockingArea::isDockingAreaFocused(DAAppDockingArea::DockingArea area) 
  */
 void DAAppDockingArea::showDataOperateWidget(const DA::DAData& data)
 {
-    m_dataOperateWidget->showData(data);
+    mDataOperateWidget->showData(data);
     //把表格窗口唤起
     raiseDockByWidget((QWidget*)getDataOperateWidget());
 }
@@ -235,51 +236,51 @@ void DAAppDockingArea::buildDockingArea()
     buildChartAboutWidgets();
     buildDataAboutWidgets();
     buildOtherWidgets();
-    auto wfoa = createCenterDockWidget(m_workFlowOperateWidget, QStringLiteral("da_workFlowOperateWidgetDock"));
-    m_workFlowOperateDock = wfoa.first;
-    m_workFlowOperateDock->setIcon(QIcon(":/Icon/Icon/showWorkFlow.svg"));
-    m_workFlowOperateDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
+    auto wfoa = createCenterDockWidget(mWorkFlowOperateWidget, QStringLiteral("da_workFlowOperateWidgetDock"));
+    mWorkFlowOperateDock = wfoa.first;
+    mWorkFlowOperateDock->setIcon(QIcon(":/Icon/Icon/showWorkFlow.svg"));
+    mWorkFlowOperateDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
 
-    auto wcoa = createDockWidgetAsTab(m_chartOperateWidget, QStringLiteral("da_chartOperateWidgetDock"), wfoa.second);
-    m_chartOperateDock = wcoa.first;
-    m_chartOperateDock->setIcon(QIcon(":/Icon/Icon/showChart.svg"));
-    m_chartOperateDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
+    auto wcoa = createDockWidgetAsTab(mChartOperateWidget, QStringLiteral("da_chartOperateWidgetDock"), wfoa.second);
+    mChartOperateDock = wcoa.first;
+    mChartOperateDock->setIcon(QIcon(":/Icon/Icon/showChart.svg"));
+    mChartOperateDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
 
-    auto wdoa = createDockWidgetAsTab(m_dataOperateWidget, QStringLiteral("da_dataOperateWidgetDock"), wfoa.second);
-    m_dataOperateDock = wdoa.first;
-    m_dataOperateDock->setIcon(QIcon(":/Icon/Icon/showTable.svg"));
-    m_dataOperateDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
-    m_dataOperateDock->raise();
+    auto wdoa = createDockWidgetAsTab(mDataOperateWidget, QStringLiteral("da_dataOperateWidgetDock"), wfoa.second);
+    mDataOperateDock = wdoa.first;
+    mDataOperateDock->setIcon(QIcon(":/Icon/Icon/showTable.svg"));
+    mDataOperateDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
+    mDataOperateDock->raise();
 
     //左侧管理区 - 工作流节点窗口
-    auto wfna = createDockWidget(m_workflowNodeListWidget, ads::LeftDockWidgetArea, QStringLiteral("da_workflowNodeListWidgetDock"));
-    m_workflowNodeListDock = wfna.first;
-    m_workflowNodeListDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
+    auto wfna = createDockWidget(mWorkflowNodeListWidget, ads::LeftDockWidgetArea, QStringLiteral("da_workflowNodeListWidgetDock"));
+    mWorkflowNodeListDock = wfna.first;
+    mWorkflowNodeListDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
 
-    auto wcma = createDockWidgetAsTab(m_chartManageWidget, QStringLiteral("da_chartManageWidgetDock"), wfna.second);
-    m_chartManageDock = wcma.first;
-    m_chartManageDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
+    auto wcma = createDockWidgetAsTab(mChartManageWidget, QStringLiteral("da_chartManageWidgetDock"), wfna.second);
+    mChartManageDock = wcma.first;
+    mChartManageDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
 
-    auto wdma = createDockWidgetAsTab(m_dataManageWidget, QStringLiteral("da_dataManageWidgetDock"), wfna.second);
-    m_dataManageDock = wdma.first;
-    m_dataManageDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
-    m_dataManageDock->raise();
+    auto wdma       = createDockWidgetAsTab(mDataManageWidget, QStringLiteral("da_dataManageWidgetDock"), wfna.second);
+    mDataManageDock = wdma.first;
+    mDataManageDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
+    mDataManageDock->raise();
 
     //右侧附属区 - 添加设置视图
-    auto sca = createDockWidget(m_settingContainerWidget, ads::RightDockWidgetArea, QStringLiteral("da_settingDock"));
-    m_settingContainerDock = sca.first;
-    m_settingContainerDock->setIcon(QIcon(":/Icon/Icon/showSettingWidget.svg"));
+    auto sca = createDockWidget(mSettingContainerWidget, ads::RightDockWidgetArea, QStringLiteral("da_settingDock"));
+    mSettingContainerDock = sca.first;
+    mSettingContainerDock->setIcon(QIcon(":/Icon/Icon/showSettingWidget.svg"));
     //日志窗口
-    auto ica         = createDockWidget(m_messageLogViewWidget, ads::BottomDockWidgetArea, QStringLiteral("da_messageLogViewWidgetDock"), sca.second);
-    m_messageLogDock = ica.first;
-    m_messageLogDock->setIcon(QIcon(":/Icon/Icon/showInfomation.svg"));
+    auto ica        = createDockWidget(mMessageLogViewWidget, ads::BottomDockWidgetArea, QStringLiteral("da_messageLogViewWidgetDock"), sca.second);
+    mMessageLogDock = ica.first;
+    mMessageLogDock->setIcon(QIcon(":/Icon/Icon/showInfomation.svg"));
 
     //设置dock的区域大小,默认为左1：中间4：右：1
     QScreen* screen = QApplication::primaryScreen();
     int leftwidth   = screen->size().width() / 6;
     int rightwidth  = leftwidth;
     int centerwidth = screen->size().width() - leftwidth - rightwidth;
-    m_dockmgr->setSplitterSizes(wfna.second, { leftwidth, centerwidth, rightwidth });
+    mDockmgr->setSplitterSizes(wfna.second, { leftwidth, centerwidth, rightwidth });
     //
 
     initConnection();
@@ -291,80 +292,80 @@ void DAAppDockingArea::buildDockingArea()
  */
 void DAAppDockingArea::buildWorkflowAboutWidgets()
 {
-    m_workFlowOperateWidget = new DAAppWorkFlowOperateWidget(m_app);
-    m_workFlowOperateWidget->setObjectName(QStringLiteral("da_workFlowOperateWidget"));
-    m_workflowNodeListWidget = new DAWorkFlowNodeListWidget(m_app);
-    m_workflowNodeListWidget->setObjectName(QStringLiteral("da_workflowNodeListWidget"));
+    mWorkFlowOperateWidget = new DAAppWorkFlowOperateWidget(mApp);
+    mWorkFlowOperateWidget->setObjectName(QStringLiteral("da_workFlowOperateWidget"));
+    mWorkflowNodeListWidget = new DAWorkFlowNodeListWidget(mApp);
+    mWorkflowNodeListWidget->setObjectName(QStringLiteral("da_workflowNodeListWidget"));
     //把工作流操作窗口设置到工程中
-    DAProject* project = DA_APP_CORE.getAppProject();
-    project->setWorkFlowOperateWidget(m_workFlowOperateWidget);
+    DAAppProject* project = DA_APP_CORE.getAppProject();
+    project->setWorkFlowOperateWidget(mWorkFlowOperateWidget);
 }
 
 void DAAppDockingArea::buildChartAboutWidgets()
 {
-    m_chartOperateWidget = new DAChartOperateWidget(m_app);
-    m_chartOperateWidget->setObjectName(QStringLiteral("da_chartOperateWidget"));
+    mChartOperateWidget = new DAAppChartOperateWidget(mApp);
+    mChartOperateWidget->setObjectName(QStringLiteral("da_chartOperateWidget"));
 
-    m_chartManageWidget = new DAChartManageWidget(m_app);
-    m_chartManageWidget->setObjectName(QStringLiteral("da_chartManageWidget"));
+    mChartManageWidget = new DAChartManageWidget(mApp);
+    mChartManageWidget->setObjectName(QStringLiteral("da_chartManageWidget"));
 
-    DADataManager* dmgr = m_dataMgr->dataManager();
-    m_chartManageWidget->setChartOperateWidget(m_chartOperateWidget);
+    DADataManager* dmgr = mDataMgr->dataManager();
+    mChartManageWidget->setChartOperateWidget(mChartOperateWidget);
     DAAppFigureFactory* factory = new DAAppFigureFactory();
     factory->setDataManager(dmgr);
-    m_chartOperateWidget->setupFigureFactory(factory);
+    mChartOperateWidget->setupFigureFactory(factory);
 }
 
 void DAAppDockingArea::buildDataAboutWidgets()
 {
-    DADataManager* dmgr = m_dataMgr->dataManager();
-    m_dataOperateWidget = new DADataOperateWidget(dmgr, m_app);
-    m_dataOperateWidget->setObjectName(QStringLiteral("da_dataOperateWidget"));
+    DADataManager* dmgr = mDataMgr->dataManager();
+    mDataOperateWidget  = new DADataOperateWidget(dmgr, mApp);
+    mDataOperateWidget->setObjectName(QStringLiteral("da_dataOperateWidget"));
 
-    m_dataManageWidget = new DADataManageWidget(m_app);
-    m_dataManageWidget->setObjectName(QStringLiteral("da_dataManageWidget"));
-    m_dataManageWidget->setDataManager(dmgr);
+    mDataManageWidget = new DADataManageWidget(mApp);
+    mDataManageWidget->setObjectName(QStringLiteral("da_dataManageWidget"));
+    mDataManageWidget->setDataManager(dmgr);
 }
 
 void DAAppDockingArea::buildOtherWidgets()
 {
     //右侧附属区 - 添加设置视图
-    m_settingContainerWidget = new DASettingContainerWidget(m_app);
-    m_settingContainerWidget->setObjectName(QStringLiteral("da_settingContainerWidget"));
+    mSettingContainerWidget = new DASettingContainerWidget(mApp);
+    mSettingContainerWidget->setObjectName(QStringLiteral("da_settingContainerWidget"));
     //日志窗口
-    m_messageLogViewWidget = new DAMessageLogViewWidget(m_app);
-    m_messageLogViewWidget->setObjectName(QStringLiteral("da_messageLogViewWidget"));
+    mMessageLogViewWidget = new DAMessageLogViewWidget(mApp);
+    mMessageLogViewWidget->setObjectName(QStringLiteral("da_messageLogViewWidget"));
 }
 
 void DAAppDockingArea::initConnection()
 {
-    connect(m_workFlowOperateWidget, &DAWorkFlowOperateWidget::selectNodeItemChanged, this, &DAAppDockingArea::onSelectNodeItemChanged);
-    connect(m_workFlowOperateWidget, &DAWorkFlowOperateWidget::workflowCreated, this, &DAAppDockingArea::onWorkFlowOperateWidgetWorkflowCreated);
+    connect(mWorkFlowOperateWidget, &DAWorkFlowOperateWidget::selectNodeItemChanged, this, &DAAppDockingArea::onSelectNodeItemChanged);
+    connect(mWorkFlowOperateWidget, &DAWorkFlowOperateWidget::workflowCreated, this, &DAAppDockingArea::onWorkFlowOperateWidgetWorkflowCreated);
     // DADataManageWidget的数据双击，在DADataOperateWidget中显示
-    connect(m_dataManageWidget, &DADataManageWidget::dataDbClicked, this, &DAAppDockingArea::onDataManageWidgetDataDbClicked);
+    connect(mDataManageWidget, &DADataManageWidget::dataDbClicked, this, &DAAppDockingArea::onDataManageWidgetDataDbClicked);
     //设置窗口的绑定
-    m_settingContainerWidget->getWorkFlowNodeItemSettingWidget()->setWorkFlowOperateWidget(m_workFlowOperateWidget);
+    mSettingContainerWidget->getWorkFlowNodeItemSettingWidget()->setWorkFlowOperateWidget(mWorkFlowOperateWidget);
 }
 
 void DAAppDockingArea::onSelectNodeItemChanged(DAAbstractNodeGraphicsItem* i)
 {
     if (nullptr == i) {
-        if (nullptr != m_lastSetNodeWidget) {
-            m_settingContainerWidget->getWorkFlowNodeItemSettingWidget()->removeWidget(m_lastSetNodeWidget);
+        if (nullptr != mLastSetNodeWidget) {
+            mSettingContainerWidget->getWorkFlowNodeItemSettingWidget()->removeWidget(mLastSetNodeWidget);
         }
         return;
     }
     DAAbstractNodeWidget* w = i->getNodeWidget();
 
     if (nullptr == w) {
-        if (nullptr != m_lastSetNodeWidget) {
-            m_settingContainerWidget->getWorkFlowNodeItemSettingWidget()->removeWidget(m_lastSetNodeWidget);
+        if (nullptr != mLastSetNodeWidget) {
+            mSettingContainerWidget->getWorkFlowNodeItemSettingWidget()->removeWidget(mLastSetNodeWidget);
         }
         return;
     }
-    if (m_lastSetNodeWidget != w) {
-        m_settingContainerWidget->getWorkFlowNodeItemSettingWidget()->removeWidget(m_lastSetNodeWidget);
-        m_settingContainerWidget->getWorkFlowNodeItemSettingWidget()->addWidget(w, QIcon(":/Icon/Icon/node-settting.svg"), tr("property"));
+    if (mLastSetNodeWidget != w) {
+        mSettingContainerWidget->getWorkFlowNodeItemSettingWidget()->removeWidget(mLastSetNodeWidget);
+        mSettingContainerWidget->getWorkFlowNodeItemSettingWidget()->addWidget(w, QIcon(":/Icon/Icon/node-settting.svg"), tr("property"));
     }
 }
 
@@ -379,8 +380,8 @@ void DAAppDockingArea::onDataManageWidgetDataDbClicked(const DA::DAData& data)
  */
 void DAAppDockingArea::onWorkFlowOperateWidgetWorkflowCreated(DA::DAWorkFlowEditWidget* wfw)
 {
-    if (m_appCmd) {
+    if (mAppCmd) {
         // 新加的DAWorkFlowEditWidget，把undostack加入command
-        m_appCmd->addStack(wfw->getUndoStack());
+        mAppCmd->addStack(wfw->getUndoStack());
     }
 }

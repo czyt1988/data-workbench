@@ -13,14 +13,13 @@
 class QwtPlotMultiBarChart;
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DAChartItemTableModel)
 /**
  * @brief 显示item数据的tablemodel
  */
 class DAFIGURE_API DAChartItemTableModel : public QAbstractTableModel
 {
     Q_OBJECT
-    DA_IMPL(DAChartItemTableModel)
+    DA_DECLARE_PRIVATE(DAChartItemTableModel)
 public:
     DAChartItemTableModel(QObject* p = 0);
     ~DAChartItemTableModel();

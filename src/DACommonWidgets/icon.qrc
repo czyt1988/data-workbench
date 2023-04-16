@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/icon">
+    <qresource prefix="/commonWidget/icon">
         <file>icon/text-bold.svg</file>
         <file>icon/text-italic.svg</file>
         <file>icon/text-underline.svg</file>

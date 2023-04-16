@@ -10,36 +10,36 @@ using namespace DA;
 // DACommandDataManagerAdd
 //===================================================
 DACommandDataManagerAdd::DACommandDataManagerAdd(const DAData& d, DADataManager* mgr, QUndoCommand* par)
-    : QUndoCommand(par), m_data(d), _dmgr(mgr)
+    : QUndoCommand(par), mData(d), mDataMgr(mgr)
 {
     setText(QObject::tr("add data"));
 }
 
 void DACommandDataManagerAdd::redo()
 {
-    _dmgr->addData(m_data);
+    mDataMgr->addData(mData);
 }
 
 void DACommandDataManagerAdd::undo()
 {
-    _dmgr->removeData(m_data);
+    mDataMgr->removeData(mData);
 }
 
 //==============================================================
 // DACommandDataManagerRemove
 //==============================================================
 DACommandDataManagerRemove::DACommandDataManagerRemove(const DAData& d, DADataManager* mgr, QUndoCommand* par)
-    : QUndoCommand(par), m_data(d), _dmgr(mgr)
+    : QUndoCommand(par), mData(d), mDataMgr(mgr)
 {
     setText(QObject::tr("remove data"));
 }
 
 void DACommandDataManagerRemove::redo()
 {
-    _dmgr->removeData(m_data);
+    mDataMgr->removeData(mData);
 }
 
 void DACommandDataManagerRemove::undo()
 {
-    _dmgr->addData(m_data);
+    mDataMgr->addData(mData);
 }

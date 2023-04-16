@@ -14,15 +14,15 @@
 #define DEFAULT_GROUP_NAME "${sa-default-group}"
 namespace DA
 {
-class DAXMLProtocolPrivate
+class DAXMLProtocol::PrivateData
 {
-    DA_IMPL_PUBLIC(DAXMLProtocol)
+    DA_DECLARE_PUBLIC(DAXMLProtocol)
 public:
-    DAXMLProtocolPrivate(DAXMLProtocol* p);
-    DAXMLProtocolPrivate(const DAXMLProtocolPrivate& other, DAXMLProtocol* p);
-    ~DAXMLProtocolPrivate();
+    PrivateData(DAXMLProtocol* p);
+    PrivateData(const DAXMLProtocol::PrivateData& other, DAXMLProtocol* p);
+    ~PrivateData();
     //
-    void copy(const DAXMLProtocolPrivate* other);
+    void copy(const PrivateData* other);
     bool fromByteArray(const QByteArray& data);
     bool fromString(const QString& str);
     bool isHasGroup(const QString& groupName) const;
@@ -37,62 +37,62 @@ public:
     bool parser(const QString& str);
 
 public:
-    int _classID;
-    int _funID;
-    DAPropertiesGroup _propGroup;  ///< 存放属性信息
-    QString _errorMsg;             ///< 错误信息
+    int mClassID { -1 };
+    int mFunID { -1 };
+    DAPropertiesGroup mPropGroup;  ///< 存放属性信息
+    QString mErrorMsg;             ///< 错误信息
 };
 
-DAXMLProtocolPrivate::DAXMLProtocolPrivate(DAXMLProtocol* p) : q_ptr(p), _classID(-1), _funID(-1)
+DAXMLProtocol::PrivateData::PrivateData(DAXMLProtocol* p) : q_ptr(p)
 {
 }
 
-DAXMLProtocolPrivate::DAXMLProtocolPrivate(const DAXMLProtocolPrivate& other, DAXMLProtocol* p)
+DAXMLProtocol::PrivateData::PrivateData(const DAXMLProtocol::PrivateData& other, DAXMLProtocol* p)
 {
     copy(&other);
     q_ptr = p;
 }
 
-DAXMLProtocolPrivate::~DAXMLProtocolPrivate()
+DAXMLProtocol::PrivateData::~PrivateData()
 {
 }
 
-void DAXMLProtocolPrivate::copy(const DAXMLProtocolPrivate* other)
+void DAXMLProtocol::PrivateData::copy(const PrivateData* other)
 {
-    this->_classID   = other->_classID;
-    this->_funID     = other->_funID;
-    this->_propGroup = other->_propGroup;
-    this->_errorMsg  = other->_errorMsg;
+    this->mClassID   = other->mClassID;
+    this->mFunID     = other->mFunID;
+    this->mPropGroup = other->mPropGroup;
+    this->mErrorMsg  = other->mErrorMsg;
     // this->q_ptr = other->q_ptr; //这个绝对不能有
 }
 
-bool DAXMLProtocolPrivate::fromByteArray(const QByteArray& data)
+bool DAXMLProtocol::PrivateData::fromByteArray(const QByteArray& data)
 {
     clear();
     return (parser(QString(data)));
 }
 
-bool DAXMLProtocolPrivate::fromString(const QString& str)
+bool DAXMLProtocol::PrivateData::fromString(const QString& str)
 {
     clear();
     return (parser(str));
 }
 
-bool DAXMLProtocolPrivate::parser(const QString& str)
+bool DAXMLProtocol::PrivateData::parser(const QString& str)
 {
     QDomDocument doc;
 
-    if (!doc.setContent(str, &_errorMsg)) {
+    if (!doc.setContent(str, &mErrorMsg)) {
         return (false);
     }
     QDomElement rootele = doc.documentElement();
 
     if (rootele.isNull()) {
-        _errorMsg = QObject::tr("DA xml protocol's root element error");  // DA xml协议的根节点异常
+        mErrorMsg = QObject::tr("DA xml protocol's root element error");  // DA xml协议的根节点异常
         return (false);
     }
     if (rootele.tagName() != "da") {
-        _errorMsg = QObject::tr("root element name error,require \"da\" but get %1").arg(rootele.tagName());  // DA xml协议根节点要求为"da"标签，但解析到的为%1
+        mErrorMsg = QObject::tr("root element name error,require \"da\" but get %1").arg(rootele.tagName());  // DA xml协议根节点要求为"da"标签，但解析到的为%1
         return (false);
     }
     DAPropertiesGroup properties;
@@ -106,7 +106,7 @@ bool DAXMLProtocolPrivate::parser(const QString& str)
     QDomElement propsEle = rootele.firstChildElement("props");
     if (propsEle.isNull()) {
         //这是一个空的内容包
-        _errorMsg = QObject::tr("DA xml protocol loss <props> tag");  // DA xml协议缺失<props>标签
+        mErrorMsg = QObject::tr("DA xml protocol loss <props> tag");  // DA xml协议缺失<props>标签
         return (false);
     }
     QDomNodeList propNodeList = propsEle.childNodes();
@@ -131,13 +131,13 @@ bool DAXMLProtocolPrivate::parser(const QString& str)
         readProp(propEle, prop);
         properties[ group ] = prop;
     }
-    this->_funID     = funID;
-    this->_classID   = classID;
-    this->_propGroup = properties;
+    this->mFunID     = funID;
+    this->mClassID   = classID;
+    this->mPropGroup = properties;
     return (true);
 }
 
-void DAXMLProtocolPrivate::readProp(QDomElement& propEle, DAProperties& prop)
+void DAXMLProtocol::PrivateData::readProp(QDomElement& propEle, DAProperties& prop)
 {
     // 获取group下的item信息
     QDomNodeList itemNodes = propEle.childNodes();
@@ -157,32 +157,32 @@ void DAXMLProtocolPrivate::readProp(QDomElement& propEle, DAProperties& prop)
     }
 }
 
-bool DAXMLProtocolPrivate::isHasGroup(const QString& groupName) const
+bool DAXMLProtocol::PrivateData::isHasGroup(const QString& groupName) const
 {
-    return (this->_propGroup.contains(groupName));
+    return (this->mPropGroup.contains(groupName));
 }
 
-bool DAXMLProtocolPrivate::isHasKey(const QString& groupName, const QString& keyName) const
+bool DAXMLProtocol::PrivateData::isHasKey(const QString& groupName, const QString& keyName) const
 {
-    auto i = this->_propGroup.find(groupName);
+    auto i = this->mPropGroup.find(groupName);
 
-    if (i != this->_propGroup.end()) {
+    if (i != this->mPropGroup.end()) {
         return (i.value().contains(keyName));
     }
     return (false);
 }
 
-QString DAXMLProtocolPrivate::toString()
+QString DAXMLProtocol::PrivateData::toString()
 {
     QDomDocument doc("da");
     QDomElement root = doc.createElement("da");
-    root.setAttribute("fid", QString::number(this->_funID));
-    root.setAttribute("cid", QString::number(this->_classID));
+    root.setAttribute("fid", QString::number(this->mFunID));
+    root.setAttribute("cid", QString::number(this->mClassID));
     //写入props
     QDomElement propsEle = doc.createElement("props");
 
     //写入prop
-    for (auto i = _propGroup.begin(); i != _propGroup.end(); ++i) {
+    for (auto i = mPropGroup.begin(); i != mPropGroup.end(); ++i) {
         QDomElement propEle = doc.createElement("prop");
         propEle.setAttribute("group", i.key());
         for (auto j = i.value().begin(); j != i.value().end(); ++j) {
@@ -199,30 +199,30 @@ QString DAXMLProtocolPrivate::toString()
     return (doc.toString());
 }
 
-void DAXMLProtocolPrivate::clear()
+void DAXMLProtocol::PrivateData::clear()
 {
-    _funID   = -1;
-    _classID = -1;
-    _propGroup.clear();
-    _errorMsg = "";
+    mFunID   = -1;
+    mClassID = -1;
+    mPropGroup.clear();
+    mErrorMsg = "";
 }
 
 //===================================================
 // DAXMLProtocol
 //===================================================
 
-DAXMLProtocol::DAXMLProtocol() : DAAbstractProtocol(), d_ptr(new DAXMLProtocolPrivate(this))
+DAXMLProtocol::DAXMLProtocol() : DAAbstractProtocol(), DA_PIMPL_CONSTRUCT
 {
 }
 
-DAXMLProtocol::DAXMLProtocol(const DAXMLProtocol& other) : DAAbstractProtocol()
+DAXMLProtocol::DAXMLProtocol(const DAXMLProtocol& other)
+    : DAAbstractProtocol(), d_ptr(new PrivateData(*(other.d_ptr), this))
 {
-    (*this) = other;
 }
 
 DAXMLProtocol::DAXMLProtocol(DAXMLProtocol&& other) : DAAbstractProtocol()
 {
-    this->d_ptr.reset(other.d_ptr.take());
+    this->d_ptr  = std::move(other.d_ptr);
     d_ptr->q_ptr = this;  //这个尤为关键
 }
 
@@ -232,7 +232,7 @@ DAXMLProtocol& DAXMLProtocol::operator=(const DAXMLProtocol& other)
     if (this == (&other)) {
         return (*this);
     }
-    this->d_ptr.reset(new DAXMLProtocolPrivate(*(other.d_ptr.data()), this));
+    this->d_ptr->copy(other.d_ptr.get());
     // this->d_ptr->q_ptr = this;//这个尤为关键
     return (*this);
 }
@@ -243,45 +243,45 @@ DAXMLProtocol::~DAXMLProtocol()
 
 void DAXMLProtocol::setFunctionID(int funid)
 {
-    d_ptr->_funID = funid;
+    d_ptr->mFunID = funid;
 }
 
 int DAXMLProtocol::getFunctionID() const
 {
-    return (d_ptr->_funID);
+    return (d_ptr->mFunID);
 }
 
 void DAXMLProtocol::setClassID(int classid)
 {
-    d_ptr->_classID = classid;
+    d_ptr->mClassID = classid;
 }
 
 int DAXMLProtocol::getClassID() const
 {
-    return (d_ptr->_classID);
+    return (d_ptr->mClassID);
 }
 
 void DAXMLProtocol::setValue(const QString& groupName, const QString& keyName, const QVariant& var)
 {
-    d_ptr->_propGroup.setProperty(groupName, keyName, var);
+    d_ptr->mPropGroup.setProperty(groupName, keyName, var);
 }
 
 void DAXMLProtocol::setValue(const QString& keyName, const QVariant& var)
 {
-    d_ptr->_propGroup.setProperty(DAXMLProtocol::defaultGroupName(), keyName, var);
+    d_ptr->mPropGroup.setProperty(DAXMLProtocol::defaultGroupName(), keyName, var);
 }
 
 QStringList DAXMLProtocol::getGroupNames() const
 {
-    return (d_ptr->_propGroup.keys());
+    return (d_ptr->mPropGroup.keys());
 }
 
 QStringList DAXMLProtocol::getKeyNames(const QString& groupName) const
 {
-    if (!(d_ptr->_propGroup.hasGroup(groupName))) {
+    if (!(d_ptr->mPropGroup.hasGroup(groupName))) {
         return (QStringList());
     }
-    return (d_ptr->_propGroup[ groupName ].keys());
+    return (d_ptr->mPropGroup[ groupName ].keys());
 }
 
 /**
@@ -330,7 +330,7 @@ bool DAXMLProtocol::isHasKey(const QString& groupName, const QString& keyName) c
 
 QVariant DAXMLProtocol::getValue(const QString& groupName, const QString& keyName, const QVariant& defaultVal) const
 {
-    return (d_ptr->_propGroup.getProperty(groupName, keyName, defaultVal));
+    return (d_ptr->mPropGroup.getProperty(groupName, keyName, defaultVal));
 }
 
 QVariant DAXMLProtocol::getDefaultGroupValue(const QString& keyName, const QVariant& defaultVal) const
@@ -344,7 +344,7 @@ QVariant DAXMLProtocol::getDefaultGroupValue(const QString& keyName, const QVari
  */
 DAPropertiesGroup DAXMLProtocol::toPropGroup() const
 {
-    return d_ptr->_propGroup;
+    return d_ptr->mPropGroup;
 }
 
 /**
@@ -353,7 +353,7 @@ DAPropertiesGroup DAXMLProtocol::toPropGroup() const
  */
 void DAXMLProtocol::fromPropGroup(const DAPropertiesGroup& props)
 {
-    d_ptr->_propGroup = props;
+    d_ptr->mPropGroup = props;
 }
 
 /**
@@ -362,7 +362,7 @@ void DAXMLProtocol::fromPropGroup(const DAPropertiesGroup& props)
  */
 QString DAXMLProtocol::getErrorString() const
 {
-    return (d_ptr->_errorMsg);
+    return (d_ptr->mErrorMsg);
 }
 
 DAXMLProtocolPtr makeXMLProtocolPtr()

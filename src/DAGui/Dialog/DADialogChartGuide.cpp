@@ -4,6 +4,8 @@
 #include "DAAbstractChartAddItemWidget.h"
 #include <iterator>
 #include <vector>
+// qwt
+#include "qwt_plot_curve.h"
 namespace DA
 {
 
@@ -29,7 +31,7 @@ void DADialogChartGuide::init()
     item = new QListWidgetItem(QIcon(":/gui/chart-type/icon/chart-type/chart-scatter.svg"), tr("scatter"));
     item->setData(Qt::UserRole, (int)ChartScatter);
     ui->listWidgetChartType->addItem(item);
-
+    //初始化
     ui->stackedWidget->setCurrentWidget(ui->pageCurve);
     ui->listWidgetChartType->setCurrentRow(0);
 }
@@ -84,7 +86,20 @@ QwtPlotItem* DADialogChartGuide::createPlotItem()
     if (!w) {
         return nullptr;
     }
-    return w->createPlotItem();
+    QwtPlotItem* item = w->createPlotItem();
+    if (nullptr == item) {
+        return nullptr;
+    }
+    //一些基本属性的设置
+    switch (getCurrentChartType()) {
+    case ChartScatter: {
+        QwtPlotCurve* c = static_cast< QwtPlotCurve* >(item);
+        c->setStyle(QwtPlotCurve::Dots);
+    } break;
+    default:
+        break;
+    }
+    return item;
 }
 
 void DADialogChartGuide::updateData()

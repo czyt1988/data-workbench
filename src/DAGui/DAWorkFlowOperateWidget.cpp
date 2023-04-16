@@ -74,6 +74,11 @@ DAWorkFlowEditWidget* DAWorkFlowOperateWidget::appendWorkflow(const QString& nam
     connect(wfe, &DAWorkFlowEditWidget::selectNodeItemChanged, this, &DAWorkFlowOperateWidget::selectNodeItemChanged);
     connect(wfe, &DAWorkFlowEditWidget::mouseActionFinished, this, &DAWorkFlowOperateWidget::mouseActionFinished);
     connect(scene, &DAWorkFlowGraphicsScene::selectionChanged, this, &DAWorkFlowOperateWidget::onSelectionChanged);
+    connect(wfe, &DAWorkFlowEditWidget::startExecute, this, [ this, wfe ]() { emit workflowStartExecute(wfe); });
+    connect(wfe, &DAWorkFlowEditWidget::nodeExecuteFinished, this, [ this, wfe ](DAAbstractNode::SharedPointer n, bool state) {
+        emit nodeExecuteFinished(wfe, n, state);
+    });
+    connect(wfe, &DAWorkFlowEditWidget::finished, this, [ this, wfe ](bool s) { emit workflowFinished(wfe, s); });
     ui->tabWidget->addTab(wfe, name);
     //把名字保存到DAWorkFlowEditWidget中，在DAProject保存的时候会用到
     wfe->setWindowTitle(name);

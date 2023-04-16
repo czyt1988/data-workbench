@@ -6,14 +6,12 @@
 namespace DA
 {
 
-DA_IMPL_FORWARD_DECL(DAXMLConfig)
-
 /**
  * @brief 用于生成xml配置文件的类
  */
 class DAUTILS_API DAXMLConfig : public DAXMLProtocol
 {
-    DA_IMPL(DAXMLConfig)
+    DA_DECLARE_PRIVATE(DAXMLConfig)
 public:
     DAXMLConfig();
     DAXMLConfig(const QString& filepath);

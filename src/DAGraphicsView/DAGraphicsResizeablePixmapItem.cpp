@@ -3,23 +3,78 @@
 #include <QDebug>
 #include <QStyleOptionGraphicsItem>
 #include <QGraphicsSceneMouseEvent>
-using namespace DA;
+#include <QBuffer>
+namespace DA
+{
+
+//===================================================
+// DAGraphicsResizeablePixmapItem::PrivateData
+//===================================================
+class DAGraphicsResizeablePixmapItem::PrivateData
+{
+    DA_DECLARE_PUBLIC(DAGraphicsResizeablePixmapItem)
+public:
+    PrivateData(DAGraphicsResizeablePixmapItem* p);
+    //把pixmap转换为base64的字符串
+    QString pixmapToString(const QPixmap& pixmap);
+    //字符串转换为pixmap
+    QPixmap stringToPixmap(const QString& base64);
+
+public:
+    QPixmap mPixmap;        ///< 设置尺寸后的图形
+    QPixmap mPixmapOrigin;  ///< 保存原始的图形
+    Qt::TransformationMode mTransformationMode { Qt::FastTransformation };
+    Qt::AspectRatioMode mAspectRatioMode { Qt::IgnoreAspectRatio };
+};
+
+DAGraphicsResizeablePixmapItem::PrivateData::PrivateData(DAGraphicsResizeablePixmapItem* p) : q_ptr(p)
+{
+}
+
+QString DAGraphicsResizeablePixmapItem::PrivateData::pixmapToString(const QPixmap& pixmap)
+{
+    QBuffer buff;
+    pixmap.save(&buff, "PNG");
+    QByteArray dataimg;
+    //图像转换为数据
+    dataimg.append(buff.data());
+    //图片保存在字符串中
+    return dataimg.toBase64();
+}
+
+QPixmap DAGraphicsResizeablePixmapItem::PrivateData::stringToPixmap(const QString& base64)
+{
+    QByteArray imgData = QByteArray::fromBase64(base64.toUtf8());
+    QPixmap pixmap;
+    //从数据载入图像
+    pixmap.loadFromData(imgData);
+    return pixmap;
+}
+
+//===================================================
+// DAGraphicsResizeablePixmapItem
+//===================================================
+
 /**
  * @brief 因为要显示调整尺寸的8个点，因此需要调整boundingRect
  * @return
  */
 DAGraphicsResizeablePixmapItem::DAGraphicsResizeablePixmapItem(QGraphicsItem* parent)
-    : DAGraphicsResizeableItem(parent), _aspectRatioMode(Qt::IgnoreAspectRatio), _transformationMode(Qt::FastTransformation)
+    : DAGraphicsResizeableItem(parent), DA_PIMPL_CONSTRUCT
 {
 }
 
 DAGraphicsResizeablePixmapItem::DAGraphicsResizeablePixmapItem(const QPixmap& pixmap, QGraphicsItem* parent)
-    : DAGraphicsResizeableItem(parent), _aspectRatioMode(Qt::IgnoreAspectRatio), _transformationMode(Qt::FastTransformation)
+    : DAGraphicsResizeableItem(parent), DA_PIMPL_CONSTRUCT
 {
 
-    _pixmap       = pixmap;
-    _pixmapOrigin = pixmap;
+    d_ptr->mPixmap       = pixmap;
+    d_ptr->mPixmapOrigin = pixmap;
     changeBodySize(pixmap.size());
+}
+
+DAGraphicsResizeablePixmapItem::~DAGraphicsResizeablePixmapItem()
+{
 }
 
 /**
@@ -48,14 +103,15 @@ bool DAGraphicsResizeablePixmapItem::isSelectable() const
 
 void DAGraphicsResizeablePixmapItem::setPixmap(const QPixmap& pixmap)
 {
-    _pixmap       = pixmap;
-    _pixmapOrigin = pixmap;
+    //先赋值给原始图片
+    d_ptr->mPixmapOrigin = pixmap;
+    //再设置大小
     setBodySize(pixmap.size());
 }
 
 const QPixmap& DAGraphicsResizeablePixmapItem::getPixmap() const
 {
-    return _pixmap;
+    return d_ptr->mPixmap;
 }
 
 /**
@@ -66,7 +122,7 @@ const QPixmap& DAGraphicsResizeablePixmapItem::getPixmap() const
  */
 const QPixmap& DAGraphicsResizeablePixmapItem::getOriginPixmap() const
 {
-    return _pixmapOrigin;
+    return d_ptr->mPixmapOrigin;
 }
 
 /**
@@ -75,37 +131,105 @@ const QPixmap& DAGraphicsResizeablePixmapItem::getOriginPixmap() const
  */
 void DAGraphicsResizeablePixmapItem::setTransformationMode(Qt::TransformationMode t)
 {
-    _transformationMode = t;
+    d_ptr->mTransformationMode = t;
 }
 
 Qt::TransformationMode DAGraphicsResizeablePixmapItem::getTransformationMode() const
 {
-    return _transformationMode;
+    return d_ptr->mTransformationMode;
 }
 
 void DAGraphicsResizeablePixmapItem::setAspectRatioMode(Qt::AspectRatioMode t)
 {
-    _aspectRatioMode = t;
+    d_ptr->mAspectRatioMode = t;
 }
 
 Qt::AspectRatioMode DAGraphicsResizeablePixmapItem::getAspectRatioMode() const
 {
-    return _aspectRatioMode;
+    return d_ptr->mAspectRatioMode;
+}
+
+/**
+ * @brief 判断是否存在有效图片
+ * @return
+ */
+bool DAGraphicsResizeablePixmapItem::isHaveValidPixmap() const
+{
+    return (!d_ptr->mPixmapOrigin.isNull());
 }
 
 void DAGraphicsResizeablePixmapItem::setBodySize(const QSizeF& s)
 {
     //设置尺寸
-    QSizeF ss = testBodySize(s);
-    _pixmap   = _pixmapOrigin.scaled(ss.toSize(), _aspectRatioMode, _transformationMode);
-    DAGraphicsResizeableItem::setBodySize(_pixmap.size());
+    QSizeF ss      = testBodySize(s);
+    d_ptr->mPixmap = d_ptr->mPixmapOrigin.scaled(ss.toSize(), getAspectRatioMode(), getTransformationMode());
+    DAGraphicsResizeableItem::setBodySize(d_ptr->mPixmap.size());
+}
+
+/**
+ * @brief 保存到xml中
+ * @note 会把pixmap以base64保存
+ * @param doc
+ * @param parentElement
+ * @return
+ */
+bool DAGraphicsResizeablePixmapItem::saveToXml(QDomDocument* doc, QDomElement* parentElement) const
+{
+    if (!DAGraphicsResizeableItem::saveToXml(doc, parentElement)) {
+        return false;
+    }
+    QDomElement pixmapEle = doc->createElement("pixmap-info");
+    QSizeF sz             = getBodySize();
+    pixmapEle.setAttribute("aspectRatioMode", enumToString(getAspectRatioMode()));
+    pixmapEle.setAttribute("transformationMode", enumToString(getTransformationMode()));
+
+    QDomElement rawEle   = doc->createElement("raw");
+    QString pixmapBase64 = d_ptr->pixmapToString(d_ptr->mPixmapOrigin);
+    rawEle.appendChild(doc->createTextNode(pixmapBase64));
+    pixmapEle.appendChild(rawEle);  //原数据
+    parentElement->appendChild(pixmapEle);
+    return true;
+}
+
+/**
+ * @brief 从xml加载
+ * @param itemElement
+ * @return
+ */
+bool DAGraphicsResizeablePixmapItem::loadFromXml(const QDomElement* itemElement)
+{
+    //先加载图片
+    QDomElement pixmapInfoEle = itemElement->firstChildElement("pixmap-info");
+    if (pixmapInfoEle.isNull()) {
+        qDebug() << "DAGraphicsResizeablePixmapItem::loadFromXml loss <pixmap-info>";
+        return false;
+    }
+    Qt::TransformationMode tm = stringToEnum(pixmapInfoEle.attribute("transformationMode"), Qt::FastTransformation);
+    Qt::AspectRatioMode ar    = stringToEnum(pixmapInfoEle.attribute("aspectRatioMode"), Qt::IgnoreAspectRatio);
+    QDomElement rawEle        = pixmapInfoEle.firstChildElement("raw");
+    if (rawEle.isNull()) {
+        qDebug() << "DAGraphicsResizeablePixmapItem::loadFromXml,loss <raw>";
+        return false;
+    }
+    QPixmap pix = d_ptr->stringToPixmap(rawEle.text());
+    if (pix.isNull()) {
+        qDebug() << "DAGraphicsResizeablePixmapItem::loadFromXml,pixmap base64 cannot to pixmap,base64string is:\n"
+                 << rawEle.text();
+        return false;
+    }
+    setPixmap(pix);
+    setTransformationMode(tm);
+    setAspectRatioMode(ar);
+    return DAGraphicsResizeableItem::loadFromXml(itemElement);
 }
 
 void DAGraphicsResizeablePixmapItem::paintBody(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget, const QRectF& bodyRect)
 {
     Q_UNUSED(widget);
     Q_UNUSED(option);
-    painter->setRenderHint(QPainter::SmoothPixmapTransform, (_transformationMode == Qt::SmoothTransformation));
+    painter->setRenderHint(QPainter::SmoothPixmapTransform, (d_ptr->mTransformationMode == Qt::SmoothTransformation));
 
-    painter->drawPixmap(bodyRect.topLeft(), _pixmap);
+    painter->drawPixmap(bodyRect.topLeft(), d_ptr->mPixmap);
+}
+
 }

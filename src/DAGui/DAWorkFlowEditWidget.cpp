@@ -44,6 +44,9 @@ DAWorkFlow* DAWorkFlowEditWidget::getWorkflow() const
 void DAWorkFlowEditWidget::setWorkFlow(DAWorkFlow* w)
 {
     ui->workflowGraphicsView->setWorkFlow(w);
+    connect(w, &DAWorkFlow::startExecute, this, &DAWorkFlowEditWidget::startExecute);
+    connect(w, &DAWorkFlow::nodeExecuteFinished, this, &DAWorkFlowEditWidget::nodeExecuteFinished);
+    connect(w, &DAWorkFlow::finished, this, &DAWorkFlowEditWidget::finished);
 }
 
 DAWorkFlowGraphicsView* DAWorkFlowEditWidget::getWorkFlowGraphicsView() const

@@ -1,16 +1,18 @@
-#include "DAAbstractNodeGraphicsItem.h"
+﻿#include "DAAbstractNodeGraphicsItem.h"
 #include <QDebug>
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>
 #include <QPointer>
 #include <QDomDocument>
 #include <QDomElement>
+#include <memory>
 #include "DAAbstractNode.h"
 #include "DAAbstractNodeLinkGraphicsItem.h"
 #include "DAAbstractNodeWidget.h"
 #include "DANodeGraphicsScene.h"
 #include "DANodePalette.h"
 #include "DANodeLinkPointDrawDelegate.h"
+#include "DAStandardNodeLinkGraphicsItem.h"
 
 /**
  * @def 调试打印
@@ -19,21 +21,22 @@
 ////////////////////////////////////////////////////////////////////////
 namespace DA
 {
-class DAAbstractNodeGraphicsItemPrivate
+class DAAbstractNodeGraphicsItem::PrivateData
 {
-    DA_IMPL_PUBLIC(DAAbstractNodeGraphicsItem)
+    DA_DECLARE_PUBLIC(DAAbstractNodeGraphicsItem)
 public:
     class LinkInfo
     {
     public:
         LinkInfo();
+        bool operator==(const LinkInfo& a) const;
         LinkInfo(const DANodeLinkPoint& p);
         QList< DAAbstractNodeLinkGraphicsItem* > linkitems;
         DANodeLinkPoint point;
     };
 
 public:
-    DAAbstractNodeGraphicsItemPrivate(DAAbstractNode* n, DAAbstractNodeGraphicsItem* p);
+    DAAbstractNodeGraphicsItem::PrivateData(DAAbstractNode* n, DAAbstractNodeGraphicsItem* p);
     //获取连接点
     QList< DANodeLinkPoint > getLinkPoints() const;
     DANodeLinkPoint getLinkPoints(const QString& n) const;
@@ -42,54 +45,60 @@ public:
     LinkInfo& addLinkPoint(const DANodeLinkPoint& lp);
 
 public:
-    DAAbstractNode::WeakPointer _node;
-    QList< LinkInfo > _linkInfos;               ///< 这里记录所有的link
-    std::unique_ptr< DANodePalette > _palette;  ///< 调色板
-    DAAbstractNodeGraphicsItem::LinkPointShowType _linkPointShowType;
-    bool _isShowLinkPoint;                                                  ///< 标记是否显示连接点
-    std::unique_ptr< DANodeLinkPointDrawDelegate > _linkPointDrawDelegate;  ///< 连接点绘制代理
-    DAAbstractNodeGraphicsItem::LinkPointLocation _inputLocation;           ///< 入口连接点的位置
-    DAAbstractNodeGraphicsItem::LinkPointLocation _outputLocation;          ///< 出口连接点的位置
+    DAAbstractNode::WeakPointer mNode;
+    QList< LinkInfo > mLinkInfos;               ///< 这里记录所有的link
+    std::unique_ptr< DANodePalette > mPalette;  ///< 调色板
+    DAAbstractNodeGraphicsItem::LinkPointShowType mLinkPointShowType;
+    bool mIsShowLinkPoint;                                                  ///< 标记是否显示连接点
+    std::unique_ptr< DANodeLinkPointDrawDelegate > mLinkPointDrawDelegate;  ///< 连接点绘制代理
+    DAAbstractNodeGraphicsItem::LinkPointLocation mInputLocation;           ///< 入口连接点的位置
+    DAAbstractNodeGraphicsItem::LinkPointLocation mOutputLocation;          ///< 出口连接点的位置
 };
 
-bool operator==(const DAAbstractNodeGraphicsItemPrivate::LinkInfo& a, const DAAbstractNodeGraphicsItemPrivate::LinkInfo& b);
+// bool operator==(const DAAbstractNodeGraphicsItem::PrivateData::LinkInfo& a,
+//                const DAAbstractNodeGraphicsItem::PrivateData::LinkInfo& b);
 
-bool operator==(const DAAbstractNodeGraphicsItemPrivate::LinkInfo& a, const DAAbstractNodeGraphicsItemPrivate::LinkInfo& b)
-{
-    return ((a.linkitems == b.linkitems) && (a.point == b.point));
-}
+// bool operator==(const DAAbstractNodeGraphicsItem::PrivateData::LinkInfo& a, const DAAbstractNodeGraphicsItem::PrivateData::LinkInfo& b)
+//{
+//    return ((a.linkitems == b.linkitems) && (a.point == b.point));
+//}
 
-DAAbstractNodeGraphicsItemPrivate::LinkInfo::LinkInfo()
-{
-}
-
-DAAbstractNodeGraphicsItemPrivate::LinkInfo::LinkInfo(const DANodeLinkPoint& p) : point(p)
+DAAbstractNodeGraphicsItem::PrivateData::LinkInfo::LinkInfo()
 {
 }
 
-DAAbstractNodeGraphicsItemPrivate::DAAbstractNodeGraphicsItemPrivate(DAAbstractNode* n, DAAbstractNodeGraphicsItem* p)
+bool DAAbstractNodeGraphicsItem::PrivateData::LinkInfo::operator==(const DAAbstractNodeGraphicsItem::PrivateData::LinkInfo& a) const
+{
+    return ((a.linkitems == this->linkitems) && (a.point == this->point));
+}
+
+DAAbstractNodeGraphicsItem::PrivateData::LinkInfo::LinkInfo(const DANodeLinkPoint& p) : point(p)
+{
+}
+
+DAAbstractNodeGraphicsItem::PrivateData::PrivateData(DAAbstractNode* n, DAAbstractNodeGraphicsItem* p)
     : q_ptr(p)
-    , _node(n->pointer())
-    , _linkPointShowType(DAAbstractNodeGraphicsItem::LinkPointAlwayShow)
-    , _isShowLinkPoint(true)
-    , _inputLocation(DAAbstractNodeGraphicsItem::LinkPointLocationOnLeftSide)
-    , _outputLocation(DAAbstractNodeGraphicsItem::LinkPointLocationOnRightSide)
+    , mNode(n->pointer())
+    , mLinkPointShowType(DAAbstractNodeGraphicsItem::LinkPointAlwayShow)
+    , mIsShowLinkPoint(true)
+    , mInputLocation(DAAbstractNodeGraphicsItem::LinkPointLocationOnLeftSide)
+    , mOutputLocation(DAAbstractNodeGraphicsItem::LinkPointLocationOnRightSide)
 {
-    _linkPointDrawDelegate.reset(new DANodeLinkPointDrawDelegate(p));
+    mLinkPointDrawDelegate.reset(new DANodeLinkPointDrawDelegate(p));
 }
 
-QList< DANodeLinkPoint > DAAbstractNodeGraphicsItemPrivate::getLinkPoints() const
+QList< DANodeLinkPoint > DAAbstractNodeGraphicsItem::PrivateData::getLinkPoints() const
 {
     QList< DANodeLinkPoint > res;
-    for (const LinkInfo& d : qAsConst(_linkInfos)) {
+    for (const LinkInfo& d : qAsConst(mLinkInfos)) {
         res.append(d.point);
     }
     return res;
 }
 
-DANodeLinkPoint DAAbstractNodeGraphicsItemPrivate::getLinkPoints(const QString& n) const
+DANodeLinkPoint DAAbstractNodeGraphicsItem::PrivateData::getLinkPoints(const QString& n) const
 {
-    for (const LinkInfo& d : qAsConst(_linkInfos)) {
+    for (const LinkInfo& d : qAsConst(mLinkInfos)) {
         if (d.point.name == n) {
             return d.point;
         }
@@ -98,9 +107,9 @@ DANodeLinkPoint DAAbstractNodeGraphicsItemPrivate::getLinkPoints(const QString& 
     return DANodeLinkPoint();
 }
 
-DANodeLinkPoint DAAbstractNodeGraphicsItemPrivate::getInputLinkPoint(const QString& name) const
+DANodeLinkPoint DAAbstractNodeGraphicsItem::PrivateData::getInputLinkPoint(const QString& name) const
 {
-    for (const LinkInfo& d : qAsConst(_linkInfos)) {
+    for (const LinkInfo& d : qAsConst(mLinkInfos)) {
         if (d.point.way == DANodeLinkPoint::Input && d.point.name == name) {
             return d.point;
         }
@@ -108,9 +117,9 @@ DANodeLinkPoint DAAbstractNodeGraphicsItemPrivate::getInputLinkPoint(const QStri
     return DANodeLinkPoint();
 }
 
-DANodeLinkPoint DAAbstractNodeGraphicsItemPrivate::getOutputLinkPoint(const QString& name) const
+DANodeLinkPoint DAAbstractNodeGraphicsItem::PrivateData::getOutputLinkPoint(const QString& name) const
 {
-    for (const LinkInfo& d : qAsConst(_linkInfos)) {
+    for (const LinkInfo& d : qAsConst(mLinkInfos)) {
         if (d.point.way == DANodeLinkPoint::Output && d.point.name == name) {
             return d.point;
         }
@@ -118,10 +127,10 @@ DANodeLinkPoint DAAbstractNodeGraphicsItemPrivate::getOutputLinkPoint(const QStr
     return DANodeLinkPoint();
 }
 
-DAAbstractNodeGraphicsItemPrivate::LinkInfo& DAAbstractNodeGraphicsItemPrivate::addLinkPoint(const DANodeLinkPoint& lp)
+DAAbstractNodeGraphicsItem::PrivateData::LinkInfo& DAAbstractNodeGraphicsItem::PrivateData::addLinkPoint(const DANodeLinkPoint& lp)
 {
-    _linkInfos.append(LinkInfo(lp));
-    return _linkInfos.back();
+    mLinkInfos.append(LinkInfo(lp));
+    return mLinkInfos.back();
 }
 
 //===================================================
@@ -129,7 +138,7 @@ DAAbstractNodeGraphicsItemPrivate::LinkInfo& DAAbstractNodeGraphicsItemPrivate::
 //===================================================
 
 DAAbstractNodeGraphicsItem::DAAbstractNodeGraphicsItem(DAAbstractNode* n, QGraphicsItem* p)
-    : DAGraphicsResizeableItem(p), d_ptr(new DAAbstractNodeGraphicsItemPrivate(n, this))
+    : DAGraphicsResizeableItem(p), d_ptr(std::make_unique< DAAbstractNodeGraphicsItem::PrivateData >(n, this))
 {
     if (n) {
         n->registItem(this);
@@ -153,17 +162,17 @@ DAAbstractNodeGraphicsItem::~DAAbstractNodeGraphicsItem()
  */
 DAAbstractNode* DAAbstractNodeGraphicsItem::rawNode()
 {
-    return (d_ptr->_node.lock().get());
+    return (d_ptr->mNode.lock().get());
 }
 
 const DAAbstractNode* DAAbstractNodeGraphicsItem::rawNode() const
 {
-    return (d_ptr->_node.lock().get());
+    return (d_ptr->mNode.lock().get());
 }
 
 DAAbstractNode::SharedPointer DAAbstractNodeGraphicsItem::node() const
 {
-    DAAbstractNode::SharedPointer p = d_ptr->_node.lock();
+    DAAbstractNode::SharedPointer p = d_ptr->mNode.lock();
     return p;
 }
 
@@ -173,16 +182,16 @@ DAAbstractNode::SharedPointer DAAbstractNodeGraphicsItem::node() const
  */
 void DAAbstractNodeGraphicsItem::setLinkPointShowType(LinkPointShowType t)
 {
-    d_ptr->_linkPointShowType = t;
+    d_ptr->mLinkPointShowType = t;
     switch (t) {
     case LinkPointAlwayShow:
-        d_ptr->_isShowLinkPoint = true;
+        d_ptr->mIsShowLinkPoint = true;
         break;
     case LinkPointShowOnHover:
-        d_ptr->_isShowLinkPoint = isUnderMouse();
+        d_ptr->mIsShowLinkPoint = isUnderMouse();
         break;
     case LinkPointShowOnSelect:
-        d_ptr->_isShowLinkPoint = isSelected();
+        d_ptr->mIsShowLinkPoint = isSelected();
         break;
     default:
         break;
@@ -191,7 +200,7 @@ void DAAbstractNodeGraphicsItem::setLinkPointShowType(LinkPointShowType t)
 
 DAAbstractNodeGraphicsItem::LinkPointShowType DAAbstractNodeGraphicsItem::getLinkPointShowType() const
 {
-    return d_ptr->_linkPointShowType;
+    return d_ptr->mLinkPointShowType;
 }
 /**
  * @brief 设置连接点的位置
@@ -203,9 +212,9 @@ DAAbstractNodeGraphicsItem::LinkPointShowType DAAbstractNodeGraphicsItem::getLin
 void DAAbstractNodeGraphicsItem::setLinkPointLocation(DANodeLinkPoint::Way way, DAAbstractNodeGraphicsItem::LinkPointLocation l)
 {
     if (DANodeLinkPoint::Input == way) {
-        d_ptr->_inputLocation = l;
+        d_ptr->mInputLocation = l;
     } else {
-        d_ptr->_outputLocation = l;
+        d_ptr->mOutputLocation = l;
     }
 }
 /**
@@ -215,9 +224,9 @@ void DAAbstractNodeGraphicsItem::setLinkPointLocation(DANodeLinkPoint::Way way, 
 DAAbstractNodeGraphicsItem::LinkPointLocation DAAbstractNodeGraphicsItem::getLinkPointLocation(DANodeLinkPoint::Way way) const
 {
     if (DANodeLinkPoint::Input == way) {
-        return d_ptr->_inputLocation;
+        return d_ptr->mInputLocation;
     }
-    return d_ptr->_outputLocation;
+    return d_ptr->mOutputLocation;
 }
 
 QString DAAbstractNodeGraphicsItem::getNodeName() const
@@ -301,7 +310,7 @@ DANodeLinkPoint DAAbstractNodeGraphicsItem::getOutputLinkPoint(const QString& na
  */
 bool DAAbstractNodeGraphicsItem::setNodeLinkPointDirection(const QString& name, DANodeLinkPoint::Direction d)
 {
-    for (DAAbstractNodeGraphicsItemPrivate::LinkInfo& dp : d_ptr->_linkInfos) {
+    for (DAAbstractNodeGraphicsItem::PrivateData::LinkInfo& dp : d_ptr->mLinkInfos) {
         if (dp.point.name == name) {
             dp.point.direction = d;
             return true;
@@ -317,7 +326,7 @@ bool DAAbstractNodeGraphicsItem::setNodeLinkPointDirection(const QString& name, 
  */
 bool DAAbstractNodeGraphicsItem::isHaveLinkPoint(const DANodeLinkPoint& pl) const
 {
-    for (const DAAbstractNodeGraphicsItemPrivate::LinkInfo& ld : qAsConst(d_ptr->_linkInfos)) {
+    for (const DAAbstractNodeGraphicsItem::PrivateData::LinkInfo& ld : qAsConst(d_ptr->mLinkInfos)) {
         if (ld.point.isEqualWayName(pl)) {
             return (true);
         }
@@ -332,10 +341,10 @@ bool DAAbstractNodeGraphicsItem::isHaveLinkPoint(const DANodeLinkPoint& pl) cons
  */
 void DAAbstractNodeGraphicsItem::paintLinkPoints(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
-    if (!d_ptr->_isShowLinkPoint) {
+    if (!d_ptr->mIsShowLinkPoint) {
         return;
     }
-    d_ptr->_linkPointDrawDelegate->paintLinkPoints(painter, option, widget);
+    d_ptr->mLinkPointDrawDelegate->paintLinkPoints(painter, option, widget);
 }
 
 /**
@@ -367,10 +376,10 @@ void DAAbstractNodeGraphicsItem::resetLinkPoint()
  */
 void DAAbstractNodeGraphicsItem::setNodePalette(const DANodePalette& pl)
 {
-    if (!(d_ptr->_palette)) {
-        d_ptr->_palette.reset(new DANodePalette);
+    if (!(d_ptr->mPalette)) {
+        d_ptr->mPalette.reset(new DANodePalette);
     }
-    *(d_ptr->_palette) = pl;
+    *(d_ptr->mPalette) = pl;
 }
 
 /**
@@ -379,8 +388,8 @@ void DAAbstractNodeGraphicsItem::setNodePalette(const DANodePalette& pl)
  */
 const DANodePalette& DAAbstractNodeGraphicsItem::getNodePalette() const
 {
-    if (d_ptr->_palette) {
-        return *(d_ptr->_palette);
+    if (d_ptr->mPalette) {
+        return *(d_ptr->mPalette);
     }
     return DANodePalette::getGlobalPalette();
 }
@@ -397,7 +406,7 @@ void DAAbstractNodeGraphicsItem::setLinkPointDrawDelegate(DANodeLinkPointDrawDel
             delegate->setItem(this);
         }
     }
-    d_ptr->_linkPointDrawDelegate.reset(delegate);
+    d_ptr->mLinkPointDrawDelegate.reset(delegate);
 }
 
 /**
@@ -406,7 +415,7 @@ void DAAbstractNodeGraphicsItem::setLinkPointDrawDelegate(DANodeLinkPointDrawDel
  */
 DANodeLinkPointDrawDelegate* DAAbstractNodeGraphicsItem::getLinkPointDrawDelegate() const
 {
-    return d_ptr->_linkPointDrawDelegate.get();
+    return d_ptr->mLinkPointDrawDelegate.get();
 }
 
 /**
@@ -503,7 +512,7 @@ DANodeLinkPoint DAAbstractNodeGraphicsItem::getLinkPointByPos(const QPointF& p) 
 {
     QList< DANodeLinkPoint > lps = getLinkPoints();
     for (const DANodeLinkPoint& lp : qAsConst(lps)) {
-        if (d_ptr->_linkPointDrawDelegate->getlinkPointPainterRect(lp).contains(p)) {
+        if (d_ptr->mLinkPointDrawDelegate->getlinkPointPainterRect(lp).contains(p)) {
             return lp;
         }
     }
@@ -523,7 +532,7 @@ QVariant DAAbstractNodeGraphicsItem::itemChange(QGraphicsItem::GraphicsItemChang
         if (scene()) {
             // 变化了位置,需要更新link item
             // 此函数能保证item在移动时连接线跟随动
-            for (const DAAbstractNodeGraphicsItemPrivate::LinkInfo& ld : qAsConst(d_ptr->_linkInfos)) {
+            for (const DAAbstractNodeGraphicsItem::PrivateData::LinkInfo& ld : qAsConst(d_ptr->mLinkInfos)) {
                 for (DAAbstractNodeLinkGraphicsItem* li : ld.linkitems) {
                     li->updatePos();
                 }
@@ -546,8 +555,8 @@ void DAAbstractNodeGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent* event
     if (isResizing()) {
         return;
     }
-    if (LinkPointShowOnSelect == d_ptr->_linkPointShowType) {
-        d_ptr->_isShowLinkPoint = isSelected();
+    if (LinkPointShowOnSelect == d_ptr->mLinkPointShowType) {
+        d_ptr->mIsShowLinkPoint = isSelected();
     }
 }
 
@@ -557,16 +566,16 @@ void DAAbstractNodeGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* eve
     if (isResizing()) {
         return;
     }
-    if (LinkPointShowOnSelect == d_ptr->_linkPointShowType) {
-        d_ptr->_isShowLinkPoint = isSelected();
+    if (LinkPointShowOnSelect == d_ptr->mLinkPointShowType) {
+        d_ptr->mIsShowLinkPoint = isSelected();
     }
 }
 
 void DAAbstractNodeGraphicsItem::hoverEnterEvent(QGraphicsSceneHoverEvent* event)
 {
     if (getLinkPointShowType() == LinkPointShowOnHover) {
-        if (!d_ptr->_isShowLinkPoint) {
-            d_ptr->_isShowLinkPoint = true;
+        if (!d_ptr->mIsShowLinkPoint) {
+            d_ptr->mIsShowLinkPoint = true;
             //刷新
             update();
         }
@@ -582,7 +591,7 @@ void DAAbstractNodeGraphicsItem::hoverMoveEvent(QGraphicsSceneHoverEvent* event)
 void DAAbstractNodeGraphicsItem::hoverLeaveEvent(QGraphicsSceneHoverEvent* event)
 {
     if (getLinkPointShowType() == LinkPointShowOnHover) {
-        d_ptr->_isShowLinkPoint = false;
+        d_ptr->mIsShowLinkPoint = false;
         //刷新
         update();
     }
@@ -598,7 +607,7 @@ void DAAbstractNodeGraphicsItem::hoverLeaveEvent(QGraphicsSceneHoverEvent* event
  */
 bool DAAbstractNodeGraphicsItem::linked(DAAbstractNodeLinkGraphicsItem* link, const DANodeLinkPoint& pl)
 {
-    for (DAAbstractNodeGraphicsItemPrivate::LinkInfo& ld : d_ptr->_linkInfos) {
+    for (DAAbstractNodeGraphicsItem::PrivateData::LinkInfo& ld : d_ptr->mLinkInfos) {
         if (ld.point.isEqualWayName(pl)) {
             ld.linkitems.append(link);
             return (true);
@@ -609,14 +618,14 @@ bool DAAbstractNodeGraphicsItem::linked(DAAbstractNodeLinkGraphicsItem* link, co
     if (rawNode()->getInputKeys().contains(pl.name) && pl.way == DANodeLinkPoint::Input) {
         //存在input
         //说明没有插入这个点
-        DAAbstractNodeGraphicsItemPrivate::LinkInfo& li = d_ptr->addLinkPoint(pl);
+        DAAbstractNodeGraphicsItem::PrivateData::LinkInfo& li = d_ptr->addLinkPoint(pl);
         li.linkitems.append(link);
         return true;
     }
     if (rawNode()->getOutputKeys().contains(pl.name) && pl.way == DANodeLinkPoint::Output) {
         //存在output
         //说明没有插入这个点
-        DAAbstractNodeGraphicsItemPrivate::LinkInfo& li = d_ptr->addLinkPoint(pl);
+        DAAbstractNodeGraphicsItem::PrivateData::LinkInfo& li = d_ptr->addLinkPoint(pl);
         li.linkitems.append(link);
         return true;
     }
@@ -631,7 +640,7 @@ bool DAAbstractNodeGraphicsItem::linked(DAAbstractNodeLinkGraphicsItem* link, co
  */
 bool DAAbstractNodeGraphicsItem::linkItemRemoved(DAAbstractNodeLinkGraphicsItem* link, const DANodeLinkPoint& pl)
 {
-    for (DAAbstractNodeGraphicsItemPrivate::LinkInfo& ld : d_ptr->_linkInfos) {
+    for (DAAbstractNodeGraphicsItem::PrivateData::LinkInfo& ld : d_ptr->mLinkInfos) {
         if (ld.point.isEqualWayName(pl)) {
             return ld.linkitems.removeAll(link) > 0;
         }
@@ -846,16 +855,98 @@ bool DAAbstractNodeGraphicsItem::loadFromXml(const QDomElement* itemElement)
 }
 
 /**
+ * @brief 创建连接，继承此函数可以生成连接，如果返回nullptr，scene将不会进行连接
+ *
+ * 默认使用DAStandardNodeLinkGraphicsItem来进行连接的创建，如果需要自定义连接，可以继承此函数
+ *
+ * 此函数创建的连接默认已经连接上lp
+ *
+ * 如果重写了自己的link，需要如下操作：
+ * @code
+ * DAAbstractNodeLinkGraphicsItem* MyNodeItem::createLinkItem(const DANodeLinkPoint& lp)
+ * {
+ *   Q_UNUSED(lp);
+ *   return new MyLinkGraphicsItem();
+ * }
+ * @endcode
+ *
+ * @note 返回的link无需attach，attach过程由scene负责
+ * @param lp 连接点，可以根据不同连接点返回不同的连接线
+ * @return
+ */
+DAAbstractNodeLinkGraphicsItem* DAAbstractNodeGraphicsItem::createLinkItem(const DANodeLinkPoint& lp)
+{
+    Q_UNUSED(lp);
+    return new DAStandardNodeLinkGraphicsItem();
+}
+
+/**
+ * @brief 从fromPoint链接到toItem的toPoint点
+ * @param fromPoint 出口链接点
+ * @param toItem 链接到的item
+ * @param toPoint 链接到的链接点
+ * @return 如果链接失败返回nullptr
+ */
+DAAbstractNodeLinkGraphicsItem* DAAbstractNodeGraphicsItem::linkTo(const DANodeLinkPoint& fromPoint,
+                                                                   DAAbstractNodeGraphicsItem* toItem,
+                                                                   const DANodeLinkPoint& toPoint)
+{
+    //创建链接线
+    QScopedPointer< DAAbstractNodeLinkGraphicsItem > linkitem(createLinkItem(fromPoint));
+    if (nullptr == linkitem) {
+        return nullptr;
+    }
+    if (!linkitem->attachFrom(this, fromPoint)) {
+        qDebug() << QObject::tr("link item can not attach from node item(%1) with key=%2")
+                            .arg(this->getNodeName(), fromPoint.name);  // cn:无法在节点(%1)的连接点%2上建立链接
+        return nullptr;
+    }
+    if (!linkitem->attachTo(toItem, toPoint)) {
+        qDebug() << QObject::tr("link item can not attach to node item(%1) with key=%2")  // cn:无法链接到节点(%1)的连接点%2
+                            .arg(toItem->getNodeName(), toPoint.name);
+
+        return nullptr;
+    }
+    return linkitem.take();
+}
+
+/**
+ * @brief 从fromPointName链接到toItem的toPointName点
+ * @param fromPointName
+ * @param toItem
+ * @param toPointName
+ * @return 如果链接失败返回nullptr
+ */
+DAAbstractNodeLinkGraphicsItem* DAAbstractNodeGraphicsItem::linkTo(const QString& fromPointName,
+                                                                   DAAbstractNodeGraphicsItem* toItem,
+                                                                   const QString& toPointName)
+{
+    DANodeLinkPoint fromlp = getOutputLinkPoint(fromPointName);
+    DANodeLinkPoint tolp   = toItem->getInputLinkPoint(toPointName);
+    if (!fromlp.isValid()) {
+        qDebug() << QObject::tr("Node %1 cannot find a connection point named %2")  // cn:节点%1无法找到名字为%2的连接点
+                            .arg(getNodeName(), fromPointName);
+        return nullptr;
+    }
+    if (!tolp.isValid()) {
+        qDebug() << QObject::tr("Node %1 cannot find a connection point named %2")  // cn:节点%1无法找到名字为%2的连接点
+                            .arg(toItem->getNodeName(), toPointName);
+        return nullptr;
+    }
+    return linkTo(fromlp, toItem, tolp);
+}
+
+/**
  * @brief 清除链接信息
  */
 void DAAbstractNodeGraphicsItem::clearLinkData()
 {
-    for (DAAbstractNodeGraphicsItemPrivate::LinkInfo& d : d_ptr->_linkInfos) {
+    for (DAAbstractNodeGraphicsItem::PrivateData::LinkInfo& d : d_ptr->mLinkInfos) {
         for (DAAbstractNodeLinkGraphicsItem* li : qAsConst(d.linkitems)) {
             li->callItemIsDestroying(this, d.point);
         }
     }
-    d_ptr->_linkInfos.clear();
+    d_ptr->mLinkInfos.clear();
 }
 
 /**
@@ -867,10 +958,10 @@ void DAAbstractNodeGraphicsItem::updateLinkPointPos()
     QList< DANodeLinkPoint > lps = d_ptr->getLinkPoints();
     changeLinkPointPos(lps, getBodyRect());
     //更新到linkData
-    int s = qMin(lps.size(), d_ptr->_linkInfos.size());
+    int s = qMin(lps.size(), d_ptr->mLinkInfos.size());
     for (int i = 0; i < s; ++i) {
-        d_ptr->_linkInfos[ i ].point = lps[ i ];
-        for (DAAbstractNodeLinkGraphicsItem* item : qAsConst(d_ptr->_linkInfos[ i ].linkitems)) {
+        d_ptr->mLinkInfos[ i ].point = lps[ i ];
+        for (DAAbstractNodeLinkGraphicsItem* item : qAsConst(d_ptr->mLinkInfos[ i ].linkitems)) {
             if (lps[ i ].way == DANodeLinkPoint::Input) {
                 item->updateToLinkPointInfo(lps[ i ]);
             } else {
@@ -887,7 +978,7 @@ void DAAbstractNodeGraphicsItem::updateLinkPointPos()
 QList< DAAbstractNodeLinkGraphicsItem* > DAAbstractNodeGraphicsItem::getLinkItems() const
 {
     QSet< DAAbstractNodeLinkGraphicsItem* > res;
-    for (DAAbstractNodeGraphicsItemPrivate::LinkInfo& d : d_ptr->_linkInfos) {
+    for (DAAbstractNodeGraphicsItem::PrivateData::LinkInfo& d : d_ptr->mLinkInfos) {
         for (DAAbstractNodeLinkGraphicsItem* li : qAsConst(d.linkitems)) {
             res.insert(li);
         }
@@ -901,7 +992,7 @@ QList< DAAbstractNodeLinkGraphicsItem* > DAAbstractNodeGraphicsItem::getLinkItem
 
 QList< DAAbstractNodeLinkGraphicsItem* > DAAbstractNodeGraphicsItem::getLinkItem(const QString& name) const
 {
-    for (DAAbstractNodeGraphicsItemPrivate::LinkInfo& d : d_ptr->_linkInfos) {
+    for (DAAbstractNodeGraphicsItem::PrivateData::LinkInfo& d : d_ptr->mLinkInfos) {
         if (d.point.name == name) {
             return d.linkitems;
         }

@@ -43,11 +43,11 @@ public:
     explicit operator bool() const;
 
 private:
-    QString m_prototype;
-    QString m_nodeName;
-    QString m_nodeToolTip;
-    QIcon m_nodeIcon;
-    QString m_group;
+    QString mPrototype;
+    QString mNodeName;
+    QString mNodeToolTip;
+    QIcon mNodeIcon;
+    QString mGroup;
 };
 // qHash
 DAWORKFLOW_API uint qHash(const DANodeMetaData& key, uint seed = 0);

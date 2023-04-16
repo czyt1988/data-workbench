@@ -3,29 +3,23 @@
 #include <QDebug>
 namespace DA
 {
-class DAPyScriptsIOPrivate
+class DAPyScriptsIO::PrivateData
 {
-    DA_IMPL_PUBLIC(DAPyScriptsIO)
+    DA_DECLARE_PUBLIC(DAPyScriptsIO)
 public:
-    DAPyScriptsIOPrivate(DAPyScriptsIO* p);
+    PrivateData(DAPyScriptsIO* p);
 };
-}  // namespace DA
-//===================================================
-// using DA namespace -- 禁止在头文件using！！
-//===================================================
-
-using namespace DA;
 
 //===================================================
 // DAPyScriptsIOPrivate
 //===================================================
-DAPyScriptsIOPrivate::DAPyScriptsIOPrivate(DAPyScriptsIO* p) : q_ptr(p)
+DAPyScriptsIO::PrivateData::PrivateData(DAPyScriptsIO* p) : q_ptr(p)
 {
 }
 //===================================================
 // DAPyScriptsIO
 //===================================================
-DAPyScriptsIO::DAPyScriptsIO() : DAPyModule(), d_ptr(new DAPyScriptsIOPrivate(this))
+DAPyScriptsIO::DAPyScriptsIO() : DAPyModule(), DA_PIMPL_CONSTRUCT
 {
 }
 
@@ -90,3 +84,4 @@ bool DAPyScriptsIO::import()
 {
     return DAPyModule::import("da_io");
 }
+}  // namespace DA

@@ -46,15 +46,13 @@ class _DAChartScrollZoomerScrollData;
 class DAChartYDataPicker;
 class DAChartXYDataPicker;
 
-DA_IMPL_FORWARD_DECL(DAChartWidget)
-
 /**
  * @brief 2d绘图
  */
 class DAFIGURE_API DAChartWidget : public QwtPlot
 {
     Q_OBJECT
-    DA_IMPL(DAChartWidget)
+    DA_DECLARE_PRIVATE(DAChartWidget)
 public:
     DAChartWidget(QWidget* parent = nullptr);
     virtual ~DAChartWidget();

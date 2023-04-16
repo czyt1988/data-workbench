@@ -8,11 +8,10 @@
 
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DAPyScriptsIO)
 
 class DAPYSCRIPTS_API DAPyScriptsIO : public DAPyModule
 {
-    DA_IMPL(DAPyScriptsIO)
+    DA_DECLARE_PRIVATE(DAPyScriptsIO)
 public:
     DAPyScriptsIO();
     ~DAPyScriptsIO();

@@ -81,8 +81,8 @@ protected:
     void setDataManager(DADataManager* mgr);
 
 private:
-    DAAbstractData::Pointer _data;
-    DADataManager* _dmgr;
+    DAAbstractData::Pointer mData;
+    DADataManager* mDataMgr;
 };
 // ADL原则，需要把qHash也放入DA命名空间中
 DADATA_API uint qHash(const DA::DAData& key, uint seed);

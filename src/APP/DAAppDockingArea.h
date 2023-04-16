@@ -1,6 +1,6 @@
 ﻿#ifndef DAAPPDOCKINGAREA_H
 #define DAAPPDOCKINGAREA_H
-#include "DAAppDockingAreaInterface.h"
+#include "DADockingAreaInterface.h"
 //
 #include "DAData.h"
 // CDockArea
@@ -39,7 +39,7 @@ class DAAbstractNodeWidget;
  * @brief 负责docking窗口区域的管理，APP分两大区域-RibbonArea和DockArea
  * DockArea包含所有的窗口
  */
-class DAAppDockingArea : public DAAppDockingAreaInterface
+class DAAppDockingArea : public DADockingAreaInterface
 {
     Q_OBJECT
 public:
@@ -59,7 +59,7 @@ public:
     };
 
 public:
-    DAAppDockingArea(DAAppUIInterface* u);
+    DAAppDockingArea(DAUIInterface* u);
     ~DAAppDockingArea();
 
     //翻译
@@ -124,36 +124,36 @@ private slots:
     void onWorkFlowOperateWidgetWorkflowCreated(DA::DAWorkFlowEditWidget* wfw);
 
 private:
-    AppMainWindow* m_app;
-    DAAppCommand* m_appCmd;  ///< cmd
-    DAAppDataManager* m_dataMgr;
-    ads::CDockManager* m_dockmgr;
+    AppMainWindow* mApp;
+    DAAppCommand* mAppCmd;  ///< cmd
+    DAAppDataManager* mDataMgr;
+    ads::CDockManager* mDockmgr;
 
     //管理窗口不允许关闭
     // 管理窗口
-    DAWorkFlowNodeListWidget* m_workflowNodeListWidget;  ///< 工作流节点窗口
-    ads::CDockWidget* m_workflowNodeListDock;            ///< m_workflowNodeListWidget对应的dock
-    DAChartManageWidget* m_chartManageWidget;            ///< 绘图管理窗口
-    ads::CDockWidget* m_chartManageDock;                 ///< m_chartManageWidget对应的dock
-    DADataManageWidget* m_dataManageWidget;              ///< 数据窗口
-    ads::CDockWidget* m_dataManageDock;                  ///< m_dataManageWidget对应的dock
+    DAWorkFlowNodeListWidget* mWorkflowNodeListWidget;  ///< 工作流节点窗口
+    ads::CDockWidget* mWorkflowNodeListDock;            ///< m_workflowNodeListWidget对应的dock
+    DAChartManageWidget* mChartManageWidget;            ///< 绘图管理窗口
+    ads::CDockWidget* mChartManageDock;                 ///< m_chartManageWidget对应的dock
+    DADataManageWidget* mDataManageWidget;              ///< 数据窗口
+    ads::CDockWidget* mDataManageDock;                  ///< m_dataManageWidget对应的dock
     //操作窗口不允许关闭
     // 操作窗口
-    DAWorkFlowOperateWidget* m_workFlowOperateWidget;  ///< 工作流操作窗口
-    ads::CDockWidget* m_workFlowOperateDock;           ///< m_workFlowOperateWidget对应的dock
-    DAChartOperateWidget* m_chartOperateWidget;        ///< 绘图操作窗口
-    ads::CDockWidget* m_chartOperateDock;              ///< m_chartOperateWidget对应的dock
-    DADataOperateWidget* m_dataOperateWidget;          ///< 数据操作窗口
-    ads::CDockWidget* m_dataOperateDock;               ///< m_dataOperateWidget对应的dock
+    DAWorkFlowOperateWidget* mWorkFlowOperateWidget;  ///< 工作流操作窗口
+    ads::CDockWidget* mWorkFlowOperateDock;           ///< m_workFlowOperateWidget对应的dock
+    DAChartOperateWidget* mChartOperateWidget;        ///< 绘图操作窗口
+    ads::CDockWidget* mChartOperateDock;              ///< m_chartOperateWidget对应的dock
+    DADataOperateWidget* mDataOperateWidget;          ///< 数据操作窗口
+    ads::CDockWidget* mDataOperateDock;               ///< m_dataOperateWidget对应的dock
 
     //设置窗口
-    DASettingContainerWidget* m_settingContainerWidget;  ///< 设置窗口容器
-    ads::CDockWidget* m_settingContainerDock;
+    DASettingContainerWidget* mSettingContainerWidget;  ///< 设置窗口容器
+    ads::CDockWidget* mSettingContainerDock;
     //日志窗口
-    DAMessageLogViewWidget* m_messageLogViewWidget;  ///< 日志窗口
-    ads::CDockWidget* m_messageLogDock;
+    DAMessageLogViewWidget* mMessageLogViewWidget;  ///< 日志窗口
+    ads::CDockWidget* mMessageLogDock;
     //
-    DAAbstractNodeWidget* m_lastSetNodeWidget;
+    DAAbstractNodeWidget* mLastSetNodeWidget;
 };
 }  // namespace DA
 #endif  // DAAPPDOCKINGAREA_H

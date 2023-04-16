@@ -1,18 +1,22 @@
-#include "DAFontEditPannelWidget.h"
+﻿#include "DAFontEditPannelWidget.h"
 #include "ui_DAFontEditPannelWidget.h"
+#include "colorWidgets/SAColorMenu.h"
 #include <QDebug>
 namespace DA
 {
 DAFontEditPannelWidget::DAFontEditPannelWidget(QWidget* parent)
-    : QWidget(parent), ui(new Ui::DAFontEditPannelWidget), _fontPointSize(10)
+    : QWidget(parent), ui(new Ui::DAFontEditPannelWidget), mFontPointSize(10)
 {
     ui->setupUi(this);
     ui->comboBoxFontSize->addItems(
             { "6", "8", "9", "10", "11", "12", "14", "16", "18", "20", "22", "24", "26", "28", "36", "48", "72" });
     ui->comboBoxFontSize->setCurrentText("10");
-    ui->pushButtonColor->setColor(Qt::black);
+    ui->colorButton->setColor(Qt::black);
+    ui->colorButton->setPopupMode(QToolButton::MenuButtonPopup);
+    mColorMenu = new SAColorMenu(this);
+    mColorMenu->bindToColorToolButton(ui->colorButton);
     connect(ui->fontComboBox, &QFontComboBox::currentFontChanged, this, &DAFontEditPannelWidget::signalEmitFontChanged);
-    connect(ui->pushButtonColor, &DA::DAColorPickerButton::colorChanged, this, &DAFontEditPannelWidget::currentFontColorChanged);
+    connect(ui->colorButton, &DA::DAColorPickerButton::colorChanged, this, &DAFontEditPannelWidget::currentFontColorChanged);
     connect(ui->toolButtonBold, &QToolButton::clicked, this, &DAFontEditPannelWidget::signalEmitFontChanged);
     connect(ui->toolButtonItalic, &QToolButton::clicked, this, &DAFontEditPannelWidget::signalEmitFontChanged);
     connect(ui->toolButtonUnderline, &QToolButton::clicked, this, &DAFontEditPannelWidget::signalEmitFontChanged);
@@ -32,7 +36,7 @@ DAFontEditPannelWidget::~DAFontEditPannelWidget()
  */
 QColor DAFontEditPannelWidget::getCurrentFontColor() const
 {
-    return ui->pushButtonColor->color();
+    return ui->colorButton->getColor();
 }
 
 /**
@@ -41,7 +45,7 @@ QColor DAFontEditPannelWidget::getCurrentFontColor() const
  */
 void DAFontEditPannelWidget::setCurrentFontColor(const QColor& c)
 {
-    ui->pushButtonColor->setColor(c);
+    ui->colorButton->setColor(c);
     //自动触发信号
 }
 
@@ -71,7 +75,7 @@ QFont DAFontEditPannelWidget::getCurrentFont()
     f.setBold(ui->toolButtonBold->isChecked());
     f.setItalic(ui->toolButtonItalic->isChecked());
     f.setUnderline(ui->toolButtonUnderline->isChecked());
-    f.setPointSize(_fontPointSize);
+    f.setPointSize(mFontPointSize);
     return f;
 }
 
@@ -82,7 +86,7 @@ QFont DAFontEditPannelWidget::getCurrentFont()
 void DAFontEditPannelWidget::setFontWeight(int w)
 {
     ui->comboBoxFontSize->setCurrentText(QString::number(w));
-    _fontPointSize = w;
+    mFontPointSize = w;
     signalEmitFontChanged();
 }
 
@@ -111,29 +115,29 @@ void DAFontEditPannelWidget::onComboBoxFontSizeTextChanged(const QString& t)
     int v = t.toInt(&isok);
     if (!isok) {
         QSignalBlocker bl(ui->comboBoxFontSize);
-        ui->comboBoxFontSize->setCurrentText(QString::number(_fontPointSize));
+        ui->comboBoxFontSize->setCurrentText(QString::number(mFontPointSize));
         return;
     }
-    _fontPointSize = v;
+    mFontPointSize = v;
     signalEmitFontChanged();
 }
 
 void DAFontEditPannelWidget::onFontSizeAdd()
 {
-    _fontPointSize += 1;
+    mFontPointSize += 1;
     QSignalBlocker bl(ui->comboBoxFontSize);
-    ui->comboBoxFontSize->setCurrentText(QString::number(_fontPointSize));
+    ui->comboBoxFontSize->setCurrentText(QString::number(mFontPointSize));
     signalEmitFontChanged();
 }
 
 void DAFontEditPannelWidget::onFontSizeSub()
 {
-    _fontPointSize -= 1;
-    if (_fontPointSize <= 0) {
-        _fontPointSize = 1;
+    mFontPointSize -= 1;
+    if (mFontPointSize <= 0) {
+        mFontPointSize = 1;
     }
     QSignalBlocker bl(ui->comboBoxFontSize);
-    ui->comboBoxFontSize->setCurrentText(QString::number(_fontPointSize));
+    ui->comboBoxFontSize->setCurrentText(QString::number(mFontPointSize));
     signalEmitFontChanged();
 }
 

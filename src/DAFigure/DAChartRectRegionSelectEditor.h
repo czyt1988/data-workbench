@@ -6,7 +6,6 @@
 class QKeyEvent;
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DAChartRectRegionSelectEditor)
 
 /**
  * @brief 用于给图标添加矩形选框的事件过滤器
@@ -14,7 +13,7 @@ DA_IMPL_FORWARD_DECL(DAChartRectRegionSelectEditor)
 class DAFIGURE_API DAChartRectRegionSelectEditor : public DAAbstractRegionSelectEditor
 {
     Q_OBJECT
-    DA_IMPL(DAChartRectRegionSelectEditor)
+    DA_DECLARE_PRIVATE(DAChartRectRegionSelectEditor)
 public:
     DAChartRectRegionSelectEditor(QwtPlot* parent);
     virtual ~DAChartRectRegionSelectEditor();

@@ -10,17 +10,17 @@
 #include <QApplication>
 namespace DA
 {
-class DAMessageQueueProxyPrivate
+class DAMessageQueueProxy::PrivateData
 {
-    DA_IMPL_PUBLIC(DAMessageQueueProxy)
+    DA_DECLARE_PUBLIC(DAMessageQueueProxy)
 public:
     enum EmitSignalType
     {
         SignalQueueAppended    = 0,
         SignalQueueSizeChanged = 1
     };
-    DAMessageQueueProxyPrivate(DAMessageQueueProxy* p);
-    ~DAMessageQueueProxyPrivate();
+    PrivateData(DAMessageQueueProxy* p);
+    ~PrivateData();
     //_DAThreadSafeMessageQueue通知DAGlobalMessageQueuePrivate，队列有东西插入
     void queueAppended();
 
@@ -40,12 +40,12 @@ public:
     void delayCreateCheck();
 
 public:
-    bool _isLazyEmit;                      ///< 信号是否惰性触发
-    std::unique_ptr< QTimer > _timer;      ///< 信号发射间隔
-    int _emitIntervalms;                   ///发射间隔
-    bool _needEmitSignalQueueAppended;     ///< 标记需要发射信号
-    bool _needEmitSignalQueueSizeChanged;  ///< 标记需要发射信号
-    bool _delayCreateTimerBeforeEventLoopUp;  ///< 这个是标记timer需要创建，但由于app的事件循环还未建立，因此要延迟create
+    bool mIsLazyEmit { true };                       ///< 信号是否惰性触发
+    std::unique_ptr< QTimer > mTimer;                ///< 信号发射间隔
+    int mEmitIntervalms { 1000 };                    ///发射间隔
+    bool mNeedEmitSignalQueueAppended { false };     ///< 标记需要发射信号
+    bool mNeedEmitSignalQueueSizeChanged { false };  ///< 标记需要发射信号
+    bool mDelayCreateTimerBeforeEventLoopUp { false };  ///< 这个是标记timer需要创建，但由于app的事件循环还未建立，因此要延迟create
 };
 
 /**
@@ -53,30 +53,30 @@ public:
  *
  * 这个使用单例，避免全局变量的初始化顺序问题导致异常
  */
-class _DAThreadSafeMessageQueue
+class DAThreadSafeMessageQueue_Private
 {
 private:
-    _DAThreadSafeMessageQueue() : _capacity(1000)
+    DAThreadSafeMessageQueue_Private() : mCapacity(1000)
     {
     }
 
 public:
-    static _DAThreadSafeMessageQueue& getInstance()
+    static DAThreadSafeMessageQueue_Private& getInstance()
     {
-        static _DAThreadSafeMessageQueue s_queue;
+        static DAThreadSafeMessageQueue_Private s_queue;
         return s_queue;
     }
 
     int size() const
     {
-        QMutexLocker lc(&_mutex);
-        return _messages.size();
+        QMutexLocker lc(&mMutex);
+        return mMessages.size();
     }
 
     DAMessageLogItem at(int index) const
     {
-        QMutexLocker lc(&_mutex);
-        return _messages.value(index);
+        QMutexLocker lc(&mMutex);
+        return mMessages.value(index);
     }
 
     void append(const DAMessageLogItem& item)
@@ -84,24 +84,24 @@ public:
         bool needNotifySizeChanged = false;
 
         {
-            QMutexLocker lc(&_mutex);
-            if (_messages.size() >= _capacity) {
-                _messages.pop_front();
+            QMutexLocker lc(&mMutex);
+            if (mMessages.size() >= mCapacity) {
+                mMessages.pop_front();
             } else {
                 //通知队列的尺寸变化了
                 needNotifySizeChanged = true;
             }
-            _messages.append(item);
+            mMessages.append(item);
         }
         //通知队列有东西插入了
         {
-            QMutexLocker lc(&_mutexNotifys);
+            QMutexLocker lc(&mMutexNotifys);
             if (needNotifySizeChanged) {
-                for (DAMessageQueueProxyPrivate* p : qAsConst(_notifys)) {
+                for (DAMessageQueueProxy::PrivateData* p : qAsConst(mNotifys)) {
                     p->queueSizeChanged();
                 }
             }
-            for (DAMessageQueueProxyPrivate* p : qAsConst(_notifys)) {
+            for (DAMessageQueueProxy::PrivateData* p : qAsConst(mNotifys)) {
                 p->queueAppended();
             }
         }
@@ -109,151 +109,150 @@ public:
 
     void setCapacity(int c)
     {
-        QMutexLocker lc(&_mutex);
-        _capacity = c;
+        QMutexLocker lc(&mMutex);
+        mCapacity = c;
     }
 
     int getCapacity()
     {
-        QMutexLocker lc(&_mutex);
-        return _capacity;
+        QMutexLocker lc(&mMutex);
+        return mCapacity;
     }
 
-    void registerNotify(DAMessageQueueProxyPrivate* p)
+    void registerNotify(DAMessageQueueProxy::PrivateData* p)
     {
-        QMutexLocker lc(&_mutexNotifys);
-        _notifys.append(p);
+        QMutexLocker lc(&mMutexNotifys);
+        mNotifys.append(p);
     }
 
-    void unregisterNotify(DAMessageQueueProxyPrivate* p)
+    void unregisterNotify(DAMessageQueueProxy::PrivateData* p)
     {
-        QMutexLocker lc(&_mutexNotifys);
-        _notifys.removeAll(p);
+        QMutexLocker lc(&mMutexNotifys);
+        mNotifys.removeAll(p);
     }
 
     void clear()
     {
-        QMutexLocker lc(&_mutex);
-        int oldsize = _messages.size();
-        _messages.clear();
+        QMutexLocker lc(&mMutex);
+        int oldsize = mMessages.size();
+        mMessages.clear();
 
         if (oldsize != 0) {
-            QMutexLocker lcNotifys(&_mutexNotifys);
-            for (DAMessageQueueProxyPrivate* p : qAsConst(_notifys)) {
+            QMutexLocker lcNotifys(&mMutexNotifys);
+            for (DAMessageQueueProxy::PrivateData* p : qAsConst(mNotifys)) {
                 p->queueSizeChanged();
             }
         }
     }
 
 private:
-    mutable QMutex _mutex;
-    mutable QMutex _mutexNotifys;
-    QList< DAMessageLogItem > _messages;            ///< 消息
-    int _capacity;                                  ///< 容量
-    QList< DAMessageQueueProxyPrivate* > _notifys;  ///< 等待通知的
+    mutable QMutex mMutex;
+    mutable QMutex mMutexNotifys;
+    QList< DAMessageLogItem > mMessages;                  ///< 消息
+    int mCapacity;                                        ///< 容量
+    QList< DAMessageQueueProxy::PrivateData* > mNotifys;  ///< 等待通知的
 };
 
 //===================================================
 // DAMessageQueueProxyPrivate
 //===================================================
-DAMessageQueueProxyPrivate::DAMessageQueueProxyPrivate(DAMessageQueueProxy* p)
-    : q_ptr(p), _isLazyEmit(true), _emitIntervalms(1000), _delayCreateTimerBeforeEventLoopUp(false)
+DAMessageQueueProxy::PrivateData::PrivateData(DAMessageQueueProxy* p) : q_ptr(p)
 {
-    _DAThreadSafeMessageQueue::getInstance().registerNotify(this);
+    DAThreadSafeMessageQueue_Private::getInstance().registerNotify(this);
     //默认是惰性发射
-    buildTimer(_emitIntervalms);
+    buildTimer(mEmitIntervalms);
 }
 
-DAMessageQueueProxyPrivate::~DAMessageQueueProxyPrivate()
+DAMessageQueueProxy::PrivateData::~PrivateData()
 {
-    _DAThreadSafeMessageQueue::getInstance().unregisterNotify(this);
+    DAThreadSafeMessageQueue_Private::getInstance().unregisterNotify(this);
 }
 
-void DAMessageQueueProxyPrivate::queueAppended()
+void DAMessageQueueProxy::PrivateData::queueAppended()
 {
     if (isLazyEmit()) {
         //惰性发射仅仅做标记
         delayCreateCheck();
-        _needEmitSignalQueueAppended = true;
+        mNeedEmitSignalQueueAppended = true;
     } else {
         //非惰性发射立即发射信号
         q_ptr->emitSignal(SignalQueueAppended);
     }
 }
 
-void DAMessageQueueProxyPrivate::queueSizeChanged()
+void DAMessageQueueProxy::PrivateData::queueSizeChanged()
 {
     if (isLazyEmit()) {
         //惰性发射仅仅做标记
         delayCreateCheck();
-        _needEmitSignalQueueSizeChanged = true;
+        mNeedEmitSignalQueueSizeChanged = true;
     } else {
         //非惰性发射立即发射信号
         q_ptr->emitSignal(SignalQueueSizeChanged);
     }
 }
 
-void DAMessageQueueProxyPrivate::buildTimer(int intervalms)
+void DAMessageQueueProxy::PrivateData::buildTimer(int intervalms)
 {
     if (QApplication::startingUp() || QApplication::closingDown()) {
         //如果app还未启动,或者已经关闭不发射信号
-        _delayCreateTimerBeforeEventLoopUp = true;
+        mDelayCreateTimerBeforeEventLoopUp = true;
         return;
     }
-    _timer.reset(new QTimer());
-    _timer->setInterval(intervalms);
-    QObject::connect(_timer.get(), &QTimer::timeout, q_ptr, &DAMessageQueueProxy::onTimeout);
-    _timer->start();
+    mTimer.reset(new QTimer());
+    mTimer->setInterval(intervalms);
+    QObject::connect(mTimer.get(), &QTimer::timeout, q_ptr, &DAMessageQueueProxy::onTimeout);
+    mTimer->start();
 }
 
-void DAMessageQueueProxyPrivate::setEmitInterval(int ms)
+void DAMessageQueueProxy::PrivateData::setEmitInterval(int ms)
 {
-    _emitIntervalms = ms;
-    if (_timer) {
-        _timer->setInterval(ms);
+    mEmitIntervalms = ms;
+    if (mTimer) {
+        mTimer->setInterval(ms);
     }
 }
 
-int DAMessageQueueProxyPrivate::getEmitInterval() const
+int DAMessageQueueProxy::PrivateData::getEmitInterval() const
 {
-    return _emitIntervalms;
+    return mEmitIntervalms;
 }
 
-void DAMessageQueueProxyPrivate::setLazyEmit(bool on)
+void DAMessageQueueProxy::PrivateData::setLazyEmit(bool on)
 {
-    _isLazyEmit = on;
+    mIsLazyEmit = on;
     if (on) {
-        if (nullptr == _timer) {
-            buildTimer(_emitIntervalms);
+        if (nullptr == mTimer) {
+            buildTimer(mEmitIntervalms);
         } else {
-            if (_timer->interval() != _emitIntervalms) {
-                _timer->setInterval(_emitIntervalms);
+            if (mTimer->interval() != mEmitIntervalms) {
+                mTimer->setInterval(mEmitIntervalms);
             }
         }
     } else {
         //不是惰性发射就删除timer
-        _timer.reset(nullptr);
+        mTimer.reset(nullptr);
     }
 }
 
-bool DAMessageQueueProxyPrivate::isLazyEmit() const
+bool DAMessageQueueProxy::PrivateData::isLazyEmit() const
 {
-    return _isLazyEmit;
+    return mIsLazyEmit;
 }
 
-void DAMessageQueueProxyPrivate::delayCreateCheck()
+void DAMessageQueueProxy::PrivateData::delayCreateCheck()
 {
-    if (_delayCreateTimerBeforeEventLoopUp) {
-        if (_isLazyEmit) {
-            _delayCreateTimerBeforeEventLoopUp = false;
-            buildTimer(_emitIntervalms);
+    if (mDelayCreateTimerBeforeEventLoopUp) {
+        if (mIsLazyEmit) {
+            mDelayCreateTimerBeforeEventLoopUp = false;
+            buildTimer(mEmitIntervalms);
         }
     }
 }
 //===================================================
 // DAMessageQueueProxy
 //===================================================
-DAMessageQueueProxy::DAMessageQueueProxy(QObject* par) : QObject(par), d_ptr(new DAMessageQueueProxyPrivate(this))
+DAMessageQueueProxy::DAMessageQueueProxy(QObject* par) : QObject(par), DA_PIMPL_CONSTRUCT
 {
 }
 
@@ -282,17 +281,17 @@ int DAMessageQueueProxy::getEmitInterval() const
 
 void DAMessageQueueProxy::append(const DAMessageLogItem& item)
 {
-    _DAThreadSafeMessageQueue::getInstance().append(item);
+    DAThreadSafeMessageQueue_Private::getInstance().append(item);
 }
 
 DAMessageLogItem DAMessageQueueProxy::at(int index) const
 {
-    return _DAThreadSafeMessageQueue::getInstance().at(index);
+    return DAThreadSafeMessageQueue_Private::getInstance().at(index);
 }
 
 int DAMessageQueueProxy::size() const
 {
-    return _DAThreadSafeMessageQueue::getInstance().size();
+    return DAThreadSafeMessageQueue_Private::getInstance().size();
 }
 
 /**
@@ -318,7 +317,7 @@ bool DAMessageQueueProxy::isLazyEmit() const
  */
 void DAMessageQueueProxy::clear()
 {
-    _DAThreadSafeMessageQueue::getInstance().clear();
+    DAThreadSafeMessageQueue_Private::getInstance().clear();
 }
 
 /**
@@ -327,7 +326,7 @@ void DAMessageQueueProxy::clear()
  */
 void DAMessageQueueProxy::setGlobalQueueCapacity(int c)
 {
-    _DAThreadSafeMessageQueue::getInstance().setCapacity(c);
+    DAThreadSafeMessageQueue_Private::getInstance().setCapacity(c);
 }
 
 /**
@@ -336,7 +335,7 @@ void DAMessageQueueProxy::setGlobalQueueCapacity(int c)
  */
 int DAMessageQueueProxy::getGlobalQueueCapacity()
 {
-    return _DAThreadSafeMessageQueue::getInstance().getCapacity();
+    return DAThreadSafeMessageQueue_Private::getInstance().getCapacity();
 }
 
 /**
@@ -344,11 +343,11 @@ int DAMessageQueueProxy::getGlobalQueueCapacity()
  */
 void DAMessageQueueProxy::onTimeout()
 {
-    if (d_ptr->_needEmitSignalQueueAppended) {
+    if (d_ptr->mNeedEmitSignalQueueAppended) {
         emit messageQueueAppended();
     }
-    if (d_ptr->_needEmitSignalQueueSizeChanged) {
-        emit messageQueueSizeChanged(_DAThreadSafeMessageQueue::getInstance().size());
+    if (d_ptr->mNeedEmitSignalQueueSizeChanged) {
+        emit messageQueueSizeChanged(DAThreadSafeMessageQueue_Private::getInstance().size());
     }
 }
 
@@ -359,11 +358,11 @@ void DAMessageQueueProxy::emitSignal(int type)
         return;
     }
     switch (type) {
-    case DAMessageQueueProxyPrivate::SignalQueueAppended:
+    case DAMessageQueueProxy::PrivateData::SignalQueueAppended:
         emit messageQueueAppended();
         break;
-    case DAMessageQueueProxyPrivate::SignalQueueSizeChanged:
-        emit messageQueueSizeChanged(_DAThreadSafeMessageQueue::getInstance().size());
+    case DAMessageQueueProxy::PrivateData::SignalQueueSizeChanged:
+        emit messageQueueSizeChanged(DAThreadSafeMessageQueue_Private::getInstance().size());
         break;
     default:
         break;

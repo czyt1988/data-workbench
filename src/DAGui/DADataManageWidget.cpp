@@ -21,23 +21,23 @@ DADataManageWidget::DADataManageWidget(QWidget* parent) : QWidget(parent), ui(ne
     ui->setupUi(this);
 
     //构建action
-    _actionViewDataListByTable = new QAction(this);
-    _actionViewDataListByTable->setObjectName("actionViewDataListByTable");
-    _actionViewDataListByTable->setCheckable(true);
-    _actionViewDataListByTable->setIcon(QIcon(":/icon/icon/showDataInList.svg"));
-    _actionViewDataListByTree = new QAction(this);
-    _actionViewDataListByTree->setObjectName("actionViewDataListByTree");
-    _actionViewDataListByTree->setCheckable(true);
-    _actionViewDataListByTree->setIcon(QIcon(":/icon/icon/showDataInTree.svg"));
-    _actionGroup = new QActionGroup(this);
-    _actionGroup->addAction(_actionViewDataListByTable);
-    _actionGroup->addAction(_actionViewDataListByTree);
-    _actionGroup->setExclusive(true);
-    ui->toolButtonShowTableView->setDefaultAction(_actionViewDataListByTable);
-    ui->toolButtonShowTreeView->setDefaultAction(_actionViewDataListByTree);
-    _actionViewDataListByTable->setChecked(true);
-    connect(_actionViewDataListByTable, &QAction::triggered, this, &DADataManageWidget::onActionTableViewTriggered);
-    connect(_actionViewDataListByTree, &QAction::triggered, this, &DADataManageWidget::onActionTreeViewTriggered);
+    mActionViewDataListByTable = new QAction(this);
+    mActionViewDataListByTable->setObjectName("actionViewDataListByTable");
+    mActionViewDataListByTable->setCheckable(true);
+    mActionViewDataListByTable->setIcon(QIcon(":/icon/icon/showDataInList.svg"));
+    mActionViewDataListByTree = new QAction(this);
+    mActionViewDataListByTree->setObjectName("actionViewDataListByTree");
+    mActionViewDataListByTree->setCheckable(true);
+    mActionViewDataListByTree->setIcon(QIcon(":/icon/icon/showDataInTree.svg"));
+    mActionGroup = new QActionGroup(this);
+    mActionGroup->addAction(mActionViewDataListByTable);
+    mActionGroup->addAction(mActionViewDataListByTree);
+    mActionGroup->setExclusive(true);
+    ui->toolButtonShowTableView->setDefaultAction(mActionViewDataListByTable);
+    ui->toolButtonShowTreeView->setDefaultAction(mActionViewDataListByTree);
+    mActionViewDataListByTable->setChecked(true);
+    connect(mActionViewDataListByTable, &QAction::triggered, this, &DADataManageWidget::onActionTableViewTriggered);
+    connect(mActionViewDataListByTree, &QAction::triggered, this, &DADataManageWidget::onActionTreeViewTriggered);
     connect(ui->dataMgrTableView, &DADataManageTableView::dataDbClicked, this, &DADataManageWidget::dataDbClicked);
     retranslateUi();
 }
@@ -91,7 +91,7 @@ QList< DAData > DADataManageWidget::getSelectDatas() const
  */
 bool DADataManageWidget::isTableView() const
 {
-    return (_actionGroup->checkedAction() == _actionViewDataListByTable);
+    return (mActionGroup->checkedAction() == mActionViewDataListByTable);
 }
 
 /**
@@ -100,7 +100,7 @@ bool DADataManageWidget::isTableView() const
  */
 bool DADataManageWidget::isTreeView() const
 {
-    return (_actionGroup->checkedAction() == _actionViewDataListByTree);
+    return (mActionGroup->checkedAction() == mActionViewDataListByTree);
 }
 
 /**
@@ -128,7 +128,7 @@ void DADataManageWidget::addDataFolder()
  */
 DADataManager* DADataManageWidget::getDataManager() const
 {
-    return _dataMgr;
+    return mDataManager;
 }
 
 /**
@@ -141,13 +141,13 @@ void DADataManageWidget::removeSelectData()
         qWarning() << tr("Please select the data item to remove");  // cn:请选择需要删除的数据条目
         return;
     }
-    _dataMgr->removeDatas_(d);
+    mDataManager->removeDatas_(d);
 }
 
 void DADataManageWidget::retranslateUi()
 {
-    _actionViewDataListByTable->setToolTip(tr("show datas in table view"));
-    _actionViewDataListByTree->setToolTip(tr("show datas in tree view"));
+    mActionViewDataListByTable->setToolTip(tr("show datas in table view"));
+    mActionViewDataListByTree->setToolTip(tr("show datas in tree view"));
 }
 
 void DADataManageWidget::changeEvent(QEvent* e)

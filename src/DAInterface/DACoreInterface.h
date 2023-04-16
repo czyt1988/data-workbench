@@ -1,4 +1,4 @@
-#ifndef DACOREINTERFACE_H
+﻿#ifndef DACOREINTERFACE_H
 #define DACOREINTERFACE_H
 #include "DAInterfaceAPI.h"
 #include "DAGlobals.h"
@@ -7,10 +7,9 @@ class SARibbonMainWindow;
 
 namespace DA
 {
-class DAAppUIInterface;
+class DAUIInterface;
 class DADataManagerInterface;
 class DAProjectInterface;
-DA_IMPL_FORWARD_DECL(DACoreInterface)
 /**
  * @brief APP的核心接口
  *
@@ -19,7 +18,6 @@ DA_IMPL_FORWARD_DECL(DACoreInterface)
 class DAINTERFACE_API DACoreInterface : public QObject
 {
     Q_OBJECT
-    DA_IMPL(DACoreInterface)
 public:
     DACoreInterface(QObject* parent = nullptr);
     virtual ~DACoreInterface();
@@ -28,7 +26,7 @@ public:
     virtual bool initialized() = 0;
 
     //获取DAAppRibbonAreaInterface
-    virtual DAAppUIInterface* getUiInterface() const = 0;
+    virtual DAUIInterface* getUiInterface() const = 0;
     //获取工程管理借口
     virtual DAProjectInterface* getProjectInterface() const = 0;
     //获取数据管理接口

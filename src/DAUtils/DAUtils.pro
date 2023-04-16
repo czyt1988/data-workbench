@@ -20,6 +20,8 @@ $$saCopyLibToBin($${TARGET})
 
 HEADERS += \
     DAAbstractProtocol.h \
+    DAColorTheme.h \
+    DAIndexedVector.h \
     DAProperties.h \
     DAStringUtil.h \
     DAUtilsAPI.h \
@@ -35,6 +37,7 @@ HEADERS += \
 
 SOURCES += \
     DAAbstractProtocol.cpp \
+    DAColorTheme.cpp \
     DAProperties.cpp \
     DAStringUtil.cpp \
     DATree.cpp \

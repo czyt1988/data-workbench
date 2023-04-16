@@ -1,4 +1,4 @@
-#ifndef DAWORDWRAPITEMDELEGATE_H
+﻿#ifndef DAWORDWRAPITEMDELEGATE_H
 #define DAWORDWRAPITEMDELEGATE_H
 #include <QStyledItemDelegate>
 namespace DA
@@ -25,7 +25,7 @@ public:
     virtual void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
 private:
-    WrapMode _wrapMode;
+    WrapMode mWrapMode;
 };
 }
 

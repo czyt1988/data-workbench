@@ -1,12 +1,13 @@
 ﻿#ifndef DAABSTRACTPLUGIN_H
 #define DAABSTRACTPLUGIN_H
+#include <memory>
 #include <QtPlugin>
 #include <QObject>
 #include "DAPluginSupportGlobal.h"
+#include "DAAbstractSettingPage.h"
 namespace DA
 {
 class DACoreInterface;
-DA_IMPL_FORWARD_DECL(DAAbstractPlugin)
 
 /**
  * @brief 所有插件的基类
@@ -17,7 +18,7 @@ DA_IMPL_FORWARD_DECL(DAAbstractPlugin)
  */
 class DAPLUGINSUPPORT_API DAAbstractPlugin
 {
-    DA_IMPL(DAAbstractPlugin)
+    DA_DECLARE_PRIVATE(DAAbstractPlugin)
     friend class DAPluginOption;
     friend class DAPluginManager;
 
@@ -57,6 +58,13 @@ public:
      * @return 如果初始化返回false，将不会把插件放入管理中，默认返回true
      */
     virtual bool initialize();
+
+    /**
+     * @brief 获取设置页，默认返回nullptr，代表没有设置页
+     * @note 返回设置页要配合@sa getConfig 一起使用，app会先调用getConfig获取配置类，在获取DAAbstractSettingPage后，调用
+     * @return
+     */
+    virtual DAAbstractSettingPage* createSettingPage();
 
     //获取core
     DACoreInterface* core() const;

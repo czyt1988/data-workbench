@@ -20,8 +20,8 @@ public:
     void undo() override;
 
 private:
-    DAData m_data;
-    DADataManager* _dmgr;
+    DAData mData;
+    DADataManager* mDataMgr;
 };
 
 /**
@@ -35,8 +35,8 @@ public:
     void undo() override;
 
 private:
-    DAData m_data;
-    DADataManager* _dmgr;
+    DAData mData;
+    DADataManager* mDataMgr;
 };
 
 }  // end of namespace DA

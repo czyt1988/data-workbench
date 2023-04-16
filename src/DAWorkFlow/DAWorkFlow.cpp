@@ -8,79 +8,73 @@
 
 namespace DA
 {
-class DAWorkFlowPrivate
+class DAWorkFlow::PrivateData
 {
-    DA_IMPL_PUBLIC(DAWorkFlow)
+    DA_DECLARE_PUBLIC(DAWorkFlow)
 public:
-    DAWorkFlowPrivate(DAWorkFlow* p);
+    PrivateData(DAWorkFlow* p);
     void createExecuter();
     //
     void recordNode(DAAbstractNode::SharedPointer& node);
 
 public:
-    QHash< DANodeMetaData, DAAbstractNodeFactory* > _metaToFactory;           ///< 记录prototype对应的工厂
-    QHash< QString, DAAbstractNodeFactory* > _factorys;                       ///< 记录所有的工厂
-    QList< DAAbstractNode::SharedPointer > _nodes;                            ///< 节点相关信息列表
-    QMap< DAAbstractNode::IdType, DAAbstractNode::SharedPointer > _idToNode;  ///< 文本信息列表
-    DAAbstractNode::WeakPointer _startNode;                                   ///< 开始执行的节点
-    QThread* _executerThread;                                                 ///< 执行器线程
-    DA::DAWorkFlowExecuter* _executer;                                        ///< 执行器
-    bool _isExecuting;                                                        ///< 正在执行
-    QString _lastErr;                                                         ///< 记录最后的错误
-    QList< DAWorkFlow::CallbackPrepareStartExecute > _prepareStartCallback;
-    QList< DAWorkFlow::CallbackPrepareEndExecute > _prepareEndCallback;
+    QHash< DANodeMetaData, DAAbstractNodeFactory* > mMetaToFactory;           ///< 记录prototype对应的工厂
+    QHash< QString, DAAbstractNodeFactory* > mFactorys;                       ///< 记录所有的工厂
+    QList< DAAbstractNode::SharedPointer > mNodes;                            ///< 节点相关信息列表
+    QMap< DAAbstractNode::IdType, DAAbstractNode::SharedPointer > mIdToNode;  ///< 文本信息列表
+    DAAbstractNode::WeakPointer mStartNode;                                   ///< 开始执行的节点
+    QThread* mExecuterThread { nullptr };                                     ///< 执行器线程
+    DA::DAWorkFlowExecuter* mExecuter { nullptr };                            ///< 执行器
+    bool mIsExecuting { false };                                              ///< 正在执行
+    QString mLastErr;                                                         ///< 记录最后的错误
+    QList< DAWorkFlow::CallbackPrepareStartExecute > mPrepareStartCallback;
+    QList< DAWorkFlow::CallbackPrepareEndExecute > mPrepareEndCallback;
 };
-}  // end of namespace DA
-
-//===================================================
-// using DA namespace -- 禁止在头文件using！！
-//===================================================
-
-using namespace DA;
 
 //===================================================
 // DAWorkFlowPrivate
 //===================================================
 
-DAWorkFlowPrivate::DAWorkFlowPrivate(DAWorkFlow* p)
-    : q_ptr(p), _executerThread(nullptr), _executer(nullptr), _isExecuting(false)
+DAWorkFlow::PrivateData::PrivateData(DAWorkFlow* p) : q_ptr(p)
 {
 }
 
 /**
  * @brief 创建执行器
  */
-void DAWorkFlowPrivate::createExecuter()
+void DAWorkFlow::PrivateData::createExecuter()
 {
-    if (_executerThread) {
-        _executerThread->quit();  // quit会触发finished，从而进行内存清除
+    if (mExecuterThread) {
+        mExecuterThread->quit();  // quit会触发finished，从而进行内存清除
     }
-    _executerThread = new QThread();
-    _executer       = new DA::DAWorkFlowExecuter();
+    mExecuterThread = new QThread();
+    mExecuter       = new DA::DAWorkFlowExecuter();
     //设置开始节点
-    _executer->setStartNode(_startNode.lock());
-    _executer->setWorkFlow(q_ptr);
-    _executer->moveToThread(_executerThread);
-    QObject::connect(_executerThread, &QThread::finished, _executer, &QObject::deleteLater);
-    QObject::connect(_executerThread, &QThread::finished, _executerThread, &QObject::deleteLater);
+    mExecuter->setStartNode(mStartNode.lock());
+    mExecuter->setWorkFlow(q_ptr);
+    mExecuter->moveToThread(mExecuterThread);
+    QObject::connect(mExecuterThread, &QThread::finished, mExecuter, &QObject::deleteLater);
+    QObject::connect(mExecuterThread, &QThread::finished, mExecuterThread, &QObject::deleteLater);
     //
-    QObject::connect(q_ptr, &DAWorkFlow::startExecute, _executer, &DA::DAWorkFlowExecuter::startExecute);
-    QObject::connect(_executer, &DA::DAWorkFlowExecuter::nodeExecuteFinished, q_ptr, &DAWorkFlow::nodeExecuteFinished);
-    QObject::connect(_executer, &DA::DAWorkFlowExecuter::finished, q_ptr, &DAWorkFlow::onExecuteFinished);
-    _executerThread->start();
+    QObject::connect(q_ptr, &DAWorkFlow::startExecute, mExecuter, &DA::DAWorkFlowExecuter::startExecute);
+    QObject::connect(mExecuter, &DA::DAWorkFlowExecuter::nodeExecuteFinished, q_ptr, &DAWorkFlow::nodeExecuteFinished);
+    QObject::connect(mExecuter, &DA::DAWorkFlowExecuter::finished, q_ptr, &DAWorkFlow::onExecuteFinished);
+    //结束后，线程也结束
+    QObject::connect(mExecuter, &DA::DAWorkFlowExecuter::finished, mExecuterThread, &QThread::quit);
+    mExecuterThread->start();
 }
 
-void DAWorkFlowPrivate::recordNode(DAAbstractNode::SharedPointer& node)
+void DAWorkFlow::PrivateData::recordNode(DAAbstractNode::SharedPointer& node)
 {
-    _nodes.append(node);
-    _idToNode[ node->getID() ] = node;
+    mNodes.append(node);
+    mIdToNode[ node->getID() ] = node;
 }
 
 //==============================================================
 // DAWorkFlow
 //==============================================================
 
-DAWorkFlow::DAWorkFlow(QObject* p) : QObject(p), d_ptr(new DAWorkFlowPrivate(this))
+DAWorkFlow::DAWorkFlow(QObject* p) : QObject(p), DA_PIMPL_CONSTRUCT
 {
     qRegisterMetaType< DAAbstractNode::SharedPointer >("DAAbstractNode::SharedPointer");
 }
@@ -99,9 +93,9 @@ void DAWorkFlow::registFactory(DAAbstractNodeFactory* factory)
 
     for (const DANodeMetaData& m : qAsConst(mds)) {
         qDebug() << "registFactory m=" << m.getNodePrototype();
-        d_ptr->_metaToFactory[ m ] = factory;
+        d_ptr->mMetaToFactory[ m ] = factory;
     }
-    d_ptr->_factorys[ factory->factoryPrototypes() ] = factory;
+    d_ptr->mFactorys[ factory->factoryPrototypes() ] = factory;
     factory->registWorkflow(this);
     connect(factory, &DAAbstractNodeFactory::destroyed, this, &DAWorkFlow::onFactoryDestory);
 }
@@ -123,7 +117,7 @@ void DAWorkFlow::registFactorys(const QList< DAAbstractNodeFactory* > factorys)
  */
 QList< DAAbstractNodeFactory* > DAWorkFlow::factorys() const
 {
-    return d_ptr->_factorys.values();
+    return d_ptr->mFactorys.values();
 }
 
 /**
@@ -147,7 +141,7 @@ QList< DAAbstractNodeFactory* > DAWorkFlow::usedFactorys() const
  */
 int DAWorkFlow::getFactoryCount() const
 {
-    return d_ptr->_factorys.size();
+    return d_ptr->mFactorys.size();
 }
 
 /**
@@ -157,7 +151,7 @@ int DAWorkFlow::getFactoryCount() const
  */
 DAAbstractNodeFactory* DAWorkFlow::getFactory(const QString& factoryPrototypes)
 {
-    return d_ptr->_factorys.value(factoryPrototypes, nullptr);
+    return d_ptr->mFactorys.value(factoryPrototypes, nullptr);
 }
 
 /**
@@ -168,7 +162,7 @@ DAAbstractNodeFactory* DAWorkFlow::getFactory(const QString& factoryPrototypes)
 DANodeMetaData DAWorkFlow::getNodeMetaData(const QString& protoType) const
 {
     DANodeMetaData data;
-    for (auto iter = d_ptr->_metaToFactory.constBegin(); iter != d_ptr->_metaToFactory.constEnd(); ++iter) {
+    for (auto iter = d_ptr->mMetaToFactory.constBegin(); iter != d_ptr->mMetaToFactory.constEnd(); ++iter) {
         DANodeMetaData data = iter.key();
         if (!data.getNodePrototype().compare(protoType)) {
             return (data);
@@ -180,14 +174,14 @@ DANodeMetaData DAWorkFlow::getNodeMetaData(const QString& protoType) const
 /**
  * @brief 工作流创建节点，FCWorkFlow保留节点的内存管理权
  *
- * 此函数会触发nodeAdded信号
+ * 此函数仅仅创建节点，不会添加到工作流中
  * @param md
  * @return
  *
  */
 DAAbstractNode::SharedPointer DAWorkFlow::createNode(const DANodeMetaData& md)
 {
-    DAAbstractNodeFactory* factory = d_ptr->_metaToFactory.value(md, nullptr);
+    DAAbstractNodeFactory* factory = d_ptr->mMetaToFactory.value(md, nullptr);
     if (factory == nullptr) {
         return (nullptr);
     }
@@ -197,7 +191,8 @@ DAAbstractNode::SharedPointer DAWorkFlow::createNode(const DANodeMetaData& md)
     }
     node->registFactory(factory);
     node->registWorkflow(this);
-    addNode(node);
+    //单一职责原则，不添加
+    //    addNode(node);
     return (node);
 }
 
@@ -227,7 +222,7 @@ void DAWorkFlow::addNode(DAAbstractNode::SharedPointer n)
  */
 QList< DAAbstractNode::SharedPointer > DAWorkFlow::nodes() const
 {
-    return d_ptr->_nodes;
+    return d_ptr->mNodes;
 }
 
 /**
@@ -242,8 +237,8 @@ void DAWorkFlow::clear()
         node->unregistWorkflow();
         node->detachAll();
     }
-    d_ptr->_nodes.clear();
-    d_ptr->_idToNode.clear();
+    d_ptr->mNodes.clear();
+    d_ptr->mIdToNode.clear();
     emit workflowCleared();
 }
 
@@ -257,7 +252,7 @@ void DAWorkFlow::clear()
 void DAWorkFlow::removeNode(const DAAbstractNode::SharedPointer& n)
 {
     //先判断是否有node，没有就跳过
-    if (!d_ptr->_nodes.contains(n)) {
+    if (!d_ptr->mNodes.contains(n)) {
         return;
     }
     DAAbstractNodeFactory* f = n->factory();
@@ -267,8 +262,18 @@ void DAWorkFlow::removeNode(const DAAbstractNode::SharedPointer& n)
     emit nodeStartRemove(n);
     n->detachAll();
     n->unregistWorkflow();
-    d_ptr->_nodes.removeAll(n);
-    d_ptr->_idToNode.remove(n->getID());
+    d_ptr->mNodes.removeAll(n);
+    d_ptr->mIdToNode.remove(n->getID());
+}
+
+/**
+ * @brief 在工作流中是否存在id
+ * @param id
+ * @return
+ */
+bool DAWorkFlow::hasNodeID(const DAAbstractNode::IdType id)
+{
+    return d_ptr->mIdToNode.contains(id);
 }
 
 /**
@@ -278,7 +283,7 @@ void DAWorkFlow::removeNode(const DAAbstractNode::SharedPointer& n)
  */
 DAAbstractNode::SharedPointer DAWorkFlow::getNode(const DAAbstractNode::IdType id)
 {
-    return d_ptr->_idToNode.value(id, nullptr);
+    return d_ptr->mIdToNode.value(id, nullptr);
 }
 
 /**
@@ -337,7 +342,7 @@ void DAWorkFlow::loadExternInfoFromXml(const QDomElement* nodeElement)
  */
 void DAWorkFlow::setStartNode(DAAbstractNode::SharedPointer p)
 {
-    d_ptr->_startNode = p;
+    d_ptr->mStartNode = p;
 }
 
 /**
@@ -346,7 +351,7 @@ void DAWorkFlow::setStartNode(DAAbstractNode::SharedPointer p)
  */
 DAAbstractNode::SharedPointer DAWorkFlow::getStartNode() const
 {
-    return d_ptr->_startNode.lock();
+    return d_ptr->mStartNode.lock();
 }
 
 /**
@@ -362,10 +367,10 @@ void DAWorkFlow::exec()
         return;
     }
 
-    if (nullptr == d_ptr->_executer) {
+    if (nullptr == d_ptr->mExecuter) {
         d_ptr->createExecuter();
     }
-    d_ptr->_isExecuting = true;
+    d_ptr->mIsExecuting = true;
     qDebug() << tr("workflow start run");
     emit startExecute();
 }
@@ -376,7 +381,7 @@ void DAWorkFlow::exec()
  */
 bool DAWorkFlow::isRunning() const
 {
-    return d_ptr->_isExecuting;
+    return d_ptr->mIsExecuting;
 }
 
 /**
@@ -385,7 +390,7 @@ bool DAWorkFlow::isRunning() const
  */
 int DAWorkFlow::size() const
 {
-    return d_ptr->_nodes.size();
+    return d_ptr->mNodes.size();
 }
 
 /**
@@ -394,7 +399,7 @@ int DAWorkFlow::size() const
  */
 bool DAWorkFlow::isEmpty() const
 {
-    return d_ptr->_nodes.isEmpty();
+    return d_ptr->mNodes.isEmpty();
 }
 
 /**
@@ -403,7 +408,7 @@ bool DAWorkFlow::isEmpty() const
  */
 QString DAWorkFlow::getLastErrorString() const
 {
-    return d_ptr->_lastErr;
+    return d_ptr->mLastErr;
 }
 
 /**
@@ -414,7 +419,7 @@ QString DAWorkFlow::getLastErrorString() const
  */
 void DAWorkFlow::registStartWorkflowCallback(DAWorkFlow::CallbackPrepareStartExecute fn)
 {
-    d_ptr->_prepareStartCallback.append(fn);
+    d_ptr->mPrepareStartCallback.append(fn);
 }
 /**
  * @brief 注册结束执行工作流的回调
@@ -424,7 +429,7 @@ void DAWorkFlow::registStartWorkflowCallback(DAWorkFlow::CallbackPrepareStartExe
  */
 void DAWorkFlow::registEndWorkflowCallback(DAWorkFlow::CallbackPrepareEndExecute fn)
 {
-    d_ptr->_prepareEndCallback.append(fn);
+    d_ptr->mPrepareEndCallback.append(fn);
 }
 
 /**
@@ -433,7 +438,7 @@ void DAWorkFlow::registEndWorkflowCallback(DAWorkFlow::CallbackPrepareEndExecute
  */
 QList< DAWorkFlow::CallbackPrepareStartExecute > DAWorkFlow::getStartWorkflowCallback() const
 {
-    return d_ptr->_prepareStartCallback;
+    return d_ptr->mPrepareStartCallback;
 }
 /**
  * @brief 获取所有的结束回调函数
@@ -441,7 +446,7 @@ QList< DAWorkFlow::CallbackPrepareStartExecute > DAWorkFlow::getStartWorkflowCal
  */
 QList< DAWorkFlow::CallbackPrepareEndExecute > DAWorkFlow::getEndWorkflowCallback() const
 {
-    return d_ptr->_prepareEndCallback;
+    return d_ptr->mPrepareEndCallback;
 }
 
 void DAWorkFlow::emitNodeNameChanged(DAAbstractNode::SharedPointer node, const QString& oldName, const QString& newName)
@@ -457,19 +462,19 @@ void DAWorkFlow::emitNodeNameChanged(DAAbstractNode::SharedPointer node, const Q
 void DAWorkFlow::onFactoryDestory(QObject* fac)
 {
     //清除_metaToFactory信息
-    auto i = d_ptr->_metaToFactory.begin();
-    while (i != d_ptr->_metaToFactory.end()) {
+    auto i = d_ptr->mMetaToFactory.begin();
+    while (i != d_ptr->mMetaToFactory.end()) {
         if (i.value() == (DAAbstractNodeFactory*)fac) {
-            i = d_ptr->_metaToFactory.erase(i);
+            i = d_ptr->mMetaToFactory.erase(i);
         } else {
             ++i;
         }
     }
     //清除_factorys信息
-    auto k = d_ptr->_factorys.begin();
-    while (k != d_ptr->_factorys.end()) {
+    auto k = d_ptr->mFactorys.begin();
+    while (k != d_ptr->mFactorys.end()) {
         if (k.value() == (DAAbstractNodeFactory*)fac) {
-            k = d_ptr->_factorys.erase(k);
+            k = d_ptr->mFactorys.erase(k);
         } else {
             ++k;
         }
@@ -478,10 +483,11 @@ void DAWorkFlow::onFactoryDestory(QObject* fac)
 
 void DAWorkFlow::onExecuteFinished(bool success)
 {
-    d_ptr->_isExecuting = false;
+    d_ptr->mIsExecuting = false;
     //无需quit，已经结束了
     // d_ptr->_executerThread->quit();
-    d_ptr->_executerThread = nullptr;
-    d_ptr->_executer       = nullptr;
+    d_ptr->mExecuterThread = nullptr;
+    d_ptr->mExecuter       = nullptr;
     emit finished(success);
 }
+}  // end of namespace DA

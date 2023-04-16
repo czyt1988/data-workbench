@@ -1,6 +1,6 @@
 ﻿#ifndef DAAPPUI_H
 #define DAAPPUI_H
-#include "DAAppUIInterface.h"
+#include "DAUIInterface.h"
 namespace DA
 {
 class DAAppCore;
@@ -11,7 +11,7 @@ class DAAppRibbonArea;
 /**
  * @brief 总体界面接口，负责生成DAAppDockingArea和DAAppRibbonArea
  */
-class DAAppUI : public DAAppUIInterface
+class DAAppUI : public DAUIInterface
 {
     Q_OBJECT
 public:
@@ -21,10 +21,10 @@ public:
     virtual QMainWindow* getMainWindow() const override;
 
     //获取界面的docking区域
-    virtual DAAppDockingAreaInterface* getDockingArea() override;
+    virtual DADockingAreaInterface* getDockingArea() override;
 
     //获取界面的ribbon区域
-    virtual DAAppRibbonAreaInterface* getRibbonArea() override;
+    virtual DARibbonAreaInterface* getRibbonArea() override;
 
     //创建ui
     void createUi();

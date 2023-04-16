@@ -6,11 +6,10 @@
 #include <QPolygonF>
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DAChartPolygonRegionSelectEditor)
 class DAFIGURE_API DAChartPolygonRegionSelectEditor : public DAAbstractRegionSelectEditor
 {
     Q_OBJECT
-    DA_IMPL(DAChartPolygonRegionSelectEditor)
+    DA_DECLARE_PRIVATE(DAChartPolygonRegionSelectEditor)
 public:
     DAChartPolygonRegionSelectEditor(QwtPlot* parent);
     virtual ~DAChartPolygonRegionSelectEditor();

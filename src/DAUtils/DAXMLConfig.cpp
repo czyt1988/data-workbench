@@ -11,51 +11,51 @@
 #include "DAXMLFileInterface.h"
 #define CONFIG_FILE_NAME "saconfig.cfg"
 
-#define CONFIG_ROOT_NAME          "config"
-#define CONFIG_GROUP_NAME         "group"
-#define CONFIG_CONTENT_PROP_NAME  "name"
-#define CONFIG_KEY_NAME           "key"
+#define CONFIG_ROOT_NAME "config"
+#define CONFIG_GROUP_NAME "group"
+#define CONFIG_CONTENT_PROP_NAME "name"
+#define CONFIG_KEY_NAME "key"
 #define CONFIG_KEY_PROP_NAME_NAME "name"
 #define CONFIG_KEY_PROP_TYPE_NAME "type"
-#define CONFIG_KEY_LIST_NAME      "list"
+#define CONFIG_KEY_LIST_NAME "list"
 
 namespace DA
 {
 
-class DAXMLConfigPrivate
+class DAXMLConfig::PrivateData
 {
-    DA_IMPL_PUBLIC(DAXMLConfig)
+    DA_DECLARE_PUBLIC(DAXMLConfig)
 public:
-    DAXMLConfigPrivate(DAXMLConfig* par);
-    DAXMLConfigPrivate(DAXMLConfig* par, const QString& cfgPath);
-    DAXMLConfigPrivate(const DAXMLConfigPrivate& other, DAXMLConfig* p);
+    PrivateData(DAXMLConfig* par);
+    PrivateData(DAXMLConfig* par, const QString& cfgPath);
+    PrivateData(const PrivateData& other, DAXMLConfig* p);
     bool setCfgFile(const QString& cfgPath);
     bool save(const QString& saveFilePath);
 
 public:
-    QString m_cfgPath;
-    bool m_isDirty;
+    QString mConfigFilePath;
+    bool mIsDirty { false };
 };
 
-DAXMLConfigPrivate::DAXMLConfigPrivate(DAXMLConfig* par) : q_ptr(par), m_isDirty(false)
+DAXMLConfig::PrivateData::PrivateData(DAXMLConfig* par) : q_ptr(par), mIsDirty(false)
 {
 }
 
-DAXMLConfigPrivate::DAXMLConfigPrivate(DAXMLConfig* par, const QString& cfgPath) : q_ptr(par), m_isDirty(false)
+DAXMLConfig::PrivateData::PrivateData(DAXMLConfig* par, const QString& cfgPath) : q_ptr(par), mIsDirty(false)
 {
     setCfgFile(cfgPath);
 }
 
-DAXMLConfigPrivate::DAXMLConfigPrivate(const DAXMLConfigPrivate& other, DAXMLConfig* p)
+DAXMLConfig::PrivateData::PrivateData(const PrivateData& other, DAXMLConfig* p)
 {
-    this->q_ptr     = p;
-    this->m_cfgPath = other.m_cfgPath;
-    this->m_isDirty = other.m_isDirty;
+    this->q_ptr           = p;
+    this->mConfigFilePath = other.mConfigFilePath;
+    this->mIsDirty        = other.mIsDirty;
 }
 
-bool DAXMLConfigPrivate::setCfgFile(const QString& cfgPath)
+bool DAXMLConfig::PrivateData::setCfgFile(const QString& cfgPath)
 {
-    m_cfgPath = cfgPath;
+    mConfigFilePath = cfgPath;
     QFile file(cfgPath);
 
     if (!file.open(QIODevice::ReadWrite)) {
@@ -67,7 +67,7 @@ bool DAXMLConfigPrivate::setCfgFile(const QString& cfgPath)
     return (false);
 }
 
-bool DAXMLConfigPrivate::save(const QString& saveFilePath)
+bool DAXMLConfig::PrivateData::save(const QString& saveFilePath)
 {
     QFile file(saveFilePath);
 
@@ -80,7 +80,7 @@ bool DAXMLConfigPrivate::save(const QString& saveFilePath)
     txt << q_ptr->toString();
     txt.flush();
     file.close();
-    m_isDirty = false;
+    mIsDirty = false;
     return (true);
 }
 
@@ -88,34 +88,32 @@ bool DAXMLConfigPrivate::save(const QString& saveFilePath)
 // DAXMLConfig
 //===================================================
 
-DAXMLConfig::DAXMLConfig() : DAXMLProtocol(), d_ptr(new DAXMLConfigPrivate(this))
+DAXMLConfig::DAXMLConfig() : DAXMLProtocol(), DA_PIMPL_CONSTRUCT
 {
 }
 
-DAXMLConfig::DAXMLConfig(const QString& filepath) : DAXMLProtocol(), d_ptr(new DAXMLConfigPrivate(this, filepath))
+DAXMLConfig::DAXMLConfig(const QString& filepath) : DAXMLProtocol(), d_ptr(new PrivateData(this, filepath))
 {
 }
 
-DAXMLConfig::DAXMLConfig(const DAXMLConfig& other) : DAXMLProtocol()
+DAXMLConfig::DAXMLConfig(const DAXMLConfig& other) : DAXMLProtocol(), d_ptr(new PrivateData(*(other.d_ptr), this))
 {
-    *this = other;
 }
 
 DAXMLConfig::DAXMLConfig(DAXMLConfig&& other) : DAXMLProtocol()
 {
-    this->d_ptr.reset(other.d_ptr.take());
+    this->d_ptr  = std::move(other.d_ptr);
     d_ptr->q_ptr = this;  //这个尤为关键
 }
 
 DAXMLConfig& DAXMLConfig::operator=(const DAXMLConfig& other)
 {
-    // SAXMLProtocolParser::operator =(*(static_cast<const SAXMLProtocolParser*>(&other)));
     if (this == (&other)) {
         return (*this);
     }
-    DAXMLProtocol::operator=(other);
-    this->d_ptr.reset(new DAXMLConfigPrivate(*(other.d_ptr.data()), this));
-    // this->d_ptr->q_ptr = this;//这个尤为关键
+    DAXMLProtocol::operator      =(other);
+    this->d_ptr->mConfigFilePath = other.d_func()->mConfigFilePath;
+    this->d_ptr->mIsDirty        = other.d_func()->mIsDirty;
     return (*this);
 }
 
@@ -139,7 +137,7 @@ bool DAXMLConfig::setFilePath(const QString& filePath)
  */
 QString DAXMLConfig::getFilePath() const
 {
-    return (d_ptr->m_cfgPath);
+    return (d_ptr->mConfigFilePath);
 }
 
 /**
@@ -150,7 +148,7 @@ QString DAXMLConfig::getFilePath() const
  */
 void DAXMLConfig::setValue(const QString& groupName, const QString& keyName, const QVariant& var)
 {
-    d_ptr->m_isDirty = true;
+    d_ptr->mIsDirty = true;
     DAXMLProtocol::setValue(groupName, keyName, var);
 }
 
@@ -161,7 +159,7 @@ void DAXMLConfig::setValue(const QString& groupName, const QString& keyName, con
  */
 void DAXMLConfig::setValue(const QString& keyName, const QVariant& var)
 {
-    d_ptr->m_isDirty = true;
+    d_ptr->mIsDirty = true;
     DAXMLProtocol::setValue(keyName, var);
 }
 
@@ -171,7 +169,7 @@ void DAXMLConfig::setValue(const QString& keyName, const QVariant& var)
  */
 bool DAXMLConfig::isDirty() const
 {
-    return (d_ptr->m_isDirty);
+    return (d_ptr->mIsDirty);
 }
 
 /**
@@ -181,10 +179,10 @@ bool DAXMLConfig::isDirty() const
  */
 bool DAXMLConfig::save()
 {
-    if (d_ptr->m_cfgPath.isEmpty()) {
+    if (d_ptr->mConfigFilePath.isEmpty()) {
         return (false);
     }
-    return (saveAs(d_ptr->m_cfgPath));
+    return (saveAs(d_ptr->mConfigFilePath));
 }
 
 /**

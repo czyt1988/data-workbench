@@ -6,7 +6,6 @@ namespace DA
 {
 
 class DAAbstractNodeGraphicsItem;
-DA_IMPL_FORWARD_DECL(DANodeLinkPointDrawDelegate)
 /**
  * @brief linkpoint的绘制代理
  *
@@ -14,7 +13,7 @@ DA_IMPL_FORWARD_DECL(DANodeLinkPointDrawDelegate)
  */
 class DAWORKFLOW_API DANodeLinkPointDrawDelegate
 {
-    DA_IMPL(DANodeLinkPointDrawDelegate)
+    DA_DECLARE_PRIVATE(DANodeLinkPointDrawDelegate)
 public:
     DANodeLinkPointDrawDelegate(DAAbstractNodeGraphicsItem* i = nullptr);
     virtual ~DANodeLinkPointDrawDelegate();

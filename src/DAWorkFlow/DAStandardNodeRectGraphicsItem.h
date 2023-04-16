@@ -1,17 +1,16 @@
-#ifndef DASTANDARDNODERECTGRAPHICSITEM_H
+﻿#ifndef DASTANDARDNODERECTGRAPHICSITEM_H
 #define DASTANDARDNODERECTGRAPHICSITEM_H
 #include "DAWorkFlowGlobal.h"
 #include "DAAbstractNodeGraphicsItem.h"
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DAStandardNodeRectGraphicsItem)
 /**
  * @brief 标准的可resize的rect GraphicsItem,可以作为节点的内容显示
  */
 class DAWORKFLOW_API DAStandardNodeRectGraphicsItem : public DAAbstractNodeGraphicsItem
 {
     Q_OBJECT
-    DA_IMPL(DAStandardNodeRectGraphicsItem)
+    DA_DECLARE_PRIVATE(DAStandardNodeRectGraphicsItem)
 public:
     enum
     {

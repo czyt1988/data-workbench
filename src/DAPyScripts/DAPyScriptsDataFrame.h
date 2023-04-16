@@ -10,7 +10,6 @@
 
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DAPyScriptsDataFrame)
 /**
  * @brief 对da_dataframe.py的封装，集成了dataframe的操作
  *
@@ -18,7 +17,7 @@ DA_IMPL_FORWARD_DECL(DAPyScriptsDataFrame)
  */
 class DAPYSCRIPTS_API DAPyScriptsDataFrame : public DAPyModule
 {
-    DA_IMPL(DAPyScriptsDataFrame)
+    DA_DECLARE_PRIVATE(DAPyScriptsDataFrame)
 public:
     DAPyScriptsDataFrame();
     ~DAPyScriptsDataFrame();

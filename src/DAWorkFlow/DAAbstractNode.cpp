@@ -1,4 +1,4 @@
-#include "DAAbstractNode.h"
+﻿#include "DAAbstractNode.h"
 #include "DAAbstractNodeGraphicsItem.h"
 #include "DANodeMetaData.h"
 #include "DAWorkFlow.h"
@@ -16,9 +16,9 @@
 
 namespace DA
 {
-class DAAbstractNodePrivate
+class DAAbstractNode::PrivateData
 {
-    DA_IMPL_PUBLIC(DAAbstractNode)
+    DA_DECLARE_PUBLIC(DAAbstractNode)
 public:
     class LinkData
     {
@@ -38,16 +38,16 @@ public:
     QList< LinkData > getInputLinkData(const QString& k);
 
 public:
-    DAAbstractNodePrivate(DAAbstractNode* p);
-    DANodeMetaData _meta;
-    QList< LinkData > _linksInfo;            ///< 记录所有连接信息
-    QHash< QString, QVariant > _inputData;   ///< 节点输入数据
-    QHash< QString, QVariant > _outputData;  ///< 节点输出数据
-    QHash< QString, QVariant > _propertys;   ///< 属性数据
-    DAAbstractNode::IdType _id;
-    QPointer< DAWorkFlow > _workflow;            ///< 持有的workflow
-    DAAbstractNodeGraphicsItem* _item;           ///< node 对应的item
-    QPointer< DAAbstractNodeFactory > _factory;  ///< 保存节点的工厂，工厂的设置在DAWorkFlow::createNode中
+    PrivateData(DAAbstractNode* p);
+    DANodeMetaData mMetaData;
+    QList< LinkData > mLinksInfo;            ///< 记录所有连接信息
+    QHash< QString, QVariant > mInputData;   ///< 节点输入数据
+    QHash< QString, QVariant > mOutputData;  ///< 节点输出数据
+    QHash< QString, QVariant > mPropertys;   ///< 属性数据
+    DAAbstractNode::IdType mId;
+    QPointer< DAWorkFlow > mWorkflow;               ///< 持有的workflow
+    DAAbstractNodeGraphicsItem* mItem { nullptr };  ///< node 对应的item
+    QPointer< DAAbstractNodeFactory > mFactory;  ///< 保存节点的工厂，工厂的设置在DAWorkFlow::createNode中
 };
 }
 
@@ -56,24 +56,24 @@ using namespace DA;
 // DAAbstractNodePrivate::LinkData
 //================================================
 
-DAAbstractNodePrivate::LinkData::LinkData()
+DAAbstractNode::PrivateData::LinkData::LinkData()
 {
 }
 
-DAAbstractNodePrivate::LinkData::LinkData(const NodeSharedPtr& inNode, const QString& inKey)
+DAAbstractNode::PrivateData::LinkData::LinkData(const NodeSharedPtr& inNode, const QString& inKey)
     : inputNode(inNode), inputKey(inKey)
 {
 }
 
-DAAbstractNodePrivate::LinkData::LinkData(const DAAbstractNodePrivate::LinkData::NodeSharedPtr& outNode,
-                                          const QString& outKey,
-                                          const DAAbstractNodePrivate::LinkData::NodeSharedPtr& inNode,
-                                          const QString& inKey)
+DAAbstractNode::PrivateData::LinkData::LinkData(const DAAbstractNode::PrivateData::LinkData::NodeSharedPtr& outNode,
+                                                const QString& outKey,
+                                                const DAAbstractNode::PrivateData::LinkData::NodeSharedPtr& inNode,
+                                                const QString& inKey)
     : outputNode(outNode), outputKey(outKey), inputNode(inNode), inputKey(inKey)
 {
 }
 
-bool DAAbstractNodePrivate::LinkData::operator==(const DAAbstractNodePrivate::LinkData& d)
+bool DAAbstractNode::PrivateData::LinkData::operator==(const DAAbstractNode::PrivateData::LinkData& d)
 {
     return (inputNode.lock() == d.inputNode.lock()) && (inputKey == d.inputKey)
            && (outputNode.lock() == d.outputNode.lock()) && (outputKey == d.outputKey);
@@ -84,10 +84,10 @@ bool DAAbstractNodePrivate::LinkData::operator==(const DAAbstractNodePrivate::Li
  * @param k
  * @return
  */
-QList< DAAbstractNodePrivate::LinkData > DAAbstractNodePrivate::getOutputLinkData(const QString& k)
+QList< DAAbstractNode::PrivateData::LinkData > DAAbstractNode::PrivateData::getOutputLinkData(const QString& k)
 {
-    QList< DAAbstractNodePrivate::LinkData > res;
-    for (const LinkData& d : qAsConst(_linksInfo)) {
+    QList< DAAbstractNode::PrivateData::LinkData > res;
+    for (const LinkData& d : qAsConst(mLinksInfo)) {
         if (d.outputNode.lock().get() == q_ptr && d.outputKey == k) {
             res.append(d);
         }
@@ -100,10 +100,10 @@ QList< DAAbstractNodePrivate::LinkData > DAAbstractNodePrivate::getOutputLinkDat
  * @param k
  * @return
  */
-QList< DAAbstractNodePrivate::LinkData > DAAbstractNodePrivate::getInputLinkData(const QString& k)
+QList< DAAbstractNode::PrivateData::LinkData > DAAbstractNode::PrivateData::getInputLinkData(const QString& k)
 {
-    QList< DAAbstractNodePrivate::LinkData > res;
-    for (const LinkData& d : qAsConst(_linksInfo)) {
+    QList< DAAbstractNode::PrivateData::LinkData > res;
+    for (const LinkData& d : qAsConst(mLinksInfo)) {
         if (d.inputNode.lock().get() == q_ptr && d.inputKey == k) {
             res.append(d);
         }
@@ -111,9 +111,13 @@ QList< DAAbstractNodePrivate::LinkData > DAAbstractNodePrivate::getInputLinkData
     return res;
 }
 
-DAAbstractNodePrivate::DAAbstractNodePrivate(DAAbstractNode* p) : q_ptr(p), _item(nullptr)
+//==============================================================
+// DAAbstractNode::PrivateData
+//==============================================================
+
+DAAbstractNode::PrivateData::PrivateData(DAAbstractNode* p) : q_ptr(p)
 {
-    _id = p->generateID();
+    mId = p->generateID();
 }
 
 //================================================
@@ -128,7 +132,7 @@ DAAbstractNode::LinkInfo::LinkInfo()
 // DAAbstractNode
 //================================================
 
-DAAbstractNode::DAAbstractNode() : d_ptr(new DAAbstractNodePrivate(this))
+DAAbstractNode::DAAbstractNode() : d_ptr(new DAAbstractNode::PrivateData(this))
 {
 }
 
@@ -146,7 +150,7 @@ DAAbstractNode::~DAAbstractNode()
  */
 QString DAAbstractNode::getNodeName() const
 {
-    return (d_ptr->_meta.getNodeName());
+    return (d_ptr->mMetaData.getNodeName());
 }
 
 /**
@@ -157,10 +161,10 @@ QString DAAbstractNode::getNodeName() const
  */
 void DAAbstractNode::setNodeName(const QString& name)
 {
-    QString oldname = d_ptr->_meta.getNodeName();
-    d_ptr->_meta.setNodeName(name);
-    if (d_ptr->_workflow) {
-        d_ptr->_workflow->emitNodeNameChanged(shared_from_this(), oldname, name);
+    QString oldname = d_ptr->mMetaData.getNodeName();
+    d_ptr->mMetaData.setNodeName(name);
+    if (d_ptr->mWorkflow) {
+        d_ptr->mWorkflow->emitNodeNameChanged(shared_from_this(), oldname, name);
     }
 }
 
@@ -170,7 +174,7 @@ void DAAbstractNode::setNodeName(const QString& name)
  */
 QString DAAbstractNode::getNodePrototype() const
 {
-    return (d_ptr->_meta.getNodePrototype());
+    return (d_ptr->mMetaData.getNodePrototype());
 }
 
 /**
@@ -179,7 +183,7 @@ QString DAAbstractNode::getNodePrototype() const
  */
 QString DAAbstractNode::getNodeGroup() const
 {
-    return d_ptr->_meta.getGroup();
+    return d_ptr->mMetaData.getGroup();
 }
 
 /**
@@ -188,7 +192,7 @@ QString DAAbstractNode::getNodeGroup() const
  */
 QIcon DAAbstractNode::getIcon() const
 {
-    return (d_ptr->_meta.getIcon());
+    return (d_ptr->mMetaData.getIcon());
 }
 
 /**
@@ -197,7 +201,7 @@ QIcon DAAbstractNode::getIcon() const
  */
 void DAAbstractNode::setIcon(const QIcon& icon)
 {
-    d_ptr->_meta.setIcon(icon);
+    d_ptr->mMetaData.setIcon(icon);
 }
 
 /**
@@ -206,7 +210,7 @@ void DAAbstractNode::setIcon(const QIcon& icon)
  */
 const DANodeMetaData& DAAbstractNode::metaData() const
 {
-    return (d_ptr->_meta);
+    return (d_ptr->mMetaData);
 }
 
 /**
@@ -215,7 +219,7 @@ const DANodeMetaData& DAAbstractNode::metaData() const
  */
 DANodeMetaData& DAAbstractNode::metaData()
 {
-    return (d_ptr->_meta);
+    return (d_ptr->mMetaData);
 }
 
 /**
@@ -225,7 +229,7 @@ DANodeMetaData& DAAbstractNode::metaData()
  */
 QString DAAbstractNode::getNodeTooltip() const
 {
-    return (d_ptr->_meta.getNodeTooltip());
+    return (d_ptr->mMetaData.getNodeTooltip());
 }
 
 /**
@@ -235,7 +239,7 @@ QString DAAbstractNode::getNodeTooltip() const
  */
 void DAAbstractNode::setNodeTooltip(const QString& tp)
 {
-    d_ptr->_meta.setNodeTooltip(tp);
+    d_ptr->mMetaData.setNodeTooltip(tp);
 }
 
 /**
@@ -244,7 +248,7 @@ void DAAbstractNode::setNodeTooltip(const QString& tp)
  */
 void DAAbstractNode::setMetaData(const DANodeMetaData& metadata)
 {
-    d_ptr->_meta = metadata;
+    d_ptr->mMetaData = metadata;
 }
 
 /**
@@ -263,7 +267,7 @@ DAAbstractNode::SharedPointer DAAbstractNode::pointer()
  */
 DAAbstractNode::IdType DAAbstractNode::getID() const
 {
-    return d_ptr->_id;
+    return d_ptr->mId;
 }
 
 /**
@@ -273,7 +277,7 @@ DAAbstractNode::IdType DAAbstractNode::getID() const
  */
 void DAAbstractNode::setID(const IdType& d)
 {
-    d_ptr->_id = d;
+    d_ptr->mId = d;
 }
 
 /**
@@ -283,7 +287,7 @@ void DAAbstractNode::setID(const IdType& d)
  */
 bool DAAbstractNode::hasProperty(const QString& k) const
 {
-    return d_ptr->_propertys.contains(k);
+    return d_ptr->mPropertys.contains(k);
 }
 
 /**
@@ -294,7 +298,7 @@ bool DAAbstractNode::hasProperty(const QString& k) const
  */
 void DAAbstractNode::setProperty(const QString& k, const QVariant& v)
 {
-    d_ptr->_propertys[ k ] = v;
+    d_ptr->mPropertys[ k ] = v;
 }
 
 /**
@@ -306,7 +310,7 @@ void DAAbstractNode::setProperty(const QString& k, const QVariant& v)
  */
 QVariant DAAbstractNode::getProperty(const QString& k, const QVariant& defaultVal) const
 {
-    return d_ptr->_propertys.value(k, defaultVal);
+    return d_ptr->mPropertys.value(k, defaultVal);
 }
 
 /**
@@ -315,7 +319,7 @@ QVariant DAAbstractNode::getProperty(const QString& k, const QVariant& defaultVa
  */
 bool DAAbstractNode::removeProperty(const QString& k)
 {
-    return d_ptr->_propertys.remove(k);
+    return d_ptr->mPropertys.remove(k);
 }
 
 /**
@@ -324,7 +328,7 @@ bool DAAbstractNode::removeProperty(const QString& k)
  */
 QList< QString > DAAbstractNode::getPropertyKeys() const
 {
-    return d_ptr->_propertys.keys();
+    return d_ptr->mPropertys.keys();
 }
 
 /**
@@ -366,7 +370,7 @@ DAAbstractNode::NodeType DAAbstractNode::nodeType() const
  */
 QList< QString > DAAbstractNode::getInputKeys() const
 {
-    return d_ptr->_inputData.keys();
+    return d_ptr->mInputData.keys();
 }
 
 /**
@@ -375,7 +379,7 @@ QList< QString > DAAbstractNode::getInputKeys() const
  */
 QList< QString > DAAbstractNode::getOutputKeys() const
 {
-    return d_ptr->_outputData.keys();
+    return d_ptr->mOutputData.keys();
 }
 
 /**
@@ -384,7 +388,7 @@ QList< QString > DAAbstractNode::getOutputKeys() const
  */
 void DAAbstractNode::addInputKey(const QString& k)
 {
-    d_ptr->_inputData[ k ] = QVariant();
+    d_ptr->mInputData[ k ] = QVariant();
 }
 /**
  * @brief 添加一个输出参数
@@ -392,7 +396,7 @@ void DAAbstractNode::addInputKey(const QString& k)
  */
 void DAAbstractNode::addOutputKey(const QString& k)
 {
-    d_ptr->_outputData[ k ] = QVariant();
+    d_ptr->mOutputData[ k ] = QVariant();
 }
 
 /**
@@ -412,9 +416,9 @@ bool DAAbstractNode::linkTo(const QString& outKey, DAAbstractNode::SharedPointer
         qCritical() << "invalid link [" << inNode->getNodeName() << "] can not find in Key " << inKey;
         return (false);
     }
-    DAAbstractNodePrivate::LinkData ld(pointer(), outKey, inNode, inKey);
-    d_ptr->_linksInfo.append(ld);             //当前记录连接信息
-    inNode->d_func()->_linksInfo.append(ld);  //被连接的节点也记录下连接信息
+    DAAbstractNode::PrivateData::LinkData ld(pointer(), outKey, inNode, inKey);
+    d_ptr->mLinksInfo.append(ld);             //当前记录连接信息
+    inNode->d_func()->mLinksInfo.append(ld);  //被连接的节点也记录下连接信息
     if (DAAbstractNodeFactory* f = factory()) {
         f->nodeLinkSucceed(pointer(), outKey, inNode, inKey);
     }
@@ -431,26 +435,26 @@ bool DAAbstractNode::linkTo(const QString& outKey, DAAbstractNode::SharedPointer
  */
 bool DAAbstractNode::detachLink(const QString& key)
 {
-    QList< DAAbstractNodePrivate::LinkData > outs = d_ptr->getOutputLinkData(key);
-    for (const DAAbstractNodePrivate::LinkData& d : qAsConst(outs)) {
-        d_ptr->_linksInfo.removeAll(d);
+    QList< DAAbstractNode::PrivateData::LinkData > outs = d_ptr->getOutputLinkData(key);
+    for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(outs)) {
+        d_ptr->mLinksInfo.removeAll(d);
         SharedPointer inputNode = d.inputNode.lock();
         if (inputNode && inputNode.get() != this) {
             //说明这个是从本身连接到其他，则其他节点也需要删除这个链接
-            inputNode->d_func()->_linksInfo.removeAll(d);
+            inputNode->d_func()->mLinksInfo.removeAll(d);
             //通知工厂的回调函数
             if (DAAbstractNodeFactory* f = factory()) {
                 f->nodeLinkDetached(d.outputNode.lock(), d.outputKey, inputNode, d.inputKey);
             }
         }
     }
-    QList< DAAbstractNodePrivate::LinkData > ins = d_ptr->getInputLinkData(key);
-    for (const DAAbstractNodePrivate::LinkData& d : qAsConst(ins)) {
-        d_ptr->_linksInfo.removeAll(d);
+    QList< DAAbstractNode::PrivateData::LinkData > ins = d_ptr->getInputLinkData(key);
+    for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(ins)) {
+        d_ptr->mLinksInfo.removeAll(d);
         SharedPointer outputNode = d.outputNode.lock();
         if (outputNode && outputNode.get() != this) {
             //说明这个是从本身连接到其他，则其他节点也需要删除这个链接
-            outputNode->d_func()->_linksInfo.removeAll(d);
+            outputNode->d_func()->mLinksInfo.removeAll(d);
             //通知工厂的回调函数
             if (DAAbstractNodeFactory* f = factory()) {
                 f->nodeLinkDetached(outputNode, d.outputKey, pointer(), d.inputKey);
@@ -487,18 +491,18 @@ void DAAbstractNode::detachAll()
 #endif
     //! 不能直接迭代_toNode过程调用detachToLink，会导致迭代器失效
     //清空关系
-    for (const DAAbstractNodePrivate::LinkData& d : qAsConst(d_ptr->_linksInfo)) {
+    for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(d_ptr->mLinksInfo)) {
         SharedPointer toItem = d.inputNode.lock();
         if (toItem && toItem.get() != this) {
             //说明这个是从本身连接到其他，则其他节点也需要删除这个链接
-            toItem->d_func()->_linksInfo.removeAll(d);
+            toItem->d_func()->mLinksInfo.removeAll(d);
             //通知工厂的回调函数
             if (DAAbstractNodeFactory* f = factory()) {
                 f->nodeLinkDetached(d.outputNode.lock(), d.outputKey, d.inputNode.lock(), d.inputKey);
             }
         }
     }
-    d_ptr->_linksInfo.clear();
+    d_ptr->mLinksInfo.clear();
 }
 
 /**
@@ -515,7 +519,7 @@ void DAAbstractNode::detachAll()
 QList< DAAbstractNode::SharedPointer > DAAbstractNode::getInputNodes() const
 {
     QList< DAAbstractNode::SharedPointer > res;
-    for (const DAAbstractNodePrivate::LinkData& d : qAsConst(d_ptr->_linksInfo)) {
+    for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(d_ptr->mLinksInfo)) {
         SharedPointer toNode = d.inputNode.lock();
         if (toNode.get() == this) {
             //说明这个是其他节点连接到自身的item
@@ -541,7 +545,7 @@ QList< DAAbstractNode::SharedPointer > DAAbstractNode::getInputNodes() const
 QList< DAAbstractNode::SharedPointer > DAAbstractNode::getInputNodes(const QString inputkey) const
 {
     QList< DAAbstractNode::SharedPointer > res;
-    for (const DAAbstractNodePrivate::LinkData& d : qAsConst(d_ptr->_linksInfo)) {
+    for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(d_ptr->mLinksInfo)) {
         if (d.inputKey != inputkey) {
             continue;
         }
@@ -572,7 +576,7 @@ QList< DAAbstractNode::SharedPointer > DAAbstractNode::getInputNodes(const QStri
 QList< DAAbstractNode::SharedPointer > DAAbstractNode::getOutputNodes() const
 {
     QList< DAAbstractNode::SharedPointer > res;
-    for (const DAAbstractNodePrivate::LinkData& d : qAsConst(d_ptr->_linksInfo)) {
+    for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(d_ptr->mLinksInfo)) {
         SharedPointer fromNode = d.outputNode.lock();
         if (fromNode.get() == this) {
             //说明这个是此节点连接到其他的node
@@ -599,7 +603,7 @@ QList< DAAbstractNode::SharedPointer > DAAbstractNode::getOutputNodes() const
 QList< DAAbstractNode::SharedPointer > DAAbstractNode::getOutputNodes(const QString outputkey) const
 {
     QList< DAAbstractNode::SharedPointer > res;
-    for (const DAAbstractNodePrivate::LinkData& d : qAsConst(d_ptr->_linksInfo)) {
+    for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(d_ptr->mLinksInfo)) {
         if (d.outputKey != outputkey) {
             continue;
         }
@@ -627,7 +631,7 @@ int DAAbstractNode::getInputNodesCount() const
              << "-> getInputNodesCount()\n"
                 "    _linksInfo:";
 #endif
-    for (const DAAbstractNodePrivate::LinkData& d : qAsConst(d_ptr->_linksInfo)) {
+    for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(d_ptr->mLinksInfo)) {
 #if DA_DAABSTRACTNODE_DEBUG_PRINT
         qDebug() << "    outputKey=" << d.outputKey << "(" << d.outputNode.lock()->getNodeName()
                  << ")--->inputKey=" << d.inputKey << "(" << d.inputNode.lock()->getNodeName() << ")";
@@ -648,7 +652,7 @@ int DAAbstractNode::getInputNodesCount() const
 int DAAbstractNode::getOutputNodesCount() const
 {
     int res = 0;
-    for (const DAAbstractNodePrivate::LinkData& d : qAsConst(d_ptr->_linksInfo)) {
+    for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(d_ptr->mLinksInfo)) {
         SharedPointer fromNode = d.outputNode.lock();
         if (fromNode.get() == this) {
             //说明这个是此节点连接到其他的node
@@ -665,7 +669,7 @@ int DAAbstractNode::getOutputNodesCount() const
  */
 void DAAbstractNode::setInputData(const QString& key, const QVariant& dp)
 {
-    d_ptr->_inputData[ key ] = dp;
+    d_ptr->mInputData[ key ] = dp;
 }
 
 /**
@@ -675,12 +679,12 @@ void DAAbstractNode::setInputData(const QString& key, const QVariant& dp)
  */
 QVariant DAAbstractNode::getInputData(const QString& key) const
 {
-    return (d_ptr->_inputData.value(key));
+    return (d_ptr->mInputData.value(key));
 }
 
 QVariant DAAbstractNode::getOutputData(const QString& key) const
 {
-    return (d_ptr->_outputData.value(key));
+    return (d_ptr->mOutputData.value(key));
 }
 
 /**
@@ -690,7 +694,7 @@ QVariant DAAbstractNode::getOutputData(const QString& key) const
 QList< DAAbstractNode::LinkInfo > DAAbstractNode::getAllInputLinkInfo() const
 {
     QHash< QString, DAAbstractNode::LinkInfo > res;
-    for (const DAAbstractNodePrivate::LinkData& d : qAsConst(d_ptr->_linksInfo)) {
+    for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(d_ptr->mLinksInfo)) {
         SharedPointer n = d.inputNode.lock();
         if (n.get() == this) {
             //说明输出节点是自己
@@ -716,7 +720,7 @@ QList< DAAbstractNode::LinkInfo > DAAbstractNode::getAllInputLinkInfo() const
 QList< DAAbstractNode::LinkInfo > DAAbstractNode::getAllOutputLinkInfo() const
 {
     QHash< QString, DAAbstractNode::LinkInfo > res;
-    for (const DAAbstractNodePrivate::LinkData& d : qAsConst(d_ptr->_linksInfo)) {
+    for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(d_ptr->mLinksInfo)) {
         SharedPointer n = d.outputNode.lock();
         if (n.get() == this) {  //说明输出节点是自己
             //首先找到输出节点对应的节点
@@ -757,7 +761,7 @@ DAAbstractNode::IdType DAAbstractNode::generateID() const
  */
 DAWorkFlow* DAAbstractNode::workflow() const
 {
-    return d_ptr->_workflow;
+    return d_ptr->mWorkflow;
 }
 
 /**
@@ -766,7 +770,7 @@ DAWorkFlow* DAAbstractNode::workflow() const
  */
 DAAbstractNodeFactory* DAAbstractNode::factory() const
 {
-    return d_ptr->_factory.data();
+    return d_ptr->mFactory.data();
 }
 
 /**
@@ -775,7 +779,7 @@ DAAbstractNodeFactory* DAAbstractNode::factory() const
  */
 DAAbstractNodeGraphicsItem* DAAbstractNode::graphicsItem()
 {
-    return d_ptr->_item;
+    return d_ptr->mItem;
 }
 /**
  * @brief 获取graphicsItem
@@ -783,7 +787,7 @@ DAAbstractNodeGraphicsItem* DAAbstractNode::graphicsItem()
  */
 const DAAbstractNodeGraphicsItem* DAAbstractNode::graphicsItem() const
 {
-    return d_ptr->_item;
+    return d_ptr->mItem;
 }
 
 /**
@@ -794,11 +798,11 @@ const DAAbstractNodeGraphicsItem* DAAbstractNode::graphicsItem() const
  */
 void DAAbstractNode::registItem(DAAbstractNodeGraphicsItem* it)
 {
-    if (d_ptr->_item) {
+    if (d_ptr->mItem) {
         //这种情况说明用户误操作，一般是调用了两次createGraphicsItem
         qCritical() << "node regist item more than one";
     }
-    d_ptr->_item = it;
+    d_ptr->mItem = it;
 }
 
 /**
@@ -807,7 +811,7 @@ void DAAbstractNode::registItem(DAAbstractNodeGraphicsItem* it)
  */
 void DAAbstractNode::unregistItem()
 {
-    d_ptr->_item = nullptr;
+    d_ptr->mItem = nullptr;
 }
 
 /**
@@ -817,7 +821,7 @@ void DAAbstractNode::unregistItem()
  */
 void DAAbstractNode::setOutputData(const QString& key, const QVariant& dp)
 {
-    d_ptr->_outputData[ key ] = dp;
+    d_ptr->mOutputData[ key ] = dp;
 }
 /**
  * @brief 移除输入,如果有数据，数据也会移除
@@ -825,7 +829,7 @@ void DAAbstractNode::setOutputData(const QString& key, const QVariant& dp)
  */
 void DAAbstractNode::removeInputKey(const QString& key)
 {
-    d_ptr->_inputData.remove(key);
+    d_ptr->mInputData.remove(key);
 }
 /**
  * @brief 移除输出,如果有数据，数据也会移除
@@ -833,7 +837,7 @@ void DAAbstractNode::removeInputKey(const QString& key)
  */
 void DAAbstractNode::removeOutputKey(const QString& key)
 {
-    d_ptr->_outputData.remove(key);
+    d_ptr->mOutputData.remove(key);
 }
 
 /**
@@ -842,7 +846,7 @@ void DAAbstractNode::removeOutputKey(const QString& key)
  */
 void DAAbstractNode::registWorkflow(DAWorkFlow* wf)
 {
-    d_ptr->_workflow = wf;
+    d_ptr->mWorkflow = wf;
 }
 
 /**
@@ -851,7 +855,7 @@ void DAAbstractNode::registWorkflow(DAWorkFlow* wf)
  */
 void DAAbstractNode::registFactory(DAAbstractNodeFactory* fc)
 {
-    d_ptr->_factory = fc;
+    d_ptr->mFactory = fc;
 }
 
 /**
@@ -859,7 +863,7 @@ void DAAbstractNode::registFactory(DAAbstractNodeFactory* fc)
  */
 void DAAbstractNode::unregistWorkflow()
 {
-    d_ptr->_workflow = nullptr;
+    d_ptr->mWorkflow = nullptr;
 }
 
 /**
@@ -867,5 +871,5 @@ void DAAbstractNode::unregistWorkflow()
  */
 void DAAbstractNode::unregistFactory()
 {
-    d_ptr->_factory = nullptr;
+    d_ptr->mFactory = nullptr;
 }

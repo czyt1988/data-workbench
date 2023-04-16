@@ -23,6 +23,7 @@
         <file>icon/cancel.svg</file>
         <file>icon/insertColumnRight.svg</file>
         <file>icon/renameColumns.svg</file>
+        <file>icon/setting-common.svg</file>
     </qresource>
     <qresource prefix="/messageType">
         <file>icon/messageType/messageTypeDebug.svg</file>
@@ -41,5 +42,11 @@
         <file>icon/chart-type/chart-spectrocurve.svg</file>
         <file>icon/chart-type/chart-spectrogram.svg</file>
         <file>icon/chart-type/chart-vectorfield.svg</file>
+    </qresource>
+    <qresource prefix="/gui/chart-setting">
+        <file>icon/axisLeftBottom.svg</file>
+        <file>icon/axisLeftTop.svg</file>
+        <file>icon/axisRightBottom.svg</file>
+        <file>icon/axisRightTop.svg</file>
     </qresource>
 </RCC>

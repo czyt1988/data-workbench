@@ -75,10 +75,10 @@ private slots:
 
 private:
     Ui::DADataManageWidget* ui;
-    DADataManager* _dataMgr;  ///< 数据管理器
-    QAction* _actionViewDataListByTable;
-    QAction* _actionViewDataListByTree;
-    QActionGroup* _actionGroup;
+    DADataManager* mDataManager;  ///< 数据管理器
+    QAction* mActionViewDataListByTable;
+    QAction* mActionViewDataListByTree;
+    QActionGroup* mActionGroup;
 };
 }  // end of namespace DA
 #endif  // DADATAMANAGEWIDGET_H

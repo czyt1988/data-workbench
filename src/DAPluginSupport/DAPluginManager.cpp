@@ -4,40 +4,70 @@
 #include <QCoreApplication>
 #include "DAPluginOption.h"
 #include <QLibrary>
+#include <QFile>
+#include <QTextStream>
 namespace DA
 {
-class DAPluginManagerPrivate
+class DAPluginManager::PrivateData
 {
-    DA_IMPL_PUBLIC(DAPluginManager)
+    DA_DECLARE_PUBLIC(DAPluginManager)
 public:
-    DAPluginManagerPrivate(DAPluginManager* p);
+    PrivateData(DAPluginManager* p);
+    //判断是否有ignore文件
+    bool hasIgnoreFile() const;
+    //更新忽略set
+    void updateIgnoreSet();
 
-    QDir _pluginDir;
-    QList< DAPluginOption > _pluginOptions;
-    bool _isLoaded;  ///< 标记是否加载了，可以只加载一次
+public:
+    QDir mPluginDir;
+    QList< DAPluginOption > mPluginOptions;
+    bool mIsLoaded { false };               ///< 标记是否加载了，可以只加载一次
+    QSet< QString > mIgnorePluginBaseName;  ///< 记录忽略插件的基本名字
 };
-}  // namespace DA
-
-//===================================================
-// using DA namespace -- 禁止在头文件using！！
-//===================================================
-
-using namespace DA;
 
 //===================================================
 // DAPluginManagerPrivate
 //===================================================
 
-DAPluginManagerPrivate::DAPluginManagerPrivate(DAPluginManager* p) : q_ptr(p), _isLoaded(false)
+DAPluginManager::PrivateData::PrivateData(DAPluginManager* p) : q_ptr(p)
 {
-    _pluginDir.setPath(QCoreApplication::applicationDirPath() + QDir::separator() + "plugins");
+    mPluginDir.setPath(QDir::toNativeSeparators(QCoreApplication::applicationDirPath() + "/plugins"));
+    updateIgnoreSet();
+}
+
+bool DAPluginManager::PrivateData::hasIgnoreFile() const
+{
+    return mPluginDir.exists(".pluginignore");
+}
+
+void DAPluginManager::PrivateData::updateIgnoreSet()
+{
+    if (!hasIgnoreFile()) {
+        return;
+    }
+    QFile ignoreFile(mPluginDir.absoluteFilePath(".pluginignore"));
+    if (!ignoreFile.open(QIODevice::ReadOnly)) {
+        return;
+    }
+    QTextStream ss(&ignoreFile);
+    while (!ss.atEnd()) {
+        QString line = ss.readLine();
+        line         = line.trimmed();
+        if (line.isEmpty()) {
+            continue;
+        }
+        if (line.at(0) == '#') {
+            continue;
+        }
+        mIgnorePluginBaseName.insert(line.toLower());
+    }
 }
 
 //===================================================
 // DAPluginManager
 //===================================================
 
-DAPluginManager::DAPluginManager(QObject* p) : QObject(p), d_ptr(new DAPluginManagerPrivate(this))
+DAPluginManager::DAPluginManager(QObject* p) : QObject(p), DA_PIMPL_CONSTRUCT
 {
 }
 
@@ -67,10 +97,14 @@ void DAPluginManager::setIgnoreList(const QStringList ignorePluginsName)
  */
 void DAPluginManager::load(DACoreInterface* c)
 {
-    QFileInfoList fileInfos = d_ptr->_pluginDir.entryInfoList(QDir::Files);
+    QFileInfoList fileInfos = d_ptr->mPluginDir.entryInfoList(QDir::Files);
 
-    qInfo() << tr("plugin dir is:%1").arg(d_ptr->_pluginDir.absolutePath());
+    qInfo() << tr("plugin dir is:%1").arg(d_ptr->mPluginDir.absolutePath());
     for (const QFileInfo& fi : qAsConst(fileInfos)) {
+        if (d_ptr->mIgnorePluginBaseName.contains(fi.baseName().toLower())) {
+            qInfo() << tr("ignore plugin %1").arg(fi.baseName());
+            continue;
+        }
         const QString filepath = fi.absoluteFilePath();
         if (!QLibrary::isLibrary(filepath)) {
             qWarning() << tr(" ignore invalid file:%1").arg(fi.absoluteFilePath());
@@ -82,14 +116,14 @@ void DAPluginManager::load(DACoreInterface* c)
             qDebug() << tr("can not load plugin:%1").arg(fi.absoluteFilePath());
             continue;
         }
-        d_ptr->_pluginOptions.append(pluginopt);
+        d_ptr->mPluginOptions.append(pluginopt);
     }
-    d_ptr->_isLoaded = true;
+    d_ptr->mIsLoaded = true;
 }
 
 bool DAPluginManager::isLoaded() const
 {
-    return (d_ptr->_isLoaded);
+    return (d_ptr->mIsLoaded);
 }
 
 /**
@@ -97,7 +131,7 @@ bool DAPluginManager::isLoaded() const
  */
 void DAPluginManager::setPluginPath(const QString& path)
 {
-    d_ptr->_pluginDir.setPath(path);
+    d_ptr->mPluginDir.setPath(path);
 }
 
 /**
@@ -106,7 +140,7 @@ void DAPluginManager::setPluginPath(const QString& path)
  */
 int DAPluginManager::getPluginCount() const
 {
-    return (d_ptr->_pluginOptions.size());
+    return (d_ptr->mPluginOptions.size());
 }
 
 /**
@@ -117,7 +151,7 @@ QList< QString > DAPluginManager::getPluginNames() const
 {
     QList< QString > res;
 
-    for (const DAPluginOption& opt : qAsConst(d_ptr->_pluginOptions)) {
+    for (const DAPluginOption& opt : qAsConst(d_ptr->mPluginOptions)) {
         res.append(opt.getPluginName());
     }
     return (res);
@@ -129,18 +163,20 @@ QList< QString > DAPluginManager::getPluginNames() const
  */
 QList< DAPluginOption > DAPluginManager::getPluginOptions() const
 {
-    return (d_ptr->_pluginOptions);
+    return (d_ptr->mPluginOptions);
 }
 
-QDebug operator<<(QDebug debug, const DAPluginManager& fmg)
+}  // namespace DA
+
+QDebug operator<<(QDebug debug, const DA::DAPluginManager& fmg)
 {
     QDebugStateSaver saver(debug);
 
-    debug.nospace() << DAPluginManager::tr("Plugin Manager Info:is loaded=%1,plugin counts=%2").arg(fmg.isLoaded()).arg(fmg.getPluginCount())
+    debug.nospace() << DA::DAPluginManager::tr("Plugin Manager Info:is loaded=%1,plugin counts=%2").arg(fmg.isLoaded()).arg(fmg.getPluginCount())
                     << endl;
-    QList< DAPluginOption > opts = fmg.getPluginOptions();
+    QList< DA::DAPluginOption > opts = fmg.getPluginOptions();
 
-    for (const DAPluginOption& opt : qAsConst(opts)) {
+    for (const DA::DAPluginOption& opt : qAsConst(opts)) {
         debug.nospace() << opt;
     }
     return (debug);

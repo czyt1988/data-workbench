@@ -4,8 +4,8 @@ namespace DA
 
 DADataPySeries::DADataPySeries(const DAPySeries& d)
 {
-    _pyObject = d;
-    _ser      = d;
+    mPyObject = d;
+    mSeries      = d;
 }
 
 DAAbstractData::DataType DADataPySeries::getDataType() const
@@ -25,11 +25,11 @@ bool DADataPySeries::setValue(const QVariant& v)
 
 DAPySeries& DADataPySeries::series()
 {
-    return _ser;
+    return mSeries;
 }
 
 const DAPySeries& DADataPySeries::series() const
 {
-    return _ser;
+    return mSeries;
 }
 }

@@ -9,8 +9,7 @@ class QUndoStack;
 namespace DA
 {
 class DACoreInterface;
-class DAAppUIInterface;
-DA_IMPL_FORWARD_DECL(DACommandInterface)
+class DAUIInterface;
 /**
  * @brief 命令接口
  *
@@ -19,12 +18,12 @@ DA_IMPL_FORWARD_DECL(DACommandInterface)
 class DAINTERFACE_API DACommandInterface : public DABaseInterface
 {
     Q_OBJECT
-    DA_IMPL(DACommandInterface)
+    DA_DECLARE_PRIVATE(DACommandInterface)
 public:
-    DACommandInterface(DAAppUIInterface* u);
+    DACommandInterface(DAUIInterface* u);
     ~DACommandInterface();
     //获取DAAppUIInterface
-    DAAppUIInterface* ui() const;
+    DAUIInterface* ui() const;
     //获取undo/redoGroup
     QUndoGroup& undoGroup();
     //添加stack

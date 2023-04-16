@@ -32,10 +32,10 @@ int DASettingWidget::count() const
  * @param title
  * @param page
  */
-void DASettingWidget::addPage(const QIcon& icon, const QString& title, DAAbstractSettingPage* page)
+void DASettingWidget::addPage(DAAbstractSettingPage* page)
 {
     Q_CHECK_PTR(page);
-    QListWidgetItem* item = new QListWidgetItem(icon, title);
+    QListWidgetItem* item = new QListWidgetItem(page->getSettingPageIcon(), page->getSettingPageTitle());
     ui->listWidget->addItem(item);
     ui->stackedWidget->addWidget(page);
     connect(page, &DAAbstractSettingPage::settingChanged, this, &DASettingWidget::onPageSettingChanged);
@@ -51,7 +51,7 @@ void DASettingWidget::applyAll()
         }
         page->apply();
     }
-    _changedPages.clear();
+    mChangedPages.clear();
 }
 
 void DASettingWidget::onPageSettingChanged()
@@ -60,7 +60,7 @@ void DASettingWidget::onPageSettingChanged()
     if (!page) {
         return;
     }
-    _changedPages.insert(page);
+    mChangedPages.insert(page);
     emit settingChanged();
 }
 }  // DA

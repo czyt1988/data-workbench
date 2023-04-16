@@ -15,7 +15,6 @@ class DAAbstractNodeLinkGraphicsItem;
 class DANodeLinkPointDrawDelegate;
 class DAAbstractNodeWidget;
 class DANodePalette;
-DA_IMPL_FORWARD_DECL(DAAbstractNodeGraphicsItem)
 
 /**
  * @brief 这是节点的基类，workflow所有节点都继承此类
@@ -33,7 +32,7 @@ DA_IMPL_FORWARD_DECL(DAAbstractNodeGraphicsItem)
 class DAWORKFLOW_API DAAbstractNodeGraphicsItem : public DAGraphicsResizeableItem
 {
     Q_OBJECT
-    DA_IMPL(DAAbstractNodeGraphicsItem)
+    DA_DECLARE_PRIVATE(DAAbstractNodeGraphicsItem)
     friend class DAAbstractNodeLinkGraphicsItem;
     friend class DAAbstractNode;
 
@@ -130,6 +129,14 @@ public:
     //保存到xml中
     virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement) const override;
     virtual bool loadFromXml(const QDomElement* itemElement) override;
+    // 创建连接，继承此函数可以生成连接，如果返回nullptr，scene将不会进行连接
+    // 默认使用DAStandardNodeLinkGraphicsItem来进行连接的创建，如果需要自定义连接，可以继承此函数
+    virtual DAAbstractNodeLinkGraphicsItem* createLinkItem(const DA::DANodeLinkPoint& lp);
+    //从fromPoint链接到toItem的toPoint点，如果链接失败返回nullptr
+    DAAbstractNodeLinkGraphicsItem* linkTo(const DA::DANodeLinkPoint& fromPoint,
+                                           DAAbstractNodeGraphicsItem* toItem,
+                                           const DA::DANodeLinkPoint& toPoint);
+    DAAbstractNodeLinkGraphicsItem* linkTo(const QString& fromPointName, DAAbstractNodeGraphicsItem* toItem, const QString& toPointName);
 
 public:
     // prepare系列函数，用于在改变前的回调
@@ -176,8 +183,8 @@ private:
 DAWORKFLOW_API QString enumToString(DA::DAAbstractNodeGraphicsItem::LinkPointLocation e);
 // DA::DAAbstractNodeGraphicsItem::LinkPointLocation的枚举转换
 DAWORKFLOW_API DA::DAAbstractNodeGraphicsItem::LinkPointLocation stringToEnum(
-const QString& s,
-DA::DAAbstractNodeGraphicsItem::LinkPointLocation defaultEnum = DA::DAAbstractNodeGraphicsItem::LinkPointLocationOnLeftSide);
+        const QString& s,
+        DA::DAAbstractNodeGraphicsItem::LinkPointLocation defaultEnum = DA::DAAbstractNodeGraphicsItem::LinkPointLocationOnLeftSide);
 
 }
 #endif  // FCNODEGRAPHICSITEM_H

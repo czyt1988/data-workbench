@@ -19,6 +19,7 @@ public:
     DADialogChartGuide* getDlgDataframeToPointVector();
     //绘制,如果没成功，返回nullptr
     QwtPlotItem* plot(const DAData& data);
+    QwtPlotItem* plot();
 
 public:
     bool _isStartDrag { false };
@@ -60,6 +61,23 @@ QwtPlotItem* DAAppFigureWidgetPrivate::plot(const DAData& data)
     return item;
 }
 
+QwtPlotItem* DAAppFigureWidgetPrivate::plot()
+{
+    DADialogChartGuide* dlg = getDlgDataframeToPointVector();
+    dlg->setDataManager(_dataManager);
+    if (QDialog::Accepted != dlg->exec()) {
+        return nullptr;
+    }
+    DAWaitCursorScoped wait;
+    Q_UNUSED(wait);
+    QwtPlotItem* item = dlg->createPlotItem();
+    if (item) {
+        qDebug() << "DAAppFigureWidget get nullptr item";
+        q_ptr->addItem_(item);
+    }
+    return item;
+}
+
 //==============================================================
 // DAAppFigureWidget
 //==============================================================
@@ -78,6 +96,20 @@ DAAppFigureWidget::~DAAppFigureWidget()
 void DAAppFigureWidget::setDataManager(DADataManager* mgr)
 {
     d_ptr->_dataManager = mgr;
+}
+
+/**
+ * @brief 带引导界面的曲线添加
+ * @return
+ * @note 用户有可能换其他曲线，所以返回不一定是折线
+ */
+QwtPlotItem* DAAppFigureWidget::addCurve_()
+{
+    DAChartWidget* chart = getCurrentChart();
+    if (chart == nullptr) {
+        return nullptr;
+    }
+    return d_ptr->plot();
 }
 
 /**

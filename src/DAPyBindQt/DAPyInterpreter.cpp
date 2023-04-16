@@ -51,7 +51,7 @@ void DAPyInterpreter::initializePythonInterpreter()
 
 void DAPyInterpreter::finalizePythonInterpreter()
 {
-    for (DAPyInterpreter::callback_finalize& f : _finalizeCallbacks) {
+    for (DAPyInterpreter::callback_finalize& f : mFinalizeCallbacks) {
         if (f) {
             f();
         }
@@ -61,5 +61,5 @@ void DAPyInterpreter::finalizePythonInterpreter()
 
 void DAPyInterpreter::registerFinalizeCallback(DAPyInterpreter::callback_finalize fp)
 {
-    _finalizeCallbacks.push_back(fp);
+    mFinalizeCallbacks.push_back(fp);
 }

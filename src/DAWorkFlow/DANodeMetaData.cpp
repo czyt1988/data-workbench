@@ -21,23 +21,23 @@ DANodeMetaData::DANodeMetaData()
 {
 }
 
-DANodeMetaData::DANodeMetaData(const QString& prototype) : m_prototype(prototype)
+DANodeMetaData::DANodeMetaData(const QString& prototype) : mPrototype(prototype)
 {
 }
 
 DANodeMetaData::DANodeMetaData(const QString& prototype, const QString& name, const QIcon& icon, const QString& group)
-    : m_prototype(prototype), m_nodeName(name), m_nodeIcon(icon), m_group(group)
+    : mPrototype(prototype), mNodeName(name), mNodeIcon(icon), mGroup(group)
 {
 }
 
 QString DANodeMetaData::getNodePrototype() const
 {
-    return (m_prototype);
+    return (mPrototype);
 }
 
 void DANodeMetaData::setNodePrototype(const QString& prototype)
 {
-    m_prototype = prototype;
+    mPrototype = prototype;
 }
 
 /**
@@ -46,7 +46,7 @@ void DANodeMetaData::setNodePrototype(const QString& prototype)
  */
 QString DANodeMetaData::getNodeName() const
 {
-    return (m_nodeName);
+    return (mNodeName);
 }
 
 /**
@@ -55,7 +55,7 @@ QString DANodeMetaData::getNodeName() const
  */
 void DANodeMetaData::setNodeName(const QString& name)
 {
-    m_nodeName = name;
+    mNodeName = name;
 }
 
 /**
@@ -64,7 +64,7 @@ void DANodeMetaData::setNodeName(const QString& name)
  */
 QIcon DANodeMetaData::getIcon() const
 {
-    return (m_nodeIcon);
+    return (mNodeIcon);
 }
 
 /**
@@ -73,7 +73,7 @@ QIcon DANodeMetaData::getIcon() const
  */
 void DANodeMetaData::setIcon(const QIcon& icon)
 {
-    m_nodeIcon = icon;
+    mNodeIcon = icon;
 }
 
 /**
@@ -82,7 +82,7 @@ void DANodeMetaData::setIcon(const QIcon& icon)
  */
 QString DANodeMetaData::getGroup() const
 {
-    return (m_group);
+    return (mGroup);
 }
 
 /**
@@ -91,7 +91,7 @@ QString DANodeMetaData::getGroup() const
  */
 void DANodeMetaData::setGroup(const QString& group)
 {
-    m_group = group;
+    mGroup = group;
 }
 
 /**
@@ -100,7 +100,7 @@ void DANodeMetaData::setGroup(const QString& group)
  */
 QString DANodeMetaData::getNodeTooltip() const
 {
-    return m_nodeToolTip;
+    return mNodeToolTip;
 }
 
 /**
@@ -109,7 +109,7 @@ QString DANodeMetaData::getNodeTooltip() const
  */
 void DANodeMetaData::setNodeTooltip(const QString& tp)
 {
-    m_nodeToolTip = tp;
+    mNodeToolTip = tp;
 }
 
 /**
@@ -118,7 +118,7 @@ void DANodeMetaData::setNodeTooltip(const QString& tp)
  */
 bool DANodeMetaData::isValid() const
 {
-    return !(m_prototype.isEmpty());
+    return !(mPrototype.isEmpty());
 }
 
 DANodeMetaData::operator bool() const

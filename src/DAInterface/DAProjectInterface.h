@@ -1,13 +1,13 @@
 ﻿#ifndef DAPROJECTINTERFACE_H
 #define DAPROJECTINTERFACE_H
 #include <QObject>
+#include <QVersionNumber>
 #include "DAInterfaceAPI.h"
 #include "DABaseInterface.h"
 namespace DA
 {
 class DACoreInterface;
 class DAWorkFlowOperateWidget;
-DA_IMPL_FORWARD_DECL(DAProjectInterface)
 /**
  * @brief 负责总体工程的接口
  *
@@ -16,7 +16,7 @@ DA_IMPL_FORWARD_DECL(DAProjectInterface)
 class DAINTERFACE_API DAProjectInterface : public DABaseInterface
 {
     Q_OBJECT
-    DA_IMPL(DAProjectInterface)
+    DA_DECLARE_PRIVATE(DAProjectInterface)
 public:
     DAProjectInterface(DACoreInterface* c, QObject* par = nullptr);
     ~DAProjectInterface();
@@ -39,6 +39,8 @@ public:
     virtual void clear();
     //追加一个工厂的工作流进入本工程中，注意这个操作不会清空当前的工作流
     bool appendWorkflowInProject(const QString& path, bool skipIndex = false);
+    //工程文件的版本,版本组成有大版本.中间版本.小版本组成，例如0.1.1
+    static QVersionNumber getProjectVersion();
 
 public:
     //加载工程，加载完成后需要发射projectLoaded信号

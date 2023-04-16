@@ -37,21 +37,16 @@ public:
 
     //通过工厂创建node setting widget,避免每个node都创建一个widget，导致widget过多
     DAAbstractNodeWidget* createNodeSettingWidget(const DAAbstractNode::SharedPointer& p);
-    //获取配置映射
-    static QHash< QString, QPair< QString, QStringList > > getSettingMap();
 
     //获取core
     DACoreInterface* core() const;
-
-public:
-    static QHash< QString, QPair< QString, QStringList > > s_settingMap;
 
 protected:
     void createMetaData();
 
 private:
-    QMap< DANodeMetaData, FpCreate > m_prototypeTpfp;
-    DACoreInterface* _core;
+    QMap< DANodeMetaData, FpCreate > mPrototypeTpfp;
+    DACoreInterface* mCore;
 };
 }
 

@@ -28,7 +28,7 @@ DAAbstractData::DataType DADataPackage::getDataType() const
 QVariant DADataPackage::toVariant() const
 {
     QVariantList var;
-    for (const DAAbstractData::Pointer& p : qAsConst(_children)) {
+    for (const DAAbstractData::Pointer& p : qAsConst(mChildren)) {
         var.append(p->toVariant());
     }
     return var;
@@ -58,7 +58,7 @@ bool DADataPackage::setValue(const QVariant& v)
  */
 int DADataPackage::getChildCount() const
 {
-    return _children.size();
+    return mChildren.size();
 }
 
 /**
@@ -67,7 +67,7 @@ int DADataPackage::getChildCount() const
  */
 void DADataPackage::append(const DAAbstractData::Pointer& p)
 {
-    _children.append(p);
+    mChildren.append(p);
 }
 
 /**
@@ -77,7 +77,7 @@ void DADataPackage::append(const DAAbstractData::Pointer& p)
  */
 DAAbstractData::Pointer& DADataPackage::at(int index)
 {
-    return _children[ index ];
+    return mChildren[ index ];
 }
 
 /**
@@ -87,7 +87,7 @@ DAAbstractData::Pointer& DADataPackage::at(int index)
  */
 const DAAbstractData::Pointer& DADataPackage::at(int index) const
 {
-    return _children[ index ];
+    return mChildren[ index ];
 }
 
 /**
@@ -97,7 +97,7 @@ const DAAbstractData::Pointer& DADataPackage::at(int index) const
  */
 DAAbstractData::Pointer& DADataPackage::operator[](int index)
 {
-    return _children[ index ];
+    return mChildren[ index ];
 }
 
 /**
@@ -107,7 +107,7 @@ DAAbstractData::Pointer& DADataPackage::operator[](int index)
  */
 const DAAbstractData::Pointer& DADataPackage::operator[](int index) const
 {
-    return _children[ index ];
+    return mChildren[ index ];
 }
 
 /**
@@ -116,5 +116,5 @@ const DAAbstractData::Pointer& DADataPackage::operator[](int index) const
  */
 bool DADataPackage::isEmpty() const
 {
-    return _children.isEmpty();
+    return mChildren.isEmpty();
 }

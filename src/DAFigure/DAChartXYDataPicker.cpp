@@ -34,7 +34,7 @@ public:
     DAChartXYDataPickerClosePointInfo();
     QwtPlotItem* item() const
     {
-        return this->_item;
+        return this->mItem;
     }
     void setItem(QwtPlotItem* item);
     bool isValid() const;
@@ -42,37 +42,36 @@ public:
     void setClosePoint(const QPointF& p);
     int index() const
     {
-        return this->_index;
+        return this->mIndex;
     }
     void setIndex(int i)
     {
-        this->_index = i;
+        this->mIndex = i;
     }
     double distace() const
     {
-        return this->_distace;
+        return this->mDistace;
     }
     void setDistace(double d)
     {
-        this->_distace = d;
+        this->mDistace = d;
     }
     void setInvalid();
 
 private:
-    QwtPlotItem* _item;
-    int _index;
-    double _distace;
-    QPointF _point;
+    QwtPlotItem* mItem { nullptr };
+    int mIndex { -1 };
+    double mDistace { std::numeric_limits< double >::max() };
+    QPointF mPoint;
 };
 
 DAChartXYDataPickerClosePointInfo::DAChartXYDataPickerClosePointInfo()
-    : _item(nullptr), _index(-1), _distace(std::numeric_limits< double >::max())
 {
 }
 
 void DAChartXYDataPickerClosePointInfo::setItem(QwtPlotItem* item)
 {
-    this->_item = item;
+    this->mItem = item;
 }
 
 bool DAChartXYDataPickerClosePointInfo::isValid() const
@@ -83,13 +82,13 @@ bool DAChartXYDataPickerClosePointInfo::isValid() const
 QPointF DAChartXYDataPickerClosePointInfo::getClosePoint() const
 {
     if (isValid())
-        return _point;
+        return mPoint;
     return QPointF();
 }
 
 void DAChartXYDataPickerClosePointInfo::setClosePoint(const QPointF& p)
 {
-    _point = p;
+    mPoint = p;
 }
 
 void DAChartXYDataPickerClosePointInfo::setInvalid()
@@ -97,34 +96,33 @@ void DAChartXYDataPickerClosePointInfo::setInvalid()
     setItem(nullptr);
     setIndex(-1);
     setDistace(std::numeric_limits< double >::max());
-    _point = QPointF();
+    mPoint = QPointF();
 }
 
 //===================================================
 // DAChartXYDataPickerPrivate
 //===================================================
-class DAChartXYDataPickerPrivate
+class DAChartXYDataPicker::PrivateData
 {
-    DA_IMPL_PUBLIC(DAChartXYDataPicker)
+    DA_DECLARE_PUBLIC(DAChartXYDataPicker)
 public:
-    DAChartXYDataPickerPrivate(DAChartXYDataPicker* p);
-    DAChartXYDataPickerClosePointInfo _closePointInfo;
-    QPen _pen;
+    PrivateData(DAChartXYDataPicker* p);
+    DAChartXYDataPickerClosePointInfo mClosePointInfo;
+    QPen mPen;
 };
-DAChartXYDataPickerPrivate::DAChartXYDataPickerPrivate(DAChartXYDataPicker* p) : q_ptr(p)
+DAChartXYDataPicker::PrivateData::PrivateData(DAChartXYDataPicker* p) : q_ptr(p)
 {
 }
 //===================================================
 // DAChartXYDataPicker
 //===================================================
-DAChartXYDataPicker::DAChartXYDataPicker(QWidget* canvas)
-    : QwtPlotPicker(canvas), d_ptr(new DAChartXYDataPickerPrivate(this))
+DAChartXYDataPicker::DAChartXYDataPicker(QWidget* canvas) : QwtPlotPicker(canvas), DA_PIMPL_CONSTRUCT
 {
     setTrackerMode(QwtPlotPicker::ActiveOnly);
     setRubberBand(UserRubberBand);
     setStateMachine(new QwtPickerTrackerMachine());
     connect(this, &QwtPicker::moved, this, &DAChartXYDataPicker::mouseMove);
-    d_ptr->_pen.setWidth(1);
+    d_ptr->mPen.setWidth(1);
     if (plot())
         connect(plot(), &QwtPlot::itemAttached, this, &DAChartXYDataPicker::itemAttached);
 }
@@ -137,15 +135,15 @@ QwtText DAChartXYDataPicker::trackerTextF(const QPointF& pos) const
 {
     Q_UNUSED(pos);
     QwtText trackerText;
-    if (!d_ptr->_closePointInfo.isValid())
+    if (!d_ptr->mClosePointInfo.isValid())
         return trackerText;
     trackerText.setColor(Qt::black);
-    QColor lineColor = getItemColor(d_ptr->_closePointInfo.item());
+    QColor lineColor = getItemColor(d_ptr->mClosePointInfo.item());
     QColor bkColor(lineColor);
     bkColor.setAlpha(30);
     // trackerText.setBorderPen( d_ptr->_closePointInfo.item()->pen () );
     trackerText.setBackgroundBrush(bkColor);
-    QPointF point = d_ptr->_closePointInfo.getClosePoint();
+    QPointF point = d_ptr->mClosePointInfo.getClosePoint();
     QString info  = QString("<font color=\"%1\">y:%2</font><br>").arg(lineColor.name()).arg(point.y())
                    + QString("<font color=\"%1\">x:%2</font>").arg(lineColor.name()).arg(point.x());
     trackerText.setText(info);
@@ -165,14 +163,14 @@ void DAChartXYDataPicker::drawRubberBand(QPainter* painter) const
     if (!isActive() || rubberBand() == NoRubberBand || rubberBandPen().style() == Qt::NoPen) {
         return;
     }
-    if (!d_ptr->_closePointInfo.isValid())
+    if (!d_ptr->mClosePointInfo.isValid())
         return;
     //获取鼠标的客户坐标位置
     const QPoint pos = trackerPosition();
     if (pos.isNull())
         return;
-    painter->setPen(d_ptr->_pen);
-    const QPointF closePoint = d_ptr->_closePointInfo.getClosePoint();
+    painter->setPen(d_ptr->mPen);
+    const QPointF closePoint = d_ptr->mClosePointInfo.getClosePoint();
     const QPoint cvp         = transform(closePoint);
     QwtPainter::drawLine(painter, pos, cvp);
     QRect r(0, 0, 10, 10);
@@ -240,7 +238,7 @@ void DAChartXYDataPicker::calcClosestPoint(const QPoint& pos)
     //记录前一次最近点的曲线指针
 
     QPointF point;
-    QwtPlotItem* oldItem = d_ptr->_closePointInfo.item();
+    QwtPlotItem* oldItem = d_ptr->mClosePointInfo.item();
     for (int i = 0; i < curveItems.size(); ++i) {
         double dp;
         int index         = -1;
@@ -250,17 +248,17 @@ void DAChartXYDataPicker::calcClosestPoint(const QPoint& pos)
             continue;
         // QPointF p = cur->sample (index);
         if (dp < distance) {
-            d_ptr->_closePointInfo.setDistace(dp);  //实际距离需要开方
-            d_ptr->_closePointInfo.setIndex(index);
-            d_ptr->_closePointInfo.setItem(item);
-            d_ptr->_closePointInfo.setClosePoint(point);
+            d_ptr->mClosePointInfo.setDistace(dp);  //实际距离需要开方
+            d_ptr->mClosePointInfo.setIndex(index);
+            d_ptr->mClosePointInfo.setItem(item);
+            d_ptr->mClosePointInfo.setClosePoint(point);
             distance = dp;
         }
     }
     //说明最近点的曲线更换了，标记线的颜色换为当前曲线的颜色
-    if (d_ptr->_closePointInfo.isValid() && oldItem != d_ptr->_closePointInfo.item()) {
-        d_ptr->_pen.setColor(getItemColor(d_ptr->_closePointInfo.item()));
-        setRubberBandPen(d_ptr->_pen);
+    if (d_ptr->mClosePointInfo.isValid() && oldItem != d_ptr->mClosePointInfo.item()) {
+        d_ptr->mPen.setColor(getItemColor(d_ptr->mClosePointInfo.item()));
+        setRubberBandPen(d_ptr->mPen);
     }
 }
 
@@ -286,8 +284,8 @@ void DAChartXYDataPicker::mouseMove(const QPoint& pos)
 void DAChartXYDataPicker::itemAttached(QwtPlotItem* plotItem, bool on)
 {
     if (!on) {
-        if (plotItem == d_ptr->_closePointInfo.item())
-            d_ptr->_closePointInfo.setInvalid();
+        if (plotItem == d_ptr->mClosePointInfo.item())
+            d_ptr->mClosePointInfo.setInvalid();
     }
 }
 

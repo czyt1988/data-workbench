@@ -7,7 +7,6 @@
 #include "DAPyScriptsDataFrame.h"
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DAPyScripts)
 /**
  * @brief 这个是da外部脚本的总调度，此类设计为单例，会加载软件安装目录下的PyScripts文件夹的固定脚本
  * 此类在初始化的时候就会加载对应的脚本，da的业务逻辑将使用这些脚本进行
@@ -28,7 +27,7 @@ DA_IMPL_FORWARD_DECL(DAPyScripts)
  */
 class DAPYSCRIPTS_API DAPyScripts
 {
-    DA_IMPL(DAPyScripts)
+    DA_DECLARE_PRIVATE(DAPyScripts)
     DAPyScripts();
 
 public:

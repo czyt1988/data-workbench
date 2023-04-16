@@ -10,14 +10,13 @@ class DANodeItemSettingWidget;
 
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DANodeItemSettingWidget)
 class DANodeGraphicsScene;
 class DAGraphicsResizeableItem;
 class DAAbstractNodeGraphicsItem;
 class DAGUI_API DANodeItemSettingWidget : public QWidget
 {
     Q_OBJECT
-    DA_IMPL(DANodeItemSettingWidget)
+    DA_DECLARE_PRIVATE(DANodeItemSettingWidget)
 public:
     explicit DANodeItemSettingWidget(QWidget* parent = nullptr);
     ~DANodeItemSettingWidget();
@@ -48,7 +47,8 @@ private slots:
     void onCheckBoxMovableStateChanged(int state);
     void onCheckBoxResizableStateChanged(int state);
     void onNodeItemsRemoved(const QList< DA::DAAbstractNodeGraphicsItem* >& items);
-    void onActionGroupTriggered(QAction* a);
+    void onButtonGroupClicked(int id);
+    void onTextEditTooltipTextChanged();
 
 private:
     void resetValue();

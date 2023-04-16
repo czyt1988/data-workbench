@@ -15,7 +15,7 @@ class DAWorkFlowEditWidget;
 class DAWorkFlow;
 class DAWorkFlowGraphicsScene;
 class DAWorkFlowOperateWidget;
-
+class DAGraphicsResizeableItem;
 class DAGUI_API DAXmlHelper
 {
     DA_IMPL(DAXmlHelper)
@@ -30,6 +30,9 @@ public:
     //标准保存—— DAWorkFlowEditWidget
     QDomElement makeElement(DAWorkFlowOperateWidget* wfo, const QString& tagName, QDomDocument* doc);
     bool loadElement(DAWorkFlowOperateWidget* wfo, const QDomElement* workflowsEle);
+    // ResizeableItem的通用保存
+    QDomElement makeElement(DAGraphicsResizeableItem* item, const QString& tagName, QDomDocument* doc);
+    bool loadElement(DAGraphicsResizeableItem* item, const QDomElement* tag);
 
 public:
     //生成一个qvariant element

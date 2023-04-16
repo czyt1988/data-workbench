@@ -4,13 +4,12 @@
 #include "DAPyModule.h"
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DAPyModuleNumpy)
 /**
  * @brief numpy
  */
 class DAPYBINDQT_API DAPyModuleNumpy : public DAPyModule
 {
-    DA_IMPL(DAPyModuleNumpy)
+    DA_DECLARE_PRIVATE(DAPyModuleNumpy)
     DAPyModuleNumpy();
 
 public:

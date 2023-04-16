@@ -127,6 +127,21 @@ signals:
      * @param lastSelectItem
      */
     void selectionItemChanged(QGraphicsItem* lastSelectItem);
+    /**
+     * @brief 开始执行，exec函数调用后会触发此信号
+     */
+    void workflowStartExecute(DAWorkFlowEditWidget* wfw);
+    /**
+     * @brief 执行到某个节点发射的信号
+     * @param n
+     */
+    void nodeExecuteFinished(DAWorkFlowEditWidget* wfw, DAAbstractNode::SharedPointer n, bool state);
+
+    /**
+     * @brief 工作流执行完毕信号
+     * @param success 成功全部执行完成为true
+     */
+    void workflowFinished(DAWorkFlowEditWidget* wfw, bool success);
 private slots:
     //当前tab发生了改变
     void onTabWidgetCurrentChanged(int index);

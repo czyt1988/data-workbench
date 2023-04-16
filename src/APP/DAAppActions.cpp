@@ -9,7 +9,7 @@ using namespace DA;
 //===================================================
 // DAAppActions
 //===================================================
-DAAppActions::DAAppActions(DAAppUIInterface* u) : DAAppActionsInterface(u)
+DAAppActions::DAAppActions(DAUIInterface* u) : DAActionsInterface(u)
 {
     buildActions();
 }
@@ -75,9 +75,11 @@ void DAAppActions::buildChartAction()
     actionAddFigure         = createAction("actionAddFigure", ":/Icon/Icon/addFigure.svg");
     actionFigureResizeChart = createAction("actionFigureResizeChart", ":/Icon/Icon/figureResizeChart.svg", true, false);
     actionFigureNewXYAxis   = createAction("actionFigureNewXYAxis", ":/Icon/Icon/newAxis.svg");
-    actionChartEnableGrid   = createAction("actionChartEnableGrid", ":/Icon/Icon/chart-grid.svg", true, false);
-    actionChartEnableGridX  = createAction("actionChartEnableGridX", ":/Icon/Icon/chart-grid-x.svg", true, false);
-    actionChartEnableGridY  = createAction("actionChartEnableGridY", ":/Icon/Icon/chart-grid-y.svg", true, false);
+    actionChartAddCurve     = createAction("actionChartAddCurve", ":/app/chart-type/Icon/chart-type/chart-curve.svg");
+
+    actionChartEnableGrid     = createAction("actionChartEnableGrid", ":/Icon/Icon/chart-grid.svg", true, false);
+    actionChartEnableGridX    = createAction("actionChartEnableGridX", ":/Icon/Icon/chart-grid-x.svg", true, false);
+    actionChartEnableGridY    = createAction("actionChartEnableGridY", ":/Icon/Icon/chart-grid-y.svg", true, false);
     actionChartEnableGridXMin = createAction("actionChartEnableGridXMin", ":/Icon/Icon/chart-grid-xmin.svg", true, false);
     actionChartEnableGridYMin = createAction("actionChartEnableGridYMin", ":/Icon/Icon/chart-grid-ymin.svg", true, false);
     actionChartEnableZoom     = createAction("actionChartEnableZoom", ":/Icon/Icon/chart-zoomer.svg", true, false);
@@ -173,13 +175,15 @@ void DAAppActions::retranslateUi()
     actionRenameColumns->setText(tr("Rename Columns"));
     actionSetting->setText(tr("Setting"));
     // Data Category
-    actionAddData->setText(tr("Add Data"));          // cn:添加数据
-    actionRemoveData->setText(tr("Remove Data"));    // cn:移除数据
-    actionAddDataFolder->setText(tr("Add Folder"));  // cn:新建文件夹
+    actionAddData->setText(tr("Add \nData"));          // cn:添加\n数据
+    actionRemoveData->setText(tr("Remove \nData"));    // cn:移除\n数据
+    actionAddDataFolder->setText(tr("Add \nFolder"));  // cn:新建\n文件夹
     // Chart Category
-    actionAddFigure->setText(tr("Add Figure"));                            // cn:添加绘图
-    actionFigureResizeChart->setText(tr("Resize Chart"));                  // cn:绘图尺寸
-    actionFigureNewXYAxis->setText(tr("New XY Axis"));                     // cn:新建坐标系
+    actionAddFigure->setText(tr("Add \nFigure"));            // cn:添加\n绘图
+    actionFigureResizeChart->setText(tr("Resize \nChart"));  // cn:绘图\n尺寸
+    actionFigureNewXYAxis->setText(tr("New \nXY Axis"));     // cn:新建\n坐标系
+    actionChartAddCurve->setText(tr("Add \nCurve"));         // cn:曲线
+
     actionChartEnableGrid->setText(tr("Enable Grid"));                     // cn:网格
     actionChartEnableGridX->setText(tr("X Grid"));                         // cn:横向网格
     actionChartEnableGridY->setText(tr("Y Grid"));                         // cn:纵向网格
@@ -188,7 +192,7 @@ void DAAppActions::retranslateUi()
     actionChartEnableZoom->setText(tr("Zoom"));                            // cn:缩放
     actionChartZoomIn->setText(tr("Zoom In"));                             // cn:放大
     actionChartZoomOut->setText(tr("Zoom Out"));                           // cn:缩小
-    actionChartZoomAll->setText(tr("Show All"));                           // cn:显示全部
+    actionChartZoomAll->setText(tr("Show \nAll"));                         // cn:显示\n全部
     actionChartEnablePan->setText(tr("Pan"));                              // cn:拖动
     actionChartEnablePickerCross->setText(tr("Cross"));                    // cn:十字标记
     actionChartEnablePickerY->setText(tr("Y Picker"));                     // cn:y值拾取
@@ -206,9 +210,9 @@ void DAAppActions::retranslateUi()
     actionRemoveRow->setText(tr("Remove Row"));                  // cn:删除行
     actionRemoveColumn->setText(tr("Remove Column"));            // cn:删除列
     actionRemoveCell->setText(tr("Remove Cell"));                // cn:移除单元格
-    actionInsertRow->setText(tr("Insert Row"));                  // cn:插入行
+    actionInsertRow->setText(tr("Insert \nRow"));                // cn:插入行
     actionInsertRowAbove->setText(tr("Insert Row(Above)"));      // cn:插入行(上)
-    actionInsertColumnRight->setText(tr("Insert Column"));       // cn:插入列(右)
+    actionInsertColumnRight->setText(tr("Insert \nColumn"));     // cn:插入\n列(右)
     actionInsertColumnLeft->setText(tr("Insert Column(Left)"));  // cn:插入列(左)
     actionCastToNum->setText(tr("to num"));
     actionCastToNum->setToolTip(tr("cast to num type"));  // cn:转换为数值类型
@@ -217,29 +221,28 @@ void DAAppActions::retranslateUi()
     actionCastToDatetime->setText(tr("to datetime"));
     actionCastToDatetime->setToolTip(tr("cast to datetime type"));  // cn:转换为日期类型
     actionCreateDataDescribe->setText(tr("Data Describe"));         // cn:数据描述
-    actionChangeToIndex->setText(tr("To Index"));                   // cn:转换为索引
+    actionChangeToIndex->setText(tr("To Index"));                   // cn:转换为\n索引
     // workflow 编辑
-    actionWorkflowNew->setText(tr("New Workflow"));         // cn:新建工作流
-    actionWorkflowStartDrawRect->setText(tr("Draw Rect"));  // cn:绘制矩形
-    actionWorkflowStartDrawText->setText(tr("Draw Text"));  // cn:绘制文本
-    actionWorkflowShowGrid->setText(tr("Show Grid"));       // cn:显示网格
-    actionWorkflowWholeView->setText(tr("Whole View"));     // cn:全部可见
-    actionWorkflowZoomOut->setText(tr("Zoom Out"));         // cn:缩小
-    actionWorkflowZoomIn->setText(tr("Zoom In"));           // cn:放大
-    actionWorkflowRun->setText(tr("Run Workflow"));         // cn:运行工作流
+    actionWorkflowNew->setText(tr("New \nWorkflow"));         // cn:新建\n工作流
+    actionWorkflowStartDrawRect->setText(tr("Draw \nRect"));  // cn:绘制\n矩形
+    actionWorkflowStartDrawText->setText(tr("Draw \nText"));  // cn:绘制\n文本
+    actionWorkflowShowGrid->setText(tr("Show \nGrid"));       // cn:显示\n网格
+    actionWorkflowWholeView->setText(tr("Whole \nView"));     // cn:全部\n可见
+    actionWorkflowZoomOut->setText(tr("Zoom Out"));           // cn:缩小
+    actionWorkflowZoomIn->setText(tr("Zoom In"));             // cn:放大
+    actionWorkflowRun->setText(tr("Run \nWorkflow"));         // cn:运行\n工作流
 
-    actionWorkflowAddBackgroundPixmap->setText(tr("Add Background"));                 // cn:添加背景
+    actionWorkflowAddBackgroundPixmap->setText(tr("Add \nBackground"));               // cn:添加\n背景
     actionWorkflowLockBackgroundPixmap->setText(tr("Lock Background"));               // cn:锁定背景
     actionWorkflowEnableItemMoveWithBackground->setText(tr("Move With Background"));  // cn:元件随背景移动
     // View Category
-    actionShowWorkFlowArea->setText(tr("Show Work Flow Area"));
-    actionShowChartArea->setText(tr("Show Chart Area"));
-    actionShowDataArea->setText(tr("Show Table Area"));
-    actionShowMessageLogView->setText(tr("Show Infomation Window"));
-
-    actionShowSettingWidget->setText(tr("Show Setting Window"));
+    actionShowWorkFlowArea->setText(tr("Show \nWork Flow Area"));     // cn:工作流\n区域
+    actionShowChartArea->setText(tr("Show \nChart Area"));            // cn:绘图\n区域
+    actionShowDataArea->setText(tr("Show \nTable Area"));             // cn:表格\n区域
+    actionShowMessageLogView->setText(tr("Show Infomation Window"));  // cn:信息窗口
+    actionShowSettingWidget->setText(tr("Show Setting Window"));      // cn:设置窗口
     // Config Category
-    actionPluginManager->setText(tr("Plugin Config"));
+    actionPluginManager->setText(tr("Plugin \nConfig"));  // cn:插件\n设置
     //
     if (actionRedo) {
         actionRedo->setText(tr("Redo"));

@@ -7,8 +7,6 @@ namespace DA
 {
 class DAAbstractNodeGraphicsItem;
 
-DA_IMPL_FORWARD_DECL(DAAbstractNodeWidget)
-
 /**
  * @brief FCNodeItem都可返回一个FCNodeWidget，用于设置node属性
  *
@@ -17,7 +15,7 @@ DA_IMPL_FORWARD_DECL(DAAbstractNodeWidget)
 class DAWORKFLOW_API DAAbstractNodeWidget : public QWidget
 {
     Q_OBJECT
-    DA_IMPL(DAAbstractNodeWidget)
+    DA_DECLARE_PRIVATE(DAAbstractNodeWidget)
 public:
     explicit DAAbstractNodeWidget(QWidget* parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
     explicit DAAbstractNodeWidget(const DAAbstractNode::SharedPointer& n,

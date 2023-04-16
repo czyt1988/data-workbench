@@ -35,12 +35,13 @@ public:
     DAAbstractNodeGraphicsItem* item() const;
 
 private:
-    DANodeGraphicsScene* _scene;
-    DANodeMetaData _metadata;
-    QPointF _scenePos;
-    DAAbstractNode::SharedPointer _node;
-    DAAbstractNodeGraphicsItem* _item;
-    bool _needDelete;
+    DANodeGraphicsScene* mScene;
+    DANodeMetaData mMetadata;
+    QPointF mScenePos;
+    DAAbstractNode::SharedPointer mNode;
+    DAAbstractNodeGraphicsItem* mItem;
+    bool mNeedDelete;
+    bool mSkipFirstRedo { true };
 };
 
 /**
@@ -70,12 +71,12 @@ public:
     QList< QGraphicsItem* > getRemovedItems() const;
 
 private:
-    bool _isvalid;  ///< 标记这个cmd是否有效，如果选择的内容没有效，则为false
-    DANodeGraphicsScene* _scene;
-    QList< DAAbstractNodeGraphicsItem* > _selNodeItems;
-    QList< DAAbstractNodeLinkGraphicsItem* > _willRemoveLink;  ///< 此item仅做保存
-    QList< QGraphicsItem* > _willRemoveNormal;
-    bool _needDelete;
+    bool mIsvalid;  ///< 标记这个cmd是否有效，如果选择的内容没有效，则为false
+    DANodeGraphicsScene* mScene;
+    QList< DAAbstractNodeGraphicsItem* > mSelectNodeItems;
+    QList< DAAbstractNodeLinkGraphicsItem* > mWillRemoveLink;  ///< 此item仅做保存
+    QList< QGraphicsItem* > mWillRemoveNormal;
+    bool mNeedDelete;
 };
 
 /**
@@ -95,15 +96,15 @@ public:
     void undo() override;
 
 private:
-    DAAbstractNodeLinkGraphicsItem* _linkitem;
-    DAAbstractNodeGraphicsItem* _fromitem;
-    DAAbstractNodeGraphicsItem* _toitem;
-    QString _fromPointName;  ///< 记录名字，每次redo/undo都从item获取linkpoint，以免出现变化
-    QString _toPointName;    ///< 记录名字，每次redo/undo都从item获取linkpoint，以免出现变化
-    DANodeGraphicsScene* _scene;
-    bool _needDelete;
-    bool _isFirstRedoNotAdditem;  ///< 记录是否第一次redo添加item，如果item已经添加进scene，就把此参数设置为false
-    bool _skipFirstRedo;  ///< 第一次redo跳过,此优先级高于_isFirstRedoAdditem
+    DAAbstractNodeLinkGraphicsItem* mLinkitem;
+    DAAbstractNodeGraphicsItem* mFromitem;
+    DAAbstractNodeGraphicsItem* mToitem;
+    QString mFromPointName;  ///< 记录名字，每次redo/undo都从item获取linkpoint，以免出现变化
+    QString mToPointName;    ///< 记录名字，每次redo/undo都从item获取linkpoint，以免出现变化
+    DANodeGraphicsScene* mScene;
+    bool mNeedDelete;
+    bool mIsFirstRedoNotAdditem;  ///< 记录是否第一次redo添加item，如果item已经添加进scene，就把此参数设置为false
+    bool mSkipFirstRedo;  ///< 第一次redo跳过,此优先级高于_isFirstRedoAdditem
 };
 
 /**
@@ -119,13 +120,13 @@ public:
     void undo() override;
 
 private:
-    DAAbstractNodeLinkGraphicsItem* _linkitem;
-    DAAbstractNodeGraphicsItem* _fromitem;
-    DAAbstractNodeGraphicsItem* _toitem;
-    QString _fromPointName;  ///< 记录名字，每次redo/undo都从item获取linkpoint，以免出现变化
-    QString _toPointName;    ///< 记录名字，每次redo/undo都从item获取linkpoint，以免出现变化
-    DANodeGraphicsScene* _scene;
-    bool _needDelete;
+    DAAbstractNodeLinkGraphicsItem* mLinkitem;
+    DAAbstractNodeGraphicsItem* mFromitem;
+    DAAbstractNodeGraphicsItem* mToitem;
+    QString mFromPointName;  ///< 记录名字，每次redo/undo都从item获取linkpoint，以免出现变化
+    QString mToPointName;    ///< 记录名字，每次redo/undo都从item获取linkpoint，以免出现变化
+    DANodeGraphicsScene* mScene;
+    bool mNeedDelete;
 };
 
 }

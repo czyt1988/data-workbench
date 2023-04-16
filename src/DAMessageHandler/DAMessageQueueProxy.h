@@ -5,7 +5,6 @@
 #include <QObject>
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DAMessageQueueProxy)
 
 /**
  * @brief 这是一个全局的日志队列，所有的qdebug相关的消息都会推入这个队列中
@@ -21,7 +20,8 @@ DA_IMPL_FORWARD_DECL(DAMessageQueueProxy)
 class DAMESSAGEHANDLER_API DAMessageQueueProxy : public QObject
 {
     Q_OBJECT
-    DA_IMPL(DAMessageQueueProxy)
+    DA_DECLARE_PRIVATE(DAMessageQueueProxy)
+    friend class DAThreadSafeMessageQueue_Private;
 
 public:
     DAMessageQueueProxy(QObject* par = nullptr);

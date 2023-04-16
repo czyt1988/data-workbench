@@ -9,13 +9,12 @@ class QwtPlotCurve;
 class QwtPlotBarChart;
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DAChartYDataPicker)
 /**
  * @brief Y值拾取器
  */
 class DAFIGURE_API DAChartYDataPicker : public QwtPlotPicker
 {
-    DA_IMPL(DAChartYDataPicker)
+    DA_DECLARE_PRIVATE(DAChartYDataPicker)
 public:
     DAChartYDataPicker(QWidget*);
     ~DAChartYDataPicker();

@@ -1,6 +1,5 @@
 ﻿#ifndef DAABSTRACTSETTINGWIDGET_H
 #define DAABSTRACTSETTINGWIDGET_H
-
 #include <QWidget>
 #include "DACommonWidgetsAPI.h"
 namespace DA
@@ -8,6 +7,19 @@ namespace DA
 
 /**
  * @brief 配置页面的基类，所有配置页面都继承此类
+ *
+ * DASettingWidget管理所有的DAAbstractSettingPage
+ *
+ * 数据的交互通过DAConfig类
+ *
+ * 首先程序会加载DAConfig对象，在构建页面的时候，会调用setConfig把配置传入
+ *
+ * 在调用apply函数的时候需要应用设置，这时候也要同步更改DAConfig内容，DASettingWidget会调用getConfig把配置信息重新获取
+ *
+ * 同时会把对应的配置信息重新保存
+ *
+ * @note 重载时务必调用DAAbstractSettingPage::setConfig(c);否则getConfig函数将不起作用
+ *
  */
 class DACOMMONWIDGETS_API DAAbstractSettingPage : public QWidget
 {
@@ -15,8 +27,22 @@ class DACOMMONWIDGETS_API DAAbstractSettingPage : public QWidget
 public:
     DAAbstractSettingPage(QWidget* parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
     ~DAAbstractSettingPage();
-    //应用设置
+    /**
+     * @brief 应用设置
+     * @note 注意要更新返回的config
+     */
     virtual void apply() = 0;
+    /**
+     * @brief 设置页的标题，此函数影响DASettingWidget的listwidget的显示
+     * @return
+     */
+    virtual QString getSettingPageTitle() const = 0;
+    /**
+     * @brief 设置页的图标,此函数影响DASettingWidget的listwidget的显示
+     * @return
+     */
+    virtual QIcon getSettingPageIcon() const = 0;
+
 signals:
     /**
      * @brief 配置信息改变信号

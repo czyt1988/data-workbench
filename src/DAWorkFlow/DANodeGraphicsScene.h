@@ -12,10 +12,8 @@ class QGraphicsSceneMouseEvent;
 namespace DA
 {
 class DAGraphicsResizeablePixmapItem;
-class DAGraphicsResizeableTextItem;
 class DAGraphicsResizeableRectItem;
 class DAStandardGraphicsTextItem;
-DA_IMPL_FORWARD_DECL(DANodeGraphicsScene)
 
 /**
  * @brief DAAbstractNodeGraphicsItem对应的QGraphicsScene,通过此scene，管理DAWorkFlow内容
@@ -25,7 +23,7 @@ DA_IMPL_FORWARD_DECL(DANodeGraphicsScene)
 class DAWORKFLOW_API DANodeGraphicsScene : public DAGraphicsSceneWithUndoStack
 {
     Q_OBJECT
-    DA_IMPL(DANodeGraphicsScene)
+    DA_DECLARE_PRIVATE(DANodeGraphicsScene)
     friend class DAAbstractNodeGraphicsItem;
     friend class DAAbstractNodeLinkGraphicsItem;
 
@@ -79,6 +77,7 @@ public:
     DAStandardGraphicsTextItem* createText_(const QString& str = QString());
     //创建矩形
     DAGraphicsResizeableRectItem* createRect_(const QPointF& p = QPointF());
+
 signals:
 
     /**

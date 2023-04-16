@@ -1,4 +1,4 @@
-#ifndef DAXMLFILEINTERFACE_H
+﻿#ifndef DAXMLFILEINTERFACE_H
 #define DAXMLFILEINTERFACE_H
 #include <QString>
 #include "DAUtilsAPI.h"

@@ -5,13 +5,12 @@
 #include <QDateTime>
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DAPyModuleDatetime)
 /**
  * @brief python datetime 模块的封装
  */
 class DAPYBINDQT_API DAPyModuleDatetime : public DAPyModule
 {
-    DA_IMPL(DAPyModuleDatetime)
+    DA_DECLARE_PRIVATE(DAPyModuleDatetime)
     DAPyModuleDatetime();
 
 public:

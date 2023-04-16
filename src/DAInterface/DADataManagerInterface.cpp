@@ -1,32 +1,32 @@
 ﻿#include "DADataManagerInterface.h"
 namespace DA
 {
-class DADataManagerInterfacePrivate
+class DADataManagerInterface::PrivateData
 {
-    DA_IMPL_PUBLIC(DADataManagerInterface)
+    DA_DECLARE_PUBLIC(DADataManagerInterface)
 public:
-    DADataManagerInterfacePrivate(DADataManagerInterface* p);
-    DADataManager* _dataMgr;
+    PrivateData(DADataManagerInterface* p);
+    DADataManager* mDataMgr;
 };
 //==============================================================
 // DADataManagerInterfacePrivate
 //==============================================================
-DADataManagerInterfacePrivate::DADataManagerInterfacePrivate(DADataManagerInterface* p) : q_ptr(p)
+DADataManagerInterface::PrivateData::PrivateData(DADataManagerInterface* p) : q_ptr(p)
 {
-    _dataMgr = new DADataManager(p);
+    mDataMgr = new DADataManager(p);
 }
 
 //==============================================================
 // DADataManagerInterface
 //==============================================================
 DADataManagerInterface::DADataManagerInterface(DACoreInterface* c, QObject* par)
-    : DABaseInterface(c, par), d_ptr(new DADataManagerInterfacePrivate(this))
+    : DABaseInterface(c, par), DA_PIMPL_CONSTRUCT
 {
 
-    connect(d_ptr->_dataMgr, &DADataManager::dataAdded, this, &DADataManagerInterface::dataAdded);
-    connect(d_ptr->_dataMgr, &DADataManager::dataBeginRemove, this, &DADataManagerInterface::dataBeginRemove);
-    connect(d_ptr->_dataMgr, &DADataManager::dataRemoved, this, &DADataManagerInterface::dataRemoved);
-    connect(d_ptr->_dataMgr, &DADataManager::dataChanged, this, &DADataManagerInterface::dataChanged);
+    connect(d_ptr->mDataMgr, &DADataManager::dataAdded, this, &DADataManagerInterface::dataAdded);
+    connect(d_ptr->mDataMgr, &DADataManager::dataBeginRemove, this, &DADataManagerInterface::dataBeginRemove);
+    connect(d_ptr->mDataMgr, &DADataManager::dataRemoved, this, &DADataManagerInterface::dataRemoved);
+    connect(d_ptr->mDataMgr, &DADataManager::dataChanged, this, &DADataManagerInterface::dataChanged);
 }
 
 DADataManagerInterface::~DADataManagerInterface()
@@ -38,7 +38,7 @@ DADataManagerInterface::~DADataManagerInterface()
  */
 DADataManager* DADataManagerInterface::dataManager() const
 {
-    return d_ptr->_dataMgr;
+    return d_ptr->mDataMgr;
 }
 /**
  * @brief 添加数据

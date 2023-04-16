@@ -17,7 +17,7 @@ public:
     DAFigureWidget* figure() const;
 
 private:
-    DAFigureWidget* _fig;
+    DAFigureWidget* mFigure { nullptr };
 };
 }  // end DA namespace
 #endif  // SAFIGUREWINDOWOVERLAY_H

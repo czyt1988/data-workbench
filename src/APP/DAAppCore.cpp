@@ -8,7 +8,7 @@
 #include "DAAppRibbonArea.h"
 #include "DAAppDataManager.h"
 #include "DACommandInterface.h"
-#include "DAProject.h"
+#include "DAAppProject.h"
 #include "DAAppCommand.h"
 // DA Python
 #include "DAPyInterpreter.h"
@@ -25,9 +25,9 @@ using namespace DA;
 // DAAppCore
 //===================================================
 DAAppCore::DAAppCore(QObject* p)
-    : DACoreInterface(p), m_appUI(nullptr), m_appCmd(nullptr), m_isPythonInterpreterInitialized(false), m_project(nullptr)
+    : DACoreInterface(p), mAppUI(nullptr), mAppCmd(nullptr), mIsPythonInterpreterInitialized(false), mProject(nullptr)
 {
-    m_dataManager = nullptr;
+    mDataManager = nullptr;
 }
 
 DAAppCore& DAAppCore::getInstance()
@@ -43,31 +43,31 @@ bool DAAppCore::initialized()
     initializePythonEnv();
     qDebug() << "core have been initialized Python Env";
     //初始化数据
-    m_dataManager = new DAAppDataManager(this, this);
+    mDataManager = new DAAppDataManager(this, this);
     qDebug() << "core have been initialized App Data Manager";
-    m_project = new DAProject(this, this);
+    mProject = new DAAppProject(this, this);
     return true;
 }
 
-DAAppUIInterface* DAAppCore::getUiInterface() const
+DAUIInterface* DAAppCore::getUiInterface() const
 {
-    return m_appUI;
+    return mAppUI;
 }
 
 DAProjectInterface* DAAppCore::getProjectInterface() const
 {
-    return m_project;
+    return mProject;
 }
 
 void DAAppCore::createUi(SARibbonMainWindow* mainwindow)
 {
-    m_appUI = new DAAppUI(mainwindow, this);
-    m_appUI->createUi();
-    m_appCmd = m_appUI->getAppCmd();
-    if (m_dataManager) {
+    mAppUI = new DAAppUI(mainwindow, this);
+    mAppUI->createUi();
+    mAppCmd = mAppUI->getAppCmd();
+    if (mDataManager) {
         //把dataManager的undo stack 注册
-        if (m_appCmd) {
-            m_appCmd->setDataManagerStack(m_dataManager->getUndoStack());
+        if (mAppCmd) {
+            mAppCmd->setDataManagerStack(mDataManager->getUndoStack());
         }
     }
 }
@@ -78,12 +78,12 @@ void DAAppCore::createUi(SARibbonMainWindow* mainwindow)
  */
 bool DAAppCore::isPythonInterpreterInitialized() const
 {
-    return m_isPythonInterpreterInitialized;
+    return mIsPythonInterpreterInitialized;
 }
 
 DADataManagerInterface* DAAppCore::getDataManagerInterface() const
 {
-    return m_dataManager;
+    return mDataManager;
 }
 
 /**
@@ -92,7 +92,7 @@ DADataManagerInterface* DAAppCore::getDataManagerInterface() const
  */
 bool DAAppCore::initializePythonEnv()
 {
-    m_isPythonInterpreterInitialized = false;
+    mIsPythonInterpreterInitialized = false;
     try {
         DA::DAPyInterpreter& python = DA::DAPyInterpreter::getInstance();
         //初始化python环境
@@ -115,7 +115,7 @@ bool DAAppCore::initializePythonEnv()
         qCritical() << tr("Initialize python environment error:%1").arg(e.what());
         return false;
     }
-    m_isPythonInterpreterInitialized = true;
+    mIsPythonInterpreterInitialized = true;
     return true;
 }
 
@@ -125,15 +125,15 @@ bool DAAppCore::initializePythonEnv()
  */
 DAAppUI* DAAppCore::getAppUi()
 {
-    return m_appUI;
+    return mAppUI;
 }
 /**
  * @brief 获取工程
  * @return
  */
-DAProject* DAAppCore::getAppProject()
+DAAppProject* DAAppCore::getAppProject()
 {
-    return m_project;
+    return mProject;
 }
 /**
  * @brief 直接获取数据
@@ -141,7 +141,7 @@ DAProject* DAAppCore::getAppProject()
  */
 DAAppDataManager* DAAppCore::getAppDatas()
 {
-    return m_dataManager;
+    return mDataManager;
 }
 /**
  * @brief 直接获取DAAppCommand
@@ -151,7 +151,7 @@ DAAppDataManager* DAAppCore::getAppDatas()
  */
 DAAppCommand* DAAppCore::getAppCmd()
 {
-    return m_appCmd;
+    return mAppCmd;
 }
 
 /**
@@ -161,7 +161,7 @@ DAAppCommand* DAAppCore::getAppCmd()
 QString DAAppCore::getPythonInterpreterPath()
 {
     QString appabsPath = QApplication::applicationDirPath();
-    return appabsPath + QDir::separator() + "Python";
+    return QDir::toNativeSeparators(appabsPath + "/Python");
 }
 
 /**
@@ -171,5 +171,5 @@ QString DAAppCore::getPythonInterpreterPath()
 QString DAAppCore::getPythonScriptsPath()
 {
     QString appabsPath = QApplication::applicationDirPath();
-    return appabsPath + QDir::separator() + "PyScripts";
+    return QDir::toNativeSeparators(appabsPath + "/PyScripts");
 }

@@ -6,14 +6,13 @@ class QDomDocument;
 class QDomElement;
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DAGraphicsResizeableRectItem)
 /**
  * @brief 矩形图元
  */
 class DAGRAPHICSVIEW_API DAGraphicsResizeableRectItem : public DAGraphicsResizeableItem
 {
     Q_OBJECT
-    DA_IMPL(DAGraphicsResizeableRectItem)
+    DA_DECLARE_PRIVATE(DAGraphicsResizeableRectItem)
 public:
     /**
      * @brief 适用qgraphicsitem_cast

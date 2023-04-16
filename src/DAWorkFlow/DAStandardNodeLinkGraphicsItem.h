@@ -2,6 +2,7 @@
 #define DASTANDARDNODELINKGRAPHICSITEM_H
 #include "DAAbstractNodeLinkGraphicsItem.h"
 #include <QtCore/qglobal.h>
+
 namespace DA
 {
 /**

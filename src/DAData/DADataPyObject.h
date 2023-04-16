@@ -28,7 +28,7 @@ public:
     const DAPyObjectWrapper& object() const;
 
 protected:
-    DAPyObjectWrapper _pyObject;
+    DAPyObjectWrapper mPyObject;
 };
 }  // namespace DA
 #endif  // DADATAPYOBJECT_H

@@ -20,9 +20,9 @@ public:
     void undo() override;
 
 private:
-    QGraphicsItem* _item;
-    QGraphicsScene* _scene;
-    bool _needDelete;
+    QGraphicsItem* mItem;
+    QGraphicsScene* mScene;
+    bool mNeedDelete;
 };
 
 /**
@@ -37,9 +37,9 @@ public:
     void undo() override;
 
 private:
-    QGraphicsItem* _item;
-    QGraphicsScene* _scene;
-    bool _needDelete;
+    QGraphicsItem* mItem;
+    QGraphicsScene* mScene;
+    bool mNeedDelete;
 };
 
 /**
@@ -59,10 +59,10 @@ public:
     bool mergeWith(const QUndoCommand* command);
 
 private:
-    QList< QGraphicsItem* > _items;
-    QList< QPointF > _startsPos;
-    QList< QPointF > _endsPos;
-    bool _skipFirst;
+    QList< QGraphicsItem* > mItems;
+    QList< QPointF > mStartsPos;
+    QList< QPointF > mEndsPos;
+    bool mSkipFirst;
 };
 
 /**
@@ -78,10 +78,10 @@ public:
     bool mergeWith(const QUndoCommand* command);
 
 private:
-    QGraphicsItem* _item;
-    QPointF _startPos;
-    QPointF _endPos;
-    bool _skipFirst;
+    QGraphicsItem* mItem;
+    QPointF mStartPos;
+    QPointF mEndPos;
+    bool mSkipFirst;
 };
 /**
  * @brief item改变尺寸
@@ -107,12 +107,12 @@ public:
     bool mergeWith(const QUndoCommand* command);
 
 private:
-    DAGraphicsResizeableItem* _item;
-    QPointF _oldpos;
-    QSizeF _oldSize;
-    QPointF _newpos;
-    QSizeF _newSize;
-    bool _skipFirst;
+    DAGraphicsResizeableItem* mItem;
+    QPointF mOldpos;
+    QSizeF mOldSize;
+    QPointF mNewPosition;
+    QSizeF mNewSize;
+    bool mSkipFirst;
 };
 
 /**
@@ -132,11 +132,11 @@ public:
     bool mergeWith(const QUndoCommand* command);
 
 private:
-    DAGraphicsResizeableItem* _item;
-    qreal _oldWidth;
-    qreal _newWidth;
-    qreal _height;
-    bool _skipfirst;
+    DAGraphicsResizeableItem* mItem;
+    qreal mOldWidth;
+    qreal mNewWidth;
+    qreal mHeight;
+    bool mSkipfirst;
 };
 
 /**
@@ -156,11 +156,11 @@ public:
     bool mergeWith(const QUndoCommand* command);
 
 private:
-    DAGraphicsResizeableItem* _item;
-    qreal _oldHeight;
-    qreal _newHeight;
-    qreal _width;
-    bool _skipfirst;
+    DAGraphicsResizeableItem* mItem;
+    qreal mOldHeight;
+    qreal mNewHeight;
+    qreal mWidth;
+    bool mSkipfirst;
 };
 
 /**
@@ -182,10 +182,10 @@ public:
     bool mergeWith(const QUndoCommand* command);
 
 private:
-    DAGraphicsResizeableItem* _item;
-    qreal _oldRotation;
-    qreal _newRotation;
-    bool _skipfirst;
+    DAGraphicsResizeableItem* mItem;
+    qreal mOldRotation;
+    qreal mNewRotation;
+    bool mSkipfirst;
 };
 }
 #endif  // DACOMMANDSFORGRAPHICS_H

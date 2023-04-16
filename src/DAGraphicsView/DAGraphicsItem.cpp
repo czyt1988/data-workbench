@@ -5,23 +5,25 @@
 namespace DA
 {
 
-class DAGraphicsItemPrivate
+class DAGraphicsItem::PrivateData
 {
-    DA_IMPL_PUBLIC(DAGraphicsItem)
+    DA_DECLARE_PUBLIC(DAGraphicsItem)
 public:
-    DAGraphicsItemPrivate(DAGraphicsItem* p);
-    bool _isShowBorder;      ///< 是否显示边框
-    QPen _borderPen;         ///< 边框画笔
-    bool _isShowBackground;  ///< 是否显示背景
-    QBrush _bkBrush;         ///< 背景画刷
+    PrivateData(DAGraphicsItem* p);
+    bool mIsShowBorder { false };      ///< 是否显示边框
+    bool mIsShowBackground { false };  ///< 是否显示背景
+    QPen mBorderPen;                   ///< 边框画笔
+    QBrush mBackgroundBrush;           ///< 背景画刷
 };
 
-DAGraphicsItemPrivate::DAGraphicsItemPrivate(DAGraphicsItem* p)
-    : q_ptr(p), _isShowBorder(false), _isShowBackground(false)
+DAGraphicsItem::PrivateData::PrivateData(DAGraphicsItem* p) : q_ptr(p)
 {
 }
 
-DAGraphicsItem::DAGraphicsItem(QGraphicsItem* parent) : QGraphicsObject(parent), d_ptr(new DAGraphicsItemPrivate(this))
+//===================================================
+// DAGraphicsItem
+//===================================================
+DAGraphicsItem::DAGraphicsItem(QGraphicsItem* parent) : QGraphicsObject(parent), DA_PIMPL_CONSTRUCT
 {
 }
 
@@ -139,7 +141,7 @@ bool DAGraphicsItem::loadFromXml(const QDomElement* parentElement)
  */
 void DAGraphicsItem::setBorderPen(const QPen& p)
 {
-    d_ptr->_borderPen = p;
+    d_ptr->mBorderPen = p;
 }
 
 /**
@@ -148,7 +150,7 @@ void DAGraphicsItem::setBorderPen(const QPen& p)
  */
 QPen DAGraphicsItem::getBorderPen() const
 {
-    return d_ptr->_borderPen;
+    return d_ptr->mBorderPen;
 }
 
 /**
@@ -157,7 +159,7 @@ QPen DAGraphicsItem::getBorderPen() const
  */
 void DAGraphicsItem::setShowBorder(bool on)
 {
-    d_ptr->_isShowBorder = on;
+    d_ptr->mIsShowBorder = on;
 }
 
 /**
@@ -166,7 +168,7 @@ void DAGraphicsItem::setShowBorder(bool on)
  */
 bool DAGraphicsItem::isShowBorder() const
 {
-    return d_ptr->_isShowBorder;
+    return d_ptr->mIsShowBorder;
 }
 
 /**
@@ -175,7 +177,7 @@ bool DAGraphicsItem::isShowBorder() const
  */
 void DAGraphicsItem::setBackgroundBrush(const QBrush& b)
 {
-    d_ptr->_bkBrush = b;
+    d_ptr->mBackgroundBrush = b;
 }
 
 /**
@@ -184,7 +186,7 @@ void DAGraphicsItem::setBackgroundBrush(const QBrush& b)
  */
 QBrush DAGraphicsItem::getBackgroundBrush() const
 {
-    return d_ptr->_bkBrush;
+    return d_ptr->mBackgroundBrush;
 }
 
 /**
@@ -193,7 +195,7 @@ QBrush DAGraphicsItem::getBackgroundBrush() const
  */
 void DAGraphicsItem::setShowBackground(bool on)
 {
-    d_ptr->_isShowBackground = on;
+    d_ptr->mIsShowBackground = on;
 }
 
 /**
@@ -202,7 +204,7 @@ void DAGraphicsItem::setShowBackground(bool on)
  */
 bool DAGraphicsItem::isShowBackground() const
 {
-    return d_ptr->_isShowBackground;
+    return d_ptr->mIsShowBackground;
 }
 
 }  // end of DA

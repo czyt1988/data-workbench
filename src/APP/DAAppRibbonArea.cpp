@@ -63,7 +63,7 @@
 #include "DAWorkFlowGraphicsView.h"
 #include "DADataWorkFlow.h"
 // project
-#include "DAProject.h"
+#include "DAAppProject.h"
 
 //快速链接信号槽
 #define DAAPPRIBBONAREA_ACTION_BIND(actionname, functionname)                                                          \
@@ -79,7 +79,7 @@ using namespace DA;
 // DAAppRibbonArea
 //===================================================
 
-DAAppRibbonArea::DAAppRibbonArea(DAAppUIInterface* u) : DAAppRibbonAreaInterface(u)
+DAAppRibbonArea::DAAppRibbonArea(DAUIInterface* u) : DARibbonAreaInterface(u)
 {
     DAAppUI* appui = qobject_cast< DAAppUI* >(u);
     m_app          = qobject_cast< AppMainWindow* >(appui->mainWindow());
@@ -184,7 +184,9 @@ void DAAppRibbonArea::resetText()
     m_pannelWorkflowView->setPannelName(tr("View"));                       //视图
     m_pannelWorkflowRun->setPannelName(tr("Run"));                         //运行
     //
-    m_categoryFigure->setCategoryName(tr("Figure"));  // cn:绘图
+    m_categoryFigure->setCategoryName(tr("Figure"));             // cn:绘图
+    m_pannelFigureSetting->setPannelName(tr("Figure Setting"));  // cn:绘图设置
+    m_pannelChartAdd->setPannelName(tr("Add Chart"));            // cn:添加绘图
     //绘图上下文标签
     m_contextChart->setContextTitle(tr("Chart"));                        // cn:绘图
     m_categoryChartEdit->setCategoryName(tr("Chart Edit"));              // cn:绘图编辑
@@ -404,6 +406,11 @@ void DAAppRibbonArea::buildRibbonFigureCategory()
     m_pannelFigureSetting->addLargeAction(m_actions->actionFigureResizeChart);
     m_pannelFigureSetting->addLargeAction(m_actions->actionFigureNewXYAxis);  //新建坐标系
     m_categoryFigure->addPannel(m_pannelFigureSetting);
+
+    m_pannelChartAdd = new SARibbonPannel(m_categoryFigure);
+    m_pannelChartAdd->setObjectName(QStringLiteral("da-pannel-figure.chart-add"));
+    m_pannelChartAdd->addLargeAction(m_actions->actionChartAddCurve);
+    m_categoryFigure->addPannel(m_pannelChartAdd);
 }
 
 void DAAppRibbonArea::buildContextCategoryWorkflowEdit()

@@ -7,7 +7,6 @@
 namespace DA
 {
 
-class DATreeItemPrivate;
 class DATree;
 ///
 /// \ingroup SALib
@@ -16,7 +15,7 @@ class DATree;
 ///
 class DAUTILS_API DATreeItem
 {
-    DA_IMPL(DATreeItem)
+    DA_DECLARE_PRIVATE(DATreeItem)
     friend class DATree;
 
 public:

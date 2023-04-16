@@ -15,6 +15,8 @@ namespace DA
  */
 class DAGRAPHICSVIEW_API DAGraphicsView : public QGraphicsView
 {
+    Q_OBJECT
+    DA_DECLARE_PRIVATE(DAGraphicsView)
 public:
     /**
      * @brief 缩放设置
@@ -41,6 +43,7 @@ public:
 public:
     DAGraphicsView(QWidget* parent = 0);
     DAGraphicsView(QGraphicsScene* scene, QWidget* parent = 0);
+    ~DAGraphicsView();
     //设置缩放的因子
     void setScaleRange(qreal min, qreal max);
     //获取缩放因子
@@ -94,15 +97,6 @@ private:
     void init();
 
 private:
-    qreal m_scaleMax;
-    qreal m_scaleMin;
-    qreal m_zoomStep;
-    qreal m_scaleValue;  ///< 记录缩放的值
-    bool m_isPadding;    ///<标记是否开始拖动
-    QPointF m_mouseScenePos;
-    QPoint m_startPadPos;  ///< 记录开始拖动的位置
-    ZoomFlags m_zoomFlags;
-    PadFlags m_padFlags;
 };
 }
 #endif  // GGRAPHICSVIEW_H

@@ -8,7 +8,6 @@ class QDomDocument;
 class QDomElement;
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DAGraphicsResizeableItem)
 
 /**
  * @brief DAGraphicsResizeableItem对应的样式
@@ -38,7 +37,7 @@ public:
 class DAGRAPHICSVIEW_API DAGraphicsResizeableItem : public DAGraphicsItem
 {
     Q_OBJECT
-    DA_IMPL(DAGraphicsResizeableItem)
+    DA_DECLARE_PRIVATE(DAGraphicsResizeableItem)
 public:
     /**
      * @brief 表征控制点和控制线的类型

@@ -1,13 +1,11 @@
-#ifndef DACSVSTREAM_H
+﻿#ifndef DACSVSTREAM_H
 #define DACSVSTREAM_H
 class QTextStream;
 class QFile;
-class SACsvStreamPrivate;
 #include "DAUtilsAPI.h"
 #include <QString>
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DACsvStream)
 ///
 /// \brief 写csv文件类支持
 /// \author czy
@@ -15,7 +13,7 @@ DA_IMPL_FORWARD_DECL(DACsvStream)
 ///
 class DAUTILS_API DACsvStream
 {
-    DA_IMPL(DACsvStream)
+    DA_DECLARE_PRIVATE(DACsvStream)
 public:
     DACsvStream(QTextStream* txt);
     DACsvStream(QFile* txt);

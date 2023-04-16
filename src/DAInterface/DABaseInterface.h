@@ -4,12 +4,11 @@
 #include "DAInterfaceAPI.h"
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DABaseInterface)
 class DACoreInterface;
 class DAINTERFACE_API DABaseInterface : public QObject
 {
     Q_OBJECT
-    DA_IMPL(DABaseInterface)
+    DA_DECLARE_PRIVATE(DABaseInterface)
 public:
     DABaseInterface(DACoreInterface* c, QObject* par = nullptr);
     ~DABaseInterface();

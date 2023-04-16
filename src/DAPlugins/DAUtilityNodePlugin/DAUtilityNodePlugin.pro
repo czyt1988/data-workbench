@@ -21,16 +21,19 @@ HEADERS += \
     DAUtilityNodeAppExecuteGraphicsItem.h \
     DAUtilityNodeFactory.h \
     DAUtilityNodePlugin.h \
-    DAUtilityNodePluginAPI.h
+    DAUtilityNodePluginAPI.h \
+    settingWidget/DAUtilityNodeAppExecuteSettingWidget.h
 
 
 SOURCES += \
     DAUtilityNodeAppExecute.cpp \
     DAUtilityNodeAppExecuteGraphicsItem.cpp \
     DAUtilityNodeFactory.cpp \
-    DAUtilityNodePlugin.cpp
+    DAUtilityNodePlugin.cpp \
+    settingWidget/DAUtilityNodeAppExecuteSettingWidget.cpp
 
 FORMS += \
+    settingWidget/DAUtilityNodeAppExecuteSettingWidget.ui
 
 
 RESOURCES += \

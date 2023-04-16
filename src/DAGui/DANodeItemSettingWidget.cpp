@@ -1,37 +1,28 @@
-#include "DANodeItemSettingWidget.h"
+﻿#include "DANodeItemSettingWidget.h"
 #include <QDebug>
 #include <QSignalBlocker>
 #include <QActionGroup>
 #include <QPointer>
+#include <QButtonGroup>
 #include "ui_DANodeItemSettingWidget.h"
 #include "DANodeGraphicsScene.h"
 #include "DAGraphicsResizeableItem.h"
 #include "DACommandsForGraphics.h"
 #include "DAAbstractNodeGraphicsItem.h"
-
 namespace DA
 {
-class DANodeItemSettingWidgetPrivate
+class DANodeItemSettingWidget::PrivateData
 {
-    DA_IMPL_PUBLIC(DANodeItemSettingWidget)
+    DA_DECLARE_PUBLIC(DANodeItemSettingWidget)
 public:
-    DANodeItemSettingWidgetPrivate(DANodeItemSettingWidget* p);
-    QPointer< DAGraphicsResizeableItem > _item;
-    QPointer< DANodeGraphicsScene > _scene;
-    QActionGroup* _actionGroupInputLocation;
-    QActionGroup* _actionGroupOutputLocation;
-    QAction* _actionInLeft;
-    QAction* _actionInTop;
-    QAction* _actionInRight;
-    QAction* _actionInBottom;
-    QAction* _actionOutLeft;
-    QAction* _actionOutTop;
-    QAction* _actionOutRight;
-    QAction* _actionOutBottom;
+    PrivateData(DANodeItemSettingWidget* p);
+    QPointer< DAGraphicsResizeableItem > mItem { nullptr };
+    QPointer< DANodeGraphicsScene > mScene { nullptr };
+    QButtonGroup* mButtonGroupInputLocation { nullptr };
+    QButtonGroup* mButtonGroupOutputLocation { nullptr };
 };
 
-DANodeItemSettingWidgetPrivate::DANodeItemSettingWidgetPrivate(DANodeItemSettingWidget* p)
-    : q_ptr(p), _item(nullptr), _scene(nullptr), _actionGroupInputLocation(nullptr), _actionGroupOutputLocation(nullptr)
+DANodeItemSettingWidget::PrivateData::PrivateData(DANodeItemSettingWidget* p) : q_ptr(p)
 {
 }
 
@@ -39,37 +30,22 @@ DANodeItemSettingWidgetPrivate::DANodeItemSettingWidgetPrivate(DANodeItemSetting
 /// DANodeItemSettingWidget
 ////////////////////////////////////////////////
 DANodeItemSettingWidget::DANodeItemSettingWidget(QWidget* parent)
-    : QWidget(parent), d_ptr(new DANodeItemSettingWidgetPrivate(this)), ui(new Ui::DANodeItemSettingWidget)
+    : QWidget(parent), ui(new Ui::DANodeItemSettingWidget), DA_PIMPL_CONSTRUCT
 {
     ui->setupUi(this);
-    d_ptr->_actionGroupInputLocation  = new QActionGroup(this);
-    d_ptr->_actionGroupOutputLocation = new QActionGroup(this);
-    d_ptr->_actionGroupInputLocation->setExclusive(true);
-    d_ptr->_actionGroupOutputLocation->setExclusive(true);
-    //创建action
-    auto createAction = [](const char* iconPath, QActionGroup* p, int dataId) -> QAction* {
-        QAction* a = new QAction(p);
-        a->setIcon(QIcon(iconPath));
-        a->setCheckable(true);
-        a->setData(dataId);
-        return a;
-    };
-    d_ptr->_actionInLeft    = createAction(":/icon/icon/leftSideIn.svg", d_ptr->_actionGroupInputLocation, 0);
-    d_ptr->_actionInTop     = createAction(":/icon/icon/topSideIn.svg", d_ptr->_actionGroupInputLocation, 1);
-    d_ptr->_actionInRight   = createAction(":/icon/icon/rightSideIn.svg", d_ptr->_actionGroupInputLocation, 2);
-    d_ptr->_actionInBottom  = createAction(":/icon/icon/bottomSideIn.svg", d_ptr->_actionGroupInputLocation, 3);
-    d_ptr->_actionOutLeft   = createAction(":/icon/icon/leftSideOut.svg", d_ptr->_actionGroupOutputLocation, 4);
-    d_ptr->_actionOutTop    = createAction(":/icon/icon/topSideOut.svg", d_ptr->_actionGroupOutputLocation, 5);
-    d_ptr->_actionOutRight  = createAction(":/icon/icon/rightSideOut.svg", d_ptr->_actionGroupOutputLocation, 6);
-    d_ptr->_actionOutBottom = createAction(":/icon/icon/bottomSideOut.svg", d_ptr->_actionGroupOutputLocation, 7);
-    ui->toolButtonInLeft->setDefaultAction(d_ptr->_actionInLeft);
-    ui->toolButtonInTop->setDefaultAction(d_ptr->_actionInTop);
-    ui->toolButtonInRight->setDefaultAction(d_ptr->_actionInRight);
-    ui->toolButtonInBottom->setDefaultAction(d_ptr->_actionInBottom);
-    ui->toolButtonOutLeft->setDefaultAction(d_ptr->_actionOutLeft);
-    ui->toolButtonOutTop->setDefaultAction(d_ptr->_actionOutTop);
-    ui->toolButtonOutRight->setDefaultAction(d_ptr->_actionOutRight);
-    ui->toolButtonOutBottom->setDefaultAction(d_ptr->_actionOutBottom);
+    d_ptr->mButtonGroupInputLocation = new QButtonGroup(this);
+    d_ptr->mButtonGroupInputLocation->setExclusive(true);
+    d_ptr->mButtonGroupInputLocation->addButton(ui->toolButtonInLeft, 0);
+    d_ptr->mButtonGroupInputLocation->addButton(ui->toolButtonInTop, 1);
+    d_ptr->mButtonGroupInputLocation->addButton(ui->toolButtonInRight, 2);
+    d_ptr->mButtonGroupInputLocation->addButton(ui->toolButtonInBottom, 3);
+    d_ptr->mButtonGroupOutputLocation = new QButtonGroup(this);
+    d_ptr->mButtonGroupOutputLocation->setExclusive(true);
+    d_ptr->mButtonGroupOutputLocation->addButton(ui->toolButtonOutLeft, 4);
+    d_ptr->mButtonGroupOutputLocation->addButton(ui->toolButtonOutTop, 5);
+    d_ptr->mButtonGroupOutputLocation->addButton(ui->toolButtonOutRight, 6);
+    d_ptr->mButtonGroupOutputLocation->addButton(ui->toolButtonOutBottom, 7);
+
     connect(ui->doubleSpinBoxBodyWidth,
             QOverload< double >::of(&QDoubleSpinBox::valueChanged),
             this,
@@ -86,8 +62,9 @@ DANodeItemSettingWidget::DANodeItemSettingWidget(QWidget* parent)
     connect(ui->doubleSpinBoxY, QOverload< double >::of(&QDoubleSpinBox::valueChanged), this, &DANodeItemSettingWidget::onDoubleSpinBoxYValueChanged);
     connect(ui->checkBoxMovable, &QCheckBox::stateChanged, this, &DANodeItemSettingWidget::onCheckBoxMovableStateChanged);
     connect(ui->checkBoxResizable, &QCheckBox::stateChanged, this, &DANodeItemSettingWidget::onCheckBoxResizableStateChanged);
-    connect(d_ptr->_actionGroupInputLocation, &QActionGroup::triggered, this, &DANodeItemSettingWidget::onActionGroupTriggered);
-    connect(d_ptr->_actionGroupOutputLocation, &QActionGroup::triggered, this, &DANodeItemSettingWidget::onActionGroupTriggered);
+    connect(d_ptr->mButtonGroupInputLocation, QOverload< int >::of(&QButtonGroup::buttonPressed), this, &DANodeItemSettingWidget::onButtonGroupClicked);
+    connect(d_ptr->mButtonGroupOutputLocation, QOverload< int >::of(&QButtonGroup::buttonPressed), this, &DANodeItemSettingWidget::onButtonGroupClicked);
+    connect(ui->textEditTooltip, &QTextEdit::textChanged, this, &DANodeItemSettingWidget::onTextEditTooltipTextChanged);
 }
 
 DANodeItemSettingWidget::~DANodeItemSettingWidget()
@@ -97,7 +74,7 @@ DANodeItemSettingWidget::~DANodeItemSettingWidget()
 
 void DANodeItemSettingWidget::setItem(DAGraphicsResizeableItem* item)
 {
-    d_ptr->_item = item;
+    d_ptr->mItem = item;
     updateData();
 }
 /**
@@ -106,7 +83,7 @@ void DANodeItemSettingWidget::setItem(DAGraphicsResizeableItem* item)
  */
 DAGraphicsResizeableItem* DANodeItemSettingWidget::getItem() const
 {
-    return d_ptr->_item.data();
+    return d_ptr->mItem.data();
 }
 
 /**
@@ -117,21 +94,21 @@ DAGraphicsResizeableItem* DANodeItemSettingWidget::getItem() const
  */
 void DANodeItemSettingWidget::setScene(DANodeGraphicsScene* sc)
 {
-    if (d_ptr->_scene == sc) {
+    if (d_ptr->mScene == sc) {
         return;
     }
-    if (d_ptr->_scene) {
-        disconnect(d_ptr->_scene.data(), &DANodeGraphicsScene::nodeItemsRemoved, this, &DANodeItemSettingWidget::onNodeItemsRemoved);
+    if (d_ptr->mScene) {
+        disconnect(d_ptr->mScene.data(), &DANodeGraphicsScene::nodeItemsRemoved, this, &DANodeItemSettingWidget::onNodeItemsRemoved);
     }
-    d_ptr->_scene = sc;
-    if (d_ptr->_scene) {
-        connect(d_ptr->_scene.data(), &DANodeGraphicsScene::nodeItemsRemoved, this, &DANodeItemSettingWidget::onNodeItemsRemoved);
+    d_ptr->mScene = sc;
+    if (d_ptr->mScene) {
+        connect(d_ptr->mScene.data(), &DANodeGraphicsScene::nodeItemsRemoved, this, &DANodeItemSettingWidget::onNodeItemsRemoved);
     }
 }
 
 void DANodeItemSettingWidget::updateData()
 {
-    if (nullptr == d_ptr->_item) {
+    if (nullptr == d_ptr->mItem) {
         resetValue();
         return;
     }
@@ -147,15 +124,15 @@ void DANodeItemSettingWidget::updatePosition()
     QSignalBlocker b1(ui->doubleSpinBoxX), b2(ui->doubleSpinBoxY);
     Q_UNUSED(b1);
     Q_UNUSED(b2);
-    ui->doubleSpinBoxX->setValue(d_ptr->_item->x());
-    ui->doubleSpinBoxY->setValue(d_ptr->_item->y());
+    ui->doubleSpinBoxX->setValue(d_ptr->mItem->x());
+    ui->doubleSpinBoxY->setValue(d_ptr->mItem->y());
 }
 
 void DANodeItemSettingWidget::updateRotation()
 {
     QSignalBlocker b1(ui->doubleSpinBoxRotation);
     Q_UNUSED(b1);
-    ui->doubleSpinBoxRotation->setValue(d_ptr->_item->rotation());
+    ui->doubleSpinBoxRotation->setValue(d_ptr->mItem->rotation());
 }
 
 void DANodeItemSettingWidget::updateBodySize()
@@ -163,9 +140,9 @@ void DANodeItemSettingWidget::updateBodySize()
     QSignalBlocker b1(ui->doubleSpinBoxBodyWidth), b2(ui->doubleSpinBoxBodyHeight);
     Q_UNUSED(b1);
     Q_UNUSED(b2);
-    QSizeF originSize = d_ptr->_item->getBodySize();
-    QSizeF minSize    = d_ptr->_item->getBodyMinimumSize();
-    QSizeF maxSize    = d_ptr->_item->getBodyMaximumSize();
+    QSizeF originSize = d_ptr->mItem->getBodySize();
+    QSizeF minSize    = d_ptr->mItem->getBodyMinimumSize();
+    QSizeF maxSize    = d_ptr->mItem->getBodyMaximumSize();
     ui->doubleSpinBoxBodyWidth->setValue(originSize.width());
     ui->doubleSpinBoxBodyWidth->setMinimum(minSize.width());
     ui->doubleSpinBoxBodyWidth->setMaximum(maxSize.width());
@@ -176,22 +153,23 @@ void DANodeItemSettingWidget::updateBodySize()
 
 void DANodeItemSettingWidget::updateItemState()
 {
-    QSignalBlocker b1(ui->checkBoxMovable), b2(ui->checkBoxResizable);
+    QSignalBlocker b1(ui->checkBoxMovable), b2(ui->checkBoxResizable), b3(ui->textEditTooltip);
     Q_UNUSED(b1);
     Q_UNUSED(b2);
+    Q_UNUSED(b3);
     //网格的尺寸作为x,y的步长
-    if (d_ptr->_scene) {
-        QSize gs = d_ptr->_scene->getGridSize();
+    if (d_ptr->mScene) {
+        QSize gs = d_ptr->mScene->getGridSize();
         ui->doubleSpinBoxX->setSingleStep(gs.width());
         ui->doubleSpinBoxY->setSingleStep(gs.height());
     }
-    ui->checkBoxMovable->setChecked(d_ptr->_item->isMovable());
-    ui->checkBoxResizable->setChecked(d_ptr->_item->isEnableResize());
-    ui->doubleSpinBoxBodyWidth->setEnabled(d_ptr->_item->isEnableResize());
-    ui->doubleSpinBoxBodyHeight->setEnabled(d_ptr->_item->isEnableResize());
-    ui->doubleSpinBoxX->setEnabled(d_ptr->_item->isMovable());
-    ui->doubleSpinBoxY->setEnabled(d_ptr->_item->isMovable());
-    ui->textEdit->setText(d_ptr->_item->toolTip());
+    ui->checkBoxMovable->setChecked(d_ptr->mItem->isMovable());
+    ui->checkBoxResizable->setChecked(d_ptr->mItem->isEnableResize());
+    ui->doubleSpinBoxBodyWidth->setEnabled(d_ptr->mItem->isEnableResize());
+    ui->doubleSpinBoxBodyHeight->setEnabled(d_ptr->mItem->isEnableResize());
+    ui->doubleSpinBoxX->setEnabled(d_ptr->mItem->isMovable());
+    ui->doubleSpinBoxY->setEnabled(d_ptr->mItem->isMovable());
+    ui->textEditTooltip->setText(d_ptr->mItem->toolTip());
 }
 
 /**
@@ -199,38 +177,27 @@ void DANodeItemSettingWidget::updateItemState()
  */
 void DANodeItemSettingWidget::updateLinkPointLocation()
 {
-    if (nullptr == d_ptr->_item) {
+    if (nullptr == d_ptr->mItem) {
         return;
     }
-    DAAbstractNodeGraphicsItem* nodeItem = qobject_cast< DAAbstractNodeGraphicsItem* >(d_ptr->_item);
-    if (nullptr == nodeItem) {
-        d_ptr->_actionGroupInputLocation->setDisabled(true);
-        d_ptr->_actionGroupOutputLocation->setDisabled(true);
-        return;
-    }
-    if (!d_ptr->_actionGroupInputLocation->isEnabled()) {
-        d_ptr->_actionGroupInputLocation->setEnabled(true);
-    }
-    if (!d_ptr->_actionGroupOutputLocation->isEnabled()) {
-        d_ptr->_actionGroupOutputLocation->setEnabled(true);
-    }
+    DAAbstractNodeGraphicsItem* nodeItem = qobject_cast< DAAbstractNodeGraphicsItem* >(d_ptr->mItem);
 
-    QSignalBlocker b1(d_ptr->_actionGroupInputLocation), b2(d_ptr->_actionGroupOutputLocation);
+    QSignalBlocker b1(d_ptr->mButtonGroupInputLocation), b2(d_ptr->mButtonGroupOutputLocation);
     Q_UNUSED(b1);
     Q_UNUSED(b2);
     DAAbstractNodeGraphicsItem::LinkPointLocation ll = nodeItem->getLinkPointLocation(DANodeLinkPoint::Input);
     switch (ll) {
     case DAAbstractNodeGraphicsItem::LinkPointLocationOnLeftSide:
-        d_ptr->_actionInLeft->setChecked(true);
+        ui->toolButtonInLeft->setChecked(true);
         break;
     case DAAbstractNodeGraphicsItem::LinkPointLocationOnTopSide:
-        d_ptr->_actionInTop->setChecked(true);
+        ui->toolButtonInTop->setChecked(true);
         break;
     case DAAbstractNodeGraphicsItem::LinkPointLocationOnRightSide:
-        d_ptr->_actionInRight->setChecked(true);
+        ui->toolButtonInRight->setChecked(true);
         break;
     case DAAbstractNodeGraphicsItem::LinkPointLocationOnBottomSide:
-        d_ptr->_actionInBottom->setChecked(true);
+        ui->toolButtonInBottom->setChecked(true);
         break;
     default:
         break;
@@ -238,16 +205,16 @@ void DANodeItemSettingWidget::updateLinkPointLocation()
     ll = nodeItem->getLinkPointLocation(DANodeLinkPoint::Output);
     switch (ll) {
     case DAAbstractNodeGraphicsItem::LinkPointLocationOnLeftSide:
-        d_ptr->_actionOutLeft->setChecked(true);
+        ui->toolButtonOutLeft->setChecked(true);
         break;
     case DAAbstractNodeGraphicsItem::LinkPointLocationOnTopSide:
-        d_ptr->_actionOutTop->setChecked(true);
+        ui->toolButtonOutTop->setChecked(true);
         break;
     case DAAbstractNodeGraphicsItem::LinkPointLocationOnRightSide:
-        d_ptr->_actionOutRight->setChecked(true);
+        ui->toolButtonOutRight->setChecked(true);
         break;
     case DAAbstractNodeGraphicsItem::LinkPointLocationOnBottomSide:
-        d_ptr->_actionOutBottom->setChecked(true);
+        ui->toolButtonOutBottom->setChecked(true);
         break;
     default:
         break;
@@ -256,168 +223,162 @@ void DANodeItemSettingWidget::updateLinkPointLocation()
 
 void DANodeItemSettingWidget::onDoubleSpinBoxBodyWidthValueChanged(double v)
 {
-    if (nullptr == d_ptr->_item) {
+    if (nullptr == d_ptr->mItem) {
         return;
     }
-    QSizeF originSize = d_ptr->_item->getBodySize();
+    QSizeF originSize = d_ptr->mItem->getBodySize();
     if (ui->checkBoxLockAspectRatio->isChecked()) {
-        d_ptr->_item->setBodySize(originSize.scaled(v, originSize.height(), Qt::KeepAspectRatio));
+        d_ptr->mItem->setBodySize(originSize.scaled(v, originSize.height(), Qt::KeepAspectRatio));
     } else {
-        d_ptr->_item->setBodySize(QSizeF(v, originSize.height()));
+        d_ptr->mItem->setBodySize(QSizeF(v, originSize.height()));
     }
-    QSizeF settedSize = d_ptr->_item->getBodySize();
+    QSizeF settedSize = d_ptr->mItem->getBodySize();
 
     QSignalBlocker b1(ui->doubleSpinBoxBodyWidth), b2(ui->doubleSpinBoxBodyHeight);
     ui->doubleSpinBoxBodyWidth->setValue(settedSize.width());
     ui->doubleSpinBoxBodyHeight->setValue(settedSize.height());
-    if (d_ptr->_scene) {
+    if (d_ptr->mScene) {
         //如果有scene，就把结果推入cmd,注意因为已经设置了bodysize，因此skipFirst一定要为true
         if (originSize != settedSize) {
-            auto cmd = new DA::DACommandsForGraphicsItemResized(d_ptr->_item, originSize, settedSize, true);
-            d_ptr->_scene->push(cmd);
+            auto cmd = new DA::DACommandsForGraphicsItemResized(d_ptr->mItem, originSize, settedSize, true);
+            d_ptr->mScene->push(cmd);
         }
     }
 }
 
 void DANodeItemSettingWidget::onDoubleSpinBoxBodyHeightValueChanged(double v)
 {
-    if (nullptr == d_ptr->_item) {
+    if (nullptr == d_ptr->mItem) {
         return;
     }
-    QSizeF originSize = d_ptr->_item->getBodySize();
+    QSizeF originSize = d_ptr->mItem->getBodySize();
     if (ui->checkBoxLockAspectRatio->isChecked()) {
-        d_ptr->_item->setBodySize(originSize.scaled(originSize.width(), v, Qt::KeepAspectRatio));
+        d_ptr->mItem->setBodySize(originSize.scaled(originSize.width(), v, Qt::KeepAspectRatio));
     } else {
-        d_ptr->_item->setBodySize(QSizeF(originSize.width(), v));
+        d_ptr->mItem->setBodySize(QSizeF(originSize.width(), v));
     }
-    QSizeF settedSize = d_ptr->_item->getBodySize();
+    QSizeF settedSize = d_ptr->mItem->getBodySize();
     //设置成功了，设置高度
     QSignalBlocker b1(ui->doubleSpinBoxBodyWidth), b2(ui->doubleSpinBoxBodyHeight);
     ui->doubleSpinBoxBodyWidth->setValue(settedSize.width());
     ui->doubleSpinBoxBodyHeight->setValue(settedSize.height());
-    if (d_ptr->_scene) {
+    if (d_ptr->mScene) {
         //如果有scene，就把结果推入cmd,注意因为已经设置了bodysize，因此skipFirst一定要为true
-        if (d_ptr->_item->getBodySize().height() == originSize.height()) {
+        if (d_ptr->mItem->getBodySize().height() == originSize.height()) {
             //说明没设置成功,跳过
             return;
         }
-        auto cmd = new DA::DACommandsForGraphicsItemResized(d_ptr->_item, originSize, settedSize, true);
-        d_ptr->_scene->push(cmd);
+        auto cmd = new DA::DACommandsForGraphicsItemResized(d_ptr->mItem, originSize, settedSize, true);
+        d_ptr->mScene->push(cmd);
     }
 }
 
 void DANodeItemSettingWidget::onDoubleSpinBoxRotationValueChanged(double v)
 {
-    if (nullptr == d_ptr->_item) {
+    if (nullptr == d_ptr->mItem) {
         return;
     }
-    qreal oldRotation = d_ptr->_item->rotation();
+    qreal oldRotation = d_ptr->mItem->rotation();
     if (qFuzzyCompare(oldRotation, v)) {
         qDebug() << "same rotation value , skip";
         return;
     }
-    d_ptr->_item->setRotation(v);
-    if (d_ptr->_scene) {
+    d_ptr->mItem->setRotation(v);
+    if (d_ptr->mScene) {
         //如果有scene，就把结果推入cmd,注意因为已经设置了bodysize，因此skipFirst一定要为true
-        if (!qFuzzyCompare(d_ptr->_item->rotation(), v)) {
+        if (!qFuzzyCompare(d_ptr->mItem->rotation(), v)) {
             //说明没设置成功,跳过
             qDebug() << "_item rotation value not equal setting value";
             QSignalBlocker b(ui->doubleSpinBoxRotation);
             Q_UNUSED(b);
-            ui->doubleSpinBoxRotation->setValue(d_ptr->_item->rotation());
+            ui->doubleSpinBoxRotation->setValue(d_ptr->mItem->rotation());
             return;
         }
-        auto cmd = new DA::DACommandsForGraphicsItemRotation(d_ptr->_item, oldRotation, v, true);
-        d_ptr->_scene->push(cmd);
+        auto cmd = new DA::DACommandsForGraphicsItemRotation(d_ptr->mItem, oldRotation, v, true);
+        d_ptr->mScene->push(cmd);
     }
 }
 
 void DANodeItemSettingWidget::onDoubleSpinBoxXValueChanged(double v)
 {
-    if (nullptr == d_ptr->_item) {
+    if (nullptr == d_ptr->mItem) {
         return;
     }
-    QPointF oldpos = d_ptr->_item->pos();
-    d_ptr->_item->setPos(v, oldpos.y());
-    QPointF newPos = d_ptr->_item->pos();
+    QPointF oldpos = d_ptr->mItem->pos();
+    d_ptr->mItem->setPos(v, oldpos.y());
+    QPointF newPos = d_ptr->mItem->pos();
     //在存在网格的情况下，可能设置的位置不是显示的位置，
     QSignalBlocker b1(ui->doubleSpinBoxX), b2(ui->doubleSpinBoxY);
     Q_UNUSED(b1);
     Q_UNUSED(b2);
     ui->doubleSpinBoxX->setValue(newPos.x());
     ui->doubleSpinBoxY->setValue(newPos.y());
-    if (d_ptr->_scene) {
-        auto cmd = new DA::DACommandsForGraphicsItemMoved(d_ptr->_item, oldpos, newPos, true);
-        d_ptr->_scene->push(cmd);
+    if (d_ptr->mScene) {
+        auto cmd = new DA::DACommandsForGraphicsItemMoved(d_ptr->mItem, oldpos, newPos, true);
+        d_ptr->mScene->push(cmd);
     }
 }
 
 void DANodeItemSettingWidget::onDoubleSpinBoxYValueChanged(double v)
 {
-    if (nullptr == d_ptr->_item) {
+    if (nullptr == d_ptr->mItem) {
         return;
     }
-    QPointF oldpos = d_ptr->_item->pos();
-    d_ptr->_item->setPos(oldpos.x(), v);
-    QPointF newPos = d_ptr->_item->pos();
+    QPointF oldpos = d_ptr->mItem->pos();
+    d_ptr->mItem->setPos(oldpos.x(), v);
+    QPointF newPos = d_ptr->mItem->pos();
     QSignalBlocker b1(ui->doubleSpinBoxX), b2(ui->doubleSpinBoxY);
     Q_UNUSED(b1);
     Q_UNUSED(b2);
     ui->doubleSpinBoxX->setValue(newPos.x());
     ui->doubleSpinBoxY->setValue(newPos.y());
-    if (d_ptr->_scene) {
-        auto cmd = new DA::DACommandsForGraphicsItemMoved(d_ptr->_item, oldpos, newPos, true);
-        d_ptr->_scene->push(cmd);
+    if (d_ptr->mScene) {
+        auto cmd = new DA::DACommandsForGraphicsItemMoved(d_ptr->mItem, oldpos, newPos, true);
+        d_ptr->mScene->push(cmd);
     }
 }
 
 void DANodeItemSettingWidget::onCheckBoxMovableStateChanged(int state)
 {
-    if (d_ptr->_item) {
-        d_ptr->_item->setFlag(QGraphicsItem::ItemIsMovable, state == Qt::Checked);
-        ui->doubleSpinBoxX->setEnabled(d_ptr->_item->isMovable());
-        ui->doubleSpinBoxY->setEnabled(d_ptr->_item->isMovable());
+    if (d_ptr->mItem) {
+        d_ptr->mItem->setFlag(QGraphicsItem::ItemIsMovable, state == Qt::Checked);
+        ui->doubleSpinBoxX->setEnabled(d_ptr->mItem->isMovable());
+        ui->doubleSpinBoxY->setEnabled(d_ptr->mItem->isMovable());
     }
 }
 
 void DANodeItemSettingWidget::onCheckBoxResizableStateChanged(int state)
 {
-    if (d_ptr->_item) {
-        d_ptr->_item->setEnableResize(state == Qt::Checked);
-        d_ptr->_item->update();
-        ui->doubleSpinBoxBodyWidth->setEnabled(d_ptr->_item->isEnableResize());
-        ui->doubleSpinBoxBodyHeight->setEnabled(d_ptr->_item->isEnableResize());
+    if (d_ptr->mItem) {
+        d_ptr->mItem->setEnableResize(state == Qt::Checked);
+        d_ptr->mItem->update();
+        ui->doubleSpinBoxBodyWidth->setEnabled(d_ptr->mItem->isEnableResize());
+        ui->doubleSpinBoxBodyHeight->setEnabled(d_ptr->mItem->isEnableResize());
     }
 }
 
 void DANodeItemSettingWidget::onNodeItemsRemoved(const QList< DAAbstractNodeGraphicsItem* >& items)
 {
-    if (d_ptr->_item) {
+    if (d_ptr->mItem) {
         for (const DAAbstractNodeGraphicsItem* i : qAsConst(items)) {
-            if (i == d_ptr->_item.data()) {
-                d_ptr->_item = nullptr;
+            if (i == d_ptr->mItem.data()) {
+                d_ptr->mItem = nullptr;
                 updateData();
             }
         }
     }
 }
 
-void DANodeItemSettingWidget::onActionGroupTriggered(QAction* a)
+void DANodeItemSettingWidget::onButtonGroupClicked(int id)
 {
-    if (nullptr == d_ptr->_item) {
+    if (nullptr == d_ptr->mItem) {
         return;
     }
-    DAAbstractNodeGraphicsItem* nodeItem = qobject_cast< DAAbstractNodeGraphicsItem* >(d_ptr->_item);
+    DAAbstractNodeGraphicsItem* nodeItem = qobject_cast< DAAbstractNodeGraphicsItem* >(d_ptr->mItem);
     if (nullptr == nodeItem) {
         return;
     }
-    bool isok  = false;
-    int dataId = a->data().toInt(&isok);
-    if (!isok) {
-        return;
-    }
-
-    switch (dataId) {
+    switch (id) {
     case 0:
         nodeItem->setLinkPointLocation(DANodeLinkPoint::Input, DAAbstractNodeGraphicsItem::LinkPointLocationOnLeftSide);
         break;
@@ -449,6 +410,15 @@ void DANodeItemSettingWidget::onActionGroupTriggered(QAction* a)
     nodeItem->update();
 }
 
+void DANodeItemSettingWidget::onTextEditTooltipTextChanged()
+{
+    if (nullptr == d_ptr->mItem) {
+        return;
+    }
+    QString t = ui->textEditTooltip->toPlainText();
+    d_ptr->mItem->setToolTip(t);
+}
+
 void DANodeItemSettingWidget::resetValue()
 {
     ui->doubleSpinBoxBodyWidth->setValue(0);
@@ -458,7 +428,7 @@ void DANodeItemSettingWidget::resetValue()
     ui->doubleSpinBoxY->setValue(0);
     ui->checkBoxMovable->setChecked(false);
     ui->checkBoxResizable->setChecked(false);
-    ui->textEdit->setText("");
+    ui->textEditTooltip->clear();
 }
 
 }  // end of DA

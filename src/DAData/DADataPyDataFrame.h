@@ -35,7 +35,7 @@ public:
     QVector< double > getSeriesByVector(const QString& name) const;
 
 protected:
-    DAPyDataFrame _df;
+    DAPyDataFrame mDataframe;
 };
 }  // namespace DA
 #endif  // DADATAPYDATAFRAME_H

@@ -323,20 +323,20 @@ QVariant DAChartWidgetStandardItem::dataDecorationRole(int c) const
 // DAFigureTreeModelPrivate
 //===================================================
 
-class DAFigureTreeModelPrivate
+class DAFigureTreeModel::PrivateData
 {
-    DA_IMPL_PUBLIC(DAFigureTreeModel)
+    DA_DECLARE_PUBLIC(DAFigureTreeModel)
 public:
-    DAFigureTreeModelPrivate(DAFigureTreeModel* p);
+    PrivateData(DAFigureTreeModel* p);
     //
     DAChartWidgetStandardItem* chartWidgetToChartItem(const DAChartWidget* chart);
 
 public:
-    DAFigureWidget* mFig;
+    DAFigureWidget* mFig { nullptr };
     QList< DAChartWidget* > mCharts;
 };
 
-DAFigureTreeModelPrivate::DAFigureTreeModelPrivate(DAFigureTreeModel* p) : q_ptr(p), mFig(nullptr)
+DAFigureTreeModel::PrivateData::PrivateData(DAFigureTreeModel* p) : q_ptr(p)
 {
 }
 
@@ -345,7 +345,7 @@ DAFigureTreeModelPrivate::DAFigureTreeModelPrivate(DAFigureTreeModel* p) : q_ptr
  * @param chart
  * @return
  */
-DAChartWidgetStandardItem* DAFigureTreeModelPrivate::chartWidgetToChartItem(const DAChartWidget* chart)
+DAChartWidgetStandardItem* DAFigureTreeModel::PrivateData::chartWidgetToChartItem(const DAChartWidget* chart)
 {
     DAChartWidgetStandardItem* chartItem = nullptr;
 
@@ -363,8 +363,10 @@ DAChartWidgetStandardItem* DAFigureTreeModelPrivate::chartWidgetToChartItem(cons
     return chartItem;
 }
 
-DAFigureTreeModel::DAFigureTreeModel(QObject* parent)
-    : QStandardItemModel(parent), d_ptr(new DAFigureTreeModelPrivate(this))
+//===================================================
+// DAFigureTreeModel
+//===================================================
+DAFigureTreeModel::DAFigureTreeModel(QObject* parent) : QStandardItemModel(parent), DA_PIMPL_CONSTRUCT
 {
 }
 

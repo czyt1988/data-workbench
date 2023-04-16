@@ -3,46 +3,36 @@
 
 namespace DA
 {
-class DAStandardNodeWidgetGraphicsItemPrivate
+class DAStandardNodeWidgetGraphicsItem::PrivateData
 {
-    DA_IMPL_PUBLIC(DAStandardNodeWidgetGraphicsItem)
+    DA_DECLARE_PUBLIC(DAStandardNodeWidgetGraphicsItem)
 public:
-    DAStandardNodeWidgetGraphicsItemPrivate(DAStandardNodeWidgetGraphicsItem* p);
+    PrivateData(DAStandardNodeWidgetGraphicsItem* p);
 
 public:
-    QGraphicsProxyWidget* _proxyWidget;
+    QGraphicsProxyWidget* mProxyWidget;
 };
-}  // end of namespace DA
-
-//===================================================
-// using DA namespace -- 禁止在头文件using！！
-//===================================================
-
-using namespace DA;
 
 //===================================================
 // DAStandardNodeWidgetGraphicsItemPrivate
 //===================================================
-DAStandardNodeWidgetGraphicsItemPrivate::DAStandardNodeWidgetGraphicsItemPrivate(DAStandardNodeWidgetGraphicsItem* p)
-    : q_ptr(p)
+DAStandardNodeWidgetGraphicsItem::PrivateData::PrivateData(DAStandardNodeWidgetGraphicsItem* p) : q_ptr(p)
 {
-    _proxyWidget = new QGraphicsProxyWidget(p);
+    mProxyWidget = new QGraphicsProxyWidget(p);
 }
 
-//
+//==============================================================
+// DAStandardNodeWidgetGraphicsItem
+//==============================================================
 
 DAStandardNodeWidgetGraphicsItem::DAStandardNodeWidgetGraphicsItem(DAAbstractNode* n, QGraphicsItem* p)
-    : DAAbstractNodeGraphicsItem(n, p), d_ptr(new DAStandardNodeWidgetGraphicsItemPrivate(this))
+    : DAAbstractNodeGraphicsItem(n, p), DA_PIMPL_CONSTRUCT
 {
 }
 
 DAStandardNodeWidgetGraphicsItem::~DAStandardNodeWidgetGraphicsItem()
 {
 }
-
-//==============================================================
-// DAStandardNodeWidgetGraphicsItem
-//==============================================================
 
 void DAStandardNodeWidgetGraphicsItem::paintBody(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget, const QRectF& bodyRect)
 {
@@ -54,7 +44,7 @@ void DAStandardNodeWidgetGraphicsItem::paintBody(QPainter* painter, const QStyle
 
 void DAStandardNodeWidgetGraphicsItem::setBodySize(const QSizeF& s)
 {
-    d_ptr->_proxyWidget->resize(s);
+    d_ptr->mProxyWidget->resize(s);
     DAAbstractNodeGraphicsItem::setBodySize(s);
 }
 /**
@@ -63,7 +53,7 @@ void DAStandardNodeWidgetGraphicsItem::setBodySize(const QSizeF& s)
  */
 QGraphicsProxyWidget* DAStandardNodeWidgetGraphicsItem::proxyWidgetItem()
 {
-    return d_ptr->_proxyWidget;
+    return d_ptr->mProxyWidget;
 }
 
 /**
@@ -73,7 +63,7 @@ QGraphicsProxyWidget* DAStandardNodeWidgetGraphicsItem::proxyWidgetItem()
 void DAStandardNodeWidgetGraphicsItem::setWidget(QWidget* w)
 {
     QSize s = w->size();
-    d_ptr->_proxyWidget->setWidget(w);
+    d_ptr->mProxyWidget->setWidget(w);
     changeBodySize(s);
 }
 
@@ -83,5 +73,6 @@ void DAStandardNodeWidgetGraphicsItem::setWidget(QWidget* w)
  */
 QWidget* DAStandardNodeWidgetGraphicsItem::widget() const
 {
-    return d_ptr->_proxyWidget->widget();
+    return d_ptr->mProxyWidget->widget();
 }
+}  // end of namespace DA

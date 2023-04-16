@@ -6,13 +6,12 @@
 #include "DAPyModule.h"
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DAPyModulePandas)
 /**
  * @brief 对应pandas的包
  */
 class DAPYBINDQT_API DAPyModulePandas : public DAPyModule
 {
-    DA_IMPL(DAPyModulePandas)
+    DA_DECLARE_PRIVATE(DAPyModulePandas)
     DAPyModulePandas();
 
 public:

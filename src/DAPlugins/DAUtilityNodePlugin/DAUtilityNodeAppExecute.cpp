@@ -30,6 +30,7 @@ DAUtilityNodeAppExecute::DAUtilityNodeAppExecute() : DAAbstractNode(), d_ptr(new
 {
     addInputKey("input");
     addOutputKey("output");
+    metaData().setIcon(QIcon(":/plugin-node-icon/icon/application.svg"));
     metaData().setNodePrototype(DAUTILITYNODEPLUGIN_NODEPROTOTYPE(AppExecute));
     metaData().setNodeName(QObject::tr("App Execute"));
     metaData().setGroup(QObject::tr("App"));

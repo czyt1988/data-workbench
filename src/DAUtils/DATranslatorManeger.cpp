@@ -1,4 +1,4 @@
-#include "DATranslatorManeger.h"
+﻿#include "DATranslatorManeger.h"
 #include <QCoreApplication>
 #include <QDir>
 #include <QLocale>
@@ -7,41 +7,41 @@
 namespace DA
 {
 
-class DATranslatorManegerPrivate
+class DATranslatorManeger::PrivateData
 {
-    DA_IMPL_PUBLIC(DATranslatorManeger)
+    DA_DECLARE_PUBLIC(DATranslatorManeger)
 public:
-    DATranslatorManegerPrivate(DATranslatorManeger* p);
+    PrivateData(DATranslatorManeger* p);
     void clearAllTranslator();
 
 public:
-    QLocale _local;
-    QList< QString > _translatorFilePaths;
-    QList< QString > _translatorNames;
-    QList< QTranslator* > _translatorLists;
-    QList< QString > _loadedFiles;  ///< 记录加载的翻译文件
+    QLocale mLocal;
+    QList< QString > mTranslatorFilePaths;
+    QList< QString > mTranslatorNames;
+    QList< QTranslator* > mTranslatorLists;
+    //    QList< QString > mLoadedFiles;  ///< 记录加载的翻译文件
 };
 
-DATranslatorManegerPrivate::DATranslatorManegerPrivate(DATranslatorManeger* p) : q_ptr(p)
+DATranslatorManeger::PrivateData::PrivateData(DATranslatorManeger* p) : q_ptr(p)
 {
-    _translatorNames << "qt"
+    mTranslatorNames << "qt"
                      << "da";
 }
 
-void DATranslatorManegerPrivate::clearAllTranslator()
+void DATranslatorManeger::PrivateData::clearAllTranslator()
 {
-    for (QTranslator* t : qAsConst(_translatorLists)) {
+    for (QTranslator* t : qAsConst(mTranslatorLists)) {
         delete t;
     }
-    _translatorLists.clear();
+    mTranslatorLists.clear();
 }
 
 //==============================================================
 // DATranslator
 //==============================================================
-DATranslatorManeger::DATranslatorManeger() : d_ptr(new DATranslatorManegerPrivate(this))
+DATranslatorManeger::DATranslatorManeger() : d_ptr(new DATranslatorManeger::PrivateData(this))
 {
-    const QLocale& locale = d_ptr->_local;
+    const QLocale& locale = d_ptr->mLocal;
     qDebug() << "Setting up translator:"
              << "\nLanguage:" << QLocale::languageToString(locale.language())
              << "\nCountry:" << QLocale::countryToString(locale.country())
@@ -61,7 +61,7 @@ DATranslatorManeger::DATranslatorManeger() : d_ptr(new DATranslatorManegerPrivat
  * @param fileNames
  */
 DATranslatorManeger::DATranslatorManeger(const QList< QString >& fileNames)
-    : d_ptr(new DATranslatorManegerPrivate(this))
+    : d_ptr(new DATranslatorManeger::PrivateData(this))
 {
     setTranslatorFilePaths(getDefaultTranslatorFilePath());
     setTranslatorFileNames(fileNames);
@@ -77,9 +77,19 @@ DATranslatorManeger::~DATranslatorManeger()
  */
 int DATranslatorManeger::installAllTranslator()
 {
+    QString langCode = locale().name();
+    return installAllTranslator(langCode);
+}
+
+/**
+ * @brief 装载所有的翻译
+ * @param langCode locale().name()
+ * @return
+ */
+int DATranslatorManeger::installAllTranslator(const QString& langCode)
+{
     QList< QString > trPaths = getTranslatorFilePath();
     QList< QString > trName  = getTranslatorFileNames();
-    QString langCode         = locale().name();
     int cnt                  = 0;
     QList< QTranslator* > translators;
     for (const QString& p : qAsConst(trPaths)) {
@@ -102,7 +112,7 @@ int DATranslatorManeger::installAllTranslator()
         d_ptr->clearAllTranslator();
         for (QTranslator* t : qAsConst(translators)) {
             if (QCoreApplication::installTranslator(t)) {
-                d_ptr->_translatorLists.append(t);
+                d_ptr->mTranslatorLists.append(t);
             } else {
                 qWarning() << "can not install translator to application";
                 delete t;  //如果安装不成功直接删除QTranslator
@@ -117,7 +127,7 @@ int DATranslatorManeger::installAllTranslator()
  */
 void DATranslatorManeger::setTranslatorFilePaths(const QList< QString >& ps)
 {
-    d_ptr->_translatorFilePaths = ps;
+    d_ptr->mTranslatorFilePaths = ps;
 }
 /**
  * @brief 获取扫描文件路径
@@ -125,7 +135,7 @@ void DATranslatorManeger::setTranslatorFilePaths(const QList< QString >& ps)
  */
 QList< QString > DATranslatorManeger::getTranslatorFilePath() const
 {
-    return d_ptr->_translatorFilePaths;
+    return d_ptr->mTranslatorFilePaths;
 }
 /**
  * @brief 设置翻译文件的前缀名
@@ -133,7 +143,7 @@ QList< QString > DATranslatorManeger::getTranslatorFilePath() const
  */
 void DATranslatorManeger::setTranslatorFileNames(const QList< QString >& ps)
 {
-    d_ptr->_translatorNames = ps;
+    d_ptr->mTranslatorNames = ps;
 }
 /**
  * @brief 获取翻译文件的前缀名
@@ -141,12 +151,12 @@ void DATranslatorManeger::setTranslatorFileNames(const QList< QString >& ps)
  */
 QList< QString > DATranslatorManeger::getTranslatorFileNames() const
 {
-    return d_ptr->_translatorNames;
+    return d_ptr->mTranslatorNames;
 }
 
 void DATranslatorManeger::addTranslatorFileNames(const QString& ps)
 {
-    d_ptr->_translatorNames.append(ps);
+    d_ptr->mTranslatorNames.append(ps);
 }
 
 /**
@@ -155,7 +165,7 @@ void DATranslatorManeger::addTranslatorFileNames(const QString& ps)
  */
 void DATranslatorManeger::setLocale(const QLocale& l)
 {
-    d_ptr->_local = l;
+    d_ptr->mLocal = l;
 }
 /**
  * @brief 获取QLocale
@@ -163,7 +173,7 @@ void DATranslatorManeger::setLocale(const QLocale& l)
  */
 const QLocale& DATranslatorManeger::locale() const
 {
-    return d_ptr->_local;
+    return d_ptr->mLocal;
 }
 /**
  * @brief 获取QLocale
@@ -171,7 +181,7 @@ const QLocale& DATranslatorManeger::locale() const
  */
 QLocale& DATranslatorManeger::locale()
 {
-    return d_ptr->_local;
+    return d_ptr->mLocal;
 }
 /**
  * @brief 获取QLocale
@@ -179,7 +189,7 @@ QLocale& DATranslatorManeger::locale()
  */
 QLocale DATranslatorManeger::getLocale() const
 {
-    return d_ptr->_local;
+    return d_ptr->mLocal;
 }
 /**
  * @brief 获取翻译文件路径
@@ -190,8 +200,8 @@ QLocale DATranslatorManeger::getLocale() const
 QList< QString > DATranslatorManeger::getDefaultTranslatorFilePath()
 {
     QString basePath   = QCoreApplication::applicationDirPath();
-    QString pathQtTr   = basePath + QDir::separator() + "translations";
-    QString pathUserTr = basePath + QDir::separator() + "translations_user";
+    QString pathQtTr   = QDir::toNativeSeparators(basePath + "/translations");
+    QString pathUserTr = QDir::toNativeSeparators(basePath + "/translations_user");
     return { pathQtTr, pathUserTr };
 }
 

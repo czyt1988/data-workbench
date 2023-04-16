@@ -17,7 +17,7 @@ class DAAppCommand : public DACommandInterface
 {
     Q_OBJECT
 public:
-    DAAppCommand(DAAppUIInterface* u);
+    DAAppCommand(DAUIInterface* u);
     ~DAAppCommand();
 
 public:
@@ -29,7 +29,7 @@ public:
     void setDataManagerStack(QUndoStack* s);
 
 private:
-    QPointer< QUndoStack > m_dataManagerStack;
+    QPointer< QUndoStack > mDataManagerStack;
 };
 }  // namespace DA
 

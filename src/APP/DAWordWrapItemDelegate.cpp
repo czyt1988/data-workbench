@@ -3,7 +3,7 @@
 #include <QPainter>
 namespace DA
 {
-DAWordWrapItemDelegate::DAWordWrapItemDelegate(QObject* parent) : QStyledItemDelegate(parent), _wrapMode(Wrap)
+DAWordWrapItemDelegate::DAWordWrapItemDelegate(QObject* parent) : QStyledItemDelegate(parent), mWrapMode(Wrap)
 {
 }
 
@@ -13,7 +13,7 @@ DAWordWrapItemDelegate::DAWordWrapItemDelegate(QObject* parent) : QStyledItemDel
  */
 void DAWordWrapItemDelegate::setWrapMode(DAWordWrapItemDelegate::WrapMode m)
 {
-    _wrapMode = m;
+    mWrapMode = m;
 }
 
 /**
@@ -22,12 +22,12 @@ void DAWordWrapItemDelegate::setWrapMode(DAWordWrapItemDelegate::WrapMode m)
  */
 DAWordWrapItemDelegate::WrapMode DAWordWrapItemDelegate::getWrapMode() const
 {
-    return _wrapMode;
+    return mWrapMode;
 }
 
 void DAWordWrapItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    if (NoWrap == _wrapMode) {
+    if (NoWrap == mWrapMode) {
         QStyledItemDelegate::paint(painter, option, index);
         return;
     }

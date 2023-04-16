@@ -34,7 +34,7 @@ public:
     const char* what() const noexcept;
 
 private:
-    QString _why;
+    QString mWhy;
 };
 
 // QFrame的序列化

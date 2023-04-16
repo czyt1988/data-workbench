@@ -9,33 +9,23 @@
 namespace DA
 {
 
-class DAFigureWidgetOverlayChartEditorPrivate
+class DAFigureWidgetOverlayChartEditor::PrivateData
 {
-    DA_IMPL_PUBLIC(DAFigureWidgetOverlayChartEditor)
+    DA_DECLARE_PUBLIC(DAFigureWidgetOverlayChartEditor)
 public:
-    QPoint _lastMousePressPos;  ///< 记录最后一次窗口移动的坐标
-    QBrush _contorlPointBrush;  ///< 绘制chart2d在编辑模式下控制点的画刷
-    QPen _borderPen;            ///< 绘制chart2d在编辑模式下的画笔
-    bool _isStartResize;        ///< 标定开始进行缩放
-    QWidget* _activeWidget;     ///标定当前激活的窗口，如果没有就为nullptr
-    QRect _oldGeometry;         ///< 保存旧的窗口位置，用于redo/undo
-    QSize _controlPointSize;    ///< 控制点大小
-    DAFigureWidgetOverlayChartEditor::ControlType _controlType;  ///< 记录当前缩放窗口的位置情况
+    QPoint mLastMousePressPos { 0, 0 };      ///< 记录最后一次窗口移动的坐标
+    QBrush mContorlPointBrush { Qt::blue };  ///< 绘制chart2d在编辑模式下控制点的画刷
+    QPen mBorderPen { Qt::blue };            ///< 绘制chart2d在编辑模式下的画笔
+    bool mIsStartResize { false };           ///< 标定开始进行缩放
+    QWidget* mActiveWidget { nullptr };      ///标定当前激活的窗口，如果没有就为nullptr
+    QRect mOldGeometry;                      ///< 保存旧的窗口位置，用于redo/undo
+    QSize mControlPointSize { 8, 8 };        ///< 控制点大小
+    DAFigureWidgetOverlayChartEditor::ControlType mControlType { DAFigureWidgetOverlayChartEditor::OutSide };  ///< 记录当前缩放窗口的位置情况
 
-    bool _figOldMouseTracking;  /// 记录原来fig是否设置了mousetrack
-    bool _figOldHasHoverAttr;   ///<记录原来的figure是否含有Hover属性
-    bool _showPrecentText;      ///< 显示占比文字
-    DAFigureWidgetOverlayChartEditorPrivate(DAFigureWidgetOverlayChartEditor* p)
-        : q_ptr(p)
-        , _lastMousePressPos(0, 0)
-        , _contorlPointBrush(Qt::blue)
-        , _borderPen(Qt::blue)
-        , _isStartResize(false)
-        , _activeWidget(nullptr)
-        , _controlPointSize(8, 8)
-        , _figOldMouseTracking(false)
-        , _figOldHasHoverAttr(false)
-        , _showPrecentText(true)
+    bool mFigOldMouseTracking { false };  /// 记录原来fig是否设置了mousetrack
+    bool mFigOldHasHoverAttr { false };   ///<记录原来的figure是否含有Hover属性
+    bool mShowPrecentText { true };       ///< 显示占比文字
+    PrivateData(DAFigureWidgetOverlayChartEditor* p) : q_ptr(p)
     {
     }
 };
@@ -45,18 +35,18 @@ public:
 //===================================================
 
 DAFigureWidgetOverlayChartEditor::DAFigureWidgetOverlayChartEditor(DAFigureWidget* fig)
-    : DAFigureWidgetOverlay(fig), d_ptr(new DAFigureWidgetOverlayChartEditorPrivate(this))
+    : DAFigureWidgetOverlay(fig), DA_PIMPL_CONSTRUCT
 {
     // setAttribute( Qt::WA_TransparentForMouseEvents,false);
     setFocusPolicy(Qt::ClickFocus);
     //由于QwtWidgetOverlay是对鼠标隐藏的，因此不能直接使用mouseEvent，直接捕获DAFigureWidget的event
     // QwtWidgetOverlay已经install了，因此无需再fig->installEventFilter(this);
-    d_ptr->_figOldMouseTracking = fig->hasMouseTracking();
-    if (!d_ptr->_figOldMouseTracking) {
+    d_ptr->mFigOldMouseTracking = fig->hasMouseTracking();
+    if (!d_ptr->mFigOldMouseTracking) {
         fig->setMouseTracking(true);
     }
-    d_ptr->_figOldHasHoverAttr = fig->testAttribute(Qt::WA_Hover);
-    if (!d_ptr->_figOldHasHoverAttr) {
+    d_ptr->mFigOldHasHoverAttr = fig->testAttribute(Qt::WA_Hover);
+    if (!d_ptr->mFigOldHasHoverAttr) {
         fig->setAttribute(Qt::WA_Hover, true);
     }
     DAChartWidget* curChart = figure()->getCurrentChart();
@@ -73,10 +63,10 @@ DAFigureWidgetOverlayChartEditor::DAFigureWidgetOverlayChartEditor(DAFigureWidge
 DAFigureWidgetOverlayChartEditor::~DAFigureWidgetOverlayChartEditor()
 {
     //如果fig原来没有mousetrack，设置回去
-    if (!d_ptr->_figOldMouseTracking) {
+    if (!d_ptr->mFigOldMouseTracking) {
         figure()->setMouseTracking(false);
     }
-    if (!d_ptr->_figOldHasHoverAttr) {
+    if (!d_ptr->mFigOldHasHoverAttr) {
         figure()->setAttribute(Qt::WA_Hover, false);
     }
 }
@@ -84,13 +74,13 @@ DAFigureWidgetOverlayChartEditor::~DAFigureWidgetOverlayChartEditor()
 void DAFigureWidgetOverlayChartEditor::drawChartEditMode(QPainter* painter, const QRect& chartRect) const
 {
     painter->setBrush(Qt::NoBrush);
-    painter->setPen(d_ptr->_borderPen);
+    painter->setPen(d_ptr->mBorderPen);
     QRect edgetRect = chartRect.adjusted(-1, -1, 1, 1);
 
     //绘制矩形边框
     painter->drawRect(edgetRect);
     //绘制边框到figure四周
-    QPen linePen(d_ptr->_borderPen);
+    QPen linePen(d_ptr->mBorderPen);
 
     linePen.setStyle(Qt::DotLine);
     painter->setPen(linePen);
@@ -117,9 +107,9 @@ void DAFigureWidgetOverlayChartEditor::drawChartEditMode(QPainter* painter, cons
     //    painter->drawText(QPointF(0, chartRect.y()), QString::number(percent.x(), 'g', 2));
     //绘制四个角落
     painter->setPen(Qt::NoPen);
-    painter->setBrush(d_ptr->_contorlPointBrush);
-    QRect connerRect(0, 0, d_ptr->_controlPointSize.width(), d_ptr->_controlPointSize.height());
-    QPoint offset = QPoint(d_ptr->_controlPointSize.width() / 2, d_ptr->_controlPointSize.height() / 2);
+    painter->setBrush(d_ptr->mContorlPointBrush);
+    QRect connerRect(0, 0, d_ptr->mControlPointSize.width(), d_ptr->mControlPointSize.height());
+    QPoint offset = QPoint(d_ptr->mControlPointSize.width() / 2, d_ptr->mControlPointSize.height() / 2);
     connerRect.moveTo(edgetRect.topLeft() - offset);
     painter->drawRect(connerRect);
     connerRect.moveTo(edgetRect.topRight() - offset);
@@ -244,9 +234,9 @@ void DAFigureWidgetOverlayChartEditor::selectNextWidget(bool forward)
         setActiveWidget(nullptr);
         return;
     }
-    if (d_ptr->_activeWidget) {
+    if (d_ptr->mActiveWidget) {
         //说明有窗口，找到这个窗口的下一个
-        auto ite = std::find(ws.begin(), ws.end(), d_ptr->_activeWidget);
+        auto ite = std::find(ws.begin(), ws.end(), d_ptr->mActiveWidget);
         if (ite != ws.end()) {
             //说明找到了
             if (forward) {
@@ -283,9 +273,9 @@ void DAFigureWidgetOverlayChartEditor::selectNextChart(bool forward)
         setActiveWidget(nullptr);
         return;
     }
-    if (d_ptr->_activeWidget) {
+    if (d_ptr->mActiveWidget) {
         //说明有窗口，找到这个窗口的下一个
-        auto ite = std::find(ws.begin(), ws.end(), d_ptr->_activeWidget);
+        auto ite = std::find(ws.begin(), ws.end(), d_ptr->mActiveWidget);
         if (ite != ws.end()) {
             //说明找到了
             if (forward) {
@@ -317,7 +307,7 @@ void DAFigureWidgetOverlayChartEditor::selectNextChart(bool forward)
  */
 QWidget* DAFigureWidgetOverlayChartEditor::getCurrentActiveWidget() const
 {
-    return d_ptr->_activeWidget;
+    return d_ptr->mActiveWidget;
 }
 
 /**
@@ -326,7 +316,7 @@ QWidget* DAFigureWidgetOverlayChartEditor::getCurrentActiveWidget() const
  */
 void DAFigureWidgetOverlayChartEditor::showPercentText(bool on)
 {
-    d_ptr->_showPrecentText = on;
+    d_ptr->mShowPrecentText = on;
     updateOverlay();
 }
 
@@ -336,7 +326,7 @@ void DAFigureWidgetOverlayChartEditor::showPercentText(bool on)
  */
 void DAFigureWidgetOverlayChartEditor::setBorderPen(const QPen& p)
 {
-    d_ptr->_borderPen = p;
+    d_ptr->mBorderPen = p;
 }
 
 /**
@@ -345,7 +335,7 @@ void DAFigureWidgetOverlayChartEditor::setBorderPen(const QPen& p)
  */
 QPen DAFigureWidgetOverlayChartEditor::getBorderPen() const
 {
-    return d_ptr->_borderPen;
+    return d_ptr->mBorderPen;
 }
 
 /**
@@ -354,7 +344,7 @@ QPen DAFigureWidgetOverlayChartEditor::getBorderPen() const
  */
 void DAFigureWidgetOverlayChartEditor::setControlPointBrush(const QBrush& b)
 {
-    d_ptr->_contorlPointBrush = b;
+    d_ptr->mContorlPointBrush = b;
 }
 
 /**
@@ -363,15 +353,15 @@ void DAFigureWidgetOverlayChartEditor::setControlPointBrush(const QBrush& b)
  */
 QBrush DAFigureWidgetOverlayChartEditor::getControlPointBrush() const
 {
-    return d_ptr->_contorlPointBrush;
+    return d_ptr->mContorlPointBrush;
 }
 
 void DAFigureWidgetOverlayChartEditor::drawOverlay(QPainter* p) const
 {
-    if (d_ptr->_activeWidget) {
+    if (d_ptr->mActiveWidget) {
         //对于激活的窗口，绘制到四周的距离提示线
         p->save();
-        drawChartEditMode(p, d_ptr->_activeWidget->frameGeometry());
+        drawChartEditMode(p, d_ptr->mActiveWidget->frameGeometry());
         p->restore();
     }
 }
@@ -391,7 +381,7 @@ QRegion DAFigureWidgetOverlayChartEditor::maskHint() const
  */
 bool DAFigureWidgetOverlayChartEditor::eventFilter(QObject* obj, QEvent* event)
 {
-    if (d_ptr->_activeWidget) {
+    if (d_ptr->mActiveWidget) {
         if (obj == figure()) {
 #if DAFigureWidgetOverlayChartEditor_DebugPrint
             qDebug() << "Overlay eventFilter=" << event->type();
@@ -434,8 +424,8 @@ bool DAFigureWidgetOverlayChartEditor::eventFilter(QObject* obj, QEvent* event)
 
 bool DAFigureWidgetOverlayChartEditor::onMouseMoveEvent(QMouseEvent* me)
 {
-    if (d_ptr->_activeWidget) {
-        if (d_ptr->_isStartResize) { }
+    if (d_ptr->mActiveWidget) {
+        if (d_ptr->mIsStartResize) { }
     }
     return (true);  //托管所有的鼠标事件
 }
@@ -443,11 +433,11 @@ bool DAFigureWidgetOverlayChartEditor::onMouseMoveEvent(QMouseEvent* me)
 bool DAFigureWidgetOverlayChartEditor::onMouseReleaseEvent(QMouseEvent* me)
 {
     if (Qt::LeftButton == me->button()) {
-        if (d_ptr->_isStartResize) {
-            d_ptr->_isStartResize = false;
-            if (d_ptr->_activeWidget) {
-                QRect newGeometry = d_ptr->_activeWidget->geometry();
-                emit widgetGeometryChanged(d_ptr->_activeWidget, d_ptr->_oldGeometry, newGeometry);
+        if (d_ptr->mIsStartResize) {
+            d_ptr->mIsStartResize = false;
+            if (d_ptr->mActiveWidget) {
+                QRect newGeometry = d_ptr->mActiveWidget->geometry();
+                emit widgetGeometryChanged(d_ptr->mActiveWidget, d_ptr->mOldGeometry, newGeometry);
                 return (true);  //这里把消息截取不传递下去
             }
         }
@@ -466,13 +456,13 @@ bool DAFigureWidgetOverlayChartEditor::onMousePressedEvent(QMouseEvent* me)
                 setActiveWidget(*ite);
             }
         }
-        ControlType ct = getPositionControlType(me->pos(), d_ptr->_activeWidget->frameGeometry(), 4);
+        ControlType ct = getPositionControlType(me->pos(), d_ptr->mActiveWidget->frameGeometry(), 4);
         if (OutSide == ct) {
             //如果点击了外部，那么久尝试变更激活窗口
             QList< QWidget* > ws = figure()->getWidgetList();
             for (QWidget* w : qAsConst(ws)) {
                 if (w->frameGeometry().contains(me->pos(), true)) {
-                    if (d_ptr->_activeWidget != w) {
+                    if (d_ptr->mActiveWidget != w) {
                         setActiveWidget(w);
                         updateOverlay();
                         return (true);  //这里把消息截取不传递下去
@@ -481,10 +471,10 @@ bool DAFigureWidgetOverlayChartEditor::onMousePressedEvent(QMouseEvent* me)
             }
         } else {
             //点击了其他区域，就执行变换
-            d_ptr->_oldGeometry       = d_ptr->_activeWidget->geometry();
-            d_ptr->_lastMousePressPos = me->pos();
-            d_ptr->_isStartResize     = true;
-            d_ptr->_controlType       = ct;
+            d_ptr->mOldGeometry       = d_ptr->mActiveWidget->geometry();
+            d_ptr->mLastMousePressPos = me->pos();
+            d_ptr->mIsStartResize     = true;
+            d_ptr->mControlType       = ct;
             return (true);  //这里把消息截取不传递下去
         }
 
@@ -495,8 +485,8 @@ bool DAFigureWidgetOverlayChartEditor::onMousePressedEvent(QMouseEvent* me)
 
 bool DAFigureWidgetOverlayChartEditor::onHoverMoveEvent(QHoverEvent* me)
 {
-    if (d_ptr->_activeWidget) {
-        if (d_ptr->_isStartResize) {
+    if (d_ptr->mActiveWidget) {
+        if (d_ptr->mIsStartResize) {
             //开始resize（鼠标按下左键后触发为true）
             //! 注意，不要在onMouseMoveEvent进行处理，因为鼠标移动到子窗体后，
             //! onMouseMoveEvent不会触发，但onHoverMoveEvent还会继续触发
@@ -505,64 +495,64 @@ bool DAFigureWidgetOverlayChartEditor::onHoverMoveEvent(QHoverEvent* me)
                      << "\n   lastMousePressPos=" << d_ptr->_lastMousePressPos
                      << "\n   oldGeometry=" << d_ptr->_oldGeometry << "\n   controlType=" << d_ptr->_controlType;
 #endif
-            QRect geoRect = d_ptr->_oldGeometry;
-            switch (d_ptr->_controlType) {
+            QRect geoRect = d_ptr->mOldGeometry;
+            switch (d_ptr->mControlType) {
             case ControlLineTop: {
-                QPoint offset = me->pos() - d_ptr->_lastMousePressPos;
+                QPoint offset = me->pos() - d_ptr->mLastMousePressPos;
                 geoRect.adjust(0, offset.y(), 0, 0);
-                d_ptr->_activeWidget->setGeometry(geoRect);
+                d_ptr->mActiveWidget->setGeometry(geoRect);
                 break;
             }
 
             case ControlLineBottom: {
                 int resultY = me->pos().y();
                 geoRect.adjust(0, 0, 0, resultY - geoRect.bottom());
-                d_ptr->_activeWidget->setGeometry(geoRect);
+                d_ptr->mActiveWidget->setGeometry(geoRect);
                 break;
             }
 
             case ControlLineLeft: {
                 int resultX = me->pos().x();
                 geoRect.adjust(resultX - geoRect.left(), 0, 0, 0);
-                d_ptr->_activeWidget->setGeometry(geoRect);
+                d_ptr->mActiveWidget->setGeometry(geoRect);
                 break;
             }
 
             case ControlLineRight: {
                 int resultX = me->pos().x();
                 geoRect.adjust(0, 0, resultX - geoRect.right(), 0);
-                d_ptr->_activeWidget->setGeometry(geoRect);
+                d_ptr->mActiveWidget->setGeometry(geoRect);
                 break;
             }
 
             case ControlPointTopLeft: {
                 geoRect.adjust(me->pos().x() - geoRect.left(), me->pos().y() - geoRect.top(), 0, 0);
-                d_ptr->_activeWidget->setGeometry(geoRect);
+                d_ptr->mActiveWidget->setGeometry(geoRect);
                 break;
             }
 
             case ControlPointTopRight: {
                 geoRect.adjust(0, me->pos().y() - geoRect.top(), me->pos().x() - geoRect.right(), 0);
-                d_ptr->_activeWidget->setGeometry(geoRect);
+                d_ptr->mActiveWidget->setGeometry(geoRect);
                 break;
             }
 
             case ControlPointBottomLeft: {
                 geoRect.adjust(me->pos().x() - geoRect.left(), 0, 0, me->pos().y() - geoRect.bottom());
-                d_ptr->_activeWidget->setGeometry(geoRect);
+                d_ptr->mActiveWidget->setGeometry(geoRect);
                 break;
             }
 
             case ControlPointBottomRight: {
                 geoRect.adjust(0, 0, me->pos().x() - geoRect.right(), me->pos().y() - geoRect.bottom());
-                d_ptr->_activeWidget->setGeometry(geoRect);
+                d_ptr->mActiveWidget->setGeometry(geoRect);
                 break;
             }
 
             case Inner: {
-                QPoint offset = me->pos() - d_ptr->_lastMousePressPos;
-                geoRect.moveTo(d_ptr->_oldGeometry.topLeft() + offset);
-                d_ptr->_activeWidget->setGeometry(geoRect);
+                QPoint offset = me->pos() - d_ptr->mLastMousePressPos;
+                geoRect.moveTo(d_ptr->mOldGeometry.topLeft() + offset);
+                d_ptr->mActiveWidget->setGeometry(geoRect);
                 break;
             }
 
@@ -572,12 +562,12 @@ bool DAFigureWidgetOverlayChartEditor::onHoverMoveEvent(QHoverEvent* me)
             updateOverlay();
             return (true);  //这里把消息截取不传递下去
         } else {
-            ControlType ct = getPositionControlType(me->pos(), d_ptr->_activeWidget->frameGeometry(), 4);
-            if (d_ptr->_controlType != ct) {
+            ControlType ct = getPositionControlType(me->pos(), d_ptr->mActiveWidget->frameGeometry(), 4);
+            if (d_ptr->mControlType != ct) {
                 //说明控制点变更
                 Qt::CursorShape cur = controlTypeToCursor(ct);
                 figure()->setCursor(cur);
-                d_ptr->_controlType = ct;
+                d_ptr->mControlType = ct;
             }
         }
     }
@@ -617,7 +607,7 @@ bool DAFigureWidgetOverlayChartEditor::onKeyPressedEvent(QKeyEvent* ke)
  */
 QSize DAFigureWidgetOverlayChartEditor::getControlPointSize() const
 {
-    return d_ptr->_controlPointSize;
+    return d_ptr->mControlPointSize;
 }
 
 /**
@@ -626,7 +616,7 @@ QSize DAFigureWidgetOverlayChartEditor::getControlPointSize() const
  */
 void DAFigureWidgetOverlayChartEditor::setControlPointSize(const QSize& c)
 {
-    d_ptr->_controlPointSize = c;
+    d_ptr->mControlPointSize = c;
 }
 
 /**
@@ -637,12 +627,12 @@ void DAFigureWidgetOverlayChartEditor::setControlPointSize(const QSize& c)
  */
 void DAFigureWidgetOverlayChartEditor::setActiveWidget(QWidget* w)
 {
-    if (w == d_ptr->_activeWidget) {
+    if (w == d_ptr->mActiveWidget) {
         //避免嵌套
         return;
     }
-    QWidget* oldact      = d_ptr->_activeWidget;
-    d_ptr->_activeWidget = w;
+    QWidget* oldact      = d_ptr->mActiveWidget;
+    d_ptr->mActiveWidget = w;
     updateOverlay();
     emit activeWidgetChanged(oldact, w);
 }

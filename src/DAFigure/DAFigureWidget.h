@@ -5,6 +5,7 @@
 #include <QPainter>
 #include "DAChartWidget.h"
 #include "DAFigureContainer.h"
+#include "DAChartFactory.h"
 class QPaintEvent;
 class QFocusEvent;
 class QUndoCommand;
@@ -15,18 +16,20 @@ namespace DA
 {
 
 class DAFigureWidgetOverlayChartEditor;
-DA_IMPL_FORWARD_DECL(DAFigureWidget)
 /**
  * @brief 绘图窗口
  */
 class DAFIGURE_API DAFigureWidget : public DAFigureContainer
 {
     Q_OBJECT
-    DA_IMPL(DAFigureWidget)
+    DA_DECLARE_PRIVATE(DAFigureWidget)
 public:
     explicit DAFigureWidget(QWidget* parent = 0);
     ~DAFigureWidget();
-
+    //获取DAChartFactory
+    DAChartFactory* getChartFactory() const;
+    //设置ChartFactory
+    void setupChartFactory(DAChartFactory* fac);
     //添加一个2D chart
     DAChartWidget* createChart();
     DAChartWidget* createChart(float xPresent, float yPresent, float wPresent, float hPresent);

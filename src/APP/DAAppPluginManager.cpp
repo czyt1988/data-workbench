@@ -44,7 +44,7 @@ DAAppPluginManager::DAAppPluginManager(QObject* p) : QObject(p)
 
 DAAppPluginManager::~DAAppPluginManager()
 {
-    for (_DAPrivateWorkflowNodePluginData* d : qAsConst(m_nodePlugins)) {
+    for (_DAPrivateWorkflowNodePluginData* d : qAsConst(mNnodePlugins)) {
         delete d;
     }
 }
@@ -70,7 +70,7 @@ void DAAppPluginManager::initLoadPlugins(DACoreInterface* c)
     }
     //获取插件
     QList< DAPluginOption > plugins = plugin.getPluginOptions();
-    _nodeMetaDatas.clear();
+    mNodeMetaDatas.clear();
     for (int i = 0; i < plugins.size(); ++i) {
         const DAPluginOption& opt = plugins[ i ];
         if (!opt.isValid()) {
@@ -78,6 +78,7 @@ void DAAppPluginManager::initLoadPlugins(DACoreInterface* c)
         }
         DAAbstractPlugin* p = opt.plugin();
         if (p) {
+            mPlugins.append(p);
             //开始通过dynamic_cast判断插件的具体类型
             if (DAAbstractNodePlugin* np = dynamic_cast< DAAbstractNodePlugin* >(p)) {
                 //说明是节点插件
@@ -89,8 +90,8 @@ void DAAppPluginManager::initLoadPlugins(DACoreInterface* c)
                     qCritical() << tr("%1 plugin create a null node factory").arg(opt.getFileName());
                     continue;
                 }
-                _nodeMetaDatas += data->factory->getNodesMetaData();
-                m_nodePlugins.append(data);
+                mNodeMetaDatas += data->factory->getNodesMetaData();
+                mNnodePlugins.append(data);
                 qDebug() << tr("succeed load plugin %1").arg(np->getName());
             }
         }
@@ -98,15 +99,24 @@ void DAAppPluginManager::initLoadPlugins(DACoreInterface* c)
     //最后对_nodeMetaDatas去重，此去重要保证原来的顺序
     QMap< DANodeMetaData, int > mapcnt;
     //说明有重复项，需要去除
-    for (auto i = _nodeMetaDatas.begin(); i != _nodeMetaDatas.end();) {
+    for (auto i = mNodeMetaDatas.begin(); i != mNodeMetaDatas.end();) {
         if (!mapcnt.contains(*i)) {
             mapcnt.insert(*i, 1);
             ++i;
         } else {
             //说明找到了重复项目
-            i = _nodeMetaDatas.erase(i);
+            i = mNodeMetaDatas.erase(i);
         }
     }
+}
+
+/**
+ * @brief 获取所有的插件
+ * @return
+ */
+QList< DAAbstractPlugin* > DAAppPluginManager::getAllPlugins() const
+{
+    return mPlugins;
 }
 
 /**
@@ -117,7 +127,7 @@ QList< DAAbstractNodePlugin* > DAAppPluginManager::getNodePlugins() const
 {
     QList< DAAbstractNodePlugin* > res;
 
-    for (_DAPrivateWorkflowNodePluginData* d : m_nodePlugins) {
+    for (_DAPrivateWorkflowNodePluginData* d : qAsConst(mNnodePlugins)) {
         res.append(d->plugin);
     }
     return (res);
@@ -131,7 +141,7 @@ QList< DA::DAAbstractNodeFactory* > DAAppPluginManager::getNodeFactorys() const
 {
     QList< DA::DAAbstractNodeFactory* > res;
 
-    for (_DAPrivateWorkflowNodePluginData* d : m_nodePlugins) {
+    for (_DAPrivateWorkflowNodePluginData* d : qAsConst(mNnodePlugins)) {
         res.append(d->factory);
     }
     return (res);
@@ -143,5 +153,5 @@ QList< DA::DAAbstractNodeFactory* > DAAppPluginManager::getNodeFactorys() const
  */
 QList< DANodeMetaData > DAAppPluginManager::getAllNodeMetaDatas() const
 {
-    return _nodeMetaDatas;
+    return mNodeMetaDatas;
 }

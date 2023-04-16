@@ -5,14 +5,13 @@
 #include <QGraphicsProxyWidget>
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DAStandardNodeWidgetGraphicsItem)
 /**
  * @brief 此类类似QGraphicsProxyWidget，实现了窗口的封装
  */
 class DAWORKFLOW_API DAStandardNodeWidgetGraphicsItem : public DAAbstractNodeGraphicsItem
 {
     Q_OBJECT
-    DA_IMPL(DAStandardNodeWidgetGraphicsItem)
+    DA_DECLARE_PRIVATE(DAStandardNodeWidgetGraphicsItem)
 public:
     enum
     {

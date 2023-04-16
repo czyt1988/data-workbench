@@ -79,4 +79,22 @@
         <file>Icon/messageTypeInfo.svg</file>
         <file>Icon/messageTypeWarning.svg</file>
     </qresource>
+    <qresource prefix="/app/settingpages">
+        <file>Icon/settingpages/ribbon-style-lite-2r.png</file>
+        <file>Icon/settingpages/ribbon-style-lite-3r.png</file>
+        <file>Icon/settingpages/ribbon-style-standard-2r.png</file>
+        <file>Icon/settingpages/ribbon-style-standard-3r.png</file>
+    </qresource>
+    <qresource prefix="/app/chart-type">
+        <file>Icon/chart-type/chart-bar.svg</file>
+        <file>Icon/chart-type/chart-curve.svg</file>
+        <file>Icon/chart-type/chart-histogram.svg</file>
+        <file>Icon/chart-type/chart-intervalcurve.svg</file>
+        <file>Icon/chart-type/chart-multibar.svg</file>
+        <file>Icon/chart-type/chart-OHLC.svg</file>
+        <file>Icon/chart-type/chart-scatter.svg</file>
+        <file>Icon/chart-type/chart-spectrocurve.svg</file>
+        <file>Icon/chart-type/chart-spectrogram.svg</file>
+        <file>Icon/chart-type/chart-vectorfield.svg</file>
+    </qresource>
 </RCC>

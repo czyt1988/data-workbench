@@ -8,7 +8,6 @@
 class QGraphicsSimpleTextItem;
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DAAbstractNodeLinkGraphicsItem)
 class DAAbstractNodeGraphicsItem;
 /**
  * @brief 绘制连接线的item
@@ -17,7 +16,7 @@ class DAAbstractNodeGraphicsItem;
  */
 class DAWORKFLOW_API DAAbstractNodeLinkGraphicsItem : public QGraphicsItem
 {
-    DA_IMPL(DAAbstractNodeLinkGraphicsItem)
+    DA_DECLARE_PRIVATE(DAAbstractNodeLinkGraphicsItem)
     friend class DAAbstractNodeGraphicsItem;
     friend class FCNodeGraphicsScene;
 
@@ -67,7 +66,8 @@ public:
 
     //更新范围参数
     void updateBoundingRect();
-
+    // boundingRect改变的回调,此函数可以用户重载实现一些附加item的绘制
+    virtual void boundingRectChanged(const QRectF& boundrect);
     //通过两个点形成一个矩形，两个点总能形成一个矩形，如果重合，返回一个空矩形
     static QRectF rectFromTwoPoint(const QPointF& p0, const QPointF& p1);
 
@@ -135,6 +135,8 @@ public:
     //设置端点的大小
     void setEndPointSize(int size);
     int getEndPointSize() const;
+    //完成链接的回调
+    virtual void finishedLink();
 
 public:
     DAAbstractNodeLinkGraphicsItem(QGraphicsItem* p = nullptr);

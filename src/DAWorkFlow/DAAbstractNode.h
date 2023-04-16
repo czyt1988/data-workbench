@@ -1,4 +1,4 @@
-#ifndef DAABSTRACTNODE_H
+﻿#ifndef DAABSTRACTNODE_H
 #define DAABSTRACTNODE_H
 #include <memory>
 #include <QMetaEnum>
@@ -13,7 +13,6 @@ namespace DA
 class DAAbstractNodeGraphicsItem;
 class DAWorkFlow;
 class DAAbstractNodeFactory;
-DA_IMPL_FORWARD_DECL(DAAbstractNode)
 
 /**
  * @brief 节点对应的基类
@@ -48,7 +47,7 @@ DA_IMPL_FORWARD_DECL(DAAbstractNode)
  */
 class DAWORKFLOW_API DAAbstractNode : public std::enable_shared_from_this< DAAbstractNode >
 {
-    DA_IMPL(DAAbstractNode)
+    DA_DECLARE_PRIVATE(DAAbstractNode)
     friend class DAAbstractNodeGraphicsItem;
     friend class DAAbstractNodeFactory;
     friend class DAWorkFlow;

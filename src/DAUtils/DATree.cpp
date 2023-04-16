@@ -1,4 +1,4 @@
-#include "DATree.h"
+﻿#include "DATree.h"
 #include "DATreeItem.h"
 #include <QJsonDocument>
 #include <QJsonArray>
@@ -8,44 +8,38 @@
 #include <memory>
 namespace DA
 {
-class DATreePrivate
+class DATree::PrivateData
 {
-    DA_IMPL_PUBLIC(DATree)
+    DA_DECLARE_PUBLIC(DATree)
 public:
-    DATreePrivate(DATree* c);
-    std::unique_ptr< DATreeItem > _rootItem;  ///< 树上有个隐藏的顶层item
-    QMap< QString, QVariant > m_property;     ///< 记录tree的属性
+    PrivateData(DATree* c);
+
+public:
+    std::unique_ptr< DATreeItem > mRootItem;  ///< 树上有个隐藏的顶层item
+    QMap< QString, QVariant > mProperty;      ///< 记录tree的属性
 };
 
 QJsonObject write_item_to_json(DATreeItem* item);
 QJsonObject write_property_to_json(QMap< QString, QVariant >* prop);
 bool read_item_from_json(const QJsonObject& json, DATreeItem* item);
 
-}
-
-//===================================================
-// using DA namespace -- 禁止在头文件using！！
-//===================================================
-
-using namespace DA;
-
 //==============================================================
 // DATreePrivate
 //==============================================================
-DATreePrivate::DATreePrivate(DATree* c) : q_ptr(c)
+DATree::PrivateData::PrivateData(DATree* c) : q_ptr(c)
 {
 }
 //===================================================
 //
 //===================================================
 
-DATree::DATree() : d_ptr(new DATreePrivate(this))
+DATree::DATree() : DA_PIMPL_CONSTRUCT
 {
-    d_ptr->_rootItem.reset(new DATreeItem());
-    d_ptr->_rootItem->setTree(this);
+    d_ptr->mRootItem.reset(new DATreeItem());
+    d_ptr->mRootItem->setTree(this);
 }
 
-DATree::DATree(const DATree& c) : d_ptr(new DATreePrivate(this))
+DATree::DATree(const DATree& c) : d_ptr(new DATree::PrivateData(this))
 {
     *this = c;
 }
@@ -74,8 +68,8 @@ DATree& DATree::operator=(const DATree& tree)
 
 void DATree::clear()
 {
-    d_ptr->_rootItem.reset();
-    d_ptr->m_property.clear();  //属性清除
+    d_ptr->mRootItem.reset();
+    d_ptr->mProperty.clear();  //属性清除
 }
 /**
  * @brief 获取子节点的个数
@@ -83,7 +77,7 @@ void DATree::clear()
  */
 int DATree::getItemCount() const
 {
-    return d_ptr->_rootItem->childItemCount();
+    return d_ptr->mRootItem->childItemCount();
 }
 /**
  * @brief 索引子条目
@@ -92,7 +86,7 @@ int DATree::getItemCount() const
  */
 DATreeItem* DATree::getItem(int row) const
 {
-    return d_ptr->_rootItem->childItem(row);
+    return d_ptr->mRootItem->childItem(row);
 }
 /**
  * @brief 获取所有子节点
@@ -100,7 +94,7 @@ DATreeItem* DATree::getItem(int row) const
  */
 QList< DATreeItem* > DATree::getItems() const
 {
-    return d_ptr->_rootItem->getChildItems();
+    return d_ptr->mRootItem->getChildItems();
 }
 /**
  * @brief 追加子条目
@@ -110,7 +104,7 @@ QList< DATreeItem* > DATree::getItems() const
 void DATree::appendItem(DATreeItem* item)
 {
     //会自动设置树指针
-    d_ptr->_rootItem->appendChild(item);
+    d_ptr->mRootItem->appendChild(item);
 }
 /**
  * @brief 插入子条目
@@ -120,7 +114,7 @@ void DATree::appendItem(DATreeItem* item)
 void DATree::insertItem(DATreeItem* item, int row)
 {
     //会自动设置树指针
-    d_ptr->_rootItem->insertChild(item, row);
+    d_ptr->mRootItem->insertChild(item, row);
 }
 /**
  * @brief 判断是否存在子节点
@@ -129,7 +123,7 @@ void DATree::insertItem(DATreeItem* item, int row)
  */
 bool DATree::haveItem(DATreeItem* item) const
 {
-    return (d_ptr->_rootItem->childIndex(item)) >= 0;
+    return (d_ptr->mRootItem->childIndex(item)) >= 0;
 }
 /**
  * @brief 把item解除satree的关系
@@ -138,7 +132,7 @@ bool DATree::haveItem(DATreeItem* item) const
 void DATree::takeItem(DATreeItem* item)
 {
     //会自动设置树指针为空
-    d_ptr->_rootItem->takeChild(item);
+    d_ptr->mRootItem->takeChild(item);
 }
 /**
  * @brief 根据索引把item返回，同时解除satree的关系
@@ -147,7 +141,7 @@ void DATree::takeItem(DATreeItem* item)
 DATreeItem* DATree::takeItemByIndex(int row)
 {
     //会自动设置树指针为空
-    return d_ptr->_rootItem->takeChild(row);
+    return d_ptr->mRootItem->takeChild(row);
 }
 /**
  * @brief 返回item对应的树层级
@@ -156,7 +150,7 @@ DATreeItem* DATree::takeItemByIndex(int row)
  */
 int DATree::indexOfItem(DATreeItem* const item) const
 {
-    return d_ptr->_rootItem->childIndex(item);
+    return d_ptr->mRootItem->childIndex(item);
 }
 
 /**
@@ -166,7 +160,7 @@ int DATree::indexOfItem(DATreeItem* const item) const
  */
 void DATree::setTreeProperty(const QString& name, const QVariant& var)
 {
-    d_ptr->m_property.insert(name, var);
+    d_ptr->mProperty.insert(name, var);
 }
 
 /**
@@ -177,7 +171,7 @@ void DATree::setTreeProperty(const QString& name, const QVariant& var)
  */
 QVariant DATree::getTreeProperty(const QString& name, const QVariant& defaultVal) const
 {
-    return d_ptr->m_property.value(name, defaultVal);
+    return d_ptr->mProperty.value(name, defaultVal);
 }
 
 /**
@@ -186,7 +180,7 @@ QVariant DATree::getTreeProperty(const QString& name, const QVariant& defaultVal
  */
 void DATree::removeTreeProperty(const QString& name)
 {
-    d_ptr->m_property.remove(name);
+    d_ptr->mProperty.remove(name);
 }
 
 /**
@@ -195,7 +189,7 @@ void DATree::removeTreeProperty(const QString& name)
  */
 QList< QString > DATree::getTreePropertyNames() const
 {
-    return d_ptr->m_property.keys();
+    return d_ptr->mProperty.keys();
 }
 
 /**
@@ -204,7 +198,7 @@ QList< QString > DATree::getTreePropertyNames() const
  */
 QMap< QString, QVariant > DATree::getTreePropertys() const
 {
-    return d_ptr->m_property;
+    return d_ptr->mProperty;
 }
 
 /**
@@ -213,7 +207,7 @@ QMap< QString, QVariant > DATree::getTreePropertys() const
  */
 DATreeItem* DATree::invisibleRootItem() const
 {
-    return d_ptr->_rootItem.get();
+    return d_ptr->mRootItem.get();
 }
 
 /**
@@ -223,7 +217,7 @@ DATreeItem* DATree::invisibleRootItem() const
  */
 bool DATree::isRootItem(const DATreeItem* item) const
 {
-    return (item->parent() == d_ptr->_rootItem.get());
+    return (item->parent() == d_ptr->mRootItem.get());
 }
 
 /**
@@ -255,7 +249,7 @@ QDebug& DA::operator<<(QDebug& dbg, const DA::DATree& tree)
  * @param tree tree指针
  * @return
  */
-QString DA::toJson(const DA::DATree* tree)
+QString toJson(const DA::DATree* tree)
 {
     QList< DATreeItem* > items = tree->getItems();
     const auto c               = items.size();
@@ -276,7 +270,7 @@ QString DA::toJson(const DA::DATree* tree)
     return json.toJson();
 }
 
-QJsonObject DA::write_item_to_json(DATreeItem* item)
+QJsonObject write_item_to_json(DATreeItem* item)
 {
     QJsonObject itemObj;
     itemObj.insert("name", item->getName());
@@ -310,7 +304,7 @@ QJsonObject DA::write_item_to_json(DATreeItem* item)
     return itemObj;
 }
 
-QJsonObject DA::write_property_to_json(QMap< QString, QVariant >* prop)
+QJsonObject write_property_to_json(QMap< QString, QVariant >* prop)
 {
     QJsonObject objprop;
     for (auto i = prop->begin(); i != prop->end(); ++i) {
@@ -321,7 +315,7 @@ QJsonObject DA::write_property_to_json(QMap< QString, QVariant >* prop)
     return objprop;
 }
 
-bool DA::read_item_from_json(const QJsonObject& json, DATreeItem* item)
+bool read_item_from_json(const QJsonObject& json, DATreeItem* item)
 {
     auto i = json.find("name");
     if (i != json.end()) {
@@ -372,7 +366,7 @@ bool DA::read_item_from_json(const QJsonObject& json, DATreeItem* item)
  * @param tree 待修改的tree
  * @return 如果转换成功返回true
  */
-bool DA::fromJson(const QString& json, DA::DATree* tree)
+bool fromJson(const QString& json, DA::DATree* tree)
 {
     QJsonParseError error;
     QJsonDocument jsonDocument = QJsonDocument::fromJson(json.toUtf8(), &error);
@@ -399,3 +393,4 @@ bool DA::fromJson(const QString& json, DA::DATree* tree)
     }
     return true;
 }
+}  // end DA

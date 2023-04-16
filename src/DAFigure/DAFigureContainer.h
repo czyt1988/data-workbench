@@ -8,7 +8,6 @@ class QResizeEvent;
 class QShowEvent;
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DAFigureContainer)
 /**
  * @brief 一个窗口容器，由于根据比例布局窗口位置
  *
@@ -17,7 +16,7 @@ DA_IMPL_FORWARD_DECL(DAFigureContainer)
 class DAFIGURE_API DAFigureContainer : public QWidget
 {
     Q_OBJECT
-    DA_IMPL(DAFigureContainer)
+    DA_DECLARE_PRIVATE(DAFigureContainer)
 public:
     DAFigureContainer(QWidget* parent = nullptr);
     ~DAFigureContainer();

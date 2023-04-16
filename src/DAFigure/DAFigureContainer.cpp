@@ -11,18 +11,18 @@ namespace DA
  */
 #define DAFIGURECONTAINER_PRECISION 5
 
-class DAFigureContainerPrivate
+class DAFigureContainer::PrivateData
 {
-    DA_IMPL_PUBLIC(DAFigureContainer)
+    DA_DECLARE_PUBLIC(DAFigureContainer)
 public:
-    QMap< QWidget*, QRectF > _widgetPosPreset;
-    bool _isResetWidgetPos;
-    DAFigureContainerPrivate(DAFigureContainer* p) : q_ptr(p), _isResetWidgetPos(false)
+    QMap< QWidget*, QRectF > mWidgetPosPreset;
+    bool mIsResetWidgetPos { false };
+    PrivateData(DAFigureContainer* p) : q_ptr(p)
     {
     }
 };
 
-DAFigureContainer::DAFigureContainer(QWidget* parent) : QWidget(parent), d_ptr(new DAFigureContainerPrivate(this))
+DAFigureContainer::DAFigureContainer(QWidget* parent) : QWidget(parent), DA_PIMPL_CONSTRUCT
 {
 }
 
@@ -43,7 +43,7 @@ void DAFigureContainer::addWidget(QWidget* widget, const QRectF& posPercent)
     }
     QRect widgetSize = calcWidgetSize(posPercent);
     widget->setGeometry(widgetSize);
-    d_ptr->_widgetPosPreset.insert(widget, posPercent);
+    d_ptr->mWidgetPosPreset.insert(widget, posPercent);
     widget->installEventFilter(this);
     qDebug() << "DAFigureContainer::addWidget,Widget setGeometry=" << widgetSize << ",DAFigureContainer rect=" << rect();
 }
@@ -63,7 +63,7 @@ void DAFigureContainer::addWidget(QWidget* widget, float xPercent, float yPercen
  */
 void DAFigureContainer::removeWidget(QWidget* widget)
 {
-    d_ptr->_widgetPosPreset.remove(widget);
+    d_ptr->mWidgetPosPreset.remove(widget);
     if (widget->parent() == this) {
         widget->setParent(nullptr);
     }
@@ -75,7 +75,7 @@ void DAFigureContainer::removeWidget(QWidget* widget)
  */
 QList< QWidget* > DAFigureContainer::getWidgetList() const
 {
-    return d_ptr->_widgetPosPreset.keys();
+    return d_ptr->mWidgetPosPreset.keys();
 }
 
 /**
@@ -103,7 +103,7 @@ QList< QWidget* > DAFigureContainer::getOrderedWidgetList() const
  */
 QRectF DAFigureContainer::getWidgetPosPercent(QWidget* w) const
 {
-    return d_ptr->_widgetPosPreset.value(w, QRectF());
+    return d_ptr->mWidgetPosPreset.value(w, QRectF());
 }
 
 /**
@@ -118,10 +118,10 @@ void DAFigureContainer::setWidgetPosPercent(QWidget* w, const QRectF& posPercent
     }
     QRect g = calcWidgetRectByPercent(posPercent);
     w->setGeometry(g);
-    auto ite = d_ptr->_widgetPosPreset.find(w);
-    if (ite == d_ptr->_widgetPosPreset.end()) {
+    auto ite = d_ptr->mWidgetPosPreset.find(w);
+    if (ite == d_ptr->mWidgetPosPreset.end()) {
         //说明w并没有管理
-        ite = d_ptr->_widgetPosPreset.insert(w, posPercent);
+        ite = d_ptr->mWidgetPosPreset.insert(w, posPercent);
     }
     *ite = posPercent;
 }
@@ -254,7 +254,7 @@ qreal DAFigureContainer::castRealByPrecision(qreal v, int precision)
  */
 void DAFigureContainer::beginResetSubWidget()
 {
-    d_ptr->_isResetWidgetPos = true;
+    d_ptr->mIsResetWidgetPos = true;
 }
 
 /**
@@ -262,7 +262,7 @@ void DAFigureContainer::beginResetSubWidget()
  */
 void DAFigureContainer::endResetSubWidget()
 {
-    d_ptr->_isResetWidgetPos = false;
+    d_ptr->mIsResetWidgetPos = false;
 }
 
 /**
@@ -281,7 +281,7 @@ QWidget* DAFigureContainer::getWidgetUnderPos(const QPoint& p, bool zorder)
             }
         }
     } else {
-        for (auto i = d_ptr->_widgetPosPreset.begin(); i != d_ptr->_widgetPosPreset.end(); ++i) {
+        for (auto i = d_ptr->mWidgetPosPreset.begin(); i != d_ptr->mWidgetPosPreset.end(); ++i) {
             if (i.key()->geometry().contains(p)) {
                 return i.key();
             }
@@ -304,7 +304,7 @@ bool DAFigureContainer::event(QEvent* e)
             QObject* obj    = ce->child();
             if (obj && obj->isWidgetType()) {
                 QWidget* w = qobject_cast< QWidget* >(obj);
-                d_ptr->_widgetPosPreset.remove(w);
+                d_ptr->mWidgetPosPreset.remove(w);
             }
         }
     }
@@ -329,13 +329,13 @@ bool DAFigureContainer::eventFilter(QObject* watched, QEvent* e)
     if (nullptr == e) {
         return (QWidget::eventFilter(watched, e));
     }
-    if (d_ptr->_isResetWidgetPos) {
+    if (d_ptr->mIsResetWidgetPos) {
         if (QEvent::Resize == e->type()) {
             if (watched && watched->isWidgetType()) {
                 QWidget* w = qobject_cast< QWidget* >(watched);
                 if (w && isWidgetInContainer(w)) {
                     QResizeEvent* re = static_cast< QResizeEvent* >(e);
-                    QRectF& data     = d_ptr->_widgetPosPreset[ w ];
+                    QRectF& data     = d_ptr->mWidgetPosPreset[ w ];
                     data.setWidth(castRealByPrecision(re->size().width() / (double)width(), DAFIGURECONTAINER_PRECISION));
                     data.setHeight(castRealByPrecision(re->size().height() / (double)height(), DAFIGURECONTAINER_PRECISION));
                     // qDebug() <<" == " <<watched << " set new:" <<  e->size() << " old" <<e->oldSize() << "present:"<<data;
@@ -346,7 +346,7 @@ bool DAFigureContainer::eventFilter(QObject* watched, QEvent* e)
                 QWidget* w = qobject_cast< QWidget* >(watched);
                 if (w && isWidgetInContainer(w)) {
                     QMoveEvent* me = static_cast< QMoveEvent* >(e);
-                    QRectF& data   = d_ptr->_widgetPosPreset[ w ];
+                    QRectF& data   = d_ptr->mWidgetPosPreset[ w ];
                     data.setX(castRealByPrecision(me->pos().x() / (double)width(), DAFIGURECONTAINER_PRECISION));
                     data.setY(castRealByPrecision(me->pos().y() / (double)height(), DAFIGURECONTAINER_PRECISION));
                 }
@@ -362,7 +362,7 @@ bool DAFigureContainer::eventFilter(QObject* watched, QEvent* e)
 void DAFigureContainer::resetSubWidgetGeometry()
 {
     QRect subWidgetSize;
-    for (auto i = d_ptr->_widgetPosPreset.begin(); i != (d_ptr->_widgetPosPreset.end()); ++i) {
+    for (auto i = d_ptr->mWidgetPosPreset.begin(); i != (d_ptr->mWidgetPosPreset.end()); ++i) {
         subWidgetSize = calcWidgetRectByPercent(i.value());
         QWidget* w    = i.key();
         w->setGeometry(subWidgetSize);

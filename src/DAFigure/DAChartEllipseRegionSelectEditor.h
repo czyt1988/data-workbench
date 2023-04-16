@@ -5,7 +5,6 @@
 #include "DAChartSelectRegionShapeItem.h"
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DAChartEllipseRegionSelectEditor)
 
 /**
  * @brief 椭圆选区
@@ -13,7 +12,7 @@ DA_IMPL_FORWARD_DECL(DAChartEllipseRegionSelectEditor)
 class DAFIGURE_API DAChartEllipseRegionSelectEditor : public DAAbstractRegionSelectEditor
 {
     Q_OBJECT
-    DA_IMPL(DAChartEllipseRegionSelectEditor)
+    DA_DECLARE_PRIVATE(DAChartEllipseRegionSelectEditor)
 public:
     DAChartEllipseRegionSelectEditor(QwtPlot* parent);
     virtual ~DAChartEllipseRegionSelectEditor();

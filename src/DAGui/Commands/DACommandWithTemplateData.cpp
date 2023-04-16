@@ -28,7 +28,7 @@ DACommandWithTemplateData::~DACommandWithTemplateData()
 QString DACommandWithTemplateData::getTemplateDirPath()
 {
     QString appPath = QApplication::applicationDirPath();
-    return appPath + QDir::separator() + "tempData";
+    return QDir::toNativeSeparators(appPath + "/tempData");
 }
 
 /**

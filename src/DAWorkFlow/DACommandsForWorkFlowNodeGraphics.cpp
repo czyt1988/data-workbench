@@ -19,29 +19,23 @@ DACommandsForWorkFlowCreateNode::DACommandsForWorkFlowCreateNode(const DANodeMet
                                                                  DANodeGraphicsScene* scene,
                                                                  const QPointF& pos,
                                                                  QUndoCommand* parent)
-    : QUndoCommand(parent), _scene(scene), _scenePos(pos), _item(nullptr), _needDelete(false)
+    : QUndoCommand(parent), mScene(scene), mScenePos(pos), mItem(nullptr), mNeedDelete(false)
 {
     setText(QObject::tr("Create Node"));
-    _metadata = md;
-    _item     = scene->createNode(md, pos);
-    _node     = _item->node();
-
-    //    DAWorkFlow* wf = _scene->getWorkflow();
-    //    _node          = wf->createNode(_metadata);
-    //    if (nullptr == _node) {
-    //        qCritical() << QObject::tr("can not create node,metadata name=%1(%2)").arg(_metadata.getNodeName(), _metadata.getNodePrototype());
-    //    } else {
-    //        _item = _node->createGraphicsItem();
-    //        _item->setPos(pos);
-    //    }
+    mMetadata = md;
+    mItem     = scene->createNode(md, pos);
+    mNode     = mItem->node();
+    if (mItem) {
+        mScene->addItem(mItem);
+    }
 }
 
 DACommandsForWorkFlowCreateNode::~DACommandsForWorkFlowCreateNode()
 {
-    if (_needDelete) {
+    if (mNeedDelete) {
         //_node是智能指针自动删除
-        if (_item) {
-            delete _item;
+        if (mItem) {
+            delete mItem;
         }
     }
 }
@@ -49,60 +43,66 @@ DACommandsForWorkFlowCreateNode::~DACommandsForWorkFlowCreateNode()
 void DACommandsForWorkFlowCreateNode::redo()
 {
     QUndoCommand::redo();  //此函数会执行子内容的redo/undo
-    if (_item) {
-        _scene->addItem(_item);
+    if (mSkipFirstRedo) {
+        //! 关键:第一次执行要跳过redo，否则会重复添加节点
+        mSkipFirstRedo = false;
+        return;
     }
-    if (_node) {
-        DAWorkFlow* wf = _scene->getWorkflow();
-        wf->addNode(_node);
+    if (mItem) {
+        mScene->addItem(mItem);
     }
-    _needDelete = false;
+    if (mNode) {
+        DAWorkFlow* wf = mScene->getWorkflow();
+        wf->addNode(mNode);
+    }
+    mNeedDelete = false;
 }
 
 void DACommandsForWorkFlowCreateNode::undo()
 {
     QUndoCommand::undo();  //此函数会执行子内容的redo/undo
-    if (_node) {
-        DAWorkFlow* wf = _scene->getWorkflow();
-        wf->removeNode(_node);
+    if (mNode) {
+        DAWorkFlow* wf = mScene->getWorkflow();
+        wf->removeNode(mNode);
     }
-    if (_item) {
-        _scene->removeItem(_item);
+    if (mItem) {
+        mScene->removeItem(mItem);
     }
-    _needDelete = true;
+    mNeedDelete = true;
 }
 
 DAAbstractNodeGraphicsItem* DACommandsForWorkFlowCreateNode::item() const
 {
-    return _item;
+    return mItem;
 }
 
 //==============================================================
 // DACommandsForWorkFlowRemoveNode
 //==============================================================
 DACommandsForWorkFlowRemoveSelectNodes::DACommandsForWorkFlowRemoveSelectNodes(DANodeGraphicsScene* scene, QUndoCommand* parent)
-    : QUndoCommand(parent), _isvalid(false), _scene(scene), _needDelete(false)
+    : QUndoCommand(parent), mIsvalid(false), mScene(scene), mNeedDelete(false)
 {
     setText(QObject::tr("Remove Select Nodes"));
-    classifyItems(scene, _selNodeItems, _willRemoveLink, _willRemoveNormal);
-    QList< DAAbstractNodeLinkGraphicsItem* > nodeLinks = getNodesLinks(_selNodeItems);
+    classifyItems(scene, mSelectNodeItems, mWillRemoveLink, mWillRemoveNormal);
+    QList< DAAbstractNodeLinkGraphicsItem* > nodeLinks = getNodesLinks(mSelectNodeItems);
     //这时候得到所有需要删除的link
     //也要做一次去重
-    _willRemoveLink = nodeLinks + _willRemoveLink;
-    _willRemoveLink = _willRemoveLink.toSet().toList();
-    for (DAAbstractNodeLinkGraphicsItem* lk : qAsConst(_willRemoveLink)) {
+    mWillRemoveLink = nodeLinks + mWillRemoveLink;
+    mWillRemoveLink = mWillRemoveLink.toSet().toList();
+    for (DAAbstractNodeLinkGraphicsItem* lk : qAsConst(mWillRemoveLink)) {
         new DACommandsForWorkFlowRemoveLink(lk, scene, this);
     }
-    _isvalid = (nodeLinks.size() > 0) || (_willRemoveLink.size() > 0) || _selNodeItems.size() > 0 || _willRemoveNormal.size() > 0;
+    mIsvalid = (nodeLinks.size() > 0) || (mWillRemoveLink.size() > 0) || mSelectNodeItems.size() > 0
+               || mWillRemoveNormal.size() > 0;
 }
 
 DACommandsForWorkFlowRemoveSelectNodes::~DACommandsForWorkFlowRemoveSelectNodes()
 {
-    if (_needDelete) {
-        for (DAAbstractNodeGraphicsItem* item : qAsConst(_selNodeItems)) {
+    if (mNeedDelete) {
+        for (DAAbstractNodeGraphicsItem* item : qAsConst(mSelectNodeItems)) {
             delete item;
         }
-        for (QGraphicsItem* item : qAsConst(_willRemoveNormal)) {
+        for (QGraphicsItem* item : qAsConst(mWillRemoveNormal)) {
             delete item;
         }
     }
@@ -144,7 +144,7 @@ QList< DAAbstractNodeLinkGraphicsItem* > DACommandsForWorkFlowRemoveSelectNodes:
 
 bool DACommandsForWorkFlowRemoveSelectNodes::isValid() const
 {
-    return _isvalid;
+    return mIsvalid;
 }
 /**
  * @brief 获取移除的数量，此函数构造后即可调用
@@ -152,7 +152,7 @@ bool DACommandsForWorkFlowRemoveSelectNodes::isValid() const
  */
 int DACommandsForWorkFlowRemoveSelectNodes::removeCount() const
 {
-    return _selNodeItems.size() + childCount() + _willRemoveNormal.size();
+    return mSelectNodeItems.size() + childCount() + mWillRemoveNormal.size();
 }
 
 /**
@@ -161,7 +161,7 @@ int DACommandsForWorkFlowRemoveSelectNodes::removeCount() const
  */
 QList< DAAbstractNodeGraphicsItem* > DACommandsForWorkFlowRemoveSelectNodes::getRemovedNodeItems() const
 {
-    return _selNodeItems;
+    return mSelectNodeItems;
 }
 /**
  * @brief 获取移除的link,此函数构造后即可调用
@@ -169,7 +169,7 @@ QList< DAAbstractNodeGraphicsItem* > DACommandsForWorkFlowRemoveSelectNodes::get
  */
 QList< DAAbstractNodeLinkGraphicsItem* > DACommandsForWorkFlowRemoveSelectNodes::getRemovedNodeLinkItems() const
 {
-    return _willRemoveLink;
+    return mWillRemoveLink;
 }
 /**
  * @brief 获取移除的QGraphicsItem,此函数构造后即可调用
@@ -177,39 +177,39 @@ QList< DAAbstractNodeLinkGraphicsItem* > DACommandsForWorkFlowRemoveSelectNodes:
  */
 QList< QGraphicsItem* > DACommandsForWorkFlowRemoveSelectNodes::getRemovedItems() const
 {
-    return _willRemoveNormal;
+    return mWillRemoveNormal;
 }
 
 void DACommandsForWorkFlowRemoveSelectNodes::redo()
 {
     //注意QUndoCommand::redo()要放到最前，QUndoCommand::undo()要放到最后
     QUndoCommand::redo();  //此函数会执行子内容的redo/undo,也就是先删除link
-    DAWorkFlow* wf = _scene->getWorkflow();
-    for (DAAbstractNodeGraphicsItem* item : qAsConst(_selNodeItems)) {
-        _scene->removeItem(item);
+    DAWorkFlow* wf = mScene->getWorkflow();
+    for (DAAbstractNodeGraphicsItem* item : qAsConst(mSelectNodeItems)) {
+        mScene->removeItem(item);
         if (wf) {
             wf->removeNode(item->node());
         }
     }
-    for (QGraphicsItem* item : qAsConst(_willRemoveNormal)) {
-        _scene->removeItem(item);
+    for (QGraphicsItem* item : qAsConst(mWillRemoveNormal)) {
+        mScene->removeItem(item);
     }
-    _needDelete = true;
+    mNeedDelete = true;
 }
 
 void DACommandsForWorkFlowRemoveSelectNodes::undo()
 {
-    DAWorkFlow* wf = _scene->getWorkflow();
-    for (DAAbstractNodeGraphicsItem* item : qAsConst(_selNodeItems)) {
-        _scene->addItem(item);
+    DAWorkFlow* wf = mScene->getWorkflow();
+    for (DAAbstractNodeGraphicsItem* item : qAsConst(mSelectNodeItems)) {
+        mScene->addItem(item);
         if (wf) {
             wf->addNode(item->node());
         }
     }
-    for (QGraphicsItem* item : qAsConst(_willRemoveNormal)) {
-        _scene->addItem(item);
+    for (QGraphicsItem* item : qAsConst(mWillRemoveNormal)) {
+        mScene->addItem(item);
     }
-    _needDelete = false;
+    mNeedDelete = false;
     //注意undo要放到最后
     QUndoCommand::undo();  //此函数会执行子内容的redo/undo
 }
@@ -221,63 +221,63 @@ void DACommandsForWorkFlowRemoveSelectNodes::undo()
 DACommandsForWorkFlowCreateLink::DACommandsForWorkFlowCreateLink(DAAbstractNodeLinkGraphicsItem* linkitem,
                                                                  DANodeGraphicsScene* sc,
                                                                  QUndoCommand* parent)
-    : QUndoCommand(parent), _linkitem(linkitem), _scene(sc), _needDelete(false), _isFirstRedoNotAdditem(true), _skipFirstRedo(true)
+    : QUndoCommand(parent), mLinkitem(linkitem), mScene(sc), mNeedDelete(false), mIsFirstRedoNotAdditem(true), mSkipFirstRedo(true)
 {
     setText(QObject::tr("Create Link"));
-    _fromitem      = linkitem->fromNodeItem();
-    _fromPointName = linkitem->fromNodeLinkPoint().name;
-    _toitem        = linkitem->toNodeItem();
-    _toPointName   = linkitem->toNodeLinkPoint().name;
+    mFromitem      = linkitem->fromNodeItem();
+    mFromPointName = linkitem->fromNodeLinkPoint().name;
+    mToitem        = linkitem->toNodeItem();
+    mToPointName   = linkitem->toNodeLinkPoint().name;
 }
 
 DACommandsForWorkFlowCreateLink::DACommandsForWorkFlowCreateLink(DAAbstractNodeLinkGraphicsItem* linkitem,
                                                                  DANodeGraphicsScene* sc,
                                                                  bool isFirstRedoNotAdditem,
                                                                  QUndoCommand* parent)
-    : QUndoCommand(parent), _linkitem(linkitem), _scene(sc), _needDelete(false), _isFirstRedoNotAdditem(isFirstRedoNotAdditem)
+    : QUndoCommand(parent), mLinkitem(linkitem), mScene(sc), mNeedDelete(false), mIsFirstRedoNotAdditem(isFirstRedoNotAdditem)
 {
     setText(QObject::tr("Create Link"));
-    _fromitem      = linkitem->fromNodeItem();
-    _fromPointName = linkitem->fromNodeLinkPoint().name;
-    _toitem        = linkitem->toNodeItem();
-    _toPointName   = linkitem->toNodeLinkPoint().name;
+    mFromitem      = linkitem->fromNodeItem();
+    mFromPointName = linkitem->fromNodeLinkPoint().name;
+    mToitem        = linkitem->toNodeItem();
+    mToPointName   = linkitem->toNodeLinkPoint().name;
 }
 
 DACommandsForWorkFlowCreateLink::~DACommandsForWorkFlowCreateLink()
 {
-    if (_needDelete) {
-        delete _linkitem;
+    if (mNeedDelete) {
+        delete mLinkitem;
     }
 }
 
 void DACommandsForWorkFlowCreateLink::redo()
 {
     QUndoCommand::redo();  //此函数会执行子内容的redo/undo
-    if (_skipFirstRedo) {
-        _skipFirstRedo = false;
-        if (_isFirstRedoNotAdditem) {
-            _isFirstRedoNotAdditem = false;
+    if (mSkipFirstRedo) {
+        mSkipFirstRedo = false;
+        if (mIsFirstRedoNotAdditem) {
+            mIsFirstRedoNotAdditem = false;
         }
         return;
     }
-    if (_isFirstRedoNotAdditem) {
+    if (mIsFirstRedoNotAdditem) {
         //此参数为true说明第一次调用不用添加item，后面都不管
-        _isFirstRedoNotAdditem = false;
+        mIsFirstRedoNotAdditem = false;
         return;
     }
-    _linkitem->attachFrom(_fromitem, _fromPointName);
-    _linkitem->attachTo(_toitem, _toPointName);
-    _scene->addItem(_linkitem);
-    _needDelete = false;
+    mLinkitem->attachFrom(mFromitem, mFromPointName);
+    mLinkitem->attachTo(mToitem, mToPointName);
+    mScene->addItem(mLinkitem);
+    mNeedDelete = false;
 }
 
 void DACommandsForWorkFlowCreateLink::undo()
 {
     QUndoCommand::undo();  //此函数会执行子内容的redo/undo
-    _scene->removeItem(_linkitem);
-    _linkitem->detachFrom();
-    _linkitem->detachTo();
-    _needDelete = true;
+    mScene->removeItem(mLinkitem);
+    mLinkitem->detachFrom();
+    mLinkitem->detachTo();
+    mNeedDelete = true;
 }
 
 //==============================================================
@@ -287,38 +287,38 @@ void DACommandsForWorkFlowCreateLink::undo()
 DACommandsForWorkFlowRemoveLink::DACommandsForWorkFlowRemoveLink(DAAbstractNodeLinkGraphicsItem* linkitem,
                                                                  DANodeGraphicsScene* sc,
                                                                  QUndoCommand* parent)
-    : QUndoCommand(parent), _linkitem(linkitem), _scene(sc), _needDelete(false)
+    : QUndoCommand(parent), mLinkitem(linkitem), mScene(sc), mNeedDelete(false)
 {
     setText(QObject::tr("Remove Link"));
-    _fromitem      = linkitem->fromNodeItem();
-    _fromPointName = linkitem->fromNodeLinkPoint().name;
-    _toitem        = linkitem->toNodeItem();
-    _toPointName   = linkitem->toNodeLinkPoint().name;
+    mFromitem      = linkitem->fromNodeItem();
+    mFromPointName = linkitem->fromNodeLinkPoint().name;
+    mToitem        = linkitem->toNodeItem();
+    mToPointName   = linkitem->toNodeLinkPoint().name;
 }
 
 DACommandsForWorkFlowRemoveLink::~DACommandsForWorkFlowRemoveLink()
 {
-    if (_needDelete) {
-        delete _linkitem;
+    if (mNeedDelete) {
+        delete mLinkitem;
     }
 }
 
 void DACommandsForWorkFlowRemoveLink::redo()
 {
     QUndoCommand::redo();  //此函数会执行子内容的redo/undo
-    _scene->removeItem(_linkitem);
-    _linkitem->detachFrom();
-    _linkitem->detachTo();
-    _needDelete = true;
+    mScene->removeItem(mLinkitem);
+    mLinkitem->detachFrom();
+    mLinkitem->detachTo();
+    mNeedDelete = true;
 }
 
 void DACommandsForWorkFlowRemoveLink::undo()
 {
     QUndoCommand::undo();  //此函数会执行子内容的redo/undo
-    _linkitem->attachFrom(_fromitem, _fromPointName);
-    _linkitem->attachTo(_toitem, _toPointName);
-    _scene->addItem(_linkitem);
-    _needDelete = false;
+    mLinkitem->attachFrom(mFromitem, mFromPointName);
+    mLinkitem->attachTo(mToitem, mToPointName);
+    mScene->addItem(mLinkitem);
+    mNeedDelete = false;
 }
 
 }  // end DA

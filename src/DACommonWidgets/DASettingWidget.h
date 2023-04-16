@@ -26,7 +26,7 @@ public:
     //获取页面的数量
     int count() const;
     //添加一个设置页面
-    void addPage(const QIcon& icon, const QString& title, DAAbstractSettingPage* page);
+    void addPage(DAAbstractSettingPage* page);
     //应用所有的改变
     void applyAll();
 private slots:
@@ -42,7 +42,7 @@ signals:
 
 private:
     Ui::DASettingWidget* ui;
-    QSet< DAAbstractSettingPage* > _changedPages;  ///< 记录改变了的页面
+    QSet< DAAbstractSettingPage* > mChangedPages;  ///< 记录改变了的页面
 };
 }
 #endif  // DASETTINGWIDGET_H

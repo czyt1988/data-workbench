@@ -5,35 +5,28 @@
 #include "DAPybind11QtTypeCast.h"
 namespace DA
 {
-class DAPyScriptsPrivate
+class DAPyScripts::PrivateData
 {
-    DA_IMPL_PUBLIC(DAPyScripts)
+    DA_DECLARE_PUBLIC(DAPyScripts)
 public:
-    DAPyScriptsPrivate(DAPyScripts* p);
+    PrivateData(DAPyScripts* p);
 
 public:
-    DAPyModule _pysys;
-    DAPyScriptsIO _pyio;                ///< 对应da_io.py
-    DAPyScriptsDataFrame _pydataframe;  ///< 对应da_dataframe.py
+    DAPyModule mPySys;
+    DAPyScriptsIO mPyIO;                ///< 对应da_io.py
+    DAPyScriptsDataFrame mPyDataframe;  ///< 对应da_dataframe.py
 };
-}  // namespace DA
-
-//===================================================
-// using DA namespace -- 禁止在头文件using！！
-//===================================================
-
-using namespace DA;
 
 //===================================================
 // DAPyScriptsPrivate
 //===================================================
-DAPyScriptsPrivate::DAPyScriptsPrivate(DAPyScripts* p) : q_ptr(p)
+DAPyScripts::PrivateData::PrivateData(DAPyScripts* p) : q_ptr(p)
 {
 }
 //===================================================
 // DAPyScripts
 //===================================================
-DAPyScripts::DAPyScripts() : d_ptr(new DAPyScriptsPrivate(this))
+DAPyScripts::DAPyScripts() : DA_PIMPL_CONSTRUCT
 {
     loadSysModule();
 }
@@ -56,7 +49,7 @@ DAPyScripts::~DAPyScripts()
 void DAPyScripts::appendSysPath(const QString& path)
 {
     try {
-        pybind11::object obj_path_append = d_ptr->_pysys.attr("path").attr("append");
+        pybind11::object obj_path_append = d_ptr->mPySys.attr("path").attr("append");
         obj_path_append(DA::PY::toString(path));
     } catch (const std::exception& e) {
         qCritical() << QObject::tr("Initialized import sys module error:%1").arg(e.what());
@@ -71,10 +64,10 @@ void DAPyScripts::appendSysPath(const QString& path)
 bool DAPyScripts::initScripts()
 {
     try {
-        if (!(d_ptr->_pyio.import())) {
+        if (!(d_ptr->mPyIO.import())) {
             return false;
         }
-        if (!(d_ptr->_pydataframe.import())) {
+        if (!(d_ptr->mPyDataframe.import())) {
             return false;
         }
         return true;
@@ -96,7 +89,7 @@ DAPyScripts& DAPyScripts::getInstance()
  */
 DAPyScriptsIO& DAPyScripts::getIO()
 {
-    return d_ptr->_pyio;
+    return d_ptr->mPyIO;
 }
 
 /**
@@ -105,7 +98,7 @@ DAPyScriptsIO& DAPyScripts::getIO()
  */
 DAPyScriptsDataFrame& DAPyScripts::getDataFrame()
 {
-    return d_ptr->_pydataframe;
+    return d_ptr->mPyDataframe;
 }
 
 /**
@@ -114,8 +107,9 @@ DAPyScriptsDataFrame& DAPyScripts::getDataFrame()
  */
 bool DAPyScripts::loadSysModule()
 {
-    if (!d_ptr->_pysys.import("sys")) {
+    if (!d_ptr->mPySys.import("sys")) {
         return false;
     }
     return true;
 }
+}  // namespace DA

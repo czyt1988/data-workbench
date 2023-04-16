@@ -32,13 +32,13 @@ public:
     int getLine() const;
 
 private:
-    bool m_validFlag;
-    QtMsgType m_msgType;
-    QString m_msg;
-    QDateTime m_datetime;
-    QString m_fileName;
-    QString m_functionName;
-    int m_line;
+    bool mValidFlag;
+    QtMsgType mMsgType;
+    QString mMsg;
+    QDateTime mDatetime;
+    QString mFileName;
+    QString mFunctionName;
+    int mLine;
 };
 }  // namespace DA
 Q_DECLARE_METATYPE(DA::DAMessageLogItem)

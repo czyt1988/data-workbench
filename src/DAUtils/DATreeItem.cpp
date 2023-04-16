@@ -8,45 +8,45 @@
 namespace DA
 {
 
-class DATreeItemPrivate
+class DATreeItem::PrivateData
 {
-    DA_IMPL_PUBLIC(DATreeItem)
+    DA_DECLARE_PUBLIC(DATreeItem)
 public:
-    DATreeItem* m_parent;
-    QList< DATreeItem* > m_childs;
-    int _index;  ///<用于记录当前所处的层级，如果parent不为nullptr，这个将返回parent下item对应的层级
-    DATreeItem::id_type m_id;
-    DATree* m_tree;                                                                  ///< 绑定的树
-    da_order_map< int, QVariant, QVector< int >, QVector< QVariant > > m_propertys;  ///< 定义属性
-    DATreeItemPrivate(DATreeItem* par)
-        : q_ptr(par), m_parent(nullptr), _index(-1), m_id(reinterpret_cast< DATreeItem::id_type >(par)), m_tree(nullptr)
+    DATreeItem* mParent { nullptr };
+    int mIndex { -1 };  ///<用于记录当前所处的层级，如果parent不为nullptr，这个将返回parent下item对应的层级
+    DATreeItem::id_type mID { 0 };
+    DATree* mTree { nullptr };  ///< 绑定的树
+    QList< DATreeItem* > mChilds;
+    da_order_map< int, QVariant, QVector< int >, QVector< QVariant > > mPropertys;  ///< 定义属性
+public:
+    PrivateData(DATreeItem* par) : q_ptr(par), mID(reinterpret_cast< DATreeItem::id_type >(par))
     {
-        m_propertys[ DATreeItem::RoleName ]  = QString();
-        m_propertys[ DATreeItem::RoleIcon ]  = QIcon();
-        m_propertys[ DATreeItem::RoleValue ] = QVariant();
+        mPropertys[ DATreeItem::RoleName ]  = QString();
+        mPropertys[ DATreeItem::RoleIcon ]  = QIcon();
+        mPropertys[ DATreeItem::RoleValue ] = QVariant();
     }
 
-    ~DATreeItemPrivate()
+    ~PrivateData()
     {
         clearChild();
     }
 
     void clearChild()
     {
-        QList< DATreeItem* > childs = m_childs;
+        QList< DATreeItem* > childs = mChilds;
 
         for (int i = 0; i < childs.size(); ++i) {
             delete childs[ i ];
         }
-        m_childs.clear();
+        mChilds.clear();
     }
 
     void updateFieldCount(int startRow = 0)
     {
-        const int cc = m_childs.size();
+        const int cc = mChilds.size();
 
         for (int i = startRow; i < cc; ++i) {
-            m_childs[ i ]->d_ptr->_index = i;
+            mChilds[ i ]->d_ptr->mIndex = i;
         }
     }
 };
@@ -57,18 +57,12 @@ void copy_childs(const DATreeItem* from, DATreeItem* to);
 //打印一个item内容
 QDebug& print_one_item(QDebug& dbg, const DATreeItem& item, const QString& prefix, bool isNewline = true);
 QDebug& print_item_and_child_items(QDebug& dbg, const DATreeItem& item, int indent);
-}
-//===================================================
-// using DA namespace -- 禁止在头文件using！！
-//===================================================
-
-using namespace DA;
 
 //===================================================
 //
 //===================================================
 
-void DA::copy_childs(const DATreeItem* from, DATreeItem* to)
+void copy_childs(const DATreeItem* from, DATreeItem* to)
 {
     QList< DATreeItem* > items = from->getChildItems();
     const auto size            = items.size();
@@ -81,14 +75,14 @@ void DA::copy_childs(const DATreeItem* from, DATreeItem* to)
     }
 }
 
-DATreeItem::DATreeItem(DATreeItem* parentItem) : d_ptr(new DATreeItemPrivate(this))
+DATreeItem::DATreeItem(DATreeItem* parentItem) : d_ptr(new DATreeItem::PrivateData(this))
 {
     if (parentItem) {
         parentItem->appendChild(this);
     }
 }
 
-DATreeItem::DATreeItem(const QString& text, DATreeItem* parentItem) : d_ptr(new DATreeItemPrivate(this))
+DATreeItem::DATreeItem(const QString& text, DATreeItem* parentItem) : d_ptr(new DATreeItem::PrivateData(this))
 {
     setName(text);
     if (parentItem) {
@@ -97,7 +91,7 @@ DATreeItem::DATreeItem(const QString& text, DATreeItem* parentItem) : d_ptr(new 
 }
 
 DATreeItem::DATreeItem(const QIcon& icon, const QString& text, DATreeItem* parentItem)
-    : d_ptr(new DATreeItemPrivate(this))
+    : d_ptr(new DATreeItem::PrivateData(this))
 {
     setName(text);
     setIcon(icon);
@@ -110,7 +104,7 @@ DATreeItem::DATreeItem(const QIcon& icon, const QString& text, DATreeItem* paren
  * @brief 拷贝构造函数
  * @param c
  */
-DATreeItem::DATreeItem(const DATreeItem& c) : d_ptr(new DATreeItemPrivate(this))
+DATreeItem::DATreeItem(const DATreeItem& c) : d_ptr(new DATreeItem::PrivateData(this))
 {
     *this = c;
 }
@@ -123,11 +117,11 @@ DATreeItem::~DATreeItem()
     if (par) {
         int indexOfPar = par->childIndex(this);
         if (indexOfPar >= 0) {
-            par->d_ptr->m_childs.removeAt(indexOfPar);
+            par->d_ptr->mChilds.removeAt(indexOfPar);
             par->d_ptr->updateFieldCount(indexOfPar);
         }
     }
-    if (d_ptr->m_tree) {
+    if (d_ptr->mTree) {
         // d_ptr->m_tree->
     }
 }
@@ -141,7 +135,7 @@ DATreeItem::~DATreeItem()
 DATreeItem& DATreeItem::operator=(const DATreeItem& item)
 {
     clearChild();
-    d_ptr->m_propertys = item.d_ptr->m_propertys;
+    d_ptr->mPropertys = item.d_ptr->mPropertys;
     //复制子对象
     copy_childs(&item, this);
     return (*this);
@@ -153,7 +147,7 @@ DATreeItem& DATreeItem::operator=(const DATreeItem& item)
 ///
 void DATreeItem::setName(const QString& name)
 {
-    d_ptr->m_propertys.orderValue(static_cast< int >(RoleName)) = name;
+    d_ptr->mPropertys.orderValue(static_cast< int >(RoleName)) = name;
 }
 
 ///
@@ -162,7 +156,7 @@ void DATreeItem::setName(const QString& name)
 ///
 QString DATreeItem::getName() const
 {
-    return (d_ptr->m_propertys.orderValue(static_cast< int >(RoleName)).toString());
+    return (d_ptr->mPropertys.orderValue(static_cast< int >(RoleName)).toString());
 }
 
 ///
@@ -171,7 +165,7 @@ QString DATreeItem::getName() const
 ///
 void DATreeItem::setIcon(const QIcon& icon)
 {
-    d_ptr->m_propertys.orderValue(static_cast< int >(RoleIcon)) = icon;
+    d_ptr->mPropertys.orderValue(static_cast< int >(RoleIcon)) = icon;
 }
 
 ///
@@ -180,7 +174,7 @@ void DATreeItem::setIcon(const QIcon& icon)
 ///
 QIcon DATreeItem::getIcon() const
 {
-    return (d_ptr->m_propertys.orderValue(static_cast< int >(RoleIcon)).value< QIcon >());
+    return (d_ptr->mPropertys.orderValue(static_cast< int >(RoleIcon)).value< QIcon >());
 }
 
 ///
@@ -190,7 +184,7 @@ QIcon DATreeItem::getIcon() const
 ///
 DATreeItem::id_type DATreeItem::getID() const
 {
-    return (d_ptr->m_id);
+    return (d_ptr->mID);
 }
 
 ///
@@ -200,7 +194,7 @@ DATreeItem::id_type DATreeItem::getID() const
 ///
 void DATreeItem::setProperty(int roleID, const QVariant& var)
 {
-    d_ptr->m_propertys[ roleID ] = var;
+    d_ptr->mPropertys[ roleID ] = var;
 }
 
 ///
@@ -210,7 +204,7 @@ void DATreeItem::setProperty(int roleID, const QVariant& var)
 ///
 bool DATreeItem::isHaveProperty(int roleID) const
 {
-    return (d_ptr->m_propertys.contains(roleID));
+    return (d_ptr->mPropertys.contains(roleID));
 }
 
 ///
@@ -219,7 +213,7 @@ bool DATreeItem::isHaveProperty(int roleID) const
 ///
 int DATreeItem::getPropertyCount() const
 {
-    return (d_ptr->m_propertys.size());
+    return (d_ptr->mPropertys.size());
 }
 
 ///
@@ -229,7 +223,7 @@ int DATreeItem::getPropertyCount() const
 ///
 const QVariant& DATreeItem::property(int id) const
 {
-    return (d_ptr->m_propertys[ id ]);
+    return (d_ptr->mPropertys[ id ]);
 }
 
 ///
@@ -239,7 +233,7 @@ const QVariant& DATreeItem::property(int id) const
 ///
 QVariant& DATreeItem::property(int id)
 {
-    return (d_ptr->m_propertys[ id ]);
+    return (d_ptr->mPropertys[ id ]);
 }
 
 ///
@@ -250,7 +244,7 @@ QVariant& DATreeItem::property(int id)
 ///
 void DATreeItem::property(int index, int& id, QVariant& var) const
 {
-    auto ite = d_ptr->m_propertys.cbegin();
+    auto ite = d_ptr->mPropertys.cbegin();
 
     ite = ite + index;
     id  = ite.key();
@@ -265,7 +259,7 @@ void DATreeItem::property(int index, int& id, QVariant& var) const
  */
 QVariant DATreeItem::getProperty(int id, const QVariant& defaultvar) const
 {
-    return (d_ptr->m_propertys.value(id, defaultvar));
+    return (d_ptr->mPropertys.value(id, defaultvar));
 }
 
 /**
@@ -274,7 +268,7 @@ QVariant DATreeItem::getProperty(int id, const QVariant& defaultvar) const
  */
 QMap< int, QVariant > DATreeItem::getPropertys() const
 {
-    return (d_ptr->m_propertys.toMap());
+    return (d_ptr->mPropertys.toMap());
 }
 
 ///
@@ -283,7 +277,7 @@ QMap< int, QVariant > DATreeItem::getPropertys() const
 ///
 int DATreeItem::childItemCount() const
 {
-    return (d_ptr->m_childs.size());
+    return (d_ptr->mChilds.size());
 }
 
 ///
@@ -293,7 +287,7 @@ int DATreeItem::childItemCount() const
 ///
 DATreeItem* DATreeItem::childItem(int row) const
 {
-    return (d_ptr->m_childs[ row ]);
+    return (d_ptr->mChilds[ row ]);
 }
 
 /**
@@ -302,7 +296,7 @@ DATreeItem* DATreeItem::childItem(int row) const
  */
 QList< DATreeItem* > DATreeItem::getChildItems() const
 {
-    return (d_ptr->m_childs);
+    return (d_ptr->mChilds);
 }
 
 /**
@@ -326,10 +320,10 @@ QList< QString > DATreeItem::getChildItemNames() const
 ///
 void DATreeItem::appendChild(DATreeItem* item)
 {
-    item->d_ptr->_index   = d_ptr->m_childs.size();
-    item->d_ptr->m_parent = this;
-    item->d_ptr->m_tree   = this->d_ptr->m_tree;
-    d_ptr->m_childs.append(item);
+    item->d_ptr->mIndex  = d_ptr->mChilds.size();
+    item->d_ptr->mParent = this;
+    item->d_ptr->mTree   = this->d_ptr->mTree;
+    d_ptr->mChilds.append(item);
 }
 
 /**
@@ -340,15 +334,15 @@ void DATreeItem::appendChild(DATreeItem* item)
 void DATreeItem::insertChild(DATreeItem* item, int row)
 {
     //如果row大于等于childcount,row=childcount
-    if (row >= d_ptr->m_childs.size()) {
-        row = d_ptr->m_childs.size();
+    if (row >= d_ptr->mChilds.size()) {
+        row = d_ptr->mChilds.size();
     } else if (row < 0) {
         row = 0;
     }
-    item->d_ptr->_index = row;
-    d_ptr->m_childs.insert(row, item);
-    item->d_ptr->m_parent = this;
-    item->d_ptr->m_tree   = this->d_ptr->m_tree;
+    item->d_ptr->mIndex = row;
+    d_ptr->mChilds.insert(row, item);
+    item->d_ptr->mParent = this;
+    item->d_ptr->mTree   = this->d_ptr->mTree;
     //修改后面的item的m_fieldRow
     d_ptr->updateFieldCount(row + 1);
 }
@@ -368,7 +362,7 @@ void DATreeItem::clearChild()
  */
 bool DATreeItem::haveChild(DATreeItem* const item) const
 {
-    return (d_ptr->m_childs.contains(item));
+    return (d_ptr->mChilds.contains(item));
 }
 
 ///
@@ -378,10 +372,10 @@ bool DATreeItem::haveChild(DATreeItem* const item) const
 ///
 DATreeItem* DATreeItem::takeChild(int row)
 {
-    DATreeItem* item = d_ptr->m_childs.takeAt(row);
+    DATreeItem* item = d_ptr->mChilds.takeAt(row);
 
-    item->d_ptr->m_parent = nullptr;
-    item->d_ptr->m_tree   = nullptr;
+    item->d_ptr->mParent = nullptr;
+    item->d_ptr->mTree   = nullptr;
     //修改后面的item的m_fieldRow
     d_ptr->updateFieldCount(row + 1);
     return (item);
@@ -410,7 +404,7 @@ bool DATreeItem::takeChild(DATreeItem* const item)
  */
 int DATreeItem::childIndex(DATreeItem* const item) const
 {
-    return (d_ptr->m_childs.indexOf(item));
+    return (d_ptr->mChilds.indexOf(item));
 }
 
 /**
@@ -436,12 +430,12 @@ void DATreeItem::removeChild(DATreeItem* item)
 ///
 DATreeItem* DATreeItem::parent() const
 {
-    if (d_ptr->m_parent) {
-        if (d_ptr->m_parent->isRootItem()) {
+    if (d_ptr->mParent) {
+        if (d_ptr->mParent->isRootItem()) {
             return nullptr;
         }
     }
-    return (d_ptr->m_parent);
+    return (d_ptr->mParent);
 }
 
 ///
@@ -451,7 +445,7 @@ DATreeItem* DATreeItem::parent() const
 ///
 int DATreeItem::index() const
 {
-    return (d_ptr->_index);
+    return (d_ptr->mIndex);
 }
 
 /**
@@ -460,7 +454,7 @@ int DATreeItem::index() const
  */
 bool DATreeItem::isOnTree() const
 {
-    return ((d_ptr->m_tree) != nullptr);
+    return ((d_ptr->mTree) != nullptr);
 }
 
 /**
@@ -469,7 +463,7 @@ bool DATreeItem::isOnTree() const
  */
 DATree* DATreeItem::getTree() const
 {
-    return d_ptr->m_tree;
+    return d_ptr->mTree;
 }
 
 /**
@@ -480,15 +474,15 @@ DATree* DATreeItem::getTree() const
  */
 bool DATreeItem::isRootItem() const
 {
-    if (d_ptr->m_tree) {
-        return d_ptr->m_tree->isRootItem(this);
+    if (d_ptr->mTree) {
+        return d_ptr->mTree->isRootItem(this);
     }
     return false;
 }
 
 void DATreeItem::setID(id_type id)
 {
-    d_ptr->m_id = id;
+    d_ptr->mID = id;
 }
 
 /**
@@ -497,15 +491,15 @@ void DATreeItem::setID(id_type id)
  */
 void DATreeItem::setTree(DATree* tree)
 {
-    if (d_ptr->m_tree == tree) {
+    if (d_ptr->mTree == tree) {
         return;
-    } else if (d_ptr->m_tree) {
-        d_ptr->m_tree->takeItem(this);
+    } else if (d_ptr->mTree) {
+        d_ptr->mTree->takeItem(this);
     }
-    d_ptr->m_tree = tree;
+    d_ptr->mTree = tree;
 }
 
-QDebug& DA::print_one_item(QDebug& dbg, const DATreeItem& item, const QString& prefix, bool isNewline)
+QDebug& print_one_item(QDebug& dbg, const DATreeItem& item, const QString& prefix, bool isNewline)
 {
     int pc = item.getPropertyCount();
 
@@ -529,7 +523,7 @@ QDebug& DA::print_one_item(QDebug& dbg, const DATreeItem& item, const QString& p
     return (dbg);
 }
 
-QDebug& DA::print_item_and_child_items(QDebug& dbg, const DATreeItem& item, int indent)
+QDebug& print_item_and_child_items(QDebug& dbg, const DATreeItem& item, int indent)
 {
     QString str(indent, ' ');
 
@@ -549,13 +543,15 @@ QDebug& DA::print_item_and_child_items(QDebug& dbg, const DATreeItem& item, int 
  * @param item
  * @return
  */
-QDebug& DA::operator<<(QDebug& dbg, const DA::DATreeItem& item)
+QDebug& operator<<(QDebug& dbg, const DATreeItem& item)
 {
     dbg = DA::print_one_item(dbg, item, "");
 
-    QList< DA::DATreeItem* > cis = item.getChildItems();
-    for (const DA::DATreeItem* i : qAsConst(cis)) {
-        dbg = DA::print_item_and_child_items(dbg, *i, 2);
+    QList< DATreeItem* > cis = item.getChildItems();
+    for (const DATreeItem* i : qAsConst(cis)) {
+        dbg = print_item_and_child_items(dbg, *i, 2);
     }
     return (dbg);
 }
+
+}  // end DA

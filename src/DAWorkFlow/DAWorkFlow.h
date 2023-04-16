@@ -12,7 +12,6 @@ namespace DA
 {
 class DAWorkFlowExecuter;
 class DAAbstractNodeFactory;
-DA_IMPL_FORWARD_DECL(DAWorkFlow)
 
 /**
  * @brief 基本的工作流,这个也是总工厂，汇总了所有插件的工厂
@@ -20,7 +19,7 @@ DA_IMPL_FORWARD_DECL(DAWorkFlow)
 class DAWORKFLOW_API DAWorkFlow : public QObject
 {
     Q_OBJECT
-    DA_IMPL(DAWorkFlow)
+    DA_DECLARE_PRIVATE(DAWorkFlow)
     friend class DAAbstractNode;
 
 public:
@@ -53,6 +52,8 @@ public:
     void clear();
     //删除节点
     void removeNode(const DAAbstractNode::SharedPointer& n);
+    //是否在workflow存在id
+    bool hasNodeID(const DAAbstractNode::IdType id);
     //通过节点ID获取节点Item
     DAAbstractNode::SharedPointer getNode(const DAAbstractNode::IdType id);
     //通过节点ID获取节点Item

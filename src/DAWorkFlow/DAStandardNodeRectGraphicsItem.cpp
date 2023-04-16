@@ -1,22 +1,21 @@
-#include "DAStandardNodeRectGraphicsItem.h"
+﻿#include "DAStandardNodeRectGraphicsItem.h"
 #include <QPainter>
 #include "DANodePalette.h"
 namespace DA
 {
 
-class DAStandardNodeRectGraphicsItemPrivate
+class DAStandardNodeRectGraphicsItem::PrivateData
 {
-    DA_IMPL_PUBLIC(DAStandardNodeRectGraphicsItem)
+    DA_DECLARE_PUBLIC(DAStandardNodeRectGraphicsItem)
 public:
-    DAStandardNodeRectGraphicsItemPrivate(DAStandardNodeRectGraphicsItem* p);
+    PrivateData(DAStandardNodeRectGraphicsItem* p);
 
 public:
-    QString _text;
-    Qt::Alignment _textAl;
+    QString mText;
+    Qt::Alignment mTextAlignment { Qt::AlignCenter };
 };
 
-DAStandardNodeRectGraphicsItemPrivate::DAStandardNodeRectGraphicsItemPrivate(DAStandardNodeRectGraphicsItem* p)
-    : q_ptr(p), _textAl(Qt::AlignCenter)
+DAStandardNodeRectGraphicsItem::PrivateData::PrivateData(DAStandardNodeRectGraphicsItem* p) : q_ptr(p)
 {
 }
 
@@ -25,7 +24,7 @@ DAStandardNodeRectGraphicsItemPrivate::DAStandardNodeRectGraphicsItemPrivate(DAS
 //===================================================
 
 DAStandardNodeRectGraphicsItem::DAStandardNodeRectGraphicsItem(DAAbstractNode* n, QGraphicsItem* p)
-    : DAAbstractNodeGraphicsItem(n, p), d_ptr(new DAStandardNodeRectGraphicsItemPrivate(this))
+    : DAAbstractNodeGraphicsItem(n, p), DA_PIMPL_CONSTRUCT
 {
 }
 
@@ -42,30 +41,30 @@ void DAStandardNodeRectGraphicsItem::paintBody(QPainter* painter, const QStyleOp
     painter->setPen(pl.getBorderColor());
     painter->setBrush(pl.getBackgroundBrush());
     painter->drawRect(bodyRect);
-    if (!(d_ptr->_text.isEmpty())) {
-        painter->drawText(bodyRect, d_ptr->_textAl, d_ptr->_text);
+    if (!(d_ptr->mText.isEmpty())) {
+        painter->drawText(bodyRect, d_ptr->mTextAlignment, d_ptr->mText);
     }
     painter->restore();
 }
 
 void DAStandardNodeRectGraphicsItem::setText(const QString& t)
 {
-    d_ptr->_text = t;
+    d_ptr->mText = t;
 }
 
 QString DAStandardNodeRectGraphicsItem::getText() const
 {
-    return d_ptr->_text;
+    return d_ptr->mText;
 }
 
 void DAStandardNodeRectGraphicsItem::setTextAlignment(Qt::Alignment al)
 {
-    d_ptr->_textAl = al;
+    d_ptr->mTextAlignment = al;
 }
 
 Qt::Alignment DAStandardNodeRectGraphicsItem::getTextAlignment() const
 {
-    return d_ptr->_textAl;
+    return d_ptr->mTextAlignment;
 }
 
 }  // end of DA

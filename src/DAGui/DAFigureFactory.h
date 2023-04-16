@@ -1,6 +1,7 @@
 ﻿#ifndef DAFIGUREFACTORY_H
 #define DAFIGUREFACTORY_H
 #include "DAGuiAPI.h"
+#include "DAChartFactory.h"
 #include "DAFigureWidget.h"
 namespace DA
 {
@@ -20,6 +21,15 @@ public:
      * @return
      */
     virtual DAFigureWidget* createFigure(QWidget* par = nullptr);
+
+protected:
+    /**
+     * @brief 创建DAChartFactory，DAChartFactory将会设置到DAFigureWidget中
+     * @note 调用createFigure会调用createChartFactory，并把factory设置到figure中
+     * @return 默认返回nullptr,代表无需额外设置chart factory
+     * @note 此函数正常外部不应该调用,而是createFigure内部调用，因此，设置为protected
+     */
+    virtual DAChartFactory* createChartFactory();
 };
 }  // end DA
 #endif  // DAFIGUREFACTORY_H

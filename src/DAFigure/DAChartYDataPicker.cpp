@@ -21,11 +21,11 @@
 namespace DA
 {
 
-class DAChartYDataPickerPrivate
+class DAChartYDataPicker::PrivateData
 {
 public:
-    DA_IMPL_PUBLIC(DAChartYDataPicker)
-    DAChartYDataPickerPrivate(DAChartYDataPicker* p);
+    DA_DECLARE_PUBLIC(DAChartYDataPicker)
+    PrivateData(DAChartYDataPicker* p);
     //把ypoints的最高点找到（相对于绘图坐标）,res(top,bottom)
     bool getTopBottomPoint(QPair< QPointF, QPointF >& res) const;
     //刷新点信息
@@ -42,32 +42,32 @@ public:
     static QPointF makeNanPoint();
 
 public:
-    QMap< QwtPlotItem*, QPointF > _ypoints;  ///< 记录所有曲线对应的y点
+    QMap< QwtPlotItem*, QPointF > mYPoints;  ///< 记录所有曲线对应的y点
     // QList< QPair< QwtPlotItem*, QPointF > > _ypoints;  ///< 记录所有曲线对应的y点
-    QPen _pen;
-    QPoint _mousePoint;
-    QString _text;
+    QPen mPen;
+    QPoint mMousePoint;
+    QString mText;
 };
 
-DAChartYDataPickerPrivate::DAChartYDataPickerPrivate(DAChartYDataPicker* p) : q_ptr(p)
+DAChartYDataPicker::PrivateData::PrivateData(DAChartYDataPicker* p) : q_ptr(p)
 {
-    _ypoints.clear();
-    _pen.setColor(Qt::black);
-    _pen.setStyle(Qt::DashLine);
+    mYPoints.clear();
+    mPen.setColor(Qt::black);
+    mPen.setStyle(Qt::DashLine);
 }
 
 /**
  * @brief 把ypoints的最高点找到（相对于绘图坐标）
  * @return
  */
-bool DAChartYDataPickerPrivate::getTopBottomPoint(QPair< QPointF, QPointF >& res) const
+bool DAChartYDataPicker::PrivateData::getTopBottomPoint(QPair< QPointF, QPointF >& res) const
 {
-    if (_ypoints.isEmpty()) {
+    if (mYPoints.isEmpty()) {
         return false;
     }
-    res.first  = _ypoints.first();
-    res.second = _ypoints.first();
-    for (auto i = _ypoints.begin() + 1; i != _ypoints.end(); ++i) {
+    res.first  = mYPoints.first();
+    res.second = mYPoints.first();
+    for (auto i = mYPoints.begin() + 1; i != mYPoints.end(); ++i) {
         if (i.value().y() > res.first.y()) {
             res.first = i.value();
         } else if (i.value().y() < res.second.y()) {
@@ -77,10 +77,10 @@ bool DAChartYDataPickerPrivate::getTopBottomPoint(QPair< QPointF, QPointF >& res
     return true;
 }
 
-void DAChartYDataPickerPrivate::resetPointsInfo(const QPointF& pos)
+void DAChartYDataPicker::PrivateData::resetPointsInfo(const QPointF& pos)
 {
-    _text.clear();
-    _ypoints.clear();
+    mText.clear();
+    mYPoints.clear();
     const QwtPlotItemList& items = q_ptr->plot()->itemList();
     QList< QPair< QwtPlotItem*, QPointF > > ordered;
     for (int i = 0; i < items.size(); i++) {
@@ -89,7 +89,7 @@ void DAChartYDataPickerPrivate::resetPointsInfo(const QPointF& pos)
             continue;
         }
         ordered.append(qMakePair(items[ i ], p));
-        _ypoints[ items[ i ] ] = p;
+        mYPoints[ items[ i ] ] = p;
     }
     //把ordered排序
     std::sort(ordered.begin(), ordered.end(), [](const QPair< QwtPlotItem*, QPointF >& a, const QPair< QwtPlotItem*, QPointF >& b) -> bool {
@@ -107,7 +107,7 @@ void DAChartYDataPickerPrivate::resetPointsInfo(const QPointF& pos)
         if (0 != i) {
             str = "<br/>" + str;
         }
-        _text += str;
+        mText += str;
     }
 }
 
@@ -116,7 +116,7 @@ void DAChartYDataPickerPrivate::resetPointsInfo(const QPointF& pos)
  * @param p
  * @return
  */
-bool DAChartYDataPickerPrivate::isNanPoint(const QPointF& p)
+bool DAChartYDataPicker::PrivateData::isNanPoint(const QPointF& p)
 {
     return (qIsNaN(p.x()) || qIsNaN(p.y()));
 }
@@ -125,7 +125,7 @@ bool DAChartYDataPickerPrivate::isNanPoint(const QPointF& p)
  * @brief 构建一个nan point
  * @return
  */
-QPointF DAChartYDataPickerPrivate::makeNanPoint()
+QPointF DAChartYDataPicker::PrivateData::makeNanPoint()
 {
     return QPointF(qQNaN(), qQNaN());
 }
@@ -133,8 +133,7 @@ QPointF DAChartYDataPickerPrivate::makeNanPoint()
 // DAChartYDataPicker
 //===================================================
 
-DAChartYDataPicker::DAChartYDataPicker(QWidget* canvas)
-    : QwtPlotPicker(canvas), d_ptr(new DAChartYDataPickerPrivate(this))
+DAChartYDataPicker::DAChartYDataPicker(QWidget* canvas) : QwtPlotPicker(canvas), DA_PIMPL_CONSTRUCT
 {
     setTrackerMode(QwtPlotPicker::ActiveOnly);
     //    setRubberBand(HLineRubberBand);
@@ -153,19 +152,19 @@ QRect DAChartYDataPicker::trackerRect(const QFont& font) const
     QRect r            = QwtPlotPicker::trackerRect(font);
     const QRect axRect = transform(scaleRect());
     //判断是显示到鼠标上面还是鼠标下面
-    if (d_ptr->_mousePoint.y() - r.height() < axRect.top()) {
+    if (d_ptr->mMousePoint.y() - r.height() < axRect.top()) {
         //显示到鼠标上面会被鼠标遮挡，默认显示到鼠标下面
-        r.moveTop(d_ptr->_mousePoint.y());
+        r.moveTop(d_ptr->mMousePoint.y());
     } else {
         //否则都显示到鼠标下面
-        r.moveBottom(d_ptr->_mousePoint.y());
+        r.moveBottom(d_ptr->mMousePoint.y());
     }
     //判断是显示到左边还是右边
 
-    if (d_ptr->_mousePoint.x() + r.width() > axRect.right()) {
-        r.moveRight(d_ptr->_mousePoint.x());
+    if (d_ptr->mMousePoint.x() + r.width() > axRect.right()) {
+        r.moveRight(d_ptr->mMousePoint.x());
     } else {
-        r.moveLeft(d_ptr->_mousePoint.x());
+        r.moveLeft(d_ptr->mMousePoint.x());
     }
     return r;
 }
@@ -177,7 +176,7 @@ QPointF DAChartYDataPicker::keyPoint(QwtPlotItem* item, const QPointF& pos) cons
     } else if (QwtPlotBarChart* c = dynamic_cast< QwtPlotBarChart* >(item)) {
         return getKeyPoint(c, pos);
     }
-    return DAChartYDataPickerPrivate::makeNanPoint();
+    return PrivateData::makeNanPoint();
 }
 
 void DAChartYDataPicker::drawRubberBand(QPainter* painter) const
@@ -186,15 +185,15 @@ void DAChartYDataPicker::drawRubberBand(QPainter* painter) const
     if (!isActive() || rubberBand() == NoRubberBand || rubberBandPen().style() == Qt::NoPen) {
         return;
     }
-    if (d_ptr->_ypoints.size() == 0) {
+    if (d_ptr->mYPoints.size() == 0) {
         return;
     }
-    painter->setPen(d_ptr->_pen);
+    painter->setPen(d_ptr->mPen);
     QRect axisrect = transform(scaleRect());
     QPoint topPoint, bottomPoint;
-    for (auto i = d_ptr->_ypoints.begin(); i != d_ptr->_ypoints.end(); ++i) {
+    for (auto i = d_ptr->mYPoints.begin(); i != d_ptr->mYPoints.end(); ++i) {
         const QPoint cvp = transform(i.value());
-        if (d_ptr->_ypoints.begin() == i) {
+        if (d_ptr->mYPoints.begin() == i) {
             topPoint    = cvp;
             bottomPoint = cvp;
         }
@@ -209,24 +208,24 @@ void DAChartYDataPicker::drawRubberBand(QPainter* painter) const
         QwtPainter::drawRect(painter, r);
     }
     //绘制鼠标到toppoint和bottompoint
-    if (d_ptr->_mousePoint.y() > bottomPoint.y()) {
+    if (d_ptr->mMousePoint.y() > bottomPoint.y()) {
         //说明鼠标在所有点之下
-        QwtPainter::drawLine(painter, QPoint(bottomPoint.x(), d_ptr->_mousePoint.y()), bottomPoint);
+        QwtPainter::drawLine(painter, QPoint(bottomPoint.x(), d_ptr->mMousePoint.y()), bottomPoint);
         QwtPainter::drawLine(painter, bottomPoint, topPoint);
-    } else if (d_ptr->_mousePoint.y() < topPoint.y()) {
+    } else if (d_ptr->mMousePoint.y() < topPoint.y()) {
         //说明鼠标在所有点之上
-        QwtPainter::drawLine(painter, QPoint(topPoint.x(), d_ptr->_mousePoint.y()), topPoint);
+        QwtPainter::drawLine(painter, QPoint(topPoint.x(), d_ptr->mMousePoint.y()), topPoint);
         QwtPainter::drawLine(painter, topPoint, bottomPoint);
     } else {
         //说明鼠标在上下中间
-        QwtPainter::drawLine(painter, QPoint(topPoint.x(), d_ptr->_mousePoint.y()), topPoint);
-        QwtPainter::drawLine(painter, QPoint(bottomPoint.x(), d_ptr->_mousePoint.y()), bottomPoint);
+        QwtPainter::drawLine(painter, QPoint(topPoint.x(), d_ptr->mMousePoint.y()), topPoint);
+        QwtPainter::drawLine(painter, QPoint(bottomPoint.x(), d_ptr->mMousePoint.y()), bottomPoint);
     }
 }
 
 void DAChartYDataPicker::move(const QPoint& pos)
 {
-    d_ptr->_mousePoint = pos;
+    d_ptr->mMousePoint = pos;
     QwtPlotPicker::move(pos);
 }
 
@@ -256,7 +255,7 @@ QPointF DAChartYDataPicker::getKeyPoint(QwtPlotBarChart* c, const QPointF& pos) 
 {
     const double y = getBarValue(c, pos.x());
     if (qIsNaN(y)) {
-        return DAChartYDataPickerPrivate::makeNanPoint();
+        return PrivateData::makeNanPoint();
     }
     return QPointF(pos.x(), y);
 }
@@ -272,7 +271,7 @@ QwtText DAChartYDataPicker::trackerTextF(const QPointF& pos) const
     QColor c(200, 200, 200, 100);
     trackerText.setBorderPen(QPen(c, 2));
     trackerText.setBackgroundBrush(c);
-    trackerText.setText(d_ptr->_text);
+    trackerText.setText(d_ptr->mText);
     return trackerText;
 }
 

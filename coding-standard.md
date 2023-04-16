@@ -2,16 +2,27 @@
 
 原则上，全局属性变量以下划线命名，其他都以驼峰命名
 
-- 统一以驼峰命名
+- 命名以IDE最优搜索原则，方便开发过程让编译器快速找到对应变量、枚举、函数等
+- 统一以驼峰命名（除全局函数全局变量以外）
 - 局部变量和成员函数首字母小写
 - 类命名首字母大写
-- 类私有成员变量以_为开头，类公有成员变量以m开头
+- 类私有成员变量以`m`为开头，类公有成员变量不做前缀
 - 全局变量以下划线分隔，以g_作为开头
 - 静态变量以下划线分隔，以s_作为开头
-- 全局函数以下划线分隔
+- 全局函数使用下划线小写的命名规则
 - 命名空间不宜过长，所有都大写，例如DataAnalysis应写为DA
 - 宏都大写，以下划线进行分隔
-- 命名以IDE最优搜索原则，方便开发过程让编译器快速找到对应变量、枚举、函数等
+
+> 谷歌规范里私有变量用结尾_来标记，如`value_`，这样虽然能避免和局部变量混淆，但不利于IDE的搜索，而下斜杠前置又和C++的保留关键字冲突（C++有很多下横杠开头的全局函数，以及保留下横杠开头作为关键字的可能），而传统的`m_`开头法实际上是对IDE最优的，但使用Pimpl模式时的“颜值”不好看，因此，这里使用m开头，不要下横杠的模式，这个模式IDE的搜索并不是最优，一般IDE要输入2~3个才开始展示推荐列表，单独输入m很有可能并不会触发推荐列表，当然可以使用this->m来进行触发，或者输入m后后面随便输入几个字母再删除来获取推荐列表，使用m不要下横杠的好处是更为简洁，尤其在Pimpl模式下，`d_ptr->m_value`就没有`d_ptr->mValue`好看，Pimpl模式下通过pimpl指针是能触发IDE的提示列表的，输入d_ptr->m，这时IDE的提示就会弹出来了
+>
+>下面展示了几种成员变量的表示方法
+>
+> ```cpp
+> d_ptr->m_value = 1;
+> d_ptr->mValue = 1;
+> d_ptr->_value = 1;
+> d_ptr->value_ = 1;
+>```
 
 以下为命名示例：
 
@@ -24,9 +35,9 @@ public:
     void functionOne(int argOne,double argTwo);//类函数首字母小写，驼峰命名 ;变量参数驼峰命名，首字母小写
     virtual void virtualFunction();
 public:
-    double mPublicMemberValue;//类公有成员变量以m开头，驼峰命名（不建议使用类公有成员变量）
+    double publicMemberValue;//类公有成员变量不做前缀限定
 private:
-    double _resultValue;//类私有成员变量以下划线开头，驼峰命名
+    double mResultValue;//类私有成员变量以m开头，驼峰命名
 };
 
 void ExampleClass::functionOne(int argOne,double argTwo){
@@ -57,6 +68,8 @@ enum DockingArea
     DockingAreaMessageLog
 };
 ```
+
+> `QStyleOption*`系列就是比较好的例子，所有相似功能的类都是以`QStyleOption`打头，例如`QStyleOptionToolButton`，而不是命名为`QToolButtonStyleOption`
 
 另外在函数命名上因遵守如下原则：
 

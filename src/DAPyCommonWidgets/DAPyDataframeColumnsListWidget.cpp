@@ -13,13 +13,13 @@ DAPyDataframeColumnsListWidget::~DAPyDataframeColumnsListWidget()
 
 void DAPyDataframeColumnsListWidget::setDataframe(const DAPyDataFrame& df)
 {
-    _dataframe = df;
+    mDataframe = df;
     updateColumnsInfo(df);
 }
 
 DAPyDataFrame DAPyDataframeColumnsListWidget::getDataFrame() const
 {
-    return _dataframe;
+    return mDataframe;
 }
 
 /**
@@ -30,7 +30,7 @@ QString DAPyDataframeColumnsListWidget::getSelectedColumn() const noexcept
 {
     try {
         int c                 = currentRow();
-        QList< QString > cols = _dataframe.columns();
+        QList< QString > cols = mDataframe.columns();
         return cols[ c ];
     } catch (const std::exception& e) {
         qCritical() << tr("Exception in get selected column:%1").arg(e.what());  // cn:获取选中的列发生异常：%1
@@ -46,7 +46,7 @@ DAPySeries DAPyDataframeColumnsListWidget::getSelectedSeries() const noexcept
 {
     try {
         QString c    = getSelectedColumn();
-        DAPySeries s = _dataframe[ c ];
+        DAPySeries s = mDataframe[ c ];
         return s;
     } catch (const std::exception& e) {
         qCritical() << tr("Exception in get selected series:%1").arg(e.what());  // cn:获取选中的序列发生异常：%1
@@ -59,7 +59,7 @@ DAPySeries DAPyDataframeColumnsListWidget::getSelectedSeries() const noexcept
  */
 void DAPyDataframeColumnsListWidget::updateColumnsInfo()
 {
-    updateColumnsInfo(_dataframe);
+    updateColumnsInfo(mDataframe);
 }
 
 /**
