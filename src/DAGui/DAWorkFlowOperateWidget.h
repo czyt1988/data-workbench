@@ -4,6 +4,7 @@
 #include "DAGuiAPI.h"
 #include "DAStandardGraphicsTextItem.h"
 #include "DAWorkFlowGraphicsScene.h"
+#include "DAWorkFlowEditWidget.h"
 namespace Ui
 {
 class DAWorkFlowOperateWidget;
@@ -12,7 +13,6 @@ class QUndoStack;
 
 namespace DA
 {
-class DAWorkFlowEditWidget;
 class DADataWorkFlow;
 class DAWorkFlowGraphicsView;
 class DAAbstractNodeGraphicsItem;
@@ -110,12 +110,12 @@ signals:
      * @brief 有新的工作流创建
      * @param wfw
      */
-    void workflowCreated(DAWorkFlowEditWidget* wfw);
+    void workflowCreated(DA::DAWorkFlowEditWidget* wfw);
     /**
      * @brief 当前的工作流窗口发生了改变
      * @param w
      */
-    void currentWorkFlowWidgetChanged(DAWorkFlowEditWidget* w);
+    void currentWorkFlowWidgetChanged(DA::DAWorkFlowEditWidget* w);
     /**
      * @brief 鼠标动作已经执行完毕
      * @param mf 已经执行完的鼠标动作
@@ -130,18 +130,18 @@ signals:
     /**
      * @brief 开始执行，exec函数调用后会触发此信号
      */
-    void workflowStartExecute(DAWorkFlowEditWidget* wfw);
+    void workflowStartExecute(DA::DAWorkFlowEditWidget* wfw);
     /**
      * @brief 执行到某个节点发射的信号
      * @param n
      */
-    void nodeExecuteFinished(DAWorkFlowEditWidget* wfw, DAAbstractNode::SharedPointer n, bool state);
+    void nodeExecuteFinished(DA::DAWorkFlowEditWidget* wfw, DA::DAAbstractNode::SharedPointer n, bool state);
 
     /**
      * @brief 工作流执行完毕信号
      * @param success 成功全部执行完成为true
      */
-    void workflowFinished(DAWorkFlowEditWidget* wfw, bool success);
+    void workflowFinished(DA::DAWorkFlowEditWidget* wfw, bool success);
 private slots:
     //当前tab发生了改变
     void onTabWidgetCurrentChanged(int index);

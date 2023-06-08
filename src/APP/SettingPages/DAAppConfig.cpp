@@ -17,7 +17,7 @@ DAAppConfig::DAAppConfig()
     mConfigFilePath = QApplication::applicationDirPath() + "/config.xml";
     mConfigFilePath = QDir::toNativeSeparators(mConfigFilePath);
     insert(DA_CONFIG_KEY_RIBBON_STYLE, int(SARibbonBar::WpsLiteStyleTwoRow));
-    insert(DA_CONFIG_KEY_SHOW_LOG_NUM, 1000);  // 1000条日志
+    insert(DA_CONFIG_KEY_SHOW_LOG_NUM, 5000);  // 5000条日志
 }
 
 DAAppConfig::~DAAppConfig()

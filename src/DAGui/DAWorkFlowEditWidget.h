@@ -116,5 +116,4 @@ private:
     DAWorkFlowGraphicsScene* _scene;
 };
 }  // end of DA
-
 #endif  // DAWORKFLOWEDITWIDGET_H
