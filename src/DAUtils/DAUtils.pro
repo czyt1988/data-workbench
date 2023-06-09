@@ -20,11 +20,13 @@ $$saCopyLibToBin($${TARGET})
 
 HEADERS += \
     DAAbstractProtocol.h \
+    DAAlgorithm.h \
     DAColorTheme.h \
     DAIndexedVector.h \
     DAProperties.h \
     DAStringUtil.h \
     DAUtilsAPI.h \
+    DATable.h \
     DATree.h \
     DATreeItem.h \
     DATranslatorManeger.h \
