@@ -6,7 +6,7 @@
 #include <QDebug>
 // std
 #include <memory>
-// SA
+// DA
 #include "DAAlgorithm.h"
 namespace DA
 {
@@ -92,7 +92,7 @@ QString DAVector< T >::getName() const
  * -------------------------------
  *
  * @code
- * SARowTable<int> table;
+ * DARowTable<int> table;
  * table.setRowNames({"row1","row2",……,"rown"});
  * table.appendColumn({1,4,……,9});
  * table.appendColumn({2,5,……,8});
@@ -305,6 +305,13 @@ typename DARowTable< T >::TablePtr takeByValue(const DARowTable< T >& table, con
     return (res);
 }
 
+/**
+ * @brief takeByValue 类似于select * from table where table.r = value
+ * @param table
+ * @param r
+ * @param value
+ * @return
+ */
 template< typename T >
 typename DARowTable< T >::TablePtr takeByValue(const DARowTable< T >& table, int r, T value)
 {
@@ -402,26 +409,6 @@ void orderBy(DARowTable< T >& table, const QString& field)
     const int r = table.nameToIndex(field);
 
     orderBy(table, r);
-    //    typename SARowTable<T>::SeriesPtr row = table.row(r);
-    //    Q_ASSERT_X(row != nullptr, "orderBy", "unknow field");
-
-    //    auto ordser = makeIndexSeries<T>(row);
-
-    //    std::sort(ordser->begin(), ordser->end());
-    //    int rowcount = table.rowCount();
-
-    //    //开始逐一转换
-    //    for (int rc = 0; rc < rowcount; ++rc)
-    //    {
-    //        typename SARowTable<T>::SeriesPtr series = table.row(rc);
-    //        typename SARowTable<T>::SeriesPtr ns = SARowTable<T>::makeSeries(series->getName());
-    //        ns->reserve(series->size());
-    //        for (auto i = ordser->begin(); i != ordser->end(); ++i)
-    //        {
-    //            ns->push_back(series->at((*i).index));
-    //        }
-    //        table[rc].swap(ns);
-    //    }
 }
 
 template< typename T >
@@ -827,9 +814,6 @@ void DARowTable< T >::setRowNames(const QStringList& ns)
     for (int i = 0; i < s; ++i) {
         if (i < rowCount()) {
             row(i)->setName(ns[ i ]);
-        } else {
-            SeriesPtr r = makeSeries(ns[ i ]);
-            appendRow(r);
         }
     }
 }
@@ -837,25 +821,25 @@ void DARowTable< T >::setRowNames(const QStringList& ns)
 template< typename T >
 typename DARowTable< T >::TablePtr DARowTable< T >::takeByValue(const QString& field, T value) const
 {
-    return (SA::takeByValue(*this, field, value));
+    return (DA::takeByValue(*this, field, value));
 }
 
 template< typename T >
 QPair< QList< typename DARowTable< T >::TablePtr >, QList< T > > DARowTable< T >::groupBy(const QString& field) const
 {
-    return (SA::groupby(*this, field));
+    return (DA::groupby(*this, field));
 }
 
 template< typename T >
 void DARowTable< T >::orderBy(const QString& sn)
 {
-    SA::orderBy(*this, sn);
+    DA::orderBy(*this, sn);
 }
 
 template< typename T >
 void DARowTable< T >::orderBy(int rindex)
 {
-    SA::orderBy(*this, rindex);
+    DA::orderBy(*this, rindex);
 }
 
 template< typename T >
@@ -1032,6 +1016,26 @@ public:
      * @return
      */
     QStringList columnNames() const;
+    /**
+     * @brief 设置行名，如果是个空的表会生成一个默认行
+     * @param ns
+     */
+    void setColumnNames(const QStringList& ns);
+
+    /**
+     * @brief 设置名字查询时是否对大小写敏感
+     * @param cs
+     */
+    void setCaseSensitivity(CaseSensitivity cs);
+
+    /**
+     * @brief 判断是否大小写敏感
+     * @return
+     */
+    bool isCaseSensitivity() const;
+    //移除
+    void remove(const QString& name);
+    void remove(int colIndex);
 
 private:
     DAVector< SeriesPtr > m_d;
@@ -1195,7 +1199,7 @@ int DAColumnTable< T >::nameToIndex(const QString& n) const
  * @return
  */
 template< typename T >
-DAColumnTable< T >::SeriesPtr& DAColumnTable< T >::column(int c)
+typename DAColumnTable< T >::SeriesPtr& DAColumnTable< T >::column(int c)
 {
     return (m_d[ c ]);
 }
@@ -1205,13 +1209,13 @@ DAColumnTable< T >::SeriesPtr& DAColumnTable< T >::column(int c)
  * @return
  */
 template< typename T >
-const DAColumnTable< T >::SeriesPtr& DAColumnTable< T >::column(int c) const
+typename const DAColumnTable< T >::SeriesPtr& DAColumnTable< T >::column(int c) const
 {
     return (m_d[ c ]);
 }
 
 template< typename T >
-DAColumnTable< T >::SeriesPtr& DAColumnTable< T >::column(const QString& n)
+typename DAColumnTable< T >::SeriesPtr& DAColumnTable< T >::column(const QString& n)
 {
     int c = nameToIndex(n);
 
@@ -1222,7 +1226,7 @@ DAColumnTable< T >::SeriesPtr& DAColumnTable< T >::column(const QString& n)
 }
 
 template< typename T >
-const DAColumnTable< T >::SeriesPtr& DAColumnTable< T >::column(const QString& n) const
+typename const DAColumnTable< T >::SeriesPtr& DAColumnTable< T >::column(const QString& n) const
 {
     int c = nameToIndex(n);
 
@@ -1325,9 +1329,9 @@ typename DAColumnTable< T >::SeriesPtr DAColumnTable< T >::row(int r) const
 }
 
 template< typename T >
-typename DAColumnTable< T >::SeriesType& DAColumnTable< T >::operator[](int colname) const
+typename DAColumnTable< T >::SeriesType& DAColumnTable< T >::operator[](int c)
 {
-    return (*(column(colname)));
+    return (*(column(c)));
 }
 
 template< typename T >
@@ -1406,6 +1410,46 @@ QStringList DAColumnTable< T >::columnNames() const
         r.append(p->getName());
     }
     return (r);
+}
+
+template< typename T >
+void DAColumnTable< T >::setColumnNames(const QStringList& ns)
+{
+    auto cc = std::min(ns.size(), columnCount());
+    for (int i = 0; i < cc; ++i) {
+        column(i)->setName(ns[ i ]);
+    }
+}
+
+template< typename T >
+void DAColumnTable< T >::setCaseSensitivity(DAColumnTable< T >::CaseSensitivity cs)
+{
+    m_caseSensitivity = cs;
+}
+
+template< typename T >
+bool DAColumnTable< T >::isCaseSensitivity() const
+{
+    return (m_caseSensitivity == CaseSensitive);
+}
+
+template< typename T >
+void DAColumnTable< T >::remove(const QString& name)
+{
+    int r = nameToIndex(name);
+    if (r < 0) {
+        return;
+    }
+    remove(r);
+}
+
+template< typename T >
+void DAColumnTable< T >::remove(int colIndex)
+{
+    m_d.remove(colIndex);
+    if (0 == m_d.size()) {
+        m_rows = 0;
+    }
 }
 
 }  // end DA
