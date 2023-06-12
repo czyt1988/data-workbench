@@ -42,8 +42,8 @@ private:
     QPixmap mPixmapRibbonLite;
     QPixmap mPixmapRibbonLite2Row;
     QButtonGroup mButtonGroupRibbonStyle;
-    SARibbonBar::RibbonStyle mOldRibbonStyle;
-    SARibbonBar::RibbonStyle mNewRibbonStyle;
+    SARibbonBar::RibbonStyle mOldRibbonStyle { SARibbonBar::WpsLiteStyleTwoRow };
+    SARibbonBar::RibbonStyle mNewRibbonStyle { SARibbonBar::WpsLiteStyleTwoRow };
 };
 }
 #endif  // DASETTINGPAGECOMMON_H

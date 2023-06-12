@@ -14,11 +14,12 @@
 #include <DbgHelp.h>
 namespace DA
 {
-
+QString g_da_dump_file_path = "/";
 //程式异常捕获
 LONG applicationCrashHandler(EXCEPTION_POINTERS* pException)
 {
-    QString createPath = QApplication::applicationDirPath() + "/Dumps";
+    // QString createPath = QApplication::applicationDirPath() + "/Dumps";
+    QString createPath = QDir::toNativeSeparators(g_da_dump_file_path);
     QDir dir;
     dir.mkpath(createPath);
     createPath = QString("%1/dump%2.dmp").arg(createPath).arg(QDateTime::currentDateTime().toString("yyyyMMddhhmmss.zzz"));
@@ -47,10 +48,11 @@ LONG applicationCrashHandler(EXCEPTION_POINTERS* pException)
 class DADumpCapture
 {
 public:
-    static void initDump()
+    static void initDump(const QString& path)
     {
 #ifdef Q_OS_WIN
 #ifdef Q_CC_MSVC
+        g_da_dump_file_path = path;
         SetUnhandledExceptionFilter((LPTOP_LEVEL_EXCEPTION_FILTER)applicationCrashHandler);  //注冊异常捕获函数
 #endif
 #endif

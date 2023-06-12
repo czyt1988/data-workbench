@@ -172,7 +172,7 @@ void DAMessageQueueProxy::PrivateData::queueAppended()
 {
     if (isLazyEmit()) {
         //惰性发射仅仅做标记
-        delayCreateCheck();
+        //        delayCreateCheck();
         mNeedEmitSignalQueueAppended = true;
     } else {
         //非惰性发射立即发射信号
@@ -184,7 +184,7 @@ void DAMessageQueueProxy::PrivateData::queueSizeChanged()
 {
     if (isLazyEmit()) {
         //惰性发射仅仅做标记
-        delayCreateCheck();
+        //        delayCreateCheck();
         mNeedEmitSignalQueueSizeChanged = true;
     } else {
         //非惰性发射立即发射信号
@@ -199,10 +199,13 @@ void DAMessageQueueProxy::PrivateData::buildTimer(int intervalms)
         mDelayCreateTimerBeforeEventLoopUp = true;
         return;
     }
-    mTimer.reset(new QTimer());
-    mTimer->setInterval(intervalms);
-    QObject::connect(mTimer.get(), &QTimer::timeout, q_ptr, &DAMessageQueueProxy::onTimeout);
-    mTimer->start();
+    if (!mTimer) {
+        //如果timer没有建立，就建立一个timer
+        mTimer.reset(new QTimer());
+        mTimer->setInterval(intervalms);
+        QObject::connect(mTimer.get(), &QTimer::timeout, q_ptr, &DAMessageQueueProxy::onTimeout);
+        mTimer->start();
+    }
 }
 
 void DAMessageQueueProxy::PrivateData::setEmitInterval(int ms)
@@ -344,9 +347,11 @@ int DAMessageQueueProxy::getGlobalQueueCapacity()
 void DAMessageQueueProxy::onTimeout()
 {
     if (d_ptr->mNeedEmitSignalQueueAppended) {
+        d_ptr->mNeedEmitSignalQueueAppended = false;
         emit messageQueueAppended();
     }
     if (d_ptr->mNeedEmitSignalQueueSizeChanged) {
+        d_ptr->mNeedEmitSignalQueueSizeChanged = false;
         emit messageQueueSizeChanged(DAThreadSafeMessageQueue_Private::getInstance().size());
     }
 }

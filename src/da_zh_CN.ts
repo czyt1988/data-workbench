@@ -112,37 +112,37 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="168"/>
+        <location filename="APP/DAAppActions.cpp" line="170"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="169"/>
+        <location filename="APP/DAAppActions.cpp" line="171"/>
         <source>Save</source>
         <translation>保存</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="170"/>
+        <location filename="APP/DAAppActions.cpp" line="172"/>
         <source>Save As</source>
         <translation>另存为</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="171"/>
+        <location filename="APP/DAAppActions.cpp" line="173"/>
         <source>Append To Project</source>
         <translation>追加到工程</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="173"/>
+        <location filename="APP/DAAppActions.cpp" line="175"/>
         <source>Rename Columns</source>
         <translation>重命名列</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="174"/>
+        <location filename="APP/DAAppActions.cpp" line="176"/>
         <source>Setting</source>
         <translation>设置</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="176"/>
+        <location filename="APP/DAAppActions.cpp" line="178"/>
         <source>Add 
 Data</source>
         <oldsource>Add Data</oldsource>
@@ -150,7 +150,7 @@ Data</source>
 数据</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="177"/>
+        <location filename="APP/DAAppActions.cpp" line="179"/>
         <source>Remove 
 Data</source>
         <oldsource>Remove Data</oldsource>
@@ -158,7 +158,7 @@ Data</source>
 数据</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="178"/>
+        <location filename="APP/DAAppActions.cpp" line="180"/>
         <source>Add 
 Folder</source>
         <oldsource>Add Folder</oldsource>
@@ -166,7 +166,7 @@ Folder</source>
 文件夹</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="180"/>
+        <location filename="APP/DAAppActions.cpp" line="182"/>
         <source>Add 
 Figure</source>
         <oldsource>Add Figure</oldsource>
@@ -174,7 +174,7 @@ Figure</source>
 绘图</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="181"/>
+        <location filename="APP/DAAppActions.cpp" line="183"/>
         <source>Resize 
 Chart</source>
         <oldsource>Resize Chart</oldsource>
@@ -182,7 +182,7 @@ Chart</source>
 尺寸</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="182"/>
+        <location filename="APP/DAAppActions.cpp" line="184"/>
         <source>New 
 XY Axis</source>
         <oldsource>New XY Axis</oldsource>
@@ -190,37 +190,43 @@ XY Axis</source>
 坐标系</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="183"/>
+        <location filename="APP/DAAppActions.cpp" line="185"/>
+        <source>Add 
+Curve</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppActions.cpp" line="187"/>
         <source>Enable Grid</source>
         <translation>网格</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="184"/>
+        <location filename="APP/DAAppActions.cpp" line="188"/>
         <source>X Grid</source>
         <translation>横向网格</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="185"/>
+        <location filename="APP/DAAppActions.cpp" line="189"/>
         <source>Y Grid</source>
         <translation>纵向网格</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="186"/>
+        <location filename="APP/DAAppActions.cpp" line="190"/>
         <source>Xmin Grid</source>
         <translation>横向密集网格</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="187"/>
+        <location filename="APP/DAAppActions.cpp" line="191"/>
         <source>Ymin Grid</source>
         <translation>纵向密集网格</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="188"/>
+        <location filename="APP/DAAppActions.cpp" line="192"/>
         <source>Zoom</source>
         <translation>缩放</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="191"/>
+        <location filename="APP/DAAppActions.cpp" line="195"/>
         <source>Show 
 All</source>
         <oldsource>Show All</oldsource>
@@ -228,87 +234,87 @@ All</source>
 全部</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="192"/>
+        <location filename="APP/DAAppActions.cpp" line="196"/>
         <source>Pan</source>
         <translation>拖动</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="193"/>
+        <location filename="APP/DAAppActions.cpp" line="197"/>
         <source>Cross</source>
         <translation>十字标记</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="194"/>
+        <location filename="APP/DAAppActions.cpp" line="198"/>
         <source>Y Picker</source>
         <translation>y值拾取</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="195"/>
+        <location filename="APP/DAAppActions.cpp" line="199"/>
         <source>XY Picker</source>
         <translation>点拾取</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="196"/>
+        <location filename="APP/DAAppActions.cpp" line="200"/>
         <source>legend</source>
         <translation>图例</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="197"/>
+        <location filename="APP/DAAppActions.cpp" line="201"/>
         <source>Top Left</source>
         <translation>左上对齐</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="198"/>
+        <location filename="APP/DAAppActions.cpp" line="202"/>
         <source>Top</source>
         <translation>上对齐</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="199"/>
+        <location filename="APP/DAAppActions.cpp" line="203"/>
         <source>Top Right</source>
         <translation>右上对齐</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="200"/>
+        <location filename="APP/DAAppActions.cpp" line="204"/>
         <source>Right</source>
         <translation>右对齐</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="201"/>
+        <location filename="APP/DAAppActions.cpp" line="205"/>
         <source>Bottom Right</source>
         <translation>右下对齐</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="202"/>
+        <location filename="APP/DAAppActions.cpp" line="206"/>
         <source>Bottom</source>
         <translation>下对齐</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="203"/>
+        <location filename="APP/DAAppActions.cpp" line="207"/>
         <source>Bottom Left</source>
         <translation>左下对齐</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="204"/>
+        <location filename="APP/DAAppActions.cpp" line="208"/>
         <source>Left</source>
         <translation>左对齐</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="206"/>
+        <location filename="APP/DAAppActions.cpp" line="210"/>
         <source>Remove Row</source>
         <translation>删除行</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="207"/>
+        <location filename="APP/DAAppActions.cpp" line="211"/>
         <source>Remove Column</source>
         <translation>删除列</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="208"/>
+        <location filename="APP/DAAppActions.cpp" line="212"/>
         <source>Remove Cell</source>
         <translation>删除单元格</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="209"/>
+        <location filename="APP/DAAppActions.cpp" line="213"/>
         <source>Insert 
 Row</source>
         <oldsource>Insert Row</oldsource>
@@ -316,12 +322,12 @@ Row</source>
 行</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="210"/>
+        <location filename="APP/DAAppActions.cpp" line="214"/>
         <source>Insert Row(Above)</source>
         <translation>插入行(上)</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="211"/>
+        <location filename="APP/DAAppActions.cpp" line="215"/>
         <source>Insert 
 Column</source>
         <oldsource>Insert Column</oldsource>
@@ -329,52 +335,52 @@ Column</source>
 列(右)</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="212"/>
+        <location filename="APP/DAAppActions.cpp" line="216"/>
         <source>Insert Column(Left)</source>
         <translation>插入列(左)</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="213"/>
+        <location filename="APP/DAAppActions.cpp" line="217"/>
         <source>to num</source>
         <translation>转换为数值</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="214"/>
+        <location filename="APP/DAAppActions.cpp" line="218"/>
         <source>cast to num type</source>
         <translation>转换为数值类型</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="215"/>
+        <location filename="APP/DAAppActions.cpp" line="219"/>
         <source>to str</source>
         <translation>转换为文本</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="216"/>
+        <location filename="APP/DAAppActions.cpp" line="220"/>
         <source>cast to string type</source>
         <translation>转换为字符串类型</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="217"/>
+        <location filename="APP/DAAppActions.cpp" line="221"/>
         <source>to datetime</source>
         <translation>转换为日期</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="218"/>
+        <location filename="APP/DAAppActions.cpp" line="222"/>
         <source>cast to datetime type</source>
         <translation>转换为日期类型</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="219"/>
+        <location filename="APP/DAAppActions.cpp" line="223"/>
         <source>Data Describe</source>
         <translation>数据描述</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="220"/>
+        <location filename="APP/DAAppActions.cpp" line="224"/>
         <source>To Index</source>
         <translation>转换为索引</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="222"/>
+        <location filename="APP/DAAppActions.cpp" line="226"/>
         <source>New 
 Workflow</source>
         <oldsource>New Workflow</oldsource>
@@ -382,7 +388,7 @@ Workflow</source>
 工作流</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="223"/>
+        <location filename="APP/DAAppActions.cpp" line="227"/>
         <source>Draw 
 Rect</source>
         <oldsource>Draw Rect</oldsource>
@@ -390,7 +396,7 @@ Rect</source>
 矩形</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="224"/>
+        <location filename="APP/DAAppActions.cpp" line="228"/>
         <source>Draw 
 Text</source>
         <oldsource>Draw Text</oldsource>
@@ -398,7 +404,7 @@ Text</source>
 文本</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="225"/>
+        <location filename="APP/DAAppActions.cpp" line="229"/>
         <source>Show 
 Grid</source>
         <oldsource>Show Grid</oldsource>
@@ -406,7 +412,7 @@ Grid</source>
 网格</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="226"/>
+        <location filename="APP/DAAppActions.cpp" line="230"/>
         <source>Whole 
 View</source>
         <oldsource>Whole View</oldsource>
@@ -414,26 +420,26 @@ View</source>
 可见</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="241"/>
+        <location filename="APP/DAAppActions.cpp" line="245"/>
         <source>Plugin 
 Config</source>
         <translation>插件
 设置</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="190"/>
-        <location filename="APP/DAAppActions.cpp" line="227"/>
+        <location filename="APP/DAAppActions.cpp" line="194"/>
+        <location filename="APP/DAAppActions.cpp" line="231"/>
         <source>Zoom Out</source>
         <translation>缩小</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="189"/>
-        <location filename="APP/DAAppActions.cpp" line="228"/>
+        <location filename="APP/DAAppActions.cpp" line="193"/>
+        <location filename="APP/DAAppActions.cpp" line="232"/>
         <source>Zoom In</source>
         <translation>放大</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="229"/>
+        <location filename="APP/DAAppActions.cpp" line="233"/>
         <source>Run 
 Workflow</source>
         <oldsource>Run Workflow</oldsource>
@@ -441,7 +447,7 @@ Workflow</source>
 工作流</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="231"/>
+        <location filename="APP/DAAppActions.cpp" line="235"/>
         <source>Add 
 Background</source>
         <oldsource>Add Background</oldsource>
@@ -449,17 +455,17 @@ Background</source>
 背景</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="232"/>
+        <location filename="APP/DAAppActions.cpp" line="236"/>
         <source>Lock Background</source>
         <translation>锁定背景</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="233"/>
+        <location filename="APP/DAAppActions.cpp" line="237"/>
         <source>Move With Background</source>
         <translation>元件随背景移动</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="235"/>
+        <location filename="APP/DAAppActions.cpp" line="239"/>
         <source>Show 
 Work Flow Area</source>
         <oldsource>Show Work Flow Area</oldsource>
@@ -467,7 +473,7 @@ Work Flow Area</source>
 区域</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="236"/>
+        <location filename="APP/DAAppActions.cpp" line="240"/>
         <source>Show 
 Chart Area</source>
         <oldsource>Show Chart Area</oldsource>
@@ -475,7 +481,7 @@ Chart Area</source>
 区域</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="237"/>
+        <location filename="APP/DAAppActions.cpp" line="241"/>
         <source>Show 
 Table Area</source>
         <oldsource>Show Table Area</oldsource>
@@ -483,12 +489,12 @@ Table Area</source>
 区域</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="238"/>
+        <location filename="APP/DAAppActions.cpp" line="242"/>
         <source>Show Infomation Window</source>
         <translation>信息窗口</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="239"/>
+        <location filename="APP/DAAppActions.cpp" line="243"/>
         <source>Show Setting Window</source>
         <translation>设置窗口</translation>
     </message>
@@ -497,12 +503,12 @@ Table Area</source>
         <translation type="vanished">插件配置</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="244"/>
+        <location filename="APP/DAAppActions.cpp" line="248"/>
         <source>Redo</source>
         <translation>重做</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="247"/>
+        <location filename="APP/DAAppActions.cpp" line="251"/>
         <source>Undo</source>
         <translation>撤销</translation>
     </message>
@@ -517,117 +523,122 @@ Table Area</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="APP/DAAppController.cpp" line="532"/>
-        <location filename="APP/DAAppController.cpp" line="608"/>
+        <location filename="APP/DAAppController.cpp" line="544"/>
+        <location filename="APP/DAAppController.cpp" line="620"/>
         <source>project file(*.%1)</source>
         <translation>工程文件(*.%1)</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="547"/>
+        <location filename="APP/DAAppController.cpp" line="559"/>
         <source>Question</source>
         <translation>疑问</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="548"/>
+        <location filename="APP/DAAppController.cpp" line="560"/>
         <source>Another project already exists. Do you want to replace it?</source>
         <translation>已存在其他工程，是否要替换？</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="562"/>
-        <location filename="APP/DAAppController.cpp" line="621"/>
+        <location filename="APP/DAAppController.cpp" line="574"/>
+        <location filename="APP/DAAppController.cpp" line="633"/>
         <source>failed to load project file:%1</source>
         <translation>加载工程文件“%1”失败</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="575"/>
-        <location filename="APP/DAAppController.cpp" line="643"/>
+        <location filename="APP/DAAppController.cpp" line="587"/>
+        <location filename="APP/DAAppController.cpp" line="655"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="577"/>
+        <location filename="APP/DAAppController.cpp" line="589"/>
         <source>project file (*.%1)</source>
         <translation>工程文件(*.%1)</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="587"/>
+        <location filename="APP/DAAppController.cpp" line="599"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="588"/>
+        <location filename="APP/DAAppController.cpp" line="600"/>
         <source>Whether to overwrite the file:%1</source>
         <translation>是否覆盖文件“%1”</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="597"/>
-        <location filename="APP/DAAppController.cpp" line="654"/>
+        <location filename="APP/DAAppController.cpp" line="609"/>
+        <location filename="APP/DAAppController.cpp" line="666"/>
         <source>Project saved failed!,path is %1</source>
         <translation>工程“%1”保存失败</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="601"/>
-        <location filename="APP/DAAppController.cpp" line="672"/>
+        <location filename="APP/DAAppController.cpp" line="613"/>
+        <location filename="APP/DAAppController.cpp" line="684"/>
         <source>Project saved successfully,path is %1</source>
         <translation>工程保存成功，路径位于:%1</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="645"/>
+        <location filename="APP/DAAppController.cpp" line="657"/>
         <source>Project Files (*.%1)</source>
         <translation>工程文件(*.%1)</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="689"/>
+        <location filename="APP/DAAppController.cpp" line="701"/>
         <source>Project load successfully,path is %1</source>
         <translation>工程加载成功，路径为：%1</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="725"/>
+        <location filename="APP/DAAppController.cpp" line="737"/>
         <source>Image files (*.png *.jpg)</source>
         <translation>图片文件 (*.png *.jpg)</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="726"/>
+        <location filename="APP/DAAppController.cpp" line="738"/>
         <source>Any files (*)</source>
         <translation>任意文件 (*)</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="759"/>
+        <location filename="APP/DAAppController.cpp" line="771"/>
         <source>get null project</source>
         <translation>空工程，接口异常</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="765"/>
+        <location filename="APP/DAAppController.cpp" line="777"/>
         <source>warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="766"/>
+        <location filename="APP/DAAppController.cpp" line="778"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="947"/>
+        <location filename="APP/DAAppController.cpp" line="979"/>
         <source>Before creating a new coordinate,you need to create a figure</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1355"/>
+        <location filename="APP/DAAppController.cpp" line="999"/>
+        <source>Before add a curve,you need to create a axis on figure</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppController.cpp" line="1399"/>
         <source>%1_Describe</source>
         <translation>%1_Describe</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1356"/>
+        <location filename="APP/DAAppController.cpp" line="1400"/>
         <source>Generate descriptive statistics that summarize the central tendency, dispersion and shape of a [%1]’s distribution, excluding NaN values</source>
         <translation>生成描述性统计数据，汇总[%1]分布的中心趋势、分散度和结构（不包括NaN值）</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1461"/>
+        <location filename="APP/DAAppController.cpp" line="1505"/>
         <source>new workflow name</source>
         <translation>新工作流名称</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1462"/>
+        <location filename="APP/DAAppController.cpp" line="1506"/>
         <source>new workflow name:</source>
         <translation>工作流名称:</translation>
     </message>
@@ -676,47 +687,47 @@ Table Area</source>
 <context>
     <name>DA::DAAppDockingArea</name>
     <message>
-        <location filename="APP/DAAppDockingArea.cpp" line="61"/>
+        <location filename="APP/DAAppDockingArea.cpp" line="62"/>
         <source>workflow node</source>
         <translation>节点</translation>
     </message>
     <message>
-        <location filename="APP/DAAppDockingArea.cpp" line="62"/>
+        <location filename="APP/DAAppDockingArea.cpp" line="63"/>
         <source>charts manager</source>
         <translation>绘图管理</translation>
     </message>
     <message>
-        <location filename="APP/DAAppDockingArea.cpp" line="63"/>
+        <location filename="APP/DAAppDockingArea.cpp" line="64"/>
         <source>datas manager</source>
         <translation>数据管理</translation>
     </message>
     <message>
-        <location filename="APP/DAAppDockingArea.cpp" line="64"/>
+        <location filename="APP/DAAppDockingArea.cpp" line="65"/>
         <source>workflow operate</source>
         <translation>工作流操作</translation>
     </message>
     <message>
-        <location filename="APP/DAAppDockingArea.cpp" line="65"/>
+        <location filename="APP/DAAppDockingArea.cpp" line="66"/>
         <source>chart operate</source>
         <translation>绘图操作</translation>
     </message>
     <message>
-        <location filename="APP/DAAppDockingArea.cpp" line="66"/>
+        <location filename="APP/DAAppDockingArea.cpp" line="67"/>
         <source>data operate</source>
         <translation>数据操作</translation>
     </message>
     <message>
-        <location filename="APP/DAAppDockingArea.cpp" line="67"/>
+        <location filename="APP/DAAppDockingArea.cpp" line="68"/>
         <source>setting</source>
         <translation>设置</translation>
     </message>
     <message>
-        <location filename="APP/DAAppDockingArea.cpp" line="68"/>
+        <location filename="APP/DAAppDockingArea.cpp" line="69"/>
         <source>log</source>
         <translation>消息</translation>
     </message>
     <message>
-        <location filename="APP/DAAppDockingArea.cpp" line="367"/>
+        <location filename="APP/DAAppDockingArea.cpp" line="368"/>
         <source>property</source>
         <translation>属性</translation>
     </message>
@@ -745,7 +756,7 @@ Table Area</source>
     <name>DA::DAAppRibbonArea</name>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="110"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="191"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="193"/>
         <source>Location</source>
         <translation></translation>
     </message>
@@ -756,37 +767,37 @@ Table Area</source>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="133"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="193"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="195"/>
         <source>Max Columns</source>
         <translation>最大列数</translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="135"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="194"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="196"/>
         <source>Margin</source>
         <translation>图例边缘</translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="137"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="195"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="197"/>
         <source>Spacing</source>
         <translation>图例间隔</translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="139"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="196"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="198"/>
         <source>Item Margin</source>
         <translation>条目边缘</translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="142"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="197"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="199"/>
         <source>Item Spacing</source>
         <translation>条目间隔</translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="145"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="198"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="200"/>
         <source>Border Radius</source>
         <translation>圆角</translation>
     </message>
@@ -813,8 +824,8 @@ Table Area</source>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="160"/>
         <location filename="APP/DAAppRibbonArea.cpp" line="178"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="253"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="411"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="255"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="418"/>
         <source>Workflow</source>
         <translation>工作流</translation>
     </message>
@@ -832,7 +843,7 @@ Table Area</source>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="165"/>
         <location filename="APP/DAAppRibbonArea.cpp" line="184"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="438"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="445"/>
         <source>View</source>
         <translation>视图</translation>
     </message>
@@ -843,33 +854,33 @@ Table Area</source>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="168"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="341"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="343"/>
         <source>DataFrame</source>
         <translation>DataFrame</translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="169"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="343"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="345"/>
         <source>Operate</source>
         <translation>操作</translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="170"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="345"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="347"/>
         <source>Axes</source>
         <translation>Axes</translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="171"/>
         <location filename="APP/DAAppRibbonArea.cpp" line="172"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="355"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="359"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="357"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="361"/>
         <source>Type</source>
         <translation>类型</translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="173"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="369"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="371"/>
         <source>Statistic</source>
         <translation>统计</translation>
     </message>
@@ -880,59 +891,69 @@ Table Area</source>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="180"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="413"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="420"/>
         <source>Workflow Edit</source>
         <translation>工作流编辑</translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="181"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="417"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="424"/>
         <source>Item</source>
         <translation>图元</translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="182"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="425"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="432"/>
         <source>Text</source>
         <translation>文本</translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="183"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="431"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="438"/>
         <source>Background</source>
         <translation>背景</translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="185"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="446"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="453"/>
         <source>Run</source>
         <translation>运行</translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="187"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="399"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="401"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
     <message>
+        <location filename="APP/DAAppRibbonArea.cpp" line="188"/>
+        <source>Figure Setting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="189"/>
+        <source>Add Chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppRibbonArea.cpp" line="191"/>
         <source>Chart</source>
         <translation>绘图</translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="190"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="457"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="459"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="192"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="464"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="466"/>
         <source>Chart Edit</source>
         <translation>绘图编辑</translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="192"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="194"/>
         <source>Legend</source>
         <translation>图例</translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="200"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="202"/>
         <source>Data Work Flow</source>
         <translation>DA</translation>
     </message>
@@ -1026,16 +1047,37 @@ Table Area</source>
     <name>DA::DAChartAddXYSeriesWidget</name>
     <message>
         <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="33"/>
+        <source>curve</source>
+        <translation type="unfinished">曲线</translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="35"/>
         <source>x</source>
         <translation>x</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="33"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="35"/>
         <source>y</source>
         <translation>y</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="144"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="129"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="136"/>
+        <source>Warning</source>
+        <translation type="unfinished">警告</translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="130"/>
+        <source>x must be a series</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="137"/>
+        <source>y must be a series</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="161"/>
         <source>Exception occurred during extracting from pandas.Series to double vector:%1</source>
         <translation>从pandas.Series提取为double vector过程中出现异常:%1</translation>
     </message>
@@ -1476,12 +1518,12 @@ Table Area</source>
 <context>
     <name>DA::DADialogChartGuide</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="26"/>
+        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="28"/>
         <source>curve</source>
         <translation>曲线</translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="29"/>
+        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="31"/>
         <source>scatter</source>
         <translation>散点</translation>
     </message>
@@ -1628,24 +1670,29 @@ Table Area</source>
 <context>
     <name>DA::DAPluginManager</name>
     <message>
-        <location filename="DAPluginSupport/DAPluginManager.cpp" line="65"/>
+        <location filename="DAPluginSupport/DAPluginManager.cpp" line="102"/>
         <source>plugin dir is:%1</source>
         <translation>插件路径:%1</translation>
     </message>
     <message>
-        <location filename="DAPluginSupport/DAPluginManager.cpp" line="69"/>
+        <location filename="DAPluginSupport/DAPluginManager.cpp" line="105"/>
+        <source>ignore plugin %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAPluginSupport/DAPluginManager.cpp" line="110"/>
         <source> ignore invalid file:%1</source>
         <oldsource> ignore invalid file:%2</oldsource>
         <translation> 忽略异常文件:%1</translation>
     </message>
     <message>
-        <location filename="DAPluginSupport/DAPluginManager.cpp" line="75"/>
+        <location filename="DAPluginSupport/DAPluginManager.cpp" line="116"/>
         <source>can not load plugin:%1</source>
         <oldsource>start load plugin:%1</oldsource>
         <translation>无法加载插件:%1</translation>
     </message>
     <message>
-        <location filename="DAPluginSupport/DAPluginManager.cpp" line="134"/>
+        <location filename="DAPluginSupport/DAPluginManager.cpp" line="175"/>
         <source>Plugin Manager Info:is loaded=%1,plugin counts=%2</source>
         <translation>Plugin Manager Info:加载情况=%1,插件数量=%2</translation>
     </message>
@@ -1815,7 +1862,7 @@ Table Area</source>
 <context>
     <name>DA::DASettingPageCommon</name>
     <message>
-        <location filename="APP/SettingPages/DASettingPageCommon.cpp" line="44"/>
+        <location filename="APP/SettingPages/DASettingPageCommon.cpp" line="45"/>
         <source>common</source>
         <translation>通用</translation>
     </message>
@@ -1857,7 +1904,7 @@ Table Area</source>
 <context>
     <name>DA::DAWorkFlowEditWidget</name>
     <message>
-        <location filename="DAGui/DAWorkFlowEditWidget.cpp" line="88"/>
+        <location filename="DAGui/DAWorkFlowEditWidget.cpp" line="91"/>
         <source>no workflow set</source>
         <translation>没有设置工作流</translation>
     </message>
@@ -1892,40 +1939,40 @@ Table Area</source>
 <context>
     <name>DA::DAWorkFlowOperateWidget</name>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="227"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="232"/>
         <source>question</source>
         <translation>疑问</translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="228"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="233"/>
         <source>Confirm to delete workflow:%1</source>
         <translation>是否确认删除工作流:%1</translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="373"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="378"/>
         <source>Title of new workflow</source>
         <translation>工作流的标题</translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="373"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="378"/>
         <source>Title:</source>
         <translation>标题:</translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="387"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="400"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="413"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="392"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="405"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="418"/>
         <source>Loss View</source>
         <translation>缺少视图</translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="426"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="552"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="431"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="557"/>
         <source>No active workflow detected</source>
         <translation>未检测到激活的工作流</translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="431"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="436"/>
         <source>Unable to get workflow correctly</source>
         <translation>无法正确获取工作流</translation>
     </message>
@@ -2527,7 +2574,7 @@ Table Area</source>
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="DAFigure/DAFigureWidget.cpp" line="200"/>
+        <location filename="DAFigure/DAFigureWidget.cpp" line="203"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
@@ -2702,12 +2749,12 @@ Table Area</source>
 <context>
     <name>DAPenEditWidget</name>
     <message>
-        <location filename="DACommonWidgets/DAPenEditWidget.cpp" line="109"/>
+        <location filename="DACommonWidgets/DAPenEditWidget.cpp" line="114"/>
         <source>Pen Editor</source>
         <translation>画笔编辑</translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DAPenEditWidget.cpp" line="110"/>
+        <location filename="DACommonWidgets/DAPenEditWidget.cpp" line="115"/>
         <source> px</source>
         <translation> px</translation>
     </message>
@@ -2813,6 +2860,16 @@ Table Area</source>
     </message>
     <message>
         <location filename="APP/SettingPages/DASettingPageCommon.ui" line="83"/>
+        <source>Log</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/SettingPages/DASettingPageCommon.ui" line="89"/>
+        <source>Display number of logs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/SettingPages/DASettingPageCommon.ui" line="115"/>
         <source>Language</source>
         <translation>语言</translation>
     </message>
@@ -3046,7 +3103,7 @@ Table Area</source>
         <translation>创建节点</translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DANodeGraphicsScene.cpp" line="285"/>
+        <location filename="DAWorkFlow/DANodeGraphicsScene.cpp" line="286"/>
         <source>can not create node,metadata name=%1(%2)</source>
         <translation>无法创建节点，元信息：%1(%2)</translation>
     </message>
@@ -3228,22 +3285,22 @@ Table Area</source>
         <translation>序列化错误</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureWidget.cpp" line="65"/>
+        <location filename="DAFigure/DAFigureWidget.cpp" line="66"/>
         <source>create chart</source>
         <translation>创建绘图</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureWidget.cpp" line="110"/>
+        <location filename="DAFigure/DAFigureWidget.cpp" line="111"/>
         <source>set figure widget size</source>
         <translation>设置绘图中窗体的尺寸</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureWidget.cpp" line="144"/>
+        <location filename="DAFigure/DAFigureWidget.cpp" line="145"/>
         <source>add item in chart</source>
         <translation>添加绘图元素</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureWidget.cpp" line="669"/>
+        <location filename="DAFigure/DAFigureWidget.cpp" line="686"/>
         <source>DAFigureWidget get invalid magic strat code</source>
         <translation>DAFigureWidget的文件头异常</translation>
     </message>
@@ -3440,28 +3497,28 @@ Table Area</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="630"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="636"/>
         <source>There is a item that is not a DA Graphics Item system and cannot be saved</source>
         <translation>存在不是DA Graphics Item系统的元件，无法对此元件进行保存</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="663"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="674"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="669"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="680"/>
         <source>Unable to load item information from file</source>
         <translation>无法通过文件加载元件信息</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="670"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="676"/>
         <source>Cannot create item by class name:%1</source>
         <translation>无法通过类名:%1创建元件</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="842"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="856"/>
         <source>The attribute %1=%2 under the tag %3 cannot be converted to double </source>
         <translation>%3标签属性%1=%2无法转换为double类型 </translation>
     </message>
     <message>
-        <location filename="APP/main.cpp" line="40"/>
+        <location filename="APP/main.cpp" line="46"/>
         <source>Kernel initialization failed</source>
         <translation>内核初始化失败</translation>
     </message>
@@ -3576,18 +3633,18 @@ Table Area</source>
         <translation>图-未命名</translation>
     </message>
     <message>
-        <location filename="APP/SettingPages/DAAppConfig.cpp" line="44"/>
-        <location filename="APP/SettingPages/DAAppConfig.cpp" line="76"/>
+        <location filename="APP/SettingPages/DAAppConfig.cpp" line="46"/>
+        <location filename="APP/SettingPages/DAAppConfig.cpp" line="77"/>
         <source>can not open config file &quot;%1&quot;,because %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/SettingPages/DAAppConfig.cpp" line="53"/>
+        <location filename="APP/SettingPages/DAAppConfig.cpp" line="55"/>
         <source>can not load config file &quot;%1&quot;,because %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/SettingPages/DAAppConfig.cpp" line="59"/>
+        <location filename="APP/SettingPages/DAAppConfig.cpp" line="61"/>
         <source>config file(%1) loss &lt;configs&gt; tag</source>
         <translation type="unfinished"></translation>
     </message>

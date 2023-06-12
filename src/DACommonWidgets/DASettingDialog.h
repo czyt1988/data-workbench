@@ -22,6 +22,11 @@ public:
     explicit DASettingDialog(QWidget* parent = nullptr);
     ~DASettingDialog();
     DASettingWidget* settingWidget() const;
+    //获取改变的页面
+    QList< DAAbstractSettingPage* > getChanggedPages() const;
+public slots:
+    //设置页面
+    void setPage(int index);
 private slots:
     void onPushButtonOKClicked();
     void onPushButtonApplyClicked();

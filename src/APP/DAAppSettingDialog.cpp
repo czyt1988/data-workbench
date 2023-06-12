@@ -16,6 +16,7 @@ void DAAppSettingDialog::buildUI(DAAppConfig* config)
     DASettingPageCommon* page = new DASettingPageCommon();
     page->setAppConfig(config);
     settingWidget()->addPage(page);
+    setPage(0);
 }
 
 DAAppSettingDialog::~DAAppSettingDialog()

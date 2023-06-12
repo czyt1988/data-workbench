@@ -41,6 +41,9 @@ void DASettingWidget::addPage(DAAbstractSettingPage* page)
     connect(page, &DAAbstractSettingPage::settingChanged, this, &DASettingWidget::onPageSettingChanged);
 }
 
+/**
+ * @brief 应用所有不管有没有改变
+ */
 void DASettingWidget::applyAll()
 {
     const int c = count();
@@ -52,6 +55,37 @@ void DASettingWidget::applyAll()
         page->apply();
     }
     mChangedPages.clear();
+    emit settingApplyed();
+}
+
+/**
+ * @brief 应用改变
+ */
+void DASettingWidget::applyChanged()
+{
+    for (DAAbstractSettingPage* p : qAsConst(mChangedPages)) {
+        p->apply();
+    }
+    mChangedPages.clear();
+    emit settingApplyed();
+}
+
+/**
+ * @brief 获取改变的页面
+ * @return
+ */
+QList< DAAbstractSettingPage* > DASettingWidget::getChanggedPages() const
+{
+    return mChangedPages.toList();
+}
+
+/**
+ * @brief 设置当前页面
+ * @param index
+ */
+void DASettingWidget::setPage(int index)
+{
+    ui->listWidget->setCurrentRow(index);
 }
 
 void DASettingWidget::onPageSettingChanged()

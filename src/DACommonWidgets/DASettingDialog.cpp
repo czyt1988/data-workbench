@@ -1,6 +1,7 @@
 ﻿#include "DASettingDialog.h"
 #include "ui_DASettingDialog.h"
 #include "DAWaitCursorScoped.h"
+#include "DAAbstractSettingPage.h"
 namespace DA
 {
 
@@ -26,6 +27,24 @@ DASettingWidget* DASettingDialog::settingWidget() const
     return ui->settingWidget;
 }
 
+/**
+ * @brief 获取改变的页面
+ * @return
+ */
+QList< DAAbstractSettingPage* > DASettingDialog::getChanggedPages() const
+{
+    return ui->settingWidget->getChanggedPages();
+}
+
+/**
+ * @brief 设置页面
+ * @param index
+ */
+void DASettingDialog::setPage(int index)
+{
+    ui->settingWidget->setPage(index);
+}
+
 void DASettingDialog::onPushButtonOKClicked()
 {
     onPushButtonApplyClicked();
@@ -36,7 +55,7 @@ void DASettingDialog::onPushButtonOKClicked()
 void DASettingDialog::onPushButtonApplyClicked()
 {
     DA_WAIT_CURSOR_SCOPED();
-    ui->settingWidget->applyAll();
+    ui->settingWidget->applyChanged();
     emit needSave();
 }
 }  // DA

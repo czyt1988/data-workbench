@@ -23,10 +23,16 @@ DAMessageLogViewWidget::DAMessageLogViewWidget(QWidget* parent)
     ui->setupUi(this);
     //创建action
     _actionMessageLogShowInfo = createAction("actionMessageLogShowInfo", ":/messageType/icon/messageType/messageTypeInfo.svg", true, true);
-    _actionMessageLogShowWarning = createAction("actionMessageLogShowWarning", ":/messageType/icon/messageType/messageTypeWarning.svg", true, true);
-    _actionMessageLogShowCritical = createAction("actionMessageLogShowCritical", ":/messageType/icon/messageType/messageTypeError.svg", true, true);
-    _actionMessageLogClear   = createAction("actionMessageLogClear", ":/icon/icon/clear-message.svg");
-    _actionCopySelectMessage = createAction("actionCopySelectMessage", ":/icon/icon/copy.svg");
+    _actionMessageLogShowWarning  = createAction("actionMessageLogShowWarning",
+                                                ":/messageType/icon/messageType/messageTypeWarning.svg",
+                                                true,
+                                                true);
+    _actionMessageLogShowCritical = createAction("actionMessageLogShowCritical",
+                                                 ":/messageType/icon/messageType/messageTypeError.svg",
+                                                 true,
+                                                 true);
+    _actionMessageLogClear        = createAction("actionMessageLogClear", ":/icon/icon/clear-message.svg");
+    _actionCopySelectMessage      = createAction("actionCopySelectMessage", ":/icon/icon/copy.svg");
     //构建菜单
 
     //
@@ -55,6 +61,8 @@ DAMessageLogViewWidget::DAMessageLogViewWidget(QWidget* parent)
     connect(this, &DAMessageLogViewWidget::customContextMenuRequested, this, &DAMessageLogViewWidget::onCustomContextMenuRequested);
     ui->tableView->setWordWrap(true);
     connect(ui->tableView, &QTableView::clicked, this, &DAMessageLogViewWidget::onTableViewItemClicked);
+    DAMessageQueueProxy* messageQueue = &(_model->messageQueueProxy());
+    connect(messageQueue, &DAMessageQueueProxy::messageQueueAppended, this, &DAMessageLogViewWidget::onMessageAppended);
 
     retranslateUi();
 }
@@ -87,6 +95,13 @@ void DAMessageLogViewWidget::onCustomContextMenuRequested(const QPoint& pos)
     }
 }
 
+void DAMessageLogViewWidget::onMessageAppended()
+{
+    if (isAutoScrollToButtom()) {
+        ui->tableView->scrollToBottom();
+    }
+}
+
 void DAMessageLogViewWidget::buildMenu()
 {
     _menu = new QMenu(this);
@@ -98,6 +113,16 @@ void DAMessageLogViewWidget::buildMenu()
     _menu->addSeparator();
     _menu->addAction(_actionMessageLogClear);
     setContextMenuPolicy(Qt::CustomContextMenu);
+}
+
+bool DAMessageLogViewWidget::isAutoScrollToButtom() const
+{
+    return mIsAutoScrollToButtom;
+}
+
+void DAMessageLogViewWidget::setAutoScrollToButtom(bool isAutoScrollToButtom)
+{
+    mIsAutoScrollToButtom = isAutoScrollToButtom;
 }
 /**
  * @brief 设置是否允许DebugMsg的显示

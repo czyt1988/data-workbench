@@ -3,7 +3,7 @@
 #include "DAGuiAPI.h"
 #include <QAbstractTableModel>
 #include <QSortFilterProxyModel>
-
+#include "DAMessageQueueProxy.h"
 #ifndef DA_ROLE_MESSAGE_TYPE
 /**
  * @def  定义消息类型的角色，通过这个角色可以获取消息的类型
@@ -32,6 +32,9 @@ public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     Qt::ItemFlags flags(const QModelIndex& index) const override;
     bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
+    //获取内部维护的DAMessageQueueProxy
+    const DAMessageQueueProxy& messageQueueProxy() const;
+    DAMessageQueueProxy& messageQueueProxy();
 
 public:
     //是否显示时间列

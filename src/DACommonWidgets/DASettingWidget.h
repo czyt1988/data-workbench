@@ -27,8 +27,15 @@ public:
     int count() const;
     //添加一个设置页面
     void addPage(DAAbstractSettingPage* page);
+    //获取改变的页面
+    QList< DAAbstractSettingPage* > getChanggedPages() const;
+public slots:
+    //设置页面
+    void setPage(int index);
     //应用所有的改变
     void applyAll();
+    //应用改变
+    void applyChanged();
 private slots:
     //页面配置改变
     void onPageSettingChanged();
@@ -39,6 +46,10 @@ signals:
      * 此信号只要配置页面有任何的改变都应该发出通知到配置窗口
      */
     void settingChanged();
+    /**
+     * @brief 设置应用的信号
+     */
+    void settingApplyed();
 
 private:
     Ui::DASettingWidget* ui;

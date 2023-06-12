@@ -1,6 +1,5 @@
 ﻿#include "DAMessageLogsModel.h"
 #include "DAMessageLogItem.h"
-#include "DAMessageQueueProxy.h"
 #include <QDebug>
 #include <QIcon>
 
@@ -131,6 +130,24 @@ bool DAMessageLogsModel::setData(const QModelIndex& index, const QVariant& value
     Q_UNUSED(value);
     Q_UNUSED(role);
     return false;
+}
+
+/**
+ * @brief 获取内部维护的DAMessageQueueProxy
+ * @return
+ */
+const DAMessageQueueProxy& DAMessageLogsModel::messageQueueProxy() const
+{
+    return d_ptr->_messageQueueProxy;
+}
+
+/**
+ * @brief 获取内部维护的DAMessageQueueProxy
+ * @return
+ */
+DAMessageQueueProxy& DAMessageLogsModel::messageQueueProxy()
+{
+    return d_ptr->_messageQueueProxy;
 }
 
 /**

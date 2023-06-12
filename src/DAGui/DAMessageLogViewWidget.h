@@ -32,6 +32,8 @@ public:
     bool isEnableShowFatalMsg() const;
     //是否显示Info
     bool isEnableShowInfoMsg() const;
+    //自动滚动到最底部
+    bool isAutoScrollToButtom() const;
 public slots:
     //对debug的显示设置
     void setEnableShowDebugMsg(bool on);
@@ -51,6 +53,8 @@ public slots:
     void copySelectionMessageToClipBoard();
     //选中所有
     void selectAll();
+    //自动滚动到最底部
+    void setAutoScrollToButtom(bool isAutoScrollToButtom);
 
 protected:
     //多语言切换的捕获
@@ -80,6 +84,8 @@ protected:
 private slots:
     //自定义菜单
     void onCustomContextMenuRequested(const QPoint& pos);
+    //有消息插入
+    void onMessageAppended();
 
 private:
     void buildMenu();
@@ -94,6 +100,7 @@ private:
     QAction* _actionMessageLogClear;    ///< 清空消息
     QAction* _actionCopySelectMessage;  ///< 复制选中的消息
     QMenu* _menu;
+    bool mIsAutoScrollToButtom { true };  ///< 是否自动滚动到最底部
 };
 }  // namespace DA
 #endif  // DAMESSAGELOGVIEWWIDGET_H

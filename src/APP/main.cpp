@@ -4,6 +4,8 @@
 #include <QApplication>
 #include <QDebug>
 #include <QLocale>
+#include <QFileInfo>
+#include <QDir>
 #include "DAAppCore.h"
 #include "DAMessageHandler.h"
 #include "DAPybind11InQt.h"
@@ -16,13 +18,17 @@ void setAppFont();
 
 int main(int argc, char* argv[])
 {
+    //程序路径捕获
+    QFileInfo fi(argv[ 0 ]);
     //进行dump捕获
-    DA::DADumpCapture::initDump();
+    DA::DADumpCapture::initDump(fi.absolutePath());
+    //
+    QString logfilePath = QDir::toNativeSeparators(fi.absolutePath() + "/log/da_log.log");
     //注册旋转文件消息捕获
-    DA::daRegisterRotatingMessageHandler("./log/da_log.log");
+    DA::daRegisterRotatingMessageHandler(logfilePath);
     // DA::daRegisterConsolMessageHandler();
     for (int i = 0; i < argc; ++i) {
-        qDebug() << argv[ i ];
+        qDebug() << "argv[" << i << "]" << argv[ i ];
     }
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);

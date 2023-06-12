@@ -38,6 +38,7 @@ public:
     };
 
 public:
+    ~DAMessageHandlerGlobalValues_Private();
     //获取单例
     static DAMessageHandlerGlobalValues_Private& getInstance();
     // spdlog日志
@@ -74,8 +75,10 @@ private:
     std::atomic_bool _enableSpdlog;
     /**
      * @brief 消息缓存
+     *
+     * @note DAMessageQueueProxy内部有个单例，当前这个类也是单例，不能实例化，否则有不可预估的错误可能
      */
-    DAMessageQueueProxy _msgQueue;
+    DAMessageQueueProxy* _msgQueue { nullptr };
     /**
      * @brief 消息处理的类型
      */
@@ -97,6 +100,13 @@ DAMessageHandlerGlobalValues_Private::DAMessageHandlerGlobalValues_Private()
 {
     _enableSpdlog.store(true);
     _enableMsgHandle.store(true);
+}
+
+DAMessageHandlerGlobalValues_Private::~DAMessageHandlerGlobalValues_Private()
+{
+    if (_msgQueue) {
+        delete _msgQueue;
+    }
 }
 
 DAMessageHandlerGlobalValues_Private& DAMessageHandlerGlobalValues_Private::getInstance()
@@ -137,7 +147,10 @@ bool DAMessageHandlerGlobalValues_Private::enableSpdLog() const
 
 DAMessageQueueProxy& DAMessageHandlerGlobalValues_Private::msgQueue()
 {
-    return _msgQueue;
+    if (nullptr == _msgQueue) {
+        _msgQueue = new DAMessageQueueProxy(nullptr);
+    }
+    return *_msgQueue;
 }
 
 void DAMessageHandlerGlobalValues_Private::setMsgHandleType(DAMessageHandlerGlobalValues_Private::MsgHandleType t)
@@ -283,25 +296,27 @@ void daMessageHandler(QtMsgType type, const QMessageLogContext& context, const Q
         const char* file       = context.file ? context.file : "";
         const char* fun        = context.function ? context.function : "";
         spdlog::logger* logger = globalMessageHandleValues.logger();
-        //        const char* pattern    = "[{0}][{1}][{2}:{3}]:{4}";
-        const char* pattern = globalMessageHandleValues.getPatternChar();
-        switch (type) {
-        case QtDebugMsg:
-            logger->debug(pattern, "debug", dt, line, fun, file, ms);
-            break;
-        case QtWarningMsg:
-            logger->warn(pattern, "warn", dt, line, fun, file, ms);
-            break;
-        case QtCriticalMsg:
-            logger->critical(pattern, "critical", dt, line, fun, file, ms);
-            break;
-        case QtFatalMsg:
-            logger->error(pattern, "error", dt, line, fun, file, ms);
-            break;
-        case QtInfoMsg:
-        default:
-            logger->info(pattern, "info", dt, line, fun, file, ms);
-            break;
+        if (logger) {
+            //        const char* pattern    = "[{0}][{1}][{2}:{3}]:{4}";
+            const char* pattern = globalMessageHandleValues.getPatternChar();
+            switch (type) {
+            case QtDebugMsg:
+                logger->debug(pattern, "debug", dt, line, fun, file, ms);
+                break;
+            case QtWarningMsg:
+                logger->warn(pattern, "warn", dt, line, fun, file, ms);
+                break;
+            case QtCriticalMsg:
+                logger->critical(pattern, "critical", dt, line, fun, file, ms);
+                break;
+            case QtFatalMsg:
+                logger->error(pattern, "error", dt, line, fun, file, ms);
+                break;
+            case QtInfoMsg:
+            default:
+                logger->info(pattern, "info", dt, line, fun, file, ms);
+                break;
+            }
         }
     }
 }
