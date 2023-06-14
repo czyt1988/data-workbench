@@ -1,5 +1,6 @@
 ﻿#include "DAPySeriesTableModule.h"
 #include "pandas/DAPySeries.h"
+
 namespace DA
 {
 
@@ -11,6 +12,7 @@ public:
 
 public:
     QList< DAPySeries > _series;
+    QMap< int, DAAutoincrementSeries< double > > mAutoincrementSeries;  ///< 自增序列
     QStringList _header;
 };
 

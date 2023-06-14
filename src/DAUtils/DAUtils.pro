@@ -21,6 +21,7 @@ $$saCopyLibToBin($${TARGET})
 HEADERS += \
     DAAbstractProtocol.h \
     DAAlgorithm.h \
+    DAAutoincrementSeries.h \
     DAColorTheme.h \
     DAIndexedVector.h \
     DAProperties.h \

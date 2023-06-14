@@ -57,6 +57,24 @@ DADataManager* DAChartAddXYSeriesWidget::getDataManager() const
 }
 
 /**
+ * @brief 判断x是否是自增
+ * @return
+ */
+bool DAChartAddXYSeriesWidget::isXAutoincrement() const
+{
+    return ui->groupBoxXAutoincrement->isChecked();
+}
+
+/**
+ * @brief 判断y是否是自增
+ * @return
+ */
+bool DAChartAddXYSeriesWidget::isYAutoincrement() const
+{
+    return ui->groupBoxYAutoincrement->isChecked();
+}
+
+/**
  * @brief 创建item
  * @return
  */

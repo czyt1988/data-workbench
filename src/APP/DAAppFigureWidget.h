@@ -23,7 +23,7 @@ public:
     ~DAAppFigureWidget();
     void setDataManager(DADataManager* mgr);
     //带对话框的添加曲线
-    QwtPlotItem* addCurve_();
+    QwtPlotItem* addPlotWithGuide_();
 
 protected:
     void dragEnterEvent(QDragEnterEvent* e) override;

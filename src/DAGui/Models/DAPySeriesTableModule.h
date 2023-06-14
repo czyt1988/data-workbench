@@ -3,6 +3,7 @@
 #include "DAGuiAPI.h"
 #include <QAbstractTableModel>
 #include "DAData.h"
+#include "DAAutoincrementSeries.h"
 namespace DA
 {
 DA_IMPL_FORWARD_DECL(DAPySeriesTableModule)

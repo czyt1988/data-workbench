@@ -27,6 +27,10 @@ public:
     //
     void setDataManager(DADataManager* dmgr);
     DADataManager* getDataManager() const;
+    //判断x是否是自增
+    bool isXAutoincrement() const;
+    //判断y是否是自增
+    bool isYAutoincrement() const;
     //接口实现
     virtual QwtPlotItem* createPlotItem() override;
 private slots:

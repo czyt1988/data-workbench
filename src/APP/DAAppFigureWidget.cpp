@@ -18,8 +18,8 @@ public:
     //获取dlg指针，如果为nullptr，则创建
     DADialogChartGuide* getDlgDataframeToPointVector();
     //绘制,如果没成功，返回nullptr
-    QwtPlotItem* plot(const DAData& data);
-    QwtPlotItem* plot();
+    QwtPlotItem* plotWithGuideDialog(const DAData& data);
+    QwtPlotItem* plotWithGuideDialog();
 
 public:
     bool _isStartDrag { false };
@@ -43,7 +43,7 @@ DADialogChartGuide* DAAppFigureWidgetPrivate::getDlgDataframeToPointVector()
  * @param data
  * @return
  */
-QwtPlotItem* DAAppFigureWidgetPrivate::plot(const DAData& data)
+QwtPlotItem* DAAppFigureWidgetPrivate::plotWithGuideDialog(const DAData& data)
 {
     DADialogChartGuide* dlg = getDlgDataframeToPointVector();
     dlg->setDataManager(_dataManager);
@@ -61,7 +61,7 @@ QwtPlotItem* DAAppFigureWidgetPrivate::plot(const DAData& data)
     return item;
 }
 
-QwtPlotItem* DAAppFigureWidgetPrivate::plot()
+QwtPlotItem* DAAppFigureWidgetPrivate::plotWithGuideDialog()
 {
     DADialogChartGuide* dlg = getDlgDataframeToPointVector();
     dlg->setDataManager(_dataManager);
@@ -103,13 +103,13 @@ void DAAppFigureWidget::setDataManager(DADataManager* mgr)
  * @return
  * @note 用户有可能换其他曲线，所以返回不一定是折线
  */
-QwtPlotItem* DAAppFigureWidget::addCurve_()
+QwtPlotItem* DAAppFigureWidget::addPlotWithGuide_()
 {
     DAChartWidget* chart = getCurrentChart();
     if (chart == nullptr) {
         return nullptr;
     }
-    return d_ptr->plot();
+    return d_ptr->plotWithGuideDialog();
 }
 
 /**
@@ -196,7 +196,7 @@ void DAAppFigureWidget::dropEvent(QDropEvent* e)
                 //如果当前绘图不是放下的绘图，则把当前绘图设置为放下数据的绘图
                 setCurrentChart(chart);
             }
-            QwtPlotItem* pi = d_ptr->plot(datamime->getDAData());
+            QwtPlotItem* pi = d_ptr->plotWithGuideDialog(datamime->getDAData());
             if (nullptr == pi) {
                 e->ignore();
                 return;

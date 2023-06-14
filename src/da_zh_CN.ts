@@ -193,7 +193,7 @@ XY Axis</source>
         <location filename="APP/DAAppActions.cpp" line="185"/>
         <source>Add 
 Curve</source>
-        <translation type="unfinished"></translation>
+        <translation>曲线</translation>
     </message>
     <message>
         <location filename="APP/DAAppActions.cpp" line="187"/>
@@ -620,7 +620,7 @@ Table Area</source>
     <message>
         <location filename="APP/DAAppController.cpp" line="999"/>
         <source>Before add a curve,you need to create a axis on figure</source>
-        <translation type="unfinished"></translation>
+        <translation>添加曲线前，需要先在绘图窗口中添加一个坐标系</translation>
     </message>
     <message>
         <location filename="APP/DAAppController.cpp" line="1399"/>
@@ -928,12 +928,12 @@ Table Area</source>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="188"/>
         <source>Figure Setting</source>
-        <translation type="unfinished"></translation>
+        <translation>绘图设置</translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="189"/>
         <source>Add Chart</source>
-        <translation type="unfinished"></translation>
+        <translation>添加绘图</translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="191"/>
@@ -1048,7 +1048,7 @@ Table Area</source>
     <message>
         <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="33"/>
         <source>curve</source>
-        <translation type="unfinished">曲线</translation>
+        <translation>曲线</translation>
     </message>
     <message>
         <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="35"/>
@@ -1064,17 +1064,17 @@ Table Area</source>
         <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="129"/>
         <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="136"/>
         <source>Warning</source>
-        <translation type="unfinished">警告</translation>
+        <translation>警告</translation>
     </message>
     <message>
         <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="130"/>
         <source>x must be a series</source>
-        <translation type="unfinished"></translation>
+        <translation>x必须是序列</translation>
     </message>
     <message>
         <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="137"/>
         <source>y must be a series</source>
-        <translation type="unfinished"></translation>
+        <translation>y必须是序列</translation>
     </message>
     <message>
         <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="161"/>
@@ -1495,17 +1495,17 @@ Table Area</source>
     <message>
         <location filename="DAGui/DADataframeToVectorPointWidget.cpp" line="14"/>
         <source>x</source>
-        <translation type="unfinished">x</translation>
+        <translation>x</translation>
     </message>
     <message>
         <location filename="DAGui/DADataframeToVectorPointWidget.cpp" line="14"/>
         <source>y</source>
-        <translation type="unfinished">y</translation>
+        <translation>y</translation>
     </message>
     <message>
         <location filename="DAGui/DADataframeToVectorPointWidget.cpp" line="68"/>
         <source>Exception occurred during extracting from pandas.Series to double vector:%1</source>
-        <translation type="unfinished">从pandas.Series提取为double vector过程中出现异常:%1</translation>
+        <translation>从pandas.Series提取为double vector过程中出现异常:%1</translation>
     </message>
 </context>
 <context>
@@ -1677,7 +1677,7 @@ Table Area</source>
     <message>
         <location filename="DAPluginSupport/DAPluginManager.cpp" line="105"/>
         <source>ignore plugin %1</source>
-        <translation type="unfinished"></translation>
+        <translation>忽略插件%1</translation>
     </message>
     <message>
         <location filename="DAPluginSupport/DAPluginManager.cpp" line="110"/>
@@ -2861,12 +2861,12 @@ Table Area</source>
     <message>
         <location filename="APP/SettingPages/DASettingPageCommon.ui" line="83"/>
         <source>Log</source>
-        <translation type="unfinished"></translation>
+        <translation>日志</translation>
     </message>
     <message>
         <location filename="APP/SettingPages/DASettingPageCommon.ui" line="89"/>
         <source>Display number of logs</source>
-        <translation type="unfinished"></translation>
+        <translation>显示的日志条数</translation>
     </message>
     <message>
         <location filename="APP/SettingPages/DASettingPageCommon.ui" line="115"/>
@@ -3347,37 +3347,37 @@ Table Area</source>
     <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="84"/>
         <source>save workflow extern info cost: %1 ms</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="87"/>
         <source>save workflow nodes cost: %1 ms</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="90"/>
         <source>save workflow links cost: %1 ms</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="93"/>
         <source>save special item cost: %1 ms</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="96"/>
         <source>save workflow factory info cost: %1 ms</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="99"/>
         <source>save secen info cost: %1 ms</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="118"/>
         <source>load workflow extern info cost: %1 ms</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="121"/>
@@ -3387,7 +3387,7 @@ Table Area</source>
     <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="123"/>
         <source>load workflow nodes cost: %1 ms</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="126"/>
@@ -3397,7 +3397,7 @@ Table Area</source>
     <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="128"/>
         <source>load workflow links cost: %1 ms</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="131"/>
@@ -3407,7 +3407,7 @@ Table Area</source>
     <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="133"/>
         <source>load special item cost: %1 ms</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="138"/>
@@ -3417,7 +3417,7 @@ Table Area</source>
     <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="140"/>
         <source>load workflow factory info cost: %1 ms</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="143"/>
@@ -3427,7 +3427,7 @@ Table Area</source>
     <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="145"/>
         <source>load secen info cost: %1 ms</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="183"/>
@@ -3474,7 +3474,7 @@ Table Area</source>
     <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="547"/>
         <source>Unable to link to node %3&apos;s link point %4 through link point %2 of node %1</source>
-        <translation type="unfinished"></translation>
+        <translation>节点%1无法通过连接点%2链接到节点%3的连接点%4</translation>
     </message>
     <message>
         <source>%1(%2) node can not create link by from key %3</source>
@@ -3494,7 +3494,7 @@ Table Area</source>
         <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="927"/>
         <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="932"/>
         <source>Node %1 cannot find a connection point named %2</source>
-        <translation type="unfinished"></translation>
+        <translation>节点%1无法通过连接点%2链接到节点%3的连接点%4</translation>
     </message>
     <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="636"/>
@@ -3636,17 +3636,17 @@ Table Area</source>
         <location filename="APP/SettingPages/DAAppConfig.cpp" line="46"/>
         <location filename="APP/SettingPages/DAAppConfig.cpp" line="77"/>
         <source>can not open config file &quot;%1&quot;,because %2</source>
-        <translation type="unfinished"></translation>
+        <translation>无法打开配置文件“%1”，原因：%2</translation>
     </message>
     <message>
         <location filename="APP/SettingPages/DAAppConfig.cpp" line="55"/>
         <source>can not load config file &quot;%1&quot;,because %2</source>
-        <translation type="unfinished"></translation>
+        <translation>无法打开配置文件“%1”，原因：%2</translation>
     </message>
     <message>
         <location filename="APP/SettingPages/DAAppConfig.cpp" line="61"/>
         <source>config file(%1) loss &lt;configs&gt; tag</source>
-        <translation type="unfinished"></translation>
+        <translation>配置文件（%1）缺失&lt;configs&gt;标签</translation>
     </message>
 </context>
 </TS>
