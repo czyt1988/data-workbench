@@ -75,8 +75,7 @@ void DADataframeToVectorPointWidget::updateDataframeColumnList()
 {
     ui->listWidgetX->clear();
     ui->listWidgetY->clear();
-    _xNeedInsert0 = false;
-    _model->clear();
+    _model->clearData();
     if (_currentData.isNull() || !_currentData.isDataFrame()) {
         return;
     }
@@ -98,12 +97,7 @@ void DADataframeToVectorPointWidget::onListWidgetXCurrentTextChanged(const QStri
     if (s.isNone()) {
         return;
     }
-    if (_xNeedInsert0) {
-        _xNeedInsert0 = false;
-        _model->insertSeries(0, s);
-    } else {
-        _model->setSeriesAt(0, s);
-    }
+    _model->setSeriesAt(0, s);
 }
 
 void DADataframeToVectorPointWidget::onListWidgetYCurrentTextChanged(const QString& n)
@@ -115,9 +109,6 @@ void DADataframeToVectorPointWidget::onListWidgetYCurrentTextChanged(const QStri
     DAPySeries s = df[ n ];
     if (s.isNone()) {
         return;
-    }
-    if (0 == _model->getSeriesCount()) {
-        _xNeedInsert0 = true;  //说明y先显示，这时x要插入0，而不是替换
     }
     _model->setSeriesAt(1, s);
 }

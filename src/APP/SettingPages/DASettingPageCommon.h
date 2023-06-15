@@ -30,9 +30,10 @@ public:
     virtual QIcon getSettingPageIcon() const override;
     //设置配置
     bool setAppConfig(DAAppConfig* p);
-    //
 private slots:
     void onButtonGroupRibbonStyleClicked(int id);
+    //日志数量改变
+    void onSpinBoxDisplayLogsNumValueChanged(int v);
 
 private:
     Ui::DASettingPageCommon* ui;

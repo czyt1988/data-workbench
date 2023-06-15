@@ -10,14 +10,68 @@ public:
     DA_IMPL_PUBLIC(DAPySeriesTableModule)
     DAPySeriesTableModulePrivate(DAPySeriesTableModule* p);
 
+    int columnCount() const;
+
+    int rowCount() const;
+
 public:
-    QList< DAPySeries > _series;
+    //! 这里都用map来管理，因为不同列有可能是不同属性，目前还没有做一个抽象能囊括所有序列，因此还是需要每种类型添加一个索引
+    //! 注意，这里要用qmap，不能用qhash，因为取最大索引是通过qmap的自动排序实现的
+    QMap< int, DAPySeries > mSeries;                                    ///< 序列
     QMap< int, DAAutoincrementSeries< double > > mAutoincrementSeries;  ///< 自增序列
-    QStringList _header;
+    QMap< int, QString > mHeader;                                       ///< 表头
 };
 
 DAPySeriesTableModulePrivate::DAPySeriesTableModulePrivate(DAPySeriesTableModule* p) : q_ptr(p)
 {
+}
+
+/**
+ * @brief 获取列数
+ * @return
+ */
+int DAPySeriesTableModulePrivate::columnCount() const
+{
+    int col = 0;
+    if (!mSeries.isEmpty()) {
+        auto i = mSeries.end();
+        --i;
+        col = i.key();
+    }
+    if (!mAutoincrementSeries.isEmpty()) {
+        int v  = 0;
+        auto i = mAutoincrementSeries.end();
+        --i;
+        v = i.key();
+        if (v > col) {
+            col = v;
+        }
+    }
+    if (mHeader.isEmpty()) {
+        int v  = 0;
+        auto i = mHeader.end();
+        --i;
+        v = i.key();
+        if (v > col) {
+            col = v;
+        }
+    }
+    return col;
+}
+
+int DAPySeriesTableModulePrivate::rowCount() const
+{
+    int r = 0;
+    for (auto i = mSeries.begin(); i != mSeries.end(); ++i) {
+        int s = static_cast< int >(i.value().size());
+        if (r < s) {
+            r = s;
+        }
+    }
+    if (r < 15) {
+        return 15;
+    }
+    return r;
 }
 //===================================================
 // DAPySeriesTableModule
@@ -33,16 +87,19 @@ DAPySeriesTableModule::~DAPySeriesTableModule()
 
 QVariant DAPySeriesTableModule::headerData(int section, Qt::Orientation orientation, int role) const
 {
-    if (role != Qt::DisplayRole || d_ptr->_series.empty()) {
+    if (role != Qt::DisplayRole || d_ptr->mSeries.empty()) {
         return QVariant();
     }
     //剩下都是DisplayRole
     if (Qt::Horizontal == orientation) {  //说明是水平表头
-        if (section < d_ptr->_header.size()) {
-            return d_ptr->_header[ section ];
+        auto ite = d_ptr->mHeader.find(section);
+        if (ite != d_ptr->mHeader.end()) {
+            return ite.value();
         }
-        if (section < d_ptr->_series.size()) {
-            return d_ptr->_series[ section ].name();
+        //如果没有，查看是否是series，series有名称，显示名称
+        auto iteSer = d_ptr->mSeries.find(section);
+        if (iteSer != d_ptr->mSeries.end()) {
+            return iteSer.value().name();
         }
         return QVariant();
     } else {
@@ -54,23 +111,13 @@ QVariant DAPySeriesTableModule::headerData(int section, Qt::Orientation orientat
 int DAPySeriesTableModule::columnCount(const QModelIndex& parent) const
 {
     Q_UNUSED(parent);
-    return d_ptr->_series.size();
+    return d_ptr->columnCount();
 }
 
 int DAPySeriesTableModule::rowCount(const QModelIndex& parent) const
 {
     Q_UNUSED(parent);
-    int rcnt = 0;
-    for (const DAPySeries& ser : qAsConst(d_ptr->_series)) {
-        int s = (int)ser.size();
-        if (s > rcnt) {
-            rcnt = s;
-        }
-    }
-    if (rcnt <= 0) {
-        return 15;
-    }
-    return rcnt;
+    return d_ptr->rowCount();
 }
 
 Qt::ItemFlags DAPySeriesTableModule::flags(const QModelIndex& index) const
@@ -82,24 +129,32 @@ Qt::ItemFlags DAPySeriesTableModule::flags(const QModelIndex& index) const
 
 QVariant DAPySeriesTableModule::data(const QModelIndex& index, int role) const
 {
-    qDebug() << "111";
-    if (!index.isValid() || d_ptr->_series.empty()) {
+    if (!index.isValid() || d_ptr->mSeries.empty()) {
         return QVariant();
     }
     if (role == Qt::TextAlignmentRole) {
         //返回的是对其方式
         return int(Qt::AlignLeft | Qt::AlignVCenter);
     } else if (role == Qt::DisplayRole) {
-        int colcnt = d_ptr->_series.size();
-        if (index.column() >= colcnt) {
+        const int col = index.column();
+        const int row = index.row();
+        auto ite      = d_ptr->mSeries.find(col);
+        if (ite != d_ptr->mSeries.end()) {
+            //说明是序列列
+            const DAPySeries& ser = ite.value();
+            int ss                = static_cast< int >(ser.size());
+            if (row < ss) {
+                return ser[ row ];
+            }
             return QVariant();
         }
-        const DAPySeries& ser = d_ptr->_series.at(index.column());
-        int rowcnt            = (int)ser.size();
-        if (index.row() >= rowcnt) {
-            return QVariant();
+        //没有在序列找到，找自增
+        auto iteInc = d_ptr->mAutoincrementSeries.find(col);
+        if (iteInc != d_ptr->mAutoincrementSeries.end()) {
+            //说明是序列列
+            const DAAutoincrementSeries< double >& serInc = iteInc.value();
+            return serInc[ row ];
         }
-        return ser[ index.row() ];
     } else if (role == Qt::BackgroundRole) {
         //背景颜色
         return QVariant();
@@ -122,15 +177,28 @@ bool DAPySeriesTableModule::setData(const QModelIndex& index, const QVariant& va
 void DAPySeriesTableModule::appendSeries(const DAPySeries& s)
 {
     beginResetModel();
-    d_ptr->_series.append(s);
+    int c               = d_ptr->columnCount();
+    d_ptr->mSeries[ c ] = s;
     endResetModel();
 }
 
 /**
- * @brief 插入series，index如果超出范围，会append
+ * @brief 插入自增series
+ * @param s
+ */
+void DAPySeriesTableModule::appendSeries(const DAAutoincrementSeries< double >& s)
+{
+    beginResetModel();
+    int c                            = d_ptr->columnCount();
+    d_ptr->mAutoincrementSeries[ c ] = s;
+    endResetModel();
+}
+
+/**
+ * @brief 插入series，index可以任意范围
  *
- * 例如[s0,s1],insertSeries(3,s2),结果是[s0,s1,s2]
- * 例如[],insertSeries(1,s1),结果是[s1]
+ * 例如[s0,s1],insertSeries(3,s2),结果是[s0,s1,[],s2]
+ * 例如[],insertSeries(1,s1),结果是[[],s1]
  * @param index
  * @param s
  */
@@ -138,7 +206,30 @@ void DAPySeriesTableModule::insertSeries(int c, const DAPySeries& s)
 {
     //先看看要刷新哪里
     beginResetModel();
-    d_ptr->_series.insert(c, s);
+    d_ptr->mSeries[ c ] = s;
+    //看看这个位置是否有自增序列
+    if (d_ptr->mAutoincrementSeries.contains(c)) {
+        d_ptr->mAutoincrementSeries.remove(c);
+    }
+    endResetModel();
+}
+
+/**
+ * @brief 插入DAAutoincrementSeries，index可以任意范围
+ *
+ * 例如[s0,s1],insertSeries(3,s2),结果是[s0,s1,[],s2]
+ * 例如[],insertSeries(1,s1),结果是[[],s1]
+ * @param index
+ * @param s
+ */
+void DAPySeriesTableModule::insertSeries(int c, const DAAutoincrementSeries< double >& s)
+{
+    beginResetModel();
+    d_ptr->mAutoincrementSeries[ c ] = s;
+    //看看这个位置是否有series
+    if (d_ptr->mSeries.contains(c)) {
+        d_ptr->mSeries.remove(c);
+    }
     endResetModel();
 }
 
@@ -149,28 +240,48 @@ void DAPySeriesTableModule::insertSeries(int c, const DAPySeries& s)
  */
 void DAPySeriesTableModule::setSeriesAt(int c, const DAPySeries& s)
 {
-    beginResetModel();
-    if (c < 0) {
-        d_ptr->_series.prepend(s);
-    } else if (c < d_ptr->_series.size()) {
-        //        const DAPySeries& oldseries = d_ptr->_series[ c ];
-        //        int oldrow                  = (int)oldseries.size();
-        d_ptr->_series[ c ] = s;
-        //        int newrow                  = (int)s.size();
-        //        emit dataChanged(index(0, c), index(std::max(oldrow, newrow), c));
-    } else if (c >= d_ptr->_series.size()) {
-        d_ptr->_series.append(s);
-    }
-    endResetModel();
+    insertSeries(c, s);
+}
+
+/**
+ * @brief 把DAAutoincrementSeries设置到对应位置，如果有，则替换
+ * @param c
+ * @param s
+ */
+void DAPySeriesTableModule::setSeriesAt(int c, const DAAutoincrementSeries< double >& s)
+{
+    insertSeries(c, s);
+}
+
+/**
+ * @brief 设置表头
+ * @param c
+ * @param head
+ */
+void DAPySeriesTableModule::setColumnHeader(int c, const QString& head)
+{
+    d_ptr->mHeader[ c ] = head;
+    emit headerDataChanged(Qt::Horizontal, c, c);
+}
+
+/**
+ * @brief 获取header
+ * @param c
+ * @return 如果没有返回QString()
+ */
+QString DAPySeriesTableModule::getColumnHeader(int c) const
+{
+    return d_ptr->mHeader.value(c);
 }
 
 /**
  * @brief 清除
  */
-void DAPySeriesTableModule::clear()
+void DAPySeriesTableModule::clearData()
 {
     beginResetModel();
-    d_ptr->_series.clear();
+    d_ptr->mSeries.clear();
+    d_ptr->mAutoincrementSeries.clear();
     endResetModel();
 }
 
@@ -180,7 +291,10 @@ void DAPySeriesTableModule::clear()
  */
 void DAPySeriesTableModule::setHeaderLabel(const QStringList& head)
 {
-    d_ptr->_header = head;
+    for (int i = 0; i < head.size(); ++i) {
+        d_ptr->mHeader[ i ] = head[ i ];
+    }
+    emit headerDataChanged(Qt::Horizontal, 0, head.size() - 1);
 }
 
 /**
@@ -189,17 +303,16 @@ void DAPySeriesTableModule::setHeaderLabel(const QStringList& head)
  */
 int DAPySeriesTableModule::getSeriesCount() const
 {
-    return d_ptr->_series.size();
+    return d_ptr->mSeries.size();
 }
 
-QStringList& DAPySeriesTableModule::headerLabel()
+/**
+ * @brief 获取所有设置的表头，注意，如果跳着设置，表头返回的是连续的，不会因为中间没有设置而补充QString()
+ * @return
+ */
+QList< QString > DAPySeriesTableModule::getSettingHeaderLabels() const
 {
-    return d_ptr->_header;
-}
-
-const QStringList& DAPySeriesTableModule::headerLabel() const
-{
-    return d_ptr->_header;
+    return d_ptr->mHeader.values();
 }
 
 }

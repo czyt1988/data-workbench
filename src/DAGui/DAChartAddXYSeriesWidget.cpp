@@ -16,7 +16,6 @@ public:
 
 public:
     DAPySeriesTableModule* _model { nullptr };
-    bool _xNeedInsert0 { false };
 };
 
 DAChartAddXYSeriesWidgetPrivate::DAChartAddXYSeriesWidgetPrivate(DAChartAddXYSeriesWidget* p) : q_ptr(p)
@@ -104,12 +103,7 @@ void DAChartAddXYSeriesWidget::onComboBoxXCurrentDataframeSeriesChanged(const DA
     if (s.isNone()) {
         return;
     }
-    if (d_ptr->_xNeedInsert0) {
-        d_ptr->_xNeedInsert0 = false;
-        d_ptr->_model->insertSeries(0, s);
-    } else {
-        d_ptr->_model->setSeriesAt(0, s);
-    }
+    d_ptr->_model->setSeriesAt(0, s);
 }
 
 /**
@@ -126,9 +120,6 @@ void DAChartAddXYSeriesWidget::onComboBoxYCurrentDataframeSeriesChanged(const DA
     DAPySeries s = df[ seriesName ];
     if (s.isNone()) {
         return;
-    }
-    if (0 == d_ptr->_model->getSeriesCount()) {
-        d_ptr->_xNeedInsert0 = true;  //说明y先显示，这时x要插入0，而不是替换
     }
     d_ptr->_model->setSeriesAt(1, s);
 }

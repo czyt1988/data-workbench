@@ -37,7 +37,6 @@ private:
     Ui::DADataframeToVectorPointWidget* ui;
     DAData _currentData;
     DAPySeriesTableModule* _model;
-    bool _xNeedInsert0 { false };
 };
 }
 

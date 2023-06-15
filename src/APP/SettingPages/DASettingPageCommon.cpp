@@ -21,6 +21,7 @@ DASettingPageCommon::DASettingPageCommon(QWidget* parent)
     mButtonGroupRibbonStyle.addButton(ui->radioButtonLiteStyle, static_cast< int >(SARibbonBar::WpsLiteStyle));
     mButtonGroupRibbonStyle.addButton(ui->radioButtonLiteStyle2Row, static_cast< int >(SARibbonBar::WpsLiteStyleTwoRow));
     connect(&mButtonGroupRibbonStyle, QOverload< int >::of(&QButtonGroup::buttonClicked), this, &DASettingPageCommon::onButtonGroupRibbonStyleClicked);
+    connect(ui->spinBoxDisplayLogsNum, QOverload< int >::of(&QSpinBox::valueChanged), this, &DASettingPageCommon::onSpinBoxDisplayLogsNumValueChanged);
 }
 
 DASettingPageCommon::~DASettingPageCommon()
@@ -113,6 +114,12 @@ void DASettingPageCommon::onButtonGroupRibbonStyleClicked(int id)
     if (mOldRibbonStyle != mNewRibbonStyle) {
         emit settingChanged();
     }
+}
+
+void DASettingPageCommon::onSpinBoxDisplayLogsNumValueChanged(int v)
+{
+    Q_UNUSED(v);
+    emit settingChanged();
 }
 
 }  // end DA

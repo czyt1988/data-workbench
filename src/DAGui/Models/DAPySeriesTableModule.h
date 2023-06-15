@@ -30,19 +30,25 @@ public:
 public:
     //追加series
     void appendSeries(const DAPySeries& s);
+    void appendSeries(const DAAutoincrementSeries< double >& s);
     //插入series，index如果超出范围，会append，例如[s0,s1],insertSeries(3,s2),结果是[s0,s1,s2]
     void insertSeries(int c, const DAPySeries& s);
+    void insertSeries(int c, const DAAutoincrementSeries< double >& s);
     //把series设置到对应位置，如果有，则替换
     void setSeriesAt(int c, const DAPySeries& s);
+    void setSeriesAt(int c, const DAAutoincrementSeries< double >& s);
+    //设置表头的名称
+    void setColumnHeader(int c, const QString& head);
+    QString getColumnHeader(int c) const;
     //清除
-    void clear();
+    void clearData();
     //设置表头，如果不设置，则返回的是series的名字作为表头
     void setHeaderLabel(const QStringList& head);
     //获取当前维护的series
     int getSeriesCount() const;
+    //获取所有表头
+    QList< QString > getSettingHeaderLabels() const;
     //
-    QStringList& headerLabel();
-    const QStringList& headerLabel() const;
 };
 }
 
