@@ -33,13 +33,19 @@ public:
     bool isYAutoincrement() const;
     //接口实现
     virtual QwtPlotItem* createPlotItem() override;
+
 private slots:
     void onComboBoxXCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
     void onComboBoxYCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
+    void onGroupBoxXAutoincrementClicked(bool on);
+    void onGroupBoxYAutoincrementClicked(bool on);
 
 protected:
     //获取为vector pointf
     bool getToVectorPointF(QVector< QPointF >& res);
+    //尝试获取x值得自增内容
+    bool tryGetXSelfInc(double& base, double& step);
+    bool tryGetYSelfInc(double& base, double& step);
 
 private:
     Ui::DAChartAddXYSeriesWidget* ui;
