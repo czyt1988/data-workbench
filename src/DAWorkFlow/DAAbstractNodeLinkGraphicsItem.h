@@ -137,6 +137,8 @@ public:
     int getEndPointSize() const;
     //完成链接的回调
     virtual void finishedLink();
+    //获取连接线
+    QPainterPath getLinePath() const;
 
 public:
     DAAbstractNodeLinkGraphicsItem(QGraphicsItem* p = nullptr);

@@ -37,32 +37,31 @@ public:
     void updateTextPos();
 
 public:
-    DAAbstractNodeLinkGraphicsItem::LinkLineStyle mLinkLineStyle;
-    DAAbstractNodeGraphicsItem* mFromItem;
-    DAAbstractNodeGraphicsItem* mToItem;
+    DAAbstractNodeLinkGraphicsItem::LinkLineStyle mLinkLineStyle { DAAbstractNodeLinkGraphicsItem::LinkLineKnuckle };
+    DAAbstractNodeGraphicsItem* mFromItem { nullptr };
+    DAAbstractNodeGraphicsItem* mToItem { nullptr };
     DANodeLinkPoint mFromPoint;
     DANodeLinkPoint mToPoint;
-    QPointF mFromPos;
-    QPointF mToPos;
-    QRectF mBoundingRect;         ///< 记录boundingRect
-    qreal mBezierControlScale;    ///<贝塞尔曲线的控制点的缩放比例
-    QPainterPath mLinePath;       ///< 通过点得到的绘图线段
-    QPainterPath mLineShapePath;  ///_linePath的轮廓，用于shape函数
-    QPen mLinePen;                ///< 线的画笔
-    QGraphicsSimpleTextItem* mFromTextItem;
-    QGraphicsSimpleTextItem* mToTextItem;
-    QPair< int, int > mPointTextPositionOffset;  ///< 记录文本和连接点的偏移量，默认为10
-    QGraphicsSimpleTextItem* mTextItem;          ///< 文本item，文本item默认为false
-    QPointF mTextPosProportion;                  ///< 文本位置占比
-    bool mAutoDetachLink;                        ///< 默认为true，在析构时自动detach link
-    QPointF mLinkCenterPoint;                    ///< 记录中心点
-    int mTextItemSpace;                          ///< 文字离中心点的距离
+    QPointF mFromPos { 0, 0 };
+    QPointF mToPos { 100, 100 };
+    QRectF mBoundingRect;                ///< 记录boundingRect
+    qreal mBezierControlScale { 0.35 };  ///<贝塞尔曲线的控制点的缩放比例
+    QPainterPath mLinePath;              ///< 通过点得到的绘图线段
+    QPainterPath mLineShapePath;         ///_linePath的轮廓，用于shape函数
+    QPen mLinePen;                       ///< 线的画笔
+    QGraphicsSimpleTextItem* mFromTextItem { nullptr };
+    QGraphicsSimpleTextItem* mToTextItem { nullptr };
+    QPair< int, int > mPointTextPositionOffset { 10, 10 };  ///< 记录文本和连接点的偏移量，默认为10
+    QGraphicsSimpleTextItem* mTextItem { nullptr };         ///< 文本item，文本item默认为false
+    QPointF mTextPosProportion { 0.5, 0.5 };                ///< 文本位置占比
+    bool mAutoDetachLink { true };                          ///< 默认为true，在析构时自动detach link
+    int mTextItemSpace { 5 };                               ///< 文字离中心点的距离
     //端点样式
-    DAAbstractNodeLinkGraphicsItem::EndPointType mFromEndPointType;  ///< from的端点样式
-    DAAbstractNodeLinkGraphicsItem::EndPointType mToEndPointType;    ///< to的端点样式
-    QPainterPath mFromEndPointPainterPath;                           ///< 记录from的端点样式
-    QPainterPath mToEndPointPainterPath;                             ///< 记录to的端点样式
-    int mEndPointSize;                                               ///< 记录端点大小
+    DAAbstractNodeLinkGraphicsItem::EndPointType mFromEndPointType { DAAbstractNodeLinkGraphicsItem::EndPointNone };  ///< from的端点样式
+    DAAbstractNodeLinkGraphicsItem::EndPointType mToEndPointType { DAAbstractNodeLinkGraphicsItem::EndPointNone };  ///< to的端点样式
+    QPainterPath mFromEndPointPainterPath;  ///< 记录from的端点样式
+    QPainterPath mToEndPointPainterPath;    ///< 记录to的端点样式
+    int mEndPointSize { 12 };               ///< 记录端点大小
 };
 
 //===================================================
@@ -81,7 +80,6 @@ DAAbstractNodeLinkGraphicsItem::PrivateData::PrivateData(DAAbstractNodeLinkGraph
     , mTextItem(nullptr)
     , mTextPosProportion(0.5, 0.5)
     , mAutoDetachLink(true)
-    , mLinkCenterPoint(50, 50)
     , mTextItemSpace(5)
     , mFromEndPointType(DAAbstractNodeLinkGraphicsItem::EndPointNone)
     , mToEndPointType(DAAbstractNodeLinkGraphicsItem::EndPointNone)
@@ -265,7 +263,8 @@ void DAAbstractNodeLinkGraphicsItem::PrivateData::updateTextPos()
     if (nullptr == mTextItem) {
         return;
     }
-    mTextItem->setPos(mLinkCenterPoint.x() + mTextItemSpace, mLinkCenterPoint.y());
+    QPointF cp = mLinePath.pointAtPercent(0.5);
+    mTextItem->setPos(cp.x() + mTextItemSpace, cp.y());
 }
 
 //////////////////////////////////////////////////////////////
@@ -884,7 +883,6 @@ QPainterPath DAAbstractNodeLinkGraphicsItem::generateLinkLineBezierPainterPath(c
     QPainterPath path;
     path.moveTo(fromPos);
     path.cubicTo(fromcCrtlPoint, toCrtlPoint, toPos);
-    d_ptr->mLinkCenterPoint = path.pointAtPercent(0.5);
     return path;
 }
 
@@ -898,7 +896,6 @@ QPainterPath DAAbstractNodeLinkGraphicsItem::generateLinkLineStraightPainterPath
     QPainterPath path;
     path.moveTo(fromPos);
     path.lineTo(toPos);
-    d_ptr->mLinkCenterPoint = path.pointAtPercent(0.5);
     return path;
 }
 
@@ -1013,7 +1010,6 @@ QPainterPath DAAbstractNodeLinkGraphicsItem::generateLinkLineKnucklePainterPath(
     }
     path.lineTo(extendTo);
     path.lineTo(toPos);
-    d_ptr->mLinkCenterPoint = path.pointAtPercent(0.5);
     return path;
 }
 
@@ -1201,6 +1197,15 @@ int DAAbstractNodeLinkGraphicsItem::getEndPointSize() const
  */
 void DAAbstractNodeLinkGraphicsItem::finishedLink()
 {
+}
+
+/**
+ * @brief 获取连接线
+ * @return
+ */
+QPainterPath DAAbstractNodeLinkGraphicsItem::getLinePath() const
+{
+    return d_ptr->mLinePath;
 }
 
 QVariant DAAbstractNodeLinkGraphicsItem::itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant& value)
