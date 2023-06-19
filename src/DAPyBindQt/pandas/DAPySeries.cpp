@@ -12,7 +12,9 @@ using namespace DA;
 //===================================================
 DAPySeries::DAPySeries(const DAPySeries& s) : DAPyObjectWrapper(s)
 {
-    checkObjectValid();
+    if (!s.isNone()) {
+        checkObjectValid();
+    }
 }
 
 DAPySeries::DAPySeries(DAPySeries&& s) : DAPyObjectWrapper(s)
@@ -21,12 +23,16 @@ DAPySeries::DAPySeries(DAPySeries&& s) : DAPyObjectWrapper(s)
 
 DAPySeries::DAPySeries(const pybind11::object& obj) : DAPyObjectWrapper(obj)
 {
-    checkObjectValid();
+    if (!obj.is_none()) {
+        checkObjectValid();
+    }
 }
 
 DAPySeries::DAPySeries(pybind11::object&& obj) : DAPyObjectWrapper(obj)
 {
-    checkObjectValid();
+    if (!obj.is_none()) {
+        checkObjectValid();
+    }
 }
 
 DAPySeries::~DAPySeries()

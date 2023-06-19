@@ -32,40 +32,35 @@ DAPySeriesTableModulePrivate::DAPySeriesTableModulePrivate(DAPySeriesTableModule
  */
 int DAPySeriesTableModulePrivate::columnCount() const
 {
-    int col = 0;
+    int col = -1;  //这样在没有数据的时候可以返回0
     if (!mSeries.isEmpty()) {
-        auto i = mSeries.end();
-        --i;
-        col = i.key();
+        col = mSeries.lastKey();
     }
     if (!mAutoincrementSeries.isEmpty()) {
-        int v  = 0;
-        auto i = mAutoincrementSeries.end();
-        --i;
-        v = i.key();
+        int v = mAutoincrementSeries.lastKey();
         if (v > col) {
             col = v;
         }
     }
     if (mHeader.isEmpty()) {
-        int v  = 0;
-        auto i = mHeader.end();
-        --i;
-        v = i.key();
+        int v = mHeader.lastKey();
         if (v > col) {
             col = v;
         }
     }
-    return col;
+    return col + 1;
 }
 
 int DAPySeriesTableModulePrivate::rowCount() const
 {
     int r = 0;
     for (auto i = mSeries.begin(); i != mSeries.end(); ++i) {
-        int s = static_cast< int >(i.value().size());
-        if (r < s) {
-            r = s;
+        const DAPySeries& ser = i.value();
+        if (!ser.isNone()) {
+            int s = static_cast< int >(ser.size());
+            if (r < s) {
+                r = s;
+            }
         }
     }
     if (r < 15) {
@@ -142,7 +137,10 @@ QVariant DAPySeriesTableModule::data(const QModelIndex& index, int role) const
         if (ite != d_ptr->mSeries.end()) {
             //说明是序列列
             const DAPySeries& ser = ite.value();
-            int ss                = static_cast< int >(ser.size());
+            if (ser.isNone()) {
+                return QVariant();
+            }
+            int ss = static_cast< int >(ser.size());
             if (row < ss) {
                 return ser[ row ];
             }
@@ -314,5 +312,4 @@ QList< QString > DAPySeriesTableModule::getSettingHeaderLabels() const
 {
     return d_ptr->mHeader.values();
 }
-
 }

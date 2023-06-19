@@ -37,6 +37,8 @@ DAChartAddXYSeriesWidget::DAChartAddXYSeriesWidget(QWidget* parent)
     ui->tableViewXY->verticalHeader()->setDefaultSectionSize(fm.lineSpacing() * 1.1);
     connect(ui->comboBoxX, &DADataManagerComboBox::currentDataframeSeriesChanged, this, &DAChartAddXYSeriesWidget::onComboBoxXCurrentDataframeSeriesChanged);
     connect(ui->comboBoxY, &DADataManagerComboBox::currentDataframeSeriesChanged, this, &DAChartAddXYSeriesWidget::onComboBoxYCurrentDataframeSeriesChanged);
+    connect(ui->groupBoxXAutoincrement, &QGroupBox::clicked, this, &DAChartAddXYSeriesWidget::onGroupBoxXAutoincrementClicked);
+    connect(ui->groupBoxYAutoincrement, &QGroupBox::clicked, this, &DAChartAddXYSeriesWidget::onGroupBoxYAutoincrementClicked);
 }
 
 DAChartAddXYSeriesWidget::~DAChartAddXYSeriesWidget()
@@ -125,6 +127,34 @@ void DAChartAddXYSeriesWidget::onComboBoxYCurrentDataframeSeriesChanged(const DA
 }
 
 /**
+ * @brief x值是否使用自增序列
+ * @param on
+ */
+void DAChartAddXYSeriesWidget::onGroupBoxXAutoincrementClicked(bool on)
+{
+    if (on) {
+        double base, step;
+        if (tryGetXSelfInc(base, step)) {
+            d_ptr->_model->setSeriesAt(0, DAAutoincrementSeries< double >(base, step));
+        }
+    }
+}
+
+/**
+ * @brief y值是否使用自增序列
+ * @param on
+ */
+void DAChartAddXYSeriesWidget::onGroupBoxYAutoincrementClicked(bool on)
+{
+    if (on) {
+        double base, step;
+        if (tryGetYSelfInc(base, step)) {
+            d_ptr->_model->setSeriesAt(1, DAAutoincrementSeries< double >(base, step));
+        }
+    }
+}
+
+/**
  * @brief 获取点序列
  * @param res
  * @return
@@ -170,6 +200,50 @@ bool DAChartAddXYSeriesWidget::getToVectorPointF(QVector< QPointF >& res)
         qCritical() << tr("Exception occurred during extracting from pandas.Series to double vector:%1").arg(e.what());  // cn:从pandas.Series提取为double vector过程中出现异常:%1
         return false;
     }
+    return true;
+}
+
+/**
+ * @brief 尝试获取x值得自增内容
+ * @param base
+ * @param step
+ * @return
+ */
+bool DAChartAddXYSeriesWidget::tryGetXSelfInc(double& base, double& step)
+{
+    bool isOK = false;
+    double a  = ui->lineEditXInitValue->text().toDouble(&isOK);
+    if (!isOK) {
+        return false;
+    }
+    double b = ui->lineEditXStepValue->text().toDouble(&isOK);
+    if (!isOK) {
+        return false;
+    }
+    base = a;
+    step = b;
+    return true;
+}
+
+/**
+ * @brief 尝试获取y值得自增内容
+ * @param base
+ * @param step
+ * @return
+ */
+bool DAChartAddXYSeriesWidget::tryGetYSelfInc(double& base, double& step)
+{
+    bool isOK = false;
+    double a  = ui->lineEditYInitValue->text().toDouble(&isOK);
+    if (!isOK) {
+        return false;
+    }
+    double b = ui->lineEditYStepValue->text().toDouble(&isOK);
+    if (!isOK) {
+        return false;
+    }
+    base = a;
+    step = b;
     return true;
 }
 
