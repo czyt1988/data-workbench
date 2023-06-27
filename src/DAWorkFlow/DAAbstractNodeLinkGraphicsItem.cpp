@@ -9,12 +9,6 @@
 #include <QGraphicsSimpleTextItem>
 #include <QStyleOptionGraphicsItem>
 #include <QGraphicsTextItem>
-//是否在连线中间加点
-/**
- *
- * @def 在链接线中间点加个圆
- */
-#define ADD_POINT_ON_LINK_LINE_CENTER 0
 
 namespace DA
 {
@@ -593,10 +587,6 @@ void DAAbstractNodeLinkGraphicsItem::paintLinkLine(QPainter* painter,
     }
     painter->setPen(pen);
     painter->drawPath(linkPath);
-#if ADD_POINT_ON_LINK_LINE_CENTER
-    painter->setBrush(QBrush(pen.color()));
-    painter->drawEllipse(d_ptr->_linkCenterPoint, d_ptr->_textItemSpace, d_ptr->_textItemSpace);
-#endif
 }
 
 /**
