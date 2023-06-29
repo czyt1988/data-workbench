@@ -28,7 +28,7 @@ class DAAbstractNodeFactory;
  * - 每个度都可以赋予不同的值，作为数据投递
  * - 邻接（Adjacent）标示为link，linkto就建立起两个节点的邻接
  *
- * 需要用户实现以下1个函数
+ * 需要用户实现以下2个函数
  * @code
  * //节点对应的item显示接口，所有node都需要提供一个供前端的显示接口
  * virtual DAAbstractNodeGraphicsItem *createGraphicsItem();

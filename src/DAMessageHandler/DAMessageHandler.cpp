@@ -96,7 +96,7 @@ private:
 };
 
 DAMessageHandlerGlobalValues_Private::DAMessageHandlerGlobalValues_Private()
-    : _recordMsgType(QtWarningMsg), _type(MsgHandleType::UnknowHandleType), _pattern("[{1}]{5}\n   ->({2}){3},{4}")
+    : _recordMsgType(QtWarningMsg), _type(MsgHandleType::UnknowHandleType), _pattern("> {5} | [{1}]({2}){3},{4}")
 {
     _enableSpdlog.store(true);
     _enableMsgHandle.store(true);

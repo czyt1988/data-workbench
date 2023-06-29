@@ -4,6 +4,21 @@
 namespace DA
 {
 
+/**
+ * @brief 这是描述等步长自增序列的类，包含了基础值和步长，可以把它当做一个数组调用
+ *
+ * 如：
+ * @example
+ * @code
+ * DAAutoincrementSeries<double> x(0,1);//等价于DAAutoincrementSeries<double> x;
+ * double v = x[1000];//等价于x.at(1000)
+ * //v = 1000
+ * for(int i=0;i<10;++i){
+ *  std::cout << x[i] <<",";
+ * }
+ * //0,1,2,3,4,5,6,7,8,9,
+ * @endcode
+ */
 template< typename T >
 class DAAutoincrementSeries
 {

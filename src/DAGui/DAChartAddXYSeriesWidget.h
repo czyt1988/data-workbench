@@ -1,9 +1,12 @@
 ﻿#ifndef DACHARTADDXYSERIESWIDGET_H
 #define DACHARTADDXYSERIESWIDGET_H
 #include "DAGuiAPI.h"
+// DAData
 #include "DAData.h"
+// DAUtil
+#include "DAAutoincrementSeries.h"
+// DAGui
 #include "DAAbstractChartAddItemWidget.h"
-
 namespace Ui
 {
 class DAChartAddXYSeriesWidget;
@@ -41,8 +44,12 @@ private slots:
     void onGroupBoxYAutoincrementClicked(bool on);
 
 protected:
+    //获取x自增
+    bool getXAutoIncFromUI(DAAutoincrementSeries< double >& v);
+    //获取y自增
+    bool getYAutoIncFromUI(DAAutoincrementSeries< double >& v);
     //获取为vector pointf
-    bool getToVectorPointF(QVector< QPointF >& res);
+    bool getToVectorPointFFromUI(QVector< QPointF >& res);
     //尝试获取x值得自增内容
     bool tryGetXSelfInc(double& base, double& step);
     bool tryGetYSelfInc(double& base, double& step);
