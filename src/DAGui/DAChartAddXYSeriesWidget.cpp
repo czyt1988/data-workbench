@@ -138,7 +138,7 @@ void DAChartAddXYSeriesWidget::onGroupBoxXAutoincrementClicked(bool on)
             d_ptr->_model->setSeriesAt(0, DAAutoincrementSeries< double >(base, step));
         }
     }
-    ui->comboBoxX->setEditable(!on);
+    ui->comboBoxX->setEnabled(!on);
 }
 
 /**
@@ -153,7 +153,7 @@ void DAChartAddXYSeriesWidget::onGroupBoxYAutoincrementClicked(bool on)
             d_ptr->_model->setSeriesAt(1, DAAutoincrementSeries< double >(base, step));
         }
     }
-    ui->comboBoxY->setEditable(!on);
+    ui->comboBoxY->setEnabled(!on);
 }
 
 /**

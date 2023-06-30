@@ -64,7 +64,7 @@ public:
 
     ////////////////////// rtti 操作//////////////////////////////
     //通过rtti获取item的颜色
-    static void setPlotItemColor(QwtPlotItem* item, const QColor& color);
+    static bool setPlotItemColor(QwtPlotItem* item, const QColor& color);
     static QColor getPlotItemColor(const QwtPlotItem* item);
     //获取item的颜色
     static QBrush getPlotItemBrush(const QwtPlotItem* item);

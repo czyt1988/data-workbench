@@ -50,9 +50,10 @@ public:
     ChartType getCurrentChartType() const;
     //获取绘图item，如果没有返回nullptr
     QwtPlotItem* createPlotItem();
+    //更新数据
+    void updateData();
 
 protected:
-    void updateData();
     //刷新dataframe combobox
     void resetDataframeCombobox();
     //更新combobox的选则状态

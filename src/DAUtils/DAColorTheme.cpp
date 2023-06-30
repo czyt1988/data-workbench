@@ -5,7 +5,16 @@ DAColorTheme::DAColorTheme()
 {
 }
 
+DAColorTheme::DAColorTheme(ColorTheme th)
+{
+    setCurrentColorTheme(th);
+}
+
 DAColorTheme::DAColorTheme(const std::initializer_list< QColor >& v) : mColorVector(v)
+{
+}
+
+DAColorTheme::~DAColorTheme()
 {
 }
 
@@ -56,6 +65,17 @@ QColor DAColorTheme::next()
     return mColorVector.next();
 }
 
+void DAColorTheme::moveToNext()
+{
+    mColorVector.moveToNext();
+}
+
+DAColorTheme& DAColorTheme::operator++()
+{
+    ++mColorVector;
+    return *this;
+}
+
 /**
  * @brief 获取前一个主题颜色
  * @note 必须保证不空才能调用此函数
@@ -64,6 +84,29 @@ QColor DAColorTheme::next()
 QColor DAColorTheme::previous()
 {
     return mColorVector.previous();
+}
+
+void DAColorTheme::moveToPrevious()
+{
+    mColorVector.moveToPrevious();
+}
+
+DAColorTheme& DAColorTheme::operator--()
+{
+    --mColorVector;
+    return *this;
+}
+
+/**
+ * @brief 当前的颜色，如果非法索引，返回QColor()
+ * @return
+ */
+QColor DAColorTheme::current() const
+{
+    if (mColorVector.isValidIndex()) {
+        return mColorVector.current();
+    }
+    return QColor();
 }
 
 /**
@@ -107,9 +150,41 @@ void DAColorTheme::setCurrentIndex(int v)
  * @param t
  * @return
  */
-DAColorTheme DAColorTheme::create(DAColorTheme::Theme t)
+DAColorTheme DAColorTheme::create(DAColorTheme::ColorTheme t)
 {
     return createColorTheme(t);
+}
+
+/**
+ * @brief 获取当前主题
+ * @return
+ */
+DAColorTheme::ColorTheme DAColorTheme::getCurrentColorTheme() const
+{
+    return mCurrentColorTheme;
+}
+
+/**
+ * @brief 设置主题
+ * @param currentTheme
+ */
+void DAColorTheme::setCurrentColorTheme(const ColorTheme& th)
+{
+    if (th < ColorTheme_End) {
+        *this = create(th);
+    }
+    mCurrentColorTheme = th;
+}
+
+/**
+ * @brief 重载等于操作符，可以直接通过主题赋值
+ * @param th
+ * @return
+ */
+DAColorTheme& DAColorTheme::operator=(const DAColorTheme::ColorTheme& th)
+{
+    setCurrentColorTheme(th);
+    return *this;
 }
 
 /**
@@ -117,7 +192,7 @@ DAColorTheme DAColorTheme::create(DAColorTheme::Theme t)
  * @param t
  * @return
  */
-DAColorTheme createColorTheme(DAColorTheme::Theme t)
+DAColorTheme createColorTheme(DAColorTheme::ColorTheme t)
 {
     switch (t) {
     case DAColorTheme::ColorTheme_Archambault:
@@ -255,4 +330,14 @@ DAColorTheme createColorTheme(DAColorTheme::Theme t)
     return DAColorTheme();
 }
 
+QDebug operator<<(QDebug debug, const DAColorTheme& th)
+{
+    QDebugStateSaver saver(debug);
+    Q_UNUSED(saver);
+    debug.nospace() << "[" << th.getCurrentIndex() << "] ";
+    for (QColor c : qAsConst(th.colorVector())) {
+        debug.nospace() << c.name() << ",";
+    }
+    return debug;
+}
 }

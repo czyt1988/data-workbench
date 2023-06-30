@@ -2,6 +2,7 @@
 #define DAAPPFIGUREWIDGET_H
 #include "DAFigureWidget.h"
 #include "DAGuiAPI.h"
+#include "DAColorTheme.h"
 class QDragEnterEvent;
 class QDragLeaveEvent;
 class QDragMoveEvent;
@@ -24,6 +25,9 @@ public:
     void setDataManager(DADataManager* mgr);
     //带对话框的添加曲线
     QwtPlotItem* addPlotWithGuide_();
+    //颜色主题
+    void setColorTheme(DAColorTheme::ColorTheme th);
+    DAColorTheme::ColorTheme getColorTheme() const;
 
 protected:
     void dragEnterEvent(QDragEnterEvent* e) override;

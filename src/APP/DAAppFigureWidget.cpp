@@ -8,6 +8,8 @@
 #include "MimeData/DAMimeDataFormats.h"
 #include "Dialog/DADialogChartGuide.h"
 #include "DAWaitCursorScoped.h"
+#include "DAColorTheme.h"
+#include "DAChartUtil.h"
 namespace DA
 {
 class DAAppFigureWidgetPrivate
@@ -18,15 +20,16 @@ public:
     //获取dlg指针，如果为nullptr，则创建
     DADialogChartGuide* getDlgDataframeToPointVector();
     //绘制,如果没成功，返回nullptr
-    QwtPlotItem* plotWithGuideDialog(const DAData& data);
-    QwtPlotItem* plotWithGuideDialog();
+    QwtPlotItem* plotWithGuideDialog(const DAData& data = DAData());
 
 public:
     bool _isStartDrag { false };
     DADialogChartGuide* _dlgDataframePlot { nullptr };
     DADataManager* _dataManager { nullptr };
+    DAColorTheme mColorTheme;  ///< 当前的颜色主题
 };
-DAAppFigureWidgetPrivate::DAAppFigureWidgetPrivate(DAAppFigureWidget* p) : q_ptr(p)
+DAAppFigureWidgetPrivate::DAAppFigureWidgetPrivate(DAAppFigureWidget* p)
+    : q_ptr(p), _dlgDataframePlot(nullptr), _dataManager(nullptr), mColorTheme(DAColorTheme::ColorTheme_Cassatt2)
 {
 }
 
@@ -34,6 +37,7 @@ DADialogChartGuide* DAAppFigureWidgetPrivate::getDlgDataframeToPointVector()
 {
     if (!_dlgDataframePlot) {
         _dlgDataframePlot = new DADialogChartGuide(q_ptr);
+        _dlgDataframePlot->setDataManager(_dataManager);
     }
     return _dlgDataframePlot;
 }
@@ -46,35 +50,26 @@ DADialogChartGuide* DAAppFigureWidgetPrivate::getDlgDataframeToPointVector()
 QwtPlotItem* DAAppFigureWidgetPrivate::plotWithGuideDialog(const DAData& data)
 {
     DADialogChartGuide* dlg = getDlgDataframeToPointVector();
-    dlg->setDataManager(_dataManager);
-    dlg->setCurrentData(data);
+    if (data) {
+        dlg->setCurrentData(data);
+    } else {
+        dlg->updateData();
+    }
     if (QDialog::Accepted != dlg->exec()) {
         return nullptr;
     }
     DAWaitCursorScoped wait;
     Q_UNUSED(wait);
     QwtPlotItem* item = dlg->createPlotItem();
-    if (item) {
-        qDebug() << "DAAppFigureWidget get nullptr item";
-        q_ptr->addItem_(item);
-    }
-    return item;
-}
-
-QwtPlotItem* DAAppFigureWidgetPrivate::plotWithGuideDialog()
-{
-    DADialogChartGuide* dlg = getDlgDataframeToPointVector();
-    dlg->setDataManager(_dataManager);
-    if (QDialog::Accepted != dlg->exec()) {
+    if (nullptr == item) {
         return nullptr;
     }
-    DAWaitCursorScoped wait;
-    Q_UNUSED(wait);
-    QwtPlotItem* item = dlg->createPlotItem();
-    if (item) {
-        qDebug() << "DAAppFigureWidget get nullptr item";
-        q_ptr->addItem_(item);
+    QColor clr = mColorTheme.current();
+    if (DAChartUtil::setPlotItemColor(item, clr)) {
+        //成功设置颜色，就把主题颜色下移一个
+        mColorTheme.moveToNext();
     }
+    qDebug() << "color:" << clr.name() << "  |  ColorTheme = " << mColorTheme;
     return item;
 }
 
@@ -93,6 +88,10 @@ DAAppFigureWidget::~DAAppFigureWidget()
 {
 }
 
+/**
+ * @brief 设置dmgr
+ * @param mgr
+ */
 void DAAppFigureWidget::setDataManager(DADataManager* mgr)
 {
     d_ptr->_dataManager = mgr;
@@ -110,6 +109,24 @@ QwtPlotItem* DAAppFigureWidget::addPlotWithGuide_()
         return nullptr;
     }
     return d_ptr->plotWithGuideDialog();
+}
+
+/**
+ * @brief 设置颜色主题
+ * @param th
+ */
+void DAAppFigureWidget::setColorTheme(DAColorTheme::ColorTheme th)
+{
+    d_ptr->mColorTheme = th;
+}
+
+/**
+ * @brief 获取当前的颜色主题
+ * @return
+ */
+DAColorTheme::ColorTheme DAAppFigureWidget::getColorTheme() const
+{
+    return d_ptr->mColorTheme.getCurrentColorTheme();
 }
 
 /**
@@ -200,6 +217,9 @@ void DAAppFigureWidget::dropEvent(QDropEvent* e)
             if (nullptr == pi) {
                 e->ignore();
                 return;
+            } else {
+                //加入
+                addItem_(pi);
             }
             e->acceptProposedAction();
         }

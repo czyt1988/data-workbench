@@ -1,14 +1,16 @@
 ﻿#ifndef DACOLORTHEME_H
 #define DACOLORTHEME_H
+#include "DAUtilsAPI.h"
 #include "DAIndexedVector.h"
 #include <initializer_list>
 #include <QColor>
+#include <QDebug>
 namespace DA
 {
 /**
  * @brief 颜色主题
  */
-class DAColorTheme
+class DAUTILS_API DAColorTheme
 {
 public:
     /**
@@ -18,7 +20,7 @@ public:
      *
      * 自动化生成代码见：src/PyScripts/create_color_theme.py
      */
-    enum Theme
+    enum ColorTheme
     {
         ColorTheme_Archambault,
         ColorTheme_Cassatt1,
@@ -50,6 +52,7 @@ public:
 
 public:
     DAColorTheme();
+    DAColorTheme(ColorTheme th);
     DAColorTheme(const std::initializer_list< QColor >& v);
     ~DAColorTheme();
     //颜色个数
@@ -62,8 +65,14 @@ public:
     void append(const QColor& c);
     //获取下一个主题颜色
     QColor next();
+    void moveToNext();
+    DAColorTheme& operator++();
     //获取前一个主题颜色
     QColor previous();
+    void moveToPrevious();
+    DAColorTheme& operator--();
+    //当前的颜色
+    QColor current() const;
     //获取颜色队列
     QVector< QColor >& colorVector();
     const QVector< QColor >& colorVector() const;
@@ -72,14 +81,22 @@ public:
     //设置当前的索引
     void setCurrentIndex(int v);
     //创建一个color theme
-    static DAColorTheme create(Theme t);
+    static DAColorTheme create(ColorTheme t);
+    //主题
+    ColorTheme getCurrentColorTheme() const;
+    void setCurrentColorTheme(const ColorTheme& th);
+    //重载等于操作符，可以直接通过主题赋值
+    DAColorTheme& operator=(const ColorTheme& th);
 
 private:
     DAIndexedVector< QColor > mColorVector;
+    ColorTheme mCurrentColorTheme { ColorTheme_UserDefine };  ///< 当前的主题
 };
 
 //创建一个color theme
-DAColorTheme createColorTheme(DAColorTheme::Theme t);
+DAColorTheme DAUTILS_API createColorTheme(DAColorTheme::ColorTheme t);
+// QDebug的打印支持
+QDebug DAUTILS_API operator<<(QDebug debug, const DAColorTheme& th);
 }
 
 #endif  // DACOLORTHEME_H

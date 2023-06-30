@@ -1099,8 +1099,9 @@ int DAChartUtil::dynamicGetPlotChartItemDataCount(const QwtPlotItem* item)
  * @brief 通过设置item的颜色
  * @param item
  * @param color
+ * @return 如果设置成功，返回true
  */
-void DAChartUtil::setPlotItemColor(QwtPlotItem* item, const QColor& color)
+bool DAChartUtil::setPlotItemColor(QwtPlotItem* item, const QColor& color)
 {
     switch (item->rtti()) {
     case QwtPlotItem::Rtti_PlotCurve:
@@ -1108,6 +1109,7 @@ void DAChartUtil::setPlotItemColor(QwtPlotItem* item, const QColor& color)
             QPen pen = p->pen();
             pen.setColor(color);
             p->setPen(pen);
+            return true;
         }
         break;
     case QwtPlotItem::Rtti_PlotIntervalCurve:
@@ -1116,28 +1118,32 @@ void DAChartUtil::setPlotItemColor(QwtPlotItem* item, const QColor& color)
             pen.setColor(color);
             p->setPen(pen);
         }
-        break;
+        return true;
     case QwtPlotItem::Rtti_PlotHistogram:
         if (QwtPlotHistogram* p = static_cast< QwtPlotHistogram* >(item)) {
             QBrush brush = p->brush();
             brush.setColor(color);
             p->setBrush(brush);
+            return true;
         }
         break;
     case QwtPlotItem::Rtti_PlotBarChart:
         if (QwtPlotBarChart* bar = static_cast< QwtPlotBarChart* >(item)) {
-            QwtColumnSymbol* newSym    = new QwtColumnSymbol();
             const QwtColumnSymbol* sym = bar->symbol();
             if (sym) {
+                QwtColumnSymbol* newSym = new QwtColumnSymbol();
                 newSym->setStyle(sym->style());
                 newSym->setFrameStyle(sym->frameStyle());
                 newSym->setLineWidth(sym->lineWidth());
                 newSym->setPalette(sym->palette());
+                QPalette p = sym->palette();
+                p.setColor(QPalette::Button, color);
+                newSym->setPalette(p);
+                bar->setSymbol(newSym);
+            } else {
+                return false;
             }
-            QPalette p = sym->palette();
-            p.setColor(QPalette::Button, color);
-            newSym->setPalette(p);
-            bar->setSymbol(newSym);
+            return true;
         }
         break;
     case QwtPlotItem::Rtti_PlotGrid:
@@ -1145,6 +1151,7 @@ void DAChartUtil::setPlotItemColor(QwtPlotItem* item, const QColor& color)
             QPen pen = grid->majorPen();
             pen.setColor(color);
             grid->setMajorPen(pen);
+            return true;
         }
         break;
     case QwtPlotItem::Rtti_PlotMarker:
@@ -1152,11 +1159,13 @@ void DAChartUtil::setPlotItemColor(QwtPlotItem* item, const QColor& color)
             QPen pen = marker->linePen();
             pen.setColor(color);
             marker->setLinePen(pen);
+            return true;
         }
         break;
     default:
         break;
     }
+    return false;
 }
 
 /**

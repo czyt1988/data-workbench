@@ -43,8 +43,7 @@ void DADialogChartGuide::setDataManager(DADataManager* dmgr)
 {
     _dataMgr = dmgr;
     ui->pageCurve->setDataManager(dmgr);
-    resetDataframeCombobox();
-    updateCurrentPageData();
+    updateData();
 }
 
 /**
@@ -55,7 +54,6 @@ void DADialogChartGuide::setCurrentData(const DAData& d)
 {
     _currentData = d;
     updateData();
-    updateCurrentPageData();
 }
 
 DAData DADialogChartGuide::getCurrentData() const

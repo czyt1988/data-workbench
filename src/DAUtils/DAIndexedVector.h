@@ -4,7 +4,9 @@
 namespace DA
 {
 /**
- * @brief 这是个带索引的vector，提供next，previous等带索引的操作
+ * @brief 这是个带当前索引的vector，提供next，previous等带索引记忆的操作
+ *
+ *
  */
 template< typename T >
 class DAIndexedVector : public QVector< T >
@@ -17,8 +19,22 @@ public:
     DAIndexedVector(const std::initializer_list< T >& v);
     //获取下一个元素(索引后移)
     T next();
+    //把索引移动到下一个
+    void moveToNext();
+    DAIndexedVector& operator++();
     //获取前一个元素(索引前移)
     T previous();
+    //把索引移动到下一个
+    void moveToPrevious();
+    DAIndexedVector& operator--();
+    //获取当前的元素，在调用前使用isValidIndex确认索引的正确性
+    T current() const;
+    //判断当前索引是否是第一个
+    bool isFirstIndex() const;
+    //判断当前索引是否是最后一个
+    bool isLastIndex() const;
+    //判断当前索引是否是合理范围内
+    bool isValidIndex() const;
     //获取当前的索引
     int getCurrentIndex() const;
     //设置当前的索引
@@ -56,23 +72,73 @@ DAIndexedVector< T >::DAIndexedVector(const std::initializer_list< T >& v) : QVe
 template< typename T >
 T DAIndexedVector< T >::next()
 {
+    moveToNext();
+    return current();
+}
+
+template< typename T >
+void DAIndexedVector< T >::moveToNext()
+{
     if (mIndex < size() - 1) {
         ++mIndex;
     } else {
         mIndex = 0;
     }
-    return at(mIndex);
+}
+
+template< typename T >
+DAIndexedVector< T >& DAIndexedVector< T >::operator++()
+{
+    moveToNext();
+    return *this;
 }
 
 template< typename T >
 T DAIndexedVector< T >::previous()
+{
+    moveToPrevious();
+    return current();
+}
+
+template< typename T >
+void DAIndexedVector< T >::moveToPrevious()
 {
     if (mIndex > 0) {
         --mIndex;
     } else {
         mIndex = size() - 1;
     }
+}
+
+template< typename T >
+DAIndexedVector< T >& DAIndexedVector< T >::operator--()
+{
+    moveToPrevious();
+    return *this;
+}
+
+template< typename T >
+T DAIndexedVector< T >::current() const
+{
     return at(mIndex);
+}
+
+template< typename T >
+bool DAIndexedVector< T >::isFirstIndex() const
+{
+    return (mIndex == 0);
+}
+
+template< typename T >
+bool DAIndexedVector< T >::isLastIndex() const
+{
+    return (mIndex == (size() - 1));
+}
+
+template< typename T >
+bool DAIndexedVector< T >::isValidIndex() const
+{
+    return (mIndex >= 0) && (mIndex < size());
 }
 
 template< typename T >
