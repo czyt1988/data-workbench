@@ -117,6 +117,8 @@ public:
     //如果DAData是dataframe，把dataframe展开，能看到底下的series，默认为false
     void setExpandDataframeToSeries(bool on);
     bool isExpandDataframeToSeries() const;
+    //重置表头名称，在调用clear后需调用此函数
+    void resetHeaderLabel();
 
 public:
     virtual Qt::ItemFlags flags(const QModelIndex& index) const override;
@@ -124,7 +126,6 @@ public:
     virtual bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
 
 protected:
-    QMimeData* mimeData(const QModelIndexList& indexes) const override;
     bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) override;
 
 private:

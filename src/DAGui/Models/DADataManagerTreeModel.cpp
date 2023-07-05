@@ -183,8 +183,7 @@ void DADataManagerTreeModel::init()
 {
     qRegisterMetaType< DA::DAData >("DA::DAData");
     setItemPrototype(new DADataManagerTreeItem());
-    setHorizontalHeaderItem(0, new QStandardItem(tr("name")));
-    setHorizontalHeaderItem(1, new QStandardItem(tr("property")));
+    resetHeaderLabel();
 }
 
 /**
@@ -198,6 +197,7 @@ void DADataManagerTreeModel::doExpandDataframeToSeries(bool on)
     daAppDataManagerTreeItemIterator(
             invisibleRootItem(),
             [ &dataframeItems ](QStandardItem* par, DADataManagerTreeItem* curIte) -> bool {
+                Q_UNUSED(par);
                 if (curIte) {
                     DAData d = curIte->toData();
                     if (d.isDataFrame()) {
@@ -242,7 +242,7 @@ void DADataManagerTreeModel::doExpandOneDataframeToSeries(DADataManagerTreeItem*
             QStandardItem* sitem = new QStandardItem(name);
             sitem->setData((int)SeriesInnerDataframe, DADATAMANAGERTREEMODEL_ROLE_DETAIL_DATA_TYPE);
             sitem->setData(d.id(), DADATAMANAGERTREEMODEL_ROLE_DATA_ID);  //把data id也记录
-            dfItem->appendRow({ sitem });
+            dfItem->appendRow(sitem);
         }
     }
 }
@@ -382,6 +382,14 @@ bool DADataManagerTreeModel::isExpandDataframeToSeries() const
 {
     return d_ptr->_expandDataframeToSeries;
 }
+
+/**
+ * @brief 重新设置表头，这个再调用clear之后调用
+ */
+void DADataManagerTreeModel::resetHeaderLabel()
+{
+    setHorizontalHeaderLabels({ tr("name"), tr("property") });
+}
 /**
  * @brief 把index转换为tree item
  * @param i
@@ -406,6 +414,7 @@ DADataManagerTreeItem* DADataManagerTreeModel::treeItemFromIndex(const QModelInd
 void DADataManagerTreeModel::setDataManager(DADataManager* p)
 {
     clear();
+    resetHeaderLabel();
     d_ptr->_dataMgr = p;
     if (nullptr == p) {
         return;
@@ -474,82 +483,8 @@ bool DADataManagerTreeModel::setData(const QModelIndex& index, const QVariant& v
     return false;
 }
 
-/**
- * @brief DAAppDataManagerTree::mimeData
- * @param indexes
- * @return
- */
-QMimeData* DADataManagerTreeModel::mimeData(const QModelIndexList& indexes) const
-{
-    //如果选了多个item，包含了folder和data，则只选中data
-    //如果选择了多个folder，则选中最顶层的folder
-    if (0 == indexes.size()) {
-        return QStandardItemModel::mimeData(indexes);
-    }
-    QSet< DADataManagerTreeItem* > items;
-    for (const QModelIndex& i : qAsConst(indexes)) {
-        qDebug() << "mimeData(" << i.row() << "," << i.column() << ")";
-        QStandardItem* si = nullptr;
-        if (i.column() != 0) {
-            si = itemFromIndex(i.siblingAtColumn(0));
-        } else {
-            si = itemFromIndex(i);
-        }
-        if (nullptr == si) {
-            continue;
-        }
-        if (si->type() == DAAPPDATAMANAGERTREEITEM_USERTYPE) {
-            items.insert(static_cast< DADataManagerTreeItem* >(si));
-        }
-    }
-    QModelIndexList needToMimeData;
-
-    bool isData = true;
-    //判断是否有data
-    for (const DADataManagerTreeItem* i : qAsConst(items)) {
-        if (i->isData()) {
-            //有data，就把data加入
-            needToMimeData.append(indexFromItem(i));
-            isData = true;
-        }
-    }
-    if (0 == needToMimeData.size()) {
-        //说明没有data，处理文件夹
-        int minDepth = std::numeric_limits< int >::max();  //初始赋予最大值
-        for (const DADataManagerTreeItem* i : qAsConst(items)) {
-            if (i->isFolder()) {
-                //获取深度
-                int dp = i->depth();
-                if (dp < minDepth) {
-                    minDepth = dp;
-                    if (needToMimeData.isEmpty()) {
-                        needToMimeData.append(indexFromItem(i));
-                    } else {
-                        needToMimeData[ 0 ] = indexFromItem(i);
-                    }
-                }
-                isData = false;
-            }
-        }
-    }
-    QMimeData* md = QStandardItemModel::mimeData(needToMimeData);
-    if (md == nullptr) {
-        return nullptr;
-    }
-    if (isData) {
-        md->setData("da/tree-data", QByteArray());
-    } else {
-        md->setData("da/tree-folder", QByteArray());
-    }
-    return md;
-}
-
 bool DADataManagerTreeModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
 {
-    if (!parent.isValid()) {
-        //顶层都可以移动
-        return QStandardItemModel::dropMimeData(data, action, row, column, parent);
-    }
     QStandardItem* parentItem = itemFromIndex(parent);
     if (nullptr == parentItem) {
         return false;
@@ -557,10 +492,10 @@ bool DADataManagerTreeModel::dropMimeData(const QMimeData* data, Qt::DropAction 
     if (parentItem->type() != DAAPPDATAMANAGERTREEITEM_USERTYPE) {
         // parent 不能是非DAAppDataManagerTreeItem
         return false;
-        DADataManagerTreeItem* treeitem = static_cast< DADataManagerTreeItem* >(parentItem);
-        if (!treeitem->isFolder()) {
-            return false;
-        }
+    }
+    DADataManagerTreeItem* treeitem = static_cast< DADataManagerTreeItem* >(parentItem);
+    if (!treeitem->isFolder()) {
+        return false;
     }
     return QStandardItemModel::dropMimeData(data, action, row, column, parent);
 }

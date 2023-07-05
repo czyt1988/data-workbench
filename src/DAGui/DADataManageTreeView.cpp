@@ -33,7 +33,7 @@ DADataManageTreeView::DADataManageTreeView(QWidget* parent) : QTreeView(parent)
     setModel(mModel);
     //建立菜单
     mActionAddDataFolder = createAction("actionAddDataFolder", ":/icon/icon/folder.svg");
-    mMenu               = new QMenu(this);
+    mMenu                = new QMenu(this);
     mMenu->addAction(mActionAddDataFolder);
     //建立信号
     connect(this, &DADataManageTreeView::customContextMenuRequested, this, &DADataManageTreeView::onCustomContextMenuRequested);
@@ -152,7 +152,7 @@ void DADataManageTreeView::dragEnterEvent(QDragEnterEvent* ev)
     //        return;
     //    }
     //    ev->ignore();
-    if (ev->mimeData()->hasFormat("da/tree-data")) { }
+    //    if (ev->mimeData()->hasFormat("da/tree-data")) { }
     QTreeView::dragEnterEvent(ev);
 }
 

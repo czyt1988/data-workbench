@@ -942,15 +942,8 @@ void DAAppController::onActionAddFigureTriggered()
     mCommand->addStack(fig->getUndoStack());
     //这里不需要回退
     DAChartWidget* chart = fig->createChart();
-    QVector< double > x, y;
-    for (int i = 0; i < 10000; ++i) {
-        x.append(i);
-        y.append(std::sin(double(i / 1000.0)));
-    }
     chart->setXLabel("x");
     chart->setYLabel("y");
-    chart->addCurve(x, y)->setTitle("curve");
-    chart->enableLegendPanel();
     mRibbon->updateFigureAboutRibbon(fig);
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
 }
