@@ -80,6 +80,7 @@ Thumbs.db
 *.vcxproj
 *vcxproj.*
 .vscode
+.vs
 
 # MinGW generated files
 *.Debug

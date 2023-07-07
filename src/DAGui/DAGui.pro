@@ -61,7 +61,7 @@ include($$PWD/MimeData/MimeData.pri)
 include($$PWD/Commands/Commands.pri)
 include($$PWD/ChartSetting/ChartSetting.pri)
 
-HEADERS +=\
+HEADERS += \
     DAAbstractChartAddItemWidget.h \
     DAChartAddXYSeriesWidget.h \
     DADataManagerComboBox.h \

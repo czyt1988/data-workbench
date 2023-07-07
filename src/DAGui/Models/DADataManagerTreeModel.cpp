@@ -151,7 +151,10 @@ bool DADataManagerTreeItem::isData() const
 
 QStandardItem* DADataManagerTreeItem::clone() const
 {
-    return new DADataManagerTreeItem(*this);
+    //调用QStandardItem的protected构造函数[protected] QStandardItem::QStandardItem(const QStandardItem &other)
+    DADataManagerTreeItem* i = new DADataManagerTreeItem(*this);
+    qDebug() << "DADataManagerTreeItem::clone,text=" << i->text() << ",isFolder=" << i->isFolder() << ",isData=" << i->isData();
+    return i;
 }
 
 DADataManagerTreeItem& DADataManagerTreeItem::operator=(const DADataManagerTreeItem& other)
@@ -456,7 +459,7 @@ QVariant DADataManagerTreeModel::data(const QModelIndex& index, int role) const
             qDebug() << "can not cast DAAppDataManagerTreeItem";
             return QVariant();
         }
-        qDebug() << "1 == index.column,item text=" << ti->text() << ",item depth=" << ti->depth();
+        //        qDebug() << "1 == index.column,item text=" << ti->text() << ",item depth=" << ti->depth();
         if (!ti->isData()) {
             return QVariant();
         }
@@ -467,10 +470,10 @@ QVariant DADataManagerTreeModel::data(const QModelIndex& index, int role) const
         }
 
         if (d.isDataFrame()) {
-            qDebug() << ti->text() << " is df";
+            //            qDebug() << ti->text() << " is df";
             DAPyDataFrame df = d.toDataFrame();
             auto shape       = df.shape();
-            qDebug() << QString("[%1,%2]").arg(shape.first).arg(shape.second);
+            //            qDebug() << QString("[%1,%2]").arg(shape.first).arg(shape.second);
             return QString("[%1,%2]").arg(shape.first).arg(shape.second);
         }
         qDebug() << ti->text() << ":end";
@@ -483,22 +486,22 @@ bool DADataManagerTreeModel::setData(const QModelIndex& index, const QVariant& v
     return false;
 }
 
-bool DADataManagerTreeModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
-{
-    QStandardItem* parentItem = itemFromIndex(parent);
-    if (nullptr == parentItem) {
-        return false;
-    }
-    if (parentItem->type() != DAAPPDATAMANAGERTREEITEM_USERTYPE) {
-        // parent 不能是非DAAppDataManagerTreeItem
-        return false;
-    }
-    DADataManagerTreeItem* treeitem = static_cast< DADataManagerTreeItem* >(parentItem);
-    if (!treeitem->isFolder()) {
-        return false;
-    }
-    return QStandardItemModel::dropMimeData(data, action, row, column, parent);
-}
+// bool DADataManagerTreeModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
+//{
+//    QStandardItem* parentItem = itemFromIndex(parent);
+//    if (nullptr == parentItem) {
+//        return false;
+//    }
+//    if (parentItem->type() != DAAPPDATAMANAGERTREEITEM_USERTYPE) {
+//        // parent 不能是非DAAppDataManagerTreeItem
+//        return false;
+//    }
+//    DADataManagerTreeItem* treeitem = static_cast< DADataManagerTreeItem* >(parentItem);
+//    if (!treeitem->isFolder()) {
+//        return false;
+//    }
+//    return QStandardItemModel::dropMimeData(data, action, row, column, parent);
+//}
 
 /**
  * @brief 参数加入
