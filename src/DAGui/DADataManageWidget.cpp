@@ -25,19 +25,15 @@ DADataManageWidget::DADataManageWidget(QWidget* parent) : QWidget(parent), ui(ne
     mActionViewDataListByTable->setObjectName("actionViewDataListByTable");
     mActionViewDataListByTable->setCheckable(true);
     mActionViewDataListByTable->setIcon(QIcon(":/icon/icon/showDataInList.svg"));
-    mActionViewDataListByTree = new QAction(this);
-    mActionViewDataListByTree->setObjectName("actionViewDataListByTree");
-    mActionViewDataListByTree->setCheckable(true);
-    mActionViewDataListByTree->setIcon(QIcon(":/icon/icon/showDataInTree.svg"));
+
     mActionGroup = new QActionGroup(this);
     mActionGroup->addAction(mActionViewDataListByTable);
-    mActionGroup->addAction(mActionViewDataListByTree);
     mActionGroup->setExclusive(true);
+
     ui->toolButtonShowTableView->setDefaultAction(mActionViewDataListByTable);
-    ui->toolButtonShowTreeView->setDefaultAction(mActionViewDataListByTree);
+
     mActionViewDataListByTable->setChecked(true);
     connect(mActionViewDataListByTable, &QAction::triggered, this, &DADataManageWidget::onActionTableViewTriggered);
-    connect(mActionViewDataListByTree, &QAction::triggered, this, &DADataManageWidget::onActionTreeViewTriggered);
     connect(ui->dataMgrTableView, &DADataManageTableView::dataDbClicked, this, &DADataManageWidget::dataDbClicked);
     retranslateUi();
 }
@@ -54,7 +50,6 @@ DADataManageWidget::~DADataManageWidget()
 void DADataManageWidget::setDataManager(DADataManager* dmgr)
 {
     ui->dataMgrTableView->setDataManager(dmgr);
-    ui->dataMgrTreeView->setDataManager(dmgr);
 }
 
 /**
@@ -65,8 +60,6 @@ DAData DADataManageWidget::getOneSelectData() const
 {
     if (isTableView()) {
         return ui->dataMgrTableView->getOneSelectData();
-    } else if (isTreeView()) {
-        // TODO
     }
     return DAData();
 }
@@ -79,8 +72,6 @@ QList< DAData > DADataManageWidget::getSelectDatas() const
 {
     if (isTableView()) {
         return ui->dataMgrTableView->getSelectDatas();
-    } else if (isTreeView()) {
-        // TODO
     }
     return QList< DAData >();
 }
@@ -95,31 +86,12 @@ bool DADataManageWidget::isTableView() const
 }
 
 /**
- * @brief 判断当前是否为tree模式
- * @return
- */
-bool DADataManageWidget::isTreeView() const
-{
-    return (mActionGroup->checkedAction() == mActionViewDataListByTree);
-}
-
-/**
  * @brief 获取当前的显示模式
  * @return
  */
 DADataManageWidget::DataViewMode DADataManageWidget::getCurrentDataViewMode() const
 {
-    return (isTableView() ? ViewDataInTable : ViewDataInTree);
-}
-
-/**
- * @brief 添加数据文件夹
- */
-void DADataManageWidget::addDataFolder()
-{
-    if (isTreeView()) {
-        ui->dataMgrTreeView->addDataFolder();
-    }
+    return ViewDataInTable;
 }
 
 /**
@@ -147,7 +119,6 @@ void DADataManageWidget::removeSelectData()
 void DADataManageWidget::retranslateUi()
 {
     mActionViewDataListByTable->setToolTip(tr("show datas in table view"));
-    mActionViewDataListByTree->setToolTip(tr("show datas in tree view"));
 }
 
 void DADataManageWidget::changeEvent(QEvent* e)
@@ -170,16 +141,6 @@ void DADataManageWidget::onActionTableViewTriggered(bool on)
         if (ui->stackedWidget->currentWidget() != ui->dataMgrTableView) {
             ui->stackedWidget->setCurrentWidget(ui->dataMgrTableView);
             emit dataViewModeChanged(ViewDataInTable);
-        }
-    }
-}
-
-void DADataManageWidget::onActionTreeViewTriggered(bool on)
-{
-    if (on) {
-        if (ui->stackedWidget->currentWidget() != ui->dataMgrTreeView) {
-            ui->stackedWidget->setCurrentWidget(ui->dataMgrTreeView);
-            emit dataViewModeChanged(ViewDataInTree);
         }
     }
 }

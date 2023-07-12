@@ -27,8 +27,7 @@ public:
      */
     enum DataViewMode
     {
-        ViewDataInTable,  ///< 以表格的方式显示
-        ViewDataInTree    ///< 以树的方式显示
+        ViewDataInTable  ///< 以表格的方式显示
     };
     Q_ENUM(DataViewMode)
 public:
@@ -44,12 +43,8 @@ public:
     QList< DAData > getSelectDatas() const;
     //判断当前是否为table模式
     bool isTableView() const;
-    //判断当前是否为tree模式
-    bool isTreeView() const;
     //当前的显示模式
     DataViewMode getCurrentDataViewMode() const;
-    //添加数据文件夹
-    void addDataFolder();
 
 public slots:
     //移除选中的数据
@@ -71,13 +66,11 @@ signals:
     void dataViewModeChanged(DADataManageWidget::DataViewMode v);
 private slots:
     void onActionTableViewTriggered(bool on);
-    void onActionTreeViewTriggered(bool on);
 
 private:
     Ui::DADataManageWidget* ui;
     DADataManager* mDataManager;  ///< 数据管理器
     QAction* mActionViewDataListByTable;
-    QAction* mActionViewDataListByTree;
     QActionGroup* mActionGroup;
 };
 }  // end of namespace DA

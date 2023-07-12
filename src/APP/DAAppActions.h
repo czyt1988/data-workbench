@@ -45,9 +45,8 @@ public:
     //===================================================
     // 数据标签 Data Category
     //===================================================
-    QAction* actionAddData;        ///< 添加数据
-    QAction* actionRemoveData;     ///< 移除数据
-    QAction* actionAddDataFolder;  ///< 添加文件夹
+    QAction* actionAddData;     ///< 添加数据
+    QAction* actionRemoveData;  ///< 移除数据
 
     //===================================================
     // 数据操作的上下文标签 Data Operate Context Category

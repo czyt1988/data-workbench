@@ -130,8 +130,6 @@ private slots:
     void onActionAddDataTriggered();
     //移除数据
     void onActionRemoveDataTriggered();
-    //添加数据文件夹
-    void onActionAddDataFolderTriggered();
     //===================================================
     // 绘图标签 Chart Category
     //===================================================
@@ -295,8 +293,6 @@ private slots:
     //===================================================
 
     //一些界面的联动槽在此
-    // DADataManageWidget查看数据的模式改变
-    void onDataManageWidgetDataViewModeChanged(DADataManageWidget::DataViewMode v);
 
     //===================================================
     // DAWorkFlowGraphicsScene

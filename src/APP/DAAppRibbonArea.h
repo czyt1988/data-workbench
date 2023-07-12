@@ -196,9 +196,8 @@ public:
     SARibbonPannel* m_pannelMainWorkflowOpt;  ///< 工作流在main的pannel
     SARibbonPannel* m_pannelSetting;          ///< 设定
     // data
-    SARibbonCategory* m_categoryData;           ///< 数据标签
-    SARibbonPannel* m_pannelDataOperate;        ///< 数据操作
-    SARibbonPannel* m_pannelDataFolderOperate;  ///< 数据文件夹操作
+    SARibbonCategory* m_categoryData;     ///< 数据标签
+    SARibbonPannel* m_pannelDataOperate;  ///< 数据操作
     // view
     SARibbonCategory* m_categoryView;      ///< 视图标签
     SARibbonPannel* m_pannelViewMainView;  ///< 主要视图操作

@@ -288,14 +288,6 @@ void DAAppRibbonArea::buildRibbonDataCategory()
     m_pannelDataOperate->addLargeAction(m_actions->actionRemoveData);
     m_categoryData->addPannel(m_pannelDataOperate);
 
-    //--------FolderOperate--------------------------------------------------
-
-    m_pannelDataFolderOperate = new SARibbonPannel(m_categoryData);
-    m_pannelDataFolderOperate->setObjectName(QStringLiteral("da-pannel-data.folder-opt"));
-    m_pannelDataFolderOperate->addLargeAction(m_actions->actionAddDataFolder);
-    m_actions->actionAddDataFolder->setDisabled(true);  //默认不可点
-    m_categoryData->addPannel(m_pannelDataFolderOperate);
-
     //----------------------------------------------------------
 
     ribbonBar()->addCategoryPage(m_categoryData);

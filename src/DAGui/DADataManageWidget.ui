@@ -55,23 +55,6 @@
       </widget>
      </item>
      <item>
-      <widget class="QToolButton" name="toolButtonShowTreeView">
-       <property name="text">
-        <string/>
-       </property>
-       <property name="icon">
-        <iconset resource="icon.qrc">
-         <normaloff>:/icon/icon/showDataInTree.svg</normaloff>:/icon/icon/showDataInTree.svg</iconset>
-       </property>
-       <property name="checkable">
-        <bool>true</bool>
-       </property>
-       <property name="autoRaise">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -92,7 +75,6 @@
       <number>0</number>
      </property>
      <widget class="DA::DADataManageTableView" name="dataMgrTableView"/>
-     <widget class="DA::DADataManageTreeView" name="dataMgrTreeView"/>
     </widget>
    </item>
   </layout>
@@ -102,12 +84,6 @@
    <class>DA::DADataManageTableView</class>
    <extends>QWidget</extends>
    <header>DADataManageTableView.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>DA::DADataManageTreeView</class>
-   <extends>QWidget</extends>
-   <header>DADataManageTreeView.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

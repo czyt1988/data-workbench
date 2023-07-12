@@ -50,9 +50,8 @@ void DAAppActions::buildMainAction()
 void DAAppActions::buildDataAction()
 {
     // Data Category
-    actionAddData       = createAction("actionAddData", ":/Icon/Icon/addData.svg");
-    actionRemoveData    = createAction("actionRemoveData", ":/Icon/Icon/removeData.svg");
-    actionAddDataFolder = createAction("actionAddDataFolder", ":/Icon/Icon/folder.svg");
+    actionAddData    = createAction("actionAddData", ":/Icon/Icon/addData.svg");
+    actionRemoveData = createAction("actionRemoveData", ":/Icon/Icon/removeData.svg");
     // 数据操作的上下文标签 Data Operate Context Category
     actionRemoveRow          = createAction("actionRemoveRow", ":/Icon/Icon/removeRow.svg");
     actionRemoveColumn       = createAction("actionRemoveColumn", ":/Icon/Icon/removeColumn.svg");
@@ -175,9 +174,8 @@ void DAAppActions::retranslateUi()
     actionRenameColumns->setText(tr("Rename Columns"));
     actionSetting->setText(tr("Setting"));
     // Data Category
-    actionAddData->setText(tr("Add \nData"));          // cn:添加\n数据
-    actionRemoveData->setText(tr("Remove \nData"));    // cn:移除\n数据
-    actionAddDataFolder->setText(tr("Add \nFolder"));  // cn:新建\n文件夹
+    actionAddData->setText(tr("Add \nData"));        // cn:添加\n数据
+    actionRemoveData->setText(tr("Remove \nData"));  // cn:移除\n数据
     // Chart Category
     actionAddFigure->setText(tr("Add \nFigure"));            // cn:添加\n绘图
     actionFigureResizeChart->setText(tr("Resize \nChart"));  // cn:绘图\n尺寸

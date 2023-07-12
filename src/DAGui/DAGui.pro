@@ -74,7 +74,6 @@ HEADERS += \
     DAChartOperateWidget.h \
     DADataListView.h \
     DADataManageTableView.h \
-    DADataManageTreeView.h \
     DADataManageWidget.h \
     DADataOperateOfDataFrameWidget.h \
     DADataOperateWidget.h \
@@ -103,7 +102,6 @@ SOURCES += \
     DAChartOperateWidget.cpp \
     DADataListView.cpp \
     DADataManageTableView.cpp \
-    DADataManageTreeView.cpp \
     DADataManageWidget.cpp \
     DADataManagerComboBox.cpp \
     DADataOperatePageWidget.cpp \

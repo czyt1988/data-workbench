@@ -308,7 +308,6 @@ void DAAppController::initConnection()
     // Data Category
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionAddData, onActionAddDataTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionRemoveData, onActionRemoveDataTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionAddDataFolder, onActionAddDataFolderTriggered);
     // Chart Category
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionAddFigure, onActionAddFigureTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionFigureResizeChart, onActionFigureResizeChartTriggered);
@@ -401,8 +400,6 @@ void DAAppController::initConnection()
     //===================================================
     connect(mDock->dockManager(), &ads::CDockManager::focusedDockWidgetChanged, this, &DAAppController::onFocusedDockWidgetChanged);
     // DADataManageWidget 数据操作
-    DADataManageWidget* dmw = getDataManageWidget();
-    connect(dmw, &DADataManageWidget::dataViewModeChanged, this, &DAAppController::onDataManageWidgetDataViewModeChanged);
     // DADataOperateWidget
     DADataOperateWidget* dow = mDock->getDataOperateWidget();
     connect(dow, &DADataOperateWidget::pageAdded, this, &DAAppController::onDataOperatePageAdded);
@@ -446,15 +443,6 @@ DAAppConfig* DAAppController::getConfig() const
 void DAAppController::setConfig(DAAppConfig* config)
 {
     mConfig = config;
-}
-
-/**
- * @brief DADataManageWidget查看数据的模式改变
- * @param v
- */
-void DAAppController::onDataManageWidgetDataViewModeChanged(DADataManageWidget::DataViewMode v)
-{
-    mActions->actionAddDataFolder->setEnabled(v == DADataManageWidget::ViewDataInTree);
 }
 
 /**
@@ -920,15 +908,6 @@ void DAAppController::onActionRemoveDataTriggered()
 {
     DADataManageWidget* dmw = mDock->getDataManageWidget();
     dmw->removeSelectData();
-}
-
-/**
- * @brief 添加数据文件夹
- */
-void DAAppController::onActionAddDataFolderTriggered()
-{
-    DADataManageWidget* dmw = mDock->getDataManageWidget();
-    dmw->addDataFolder();
 }
 
 /**
