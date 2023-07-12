@@ -85,13 +85,13 @@ HEADERS += \
     DANodeSettingWidget.h \
     DANodeTreeWidget.h \
     DAToolBox.h \
-    DASettingContainerWidget.h \
     DAWorkFlowEditWidget.h \
     DAWorkFlowGraphicsScene.h \
     DAWorkFlowGraphicsView.h \
     DAWorkFlowNodeListWidget.h \
     DAWorkFlowNodeItemSettingWidget.h \
     DAWorkFlowOperateWidget.h \
+    DASettingContainerWidget.h \
     DAXmlHelper.h
 
 SOURCES += \
@@ -117,13 +117,13 @@ SOURCES += \
     DANodeSettingWidget.cpp \
     DANodeTreeWidget.cpp \
     DAToolBox.cpp \
-    DASettingContainerWidget.cpp \
     DAWorkFlowEditWidget.cpp \
     DAWorkFlowGraphicsScene.cpp \
     DAWorkFlowGraphicsView.cpp \
     DAWorkFlowNodeListWidget.cpp \
     DAWorkFlowNodeItemSettingWidget.cpp \
     DAWorkFlowOperateWidget.cpp \
+    DASettingContainerWidget.cpp \
     DAXmlHelper.cpp
 
 FORMS += \
@@ -138,7 +138,6 @@ FORMS += \
     DANodeItemSettingWidget.ui \
     DANodeLinkItemSettingWidget.ui \
     DANodeSettingWidget.ui \
-    DASettingContainerWidget.ui \
     DAWorkFlowOperateWidget.ui \
     DAWorkFlowEditWidget.ui \
     DAWorkFlowNodeListWidget.ui \

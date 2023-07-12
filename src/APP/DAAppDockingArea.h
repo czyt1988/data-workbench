@@ -87,7 +87,7 @@ public:
     virtual DADataOperateWidget* getDataOperateWidget() const override;
 
     //获取日志显示窗口
-    DAMessageLogViewWidget* getMessageLogViewWidget() const;
+    DAMessageLogViewWidget* getMessageLogViewWidget() const override;
 
     //获取设置窗口
     DASettingContainerWidget* getSettingContainerWidget() const;
