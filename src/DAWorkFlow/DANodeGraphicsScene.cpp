@@ -92,6 +92,20 @@ void DANodeGraphicsScene::cancelLink()
 }
 
 /**
+ * @brief 判断是否这个item是正在连线的item
+ *
+ * 正在连线过程，会有一个item，这个item会被暂时加入scene，如果链接线失败，会把这个item删除
+ *
+ * 这个函数主要是在批量删除item时，判断item是否是正在链接的那个item
+ * @param linkItem
+ * @return
+ */
+bool DANodeGraphicsScene::isLinkingItem(DAAbstractNodeLinkGraphicsItem* linkItem) const
+{
+    return (linkItem == d_ptr->mLinkingItem.get());
+}
+
+/**
  * @brief 设置工作流
  * @param wf
  * @note DANodeGraphicsScene不负责管理DAWorkFlow的所有权
@@ -243,7 +257,10 @@ int DANodeGraphicsScene::removeSelectedItems_()
     //此操作比较复杂，首先要找到非node的item，这些直接就可以删除，然后找到nodeitem，先删除link，再删除node
     // QGraphicsItem不进行处理,因此普通的item需要调用addItem_而不是addItem
     //需要先找到节点下面所以得link，和选中的link进行分组
+    //! 注意： 如果处于链接状态（isStartLink() == true）那么不能删除正在链接的那个元素的节点，否则会导致异常
     qDebug() << "removeSelectedItems_";
+    //移除元素过程中，先要删除链接
+    cancelLink();
     QScopedPointer< DA::DACommandsForWorkFlowRemoveSelectNodes > cmd(new DA::DACommandsForWorkFlowRemoveSelectNodes(this));
     int rc = cmd->removeCount();
     if (!cmd->isValid()) {

@@ -122,10 +122,18 @@ void DACommandsForWorkFlowRemoveSelectNodes::classifyItems(DANodeGraphicsScene* 
     if (its.size() <= 0) {
         return;
     }
+    bool isStartLink = scene->isStartLink();
     for (QGraphicsItem* i : qAsConst(its)) {
         if (DAAbstractNodeGraphicsItem* ni = dynamic_cast< DAAbstractNodeGraphicsItem* >(i)) {
             nodeItems.append(ni);
         } else if (DAAbstractNodeLinkGraphicsItem* li = dynamic_cast< DAAbstractNodeLinkGraphicsItem* >(i)) {
+            if (isStartLink) {
+                if (scene->isLinkingItem(li)) {
+                    //连接线要跳过
+                    scene->cancelLink();
+                    continue;
+                }
+            }
             linkItems.append(li);
         } else {
             normalItem.append(i);

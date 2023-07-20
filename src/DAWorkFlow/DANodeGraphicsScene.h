@@ -39,6 +39,9 @@ public:
     //取消链接
     void cancelLink();
 
+    //判断是否这个item是正在连线的item，正在连线过程，会有一个item，这个item会被暂时加入scene，如果链接线失败，会把这个item删除
+    bool isLinkingItem(DAAbstractNodeLinkGraphicsItem* linkItem) const;
+
     //设置工作流
     void setWorkFlow(DAWorkFlow* wf);
     DAWorkFlow* getWorkflow();
