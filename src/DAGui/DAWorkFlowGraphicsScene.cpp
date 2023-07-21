@@ -26,12 +26,12 @@ using namespace DA;
 //===================================================
 DAWorkFlowGraphicsScene::DAWorkFlowGraphicsScene(QObject* parent)
     : DANodeGraphicsScene(parent)
-    , _backgroundPixmapItem(nullptr)
-    , _mouseAction(NoMouseAction)
-    , _isMouseActionContinuoue(false)
-    , m_enableItemMoveWithBackground(false)
+    , mBackgroundPixmapItem(nullptr)
+    , mMouseAction(NoMouseAction)
+    , mIsMouseActionContinuoue(false)
+    , mEnableItemMoveWithBackground(false)
 {
-    m_textFont = QApplication::font();
+    mTextFont = QApplication::font();
 }
 
 DAWorkFlowGraphicsScene::~DAWorkFlowGraphicsScene()
@@ -48,7 +48,7 @@ DAGraphicsResizeablePixmapItem* DAWorkFlowGraphicsScene::setBackgroundPixmap(con
 {
     DACommandWorkFlowSceneAddBackgroundPixmap* cmd = new DACommandWorkFlowSceneAddBackgroundPixmap(this, pixmap);
     undoStack().push(cmd);
-    return _backgroundPixmapItem;
+    return mBackgroundPixmapItem;
 }
 /**
  * @brief 获取背景图item
@@ -56,7 +56,7 @@ DAGraphicsResizeablePixmapItem* DAWorkFlowGraphicsScene::setBackgroundPixmap(con
  */
 DAGraphicsResizeablePixmapItem* DAWorkFlowGraphicsScene::getBackgroundPixmapItem() const
 {
-    return _backgroundPixmapItem;
+    return mBackgroundPixmapItem;
     //    if (nullptr == _backgroundPixmapItem) {
     //        return nullptr;
     //    }
@@ -92,8 +92,8 @@ DAGraphicsResizeablePixmapItem* DAWorkFlowGraphicsScene::createBackgroundPixmapI
  */
 void DAWorkFlowGraphicsScene::setMouseAction(DAWorkFlowGraphicsScene::MouseActionFlag mf, bool continuous)
 {
-    _mouseAction             = mf;
-    _isMouseActionContinuoue = continuous;
+    mMouseAction             = mf;
+    mIsMouseActionContinuoue = continuous;
 }
 /**
  * @brief 获取当前的鼠标动作标记
@@ -101,7 +101,7 @@ void DAWorkFlowGraphicsScene::setMouseAction(DAWorkFlowGraphicsScene::MouseActio
  */
 DAWorkFlowGraphicsScene::MouseActionFlag DAWorkFlowGraphicsScene::getMouseAction() const
 {
-    return _mouseAction;
+    return mMouseAction;
 }
 /**
  * @brief 鼠标动作是否连续执行
@@ -109,7 +109,7 @@ DAWorkFlowGraphicsScene::MouseActionFlag DAWorkFlowGraphicsScene::getMouseAction
  */
 bool DAWorkFlowGraphicsScene::isMouseActionContinuoue() const
 {
-    return _isMouseActionContinuoue;
+    return mIsMouseActionContinuoue;
 }
 
 /**
@@ -120,21 +120,16 @@ bool DAWorkFlowGraphicsScene::isMouseActionContinuoue() const
 void DAWorkFlowGraphicsScene::setBackgroundPixmapItem(DAGraphicsResizeablePixmapItem* item)
 {
     removeBackgroundPixmapItem();
-    _backgroundPixmapItem = item;
+    mBackgroundPixmapItem = item;
     if (item) {
 #if DA_USE_QGRAPHICSOBJECT
-        connect(_backgroundPixmapItem, &DAGraphicsResizeablePixmapItem::xChanged, this, &DAWorkFlowGraphicsScene::backgroundPixmapItemXChanged);
-        connect(_backgroundPixmapItem, &DAGraphicsResizeablePixmapItem::yChanged, this, &DAWorkFlowGraphicsScene::backgroundPixmapItemYChanged);
-        connect(_backgroundPixmapItem,
-                &DAGraphicsResizeablePixmapItem::itemBodySizeChanged,
-                this,
-                &DAWorkFlowGraphicsScene::backgroundPixmapItemBodyItemBodySizeChanged);
+        connect(mBackgroundPixmapItem, &DAGraphicsResizeablePixmapItem::xChanged, this, &DAWorkFlowGraphicsScene::backgroundPixmapItemXChanged);
+        connect(mBackgroundPixmapItem, &DAGraphicsResizeablePixmapItem::yChanged, this, &DAWorkFlowGraphicsScene::backgroundPixmapItemYChanged);
 #endif
         item->setZValue(-9999);
-        addItem(_backgroundPixmapItem);
+        addItem(mBackgroundPixmapItem);
 #if DA_USE_QGRAPHICSOBJECT
-        _backgroundPixmapItemLastPos = _backgroundPixmapItem->pos();
-        _pixmapResizeLastPos         = _backgroundPixmapItem->pos();
+        mBackgroundPixmapItemLastPos = mBackgroundPixmapItem->pos();
 #endif
     }
 }
@@ -147,19 +142,15 @@ void DAWorkFlowGraphicsScene::setBackgroundPixmapItem(DAGraphicsResizeablePixmap
  */
 DAGraphicsResizeablePixmapItem* DAWorkFlowGraphicsScene::removeBackgroundPixmapItem()
 {
-    if (_backgroundPixmapItem) {
+    if (mBackgroundPixmapItem) {
 #if DA_USE_QGRAPHICSOBJECT
-        disconnect(_backgroundPixmapItem, &DAGraphicsResizeablePixmapItem::xChanged, this, &DAWorkFlowGraphicsScene::backgroundPixmapItemXChanged);
-        disconnect(_backgroundPixmapItem, &DAGraphicsResizeablePixmapItem::yChanged, this, &DAWorkFlowGraphicsScene::backgroundPixmapItemYChanged);
-        disconnect(_backgroundPixmapItem,
-                   &DAGraphicsResizeablePixmapItem::itemBodySizeChanged,
-                   this,
-                   &DAWorkFlowGraphicsScene::backgroundPixmapItemBodyItemBodySizeChanged);
+        disconnect(mBackgroundPixmapItem, &DAGraphicsResizeablePixmapItem::xChanged, this, &DAWorkFlowGraphicsScene::backgroundPixmapItemXChanged);
+        disconnect(mBackgroundPixmapItem, &DAGraphicsResizeablePixmapItem::yChanged, this, &DAWorkFlowGraphicsScene::backgroundPixmapItemYChanged);
 #endif
-        removeItem(_backgroundPixmapItem);
+        removeItem(mBackgroundPixmapItem);
     }
-    DAGraphicsResizeablePixmapItem* oldItem = _backgroundPixmapItem;
-    _backgroundPixmapItem                   = nullptr;
+    DAGraphicsResizeablePixmapItem* oldItem = mBackgroundPixmapItem;
+    mBackgroundPixmapItem                   = nullptr;
     return oldItem;
 }
 
@@ -169,7 +160,7 @@ DAGraphicsResizeablePixmapItem* DAWorkFlowGraphicsScene::removeBackgroundPixmapI
  */
 void DAWorkFlowGraphicsScene::enableItemMoveWithBackground(bool on)
 {
-    m_enableItemMoveWithBackground = on;
+    mEnableItemMoveWithBackground = on;
 }
 
 /**
@@ -178,15 +169,15 @@ void DAWorkFlowGraphicsScene::enableItemMoveWithBackground(bool on)
  */
 bool DAWorkFlowGraphicsScene::isEnableItemMoveWithBackground() const
 {
-    return m_enableItemMoveWithBackground;
+    return mEnableItemMoveWithBackground;
 }
 
 DAGraphicsResizeablePixmapItem* DAWorkFlowGraphicsScene::ensureGetBackgroundPixmapItem()
 {
-    if (nullptr == _backgroundPixmapItem) {
+    if (nullptr == mBackgroundPixmapItem) {
         createBackgroundPixmapItem();
     }
-    return _backgroundPixmapItem;
+    return mBackgroundPixmapItem;
 }
 
 void DAWorkFlowGraphicsScene::dragEnterEvent(QGraphicsSceneDragDropEvent* event)
@@ -225,34 +216,34 @@ void DAWorkFlowGraphicsScene::dropEvent(QGraphicsSceneDragDropEvent* event)
 
 void DAWorkFlowGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
-    if (_mouseAction == NoMouseAction) {
+    if (mMouseAction == NoMouseAction) {
         //说明没有鼠标动作要执行，正常传递鼠标事件
         DANodeGraphicsScene::mousePressEvent(mouseEvent);
         return;
     }
     //说明有鼠标事件要执行
     QPointF pos = mouseEvent->scenePos();
-    switch (_mouseAction) {
+    switch (mMouseAction) {
     case StartAddText: {
         DAStandardGraphicsTextItem* item = createText_();
         item->setPos(pos);
-        item->setFont(m_textFont);
-        item->setDefaultTextColor(m_textColor);
+        item->setFont(mTextFont);
+        item->setDefaultTextColor(mTextColor);
         item->setEditMode(true);
         item->setFocus();
-        emit mouseActionFinished(_mouseAction);
+        emit mouseActionFinished(mMouseAction);
     } break;
     case StartAddRect: {
         DAGraphicsResizeableRectItem* item = createRect_(pos);
         item->setSelected(true);
         item->setZValue(-10);
-        emit mouseActionFinished(_mouseAction);
+        emit mouseActionFinished(mMouseAction);
     }
     default:
         break;
     }
-    if (!_isMouseActionContinuoue) {
-        _mouseAction = NoMouseAction;
+    if (!mIsMouseActionContinuoue) {
+        mMouseAction = NoMouseAction;
     }
     mouseEvent->accept();  //接受事件，通知下面的mousePressEvent函数事件已经接收，无需执行动作
 }
@@ -266,11 +257,11 @@ void DAWorkFlowGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseE
 void DAWorkFlowGraphicsScene::backgroundPixmapItemXChanged()
 {
     if (!isEnableItemMoveWithBackground()) {
-        _backgroundPixmapItemLastPos = _backgroundPixmapItem->pos();
+        mBackgroundPixmapItemLastPos = mBackgroundPixmapItem->pos();
         return;
     }
-    QPointF newPos = _backgroundPixmapItem->pos();
-    QPointF sub(newPos - _backgroundPixmapItemLastPos);
+    QPointF newPos = mBackgroundPixmapItem->pos();
+    QPointF sub(newPos - mBackgroundPixmapItemLastPos);
     //
     QList< QGraphicsItem* > itemsWithoutLink = getGraphicsItemsWithoutLink();
 
@@ -286,17 +277,17 @@ void DAWorkFlowGraphicsScene::backgroundPixmapItemXChanged()
         item->setPos(tempPos);
     }
 
-    _backgroundPixmapItemLastPos = newPos;
+    mBackgroundPixmapItemLastPos = newPos;
 }
 
 void DAWorkFlowGraphicsScene::backgroundPixmapItemYChanged()
 {
     if (!isEnableItemMoveWithBackground()) {
-        _backgroundPixmapItemLastPos = _backgroundPixmapItem->pos();
+        mBackgroundPixmapItemLastPos = mBackgroundPixmapItem->pos();
         return;
     }
-    QPointF newPos = _backgroundPixmapItem->pos();
-    QPointF sub(newPos - _backgroundPixmapItemLastPos);
+    QPointF newPos = mBackgroundPixmapItem->pos();
+    QPointF sub(newPos - mBackgroundPixmapItemLastPos);
     QList< QGraphicsItem* > itemsWithoutLink = getGraphicsItemsWithoutLink();
 
     for (QGraphicsItem* item : qAsConst(itemsWithoutLink)) {
@@ -310,57 +301,26 @@ void DAWorkFlowGraphicsScene::backgroundPixmapItemYChanged()
         QPointF tempPos = sub + item->pos();
         item->setPos(tempPos);
     }
-    _backgroundPixmapItemLastPos = newPos;
-}
-
-void DAWorkFlowGraphicsScene::backgroundPixmapItemBodyItemBodySizeChanged(const QSizeF& oldsize, const QSizeF& newsize)
-{
-    QPointF lastPost = _pixmapResizeLastPos;
-    QPointF newPos   = _backgroundPixmapItem->pos();
-    qDebug() << "oldPos=" << _backgroundPixmapItemLastPos << " newPos=" << newPos;
-    qDebug() << "oldsize=" << oldsize << " newsize=" << newsize;
-
-    //    QList< DAAbstractNodeGraphicsItem* > list = getNodeGraphicsItems();
-    //    for (auto item : qAsConst(list)) {
-    //        QPointF itemPos = item->pos();
-    //        qDebug() << "itemPos=" << itemPos << " lastPost=" << _pixmapResizeLastPos;
-    //        qreal xSub = 0;
-    //        qreal ySub = 0;
-    //        if (lastPost.x() < 0) {
-    //            xSub = itemPos.x() + lastPost.x();
-    //        } else {
-    //            xSub = itemPos.x() - lastPost.x();
-    //        }
-    //        if (lastPost.x() < 0) {
-    //            ySub = itemPos.y() + lastPost.y();
-    //        } else {
-    //            ySub = itemPos.y() - lastPost.y();
-    //        }
-    //        qreal dx = (xSub / oldsize.width()) * newsize.width();
-    //        qreal dy = (ySub / oldsize.height()) * newsize.height();
-    //        item->setPos(QPointF(dx, dy));
-    //    }
-
-    //    _pixmapResizeLastPos = newPos;
+    mBackgroundPixmapItemLastPos = newPos;
 }
 
 QColor DAWorkFlowGraphicsScene::getDefaultTextColor() const
 {
-    return m_textColor;
+    return mTextColor;
 }
 
 void DAWorkFlowGraphicsScene::setDefaultTextColor(const QColor& c)
 {
-    m_textColor = c;
+    mTextColor = c;
 }
 
 QFont DAWorkFlowGraphicsScene::getDefaultTextFont() const
 {
-    return m_textFont;
+    return mTextFont;
 }
 
 void DAWorkFlowGraphicsScene::setDefaultTextFont(const QFont& f)
 {
-    m_textFont = f;
+    mTextFont = f;
 }
 #endif

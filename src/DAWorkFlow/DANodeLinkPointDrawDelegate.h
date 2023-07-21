@@ -10,6 +10,8 @@ class DAAbstractNodeGraphicsItem;
  * @brief linkpoint的绘制代理
  *
  * 想要实现自己的连接点可以重载此代理
+ *
+ * @sa DAAbstractNodeGraphicsItem::setLinkPointDrawDelegate
  */
 class DAWORKFLOW_API DANodeLinkPointDrawDelegate
 {

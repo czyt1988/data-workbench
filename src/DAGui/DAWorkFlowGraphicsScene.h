@@ -79,17 +79,15 @@ private slots:
 #if DA_USE_QGRAPHICSOBJECT
     void backgroundPixmapItemXChanged();
     void backgroundPixmapItemYChanged();
-    void backgroundPixmapItemBodyItemBodySizeChanged(const QSizeF& oldsize, const QSizeF& newsize);
 #endif
 private:
-    DAGraphicsResizeablePixmapItem* _backgroundPixmapItem;
-    MouseActionFlag _mouseAction;          ///< 鼠标动作
-    bool _isMouseActionContinuoue;         ///<鼠标动作是否连续执行
-    bool m_enableItemMoveWithBackground;   ///< 允许item跟随背景图移动
-    QColor m_textColor;                    ///< 文本的颜色
-    QFont m_textFont;                      ///<文本的字体
-    QPointF _backgroundPixmapItemLastPos;  //背景图移动前的坐标
-    QPointF _pixmapResizeLastPos;          //背景图拖动缩放前的坐标
+    DAGraphicsResizeablePixmapItem* mBackgroundPixmapItem;
+    MouseActionFlag mMouseAction;          ///< 鼠标动作
+    bool mIsMouseActionContinuoue;         ///< 鼠标动作是否连续执行
+    bool mEnableItemMoveWithBackground;    ///< 允许item跟随背景图移动
+    QColor mTextColor;                     ///< 文本的颜色
+    QFont mTextFont;                       ///< 文本的字体
+    QPointF mBackgroundPixmapItemLastPos;  ///< 背景图移动前的坐标
 };
 }  // end of namespace DA
 #endif  // GGRAPHICSSCENE_H

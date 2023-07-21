@@ -48,6 +48,9 @@ public:
     Qt::AspectRatioMode getAspectRatioMode() const;
     //判断是否存在有效图片
     bool isHaveValidPixmap() const;
+    //设置透明度
+    void setAlpha(int a);
+    int getAlpha() const;
     //接口函数
     virtual void setBodySize(const QSizeF& s) override;
     //保存到xml中

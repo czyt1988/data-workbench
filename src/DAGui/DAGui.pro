@@ -68,6 +68,7 @@ HEADERS += \
     DADataOperatePageWidget.h \
     DADataframeToVectorPointWidget.h \
     DAFigureFactory.h \
+    DAGraphicsPixmapItemSettingWidget.h \
     DAGuiAPI.h \
     DAChartListView.h \
     DAChartManageWidget.h \
@@ -109,6 +110,7 @@ SOURCES += \
     DADataOperateOfDataFrameWidget.cpp \
     DADataframeToVectorPointWidget.cpp \
     DAFigureFactory.cpp \
+    DAGraphicsPixmapItemSettingWidget.cpp \
     DAMessageLogViewWidget.cpp \
     DANodeItemSettingWidget.cpp \
     DANodeLinkItemSettingWidget.cpp \
@@ -134,6 +136,7 @@ FORMS += \
     DADataOperateOfDataFrameWidget.ui \
     DADataOperateWidget.ui \
     DADataframeToVectorPointWidget.ui \
+    DAGraphicsPixmapItemSettingWidget.ui \
     DAMessageLogViewWidget.ui \
     DANodeItemSettingWidget.ui \
     DANodeLinkItemSettingWidget.ui \

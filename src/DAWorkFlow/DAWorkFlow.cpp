@@ -92,7 +92,7 @@ void DAWorkFlow::registFactory(DAAbstractNodeFactory* factory)
     QList< DANodeMetaData > mds = factory->getNodesMetaData();
 
     for (const DANodeMetaData& m : qAsConst(mds)) {
-        qDebug() << "registFactory m=" << m.getNodePrototype();
+        // qDebug() << "registFactory m=" << m.getNodePrototype();
         d_ptr->mMetaToFactory[ m ] = factory;
     }
     d_ptr->mFactorys[ factory->factoryPrototypes() ] = factory;

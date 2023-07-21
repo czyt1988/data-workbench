@@ -3,8 +3,10 @@
 #include "DAAbstractNode.h"
 #include "DAAbstractNodeGraphicsItem.h"
 #include "DAWorkFlowOperateWidget.h"
+#include "DAGraphicsPixmapItemSettingWidget.h"
 #include "DAStandardGraphicsTextItem.h"
 #include "DAWorkFlowEditWidget.h"
+#include "DAGraphicsResizeablePixmapItem.h"
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
 //===================================================
@@ -29,6 +31,10 @@ DAWorkFlowNodeItemSettingWidget::~DAWorkFlowNodeItemSettingWidget()
 void DAWorkFlowNodeItemSettingWidget::init()
 {
     connect(ui->tabWidget, &QTabWidget::currentChanged, this, &DAWorkFlowNodeItemSettingWidget::onTabBarCurrentIndexChanged);
+    connect(ui->tabPictureItemSetting,
+            &DAGraphicsPixmapItemSettingWidget::pixmapAlphaValueChanged,
+            this,
+            &DAWorkFlowNodeItemSettingWidget::onPixmapItemAlphaChanged);
 }
 
 void DAWorkFlowNodeItemSettingWidget::bindWorkFlowEditWidget(DAWorkFlowEditWidget* w)
@@ -113,6 +119,14 @@ void DAWorkFlowNodeItemSettingWidget::setLinkSettingEnable(bool on)
 {
     ui->tabWidget->setTabEnabled(ui->tabWidget->indexOf(ui->tabLinkSetting), on);
 }
+/**
+ * @brief 设置PixmapItem设置可用
+ * @param on
+ */
+void DAWorkFlowNodeItemSettingWidget::setPixmapItemSettingEnable(bool on)
+{
+    ui->tabWidget->setTabEnabled(ui->tabWidget->indexOf(ui->tabPictureItemSetting), on);
+}
 
 DAWorkFlowGraphicsScene* DAWorkFlowNodeItemSettingWidget::getCurrentScene() const
 {
@@ -138,6 +152,7 @@ void DAWorkFlowNodeItemSettingWidget::onSceneSelectionChanged()
         setLinkSettingEnable(false);
         setNodeSettingEnable(false);
         setItemSettingEnable(false);
+        setPixmapItemSettingEnable(false);
         return;
     }
     QGraphicsItem* item = its.last();
@@ -148,6 +163,7 @@ void DAWorkFlowNodeItemSettingWidget::onSceneSelectionChanged()
         setLinkSettingEnable(false);
         setNodeSettingEnable(true);
         setItemSettingEnable(true);
+        setPixmapItemSettingEnable(false);
         ui->tabNodeSetting->setNode(nodeItem->node());
         ui->tabItemSetting->setItem(nodeItem);
         ui->tabLinkSetting->setLinkItem(nullptr);
@@ -156,14 +172,23 @@ void DAWorkFlowNodeItemSettingWidget::onSceneSelectionChanged()
         setLinkSettingEnable(true);
         setNodeSettingEnable(false);
         setItemSettingEnable(false);
+        setPixmapItemSettingEnable(false);
         ui->tabNodeSetting->setNode(nullptr);
         ui->tabItemSetting->setItem(nullptr);
         ui->tabLinkSetting->setLinkItem(linkItem);
     } else {
         //说明是其他item
+        setLinkSettingEnable(false);
+        setNodeSettingEnable(false);
+        setItemSettingEnable(true);
         ui->tabNodeSetting->setNode(nullptr);
         ui->tabItemSetting->setItem(nullptr);
         ui->tabLinkSetting->setLinkItem(nullptr);
+        if (DAGraphicsResizeablePixmapItem* pitem = dynamic_cast< DAGraphicsResizeablePixmapItem* >(item)) {
+            setPixmapItemSettingEnable(true);
+        } else {
+            setPixmapItemSettingEnable(false);
+        }
     }
     //把最后用户点击的页面记录下来并显示
     if (_lastTabIndex >= 0 && _lastTabIndex < ui->tabWidget->count()) {
@@ -229,4 +254,21 @@ void DAWorkFlowNodeItemSettingWidget::onWorkFlowEditWidgetChanged(DAWorkFlowEdit
     if (w) {
         bindWorkFlowEditWidget(w);
     }
+}
+
+/**
+ * @brief 图片元素的透明度 改变
+ * @param v
+ */
+void DAWorkFlowNodeItemSettingWidget::onPixmapItemAlphaChanged(int v)
+{
+    DAWorkFlowGraphicsScene* scene = getCurrentScene();
+    if (nullptr == scene) {
+        return;
+    }
+    DAGraphicsResizeablePixmapItem* pixmapItem = scene->getBackgroundPixmapItem();
+    if (nullptr == pixmapItem) {
+        return;
+    }
+    pixmapItem->setAlpha(v);
 }

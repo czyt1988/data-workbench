@@ -41,7 +41,7 @@ public:
     {
         Type = DA::ItemType_GraphicsNodeItem
     };
-    int type() const
+    int type() const override
     {
         return (Type);
     }

@@ -161,6 +161,7 @@ void DAAppActions::buildWorkflowAction()
     actionWorkflowZoomIn    = createAction("actionZoomIn", ":/Icon/Icon/zoomIn.svg");
     actionWorkflowZoomOut   = createAction("actionZoomOut", ":/Icon/Icon/zoomOut.svg");
     actionWorkflowRun       = createAction("actionRunWorkflow", ":/Icon/Icon/run.svg");
+    actionWorkflowTerminate = createAction("actionWorkflowTerminate", ":/Icon/Icon/stop.svg");
 }
 
 void DAAppActions::retranslateUi()
@@ -221,14 +222,15 @@ void DAAppActions::retranslateUi()
     actionCreateDataDescribe->setText(tr("Data Describe"));         // cn:数据描述
     actionChangeToIndex->setText(tr("To Index"));                   // cn:转换为\n索引
     // workflow 编辑
-    actionWorkflowNew->setText(tr("New \nWorkflow"));         // cn:新建\n工作流
-    actionWorkflowStartDrawRect->setText(tr("Draw \nRect"));  // cn:绘制\n矩形
-    actionWorkflowStartDrawText->setText(tr("Draw \nText"));  // cn:绘制\n文本
-    actionWorkflowShowGrid->setText(tr("Show \nGrid"));       // cn:显示\n网格
-    actionWorkflowWholeView->setText(tr("Whole \nView"));     // cn:全部\n可见
-    actionWorkflowZoomOut->setText(tr("Zoom Out"));           // cn:缩小
-    actionWorkflowZoomIn->setText(tr("Zoom In"));             // cn:放大
-    actionWorkflowRun->setText(tr("Run \nWorkflow"));         // cn:运行\n工作流
+    actionWorkflowNew->setText(tr("New \nWorkflow"));              // cn:新建\n工作流
+    actionWorkflowStartDrawRect->setText(tr("Draw \nRect"));       // cn:绘制\n矩形
+    actionWorkflowStartDrawText->setText(tr("Draw \nText"));       // cn:绘制\n文本
+    actionWorkflowShowGrid->setText(tr("Show \nGrid"));            // cn:显示\n网格
+    actionWorkflowWholeView->setText(tr("Whole \nView"));          // cn:全部\n可见
+    actionWorkflowZoomOut->setText(tr("Zoom Out"));                // cn:缩小
+    actionWorkflowZoomIn->setText(tr("Zoom In"));                  // cn:放大
+    actionWorkflowRun->setText(tr("Run \nWorkflow"));              // cn:运行\n工作流
+    actionWorkflowTerminate->setText(tr("Terminate \nWorkflow"));  // cn:停止\n工作流
 
     actionWorkflowAddBackgroundPixmap->setText(tr("Add \nBackground"));               // cn:添加\n背景
     actionWorkflowLockBackgroundPixmap->setText(tr("Lock Background"));               // cn:锁定背景

@@ -19,10 +19,15 @@ public:
     QString pixmapToString(const QPixmap& pixmap);
     //字符串转换为pixmap
     QPixmap stringToPixmap(const QString& base64);
+    //判断是否存在透明度
+    bool isValidAlpha() const;
+    //获取0~1的透明度
+    qreal getOpacity() const;
 
 public:
     QPixmap mPixmap;        ///< 设置尺寸后的图形
     QPixmap mPixmapOrigin;  ///< 保存原始的图形
+    int mAlpha { 255 };     ///< 用于叠加透明度
     Qt::TransformationMode mTransformationMode { Qt::FastTransformation };
     Qt::AspectRatioMode mAspectRatioMode { Qt::IgnoreAspectRatio };
 };
@@ -49,6 +54,26 @@ QPixmap DAGraphicsResizeablePixmapItem::PrivateData::stringToPixmap(const QStrin
     //从数据载入图像
     pixmap.loadFromData(imgData);
     return pixmap;
+}
+
+/**
+ * @brief 判断透明度是否存在
+ *
+ * @note 255表示没有透明度
+ * @return
+ */
+bool DAGraphicsResizeablePixmapItem::PrivateData::isValidAlpha() const
+{
+    return (mAlpha >= 0) && (mAlpha < 255);
+}
+
+/**
+ * @brief 获取0~1的透明度
+ * @return
+ */
+qreal DAGraphicsResizeablePixmapItem::PrivateData::getOpacity() const
+{
+    return mAlpha / 255.0;
 }
 
 //===================================================
@@ -158,6 +183,21 @@ bool DAGraphicsResizeablePixmapItem::isHaveValidPixmap() const
     return (!d_ptr->mPixmapOrigin.isNull());
 }
 
+/**
+ * @brief 设置透明度
+ * @param a
+ */
+void DAGraphicsResizeablePixmapItem::setAlpha(int a)
+{
+    d_ptr->mAlpha = a;
+    update();
+}
+
+int DAGraphicsResizeablePixmapItem::getAlpha() const
+{
+    return d_ptr->mAlpha;
+}
+
 void DAGraphicsResizeablePixmapItem::setBodySize(const QSizeF& s)
 {
     //设置尺寸
@@ -179,10 +219,9 @@ bool DAGraphicsResizeablePixmapItem::saveToXml(QDomDocument* doc, QDomElement* p
         return false;
     }
     QDomElement pixmapEle = doc->createElement("pixmap-info");
-    QSizeF sz             = getBodySize();
     pixmapEle.setAttribute("aspectRatioMode", enumToString(getAspectRatioMode()));
     pixmapEle.setAttribute("transformationMode", enumToString(getTransformationMode()));
-
+    pixmapEle.setAttribute("alpha", getAlpha());
     QDomElement rawEle   = doc->createElement("raw");
     QString pixmapBase64 = d_ptr->pixmapToString(d_ptr->mPixmapOrigin);
     rawEle.appendChild(doc->createTextNode(pixmapBase64));
@@ -204,9 +243,17 @@ bool DAGraphicsResizeablePixmapItem::loadFromXml(const QDomElement* itemElement)
         qDebug() << "DAGraphicsResizeablePixmapItem::loadFromXml loss <pixmap-info>";
         return false;
     }
+
     Qt::TransformationMode tm = stringToEnum(pixmapInfoEle.attribute("transformationMode"), Qt::FastTransformation);
     Qt::AspectRatioMode ar    = stringToEnum(pixmapInfoEle.attribute("aspectRatioMode"), Qt::IgnoreAspectRatio);
-    QDomElement rawEle        = pixmapInfoEle.firstChildElement("raw");
+    bool isok                 = false;
+    int alpha                 = pixmapInfoEle.attribute("alpha", "255").toInt(&isok);
+    if (isok) {
+        setAlpha(alpha);
+    } else {
+        setAlpha(255);
+    }
+    QDomElement rawEle = pixmapInfoEle.firstChildElement("raw");
     if (rawEle.isNull()) {
         qDebug() << "DAGraphicsResizeablePixmapItem::loadFromXml,loss <raw>";
         return false;
@@ -227,9 +274,14 @@ void DAGraphicsResizeablePixmapItem::paintBody(QPainter* painter, const QStyleOp
 {
     Q_UNUSED(widget);
     Q_UNUSED(option);
+    painter->save();
+    if (d_ptr->isValidAlpha()) {
+        //说明要有透明度
+        painter->setOpacity(d_ptr->getOpacity());
+    }
     painter->setRenderHint(QPainter::SmoothPixmapTransform, (d_ptr->mTransformationMode == Qt::SmoothTransformation));
-
     painter->drawPixmap(bodyRect.topLeft(), d_ptr->mPixmap);
+    painter->restore();
 }
 
 }

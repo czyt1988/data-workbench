@@ -78,6 +78,7 @@ public:
     QAction* actionWorkflowZoomIn;                        ///< 放大
     QAction* actionWorkflowZoomOut;                       ///< 缩小
     QAction* actionWorkflowRun;                           ///< 运行工作流
+    QAction* actionWorkflowTerminate;                     ///< 停止工作流
     QAction* actionWorkflowAddBackgroundPixmap;           ///< 添加背景图
     QAction* actionWorkflowLockBackgroundPixmap;          ///< 锁定背景图
     QAction* actionWorkflowEnableItemMoveWithBackground;  ///< 背景图跟随元件移动

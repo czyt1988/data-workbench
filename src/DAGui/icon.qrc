@@ -24,6 +24,7 @@
         <file>icon/insertColumnRight.svg</file>
         <file>icon/renameColumns.svg</file>
         <file>icon/setting-common.svg</file>
+        <file>icon/picture.svg</file>
     </qresource>
     <qresource prefix="/messageType">
         <file>icon/messageType/messageTypeDebug.svg</file>

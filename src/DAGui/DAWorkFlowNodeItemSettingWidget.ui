@@ -35,7 +35,10 @@
       <enum>QTabWidget::West</enum>
      </property>
      <property name="currentIndex">
-      <number>2</number>
+      <number>3</number>
+     </property>
+     <property name="documentMode">
+      <bool>false</bool>
      </property>
      <widget class="DA::DANodeSettingWidget" name="tabNodeSetting">
       <attribute name="icon">
@@ -64,6 +67,15 @@
        <string>Link</string>
       </attribute>
      </widget>
+     <widget class="DA::DAGraphicsPixmapItemSettingWidget" name="tabPictureItemSetting">
+      <attribute name="icon">
+       <iconset resource="icon.qrc">
+        <normaloff>:/icon/icon/picture.svg</normaloff>:/icon/icon/picture.svg</iconset>
+      </attribute>
+      <attribute name="title">
+       <string>Picture</string>
+      </attribute>
+     </widget>
     </widget>
    </item>
   </layout>
@@ -85,6 +97,12 @@
    <class>DA::DANodeLinkItemSettingWidget</class>
    <extends>QWidget</extends>
    <header>DANodeLinkItemSettingWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DA::DAGraphicsPixmapItemSettingWidget</class>
+   <extends>QWidget</extends>
+   <header>DAGraphicsPixmapItemSettingWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

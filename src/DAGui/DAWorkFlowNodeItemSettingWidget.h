@@ -41,6 +41,8 @@ public:
     void setItemSettingEnable(bool on = true);
     //设置link设置可用
     void setLinkSettingEnable(bool on = true);
+    //设置pixmap设置可用
+    void setPixmapItemSettingEnable(bool on = true);
     //获取当前的scene
     DAWorkFlowGraphicsScene* getCurrentScene() const;
 private slots:
@@ -56,6 +58,9 @@ private slots:
     void onTabBarCurrentIndexChanged(int index);
     //编辑窗口发生变更
     void onWorkFlowEditWidgetChanged(DAWorkFlowEditWidget* w);
+private slots:
+    //图片的透明度改变槽
+    void onPixmapItemAlphaChanged(int v);
 
 private:
     void init();
