@@ -1,4 +1,4 @@
-#include "DAWorkFlowNodeItemSettingWidget.h"
+﻿#include "DAWorkFlowNodeItemSettingWidget.h"
 #include "ui_DAWorkFlowNodeItemSettingWidget.h"
 #include "DAAbstractNode.h"
 #include "DAAbstractNodeGraphicsItem.h"
@@ -186,6 +186,7 @@ void DAWorkFlowNodeItemSettingWidget::onSceneSelectionChanged()
         ui->tabLinkSetting->setLinkItem(nullptr);
         if (DAGraphicsResizeablePixmapItem* pitem = dynamic_cast< DAGraphicsResizeablePixmapItem* >(item)) {
             setPixmapItemSettingEnable(true);
+            updatePixmapItemSettingWidget(pitem);
         } else {
             setPixmapItemSettingEnable(false);
         }
@@ -271,4 +272,13 @@ void DAWorkFlowNodeItemSettingWidget::onPixmapItemAlphaChanged(int v)
         return;
     }
     pixmapItem->setAlpha(v);
+}
+
+/**
+ * @brief 更新PixmapItemSettingWidget
+ * @param pitem
+ */
+void DAWorkFlowNodeItemSettingWidget::updatePixmapItemSettingWidget(DAGraphicsResizeablePixmapItem* pitem)
+{
+    ui->tabPictureItemSetting->setCurrentAlphaValue(pitem->getAlpha());
 }

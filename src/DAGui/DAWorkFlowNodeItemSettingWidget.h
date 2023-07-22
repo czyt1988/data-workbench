@@ -17,6 +17,7 @@ namespace DA
 {
 class DAWorkFlowEditWidget;
 class DAWorkFlowOperateWidget;
+class DAGraphicsResizeablePixmapItem;
 /**
  * @brief 节点设置窗口
  */
@@ -61,6 +62,10 @@ private slots:
 private slots:
     //图片的透明度改变槽
     void onPixmapItemAlphaChanged(int v);
+
+private:
+    //更新PixmapItemSettingWidget
+    void updatePixmapItemSettingWidget(DAGraphicsResizeablePixmapItem* pitem);
 
 private:
     void init();

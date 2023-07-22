@@ -364,6 +364,7 @@ void DAAppController::initConnection()
     // workflow edit 工作流编辑
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowNew, onActionNewWorkflowTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowRun, onActionRunCurrentWorkflowTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowTerminate, onActionTerminateCurrentWorkflowTriggered);
     // workflow edit 工作流编辑/data edit 绘图编辑
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowStartDrawRect, onActionStartDrawRectTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowStartDrawText, onActionStartDrawTextTriggered);
@@ -752,7 +753,7 @@ void DAAppController::onActionEnableItemMoveWithBackgroundTriggered(bool on)
 
 void DAAppController::onActionRunCurrentWorkflowTriggered()
 {
-    qDebug() << "onActionRunTriggered";
+    qDebug() << "onActionRunCurrentWorkflowTriggered";
     //先检查是否有工程
     DAAppProject* p = DA_APP_CORE.getAppProject();
     if (nullptr == p) {
@@ -768,6 +769,15 @@ void DAAppController::onActionRunCurrentWorkflowTriggered()
         return;
     }
     mDock->getWorkFlowOperateWidget()->runCurrentWorkFlow();
+}
+
+/**
+ * @brief 终止当前的工作流
+ */
+void DAAppController::onActionTerminateCurrentWorkflowTriggered()
+{
+    qDebug() << "onActionTerminateCurrentWorkflowTriggered";
+    mDock->getWorkFlowOperateWidget()->terminateCurrentWorkFlow();
 }
 
 void DAAppController::onCurrentWorkflowFontChanged(const QFont& f)
@@ -812,6 +822,7 @@ void DAAppController::onWorkflowStartExecute(DAWorkFlowEditWidget* wfw)
 {
     Q_UNUSED(wfw);
     mActions->actionWorkflowRun->setEnabled(false);
+    mActions->actionWorkflowTerminate->setEnabled(true);
 }
 
 /**
@@ -822,6 +833,7 @@ void DAAppController::onWorkflowStartExecute(DAWorkFlowEditWidget* wfw)
 void DAAppController::onWorkflowFinished(DAWorkFlowEditWidget* wfw, bool success)
 {
     mActions->actionWorkflowRun->setEnabled(true);
+    mActions->actionWorkflowTerminate->setEnabled(false);
 }
 
 /**

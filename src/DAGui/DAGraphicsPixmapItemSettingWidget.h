@@ -1,4 +1,4 @@
-#ifndef DAGRAPHICSPIXMAPITEMSETTINGWIDGET_H
+﻿#ifndef DAGRAPHICSPIXMAPITEMSETTINGWIDGET_H
 #define DAGRAPHICSPIXMAPITEMSETTINGWIDGET_H
 
 #include <QWidget>
@@ -18,6 +18,9 @@ class DAGraphicsPixmapItemSettingWidget : public QWidget
 public:
     explicit DAGraphicsPixmapItemSettingWidget(QWidget* parent = nullptr);
     ~DAGraphicsPixmapItemSettingWidget();
+    //设置当前的alpha值,注意这个函数不会发射信号
+    void setCurrentAlphaValue(int v);
+    int getCurrentAlphaValue() const;
 signals:
     /**
      * @brief 图片的透明度改变信号

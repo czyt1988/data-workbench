@@ -21,6 +21,7 @@ public:
     void transmit(const QList< DAAbstractNode::LinkInfo >& outInfo);
 
 public:
+    bool mIsTerminateRequest { false };  ///<请求终止
     QPointer< DAWorkFlow > mWorkflow;
     DAAbstractNode::SharedPointer mStartNode;
     QList< DAWorkFlow::CallbackPrepareStartExecute > mCallbackStart;
@@ -53,6 +54,8 @@ DAWorkFlowExecuter::PrivateData::PrivateData(DAWorkFlowExecuter* p) : q_ptr(p)
  */
 void DAWorkFlowExecuter::PrivateData::prepareStartExec()
 {
+    //请求终止标记为false
+    mIsTerminateRequest = false;
     //清空记录
     clear();
     //查找孤立节点和0入度节点
@@ -188,6 +191,15 @@ QList< DAAbstractNode::SharedPointer > DAWorkFlowExecuter::getIsolatedNodesNodes
 }
 
 /**
+ * @brief 判断是否在请求结束
+ * @return
+ */
+bool DAWorkFlowExecuter::isTerminateRequest() const
+{
+    return d_ptr->mIsTerminateRequest;
+}
+
+/**
  * @brief 开始执行节点运算
  *
  * 此函数有DAWorkFlow的exec函数触发
@@ -197,6 +209,10 @@ void DAWorkFlowExecuter::startExecute()
 {
     //! 首先执行注册的prepareStartexec回调
     for (DAWorkFlow::CallbackPrepareStartExecute& fn : d_ptr->mCallbackStart) {
+        if (isTerminateRequest()) {
+            emit finished(false);
+            return;
+        }
         if (!fn(this)) {
             emit finished(false);
             return;
@@ -207,18 +223,34 @@ void DAWorkFlowExecuter::startExecute()
     if (d_ptr->mStartNode) {
         //如果指定了开始节点，就从开始节点开始执行
         executeNode(d_ptr->mStartNode);
+        if (isTerminateRequest()) {
+            emit finished(false);
+            return;
+        }
     } else {
         //否则自动查找节点开始执行
         //执行全局节点，全局节点只执行不传递，也就是说执行节点后，节点的连线并不会执行
         for (const DAAbstractNode::SharedPointer& n : qAsConst(d_ptr->mGlobalNodes)) {
+            if (isTerminateRequest()) {
+                emit finished(false);
+                return;
+            }
             executeNodeNotTransmit(n);
         }
         //开始执行孤立节点
         for (const DAAbstractNode::SharedPointer& n : qAsConst(d_ptr->mIsolatedNodes)) {
+            if (isTerminateRequest()) {
+                emit finished(false);
+                return;
+            }
             executeNode(n);
         }
         //开始执行开始节点
         for (const DAAbstractNode::SharedPointer& n : qAsConst(d_ptr->mBeginNodes)) {
+            if (isTerminateRequest()) {
+                emit finished(false);
+                return;
+            }
             if (!d_ptr->mGlobalNodes.contains(n)) {
                 //如果开始节点并不是全局节点，正常执行
                 executeNode(n);
@@ -231,6 +263,10 @@ void DAWorkFlowExecuter::startExecute()
 
     //! 最后执行注册的prepareEndexec回调
     for (DAWorkFlow::CallbackPrepareEndExecute& fn : d_ptr->mCallbackEnd) {
+        if (isTerminateRequest()) {
+            emit finished(false);
+            return;
+        }
         if (fn) {
             if (!fn(this)) {
                 emit finished(false);
@@ -240,6 +276,13 @@ void DAWorkFlowExecuter::startExecute()
     }
 
     emit finished(true);
+}
+
+/**
+ * @brief 终止请求
+ */
+void DAWorkFlowExecuter::terminateRequest()
+{
 }
 
 /**

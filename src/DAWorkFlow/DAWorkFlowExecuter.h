@@ -24,9 +24,13 @@ public:
     QList< DAAbstractNode::SharedPointer > getGlobalNodes() const;
     //获取孤立节点
     QList< DAAbstractNode::SharedPointer > getIsolatedNodesNodes() const;
+    //判断是否在请求结束
+    bool isTerminateRequest() const;
 public slots:
     //开始执行
     void startExecute();
+    //请求终止
+    void terminateRequest();
     //单独执行某个节点
     void executeNode(DAAbstractNode::SharedPointer n);
 private slots:

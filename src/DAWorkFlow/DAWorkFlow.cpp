@@ -57,6 +57,7 @@ void DAWorkFlow::PrivateData::createExecuter()
     QObject::connect(mExecuterThread, &QThread::finished, mExecuterThread, &QObject::deleteLater);
     //
     QObject::connect(q_ptr, &DAWorkFlow::startExecute, mExecuter, &DA::DAWorkFlowExecuter::startExecute);
+    QObject::connect(q_ptr, &DAWorkFlow::terminateExecute, mExecuter, &DA::DAWorkFlowExecuter::terminateRequest);
     QObject::connect(mExecuter, &DA::DAWorkFlowExecuter::nodeExecuteFinished, q_ptr, &DAWorkFlow::nodeExecuteFinished);
     QObject::connect(mExecuter, &DA::DAWorkFlowExecuter::finished, q_ptr, &DAWorkFlow::onExecuteFinished);
     //结束后，线程也结束
@@ -373,6 +374,16 @@ void DAWorkFlow::exec()
     d_ptr->mIsExecuting = true;
     qDebug() << tr("workflow start run");
     emit startExecute();
+}
+
+/**
+ * @brief 终止
+ */
+void DAWorkFlow::terminate()
+{
+    if (isRunning()) {
+        emit terminateExecute();
+    }
 }
 
 /**

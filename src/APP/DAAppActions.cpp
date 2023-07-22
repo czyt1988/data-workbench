@@ -162,6 +162,7 @@ void DAAppActions::buildWorkflowAction()
     actionWorkflowZoomOut   = createAction("actionZoomOut", ":/Icon/Icon/zoomOut.svg");
     actionWorkflowRun       = createAction("actionRunWorkflow", ":/Icon/Icon/run.svg");
     actionWorkflowTerminate = createAction("actionWorkflowTerminate", ":/Icon/Icon/stop.svg");
+    actionWorkflowTerminate->setEnabled(false);
 }
 
 void DAAppActions::retranslateUi()

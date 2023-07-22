@@ -98,6 +98,8 @@ public slots:
     void setCurrentWorkflowZoomOut();
     //运行工作流
     void runCurrentWorkFlow();
+    //终止工作流
+    void terminateCurrentWorkFlow();
 signals:
 
     /**

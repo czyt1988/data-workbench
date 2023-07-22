@@ -1,4 +1,4 @@
-#include "DAGraphicsPixmapItemSettingWidget.h"
+﻿#include "DAGraphicsPixmapItemSettingWidget.h"
 #include "ui_DAGraphicsPixmapItemSettingWidget.h"
 #include <QSignalBlocker>
 namespace DA
@@ -14,6 +14,25 @@ DAGraphicsPixmapItemSettingWidget::DAGraphicsPixmapItemSettingWidget(QWidget* pa
 DAGraphicsPixmapItemSettingWidget::~DAGraphicsPixmapItemSettingWidget()
 {
     delete ui;
+}
+
+/**
+ * @brief 设置当前透明度的值
+ * @param v
+ */
+void DAGraphicsPixmapItemSettingWidget::setCurrentAlphaValue(int v)
+{
+    QSignalBlocker b1(ui->spinBoxAlpha);
+    QSignalBlocker b2(ui->horizontalSliderAlpha);
+    Q_UNUSED(b1);
+    Q_UNUSED(b2);
+    ui->spinBoxAlpha->setValue(v);
+    ui->horizontalSliderAlpha->setValue(v);
+}
+
+int DAGraphicsPixmapItemSettingWidget::getCurrentAlphaValue() const
+{
+    return ui->spinBoxAlpha->value();
 }
 
 void DAGraphicsPixmapItemSettingWidget::onHorizontalSliderAlphaValueChanged(int v)

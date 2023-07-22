@@ -66,8 +66,6 @@ public:
     void setStartNode(DAAbstractNode::SharedPointer p);
     //获取开始执行的节点
     DAAbstractNode::SharedPointer getStartNode() const;
-    //运行工作流
-    void exec();
     //判断工作量是否再运行
     bool isRunning() const;
     //工作流中节点的数量
@@ -84,6 +82,11 @@ public:
     QList< CallbackPrepareStartExecute > getStartWorkflowCallback() const;
     //获取所有注册的结束回调
     QList< CallbackPrepareEndExecute > getEndWorkflowCallback() const;
+public slots:
+    //运行工作流
+    void exec();
+    //终止
+    void terminate();
 
 protected:
     //主动触发nodeNameChanged信号
@@ -116,6 +119,11 @@ signals:
      * @brief 开始执行，exec函数调用后会触发此信号
      */
     void startExecute();
+
+    /**
+     * @brief 开始停止工作流
+     */
+    void terminateExecute();
     /**
      * @brief 执行到某个节点发射的信号
      * @param n

@@ -239,6 +239,8 @@ private slots:
     void onActionStartDrawTextTriggered(bool on);
     //运行
     void onActionRunCurrentWorkflowTriggered();
+    //终止
+    void onActionTerminateCurrentWorkflowTriggered();
     //当前工作流的字体变更
     void onCurrentWorkflowFontChanged(const QFont& f);
     void onCurrentWorkflowFontColorChanged(const QColor& c);

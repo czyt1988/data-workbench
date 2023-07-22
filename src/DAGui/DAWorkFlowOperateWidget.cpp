@@ -440,6 +440,24 @@ void DAWorkFlowOperateWidget::runCurrentWorkFlow()
 }
 
 /**
+ * @brief 终止当前工作流
+ */
+void DAWorkFlowOperateWidget::terminateCurrentWorkFlow()
+{
+    DAWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
+    if (nullptr == w) {
+        qWarning() << tr("No active workflow detected");  //未检测到激活的工作流
+        return;
+    }
+    DAWorkFlow* wf = w->getWorkflow();
+    if (nullptr == wf) {
+        qCritical() << tr("Unable to get workflow correctly");  //无法正确获取工作流
+        return;
+    }
+    wf->terminate();
+}
+
+/**
  * @brief 文本字体
  * @param c
  */

@@ -445,6 +445,7 @@ void DAAppRibbonArea::buildContextCategoryWorkflowEdit()
     m_pannelWorkflowRun = m_categoryWorkflowGraphicsEdit->addPannel(tr("Run"));
     m_pannelWorkflowRun->setObjectName(QStringLiteral("da-pannel-context.workflow.run"));
     m_pannelWorkflowRun->addLargeAction(m_actions->actionWorkflowRun);
+    m_pannelWorkflowRun->addLargeAction(m_actions->actionWorkflowTerminate);
     ribbonBar()->showContextCategory(m_contextWorkflow);
 }
 
