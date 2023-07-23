@@ -1,5 +1,4 @@
 ﻿#include "DASettingContainerWidget.h"
-#include "ui_DASettingContainerWidget.h"
 #include "DAWorkFlowNodeItemSettingWidget.h"
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
