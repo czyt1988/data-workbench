@@ -22,6 +22,7 @@ class DAAppController;
 class DAAppConfig;
 class DAConfigsManager;
 class DAAppSettingDialog;
+class DAAppRibbonApplicationMenu;
 class AppMainWindow : public SARibbonMainWindow
 {
     Q_OBJECT
@@ -54,6 +55,8 @@ private:
     //初始化设置
     void initConfig();
 
+    //创建ribbon app menu
+    void createApplicationMenu();
 private slots:
     //
     void onWorkflowFinished(bool success);
@@ -67,6 +70,7 @@ private:
     DAAppController* mController { nullptr };
     std::unique_ptr< DAAppConfig > mConfig;
     DAAppSettingDialog* mSettingDialog { nullptr };  ///< 设置窗口,避免过多的中间传递
+    DAAppRibbonApplicationMenu* mApplicationMenu;    ///< ribbon-app menu
 };
 }  // namespace DA
 #endif  // METHODMAINWINDOW_H

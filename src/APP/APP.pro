@@ -36,6 +36,7 @@ SOURCES += \
     DAAppFigureWidget.cpp \
     DAAppPluginManager.cpp \
     DAAppProject.cpp \
+    DAAppRibbonApplicationMenu.cpp \
     DAAppRibbonArea.cpp \
     DAAppUI.cpp \
     DAAppWorkFlowOperateWidget.cpp \
@@ -59,6 +60,7 @@ HEADERS += \
     DAAppFigureWidget.h \
     DAAppPluginManager.h \
     DAAppProject.h \
+    DAAppRibbonApplicationMenu.h \
     DAAppRibbonArea.h \
     DAAppUI.h \
     DAAppWorkFlowOperateWidget.h \

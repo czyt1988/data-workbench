@@ -7,12 +7,14 @@
 #include <QDomElement>
 //
 #include "SARibbonBar.h"
+#include "SARibbonApplicationButton.h"
 //插件相关
 #include "DAAppPluginManager.h"
 #include "DAPluginManager.h"
 #include "DAAbstractPlugin.h"
 #include "DAAbstractNodePlugin.h"
 //界面相关
+#include "DAAppRibbonApplicationMenu.h"
 #include "DAAppController.h"
 #include "DAAppCore.h"
 #include "DAAppUI.h"
@@ -58,10 +60,14 @@ AppMainWindow::AppMainWindow(QWidget* parent) : SARibbonMainWindow(parent)
     //建立ribbonArea，此函数的构造函数会生成界面
 
     DAAppCore& core = DAAppCore::getInstance();
+    //创建界面
     core.createUi(this);
-    mCore       = &core;
-    mUI         = qobject_cast< DAAppUI* >(core.getUiInterface());
-    mDockArea   = mUI->getAppDockingArea();
+    mCore     = &core;
+    mUI       = qobject_cast< DAAppUI* >(core.getUiInterface());
+    mDockArea = mUI->getAppDockingArea();
+    //创建app menu
+    createApplicationMenu();
+    //创建controller
     mController = new DAAppController(this);
     mController
             ->setAppMainWindow(this)                      // app
@@ -145,6 +151,21 @@ void AppMainWindow::initConfig()
 {
     mConfig = std::make_unique< DAAppConfig >();
     mConfig->setCore(mCore);
+}
+
+void AppMainWindow::createApplicationMenu()
+{
+    mApplicationMenu         = new DAAppRibbonApplicationMenu(this);
+    DAAppActions* appActions = mUI->getAppActions();
+    mApplicationMenu->addAction(appActions->actionOpen);
+    mApplicationMenu->addAction(appActions->actionSave);
+    mApplicationMenu->addAction(appActions->actionSaveAs);
+    DAAppRibbonArea* ribbonArea = mUI->getAppRibbonArea();
+    SARibbonApplicationButton* appBtn = qobject_cast< SARibbonApplicationButton* >(ribbonArea->ribbonBar()->applicationButton());
+    if (nullptr == appBtn) {
+        return;
+    }
+    appBtn->setMenu(mApplicationMenu);
 }
 
 void AppMainWindow::onWorkflowFinished(bool success)
