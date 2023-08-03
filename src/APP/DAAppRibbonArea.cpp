@@ -14,6 +14,7 @@
 #include "SARibbonButtonGroupWidget.h"
 #include "SARibbonMenu.h"
 #include "SARibbonCtrlContainer.h"
+#include "SARibbonApplicationButton.h"
 // stl
 #include <memory>
 // Qt
@@ -28,6 +29,7 @@
 #include <QMenu>
 // ui
 #include "DAWaitCursorScoped.h"
+#include "DAAppRibbonApplicationMenu.h"
 // Py
 #include "DAPyScripts.h"
 #include "pandas/DAPyDataFrame.h"
@@ -217,6 +219,8 @@ void DAAppRibbonArea::buildRibbon()
     buildContextCategoryDataFrame();
     buildContextCategoryWorkflowEdit();
     buildContextCategoryChart();
+    //
+    buildApplicationMenu();
 }
 
 /**
@@ -254,11 +258,8 @@ void DAAppRibbonArea::buildRibbonMainCategory()
     //--------Workflow Opt----------------------------------------------
     m_pannelMainWorkflowOpt = m_categoryMain->addPannel(tr("Workflow"));
     m_pannelMainWorkflowOpt->setObjectName(QStringLiteral("da-pannel-main.workflow"));
-    m_pannelMainWorkflowOpt->addLargeAction(m_actions->actionWorkflowAddBackgroundPixmap);
-    m_pannelMainWorkflowOpt->addMediumAction(m_actions->actionWorkflowStartDrawRect);
-    m_pannelMainWorkflowOpt->addMediumAction(m_actions->actionWorkflowStartDrawText);
     m_pannelMainWorkflowOpt->addLargeAction(m_actions->actionWorkflowRun);
-
+    m_pannelMainWorkflowOpt->addLargeAction(m_actions->actionWorkflowTerminate);
     //--------Setting--------------------------------------------------
 
     m_pannelSetting = new SARibbonPannel(m_categoryMain);
@@ -493,6 +494,19 @@ void DAAppRibbonArea::buildContextCategoryChart()
     m_pannelChartSetting->addLargeActionMenu(m_actions->actionChartEnableLegend, m_menuChartLegendProperty);
 
     m_categoryChartEdit->addPannel(m_pannelChartSetting);
+}
+
+void DAAppRibbonArea::buildApplicationMenu()
+{
+    mApplicationMenu = new DAAppRibbonApplicationMenu(app());
+    mApplicationMenu->addAction(m_actions->actionOpen);
+    mApplicationMenu->addAction(m_actions->actionSave);
+    mApplicationMenu->addAction(m_actions->actionSaveAs);
+    SARibbonApplicationButton* appBtn = qobject_cast< SARibbonApplicationButton* >(ribbonBar()->applicationButton());
+    if (nullptr == appBtn) {
+        return;
+    }
+    appBtn->setMenu(mApplicationMenu);
 }
 
 AppMainWindow* DAAppRibbonArea::app() const

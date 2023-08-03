@@ -115,7 +115,6 @@ private:
     void buildOtherWidgets();
     //初始化信号槽
     void initConnection();
-
 private slots:
     //
     void onSelectNodeItemChanged(DA::DAAbstractNodeGraphicsItem* i);

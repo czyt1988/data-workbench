@@ -39,6 +39,7 @@ class DACommandInterface;
 class DAAppDataManager;
 class DADataOperateOfDataFrameWidget;
 class DAAppProject;
+class DAAppRibbonApplicationMenu;
 //
 class DADataOperatePageWidget;
 //窗口
@@ -163,6 +164,8 @@ private:
     void buildContextCategoryWorkflowEdit();
     //构建chart上下文
     void buildContextCategoryChart();
+    //构建ApplicationMenu
+    void buildApplicationMenu();
 
 public:
     void resetText();
@@ -251,6 +254,8 @@ public:
     QStringList m_fileReadFilters;
     QMenu* m_menuInsertRow;     ///< 针对insertrow的action menu
     QMenu* m_menuInsertColumn;  ///< 这对insertcol的action menu
+    // ApplicationMenu
+    DAAppRibbonApplicationMenu* mApplicationMenu;  ///< ribbon-app menu
 };
 }  // namespace DA
 #endif  // DAAPPRIBBONAREA_H

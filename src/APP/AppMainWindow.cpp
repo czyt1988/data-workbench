@@ -5,6 +5,7 @@
 #include <QDir>
 #include <QDomDocument>
 #include <QDomElement>
+#include <QDebug>
 //
 #include "SARibbonBar.h"
 #include "SARibbonApplicationButton.h"
@@ -65,8 +66,6 @@ AppMainWindow::AppMainWindow(QWidget* parent) : SARibbonMainWindow(parent)
     mCore     = &core;
     mUI       = qobject_cast< DAAppUI* >(core.getUiInterface());
     mDockArea = mUI->getAppDockingArea();
-    //创建app menu
-    createApplicationMenu();
     //创建controller
     mController = new DAAppController(this);
     mController
@@ -84,7 +83,7 @@ AppMainWindow::AppMainWindow(QWidget* parent) : SARibbonMainWindow(parent)
     DAGraphicsItemFactory::initialization();
     mConfig->loadConfig();
     mConfig->apply();
-    retranslateUi();
+    //    retranslateUi();//非必要可以验证调用是否正常
     //    ribbonBar()->setRibbonStyle(SARibbonBar::WpsLiteStyleTwoRow);
     showMaximized();
 }
@@ -104,6 +103,7 @@ void AppMainWindow::changeEvent(QEvent* e)
     QWidget::changeEvent(e);
     switch (e->type()) {
     case QEvent::LanguageChange:
+        qDebug() << tr("LanguageChange");
         retranslateUi();
         break;
 
@@ -151,21 +151,6 @@ void AppMainWindow::initConfig()
 {
     mConfig = std::make_unique< DAAppConfig >();
     mConfig->setCore(mCore);
-}
-
-void AppMainWindow::createApplicationMenu()
-{
-    mApplicationMenu         = new DAAppRibbonApplicationMenu(this);
-    DAAppActions* appActions = mUI->getAppActions();
-    mApplicationMenu->addAction(appActions->actionOpen);
-    mApplicationMenu->addAction(appActions->actionSave);
-    mApplicationMenu->addAction(appActions->actionSaveAs);
-    DAAppRibbonArea* ribbonArea = mUI->getAppRibbonArea();
-    SARibbonApplicationButton* appBtn = qobject_cast< SARibbonApplicationButton* >(ribbonArea->ribbonBar()->applicationButton());
-    if (nullptr == appBtn) {
-        return;
-    }
-    appBtn->setMenu(mApplicationMenu);
 }
 
 void AppMainWindow::onWorkflowFinished(bool success)
