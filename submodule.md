@@ -42,3 +42,49 @@ git submodule update --remote src/3rdparty/SARibbon
 `git submodule foreach '{需要执行的git命令}'`
 
 如 git submodule foreach 'git checkout main'
+
+# 针对中国地区访问github缓慢的问题
+
+用编辑器打开
+
+```
+.git/config
+```
+
+把config的github地址替换为gitee的地址
+
+github地址
+
+```ini
+[submodule "src/3rdparty/Qt-Advanced-Docking-System"]
+	active = true
+	url = https://github.com/githubuser0xFFFF/Qt-Advanced-Docking-System.git
+[submodule "src/3rdparty/SARibbon"]
+	active = true
+	url = https://github.com/czyt1988/SARibbon.git
+[submodule "src/3rdparty/pybind11"]
+	active = true
+	url = https://github.com/pybind/pybind11.git
+[submodule "src/3rdparty/spdlog"]
+	active = true
+	url = https://github.com/gabime/spdlog.git
+```
+
+gitee地址
+
+```ini
+[submodule "src/3rdparty/Qt-Advanced-Docking-System"]
+	active = true
+	url = https://gitee.com/czyt1988/Qt-Advanced-Docking-System.git
+[submodule "src/3rdparty/SARibbon"]
+	active = true
+	url = https://gitee.com/czyt1988/SARibbon.git
+[submodule "src/3rdparty/pybind11"]
+	active = true
+	url = https://gitee.com/czyt1988/pybind11.git
+[submodule "src/3rdparty/spdlog"]
+	active = true
+	url = https://gitee.com/czyt1988/spdlog.git
+```
+
+同时把根目录的`.gitmodules`用`.gitmodules-gitee`的内容替代

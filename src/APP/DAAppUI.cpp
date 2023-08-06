@@ -84,6 +84,7 @@ DAAppRibbonArea* DAAppUI::getAppRibbonArea()
 void DAAppUI::createActions()
 {
     m_actions = new DAAppActions(this);
+    m_actions->retranslateUi();//显示调用文字翻译
     registeAction(m_actions);
 }
 

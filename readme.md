@@ -30,6 +30,8 @@ git submodule update --init --recursive
 
 把所有第三方库拉取
 
+具体可见：[submodule.md](./submodule.md)
+
 ## bin目录
 
 DA项目编译好的二进制文件统一生成到bin_qt$$[QT_VERSION]_{msvc/mingw}_{debug/release}{/_64}目录下，如：使用qt5.14.2, msvc版本debug模式64位编译，将生成`bin_qt5.14.2_msvc_debug_64`文件夹，[common.pri](./src/common.pri)文件定义了DA项目的目录内容:
@@ -130,6 +132,23 @@ DA_PYTHON = python37
 `da-work-flow`的许多功能是通过python实现的，程序运行需要`data-work-flow/src/PyScripts`下的脚本支持，需要把`PyScripts`拷贝到bin_xx目录下
 
 ![](./doc/PIC/copy-pyscripts.jpg)
+
+## 程序编译成功后无法运行
+
+编译成功后，但无法运行，这种情况一般是bin目录下的dll缺失，需要保证如下几点：
+
+![编译成功但无法运行](./doc/PIC/build-succ-but-unable-run.png)
+
+> 1. 3rdparty编译的dll都拷贝到bin目录下，包括：`qtadvanceddocking.dll`、`qwt.dll`、`SARibbonBar.dll`
+> 2. `qwt.dll`依赖OpenGL，因此需要OpenGL相关的库`opengl32sw.dll`、`libEGLd.dll`、`libGLESv2d.dll`，可以直接通过`windeployqt qwtd.dll`进行抓取
+> 3. PyScripts文件夹要在bin目录下
+> 4. 执行`windeployqt daWork.exe`抓取必要的dll
+> 5. 确保Python文件夹复制到bin目录下
+
+如果上述步骤执行完毕，点击daWork.exe能运行，但在Qt Creator下无法运行
+
+> 6. 把Python目录下python3x.dll复制到bin目录下
+
 
 # 程序框架及说明
 
