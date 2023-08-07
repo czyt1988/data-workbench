@@ -80,9 +80,6 @@ AppMainWindow::AppMainWindow(QWidget* parent) : SARibbonMainWindow(parent)
     mController->initialize();
     //首次调用此函数会加载插件，可放置在main函数中调用
     init();
-    DAGraphicsItemFactory::initialization();
-    mConfig->loadConfig();
-    mConfig->apply();
     //    retranslateUi();//非必要可以验证调用是否正常
     //    ribbonBar()->setRibbonStyle(SARibbonBar::WpsLiteStyleTwoRow);
     showMaximized();
@@ -95,6 +92,8 @@ AppMainWindow::~AppMainWindow()
 
 void AppMainWindow::retranslateUi()
 {
+    // TODO:工程加载后，标题可能需要改变
+    setWindowTitle(tr("Data WorkFlow"));
     mUI->retranslateUi();
 }
 
@@ -116,11 +115,15 @@ void AppMainWindow::init()
 {
     //初始化配置文件，这个要在所有之前
     initConfig();
+    //初始化图元工厂
+    DAGraphicsItemFactory::initialization();
     //先初始化插件
     initPlugins();
     //初始化工作流的节点
     initWorkflowNodes();
     //应用所有配置
+    mConfig->loadConfig();
+    mConfig->apply();
 }
 
 void AppMainWindow::initPlugins()
