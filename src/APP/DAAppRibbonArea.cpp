@@ -156,16 +156,16 @@ void DAAppRibbonArea::resetText()
 {
     ribbonBar()->applicationButton()->setText(tr("File"));  //文件
 
-    m_categoryMain->setCategoryName(tr("Main"));               //主页
-    m_pannelMainFileOpt->setPannelName(tr("File Operation"));  //文件操作
-    m_pannelSetting->setPannelName(tr("Config"));              //配置
-    m_pannelMainWorkflowOpt->setPannelName(tr("Workflow"));    //工作流
-    m_pannelMainDataOpt->setPannelName(tr("Data Operation"));  //数据操作
-    m_categoryData->setCategoryName(tr("Data"));               //数据
-    m_pannelDataOperate->setPannelName(tr("Data Operation"));  //数据操作
+    m_categoryMain->setCategoryName(tr("Main"));               //cn:主页
+    m_pannelMainFileOpt->setPannelName(tr("File Operation"));  //cn:文件操作
+    m_pannelSetting->setPannelName(tr("Config"));              //cn:配置
+    m_pannelMainWorkflowOpt->setPannelName(tr("Workflow"));    //cn:工作流
+    m_pannelMainDataOpt->setPannelName(tr("Data Operation"));  //cn:数据操作
+    m_categoryData->setCategoryName(tr("Data"));               //cn:数据
+    m_pannelDataOperate->setPannelName(tr("Data Operation"));  //cn:数据操作
 
-    m_categoryView->setCategoryName(tr("View"));         //视图
-    m_pannelViewMainView->setPannelName(tr("Display"));  //视图显示
+    m_categoryView->setCategoryName(tr("View"));         //cn:视图
+    m_pannelViewMainView->setPannelName(tr("Display"));  //cn:视图显示
 
     m_contextDataFrame->setContextTitle(tr("DataFrame"));               ///< DataFrame
     m_categoryDataframeOperate->setCategoryName(tr("Operate"));         ///< DataFrame -> Operate
@@ -175,16 +175,18 @@ void DAAppRibbonArea::resetText()
     m_pannelDataframeOperateStatistic->setPannelName(tr("Statistic"));  ///< DataFrame -> Statistic
 
     //编辑标签
-    m_categoryEdit->setCategoryName(tr("Edit"));  //编辑
+    m_categoryEdit->setCategoryName(tr("Edit"));  //cn:编辑
 
-    m_contextWorkflow->setContextTitle(tr("Workflow"));  //工作流
+    m_contextWorkflow->setContextTitle(tr("Workflow"));  //cn:工作流
 
-    m_categoryWorkflowGraphicsEdit->setCategoryName(tr("Workflow Edit"));  //工作流编辑
-    m_pannelWorkflowItem->setPannelName(tr("Item"));                       //图元
-    m_pannelWorkflowText->setPannelName(tr("Text"));                       //文本
-    m_pannelWorkflowBackground->setPannelName(tr("Background"));           //背景
-    m_pannelWorkflowView->setPannelName(tr("View"));                       //视图
-    m_pannelWorkflowRun->setPannelName(tr("Run"));                         //运行
+    m_categoryWorkflowGraphicsEdit->setCategoryName(tr("Workflow Edit"));  //cn:工作流编辑
+    m_pannelWorkflowItem->setPannelName(tr("Item"));                       //cn:图元
+    m_pannelWorkflowText->setPannelName(tr("Text"));                       //cn:文本
+    m_pannelWorkflowBackground->setPannelName(tr("Background"));           //cn:背景
+    m_pannelWorkflowView->setPannelName(tr("View"));                       //cn:视图
+
+    m_categoryWorkflowRun->setCategoryName(tr("Workflow Run"));  //cn:工作流运行
+    m_pannelWorkflowRun->setPannelName(tr("Run"));                         //cn:运行
     //
     m_categoryFigure->setCategoryName(tr("Figure"));             // cn:绘图
     m_pannelFigureSetting->setPannelName(tr("Figure Setting"));  // cn:绘图设置
@@ -217,7 +219,7 @@ void DAAppRibbonArea::buildRibbon()
     buildRibbonQuickAccessBar();
     //上下文标签
     buildContextCategoryDataFrame();
-    buildContextCategoryWorkflowEdit();
+    buildContextCategoryWorkflow();
     buildContextCategoryChart();
     //
     buildApplicationMenu();
@@ -365,6 +367,8 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     m_pannelDataframeOperateStatistic->addLargeAction(m_actions->actionCreateDataDescribe);
 }
 
+
+
 /**
  * @brief 构建Edit标签
  * da-ribbon-category-edit
@@ -374,7 +378,6 @@ void DAAppRibbonArea::buildRibbonEditCategory()
 {
     m_categoryEdit = new SARibbonCategory(app());
     m_categoryEdit->setObjectName(QStringLiteral("da-ribbon-category-edit"));
-
     //--------MainView--------------------------------------------------
 
     m_pannelEditWorkflow = new SARibbonPannel(m_categoryEdit);
@@ -406,10 +409,26 @@ void DAAppRibbonArea::buildRibbonFigureCategory()
     m_categoryFigure->addPannel(m_pannelChartAdd);
 }
 
-void DAAppRibbonArea::buildContextCategoryWorkflowEdit()
+
+/**
+ * @brief 构建Workflow的上下文标签
+ * @note 注意buildContextCategoryWorkflowEdit和buildContextCategoryWorkflowRun必须在此函数之后调用
+ */
+void DAAppRibbonArea::buildContextCategoryWorkflow()
 {
     m_contextWorkflow = ribbonBar()->addContextCategory(tr("Workflow"));
     m_contextWorkflow->setObjectName(QStringLiteral("da-ribbon-contextcategory-workflow"));
+    buildContextCategoryWorkflowEdit_();
+    buildContextCategoryWorkflowRun_();
+    ribbonBar()->showContextCategory(m_contextWorkflow);
+}
+
+/**
+ * @brief 构建Workflow-编辑的上下文标签
+ */
+void DAAppRibbonArea::buildContextCategoryWorkflowEdit_()
+{
+
     m_categoryWorkflowGraphicsEdit = m_contextWorkflow->addCategoryPage(tr("Workflow Edit"));
     m_categoryWorkflowGraphicsEdit->setObjectName(QStringLiteral("da-ribbon-category-workflow.edit"));
     //条目pannel
@@ -442,12 +461,20 @@ void DAAppRibbonArea::buildContextCategoryWorkflowEdit()
     m_pannelWorkflowView->addLargeAction(m_actions->actionWorkflowWholeView);
     m_pannelWorkflowView->addMediumAction(m_actions->actionWorkflowZoomIn);
     m_pannelWorkflowView->addMediumAction(m_actions->actionWorkflowZoomOut);
+}
+
+/**
+ * @brief 构建workflow-运行的上下文标签
+ */
+void DAAppRibbonArea::buildContextCategoryWorkflowRun_()
+{
+    m_categoryWorkflowRun = m_contextWorkflow->addCategoryPage(tr("Workflow Run"));
+    m_categoryWorkflowRun->setObjectName(QStringLiteral("da-ribbon-category-workflow.run"));
     // Run
-    m_pannelWorkflowRun = m_categoryWorkflowGraphicsEdit->addPannel(tr("Run"));
+    m_pannelWorkflowRun = m_categoryWorkflowRun->addPannel(tr("Run"));
     m_pannelWorkflowRun->setObjectName(QStringLiteral("da-pannel-context.workflow.run"));
     m_pannelWorkflowRun->addLargeAction(m_actions->actionWorkflowRun);
     m_pannelWorkflowRun->addLargeAction(m_actions->actionWorkflowTerminate);
-    ribbonBar()->showContextCategory(m_contextWorkflow);
 }
 
 /**

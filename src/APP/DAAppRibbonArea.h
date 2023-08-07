@@ -160,8 +160,12 @@ private:
     void buildRibbonQuickAccessBar();
     //构建DataFrame上下文标签
     void buildContextCategoryDataFrame();
-    //构建Workflow上下文标签
-    void buildContextCategoryWorkflowEdit();
+    //构建Workflow的上下文标签，注意buildContextCategoryWorkflowEdit和buildContextCategoryWorkflowRun必须在此函数之后调用
+    void buildContextCategoryWorkflow();
+    //构建Workflow-编辑的上下文标签
+    void buildContextCategoryWorkflowEdit_();
+    //构建workflow-运行的上下文标签
+    void buildContextCategoryWorkflowRun_();
     //构建chart上下文
     void buildContextCategoryChart();
     //构建ApplicationMenu
@@ -204,6 +208,10 @@ public:
     // view
     SARibbonCategory* m_categoryView;      ///< 视图标签
     SARibbonPannel* m_pannelViewMainView;  ///< 主要视图操作
+    //edit
+
+    SARibbonCategory* m_categoryEdit;      ///< 编辑标签
+    SARibbonPannel* m_pannelEditWorkflow;  ///< 主要编辑操作
     // figure
     SARibbonCategory* m_categoryFigure;     ///< 绘图标签
     SARibbonPannel* m_pannelFigureSetting;  ///< 绘图的设置
@@ -218,16 +226,15 @@ public:
     DAPyDTypeComboBox* m_comboxColumnTypes;                     ///< 列类型选择器
     SARibbonPannel* m_pannelDataframeOperateStatistic;          ///< 统计相关操作
     // Context - workflow
-
-    SARibbonCategory* m_categoryEdit;      ///< 编辑标签
-    SARibbonPannel* m_pannelEditWorkflow;  ///< 主要编辑操作
-
     SARibbonContextCategory* m_contextWorkflow;        ///< 对应workflow的上下文
+    // Context - workflow-edit
     SARibbonCategory* m_categoryWorkflowGraphicsEdit;  ///< 工作流绘图编辑
     SARibbonPannel* m_pannelWorkflowItem;              ///< 图元编辑
     SARibbonPannel* m_pannelWorkflowBackground;        ///< 背景编辑
     SARibbonPannel* m_pannelWorkflowText;              ///< 文本编辑
     SARibbonPannel* m_pannelWorkflowView;              ///< 图元视图pannel
+    // Context - workflow-run
+    SARibbonCategory* m_categoryWorkflowRun;  ///< 工作流运行
     SARibbonPannel* m_pannelWorkflowRun;               ///< 运行视图pannel
     // Context - chart
     SARibbonContextCategory* m_contextChart;                      ///< 对应Chart的上下文
