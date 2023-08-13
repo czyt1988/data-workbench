@@ -8,6 +8,7 @@ class DAAppCommand;
 class DAAppActions;
 class DAAppDockingArea;
 class DAAppRibbonArea;
+class DAStatusBar;
 /**
  * @brief 总体界面接口，负责生成DAAppDockingArea和DAAppRibbonArea
  */
@@ -46,12 +47,14 @@ protected:
     void createCmd();
     void createDockingArea();
     void createRibbonArea();
+    void createStatusBar();
 
 public:
     DAAppActions* m_actions;
     DAAppCommand* m_cmd;
     DAAppDockingArea* m_dockingArea;
     DAAppRibbonArea* m_ribbonArea;
+    DAStatusBar* mStatusBar;
 };
 }  // namespace DA
 

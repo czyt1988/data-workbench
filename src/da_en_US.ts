@@ -75,23 +75,33 @@
 <context>
     <name>DA::AppMainWindow</name>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="135"/>
+        <location filename="APP/AppMainWindow.cpp" line="96"/>
+        <source>Data WorkFlow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/AppMainWindow.cpp" line="105"/>
+        <source>LanguageChange</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/AppMainWindow.cpp" line="144"/>
         <source>untitle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="153"/>
-        <location filename="APP/AppMainWindow.cpp" line="155"/>
+        <location filename="APP/AppMainWindow.cpp" line="162"/>
+        <location filename="APP/AppMainWindow.cpp" line="164"/>
         <source>infomation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="153"/>
+        <location filename="APP/AppMainWindow.cpp" line="162"/>
         <source>Topology execution completed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="155"/>
+        <location filename="APP/AppMainWindow.cpp" line="164"/>
         <source>Topology execution failed</source>
         <translation type="unfinished"></translation>
     </message>
@@ -112,51 +122,51 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="169"/>
+        <location filename="APP/DAAppActions.cpp" line="171"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="170"/>
+        <location filename="APP/DAAppActions.cpp" line="172"/>
         <source>Save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="171"/>
+        <location filename="APP/DAAppActions.cpp" line="173"/>
         <source>Save As</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="172"/>
+        <location filename="APP/DAAppActions.cpp" line="174"/>
         <source>Append To Project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="174"/>
+        <location filename="APP/DAAppActions.cpp" line="176"/>
         <source>Rename Columns</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="175"/>
+        <location filename="APP/DAAppActions.cpp" line="177"/>
         <source>Setting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="177"/>
+        <location filename="APP/DAAppActions.cpp" line="179"/>
         <source>Add 
 Data</source>
         <oldsource>Add Data</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="178"/>
+        <location filename="APP/DAAppActions.cpp" line="180"/>
         <source>Remove 
 Data</source>
         <oldsource>Remove Data</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="180"/>
+        <location filename="APP/DAAppActions.cpp" line="182"/>
         <source>Add 
 Figure</source>
         <oldsource>Add 
@@ -164,328 +174,327 @@ Folder</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="180"/>
-        <source>Add 
-Figure</source>
-        <oldsource>Add Figure</oldsource>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="181"/>
+        <location filename="APP/DAAppActions.cpp" line="183"/>
         <source>Resize 
 Chart</source>
         <oldsource>Resize Chart</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="182"/>
+        <location filename="APP/DAAppActions.cpp" line="184"/>
         <source>New 
 XY Axis</source>
         <oldsource>New XY Axis</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="183"/>
+        <location filename="APP/DAAppActions.cpp" line="185"/>
         <source>Add 
 Curve</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="185"/>
+        <location filename="APP/DAAppActions.cpp" line="187"/>
         <source>Enable Grid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="186"/>
+        <location filename="APP/DAAppActions.cpp" line="188"/>
         <source>X Grid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="187"/>
+        <location filename="APP/DAAppActions.cpp" line="189"/>
         <source>Y Grid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="188"/>
+        <location filename="APP/DAAppActions.cpp" line="190"/>
         <source>Xmin Grid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="189"/>
+        <location filename="APP/DAAppActions.cpp" line="191"/>
         <source>Ymin Grid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="190"/>
+        <location filename="APP/DAAppActions.cpp" line="192"/>
         <source>Zoom</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="193"/>
+        <location filename="APP/DAAppActions.cpp" line="195"/>
         <source>Show 
 All</source>
         <oldsource>Show All</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="194"/>
+        <location filename="APP/DAAppActions.cpp" line="196"/>
         <source>Pan</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="195"/>
+        <location filename="APP/DAAppActions.cpp" line="197"/>
         <source>Cross</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="196"/>
+        <location filename="APP/DAAppActions.cpp" line="198"/>
         <source>Y Picker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="197"/>
+        <location filename="APP/DAAppActions.cpp" line="199"/>
         <source>XY Picker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="198"/>
+        <location filename="APP/DAAppActions.cpp" line="200"/>
         <source>legend</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="199"/>
+        <location filename="APP/DAAppActions.cpp" line="201"/>
         <source>Top Left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="200"/>
+        <location filename="APP/DAAppActions.cpp" line="202"/>
         <source>Top</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="201"/>
+        <location filename="APP/DAAppActions.cpp" line="203"/>
         <source>Top Right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="202"/>
+        <location filename="APP/DAAppActions.cpp" line="204"/>
         <source>Right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="203"/>
+        <location filename="APP/DAAppActions.cpp" line="205"/>
         <source>Bottom Right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="204"/>
+        <location filename="APP/DAAppActions.cpp" line="206"/>
         <source>Bottom</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="205"/>
+        <location filename="APP/DAAppActions.cpp" line="207"/>
         <source>Bottom Left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="206"/>
+        <location filename="APP/DAAppActions.cpp" line="208"/>
         <source>Left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="208"/>
+        <location filename="APP/DAAppActions.cpp" line="210"/>
         <source>Remove Row</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="209"/>
+        <location filename="APP/DAAppActions.cpp" line="211"/>
         <source>Remove Column</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="210"/>
+        <location filename="APP/DAAppActions.cpp" line="212"/>
         <source>Remove Cell</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="211"/>
+        <location filename="APP/DAAppActions.cpp" line="213"/>
         <source>Insert 
 Row</source>
         <oldsource>Insert Row</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="212"/>
+        <location filename="APP/DAAppActions.cpp" line="214"/>
         <source>Insert Row(Above)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="213"/>
+        <location filename="APP/DAAppActions.cpp" line="215"/>
         <source>Insert 
 Column</source>
         <oldsource>Insert Column</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="214"/>
+        <location filename="APP/DAAppActions.cpp" line="216"/>
         <source>Insert Column(Left)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="215"/>
+        <location filename="APP/DAAppActions.cpp" line="217"/>
         <source>to num</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="216"/>
+        <location filename="APP/DAAppActions.cpp" line="218"/>
         <source>cast to num type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="217"/>
+        <location filename="APP/DAAppActions.cpp" line="219"/>
         <source>to str</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="218"/>
+        <location filename="APP/DAAppActions.cpp" line="220"/>
         <source>cast to string type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="219"/>
+        <location filename="APP/DAAppActions.cpp" line="221"/>
         <source>to datetime</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="220"/>
+        <location filename="APP/DAAppActions.cpp" line="222"/>
         <source>cast to datetime type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="221"/>
+        <location filename="APP/DAAppActions.cpp" line="223"/>
         <source>Data Describe</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="222"/>
+        <location filename="APP/DAAppActions.cpp" line="224"/>
         <source>To Index</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="224"/>
+        <location filename="APP/DAAppActions.cpp" line="226"/>
         <source>New 
 Workflow</source>
         <oldsource>New Workflow</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="225"/>
+        <location filename="APP/DAAppActions.cpp" line="227"/>
         <source>Draw 
 Rect</source>
         <oldsource>Draw Rect</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="226"/>
+        <location filename="APP/DAAppActions.cpp" line="228"/>
         <source>Draw 
 Text</source>
         <oldsource>Draw Text</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="227"/>
+        <location filename="APP/DAAppActions.cpp" line="229"/>
         <source>Show 
 Grid</source>
         <oldsource>Show Grid</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="228"/>
+        <location filename="APP/DAAppActions.cpp" line="230"/>
         <source>Whole 
 View</source>
         <oldsource>Whole View</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="243"/>
+        <location filename="APP/DAAppActions.cpp" line="234"/>
+        <source>Terminate 
+Workflow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppActions.cpp" line="246"/>
         <source>Plugin 
 Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="192"/>
-        <location filename="APP/DAAppActions.cpp" line="229"/>
+        <location filename="APP/DAAppActions.cpp" line="194"/>
+        <location filename="APP/DAAppActions.cpp" line="231"/>
         <source>Zoom Out</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="191"/>
-        <location filename="APP/DAAppActions.cpp" line="230"/>
+        <location filename="APP/DAAppActions.cpp" line="193"/>
+        <location filename="APP/DAAppActions.cpp" line="232"/>
         <source>Zoom In</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="231"/>
+        <location filename="APP/DAAppActions.cpp" line="233"/>
         <source>Run 
 Workflow</source>
         <oldsource>Run Workflow</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="233"/>
+        <location filename="APP/DAAppActions.cpp" line="236"/>
         <source>Add 
 Background</source>
         <oldsource>Add Background</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="234"/>
+        <location filename="APP/DAAppActions.cpp" line="237"/>
         <source>Lock Background</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="235"/>
+        <location filename="APP/DAAppActions.cpp" line="238"/>
         <source>Move With Background</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="237"/>
+        <location filename="APP/DAAppActions.cpp" line="240"/>
         <source>Show 
 Work Flow Area</source>
         <oldsource>Show Work Flow Area</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="238"/>
+        <location filename="APP/DAAppActions.cpp" line="241"/>
         <source>Show 
 Chart Area</source>
         <oldsource>Show Chart Area</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="239"/>
+        <location filename="APP/DAAppActions.cpp" line="242"/>
         <source>Show 
 Table Area</source>
         <oldsource>Show Table Area</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="240"/>
+        <location filename="APP/DAAppActions.cpp" line="243"/>
         <source>Show Infomation Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="241"/>
+        <location filename="APP/DAAppActions.cpp" line="244"/>
         <source>Show Setting Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="246"/>
+        <location filename="APP/DAAppActions.cpp" line="249"/>
         <source>Redo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="249"/>
+        <location filename="APP/DAAppActions.cpp" line="252"/>
         <source>Undo</source>
         <translation type="unfinished"></translation>
     </message>
@@ -493,122 +502,122 @@ Table Area</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="APP/DAAppController.cpp" line="532"/>
-        <location filename="APP/DAAppController.cpp" line="608"/>
+        <location filename="APP/DAAppController.cpp" line="533"/>
+        <location filename="APP/DAAppController.cpp" line="609"/>
         <source>project file(*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="547"/>
+        <location filename="APP/DAAppController.cpp" line="548"/>
         <source>Question</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="548"/>
+        <location filename="APP/DAAppController.cpp" line="549"/>
         <source>Another project already exists. Do you want to replace it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="562"/>
-        <location filename="APP/DAAppController.cpp" line="621"/>
+        <location filename="APP/DAAppController.cpp" line="563"/>
+        <location filename="APP/DAAppController.cpp" line="622"/>
         <source>failed to load project file:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="575"/>
-        <location filename="APP/DAAppController.cpp" line="643"/>
+        <location filename="APP/DAAppController.cpp" line="576"/>
+        <location filename="APP/DAAppController.cpp" line="644"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="577"/>
+        <location filename="APP/DAAppController.cpp" line="578"/>
         <source>project file (*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="587"/>
+        <location filename="APP/DAAppController.cpp" line="588"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="588"/>
+        <location filename="APP/DAAppController.cpp" line="589"/>
         <source>Whether to overwrite the file:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="597"/>
-        <location filename="APP/DAAppController.cpp" line="654"/>
+        <location filename="APP/DAAppController.cpp" line="598"/>
+        <location filename="APP/DAAppController.cpp" line="655"/>
         <source>Project saved failed!,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="601"/>
-        <location filename="APP/DAAppController.cpp" line="672"/>
+        <location filename="APP/DAAppController.cpp" line="602"/>
+        <location filename="APP/DAAppController.cpp" line="673"/>
         <source>Project saved successfully,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="645"/>
+        <location filename="APP/DAAppController.cpp" line="646"/>
         <source>Project Files (*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="689"/>
+        <location filename="APP/DAAppController.cpp" line="690"/>
         <source>Project load successfully,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="725"/>
+        <location filename="APP/DAAppController.cpp" line="726"/>
         <source>Image files (*.png *.jpg)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="726"/>
+        <location filename="APP/DAAppController.cpp" line="727"/>
         <source>Any files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="759"/>
+        <location filename="APP/DAAppController.cpp" line="760"/>
         <source>get null project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="765"/>
+        <location filename="APP/DAAppController.cpp" line="766"/>
         <source>warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="766"/>
+        <location filename="APP/DAAppController.cpp" line="767"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="951"/>
+        <location filename="APP/DAAppController.cpp" line="963"/>
         <source>Before creating a new coordinate,you need to create a figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="971"/>
+        <location filename="APP/DAAppController.cpp" line="983"/>
         <source>Before add a curve,you need to create a axis on figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1371"/>
+        <location filename="APP/DAAppController.cpp" line="1383"/>
         <source>%1_Describe</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1372"/>
+        <location filename="APP/DAAppController.cpp" line="1384"/>
         <source>Generate descriptive statistics that summarize the central tendency, dispersion and shape of a [%1]’s distribution, excluding NaN values</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1477"/>
+        <location filename="APP/DAAppController.cpp" line="1489"/>
         <source>new workflow name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1478"/>
+        <location filename="APP/DAAppController.cpp" line="1490"/>
         <source>new workflow name:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -718,205 +727,211 @@ Table Area</source>
 <context>
     <name>DA::DAAppRibbonArea</name>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="110"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="193"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="112"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="197"/>
         <source>Location</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="120"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="122"/>
         <source>Property</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="133"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="195"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="135"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="199"/>
         <source>Max Columns</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="135"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="196"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="137"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="200"/>
         <source>Margin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="137"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="197"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="139"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="201"/>
         <source>Spacing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="139"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="198"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="141"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="202"/>
         <source>Item Margin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="142"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="199"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="144"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="203"/>
         <source>Item Spacing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="145"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="200"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="147"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="204"/>
         <source>Border Radius</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="155"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="157"/>
         <source>File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="157"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="159"/>
         <source>Main</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="158"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="160"/>
         <source>File Operation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="159"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="161"/>
         <source>Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="160"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="178"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="255"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="410"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="162"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="180"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="261"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="419"/>
         <source>Workflow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="161"/>
         <location filename="APP/DAAppRibbonArea.cpp" line="163"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="165"/>
         <source>Data Operation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="162"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="164"/>
         <source>Data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="165"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="184"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="437"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="167"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="186"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="457"/>
         <source>View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="166"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="168"/>
         <source>Display</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="168"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="335"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="170"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="338"/>
         <source>DataFrame</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="169"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="337"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="171"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="340"/>
         <source>Operate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="170"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="339"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="172"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="342"/>
         <source>Axes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="171"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="172"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="349"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="353"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="173"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="174"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="352"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="356"/>
         <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="173"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="363"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="175"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="366"/>
         <source>Statistic</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="176"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="178"/>
         <source>Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="180"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="412"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="182"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="432"/>
         <source>Workflow Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="181"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="416"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="183"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="436"/>
         <source>Item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="182"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="424"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="184"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="444"/>
         <source>Text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="183"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="430"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="185"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="450"/>
         <source>Background</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="185"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="445"/>
-        <source>Run</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="187"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="393"/>
-        <source>Figure</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="188"/>
-        <source>Figure Setting</source>
+        <location filename="APP/DAAppRibbonArea.cpp" line="471"/>
+        <source>Workflow Run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="189"/>
-        <source>Add Chart</source>
+        <location filename="APP/DAAppRibbonArea.cpp" line="474"/>
+        <source>Run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="191"/>
-        <source>Chart</source>
+        <location filename="APP/DAAppRibbonArea.cpp" line="397"/>
+        <source>Figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="192"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="456"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="458"/>
+        <source>Figure Setting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppRibbonArea.cpp" line="193"/>
+        <source>Add Chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppRibbonArea.cpp" line="195"/>
+        <source>Chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppRibbonArea.cpp" line="196"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="485"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="487"/>
         <source>Chart Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="194"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="198"/>
         <source>Legend</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="202"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="206"/>
         <source>Data Work Flow</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1778,17 +1793,17 @@ Table Area</source>
 <context>
     <name>DA::DAWorkFlow</name>
     <message>
-        <location filename="DAWorkFlow/DAWorkFlow.cpp" line="363"/>
+        <location filename="DAWorkFlow/DAWorkFlow.cpp" line="364"/>
         <source>begin exec workflow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAWorkFlow.cpp" line="365"/>
+        <location filename="DAWorkFlow/DAWorkFlow.cpp" line="366"/>
         <source>empty workflow can not exec</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAWorkFlow.cpp" line="374"/>
+        <location filename="DAWorkFlow/DAWorkFlow.cpp" line="375"/>
         <source>workflow start run</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1804,12 +1819,12 @@ Table Area</source>
 <context>
     <name>DA::DAWorkFlowExecuter</name>
     <message>
-        <location filename="DAWorkFlow/DAWorkFlowExecuter.cpp" line="276"/>
+        <location filename="DAWorkFlow/DAWorkFlowExecuter.cpp" line="319"/>
         <source>execute node, name=%1,type=%2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAWorkFlowExecuter.cpp" line="300"/>
+        <location filename="DAWorkFlow/DAWorkFlowExecuter.cpp" line="343"/>
         <source>execute node(not transmit), name=%1,type=%2</source>
         <oldsource>execute node, name=</oldsource>
         <translation type="unfinished"></translation>
@@ -1859,12 +1874,14 @@ Table Area</source>
     </message>
     <message>
         <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="431"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="557"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="449"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="575"/>
         <source>No active workflow detected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="436"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="454"/>
         <source>Unable to get workflow correctly</source>
         <translation type="unfinished"></translation>
     </message>

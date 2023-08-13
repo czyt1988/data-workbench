@@ -41,6 +41,7 @@ SOURCES += \
     DAAppUI.cpp \
     DAAppWorkFlowOperateWidget.cpp \
     DAGuideTabWidget.cpp \
+    DAStatusBar.cpp \
     DAWordWrapItemDelegate.cpp \
     DADataWorkFlow.cpp \
     DAPluginManagerDialog.cpp \
@@ -66,6 +67,7 @@ HEADERS += \
     DAAppWorkFlowOperateWidget.h \
     DADumpCapture.h \
     DAGuideTabWidget.h \
+    DAStatusBar.h \
     DAWordWrapItemDelegate.h \
     DADataWorkFlow.h \
     DAPluginManagerDialog.h \

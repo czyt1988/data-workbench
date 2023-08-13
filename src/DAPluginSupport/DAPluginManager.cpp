@@ -21,7 +21,7 @@ public:
 public:
     QDir mPluginDir;
     QList< DAPluginOption > mPluginOptions;
-    bool mIsLoaded { false };               ///< 标记是否加载了，可以只加载一次
+    bool mIsLoaded{ false };                ///< 标记是否加载了，可以只加载一次
     QSet< QString > mIgnorePluginBaseName;  ///< 记录忽略插件的基本名字
 };
 
@@ -46,6 +46,19 @@ void DAPluginManager::PrivateData::updateIgnoreSet()
         return;
     }
     QFile ignoreFile(mPluginDir.absoluteFilePath(".pluginignore"));
+    if (!ignoreFile.exists()) {
+        //不存在，则创建一个
+        if (ignoreFile.open(QIODevice::ReadWrite)) {
+            QTextStream txt(&ignoreFile);
+            txt.setCodec("utf-8");
+            txt << "# pluginignore file,Plugins that you do not want to load are described in this file,only write the "
+                   "file base name, do not need to write suffixes"
+                << endl;
+            txt << "# 不想加载的插件在此文件描述，写入基本文件名，无需后缀" << endl;
+            txt << endl;
+        }
+        return;
+    }
     if (!ignoreFile.open(QIODevice::ReadOnly)) {
         return;
     }
@@ -89,7 +102,7 @@ DAPluginManager& DAPluginManager::instance()
  */
 void DAPluginManager::setIgnoreList(const QStringList ignorePluginsName)
 {
-    // TODO 给插件设置忽略名
+    d_ptr->mIgnorePluginBaseName = ignorePluginsName.toSet();
 }
 
 /**
