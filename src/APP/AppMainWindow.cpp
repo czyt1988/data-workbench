@@ -78,6 +78,7 @@ AppMainWindow::AppMainWindow(QWidget* parent) : SARibbonMainWindow(parent)
             .setAppRibbonArea(mUI->getAppRibbonArea())    // ribbon
             ;
     mController->initialize();
+    ribbonBar()->setContentsMargins(3, 0, 3, 0);
     //首次调用此函数会加载插件，可放置在main函数中调用
     init();
     //    retranslateUi();//非必要可以验证调用是否正常

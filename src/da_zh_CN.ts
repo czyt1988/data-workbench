@@ -426,8 +426,7 @@ View</source>
         <location filename="APP/DAAppActions.cpp" line="234"/>
         <source>Terminate 
 Workflow</source>
-        <translation>停止
-工作流</translation>
+        <translation>结束</translation>
     </message>
     <message>
         <location filename="APP/DAAppActions.cpp" line="246"/>
@@ -927,7 +926,7 @@ Table Area</source>
         <location filename="APP/DAAppRibbonArea.cpp" line="188"/>
         <location filename="APP/DAAppRibbonArea.cpp" line="471"/>
         <source>Workflow Run</source>
-        <translation>运行工作流</translation>
+        <translation>运行</translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="189"/>

@@ -7,6 +7,7 @@
 #include "DAWorkFlowOperateWidget.h"
 #include "DAAppDataManager.h"
 #include "AppMainWindow.h"
+#include "DAStatusBar.h"
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
 //===================================================
@@ -50,6 +51,7 @@ void DAAppUI::createUi()
     createActions();  // Actions第二个创建
     createDockingArea();
     createRibbonArea();
+    createStatusBar();
 }
 
 /**
@@ -84,7 +86,7 @@ DAAppRibbonArea* DAAppUI::getAppRibbonArea()
 void DAAppUI::createActions()
 {
     m_actions = new DAAppActions(this);
-    m_actions->retranslateUi();//显示调用文字翻译
+    m_actions->retranslateUi();  //显示调用文字翻译
     registeAction(m_actions);
 }
 
@@ -104,4 +106,11 @@ void DAAppUI::createRibbonArea()
 {
     m_ribbonArea = new DAAppRibbonArea(this);
     registeExtend(m_ribbonArea);
+}
+
+void DAAppUI::createStatusBar()
+{
+    QMainWindow* m = getMainWindow();
+    mStatusBar     = new DAStatusBar(m);
+    m->setStatusBar(mStatusBar);
 }
