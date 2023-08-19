@@ -15,7 +15,7 @@ public:
     DAChartAddXYSeriesWidgetPrivate(DAChartAddXYSeriesWidget* p);
 
 public:
-    DAPySeriesTableModule* _model { nullptr };
+    DAPySeriesTableModule* _model{ nullptr };
 };
 
 DAChartAddXYSeriesWidgetPrivate::DAChartAddXYSeriesWidgetPrivate(DAChartAddXYSeriesWidget* p) : q_ptr(p)
@@ -97,15 +97,12 @@ QwtPlotItem* DAChartAddXYSeriesWidget::createPlotItem()
  */
 void DAChartAddXYSeriesWidget::onComboBoxXCurrentDataframeSeriesChanged(const DAData& data, const QString& seriesName)
 {
+    DAPySeries series;
     DAPyDataFrame df = data.toDataFrame();
-    if (df.isNone()) {
-        return;
+    if (!df.isNone()) {
+        series = df[ seriesName ];
     }
-    DAPySeries s = df[ seriesName ];
-    if (s.isNone()) {
-        return;
-    }
-    d_ptr->_model->setSeriesAt(0, s);
+    d_ptr->_model->setSeriesAt(0, series);
 }
 
 /**
@@ -115,15 +112,12 @@ void DAChartAddXYSeriesWidget::onComboBoxXCurrentDataframeSeriesChanged(const DA
  */
 void DAChartAddXYSeriesWidget::onComboBoxYCurrentDataframeSeriesChanged(const DAData& data, const QString& seriesName)
 {
+    DAPySeries series;
     DAPyDataFrame df = data.toDataFrame();
-    if (df.isNone()) {
-        return;
+    if (!df.isNone()) {
+        series = df[ seriesName ];
     }
-    DAPySeries s = df[ seriesName ];
-    if (s.isNone()) {
-        return;
-    }
-    d_ptr->_model->setSeriesAt(1, s);
+    d_ptr->_model->setSeriesAt(1, series);
 }
 
 /**
@@ -137,6 +131,14 @@ void DAChartAddXYSeriesWidget::onGroupBoxXAutoincrementClicked(bool on)
         if (tryGetXSelfInc(base, step)) {
             d_ptr->_model->setSeriesAt(0, DAAutoincrementSeries< double >(base, step));
         }
+    } else {
+        //取消要读取回原来的设置
+        DAPySeries series;
+        DAData data = ui->comboBoxX->getCurrentDAData();
+        if (data) {
+            series = data.toSeries();
+        }
+        d_ptr->_model->setSeriesAt(0, series);
     }
     ui->comboBoxX->setEnabled(!on);
 }
@@ -152,6 +154,14 @@ void DAChartAddXYSeriesWidget::onGroupBoxYAutoincrementClicked(bool on)
         if (tryGetYSelfInc(base, step)) {
             d_ptr->_model->setSeriesAt(1, DAAutoincrementSeries< double >(base, step));
         }
+    } else {
+        //取消要读取回原来的设置
+        DAPySeries series;
+        DAData data = ui->comboBoxY->getCurrentDAData();
+        if (data) {
+            series = data.toSeries();
+        }
+        d_ptr->_model->setSeriesAt(1, series);
     }
     ui->comboBoxY->setEnabled(!on);
 }
@@ -262,7 +272,7 @@ bool DAChartAddXYSeriesWidget::getToVectorPointFFromUI(QVector< QPointF >& res)
             vy.reserve(y.size());
             y.castTo< double >(std::back_inserter(vy));
             res.resize(s);
-            for (int i = 0; i < s; ++i) {
+            for (std::size_t i = 0; i < s; ++i) {
                 res[ i ].setX(xinc[ i ]);
                 res[ i ].setY(vy[ i ]);
             }
@@ -303,7 +313,7 @@ bool DAChartAddXYSeriesWidget::getToVectorPointFFromUI(QVector< QPointF >& res)
             vx.reserve(x.size());
             x.castTo< double >(std::back_inserter(vx));
             res.resize(s);
-            for (int i = 0; i < s; ++i) {
+            for (std::size_t i = 0; i < s; ++i) {
                 res[ i ].setX(vx[ i ]);
                 res[ i ].setY(yinc[ i ]);
             }
@@ -353,7 +363,7 @@ bool DAChartAddXYSeriesWidget::getToVectorPointFFromUI(QVector< QPointF >& res)
             x.castTo< double >(std::back_inserter(vx));
             y.castTo< double >(std::back_inserter(vy));
             res.resize(s);
-            for (int i = 0; i < s; ++i) {
+            for (std::size_t i = 0; i < s; ++i) {
                 res[ i ].setX(vx[ i ]);
                 res[ i ].setY(vy[ i ]);
             }
@@ -408,5 +418,4 @@ bool DAChartAddXYSeriesWidget::tryGetYSelfInc(double& base, double& step)
     step = b;
     return true;
 }
-
 }
