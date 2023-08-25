@@ -53,6 +53,10 @@ DACoreInterface* DAAbstractPlugin::core() const
     return d_ptr->mCore;
 }
 
+/**
+ * @brief 设置core
+ * @param c
+ */
 void DAAbstractPlugin::setCore(DACoreInterface* c)
 {
     d_ptr->mCore = c;

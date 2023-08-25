@@ -150,7 +150,6 @@ void DAToolBox::adjustMinItemHight(int minHeight)
         return;
     }
     int curheight = w->height();
-    qDebug() << "curheight=" << curheight;
     if (curheight >= minHeight) {
         return;
     }
@@ -170,7 +169,6 @@ void DAToolBox::adjustMinItemHight(int minHeight)
     willSetMinHeight += minHeight;
     //
     _toolBox->setMinimumHeight(willSetMinHeight);
-    qDebug() << "setMinimumHeight=" << willSetMinHeight;
 }
 
 int DAToolBox::addItem(QWidget* w, const QIcon& iconSet, const QString& text)
