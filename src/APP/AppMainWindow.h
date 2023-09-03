@@ -12,6 +12,8 @@ class AppMainWindow;
 }
 QT_END_NAMESPACE
 
+class QCloseEvent;
+
 namespace DA
 {
 class DAAppCore;
@@ -22,6 +24,7 @@ class DAAppController;
 class DAAppConfig;
 class DAConfigsManager;
 class DAAppSettingDialog;
+
 class AppMainWindow : public SARibbonMainWindow
 {
     Q_OBJECT
@@ -38,8 +41,22 @@ public:
     //显示设置对话框
     void showSettingDialog();
 
+    //保存所有状态
+    QByteArray saveUIState() const;
+    bool restoreUIState(const QByteArray& v);
+    //从默认路径恢复
+    bool restoreUIState();
+    //重置ui
+    void resetUIState();
+    //设置是否在退出时保存ui的状态
+    bool isSaveUIStateOnClose() const;
+    void setSaveUIStateOnClose(bool v);
+    //获取ui state 配置文件路径
+    static QString getUIStateSettingFilePath();
+
 protected:
     void changeEvent(QEvent* e);
+    void closeEvent(QCloseEvent* e);
 
 private:
     //初始化
@@ -66,6 +83,7 @@ private:
     DAAppController* mController { nullptr };
     std::unique_ptr< DAAppConfig > mConfig;
     DAAppSettingDialog* mSettingDialog { nullptr };  ///< 设置窗口,避免过多的中间传递
+    bool mIsSaveUIStateOnClose { false };            ///< 是否在退出时记录程序的状态
 };
 }  // namespace DA
 #endif  // METHODMAINWINDOW_H

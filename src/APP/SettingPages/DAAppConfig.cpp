@@ -18,7 +18,8 @@ DAAppConfig::DAAppConfig()
     mConfigFilePath = getAbsoluteConfigFilePath();
     //先设置默认参数，这些默认参数后续如果配置文件中有会被替换掉
     insert(DA_CONFIG_KEY_RIBBON_STYLE, int(SARibbonBar::WpsLiteStyleTwoRow));
-    insert(DA_CONFIG_KEY_SHOW_LOG_NUM, 5000);  // 5000条日志
+    insert(DA_CONFIG_KEY_SHOW_LOG_NUM, 5000);             // 5000条日志
+    insert(DA_CONFIG_KEY_SAVE_UI_STATE_ON_CLOSE, false);  // 程序在退出时是否保存ui的状态
 }
 
 DAAppConfig::~DAAppConfig()
@@ -161,18 +162,28 @@ QString DAAppConfig::getAbsoluteConfigFilePath()
     return QDir::toNativeSeparators(DAAbstractSettingPage::getConfigFileSavePath() + QDir::separator() + getConfigFileName());
 }
 
+/**
+ * @brief 应用配置
+ * @return
+ */
 bool DAAppConfig::apply()
 {
     SARibbonBar* bar = mMainWindow->ribbonBar();
     if (bar) {
         SARibbonBar::RibbonStyle ribbonStyle = static_cast< SARibbonBar::RibbonStyle >(value(DA_CONFIG_KEY_RIBBON_STYLE).toInt());
-        qDebug() << QString("SARibbonBar::setRibbonStyle(%1)").arg(ribbonStyle);
         bar->setRibbonStyle(ribbonStyle);
     }
     bool isOK  = false;
     int logNum = value(DA_CONFIG_KEY_SHOW_LOG_NUM).toInt(&isOK);
     if (isOK && logNum > 10 && logNum < 999999) {
         DAMessageQueueProxy::setGlobalQueueCapacity(logNum);
+    }
+    bool isSaveUIState = value(DA_CONFIG_KEY_SAVE_UI_STATE_ON_CLOSE).toBool();
+    if (mMainWindow) {
+        mMainWindow->setSaveUIStateOnClose(isSaveUIState);
+        if (isSaveUIState) {
+            mMainWindow->restoreUIState();
+        }
     }
     return true;
 }

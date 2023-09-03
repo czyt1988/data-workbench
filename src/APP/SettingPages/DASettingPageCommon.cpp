@@ -1,4 +1,5 @@
 ﻿#include "DASettingPageCommon.h"
+#include <QSignalBlocker>
 #include "ui_DASettingPageCommon.h"
 #include "AppMainWindow.h"
 #include "SARibbonBar.h"
@@ -22,6 +23,7 @@ DASettingPageCommon::DASettingPageCommon(QWidget* parent)
     mButtonGroupRibbonStyle.addButton(ui->radioButtonLiteStyle2Row, static_cast< int >(SARibbonBar::WpsLiteStyleTwoRow));
     connect(&mButtonGroupRibbonStyle, QOverload< int >::of(&QButtonGroup::buttonClicked), this, &DASettingPageCommon::onButtonGroupRibbonStyleClicked);
     connect(ui->spinBoxDisplayLogsNum, QOverload< int >::of(&QSpinBox::valueChanged), this, &DASettingPageCommon::onSpinBoxDisplayLogsNumValueChanged);
+    connect(ui->checkBoxSaveUIState, &QCheckBox::stateChanged, this, &DASettingPageCommon::onCheckBoxSaveUIStateStateChanged);
 }
 
 DASettingPageCommon::~DASettingPageCommon()
@@ -38,8 +40,9 @@ void DASettingPageCommon::apply()
     //记录旧值
     mOldRibbonStyle = static_cast< SARibbonBar::RibbonStyle >(cfg[ DA_CONFIG_KEY_RIBBON_STYLE ].toInt());
     //更新
-    cfg[ DA_CONFIG_KEY_RIBBON_STYLE ] = static_cast< int >(mNewRibbonStyle);
-    cfg[ DA_CONFIG_KEY_SHOW_LOG_NUM ] = ui->spinBoxDisplayLogsNum->value();
+    cfg[ DA_CONFIG_KEY_RIBBON_STYLE ]           = static_cast< int >(mNewRibbonStyle);
+    cfg[ DA_CONFIG_KEY_SHOW_LOG_NUM ]           = ui->spinBoxDisplayLogsNum->value();
+    cfg[ DA_CONFIG_KEY_SAVE_UI_STATE_ON_CLOSE ] = ui->checkBoxSaveUIState->isChecked();
     cfg.apply();
     emit settingApplyed();
 }
@@ -59,6 +62,7 @@ bool DASettingPageCommon::setAppConfig(DAAppConfig* p)
     if (nullptr == p) {
         return false;
     }
+    QSignalBlocker blocker(this);
     //名字不符合，跳过
     mAppConfig       = p;
     DAAppConfig& cfg = *p;
@@ -85,12 +89,16 @@ bool DASettingPageCommon::setAppConfig(DAAppConfig* p)
     default:
         break;
     }
+    //是否记录ui
+    bool isSaveUIState = cfg[ DA_CONFIG_KEY_SAVE_UI_STATE_ON_CLOSE ].toBool();
+    ui->checkBoxSaveUIState->setChecked(isSaveUIState);
     //日志
     bool isOK = false;
     int c     = cfg[ DA_CONFIG_KEY_SHOW_LOG_NUM ].toInt(&isOK);
     if (isOK) {
         ui->spinBoxDisplayLogsNum->setValue(c);
     }
+
     return true;
 }
 
@@ -122,6 +130,12 @@ void DASettingPageCommon::onButtonGroupRibbonStyleClicked(int id)
 void DASettingPageCommon::onSpinBoxDisplayLogsNumValueChanged(int v)
 {
     Q_UNUSED(v);
+    emit settingChanged();
+}
+
+void DASettingPageCommon::onCheckBoxSaveUIStateStateChanged(int state)
+{
+    Q_UNUSED(state);
     emit settingChanged();
 }
 

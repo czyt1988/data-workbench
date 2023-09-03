@@ -34,6 +34,8 @@ private slots:
     void onButtonGroupRibbonStyleClicked(int id);
     //日志数量改变
     void onSpinBoxDisplayLogsNumValueChanged(int v);
+    //程序在退出时是否保存ui的状态
+    void onCheckBoxSaveUIStateStateChanged(int state);
 
 private:
     Ui::DASettingPageCommon* ui;

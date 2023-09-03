@@ -11,6 +11,11 @@
  *@def 显示日志的条数
  */
 #define DA_CONFIG_KEY_SHOW_LOG_NUM "show-log-num"
+/**
+ *@def 程序在退出时是否保存ui的状态
+ */
+#define DA_CONFIG_KEY_SAVE_UI_STATE_ON_CLOSE "save-ui-state-on-close"
+
 namespace DA
 {
 class AppMainWindow;

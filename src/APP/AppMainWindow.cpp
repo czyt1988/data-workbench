@@ -6,6 +6,11 @@
 #include <QDomDocument>
 #include <QDomElement>
 #include <QDebug>
+#include <QVector>
+#include <QDataStream>
+#include <QCloseEvent>
+#include <QFile>
+#include <QBuffer>
 //
 #include "SARibbonBar.h"
 #include "SARibbonApplicationButton.h"
@@ -46,6 +51,8 @@
 //
 #include "DAAppSettingDialog.h"
 #include "SettingPages/DAAppConfig.h"
+// Qt-Advanced-Docking-System
+#include "DockManager.h"
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
 //===================================================
@@ -112,6 +119,31 @@ void AppMainWindow::changeEvent(QEvent* e)
     }
 }
 
+/**
+ * @brief 程序关闭事件
+ * @param event
+ */
+void AppMainWindow::closeEvent(QCloseEvent* e)
+{
+    QString uistateFile = getUIStateSettingFilePath();
+    if (mIsSaveUIStateOnClose) {
+        QFile file(uistateFile);
+        if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+            QDataStream st(&file);
+            st << saveUIState();
+            qDebug() << tr("success save ui state to %1").arg(uistateFile);
+        } else {
+            qDebug() << tr("can not open %1,because:%2").arg(uistateFile, file.errorString());
+        }
+    } else {
+        //不保存要删除
+        if (!QFile::remove(uistateFile)) {
+            qDebug() << tr("can not remove %1").arg(uistateFile);
+        }
+    }
+    SARibbonMainWindow::closeEvent(e);
+}
+
 void AppMainWindow::init()
 {
     //初始化配置文件，这个要在所有之前
@@ -171,11 +203,29 @@ void AppMainWindow::onConfigNeedSave()
     mConfig->saveConfig();
 }
 
+bool AppMainWindow::isSaveUIStateOnClose() const
+{
+    return mIsSaveUIStateOnClose;
+}
+
+void AppMainWindow::setSaveUIStateOnClose(bool v)
+{
+    mIsSaveUIStateOnClose = v;
+}
+
+QString AppMainWindow::getUIStateSettingFilePath()
+{
+    return QDir::toNativeSeparators(QString("%1/.dawork-ui-state").arg(DAAbstractSettingPage::getConfigFileSavePath()));
+}
+
 DAAppConfig* AppMainWindow::getAppConfig() const
 {
     return mConfig.get();
 }
 
+/**
+ * @brief 显示设置对话框
+ */
 void AppMainWindow::showSettingDialog()
 {
     if (nullptr == mSettingDialog) {
@@ -193,4 +243,77 @@ void AppMainWindow::showSettingDialog()
         }
     }
     mSettingDialog->exec();
+}
+
+/**
+ * @brief 保存所有状态
+ *
+ * 包含了QMainWindow::saveGeometry,QMainWindow::saveState,ads::CDockManager::saveState
+ * @return
+ */
+QByteArray AppMainWindow::saveUIState() const
+{
+    QVector< QByteArray > uiStateArr;
+    uiStateArr << saveGeometry() << saveGeometry();
+    if (mDockArea) {
+        uiStateArr << mDockArea->dockManager()->saveState();
+    }
+    QByteArray res;
+    QBuffer buffer(&res);
+    buffer.open(QIODevice::WriteOnly);
+    QDataStream st(&buffer);
+    st << uiStateArr;
+    for (auto& v : uiStateArr) {
+        qDebug() << "QByteArray.size = " << v.size();
+    }
+    qDebug() << "saveUIState byte = " << res.size();
+    return res;
+}
+
+/**
+ * @brief 恢复状态
+ * @param v
+ * @return
+ */
+bool AppMainWindow::restoreUIState(const QByteArray& v)
+{
+    QVector< QByteArray > uiStateArr;
+
+    try {
+        QDataStream st(v);
+        st >> uiStateArr;
+        if (1 <= uiStateArr.size()) {
+            restoreGeometry(uiStateArr.at(0));
+        }
+        if (2 <= uiStateArr.size()) {
+            restoreState(uiStateArr.at(1));
+        }
+        if (3 <= uiStateArr.size()) {
+            if (mDockArea) {
+                mDockArea->dockManager()->restoreState(uiStateArr.at(2));
+            }
+        }
+    } catch (const std::exception& e) {
+        qCritical() << tr("restore UI state error:%1").arg(e.what());  //恢复状态过程中出错:%1
+    }
+    return true;
+}
+
+bool AppMainWindow::restoreUIState()
+{
+    QString uistateFile = getUIStateSettingFilePath();
+    QFile file(uistateFile);
+    if (!file.open(QIODevice::ReadOnly)) {
+        qCritical() << tr("can not read ui state file %1,because %2").arg(uistateFile, file.errorString());
+        return false;
+    }
+    QByteArray res;
+    QDataStream st(&file);
+    st >> res;
+    return restoreUIState(res);
+}
+
+void AppMainWindow::resetUIState()
+{
+    // TODO:重置ui
 }
