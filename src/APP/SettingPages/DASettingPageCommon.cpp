@@ -34,7 +34,10 @@ void DASettingPageCommon::apply()
     if (nullptr == mAppConfig) {
         return;
     }
-    DAAppConfig& cfg                  = *mAppConfig;
+    DAAppConfig& cfg = *mAppConfig;
+    //记录旧值
+    mOldRibbonStyle = static_cast< SARibbonBar::RibbonStyle >(cfg[ DA_CONFIG_KEY_RIBBON_STYLE ].toInt());
+    //更新
     cfg[ DA_CONFIG_KEY_RIBBON_STYLE ] = static_cast< int >(mNewRibbonStyle);
     cfg[ DA_CONFIG_KEY_SHOW_LOG_NUM ] = ui->spinBoxDisplayLogsNum->value();
     cfg.apply();
