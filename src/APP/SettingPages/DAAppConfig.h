@@ -30,7 +30,10 @@ public:
     //保存到xml中
     virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement) const;
     virtual bool loadFromXml(const QDomElement* parentElement);
-    //
+    //获取配置文件名字
+    static QString getConfigFileName();
+    //获取配置文件的绝对路径
+    static QString getAbsoluteConfigFilePath();
 
 public:
     virtual bool apply();

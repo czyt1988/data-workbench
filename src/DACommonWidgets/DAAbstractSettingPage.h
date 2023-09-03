@@ -43,6 +43,15 @@ public:
      */
     virtual QIcon getSettingPageIcon() const = 0;
 
+    /**
+     * @brief 获取配置文件推荐保存的目录
+     *
+     * 此函数会返回一个路径，这个路径正常情况必定存在，如果无法创建将会报错（qCritual）
+     *
+     * 此函数返回的是QStandardPaths::AppConfigLocation
+     * @return 如果创建不成功会返回一个空的字符串
+     */
+    static QString getConfigFileSavePath();
 signals:
     /**
      * @brief 配置信息改变信号

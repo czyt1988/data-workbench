@@ -9,13 +9,14 @@
 #include "DAAppCore.h"
 #include "DAAppUI.h"
 #include "DAMessageQueueProxy.h"
+#include "DAAbstractSettingPage.h"
 namespace DA
 {
 
 DAAppConfig::DAAppConfig()
 {
-    mConfigFilePath = QApplication::applicationDirPath() + "/config.xml";
-    mConfigFilePath = QDir::toNativeSeparators(mConfigFilePath);
+    mConfigFilePath = getAbsoluteConfigFilePath();
+    //先设置默认参数，这些默认参数后续如果配置文件中有会被替换掉
     insert(DA_CONFIG_KEY_RIBBON_STYLE, int(SARibbonBar::WpsLiteStyleTwoRow));
     insert(DA_CONFIG_KEY_SHOW_LOG_NUM, 5000);  // 5000条日志
 }
@@ -72,6 +73,7 @@ bool DAAppConfig::loadConfig(bool noFileCreateNewOne)
 bool DAAppConfig::saveConfig()
 {
     QFile xmlConfigFile(mConfigFilePath);
+    //一定要带上QIODevice::Truncate
     if (!xmlConfigFile.open(QIODevice::ReadWrite | QIODevice::Truncate)) {
         //有配置文件，但打开失败
         qCritical() << QObject::tr("can not open config file \"%1\",because %2")  // cn:无法打开配置文件\"%1\",原因是%2
@@ -141,11 +143,30 @@ bool DAAppConfig::loadFromXml(const QDomElement* parentElement)
     return true;
 }
 
+/**
+ * @brief 获取配置文件名字
+ * @return
+ */
+QString DAAppConfig::getConfigFileName()
+{
+    return "dawork-config.xml";
+}
+
+/**
+ * @brief 获取配置文件的绝对路径
+ * @return
+ */
+QString DAAppConfig::getAbsoluteConfigFilePath()
+{
+    return QDir::toNativeSeparators(DAAbstractSettingPage::getConfigFileSavePath() + QDir::separator() + getConfigFileName());
+}
+
 bool DAAppConfig::apply()
 {
     SARibbonBar* bar = mMainWindow->ribbonBar();
     if (bar) {
         SARibbonBar::RibbonStyle ribbonStyle = static_cast< SARibbonBar::RibbonStyle >(value(DA_CONFIG_KEY_RIBBON_STYLE).toInt());
+        qDebug() << QString("SARibbonBar::setRibbonStyle(%1)").arg(ribbonStyle);
         bar->setRibbonStyle(ribbonStyle);
     }
     bool isOK  = false;
