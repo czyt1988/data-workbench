@@ -53,6 +53,8 @@ public:
     void setSaveUIStateOnClose(bool v);
     //获取ui state 配置文件路径
     static QString getUIStateSettingFilePath();
+    // 判断是否存在状态设置文件
+    static bool isHaveStateSettingFile();
 
 protected:
     void changeEvent(QEvent* e);
@@ -77,13 +79,13 @@ private slots:
     void onConfigNeedSave();
 
 private:
-    DAAppCore* mCore { nullptr };
-    DAAppUI* mUI { nullptr };
-    DAAppDockingArea* mDockArea { nullptr };
-    DAAppController* mController { nullptr };
+    DAAppCore* mCore{ nullptr };
+    DAAppUI* mUI{ nullptr };
+    DAAppDockingArea* mDockArea{ nullptr };
+    DAAppController* mController{ nullptr };
     std::unique_ptr< DAAppConfig > mConfig;
-    DAAppSettingDialog* mSettingDialog { nullptr };  ///< 设置窗口,避免过多的中间传递
-    bool mIsSaveUIStateOnClose { false };            ///< 是否在退出时记录程序的状态
+    DAAppSettingDialog* mSettingDialog{ nullptr };  ///< 设置窗口,避免过多的中间传递
+    bool mIsSaveUIStateOnClose{ false };            ///< 是否在退出时记录程序的状态
 };
 }  // namespace DA
 #endif  // METHODMAINWINDOW_H

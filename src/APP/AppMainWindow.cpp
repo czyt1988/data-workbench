@@ -90,7 +90,9 @@ AppMainWindow::AppMainWindow(QWidget* parent) : SARibbonMainWindow(parent)
     init();
     //    retranslateUi();//非必要可以验证调用是否正常
     //    ribbonBar()->setRibbonStyle(SARibbonBar::WpsLiteStyleTwoRow);
-    showMaximized();
+    if (!restoreUIState()) {
+        showMaximized();
+    }
 }
 
 AppMainWindow::~AppMainWindow()
@@ -218,6 +220,15 @@ QString AppMainWindow::getUIStateSettingFilePath()
     return QDir::toNativeSeparators(QString("%1/.dawork-ui-state").arg(DAAbstractSettingPage::getConfigFileSavePath()));
 }
 
+/**
+ * @brief 判断是否存在状态设置文件
+ * @return
+ */
+bool AppMainWindow::isHaveStateSettingFile()
+{
+    return QFileInfo::exists(getUIStateSettingFilePath());
+}
+
 DAAppConfig* AppMainWindow::getAppConfig() const
 {
     return mConfig.get();
@@ -263,10 +274,6 @@ QByteArray AppMainWindow::saveUIState() const
     buffer.open(QIODevice::WriteOnly);
     QDataStream st(&buffer);
     st << uiStateArr;
-    for (auto& v : uiStateArr) {
-        qDebug() << "QByteArray.size = " << v.size();
-    }
-    qDebug() << "saveUIState byte = " << res.size();
     return res;
 }
 

@@ -168,6 +168,7 @@ QString DAAppConfig::getAbsoluteConfigFilePath()
  */
 bool DAAppConfig::apply()
 {
+    qDebug() << "apply setting";
     SARibbonBar* bar = mMainWindow->ribbonBar();
     if (bar) {
         SARibbonBar::RibbonStyle ribbonStyle = static_cast< SARibbonBar::RibbonStyle >(value(DA_CONFIG_KEY_RIBBON_STYLE).toInt());
@@ -181,11 +182,8 @@ bool DAAppConfig::apply()
     bool isSaveUIState = value(DA_CONFIG_KEY_SAVE_UI_STATE_ON_CLOSE).toBool();
     if (mMainWindow) {
         mMainWindow->setSaveUIStateOnClose(isSaveUIState);
-        if (isSaveUIState) {
-            mMainWindow->restoreUIState();
-        }
     }
     return true;
 }
 
-}
+}  // end da
