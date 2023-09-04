@@ -22,7 +22,7 @@ public:
     {
         Type = DA::ItemType_GraphicsStandardNodeSvgItem
     };
-    int type() const
+    int type() const override
     {
         return (Type);
     }
@@ -61,9 +61,11 @@ public:
     Qt::AspectRatioMode getAspectRatioMode() const;
     //获取文本图元
     QGraphicsSimpleTextItem* getTextItem() const;
+    //更新text item的位置，使得文本的位置一直处于中间
+    void updateTextItemPos();
 
 protected:
-    virtual void prepareNodeNameChanged(const QString& name);
+    virtual void prepareNodeNameChanged(const QString& name) override;
 public slots:
     void repaintItem();
 

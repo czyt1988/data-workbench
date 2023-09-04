@@ -24,15 +24,15 @@ public:
     QSizeF getAspectRatioSize(const QSizeF& s) const;
 
 public:
-    bool mShared { false };
-    QSvgRenderer* mRenderer { nullptr };
+    bool mShared{ false };
+    QSvgRenderer* mRenderer{ nullptr };
     QSize mDefaultSize;
     QString mElemId;
     QRectF mNodeNameRect;
     QRectF mSvgPaintRect;
     QMarginsF mMargins;
-    QGraphicsSimpleTextItem* mItemText { nullptr };
-    Qt::AspectRatioMode mAspectRatioMode { Qt::KeepAspectRatio };
+    QGraphicsSimpleTextItem* mItemText{ nullptr };
+    Qt::AspectRatioMode mAspectRatioMode{ Qt::KeepAspectRatio };
 };
 
 //===================================================
@@ -230,6 +230,7 @@ QSizeF DAStandardNodeSvgGraphicsItem::getTextSize() const
 void DAStandardNodeSvgGraphicsItem::setText(const QString& t)
 {
     d_ptr->mItemText->setText(t);
+    updateTextItemPos();
 }
 
 /**
@@ -279,6 +280,21 @@ Qt::AspectRatioMode DAStandardNodeSvgGraphicsItem::getAspectRatioMode() const
 QGraphicsSimpleTextItem* DAStandardNodeSvgGraphicsItem::getTextItem() const
 {
     return d_ptr->mItemText;
+}
+
+/**
+ * @brief 更新text item的位置，使得文本的位置一直处于中间
+ */
+void DAStandardNodeSvgGraphicsItem::updateTextItemPos()
+{
+    if (!(d_ptr->mItemText)) {
+        return;
+    }
+    QRectF tc = d_ptr->mItemText->boundingRect();
+    QRectF bc = getBodyRect();
+    qreal x   = (bc.width() - tc.width()) / 2;
+    qreal y   = bc.bottom() + 5;
+    d_ptr->mItemText->setPos(x, y);
 }
 
 void DAStandardNodeSvgGraphicsItem::prepareNodeNameChanged(const QString& name)

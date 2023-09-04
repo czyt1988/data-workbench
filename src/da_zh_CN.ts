@@ -75,35 +75,68 @@
 <context>
     <name>DA::AppMainWindow</name>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="96"/>
+        <location filename="APP/AppMainWindow.cpp" line="106"/>
         <source>Data WorkFlow</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="105"/>
+        <location filename="APP/AppMainWindow.cpp" line="115"/>
         <source>LanguageChange</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="144"/>
+        <location filename="APP/AppMainWindow.cpp" line="136"/>
+        <source>success save ui state to %1</source>
+        <translation>成功保存ui状态到路径%1</translation>
+    </message>
+    <message>
+        <location filename="APP/AppMainWindow.cpp" line="138"/>
+        <source>can not open %1,because:%2</source>
+        <translation>无法打开路径%1，原因是：%2</translation>
+    </message>
+    <message>
+        <location filename="APP/AppMainWindow.cpp" line="143"/>
+        <source>can not remove %1</source>
+        <translation>无法移除ui状态文件%1</translation>
+    </message>
+    <message>
+        <location filename="APP/AppMainWindow.cpp" line="179"/>
         <source>untitle</source>
         <translation>未命名</translation>
     </message>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="162"/>
-        <location filename="APP/AppMainWindow.cpp" line="164"/>
+        <location filename="APP/AppMainWindow.cpp" line="197"/>
+        <location filename="APP/AppMainWindow.cpp" line="199"/>
         <source>infomation</source>
         <translation>信息</translation>
     </message>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="162"/>
+        <location filename="APP/AppMainWindow.cpp" line="197"/>
         <source>Topology execution completed</source>
         <translation>拓扑执行完成</translation>
     </message>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="164"/>
+        <location filename="APP/AppMainWindow.cpp" line="199"/>
         <source>Topology execution failed</source>
         <translation>拓扑执行失败</translation>
+    </message>
+    <message>
+        <location filename="APP/AppMainWindow.cpp" line="304"/>
+        <source>restore UI state error:%1</source>
+        <translation>恢复ui状态发生错误：%1</translation>
+    </message>
+    <message>
+        <location filename="APP/AppMainWindow.cpp" line="314"/>
+        <source>can not read ui state file %1,because %2</source>
+        <translation>无法读取ui状态文件%1，原因是：%2</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAAbstractSettingPage</name>
+    <message>
+        <location filename="DACommonWidgets/DAAbstractSettingPage.cpp" line="27"/>
+        <source>Unable to create application configuration path:%1</source>
+        <translation>无法创建程序的配置文件路径：%1</translation>
     </message>
 </context>
 <context>
@@ -1076,77 +1109,77 @@ Table Area</source>
         <translation>y</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="172"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="180"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="203"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="212"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="235"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="248"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="255"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="274"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="288"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="296"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="315"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="326"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="333"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="341"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="182"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="190"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="213"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="222"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="245"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="258"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="265"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="284"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="298"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="306"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="325"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="336"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="343"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="351"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="173"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="183"/>
         <source>The initial value of x auto increment series must be a floating-point arithmetic number</source>
         <translation>x自增序列的初始值必须为浮点数</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="181"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="191"/>
         <source>The step value of x auto increment series must be a floating-point arithmetic number</source>
         <translation>x自增序列的步长必须为浮点数</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="204"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="214"/>
         <source>The initial value of y auto increment series must be a floating-point arithmetic number</source>
         <translation>y自增序列的初始值必须为浮点数</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="213"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="223"/>
         <source>The step value of y auto increment series must be a floating-point arithmetic number</source>
         <translation>y自增序列的步长必须为浮点数</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="236"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="246"/>
         <source>x and y cannot be set to autoincrement at the same time</source>
         <translation>x和y无法同时设置为自增</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="256"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="297"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="342"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="266"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="307"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="352"/>
         <source>The None value cannot be converted to a series</source>
         <translation>None值无法转换为序列</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="275"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="316"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="285"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="326"/>
         <source>Exception occurred during extracting from pandas.Series to double vector</source>
         <translation>从pandas.Series提取为double vector过程中出现异常</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="289"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="327"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="299"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="337"/>
         <source>x must be a series</source>
         <translation>x必须是序列</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="249"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="334"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="259"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="344"/>
         <source>y must be a series</source>
         <translation>y必须是序列</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="270"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="311"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="361"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="280"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="321"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="371"/>
         <source>Exception occurred during extracting from pandas.Series to double vector:%1</source>
         <translation>从pandas.Series提取为double vector过程中出现异常:%1</translation>
     </message>
@@ -1736,29 +1769,29 @@ Table Area</source>
 <context>
     <name>DA::DAPluginManager</name>
     <message>
-        <location filename="DAPluginSupport/DAPluginManager.cpp" line="102"/>
+        <location filename="DAPluginSupport/DAPluginManager.cpp" line="115"/>
         <source>plugin dir is:%1</source>
         <translation>插件路径:%1</translation>
     </message>
     <message>
-        <location filename="DAPluginSupport/DAPluginManager.cpp" line="105"/>
+        <location filename="DAPluginSupport/DAPluginManager.cpp" line="118"/>
         <source>ignore plugin %1</source>
         <translation>忽略插件%1</translation>
     </message>
     <message>
-        <location filename="DAPluginSupport/DAPluginManager.cpp" line="110"/>
+        <location filename="DAPluginSupport/DAPluginManager.cpp" line="123"/>
         <source> ignore invalid file:%1</source>
         <oldsource> ignore invalid file:%2</oldsource>
         <translation> 忽略异常文件:%1</translation>
     </message>
     <message>
-        <location filename="DAPluginSupport/DAPluginManager.cpp" line="116"/>
+        <location filename="DAPluginSupport/DAPluginManager.cpp" line="129"/>
         <source>can not load plugin:%1</source>
         <oldsource>start load plugin:%1</oldsource>
         <translation>无法加载插件:%1</translation>
     </message>
     <message>
-        <location filename="DAPluginSupport/DAPluginManager.cpp" line="175"/>
+        <location filename="DAPluginSupport/DAPluginManager.cpp" line="188"/>
         <source>Plugin Manager Info:is loaded=%1,plugin counts=%2</source>
         <translation>Plugin Manager Info:加载情况=%1,插件数量=%2</translation>
     </message>
@@ -1928,7 +1961,7 @@ Table Area</source>
 <context>
     <name>DA::DASettingPageCommon</name>
     <message>
-        <location filename="APP/SettingPages/DASettingPageCommon.cpp" line="46"/>
+        <location filename="APP/SettingPages/DASettingPageCommon.cpp" line="52"/>
         <source>common</source>
         <translation>通用</translation>
     </message>
@@ -2953,6 +2986,11 @@ Table Area</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="APP/SettingPages/DASettingPageCommon.ui" line="20"/>
+        <source>UI</source>
+        <translation></translation>
+    </message>
+    <message>
         <location filename="APP/SettingPages/DASettingPageCommon.ui" line="28"/>
         <source>Standard Mode</source>
         <translation>标准模式</translation>
@@ -2973,24 +3011,28 @@ Table Area</source>
         <translation>最小模式</translation>
     </message>
     <message>
-        <location filename="APP/SettingPages/DASettingPageCommon.ui" line="83"/>
+        <location filename="APP/SettingPages/DASettingPageCommon.ui" line="80"/>
+        <source>Is the geometry and status of the program interface recorded</source>
+        <translation>是否在程序退出的时候记录程序的界面布局和位置</translation>
+    </message>
+    <message>
+        <location filename="APP/SettingPages/DASettingPageCommon.ui" line="90"/>
         <source>Log</source>
         <translation>日志</translation>
     </message>
     <message>
-        <location filename="APP/SettingPages/DASettingPageCommon.ui" line="89"/>
+        <location filename="APP/SettingPages/DASettingPageCommon.ui" line="96"/>
         <source>Display number of logs</source>
         <translation>显示的日志条数</translation>
     </message>
     <message>
-        <location filename="APP/SettingPages/DASettingPageCommon.ui" line="115"/>
+        <location filename="APP/SettingPages/DASettingPageCommon.ui" line="122"/>
         <source>Language</source>
         <translation>语言</translation>
     </message>
     <message>
-        <location filename="APP/SettingPages/DASettingPageCommon.ui" line="20"/>
         <source>Ribbon Style</source>
-        <translation>界面样式</translation>
+        <translation type="vanished">界面样式</translation>
     </message>
 </context>
 <context>
@@ -3752,18 +3794,18 @@ Table Area</source>
         <translation>图-未命名</translation>
     </message>
     <message>
-        <location filename="APP/SettingPages/DAAppConfig.cpp" line="46"/>
-        <location filename="APP/SettingPages/DAAppConfig.cpp" line="77"/>
+        <location filename="APP/SettingPages/DAAppConfig.cpp" line="48"/>
+        <location filename="APP/SettingPages/DAAppConfig.cpp" line="80"/>
         <source>can not open config file &quot;%1&quot;,because %2</source>
         <translation>无法打开配置文件“%1”，原因：%2</translation>
     </message>
     <message>
-        <location filename="APP/SettingPages/DAAppConfig.cpp" line="55"/>
+        <location filename="APP/SettingPages/DAAppConfig.cpp" line="57"/>
         <source>can not load config file &quot;%1&quot;,because %2</source>
         <translation>无法打开配置文件“%1”，原因：%2</translation>
     </message>
     <message>
-        <location filename="APP/SettingPages/DAAppConfig.cpp" line="61"/>
+        <location filename="APP/SettingPages/DAAppConfig.cpp" line="63"/>
         <source>config file(%1) loss &lt;configs&gt; tag</source>
         <translation>配置文件（%1）缺失&lt;configs&gt;标签</translation>
     </message>
