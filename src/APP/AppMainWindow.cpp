@@ -90,7 +90,9 @@ AppMainWindow::AppMainWindow(QWidget* parent) : SARibbonMainWindow(parent)
     init();
     //    retranslateUi();//非必要可以验证调用是否正常
     //    ribbonBar()->setRibbonStyle(SARibbonBar::WpsLiteStyleTwoRow);
-    if (!restoreUIState()) {
+    if (isHaveStateSettingFile()) {
+        restoreUIState();
+    } else {
         showMaximized();
     }
 }
