@@ -49,7 +49,6 @@ void DASettingDialog::onPushButtonOKClicked()
 {
     onPushButtonApplyClicked();
     accept();
-    emit needSave();
 }
 
 void DASettingDialog::onPushButtonApplyClicked()

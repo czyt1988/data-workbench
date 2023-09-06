@@ -1,6 +1,7 @@
 ﻿#include "DASettingWidget.h"
 #include "ui_DASettingWidget.h"
 #include "DAAbstractSettingPage.h"
+#include <QDebug>
 namespace DA
 {
 
@@ -92,6 +93,7 @@ void DASettingWidget::onPageSettingChanged()
 {
     DAAbstractSettingPage* page = qobject_cast< DAAbstractSettingPage* >(sender());
     if (!page) {
+        qCritical() << tr("page changed,but can not catch the sender widget");  // cn:检测到配置页的改变，但无法捕获改变的配置页
         return;
     }
     mChangedPages.insert(page);
