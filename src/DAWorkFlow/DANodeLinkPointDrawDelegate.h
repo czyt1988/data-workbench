@@ -2,6 +2,7 @@
 #define DANODELINKPOINTDRAWDELEGATE_H
 #include "DAWorkFlowGlobal.h"
 #include "DANodeLinkPoint.h"
+#include <QPainterPath>
 namespace DA
 {
 
@@ -27,7 +28,7 @@ public:
 
 public:
     //获取连接点的矩形绘图区域范围
-    virtual QRectF getlinkPointPainterRect(const DANodeLinkPoint& pl) const;
+    virtual QPainterPath getlinkPointPainterRegion(const DANodeLinkPoint& pl) const;
     //获取连接点
     virtual QList< DANodeLinkPoint > getLinkPoints() const;
     //绘制某个连接点

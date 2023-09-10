@@ -512,7 +512,7 @@ DANodeLinkPoint DAAbstractNodeGraphicsItem::getLinkPointByPos(const QPointF& p) 
 {
     QList< DANodeLinkPoint > lps = getLinkPoints();
     for (const DANodeLinkPoint& lp : qAsConst(lps)) {
-        if (d_ptr->mLinkPointDrawDelegate->getlinkPointPainterRect(lp).contains(p)) {
+        if (d_ptr->mLinkPointDrawDelegate->getlinkPointPainterRegion(lp).contains(p)) {
             return lp;
         }
     }

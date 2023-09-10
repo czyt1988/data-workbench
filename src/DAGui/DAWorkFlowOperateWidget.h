@@ -17,7 +17,7 @@ class DADataWorkFlow;
 class DAWorkFlowGraphicsView;
 class DAAbstractNodeGraphicsItem;
 /**
- * @brief 工作流绘图窗口
+ * @brief 工作流绘图建模窗口
  */
 class DAGUI_API DAWorkFlowOperateWidget : public QWidget
 {

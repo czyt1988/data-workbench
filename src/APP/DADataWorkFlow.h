@@ -9,6 +9,8 @@ namespace DA
 {
 /**
  * @brief 创建节点命令
+ *
+ * 这里所有工作流是共享一批工厂
  */
 class DADataWorkFlow : public DAWorkFlow
 {

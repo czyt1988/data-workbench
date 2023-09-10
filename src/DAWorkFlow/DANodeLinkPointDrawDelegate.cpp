@@ -2,6 +2,7 @@
 #include <QGraphicsItem>
 #include <QPainter>
 #include <QStyleOptionGraphicsItem>
+#include <QDebug>
 #include "DAAbstractNodeGraphicsItem.h"
 #include "DANodePalette.h"
 
@@ -86,32 +87,33 @@ QList< DANodeLinkPoint > DANodeLinkPointDrawDelegate::getLinkPoints() const
 }
 
 /**
- * @brief 获取连接点的矩形绘图区域范围
+ * @brief 获取连接点的绘图区域
  *
  * DAAbstractNodeGraphicsItem::changeLinkPointPos函数用于定义DANodeLinkPoint的信息，此函数根据定义的位置信息获取连接点的绘图区域
  * @sa DAAbstractNodeGraphicsItem::changeLinkPointPos
  * @param pl
  * @return
  */
-QRectF DANodeLinkPointDrawDelegate::getlinkPointPainterRect(const DANodeLinkPoint& pl) const
+QPainterPath DANodeLinkPointDrawDelegate::getlinkPointPainterRegion(const DANodeLinkPoint& pl) const
 {
     int lpHWidth  = 14;  //连接点水平时的宽度
     int lpHHeight = 10;  //连接点水平时的高度
+    QPainterPath region;
     switch (pl.direction) {
     case DANodeLinkPoint::East:
     case DANodeLinkPoint::West:
-        return (QRectF(pl.position.x() - lpHWidth / 2, pl.position.y() - lpHHeight / 2, lpHWidth, lpHHeight));
-
+        region.addRect(QRectF(pl.position.x() - lpHWidth / 2, pl.position.y() - lpHHeight / 2, lpHWidth, lpHHeight));
+        break;
     case DANodeLinkPoint::North:
     case DANodeLinkPoint::South:
-        return (QRectF(pl.position.x() - lpHHeight / 2, pl.position.y() - lpHWidth / 2, lpHHeight, lpHWidth));
-
+        region.addRect(QRectF(pl.position.x() - lpHHeight / 2, pl.position.y() - lpHWidth / 2, lpHHeight, lpHWidth));
+        break;
     default:
+        region.addRect(QRectF(pl.position.x() - lpHWidth / 2, pl.position.y() - lpHWidth / 2, lpHWidth, lpHWidth));
         break;
     }
-    return (QRectF(pl.position.x() - lpHWidth / 2, pl.position.y() - lpHWidth / 2, lpHWidth, lpHWidth));
+    return region;
 }
-
 /**
  * @brief 绘制连接点
  * @param pl 连接点
@@ -130,13 +132,13 @@ void DANodeLinkPointDrawDelegate::paintLinkPoint(const DANodeLinkPoint& pl,
     //连接点是一个长方形，6X8,点中心是长方形中心
     //先把painter坐标变换到点处
     const DANodePalette& palette = d_ptr->mItem->getNodePalette();
-    QRectF pointrange            = getlinkPointPainterRect(pl);  // 横版矩形，对应East，West
+    QPainterPath pointrange      = getlinkPointPainterRegion(pl);  // 横版矩形，对应East，West
     painter->setPen(palette.getGlobalLinkPointBorderColor());
-    painter->drawRect(pointrange);
     if (DANodeLinkPoint::Input == pl.way) {
-        painter->fillRect(pointrange, palette.getInLinkPointBrush());
+        painter->setBrush(palette.getInLinkPointBrush());
     } else {
-        painter->fillRect(pointrange, palette.getOutLinkPointBrush());
+        painter->setBrush(palette.getOutLinkPointBrush());
     }
+    painter->drawPath(pointrange);
     painter->restore();
 }
