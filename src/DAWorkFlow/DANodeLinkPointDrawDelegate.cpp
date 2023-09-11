@@ -89,8 +89,11 @@ QList< DANodeLinkPoint > DANodeLinkPointDrawDelegate::getLinkPoints() const
 /**
  * @brief 获取连接点的绘图区域
  *
- * DAAbstractNodeGraphicsItem::changeLinkPointPos函数用于定义DANodeLinkPoint的信息，此函数根据定义的位置信息获取连接点的绘图区域
- * @sa DAAbstractNodeGraphicsItem::changeLinkPointPos
+ * DAAbstractNodeGraphicsItem::getLinkPointByPos函数是通过此函数获取到的路径来进行判断
+ *
+ * 此函数会影响到场景链接过程选中的状态，比较关键，决定了DANodeGraphicsScene::nodeItemLinkPointSelected能否发射
+ *
+ * @sa DAAbstractNodeGraphicsItem::getLinkPointByPos DANodeGraphicsScene::nodeItemLinkPointSelected
  * @param pl
  * @return
  */

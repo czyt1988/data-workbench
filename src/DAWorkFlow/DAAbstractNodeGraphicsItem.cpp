@@ -651,11 +651,14 @@ bool DAAbstractNodeGraphicsItem::linkItemRemoved(DAAbstractNodeLinkGraphicsItem*
 /**
  * @brief 此函数根据DAAbstractNode的输入输出来生成默认的连接点
  *
- * 会调用@sa FCAbstractNode::inputKeys 获取所有的输入参数,
- * 调用@sa FCAbstractNode::outputKeys 判断是否生成输出节点
+ * 会调用@sa DAAbstractNode::inputKeys 获取所有的输入参数,
+ * 调用@sa DAAbstractNode::outputKeys 判断是否生成输出节点
  *
  * 默认所有输入位于左边，所有输出位于右边
  * 此函数会调用@sa updateLinkPointPos 来更新点位置
+ *
+ * 连接点的方向属性仅仅是为了辅助绘制常规连接点，针对一些特别的连接点，
+ * 可以通过@sa DANodeLinkPointDrawDelegate 绘制任意形状的连接点
  * @return
  */
 QList< DANodeLinkPoint > DAAbstractNodeGraphicsItem::generateLinkPoint() const
@@ -898,12 +901,12 @@ DAAbstractNodeLinkGraphicsItem* DAAbstractNodeGraphicsItem::linkTo(const DANodeL
     }
     if (!linkitem->attachFrom(this, fromPoint)) {
         qDebug() << QObject::tr("link item can not attach from node item(%1) with key=%2")
-                            .arg(this->getNodeName(), fromPoint.name);  // cn:无法在节点(%1)的连接点%2上建立链接
+                        .arg(this->getNodeName(), fromPoint.name);  // cn:无法在节点(%1)的连接点%2上建立链接
         return nullptr;
     }
     if (!linkitem->attachTo(toItem, toPoint)) {
         qDebug() << QObject::tr("link item can not attach to node item(%1) with key=%2")  // cn:无法链接到节点(%1)的连接点%2
-                            .arg(toItem->getNodeName(), toPoint.name);
+                        .arg(toItem->getNodeName(), toPoint.name);
 
         return nullptr;
     }
@@ -925,12 +928,12 @@ DAAbstractNodeLinkGraphicsItem* DAAbstractNodeGraphicsItem::linkTo(const QString
     DANodeLinkPoint tolp   = toItem->getInputLinkPoint(toPointName);
     if (!fromlp.isValid()) {
         qDebug() << QObject::tr("Node %1 cannot find a connection point named %2")  // cn:节点%1无法找到名字为%2的连接点
-                            .arg(getNodeName(), fromPointName);
+                        .arg(getNodeName(), fromPointName);
         return nullptr;
     }
     if (!tolp.isValid()) {
         qDebug() << QObject::tr("Node %1 cannot find a connection point named %2")  // cn:节点%1无法找到名字为%2的连接点
-                            .arg(toItem->getNodeName(), toPointName);
+                        .arg(toItem->getNodeName(), toPointName);
         return nullptr;
     }
     return linkTo(fromlp, toItem, tolp);

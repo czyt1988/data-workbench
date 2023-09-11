@@ -28,6 +28,7 @@ public:
 
 public:
     //获取连接点的矩形绘图区域范围
+    // 此函数会影响到场景链接过程选中的状态，比较关键，决定了DANodeGraphicsScene::nodeItemLinkPointSelected能否发射
     virtual QPainterPath getlinkPointPainterRegion(const DANodeLinkPoint& pl) const;
     //获取连接点
     virtual QList< DANodeLinkPoint > getLinkPoints() const;

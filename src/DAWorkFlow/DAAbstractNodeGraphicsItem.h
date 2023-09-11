@@ -153,21 +153,21 @@ public:
 
 protected:
     //处理一些联动事件，如和FCAbstractNodeLinkGraphicsItem的联动
-    virtual QVariant itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant& value);
+    virtual QVariant itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant& value) override;
 
     //鼠标事件
-    virtual void mousePressEvent(QGraphicsSceneMouseEvent* event);
-    virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* event);
-    virtual void hoverEnterEvent(QGraphicsSceneHoverEvent* event);
-    virtual void hoverMoveEvent(QGraphicsSceneHoverEvent* event);
-    virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent* event);
+    virtual void mousePressEvent(QGraphicsSceneMouseEvent* event) override;
+    virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
+    virtual void hoverEnterEvent(QGraphicsSceneHoverEvent* event) override;
+    virtual void hoverMoveEvent(QGraphicsSceneHoverEvent* event) override;
+    virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override;
     //此函数用于FCAbstractNodeLinkGraphicsItem在调用attachedTo/From过程中调用
     bool linked(DAAbstractNodeLinkGraphicsItem* link, const DANodeLinkPoint& pl);
 
     //连接的link在销毁时调用，把item记录的link信息消除
     bool linkItemRemoved(DAAbstractNodeLinkGraphicsItem* link, const DANodeLinkPoint& pl);
 
-    //生成linkpoint
+    //生成linkpoint，默认会把输入设置在左边，输出设置在右边，并生成一个举行的链接点
     virtual QList< DANodeLinkPoint > generateLinkPoint() const;
     //重置连接点，此函数会自动调用generateLinkPoint，如果想自定义，重载此函数
     void resetLinkPoint();
@@ -183,8 +183,8 @@ private:
 DAWORKFLOW_API QString enumToString(DA::DAAbstractNodeGraphicsItem::LinkPointLocation e);
 // DA::DAAbstractNodeGraphicsItem::LinkPointLocation的枚举转换
 DAWORKFLOW_API DA::DAAbstractNodeGraphicsItem::LinkPointLocation stringToEnum(
-        const QString& s,
-        DA::DAAbstractNodeGraphicsItem::LinkPointLocation defaultEnum = DA::DAAbstractNodeGraphicsItem::LinkPointLocationOnLeftSide);
+    const QString& s,
+    DA::DAAbstractNodeGraphicsItem::LinkPointLocation defaultEnum = DA::DAAbstractNodeGraphicsItem::LinkPointLocationOnLeftSide);
 
 }
 #endif  // FCNODEGRAPHICSITEM_H
