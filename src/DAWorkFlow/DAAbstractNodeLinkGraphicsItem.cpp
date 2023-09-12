@@ -351,6 +351,7 @@ void DAAbstractNodeLinkGraphicsItem::updateBoundingRect()
         //只设定了一个from
         // to要根据scene的鼠标位置实时刷新
         d_ptr->mToPos = mapFromScene(sc->getCurrentMouseScenePos());
+        // 关键！！！
         // 为了不覆盖点击，d_ptr->_toPos要做2像素偏移
         if (d_ptr->mToPos.x() > d_ptr->mFromPos.x()) {
             d_ptr->mToPos.rx() -= 2;

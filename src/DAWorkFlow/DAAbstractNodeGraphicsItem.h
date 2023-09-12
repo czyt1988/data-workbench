@@ -92,6 +92,8 @@ public:
 
     //获取连接点
     QList< DANodeLinkPoint > getLinkPoints() const;
+    QList< DANodeLinkPoint > getOutputLinkPoints() const;
+    QList< DANodeLinkPoint > getInputLinkPoints() const;
 
     //通过名字获取连接点
     DANodeLinkPoint getLinkPoint(const QString& name) const;
@@ -119,7 +121,7 @@ public:
     //通过位置获取linkpoint,如果没有返回一个invalid的DANodeLinkPoint
     //此函数作为虚函数，是scene判断是否点击到了链接点的关键函数，如果连接点是固定的
     //是不需要继承此函数的，但对于一些特殊的连接点（如不固定的）就需要通过此函数来获取
-    virtual DANodeLinkPoint getLinkPointByPos(const QPointF& p) const;
+    virtual DANodeLinkPoint getLinkPointByPos(const QPointF& p, DANodeLinkPoint::Way way = DANodeLinkPoint::Output) const;
     //更新连接点的位置，此函数一般在setbody之后更新点的位置
     void updateLinkPointPos();
     //获取当前链接上的LinkGraphicsItem
@@ -183,8 +185,8 @@ private:
 DAWORKFLOW_API QString enumToString(DA::DAAbstractNodeGraphicsItem::LinkPointLocation e);
 // DA::DAAbstractNodeGraphicsItem::LinkPointLocation的枚举转换
 DAWORKFLOW_API DA::DAAbstractNodeGraphicsItem::LinkPointLocation stringToEnum(
-    const QString& s,
-    DA::DAAbstractNodeGraphicsItem::LinkPointLocation defaultEnum = DA::DAAbstractNodeGraphicsItem::LinkPointLocationOnLeftSide);
+        const QString& s,
+        DA::DAAbstractNodeGraphicsItem::LinkPointLocation defaultEnum = DA::DAAbstractNodeGraphicsItem::LinkPointLocationOnLeftSide);
 
 }
 #endif  // FCNODEGRAPHICSITEM_H

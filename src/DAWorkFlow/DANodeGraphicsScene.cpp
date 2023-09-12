@@ -511,7 +511,12 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
             //非开始链接状态，此时点击的是output
             nodeItem->prepareLinkOutput(itempos);
         }
-        DANodeLinkPoint lp = nodeItem->getLinkPointByPos(itempos);
+        DANodeLinkPoint lp;
+        if (isStartLink()) {
+            lp = nodeItem->getLinkPointByPos(itempos, DANodeLinkPoint::Input);
+        } else {
+            lp = nodeItem->getLinkPointByPos(itempos, DANodeLinkPoint::Output);
+        }
         if (!lp.isValid()) {
             //说明没有点击到连接点，正常传递到DAGraphicsSceneWithUndoStack
             DAGraphicsSceneWithUndoStack::mousePressEvent(mouseEvent);
