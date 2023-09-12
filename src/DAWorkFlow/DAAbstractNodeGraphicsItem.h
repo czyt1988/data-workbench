@@ -172,6 +172,7 @@ protected:
     //生成linkpoint，默认会把输入设置在左边，输出设置在右边，并生成一个举行的链接点
     virtual QList< DANodeLinkPoint > generateLinkPoint() const;
     //重置连接点，此函数会自动调用generateLinkPoint，如果想自定义，重载此函数
+    //如果重载了generateLinkPoint或changeLinkPointPos，在构造函数中调用此函数
     void resetLinkPoint();
     //更新连接点，传入已有的连接点和总体尺寸，通过此函数的重写可以改变连接点的位置，如果想改变连接点的绘制应该通过setLinkPointDrawDelegate实现
     virtual void changeLinkPointPos(QList< DANodeLinkPoint >& lps, const QRectF& bodyRect) const;
@@ -185,8 +186,8 @@ private:
 DAWORKFLOW_API QString enumToString(DA::DAAbstractNodeGraphicsItem::LinkPointLocation e);
 // DA::DAAbstractNodeGraphicsItem::LinkPointLocation的枚举转换
 DAWORKFLOW_API DA::DAAbstractNodeGraphicsItem::LinkPointLocation stringToEnum(
-        const QString& s,
-        DA::DAAbstractNodeGraphicsItem::LinkPointLocation defaultEnum = DA::DAAbstractNodeGraphicsItem::LinkPointLocationOnLeftSide);
+    const QString& s,
+    DA::DAAbstractNodeGraphicsItem::LinkPointLocation defaultEnum = DA::DAAbstractNodeGraphicsItem::LinkPointLocationOnLeftSide);
 
 }
 #endif  // FCNODEGRAPHICSITEM_H
