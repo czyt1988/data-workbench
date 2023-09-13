@@ -65,9 +65,8 @@ public:
     void updatePos();
 
     //更新范围参数
-    void updateBoundingRect();
-    // boundingRect改变的回调,此函数可以用户重载实现一些附加item的绘制
-    virtual void boundingRectChanged(const QRectF& boundrect);
+    virtual QRectF updateBoundingRect();
+
     //通过两个点形成一个矩形，两个点总能形成一个矩形，如果重合，返回一个空矩形
     static QRectF rectFromTwoPoint(const QPointF& p0, const QPointF& p1);
 
@@ -193,14 +192,14 @@ namespace DA
 DAWORKFLOW_API QString enumToString(DA::DAAbstractNodeLinkGraphicsItem::EndPointType e);
 // DAAbstractNodeLinkGraphicsItem::EndPointType的枚举转换
 DAWORKFLOW_API DA::DAAbstractNodeLinkGraphicsItem::EndPointType stringToEnum(
-        const QString& s,
-        DA::DAAbstractNodeLinkGraphicsItem::EndPointType defaultEnum = DA::DAAbstractNodeLinkGraphicsItem::EndPointNone);
+    const QString& s,
+    DA::DAAbstractNodeLinkGraphicsItem::EndPointType defaultEnum = DA::DAAbstractNodeLinkGraphicsItem::EndPointNone);
 // DAAbstractNodeLinkGraphicsItem::LinkLineStyle的枚举转换
 DAWORKFLOW_API QString enumToString(DA::DAAbstractNodeLinkGraphicsItem::LinkLineStyle e);
 // DAAbstractNodeLinkGraphicsItem::LinkLineStyle的枚举转换
 DAWORKFLOW_API DA::DAAbstractNodeLinkGraphicsItem::LinkLineStyle stringToEnum(
-        const QString& s,
-        DA::DAAbstractNodeLinkGraphicsItem::LinkLineStyle defaultEnum = DA::DAAbstractNodeLinkGraphicsItem::LinkLineKnuckle);
+    const QString& s,
+    DA::DAAbstractNodeLinkGraphicsItem::LinkLineStyle defaultEnum = DA::DAAbstractNodeLinkGraphicsItem::LinkLineKnuckle);
 
 }  // end of namespace DA
 

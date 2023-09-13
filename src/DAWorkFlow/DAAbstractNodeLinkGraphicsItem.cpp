@@ -38,11 +38,11 @@ public:
     DANodeLinkPoint mToPoint;
     QPointF mFromPos { 0, 0 };
     QPointF mToPos { 100, 100 };
-    QRectF mBoundingRect;                ///< 记录boundingRect
-    qreal mBezierControlScale { 0.35 };  ///<贝塞尔曲线的控制点的缩放比例
-    QPainterPath mLinePath;              ///< 通过点得到的绘图线段
-    QPainterPath mLineShapePath;         ///_linePath的轮廓，用于shape函数
-    QPen mLinePen;                       ///< 线的画笔
+    QRectF mBoundingRect { 0, 0, 100, 100 };  ///< 记录boundingRect
+    qreal mBezierControlScale { 0.35 };       ///<贝塞尔曲线的控制点的缩放比例
+    QPainterPath mLinePath;                   ///< 通过点得到的绘图线段
+    QPainterPath mLineShapePath;              ///_linePath的轮廓，用于shape函数
+    QPen mLinePen;                            ///< 线的画笔
     QGraphicsSimpleTextItem* mFromTextItem { nullptr };
     QGraphicsSimpleTextItem* mToTextItem { nullptr };
     QPair< int, int > mPointTextPositionOffset { 10, 10 };  ///< 记录文本和连接点的偏移量，默认为10
@@ -329,12 +329,17 @@ void DAAbstractNodeLinkGraphicsItem::updatePos()
     }
 }
 
-void DAAbstractNodeLinkGraphicsItem::updateBoundingRect()
+/**
+ * @brief 更新范围
+ *
+ * @note 争对只有一个起始连接点的情况下，此函数的终止链接点将更新为场景鼠标所在
+ */
+QRectF DAAbstractNodeLinkGraphicsItem::updateBoundingRect()
 {
     DANodeGraphicsScene* sc = d_ptr->nodeScene();
 
     if (nullptr == sc) {
-        return;
+        return d_ptr->mBoundingRect;
     }
     //! 通过调用prepareGeometryChange()通知范围变更，避免出现残影
     prepareGeometryChange();
@@ -346,7 +351,7 @@ void DAAbstractNodeLinkGraphicsItem::updateBoundingRect()
         d_ptr->mToPoint.direction   = DANodeLinkPoint::West;
         generatePainterPath();
         d_ptr->mBoundingRect = d_ptr->mLinePath.boundingRect().adjusted(-2, -2, 2, 2);  //留足选中后画笔变宽的绘制余量
-        return;
+        return d_ptr->mBoundingRect;
     } else if ((d_ptr->mFromItem != nullptr) && (d_ptr->mToItem == nullptr)) {
         //只设定了一个from
         // to要根据scene的鼠标位置实时刷新
@@ -354,14 +359,14 @@ void DAAbstractNodeLinkGraphicsItem::updateBoundingRect()
         // 关键！！！
         // 为了不覆盖点击，d_ptr->_toPos要做2像素偏移
         if (d_ptr->mToPos.x() > d_ptr->mFromPos.x()) {
-            d_ptr->mToPos.rx() -= 2;
+            d_ptr->mToPos.rx() -= 4;
         } else {
-            d_ptr->mToPos.rx() += 2;
+            d_ptr->mToPos.rx() += 4;
         }
         if (d_ptr->mToPos.y() > d_ptr->mFromPos.y()) {
-            d_ptr->mToPos.ry() -= 2;
+            d_ptr->mToPos.ry() -= 4;
         } else {
-            d_ptr->mToPos.ry() += 2;
+            d_ptr->mToPos.ry() += 4;
         }
         d_ptr->mToPoint.direction = DANodeLinkPoint::oppositeDirection(d_ptr->mFromPoint.direction);
         generatePainterPath();
@@ -376,18 +381,9 @@ void DAAbstractNodeLinkGraphicsItem::updateBoundingRect()
         d_ptr->mBoundingRect = d_ptr->mLinePath.boundingRect().adjusted(-2, -2, 2, 2);  //留足选中后画笔变宽的绘制余量
         //        qDebug() << "occ unknow link type,please check!, from item:" << d_ptr->_fromItem << " to item:" << d_ptr->_toItem;
     }
-    boundingRectChanged(d_ptr->mBoundingRect);
-}
-
-/**
- * @brief boundingRect改变的回调,此函数可以用户重载实现一些附加item的绘制
- * @param boundrect
- */
-void DAAbstractNodeLinkGraphicsItem::boundingRectChanged(const QRectF& boundrect)
-{
-    Q_UNUSED(boundrect);
     d_ptr->updateLinkPointNameText();
     d_ptr->updateTextPos();
+    return d_ptr->mBoundingRect;
 }
 
 /**
