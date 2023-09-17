@@ -24,7 +24,7 @@ enum DANodeGraphicsItemType
     ItemType_GraphicsNodeItemTypeStart      = QGraphicsItem::UserType + 500,
     ItemType_GraphicsNodeItem               = ItemType_GraphicsNodeItemTypeStart + 1,  ///<针对DANode的item
     ItemType_GraphicsNodeObject             = ItemType_GraphicsNodeItemTypeStart + 2,  ///<针对DANode的item
-    ItemType_GraphicsLinkItem               = ItemType_GraphicsNodeItemTypeStart + 3,
+    ItemType_GraphicsNodeLinkItem           = ItemType_GraphicsNodeItemTypeStart + 3,
     ItemType_GraphicsStandardNodePixmapItem = ItemType_GraphicsNodeItemTypeStart + 4,
     ItemType_GraphicsStandardNodeSvgItem    = ItemType_GraphicsNodeItemTypeStart + 5,
     ItemType_GraphicsStandardWidgetItem     = ItemType_GraphicsNodeItemTypeStart + 6,

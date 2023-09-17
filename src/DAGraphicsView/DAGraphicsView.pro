@@ -18,6 +18,7 @@ include($${DA_SRC_DIR}/DAUtils/DAUtils.pri)
 HEADERS +=\
     DAGraphicsItem.h \
     DAGraphicsItemFactory.h \
+    DAGraphicsLinkItem.h \
     DAGraphicsResizeableRectItem.h \
     DAGraphicsViewGlobal.h \
     DAGraphicsTextItem.h \
@@ -34,6 +35,7 @@ HEADERS +=\
 SOURCES += \
     DAGraphicsItem.cpp \
     DAGraphicsItemFactory.cpp \
+    DAGraphicsLinkItem.cpp \
     DAGraphicsRelativeSimpleTextItem.cpp \
     DAGraphicsResizeableItem.cpp \
     DAGraphicsResizeablePixmapItem.cpp \

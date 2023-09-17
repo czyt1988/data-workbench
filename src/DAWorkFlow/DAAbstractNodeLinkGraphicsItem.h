@@ -18,12 +18,11 @@ class DAWORKFLOW_API DAAbstractNodeLinkGraphicsItem : public QGraphicsItem
 {
     DA_DECLARE_PRIVATE(DAAbstractNodeLinkGraphicsItem)
     friend class DAAbstractNodeGraphicsItem;
-    friend class FCNodeGraphicsScene;
 
 public:
     enum AnonymousType
     {
-        anonymous = DA::ItemType_GraphicsLinkItem
+        anonymous = DA::ItemType_GraphicsNodeLinkItem
     };
     int type() const override
     {
