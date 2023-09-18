@@ -1,7 +1,14 @@
 #include "DAGraphicsLinkItem.h"
 #include <QPainter>
 #include <QDebug>
+#include <QGraphicsScene>
+#include <QEvent>
+#include <QMouseEvent>
+#include <QGraphicsSceneMouseEvent>
+#include <QStyleOptionGraphicsItem>
+#include <QLineF>
 #include <math.h>
+
 namespace DA
 {
 //===============================================================
@@ -25,9 +32,10 @@ public:
     //端点样式
     DAGraphicsLinkItem::EndPointType mFromEndPointType { DAGraphicsLinkItem::EndPointNone };  ///< from的端点样式
     DAGraphicsLinkItem::EndPointType mToEndPointType { DAGraphicsLinkItem::EndPointNone };    ///< to的端点样式
-    QPainterPath mFromEndPointPainterPath;  ///< 记录from的端点样式
-    QPainterPath mToEndPointPainterPath;    ///< 记录to的端点样式
-    int mEndPointSize { 12 };               ///< 记录端点大小
+    QPainterPath mFromEndPointPainterPath;     ///< 记录from的端点样式
+    QPainterPath mToEndPointPainterPath;       ///< 记录to的端点样式
+    int mEndPointSize { 12 };                  ///< 记录端点大小
+    bool mIsEndPositionFollowMouse { false };  ///< 结束节点跟随鼠标移动而移动
 };
 
 DAGraphicsLinkItem::PrivateData::PrivateData(DAGraphicsLinkItem* p) : q_ptr(p)
@@ -37,12 +45,16 @@ DAGraphicsLinkItem::PrivateData::PrivateData(DAGraphicsLinkItem* p) : q_ptr(p)
 //===============================================================
 // DAGraphicsLinkItem
 //===============================================================
-DAGraphicsLinkItem::DAGraphicsLinkItem(QGraphicsItem* p) : QGraphicsItem(p)
+DAGraphicsLinkItem::DAGraphicsLinkItem(QGraphicsItem* p) : QGraphicsItem(p), DA_PIMPL_CONSTRUCT
 {
     setFlags(flags() | ItemIsSelectable);
     setEndPointType(OrientationFrom, EndPointNone);
     setEndPointType(OrientationTo, EndPointTriangType);
     setZValue(-1);  //连接线在-1层，这样避免在节点上面
+}
+
+DAGraphicsLinkItem::~DAGraphicsLinkItem()
+{
 }
 
 /**
@@ -114,6 +126,24 @@ DAGraphicsLinkItem::LinkLineStyle DAGraphicsLinkItem::getLinkLineStyle() const
 }
 
 /**
+ * @brief 设置线的画笔
+ * @param p
+ */
+void DAGraphicsLinkItem::setLinePen(const QPen& p)
+{
+    d_ptr->mLinePen = p;
+}
+
+/**
+ * @brief 返回当前画笔
+ * @return
+ */
+QPen DAGraphicsLinkItem::getLinePen() const
+{
+    return (d_ptr->mLinePen);
+}
+
+/**
  * @brief 更新范围
  *
  * @note 争对只有一个起始连接点的情况下，此函数的终止链接点将更新为场景鼠标所在
@@ -137,6 +167,10 @@ QRectF DAGraphicsLinkItem::updateBoundingRect()
         toPoint.ry() += 4;
     }
     d_ptr->mLinePath = generateLinePainterPath(fromPoint, toPoint, getLinkLineStyle(), d_ptr->mLinePen.width());
+    QPainterPathStroker stroker;
+    int w = d_ptr->mLinePen.width() + 2;
+    stroker.setWidth((w < 6) ? 6 : w);
+    d_ptr->mLineShapePath = stroker.createStroke(d_ptr->mLinePath);
     d_ptr->mBoundingRect = d_ptr->mLinePath.boundingRect().adjusted(-2, -2, 2, 2);  //留足选中后画笔变宽的绘制余量
     return d_ptr->mBoundingRect;
 }
@@ -170,9 +204,6 @@ QPainterPath DAGraphicsLinkItem::generateLinePainterPath(const QPointF& fromPoin
     default:
         break;
     }
-    QPainterPathStroker stroker;
-    stroker.setWidth(lineWidth);
-    res = stroker.createStroke(res);
     return res;
 }
 
@@ -195,6 +226,182 @@ void DAGraphicsLinkItem::setBezierControlScale(qreal rate)
 qreal DAGraphicsLinkItem::getBezierControlScale() const
 {
     return (d_ptr->mBezierControlScale);
+}
+
+/**
+ * @brief 开始连接点的位置
+ * @param p 相对item自身的位置
+ */
+void DAGraphicsLinkItem::setStartPosition(const QPointF& p)
+{
+    d_ptr->mFromPos = p;
+}
+
+/**
+ * @brief 开始连接点的位置
+ * @return 相对item自身的位置
+ */
+const QPointF& DAGraphicsLinkItem::getStartPosition() const
+{
+    return d_ptr->mFromPos;
+}
+
+/**
+ * @brief 结束连接点的位置
+ * @param p 相对item自身的位置
+ */
+void DAGraphicsLinkItem::setEndPosition(const QPointF& p)
+{
+    d_ptr->mToPos = p;
+}
+
+/**
+ * @brief 结束连接点的位置
+ * @return 相对item自身的位置
+ */
+const QPointF& DAGraphicsLinkItem::getEndPosition() const
+{
+    return d_ptr->mToPos;
+}
+
+/**
+ * @brief 开始连接点的位置,位置基于scene
+ * @param p 相对scene的位置
+ */
+void DAGraphicsLinkItem::setStartScenePosition(const QPointF& p)
+{
+    d_ptr->mFromPos = mapFromScene(p);
+}
+
+/**
+ * @brief 开始连接点的位置,位置基于scene
+ * @return
+ */
+QPointF DAGraphicsLinkItem::getStartScenePosition() const
+{
+    return mapToScene(d_ptr->mFromPos);
+}
+
+/**
+ * @brief 结束连接点的位置,位置基于scene
+ * @param p 相对scene的位置
+ */
+void DAGraphicsLinkItem::setEndScenePosition(const QPointF& p)
+{
+    d_ptr->mToPos = mapFromScene(p);
+}
+
+/**
+ * @brief 结束连接点的位置,位置基于scene
+ * @return 相对scene的位置
+ */
+QPointF DAGraphicsLinkItem::getEndScenePosition() const
+{
+    return mapToScene(d_ptr->mToPos);
+}
+
+/**
+ * @brief 结束节点跟随鼠标，此函数前提是from节点已经确定
+ *
+ * 设置此函数后，DAGraphicsLinkItem的结束点会跟随鼠标移动而移动，这个函数在进行一些连接线交互上比较有用
+ */
+void DAGraphicsLinkItem::setEndPositionFollowMouse(bool on)
+{
+    d_ptr->mIsEndPositionFollowMouse = on;
+}
+
+/**
+ * @brief 绘图
+ * @param painter
+ * @param option
+ * @param widget
+ */
+void DAGraphicsLinkItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
+{
+    painter->save();
+    paintLinkLine(painter, option, widget, d_ptr->mLinePath);
+    //绘制端点
+    paintEndPoint(painter,
+                  option,
+                  d_ptr->mFromPos,
+                  d_ptr->mFromEndPointType,
+                  d_ptr->mFromEndPointPainterPath,
+                  d_ptr->mToPos,
+                  d_ptr->mToEndPointType,
+                  d_ptr->mToEndPointPainterPath,
+                  d_ptr->mLinePath);
+    painter->restore();
+}
+
+/**
+ * @brief 绘制连接线
+ * @param painter
+ * @param option
+ * @param widget
+ * @param linkPath
+ */
+void DAGraphicsLinkItem::paintLinkLine(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget, const QPainterPath& linkPath)
+{
+    Q_UNUSED(widget);
+    QPen pen = getPainterPen(option);
+    painter->setPen(pen);
+    painter->drawPath(linkPath);
+}
+
+/**
+ * @brief 绘制箭头
+ * @param painter
+ * @param option
+ * @param p 箭头的端点
+ * @param linkPath 绘制箭头的路径线，这个路径线用来计算箭头的旋转
+ */
+void DAGraphicsLinkItem::paintEndPoint(QPainter* painter,
+                                       const QStyleOptionGraphicsItem* option,
+                                       const QPointF& pStart,
+                                       EndPointType etStart,
+                                       const QPainterPath& startPainterPath,
+                                       const QPointF& pEnd,
+                                       EndPointType etEnd,
+                                       const QPainterPath& endPainterPath,
+                                       const QPainterPath& linkPath)
+{
+    if (etStart == EndPointNone && etEnd == EndPointNone) {
+        return;
+    }
+    //根据DANodeLinkPoint计算旋转的角度
+    painter->save();
+    QPen pen = getPainterPen(option);
+    painter->setPen(pen);
+    painter->setBrush(pen.color());
+    //首先绘制开端箭头
+    if (etStart != EndPointNone) {
+        painter->resetTransform();
+        painter->translate(pStart);
+        QPointF pTrend = linkPath.pointAtPercent(0.1);
+        QLineF lf(pStart, pTrend);
+        painter->rotate(lf.angle());
+        painter->drawPath(startPainterPath);
+    }
+    //再绘制结束箭头
+    if (etEnd != EndPointNone) {
+        painter->resetTransform();
+        painter->translate(pEnd);
+        QPointF pTrend = linkPath.pointAtPercent(0.9);
+        QLineF lf(pEnd, pTrend);
+        painter->rotate(lf.angle());
+        painter->drawPath(endPainterPath);
+    }
+    painter->restore();
+}
+
+QRectF DAGraphicsLinkItem::boundingRect() const
+{
+    return (d_ptr->mBoundingRect);
+}
+
+QPainterPath DAGraphicsLinkItem::shape() const
+{
+    return (d_ptr->mLineShapePath);
 }
 
 /**
@@ -430,7 +637,36 @@ AspectDirection DAGraphicsLinkItem::relativeDirectionOfPoint(const QPointF& p1, 
 }
 
 /**
- * @brief 生成箭头，所有生成的箭头都是尖朝上（↑），绘制的时候需要根据情况进行旋转
+ * @brief 获取绘图的画笔
+ *
+ * 在被选中的时候，画笔会加深加粗
+ * @param option
+ * @return
+ */
+QPen DAGraphicsLinkItem::getPainterPen(const QStyleOptionGraphicsItem* option) const
+{
+    QPen pen = d_ptr->mLinePen;
+    if (option->state.testFlag(QStyle::State_Selected)) {
+        //说明选中了
+        pen.setWidth(pen.width() + 2);
+        pen.setColor(pen.color().darker(150));
+    }
+    return pen;
+}
+
+/**
+ * @brief 生成箭头，所有生成的箭头箭头尖端需要再原点，箭头朝向x轴正方向
+ *
+ * 形如：
+ *
+ *     |
+ *     |   *
+ *     | * *
+ * ----*   *-->
+ *     | * *
+ *     |   *
+ *     |
+ *
  * @param arrowType
  * @param size 箭头↑的高度
  * @return
@@ -441,8 +677,8 @@ QPainterPath DAGraphicsLinkItem::generateEndPointPainterPath(DAGraphicsLinkItem:
     switch (epType) {
     case EndPointTriangType:  //三角形
         path.moveTo(0, 0);
-        path.lineTo(-size / 2, size);
-        path.lineTo(size / 2, size);
+        path.lineTo(size, -size / 2);
+        path.lineTo(size, size / 2);
         path.lineTo(0, 0);
         break;
     default:
@@ -602,6 +838,38 @@ QPainterPath DAGraphicsLinkItem::generateLinkLineKnucklePainterPath(const QPoint
     path.lineTo(extendTo);
     path.lineTo(toPos);
     return path;
+}
+
+/**
+ * @brief 捕获场景的事件，主要处理setEndPositionFollowMouse函数
+ * @param e
+ * @return
+ */
+bool DAGraphicsLinkItem::sceneEvent(QEvent* e)
+{
+    qDebug() << "DAGraphicsLinkItem::sceneEvent:" << e->type();
+    if (!d_ptr->mIsEndPositionFollowMouse) {
+        return QGraphicsItem::sceneEvent(e);
+    }
+    switch (e->type()) {
+    case QEvent::GraphicsSceneMouseMove: {
+        //捕获场景的鼠标移动事件
+        QGraphicsSceneMouseEvent* sme = static_cast< QGraphicsSceneMouseEvent* >(e);
+        return sceneMouseMoveEvent(sme);
+    } break;
+    case QEvent::MouseButtonPress: {
+        //捕获场景的鼠标点击事件
+    } break;
+    default:
+        break;
+    }
+    return QGraphicsItem::sceneEvent(e);
+}
+
+bool DAGraphicsLinkItem::sceneMouseMoveEvent(QGraphicsSceneMouseEvent* e)
+{
+    qDebug() << "DAGraphicsLinkItem::sceneMouseMoveEvent:" << e->pos();
+    return true;
 }
 
 }  // end DA

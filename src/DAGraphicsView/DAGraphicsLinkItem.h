@@ -2,6 +2,8 @@
 #define DAGRAPHICSLINKITEM_H
 #include "DAGraphicsViewGlobal.h"
 #include <QGraphicsItem>
+
+class QGraphicsSceneMouseEvent;
 namespace DA
 {
 
@@ -51,22 +53,69 @@ public:
 
 public:
     DAGraphicsLinkItem(QGraphicsItem* p = nullptr);
+    ~DAGraphicsLinkItem();
     //设置连接点的形式
     void setEndPointType(Orientations o, EndPointType epType);
     EndPointType getEndPointType(Orientations o) const;
+
     //连线方式
     void setLinkLineStyle(LinkLineStyle s);
     LinkLineStyle getLinkLineStyle() const;
+
+    //设置线的画笔
+    void setLinePen(const QPen& p);
+    QPen getLinePen() const;
+
     //【重要虚函数】更新范围参数
     virtual QRectF updateBoundingRect();
+
     //生成painterpath
     QPainterPath generateLinePainterPath(const QPointF& fromPoint,
                                          const QPointF& toPoint,
                                          LinkLineStyle linestyle = LinkLineStraight,
                                          int lineWidth           = 3);
+
     //设置贝塞尔曲线的控制点的缩放比例，连线时按照控制点的方向延伸出贝塞尔曲线的控制点，延伸的控制点的长度w = length * bezierControlScale
     void setBezierControlScale(qreal rate = 0.25);
     qreal getBezierControlScale() const;
+
+    //开始连接点的位置
+    void setStartPosition(const QPointF& p);
+    const QPointF& getStartPosition() const;
+
+    //结束连接点的位置
+    void setEndPosition(const QPointF& p);
+    const QPointF& getEndPosition() const;
+
+    //开始连接点的位置,位置基于scene
+    void setStartScenePosition(const QPointF& p);
+    QPointF getStartScenePosition() const;
+
+    //结束连接点的位置
+    void setEndScenePosition(const QPointF& p);
+    QPointF getEndScenePosition() const;
+
+    //结束节点跟随鼠标，此函数前提是from节点已经确定
+    void setEndPositionFollowMouse(bool on = true);
+    bool isEndPositionFollowMouse() const;
+
+    //绘图
+    virtual void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget = nullptr) override;
+    //绘制连接线
+    virtual void paintLinkLine(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget, const QPainterPath& linkPath);
+    //绘制箭头
+    virtual void paintEndPoint(QPainter* painter,
+                               const QStyleOptionGraphicsItem* option,
+                               const QPointF& pStart,
+                               EndPointType etStart,
+                               const QPainterPath& startPainterPath,
+                               const QPointF& pEnd,
+                               EndPointType etEnd,
+                               const QPainterPath& endPainterPath,
+                               const QPainterPath& linkPath);
+
+    virtual QRectF boundingRect() const override;
+    virtual QPainterPath shape() const override;
 
 public:
     //计算两个点的距离
@@ -93,6 +142,8 @@ public:
     static AspectDirection relativeDirectionOfPoint(const QPointF& p1, const QPointF& p2);
 
 protected:
+    //获取绘图的画笔
+    QPen getPainterPen(const QStyleOptionGraphicsItem* option) const;
     //生成箭头，所有生成的箭头都是尖朝上（↑），绘制的时候需要根据情况进行旋转
     virtual QPainterPath generateEndPointPainterPath(EndPointType epType, int size);
     //生成painterpath
@@ -107,6 +158,10 @@ protected:
                                                             AspectDirection fromDirect,
                                                             const QPointF& toPos,
                                                             AspectDirection toDirect);
+    //捕获场景的事件
+    bool sceneEvent(QEvent* e) override;
+    //场景的鼠标移动事件
+    bool sceneMouseMoveEvent(QGraphicsSceneMouseEvent* e);
 };
 }  // end DA
 
