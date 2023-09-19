@@ -79,14 +79,6 @@ public:
     void setBezierControlScale(qreal rate = 0.25);
     qreal getBezierControlScale() const;
 
-    //开始连接点的位置
-    void setStartPosition(const QPointF& p);
-    const QPointF& getStartPosition() const;
-
-    //结束连接点的位置
-    void setEndPosition(const QPointF& p);
-    const QPointF& getEndPosition() const;
-
     //开始连接点的位置,位置基于scene
     void setStartScenePosition(const QPointF& p);
     QPointF getStartScenePosition() const;
@@ -142,6 +134,13 @@ public:
     static AspectDirection relativeDirectionOfPoint(const QPointF& p1, const QPointF& p2);
 
 protected:
+    //开始连接点的位置
+    void setStartPosition(const QPointF& p);
+    const QPointF& getStartPosition() const;
+
+    //结束连接点的位置
+    void setEndPosition(const QPointF& p);
+    const QPointF& getEndPosition() const;
     //获取绘图的画笔
     QPen getPainterPen(const QStyleOptionGraphicsItem* option) const;
     //生成箭头，所有生成的箭头都是尖朝上（↑），绘制的时候需要根据情况进行旋转

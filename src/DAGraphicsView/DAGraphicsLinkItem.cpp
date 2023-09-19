@@ -266,10 +266,13 @@ const QPointF& DAGraphicsLinkItem::getEndPosition() const
 
 /**
  * @brief 开始连接点的位置,位置基于scene
+ *
+ * 默认情况下，开始点就是相对于item的原点（0，0）
  * @param p 相对scene的位置
  */
 void DAGraphicsLinkItem::setStartScenePosition(const QPointF& p)
 {
+    setPos(p);
     d_ptr->mFromPos = mapFromScene(p);
 }
 

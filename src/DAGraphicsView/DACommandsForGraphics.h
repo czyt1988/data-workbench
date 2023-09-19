@@ -10,6 +10,8 @@ namespace DA
 class DAGraphicsResizeableItem;
 /**
  * @brief 添加item命令
+ *
+ * @note 如果item已经调用Scene::addItem函数，此命令不会重复addItem
  */
 class DAGRAPHICSVIEW_API DACommandsForGraphicsItemAdd : public QUndoCommand
 {
@@ -56,7 +58,7 @@ public:
     void redo() override;
     void undo() override;
     int id() const override;
-    bool mergeWith(const QUndoCommand* command);
+    bool mergeWith(const QUndoCommand* command) override;
 
 private:
     QList< QGraphicsItem* > mItems;
@@ -75,7 +77,7 @@ public:
     void redo() override;
     void undo() override;
     int id() const override;
-    bool mergeWith(const QUndoCommand* command);
+    bool mergeWith(const QUndoCommand* command) override;
 
 private:
     QGraphicsItem* mItem;
@@ -104,7 +106,7 @@ public:
     void redo() override;
     void undo() override;
     int id() const override;
-    bool mergeWith(const QUndoCommand* command);
+    bool mergeWith(const QUndoCommand* command) override;
 
 private:
     DAGraphicsResizeableItem* mItem;
@@ -129,7 +131,7 @@ public:
     void redo() override;
     void undo() override;
     int id() const override;
-    bool mergeWith(const QUndoCommand* command);
+    bool mergeWith(const QUndoCommand* command) override;
 
 private:
     DAGraphicsResizeableItem* mItem;
@@ -153,7 +155,7 @@ public:
     void redo() override;
     void undo() override;
     int id() const override;
-    bool mergeWith(const QUndoCommand* command);
+    bool mergeWith(const QUndoCommand* command) override;
 
 private:
     DAGraphicsResizeableItem* mItem;
@@ -179,7 +181,7 @@ public:
     void redo() override;
     void undo() override;
     int id() const override;
-    bool mergeWith(const QUndoCommand* command);
+    bool mergeWith(const QUndoCommand* command) override;
 
 private:
     DAGraphicsResizeableItem* mItem;

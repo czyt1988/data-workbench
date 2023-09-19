@@ -22,7 +22,9 @@ DACommandsForGraphicsItemAdd::~DACommandsForGraphicsItemAdd()
 void DACommandsForGraphicsItemAdd::redo()
 {
     QUndoCommand::redo();
-    mScene->addItem(mItem);
+    if (mItem->scene() != mScene) {
+        mScene->addItem(mItem);
+    }
     mNeedDelete = false;
 }
 

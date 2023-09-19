@@ -3,6 +3,7 @@
 #include "DAGraphicsViewGlobal.h"
 #include <QGraphicsScene>
 #include <QUndoStack>
+#include "DAGraphicsLinkItem.h"
 namespace DA
 {
 class DAGraphicsResizeableItem;
@@ -23,6 +24,18 @@ class DAGRAPHICSVIEW_API DAGraphicsSceneWithUndoStack : public QGraphicsScene
     friend class DAGraphicsResizeableItem;
 
 public:
+    /**
+     * @brief 链接模式
+     */
+    enum LinkMode
+    {
+        ///< The beginning is the current mouse position, the end follows the mouse movement,
+        /// and the connection ends when the next left mouse button is clicked
+        /// 开端为当前鼠标位置，末端跟随鼠标移动，在下个鼠标左键点击时结束连线
+        LinkModeAutoStartEndFollowMouseClick
+    };
+
+public:
     DAGraphicsSceneWithUndoStack(QObject* p = nullptr);
     DAGraphicsSceneWithUndoStack(const QRectF& sceneRect, QObject* p = nullptr);
     DAGraphicsSceneWithUndoStack(qreal x, qreal y, qreal width, qreal height, QObject* p = nullptr);
@@ -39,6 +52,16 @@ public:
     QUndoCommand* removeItem_(QGraphicsItem* item, bool autopush = true);
     //导出为pixmap
     QPixmap toPixamp();
+    //链接模式
+    void beginLink(DAGraphicsLinkItem* linkItem, LinkMode lm = LinkModeAutoStartEndFollowMouseClick);
+    //判断当前是否是链接模式
+    bool isStartLink() const;
+    //结束链接模式
+    void endLink();
+    //取消链接模式
+    void cancelLink();
+    //获取当前正在进行连线的连接线item
+    DAGraphicsLinkItem* getCurrentLinkItem() const;
 
 public:
     //是否允许对齐网格
@@ -88,6 +111,12 @@ signals:
      * @param rotation
      */
     void itemRotationChanged(DAGraphicsResizeableItem* item, const qreal& rotation);
+
+    /**
+     * @brief 完成了一次链接
+     * @param linkItem 通过此指针可以获取两个连接点
+     */
+    void completeLink(DAGraphicsLinkItem* linkItem);
 
 public:
     //回退栈操作
