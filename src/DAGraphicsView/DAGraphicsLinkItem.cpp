@@ -48,8 +48,8 @@ DAGraphicsLinkItem::PrivateData::PrivateData(DAGraphicsLinkItem* p) : q_ptr(p)
 DAGraphicsLinkItem::DAGraphicsLinkItem(QGraphicsItem* p) : QGraphicsItem(p), DA_PIMPL_CONSTRUCT
 {
     setFlags(flags() | ItemIsSelectable);
-    setEndPointType(OrientationFrom, EndPointNone);
-    setEndPointType(OrientationTo, EndPointTriangType);
+    setEndPointType(OrientationStart, EndPointNone);
+    setEndPointType(OrientationEnd, EndPointTriangType);
     setLinkLineStyle(LinkLineBezier);
     setZValue(-1);  //连接线在-1层，这样避免在节点上面
 }
@@ -66,14 +66,14 @@ DAGraphicsLinkItem::~DAGraphicsLinkItem()
 void DAGraphicsLinkItem::setEndPointType(DAGraphicsLinkItem::Orientations o, DAGraphicsLinkItem::EndPointType epType)
 {
     switch (o) {
-    case OrientationFrom: {
+    case OrientationStart: {
         if (d_ptr->mStartEndPointType == epType) {
             return;
         }
         d_ptr->mStartEndPointType        = epType;
         d_ptr->mSrartEndPointPainterPath = generateEndPointPainterPath(epType, d_ptr->mEndPointSize);
     } break;
-    case OrientationTo: {
+    case OrientationEnd: {
         if (d_ptr->mEndEndPointType == epType) {
             return;
         }
@@ -81,8 +81,8 @@ void DAGraphicsLinkItem::setEndPointType(DAGraphicsLinkItem::Orientations o, DAG
         d_ptr->mEndEndPointPainterPath = generateEndPointPainterPath(epType, d_ptr->mEndPointSize);
     } break;
     case OrientationBoth: {
-        setEndPointType(OrientationFrom, epType);
-        setEndPointType(OrientationTo, epType);
+        setEndPointType(OrientationStart, epType);
+        setEndPointType(OrientationEnd, epType);
     }
     default:
         break;
@@ -97,14 +97,32 @@ void DAGraphicsLinkItem::setEndPointType(DAGraphicsLinkItem::Orientations o, DAG
 DAGraphicsLinkItem::EndPointType DAGraphicsLinkItem::getEndPointType(DAGraphicsLinkItem::Orientations o) const
 {
     switch (o) {
-    case OrientationFrom:
+    case OrientationStart:
         return d_ptr->mStartEndPointType;
-    case OrientationTo:
+    case OrientationEnd:
         return d_ptr->mEndEndPointType;
     default:
         break;
     }
     return (d_ptr->mStartEndPointType == d_ptr->mEndEndPointType) ? d_ptr->mStartEndPointType : EndPointNone;
+}
+
+/**
+ * @brief 端点大小
+ * @return
+ */
+int DAGraphicsLinkItem::getEndPointSize() const
+{
+    return d_ptr->mEndPointSize;
+}
+
+/**
+ * @brief 设置端点大小
+ * @param v
+ */
+void DAGraphicsLinkItem::setEndPointSize(int v)
+{
+    d_ptr->mEndPointSize = v;
 }
 
 /**
@@ -178,38 +196,6 @@ QRectF DAGraphicsLinkItem::updateBoundingRect()
     d_ptr->mLineShapePath = stroker.createStroke(d_ptr->mLinePath);
     d_ptr->mBoundingRect = d_ptr->mLinePath.boundingRect().adjusted(-2, -2, 2, 2);  //留足选中后画笔变宽的绘制余量
     return d_ptr->mBoundingRect;
-}
-
-/**
- * @brief 生成一个连接线
- * @param fromPoint
- * @param toPoint
- * @param strokerWidth 轮廓扩展，此轮廓扩展会生成一个
- * @return
- */
-QPainterPath DAGraphicsLinkItem::generateLinePainterPath(const QPointF& fromPoint, const QPointF& toPoint, LinkLineStyle linestyle)
-{
-    QPainterPath res;
-    switch (linestyle) {
-    case LinkLineBezier:
-        res = generateLinkLineBezierPainterPath(fromPoint,
-                                                relativeDirectionOfPoint(toPoint, fromPoint),
-                                                toPoint,
-                                                relativeDirectionOfPoint(fromPoint, toPoint));
-        break;
-    case LinkLineStraight:
-        res = generateLinkLineStraightPainterPath(fromPoint, toPoint);
-        break;
-    case LinkLineKnuckle:
-        res = generateLinkLineKnucklePainterPath(fromPoint,
-                                                 relativeDirectionOfPoint(toPoint, fromPoint),
-                                                 toPoint,
-                                                 relativeDirectionOfPoint(fromPoint, toPoint));
-        break;
-    default:
-        break;
-    }
-    return res;
 }
 
 /**
@@ -319,6 +305,32 @@ void DAGraphicsLinkItem::setEndPositionFollowMouse(bool on)
 }
 
 /**
+ * @brief 获取链接线
+ * @return
+ */
+QPainterPath DAGraphicsLinkItem::getLinkLinePainterPath() const
+{
+    return d_ptr->mLinePath;
+}
+
+/**
+ * @brief 获取末端(箭头)的绘图路径
+ * @return
+ */
+QPainterPath DAGraphicsLinkItem::getEndPointPainterPath(Orientations epType) const
+{
+    switch (epType) {
+    case OrientationStart:
+        return d_ptr->mSrartEndPointPainterPath;
+    case OrientationEnd:
+        return d_ptr->mEndEndPointPainterPath;
+    default:
+        break;
+    }
+    return QPainterPath();
+}
+
+/**
  * @brief 绘图
  * @param painter
  * @param option
@@ -422,6 +434,16 @@ QRectF DAGraphicsLinkItem::boundingRect() const
 QPainterPath DAGraphicsLinkItem::shape() const
 {
     return (d_ptr->mLineShapePath);
+}
+
+/**
+ * @brief 更新末端
+ */
+void DAGraphicsLinkItem::updateEndPoint()
+{
+    d_ptr->mSrartEndPointPainterPath = generateEndPointPainterPath(d_ptr->mStartEndPointType, d_ptr->mEndPointSize);
+    d_ptr->mEndEndPointPainterPath   = generateEndPointPainterPath(d_ptr->mEndEndPointType, d_ptr->mEndPointSize);
+    update();
 }
 
 /**
@@ -675,6 +697,38 @@ QPen DAGraphicsLinkItem::getPainterPen(const QStyleOptionGraphicsItem* option) c
 }
 
 /**
+ * @brief 生成一个连接线
+ * @param fromPoint
+ * @param toPoint
+ * @param strokerWidth 轮廓扩展，此轮廓扩展会生成一个
+ * @return
+ */
+QPainterPath DAGraphicsLinkItem::generateLinePainterPath(const QPointF& fromPoint, const QPointF& toPoint, LinkLineStyle linestyle)
+{
+    QPainterPath res;
+    switch (linestyle) {
+    case LinkLineBezier:
+        res = generateLinkLineBezierPainterPath(fromPoint,
+                                                relativeDirectionOfPoint(toPoint, fromPoint),
+                                                toPoint,
+                                                relativeDirectionOfPoint(fromPoint, toPoint));
+        break;
+    case LinkLineStraight:
+        res = generateLinkLineStraightPainterPath(fromPoint, toPoint);
+        break;
+    case LinkLineKnuckle:
+        res = generateLinkLineKnucklePainterPath(fromPoint,
+                                                 relativeDirectionOfPoint(toPoint, fromPoint),
+                                                 toPoint,
+                                                 relativeDirectionOfPoint(fromPoint, toPoint));
+        break;
+    default:
+        break;
+    }
+    return res;
+}
+
+/**
  * @brief 生成箭头，所有生成的箭头箭头尖端需要再原点，箭头朝向x轴正方向
  *
  * 形如：
@@ -858,6 +912,75 @@ QPainterPath DAGraphicsLinkItem::generateLinkLineKnucklePainterPath(const QPoint
     path.lineTo(extendTo);
     path.lineTo(toPos);
     return path;
+}
+
+/**
+ * @brief DAAbstractNodeLinkGraphicsItem::EndPointType的枚举转换
+ * @param e
+ * @return
+ */
+QString enumToString(DAGraphicsLinkItem::EndPointType e)
+{
+
+    switch (e) {
+    case DAGraphicsLinkItem::EndPointNone:
+        return "none";
+    case DAGraphicsLinkItem::EndPointTriangType:
+        return "triang";
+    default:
+        break;
+    }
+    return "none";
+}
+
+/**
+ * @brief DAAbstractNodeLinkGraphicsItem::EndPointType的枚举转换
+ * @param s
+ * @return
+ */
+DAGraphicsLinkItem::EndPointType stringToEnum(const QString& s, DAGraphicsLinkItem::EndPointType defaultEnum)
+{
+    if (0 == s.compare("none", Qt::CaseInsensitive)) {
+        return DAGraphicsLinkItem::EndPointNone;
+    } else if (0 == s.compare("triang", Qt::CaseInsensitive)) {
+        return DAGraphicsLinkItem::EndPointTriangType;
+    }
+    return defaultEnum;
+}
+/**
+ * @brief DAAbstractNodeLinkGraphicsItem::LinkLineStyle的枚举转换
+ * @param e
+ * @return
+ */
+QString enumToString(DAGraphicsLinkItem::LinkLineStyle e)
+{
+    switch (e) {
+    case DAGraphicsLinkItem::LinkLineBezier:
+        return "bezier";
+    case DAGraphicsLinkItem::LinkLineStraight:
+        return "straight";
+    case DAGraphicsLinkItem::LinkLineKnuckle:
+        return "knuckle";
+    default:
+        break;
+    }
+    return "knuckle";
+}
+/**
+ * @brief DAAbstractNodeLinkGraphicsItem::LinkLineStyle的枚举转换
+ * @param s
+ * @return
+ */
+DAGraphicsLinkItem::LinkLineStyle stringToEnum(const QString& s, DAGraphicsLinkItem::LinkLineStyle defaultEnum)
+{
+    if (0 == s.compare("knuckle", Qt::CaseInsensitive)) {
+        return DAGraphicsLinkItem::LinkLineKnuckle;
+    } else if (0 == s.compare("bezier", Qt::CaseInsensitive)) {
+        return DAGraphicsLinkItem::LinkLineBezier;
+    } else if (0 == s.compare("straight", Qt::CaseInsensitive)) {
+        return DAGraphicsLinkItem::LinkLineStraight;
+    }
+    return defaultEnum;
 }
 
 }  // end DA

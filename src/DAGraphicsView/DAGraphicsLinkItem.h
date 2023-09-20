@@ -57,7 +57,9 @@ public:
     //设置连接点的形式
     void setEndPointType(Orientations o, EndPointType epType);
     EndPointType getEndPointType(Orientations o) const;
-
+    //端点大小
+    int getEndPointSize() const;
+    void setEndPointSize(int v);
     //连线方式
     void setLinkLineStyle(LinkLineStyle s);
     LinkLineStyle getLinkLineStyle() const;
@@ -68,9 +70,6 @@ public:
 
     //【重要虚函数】更新范围参数
     virtual QRectF updateBoundingRect();
-
-    //生成painterpath
-    QPainterPath generateLinePainterPath(const QPointF& fromPoint, const QPointF& toPoint, LinkLineStyle linestyle = LinkLineStraight);
 
     //设置贝塞尔曲线的控制点的缩放比例，连线时按照控制点的方向延伸出贝塞尔曲线的控制点，延伸的控制点的长度w = length * bezierControlScale
     void setBezierControlScale(qreal rate = 0.25);
@@ -87,7 +86,12 @@ public:
     //结束节点跟随鼠标，此函数前提是from节点已经确定
     void setEndPositionFollowMouse(bool on = true);
     bool isEndPositionFollowMouse() const;
-
+    //获取链接线
+    QPainterPath getLinkLinePainterPath() const;
+    //获取末端(箭头)的绘图路径
+    QPainterPath getEndPointPainterPath(Orientations epType) const;
+    //更新末端
+    void updateEndPoint();
     //绘图
     virtual void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget = nullptr) override;
     //绘制连接线
@@ -105,6 +109,11 @@ public:
 
     virtual QRectF boundingRect() const override;
     virtual QPainterPath shape() const override;
+
+    //生成painterpath
+    virtual QPainterPath generateLinePainterPath(const QPointF& fromPoint, const QPointF& toPoint, LinkLineStyle linestyle = LinkLineStraight);
+    //生成箭头，所有生成的箭头都是尖朝上（↑），绘制的时候需要根据情况进行旋转
+    virtual QPainterPath generateEndPointPainterPath(EndPointType epType, int size);
 
 public:
     //计算两个点的距离
@@ -140,21 +149,27 @@ protected:
     const QPointF& getEndPosition() const;
     //获取绘图的画笔
     QPen getPainterPen(const QStyleOptionGraphicsItem* option) const;
-    //生成箭头，所有生成的箭头都是尖朝上（↑），绘制的时候需要根据情况进行旋转
-    virtual QPainterPath generateEndPointPainterPath(EndPointType epType, int size);
     //生成painterpath
-    virtual QPainterPath generateLinkLineBezierPainterPath(const QPointF& fromPos,
-                                                           AspectDirection fromDirect,
-                                                           const QPointF& toPos,
-                                                           AspectDirection toDirect);
+    QPainterPath generateLinkLineBezierPainterPath(const QPointF& fromPos, AspectDirection fromDirect, const QPointF& toPos, AspectDirection toDirect);
     //生成直线
-    virtual QPainterPath generateLinkLineStraightPainterPath(const QPointF& fromPos, const QPointF& toPos);
+    QPainterPath generateLinkLineStraightPainterPath(const QPointF& fromPos, const QPointF& toPos);
     //生成直角线
-    virtual QPainterPath generateLinkLineKnucklePainterPath(const QPointF& fromPos,
-                                                            AspectDirection fromDirect,
-                                                            const QPointF& toPos,
-                                                            AspectDirection toDirect);
+    QPainterPath generateLinkLineKnucklePainterPath(const QPointF& fromPos, AspectDirection fromDirect, const QPointF& toPos, AspectDirection toDirect);
 };
+
+// DAAbstractNodeLinkGraphicsItem::EndPointType的枚举转换
+DAGRAPHICSVIEW_API QString enumToString(DA::DAGraphicsLinkItem::EndPointType e);
+// DAAbstractNodeLinkGraphicsItem::EndPointType的枚举转换
+DAGRAPHICSVIEW_API DA::DAGraphicsLinkItem::EndPointType stringToEnum(
+    const QString& s,
+    DA::DAGraphicsLinkItem::EndPointType defaultEnum = DA::DAGraphicsLinkItem::EndPointNone);
+// DAAbstractNodeLinkGraphicsItem::LinkLineStyle的枚举转换
+DAGRAPHICSVIEW_API QString enumToString(DA::DAGraphicsLinkItem::LinkLineStyle e);
+// DAAbstractNodeLinkGraphicsItem::LinkLineStyle的枚举转换
+DAGRAPHICSVIEW_API DA::DAGraphicsLinkItem::LinkLineStyle stringToEnum(
+    const QString& s,
+    DA::DAGraphicsLinkItem::LinkLineStyle defaultEnum = DA::DAGraphicsLinkItem::LinkLineKnuckle);
+
 }  // end DA
 
 #endif  // DAGRAPHICSLINKITEM_H

@@ -252,7 +252,7 @@ bool DAXmlHelperPrivate::loadNodes(DAWorkFlowEditWidget* wfe, const QDomElement&
         if (nullptr == node) {
             qWarning() << QObject::tr("workflow can not create note by "
                                       "metadata(prototype=%1,name=%2,group=%3),will skip this node")
-                                  .arg(metadata.getNodePrototype(), metadata.getNodeName(), metadata.getGroup());
+                              .arg(metadata.getNodePrototype(), metadata.getNodeName(), metadata.getGroup());
             continue;
         }
 
@@ -329,7 +329,7 @@ bool DAXmlHelperPrivate::loadNodeInPutOutputKey(DAAbstractNode::SharedPointer& n
             QDomElement nameEle = inputEle.firstChildElement("name");
             if (nameEle.isNull()) {
                 qWarning() << QObject::tr("node(prototype=%1,name=%2,group=%3) %4 tag loss child tag <name>")
-                                      .arg(node->getNodePrototype(), node->getNodeName(), node->getNodeGroup(), ks.at(i).nodeName());
+                                  .arg(node->getNodePrototype(), node->getNodeName(), node->getNodeGroup(), ks.at(i).nodeName());
                 continue;
             }
             QString key = nameEle.text();
@@ -353,7 +353,7 @@ bool DAXmlHelperPrivate::loadNodeInPutOutputKey(DAAbstractNode::SharedPointer& n
             QDomElement nameEle = outputEle.firstChildElement("name");
             if (nameEle.isNull()) {
                 qWarning() << QObject::tr("node(prototype=%1,name=%2,group=%3) %4 tag loss child tag <name>")
-                                      .arg(node->getNodePrototype(), node->getNodeName(), node->getNodeGroup(), ks.at(i).nodeName());
+                                  .arg(node->getNodePrototype(), node->getNodeName(), node->getNodeGroup(), ks.at(i).nodeName());
                 continue;
             }
             QString key = nameEle.text();
@@ -439,7 +439,7 @@ bool DAXmlHelperPrivate::loadNodeItem(DAWorkFlowGraphicsScene* scene, DAAbstract
     DAAbstractNodeGraphicsItem* item = node->createGraphicsItem();
     if (nullptr == item) {
         qWarning() << QObject::tr("node metadata(prototype=%1,name=%2,group=%3) can not create graphics item")
-                              .arg(node->getNodePrototype(), node->getNodeName(), node->getNodeGroup());
+                          .arg(node->getNodePrototype(), node->getNodeName(), node->getNodeGroup());
         return false;
     }
     item->loadFromXml(&ele);
@@ -472,17 +472,13 @@ void DAXmlHelperPrivate::saveNodeLinks(const DAWorkFlow* workflow, QDomDocument&
 
         QDomElement pointEle = doc.createElement("linkPoint");
         pointEle.setAttribute("visible", link->isLinkPointNameVisible());
-        pointEle.setAttribute("fromTextColor",
-                              link->getLinkPointNameTextColor(DAAbstractNodeLinkGraphicsItem::OrientationFrom).name());
-        pointEle.setAttribute("toTextColor",
-                              link->getLinkPointNameTextColor(DAAbstractNodeLinkGraphicsItem::OrientationTo).name());
-        pointEle.setAttribute("fromPositionOffset",
-                              link->getLinkPointNamePositionOffset(DAAbstractNodeLinkGraphicsItem::OrientationFrom));
-        pointEle.setAttribute("toPositionOffset", link->getLinkPointNamePositionOffset(DAAbstractNodeLinkGraphicsItem::OrientationTo));
+        pointEle.setAttribute("fromTextColor", link->getLinkPointNameTextColor(DAGraphicsLinkItem::OrientationStart).name());
+        pointEle.setAttribute("toTextColor", link->getLinkPointNameTextColor(DAGraphicsLinkItem::OrientationEnd).name());
+        pointEle.setAttribute("fromPositionOffset", link->getLinkPointNamePositionOffset(DAGraphicsLinkItem::OrientationStart));
+        pointEle.setAttribute("toPositionOffset", link->getLinkPointNamePositionOffset(DAGraphicsLinkItem::OrientationEnd));
         QDomElement endPointEle = doc.createElement("endPoint");
-        endPointEle.setAttribute("toType", DA::enumToString(link->getEndPointType(DAAbstractNodeLinkGraphicsItem::OrientationTo)));
-        endPointEle.setAttribute("fromType",
-                                 DA::enumToString(link->getEndPointType(DAAbstractNodeLinkGraphicsItem::OrientationFrom)));
+        endPointEle.setAttribute("toType", DA::enumToString(link->getEndPointType(DAGraphicsLinkItem::OrientationEnd)));
+        endPointEle.setAttribute("fromType", DA::enumToString(link->getEndPointType(DAGraphicsLinkItem::OrientationStart)));
         endPointEle.setAttribute("size", link->getEndPointSize());
 
         QDomElement lineEle = doc.createElement("linkLine");
@@ -545,7 +541,7 @@ bool DAXmlHelperPrivate::loadNodeLinks(DAWorkFlowGraphicsScene* scene, DAWorkFlo
         DAAbstractNodeLinkGraphicsItem* linkitem = fromItem->linkTo(fromKey, toItem, toKey);
         if (nullptr == linkitem) {
             qWarning() << QObject::tr("Unable to link to node %3's link point %4 through link point %2 of node %1")  // cn:节点%1无法通过连接点%2链接到节点%3的连接点%4
-                                  .arg(fromItem->getNodeName(), fromKey, toItem->getNodeName(), toKey);
+                              .arg(fromItem->getNodeName(), fromKey, toItem->getNodeName(), toKey);
             continue;
         }
         QDomElement pointEle    = linkEle.firstChildElement("linkPoint");
@@ -559,24 +555,22 @@ bool DAXmlHelperPrivate::loadNodeLinks(DAWorkFlowGraphicsScene* scene, DAWorkFlo
             int fromPositionOffset = pointEle.attribute("fromPositionOffset").toInt();
             int toPositionOffset   = pointEle.attribute("toPositionOffset").toInt();
             linkitem->setLinkPointNameVisible(visible);
-            linkitem->setLinkPointNamePositionOffset(fromPositionOffset, DAAbstractNodeLinkGraphicsItem::OrientationFrom);
-            linkitem->setLinkPointNamePositionOffset(toPositionOffset, DAAbstractNodeLinkGraphicsItem::OrientationTo);
-            linkitem->setLinkPointNameTextColor(fromTextColor, DAAbstractNodeLinkGraphicsItem::OrientationFrom);
-            linkitem->setLinkPointNameTextColor(toTextColor, DAAbstractNodeLinkGraphicsItem::OrientationTo);
+            linkitem->setLinkPointNamePositionOffset(fromPositionOffset, DAGraphicsLinkItem::OrientationStart);
+            linkitem->setLinkPointNamePositionOffset(toPositionOffset, DAGraphicsLinkItem::OrientationEnd);
+            linkitem->setLinkPointNameTextColor(fromTextColor, DAGraphicsLinkItem::OrientationStart);
+            linkitem->setLinkPointNameTextColor(toTextColor, DAGraphicsLinkItem::OrientationEnd);
         }
         if (!lineEle.isNull()) {
-            DAAbstractNodeLinkGraphicsItem::LinkLineStyle s = DA::stringToEnum(lineEle.attribute("style"),
-                                                                               DAAbstractNodeLinkGraphicsItem::LinkLineKnuckle);
+            DAGraphicsLinkItem::LinkLineStyle s = DA::stringToEnum(lineEle.attribute("style"), DAGraphicsLinkItem::LinkLineKnuckle);
             linkitem->setLinkLineStyle(s);
         }
         if (!endPointEle.isNull()) {
-            DAAbstractNodeLinkGraphicsItem::EndPointType etTo   = DA::stringToEnum(endPointEle.attribute("toType"),
-                                                                                 DAAbstractNodeLinkGraphicsItem::EndPointNone);
-            DAAbstractNodeLinkGraphicsItem::EndPointType etFrom = DA::stringToEnum(endPointEle.attribute("fromType"),
-                                                                                   DAAbstractNodeLinkGraphicsItem::EndPointNone);
-            int size                                            = endPointEle.attribute("size").toInt();
-            linkitem->setEndPointType(DAAbstractNodeLinkGraphicsItem::OrientationTo, etTo);
-            linkitem->setEndPointType(DAAbstractNodeLinkGraphicsItem::OrientationFrom, etFrom);
+            DAGraphicsLinkItem::EndPointType etTo = DA::stringToEnum(endPointEle.attribute("toType"), DAGraphicsLinkItem::EndPointNone);
+            DAGraphicsLinkItem::EndPointType etFrom = DA::stringToEnum(endPointEle.attribute("fromType"),
+                                                                       DAGraphicsLinkItem::EndPointNone);
+            int size                                = endPointEle.attribute("size").toInt();
+            linkitem->setEndPointType(DAGraphicsLinkItem::OrientationStart, etFrom);
+            linkitem->setEndPointType(DAGraphicsLinkItem::OrientationEnd, etTo);
             if (size > 0) {
                 linkitem->setEndPointSize(size);
             }
@@ -854,7 +848,7 @@ qreal DAXmlHelper::attributeToDouble(const QDomElement& item, const QString& att
     qreal r   = item.attribute(att).toDouble(&isok);
     if (!isok) {
         qWarning() << QObject::tr("The attribute %1=%2 under the tag %3 cannot be converted to double ")
-                              .arg(att, item.attribute(att), item.tagName());
+                          .arg(att, item.attribute(att), item.tagName());
     }
     return r;
 }
