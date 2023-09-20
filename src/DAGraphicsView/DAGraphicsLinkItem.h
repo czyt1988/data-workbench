@@ -37,9 +37,9 @@ public:
      */
     enum Orientations
     {
-        OrientationFrom = 0,  ///< 连接的开始点
-        OrientationTo,        ///< 连接的结束点
-        OrientationBoth       ///< 两个都包含
+        OrientationStart = 0,  ///< 连接的开始点
+        OrientationEnd,        ///< 连接的结束点
+        OrientationBoth        ///< 两个都包含
     };
 
     /**
@@ -70,10 +70,7 @@ public:
     virtual QRectF updateBoundingRect();
 
     //生成painterpath
-    QPainterPath generateLinePainterPath(const QPointF& fromPoint,
-                                         const QPointF& toPoint,
-                                         LinkLineStyle linestyle = LinkLineStraight,
-                                         int lineWidth           = 3);
+    QPainterPath generateLinePainterPath(const QPointF& fromPoint, const QPointF& toPoint, LinkLineStyle linestyle = LinkLineStraight);
 
     //设置贝塞尔曲线的控制点的缩放比例，连线时按照控制点的方向延伸出贝塞尔曲线的控制点，延伸的控制点的长度w = length * bezierControlScale
     void setBezierControlScale(qreal rate = 0.25);
@@ -157,10 +154,6 @@ protected:
                                                             AspectDirection fromDirect,
                                                             const QPointF& toPos,
                                                             AspectDirection toDirect);
-    //捕获场景的事件
-    bool sceneEvent(QEvent* e) override;
-    //场景的鼠标移动事件
-    bool sceneMouseMoveEvent(QGraphicsSceneMouseEvent* e);
 };
 }  // end DA
 
