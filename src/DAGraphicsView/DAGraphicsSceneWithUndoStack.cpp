@@ -54,6 +54,7 @@ public:
     /// 用户调用beginLink函数后，有可能接下来就马上触发mousePressedEvent而结束链接，因此，在LinkModeAutoStartEndFollowMouseClick模式下
     /// beginLink函数调用时会把mLinkItemIsMoved设置为false，只有接收到mouseMove事件后，此变量变为true，在mousePressedEvent才会进行结束判断
     bool mLinkItemIsMoved { false };
+    bool mIsIgnoreLinkEvent { false };  ///<设置忽略链接事件的处理，主要忽略mousePressEvent，mouseMoveEvent的链接事件
 };
 
 ////////////////////////////////////////////////
@@ -187,6 +188,17 @@ bool DAGraphicsSceneWithUndoStack::isMovingItems() const
 QPointF DAGraphicsSceneWithUndoStack::getCurrentMouseScenePos() const
 {
     return (d_ptr->mLastMouseScenePos);
+}
+
+/**
+ * @brief 获取最后鼠标在scene点击的位置
+ *
+ * @note 如果子类重载了mousePressEvent，必须调用DAGraphicsSceneWithUndoStack::mousePressEvent(mouseEvent);此函数才会生效
+ * @return
+ */
+QPointF DAGraphicsSceneWithUndoStack::getLastMousePressScenePos() const
+{
+    return (d_ptr->mLastMousePressScenePos);
 }
 
 /**
@@ -329,6 +341,17 @@ void DAGraphicsSceneWithUndoStack::cancelLink()
 DAGraphicsLinkItem* DAGraphicsSceneWithUndoStack::getCurrentLinkItem() const
 {
     return d_ptr->mLinkItem.get();
+}
+
+/**
+ * @brief 设置忽略链接事件的处理，主要忽略mousePressEvent，mouseMoveEvent的链接事件
+ *
+ * 这个函数一般是在子类中的重载函数中调用，用于进行一些特殊处理需要暂时屏蔽掉链接事件
+ * @param on
+ */
+void DAGraphicsSceneWithUndoStack::setIgnoreLinkEvent(bool on)
+{
+    d_ptr->mIsIgnoreLinkEvent = on;
 }
 
 /**
@@ -567,59 +590,62 @@ void DAGraphicsSceneWithUndoStack::mousePressEvent(QGraphicsSceneMouseEvent* mou
     d_ptr->mLastMousePressScenePos = mouseEvent->scenePos();
     //先传递下去使得能处理选中状态
     QGraphicsScene::mousePressEvent(mouseEvent);
-    if (isStartLink()) {
-        //链接线模式，处理连接线
-        if (mouseEvent->buttons().testFlag(Qt::RightButton)) {
-            //右键点击是取消
-            cancelLink();
-        } else if (mouseEvent->buttons().testFlag(Qt::LeftButton)) {
-            //左键点击
-            switch (d_ptr->mLinkMode) {
-            case LinkModeAutoStartEndFollowMouseClick: {
-                //结束链接
-                if (d_ptr->mLinkItemIsMoved) {
-                    endLink();
+    //! 处理链接事件
+    if (!(d_ptr->mIsIgnoreLinkEvent)) {
+        if (isStartLink()) {
+            //链接线模式，处理连接线
+            if (mouseEvent->buttons().testFlag(Qt::RightButton)) {
+                //右键点击是取消
+                cancelLink();
+            } else if (mouseEvent->buttons().testFlag(Qt::LeftButton)) {
+                //左键点击
+                switch (d_ptr->mLinkMode) {
+                case LinkModeAutoStartEndFollowMouseClick: {
+                    //结束链接
+                    if (d_ptr->mLinkItemIsMoved) {
+                        endLink();
+                    }
+                } break;
+                default:
+                    break;
                 }
-            } break;
-            default:
-                break;
+            }
+            //处理链接事件时，忽略掉移动事件的处理，所以这里要return掉
+            return;
+        }
+    }
+    //! 处理有移动事件
+    if (mouseEvent->buttons().testFlag(Qt::LeftButton)) {
+        //!  1.记录选中的所有图元，如果点击的是改变尺寸的点，这个就不执行记录
+        QGraphicsItem* positem = itemAt(d_ptr->mLastMousePressScenePos, QTransform());
+        if (!isItemCanMove(positem, d_ptr->mLastMousePressScenePos)) {
+            d_ptr->mIsMovingItems = false;
+            return;
+        }
+        //说明这个是移动
+        //获取选中的可移动单元
+        QList< QGraphicsItem* > mits = getSelectedMovableItems();
+        if (mits.isEmpty()) {
+            d_ptr->mIsMovingItems = false;
+            return;
+        }
+        // todo.如果点击的是链接和control point，不属于移动
+        for (QGraphicsItem* its : qAsConst(mits)) {
+            DAGraphicsResizeableItem* ri = dynamic_cast< DAGraphicsResizeableItem* >(its);
+            if (ri) {
+                if (DAGraphicsResizeableItem::NotUnderAnyControlType
+                    != ri->getControlPointByPos(ri->mapFromScene(mouseEvent->scenePos()))) {
+                    //说明点击在了控制点上，需要跳过
+                    d_ptr->mIsMovingItems = false;
+                    return;
+                }
             }
         }
-    } else {
-        if (mouseEvent->buttons().testFlag(Qt::LeftButton)) {
-            //! 1. 在链接模式下处理链接线的点击
-
-            //!  2.记录选中的所有图元，如果点击的是改变尺寸的点，这个就不执行记录
-            QGraphicsItem* positem = itemAt(d_ptr->mLastMousePressScenePos, QTransform());
-            if (!isItemCanMove(positem, d_ptr->mLastMousePressScenePos)) {
-                d_ptr->mIsMovingItems = false;
-                return;
-            }
-            //说明这个是移动
-            //获取选中的可移动单元
-            QList< QGraphicsItem* > mits = getSelectedMovableItems();
-            if (mits.isEmpty()) {
-                d_ptr->mIsMovingItems = false;
-                return;
-            }
-            // todo.如果点击的是链接和control point，不属于移动
-            for (QGraphicsItem* its : qAsConst(mits)) {
-                DAGraphicsResizeableItem* ri = dynamic_cast< DAGraphicsResizeableItem* >(its);
-                if (ri) {
-                    if (DAGraphicsResizeableItem::NotUnderAnyControlType
-                        != ri->getControlPointByPos(ri->mapFromScene(mouseEvent->scenePos()))) {
-                        //说明点击在了控制点上，需要跳过
-                        d_ptr->mIsMovingItems = false;
-                        return;
-                    }
-                }
-            }
-            d_ptr->mIsMovingItems = true;
-            //
-            d_ptr->mMovingInfos.clear();
-            for (QGraphicsItem* its : qAsConst(mits)) {
-                d_ptr->mMovingInfos.appendStartPos(its);
-            }
+        d_ptr->mIsMovingItems = true;
+        //
+        d_ptr->mMovingInfos.clear();
+        for (QGraphicsItem* its : qAsConst(mits)) {
+            d_ptr->mMovingInfos.appendStartPos(its);
         }
     }
 }
@@ -630,15 +656,17 @@ void DAGraphicsSceneWithUndoStack::mouseMoveEvent(QGraphicsSceneMouseEvent* mous
         return;
     }
     d_ptr->mLastMouseScenePos = mouseEvent->scenePos();
-    if (isStartLink()) {
-        switch (d_ptr->mLinkMode) {
-        case LinkModeAutoStartEndFollowMouseClick: {  //开端为当前鼠标位置，末端跟随鼠标移动，在下个鼠标左键点击时结束连线
-            d_ptr->mLinkItem->setEndScenePosition(d_ptr->mLastMouseScenePos);
-            d_ptr->mLinkItem->updateBoundingRect();
-            d_ptr->mLinkItemIsMoved = true;
-        } break;
-        default:
-            break;
+    if (!(d_ptr->mIsIgnoreLinkEvent)) {
+        if (isStartLink()) {
+            switch (d_ptr->mLinkMode) {
+            case LinkModeAutoStartEndFollowMouseClick: {  //开端为当前鼠标位置，末端跟随鼠标移动，在下个鼠标左键点击时结束连线
+                d_ptr->mLinkItem->setEndScenePosition(d_ptr->mLastMouseScenePos);
+                d_ptr->mLinkItem->updateBoundingRect();
+                d_ptr->mLinkItemIsMoved = true;
+            } break;
+            default:
+                break;
+            }
         }
     }
     QGraphicsScene::mouseMoveEvent(mouseEvent);

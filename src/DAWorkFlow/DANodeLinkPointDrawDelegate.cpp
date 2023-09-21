@@ -10,18 +10,11 @@ namespace DA
 {
 class DANodeLinkPointDrawDelegate::PrivateData
 {
-    DA_DECLARE_PUBLIC(DANodeLinkPointDrawDelegate)
+        DA_DECLARE_PUBLIC(DANodeLinkPointDrawDelegate)
 public:
-    PrivateData(DANodeLinkPointDrawDelegate* p);
-    DAAbstractNodeGraphicsItem* mItem;  ///< 绑定的item
+        PrivateData(DANodeLinkPointDrawDelegate* p);
+        DAAbstractNodeGraphicsItem* mItem;  ///< 绑定的item
 };
-}  // end of namespace DA
-
-//===================================================
-// using DA namespace -- 禁止在头文件using！！
-//===================================================
-
-using namespace DA;
 
 //===================================================
 //
@@ -34,7 +27,7 @@ DANodeLinkPointDrawDelegate::PrivateData::PrivateData(DANodeLinkPointDrawDelegat
 
 DANodeLinkPointDrawDelegate::DANodeLinkPointDrawDelegate(DAAbstractNodeGraphicsItem* i) : DA_PIMPL_CONSTRUCT
 {
-    setItem(i);
+        setItem(i);
 }
 
 DANodeLinkPointDrawDelegate::~DANodeLinkPointDrawDelegate()
@@ -47,7 +40,7 @@ DANodeLinkPointDrawDelegate::~DANodeLinkPointDrawDelegate()
  */
 void DANodeLinkPointDrawDelegate::setItem(DAAbstractNodeGraphicsItem* i)
 {
-    d_ptr->mItem = i;
+        d_ptr->mItem = i;
 }
 
 /**
@@ -56,7 +49,7 @@ void DANodeLinkPointDrawDelegate::setItem(DAAbstractNodeGraphicsItem* i)
  */
 DAAbstractNodeGraphicsItem* DANodeLinkPointDrawDelegate::getItem() const
 {
-    return d_ptr->mItem;
+        return d_ptr->mItem;
 }
 
 /**
@@ -67,10 +60,10 @@ DAAbstractNodeGraphicsItem* DANodeLinkPointDrawDelegate::getItem() const
  */
 void DANodeLinkPointDrawDelegate::paintLinkPoints(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
-    QList< DANodeLinkPoint > pls = getLinkPoints();
-    for (const DANodeLinkPoint& pl : qAsConst(pls)) {
-        paintLinkPoint(pl, painter, option, widget);
-    }
+        QList< DANodeLinkPoint > pls = getLinkPoints();
+        for (const DANodeLinkPoint& pl : qAsConst(pls)) {
+                paintLinkPoint(pl, painter, option, widget);
+        }
 }
 
 /**
@@ -83,7 +76,7 @@ void DANodeLinkPointDrawDelegate::paintLinkPoints(QPainter* painter, const QStyl
  */
 QList< DANodeLinkPoint > DANodeLinkPointDrawDelegate::getLinkPoints() const
 {
-    return d_ptr->mItem->getLinkPoints();
+        return d_ptr->mItem->getLinkPoints();
 }
 
 /**
@@ -99,23 +92,23 @@ QList< DANodeLinkPoint > DANodeLinkPointDrawDelegate::getLinkPoints() const
  */
 QPainterPath DANodeLinkPointDrawDelegate::getlinkPointPainterRegion(const DANodeLinkPoint& pl) const
 {
-    int lpHWidth  = 14;  //连接点水平时的宽度
-    int lpHHeight = 10;  //连接点水平时的高度
-    QPainterPath region;
-    switch (pl.direction) {
-    case DANodeLinkPoint::East:
-    case DANodeLinkPoint::West:
-        region.addRect(QRectF(pl.position.x() - lpHWidth / 2, pl.position.y() - lpHHeight / 2, lpHWidth, lpHHeight));
-        break;
-    case DANodeLinkPoint::North:
-    case DANodeLinkPoint::South:
-        region.addRect(QRectF(pl.position.x() - lpHHeight / 2, pl.position.y() - lpHWidth / 2, lpHHeight, lpHWidth));
-        break;
-    default:
-        region.addRect(QRectF(pl.position.x() - lpHWidth / 2, pl.position.y() - lpHWidth / 2, lpHWidth, lpHWidth));
-        break;
-    }
-    return region;
+        int lpHWidth  = 14;  //连接点水平时的宽度
+        int lpHHeight = 10;  //连接点水平时的高度
+        QPainterPath region;
+        switch (pl.direction) {
+        case AspectDirection::East:
+        case AspectDirection::West:
+                region.addRect(QRectF(pl.position.x() - lpHWidth / 2, pl.position.y() - lpHHeight / 2, lpHWidth, lpHHeight));
+                break;
+        case AspectDirection::North:
+        case AspectDirection::South:
+                region.addRect(QRectF(pl.position.x() - lpHHeight / 2, pl.position.y() - lpHWidth / 2, lpHHeight, lpHWidth));
+                break;
+        default:
+                region.addRect(QRectF(pl.position.x() - lpHWidth / 2, pl.position.y() - lpHWidth / 2, lpHWidth, lpHWidth));
+                break;
+        }
+        return region;
 }
 /**
  * @brief 绘制连接点
@@ -129,19 +122,20 @@ void DANodeLinkPointDrawDelegate::paintLinkPoint(const DANodeLinkPoint& pl,
                                                  const QStyleOptionGraphicsItem* option,
                                                  QWidget* widget)
 {
-    Q_UNUSED(option);
-    Q_UNUSED(widget);
-    painter->save();
-    //连接点是一个长方形，6X8,点中心是长方形中心
-    //先把painter坐标变换到点处
-    const DANodePalette& palette = d_ptr->mItem->getNodePalette();
-    QPainterPath pointrange      = getlinkPointPainterRegion(pl);  // 横版矩形，对应East，West
-    painter->setPen(palette.getGlobalLinkPointBorderColor());
-    if (DANodeLinkPoint::Input == pl.way) {
-        painter->setBrush(palette.getInLinkPointBrush());
-    } else {
-        painter->setBrush(palette.getOutLinkPointBrush());
-    }
-    painter->drawPath(pointrange);
-    painter->restore();
+        Q_UNUSED(option);
+        Q_UNUSED(widget);
+        painter->save();
+        //连接点是一个长方形，6X8,点中心是长方形中心
+        //先把painter坐标变换到点处
+        const DANodePalette& palette = d_ptr->mItem->getNodePalette();
+        QPainterPath pointrange      = getlinkPointPainterRegion(pl);  // 横版矩形，对应East，West
+        painter->setPen(palette.getGlobalLinkPointBorderColor());
+        if (DANodeLinkPoint::Input == pl.way) {
+                painter->setBrush(palette.getInLinkPointBrush());
+        } else {
+                painter->setBrush(palette.getOutLinkPointBrush());
+        }
+        painter->drawPath(pointrange);
+        painter->restore();
 }
+}  // end of namespace DA

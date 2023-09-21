@@ -396,32 +396,24 @@ void DAGraphicsLinkItem::paintEndPoint(QPainter* painter,
     //首先绘制开端箭头
     if (etStart != EndPointNone) {
         painter->save();
-        QPointF pTrend = linkPath.pointAtPercent(0.1);
+        QPointF pTrend = linkPath.pointAtPercent(0.05);
         QLineF lf(pStart, pTrend);
         //先旋转再移动
         painter->rotate(360 - lf.angle());  // painter的rotate是顺时针旋转，而line的angle是逆时针
         painter->translate(pStart);
         painter->drawPath(startPainterPath);
         painter->restore();
-        //        qDebug() << "etStart,pTrend=" << pTrend << ",pStart=" << pStart
-        //                 << "QLineF(pTrend, pStart).angle=" << QLineF(pTrend, pStart).angle()
-        //                 << ",QLineF(pStart,pTrend).angle=" << QLineF(pStart, pTrend).angle();
     }
     //再绘制结束箭头
     if (etEnd != EndPointNone) {
         painter->save();
-        QPointF pTrend = linkPath.pointAtPercent(0.9);
+        QPointF pTrend = linkPath.pointAtPercent(0.95);
         QLineF lf(pEnd, pTrend);
         //先旋转再移动
-        painter->drawEllipse(pTrend, 2, 2);
-        painter->drawEllipse(pEnd, 4, 4);
         painter->translate(pEnd);
         painter->rotate(360 - lf.angle());  // painter的rotate是顺时针旋转，而line的angle是逆时针
         painter->drawPath(endPainterPath);
         painter->restore();
-        //        qDebug() << "etEnd,pTrend=" << pTrend << ",pEnd=" << pEnd
-        //                 << "QLineF(pTrend, pEnd).angle=" << QLineF(pTrend, pEnd).angle()
-        //                 << ",QLineF(pEnd,pTrend).angle=" << QLineF(pEnd, pTrend).angle();
     }
     painter->restore();
 }
@@ -813,7 +805,7 @@ QPainterPath DAGraphicsLinkItem::generateLinkLineKnucklePainterPath(const QPoint
                                                                     const QPointF& toPos,
                                                                     AspectDirection toDirect)
 {
-    const int extendLength = 15;  //延长线的长度
+    const int extendLength = 20;  //延长线的长度
     QPointF extendFrom     = elongation(fromPos, fromDirect, extendLength);
     QPointF extendTo       = elongation(toPos, toDirect, extendLength);
     QPainterPath path;
@@ -983,4 +975,49 @@ DAGraphicsLinkItem::LinkLineStyle stringToEnum(const QString& s, DAGraphicsLinkI
     return defaultEnum;
 }
 
+/**
+ * @brief DANodeLinkPoint::Direction 的枚举转换
+ *
+ * header:DAGraphicsViewGlobal.h
+ * cpp:DAGraphicsLinkItem.cpp
+ * @param e
+ * @return
+ */
+QString enumToString(AspectDirection e)
+{
+    switch (e) {
+    case AspectDirection::East:
+        return "east";
+    case AspectDirection::South:
+        return "south";
+    case AspectDirection::West:
+        return "west";
+    case AspectDirection::North:
+        return "north";
+    default:
+        break;
+    }
+    return "east";
+}
+/**
+ * @brief DANodeLinkPoint::Direction 的枚举转换
+ *
+ * header:DAGraphicsViewGlobal.h
+ * cpp:DAGraphicsLinkItem.cpp
+ * @param s
+ * @return
+ */
+AspectDirection stringToEnum(const QString& s, AspectDirection defaultEnum)
+{
+    if (0 == s.compare("east", Qt::CaseInsensitive)) {
+        return AspectDirection::East;
+    } else if (0 == s.compare("south", Qt::CaseInsensitive)) {
+        return AspectDirection::South;
+    } else if (0 == s.compare("west", Qt::CaseInsensitive)) {
+        return AspectDirection::West;
+    } else if (0 == s.compare("north", Qt::CaseInsensitive)) {
+        return AspectDirection::North;
+    }
+    return defaultEnum;
+}
 }  // end DA

@@ -65,6 +65,11 @@ enum DAGraphicsItemType
     ItemType_GraphicsStandardTextItem  = ItemType_GraphicsItemBegin + 500,     ///<标准样式
     ItemType_GraphicsResizeableItemEnd = ItemType_GraphicsItemBegin + 1000
 };
+// 实现位于DAGraphicsLinkItem.cpp
+// DANodeLinkPoint::Direction 的枚举转换
+DAGRAPHICSVIEW_API QString enumToString(AspectDirection e);
+// DANodeLinkPoint::Direction 的枚举转换
+DAGRAPHICSVIEW_API AspectDirection stringToEnum(const QString& s, AspectDirection defaultEnum = AspectDirection::East);
 
 }
 

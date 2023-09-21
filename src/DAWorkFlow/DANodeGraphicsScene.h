@@ -33,14 +33,8 @@ public:
     DANodeGraphicsScene(qreal x, qreal y, qreal width, qreal height, QObject* p = nullptr);
     ~DANodeGraphicsScene();
 
-    // 判断是否处于开始连接状态
-    bool isStartLink() const;
-
     //取消链接
-    void cancelLink();
-
-    //判断是否这个item是正在连线的item，正在连线过程，会有一个item，这个item会被暂时加入scene，如果链接线失败，会把这个item删除
-    bool isLinkingItem(DAAbstractNodeLinkGraphicsItem* linkItem) const;
+    virtual void cancelLink() override;
 
     //设置工作流
     void setWorkFlow(DAWorkFlow* wf);
@@ -139,9 +133,6 @@ signals:
     void itemRemoved(const QList< QGraphicsItem* >& items);
 
 protected slots:
-
-    //此函数为FCNodeGraphicsScene处理连接点点击事件
-    void onNodeItemLinkPointSelected(DA::DAAbstractNodeGraphicsItem* item, const DA::DANodeLinkPoint& lp, QGraphicsSceneMouseEvent* event);
 
     // item选择改变
     void onItemSelectionChanged();

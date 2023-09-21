@@ -44,6 +44,8 @@ public:
     bool isMovingItems() const;
     // 获取当前鼠标在scene的位置
     QPointF getCurrentMouseScenePos() const;
+    // 获取最后鼠标在scene点击的位置
+    QPointF getLastMousePressScenePos() const;
     //获取选中且能移动的item
     QList< QGraphicsItem* > getSelectedMovableItems();
     //等同additem，但使用redo/undo来添加，可以进行redo/undo操作
@@ -59,9 +61,12 @@ public:
     //结束链接模式
     void endLink();
     //取消链接模式
-    void cancelLink();
+    virtual void cancelLink();
     //获取当前正在进行连线的连接线item
     DAGraphicsLinkItem* getCurrentLinkItem() const;
+    // 设置忽略链接事件的处理，主要忽略mousePressEvent，mouseMoveEvent的链接事件，
+    // 这个函数一般是在子类中的重载函数中调用，用于进行一些特殊处理需要暂时屏蔽掉链接事件
+    void setIgnoreLinkEvent(bool on);
 
 public:
     //是否允许对齐网格

@@ -114,22 +114,22 @@ void DAAbstractNodeLinkGraphicsItem::PrivateData::updateLinkPointNameText(QGraph
     int w = item->boundingRect().width();
 
     switch (pl.direction) {
-    case DANodeLinkPoint::East:
+    case AspectDirection::East:
         item->setRotation(0);
         item->setPos(p.x() + offset, p.y() - hoff);
         break;
 
-    case DANodeLinkPoint::South:
+    case AspectDirection::South:
         item->setRotation(90);
         item->setPos(p.x() + hoff, p.y() + offset);
         break;
 
-    case DANodeLinkPoint::West:
+    case AspectDirection::West:
         item->setRotation(0);
         item->setPos(p.x() - w - offset, p.y() - hoff);
         break;
 
-    case DANodeLinkPoint::North:
+    case AspectDirection::North:
         item->setRotation(90);
         item->setPos(p.x() + hoff, p.y() - w - offset);
         break;
@@ -629,6 +629,27 @@ DAAbstractNode::SharedPointer DAAbstractNodeLinkGraphicsItem::toNode() const
  */
 void DAAbstractNodeLinkGraphicsItem::finishedLink()
 {
+}
+
+QPainterPath DAAbstractNodeLinkGraphicsItem::generateLinePainterPath(const QPointF& fromPoint,
+                                                                     const QPointF& toPoint,
+                                                                     DAGraphicsLinkItem::LinkLineStyle linestyle)
+{
+    QPainterPath res;
+    switch (linestyle) {
+    case LinkLineBezier:
+        res = generateLinkLineBezierPainterPath(fromPoint, d_ptr->mFromPoint.direction, toPoint, d_ptr->mToPoint.direction);
+        break;
+    case LinkLineStraight:
+        res = generateLinkLineStraightPainterPath(fromPoint, toPoint);
+        break;
+    case LinkLineKnuckle:
+        res = generateLinkLineKnucklePainterPath(fromPoint, d_ptr->mFromPoint.direction, toPoint, d_ptr->mToPoint.direction);
+        break;
+    default:
+        break;
+    }
+    return res;
 }
 
 QVariant DAAbstractNodeLinkGraphicsItem::itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant& value)

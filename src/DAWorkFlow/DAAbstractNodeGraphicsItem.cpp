@@ -350,7 +350,7 @@ DANodeLinkPoint DAAbstractNodeGraphicsItem::getOutputLinkPoint(const QString& na
  * @param name
  * @param d
  */
-bool DAAbstractNodeGraphicsItem::setNodeLinkPointDirection(const QString& name, DANodeLinkPoint::Direction d)
+bool DAAbstractNodeGraphicsItem::setNodeLinkPointDirection(const QString& name, AspectDirection d)
 {
     for (DAAbstractNodeGraphicsItem::PrivateData::LinkInfo& dp : d_ptr->mLinkInfos) {
         if (dp.point.name == name) {
@@ -721,7 +721,7 @@ QList< DANodeLinkPoint > DAAbstractNodeGraphicsItem::generateLinkPoint() const
     //避免除0
     for (const QString& k : qAsConst(ks)) {
         DANodeLinkPoint lp;
-        lp.direction = DANodeLinkPoint::West;
+        lp.direction = AspectDirection::West;
         lp.way       = DANodeLinkPoint::Input;
         lp.name      = k;
         res.append(lp);
@@ -731,7 +731,7 @@ QList< DANodeLinkPoint > DAAbstractNodeGraphicsItem::generateLinkPoint() const
     ks = n->getOutputKeys();
     for (const QString& k : qAsConst(ks)) {
         DANodeLinkPoint lp;
-        lp.direction = DANodeLinkPoint::East;
+        lp.direction = AspectDirection::East;
         lp.way       = DANodeLinkPoint::Output;
         lp.name      = k;
         res.append(lp);
@@ -797,19 +797,19 @@ void DAAbstractNodeGraphicsItem::changeLinkPointPos(QList< DANodeLinkPoint >& lp
             ++inputCnt;
             switch (inLoc) {
             case LinkPointLocationOnLeftSide:
-                lp.direction = DANodeLinkPoint::West;
+                lp.direction = AspectDirection::West;
                 lp.position  = QPointF(bodyRect.left() + spaceSide, bodyRect.top() + spaceSide + (inputCnt * dtIn));
                 break;
             case LinkPointLocationOnTopSide:
-                lp.direction = DANodeLinkPoint::North;
+                lp.direction = AspectDirection::North;
                 lp.position  = QPointF(bodyRect.left() + spaceSide + (inputCnt * dtIn), bodyRect.top() + spaceSide);
                 break;
             case LinkPointLocationOnRightSide:
-                lp.direction = DANodeLinkPoint::East;
+                lp.direction = AspectDirection::East;
                 lp.position  = QPointF(bodyRect.right() - spaceSide, bodyRect.top() + spaceSide + (inputCnt * dtIn));
                 break;
             case LinkPointLocationOnBottomSide:
-                lp.direction = DANodeLinkPoint::South;
+                lp.direction = AspectDirection::South;
                 lp.position  = QPointF(bodyRect.left() + spaceSide + (inputCnt * dtIn), bodyRect.bottom() - spaceSide);
                 break;
             default:
@@ -820,19 +820,19 @@ void DAAbstractNodeGraphicsItem::changeLinkPointPos(QList< DANodeLinkPoint >& lp
             ++outputCnt;
             switch (outLoc) {
             case LinkPointLocationOnLeftSide:
-                lp.direction = DANodeLinkPoint::West;
+                lp.direction = AspectDirection::West;
                 lp.position  = QPointF(bodyRect.left() + spaceSide, bodyRect.top() + spaceSide + (outputCnt * dtOut));
                 break;
             case LinkPointLocationOnTopSide:
-                lp.direction = DANodeLinkPoint::North;
+                lp.direction = AspectDirection::North;
                 lp.position  = QPointF(bodyRect.left() + spaceSide + (outputCnt * dtOut), bodyRect.top() + spaceSide);
                 break;
             case LinkPointLocationOnRightSide:
-                lp.direction = DANodeLinkPoint::East;
+                lp.direction = AspectDirection::East;
                 lp.position  = QPointF(bodyRect.right() - spaceSide, bodyRect.top() + spaceSide + (outputCnt * dtOut));
                 break;
             case LinkPointLocationOnBottomSide:
-                lp.direction = DANodeLinkPoint::South;
+                lp.direction = AspectDirection::South;
                 lp.position = QPointF(bodyRect.left() + spaceSide + (outputCnt * dtOut), bodyRect.bottom() - spaceSide);
                 break;
             default:
@@ -899,7 +899,7 @@ bool DAAbstractNodeGraphicsItem::loadFromXml(const QDomElement* itemElement)
             if (name.isEmpty()) {
                 continue;
             }
-            setNodeLinkPointDirection(name, stringToEnum(le.attribute("direction"), DANodeLinkPoint::East));
+            setNodeLinkPointDirection(name, stringToEnum(le.attribute("direction"), AspectDirection::East));
         }
     }
     return true;
@@ -949,12 +949,12 @@ DAAbstractNodeLinkGraphicsItem* DAAbstractNodeGraphicsItem::linkTo(const DANodeL
     }
     if (!linkitem->attachFrom(this, fromPoint)) {
         qDebug() << QObject::tr("link item can not attach from node item(%1) with key=%2")
-                            .arg(this->getNodeName(), fromPoint.name);  // cn:无法在节点(%1)的连接点%2上建立链接
+                        .arg(this->getNodeName(), fromPoint.name);  // cn:无法在节点(%1)的连接点%2上建立链接
         return nullptr;
     }
     if (!linkitem->attachTo(toItem, toPoint)) {
         qDebug() << QObject::tr("link item can not attach to node item(%1) with key=%2")  // cn:无法链接到节点(%1)的连接点%2
-                            .arg(toItem->getNodeName(), toPoint.name);
+                        .arg(toItem->getNodeName(), toPoint.name);
 
         return nullptr;
     }
@@ -976,12 +976,12 @@ DAAbstractNodeLinkGraphicsItem* DAAbstractNodeGraphicsItem::linkTo(const QString
     DANodeLinkPoint tolp   = toItem->getInputLinkPoint(toPointName);
     if (!fromlp.isValid()) {
         qDebug() << QObject::tr("Node %1 cannot find a connection point named %2")  // cn:节点%1无法找到名字为%2的连接点
-                            .arg(getNodeName(), fromPointName);
+                        .arg(getNodeName(), fromPointName);
         return nullptr;
     }
     if (!tolp.isValid()) {
         qDebug() << QObject::tr("Node %1 cannot find a connection point named %2")  // cn:节点%1无法找到名字为%2的连接点
-                            .arg(toItem->getNodeName(), toPointName);
+                        .arg(toItem->getNodeName(), toPointName);
         return nullptr;
     }
     return linkTo(fromlp, toItem, tolp);

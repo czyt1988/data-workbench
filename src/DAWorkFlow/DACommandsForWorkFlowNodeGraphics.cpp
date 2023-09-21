@@ -128,7 +128,7 @@ void DACommandsForWorkFlowRemoveSelectNodes::classifyItems(DANodeGraphicsScene* 
             nodeItems.append(ni);
         } else if (DAAbstractNodeLinkGraphicsItem* li = dynamic_cast< DAAbstractNodeLinkGraphicsItem* >(i)) {
             if (isStartLink) {
-                if (scene->isLinkingItem(li)) {
+                if (scene->getCurrentLinkItem() == li) {
                     //连接线要跳过
                     scene->cancelLink();
                     continue;

@@ -70,6 +70,10 @@ public:
 
     //完成链接的回调
     virtual void finishedLink();
+    //生成painterpath
+    virtual QPainterPath generateLinePainterPath(const QPointF& fromPoint,
+                                                 const QPointF& toPoint,
+                                                 LinkLineStyle linestyle = LinkLineStraight) override;
 
 public:
     DAAbstractNodeLinkGraphicsItem(QGraphicsItem* p = nullptr);

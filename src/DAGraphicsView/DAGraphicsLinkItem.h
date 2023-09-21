@@ -150,11 +150,17 @@ protected:
     //获取绘图的画笔
     QPen getPainterPen(const QStyleOptionGraphicsItem* option) const;
     //生成painterpath
-    QPainterPath generateLinkLineBezierPainterPath(const QPointF& fromPos, AspectDirection fromDirect, const QPointF& toPos, AspectDirection toDirect);
+    virtual QPainterPath generateLinkLineBezierPainterPath(const QPointF& fromPos,
+                                                           AspectDirection fromDirect,
+                                                           const QPointF& toPos,
+                                                           AspectDirection toDirect);
     //生成直线
-    QPainterPath generateLinkLineStraightPainterPath(const QPointF& fromPos, const QPointF& toPos);
+    virtual QPainterPath generateLinkLineStraightPainterPath(const QPointF& fromPos, const QPointF& toPos);
     //生成直角线
-    QPainterPath generateLinkLineKnucklePainterPath(const QPointF& fromPos, AspectDirection fromDirect, const QPointF& toPos, AspectDirection toDirect);
+    virtual QPainterPath generateLinkLineKnucklePainterPath(const QPointF& fromPos,
+                                                            AspectDirection fromDirect,
+                                                            const QPointF& toPos,
+                                                            AspectDirection toDirect);
 };
 
 // DAAbstractNodeLinkGraphicsItem::EndPointType的枚举转换

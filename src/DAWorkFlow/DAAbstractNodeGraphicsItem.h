@@ -100,7 +100,7 @@ public:
     DANodeLinkPoint getInputLinkPoint(const QString& name) const;
     DANodeLinkPoint getOutputLinkPoint(const QString& name) const;
     //对linkpoint的属性设置,linkpoint 方向设置只会影响显示，不会影响工作流的链接
-    bool setNodeLinkPointDirection(const QString& name, DANodeLinkPoint::Direction d);
+    bool setNodeLinkPointDirection(const QString& name, AspectDirection d);
 
     //判断是否存在连接点
     bool isHaveLinkPoint(const DANodeLinkPoint& pl) const;
