@@ -396,7 +396,8 @@ void DAGraphicsLinkItem::paintEndPoint(QPainter* painter,
     //首先绘制开端箭头
     if (etStart != EndPointNone) {
         painter->save();
-        QPointF pTrend = linkPath.pointAtPercent(0.05);
+        //
+        QPointF pTrend = calcPainterPathEndPoint(linkPath, true, 18);  //折线的延长线是20，因此这里设定18
         QLineF lf(pStart, pTrend);
         //先旋转再移动
         painter->rotate(360 - lf.angle());  // painter的rotate是顺时针旋转，而line的angle是逆时针
@@ -407,7 +408,7 @@ void DAGraphicsLinkItem::paintEndPoint(QPainter* painter,
     //再绘制结束箭头
     if (etEnd != EndPointNone) {
         painter->save();
-        QPointF pTrend = linkPath.pointAtPercent(0.95);
+        QPointF pTrend = calcPainterPathEndPoint(linkPath, false, 18);  //折线的延长线是20，因此这里设定18
         QLineF lf(pEnd, pTrend);
         //先旋转再移动
         painter->translate(pEnd);
@@ -668,6 +669,36 @@ AspectDirection DAGraphicsLinkItem::relativeDirectionOfPoint(const QPointF& p1, 
     }
     //不可能达到
     return AspectDirection::East;
+}
+
+/**
+ * @brief 获取线段的末端，这个函数可以返回末端但有不是终端的点，这个点离终端的距离不会超过distanceMaxPx
+ *
+ * 这个函数主要是用于绘制箭头，为了决定箭头的旋转角度，获取线段的0.9位置点，这个点和端点的角度就是箭头旋转角度，
+ * 但是，对于非常长的线段，0.9的位置可能也比较大，尤其是折线，有可能会异常，因此就要有一个最大像素距离，如果超过最大像素距离，
+ * 就要尝试再计算要给更小的值，如变为0.95，如果还不行，就继续变大占比，直到小于最小距离
+ * @param path
+ * @param fromStart
+ * @param distanceMaxPx
+ * @param maxTryCnt 最大尝试次数
+ * @return
+ */
+QPointF DAGraphicsLinkItem::calcPainterPathEndPoint(const QPainterPath& path, bool fromStart, qreal distanceMaxPx, int maxTryCnt)
+{
+    qreal basePercent = fromStart ? 0.0 : 1.0;
+    qreal dt          = fromStart ? 0.05 : -0.05;
+
+    QPointF endpoint  = path.pointAtPercent(basePercent);
+    QPointF testpoint = path.pointAtPercent(basePercent + dt);
+    qreal dist        = pointLength(endpoint, testpoint);
+    int tryCnt        = 0;
+    while (dist > distanceMaxPx && tryCnt < maxTryCnt) {
+        dt /= 2.0;
+        testpoint = path.pointAtPercent(basePercent + dt);
+        dist      = pointLength(endpoint, testpoint);
+        ++tryCnt;
+    }
+    return testpoint;
 }
 
 /**

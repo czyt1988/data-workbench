@@ -138,6 +138,8 @@ public:
     static AspectDirection oppositeDirection(AspectDirection d);
     //返回点1相对点2的方位
     static AspectDirection relativeDirectionOfPoint(const QPointF& p1, const QPointF& p2);
+    //获取线段的末端，这个函数可以返回末端但有不是终端的点，这个点离终端的距离不会超过distanceMaxPx
+    static QPointF calcPainterPathEndPoint(const QPainterPath& path, bool fromStart = true, qreal distanceMaxPx = 18.0);
 
 protected:
     //开始连接点的位置
