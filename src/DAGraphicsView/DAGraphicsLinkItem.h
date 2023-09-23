@@ -114,6 +114,9 @@ public:
     virtual QPainterPath generateLinePainterPath(const QPointF& fromPoint, const QPointF& toPoint, LinkLineStyle linestyle = LinkLineStraight);
     //生成箭头，所有生成的箭头都是尖朝上（↑），绘制的时候需要根据情况进行旋转
     virtual QPainterPath generateEndPointPainterPath(EndPointType epType, int size);
+    //在将要结束链接的回调，通过此回调可以执行完成链接后的相关操作，例如判断末端链接的图元，从而实现路径调整
+    //如果此函数返回false，将代表不接受链接，这时候，结束动作会被跳过，也就是鼠标点击是没有无法结束链接而生成连接线
+    virtual bool willCompleteLink();
 
 public:
     //计算两个点的距离
@@ -139,7 +142,7 @@ public:
     //返回点1相对点2的方位
     static AspectDirection relativeDirectionOfPoint(const QPointF& p1, const QPointF& p2);
     //获取线段的末端，这个函数可以返回末端但有不是终端的点，这个点离终端的距离不会超过distanceMaxPx
-    static QPointF calcPainterPathEndPoint(const QPainterPath& path, bool fromStart = true, qreal distanceMaxPx = 18.0);
+    static QPointF calcPainterPathEndPoint(const QPainterPath& path, bool fromStart = true, qreal distanceMaxPx = 18.0, int maxTryCnt = 10);
 
 protected:
     //开始连接点的位置

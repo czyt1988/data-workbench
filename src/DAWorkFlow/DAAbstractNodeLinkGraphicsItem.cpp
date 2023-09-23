@@ -499,6 +499,7 @@ bool DAAbstractNodeLinkGraphicsItem::isLinked() const
 {
     return d_ptr->isLinked();
 }
+
 /**
  * @brief 更新连接点信息
  * @param pl

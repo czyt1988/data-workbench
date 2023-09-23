@@ -33,6 +33,8 @@ public:
     void undo();
     //获取创建的item，此函数不能继承id进行压缩，因为推入stack后需要操作这个cmd指针
     DAAbstractNodeGraphicsItem* item() const;
+    //节点
+    DAAbstractNode::SharedPointer node() const;
 
 private:
     DANodeGraphicsScene* mScene;
@@ -129,6 +131,6 @@ private:
     bool mNeedDelete;
 };
 
-}
+}  // end DA
 
 #endif  // DACOMMANDSFORWORKFLOWNODEGRAPHICS_H

@@ -30,6 +30,10 @@ public:
         return (anonymous);
     }
 
+public:
+    DAAbstractNodeLinkGraphicsItem(QGraphicsItem* p = nullptr);
+    DAAbstractNodeLinkGraphicsItem(DAAbstractNodeGraphicsItem* from, const DA::DANodeLinkPoint& pl, QGraphicsItem* p = nullptr);
+    virtual ~DAAbstractNodeLinkGraphicsItem();
     //自动根据fromitem来更新位置
     void updatePos();
 
@@ -74,11 +78,6 @@ public:
     virtual QPainterPath generateLinePainterPath(const QPointF& fromPoint,
                                                  const QPointF& toPoint,
                                                  LinkLineStyle linestyle = LinkLineStraight) override;
-
-public:
-    DAAbstractNodeLinkGraphicsItem(QGraphicsItem* p = nullptr);
-    DAAbstractNodeLinkGraphicsItem(DAAbstractNodeGraphicsItem* from, const DA::DANodeLinkPoint& pl, QGraphicsItem* p = nullptr);
-    virtual ~DAAbstractNodeLinkGraphicsItem();
 
     //开始节点连接
     bool attachFrom(DAAbstractNodeGraphicsItem* item, const QString& name);

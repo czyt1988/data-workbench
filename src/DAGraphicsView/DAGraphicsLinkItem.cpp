@@ -785,6 +785,15 @@ QPainterPath DAGraphicsLinkItem::generateEndPointPainterPath(DAGraphicsLinkItem:
 }
 
 /**
+ * @brief 在将要结束链接的回调，通过此回调可以执行完成链接后的相关操作，例如判断末端链接的图元，从而实现路径调整
+ * @return 如果此函数返回false，将代表不接受链接，这时候，结束动作会被跳过，也就是鼠标点击是没有无法结束链接而生成连接线
+ */
+bool DAGraphicsLinkItem::willCompleteLink()
+{
+    return true;
+}
+
+/**
  * @brief 生成贝塞尔曲线
  * @param fromPos
  * @param toPos

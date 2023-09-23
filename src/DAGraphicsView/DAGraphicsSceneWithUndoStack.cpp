@@ -313,6 +313,10 @@ void DAGraphicsSceneWithUndoStack::endLink()
         return;
     }
     //把item脱离智能指针管理
+    if (!(d_ptr->mLinkItem->willCompleteLink())) {
+        //如果willCompleteLink返回false，endLink函数将中途推出，不接受
+        return;
+    }
     DAGraphicsLinkItem* linkItem = d_ptr->mLinkItem.release();
     linkItem->updateBoundingRect();
     DACommandsForGraphicsItemAdd* cmd = new DACommandsForGraphicsItemAdd(linkItem, this);

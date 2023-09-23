@@ -19,12 +19,16 @@ DACommandsForWorkFlowCreateNode::DACommandsForWorkFlowCreateNode(const DANodeMet
                                                                  DANodeGraphicsScene* scene,
                                                                  const QPointF& pos,
                                                                  QUndoCommand* parent)
-    : QUndoCommand(parent), mScene(scene), mScenePos(pos), mItem(nullptr), mNeedDelete(false)
+    : QUndoCommand(parent), mScene(scene), mScenePos(pos), mItem(nullptr), mNeedDelete(true)
 {
     setText(QObject::tr("Create Node"));
-    mMetadata = md;
-    mItem     = scene->createNode(md, pos);
-    mNode     = mItem->node();
+    //! 针对在命令的构造函数中就直接执行了创建或者删除动作的情况，
+    //! 创建的命令mNeedDelete初始要为true，否则创建此命令，但没推入stack就会出现内存泄露
+    //! 反之亦然，删除的命令，needdelete应该为false
+    mNeedDelete = true;
+    mMetadata   = md;
+    mItem       = scene->createNode(md, pos);
+    mNode       = mItem->node();
     if (mItem) {
         mScene->addItem(mItem);
     }
@@ -43,6 +47,7 @@ DACommandsForWorkFlowCreateNode::~DACommandsForWorkFlowCreateNode()
 void DACommandsForWorkFlowCreateNode::redo()
 {
     QUndoCommand::redo();  //此函数会执行子内容的redo/undo
+    mNeedDelete = false;   //标记要delete为false
     if (mSkipFirstRedo) {
         //! 关键:第一次执行要跳过redo，否则会重复添加节点
         mSkipFirstRedo = false;
@@ -55,12 +60,12 @@ void DACommandsForWorkFlowCreateNode::redo()
         DAWorkFlow* wf = mScene->getWorkflow();
         wf->addNode(mNode);
     }
-    mNeedDelete = false;
 }
 
 void DACommandsForWorkFlowCreateNode::undo()
 {
     QUndoCommand::undo();  //此函数会执行子内容的redo/undo
+    mNeedDelete = true;
     if (mNode) {
         DAWorkFlow* wf = mScene->getWorkflow();
         wf->removeNode(mNode);
@@ -68,12 +73,16 @@ void DACommandsForWorkFlowCreateNode::undo()
     if (mItem) {
         mScene->removeItem(mItem);
     }
-    mNeedDelete = true;
 }
 
 DAAbstractNodeGraphicsItem* DACommandsForWorkFlowCreateNode::item() const
 {
     return mItem;
+}
+
+DAAbstractNode::SharedPointer DACommandsForWorkFlowCreateNode::node() const
+{
+    return mNode;
 }
 
 //==============================================================
@@ -83,7 +92,11 @@ DACommandsForWorkFlowRemoveSelectNodes::DACommandsForWorkFlowRemoveSelectNodes(D
     : QUndoCommand(parent), mIsvalid(false), mScene(scene), mNeedDelete(false)
 {
     setText(QObject::tr("Remove Select Nodes"));
-    classifyItems(scene, mSelectNodeItems, mWillRemoveLink, mWillRemoveNormal);
+    //! 针对在命令的构造函数中就直接执行了创建或者删除动作的情况，
+    //! 创建的命令mNeedDelete初始要为true，否则创建此命令，但没推入stack就会出现内存泄露
+    //! 反之亦然，删除的命令，needdelete应该为false
+    mNeedDelete = false;
+    classifyItems(mScene, mSelectNodeItems, mWillRemoveLink, mWillRemoveNormal);
     QList< DAAbstractNodeLinkGraphicsItem* > nodeLinks = getNodesLinks(mSelectNodeItems);
     //这时候得到所有需要删除的link
     //也要做一次去重
@@ -191,6 +204,7 @@ QList< QGraphicsItem* > DACommandsForWorkFlowRemoveSelectNodes::getRemovedItems(
 void DACommandsForWorkFlowRemoveSelectNodes::redo()
 {
     //注意QUndoCommand::redo()要放到最前，QUndoCommand::undo()要放到最后
+    mNeedDelete = true;
     QUndoCommand::redo();  //此函数会执行子内容的redo/undo,也就是先删除link
     DAWorkFlow* wf = mScene->getWorkflow();
     for (DAAbstractNodeGraphicsItem* item : qAsConst(mSelectNodeItems)) {
@@ -202,11 +216,11 @@ void DACommandsForWorkFlowRemoveSelectNodes::redo()
     for (QGraphicsItem* item : qAsConst(mWillRemoveNormal)) {
         mScene->removeItem(item);
     }
-    mNeedDelete = true;
 }
 
 void DACommandsForWorkFlowRemoveSelectNodes::undo()
 {
+    mNeedDelete    = false;
     DAWorkFlow* wf = mScene->getWorkflow();
     for (DAAbstractNodeGraphicsItem* item : qAsConst(mSelectNodeItems)) {
         mScene->addItem(item);
@@ -217,7 +231,6 @@ void DACommandsForWorkFlowRemoveSelectNodes::undo()
     for (QGraphicsItem* item : qAsConst(mWillRemoveNormal)) {
         mScene->addItem(item);
     }
-    mNeedDelete = false;
     //注意undo要放到最后
     QUndoCommand::undo();  //此函数会执行子内容的redo/undo
 }
@@ -232,6 +245,12 @@ DACommandsForWorkFlowCreateLink::DACommandsForWorkFlowCreateLink(DAAbstractNodeL
     : QUndoCommand(parent), mLinkitem(linkitem), mScene(sc), mNeedDelete(false), mIsFirstRedoNotAdditem(true), mSkipFirstRedo(true)
 {
     setText(QObject::tr("Create Link"));
+    //! 针对在命令的构造函数中就直接执行了创建或者删除动作的情况，
+    //! 创建的命令mNeedDelete初始要为true，否则创建此命令，但没推入stack就会出现内存泄露
+    //! 反之亦然，删除的命令，needdelete应该为false
+    //! 但这里不一样
+    //! 这里的mlinkItem是外面传入的，并非在构造函数创建，因此初始mNeedDelete = false
+    mNeedDelete    = false;
     mFromitem      = linkitem->fromNodeItem();
     mFromPointName = linkitem->fromNodeLinkPoint().name;
     mToitem        = linkitem->toNodeItem();
@@ -245,6 +264,12 @@ DACommandsForWorkFlowCreateLink::DACommandsForWorkFlowCreateLink(DAAbstractNodeL
     : QUndoCommand(parent), mLinkitem(linkitem), mScene(sc), mNeedDelete(false), mIsFirstRedoNotAdditem(isFirstRedoNotAdditem)
 {
     setText(QObject::tr("Create Link"));
+    //! 针对在命令的构造函数中就直接执行了创建或者删除动作的情况，
+    //! 创建的命令mNeedDelete初始要为true，否则创建此命令，但没推入stack就会出现内存泄露
+    //! 反之亦然，删除的命令，needdelete应该为false
+    //! 但这里不一样
+    //! 这里的mlinkItem是外面传入的，并非在构造函数创建，因此初始mNeedDelete = false
+    mNeedDelete    = false;
     mFromitem      = linkitem->fromNodeItem();
     mFromPointName = linkitem->fromNodeLinkPoint().name;
     mToitem        = linkitem->toNodeItem();
@@ -261,6 +286,7 @@ DACommandsForWorkFlowCreateLink::~DACommandsForWorkFlowCreateLink()
 void DACommandsForWorkFlowCreateLink::redo()
 {
     QUndoCommand::redo();  //此函数会执行子内容的redo/undo
+    mNeedDelete = false;
     if (mSkipFirstRedo) {
         mSkipFirstRedo = false;
         if (mIsFirstRedoNotAdditem) {
@@ -276,16 +302,15 @@ void DACommandsForWorkFlowCreateLink::redo()
     mLinkitem->attachFrom(mFromitem, mFromPointName);
     mLinkitem->attachTo(mToitem, mToPointName);
     mScene->addItem(mLinkitem);
-    mNeedDelete = false;
 }
 
 void DACommandsForWorkFlowCreateLink::undo()
 {
     QUndoCommand::undo();  //此函数会执行子内容的redo/undo
+    mNeedDelete = true;
     mScene->removeItem(mLinkitem);
     mLinkitem->detachFrom();
     mLinkitem->detachTo();
-    mNeedDelete = true;
 }
 
 //==============================================================
@@ -298,6 +323,10 @@ DACommandsForWorkFlowRemoveLink::DACommandsForWorkFlowRemoveLink(DAAbstractNodeL
     : QUndoCommand(parent), mLinkitem(linkitem), mScene(sc), mNeedDelete(false)
 {
     setText(QObject::tr("Remove Link"));
+    //! 针对在命令的构造函数中就直接执行了创建或者删除动作的情况，
+    //! 创建的命令mNeedDelete初始要为true，否则创建此命令，但没推入stack就会出现内存泄露
+    //! 反之亦然，删除的命令，needdelete应该为false
+    mNeedDelete    = false;
     mFromitem      = linkitem->fromNodeItem();
     mFromPointName = linkitem->fromNodeLinkPoint().name;
     mToitem        = linkitem->toNodeItem();
