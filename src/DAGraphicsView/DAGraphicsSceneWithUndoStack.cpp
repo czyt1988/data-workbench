@@ -306,6 +306,10 @@ bool DAGraphicsSceneWithUndoStack::isStartLink() const
  * 结束链接模式会正常记录当前的连线
  *
  * 如果是要取消当前的连接线，使用@sa cancelLink
+ *
+ * @note 这里有个问题，endLink如果带有redo/undo动作的，但有些情况下，需要处理链接撤销前和后的动作，例如工作流，
+ * 链接和不链接的逻辑是不一样的，因此，redo/undo的动作并不提供，而是由用户自己处理
+ *
  */
 void DAGraphicsSceneWithUndoStack::endLink()
 {
@@ -319,8 +323,10 @@ void DAGraphicsSceneWithUndoStack::endLink()
     }
     DAGraphicsLinkItem* linkItem = d_ptr->mLinkItem.release();
     linkItem->updateBoundingRect();
-    DACommandsForGraphicsItemAdd* cmd = new DACommandsForGraphicsItemAdd(linkItem, this);
-    push(cmd);
+    // endLink如果带有redo/undo动作的，但有些情况下，需要处理链接撤销前和后的动作，例如工作流，
+    // 链接和不链接的逻辑是不一样的，因此，redo/undo的动作并不提供，而是由用户自己处理
+    //    DACommandsForGraphicsItemAdd* cmd = new DACommandsForGraphicsItemAdd(linkItem, this);
+    //    push(cmd);
     emit completeLink(linkItem);
 }
 

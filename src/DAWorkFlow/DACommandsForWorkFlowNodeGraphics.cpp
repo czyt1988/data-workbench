@@ -317,6 +317,14 @@ void DACommandsForWorkFlowCreateLink::undo()
 // DACommandsForWorkFlowRemoveLink
 //==============================================================
 
+/**
+ * @brief DACommandsForWorkFlowRemoveLink::DACommandsForWorkFlowRemoveLink
+ *
+ * 此类在@sa DACommandsForWorkFlowRemoveSelectNodes 中调用
+ * @param linkitem
+ * @param sc
+ * @param parent
+ */
 DACommandsForWorkFlowRemoveLink::DACommandsForWorkFlowRemoveLink(DAAbstractNodeLinkGraphicsItem* linkitem,
                                                                  DANodeGraphicsScene* sc,
                                                                  QUndoCommand* parent)

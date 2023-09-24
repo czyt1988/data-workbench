@@ -436,8 +436,10 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
                 setIgnoreLinkEvent(false);
                 return;
             }
-
             // 连接成功，把item脱离管理
+            //! 记录到redo/undo中
+            DACommandsForWorkFlowCreateLink* cmd = new DACommandsForWorkFlowCreateLink(linkItem, this);
+            push(cmd);
             // 跳出if 到DAGraphicsSceneWithUndoStack::mousePressEvent(mouseEvent);
         } else {
             //非开始链接状态，此时点击的是output
