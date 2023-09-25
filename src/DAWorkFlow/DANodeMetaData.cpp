@@ -171,3 +171,10 @@ QDataStream& operator>>(QDataStream& in, DA::DANodeMetaData& b)
     b.setIcon(ic);
     return in;
 }
+
+QDebug operator<<(QDebug debug, const DA::DANodeMetaData& c)
+{
+    QDebugStateSaver saver(debug);
+    debug.nospace() << "[" << c.getGroup() << "/" << c.getNodePrototype() << "]" << c.getNodeName();
+    return debug;
+}

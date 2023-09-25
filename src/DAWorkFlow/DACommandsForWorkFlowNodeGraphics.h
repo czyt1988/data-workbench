@@ -89,10 +89,6 @@ class DAWORKFLOW_API DACommandsForWorkFlowCreateLink : public QUndoCommand
 public:
     //这两个构造函数是在linkitem已经完成且确认连接后执行，在第一次redo时，不会进行操作，第二次才是真实操作
     DACommandsForWorkFlowCreateLink(DAAbstractNodeLinkGraphicsItem* linkitem, DANodeGraphicsScene* sc, QUndoCommand* parent = nullptr);
-    DACommandsForWorkFlowCreateLink(DAAbstractNodeLinkGraphicsItem* linkitem,
-                                    DANodeGraphicsScene* sc,
-                                    bool isFirstRedoNotAdditem,
-                                    QUndoCommand* parent = nullptr);
     ~DACommandsForWorkFlowCreateLink();
     void redo() override;
     void undo() override;
@@ -105,7 +101,6 @@ private:
     QString mToPointName;    ///< 记录名字，每次redo/undo都从item获取linkpoint，以免出现变化
     DANodeGraphicsScene* mScene;
     bool mNeedDelete;
-    bool mIsFirstRedoNotAdditem;  ///< 记录是否第一次redo添加item，如果item已经添加进scene，就把此参数设置为false
     bool mSkipFirstRedo;  ///< 第一次redo跳过,此优先级高于_isFirstRedoAdditem
 };
 

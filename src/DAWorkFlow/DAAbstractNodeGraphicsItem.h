@@ -133,6 +133,7 @@ public:
     virtual bool loadFromXml(const QDomElement* itemElement) override;
     // 创建连接，继承此函数可以生成连接，如果返回nullptr，scene将不会进行连接
     // 默认使用DAStandardNodeLinkGraphicsItem来进行连接的创建，如果需要自定义连接，可以继承此函数
+    // 返回的link无需attach，attach过程由scene负责
     virtual DAAbstractNodeLinkGraphicsItem* createLinkItem(const DA::DANodeLinkPoint& lp);
     //从fromPoint链接到toItem的toPoint点，如果链接失败返回nullptr
     DAAbstractNodeLinkGraphicsItem* linkTo(const DA::DANodeLinkPoint& fromPoint,

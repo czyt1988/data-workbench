@@ -28,8 +28,8 @@ DACommandsForWorkFlowCreateNode::DACommandsForWorkFlowCreateNode(const DANodeMet
     mNeedDelete = true;
     mMetadata   = md;
     mItem       = scene->createNode(md, pos);
-    mNode       = mItem->node();
     if (mItem) {
+        mNode = mItem->node();
         mScene->addItem(mItem);
     }
 }
@@ -242,7 +242,7 @@ void DACommandsForWorkFlowRemoveSelectNodes::undo()
 DACommandsForWorkFlowCreateLink::DACommandsForWorkFlowCreateLink(DAAbstractNodeLinkGraphicsItem* linkitem,
                                                                  DANodeGraphicsScene* sc,
                                                                  QUndoCommand* parent)
-    : QUndoCommand(parent), mLinkitem(linkitem), mScene(sc), mNeedDelete(false), mIsFirstRedoNotAdditem(true), mSkipFirstRedo(true)
+    : QUndoCommand(parent), mLinkitem(linkitem), mScene(sc), mNeedDelete(false), mSkipFirstRedo(true)
 {
     setText(QObject::tr("Create Link"));
     //! 针对在命令的构造函数中就直接执行了创建或者删除动作的情况，
@@ -255,25 +255,9 @@ DACommandsForWorkFlowCreateLink::DACommandsForWorkFlowCreateLink(DAAbstractNodeL
     mFromPointName = linkitem->fromNodeLinkPoint().name;
     mToitem        = linkitem->toNodeItem();
     mToPointName   = linkitem->toNodeLinkPoint().name;
-}
-
-DACommandsForWorkFlowCreateLink::DACommandsForWorkFlowCreateLink(DAAbstractNodeLinkGraphicsItem* linkitem,
-                                                                 DANodeGraphicsScene* sc,
-                                                                 bool isFirstRedoNotAdditem,
-                                                                 QUndoCommand* parent)
-    : QUndoCommand(parent), mLinkitem(linkitem), mScene(sc), mNeedDelete(false), mIsFirstRedoNotAdditem(isFirstRedoNotAdditem)
-{
-    setText(QObject::tr("Create Link"));
-    //! 针对在命令的构造函数中就直接执行了创建或者删除动作的情况，
-    //! 创建的命令mNeedDelete初始要为true，否则创建此命令，但没推入stack就会出现内存泄露
-    //! 反之亦然，删除的命令，needdelete应该为false
-    //! 但这里不一样
-    //! 这里的mlinkItem是外面传入的，并非在构造函数创建，因此初始mNeedDelete = false
-    mNeedDelete    = false;
-    mFromitem      = linkitem->fromNodeItem();
-    mFromPointName = linkitem->fromNodeLinkPoint().name;
-    mToitem        = linkitem->toNodeItem();
-    mToPointName   = linkitem->toNodeLinkPoint().name;
+    if (mLinkitem->scene() != mScene) {
+        mScene->addItem(mLinkitem);
+    }
 }
 
 DACommandsForWorkFlowCreateLink::~DACommandsForWorkFlowCreateLink()
@@ -289,14 +273,6 @@ void DACommandsForWorkFlowCreateLink::redo()
     mNeedDelete = false;
     if (mSkipFirstRedo) {
         mSkipFirstRedo = false;
-        if (mIsFirstRedoNotAdditem) {
-            mIsFirstRedoNotAdditem = false;
-        }
-        return;
-    }
-    if (mIsFirstRedoNotAdditem) {
-        //此参数为true说明第一次调用不用添加item，后面都不管
-        mIsFirstRedoNotAdditem = false;
         return;
     }
     mLinkitem->attachFrom(mFromitem, mFromPointName);

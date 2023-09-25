@@ -4,6 +4,7 @@
 #include <QtCore/qglobal.h>
 #include <QIcon>
 #include <QDataStream>
+#include <QDebug>
 namespace DA
 {
 /**
@@ -58,4 +59,5 @@ DAWORKFLOW_API bool operator<(const DA::DANodeMetaData& a, const DA::DANodeMetaD
 DAWORKFLOW_API bool operator==(const DA::DANodeMetaData& a, const DA::DANodeMetaData& b);
 DAWORKFLOW_API QDataStream& operator<<(QDataStream& out, const DA::DANodeMetaData& b);
 DAWORKFLOW_API QDataStream& operator>>(QDataStream& in, DA::DANodeMetaData& b);
+DAWORKFLOW_API QDebug operator<<(QDebug debug, const DA::DANodeMetaData& c);
 #endif  // FCNODEMETADATA_H
