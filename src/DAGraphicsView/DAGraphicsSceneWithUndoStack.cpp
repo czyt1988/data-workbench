@@ -327,7 +327,7 @@ void DAGraphicsSceneWithUndoStack::endLink()
     // 链接和不链接的逻辑是不一样的，因此，redo/undo的动作并不提供，而是由用户自己处理
     //    DACommandsForGraphicsItemAdd* cmd = new DACommandsForGraphicsItemAdd(linkItem, this);
     //    push(cmd);
-    emit completeLink(linkItem);
+    emit linkCompleted(linkItem);
 }
 
 /**

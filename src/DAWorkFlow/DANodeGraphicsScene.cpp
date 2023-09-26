@@ -11,6 +11,7 @@
 #include "DAStandardGraphicsTextItem.h"
 #include "DAAbstractNode.h"
 #include "DAWorkFlow.h"
+#include "DAAbstractNodeFactory.h"
 #include "DAGraphicsResizeableRectItem.h"
 #include "DAStandardGraphicsTextItem.h"
 namespace DA
@@ -87,6 +88,11 @@ void DANodeGraphicsScene::setWorkFlow(DAWorkFlow* wf)
     d_ptr->mWorkflow = wf;
     if (wf) {
         connect(wf, &DAWorkFlow::nodeNameChanged, this, &DANodeGraphicsScene::onNodeNameChanged);
+        QList< DAAbstractNodeFactory* > factorys = wf->getAllFactorys();
+        for (DAAbstractNodeFactory* f : factorys) {
+            //场景添加工厂的回调
+            f->sceneAddedFactory(this);
+        }
     }
 }
 
@@ -395,7 +401,7 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
         //        }
         //看看是否点击到了节点item
         DAAbstractNodeGraphicsItem* nodeItem = dynamic_cast< DAAbstractNodeGraphicsItem* >(
-            itemAt(mouseEvent->scenePos(), QTransform()));
+                itemAt(mouseEvent->scenePos(), QTransform()));
         if (nullptr == nodeItem) {
             //点击的不是节点item就退出
             DAGraphicsSceneWithUndoStack::mousePressEvent(mouseEvent);

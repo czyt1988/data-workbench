@@ -116,7 +116,7 @@ void DAWorkFlow::registFactorys(const QList< DAAbstractNodeFactory* > factorys)
  * @brief 获取所有的工厂
  * @return
  */
-QList< DAAbstractNodeFactory* > DAWorkFlow::factorys() const
+QList< DAAbstractNodeFactory* > DAWorkFlow::getAllFactorys() const
 {
     return d_ptr->mFactorys.values();
 }

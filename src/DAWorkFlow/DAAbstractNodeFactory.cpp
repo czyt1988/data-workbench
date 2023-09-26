@@ -143,4 +143,15 @@ void DAAbstractNodeFactory::loadExternInfoFromXml(const QDomElement* factoryExte
 {
     Q_UNUSED(factoryExternElement);
 }
+
+/**
+ * @brief 场景添加了工厂的回调
+ *
+ * 此回调可用于绑定场景的一些信号槽,此函数发生在场景添加了工作流后触发，这个函数的回调保证场景已经生成
+ * @param sc
+ */
+void DAAbstractNodeFactory::sceneAddedFactory(DANodeGraphicsScene* sc)
+{
+    Q_UNUSED(sc);
+}
 }  // end DA

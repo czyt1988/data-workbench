@@ -153,7 +153,7 @@ bool DAXmlHelperPrivate::loadWorkflow(DAWorkFlowEditWidget* wfe, const QDomEleme
  */
 void DAXmlHelperPrivate::saveFactoryInfo(const DAWorkFlow* workflow, QDomDocument& doc, QDomElement& workflowEle)
 {
-    QList< DAAbstractNodeFactory* > factorys = workflow->factorys();
+    QList< DAAbstractNodeFactory* > factorys = workflow->getAllFactorys();
     //创建节点
     QDomElement factorysEle = doc.createElement("factorys");
     for (const DAAbstractNodeFactory* fac : qAsConst(factorys)) {

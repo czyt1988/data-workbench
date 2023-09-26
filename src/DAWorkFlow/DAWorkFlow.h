@@ -33,7 +33,7 @@ public:
     void registFactory(DAAbstractNodeFactory* factory);
     void registFactorys(const QList< DAAbstractNodeFactory* > factorys);
     //获取所有的工厂
-    QList< DAAbstractNodeFactory* > factorys() const;
+    QList< DAAbstractNodeFactory* > getAllFactorys() const;
     //获取使用到的工厂
     QList< DAAbstractNodeFactory* > usedFactorys() const;
     //获取工程的数量

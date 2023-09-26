@@ -121,7 +121,7 @@ signals:
      * @brief 完成了一次链接
      * @param linkItem 通过此指针可以获取两个连接点
      */
-    void completeLink(DAGraphicsLinkItem* linkItem);
+    void linkCompleted(DAGraphicsLinkItem* linkItem);
 
 public:
     //回退栈操作
