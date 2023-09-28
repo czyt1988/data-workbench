@@ -11,6 +11,7 @@ using namespace DA;
 //===================================================
 DASettingContainerWidget::DASettingContainerWidget(QWidget* parent) : QStackedWidget(parent)
 {
+    //初始化工作流相关的配置窗口
     initWorkFlowSettingWidgets();
 }
 
@@ -20,11 +21,11 @@ DASettingContainerWidget::~DASettingContainerWidget()
 
 void DASettingContainerWidget::initWorkFlowSettingWidgets()
 {
-    _workFlowNodeItemSettingWidget = new DAWorkFlowNodeItemSettingWidget();
-    addWidget(_workFlowNodeItemSettingWidget);
+    mWorkFlowNodeItemSettingWidget = new DAWorkFlowNodeItemSettingWidget();
+    addWidget(mWorkFlowNodeItemSettingWidget);
 }
 
 DAWorkFlowNodeItemSettingWidget* DASettingContainerWidget::getWorkFlowNodeItemSettingWidget()
 {
-    return _workFlowNodeItemSettingWidget;
+    return mWorkFlowNodeItemSettingWidget;
 }

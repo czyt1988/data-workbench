@@ -34,6 +34,7 @@ public:
     void removeWidget(QWidget* w);
     // tab窗体
     QTabWidget* tabWidget();
+
     //设置场景
     void setWorkFlowOperateWidget(DAWorkFlowOperateWidget* wf);
     //设置节点设置可用
@@ -46,6 +47,18 @@ public:
     void setPixmapItemSettingEnable(bool on = true);
     //获取当前的scene
     DAWorkFlowGraphicsScene* getCurrentScene() const;
+    //移除tab页
+    void removeTab(QWidget* w);
+    //移除节点设置tab，移除后将不显示
+    void removeNodeSettingTab();
+    //移除元件设置tab，移除后将不显示
+    void removeItemSettingTab();
+    //移除链接设置tab
+    void removeLinkSettingTab();
+    //移除图片设置窗口
+    void removePictureItemSettingTab();
+    //判断tab是否包含此窗口
+    bool isTabContainWidget(QWidget* w);
 private slots:
     //选择改变
     void onSceneSelectionChanged();

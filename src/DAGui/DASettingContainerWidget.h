@@ -18,14 +18,14 @@ class DAGUI_API DASettingContainerWidget : public QStackedWidget
 public:
     DASettingContainerWidget(QWidget* parent = nullptr);
     ~DASettingContainerWidget();
-
-public:
-    void initWorkFlowSettingWidgets();
     //特化
     DAWorkFlowNodeItemSettingWidget* getWorkFlowNodeItemSettingWidget();
 
+protected:
+    void initWorkFlowSettingWidgets();
+
 private:
-    DAWorkFlowNodeItemSettingWidget* _workFlowNodeItemSettingWidget;
+    DAWorkFlowNodeItemSettingWidget* mWorkFlowNodeItemSettingWidget;
 };
 }  // namespace DA
 #endif  // DASETTINGCONTAINERWIDGET_H

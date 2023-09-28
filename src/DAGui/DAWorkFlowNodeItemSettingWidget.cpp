@@ -101,6 +101,9 @@ void DAWorkFlowNodeItemSettingWidget::setWorkFlowOperateWidget(DAWorkFlowOperate
  */
 void DAWorkFlowNodeItemSettingWidget::setNodeSettingEnable(bool on)
 {
+    if (!isTabContainWidget(ui->tabNodeSetting)) {
+        return;
+    }
     ui->tabWidget->setTabEnabled(ui->tabWidget->indexOf(ui->tabNodeSetting), on);
 }
 /**
@@ -109,6 +112,9 @@ void DAWorkFlowNodeItemSettingWidget::setNodeSettingEnable(bool on)
  */
 void DAWorkFlowNodeItemSettingWidget::setItemSettingEnable(bool on)
 {
+    if (!isTabContainWidget(ui->tabItemSetting)) {
+        return;
+    }
     ui->tabWidget->setTabEnabled(ui->tabWidget->indexOf(ui->tabItemSetting), on);
 }
 /**
@@ -117,6 +123,9 @@ void DAWorkFlowNodeItemSettingWidget::setItemSettingEnable(bool on)
  */
 void DAWorkFlowNodeItemSettingWidget::setLinkSettingEnable(bool on)
 {
+    if (!isTabContainWidget(ui->tabLinkSetting)) {
+        return;
+    }
     ui->tabWidget->setTabEnabled(ui->tabWidget->indexOf(ui->tabLinkSetting), on);
 }
 /**
@@ -125,6 +134,9 @@ void DAWorkFlowNodeItemSettingWidget::setLinkSettingEnable(bool on)
  */
 void DAWorkFlowNodeItemSettingWidget::setPixmapItemSettingEnable(bool on)
 {
+    if (!isTabContainWidget(ui->tabPictureItemSetting)) {
+        return;
+    }
     ui->tabWidget->setTabEnabled(ui->tabWidget->indexOf(ui->tabPictureItemSetting), on);
 }
 
@@ -135,6 +147,63 @@ DAWorkFlowGraphicsScene* DAWorkFlowNodeItemSettingWidget::getCurrentScene() cons
     }
     return nullptr;
 }
+
+/**
+ * @brief 移除tab页
+ * @param w
+ */
+void DAWorkFlowNodeItemSettingWidget::removeTab(QWidget* w)
+{
+    int index = ui->tabWidget->indexOf(w);
+    if (index >= 0) {
+        ui->tabWidget->removeTab(index);
+    }
+}
+
+/**
+ * @brief 移除节点设置tab，移除后将不显示
+ *
+ * 某些情况不想让用户看到节点设置tab，可以使用此函数移除掉
+ */
+void DAWorkFlowNodeItemSettingWidget::removeNodeSettingTab()
+{
+    removeTab(ui->tabNodeSetting);
+}
+
+/**
+ * @brief 移除元件设置tab，移除后将不显示
+ */
+void DAWorkFlowNodeItemSettingWidget::removeItemSettingTab()
+{
+    removeTab(ui->tabItemSetting);
+}
+
+/**
+ * @brief 移除链接设置tab
+ */
+void DAWorkFlowNodeItemSettingWidget::removeLinkSettingTab()
+{
+    removeTab(ui->tabLinkSetting);
+}
+
+/**
+ * @brief 移除图片设置窗口
+ */
+void DAWorkFlowNodeItemSettingWidget::removePictureItemSettingTab()
+{
+    removeTab(ui->tabPictureItemSetting);
+}
+
+/**
+ * @brief 判断tab是否包含此窗口
+ * @param w
+ * @return
+ */
+bool DAWorkFlowNodeItemSettingWidget::isTabContainWidget(QWidget* w)
+{
+    return (ui->tabWidget->indexOf(w) >= 0);
+}
+
 /**
  * @brief 选择改变
  */
@@ -164,26 +233,44 @@ void DAWorkFlowNodeItemSettingWidget::onSceneSelectionChanged()
         setNodeSettingEnable(true);
         setItemSettingEnable(true);
         setPixmapItemSettingEnable(false);
-        ui->tabNodeSetting->setNode(nodeItem->node());
-        ui->tabItemSetting->setItem(nodeItem);
-        ui->tabLinkSetting->setLinkItem(nullptr);
+        if (isTabContainWidget(ui->tabNodeSetting)) {
+            ui->tabNodeSetting->setNode(nodeItem->node());
+        }
+        if (isTabContainWidget(ui->tabItemSetting)) {
+            ui->tabItemSetting->setItem(nodeItem);
+        }
+        if (isTabContainWidget(ui->tabLinkSetting)) {
+            ui->tabLinkSetting->setLinkItem(nullptr);
+        }
     } else if (DAAbstractNodeLinkGraphicsItem* linkItem = dynamic_cast< DAAbstractNodeLinkGraphicsItem* >(item)) {
         //说明是link
         setLinkSettingEnable(true);
         setNodeSettingEnable(false);
         setItemSettingEnable(false);
         setPixmapItemSettingEnable(false);
-        ui->tabNodeSetting->setNode(nullptr);
-        ui->tabItemSetting->setItem(nullptr);
-        ui->tabLinkSetting->setLinkItem(linkItem);
+        if (isTabContainWidget(ui->tabNodeSetting)) {
+            ui->tabNodeSetting->setNode(nullptr);
+        }
+        if (isTabContainWidget(ui->tabItemSetting)) {
+            ui->tabItemSetting->setItem(nullptr);
+        }
+        if (isTabContainWidget(ui->tabLinkSetting)) {
+            ui->tabLinkSetting->setLinkItem(linkItem);
+        }
     } else {
         //说明是其他item
         setLinkSettingEnable(false);
         setNodeSettingEnable(false);
         setItemSettingEnable(true);
-        ui->tabNodeSetting->setNode(nullptr);
-        ui->tabItemSetting->setItem(nullptr);
-        ui->tabLinkSetting->setLinkItem(nullptr);
+        if (isTabContainWidget(ui->tabNodeSetting)) {
+            ui->tabNodeSetting->setNode(nullptr);
+        }
+        if (isTabContainWidget(ui->tabItemSetting)) {
+            ui->tabItemSetting->setItem(nullptr);
+        }
+        if (isTabContainWidget(ui->tabLinkSetting)) {
+            ui->tabLinkSetting->setLinkItem(nullptr);
+        }
         if (DAGraphicsResizeablePixmapItem* pitem = dynamic_cast< DAGraphicsResizeablePixmapItem* >(item)) {
             setPixmapItemSettingEnable(true);
             updatePixmapItemSettingWidget(pitem);
@@ -212,6 +299,9 @@ void DAWorkFlowNodeItemSettingWidget::onSceneItemsPositionChanged(const QList< Q
     Q_UNUSED(oldPos);
     Q_UNUSED(newPos);
     //刷新item维护的数据
+    if (!isTabContainWidget(ui->tabItemSetting)) {
+        return;
+    }
     if (items.contains(static_cast< QGraphicsItem* >(ui->tabItemSetting->getItem()))) {
         ui->tabItemSetting->updatePosition();
     }
@@ -227,6 +317,9 @@ void DAWorkFlowNodeItemSettingWidget::onSceneItemBodySizeChanged(DAGraphicsResiz
     Q_UNUSED(item);
     Q_UNUSED(oldSize);
     Q_UNUSED(newSize);
+    if (!isTabContainWidget(ui->tabItemSetting)) {
+        return;
+    }
     if (ui->tabItemSetting->getItem() == item) {
         ui->tabItemSetting->updateBodySize();
     }
@@ -240,6 +333,9 @@ void DAWorkFlowNodeItemSettingWidget::onSceneItemRotationChanged(DAGraphicsResiz
 {
     Q_UNUSED(item);
     Q_UNUSED(rotation);
+    if (!isTabContainWidget(ui->tabItemSetting)) {
+        return;
+    }
     if (ui->tabItemSetting->getItem() == item) {
         ui->tabItemSetting->updateRotation();
     }
@@ -280,5 +376,7 @@ void DAWorkFlowNodeItemSettingWidget::onPixmapItemAlphaChanged(int v)
  */
 void DAWorkFlowNodeItemSettingWidget::updatePixmapItemSettingWidget(DAGraphicsResizeablePixmapItem* pitem)
 {
-    ui->tabPictureItemSetting->setCurrentAlphaValue(pitem->getAlpha());
+    if (isTabContainWidget(ui->tabPictureItemSetting)) {
+        ui->tabPictureItemSetting->setCurrentAlphaValue(pitem->getAlpha());
+    }
 }
