@@ -32,10 +32,9 @@ public:
     //端点样式
     DAGraphicsLinkItem::EndPointType mStartEndPointType { DAGraphicsLinkItem::EndPointNone };  ///< from的端点样式
     DAGraphicsLinkItem::EndPointType mEndEndPointType { DAGraphicsLinkItem::EndPointNone };    ///< to的端点样式
-    QPainterPath mSrartEndPointPainterPath;    ///< 记录from的端点样式
-    QPainterPath mEndEndPointPainterPath;      ///< 记录to的端点样式
-    int mEndPointSize { 12 };                  ///< 记录端点大小
-    bool mIsEndPositionFollowMouse { false };  ///< 结束节点跟随鼠标移动而移动
+    QPainterPath mSrartEndPointPainterPath;  ///< 记录from的端点样式
+    QPainterPath mEndEndPointPainterPath;    ///< 记录to的端点样式
+    int mEndPointSize { 12 };                ///< 记录端点大小
 };
 
 DAGraphicsLinkItem::PrivateData::PrivateData(DAGraphicsLinkItem* p) : q_ptr(p)
@@ -166,30 +165,14 @@ QPen DAGraphicsLinkItem::getLinePen() const
  * @brief 更新范围
  *
  * @note 争对只有一个起始连接点的情况下，此函数的终止链接点将更新为场景鼠标所在
+ *
+ * 这个函数用来生成painterpath，计算BoundingRect等一系列操作
  */
 QRectF DAGraphicsLinkItem::updateBoundingRect()
 {
     //! 通过调用prepareGeometryChange()通知范围变更，避免出现残影
     prepareGeometryChange();
-#if 0
-    QPointF fromPoint = d_ptr->mStartPos;
-    QPointF toPoint   = d_ptr->mEndPos;
-    // 关键！！！
-    // 为了不覆盖点击，d_ptr->_toPos要做2像素偏移
-    if (toPoint.x() > fromPoint.x()) {
-        toPoint.rx() -= 4;
-    } else {
-        toPoint.rx() += 4;
-    }
-    if (toPoint.y() > fromPoint.y()) {
-        toPoint.ry() -= 4;
-    } else {
-        toPoint.ry() += 4;
-    }
-    d_ptr->mLinePath = generateLinePainterPath(fromPoint, toPoint, getLinkLineStyle());
-#else
     d_ptr->mLinePath = generateLinePainterPath(d_ptr->mStartPos, d_ptr->mEndPos, getLinkLineStyle());
-#endif
     QPainterPathStroker stroker;
     int w = d_ptr->mLinePen.width() + 2;
     stroker.setWidth((w < 6) ? 6 : w);
@@ -259,6 +242,7 @@ const QPointF& DAGraphicsLinkItem::getEndPosition() const
  * @brief 开始连接点的位置,位置基于scene
  *
  * 默认情况下，开始点就是相对于item的原点（0，0）
+ * @note 这个之所以要设置为虚函数，是因为有些场景，要把实际场景的位置，转化为其他位置，例如进行连接点捕抓，正交绘制等等情景
  * @param p 相对scene的位置
  */
 void DAGraphicsLinkItem::setStartScenePosition(const QPointF& p)
@@ -278,6 +262,7 @@ QPointF DAGraphicsLinkItem::getStartScenePosition() const
 
 /**
  * @brief 结束连接点的位置,位置基于scene
+ * @note 这个之所以要设置为虚函数，是因为有些场景，要把实际场景的位置，转化为其他位置，例如进行连接点捕抓，正交绘制等等情景
  * @param p 相对scene的位置
  */
 void DAGraphicsLinkItem::setEndScenePosition(const QPointF& p)
@@ -292,16 +277,6 @@ void DAGraphicsLinkItem::setEndScenePosition(const QPointF& p)
 QPointF DAGraphicsLinkItem::getEndScenePosition() const
 {
     return mapToScene(d_ptr->mEndPos);
-}
-
-/**
- * @brief 结束节点跟随鼠标，此函数前提是from节点已经确定
- *
- * 设置此函数后，DAGraphicsLinkItem的结束点会跟随鼠标移动而移动，这个函数在进行一些连接线交互上比较有用
- */
-void DAGraphicsLinkItem::setEndPositionFollowMouse(bool on)
-{
-    d_ptr->mIsEndPositionFollowMouse = on;
 }
 
 /**

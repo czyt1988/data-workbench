@@ -76,21 +76,17 @@ public:
     qreal getBezierControlScale() const;
 
     //开始连接点的位置,位置基于scene
-    void setStartScenePosition(const QPointF& p);
+    virtual void setStartScenePosition(const QPointF& p);
     QPointF getStartScenePosition() const;
 
     //结束连接点的位置
-    void setEndScenePosition(const QPointF& p);
+    virtual void setEndScenePosition(const QPointF& p);
     QPointF getEndScenePosition() const;
-
-    //结束节点跟随鼠标，此函数前提是from节点已经确定
-    void setEndPositionFollowMouse(bool on = true);
-    bool isEndPositionFollowMouse() const;
     //获取链接线
     QPainterPath getLinkLinePainterPath() const;
     //获取末端(箭头)的绘图路径
     QPainterPath getEndPointPainterPath(Orientations epType) const;
-    //更新末端
+    //更新末端(箭头)
     void updateEndPoint();
     //绘图
     virtual void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget = nullptr) override;
