@@ -347,8 +347,17 @@ void DAAppDockingArea::initConnection()
     mSettingContainerWidget->getWorkFlowNodeItemSettingWidget()->setWorkFlowOperateWidget(mWorkFlowOperateWidget);
 }
 
+/**
+ * @brief 节点选择发生了变化
+ * @param i
+ */
 void DAAppDockingArea::onSelectNodeItemChanged(DAAbstractNodeGraphicsItem* i)
 {
+    DAWorkFlowNodeItemSettingWidget* nodesetting = mSettingContainerWidget->getWorkFlowNodeItemSettingWidget();
+    if (nullptr == nodesetting) {
+        return;
+    }
+    //! 节点有个虚函数getNodeWidget是可以针对不同节点获取不同的设置窗口,这个窗口是一个个性化设置窗口，需要在节点切换时单独加载
     if (nullptr == i) {
         if (nullptr != mLastSetNodeWidget) {
             mSettingContainerWidget->getWorkFlowNodeItemSettingWidget()->removeWidget(mLastSetNodeWidget);

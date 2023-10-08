@@ -89,7 +89,7 @@ public:
     //获取日志显示窗口
     DAMessageLogViewWidget* getMessageLogViewWidget() const override;
 
-    //获取设置窗口
+    //获取设置窗口,设置容器可以放置多个设置窗口
     DASettingContainerWidget* getSettingContainerWidget() const;
 
     // DockingArea对应的dock窗口指针

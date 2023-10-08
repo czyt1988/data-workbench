@@ -10,18 +10,11 @@ class DARibbonAreaInterface::PrivateData
 {
     DA_DECLARE_PUBLIC(DARibbonAreaInterface)
 public:
-    DARibbonAreaInterface::PrivateData(DARibbonAreaInterface* p);
+    PrivateData(DARibbonAreaInterface* p);
 
 public:
     DAUIInterface* mUiInterface { nullptr };  //不调用父类的parent，这样是为了不进行qobject_cast，加快效率
 };
-}  // namespace DA
-
-//===================================================
-// using DA namespace -- 禁止在头文件using！！
-//===================================================
-
-using namespace DA;
 
 //===================================================
 // DAAppRibbonAreaInterfacePrivate
@@ -102,3 +95,5 @@ SARibbonPannel* DARibbonAreaInterface::getPannelByObjectName(const QString& objn
     }
     return nullptr;
 }
+
+}  // namespace DA

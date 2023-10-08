@@ -4,7 +4,7 @@ QT          +=  core gui widgets
 #QT += opengl
 TEMPLATE = lib
 DEFINES += DAPYCOMMONWIDGETS_BUILD
-CONFIG		+=  c++11
+CONFIG		+=  c++17
 CONFIG		+=  qt
 include($$PWD/../common.pri)
 include($$PWD/../function.pri)

@@ -19,13 +19,40 @@ DASettingContainerWidget::~DASettingContainerWidget()
 {
 }
 
+/**
+ * @brief 判断当前是否已经有这个窗口
+ * @param w
+ * @return
+ */
+bool DASettingContainerWidget::isContainWidget(QWidget* w) const
+{
+    for (int i = 0; i < count(); ++i) {
+        if (w == widget(i)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void DASettingContainerWidget::initWorkFlowSettingWidgets()
 {
     mWorkFlowNodeItemSettingWidget = new DAWorkFlowNodeItemSettingWidget();
     addWidget(mWorkFlowNodeItemSettingWidget);
 }
 
+/**
+ * @brief 获取工作量节点设置窗口
+ * @return
+ */
 DAWorkFlowNodeItemSettingWidget* DASettingContainerWidget::getWorkFlowNodeItemSettingWidget()
 {
     return mWorkFlowNodeItemSettingWidget;
+}
+
+/**
+ * @brief 显示工作流节点设置窗口
+ */
+void DASettingContainerWidget::showWorkFlowNodeItemSettingWidget()
+{
+    setCurrentWidget(mWorkFlowNodeItemSettingWidget);
 }

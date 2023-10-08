@@ -1,6 +1,6 @@
 include($$PWD/common.pri)
 include($$PWD/function.pri)
-# C++版本要求最低为14
+# C++版本要求最低为17
 
 system(mkdir $$saFixPath($${BIN_PLUGIN_DIR}))#创建插件路径
 # 运行此文件之前，先构建第三方库3rdparty.pro

@@ -18,8 +18,12 @@ class DAGUI_API DASettingContainerWidget : public QStackedWidget
 public:
     DASettingContainerWidget(QWidget* parent = nullptr);
     ~DASettingContainerWidget();
+    //判断当前是否已经有这个窗口
+    bool isContainWidget(QWidget* w) const;
     //特化
     DAWorkFlowNodeItemSettingWidget* getWorkFlowNodeItemSettingWidget();
+    //显示默认的工作流节点设置窗口
+    void showWorkFlowNodeItemSettingWidget();
 
 protected:
     void initWorkFlowSettingWidgets();

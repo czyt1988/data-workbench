@@ -65,9 +65,17 @@ void DAWorkFlowNodeItemSettingWidget::addWidget(QWidget* w, const QIcon& icon, c
     tabWidget()->addTab(w, icon, title);
 }
 
+/**
+ * @brief 移除设置页
+ * @note 注意，页面并不会被删除
+ * @param w
+ */
 void DAWorkFlowNodeItemSettingWidget::removeWidget(QWidget* w)
 {
-    tabWidget()->removeTab(tabWidget()->indexOf(w));
+    int index = tabWidget()->indexOf(w);
+    if (index >= 0) {
+        tabWidget()->removeTab(index);
+    }
 }
 
 QTabWidget* DAWorkFlowNodeItemSettingWidget::tabWidget()

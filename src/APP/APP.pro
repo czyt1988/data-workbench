@@ -2,7 +2,7 @@ QT       += core gui xml
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-CONFIG += c++11
+CONFIG += c++17
 include($$PWD/../common.pri)
 include($$PWD/../function.pri)
 # The following define makes your compiler emit warnings if you use

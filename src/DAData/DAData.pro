@@ -13,7 +13,7 @@ include($${DA_SRC_DIR}/DAPyScripts/DAPyScripts.pri)
 # da utility
 include($${DA_SRC_DIR}/DAUtils/DAUtils.pri)
 TEMPLATE = lib
-CONFIG +=  c++14
+CONFIG +=  c++17
 DEFINES += DADATA_BUILDLIB
 TARGET = $$saLibNameMake(DAData)
 # 通用的设置

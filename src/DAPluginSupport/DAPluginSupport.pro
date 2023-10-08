@@ -3,7 +3,7 @@ QT          +=  core gui xml
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TEMPLATE = lib
 DEFINES += DAPLUGINSUPPORT_BUILDLIB
-CONFIG		+=  c++11
+CONFIG		+=  c++17
 CONFIG		+=  qt
 include($$PWD/../common.pri)
 include($$PWD/../function.pri)

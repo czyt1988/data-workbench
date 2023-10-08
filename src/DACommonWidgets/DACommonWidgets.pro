@@ -9,7 +9,7 @@ QT          +=  core gui widgets xml
 #QT += opengl
 TEMPLATE = lib
 DEFINES += DACOMMONWIDGETS_BUILD
-CONFIG		+=  c++14
+CONFIG		+=  c++17
 CONFIG		+=  qt
 include($$PWD/../common.pri)
 include($$PWD/../function.pri)
