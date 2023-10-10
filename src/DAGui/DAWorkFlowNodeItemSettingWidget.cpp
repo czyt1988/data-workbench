@@ -255,13 +255,15 @@ void DAWorkFlowNodeItemSettingWidget::onSceneSelectionChanged()
         //! 获取节点对应的设置窗口，把设置窗口作为一个tab设置进去
         DAAbstractNodeWidget* w = nodeItem->getNodeWidget();
         if (nullptr == w) {
+            //没有设置窗口，看看当前是否显示着设置窗口，如果有就取消掉
             if (nullptr != mLastSetNodeWidget) {
                 removeWidget(mLastSetNodeWidget.data());
             }
         } else {
+            //设置窗口不为空，就把
             if (mLastSetNodeWidget != w) {
                 removeWidget(mLastSetNodeWidget.data());
-                addWidget(mLastSetNodeWidget.data(), QIcon(":/Icon/Icon/node-settting.svg"), tr("property"));
+                addWidget(w, QIcon(":/Icon/Icon/node-settting.svg"), tr("property"));
             }
         }
         mLastSetNodeWidget = w;
