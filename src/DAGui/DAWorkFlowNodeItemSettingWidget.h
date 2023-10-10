@@ -18,8 +18,14 @@ namespace DA
 class DAWorkFlowEditWidget;
 class DAWorkFlowOperateWidget;
 class DAGraphicsResizeablePixmapItem;
+class DAAbstractNodeWidget;
+
 /**
  * @brief 节点设置窗口
+ *
+ * 节点设置窗口是一个tab窗口，默认有节点设置、图元设置、连线设置、图片设置
+ *
+ * 用户也可以自己添加设置窗口
  */
 class DAGUI_API DAWorkFlowNodeItemSettingWidget : public QWidget
 {
@@ -65,13 +71,13 @@ private slots:
     //条目的位置改变触发的槽
     void onSceneItemsPositionChanged(const QList< QGraphicsItem* >& items, const QList< QPointF >& oldPos, const QList< QPointF >& newPos);
     //条目bodysize改变触发的信号
-    void onSceneItemBodySizeChanged(DAGraphicsResizeableItem* item, const QSizeF& oldSize, const QSizeF& newSize);
+    void onSceneItemBodySizeChanged(DA::DAGraphicsResizeableItem* item, const QSizeF& oldSize, const QSizeF& newSize);
     //条目item旋转发出的信号
-    void onSceneItemRotationChanged(DAGraphicsResizeableItem* item, const qreal& rotation);
+    void onSceneItemRotationChanged(DA::DAGraphicsResizeableItem* item, const qreal& rotation);
     //记录tab最后一个index
     void onTabBarCurrentIndexChanged(int index);
     //编辑窗口发生变更
-    void onWorkFlowEditWidgetChanged(DAWorkFlowEditWidget* w);
+    void onWorkFlowEditWidgetChanged(DA::DAWorkFlowEditWidget* w);
 private slots:
     //图片的透明度改变槽
     void onPixmapItemAlphaChanged(int v);
@@ -88,6 +94,7 @@ private:
     Ui::DAWorkFlowNodeItemSettingWidget* ui;
     QPointer< DAWorkFlowOperateWidget > _workflowOptWidget;
     QPointer< DAWorkFlowEditWidget > _workflowEditWidget;
+    QPointer< DAAbstractNodeWidget > mLastSetNodeWidget;
     int _lastTabIndex;
 };
 }  // namespace DA

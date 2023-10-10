@@ -27,6 +27,7 @@ class DADataOperateWidget;
 class DAMessageLogViewWidget;
 class DAWorkFlowNodeListWidget;
 class DAWorkFlowOperateWidget;
+class DASettingContainerWidget;
 
 /**
  * @brief 此接口负责整个app的dock区域
@@ -88,6 +89,9 @@ public:
 
     //获取日志显示窗口
     virtual DAMessageLogViewWidget* getMessageLogViewWidget() const = 0;
+
+    //获取设置窗口,设置容器可以放置多个设置窗口
+    virtual DASettingContainerWidget* getSettingContainerWidget() const = 0;
 
 public:
     //基于接口的快速方法

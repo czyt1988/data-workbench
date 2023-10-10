@@ -351,16 +351,20 @@ void DANodeGraphicsScene::callNodeItemLinkIsEmpty(DAAbstractNodeLinkGraphicsItem
 
 /**
  * @brief item选择改变
+ *
+ * @note 注意，多选只会传递最后选中的那个，避免批量选择时的卡顿
  */
 void DANodeGraphicsScene::onItemSelectionChanged()
 {
     QList< QGraphicsItem* > sits = selectedItems();
-    for (QGraphicsItem* i : qAsConst(sits)) {
-        if (DAAbstractNodeGraphicsItem* gi = dynamic_cast< DAAbstractNodeGraphicsItem* >(i)) {
-            emit selectNodeItemChanged(gi);
-        } else if (DAAbstractNodeLinkGraphicsItem* gi = dynamic_cast< DAAbstractNodeLinkGraphicsItem* >(i)) {
-            emit selectNodeLinkChanged(gi);
-        }
+    if (sits.isEmpty()) {
+        return;
+    }
+    QGraphicsItem* i = sits.last();
+    if (DAAbstractNodeGraphicsItem* gi = dynamic_cast< DAAbstractNodeGraphicsItem* >(i)) {
+        emit selectNodeItemChanged(gi);
+    } else if (DAAbstractNodeLinkGraphicsItem* gi = dynamic_cast< DAAbstractNodeLinkGraphicsItem* >(i)) {
+        emit selectNodeLinkChanged(gi);
     }
 }
 

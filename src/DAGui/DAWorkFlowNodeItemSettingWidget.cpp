@@ -7,6 +7,7 @@
 #include "DAStandardGraphicsTextItem.h"
 #include "DAWorkFlowEditWidget.h"
 #include "DAGraphicsResizeablePixmapItem.h"
+#include "DAAbstractNodeWidget.h"
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
 //===================================================
@@ -250,6 +251,20 @@ void DAWorkFlowNodeItemSettingWidget::onSceneSelectionChanged()
         if (isTabContainWidget(ui->tabLinkSetting)) {
             ui->tabLinkSetting->setLinkItem(nullptr);
         }
+        //! 节点选择发生了变化,
+        //! 获取节点对应的设置窗口，把设置窗口作为一个tab设置进去
+        DAAbstractNodeWidget* w = nodeItem->getNodeWidget();
+        if (nullptr == w) {
+            if (nullptr != mLastSetNodeWidget) {
+                removeWidget(mLastSetNodeWidget.data());
+            }
+        } else {
+            if (mLastSetNodeWidget != w) {
+                removeWidget(mLastSetNodeWidget.data());
+                addWidget(mLastSetNodeWidget.data(), QIcon(":/Icon/Icon/node-settting.svg"), tr("property"));
+            }
+        }
+        mLastSetNodeWidget = w;
     } else if (DAAbstractNodeLinkGraphicsItem* linkItem = dynamic_cast< DAAbstractNodeLinkGraphicsItem* >(item)) {
         //说明是link
         setLinkSettingEnable(true);

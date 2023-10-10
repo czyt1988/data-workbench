@@ -1,5 +1,6 @@
 include($$PWD/common.pri)
 include($$PWD/function.pri)
+include($$PWD/python_lib.pri)
 # C++版本要求最低为17
 
 system(mkdir $$saFixPath($${BIN_PLUGIN_DIR}))#创建插件路径

@@ -353,29 +353,30 @@ void DAAppDockingArea::initConnection()
  */
 void DAAppDockingArea::onSelectNodeItemChanged(DAAbstractNodeGraphicsItem* i)
 {
-    DAWorkFlowNodeItemSettingWidget* nodesetting = mSettingContainerWidget->getWorkFlowNodeItemSettingWidget();
-    if (nullptr == nodesetting) {
-        return;
-    }
-    //! 节点有个虚函数getNodeWidget是可以针对不同节点获取不同的设置窗口,这个窗口是一个个性化设置窗口，需要在节点切换时单独加载
-    if (nullptr == i) {
-        if (nullptr != mLastSetNodeWidget) {
-            mSettingContainerWidget->getWorkFlowNodeItemSettingWidget()->removeWidget(mLastSetNodeWidget);
-        }
-        return;
-    }
-    DAAbstractNodeWidget* w = i->getNodeWidget();
+    Q_UNUSED(i);
+    //    DAWorkFlowNodeItemSettingWidget* nodesetting = mSettingContainerWidget->getWorkFlowNodeItemSettingWidget();
+    //    if (nullptr == nodesetting) {
+    //        return;
+    //    }
+    //    //! 节点有个虚函数getNodeWidget是可以针对不同节点获取不同的设置窗口,这个窗口是一个个性化设置窗口，需要在节点切换时单独加载
+    //    if (nullptr == i) {
+    //        if (nullptr != mLastSetNodeWidget) {
+    //            mSettingContainerWidget->getWorkFlowNodeItemSettingWidget()->removeWidget(mLastSetNodeWidget);
+    //        }
+    //        return;
+    //    }
+    //    DAAbstractNodeWidget* w = i->getNodeWidget();
 
-    if (nullptr == w) {
-        if (nullptr != mLastSetNodeWidget) {
-            mSettingContainerWidget->getWorkFlowNodeItemSettingWidget()->removeWidget(mLastSetNodeWidget);
-        }
-        return;
-    }
-    if (mLastSetNodeWidget != w) {
-        mSettingContainerWidget->getWorkFlowNodeItemSettingWidget()->removeWidget(mLastSetNodeWidget);
-        mSettingContainerWidget->getWorkFlowNodeItemSettingWidget()->addWidget(w, QIcon(":/Icon/Icon/node-settting.svg"), tr("property"));
-    }
+    //    if (nullptr == w) {
+    //        if (nullptr != mLastSetNodeWidget) {
+    //            mSettingContainerWidget->getWorkFlowNodeItemSettingWidget()->removeWidget(mLastSetNodeWidget);
+    //        }
+    //        return;
+    //    }
+    //    if (mLastSetNodeWidget != w) {
+    //        mSettingContainerWidget->getWorkFlowNodeItemSettingWidget()->removeWidget(mLastSetNodeWidget);
+    //        mSettingContainerWidget->getWorkFlowNodeItemSettingWidget()->addWidget(w, QIcon(":/Icon/Icon/node-settting.svg"), tr("property"));
+    //    }
 }
 
 void DAAppDockingArea::onDataManageWidgetDataDbClicked(const DA::DAData& data)

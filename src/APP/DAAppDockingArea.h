@@ -87,10 +87,10 @@ public:
     virtual DADataOperateWidget* getDataOperateWidget() const override;
 
     //获取日志显示窗口
-    DAMessageLogViewWidget* getMessageLogViewWidget() const override;
+    virtual DAMessageLogViewWidget* getMessageLogViewWidget() const override;
 
     //获取设置窗口,设置容器可以放置多个设置窗口
-    DASettingContainerWidget* getSettingContainerWidget() const;
+    virtual DASettingContainerWidget* getSettingContainerWidget() const override;
 
     // DockingArea对应的dock窗口指针
     ads::CDockWidget* dockingAreaToDockWidget(DockingArea area) const;
