@@ -393,7 +393,7 @@ void DAAbstractNodeGraphicsItem::paintLinkPoints(QPainter* painter, const QStyle
  * @brief 获取节点对应的设置窗口
  * @return
  */
-DAAbstractNodeWidget* DAAbstractNodeGraphicsItem::getNodeWidget() const
+DAAbstractNodeWidget* DAAbstractNodeGraphicsItem::getNodeWidget()
 {
     return nullptr;
 }

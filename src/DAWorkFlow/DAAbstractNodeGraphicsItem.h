@@ -109,7 +109,7 @@ public:
     void paintLinkPoints(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget);
 
     //获取节点对应的窗口，一般保存节点的设置
-    virtual DAAbstractNodeWidget* getNodeWidget() const;
+    virtual DAAbstractNodeWidget* getNodeWidget();
 
     // palette设置
     void setNodePalette(const DANodePalette& pl);
