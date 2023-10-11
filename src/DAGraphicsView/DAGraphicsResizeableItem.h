@@ -165,13 +165,13 @@ signals:
     void itemBodySizeChanged(const QSizeF& oldsize, const QSizeF& newsize);
 #endif
 protected:
-    virtual void hoverEnterEvent(QGraphicsSceneHoverEvent* event);
-    virtual void hoverMoveEvent(QGraphicsSceneHoverEvent* event);
-    virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent* event);
-    virtual void mousePressEvent(QGraphicsSceneMouseEvent* event);
-    virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* event);
-    virtual void mouseMoveEvent(QGraphicsSceneMouseEvent* event);
-    QVariant itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant& value);
+    virtual void hoverEnterEvent(QGraphicsSceneHoverEvent* event) override;
+    virtual void hoverMoveEvent(QGraphicsSceneHoverEvent* event) override;
+    virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override;
+    virtual void mousePressEvent(QGraphicsSceneMouseEvent* event) override;
+    virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
+    virtual void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override;
+    QVariant itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant& value) override;
 };
 }
 Q_GLOBAL_STATIC(DA::DAGraphicsResizeableItemPalette, daGlobalGraphicsResizeableItemPalette)
