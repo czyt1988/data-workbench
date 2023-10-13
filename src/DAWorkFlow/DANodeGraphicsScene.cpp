@@ -14,6 +14,16 @@
 #include "DAAbstractNodeFactory.h"
 #include "DAGraphicsResizeableRectItem.h"
 #include "DAStandardGraphicsTextItem.h"
+#include "DANodeGraphicsSceneEventListener.h"
+#include <QPointer>
+
+#define DANODEGRAPHICSSCENE_EVENTLISTENER(eventName, e)                                                                \
+    for (int i = 0; i < d_ptr->mEventListeners.size(); ++i) {                                                          \
+        if (d_ptr->mEventListeners[ i ]) {                                                                             \
+            d_ptr->mEventListeners[ i ]->eventName(this, e);                                                           \
+        }                                                                                                              \
+    }
+
 namespace DA
 {
 class DANodeGraphicsScene::PrivateData
@@ -24,16 +34,16 @@ public:
 
 public:
     QPointer< DAWorkFlow > mWorkflow;
+    QVector< QPointer< DANodeGraphicsSceneEventListener > > mEventListeners;
 };
 
-////////////////////////////////////////////////
-///
-////////////////////////////////////////////////
 DANodeGraphicsScene::PrivateData::PrivateData(DANodeGraphicsScene* p) : q_ptr(p)
 {
 }
 
-///////////////////////////////////
+////////////////////////////////////////////////
+/// DANodeGraphicsScene
+////////////////////////////////////////////////
 
 DANodeGraphicsScene::DANodeGraphicsScene(QObject* p) : DAGraphicsSceneWithUndoStack(p), DA_PIMPL_CONSTRUCT
 {
@@ -90,8 +100,11 @@ void DANodeGraphicsScene::setWorkFlow(DAWorkFlow* wf)
         connect(wf, &DAWorkFlow::nodeNameChanged, this, &DANodeGraphicsScene::onNodeNameChanged);
         QList< DAAbstractNodeFactory* > factorys = wf->getAllFactorys();
         for (DAAbstractNodeFactory* f : factorys) {
-            //场景添加工厂的回调
-            f->sceneAddedFactory(this);
+            DANodeGraphicsSceneEventListener* listen = f->createNodeGraphicsSceneEventListener();
+            if (listen) {
+                listen->factoryAddedToScene(this);
+                d_ptr->mEventListeners.append(listen);
+            }
         }
     }
 }
@@ -471,15 +484,18 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
         }
     }
     DAGraphicsSceneWithUndoStack::mousePressEvent(mouseEvent);
+    DANODEGRAPHICSSCENE_EVENTLISTENER(mousePressEvent, mouseEvent)
 }
 
 void DANodeGraphicsScene::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
     DAGraphicsSceneWithUndoStack::mouseMoveEvent(mouseEvent);
+    DANODEGRAPHICSSCENE_EVENTLISTENER(mouseMoveEvent, mouseEvent)
 }
 
 void DANodeGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
     DAGraphicsSceneWithUndoStack::mouseReleaseEvent(mouseEvent);
+    DANODEGRAPHICSSCENE_EVENTLISTENER(mouseReleaseEvent, mouseEvent)
 }
 }  // end DA

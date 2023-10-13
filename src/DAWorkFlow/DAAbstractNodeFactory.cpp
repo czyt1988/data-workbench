@@ -1,14 +1,19 @@
 ﻿#include "DAAbstractNodeFactory.h"
 #include <QPointer>
 #include <DAWorkFlow.h>
+#include "DANodeGraphicsSceneEventListener.h"
 
 namespace DA
 {
+
+/**
+ * @brief The DAAbstractNodeFactory::PrivateData class
+ */
 class DAAbstractNodeFactory::PrivateData
 {
     DA_DECLARE_PUBLIC(DAAbstractNodeFactory)
 public:
-    DAAbstractNodeFactory::PrivateData(DAAbstractNodeFactory* p);
+    PrivateData(DAAbstractNodeFactory* p);
 
 public:
     QPointer< DAWorkFlow > mWorkflow;
@@ -145,13 +150,17 @@ void DAAbstractNodeFactory::loadExternInfoFromXml(const QDomElement* factoryExte
 }
 
 /**
- * @brief 场景添加了工厂的回调
+ * @brief 创建DANodeGraphicsScene的事件监听器
  *
- * 此回调可用于绑定场景的一些信号槽,此函数发生在场景添加了工作流后触发，这个函数的回调保证场景已经生成
- * @param sc
+ * 创建场景事件监听器，如果需要对场景的事件进行监听，需要继承此函数并返回一个事件监听器
+ *
+ * 如果无需监听，可返还nullptr
+ *
+ * @return
  */
-void DAAbstractNodeFactory::sceneAddedFactory(DANodeGraphicsScene* sc)
+DANodeGraphicsSceneEventListener* DAAbstractNodeFactory::createNodeGraphicsSceneEventListener()
 {
-    Q_UNUSED(sc);
+    return nullptr;
 }
+
 }  // end DA

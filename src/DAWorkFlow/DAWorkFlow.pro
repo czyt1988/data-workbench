@@ -24,6 +24,7 @@ include($${DA_SRC_DIR}/DAGraphicsView/DAGraphicsView.pri)
 
 HEADERS +=\
     DACommandsForWorkFlowNodeGraphics.h \
+    DANodeGraphicsSceneEventListener.h \
     DANodeLinkPointDrawDelegate.h \
     DAStandardNodePixmapGraphicsItem.h \
     DAStandardNodeRectGraphicsItem.h \
@@ -53,6 +54,7 @@ SOURCES += \
     DAAbstractNodeWidget.cpp \
     DACommandsForWorkFlowNodeGraphics.cpp \
     DANodeGraphicsScene.cpp \
+    DANodeGraphicsSceneEventListener.cpp \
     DANodeLinkPoint.cpp \
     DANodeLinkPointDrawDelegate.cpp \
     DANodeMetaData.cpp \

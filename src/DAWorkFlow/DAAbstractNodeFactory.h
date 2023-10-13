@@ -12,6 +12,7 @@ namespace DA
 
 class DAWorkFlow;
 class DANodeGraphicsScene;
+class DANodeGraphicsSceneEventListener;
 /**
  * @brief FCAbstractNode的工厂基类，所有自定义的node集合最后都需要提供一个工厂
  *
@@ -95,8 +96,8 @@ public:
     virtual void saveExternInfoToXml(QDomDocument* doc, QDomElement* factoryExternElement) const;
     //从xml加载扩展信息
     virtual void loadExternInfoFromXml(const QDomElement* factoryExternElement);
-    //场景添加了工厂的回调，此回调可用于绑定场景的一些信号槽
-    virtual void sceneAddedFactory(DANodeGraphicsScene* sc);
+    //创建场景事件监听器，如果需要对场景的事件进行监听，需要继承此函数并返回一个事件监听器
+    virtual DANodeGraphicsSceneEventListener* createNodeGraphicsSceneEventListener();
 };
 }
 #endif  // FCABSTRACTNODEFACTORY_H
