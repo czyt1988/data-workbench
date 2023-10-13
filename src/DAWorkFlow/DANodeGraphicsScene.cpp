@@ -405,6 +405,7 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
             cancelLink();
         }
         DAGraphicsSceneWithUndoStack::mousePressEvent(mouseEvent);
+        DANODEGRAPHICSSCENE_EVENTLISTENER(mousePressEvent, mouseEvent)
         return;
     }
     //先检查是否点击到了连接点
@@ -422,6 +423,7 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
         if (nullptr == nodeItem) {
             //点击的不是节点item就退出
             DAGraphicsSceneWithUndoStack::mousePressEvent(mouseEvent);
+            DANODEGRAPHICSSCENE_EVENTLISTENER(mousePressEvent, mouseEvent)
             return;
         }
         //如果点击到了DAAbstractNodeGraphicsItem，要看看是否点击到了连接点
@@ -435,6 +437,7 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
             } else {
                 qDebug() << "is start link,but link item can not cast to DAAbstractNodeLinkGraphicsItem";
                 DAGraphicsSceneWithUndoStack::mousePressEvent(mouseEvent);
+                DANODEGRAPHICSSCENE_EVENTLISTENER(mousePressEvent, mouseEvent)
                 return;
             }
             DANodeLinkPoint lp;
@@ -446,6 +449,7 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
                 setIgnoreLinkEvent(true);
                 DAGraphicsSceneWithUndoStack::mousePressEvent(mouseEvent);
                 setIgnoreLinkEvent(false);
+                DANODEGRAPHICSSCENE_EVENTLISTENER(mousePressEvent, mouseEvent)
                 return;
             }
             //点击了连接点
@@ -457,6 +461,7 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
                 setIgnoreLinkEvent(true);
                 DAGraphicsSceneWithUndoStack::mousePressEvent(mouseEvent);
                 setIgnoreLinkEvent(false);
+                DANODEGRAPHICSSCENE_EVENTLISTENER(mousePressEvent, mouseEvent)
                 return;
             }
             // 连接成功，把item脱离管理
