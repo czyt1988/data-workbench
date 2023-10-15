@@ -6,6 +6,7 @@
 #include <QDomDocument>
 #include <QDomElement>
 #include <memory>
+#include "DAQtContainerUtil.h"
 #include "DAAbstractNode.h"
 #include "DAAbstractNodeLinkGraphicsItem.h"
 #include "DAAbstractNodeWidget.h"
@@ -1034,11 +1035,77 @@ QList< DAAbstractNodeLinkGraphicsItem* > DAAbstractNodeGraphicsItem::getLinkItem
             res.insert(li);
         }
     }
-#if QT_VERSION_MAJOR >= 6
-    return QList< DAAbstractNodeLinkGraphicsItem* >(res.begin(), res.end());
-#else
-    return res.toList();
-#endif
+    return qset_to_qlist(res);
+}
+
+/**
+ * @brief 获取所有链接进来这个节点的连接线
+ * @return 将会去重，也就返回的内容不会有重复
+ */
+QList< DAAbstractNodeLinkGraphicsItem* > DAAbstractNodeGraphicsItem::getInputLinkItems() const
+{
+    QSet< DAAbstractNodeLinkGraphicsItem* > res;
+    for (DAAbstractNodeGraphicsItem::PrivateData::LinkInfo& d : d_ptr->mLinkInfos) {
+        if (DANodeLinkPoint::Input != d.point.way) {
+            //不是输出节点就跳过
+            continue;
+        }
+        for (DAAbstractNodeLinkGraphicsItem* li : qAsConst(d.linkitems)) {
+            res.insert(li);
+        }
+    }
+    return qset_to_qlist(res);
+}
+
+/**
+ * @brief 获取这个节点链接出去的所有连接线
+ * @return 将会去重，也就返回的内容不会有重复
+ */
+QList< DAAbstractNodeLinkGraphicsItem* > DAAbstractNodeGraphicsItem::getOutputLinkItems() const
+{
+    QSet< DAAbstractNodeLinkGraphicsItem* > res;
+    for (DAAbstractNodeGraphicsItem::PrivateData::LinkInfo& d : d_ptr->mLinkInfos) {
+        if (DANodeLinkPoint::Output != d.point.way) {
+            //不是输出节点就跳过
+            continue;
+        }
+        for (DAAbstractNodeLinkGraphicsItem* li : qAsConst(d.linkitems)) {
+            res.insert(li);
+        }
+    }
+    return qset_to_qlist(res);
+}
+
+/**
+ * @brief 获取所有链接到这个节点的节点
+ * @return 将会去重，也就返回的内容不会有重复
+ */
+QList< DAAbstractNodeGraphicsItem* > DAAbstractNodeGraphicsItem::getInputItems() const
+{
+    QSet< DAAbstractNodeGraphicsItem* > res;
+    QList< DAAbstractNodeLinkGraphicsItem* > inputLinks = getInputLinkItems();
+    for (DAAbstractNodeLinkGraphicsItem* li : qAsConst(inputLinks)) {
+        if (DAAbstractNodeGraphicsItem* fi = li->fromNodeItem()) {
+            res.insert(fi);
+        }
+    }
+    return qset_to_qlist(res);
+}
+
+/**
+ * @brief 获取这个节点链接出去的所有节点
+ * @return  将会去重，也就返回的内容不会有重复
+ */
+QList< DAAbstractNodeGraphicsItem* > DAAbstractNodeGraphicsItem::getOutputItems() const
+{
+    QSet< DAAbstractNodeGraphicsItem* > res;
+    QList< DAAbstractNodeLinkGraphicsItem* > outputLinks = getOutputLinkItems();
+    for (DAAbstractNodeLinkGraphicsItem* li : qAsConst(outputLinks)) {
+        if (DAAbstractNodeGraphicsItem* ti = li->toNodeItem()) {
+            res.insert(ti);
+        }
+    }
+    return qset_to_qlist(res);
 }
 
 QList< DAAbstractNodeLinkGraphicsItem* > DAAbstractNodeGraphicsItem::getLinkItem(const QString& name) const

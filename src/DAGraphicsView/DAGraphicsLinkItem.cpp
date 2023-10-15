@@ -245,10 +245,10 @@ const QPointF& DAGraphicsLinkItem::getEndPosition() const
  * @note 这个之所以要设置为虚函数，是因为有些场景，要把实际场景的位置，转化为其他位置，例如进行连接点捕抓，正交绘制等等情景
  * @param p 相对scene的位置
  */
-void DAGraphicsLinkItem::setStartScenePosition(const QPointF& p)
+void DAGraphicsLinkItem::setStartScenePosition(const QPointF& scenepostion)
 {
-    setPos(p);
-    d_ptr->mStartPos = mapFromScene(p);
+    setPos(scenepostion);
+    d_ptr->mStartPos = mapFromScene(scenepostion);
 }
 
 /**
@@ -265,9 +265,9 @@ QPointF DAGraphicsLinkItem::getStartScenePosition() const
  * @note 这个之所以要设置为虚函数，是因为有些场景，要把实际场景的位置，转化为其他位置，例如进行连接点捕抓，正交绘制等等情景
  * @param p 相对scene的位置
  */
-void DAGraphicsLinkItem::setEndScenePosition(const QPointF& p)
+void DAGraphicsLinkItem::setEndScenePosition(const QPointF& scenepostion)
 {
-    d_ptr->mEndPos = mapFromScene(p);
+    d_ptr->mEndPos = mapFromScene(scenepostion);
 }
 
 /**

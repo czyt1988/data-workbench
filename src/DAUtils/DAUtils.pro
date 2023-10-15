@@ -25,6 +25,7 @@ HEADERS += \
     DAColorTheme.h \
     DAIndexedVector.h \
     DAProperties.h \
+    DAQtContainerUtil.h \
     DAStringUtil.h \
     DAUtilsAPI.h \
     DATable.h \

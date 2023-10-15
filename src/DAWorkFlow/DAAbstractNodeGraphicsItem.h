@@ -126,6 +126,14 @@ public:
     void updateLinkPointPos();
     //获取当前链接上的LinkGraphicsItem
     QList< DAAbstractNodeLinkGraphicsItem* > getLinkItems() const;
+    //获取所有链接进来这个节点的连接线
+    QList< DAAbstractNodeLinkGraphicsItem* > getInputLinkItems() const;
+    //获取这个节点链接出去的所有连接线
+    QList< DAAbstractNodeLinkGraphicsItem* > getOutputLinkItems() const;
+    //获取所有链接到这个节点的节点
+    QList< DAAbstractNodeGraphicsItem* > getInputItems() const;
+    //获取这个节点链接出去的所有节点
+    QList< DAAbstractNodeGraphicsItem* > getOutputItems() const;
     //获取连接item
     QList< DAAbstractNodeLinkGraphicsItem* > getLinkItem(const QString& name) const;
     //保存到xml中

@@ -76,11 +76,11 @@ public:
     qreal getBezierControlScale() const;
 
     //开始连接点的位置,位置基于scene
-    virtual void setStartScenePosition(const QPointF& p);
+    virtual void setStartScenePosition(const QPointF& scenepostion);
     QPointF getStartScenePosition() const;
 
     //结束连接点的位置
-    virtual void setEndScenePosition(const QPointF& p);
+    virtual void setEndScenePosition(const QPointF& scenepostion);
     QPointF getEndScenePosition() const;
     //获取链接线
     QPainterPath getLinkLinePainterPath() const;
