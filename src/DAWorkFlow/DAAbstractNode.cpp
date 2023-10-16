@@ -3,7 +3,7 @@
 #include "DANodeMetaData.h"
 #include "DAWorkFlow.h"
 #include "DAAbstractNodeFactory.h"
-
+#include "DAQtContainerUtil.h"
 // Qxml
 #include <QPointer>
 #include <QDomComment>
@@ -374,12 +374,46 @@ QList< QString > DAAbstractNode::getInputKeys() const
 }
 
 /**
+ * @brief 获取所有已经链接上的输入节点
+ * @return 结果已经去重
+ */
+QList< QString > DAAbstractNode::getLinkedInputKeys() const
+{
+    QSet< QString > res;
+    for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(d_ptr->mLinksInfo)) {
+        SharedPointer toNode = d.inputNode.lock();
+        if (toNode.get() == this) {
+            //说明这个是其他节点连接到自身的item
+            res.insert(d.inputKey);
+        }
+    }
+    return qset_to_qlist(res);
+}
+
+/**
  * @brief 获取所有的输出参数
  * @return
  */
 QList< QString > DAAbstractNode::getOutputKeys() const
 {
     return d_ptr->mOutputData.keys();
+}
+
+/**
+ * @brief 获取所有已经链接上的输出的参数名
+ * @return 结果已经去重
+ */
+QList< QString > DAAbstractNode::getLinkedOutputKeys() const
+{
+    QSet< QString > res;
+    for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(d_ptr->mLinksInfo)) {
+        SharedPointer fromNode = d.outputNode.lock();
+        if (fromNode.get() == this) {
+            //说明这个是其他节点连接到自身的item
+            res.insert(d.outputKey);
+        }
+    }
+    return qset_to_qlist(res);
 }
 
 /**
@@ -401,6 +435,10 @@ void DAAbstractNode::addOutputKey(const QString& k)
 
 /**
  * @brief 建立连接,从out到另外一个item的in
+ *
+ * 建立连接,如果基础的对象需要校验，可继承此函数
+ *
+ * 注意，继承的方法中一定要调用父类方法DAAbstractNode::linkTo，否则信息会异常
  * @param outpt 输出点
  * @param toItem 输入的item
  * @param topt 输入点
@@ -518,18 +556,18 @@ void DAAbstractNode::detachAll()
  */
 QList< DAAbstractNode::SharedPointer > DAAbstractNode::getInputNodes() const
 {
-    QList< DAAbstractNode::SharedPointer > res;
+    QSet< DAAbstractNode::SharedPointer > res;
     for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(d_ptr->mLinksInfo)) {
         SharedPointer toNode = d.inputNode.lock();
         if (toNode.get() == this) {
             //说明这个是其他节点连接到自身的item
             SharedPointer fromNode = d.outputNode.lock();
             if (fromNode) {
-                res.append(fromNode);
+                res.insert(fromNode);
             }
         }
     }
-    return res;
+    return qset_to_qlist(res);
 }
 /**
  * @brief 获取所有连接了inputkey的节点
@@ -544,7 +582,7 @@ QList< DAAbstractNode::SharedPointer > DAAbstractNode::getInputNodes() const
  */
 QList< DAAbstractNode::SharedPointer > DAAbstractNode::getInputNodes(const QString inputkey) const
 {
-    QList< DAAbstractNode::SharedPointer > res;
+    QSet< DAAbstractNode::SharedPointer > res;
     for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(d_ptr->mLinksInfo)) {
         if (d.inputKey != inputkey) {
             continue;
@@ -554,11 +592,11 @@ QList< DAAbstractNode::SharedPointer > DAAbstractNode::getInputNodes(const QStri
             //说明这个是其他节点连接到自身的item
             SharedPointer fromNode = d.outputNode.lock();
             if (fromNode) {
-                res.append(fromNode);
+                res.insert(fromNode);
             }
         }
     }
-    return res;
+    return qset_to_qlist(res);
 }
 
 /**
@@ -575,18 +613,18 @@ QList< DAAbstractNode::SharedPointer > DAAbstractNode::getInputNodes(const QStri
  */
 QList< DAAbstractNode::SharedPointer > DAAbstractNode::getOutputNodes() const
 {
-    QList< DAAbstractNode::SharedPointer > res;
+    QSet< DAAbstractNode::SharedPointer > res;
     for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(d_ptr->mLinksInfo)) {
         SharedPointer fromNode = d.outputNode.lock();
         if (fromNode.get() == this) {
             //说明这个是此节点连接到其他的node
             SharedPointer toNode = d.inputNode.lock();
             if (toNode) {
-                res.append(toNode);
+                res.insert(toNode);
             }
         }
     }
-    return res;
+    return qset_to_qlist(res);
 }
 /**
  * @brief 获取此节点输出到其他的节点
@@ -602,7 +640,7 @@ QList< DAAbstractNode::SharedPointer > DAAbstractNode::getOutputNodes() const
  */
 QList< DAAbstractNode::SharedPointer > DAAbstractNode::getOutputNodes(const QString outputkey) const
 {
-    QList< DAAbstractNode::SharedPointer > res;
+    QSet< DAAbstractNode::SharedPointer > res;
     for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(d_ptr->mLinksInfo)) {
         if (d.outputKey != outputkey) {
             continue;
@@ -612,11 +650,11 @@ QList< DAAbstractNode::SharedPointer > DAAbstractNode::getOutputNodes(const QStr
             //说明这个是此节点连接到其他的node
             SharedPointer toNode = d.inputNode.lock();
             if (toNode) {
-                res.append(toNode);
+                res.insert(toNode);
             }
         }
     }
-    return res;
+    return qset_to_qlist(res);
 }
 
 /**

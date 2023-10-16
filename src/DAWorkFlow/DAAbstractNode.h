@@ -128,8 +128,12 @@ public:
 public:  //连接相关
     //获取所有输入的参数名
     QList< QString > getInputKeys() const;
+    //获取所有已经链接上的输入节点
+    QList< QString > getLinkedInputKeys() const;
     //获取所有输出的参数名
     QList< QString > getOutputKeys() const;
+    //获取所有已经链接上的输出的参数名
+    QList< QString > getLinkedOutputKeys() const;
     //添加一个输入参数
     void addInputKey(const QString& k);
     //添加一个输出参数
@@ -173,6 +177,7 @@ public:  //连接相关
     DAWorkFlow* workflow() const;
     //获取工厂
     DAAbstractNodeFactory* factory() const;
+    //
 
 public:
     //执行
