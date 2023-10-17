@@ -1176,6 +1176,15 @@ bool DAGraphicsResizeableItem::isResizing() const
 }
 
 /**
+ * @brief 设置为是否可移动
+ * @param on
+ */
+void DAGraphicsResizeableItem::setMovable(bool on)
+{
+    setFlag(ItemIsMovable, on);
+}
+
+/**
  * @brief 判断是否可以移动
  * @return
  */

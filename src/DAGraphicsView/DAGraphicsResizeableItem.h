@@ -143,6 +143,7 @@ public:
     //判断是否在调整大小中
     bool isResizing() const;
     //是否允许移动
+    void setMovable(bool on = true);
     bool isMovable() const;
 
 public:
