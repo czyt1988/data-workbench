@@ -74,6 +74,9 @@ public:
 
     //完成链接的回调
     virtual void finishedLink();
+    //在将要结束链接的回调，通过此回调可以执行完成链接后的相关操作，例如判断末端链接的图元，从而实现路径调整
+    //如果此函数返回false，将代表不接受链接，这时候，结束动作会被跳过，也就是鼠标点击是没有无法结束链接而生成连接线
+    virtual bool willCompleteLink() override;
     //生成painterpath
     virtual QPainterPath generateLinePainterPath(const QPointF& fromPoint,
                                                  const QPointF& toPoint,

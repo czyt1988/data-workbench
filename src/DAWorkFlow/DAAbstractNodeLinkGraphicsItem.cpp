@@ -632,6 +632,15 @@ void DAAbstractNodeLinkGraphicsItem::finishedLink()
 {
 }
 
+/**
+ * @brief 节点的连接线在确认点击链接到完成才能完成链接
+ * @return
+ */
+bool DAAbstractNodeLinkGraphicsItem::willCompleteLink()
+{
+    return isLinked();
+}
+
 QPainterPath DAAbstractNodeLinkGraphicsItem::generateLinePainterPath(const QPointF& fromPoint,
                                                                      const QPointF& toPoint,
                                                                      DAGraphicsLinkItem::LinkLineStyle linestyle)

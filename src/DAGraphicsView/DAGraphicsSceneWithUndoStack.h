@@ -67,6 +67,7 @@ public:
     // 设置忽略链接事件的处理，主要忽略mousePressEvent，mouseMoveEvent的链接事件，
     // 这个函数一般是在子类中的重载函数中调用，用于进行一些特殊处理需要暂时屏蔽掉链接事件
     void setIgnoreLinkEvent(bool on);
+    bool isIgnoreLinkEvent() const;
 
 public:
     //是否允许对齐网格

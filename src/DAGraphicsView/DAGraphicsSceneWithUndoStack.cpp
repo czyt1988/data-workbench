@@ -365,6 +365,15 @@ void DAGraphicsSceneWithUndoStack::setIgnoreLinkEvent(bool on)
 }
 
 /**
+ * @brief 判断当前是否忽略链接事件
+ * @return
+ */
+bool DAGraphicsSceneWithUndoStack::isIgnoreLinkEvent() const
+{
+    return d_ptr->mIsIgnoreLinkEvent;
+}
+
+/**
  * @brief 是否允许对齐网格
  * @param on
  * @note 此操作对未对齐的item是不会起作用
@@ -601,7 +610,7 @@ void DAGraphicsSceneWithUndoStack::mousePressEvent(QGraphicsSceneMouseEvent* mou
     //先传递下去使得能处理选中状态
     QGraphicsScene::mousePressEvent(mouseEvent);
     //! 处理链接事件
-    if (!(d_ptr->mIsIgnoreLinkEvent)) {
+    if (!isIgnoreLinkEvent()) {
         if (isStartLink()) {
             //链接线模式，处理连接线
             if (mouseEvent->buttons().testFlag(Qt::RightButton)) {
@@ -666,7 +675,7 @@ void DAGraphicsSceneWithUndoStack::mouseMoveEvent(QGraphicsSceneMouseEvent* mous
         return;
     }
     d_ptr->mLastMouseScenePos = mouseEvent->scenePos();
-    if (!(d_ptr->mIsIgnoreLinkEvent)) {
+    if (!isIgnoreLinkEvent()) {
         if (isStartLink()) {
             switch (d_ptr->mLinkMode) {
             case LinkModeAutoStartEndFollowMouseClick: {  //开端为当前鼠标位置，末端跟随鼠标移动，在下个鼠标左键点击时结束连线
