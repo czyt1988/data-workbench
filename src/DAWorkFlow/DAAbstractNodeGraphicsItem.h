@@ -124,6 +124,8 @@ public:
     virtual DANodeLinkPoint getLinkPointByPos(const QPointF& p, DANodeLinkPoint::Way way = DANodeLinkPoint::Output) const;
     //更新连接点的位置，此函数一般在setbody之后更新点的位置
     void updateLinkPointPos();
+    //更新linkitem
+    void updateLinkItems();
     //获取当前链接上的LinkGraphicsItem
     QList< DAAbstractNodeLinkGraphicsItem* > getLinkItems() const;
     //获取所有链接进来这个节点的连接线
@@ -195,8 +197,8 @@ private:
 DAWORKFLOW_API QString enumToString(DA::DAAbstractNodeGraphicsItem::LinkPointLocation e);
 // DA::DAAbstractNodeGraphicsItem::LinkPointLocation的枚举转换
 DAWORKFLOW_API DA::DAAbstractNodeGraphicsItem::LinkPointLocation stringToEnum(
-    const QString& s,
-    DA::DAAbstractNodeGraphicsItem::LinkPointLocation defaultEnum = DA::DAAbstractNodeGraphicsItem::LinkPointLocationOnLeftSide);
+        const QString& s,
+        DA::DAAbstractNodeGraphicsItem::LinkPointLocation defaultEnum = DA::DAAbstractNodeGraphicsItem::LinkPointLocationOnLeftSide);
 
 }
 #endif  // FCNODEGRAPHICSITEM_H

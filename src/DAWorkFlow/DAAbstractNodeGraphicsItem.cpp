@@ -581,11 +581,7 @@ QVariant DAAbstractNodeGraphicsItem::itemChange(QGraphicsItem::GraphicsItemChang
         if (scene()) {
             // 变化了位置,需要更新link item
             // 此函数能保证item在移动时连接线跟随动
-            for (const DAAbstractNodeGraphicsItem::PrivateData::LinkInfo& ld : qAsConst(d_ptr->mLinkInfos)) {
-                for (DAAbstractNodeLinkGraphicsItem* li : ld.linkitems) {
-                    li->updatePos();
-                }
-            }
+            updateLinkItems();
         }
     } break;
     default:
@@ -950,12 +946,12 @@ DAAbstractNodeLinkGraphicsItem* DAAbstractNodeGraphicsItem::linkTo(const DANodeL
     }
     if (!linkitem->attachFrom(this, fromPoint)) {
         qDebug() << QObject::tr("link item can not attach from node item(%1) with key=%2")
-                        .arg(this->getNodeName(), fromPoint.name);  // cn:无法在节点(%1)的连接点%2上建立链接
+                            .arg(this->getNodeName(), fromPoint.name);  // cn:无法在节点(%1)的连接点%2上建立链接
         return nullptr;
     }
     if (!linkitem->attachTo(toItem, toPoint)) {
         qDebug() << QObject::tr("link item can not attach to node item(%1) with key=%2")  // cn:无法链接到节点(%1)的连接点%2
-                        .arg(toItem->getNodeName(), toPoint.name);
+                            .arg(toItem->getNodeName(), toPoint.name);
 
         return nullptr;
     }
@@ -977,12 +973,12 @@ DAAbstractNodeLinkGraphicsItem* DAAbstractNodeGraphicsItem::linkTo(const QString
     DANodeLinkPoint tolp   = toItem->getInputLinkPoint(toPointName);
     if (!fromlp.isValid()) {
         qDebug() << QObject::tr("Node %1 cannot find a connection point named %2")  // cn:节点%1无法找到名字为%2的连接点
-                        .arg(getNodeName(), fromPointName);
+                            .arg(getNodeName(), fromPointName);
         return nullptr;
     }
     if (!tolp.isValid()) {
         qDebug() << QObject::tr("Node %1 cannot find a connection point named %2")  // cn:节点%1无法找到名字为%2的连接点
-                        .arg(toItem->getNodeName(), toPointName);
+                            .arg(toItem->getNodeName(), toPointName);
         return nullptr;
     }
     return linkTo(fromlp, toItem, tolp);
@@ -1019,6 +1015,18 @@ void DAAbstractNodeGraphicsItem::updateLinkPointPos()
             } else {
                 item->updateFromLinkPointInfo(lps[ i ]);
             }
+        }
+    }
+}
+
+/**
+ * @brief 更新链接到这个item的linkitem
+ */
+void DAAbstractNodeGraphicsItem::updateLinkItems()
+{
+    for (const DAAbstractNodeGraphicsItem::PrivateData::LinkInfo& ld : qAsConst(d_ptr->mLinkInfos)) {
+        for (DAAbstractNodeLinkGraphicsItem* li : ld.linkitems) {
+            li->updatePos();
         }
     }
 }
