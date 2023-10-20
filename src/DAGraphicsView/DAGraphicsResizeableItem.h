@@ -111,6 +111,8 @@ public:  //尺寸相关接口
     void setBodyPos(const QPointF& p);
     //返回body中心点
     QPointF getBodyCenterPoint() const;
+    //获取body中心的位置
+    QPointF getBodyCenterPosition() const;
     //设置TransformOriginPoint自动设置为bodysize的中心,否则为用户自己指定
     void setAutoCenterTransformOriginPoint(bool on = true);
     //更新TransformOriginPoint，前提是setAutoCenterTransformOriginPoint(true)

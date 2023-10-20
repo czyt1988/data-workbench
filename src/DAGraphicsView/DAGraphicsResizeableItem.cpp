@@ -528,12 +528,24 @@ void DAGraphicsResizeableItem::setBodyPos(const QPointF& p)
 
 /**
  * @brief 返回body的中心点，此坐标系为item坐标系
- * @return
+ * @return item坐标系
+ * @sa getBodyCenterPosition
  */
 QPointF DAGraphicsResizeableItem::getBodyCenterPoint() const
 {
     QSizeF s = getBodySize();
     return QPointF(d_ptr->mPainterRectStartPos.x() + s.width() / 2, d_ptr->mPainterRectStartPos.y() + s.height() / 2);
+}
+
+/**
+ * @brief 获取body中心的位置
+ * @return scene坐标系
+ * @sa getBodyCenterPoint
+ */
+QPointF DAGraphicsResizeableItem::getBodyCenterPosition() const
+{
+    QPointF p = getBodyCenterPoint();
+    return mapToScene(p);
 }
 
 /**
