@@ -112,7 +112,9 @@ public:  //尺寸相关接口
     //返回body中心点
     QPointF getBodyCenterPoint() const;
     //获取body中心的位置
-    QPointF getBodyCenterPosition() const;
+    QPointF getBodyCenterPos() const;
+    //设置body中心到scene的位置
+    void setBodyCenterPos(const QPointF& p);
     //设置TransformOriginPoint自动设置为bodysize的中心,否则为用户自己指定
     void setAutoCenterTransformOriginPoint(bool on = true);
     //更新TransformOriginPoint，前提是setAutoCenterTransformOriginPoint(true)

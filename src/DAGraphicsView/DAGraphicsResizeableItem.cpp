@@ -542,7 +542,7 @@ QPointF DAGraphicsResizeableItem::getBodyCenterPoint() const
  * @return scene坐标系
  * @sa getBodyCenterPoint
  */
-QPointF DAGraphicsResizeableItem::getBodyCenterPosition() const
+QPointF DAGraphicsResizeableItem::getBodyCenterPos() const
 {
     QPointF p = getBodyCenterPoint();
     return mapToScene(p);
