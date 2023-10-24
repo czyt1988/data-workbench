@@ -10,6 +10,7 @@ class QGraphicsSimpleTextItem;
 namespace DA
 {
 class DAAbstractNodeGraphicsItem;
+class DAWorkFlow;
 /**
  * @brief 绘制连接线的item
  *
@@ -97,6 +98,9 @@ public:
 
     //已经连接完成，在from和to都有节点时，返回true
     bool isLinked() const;
+    //保存到xml中
+    virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement) const override;
+    virtual bool loadFromXml(const QDomElement* parentElement) override;
 
 protected:
     //

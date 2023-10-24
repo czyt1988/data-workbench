@@ -1,8 +1,10 @@
 #ifndef DAGRAPHICSLINKITEM_H
 #define DAGRAPHICSLINKITEM_H
 #include "DAGraphicsViewGlobal.h"
+#include "DAXMLFileInterface.h"
 #include <QGraphicsItem>
-
+class QDomDocument;
+class QDomElement;
 class QGraphicsSceneMouseEvent;
 namespace DA
 {
@@ -10,7 +12,7 @@ namespace DA
 /**
  * @brief 绘制连接线的item
  */
-class DAGRAPHICSVIEW_API DAGraphicsLinkItem : public QGraphicsItem
+class DAGRAPHICSVIEW_API DAGraphicsLinkItem : public QGraphicsItem, public DAXMLFileInterface
 {
     DA_DECLARE_PRIVATE(DAGraphicsLinkItem)
 public:
@@ -113,6 +115,9 @@ public:
     //在将要结束链接的回调，通过此回调可以执行完成链接后的相关操作，例如判断末端链接的图元，从而实现路径调整
     //如果此函数返回false，将代表不接受链接，这时候，结束动作会被跳过，也就是鼠标点击是没有无法结束链接而生成连接线
     virtual bool willCompleteLink();
+    //保存到xml中
+    virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement) const override;
+    virtual bool loadFromXml(const QDomElement* parentElement) override;
 
 public:
     //计算两个点的距离
@@ -168,14 +173,14 @@ protected:
 DAGRAPHICSVIEW_API QString enumToString(DA::DAGraphicsLinkItem::EndPointType e);
 // DAAbstractNodeLinkGraphicsItem::EndPointType的枚举转换
 DAGRAPHICSVIEW_API DA::DAGraphicsLinkItem::EndPointType stringToEnum(
-    const QString& s,
-    DA::DAGraphicsLinkItem::EndPointType defaultEnum = DA::DAGraphicsLinkItem::EndPointNone);
+        const QString& s,
+        DA::DAGraphicsLinkItem::EndPointType defaultEnum = DA::DAGraphicsLinkItem::EndPointNone);
 // DAAbstractNodeLinkGraphicsItem::LinkLineStyle的枚举转换
 DAGRAPHICSVIEW_API QString enumToString(DA::DAGraphicsLinkItem::LinkLineStyle e);
 // DAAbstractNodeLinkGraphicsItem::LinkLineStyle的枚举转换
 DAGRAPHICSVIEW_API DA::DAGraphicsLinkItem::LinkLineStyle stringToEnum(
-    const QString& s,
-    DA::DAGraphicsLinkItem::LinkLineStyle defaultEnum = DA::DAGraphicsLinkItem::LinkLineKnuckle);
+        const QString& s,
+        DA::DAGraphicsLinkItem::LinkLineStyle defaultEnum = DA::DAGraphicsLinkItem::LinkLineKnuckle);
 
 }  // end DA
 

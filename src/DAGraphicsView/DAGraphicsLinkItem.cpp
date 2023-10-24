@@ -768,6 +768,88 @@ bool DAGraphicsLinkItem::willCompleteLink()
     return true;
 }
 
+bool DAGraphicsLinkItem::saveToXml(QDomDocument* doc, QDomElement* parentElement) const
+{
+    QDomElement posEle = doc->createElement("pos");
+    posEle.setAttribute("BezierControlScale", d_ptr->mBezierControlScale);
+    QDomElement startPosEle     = makeElement(d_ptr->mStartPos, "startPos", doc);
+    QDomElement endPosEle       = makeElement(d_ptr->mEndPos, "endPos", doc);
+    QDomElement boundingRectEle = makeElement(d_ptr->mBoundingRect, "boundingRect", doc);
+    posEle.appendChild(startPosEle);
+    posEle.appendChild(endPosEle);
+    posEle.appendChild(boundingRectEle);
+
+    QDomElement lineEle = doc->createElement("linkLine");
+    lineEle.setAttribute("style", enumToString(getLinkLineStyle()));
+
+    QDomElement linePenEle = doc->createElement("linePen");
+    linePenEle.setAttribute("color", getLinePen().color().name());
+    linePenEle.setAttribute("style", enumToString(getLinePen().style()));
+    linePenEle.setAttribute("width", getLinePen().width());
+
+    QDomElement endPointEle = doc->createElement("endPoint");
+    endPointEle.setAttribute("toType", DA::enumToString(getEndPointType(DAGraphicsLinkItem::OrientationEnd)));
+    endPointEle.setAttribute("fromType", DA::enumToString(getEndPointType(DAGraphicsLinkItem::OrientationStart)));
+    endPointEle.setAttribute("size", getEndPointSize());
+
+    parentElement->appendChild(posEle);
+    parentElement->appendChild(lineEle);
+    parentElement->appendChild(linePenEle);
+    parentElement->appendChild(endPointEle);
+    return true;
+}
+
+bool DAGraphicsLinkItem::loadFromXml(const QDomElement* parentElement)
+{
+    QDomElement posEle = parentElement->firstChildElement("pos");
+    if (!posEle.isNull()) {
+        bool isok = false;
+        qreal v   = posEle.attribute("BezierControlScale").toDouble(&isok);
+        if (isok) {
+            d_ptr->mBezierControlScale = v;
+        }
+        QDomElement ele = posEle.firstChildElement("startPos");
+        if (!ele.isNull()) {
+            loadElement(d_ptr->mStartPos, &ele);
+        }
+        ele = posEle.firstChildElement("endPos");
+        if (!ele.isNull()) {
+            loadElement(d_ptr->mEndPos, &ele);
+        }
+        ele = posEle.firstChildElement("boundingRect");
+        if (!ele.isNull()) {
+            loadElement(d_ptr->mBoundingRect, &ele);
+        }
+    }
+    QDomElement lineEle = parentElement->firstChildElement("linkLine");
+    if (!lineEle.isNull()) {
+        DAGraphicsLinkItem::LinkLineStyle s = DA::stringToEnum(lineEle.attribute("style"), DAGraphicsLinkItem::LinkLineKnuckle);
+        setLinkLineStyle(s);
+    }
+    QDomElement linePenEle = parentElement->firstChildElement("linePen");
+    if (!linePenEle.isNull()) {
+        QColor pencolor(linePenEle.attribute("color"));
+        int width          = linePenEle.attribute("width").toInt();
+        Qt::PenStyle style = stringToEnum(linePenEle.attribute("style"), Qt::SolidLine);
+        QPen pen(pencolor);
+        pen.setWidth(width);
+        pen.setStyle(style);
+        setLinePen(pen);
+    }
+    QDomElement endPointEle = parentElement->firstChildElement("endPoint");
+    if (!endPointEle.isNull()) {
+        DAGraphicsLinkItem::EndPointType etTo = DA::stringToEnum(endPointEle.attribute("toType"), DAGraphicsLinkItem::EndPointNone);
+        DAGraphicsLinkItem::EndPointType etFrom = DA::stringToEnum(endPointEle.attribute("fromType"), DAGraphicsLinkItem::EndPointNone);
+        int size                                = endPointEle.attribute("size").toInt();
+        setEndPointType(DAGraphicsLinkItem::OrientationStart, etFrom);
+        setEndPointType(DAGraphicsLinkItem::OrientationEnd, etTo);
+        if (size > 0) {
+            setEndPointSize(size);
+        }
+    }
+    return true;
+}
+
 /**
  * @brief 生成贝塞尔曲线
  * @param fromPos

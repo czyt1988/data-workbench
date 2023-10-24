@@ -9,7 +9,7 @@
 #include <QGraphicsSimpleTextItem>
 #include <QStyleOptionGraphicsItem>
 #include <QGraphicsTextItem>
-
+#include "DAWorkFlow.h"
 namespace DA
 {
 class DAAbstractNodeLinkGraphicsItem::PrivateData
@@ -498,6 +498,38 @@ void DAAbstractNodeLinkGraphicsItem::detachTo()
 bool DAAbstractNodeLinkGraphicsItem::isLinked() const
 {
     return d_ptr->isLinked();
+}
+
+bool DAAbstractNodeLinkGraphicsItem::saveToXml(QDomDocument* doc, QDomElement* parentElement) const
+{
+    DAGraphicsLinkItem::saveToXml(doc, parentElement);
+    QDomElement pointEle = doc->createElement("linkPoint");
+    pointEle.setAttribute("visible", isLinkPointNameVisible());
+    pointEle.setAttribute("fromTextColor", getLinkPointNameTextColor(DAGraphicsLinkItem::OrientationStart).name());
+    pointEle.setAttribute("toTextColor", getLinkPointNameTextColor(DAGraphicsLinkItem::OrientationEnd).name());
+    pointEle.setAttribute("fromPositionOffset", getLinkPointNamePositionOffset(DAGraphicsLinkItem::OrientationStart));
+    pointEle.setAttribute("toPositionOffset", getLinkPointNamePositionOffset(DAGraphicsLinkItem::OrientationEnd));
+    parentElement->appendChild(pointEle);
+    return true;
+}
+
+bool DAAbstractNodeLinkGraphicsItem::loadFromXml(const QDomElement* parentElement)
+{
+    bool on              = DAGraphicsLinkItem::loadFromXml(parentElement);
+    QDomElement pointEle = parentElement->firstChildElement("linkPoint");
+    if (!pointEle.isNull()) {
+        bool visible = pointEle.attribute("visible").toInt();
+        QColor fromTextColor(pointEle.attribute("fromTextColor"));
+        QColor toTextColor(pointEle.attribute("toTextColor"));
+        int fromPositionOffset = pointEle.attribute("fromPositionOffset").toInt();
+        int toPositionOffset   = pointEle.attribute("toPositionOffset").toInt();
+        setLinkPointNameVisible(visible);
+        setLinkPointNamePositionOffset(fromPositionOffset, DAGraphicsLinkItem::OrientationStart);
+        setLinkPointNamePositionOffset(toPositionOffset, DAGraphicsLinkItem::OrientationEnd);
+        setLinkPointNameTextColor(fromTextColor, DAGraphicsLinkItem::OrientationStart);
+        setLinkPointNameTextColor(toTextColor, DAGraphicsLinkItem::OrientationEnd);
+    }
+    return on;
 }
 
 /**

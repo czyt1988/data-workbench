@@ -44,6 +44,153 @@ DAXMLFileInterface::~DAXMLFileInterface()
 {
 }
 /**
+ * @brief 生成一个QRect标签
+ * @param p
+ * @param tagName 标签名
+ * @param doc
+ * @return
+ */
+QDomElement DAXMLFileInterface::makeElement(const QRect& v, const QString& tagName, QDomDocument* doc)
+{
+    QDomElement ele = doc->createElement(tagName);
+    ele.setAttribute("class", "QRect");
+    ele.setAttribute("x", QString::number(v.x()));
+    ele.setAttribute("y", QString::number(v.y()));
+    ele.setAttribute("w", QString::number(v.width()));
+    ele.setAttribute("h", QString::number(v.height()));
+    return ele;
+}
+/**
+ * @brief 加载QRect
+ * @param p
+ * @param ele
+ * @return 此函数不会返回false
+ */
+bool DAXMLFileInterface::loadElement(QRect& p, const QDomElement* ele)
+{
+    int v;
+    if (getStringIntValue(ele->attribute("x"), v)) {
+        p.setX(v);
+    }
+    if (getStringIntValue(ele->attribute("y"), v)) {
+        p.setY(v);
+    }
+    if (getStringIntValue(ele->attribute("w"), v)) {
+        p.setWidth(v);
+    }
+    if (getStringIntValue(ele->attribute("h"), v)) {
+        p.setHeight(v);
+    }
+    return true;
+}
+/**
+ * @brief 生成一个QRectF标签
+ * @param p
+ * @param tagName 标签名
+ * @param doc
+ * @return
+ */
+QDomElement DAXMLFileInterface::makeElement(const QRectF& v, const QString& tagName, QDomDocument* doc)
+{
+    QDomElement ele = doc->createElement(tagName);
+    ele.setAttribute("class", "QRectF");
+    ele.setAttribute("x", QString::number(v.x()));
+    ele.setAttribute("y", QString::number(v.y()));
+    ele.setAttribute("w", QString::number(v.width()));
+    ele.setAttribute("h", QString::number(v.height()));
+    return ele;
+}
+/**
+ * @brief 加载QRectF
+ * @param p
+ * @param ele
+ * @return 此函数不会返回false
+ */
+bool DAXMLFileInterface::loadElement(QRectF& p, const QDomElement* ele)
+{
+    qreal v;
+    if (getStringRealValue(ele->attribute("x"), v)) {
+        p.setX(v);
+    }
+    if (getStringRealValue(ele->attribute("y"), v)) {
+        p.setY(v);
+    }
+    if (getStringRealValue(ele->attribute("w"), v)) {
+        p.setWidth(v);
+    }
+    if (getStringRealValue(ele->attribute("h"), v)) {
+        p.setHeight(v);
+    }
+    return true;
+}
+
+/**
+ * @brief 生成一个QPoint标签
+ * @param p
+ * @param tagName 标签名
+ * @param doc
+ * @return
+ */
+QDomElement DAXMLFileInterface::makeElement(const QPoint& v, const QString& tagName, QDomDocument* doc)
+{
+    QDomElement ele = doc->createElement(tagName);
+    ele.setAttribute("class", "QPoint");
+    ele.setAttribute("x", QString::number(v.x()));
+    ele.setAttribute("y", QString::number(v.y()));
+    return ele;
+}
+
+/**
+ * @brief 加载QPoint
+ * @param p
+ * @param ele
+ * @return 此函数不会返回false
+ */
+bool DAXMLFileInterface::loadElement(QPoint& p, const QDomElement* ele)
+{
+    int v;
+    if (getStringIntValue(ele->attribute("x"), v)) {
+        p.setX(v);
+    }
+    if (getStringIntValue(ele->attribute("y"), v)) {
+        p.setY(v);
+    }
+    return true;
+}
+/**
+ * @brief 生成一个QPointF标签
+ * @param p
+ * @param tagName 标签名
+ * @param doc
+ * @return
+ */
+QDomElement DAXMLFileInterface::makeElement(const QPointF& v, const QString& tagName, QDomDocument* doc)
+{
+    QDomElement ele = doc->createElement(tagName);
+    ele.setAttribute("class", "QPointF");
+    ele.setAttribute("x", QString::number(v.x()));
+    ele.setAttribute("y", QString::number(v.y()));
+    return ele;
+}
+
+/**
+ * @brief 加载QPointF
+ * @param p
+ * @param ele
+ * @return 此函数不会返回false
+ */
+bool DAXMLFileInterface::loadElement(QPointF& p, const QDomElement* ele)
+{
+    qreal v;
+    if (getStringRealValue(ele->attribute("x"), v)) {
+        p.setX(v);
+    }
+    if (getStringRealValue(ele->attribute("y"), v)) {
+        p.setY(v);
+    }
+    return true;
+}
+/**
  * @brief 生成一个标准画笔标签
  * @param p
  * @param tagName 标签名
@@ -53,6 +200,7 @@ DAXMLFileInterface::~DAXMLFileInterface()
 QDomElement DAXMLFileInterface::makeElement(const QPen& v, const QString& tagName, QDomDocument* doc)
 {
     QDomElement ele = doc->createElement(tagName);
+    ele.setAttribute("class", "QPen");
     ele.setAttribute("color", v.color().name());
     ele.setAttribute("width", v.widthF());
     ele.setAttribute("style", enumToString(v.style()));
@@ -64,7 +212,6 @@ QDomElement DAXMLFileInterface::makeElement(const QPen& v, const QString& tagNam
  * @param p
  * @param ele
  * @return 此函数不会返回false
- * @sa makePenElement
  */
 bool DAXMLFileInterface::loadElement(QPen& p, const QDomElement* ele)
 {
@@ -91,6 +238,7 @@ QDomElement DAXMLFileInterface::makeElement(const QBrush& v, const QString& tagN
 {
     QDomElement ele  = doc->createElement(tagName);
     Qt::BrushStyle s = v.style();
+    ele.setAttribute("class", "QBrush");
     ele.setAttribute("style", enumToString(s));
     switch (s) {
     case Qt::NoBrush:
@@ -166,6 +314,7 @@ bool DAXMLFileInterface::loadElement(QBrush& p, const QDomElement* ele)
 QDomElement DAXMLFileInterface::makeElement(const QFont& v, const QString& tagName, QDomDocument* doc)
 {
     QDomElement fontEle = doc->createElement(tagName);
+    fontEle.setAttribute("class", "QFont");
     fontEle.setAttribute("bold", v.bold());
     fontEle.setAttribute("italic", v.italic());
     fontEle.setAttribute("pointSizeF", v.pointSizeF());
@@ -196,7 +345,8 @@ bool DAXMLFileInterface::loadElement(QFont& p, const QDomElement* ele)
 QDomElement DAXMLFileInterface::makeElement(const QVariant& v, const QString& tagName, QDomDocument* doc)
 {
     QDomElement varEle = doc->createElement(tagName);
-    QString vartype    = v.typeName();
+    varEle.setAttribute("class", "QVariant");
+    QString vartype = v.typeName();
     varEle.setAttribute("type", vartype);
     //特殊对待
     switch (v.type()) {
@@ -681,8 +831,7 @@ QString DA::variantToString(const QVariant& var)
 
     case QVariant::LineF: {
         QLineF d = var.toLineF();
-        return (QString("%1;%2;%3;%4")
-                .arg(doubleToString(d.x1()), doubleToString(d.y1()), doubleToString(d.x2()), doubleToString(d.y2())));
+        return (QString("%1;%2;%3;%4").arg(doubleToString(d.x1()), doubleToString(d.y1()), doubleToString(d.x2()), doubleToString(d.y2())));
     }
 
     case QVariant::List: {
@@ -709,36 +858,36 @@ QString DA::variantToString(const QVariant& var)
     case QVariant::Transform: {
         QTransform d = var.value< QTransform >();
         return (QString("%1;%2;%3;%4;%5;%6;%7;%8;%9")
-                .arg(d.m11())
-                .arg(d.m12())
-                .arg(d.m13())
-                .arg(d.m21())
-                .arg(d.m22())
-                .arg(d.m23())
-                .arg(d.m31())
-                .arg(d.m32())
-                .arg(d.m33()));
+                        .arg(d.m11())
+                        .arg(d.m12())
+                        .arg(d.m13())
+                        .arg(d.m21())
+                        .arg(d.m22())
+                        .arg(d.m23())
+                        .arg(d.m31())
+                        .arg(d.m32())
+                        .arg(d.m33()));
     }
 
     case QVariant::Matrix4x4: {
         QMatrix4x4 d = var.value< QMatrix4x4 >();
         return (QString("%1;%2;%3;%4;%5;%6;%7;%8;%9;%10;%11;%12;%13;%14;%15;%16")
-                .arg(d(0, 0))
-                .arg(d(0, 1))
-                .arg(d(0, 2))
-                .arg(d(0, 3))
-                .arg(d(1, 0))
-                .arg(d(1, 1))
-                .arg(d(1, 2))
-                .arg(d(1, 3))
-                .arg(d(2, 0))
-                .arg(d(2, 1))
-                .arg(d(2, 2))
-                .arg(d(2, 3))
-                .arg(d(3, 0))
-                .arg(d(3, 1))
-                .arg(d(3, 2))
-                .arg(d(3, 3)));
+                        .arg(d(0, 0))
+                        .arg(d(0, 1))
+                        .arg(d(0, 2))
+                        .arg(d(0, 3))
+                        .arg(d(1, 0))
+                        .arg(d(1, 1))
+                        .arg(d(1, 2))
+                        .arg(d(1, 3))
+                        .arg(d(2, 0))
+                        .arg(d(2, 1))
+                        .arg(d(2, 2))
+                        .arg(d(2, 3))
+                        .arg(d(3, 0))
+                        .arg(d(3, 1))
+                        .arg(d(3, 2))
+                        .arg(d(3, 3)));
     }
 
     case QVariant::Palette: {
@@ -800,8 +949,7 @@ QString DA::variantToString(const QVariant& var)
 
     case QVariant::RectF: {
         QRectF d = var.toRectF();
-        return (QString("%1;%2;%3;%4")
-                .arg(doubleToString(d.x()), doubleToString(d.y()), doubleToString(d.width()), doubleToString(d.height())));
+        return (QString("%1;%2;%3;%4").arg(doubleToString(d.x()), doubleToString(d.y()), doubleToString(d.width()), doubleToString(d.height())));
     }
 
     case QVariant::RegExp: {

@@ -252,7 +252,7 @@ bool DAXmlHelperPrivate::loadNodes(DAWorkFlowEditWidget* wfe, const QDomElement&
         if (nullptr == node) {
             qWarning() << QObject::tr("workflow can not create note by "
                                       "metadata(prototype=%1,name=%2,group=%3),will skip this node")
-                              .arg(metadata.getNodePrototype(), metadata.getNodeName(), metadata.getGroup());
+                                  .arg(metadata.getNodePrototype(), metadata.getNodeName(), metadata.getGroup());
             continue;
         }
 
@@ -329,7 +329,7 @@ bool DAXmlHelperPrivate::loadNodeInPutOutputKey(DAAbstractNode::SharedPointer& n
             QDomElement nameEle = inputEle.firstChildElement("name");
             if (nameEle.isNull()) {
                 qWarning() << QObject::tr("node(prototype=%1,name=%2,group=%3) %4 tag loss child tag <name>")
-                                  .arg(node->getNodePrototype(), node->getNodeName(), node->getNodeGroup(), ks.at(i).nodeName());
+                                      .arg(node->getNodePrototype(), node->getNodeName(), node->getNodeGroup(), ks.at(i).nodeName());
                 continue;
             }
             QString key = nameEle.text();
@@ -353,7 +353,7 @@ bool DAXmlHelperPrivate::loadNodeInPutOutputKey(DAAbstractNode::SharedPointer& n
             QDomElement nameEle = outputEle.firstChildElement("name");
             if (nameEle.isNull()) {
                 qWarning() << QObject::tr("node(prototype=%1,name=%2,group=%3) %4 tag loss child tag <name>")
-                                  .arg(node->getNodePrototype(), node->getNodeName(), node->getNodeGroup(), ks.at(i).nodeName());
+                                      .arg(node->getNodePrototype(), node->getNodeName(), node->getNodeGroup(), ks.at(i).nodeName());
                 continue;
             }
             QString key = nameEle.text();
@@ -439,7 +439,7 @@ bool DAXmlHelperPrivate::loadNodeItem(DAWorkFlowGraphicsScene* scene, DAAbstract
     DAAbstractNodeGraphicsItem* item = node->createGraphicsItem();
     if (nullptr == item) {
         qWarning() << QObject::tr("node metadata(prototype=%1,name=%2,group=%3) can not create graphics item")
-                          .arg(node->getNodePrototype(), node->getNodeName(), node->getNodeGroup());
+                              .arg(node->getNodePrototype(), node->getNodeName(), node->getNodeGroup());
         return false;
     }
     item->loadFromXml(&ele);
@@ -470,31 +470,12 @@ void DAXmlHelperPrivate::saveNodeLinks(const DAWorkFlow* workflow, QDomDocument&
         toEle.setAttribute("id", link->toNode()->getID());
         toEle.setAttribute("name", link->toNodeLinkPoint().name);
 
-        QDomElement pointEle = doc.createElement("linkPoint");
-        pointEle.setAttribute("visible", link->isLinkPointNameVisible());
-        pointEle.setAttribute("fromTextColor", link->getLinkPointNameTextColor(DAGraphicsLinkItem::OrientationStart).name());
-        pointEle.setAttribute("toTextColor", link->getLinkPointNameTextColor(DAGraphicsLinkItem::OrientationEnd).name());
-        pointEle.setAttribute("fromPositionOffset", link->getLinkPointNamePositionOffset(DAGraphicsLinkItem::OrientationStart));
-        pointEle.setAttribute("toPositionOffset", link->getLinkPointNamePositionOffset(DAGraphicsLinkItem::OrientationEnd));
-        QDomElement endPointEle = doc.createElement("endPoint");
-        endPointEle.setAttribute("toType", DA::enumToString(link->getEndPointType(DAGraphicsLinkItem::OrientationEnd)));
-        endPointEle.setAttribute("fromType", DA::enumToString(link->getEndPointType(DAGraphicsLinkItem::OrientationStart)));
-        endPointEle.setAttribute("size", link->getEndPointSize());
-
-        QDomElement lineEle = doc.createElement("linkLine");
-        lineEle.setAttribute("style", DA::enumToString(link->getLinkLineStyle()));
-
-        QDomElement linePenEle = doc.createElement("linePen");
-        linePenEle.setAttribute("color", link->getLinePen().color().name());
-        linePenEle.setAttribute("style", (link->getLinePen().style()));
-        linePenEle.setAttribute("width", link->getLinePen().width());
-
         linkEle.appendChild(fromEle);
         linkEle.appendChild(toEle);
-        linkEle.appendChild(pointEle);
-        linkEle.appendChild(endPointEle);
-        linkEle.appendChild(lineEle);
-        linkEle.appendChild(linePenEle);
+
+        if (!link->saveToXml(&doc, &linkEle)) {
+            qWarning() << QObject::tr("linkitem save to xml return false");  // cn:链接线从xml加载信息返回了false
+        }
 
         nodeLinkEle.appendChild(linkEle);
     }
@@ -538,51 +519,16 @@ bool DAXmlHelperPrivate::loadNodeLinks(DAWorkFlowGraphicsScene* scene, DAWorkFlo
             qWarning() << QObject::tr("can not get item by node");
             continue;
         }
+        //建立链接线
         DAAbstractNodeLinkGraphicsItem* linkitem = fromItem->linkTo(fromKey, toItem, toKey);
         if (nullptr == linkitem) {
             qWarning() << QObject::tr("Unable to link to node %3's link point %4 through link point %2 of node %1")  // cn:节点%1无法通过连接点%2链接到节点%3的连接点%4
-                              .arg(fromItem->getNodeName(), fromKey, toItem->getNodeName(), toKey);
+                                  .arg(fromItem->getNodeName(), fromKey, toItem->getNodeName(), toKey);
             continue;
         }
-        QDomElement pointEle    = linkEle.firstChildElement("linkPoint");
-        QDomElement endPointEle = linkEle.firstChildElement("endPoint");
-        QDomElement lineEle     = linkEle.firstChildElement("linkLine");
-        QDomElement linePenEle  = linkEle.firstChildElement("linePen");
-        if (!pointEle.isNull()) {
-            bool visible = pointEle.attribute("visible").toInt();
-            QColor fromTextColor(pointEle.attribute("fromTextColor"));
-            QColor toTextColor(pointEle.attribute("toTextColor"));
-            int fromPositionOffset = pointEle.attribute("fromPositionOffset").toInt();
-            int toPositionOffset   = pointEle.attribute("toPositionOffset").toInt();
-            linkitem->setLinkPointNameVisible(visible);
-            linkitem->setLinkPointNamePositionOffset(fromPositionOffset, DAGraphicsLinkItem::OrientationStart);
-            linkitem->setLinkPointNamePositionOffset(toPositionOffset, DAGraphicsLinkItem::OrientationEnd);
-            linkitem->setLinkPointNameTextColor(fromTextColor, DAGraphicsLinkItem::OrientationStart);
-            linkitem->setLinkPointNameTextColor(toTextColor, DAGraphicsLinkItem::OrientationEnd);
-        }
-        if (!lineEle.isNull()) {
-            DAGraphicsLinkItem::LinkLineStyle s = DA::stringToEnum(lineEle.attribute("style"), DAGraphicsLinkItem::LinkLineKnuckle);
-            linkitem->setLinkLineStyle(s);
-        }
-        if (!endPointEle.isNull()) {
-            DAGraphicsLinkItem::EndPointType etTo = DA::stringToEnum(endPointEle.attribute("toType"), DAGraphicsLinkItem::EndPointNone);
-            DAGraphicsLinkItem::EndPointType etFrom = DA::stringToEnum(endPointEle.attribute("fromType"),
-                                                                       DAGraphicsLinkItem::EndPointNone);
-            int size                                = endPointEle.attribute("size").toInt();
-            linkitem->setEndPointType(DAGraphicsLinkItem::OrientationStart, etFrom);
-            linkitem->setEndPointType(DAGraphicsLinkItem::OrientationEnd, etTo);
-            if (size > 0) {
-                linkitem->setEndPointSize(size);
-            }
-        }
-        if (!linePenEle.isNull()) {
-            QColor pencolor(linePenEle.attribute("color"));
-            int width          = linePenEle.attribute("width").toInt();
-            Qt::PenStyle style = static_cast< Qt::PenStyle >(linePenEle.attribute("style").toInt());
-            QPen pen(pencolor);
-            pen.setWidth(width);
-            pen.setStyle(style);
-            linkitem->setLinePen(pen);
+        if (!linkitem->loadFromXml(&linkEle)) {
+            qWarning() << QObject::tr("linkitem load from xml return false")  // cn:链接线从xml加载信息返回了false
+                    ;
         }
         scene->addItem(linkitem);
         linkitem->updatePos();
@@ -848,7 +794,7 @@ qreal DAXmlHelper::attributeToDouble(const QDomElement& item, const QString& att
     qreal r   = item.attribute(att).toDouble(&isok);
     if (!isok) {
         qWarning() << QObject::tr("The attribute %1=%2 under the tag %3 cannot be converted to double ")
-                          .arg(att, item.attribute(att), item.tagName());
+                              .arg(att, item.attribute(att), item.tagName());
     }
     return r;
 }

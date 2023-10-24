@@ -6,6 +6,7 @@
 #include <QFont>
 #include <QBrush>
 #include <QDomElement>
+#include <QPointF>
 #include <QVariant>
 class QDomDocument;
 namespace DA
@@ -23,6 +24,18 @@ public:
     virtual bool loadFromXml(const QDomElement* parentElement)                  = 0;
 
 public:
+    //标准保存—— QRect
+    static QDomElement makeElement(const QRect& v, const QString& tagName, QDomDocument* doc);
+    static bool loadElement(QRect& p, const QDomElement* ele);
+    //标准保存—— QRectF
+    static QDomElement makeElement(const QRectF& v, const QString& tagName, QDomDocument* doc);
+    static bool loadElement(QRectF& p, const QDomElement* ele);
+    //标准保存—— QPoint
+    static QDomElement makeElement(const QPoint& v, const QString& tagName, QDomDocument* doc);
+    static bool loadElement(QPoint& p, const QDomElement* ele);
+    //标准保存—— QPointF
+    static QDomElement makeElement(const QPointF& v, const QString& tagName, QDomDocument* doc);
+    static bool loadElement(QPointF& p, const QDomElement* ele);
     //标准保存—— QPen 画笔
     static QDomElement makeElement(const QPen& v, const QString& tagName, QDomDocument* doc);
     static bool loadElement(QPen& p, const QDomElement* ele);
