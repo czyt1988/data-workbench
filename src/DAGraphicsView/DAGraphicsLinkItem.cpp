@@ -374,9 +374,9 @@ void DAGraphicsLinkItem::paintEndPoint(QPainter* painter,
         //
         QPointF pTrend = calcPainterPathEndPoint(linkPath, true, 18);  //折线的延长线是20，因此这里设定18
         QLineF lf(pStart, pTrend);
-        //先旋转再移动
-        painter->rotate(360 - lf.angle());  // painter的rotate是顺时针旋转，而line的angle是逆时针
+        //先移动再旋转
         painter->translate(pStart);
+        painter->rotate(360 - lf.angle());  // painter的rotate是顺时针旋转，而line的angle是逆时针
         painter->drawPath(startPainterPath);
         painter->restore();
     }
@@ -385,7 +385,7 @@ void DAGraphicsLinkItem::paintEndPoint(QPainter* painter,
         painter->save();
         QPointF pTrend = calcPainterPathEndPoint(linkPath, false, 18);  //折线的延长线是20，因此这里设定18
         QLineF lf(pEnd, pTrend);
-        //先旋转再移动
+        //先移动再旋转
         painter->translate(pEnd);
         painter->rotate(360 - lf.angle());  // painter的rotate是顺时针旋转，而line的angle是逆时针
         painter->drawPath(endPainterPath);

@@ -478,6 +478,7 @@ void DAXmlHelperPrivate::saveNodeLinks(const DAWorkFlow* workflow, QDomDocument&
         }
 
         nodeLinkEle.appendChild(linkEle);
+        _haveBeenSaveNodeItem.insert(link);  //加入以保存列表避免重复保存
     }
 
     workflowEle.appendChild(nodeLinkEle);

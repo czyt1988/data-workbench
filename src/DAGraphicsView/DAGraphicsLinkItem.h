@@ -110,7 +110,7 @@ public:
 
     //生成painterpath
     virtual QPainterPath generateLinePainterPath(const QPointF& fromPoint, const QPointF& toPoint, LinkLineStyle linestyle = LinkLineStraight);
-    //生成箭头，所有生成的箭头都是尖朝上（↑），绘制的时候需要根据情况进行旋转
+    //生成箭头，绘制的时候需要根据情况进行旋转
     virtual QPainterPath generateEndPointPainterPath(EndPointType epType, int size);
     //在将要结束链接的回调，通过此回调可以执行完成链接后的相关操作，例如判断末端链接的图元，从而实现路径调整
     //如果此函数返回false，将代表不接受链接，这时候，结束动作会被跳过，也就是鼠标点击是没有无法结束链接而生成连接线
