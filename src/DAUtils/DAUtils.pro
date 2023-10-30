@@ -23,15 +23,19 @@ HEADERS += \
     DAAlgorithm.h \
     DAAutoincrementSeries.h \
     DAColorTheme.h \
+    DAColumnTable.h \
+    DAHashTable.h \
     DAIndexedVector.h \
     DAProperties.h \
     DAQtContainerUtil.h \
+    DARowTable.h \
     DAStringUtil.h \
     DAUtilsAPI.h \
     DATable.h \
     DATree.h \
     DATreeItem.h \
     DATranslatorManeger.h \
+    DAVector.h \
     DAXMLConfig.h \
     DAXMLFileInterface.h \
     DACsvStream.h \

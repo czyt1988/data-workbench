@@ -8,6 +8,7 @@ system(mkdir $$saFixPath($${BIN_PLUGIN_DIR}))#创建插件路径
 TEMPLATE = subdirs
 SUBDIRS += \
           $$PWD/DAUtils \
+          $$PWD/DAAxOfficeWrapper \
           $$PWD/DAMessageHandler \
           $$PWD/DAPyBindQt \
           $$PWD/DAPyScripts \
