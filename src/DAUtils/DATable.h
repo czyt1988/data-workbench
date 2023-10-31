@@ -36,6 +36,18 @@ public:
         mData  = std::move(other.mData);
         mShape = std::move(other.mShape);
     }
+    DATable< T >& operator=(const DATable& other)
+    {
+        mData  = other.mData;
+        mShape = other.mShape;
+        return *this;
+    }
+    DATable< T >& operator=(DATable&& other)
+    {
+        mData  = std::move(other.mData);
+        mShape = std::move(other.mShape);
+        return *this;
+    }
     /**
      * @brief 获取表的shape，first：最大行，second：最大列
      * @return
@@ -204,6 +216,10 @@ public:
     {
         return mData.begin();
     }
+    bool empty() const
+    {
+        return mData.empty();
+    }
 
 private:
     DAHashTable< T, int > mData;
@@ -211,5 +227,25 @@ private:
 };
 
 }  // end DA
+
+template< typename T >
+QDebug operator<<(QDebug debug, const DA::DATable< T >& t)
+{
+    QDebugStateSaver saver(debug);
+    int rs = t.rowCount();
+    int cs = t.columnCount();
+    for (int r = 0; r < rs; ++r) {
+        if (r != 0) {
+            debug << "\n";
+        }
+        for (int c = 0; c < cs; ++c) {
+            if (c != 0) {
+                debug << "\t";
+            }
+            debug.noquote() << t.at(r, c);
+        }
+    }
+    return (debug);
+}
 
 #endif  // DATABLE_H

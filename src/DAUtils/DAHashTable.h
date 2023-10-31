@@ -1,10 +1,11 @@
 #ifndef DAHASHTABLE_H
 #define DAHASHTABLE_H
 #include <unordered_map>
+#include "DAUtilsAPI.h"
 namespace DA
 {
 
-struct pair_hash
+struct DAUTILS_API pair_hash
 {
     template< class T1, class T2 >
     std::size_t operator()(const std::pair< T1, T2 >& p) const
@@ -30,6 +31,7 @@ class DAHashTable : public std::unordered_map< std::pair< row_index_type, col_in
 {
 public:
     using table_index_type = std::pair< row_index_type, col_index_type >;
+    using super_class      = std::unordered_map< std::pair< row_index_type, col_index_type >, T, hasher >;
 
 public:
     DAHashTable() : std::unordered_map< std::pair< row_index_type, col_index_type >, T, pair_hash >()
@@ -47,13 +49,23 @@ public:
         : std::unordered_map< std::pair< row_index_type, col_index_type >, T, pair_hash >(init)
     {
     }
+    DAHashTable< T, row_index_type, col_index_type, hasher >& operator=(const DAHashTable< T, row_index_type, col_index_type, hasher >& other)
+    {
+        super_class::operator=(other);
+        return *this;
+    }
+    DAHashTable< T, row_index_type, col_index_type, hasher >& operator=(DAHashTable< T, row_index_type, col_index_type, hasher >&& other)
+    {
+        super_class::operator=(other);
+        return *this;
+    }
     T& at(row_index_type r, col_index_type c)
     {
-        return at(std::make_pair(r, c));
+        return super_class::at(std::make_pair(r, c));
     }
     const T& at(row_index_type r, col_index_type c) const
     {
-        return at(std::make_pair(r, c));
+        return super_class::at(std::make_pair(r, c));
     }
     /**
      * @brief 计算表格的shape

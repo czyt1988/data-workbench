@@ -7,7 +7,8 @@ HEADERS += \
     $$PWD/DATreeModel.h \
     $$PWD/DADataManagerTableModel.h \
     $$PWD/DAMessageLogsModel.h \
-    $$PWD/DAPyDataFrameTableModule.h
+    $$PWD/DAPyDataFrameTableModule.h \
+    $$PWD/DAVariantTableModel.h
 
     
 
@@ -17,7 +18,8 @@ SOURCES += \
     $$PWD/DATreeModel.cpp \
     $$PWD/DADataManagerTableModel.cpp \
     $$PWD/DAMessageLogsModel.cpp \
-    $$PWD/DAPyDataFrameTableModule.cpp
+    $$PWD/DAPyDataFrameTableModule.cpp \
+    $$PWD/DAVariantTableModel.cpp
 
     
 

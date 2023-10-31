@@ -241,12 +241,14 @@ DAAxObjectWordTableWrapper DAAxObjectWordWrapper::PrivateData::insertTableAtMark
         return DAAxObjectWordTableWrapper(nullptr);
     }
     QAxObject* table = tables->querySubObject("Add(QVariant,int,int)", range->asVariant(), rowCnt, colCnt);
-    //    for (int i = 1; i <= 6; i++) {
-    //        QString str        = QString("Borders(-%1)").arg(i);
-    //        QAxObject* borders = table->querySubObject(str.toLocal8Bit().constData());
-    //        borders->dynamicCall("SetLineStyle(int)", 1);
-    //    }
-    table->setProperty("Style", QString(u8"网格型"));
+    for (int i = 1; i <= 6; i++) {
+        QString str = QString("Borders(-%1)").arg(i);
+        if (QAxObject* borders = table->querySubObject(str.toLocal8Bit().constData())) {
+            borders->dynamicCall("SetLineStyle(int)", 1);
+            delete borders;
+        }
+    }
+    //    table->setProperty("Style", QString(u8"网格型"));
     table->dynamicCall("AutoFitBehavior(WdAutoFitBehavior)", 2);  //表格自动拉伸列 0固定  1根据内容调整  2 根据窗口调整
     return DAAxObjectWordTableWrapper(table);
 }
