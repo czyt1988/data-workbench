@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QAxObject>
 #include <QVariant>
+#include <optional>
 #include "DAAxOfficeWrapperGlobal.h"
 #include "DATable.h"
 namespace DA
@@ -38,7 +39,7 @@ public:
 
 public:
     //读取excel第sheetIndex的sheet的数据
-    static DATable< QVariant > readAllData(const QString& filename, int sheetIndex = 0);
+    static DATable< QVariant > readAllData(const QString& filename, int sheetIndex = 0, QString* errString = nullptr);
 };
 }
 

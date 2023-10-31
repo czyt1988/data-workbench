@@ -67,6 +67,7 @@ public:
 
 public:
     const QString cAppComControlName { "Excel.Application" };  ///< excel的程序名
+    const QString cAppComControlName2 { "kwps.Application" };  ///< excel的程序名
     QAxObject* mAxApp { nullptr };                             ///< Excel.Application
     QAxObject* mAxWorkbooks { nullptr };                       ///< Workbooks,父对象是mApp
     QAxObject* mAxWorkbook { nullptr };                        ///< Workbook,父对象是mAxWorkbooks/mApp
@@ -128,10 +129,11 @@ bool DAAxObjectExcelWrapper::PrivateData::isHaveWorkSheets() const
 
 bool DAAxObjectExcelWrapper::PrivateData::tryCreateComControl(QAxObject* obj)
 {
-    if (!obj->setControl(cAppComControlName)) {
-        return false;
+    bool res = obj->setControl(cAppComControlName);
+    if (!res) {
+        res = obj->setControl(cAppComControlName2);
     }
-    return true;
+    return res;
 }
 
 void DAAxObjectExcelWrapper::PrivateData::setWindowVisible(bool on)
@@ -483,11 +485,14 @@ DATable< QVariant > DAAxObjectExcelWrapper::readAllData(int sheetIndex) const
     return d_ptr->getSheetAllData(sheetIndex);
 }
 
-DATable< QVariant > DAAxObjectExcelWrapper::readAllData(const QString& filename, int sheetIndex)
+DATable< QVariant > DAAxObjectExcelWrapper::readAllData(const QString& filename, int sheetIndex, QString* errString)
 {
     DATable< QVariant > res;
     DAAxObjectExcelWrapper excel;
-    if (excel.isValid()) {
+    if (!excel.isValid()) {
+        if (errString) {
+            *errString = QObject::tr("The local computer does not have Excel or WPS installed");  //当前计算机中没有安装excel或者wps
+        }
         return res;
     }
     if (!excel.open(filename)) {
