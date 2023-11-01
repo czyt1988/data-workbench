@@ -230,11 +230,13 @@ bool DAAxObjectExcelWrapper::PrivateData::saveAs(const QString& filename)
 void DAAxObjectExcelWrapper::PrivateData::close()
 {
     if (isHaveWorkbook()) {
+        qDebug() << "close Workbook";
         mAxWorkbook->dynamicCall("Close()");
     }
-    if (isHaveWorkbooks()) {
-        mAxWorkbooks->dynamicCall("Close()");
-    }
+//    if (isHaveWorkbooks()) {
+//        qDebug() << "close Workbooks";
+//        mAxWorkbooks->dynamicCall("Close()");
+//    }
 }
 
 void DAAxObjectExcelWrapper::PrivateData::release()
@@ -242,6 +244,7 @@ void DAAxObjectExcelWrapper::PrivateData::release()
     close();
     //理论所有的AxObject的父类都是mAxApp，因此务必保证mAxApp被删除
     if (isInitialize()) {
+        qDebug() << "quit excel";
         mAxApp->dynamicCall("Quit()");
     }
     mAxApp.reset(nullptr);

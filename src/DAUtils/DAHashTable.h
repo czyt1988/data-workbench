@@ -27,34 +27,34 @@ struct DAUTILS_API pair_hash
  * @endcode
  */
 template< typename T, typename row_index_type = std::size_t, typename col_index_type = row_index_type, typename hasher = pair_hash >
-class DAHashTable : public std::unordered_map< std::pair< row_index_type, col_index_type >, T, hasher >
+class da_hash_table : public std::unordered_map< std::pair< row_index_type, col_index_type >, T, hasher >
 {
 public:
     using table_index_type = std::pair< row_index_type, col_index_type >;
     using super_class      = std::unordered_map< std::pair< row_index_type, col_index_type >, T, hasher >;
 
 public:
-    DAHashTable() : std::unordered_map< std::pair< row_index_type, col_index_type >, T, pair_hash >()
+    da_hash_table() : std::unordered_map< std::pair< row_index_type, col_index_type >, T, pair_hash >()
     {
     }
-    DAHashTable(const DAHashTable& other)
+    da_hash_table(const da_hash_table& other)
         : std::unordered_map< std::pair< row_index_type, col_index_type >, T, pair_hash >(other)
     {
     }
-    DAHashTable(DAHashTable&& other)
+    da_hash_table(da_hash_table&& other)
         : std::unordered_map< std::pair< row_index_type, col_index_type >, T, pair_hash >(other)
     {
     }
-    DAHashTable(const std::initializer_list< T >& init)
+    da_hash_table(const std::initializer_list< T >& init)
         : std::unordered_map< std::pair< row_index_type, col_index_type >, T, pair_hash >(init)
     {
     }
-    DAHashTable< T, row_index_type, col_index_type, hasher >& operator=(const DAHashTable< T, row_index_type, col_index_type, hasher >& other)
+    da_hash_table< T, row_index_type, col_index_type, hasher >& operator=(const da_hash_table< T, row_index_type, col_index_type, hasher >& other)
     {
         super_class::operator=(other);
         return *this;
     }
-    DAHashTable< T, row_index_type, col_index_type, hasher >& operator=(DAHashTable< T, row_index_type, col_index_type, hasher >&& other)
+    da_hash_table< T, row_index_type, col_index_type, hasher >& operator=(da_hash_table< T, row_index_type, col_index_type, hasher >&& other)
     {
         super_class::operator=(other);
         return *this;
@@ -89,6 +89,7 @@ public:
             if (i->first.second > minc) {
                 minc = i->first.second;
             }
+            ++i;
         }
         return table_index_type(minr, minc);
     }

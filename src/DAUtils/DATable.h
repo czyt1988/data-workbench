@@ -4,6 +4,7 @@
 #include <QDebug>
 // std
 #include <memory>
+#include <functional>
 // DA
 #include "DAAlgorithm.h"
 #include "DAHashTable.h"
@@ -16,11 +17,13 @@ class DATable
 {
 public:
     using Type               = T;
-    using value_type         = T;  //兼容std
-    using IndexType          = std::pair< int, int >;
-    using TableType          = DAHashTable< T, int >;
-    using TableIterator      = typename DAHashTable< T, int >::iterator;
-    using TableConstIterator = typename DAHashTable< T, int >::const_iterator;
+    using IndexType          = int;
+    using IndexPair          = std::pair< IndexType, IndexType >;
+    using TableType          = da_hash_table< T, IndexType >;
+    using TableIterator      = typename TableType::iterator;
+    using TableConstIterator = typename TableType::const_iterator;
+    using value_type         = typename TableType::value_type;  // 兼容std
+    using PredFun            = std::function< bool(const value_type&) >;
 
 public:
     DATable() : mShape(0, 0)
@@ -49,10 +52,24 @@ public:
         return *this;
     }
     /**
+     * @brief 单元格是否有内容
+     * @param r
+     * @param c
+     * @return
+     */
+    bool contain(int r, int c) const
+    {
+        return (mData.cend() != mData.find({ r, c }));
+    }
+    bool contain(IndexPair i) const
+    {
+        return (mData.cend() != mData.find(i));
+    }
+    /**
      * @brief 获取表的shape，first：最大行，second：最大列
      * @return
      */
-    IndexType getShape() const
+    IndexPair getShape() const
     {
         return mShape;
     }
@@ -64,11 +81,11 @@ public:
     {
         return mData.at(r, c);
     }
-    const T& at(const IndexType& i) const
+    const T& at(const IndexPair& i) const
     {
         return mData.at(i);
     }
-    T& at(const IndexType& i)
+    T& at(const IndexPair& i)
     {
         return mData.at(i);
     }
@@ -76,24 +93,34 @@ public:
     {
         return at(r, c);
     }
-    T cell(const IndexType& i) const
+    T cell(const IndexPair& i) const
     {
         return at(i);
     }
-    T& operator[](const IndexType& i)
+    T& operator[](const IndexPair& i)
     {
-        if (i.first > mShape.first) {
-            mShape.first = i.first;
-        }
-        if (i.second > mShape.second) {
-            mShape.second = i.second;
-        }
+        reflashShape(i);
         return mData[ i ];
     }
-    const T& operator[](const IndexType& i) const
+    const T& operator[](const IndexPair& i) const
     {
         return mData[ i ];
     }
+    /**
+     * @brief 插入内容
+     * @param k
+     * @param v
+     */
+    void set(const IndexPair& k, const T& v)
+    {
+        mData[ k ] = v;
+        reflashShape(k);
+    }
+    void set(IndexType row, IndexType col, const T& v)
+    {
+        set(IndexPair(row, col), v);
+    }
+
     /**
      * @brief 表的最大行数
      * @return
@@ -139,9 +166,9 @@ public:
         auto i = mData.find({ r, c });
         if (i != mData.end()) {
             mData.erase(i);
-            //判断是否触发reshape
+            // 判断是否触发reshape
             if (r == mShape.first || c == mShape.second) {
-                //但凡有一边接触到边界，在删除后都有重新计算边界
+                // 但凡有一边接触到边界，在删除后都有重新计算边界
                 recalcShape();
             }
             return true;
@@ -153,7 +180,7 @@ public:
      * @param i 索引
      * @return
      */
-    bool removeCell(const IndexType& i)
+    bool removeCell(const IndexPair& i)
     {
         return removeCell(i.first, i.second);
     }
@@ -164,7 +191,7 @@ public:
     void clear()
     {
         mData.clear();
-        mShape = IndexType(0, 0);
+        mShape = IndexPair(0, 0);
     }
     /**
      * @brief 获取内部的table
@@ -184,21 +211,21 @@ public:
      * @param i
      * @return
      */
-    TableConstIterator find(const IndexType& i) const
+    TableConstIterator find(const IndexPair& i) const
     {
         return mData.find(i);
     }
     TableConstIterator find(int r, int c) const
     {
-        return find(IndexType(r, c));
+        return find(IndexPair(r, c));
     }
-    TableIterator find(const IndexType& i)
+    TableIterator find(const IndexPair& i)
     {
         return mData.find(i);
     }
     TableIterator find(int r, int c)
     {
-        return find(IndexType(r, c));
+        return find(IndexPair(r, c));
     }
     TableConstIterator end() const
     {
@@ -220,10 +247,81 @@ public:
     {
         return mData.empty();
     }
+    /**
+     * @brief 按条件删除元素
+     * @param pred
+     * @return 返回元素的个数
+     */
+    std::size_t erase_if(PredFun pred)
+    {
+        auto old_size = size();
+        for (auto i = mData.begin(), last = mData.end(); i != last;) {
+            if (pred(*i)) {
+                i = mData.erase(i);
+            } else {
+                ++i;
+            }
+        }
+        recalcShape();
+        return old_size - size();
+    }
+    /**
+     * @brief 移除一列，所有大于此索引的列向左移动
+     * @param col
+     */
+    void dropColumn(IndexType col)
+    {
+        // 分两步，第一步删除，第二部移动
+        // 先把列号等于col的移除
+        std::vector< value_type > temp;
+        std::ignore = erase_if([ col, &temp ](const value_type& v) -> bool {
+            if (v.first.second == col) {
+                return true;
+            } else if (v.first.second > col) {
+                // 大于这个列的也要删除，但要缓存起来
+                temp.emplace_back(v);
+                return true;
+            }
+            return false;
+        });
+        // 再把列号大于col的全部减去1
+        std::for_each(temp.begin(), temp.end(), [ this ](const value_type& v) {
+            IndexPair k = v.first;
+            k.second -= 1;
+            this->operator[](k) = v.second;
+        });
+        recalcShape();
+    }
+
+    /**
+     * @brief 按照trFun遍历所有元素，并返回一个新的table
+     * @param trFun
+     * @return
+     */
+    template< typename OtherType >
+    DATable< OtherType > transfered(std::function< OtherType(const value_type& v) > trFun) const
+    {
+        DATable< OtherType > other;
+        for (auto i = mData.cbegin(), last = mData.cend(); i != last; ++i) {
+            other[ i.first ] = trFun(*i);
+        }
+        return other;
+    }
 
 private:
-    DAHashTable< T, int > mData;
-    IndexType mShape;
+    void reflashShape(const IndexPair& k)
+    {
+        if (k.first > mShape.first) {
+            mShape.first = k.first;
+        }
+        if (k.second > mShape.second) {
+            mShape.second = k.second;
+        }
+    }
+
+private:
+    TableType mData;
+    IndexPair mShape;
 };
 
 }  // end DA

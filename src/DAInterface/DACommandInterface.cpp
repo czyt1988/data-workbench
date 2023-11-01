@@ -44,4 +44,9 @@ void DACommandInterface::addStack(QUndoStack* stack)
 {
     d_ptr->mUndoGroup.addStack(stack);
 }
+
+void DACommandInterface::removeStack(QUndoStack* stack)
+{
+    d_ptr->mUndoGroup.removeStack(stack);
+}
 }  // namespace DA

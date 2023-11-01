@@ -28,6 +28,8 @@ public:
     QUndoGroup& undoGroup();
     //添加stack
     void addStack(QUndoStack* stack);
+    //移除stack
+    void removeStack(QUndoStack* stack);
 };
 }  // namespace DA
 #endif  // DACOMMANDINTERFACE_H
