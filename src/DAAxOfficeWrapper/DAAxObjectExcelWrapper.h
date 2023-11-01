@@ -36,6 +36,8 @@ public:
     QStringList getSheetsName() const;
     //读取所有数据
     DATable< QVariant > readAllData(int sheetIndex = 0) const;
+    //关闭
+    void close();
 
 public:
     //读取excel第sheetIndex的sheet的数据

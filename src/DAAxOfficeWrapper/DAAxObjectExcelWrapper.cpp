@@ -12,6 +12,7 @@ class DAAxObjectExcelWrapper::PrivateData
     DA_DECLARE_PUBLIC(DAAxObjectExcelWrapper)
 public:
     PrivateData(DAAxObjectExcelWrapper* p);
+    ~PrivateData();
     //初始化，加载app
     bool initialize(bool visible = false, bool displayAlerts = false);
     //判断是否初始化完成
@@ -68,7 +69,7 @@ public:
 public:
     const QString cAppComControlName { "Excel.Application" };  ///< excel的程序名
     const QString cAppComControlName2 { "kwps.Application" };  ///< excel的程序名
-    QAxObject* mAxApp { nullptr };                             ///< Excel.Application
+    std::unique_ptr< QAxObject > mAxApp;                       ///< Excel.Application
     QAxObject* mAxWorkbooks { nullptr };                       ///< Workbooks,父对象是mApp
     QAxObject* mAxWorkbook { nullptr };                        ///< Workbook,父对象是mAxWorkbooks/mApp
     QAxObject* mAxWorkSheets { nullptr };                      ///< WorkSheets,
@@ -80,10 +81,15 @@ DAAxObjectExcelWrapper::PrivateData::PrivateData(DAAxObjectExcelWrapper* p) : q_
     initialize();
 }
 
+DAAxObjectExcelWrapper::PrivateData::~PrivateData()
+{
+    release();
+}
+
 bool DAAxObjectExcelWrapper::PrivateData::initialize(bool visible, bool displayAlerts)
 {
-    mAxApp = new QAxObject(q_ptr);
-    if (!tryCreateComControl(mAxApp)) {
+    mAxApp = std::make_unique< QAxObject >(q_ptr);
+    if (!tryCreateComControl(mAxApp.get())) {
         return false;
     }
     setWindowVisible(visible);
@@ -94,7 +100,7 @@ bool DAAxObjectExcelWrapper::PrivateData::initialize(bool visible, bool displayA
 
 bool DAAxObjectExcelWrapper::PrivateData::isInitialize() const
 {
-    return checkAxObjectValid(mAxApp);
+    return checkAxObjectValid(mAxApp.get());
 }
 
 bool DAAxObjectExcelWrapper::PrivateData::tryInitialize(bool visible, bool displayAlerts)
@@ -237,14 +243,8 @@ void DAAxObjectExcelWrapper::PrivateData::release()
     //理论所有的AxObject的父类都是mAxApp，因此务必保证mAxApp被删除
     if (isInitialize()) {
         mAxApp->dynamicCall("Quit()");
-        delete mAxApp;
-    } else {
-        if (mAxApp) {
-            //有可能初始化失败，但这个时候AxObject已经创建了
-            delete mAxApp;
-        }
     }
-
+    mAxApp.reset(nullptr);
     mAxApp        = nullptr;
     mAxWorkbooks  = nullptr;
     mAxWorkbook   = nullptr;
@@ -483,6 +483,14 @@ QStringList DAAxObjectExcelWrapper::getSheetsName() const
 DATable< QVariant > DAAxObjectExcelWrapper::readAllData(int sheetIndex) const
 {
     return d_ptr->getSheetAllData(sheetIndex);
+}
+
+/**
+ * @brief 关闭
+ */
+void DAAxObjectExcelWrapper::close()
+{
+    d_ptr->close();
 }
 
 DATable< QVariant > DAAxObjectExcelWrapper::readAllData(const QString& filename, int sheetIndex, QString* errString)
