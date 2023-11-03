@@ -24,7 +24,6 @@ HEADERS += \
     DAAutoincrementSeries.h \
     DAColorTheme.h \
     DAColumnTable.h \
-    DAHashTable.h \
     DAIndexedVector.h \
     DAProperties.h \
     DAQtContainerUtil.h \
@@ -41,6 +40,8 @@ HEADERS += \
     DACsvStream.h \
     DAXMLProtocol.h \
     DAMimeData.h \
+    da_hash_table.h \
+    da_vector_table.h
 
 
 SOURCES += \

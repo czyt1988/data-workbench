@@ -1,5 +1,5 @@
-#ifndef DAHASHTABLE_H
-#define DAHASHTABLE_H
+#ifndef DA_HASH_TABLE_H
+#define DA_HASH_TABLE_H
 #include <unordered_map>
 #include "DAUtilsAPI.h"
 namespace DA
@@ -17,13 +17,13 @@ struct DAUTILS_API pair_hash
 };
 
 /**
- * @brief 基于std::unordered_map组成的松散table
- * key为std::pair< row_index_type, col_index_type >
+ * @brief 鍩轰簬std::unordered_map缁勬垚鐨勬澗鏁able
+ * key涓簊td::pair< row_index_type, col_index_type >
  *
  * @code
- * DAHashTable table<double>;// 行列由std::size_t组成索引，值为double的table
- * DAHashTable table<double,int>;// 行列由int组成索引，值为double的table
- * DAHashTable table<double,std::size_t,std::string>;// 行由std::size_t组成索引,列由std::string组成索引（类似excel），值为double的table
+ * DAHashTable table<double>;// 琛屽垪鐢眘td::size_t缁勬垚绱㈠紩锛屽€间负double鐨則able
+ * DAHashTable table<double,int>;// 琛屽垪鐢眎nt缁勬垚绱㈠紩锛屽€间负double鐨則able
+ * DAHashTable table<double,std::size_t,std::string>;// 琛岀敱std::size_t缁勬垚绱㈠紩,鍒楃敱std::string缁勬垚绱㈠紩锛堢被浼糴xcel锛夛紝鍊间负double鐨則able
  * @endcode
  */
 template< typename T, typename row_index_type = std::size_t, typename col_index_type = row_index_type, typename hasher = pair_hash >
@@ -68,9 +68,9 @@ public:
         return super_class::at(std::make_pair(r, c));
     }
     /**
-     * @brief 计算表格的shape
+     * @brief 璁＄畻琛ㄦ牸鐨剆hape
      *
-     * @note 此操作会遍历所有节点，时间复杂度为O(n)
+     * @note 姝ゆ搷浣滀細閬嶅巻鎵€鏈夎妭鐐癸紝鏃堕棿澶嶆潅搴︿负O(n)
      * @return
      */
     table_index_type shape() const
@@ -96,4 +96,4 @@ public:
 };
 
 }
-#endif  // DAHASHTABLE_H
+#endif  // DA_HASH_TABLE_H
