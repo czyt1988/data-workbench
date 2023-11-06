@@ -68,9 +68,9 @@ public:
         return super_class::at(std::make_pair(r, c));
     }
     /**
-     * @brief 璁＄畻琛ㄦ牸鐨剆hape
+     * @brief 计算最大的形状
      *
-     * @note 姝ゆ搷浣滀細閬嶅巻鎵€鏈夎妭鐐癸紝鏃堕棿澶嶆潅搴︿负O(n)
+     * @note 此函数会遍历所有的元素，时间复杂度为O(n)
      * @return
      */
     table_index_type shape() const
