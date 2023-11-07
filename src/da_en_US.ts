@@ -75,58 +75,58 @@
 <context>
     <name>DA::AppMainWindow</name>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="106"/>
+        <location filename="APP/AppMainWindow.cpp" line="108"/>
         <source>Data WorkFlow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="115"/>
+        <location filename="APP/AppMainWindow.cpp" line="117"/>
         <source>LanguageChange</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="136"/>
+        <location filename="APP/AppMainWindow.cpp" line="138"/>
         <source>success save ui state to %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="138"/>
+        <location filename="APP/AppMainWindow.cpp" line="140"/>
         <source>can not open %1,because:%2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="143"/>
+        <location filename="APP/AppMainWindow.cpp" line="145"/>
         <source>can not remove %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="179"/>
+        <location filename="APP/AppMainWindow.cpp" line="181"/>
         <source>untitle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="197"/>
         <location filename="APP/AppMainWindow.cpp" line="199"/>
+        <location filename="APP/AppMainWindow.cpp" line="201"/>
         <source>infomation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="197"/>
+        <location filename="APP/AppMainWindow.cpp" line="199"/>
         <source>Topology execution completed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="199"/>
+        <location filename="APP/AppMainWindow.cpp" line="201"/>
         <source>Topology execution failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="304"/>
+        <location filename="APP/AppMainWindow.cpp" line="306"/>
         <source>restore UI state error:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="314"/>
+        <location filename="APP/AppMainWindow.cpp" line="316"/>
         <source>can not read ui state file %1,because %2</source>
         <translation type="unfinished"></translation>
     </message>
@@ -736,11 +736,6 @@ Table Area</source>
     <message>
         <location filename="APP/DAAppDockingArea.cpp" line="69"/>
         <source>log</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppDockingArea.cpp" line="368"/>
-        <source>property</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1808,6 +1803,14 @@ Table Area</source>
     </message>
 </context>
 <context>
+    <name>DA::DASettingWidget</name>
+    <message>
+        <location filename="DACommonWidgets/DASettingWidget.cpp" line="96"/>
+        <source>page changed,but can not catch the sender widget</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DA::DAToolBox</name>
     <message>
         <location filename="DAGui/DAToolBox.cpp" line="88"/>
@@ -1860,6 +1863,14 @@ Table Area</source>
         <location filename="DAWorkFlow/DAWorkFlowExecuter.cpp" line="343"/>
         <source>execute node(not transmit), name=%1,type=%2</source>
         <oldsource>execute node, name=</oldsource>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAWorkFlowNodeItemSettingWidget</name>
+    <message>
+        <location filename="DAGui/DAWorkFlowNodeItemSettingWidget.cpp" line="266"/>
+        <source>property</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3002,58 +3013,58 @@ Table Area</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="41"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="43"/>
         <source>Item Remove</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="82"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="84"/>
         <source>Items Move</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="138"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="140"/>
         <source>Item Move</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="197"/>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="207"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="199"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="209"/>
         <source>Item Resize</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="278"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="280"/>
         <source>Item Resize Width</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="323"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="325"/>
         <source>Item Resize Height</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="368"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="370"/>
         <source>Item Rotation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAAbstractNodeLinkGraphicsItem.cpp" line="693"/>
+        <location filename="DAWorkFlow/DAAbstractNodeLinkGraphicsItem.cpp" line="401"/>
         <source>Item have not out put link point:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAAbstractNodeLinkGraphicsItem.cpp" line="699"/>
+        <location filename="DAWorkFlow/DAAbstractNodeLinkGraphicsItem.cpp" line="407"/>
         <source>Link from must attach an output point</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAAbstractNodeLinkGraphicsItem.cpp" line="741"/>
+        <location filename="DAWorkFlow/DAAbstractNodeLinkGraphicsItem.cpp" line="449"/>
         <source>Item have not in put link point:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAAbstractNodeLinkGraphicsItem.cpp" line="747"/>
+        <location filename="DAWorkFlow/DAAbstractNodeLinkGraphicsItem.cpp" line="455"/>
         <source>Link to must attach an input point</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3063,23 +3074,22 @@ Table Area</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DANodeGraphicsScene.cpp" line="303"/>
+        <location filename="DAWorkFlow/DANodeGraphicsScene.cpp" line="291"/>
         <source>can not create node,metadata name=%1(%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DACommandsForWorkFlowNodeGraphics.cpp" line="85"/>
+        <location filename="DAWorkFlow/DACommandsForWorkFlowNodeGraphics.cpp" line="94"/>
         <source>Remove Select Nodes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DACommandsForWorkFlowNodeGraphics.cpp" line="234"/>
         <location filename="DAWorkFlow/DACommandsForWorkFlowNodeGraphics.cpp" line="247"/>
         <source>Create Link</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DACommandsForWorkFlowNodeGraphics.cpp" line="300"/>
+        <location filename="DAWorkFlow/DACommandsForWorkFlowNodeGraphics.cpp" line="309"/>
         <source>Remove Link</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3421,55 +3431,65 @@ Table Area</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="529"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="536"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="477"/>
+        <source>linkitem save to xml return false</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAXmlHelper.cpp" line="507"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="514"/>
         <source>link info can not find node in workflow,id = %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="542"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="520"/>
         <source>can not get item by node</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="547"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="526"/>
         <source>Unable to link to node %3&apos;s link point %4 through link point %2 of node %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="900"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="531"/>
+        <source>linkitem load from xml return false</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="948"/>
         <source>link item can not attach from node item(%1) with key=%2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="905"/>
+        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="953"/>
         <source>link item can not attach to node item(%1) with key=%2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="927"/>
-        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="932"/>
+        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="975"/>
+        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="980"/>
         <source>Node %1 cannot find a connection point named %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="636"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="577"/>
         <source>There is a item that is not a DA Graphics Item system and cannot be saved</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="669"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="680"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="610"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="621"/>
         <source>Unable to load item information from file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="676"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="617"/>
         <source>Cannot create item by class name:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="856"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="797"/>
         <source>The attribute %1=%2 under the tag %3 cannot be converted to double </source>
         <translation type="unfinished"></translation>
     </message>
@@ -3602,6 +3622,28 @@ Table Area</source>
     <message>
         <location filename="APP/SettingPages/DAAppConfig.cpp" line="63"/>
         <source>config file(%1) loss &lt;configs&gt; tag</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="164"/>
+        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="195"/>
+        <source>unable initialize %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="169"/>
+        <source>file &quot;%1&quot; does not exist</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="176"/>
+        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="202"/>
+        <source>can not get excel workbook</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="505"/>
+        <source>The local computer does not have Excel or WPS installed</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
