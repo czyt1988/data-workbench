@@ -13,6 +13,8 @@ public:
     DATable< QVariant >* mData { nullptr };
     Qt::ItemFlags mItemFlags { Qt::ItemIsSelectable | Qt::ItemIsEnabled };
     QUndoStack mStack;
+
+    DAVariantTableModel::FpToDisplayString mToDisplayString { nullptr };  ///< 显示设置
 };
 
 DAVariantTableModel::PrivateData::PrivateData(DAVariantTableModel* p) : q_ptr(p)
@@ -51,7 +53,7 @@ DAVariantTableModelSetDataCommand::DAVariantTableModelSetDataCommand(DAVariantTa
 void DAVariantTableModelSetDataCommand::redo()
 {
     if (mValue.isNull()) {
-        //说明没有值要移除
+        // 说明没有值要移除
         mModel->removeTableCell(mRow, mCol);
     } else {
         mModel->setTableData(mRow, mCol, mValue);
@@ -61,7 +63,7 @@ void DAVariantTableModelSetDataCommand::redo()
 void DAVariantTableModelSetDataCommand::undo()
 {
     if (mOldValue.isNull()) {
-        //说明没有值要移除
+        // 说明没有值要移除
         mModel->removeTableCell(mRow, mCol);
     } else {
         mModel->setTableData(mRow, mCol, mOldValue);
@@ -176,6 +178,60 @@ QUndoStack* DAVariantTableModel::getUndoStack() const
     return &(d_ptr->mStack);
 }
 
+/**
+   @brief 设置表格
+
+   原来的redo/undo将清空
+   @param t
+ */
+void DAVariantTableModel::setTable(DATable< QVariant >* t)
+{
+    d_ptr->mStack.clear();
+    beginResetModel();
+    d_ptr->mData = t;
+    endResetModel();
+}
+
+/**
+   @brief 返回表格指针
+
+   @note 注意，这是一个非常危险的操作，因为DAVariantTableModel是带redo/undo的，如果用户对表进行写操作，
+   将和当前的redo/undo冲突
+
+   @return
+ */
+DATable< QVariant >* DAVariantTableModel::getTable() const
+{
+    return d_ptr->mData;
+}
+
+/**
+   @brief 清空表格
+ */
+void DAVariantTableModel::clearTable()
+{
+    if (d_ptr->mData) {
+        beginResetModel();
+        d_ptr->mData->clear();
+        endResetModel();
+    }
+}
+
+/**
+   @brief 注册显示函数，把QVariant转换为文本显示出来
+   @example 示例：
+   @code
+   model->registDisplayFun([](const QVariant& v) -> QString {
+        return QString::number(v.toDouble(), 'f');
+    });
+   @endcode
+   @param fp
+ */
+void DAVariantTableModel::registDisplayFun(DAVariantTableModel::FpToDisplayString fp)
+{
+    d_ptr->mToDisplayString = fp;
+}
+
 void DAVariantTableModel::redo()
 {
     d_ptr->mStack.redo();
@@ -205,6 +261,10 @@ QVariant DAVariantTableModel::getTableData(int row, int col) const
     auto i = d_ptr->mData->find(row, col);
     if (i == d_ptr->mData->end()) {
         return QVariant();
+    }
+    if (d_ptr->mToDisplayString) {
+        // 如果注册了显示函数指针，先调用显示函数指针
+        return d_ptr->mToDisplayString(i->second);
     }
     return i->second;
 }

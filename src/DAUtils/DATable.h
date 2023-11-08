@@ -8,7 +8,8 @@
 // DA
 #include "DAAlgorithm.h"
 #include "da_hash_table.h"
-
+#include "da_vector_table.h"
+#include "da_array_table.h"
 namespace DA
 {
 
@@ -138,6 +139,16 @@ public:
     {
         return mShape.second;
     }
+
+    /**
+       @brief 获取表格的形状
+       @return
+     */
+    IndexPair shape() const
+    {
+        return mShape;
+    }
+
     /**
      * @brief 重新计算shape
      */
@@ -167,7 +178,7 @@ public:
         if (i != mData.end()) {
             mData.erase(i);
             // 判断是否触发reshape
-            if (r == mShape.first || c == mShape.second) {
+            if (r == (mShape.first - 1) || c == (mShape.second - 1)) {
                 // 但凡有一边接触到边界，在删除后都有重新计算边界
                 recalcShape();
             }
@@ -254,16 +265,9 @@ public:
      */
     std::size_t erase_if(PredFun pred)
     {
-        auto old_size = size();
-        for (auto i = mData.begin(), last = mData.end(); i != last;) {
-            if (pred(*i)) {
-                i = mData.erase(i);
-            } else {
-                ++i;
-            }
-        }
+        std::size_t r = erase_if__(pred);
         recalcShape();
-        return old_size - size();
+        return r;
     }
     /**
      * @brief 移除一列，所有大于此索引的列向左移动
@@ -274,21 +278,21 @@ public:
         // 分两步，第一步删除，第二部移动
         // 先把列号等于col的移除
         std::vector< value_type > temp;
-        std::ignore = erase_if([ col, &temp ](const value_type& v) -> bool {
+        std::ignore = erase_if__([ col, &temp ](const value_type& v) -> bool {
             if (v.first.second == col) {
                 return true;
             } else if (v.first.second > col) {
-                // 大于这个列的也要删除，但要缓存起来
+                // 大于这个列的也要删除，但要把值缓存起来，并进行左移动
                 temp.emplace_back(v);
                 return true;
             }
             return false;
         });
         // 再把列号大于col的全部减去1
-        std::for_each(temp.begin(), temp.end(), [ this ](const value_type& v) {
+        std::for_each(temp.begin(), temp.end(), [ this ](value_type& v) {
             IndexPair k = v.first;
-            k.second -= 1;
-            this->operator[](k) = v.second;
+            --k.second;
+            mData[ k ] = v.second;
         });
         recalcShape();
     }
@@ -311,18 +315,102 @@ public:
 private:
     void reflashShape(const IndexPair& k)
     {
-        if (k.first > mShape.first) {
-            mShape.first = k.first;
+        if (k.first >= mShape.first) {
+            mShape.first = k.first + 1;
         }
-        if (k.second > mShape.second) {
-            mShape.second = k.second;
+        if (k.second >= mShape.second) {
+            mShape.second = k.second + 1;
         }
+    }
+    std::size_t erase_if__(PredFun pred)
+    {
+        auto old_size = size();
+        for (auto i = mData.begin(), last = mData.end(); i != last;) {
+            if (pred(*i)) {
+                i = mData.erase(i);
+            } else {
+                ++i;
+            }
+        }
+        return old_size - size();
     }
 
 private:
     TableType mData;
     IndexPair mShape;
 };
+
+/**
+   @brief 实现DATable向da_vector_table的转换
+   @param table
+   @param tr_fun 转换函数指针，如果不指定，默认为nullptr，直接进行赋值转换
+   @example 下面演示把一个DATable< QVariant >转换为da_vector_table< qreal >：
+   @code
+   DA::DATable< QVariant > table;
+   ...
+   DA::da_vector_table< qreal > res =
+            DA::table_transfered< qreal, QVariant >(table,[](const QVariant& v) -> qreal { return v.toDouble(); });
+   @return 转换后的结果
+ */
+template< typename T1, typename T2 >
+da_vector_table< T1 > table_transfered(const DATable< T2 >& table, std::function< T1(const T2&) > tr_fun)
+{
+    da_vector_table< T1 > res;
+    const typename DATable< T2 >::IndexPair sh = table.shape();
+    res.resize(sh.first, sh.second);
+    for (auto c = table.begin(); c != table.end(); ++c) {
+        res[ c->first.first ][ c->first.second ] = tr_fun(c->second);
+    }
+    return res;
+}
+template< typename T1, typename T2 >
+da_vector_table< T1 > table_transfered(const DATable< T2 >& table)
+{
+    da_vector_table< T1 > res;
+    const typename DATable< T2 >::IndexPair sh = table.shape();
+    res.resize(sh.first, sh.second);
+    for (auto c = table.begin(); c != table.end(); ++c) {
+        res[ c->first.first ][ c->first.second ] = c->second;
+    }
+    return res;
+}
+
+/**
+   @brief 实现da_vector_table向DATable的转换
+   @param table
+   @param tr_fun 转换函数指针，如果不指定，默认为nullptr，直接进行赋值转换
+   @example 下面演示把一个da_vector_table< qreal >转换为DATable< QVariant >：
+   @code
+   DA::da_vector_table< qreal > table;
+   ...
+   DA::DATable< QVariant > res = DA::table_transfered< QVariant, qreal >(table);
+   @endcode
+   @return
+ */
+template< typename T1, typename T2 >
+DATable< T1 > table_transfered(const da_vector_table< T2 >& table, std::function< T1(const T2&) > tr_fun)
+{
+    DATable< T1 > res;
+    auto r_cnt = table.row_count();
+    for (std::size_t r = 0; r < r_cnt; ++r) {
+        for (std::size_t c = 0; c < table[ r ].size(); ++c) {
+            res[ { r, c } ] = tr_fun(table[ r ][ c ]);
+        }
+    }
+    return res;
+}
+template< typename T1, typename T2 >
+DATable< T1 > table_transfered(const da_vector_table< T2 >& table)
+{
+    DATable< T1 > res;
+    std::size_t r_cnt = table.row_count();
+    for (std::size_t r = 0; r < r_cnt; ++r) {
+        for (std::size_t c = 0; c < table[ r ].size(); ++c) {
+            res[ { r, c } ] = table[ r ][ c ];
+        }
+    }
+    return res;
+}
 
 }  // end DA
 

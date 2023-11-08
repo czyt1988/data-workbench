@@ -3,6 +3,7 @@
 #include "DAGuiAPI.h"
 #include "DATable.h"
 #include <QAbstractTableModel>
+#include <functional>
 class QUndoStack;
 namespace DA
 {
@@ -18,6 +19,9 @@ class DAGUI_API DAVariantTableModel : public QAbstractTableModel
     friend class DAVariantTableModelSetDataCommand;
 
 public:
+    using FpToDisplayString = std::function< QString(const QVariant& v) >;
+
+public:
     DAVariantTableModel(QObject* p = nullptr);
     DAVariantTableModel(DATable< QVariant >* d, QObject* p = nullptr);
     ~DAVariantTableModel();
@@ -27,12 +31,19 @@ public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     virtual bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
     Qt::ItemFlags flags(const QModelIndex& index) const override;
-    //更新表格
+    // 更新表格
     void update();
-    //设置是否可编辑
+    // 设置是否可编辑
     void setEnableEdit(bool on = true);
-    //获取UndoStack
+    // 获取UndoStack
     QUndoStack* getUndoStack() const;
+    // 设置table
+    void setTable(DATable< QVariant >* t);
+    DATable< QVariant >* getTable() const;
+    // 清空表格
+    void clearTable();
+    // 注册显示函数，把QVariant转换为文本显示出来
+    void registDisplayFun(FpToDisplayString fp);
 public slots:
     void redo();
     void undo();

@@ -91,7 +91,7 @@ public:
             }
             ++i;
         }
-        return table_index_type(minr, minc);
+        return table_index_type(minr + 1, minc + 1);
     }
 };
 

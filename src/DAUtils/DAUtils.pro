@@ -40,6 +40,7 @@ HEADERS += \
     DACsvStream.h \
     DAXMLProtocol.h \
     DAMimeData.h \
+    da_array_table.h \
     da_hash_table.h \
     da_vector_table.h
 

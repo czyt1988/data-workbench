@@ -15,6 +15,19 @@ public:
     using table_index_type = std::pair< std::size_t, std::size_t >;  ///< 索引类型
     using super_class      = std::vector< std::vector< T > >;        ///< 父类
 
+    using value_type             = typename super_class::value_type;
+    using allocator_type         = typename super_class::allocator_type;
+    using pointer                = typename super_class::pointer;
+    using const_pointer          = typename super_class::const_pointer;
+    using reference              = typename super_class::reference;
+    using const_reference        = typename super_class::const_reference;
+    using size_type              = typename super_class::size_type;
+    using difference_type        = typename super_class::difference_type;
+    using iterator               = typename super_class::iterator;
+    using const_iterator         = typename super_class::const_iterator;
+    using reverse_iterator       = typename super_class::reverse_iterator;
+    using const_reverse_iterator = typename super_class::const_reverse_iterator;
+
 public:
     da_vector_table() : super_class()
     {
@@ -69,6 +82,15 @@ public:
     {
         append_column(il.begin(), il.end());
     }
+
+    reference at(std::size_t r, std::size_t c)
+    {
+        return at(r).at(c);
+    }
+    const_reference at(std::size_t r, std::size_t c) const
+    {
+        return at(r).at(c);
+    }
     /**
      * @brief 计算最大的形状
      * @return 此函数会遍历所有的行，时间复杂度为O(n)
@@ -89,6 +111,46 @@ public:
         }
         sh.first = size();
         return sh;
+    }
+    /**
+       @brief 行数
+       @return
+     */
+    std::size_t row_count() const
+    {
+        return super_class::size();
+    }
+
+    /**
+       @brief 列数
+       @note 由于有可能每行的列不一样，因此列数可指定行，默认为第一行
+       @note 如果要求最大的形状，使用@ref shape
+       @return
+     */
+    std::size_t column_count(std::size_t row = 0) const
+    {
+        return at(row).size();
+    }
+
+    /**
+       @brief 基于表格的resize
+       @param row 行数
+       @param col 列数
+     */
+    void resize(std::size_t row, std::size_t col)
+    {
+        super_class::resize(row);
+        for (auto i = begin(); i != end(); ++i) {
+            i->resize(col);
+        }
+    }
+    /**
+       @brief 基于表格的resize
+       @param sh
+     */
+    void resize(table_index_type sh)
+    {
+        resize(sh.first, sh.second);
     }
 };
 }
