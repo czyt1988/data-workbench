@@ -44,9 +44,9 @@ public:
     // spdlog日志
     void setLogger(const std::shared_ptr< spdlog::logger >& logger);
     spdlog::logger* logger();
-    //判断是否执行message handle，通过这个可以临时跳过一些捕获
-    void setEnableMessageHandle(bool on);
-    bool enableMessageHandle() const;
+    //判断是否捕获到全局队列中，通过这个可以临时跳过一些捕获
+    void setEnableMessageCaptureToQueue(bool on);
+    bool isEnableMessageCaptureToQueue() const;
     //判断是否使用spdlog
     void setEnableSpdLog(bool on);
     bool enableSpdLog() const;
@@ -92,14 +92,14 @@ private:
     /**
      * @brief 允许消息捕获
      */
-    std::atomic_bool _enableMsgHandle { true };
+    std::atomic_bool _enableCaptureToQueue { true };
 };
 
 DAMessageHandlerGlobalValues_Private::DAMessageHandlerGlobalValues_Private()
     : _recordMsgType(QtWarningMsg), _type(MsgHandleType::UnknowHandleType), _pattern("> {5} | [{1}]({2}){3},{4}")
 {
     _enableSpdlog.store(true);
-    _enableMsgHandle.store(true);
+    _enableCaptureToQueue.store(true);
 }
 
 DAMessageHandlerGlobalValues_Private::~DAMessageHandlerGlobalValues_Private()
@@ -125,14 +125,14 @@ spdlog::logger* DAMessageHandlerGlobalValues_Private::logger()
     return this->_daLogger.get();
 }
 
-void DAMessageHandlerGlobalValues_Private::setEnableMessageHandle(bool on)
+void DAMessageHandlerGlobalValues_Private::setEnableMessageCaptureToQueue(bool on)
 {
-    return this->_enableMsgHandle.store(on);
+    return this->_enableCaptureToQueue.store(on);
 }
 
-bool DAMessageHandlerGlobalValues_Private::enableMessageHandle() const
+bool DAMessageHandlerGlobalValues_Private::isEnableMessageCaptureToQueue() const
 {
-    return this->_enableMsgHandle.load();
+    return this->_enableCaptureToQueue.load();
 }
 
 void DAMessageHandlerGlobalValues_Private::setEnableSpdLog(bool on)
@@ -286,7 +286,10 @@ void daMessageHandler(QtMsgType type, const QMessageLogContext& context, const Q
     DAMessageLogItem item(type, context, msg);
     if (type >= globalMessageHandleValues.getMsgQueueRecordMsgType()) {
         //只有type大于等于设定的msgtype才会记录到队列中
-        globalMessageHandleValues.msgQueue().append(item);
+        if (globalMessageHandleValues.isEnableMessageCaptureToQueue()) {
+            //只有允许消息捕获时，消息才会推入到队列中
+            globalMessageHandleValues.msgQueue().append(item);
+        }
     }
 
     if (globalMessageHandleValues.enableSpdLog()) {
@@ -418,21 +421,19 @@ const char* DAMessageHandlerGlobalValues_Private::getPatternChar() const
     return _pattern.c_str();
 }
 
-/**
- * @brief 禁止MessageHandler，如果针对一些qDebug、qInfo不想被捕获的，
- * 可以调用此函数，但要保证使用daEnableQtMessageHandler恢复
- */
-void daDisableQtMessageHandler()
+void daDisableMessageQueueCapture()
 {
-    globalMessageHandleValues.setEnableMessageHandle(false);
+    globalMessageHandleValues.setEnableMessageCaptureToQueue(false);
 }
 
-/**
- * @brief 开启MessageHandler
- */
-void daEnableQtMessageHandler()
+void daEnableMessageQueueCapture()
 {
-    globalMessageHandleValues.setEnableMessageHandle(true);
+    globalMessageHandleValues.setEnableMessageCaptureToQueue(true);
+}
+
+bool daIsEnableMessageQueueCapture()
+{
+    return globalMessageHandleValues.isEnableMessageCaptureToQueue();
 }
 
 }  // namespace DA
