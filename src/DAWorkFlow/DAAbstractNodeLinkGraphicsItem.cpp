@@ -261,12 +261,12 @@ DAAbstractNodeLinkGraphicsItem::DAAbstractNodeLinkGraphicsItem(DAAbstractNodeGra
     attachFrom(from, pl);
     setEndPointType(OrientationStart, EndPointNone);
     setEndPointType(OrientationEnd, EndPointTriangType);
-    setZValue(-1);  //连接线在-1层，这样避免在节点上面
+    setZValue(-1);  // 连接线在-1层，这样避免在节点上面
 }
 
 DAAbstractNodeLinkGraphicsItem::~DAAbstractNodeLinkGraphicsItem()
 {
-    //析构时d调用FCAbstractNodeGraphicsItem::callItemLinkIsDestroying移除item对应记录的link
+    // 析构时d调用FCAbstractNodeGraphicsItem::callItemLinkIsDestroying移除item对应记录的link
     if (d_ptr->mAutoDetachLink) {
         detachFrom();
         detachTo();
@@ -411,10 +411,10 @@ bool DAAbstractNodeLinkGraphicsItem::attachFrom(DAAbstractNodeGraphicsItem* item
     d_ptr->mFromItem  = item;
     d_ptr->mFromPoint = pl;
     d_ptr->updateLinkPointNameText();
-    item->linked(this, pl);
+    item->recordLinkInfo(this, pl);
     item->prepareLinkOutputSucceed(pl);
     if (toNodeItem()) {
-        //终点已经链接
+        // 终点已经链接
         finishedLink();
     }
     return (true);
@@ -430,8 +430,8 @@ bool DAAbstractNodeLinkGraphicsItem::attachFrom(DAAbstractNodeGraphicsItem* item
 void DAAbstractNodeLinkGraphicsItem::detachFrom()
 {
     if (d_ptr->mFromItem) {
-        d_ptr->mFromItem->linkItemRemoved(this, d_ptr->mFromPoint);
-        d_ptr->mFromItem->node()->detachLink(d_ptr->mFromPoint.name);  //断开连接
+        d_ptr->mFromItem->removeLinkInfo(this, d_ptr->mFromPoint);
+        d_ptr->mFromItem->node()->detachLink(d_ptr->mFromPoint.name);  // 断开连接
         d_ptr->mFromItem = nullptr;
     }
     d_ptr->mFromPoint = DANodeLinkPoint();
@@ -456,20 +456,23 @@ bool DAAbstractNodeLinkGraphicsItem::attachTo(DAAbstractNodeGraphicsItem* item, 
         item->prepareLinkInputFailed(pl, this);
         return (false);
     }
-    //这个函数才完成一个节点的连接
+    // 这个函数才完成一个节点的连接
     DAAbstractNode::SharedPointer fnode = d_ptr->mFromItem->node();
     DAAbstractNode::SharedPointer tnode = item->node();
+
     if (!fnode->linkTo(d_ptr->mFromPoint.name, tnode, pl.name)) {
+        // linkTo会触发DAAbstractNodeFactory::nodeLinkedSucceed回调，但这个回调里面如果获取graphicsitem信息，
+        // 是不完整的，因为graphicsitem信息在下面才更新
         item->prepareLinkInputFailed(pl, this);
         return (false);
     }
     d_ptr->mToItem  = item;
     d_ptr->mToPoint = pl;
     d_ptr->updateLinkPointNameText();
-    item->linked(this, pl);
+    item->recordLinkInfo(this, pl);  // 记录链接信息
     item->prepareLinkInputSucceed(pl, this);
     if (fromNodeItem()) {
-        //起点已经链接
+        // 起点已经链接
         finishedLink();
     }
     return (true);
@@ -484,8 +487,8 @@ bool DAAbstractNodeLinkGraphicsItem::attachTo(DAAbstractNodeGraphicsItem* item, 
 void DAAbstractNodeLinkGraphicsItem::detachTo()
 {
     if (d_ptr->mToItem) {
-        d_ptr->mToItem->linkItemRemoved(this, d_ptr->mToPoint);
-        d_ptr->mToItem->node()->detachLink(d_ptr->mToPoint.name);  //断开连接
+        d_ptr->mToItem->removeLinkInfo(this, d_ptr->mToPoint);
+        d_ptr->mToItem->node()->detachLink(d_ptr->mToPoint.name);  // 断开连接
         d_ptr->mToItem = nullptr;
     }
     d_ptr->mToPoint = DANodeLinkPoint();
@@ -557,7 +560,7 @@ void DAAbstractNodeLinkGraphicsItem::updateToLinkPointInfo(const DANodeLinkPoint
  */
 void DAAbstractNodeLinkGraphicsItem::setText(const QString& t)
 {
-    //设置null字符就销毁item
+    // 设置null字符就销毁item
     if (t.isNull()) {
         if (d_ptr->mTextItem) {
             delete d_ptr->mTextItem;
@@ -570,7 +573,7 @@ void DAAbstractNodeLinkGraphicsItem::setText(const QString& t)
         d_ptr->mTextItem = new QGraphicsSimpleTextItem(this);
         d_ptr->mTextItem->setFlag(ItemIsSelectable, true);
         d_ptr->mTextItem->setFlag(ItemIsMovable, false);
-        //默认位置在中间
+        // 默认位置在中间
         d_ptr->updateTextPos();
     }
     d_ptr->mTextItem->setText(t);
@@ -702,7 +705,7 @@ QVariant DAAbstractNodeLinkGraphicsItem::itemChange(QGraphicsItem::GraphicsItemC
         break;
 
     case QGraphicsItem::ItemSelectedChange:
-        //在连接状态中不允许选中
+        // 在连接状态中不允许选中
         if (d_ptr->isStartLinking()) {
             return (false);
         }
@@ -717,16 +720,16 @@ QVariant DAAbstractNodeLinkGraphicsItem::itemChange(QGraphicsItem::GraphicsItemC
 void DAAbstractNodeLinkGraphicsItem::callItemIsDestroying(DAAbstractNodeGraphicsItem* item, const DA::DANodeLinkPoint& pl)
 {
     if ((d_ptr->mFromItem == item) && (d_ptr->mFromPoint == pl)) {
-        //说明from要取消
+        // 说明from要取消
         d_ptr->mFromItem  = nullptr;
         d_ptr->mFromPoint = DANodeLinkPoint();
     } else if ((d_ptr->mToItem == item) && (d_ptr->mToPoint == pl)) {
-        //说明to要取消
+        // 说明to要取消
         qDebug() << "d_ptr->_toItem = nullptr";
         d_ptr->mToItem  = nullptr;
         d_ptr->mToPoint = DANodeLinkPoint();
     }
-    //如果from和to都为空，这时就需要自动销毁
+    // 如果from和to都为空，这时就需要自动销毁
     DANodeGraphicsScene* sc = d_ptr->nodeScene();
 
     if (sc) {

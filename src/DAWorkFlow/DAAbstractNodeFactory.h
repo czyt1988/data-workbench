@@ -28,10 +28,10 @@ public:
     DAAbstractNodeFactory(QObject* p = nullptr);
     virtual ~DAAbstractNodeFactory();
 
-    //工厂设置了workflow，此函数设置为虚函数，在某些工厂可以通过此函数的重载来绑定DAWorkFlow的信号,以及注册回调
+    // 工厂设置了workflow，此函数设置为虚函数，在某些工厂可以通过此函数的重载来绑定DAWorkFlow的信号,以及注册回调
     virtual void registWorkflow(DAWorkFlow* wf);
 
-    //获取工作流
+    // 获取工作流
     DAWorkFlow* getWorkFlow() const;
 
     /**
@@ -76,27 +76,29 @@ public:
      */
     virtual QList< DANodeMetaData > getNodesMetaData() const = 0;
 
-    //节点加入workflow的回调
+    // 节点加入workflow的回调
     virtual void nodeAddedToWorkflow(DAAbstractNode::SharedPointer node);
 
-    //节点删除的工厂回调
+    // 节点删除的工厂回调
     virtual void nodeStartRemove(DAAbstractNode::SharedPointer node);
 
-    //节点连接成功的回调
+    // 节点连接成功的回调
+    // 注意仅仅是节点的链接完成，这里不要操作graphicsItem,
+    // 要处理连接线完全连接两个节点后的情况，使用DAAbstractNodeLinkGraphicsItem::finishedLink来处理
     virtual void nodeLinkSucceed(DAAbstractNode::SharedPointer outNode,
                                  const QString& outKey,
                                  DAAbstractNode::SharedPointer inNode,
                                  const QString& inkey);
-    //节点连线删除的回调
+    // 节点连线删除的回调
     virtual void nodeLinkDetached(DAAbstractNode::SharedPointer outNode,
                                   const QString& outKey,
                                   DAAbstractNode::SharedPointer inNode,
                                   const QString& inkey);
-    //把扩展信息保存到xml上
+    // 把扩展信息保存到xml上
     virtual void saveExternInfoToXml(QDomDocument* doc, QDomElement* factoryExternElement) const;
-    //从xml加载扩展信息
+    // 从xml加载扩展信息
     virtual void loadExternInfoFromXml(const QDomElement* factoryExternElement);
-    //创建场景事件监听器，如果需要对场景的事件进行监听，需要继承此函数并返回一个事件监听器
+    // 创建场景事件监听器，如果需要对场景的事件进行监听，需要继承此函数并返回一个事件监听器
     virtual DANodeGraphicsSceneEventListener* createNodeGraphicsSceneEventListener();
 };
 }

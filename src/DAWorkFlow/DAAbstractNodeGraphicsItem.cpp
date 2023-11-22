@@ -38,7 +38,7 @@ public:
 
 public:
     PrivateData(DAAbstractNode* n, DAAbstractNodeGraphicsItem* p);
-    //获取连接点
+    // 获取连接点
     QList< DANodeLinkPoint > getLinkPoints() const;
     QList< DANodeLinkPoint > getOutputLinkPoints() const;
     QList< DANodeLinkPoint > getInputLinkPoints() const;
@@ -467,7 +467,6 @@ DANodeLinkPointDrawDelegate* DAAbstractNodeGraphicsItem::getLinkPointDrawDelegat
  * 此函数对于固定节点作用不大，对于非固定节点，或者动态生成节点的情况，可以通过此函数用来实时生成节点
  * @param p
  * @param linkItem 将要尝试链接此节点input的linkitem
- * @note prepareXXX相关的函数，仅仅会在scene操作item时触发
  */
 void DAAbstractNodeGraphicsItem::prepareLinkInput(const QPointF& p, DAAbstractNodeLinkGraphicsItem* linkItem)
 {
@@ -479,7 +478,6 @@ void DAAbstractNodeGraphicsItem::prepareLinkInput(const QPointF& p, DAAbstractNo
  *
  * 此函数对于固定节点作用不大，对于非固定节点，或者动态生成节点的情况，可以通过此函数用来处理链接失败之后的情况
  * @param linkItem 将要尝试链接此节点input的linkitem
- * @note prepareXXX相关的函数，仅仅会在scene操作item时触发
  */
 void DAAbstractNodeGraphicsItem::prepareLinkInputFailed(const DANodeLinkPoint& p, DAAbstractNodeLinkGraphicsItem* linkItem)
 {
@@ -491,7 +489,6 @@ void DAAbstractNodeGraphicsItem::prepareLinkInputFailed(const DANodeLinkPoint& p
  *
  * 此函数对于固定节点作用不大，对于非固定节点，或者动态生成节点的情况，可以通过此函数用来处理链接成功之后的情况
  * @param linkItem 将要尝试链接此节点input的linkitem
- * @note prepareXXX相关的函数，仅仅会在scene操作item时触发
  */
 void DAAbstractNodeGraphicsItem::prepareLinkInputSucceed(const DANodeLinkPoint& p, DAAbstractNodeLinkGraphicsItem* linkItem)
 {
@@ -504,7 +501,6 @@ void DAAbstractNodeGraphicsItem::prepareLinkInputSucceed(const DANodeLinkPoint& 
  *
  * 此函数对于固定节点作用不大，对于非固定节点，或者动态生成节点的情况，可以通过此函数用来实时生成节点
  * @param p
- * @note prepareXXX相关的函数，仅仅会在scene操作item时触发
  */
 void DAAbstractNodeGraphicsItem::prepareLinkOutput(const QPointF& p)
 {
@@ -514,17 +510,18 @@ void DAAbstractNodeGraphicsItem::prepareLinkOutput(const QPointF& p)
  * @brief 此函数是在尝试链接失败之后调用的函数
  *
  * 此函数对于固定节点作用不大，对于非固定节点，或者动态生成节点的情况，可以通过此函数用来处理链接失败之后的情况
- * @note prepareXXX相关的函数，仅仅会在scene操作item时触发
  */
 void DAAbstractNodeGraphicsItem::prepareLinkOutputFailed(const DANodeLinkPoint& p)
 {
     Q_UNUSED(p);
 }
 /**
- * @brief 此函数是在尝试链接成功之后调用的函数
- *
- * 此函数对于固定节点作用不大，对于非固定节点，或者动态生成节点的情况，可以通过此函数用来处理链接成功之后的情况
- * @note prepareXXX相关的函数，仅仅会在scene操作item时触发
+  @brief 此函数是在尝试链接成功之后调用的函数
+
+  此函数对于固定节点作用不大，对于非固定节点，或者动态生成节点的情况，可以通过此函数用来处理链接成功之后的情况
+
+  用户不要使用此回调来处理链接完成的情况，往往这个函数调用仅仅是连接线链接上此节点的输出点而已，如果要处理连接线完全连接两个节点
+  后的情况，使用@sa DAAbstractNodeFactory::nodeLinkSucceed来处理
  */
 void DAAbstractNodeGraphicsItem::prepareLinkOutputSucceed(const DANodeLinkPoint& p)
 {
@@ -621,7 +618,7 @@ void DAAbstractNodeGraphicsItem::hoverEnterEvent(QGraphicsSceneHoverEvent* event
     if (getLinkPointShowType() == LinkPointShowOnHover) {
         if (!d_ptr->mIsShowLinkPoint) {
             d_ptr->mIsShowLinkPoint = true;
-            //刷新
+            // 刷新
             update();
         }
     }
@@ -637,7 +634,7 @@ void DAAbstractNodeGraphicsItem::hoverLeaveEvent(QGraphicsSceneHoverEvent* event
 {
     if (getLinkPointShowType() == LinkPointShowOnHover) {
         d_ptr->mIsShowLinkPoint = false;
-        //刷新
+        // 刷新
         update();
     }
     DAGraphicsResizeableItem::hoverLeaveEvent(event);
@@ -645,12 +642,12 @@ void DAAbstractNodeGraphicsItem::hoverLeaveEvent(QGraphicsSceneHoverEvent* event
 
 /**
  * @brief
- * 此函数用于FCAbstractNodeLinkGraphicsItem在调用attachedTo/From过程中调用
+ * 此函数在DAAbstractNodeLinkGraphicsItem的attachedTo/From过程中调用
  * @param item
  * @param pl
  * @return 如果返回false，说明记录不成功，已经有相同的连接了
  */
-bool DAAbstractNodeGraphicsItem::linked(DAAbstractNodeLinkGraphicsItem* link, const DANodeLinkPoint& pl)
+bool DAAbstractNodeGraphicsItem::recordLinkInfo(DAAbstractNodeLinkGraphicsItem* link, const DANodeLinkPoint& pl)
 {
     for (DAAbstractNodeGraphicsItem::PrivateData::LinkInfo& ld : d_ptr->mLinkInfos) {
         if (ld.point.isEqualWayName(pl)) {
@@ -658,22 +655,23 @@ bool DAAbstractNodeGraphicsItem::linked(DAAbstractNodeLinkGraphicsItem* link, co
             return (true);
         }
     }
-    //下面永远不会达到
-    //没有找到，就查看node有没有
+    // 下面永远不会达到
+    // 没有找到，就查看node有没有
     if (rawNode()->getInputKeys().contains(pl.name) && pl.way == DANodeLinkPoint::Input) {
-        //存在input
-        //说明没有插入这个点
+        // 存在input
+        // 说明没有插入这个点
         DAAbstractNodeGraphicsItem::PrivateData::LinkInfo& li = d_ptr->addLinkPoint(pl);
         li.linkitems.append(link);
         return true;
     }
     if (rawNode()->getOutputKeys().contains(pl.name) && pl.way == DANodeLinkPoint::Output) {
-        //存在output
-        //说明没有插入这个点
+        // 存在output
+        // 说明没有插入这个点
         DAAbstractNodeGraphicsItem::PrivateData::LinkInfo& li = d_ptr->addLinkPoint(pl);
         li.linkitems.append(link);
         return true;
     }
+    qDebug() << "can not record linked info";
     return false;
 }
 
@@ -683,7 +681,7 @@ bool DAAbstractNodeGraphicsItem::linked(DAAbstractNodeLinkGraphicsItem* link, co
  * @param pl
  * @return
  */
-bool DAAbstractNodeGraphicsItem::linkItemRemoved(DAAbstractNodeLinkGraphicsItem* link, const DANodeLinkPoint& pl)
+bool DAAbstractNodeGraphicsItem::removeLinkInfo(DAAbstractNodeLinkGraphicsItem* link, const DANodeLinkPoint& pl)
 {
     for (DAAbstractNodeGraphicsItem::PrivateData::LinkInfo& ld : d_ptr->mLinkInfos) {
         if (ld.point.isEqualWayName(pl)) {
@@ -713,9 +711,9 @@ QList< DANodeLinkPoint > DAAbstractNodeGraphicsItem::generateLinkPoint() const
     if (nullptr == n) {
         return res;
     }
-    //生成输入点
+    // 生成输入点
     QList< QString > ks = n->getInputKeys();
-    //避免除0
+    // 避免除0
     for (const QString& k : qAsConst(ks)) {
         DANodeLinkPoint lp;
         lp.direction = AspectDirection::West;
@@ -724,7 +722,7 @@ QList< DANodeLinkPoint > DAAbstractNodeGraphicsItem::generateLinkPoint() const
         res.append(lp);
     }
 
-    //生成输出点
+    // 生成输出点
     ks = n->getOutputKeys();
     for (const QString& k : qAsConst(ks)) {
         DANodeLinkPoint lp;
@@ -756,12 +754,12 @@ void DAAbstractNodeGraphicsItem::changeLinkPointPos(QList< DANodeLinkPoint >& lp
             ++inputCnt;
         }
     }
-    //离开边界的距离
+    // 离开边界的距离
     const qreal spaceSide = 2;
-    //获取出入口位置
+    // 获取出入口位置
     const LinkPointLocation inLoc  = getLinkPointLocation(DANodeLinkPoint::Input);
     const LinkPointLocation outLoc = getLinkPointLocation(DANodeLinkPoint::Output);
-    //计算出入口的每次偏移量
+    // 计算出入口的每次偏移量
     qreal dtIn  = 0;
     qreal dtOut = 0;
     switch (inLoc) {
@@ -786,7 +784,7 @@ void DAAbstractNodeGraphicsItem::changeLinkPointPos(QList< DANodeLinkPoint >& lp
     default:
         break;
     }
-    //计数清零
+    // 计数清零
     inputCnt  = 0;
     outputCnt = 0;
     for (DANodeLinkPoint& lp : lps) {
@@ -813,7 +811,7 @@ void DAAbstractNodeGraphicsItem::changeLinkPointPos(QList< DANodeLinkPoint >& lp
                 break;
             }
         } else {
-            //出口
+            // 出口
             ++outputCnt;
             switch (outLoc) {
             case LinkPointLocationOnLeftSide:
@@ -884,7 +882,7 @@ bool DAAbstractNodeGraphicsItem::loadFromXml(const QDomElement* itemElement)
     setLinkPointLocation(DANodeLinkPoint::Input, stringToEnum(lpEle.attribute("input-loc"), LinkPointLocationOnLeftSide));
     setLinkPointLocation(DANodeLinkPoint::Output, stringToEnum(lpEle.attribute("output-loc"), LinkPointLocationOnRightSide));
     updateLinkPointPos();
-    //获取具体连接点
+    // 获取具体连接点
     QDomNodeList childs = lpEle.childNodes();
     for (int i = 0; i < childs.size(); ++i) {
         QDomElement le = childs.at(i).toElement();
@@ -939,7 +937,7 @@ DAAbstractNodeLinkGraphicsItem* DAAbstractNodeGraphicsItem::linkTo(const DANodeL
                                                                    DAAbstractNodeGraphicsItem* toItem,
                                                                    const DANodeLinkPoint& toPoint)
 {
-    //创建链接线
+    // 创建链接线
     QScopedPointer< DAAbstractNodeLinkGraphicsItem > linkitem(createLinkItem(fromPoint));
     if (nullptr == linkitem) {
         return nullptr;
@@ -1005,7 +1003,7 @@ void DAAbstractNodeGraphicsItem::updateLinkPointPos()
 {
     QList< DANodeLinkPoint > lps = d_ptr->getLinkPoints();
     changeLinkPointPos(lps, getBodyRect());
-    //更新到linkData
+    // 更新到linkData
     int s = qMin(lps.size(), d_ptr->mLinkInfos.size());
     for (int i = 0; i < s; ++i) {
         d_ptr->mLinkInfos[ i ].point = lps[ i ];
@@ -1055,7 +1053,7 @@ QList< DAAbstractNodeLinkGraphicsItem* > DAAbstractNodeGraphicsItem::getInputLin
     QSet< DAAbstractNodeLinkGraphicsItem* > res;
     for (DAAbstractNodeGraphicsItem::PrivateData::LinkInfo& d : d_ptr->mLinkInfos) {
         if (DANodeLinkPoint::Input != d.point.way) {
-            //不是输出节点就跳过
+            // 不是输出节点就跳过
             continue;
         }
         for (DAAbstractNodeLinkGraphicsItem* li : qAsConst(d.linkitems)) {
@@ -1074,7 +1072,7 @@ QList< DAAbstractNodeLinkGraphicsItem* > DAAbstractNodeGraphicsItem::getOutputLi
     QSet< DAAbstractNodeLinkGraphicsItem* > res;
     for (DAAbstractNodeGraphicsItem::PrivateData::LinkInfo& d : d_ptr->mLinkInfos) {
         if (DANodeLinkPoint::Output != d.point.way) {
-            //不是输出节点就跳过
+            // 不是输出节点就跳过
             continue;
         }
         for (DAAbstractNodeLinkGraphicsItem* li : qAsConst(d.linkitems)) {

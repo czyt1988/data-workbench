@@ -383,7 +383,7 @@ QList< QString > DAAbstractNode::getLinkedInputKeys() const
     for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(d_ptr->mLinksInfo)) {
         SharedPointer toNode = d.inputNode.lock();
         if (toNode.get() == this) {
-            //说明这个是其他节点连接到自身的item
+            // 说明这个是其他节点连接到自身的item
             res.insert(d.inputKey);
         }
     }
@@ -409,7 +409,7 @@ QList< QString > DAAbstractNode::getLinkedOutputKeys() const
     for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(d_ptr->mLinksInfo)) {
         SharedPointer fromNode = d.outputNode.lock();
         if (fromNode.get() == this) {
-            //说明这个是其他节点连接到自身的item
+            // 说明这个是其他节点连接到自身的item
             res.insert(d.outputKey);
         }
     }
@@ -439,6 +439,7 @@ void DAAbstractNode::addOutputKey(const QString& k)
  * 建立连接,如果基础的对象需要校验，可继承此函数
  *
  * 注意，继承的方法中一定要调用父类方法DAAbstractNode::linkTo，否则信息会异常
+ *
  * @param outpt 输出点
  * @param toItem 输入的item
  * @param topt 输入点
@@ -446,17 +447,9 @@ void DAAbstractNode::addOutputKey(const QString& k)
  */
 bool DAAbstractNode::linkTo(const QString& outKey, DAAbstractNode::SharedPointer inNode, const QString& inKey)
 {
-    if (!getOutputKeys().contains(outKey)) {
-        qCritical() << "invalid link [" << getNodeName() << "] can not find out key " << outKey;
-        return (false);
+    if (!linkTo_(outKey, inNode, inKey)) {
+        return false;
     }
-    if (!(inNode->getInputKeys().contains(inKey))) {
-        qCritical() << "invalid link [" << inNode->getNodeName() << "] can not find in Key " << inKey;
-        return (false);
-    }
-    DAAbstractNode::PrivateData::LinkData ld(pointer(), outKey, inNode, inKey);
-    d_ptr->mLinksInfo.append(ld);             //当前记录连接信息
-    inNode->d_func()->mLinksInfo.append(ld);  //被连接的节点也记录下连接信息
     if (DAAbstractNodeFactory* f = factory()) {
         f->nodeLinkSucceed(pointer(), outKey, inNode, inKey);
     }
@@ -478,9 +471,9 @@ bool DAAbstractNode::detachLink(const QString& key)
         d_ptr->mLinksInfo.removeAll(d);
         SharedPointer inputNode = d.inputNode.lock();
         if (inputNode && inputNode.get() != this) {
-            //说明这个是从本身连接到其他，则其他节点也需要删除这个链接
+            // 说明这个是从本身连接到其他，则其他节点也需要删除这个链接
             inputNode->d_func()->mLinksInfo.removeAll(d);
-            //通知工厂的回调函数
+            // 通知工厂的回调函数
             if (DAAbstractNodeFactory* f = factory()) {
                 f->nodeLinkDetached(d.outputNode.lock(), d.outputKey, inputNode, d.inputKey);
             }
@@ -491,9 +484,9 @@ bool DAAbstractNode::detachLink(const QString& key)
         d_ptr->mLinksInfo.removeAll(d);
         SharedPointer outputNode = d.outputNode.lock();
         if (outputNode && outputNode.get() != this) {
-            //说明这个是从本身连接到其他，则其他节点也需要删除这个链接
+            // 说明这个是从本身连接到其他，则其他节点也需要删除这个链接
             outputNode->d_func()->mLinksInfo.removeAll(d);
-            //通知工厂的回调函数
+            // 通知工厂的回调函数
             if (DAAbstractNodeFactory* f = factory()) {
                 f->nodeLinkDetached(outputNode, d.outputKey, pointer(), d.inputKey);
             }
@@ -528,13 +521,13 @@ void DAAbstractNode::detachAll()
     }
 #endif
     //! 不能直接迭代_toNode过程调用detachToLink，会导致迭代器失效
-    //清空关系
+    // 清空关系
     for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(d_ptr->mLinksInfo)) {
         SharedPointer toItem = d.inputNode.lock();
         if (toItem && toItem.get() != this) {
-            //说明这个是从本身连接到其他，则其他节点也需要删除这个链接
+            // 说明这个是从本身连接到其他，则其他节点也需要删除这个链接
             toItem->d_func()->mLinksInfo.removeAll(d);
-            //通知工厂的回调函数
+            // 通知工厂的回调函数
             if (DAAbstractNodeFactory* f = factory()) {
                 f->nodeLinkDetached(d.outputNode.lock(), d.outputKey, d.inputNode.lock(), d.inputKey);
             }
@@ -560,7 +553,7 @@ QList< DAAbstractNode::SharedPointer > DAAbstractNode::getInputNodes() const
     for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(d_ptr->mLinksInfo)) {
         SharedPointer toNode = d.inputNode.lock();
         if (toNode.get() == this) {
-            //说明这个是其他节点连接到自身的item
+            // 说明这个是其他节点连接到自身的item
             SharedPointer fromNode = d.outputNode.lock();
             if (fromNode) {
                 res.insert(fromNode);
@@ -589,7 +582,7 @@ QList< DAAbstractNode::SharedPointer > DAAbstractNode::getInputNodes(const QStri
         }
         SharedPointer toNode = d.inputNode.lock();
         if (toNode.get() == this) {
-            //说明这个是其他节点连接到自身的item
+            // 说明这个是其他节点连接到自身的item
             SharedPointer fromNode = d.outputNode.lock();
             if (fromNode) {
                 res.insert(fromNode);
@@ -617,7 +610,7 @@ QList< DAAbstractNode::SharedPointer > DAAbstractNode::getOutputNodes() const
     for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(d_ptr->mLinksInfo)) {
         SharedPointer fromNode = d.outputNode.lock();
         if (fromNode.get() == this) {
-            //说明这个是此节点连接到其他的node
+            // 说明这个是此节点连接到其他的node
             SharedPointer toNode = d.inputNode.lock();
             if (toNode) {
                 res.insert(toNode);
@@ -647,7 +640,7 @@ QList< DAAbstractNode::SharedPointer > DAAbstractNode::getOutputNodes(const QStr
         }
         SharedPointer fromNode = d.outputNode.lock();
         if (fromNode.get() == this) {
-            //说明这个是此节点连接到其他的node
+            // 说明这个是此节点连接到其他的node
             SharedPointer toNode = d.inputNode.lock();
             if (toNode) {
                 res.insert(toNode);
@@ -676,7 +669,7 @@ int DAAbstractNode::getInputNodesCount() const
 #endif
         SharedPointer toNode = d.inputNode.lock();
         if (toNode.get() == this) {
-            //说明这个是其他节点连接到自身的item
+            // 说明这个是其他节点连接到自身的item
             ++res;
         }
     }
@@ -693,7 +686,7 @@ int DAAbstractNode::getOutputNodesCount() const
     for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(d_ptr->mLinksInfo)) {
         SharedPointer fromNode = d.outputNode.lock();
         if (fromNode.get() == this) {
-            //说明这个是此节点连接到其他的node
+            // 说明这个是此节点连接到其他的node
             ++res;
         }
     }
@@ -735,7 +728,7 @@ QList< DAAbstractNode::LinkInfo > DAAbstractNode::getAllInputLinkInfo() const
     for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(d_ptr->mLinksInfo)) {
         SharedPointer n = d.inputNode.lock();
         if (n.get() == this) {
-            //说明输出节点是自己
+            // 说明输出节点是自己
             SharedPointer outputNode = d.outputNode.lock();
             if (!outputNode) {
                 continue;
@@ -760,13 +753,13 @@ QList< DAAbstractNode::LinkInfo > DAAbstractNode::getAllOutputLinkInfo() const
     QHash< QString, DAAbstractNode::LinkInfo > res;
     for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(d_ptr->mLinksInfo)) {
         SharedPointer n = d.outputNode.lock();
-        if (n.get() == this) {  //说明输出节点是自己
-            //首先找到输出节点对应的节点
+        if (n.get() == this) {  // 说明输出节点是自己
+            // 首先找到输出节点对应的节点
             SharedPointer inputnode = d.inputNode.lock();
             if (!inputnode) {
                 continue;
             }
-            //找到这个输出节点的连接信息，有可能有多个输出对应着多个输出节点
+            // 找到这个输出节点的连接信息，有可能有多个输出对应着多个输出节点
             auto ite = res.find(d.outputKey);
             if (ite == res.end()) {
                 ite             = res.insert(d.outputKey, DAAbstractNode::LinkInfo());
@@ -837,7 +830,7 @@ const DAAbstractNodeGraphicsItem* DAAbstractNode::graphicsItem() const
 void DAAbstractNode::registItem(DAAbstractNodeGraphicsItem* it)
 {
     if (d_ptr->mItem) {
-        //这种情况说明用户误操作，一般是调用了两次createGraphicsItem
+        // 这种情况说明用户误操作，一般是调用了两次createGraphicsItem
         qCritical() << "node regist item more than one";
     }
     d_ptr->mItem = it;
@@ -850,6 +843,29 @@ void DAAbstractNode::registItem(DAAbstractNodeGraphicsItem* it)
 void DAAbstractNode::unregistItem()
 {
     d_ptr->mItem = nullptr;
+}
+
+/**
+   @brief DAAbstractNode::linkToNoCallback
+   @param outKey
+   @param inNode
+   @param inKey
+   @return
+ */
+bool DAAbstractNode::linkTo_(const QString& outKey, DAAbstractNode::SharedPointer inNode, const QString& inKey)
+{
+    if (!getOutputKeys().contains(outKey)) {
+        qDebug() << "invalid link [" << getNodeName() << "] can not find out key " << outKey;
+        return (false);
+    }
+    if (!(inNode->getInputKeys().contains(inKey))) {
+        qDebug() << "invalid link [" << inNode->getNodeName() << "] can not find in Key " << inKey;
+        return (false);
+    }
+    DAAbstractNode::PrivateData::LinkData ld(pointer(), outKey, inNode, inKey);
+    d_ptr->mLinksInfo.append(ld);             // 当前记录连接信息
+    inNode->d_func()->mLinksInfo.append(ld);  // 被连接的节点也记录下连接信息
+    return (true);
 }
 
 /**
