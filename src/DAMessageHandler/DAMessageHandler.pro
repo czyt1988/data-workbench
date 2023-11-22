@@ -17,6 +17,7 @@ $$commonProLibSet($${TARGET})
 $$saCopyLibToBin($${TARGET})
 
 HEADERS += \
+    DALog.h \
     DAMessageHandlerGlobal.h \
     DAMessageHandler.h \
     DAMessageLogItem.h \

@@ -2,13 +2,23 @@
 #define DAMESSAGEHANDLER_H
 #include "DAMessageHandlerGlobal.h"
 #include <QObject>
+#include <QTextStream>
 namespace DA
 {
 /**
- * @brief 禁止MessageHandler，如果针对一些qDebug、qInfo不想被捕获的，可以调用此函数，但要保证使用daEnableQtMessageHandler恢复
+ * @brief 禁止MessageQueueCapture，如果针对一些qDebug、qInfo不想被捕获的，可以调用此函数，次数消息不会推入队列中，但会被spdlog写入文件中
  */
-void DAMESSAGEHANDLER_API daDisableQtMessageHandler();
-void DAMESSAGEHANDLER_API daEnableQtMessageHandler();
+void DAMESSAGEHANDLER_API daDisableMessageQueueCapture();
+/**
+   @brief 允许MessageQueueCapture
+ */
+void DAMESSAGEHANDLER_API daEnableMessageQueueCapture();
+
+/**
+   @brief 判断当前是否运行消息捕获
+   @return
+ */
+bool DAMESSAGEHANDLER_API daIsEnableMessageQueueCapture();
 
 //注册控制台的消息处理
 void DAMESSAGEHANDLER_API daRegisterConsolMessageHandler(int flush_every_sec = 1, bool async_logger = true);
