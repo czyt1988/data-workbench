@@ -145,6 +145,14 @@ void DAAppRibbonArea::buildMenu()
     m_spinboxChartLegendBorderRadius       = new QDoubleSpinBox(m_menuChartLegendProperty);
     m_ctrlContainerChartLegendBorderRadius = addControlWidgetInChartLegendMenu(m_spinboxChartLegendBorderRadius,
                                                                                tr("Border Radius"));  // cn:圆角
+    //
+    m_menuTheme = new SARibbonMenu(m_app);
+    m_menuTheme->setObjectName("menuTheme");
+    m_menuTheme->setIcon(QIcon(":/Icon/Icon/theme.svg"));
+    m_menuTheme->addAction(m_actions->actionRibbonThemeOffice2013);
+    m_menuTheme->addAction(m_actions->actionRibbonThemeOffice2016Blue);
+    m_menuTheme->addAction(m_actions->actionRibbonThemeOffice2021Blue);
+    m_menuTheme->addAction(m_actions->actionRibbonThemeDark);
 }
 
 void DAAppRibbonArea::retranslateUi()
@@ -154,18 +162,18 @@ void DAAppRibbonArea::retranslateUi()
 
 void DAAppRibbonArea::resetText()
 {
-    ribbonBar()->applicationButton()->setText(tr("File"));  //文件
+    ribbonBar()->applicationButton()->setText(tr(" File "));  //文件
 
-    m_categoryMain->setCategoryName(tr("Main"));               //cn:主页
-    m_pannelMainFileOpt->setPannelName(tr("File Operation"));  //cn:文件操作
-    m_pannelSetting->setPannelName(tr("Config"));              //cn:配置
-    m_pannelMainWorkflowOpt->setPannelName(tr("Workflow"));    //cn:工作流
-    m_pannelMainDataOpt->setPannelName(tr("Data Operation"));  //cn:数据操作
-    m_categoryData->setCategoryName(tr("Data"));               //cn:数据
-    m_pannelDataOperate->setPannelName(tr("Data Operation"));  //cn:数据操作
+    m_categoryMain->setCategoryName(tr("Main"));               // cn:主页
+    m_pannelMainFileOpt->setPannelName(tr("File Operation"));  // cn:文件操作
+    m_pannelSetting->setPannelName(tr("Config"));              // cn:配置
+    m_pannelMainWorkflowOpt->setPannelName(tr("Workflow"));    // cn:工作流
+    m_pannelMainDataOpt->setPannelName(tr("Data Operation"));  // cn:数据操作
+    m_categoryData->setCategoryName(tr("Data"));               // cn:数据
+    m_pannelDataOperate->setPannelName(tr("Data Operation"));  // cn:数据操作
 
-    m_categoryView->setCategoryName(tr("View"));         //cn:视图
-    m_pannelViewMainView->setPannelName(tr("Display"));  //cn:视图显示
+    m_categoryView->setCategoryName(tr("View"));         // cn:视图
+    m_pannelViewMainView->setPannelName(tr("Display"));  // cn:视图显示
 
     m_contextDataFrame->setContextTitle(tr("DataFrame"));               ///< DataFrame
     m_categoryDataframeOperate->setCategoryName(tr("Operate"));         ///< DataFrame -> Operate
@@ -175,18 +183,18 @@ void DAAppRibbonArea::resetText()
     m_pannelDataframeOperateStatistic->setPannelName(tr("Statistic"));  ///< DataFrame -> Statistic
 
     //编辑标签
-    m_categoryEdit->setCategoryName(tr("Edit"));  //cn:编辑
+    m_categoryEdit->setCategoryName(tr("Edit"));  // cn:编辑
 
-    m_contextWorkflow->setContextTitle(tr("Workflow"));  //cn:工作流
+    m_contextWorkflow->setContextTitle(tr("Workflow"));  // cn:工作流
 
-    m_categoryWorkflowGraphicsEdit->setCategoryName(tr("Workflow Edit"));  //cn:工作流编辑
-    m_pannelWorkflowItem->setPannelName(tr("Item"));                       //cn:图元
-    m_pannelWorkflowText->setPannelName(tr("Text"));                       //cn:文本
-    m_pannelWorkflowBackground->setPannelName(tr("Background"));           //cn:背景
-    m_pannelWorkflowView->setPannelName(tr("View"));                       //cn:视图
+    m_categoryWorkflowGraphicsEdit->setCategoryName(tr("Workflow Edit"));  // cn:工作流编辑
+    m_pannelWorkflowItem->setPannelName(tr("Item"));                       // cn:图元
+    m_pannelWorkflowText->setPannelName(tr("Text"));                       // cn:文本
+    m_pannelWorkflowBackground->setPannelName(tr("Background"));           // cn:背景
+    m_pannelWorkflowView->setPannelName(tr("View"));                       // cn:视图
 
-    m_categoryWorkflowRun->setCategoryName(tr("Workflow Run"));  //cn:工作流运行
-    m_pannelWorkflowRun->setPannelName(tr("Run"));                         //cn:运行
+    m_categoryWorkflowRun->setCategoryName(tr("Workflow Run"));  // cn:工作流运行
+    m_pannelWorkflowRun->setPannelName(tr("Run"));               // cn:运行
     //
     m_categoryFigure->setCategoryName(tr("Figure"));             // cn:绘图
     m_pannelFigureSetting->setPannelName(tr("Figure Setting"));  // cn:绘图设置
@@ -202,6 +210,9 @@ void DAAppRibbonArea::resetText()
     m_ctrlContainerChartLegendItemMargin->setText(tr("Item Margin"));      // cn:条目边缘
     m_ctrlContainerChartLegendItemSpacing->setText(tr("Item Spacing"));    // cn:条目间隔
     m_ctrlContainerChartLegendBorderRadius->setText(tr("Border Radius"));  // cn:圆角
+    // 其他
+    m_menuTheme->setTitle(tr("theme"));               // cn:主题
+    m_menuTheme->setToolTip(tr("set ribbon theme"));  // cn:设置主题
     //
     m_app->setWindowTitle(tr("Data Work Flow"));
 }
@@ -211,6 +222,7 @@ void DAAppRibbonArea::resetText()
  */
 void DAAppRibbonArea::buildRibbon()
 {
+    ribbonBar()->showMinimumModeButton();
     buildRibbonMainCategory();
     buildRibbonDataCategory();
     buildRibbonViewCategory();
@@ -223,6 +235,8 @@ void DAAppRibbonArea::buildRibbon()
     buildContextCategoryChart();
     //
     buildApplicationMenu();
+    //
+    buildRightButtonBar();
 }
 
 /**
@@ -367,8 +381,6 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     m_pannelDataframeOperateStatistic->addLargeAction(m_actions->actionCreateDataDescribe);
 }
 
-
-
 /**
  * @brief 构建Edit标签
  * da-ribbon-category-edit
@@ -408,7 +420,6 @@ void DAAppRibbonArea::buildRibbonFigureCategory()
     m_pannelChartAdd->addLargeAction(m_actions->actionChartAddCurve);
     m_categoryFigure->addPannel(m_pannelChartAdd);
 }
-
 
 /**
  * @brief 构建Workflow的上下文标签
@@ -534,6 +545,13 @@ void DAAppRibbonArea::buildApplicationMenu()
         return;
     }
     appBtn->setMenu(mApplicationMenu);
+}
+
+void DAAppRibbonArea::buildRightButtonBar()
+{
+    ribbonBar()->activeRightButtonGroup();
+    SARibbonButtonGroupWidget* rbar = ribbonBar()->rightButtonGroup();
+    rbar->addMenu(m_menuTheme);
 }
 
 AppMainWindow* DAAppRibbonArea::app() const

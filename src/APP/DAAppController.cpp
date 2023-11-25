@@ -66,12 +66,12 @@
 //未实现的功能标记
 #define DAAPPCONTROLLER_PASS()                                                                                         \
     QMessageBox::                                                                                                      \
-            warning(app(),                                                                                             \
-                    QCoreApplication::translate("DAAppRibbonArea", "warning", nullptr),                                \
-                    QCoreApplication::translate("DAAppRibbonArea",                                                     \
-                                                "The current function is not implemented, only the UI is reserved, "   \
-                                                "please pay attention: https://gitee.com/czyt1988/data-work-flow",     \
-                                                nullptr))
+        warning(app(),                                                                                                 \
+                QCoreApplication::translate("DAAppRibbonArea", "warning", nullptr),                                    \
+                QCoreApplication::translate("DAAppRibbonArea",                                                         \
+                                            "The current function is not implemented, only the UI is reserved, "       \
+                                            "please pay attention: https://gitee.com/czyt1988/data-work-flow",         \
+                                            nullptr))
 
 //快速链接信号槽
 #define DAAPPCONTROLLER_ACTION_BIND(actionname, functionname)                                                          \
@@ -372,6 +372,8 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowLockBackgroundPixmap, onActionLockBackgroundPixmapTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowEnableItemMoveWithBackground, onActionEnableItemMoveWithBackgroundTriggered);
 
+    // other
+    connect(mActions->actionGroupRibbonTheme, &QActionGroup::triggered, this, &DAAppController::onActionGroupRibbonThemeTriggered);
     //===================================================
     // setDockAreaInterface 有其他的绑定
     //===================================================
@@ -544,10 +546,10 @@ void DAAppController::onActionOpenTriggered()
         if (project->isDirty()) {
             // TODO 没有保存。先询问是否保存
             QMessageBox::StandardButton
-                    btn = QMessageBox::question(nullptr,
-                                                tr("Question"),  //提示
-                                                tr("Another project already exists. Do you want to replace it?")  //已存在其他工程，是否要替换？
-                    );
+                btn = QMessageBox::question(nullptr,
+                                            tr("Question"),                                                   //提示
+                                            tr("Another project already exists. Do you want to replace it?")  //已存在其他工程，是否要替换？
+                );
             if (btn == QMessageBox::Yes) {
                 project->clear();
             } else {
@@ -725,7 +727,7 @@ void DAAppController::onActionAddBackgroundPixmapTriggered()
     QStringList filters;
     filters << tr("Image files (*.png *.jpg)")  //图片文件 (*.png *.jpg)
             << tr("Any files (*)")              //任意文件 (*)
-            ;
+        ;
 
     QFileDialog dialog(app());
     dialog.setNameFilters(filters);
@@ -749,6 +751,23 @@ void DAAppController::onActionLockBackgroundPixmapTriggered(bool on)
 void DAAppController::onActionEnableItemMoveWithBackgroundTriggered(bool on)
 {
     mDock->getWorkFlowOperateWidget()->getCurrentWorkFlowScene()->enableItemMoveWithBackground(on);
+}
+
+/**
+   @brief 主题切换
+   @param a
+ */
+void DAAppController::onActionGroupRibbonThemeTriggered(QAction* a)
+{
+    if (mActions->actionRibbonThemeOffice2013 == a) {
+        mMainWindow->setRibbonTheme(SARibbonMainWindow::RibbonThemeOffice2013);
+    } else if (mActions->actionRibbonThemeOffice2016Blue == a) {
+        mMainWindow->setRibbonTheme(SARibbonMainWindow::RibbonThemeOffice2016Blue);
+    } else if (mActions->actionRibbonThemeOffice2021Blue == a) {
+        mMainWindow->setRibbonTheme(SARibbonMainWindow::RibbonThemeOffice2021Blue);
+    } else if (mActions->actionRibbonThemeDark == a) {
+        mMainWindow->setRibbonTheme(SARibbonMainWindow::RibbonThemeDark);
+    }
 }
 
 void DAAppController::onActionRunCurrentWorkflowTriggered()
@@ -1383,7 +1402,7 @@ void DAAppController::onActionCreateDataDescribeTriggered()
         data.setName(tr("%1_Describe").arg(dfopt->data().getName()));
         data.setDescribe(tr("Generate descriptive statistics that summarize the central tendency, dispersion and "
                             "shape of a [%1]’s distribution, excluding NaN values")
-                                 .arg(dfopt->data().getName()));
+                             .arg(dfopt->data().getName()));
         mDatas->addData(data);
         // showDataOperate要在m_dataManagerStack.push之后，因为m_dataManagerStack.push可能会导致data的名字改变
         mDock->showDataOperateWidget(data);

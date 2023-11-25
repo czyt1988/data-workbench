@@ -28,6 +28,8 @@ protected:
     void buildViewAction();
     //构建workflow action
     void buildWorkflowAction();
+    //建立其他的actions
+    void buildOtherActions();
 
 public:
     //===================================================
@@ -124,6 +126,14 @@ public:
     QAction* actionShowDataArea;
     QAction* actionShowMessageLogView;
     QAction* actionShowSettingWidget;
+    //===================================================
+    // 主题
+    //===================================================
+    QAction* actionRibbonThemeOffice2013;      ///< office2013主题
+    QAction* actionRibbonThemeOffice2016Blue;  ///< office2016主题
+    QAction* actionRibbonThemeOffice2021Blue;  ///< office2021主题
+    QAction* actionRibbonThemeDark;            ///< dark主题
+    QActionGroup* actionGroupRibbonTheme;      ///< actionRibbonTheme* 的actionGroup
 };
 }  // namespace DA
 

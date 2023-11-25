@@ -30,6 +30,8 @@ void DAAppActions::buildActions()
     buildViewAction();
     //构建workflow相关的action
     buildWorkflowAction();
+    //
+    buildOtherActions();
 }
 
 void DAAppActions::buildMainAction()
@@ -90,12 +92,9 @@ void DAAppActions::buildChartAction()
     actionGroupChartPickers = new QActionGroup(this);
     actionGroupChartPickers->setObjectName(QStringLiteral("actionGroupChartPickers"));
     actionGroupChartPickers->setExclusionPolicy(QActionGroup::ExclusionPolicy::ExclusiveOptional);  //允许都不选中
-    actionChartEnablePickerCross = createAction("actionChartEnablePickerCross", ":/Icon/Icon/chart-picker.svg", true, false);
-    actionChartEnablePickerY = createAction("actionChartEnablePickerY", ":/Icon/Icon/chart-picker-y.svg", true, false);
-    actionChartEnablePickerXY = createAction("actionChartEnablePickerXY", ":/Icon/Icon/chart-picker-xy.svg", true, false);
-    actionGroupChartPickers->addAction(actionChartEnablePickerCross);
-    actionGroupChartPickers->addAction(actionChartEnablePickerY);
-    actionGroupChartPickers->addAction(actionChartEnablePickerXY);
+    actionChartEnablePickerCross = createAction("actionChartEnablePickerCross", ":/Icon/Icon/chart-picker.svg", true, false, actionGroupChartPickers);
+    actionChartEnablePickerY = createAction("actionChartEnablePickerY", ":/Icon/Icon/chart-picker-y.svg", true, false, actionGroupChartPickers);
+    actionChartEnablePickerXY = createAction("actionChartEnablePickerXY", ":/Icon/Icon/chart-picker-xy.svg", true, false, actionGroupChartPickers);
 
     actionChartEnableLegend = createAction("actionChartEnableLegend", ":/Icon/Icon/chart-legend.svg", true, false);
     actionChartLegendAlignmentInTopLeft = createAction("actionChartLegendAlignmentInTopLeft", true, false);
@@ -144,10 +143,8 @@ void DAAppActions::buildWorkflowAction()
     actionGroupWorkflowStartEdit = new QActionGroup(this);
     actionGroupWorkflowStartEdit->setObjectName(QStringLiteral("actionGroupWorkflowStartEdit"));
     actionGroupWorkflowStartEdit->setExclusionPolicy(QActionGroup::ExclusionPolicy::ExclusiveOptional);  //允许都不选中
-    actionWorkflowStartDrawRect = createAction("actionStartDrawRect", ":/Icon/Icon/drawRect.svg", true, false);
-    actionWorkflowStartDrawText = createAction("actionStartDrawText", ":/Icon/Icon/drawText.svg", true, false);
-    actionGroupWorkflowStartEdit->addAction(actionWorkflowStartDrawRect);
-    actionGroupWorkflowStartEdit->addAction(actionWorkflowStartDrawText);
+    actionWorkflowStartDrawRect = createAction("actionStartDrawRect", ":/Icon/Icon/drawRect.svg", true, false, actionGroupWorkflowStartEdit);
+    actionWorkflowStartDrawText = createAction("actionStartDrawText", ":/Icon/Icon/drawText.svg", true, false, actionGroupWorkflowStartEdit);
     // workflow-背景图相关
     actionWorkflowAddBackgroundPixmap = createAction("actionAddBackgroundPixmap", ":/Icon/Icon/backgroundPixmap.svg");
     actionWorkflowLockBackgroundPixmap = createAction("actionLockBackgroundPixmap", ":/Icon/Icon/lock-bk.svg", true, false);
@@ -163,6 +160,16 @@ void DAAppActions::buildWorkflowAction()
     actionWorkflowRun       = createAction("actionRunWorkflow", ":/Icon/Icon/run.svg");
     actionWorkflowTerminate = createAction("actionWorkflowTerminate", ":/Icon/Icon/stop.svg");
     actionWorkflowTerminate->setEnabled(false);
+}
+
+void DAAppActions::buildOtherActions()
+{
+    actionGroupRibbonTheme = new QActionGroup(this);
+    actionGroupRibbonTheme->setObjectName(QStringLiteral("actionGroupRibbonTheme"));
+    actionRibbonThemeOffice2013     = createAction("actionRibbonThemeOffice2013", true, true, actionGroupRibbonTheme);
+    actionRibbonThemeOffice2016Blue = createAction("actionRibbonThemeOffice2013", true, false, actionGroupRibbonTheme);
+    actionRibbonThemeOffice2021Blue = createAction("actionRibbonThemeOffice2013", true, false, actionGroupRibbonTheme);
+    actionRibbonThemeDark           = createAction("actionRibbonThemeOffice2013", true, false, actionGroupRibbonTheme);
 }
 
 void DAAppActions::retranslateUi()
@@ -244,6 +251,12 @@ void DAAppActions::retranslateUi()
     actionShowSettingWidget->setText(tr("Show Setting Window"));      // cn:设置窗口
     // Config Category
     actionPluginManager->setText(tr("Plugin \nConfig"));  // cn:插件\n设置
+    // Other
+    actionRibbonThemeOffice2013->setText(tr("Office 2013 theme"));
+    actionRibbonThemeOffice2016Blue->setText(tr("Office 2016 blue theme"));
+    actionRibbonThemeOffice2021Blue->setText(tr("Office 2021 blue theme"));
+    actionRibbonThemeDark->setText(tr("Dark theme"));
+
     //
     if (actionRedo) {
         actionRedo->setText(tr("Redo"));

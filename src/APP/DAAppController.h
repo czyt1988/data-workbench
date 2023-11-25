@@ -253,6 +253,12 @@ private slots:
     void onActionLockBackgroundPixmapTriggered(bool on);
     //跟随背景图
     void onActionEnableItemMoveWithBackgroundTriggered(bool on);
+
+    //===================================================
+    // 其他
+    //===================================================
+    // 主题切换
+    void onActionGroupRibbonThemeTriggered(QAction* a);
 private slots:
     //===================================================
     // DAWorkFlowOperateWidget的槽

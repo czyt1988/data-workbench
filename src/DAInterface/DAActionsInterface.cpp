@@ -2,6 +2,7 @@
 #include "DACoreInterface.h"
 #include <QHash>
 #include <QDebug>
+#include <QActionGroup>
 namespace DA
 {
 class DAActionsInterface::PrivateData
@@ -63,11 +64,14 @@ QAction* DAActionsInterface::createAction(const char* objname)
  * @param checked
  * @return
  */
-QAction* DAActionsInterface::createAction(const char* objname, bool checkable, bool checked)
+QAction* DAActionsInterface::createAction(const char* objname, bool checkable, bool checked, QActionGroup* actGroup)
 {
     QAction* act = createAction(objname);
     act->setCheckable(checkable);
     act->setChecked(checked);
+    if (actGroup) {
+        act->setActionGroup(actGroup);
+    }
     return act;
 }
 
@@ -93,11 +97,14 @@ QAction* DAActionsInterface::createAction(const char* objname, const char* iconp
  * @param checked
  * @return
  */
-QAction* DAActionsInterface::createAction(const char* objname, const char* iconpath, bool checkable, bool checked)
+QAction* DAActionsInterface::createAction(const char* objname, const char* iconpath, bool checkable, bool checked, QActionGroup* actGroup)
 {
     QAction* act = createAction(objname, iconpath);
     act->setCheckable(checkable);
     act->setChecked(checked);
+    if (actGroup) {
+        act->setActionGroup(actGroup);
+    }
     return act;
 }
 /**
@@ -114,7 +121,7 @@ void DAActionsInterface::recordAction(QAction* act)
     if (d_ptr->mObjectToAction.contains(act->objectName())) {
         qWarning() << tr("DAAppActionsInterface::recordAction(QAction objname=%1) receive same object name, and the "
                          "previous record will be overwritten")
-                              .arg(act->objectName());
+                          .arg(act->objectName());
     }
 #endif
     d_ptr->mObjectToAction[ act->objectName() ] = act;

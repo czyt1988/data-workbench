@@ -3,6 +3,7 @@
 #include <QAction>
 #include "DAGlobals.h"
 #include "DAUIInterface.h"
+class QActionGroup;
 namespace DA
 {
 class DACoreInterface;
@@ -19,9 +20,9 @@ public:
     ~DAActionsInterface();
     //创建一个action,并管理
     QAction* createAction(const char* objname);
-    QAction* createAction(const char* objname, bool checkable, bool checked = false);
+    QAction* createAction(const char* objname, bool checkable, bool checked = false, QActionGroup* actGroup = nullptr);
     QAction* createAction(const char* objname, const char* iconpath);
-    QAction* createAction(const char* objname, const char* iconpath, bool checkable, bool checked = false);
+    QAction* createAction(const char* objname, const char* iconpath, bool checkable, bool checked = false, QActionGroup* actGroup = nullptr);
     //记录action，action要保证有独立的object name
     void recordAction(QAction* act);
     //发生语言变更时会调用此函数

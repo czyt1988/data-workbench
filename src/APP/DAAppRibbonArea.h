@@ -170,6 +170,8 @@ private:
     void buildContextCategoryChart();
     //构建ApplicationMenu
     void buildApplicationMenu();
+    //构建右工具栏
+    void buildRightButtonBar();
 
 public:
     void resetText();
@@ -208,7 +210,7 @@ public:
     // view
     SARibbonCategory* m_categoryView;      ///< 视图标签
     SARibbonPannel* m_pannelViewMainView;  ///< 主要视图操作
-    //edit
+    // edit
 
     SARibbonCategory* m_categoryEdit;      ///< 编辑标签
     SARibbonPannel* m_pannelEditWorkflow;  ///< 主要编辑操作
@@ -226,7 +228,7 @@ public:
     DAPyDTypeComboBox* m_comboxColumnTypes;                     ///< 列类型选择器
     SARibbonPannel* m_pannelDataframeOperateStatistic;          ///< 统计相关操作
     // Context - workflow
-    SARibbonContextCategory* m_contextWorkflow;        ///< 对应workflow的上下文
+    SARibbonContextCategory* m_contextWorkflow;  ///< 对应workflow的上下文
     // Context - workflow-edit
     SARibbonCategory* m_categoryWorkflowGraphicsEdit;  ///< 工作流绘图编辑
     SARibbonPannel* m_pannelWorkflowItem;              ///< 图元编辑
@@ -235,7 +237,7 @@ public:
     SARibbonPannel* m_pannelWorkflowView;              ///< 图元视图pannel
     // Context - workflow-run
     SARibbonCategory* m_categoryWorkflowRun;  ///< 工作流运行
-    SARibbonPannel* m_pannelWorkflowRun;               ///< 运行视图pannel
+    SARibbonPannel* m_pannelWorkflowRun;      ///< 运行视图pannel
     // Context - chart
     SARibbonContextCategory* m_contextChart;                      ///< 对应Chart的上下文
     SARibbonCategory* m_categoryChartEdit;                        ///< Chart编辑
@@ -263,6 +265,8 @@ public:
     QMenu* m_menuInsertColumn;  ///< 这对insertcol的action menu
     // ApplicationMenu
     DAAppRibbonApplicationMenu* mApplicationMenu;  ///< ribbon-app menu
+    //
+    QMenu* m_menuTheme;  ///< 主题菜单
 };
 }  // namespace DA
 #endif  // DAAPPRIBBONAREA_H

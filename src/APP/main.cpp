@@ -16,6 +16,16 @@
 #include "DADumpCapture.h"
 void setAppFont();
 
+void enableHDPIScaling()
+{
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
+    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+#endif
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
+    QApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
+#endif
+}
+
 int main(int argc, char* argv[])
 {
     //程序路径捕获
@@ -30,9 +40,10 @@ int main(int argc, char* argv[])
     for (int i = 0; i < argc; ++i) {
         qDebug() << "argv[" << i << "]" << argv[ i ];
     }
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
-    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-#endif
+    //高清屏的适配
+    enableHDPIScaling();
+
+    //启动app
     QApplication app(argc, argv);
     DA::DATranslatorManeger datr;
     datr.installAllTranslator();

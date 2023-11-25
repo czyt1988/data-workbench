@@ -67,6 +67,7 @@
         <file>Icon/chart-picker-xy.svg</file>
         <file>Icon/chart-legend.svg</file>
         <file>Icon/stop.svg</file>
+        <file>Icon/theme.svg</file>
     </qresource>
     <qresource prefix="/dataType">
         <file>Icon/typeDataframe.svg</file>
