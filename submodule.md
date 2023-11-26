@@ -23,9 +23,74 @@ git submodule update src/3rdparty/pybind11
 
 ## submodule的添加
 
-第三方库统一放置到`/src/3rdparty`目录下，因此添加submodule如下：
+第三方库统一放置到`/src/3rdparty/xxx`目录下，因此添加submodule如下：
 
-`git submodule add https://gitee.com/czyt1988/pybind11.git ./src/3rdparty/pybind11`
+- 注意3rdparty下的第三方库文件夹名字是两层，库名为libname，则目录是`/src/3rdparty/libname/libname`
+
+添加2层目录目的是在第一层目录下面添加cmake文件，以便自动化编译
+
+例如添加第三方库pybind11，先新建目录/src/3rdparty/pybind11
+
+新建CMakeLists.txt文件，内容为：
+
+```cmake
+cmake_minimum_required(VERSION 3.5)
+
+project(bilud-pybind11
+        LANGUAGES CXX
+        DESCRIPTION "DataWorkBench : 3rdparty build"
+        )
+
+########################################################
+# Qt
+########################################################
+set(DA_MIN_QT_VERSION 5.14)
+find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
+
+
+########################################################
+# 第三方库 - pybind11
+########################################################
+set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/../../../bin_qt${QT_VERSION}/build_3rdparty_lib/pybind11")
+message(STATUS "3rdparty pybind11 will install to : ${CMAKE_INSTALL_PREFIX}")
+# 安装pybind11
+add_subdirectory(pybind11)
+```
+
+添加submodule:
+
+DA添加submodule需要在src/3rdparty目录先建立linName文件夹，在linName文件夹下建立一个cmake文件，文件内容如下：
+
+```cmake
+cmake_minimum_required(VERSION 3.5)
+project(bilud-{{linName}}
+        LANGUAGES CXX
+        DESCRIPTION "DataWorkBench : 3rdparty build"
+        )
+
+########################################################
+# Qt
+########################################################
+set(DA_MIN_QT_VERSION 5.14)
+find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
+
+
+########################################################
+# 第三方库 - {{linName}}
+########################################################
+set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/../../../bin_qt${QT_VERSION}/build_3rdparty_lib/{{linName}}")
+message(STATUS "3rdparty pybind11 will install to : ${CMAKE_INSTALL_PREFIX}")
+# 安装# {{linName}}
+add_subdirectory({{linName}})
+```
+
+{{linName}}为占位符，改为第三方库名称即可
+
+然后再git中添加，以pybind11举例
+
+`git submodule add https://github.com/pybind/pybind11.git ./src/3rdparty/pybind11/pybind11`
+
+- 注意最后路径是`./src/3rdparty/pybind11/pybind11`,库名称文件夹有两个
 
 ## submodule的更新
 
