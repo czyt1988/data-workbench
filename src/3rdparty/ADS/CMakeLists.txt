@@ -20,7 +20,7 @@ find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
 ########################################################
 # 第三方库 - Qt-Advanced-Docking-System
 ########################################################
-set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/../../../bin_qt${QT_VERSION}/build_3rdparty_lib/ADS")
+set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/../../../bin_qt${QT_VERSION}/build_lib/ADS")
 message(STATUS "3rdparty Qt-Advanced-Docking-System will install to : ${CMAKE_INSTALL_PREFIX}")
 # 安装 ADS
 add_subdirectory(ADS)

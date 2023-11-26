@@ -92,6 +92,16 @@ add_subdirectory({{linName}})
 
 - 注意最后路径是`./src/3rdparty/pybind11/pybind11`,库名称文件夹有两个
 
+DA目前添加的submodule有如下：
+
+```shell
+git submodule add https://github.com/gabime/spdlog.git ./src/3rdparty/spdlog/spdlog
+git submodule add https://github.com/githubuser0xFFFF/Qt-Advanced-Docking-System.git ./src/3rdparty/ADS/ADS
+git submodule add https://github.com/czyt1988/SARibbon.git ./src/3rdparty/SARibbon/SARibbon
+git submodule add https://github.com/pybind/pybind11.git ./src/3rdparty/pybind11/pybind11
+```
+
+
 ## submodule的更新
 
 如果某个submodule更新了，使用`git submodule update --remote {submodule}`进行更新，如SARibbon项目更新了，可以执行：

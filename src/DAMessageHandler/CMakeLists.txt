@@ -12,7 +12,7 @@ set(DA_LIB_VERSION_MAJOR 0)
 set(DA_LIB_VERSION_MINOR 0)
 set(DA_LIB_VERSION_PATCH 1)
 set(DA_LIB_VERSION "${DA_LIB_VERSION_MAJOR}.${DA_LIB_VERSION_MINOR}.${DA_LIB_VERSION_PATCH}")
-set(DA_OUTPUT_DIR ${CMAKE_BINARY_DIR}/build_libs/${DA_LIB_NAME})
+set(DA_OUTPUT_DIR ${CMAKE_BINARY_DIR}/${DA_LIB_NAME})
 
 project(${DA_LIB_NAME} 
         VERSION ${DA_LIB_VERSION} 
@@ -48,6 +48,7 @@ find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
     Core
     Gui
     Widgets
+    Xml
     REQUIRED
 )
 if(Qt5_POSITION_INDEPENDENT_CODE)
@@ -62,20 +63,23 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # 上级目录加入include_directories，DAGlobals.h需要
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/..)
 # 默认的CMAKE_INSTALL_PREFIX
-set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/../../bin_qt${QT_VERSION}/build_lib")
+set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/../../bin_qt${QT_VERSION}/build_lib/DA")
 ########################################################
 # 文件加载
 ########################################################
 file(GLOB DA_LIB_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 file(GLOB DA_LIB_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+set(DA_GLOBAL_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/../DAGlobals.h)
 
 
 add_library(${DA_LIB_NAME} SHARED
             ${DA_LIB_HEADER_FILES}
             ${DA_LIB_SOURCE_FILES}
+            ${DA_GLOBAL_HEADER}
 )	
 # 构建库定义的宏
-target_compile_definitions(${DA_LIB_NAME} PRIVATE DAAXOFFICEWRAPPER_BUILDLIB)
+target_compile_definitions(${DA_LIB_NAME} PRIVATE DAMESSAGEHANDLER_BUILDLIB)
+add_library(DA::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
 ########################################################
 # 依赖链接
 ########################################################
@@ -83,17 +87,24 @@ target_link_libraries(${DA_LIB_NAME} PUBLIC
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Widgets
+    Qt${QT_VERSION_MAJOR}::Xml
 )
 message(STATUS "${DA_LIB_NAME} Qt${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
 
+# DAMessageHandler依赖spdlog
+# spdlog是header only
+set(spdlog_DIR "${CMAKE_INSTALL_PREFIX}/../spdlog")
+include_directories(${spdlog_DIR}/include)
+message(STATUS "  |-spdlog include: ${spdlog_DIR}/include")
+
 # DAMessageHandler依赖DAUtils
-set(DAUtils_DIR "${CMAKE_INSTALL_PREFIX}/DAUtils/cmake")
-find_package(DAUtils CONFIG)
+set(DAUtils_DIR "${CMAKE_INSTALL_PREFIX}/lib/cmake")
+find_package(DAUtils)
 if(${DAUtils_FOUND})
-    target_link_libraries(${DA_LIB_NAME} PUBLIC DA::DAUtils)
     message(STATUS "  |-link DA::DAUtils")
-    message(STATUS "  |-include dir:${DAUtils_INCLUDE_DIR}")
+    message(STATUS "  | |-include dir:${DAUtils_INCLUDE_DIR}")
 endif()
+target_link_libraries(${DA_LIB_NAME} PRIVATE DA::DAUtils)
 
 ########################################################
 # Qt的moc
@@ -106,10 +117,11 @@ set_target_properties(${DA_LIB_NAME} PROPERTIES
     DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
     VERSION ${DA_LIB_VERSION}
     EXPORT_NAME ${DA_LIB_NAME}
-    ARCHIVE_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}"
-    LIBRARY_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}"
-    RUNTIME_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}"
+    ARCHIVE_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}/lib"
+    LIBRARY_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}/lib"
+    RUNTIME_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}/bin"
 )
+
 
 
 ########################################################
@@ -117,7 +129,7 @@ set_target_properties(${DA_LIB_NAME} PROPERTIES
 ########################################################
 message(STATUS "${DA_LIB_NAME} install dir is : ${CMAKE_INSTALL_PREFIX}")
 
-set(DA_LIB_INCLUDE_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/${DA_LIB_NAME}/include")
+set(DA_LIB_INCLUDE_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/include/${DA_LIB_NAME}")
 
 # Generate library version info which will generate xxxConfigVersion.cmake,
 # the ${PACKAGE_VERSION} is the version defined in project()
@@ -130,34 +142,42 @@ write_basic_package_version_file(
 configure_package_config_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/${DA_LIB_NAME}Config.cmake.in"
   "${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}Config.cmake"
-  INSTALL_DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/${DA_LIB_NAME}/cmake"
+  INSTALL_DESTINATION lib/cmake
   PATH_VARS DA_LIB_INCLUDE_INSTALL_DIR
 )
 
 install(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}Config.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}ConfigVersion.cmake"
-    DESTINATION ${DA_LIB_NAME}/cmake
+    DESTINATION lib/cmake
 )
 install(FILES
     ${DA_LIB_HEADER_FILES}
-    DESTINATION ${DA_LIB_NAME}/include
+    DESTINATION include/${DA_LIB_NAME}
     COMPONENT headers
 )
+#DAGlobal.h
+install(FILES
+    ${DA_GLOBAL_HEADER}
+    DESTINATION .
+    COMPONENT headers
+)
+# 声明导出target的名称
 install(TARGETS ${DA_LIB_NAME}
     EXPORT "${DA_LIB_NAME}Targets"
-    RUNTIME DESTINATION ${DA_LIB_NAME}/bin
-    LIBRARY DESTINATION ${DA_LIB_NAME}/lib
-    ARCHIVE DESTINATION ${DA_LIB_NAME}/lib
-    INCLUDES DESTINATION ${DA_LIB_NAME}/include
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    INCLUDES DESTINATION include/${DA_LIB_NAME}
 )
 install(EXPORT "${DA_LIB_NAME}Targets"
-    FILE ${DA_LIB_NAME}Targets.cmake
+    FILE ${DA_LIB_NAME}Targets.cmake # 导出的文件基准名。
     NAMESPACE DA::
-    DESTINATION ${DA_LIB_NAME}/cmake
+    DESTINATION lib/cmake
 )
+
 target_include_directories(${DA_LIB_NAME} PUBLIC
-    $<INSTALL_INTERFACE:${DA_LIB_NAME}/include>
+    $<INSTALL_INTERFACE:include/${DA_LIB_NAME}>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
 

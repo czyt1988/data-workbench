@@ -5,22 +5,24 @@
 
 cmake_minimum_required(VERSION 3.5)
 
-set(DA_PROJECT_3RDPARTY "DA_3rdParty")
-project(${DA_PROJECT_3RDPARTY}
+project(bilud-SARibbon
         LANGUAGES CXX
         DESCRIPTION "DataWorkBench : 3rdparty build"
         )
+
 ########################################################
-# MSVC设置
+# Qt
 ########################################################
-if(MSVC)
-# msvc utf-8
-    add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
-    add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
-endif()
+set(DA_MIN_QT_VERSION 5.14)
+find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
 
 
+########################################################
+# 第三方库 - SARibbon
+########################################################
+set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/../../../bin_qt${QT_VERSION}/build_lib/SARibbon")
+message(STATUS "3rdparty SARibbon will install to : ${CMAKE_INSTALL_PREFIX}")
+# 安装 SARibbon
+add_subdirectory(SARibbon)
 
-add_subdirectory(spdlog)
 
-add_subdirectory(ADS)

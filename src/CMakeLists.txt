@@ -9,11 +9,14 @@ cmake_minimum_required(VERSION 3.5)
 # 加载库
 ########################################################
 add_subdirectory(DAUtils)
+
 add_subdirectory(DAAxOfficeWrapper)
 add_dependencies(DAAxOfficeWrapper DAUtils)
 
-#add_subdirectory(DAMessageHandler)
-#add_subdirectory(DAPyBindQt)
+add_subdirectory(DAMessageHandler)
+add_dependencies(DAMessageHandler DAUtils)
+
+add_subdirectory(DAPyBindQt)
 #add_subdirectory(DAPyScripts)
 #add_subdirectory(DAData)
 #add_subdirectory(DACommonWidgets)

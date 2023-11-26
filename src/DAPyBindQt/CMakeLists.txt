@@ -1,12 +1,12 @@
 ﻿
 # Cmake的命令不区分打下写，例如message，set等命令；但Cmake的变量区分大小写
 # 为统一风格，本项目的Cmake命令全部采用小写，变量全部采用大写加下划线组合。
-# DAAxOfficeWrapper 库
+# DAPyBindQt 库
 
 cmake_minimum_required(VERSION 3.5)
 
-set(DA_LIB_NAME DAAxOfficeWrapper)
-set(DA_LIB_DESCRIPTION "DAAxOfficeWrapper | office ax container qt的wrapper | https://github.com/czyt1988")
+set(DA_LIB_NAME DAPyBindQt) #!!!!** 注意变更为实际库名 **!!!!
+set(DA_LIB_DESCRIPTION "DAPyBindQt | qt wrapper python | https://github.com/czyt1988")#!!!!** 注意变更 **!!!!
 
 set(DA_LIB_VERSION_MAJOR 0)
 set(DA_LIB_VERSION_MINOR 0)
@@ -46,10 +46,6 @@ set(DA_MIN_QT_VERSION 5.14)
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
     Core
-    Gui
-    Widgets
-    Xml
-    AxContainer
     REQUIRED
 )
 if(Qt5_POSITION_INDEPENDENT_CODE)
@@ -66,41 +62,58 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/..)
 # 默认的CMAKE_INSTALL_PREFIX
 set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/../../bin_qt${QT_VERSION}/build_lib/DA")
 ########################################################
-# 文件加载
+# 文件加载 #!!!!** 注意变更 **!!!!
 ########################################################
+set(DA_GLOBAL_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/../DAGlobals.h)
 file(GLOB DA_LIB_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 file(GLOB DA_LIB_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
-set(DA_GLOBAL_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/../DAGlobals.h)
-
+file(GLOB DA_DAPYBINDQT_PANDAS_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/pandas/*.h")
+file(GLOB DA_DAPYBINDQT_PANDAS_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/pandas/*.cpp")
+file(GLOB DA_DAPYBINDQT_NUMPY_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/numpy/*.h")
+file(GLOB DA_DAPYBINDQT_NUMPY_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/numpy/*.cpp")
 
 add_library(${DA_LIB_NAME} SHARED
             ${DA_LIB_HEADER_FILES}
             ${DA_LIB_SOURCE_FILES}
+            ${DA_DAPYBINDQT_PANDAS_HEADER_FILES}
+            ${DA_DAPYBINDQT_PANDAS_SOURCE_FILES}
+            ${DA_DAPYBINDQT_NUMPY_HEADER_FILES}
+            ${DA_DAPYBINDQT_NUMPY_SOURCE_FILES}
             ${DA_GLOBAL_HEADER}
 )	
 # 构建库定义的宏
-target_compile_definitions(${DA_LIB_NAME} PRIVATE DAAXOFFICEWRAPPER_BUILDLIB)
+target_compile_definitions(${DA_LIB_NAME} PRIVATE DAPYBINDQT_BUILDLIB)#!!!!** 注意变更 **!!!!
 add_library(DA::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
 ########################################################
-# 依赖链接
+# 依赖链接 #!!!!** 注意变更 **!!!!
 ########################################################
 target_link_libraries(${DA_LIB_NAME} PUBLIC
     Qt${QT_VERSION_MAJOR}::Core
-    Qt${QT_VERSION_MAJOR}::Gui
-    Qt${QT_VERSION_MAJOR}::Widgets
-    Qt${QT_VERSION_MAJOR}::Xml
-    Qt${QT_VERSION_MAJOR}::AxContainer
 )
 message(STATUS "${DA_LIB_NAME} Qt${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
 
-# DAAxOfficeWrapper依赖DAUtils
-set(DAUtils_DIR "${CMAKE_INSTALL_PREFIX}/lib/cmake")
-find_package(DAUtils)
-if(${DAUtils_FOUND})
-    message(STATUS "  |-link DA::DAUtils")
-    message(STATUS "  | |-include dir:${DAUtils_INCLUDE_DIR}")
+# 此处要依赖python
+# https://zhuanlan.zhihu.com/p/666367728
+# https://blog.csdn.net/weixin_40448140/article/details/112005184
+# 如果使用的是非系统目录下的 Python 可以通过指定 Python3_ROOT_DIR 改变查找路径
+find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+if(${Python3_FOUND})
+    message(STATUS "  |-find python")
+    message(STATUS "  | |-include dir:${Python3_INCLUDE_DIRS}")
+    message(STATUS "  | |-libs : ${Python3_LIBRARIES}")
 endif()
-target_link_libraries(${DA_LIB_NAME} PRIVATE DA::DAUtils)
+target_link_libraries(${DA_LIB_NAME} PRIVATE ${Python3_LIBRARIES})
+include_directories(${Python3_INCLUDE_DIRS})
+
+# DAPyBindQt依赖pybind11
+# pybind11是header only
+set(pybind11_DIR "${CMAKE_INSTALL_PREFIX}/../pybind11")
+#include_directories(${pybind11_DIR}/include)
+target_include_directories(${DA_LIB_NAME} PUBLIC
+    $<INSTALL_INTERFACE:../pybind11/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../3rdparty/pybind11/pybind11/include>
+)
+message(STATUS "  |-pybind11 include: ${pybind11_DIR}/include")
 
 ########################################################
 # Qt的moc
@@ -150,6 +163,16 @@ install(FILES
 install(FILES
     ${DA_LIB_HEADER_FILES}
     DESTINATION include/${DA_LIB_NAME}
+    COMPONENT headers
+)
+install(FILES
+    ${DA_DAPYBINDQT_PANDAS_HEADER_FILES}
+    DESTINATION include/${DA_LIB_NAME}/pandas
+    COMPONENT headers
+)
+install(FILES
+    ${DA_DAPYBINDQT_NUMPY_HEADER_FILES}
+    DESTINATION include/${DA_LIB_NAME}/numpy
     COMPONENT headers
 )
 #DAGlobal.h
