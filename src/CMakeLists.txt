@@ -19,6 +19,7 @@ add_dependencies(DAMessageHandler DAUtils)
 add_subdirectory(DAPyBindQt)
 add_subdirectory(DAPyScripts)
 add_dependencies(DAPyScripts DAPyBindQt)
+
 #add_subdirectory(DAData)
 #add_subdirectory(DACommonWidgets)
 #add_subdirectory(DAGraphicsView)
