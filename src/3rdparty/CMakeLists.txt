@@ -21,6 +21,6 @@ endif()
 
 
 
-add_subdirectory(da-spdlog)
+add_subdirectory(spdlog)
 
-add_subdirectory(da-Qt-Advanced-Docking-System)
+add_subdirectory(ADS)
