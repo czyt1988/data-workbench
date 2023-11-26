@@ -81,6 +81,7 @@ Thumbs.db
 *vcxproj.*
 .vscode
 .vs
+CMakeSettings.json
 
 # MinGW generated files
 *.Debug
