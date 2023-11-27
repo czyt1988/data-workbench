@@ -5,19 +5,21 @@
 
 cmake_minimum_required(VERSION 3.5)
 
-set(DA_LIB_NAME DAUtils)
-set(DA_LIB_DESCRIPTION "DAUtils | DA Utils Lib | https://github.com/czyt1988")
-
+set(DA_LIB_NAME "DAUtils")
+set(DA_LIB_DESCRIPTION "DA Utils Lib | https://github.com/czyt1988")
 set(DA_LIB_VERSION_MAJOR 0)
 set(DA_LIB_VERSION_MINOR 0)
 set(DA_LIB_VERSION_PATCH 1)
 set(DA_LIB_VERSION "${DA_LIB_VERSION_MAJOR}.${DA_LIB_VERSION_MINOR}.${DA_LIB_VERSION_PATCH}")
 set(DA_OUTPUT_DIR ${CMAKE_BINARY_DIR}/${DA_LIB_NAME})
 
+message("")
+message("${DA_LIB_NAME}${DA_LIB_VERSION} | ${DA_LIB_DESCRIPTION}")
+
 project(${DA_LIB_NAME} 
         VERSION ${DA_LIB_VERSION} 
         LANGUAGES CXX
-        DESCRIPTION "DA | ${DA_LIB_DESCRIPTION}"
+        DESCRIPTION "DAWorkbench | ${DA_LIB_DESCRIPTION}"
 )
 
 ########################################################
@@ -78,13 +80,13 @@ add_library(${DA_LIB_NAME} SHARED
         ${DA_GLOBAL_HEADER}
 )	
 # 定义别名让DA::${DA_LIB_NAME}也能获取到
-add_library(DA::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
+add_library(DAWorkbench::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
 # 构建库定义的宏
 target_compile_definitions(${DA_LIB_NAME} PRIVATE DAUTILS_BUILD)
 ########################################################
 # 依赖链接
 ########################################################
-target_link_libraries(${DA_LIB_NAME} PUBLIC
+target_link_libraries(${DA_LIB_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Xml
@@ -103,9 +105,6 @@ set_target_properties(${DA_LIB_NAME} PROPERTIES
     DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
     VERSION ${DA_LIB_VERSION}
     EXPORT_NAME ${DA_LIB_NAME}
-#    ARCHIVE_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}/lib"
-#    LIBRARY_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}/lib"
-#    RUNTIME_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}/bin"
 )
 
 
@@ -114,8 +113,10 @@ set_target_properties(${DA_LIB_NAME} PROPERTIES
 ########################################################
 message(STATUS "${DA_LIB_NAME} install dir is : ${CMAKE_INSTALL_PREFIX}")
 
-set(DA_LIB_INCLUDE_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/include/${DA_LIB_NAME}")
-
+set(DA_LIB_INCLUDE_INSTALL_DIR
+    $<INSTALL_INTERFACE:include/${DA_LIB_NAME}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)
 # Generate library version info which will generate xxxConfigVersion.cmake,
 # the ${PACKAGE_VERSION} is the version defined in project()
 include(CMakePackageConfigHelpers)
@@ -127,8 +128,31 @@ write_basic_package_version_file(
 configure_package_config_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/${DA_LIB_NAME}Config.cmake.in"
   "${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}Config.cmake"
-  INSTALL_DESTINATION lib/cmake
+  INSTALL_DESTINATION "lib/cmake"
   PATH_VARS DA_LIB_INCLUDE_INSTALL_DIR
+)
+# 声明导出target的名称
+install(TARGETS ${DA_LIB_NAME}
+    EXPORT ${DA_LIB_NAME}Targets
+    INCLUDES DESTINATION include/${DA_LIB_NAME}
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+)
+export(EXPORT ${DA_LIB_NAME}Targets
+   FILE ${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}Targets.cmake
+   NAMESPACE DAWorkbench::
+)
+install(EXPORT "${DA_LIB_NAME}Targets"
+    FILE ${DA_LIB_NAME}Targets.cmake # 导出的文件基准名。
+    NAMESPACE DAWorkbench::
+    DESTINATION lib/cmake
+)
+
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}Config.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}ConfigVersion.cmake"
+    DESTINATION lib/cmake
 )
 
 install(FILES
@@ -143,29 +167,8 @@ install(FILES
     DESTINATION .
     COMPONENT headers
 )
-# 声明导出target的名称
-install(TARGETS ${DA_LIB_NAME}
-    EXPORT "${DA_LIB_NAME}Targets"
-    RUNTIME DESTINATION bin
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
-    INCLUDES DESTINATION include/${DA_LIB_NAME}
-)
-export(EXPORT ${DA_LIB_NAME}Targets
-       FILE ${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}Config.cmake
-       NAMESPACE DA::
-       )
-install(EXPORT "${DA_LIB_NAME}Targets"
-    FILE ${DA_LIB_NAME}-config.cmake # 导出的文件基准名。
-    NAMESPACE DA::
-    DESTINATION lib/cmake
-)
 
-install(FILES
-    "${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}Config.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}ConfigVersion.cmake"
-    DESTINATION lib/cmake
-)
+
 target_include_directories(${DA_LIB_NAME} PUBLIC
     $<INSTALL_INTERFACE:include/${DA_LIB_NAME}>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>

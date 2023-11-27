@@ -16,7 +16,7 @@ message(STATUS "DA Version is ${DA_VERSION}")
 ########################################################
 # 定义工程
 ########################################################
-set(DA_PROJECT_NAME "DA")
+set(DA_PROJECT_NAME "DAWorkbench")
 
 project(${DA_PROJECT_NAME} 
         VERSION ${DA_VERSION} 
@@ -71,7 +71,23 @@ find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
 ##################################
 set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/bin_qt${QT_VERSION}/build_lib/DA")
 message(STATUS "${DA_PROJECT_NAME} install dir is : ${CMAKE_INSTALL_PREFIX}")
-
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
+    VERSION ${DA_VERSION}
+    COMPATIBILITY AnyNewerVersion
+)
+configure_package_config_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}Config.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+    INSTALL_DESTINATION "lib/cmake"
+    NO_CHECK_REQUIRED_COMPONENTS_MACRO
+)
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+    DESTINATION "lib/cmake"
+)
 ########################################################
 # 源码路径
 ########################################################
