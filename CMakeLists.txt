@@ -12,11 +12,11 @@ set(DA_VERSION_MAJOR 0)
 set(DA_VERSION_MINOR 0)
 set(DA_VERSION_PATCH 2)
 set(DA_VERSION "${DA_VERSION_MAJOR}.${DA_VERSION_MINOR}.${DA_VERSION_PATCH}")
-message(STATUS "DA Version is ${DA_VERSION} | DA 版本为${DA_VERSION}")
+message(STATUS "DA Version is ${DA_VERSION}")
 ########################################################
 # 定义工程
 ########################################################
-set(DA_PROJECT_NAME "DataWorkBench")
+set(DA_PROJECT_NAME "DA")
 
 project(${DA_PROJECT_NAME} 
         VERSION ${DA_VERSION} 

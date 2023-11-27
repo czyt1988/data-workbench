@@ -29,3 +29,5 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/../../../bin_qt${QT_VERSIO
 
 # pybind11 是header only，因此直接把include文件夹复制过去即可
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/pybind11/include" DESTINATION ${CMAKE_INSTALL_PREFIX})
+message(STATUS "have been copy pybind11 to: ${CMAKE_INSTALL_PREFIX}")
+message(STATUS "finish config pybind11 you can build another DA 3rdparty")

@@ -98,7 +98,7 @@ include_directories(${spdlog_DIR}/include)
 message(STATUS "  |-spdlog include: ${spdlog_DIR}/include")
 
 # DAMessageHandler依赖DAUtils
-set(DAUtils_DIR "${CMAKE_INSTALL_PREFIX}/lib/cmake")
+# set(DAUtils_DIR "${CMAKE_INSTALL_PREFIX}/lib/cmake")
 find_package(DAUtils)
 if(${DAUtils_FOUND})
     message(STATUS "  |-link DA::DAUtils")
@@ -117,9 +117,9 @@ set_target_properties(${DA_LIB_NAME} PROPERTIES
     DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
     VERSION ${DA_LIB_VERSION}
     EXPORT_NAME ${DA_LIB_NAME}
-    ARCHIVE_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}/lib"
-    LIBRARY_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}/lib"
-    RUNTIME_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}/bin"
+#    ARCHIVE_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}/lib"
+#    LIBRARY_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}/lib"
+#    RUNTIME_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}/bin"
 )
 
 
@@ -170,6 +170,10 @@ install(TARGETS ${DA_LIB_NAME}
     ARCHIVE DESTINATION lib
     INCLUDES DESTINATION include/${DA_LIB_NAME}
 )
+export(EXPORT ${DA_LIB_NAME}Targets
+       FILE ${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}Targets.cmake
+       NAMESPACE DA::
+       )
 install(EXPORT "${DA_LIB_NAME}Targets"
     FILE ${DA_LIB_NAME}Targets.cmake # 导出的文件基准名。
     NAMESPACE DA::

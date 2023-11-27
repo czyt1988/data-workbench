@@ -107,8 +107,8 @@ target_include_directories(${DA_LIB_NAME} PUBLIC
 )
 message(STATUS "  |-pybind11 include: ${pybind11_DIR}/include")
 
-# DAPyScripts依赖DAPyBindQt
-set(DAPyBindQt_DIR "${CMAKE_INSTALL_PREFIX}/lib/cmake")
+# DAPyBindQt
+# set(DAPyBindQt_DIR "${CMAKE_INSTALL_PREFIX}/lib/cmake")
 find_package(DAPyBindQt)
 if(${DAPyBindQt_FOUND})
     message(STATUS "  |-link DA::DAPyBindQt")
@@ -130,9 +130,9 @@ set_target_properties(${DA_LIB_NAME} PROPERTIES
     DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
     VERSION ${DA_LIB_VERSION}
     EXPORT_NAME ${DA_LIB_NAME}
-    ARCHIVE_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}/lib"
-    LIBRARY_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}/lib"
-    RUNTIME_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}/bin"
+#    ARCHIVE_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}/lib"
+#    LIBRARY_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}/lib"
+#    RUNTIME_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}/bin"
 )
 
 
@@ -193,12 +193,15 @@ install(TARGETS ${DA_LIB_NAME}
     ARCHIVE DESTINATION lib
     INCLUDES DESTINATION include/${DA_LIB_NAME}
 )
+export(EXPORT ${DA_LIB_NAME}Targets
+       FILE ${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}Targets.cmake
+       NAMESPACE DA::
+       )
 install(EXPORT "${DA_LIB_NAME}Targets"
     FILE ${DA_LIB_NAME}Targets.cmake # 导出的文件基准名。
     NAMESPACE DA::
     DESTINATION lib/cmake
 )
-
 target_include_directories(${DA_LIB_NAME} PUBLIC
     $<INSTALL_INTERFACE:include/${DA_LIB_NAME}>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>

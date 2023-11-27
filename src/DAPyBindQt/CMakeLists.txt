@@ -108,7 +108,6 @@ include_directories(${Python3_INCLUDE_DIRS})
 # DAPyBindQt依赖pybind11
 # pybind11是header only
 set(pybind11_DIR "${CMAKE_INSTALL_PREFIX}/../pybind11")
-#include_directories(${pybind11_DIR}/include)
 target_include_directories(${DA_LIB_NAME} PUBLIC
     $<INSTALL_INTERFACE:../pybind11/include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../3rdparty/pybind11/pybind11/include>
@@ -126,9 +125,9 @@ set_target_properties(${DA_LIB_NAME} PROPERTIES
     DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
     VERSION ${DA_LIB_VERSION}
     EXPORT_NAME ${DA_LIB_NAME}
-    ARCHIVE_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}/lib"
-    LIBRARY_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}/lib"
-    RUNTIME_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}/bin"
+#    ARCHIVE_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}/lib"
+#    LIBRARY_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}/lib"
+#    RUNTIME_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}/bin"
 )
 
 
@@ -189,6 +188,10 @@ install(TARGETS ${DA_LIB_NAME}
     ARCHIVE DESTINATION lib
     INCLUDES DESTINATION include/${DA_LIB_NAME}
 )
+export(EXPORT ${DA_LIB_NAME}Targets
+       FILE ${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}Targets.cmake
+       NAMESPACE DA::
+       )
 install(EXPORT "${DA_LIB_NAME}Targets"
     FILE ${DA_LIB_NAME}Targets.cmake # 导出的文件基准名。
     NAMESPACE DA::
