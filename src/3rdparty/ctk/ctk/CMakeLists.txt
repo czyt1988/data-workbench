@@ -120,9 +120,9 @@ set_target_properties(${DACTK_LIB_NAME} PROPERTIES
 ##################################
 # install
 ##################################
-
-set(DA_LIB_INCLUDE_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/include")
-message("DA_LIB_INCLUDE_INSTALL_DIR=${DA_LIB_INCLUDE_INSTALL_DIR}")
+# xxxConfig.cmake.in中，会让此变量和“${CMAKE_CURRENT_LIST_DIR}/”进行拼接，也就是${CMAKE_CURRENT_LIST_DIR}/@SARIBBONBAR_LIB_INCLUDE_INSTALL_DIR@
+# 最终变为${CMAKE_CURRENT_LIST_DIR}/../../include
+set(DA_LIB_INCLUDE_INSTALL_DIR "../../include")
 # Generate library version info which will generate xxxConfigVersion.cmake,
 # the ${PACKAGE_VERSION} is the version defined in project()
 include(CMakePackageConfigHelpers)

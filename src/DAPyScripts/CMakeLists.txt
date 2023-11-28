@@ -152,7 +152,11 @@ target_include_directories(${DA_LIB_NAME} PUBLIC
 ########################################################
 message(STATUS "${DA_LIB_NAME} install dir is : ${CMAKE_INSTALL_PREFIX}")
 
-set(DA_LIB_INCLUDE_INSTALL_DIR "include/${DA_LIB_NAME}>")
+# DALibConfig.cmake.in中，会让此变量和“${PACKAGE_PREFIX_DIR}/”进行拼接，也就是${PACKAGE_PREFIX_DIR}/@DA_LIB_INCLUDE_INSTALL_DIR@
+# PACKAGE_PREFIX_DIR = ${CMAKE_CURRENT_LIST_DIR}/../..
+# 最终变为${CMAKE_CURRENT_LIST_DIR}/../../include/${DA_LIB_NAME}
+set(DA_LIB_INCLUDE_INSTALL_DIR "include/${DA_LIB_NAME}")
+
 # Generate library version info which will generate xxxConfigVersion.cmake,
 # the ${PACKAGE_VERSION} is the version defined in project()
 include(CMakePackageConfigHelpers)
@@ -162,7 +166,7 @@ write_basic_package_version_file(
     COMPATIBILITY SameMajorVersion
 )
 configure_package_config_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/${DA_LIB_NAME}Config.cmake.in"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../DALibConfig.cmake.in"
   "${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}Config.cmake"
   INSTALL_DESTINATION lib/cmake
   PATH_VARS DA_LIB_INCLUDE_INSTALL_DIR

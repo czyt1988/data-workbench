@@ -48,9 +48,9 @@ set(DA_MIN_QT_VERSION 5.14)
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
     Core
-	Gui
-	Widgets
-	Xml
+    Gui
+    Widgets
+    Xml
     REQUIRED
 )
 if(Qt5_POSITION_INDEPENDENT_CODE)
@@ -86,30 +86,43 @@ add_library(DAWorkbench::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
 ########################################################
 # 依赖链接 #!!!!** 注意变更 **!!!!
 ########################################################
+message(STATUS "${DA_LIB_NAME} Qt${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
 target_link_libraries(${DA_LIB_NAME} PUBLIC
     Qt${QT_VERSION_MAJOR}::Core
-	Qt${QT_VERSION_MAJOR}::Gui
-	Qt${QT_VERSION_MAJOR}::Widgets
-	Qt${QT_VERSION_MAJOR}::Xml
+    Qt${QT_VERSION_MAJOR}::Gui
+    Qt${QT_VERSION_MAJOR}::Widgets
+    Qt${QT_VERSION_MAJOR}::Xml
 )
-message(STATUS "${DA_LIB_NAME} Qt${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
 
 # 3rdparty - DALiteCtk
-set(DALiteCtk_DIR "${CMAKE_INSTALL_PREFIX}/../liteCtk/lib/cmake")
 find_package(DALiteCtk)
+if(DALiteCtk_FOUND)
+    message(STATUS "  |-link DALiteCtk")
+    message(STATUS "  | |-include dir:${DALiteCtk_INCLUDE_DIR}")
+endif()
+include_directories(${DALiteCtk_INCLUDE_DIR})
 
-# 3rdparty - SARibbonBar
-set(SARibbonBar_DIR "${CMAKE_INSTALL_PREFIX}/../SARibbon/lib/cmake")
-find_package(SARibbonBar)
+# 3rdparty - SARibbon
+find_package(SARibbon)
+if(SARibbon_FOUND)
+    message(STATUS "  |-link SARibbon")
+    message(STATUS "  | |-include dir:${SARibbonBar_INCLUDE_DIR}")
+endif()
+include_directories(${SARibbonBar_INCLUDE_DIR})
 
 # DAUtils
 # 指定DAWorkbench_DIR为工程的顶层BINARY_DIR，否则找不到DAWorkbench
-set(DAWorkbench_DIR "${CMAKE_BINARY_DIR}")
 find_package(DAWorkbench COMPONENTS DAUtils)
 if(${DAWorkbench_FOUND})
     message(STATUS "  |-link DA::DAUtils")
     message(STATUS "  | |-include dir:${DAUtils_INCLUDE_DIR}")
 endif()
+
+target_link_libraries(${DA_LIB_NAME} PRIVATE
+    SARibbon
+    DALiteCtk
+)
+
 target_link_libraries(${DA_LIB_NAME} PRIVATE
     DAWorkbench::DAUtils
 )
@@ -147,7 +160,10 @@ target_include_directories(${DA_LIB_NAME} PUBLIC
 ########################################################
 message(STATUS "${DA_LIB_NAME} install dir is : ${CMAKE_INSTALL_PREFIX}")
 
-set(DA_LIB_INCLUDE_INSTALL_DIR include/${DA_LIB_NAME}>)
+# DALibConfig.cmake.in中，会让此变量和“${PACKAGE_PREFIX_DIR}/”进行拼接，也就是${PACKAGE_PREFIX_DIR}/@DA_LIB_INCLUDE_INSTALL_DIR@
+# PACKAGE_PREFIX_DIR = ${CMAKE_CURRENT_LIST_DIR}/../..
+# 最终变为${CMAKE_CURRENT_LIST_DIR}/../../include/${DA_LIB_NAME}
+set(DA_LIB_INCLUDE_INSTALL_DIR "include/${DA_LIB_NAME}")
 
 # Generate library version info which will generate xxxConfigVersion.cmake,
 # the ${PACKAGE_VERSION} is the version defined in project()
@@ -158,7 +174,7 @@ write_basic_package_version_file(
     COMPATIBILITY SameMajorVersion
 )
 configure_package_config_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/${DA_LIB_NAME}Config.cmake.in"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../DALibConfig.cmake.in"
   "${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}Config.cmake"
   INSTALL_DESTINATION lib/cmake
   PATH_VARS DA_LIB_INCLUDE_INSTALL_DIR

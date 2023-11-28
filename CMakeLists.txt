@@ -13,6 +13,8 @@ set(DA_VERSION_MINOR 0)
 set(DA_VERSION_PATCH 2)
 set(DA_VERSION "${DA_VERSION_MAJOR}.${DA_VERSION_MINOR}.${DA_VERSION_PATCH}")
 message(STATUS "DA Version is ${DA_VERSION}")
+
+
 ########################################################
 # 定义工程
 ########################################################
@@ -66,12 +68,20 @@ endif()
 set(DA_MIN_QT_VERSION 5.14)
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
 
+
+set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/bin_qt${QT_VERSION}/build_lib/DA")
+########################################################
+# 定义第三方库路径
+########################################################
+set(SARibbon_DIR "${CMAKE_INSTALL_PREFIX}/../SARibbon/lib/cmake")
+set(DALiteCtk_DIR "${CMAKE_INSTALL_PREFIX}/../liteCtk/lib/cmake")
+set(DAWorkbench_DIR "${CMAKE_BINARY_DIR}")
+
 ##################################
 # install
 ##################################
 message(STATUS "CMAKE_CURRENT_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}")
 
-set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/bin_qt${QT_VERSION}/build_lib/DA")
 message(STATUS "${DA_PROJECT_NAME} install dir is : ${CMAKE_INSTALL_PREFIX}")
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
