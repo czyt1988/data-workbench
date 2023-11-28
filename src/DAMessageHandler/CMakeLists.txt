@@ -62,8 +62,6 @@ endif()
 ########################################################
 # 包含自身目录
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-# 上级目录加入include_directories，DAGlobals.h需要
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/..)
 # 默认的CMAKE_INSTALL_PREFIX
 set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/../../bin_qt${QT_VERSION}/build_lib/DA")
 ########################################################
@@ -130,17 +128,25 @@ set_target_properties(${DA_LIB_NAME} PROPERTIES
 #    RUNTIME_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}/bin"
 )
 
+########################################################
+# 目标依赖目录
+########################################################
+target_include_directories(${DA_LIB_NAME} PUBLIC
+    $<INSTALL_INTERFACE:include/${DA_LIB_NAME}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)
 
+target_include_directories(${DA_LIB_NAME} PUBLIC
+    $<INSTALL_INTERFACE:include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../>
+)
 
 ########################################################
 # 安装
 ########################################################
 message(STATUS "${DA_LIB_NAME} install dir is : ${CMAKE_INSTALL_PREFIX}")
 
-set(DA_LIB_INCLUDE_INSTALL_DIR
-    $<INSTALL_INTERFACE:include/${DA_LIB_NAME}>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-)
+set(DA_LIB_INCLUDE_INSTALL_DIR "include/${DA_LIB_NAME}>")
 
 # Generate library version info which will generate xxxConfigVersion.cmake,
 # the ${PACKAGE_VERSION} is the version defined in project()
@@ -186,12 +192,6 @@ install(FILES
     ${DA_GLOBAL_HEADER}
     DESTINATION .
     COMPONENT headers
-)
-
-
-target_include_directories(${DA_LIB_NAME} PUBLIC
-    $<INSTALL_INTERFACE:include/${DA_LIB_NAME}>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
 
 export(EXPORT ${DA_LIB_NAME}Targets

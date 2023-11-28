@@ -62,8 +62,6 @@ endif()
 ########################################################
 # 包含自身目录
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-# 上级目录加入include_directories，DAGlobals.h需要
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/..)
 # 默认的CMAKE_INSTALL_PREFIX
 set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/../../bin_qt${QT_VERSION}/build_lib/DA")
 ########################################################
@@ -96,6 +94,14 @@ target_link_libraries(${DA_LIB_NAME} PUBLIC
 )
 message(STATUS "${DA_LIB_NAME} Qt${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
 
+# 3rdparty - DALiteCtk
+set(DALiteCtk_DIR "${CMAKE_INSTALL_PREFIX}/../liteCtk/lib/cmake")
+find_package(DALiteCtk)
+
+# 3rdparty - SARibbonBar
+set(SARibbonBar_DIR "${CMAKE_INSTALL_PREFIX}/../SARibbon/lib/cmake")
+find_package(SARibbonBar)
+
 # DAUtils
 # 指定DAWorkbench_DIR为工程的顶层BINARY_DIR，否则找不到DAWorkbench
 set(DAWorkbench_DIR "${CMAKE_BINARY_DIR}")
@@ -123,18 +129,25 @@ set_target_properties(${DA_LIB_NAME} PROPERTIES
 #    LIBRARY_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}/lib"
 #    RUNTIME_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}/bin"
 )
+########################################################
+# 目标依赖目录
+########################################################
+target_include_directories(${DA_LIB_NAME} PUBLIC
+    $<INSTALL_INTERFACE:include/${DA_LIB_NAME}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)
 
-
+target_include_directories(${DA_LIB_NAME} PUBLIC
+    $<INSTALL_INTERFACE:include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../>
+)
 
 ########################################################
 # 安装
 ########################################################
 message(STATUS "${DA_LIB_NAME} install dir is : ${CMAKE_INSTALL_PREFIX}")
 
-set(DA_LIB_INCLUDE_INSTALL_DIR
-    $<INSTALL_INTERFACE:include/${DA_LIB_NAME}>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-)
+set(DA_LIB_INCLUDE_INSTALL_DIR include/${DA_LIB_NAME}>)
 
 # Generate library version info which will generate xxxConfigVersion.cmake,
 # the ${PACKAGE_VERSION} is the version defined in project()
@@ -184,15 +197,10 @@ install(FILES
     COMPONENT headers
 )
 
-target_include_directories(${DA_LIB_NAME} PUBLIC
-    $<INSTALL_INTERFACE:include/${DA_LIB_NAME}>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-)
-
 export(EXPORT ${DA_LIB_NAME}Targets
        FILE ${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}Targets.cmake
        NAMESPACE DAWorkbench::
-       )
+)
 ########################################################
 # dll资源信息
 ########################################################
