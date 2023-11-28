@@ -1,12 +1,12 @@
 ﻿
 # Cmake的命令不区分打下写，例如message，set等命令；但Cmake的变量区分大小写
 # 为统一风格，本项目的Cmake命令全部采用小写，变量全部采用大写加下划线组合。
-# DAAxOfficeWrapper 库
+# DAPyCommonWidgets 库
 
 cmake_minimum_required(VERSION 3.5)
 
-set(DA_LIB_NAME "DAAxOfficeWrapper")
-set(DA_LIB_DESCRIPTION "office ax container qt wrapper | https://github.com/czyt1988")
+set(DA_LIB_NAME "DACommonWidgets") #!!!!** 注意变更为实际库名 **!!!!
+set(DA_LIB_DESCRIPTION "DA Common Widgets | https://github.com/czyt1988")#!!!!** 注意变更 **!!!!
 set(DA_LIB_VERSION_MAJOR 0)
 set(DA_LIB_VERSION_MINOR 0)
 set(DA_LIB_VERSION_PATCH 1)
@@ -48,10 +48,9 @@ set(DA_MIN_QT_VERSION 5.14)
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
     Core
-    Gui
-    Widgets
-    Xml
-    AxContainer
+	Gui
+	Widgets
+	Xml
     REQUIRED
 )
 if(Qt5_POSITION_INDEPENDENT_CODE)
@@ -68,30 +67,32 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/..)
 # 默认的CMAKE_INSTALL_PREFIX
 set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/../../bin_qt${QT_VERSION}/build_lib/DA")
 ########################################################
-# 文件加载
+# 文件加载 #!!!!** 注意变更 **!!!!
 ########################################################
+set(DA_GLOBAL_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/../DAGlobals.h)
 file(GLOB DA_LIB_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 file(GLOB DA_LIB_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
-set(DA_GLOBAL_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/../DAGlobals.h)
-
+file(GLOB DA_LIB_QT_UI_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.ui")
+file(GLOB DA_LIB_QT_RC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.qrc")
 
 add_library(${DA_LIB_NAME} SHARED
             ${DA_LIB_HEADER_FILES}
             ${DA_LIB_SOURCE_FILES}
+			${DA_LIB_QT_UI_FILES}
+			${DA_LIB_QT_RC_FILES}
             ${DA_GLOBAL_HEADER}
 )	
-add_library(DAWorkbench::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
 # 构建库定义的宏
-target_compile_definitions(${DA_LIB_NAME} PRIVATE DAAXOFFICEWRAPPER_BUILDLIB)
+target_compile_definitions(${DA_LIB_NAME} PRIVATE DACOMMONWIDGETS_BUILD)#!!!!** 注意变更 **!!!!
+add_library(DAWorkbench::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
 ########################################################
-# 依赖链接
+# 依赖链接 #!!!!** 注意变更 **!!!!
 ########################################################
 target_link_libraries(${DA_LIB_NAME} PUBLIC
     Qt${QT_VERSION_MAJOR}::Core
-    Qt${QT_VERSION_MAJOR}::Gui
-    Qt${QT_VERSION_MAJOR}::Widgets
-    Qt${QT_VERSION_MAJOR}::Xml
-    Qt${QT_VERSION_MAJOR}::AxContainer
+	Qt${QT_VERSION_MAJOR}::Gui
+	Qt${QT_VERSION_MAJOR}::Widgets
+	Qt${QT_VERSION_MAJOR}::Xml
 )
 message(STATUS "${DA_LIB_NAME} Qt${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
 
@@ -100,7 +101,8 @@ message(STATUS "${DA_LIB_NAME} Qt${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VE
 set(DAWorkbench_DIR "${CMAKE_BINARY_DIR}")
 find_package(DAWorkbench COMPONENTS DAUtils)
 if(${DAWorkbench_FOUND})
-    message(STATUS "  |-link DAUtils")
+    message(STATUS "  |-link DA::DAUtils")
+    message(STATUS "  | |-include dir:${DAUtils_INCLUDE_DIR}")
 endif()
 target_link_libraries(${DA_LIB_NAME} PRIVATE
     DAWorkbench::DAUtils
@@ -134,21 +136,6 @@ set(DA_LIB_INCLUDE_INSTALL_DIR
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
 
-# 声明导出target的名称
-install(TARGETS ${DA_LIB_NAME}
-    EXPORT "${DA_LIB_NAME}Targets"
-    INCLUDES DESTINATION include/${DA_LIB_NAME}
-    RUNTIME DESTINATION bin
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
-)
-
-install(EXPORT "${DA_LIB_NAME}Targets"
-    FILE ${DA_LIB_NAME}Targets.cmake # 导出的文件基准名。
-    NAMESPACE DAWorkbench::
-    DESTINATION lib/cmake
-)
-
 # Generate library version info which will generate xxxConfigVersion.cmake,
 # the ${PACKAGE_VERSION} is the version defined in project()
 include(CMakePackageConfigHelpers)
@@ -160,9 +147,24 @@ write_basic_package_version_file(
 configure_package_config_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/${DA_LIB_NAME}Config.cmake.in"
   "${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}Config.cmake"
-  INSTALL_DESTINATION "lib/cmake"
+  INSTALL_DESTINATION lib/cmake
   PATH_VARS DA_LIB_INCLUDE_INSTALL_DIR
 )
+
+# 声明导出target的名称
+install(TARGETS ${DA_LIB_NAME}
+    EXPORT "${DA_LIB_NAME}Targets"
+    INCLUDES DESTINATION include/${DA_LIB_NAME}
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+)
+install(EXPORT "${DA_LIB_NAME}Targets"
+    FILE ${DA_LIB_NAME}Targets.cmake # 导出的文件基准名。
+    NAMESPACE DAWorkbench::
+    DESTINATION lib/cmake
+)
+
 
 install(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}Config.cmake"
@@ -171,16 +173,16 @@ install(FILES
 )
 install(FILES
     ${DA_LIB_HEADER_FILES}
-    DESTINATION include/${DA_LIB_NAME}
-    COMPONENT headers
-)
-#DAGlobal.h
-install(FILES
-    ${DA_GLOBAL_HEADER}
-    DESTINATION .
+    DESTINATION "include/${DA_LIB_NAME}"
     COMPONENT headers
 )
 
+#DAGlobal.h
+install(FILES
+    ${DA_GLOBAL_HEADER}
+    DESTINATION "include"
+    COMPONENT headers
+)
 
 target_include_directories(${DA_LIB_NAME} PUBLIC
     $<INSTALL_INTERFACE:include/${DA_LIB_NAME}>
@@ -190,7 +192,7 @@ target_include_directories(${DA_LIB_NAME} PUBLIC
 export(EXPORT ${DA_LIB_NAME}Targets
        FILE ${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}Targets.cmake
        NAMESPACE DAWorkbench::
-)
+       )
 ########################################################
 # dll资源信息
 ########################################################

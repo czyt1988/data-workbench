@@ -17,16 +17,22 @@ add_subdirectory(DAMessageHandler)
 add_dependencies(DAMessageHandler DAUtils)
 
 add_subdirectory(DAPyBindQt)
+
 add_subdirectory(DAPyScripts)
 add_dependencies(DAPyScripts DAPyBindQt)
 
 add_subdirectory(DAData)
-add_dependencies(DAData DAPyScripts)
-#add_subdirectory(DACommonWidgets)
+add_dependencies(DAData DAUtils DAPyBindQt DAPyScripts)
+
+add_subdirectory(DAPyCommonWidgets)
+add_dependencies(DAPyCommonWidgets DAPyBindQt)
+
+add_subdirectory(DACommonWidgets)
+add_dependencies(DAPyCommonWidgets DAUtils)
+
 #add_subdirectory(DAGraphicsView)
 #add_subdirectory(DAWorkFlow)
 #add_subdirectory(DAFigure)
-#add_subdirectory(DAPyCommonWidgets)
 #add_subdirectory(DAGui)
 #add_subdirectory(DAInterface)
 #add_subdirectory(DAPluginSupport)

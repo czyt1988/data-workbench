@@ -97,10 +97,15 @@ message(STATUS "${DA_LIB_NAME} Qt${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VE
 # spdlog是header only
 set(spdlog_DIR "${CMAKE_INSTALL_PREFIX}/../spdlog")
 include_directories(${spdlog_DIR}/include)
+target_include_directories(${DA_LIB_NAME} PUBLIC
+    $<INSTALL_INTERFACE:../spdlog/include/>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../3rdparty/spdlog/spdlog/include>
+)
 message(STATUS "  |-spdlog include: ${spdlog_DIR}/include")
 
-# DAMessageHandler依赖DAUtils
-# set(DAUtils_DIR "${CMAKE_INSTALL_PREFIX}/lib/cmake")
+# DAUtils
+# 指定DAWorkbench_DIR为工程的顶层BINARY_DIR，否则找不到DAWorkbench
+set(DAWorkbench_DIR "${CMAKE_BINARY_DIR}")
 find_package(DAWorkbench COMPONENTS DAUtils)
 if(${DAWorkbench_FOUND})
     message(STATUS "  |-link DAUtils")
@@ -139,6 +144,21 @@ set(DA_LIB_INCLUDE_INSTALL_DIR
 
 # Generate library version info which will generate xxxConfigVersion.cmake,
 # the ${PACKAGE_VERSION} is the version defined in project()
+
+# 声明导出target的名称
+install(TARGETS ${DA_LIB_NAME}
+    EXPORT "${DA_LIB_NAME}Targets"
+    INCLUDES DESTINATION include/${DA_LIB_NAME}
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+)
+
+install(EXPORT "${DA_LIB_NAME}Targets"
+    FILE ${DA_LIB_NAME}Targets.cmake # 导出的文件基准名。
+    NAMESPACE DAWorkbench::
+    DESTINATION lib/cmake
+)
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
     ${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}ConfigVersion.cmake
@@ -151,24 +171,6 @@ configure_package_config_file(
   INSTALL_DESTINATION lib/cmake
   PATH_VARS DA_LIB_INCLUDE_INSTALL_DIR
 )
-# 声明导出target的名称
-install(TARGETS ${DA_LIB_NAME}
-    EXPORT "${DA_LIB_NAME}Targets"
-    INCLUDES DESTINATION include/${DA_LIB_NAME}
-    RUNTIME DESTINATION bin
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
-)
-export(EXPORT ${DA_LIB_NAME}Targets
-       FILE ${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}Targets.cmake
-       NAMESPACE DAWorkbench::
-       )
-install(EXPORT "${DA_LIB_NAME}Targets"
-    FILE ${DA_LIB_NAME}Targets.cmake # 导出的文件基准名。
-    NAMESPACE DAWorkbench::
-    DESTINATION lib/cmake
-)
-
 install(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}Config.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}ConfigVersion.cmake"
@@ -192,7 +194,10 @@ target_include_directories(${DA_LIB_NAME} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
 
-
+export(EXPORT ${DA_LIB_NAME}Targets
+       FILE ${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}Targets.cmake
+       NAMESPACE DAWorkbench::
+)
 ########################################################
 # dll资源信息
 ########################################################

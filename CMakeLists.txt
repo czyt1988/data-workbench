@@ -69,6 +69,8 @@ find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
 ##################################
 # install
 ##################################
+message(STATUS "CMAKE_CURRENT_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}")
+
 set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/bin_qt${QT_VERSION}/build_lib/DA")
 message(STATUS "${DA_PROJECT_NAME} install dir is : ${CMAKE_INSTALL_PREFIX}")
 include(CMakePackageConfigHelpers)
@@ -83,6 +85,7 @@ configure_package_config_file(
     INSTALL_DESTINATION "lib/cmake"
     NO_CHECK_REQUIRED_COMPONENTS_MACRO
 )
+
 install(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"

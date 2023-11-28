@@ -110,7 +110,8 @@ target_include_directories(${DA_LIB_NAME} PUBLIC
 message(STATUS "  |-pybind11 include: ${pybind11_DIR}/include")
 
 # DAPyBindQt
-# set(DAPyBindQt_DIR "${CMAKE_INSTALL_PREFIX}/lib/cmake")
+# 指定DAWorkbench_DIR为工程的顶层BINARY_DIR，否则找不到DAWorkbench
+set(DAWorkbench_DIR "${CMAKE_BINARY_DIR}")
 find_package(DAWorkbench COMPONENTS DAPyBindQt)
 if(${DAWorkbench_FOUND})
     message(STATUS "  |-link DA::DAPyBindQt")
@@ -118,10 +119,6 @@ if(${DAWorkbench_FOUND})
 endif()
 target_link_libraries(${DA_LIB_NAME} PRIVATE
     DAWorkbench::DAPyBindQt
-)
-target_include_directories(${DA_LIB_NAME} PUBLIC
-    $<INSTALL_INTERFACE:include/DAPyBindQt>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../DAPyBindQt>
 )
 ########################################################
 # Qt的moc
@@ -164,6 +161,7 @@ configure_package_config_file(
   INSTALL_DESTINATION lib/cmake
   PATH_VARS DA_LIB_INCLUDE_INSTALL_DIR
 )
+
 # 声明导出target的名称
 install(TARGETS ${DA_LIB_NAME}
     EXPORT "${DA_LIB_NAME}Targets"
@@ -172,15 +170,13 @@ install(TARGETS ${DA_LIB_NAME}
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
 )
-export(EXPORT ${DA_LIB_NAME}Targets
-       FILE ${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}Targets.cmake
-       NAMESPACE DAWorkbench::
-       )
 install(EXPORT "${DA_LIB_NAME}Targets"
     FILE ${DA_LIB_NAME}Targets.cmake # 导出的文件基准名。
     NAMESPACE DAWorkbench::
     DESTINATION lib/cmake
 )
+
+
 install(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}Config.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}ConfigVersion.cmake"
@@ -188,14 +184,14 @@ install(FILES
 )
 install(FILES
     ${DA_LIB_HEADER_FILES}
-    DESTINATION include/${DA_LIB_NAME}
+    DESTINATION "include/${DA_LIB_NAME}"
     COMPONENT headers
 )
 
 #DAGlobal.h
 install(FILES
     ${DA_GLOBAL_HEADER}
-    DESTINATION .
+    DESTINATION "include"
     COMPONENT headers
 )
 
@@ -204,7 +200,10 @@ target_include_directories(${DA_LIB_NAME} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
 
-
+export(EXPORT ${DA_LIB_NAME}Targets
+       FILE ${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}Targets.cmake
+       NAMESPACE DAWorkbench::
+       )
 ########################################################
 # dll资源信息
 ########################################################
