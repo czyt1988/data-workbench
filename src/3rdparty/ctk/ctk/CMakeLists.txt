@@ -92,7 +92,6 @@ add_library(${DACTK_LIB_NAME} SHARED
 # 构建库定义的宏
 target_compile_definitions(${DACTK_LIB_NAME} PRIVATE MAKE_CTK_LIB)#!!!!** 注意变更 **!!!!
 target_compile_definitions(${DACTK_LIB_NAME} PRIVATE CTK_SHARED)#!!!!** 注意变更 **!!!!
-add_library(DAWorkbench::${DACTK_LIB_NAME} ALIAS ${DACTK_LIB_NAME})
 
 target_link_libraries(${DACTK_LIB_NAME} PUBLIC
     Qt${QT_VERSION_MAJOR}::Core
@@ -111,18 +110,18 @@ set_target_properties(${DACTK_LIB_NAME} PROPERTIES
     DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
     VERSION ${DACTK_VERSION}
     EXPORT_NAME ${DACTK_LIB_NAME}
-#    ARCHIVE_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}/lib"
-#    LIBRARY_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}/lib"
-#    RUNTIME_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}/bin"
 )
 
 
 ##################################
 # install
 ##################################
-# xxxConfig.cmake.in中，会让此变量和“${CMAKE_CURRENT_LIST_DIR}/”进行拼接，也就是${CMAKE_CURRENT_LIST_DIR}/@SARIBBONBAR_LIB_INCLUDE_INSTALL_DIR@
+# xxxConfig.cmake.in中，会让此变量和“${PACKAGE_PREFIX_DIR}/”进行拼接，也就是${PACKAGE_PREFIX_DIR}/@DA_LIB_INCLUDE_INSTALL_DIR@
+# PACKAGE_PREFIX_DIR等于${CMAKE_CURRENT_LIST_DIR}/../..
 # 最终变为${CMAKE_CURRENT_LIST_DIR}/../../include
-set(DA_LIB_INCLUDE_INSTALL_DIR "../../include")
+# 注意此处是替换，不要出现引号
+
+set(DA_LIB_INCLUDE_INSTALL_DIR include)
 # Generate library version info which will generate xxxConfigVersion.cmake,
 # the ${PACKAGE_VERSION} is the version defined in project()
 include(CMakePackageConfigHelpers)
@@ -141,14 +140,13 @@ configure_package_config_file(
 # 声明导出target的名称
 install(TARGETS ${DACTK_LIB_NAME}
     EXPORT "${DACTK_LIB_NAME}Targets"
-    INCLUDES DESTINATION include/${DACTK_LIB_NAME}
+    INCLUDES DESTINATION include
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
 )
 install(EXPORT "${DACTK_LIB_NAME}Targets"
     FILE ${DACTK_LIB_NAME}Targets.cmake # 导出的文件基准名。
-    NAMESPACE DAWorkbench::
     DESTINATION lib/cmake
 )
 
@@ -170,6 +168,5 @@ target_include_directories(${DACTK_LIB_NAME} PUBLIC
 )
 
 export(EXPORT ${DACTK_LIB_NAME}Targets
-       FILE ${CMAKE_CURRENT_BINARY_DIR}/${DACTK_LIB_NAME}Targets.cmake
-       NAMESPACE DAWorkbench::
+    FILE ${CMAKE_CURRENT_BINARY_DIR}/${DACTK_LIB_NAME}Targets.cmake
 )

@@ -73,7 +73,7 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/bin_qt${QT_VERSION}/build_
 ########################################################
 # 定义第三方库路径
 ########################################################
-set(SARibbon_DIR "${CMAKE_INSTALL_PREFIX}/../SARibbon/lib/cmake")
+set(SARibbonBar_DIR "${CMAKE_INSTALL_PREFIX}/../SARibbon/lib/cmake")
 set(DALiteCtk_DIR "${CMAKE_INSTALL_PREFIX}/../liteCtk/lib/cmake")
 set(DAWorkbench_DIR "${CMAKE_BINARY_DIR}")
 

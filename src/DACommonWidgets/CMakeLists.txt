@@ -86,6 +86,7 @@ add_library(DAWorkbench::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
 ########################################################
 # 依赖链接 #!!!!** 注意变更 **!!!!
 ########################################################
+# -------------link Qt--------------------------
 message(STATUS "${DA_LIB_NAME} Qt${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
 target_link_libraries(${DA_LIB_NAME} PUBLIC
     Qt${QT_VERSION_MAJOR}::Core
@@ -93,7 +94,7 @@ target_link_libraries(${DA_LIB_NAME} PUBLIC
     Qt${QT_VERSION_MAJOR}::Widgets
     Qt${QT_VERSION_MAJOR}::Xml
 )
-
+# -------------link 3rdparty--------------------------
 # 3rdparty - DALiteCtk
 find_package(DALiteCtk)
 if(DALiteCtk_FOUND)
@@ -103,13 +104,19 @@ endif()
 include_directories(${DALiteCtk_INCLUDE_DIR})
 
 # 3rdparty - SARibbon
-find_package(SARibbon)
-if(SARibbon_FOUND)
-    message(STATUS "  |-link SARibbon")
+find_package(SARibbonBar)
+if(SARibbonBar_FOUND)
+    message(STATUS "  |-link SARibbonBar")
     message(STATUS "  | |-include dir:${SARibbonBar_INCLUDE_DIR}")
 endif()
 include_directories(${SARibbonBar_INCLUDE_DIR})
-
+ 
+# 链接的第三方库
+target_link_libraries(${DA_LIB_NAME} PUBLIC
+    SARibbonBar
+    DALiteCtk
+)
+# -------------link DAWorkBench--------------------------
 # DAUtils
 # 指定DAWorkbench_DIR为工程的顶层BINARY_DIR，否则找不到DAWorkbench
 find_package(DAWorkbench COMPONENTS DAUtils)
@@ -118,10 +125,6 @@ if(${DAWorkbench_FOUND})
     message(STATUS "  | |-include dir:${DAUtils_INCLUDE_DIR}")
 endif()
 
-target_link_libraries(${DA_LIB_NAME} PRIVATE
-    SARibbon
-    DALiteCtk
-)
 
 target_link_libraries(${DA_LIB_NAME} PRIVATE
     DAWorkbench::DAUtils
@@ -163,7 +166,8 @@ message(STATUS "${DA_LIB_NAME} install dir is : ${CMAKE_INSTALL_PREFIX}")
 # DALibConfig.cmake.in中，会让此变量和“${PACKAGE_PREFIX_DIR}/”进行拼接，也就是${PACKAGE_PREFIX_DIR}/@DA_LIB_INCLUDE_INSTALL_DIR@
 # PACKAGE_PREFIX_DIR = ${CMAKE_CURRENT_LIST_DIR}/../..
 # 最终变为${CMAKE_CURRENT_LIST_DIR}/../../include/${DA_LIB_NAME}
-set(DA_LIB_INCLUDE_INSTALL_DIR "include/${DA_LIB_NAME}")
+# 注意，此处不要出现引号
+set(DA_LIB_INCLUDE_INSTALL_DIR include/${DA_LIB_NAME})
 
 # Generate library version info which will generate xxxConfigVersion.cmake,
 # the ${PACKAGE_VERSION} is the version defined in project()

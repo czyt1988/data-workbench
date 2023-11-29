@@ -1,4 +1,4 @@
-ThirdParty_QWT_Dir=$$PWD/qwt
+ThirdParty_QWT_Dir=$$PWD/qwt/qwt
 # common_3rdparty 定义了第三方库的路径
 include($${ThirdParty_QWT_Dir}/qwtconfig.pri)
 include( $${ThirdParty_QWT_Dir}/qwtfunctions.pri)

@@ -28,10 +28,13 @@ add_subdirectory(DAPyCommonWidgets)
 add_dependencies(DAPyCommonWidgets DAPyBindQt)
 
 add_subdirectory(DACommonWidgets)
-add_dependencies(DAPyCommonWidgets DAUtils)
+add_dependencies(DACommonWidgets DAUtils)
 
-#add_subdirectory(DAGraphicsView)
-#add_subdirectory(DAWorkFlow)
+add_subdirectory(DAGraphicsView)
+add_dependencies(DAGraphicsView DAUtils)
+
+add_subdirectory(DAWorkFlow)
+add_dependencies(DAWorkFlow DAGraphicsView)
 #add_subdirectory(DAFigure)
 #add_subdirectory(DAGui)
 #add_subdirectory(DAInterface)

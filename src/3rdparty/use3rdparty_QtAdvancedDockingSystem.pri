@@ -1,4 +1,4 @@
-ThirdParty_QtAdvancedDockingSystem_Dir=$$PWD/Qt-Advanced-Docking-System
+ThirdParty_QtAdvancedDockingSystem_Dir=$$PWD/ADS/ADS
 include($$PWD/common_3rdparty.pri)
 # common_3rdparty 定义了第三方库的路径
 QAD_LIB_NAME = qt$${QT_MAJOR_VERSION}advanceddocking
