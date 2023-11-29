@@ -98,7 +98,7 @@ if(${DAWorkbench_FOUND})
     message(STATUS "  |-link DA::DAUtils")
     message(STATUS "  | |-include dir:${DAUtils_INCLUDE_DIR}")
 endif()
-target_link_libraries(${DA_LIB_NAME} PRIVATE
+target_link_libraries(${DA_LIB_NAME} PUBLIC
     DAWorkbench::DAUtils
 )
 

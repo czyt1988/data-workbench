@@ -100,7 +100,7 @@ if(${DAWorkbench_FOUND})
     message(STATUS "  |-link DA::DAGraphicsView")
     message(STATUS "  | |-include dir:${DAGraphicsView_INCLUDE_DIR}")
 endif()
-target_link_libraries(${DA_LIB_NAME} PRIVATE
+target_link_libraries(${DA_LIB_NAME} PUBLIC
     DAWorkbench::DAGraphicsView
 )
 
