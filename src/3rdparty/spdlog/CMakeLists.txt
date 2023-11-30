@@ -11,19 +11,24 @@ project(bilud-spdlog
         )
 
 ########################################################
-# Qt
+# 安装路径设置
 ########################################################
 set(DA_MIN_QT_VERSION 5.14)
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
-
-
+if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "4")
+    set(DA_PLATFORM_NAME "x86")
+else()
+    set(DA_PLATFORM_NAME "x64")
+endif()
+set(DA_BIN_DIR_NAME bin_qt${QT_VERSION}_${CMAKE_BUILD_TYPE}_${DA_PLATFORM_NAME})
 ########################################################
 # 第三方库 - spdlog
 ########################################################
-set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/../../../bin_qt${QT_VERSION}/build_lib/spdlog")
+set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/../../../${DA_BIN_DIR_NAME}")
 message(STATUS "3rdparty spdlog will install to : ${CMAKE_INSTALL_PREFIX}")
 # 安装SPDLOG
 set(SPDLOG_INSTALL ON)
+set(SPDLOG_BUILD_EXAMPLE OFF)
 add_subdirectory(spdlog)
 
 

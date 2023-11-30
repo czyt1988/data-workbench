@@ -16,7 +16,7 @@ message(STATUS "QWT Version is ${QWT_VERSION}")
 ########################################################
 # 定义工程
 ########################################################
-set(QWT_PROJECT_NAME "qwt")
+set(QWT_PROJECT_NAME "qwt-project")
 
 project(${QWT_PROJECT_NAME} 
         VERSION ${QWT_VERSION} 
@@ -59,22 +59,20 @@ if(MSVC)
 endif()
 
 ########################################################
-# 平台判断
+# 安装路径设置
 ########################################################
-if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "4")
-    set(SARIBBON_PLATFORM "86")
-else()
-    set(SARIBBON_PLATFORM "64")
-endif()
-
-########################################################
-# Qt
-########################################################
-set(QWT_MIN_QT_VERSION 5.6)
+set(DA_MIN_QT_VERSION 5.14)
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
+if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "4")
+    set(DA_PLATFORM_NAME "x86")
+else()
+    set(DA_PLATFORM_NAME "x64")
+endif()
+set(DA_BIN_DIR_NAME bin_qt${QT_VERSION}_${CMAKE_BUILD_TYPE}_${DA_PLATFORM_NAME})
+
 
 if(WIN32)
-    set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/bin_qt${QT_VERSION}/build_lib/DA")
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/${DA_BIN_DIR_NAME}")
 endif()
 
 ##################################

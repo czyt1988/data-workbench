@@ -52,15 +52,6 @@ if(MSVC)
 endif()
 
 ########################################################
-# 平台判断
-########################################################
-if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "4")
-    set(SARIBBON_PLATFORM "86")
-else()
-    set(SARIBBON_PLATFORM "64")
-endif()
-
-########################################################
 # Qt
 ########################################################
 set(DACTK_MIN_QT_VERSION 5.6)
@@ -118,10 +109,10 @@ set_target_properties(${DACTK_LIB_NAME} PROPERTIES
 ##################################
 # xxxConfig.cmake.in中，会让此变量和“${PACKAGE_PREFIX_DIR}/”进行拼接，也就是${PACKAGE_PREFIX_DIR}/@DA_LIB_INCLUDE_INSTALL_DIR@
 # PACKAGE_PREFIX_DIR等于${CMAKE_CURRENT_LIST_DIR}/../..
-# 最终变为${CMAKE_CURRENT_LIST_DIR}/../../include
+# 最终变为${CMAKE_CURRENT_LIST_DIR}/../../include/${DACTK_LIB_NAME}
 # 注意此处是替换，不要出现引号
 
-set(DA_LIB_INCLUDE_INSTALL_DIR include)
+set(DA_LIB_INCLUDE_INSTALL_DIR include/${DACTK_LIB_NAME})
 # Generate library version info which will generate xxxConfigVersion.cmake,
 # the ${PACKAGE_VERSION} is the version defined in project()
 include(CMakePackageConfigHelpers)
@@ -140,7 +131,7 @@ configure_package_config_file(
 # 声明导出target的名称
 install(TARGETS ${DACTK_LIB_NAME}
     EXPORT "${DACTK_LIB_NAME}Targets"
-    INCLUDES DESTINATION include
+    INCLUDES DESTINATION include/${DACTK_LIB_NAME}
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
@@ -158,12 +149,12 @@ install(FILES
 )
 install(FILES
     ${DACTK_LIB_HEADER_FILES}
-    DESTINATION "include"
+    DESTINATION include/${DACTK_LIB_NAME}
     COMPONENT headers
 )
 
 target_include_directories(${DACTK_LIB_NAME} PUBLIC
-    $<INSTALL_INTERFACE:include>
+    $<INSTALL_INTERFACE:include/${DACTK_LIB_NAME}>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
 

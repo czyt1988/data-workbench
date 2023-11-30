@@ -53,36 +53,42 @@ if(MSVC)
     string(APPEND CMAKE_CXX_FLAGS " /Zc:__cplusplus /MP")
 endif()
 
-########################################################
-# 平台判断
-########################################################
-if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "4")
-    set(SARIBBON_PLATFORM "86")
-else()
-    set(SARIBBON_PLATFORM "64")
-endif()
 
+set(DA_BIN_DIR_NAME bin_qt${QT_VERSION}_${CMAKE_BUILD_TYPE}_${DA_PLATFORM_NAME})
 ########################################################
 # Qt
 ########################################################
 set(DA_MIN_QT_VERSION 5.14)
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
 
+########################################################
+# 平台判断
+########################################################
+if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "4")
+    set(DA_PLATFORM_NAME "x86")
+else()
+    set(DA_PLATFORM_NAME "x64")
+endif()
+########################################################
+# 安装路径设置
+########################################################
+set(DA_BIN_DIR_NAME bin_qt${QT_VERSION}_${CMAKE_BUILD_TYPE}_${DA_PLATFORM_NAME})
+set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/${DA_BIN_DIR_NAME}")
 
-set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/bin_qt${QT_VERSION}/build_lib/DA")
 ########################################################
 # 定义第三方库路径
 ########################################################
-set(SARibbonBar_DIR "${CMAKE_INSTALL_PREFIX}/../SARibbon/lib/cmake")
-set(DALiteCtk_DIR "${CMAKE_INSTALL_PREFIX}/../liteCtk/lib/cmake")
-set(DAWorkbench_DIR "${CMAKE_BINARY_DIR}")
+set(DA_INSTALL_LIB_CMAKE_PATH ${CMAKE_INSTALL_PREFIX}/lib/cmake)
+set(SARibbonBar_DIR ${DA_INSTALL_LIB_CMAKE_PATH})
+set(DALiteCtk_DIR ${DA_INSTALL_LIB_CMAKE_PATH})
+set(DAWorkbench_DIR ${DA_INSTALL_LIB_CMAKE_PATH})
 
 ##################################
 # install
 ##################################
 message(STATUS "CMAKE_CURRENT_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}")
-
 message(STATUS "${DA_PROJECT_NAME} install dir is : ${CMAKE_INSTALL_PREFIX}")
+
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
     "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
@@ -92,14 +98,14 @@ write_basic_package_version_file(
 configure_package_config_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}Config.cmake.in"
     "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
-    INSTALL_DESTINATION "lib/cmake"
+    INSTALL_DESTINATION lib/cmake/${DA_PROJECT_NAME}
     NO_CHECK_REQUIRED_COMPONENTS_MACRO
 )
 
 install(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
-    DESTINATION "lib/cmake"
+    DESTINATION lib/cmake/${DA_PROJECT_NAME}
 )
 ########################################################
 # 源码路径

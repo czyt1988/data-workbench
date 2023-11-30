@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 3.5)
 
 set(QWT_LIB_NAME "qwt")
-set(QWT_LIB_DESCRIPTION "QWT | https://github.com/czyt1988")
+set(QWT_LIB_DESCRIPTION "QWT | Qt Widgets for Technical Applications")
 set(QWT_LIB_VERSION_MAJOR 6)
 set(QWT_LIB_VERSION_MINOR 2)
 set(QWT_LIB_VERSION_PATCH 0)
@@ -385,13 +385,11 @@ add_library(${QWT_LIB_NAME} SHARED
         ${QWT_SOURCE_FILES}
 #        ${QWT_HEADERS_MOC}
 )	
-
 # 构建库定义的宏
-target_compile_definitions(${QWT_LIB_NAME} PRIVATE DAUTILS_BUILD)
 target_compile_definitions(${QWT_LIB_NAME} PRIVATE QT_DLL)
 target_compile_definitions(${QWT_LIB_NAME} PRIVATE QWT_DLL)
 target_compile_definitions(${QWT_LIB_NAME} PRIVATE QWT_MAKEDLL)
-
+target_compile_definitions(${QWT_LIB_NAME} PRIVATE QWT_MOC_INCLUDE=1)
 ########################################################
 # 依赖链接
 ########################################################
@@ -441,7 +439,7 @@ set_target_properties(${QWT_LIB_NAME} PROPERTIES
 # 目标依赖目录
 ########################################################
 target_include_directories(${QWT_LIB_NAME} PUBLIC
-    $<INSTALL_INTERFACE:include>
+    $<INSTALL_INTERFACE:include/${QWT_LIB_NAME}>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
 
@@ -453,8 +451,8 @@ message(STATUS "${QWT_LIB_NAME} install dir is : ${CMAKE_INSTALL_PREFIX}")
 
 # DALibConfig.cmake.in中，会让此变量和“${PACKAGE_PREFIX_DIR}/”进行拼接，也就是${PACKAGE_PREFIX_DIR}/@QWT_LIB_INCLUDE_INSTALL_DIR@
 # PACKAGE_PREFIX_DIR = ${CMAKE_CURRENT_LIST_DIR}/../..
-# 最终变为${CMAKE_CURRENT_LIST_DIR}/../../include
-set(QWT_LIB_INCLUDE_INSTALL_DIR include)
+# 最终变为${CMAKE_CURRENT_LIST_DIR}/../../include/qwt
+set(QWT_LIB_INCLUDE_INSTALL_DIR include/${QWT_LIB_NAME})
 
 # Generate library version info which will generate xxxConfigVersion.cmake,
 # the ${PACKAGE_VERSION} is the version defined in project()
@@ -473,7 +471,7 @@ configure_package_config_file(
 # 声明导出target的名称
 install(TARGETS ${QWT_LIB_NAME}
     EXPORT ${QWT_LIB_NAME}Targets
-    INCLUDES DESTINATION include
+    INCLUDES DESTINATION include/${QWT_LIB_NAME}
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
@@ -492,14 +490,14 @@ install(FILES
 
 install(FILES
     ${QWT_HEADER_FILES}
-    DESTINATION include
+    DESTINATION include/${QWT_LIB_NAME}
     COMPONENT headers
 )
 
 file(GLOB QWT_INCLUDE_IN_CLASS_FILES "${CMAKE_CURRENT_LIST_DIR}/../classincludes/Qwt*")
 install(FILES
     ${QWT_INCLUDE_IN_CLASS_FILES}
-    DESTINATION include
+    DESTINATION include/${QWT_LIB_NAME}
     COMPONENT headers
 )
 
