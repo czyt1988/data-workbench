@@ -79,10 +79,10 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/${DA_BIN_DIR_NAME}")
 # 定义第三方库路径
 ########################################################
 set(DA_INSTALL_LIB_CMAKE_PATH ${CMAKE_INSTALL_PREFIX}/lib/cmake)
-set(SARibbonBar_DIR ${DA_INSTALL_LIB_CMAKE_PATH})
-set(DALiteCtk_DIR ${DA_INSTALL_LIB_CMAKE_PATH})
-set(DAWorkbench_DIR ${DA_INSTALL_LIB_CMAKE_PATH})
-
+set(SARibbonBar_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/SARibbonBar)
+set(DALiteCtk_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/DALiteCtk)
+set(qwt_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/qwt)
+set(DAWorkbench_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/${DA_PROJECT_NAME})
 ##################################
 # install
 ##################################
@@ -107,6 +107,11 @@ install(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
     DESTINATION lib/cmake/${DA_PROJECT_NAME}
 )
+########################################################
+# 引入用到的通用函数和宏
+########################################################
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/daworkbench_utils.cmake)
+
 ########################################################
 # 源码路径
 ########################################################

@@ -1,12 +1,12 @@
 ﻿
 # Cmake的命令不区分打下写，例如message，set等命令；但Cmake的变量区分大小写
 # 为统一风格，本项目的Cmake命令全部采用小写，变量全部采用大写加下划线组合。
-# DAPyScripts 库
+# DAPyCommonWidgets 库
 
 cmake_minimum_required(VERSION 3.5)
 damacro_lib_setting(
-    "DAPyScripts"
-    "wrapper python | https://github.com/czyt1988"
+    "DAFigure"
+    "DA Figure Widgets Base On QWT | https://github.com/czyt1988"
     0
     0
     1
@@ -19,6 +19,10 @@ set(DA_MIN_QT_VERSION 5.14)
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
     Core
+    Gui
+    Widgets
+    Concurrent
+    PrintSupport
     REQUIRED
 )
 if(Qt5_POSITION_INDEPENDENT_CODE)
@@ -28,61 +32,56 @@ endif()
 ########################################################
 # 文件加载 #!!!!** 注意变更 **!!!!
 ########################################################
-set(DA_GLOBAL_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/../DAGlobals.h)
 file(GLOB DA_LIB_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 file(GLOB DA_LIB_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+file(GLOB DA_LIB_HEADER_FILES_MarkSymbol "${CMAKE_CURRENT_SOURCE_DIR}/MarkSymbol/*.h")
+file(GLOB DA_LIB_SOURCE_FILES_MarkSymbol "${CMAKE_CURRENT_SOURCE_DIR}/MarkSymbol/*.cpp")
+file(GLOB DA_LIB_QT_UI_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.ui")
+file(GLOB DA_LIB_QT_RC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.qrc")
 
 add_library(${DA_LIB_NAME} SHARED
             ${DA_LIB_HEADER_FILES}
             ${DA_LIB_SOURCE_FILES}
+            ${DA_LIB_HEADER_FILES_MarkSymbol}
+            ${DA_LIB_SOURCE_FILES_MarkSymbol}
+			${DA_LIB_QT_UI_FILES}
+			${DA_LIB_QT_RC_FILES}
             ${DA_GLOBAL_HEADER}
 )	
-# 构建库定义的宏,必须为Private
-target_compile_definitions(${DA_LIB_NAME} PRIVATE DAPYSCRIPTS_BUILDLIB)#!!!!** 注意变更 **!!!!
-# 定义别名让DA::${DA_LIB_NAME}也能获取到
+# 构建库定义的宏,注意必须为Private
+target_compile_definitions(${DA_LIB_NAME} PRIVATE DAFIGURE_BUILD)#!!!!** 注意变更 **!!!!
 add_library(${DA_PROJECT_NAME}::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
 ########################################################
 # 依赖链接 #!!!!** 注意变更 **!!!!
 ########################################################
+# -------------link Qt--------------------------
+message(STATUS "${DA_LIB_NAME} Qt${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
 target_link_libraries(${DA_LIB_NAME} PUBLIC
     Qt${QT_VERSION_MAJOR}::Core
+    Qt${QT_VERSION_MAJOR}::Gui
+    Qt${QT_VERSION_MAJOR}::Widgets
+    Qt${QT_VERSION_MAJOR}::Concurrent
+    Qt${QT_VERSION_MAJOR}::PrintSupport
 )
-message(STATUS "${DA_LIB_NAME} Qt${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
-
-# 此处要依赖python
-# https://zhuanlan.zhihu.com/p/666367728
-# https://blog.csdn.net/weixin_40448140/article/details/112005184
-# 如果使用的是非系统目录下的 Python 可以通过指定 Python3_ROOT_DIR 改变查找路径
-find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
-if(${Python3_FOUND})
-    message(STATUS "  |-find python")
-    message(STATUS "  | |-include dir:${Python3_INCLUDE_DIRS}")
-    message(STATUS "  | |-libs : ${Python3_LIBRARIES}")
+# -------------link 3rdparty--------------------------
+# 3rdparty - qwt
+find_package(qwt)
+if(qwt_FOUND)
+    message(STATUS "  |-link qwt")
+    message(STATUS "  | |-include dir:${qwt_INCLUDE_DIR}")
 endif()
-target_link_libraries(${DA_LIB_NAME} PRIVATE ${Python3_LIBRARIES})
-include_directories(${Python3_INCLUDE_DIRS})
-
-# DAPyScripts依赖pybind11
-# pybind11是header only
-# set(pybind11_DIR "${CMAKE_INSTALL_PREFIX}/../pybind11")
-#include_directories(${pybind11_DIR}/include)
 target_include_directories(${DA_LIB_NAME} PUBLIC
-    $<INSTALL_INTERFACE:include/pybind11/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../3rdparty/pybind11/pybind11/include>
+        $<INSTALL_INTERFACE:include/qwt>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../3rdparty/qwt/qwt/src>
 )
-message(STATUS "  |-pybind11 include: ${pybind11_DIR}/include")
 
-# -------------link DAWorkbench--------------------------
-# DAPyBindQt
-# 指定DAWorkbench_DIR为工程的顶层BINARY_DIR，否则找不到DAWorkbench
-find_package(${DA_PROJECT_NAME} COMPONENTS DAPyBindQt)
-if(${DA_PROJECT_NAME}_FOUND)
-    message(STATUS "  |-link ${DA_PROJECT_NAME}::DAPyBindQt")
-    message(STATUS "  | |-include dir:${DAPyBindQt_INCLUDE_DIR}")
-endif()
-target_link_libraries(${DA_LIB_NAME} PRIVATE
-    ${DA_PROJECT_NAME}::DAPyBindQt
+# 链接的第三方库
+target_link_libraries(${DA_LIB_NAME} PUBLIC
+    qwt
 )
+# -------------link DAWorkBench--------------------------
+
+
 ########################################################
 # Qt的moc
 ########################################################
@@ -94,6 +93,9 @@ set_target_properties(${DA_LIB_NAME} PROPERTIES
     DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
     VERSION ${DA_LIB_VERSION}
     EXPORT_NAME ${DA_LIB_NAME}
+#    ARCHIVE_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}/lib"
+#    LIBRARY_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}/lib"
+#    RUNTIME_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}/bin"
 )
 
 ########################################################
@@ -104,6 +106,11 @@ damacro_lib_install()
 install(FILES
     ${DA_LIB_HEADER_FILES}
     DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}
+    COMPONENT headers
+)
+install(FILES
+    ${DA_LIB_HEADER_FILES_MarkSymbol}
+    DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/MarkSymbol
     COMPONENT headers
 )
 #DAGlobal.h

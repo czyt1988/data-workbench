@@ -124,7 +124,7 @@ write_basic_package_version_file(
 configure_package_config_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/${DACTK_LIB_NAME}Config.cmake.in"
   "${CMAKE_CURRENT_BINARY_DIR}/${DACTK_LIB_NAME}Config.cmake"
-  INSTALL_DESTINATION lib/cmake
+  INSTALL_DESTINATION lib/cmake/${DACTK_LIB_NAME}
   PATH_VARS DA_LIB_INCLUDE_INSTALL_DIR
 )
 
@@ -138,14 +138,14 @@ install(TARGETS ${DACTK_LIB_NAME}
 )
 install(EXPORT "${DACTK_LIB_NAME}Targets"
     FILE ${DACTK_LIB_NAME}Targets.cmake # 导出的文件基准名。
-    DESTINATION lib/cmake
+    DESTINATION lib/cmake/${DACTK_LIB_NAME}
 )
 
 
 install(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/${DACTK_LIB_NAME}Config.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/${DACTK_LIB_NAME}ConfigVersion.cmake"
-    DESTINATION lib/cmake
+    DESTINATION lib/cmake/${DACTK_LIB_NAME}
 )
 install(FILES
     ${DACTK_LIB_HEADER_FILES}

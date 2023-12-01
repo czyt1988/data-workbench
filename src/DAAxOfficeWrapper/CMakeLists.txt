@@ -4,43 +4,14 @@
 # DAAxOfficeWrapper 库
 
 cmake_minimum_required(VERSION 3.5)
-
-set(DA_LIB_NAME "DAAxOfficeWrapper")
-set(DA_LIB_DESCRIPTION "office ax container qt wrapper | https://github.com/czyt1988")
-set(DA_LIB_VERSION_MAJOR 0)
-set(DA_LIB_VERSION_MINOR 0)
-set(DA_LIB_VERSION_PATCH 1)
-set(DA_LIB_VERSION "${DA_LIB_VERSION_MAJOR}.${DA_LIB_VERSION_MINOR}.${DA_LIB_VERSION_PATCH}")
-set(DA_OUTPUT_DIR ${CMAKE_BINARY_DIR}/${DA_LIB_NAME})
-
-message("")
-message("${DA_LIB_NAME}${DA_LIB_VERSION} | ${DA_LIB_DESCRIPTION}")
-
-project(${DA_LIB_NAME} 
-        VERSION ${DA_LIB_VERSION} 
-        LANGUAGES CXX
-        DESCRIPTION "DAWorkbench | ${DA_LIB_DESCRIPTION}"
+damacro_lib_setting(
+    "DAAxOfficeWrapper"
+    "office ax container qt wrapper | https://github.com/czyt1988"
+    0
+    0
+    1
 )
 
-########################################################
-# 通用常规设置
-########################################################
-# C++标准要求最低C++17
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-# 编译选项
-set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows")
-set(CMAKE_RELEASE_POSTFIX "" CACHE STRING "add a postfix, usually empty on windows")
-set(CMAKE_RELWITHDEBINFO_POSTFIX "rd" CACHE STRING "add a postfix, usually empty on windows")
-set(CMAKE_MINSIZEREL_POSTFIX "s" CACHE STRING "add a postfix, usually empty on windows")
-########################################################
-# MSVC设置
-########################################################
-if(MSVC)
-# msvc utf-8
-    add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
-    add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
-endif()
 ########################################################
 # Qt
 ########################################################
@@ -58,13 +29,6 @@ if(Qt5_POSITION_INDEPENDENT_CODE)
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif()
 
-########################################################
-# 目录包含
-########################################################
-# 包含自身目录
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-# 默认的CMAKE_INSTALL_PREFIX
-set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/../../bin_qt${QT_VERSION}/build_lib/DA")
 ########################################################
 # 文件加载
 ########################################################
@@ -95,13 +59,13 @@ message(STATUS "${DA_LIB_NAME} Qt${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VE
 
 # DAUtils
 # 指定DAWorkbench_DIR为工程的顶层BINARY_DIR，否则找不到DAWorkbench
-set(DAWorkbench_DIR "${CMAKE_BINARY_DIR}")
-find_package(DAWorkbench COMPONENTS DAUtils)
-if(${DAWorkbench_FOUND})
+set(${DA_PROJECT_NAME}_DIR "${CMAKE_BINARY_DIR}")
+find_package(${DA_PROJECT_NAME} COMPONENTS DAUtils)
+if(${DA_PROJECT_NAME}_FOUND)
     message(STATUS "  |-link DAUtils")
 endif()
 target_link_libraries(${DA_LIB_NAME} PRIVATE
-    DAWorkbench::DAUtils
+    ${DA_PROJECT_NAME}::DAUtils
 )
 
 ########################################################
@@ -121,93 +85,18 @@ set_target_properties(${DA_LIB_NAME} PROPERTIES
 )
 
 ########################################################
-# 目标依赖目录
-########################################################
-target_include_directories(${DA_LIB_NAME} PUBLIC
-    $<INSTALL_INTERFACE:include/${DA_LIB_NAME}>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-)
-
-target_include_directories(${DA_LIB_NAME} PUBLIC
-    $<INSTALL_INTERFACE:include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../>
-)
-
-########################################################
 # 安装
 ########################################################
-message(STATUS "${DA_LIB_NAME} install dir is : ${CMAKE_INSTALL_PREFIX}")
+damacro_lib_install()
 
-# DALibConfig.cmake.in中，会让此变量和“${PACKAGE_PREFIX_DIR}/”进行拼接，也就是${PACKAGE_PREFIX_DIR}/@DA_LIB_INCLUDE_INSTALL_DIR@
-# PACKAGE_PREFIX_DIR = ${CMAKE_CURRENT_LIST_DIR}/../..
-# 最终变为${CMAKE_CURRENT_LIST_DIR}/../../include/${DA_LIB_NAME}
-set(DA_LIB_INCLUDE_INSTALL_DIR include/${DA_LIB_NAME})
-
-# Generate library version info which will generate xxxConfigVersion.cmake,
-# the ${PACKAGE_VERSION} is the version defined in project()
-include(CMakePackageConfigHelpers)
-write_basic_package_version_file(
-    ${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}ConfigVersion.cmake
-    VERSION ${DA_LIB_VERSION}
-    COMPATIBILITY SameMajorVersion
-)
-configure_package_config_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/../DALibConfig.cmake.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}Config.cmake"
-  INSTALL_DESTINATION "lib/cmake"
-  PATH_VARS DA_LIB_INCLUDE_INSTALL_DIR
-)
-
-# 声明导出target的名称
-install(TARGETS ${DA_LIB_NAME}
-    EXPORT "${DA_LIB_NAME}Targets"
-    INCLUDES DESTINATION include/${DA_LIB_NAME}
-    RUNTIME DESTINATION bin
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
-)
-
-install(EXPORT "${DA_LIB_NAME}Targets"
-    FILE ${DA_LIB_NAME}Targets.cmake # 导出的文件基准名。
-    NAMESPACE DAWorkbench::
-    DESTINATION lib/cmake
-)
-
-
-
-install(FILES
-    "${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}Config.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}ConfigVersion.cmake"
-    DESTINATION lib/cmake
-)
 install(FILES
     ${DA_LIB_HEADER_FILES}
-    DESTINATION include/${DA_LIB_NAME}
+    DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}
     COMPONENT headers
 )
 #DAGlobal.h
 install(FILES
     ${DA_GLOBAL_HEADER}
-    DESTINATION .
+    DESTINATION include/${DA_PROJECT_NAME}
     COMPONENT headers
 )
-
-export(EXPORT ${DA_LIB_NAME}Targets
-       FILE ${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}Targets.cmake
-       NAMESPACE DAWorkbench::
-)
-########################################################
-# dll资源信息
-########################################################
-include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/create_win32_resource_version.cmake)
-if(WIN32)
-        create_win32_resource_version(
-                TARGET ${DA_LIB_NAME}
-                FILENAME ${DA_LIB_NAME}
-                VERSION ${DA_LIB_VERSION}
-                EXT "dll"
-                COMPANYNAME "DA"
-                COPYRIGHT "czy"
-                DESCRIPTION ${DA_LIB_DESCRIPTION}
-        )
-endif()

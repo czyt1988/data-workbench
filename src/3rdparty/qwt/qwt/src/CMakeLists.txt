@@ -393,7 +393,7 @@ target_compile_definitions(${QWT_LIB_NAME} PRIVATE QWT_MOC_INCLUDE=1)
 ########################################################
 # 依赖链接
 ########################################################
-target_link_libraries(${QWT_LIB_NAME} PUBLIC
+target_link_libraries(${QWT_LIB_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Widgets
@@ -406,7 +406,7 @@ if(QWT_CONFIG_QWTOPENGL)
         OpenGL
         REQUIRED
     )
-    target_link_libraries(${QWT_LIB_NAME} PUBLIC
+    target_link_libraries(${QWT_LIB_NAME} PRIVATE
         Qt${QT_VERSION_MAJOR}::OpenGL
     )
 endif()
@@ -416,7 +416,7 @@ if(QWT_CONFIG_QWTSVG)
         Svg
         REQUIRED
     )
-    target_link_libraries(${QWT_LIB_NAME} PUBLIC
+    target_link_libraries(${QWT_LIB_NAME} PRIVATE
         Qt${QT_VERSION_MAJOR}::Svg
     )
 endif()
@@ -465,7 +465,7 @@ write_basic_package_version_file(
 configure_package_config_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/QwtConfig.cmake.in"
   "${CMAKE_CURRENT_BINARY_DIR}/${QWT_LIB_NAME}Config.cmake"
-  INSTALL_DESTINATION "lib/cmake"
+  INSTALL_DESTINATION lib/cmake/${QWT_LIB_NAME}
   PATH_VARS QWT_LIB_INCLUDE_INSTALL_DIR
 )
 # 声明导出target的名称
@@ -479,13 +479,13 @@ install(TARGETS ${QWT_LIB_NAME}
 
 install(EXPORT "${QWT_LIB_NAME}Targets"
     FILE ${QWT_LIB_NAME}Targets.cmake # 导出的文件基准名。
-    DESTINATION lib/cmake
+    DESTINATION lib/cmake/${QWT_LIB_NAME}
 )
 
 install(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/${QWT_LIB_NAME}Config.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/${QWT_LIB_NAME}ConfigVersion.cmake"
-    DESTINATION lib/cmake
+    DESTINATION lib/cmake/${QWT_LIB_NAME}
 )
 
 install(FILES
