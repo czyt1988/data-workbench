@@ -37,9 +37,13 @@ add_subdirectory(DAWorkFlow)
 add_dependencies(DAWorkFlow DAGraphicsView)
 
 add_subdirectory(DAFigure)
-#add_subdirectory(DAGui)
-#add_subdirectory(DAInterface)
-#add_subdirectory(DAPluginSupport)
+add_subdirectory(DAGui)
+
+add_subdirectory(DAInterface)
+add_dependencies(DAInterface DAGui)
+
+add_subdirectory(DAPluginSupport)
+add_dependencies(DAPluginSupport DAInterface)
 #add_subdirectory(APP)
 
 ########################################################

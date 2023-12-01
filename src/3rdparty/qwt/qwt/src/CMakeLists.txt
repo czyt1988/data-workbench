@@ -66,7 +66,6 @@ endif()
 ########################################################
 # 包含自身目录
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_AUTOMOC_RELAXED_MODE ON)
 set(CMAKE_AUTOMOC_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/moc)
 ########################################################
 # 文件加载
@@ -387,9 +386,12 @@ add_library(${QWT_LIB_NAME} SHARED
 )	
 # 构建库定义的宏
 target_compile_definitions(${QWT_LIB_NAME} PRIVATE QT_DLL)
-target_compile_definitions(${QWT_LIB_NAME} PRIVATE QWT_DLL)
+# 此宏必须为public
+target_compile_definitions(${QWT_LIB_NAME} PUBLIC QWT_DLL)
+#此宏必须为private
 target_compile_definitions(${QWT_LIB_NAME} PRIVATE QWT_MAKEDLL)
-target_compile_definitions(${QWT_LIB_NAME} PRIVATE QWT_MOC_INCLUDE=1)
+# 此宏必须为public
+target_compile_definitions(${QWT_LIB_NAME} PUBLIC QWT_MOC_INCLUDE=1)
 ########################################################
 # 依赖链接
 ########################################################

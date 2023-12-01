@@ -5,8 +5,8 @@
 
 cmake_minimum_required(VERSION 3.5)
 damacro_lib_setting(
-    "DACommonWidgets"
-    "DA Common Widgets | https://github.com/czyt1988"
+    "DAInterface"
+    "Interface Of DAWorkbench | https://github.com/czyt1988"
     0
     0
     1
@@ -33,73 +33,38 @@ endif()
 ########################################################
 file(GLOB DA_LIB_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 file(GLOB DA_LIB_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
-file(GLOB DA_LIB_QT_UI_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.ui")
-file(GLOB DA_LIB_QT_RC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.qrc")
+
 
 add_library(${DA_LIB_NAME} SHARED
             ${DA_LIB_HEADER_FILES}
             ${DA_LIB_SOURCE_FILES}
-			${DA_LIB_QT_UI_FILES}
-			${DA_LIB_QT_RC_FILES}
             ${DA_GLOBAL_HEADER}
 )	
 # 构建库定义的宏
-target_compile_definitions(${DA_LIB_NAME} PRIVATE DACOMMONWIDGETS_BUILD)#!!!!** 注意变更 **!!!!
+target_compile_definitions(${DA_LIB_NAME} PRIVATE DAINTERFACE_BUILDLIB)#!!!!** 注意变更 **!!!!
 add_library(${DA_PROJECT_NAME}::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
 ########################################################
 # 依赖链接 #!!!!** 注意变更 **!!!!
 ########################################################
 # -------------link Qt--------------------------
-message(STATUS "${DA_LIB_NAME} Qt${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
 target_link_libraries(${DA_LIB_NAME} PUBLIC
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Widgets
     Qt${QT_VERSION_MAJOR}::Xml
 )
-# -------------link 3rdparty--------------------------
-# 3rdparty - DALiteCtk
-find_package(DALiteCtk)
-if(DALiteCtk_FOUND)
-    message(STATUS "  |-link DALiteCtk")
-    message(STATUS "  | |-include dir:${DALiteCtk_INCLUDE_DIR}")
-endif()
-target_include_directories(${DA_LIB_NAME} PUBLIC
-    $<INSTALL_INTERFACE:include/DALiteCtk>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../3rdparty/ctk/ctk>
-)
-
-# 3rdparty - SARibbon
-find_package(SARibbonBar)
-if(SARibbonBar_FOUND)
-    message(STATUS "  |-link SARibbonBar")
-    message(STATUS "  | |-include dir:${SARibbonBar_INCLUDE_DIR}")
-endif()
-target_include_directories(${DA_LIB_NAME} PUBLIC
-    $<INSTALL_INTERFACE:include/SARibbonBar>
-    $<INSTALL_INTERFACE:include/SARibbonBar/3rdparty/framelesshelper/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../3rdparty/SARibbon/SARibbon/src/SARibbonBar>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../3rdparty/SARibbon/SARibbon/src/SARibbonBar/3rdparty/framelesshelper/include>
-)
- 
-# 链接的第三方库
-target_link_libraries(${DA_LIB_NAME} PUBLIC
-    SARibbonBar
-    DALiteCtk
-)
 # -------------link DAWorkBench--------------------------
-# DAUtils
+# DAGui
 # 指定DAWorkbench_DIR为工程的顶层BINARY_DIR，否则找不到${DA_PROJECT_NAME}
-set(${DA_PROJECT_NAME}_DIR "${CMAKE_BINARY_DIR}")
-find_package(${DA_PROJECT_NAME} COMPONENTS DAUtils)
+find_package(${DA_PROJECT_NAME} COMPONENTS DAGui)
 if(${DA_PROJECT_NAME}_FOUND)
-    message(STATUS "  |-link ${DA_PROJECT_NAME}::DAUtils")
-    message(STATUS "  | |-include dir:${DAUtils_INCLUDE_DIR}")
+    message(STATUS "  |-link ${DA_PROJECT_NAME}::DAGui")
+    message(STATUS "  | |-include dir:${DAGui_INCLUDE_DIR}")
 endif()
 
 
 target_link_libraries(${DA_LIB_NAME} PRIVATE
-    ${DA_PROJECT_NAME}::DAUtils
+    ${DA_PROJECT_NAME}::DAGui
 )
 
 ########################################################

@@ -30,7 +30,6 @@ endif()
 ########################################################
 # 文件加载 #!!!!** 注意变更 **!!!!
 ########################################################
-set(DA_GLOBAL_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/../DAGlobals.h)
 file(GLOB DA_LIB_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 file(GLOB DA_LIB_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
@@ -95,10 +94,13 @@ if(${DA_PROJECT_NAME}_FOUND)
 endif()
 target_link_libraries(${DA_LIB_NAME} PRIVATE
     ${DA_PROJECT_NAME}::DAUtils
-    ${DA_PROJECT_NAME}::DAPyBindQt
     ${DA_PROJECT_NAME}::DAPyScripts
 )
-
+# DAData的头文件包含了DAPyBindQt库的内容，因此DAPyBindQt需要公开链接
+target_link_libraries(${DA_LIB_NAME} PUBLIC
+    ${DA_PROJECT_NAME}::DAPyBindQt
+)
+include_directories(${DAPyBindQt_INCLUDE_DIR})
 
 
 ########################################################

@@ -28,7 +28,6 @@ endif()
 ########################################################
 # 文件加载 #!!!!** 注意变更 **!!!!
 ########################################################
-set(DA_GLOBAL_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/../DAGlobals.h)
 file(GLOB DA_LIB_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 file(GLOB DA_LIB_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 file(GLOB DA_DAPYBINDQT_PANDAS_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/pandas/*.h")
@@ -67,7 +66,7 @@ if(${Python3_FOUND})
     message(STATUS "  | |-include dir:${Python3_INCLUDE_DIRS}")
     message(STATUS "  | |-libs : ${Python3_LIBRARIES}")
 endif()
-target_link_libraries(${DA_LIB_NAME} PRIVATE ${Python3_LIBRARIES})
+target_link_libraries(${DA_LIB_NAME} PUBLIC ${Python3_LIBRARIES})
 target_include_directories(${DA_LIB_NAME} PUBLIC ${Python3_INCLUDE_DIRS})
 
 # DAPyBindQt依赖pybind11
@@ -99,7 +98,6 @@ set_target_properties(${DA_LIB_NAME} PROPERTIES
 # 安装
 ########################################################
 damacro_lib_install()
-
 
 install(FILES
     ${DA_LIB_HEADER_FILES}

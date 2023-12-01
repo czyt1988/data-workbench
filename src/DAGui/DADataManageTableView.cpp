@@ -6,9 +6,9 @@
 #include <QDragLeaveEvent>
 #include <QDragMoveEvent>
 #include <QDropEvent>
-#include "DADataManagerTableModel.h"
+#include "Models/DADataManagerTableModel.h"
 #include "DADataManager.h"
-#include "DAMimeDataForData.h"
+#include "MimeData/DAMimeDataForData.h"
 //===================================================
 // using DA namespace -- 禁止在头文件using!!
 //===================================================

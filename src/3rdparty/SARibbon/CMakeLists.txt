@@ -28,6 +28,7 @@ set(DA_BIN_DIR_NAME bin_qt${QT_VERSION}_${CMAKE_BUILD_TYPE}_${DA_PLATFORM_NAME})
 set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/../../../${DA_BIN_DIR_NAME}")
 message(STATUS "3rdparty SARibbon will install to : ${CMAKE_INSTALL_PREFIX}")
 # 安装 SARibbon
+set(SARIBBON_BUILD_EXAMPLES OFF)
 add_subdirectory(SARibbon)
 
 

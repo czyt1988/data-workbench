@@ -13,7 +13,7 @@
 #include "DAGraphicsResizeablePixmapItem.h"
 #include "DAGraphicsResizeableRectItem.h"
 #include "DAGraphicsResizeableTextItem.h"
-#include "DACommandsForWorkFlow.h"
+#include "Commands/DACommandsForWorkFlow.h"
 
 //===================================================
 // using DA namespace -- 禁止在头文件using!!

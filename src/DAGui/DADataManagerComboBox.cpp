@@ -1,6 +1,6 @@
 ﻿#include "DADataManagerComboBox.h"
 #include <QTreeView>
-#include "DADataManagerTreeModel.h"
+#include "Models/DADataManagerTreeModel.h"
 namespace DA
 {
 class DADataManagerComboBoxPrivate

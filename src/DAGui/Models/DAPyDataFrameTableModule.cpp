@@ -1,5 +1,5 @@
 ﻿#include "DAPyDataFrameTableModule.h"
-#include "DACommandsDataFrame.h"
+#include "Commands/DACommandsDataFrame.h"
 #include <QUndoStack>
 #include <algorithm>
 namespace DA
@@ -139,7 +139,7 @@ bool DAPyDataFrameTableModule::setData(const QModelIndex& index, const QVariant&
     }
     QVariant olddata = d_ptr->_dataframe.iat(index.row(), index.column());
     std::unique_ptr< DACommandDataFrame_iat > cmd_iat(
-            new DACommandDataFrame_iat(d_ptr->_dataframe, index.row(), index.column(), olddata, value, this));
+        new DACommandDataFrame_iat(d_ptr->_dataframe, index.row(), index.column(), olddata, value, this));
     cmd_iat->redo();
     if (!cmd_iat->isSetSuccess()) {
         //没设置成功，退出

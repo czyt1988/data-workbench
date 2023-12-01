@@ -30,7 +30,6 @@ endif()
 ########################################################
 # 文件加载 #!!!!** 注意变更 **!!!!
 ########################################################
-set(DA_GLOBAL_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/../DAGlobals.h)
 file(GLOB DA_LIB_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 file(GLOB DA_LIB_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 file(GLOB DA_LIB_QT_UI_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.ui")
@@ -39,8 +38,8 @@ file(GLOB DA_LIB_QT_RC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.qrc")
 add_library(${DA_LIB_NAME} SHARED
             ${DA_LIB_HEADER_FILES}
             ${DA_LIB_SOURCE_FILES}
-			${DA_LIB_QT_UI_FILES}
-			${DA_LIB_QT_RC_FILES}
+            ${DA_LIB_QT_UI_FILES}
+            ${DA_LIB_QT_RC_FILES}
             ${DA_GLOBAL_HEADER}
 )	
 # 构建库定义的宏,必须为Private

@@ -1,6 +1,6 @@
 ﻿#include "DADataOperateOfDataFrameWidget.h"
 #include "ui_DADataOperateOfDataFrameWidget.h"
-#include "DAPyDataFrameTableModule.h"
+#include "Models/DAPyDataFrameTableModule.h"
 #include "DADataPyObject.h"
 #include "DADataPyDataFrame.h"
 // stl
@@ -14,12 +14,12 @@
 #include "DAPyScripts.h"
 #include "DAPyScriptsDataFrame.h"
 // cmd
-#include "DACommandsDataFrame.h"
+#include "Commands/DACommandsDataFrame.h"
 // Dialog
-#include "DARenameColumnsNameDialog.h"
-#include "DADialogDataframeColumnCastToNumeric.h"
-#include "DADialogDataframeColumnCastToDatetime.h"
-#include "DADialogInsertNewColumn.h"
+#include "Dialog/DARenameColumnsNameDialog.h"
+#include "Dialog/DADialogDataframeColumnCastToNumeric.h"
+#include "Dialog/DADialogDataframeColumnCastToDatetime.h"
+#include "Dialog/DADialogInsertNewColumn.h"
 
 //===================================================
 // using DA namespace -- 禁止在头文件using!!
@@ -405,7 +405,7 @@ bool DADataOperateOfDataFrameWidget::changeSelectColumnToIndex()
         return false;
     }
     std::unique_ptr< DACommandDataFrame_setIndex > cmd(
-            new DACommandDataFrame_setIndex(df, colsIndex, ui->tableView->verticalHeader(), _model));
+        new DACommandDataFrame_setIndex(df, colsIndex, ui->tableView->verticalHeader(), _model));
     cmd->redo();  //先执行
     if (!cmd->isSetSuccess()) {
         return false;

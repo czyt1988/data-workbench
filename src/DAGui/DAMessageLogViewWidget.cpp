@@ -6,7 +6,7 @@
 #include <QClipboard>
 #include <QApplication>
 #include <QKeyEvent>
-#include "DAMessageLogsModel.h"
+#include "Models/DAMessageLogsModel.h"
 
 //===================================================
 // using DA namespace -- 禁止在头文件using！！

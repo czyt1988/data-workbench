@@ -11,7 +11,7 @@
 #include "DAWorkFlowGraphicsScene.h"
 #include "DAGraphicsResizeablePixmapItem.h"
 //
-#include "DACommandsForWorkFlow.h"
+#include "Commands/DACommandsForWorkFlow.h"
 namespace DA
 {
 

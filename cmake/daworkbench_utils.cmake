@@ -55,11 +55,11 @@ macro(damacro_lib_setting _lib_name _lib_description _lib_ver_major _lib_ver_min
     ########################################################
     message("")
     message("${DA_LIB_FULL_DESCRIPTION}")
-    message(STATUS " | => DA_LIB_NAME=${DA_LIB_NAME}")
-    message(STATUS " | => DA_GLOBAL_HEADER=${DA_GLOBAL_HEADER}")
-    message(STATUS " | => CMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}")
-    message(STATUS " | => CMAKE_CURRENT_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}")
-    message(STATUS " | => CMAKE_CURRENT_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}")
+    message(STATUS "  | => DA_LIB_NAME=${DA_LIB_NAME}")
+    message(STATUS "  | => DA_GLOBAL_HEADER=${DA_GLOBAL_HEADER}")
+    message(STATUS "  | => CMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}")
+    message(STATUS "  | => CMAKE_CURRENT_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}")
+    message(STATUS "  | => CMAKE_CURRENT_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}")
 endmacro(damacro_lib_setting)
 
 # 通用的安装

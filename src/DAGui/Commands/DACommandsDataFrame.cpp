@@ -1,5 +1,5 @@
 ﻿#include "DACommandsDataFrame.h"
-#include "DAPyDataFrameTableModule.h"
+#include "Models/DAPyDataFrameTableModule.h"
 #include "DAPyScripts.h"
 #include <QHeaderView>
 
