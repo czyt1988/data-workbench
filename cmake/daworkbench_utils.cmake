@@ -10,10 +10,10 @@
 macro(damacro_lib_setting _lib_name _lib_description _lib_ver_major _lib_ver_minor _lib_ver_path)
     set(DA_MIN_QT_VERSION 5.14)
 	set(DA_LIB_NAME ${_lib_name})
-    set(DA_LIB_DESCRIPTION "DA Utils Lib | https://github.com/czyt1988")
-    set(DA_LIB_VERSION_MAJOR 0)
-    set(DA_LIB_VERSION_MINOR 0)
-    set(DA_LIB_VERSION_PATCH 1)
+    set(DA_LIB_DESCRIPTION ${_lib_description})
+    set(DA_LIB_VERSION_MAJOR ${_lib_ver_major})
+    set(DA_LIB_VERSION_MINOR ${_lib_ver_minor})
+    set(DA_LIB_VERSION_PATCH ${_lib_ver_path})
     set(DA_LIB_VERSION "${DA_LIB_VERSION_MAJOR}.${DA_LIB_VERSION_MINOR}.${DA_LIB_VERSION_PATCH}")
     set(DA_LIB_FULL_DESCRIPTION "${DA_PROJECT_NAME}::${DA_LIB_NAME} ${DA_LIB_VERSION} | ${DA_LIB_DESCRIPTION}")
 
@@ -137,4 +137,79 @@ macro(damacro_lib_install)
     endif()
 
     message(STATUS "${DA_LIB_NAME} install dir is : ${CMAKE_INSTALL_PREFIX}")
+endmacro(damacro_lib_install)
+
+
+# 定义DA_APP的宏
+# _app_name lib的名字，决定变量DA_APP_NAME
+# _app_description lib的描述，决定变量DA_APP_DESCRIPTION
+# _app_ver_major lib的主版本号，决定变量DA_APP_VERSION_MAJOR
+# _app_ver_minor lib的次版本号，决定变量DA_APP_VERSION_MINOR
+# _app_ver_path lib的末版本号，决定变量DA_APP_VERSION_PATCH
+# 生成：DA_APP_VERSION，完整的版本名
+# 生成：DA_APP_FULL_DESCRIPTION，完整的描述
+# 生成：DA_MIN_QT_VERSION 最低qt版本要求
+macro(damacro_app_setting _app_name _app_description _app_ver_major _app_ver_minor _app_ver_path)
+    set(DA_MIN_QT_VERSION 5.14)
+	set(DA_APP_NAME ${_app_name})
+    set(DA_APP_DESCRIPTION ${_app_description})
+    set(DA_APP_VERSION_MAJOR ${_app_ver_major})
+    set(DA_APP_VERSION_MINOR ${_app_ver_minor})
+    set(DA_APP_VERSION_PATCH ${_app_ver_path})
+    set(DA_APP_VERSION "${DA_APP_VERSION_MAJOR}.${DA_APP_VERSION_MINOR}.${DA_APP_VERSION_PATCH}")
+    set(DA_APP_FULL_DESCRIPTION "${DA_PROJECT_NAME}::${DA_APP_NAME} ${DA_APP_VERSION} | ${DA_APP_DESCRIPTION}")
+
+    project(${DA_APP_NAME} 
+        VERSION ${DA_APP_VERSION} 
+        LANGUAGES CXX
+        DESCRIPTION ${DA_APP_FULL_DESCRIPTION}
+    )
+    ########################################################
+    # 通用常规设置
+    ########################################################
+    # C++标准要求最低C++17
+    set(CMAKE_CXX_STANDARD 17)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+    # 编译选项
+    set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows")
+    set(CMAKE_RELEASE_POSTFIX "" CACHE STRING "add a postfix, usually empty on windows")
+    set(CMAKE_RELWITHDEBINFO_POSTFIX "rd" CACHE STRING "add a postfix, usually empty on windows")
+    set(CMAKE_MINSIZEREL_POSTFIX "s" CACHE STRING "add a postfix, usually empty on windows")
+    ########################################################
+    # MSVC设置
+    ########################################################
+    if(MSVC)
+    # msvc utf-8
+        add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
+        add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+    endif()
+    ########################################################
+    # 目录包含
+    ########################################################
+    # 包含自身目录
+    set(CMAKE_INCLUDE_CURRENT_DIR ON)
+    # 默认的CMAKE_INSTALL_PREFIX
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/../../${DA_BIN_DIR_NAME}")
+    set(DA_GLOBAL_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/../DAGlobals.h)
+    set(${DA_PROJECT_NAME}_DIR "${CMAKE_BINARY_DIR}")
+    ########################################################
+    # 打印信息
+    ########################################################
+    message("")
+    message("${DA_APP_FULL_DESCRIPTION}")
+    message(STATUS "  | => DA_APP_NAME=${DA_APP_NAME}")
+    message(STATUS "  | => DA_GLOBAL_HEADER=${DA_GLOBAL_HEADER}")
+    message(STATUS "  | => CMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}")
+    message(STATUS "  | => CMAKE_CURRENT_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}")
+    message(STATUS "  | => CMAKE_CURRENT_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}")
+endmacro(damacro_app_setting)
+
+# 通用的安装
+macro(damacro_app_install)
+    ########################################################
+    # 目标依赖目录
+    ########################################################
+    # 声明导出target的名称
+    install(TARGETS ${DA_APP_NAME} RUNTIME DESTINATION bin)
+    message(STATUS "${DA_APP_NAME} install dir is : ${CMAKE_INSTALL_PREFIX}")
 endmacro(damacro_lib_install)

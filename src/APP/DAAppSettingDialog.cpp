@@ -1,10 +1,10 @@
 ﻿#include "DAAppSettingDialog.h"
-#include "DASettingPageCommon.h"
+#include "SettingPages/DASettingPageCommon.h"
 #include <QIcon>
 #include "DAAppCore.h"
 #include "DAAppUI.h"
 #include "AppMainWindow.h"
-#include "DAAppConfig.h"
+#include "SettingPages/DAAppConfig.h"
 namespace DA
 {
 DAAppSettingDialog::DAAppSettingDialog(QWidget* parent) : DASettingDialog(parent)

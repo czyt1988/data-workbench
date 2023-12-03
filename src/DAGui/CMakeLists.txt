@@ -156,14 +156,12 @@ if(${DA_PROJECT_NAME}_FOUND)
     message(STATUS "  |-link ${DA_PROJECT_NAME}::DAFigure")
     message(STATUS "  | |-include dir:${DAFigure_INCLUDE_DIR}")
 endif()
-target_link_libraries(${DA_LIB_NAME} PRIVATE
+target_link_libraries(${DA_LIB_NAME} PUBLIC
+    ${DA_PROJECT_NAME}::DAData
     ${DA_PROJECT_NAME}::DAMessageHandler
     ${DA_PROJECT_NAME}::DAPyScripts
     ${DA_PROJECT_NAME}::DACommonWidgets
-    ${DA_PROJECT_NAME}::DAPyCommonWidgets  
-)
-target_link_libraries(${DA_LIB_NAME} PUBLIC
-    ${DA_PROJECT_NAME}::DAData
+    ${DA_PROJECT_NAME}::DAPyCommonWidgets
     ${DA_PROJECT_NAME}::DAGraphicsView
     ${DA_PROJECT_NAME}::DAWorkFlow
     ${DA_PROJECT_NAME}::DAFigure
@@ -179,9 +177,9 @@ set_target_properties(${DA_LIB_NAME} PROPERTIES
     DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
     VERSION ${DA_LIB_VERSION}
     EXPORT_NAME ${DA_LIB_NAME}
-#    ARCHIVE_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}/lib"
-#    LIBRARY_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}/lib"
-#    RUNTIME_OUTPUT_DIRECTORY "${DA_OUTPUT_DIR}/bin"
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
 ########################################################

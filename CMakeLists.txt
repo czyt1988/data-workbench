@@ -86,7 +86,7 @@ set(DAWorkbench_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/${DA_PROJECT_NAME})
 set(DAWorkbench_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/${DA_PROJECT_NAME})
 set(qt${QT_VERSION_MAJOR}advanceddocking_DIR  ${DA_INSTALL_LIB_CMAKE_PATH}/qt${QT_VERSION_MAJOR}advanceddocking)
 ##################################
-# install
+# install 通用内容
 ##################################
 message(STATUS "CMAKE_CURRENT_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}")
 message(STATUS "${DA_PROJECT_NAME} install dir is : ${CMAKE_INSTALL_PREFIX}")
@@ -118,6 +118,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/cmake/daworkbench_utils.cmake)
 # 源码路径
 ########################################################
 add_subdirectory(src)
+
 
 
 

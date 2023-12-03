@@ -44,8 +44,8 @@ add_dependencies(DAInterface DAGui)
 
 add_subdirectory(DAPluginSupport)
 add_dependencies(DAPluginSupport DAInterface)
-#add_subdirectory(APP)
 
+add_subdirectory(APP)
 ########################################################
 # install
 ########################################################
