@@ -109,9 +109,4 @@ endif()
 # 安装
 ########################################################
 damacro_app_install()
-#file(GLOB DA_APP_EXE_FILES ${CMAKE_BINARY_DIR}/bin/DAWorkbench*)
-#message(STATUS "will copy ${DA_APP_EXE_FILES}")
-#install(FILES
-#    ${DA_APP_EXE}
-#    DESTINATION bin
-#)
+

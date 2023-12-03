@@ -47,7 +47,7 @@ add_library(${DA_PROJECT_NAME}::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
 # 依赖链接 #!!!!** 注意变更 **!!!!
 ########################################################
 # -------------link Qt--------------------------
-target_link_libraries(${DA_LIB_NAME} PUBLIC
+target_link_libraries(${DA_LIB_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Widgets

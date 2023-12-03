@@ -54,17 +54,17 @@ target_link_libraries(${DA_LIB_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Xml
 )
 # -------------link DAWorkBench--------------------------
-# DAInterface
+# DAPluginSupport
 # 指定DAWorkbench_DIR为工程的顶层BINARY_DIR，否则找不到${DA_PROJECT_NAME}
-find_package(${DA_PROJECT_NAME} COMPONENTS DAInterface)
+find_package(${DA_PROJECT_NAME} COMPONENTS DAPluginSupport)
 if(${DA_PROJECT_NAME}_FOUND)
-    message(STATUS "  |-link ${DA_PROJECT_NAME}::DAInterface")
-    message(STATUS "  | |-include dir:${DAInterface_INCLUDE_DIR}")
+    message(STATUS "  |-link ${DA_PROJECT_NAME}::DAPluginSupport")
+    message(STATUS "  | |-include dir:${DAPluginSupport_INCLUDE_DIR}")
 endif()
 
 
 target_link_libraries(${DA_LIB_NAME} PUBLIC
-    ${DA_PROJECT_NAME}::DAInterface
+    ${DA_PROJECT_NAME}::DAPluginSupport
 )
 
 ########################################################

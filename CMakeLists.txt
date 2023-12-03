@@ -79,6 +79,9 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/${DA_BIN_DIR_NAME}")
 # 定义第三方库路径
 ########################################################
 set(DA_INSTALL_LIB_CMAKE_PATH ${CMAKE_INSTALL_PREFIX}/lib/cmake)
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${DA_INSTALL_LIB_CMAKE_PATH})
+
+
 set(SARibbonBar_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/SARibbonBar)
 set(DALiteCtk_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/DALiteCtk)
 set(qwt_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/qwt)
@@ -86,7 +89,7 @@ set(DAWorkbench_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/${DA_PROJECT_NAME})
 set(DAWorkbench_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/${DA_PROJECT_NAME})
 set(qt${QT_VERSION_MAJOR}advanceddocking_DIR  ${DA_INSTALL_LIB_CMAKE_PATH}/qt${QT_VERSION_MAJOR}advanceddocking)
 ##################################
-# install 通用内容
+# 初步安装 install 通用内容
 ##################################
 message(STATUS "CMAKE_CURRENT_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}")
 message(STATUS "${DA_PROJECT_NAME} install dir is : ${CMAKE_INSTALL_PREFIX}")
@@ -120,5 +123,18 @@ include(${CMAKE_CURRENT_LIST_DIR}/cmake/daworkbench_utils.cmake)
 add_subdirectory(src)
 
 
+##################################
+# 最终安装 install
+##################################
+# 把PyScripts文件夹复制过去
+install(DIRECTORY
+    ${CMAKE_CURRENT_LIST_DIR}/src/PyScripts
+    DESTINATION bin
+)
 
 
+install(FILES
+    "${CMAKE_CURRENT_LIST_DIR}/cmake/daworkbench_plugin_utils.cmake"
+    "${CMAKE_CURRENT_LIST_DIR}/cmake/create_win32_resource_version.cmake"
+    DESTINATION lib/cmake/${DA_PROJECT_NAME}
+)
