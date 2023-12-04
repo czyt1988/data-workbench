@@ -99,7 +99,7 @@ git submodule add https://github.com/gabime/spdlog.git ./src/3rdparty/spdlog/spd
 git submodule add https://github.com/githubuser0xFFFF/Qt-Advanced-Docking-System.git ./src/3rdparty/ADS/ADS
 git submodule add https://github.com/czyt1988/SARibbon.git ./src/3rdparty/SARibbon/SARibbon
 git submodule add https://github.com/pybind/pybind11.git ./src/3rdparty/pybind11/pybind11
-git submodule add https://github.com/commontk/QtPropertyBrowser.git ./src/3rdparty/QtPropertyBrowser/QtPropertyBrowser
+git submodule add https://github.com/czyt1988/QtPropertyBrowser ./src/3rdparty/QtPropertyBrowser/QtPropertyBrowser
 ```
 
 
