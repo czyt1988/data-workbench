@@ -77,7 +77,7 @@ void DASettingWidget::applyChanged()
  */
 QList< DAAbstractSettingPage* > DASettingWidget::getChanggedPages() const
 {
-    return mChangedPages.toList();
+    return mChangedPages.values();
 }
 
 /**

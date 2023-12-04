@@ -1,12 +1,15 @@
 ﻿
 # Cmake的命令不区分打下写，例如message，set等命令；但Cmake的变量区分大小写
 # 为统一风格，本项目的Cmake命令全部采用小写，变量全部采用大写加下划线组合。
+# DA WorkBench 源码目录Cmake文件
 
 cmake_minimum_required(VERSION 3.5)
-project(DAWorkBench-3rdparty-build
+
+project(bilud-QtPropertyBrowser
         LANGUAGES CXX
         DESCRIPTION "DataWorkBench : 3rdparty build"
-)
+        )
+
 ########################################################
 # 安装路径设置
 ########################################################
@@ -18,18 +21,14 @@ else()
     set(DA_PLATFORM_NAME "x64")
 endif()
 set(DA_BIN_DIR_NAME bin_qt${QT_VERSION}_${CMAKE_BUILD_TYPE}_${DA_PLATFORM_NAME})
-set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/../../${DA_BIN_DIR_NAME}")
-########################################################
-# 安装第三方库
-########################################################
-add_subdirectory(qwt)
-add_subdirectory(SARibbon)
-add_subdirectory(ADS)
-add_subdirectory(spdlog)
-add_subdirectory(pybind11)
-add_subdirectory(ctk)
-add_subdirectory(QtPropertyBrowser)
 
 ########################################################
-# install
+# 第三方库 - QtPropertyBrowser
 ########################################################
+set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/../../../${DA_BIN_DIR_NAME}")
+message(STATUS "3rdparty QtPropertyBrowser will install to : ${CMAKE_INSTALL_PREFIX}")
+# 安装 QtPropertyBrowser
+set(QtPropertyBrowser_BUILD_EXAMPLES OFF)
+add_subdirectory(QtPropertyBrowser)
+
+

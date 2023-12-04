@@ -95,3 +95,82 @@ macro(damacro_plugin_install)
     message(STATUS "${DA_PLUGIN_NAME} install dir is : ${CMAKE_INSTALL_PREFIX}")
 endmacro(damacro_plugin_install)
 
+
+# damacro_import_SARibbonBar(${DA_LIB_NAME})
+macro(damacro_import_SARibbonBar __target_name __install_dir)
+    find_package(SARibbonBar PATHS ${__install_dir})
+    if(SARibbonBar_FOUND)
+        message(STATUS "  |-link SARibbonBar")
+        message(STATUS "  | |-include dir:${SARibbonBar_INCLUDE_DIR}")
+    endif()
+    # 链接的第三方库
+    target_link_libraries(${__target_name} PUBLIC
+        SARibbonBar
+    )
+endmacro(damacro_import_SARibbonBar)
+
+
+macro(damacro_import_DALiteCtk __target_name __install_dir)
+    find_package(DALiteCtk PATHS ${__install_dir})
+    if(DALiteCtk_FOUND)
+        message(STATUS "  |-link DALiteCtk")
+        message(STATUS "  | |-include dir:${DALiteCtk_INCLUDE_DIR}")
+    endif()
+    # 链接的第三方库
+    target_link_libraries(${__target_name} PUBLIC
+        DALiteCtk
+    )
+endmacro(damacro_import_DALiteCtk)
+
+
+macro(damacro_import_QtAdvancedDocking __target_name __install_dir)
+    find_package(qt${QT_VERSION_MAJOR}advanceddocking PATHS ${__install_dir})
+    if(qt${QT_VERSION_MAJOR}advanceddocking_FOUND)
+        message(STATUS "  |-link qt${QT_VERSION_MAJOR}advanceddocking")
+        message(STATUS "  | |-include dir:${qt${QT_VERSION_MAJOR}advanceddocking_INCLUDE_DIR}")
+    endif()
+    target_link_libraries(${__target_name} PUBLIC
+        ads::qt${QT_VERSION_MAJOR}advanceddocking
+    )
+endmacro(damacro_import_QtAdvancedDocking)
+
+
+macro(damacro_import_qwt __target_name __install_dir)
+    # 3rdparty - qwt
+    find_package(qwt PATHS ${__install_dir})
+    if(qwt_FOUND)
+        message(STATUS "  |-link qwt")
+        message(STATUS "  | |-include dir:${qwt_INCLUDE_DIR}")
+    endif()
+    # 链接的第三方库
+    target_link_libraries(${__target_name} PUBLIC
+        qwt
+    )
+endmacro(damacro_import_qwt)
+
+macro(damacro_import_spdlog __target_name __install_dir)
+    # 3rdparty - spdlog
+    find_package(spdlog)
+    if(spdlog_FOUND)
+        message(STATUS "  |-link spdlog")
+        message(STATUS "  | |-include dir:${spdlog_INCLUDE_DIR}")
+    endif()
+    # 链接的第三方库
+    target_link_libraries(${__target_name} PUBLIC spdlog)
+    target_include_directories(${__target_name} PUBLIC ${spdlog_INCLUDE_DIR})
+endmacro(damacro_import_spdlog)
+
+macro(damacro_import_Python __target_name)
+    # Python
+    # https://zhuanlan.zhihu.com/p/666367728
+    # https://blog.csdn.net/weixin_40448140/article/details/112005184
+    # 如果使用的是非系统目录下的 Python 可以通过指定 Python3_ROOT_DIR 改变查找路径
+    find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+    if(${Python3_FOUND})
+        message(STATUS "  |-find python")
+        message(STATUS "  | |-include dir:${Python3_INCLUDE_DIRS}")
+        message(STATUS "  | |-libs : ${Python3_LIBRARIES}")
+    endif()
+    target_link_libraries(${__target_name} PUBLIC ${Python3_LIBRARIES})
+    target_include_directories(${__target_name} PUBLIC ${Python3_INCLUDE_DIRS})
+endmacro(damacro_import_Python)

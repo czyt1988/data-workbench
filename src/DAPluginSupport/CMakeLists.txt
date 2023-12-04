@@ -56,15 +56,15 @@ target_link_libraries(${DA_LIB_NAME} PRIVATE
 # -------------link DAWorkBench--------------------------
 # DAPluginSupport
 # 指定DAWorkbench_DIR为工程的顶层BINARY_DIR，否则找不到${DA_PROJECT_NAME}
-find_package(${DA_PROJECT_NAME} COMPONENTS DAPluginSupport)
+find_package(${DA_PROJECT_NAME} COMPONENTS DAInterface)
 if(${DA_PROJECT_NAME}_FOUND)
-    message(STATUS "  |-link ${DA_PROJECT_NAME}::DAPluginSupport")
-    message(STATUS "  | |-include dir:${DAPluginSupport_INCLUDE_DIR}")
+    message(STATUS "  |-link ${DA_PROJECT_NAME}::DAInterface")
+    message(STATUS "  | |-include dir:${DAInterface_INCLUDE_DIR}")
 endif()
 
 
 target_link_libraries(${DA_LIB_NAME} PUBLIC
-    ${DA_PROJECT_NAME}::DAPluginSupport
+    ${DA_PROJECT_NAME}::DAInterface
 )
 
 ########################################################

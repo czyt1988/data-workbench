@@ -15,10 +15,10 @@ git submodule update --init --recursive
 当然也可以逐个拉取：
 
 ```shell
-git submodule update src/3rdparty/spdlog
-git submodule update src/3rdparty/SARibbon
-git submodule update src/3rdparty/Qt-Advanced-Docking-System
-git submodule update src/3rdparty/pybind11
+git submodule update src/3rdparty/spdlog/spdlog
+git submodule update src/3rdparty/SARibbon/SARibbon
+git submodule update src/3rdparty/ADS/ADS
+git submodule update src/3rdparty/pybind11/pybind11
 ```
 
 ## submodule的添加
@@ -99,6 +99,7 @@ git submodule add https://github.com/gabime/spdlog.git ./src/3rdparty/spdlog/spd
 git submodule add https://github.com/githubuser0xFFFF/Qt-Advanced-Docking-System.git ./src/3rdparty/ADS/ADS
 git submodule add https://github.com/czyt1988/SARibbon.git ./src/3rdparty/SARibbon/SARibbon
 git submodule add https://github.com/pybind/pybind11.git ./src/3rdparty/pybind11/pybind11
+git submodule add https://github.com/commontk/QtPropertyBrowser.git ./src/3rdparty/QtPropertyBrowser/QtPropertyBrowser
 ```
 
 
@@ -107,7 +108,7 @@ git submodule add https://github.com/pybind/pybind11.git ./src/3rdparty/pybind11
 如果某个submodule更新了，使用`git submodule update --remote {submodule}`进行更新，如SARibbon项目更新了，可以执行：
 
 ```shell
-git submodule update --remote src/3rdparty/SARibbon
+git submodule update --remote src/3rdparty/SARibbon/SARibbon
 ```
 
 ## submodule的批量操作
@@ -131,16 +132,16 @@ git submodule update --remote src/3rdparty/SARibbon
 github地址
 
 ```ini
-[submodule "src/3rdparty/Qt-Advanced-Docking-System"]
+[submodule "src/3rdparty/ADS/ADS"]
 	active = true
 	url = https://github.com/githubuser0xFFFF/Qt-Advanced-Docking-System.git
-[submodule "src/3rdparty/SARibbon"]
+[submodule "src/3rdparty/SARibbon/SARibbon"]
 	active = true
 	url = https://github.com/czyt1988/SARibbon.git
-[submodule "src/3rdparty/pybind11"]
+[submodule "src/3rdparty/pybind11/pybind11"]
 	active = true
 	url = https://github.com/pybind/pybind11.git
-[submodule "src/3rdparty/spdlog"]
+[submodule "src/3rdparty/spdlog/spdlog"]
 	active = true
 	url = https://github.com/gabime/spdlog.git
 ```
@@ -148,16 +149,16 @@ github地址
 gitee地址
 
 ```ini
-[submodule "src/3rdparty/Qt-Advanced-Docking-System"]
+[submodule "src/3rdparty/ADS/ADS"]
 	active = true
 	url = https://gitee.com/czyt1988/Qt-Advanced-Docking-System.git
-[submodule "src/3rdparty/SARibbon"]
+[submodule "src/3rdparty/SARibbon/SARibbon"]
 	active = true
 	url = https://gitee.com/czyt1988/SARibbon.git
-[submodule "src/3rdparty/pybind11"]
+[submodule "src/3rdparty/pybind11/pybind11"]
 	active = true
 	url = https://gitee.com/czyt1988/pybind11.git
-[submodule "src/3rdparty/spdlog"]
+[submodule "src/3rdparty/spdlog/spdlog"]
 	active = true
 	url = https://gitee.com/czyt1988/spdlog.git
 ```

@@ -10,3 +10,6 @@
 [submodule "src/3rdparty/ADS/ADS"]
 	path = src/3rdparty/ADS/ADS
 	url = https://github.com/githubuser0xFFFF/Qt-Advanced-Docking-System.git
+[submodule "src/3rdparty/QtPropertyBrowser/QtPropertyBrowser"]
+	path = src/3rdparty/QtPropertyBrowser/QtPropertyBrowser
+	url = https://github.com/commontk/QtPropertyBrowser.git

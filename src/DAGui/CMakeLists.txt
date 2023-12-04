@@ -99,38 +99,20 @@ target_link_libraries(${DA_LIB_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Svg
 )
 # -------------link SARibbon--------------------------
-find_package(SARibbonBar)
-if(SARibbonBar_FOUND)
-    message(STATUS "  |-link SARibbonBar")
-    message(STATUS "  | |-include dir:${SARibbonBar_INCLUDE_DIR}")
-endif()
-target_include_directories(${DA_LIB_NAME} PUBLIC
-    $<INSTALL_INTERFACE:include/SARibbonBar>
-    $<INSTALL_INTERFACE:include/SARibbonBar/3rdparty/framelesshelper/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../3rdparty/SARibbon/SARibbon/src/SARibbonBar>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../3rdparty/SARibbon/SARibbon/src/SARibbonBar/3rdparty/framelesshelper/include>
-)
-target_link_libraries(${DA_LIB_NAME} PUBLIC
-    SARibbonBar
-)
+damacro_import_SARibbonBar(${DA_LIB_NAME})
+
 # -------------link QtAdvancedDockingSystem--------------------------
-# 链接ADS
-find_package(qt${QT_VERSION_MAJOR}advanceddocking)
-if(qt${QT_VERSION_MAJOR}advanceddocking_FOUND)
-    message(STATUS "  |-link qt${QT_VERSION_MAJOR}advanceddocking")
-    message(STATUS "  | |-include dir:${qt${QT_VERSION_MAJOR}advanceddocking_INCLUDE_DIR}")
-endif()
-target_include_directories(${DA_LIB_NAME} PUBLIC
-    $<INSTALL_INTERFACE:include/qt${QT_VERSION_MAJOR}advanceddocking>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../3rdparty/ADS/ADS/src>
-)
-target_link_libraries(${DA_LIB_NAME} PUBLIC
-    ads::qt${QT_VERSION_MAJOR}advanceddocking
-)
+damacro_import_QtAdvancedDocking(${DA_LIB_NAME})
+
+# -------------link 3rdparty--------------------------
+damacro_import_qwt(${DA_LIB_NAME})
+
+
 # -------------link DAWorkBench--------------------------
 # DAUtils
 # 指定DAWorkbench_DIR为工程的顶层BINARY_DIR，否则找不到${DA_PROJECT_NAME}
 find_package(${DA_PROJECT_NAME} COMPONENTS
+    DAUtils
     DAMessageHandler
     DAData
     DAPyScripts
@@ -157,8 +139,9 @@ if(${DA_PROJECT_NAME}_FOUND)
     message(STATUS "  | |-include dir:${DAFigure_INCLUDE_DIR}")
 endif()
 target_link_libraries(${DA_LIB_NAME} PUBLIC
-    ${DA_PROJECT_NAME}::DAData
+    ${DA_PROJECT_NAME}::DAUtils
     ${DA_PROJECT_NAME}::DAMessageHandler
+    ${DA_PROJECT_NAME}::DAData
     ${DA_PROJECT_NAME}::DAPyScripts
     ${DA_PROJECT_NAME}::DACommonWidgets
     ${DA_PROJECT_NAME}::DAPyCommonWidgets

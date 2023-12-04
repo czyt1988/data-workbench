@@ -56,30 +56,15 @@ add_library(${DA_PROJECT_NAME}::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
 ########################################################
 # -------------link Qt--------------------------
 message(STATUS "${DA_LIB_NAME} Qt${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
-target_link_libraries(${DA_LIB_NAME} PUBLIC
+target_link_libraries(${DA_LIB_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Widgets
     Qt${QT_VERSION_MAJOR}::Concurrent
     Qt${QT_VERSION_MAJOR}::PrintSupport
 )
-# -------------link 3rdparty--------------------------
-# 3rdparty - qwt
-find_package(qwt)
-if(qwt_FOUND)
-    message(STATUS "  |-link qwt")
-    message(STATUS "  | |-include dir:${qwt_INCLUDE_DIR}")
-endif()
-target_include_directories(${DA_LIB_NAME} PUBLIC
-        $<INSTALL_INTERFACE:include/qwt>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../3rdparty/qwt/qwt/src>
-)
-
-# 链接的第三方库
-target_link_libraries(${DA_LIB_NAME} PUBLIC
-    qwt
-)
-# -------------link DAWorkBench--------------------------
+# -------------link 3rdparty qwt--------------------------
+damacro_import_qwt(${DA_LIB_NAME})
 
 
 ########################################################

@@ -51,53 +51,26 @@ add_library(${DA_PROJECT_NAME}::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
 ########################################################
 # -------------link Qt--------------------------
 message(STATUS "${DA_LIB_NAME} Qt${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
-target_link_libraries(${DA_LIB_NAME} PUBLIC
+target_link_libraries(${DA_LIB_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Widgets
     Qt${QT_VERSION_MAJOR}::Xml
 )
-# -------------link 3rdparty--------------------------
-# 3rdparty - DALiteCtk
-find_package(DALiteCtk)
-if(DALiteCtk_FOUND)
-    message(STATUS "  |-link DALiteCtk")
-    message(STATUS "  | |-include dir:${DALiteCtk_INCLUDE_DIR}")
-endif()
-target_include_directories(${DA_LIB_NAME} PUBLIC
-    $<INSTALL_INTERFACE:include/DALiteCtk>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../3rdparty/ctk/ctk>
-)
+# -------------link 3rdparty DALiteCtk--------------------------
+damacro_import_DALiteCtk(${DA_LIB_NAME})
 
-# 3rdparty - SARibbon
-find_package(SARibbonBar)
-if(SARibbonBar_FOUND)
-    message(STATUS "  |-link SARibbonBar")
-    message(STATUS "  | |-include dir:${SARibbonBar_INCLUDE_DIR}")
-endif()
-target_include_directories(${DA_LIB_NAME} PUBLIC
-    $<INSTALL_INTERFACE:include/SARibbonBar>
-    $<INSTALL_INTERFACE:include/SARibbonBar/3rdparty/framelesshelper/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../3rdparty/SARibbon/SARibbon/src/SARibbonBar>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../3rdparty/SARibbon/SARibbon/src/SARibbonBar/3rdparty/framelesshelper/include>
-)
- 
-# 链接的第三方库
-target_link_libraries(${DA_LIB_NAME} PUBLIC
-    SARibbonBar
-    DALiteCtk
-)
+# -------------link 3rdparty SARibbon--------------------------
+damacro_import_SARibbonBar(${DA_LIB_NAME})
+
 # -------------link DAWorkBench--------------------------
 # DAUtils
 # 指定DAWorkbench_DIR为工程的顶层BINARY_DIR，否则找不到${DA_PROJECT_NAME}
-set(${DA_PROJECT_NAME}_DIR "${CMAKE_BINARY_DIR}")
 find_package(${DA_PROJECT_NAME} COMPONENTS DAUtils)
 if(${DA_PROJECT_NAME}_FOUND)
     message(STATUS "  |-link ${DA_PROJECT_NAME}::DAUtils")
     message(STATUS "  | |-include dir:${DAUtils_INCLUDE_DIR}")
 endif()
-
-
 target_link_libraries(${DA_LIB_NAME} PRIVATE
     ${DA_PROJECT_NAME}::DAUtils
 )

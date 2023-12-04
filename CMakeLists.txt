@@ -2,6 +2,8 @@
 # Cmake的命令不区分打下写，例如message，set等命令；但Cmake的变量区分大小写
 # 为统一风格，本项目的Cmake命令全部采用小写，变量全部采用大写加下划线组合。
 # DA WorkBench 顶层Cmake文件
+# 在运行次CMakeLists.txt之前，请确保3rdparty已经运行并进行了install，3rdparty位于/src/3rdparty/CMakeLists.txt
+# 请先单独编译第三方库后，安装，并把安装目录设置到和此安装目录一致
 
 cmake_minimum_required(VERSION 3.5)
 
@@ -13,7 +15,6 @@ set(DA_VERSION_MINOR 0)
 set(DA_VERSION_PATCH 2)
 set(DA_VERSION "${DA_VERSION_MAJOR}.${DA_VERSION_MINOR}.${DA_VERSION_PATCH}")
 message(STATUS "DA Version is ${DA_VERSION}")
-
 
 ########################################################
 # 定义工程
@@ -55,6 +56,7 @@ endif()
 
 
 set(DA_BIN_DIR_NAME bin_qt${QT_VERSION}_${CMAKE_BUILD_TYPE}_${DA_PLATFORM_NAME})
+
 ########################################################
 # Qt
 ########################################################
@@ -78,9 +80,10 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/${DA_BIN_DIR_NAME}")
 ########################################################
 # 定义第三方库路径
 ########################################################
+set(DA_SRC_DIR ${CMAKE_CURRENT_LIST_DIR}/src)
+set(DA_CMAKE_DIR ${CMAKE_CURRENT_LIST_DIR}/cmake)
 set(DA_INSTALL_LIB_CMAKE_PATH ${CMAKE_INSTALL_PREFIX}/lib/cmake)
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${DA_INSTALL_LIB_CMAKE_PATH})
-
+list(APPEND CMAKE_MODULE_PATH ${DA_CMAKE_DIR} ${DA_INSTALL_LIB_CMAKE_PATH})
 
 set(SARibbonBar_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/SARibbonBar)
 set(DALiteCtk_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/DALiteCtk)
@@ -116,7 +119,7 @@ install(FILES
 # 引入用到的通用函数和宏
 ########################################################
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/daworkbench_utils.cmake)
-
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/daworkbench_3rdparty.cmake)
 ########################################################
 # 源码路径
 ########################################################

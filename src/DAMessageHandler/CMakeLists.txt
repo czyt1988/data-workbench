@@ -47,7 +47,7 @@ add_library(${DA_PROJECT_NAME}::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
 ########################################################
 # 依赖链接
 ########################################################
-target_link_libraries(${DA_LIB_NAME} PUBLIC
+target_link_libraries(${DA_LIB_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Widgets
@@ -55,14 +55,10 @@ target_link_libraries(${DA_LIB_NAME} PUBLIC
 )
 message(STATUS "${DA_LIB_NAME} Qt${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
 
+# -------------link 3rdparty spdlog--------------------------
 # DAMessageHandler依赖spdlog
 # spdlog是header only
-set(spdlog_DIR "${CMAKE_INSTALL_PREFIX}/spdlog/include")
-target_include_directories(${DA_LIB_NAME} PUBLIC
-    $<INSTALL_INTERFACE:include/spdlog/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../3rdparty/spdlog/spdlog/include>
-)
-message(STATUS "  |-spdlog include: ${spdlog_DIR}/include")
+damacro_import_spdlog(${DA_LIB_NAME})
 
 # DAUtils
 # 指定DAWorkbench_DIR为工程的顶层BINARY_DIR，否则找不到DAWorkbench
@@ -70,7 +66,7 @@ find_package(${DA_PROJECT_NAME} COMPONENTS DAUtils)
 if(${DA_PROJECT_NAME}_FOUND)
     message(STATUS "  |-link DAUtils")
 endif()
-target_link_libraries(${DA_LIB_NAME} PRIVATE
+target_link_libraries(${DA_LIB_NAME} PUBLIC
     ${DA_PROJECT_NAME}::DAUtils
 )
 

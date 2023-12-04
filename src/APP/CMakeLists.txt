@@ -22,6 +22,10 @@ find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
     Gui
     Widgets
     Xml
+    Svg
+    Concurrent
+    PrintSupport
+    AxContainer
     REQUIRED
 )
 if(Qt5_POSITION_INDEPENDENT_CODE)
@@ -66,7 +70,21 @@ target_link_libraries(${DA_APP_NAME} PUBLIC
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Widgets
     Qt${QT_VERSION_MAJOR}::Xml
+    Qt${QT_VERSION_MAJOR}::Svg
+    Qt${QT_VERSION_MAJOR}::Concurrent
+    Qt${QT_VERSION_MAJOR}::PrintSupport
+    Qt${QT_VERSION_MAJOR}::AxContainer
 )
+
+# -------------link 3rdparty DALiteCtk--------------------------
+damacro_import_DALiteCtk(${DA_APP_NAME})
+# -------------link 3rdparty SARibbon--------------------------
+damacro_import_SARibbonBar(${DA_APP_NAME})
+# -------------link 3rdparty QtAdvancedDocking--------------------------
+damacro_import_QtAdvancedDocking(${DA_APP_NAME})
+# -------------link 3rdparty--------------------------
+damacro_import_qwt(${DA_APP_NAME})
+
 # -------------link DAWorkBench--------------------------
 # DAPluginSupport
 # 指定DAWorkbench_DIR为工程的顶层BINARY_DIR，否则找不到${DA_PROJECT_NAME}
@@ -78,6 +96,9 @@ endif()
 
 
 target_link_libraries(${DA_APP_NAME} PUBLIC
+    ${DA_PROJECT_NAME}::DACommonWidgets
+    ${DA_PROJECT_NAME}::DAGui
+    ${DA_PROJECT_NAME}::DAInterface
     ${DA_PROJECT_NAME}::DAPluginSupport
 )
 # -------------link Dbghelp--------------------------

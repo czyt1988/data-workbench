@@ -45,7 +45,7 @@ add_library(${DA_PROJECT_NAME}::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
 # 依赖链接 #!!!!** 注意变更 **!!!!
 ########################################################
 # -------------link Qt--------------------------
-target_link_libraries(${DA_LIB_NAME} PUBLIC
+target_link_libraries(${DA_LIB_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Widgets
@@ -53,34 +53,13 @@ target_link_libraries(${DA_LIB_NAME} PUBLIC
 message(STATUS "${DA_LIB_NAME} Qt${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
 
 # -------------link Python--------------------------
-# Python
-# 此处要依赖python
-# https://zhuanlan.zhihu.com/p/666367728
-# https://blog.csdn.net/weixin_40448140/article/details/112005184
-# 如果使用的是非系统目录下的 Python 可以通过指定 Python3_ROOT_DIR 改变查找路径
-find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
-if(${Python3_FOUND})
-    message(STATUS "  |-find python")
-    message(STATUS "  | |-include dir:${Python3_INCLUDE_DIRS}")
-    message(STATUS "  | |-libs : ${Python3_LIBRARIES}")
-endif()
-target_link_libraries(${DA_LIB_NAME} PRIVATE ${Python3_LIBRARIES})
-target_include_directories(${DA_LIB_NAME} PUBLIC
-    ${Python3_INCLUDE_DIRS}
-)
+damacro_import_Python(${DA_LIB_NAME})
 
 # -------------link pybind11--------------------------
-# pybind11
-# pybind11是header only
-set(pybind11_DIR "${CMAKE_INSTALL_PREFIX}/../pybind11")
-#include_directories(${pybind11_DIR}/include)
-target_include_directories(${DA_LIB_NAME} PUBLIC
-    $<INSTALL_INTERFACE:../pybind11/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../3rdparty/pybind11/pybind11/include>
-)
+damacro_import_pybind11(${DA_LIB_NAME})
 message(STATUS "  |-pybind11 include: ${pybind11_DIR}/include")
 
-# -------------link pybind11--------------------------
+# -------------link DAWorkBench--------------------------
 # DAUtils DAPyBindQt DAPyScripts
 # 指定DAWorkbench_DIR为工程的顶层BINARY_DIR，否则找不到DAWorkbench
 find_package(${DA_PROJECT_NAME} COMPONENTS DAUtils DAPyBindQt DAPyScripts)
@@ -94,11 +73,11 @@ if(${DA_PROJECT_NAME}_FOUND)
 endif()
 target_link_libraries(${DA_LIB_NAME} PRIVATE
     ${DA_PROJECT_NAME}::DAUtils
-    ${DA_PROJECT_NAME}::DAPyScripts
 )
 # DAData的头文件包含了DAPyBindQt库的内容，因此DAPyBindQt需要公开链接
 target_link_libraries(${DA_LIB_NAME} PUBLIC
     ${DA_PROJECT_NAME}::DAPyBindQt
+    ${DA_PROJECT_NAME}::DAPyScripts
 )
 include_directories(${DAPyBindQt_INCLUDE_DIR})
 

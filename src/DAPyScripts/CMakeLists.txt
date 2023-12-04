@@ -43,33 +43,15 @@ add_library(${DA_PROJECT_NAME}::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
 ########################################################
 # 依赖链接 #!!!!** 注意变更 **!!!!
 ########################################################
-target_link_libraries(${DA_LIB_NAME} PUBLIC
+target_link_libraries(${DA_LIB_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Core
 )
 message(STATUS "${DA_LIB_NAME} Qt${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
+# -------------link 3rdparty python--------------------------
+damacro_import_Python(${DA_LIB_NAME})
 
-# 此处要依赖python
-# https://zhuanlan.zhihu.com/p/666367728
-# https://blog.csdn.net/weixin_40448140/article/details/112005184
-# 如果使用的是非系统目录下的 Python 可以通过指定 Python3_ROOT_DIR 改变查找路径
-find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
-if(${Python3_FOUND})
-    message(STATUS "  |-find python")
-    message(STATUS "  | |-include dir:${Python3_INCLUDE_DIRS}")
-    message(STATUS "  | |-libs : ${Python3_LIBRARIES}")
-endif()
-target_link_libraries(${DA_LIB_NAME} PRIVATE ${Python3_LIBRARIES})
-include_directories(${Python3_INCLUDE_DIRS})
-
-# DAPyScripts依赖pybind11
-# pybind11是header only
-# set(pybind11_DIR "${CMAKE_INSTALL_PREFIX}/../pybind11")
-#include_directories(${pybind11_DIR}/include)
-target_include_directories(${DA_LIB_NAME} PUBLIC
-    $<INSTALL_INTERFACE:include/pybind11/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../3rdparty/pybind11/pybind11/include>
-)
-message(STATUS "  |-pybind11 include: ${pybind11_DIR}/include")
+# -------------link 3rdparty pybind11--------------------------
+damacro_import_pybind11(${DA_LIB_NAME})
 
 # -------------link DAWorkbench--------------------------
 # DAPyBindQt
