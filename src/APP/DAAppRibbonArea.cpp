@@ -30,10 +30,15 @@
 // ui
 #include "DAWaitCursorScoped.h"
 #include "DAAppRibbonApplicationMenu.h"
+#ifdef DA_ENABLE_PYTHON
 // Py
 #include "DAPyScripts.h"
 #include "pandas/DAPyDataFrame.h"
 #include "numpy/DAPyDType.h"
+// Widget
+#include "DAPyDTypeComboBox.h"
+#include "DADataOperateOfDataFrameWidget.h"
+#endif
 // api
 #include "DAAppUI.h"
 #include "DAAppCommand.h"
@@ -48,8 +53,6 @@
 #include "DACommandsDataManager.h"
 // Widget
 #include "DADataOperateWidget.h"
-#include "DADataOperateOfDataFrameWidget.h"
-#include "DAPyDTypeComboBox.h"
 #include "DADataManageWidget.h"
 #include "DAChartOperateWidget.h"
 #include "DAFigureWidget.h"
@@ -175,11 +178,13 @@ void DAAppRibbonArea::resetText()
     m_categoryView->setCategoryName(tr("View"));         // cn:视图
     m_pannelViewMainView->setPannelName(tr("Display"));  // cn:视图显示
 
-    m_contextDataFrame->setContextTitle(tr("DataFrame"));               ///< DataFrame
-    m_categoryDataframeOperate->setCategoryName(tr("Operate"));         ///< DataFrame -> Operate
-    m_pannelDataframeOperateAxes->setPannelName(tr("Axes"));            ///< DataFrame -> Operate -> Axes
-    m_pannelDataframeOperateDType->setPannelName(tr("Type"));           ///< DataFrame -> Type
-    m_comboxColumnTypesContainer->setPrefix(tr("Type"));                ///< DataFrame -> Type -> Type
+    m_contextDataFrame->setContextTitle(tr("DataFrame"));        ///< DataFrame
+    m_categoryDataframeOperate->setCategoryName(tr("Operate"));  ///< DataFrame -> Operate
+    m_pannelDataframeOperateAxes->setPannelName(tr("Axes"));     ///< DataFrame -> Operate -> Axes
+    m_pannelDataframeOperateDType->setPannelName(tr("Type"));    ///< DataFrame -> Type
+#ifdef DA_ENABLE_PYTHON
+    m_comboxColumnTypesContainer->setPrefix(tr("Type"));  ///< DataFrame -> Type -> Type
+#endif
     m_pannelDataframeOperateStatistic->setPannelName(tr("Statistic"));  ///< DataFrame -> Statistic
 
     //编辑标签
@@ -364,12 +369,14 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     m_pannelDataframeOperateAxes->addLargeAction(m_actions->actionChangeToIndex);
     // Type pannel
     m_pannelDataframeOperateDType = m_categoryDataframeOperate->addPannel(tr("Type"));
-    m_comboxColumnTypesContainer  = new SARibbonLineWidgetContainer(m_pannelDataframeOperateDType);
-    m_comboxColumnTypes           = new DAPyDTypeComboBox(m_comboxColumnTypesContainer);
+#ifdef DA_ENABLE_PYTHON
+    m_comboxColumnTypesContainer = new SARibbonLineWidgetContainer(m_pannelDataframeOperateDType);
+    m_comboxColumnTypes          = new DAPyDTypeComboBox(m_comboxColumnTypesContainer);
     m_comboxColumnTypes->setMinimumWidth(m_app->fontMetrics().width("timedelta64(scoll)"));  //设置最小宽度
     m_comboxColumnTypesContainer->setPrefix(tr("Type"));
     m_comboxColumnTypesContainer->setWidget(m_comboxColumnTypes);
     m_pannelDataframeOperateDType->addWidget(m_comboxColumnTypesContainer, SARibbonPannelItem::Medium);
+#endif
     m_castActionsButtonGroup = new SARibbonButtonGroupWidget();
     m_castActionsButtonGroup->addAction(m_actions->actionCastToNum);
     m_castActionsButtonGroup->addAction(m_actions->actionCastToString);

@@ -2,10 +2,13 @@
 #include <QList>
 #include <QFileInfo>
 #include <QUndoStack>
-// DAPyScript
-#include "DAPyScripts.h"
+#include <QDebug>
 // DAUtils
 #include "DAStringUtil.h"
+#ifdef DA_ENABLE_PYTHON
+// DAPyScript
+#include "DAPyScripts.h"
+#endif
 
 namespace DA
 {
@@ -57,6 +60,7 @@ int DAAppDataManager::importFromFiles(const QStringList& fileNames)
     qDebug() << "data manager begin import files:" << fileNames;
     QList< DAData > importDatas;
     for (const QString& f : qAsConst(fileNames)) {
+#ifdef DA_ENABLE_PYTHON
         qInfo() << tr("begin import file:%1").arg(f);
         DAPyObjectWrapper res = DAPyScripts::getInstance().getIO().read(f);
         if (DAPyDataFrame::isDataFrame(res.object())) {
@@ -72,6 +76,7 @@ int DAAppDataManager::importFromFiles(const QStringList& fileNames)
             qWarning() << tr("can not import file:%1").arg(f);
             continue;
         }
+#endif
     }
     if (importDatas.size() > 0) {
         addDatas(importDatas);

@@ -8,12 +8,14 @@
 #include <QDir>
 #include "DAAppCore.h"
 #include "DAMessageHandler.h"
+#include "DATranslatorManeger.h"
+#include "DADumpCapture.h"
+#ifdef DA_ENABLE_PYTHON
 #include "DAPybind11InQt.h"
 #include "DAPyScripts.h"
 #include "DAPyInterpreter.h"
 #include "DAPybind11QtTypeCast.h"
-#include "DATranslatorManeger.h"
-#include "DADumpCapture.h"
+#endif
 void setAppFont();
 
 void enableHDPIScaling()
@@ -47,9 +49,10 @@ int main(int argc, char* argv[])
     QApplication app(argc, argv);
     DA::DATranslatorManeger datr;
     datr.installAllTranslator();
-
+#ifdef DA_ENABLE_PYTHON
     //注册元对象
     DA::PY::registerMetaType();
+#endif
     setAppFont();
     DA::DAAppCore& core = DA::DAAppCore::getInstance();
     //初始化python环境

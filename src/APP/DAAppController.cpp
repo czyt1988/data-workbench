@@ -11,6 +11,7 @@
 #include <QComboBox>
 #include <QInputDialog>
 #include <QMenu>
+#include <QCoreApplication>
 // API
 #include "AppMainWindow.h"
 #include "DAAppCore.h"
@@ -30,7 +31,7 @@
 // Widget
 #include "DAWaitCursorScoped.h"
 #include "DADataOperateWidget.h"
-#include "DADataOperateOfDataFrameWidget.h"
+#include "DADataOperatePageWidget.h"
 #include "DADataManageWidget.h"
 #include "DAChartOperateWidget.h"
 #include "DAFigureWidget.h"
@@ -57,6 +58,8 @@
 #include "DAPyScripts.h"
 #include "pandas/DAPyDataFrame.h"
 #include "numpy/DAPyDType.h"
+// Widget
+#include "DADataOperateOfDataFrameWidget.h"
 #endif
 //
 #include "SettingPages/DAAppConfig.h"
@@ -431,7 +434,6 @@ void DAAppController::initConnection()
 	connect(mActions->actionWorkflowZoomIn, &QAction::triggered, workflowOpt, &DAWorkFlowOperateWidget::setCurrentWorkflowZoomIn);
 	connect(mActions->actionWorkflowZoomOut, &QAction::triggered, workflowOpt, &DAWorkFlowOperateWidget::setCurrentWorkflowZoomOut);
 }
-
 
 DAAppConfig* DAAppController::getConfig() const
 {
@@ -1336,9 +1338,11 @@ void DAAppController::onChartLegendBorderRadiusValueChanged(double v)
  */
 void DAAppController::onActionRemoveRowTriggered()
 {
+#ifdef DA_ENABLE_PYTHON
 	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
 		dfopt->removeSelectRow();
 	}
+#endif
 }
 
 /**
@@ -1346,9 +1350,11 @@ void DAAppController::onActionRemoveRowTriggered()
  */
 void DAAppController::onActionRemoveColumnTriggered()
 {
+#ifdef DA_ENABLE_PYTHON
 	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
 		dfopt->removeSelectColumn();
-	}
+    }
+#endif
 }
 
 /**
@@ -1356,9 +1362,11 @@ void DAAppController::onActionRemoveColumnTriggered()
  */
 void DAAppController::onActionRemoveCellTriggered()
 {
-	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+#ifdef DA_ENABLE_PYTHON
+    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
 		dfopt->removeSelectCell();
-	}
+    }
+#endif
 }
 
 /**
@@ -1366,9 +1374,11 @@ void DAAppController::onActionRemoveCellTriggered()
  */
 void DAAppController::onActionInsertRowTriggered()
 {
+#ifdef DA_ENABLE_PYTHON
 	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
 		dfopt->insertRowBelowBySelect();
-	}
+    }
+#endif
 }
 
 /**
@@ -1376,27 +1386,33 @@ void DAAppController::onActionInsertRowTriggered()
  */
 void DAAppController::onActionInsertRowAboveTriggered()
 {
+#ifdef DA_ENABLE_PYTHON
 	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
 		dfopt->insertRowAboveBySelect();
-	}
+    }
+#endif
 }
 /**
  * @brief 在选中位置右边插入一列
  */
 void DAAppController::onActionInsertColumnRightTriggered()
 {
+#ifdef DA_ENABLE_PYTHON
 	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
 		dfopt->insertColumnRightBySelect();
 	}
+#endif
 }
 /**
  * @brief 在选中位置左边插入一列
  */
 void DAAppController::onActionInsertColumnLeftTriggered()
 {
+#ifdef DA_ENABLE_PYTHON
 	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
 		dfopt->insertColumnLeftBySelect();
 	}
+#endif
 }
 
 /**
@@ -1404,9 +1420,11 @@ void DAAppController::onActionInsertColumnLeftTriggered()
  */
 void DAAppController::onActionRenameColumnsTriggered()
 {
+#ifdef DA_ENABLE_PYTHON
 	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
 		dfopt->renameColumns();
 	}
+#endif
 }
 
 /**
@@ -1433,15 +1451,16 @@ void DAAppController::onActionCreateDataDescribeTriggered()
 #endif
 }
 
-
 /**
  * @brief 选中列转换为数值
  */
 void DAAppController::onActionCastToNumTriggered()
 {
+#ifdef DA_ENABLE_PYTHON
 	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
 		dfopt->castSelectToNum();
 	}
+#endif
 }
 
 /**
@@ -1457,9 +1476,11 @@ void DAAppController::onActionCastToStringTriggered()
  */
 void DAAppController::onActionCastToDatetimeTriggered()
 {
+#ifdef DA_ENABLE_PYTHON
 	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
 		dfopt->castSelectToDatetime();
 	}
+#endif
 }
 
 /**
@@ -1467,9 +1488,11 @@ void DAAppController::onActionCastToDatetimeTriggered()
  */
 void DAAppController::onActionChangeToIndexTriggered()
 {
+#ifdef DA_ENABLE_PYTHON
 	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
 		dfopt->changeSelectColumnToIndex();
 	}
+#endif
 }
 
 /**

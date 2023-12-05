@@ -9,7 +9,7 @@
 #include "DADataManageWidget.h"
 #include "DAWorkFlowGraphicsScene.h"
 #ifdef DA_ENABLE_PYTHON
-//Py
+// Py
 #include "numpy/DAPyDType.h"
 #endif
 // Qt
@@ -223,14 +223,16 @@ public:
     SARibbonPannel* m_pannelFigureSetting;  ///< 绘图的设置
     SARibbonPannel* m_pannelChartAdd;       ///< 添加绘图
     // Context - dataframe
-    SARibbonContextCategory* m_contextDataFrame;                ///< 对应dataframe的上下文
-    SARibbonCategory* m_categoryDataframeOperate;               ///< dataframe对应的category
-    SARibbonPannel* m_pannelDataframeOperateAxes;               ///< 数据信息的编辑
-    SARibbonPannel* m_pannelDataframeOperateDType;              ///< 数据类型的编辑
+    SARibbonContextCategory* m_contextDataFrame;    ///< 对应dataframe的上下文
+    SARibbonCategory* m_categoryDataframeOperate;   ///< dataframe对应的category
+    SARibbonPannel* m_pannelDataframeOperateAxes;   ///< 数据信息的编辑
+    SARibbonPannel* m_pannelDataframeOperateDType;  ///< 数据类型的编辑
+#ifdef DA_ENABLE_PYTHON
     SARibbonLineWidgetContainer* m_comboxColumnTypesContainer;  ///<列类型选择器的container
-    SARibbonButtonGroupWidget* m_castActionsButtonGroup;        ///< 管理强制转换的action的工具栏
     DAPyDTypeComboBox* m_comboxColumnTypes;                     ///< 列类型选择器
-    SARibbonPannel* m_pannelDataframeOperateStatistic;          ///< 统计相关操作
+#endif
+    SARibbonButtonGroupWidget* m_castActionsButtonGroup;  ///< 管理强制转换的action的工具栏
+    SARibbonPannel* m_pannelDataframeOperateStatistic;    ///< 统计相关操作
     // Context - workflow
     SARibbonContextCategory* m_contextWorkflow;  ///< 对应workflow的上下文
     // Context - workflow-edit

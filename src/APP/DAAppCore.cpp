@@ -10,11 +10,13 @@
 #include "DACommandInterface.h"
 #include "DAAppProject.h"
 #include "DAAppCommand.h"
+#ifdef DA_ENABLE_PYTHON
 // DA Python
 #include "DAPyInterpreter.h"
 #include "DAPybind11QtTypeCast.h"
 #include "DAPybind11InQt.h"
 #include "DAPyScripts.h"
+#endif
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
 //===================================================
@@ -38,10 +40,12 @@ DAAppCore& DAAppCore::getInstance()
 
 bool DAAppCore::initialized()
 {
+#ifdef DA_ENABLE_PYTHON
     //初始化python环境
     qDebug() << "begin app core initialized";
     initializePythonEnv();
     qDebug() << "core have been initialized Python Env";
+#endif
     //初始化数据
     mDataManager = new DAAppDataManager(this, this);
     qDebug() << "core have been initialized App Data Manager";
@@ -93,6 +97,7 @@ DADataManagerInterface* DAAppCore::getDataManagerInterface() const
 bool DAAppCore::initializePythonEnv()
 {
     mIsPythonInterpreterInitialized = false;
+#ifdef DA_ENABLE_PYTHON
     try {
         DA::DAPyInterpreter& python = DA::DAPyInterpreter::getInstance();
         //初始化python环境
@@ -116,6 +121,7 @@ bool DAAppCore::initializePythonEnv()
         return false;
     }
     mIsPythonInterpreterInitialized = true;
+#endif
     return true;
 }
 

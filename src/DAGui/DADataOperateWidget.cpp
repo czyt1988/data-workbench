@@ -1,11 +1,15 @@
 ﻿#include "DADataOperateWidget.h"
 #include "ui_DADataOperateWidget.h"
+#include <QDebug>
 // api
 #include "DADataManager.h"
-// py
-#include "DADataPyObject.h"
+#include "DADataOperatePageWidget.h"
+#ifdef DA_ENABLE_PYTHON
 // widget
 #include "DADataOperateOfDataFrameWidget.h"
+// py
+#include "DADataPyObject.h"
+#endif
 //===================================================
 // using DA namespace -- 禁止在头文件using!!
 //===================================================
@@ -54,16 +58,18 @@ QWidget* DADataOperateWidget::currentWidget() const
 {
     return ui->tabWidget->currentWidget();
 }
-
 /**
  * @brief 当前显示的DataFrame窗口，如果不是DataFrame窗口，返回nullptr
  * @return
  */
 DADataOperateOfDataFrameWidget* DADataOperateWidget::getCurrentDataFrameWidget() const
 {
+#ifdef DA_ENABLE_PYTHON
     return qobject_cast< DADataOperateOfDataFrameWidget* >(currentWidget());
+#else
+    return nullptr;
+#endif
 }
-
 /**
  * @brief 显示数据，如果数据已经有，唤起对应的tab，如果没有，则创建一个sheet
  * @param d
@@ -168,10 +174,12 @@ void DADataOperateWidget::onTabWidgetCurrentChanged(int index)
     if (!w) {
         return;
     }
+#ifdef DA_ENABLE_PYTHON
     if (DADataOperateOfDataFrameWidget* d = qobject_cast< DADataOperateOfDataFrameWidget* >(w)) {
         //激活undostack
         d->activeUndoStack();
     }
+#endif
 }
 
 /**
@@ -189,6 +197,7 @@ void DADataOperateWidget::onTabWidgetCloseRequested(int index)
 
 void DADataOperateWidget::showDataframeData(const DA::DAData& d)
 {
+#ifdef DA_ENABLE_PYTHON
     //先查找是否已经存在对于窗口
     DADataOperateOfDataFrameWidget* w = qobject_cast< DADataOperateOfDataFrameWidget* >(_dataToWidget.value(d, nullptr));
     if (nullptr == w) {
@@ -209,4 +218,5 @@ void DADataOperateWidget::showDataframeData(const DA::DAData& d)
     ui->tabWidget->setTabToolTip(index, d.getDescribe());
     //把当前的tabwidget唤起
     ui->tabWidget->setCurrentIndex(index);
+#endif
 }
