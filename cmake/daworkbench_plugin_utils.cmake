@@ -24,7 +24,7 @@ endmacro(damacro_set_bin_name)
 # 生成：DA_PLUGIN_VERSION，完整的版本名
 # 生成：DA_PLUGIN_FULL_DESCRIPTION，完整的描述
 # 生成：DA_MIN_QT_VERSION 最低qt版本要求
-macro(damacro_plugin_setting _plugin_name _plugin_description _plugin_ver_major _plugin_ver_minor _plugin_ver_path _daworkbench_intall_cmake_dir)
+macro(damacro_plugin_setting _plugin_name _plugin_description _plugin_ver_major _plugin_ver_minor _plugin_ver_path _daworkbench_intall_dir)
     set(DA_MIN_QT_VERSION 5.14)
 	set(DA_PLUGIN_NAME ${_plugin_name})
     set(DA_PLUGIN_DESCRIPTION ${_plugin_description})
@@ -33,8 +33,6 @@ macro(damacro_plugin_setting _plugin_name _plugin_description _plugin_ver_major 
     set(DA_PLUGIN_VERSION_PATCH ${_plugin_ver_path})
     set(DA_PLUGIN_VERSION "${DA_PLUGIN_VERSION_MAJOR}.${DA_PLUGIN_VERSION_MINOR}.${DA_PLUGIN_VERSION_PATCH}")
     set(DA_PLUGIN_FULL_DESCRIPTION "${DA_PLUGIN_NAME} ${DA_PLUGIN_VERSION} | ${DA_PLUGIN_DESCRIPTION}")
-    set(DAWorkbench_DIR ${_daworkbench_intall_cmake_dir})
-    get_filename_component(DAWORKBENCH_INSTALL_DIR "${_daworkbench_intall_cmake_dir}/../../../" ABSOLUTE)
 
     project(${DA_PLUGIN_NAME} 
         VERSION ${DA_PLUGIN_VERSION} 
@@ -66,32 +64,39 @@ macro(damacro_plugin_setting _plugin_name _plugin_description _plugin_ver_major 
     # 包含自身目录
     set(CMAKE_INCLUDE_CURRENT_DIR ON)
     # 默认的CMAKE_INSTALL_PREFIX
-    damacro_set_bin_name(DA_BIN_DIR_NAME)
-    set(CMAKE_INSTALL_PREFIX "${DAWORKBENCH_INSTALL_DIR}/${DA_BIN_DIR_NAME}/plugins")
+    # 插件的安装路径和DAWorkbench一致，这样才能正确把插件安装
+    set(CMAKE_INSTALL_PREFIX "${_daworkbench_intall_dir}")
     ########################################################
     # 打印信息
     ########################################################
     message("")
     message("${DA_PLUGIN_FULL_DESCRIPTION}")
+    message(STATUS "  | => DAWorkBench Install Dir=${_daworkbench_intall_dir}")
     message(STATUS "  | => DA_PLUGIN_NAME=${DA_PLUGIN_NAME}")
-    message(STATUS "  | => DA_GLOBAL_HEADER=${DA_GLOBAL_HEADER}")
-    message(STATUS "  | => CMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}")
-    message(STATUS "  | => CMAKE_CURRENT_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}")
-    message(STATUS "  | => CMAKE_CURRENT_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}")
+    message(STATUS "  | => PLUGIN CMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}")
+    message(STATUS "  | => PLUGIN CMAKE_CURRENT_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}")
+    message(STATUS "  | => PLUGIN CMAKE_CURRENT_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}")
 endmacro(damacro_plugin_setting)
+
+# 获取插件的runtime所在目录，也就是dll放置的位置
+macro(damacro_get_plugin_runtime_install_dir _var_plugin_install_dir _daworkbench_install_root_dir)
+    ########################################################
+    # 获取插件的安装目录
+    ########################################################
+    # 声明导出target的名称
+    set(_var_plugin_install_dir ${_daworkbench_install_root_dir}/bin/plugins)
+    message(STATUS "${DA_PLUGIN_NAME} install dir is : ${CMAKE_INSTALL_PREFIX}")
+endmacro(damacro_get_plugin_runtime_install_dir)
 
 # 通用的安装
 macro(damacro_plugin_install)
     ########################################################
     # dll资源信息添加到 target_sources中
     ########################################################
-
-
     # 声明导出target的名称
     install(TARGETS ${DA_PLUGIN_NAME}
-        RUNTIME DESTINATION .
+        RUNTIME DESTINATION bin/plugins
     )
-
     message(STATUS "${DA_PLUGIN_NAME} install dir is : ${CMAKE_INSTALL_PREFIX}")
 endmacro(damacro_plugin_install)
 
@@ -147,6 +152,19 @@ macro(damacro_import_qwt __target_name __install_dir)
         qwt
     )
 endmacro(damacro_import_qwt)
+
+macro(damacro_import_QtPropertyBrowser __target_name __install_dir)
+    # 3rdparty - QtPropertyBrowser
+    find_package(QtPropertyBrowser PATHS ${__install_dir})
+    if(QtPropertyBrowser_FOUND)
+        message(STATUS "  |-link QtPropertyBrowser")
+        message(STATUS "  | |-include dir:${QtPropertyBrowser_INCLUDE_DIR}")
+    endif()
+    # 链接的第三方库
+    target_link_libraries(${__target_name} PUBLIC
+        QtPropertyBrowser
+    )
+endmacro(damacro_import_QtPropertyBrowser)
 
 macro(damacro_import_spdlog __target_name __install_dir)
     # 3rdparty - spdlog

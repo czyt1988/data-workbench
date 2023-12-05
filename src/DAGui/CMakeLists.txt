@@ -32,29 +32,196 @@ endif()
 ########################################################
 # 文件加载 #!!!!** 注意变更 **!!!!
 ########################################################
+set(DA_LIB_HEADER_FILES
+    DAAbstractChartAddItemWidget.h
+    DAChartAddXYSeriesWidget.h
+    DADataManagerComboBox.h
+    DADataOperatePageWidget.h
+    DAFigureFactory.h
+    DAGraphicsPixmapItemSettingWidget.h
+    DAGuiAPI.h
+    DAChartListView.h
+    DAChartManageWidget.h
+    DAChartOperateWidget.h
+    DADataListView.h
+    DADataManageTableView.h
+    DADataManageWidget.h
+    DADataOperateWidget.h
+    DAMessageLogViewWidget.h
+    DANodeItemSettingWidget.h
+    DANodeLinkItemSettingWidget.h
+    DANodeListWidget.h
+    DANodeMimeData.h
+    DANodeSettingWidget.h
+    DANodeTreeWidget.h
+    DAToolBox.h
+    DAWorkFlowEditWidget.h
+    DAWorkFlowGraphicsScene.h
+    DAWorkFlowGraphicsView.h
+    DAWorkFlowNodeListWidget.h
+    DAWorkFlowNodeItemSettingWidget.h
+    DAWorkFlowOperateWidget.h
+    DASettingContainerWidget.h
+    DAXmlHelper.h
+)
+set(DA_LIB_SOURCE_FILES
+    DAAbstractChartAddItemWidget.cpp
+    DAChartAddXYSeriesWidget.cpp
+    DAChartListView.cpp
+    DAChartManageWidget.cpp
+    DAChartOperateWidget.cpp
+    DADataListView.cpp
+    DADataManageTableView.cpp
+    DADataManageWidget.cpp
+    DADataManagerComboBox.cpp
+    DADataOperatePageWidget.cpp
+    DADataOperateWidget.cpp
+    DAFigureFactory.cpp
+    DAGraphicsPixmapItemSettingWidget.cpp
+    DAMessageLogViewWidget.cpp
+    DANodeItemSettingWidget.cpp
+    DANodeLinkItemSettingWidget.cpp
+    DANodeListWidget.cpp
+    DANodeMimeData.cpp
+    DANodeSettingWidget.cpp
+    DANodeTreeWidget.cpp
+    DAToolBox.cpp
+    DAWorkFlowEditWidget.cpp
+    DAWorkFlowGraphicsScene.cpp
+    DAWorkFlowGraphicsView.cpp
+    DAWorkFlowNodeListWidget.cpp
+    DAWorkFlowNodeItemSettingWidget.cpp
+    DAWorkFlowOperateWidget.cpp
+    DASettingContainerWidget.cpp
+    DAXmlHelper.cpp
+)
+set(DA_LIB_QT_UI_FILES
+    DAChartAddXYSeriesWidget.ui
+    DAChartManageWidget.ui
+    DAChartOperateWidget.ui
+    DADataManageWidget.ui
+    DADataOperateWidget.ui
+    DAGraphicsPixmapItemSettingWidget.ui
+    DAMessageLogViewWidget.ui
+    DANodeItemSettingWidget.ui
+    DANodeLinkItemSettingWidget.ui
+    DANodeSettingWidget.ui
+    DAWorkFlowOperateWidget.ui
+    DAWorkFlowEditWidget.ui
+    DAWorkFlowNodeListWidget.ui
+    DAWorkFlowNodeItemSettingWidget.ui
+)
+set(DA_LIB_QT_RC_FILES
+    icon.qrc
+)
+if(DA_ENABLE_PYTHON)
+    list(APPEND DA_LIB_HEADER_FILES
+        DADataframeToVectorPointWidget.h
+        DADataOperateOfDataFrameWidget.h
+    )
+    list(APPEND DA_LIB_HEADER_FILES
+        DADataframeToVectorPointWidget.cpp
+        DADataOperateOfDataFrameWidget.cpp
+    )
+    list(APPEND DA_LIB_QT_UI_FILES
+        DADataframeToVectorPointWidget.ui
+        DADataOperateOfDataFrameWidget.cpp
+    )
+endif()
+# 子目录
 set(DA_LIB_SUBDIR_Models ${CMAKE_CURRENT_SOURCE_DIR}/Models)
 set(DA_LIB_SUBDIR_Dialog ${CMAKE_CURRENT_SOURCE_DIR}/Dialog)
 set(DA_LIB_SUBDIR_MimeData ${CMAKE_CURRENT_SOURCE_DIR}/MimeData)
 set(DA_LIB_SUBDIR_Commands ${CMAKE_CURRENT_SOURCE_DIR}/Commands)
 set(DA_LIB_SUBDIR_ChartSetting ${CMAKE_CURRENT_SOURCE_DIR}/ChartSetting)
 
-file(GLOB DA_LIB_HEADER_FILES ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
-file(GLOB DA_LIB_SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
-file(GLOB DA_LIB_QT_UI_FILES ${CMAKE_CURRENT_SOURCE_DIR}/*.ui)
-file(GLOB DA_LIB_QT_RC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/*.qrc)
-#Models
-file(GLOB DA_LIB_HEADER_FILES_Models ${DA_LIB_SUBDIR_Models}/*.h)
-file(GLOB DA_LIB_SOURCE_FILES_Models ${DA_LIB_SUBDIR_Models}/*.cpp)
+# Models
+set(DA_LIB_HEADER_FILES_Models
+    ${DA_LIB_SUBDIR_Models}/DADataManagerTreeModel.h
+    ${DA_LIB_SUBDIR_Models}/DATreeModel.h
+    ${DA_LIB_SUBDIR_Models}/DADataManagerTableModel.h
+    ${DA_LIB_SUBDIR_Models}/DAMessageLogsModel.h
+    ${DA_LIB_SUBDIR_Models}/DAVariantTableModel.h
+)
+set(DA_LIB_SOURCE_FILES_Models
+    ${DA_LIB_SUBDIR_Models}/DADataManagerTreeModel.cpp
+    ${DA_LIB_SUBDIR_Models}/DATreeModel.cpp
+    ${DA_LIB_SUBDIR_Models}/DADataManagerTableModel.cpp
+    ${DA_LIB_SUBDIR_Models}/DAMessageLogsModel.cpp
+    ${DA_LIB_SUBDIR_Models}/DAVariantTableModel.cpp
+)
+if(DA_ENABLE_PYTHON)
+    list(APPEND DA_LIB_HEADER_FILES_Models
+        ${DA_LIB_SUBDIR_Models}/DAPySeriesTableModule.h
+        ${DA_LIB_SUBDIR_Models}/DAPyDataFrameTableModule.h
+    )
+    list(APPEND DA_LIB_SOURCE_FILES_Models
+        ${DA_LIB_SUBDIR_Models}/DAPySeriesTableModule.cpp
+        ${DA_LIB_SUBDIR_Models}/DAPyDataFrameTableModule.cpp
+    )
+endif()
+
 #Dialog
-file(GLOB DA_LIB_HEADER_FILES_Dialog ${DA_LIB_SUBDIR_Dialog}/*.h)
-file(GLOB DA_LIB_SOURCE_FILES_Dialog ${DA_LIB_SUBDIR_Dialog}/*.cpp)
-file(GLOB DA_LIB_QT_UI_FILES_Dialog ${DA_LIB_SUBDIR_Dialog}/*.ui)
+set(DA_LIB_HEADER_FILES_Dialog
+    ${DA_LIB_SUBDIR_Dialog}/DADialogChartGuide.h
+    ${DA_LIB_SUBDIR_Dialog}/DARenameColumnsNameDialog.h
+)
+
+set(DA_LIB_SOURCE_FILES_Dialog
+    ${DA_LIB_SUBDIR_Dialog}/DADialogChartGuide.cpp
+    
+    ${DA_LIB_SUBDIR_Dialog}/DARenameColumnsNameDialog.cpp
+)
+
+set(DA_LIB_QT_UI_FILES_Dialog
+    ${DA_LIB_SUBDIR_Dialog}/DADialogChartGuide.ui
+    ${DA_LIB_SUBDIR_Dialog}/DARenameColumnsNameDialog.ui
+)
+if(DA_ENABLE_PYTHON)
+    list(APPEND DA_LIB_HEADER_FILES_Dialog
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToDatetime.h
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToNumeric.h
+        ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.h
+        ${DA_LIB_SUBDIR_Dialog}/DADialogPythonArgs.h
+    )
+    list(APPEND DA_LIB_SOURCE_FILES_Dialog
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToDatetime.cpp
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToNumeric.cpp
+        ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.cpp
+        ${DA_LIB_SUBDIR_Dialog}/DADialogPythonArgs.cpp
+    )
+    list(APPEND DA_LIB_QT_UI_FILES_Dialog
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToDatetime.ui
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToNumeric.ui
+        ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.ui
+        ${DA_LIB_SUBDIR_Dialog}/DADialogPythonArgs.ui
+    )
+endif()
 #MimeData
 file(GLOB DA_LIB_HEADER_FILES_MimeData ${DA_LIB_SUBDIR_MimeData}/*.h)
 file(GLOB DA_LIB_SOURCE_FILES_MimeData ${DA_LIB_SUBDIR_MimeData}/*.cpp)
+
 #Commands
-file(GLOB DA_LIB_HEADER_FILES_Commands ${DA_LIB_SUBDIR_Commands}/*.h)
-file(GLOB DA_LIB_SOURCE_FILES_Commands ${DA_LIB_SUBDIR_Commands}/*.cpp)
+
+set(DA_LIB_HEADER_FILES_Commands
+    ${DA_LIB_SUBDIR_Commands}/DACommandWithRedoCount.h
+    ${DA_LIB_SUBDIR_Commands}/DACommandsForWorkFlow.h
+)
+
+set(DA_LIB_SOURCE_FILES_Commands
+    ${DA_LIB_SUBDIR_Commands}/DACommandWithRedoCount.cpp
+    ${DA_LIB_SUBDIR_Commands}/DACommandsForWorkFlow.cpp
+)
+if(DA_ENABLE_PYTHON)
+    list(APPEND DA_LIB_HEADER_FILES_Commands
+        ${DA_LIB_SUBDIR_Commands}/DACommandWithTemplateData.h
+        ${DA_LIB_SUBDIR_Commands}/DACommandsDataFrame.h
+    )
+    list(APPEND DA_LIB_SOURCE_FILES_Commands
+        ${DA_LIB_SUBDIR_Commands}/DACommandWithTemplateData.cpp
+        ${DA_LIB_SUBDIR_Commands}/DACommandsDataFrame.cpp
+    )
+endif()
 #ChartSetting
 file(GLOB DA_LIB_HEADER_FILES_ChartSetting ${DA_LIB_SUBDIR_ChartSetting}/*.h)
 file(GLOB DA_LIB_SOURCE_FILES_ChartSetting ${DA_LIB_SUBDIR_ChartSetting}/*.cpp)
@@ -115,9 +282,7 @@ find_package(${DA_PROJECT_NAME} COMPONENTS
     DAUtils
     DAMessageHandler
     DAData
-    DAPyScripts
     DACommonWidgets
-    DAPyCommonWidgets
     DAGraphicsView
     DAWorkFlow
     DAFigure
@@ -127,12 +292,8 @@ if(${DA_PROJECT_NAME}_FOUND)
     message(STATUS "  | |-include dir:${DAMessageHandler_INCLUDE_DIR}")
     message(STATUS "  |-link ${DA_PROJECT_NAME}::DAData")
     message(STATUS "  | |-include dir:${DAData_INCLUDE_DIR}")
-    message(STATUS "  |-link ${DA_PROJECT_NAME}::DAPyScripts")
-    message(STATUS "  | |-include dir:${DAPyScripts_INCLUDE_DIR}")
     message(STATUS "  |-link ${DA_PROJECT_NAME}::DACommonWidgets")
     message(STATUS "  | |-include dir:${DACommonWidgets_INCLUDE_DIR}")
-    message(STATUS "  |-link ${DA_PROJECT_NAME}::DAPyCommonWidgets")
-    message(STATUS "  | |-include dir:${DAPyCommonWidgets_INCLUDE_DIR}")
     message(STATUS "  |-link ${DA_PROJECT_NAME}::DAWorkFlow")
     message(STATUS "  | |-include dir:${DAWorkFlow_INCLUDE_DIR}")
     message(STATUS "  |-link ${DA_PROJECT_NAME}::DAFigure")
@@ -142,13 +303,31 @@ target_link_libraries(${DA_LIB_NAME} PUBLIC
     ${DA_PROJECT_NAME}::DAUtils
     ${DA_PROJECT_NAME}::DAMessageHandler
     ${DA_PROJECT_NAME}::DAData
-    ${DA_PROJECT_NAME}::DAPyScripts
     ${DA_PROJECT_NAME}::DACommonWidgets
-    ${DA_PROJECT_NAME}::DAPyCommonWidgets
     ${DA_PROJECT_NAME}::DAGraphicsView
     ${DA_PROJECT_NAME}::DAWorkFlow
     ${DA_PROJECT_NAME}::DAFigure
 )
+
+
+if(DA_ENABLE_PYTHON)
+    find_package(${DA_PROJECT_NAME} COMPONENTS
+        DAPyScripts
+        DAPyCommonWidgets
+    )
+    if(${DA_PROJECT_NAME}_FOUND)
+        message(STATUS "  |-link ${DA_PROJECT_NAME}::DAPyScripts")
+        message(STATUS "  | |-include dir:${DAPyScripts_INCLUDE_DIR}")
+        message(STATUS "  |-link ${DA_PROJECT_NAME}::DAPyCommonWidgets")
+        message(STATUS "  | |-include dir:${DAPyCommonWidgets_INCLUDE_DIR}")
+    endif()
+    target_link_libraries(${DA_LIB_NAME} PUBLIC
+        ${DA_PROJECT_NAME}::DAPyScripts
+        ${DA_PROJECT_NAME}::DAPyCommonWidgets
+    )
+endif()
+
+
 ########################################################
 # Qt的moc
 ########################################################

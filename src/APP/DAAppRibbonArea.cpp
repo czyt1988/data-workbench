@@ -808,7 +808,7 @@ void DAAppRibbonArea::hideContextCategory(DAAppRibbonArea::ContextCategoryType t
         break;
     }
 }
-
+#ifdef DA_ENABLE_PYTHON
 /**
  * @brief 设置DataFrame的类型，[Context Category - dataframe] [Type] -> Type
  * @param d
@@ -820,3 +820,4 @@ void DAAppRibbonArea::setDataframeOperateCurrentDType(const DAPyDType& d)
     Q_UNUSED(blocker);
     m_comboxColumnTypes->setCurrentDType(d);
 }
+#endif

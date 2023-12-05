@@ -16,16 +16,23 @@ add_dependencies(DAAxOfficeWrapper DAUtils)
 add_subdirectory(DAMessageHandler)
 add_dependencies(DAMessageHandler DAUtils)
 
-add_subdirectory(DAPyBindQt)
+if(DA_ENABLE_PYTHON)
+    add_subdirectory(DAPyBindQt)
 
-add_subdirectory(DAPyScripts)
-add_dependencies(DAPyScripts DAPyBindQt)
+    add_subdirectory(DAPyScripts)
+    add_dependencies(DAPyScripts DAPyBindQt)
 
-add_subdirectory(DAData)
-add_dependencies(DAData DAUtils DAPyBindQt DAPyScripts)
+    add_subdirectory(DAPyCommonWidgets)
+    add_dependencies(DAPyCommonWidgets DAPyBindQt)
 
-add_subdirectory(DAPyCommonWidgets)
-add_dependencies(DAPyCommonWidgets DAPyBindQt)
+    add_subdirectory(DAData)
+    add_dependencies(DAData DAUtils DAPyBindQt DAPyScripts)
+else()
+    add_subdirectory(DAData)
+endif()
+
+
+
 
 add_subdirectory(DACommonWidgets)
 add_dependencies(DACommonWidgets DAUtils)

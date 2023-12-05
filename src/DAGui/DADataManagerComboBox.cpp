@@ -100,6 +100,7 @@ DAData DADataManagerComboBox::getCurrentDAData() const
         //说明选择的是dataframe这些直接是变量管理器的
         return d;
     } else {
+#ifdef DA_ENABLE_PYTHON
         //说明是Dataframe下的Series
         DADataManagerTreeModel::DetailDataTypeMark m = static_cast< DADataManagerTreeModel::DetailDataTypeMark >(dtype.toInt());
         if (DADataManagerTreeModel::SeriesInnerDataframe == m) {
@@ -110,6 +111,7 @@ DAData DADataManagerComboBox::getCurrentDAData() const
             }
             return df[ serName ];
         }
+#endif
     }
     return DAData();
 }

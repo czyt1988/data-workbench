@@ -15,6 +15,10 @@ set(DA_VERSION_MINOR 0)
 set(DA_VERSION_PATCH 2)
 set(DA_VERSION "${DA_VERSION_MAJOR}.${DA_VERSION_MINOR}.${DA_VERSION_PATCH}")
 message(STATUS "DA Version is ${DA_VERSION}")
+########################################################
+# 可选的变量
+########################################################
+option(DA_ENABLE_PYTHON "enable python|if ON will add DAPythonBind DAPyScript DAPyCommonWidgets COMPONENTS" OFF)
 
 ########################################################
 # 定义工程
@@ -89,7 +93,6 @@ set(SARibbonBar_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/SARibbonBar)
 set(DALiteCtk_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/DALiteCtk)
 set(qwt_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/qwt)
 set(DAWorkbench_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/${DA_PROJECT_NAME})
-set(DAWorkbench_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/${DA_PROJECT_NAME})
 set(qt${QT_VERSION_MAJOR}advanceddocking_DIR  ${DA_INSTALL_LIB_CMAKE_PATH}/qt${QT_VERSION_MAJOR}advanceddocking)
 ##################################
 # 初步安装 install 通用内容
@@ -129,11 +132,13 @@ add_subdirectory(src)
 ##################################
 # 最终安装 install
 ##################################
-# 把PyScripts文件夹复制过去
-install(DIRECTORY
-    ${CMAKE_CURRENT_LIST_DIR}/src/PyScripts
-    DESTINATION bin
-)
+if(DA_ENABLE_PYTHON)
+    # 把PyScripts文件夹复制过去
+    install(DIRECTORY
+        ${CMAKE_CURRENT_LIST_DIR}/src/PyScripts
+        DESTINATION bin
+    )
+endif()
 
 
 install(FILES

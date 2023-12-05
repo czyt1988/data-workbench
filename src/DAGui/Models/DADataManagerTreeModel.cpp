@@ -9,9 +9,12 @@
 // DAData
 #include "DADataManager.h"
 #include "DAData.h"
-#include "pandas/DAPyDataFrame.h"
-//
 #include "DADataManagerTableModel.h"
+#ifdef DA_ENABLE_PYTHON
+//Py
+#include "pandas/DAPyDataFrame.h"
+#endif
+//
 
 namespace DA
 {
@@ -215,10 +218,10 @@ void DADataManagerTreeModel::doExpandDataframeToSeries(bool on)
         doExpandOneDataframeToSeries(i, on);
     }
     if (on) {
-        //需要添加
-        for (DADataManagerTreeItem* i : qAsConst(dataframeItems)) {
-            DAPyDataFrame df = i->toData().toDataFrame();
-        }
+        ////需要添加
+        //for (DADataManagerTreeItem* i : qAsConst(dataframeItems)) {
+        //    DAPyDataFrame df = i->toData().toDataFrame();
+        //}
     }
 }
 
@@ -234,6 +237,7 @@ void DADataManagerTreeModel::doExpandOneDataframeToSeries(DADataManagerTreeItem*
         dfItem->removeRow(0);
     }
     if (on) {
+#ifdef DA_ENABLE_PYTHON
         //需要添加
         DAData d         = dfItem->toData();
         DAPyDataFrame df = d.toDataFrame();
@@ -247,6 +251,7 @@ void DADataManagerTreeModel::doExpandOneDataframeToSeries(DADataManagerTreeItem*
             sitem->setData(d.id(), DADATAMANAGERTREEMODEL_ROLE_DATA_ID);  //把data id也记录
             dfItem->appendRow(sitem);
         }
+#endif
     }
 }
 
@@ -468,7 +473,7 @@ QVariant DADataManagerTreeModel::data(const QModelIndex& index, int role) const
             qDebug() << ti->text() << "is data but to data get null";
             return QVariant();
         }
-
+#ifdef DA_ENABLE_PYTHON
         if (d.isDataFrame()) {
             //            qDebug() << ti->text() << " is df";
             DAPyDataFrame df = d.toDataFrame();
@@ -476,6 +481,7 @@ QVariant DADataManagerTreeModel::data(const QModelIndex& index, int role) const
             //            qDebug() << QString("[%1,%2]").arg(shape.first).arg(shape.second);
             return QString("[%1,%2]").arg(shape.first).arg(shape.second);
         }
+#endif
         qDebug() << ti->text() << ":end";
     }
     return QVariant();

@@ -6,9 +6,12 @@
 #include <QSpinBox>
 #include <QWidgetAction>
 #include "DARibbonAreaInterface.h"
-#include "numpy/DAPyDType.h"
 #include "DADataManageWidget.h"
 #include "DAWorkFlowGraphicsScene.h"
+#ifdef DA_ENABLE_PYTHON
+//Py
+#include "numpy/DAPyDType.h"
+#endif
 // Qt
 class QComboBox;
 class QToolBar;
@@ -138,9 +141,10 @@ public:
     void updateWorkflowItemAboutRibbon(QGraphicsItem* lastSelectItem);
 
 public:
+#ifdef DA_ENABLE_PYTHON
     //设置DataFrame的类型，【Context】 - 【dataframe】 DataFrame -> Type -> Type,此函数的调用忽略combox的currentindexchanged信号
     void setDataframeOperateCurrentDType(const DAPyDType& d);
-
+#endif
 private:
     //构建所有的action
     void buildMenu();

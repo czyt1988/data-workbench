@@ -31,7 +31,6 @@
 #include "DAWaitCursorScoped.h"
 #include "DADataOperateWidget.h"
 #include "DADataOperateOfDataFrameWidget.h"
-#include "DAPyDTypeComboBox.h"
 #include "DADataManageWidget.h"
 #include "DAChartOperateWidget.h"
 #include "DAFigureWidget.h"
@@ -53,29 +52,32 @@
 // project
 #include "DAAppProject.h"
 // Py
+#ifdef DA_ENABLE_PYTHON
+#include "DAPyDTypeComboBox.h"
 #include "DAPyScripts.h"
 #include "pandas/DAPyDataFrame.h"
 #include "numpy/DAPyDType.h"
+#endif
 //
 #include "SettingPages/DAAppConfig.h"
 
 #ifndef DAAPPRIBBONAREA_WINDOW_NAME
-#define DAAPPRIBBONAREA_WINDOW_NAME QCoreApplication::translate("DAAppController", "DA", nullptr)  //
+#define DAAPPRIBBONAREA_WINDOW_NAME QCoreApplication::translate("DAAppController", "DA", nullptr)
 #endif
 
 //未实现的功能标记
 #define DAAPPCONTROLLER_PASS()                                                                                         \
-    QMessageBox::                                                                                                      \
-        warning(app(),                                                                                                 \
-                QCoreApplication::translate("DAAppRibbonArea", "warning", nullptr),                                    \
-                QCoreApplication::translate("DAAppRibbonArea",                                                         \
-                                            "The current function is not implemented, only the UI is reserved, "       \
-                                            "please pay attention: https://gitee.com/czyt1988/data-work-flow",         \
-                                            nullptr))
+	QMessageBox::                                                                                                      \
+	    warning(app(),                                                                                                 \
+	            QCoreApplication::translate("DAAppRibbonArea", "warning", nullptr),                                    \
+	            QCoreApplication::translate("DAAppRibbonArea",                                                         \
+	                                        "The current function is not implemented, only the UI is reserved, "       \
+	                                        "please pay attention: https://gitee.com/czyt1988/data-work-flow",         \
+	                                        nullptr))
 
 //快速链接信号槽
 #define DAAPPCONTROLLER_ACTION_BIND(actionname, functionname)                                                          \
-    connect(actionname, &QAction::triggered, this, &DAAppController::functionname)
+	connect(actionname, &QAction::triggered, this, &DAAppController::functionname)
 
 namespace DA
 {
@@ -94,8 +96,8 @@ DAAppController::~DAAppController()
  */
 DAAppController& DAAppController::setAppMainWindow(AppMainWindow* mainWindow)
 {
-    mMainWindow = mainWindow;
-    return (*this);
+	mMainWindow = mainWindow;
+	return (*this);
 }
 
 /**
@@ -105,8 +107,8 @@ DAAppController& DAAppController::setAppMainWindow(AppMainWindow* mainWindow)
  */
 DAAppController& DAAppController::setAppCore(DAAppCore* core)
 {
-    mCore = core;
-    return (*this);
+	mCore = core;
+	return (*this);
 }
 /**
  * @brief 设置ribbon
@@ -115,8 +117,8 @@ DAAppController& DAAppController::setAppCore(DAAppCore* core)
  */
 DAAppController& DAAppController::setAppRibbonArea(DAAppRibbonArea* ribbon)
 {
-    mRibbon = ribbon;
-    return (*this);
+	mRibbon = ribbon;
+	return (*this);
 }
 
 /**
@@ -126,8 +128,8 @@ DAAppController& DAAppController::setAppRibbonArea(DAAppRibbonArea* ribbon)
  */
 DAAppController& DAAppController::setAppDockingArea(DAAppDockingArea* dock)
 {
-    mDock = dock;
-    return (*this);
+	mDock = dock;
+	return (*this);
 }
 
 /**
@@ -137,8 +139,8 @@ DAAppController& DAAppController::setAppDockingArea(DAAppDockingArea* dock)
  */
 DAAppController& DAAppController::setAppCommand(DAAppCommand* cmd)
 {
-    mCommand = cmd;
-    return (*this);
+	mCommand = cmd;
+	return (*this);
 }
 
 /**
@@ -148,8 +150,8 @@ DAAppController& DAAppController::setAppCommand(DAAppCommand* cmd)
  */
 DAAppController& DAAppController::setAppActions(DAAppActions* act)
 {
-    mActions = act;
-    return (*this);
+	mActions = act;
+	return (*this);
 }
 
 /**
@@ -159,8 +161,8 @@ DAAppController& DAAppController::setAppActions(DAAppActions* act)
  */
 DAAppController& DAAppController::setAppDataManager(DAAppDataManager* d)
 {
-    mDatas = d;
-    return (*this);
+	mDatas = d;
+	return (*this);
 }
 
 /**
@@ -169,7 +171,7 @@ DAAppController& DAAppController::setAppDataManager(DAAppDataManager* d)
  */
 AppMainWindow* DAAppController::app() const
 {
-    return mMainWindow;
+	return mMainWindow;
 }
 
 /**
@@ -177,8 +179,10 @@ AppMainWindow* DAAppController::app() const
  */
 void DAAppController::initialize()
 {
-    initConnection();
-    initScripts();
+	initConnection();
+#ifdef DA_ENABLE_PYTHON
+	initScripts();
+#endif
 }
 
 /**
@@ -190,16 +194,16 @@ void DAAppController::initialize()
  */
 DADataOperateOfDataFrameWidget* DAAppController::getCurrentDataFrameOperateWidget(bool checkDataOperateAreaFocused)
 {
-    if (nullptr == mDock) {
-        return nullptr;
-    }
-    if (checkDataOperateAreaFocused) {
-        if (!(mDock->isDockingAreaFocused(DAAppDockingArea::DockingAreaDataOperate))) {
-            //窗口未选中就退出
-            return nullptr;
-        }
-    }
-    return mDock->getDataOperateWidget()->getCurrentDataFrameWidget();
+	if (nullptr == mDock) {
+		return nullptr;
+	}
+	if (checkDataOperateAreaFocused) {
+		if (!(mDock->isDockingAreaFocused(DAAppDockingArea::DockingAreaDataOperate))) {
+			//窗口未选中就退出
+			return nullptr;
+		}
+	}
+	return mDock->getDataOperateWidget()->getCurrentDataFrameWidget();
 }
 
 /**
@@ -208,7 +212,7 @@ DADataOperateOfDataFrameWidget* DAAppController::getCurrentDataFrameOperateWidge
  */
 DAWorkFlowOperateWidget* DAAppController::getWorkFlowOperateWidget() const
 {
-    return mDock->getWorkFlowOperateWidget();
+	return mDock->getWorkFlowOperateWidget();
 }
 
 /**
@@ -217,7 +221,7 @@ DAWorkFlowOperateWidget* DAAppController::getWorkFlowOperateWidget() const
  */
 DADataOperateWidget* DAAppController::getDataOperateWidget() const
 {
-    return mDock->getDataOperateWidget();
+	return mDock->getDataOperateWidget();
 }
 
 /**
@@ -226,7 +230,7 @@ DADataOperateWidget* DAAppController::getDataOperateWidget() const
  */
 DAChartOperateWidget* DAAppController::getChartOperateWidget() const
 {
-    return mDock->getChartOperateWidget();
+	return mDock->getChartOperateWidget();
 }
 
 /**
@@ -235,7 +239,7 @@ DAChartOperateWidget* DAAppController::getChartOperateWidget() const
  */
 DADataManageWidget* DAAppController::getDataManageWidget() const
 {
-    return mDock->getDataManageWidget();
+	return mDock->getDataManageWidget();
 }
 /**
  * @brief 获取当前的绘图
@@ -243,12 +247,12 @@ DADataManageWidget* DAAppController::getDataManageWidget() const
  */
 DAFigureWidget* DAAppController::getCurrentFigure()
 {
-    return getChartOperateWidget()->getCurrentFigure();
+	return getChartOperateWidget()->getCurrentFigure();
 }
 
 DAFigureWidget* DAAppController::gcf()
 {
-    return getCurrentFigure();
+	return getCurrentFigure();
 }
 
 /**
@@ -257,12 +261,12 @@ DAFigureWidget* DAAppController::gcf()
  */
 DAChartWidget* DAAppController::getCurrentChart() const
 {
-    return getChartOperateWidget()->getCurrentChart();
+	return getChartOperateWidget()->getCurrentChart();
 }
 
 DAChartWidget* DAAppController::gca() const
 {
-    return getCurrentChart();
+	return getCurrentChart();
 }
 
 /**
@@ -271,7 +275,7 @@ DAChartWidget* DAAppController::gca() const
  */
 bool DAAppController::isLastFocusedOnChartOptWidget() const
 {
-    return mLastFocusedOpertateWidget.testFlag(LastFocusedOnChartOpt);
+	return mLastFocusedOpertateWidget.testFlag(LastFocusedOnChartOpt);
 }
 
 /**
@@ -280,7 +284,7 @@ bool DAAppController::isLastFocusedOnChartOptWidget() const
  */
 bool DAAppController::isLastFocusedOnWorkflowOptWidget() const
 {
-    return mLastFocusedOpertateWidget.testFlag(LastFocusedOnWorkflowOpt);
+	return mLastFocusedOpertateWidget.testFlag(LastFocusedOnWorkflowOpt);
 }
 
 /**
@@ -289,7 +293,7 @@ bool DAAppController::isLastFocusedOnWorkflowOptWidget() const
  */
 bool DAAppController::isLastFocusedOnDataOptWidget() const
 {
-    return mLastFocusedOpertateWidget.testFlag(LastFocusedOnDataOpt);
+	return mLastFocusedOpertateWidget.testFlag(LastFocusedOnDataOpt);
 }
 
 /**
@@ -298,154 +302,145 @@ bool DAAppController::isLastFocusedOnDataOptWidget() const
  */
 void DAAppController::initConnection()
 {
-    // Main Category
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionOpen, onActionOpenTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionSave, onActionSaveTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionSaveAs, onActionSaveAsTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionAppendProject, onActionAppendProjectTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionSetting, onActionSettingTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionPluginManager, onActionPluginManagerTriggered);
-    // Data Category
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionAddData, onActionAddDataTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionRemoveData, onActionRemoveDataTriggered);
-    // Chart Category
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionAddFigure, onActionAddFigureTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionFigureResizeChart, onActionFigureResizeChartTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionFigureNewXYAxis, onActionFigureNewXYAxisTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGrid, onActionChartEnableGridTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGridX, onActionChartEnableGridXTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGridY, onActionChartEnableGridYTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGridXMin, onActionChartEnableGridXMinEnableTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGridYMin, onActionChartEnableGridYMinTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableZoom, onActionChartEnableZoomTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartZoomIn, onActionChartZoomInTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartZoomOut, onActionChartZoomOutTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartZoomAll, onActionChartZoomAllTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnablePan, onActionChartEnablePanTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnablePickerCross, onActionChartEnablePickerCrossTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnablePickerY, onActionChartEnablePickerYTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnablePickerXY, onActionChartEnablePickerXYTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableLegend, onActionChartEnableLegendTriggered);
-    connect(mActions->actionGroupChartLegendAlignment, &QActionGroup::triggered, this, &DAAppController::onActionGroupChartLegendAlignmentTriggered);
-    connect(mRibbon->m_spinboxChartLegendMaxColumns, QOverload< int >::of(&QSpinBox::valueChanged), this, &DAAppController::onChartLegendMaxColumnsValueChanged);
-    connect(mRibbon->m_spinboxChartLegendMargin, QOverload< int >::of(&QSpinBox::valueChanged), this, &DAAppController::onChartLegendMarginValueChanged);
-    connect(mRibbon->m_spinboxChartLegendSpacing, QOverload< int >::of(&QSpinBox::valueChanged), this, &DAAppController::onChartLegendSpacingValueChanged);
-    connect(mRibbon->m_spinboxChartLegendItemMargin, QOverload< int >::of(&QSpinBox::valueChanged), this, &DAAppController::onChartLegendItemMarginValueChanged);
-    connect(mRibbon->m_spinboxChartLegendItemSpacing, QOverload< int >::of(&QSpinBox::valueChanged), this, &DAAppController::onChartLegendItemSpacingValueChanged);
-    connect(mRibbon->m_spinboxChartLegendBorderRadius,
-            QOverload< double >::of(&QDoubleSpinBox::valueChanged),
-            this,
-            &DAAppController::onChartLegendBorderRadiusValueChanged);
-    // 数据操作的上下文标签 Data Operate Context Category
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionInsertRow, onActionInsertRowTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionInsertRowAbove, onActionInsertRowAboveTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionInsertColumnRight, onActionInsertColumnRightTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionInsertColumnLeft, onActionInsertColumnLeftTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionRemoveRow, onActionRemoveRowTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionRemoveColumn, onActionRemoveColumnTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionRemoveCell, onActionRemoveCellTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionRenameColumns, onActionRenameColumnsTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionCreateDataDescribe, onActionCreateDataDescribeTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToNum, onActionCastToNumTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToString, onActionCastToStringTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToDatetime, onActionCastToDatetimeTriggered);
-    //不知为何使用函数指针无法关联信号和槽
-    // connect(m_comboxColumnTypes, &DAPyDTypeComboBox::currentDTypeChanged, this,&DAAppRibbonArea::onComboxColumnTypesCurrentDTypeChanged);
-    // QObject::connect: signal not found in DAPyDTypeComboBox
-    connect(mRibbon->m_comboxColumnTypes, SIGNAL(currentDTypeChanged(DAPyDType)), this, SLOT(onComboxColumnTypesCurrentDTypeChanged(DAPyDType)));
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChangeToIndex, onActionChangeToIndexTriggered);
-    // View Category
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowArea, onActionShowWorkFlowAreaTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowChartArea, onActionShowChartAreaTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowDataArea, onActionShowDataAreaTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowMessageLogView, onActionShowMessageLogViewTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowSettingWidget, onActionSettingWidgetTriggered);
+	// Main Category
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionOpen, onActionOpenTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionSave, onActionSaveTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionSaveAs, onActionSaveAsTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionAppendProject, onActionAppendProjectTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionSetting, onActionSettingTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionPluginManager, onActionPluginManagerTriggered);
+	// Data Category
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionAddData, onActionAddDataTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionRemoveData, onActionRemoveDataTriggered);
+	// Chart Category
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionAddFigure, onActionAddFigureTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionFigureResizeChart, onActionFigureResizeChartTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionFigureNewXYAxis, onActionFigureNewXYAxisTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGrid, onActionChartEnableGridTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGridX, onActionChartEnableGridXTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGridY, onActionChartEnableGridYTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGridXMin, onActionChartEnableGridXMinEnableTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGridYMin, onActionChartEnableGridYMinTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableZoom, onActionChartEnableZoomTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartZoomIn, onActionChartZoomInTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartZoomOut, onActionChartZoomOutTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartZoomAll, onActionChartZoomAllTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnablePan, onActionChartEnablePanTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnablePickerCross, onActionChartEnablePickerCrossTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnablePickerY, onActionChartEnablePickerYTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnablePickerXY, onActionChartEnablePickerXYTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableLegend, onActionChartEnableLegendTriggered);
+	connect(mActions->actionGroupChartLegendAlignment, &QActionGroup::triggered, this, &DAAppController::onActionGroupChartLegendAlignmentTriggered);
+	connect(mRibbon->m_spinboxChartLegendMaxColumns, QOverload< int >::of(&QSpinBox::valueChanged), this, &DAAppController::onChartLegendMaxColumnsValueChanged);
+	connect(mRibbon->m_spinboxChartLegendMargin, QOverload< int >::of(&QSpinBox::valueChanged), this, &DAAppController::onChartLegendMarginValueChanged);
+	connect(mRibbon->m_spinboxChartLegendSpacing, QOverload< int >::of(&QSpinBox::valueChanged), this, &DAAppController::onChartLegendSpacingValueChanged);
+	connect(mRibbon->m_spinboxChartLegendItemMargin, QOverload< int >::of(&QSpinBox::valueChanged), this, &DAAppController::onChartLegendItemMarginValueChanged);
+	connect(mRibbon->m_spinboxChartLegendItemSpacing, QOverload< int >::of(&QSpinBox::valueChanged), this, &DAAppController::onChartLegendItemSpacingValueChanged);
+	connect(mRibbon->m_spinboxChartLegendBorderRadius,
+	        QOverload< double >::of(&QDoubleSpinBox::valueChanged),
+	        this,
+	        &DAAppController::onChartLegendBorderRadiusValueChanged);
+	// 数据操作的上下文标签 Data Operate Context Category
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionInsertRow, onActionInsertRowTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionInsertRowAbove, onActionInsertRowAboveTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionInsertColumnRight, onActionInsertColumnRightTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionInsertColumnLeft, onActionInsertColumnLeftTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionRemoveRow, onActionRemoveRowTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionRemoveColumn, onActionRemoveColumnTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionRemoveCell, onActionRemoveCellTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionRenameColumns, onActionRenameColumnsTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCreateDataDescribe, onActionCreateDataDescribeTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToNum, onActionCastToNumTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToString, onActionCastToStringTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToDatetime, onActionCastToDatetimeTriggered);
+	//不知为何使用函数指针无法关联信号和槽
+	// connect(m_comboxColumnTypes, &DAPyDTypeComboBox::currentDTypeChanged, this,&DAAppRibbonArea::onComboxColumnTypesCurrentDTypeChanged);
+	// QObject::connect: signal not found in DAPyDTypeComboBox
+#ifdef DA_ENABLE_PYTHON
+	connect(mRibbon->m_comboxColumnTypes, SIGNAL(currentDTypeChanged(DAPyDType)), this, SLOT(onComboxColumnTypesCurrentDTypeChanged(DAPyDType)));
+#endif
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChangeToIndex, onActionChangeToIndexTriggered);
+	// View Category
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowArea, onActionShowWorkFlowAreaTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowChartArea, onActionShowChartAreaTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowDataArea, onActionShowDataAreaTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowMessageLogView, onActionShowMessageLogViewTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowSettingWidget, onActionSettingWidgetTriggered);
 
-    // workflow edit 工作流编辑
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowNew, onActionNewWorkflowTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowRun, onActionRunCurrentWorkflowTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowTerminate, onActionTerminateCurrentWorkflowTriggered);
-    // workflow edit 工作流编辑/data edit 绘图编辑
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowStartDrawRect, onActionStartDrawRectTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowStartDrawText, onActionStartDrawTextTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowAddBackgroundPixmap, onActionAddBackgroundPixmapTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowLockBackgroundPixmap, onActionLockBackgroundPixmapTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowEnableItemMoveWithBackground, onActionEnableItemMoveWithBackgroundTriggered);
+	// workflow edit 工作流编辑
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowNew, onActionNewWorkflowTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowRun, onActionRunCurrentWorkflowTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowTerminate, onActionTerminateCurrentWorkflowTriggered);
+	// workflow edit 工作流编辑/data edit 绘图编辑
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowStartDrawRect, onActionStartDrawRectTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowStartDrawText, onActionStartDrawTextTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowAddBackgroundPixmap, onActionAddBackgroundPixmapTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowLockBackgroundPixmap, onActionLockBackgroundPixmapTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowEnableItemMoveWithBackground, onActionEnableItemMoveWithBackgroundTriggered);
 
-    // other
-    connect(mActions->actionGroupRibbonTheme, &QActionGroup::triggered, this, &DAAppController::onActionGroupRibbonThemeTriggered);
-    //===================================================
-    // setDockAreaInterface 有其他的绑定
-    //===================================================
-    //! 注意！！
-    //! 在setDockAreaInterface函数中还有很多绑定操作
-    //
-    DAAppProject* p = mCore->getAppProject();
-    if (p) {
-        connect(p, &DAAppProject::projectSaved, this, &DAAppController::onProjectSaved);
-        connect(p, &DAAppProject::projectLoaded, this, &DAAppController::onProjectLoaded);
-    }
+	// other
+	connect(mActions->actionGroupRibbonTheme, &QActionGroup::triggered, this, &DAAppController::onActionGroupRibbonThemeTriggered);
+	//===================================================
+	// setDockAreaInterface 有其他的绑定
+	//===================================================
+	//! 注意！！
+	//! 在setDockAreaInterface函数中还有很多绑定操作
+	//
+	DAAppProject* p = mCore->getAppProject();
+	if (p) {
+		connect(p, &DAAppProject::projectSaved, this, &DAAppController::onProjectSaved);
+		connect(p, &DAAppProject::projectLoaded, this, &DAAppController::onProjectLoaded);
+	}
 
-    //===================================================
-    // workflow窗口字体相关信号槽
-    //===================================================
+	//===================================================
+	// workflow窗口字体相关信号槽
+	//===================================================
 
-    connect(mRibbon->m_workflowFontEditPannel, &DA::DAFontEditPannelWidget::currentFontChanged, this, &DAAppController::onCurrentWorkflowFontChanged);
-    connect(mRibbon->m_workflowFontEditPannel, &DA::DAFontEditPannelWidget::currentFontColorChanged, this, &DAAppController::onCurrentWorkflowFontColorChanged);
-    connect(mRibbon->m_workflowShapeEditPannelWidget,
-            &DAShapeEditPannelWidget::backgroundBrushChanged,
-            this,
-            &DAAppController::onCurrentWorkflowShapeBackgroundBrushChanged);
-    connect(mRibbon->m_workflowShapeEditPannelWidget, &DAShapeEditPannelWidget::borderPenChanged, this, &DAAppController::onCurrentWorkflowShapeBorderPenChanged);
+	connect(mRibbon->m_workflowFontEditPannel, &DA::DAFontEditPannelWidget::currentFontChanged, this, &DAAppController::onCurrentWorkflowFontChanged);
+	connect(mRibbon->m_workflowFontEditPannel, &DA::DAFontEditPannelWidget::currentFontColorChanged, this, &DAAppController::onCurrentWorkflowFontColorChanged);
+	connect(mRibbon->m_workflowShapeEditPannelWidget,
+	        &DAShapeEditPannelWidget::backgroundBrushChanged,
+	        this,
+	        &DAAppController::onCurrentWorkflowShapeBackgroundBrushChanged);
+	connect(mRibbon->m_workflowShapeEditPannelWidget, &DAShapeEditPannelWidget::borderPenChanged, this, &DAAppController::onCurrentWorkflowShapeBorderPenChanged);
 
-    //===================================================
-    // name
-    //===================================================
-    connect(mDock->dockManager(), &ads::CDockManager::focusedDockWidgetChanged, this, &DAAppController::onFocusedDockWidgetChanged);
-    // DADataManageWidget 数据操作
-    // DADataOperateWidget
-    DADataOperateWidget* dow = mDock->getDataOperateWidget();
-    connect(dow, &DADataOperateWidget::pageAdded, this, &DAAppController::onDataOperatePageAdded);
-    // DAChartOperateWidget
-    DAChartOperateWidget* cow = mDock->getChartOperateWidget();
-    connect(cow, &DAChartOperateWidget::figureCreated, this, &DAAppController::onFigureCreated);
-    connect(cow, &DAChartOperateWidget::currentFigureChanged, this, &DAAppController::onCurrentFigureChanged);
-    connect(cow, &DAChartOperateWidget::chartAdded, this, &DAAppController::onChartAdded);
-    connect(cow, &DAChartOperateWidget::currentChartChanged, this, &DAAppController::onCurrentChartChanged);
-    //鼠标动作完成的触发
-    connect(mDock->getWorkFlowOperateWidget(), &DAWorkFlowOperateWidget::mouseActionFinished, this, &DAAppController::onWorkFlowGraphicsSceneMouseActionFinished);
-    //
-    DAWorkFlowOperateWidget* workflowOpt = mDock->getWorkFlowOperateWidget();
-    connect(workflowOpt, &DAWorkFlowOperateWidget::selectionItemChanged, this, &DAAppController::onSelectionItemChanged);
-    connect(workflowOpt, &DAWorkFlowOperateWidget::workflowStartExecute, this, &DAAppController::onWorkflowStartExecute);
-    connect(workflowOpt, &DAWorkFlowOperateWidget::workflowFinished, this, &DAAppController::onWorkflowFinished);
-    connect(mActions->actionWorkflowShowGrid, &QAction::triggered, workflowOpt, &DAWorkFlowOperateWidget::setCurrentWorkflowShowGrid);
-    connect(mActions->actionWorkflowNew, &QAction::triggered, workflowOpt, &DAWorkFlowOperateWidget::appendWorkflowWithDialog);
-    connect(mActions->actionWorkflowWholeView, &QAction::triggered, workflowOpt, &DAWorkFlowOperateWidget::setCurrentWorkflowWholeView);
-    connect(mActions->actionWorkflowZoomIn, &QAction::triggered, workflowOpt, &DAWorkFlowOperateWidget::setCurrentWorkflowZoomIn);
-    connect(mActions->actionWorkflowZoomOut, &QAction::triggered, workflowOpt, &DAWorkFlowOperateWidget::setCurrentWorkflowZoomOut);
+	//===================================================
+	// name
+	//===================================================
+	connect(mDock->dockManager(), &ads::CDockManager::focusedDockWidgetChanged, this, &DAAppController::onFocusedDockWidgetChanged);
+	// DADataManageWidget 数据操作
+	// DADataOperateWidget
+	DADataOperateWidget* dow = mDock->getDataOperateWidget();
+	connect(dow, &DADataOperateWidget::pageAdded, this, &DAAppController::onDataOperatePageAdded);
+	// DAChartOperateWidget
+	DAChartOperateWidget* cow = mDock->getChartOperateWidget();
+	connect(cow, &DAChartOperateWidget::figureCreated, this, &DAAppController::onFigureCreated);
+	connect(cow, &DAChartOperateWidget::currentFigureChanged, this, &DAAppController::onCurrentFigureChanged);
+	connect(cow, &DAChartOperateWidget::chartAdded, this, &DAAppController::onChartAdded);
+	connect(cow, &DAChartOperateWidget::currentChartChanged, this, &DAAppController::onCurrentChartChanged);
+	//鼠标动作完成的触发
+	connect(mDock->getWorkFlowOperateWidget(), &DAWorkFlowOperateWidget::mouseActionFinished, this, &DAAppController::onWorkFlowGraphicsSceneMouseActionFinished);
+	//
+	DAWorkFlowOperateWidget* workflowOpt = mDock->getWorkFlowOperateWidget();
+	connect(workflowOpt, &DAWorkFlowOperateWidget::selectionItemChanged, this, &DAAppController::onSelectionItemChanged);
+	connect(workflowOpt, &DAWorkFlowOperateWidget::workflowStartExecute, this, &DAAppController::onWorkflowStartExecute);
+	connect(workflowOpt, &DAWorkFlowOperateWidget::workflowFinished, this, &DAAppController::onWorkflowFinished);
+	connect(mActions->actionWorkflowShowGrid, &QAction::triggered, workflowOpt, &DAWorkFlowOperateWidget::setCurrentWorkflowShowGrid);
+	connect(mActions->actionWorkflowNew, &QAction::triggered, workflowOpt, &DAWorkFlowOperateWidget::appendWorkflowWithDialog);
+	connect(mActions->actionWorkflowWholeView, &QAction::triggered, workflowOpt, &DAWorkFlowOperateWidget::setCurrentWorkflowWholeView);
+	connect(mActions->actionWorkflowZoomIn, &QAction::triggered, workflowOpt, &DAWorkFlowOperateWidget::setCurrentWorkflowZoomIn);
+	connect(mActions->actionWorkflowZoomOut, &QAction::triggered, workflowOpt, &DAWorkFlowOperateWidget::setCurrentWorkflowZoomOut);
 }
 
-/**
- * @brief 脚本定义的内容初始化
- */
-void DAAppController::initScripts()
-{
-    if (!mCore->isPythonInterpreterInitialized()) {
-        return;
-    }
-    mFileReadFilters = QStringList(DAPyScripts::getInstance().getIO().getFileReadFilters());
-    qDebug() << mFileReadFilters;
-}
 
 DAAppConfig* DAAppController::getConfig() const
 {
-    return mConfig;
+	return mConfig;
 }
 
 void DAAppController::setConfig(DAAppConfig* config)
 {
-    mConfig = config;
+	mConfig = config;
 }
 
 /**
@@ -454,16 +449,16 @@ void DAAppController::setConfig(DAAppConfig* config)
  */
 void DAAppController::onWorkFlowGraphicsSceneMouseActionFinished(DAWorkFlowGraphicsScene::MouseActionFlag mf)
 {
-    switch (mf) {
-    case DAWorkFlowGraphicsScene::StartAddRect:
-        mActions->actionWorkflowStartDrawRect->setChecked(false);
-        break;
-    case DAWorkFlowGraphicsScene::StartAddText:
-        mActions->actionWorkflowStartDrawText->setChecked(false);
-        break;
-    default:
-        break;
-    }
+	switch (mf) {
+	case DAWorkFlowGraphicsScene::StartAddRect:
+		mActions->actionWorkflowStartDrawRect->setChecked(false);
+		break;
+	case DAWorkFlowGraphicsScene::StartAddText:
+		mActions->actionWorkflowStartDrawText->setChecked(false);
+		break;
+	default:
+		break;
+	}
 }
 
 /**
@@ -472,10 +467,10 @@ void DAAppController::onWorkFlowGraphicsSceneMouseActionFinished(DAWorkFlowGraph
  */
 void DAAppController::onActionPluginManagerTriggered(bool on)
 {
-    Q_UNUSED(on);
-    DAPluginManagerDialog dlg(app());
+	Q_UNUSED(on);
+	DAPluginManagerDialog dlg(app());
 
-    dlg.exec();
+	dlg.exec();
 }
 
 /**
@@ -483,9 +478,9 @@ void DAAppController::onActionPluginManagerTriggered(bool on)
  */
 void DAAppController::onActionSettingTriggered()
 {
-    if (mMainWindow) {
-        mMainWindow->showSettingDialog();
-    }
+	if (mMainWindow) {
+		mMainWindow->showSettingDialog();
+	}
 }
 
 /**
@@ -495,78 +490,78 @@ void DAAppController::onActionSettingTriggered()
  */
 void DAAppController::onFocusedDockWidgetChanged(ads::CDockWidget* old, ads::CDockWidget* now)
 {
-    Q_UNUSED(old);
+	Q_UNUSED(old);
 
-    if (nullptr == now) {
-        mRibbon->hideContextCategory(DAAppRibbonArea::AllContextCategory);
-        return;
-    }
-    //数据操作窗口激活时，检查是否需要显示m_contextDataFrame
-    if (now->widget() == getDataOperateWidget()) {
-        //数据窗口激活
-        mLastFocusedOpertateWidget = LastFocusedOnDataOpt;
-        mRibbon->showContextCategory(DAAppRibbonArea::ContextCategoryData);
-    } else if (now->widget() == getWorkFlowOperateWidget()) {
-        //工作流窗口激活
-        mLastFocusedOpertateWidget = LastFocusedOnWorkflowOpt;
-        getWorkFlowOperateWidget()->setUndoStackActive();
-        mRibbon->showContextCategory(DAAppRibbonArea::ContextCategoryWorkflow);
-    } else if (now->widget() == getChartOperateWidget()) {
-        //绘图窗口激活
-        mLastFocusedOpertateWidget = LastFocusedOnChartOpt;
-        mRibbon->showContextCategory(DAAppRibbonArea::ContextCategoryChart);
-    } else if (now->widget() == getDataManageWidget()) {
-        if (mCommand) {
-            QUndoStack* stack = mCommand->getDataManagerStack();
-            if (stack && !(stack->isActive())) {  // Data 相关的窗口 undostack激活
-                stack->setActive();
-            }
-        }
-    }
+	if (nullptr == now) {
+		mRibbon->hideContextCategory(DAAppRibbonArea::AllContextCategory);
+		return;
+	}
+	//数据操作窗口激活时，检查是否需要显示m_contextDataFrame
+	if (now->widget() == getDataOperateWidget()) {
+		//数据窗口激活
+		mLastFocusedOpertateWidget = LastFocusedOnDataOpt;
+		mRibbon->showContextCategory(DAAppRibbonArea::ContextCategoryData);
+	} else if (now->widget() == getWorkFlowOperateWidget()) {
+		//工作流窗口激活
+		mLastFocusedOpertateWidget = LastFocusedOnWorkflowOpt;
+		getWorkFlowOperateWidget()->setUndoStackActive();
+		mRibbon->showContextCategory(DAAppRibbonArea::ContextCategoryWorkflow);
+	} else if (now->widget() == getChartOperateWidget()) {
+		//绘图窗口激活
+		mLastFocusedOpertateWidget = LastFocusedOnChartOpt;
+		mRibbon->showContextCategory(DAAppRibbonArea::ContextCategoryChart);
+	} else if (now->widget() == getDataManageWidget()) {
+		if (mCommand) {
+			QUndoStack* stack = mCommand->getDataManagerStack();
+			if (stack && !(stack->isActive())) {  // Data 相关的窗口 undostack激活
+				stack->setActive();
+			}
+		}
+	}
 }
 /**
  * @brief 打开文件
  */
 void DAAppController::onActionOpenTriggered()
 {
-    // TODO : 这里要加上工程文件的打开支持
-    QFileDialog dialog(app());
-    QStringList filters;
-    filters << tr("project file(*.%1)").arg(DAAppProject::getProjectFileSuffix());
-    dialog.setNameFilters(filters);
-    if (QDialog::Accepted != dialog.exec()) {
-        return;
-    }
-    QStringList fileNames = dialog.selectedFiles();
-    if (fileNames.empty()) {
-        return;
-    }
-    DAAppProject* project = DA_APP_CORE.getAppProject();
-    if (!project->getProjectDir().isEmpty()) {
-        if (project->isDirty()) {
-            // TODO 没有保存。先询问是否保存
-            QMessageBox::StandardButton
-                btn = QMessageBox::question(nullptr,
-                                            tr("Question"),                                                   //提示
-                                            tr("Another project already exists. Do you want to replace it?")  //已存在其他工程，是否要替换？
-                );
-            if (btn == QMessageBox::Yes) {
-                project->clear();
-            } else {
-                return;
-            }
-        } else {
-            project->clear();
-        }
-    }
-    DA_WAIT_CURSOR_SCOPED();
+	// TODO : 这里要加上工程文件的打开支持
+	QFileDialog dialog(app());
+	QStringList filters;
+	filters << tr("project file(*.%1)").arg(DAAppProject::getProjectFileSuffix());
+	dialog.setNameFilters(filters);
+	if (QDialog::Accepted != dialog.exec()) {
+		return;
+	}
+	QStringList fileNames = dialog.selectedFiles();
+	if (fileNames.empty()) {
+		return;
+	}
+	DAAppProject* project = DA_APP_CORE.getAppProject();
+	if (!project->getProjectDir().isEmpty()) {
+		if (project->isDirty()) {
+			// TODO 没有保存。先询问是否保存
+			QMessageBox::StandardButton
+			    btn = QMessageBox::question(nullptr,
+			                                tr("Question"),                                                   //提示
+			                                tr("Another project already exists. Do you want to replace it?")  //已存在其他工程，是否要替换？
+			    );
+			if (btn == QMessageBox::Yes) {
+				project->clear();
+			} else {
+				return;
+			}
+		} else {
+			project->clear();
+		}
+	}
+	DA_WAIT_CURSOR_SCOPED();
 
-    if (!project->load(fileNames.first())) {
-        qCritical() << tr("failed to load project file:%1").arg(fileNames.first());
-        return;
-    }
-    //设置工程名称给标题
-    app()->setWindowTitle(QString("%1").arg(project->getProjectBaseName()));
+	if (!project->load(fileNames.first())) {
+		qCritical() << tr("failed to load project file:%1").arg(fileNames.first());
+		return;
+	}
+	//设置工程名称给标题
+	app()->setWindowTitle(QString("%1").arg(project->getProjectBaseName()));
 }
 
 /**
@@ -574,62 +569,62 @@ void DAAppController::onActionOpenTriggered()
  */
 void DAAppController::onActionSaveAsTriggered()
 {
-    QString projectPath = QFileDialog::getSaveFileName(app(),
-                                                       tr("Save Project"),  //保存工程
-                                                       QString(),
-                                                       tr("project file (*.%1)").arg(DAAppProject::getProjectFileSuffix())  // 工程文件
-    );
-    if (projectPath.isEmpty()) {
-        //取消退出
-        return;
-    }
-    QFileInfo fi(projectPath);
-    if (fi.exists()) {
-        //说明是目录
-        QMessageBox::StandardButton btn = QMessageBox::question(nullptr,
-                                                                tr("Warning"),
-                                                                tr("Whether to overwrite the file:%1").arg(fi.absoluteFilePath()));
-        if (btn != QMessageBox::Yes) {
-            return;
-        }
-    }
-    //另存为
-    DA_WAIT_CURSOR_SCOPED();
-    DAAppProject* project = DA_APP_CORE.getAppProject();
-    if (!project->save(projectPath)) {
-        qCritical() << tr("Project saved failed!,path is %1").arg(projectPath);  //工程保存失败！路径位于:%1
-        return;
-    }
-    app()->setWindowTitle(QString("%1").arg(project->getProjectBaseName()));
-    qInfo() << tr("Project saved successfully,path is %1").arg(projectPath);  //工程保存成功，路径位于:%1
+	QString projectPath = QFileDialog::getSaveFileName(app(),
+	                                                   tr("Save Project"),  //保存工程
+	                                                   QString(),
+	                                                   tr("project file (*.%1)").arg(DAAppProject::getProjectFileSuffix())  // 工程文件
+	);
+	if (projectPath.isEmpty()) {
+		//取消退出
+		return;
+	}
+	QFileInfo fi(projectPath);
+	if (fi.exists()) {
+		//说明是目录
+		QMessageBox::StandardButton btn = QMessageBox::question(nullptr,
+		                                                        tr("Warning"),
+		                                                        tr("Whether to overwrite the file:%1").arg(fi.absoluteFilePath()));
+		if (btn != QMessageBox::Yes) {
+			return;
+		}
+	}
+	//另存为
+	DA_WAIT_CURSOR_SCOPED();
+	DAAppProject* project = DA_APP_CORE.getAppProject();
+	if (!project->save(projectPath)) {
+		qCritical() << tr("Project saved failed!,path is %1").arg(projectPath);  //工程保存失败！路径位于:%1
+		return;
+	}
+	app()->setWindowTitle(QString("%1").arg(project->getProjectBaseName()));
+	qInfo() << tr("Project saved successfully,path is %1").arg(projectPath);  //工程保存成功，路径位于:%1
 }
 
 void DAAppController::onActionAppendProjectTriggered()
 {
-    QFileDialog dialog(app());
-    QStringList filters;
-    filters << tr("project file(*.%1)").arg(DAAppProject::getProjectFileSuffix());
-    dialog.setNameFilters(filters);
-    if (QDialog::Accepted != dialog.exec()) {
-        return;
-    }
-    QStringList fileNames = dialog.selectedFiles();
-    if (fileNames.empty()) {
-        return;
-    }
-    DAAppProject* project = DA_APP_CORE.getAppProject();
-    DA_WAIT_CURSOR_SCOPED();
+	QFileDialog dialog(app());
+	QStringList filters;
+	filters << tr("project file(*.%1)").arg(DAAppProject::getProjectFileSuffix());
+	dialog.setNameFilters(filters);
+	if (QDialog::Accepted != dialog.exec()) {
+		return;
+	}
+	QStringList fileNames = dialog.selectedFiles();
+	if (fileNames.empty()) {
+		return;
+	}
+	DAAppProject* project = DA_APP_CORE.getAppProject();
+	DA_WAIT_CURSOR_SCOPED();
 
-    if (!project->appendWorkflowInProject(fileNames.first(), true)) {
-        qCritical() << tr("failed to load project file:%1").arg(fileNames.first());
-        return;
-    }
-    //设置工程名称给标题
-    if (project->getProjectBaseName().isEmpty()) {
-        app()->setWindowTitle(QString("untitle"));
-    } else {
-        app()->setWindowTitle(QString("%1").arg(project->getProjectBaseName()));
-    }
+	if (!project->appendWorkflowInProject(fileNames.first(), true)) {
+		qCritical() << tr("failed to load project file:%1").arg(fileNames.first());
+		return;
+	}
+	//设置工程名称给标题
+	if (project->getProjectBaseName().isEmpty()) {
+		app()->setWindowTitle(QString("untitle"));
+	} else {
+		app()->setWindowTitle(QString("%1").arg(project->getProjectBaseName()));
+	}
 }
 
 /**
@@ -637,25 +632,25 @@ void DAAppController::onActionAppendProjectTriggered()
  */
 void DAAppController::onActionSaveTriggered()
 {
-    DAAppProject* project   = DA_APP_CORE.getAppProject();
-    QString projectFilePath = project->getProjectFilePath();
-    qDebug() << "Save Project,Path=" << projectFilePath;
-    if (projectFilePath.isEmpty()) {
-        QString desktop = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
-        projectFilePath = QFileDialog::getSaveFileName(nullptr,
-                                                       tr("Save Project"),  //保存工程
-                                                       desktop,
-                                                       tr("Project Files (*.%1)").arg(DAAppProject::getProjectFileSuffix())  // 工程文件 (*.%1)
-        );
-        if (projectFilePath.isEmpty()) {
-            //取消退出
-            return;
-        }
-    }
-    bool saveRet = project->save(projectFilePath);
-    if (!saveRet) {
-        qCritical() << tr("Project saved failed!,path is %1").arg(projectFilePath);  //工程保存失败！路径位于:%1
-    }
+	DAAppProject* project   = DA_APP_CORE.getAppProject();
+	QString projectFilePath = project->getProjectFilePath();
+	qDebug() << "Save Project,Path=" << projectFilePath;
+	if (projectFilePath.isEmpty()) {
+		QString desktop = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+		projectFilePath = QFileDialog::getSaveFileName(nullptr,
+		                                               tr("Save Project"),  //保存工程
+		                                               desktop,
+		                                               tr("Project Files (*.%1)").arg(DAAppProject::getProjectFileSuffix())  // 工程文件 (*.%1)
+		);
+		if (projectFilePath.isEmpty()) {
+			//取消退出
+			return;
+		}
+	}
+	bool saveRet = project->save(projectFilePath);
+	if (!saveRet) {
+		qCritical() << tr("Project saved failed!,path is %1").arg(projectFilePath);  //工程保存失败！路径位于:%1
+	}
 }
 
 /**
@@ -664,15 +659,15 @@ void DAAppController::onActionSaveTriggered()
  */
 void DAAppController::onProjectSaved(const QString& path)
 {
-    DAAppProject* project = DA_APP_CORE.getAppProject();
-    app()->setWindowTitle(QString("%1-%2").arg(DAAPPRIBBONAREA_WINDOW_NAME, project->getProjectBaseName()));
-    if (mDock) {
-        DAWorkFlowOperateWidget* wf = mDock->getWorkFlowOperateWidget();
-        if (wf) {
-            wf->setCurrentWorkflowName(project->getProjectBaseName());
-        }
-    }
-    qInfo() << tr("Project saved successfully,path is %1").arg(path);  //工程保存成功，路径位于:%1
+	DAAppProject* project = DA_APP_CORE.getAppProject();
+	app()->setWindowTitle(QString("%1-%2").arg(DAAPPRIBBONAREA_WINDOW_NAME, project->getProjectBaseName()));
+	if (mDock) {
+		DAWorkFlowOperateWidget* wf = mDock->getWorkFlowOperateWidget();
+		if (wf) {
+			wf->setCurrentWorkflowName(project->getProjectBaseName());
+		}
+	}
+	qInfo() << tr("Project saved successfully,path is %1").arg(path);  //工程保存成功，路径位于:%1
 }
 
 /**
@@ -681,15 +676,15 @@ void DAAppController::onProjectSaved(const QString& path)
  */
 void DAAppController::onProjectLoaded(const QString& path)
 {
-    DAAppProject* project = DA_APP_CORE.getAppProject();
-    app()->setWindowTitle(QString("%1-%2").arg(DAAPPRIBBONAREA_WINDOW_NAME, project->getProjectBaseName()));
-    if (mDock) {
-        DAWorkFlowOperateWidget* wf = mDock->getWorkFlowOperateWidget();
-        if (wf) {
-            wf->setCurrentWorkflowName(project->getProjectBaseName());
-        }
-    }
-    qInfo() << tr("Project load successfully,path is %1").arg(path);  //工程保存成功，路径位于:%1
+	DAAppProject* project = DA_APP_CORE.getAppProject();
+	app()->setWindowTitle(QString("%1-%2").arg(DAAPPRIBBONAREA_WINDOW_NAME, project->getProjectBaseName()));
+	if (mDock) {
+		DAWorkFlowOperateWidget* wf = mDock->getWorkFlowOperateWidget();
+		if (wf) {
+			wf->setCurrentWorkflowName(project->getProjectBaseName());
+		}
+	}
+	qInfo() << tr("Project load successfully,path is %1").arg(path);  //工程保存成功，路径位于:%1
 }
 
 /**
@@ -698,14 +693,30 @@ void DAAppController::onProjectLoaded(const QString& path)
  */
 void DAAppController::onDataOperatePageAdded(DADataOperatePageWidget* page)
 {
-    switch (page->getDataOperatePageType()) {
-    case DADataOperatePageWidget::DataOperateOfDataFrame: {
-        DADataOperateOfDataFrameWidget* w = static_cast< DADataOperateOfDataFrameWidget* >(page);
-        connect(w, &DADataOperateOfDataFrameWidget::selectTypeChanged, this, &DAAppController::onDataOperateDataFrameWidgetSelectTypeChanged);
-    } break;
-    default:
-        break;
-    }
+	switch (page->getDataOperatePageType()) {
+	case DADataOperatePageWidget::DataOperateOfDataFrame: {
+#ifdef DA_ENABLE_PYTHON
+		DADataOperateOfDataFrameWidget* w = static_cast< DADataOperateOfDataFrameWidget* >(page);
+		connect(w, &DADataOperateOfDataFrameWidget::selectTypeChanged, this, &DAAppController::onDataOperateDataFrameWidgetSelectTypeChanged);
+#endif
+	} break;
+	default:
+		break;
+	}
+}
+
+#ifdef DA_ENABLE_PYTHON
+
+/**
+ * @brief 脚本定义的内容初始化
+ */
+void DAAppController::initScripts()
+{
+	if (!mCore->isPythonInterpreterInitialized()) {
+		return;
+	}
+	mFileReadFilters = QStringList(DAPyScripts::getInstance().getIO().getFileReadFilters());
+	qDebug() << mFileReadFilters;
 }
 
 /**
@@ -715,42 +726,53 @@ void DAAppController::onDataOperatePageAdded(DADataOperatePageWidget* page)
  */
 void DAAppController::onDataOperateDataFrameWidgetSelectTypeChanged(const QList< int >& column, DAPyDType dt)
 {
-    Q_UNUSED(column);
-    mRibbon->setDataframeOperateCurrentDType(dt);
+	Q_UNUSED(column);
+	mRibbon->setDataframeOperateCurrentDType(dt);
 }
 
+/**
+ * @brief dataframe的列数据类型改变
+ * @param index
+ */
+void DAAppController::onComboxColumnTypesCurrentDTypeChanged(const DA::DAPyDType& dt)
+{
+	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+		dfopt->changeSelectColumnType(dt);
+	}
+}
+#endif
 /**
  * @brief 添加背景图
  */
 void DAAppController::onActionAddBackgroundPixmapTriggered()
 {
-    QStringList filters;
-    filters << tr("Image files (*.png *.jpg)")  //图片文件 (*.png *.jpg)
-            << tr("Any files (*)")              //任意文件 (*)
-        ;
+	QStringList filters;
+	filters << tr("Image files (*.png *.jpg)")  //图片文件 (*.png *.jpg)
+	        << tr("Any files (*)")              //任意文件 (*)
+	    ;
 
-    QFileDialog dialog(app());
-    dialog.setNameFilters(filters);
+	QFileDialog dialog(app());
+	dialog.setNameFilters(filters);
 
-    if (QDialog::Accepted != dialog.exec()) {
-        return;
-    }
-    QStringList f = dialog.selectedFiles();
-    if (!f.isEmpty()) {
-        DAWorkFlowOperateWidget* ow = mDock->getWorkFlowOperateWidget();
-        ow->addBackgroundPixmap(f.first());
-        mDock->raiseDockingArea(DAAppDockingArea::DockingAreaWorkFlowOperate);
-    }
+	if (QDialog::Accepted != dialog.exec()) {
+		return;
+	}
+	QStringList f = dialog.selectedFiles();
+	if (!f.isEmpty()) {
+		DAWorkFlowOperateWidget* ow = mDock->getWorkFlowOperateWidget();
+		ow->addBackgroundPixmap(f.first());
+		mDock->raiseDockingArea(DAAppDockingArea::DockingAreaWorkFlowOperate);
+	}
 }
 
 void DAAppController::onActionLockBackgroundPixmapTriggered(bool on)
 {
-    mDock->getWorkFlowOperateWidget()->setBackgroundPixmapLock(on);
+	mDock->getWorkFlowOperateWidget()->setBackgroundPixmapLock(on);
 }
 
 void DAAppController::onActionEnableItemMoveWithBackgroundTriggered(bool on)
 {
-    mDock->getWorkFlowOperateWidget()->getCurrentWorkFlowScene()->enableItemMoveWithBackground(on);
+	mDock->getWorkFlowOperateWidget()->getCurrentWorkFlowScene()->enableItemMoveWithBackground(on);
 }
 
 /**
@@ -759,35 +781,35 @@ void DAAppController::onActionEnableItemMoveWithBackgroundTriggered(bool on)
  */
 void DAAppController::onActionGroupRibbonThemeTriggered(QAction* a)
 {
-    if (mActions->actionRibbonThemeOffice2013 == a) {
-        mMainWindow->setRibbonTheme(SARibbonMainWindow::RibbonThemeOffice2013);
-    } else if (mActions->actionRibbonThemeOffice2016Blue == a) {
-        mMainWindow->setRibbonTheme(SARibbonMainWindow::RibbonThemeOffice2016Blue);
-    } else if (mActions->actionRibbonThemeOffice2021Blue == a) {
-        mMainWindow->setRibbonTheme(SARibbonMainWindow::RibbonThemeOffice2021Blue);
-    } else if (mActions->actionRibbonThemeDark == a) {
-        mMainWindow->setRibbonTheme(SARibbonMainWindow::RibbonThemeDark);
-    }
+	if (mActions->actionRibbonThemeOffice2013 == a) {
+		mMainWindow->setRibbonTheme(SARibbonMainWindow::RibbonThemeOffice2013);
+	} else if (mActions->actionRibbonThemeOffice2016Blue == a) {
+		mMainWindow->setRibbonTheme(SARibbonMainWindow::RibbonThemeOffice2016Blue);
+	} else if (mActions->actionRibbonThemeOffice2021Blue == a) {
+		mMainWindow->setRibbonTheme(SARibbonMainWindow::RibbonThemeOffice2021Blue);
+	} else if (mActions->actionRibbonThemeDark == a) {
+		mMainWindow->setRibbonTheme(SARibbonMainWindow::RibbonThemeDark);
+	}
 }
 
 void DAAppController::onActionRunCurrentWorkflowTriggered()
 {
-    qDebug() << "onActionRunCurrentWorkflowTriggered";
-    //先检查是否有工程
-    DAAppProject* p = DA_APP_CORE.getAppProject();
-    if (nullptr == p) {
-        qCritical() << tr("get null project");  // cn:空工程，接口异常
-        return;
-    }
-    QString bn = p->getProjectBaseName();
-    if (bn.isEmpty()) {
-        QMessageBox::warning(app(),
-                             tr("warning"),                                                   // cn:警告
-                             tr("Before running the workflow, you need to save the project")  // cn：在运行工作流之前，需要先保存工程
-        );
-        return;
-    }
-    mDock->getWorkFlowOperateWidget()->runCurrentWorkFlow();
+	qDebug() << "onActionRunCurrentWorkflowTriggered";
+	//先检查是否有工程
+	DAAppProject* p = DA_APP_CORE.getAppProject();
+	if (nullptr == p) {
+		qCritical() << tr("get null project");  // cn:空工程，接口异常
+		return;
+	}
+	QString bn = p->getProjectBaseName();
+	if (bn.isEmpty()) {
+		QMessageBox::warning(app(),
+		                     tr("warning"),                                                   // cn:警告
+		                     tr("Before running the workflow, you need to save the project")  // cn：在运行工作流之前，需要先保存工程
+		);
+		return;
+	}
+	mDock->getWorkFlowOperateWidget()->runCurrentWorkFlow();
 }
 
 /**
@@ -795,42 +817,42 @@ void DAAppController::onActionRunCurrentWorkflowTriggered()
  */
 void DAAppController::onActionTerminateCurrentWorkflowTriggered()
 {
-    qDebug() << "onActionTerminateCurrentWorkflowTriggered";
-    mDock->getWorkFlowOperateWidget()->terminateCurrentWorkFlow();
+	qDebug() << "onActionTerminateCurrentWorkflowTriggered";
+	mDock->getWorkFlowOperateWidget()->terminateCurrentWorkFlow();
 }
 
 void DAAppController::onCurrentWorkflowFontChanged(const QFont& f)
 {
-    DAWorkFlowOperateWidget* wf = mDock->getWorkFlowOperateWidget();
-    wf->setDefaultTextFont(f);
-    wf->setSelectTextFont(f);
+	DAWorkFlowOperateWidget* wf = mDock->getWorkFlowOperateWidget();
+	wf->setDefaultTextFont(f);
+	wf->setSelectTextFont(f);
 }
 
 void DAAppController::onCurrentWorkflowFontColorChanged(const QColor& c)
 {
-    DAWorkFlowOperateWidget* wf = mDock->getWorkFlowOperateWidget();
-    wf->setDefaultTextColor(c);
-    wf->setSelectTextColor(c);
+	DAWorkFlowOperateWidget* wf = mDock->getWorkFlowOperateWidget();
+	wf->setDefaultTextColor(c);
+	wf->setSelectTextColor(c);
 }
 
 void DAAppController::onCurrentWorkflowShapeBackgroundBrushChanged(const QBrush& b)
 {
-    DAWorkFlowOperateWidget* wf = mDock->getWorkFlowOperateWidget();
-    wf->setSelectShapeBackgroundBrush(b);
+	DAWorkFlowOperateWidget* wf = mDock->getWorkFlowOperateWidget();
+	wf->setSelectShapeBackgroundBrush(b);
 }
 
 void DAAppController::onCurrentWorkflowShapeBorderPenChanged(const QPen& p)
 {
-    DAWorkFlowOperateWidget* wf = mDock->getWorkFlowOperateWidget();
-    wf->setSelectShapeBorderPen(p);
+	DAWorkFlowOperateWidget* wf = mDock->getWorkFlowOperateWidget();
+	wf->setSelectShapeBorderPen(p);
 }
 
 void DAAppController::onSelectionItemChanged(QGraphicsItem* lastSelectItem)
 {
-    if (lastSelectItem == nullptr) {
-        return;
-    }
-    mRibbon->updateWorkflowItemAboutRibbon(lastSelectItem);
+	if (lastSelectItem == nullptr) {
+		return;
+	}
+	mRibbon->updateWorkflowItemAboutRibbon(lastSelectItem);
 }
 
 /**
@@ -839,9 +861,9 @@ void DAAppController::onSelectionItemChanged(QGraphicsItem* lastSelectItem)
  */
 void DAAppController::onWorkflowStartExecute(DAWorkFlowEditWidget* wfw)
 {
-    Q_UNUSED(wfw);
-    mActions->actionWorkflowRun->setEnabled(false);
-    mActions->actionWorkflowTerminate->setEnabled(true);
+	Q_UNUSED(wfw);
+	mActions->actionWorkflowRun->setEnabled(false);
+	mActions->actionWorkflowTerminate->setEnabled(true);
 }
 
 /**
@@ -851,8 +873,8 @@ void DAAppController::onWorkflowStartExecute(DAWorkFlowEditWidget* wfw)
  */
 void DAAppController::onWorkflowFinished(DAWorkFlowEditWidget* wfw, bool success)
 {
-    mActions->actionWorkflowRun->setEnabled(true);
-    mActions->actionWorkflowTerminate->setEnabled(false);
+	mActions->actionWorkflowRun->setEnabled(true);
+	mActions->actionWorkflowTerminate->setEnabled(false);
 }
 
 /**
@@ -861,12 +883,12 @@ void DAAppController::onWorkflowFinished(DAWorkFlowEditWidget* wfw, bool success
  */
 void DAAppController::onFigureCreated(DAFigureWidget* f)
 {
-    if (nullptr == f) {
-        return;
-    }
-    qDebug() << "DAAppController::onFigureCreate";
-    f->getUndoStack()->setActive();
-    // updateFigureAboutRibbon(f);//在onActionAddFigureTriggered中调用了
+	if (nullptr == f) {
+		return;
+	}
+	qDebug() << "DAAppController::onFigureCreate";
+	f->getUndoStack()->setActive();
+	// updateFigureAboutRibbon(f);//在onActionAddFigureTriggered中调用了
 }
 
 /**
@@ -876,13 +898,13 @@ void DAAppController::onFigureCreated(DAFigureWidget* f)
  */
 void DAAppController::onCurrentFigureChanged(DAFigureWidget* f, int index)
 {
-    Q_UNUSED(index);
-    if (nullptr == f) {
-        return;
-    }
-    qDebug() << "DAAppController::onCurrentFigureChanged";
-    f->getUndoStack()->setActive();
-    mRibbon->updateFigureAboutRibbon(f);
+	Q_UNUSED(index);
+	if (nullptr == f) {
+		return;
+	}
+	qDebug() << "DAAppController::onCurrentFigureChanged";
+	f->getUndoStack()->setActive();
+	mRibbon->updateFigureAboutRibbon(f);
 }
 
 /**
@@ -891,11 +913,11 @@ void DAAppController::onCurrentFigureChanged(DAFigureWidget* f, int index)
  */
 void DAAppController::onChartAdded(DAChartWidget* c)
 {
-    if (nullptr == c) {
-        return;
-    }
-    // qDebug() << "DAAppController::onChartAdded";
-    // updateChartAboutRibbon(c);//在onActionFigureNewXYAxisTriggered中调用了
+	if (nullptr == c) {
+		return;
+	}
+	// qDebug() << "DAAppController::onChartAdded";
+	// updateChartAboutRibbon(c);//在onActionFigureNewXYAxisTriggered中调用了
 }
 
 /**
@@ -904,11 +926,11 @@ void DAAppController::onChartAdded(DAChartWidget* c)
  */
 void DAAppController::onCurrentChartChanged(DAChartWidget* c)
 {
-    if (nullptr == c) {
-        return;
-    }
-    qDebug() << "DAAppController::onCurrentChartChanged";
-    mRibbon->updateChartAboutRibbon(c);
+	if (nullptr == c) {
+		return;
+	}
+	qDebug() << "DAAppController::onCurrentChartChanged";
+	mRibbon->updateChartAboutRibbon(c);
 }
 
 /**
@@ -916,20 +938,20 @@ void DAAppController::onCurrentChartChanged(DAChartWidget* c)
  */
 void DAAppController::onActionAddDataTriggered()
 {
-    QFileDialog dialog(app());
-    dialog.setNameFilters(mFileReadFilters);
-    if (QDialog::Accepted != dialog.exec()) {
-        return;
-    }
-    QStringList fileNames = dialog.selectedFiles();
-    if (fileNames.empty()) {
-        return;
-    }
-    DA_WAIT_CURSOR_SCOPED();
-    int importdataCount = mDatas->importFromFiles(fileNames);
-    if (importdataCount > 0) {
-        mDock->raiseDockByWidget((QWidget*)(mDock->getDataManageWidget()));
-    }
+	QFileDialog dialog(app());
+	dialog.setNameFilters(mFileReadFilters);
+	if (QDialog::Accepted != dialog.exec()) {
+		return;
+	}
+	QStringList fileNames = dialog.selectedFiles();
+	if (fileNames.empty()) {
+		return;
+	}
+	DA_WAIT_CURSOR_SCOPED();
+	int importdataCount = mDatas->importFromFiles(fileNames);
+	if (importdataCount > 0) {
+		mDock->raiseDockByWidget((QWidget*)(mDock->getDataManageWidget()));
+	}
 }
 
 /**
@@ -937,8 +959,8 @@ void DAAppController::onActionAddDataTriggered()
  */
 void DAAppController::onActionRemoveDataTriggered()
 {
-    DADataManageWidget* dmw = mDock->getDataManageWidget();
-    dmw->removeSelectData();
+	DADataManageWidget* dmw = mDock->getDataManageWidget();
+	dmw->removeSelectData();
 }
 
 /**
@@ -946,16 +968,16 @@ void DAAppController::onActionRemoveDataTriggered()
  */
 void DAAppController::onActionAddFigureTriggered()
 {
-    DAChartOperateWidget* chartopt = getChartOperateWidget();
-    DAFigureWidget* fig            = chartopt->createFigure();
-    //把fig的undostack添加
-    mCommand->addStack(fig->getUndoStack());
-    //这里不需要回退
-    DAChartWidget* chart = fig->createChart();
-    chart->setXLabel("x");
-    chart->setYLabel("y");
-    mRibbon->updateFigureAboutRibbon(fig);
-    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
+	DAChartOperateWidget* chartopt = getChartOperateWidget();
+	DAFigureWidget* fig            = chartopt->createFigure();
+	//把fig的undostack添加
+	mCommand->addStack(fig->getUndoStack());
+	//这里不需要回退
+	DAChartWidget* chart = fig->createChart();
+	chart->setXLabel("x");
+	chart->setYLabel("y");
+	mRibbon->updateFigureAboutRibbon(fig);
+	mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
 }
 
 /**
@@ -964,12 +986,12 @@ void DAAppController::onActionAddFigureTriggered()
  */
 void DAAppController::onActionFigureResizeChartTriggered(bool on)
 {
-    DAFigureWidget* fig = getCurrentFigure();
-    if (nullptr == fig) {
-        return;
-    }
-    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
-    fig->enableSubChartEditor(on);
+	DAFigureWidget* fig = getCurrentFigure();
+	if (nullptr == fig) {
+		return;
+	}
+	mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
+	fig->enableSubChartEditor(on);
 }
 
 /**
@@ -977,19 +999,19 @@ void DAAppController::onActionFigureResizeChartTriggered(bool on)
  */
 void DAAppController::onActionFigureNewXYAxisTriggered()
 {
-    DAFigureWidget* fig = gcf();
-    if (!fig) {
-        qWarning() << tr("Before creating a new coordinate,you need to create a figure");  // cn:在创建一个坐标系之前，需要先创建一个绘图窗口
-        return;
-    }
-    DAChartWidget* w = fig->createChart_(0.1, 0.1, 0.4, 0.4);
-    w->enableGrid();
-    w->enablePan();
-    w->enableXYDataPicker();
-    //    w->addCurve({ 1, 2, 3, 4, 5 }, { 3, 5, 8, 0, -3 })->setTitle("curve1");
-    //    w->addCurve({ 1, 2, 3, 4, 5 }, { 5, 7, 0, -1, 1 })->setTitle("curve2");
-    mRibbon->updateChartAboutRibbon(w);
-    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
+	DAFigureWidget* fig = gcf();
+	if (!fig) {
+		qWarning() << tr("Before creating a new coordinate,you need to create a figure");  // cn:在创建一个坐标系之前，需要先创建一个绘图窗口
+		return;
+	}
+	DAChartWidget* w = fig->createChart_(0.1, 0.1, 0.4, 0.4);
+	w->enableGrid();
+	w->enablePan();
+	w->enableXYDataPicker();
+	//    w->addCurve({ 1, 2, 3, 4, 5 }, { 3, 5, 8, 0, -3 })->setTitle("curve1");
+	//    w->addCurve({ 1, 2, 3, 4, 5 }, { 5, 7, 0, -1, 1 })->setTitle("curve2");
+	mRibbon->updateChartAboutRibbon(w);
+	mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
 }
 
 /**
@@ -997,11 +1019,11 @@ void DAAppController::onActionFigureNewXYAxisTriggered()
  */
 void DAAppController::onActionChartAddCurveTriggered()
 {
-    DAChartWidget* w = gca();
-    if (!w) {
-        qWarning() << tr("Before add a curve,you need to create a axis on figure");  // cn:在添加曲线前，需要先在绘图窗口中添加一个坐标系
-        return;
-    }
+	DAChartWidget* w = gca();
+	if (!w) {
+		qWarning() << tr("Before add a curve,you need to create a axis on figure");  // cn:在添加曲线前，需要先在绘图窗口中添加一个坐标系
+		return;
+	}
 }
 
 /**
@@ -1010,12 +1032,12 @@ void DAAppController::onActionChartAddCurveTriggered()
  */
 void DAAppController::onActionChartEnableGridTriggered(bool on)
 {
-    qDebug() << "onActionChartGridEnableTriggered";
-    DAChartWidget* w = getCurrentChart();
-    if (w) {
-        w->enableGrid(on);
-        mRibbon->updateChartGridAboutRibbon(w);
-    }
+	qDebug() << "onActionChartGridEnableTriggered";
+	DAChartWidget* w = getCurrentChart();
+	if (w) {
+		w->enableGrid(on);
+		mRibbon->updateChartGridAboutRibbon(w);
+	}
 }
 
 /**
@@ -1024,10 +1046,10 @@ void DAAppController::onActionChartEnableGridTriggered(bool on)
  */
 void DAAppController::onActionChartEnableGridXTriggered(bool on)
 {
-    DAChartWidget* w = getCurrentChart();
-    if (w) {
-        w->enableGridX(on);
-    }
+	DAChartWidget* w = getCurrentChart();
+	if (w) {
+		w->enableGridX(on);
+	}
 }
 /**
  * @brief 纵向网格
@@ -1035,10 +1057,10 @@ void DAAppController::onActionChartEnableGridXTriggered(bool on)
  */
 void DAAppController::onActionChartEnableGridYTriggered(bool on)
 {
-    DAChartWidget* w = getCurrentChart();
-    if (w) {
-        w->enableGridY(on);
-    }
+	DAChartWidget* w = getCurrentChart();
+	if (w) {
+		w->enableGridY(on);
+	}
 }
 /**
  * @brief 横向密集网格
@@ -1046,10 +1068,10 @@ void DAAppController::onActionChartEnableGridYTriggered(bool on)
  */
 void DAAppController::onActionChartEnableGridXMinEnableTriggered(bool on)
 {
-    DAChartWidget* w = getCurrentChart();
-    if (w) {
-        w->enableGridXMin(on);
-    }
+	DAChartWidget* w = getCurrentChart();
+	if (w) {
+		w->enableGridXMin(on);
+	}
 }
 /**
  * @brief 纵向密集网格
@@ -1057,10 +1079,10 @@ void DAAppController::onActionChartEnableGridXMinEnableTriggered(bool on)
  */
 void DAAppController::onActionChartEnableGridYMinTriggered(bool on)
 {
-    DAChartWidget* w = getCurrentChart();
-    if (w) {
-        w->enableGridYMin(on);
-    }
+	DAChartWidget* w = getCurrentChart();
+	if (w) {
+		w->enableGridYMin(on);
+	}
 }
 
 /**
@@ -1069,11 +1091,11 @@ void DAAppController::onActionChartEnableGridYMinTriggered(bool on)
  */
 void DAAppController::onActionChartEnableZoomTriggered(bool on)
 {
-    DAChartWidget* w = getCurrentChart();
-    if (w) {
-        w->enableZoomer(on);
-        mRibbon->updateChartZoomPanAboutRibbon(w);
-    }
+	DAChartWidget* w = getCurrentChart();
+	if (w) {
+		w->enableZoomer(on);
+		mRibbon->updateChartZoomPanAboutRibbon(w);
+	}
 }
 
 /**
@@ -1081,10 +1103,10 @@ void DAAppController::onActionChartEnableZoomTriggered(bool on)
  */
 void DAAppController::onActionChartZoomInTriggered()
 {
-    DAChartWidget* w = getCurrentChart();
-    if (w && w->isEnableZoomer()) {
-        w->zoomIn();
-    }
+	DAChartWidget* w = getCurrentChart();
+	if (w && w->isEnableZoomer()) {
+		w->zoomIn();
+	}
 }
 
 /**
@@ -1092,10 +1114,10 @@ void DAAppController::onActionChartZoomInTriggered()
  */
 void DAAppController::onActionChartZoomOutTriggered()
 {
-    DAChartWidget* w = getCurrentChart();
-    if (w && w->isEnableZoomer()) {
-        w->zoomOut();
-    }
+	DAChartWidget* w = getCurrentChart();
+	if (w && w->isEnableZoomer()) {
+		w->zoomOut();
+	}
 }
 
 /**
@@ -1103,10 +1125,10 @@ void DAAppController::onActionChartZoomOutTriggered()
  */
 void DAAppController::onActionChartZoomAllTriggered()
 {
-    DAChartWidget* w = getCurrentChart();
-    if (w) {
-        w->zoomInCompatible();
-    }
+	DAChartWidget* w = getCurrentChart();
+	if (w) {
+		w->zoomInCompatible();
+	}
 }
 
 /**
@@ -1115,11 +1137,11 @@ void DAAppController::onActionChartZoomAllTriggered()
  */
 void DAAppController::onActionChartEnablePanTriggered(bool on)
 {
-    DAChartWidget* w = getCurrentChart();
-    if (w) {
-        w->enablePan(on);
-        mRibbon->updateChartZoomPanAboutRibbon(w);
-    }
+	DAChartWidget* w = getCurrentChart();
+	if (w) {
+		w->enablePan(on);
+		mRibbon->updateChartZoomPanAboutRibbon(w);
+	}
 }
 
 /**
@@ -1128,14 +1150,14 @@ void DAAppController::onActionChartEnablePanTriggered(bool on)
  */
 void DAAppController::onActionChartEnablePickerCrossTriggered(bool on)
 {
-    DAChartWidget* w = getCurrentChart();
-    if (w) {
-        w->enableCrossPicker(on);
-        if (on) {
-            w->enableYDataPicker(false);
-            w->enableXYDataPicker(false);
-        }
-    }
+	DAChartWidget* w = getCurrentChart();
+	if (w) {
+		w->enableCrossPicker(on);
+		if (on) {
+			w->enableYDataPicker(false);
+			w->enableXYDataPicker(false);
+		}
+	}
 }
 
 /**
@@ -1144,14 +1166,14 @@ void DAAppController::onActionChartEnablePickerCrossTriggered(bool on)
  */
 void DAAppController::onActionChartEnablePickerYTriggered(bool on)
 {
-    DAChartWidget* w = getCurrentChart();
-    if (w) {
-        w->enableYDataPicker(on);
-        if (on) {
-            w->enableCrossPicker(false);
-            w->enableXYDataPicker(false);
-        }
-    }
+	DAChartWidget* w = getCurrentChart();
+	if (w) {
+		w->enableYDataPicker(on);
+		if (on) {
+			w->enableCrossPicker(false);
+			w->enableXYDataPicker(false);
+		}
+	}
 }
 
 /**
@@ -1160,14 +1182,14 @@ void DAAppController::onActionChartEnablePickerYTriggered(bool on)
  */
 void DAAppController::onActionChartEnablePickerXYTriggered(bool on)
 {
-    DAChartWidget* w = getCurrentChart();
-    if (w) {
-        w->enableXYDataPicker(on);
-        if (on) {
-            w->enableCrossPicker(false);
-            w->enableYDataPicker(false);
-        }
-    }
+	DAChartWidget* w = getCurrentChart();
+	if (w) {
+		w->enableXYDataPicker(on);
+		if (on) {
+			w->enableCrossPicker(false);
+			w->enableYDataPicker(false);
+		}
+	}
 }
 
 /**
@@ -1176,11 +1198,11 @@ void DAAppController::onActionChartEnablePickerXYTriggered(bool on)
  */
 void DAAppController::onActionChartEnableLegendTriggered(bool on)
 {
-    DAChartWidget* w = getCurrentChart();
-    if (!w) {
-        return;
-    }
-    w->enableLegend(on);
+	DAChartWidget* w = getCurrentChart();
+	if (!w) {
+		return;
+	}
+	w->enableLegend(on);
 }
 
 /**
@@ -1189,22 +1211,22 @@ void DAAppController::onActionChartEnableLegendTriggered(bool on)
  */
 void DAAppController::onActionGroupChartLegendAlignmentTriggered(QAction* a)
 {
-    DAChartWidget* w = getCurrentChart();
-    if (!w) {
-        return;
-    }
-    QwtPlotLegendItem* legend = w->getLegend();
-    if (!legend) {
-        w->enableLegend(true);
-        legend = w->getLegend();
-        mActions->actionChartEnableLegend->setChecked(true);
-    }
-    if (!a->isChecked()) {
-        //无法支持uncheck
-        a->setChecked(true);
-    }
-    Qt::Alignment al = static_cast< Qt::Alignment >(a->data().toInt());
-    legend->setAlignmentInCanvas(al);
+	DAChartWidget* w = getCurrentChart();
+	if (!w) {
+		return;
+	}
+	QwtPlotLegendItem* legend = w->getLegend();
+	if (!legend) {
+		w->enableLegend(true);
+		legend = w->getLegend();
+		mActions->actionChartEnableLegend->setChecked(true);
+	}
+	if (!a->isChecked()) {
+		//无法支持uncheck
+		a->setChecked(true);
+	}
+	Qt::Alignment al = static_cast< Qt::Alignment >(a->data().toInt());
+	legend->setAlignmentInCanvas(al);
 }
 
 /**
@@ -1213,15 +1235,15 @@ void DAAppController::onActionGroupChartLegendAlignmentTriggered(QAction* a)
  */
 void DAAppController::onChartLegendMaxColumnsValueChanged(int v)
 {
-    DAChartWidget* w = getCurrentChart();
-    if (!w) {
-        return;
-    }
-    QwtPlotLegendItem* legend = w->getLegend();
-    if (!legend) {
-        return;
-    }
-    legend->setMaxColumns(v);
+	DAChartWidget* w = getCurrentChart();
+	if (!w) {
+		return;
+	}
+	QwtPlotLegendItem* legend = w->getLegend();
+	if (!legend) {
+		return;
+	}
+	legend->setMaxColumns(v);
 }
 
 /**
@@ -1230,15 +1252,15 @@ void DAAppController::onChartLegendMaxColumnsValueChanged(int v)
  */
 void DAAppController::onChartLegendMarginValueChanged(int v)
 {
-    DAChartWidget* w = getCurrentChart();
-    if (!w) {
-        return;
-    }
-    QwtPlotLegendItem* legend = w->getLegend();
-    if (!legend) {
-        return;
-    }
-    legend->setMargin(v);
+	DAChartWidget* w = getCurrentChart();
+	if (!w) {
+		return;
+	}
+	QwtPlotLegendItem* legend = w->getLegend();
+	if (!legend) {
+		return;
+	}
+	legend->setMargin(v);
 }
 
 /**
@@ -1247,15 +1269,15 @@ void DAAppController::onChartLegendMarginValueChanged(int v)
  */
 void DAAppController::onChartLegendSpacingValueChanged(int v)
 {
-    DAChartWidget* w = getCurrentChart();
-    if (!w) {
-        return;
-    }
-    QwtPlotLegendItem* legend = w->getLegend();
-    if (!legend) {
-        return;
-    }
-    legend->setSpacing(v);
+	DAChartWidget* w = getCurrentChart();
+	if (!w) {
+		return;
+	}
+	QwtPlotLegendItem* legend = w->getLegend();
+	if (!legend) {
+		return;
+	}
+	legend->setSpacing(v);
 }
 
 /**
@@ -1264,15 +1286,15 @@ void DAAppController::onChartLegendSpacingValueChanged(int v)
  */
 void DAAppController::onChartLegendItemMarginValueChanged(int v)
 {
-    DAChartWidget* w = getCurrentChart();
-    if (!w) {
-        return;
-    }
-    QwtPlotLegendItem* legend = w->getLegend();
-    if (!legend) {
-        return;
-    }
-    legend->setItemMargin(v);
+	DAChartWidget* w = getCurrentChart();
+	if (!w) {
+		return;
+	}
+	QwtPlotLegendItem* legend = w->getLegend();
+	if (!legend) {
+		return;
+	}
+	legend->setItemMargin(v);
 }
 
 /**
@@ -1281,15 +1303,15 @@ void DAAppController::onChartLegendItemMarginValueChanged(int v)
  */
 void DAAppController::onChartLegendItemSpacingValueChanged(int v)
 {
-    DAChartWidget* w = getCurrentChart();
-    if (!w) {
-        return;
-    }
-    QwtPlotLegendItem* legend = w->getLegend();
-    if (!legend) {
-        return;
-    }
-    legend->setItemSpacing(v);
+	DAChartWidget* w = getCurrentChart();
+	if (!w) {
+		return;
+	}
+	QwtPlotLegendItem* legend = w->getLegend();
+	if (!legend) {
+		return;
+	}
+	legend->setItemSpacing(v);
 }
 
 /**
@@ -1298,15 +1320,15 @@ void DAAppController::onChartLegendItemSpacingValueChanged(int v)
  */
 void DAAppController::onChartLegendBorderRadiusValueChanged(double v)
 {
-    DAChartWidget* w = getCurrentChart();
-    if (!w) {
-        return;
-    }
-    QwtPlotLegendItem* legend = w->getLegend();
-    if (!legend) {
-        return;
-    }
-    legend->setBorderRadius(v);
+	DAChartWidget* w = getCurrentChart();
+	if (!w) {
+		return;
+	}
+	QwtPlotLegendItem* legend = w->getLegend();
+	if (!legend) {
+		return;
+	}
+	legend->setBorderRadius(v);
 }
 
 /**
@@ -1314,9 +1336,9 @@ void DAAppController::onChartLegendBorderRadiusValueChanged(double v)
  */
 void DAAppController::onActionRemoveRowTriggered()
 {
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-        dfopt->removeSelectRow();
-    }
+	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+		dfopt->removeSelectRow();
+	}
 }
 
 /**
@@ -1324,9 +1346,9 @@ void DAAppController::onActionRemoveRowTriggered()
  */
 void DAAppController::onActionRemoveColumnTriggered()
 {
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-        dfopt->removeSelectColumn();
-    }
+	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+		dfopt->removeSelectColumn();
+	}
 }
 
 /**
@@ -1334,9 +1356,9 @@ void DAAppController::onActionRemoveColumnTriggered()
  */
 void DAAppController::onActionRemoveCellTriggered()
 {
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-        dfopt->removeSelectCell();
-    }
+	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+		dfopt->removeSelectCell();
+	}
 }
 
 /**
@@ -1344,9 +1366,9 @@ void DAAppController::onActionRemoveCellTriggered()
  */
 void DAAppController::onActionInsertRowTriggered()
 {
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-        dfopt->insertRowBelowBySelect();
-    }
+	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+		dfopt->insertRowBelowBySelect();
+	}
 }
 
 /**
@@ -1354,27 +1376,27 @@ void DAAppController::onActionInsertRowTriggered()
  */
 void DAAppController::onActionInsertRowAboveTriggered()
 {
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-        dfopt->insertRowAboveBySelect();
-    }
+	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+		dfopt->insertRowAboveBySelect();
+	}
 }
 /**
  * @brief 在选中位置右边插入一列
  */
 void DAAppController::onActionInsertColumnRightTriggered()
 {
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-        dfopt->insertColumnRightBySelect();
-    }
+	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+		dfopt->insertColumnRightBySelect();
+	}
 }
 /**
  * @brief 在选中位置左边插入一列
  */
 void DAAppController::onActionInsertColumnLeftTriggered()
 {
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-        dfopt->insertColumnLeftBySelect();
-    }
+	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+		dfopt->insertColumnLeftBySelect();
+	}
 }
 
 /**
@@ -1382,9 +1404,9 @@ void DAAppController::onActionInsertColumnLeftTriggered()
  */
 void DAAppController::onActionRenameColumnsTriggered()
 {
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-        dfopt->renameColumns();
-    }
+	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+		dfopt->renameColumns();
+	}
 }
 
 /**
@@ -1392,42 +1414,34 @@ void DAAppController::onActionRenameColumnsTriggered()
  */
 void DAAppController::onActionCreateDataDescribeTriggered()
 {
-    // TODO 此函数应该移动到dataOperateWidget中
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-        DAPyDataFrame df = dfopt->createDataDescribe();
-        if (df.isNone()) {
-            return;
-        }
-        DAData data = df;
-        data.setName(tr("%1_Describe").arg(dfopt->data().getName()));
-        data.setDescribe(tr("Generate descriptive statistics that summarize the central tendency, dispersion and "
-                            "shape of a [%1]’s distribution, excluding NaN values")
-                             .arg(dfopt->data().getName()));
-        mDatas->addData(data);
-        // showDataOperate要在m_dataManagerStack.push之后，因为m_dataManagerStack.push可能会导致data的名字改变
-        mDock->showDataOperateWidget(data);
-    }
+	// TODO 此函数应该移动到dataOperateWidget中
+#ifdef DA_ENABLE_PYTHON
+	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+		DAPyDataFrame df = dfopt->createDataDescribe();
+		if (df.isNone()) {
+			return;
+		}
+		DAData data = df;
+		data.setName(tr("%1_Describe").arg(dfopt->data().getName()));
+		data.setDescribe(tr("Generate descriptive statistics that summarize the central tendency, dispersion and "
+		                    "shape of a [%1]’s distribution, excluding NaN values")
+		                     .arg(dfopt->data().getName()));
+		mDatas->addData(data);
+		// showDataOperate要在m_dataManagerStack.push之后，因为m_dataManagerStack.push可能会导致data的名字改变
+		mDock->showDataOperateWidget(data);
+	}
+#endif
 }
 
-/**
- * @brief dataframe的列数据类型改变
- * @param index
- */
-void DAAppController::onComboxColumnTypesCurrentDTypeChanged(const DA::DAPyDType& dt)
-{
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-        dfopt->changeSelectColumnType(dt);
-    }
-}
 
 /**
  * @brief 选中列转换为数值
  */
 void DAAppController::onActionCastToNumTriggered()
 {
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-        dfopt->castSelectToNum();
-    }
+	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+		dfopt->castSelectToNum();
+	}
 }
 
 /**
@@ -1435,7 +1449,7 @@ void DAAppController::onActionCastToNumTriggered()
  */
 void DAAppController::onActionCastToStringTriggered()
 {
-    DAAPPCONTROLLER_PASS();
+	DAAPPCONTROLLER_PASS();
 }
 
 /**
@@ -1443,9 +1457,9 @@ void DAAppController::onActionCastToStringTriggered()
  */
 void DAAppController::onActionCastToDatetimeTriggered()
 {
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-        dfopt->castSelectToDatetime();
-    }
+	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+		dfopt->castSelectToDatetime();
+	}
 }
 
 /**
@@ -1453,9 +1467,9 @@ void DAAppController::onActionCastToDatetimeTriggered()
  */
 void DAAppController::onActionChangeToIndexTriggered()
 {
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-        dfopt->changeSelectColumnToIndex();
-    }
+	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+		dfopt->changeSelectColumnToIndex();
+	}
 }
 
 /**
@@ -1463,7 +1477,7 @@ void DAAppController::onActionChangeToIndexTriggered()
  */
 void DAAppController::onActionShowWorkFlowAreaTriggered()
 {
-    mDock->raiseDockByWidget((QWidget*)(mDock->getWorkFlowOperateWidget()));
+	mDock->raiseDockByWidget((QWidget*)(mDock->getWorkFlowOperateWidget()));
 }
 
 /**
@@ -1471,7 +1485,7 @@ void DAAppController::onActionShowWorkFlowAreaTriggered()
  */
 void DAAppController::onActionShowChartAreaTriggered()
 {
-    mDock->raiseDockByWidget((QWidget*)(mDock->getChartOperateWidget()));
+	mDock->raiseDockByWidget((QWidget*)(mDock->getChartOperateWidget()));
 }
 
 /**
@@ -1479,7 +1493,7 @@ void DAAppController::onActionShowChartAreaTriggered()
  */
 void DAAppController::onActionShowDataAreaTriggered()
 {
-    mDock->raiseDockByWidget((QWidget*)(mDock->getDataOperateWidget()));
+	mDock->raiseDockByWidget((QWidget*)(mDock->getDataOperateWidget()));
 }
 
 /**
@@ -1487,7 +1501,7 @@ void DAAppController::onActionShowDataAreaTriggered()
  */
 void DAAppController::onActionShowMessageLogViewTriggered()
 {
-    mDock->raiseDockByWidget((QWidget*)(mDock->getMessageLogViewWidget()));
+	mDock->raiseDockByWidget((QWidget*)(mDock->getMessageLogViewWidget()));
 }
 
 /**
@@ -1495,7 +1509,7 @@ void DAAppController::onActionShowMessageLogViewTriggered()
  */
 void DAAppController::onActionSettingWidgetTriggered()
 {
-    mDock->raiseDockByWidget((QWidget*)(mDock->getSettingContainerWidget()));
+	mDock->raiseDockByWidget((QWidget*)(mDock->getSettingContainerWidget()));
 }
 
 /**
@@ -1503,18 +1517,18 @@ void DAAppController::onActionSettingWidgetTriggered()
  */
 void DAAppController::onActionNewWorkflowTriggered()
 {
-    bool ok      = false;
-    QString text = QInputDialog::getText(app(),
-                                         tr("new workflow name"),   // cn:新工作流名称
-                                         tr("new workflow name:"),  // cn:新工作流名称
-                                         QLineEdit::Normal,
-                                         QString(),
-                                         &ok);
-    if (!ok || text.isEmpty()) {
-        return;
-    }
-    DAWorkFlowOperateWidget* wf = mDock->getWorkFlowOperateWidget();
-    wf->appendWorkflow(text);
+	bool ok      = false;
+	QString text = QInputDialog::getText(app(),
+	                                     tr("new workflow name"),   // cn:新工作流名称
+	                                     tr("new workflow name:"),  // cn:新工作流名称
+	                                     QLineEdit::Normal,
+	                                     QString(),
+	                                     &ok);
+	if (!ok || text.isEmpty()) {
+		return;
+	}
+	DAWorkFlowOperateWidget* wf = mDock->getWorkFlowOperateWidget();
+	wf->appendWorkflow(text);
 }
 
 /**
@@ -1525,9 +1539,9 @@ void DAAppController::onActionNewWorkflowTriggered()
  */
 void DAAppController::onActionStartDrawRectTriggered(bool on)
 {
-    if (on) {
-        mDock->getWorkFlowOperateWidget()->setMouseActionFlag(DAWorkFlowGraphicsScene::StartAddRect, false);
-    }
+	if (on) {
+		mDock->getWorkFlowOperateWidget()->setMouseActionFlag(DAWorkFlowGraphicsScene::StartAddRect, false);
+	}
 }
 
 /**
@@ -1538,8 +1552,8 @@ void DAAppController::onActionStartDrawRectTriggered(bool on)
  */
 void DAAppController::onActionStartDrawTextTriggered(bool on)
 {
-    if (on) {
-        mDock->getWorkFlowOperateWidget()->setMouseActionFlag(DAWorkFlowGraphicsScene::StartAddText, false);
-    }
+	if (on) {
+		mDock->getWorkFlowOperateWidget()->setMouseActionFlag(DAWorkFlowGraphicsScene::StartAddText, false);
+	}
 }
 }  // end DA
