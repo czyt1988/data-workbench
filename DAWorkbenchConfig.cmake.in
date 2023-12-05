@@ -6,6 +6,9 @@ include(CMakeFindDependencyMacro)
 set(_@PROJECT_NAME@_supported_components DAUtils DAAxOfficeWrapper DAMessageHandler DAPyBindQt DAPyScripts DAData DACommonWidgets DAPyCommonWidgets DAGraphicsView DAWorkFlow DAFigure DAGui DAInterface DAPluginSupport)
 set(_@PROJECT_NAME@_available_components "")
 
+# 把DA_ENABLE_PYTHON变量传递到此处
+set(DA_ENABLE_PYTHON @DA_ENABLE_PYTHON@)
+
 foreach(_component ${@PROJECT_NAME@_FIND_COMPONENTS})
     if(_component IN_LIST _@PROJECT_NAME@_supported_components)
         set(__target @PROJECT_NAME@::${_component})
@@ -15,7 +18,6 @@ foreach(_component ${@PROJECT_NAME@_FIND_COMPONENTS})
             set(__targets_file "${CMAKE_CURRENT_LIST_DIR}/${_component}Targets.cmake")
             if(EXISTS "${__targets_file}")
                 include("${__targets_file}")
-                #add_library(@PROJECT_NAME@::${__target} ALIAS ${__target_full})
                 list(APPEND _@PROJECT_NAME@_available_components ${_component})
             else()
                 set(@PROJECT_NAME@_FOUND FALSE)
