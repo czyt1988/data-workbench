@@ -251,6 +251,8 @@ macro(damacro_app_install _icon_path)
                 PRODUCT ${DA_APP_NAME}
                 ICONS ${_icon_path}
             )
+        endif()
+        if(EXISTS "${__rc_path}")
             target_sources(${DA_APP_NAME} PRIVATE "${__rc_path}")
         endif()
     endif()

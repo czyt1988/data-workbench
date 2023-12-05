@@ -10,6 +10,7 @@
 # 		DESCRIPTION ${DA_LIB_DESCRIPTION}
 # )
 # endif()
+
 macro(create_win32_resource_version)
 	if(MSVC) # TODO: MinGW (http://www.mingw.org/wiki/MS_resource_compiler)
 		set(_target)

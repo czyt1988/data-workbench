@@ -354,7 +354,36 @@ install(FILES
     DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}
     COMPONENT headers
 )
-
+#Models
+install(FILES
+    ${DA_LIB_HEADER_FILES_Models}
+    DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/Models
+    COMPONENT headers
+)
+#Dialog
+install(FILES
+    ${DA_LIB_HEADER_FILES_Dialog}
+    DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/Dialog
+    COMPONENT headers
+)
+#MimeData
+install(FILES
+    ${DA_LIB_HEADER_FILES_MimeData}
+    DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/MimeData
+    COMPONENT headers
+)
+#Commands
+install(FILES
+    ${DA_LIB_HEADER_FILES_Commands}
+    DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/Commands
+    COMPONENT headers
+)
+#ChartSetting
+install(FILES
+    ${DA_LIB_HEADER_FILES_ChartSetting}
+    DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/ChartSetting
+    COMPONENT headers
+)
 #DAGlobal.h
 install(FILES
     ${DA_GLOBAL_HEADER}
