@@ -234,7 +234,7 @@ macro(damacro_app_setting _app_name _app_description _app_ver_major _app_ver_min
 endmacro(damacro_app_setting)
 
 # 通用的安装
-macro(damacro_app_install)
+macro(damacro_app_install _icon_path)
     ########################################################
     # dll资源信息添加到 target_sources中
     ########################################################
@@ -249,10 +249,10 @@ macro(damacro_app_install)
                 DESCRIPTION ${DA_APP_FULL_DESCRIPTION}
                 COPYRIGHT "LGPL License"
                 PRODUCT ${DA_APP_NAME}
-                # ICONS "../shared/example.ico"
+                ICONS ${_icon_path}
             )
+            target_sources(${DA_APP_NAME} PRIVATE "${__rc_path}")
         endif()
-        target_sources(${DA_APP_NAME} PRIVATE "${__rc_path}")
     endif()
     ########################################################
     # 目标依赖目录

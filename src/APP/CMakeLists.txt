@@ -45,7 +45,7 @@ file(GLOB DA_APP_SOURCE_FILES_SettingPages "${CMAKE_CURRENT_SOURCE_DIR}/SettingP
 file(GLOB DA_APP_QT_UI_FILES_SettingPages ${CMAKE_CURRENT_SOURCE_DIR}/SettingPages/*.ui)
 file(GLOB DA_APP_QT_RC_FILES_SettingPages ${CMAKE_CURRENT_SOURCE_DIR}/SettingPages/*.qrc)
 
-add_executable(${DA_APP_NAME}
+add_executable(${DA_APP_NAME} WIN32
             ${DA_APP_HEADER_FILES}
             ${DA_APP_SOURCE_FILES}
             ${DA_APP_QT_UI_FILES}
@@ -129,5 +129,5 @@ endif()
 ########################################################
 # 安装
 ########################################################
-damacro_app_install()
+damacro_app_install(${CMAKE_CURRENT_SOURCE_DIR}/icon.ico)
 
