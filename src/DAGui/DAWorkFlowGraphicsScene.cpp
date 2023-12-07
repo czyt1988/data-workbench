@@ -164,6 +164,14 @@ void DAWorkFlowGraphicsScene::enableItemMoveWithBackground(bool on)
 }
 
 /**
+  @brief 允许移动图元时，其它和此图元链接起来的图元跟随移动
+  @return
+ */
+void DAWorkFlowGraphicsScene::enableItemLinkageMove(bool on)
+{
+}
+
+/**
  * @brief DAWorkFlowGraphicsScene::isEnableItemMoveWithBackground
  * @return
  */

@@ -41,6 +41,8 @@ public:
     DAGraphicsResizeablePixmapItem* removeBackgroundPixmapItem();
     //允许item跟随背景图移动
     void enableItemMoveWithBackground(bool on);
+    //允许移动图元时，其它和此图元链接起来的图元跟随移动
+	void enableItemLinkageMove(bool on);
     //是否item跟随背景图移动
     bool isEnableItemMoveWithBackground() const;
     //添加一个背景图,如果多次调用，此函数返回的QGraphicsPixmapItem* 是一样的，也就是只会创建一个QGraphicsPixmapItem*

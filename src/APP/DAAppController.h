@@ -258,7 +258,8 @@ private slots:
 	void onActionLockBackgroundPixmapTriggered(bool on);
 	//跟随背景图
 	void onActionEnableItemMoveWithBackgroundTriggered(bool on);
-
+    //允许移动图元时，其它和此图元链接起来的图元跟随移动
+	void onActionWorkflowEnableItemLinkageMoveTriggered(bool on);
 	//===================================================
 	// 其他
 	//===================================================

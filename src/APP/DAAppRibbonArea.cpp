@@ -455,6 +455,7 @@ void DAAppRibbonArea::buildContextCategoryWorkflowEdit_()
     m_pannelWorkflowItem->setObjectName(QStringLiteral("da-pannel-context.workflow.item"));
     m_pannelWorkflowItem->addLargeAction(m_actions->actionWorkflowNew);
     m_pannelWorkflowItem->addSeparator();
+	m_pannelWorkflowItem->addSmallAction(m_actions->actionWorkflowEnableItemLinkageMove);
     m_pannelWorkflowItem->addLargeAction(m_actions->actionWorkflowStartDrawRect);
     m_workflowShapeEditPannelWidget = new DAShapeEditPannelWidget(m_pannelWorkflowItem);
     m_pannelWorkflowItem->addWidget(m_workflowShapeEditPannelWidget, SARibbonPannelItem::Large);

@@ -23,11 +23,19 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/../../${DA_BIN_DIR_NAME}")
 # 安装第三方库
 ########################################################
 add_subdirectory(qwt)
+
+set(SARIBBON_BUILD_EXAMPLES OFF)
 add_subdirectory(SARibbon)
+
+set(BUILD_EXAMPLES OFF)
 add_subdirectory(ADS)
+
 add_subdirectory(spdlog)
+
 add_subdirectory(pybind11)
+
 add_subdirectory(ctk)
+
 add_subdirectory(QtPropertyBrowser)
 
 ########################################################

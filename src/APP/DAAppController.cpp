@@ -778,6 +778,15 @@ void DAAppController::onActionEnableItemMoveWithBackgroundTriggered(bool on)
 }
 
 /**
+   @brief 允许移动图元时，其它和此图元链接起来的图元跟随移动
+   @param a
+ */
+void DAAppController::onActionWorkflowEnableItemLinkageMoveTriggered(bool on)
+{
+	mDock->getWorkFlowOperateWidget()->getCurrentWorkFlowScene()->enableItemLinkageMove(on);
+}
+
+/**
    @brief 主题切换
    @param a
  */
