@@ -11,12 +11,12 @@ macro(damacro_import_SARibbonBar __target_name)
     else()
         set(_src_dir ${CMAKE_CURRENT_SOURCE_DIR}/..)
     endif()
-    target_include_directories(${__target_name} PUBLIC
-        $<INSTALL_INTERFACE:include/SARibbonBar>
-        $<INSTALL_INTERFACE:include/SARibbonBar/3rdparty/framelesshelper/include>
-        $<BUILD_INTERFACE:${_src_dir}/3rdparty/SARibbon/SARibbon/src/SARibbonBar>
-        $<BUILD_INTERFACE:${_src_dir}/3rdparty/SARibbon/SARibbon/src/SARibbonBar/3rdparty/framelesshelper/include>
-    )
+    # target_include_directories(${__target_name} PUBLIC
+    #     $<INSTALL_INTERFACE:include/SARibbonBar>
+    #     $<INSTALL_INTERFACE:include/SARibbonBar/3rdparty/framelesshelper/include>
+    #     $<BUILD_INTERFACE:${_src_dir}/3rdparty/SARibbon/src/SARibbonBar>
+    #     $<BUILD_INTERFACE:${_src_dir}/3rdparty/SARibbon/src/SARibbonBar/3rdparty/framelesshelper/include>
+    # )
     # 链接的第三方库
     target_link_libraries(${__target_name} PUBLIC
         SARibbonBar
@@ -35,10 +35,10 @@ macro(damacro_import_DALiteCtk __target_name)
     else()
         set(_src_dir ${CMAKE_CURRENT_SOURCE_DIR}/..)
     endif()
-    target_include_directories(${__target_name} PUBLIC
-        $<INSTALL_INTERFACE:include/DALiteCtk>
-        $<BUILD_INTERFACE:${_src_dir}/3rdparty/ctk/ctk>
-    )
+    # target_include_directories(${__target_name} PUBLIC
+    #     $<INSTALL_INTERFACE:include/DALiteCtk>
+    #     $<BUILD_INTERFACE:${_src_dir}/3rdparty/ctk>
+    # )
     # 链接的第三方库
     target_link_libraries(${__target_name} PUBLIC
         DALiteCtk
@@ -57,10 +57,10 @@ macro(damacro_import_QtAdvancedDocking __target_name)
     else()
         set(_src_dir ${CMAKE_CURRENT_SOURCE_DIR}/..)
     endif()
-    target_include_directories(${__target_name} PUBLIC
-        $<INSTALL_INTERFACE:include/qt${QT_VERSION_MAJOR}advanceddocking>
-        $<BUILD_INTERFACE:${_src_dir}/3rdparty/ADS/ADS/src>
-    )
+    # target_include_directories(${__target_name} PUBLIC
+    #     $<INSTALL_INTERFACE:include/qt${QT_VERSION_MAJOR}advanceddocking>
+    #     $<BUILD_INTERFACE:${_src_dir}/3rdparty/ADS/src>
+    # )
     target_link_libraries(${__target_name} PUBLIC
         ads::qt${QT_VERSION_MAJOR}advanceddocking
     )
@@ -79,10 +79,10 @@ macro(damacro_import_qwt __target_name)
     else()
         set(_src_dir ${CMAKE_CURRENT_SOURCE_DIR}/..)
     endif()
-    target_include_directories(${__target_name} PUBLIC
-            $<INSTALL_INTERFACE:include/qwt>
-            $<BUILD_INTERFACE:${_src_dir}/3rdparty/qwt/qwt/src>
-    )
+    # target_include_directories(${__target_name} PUBLIC
+    #         $<INSTALL_INTERFACE:include/qwt>
+    #         $<BUILD_INTERFACE:${_src_dir}/3rdparty/qwt/src>
+    # )
     # 链接的第三方库
     target_link_libraries(${__target_name} PUBLIC
         qwt
@@ -98,7 +98,7 @@ macro(damacro_import_spdlog __target_name)
     # spdlog是header only
     target_include_directories(${__target_name} PUBLIC
         $<INSTALL_INTERFACE:include/spdlog>
-        $<BUILD_INTERFACE:${_src_dir}/3rdparty/spdlog/spdlog/include>
+        $<BUILD_INTERFACE:${_src_dir}/3rdparty/spdlog/include>
     )
     message(STATUS "  |-spdlog include: ${spdlog_DIR}/include")
 endmacro(damacro_import_spdlog)
@@ -136,6 +136,6 @@ macro(damacro_import_pybind11 __target_name)
     endif()
     target_include_directories(${DA_LIB_NAME} PUBLIC
         $<INSTALL_INTERFACE:include/pybind11>
-        $<BUILD_INTERFACE:${_src_dir}/3rdparty/pybind11/pybind11/include>
+        $<BUILD_INTERFACE:${_src_dir}/3rdparty/pybind11/include>
     )
 endmacro(damacro_import_pybind11)
