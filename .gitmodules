@@ -1,15 +1,15 @@
-[submodule "src/3rdparty/pybind11/pybind11"]
-	path = src/3rdparty/pybind11/pybind11
-	url = https://github.com/pybind/pybind11.git
-[submodule "src/3rdparty/spdlog/spdlog"]
-	path = src/3rdparty/spdlog/spdlog
-	url = https://github.com/gabime/spdlog.git
-[submodule "src/3rdparty/SARibbon/SARibbon"]
-	path = src/3rdparty/SARibbon/SARibbon
-	url = https://github.com/czyt1988/SARibbon.git
-[submodule "src/3rdparty/ADS/ADS"]
-	path = src/3rdparty/ADS/ADS
-	url = https://github.com/githubuser0xFFFF/Qt-Advanced-Docking-System.git
-[submodule "src/3rdparty/QtPropertyBrowser/QtPropertyBrowser"]
-	path = src/3rdparty/QtPropertyBrowser/QtPropertyBrowser
-	url = https://github.com/czyt1988/QtPropertyBrowser
+[submodule "src/3rdparty/pybind11"]
+	path = src/3rdparty/pybind11
+	url = https://gitee.com/czyt1988/pybind11.git
+[submodule "src/3rdparty/spdlog"]
+	path = src/3rdparty/spdlog
+	url = https://gitee.com/czyt1988/spdlog.git
+[submodule "src/3rdparty/SARibbon"]
+	path = src/3rdparty/SARibbon
+	url = https://gitee.com/czyt1988/SARibbon.git
+[submodule "src/3rdparty/ADS"]
+	path = src/3rdparty/ADS
+	url = https://gitee.com/czyt1988/Qt-Advanced-Docking-System.git
+[submodule "src/3rdparty/QtPropertyBrowser"]
+	path = src/3rdparty/QtPropertyBrowser
+	url = https://gitee.com/czyt1988/QtPropertyBrowser.git
