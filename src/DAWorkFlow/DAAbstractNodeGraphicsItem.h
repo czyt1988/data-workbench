@@ -126,6 +126,7 @@ public:
     void updateLinkPointPos();
     // 更新linkitem
     void updateLinkItems();
+
     // 获取当前链接上的LinkGraphicsItem
     QList< DAAbstractNodeLinkGraphicsItem* > getLinkItems() const;
     // 获取所有链接进来这个节点的连接线
@@ -136,6 +137,8 @@ public:
     QList< DAAbstractNodeGraphicsItem* > getInputItems() const;
     // 获取这个节点链接出去的所有节点
     QList< DAAbstractNodeGraphicsItem* > getOutputItems() const;
+    //获取链接链路，上所有的item，这个链路如果有环，item不会重复出现，返回的链路不会包含自身
+	QList< DAAbstractNodeGraphicsItem* > getLinkChain() const;
     // 获取连接item
     QList< DAAbstractNodeLinkGraphicsItem* > getLinkItem(const QString& name) const;
     // 保存到xml中
@@ -193,6 +196,8 @@ protected:
 
 private:
     void clearLinkData();
+    //递归获取链接的原件
+	int getLinkChainRecursion(DAAbstractNodeGraphicsItem* item, QSet< DAAbstractNodeGraphicsItem* >& res) const;
 };
 // DA::DAAbstractNodeGraphicsItem::LinkPointLocation的枚举转换
 DAWORKFLOW_API QString enumToString(DA::DAAbstractNodeGraphicsItem::LinkPointLocation e);

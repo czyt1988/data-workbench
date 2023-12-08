@@ -707,7 +707,7 @@ void DAGraphicsSceneWithUndoStack::mouseReleaseEvent(QGraphicsSceneMouseEvent* m
         }
         //位置不等，属于正常移动
         d_ptr->mMovingInfos.updateEndPos();
-        DA::DACommandsForGraphicsItemsMoved* cmd = new DA::DACommandsForGraphicsItemsMoved(d_ptr->mMovingInfos.items,
+        DACommandsForGraphicsItemsMoved* cmd = new DACommandsForGraphicsItemsMoved(d_ptr->mMovingInfos.items,
                                                                                            d_ptr->mMovingInfos.startsPos,
                                                                                            d_ptr->mMovingInfos.endsPos,
                                                                                            true);

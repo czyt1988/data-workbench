@@ -783,7 +783,7 @@ void DAAppController::onActionEnableItemMoveWithBackgroundTriggered(bool on)
  */
 void DAAppController::onActionWorkflowEnableItemLinkageMoveTriggered(bool on)
 {
-	mDock->getWorkFlowOperateWidget()->getCurrentWorkFlowScene()->enableItemLinkageMove(on);
+	mDock->getWorkFlowOperateWidget()->getCurrentWorkFlowScene()->setEnableItemLinkageMove(on);
 }
 
 /**
