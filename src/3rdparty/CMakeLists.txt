@@ -7,6 +7,7 @@ project(DAWorkBench-3rdparty-build
         LANGUAGES CXX
         DESCRIPTION "DataWorkBench : 3rdparty build"
 )
+message(STATUS "CMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}")
 ########################################################
 # 安装路径设置
 ########################################################
@@ -18,7 +19,7 @@ else()
     set(DA_PLATFORM_NAME "x64")
 endif()
 set(DA_BIN_DIR_NAME bin_qt${QT_VERSION}_${CMAKE_BUILD_TYPE}_${DA_PLATFORM_NAME})
-set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/../../${DA_BIN_DIR_NAME}")
+set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/../../${DA_BIN_DIR_NAME}")
 ########################################################
 # 安装第三方库
 ########################################################
@@ -32,7 +33,8 @@ add_subdirectory(ADS)
 
 add_subdirectory(spdlog)
 
-add_subdirectory(pybind11)
+# pybind11直接把文件夹复制过去
+file(COPY "${CMAKE_CURRENT_LIST_DIR}/pybind11/include/pybind11" DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
 
 add_subdirectory(ctk)
 
