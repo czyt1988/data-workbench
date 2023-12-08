@@ -42,6 +42,7 @@ git submodule add https://github.com/githubuser0xFFFF/Qt-Advanced-Docking-System
 git submodule add https://github.com/czyt1988/SARibbon.git ./src/3rdparty/SARibbon
 git submodule add https://github.com/pybind/pybind11.git ./src/3rdparty/pybind11
 git submodule add https://github.com/czyt1988/QtPropertyBrowser ./src/3rdparty/QtPropertyBrowser
+git submodule add https://github.com/czyt1988/QWT.git ./src/3rdparty/qwt
 ```
 
 gitee版本：
