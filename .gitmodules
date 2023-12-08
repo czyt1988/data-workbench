@@ -13,3 +13,6 @@
 [submodule "src/3rdparty/QtPropertyBrowser"]
 	path = src/3rdparty/QtPropertyBrowser
 	url = https://gitee.com/czyt1988/QtPropertyBrowser.git
+[submodule "src/3rdparty/qwt"]
+	path = src/3rdparty/qwt
+	url = https://gitee.com/czyt1988/QWT.git
