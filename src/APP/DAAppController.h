@@ -260,6 +260,10 @@ private slots:
 	void onActionEnableItemMoveWithBackgroundTriggered(bool on);
     //允许移动图元时，其它和此图元链接起来的图元跟随移动
 	void onActionWorkflowEnableItemLinkageMoveTriggered(bool on);
+    //分组
+    void onActionItemGroupingTriggered();
+    //取消分组
+    void onActionItemUngroupTriggered();
 	//===================================================
 	// 其他
 	//===================================================
@@ -295,7 +299,6 @@ private slots:
 	//数据操作窗口添加，需要绑定相关信号槽到ribbon的页面
 	void onDataOperatePageAdded(DA::DADataOperatePageWidget* page);
 
-
 	//==========================================
 	// Qt-Advanced-Docking-System
 	//===================================================
@@ -322,19 +325,19 @@ private:
 	void initScripts();
 #endif
 private:
-	AppMainWindow* mMainWindow{ nullptr };
-	DAAppCore* mCore{ nullptr };
-	DAAppRibbonArea* mRibbon{ nullptr };
-	DAAppDockingArea* mDock{ nullptr };
-	DAAppCommand* mCommand{ nullptr };
-	DAAppActions* mActions{ nullptr };
-	DAAppDataManager* mDatas{ nullptr };
+    AppMainWindow* mMainWindow { nullptr };
+    DAAppCore* mCore { nullptr };
+    DAAppRibbonArea* mRibbon { nullptr };
+    DAAppDockingArea* mDock { nullptr };
+    DAAppCommand* mCommand { nullptr };
+    DAAppActions* mActions { nullptr };
+    DAAppDataManager* mDatas { nullptr };
 	QStringList mFileReadFilters;  ///<包含支持的文件[Images (*.png *.xpm *.jpg)] [Text files (*.txt)]
 	//
 	LastFocusedOpertateWidgets mLastFocusedOpertateWidget;  ///< 最后获取焦点的操作窗口
 	//
-	DAAppSettingDialog* mSettingDialog{ nullptr };  ///< 设置窗口
-	DAAppConfig* mConfig;                           ///< 设置类
+    DAAppSettingDialog* mSettingDialog { nullptr };  ///< 设置窗口
+    DAAppConfig* mConfig;                            ///< 设置类
 };
 }
 

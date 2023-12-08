@@ -69,6 +69,8 @@
         <file>Icon/stop.svg</file>
         <file>Icon/theme.svg</file>
         <file>Icon/itemLinkageMove.svg</file>
+        <file>Icon/item-cancel-group.svg</file>
+        <file>Icon/item-set-group.svg</file>
     </qresource>
     <qresource prefix="/dataType">
         <file>Icon/typeDataframe.svg</file>

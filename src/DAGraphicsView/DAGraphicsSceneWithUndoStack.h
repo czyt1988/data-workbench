@@ -68,6 +68,10 @@ public:
     // 这个函数一般是在子类中的重载函数中调用，用于进行一些特殊处理需要暂时屏蔽掉链接事件
     void setIgnoreLinkEvent(bool on);
     bool isIgnoreLinkEvent() const;
+    //选中的item进行分组，支持redo/undo
+    void groupingSelectItems_();
+    //移除选中的分组
+    void removeSelectItemGroup_();
 
 public:
     //是否允许对齐网格

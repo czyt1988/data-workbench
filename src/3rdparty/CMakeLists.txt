@@ -21,14 +21,23 @@ endif()
 set(DA_BIN_DIR_NAME bin_qt${QT_VERSION}_${CMAKE_BUILD_TYPE}_${DA_PLATFORM_NAME})
 set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/../../${DA_BIN_DIR_NAME}")
 ########################################################
+# 第三方库参数设置
+########################################################
+#spdlog
+set(SPDLOG_BUILD_EXAMPLE OFF)
+set(SPDLOG_BUILD_TESTS OFF)
+set(SPDLOG_INSTALL ON)
+#ADS
+set(BUILD_EXAMPLES OFF)
+#SARibbon
+set(SARIBBON_BUILD_EXAMPLES OFF)
+########################################################
 # 安装第三方库
 ########################################################
 add_subdirectory(qwt)
 
-set(SARIBBON_BUILD_EXAMPLES OFF)
 add_subdirectory(SARibbon)
 
-set(BUILD_EXAMPLES OFF)
 add_subdirectory(ADS)
 
 add_subdirectory(spdlog)

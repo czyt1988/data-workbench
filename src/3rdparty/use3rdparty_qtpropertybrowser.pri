@@ -1,4 +1,4 @@
-ThirdParty_qtpropertybrowser_Dir=$$PWD/qtpropertybrowser
-include($${ThirdParty_qtpropertybrowser_Dir}/qtpropertybrowser.pri)
+ThirdParty_qtpropertybrowser_Dir=$$PWD/QtPropertyBrowser
+include($${ThirdParty_qtpropertybrowser_Dir}/qmake/qtpropertybrowser.pri)
 
 

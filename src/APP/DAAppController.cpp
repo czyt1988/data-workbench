@@ -372,6 +372,9 @@ void DAAppController::initConnection()
 
 	// workflow edit 工作流编辑
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowNew, onActionNewWorkflowTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowEnableItemLinkageMove, onActionWorkflowEnableItemLinkageMoveTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionItemGrouping, onActionItemGroupingTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionItemUngroup, onActionItemUngroupTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowRun, onActionRunCurrentWorkflowTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowTerminate, onActionTerminateCurrentWorkflowTriggered);
 	// workflow edit 工作流编辑/data edit 绘图编辑
@@ -774,7 +777,9 @@ void DAAppController::onActionLockBackgroundPixmapTriggered(bool on)
 
 void DAAppController::onActionEnableItemMoveWithBackgroundTriggered(bool on)
 {
-	mDock->getWorkFlowOperateWidget()->getCurrentWorkFlowScene()->enableItemMoveWithBackground(on);
+    if (DAWorkFlowGraphicsScene* s = mDock->getWorkFlowOperateWidget()->getCurrentWorkFlowScene()) {
+        s->enableItemMoveWithBackground(on);
+    }
 }
 
 /**
@@ -783,7 +788,29 @@ void DAAppController::onActionEnableItemMoveWithBackgroundTriggered(bool on)
  */
 void DAAppController::onActionWorkflowEnableItemLinkageMoveTriggered(bool on)
 {
-	mDock->getWorkFlowOperateWidget()->getCurrentWorkFlowScene()->setEnableItemLinkageMove(on);
+    if (DAWorkFlowGraphicsScene* s = mDock->getWorkFlowOperateWidget()->getCurrentWorkFlowScene()) {
+        s->setEnableItemLinkageMove(on);
+    }
+}
+
+/**
+   @brief 分组
+ */
+void DAAppController::onActionItemGroupingTriggered()
+{
+    if (DAWorkFlowGraphicsScene* s = mDock->getWorkFlowOperateWidget()->getCurrentWorkFlowScene()) {
+        s->groupingSelectItems_();
+    }
+}
+
+/**
+   @brief 取消分组
+ */
+void DAAppController::onActionItemUngroupTriggered()
+{
+    if (DAWorkFlowGraphicsScene* s = mDock->getWorkFlowOperateWidget()->getCurrentWorkFlowScene()) {
+        s->removeSelectItemGroup_();
+    }
 }
 
 /**

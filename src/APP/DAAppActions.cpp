@@ -139,7 +139,9 @@ void DAAppActions::buildWorkflowAction()
 {
     // workflow 编辑
     actionWorkflowNew = createAction("actionNewWorkflow", ":/Icon/Icon/newWorkflow.svg");
-	actionWorkflowEnableItemLinkageMove = createAction("actionWorkflowEnableItemLinkageMove", ":/Icon/Icon/itemLinkageMove.svg",true,false);
+    actionWorkflowEnableItemLinkageMove = createAction("actionWorkflowEnableItemLinkageMove", ":/Icon/Icon/itemLinkageMove.svg", true, false);
+    actionItemGrouping = createAction("actionItemSetGroup", ":/Icon/Icon/item-set-group.svg");
+    actionItemUngroup  = createAction("actionItemCancelGroup", ":/Icon/Icon/item-cancel-group.svg");
     // workflow下面的状态action都是checkable状态的
     actionGroupWorkflowStartEdit = new QActionGroup(this);
     actionGroupWorkflowStartEdit->setObjectName(QStringLiteral("actionGroupWorkflowStartEdit"));
@@ -231,9 +233,12 @@ void DAAppActions::retranslateUi()
     actionCreateDataDescribe->setText(tr("Data Describe"));         // cn:数据描述
     actionChangeToIndex->setText(tr("To Index"));                   // cn:转换为\n索引
     // workflow 编辑
-    actionWorkflowNew->setText(tr("New \nWorkflow"));              // cn:新建\n工作流
-	actionWorkflowEnableItemLinkageMove->setText(tr("Linkage \nMove"));   //cn:联动
-	actionWorkflowEnableItemLinkageMove->setToolTip(tr("When moving elements, other elements linked to this element follow the movement"));//cn:允许移动图元时，其它和此图元链接起来的图元跟随移动
+    actionWorkflowNew->setText(tr("New \nWorkflow"));                    // cn:新建\n工作流
+    actionWorkflowEnableItemLinkageMove->setText(tr("Linkage \nMove"));  // cn:联动
+    actionWorkflowEnableItemLinkageMove->setToolTip(
+        tr("When moving elements, other elements linked to this element follow the movement"));  // cn:允许移动图元时，其它和此图元链接起来的图元跟随移动
+    actionItemGrouping->setText(tr("grouping"));                   // cn:分组
+    actionItemUngroup->setText(tr("ungroup"));                     // cn:取消分组
     actionWorkflowStartDrawRect->setText(tr("Draw \nRect"));       // cn:绘制\n矩形
     actionWorkflowStartDrawText->setText(tr("Draw \nText"));       // cn:绘制\n文本
     actionWorkflowShowGrid->setText(tr("Show \nGrid"));            // cn:显示\n网格

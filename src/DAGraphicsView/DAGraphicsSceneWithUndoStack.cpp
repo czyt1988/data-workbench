@@ -374,6 +374,30 @@ bool DAGraphicsSceneWithUndoStack::isIgnoreLinkEvent() const
 }
 
 /**
+   @brief 对选中item的分组
+ */
+void DAGraphicsSceneWithUndoStack::groupingSelectItems_()
+{
+    auto cmd = new DACommandsForGraphicsItemGrouping(this, selectedItems());
+    push(cmd);
+}
+
+/**
+   @brief 移除选中的分组
+ */
+void DAGraphicsSceneWithUndoStack::removeSelectItemGroup_()
+{
+    QList< QGraphicsItem* > si = selectedItems();
+    for (QGraphicsItem* i : qAsConst(si)) {
+        QGraphicsItemGroup* g = dynamic_cast< QGraphicsItemGroup* >(i);
+        if (g) {
+            auto cmd = new DACommandsForGraphicsItemUngrouping(this, g);
+            push(cmd);
+        }
+    }
+}
+
+/**
  * @brief 是否允许对齐网格
  * @param on
  * @note 此操作对未对齐的item是不会起作用
@@ -708,9 +732,9 @@ void DAGraphicsSceneWithUndoStack::mouseReleaseEvent(QGraphicsSceneMouseEvent* m
         //位置不等，属于正常移动
         d_ptr->mMovingInfos.updateEndPos();
         DACommandsForGraphicsItemsMoved* cmd = new DACommandsForGraphicsItemsMoved(d_ptr->mMovingInfos.items,
-                                                                                           d_ptr->mMovingInfos.startsPos,
-                                                                                           d_ptr->mMovingInfos.endsPos,
-                                                                                           true);
+                                                                                   d_ptr->mMovingInfos.startsPos,
+                                                                                   d_ptr->mMovingInfos.endsPos,
+                                                                                   true);
         push(cmd);
         //位置改变信号
         //        qDebug() << "emit itemsPositionChanged";

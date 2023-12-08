@@ -241,6 +241,7 @@ public:
     SARibbonPannel* m_pannelWorkflowBackground;        ///< 背景编辑
     SARibbonPannel* m_pannelWorkflowText;              ///< 文本编辑
     SARibbonPannel* m_pannelWorkflowView;              ///< 图元视图pannel
+
     // Context - workflow-run
     SARibbonCategory* m_categoryWorkflowRun;  ///< 工作流运行
     SARibbonPannel* m_pannelWorkflowRun;      ///< 运行视图pannel

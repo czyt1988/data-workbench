@@ -142,7 +142,7 @@ private:
 };
 
 /**
- * @brief The DACommandsForGraphicsItemResizeWidth class
+ * @brief 改变高度
  */
 class DAGRAPHICSVIEW_API DACommandsForGraphicsItemResizeHeight : public QUndoCommand
 {
@@ -166,7 +166,7 @@ private:
 };
 
 /**
- * @brief The DACommandsForGraphicsItemRotation class
+ * @brief 旋转
  *
  * 旋转中心为bodysize的中心
  */
@@ -189,5 +189,40 @@ private:
     qreal mNewRotation;
     bool mSkipfirst;
 };
+
+/**
+   @brief 分组命令
+ */
+class DAGRAPHICSVIEW_API DACommandsForGraphicsItemGrouping : public QUndoCommand
+{
+public:
+    DACommandsForGraphicsItemGrouping(QGraphicsScene* sc, const QList< QGraphicsItem* >& groupingitems, QUndoCommand* parent = nullptr);
+    void redo() override;
+    void undo() override;
+
+private:
+    QGraphicsScene* mScene;
+    QList< QGraphicsItem* > mItems;
+    QGraphicsItemGroup* mGroupItem { nullptr };
+};
+
+/**
+   @brief 解除分组命令
+
+   @note 注意，QGraphicsItemGroup指针不要保存
+ */
+class DAGRAPHICSVIEW_API DACommandsForGraphicsItemUngrouping : public QUndoCommand
+{
+public:
+    DACommandsForGraphicsItemUngrouping(QGraphicsScene* sc, QGraphicsItemGroup* group, QUndoCommand* parent = nullptr);
+    void redo() override;
+    void undo() override;
+
+private:
+    QGraphicsScene* mScene;
+    QList< QGraphicsItem* > mItems;
+    QGraphicsItemGroup* mGroupItem { nullptr };
+};
+
 }
 #endif  // DACOMMANDSFORGRAPHICS_H

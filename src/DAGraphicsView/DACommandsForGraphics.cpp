@@ -402,3 +402,36 @@ bool DACommandsForGraphicsItemRotation::mergeWith(const QUndoCommand* command)
     mNewRotation = other->mNewRotation;
     return true;
 }
+
+DACommandsForGraphicsItemGrouping::DACommandsForGraphicsItemGrouping(QGraphicsScene* sc,
+                                                                     const QList< QGraphicsItem* >& groupingitems,
+                                                                     QUndoCommand* parent)
+    : QUndoCommand(parent), mScene(sc), mItems(groupingitems)
+{
+}
+
+void DACommandsForGraphicsItemGrouping::redo()
+{
+    mGroupItem = mScene->createItemGroup(mItems);
+}
+
+void DACommandsForGraphicsItemGrouping::undo()
+{
+    mScene->destroyItemGroup(mGroupItem);
+}
+
+DACommandsForGraphicsItemUngrouping::DACommandsForGraphicsItemUngrouping(QGraphicsScene* sc, QGraphicsItemGroup* group, QUndoCommand* parent)
+    : QUndoCommand(parent), mScene(sc), mGroupItem(group)
+{
+    mItems = mGroupItem->childItems();
+}
+
+void DACommandsForGraphicsItemUngrouping::redo()
+{
+    mScene->destroyItemGroup(mGroupItem);
+}
+
+void DACommandsForGraphicsItemUngrouping::undo()
+{
+    mGroupItem = mScene->createItemGroup(mItems);
+}

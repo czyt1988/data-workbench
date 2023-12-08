@@ -338,6 +338,7 @@ void DAWorkFlowGraphicsScene::onItemsPositionChanged(const QList< QGraphicsItem*
                                                      const QList< QPointF >& oldPos,
                                                      const QList< QPointF >& newPos)
 {
+    qDebug() << "onItemsPositionChanged";
 	if (items.empty() || oldPos.empty() || newPos.empty()) {
 		return;
 	}
@@ -372,6 +373,8 @@ void DAWorkFlowGraphicsScene::onItemsPositionChanged(const QList< QGraphicsItem*
 		startPos.push_back(i->pos());
 		endPos.push_back(i->pos() + offset);
 	}
+    qDebug() << "will move " << willMoveItems.size();
+
 	//进行同步移动
 	DACommandsForGraphicsItemsMoved* cmd = new DACommandsForGraphicsItemsMoved(willMoveItems, startPos, endPos, false);
 	getUndoStack()->push(cmd);
