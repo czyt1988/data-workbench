@@ -343,7 +343,7 @@ void DAGraphicsView::setWholeView()
  */
 void DAGraphicsView::selectAll()
 {
-    DAGraphicsSceneWithUndoStack* s = qobject_cast< DAGraphicsSceneWithUndoStack* >(scene());
+    DAGraphicsScene* s = qobject_cast< DAGraphicsScene* >(scene());
     if (s) {
         // DAGraphicsSceneWithUndoStack的selectAll只发射一次selectionChanged信号
         s->selectAll();

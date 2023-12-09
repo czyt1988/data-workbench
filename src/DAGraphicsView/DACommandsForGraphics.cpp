@@ -3,6 +3,7 @@
 #include <QGraphicsItem>
 #include "DAGraphicsSceneWithUndoStack.h"
 #include "DAGraphicsResizeableItem.h"
+#include "DAGraphicsItemGroup.h"
 #include <QObject>
 using namespace DA;
 
@@ -108,14 +109,27 @@ int DACommandsForGraphicsItemsMoved::id() const
 {
     return CmdID_ItemsMove;
 }
-/**
- * @brief 合并
- * @param command
- * @return
- */
-bool DACommandsForGraphicsItemsMoved::mergeWith(const QUndoCommand* command)
+
+//==============================================================
+// DACommandsForGraphicsItemsMoved_Merge
+//==============================================================
+DACommandsForGraphicsItemsMoved_Merge::DACommandsForGraphicsItemsMoved_Merge(const QList< QGraphicsItem* >& items,
+                                                                             const QList< QPointF >& starts,
+                                                                             const QList< QPointF >& ends,
+                                                                             bool skipfirst,
+                                                                             QUndoCommand* parent)
+    : DACommandsForGraphicsItemsMoved(items, starts, ends, skipfirst, parent)
 {
-    const DACommandsForGraphicsItemsMoved* other = dynamic_cast< const DACommandsForGraphicsItemsMoved* >(command);
+}
+
+int DACommandsForGraphicsItemsMoved_Merge::id() const
+{
+    return CmdID_ItemsMoveMerge;
+}
+
+bool DACommandsForGraphicsItemsMoved_Merge::mergeWith(const QUndoCommand* command)
+{
+    const DACommandsForGraphicsItemsMoved_Merge* other = dynamic_cast< const DACommandsForGraphicsItemsMoved_Merge* >(command);
     if (nullptr == other) {
         return false;
     }
@@ -160,16 +174,34 @@ int DACommandsForGraphicsItemMoved::id() const
     return CmdID_ItemMove;
 }
 
-bool DACommandsForGraphicsItemMoved::mergeWith(const QUndoCommand* command)
+//==============================================================
+// DACommandsForGraphicsItemMoved_Merge
+//==============================================================
+
+DACommandsForGraphicsItemMoved_Merge::DACommandsForGraphicsItemMoved_Merge(QGraphicsItem* item,
+                                                                           const QPointF& start,
+                                                                           const QPointF& end,
+                                                                           bool skipfirst,
+                                                                           QUndoCommand* parent)
+    : DACommandsForGraphicsItemMoved(item, start, end, skipfirst, parent)
 {
-    const DACommandsForGraphicsItemMoved* other = dynamic_cast< const DACommandsForGraphicsItemMoved* >(command);
+}
+
+int DACommandsForGraphicsItemMoved_Merge::id() const
+{
+    return CmdID_ItemMoveMerge;
+}
+
+bool DACommandsForGraphicsItemMoved_Merge::mergeWith(const QUndoCommand* command)
+{
+    const DACommandsForGraphicsItemMoved_Merge* other = dynamic_cast< const DACommandsForGraphicsItemMoved_Merge* >(command);
     if (nullptr == other) {
         return false;
     }
     if (mItem != other->mItem) {
         return false;
     }
-    //合并只改变最后的位置
+    // 合并只改变最后的位置
     mEndPos = other->mEndPos;
     return true;
 }
@@ -254,7 +286,7 @@ bool DACommandsForGraphicsItemResized::mergeWith(const QUndoCommand* command)
     if (mItem != other->mItem) {
         return false;
     }
-    //合并只改变最后的位置
+    // 合并只改变最后的位置
     mNewPosition = other->mNewPosition;
     mNewSize     = other->mNewSize;
     return true;
@@ -403,22 +435,50 @@ bool DACommandsForGraphicsItemRotation::mergeWith(const QUndoCommand* command)
     return true;
 }
 
-DACommandsForGraphicsItemGrouping::DACommandsForGraphicsItemGrouping(QGraphicsScene* sc,
+//==============================================================
+// DACommandsForGraphicsItemGrouping
+//==============================================================
+
+DACommandsForGraphicsItemGrouping::DACommandsForGraphicsItemGrouping(DAGraphicsScene* sc,
                                                                      const QList< QGraphicsItem* >& groupingitems,
                                                                      QUndoCommand* parent)
     : QUndoCommand(parent), mScene(sc), mItems(groupingitems)
 {
 }
 
+DACommandsForGraphicsItemGrouping::~DACommandsForGraphicsItemGrouping()
+{
+    if (mNeedDelete) {
+        delete mGroupItem;
+    }
+}
+
 void DACommandsForGraphicsItemGrouping::redo()
 {
-    mGroupItem = mScene->createItemGroup(mItems);
+    if (!mGroupItem) {
+        mGroupItem = new DAGraphicsItemGroup();
+    }
+    DAGraphicsScene::addItemToGroup(mGroupItem, mItems);
+    mScene->addItem(mGroupItem);
+    mGroupItem->setSelected(true);
+    mNeedDelete = false;
 }
 
 void DACommandsForGraphicsItemGrouping::undo()
 {
-    mScene->destroyItemGroup(mGroupItem);
+    // 不能用destroyItemGroup，destroyItemGroup会删除mGroupItem，如果之前做过移动操作，mGroupItem会被保存在其它的cmd中，这时候就会触发异常
+    const auto items = mGroupItem->childItems();
+    for (QGraphicsItem* item : items) {
+        mGroupItem->removeFromGroup(item);
+        item->setSelected(false);
+    }
+    mScene->removeItem(mGroupItem);
+    mNeedDelete = true;
 }
+
+//==============================================================
+// DACommandsForGraphicsItemUngrouping
+//==============================================================
 
 DACommandsForGraphicsItemUngrouping::DACommandsForGraphicsItemUngrouping(QGraphicsScene* sc, QGraphicsItemGroup* group, QUndoCommand* parent)
     : QUndoCommand(parent), mScene(sc), mGroupItem(group)
@@ -426,12 +486,27 @@ DACommandsForGraphicsItemUngrouping::DACommandsForGraphicsItemUngrouping(QGraphi
     mItems = mGroupItem->childItems();
 }
 
+DACommandsForGraphicsItemUngrouping::~DACommandsForGraphicsItemUngrouping()
+{
+    if (mNeedDelete) {
+        delete mGroupItem;
+    }
+}
+
 void DACommandsForGraphicsItemUngrouping::redo()
 {
-    mScene->destroyItemGroup(mGroupItem);
+    for (QGraphicsItem* item : qAsConst(mItems)) {
+        mGroupItem->removeFromGroup(item);
+        item->setSelected(false);
+    }
+    mScene->removeItem(mGroupItem);
+    mNeedDelete = true;
 }
 
 void DACommandsForGraphicsItemUngrouping::undo()
 {
-    mGroupItem = mScene->createItemGroup(mItems);
+    DAGraphicsScene::addItemToGroup(mGroupItem, mItems);
+    mScene->addItem(mGroupItem);
+    mGroupItem->setSelected(true);
+    mNeedDelete = false;
 }

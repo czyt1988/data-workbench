@@ -3,10 +3,12 @@
 #include "DAGraphicsViewGlobal.h"
 #include <QGraphicsScene>
 #include <QUndoStack>
-#include "DAGraphicsLinkItem.h"
+
 namespace DA
 {
 class DAGraphicsResizeableItem;
+class DAGraphicsLinkItem;
+class DAGraphicsItemGroup;
 /**
  * @brief 这是带着undostack的GraphicsScene
  * 此QGraphicsScene支持：
@@ -17,10 +19,10 @@ class DAGraphicsResizeableItem;
  *
  * @note 能支持redo/undo操作的函数后面以“_”结尾
  */
-class DAGRAPHICSVIEW_API DAGraphicsSceneWithUndoStack : public QGraphicsScene
+class DAGRAPHICSVIEW_API DAGraphicsScene : public QGraphicsScene
 {
     Q_OBJECT
-    DA_DECLARE_PRIVATE(DAGraphicsSceneWithUndoStack)
+    DA_DECLARE_PRIVATE(DAGraphicsScene)
     friend class DAGraphicsResizeableItem;
 
 public:
@@ -36,64 +38,71 @@ public:
     };
 
 public:
-    DAGraphicsSceneWithUndoStack(QObject* p = nullptr);
-    DAGraphicsSceneWithUndoStack(const QRectF& sceneRect, QObject* p = nullptr);
-    DAGraphicsSceneWithUndoStack(qreal x, qreal y, qreal width, qreal height, QObject* p = nullptr);
-    ~DAGraphicsSceneWithUndoStack();
-    //判断是否正在移动item
+    DAGraphicsScene(QObject* p = nullptr);
+    DAGraphicsScene(const QRectF& sceneRect, QObject* p = nullptr);
+    DAGraphicsScene(qreal x, qreal y, qreal width, qreal height, QObject* p = nullptr);
+    ~DAGraphicsScene();
+    // 判断是否正在移动item
     bool isMovingItems() const;
     // 获取当前鼠标在scene的位置
     QPointF getCurrentMouseScenePos() const;
     // 获取最后鼠标在scene点击的位置
     QPointF getLastMousePressScenePos() const;
-    //获取选中且能移动的item
+    // 获取选中且能移动的item
     QList< QGraphicsItem* > getSelectedMovableItems();
-    //等同additem，但使用redo/undo来添加，可以进行redo/undo操作
+    // 等同additem，但使用redo/undo来添加，可以进行redo/undo操作
     QUndoCommand* addItem_(QGraphicsItem* item, bool autopush = true);
-    //等同removeItem，但使用redo/undo来添加，可以进行redo/undo操作
+    // 等同removeItem，但使用redo/undo来添加，可以进行redo/undo操作
     QUndoCommand* removeItem_(QGraphicsItem* item, bool autopush = true);
-    //导出为pixmap
+    // 导出为pixmap
     QPixmap toPixamp();
-    //链接模式
+    // 链接模式
     void beginLink(DAGraphicsLinkItem* linkItem, LinkMode lm = LinkModeAutoStartEndFollowMouseClick);
-    //判断当前是否是链接模式
+    // 判断当前是否是链接模式
     bool isStartLink() const;
-    //结束链接模式
+    // 结束链接模式
     void endLink();
-    //取消链接模式
+    // 取消链接模式
     virtual void cancelLink();
-    //获取当前正在进行连线的连接线item
+    // 获取当前正在进行连线的连接线item
     DAGraphicsLinkItem* getCurrentLinkItem() const;
     // 设置忽略链接事件的处理，主要忽略mousePressEvent，mouseMoveEvent的链接事件，
     // 这个函数一般是在子类中的重载函数中调用，用于进行一些特殊处理需要暂时屏蔽掉链接事件
     void setIgnoreLinkEvent(bool on);
     bool isIgnoreLinkEvent() const;
-    //选中的item进行分组，支持redo/undo
+    // 选中的item进行分组，支持redo/undo
     void groupingSelectItems_();
-    //移除选中的分组
+    // 移除选中的分组
     void removeSelectItemGroup_();
-
-public:
-    //是否允许对齐网格
+    // 是否允许对齐网格
     bool isEnableSnapToGrid() const;
-    //是否显示网格
+    // 是否显示网格
     bool isShowGridLine();
-    //设置网格尺寸
+    // 设置网格尺寸
     void setGridSize(const QSize& gs);
     QSize getGridSize() const;
-    //网格画笔
+    // 网格画笔
     void setGridLinePen(const QPen& p);
     QPen getGridLinePen() const;
-    //设置绘制背景使用缓冲
+    // 设置绘制背景使用缓冲
     void setPaintBackgroundInCache(bool on);
     bool isPaintBackgroundInCache() const;
 
+    // 回退栈操作
+    QUndoStack& undoStack();
+    const QUndoStack& undoStack() const;
+    QUndoStack* getUndoStack() const;
+    void setUndoStackActive();
+    void push(QUndoCommand* cmd);
+
+public:
+    static void addItemToGroup(QGraphicsItemGroup* group, const QList< QGraphicsItem* >& willGroupItems);
 public slots:
-    //设置对齐网格
+    // 设置对齐网格
     void setEnableSnapToGrid(bool on = true);
-    //显示网格
+    // 显示网格
     void showGridLine(bool on);
-    //选中所有item
+    // 选中所有item
     void selectAll();
 signals:
     /**
@@ -128,32 +137,24 @@ signals:
      */
     void linkCompleted(DAGraphicsLinkItem* linkItem);
 
-public:
-    //回退栈操作
-    QUndoStack& undoStack();
-    const QUndoStack& undoStack() const;
-    QUndoStack* getUndoStack() const;
-    void setUndoStackActive();
-    void push(QUndoCommand* cmd);
-
 protected:
-    //判断点击的item是否可以移动
+    // 判断点击的item是否可以移动
     virtual bool isItemCanMove(QGraphicsItem* positem, const QPointF& scenePos);
-    //调用此函数 主动触发itemsPositionChanged信号，这个函数用于 继承此类例如实现了键盘移动item，主动触发此信号
+    // 调用此函数 主动触发itemsPositionChanged信号，这个函数用于 继承此类例如实现了键盘移动item，主动触发此信号
     void emitItemsPositionChanged(const QList< QGraphicsItem* >& items, const QList< QPointF >& oldPos, const QList< QPointF >& newPos);
-    //调用此函数 主动触发itemBodySizeChanged信号
+    // 调用此函数 主动触发itemBodySizeChanged信号
     void emitItemBodySizeChanged(DAGraphicsResizeableItem* item, const QSizeF& oldSize, const QSizeF& newSize);
-    //调用此函数 主动触发itemRotationed信号
+    // 调用此函数 主动触发itemRotationed信号
     void emitItemRotationChanged(DAGraphicsResizeableItem* item, const qreal& rotation);
 
 protected:
-    //鼠标点击事件
+    // 鼠标点击事件
     void mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent) override;
-    //鼠标移动事件
+    // 鼠标移动事件
     void mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent) override;
-    //鼠标释放
+    // 鼠标释放
     void mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent) override;
-    //绘制背景
+    // 绘制背景
     void drawBackground(QPainter* painter, const QRectF& rect) override;
 };
 }

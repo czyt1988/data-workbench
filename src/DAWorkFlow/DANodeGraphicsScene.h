@@ -20,7 +20,7 @@ class DAStandardGraphicsTextItem;
  *
  * @note 所有支持redo/undo的函数后面都会带有_下标
  */
-class DAWORKFLOW_API DANodeGraphicsScene : public DAGraphicsSceneWithUndoStack
+class DAWORKFLOW_API DANodeGraphicsScene : public DAGraphicsScene
 {
     Q_OBJECT
     DA_DECLARE_PRIVATE(DANodeGraphicsScene)

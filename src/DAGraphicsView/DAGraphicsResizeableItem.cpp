@@ -77,7 +77,7 @@ public:
 	bool mEnableResize{ true };                    ///< 是否允许调整大小
 	bool mAutoCenterTransformOriginPoint{ true };  ///< 自动更新TransformOriginPoint
 	DAGraphicsResizeableItem::ControlType mCurrentControlTypeUnderMouse{ DAGraphicsResizeableItem::NotUnderAnyControlType };  ///< 鼠标当前在的控制点
-	DAGraphicsSceneWithUndoStack* mSceneUndo{ nullptr };  ///保存secene
+	DAGraphicsScene* mSceneUndo{ nullptr };  ///保存secene
 	QSizeF mSize{ 30, 30 };                               ///< 尺寸
 	QSizeF mMinSize{ 5, 5 };                              ///< 最小尺寸
 	QSizeF mMaxSize{ 9999, 9999 };                        ///< 最大尺寸
@@ -733,7 +733,7 @@ QVariant DAGraphicsResizeableItem::itemChange(GraphicsItemChange change, const Q
 	}
 	case QGraphicsItem::ItemSceneHasChanged: {
 		//记录scene
-		d_ptr->mSceneUndo = qobject_cast< DAGraphicsSceneWithUndoStack* >(scene());
+		d_ptr->mSceneUndo = qobject_cast< DAGraphicsScene* >(scene());
 		break;
 	}
 	default:
@@ -1221,7 +1221,7 @@ bool DAGraphicsResizeableItem::isMovable() const
  */
 bool DAGraphicsResizeableItem::isEnableSnapToGrid() const
 {
-	DAGraphicsSceneWithUndoStack* sc = d_ptr->mSceneUndo;
+	DAGraphicsScene* sc = d_ptr->mSceneUndo;
 	if (sc) {
 		return sc->isEnableSnapToGrid();
 	}
@@ -1233,7 +1233,7 @@ bool DAGraphicsResizeableItem::isEnableSnapToGrid() const
  */
 QSize DAGraphicsResizeableItem::getGridSize() const
 {
-	DAGraphicsSceneWithUndoStack* sc = qobject_cast< DAGraphicsSceneWithUndoStack* >(scene());
+	DAGraphicsScene* sc = qobject_cast< DAGraphicsScene* >(scene());
 	if (sc) {
 		return sc->getGridSize();
 	}

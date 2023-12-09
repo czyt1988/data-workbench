@@ -2,24 +2,26 @@
 #include <QGraphicsSceneMouseEvent>
 #include "DACommandsForGraphics.h"
 #include "DAGraphicsResizeableItem.h"
+#include "DAGraphicsLinkItem.h"
+#include "DAGraphicsItemGroup.h"
 #include <QPainter>
 #include <QDebug>
 
 namespace DA
 {
 
-class _DANodeGraphicsSceneItemMoveingInfos
+class _DAGraphicsSceneItemMoveingInfos
 {
 public:
     QList< QGraphicsItem* > items;
     QList< QPointF > startsPos;
     QList< QPointF > endsPos;
-    //添加开始的位置
+    // 添加开始的位置
     void appendStartPos(QGraphicsItem* item, const QPointF& start);
     void appendStartPos(QGraphicsItem* item);
-    //刷新结束位置
+    // 刷新结束位置
     void updateEndPos();
-    //清除信息
+    // 清除信息
     void clear();
 };
 
@@ -27,12 +29,12 @@ public:
 // DAGraphicsSceneWithUndoStack::PrivateData
 //===================================================
 
-class DAGraphicsSceneWithUndoStack::PrivateData
+class DAGraphicsScene::PrivateData
 {
-    DA_DECLARE_PUBLIC(DAGraphicsSceneWithUndoStack)
+    DA_DECLARE_PUBLIC(DAGraphicsScene)
 public:
-    PrivateData(DAGraphicsSceneWithUndoStack* p);
-    //绘制背景缓存
+    PrivateData(DAGraphicsScene* p);
+    // 绘制背景缓存
     void renderBackgroundCache();
     void renderBackgroundCache(QPainter* painter, const QRect& rect);
 
@@ -40,21 +42,21 @@ public:
     QUndoStack mUndoStack;
     bool mIsMovingItems { false };  /// 正在进行item的移动
     QPointF mLastMouseScenePos;
-    QPointF mLastMousePressScenePos;                    ///< 记录点击时的位置
-    _DANodeGraphicsSceneItemMoveingInfos mMovingInfos;  ///< 记录移动的信息
-    bool mEnableSnapToGrid { false };                   ///< 允许对齐网格
-    bool mShowGridLine { true };                        ///< 是否显示网格
-    QSize mGridSize { 10, 10 };                         ///< 网格大小
-    QPen mGridLinePen;                                  ///< 绘制网格的画笔
-    QPixmap mBackgroundCache;                           ///< 背景缓存，不用每次都绘制
-    bool mIsPaintBackgroundInCache { false };           ///< 背景使用缓冲绘制
-    std::unique_ptr< DAGraphicsLinkItem > mLinkItem;    ///< 连接线
-    DAGraphicsSceneWithUndoStack::LinkMode mLinkMode { DAGraphicsSceneWithUndoStack::LinkModeAutoStartEndFollowMouseClick };  ///< 当前链接模式记录
+    QPointF mLastMousePressScenePos;                  ///< 记录点击时的位置
+    _DAGraphicsSceneItemMoveingInfos mMovingInfos;    ///< 记录移动的信息
+    bool mEnableSnapToGrid { false };                 ///< 允许对齐网格
+    bool mShowGridLine { true };                      ///< 是否显示网格
+    QSize mGridSize { 10, 10 };                       ///< 网格大小
+    QPen mGridLinePen;                                ///< 绘制网格的画笔
+    QPixmap mBackgroundCache;                         ///< 背景缓存，不用每次都绘制
+    bool mIsPaintBackgroundInCache { false };         ///< 背景使用缓冲绘制
+    std::unique_ptr< DAGraphicsLinkItem > mLinkItem;  ///< 连接线
+    DAGraphicsScene::LinkMode mLinkMode { DAGraphicsScene::LinkModeAutoStartEndFollowMouseClick };  ///< 当前链接模式记录
     ///< 标记连接线移动过，这个变量是在LinkModeAutoStartEndFollowMouseClick模式下，
     /// 用户调用beginLink函数后，有可能接下来就马上触发mousePressedEvent而结束链接，因此，在LinkModeAutoStartEndFollowMouseClick模式下
     /// beginLink函数调用时会把mLinkItemIsMoved设置为false，只有接收到mouseMove事件后，此变量变为true，在mousePressedEvent才会进行结束判断
     bool mLinkItemIsMoved { false };
-    bool mIsIgnoreLinkEvent { false };  ///<设置忽略链接事件的处理，主要忽略mousePressEvent，mouseMoveEvent的链接事件
+    bool mIsIgnoreLinkEvent { false };  ///< 设置忽略链接事件的处理，主要忽略mousePressEvent，mouseMoveEvent的链接事件
 };
 
 ////////////////////////////////////////////////
@@ -66,7 +68,7 @@ public:
  * @param item
  * @param start
  */
-void _DANodeGraphicsSceneItemMoveingInfos::appendStartPos(QGraphicsItem* item, const QPointF& start)
+void _DAGraphicsSceneItemMoveingInfos::appendStartPos(QGraphicsItem* item, const QPointF& start)
 {
     items.append(item);
     startsPos.append(start);
@@ -75,13 +77,13 @@ void _DANodeGraphicsSceneItemMoveingInfos::appendStartPos(QGraphicsItem* item, c
 /**
  * @brief 刷新结束位置
  */
-void _DANodeGraphicsSceneItemMoveingInfos::appendStartPos(QGraphicsItem* item)
+void _DAGraphicsSceneItemMoveingInfos::appendStartPos(QGraphicsItem* item)
 {
     items.append(item);
     startsPos.append(item->pos());
 }
 
-void _DANodeGraphicsSceneItemMoveingInfos::updateEndPos()
+void _DAGraphicsSceneItemMoveingInfos::updateEndPos()
 {
     for (QGraphicsItem* i : qAsConst(items)) {
         endsPos.append(i->pos());
@@ -91,7 +93,7 @@ void _DANodeGraphicsSceneItemMoveingInfos::updateEndPos()
 /**
  * @brief 清除信息
  */
-void _DANodeGraphicsSceneItemMoveingInfos::clear()
+void _DAGraphicsSceneItemMoveingInfos::clear()
 {
     items.clear();
     startsPos.clear();
@@ -105,7 +107,7 @@ void _DANodeGraphicsSceneItemMoveingInfos::clear()
 //==============================
 ////////////////////////////////////////////////
 
-DAGraphicsSceneWithUndoStack::PrivateData::PrivateData(DAGraphicsSceneWithUndoStack* p) : q_ptr(p)
+DAGraphicsScene::PrivateData::PrivateData(DAGraphicsScene* p) : q_ptr(p)
 {
     mGridLinePen.setStyle(Qt::SolidLine);
     mGridLinePen.setColor(QColor(219, 219, 219));
@@ -113,7 +115,7 @@ DAGraphicsSceneWithUndoStack::PrivateData::PrivateData(DAGraphicsSceneWithUndoSt
     mGridLinePen.setWidthF(0.5);
 }
 
-void DAGraphicsSceneWithUndoStack::PrivateData::renderBackgroundCache()
+void DAGraphicsScene::PrivateData::renderBackgroundCache()
 {
     if (!mShowGridLine) {
         return;
@@ -135,7 +137,7 @@ void DAGraphicsSceneWithUndoStack::PrivateData::renderBackgroundCache()
 /**
  * @brief 渲染背景缓存
  */
-void DAGraphicsSceneWithUndoStack::PrivateData::renderBackgroundCache(QPainter* painter, const QRect& rect)
+void DAGraphicsScene::PrivateData::renderBackgroundCache(QPainter* painter, const QRect& rect)
 {
     painter->setPen(mGridLinePen);
     qreal left = int(rect.left()) - (int(rect.left()) % mGridSize.width());
@@ -144,7 +146,7 @@ void DAGraphicsSceneWithUndoStack::PrivateData::renderBackgroundCache(QPainter* 
     for (qreal x = left; x < rect.right(); x += mGridSize.width()) {
         painter->drawLine(QPointF(x, rect.top()), QPointF(x, rect.bottom()));
     }
-    //绘制横线
+    // 绘制横线
     for (qreal y = top; y < rect.bottom(); y += mGridSize.height()) {
         painter->drawLine(QPointF(rect.left(), y), QPointF(rect.right(), y));
     }
@@ -154,21 +156,20 @@ void DAGraphicsSceneWithUndoStack::PrivateData::renderBackgroundCache(QPainter* 
 // DAGraphicsSceneWithUndoStack
 //===============================================================
 
-DAGraphicsSceneWithUndoStack::DAGraphicsSceneWithUndoStack(QObject* p) : QGraphicsScene(p), DA_PIMPL_CONSTRUCT
+DAGraphicsScene::DAGraphicsScene(QObject* p) : QGraphicsScene(p), DA_PIMPL_CONSTRUCT
 {
 }
 
-DAGraphicsSceneWithUndoStack::DAGraphicsSceneWithUndoStack(const QRectF& sceneRect, QObject* p)
-    : QGraphicsScene(sceneRect, p), DA_PIMPL_CONSTRUCT
+DAGraphicsScene::DAGraphicsScene(const QRectF& sceneRect, QObject* p) : QGraphicsScene(sceneRect, p), DA_PIMPL_CONSTRUCT
 {
 }
 
-DAGraphicsSceneWithUndoStack::DAGraphicsSceneWithUndoStack(qreal x, qreal y, qreal width, qreal height, QObject* p)
+DAGraphicsScene::DAGraphicsScene(qreal x, qreal y, qreal width, qreal height, QObject* p)
     : QGraphicsScene(x, y, width, height, p), DA_PIMPL_CONSTRUCT
 {
 }
 
-DAGraphicsSceneWithUndoStack::~DAGraphicsSceneWithUndoStack()
+DAGraphicsScene::~DAGraphicsScene()
 {
 }
 
@@ -176,7 +177,7 @@ DAGraphicsSceneWithUndoStack::~DAGraphicsSceneWithUndoStack()
  * @brief 判断是否正在移动item
  * @return
  */
-bool DAGraphicsSceneWithUndoStack::isMovingItems() const
+bool DAGraphicsScene::isMovingItems() const
 {
     return d_ptr->mIsMovingItems;
 }
@@ -185,7 +186,7 @@ bool DAGraphicsSceneWithUndoStack::isMovingItems() const
  * @brief 获取当前鼠标在scene的位置
  * @return
  */
-QPointF DAGraphicsSceneWithUndoStack::getCurrentMouseScenePos() const
+QPointF DAGraphicsScene::getCurrentMouseScenePos() const
 {
     return (d_ptr->mLastMouseScenePos);
 }
@@ -196,7 +197,7 @@ QPointF DAGraphicsSceneWithUndoStack::getCurrentMouseScenePos() const
  * @note 如果子类重载了mousePressEvent，必须调用DAGraphicsSceneWithUndoStack::mousePressEvent(mouseEvent);此函数才会生效
  * @return
  */
-QPointF DAGraphicsSceneWithUndoStack::getLastMousePressScenePos() const
+QPointF DAGraphicsScene::getLastMousePressScenePos() const
 {
     return (d_ptr->mLastMousePressScenePos);
 }
@@ -205,7 +206,7 @@ QPointF DAGraphicsSceneWithUndoStack::getLastMousePressScenePos() const
  * @brief 获取选中且能移动的item
  * @return
  */
-QList< QGraphicsItem* > DAGraphicsSceneWithUndoStack::getSelectedMovableItems()
+QList< QGraphicsItem* > DAGraphicsScene::getSelectedMovableItems()
 {
     QList< QGraphicsItem* > res;
     QList< QGraphicsItem* > its = selectedItems();
@@ -223,7 +224,7 @@ QList< QGraphicsItem* > DAGraphicsSceneWithUndoStack::getSelectedMovableItems()
  * @param autopush 自动推入redo/undo栈，对于无需操作返回的cmd，此值需要设置为true，否则需要手动调用push函数，把返回的cmd推入
  * @return 返回执行的命令
  */
-QUndoCommand* DAGraphicsSceneWithUndoStack::addItem_(QGraphicsItem* item, bool autopush)
+QUndoCommand* DAGraphicsScene::addItem_(QGraphicsItem* item, bool autopush)
 {
     DA::DACommandsForGraphicsItemAdd* cmd = new DA::DACommandsForGraphicsItemAdd(item, this);
     if (autopush) {
@@ -238,7 +239,7 @@ QUndoCommand* DAGraphicsSceneWithUndoStack::addItem_(QGraphicsItem* item, bool a
  * @param autopush 自动推入redo/undo栈，对于无需操作返回的cmd，此值需要设置为true，否则需要手动调用push函数，把返回的cmd推入
  * @return
  */
-QUndoCommand* DAGraphicsSceneWithUndoStack::removeItem_(QGraphicsItem* item, bool autopush)
+QUndoCommand* DAGraphicsScene::removeItem_(QGraphicsItem* item, bool autopush)
 {
     DA::DACommandsForGraphicsItemRemove* cmd = new DA::DACommandsForGraphicsItemRemove(item, this);
     if (autopush) {
@@ -251,7 +252,7 @@ QUndoCommand* DAGraphicsSceneWithUndoStack::removeItem_(QGraphicsItem* item, boo
  * @brief 导出为pixmap
  * @return
  */
-QPixmap DAGraphicsSceneWithUndoStack::toPixamp()
+QPixmap DAGraphicsScene::toPixamp()
 {
     QRectF br = itemsBoundingRect();
     QPixmap res(br.size().toSize() + QSize(10, 10));
@@ -269,7 +270,7 @@ QPixmap DAGraphicsSceneWithUndoStack::toPixamp()
  * 或者点击鼠标右键取消链接（cancelLink）
  * @param linkItem 连接线图元
  */
-void DAGraphicsSceneWithUndoStack::beginLink(DAGraphicsLinkItem* linkItem, LinkMode lm)
+void DAGraphicsScene::beginLink(DAGraphicsLinkItem* linkItem, LinkMode lm)
 {
     if (nullptr == linkItem) {
         cancelLink();
@@ -280,7 +281,7 @@ void DAGraphicsSceneWithUndoStack::beginLink(DAGraphicsLinkItem* linkItem, LinkM
         addItem(linkItem);
     }
     switch (lm) {
-    case LinkModeAutoStartEndFollowMouseClick: {  //开端为当前鼠标位置，末端跟随鼠标移动，在下个鼠标左键点击时结束连线
+    case LinkModeAutoStartEndFollowMouseClick: {  // 开端为当前鼠标位置，末端跟随鼠标移动，在下个鼠标左键点击时结束连线
         linkItem->setStartScenePosition(getCurrentMouseScenePos());
         d_ptr->mLinkItemIsMoved = false;
     } break;
@@ -295,7 +296,7 @@ void DAGraphicsSceneWithUndoStack::beginLink(DAGraphicsLinkItem* linkItem, LinkM
  * @brief 判断当前是否是链接模式
  * @return
  */
-bool DAGraphicsSceneWithUndoStack::isStartLink() const
+bool DAGraphicsScene::isStartLink() const
 {
     return (d_ptr->mLinkItem != nullptr);
 }
@@ -311,14 +312,14 @@ bool DAGraphicsSceneWithUndoStack::isStartLink() const
  * 链接和不链接的逻辑是不一样的，因此，redo/undo的动作并不提供，而是由用户自己处理
  *
  */
-void DAGraphicsSceneWithUndoStack::endLink()
+void DAGraphicsScene::endLink()
 {
     if (!isStartLink()) {
         return;
     }
-    //把item脱离智能指针管理
+    // 把item脱离智能指针管理
     if (!(d_ptr->mLinkItem->willCompleteLink())) {
-        //如果willCompleteLink返回false，endLink函数将中途推出，不接受
+        // 如果willCompleteLink返回false，endLink函数将中途推出，不接受
         return;
     }
     DAGraphicsLinkItem* linkItem = d_ptr->mLinkItem.release();
@@ -333,7 +334,7 @@ void DAGraphicsSceneWithUndoStack::endLink()
 /**
  * @brief 取消链接模式
  */
-void DAGraphicsSceneWithUndoStack::cancelLink()
+void DAGraphicsScene::cancelLink()
 {
     if (!isStartLink()) {
         return;
@@ -348,7 +349,7 @@ void DAGraphicsSceneWithUndoStack::cancelLink()
  * @note 注意，此函数在@sa beginLink 调用之后才会有指针返回，在调用@sa endLink 或 @sa cancelLink 后都返回nullptr
  * @return 返回beginLink设置的指针
  */
-DAGraphicsLinkItem* DAGraphicsSceneWithUndoStack::getCurrentLinkItem() const
+DAGraphicsLinkItem* DAGraphicsScene::getCurrentLinkItem() const
 {
     return d_ptr->mLinkItem.get();
 }
@@ -359,7 +360,7 @@ DAGraphicsLinkItem* DAGraphicsSceneWithUndoStack::getCurrentLinkItem() const
  * 这个函数一般是在子类中的重载函数中调用，用于进行一些特殊处理需要暂时屏蔽掉链接事件
  * @param on
  */
-void DAGraphicsSceneWithUndoStack::setIgnoreLinkEvent(bool on)
+void DAGraphicsScene::setIgnoreLinkEvent(bool on)
 {
     d_ptr->mIsIgnoreLinkEvent = on;
 }
@@ -368,7 +369,7 @@ void DAGraphicsSceneWithUndoStack::setIgnoreLinkEvent(bool on)
  * @brief 判断当前是否忽略链接事件
  * @return
  */
-bool DAGraphicsSceneWithUndoStack::isIgnoreLinkEvent() const
+bool DAGraphicsScene::isIgnoreLinkEvent() const
 {
     return d_ptr->mIsIgnoreLinkEvent;
 }
@@ -376,16 +377,27 @@ bool DAGraphicsSceneWithUndoStack::isIgnoreLinkEvent() const
 /**
    @brief 对选中item的分组
  */
-void DAGraphicsSceneWithUndoStack::groupingSelectItems_()
+void DAGraphicsScene::groupingSelectItems_()
 {
-    auto cmd = new DACommandsForGraphicsItemGrouping(this, selectedItems());
+    QList< QGraphicsItem* > selItems = selectedItems();
+    if (selItems.empty()) {
+        return;
+    }
+    if (1 == selItems.size()) {
+        // 防止group套group
+        if (QGraphicsItemGroup* g = dynamic_cast< QGraphicsItemGroup* >(selItems.first())) {
+            // 选择了一个结果还是个group
+            return;
+        }
+    }
+    auto cmd = new DACommandsForGraphicsItemGrouping(this, selItems);
     push(cmd);
 }
 
 /**
    @brief 移除选中的分组
  */
-void DAGraphicsSceneWithUndoStack::removeSelectItemGroup_()
+void DAGraphicsScene::removeSelectItemGroup_()
 {
     QList< QGraphicsItem* > si = selectedItems();
     for (QGraphicsItem* i : qAsConst(si)) {
@@ -402,7 +414,7 @@ void DAGraphicsSceneWithUndoStack::removeSelectItemGroup_()
  * @param on
  * @note 此操作对未对齐的item是不会起作用
  */
-void DAGraphicsSceneWithUndoStack::setEnableSnapToGrid(bool on)
+void DAGraphicsScene::setEnableSnapToGrid(bool on)
 {
     d_ptr->mEnableSnapToGrid = on;
 }
@@ -410,7 +422,7 @@ void DAGraphicsSceneWithUndoStack::setEnableSnapToGrid(bool on)
  * @brief 是否允许对齐网格
  * @return
  */
-bool DAGraphicsSceneWithUndoStack::isEnableSnapToGrid() const
+bool DAGraphicsScene::isEnableSnapToGrid() const
 {
     return d_ptr->mEnableSnapToGrid;
 }
@@ -418,7 +430,7 @@ bool DAGraphicsSceneWithUndoStack::isEnableSnapToGrid() const
  * @brief 设置网格尺寸
  * @param gs
  */
-void DAGraphicsSceneWithUndoStack::setGridSize(const QSize& gs)
+void DAGraphicsScene::setGridSize(const QSize& gs)
 {
     d_ptr->mGridSize = gs;
 }
@@ -426,7 +438,7 @@ void DAGraphicsSceneWithUndoStack::setGridSize(const QSize& gs)
  * @brief 网格尺寸
  * @return
  */
-QSize DAGraphicsSceneWithUndoStack::getGridSize() const
+QSize DAGraphicsScene::getGridSize() const
 {
     return d_ptr->mGridSize;
 }
@@ -435,7 +447,7 @@ QSize DAGraphicsSceneWithUndoStack::getGridSize() const
  * @brief 显示网格线
  * @param on
  */
-void DAGraphicsSceneWithUndoStack::showGridLine(bool on)
+void DAGraphicsScene::showGridLine(bool on)
 {
     d_ptr->mShowGridLine = on;
 }
@@ -445,16 +457,16 @@ void DAGraphicsSceneWithUndoStack::showGridLine(bool on)
  *
  * @note 此函数会发射一次selectionChanged信号
  */
-void DAGraphicsSceneWithUndoStack::selectAll()
+void DAGraphicsScene::selectAll()
 {
     int selectCnt = 0;
     {
-        //避免每个选中都触发selectionChanged信号
+        // 避免每个选中都触发selectionChanged信号
         QSignalBlocker b(this);
         QList< QGraphicsItem* > its = items();
         for (QGraphicsItem* i : its) {
             if (!i->isSelected() && i->flags().testFlag(QGraphicsItem::ItemIsSelectable)) {
-                //只有没有被选上，且是可选的才会执行选中动作
+                // 只有没有被选上，且是可选的才会执行选中动作
                 i->setSelected(true);
                 ++selectCnt;
             }
@@ -468,7 +480,7 @@ void DAGraphicsSceneWithUndoStack::selectAll()
  * @brief 是否显示网格线
  * @return
  */
-bool DAGraphicsSceneWithUndoStack::isShowGridLine()
+bool DAGraphicsScene::isShowGridLine()
 {
     return d_ptr->mShowGridLine;
 }
@@ -476,7 +488,7 @@ bool DAGraphicsSceneWithUndoStack::isShowGridLine()
  * @brief 设置网格画笔
  * @param p
  */
-void DAGraphicsSceneWithUndoStack::setGridLinePen(const QPen& p)
+void DAGraphicsScene::setGridLinePen(const QPen& p)
 {
     d_ptr->mGridLinePen = p;
 }
@@ -484,7 +496,7 @@ void DAGraphicsSceneWithUndoStack::setGridLinePen(const QPen& p)
  * @brief 获取网格画笔
  * @return
  */
-QPen DAGraphicsSceneWithUndoStack::getGridLinePen() const
+QPen DAGraphicsScene::getGridLinePen() const
 {
     return d_ptr->mGridLinePen;
 }
@@ -493,7 +505,7 @@ QPen DAGraphicsSceneWithUndoStack::getGridLinePen() const
  * @brief 设置绘制背景使用缓冲
  * @param on
  */
-void DAGraphicsSceneWithUndoStack::setPaintBackgroundInCache(bool on)
+void DAGraphicsScene::setPaintBackgroundInCache(bool on)
 {
     d_ptr->mIsPaintBackgroundInCache = on;
     if (on) {
@@ -505,7 +517,7 @@ void DAGraphicsSceneWithUndoStack::setPaintBackgroundInCache(bool on)
  * @brief 是否绘制背景使用缓冲
  * @return
  */
-bool DAGraphicsSceneWithUndoStack::isPaintBackgroundInCache() const
+bool DAGraphicsScene::isPaintBackgroundInCache() const
 {
     return d_ptr->mIsPaintBackgroundInCache;
 }
@@ -514,12 +526,12 @@ bool DAGraphicsSceneWithUndoStack::isPaintBackgroundInCache() const
  * @brief 获取DANodeGraphicsScene内部维护的undoStack
  * @return
  */
-QUndoStack& DAGraphicsSceneWithUndoStack::undoStack()
+QUndoStack& DAGraphicsScene::undoStack()
 {
     return d_ptr->mUndoStack;
 }
 
-const QUndoStack& DAGraphicsSceneWithUndoStack::undoStack() const
+const QUndoStack& DAGraphicsScene::undoStack() const
 {
     return d_ptr->mUndoStack;
 }
@@ -527,7 +539,7 @@ const QUndoStack& DAGraphicsSceneWithUndoStack::undoStack() const
  * @brief 获取undostack指针
  * @return
  */
-QUndoStack* DAGraphicsSceneWithUndoStack::getUndoStack() const
+QUndoStack* DAGraphicsScene::getUndoStack() const
 {
     return &(d_ptr->mUndoStack);
 }
@@ -535,7 +547,7 @@ QUndoStack* DAGraphicsSceneWithUndoStack::getUndoStack() const
 /**
  * @brief 在StackGroup中激活undoStack
  */
-void DAGraphicsSceneWithUndoStack::setUndoStackActive()
+void DAGraphicsScene::setUndoStackActive()
 {
     if (!d_ptr->mUndoStack.isActive()) {
         d_ptr->mUndoStack.setActive(true);
@@ -546,9 +558,61 @@ void DAGraphicsSceneWithUndoStack::setUndoStackActive()
  * @brief 等同s->undoStack().push(cmd);
  * @param cmd
  */
-void DAGraphicsSceneWithUndoStack::push(QUndoCommand* cmd)
+void DAGraphicsScene::push(QUndoCommand* cmd)
 {
     d_ptr->mUndoStack.push(cmd);
+}
+
+/**
+   @brief 通用的item分组，此操作和QGraphicsScene::createItemGroup逻辑一致
+   @param group
+   @param willGroupItems
+ */
+void DAGraphicsScene::addItemToGroup(QGraphicsItemGroup* group, const QList< QGraphicsItem* >& willGroupItems)
+{
+    QList< QGraphicsItem* > ancestors;
+    int n = 0;
+    if (!willGroupItems.isEmpty()) {
+        QGraphicsItem* parent = willGroupItems.at(n++);
+        while ((parent = parent->parentItem()))
+            ancestors.append(parent);
+    }
+
+    // Find the common ancestor for all items
+    QGraphicsItem* commonAncestor = 0;
+    if (!ancestors.isEmpty()) {
+        while (n < willGroupItems.size()) {
+            int commonIndex       = -1;
+            QGraphicsItem* parent = willGroupItems.at(n++);
+            do {
+                int index = ancestors.indexOf(parent, qMax(0, commonIndex));
+                if (index != -1) {
+                    commonIndex = index;
+                    break;
+                }
+            } while ((parent = parent->parentItem()));
+
+            if (commonIndex == -1) {
+                commonAncestor = 0;
+                break;
+            }
+
+            commonAncestor = ancestors.at(commonIndex);
+        }
+    }
+    bool isNeedAcceptHoverEvents = false;
+    group->setParentItem(commonAncestor);
+    qreal minZ = std::numeric_limits< qreal >::max();
+    // Create a new group at that level
+    for (QGraphicsItem* item : qAsConst(willGroupItems)) {
+        group->addToGroup(item);
+        if (item->zValue() < minZ) {
+            minZ = item->zValue();
+        }
+        isNeedAcceptHoverEvents |= item->acceptHoverEvents();
+    }
+    group->setAcceptHoverEvents(isNeedAcceptHoverEvents);
+    group->setZValue(minZ - 1);
 }
 
 /**
@@ -573,22 +637,22 @@ void DAGraphicsSceneWithUndoStack::push(QUndoCommand* cmd)
  * @param selitems
  * @return
  */
-bool DAGraphicsSceneWithUndoStack::isItemCanMove(QGraphicsItem* positem, const QPointF& scenePos)
+bool DAGraphicsScene::isItemCanMove(QGraphicsItem* positem, const QPointF& scenePos)
 {
-    //没选中
+    // 没选中
     if (positem == nullptr) {
         return false;
     }
-    //选中了但不可移动，也不行
+    // 选中了但不可移动，也不行
     if (!positem->flags().testFlag(QGraphicsItem::ItemIsMovable)) {
         return false;
     }
-    //还要确认一下是否点在了DAGraphicsResizeableItem的控制点上，点在控制点上是不能移动的
+    // 还要确认一下是否点在了DAGraphicsResizeableItem的控制点上，点在控制点上是不能移动的
     DAGraphicsResizeableItem* resizeitem = qgraphicsitem_cast< DAGraphicsResizeableItem* >(positem);
     if (resizeitem) {
         DAGraphicsResizeableItem::ControlType t = resizeitem->getControlPointByPos(resizeitem->mapFromScene(scenePos));
         if (t != DAGraphicsResizeableItem::NotUnderAnyControlType) {
-            //说明点击在了控制点上，也取消移动
+            // 说明点击在了控制点上，也取消移动
             return false;
         }
     }
@@ -601,9 +665,9 @@ bool DAGraphicsSceneWithUndoStack::isItemCanMove(QGraphicsItem* positem, const Q
  * @param oldPos
  * @param newPos
  */
-void DAGraphicsSceneWithUndoStack::emitItemsPositionChanged(const QList< QGraphicsItem* >& items,
-                                                            const QList< QPointF >& oldPos,
-                                                            const QList< QPointF >& newPos)
+void DAGraphicsScene::emitItemsPositionChanged(const QList< QGraphicsItem* >& items,
+                                               const QList< QPointF >& oldPos,
+                                               const QList< QPointF >& newPos)
 {
     emit itemsPositionChanged(items, oldPos, newPos);
 }
@@ -613,7 +677,7 @@ void DAGraphicsSceneWithUndoStack::emitItemsPositionChanged(const QList< QGraphi
  * @param oldSize
  * @param newSize
  */
-void DAGraphicsSceneWithUndoStack::emitItemBodySizeChanged(DAGraphicsResizeableItem* item, const QSizeF& oldSize, const QSizeF& newSize)
+void DAGraphicsScene::emitItemBodySizeChanged(DAGraphicsResizeableItem* item, const QSizeF& oldSize, const QSizeF& newSize)
 {
     emit itemBodySizeChanged(item, oldSize, newSize);
 }
@@ -622,29 +686,29 @@ void DAGraphicsSceneWithUndoStack::emitItemBodySizeChanged(DAGraphicsResizeableI
  * @param item
  * @param rotation
  */
-void DAGraphicsSceneWithUndoStack::emitItemRotationChanged(DAGraphicsResizeableItem* item, const qreal& rotation)
+void DAGraphicsScene::emitItemRotationChanged(DAGraphicsResizeableItem* item, const qreal& rotation)
 {
     emit itemRotationChanged(item, rotation);
 }
 
-void DAGraphicsSceneWithUndoStack::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
+void DAGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
-    //记录鼠标点击的位置
+    // 记录鼠标点击的位置
     d_ptr->mLastMousePressScenePos = mouseEvent->scenePos();
-    //先传递下去使得能处理选中状态
+    // 先传递下去使得能处理选中状态
     QGraphicsScene::mousePressEvent(mouseEvent);
     //! 处理链接事件
     if (!isIgnoreLinkEvent()) {
         if (isStartLink()) {
-            //链接线模式，处理连接线
+            // 链接线模式，处理连接线
             if (mouseEvent->buttons().testFlag(Qt::RightButton)) {
-                //右键点击是取消
+                // 右键点击是取消
                 cancelLink();
             } else if (mouseEvent->buttons().testFlag(Qt::LeftButton)) {
-                //左键点击
+                // 左键点击
                 switch (d_ptr->mLinkMode) {
                 case LinkModeAutoStartEndFollowMouseClick: {
-                    //结束链接
+                    // 结束链接
                     if (d_ptr->mLinkItemIsMoved) {
                         endLink();
                     }
@@ -653,7 +717,7 @@ void DAGraphicsSceneWithUndoStack::mousePressEvent(QGraphicsSceneMouseEvent* mou
                     break;
                 }
             }
-            //处理链接事件时，忽略掉移动事件的处理，所以这里要return掉
+            // 处理链接事件时，忽略掉移动事件的处理，所以这里要return掉
             return;
         }
     }
@@ -665,8 +729,8 @@ void DAGraphicsSceneWithUndoStack::mousePressEvent(QGraphicsSceneMouseEvent* mou
             d_ptr->mIsMovingItems = false;
             return;
         }
-        //说明这个是移动
-        //获取选中的可移动单元
+        // 说明这个是移动
+        // 获取选中的可移动单元
         QList< QGraphicsItem* > mits = getSelectedMovableItems();
         if (mits.isEmpty()) {
             d_ptr->mIsMovingItems = false;
@@ -678,7 +742,7 @@ void DAGraphicsSceneWithUndoStack::mousePressEvent(QGraphicsSceneMouseEvent* mou
             if (ri) {
                 if (DAGraphicsResizeableItem::NotUnderAnyControlType
                     != ri->getControlPointByPos(ri->mapFromScene(mouseEvent->scenePos()))) {
-                    //说明点击在了控制点上，需要跳过
+                    // 说明点击在了控制点上，需要跳过
                     d_ptr->mIsMovingItems = false;
                     return;
                 }
@@ -693,7 +757,7 @@ void DAGraphicsSceneWithUndoStack::mousePressEvent(QGraphicsSceneMouseEvent* mou
     }
 }
 
-void DAGraphicsSceneWithUndoStack::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
+void DAGraphicsScene::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
     if (nullptr == mouseEvent) {
         return;
@@ -702,7 +766,7 @@ void DAGraphicsSceneWithUndoStack::mouseMoveEvent(QGraphicsSceneMouseEvent* mous
     if (!isIgnoreLinkEvent()) {
         if (isStartLink()) {
             switch (d_ptr->mLinkMode) {
-            case LinkModeAutoStartEndFollowMouseClick: {  //开端为当前鼠标位置，末端跟随鼠标移动，在下个鼠标左键点击时结束连线
+            case LinkModeAutoStartEndFollowMouseClick: {  // 开端为当前鼠标位置，末端跟随鼠标移动，在下个鼠标左键点击时结束连线
                 d_ptr->mLinkItem->setEndScenePosition(d_ptr->mLastMouseScenePos);
                 d_ptr->mLinkItem->updateBoundingRect();
                 d_ptr->mLinkItemIsMoved = true;
@@ -715,7 +779,7 @@ void DAGraphicsSceneWithUndoStack::mouseMoveEvent(QGraphicsSceneMouseEvent* mous
     QGraphicsScene::mouseMoveEvent(mouseEvent);
 }
 
-void DAGraphicsSceneWithUndoStack::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
+void DAGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
     if (nullptr == mouseEvent) {
         return;
@@ -726,24 +790,24 @@ void DAGraphicsSceneWithUndoStack::mouseReleaseEvent(QGraphicsSceneMouseEvent* m
         QPointF releasePos    = mouseEvent->scenePos();
         if (qFuzzyCompare(releasePos.x(), d_ptr->mLastMousePressScenePos.x())
             && qFuzzyCompare(releasePos.y(), d_ptr->mLastMousePressScenePos.y())) {
-            //位置相等，不做处理
+            // 位置相等，不做处理
             return;
         }
-        //位置不等，属于正常移动
+        // 位置不等，属于正常移动
         d_ptr->mMovingInfos.updateEndPos();
         DACommandsForGraphicsItemsMoved* cmd = new DACommandsForGraphicsItemsMoved(d_ptr->mMovingInfos.items,
                                                                                    d_ptr->mMovingInfos.startsPos,
                                                                                    d_ptr->mMovingInfos.endsPos,
                                                                                    true);
         push(cmd);
-        //位置改变信号
-        //        qDebug() << "emit itemsPositionChanged";
-        //如果 移动 过程 鼠标移出scene在释放，可能无法捕获
+        // 位置改变信号
+        //         qDebug() << "emit itemsPositionChanged";
+        // 如果 移动 过程 鼠标移出scene在释放，可能无法捕获
         emit itemsPositionChanged(d_ptr->mMovingInfos.items, d_ptr->mMovingInfos.startsPos, d_ptr->mMovingInfos.endsPos);
     }
 }
 
-void DAGraphicsSceneWithUndoStack::drawBackground(QPainter* painter, const QRectF& rect)
+void DAGraphicsScene::drawBackground(QPainter* painter, const QRectF& rect)
 {
     QGraphicsScene::drawBackground(painter, rect);
     if (isShowGridLine()) {
@@ -760,7 +824,7 @@ void DAGraphicsSceneWithUndoStack::drawBackground(QPainter* painter, const QRect
             d_ptr->renderBackgroundCache(painter, rect.toRect());
         }
     }
-    //直接绘制网格线在放大时很卡
+    // 直接绘制网格线在放大时很卡
 }
 
 }  // end DA

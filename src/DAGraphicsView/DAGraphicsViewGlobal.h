@@ -42,11 +42,13 @@ enum DAGraphicsCommandIDType
 {
     CmdID_GraphicsBegin    = 0x100,                    ///< Graphics相关的command id的起始
     CmdID_ItemMove         = CmdID_GraphicsBegin + 1,  ///< item移动
-    CmdID_ItemsMove        = CmdID_GraphicsBegin + 2,  ///< 多个item移动
-    CmdID_ItemResize       = CmdID_GraphicsBegin + 3,  ///< item resize
-    CmdID_ItemResizeWidth  = CmdID_GraphicsBegin + 4,  ///< item resize width
-    CmdID_ItemResizeHeight = CmdID_GraphicsBegin + 5,  ///< item resize height
-    CmdID_ItemRotation     = CmdID_GraphicsBegin + 6,  ///< item rotation
+    CmdID_ItemMoveMerge    = CmdID_GraphicsBegin + 2,  ///< item移动
+    CmdID_ItemsMove        = CmdID_GraphicsBegin + 3,  ///< 多个item移动
+    CmdID_ItemsMoveMerge   = CmdID_GraphicsBegin + 4,  ///< 多个item移动
+    CmdID_ItemResize       = CmdID_GraphicsBegin + 5,  ///< item resize
+    CmdID_ItemResizeWidth  = CmdID_GraphicsBegin + 6,  ///< item resize width
+    CmdID_ItemResizeHeight = CmdID_GraphicsBegin + 7,  ///< item resize height
+    CmdID_ItemRotation     = CmdID_GraphicsBegin + 8,  ///< item rotation
     CmdID_GraphicsEnd      = 0x200                     ///< Graphics相关的command id的结束
 };
 
@@ -55,14 +57,14 @@ enum DAGraphicsCommandIDType
  */
 enum DAGraphicsItemType
 {
-    ItemType_GraphicsItemBegin      = QGraphicsItem::UserType + 10,    ///<针对DAGraphicsResizeableItem的类型开始
+    ItemType_GraphicsItemBegin      = QGraphicsItem::UserType + 10,  ///< 针对DAGraphicsResizeableItem的类型开始
     ItemType_GraphicsItem           = ItemType_GraphicsItemBegin + 1,  ///< 针对DAGraphicsResizeableItem的类型
     ItemType_GraphicsResizeableItem = ItemType_GraphicsItemBegin + 2,  ///< 针对DAGraphicsResizeableItem的类型
     ItemType_GraphicsResizeableObjectItem = ItemType_GraphicsItemBegin + 3,  ///< 针对DAGraphicsResizeableObjecrtItem的类型
     ItemType_GraphicsResizeableRectItem = ItemType_GraphicsItemBegin + 4,  ///< 针对DAGraphicsResizeableRectItem的类型
     ItemType_GraphicsResizeablePixmapItem = ItemType_GraphicsItemBegin + 5,  ///< 针对DAGraphicsResizeablePixmapItem的类型
-    ItemType_GraphicsLinkItem             = ItemType_GraphicsItemBegin + 300,  ///< 针对DAGraphicsLinkItem的类型
-    ItemType_GraphicsStandardTextItem  = ItemType_GraphicsItemBegin + 500,     ///<标准样式
+    ItemType_GraphicsLinkItem          = ItemType_GraphicsItemBegin + 300,  ///< 针对DAGraphicsLinkItem的类型
+    ItemType_GraphicsStandardTextItem  = ItemType_GraphicsItemBegin + 500,  ///< 标准样式
     ItemType_GraphicsResizeableItemEnd = ItemType_GraphicsItemBegin + 1000
 };
 // 实现位于DAGraphicsLinkItem.cpp

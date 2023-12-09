@@ -39,7 +39,7 @@ DAWorkFlowGraphicsScene::DAWorkFlowGraphicsScene(QObject* parent)
     , mEnableItemMoveWithBackground(false)
 {
 	mTextFont = QApplication::font();
-	connect(this, &DAGraphicsSceneWithUndoStack::itemsPositionChanged, this, &DAWorkFlowGraphicsScene::onItemsPositionChanged);
+	connect(this, &DAGraphicsScene::itemsPositionChanged, this, &DAWorkFlowGraphicsScene::onItemsPositionChanged);
 }
 
 DAWorkFlowGraphicsScene::~DAWorkFlowGraphicsScene()

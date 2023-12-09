@@ -45,19 +45,19 @@ DANodeGraphicsScene::PrivateData::PrivateData(DANodeGraphicsScene* p) : q_ptr(p)
 /// DANodeGraphicsScene
 ////////////////////////////////////////////////
 
-DANodeGraphicsScene::DANodeGraphicsScene(QObject* p) : DAGraphicsSceneWithUndoStack(p), DA_PIMPL_CONSTRUCT
+DANodeGraphicsScene::DANodeGraphicsScene(QObject* p) : DAGraphicsScene(p), DA_PIMPL_CONSTRUCT
 {
     initConnect();
 }
 
 DANodeGraphicsScene::DANodeGraphicsScene(const QRectF& sceneRect, QObject* p)
-    : DAGraphicsSceneWithUndoStack(sceneRect, p), DA_PIMPL_CONSTRUCT
+    : DAGraphicsScene(sceneRect, p), DA_PIMPL_CONSTRUCT
 {
     initConnect();
 }
 
 DANodeGraphicsScene::DANodeGraphicsScene(qreal x, qreal y, qreal width, qreal height, QObject* p)
-    : DAGraphicsSceneWithUndoStack(x, y, width, height, p), DA_PIMPL_CONSTRUCT
+    : DAGraphicsScene(x, y, width, height, p), DA_PIMPL_CONSTRUCT
 {
     initConnect();
 }
@@ -82,7 +82,7 @@ void DANodeGraphicsScene::cancelLink()
             it->prepareLinkInputFailed(linkItem->toNodeLinkPoint(), linkItem);
         }
     }
-    DAGraphicsSceneWithUndoStack::cancelLink();
+    DAGraphicsScene::cancelLink();
 }
 
 /**
@@ -404,7 +404,7 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
         if (isStartLink()) {
             cancelLink();
         }
-        DAGraphicsSceneWithUndoStack::mousePressEvent(mouseEvent);
+        DAGraphicsScene::mousePressEvent(mouseEvent);
         DANODEGRAPHICSSCENE_EVENTLISTENER(mousePressEvent, mouseEvent)
         return;
     }
@@ -422,7 +422,7 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
                 itemAt(mouseEvent->scenePos(), QTransform()));
         if (nullptr == nodeItem) {
             //点击的不是节点item就退出
-            DAGraphicsSceneWithUndoStack::mousePressEvent(mouseEvent);
+            DAGraphicsScene::mousePressEvent(mouseEvent);
             DANODEGRAPHICSSCENE_EVENTLISTENER(mousePressEvent, mouseEvent)
             return;
         }
@@ -436,7 +436,7 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
                 nodeItem->prepareLinkInput(itempos, linkItem);
             } else {
                 qDebug() << "is start link,but link item can not cast to DAAbstractNodeLinkGraphicsItem";
-                DAGraphicsSceneWithUndoStack::mousePressEvent(mouseEvent);
+                DAGraphicsScene::mousePressEvent(mouseEvent);
                 DANODEGRAPHICSSCENE_EVENTLISTENER(mousePressEvent, mouseEvent)
                 return;
             }
@@ -447,7 +447,7 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
                 //! DAGraphicsSceneWithUndoStack的连线在这时候就结束，但这里并不想结束，
                 //! 因此需要调用setIgnoreLinkEvent忽略掉链接模式的事件
                 setIgnoreLinkEvent(true);
-                DAGraphicsSceneWithUndoStack::mousePressEvent(mouseEvent);
+                DAGraphicsScene::mousePressEvent(mouseEvent);
                 setIgnoreLinkEvent(false);
                 DANODEGRAPHICSSCENE_EVENTLISTENER(mousePressEvent, mouseEvent)
                 return;
@@ -459,7 +459,7 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
             if (!(linkItem->attachTo(nodeItem, lp))) {
                 //连接失败
                 setIgnoreLinkEvent(true);
-                DAGraphicsSceneWithUndoStack::mousePressEvent(mouseEvent);
+                DAGraphicsScene::mousePressEvent(mouseEvent);
                 setIgnoreLinkEvent(false);
                 DANODEGRAPHICSSCENE_EVENTLISTENER(mousePressEvent, mouseEvent)
                 return;
@@ -488,19 +488,19 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
             }
         }
     }
-    DAGraphicsSceneWithUndoStack::mousePressEvent(mouseEvent);
+    DAGraphicsScene::mousePressEvent(mouseEvent);
     DANODEGRAPHICSSCENE_EVENTLISTENER(mousePressEvent, mouseEvent)
 }
 
 void DANodeGraphicsScene::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
-    DAGraphicsSceneWithUndoStack::mouseMoveEvent(mouseEvent);
+    DAGraphicsScene::mouseMoveEvent(mouseEvent);
     DANODEGRAPHICSSCENE_EVENTLISTENER(mouseMoveEvent, mouseEvent)
 }
 
 void DANodeGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
-    DAGraphicsSceneWithUndoStack::mouseReleaseEvent(mouseEvent);
+    DAGraphicsScene::mouseReleaseEvent(mouseEvent);
     DANODEGRAPHICSSCENE_EVENTLISTENER(mouseReleaseEvent, mouseEvent)
 }
 }  // end DA
