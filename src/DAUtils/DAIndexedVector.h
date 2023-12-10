@@ -79,7 +79,7 @@ T DAIndexedVector< T >::next()
 template< typename T >
 void DAIndexedVector< T >::moveToNext()
 {
-    if (mIndex < size() - 1) {
+    if (mIndex < QVector< T >::size() - 1) {
         ++mIndex;
     } else {
         mIndex = 0;
@@ -106,7 +106,7 @@ void DAIndexedVector< T >::moveToPrevious()
     if (mIndex > 0) {
         --mIndex;
     } else {
-        mIndex = size() - 1;
+        mIndex = QVector< T >::size() - 1;
     }
 }
 
@@ -120,7 +120,7 @@ DAIndexedVector< T >& DAIndexedVector< T >::operator--()
 template< typename T >
 T DAIndexedVector< T >::current() const
 {
-    return at(mIndex);
+    return QVector< T >::at(mIndex);
 }
 
 template< typename T >
@@ -132,13 +132,13 @@ bool DAIndexedVector< T >::isFirstIndex() const
 template< typename T >
 bool DAIndexedVector< T >::isLastIndex() const
 {
-    return (mIndex == (size() - 1));
+    return (mIndex == (QVector< T >::size() - 1));
 }
 
 template< typename T >
 bool DAIndexedVector< T >::isValidIndex() const
 {
-    return (mIndex >= 0) && (mIndex < size());
+    return (mIndex >= 0) && (mIndex < QVector< T >::size());
 }
 
 template< typename T >
@@ -156,13 +156,13 @@ void DAIndexedVector< T >::setCurrentIndex(int v)
 template< typename T >
 T DAIndexedVector< T >::get() const
 {
-    return at(mIndex);
+    return QVector< T >::at(mIndex);
 }
 
 template< typename T >
 void DAIndexedVector< T >::set(const T& v)
 {
-    operator[](mIndex) = v;
+    QVector< T >::operator[](mIndex) = v;
 }
 
 }

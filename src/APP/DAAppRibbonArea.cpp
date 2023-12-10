@@ -1,6 +1,6 @@
 ﻿#include "DAAppRibbonArea.h"
 #include "AppMainWindow.h"
-#include "ui_AppMainWindow.h"
+#include <QActionGroup>
 // SARibbon
 #include "SARibbonMainWindow.h"
 #include "SARibbonBar.h"
@@ -9,14 +9,11 @@
 #include "SARibbonPannel.h"
 #include "SARibbonContextCategory.h"
 #include "SARibbonQuickAccessBar.h"
-#include "SARibbonLineWidgetContainer.h"
-#include "SARibbonComboBox.h"
 #include "SARibbonButtonGroupWidget.h"
 #include "SARibbonMenu.h"
 #include "SARibbonCtrlContainer.h"
 #include "SARibbonApplicationButton.h"
 // stl
-#include <memory>
 // Qt
 #include <QFileDialog>
 #include <QFileInfo>
@@ -28,7 +25,6 @@
 #include <QInputDialog>
 #include <QMenu>
 // ui
-#include "DAWaitCursorScoped.h"
 #include "DAAppRibbonApplicationMenu.h"
 #ifdef DA_ENABLE_PYTHON
 // Py
@@ -43,32 +39,22 @@
 #include "DAAppUI.h"
 #include "DAAppCommand.h"
 #include "DAAppCore.h"
-#include "DAAppDataManager.h"
 #include "DAAppDockingArea.h"
 #include "DAAppActions.h"
 // Qt-Advanced-Docking-System
 #include "DockManager.h"
 #include "DockAreaWidget.h"
 // command
-#include "DACommandsDataManager.h"
 // Widget
-#include "DADataOperateWidget.h"
 #include "DADataManageWidget.h"
-#include "DAChartOperateWidget.h"
 #include "DAFigureWidget.h"
 #include "DAChartWidget.h"
 // Dialog
-#include "DAPluginManagerDialog.h"
-#include "Dialog/DARenameColumnsNameDialog.h"
 // DACommonWidgets
 #include "DAFontEditPannelWidget.h"
 #include "DAShapeEditPannelWidget.h"
 // Workflow
-#include "DAWorkFlowOperateWidget.h"
-#include "DAWorkFlowGraphicsView.h"
-#include "DADataWorkFlow.h"
 // project
-#include "DAAppProject.h"
 
 //快速链接信号槽
 #define DAAPPRIBBONAREA_ACTION_BIND(actionname, functionname)                                                          \

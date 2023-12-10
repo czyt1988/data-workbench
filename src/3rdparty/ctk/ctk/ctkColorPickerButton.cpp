@@ -59,7 +59,7 @@ ctkColorPickerButtonPrivate::ctkColorPickerButtonPrivate(ctkColorPickerButton& o
   this->Color = Qt::black;
   this->ColorName = QString();
   this->DisplayColorName = true;
-  this->DialogOptions = 0;
+  this->DialogOptions = ctkColorPickerButton::ShowAlphaChannel;
 }
 
 //-----------------------------------------------------------------------------
@@ -298,7 +298,7 @@ QSize ctkColorPickerButton::sizeHint()const
     opt.rect.setSize(opt.iconSize); // PM_MenuButtonIndicator depends on the height
     d->CachedSizeHint = this->style()->sizeFromContents(
       QStyle::CT_ToolButton, &opt, opt.iconSize, this).
-      expandedTo(QApplication::globalStrut());
+                        expandedTo(QSize(0,0));
     }
   else
     {
@@ -307,7 +307,7 @@ QSize ctkColorPickerButton::sizeHint()const
     pushButtonOpt.rect.setSize(pushButtonOpt.iconSize); // PM_MenuButtonIndicator depends on the height
     d->CachedSizeHint = (style()->sizeFromContents(
                            QStyle::CT_PushButton, &pushButtonOpt, pushButtonOpt.iconSize, this).
-                         expandedTo(QApplication::globalStrut()));
+                         expandedTo(QSize(0,0)));
     }
   return d->CachedSizeHint;
 }

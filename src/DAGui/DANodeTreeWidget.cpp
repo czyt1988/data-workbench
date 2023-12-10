@@ -3,6 +3,7 @@
 #include <QApplication>
 #include <QDrag>
 #include "DANodeMimeData.h"
+#include "DANodeMetaData.h"
 #define ROLE_META_DATA (Qt::UserRole + 1)
 namespace DA
 {
@@ -38,7 +39,7 @@ void DANodeTreeWidgetItem::setNodeMetaData(const DANodeMetaData& md)
 
 DANodeTreeWidget::DANodeTreeWidget(QWidget* par) : QTreeWidget(par), _favoriteItem(nullptr)
 {
-    qRegisterMetaTypeStreamOperators< DANodeMetaData >("DANodeMetaData");
+    qRegisterMetaType< DA::DANodeMetaData >("DA::DANodeMetaData");
     setDragEnabled(true);  //启用拖放
     setHeaderHidden(true);
 }

@@ -13,7 +13,6 @@
 // DA
 #include "DAWorkFlowGraphicsScene.h"
 #include "DAGraphicsResizeablePixmapItem.h"
-#include "DAStandardNodeLinkGraphicsItem.h"
 #include "DAGraphicsItemFactory.h"
 #include "DAAbstractNodeFactory.h"
 #include "DAGraphicsItem.h"
@@ -21,6 +20,7 @@
 #include "DAStringUtil.h"
 #include "DAWorkFlowOperateWidget.h"
 #include "DAWorkFlowEditWidget.h"
+#include "DAQtContainerUtil.h"
 namespace DA
 {
 //==============================================================
@@ -252,7 +252,7 @@ bool DAXmlHelperPrivate::loadNodes(DAWorkFlowEditWidget* wfe, const QDomElement&
         if (nullptr == node) {
             qWarning() << QObject::tr("workflow can not create note by "
                                       "metadata(prototype=%1,name=%2,group=%3),will skip this node")
-                                  .arg(metadata.getNodePrototype(), metadata.getNodeName(), metadata.getGroup());
+                              .arg(metadata.getNodePrototype(), metadata.getNodeName(), metadata.getGroup());
             continue;
         }
 
@@ -329,7 +329,7 @@ bool DAXmlHelperPrivate::loadNodeInPutOutputKey(DAAbstractNode::SharedPointer& n
             QDomElement nameEle = inputEle.firstChildElement("name");
             if (nameEle.isNull()) {
                 qWarning() << QObject::tr("node(prototype=%1,name=%2,group=%3) %4 tag loss child tag <name>")
-                                      .arg(node->getNodePrototype(), node->getNodeName(), node->getNodeGroup(), ks.at(i).nodeName());
+                                  .arg(node->getNodePrototype(), node->getNodeName(), node->getNodeGroup(), ks.at(i).nodeName());
                 continue;
             }
             QString key = nameEle.text();
@@ -353,7 +353,7 @@ bool DAXmlHelperPrivate::loadNodeInPutOutputKey(DAAbstractNode::SharedPointer& n
             QDomElement nameEle = outputEle.firstChildElement("name");
             if (nameEle.isNull()) {
                 qWarning() << QObject::tr("node(prototype=%1,name=%2,group=%3) %4 tag loss child tag <name>")
-                                      .arg(node->getNodePrototype(), node->getNodeName(), node->getNodeGroup(), ks.at(i).nodeName());
+                                  .arg(node->getNodePrototype(), node->getNodeName(), node->getNodeGroup(), ks.at(i).nodeName());
                 continue;
             }
             QString key = nameEle.text();
@@ -439,7 +439,7 @@ bool DAXmlHelperPrivate::loadNodeItem(DAWorkFlowGraphicsScene* scene, DAAbstract
     DAAbstractNodeGraphicsItem* item = node->createGraphicsItem();
     if (nullptr == item) {
         qWarning() << QObject::tr("node metadata(prototype=%1,name=%2,group=%3) can not create graphics item")
-                              .arg(node->getNodePrototype(), node->getNodeName(), node->getNodeGroup());
+                          .arg(node->getNodePrototype(), node->getNodeName(), node->getNodeGroup());
         return false;
     }
     item->loadFromXml(&ele);
@@ -524,12 +524,12 @@ bool DAXmlHelperPrivate::loadNodeLinks(DAWorkFlowGraphicsScene* scene, DAWorkFlo
         DAAbstractNodeLinkGraphicsItem* linkitem = fromItem->linkTo(fromKey, toItem, toKey);
         if (nullptr == linkitem) {
             qWarning() << QObject::tr("Unable to link to node %3's link point %4 through link point %2 of node %1")  // cn:节点%1无法通过连接点%2链接到节点%3的连接点%4
-                                  .arg(fromItem->getNodeName(), fromKey, toItem->getNodeName(), toKey);
+                              .arg(fromItem->getNodeName(), fromKey, toItem->getNodeName(), toKey);
             continue;
         }
         if (!linkitem->loadFromXml(&linkEle)) {
             qWarning() << QObject::tr("linkitem load from xml return false")  // cn:链接线从xml加载信息返回了false
-                    ;
+                ;
         }
         scene->addItem(linkitem);
         linkitem->updatePos();
@@ -721,7 +721,7 @@ bool DAXmlHelper::loadElement(DAWorkFlowOperateWidget* wfo, const QDomElement* w
     Q_CHECK_PTR(wfo);
     bool isok = true;
     //先获取当前的窗口名字，避免重名
-    QSet< QString > names    = wfo->getAllWorkflowNames().toSet();
+    QSet< QString > names    = qlist_to_qset(wfo->getAllWorkflowNames());
     QDomNodeList wfListNodes = workflowsEle->childNodes();
     for (int i = 0; i < wfListNodes.size(); ++i) {
         QDomElement workflowEle = wfListNodes.at(i).toElement();
@@ -795,7 +795,7 @@ qreal DAXmlHelper::attributeToDouble(const QDomElement& item, const QString& att
     qreal r   = item.attribute(att).toDouble(&isok);
     if (!isok) {
         qWarning() << QObject::tr("The attribute %1=%2 under the tag %3 cannot be converted to double ")
-                              .arg(att, item.attribute(att), item.tagName());
+                          .arg(att, item.attribute(att), item.tagName());
     }
     return r;
 }

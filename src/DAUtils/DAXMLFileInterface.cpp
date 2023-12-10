@@ -17,7 +17,6 @@
 #include <QKeySequence>
 #include <QLocale>
 #include <QMatrix4x4>
-#include <QMatrix>
 #include <QPalette>
 #include <QPen>
 #include <QPolygon>
@@ -318,7 +317,12 @@ QDomElement DAXMLFileInterface::makeElement(const QFont& v, const QString& tagNa
     fontEle.setAttribute("bold", v.bold());
     fontEle.setAttribute("italic", v.italic());
     fontEle.setAttribute("pointSizeF", v.pointSizeF());
-    fontEle.setAttribute("weight", v.weight());
+    // QFont::Weight的枚举值在qt5和qt6不一致，为了避免直接传值，都需要转换为QFont::Weight
+#if QT_VERSION_MAJOR >= 6
+    fontEle.setAttribute("weight", enumToString(v.weight()));
+#else
+    fontEle.setAttribute("weight", enumToString(static_cast< QFont::Weight >(v.weight())));
+#endif
     fontEle.setAttribute("family", v.family());
     return fontEle;
 }
@@ -328,7 +332,7 @@ bool DAXMLFileInterface::loadElement(QFont& p, const QDomElement* ele)
     p.setBold(ele->attribute("bold").toInt());
     p.setItalic(ele->attribute("italic").toInt());
     p.setPointSizeF(ele->attribute("pointSizeF").toDouble());
-    p.setWeight(ele->attribute("weight").toInt());
+    p.setWeight(stringToEnum(ele->attribute("weight"), QFont::Normal));
     p.setFamily(ele->attribute("family"));
     return true;
 }
@@ -348,8 +352,13 @@ QDomElement DAXMLFileInterface::makeElement(const QVariant& v, const QString& ta
     varEle.setAttribute("class", "QVariant");
     QString vartype = v.typeName();
     varEle.setAttribute("type", vartype);
+#if QT_VERSION_MAJOR >= 6
+    int tid = v.typeId();
+#else
+    int tid = v.type();
+#endif
     //特殊对待
-    switch (v.type()) {
+    switch (tid) {
     case QMetaType::QStringList: {
         QStringList vl = v.toStringList();
         for (const QString& i : vl) {
@@ -740,179 +749,231 @@ Qt::BrushStyle stringToEnum(const QString& s, Qt::BrushStyle defaultEnum)
     return defaultEnum;
 }
 
+QString enumToString(QFont::Weight e)
+{
+    switch (e) {
+    case QFont::Thin:
+        return "Thin";
+    case QFont::ExtraLight:
+        return "ExtraLight";
+    case QFont::Light:
+        return "Light";
+    case QFont::Normal:
+        return "Normal";
+    case QFont::Medium:
+        return "Medium";
+    case QFont::DemiBold:
+        return "DemiBold";
+    case QFont::Bold:
+        return "Bold";
+    case QFont::ExtraBold:
+        return "ExtraBold";
+    case QFont::Black:
+        return "Black";
+    default:
+        break;
+    }
+    return "Normal";
+}
+
+QFont::Weight stringToEnum(const QString& s, QFont::Weight defaultEnum)
+{
+    if (0 == s.compare("Thin", Qt::CaseInsensitive)) {
+        return QFont::Thin;
+    } else if (0 == s.compare("ExtraLight", Qt::CaseInsensitive)) {
+        return QFont::ExtraLight;
+    } else if (0 == s.compare("Light", Qt::CaseInsensitive)) {
+        return QFont::Light;
+    } else if (0 == s.compare("Normal", Qt::CaseInsensitive)) {
+        return QFont::Normal;
+    } else if (0 == s.compare("Medium", Qt::CaseInsensitive)) {
+        return QFont::Medium;
+    } else if (0 == s.compare("DemiBold", Qt::CaseInsensitive)) {
+        return QFont::DemiBold;
+    } else if (0 == s.compare("Bold", Qt::CaseInsensitive)) {
+        return QFont::Bold;
+    } else if (0 == s.compare("ExtraBold", Qt::CaseInsensitive)) {
+        return QFont::ExtraBold;
+    } else if (0 == s.compare("Black", Qt::CaseInsensitive)) {
+        return QFont::Black;
+    }
+    return QFont::Normal;
+}
+
 //===================================================
 
 }  // end of DA
 
 QString DA::variantToString(const QVariant& var)
 {
-    switch (var.type()) {
-    case QVariant::Invalid:
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    int tid = var.type();
+#else
+    int tid = var.typeId();
+#endif
+    switch (tid) {
+    case QMetaType::UnknownType:
         return (QString());
 
-    case QVariant::BitArray:
+    case QMetaType::QBitArray:
         return (converVariantToBase64String< QBitArray >(var));
 
-    case QVariant::Bitmap:
+    case QMetaType::QBitmap:
         return (converVariantToBase64String< QBitmap >(var));
 
-    case QVariant::Bool:
+    case QMetaType::Bool:
         return (var.toBool() ? "1" : "0");
 
-    case QVariant::Brush:
+    case QMetaType::QBrush:
         return (converVariantToBase64String< QBrush >(var));
 
-    case QVariant::ByteArray:
+    case QMetaType::QByteArray:
         return (converVariantToBase64String< QByteArray >(var));
 
-    case QVariant::Char:
+    case QMetaType::QChar:
         return (var.toChar());
 
-    case QVariant::Color: {
+    case QMetaType::QColor: {
         QColor clr = var.value< QColor >();
         return (clr.name(QColor::HexArgb));
     }
 
-    case QVariant::Cursor:
+    case QMetaType::QCursor:
         return (converVariantToBase64String< QCursor >(var));
 
-    case QVariant::Date: {
+    case QMetaType::QDate: {
         QDate d = var.toDate();
         return (d.toString(Qt::ISODate));
     }
 
-    case QVariant::DateTime: {
+    case QMetaType::QDateTime: {
         QDateTime d = var.toDateTime();
         return (d.toString(Qt::ISODate));
     }
 
-    case QVariant::Double: {
+    case QMetaType::Double: {
         double d = var.toDouble();
         return (doubleToString(d));  //针对double，用非科学计数法会对小数丢失精度，因此采样g最合理，但小数点较多时需要适当处理
     }
 
-    case QVariant::EasingCurve: {
+    case QMetaType::QEasingCurve: {
         return (converVariantToBase64String< QEasingCurve >(var));
     }
 
-    case QVariant::Uuid: {
+    case QMetaType::QUuid: {
         return (var.toUuid().toString());
     }
 
-    case QVariant::Font: {
+    case QMetaType::QFont: {
         return (converVariantToBase64String< QFont >(var));
     }
 
-    case QVariant::Hash: {
+    case QMetaType::QVariantHash: {
         return (converVariantToBase64String< QVariantHash >(var));
     }
 
-    case QVariant::Icon: {
+    case QMetaType::QIcon: {
         return (converVariantToBase64String< QIcon >(var));
     }
 
-    case QVariant::Image: {
+    case QMetaType::QImage: {
         return (converVariantToBase64String< QImage >(var));
     }
 
-    case QVariant::Int: {
+    case QMetaType::Int: {
         return (QString::number(var.toInt()));
     }
 
-    case QVariant::KeySequence: {
+    case QMetaType::QKeySequence: {
         QKeySequence d = var.value< QKeySequence >();
         return (d.toString(QKeySequence::NativeText));
     }
 
-    case QVariant::Line: {
+    case QMetaType::QLine: {
         QLine d = var.toLine();
         return (QString("%1;%2;%3;%4").arg(d.x1()).arg(d.y1()).arg(d.x2()).arg(d.y2()));
     }
 
-    case QVariant::LineF: {
+    case QMetaType::QLineF: {
         QLineF d = var.toLineF();
         return (QString("%1;%2;%3;%4").arg(doubleToString(d.x1()), doubleToString(d.y1()), doubleToString(d.x2()), doubleToString(d.y2())));
     }
 
-    case QVariant::List: {
+    case QMetaType::QVariantList: {
         return (converVariantToBase64String< QVariantList >(var));
     }
 
-    case QVariant::Locale: {
+    case QMetaType::QLocale: {
         return (var.toLocale().name());
     }
 
-    case QVariant::LongLong: {
+    case QMetaType::LongLong: {
         return (QString::number(var.toLongLong()));
     }
 
-    case QVariant::Map: {
+    case QMetaType::QVariantMap: {
         return (converVariantToBase64String< QVariantMap >(var));
     }
 
-    case QVariant::Matrix: {
-        QMatrix d = var.value< QMatrix >();
-        return (QString("%1;%2;%3;%4;%5;%6").arg(d.m11()).arg(d.m12()).arg(d.m21()).arg(d.m22()).arg(d.dx()).arg(d.dy()));
-    }
-
-    case QVariant::Transform: {
+    case QMetaType::QTransform: {
         QTransform d = var.value< QTransform >();
         return (QString("%1;%2;%3;%4;%5;%6;%7;%8;%9")
-                        .arg(d.m11())
-                        .arg(d.m12())
-                        .arg(d.m13())
-                        .arg(d.m21())
-                        .arg(d.m22())
-                        .arg(d.m23())
-                        .arg(d.m31())
-                        .arg(d.m32())
-                        .arg(d.m33()));
+                    .arg(d.m11())
+                    .arg(d.m12())
+                    .arg(d.m13())
+                    .arg(d.m21())
+                    .arg(d.m22())
+                    .arg(d.m23())
+                    .arg(d.m31())
+                    .arg(d.m32())
+                    .arg(d.m33()));
     }
 
-    case QVariant::Matrix4x4: {
+    case QMetaType::QMatrix4x4: {
         QMatrix4x4 d = var.value< QMatrix4x4 >();
         return (QString("%1;%2;%3;%4;%5;%6;%7;%8;%9;%10;%11;%12;%13;%14;%15;%16")
-                        .arg(d(0, 0))
-                        .arg(d(0, 1))
-                        .arg(d(0, 2))
-                        .arg(d(0, 3))
-                        .arg(d(1, 0))
-                        .arg(d(1, 1))
-                        .arg(d(1, 2))
-                        .arg(d(1, 3))
-                        .arg(d(2, 0))
-                        .arg(d(2, 1))
-                        .arg(d(2, 2))
-                        .arg(d(2, 3))
-                        .arg(d(3, 0))
-                        .arg(d(3, 1))
-                        .arg(d(3, 2))
-                        .arg(d(3, 3)));
+                    .arg(d(0, 0))
+                    .arg(d(0, 1))
+                    .arg(d(0, 2))
+                    .arg(d(0, 3))
+                    .arg(d(1, 0))
+                    .arg(d(1, 1))
+                    .arg(d(1, 2))
+                    .arg(d(1, 3))
+                    .arg(d(2, 0))
+                    .arg(d(2, 1))
+                    .arg(d(2, 2))
+                    .arg(d(2, 3))
+                    .arg(d(3, 0))
+                    .arg(d(3, 1))
+                    .arg(d(3, 2))
+                    .arg(d(3, 3)));
     }
 
-    case QVariant::Palette: {
+    case QMetaType::QPalette: {
         return (converVariantToBase64String< QPalette >(var));
     }
 
-    case QVariant::Pen: {
+    case QMetaType::QPen: {
         return (converVariantToBase64String< QPen >(var));
     }
 
-    case QVariant::Pixmap: {
+    case QMetaType::QPixmap: {
         return (converVariantToBase64String< QPixmap >(var));
     }
 
-    case QVariant::Point: {
+    case QMetaType::QPoint: {
         QPoint d = var.toPoint();
         return (QString("%1;%2").arg(d.x()).arg(d.y()));
     }
 
-    case QVariant::PointF: {
+    case QMetaType::QPointF: {
         QPointF d = var.toPointF();
         return (QString("%1;%2").arg(doubleToString(d.x()), doubleToString(d.y())));
     }
 
-    case QVariant::Polygon: {
+    case QMetaType::QPolygon: {
         QPolygon d = var.value< QPolygon >();
         QString str;
         if (!d.isEmpty()) {
@@ -924,7 +985,7 @@ QString DA::variantToString(const QVariant& var)
         return (str);
     }
 
-    case QVariant::PolygonF: {
+    case QMetaType::QPolygonF: {
         QPolygonF d = var.value< QPolygonF >();
         QString str;
         if (!d.isEmpty()) {
@@ -938,87 +999,83 @@ QString DA::variantToString(const QVariant& var)
         return (str);
     }
 
-    case QVariant::Quaternion: {
+    case QMetaType::QQuaternion: {
         return (converVariantToBase64String< QQuaternion >(var));
     }
 
-    case QVariant::Rect: {
+    case QMetaType::QRect: {
         QRect d = var.toRect();
         return (QString("%1;%2;%3;%4").arg(d.x()).arg(d.y()).arg(d.width()).arg(d.height()));
     }
 
-    case QVariant::RectF: {
+    case QMetaType::QRectF: {
         QRectF d = var.toRectF();
         return (QString("%1;%2;%3;%4").arg(doubleToString(d.x()), doubleToString(d.y()), doubleToString(d.width()), doubleToString(d.height())));
     }
 
-    case QVariant::RegExp: {
-        return (converVariantToBase64String< QRegExp >(var));
-    }
-
-    case QVariant::RegularExpression: {
+    case QMetaType::QRegularExpression: {
         return (converVariantToBase64String< QRegularExpression >(var));
     }
 
-    case QVariant::Region: {
+    case QMetaType::QRegion: {
         return (converVariantToBase64String< QRegion >(var));
     }
 
-    case QVariant::Size: {
+    case QMetaType::QSize: {
         QSize d = var.toSize();
         return (QString("%1;%2").arg(d.width()).arg(d.height()));
     }
 
-    case QVariant::SizeF: {
+    case QMetaType::QSizeF: {
         QSizeF d = var.toSizeF();
         return (QString("%1;%2").arg(doubleToString(d.width()), doubleToString(d.height())));
     }
 
-    case QVariant::SizePolicy: {
+    case QMetaType::QSizePolicy: {
         return (converVariantToBase64String< QSizePolicy >(var));
     }
 
-    case QVariant::String: {
+    case QMetaType::QString: {
         return (var.toString());
     }
 
-    case QVariant::StringList: {
+    case QMetaType::QStringList: {
         return (converVariantToBase64String< QStringList >(var));
     }
 
-    case QVariant::TextFormat: {
+    case QMetaType::QTextFormat: {
         return (converVariantToBase64String< QTextFormat >(var));
     }
 
-    case QVariant::TextLength: {
+    case QMetaType::QTextLength: {
         return (converVariantToBase64String< QTextLength >(var));
     }
 
-    case QVariant::Time: {
+    case QMetaType::QTime: {
         return (var.toTime().toString(Qt::ISODate));
     }
 
-    case QVariant::UInt: {
+    case QMetaType::UInt: {
         return (QString::number(var.toUInt()));
     }
 
-    case QVariant::ULongLong: {
+    case QMetaType::ULongLong: {
         return (QString::number(var.toULongLong()));
     }
 
-    case QVariant::Url: {
+    case QMetaType::QUrl: {
         return (var.toUrl().toString());
     }
 
-    case QVariant::Vector2D: {
+    case QMetaType::QVector2D: {
         return (converVariantToBase64String< QVector2D >(var));
     }
 
-    case QVariant::Vector3D: {
+    case QMetaType::QVector3D: {
         return (converVariantToBase64String< QVector3D >(var));
     }
 
-    case QVariant::Vector4D: {
+    case QMetaType::QVector4D: {
         return (converVariantToBase64String< QVector4D >(var));
     }
 
@@ -1030,97 +1087,100 @@ QString DA::variantToString(const QVariant& var)
 
 QVariant DA::stringToVariant(const QString& var, const QString& typeName)
 {
-    QVariant::Type type = QVariant::nameToType(typeName.toLocal8Bit().data());
-
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    int type = QVariant::nameToType(typeName.toLocal8Bit().data());
+#else
+    int type = QMetaType::fromName(typeName.toLocal8Bit().data()).id();
+#endif
     switch (type) {
-    case QVariant::Invalid:
+    case QMetaType::UnknownType:
         return (QVariant());
 
-    case QVariant::BitArray:
+    case QMetaType::QBitArray:
         return (converBase64StringToVariant< QBitArray >(var));
 
-    case QVariant::Bitmap:
+    case QMetaType::QBitmap:
         return (converBase64StringToVariant< QBitmap >(var));
 
-    case QVariant::Bool: {
+    case QMetaType::Bool: {
         bool d = var.toInt();
         return (d);
     }
 
-    case QVariant::Brush:
+    case QMetaType::QBrush:
         return (converBase64StringToVariant< QBrush >(var));
 
-    case QVariant::ByteArray:
+    case QMetaType::QByteArray:
         return (converBase64StringToVariant< QByteArray >(var));
 
-    case QVariant::Char: {
+    case QMetaType::QChar: {
         if (var.size() <= 0) {
             return (QVariant());
         }
         return (QChar(var[ 0 ]));
     }
 
-    case QVariant::Color: {
+    case QMetaType::QColor: {
         QColor clr;
         clr.setNamedColor(var);
         return (clr);
     }
 
-    case QVariant::Cursor:
+    case QMetaType::QCursor:
         return (converBase64StringToVariant< QCursor >(var));
 
-    case QVariant::Date: {
+    case QMetaType::QDate: {
         QDate d;
         d.fromString(var, Qt::ISODate);
         return (d);
     }
 
-    case QVariant::DateTime: {
+    case QMetaType::QDateTime: {
         QDateTime d;
         d.fromString(var, Qt::ISODate);
         return (d);
     }
 
-    case QVariant::Double: {
+    case QMetaType::Double: {
         double d = var.toDouble();
         return (d);
     }
 
-    case QVariant::EasingCurve: {
+    case QMetaType::QEasingCurve: {
         return (converBase64StringToVariant< QEasingCurve >(var));
     }
 
-    case QVariant::Uuid: {
+    case QMetaType::QUuid: {
         QUuid d(var);
         return (d);
     }
 
-    case QVariant::Font: {
+    case QMetaType::QFont: {
         return (converBase64StringToVariant< QFont >(var));
     }
 
-    case QVariant::Hash: {
+    case QMetaType::QVariantHash: {
         return (converBase64StringToVariant< QVariantHash >(var));
     }
 
-    case QVariant::Icon: {
+    case QMetaType::QIcon: {
         return (converBase64StringToVariant< QIcon >(var));
     }
 
-    case QVariant::Image: {
+    case QMetaType::QImage: {
         return (converBase64StringToVariant< QImage >(var));
     }
 
-    case QVariant::Int: {
+    case QMetaType::Int: {
         return (QString::number(var.toInt()));
     }
 
-    case QVariant::KeySequence: {
+    case QMetaType::QKeySequence: {
         QKeySequence d(var, QKeySequence::NativeText);
         return (d);
     }
 
-    case QVariant::Line: {
+    case QMetaType::QLine: {
         QStringList list = var.split(';');
         if (list.size() != 4) {
             return (QVariant());
@@ -1129,7 +1189,7 @@ QVariant DA::stringToVariant(const QString& var, const QString& typeName)
         return (d);
     }
 
-    case QVariant::LineF: {
+    case QMetaType::QLineF: {
         QStringList list = var.split(';');
         if (list.size() != 4) {
             return (QVariant());
@@ -1138,37 +1198,23 @@ QVariant DA::stringToVariant(const QString& var, const QString& typeName)
         return (d);
     }
 
-    case QVariant::List: {
+    case QMetaType::QVariantList: {
         return (converBase64StringToVariant< QVariantList >(var));
     }
 
-    case QVariant::Locale: {
+    case QMetaType::QLocale: {
         return (QLocale(var));
     }
 
-    case QVariant::LongLong: {
+    case QMetaType::LongLong: {
         return (QString::number(var.toLongLong()));
     }
 
-    case QVariant::Map: {
+    case QMetaType::QVariantMap: {
         return (converBase64StringToVariant< QVariantMap >(var));
     }
 
-    case QVariant::Matrix: {
-        QStringList list = var.split(';');
-        if (list.size() != 6) {
-            return (QVariant());
-        }
-        QMatrix d(list[ 0 ].toDouble(),
-                  list[ 1 ].toDouble(),
-                  list[ 2 ].toDouble(),
-                  list[ 3 ].toDouble(),
-                  list[ 4 ].toDouble(),
-                  list[ 5 ].toDouble());
-        return (d);
-    }
-
-    case QVariant::Transform: {
+    case QMetaType::QTransform: {
         QStringList list = var.split(';');
         if (list.size() != 9) {
             return (QVariant());
@@ -1185,7 +1231,7 @@ QVariant DA::stringToVariant(const QString& var, const QString& typeName)
         return (d);
     }
 
-    case QVariant::Matrix4x4: {
+    case QMetaType::QMatrix4x4: {
         QStringList list = var.split(';');
         if (list.size() != 16) {
             return (QVariant());
@@ -1209,19 +1255,19 @@ QVariant DA::stringToVariant(const QString& var, const QString& typeName)
         return (d);
     }
 
-    case QVariant::Palette: {
+    case QMetaType::QPalette: {
         return (converBase64StringToVariant< QPalette >(var));
     }
 
-    case QVariant::Pen: {
+    case QMetaType::QPen: {
         return (converBase64StringToVariant< QPen >(var));
     }
 
-    case QVariant::Pixmap: {
+    case QMetaType::QPixmap: {
         return (converBase64StringToVariant< QPixmap >(var));
     }
 
-    case QVariant::Point: {
+    case QMetaType::QPoint: {
         QStringList list = var.split(';');
         if (list.size() != 2) {
             return (QVariant());
@@ -1230,7 +1276,7 @@ QVariant DA::stringToVariant(const QString& var, const QString& typeName)
         return (d);
     }
 
-    case QVariant::PointF: {
+    case QMetaType::QPointF: {
         QStringList list = var.split(';');
         if (list.size() != 2) {
             return (QPointF());
@@ -1239,7 +1285,7 @@ QVariant DA::stringToVariant(const QString& var, const QString& typeName)
         return (d);
     }
 
-    case QVariant::Polygon: {
+    case QMetaType::QPolygon: {
         QPolygon d;
         QStringList list = var.split('|');
         if (0 == list.size()) {
@@ -1258,7 +1304,7 @@ QVariant DA::stringToVariant(const QString& var, const QString& typeName)
         return (d);
     }
 
-    case QVariant::PolygonF: {
+    case QMetaType::QPolygonF: {
         QStringList list = var.split('|');
         QPolygonF d;
         if (0 == list.size()) {
@@ -1277,11 +1323,11 @@ QVariant DA::stringToVariant(const QString& var, const QString& typeName)
         return (d);
     }
 
-    case QVariant::Quaternion: {
+    case QMetaType::QQuaternion: {
         return (converBase64StringToVariant< QQuaternion >(var));
     }
 
-    case QVariant::Rect: {
+    case QMetaType::QRect: {
         QStringList list = var.split(';');
         if (list.size() != 4) {
             return (QVariant());
@@ -1290,7 +1336,7 @@ QVariant DA::stringToVariant(const QString& var, const QString& typeName)
         return (d);
     }
 
-    case QVariant::RectF: {
+    case QMetaType::QRectF: {
         QStringList list = var.split(';');
         if (list.size() != 4) {
             return (QVariant());
@@ -1299,19 +1345,15 @@ QVariant DA::stringToVariant(const QString& var, const QString& typeName)
         return (d);
     }
 
-    case QVariant::RegExp: {
-        return (converBase64StringToVariant< QRegExp >(var));
-    }
-
-    case QVariant::RegularExpression: {
+    case QMetaType::QRegularExpression: {
         return (converBase64StringToVariant< QRegularExpression >(var));
     }
 
-    case QVariant::Region: {
+    case QMetaType::QRegion: {
         return (converBase64StringToVariant< QRegion >(var));
     }
 
-    case QVariant::Size: {
+    case QMetaType::QSize: {
         QStringList list = var.split(';');
         if (list.size() != 2) {
             return (QVariant());
@@ -1320,7 +1362,7 @@ QVariant DA::stringToVariant(const QString& var, const QString& typeName)
         return (d);
     }
 
-    case QVariant::SizeF: {
+    case QMetaType::QSizeF: {
         QStringList list = var.split(';');
         if (list.size() != 2) {
             return (QVariant());
@@ -1329,53 +1371,53 @@ QVariant DA::stringToVariant(const QString& var, const QString& typeName)
         return (d);
     }
 
-    case QVariant::SizePolicy: {
+    case QMetaType::QSizePolicy: {
         return (converBase64StringToVariant< QSizePolicy >(var));
     }
 
-    case QVariant::String: {
+    case QMetaType::QString: {
         return (var);
     }
 
-    case QVariant::StringList: {
+    case QMetaType::QStringList: {
         return (converBase64StringToVariant< QStringList >(var));
     }
 
-    case QVariant::TextFormat: {
+    case QMetaType::QTextFormat: {
         return (converBase64StringToVariant< QTextFormat >(var));
     }
 
-    case QVariant::TextLength: {
+    case QMetaType::QTextLength: {
         return (converBase64StringToVariant< QTextLength >(var));
     }
 
-    case QVariant::Time: {
+    case QMetaType::QTime: {
         QTime t;
         t.fromString(var, Qt::ISODate);
         return (t);
     }
 
-    case QVariant::UInt: {
+    case QMetaType::UInt: {
         return (var.toUInt());
     }
 
-    case QVariant::ULongLong: {
+    case QMetaType::ULongLong: {
         return (var.toULongLong());
     }
 
-    case QVariant::Url: {
+    case QMetaType::QUrl: {
         return (QUrl(var));
     }
 
-    case QVariant::Vector2D: {
+    case QMetaType::QVector2D: {
         return (converBase64StringToVariant< QVector2D >(var));
     }
 
-    case QVariant::Vector3D: {
+    case QMetaType::QVector3D: {
         return (converBase64StringToVariant< QVector3D >(var));
     }
 
-    case QVariant::Vector4D: {
+    case QMetaType::QVector4D: {
         return (converBase64StringToVariant< QVector4D >(var));
     }
 

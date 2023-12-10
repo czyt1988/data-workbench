@@ -2,12 +2,6 @@
 
 namespace DA
 {
-QString full_name(const DANodeMetaData& a);
-
-QString full_name(const DANodeMetaData& a)
-{
-    return (a.getGroup() + "/" + a.getNodePrototype());
-}
 
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
@@ -126,28 +120,46 @@ DANodeMetaData::operator bool() const
     return isValid();
 }
 
+bool DANodeMetaData::operator<(const DANodeMetaData& other) const
+{
+    return (fullName(*this) < fullName(other));
+}
+
+bool DANodeMetaData::operator==(const DANodeMetaData& other) const
+{
+    return (fullName(*this) == fullName(other));
+}
+
+bool DANodeMetaData::operator!=(const DANodeMetaData& other) const
+{
+    return (fullName(*this) != fullName(other));
+}
+
+/**
+   @brief 获取全名
+   @param m
+   @return
+ */
+QString DANodeMetaData::fullName(const DANodeMetaData& m)
+{
+    return (m.getGroup() + "/" + m.getNodePrototype());
+}
+
 // 把qHash放入DA命名空间为了ADL查找
 // DANodeLinkPoint是DA命名空间，根据ADL原则，会去DA命名空间查找qHash
+#if QT_VERSION_MAJOR >= 6
+std::size_t qHash(const DA::DANodeMetaData& key, std::size_t seed)
+{
+    return qHash(DANodeMetaData::fullName(key), seed);
+}
+#else
 uint qHash(const DA::DANodeMetaData& key, uint seed)
 {
-    return (qHash(full_name(key), seed));
+    return qHash(DANodeMetaData::fullName(key), seed);
 }
+#endif
 
 }  // end of namespace DA
-
-//==============================================================
-// DANodeMetaData Global Function
-//==============================================================
-
-bool operator<(const DA::DANodeMetaData& a, const DA::DANodeMetaData& b)
-{
-    return (DA::full_name(a) < DA::full_name(b));
-}
-
-bool operator==(const DA::DANodeMetaData& a, const DA::DANodeMetaData& b)
-{
-    return (DA::full_name(a) == DA::full_name(b));
-}
 
 QDataStream& operator<<(QDataStream& out, const DA::DANodeMetaData& b)
 {

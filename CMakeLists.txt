@@ -5,7 +5,8 @@
 # 在运行次CMakeLists.txt之前，请确保3rdparty已经运行并进行了install，3rdparty位于/src/3rdparty/CMakeLists.txt
 # 请先单独编译第三方库后，安装，并把安装目录设置到和此安装目录一致
 
-cmake_minimum_required(VERSION 3.5)
+#3.16是qt6要求的最低版本
+cmake_minimum_required(VERSION 3.16)
 
 ########################################################
 # 版本定义

@@ -3,6 +3,7 @@
 #include <QLibrary>
 #include <memory>
 #include <QPluginLoader>
+#include <QTextStream>
 namespace DA
 {
 class DAPluginOption::PrivateData
@@ -206,12 +207,11 @@ QDebug operator<<(QDebug debug, const DA::DAPluginOption& po)
 {
     QDebugStateSaver saver(debug);
     debug.nospace() << QObject::tr("plugin file name:%1,iid:%2,name:%3,description:%4,version:%5,error string:%6")
-                               .arg(po.getFileName(),
-                                    po.getIid(),
-                                    po.getPluginName(),
-                                    po.getPluginDescription(),
-                                    po.getPluginVersion(),
-                                    po.getErrorString())
+                           .arg(po.getFileName(), po.getIid(), po.getPluginName(), po.getPluginDescription(), po.getPluginVersion(), po.getErrorString())
+#if QT_VERSION_MAJOR >= 6
+                    << Qt::endl;
+#else
                     << endl;
+#endif
     return (debug);
 }

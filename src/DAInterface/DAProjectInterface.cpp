@@ -4,6 +4,7 @@
 #include "DAWorkFlowOperateWidget.h"
 #include "DAStringUtil.h"
 #include "DAXmlHelper.h"
+#include "DAQtContainerUtil.h"
 namespace DA
 {
 
@@ -216,7 +217,7 @@ bool DAProjectInterface::appendWorkflowInProject(const QString& path, bool skipI
     QDomElement proEle         = docElem.firstChildElement("project");   // project
     QDomElement workflowsEle   = proEle.firstChildElement("workflows");  // workflows
     QDomNodeList wfListNodes   = workflowsEle.childNodes();
-    QSet< QString > names      = wfo->getAllWorkflowNames().toSet();
+    QSet< QString > names      = qlist_to_qset(wfo->getAllWorkflowNames());
     for (int i = 0; i < wfListNodes.size(); ++i) {
         QDomElement workflowEle = wfListNodes.at(i).toElement();
         if (workflowEle.tagName() != "workflow") {

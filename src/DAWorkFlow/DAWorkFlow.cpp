@@ -5,6 +5,7 @@
 #include <QThread>
 #include "DAWorkFlowExecuter.h"
 #include "DAAbstractNodeFactory.h"
+#include "DAQtContainerUtil.h"
 
 namespace DA
 {
@@ -133,7 +134,7 @@ QList< DAAbstractNodeFactory* > DAWorkFlow::usedFactorys() const
     for (const DAAbstractNode::SharedPointer& n : qAsConst(ns)) {
         factorys.insert(n->factory());
     }
-    return factorys.toList();
+    return qset_to_qlist(factorys);
 }
 
 /**

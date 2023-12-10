@@ -50,6 +50,12 @@ QSet< T > qlist_to_qset(const QList< T >& v)
 #endif
 }
 
+template< typename T >
+QList< T > unique_qlist(const QList< T >& v)
+{
+    return qset_to_qlist(qlist_to_qset(v));
+}
+
 }
 
 #endif  // DAQTCONTAINERUTIL_H

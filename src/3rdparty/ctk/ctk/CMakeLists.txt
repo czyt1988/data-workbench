@@ -58,10 +58,11 @@ set(DACTK_MIN_QT_VERSION 5.6)
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} ${DACTK_MIN_QT_VERSION} COMPONENTS
     Core
-	Gui
-	Widgets
+    Gui
+    Widgets
     REQUIRED
 )
+
 
 ########################################################
 # 目录包含
@@ -84,12 +85,15 @@ add_library(${DACTK_LIB_NAME} SHARED
 target_compile_definitions(${DACTK_LIB_NAME} PRIVATE MAKE_CTK_LIB)#!!!!** 注意变更 **!!!!
 target_compile_definitions(${DACTK_LIB_NAME} PRIVATE CTK_SHARED)#!!!!** 注意变更 **!!!!
 
-target_link_libraries(${DACTK_LIB_NAME} PUBLIC
+target_link_libraries(${DACTK_LIB_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Core
-	Qt${QT_VERSION_MAJOR}::Gui
-	Qt${QT_VERSION_MAJOR}::Widgets
+    Qt${QT_VERSION_MAJOR}::Gui
+    Qt${QT_VERSION_MAJOR}::Widgets
 )
-
+if(${QT_VERSION_MAJOR} EQUAL 6)
+   find_package(Qt6 REQUIRED COMPONENTS Core5Compat)
+   target_link_libraries(${DACTK_LIB_NAME} PRIVATE Qt6::Core5Compat)
+endif()
 ########################################################
 # Qt的moc
 ########################################################

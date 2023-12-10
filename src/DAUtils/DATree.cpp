@@ -5,6 +5,7 @@
 #include <QJsonValue>
 #include <QJsonObject>
 #include <QDataStream>
+#include <QIODevice>
 #include <memory>
 namespace DA
 {

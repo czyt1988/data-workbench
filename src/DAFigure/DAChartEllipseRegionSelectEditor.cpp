@@ -97,7 +97,7 @@ void DAChartEllipseRegionSelectEditor::onItemAttached(QwtPlotItem* item, bool on
 
 bool DAChartEllipseRegionSelectEditor::mousePressEvent(const QMouseEvent* e)
 {
-    if (Qt::MidButton == e->button() || Qt::RightButton == e->button()) {
+    if (Qt::MiddleButton == e->button() || Qt::RightButton == e->button()) {
         return false;
     }
     QPoint p                  = e->pos();
@@ -121,7 +121,7 @@ bool DAChartEllipseRegionSelectEditor::mouseMovedEvent(const QMouseEvent* e)
     if (!d_ptr->mIsStartDrawRegion) {
         return false;
     }
-    if (Qt::MidButton == e->button() || Qt::RightButton == e->button()) {
+    if (Qt::MiddleButton == e->button() || Qt::RightButton == e->button()) {
         return false;
     }
     QPoint p   = e->pos();
@@ -138,7 +138,7 @@ bool DAChartEllipseRegionSelectEditor::mouseMovedEvent(const QMouseEvent* e)
 
 bool DAChartEllipseRegionSelectEditor::mouseReleasedEvent(const QMouseEvent* e)
 {
-    if (Qt::MidButton == e->button() || Qt::RightButton == e->button()) {
+    if (Qt::MiddleButton == e->button() || Qt::RightButton == e->button()) {
         return false;
     }
     QPoint p   = e->pos();

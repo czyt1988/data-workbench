@@ -84,7 +84,7 @@ void DAChartPolygonRegionSelectEditor::onItemAttached(QwtPlotItem* item, bool on
 
 bool DAChartPolygonRegionSelectEditor::mousePressEvent(const QMouseEvent* e)
 {
-    if (Qt::MidButton == e->button() || Qt::RightButton == e->button()) {
+    if (Qt::MiddleButton == e->button() || Qt::RightButton == e->button()) {
         return false;
     }
     QPoint p                  = e->pos();
@@ -102,7 +102,7 @@ bool DAChartPolygonRegionSelectEditor::mouseMovedEvent(const QMouseEvent* e)
     if (!d_ptr->mIsStartDrawRegion) {
         return false;
     }
-    if (Qt::MidButton == e->button() || Qt::RightButton == e->button()) {
+    if (Qt::MiddleButton == e->button() || Qt::RightButton == e->button()) {
         return false;
     }
     QPoint p      = e->pos();

@@ -42,7 +42,7 @@ void DANodeListWidgetItem::setNodeMetaData(const DANodeMetaData& md)
 //===================================================
 DANodeListWidget::DANodeListWidget(QWidget* p) : QListWidget(p)
 {
-    qRegisterMetaTypeStreamOperators< DANodeMetaData >("DANodeMetaData");
+    qRegisterMetaType< DA::DANodeMetaData >("DA::DANodeMetaData");
     setViewMode(QListView::IconMode);
     setMovement(QListView::Snap);
     setIconSize(QSize(40, 40));

@@ -27,7 +27,11 @@ DADataManagerComboBoxPrivate::DADataManagerComboBoxPrivate(DADataManagerComboBox
 DADataManagerComboBox::DADataManagerComboBox(QWidget* par)
     : ctkTreeComboBox(par), d_ptr(new DADataManagerComboBoxPrivate(this))
 {
+#if QT_VERSION_MAJOR >= 6
+    connect(this, &QComboBox::currentTextChanged, this, &DADataManagerComboBox::onCurrentIndexChanged);
+#else
     connect(this, QOverload< const QString& >::of(&QComboBox::currentIndexChanged), this, &DADataManagerComboBox::onCurrentIndexChanged);
+#endif
 }
 
 DADataManagerComboBox::~DADataManagerComboBox()

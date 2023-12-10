@@ -1,6 +1,4 @@
 ﻿#include "DAAppController.h"
-// stl
-#include <memory>
 // Qt
 #include <QFileDialog>
 #include <QFileInfo>
@@ -12,6 +10,7 @@
 #include <QInputDialog>
 #include <QMenu>
 #include <QCoreApplication>
+#include <QActionGroup>
 // API
 #include "AppMainWindow.h"
 #include "DAAppCore.h"
@@ -21,13 +20,10 @@
 #include "DAAppActions.h"
 #include "DAAppDataManager.h"
 // plugin
-#include "DAAbstractPlugin.h"
-#include "DAAppPluginManager.h"
 // Qt-Advanced-Docking-System
 #include "DockManager.h"
 #include "DockAreaWidget.h"
 // command
-#include "DACommandsDataManager.h"
 // Widget
 #include "DAWaitCursorScoped.h"
 #include "DADataOperateWidget.h"
@@ -36,12 +32,9 @@
 #include "DAChartOperateWidget.h"
 #include "DAFigureWidget.h"
 #include "DAChartWidget.h"
-#include "DAAbstractSettingPage.h"
-#include "DASettingWidget.h"
 #include "SettingPages/DASettingPageCommon.h"
 // Dialog
 #include "DAPluginManagerDialog.h"
-#include "Dialog/DARenameColumnsNameDialog.h"
 #include "DAAppSettingDialog.h"
 // DACommonWidgets
 #include "DAFontEditPannelWidget.h"
@@ -49,7 +42,6 @@
 // Workflow
 #include "DAWorkFlowOperateWidget.h"
 #include "DAWorkFlowGraphicsView.h"
-#include "DADataWorkFlow.h"
 // project
 #include "DAAppProject.h"
 // Py

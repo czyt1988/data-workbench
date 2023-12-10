@@ -62,8 +62,13 @@ DANodeItemSettingWidget::DANodeItemSettingWidget(QWidget* parent)
     connect(ui->doubleSpinBoxY, QOverload< double >::of(&QDoubleSpinBox::valueChanged), this, &DANodeItemSettingWidget::onDoubleSpinBoxYValueChanged);
     connect(ui->checkBoxMovable, &QCheckBox::stateChanged, this, &DANodeItemSettingWidget::onCheckBoxMovableStateChanged);
     connect(ui->checkBoxResizable, &QCheckBox::stateChanged, this, &DANodeItemSettingWidget::onCheckBoxResizableStateChanged);
+#if QT_VERSION_MAJOR >= 6
+    connect(d_ptr->mButtonGroupInputLocation, &QButtonGroup::idClicked, this, &DANodeItemSettingWidget::onButtonGroupClicked);
+    connect(d_ptr->mButtonGroupOutputLocation, &QButtonGroup::idClicked, this, &DANodeItemSettingWidget::onButtonGroupClicked);
+#else
     connect(d_ptr->mButtonGroupInputLocation, QOverload< int >::of(&QButtonGroup::buttonPressed), this, &DANodeItemSettingWidget::onButtonGroupClicked);
     connect(d_ptr->mButtonGroupOutputLocation, QOverload< int >::of(&QButtonGroup::buttonPressed), this, &DANodeItemSettingWidget::onButtonGroupClicked);
+#endif
     connect(ui->textEditTooltip, &QTextEdit::textChanged, this, &DANodeItemSettingWidget::onTextEditTooltipTextChanged);
 }
 

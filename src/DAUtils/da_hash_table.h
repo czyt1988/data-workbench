@@ -75,14 +75,14 @@ public:
      */
     table_index_type shape() const
     {
-        auto i = cbegin();
-        if (i == cend()) {
+        auto i = super_class::cbegin();
+        if (i == super_class::cend()) {
             return table_index_type();
         }
         row_index_type minr = i->first.first;
         col_index_type minc = i->first.second;
         ++i;
-        while (i != cend()) {
+        while (i != super_class::cend()) {
             if (i->first.first > minr) {
                 minr = i->first.first;
             }

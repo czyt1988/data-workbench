@@ -54,7 +54,7 @@ DAChartRectRegionSelectEditor::~DAChartRectRegionSelectEditor()
 
 bool DAChartRectRegionSelectEditor::mousePressEvent(const QMouseEvent* e)
 {
-    if (Qt::MidButton == e->button() || Qt::RightButton == e->button()) {
+    if (Qt::MiddleButton == e->button() || Qt::RightButton == e->button()) {
         return false;
     }
     QPoint p = e->pos();
@@ -76,7 +76,7 @@ bool DAChartRectRegionSelectEditor::mouseMovedEvent(const QMouseEvent* e)
     if (!d_ptr->m_isStartDrawRegion) {
         return false;
     }
-    if (Qt::MidButton == e->button() || Qt::RightButton == e->button()) {
+    if (Qt::MiddleButton == e->button() || Qt::RightButton == e->button()) {
         return false;
     }
     QPoint p   = e->pos();
@@ -93,7 +93,7 @@ bool DAChartRectRegionSelectEditor::mouseMovedEvent(const QMouseEvent* e)
 
 bool DAChartRectRegionSelectEditor::mouseReleasedEvent(const QMouseEvent* e)
 {
-    if (Qt::MidButton == e->button() || Qt::RightButton == e->button()) {
+    if (Qt::MiddleButton == e->button() || Qt::RightButton == e->button()) {
         return false;
     }
     QPoint p   = e->pos();

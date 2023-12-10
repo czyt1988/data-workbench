@@ -65,9 +65,9 @@ public:
     template< typename InputIt >
     void append_column(InputIt first, InputIt last)
     {
-        auto i  = begin();
+        auto i  = super_class::begin();
         auto ci = first;
-        while (i != end() && ci != last) {
+        while (i != super_class::end() && ci != last) {
             i->emplace_back(*ci);
             ++i;
             ++ci;
@@ -98,18 +98,18 @@ public:
     table_index_type shape() const
     {
         table_index_type sh;
-        auto i = cbegin();
-        if (i == cend()) {
+        auto i = super_class::cbegin();
+        if (i == super_class::cend()) {
             return table_index_type();
         }
         sh.second = (*i).size();
-        while (i != cend()) {
+        while (i != super_class::cend()) {
             if (sh.second < (*i).size()) {
                 sh.second = (*i).size();
             }
             ++i;
         }
-        sh.first = size();
+        sh.first = super_class::size();
         return sh;
     }
     /**
@@ -140,7 +140,7 @@ public:
     void resize(std::size_t row, std::size_t col)
     {
         super_class::resize(row);
-        for (auto i = begin(); i != end(); ++i) {
+        for (auto i = super_class::begin(); i != super_class::end(); ++i) {
             i->resize(col);
         }
     }

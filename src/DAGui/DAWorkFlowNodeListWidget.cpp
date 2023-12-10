@@ -1,4 +1,5 @@
 ﻿#include "DAWorkFlowNodeListWidget.h"
+#include <QActionGroup>
 #include "ui_DAWorkFlowNodeListWidget.h"
 #include "DANodeListWidget.h"
 #include "DAToolBox.h"

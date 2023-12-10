@@ -21,7 +21,7 @@ public:
 public:
     QDir mPluginDir;
     QList< DAPluginOption > mPluginOptions;
-    bool mIsLoaded{ false };                ///< 标记是否加载了，可以只加载一次
+    bool mIsLoaded { false };               ///< 标记是否加载了，可以只加载一次
     QSet< QString > mIgnorePluginBaseName;  ///< 记录忽略插件的基本名字
 };
 
@@ -50,12 +50,24 @@ void DAPluginManager::PrivateData::updateIgnoreSet()
         //不存在，则创建一个
         if (ignoreFile.open(QIODevice::ReadWrite)) {
             QTextStream txt(&ignoreFile);
+#if QT_VERSION_MAJOR >= 6
+            txt.setEncoding(QStringConverter::Utf8);
+#else
             txt.setCodec("utf-8");
+#endif
             txt << "# pluginignore file,Plugins that you do not want to load are described in this file,only write the "
                    "file base name, do not need to write suffixes"
+#if QT_VERSION_MAJOR >= 6
+                << Qt::endl;
+#else
                 << endl;
-            txt << "# 不想加载的插件在此文件描述，写入基本文件名，无需后缀" << endl;
-            txt << endl;
+#endif
+            txt << "# 不想加载的插件在此文件描述，写入基本文件名，无需后缀"
+#if QT_VERSION_MAJOR >= 6
+                << Qt::endl;
+#else
+                << endl;
+#endif
         }
         return;
     }
@@ -102,7 +114,7 @@ DAPluginManager& DAPluginManager::instance()
  */
 void DAPluginManager::setIgnoreList(const QStringList ignorePluginsName)
 {
-    d_ptr->mIgnorePluginBaseName = ignorePluginsName.toSet();
+    d_ptr->mIgnorePluginBaseName = QSet< QString >(ignorePluginsName.begin(), ignorePluginsName.end());
 }
 
 /**
@@ -186,7 +198,11 @@ QDebug operator<<(QDebug debug, const DA::DAPluginManager& fmg)
     QDebugStateSaver saver(debug);
 
     debug.nospace() << DA::DAPluginManager::tr("Plugin Manager Info:is loaded=%1,plugin counts=%2").arg(fmg.isLoaded()).arg(fmg.getPluginCount())
+#if QT_VERSION_MAJOR >= 6
+                    << Qt::endl;
+#else
                     << endl;
+#endif
     QList< DA::DAPluginOption > opts = fmg.getPluginOptions();
 
     for (const DA::DAPluginOption& opt : qAsConst(opts)) {

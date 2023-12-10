@@ -30,37 +30,42 @@
 #include <vector>
 
 #include "ctkCoreExport.h"
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#include <QRegExp>
+#else
+#include <QRegExp>
+#include <QRegularExpression>
+#endif
 
 /// This macro can be used instead of Q_ASSERT to warn developers
 /// when some assumption fails. CTK_SOFT_ASSERT behavior differs
 /// in two key aspects: (1) it only logs a warning (instead of terminating
 /// the application) and (2) the message is always logged (instead of
 /// ignoring the check in release builds).
-#define CTK_SOFT_ASSERT(condition) do \
-  { \
-    if (! (condition) ) \
-    { \
-      qWarning() << "Assertion `" #condition "` failed in " << __FILE__ \
-                 << " line " << __LINE__; \
-    } \
-  } while (false)
+#define CTK_SOFT_ASSERT(condition)                                                                                     \
+    do {                                                                                                               \
+        if (!(condition)) {                                                                                            \
+            qWarning() << "Assertion `" #condition "` failed in " << __FILE__ << " line " << __LINE__;                 \
+        }                                                                                                              \
+    } while (false)
 
-namespace ctk {
+namespace ctk
+{
 ///
 /// \ingroup Core
 /// Convert a QStringList to Vector of char*
 /// Caller will be responsible to delete the content of the vector
-void CTK_CORE_EXPORT qListToSTLVector(const QStringList& list, std::vector<char*>& vector);
+void CTK_CORE_EXPORT qListToSTLVector(const QStringList& list, std::vector< char* >& vector);
 
 ///
 /// \ingroup Core
 /// Convert a QStringList to a Vector of string
-void CTK_CORE_EXPORT qListToSTLVector(const QStringList& list, std::vector<std::string>& vector);
+void CTK_CORE_EXPORT qListToSTLVector(const QStringList& list, std::vector< std::string >& vector);
 
 ///
 /// \ingroup Core
 /// Convert a Vector of string to QStringList
-void CTK_CORE_EXPORT stlVectorToQList(const std::vector<std::string>& vector, QStringList& list);
+void CTK_CORE_EXPORT stlVectorToQList(const std::vector< std::string >& vector, QStringList& list);
 
 ///
 /// \ingroup Core
@@ -88,8 +93,11 @@ QString CTK_CORE_EXPORT extensionToRegExp(const QString& extension);
 /// Convert a list of wildcar extension filters ("*.jpg")
 /// into a regular expression string
 /// "*.jpg", "*.txt" -> "(.*\\.jpg?$|.*\\.txt?$)"
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 QRegExp CTK_CORE_EXPORT nameFiltersToRegExp(const QStringList& nameFilters);
-
+#else
+QRegularExpression CTK_CORE_EXPORT nameFiltersToRegExp(const QStringList& nameFilters);
+#endif
 ///
 /// \ingroup Core
 /// Return a "smart" number of decimals needed to display (in a gui) a floating
@@ -134,8 +142,7 @@ double CTK_CORE_EXPORT closestPowerOfTen(double value);
 /// \param dirName The directory to remove
 /// \return <code>true</code> on success, <code>false</code> otherwise.
 /// \sa QDir::rmdir
-bool CTK_CORE_EXPORT removeDirRecursively(const QString & dirName);
-
+bool CTK_CORE_EXPORT removeDirRecursively(const QString& dirName);
 
 ///
 /// \ingroup Core
@@ -147,14 +154,13 @@ bool CTK_CORE_EXPORT removeDirRecursively(const QString & dirName);
 /// \param dstPath The directory where the file should be copied
 /// \return <code>true</code> on success, <code>false</code> otherwise.
 /// \sa QFile::copy
-bool CTK_CORE_EXPORT copyDirRecursively(const QString &srcPath, const QString &dstPath, bool includeHiddenFiles=true);
+bool CTK_CORE_EXPORT copyDirRecursively(const QString& srcPath, const QString& dstPath, bool includeHiddenFiles = true);
 
 ///
 /// \ingroup Core
 /// Convert Qt::HANDLE to string
 /// \sa Qt::HANDLE
 QString CTK_CORE_EXPORT qtHandleToString(Qt::HANDLE handle);
-
 
 ///
 /// \ingroup Core

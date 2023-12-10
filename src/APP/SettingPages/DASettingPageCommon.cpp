@@ -21,7 +21,11 @@ DASettingPageCommon::DASettingPageCommon(QWidget* parent)
     mButtonGroupRibbonStyle.addButton(ui->radioButtonStandardStyle2Row, static_cast< int >(SARibbonBar::OfficeStyleTwoRow));
     mButtonGroupRibbonStyle.addButton(ui->radioButtonLiteStyle, static_cast< int >(SARibbonBar::WpsLiteStyle));
     mButtonGroupRibbonStyle.addButton(ui->radioButtonLiteStyle2Row, static_cast< int >(SARibbonBar::WpsLiteStyleTwoRow));
+#if QT_VERSION_MAJOR >= 6
+    connect(&mButtonGroupRibbonStyle, &QButtonGroup::idClicked, this, &DASettingPageCommon::onButtonGroupRibbonStyleClicked);
+#else
     connect(&mButtonGroupRibbonStyle, QOverload< int >::of(&QButtonGroup::buttonClicked), this, &DASettingPageCommon::onButtonGroupRibbonStyleClicked);
+#endif
     connect(ui->spinBoxDisplayLogsNum, QOverload< int >::of(&QSpinBox::valueChanged), this, &DASettingPageCommon::onSpinBoxDisplayLogsNumValueChanged);
     connect(ui->checkBoxSaveUIState, &QCheckBox::stateChanged, this, &DASettingPageCommon::onCheckBoxSaveUIStateStateChanged);
 }

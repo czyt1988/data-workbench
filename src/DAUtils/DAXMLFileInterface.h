@@ -8,6 +8,7 @@
 #include <QDomElement>
 #include <QPointF>
 #include <QVariant>
+#include <QIODevice>
 class QDomDocument;
 namespace DA
 {
@@ -138,6 +139,10 @@ DAUTILS_API QString enumToString(Qt::TransformationMode e);
 // Qt::TransformationMode的枚举转换
 DAUTILS_API Qt::TransformationMode stringToEnum(const QString& s, Qt::TransformationMode defaultEnum = Qt::FastTransformation);
 
+// Qt::TransformationMode的枚举转换
+DAUTILS_API QString enumToString(QFont::Weight e);
+// Qt::TransformationMode的枚举转换
+DAUTILS_API QFont::Weight stringToEnum(const QString& s, QFont::Weight defaultEnum = QFont::Normal);
 }
 
 #endif  // DAXMLFILEINTERFACE_H

@@ -8,6 +8,7 @@
 #include "DAWorkFlow.h"
 #include "DAGraphicsItem.h"
 #include "DAStandardGraphicsTextItem.h"
+#include "DAQtContainerUtil.h"
 namespace DA
 {
 
@@ -101,7 +102,7 @@ DACommandsForWorkFlowRemoveSelectNodes::DACommandsForWorkFlowRemoveSelectNodes(D
     //这时候得到所有需要删除的link
     //也要做一次去重
     mWillRemoveLink = nodeLinks + mWillRemoveLink;
-    mWillRemoveLink = mWillRemoveLink.toSet().toList();
+    mWillRemoveLink = unique_qlist(mWillRemoveLink);
     for (DAAbstractNodeLinkGraphicsItem* lk : qAsConst(mWillRemoveLink)) {
         new DACommandsForWorkFlowRemoveLink(lk, scene, this);
     }
@@ -160,7 +161,7 @@ QList< DAAbstractNodeLinkGraphicsItem* > DACommandsForWorkFlowRemoveSelectNodes:
     for (DAAbstractNodeGraphicsItem* n : qAsConst(nodeItems)) {
         res += n->getLinkItems();
     }
-    return res.toSet().toList();
+    return unique_qlist(res);
 }
 
 bool DACommandsForWorkFlowRemoveSelectNodes::isValid() const

@@ -28,7 +28,7 @@ public:
         LinkData();
         LinkData(const NodeSharedPtr& inNode, const QString& inKey);
         LinkData(const NodeSharedPtr& outNode, const QString& outKey, const NodeSharedPtr& inNode, const QString& inKey);
-        bool operator==(const LinkData& d);
+        bool operator==(const LinkData& d) const;
         NodeWeakPtr inputNode;
         QString inputKey;
         NodeWeakPtr outputNode;
@@ -73,7 +73,7 @@ DAAbstractNode::PrivateData::LinkData::LinkData(const DAAbstractNode::PrivateDat
 {
 }
 
-bool DAAbstractNode::PrivateData::LinkData::operator==(const DAAbstractNode::PrivateData::LinkData& d)
+bool DAAbstractNode::PrivateData::LinkData::operator==(const DAAbstractNode::PrivateData::LinkData& d) const
 {
     return (inputNode.lock() == d.inputNode.lock()) && (inputKey == d.inputKey)
            && (outputNode.lock() == d.outputNode.lock()) && (outputKey == d.outputKey);
@@ -781,7 +781,8 @@ DAAbstractNode::IdType DAAbstractNode::generateID() const
         uint32_t raw[ 2 ];
     } mem;
     QDateTime dt = QDateTime::currentDateTime();
-    mem.raw[ 0 ] = uint32_t(dt.toTime_t());
+
+    mem.raw[ 0 ] = uint32_t(dt.toMSecsSinceEpoch());
     mem.raw[ 1 ] = uintptr_t(this);
     return mem.id;
 }

@@ -31,8 +31,8 @@ void DAWordWrapItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
         QStyledItemDelegate::paint(painter, option, index);
         return;
     }
-    QString value              = index.model()->data(index, Qt::DisplayRole).toString();
-    QStyleOptionViewItemV4 opt = option;
+    QString value            = index.model()->data(index, Qt::DisplayRole).toString();
+    QStyleOptionViewItem opt = option;
     this->initStyleOption(&opt, index);
 
     const QWidget* widget = option.widget;
@@ -43,12 +43,12 @@ void DAWordWrapItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     //下边是设置选中时颜色
     if (option.state & QStyle::State_Selected) {
         // Whitee pen while selection
-        painter->setPen(Qt::white);
+        painter->setPen(QPen(option.palette.highlightedText(), 0));
         painter->setBrush(option.palette.highlightedText());
         // This call will take care to draw, dashed line while selecting
         style->drawControl(QStyle::CE_ItemViewItem, &opt, painter, widget);
     } else {
-        painter->setPen(QPen(option.palette.foreground(), 0));
+        painter->setPen(QPen(option.palette.brightText(), 0));
         painter->setBrush(qvariant_cast< QBrush >(index.data(Qt::ForegroundRole)));
     }
 

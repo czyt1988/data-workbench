@@ -114,7 +114,7 @@ QVariant DAChartItemTableModel::data(const QModelIndex& index, int role) const
         if (index.row() >= getItemRowCount(item))
             return QVariant();
         return getItemData(index.row(), col, item);
-    } else if (role == Qt::BackgroundColorRole) {
+    } else if (role == Qt::BackgroundRole) {
         if (!d_ptr->mEnableBkColor)
             return QVariant();
         QwtPlotItem* item = getItemFromCol(index.column());
@@ -226,13 +226,14 @@ void DAChartItemTableModel::updateColumnCount()
 {
     d_ptr->mColumnMap.clear();
     d_ptr->mItemsColumnStartIndex.clear();
-    for (auto i = d_ptr->mItems.begin(); i != d_ptr->mItems.end(); ++i) {
-        int dim = calcItemDataColumnCount(*i);
+    // for (auto i = d_ptr->mItems.begin(); i != d_ptr->mItems.end(); ++i) {
+    for (QwtPlotItem* i : std::as_const(d_ptr->mItems)) {
+        int dim = calcItemDataColumnCount(i);
         if (dim > 0) {
-            int startIndex                      = d_ptr->mColumnMap.size();
-            d_ptr->mItemsColumnStartIndex[ *i ] = startIndex;
+            int startIndex                     = d_ptr->mColumnMap.size();
+            d_ptr->mItemsColumnStartIndex[ i ] = startIndex;
             for (int d = 0; d < dim; ++d) {
-                d_ptr->mColumnMap[ startIndex + d ] = qMakePair< QwtPlotItem*, int >(*i, d);
+                d_ptr->mColumnMap[ startIndex + d ] = qMakePair(i, d);
             }
         }
     }

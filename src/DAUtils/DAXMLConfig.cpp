@@ -75,8 +75,11 @@ bool DAXMLConfig::PrivateData::save(const QString& saveFilePath)
         return (false);
     }
     QTextStream txt(&file);
-
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
     txt.setCodec("UTF-8");
+#else
+    txt.setEncoding(QStringConverter::Utf8);
+#endif
     txt << q_ptr->toString();
     txt.flush();
     file.close();

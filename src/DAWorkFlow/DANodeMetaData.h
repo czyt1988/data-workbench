@@ -42,6 +42,13 @@ public:
     bool isValid() const;
     //重载bool操作符
     explicit operator bool() const;
+    //重载<操作符
+    bool operator<(const DANodeMetaData& other) const;
+    bool operator==(const DANodeMetaData& other) const;
+    bool operator!=(const DANodeMetaData& other) const;
+
+public:
+    static QString fullName(const DANodeMetaData& m);
 
 private:
     QString mPrototype;
@@ -51,12 +58,14 @@ private:
     QString mGroup;
 };
 // qHash
+#if QT_VERSION_MAJOR >= 6
+DAWORKFLOW_API std::size_t qHash(const DANodeMetaData& key, std::size_t seed = 0);
+#else
 DAWORKFLOW_API uint qHash(const DANodeMetaData& key, uint seed = 0);
+#endif
 }  // end of namespace DA
 Q_DECLARE_METATYPE(DA::DANodeMetaData)
 
-DAWORKFLOW_API bool operator<(const DA::DANodeMetaData& a, const DA::DANodeMetaData& b);
-DAWORKFLOW_API bool operator==(const DA::DANodeMetaData& a, const DA::DANodeMetaData& b);
 DAWORKFLOW_API QDataStream& operator<<(QDataStream& out, const DA::DANodeMetaData& b);
 DAWORKFLOW_API QDataStream& operator>>(QDataStream& in, DA::DANodeMetaData& b);
 DAWORKFLOW_API QDebug operator<<(QDebug debug, const DA::DANodeMetaData& c);
