@@ -1,7 +1,8 @@
 ﻿#include "DAGraphicsItem.h"
 #include <QDomDocument>
 #include <QDomElement>
-
+#include <QDebug>
+#include <QEvent>
 namespace DA
 {
 
@@ -78,7 +79,7 @@ bool DAGraphicsItem::loadFromXml(const QDomElement* parentElement)
 {
     QDomElement infoEle = parentElement->firstChildElement("info");
     if (infoEle.isNull()) {
-        //没有找到info节点，返回错误
+        // 没有找到info节点，返回错误
         return false;
     }
     qreal realValue;
@@ -107,7 +108,7 @@ bool DAGraphicsItem::loadFromXml(const QDomElement* parentElement)
     }
     QDomElement shapeInfoEle = infoEle.firstChildElement("shape-info");
     if (!shapeInfoEle.isNull()) {
-        //解析shapeInfoEle信息
+        // 解析shapeInfoEle信息
         bool isShowBorder = getStringBoolValue(shapeInfoEle.attribute("show-border", "0"));
         bool isShowBk     = getStringBoolValue(shapeInfoEle.attribute("show-bk", "0"));
         if (isShowBorder) {
@@ -205,6 +206,12 @@ void DAGraphicsItem::setShowBackground(bool on)
 bool DAGraphicsItem::isShowBackground() const
 {
     return d_ptr->mIsShowBackground;
+}
+
+bool DAGraphicsItem::sceneEvent(QEvent* event)
+{
+    qDebug() << "DAGraphicsItem::sceneEvent" << event->type();
+    return QGraphicsObject::sceneEvent(event);
 }
 
 }  // end of DA

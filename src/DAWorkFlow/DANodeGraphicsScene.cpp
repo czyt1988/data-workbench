@@ -242,12 +242,12 @@ QList< QGraphicsItem* > DANodeGraphicsScene::getGraphicsItemsWithoutLink() const
  */
 int DANodeGraphicsScene::removeSelectedItems_()
 {
-    //此操作比较复杂，首先要找到非node的item，这些直接就可以删除，然后找到nodeitem，先删除link，再删除node
-    // QGraphicsItem不进行处理,因此普通的item需要调用addItem_而不是addItem
-    //需要先找到节点下面所以得link，和选中的link进行分组
+    // 此操作比较复杂，首先要找到非node的item，这些直接就可以删除，然后找到nodeitem，先删除link，再删除node
+    //  QGraphicsItem不进行处理,因此普通的item需要调用addItem_而不是addItem
+    // 需要先找到节点下面所以得link，和选中的link进行分组
     //! 注意： 如果处于链接状态（isStartLink() == true）那么不能删除正在链接的那个元素的节点，否则会导致异常
     qDebug() << "removeSelectedItems_";
-    //移除元素过程中，先要删除链接
+    // 移除元素过程中，先要删除链接
     cancelLink();
     QScopedPointer< DA::DACommandsForWorkFlowRemoveSelectNodes > cmd(new DA::DACommandsForWorkFlowRemoveSelectNodes(this));
     int rc = cmd->removeCount();
@@ -389,7 +389,7 @@ void DANodeGraphicsScene::onItemSelectionChanged()
  */
 void DANodeGraphicsScene::onNodeNameChanged(DAAbstractNode::SharedPointer node, const QString& oldName, const QString& newName)
 {
-    //查找对应的item并让其改变文字
+    // 查找对应的item并让其改变文字
     Q_UNUSED(oldName);
     DAAbstractNodeGraphicsItem* it = findItemByNode(node.get());
     if (it) {
@@ -400,7 +400,7 @@ void DANodeGraphicsScene::onNodeNameChanged(DAAbstractNode::SharedPointer node, 
 void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
     if (mouseEvent->isAccepted()) {
-        //说明上级已经接受了鼠标事件，这里不应该处理
+        // 说明上级已经接受了鼠标事件，这里不应该处理
         if (isStartLink()) {
             cancelLink();
         }
@@ -408,31 +408,32 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
         DANODEGRAPHICSSCENE_EVENTLISTENER(mousePressEvent, mouseEvent)
         return;
     }
-    //先检查是否点击到了连接点
+    // 先检查是否点击到了连接点
     if (mouseEvent->buttons().testFlag(Qt::LeftButton)) {
 
-        //左键点击
-        //        QGraphicsItem* positem = itemAt(mouseEvent->scenePos(), QTransform());
-        //        if (nullptr == positem) {
-        //            DAGraphicsSceneWithUndoStack::mousePressEvent(mouseEvent);
-        //            return;
-        //        }
-        //看看是否点击到了节点item
+        // 左键点击
+        //         QGraphicsItem* positem = itemAt(mouseEvent->scenePos(), QTransform());
+        //         if (nullptr == positem) {
+        //             DAGraphicsSceneWithUndoStack::mousePressEvent(mouseEvent);
+        //             return;
+        //         }
+        // 看看是否点击到了节点item
         DAAbstractNodeGraphicsItem* nodeItem = dynamic_cast< DAAbstractNodeGraphicsItem* >(
                 itemAt(mouseEvent->scenePos(), QTransform()));
         if (nullptr == nodeItem) {
-            //点击的不是节点item就退出
+            // 注意，有可能进行了分组，这时候，点击的是分组
+            // 点击的不是节点item就退出
             DAGraphicsScene::mousePressEvent(mouseEvent);
             DANODEGRAPHICSSCENE_EVENTLISTENER(mousePressEvent, mouseEvent)
             return;
         }
-        //如果点击到了DAAbstractNodeGraphicsItem，要看看是否点击到了连接点
+        // 如果点击到了DAAbstractNodeGraphicsItem，要看看是否点击到了连接点
         QPointF itempos = nodeItem->mapFromScene(mouseEvent->scenePos());
         if (isStartLink()) {
-            //开始链接状态，此时理论要点击的是input
+            // 开始链接状态，此时理论要点击的是input
             DAAbstractNodeLinkGraphicsItem* linkItem = dynamic_cast< DAAbstractNodeLinkGraphicsItem* >(getCurrentLinkItem());
             if (linkItem) {
-                //调用nodeitem的prepareLinkInput用于构建一些响应式连接点
+                // 调用nodeitem的prepareLinkInput用于构建一些响应式连接点
                 nodeItem->prepareLinkInput(itempos, linkItem);
             } else {
                 qDebug() << "is start link,but link item can not cast to DAAbstractNodeLinkGraphicsItem";
@@ -442,7 +443,7 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
             }
             DANodeLinkPoint lp;
             lp = nodeItem->getLinkPointByPos(itempos, DANodeLinkPoint::Input);
-            if (!lp.isValid() || lp.isOutput()) {  //正常时要到input，链接到output点就忽略
+            if (!lp.isValid() || lp.isOutput()) {  // 正常时要到input，链接到output点就忽略
                 //! 说明没有点击到连接点，正常传递到DAGraphicsSceneWithUndoStack
                 //! DAGraphicsSceneWithUndoStack的连线在这时候就结束，但这里并不想结束，
                 //! 因此需要调用setIgnoreLinkEvent忽略掉链接模式的事件
@@ -452,12 +453,12 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
                 DANODEGRAPHICSSCENE_EVENTLISTENER(mousePressEvent, mouseEvent)
                 return;
             }
-            //点击了连接点
+            // 点击了连接点
             emit nodeItemLinkPointSelected(nodeItem, lp, mouseEvent);
 
-            //此时连接到to点
+            // 此时连接到to点
             if (!(linkItem->attachTo(nodeItem, lp))) {
-                //连接失败
+                // 连接失败
                 setIgnoreLinkEvent(true);
                 DAGraphicsScene::mousePressEvent(mouseEvent);
                 setIgnoreLinkEvent(false);
@@ -470,19 +471,19 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
             push(cmd);
             // 跳出if 到DAGraphicsSceneWithUndoStack::mousePressEvent(mouseEvent);
         } else {
-            //非开始链接状态，此时点击的是output
+            // 非开始链接状态，此时点击的是output
             nodeItem->prepareLinkOutput(itempos);
             DANodeLinkPoint lp;
             lp = nodeItem->getLinkPointByPos(itempos, DANodeLinkPoint::Output);
             if (lp.isValid() && lp.isOutput()) {
                 emit nodeItemLinkPointSelected(nodeItem, lp, mouseEvent);
-                //此时说明开始进行连线
+                // 此时说明开始进行连线
                 std::unique_ptr< DAAbstractNodeLinkGraphicsItem > linkItem(nodeItem->createLinkItem(lp));
                 if (linkItem) {
                     if (linkItem->attachFrom(nodeItem, lp)) {
                         linkItem->setStartScenePosition(nodeItem->mapToScene(lp.position));
                         beginLink(linkItem.release());
-                        //这里不需要return，因为beginLink后如果不移动，DAGraphicsSceneWithUndoStack::mousePressEvent不会触发结束
+                        // 这里不需要return，因为beginLink后如果不移动，DAGraphicsSceneWithUndoStack::mousePressEvent不会触发结束
                     }
                 }
             }
