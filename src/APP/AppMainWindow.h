@@ -1,9 +1,7 @@
 ﻿#ifndef DAMETHODEDITORMAINWINDOW_H
 #define DAMETHODEDITORMAINWINDOW_H
 #include "SARibbonMainWindow.h"
-#include "DANodeListWidget.h"
 #include <QScopedPointer>
-#include "DAAbstractNodeGraphicsItem.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui

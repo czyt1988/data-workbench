@@ -1,5 +1,4 @@
 ﻿#include "AppMainWindow.h"
-#include "ui_AppMainWindow.h"
 // Qt 相关
 #include <QMessageBox>
 #include <QDir>
@@ -13,41 +12,27 @@
 #include <QBuffer>
 //
 #include "SARibbonBar.h"
-#include "SARibbonApplicationButton.h"
 //插件相关
 #include "DAAppPluginManager.h"
-#include "DAPluginManager.h"
 #include "DAAbstractPlugin.h"
 #include "DAAbstractNodePlugin.h"
 //界面相关
-#include "DAAppRibbonApplicationMenu.h"
 #include "DAAppController.h"
 #include "DAAppCore.h"
 #include "DAAppUI.h"
 #include "DAAppDockingArea.h"
 #include "DAAppRibbonArea.h"
-#include "DAAppCommand.h"
-#include "DAAppActions.h"
-#include "DAAppDataManager.h"
 //对话框
-#include "DAPluginManagerDialog.h"
 
 //节点相关
 #include "DANodeMetaData.h"
-#include "DAAbstractNodeFactory.h"
-#include "DAAbstractNodeWidget.h"
 
 //
 #include "DAGraphicsItemFactory.h"
 #include "DAWorkFlowNodeListWidget.h"
 #include "DAWorkFlowOperateWidget.h"
-#include "DAChartOperateWidget.h"
-#include "DAChartManageWidget.h"
-#include "DADataManageWidget.h"
-#include "DADataOperateWidget.h"
 #include "DAWorkFlowOperateWidget.h"
 #include "DAWorkFlowOperateWidget.h"
-#include "DAMessageLogViewWidget.h"
 //
 #include "DAAppSettingDialog.h"
 #include "SettingPages/DAAppConfig.h"
@@ -66,7 +51,8 @@ AppMainWindow::AppMainWindow(QWidget* parent) : SARibbonMainWindow(parent)
 
 {
     //建立ribbonArea，此函数的构造函数会生成界面
-
+    QIcon icon(":/Icon/Icon/icon.svg");
+    setWindowIcon(icon);
     DAAppCore& core = DAAppCore::getInstance();
     //创建界面
     core.createUi(this);
@@ -76,23 +62,23 @@ AppMainWindow::AppMainWindow(QWidget* parent) : SARibbonMainWindow(parent)
     //创建controller
     mController = new DAAppController(this);
     mController
-            ->setAppMainWindow(this)                      // app
-            .setAppCore(&core)                            // core
-            .setAppActions(mUI->getAppActions())          // action
-            .setAppCommand(mUI->getAppCmd())              // cmd
-            .setAppDataManager(core.getAppDatas())        // data
-            .setAppDockingArea(mUI->getAppDockingArea())  // dock
-            .setAppRibbonArea(mUI->getAppRibbonArea())    // ribbon
-            ;
+        ->setAppMainWindow(this)                      // app
+        .setAppCore(&core)                            // core
+        .setAppActions(mUI->getAppActions())          // action
+        .setAppCommand(mUI->getAppCmd())              // cmd
+        .setAppDataManager(core.getAppDatas())        // data
+        .setAppDockingArea(mUI->getAppDockingArea())  // dock
+        .setAppRibbonArea(mUI->getAppRibbonArea())    // ribbon
+        ;
     mController->initialize();
     ribbonBar()->setContentsMargins(3, 0, 3, 0);
     //首次调用此函数会加载插件，可放置在main函数中调用
     init();
-    //    retranslateUi();//非必要可以验证调用是否正常
-    //    ribbonBar()->setRibbonStyle(SARibbonBar::WpsLiteStyleTwoRow);
+    retranslateUi();  //非必要可以验证调用是否正常
     if (isHaveStateSettingFile()) {
         restoreUIState();
     } else {
+        ribbonBar()->setRibbonStyle(SARibbonBar::WpsLiteStyleTwoRow);
         showMaximized();
     }
 }

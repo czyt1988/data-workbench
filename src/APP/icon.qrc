@@ -71,6 +71,7 @@
         <file>Icon/itemLinkageMove.svg</file>
         <file>Icon/item-cancel-group.svg</file>
         <file>Icon/item-set-group.svg</file>
+        <file>Icon/icon.svg</file>
     </qresource>
     <qresource prefix="/dataType">
         <file>Icon/typeDataframe.svg</file>
