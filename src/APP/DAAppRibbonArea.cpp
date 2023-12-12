@@ -56,9 +56,47 @@
 // Workflow
 // project
 
-//快速链接信号槽
+// 快速链接信号槽
 #define DAAPPRIBBONAREA_ACTION_BIND(actionname, functionname)                                                          \
     connect(actionname, &QAction::triggered, this, &DAAppRibbonArea::functionname)
+
+#define DAAPPRIBBONAREA_COMMON_SETTING_CPP(MiddleName, ShapeEditPannelWidget, FontEditWidget)                          \
+    QPen DAAppRibbonArea::get##MiddleName##Pen() const                                                                 \
+    {                                                                                                                  \
+        return ShapeEditPannelWidget->getBorderPen();                                                                  \
+    }                                                                                                                  \
+    QBrush DAAppRibbonArea::get##MiddleName##Brush() const                                                             \
+    {                                                                                                                  \
+        return ShapeEditPannelWidget->getBackgroundBrush();                                                            \
+    }                                                                                                                  \
+    QFont DAAppRibbonArea::get##MiddleName##Font() const                                                               \
+    {                                                                                                                  \
+        return FontEditWidget->getCurrentFont();                                                                       \
+    }                                                                                                                  \
+    QColor DAAppRibbonArea::get##MiddleName##FontColor() const                                                         \
+    {                                                                                                                  \
+        return FontEditWidget->getCurrentFontColor();                                                                  \
+    }                                                                                                                  \
+    void DAAppRibbonArea::set##MiddleName##Pen(const QPen& v)                                                          \
+    {                                                                                                                  \
+        QSignalBlocker b(ShapeEditPannelWidget);                                                                       \
+        ShapeEditPannelWidget->setBorderPen(v);                                                                        \
+    }                                                                                                                  \
+    void DAAppRibbonArea::set##MiddleName##Brush(const QBrush& v)                                                      \
+    {                                                                                                                  \
+        QSignalBlocker b(ShapeEditPannelWidget);                                                                       \
+        ShapeEditPannelWidget->setBackgroundBrush(v);                                                                  \
+    }                                                                                                                  \
+    void DAAppRibbonArea::set##MiddleName##Font(const QFont& v)                                                        \
+    {                                                                                                                  \
+        QSignalBlocker b(FontEditWidget);                                                                              \
+        FontEditWidget->setCurrentFont(v);                                                                             \
+    }                                                                                                                  \
+    void DAAppRibbonArea::set##MiddleName##FontColor(const QColor& v)                                                  \
+    {                                                                                                                  \
+        QSignalBlocker b(FontEditWidget);                                                                              \
+        FontEditWidget->setCurrentFontColor(v);                                                                        \
+    }
 
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
@@ -109,7 +147,7 @@ void DAAppRibbonArea::buildMenu()
     m_menuChartLegendProperty->addAction(m_actions->actionChartLegendAlignmentInLeft);
     //
     m_menuChartLegendProperty->addSection(tr("Property"));
-    //构建最大列数的窗口
+    // 构建最大列数的窗口
     auto addControlWidgetInChartLegendMenu = [ this ](QWidget* w, const QString& text) -> SARibbonCtrlContainer* {
         SARibbonCtrlContainer* container = new SARibbonCtrlContainer(this->m_menuChartLegendProperty);
         container->setContainerWidget(w);
@@ -151,7 +189,7 @@ void DAAppRibbonArea::retranslateUi()
 
 void DAAppRibbonArea::resetText()
 {
-    ribbonBar()->applicationButton()->setText(tr(" File "));  //文件
+    ribbonBar()->applicationButton()->setText(tr(" File "));  // 文件
 
     m_categoryMain->setCategoryName(tr("Main"));               // cn:主页
     m_pannelMainFileOpt->setPannelName(tr("File Operation"));  // cn:文件操作
@@ -173,7 +211,7 @@ void DAAppRibbonArea::resetText()
 #endif
     m_pannelDataframeOperateStatistic->setPannelName(tr("Statistic"));  ///< DataFrame -> Statistic
 
-    //编辑标签
+    // 编辑标签
     m_categoryEdit->setCategoryName(tr("Edit"));  // cn:编辑
 
     m_contextWorkflow->setContextTitle(tr("Workflow"));  // cn:工作流
@@ -190,7 +228,7 @@ void DAAppRibbonArea::resetText()
     m_categoryFigure->setCategoryName(tr("Figure"));             // cn:绘图
     m_pannelFigureSetting->setPannelName(tr("Figure Setting"));  // cn:绘图设置
     m_pannelChartAdd->setPannelName(tr("Add Chart"));            // cn:添加绘图
-    //绘图上下文标签
+    // 绘图上下文标签
     m_contextChart->setContextTitle(tr("Chart"));                        // cn:绘图
     m_categoryChartEdit->setCategoryName(tr("Chart Edit"));              // cn:绘图编辑
     m_actionOfMenuChartLegendAlignmentSection->setText(tr("Location"));  // cn:方位
@@ -220,7 +258,7 @@ void DAAppRibbonArea::buildRibbon()
     buildRibbonEditCategory();
     buildRibbonFigureCategory();
     buildRibbonQuickAccessBar();
-    //上下文标签
+    // 上下文标签
     buildContextCategoryDataFrame();
     buildContextCategoryWorkflow();
     buildContextCategoryChart();
@@ -251,7 +289,7 @@ void DAAppRibbonArea::buildRibbonMainCategory()
     m_categoryMain->addPannel(m_pannelMainFileOpt);
 
     //--------Data Opt--------------------------------------------------
-    //这里演示通过addPannel的重载函数来创建pannel
+    // 这里演示通过addPannel的重载函数来创建pannel
     m_pannelMainDataOpt = m_categoryMain->addPannel("Data Opt");
     ;
     m_pannelMainDataOpt->setObjectName(QStringLiteral("da-pannel-main.data-opt"));
@@ -276,7 +314,7 @@ void DAAppRibbonArea::buildRibbonMainCategory()
     m_categoryMain->addPannel(m_pannelSetting);
     //----------------------------------------------------------
 
-    ribbonBar()->addCategoryPage(m_categoryMain);  //主页
+    ribbonBar()->addCategoryPage(m_categoryMain);  // 主页
 }
 
 /**
@@ -324,7 +362,7 @@ void DAAppRibbonArea::buildRibbonViewCategory()
 
     //----------------------------------------------------------
 
-    ribbonBar()->addCategoryPage(m_categoryView);  //视图
+    ribbonBar()->addCategoryPage(m_categoryView);  // 视图
 }
 
 /**
@@ -358,7 +396,7 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
 #ifdef DA_ENABLE_PYTHON
     m_comboxColumnTypesContainer = new SARibbonLineWidgetContainer(m_pannelDataframeOperateDType);
     m_comboxColumnTypes          = new DAPyDTypeComboBox(m_comboxColumnTypesContainer);
-    m_comboxColumnTypes->setMinimumWidth(m_app->fontMetrics().width("timedelta64(scoll)"));  //设置最小宽度
+    m_comboxColumnTypes->setMinimumWidth(m_app->fontMetrics().width("timedelta64(scoll)"));  // 设置最小宽度
     m_comboxColumnTypesContainer->setPrefix(tr("Type"));
     m_comboxColumnTypesContainer->setWidget(m_comboxColumnTypes);
     m_pannelDataframeOperateDType->addWidget(m_comboxColumnTypesContainer, SARibbonPannelItem::Medium);
@@ -391,10 +429,22 @@ void DAAppRibbonArea::buildRibbonEditCategory()
     m_pannelEditWorkflow->addSeparator();
     m_pannelEditWorkflow->addLargeAction(m_actions->actionWorkflowStartDrawRect);
     m_pannelEditWorkflow->addLargeAction(m_actions->actionWorkflowStartDrawText);
+
+    m_editShapeEditPannelWidget = new DAShapeEditPannelWidget(m_pannelEditWorkflow);
+    m_pannelEditWorkflow->addWidget(m_editShapeEditPannelWidget, SARibbonPannelItem::Large);
+    m_pannelEditWorkflow->addSeparator();
+    m_editFontEditPannel = new DAFontEditPannelWidget(m_pannelEditWorkflow);
+    m_pannelEditWorkflow->addWidget(m_editFontEditPannel, SARibbonPannelItem::Large);
     m_categoryEdit->addPannel(m_pannelEditWorkflow);
     //----------------------------------------------------------
 
-    ribbonBar()->addCategoryPage(m_categoryEdit);  //编辑
+    ribbonBar()->addCategoryPage(m_categoryEdit);  // 编辑
+
+    // connect
+    connect(m_editShapeEditPannelWidget, &DAShapeEditPannelWidget::borderPenChanged, this, &DAAppRibbonArea::selectedPen);
+    connect(m_editShapeEditPannelWidget, &DAShapeEditPannelWidget::backgroundBrushChanged, this, &DAAppRibbonArea::selectedBrush);
+    connect(m_editFontEditPannel, &DAFontEditPannelWidget::currentFontChanged, this, &DAAppRibbonArea::selectedFont);
+    connect(m_editFontEditPannel, &DAFontEditPannelWidget::currentFontColorChanged, this, &DAAppRibbonArea::selectedFontColor);
 }
 
 void DAAppRibbonArea::buildRibbonFigureCategory()
@@ -405,7 +455,7 @@ void DAAppRibbonArea::buildRibbonFigureCategory()
     m_pannelFigureSetting->setObjectName(QStringLiteral("da-pannel-figure.fig_setting"));
     m_pannelFigureSetting->addLargeAction(m_actions->actionAddFigure);
     m_pannelFigureSetting->addLargeAction(m_actions->actionFigureResizeChart);
-    m_pannelFigureSetting->addLargeAction(m_actions->actionFigureNewXYAxis);  //新建坐标系
+    m_pannelFigureSetting->addLargeAction(m_actions->actionFigureNewXYAxis);  // 新建坐标系
     m_categoryFigure->addPannel(m_pannelFigureSetting);
 
     m_pannelChartAdd = new SARibbonPannel(m_categoryFigure);
@@ -435,21 +485,22 @@ void DAAppRibbonArea::buildContextCategoryWorkflowEdit_()
 
     m_categoryWorkflowGraphicsEdit = m_contextWorkflow->addCategoryPage(tr("Workflow Edit"));
     m_categoryWorkflowGraphicsEdit->setObjectName(QStringLiteral("da-ribbon-category-workflow.edit"));
-    //条目pannel
-    // Item
+    // 条目pannel
+    //  Item
     m_pannelWorkflowItem = m_categoryWorkflowGraphicsEdit->addPannel(tr("Item"));
     m_pannelWorkflowItem->setObjectName(QStringLiteral("da-pannel-context.workflow.item"));
     m_pannelWorkflowItem->addLargeAction(m_actions->actionWorkflowNew);
     m_pannelWorkflowItem->addSeparator();
-    m_pannelWorkflowItem->addLargeAction(m_actions->actionWorkflowStartDrawRect);
     m_workflowShapeEditPannelWidget = new DAShapeEditPannelWidget(m_pannelWorkflowItem);
     m_pannelWorkflowItem->addWidget(m_workflowShapeEditPannelWidget, SARibbonPannelItem::Large);
+    m_pannelWorkflowItem->addSeparator();
+    m_workflowFontEditPannel = new DAFontEditPannelWidget(m_pannelWorkflowItem);
+    m_pannelWorkflowItem->addWidget(m_workflowFontEditPannel, SARibbonPannelItem::Large);
     // Text
     m_pannelWorkflowText = m_categoryWorkflowGraphicsEdit->addPannel(tr("Text"));
     m_pannelWorkflowText->setObjectName(QStringLiteral("da-pannel-context.workflow.text"));
+    m_pannelWorkflowText->addLargeAction(m_actions->actionWorkflowStartDrawRect);
     m_pannelWorkflowText->addLargeAction(m_actions->actionWorkflowStartDrawText);
-    m_workflowFontEditPannel = new DAFontEditPannelWidget(m_pannelWorkflowText);
-    m_pannelWorkflowText->addWidget(m_workflowFontEditPannel, SARibbonPannelItem::Large);
     // Background
     m_pannelWorkflowBackground = m_categoryWorkflowGraphicsEdit->addPannel(tr("Background"));
     m_pannelWorkflowBackground->setObjectName(QStringLiteral("da-pannel-context.workflow.background"));
@@ -469,6 +520,12 @@ void DAAppRibbonArea::buildContextCategoryWorkflowEdit_()
     m_pannelWorkflowView->addMediumAction(m_actions->actionItemGrouping);
     m_pannelWorkflowView->addMediumAction(m_actions->actionItemUngroup);
     m_pannelWorkflowView->addLargeAction(m_actions->actionWorkflowEnableItemLinkageMove);
+    //
+    // connect
+    connect(m_workflowShapeEditPannelWidget, &DAShapeEditPannelWidget::borderPenChanged, this, &DAAppRibbonArea::selectedWorkflowItemPen);
+    connect(m_workflowShapeEditPannelWidget, &DAShapeEditPannelWidget::backgroundBrushChanged, this, &DAAppRibbonArea::selectedWorkflowItemBrush);
+    connect(m_workflowFontEditPannel, &DAFontEditPannelWidget::currentFontChanged, this, &DAAppRibbonArea::selectedWorkflowItemFont);
+    connect(m_workflowFontEditPannel, &DAFontEditPannelWidget::currentFontColorChanged, this, &DAAppRibbonArea::selectedWorkflowItemFontColor);
 }
 
 /**
@@ -499,7 +556,7 @@ void DAAppRibbonArea::buildContextCategoryChart()
     m_pannelFigureSettingForContext->setObjectName(QStringLiteral("da-pannel-context-chartedit.fig_setting"));
     m_pannelFigureSettingForContext->addLargeAction(m_actions->actionAddFigure);
     m_pannelFigureSettingForContext->addLargeAction(m_actions->actionFigureResizeChart);
-    m_pannelFigureSettingForContext->addLargeAction(m_actions->actionFigureNewXYAxis);  //新建坐标系
+    m_pannelFigureSettingForContext->addLargeAction(m_actions->actionFigureNewXYAxis);  // 新建坐标系
     m_categoryChartEdit->addPannel(m_pannelFigureSettingForContext);
     // chart edit
     m_pannelChartSetting = new SARibbonPannel(m_categoryChartEdit);
@@ -516,7 +573,7 @@ void DAAppRibbonArea::buildContextCategoryChart()
     m_pannelChartSetting->addSmallWidget(m_chartGridMinActionsButtonGroup);
     // pan
     m_pannelChartSetting->addLargeAction(m_actions->actionChartEnablePan);
-    //缩放
+    // 缩放
     m_pannelChartSetting->addLargeAction(m_actions->actionChartEnableZoom);
     m_pannelChartSetting->addMediumAction(m_actions->actionChartZoomIn);
     m_pannelChartSetting->addMediumAction(m_actions->actionChartZoomOut);
@@ -551,6 +608,38 @@ void DAAppRibbonArea::buildRightButtonBar()
     rbar->addMenu(m_menuTheme);
 }
 
+/**
+   @fn getEditPen
+   @brief 获取编辑的画笔
+   @return
+ */
+
+/**
+   @fn getEditBrush
+   @brief 画刷
+   @return
+ */
+
+/**
+   @fn getEditFont
+   @brief 字体
+   @return
+ */
+
+/**
+   @fn getEditFontColor
+   @brief 字体颜色
+   @return
+ */
+
+/**
+   @fn setEditPen
+   @brief 设置画笔
+   @param p
+ */
+DAAPPRIBBONAREA_COMMON_SETTING_CPP(Edit, m_editShapeEditPannelWidget, m_editFontEditPannel)
+DAAPPRIBBONAREA_COMMON_SETTING_CPP(WorkFlowEdit, m_workflowShapeEditPannelWidget, m_workflowFontEditPannel)
+
 AppMainWindow* DAAppRibbonArea::app() const
 {
     return (m_app);
@@ -577,7 +666,7 @@ SARibbonCategory* DAAppRibbonArea::getRibbonCategoryMain() const
 void DAAppRibbonArea::buildRedoUndo()
 {
     QUndoGroup& undoGroup = m_appCmd->undoGroup();
-    //设置redo,undo的action
+    // 设置redo,undo的action
     m_actions->actionRedo = undoGroup.createRedoAction(this);
     m_actions->actionRedo->setObjectName("actionRedo");
     m_actions->actionRedo->setIcon(QIcon(":/Icon/Icon/redo.svg"));
@@ -697,12 +786,12 @@ void DAAppRibbonArea::updateChartLegendAboutRibbon(DAChartWidget* chart)
     QAction* ca         = m_actions->actionGroupChartLegendAlignment->checkedAction();
     if (ca) {
         if (ca->data().toInt() == static_cast< int >(al)) {
-            //状态不变，无需迭代
+            // 状态不变，无需迭代
             needIteActions = false;
         }
     }
     if (needIteActions) {
-        //需要迭代所有情况
+        // 需要迭代所有情况
         QList< QAction* > acts = m_actions->actionGroupChartLegendAlignment->actions();
         for (QAction* a : qAsConst(acts)) {
             if (a->data().toInt() == static_cast< int >(al)) {
@@ -723,27 +812,6 @@ void DAAppRibbonArea::updateChartLegendAboutRibbon(DAChartWidget* chart)
     m_spinboxChartLegendItemSpacing->setValue(legend->itemSpacing());
     QSignalBlocker b6(m_spinboxChartLegendBorderRadius);
     m_spinboxChartLegendBorderRadius->setValue(legend->borderRadius());
-}
-
-/**
- * @brief 更新工作流相关的界面
- * @param item
- */
-void DAAppRibbonArea::updateWorkflowItemAboutRibbon(QGraphicsItem* lastSelectItem)
-{
-    if (lastSelectItem == nullptr) {
-        return;
-    }
-
-    if (DAGraphicsItem* daitem = dynamic_cast< DAGraphicsItem* >(lastSelectItem)) {
-        //属于DAGraphicsItem系列
-        QSignalBlocker b(m_workflowShapeEditPannelWidget);
-        m_workflowShapeEditPannelWidget->setBackgroundBrush(daitem->getBackgroundBrush());
-        m_workflowShapeEditPannelWidget->setBorderPen(daitem->getBorderPen());
-    } else if (DAStandardGraphicsTextItem* titem = dynamic_cast< DAStandardGraphicsTextItem* >(lastSelectItem)) {
-        m_workflowFontEditPannel->setCurrentFontColor(titem->defaultTextColor());
-        m_workflowFontEditPannel->setCurrentFont(titem->font());
-    }
 }
 
 /**
@@ -812,7 +880,7 @@ void DAAppRibbonArea::hideContextCategory(DAAppRibbonArea::ContextCategoryType t
  */
 void DAAppRibbonArea::setDataframeOperateCurrentDType(const DAPyDType& d)
 {
-    //先阻塞
+    // 先阻塞
     QSignalBlocker blocker(m_comboxColumnTypes);
     Q_UNUSED(blocker);
     m_comboxColumnTypes->setCurrentDType(d);

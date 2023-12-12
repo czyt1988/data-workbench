@@ -21,11 +21,16 @@ class DACOMMONWIDGETS_API DABrushEditWidget : public QWidget
 public:
     explicit DABrushEditWidget(QWidget* parent = nullptr);
     ~DABrushEditWidget();
-    //获取当前画刷
+    // 获取当前画刷
     QBrush getCurrentBrush() const;
+    // 是否在样式上显示文字
+    void setStyleTextVisible(bool on);
+    bool isStyleTextVisible() const;
 public slots:
-    //设置画刷,设置画刷会触发brushChanged信号
+    // 设置画刷,设置画刷会触发brushChanged信号
     void setCurrentBrush(const QBrush& b);
+    // 设置当前画刷样式
+    void setCurrentBrushStyle(Qt::BrushStyle s);
 signals:
     /**
      * @brief 画刷发生改变

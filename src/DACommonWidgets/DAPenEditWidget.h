@@ -21,10 +21,13 @@ public:
     explicit DAPenEditWidget(const QPen& p, QWidget* parent = nullptr);
     ~DAPenEditWidget();
     void retranslateUi();
-    //获取当前的画笔
+    // 获取当前的画笔
     QPen getCurrentPen() const;
+    // 是否在样式上显示文字
+    void setLineStyleTextVisible(bool on);
+    bool isLineStyleTextVisible() const;
 public slots:
-    //设置画笔,设置画笔会触发penChanged信号
+    // 设置画笔,设置画笔会触发penChanged信号
     void setCurrentPen(const QPen& p);
 signals:
     /**

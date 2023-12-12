@@ -120,6 +120,16 @@ QPen DAPenEditWidget::getCurrentPen() const
     return d_ptr->mPen;
 }
 
+void DAPenEditWidget::setLineStyleTextVisible(bool on)
+{
+    d_ptr->comboBox->setStyleTextVisible(on);
+}
+
+bool DAPenEditWidget::isLineStyleTextVisible() const
+{
+    return d_ptr->comboBox->isStyleTextVisible();
+}
+
 void DAPenEditWidget::onColorChanged(const QColor& c)
 {
     d_ptr->mPen.setColor(c);

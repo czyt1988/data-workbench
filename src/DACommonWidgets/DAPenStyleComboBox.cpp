@@ -18,6 +18,7 @@ class DAPenStyleComboBox::PrivateData
 public:
     PrivateData(DAPenStyleComboBox* p);
     QPen mDrawPen { Qt::black };
+    bool mStyleTextVisible { false };
 };
 
 DAPenStyleComboBox::PrivateData::PrivateData(DAPenStyleComboBox* p) : q_ptr(p)
@@ -33,12 +34,7 @@ DAPenStyleComboBox::DAPenStyleComboBox(QWidget* parent) : QComboBox(parent), DA_
 {
     setEditable(false);
     setIconSize(QSize(40, 15));
-    addItem(Qt::NoPen);
-    addItem(Qt::SolidLine);
-    addItem(Qt::DashLine);
-    addItem(Qt::DotLine);
-    addItem(Qt::DashDotLine);
-    addItem(Qt::DashDotDotLine);
+    rebuildItems();
     connect(this, QOverload< int >::of(&QComboBox::currentIndexChanged), this, &DAPenStyleComboBox::onCurrentIndexChanged);
 }
 
@@ -118,7 +114,7 @@ QIcon DAPenStyleComboBox::generatePenIcon(Qt::PenStyle s) const
     pixmap.fill(Qt::transparent);
     QPainter painter(&pixmap);
     DAPenStyleComboBoxItemDelegate* d = qobject_cast< DAPenStyleComboBoxItemDelegate* >(itemDelegate());
-    //获取颜色
+    // 获取颜色
     QColor c = (d == nullptr) ? Qt::black : d->getPenColor();
     int w    = (d == nullptr) ? 2 : d->getPenLineWidth();
     QPen p(c);
@@ -158,6 +154,49 @@ void DAPenStyleComboBox::updateItems()
 }
 
 /**
+   @brief 是否在样式上显示文字
+
+   @default 默认为否
+   @param on
+ */
+void DAPenStyleComboBox::setStyleTextVisible(bool on)
+{
+    if (d_ptr->mStyleTextVisible != on) {
+        // 要重新生成
+        // 先获取已经设置的
+        QList< Qt::PenStyle > ps;
+        int c = count();
+        for (int i = 0; i < c; ++i) {
+            ps.append(static_cast< Qt::PenStyle >(itemData(i).toInt()));
+        }
+        clear();
+        for (Qt::PenStyle s : std::as_const(ps)) {
+            addItem(s);
+        }
+    }
+    d_ptr->mStyleTextVisible = on;
+}
+
+bool DAPenStyleComboBox::isStyleTextVisible() const
+{
+    return d_ptr->mStyleTextVisible;
+}
+
+/**
+   @brief 重建所有items
+ */
+void DAPenStyleComboBox::rebuildItems()
+{
+    clear();
+    addItem(Qt::NoPen);
+    addItem(Qt::SolidLine);
+    addItem(Qt::DashLine);
+    addItem(Qt::DotLine);
+    addItem(Qt::DashDotLine);
+    addItem(Qt::DashDotDotLine);
+}
+
+/**
  * @brief 设置画笔
  * @param p
  */
@@ -174,7 +213,7 @@ void DAPenStyleComboBox::setPen(const QPen& p)
  */
 void DAPenStyleComboBox::addItem(Qt::PenStyle s)
 {
-    QComboBox::addItem(generatePenIcon(s), penStyleToString(s), static_cast< int >(s));
+    QComboBox::addItem(generatePenIcon(s), isStyleTextVisible() ? penStyleToString(s) : "", static_cast< int >(s));
 }
 
 void DAPenStyleComboBox::onCurrentIndexChanged(int index)

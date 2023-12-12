@@ -14,6 +14,7 @@ public:
     std::unique_ptr< QGradient > mGradient;
     std::unique_ptr< QPixmap > mPixmap;
     Qt::BrushStyle mCurrentBrushStyle;  ///< 记录当前的style
+    bool mStyleTextVisible { false };
 };
 
 DABrushStyleComboBox::PrivateData::PrivateData(DABrushStyleComboBox* p)
@@ -148,8 +149,6 @@ void DABrushStyleComboBox::rebuildItems()
     clear();
     if (isColorBrush()) {
         addItem(Qt::NoBrush);
-    }
-    if (isColorBrush()) {
         addItem(Qt::SolidPattern);
         addItem(Qt::Dense1Pattern);
         addItem(Qt::Dense2Pattern);
@@ -220,6 +219,56 @@ void DABrushStyleComboBox::updateIcons()
     }
 }
 
+void DABrushStyleComboBox::setStyleTextVisible(bool on)
+{
+    if (d_ptr->mStyleTextVisible != on) {
+        // 要重新生成
+        // 先获取已经设置的
+        QList< Qt::BrushStyle > ps;
+        int c = count();
+        for (int i = 0; i < c; ++i) {
+            ps.append(static_cast< Qt::BrushStyle >(itemData(i).toInt()));
+        }
+        clear();
+        for (Qt::BrushStyle s : std::as_const(ps)) {
+            addItem(s);
+        }
+    }
+    d_ptr->mStyleTextVisible = on;
+}
+
+bool DABrushStyleComboBox::isStyleTextVisible() const
+{
+    return d_ptr->mStyleTextVisible;
+}
+
+/**
+   @brief 获取当前的画刷样式
+   @return
+ */
+Qt::BrushStyle DABrushStyleComboBox::getCurrentBrushStyle() const
+{
+    QVariant v = currentData();
+    if (v.isValid()) {
+        return static_cast< Qt::BrushStyle >(v.toInt());
+    }
+    return Qt::NoBrush;
+}
+
+/**
+   @brief 获取画刷样式
+   @param index
+   @return
+ */
+Qt::BrushStyle DABrushStyleComboBox::getBrushStyle(int index) const
+{
+    QVariant v = itemData(index);
+    if (v.isValid()) {
+        return static_cast< Qt::BrushStyle >(v.toInt());
+    }
+    return Qt::NoBrush;
+}
+
 /**
  * @brief 设置当前选中的样式
  *
@@ -242,12 +291,12 @@ void DABrushStyleComboBox::setCurrentBrushStyle(Qt::BrushStyle s)
 
 void DABrushStyleComboBox::onCurrentIndexChanged(int index)
 {
-    emit currentBrushStyleChanged(static_cast< Qt::BrushStyle >(itemData(index).toInt()));
+    emit currentBrushStyleChanged(getBrushStyle(index));
 }
 
 void DABrushStyleComboBox::addItem(Qt::BrushStyle s)
 {
-    QComboBox::addItem(generateBrushStyleIcon(s), brushStyleToString(s), int(s));
+    QComboBox::addItem(generateBrushStyleIcon(s), isStyleTextVisible() ? brushStyleToString(s) : "", static_cast< int >(s));
 }
 
 }
