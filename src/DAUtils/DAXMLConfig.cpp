@@ -8,7 +8,6 @@
 #include <QDomText>
 #include <QDomNode>
 #include <QDebug>
-#include "DAXMLFileInterface.h"
 #define CONFIG_FILE_NAME "saconfig.cfg"
 
 #define CONFIG_ROOT_NAME "config"

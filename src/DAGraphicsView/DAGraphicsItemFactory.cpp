@@ -2,11 +2,9 @@
 #include <QDebug>
 #include <QObject>
 #include "DAGraphicsItem.h"
-#include "DAGraphicsResizeableItem.h"
 #include "DAGraphicsResizeablePixmapItem.h"
 #include "DAGraphicsResizeableRectItem.h"
 #include "DAGraphicsResizeableTextItem.h"
-#include "DAStandardGraphicsTextItem.h"
 namespace DA
 {
 /**

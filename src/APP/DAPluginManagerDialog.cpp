@@ -1,6 +1,5 @@
 ﻿#include "DAPluginManagerDialog.h"
 #include "ui_DAPluginManagerDialog.h"
-#include "DAPluginManager.h"
 #include <QTreeWidgetItem>
 #include <QDebug>
 #include "DAAbstractNodePlugin.h"

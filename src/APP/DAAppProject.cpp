@@ -9,17 +9,7 @@
 #include <QElapsedTimer>
 #include <QSet>
 // DA
-#include "DAWorkFlowGraphicsScene.h"
-#include "DAAppPluginManager.h"
-#include "DAGraphicsResizeablePixmapItem.h"
-#include "DAStandardNodeLinkGraphicsItem.h"
-#include "DAGraphicsItemFactory.h"
-#include "DAAbstractNodeFactory.h"
-#include "DAGraphicsItem.h"
-#include "DAXMLFileInterface.h"
-#include "DAStringUtil.h"
 #include "DAWorkFlowOperateWidget.h"
-#include "DAWorkFlowEditWidget.h"
 #include "DAXmlHelper.h"
 namespace DA
 {

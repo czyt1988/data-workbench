@@ -25,7 +25,6 @@
 // workflow相关
 #include "DAAbstractNodeGraphicsItem.h"
 #include "DAWorkFlowNodeListWidget.h"
-#include "DAWorkFlowGraphicsView.h"
 #include "DAWorkFlowEditWidget.h"
 #include "DASettingContainerWidget.h"
 #include "DAWorkFlowNodeItemSettingWidget.h"

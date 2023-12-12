@@ -4,7 +4,6 @@
 #include "DAAppActions.h"
 #include "DAAppCommand.h"
 #include "DAAppCore.h"
-#include "DAWorkFlowOperateWidget.h"
 #include "DAAppDataManager.h"
 #include "AppMainWindow.h"
 #include "DAStatusBar.h"

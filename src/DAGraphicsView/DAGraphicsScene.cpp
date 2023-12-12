@@ -3,7 +3,6 @@
 #include "DACommandsForGraphics.h"
 #include "DAGraphicsResizeableItem.h"
 #include "DAGraphicsLinkItem.h"
-#include "DAGraphicsItemGroup.h"
 #include <QPainter>
 #include <QDebug>
 
