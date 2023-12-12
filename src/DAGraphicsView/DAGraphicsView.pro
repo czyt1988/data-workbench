@@ -27,7 +27,7 @@ HEADERS +=\
     DAGraphicsResizeableTextItem.h \
     DAGraphicsRelativeSimpleTextItem.h \
     DAStandardGraphicsTextItem.h \
-    DAGraphicsSceneWithUndoStack.h \
+    DAGraphicsScene.h \
     DACommandsForGraphics.h \
     DAGraphicsView.h 
 
@@ -42,7 +42,7 @@ SOURCES += \
     DAGraphicsResizeableRectItem.cpp \
     DAGraphicsResizeableTextItem.cpp \
     DAStandardGraphicsTextItem.cpp \
-    DAGraphicsSceneWithUndoStack.cpp \
+    DAGraphicsScene.cpp \
     DACommandsForGraphics.cpp \
     DAGraphicsView.cpp 
 

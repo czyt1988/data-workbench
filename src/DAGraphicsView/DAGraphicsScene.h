@@ -1,5 +1,5 @@
-﻿#ifndef DAGRAPHICSSCENEWITHUNDOSTACK_H
-#define DAGRAPHICSSCENEWITHUNDOSTACK_H
+﻿#ifndef DAGRAPHICSSCENE_H
+#define DAGRAPHICSSCENE_H
 #include "DAGraphicsViewGlobal.h"
 #include <QGraphicsScene>
 #include <QUndoStack>

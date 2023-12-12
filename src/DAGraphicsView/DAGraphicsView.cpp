@@ -4,7 +4,7 @@
 #include <QDebug>
 #include <QScrollBar>
 #include <QKeyEvent>
-#include "DAGraphicsSceneWithUndoStack.h"
+#include "DAGraphicsScene.h"
 
 namespace DA
 {
@@ -19,7 +19,7 @@ public:
     qreal mScaleMin { 0.333 };
     qreal mZoomStep { 0.1 };
     qreal mScaleValue { 1.0 };  ///< 记录缩放的值
-    bool mIsPadding { false };  ///<标记是否开始拖动
+    bool mIsPadding { false };  ///< 标记是否开始拖动
     QPointF mMouseScenePos;
     QPoint mStartPadPos;  ///< 记录开始拖动的位置
     DAGraphicsView::ZoomFlags mZoomFlags { DAGraphicsView::ZoomUseWheelAndCtrl };
@@ -124,7 +124,7 @@ void DAGraphicsView::wheelEvent(QWheelEvent* event)
         return;
     }
     if (d_ptr->mZoomFlags.testFlag(ZoomUseWheelAndCtrl)) {
-        //通过ctrl来缩放，需要判断是否按住了ctrl
+        // 通过ctrl来缩放，需要判断是否按住了ctrl
         if (event->modifiers().testFlag(Qt::ControlModifier)) {
             wheelZoom(event);
             event->accept();
@@ -150,7 +150,7 @@ void DAGraphicsView::mouseMoveEvent(QMouseEvent* event)
         horizontalScrollBar()->setValue(horizontalScrollBar()->value() - (event->x() - d_ptr->mStartPadPos.x()));
         verticalScrollBar()->setValue(verticalScrollBar()->value() - (event->y() - d_ptr->mStartPadPos.y()));
         d_ptr->mStartPadPos = event->pos();
-        //移动状态不把事件向下传递
+        // 移动状态不把事件向下传递
         event->accept();
     }
     QGraphicsView::mouseMoveEvent(event);
@@ -164,9 +164,9 @@ void DAGraphicsView::mousePressEvent(QMouseEvent* event)
     }
     if (d_ptr->mPadFlags.testFlag(PadByWheelMiddleButton)) {
         if (event->button() == Qt::MiddleButton) {
-            //设置了中间拖动
+            // 设置了中间拖动
             startPad(event);
-            //把事件截断
+            // 把事件截断
             event->accept();
             return;
         }
@@ -351,11 +351,11 @@ void DAGraphicsView::selectAll()
         // DAGraphicsSceneWithUndoStack的selectAll只发射一次selectionChanged信号
         s->selectAll();
     } else {
-        //非DAGraphicsSceneWithUndoStack，就执行选中所有
+        // 非DAGraphicsSceneWithUndoStack，就执行选中所有
         QList< QGraphicsItem* > its = items();
         for (QGraphicsItem* i : its) {
             if (!i->isSelected() && i->flags().testFlag(QGraphicsItem::ItemIsSelectable)) {
-                //只有没有被选上，且是可选的才会执行选中动作
+                // 只有没有被选上，且是可选的才会执行选中动作
                 i->setSelected(true);
             }
         }

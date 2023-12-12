@@ -538,6 +538,17 @@ void DAAbstractNodeGraphicsItem::prepareNodeNameChanged(const QString& name)
 }
 
 /**
+   @brief 分组位置发生了变化
+
+   分组位置发生了变化也要刷新链接
+   @param pos
+ */
+void DAAbstractNodeGraphicsItem::groupPositionChanged(const QPointF& pos)
+{
+    updateLinkItems();
+}
+
+/**
  * @brief 通过位置获取linkpoint,如果没有返回一个invalid的DANodeLinkPoint
  *
  * 此函数作为虚函数，是scene判断是否点击到了链接点的关键函数，如果连接点是固定的,

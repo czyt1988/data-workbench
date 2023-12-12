@@ -1,7 +1,7 @@
 ﻿#include "DACommandsForGraphics.h"
 #include <QDebug>
 #include <QGraphicsItem>
-#include "DAGraphicsSceneWithUndoStack.h"
+#include "DAGraphicsScene.h"
 #include "DAGraphicsResizeableItem.h"
 #include "DAGraphicsItemGroup.h"
 #include <QObject>

@@ -3,7 +3,7 @@
 #include <QtCore/qglobal.h>
 #include "DANodeMetaData.h"
 #include "DAWorkFlowGlobal.h"
-#include "DAGraphicsSceneWithUndoStack.h"
+#include "DAGraphicsScene.h"
 #include "DAAbstractNodeGraphicsItem.h"
 #include "DAAbstractNodeLinkGraphicsItem.h"
 #include "DAWorkFlow.h"
@@ -33,23 +33,23 @@ public:
     DANodeGraphicsScene(qreal x, qreal y, qreal width, qreal height, QObject* p = nullptr);
     ~DANodeGraphicsScene();
 
-    //取消链接
+    // 取消链接
     virtual void cancelLink() override;
 
-    //设置工作流
+    // 设置工作流
     void setWorkFlow(DAWorkFlow* wf);
     DAWorkFlow* getWorkflow();
 
-    //通过node找到item,时间复杂度<O(n)
+    // 通过node找到item,时间复杂度<O(n)
     DAAbstractNodeGraphicsItem* findItemByNode(DAAbstractNode* n);
 
     // 获取选中的NodeGraphicsItem,如果没有返回nullptr，如果选中多个，返回第一个
     DAAbstractNodeGraphicsItem* getSelectedNodeGraphicsItem() const;
 
-    //获取所有的graphicsitem
+    // 获取所有的graphicsitem
     QList< DAAbstractNodeGraphicsItem* > getNodeGraphicsItems() const;
 
-    //获取所有的DAAbstractNodeGraphicsItem
+    // 获取所有的DAAbstractNodeGraphicsItem
     QList< DAStandardGraphicsTextItem* > getTextGraphicsItems() const;
 
     // 获取选中的NodeGraphicsItem,如果没有返回一个空list
@@ -61,20 +61,21 @@ public:
     // 获取选中的NodeLinkGraphicsItem,如果没有返回一个空list
     QList< DAAbstractNodeLinkGraphicsItem* > getSelectedNodeLinkGraphicsItems() const;
 
-    //获取除了连接线以外的item
+    // 获取除了连接线以外的item
     QList< QGraphicsItem* > getGraphicsItemsWithoutLink() const;
 
-    //删除选中的item，此函数支持redo/undo,返回删除的数量
+    // 删除选中的item，此函数支持redo/undo,返回删除的数量
     int removeSelectedItems_();
 
-    //通过node元对象创建工作流节点
+    // 通过node元对象创建工作流节点
     DAAbstractNodeGraphicsItem* createNode(const DANodeMetaData& md, const QPointF& pos);
     DAAbstractNodeGraphicsItem* createNode_(const DANodeMetaData& md, const QPointF& pos);
-    //创建文本框
+    // 创建文本框
     DAStandardGraphicsTextItem* createText_(const QString& str = QString());
-    //创建矩形
+    // 创建矩形
     DAGraphicsResizeableRectItem* createRect_(const QPointF& p = QPointF());
-
+    // 通过位置获取DAAbstractNodeGraphicsItem，此函数是加强版的itemAt
+    DAAbstractNodeGraphicsItem* nodeItemAt(const QPointF& scenePos) const;
 signals:
 
     /**
@@ -141,13 +142,13 @@ protected slots:
     void onNodeNameChanged(DAAbstractNode::SharedPointer node, const QString& oldName, const QString& newName);
 
 protected:
-    //鼠标点击事件
+    // 鼠标点击事件
     void mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent) override;
 
-    //鼠标移动事件
+    // 鼠标移动事件
     void mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent) override;
 
-    //鼠标释放
+    // 鼠标释放
     void mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent) override;
 
     // itemlink都没用节点连接时会调用这个函数，发出

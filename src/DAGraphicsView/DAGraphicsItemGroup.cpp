@@ -5,6 +5,7 @@
 #include <QStyleOptionGraphicsItem>
 #include <QGraphicsSceneHoverEvent>
 #include <QDebug>
+#include "DAGraphicsItem.h"
 namespace DA
 {
 
@@ -144,6 +145,24 @@ void DAGraphicsItemGroup::paint(QPainter* painter, const QStyleOptionGraphicsIte
         painter->setPen(d_ptr->mBorderPen);
         painter->drawRect(boundingRect());
     }
+}
+
+QVariant DAGraphicsItemGroup::itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant& value)
+{
+    switch (change) {
+    case QGraphicsItem::ItemPositionHasChanged: {
+        QPointF p                   = value.toPointF();
+        QList< QGraphicsItem* > cis = childItems();
+        for (QGraphicsItem* i : std::as_const(cis)) {
+            if (DAGraphicsItem* di = dynamic_cast< DAGraphicsItem* >(i)) {
+                di->groupPositionChanged(p);
+            }
+        }
+    }
+    default:
+        break;
+    }
+    return QGraphicsItemGroup::itemChange(change, value);
 }
 
 }  // end of DA

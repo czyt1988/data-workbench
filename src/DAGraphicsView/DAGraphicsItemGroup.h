@@ -35,6 +35,7 @@ public:
 
 public:
     virtual void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget = nullptr) override;
+    virtual QVariant itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant& value) override;
 };
 
 }

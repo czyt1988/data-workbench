@@ -48,10 +48,11 @@ public:
     // 设置是否显示背景
     void setShowBackground(bool on);
     bool isShowBackground() const;
-    //    //分组位置发生改变的事件
-    //    virtual void groupPositionChanged();
+    // 分组位置发生改变的事件
+    virtual void groupPositionChanged(const QPointF& pos);
+
 protected:
-    virtual bool sceneEvent(QEvent* event) override;
+    //    virtual bool sceneEvent(QEvent* event) override;
 };
 
 }

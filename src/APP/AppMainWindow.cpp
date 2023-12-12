@@ -12,19 +12,19 @@
 #include <QBuffer>
 //
 #include "SARibbonBar.h"
-//插件相关
+// 插件相关
 #include "DAAppPluginManager.h"
 #include "DAAbstractPlugin.h"
 #include "DAAbstractNodePlugin.h"
-//界面相关
+// 界面相关
 #include "DAAppController.h"
 #include "DAAppCore.h"
 #include "DAAppUI.h"
 #include "DAAppDockingArea.h"
 #include "DAAppRibbonArea.h"
-//对话框
+// 对话框
 
-//节点相关
+// 节点相关
 #include "DANodeMetaData.h"
 
 //
@@ -50,31 +50,35 @@ using namespace DA;
 AppMainWindow::AppMainWindow(QWidget* parent) : SARibbonMainWindow(parent)
 
 {
-    //建立ribbonArea，此函数的构造函数会生成界面
+    // 标签可高亮
+    ads::CDockManager::setConfigFlag(ads::CDockManager::FocusHighlighting, true);
+    // 让dock可以最小化到一个标签
+    ads::CDockManager::setAutoHideConfigFlags({ ads::CDockManager::DefaultAutoHideConfig });
+    // 建立ribbonArea，此函数的构造函数会生成界面
     QIcon icon(":/Icon/Icon/icon.svg");
     setWindowIcon(icon);
     DAAppCore& core = DAAppCore::getInstance();
-    //创建界面
+    // 创建界面
     core.createUi(this);
     mCore     = &core;
     mUI       = qobject_cast< DAAppUI* >(core.getUiInterface());
     mDockArea = mUI->getAppDockingArea();
-    //创建controller
+    // 创建controller
     mController = new DAAppController(this);
     mController
-        ->setAppMainWindow(this)                      // app
-        .setAppCore(&core)                            // core
-        .setAppActions(mUI->getAppActions())          // action
-        .setAppCommand(mUI->getAppCmd())              // cmd
-        .setAppDataManager(core.getAppDatas())        // data
-        .setAppDockingArea(mUI->getAppDockingArea())  // dock
-        .setAppRibbonArea(mUI->getAppRibbonArea())    // ribbon
-        ;
+            ->setAppMainWindow(this)                      // app
+            .setAppCore(&core)                            // core
+            .setAppActions(mUI->getAppActions())          // action
+            .setAppCommand(mUI->getAppCmd())              // cmd
+            .setAppDataManager(core.getAppDatas())        // data
+            .setAppDockingArea(mUI->getAppDockingArea())  // dock
+            .setAppRibbonArea(mUI->getAppRibbonArea())    // ribbon
+            ;
     mController->initialize();
     ribbonBar()->setContentsMargins(3, 0, 3, 0);
-    //首次调用此函数会加载插件，可放置在main函数中调用
+    // 首次调用此函数会加载插件，可放置在main函数中调用
     init();
-    retranslateUi();  //非必要可以验证调用是否正常
+    retranslateUi();  // 非必要可以验证调用是否正常
     if (isHaveStateSettingFile()) {
         restoreUIState();
     } else {
@@ -126,25 +130,28 @@ void AppMainWindow::closeEvent(QCloseEvent* e)
             qDebug() << tr("can not open %1,because:%2").arg(uistateFile, file.errorString());
         }
     } else {
-        //不保存要删除
+        // 不保存要删除
         if (!QFile::remove(uistateFile)) {
             qDebug() << tr("can not remove %1").arg(uistateFile);
         }
     }
+    // Delete dock manager here to delete all floating widgets. This ensures
+    // that all top level windows of the dock manager are properly closed
+    mDockArea->dockManager()->deleteLater();
     SARibbonMainWindow::closeEvent(e);
 }
 
 void AppMainWindow::init()
 {
-    //初始化配置文件，这个要在所有之前
+    // 初始化配置文件，这个要在所有之前
     initConfig();
-    //初始化图元工厂
+    // 初始化图元工厂
     DAGraphicsItemFactory::initialization();
-    //先初始化插件
+    // 先初始化插件
     initPlugins();
-    //初始化工作流的节点
+    // 初始化工作流的节点
     initWorkflowNodes();
-    //应用所有配置
+    // 应用所有配置
     mConfig->loadConfig();
     mConfig->apply();
 }
@@ -159,14 +166,14 @@ void AppMainWindow::initPlugins()
 void AppMainWindow::initWorkflowNodes()
 {
     DAAppPluginManager& pluginmgr = DAAppPluginManager::instance();
-    //提取所有的元数据
+    // 提取所有的元数据
     QList< DANodeMetaData > nodeMetaDatas = pluginmgr.getAllNodeMetaDatas();
-    //把数据写入toolbox
+    // 把数据写入toolbox
     mDockArea->getWorkflowNodeListWidget()->addItems(nodeMetaDatas);
-    //此时才创建第一个workflow，这个workflow创建时，插件已经加载好
+    // 此时才创建第一个workflow，这个workflow创建时，插件已经加载好
     mDockArea->getWorkFlowOperateWidget()->appendWorkflow(tr("untitle"));
 
-    //执行一些必要的回调
+    // 执行一些必要的回调
     QList< DAAbstractNodePlugin* > nodeplugins = pluginmgr.getNodePlugins();
     for (DAAbstractNodePlugin* plugin : qAsConst(nodeplugins)) {
         plugin->afterLoadedNodes();
@@ -182,9 +189,9 @@ void AppMainWindow::initConfig()
 void AppMainWindow::onWorkflowFinished(bool success)
 {
     if (success) {
-        QMessageBox::information(this, tr("infomation"), tr("Topology execution completed"));  //拓扑执行完成
+        QMessageBox::information(this, tr("infomation"), tr("Topology execution completed"));  // 拓扑执行完成
     } else {
-        QMessageBox::critical(this, tr("infomation"), tr("Topology execution failed"));  //拓扑执行失败
+        QMessageBox::critical(this, tr("infomation"), tr("Topology execution failed"));  // 拓扑执行失败
     }
 }
 
@@ -228,7 +235,7 @@ DAAppConfig* AppMainWindow::getAppConfig() const
 void AppMainWindow::showSettingDialog()
 {
     if (nullptr == mSettingDialog) {
-        //创建设置窗口
+        // 创建设置窗口
         mSettingDialog = new DAAppSettingDialog(this);
         connect(mSettingDialog, &DAAppSettingDialog::needSave, this, &AppMainWindow::onConfigNeedSave);
         mSettingDialog->buildUI(getAppConfig());
@@ -289,7 +296,7 @@ bool AppMainWindow::restoreUIState(const QByteArray& v)
             }
         }
     } catch (const std::exception& e) {
-        qCritical() << tr("restore UI state error:%1").arg(e.what());  //恢复状态过程中出错:%1
+        qCritical() << tr("restore UI state error:%1").arg(e.what());  // 恢复状态过程中出错:%1
     }
     return true;
 }

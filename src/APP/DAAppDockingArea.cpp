@@ -208,7 +208,7 @@ bool DAAppDockingArea::isDockingAreaFocused(DAAppDockingArea::DockingArea area) 
 void DAAppDockingArea::showDataOperateWidget(const DA::DAData& data)
 {
     mDataOperateWidget->showData(data);
-    //把表格窗口唤起
+    // 把表格窗口唤起
     raiseDockByWidget((QWidget*)getDataOperateWidget());
 }
 
@@ -231,7 +231,7 @@ void DAAppDockingArea::showDataOperateWidget(const DA::DAData& data)
  */
 void DAAppDockingArea::buildDockingArea()
 {
-    //中央操作区
+    // 中央操作区
     buildWorkflowAboutWidgets();
     buildChartAboutWidgets();
     buildDataAboutWidgets();
@@ -252,7 +252,7 @@ void DAAppDockingArea::buildDockingArea()
     mDataOperateDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
     mDataOperateDock->raise();
 
-    //左侧管理区 - 工作流节点窗口
+    // 左侧管理区 - 工作流节点窗口
     auto wfna = createDockWidget(mWorkflowNodeListWidget, ads::LeftDockWidgetArea, QStringLiteral("da_workflowNodeListWidgetDock"));
     mWorkflowNodeListDock = wfna.first;
     mWorkflowNodeListDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
@@ -266,21 +266,21 @@ void DAAppDockingArea::buildDockingArea()
     mDataManageDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
     mDataManageDock->raise();
 
-    //右侧附属区 - 添加设置视图
+    // 右侧附属区 - 添加设置视图
     auto sca = createDockWidget(mSettingContainerWidget, ads::RightDockWidgetArea, QStringLiteral("da_settingDock"));
     mSettingContainerDock = sca.first;
     mSettingContainerDock->setIcon(QIcon(":/Icon/Icon/showSettingWidget.svg"));
-    //日志窗口
-    auto ica        = createDockWidget(mMessageLogViewWidget, ads::BottomDockWidgetArea, QStringLiteral("da_messageLogViewWidgetDock"), sca.second);
+    // 日志窗口
+    auto ica = createDockWidget(mMessageLogViewWidget, ads::BottomDockWidgetArea, QStringLiteral("da_messageLogViewWidgetDock"), sca.second);
     mMessageLogDock = ica.first;
     mMessageLogDock->setIcon(QIcon(":/Icon/Icon/showInfomation.svg"));
 
-    //设置dock的区域大小,默认为左1：中间4：右：1
+    // 设置dock的区域大小,默认为左1：中间4：右：1
     QScreen* screen = QApplication::primaryScreen();
     int leftwidth   = screen->size().width() / 6;
     int rightwidth  = leftwidth;
     int centerwidth = screen->size().width() - leftwidth - rightwidth;
-    mDockmgr->setSplitterSizes(wfna.second, { leftwidth, centerwidth, rightwidth });
+    dockManager()->setSplitterSizes(wfna.second, { leftwidth, centerwidth, rightwidth });
     //
 
     initConnection();
@@ -296,7 +296,7 @@ void DAAppDockingArea::buildWorkflowAboutWidgets()
     mWorkFlowOperateWidget->setObjectName(QStringLiteral("da_workFlowOperateWidget"));
     mWorkflowNodeListWidget = new DAWorkFlowNodeListWidget(mApp);
     mWorkflowNodeListWidget->setObjectName(QStringLiteral("da_workflowNodeListWidget"));
-    //把工作流操作窗口设置到工程中
+    // 把工作流操作窗口设置到工程中
     DAAppProject* project = DA_APP_CORE.getAppProject();
     project->setWorkFlowOperateWidget(mWorkFlowOperateWidget);
 }
@@ -329,10 +329,10 @@ void DAAppDockingArea::buildDataAboutWidgets()
 
 void DAAppDockingArea::buildOtherWidgets()
 {
-    //右侧附属区 - 添加设置视图
+    // 右侧附属区 - 添加设置视图
     mSettingContainerWidget = new DASettingContainerWidget(mApp);
     mSettingContainerWidget->setObjectName(QStringLiteral("da_settingContainerWidget"));
-    //日志窗口
+    // 日志窗口
     mMessageLogViewWidget = new DAMessageLogViewWidget(mApp);
     mMessageLogViewWidget->setObjectName(QStringLiteral("da_messageLogViewWidget"));
 }
@@ -343,7 +343,7 @@ void DAAppDockingArea::initConnection()
     connect(mWorkFlowOperateWidget, &DAWorkFlowOperateWidget::workflowCreated, this, &DAAppDockingArea::onWorkFlowOperateWidgetWorkflowCreated);
     // DADataManageWidget的数据双击，在DADataOperateWidget中显示
     connect(mDataManageWidget, &DADataManageWidget::dataDbClicked, this, &DAAppDockingArea::onDataManageWidgetDataDbClicked);
-    //设置窗口的绑定
+    // 设置窗口的绑定
     mSettingContainerWidget->getWorkFlowNodeItemSettingWidget()->setWorkFlowOperateWidget(mWorkFlowOperateWidget);
 }
 

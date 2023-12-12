@@ -149,6 +149,8 @@ QPair< ads::CDockWidget*, ads::CDockAreaWidget* > DADockingAreaInterface::create
 {
     ads::CDockWidget* dockWidget = new ads::CDockWidget(widgetName);
     dockWidget->setWidget(w);
+    dockWidget->setFeatures(ads::CDockWidget::DefaultDockWidgetFeatures);
+    dockWidget->setMinimumSizeHintMode(ads::CDockWidget::MinimumSizeHintFromDockWidget);
     ads::CDockAreaWidget* areaWidget = d_ptr->mDockManager->addDockWidgetTabToArea(dockWidget, dockAreaWidget);
     d_ptr->mWidgetToDockWidget[ w ]  = dockWidget;
     return qMakePair(dockWidget, areaWidget);

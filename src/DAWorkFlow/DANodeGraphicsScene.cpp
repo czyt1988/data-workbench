@@ -346,6 +346,29 @@ DAGraphicsResizeableRectItem* DANodeGraphicsScene::createRect_(const QPointF& p)
     return (item);
 }
 
+/**
+   @brief 通过位置获取DAAbstractNodeGraphicsItem
+
+    此函数是加强版的itemAt
+   @param scenePos
+   @return
+ */
+DAAbstractNodeGraphicsItem* DANodeGraphicsScene::nodeItemAt(const QPointF& scenePos) const
+{
+    DAAbstractNodeGraphicsItem* nodeItem = dynamic_cast< DAAbstractNodeGraphicsItem* >(itemAt(scenePos, QTransform()));
+    if (nodeItem) {
+        return nodeItem;
+    }
+    // 如果没找到，就要看看此点下的所有item，有可能被分组了
+    QList< QGraphicsItem* > its = items(scenePos);
+    for (QGraphicsItem* i : std::as_const(its)) {
+        if (DAAbstractNodeGraphicsItem* n = dynamic_cast< DAAbstractNodeGraphicsItem* >(i)) {
+            return n;
+        }
+    }
+    return nullptr;
+}
+
 void DANodeGraphicsScene::initConnect()
 {
     qRegisterMetaType< DANodeLinkPoint >("DANodeLinkPoint");
@@ -418,8 +441,7 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
         //             return;
         //         }
         // 看看是否点击到了节点item
-        DAAbstractNodeGraphicsItem* nodeItem = dynamic_cast< DAAbstractNodeGraphicsItem* >(
-                itemAt(mouseEvent->scenePos(), QTransform()));
+        DAAbstractNodeGraphicsItem* nodeItem = nodeItemAt(mouseEvent->scenePos());
         if (nullptr == nodeItem) {
             // 注意，有可能进行了分组，这时候，点击的是分组
             // 点击的不是节点item就退出

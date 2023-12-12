@@ -208,10 +208,20 @@ bool DAGraphicsItem::isShowBackground() const
     return d_ptr->mIsShowBackground;
 }
 
-bool DAGraphicsItem::sceneEvent(QEvent* event)
+/**
+   @brief 分组的位置发生了改变
+    此函数是在分组后才会回调，分组后，分组的移动对于item来说是不移动的，这时候无法触发ItemPositionChanged的改变，从而导致一些异常，因此需要分组告诉子对象分组移动了
+   @param pos 分组的位置，如果要获取当前item的位置，获取parent，后再map
+ */
+void DAGraphicsItem::groupPositionChanged(const QPointF& pos)
 {
-    qDebug() << "DAGraphicsItem::sceneEvent" << event->type();
-    return QGraphicsObject::sceneEvent(event);
+    Q_UNUSED(pos);
 }
+
+// bool DAGraphicsItem::sceneEvent(QEvent* event)
+//{
+//     qDebug() << "DAGraphicsItem::sceneEvent" << event->type();
+//     return QGraphicsObject::sceneEvent(event);
+// }
 
 }  // end of DA
