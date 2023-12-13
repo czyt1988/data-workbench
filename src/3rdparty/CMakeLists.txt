@@ -31,6 +31,8 @@ set(SPDLOG_INSTALL ON)
 set(BUILD_EXAMPLES OFF)
 #SARibbon
 set(SARIBBON_BUILD_EXAMPLES OFF)
+#magic_enum
+set(MAGIC_ENUM_OPT_INSTALL ON)
 ########################################################
 # 安装第三方库
 ########################################################
@@ -49,6 +51,7 @@ add_subdirectory(ctk)
 
 add_subdirectory(QtPropertyBrowser)
 
+add_subdirectory(magic_enum)
 ########################################################
 # install
 ########################################################

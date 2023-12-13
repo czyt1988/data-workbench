@@ -43,6 +43,7 @@ git submodule add https://github.com/czyt1988/SARibbon.git ./src/3rdparty/SARibb
 git submodule add https://github.com/pybind/pybind11.git ./src/3rdparty/pybind11
 git submodule add https://github.com/czyt1988/QtPropertyBrowser ./src/3rdparty/QtPropertyBrowser
 git submodule add https://github.com/czyt1988/QWT.git ./src/3rdparty/qwt
+git submodule add https://github.com/Neargye/magic_enum.git ./src/3rdparty/magic_enum
 ```
 
 gitee版本：
