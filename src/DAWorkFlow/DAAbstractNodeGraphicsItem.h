@@ -157,6 +157,11 @@ public:
 public:
     // prepare系列函数，用于在改变前的回调
     // 此函数是在准备调用getLinkPointByPos之前调用的函数，用来准备输入节点
+    // 准备链接回调，对于旧版的prepareLinkInput，prepareLinkOutput两个回调
+    virtual void tryLinkOnItemPos(const QPointF& p, DAAbstractNodeLinkGraphicsItem* linkItem, DANodeLinkPoint::Way way);
+    // 链接结束回调，对应旧版的prepareLinkInputFailed,prepareLinkInputSucceed,prepareLinkOutputFailed,prepareLinkOutputSucceed四个回调
+    virtual void finishLink(const DANodeLinkPoint& p, DAAbstractNodeLinkGraphicsItem* linkItem, DANodeLinkPoint::Way way, bool isSuccess);
+
     virtual void prepareLinkInput(const QPointF& p, DAAbstractNodeLinkGraphicsItem* linkItem);
     virtual void prepareLinkInputFailed(const DANodeLinkPoint& p, DAAbstractNodeLinkGraphicsItem* linkItem);
     virtual void prepareLinkInputSucceed(const DANodeLinkPoint& p, DAAbstractNodeLinkGraphicsItem* linkItem);

@@ -462,6 +462,41 @@ DANodeLinkPointDrawDelegate* DAAbstractNodeGraphicsItem::getLinkPointDrawDelegat
 }
 
 /**
+   @brief 此函数是在连接线点击item时调用的回调，无论点击的位置是否存在连接点，都会调用此回调
+
+   通过此函数可以实现动态增加连接点功能，例如一个item的连接点是随着点击而根据某个逻辑判断是否需要存在的，可以重装此函数，在点击时进行判断
+   @param p
+   @param linkItem 注意，way=Output，linkItem为nullptr，这时连接线还没创建
+   @param way 判断是输入还是输出，如果way=Input，就是输入过程的点击（被连接），way=Output，就是输出过程的点击（链接出去）
+ */
+void DA::DAAbstractNodeGraphicsItem::tryLinkOnItemPos(const QPointF& p,
+                                                      DA::DAAbstractNodeLinkGraphicsItem* linkItem,
+                                                      DA::DANodeLinkPoint::Way way)
+{
+    Q_UNUSED(p);
+    Q_UNUSED(linkItem);
+    Q_UNUSED(way);
+}
+
+/**
+   @brief 链接结束的回调，无论有没有成功都会调用此回调函数
+   @param p
+   @param linkItem
+   @param way 判断是输入还是输出，如果way=Input，就是输入过程的点击（被连接），way=Output，就是输出过程的点击（链接出去）
+   @param isSuccess 链接成功或失败
+ */
+void DAAbstractNodeGraphicsItem::finishLink(const DANodeLinkPoint& p,
+                                            DAAbstractNodeLinkGraphicsItem* linkItem,
+                                            DANodeLinkPoint::Way way,
+                                            bool isSuccess)
+{
+    Q_UNUSED(p);
+    Q_UNUSED(linkItem);
+    Q_UNUSED(way);
+    Q_UNUSED(isSuccess);
+}
+
+/**
  * @brief 此函数是在准备调用getLinkPointByPos之前调用的函数，用来准备输入节点
  *
  * 此函数对于固定节点作用不大，对于非固定节点，或者动态生成节点的情况，可以通过此函数用来实时生成节点

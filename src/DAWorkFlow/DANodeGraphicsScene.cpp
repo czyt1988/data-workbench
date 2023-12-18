@@ -76,10 +76,12 @@ void DANodeGraphicsScene::cancelLink()
         DAAbstractNodeGraphicsItem* it = linkItem->fromNodeItem();
         if (it) {
             it->prepareLinkOutputFailed(linkItem->fromNodeLinkPoint());
+            it->finishLink(linkItem->fromNodeLinkPoint(), linkItem, DANodeLinkPoint::Output, false);
         }
         it = linkItem->toNodeItem();
         if (it) {
             it->prepareLinkInputFailed(linkItem->toNodeLinkPoint(), linkItem);
+            it->finishLink(linkItem->toNodeLinkPoint(), linkItem, DANodeLinkPoint::Input, false);
         }
     }
     DAGraphicsScene::cancelLink();
@@ -457,6 +459,7 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
             if (linkItem) {
                 // 调用nodeitem的prepareLinkInput用于构建一些响应式连接点
                 nodeItem->prepareLinkInput(itempos, linkItem);
+                nodeItem->tryLinkOnItemPos(itempos, linkItem, DANodeLinkPoint::Input);
             } else {
                 qDebug() << "is start link,but link item can not cast to DAAbstractNodeLinkGraphicsItem";
                 DAGraphicsScene::mousePressEvent(mouseEvent);
@@ -495,6 +498,7 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
         } else {
             // 非开始链接状态，此时点击的是output
             nodeItem->prepareLinkOutput(itempos);
+            nodeItem->tryLinkOnItemPos(itempos, nullptr, DANodeLinkPoint::Output);
             DANodeLinkPoint lp;
             lp = nodeItem->getLinkPointByPos(itempos, DANodeLinkPoint::Output);
             if (lp.isValid() && lp.isOutput()) {
