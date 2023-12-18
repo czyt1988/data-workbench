@@ -162,14 +162,6 @@ public:
     // 链接结束回调，对应旧版的prepareLinkInputFailed,prepareLinkInputSucceed,prepareLinkOutputFailed,prepareLinkOutputSucceed四个回调
     virtual void finishLink(const DANodeLinkPoint& p, DAAbstractNodeLinkGraphicsItem* linkItem, DANodeLinkPoint::Way way, bool isSuccess);
 
-    virtual void prepareLinkInput(const QPointF& p, DAAbstractNodeLinkGraphicsItem* linkItem);
-    virtual void prepareLinkInputFailed(const DANodeLinkPoint& p, DAAbstractNodeLinkGraphicsItem* linkItem);
-    virtual void prepareLinkInputSucceed(const DANodeLinkPoint& p, DAAbstractNodeLinkGraphicsItem* linkItem);
-    // 此函数是在准备调用getLinkPointByPos之前调用的函数，用来准备输出节点
-    // 如果要处理连接线完全连接两个节点后的情况，使用DAAbstractNodeLinkGraphicsItem::finishedLink来处理
-    virtual void prepareLinkOutput(const QPointF& p);
-    virtual void prepareLinkOutputFailed(const DANodeLinkPoint& p);
-    virtual void prepareLinkOutputSucceed(const DANodeLinkPoint& p);
     // 节点名字改变准备函数，通过此函数，让节点对名字进行重新绘制
     virtual void prepareNodeNameChanged(const QString& name);
     // 分组位置发生了变化

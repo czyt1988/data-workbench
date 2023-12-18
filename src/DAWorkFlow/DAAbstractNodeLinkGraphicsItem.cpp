@@ -399,14 +399,12 @@ bool DAAbstractNodeLinkGraphicsItem::attachFrom(DAAbstractNodeGraphicsItem* item
 {
     if (!item->isHaveLinkPoint(pl)) {
         qDebug() << QObject::tr("Item have not out put link point:") << pl;
-        item->prepareLinkOutputFailed(pl);
         item->finishLink(pl, this, DANodeLinkPoint::Output, false);
         return (false);
     }
     if (!pl.isOutput()) {
         // from必须从out出发
         qDebug() << QObject::tr("Link from must attach an output point");
-        item->prepareLinkOutputFailed(pl);
         item->finishLink(pl, this, DANodeLinkPoint::Output, false);
         return (false);
     }
@@ -414,7 +412,6 @@ bool DAAbstractNodeLinkGraphicsItem::attachFrom(DAAbstractNodeGraphicsItem* item
     d_ptr->mFromPoint = pl;
     d_ptr->updateLinkPointNameText();
     item->recordLinkInfo(this, pl);
-    item->prepareLinkOutputSucceed(pl);
     item->finishLink(pl, this, DANodeLinkPoint::Output, true);
     if (toNodeItem()) {
         // 终点已经链接
@@ -450,14 +447,12 @@ bool DAAbstractNodeLinkGraphicsItem::attachTo(DAAbstractNodeGraphicsItem* item, 
 {
     if (!item->isHaveLinkPoint(pl)) {
         qDebug() << QObject::tr("Item have not in put link point:") << pl;
-        item->prepareLinkInputFailed(pl, this);
         item->finishLink(pl, this, DANodeLinkPoint::Input, false);
         return (false);
     }
     if (!pl.isInput()) {
         // to必须到in
         qDebug() << QObject::tr("Link to must attach an input point");
-        item->prepareLinkInputFailed(pl, this);
         item->finishLink(pl, this, DANodeLinkPoint::Input, false);
         return (false);
     }
@@ -468,7 +463,6 @@ bool DAAbstractNodeLinkGraphicsItem::attachTo(DAAbstractNodeGraphicsItem* item, 
     if (!fnode->linkTo(d_ptr->mFromPoint.name, tnode, pl.name)) {
         // linkTo会触发DAAbstractNodeFactory::nodeLinkedSucceed回调，但这个回调里面如果获取graphicsitem信息，
         // 是不完整的，因为graphicsitem信息在下面才更新
-        item->prepareLinkInputFailed(pl, this);
         item->finishLink(pl, this, DANodeLinkPoint::Input, false);
         return (false);
     }
@@ -476,7 +470,6 @@ bool DAAbstractNodeLinkGraphicsItem::attachTo(DAAbstractNodeGraphicsItem* item, 
     d_ptr->mToPoint = pl;
     d_ptr->updateLinkPointNameText();
     item->recordLinkInfo(this, pl);  // 记录链接信息
-    item->prepareLinkInputSucceed(pl, this);
     item->finishLink(pl, this, DANodeLinkPoint::Input, true);
     if (fromNodeItem()) {
         // 起点已经链接
