@@ -27,16 +27,19 @@ public:
     DAStandardGraphicsTextItem(const QString& str, const QFont& f, QGraphicsItem* parent = nullptr);
 
     DAStandardGraphicsTextItem(const QFont& f, QGraphicsItem* parent = nullptr);
-    //设置编辑模式
+    // 设置编辑模式
     void setEditMode(bool on = true);
-    //保存到xml中
+    // 保存到xml中
     virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement) const override;
     virtual bool loadFromXml(const QDomElement* itemElement) override;
+    // 设置在场景的位置，如果没有分组，和setPos一样，如果分组了，最终也能保证位置在pos位置
+    void setScenePos(const QPointF& p);
+    void setScenePos(qreal x, qreal y);
 
 protected:
-    //焦点移出事件
+    // 焦点移出事件
     virtual void focusOutEvent(QFocusEvent* focusEvent) override;
-    //鼠标双击事件进入编辑
+    // 鼠标双击事件进入编辑
     virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent* event) override;
 
 private:

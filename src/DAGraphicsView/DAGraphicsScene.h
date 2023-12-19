@@ -7,6 +7,7 @@
 namespace DA
 {
 class DAGraphicsResizeableItem;
+class DAGraphicsItem;
 class DAGraphicsLinkItem;
 class DAGraphicsItemGroup;
 /**
@@ -137,6 +138,18 @@ signals:
      */
     void linkCompleted(DAGraphicsLinkItem* linkItem);
 
+    /**
+       @brief 选中的item发生了变化，注意，选中的如果是分组，会检查分组内部的item的点击，最终也是发送被点击的item
+       @param item
+     */
+    void selectItemChanged(DAGraphicsItem* item);
+
+    /**
+       @brief 选中的链接线发生了改变
+       @param item
+     */
+    void selectLinkChanged(DAGraphicsLinkItem* item);
+
 protected:
     // 判断点击的item是否可以移动
     virtual bool isItemCanMove(QGraphicsItem* positem, const QPointF& scenePos);
@@ -156,6 +169,13 @@ protected:
     void mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent) override;
     // 绘制背景
     void drawBackground(QPainter* painter, const QRectF& rect) override;
+private slots:
+    //
+    void onSelectionChanged();
+
+private:
+    void init();
+    void checkSelectItem(QGraphicsItem* item);
 };
 }
 #endif  // DAGRAPHICSSCENEWITHUNDOSTACK_H

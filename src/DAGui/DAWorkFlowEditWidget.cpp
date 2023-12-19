@@ -344,6 +344,12 @@ void DAWorkFlowEditWidget::createScene()
 {
     _scene = new DAWorkFlowGraphicsScene(this);
     ui->workflowGraphicsView->setScene(_scene);
+    //    connect(_scene, &DAWorkFlowGraphicsScene::selectNodeItemChanged, this, [ this ](DAGraphicsItem* i) {
+    //        if (DAAbstractNodeGraphicsItem* ni = dynamic_cast< DAAbstractNodeGraphicsItem* >(i)) {
+    //            emit selectNodeItemChanged(ni);
+    //        }
+    //    });
+
     connect(_scene, &DAWorkFlowGraphicsScene::selectNodeItemChanged, this, &DAWorkFlowEditWidget::selectNodeItemChanged);
     connect(_scene, &DAWorkFlowGraphicsScene::mouseActionFinished, this, &DAWorkFlowEditWidget::mouseActionFinished);
 }

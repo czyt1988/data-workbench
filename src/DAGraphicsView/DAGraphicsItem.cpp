@@ -40,8 +40,9 @@ DAGraphicsItem::~DAGraphicsItem()
 bool DAGraphicsItem::saveToXml(QDomDocument* doc, QDomElement* parentElement) const
 {
     QDomElement infoEle = doc->createElement("info");
-    infoEle.setAttribute("x", x());
-    infoEle.setAttribute("y", y());
+    QPointF scPos       = scenePos();
+    infoEle.setAttribute("x", scPos.x());
+    infoEle.setAttribute("y", scPos.y());
     infoEle.setAttribute("z", zValue());
     infoEle.setAttribute("acceptDrops", acceptDrops());
     infoEle.setAttribute("enable", isEnabled());
@@ -86,7 +87,7 @@ bool DAGraphicsItem::loadFromXml(const QDomElement* parentElement)
     qreal realValue2;
 
     if (getStringRealValue(infoEle.attribute("x", "0"), realValue) && getStringRealValue(infoEle.attribute("y", "0"), realValue2)) {
-        setPos(realValue, realValue2);
+        setScenePos(realValue, realValue2);
     }
     if (getStringRealValue(infoEle.attribute("z", ""), realValue)) {
         setZValue(realValue);
@@ -213,9 +214,19 @@ bool DAGraphicsItem::isShowBackground() const
     此函数是在分组后才会回调，分组后，分组的移动对于item来说是不移动的，这时候无法触发ItemPositionChanged的改变，从而导致一些异常，因此需要分组告诉子对象分组移动了
    @param pos 分组的位置，如果要获取当前item的位置，获取parent，后再map
  */
-void DAGraphicsItem::groupPositionChanged(const QPointF& pos)
+void DAGraphicsItem::groupPositionChanged(const QPointF& p)
 {
-    Q_UNUSED(pos);
+    Q_UNUSED(p);
+}
+
+void DAGraphicsItem::setScenePos(const QPointF& p)
+{
+    setPos(mapToParent(mapFromScene(p)));
+}
+
+void DAGraphicsItem::setScenePos(qreal x, qreal y)
+{
+    setScenePos(QPointF(x, y));
 }
 
 // bool DAGraphicsItem::sceneEvent(QEvent* event)

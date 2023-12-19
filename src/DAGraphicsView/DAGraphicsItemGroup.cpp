@@ -50,8 +50,8 @@ DAGraphicsItemGroup::~DAGraphicsItemGroup()
  */
 bool DAGraphicsItemGroup::saveToXml(QDomDocument* doc, QDomElement* parentElement) const
 {
-    // todo
-    return true;
+    QDomElement infoEle = doc->createElement("info");
+    QPointF scPos       = scenePos();
 }
 
 /**

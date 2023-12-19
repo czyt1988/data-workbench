@@ -162,7 +162,7 @@ void DANodeItemSettingWidget::updateItemState()
     Q_UNUSED(b1);
     Q_UNUSED(b2);
     Q_UNUSED(b3);
-    //网格的尺寸作为x,y的步长
+    // 网格的尺寸作为x,y的步长
     if (d_ptr->mScene) {
         QSize gs = d_ptr->mScene->getGridSize();
         ui->doubleSpinBoxX->setSingleStep(gs.width());
@@ -243,7 +243,7 @@ void DANodeItemSettingWidget::onDoubleSpinBoxBodyWidthValueChanged(double v)
     ui->doubleSpinBoxBodyWidth->setValue(settedSize.width());
     ui->doubleSpinBoxBodyHeight->setValue(settedSize.height());
     if (d_ptr->mScene) {
-        //如果有scene，就把结果推入cmd,注意因为已经设置了bodysize，因此skipFirst一定要为true
+        // 如果有scene，就把结果推入cmd,注意因为已经设置了bodysize，因此skipFirst一定要为true
         if (originSize != settedSize) {
             auto cmd = new DA::DACommandsForGraphicsItemResized(d_ptr->mItem, originSize, settedSize, true);
             d_ptr->mScene->push(cmd);
@@ -263,14 +263,14 @@ void DANodeItemSettingWidget::onDoubleSpinBoxBodyHeightValueChanged(double v)
         d_ptr->mItem->setBodySize(QSizeF(originSize.width(), v));
     }
     QSizeF settedSize = d_ptr->mItem->getBodySize();
-    //设置成功了，设置高度
+    // 设置成功了，设置高度
     QSignalBlocker b1(ui->doubleSpinBoxBodyWidth), b2(ui->doubleSpinBoxBodyHeight);
     ui->doubleSpinBoxBodyWidth->setValue(settedSize.width());
     ui->doubleSpinBoxBodyHeight->setValue(settedSize.height());
     if (d_ptr->mScene) {
-        //如果有scene，就把结果推入cmd,注意因为已经设置了bodysize，因此skipFirst一定要为true
+        // 如果有scene，就把结果推入cmd,注意因为已经设置了bodysize，因此skipFirst一定要为true
         if (d_ptr->mItem->getBodySize().height() == originSize.height()) {
-            //说明没设置成功,跳过
+            // 说明没设置成功,跳过
             return;
         }
         auto cmd = new DA::DACommandsForGraphicsItemResized(d_ptr->mItem, originSize, settedSize, true);
@@ -290,9 +290,9 @@ void DANodeItemSettingWidget::onDoubleSpinBoxRotationValueChanged(double v)
     }
     d_ptr->mItem->setRotation(v);
     if (d_ptr->mScene) {
-        //如果有scene，就把结果推入cmd,注意因为已经设置了bodysize，因此skipFirst一定要为true
+        // 如果有scene，就把结果推入cmd,注意因为已经设置了bodysize，因此skipFirst一定要为true
         if (!qFuzzyCompare(d_ptr->mItem->rotation(), v)) {
-            //说明没设置成功,跳过
+            // 说明没设置成功,跳过
             qDebug() << "_item rotation value not equal setting value";
             QSignalBlocker b(ui->doubleSpinBoxRotation);
             Q_UNUSED(b);
@@ -310,9 +310,10 @@ void DANodeItemSettingWidget::onDoubleSpinBoxXValueChanged(double v)
         return;
     }
     QPointF oldpos = d_ptr->mItem->pos();
-    d_ptr->mItem->setPos(v, oldpos.y());
+
+    d_ptr->mItem->setScenePos(v, oldpos.y());
     QPointF newPos = d_ptr->mItem->pos();
-    //在存在网格的情况下，可能设置的位置不是显示的位置，
+    // 在存在网格的情况下，可能设置的位置不是显示的位置，
     QSignalBlocker b1(ui->doubleSpinBoxX), b2(ui->doubleSpinBoxY);
     Q_UNUSED(b1);
     Q_UNUSED(b2);
@@ -330,7 +331,7 @@ void DANodeItemSettingWidget::onDoubleSpinBoxYValueChanged(double v)
         return;
     }
     QPointF oldpos = d_ptr->mItem->pos();
-    d_ptr->mItem->setPos(oldpos.x(), v);
+    d_ptr->mItem->setScenePos(oldpos.x(), v);
     QPointF newPos = d_ptr->mItem->pos();
     QSignalBlocker b1(ui->doubleSpinBoxX), b2(ui->doubleSpinBoxY);
     Q_UNUSED(b1);

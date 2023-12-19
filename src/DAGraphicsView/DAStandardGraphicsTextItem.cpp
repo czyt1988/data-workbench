@@ -43,8 +43,9 @@ void DAStandardGraphicsTextItem::setEditMode(bool on)
 bool DAStandardGraphicsTextItem::saveToXml(QDomDocument* doc, QDomElement* parentElement) const
 {
     QDomElement textItemEle = doc->createElement("text-info");
-    textItemEle.setAttribute("x", x());
-    textItemEle.setAttribute("y", y());
+    QPointF scPos           = scenePos();
+    textItemEle.setAttribute("x", scPos.x());
+    textItemEle.setAttribute("y", scPos.y());
     textItemEle.setAttribute("color", defaultTextColor().name());
     QDomElement textEle = doc->createElement("text");
     textEle.appendChild(doc->createTextNode(toPlainText()));
@@ -64,7 +65,7 @@ bool DAStandardGraphicsTextItem::loadFromXml(const QDomElement* itemElement)
     }
     QPointF pos;
     if (getStringRealValue(textItemEle.attribute("x"), pos.rx()) && getStringRealValue(textItemEle.attribute("y"), pos.ry())) {
-        setPos(pos);
+        setScenePos(pos);
     }
     QColor color(textItemEle.attribute("color"));
     setDefaultTextColor(color);
@@ -81,9 +82,19 @@ bool DAStandardGraphicsTextItem::loadFromXml(const QDomElement* itemElement)
     return true;
 }
 
+void DAStandardGraphicsTextItem::setScenePos(const QPointF& p)
+{
+    setPos(mapToParent(mapFromScene(p)));
+}
+
+void DAStandardGraphicsTextItem::setScenePos(qreal x, qreal y)
+{
+    setScenePos(QPointF(x, y));
+}
+
 void DAStandardGraphicsTextItem::focusOutEvent(QFocusEvent* focusEvent)
 {
-    //在有选中的情况下，把选中的内容取消
+    // 在有选中的情况下，把选中的内容取消
     QTextCursor cursor = textCursor();
     cursor.clearSelection();
     cursor.setPosition(QTextCursor::Start);
@@ -104,7 +115,7 @@ void DAStandardGraphicsTextItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent*
 
 void DAStandardGraphicsTextItem::initItem()
 {
-    setDefaultTextColor(Qt::black);  //设置字体颜色
+    setDefaultTextColor(Qt::black);  // 设置字体颜色
     setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable | QGraphicsItem::ItemIsFocusable);
     setTextInteractionFlags(Qt::TextEditorInteraction);
 }

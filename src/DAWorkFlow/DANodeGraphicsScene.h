@@ -134,9 +134,10 @@ signals:
     void itemRemoved(const QList< QGraphicsItem* >& items);
 
 protected slots:
-
+    void onSelectItemChanged(DAGraphicsItem* item);
+    void onSelectLinkChanged(DAGraphicsLinkItem* item);
     // item选择改变
-    void onItemSelectionChanged();
+    //    void onItemSelectionChanged();
 
     // node的名字改变
     void onNodeNameChanged(DAAbstractNode::SharedPointer node, const QString& oldName, const QString& newName);

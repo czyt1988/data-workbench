@@ -25,11 +25,11 @@ public:
     QPointF mStartPos { 0, 0 };
     QPointF mEndPos { 100, 100 };
     QRectF mBoundingRect { 0, 0, 100, 100 };  ///< 记录boundingRect
-    qreal mBezierControlScale { 0.35 };       ///<贝塞尔曲线的控制点的缩放比例
+    qreal mBezierControlScale { 0.35 };       ///< 贝塞尔曲线的控制点的缩放比例
     QPainterPath mLinePath;                   ///< 通过点得到的绘图线段
     QPainterPath mLineShapePath;              ///_linePath的轮廓，用于shape函数
     QPen mLinePen { QColor(101, 103, 106) };  ///< 线的画笔(默认灰色)
-    //端点样式
+    // 端点样式
     DAGraphicsLinkItem::EndPointType mStartEndPointType { DAGraphicsLinkItem::EndPointNone };  ///< from的端点样式
     DAGraphicsLinkItem::EndPointType mEndEndPointType { DAGraphicsLinkItem::EndPointNone };    ///< to的端点样式
     QPainterPath mSrartEndPointPainterPath;  ///< 记录from的端点样式
@@ -50,7 +50,7 @@ DAGraphicsLinkItem::DAGraphicsLinkItem(QGraphicsItem* p) : QGraphicsItem(p), DA_
     setEndPointType(OrientationStart, EndPointNone);
     setEndPointType(OrientationEnd, EndPointTriangType);
     setLinkLineStyle(LinkLineBezier);
-    setZValue(-1);  //连接线在-1层，这样避免在节点上面
+    setZValue(-1);  // 连接线在-1层，这样避免在节点上面
 }
 
 DAGraphicsLinkItem::~DAGraphicsLinkItem()
@@ -177,7 +177,7 @@ QRectF DAGraphicsLinkItem::updateBoundingRect()
     int w = d_ptr->mLinePen.width() + 2;
     stroker.setWidth((w < 6) ? 6 : w);
     d_ptr->mLineShapePath = stroker.createStroke(d_ptr->mLinePath);
-    d_ptr->mBoundingRect = d_ptr->mLinePath.boundingRect().adjusted(-2, -2, 2, 2);  //留足选中后画笔变宽的绘制余量
+    d_ptr->mBoundingRect = d_ptr->mLinePath.boundingRect().adjusted(-2, -2, 2, 2);  // 留足选中后画笔变宽的绘制余量
     return d_ptr->mBoundingRect;
 }
 
@@ -247,7 +247,7 @@ const QPointF& DAGraphicsLinkItem::getEndPosition() const
  */
 void DAGraphicsLinkItem::setStartScenePosition(const QPointF& scenepostion)
 {
-    setPos(scenepostion);
+    setScenePos(scenepostion);
     d_ptr->mStartPos = mapFromScene(scenepostion);
 }
 
@@ -315,7 +315,7 @@ void DAGraphicsLinkItem::paint(QPainter* painter, const QStyleOptionGraphicsItem
 {
     painter->save();
     paintLinkLine(painter, option, widget, d_ptr->mLinePath);
-    //绘制端点
+    // 绘制端点
     paintEndPoint(painter,
                   option,
                   d_ptr->mStartPos,
@@ -363,29 +363,29 @@ void DAGraphicsLinkItem::paintEndPoint(QPainter* painter,
     if (etStart == EndPointNone && etEnd == EndPointNone) {
         return;
     }
-    //根据DANodeLinkPoint计算旋转的角度
+    // 根据DANodeLinkPoint计算旋转的角度
     painter->save();
     QPen pen = getPainterPen(option);
     painter->setPen(pen);
     painter->setBrush(pen.color());
-    //首先绘制开端箭头
+    // 首先绘制开端箭头
     if (etStart != EndPointNone) {
         painter->save();
         //
-        QPointF pTrend = calcPainterPathEndPoint(linkPath, true, 18);  //折线的延长线是20，因此这里设定18
+        QPointF pTrend = calcPainterPathEndPoint(linkPath, true, 18);  // 折线的延长线是20，因此这里设定18
         QLineF lf(pStart, pTrend);
-        //先移动再旋转
+        // 先移动再旋转
         painter->translate(pStart);
         painter->rotate(360 - lf.angle());  // painter的rotate是顺时针旋转，而line的angle是逆时针
         painter->drawPath(startPainterPath);
         painter->restore();
     }
-    //再绘制结束箭头
+    // 再绘制结束箭头
     if (etEnd != EndPointNone) {
         painter->save();
-        QPointF pTrend = calcPainterPathEndPoint(linkPath, false, 18);  //折线的延长线是20，因此这里设定18
+        QPointF pTrend = calcPainterPathEndPoint(linkPath, false, 18);  // 折线的延长线是20，因此这里设定18
         QLineF lf(pEnd, pTrend);
-        //先移动再旋转
+        // 先移动再旋转
         painter->translate(pEnd);
         painter->rotate(360 - lf.angle());  // painter的rotate是顺时针旋转，而line的angle是逆时针
         painter->drawPath(endPainterPath);
@@ -524,37 +524,37 @@ bool DAGraphicsLinkItem::isPointCanMeet(const QPointF& p1, AspectDirection d1, c
     switch (d1) {
     case AspectDirection::East: {
         if (d2 == AspectDirection::South) {
-            //南
+            // 南
             return (p1.x() < p2.x()) && (p1.y() > p2.y());
         } else {
-            //北
+            // 北
             return (p1.x() < p2.x()) && (p1.y() < p2.y());
         }
     } break;
     case AspectDirection::South: {
         if (d2 == AspectDirection::East) {
-            //东
+            // 东
             return (p1.x() > p2.x()) && (p1.y() < p2.y());
         } else {
-            //西
+            // 西
             return (p1.x() < p2.x()) && (p1.y() < p2.y());
         }
     } break;
     case AspectDirection::West: {
         if (d2 == AspectDirection::South) {
-            //南
+            // 南
             return (p1.x() > p2.x()) && (p1.y() > p2.y());
         } else {
-            //北
+            // 北
             return (p1.x() > p2.x()) && (p1.y() < p2.y());
         }
     } break;
     case AspectDirection::North: {
         if (d2 == AspectDirection::East) {
-            //东
+            // 东
             return (p1.x() > p2.x()) && (p1.y() > p2.y());
         } else {
-            //西
+            // 西
             return (p1.x() < p2.x()) && (p1.y() > p2.y());
         }
     } break;
@@ -573,10 +573,10 @@ bool DAGraphicsLinkItem::isPointCanMeet(const QPointF& p1, AspectDirection d1, c
 bool DAGraphicsLinkItem::isParallelPointApproachInDirection(const QPointF& p1, AspectDirection d1, const QPointF& p2, AspectDirection d2)
 {
     if (!isDirectionOpposite(d1, d2)) {
-        //平行同向永远接近不了
+        // 平行同向永远接近不了
         return false;
     }
-    //这里说明必定反向
+    // 这里说明必定反向
     switch (d1) {
     case AspectDirection::East:
         return p1.x() < p2.x();
@@ -642,7 +642,7 @@ AspectDirection DAGraphicsLinkItem::relativeDirectionOfPoint(const QPointF& p1, 
         }
         return AspectDirection::North;
     }
-    //不可能达到
+    // 不可能达到
     return AspectDirection::East;
 }
 
@@ -687,7 +687,7 @@ QPen DAGraphicsLinkItem::getPainterPen(const QStyleOptionGraphicsItem* option) c
 {
     QPen pen = d_ptr->mLinePen;
     if (option->state.testFlag(QStyle::State_Selected)) {
-        //说明选中了
+        // 说明选中了
         pen.setWidth(pen.width() + 2);
         pen.setColor(pen.color().darker(150));
     }
@@ -747,7 +747,7 @@ QPainterPath DAGraphicsLinkItem::generateEndPointPainterPath(DAGraphicsLinkItem:
 {
     QPainterPath path;
     switch (epType) {
-    case EndPointTriangType:  //三角形
+    case EndPointTriangType:  // 三角形
         path.moveTo(0, 0);
         path.lineTo(size, -size / 2);
         path.lineTo(size, size / 2);
@@ -840,7 +840,7 @@ bool DAGraphicsLinkItem::loadFromXml(const QDomElement* parentElement)
     if (!endPointEle.isNull()) {
         DAGraphicsLinkItem::EndPointType etTo = DA::stringToEnum(endPointEle.attribute("toType"), DAGraphicsLinkItem::EndPointNone);
         DAGraphicsLinkItem::EndPointType etFrom = DA::stringToEnum(endPointEle.attribute("fromType"), DAGraphicsLinkItem::EndPointNone);
-        int size                                = endPointEle.attribute("size").toInt();
+        int size = endPointEle.attribute("size").toInt();
         setEndPointType(DAGraphicsLinkItem::OrientationStart, etFrom);
         setEndPointType(DAGraphicsLinkItem::OrientationEnd, etTo);
         if (size > 0) {
@@ -848,6 +848,16 @@ bool DAGraphicsLinkItem::loadFromXml(const QDomElement* parentElement)
         }
     }
     return true;
+}
+
+void DAGraphicsLinkItem::setScenePos(const QPointF& p)
+{
+    setPos(mapToParent(mapFromScene(p)));
+}
+
+void DAGraphicsLinkItem::setScenePos(qreal x, qreal y)
+{
+    setScenePos(QPointF(x, y));
 }
 
 /**
@@ -861,7 +871,7 @@ QPainterPath DAGraphicsLinkItem::generateLinkLineBezierPainterPath(const QPointF
                                                                    const QPointF& toPos,
                                                                    AspectDirection toDirect)
 {
-    //贝塞尔的引导线根据伸出点的方向偏移两个点距离的1/5
+    // 贝塞尔的引导线根据伸出点的方向偏移两个点距离的1/5
     //! 1 先求出两个点距离
     qreal length = pointLength(fromPos, toPos);
 
@@ -902,7 +912,7 @@ QPainterPath DAGraphicsLinkItem::generateLinkLineKnucklePainterPath(const QPoint
                                                                     const QPointF& toPos,
                                                                     AspectDirection toDirect)
 {
-    const int extendLength = 20;  //延长线的长度
+    const int extendLength = 20;  // 延长线的长度
     QPointF extendFrom     = elongation(fromPos, fromDirect, extendLength);
     QPointF extendTo       = elongation(toPos, toDirect, extendLength);
     QPainterPath path;
@@ -913,9 +923,9 @@ QPainterPath DAGraphicsLinkItem::generateLinkLineKnucklePainterPath(const QPoint
     if ((fromDirect == AspectDirection::East) || (fromDirect == AspectDirection::West)) {
         // from沿着x方向
         if (isDirectionParallel(fromDirect, toDirect)) {
-            //平行
+            // 平行
             if (isDirectionOpposite(fromDirect, toDirect)) {
-                //反向
+                // 反向
                 if (isParallelPointApproachInDirection(extendFrom, fromDirect, extendTo, toDirect)) {
                     // from沿着x方向、平行，反向接近
                     path.lineTo(extendFrom.x() + dx / 2, extendFrom.y());
@@ -926,7 +936,7 @@ QPainterPath DAGraphicsLinkItem::generateLinkLineKnucklePainterPath(const QPoint
                     path.lineTo(extendTo.x(), extendFrom.y() + dy / 2);
                 }
             } else {
-                //同向
+                // 同向
                 if (isPointInFront(extendFrom, fromDirect, extendTo)) {
                     // from沿着x方向，平行，同向靠前
                     path.lineTo(extendTo.x(), extendFrom.y());
@@ -936,7 +946,7 @@ QPainterPath DAGraphicsLinkItem::generateLinkLineKnucklePainterPath(const QPoint
                 }
             }
         } else {
-            //垂直
+            // 垂直
             if (isPointCanMeet(extendFrom, fromDirect, extendTo, toDirect)) {
                 // from沿着x方向，垂直,能相遇使用
                 path.lineTo(extendTo.x(), extendFrom.y());
@@ -956,9 +966,9 @@ QPainterPath DAGraphicsLinkItem::generateLinkLineKnucklePainterPath(const QPoint
     } else {
         // from沿着y方向
         if (isDirectionParallel(fromDirect, toDirect)) {
-            //平行
+            // 平行
             if (isDirectionOpposite(fromDirect, toDirect)) {
-                //反向
+                // 反向
                 if (isParallelPointApproachInDirection(extendFrom, fromDirect, extendTo, toDirect)) {
                     // from沿着y方向、平行，反向接近
                     path.lineTo(extendFrom.x(), extendFrom.y() + dy / 2);
@@ -970,7 +980,7 @@ QPainterPath DAGraphicsLinkItem::generateLinkLineKnucklePainterPath(const QPoint
                     path.lineTo(extendFrom.x() + dx / 2, extendTo.y());
                 }
             } else {
-                //同向
+                // 同向
                 if (isPointInFront(extendFrom, fromDirect, extendTo)) {
                     // from沿着y方向，平行，同向靠前
                     path.lineTo(extendFrom.x(), extendTo.y());
@@ -980,7 +990,7 @@ QPainterPath DAGraphicsLinkItem::generateLinkLineKnucklePainterPath(const QPoint
                 }
             }
         } else {
-            //垂直
+            // 垂直
             if (isPointCanMeet(extendFrom, fromDirect, extendTo, toDirect)) {
                 // from沿着y方向，垂直,能相遇使用
                 path.lineTo(extendFrom.x(), extendTo.y());

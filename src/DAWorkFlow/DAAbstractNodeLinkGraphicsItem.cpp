@@ -412,9 +412,12 @@ bool DAAbstractNodeLinkGraphicsItem::attachFrom(DAAbstractNodeGraphicsItem* item
     d_ptr->mFromPoint = pl;
     d_ptr->updateLinkPointNameText();
     item->recordLinkInfo(this, pl);
-    item->finishLink(pl, this, DANodeLinkPoint::Output, true);
-    if (toNodeItem()) {
+    // 这里不做item->finishLink(pl, this, DANodeLinkPoint::Output, true);的回调调用，因为开始连接还不算finishlink，只有attachto结束后才算
+    DAAbstractNodeGraphicsItem* ti = toNodeItem();
+    if (ti) {
         // 终点已经链接
+        item->finishLink(pl, this, DANodeLinkPoint::Output, true);
+        ti->finishLink(toNodeLinkPoint(), this, DANodeLinkPoint::Input, true);
         finishedLink();
     }
     return (true);
@@ -432,6 +435,7 @@ void DAAbstractNodeLinkGraphicsItem::detachFrom()
     if (d_ptr->mFromItem) {
         d_ptr->mFromItem->removeLinkInfo(this, d_ptr->mFromPoint);
         d_ptr->mFromItem->node()->detachLink(d_ptr->mFromPoint.name);  // 断开连接
+        d_ptr->mFromItem->detachLink(d_ptr->mFromPoint, this, DANodeLinkPoint::Output);
         d_ptr->mFromItem = nullptr;
     }
     d_ptr->mFromPoint = DANodeLinkPoint();
@@ -470,9 +474,11 @@ bool DAAbstractNodeLinkGraphicsItem::attachTo(DAAbstractNodeGraphicsItem* item, 
     d_ptr->mToPoint = pl;
     d_ptr->updateLinkPointNameText();
     item->recordLinkInfo(this, pl);  // 记录链接信息
-    item->finishLink(pl, this, DANodeLinkPoint::Input, true);
-    if (fromNodeItem()) {
+    DAAbstractNodeGraphicsItem* fi = fromNodeItem();
+    if (fi) {
         // 起点已经链接
+        fi->finishLink(fromNodeLinkPoint(), this, DANodeLinkPoint::Output, true);
+        item->finishLink(pl, this, DANodeLinkPoint::Input, true);
         finishedLink();
     }
     return (true);
@@ -489,6 +495,7 @@ void DAAbstractNodeLinkGraphicsItem::detachTo()
     if (d_ptr->mToItem) {
         d_ptr->mToItem->removeLinkInfo(this, d_ptr->mToPoint);
         d_ptr->mToItem->node()->detachLink(d_ptr->mToPoint.name);  // 断开连接
+        d_ptr->mToItem->detachLink(d_ptr->mToPoint, this, DANodeLinkPoint::Input);
         d_ptr->mToItem = nullptr;
     }
     d_ptr->mToPoint = DANodeLinkPoint();

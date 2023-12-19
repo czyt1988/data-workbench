@@ -49,7 +49,10 @@ public:
     void setShowBackground(bool on);
     bool isShowBackground() const;
     // 分组位置发生改变的事件
-    virtual void groupPositionChanged(const QPointF& pos);
+    virtual void groupPositionChanged(const QPointF& p);
+    // 设置在场景的位置，如果没有分组，和setPos一样，如果分组了，最终也能保证位置在pos位置
+    void setScenePos(const QPointF& p);
+    void setScenePos(qreal x, qreal y);
 
 protected:
     //    virtual bool sceneEvent(QEvent* event) override;

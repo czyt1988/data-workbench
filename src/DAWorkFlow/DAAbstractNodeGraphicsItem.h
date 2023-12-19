@@ -161,7 +161,8 @@ public:
     virtual void tryLinkOnItemPos(const QPointF& p, DAAbstractNodeLinkGraphicsItem* linkItem, DANodeLinkPoint::Way way);
     // 链接结束回调，对应旧版的prepareLinkInputFailed,prepareLinkInputSucceed,prepareLinkOutputFailed,prepareLinkOutputSucceed四个回调
     virtual void finishLink(const DANodeLinkPoint& p, DAAbstractNodeLinkGraphicsItem* linkItem, DANodeLinkPoint::Way way, bool isSuccess);
-
+    // 断开连接的回调，detach是针对已经连接上的断开
+    virtual void detachLink(const DANodeLinkPoint& p, DAAbstractNodeLinkGraphicsItem* linkItem, DANodeLinkPoint::Way way);
     // 节点名字改变准备函数，通过此函数，让节点对名字进行重新绘制
     virtual void prepareNodeNameChanged(const QString& name);
     // 分组位置发生了变化

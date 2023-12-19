@@ -81,84 +81,85 @@ public:
     QPainterPath shape() const override;
     //
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
-    //保存到xml中
+    // 保存到xml中
     virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement) const override;
     virtual bool loadFromXml(const QDomElement* itemElement) override;
 
-public:  //尺寸相关接口
-    //测试一下setBodySize之后getBodySize能得到的尺寸
+public:  // 尺寸相关接口
+    // 测试一下setBodySize之后getBodySize能得到的尺寸
     QSizeF testBodySize(const QSizeF& s);
-    //设置尺寸这里的尺寸是不包括旋转和缩放的辅助控制，如果构造函数中需要设置默认大小，使用changeBodySize
+    // 设置尺寸这里的尺寸是不包括旋转和缩放的辅助控制，如果构造函数中需要设置默认大小，使用changeBodySize
     virtual void setBodySize(const QSizeF& s);
-    //绘图的shape，等同于原来的QGraphicsItem::boundingRect
+    // 绘图的shape，等同于原来的QGraphicsItem::boundingRect
     QRectF getBodyRect() const;
-    //获取尺寸，
+    // 获取尺寸，
     QSizeF getBodySize() const;
-    //获取body包含控制窗口大小，就是在改变尺寸时包含那8个控制点的最大尺寸
+    // 获取body包含控制窗口大小，就是在改变尺寸时包含那8个控制点的最大尺寸
     QRectF getBodyControlRect() const;
-    //设置最大最小范围
+    // 设置最大最小范围
     void setBodyMinimumSize(const QSizeF& s);
     void setBodyMaximumSize(const QSizeF& s);
     QSizeF getBodyMinimumSize() const;
     QSizeF getBodyMaximumSize() const;
-    //设置控制器的大小
+    // 设置控制器的大小
     void setControlerSize(const QSizeF& s);
     QSizeF getControlerSize() const;
-    //是否允许
+    // 是否允许
     void setEnableResize(bool on);
     bool isEnableResize() const;
-    //设置body的位置
+    // 设置body的位置
     void setBodyPos(const QPointF& p);
-    //返回body中心点
+    void setBodyScenePos(const QPointF& p);
+    // 返回body中心点
     QPointF getBodyCenterPoint() const;
-    //获取body中心的位置
+    // 获取body中心的位置
     QPointF getBodyCenterPos() const;
-    //设置body中心到scene的位置
+    // 设置body中心到scene的位置
     void setBodyCenterPos(const QPointF& p);
-    //设置TransformOriginPoint自动设置为bodysize的中心,否则为用户自己指定
+    // 设置TransformOriginPoint自动设置为bodysize的中心,否则为用户自己指定
     void setAutoCenterTransformOriginPoint(bool on = true);
-    //更新TransformOriginPoint，前提是setAutoCenterTransformOriginPoint(true)
+    // 更新TransformOriginPoint，前提是setAutoCenterTransformOriginPoint(true)
     void updateTransformOriginPoint();
-    //执行变换，返回需要移动的位置和尺寸，尺寸会考虑最大最小
+    // 执行变换，返回需要移动的位置和尺寸，尺寸会考虑最大最小
     QPair< QPointF, QSizeF > doItemResize(const QPointF& mousescenePos);
 
 public:
-    //需要用户继承的接口
-    //绘图的shape，等同于原来的QGraphicsItem::shape
+    // 需要用户继承的接口
+    // 绘图的shape，等同于原来的QGraphicsItem::shape
     virtual QPainterPath getBodyShape() const;
-    //绘制resize边框
+    // 绘制resize边框
     virtual void paintSelectedBorder(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget);
-    //绘制resize控制点
+    // 绘制resize控制点
     virtual void paintResizeControlPoints(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget);
-    //绘制背景
+    // 绘制背景
     virtual void paintBackground(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget, const QRectF& bodyRect);
-    //绘制边框
+    // 绘制边框
     virtual void paintBorder(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget, const QRectF& bodyRect);
-    //绘制具体内容
+    // 绘制具体内容
     virtual void paintBody(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget, const QRectF& bodyRect) = 0;
-    //生成controlPoints
+    // 生成controlPoints
     virtual QRectF controlPointRect(ControlType tp, const QRectF& bodyRect) const;
-    //控制点的大小
+    // 控制点的大小
     virtual QSizeF controlPointSize() const;
-    //在尺寸变化时调用，例如prepareGeometryChange之后调用
+    // 在尺寸变化时调用，例如prepareGeometryChange之后调用
     void prepareControlInfoChange();
-    //检测点在哪个控制点上
+    // 检测点在哪个控制点上
     ControlType getControlPointByPos(const QPointF& pos) const;
-    //判断是否在调整大小中
+    // 判断是否在调整大小中
     bool isResizing() const;
-    //是否允许移动
+    // 是否允许移动
     void setMovable(bool on = true);
     bool isMovable() const;
 
 public:
-    //下面四个函数是通过scene获取，如果没有scene，返回默认值
-    //是否允许对齐网格
+    // 下面四个函数是通过scene获取，如果没有scene，返回默认值
+    // 是否允许对齐网格
     bool isEnableSnapToGrid() const;
-    //设置网格尺寸
+    // 设置网格尺寸
     QSize getGridSize() const;
 
 protected:
-    //直接改变bodysize
+    // 直接改变bodysize
     void changeBodySize(const QSizeF& s);
 #if DA_USE_QGRAPHICSOBJECT
 signals:

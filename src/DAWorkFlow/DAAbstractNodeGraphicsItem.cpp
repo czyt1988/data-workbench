@@ -496,6 +496,13 @@ void DAAbstractNodeGraphicsItem::finishLink(const DANodeLinkPoint& p,
     Q_UNUSED(isSuccess);
 }
 
+void DAAbstractNodeGraphicsItem::detachLink(const DANodeLinkPoint& p, DAAbstractNodeLinkGraphicsItem* linkItem, DANodeLinkPoint::Way way)
+{
+    Q_UNUSED(p);
+    Q_UNUSED(linkItem);
+    Q_UNUSED(way);
+}
+
 /**
  * @brief 节点名字改变准备函数，通过此函数，让节点对名字进行重新绘制
  * @param name

@@ -372,7 +372,9 @@ DAAbstractNodeGraphicsItem* DANodeGraphicsScene::nodeItemAt(const QPointF& scene
 void DANodeGraphicsScene::initConnect()
 {
     qRegisterMetaType< DANodeLinkPoint >("DANodeLinkPoint");
-    connect(this, &QGraphicsScene::selectionChanged, this, &DANodeGraphicsScene::onItemSelectionChanged);
+    //    connect(this, &QGraphicsScene::selectionChanged, this, &DANodeGraphicsScene::onItemSelectionChanged);
+    connect(this, &DAGraphicsScene::selectItemChanged, this, &DANodeGraphicsScene::onSelectItemChanged);
+    connect(this, &DAGraphicsScene::selectLinkChanged, this, &DANodeGraphicsScene::onSelectLinkChanged);
 }
 
 /**
@@ -390,20 +392,31 @@ void DANodeGraphicsScene::callNodeItemLinkIsEmpty(DAAbstractNodeLinkGraphicsItem
  *
  * @note 注意，多选只会传递最后选中的那个，避免批量选择时的卡顿
  */
-void DANodeGraphicsScene::onItemSelectionChanged()
+// void DANodeGraphicsScene::onItemSelectionChanged()
+//{
+//     QList< QGraphicsItem* > sits = selectedItems();
+//     if (sits.isEmpty()) {
+//         return;
+//     }
+//     QGraphicsItem* i = sits.last();
+//     if (DAAbstractNodeGraphicsItem* gi = dynamic_cast< DAAbstractNodeGraphicsItem* >(i)) {
+//         emit selectNodeItemChanged(gi);
+//     } else if (DAAbstractNodeLinkGraphicsItem* gi = dynamic_cast< DAAbstractNodeLinkGraphicsItem* >(i)) {
+//         emit selectNodeLinkChanged(gi);
+//     }
+// }
+void DANodeGraphicsScene::onSelectItemChanged(DAGraphicsItem* item)
 {
-    QList< QGraphicsItem* > sits = selectedItems();
-    if (sits.isEmpty()) {
-        return;
-    }
-    QGraphicsItem* i = sits.last();
-    if (DAAbstractNodeGraphicsItem* gi = dynamic_cast< DAAbstractNodeGraphicsItem* >(i)) {
+    if (DAAbstractNodeGraphicsItem* gi = dynamic_cast< DAAbstractNodeGraphicsItem* >(item)) {
         emit selectNodeItemChanged(gi);
-    } else if (DAAbstractNodeLinkGraphicsItem* gi = dynamic_cast< DAAbstractNodeLinkGraphicsItem* >(i)) {
+    }
+}
+void DANodeGraphicsScene::onSelectLinkChanged(DAGraphicsLinkItem* item)
+{
+    if (DAAbstractNodeLinkGraphicsItem* gi = dynamic_cast< DAAbstractNodeLinkGraphicsItem* >(item)) {
         emit selectNodeLinkChanged(gi);
     }
 }
-
 /**
  * @brief 节点名字改变触发的槽
  * @param node

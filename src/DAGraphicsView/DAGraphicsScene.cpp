@@ -3,6 +3,7 @@
 #include "DACommandsForGraphics.h"
 #include "DAGraphicsResizeableItem.h"
 #include "DAGraphicsLinkItem.h"
+#include "DAGraphicsItemGroup.h"
 #include <QPainter>
 #include <QDebug>
 
@@ -157,15 +158,23 @@ void DAGraphicsScene::PrivateData::renderBackgroundCache(QPainter* painter, cons
 
 DAGraphicsScene::DAGraphicsScene(QObject* p) : QGraphicsScene(p), DA_PIMPL_CONSTRUCT
 {
+    init();
 }
 
 DAGraphicsScene::DAGraphicsScene(const QRectF& sceneRect, QObject* p) : QGraphicsScene(sceneRect, p), DA_PIMPL_CONSTRUCT
 {
+    init();
 }
 
 DAGraphicsScene::DAGraphicsScene(qreal x, qreal y, qreal width, qreal height, QObject* p)
     : QGraphicsScene(x, y, width, height, p), DA_PIMPL_CONSTRUCT
 {
+    init();
+}
+
+void DAGraphicsScene::init()
+{
+    connect(this, &QGraphicsScene::selectionChanged, this, &DAGraphicsScene::onSelectionChanged);
 }
 
 DAGraphicsScene::~DAGraphicsScene()
@@ -824,6 +833,32 @@ void DAGraphicsScene::drawBackground(QPainter* painter, const QRectF& rect)
         }
     }
     // 直接绘制网格线在放大时很卡
+}
+
+void DAGraphicsScene::onSelectionChanged()
+{
+    QList< QGraphicsItem* > sits = selectedItems();
+    if (sits.isEmpty()) {
+        return;
+    }
+    checkSelectItem(sits.last());
+}
+
+void DAGraphicsScene::checkSelectItem(QGraphicsItem* item)
+{
+    if (DAGraphicsItem* gi = dynamic_cast< DAGraphicsItem* >(item)) {
+        emit selectItemChanged(gi);
+    } else if (DAGraphicsLinkItem* gi = dynamic_cast< DAGraphicsLinkItem* >(item)) {
+        emit selectLinkChanged(gi);
+    } else if (DAGraphicsItemGroup* gi = dynamic_cast< DAGraphicsItemGroup* >(item)) {
+        // 选中的分组，要检查点击的是哪个
+        QList< QGraphicsItem* > gites = gi->childItems();
+        for (QGraphicsItem* i : qAsConst(gites)) {
+            if (i->isUnderMouse() && i != item) {
+                checkSelectItem(i);
+            }
+        }
+    }
 }
 
 }  // end DA

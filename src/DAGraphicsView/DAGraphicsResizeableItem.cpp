@@ -526,6 +526,13 @@ void DAGraphicsResizeableItem::setBodyPos(const QPointF& p)
     setPos(p.x() - wo, p.y() - ho);
 }
 
+void DAGraphicsResizeableItem::setBodyScenePos(const QPointF& p)
+{
+    qreal wo = d_ptr->mControlPointSize.width() + 1;
+    qreal ho = d_ptr->mControlPointSize.height() + 1;
+    setScenePos(p.x() - wo, p.y() - ho);
+}
+
 /**
  * @brief 返回body的中心点，此坐标系为item坐标系
  * @return item坐标系
