@@ -15,9 +15,22 @@ class DAGRAPHICSVIEW_API DAGraphicsItemGroup : public QGraphicsItemGroup, public
 {
     DA_DECLARE_PRIVATE(DAGraphicsItemGroup)
 public:
+    /**
+     * @brief 适用qgraphicsitem_cast
+     */
+    enum
+    {
+        Type = DA::ItemType_GraphicsItem
+    };
+    virtual int type() const override
+    {
+        return (Type);
+    }
+
+public:
     DAGraphicsItemGroup(QGraphicsItem* parent = nullptr);
     ~DAGraphicsItemGroup();
-    // 保存到xml中
+    // 保存到xml中,注意，这里不会保存子item
     virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement) const override;
     virtual bool loadFromXml(const QDomElement* parentElement) override;
     // 设置边框画笔，如果设置一个QPen,则不绘制边框

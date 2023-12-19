@@ -4,6 +4,7 @@
 #include <QDomDocument>
 #include <QVariant>
 #include "DAAbstractNode.h"
+#include "DAGraphicsItemGroup.h"
 /**
  *@file xml文件的帮助类
  */

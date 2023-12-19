@@ -63,9 +63,10 @@ enum DAGraphicsItemType
     ItemType_GraphicsResizeableObjectItem = ItemType_GraphicsItemBegin + 3,  ///< 针对DAGraphicsResizeableObjecrtItem的类型
     ItemType_GraphicsResizeableRectItem = ItemType_GraphicsItemBegin + 4,  ///< 针对DAGraphicsResizeableRectItem的类型
     ItemType_GraphicsResizeablePixmapItem = ItemType_GraphicsItemBegin + 5,  ///< 针对DAGraphicsResizeablePixmapItem的类型
-    ItemType_GraphicsLinkItem          = ItemType_GraphicsItemBegin + 300,  ///< 针对DAGraphicsLinkItem的类型
-    ItemType_GraphicsStandardTextItem  = ItemType_GraphicsItemBegin + 500,  ///< 标准样式
-    ItemType_GraphicsResizeableItemEnd = ItemType_GraphicsItemBegin + 1000
+    ItemType_GraphicsLinkItem             = ItemType_GraphicsItemBegin + 300,  ///< 针对DAGraphicsLinkItem的类型
+    ItemType_GraphicsStandardTextItem  = ItemType_GraphicsItemBegin + 500,     ///< 标准样式
+    ItemType_GraphicsResizeableItemEnd = ItemType_GraphicsItemBegin + 1000,
+    ItemType_GraphicsItemGroup         = ItemType_GraphicsItemBegin + 1100  ///< 针对DAGraphicsItemGroup的类型
 };
 // 实现位于DAGraphicsLinkItem.cpp
 // DANodeLinkPoint::Direction 的枚举转换
