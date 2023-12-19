@@ -16,6 +16,3 @@
 [submodule "src/3rdparty/qwt"]
 	path = src/3rdparty/qwt
 	url = https://gitee.com/czyt1988/QWT.git
-[submodule "src/3rdparty/magic_enum"]
-	path = src/3rdparty/magic_enum
-	url = https://github.com/Neargye/magic_enum.git
