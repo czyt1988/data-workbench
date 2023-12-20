@@ -1,7 +1,7 @@
 #ifndef DAGRAPHICSLINKITEM_H
 #define DAGRAPHICSLINKITEM_H
 #include "DAGraphicsViewGlobal.h"
-#include "DAXMLFileInterface.h"
+#include "DAGraphicsItem.h"
 #include <QGraphicsItem>
 class QDomDocument;
 class QDomElement;
@@ -12,7 +12,7 @@ namespace DA
 /**
  * @brief 绘制连接线的item
  */
-class DAGRAPHICSVIEW_API DAGraphicsLinkItem : public QGraphicsItem, public DAXMLFileInterface
+class DAGRAPHICSVIEW_API DAGraphicsLinkItem : public DAGraphicsItem
 {
     DA_DECLARE_PRIVATE(DAGraphicsLinkItem)
 public:

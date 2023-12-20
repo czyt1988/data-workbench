@@ -44,7 +44,7 @@ DAGraphicsLinkItem::PrivateData::PrivateData(DAGraphicsLinkItem* p) : q_ptr(p)
 //===============================================================
 // DAGraphicsLinkItem
 //===============================================================
-DAGraphicsLinkItem::DAGraphicsLinkItem(QGraphicsItem* p) : QGraphicsItem(p), DA_PIMPL_CONSTRUCT
+DAGraphicsLinkItem::DAGraphicsLinkItem(QGraphicsItem* p) : DAGraphicsItem(p), DA_PIMPL_CONSTRUCT
 {
     setFlags(flags() | ItemIsSelectable);
     setEndPointType(OrientationStart, EndPointNone);
@@ -770,6 +770,7 @@ bool DAGraphicsLinkItem::willCompleteLink()
 
 bool DAGraphicsLinkItem::saveToXml(QDomDocument* doc, QDomElement* parentElement) const
 {
+    DAGraphicsItem::saveToXml(doc, parentElement);
     QDomElement posEle = doc->createElement("pos");
     posEle.setAttribute("BezierControlScale", d_ptr->mBezierControlScale);
     QDomElement startPosEle     = makeElement(d_ptr->mStartPos, "startPos", doc);
@@ -801,6 +802,7 @@ bool DAGraphicsLinkItem::saveToXml(QDomDocument* doc, QDomElement* parentElement
 
 bool DAGraphicsLinkItem::loadFromXml(const QDomElement* parentElement)
 {
+    DAGraphicsItem::loadFromXml(parentElement);
     QDomElement posEle = parentElement->firstChildElement("pos");
     if (!posEle.isNull()) {
         bool isok = false;

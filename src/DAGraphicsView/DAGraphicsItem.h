@@ -53,6 +53,9 @@ public:
     // 设置在场景的位置，如果没有分组，和setPos一样，如果分组了，最终也能保证位置在pos位置
     void setScenePos(const QPointF& p);
     void setScenePos(qreal x, qreal y);
+    // 获取item的id，id是这个id唯一的标识，id主要为了能单独的找到这个item，在分组加载时使用
+    uint64_t getItemID() const;
+    void setItemID(uint64_t id);
 
 protected:
     //    virtual bool sceneEvent(QEvent* event) override;

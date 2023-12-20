@@ -3,7 +3,7 @@
 #include <QObject>
 // workflow
 #include "DANodeGraphicsScene.h"
-#include "DAGraphicsResizeablePixmapItem.h"
+#include "DAGraphicsPixmapItem.h"
 #include "DAAbstractNodeLinkGraphicsItem.h"
 #include "DAWorkFlow.h"
 #include "DAGraphicsItem.h"
@@ -47,8 +47,8 @@ DACommandsForWorkFlowCreateNode::~DACommandsForWorkFlowCreateNode()
 
 void DACommandsForWorkFlowCreateNode::redo()
 {
-    QUndoCommand::redo();  //此函数会执行子内容的redo/undo
-    mNeedDelete = false;   //标记要delete为false
+    QUndoCommand::redo();  // 此函数会执行子内容的redo/undo
+    mNeedDelete = false;   // 标记要delete为false
     if (mSkipFirstRedo) {
         //! 关键:第一次执行要跳过redo，否则会重复添加节点
         mSkipFirstRedo = false;
@@ -65,7 +65,7 @@ void DACommandsForWorkFlowCreateNode::redo()
 
 void DACommandsForWorkFlowCreateNode::undo()
 {
-    QUndoCommand::undo();  //此函数会执行子内容的redo/undo
+    QUndoCommand::undo();  // 此函数会执行子内容的redo/undo
     mNeedDelete = true;
     if (mNode) {
         DAWorkFlow* wf = mScene->getWorkflow();
@@ -99,8 +99,8 @@ DACommandsForWorkFlowRemoveSelectNodes::DACommandsForWorkFlowRemoveSelectNodes(D
     mNeedDelete = false;
     classifyItems(mScene, mSelectNodeItems, mWillRemoveLink, mWillRemoveNormal);
     QList< DAAbstractNodeLinkGraphicsItem* > nodeLinks = getNodesLinks(mSelectNodeItems);
-    //这时候得到所有需要删除的link
-    //也要做一次去重
+    // 这时候得到所有需要删除的link
+    // 也要做一次去重
     mWillRemoveLink = nodeLinks + mWillRemoveLink;
     mWillRemoveLink = unique_qlist(mWillRemoveLink);
     for (DAAbstractNodeLinkGraphicsItem* lk : qAsConst(mWillRemoveLink)) {
@@ -143,7 +143,7 @@ void DACommandsForWorkFlowRemoveSelectNodes::classifyItems(DANodeGraphicsScene* 
         } else if (DAAbstractNodeLinkGraphicsItem* li = dynamic_cast< DAAbstractNodeLinkGraphicsItem* >(i)) {
             if (isStartLink) {
                 if (scene->getCurrentLinkItem() == li) {
-                    //连接线要跳过
+                    // 连接线要跳过
                     scene->cancelLink();
                     continue;
                 }
@@ -204,9 +204,9 @@ QList< QGraphicsItem* > DACommandsForWorkFlowRemoveSelectNodes::getRemovedItems(
 
 void DACommandsForWorkFlowRemoveSelectNodes::redo()
 {
-    //注意QUndoCommand::redo()要放到最前，QUndoCommand::undo()要放到最后
+    // 注意QUndoCommand::redo()要放到最前，QUndoCommand::undo()要放到最后
     mNeedDelete = true;
-    QUndoCommand::redo();  //此函数会执行子内容的redo/undo,也就是先删除link
+    QUndoCommand::redo();  // 此函数会执行子内容的redo/undo,也就是先删除link
     DAWorkFlow* wf = mScene->getWorkflow();
     for (DAAbstractNodeGraphicsItem* item : qAsConst(mSelectNodeItems)) {
         mScene->removeItem(item);
@@ -232,8 +232,8 @@ void DACommandsForWorkFlowRemoveSelectNodes::undo()
     for (QGraphicsItem* item : qAsConst(mWillRemoveNormal)) {
         mScene->addItem(item);
     }
-    //注意undo要放到最后
-    QUndoCommand::undo();  //此函数会执行子内容的redo/undo
+    // 注意undo要放到最后
+    QUndoCommand::undo();  // 此函数会执行子内容的redo/undo
 }
 
 //==============================================================
@@ -270,7 +270,7 @@ DACommandsForWorkFlowCreateLink::~DACommandsForWorkFlowCreateLink()
 
 void DACommandsForWorkFlowCreateLink::redo()
 {
-    QUndoCommand::redo();  //此函数会执行子内容的redo/undo
+    QUndoCommand::redo();  // 此函数会执行子内容的redo/undo
     mNeedDelete = false;
     if (mSkipFirstRedo) {
         mSkipFirstRedo = false;
@@ -283,7 +283,7 @@ void DACommandsForWorkFlowCreateLink::redo()
 
 void DACommandsForWorkFlowCreateLink::undo()
 {
-    QUndoCommand::undo();  //此函数会执行子内容的redo/undo
+    QUndoCommand::undo();  // 此函数会执行子内容的redo/undo
     mNeedDelete = true;
     mScene->removeItem(mLinkitem);
     mLinkitem->detachFrom();
@@ -327,7 +327,7 @@ DACommandsForWorkFlowRemoveLink::~DACommandsForWorkFlowRemoveLink()
 
 void DACommandsForWorkFlowRemoveLink::redo()
 {
-    QUndoCommand::redo();  //此函数会执行子内容的redo/undo
+    QUndoCommand::redo();  // 此函数会执行子内容的redo/undo
     mScene->removeItem(mLinkitem);
     mLinkitem->detachFrom();
     mLinkitem->detachTo();
@@ -336,7 +336,7 @@ void DACommandsForWorkFlowRemoveLink::redo()
 
 void DACommandsForWorkFlowRemoveLink::undo()
 {
-    QUndoCommand::undo();  //此函数会执行子内容的redo/undo
+    QUndoCommand::undo();  // 此函数会执行子内容的redo/undo
     mLinkitem->attachFrom(mFromitem, mFromPointName);
     mLinkitem->attachTo(mToitem, mToPointName);
     mScene->addItem(mLinkitem);

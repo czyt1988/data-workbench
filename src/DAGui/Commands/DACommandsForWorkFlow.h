@@ -12,7 +12,7 @@
 
 namespace DA
 {
-class DAGraphicsResizeablePixmapItem;
+class DAGraphicsPixmapItem;
 class DAWorkFlowGraphicsScene;
 class DAGraphicsItem;
 class DAStandardGraphicsTextItem;
@@ -30,8 +30,8 @@ public:
 
 private:
     DAWorkFlowGraphicsScene* _scene;
-    DAGraphicsResizeablePixmapItem* _oldItem;
-    DAGraphicsResizeablePixmapItem* _newItem;
+    DAGraphicsPixmapItem* _oldItem;
+    DAGraphicsPixmapItem* _newItem;
     bool _needDeleteOldItem;
     bool _needDeleteNewItem;
 };

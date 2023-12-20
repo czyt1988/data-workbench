@@ -9,7 +9,7 @@
 // workflow
 #include "DAWorkFlowGraphicsView.h"
 #include "DAWorkFlowGraphicsScene.h"
-#include "DAGraphicsResizeablePixmapItem.h"
+#include "DAGraphicsPixmapItem.h"
 //
 #include "Commands/DACommandsForWorkFlow.h"
 namespace DA
@@ -112,10 +112,10 @@ void DAWorkFlowEditWidget::addBackgroundPixmap(const QString& pixmapPath)
     QImage img(pixmapPath);
     QPixmap px;
     px.convertFromImage(img);
-    DAGraphicsResizeablePixmapItem* item = sc->setBackgroundPixmap(px);
+    DAGraphicsPixmapItem* item = sc->setBackgroundPixmap(px);
     item->setSelectable(true);
     item->setMoveable(true);
-    // connect(item, &DAGraphicsResizeablePixmapItem::itemPosChange, this, &DAWorkFlowOperateWidget::onItemPosChange);
+    // connect(item, &DAGraphicsPixmapItem::itemPosChange, this, &DAWorkFlowOperateWidget::onItemPosChange);
 }
 
 void DAWorkFlowEditWidget::setBackgroundPixmapLock(bool on)
@@ -124,7 +124,7 @@ void DAWorkFlowEditWidget::setBackgroundPixmapLock(bool on)
     if (!sc) {
         return;
     }
-    DAGraphicsResizeablePixmapItem* item = sc->getBackgroundPixmapItem();
+    DAGraphicsPixmapItem* item = sc->getBackgroundPixmapItem();
     if (nullptr == item) {
         return;
     }

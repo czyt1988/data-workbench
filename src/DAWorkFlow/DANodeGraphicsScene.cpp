@@ -3,16 +3,16 @@
 #include <QScopedPointer>
 #include <QPointer>
 #include <QPainter>
-#include "DAGraphicsResizeablePixmapItem.h"
+#include "DAGraphicsPixmapItem.h"
 #include "DAStandardNodeLinkGraphicsItem.h"
 #include "DACommandsForGraphics.h"
 #include "DACommandsForWorkFlowNodeGraphics.h"
-#include "DAGraphicsResizeableTextItem.h"
+#include "DAGraphicsTextItem.h"
 #include "DAStandardGraphicsTextItem.h"
 #include "DAAbstractNode.h"
 #include "DAWorkFlow.h"
 #include "DAAbstractNodeFactory.h"
-#include "DAGraphicsResizeableRectItem.h"
+#include "DAGraphicsRectItem.h"
 #include "DAStandardGraphicsTextItem.h"
 #include "DANodeGraphicsSceneEventListener.h"
 #include <QPointer>
@@ -336,9 +336,9 @@ DAStandardGraphicsTextItem* DANodeGraphicsScene::createText_(const QString& str)
  * @param p 矩形的位置
  * @return
  */
-DAGraphicsResizeableRectItem* DANodeGraphicsScene::createRect_(const QPointF& p)
+DAGraphicsRectItem* DANodeGraphicsScene::createRect_(const QPointF& p)
 {
-    DAGraphicsResizeableRectItem* item = new DAGraphicsResizeableRectItem();
+    DAGraphicsRectItem* item = new DAGraphicsRectItem();
     addItem_(item);
     if (!p.isNull()) {
         item->setPos(p);

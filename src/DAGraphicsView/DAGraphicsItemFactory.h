@@ -20,14 +20,16 @@ public:
 public:
     DAGraphicsItemFactory();
     virtual ~DAGraphicsItemFactory();
-    //工厂初始化，此初始化会注册DAGraphicsView库里面的元件
+    // 工厂初始化，此初始化会注册DAGraphicsView库里面的元件
     static void initialization();
-    //注册
+    // 注册
     static void registItem(const QString& className, FpCreate fp);
-    //创建item
+    // 创建item
     static DAGraphicsItem* createItem(const QString& className);
-    //销毁item
+    // 销毁item
     static void destoryItem(DAGraphicsItem* i);
+    // 生成一个id,rand建议传入对应指针的截断值
+    static uint64_t generateID(uint32_t rand);
 };
 }
 

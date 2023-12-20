@@ -6,7 +6,7 @@
 #include "DAGraphicsPixmapItemSettingWidget.h"
 #include "DAStandardGraphicsTextItem.h"
 #include "DAWorkFlowEditWidget.h"
-#include "DAGraphicsResizeablePixmapItem.h"
+#include "DAGraphicsPixmapItem.h"
 #include "DAAbstractNodeWidget.h"
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
@@ -234,10 +234,10 @@ void DAWorkFlowNodeItemSettingWidget::onSceneSelectionChanged()
         return;
     }
     QGraphicsItem* item = its.last();
-    //此注释给新手：
-    // 注意C语言的条件赋值，如果是nullptr就不会执行if内容
+    // 此注释给新手：
+    //  注意C语言的条件赋值，如果是nullptr就不会执行if内容
     if (DAAbstractNodeGraphicsItem* nodeItem = dynamic_cast< DAAbstractNodeGraphicsItem* >(item)) {
-        //说明是node
+        // 说明是node
         setLinkSettingEnable(false);
         setNodeSettingEnable(true);
         setItemSettingEnable(true);
@@ -255,12 +255,12 @@ void DAWorkFlowNodeItemSettingWidget::onSceneSelectionChanged()
         //! 获取节点对应的设置窗口，把设置窗口作为一个tab设置进去
         DAAbstractNodeWidget* w = nodeItem->getNodeWidget();
         if (nullptr == w) {
-            //没有设置窗口，看看当前是否显示着设置窗口，如果有就取消掉
+            // 没有设置窗口，看看当前是否显示着设置窗口，如果有就取消掉
             if (nullptr != mLastSetNodeWidget) {
                 removeWidget(mLastSetNodeWidget.data());
             }
         } else {
-            //设置窗口不为空，就把
+            // 设置窗口不为空，就把
             if (mLastSetNodeWidget != w) {
                 removeWidget(mLastSetNodeWidget.data());
                 addWidget(w, QIcon(":/Icon/Icon/node-settting.svg"), tr("property"));
@@ -268,7 +268,7 @@ void DAWorkFlowNodeItemSettingWidget::onSceneSelectionChanged()
         }
         mLastSetNodeWidget = w;
     } else if (DAAbstractNodeLinkGraphicsItem* linkItem = dynamic_cast< DAAbstractNodeLinkGraphicsItem* >(item)) {
-        //说明是link
+        // 说明是link
         setLinkSettingEnable(true);
         setNodeSettingEnable(false);
         setItemSettingEnable(false);
@@ -283,7 +283,7 @@ void DAWorkFlowNodeItemSettingWidget::onSceneSelectionChanged()
             ui->tabLinkSetting->setLinkItem(linkItem);
         }
     } else {
-        //说明是其他item
+        // 说明是其他item
         setLinkSettingEnable(false);
         setNodeSettingEnable(false);
         setItemSettingEnable(true);
@@ -296,14 +296,14 @@ void DAWorkFlowNodeItemSettingWidget::onSceneSelectionChanged()
         if (isTabContainWidget(ui->tabLinkSetting)) {
             ui->tabLinkSetting->setLinkItem(nullptr);
         }
-        if (DAGraphicsResizeablePixmapItem* pitem = dynamic_cast< DAGraphicsResizeablePixmapItem* >(item)) {
+        if (DAGraphicsPixmapItem* pitem = dynamic_cast< DAGraphicsPixmapItem* >(item)) {
             setPixmapItemSettingEnable(true);
             updatePixmapItemSettingWidget(pitem);
         } else {
             setPixmapItemSettingEnable(false);
         }
     }
-    //把最后用户点击的页面记录下来并显示
+    // 把最后用户点击的页面记录下来并显示
     if (_lastTabIndex >= 0 && _lastTabIndex < ui->tabWidget->count()) {
         if (ui->tabWidget->isTabEnabled(_lastTabIndex)) {
             ui->tabWidget->setCurrentIndex(_lastTabIndex);
@@ -323,7 +323,7 @@ void DAWorkFlowNodeItemSettingWidget::onSceneItemsPositionChanged(const QList< Q
 {
     Q_UNUSED(oldPos);
     Q_UNUSED(newPos);
-    //刷新item维护的数据
+    // 刷新item维护的数据
     if (!isTabContainWidget(ui->tabItemSetting)) {
         return;
     }
@@ -388,7 +388,7 @@ void DAWorkFlowNodeItemSettingWidget::onPixmapItemAlphaChanged(int v)
     if (nullptr == scene) {
         return;
     }
-    DAGraphicsResizeablePixmapItem* pixmapItem = scene->getBackgroundPixmapItem();
+    DAGraphicsPixmapItem* pixmapItem = scene->getBackgroundPixmapItem();
     if (nullptr == pixmapItem) {
         return;
     }
@@ -399,7 +399,7 @@ void DAWorkFlowNodeItemSettingWidget::onPixmapItemAlphaChanged(int v)
  * @brief 更新PixmapItemSettingWidget
  * @param pitem
  */
-void DAWorkFlowNodeItemSettingWidget::updatePixmapItemSettingWidget(DAGraphicsResizeablePixmapItem* pitem)
+void DAWorkFlowNodeItemSettingWidget::updatePixmapItemSettingWidget(DAGraphicsPixmapItem* pitem)
 {
     if (isTabContainWidget(ui->tabPictureItemSetting)) {
         ui->tabPictureItemSetting->setCurrentAlphaValue(pitem->getAlpha());

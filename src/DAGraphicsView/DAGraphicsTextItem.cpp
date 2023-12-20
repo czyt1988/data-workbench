@@ -1,4 +1,4 @@
-#include "DAGraphicsResizeableTextItem.h"
+#include "DAGraphicsTextItem.h"
 #include <QDebug>
 #include <QFont>
 #include <QPainter>
@@ -6,7 +6,7 @@
 #include "DAStandardGraphicsTextItem.h"
 namespace DA
 {
-DAGraphicsResizeableTextItem::DAGraphicsResizeableTextItem(QGraphicsItem* parent)
+DAGraphicsTextItem::DAGraphicsTextItem(QGraphicsItem* parent)
     : DAGraphicsResizeableItem(parent), m_textItem(new DAStandardGraphicsTextItem(this))
 {
     //    m_textItem->setFocusProxy(this);
@@ -15,7 +15,7 @@ DAGraphicsResizeableTextItem::DAGraphicsResizeableTextItem(QGraphicsItem* parent
     setFocusProxy(m_textItem);
 }
 
-DAGraphicsResizeableTextItem::DAGraphicsResizeableTextItem(const QFont& f, QGraphicsItem* parent)
+DAGraphicsTextItem::DAGraphicsTextItem(const QFont& f, QGraphicsItem* parent)
     : DAGraphicsResizeableItem(parent), m_textItem(new DAStandardGraphicsTextItem(f, this))
 {
     //    m_textItem->setFocusProxy(this);
@@ -24,7 +24,7 @@ DAGraphicsResizeableTextItem::DAGraphicsResizeableTextItem(const QFont& f, QGrap
     setFocusProxy(m_textItem);
 }
 
-DAGraphicsResizeableTextItem::DAGraphicsResizeableTextItem(const QString& str, const QFont& f, QGraphicsItem* parent)
+DAGraphicsTextItem::DAGraphicsTextItem(const QString& str, const QFont& f, QGraphicsItem* parent)
     : DAGraphicsResizeableItem(parent), m_textItem(new DAStandardGraphicsTextItem(str, f, this))
 {
     //    m_textItem->setFocusProxy(this);
@@ -34,42 +34,42 @@ DAGraphicsResizeableTextItem::DAGraphicsResizeableTextItem(const QString& str, c
     setFocusProxy(m_textItem);
 }
 
-void DAGraphicsResizeableTextItem::setEditMode(bool on)
+void DAGraphicsTextItem::setEditMode(bool on)
 {
     m_textItem->setEditMode(on);
 }
 
-bool DAGraphicsResizeableTextItem::saveToXml(QDomDocument* doc, QDomElement* parentElement) const
+bool DAGraphicsTextItem::saveToXml(QDomDocument* doc, QDomElement* parentElement) const
 {
     DAGraphicsResizeableItem::saveToXml(doc, parentElement);
     m_textItem->saveToXml(doc, parentElement);
     return true;
 }
 
-bool DAGraphicsResizeableTextItem::loadFromXml(const QDomElement* itemElement)
+bool DAGraphicsTextItem::loadFromXml(const QDomElement* itemElement)
 {
     DAGraphicsResizeableItem::loadFromXml(itemElement);
     return m_textItem->loadFromXml(itemElement);
 }
 
-DAStandardGraphicsTextItem* DAGraphicsResizeableTextItem::textItem() const
+DAStandardGraphicsTextItem* DAGraphicsTextItem::textItem() const
 {
     return m_textItem;
 }
 
-void DAGraphicsResizeableTextItem::setBodySize(const QSizeF& s)
+void DAGraphicsTextItem::setBodySize(const QSizeF& s)
 {
     DAGraphicsResizeableItem::setBodySize(s);
 }
 
 /**
- * @brief DAGraphicsResizeableTextItem::paintBody
+ * @brief paintBody
  * @param painter
  * @param option
  * @param widget
  * @param bodyRect
  */
-void DAGraphicsResizeableTextItem::paintBody(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget, const QRectF& bodyRect)
+void DAGraphicsTextItem::paintBody(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget, const QRectF& bodyRect)
 {
     // TODO:
     Q_UNUSED(bodyRect);

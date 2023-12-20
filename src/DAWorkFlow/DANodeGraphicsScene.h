@@ -11,8 +11,8 @@
 class QGraphicsSceneMouseEvent;
 namespace DA
 {
-class DAGraphicsResizeablePixmapItem;
-class DAGraphicsResizeableRectItem;
+class DAGraphicsPixmapItem;
+class DAGraphicsRectItem;
 class DAStandardGraphicsTextItem;
 
 /**
@@ -73,7 +73,7 @@ public:
     // 创建文本框
     DAStandardGraphicsTextItem* createText_(const QString& str = QString());
     // 创建矩形
-    DAGraphicsResizeableRectItem* createRect_(const QPointF& p = QPointF());
+    DAGraphicsRectItem* createRect_(const QPointF& p = QPointF());
     // 通过位置获取DAAbstractNodeGraphicsItem，此函数是加强版的itemAt
     DAAbstractNodeGraphicsItem* nodeItemAt(const QPointF& scenePos) const;
 signals:

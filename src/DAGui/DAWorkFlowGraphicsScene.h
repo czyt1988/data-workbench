@@ -10,7 +10,7 @@
 class QGraphicsSceneWheelEvent;
 namespace DA
 {
-class DAGraphicsResizeablePixmapItem;
+class DAGraphicsPixmapItem;
 class DAGUI_API DAWorkFlowGraphicsScene : public DANodeGraphicsScene
 {
 	Q_OBJECT
@@ -37,8 +37,8 @@ public:
 	//背景图相关操作
 	//===================================================
 	//设置背景item，如果外部调用getBackgroundPixmapItem并删除，需要通过此函数把保存的item设置为null
-	void setBackgroundPixmapItem(DAGraphicsResizeablePixmapItem* item);
-	DAGraphicsResizeablePixmapItem* removeBackgroundPixmapItem();
+	void setBackgroundPixmapItem(DAGraphicsPixmapItem* item);
+	DAGraphicsPixmapItem* removeBackgroundPixmapItem();
 	//允许item跟随背景图移动
 	void enableItemMoveWithBackground(bool on);
 	//允许移动图元时，其它和此图元链接起来的图元跟随移动
@@ -47,9 +47,9 @@ public:
 	//是否item跟随背景图移动
 	bool isEnableItemMoveWithBackground() const;
 	//添加一个背景图,如果多次调用，此函数返回的QGraphicsPixmapItem* 是一样的，也就是只会创建一个QGraphicsPixmapItem*
-	DAGraphicsResizeablePixmapItem* setBackgroundPixmap(const QPixmap& pixmap);
+	DAGraphicsPixmapItem* setBackgroundPixmap(const QPixmap& pixmap);
 	//获取背景图item，如果没有设置返回一个nullptr
-	DAGraphicsResizeablePixmapItem* getBackgroundPixmapItem() const;
+	DAGraphicsPixmapItem* getBackgroundPixmapItem() const;
 
 	//设置文本字体
 	QFont getDefaultTextFont() const;
@@ -59,8 +59,8 @@ public:
 	void setDefaultTextColor(const QColor& c);
 
 protected:
-	DAGraphicsResizeablePixmapItem* ensureGetBackgroundPixmapItem();
-	DAGraphicsResizeablePixmapItem* createBackgroundPixmapItem();
+	DAGraphicsPixmapItem* ensureGetBackgroundPixmapItem();
+	DAGraphicsPixmapItem* createBackgroundPixmapItem();
 
 protected:
 	virtual void dragEnterEvent(QGraphicsSceneDragDropEvent* event) override;
@@ -85,7 +85,7 @@ private slots:
 #endif
 	void onItemsPositionChanged(const QList< QGraphicsItem* >& items, const QList< QPointF >& oldPos, const QList< QPointF >& newPos);
 private:
-	DAGraphicsResizeablePixmapItem* mBackgroundPixmapItem;
+	DAGraphicsPixmapItem* mBackgroundPixmapItem;
 	MouseActionFlag mMouseAction;          ///< 鼠标动作
 	bool mIsMouseActionContinuoue;         ///< 鼠标动作是否连续执行
 	bool mEnableItemMoveWithBackground;    ///< 允许item跟随背景图移动

@@ -1,4 +1,5 @@
 ﻿#include "DAGraphicsItemGroup.h"
+#include "DAGraphicsItemFactory.h"
 #include <QDomDocument>
 #include <QDomElement>
 #include <QPainter>
@@ -18,10 +19,12 @@ public:
     bool mIsShowBackground { false };  ///< 是否显示背景
     QPen mBorderPen;                   ///< 边框画笔
     QBrush mBackgroundBrush;           ///< 背景画刷
+    uint64_t mID { 0 };                ///< id
 };
 
 DAGraphicsItemGroup::PrivateData::PrivateData(DAGraphicsItemGroup* p) : q_ptr(p)
 {
+    mID = DAGraphicsItemFactory::generateID(reinterpret_cast< uint32_t >(q_ptr));
     mBorderPen.setColor(QColor(25, 152, 236));
     mBorderPen.setWidthF(1.1);
 }
@@ -135,6 +138,16 @@ void DAGraphicsItemGroup::setShowBackground(bool on)
 bool DAGraphicsItemGroup::isShowBackground() const
 {
     return d_ptr->mIsShowBackground;
+}
+
+uint64_t DAGraphicsItemGroup::getItemID() const
+{
+    return d_ptr->mID;
+}
+
+void DAGraphicsItemGroup::setItemID(uint64_t id)
+{
+    d_ptr->mID = id;
 }
 
 void DAGraphicsItemGroup::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)

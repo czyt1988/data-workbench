@@ -58,13 +58,13 @@ enum DAGraphicsCommandIDType
 enum DAGraphicsItemType
 {
     ItemType_GraphicsItemBegin      = QGraphicsItem::UserType + 10,  ///< 针对DAGraphicsResizeableItem的类型开始
-    ItemType_GraphicsItem           = ItemType_GraphicsItemBegin + 1,  ///< 针对DAGraphicsResizeableItem的类型
-    ItemType_GraphicsResizeableItem = ItemType_GraphicsItemBegin + 2,  ///< 针对DAGraphicsResizeableItem的类型
-    ItemType_GraphicsResizeableObjectItem = ItemType_GraphicsItemBegin + 3,  ///< 针对DAGraphicsResizeableObjecrtItem的类型
-    ItemType_GraphicsResizeableRectItem = ItemType_GraphicsItemBegin + 4,  ///< 针对DAGraphicsResizeableRectItem的类型
-    ItemType_GraphicsResizeablePixmapItem = ItemType_GraphicsItemBegin + 5,  ///< 针对DAGraphicsResizeablePixmapItem的类型
-    ItemType_GraphicsLinkItem             = ItemType_GraphicsItemBegin + 300,  ///< 针对DAGraphicsLinkItem的类型
-    ItemType_GraphicsStandardTextItem  = ItemType_GraphicsItemBegin + 500,     ///< 标准样式
+    ItemType_GraphicsItem           = ItemType_GraphicsItemBegin + 1,       ///< 针对DAGraphicsResizeableItem的类型
+    ItemType_GraphicsResizeableItem = ItemType_GraphicsItemBegin + 2,       ///< 针对DAGraphicsResizeableItem的类型
+    ItemType_GraphicsRectItem       = ItemType_GraphicsItemBegin + 10,      ///< 针对DAGraphicsRectItem的类型
+    ItemType_GraphicsTextItem       = ItemType_GraphicsItemBegin + 12,      ///< 针对DAGraphicsTextItem的类型
+    ItemType_GraphicsPixmapItem     = ItemType_GraphicsItemBegin + 14,      ///< 针对DAGraphicsPixmapItem的类型
+    ItemType_GraphicsLinkItem       = ItemType_GraphicsItemBegin + 300,     ///< 针对DAGraphicsLinkItem的类型
+    ItemType_GraphicsStandardTextItem  = ItemType_GraphicsItemBegin + 500,  ///< 标准样式
     ItemType_GraphicsResizeableItemEnd = ItemType_GraphicsItemBegin + 1000,
     ItemType_GraphicsItemGroup         = ItemType_GraphicsItemBegin + 1100  ///< 针对DAGraphicsItemGroup的类型
 };

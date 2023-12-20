@@ -357,7 +357,7 @@ QDomElement DAXMLFileInterface::makeElement(const QVariant& v, const QString& ta
 #else
     int tid = v.type();
 #endif
-    //特殊对待
+    // 特殊对待
     switch (tid) {
     case QMetaType::QStringList: {
         QStringList vl = v.toStringList();
@@ -392,7 +392,7 @@ QDomElement DAXMLFileInterface::makeElement(const QVariant& v, const QString& ta
             varEle.appendChild(m);
         }
     } break;
-    default: {  //其他类型通过字符串转换
+    default: {  // 其他类型通过字符串转换
         QDomText t = doc->createTextNode(DA::variantToString(v));
         varEle.appendChild(t);
     } break;
@@ -485,6 +485,33 @@ bool getStringIntValue(const QString& valuestring, int& v)
     v       = valuestring.toInt(&ok);
     return ok;
 }
+
+/**
+   @brief 获取unsigned int值
+   @param valuestring
+   @param v
+   @return
+ */
+bool getStringUIntValue(const QString& valuestring, unsigned int& v)
+{
+    bool ok = false;
+    v       = valuestring.toUInt(&ok);
+    return ok;
+}
+
+/**
+   @brief 获取unsigned ll值
+   @param valuestring
+   @param v
+   @return
+ */
+bool getStringULongLongValue(const QString& valuestring, unsigned long long& v)
+{
+    bool ok = false;
+    v       = valuestring.toULongLong(&ok);
+    return ok;
+}
+
 /**
  * @brief 获取qreal值
  * @param valuestring
@@ -854,7 +881,7 @@ QString DA::variantToString(const QVariant& var)
 
     case QMetaType::Double: {
         double d = var.toDouble();
-        return (doubleToString(d));  //针对double，用非科学计数法会对小数丢失精度，因此采样g最合理，但小数点较多时需要适当处理
+        return (doubleToString(d));  // 针对double，用非科学计数法会对小数丢失精度，因此采样g最合理，但小数点较多时需要适当处理
     }
 
     case QMetaType::QEasingCurve: {
@@ -919,36 +946,36 @@ QString DA::variantToString(const QVariant& var)
     case QMetaType::QTransform: {
         QTransform d = var.value< QTransform >();
         return (QString("%1;%2;%3;%4;%5;%6;%7;%8;%9")
-                    .arg(d.m11())
-                    .arg(d.m12())
-                    .arg(d.m13())
-                    .arg(d.m21())
-                    .arg(d.m22())
-                    .arg(d.m23())
-                    .arg(d.m31())
-                    .arg(d.m32())
-                    .arg(d.m33()));
+                        .arg(d.m11())
+                        .arg(d.m12())
+                        .arg(d.m13())
+                        .arg(d.m21())
+                        .arg(d.m22())
+                        .arg(d.m23())
+                        .arg(d.m31())
+                        .arg(d.m32())
+                        .arg(d.m33()));
     }
 
     case QMetaType::QMatrix4x4: {
         QMatrix4x4 d = var.value< QMatrix4x4 >();
         return (QString("%1;%2;%3;%4;%5;%6;%7;%8;%9;%10;%11;%12;%13;%14;%15;%16")
-                    .arg(d(0, 0))
-                    .arg(d(0, 1))
-                    .arg(d(0, 2))
-                    .arg(d(0, 3))
-                    .arg(d(1, 0))
-                    .arg(d(1, 1))
-                    .arg(d(1, 2))
-                    .arg(d(1, 3))
-                    .arg(d(2, 0))
-                    .arg(d(2, 1))
-                    .arg(d(2, 2))
-                    .arg(d(2, 3))
-                    .arg(d(3, 0))
-                    .arg(d(3, 1))
-                    .arg(d(3, 2))
-                    .arg(d(3, 3)));
+                        .arg(d(0, 0))
+                        .arg(d(0, 1))
+                        .arg(d(0, 2))
+                        .arg(d(0, 3))
+                        .arg(d(1, 0))
+                        .arg(d(1, 1))
+                        .arg(d(1, 2))
+                        .arg(d(1, 3))
+                        .arg(d(2, 0))
+                        .arg(d(2, 1))
+                        .arg(d(2, 2))
+                        .arg(d(2, 3))
+                        .arg(d(3, 0))
+                        .arg(d(3, 1))
+                        .arg(d(3, 2))
+                        .arg(d(3, 3)));
     }
 
     case QMetaType::QPalette: {
@@ -992,7 +1019,7 @@ QString DA::variantToString(const QVariant& var)
             ////用g,而不用f，f会导致小数位过多，并不适合协议传输，但针对double类型，默认是用f
             str += QString("%1;%2").arg(doubleToString(d[ 0 ].x()), doubleToString(d[ 0 ].y()));
         }
-        //用非科学计数法转换，避免精度的丢失
+        // 用非科学计数法转换，避免精度的丢失
         for (int i = 1; i < d.size(); ++i) {
             str += QString("|%1;%2").arg(doubleToString(d[ i ].x()), doubleToString(d[ i ].y()));
         }
@@ -1433,19 +1460,19 @@ QString DA::doubleToString(const double a)
     int precision = 6;
 
     if (a > 1e6) {
-        //当数据非常大时，精度需要根据大小进行调整
+        // 当数据非常大时，精度需要根据大小进行调整
         int tmp = a / 1e6;
         while (tmp / 10 != 0)  // && precision < 16 precision不大于16
         {
             tmp /= 10;
             ++precision;
         }
-        //精度还可以扩充，继续去处理小数位
-        //取出double的小数位
+        // 精度还可以扩充，继续去处理小数位
+        // 取出double的小数位
         double decimal = a - floor(a);
-        //把小数转换为最大可处理的整形以便处理
+        // 把小数转换为最大可处理的整形以便处理
         tmp = decimal * pow(10, 9);
-        //把整形的小位的0去除
+        // 把整形的小位的0去除
         while (tmp)  // precision不大于16
         {
             if (0 != tmp % 10) {
@@ -1453,24 +1480,24 @@ QString DA::doubleToString(const double a)
             }
             tmp /= 10;
         }
-        //把整形剩余位取出，作为精度
+        // 把整形剩余位取出，作为精度
         while (tmp / 10 != 0)  // && precision < 16 precision不大于16
         {
             tmp /= 10;
             ++precision;
         }
     } else if ((a < 1e-6) && !qFuzzyCompare(a + 1, 1)) {
-        //当数据非常小时
-        //先把数据上调
+        // 当数据非常小时
+        // 先把数据上调
         int i     = 0;
         double ta = a;
         while (ta < 1 && i < 308) {
             ta *= 10;
-            ++i;  //防止ta == 0
+            ++i;  // 防止ta == 0
         }
         precision = 16;
         int tmp   = ta * 1e16;
-        //把整形的小位的0去除
+        // 把整形的小位的0去除
         while (tmp && precision > 6)  // precision不小于6
         {
             if (0 == tmp % 10) {

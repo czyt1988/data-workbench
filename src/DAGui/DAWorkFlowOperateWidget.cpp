@@ -10,7 +10,7 @@
 // workflow
 #include "DAWorkFlowGraphicsView.h"
 #include "DAWorkFlowGraphicsScene.h"
-#include "DAGraphicsResizeablePixmapItem.h"
+#include "DAGraphicsPixmapItem.h"
 //
 #include "DAWorkFlowEditWidget.h"
 #include "DACommandsForWorkFlowNodeGraphics.h"
@@ -66,7 +66,7 @@ DAWorkFlowEditWidget* DAWorkFlowOperateWidget::appendWorkflow(const QString& nam
     DAWorkFlow* wf            = createWorkflow();
     wf->setParent(wfe);
     wfe->setWorkFlow(wf);
-    //把undo添加进去
+    // 把undo添加进去
     wfe->setEnableShowGrid(_isShowGrid);
     wfe->setDefaultTextColor(_defaultTextColor);
     wfe->setDefaultTextFont(_defaultFont);
@@ -80,7 +80,7 @@ DAWorkFlowEditWidget* DAWorkFlowOperateWidget::appendWorkflow(const QString& nam
     });
     connect(wfe, &DAWorkFlowEditWidget::finished, this, [ this, wfe ](bool s) { emit workflowFinished(wfe, s); });
     ui->tabWidget->addTab(wfe, name);
-    //把名字保存到DAWorkFlowEditWidget中，在DAProject保存的时候会用到
+    // 把名字保存到DAWorkFlowEditWidget中，在DAProject保存的时候会用到
     wfe->setWindowTitle(name);
     emit workflowCreated(wfe);
     ui->tabWidget->setCurrentIndex(ui->tabWidget->indexOf(wfe));
@@ -229,8 +229,8 @@ void DAWorkFlowOperateWidget::removeWorkflow(int index)
         return;
     }
     QMessageBox::StandardButton btn = QMessageBox::question(this,
-                                                            tr("question"),  //疑问
-                                                            tr("Confirm to delete workflow:%1").arg(getWorkFlowWidgetName(index))  //是否确认删除工作流:%1
+                                                            tr("question"),  // 疑问
+                                                            tr("Confirm to delete workflow:%1").arg(getWorkFlowWidgetName(index))  // 是否确认删除工作流:%1
     );
     if (btn != QMessageBox::Yes) {
         return;
@@ -301,10 +301,9 @@ void DAWorkFlowOperateWidget::addBackgroundPixmap(const QString& pixmapPath)
     QImage img(pixmapPath);
     QPixmap px;
     px.convertFromImage(img);
-    DAGraphicsResizeablePixmapItem* item = s->setBackgroundPixmap(px);
+    DAGraphicsPixmapItem* item = s->setBackgroundPixmap(px);
     item->setSelectable(true);
     item->setMoveable(true);
-    // connect(item, &DAGraphicsResizeablePixmapItem::itemPosChange, this, &DAWorkFlowOperateWidget::onItemPosChange);
 }
 
 void DAWorkFlowOperateWidget::setBackgroundPixmapLock(bool on)
@@ -313,7 +312,7 @@ void DAWorkFlowOperateWidget::setBackgroundPixmapLock(bool on)
     if (nullptr == s) {
         return;
     }
-    DAGraphicsResizeablePixmapItem* item = s->getBackgroundPixmapItem();
+    DAGraphicsPixmapItem* item = s->getBackgroundPixmapItem();
     if (nullptr == item) {
         return;
     }
@@ -374,7 +373,7 @@ void DAWorkFlowOperateWidget::setCurrentWorkflowShowGrid(bool on)
  */
 DAWorkFlowEditWidget* DAWorkFlowOperateWidget::appendWorkflowWithDialog()
 {
-    bool ok      = false;
+    bool ok = false;
     QString text = QInputDialog::getText(this, tr("Title of new workflow"), tr("Title:"), QLineEdit::Normal, QString(), &ok);
     if (!ok || text.isEmpty()) {
         return nullptr;
@@ -428,12 +427,12 @@ void DAWorkFlowOperateWidget::runCurrentWorkFlow()
 {
     DAWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
     if (nullptr == w) {
-        qWarning() << tr("No active workflow detected");  //未检测到激活的工作流
+        qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
         return;
     }
     DAWorkFlow* wf = w->getWorkflow();
     if (nullptr == wf) {
-        qCritical() << tr("Unable to get workflow correctly");  //无法正确获取工作流
+        qCritical() << tr("Unable to get workflow correctly");  // 无法正确获取工作流
         return;
     }
     wf->exec();
@@ -446,12 +445,12 @@ void DAWorkFlowOperateWidget::terminateCurrentWorkFlow()
 {
     DAWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
     if (nullptr == w) {
-        qWarning() << tr("No active workflow detected");  //未检测到激活的工作流
+        qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
         return;
     }
     DAWorkFlow* wf = w->getWorkflow();
     if (nullptr == wf) {
-        qCritical() << tr("Unable to get workflow correctly");  //无法正确获取工作流
+        qCritical() << tr("Unable to get workflow correctly");  // 无法正确获取工作流
         return;
     }
     wf->terminate();
@@ -572,7 +571,7 @@ bool DAWorkFlowOperateWidget::setMouseActionFlag(DAWorkFlowGraphicsScene::MouseA
 {
     DAWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
     if (nullptr == w) {
-        qWarning() << tr("No active workflow detected");  //未检测到激活的工作流
+        qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
         return false;
     }
     w->setMouseActionFlag(mf, continous);
@@ -587,11 +586,11 @@ void DAWorkFlowOperateWidget::clear()
         DAWorkFlowEditWidget* wfe = getWorkFlowWidget(i);
         wfes.append(wfe);
     }
-    //清空tab
+    // 清空tab
     while (ui->tabWidget->count() > 0) {
         ui->tabWidget->removeTab(0);
     }
-    //清空
+    // 清空
     for (DAWorkFlowEditWidget* w : wfes) {
         w->hide();
         w->deleteLater();

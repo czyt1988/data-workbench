@@ -12,7 +12,7 @@
 #include <QSet>
 // DA
 #include "DAWorkFlowGraphicsScene.h"
-#include "DAGraphicsResizeablePixmapItem.h"
+#include "DAGraphicsPixmapItem.h"
 #include "DAGraphicsItemFactory.h"
 #include "DAAbstractNodeFactory.h"
 #include "DAGraphicsItem.h"
@@ -56,8 +56,12 @@ public:
     bool loadNodeLinks(DAWorkFlowGraphicsScene* scene, DAWorkFlow* wf, const QDomElement& workflowEle);
     // 保存特殊的item，主要为文本
     void saveSpecialItem(const DAWorkFlowGraphicsScene* scene, QDomDocument& doc, QDomElement& workflowEle);
+    void saveSpecialItem(const QGraphicsItem* i, QDomDocument& doc, QDomElement& itemsElement);
     bool loadSpecialItem(DAWorkFlowGraphicsScene* scene, const QDomElement& workflowEle);
-    //保存和加载分组
+    // 保存一个item
+    void saveDAItem(const DAGraphicsItem* i, QDomDocument& doc, QDomElement& itemsElement);
+    DAGraphicsItem* loadDAItem(const QDomElement& itemElement);
+    // 保存和加载分组
     void saveItemGroup(const DAWorkFlowGraphicsScene* scene, QDomDocument& doc, QDomElement& workflowEle);
     bool loadItemGroup(DAWorkFlowGraphicsScene* scene, const QDomElement& workflowEle);
     // SecenInfo
@@ -257,7 +261,7 @@ bool DAXmlHelperPrivate::loadNodes(DAWorkFlowEditWidget* wfe, const QDomElement&
         if (nullptr == node) {
             qWarning() << QObject::tr("workflow can not create note by "
                                       "metadata(prototype=%1,name=%2,group=%3),will skip this node")
-                              .arg(metadata.getNodePrototype(), metadata.getNodeName(), metadata.getGroup());
+                                  .arg(metadata.getNodePrototype(), metadata.getNodeName(), metadata.getGroup());
             continue;
         }
 
@@ -334,7 +338,7 @@ bool DAXmlHelperPrivate::loadNodeInPutOutputKey(DAAbstractNode::SharedPointer& n
             QDomElement nameEle = inputEle.firstChildElement("name");
             if (nameEle.isNull()) {
                 qWarning() << QObject::tr("node(prototype=%1,name=%2,group=%3) %4 tag loss child tag <name>")
-                                  .arg(node->getNodePrototype(), node->getNodeName(), node->getNodeGroup(), ks.at(i).nodeName());
+                                      .arg(node->getNodePrototype(), node->getNodeName(), node->getNodeGroup(), ks.at(i).nodeName());
                 continue;
             }
             QString key = nameEle.text();
@@ -358,7 +362,7 @@ bool DAXmlHelperPrivate::loadNodeInPutOutputKey(DAAbstractNode::SharedPointer& n
             QDomElement nameEle = outputEle.firstChildElement("name");
             if (nameEle.isNull()) {
                 qWarning() << QObject::tr("node(prototype=%1,name=%2,group=%3) %4 tag loss child tag <name>")
-                                  .arg(node->getNodePrototype(), node->getNodeName(), node->getNodeGroup(), ks.at(i).nodeName());
+                                      .arg(node->getNodePrototype(), node->getNodeName(), node->getNodeGroup(), ks.at(i).nodeName());
                 continue;
             }
             QString key = nameEle.text();
@@ -444,7 +448,7 @@ bool DAXmlHelperPrivate::loadNodeItem(DAWorkFlowGraphicsScene* scene, DAAbstract
     DAAbstractNodeGraphicsItem* item = node->createGraphicsItem();
     if (nullptr == item) {
         qWarning() << QObject::tr("node metadata(prototype=%1,name=%2,group=%3) can not create graphics item")
-                          .arg(node->getNodePrototype(), node->getNodeName(), node->getNodeGroup());
+                              .arg(node->getNodePrototype(), node->getNodeName(), node->getNodeGroup());
         return false;
     }
     item->loadFromXml(&ele);
@@ -529,12 +533,12 @@ bool DAXmlHelperPrivate::loadNodeLinks(DAWorkFlowGraphicsScene* scene, DAWorkFlo
         DAAbstractNodeLinkGraphicsItem* linkitem = fromItem->linkTo(fromKey, toItem, toKey);
         if (nullptr == linkitem) {
             qWarning() << QObject::tr("Unable to link to node %3's link point %4 through link point %2 of node %1")  // cn:节点%1无法通过连接点%2链接到节点%3的连接点%4
-                              .arg(fromItem->getNodeName(), fromKey, toItem->getNodeName(), toKey);
+                                  .arg(fromItem->getNodeName(), fromKey, toItem->getNodeName(), toKey);
             continue;
         }
         if (!linkitem->loadFromXml(&linkEle)) {
             qWarning() << QObject::tr("linkitem load from xml return false")  // cn:链接线从xml加载信息返回了false
-                ;
+                    ;
         }
         scene->addItem(linkitem);
         linkitem->updatePos();
@@ -552,7 +556,7 @@ void DAXmlHelperPrivate::saveSpecialItem(const DAWorkFlowGraphicsScene* scene, Q
     QList< QGraphicsItem* > items = scene->items();
     QDomElement itemsElement      = doc.createElement("items");
     // 背景不作为items保存
-    DAGraphicsResizeablePixmapItem* bkItem = scene->getBackgroundPixmapItem();
+    DAGraphicsPixmapItem* bkItem = scene->getBackgroundPixmapItem();
     for (const QGraphicsItem* i : qAsConst(items)) {
         if (i == bkItem) {
             // 背景图片这个特殊的item不在items里保存
@@ -567,27 +571,7 @@ void DAXmlHelperPrivate::saveSpecialItem(const DAWorkFlowGraphicsScene* scene, Q
             // 非xml文件系统
             continue;
         }
-        switch (i->type()) {
-        case DA::ItemType_GraphicsStandardTextItem: {
-            // 文本
-            QDomElement itemElement = doc.createElement("item");
-            itemElement.setAttribute("className", "DA::DAStandardGraphicsTextItem");
-            const DAStandardGraphicsTextItem* ti = static_cast< const DAStandardGraphicsTextItem* >(i);
-            ti->saveToXml(&doc, &itemElement);
-            itemsElement.appendChild(itemElement);
-        } break;
-        default: {
-            const DAGraphicsItem* obj = dynamic_cast< const DAGraphicsItem* >(i);
-            if (nullptr == obj) {
-                qWarning() << QObject::tr("There is a item that is not a DA Graphics Item system and cannot be saved");  // 存在不是DA Graphics Item系统的元件，无法对此元件进行保存
-                continue;
-            }
-            QDomElement itemElement = doc.createElement("item");
-            itemElement.setAttribute("className", obj->metaObject()->className());
-            xml->saveToXml(&doc, &itemElement);
-            itemsElement.appendChild(itemElement);
-        }
-        }
+        saveSpecialItem(i, doc, itemsElement);
     }
     workflowEle.appendChild(itemsElement);
 }
@@ -635,14 +619,61 @@ bool DAXmlHelperPrivate::loadSpecialItem(DAWorkFlowGraphicsScene* scene, const Q
     return true;
 }
 
+/**
+   @brief DAXmlHelperPrivate::saveSpecialItem
+   @param i
+   @param doc
+   @param itemsElement
+ */
+void DAXmlHelperPrivate::saveSpecialItem(const QGraphicsItem* i, QDomDocument& doc, QDomElement& itemsElement)
+{
+    if (mHaveBeenSaveNodeItem.contains(const_cast< QGraphicsItem* >(i))) {
+        // 已经保存过的不进行保存
+        return;
+    }
+    if (const DAGraphicsItem* obj = dynamic_cast< const DAGraphicsItem* >(i)) {
+        saveDAItem(obj, doc, itemsElement);
+    }
+}
+
+/**
+   @brief 保存DAGraphicsItem
+   @param i
+   @param doc
+   @param itemsElement
+ */
+void DAXmlHelperPrivate::saveDAItem(const DAGraphicsItem* i, QDomDocument& doc, QDomElement& itemsElement)
+{
+    QDomElement itemElement = doc.createElement("item");
+    itemElement.setAttribute("className", i->metaObject()->className());
+    itemElement.setAttribute("tid", i->type());
+    i->saveToXml(&doc, &itemElement);
+    itemsElement.appendChild(itemElement);
+}
+
+DAGraphicsItem* DAXmlHelperPrivate::loadDAItem(const QDomElement& itemElement)
+{
+}
+/**
+   @brief 保存分组信息
+
+   这个分组是放到最后保存，前面已经把item保存了，分组里面可能还会有item还需要保存
+   @param scene
+   @param doc
+   @param workflowEle
+ */
 void DAXmlHelperPrivate::saveItemGroup(const DAWorkFlowGraphicsScene* scene, QDomDocument& doc, QDomElement& workflowEle)
 {
-
+    // 首先查看有多少分组
+    auto its = scene->items();
+    for (auto i : qAsConst(its)) {
+        if (DAGraphicsItemGroup* g = dynamic_cast< DAGraphicsItemGroup* >(i)) { }
+    }
 }
 
 bool DAXmlHelperPrivate::loadItemGroup(DAWorkFlowGraphicsScene* scene, const QDomElement& workflowEle)
 {
-
+    return true;
 }
 
 void DAXmlHelperPrivate::saveSecenInfo(DAWorkFlowGraphicsScene* scene, QDomDocument& doc, QDomElement& workflowEle)
@@ -679,7 +710,7 @@ bool DAXmlHelperPrivate::loadSecenInfo(DAWorkFlowGraphicsScene* scene, const QDo
 
     QDomElement imageEle = sceneEle.firstChildElement("background");
     if (!imageEle.isNull()) {
-        QScopedPointer< DAGraphicsResizeablePixmapItem > item(new DAGraphicsResizeablePixmapItem());
+        QScopedPointer< DAGraphicsPixmapItem > item(new DAGraphicsPixmapItem());
         if (item->loadFromXml(&imageEle)) {
             scene->setBackgroundPixmapItem(item.take());
         }
@@ -810,7 +841,7 @@ qreal DAXmlHelper::attributeToDouble(const QDomElement& item, const QString& att
     qreal r   = item.attribute(att).toDouble(&isok);
     if (!isok) {
         qWarning() << QObject::tr("The attribute %1=%2 under the tag %3 cannot be converted to double ")
-                          .arg(att, item.attribute(att), item.tagName());
+                              .arg(att, item.attribute(att), item.tagName());
     }
     return r;
 }

@@ -1,4 +1,4 @@
-﻿#include "DAGraphicsResizeableRectItem.h"
+﻿#include "DAGraphicsRectItem.h"
 #include <QPainter>
 #include <QDomDocument>
 #include <QDomElement>
@@ -6,13 +6,13 @@ namespace DA
 {
 
 //===================================================
-// DAGraphicsResizeableRectItem::PrivateData
+// DAGraphicsRectItem::PrivateData
 //===================================================
-class DAGraphicsResizeableRectItem::PrivateData
+class DAGraphicsRectItem::PrivateData
 {
-    DA_DECLARE_PUBLIC(DAGraphicsResizeableRectItem)
+    DA_DECLARE_PUBLIC(DAGraphicsRectItem)
 public:
-    PrivateData(DAGraphicsResizeableRectItem* p);
+    PrivateData(DAGraphicsRectItem* p);
     QPen getTextPen() const;
     void setTextPen(const QPen& p);
 
@@ -22,65 +22,64 @@ public:
     QPen mTextPen { Qt::black };
 };
 
-DAGraphicsResizeableRectItem::PrivateData::PrivateData(DAGraphicsResizeableRectItem* p) : q_ptr(p)
+DAGraphicsRectItem::PrivateData::PrivateData(DAGraphicsRectItem* p) : q_ptr(p)
 {
 }
 
-QPen DAGraphicsResizeableRectItem::PrivateData::getTextPen() const
+QPen DAGraphicsRectItem::PrivateData::getTextPen() const
 {
     return mTextPen;
 }
 
-void DAGraphicsResizeableRectItem::PrivateData::setTextPen(const QPen& p)
+void DAGraphicsRectItem::PrivateData::setTextPen(const QPen& p)
 {
     mTextPen = p;
 }
 //===================================================
-// DAGraphicsResizeableRectItem
+// DAGraphicsRectItem
 //===================================================
-DAGraphicsResizeableRectItem::DAGraphicsResizeableRectItem(QGraphicsItem* parent)
-    : DAGraphicsResizeableItem(parent), DA_PIMPL_CONSTRUCT
+DAGraphicsRectItem::DAGraphicsRectItem(QGraphicsItem* parent) : DAGraphicsResizeableItem(parent), DA_PIMPL_CONSTRUCT
 {
     setShowBackground(false);
     setShowBorder(true);
     setBorderPen(QPen(QColor(Qt::black)));
 }
 
-DAGraphicsResizeableRectItem::~DAGraphicsResizeableRectItem()
+DAGraphicsRectItem::~DAGraphicsRectItem()
 {
 }
 
-void DAGraphicsResizeableRectItem::setText(const QString& t)
+void DAGraphicsRectItem::setText(const QString& t)
 {
     d_ptr->mText = t;
 }
 
-QString DAGraphicsResizeableRectItem::getText() const
+QString DAGraphicsRectItem::getText() const
 {
     return d_ptr->mText;
 }
 
-void DAGraphicsResizeableRectItem::setTextAlignment(Qt::Alignment al)
+void DAGraphicsRectItem::setTextAlignment(Qt::Alignment al)
 {
     d_ptr->mTextAlignment = al;
 }
 
-Qt::Alignment DAGraphicsResizeableRectItem::getTextAlignment() const
+Qt::Alignment DAGraphicsRectItem::getTextAlignment() const
 {
     return d_ptr->mTextAlignment;
 }
 
-QPen DAGraphicsResizeableRectItem::getTextPen() const
+QPen DAGraphicsRectItem::getTextPen() const
 {
     return d_ptr->getTextPen();
 }
 
-void DAGraphicsResizeableRectItem::setTextPen(const QPen& p)
+void DAGraphicsRectItem::setTextPen(const QPen& p)
 {
     d_ptr->setTextPen(p);
 }
 
-bool DAGraphicsResizeableRectItem::saveToXml(QDomDocument* doc, QDomElement* parentElement) const
+bool DAGraphicsRectItem::saveToXml(QDomDocument* doc, QDomElement* parentElement) const
 {
     DAGraphicsResizeableItem::saveToXml(doc, parentElement);
     QDomElement rectEle = doc->createElement("rect-info");
@@ -95,7 +94,7 @@ bool DAGraphicsResizeableRectItem::saveToXml(QDomDocument* doc, QDomElement* par
     return true;
 }
 
-bool DAGraphicsResizeableRectItem::loadFromXml(const QDomElement* itemElement)
+bool DAGraphicsRectItem::loadFromXml(const QDomElement* itemElement)
 {
     if (!DAGraphicsResizeableItem::loadFromXml(itemElement)) {
         return false;
@@ -112,7 +111,7 @@ bool DAGraphicsResizeableRectItem::loadFromXml(const QDomElement* itemElement)
     return true;
 }
 
-void DAGraphicsResizeableRectItem::paintBody(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget, const QRectF& bodyRect)
+void DAGraphicsRectItem::paintBody(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget, const QRectF& bodyRect)
 {
     Q_UNUSED(option);
     Q_UNUSED(widget);

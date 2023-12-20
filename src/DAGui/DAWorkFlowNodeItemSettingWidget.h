@@ -17,7 +17,7 @@ namespace DA
 {
 class DAWorkFlowEditWidget;
 class DAWorkFlowOperateWidget;
-class DAGraphicsResizeablePixmapItem;
+class DAGraphicsPixmapItem;
 class DAAbstractNodeWidget;
 
 /**
@@ -84,7 +84,7 @@ private slots:
 
 private:
     //更新PixmapItemSettingWidget
-    void updatePixmapItemSettingWidget(DAGraphicsResizeablePixmapItem* pitem);
+    void updatePixmapItemSettingWidget(DAGraphicsPixmapItem* pitem);
 
 private:
     void init();

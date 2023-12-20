@@ -45,6 +45,9 @@ public:
     // 设置是否显示背景
     void setShowBackground(bool on);
     bool isShowBackground() const;
+    // 获取item的id，id是这个id唯一的标识，id主要为了能单独的找到这个item，在分组加载时使用
+    uint64_t getItemID() const;
+    void setItemID(uint64_t id);
 
 public:
     virtual void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget = nullptr) override;

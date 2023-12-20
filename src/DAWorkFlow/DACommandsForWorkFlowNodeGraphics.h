@@ -13,7 +13,7 @@
 namespace DA
 {
 class DAAbstractNodeLinkGraphicsItem;
-class DAGraphicsResizeablePixmapItem;
+class DAGraphicsPixmapItem;
 class DANodeGraphicsScene;
 class DAWorkFlowGraphicsScene;
 class DAAbstractNodeGraphicsItem;

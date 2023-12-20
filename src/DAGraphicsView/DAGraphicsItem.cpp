@@ -1,4 +1,5 @@
 ﻿#include "DAGraphicsItem.h"
+#include "DAGraphicsItemFactory.h"
 #include <QDomDocument>
 #include <QDomElement>
 #include <QDebug>
@@ -15,10 +16,12 @@ public:
     bool mIsShowBackground { false };  ///< 是否显示背景
     QPen mBorderPen;                   ///< 边框画笔
     QBrush mBackgroundBrush;           ///< 背景画刷
+    uint64_t mID { 0 };                ///< id
 };
 
 DAGraphicsItem::PrivateData::PrivateData(DAGraphicsItem* p) : q_ptr(p)
 {
+    mID = DAGraphicsItemFactory::generateID(reinterpret_cast< uint32_t >(q_ptr));
 }
 
 //===================================================
@@ -41,6 +44,7 @@ bool DAGraphicsItem::saveToXml(QDomDocument* doc, QDomElement* parentElement) co
 {
     QDomElement infoEle = doc->createElement("info");
     QPointF scPos       = scenePos();
+    infoEle.setAttribute("id", getItemID());
     infoEle.setAttribute("x", scPos.x());
     infoEle.setAttribute("y", scPos.y());
     infoEle.setAttribute("z", zValue());
@@ -85,6 +89,10 @@ bool DAGraphicsItem::loadFromXml(const QDomElement* parentElement)
     }
     qreal realValue;
     qreal realValue2;
+    uint64_t llv;
+    if (getStringULongLongValue(infoEle.attribute("id"), llv)) {
+        setItemID(llv);
+    }
 
     if (getStringRealValue(infoEle.attribute("x", "0"), realValue) && getStringRealValue(infoEle.attribute("y", "0"), realValue2)) {
         setScenePos(realValue, realValue2);
@@ -227,6 +235,16 @@ void DAGraphicsItem::setScenePos(const QPointF& p)
 void DAGraphicsItem::setScenePos(qreal x, qreal y)
 {
     setScenePos(QPointF(x, y));
+}
+
+uint64_t DAGraphicsItem::getItemID() const
+{
+    return d_ptr->mID;
+}
+
+void DAGraphicsItem::setItemID(uint64_t id)
+{
+    d_ptr->mID = id;
 }
 
 // bool DAGraphicsItem::sceneEvent(QEvent* event)

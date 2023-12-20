@@ -1,4 +1,4 @@
-﻿#include "DAGraphicsResizeablePixmapItem.h"
+﻿#include "DAGraphicsPixmapItem.h"
 #include <QPainter>
 #include <QDebug>
 #include <QStyleOptionGraphicsItem>
@@ -8,20 +8,20 @@ namespace DA
 {
 
 //===================================================
-// DAGraphicsResizeablePixmapItem::PrivateData
+// DAGraphicsPixmapItem::PrivateData
 //===================================================
-class DAGraphicsResizeablePixmapItem::PrivateData
+class DAGraphicsPixmapItem::PrivateData
 {
-    DA_DECLARE_PUBLIC(DAGraphicsResizeablePixmapItem)
+    DA_DECLARE_PUBLIC(DAGraphicsPixmapItem)
 public:
-    PrivateData(DAGraphicsResizeablePixmapItem* p);
-    //把pixmap转换为base64的字符串
+    PrivateData(DAGraphicsPixmapItem* p);
+    // 把pixmap转换为base64的字符串
     QString pixmapToString(const QPixmap& pixmap);
-    //字符串转换为pixmap
+    // 字符串转换为pixmap
     QPixmap stringToPixmap(const QString& base64);
-    //判断是否存在透明度
+    // 判断是否存在透明度
     bool isValidAlpha() const;
-    //获取0~1的透明度
+    // 获取0~1的透明度
     qreal getOpacity() const;
 
 public:
@@ -32,26 +32,26 @@ public:
     Qt::AspectRatioMode mAspectRatioMode { Qt::IgnoreAspectRatio };
 };
 
-DAGraphicsResizeablePixmapItem::PrivateData::PrivateData(DAGraphicsResizeablePixmapItem* p) : q_ptr(p)
+DAGraphicsPixmapItem::PrivateData::PrivateData(DAGraphicsPixmapItem* p) : q_ptr(p)
 {
 }
 
-QString DAGraphicsResizeablePixmapItem::PrivateData::pixmapToString(const QPixmap& pixmap)
+QString DAGraphicsPixmapItem::PrivateData::pixmapToString(const QPixmap& pixmap)
 {
     QBuffer buff;
     pixmap.save(&buff, "PNG");
     QByteArray dataimg;
-    //图像转换为数据
+    // 图像转换为数据
     dataimg.append(buff.data());
-    //图片保存在字符串中
+    // 图片保存在字符串中
     return dataimg.toBase64();
 }
 
-QPixmap DAGraphicsResizeablePixmapItem::PrivateData::stringToPixmap(const QString& base64)
+QPixmap DAGraphicsPixmapItem::PrivateData::stringToPixmap(const QString& base64)
 {
     QByteArray imgData = QByteArray::fromBase64(base64.toUtf8());
     QPixmap pixmap;
-    //从数据载入图像
+    // 从数据载入图像
     pixmap.loadFromData(imgData);
     return pixmap;
 }
@@ -62,7 +62,7 @@ QPixmap DAGraphicsResizeablePixmapItem::PrivateData::stringToPixmap(const QStrin
  * @note 255表示没有透明度
  * @return
  */
-bool DAGraphicsResizeablePixmapItem::PrivateData::isValidAlpha() const
+bool DAGraphicsPixmapItem::PrivateData::isValidAlpha() const
 {
     return (mAlpha >= 0) && (mAlpha < 255);
 }
@@ -71,25 +71,24 @@ bool DAGraphicsResizeablePixmapItem::PrivateData::isValidAlpha() const
  * @brief 获取0~1的透明度
  * @return
  */
-qreal DAGraphicsResizeablePixmapItem::PrivateData::getOpacity() const
+qreal DAGraphicsPixmapItem::PrivateData::getOpacity() const
 {
     return mAlpha / 255.0;
 }
 
 //===================================================
-// DAGraphicsResizeablePixmapItem
+// DAGraphicsPixmapItem
 //===================================================
 
 /**
  * @brief 因为要显示调整尺寸的8个点，因此需要调整boundingRect
  * @return
  */
-DAGraphicsResizeablePixmapItem::DAGraphicsResizeablePixmapItem(QGraphicsItem* parent)
-    : DAGraphicsResizeableItem(parent), DA_PIMPL_CONSTRUCT
+DAGraphicsPixmapItem::DAGraphicsPixmapItem(QGraphicsItem* parent) : DAGraphicsResizeableItem(parent), DA_PIMPL_CONSTRUCT
 {
 }
 
-DAGraphicsResizeablePixmapItem::DAGraphicsResizeablePixmapItem(const QPixmap& pixmap, QGraphicsItem* parent)
+DAGraphicsPixmapItem::DAGraphicsPixmapItem(const QPixmap& pixmap, QGraphicsItem* parent)
     : DAGraphicsResizeableItem(parent), DA_PIMPL_CONSTRUCT
 {
 
@@ -98,7 +97,7 @@ DAGraphicsResizeablePixmapItem::DAGraphicsResizeablePixmapItem(const QPixmap& pi
     changeBodySize(pixmap.size());
 }
 
-DAGraphicsResizeablePixmapItem::~DAGraphicsResizeablePixmapItem()
+DAGraphicsPixmapItem::~DAGraphicsPixmapItem()
 {
 }
 
@@ -106,35 +105,35 @@ DAGraphicsResizeablePixmapItem::~DAGraphicsResizeablePixmapItem()
  * @brief 设置是否可移动
  * @param on
  */
-void DAGraphicsResizeablePixmapItem::setMoveable(bool on)
+void DAGraphicsPixmapItem::setMoveable(bool on)
 {
     setFlag(QGraphicsItem::ItemIsMovable, on);
 }
 
-bool DAGraphicsResizeablePixmapItem::isMoveable() const
+bool DAGraphicsPixmapItem::isMoveable() const
 {
     return flags().testFlag(QGraphicsItem::ItemIsMovable);
 }
 
-void DAGraphicsResizeablePixmapItem::setSelectable(bool on)
+void DAGraphicsPixmapItem::setSelectable(bool on)
 {
     setFlag(QGraphicsItem::ItemIsSelectable, on);
 }
 
-bool DAGraphicsResizeablePixmapItem::isSelectable() const
+bool DAGraphicsPixmapItem::isSelectable() const
 {
     return flags().testFlag(QGraphicsItem::ItemIsSelectable);
 }
 
-void DAGraphicsResizeablePixmapItem::setPixmap(const QPixmap& pixmap)
+void DAGraphicsPixmapItem::setPixmap(const QPixmap& pixmap)
 {
-    //先赋值给原始图片
+    // 先赋值给原始图片
     d_ptr->mPixmapOrigin = pixmap;
-    //再设置大小
+    // 再设置大小
     setBodySize(pixmap.size());
 }
 
-const QPixmap& DAGraphicsResizeablePixmapItem::getPixmap() const
+const QPixmap& DAGraphicsPixmapItem::getPixmap() const
 {
     return d_ptr->mPixmap;
 }
@@ -142,10 +141,10 @@ const QPixmap& DAGraphicsResizeablePixmapItem::getPixmap() const
 /**
  * @brief 获取原来的尺寸的图片
  *
- * @sa DAGraphicsResizeablePixmapItem 会保留原来尺寸的图片，以便能进行缩放
+ * @sa DAGraphicsPixmapItem 会保留原来尺寸的图片，以便能进行缩放
  * @return
  */
-const QPixmap& DAGraphicsResizeablePixmapItem::getOriginPixmap() const
+const QPixmap& DAGraphicsPixmapItem::getOriginPixmap() const
 {
     return d_ptr->mPixmapOrigin;
 }
@@ -154,22 +153,22 @@ const QPixmap& DAGraphicsResizeablePixmapItem::getOriginPixmap() const
  * @brief DAGraphicsResizeablePixmapItem::setTransformationMode
  * @param t
  */
-void DAGraphicsResizeablePixmapItem::setTransformationMode(Qt::TransformationMode t)
+void DAGraphicsPixmapItem::setTransformationMode(Qt::TransformationMode t)
 {
     d_ptr->mTransformationMode = t;
 }
 
-Qt::TransformationMode DAGraphicsResizeablePixmapItem::getTransformationMode() const
+Qt::TransformationMode DAGraphicsPixmapItem::getTransformationMode() const
 {
     return d_ptr->mTransformationMode;
 }
 
-void DAGraphicsResizeablePixmapItem::setAspectRatioMode(Qt::AspectRatioMode t)
+void DAGraphicsPixmapItem::setAspectRatioMode(Qt::AspectRatioMode t)
 {
     d_ptr->mAspectRatioMode = t;
 }
 
-Qt::AspectRatioMode DAGraphicsResizeablePixmapItem::getAspectRatioMode() const
+Qt::AspectRatioMode DAGraphicsPixmapItem::getAspectRatioMode() const
 {
     return d_ptr->mAspectRatioMode;
 }
@@ -178,7 +177,7 @@ Qt::AspectRatioMode DAGraphicsResizeablePixmapItem::getAspectRatioMode() const
  * @brief 判断是否存在有效图片
  * @return
  */
-bool DAGraphicsResizeablePixmapItem::isHaveValidPixmap() const
+bool DAGraphicsPixmapItem::isHaveValidPixmap() const
 {
     return (!d_ptr->mPixmapOrigin.isNull());
 }
@@ -187,20 +186,20 @@ bool DAGraphicsResizeablePixmapItem::isHaveValidPixmap() const
  * @brief 设置透明度
  * @param a
  */
-void DAGraphicsResizeablePixmapItem::setAlpha(int a)
+void DAGraphicsPixmapItem::setAlpha(int a)
 {
     d_ptr->mAlpha = a;
     update();
 }
 
-int DAGraphicsResizeablePixmapItem::getAlpha() const
+int DAGraphicsPixmapItem::getAlpha() const
 {
     return d_ptr->mAlpha;
 }
 
-void DAGraphicsResizeablePixmapItem::setBodySize(const QSizeF& s)
+void DAGraphicsPixmapItem::setBodySize(const QSizeF& s)
 {
-    //设置尺寸
+    // 设置尺寸
     QSizeF ss      = testBodySize(s);
     d_ptr->mPixmap = d_ptr->mPixmapOrigin.scaled(ss.toSize(), getAspectRatioMode(), getTransformationMode());
     DAGraphicsResizeableItem::setBodySize(d_ptr->mPixmap.size());
@@ -213,7 +212,7 @@ void DAGraphicsResizeablePixmapItem::setBodySize(const QSizeF& s)
  * @param parentElement
  * @return
  */
-bool DAGraphicsResizeablePixmapItem::saveToXml(QDomDocument* doc, QDomElement* parentElement) const
+bool DAGraphicsPixmapItem::saveToXml(QDomDocument* doc, QDomElement* parentElement) const
 {
     if (!DAGraphicsResizeableItem::saveToXml(doc, parentElement)) {
         return false;
@@ -225,7 +224,7 @@ bool DAGraphicsResizeablePixmapItem::saveToXml(QDomDocument* doc, QDomElement* p
     QDomElement rawEle   = doc->createElement("raw");
     QString pixmapBase64 = d_ptr->pixmapToString(d_ptr->mPixmapOrigin);
     rawEle.appendChild(doc->createTextNode(pixmapBase64));
-    pixmapEle.appendChild(rawEle);  //原数据
+    pixmapEle.appendChild(rawEle);  // 原数据
     parentElement->appendChild(pixmapEle);
     return true;
 }
@@ -235,12 +234,12 @@ bool DAGraphicsResizeablePixmapItem::saveToXml(QDomDocument* doc, QDomElement* p
  * @param itemElement
  * @return
  */
-bool DAGraphicsResizeablePixmapItem::loadFromXml(const QDomElement* itemElement)
+bool DAGraphicsPixmapItem::loadFromXml(const QDomElement* itemElement)
 {
-    //先加载图片
+    // 先加载图片
     QDomElement pixmapInfoEle = itemElement->firstChildElement("pixmap-info");
     if (pixmapInfoEle.isNull()) {
-        qDebug() << "DAGraphicsResizeablePixmapItem::loadFromXml loss <pixmap-info>";
+        qDebug() << "DAGraphicsPixmapItem::loadFromXml loss <pixmap-info>";
         return false;
     }
 
@@ -255,12 +254,12 @@ bool DAGraphicsResizeablePixmapItem::loadFromXml(const QDomElement* itemElement)
     }
     QDomElement rawEle = pixmapInfoEle.firstChildElement("raw");
     if (rawEle.isNull()) {
-        qDebug() << "DAGraphicsResizeablePixmapItem::loadFromXml,loss <raw>";
+        qDebug() << "DAGraphicsPixmapItem::loadFromXml,loss <raw>";
         return false;
     }
     QPixmap pix = d_ptr->stringToPixmap(rawEle.text());
     if (pix.isNull()) {
-        qDebug() << "DAGraphicsResizeablePixmapItem::loadFromXml,pixmap base64 cannot to pixmap,base64string is:\n"
+        qDebug() << "DAGraphicsPixmapItem::loadFromXml,pixmap base64 cannot to pixmap,base64string is:\n"
                  << rawEle.text();
         return false;
     }
@@ -270,13 +269,13 @@ bool DAGraphicsResizeablePixmapItem::loadFromXml(const QDomElement* itemElement)
     return DAGraphicsResizeableItem::loadFromXml(itemElement);
 }
 
-void DAGraphicsResizeablePixmapItem::paintBody(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget, const QRectF& bodyRect)
+void DAGraphicsPixmapItem::paintBody(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget, const QRectF& bodyRect)
 {
     Q_UNUSED(widget);
     Q_UNUSED(option);
     painter->save();
     if (d_ptr->isValidAlpha()) {
-        //说明要有透明度
+        // 说明要有透明度
         painter->setOpacity(d_ptr->getOpacity());
     }
     painter->setRenderHint(QPainter::SmoothPixmapTransform, (d_ptr->mTransformationMode == Qt::SmoothTransformation));

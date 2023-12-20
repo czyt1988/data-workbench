@@ -16,9 +16,8 @@
 #include "DAAbstractNode.h"
 #include "DANodeMimeData.h"
 #include "DANodeMetaData.h"
-#include "DAGraphicsResizeablePixmapItem.h"
-#include "DAGraphicsResizeableRectItem.h"
-#include "DAGraphicsResizeableTextItem.h"
+#include "DAGraphicsPixmapItem.h"
+#include "DAGraphicsRectItem.h"
 #include "Commands/DACommandsForWorkFlow.h"
 #include "DACommandsForGraphics.h"
 //===================================================
@@ -51,7 +50,7 @@ DAWorkFlowGraphicsScene::~DAWorkFlowGraphicsScene()
  * @param pixmap
  * @return
  */
-DAGraphicsResizeablePixmapItem* DAWorkFlowGraphicsScene::setBackgroundPixmap(const QPixmap& pixmap)
+DAGraphicsPixmapItem* DAWorkFlowGraphicsScene::setBackgroundPixmap(const QPixmap& pixmap)
 {
     DACommandWorkFlowSceneAddBackgroundPixmap* cmd = new DACommandWorkFlowSceneAddBackgroundPixmap(this, pixmap);
     undoStack().push(cmd);
@@ -61,7 +60,7 @@ DAGraphicsResizeablePixmapItem* DAWorkFlowGraphicsScene::setBackgroundPixmap(con
  * @brief 获取背景图item
  * @return 如果没有设置返回一个nullptr
  */
-DAGraphicsResizeablePixmapItem* DAWorkFlowGraphicsScene::getBackgroundPixmapItem() const
+DAGraphicsPixmapItem* DAWorkFlowGraphicsScene::getBackgroundPixmapItem() const
 {
     return mBackgroundPixmapItem;
     //    if (nullptr == _backgroundPixmapItem) {
@@ -83,9 +82,9 @@ DAGraphicsResizeablePixmapItem* DAWorkFlowGraphicsScene::getBackgroundPixmapItem
  * @note 原来的并不会删除
  * @return
  */
-DAGraphicsResizeablePixmapItem* DAWorkFlowGraphicsScene::createBackgroundPixmapItem()
+DAGraphicsPixmapItem* DAWorkFlowGraphicsScene::createBackgroundPixmapItem()
 {
-    DAGraphicsResizeablePixmapItem* item = new DAGraphicsResizeablePixmapItem();
+    DAGraphicsPixmapItem* item = new DAGraphicsPixmapItem();
     setBackgroundPixmapItem(item);
     return item;
 }
@@ -124,14 +123,14 @@ bool DAWorkFlowGraphicsScene::isMouseActionContinuoue() const
  * @note 如果之前有设置item，会对之前的背景进行移除，但不会删除，这样如果用户不remove就是set可能会导致内存泄漏
  * @param item 设置nullptr相当于移除背景
  */
-void DAWorkFlowGraphicsScene::setBackgroundPixmapItem(DAGraphicsResizeablePixmapItem* item)
+void DAWorkFlowGraphicsScene::setBackgroundPixmapItem(DAGraphicsPixmapItem* item)
 {
     removeBackgroundPixmapItem();
     mBackgroundPixmapItem = item;
     if (item) {
 #if DA_USE_QGRAPHICSOBJECT
-        connect(mBackgroundPixmapItem, &DAGraphicsResizeablePixmapItem::xChanged, this, &DAWorkFlowGraphicsScene::backgroundPixmapItemXChanged);
-        connect(mBackgroundPixmapItem, &DAGraphicsResizeablePixmapItem::yChanged, this, &DAWorkFlowGraphicsScene::backgroundPixmapItemYChanged);
+        connect(mBackgroundPixmapItem, &DAGraphicsPixmapItem::xChanged, this, &DAWorkFlowGraphicsScene::backgroundPixmapItemXChanged);
+        connect(mBackgroundPixmapItem, &DAGraphicsPixmapItem::yChanged, this, &DAWorkFlowGraphicsScene::backgroundPixmapItemYChanged);
 #endif
         item->setZValue(-9999);
         addItem(mBackgroundPixmapItem);
@@ -147,17 +146,17 @@ void DAWorkFlowGraphicsScene::setBackgroundPixmapItem(DAGraphicsResizeablePixmap
  * @note 如果没有设置背景，此函数返回nullptr
  * @return 返回pixmapitem
  */
-DAGraphicsResizeablePixmapItem* DAWorkFlowGraphicsScene::removeBackgroundPixmapItem()
+DAGraphicsPixmapItem* DAWorkFlowGraphicsScene::removeBackgroundPixmapItem()
 {
     if (mBackgroundPixmapItem) {
 #if DA_USE_QGRAPHICSOBJECT
-        disconnect(mBackgroundPixmapItem, &DAGraphicsResizeablePixmapItem::xChanged, this, &DAWorkFlowGraphicsScene::backgroundPixmapItemXChanged);
-        disconnect(mBackgroundPixmapItem, &DAGraphicsResizeablePixmapItem::yChanged, this, &DAWorkFlowGraphicsScene::backgroundPixmapItemYChanged);
+        disconnect(mBackgroundPixmapItem, &DAGraphicsPixmapItem::xChanged, this, &DAWorkFlowGraphicsScene::backgroundPixmapItemXChanged);
+        disconnect(mBackgroundPixmapItem, &DAGraphicsPixmapItem::yChanged, this, &DAWorkFlowGraphicsScene::backgroundPixmapItemYChanged);
 #endif
         removeItem(mBackgroundPixmapItem);
     }
-    DAGraphicsResizeablePixmapItem* oldItem = mBackgroundPixmapItem;
-    mBackgroundPixmapItem                   = nullptr;
+    DAGraphicsPixmapItem* oldItem = mBackgroundPixmapItem;
+    mBackgroundPixmapItem         = nullptr;
     return oldItem;
 }
 
@@ -193,7 +192,7 @@ bool DAWorkFlowGraphicsScene::isEnableItemMoveWithBackground() const
     return mEnableItemMoveWithBackground;
 }
 
-DAGraphicsResizeablePixmapItem* DAWorkFlowGraphicsScene::ensureGetBackgroundPixmapItem()
+DAGraphicsPixmapItem* DAWorkFlowGraphicsScene::ensureGetBackgroundPixmapItem()
 {
     if (nullptr == mBackgroundPixmapItem) {
         createBackgroundPixmapItem();
@@ -255,7 +254,7 @@ void DAWorkFlowGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEve
         emit mouseActionFinished(mMouseAction);
     } break;
     case StartAddRect: {
-        DAGraphicsResizeableRectItem* item = createRect_(pos);
+        DAGraphicsRectItem* item = createRect_(pos);
         item->setSelected(true);
         item->setZValue(-10);
         emit mouseActionFinished(mMouseAction);

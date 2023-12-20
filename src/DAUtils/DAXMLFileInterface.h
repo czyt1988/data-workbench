@@ -20,33 +20,33 @@ class DAUTILS_API DAXMLFileInterface
 public:
     DAXMLFileInterface();
     virtual ~DAXMLFileInterface();
-    //保存到xml中
+    // 保存到xml中
     virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement) const = 0;
     virtual bool loadFromXml(const QDomElement* parentElement)                  = 0;
 
 public:
-    //标准保存—— QRect
+    // 标准保存—— QRect
     static QDomElement makeElement(const QRect& v, const QString& tagName, QDomDocument* doc);
     static bool loadElement(QRect& p, const QDomElement* ele);
-    //标准保存—— QRectF
+    // 标准保存—— QRectF
     static QDomElement makeElement(const QRectF& v, const QString& tagName, QDomDocument* doc);
     static bool loadElement(QRectF& p, const QDomElement* ele);
-    //标准保存—— QPoint
+    // 标准保存—— QPoint
     static QDomElement makeElement(const QPoint& v, const QString& tagName, QDomDocument* doc);
     static bool loadElement(QPoint& p, const QDomElement* ele);
-    //标准保存—— QPointF
+    // 标准保存—— QPointF
     static QDomElement makeElement(const QPointF& v, const QString& tagName, QDomDocument* doc);
     static bool loadElement(QPointF& p, const QDomElement* ele);
-    //标准保存—— QPen 画笔
+    // 标准保存—— QPen 画笔
     static QDomElement makeElement(const QPen& v, const QString& tagName, QDomDocument* doc);
     static bool loadElement(QPen& p, const QDomElement* ele);
-    //标准保存—— QBrush 画笔
+    // 标准保存—— QBrush 画笔
     static QDomElement makeElement(const QBrush& v, const QString& tagName, QDomDocument* doc);
     static bool loadElement(QBrush& p, const QDomElement* ele);
-    //标准保存—— QFont
+    // 标准保存—— QFont
     static QDomElement makeElement(const QFont& v, const QString& tagName, QDomDocument* doc);
     static bool loadElement(QFont& p, const QDomElement* ele);
-    //标准保存—— QVariant
+    // 标准保存—— QVariant
     static QDomElement makeElement(const QVariant& v, const QString& tagName, QDomDocument* doc);
     static bool loadElement(QVariant& p, const QDomElement* ele);
 };
@@ -109,8 +109,10 @@ QVariant converBase64StringToVariant(const QString& base64)
     return (QVariant::fromValue(ba));
 }
 
-//获取qreal值
+// 获取qreal值
 bool DAUTILS_API getStringIntValue(const QString& valuestring, int& v);
+bool DAUTILS_API getStringUIntValue(const QString& valuestring, unsigned int& v);
+bool DAUTILS_API getStringULongLongValue(const QString& valuestring, unsigned long long& v);
 bool DAUTILS_API getStringRealValue(const QString& valuestring, qreal& v);
 bool DAUTILS_API getStringBoolValue(const QString& valuestring);
 

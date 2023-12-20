@@ -4,7 +4,7 @@
 // workflow
 #include "DANodeGraphicsScene.h"
 #include "DAWorkFlowGraphicsScene.h"
-#include "DAGraphicsResizeablePixmapItem.h"
+#include "DAGraphicsPixmapItem.h"
 #include "DAAbstractNodeLinkGraphicsItem.h"
 #include "DAWorkFlow.h"
 #include "DAGraphicsItem.h"
@@ -23,7 +23,7 @@ DACommandWorkFlowSceneAddBackgroundPixmap::DACommandWorkFlowSceneAddBackgroundPi
     if (_oldItem) {
         _needDeleteOldItem = true;
     }
-    _newItem = new DAGraphicsResizeablePixmapItem();
+    _newItem = new DAGraphicsPixmapItem();
     _newItem->setPixmap(pixmap);
     _needDeleteNewItem = false;
 }
@@ -156,7 +156,7 @@ DACommandGraphicsTextItemsChangeFont::~DACommandGraphicsTextItemsChangeFont()
 
 void DACommandGraphicsTextItemsChangeFont::redo()
 {
-    QUndoCommand::redo();  //此函数会执行子内容的redo/undo
+    QUndoCommand::redo();  // 此函数会执行子内容的redo/undo
     int size = qMin(m_items.size(), m_newFonts.size());
     for (int i = 0; i < size; ++i) {
         m_items[ i ]->setFont(m_newFonts[ i ]);

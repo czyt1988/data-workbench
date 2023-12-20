@@ -1,10 +1,11 @@
 #include "DAGraphicsItemFactory.h"
 #include <QDebug>
 #include <QObject>
+#include <QDateTime>
 #include "DAGraphicsItem.h"
-#include "DAGraphicsResizeablePixmapItem.h"
-#include "DAGraphicsResizeableRectItem.h"
-#include "DAGraphicsResizeableTextItem.h"
+#include "DAGraphicsPixmapItem.h"
+#include "DAGraphicsRectItem.h"
+#include "DAGraphicsTextItem.h"
 namespace DA
 {
 /**
@@ -22,12 +23,12 @@ DAGraphicsItemFactory::~DAGraphicsItemFactory()
 
 void DAGraphicsItemFactory::initialization()
 {
-    registItem(DAGraphicsResizeablePixmapItem::staticMetaObject.className(),
-               []() -> DAGraphicsItem* { return new DAGraphicsResizeablePixmapItem(); });
-    registItem(DAGraphicsResizeableRectItem::staticMetaObject.className(),
-               []() -> DAGraphicsItem* { return new DAGraphicsResizeableRectItem(); });
-    registItem(DAGraphicsResizeableTextItem::staticMetaObject.className(),
-               []() -> DAGraphicsItem* { return new DAGraphicsResizeableTextItem(); });
+    registItem(DAGraphicsPixmapItem::staticMetaObject.className(),
+               []() -> DAGraphicsItem* { return new DAGraphicsPixmapItem(); });
+    registItem(DAGraphicsRectItem::staticMetaObject.className(),
+               []() -> DAGraphicsItem* { return new DAGraphicsRectItem(); });
+    registItem(DAGraphicsTextItem::staticMetaObject.className(),
+               []() -> DAGraphicsItem* { return new DAGraphicsTextItem(); });
 }
 
 /**
@@ -59,6 +60,23 @@ DAGraphicsItem* DAGraphicsItemFactory::createItem(const QString& className)
 void DAGraphicsItemFactory::destoryItem(DAGraphicsItem* i)
 {
     delete i;
+}
+
+/**
+   @brief 生成一个id
+   @return
+ */
+uint64_t DAGraphicsItemFactory::generateID(uint32_t rand)
+{
+    union {
+        uint64_t id;
+        uint32_t raw[ 2 ];
+    } mem;
+    QDateTime dt = QDateTime::currentDateTime();
+
+    mem.id       = uint64_t(dt.toMSecsSinceEpoch());
+    mem.raw[ 1 ] = rand;
+    return mem.id;
 }
 
 }  // end DA
