@@ -23,7 +23,7 @@ public:
      */
     enum
     {
-        Type = DA::ItemType_GraphicsItem
+        Type = DA::ItemType_DAGraphicsItem
     };
     virtual int type() const override
     {
@@ -56,6 +56,8 @@ public:
     // 获取item的id，id是这个id唯一的标识，id主要为了能单独的找到这个item，在分组加载时使用
     uint64_t getItemID() const;
     void setItemID(uint64_t id);
+    // 快速cast，基于type进行快速判断
+    static DAGraphicsItem* cast(QGraphicsItem* i);
 
 protected:
     //    virtual bool sceneEvent(QEvent* event) override;

@@ -3,11 +3,11 @@
 #include <QFont>
 #include <QPainter>
 #include <QTextItem>
-#include "DAStandardGraphicsTextItem.h"
+#include "DAGraphicsStandardTextItem.h"
 namespace DA
 {
 DAGraphicsTextItem::DAGraphicsTextItem(QGraphicsItem* parent)
-    : DAGraphicsResizeableItem(parent), m_textItem(new DAStandardGraphicsTextItem(this))
+    : DAGraphicsResizeableItem(parent), m_textItem(new DAGraphicsStandardTextItem(this))
 {
     //    m_textItem->setFocusProxy(this);
     setAcceptDrops(true);
@@ -16,7 +16,7 @@ DAGraphicsTextItem::DAGraphicsTextItem(QGraphicsItem* parent)
 }
 
 DAGraphicsTextItem::DAGraphicsTextItem(const QFont& f, QGraphicsItem* parent)
-    : DAGraphicsResizeableItem(parent), m_textItem(new DAStandardGraphicsTextItem(f, this))
+    : DAGraphicsResizeableItem(parent), m_textItem(new DAGraphicsStandardTextItem(f, this))
 {
     //    m_textItem->setFocusProxy(this);
     setAcceptDrops(true);
@@ -25,7 +25,7 @@ DAGraphicsTextItem::DAGraphicsTextItem(const QFont& f, QGraphicsItem* parent)
 }
 
 DAGraphicsTextItem::DAGraphicsTextItem(const QString& str, const QFont& f, QGraphicsItem* parent)
-    : DAGraphicsResizeableItem(parent), m_textItem(new DAStandardGraphicsTextItem(str, f, this))
+    : DAGraphicsResizeableItem(parent), m_textItem(new DAGraphicsStandardTextItem(str, f, this))
 {
     //    m_textItem->setFocusProxy(this);
     setAcceptDrops(true);
@@ -52,7 +52,7 @@ bool DAGraphicsTextItem::loadFromXml(const QDomElement* itemElement)
     return m_textItem->loadFromXml(itemElement);
 }
 
-DAStandardGraphicsTextItem* DAGraphicsTextItem::textItem() const
+DAGraphicsStandardTextItem* DAGraphicsTextItem::textItem() const
 {
     return m_textItem;
 }

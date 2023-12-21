@@ -541,9 +541,9 @@ void DAWorkFlowOperateWidget::onSelectionChanged()
     emit selectionItemChanged(sits.last());
 }
 
-QList< DAStandardGraphicsTextItem* > DAWorkFlowOperateWidget::getSelectTextItems()
+QList< DAGraphicsStandardTextItem* > DAWorkFlowOperateWidget::getSelectTextItems()
 {
-    QList< DAStandardGraphicsTextItem* > res;
+    QList< DAGraphicsStandardTextItem* > res;
     DAWorkFlowGraphicsScene* secen = getCurrentWorkFlowScene();
     if (nullptr == secen) {
         return res;
@@ -553,7 +553,7 @@ QList< DAStandardGraphicsTextItem* > DAWorkFlowOperateWidget::getSelectTextItems
         return res;
     }
     for (QGraphicsItem* item : qAsConst(its)) {
-        if (DAStandardGraphicsTextItem* textItem = dynamic_cast< DAStandardGraphicsTextItem* >(item)) {
+        if (DAGraphicsStandardTextItem* textItem = dynamic_cast< DAGraphicsStandardTextItem* >(item)) {
             res.append(textItem);
         }
     }

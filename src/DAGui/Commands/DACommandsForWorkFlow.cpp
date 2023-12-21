@@ -8,7 +8,7 @@
 #include "DAAbstractNodeLinkGraphicsItem.h"
 #include "DAWorkFlow.h"
 #include "DAGraphicsItem.h"
-#include "DAStandardGraphicsTextItem.h"
+#include "DAGraphicsStandardTextItem.h"
 namespace DA
 {
 //===================================================
@@ -140,12 +140,12 @@ void DACommandGraphicsShapeBackgroundBrushChange::undo()
 //===================================================
 // DACommandGraphicsTextItemsChangeFont
 //===================================================
-DACommandGraphicsTextItemsChangeFont::DACommandGraphicsTextItemsChangeFont(const QList< DAStandardGraphicsTextItem* >& items,
+DACommandGraphicsTextItemsChangeFont::DACommandGraphicsTextItemsChangeFont(const QList< DAGraphicsStandardTextItem* >& items,
                                                                            const QList< QFont >& newfonts,
                                                                            QUndoCommand* parent)
     : QUndoCommand(parent), m_items(items), m_newFonts(newfonts)
 {
-    for (const DAStandardGraphicsTextItem* i : qAsConst(items)) {
+    for (const DAGraphicsStandardTextItem* i : qAsConst(items)) {
         m_oldFonts.append(i->font());
     }
 }
@@ -175,12 +175,12 @@ void DACommandGraphicsTextItemsChangeFont::undo()
 //===================================================
 // DACommandGraphicsTextItemsChangeColor
 //===================================================
-DACommandGraphicsTextItemsChangeColor::DACommandGraphicsTextItemsChangeColor(const QList< DAStandardGraphicsTextItem* >& items,
+DACommandGraphicsTextItemsChangeColor::DACommandGraphicsTextItemsChangeColor(const QList< DAGraphicsStandardTextItem* >& items,
                                                                              const QList< QColor >& newcolors,
                                                                              QUndoCommand* parent)
     : QUndoCommand(parent), m_items(items), m_newColors(newcolors)
 {
-    for (const DAStandardGraphicsTextItem* i : qAsConst(items)) {
+    for (const DAGraphicsStandardTextItem* i : qAsConst(items)) {
         m_oldColors.append(i->defaultTextColor());
     }
 }

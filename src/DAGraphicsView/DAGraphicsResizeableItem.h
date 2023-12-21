@@ -67,7 +67,7 @@ public:
      */
     enum
     {
-        Type = DA::ItemType_GraphicsResizeableItem
+        Type = DA::ItemType_DAGraphicsResizeableItem
     };
     int type() const override
     {

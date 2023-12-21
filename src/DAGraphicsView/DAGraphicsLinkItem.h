@@ -18,7 +18,7 @@ class DAGRAPHICSVIEW_API DAGraphicsLinkItem : public DAGraphicsItem
 public:
     enum AnonymousType
     {
-        anonymous = DA::ItemType_GraphicsLinkItem
+        anonymous = DA::ItemType_DAGraphicsLinkItem
     };
     int type() const override
     {

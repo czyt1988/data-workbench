@@ -20,7 +20,7 @@ public:
      */
     enum
     {
-        Type = DA::ItemType_GraphicsItem
+        Type = DA::ItemType_DAGraphicsItem
     };
     virtual int type() const override
     {
@@ -48,6 +48,10 @@ public:
     // 获取item的id，id是这个id唯一的标识，id主要为了能单独的找到这个item，在分组加载时使用
     uint64_t getItemID() const;
     void setItemID(uint64_t id);
+    // 获取分组下的分组
+    QList< DAGraphicsItemGroup* > childGroups() const;
+    // 获取不包含分组的子item
+    QList< QGraphicsItem* > childItemsExcludingGrouping() const;
 
 public:
     virtual void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget = nullptr) override;

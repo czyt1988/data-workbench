@@ -4,7 +4,7 @@
 #include "DAAbstractNodeGraphicsItem.h"
 #include "DAWorkFlowOperateWidget.h"
 #include "DAGraphicsPixmapItemSettingWidget.h"
-#include "DAStandardGraphicsTextItem.h"
+#include "DAGraphicsStandardTextItem.h"
 #include "DAWorkFlowEditWidget.h"
 #include "DAGraphicsPixmapItem.h"
 #include "DAAbstractNodeWidget.h"

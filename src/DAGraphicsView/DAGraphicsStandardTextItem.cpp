@@ -1,4 +1,4 @@
-﻿#include "DAStandardGraphicsTextItem.h"
+﻿#include "DAGraphicsStandardTextItem.h"
 #include <QFont>
 #include <QDebug>
 #include <QTextCursor>
@@ -11,12 +11,12 @@ namespace DA
 //===================================================
 // DAStandardGraphicsTextItem
 //===================================================
-DAStandardGraphicsTextItem::DAStandardGraphicsTextItem(QGraphicsItem* parent) : QGraphicsTextItem(parent)
+DAGraphicsStandardTextItem::DAGraphicsStandardTextItem(QGraphicsItem* parent) : QGraphicsTextItem(parent)
 {
     initItem();
 }
 
-DAStandardGraphicsTextItem::DAStandardGraphicsTextItem(const QString& str, const QFont& f, QGraphicsItem* parent)
+DAGraphicsStandardTextItem::DAGraphicsStandardTextItem(const QString& str, const QFont& f, QGraphicsItem* parent)
     : QGraphicsTextItem(parent)
 {
     initItem();
@@ -24,7 +24,7 @@ DAStandardGraphicsTextItem::DAStandardGraphicsTextItem(const QString& str, const
     setFont(f);
 }
 
-DAStandardGraphicsTextItem::DAStandardGraphicsTextItem(const QFont& f, QGraphicsItem* parent)
+DAGraphicsStandardTextItem::DAGraphicsStandardTextItem(const QFont& f, QGraphicsItem* parent)
     : QGraphicsTextItem(parent)
 {
     initItem();
@@ -35,12 +35,12 @@ DAStandardGraphicsTextItem::DAStandardGraphicsTextItem(const QFont& f, QGraphics
  * @brief 设置编辑模式
  * @param on
  */
-void DAStandardGraphicsTextItem::setEditMode(bool on)
+void DAGraphicsStandardTextItem::setEditMode(bool on)
 {
     setTextInteractionFlags(on ? Qt::TextEditorInteraction : Qt::NoTextInteraction);
 }
 
-bool DAStandardGraphicsTextItem::saveToXml(QDomDocument* doc, QDomElement* parentElement) const
+bool DAGraphicsStandardTextItem::saveToXml(QDomDocument* doc, QDomElement* parentElement) const
 {
     QDomElement textItemEle = doc->createElement("text-info");
     QPointF scPos           = scenePos();
@@ -57,7 +57,7 @@ bool DAStandardGraphicsTextItem::saveToXml(QDomDocument* doc, QDomElement* paren
     return true;
 }
 
-bool DAStandardGraphicsTextItem::loadFromXml(const QDomElement* itemElement)
+bool DAGraphicsStandardTextItem::loadFromXml(const QDomElement* itemElement)
 {
     QDomElement textItemEle = itemElement->firstChildElement("text-info");
     if (textItemEle.isNull()) {
@@ -82,17 +82,17 @@ bool DAStandardGraphicsTextItem::loadFromXml(const QDomElement* itemElement)
     return true;
 }
 
-void DAStandardGraphicsTextItem::setScenePos(const QPointF& p)
+void DAGraphicsStandardTextItem::setScenePos(const QPointF& p)
 {
     setPos(mapToParent(mapFromScene(p)));
 }
 
-void DAStandardGraphicsTextItem::setScenePos(qreal x, qreal y)
+void DAGraphicsStandardTextItem::setScenePos(qreal x, qreal y)
 {
     setScenePos(QPointF(x, y));
 }
 
-void DAStandardGraphicsTextItem::focusOutEvent(QFocusEvent* focusEvent)
+void DAGraphicsStandardTextItem::focusOutEvent(QFocusEvent* focusEvent)
 {
     // 在有选中的情况下，把选中的内容取消
     QTextCursor cursor = textCursor();
@@ -103,7 +103,7 @@ void DAStandardGraphicsTextItem::focusOutEvent(QFocusEvent* focusEvent)
     QGraphicsTextItem::focusOutEvent(focusEvent);
 }
 
-void DAStandardGraphicsTextItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* event)
+void DAGraphicsStandardTextItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* event)
 {
     if (event->button() == Qt::LeftButton) {
         // czy:setTextInteractionFlags必须在setFocus之前，否则会出现异常
@@ -113,7 +113,7 @@ void DAStandardGraphicsTextItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent*
     QGraphicsTextItem::mouseDoubleClickEvent(event);
 }
 
-void DAStandardGraphicsTextItem::initItem()
+void DAGraphicsStandardTextItem::initItem()
 {
     setDefaultTextColor(Qt::black);  // 设置字体颜色
     setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable | QGraphicsItem::ItemIsFocusable);

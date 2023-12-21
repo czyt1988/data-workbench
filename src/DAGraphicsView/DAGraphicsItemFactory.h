@@ -15,7 +15,7 @@ namespace DA
 class DAGRAPHICSVIEW_API DAGraphicsItemFactory
 {
 public:
-    using FpCreate = std::function< DAGraphicsItem*() >;
+    using FpItemCreate = std::function< QGraphicsItem*() >;
 
 public:
     DAGraphicsItemFactory();
@@ -23,9 +23,10 @@ public:
     // 工厂初始化，此初始化会注册DAGraphicsView库里面的元件
     static void initialization();
     // 注册
-    static void registItem(const QString& className, FpCreate fp);
+    static void registItem(const QString& className, FpItemCreate fp);
     // 创建item
-    static DAGraphicsItem* createItem(const QString& className);
+    static QGraphicsItem* createItem(const QString& className);
+    static QGraphicsItem* createItem(int itemType);
     // 销毁item
     static void destoryItem(DAGraphicsItem* i);
     // 生成一个id,rand建议传入对应指针的截断值

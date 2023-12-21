@@ -13,7 +13,7 @@ namespace DA
 {
 class DAGraphicsPixmapItem;
 class DAGraphicsRectItem;
-class DAStandardGraphicsTextItem;
+class DAGraphicsStandardTextItem;
 
 /**
  * @brief DAAbstractNodeGraphicsItem对应的QGraphicsScene,通过此scene，管理DAWorkFlow内容
@@ -50,7 +50,7 @@ public:
     QList< DAAbstractNodeGraphicsItem* > getNodeGraphicsItems() const;
 
     // 获取所有的DAAbstractNodeGraphicsItem
-    QList< DAStandardGraphicsTextItem* > getTextGraphicsItems() const;
+    QList< DAGraphicsStandardTextItem* > getTextGraphicsItems() const;
 
     // 获取选中的NodeGraphicsItem,如果没有返回一个空list
     QList< DAAbstractNodeGraphicsItem* > getSelectedNodeGraphicsItems() const;
@@ -71,7 +71,7 @@ public:
     DAAbstractNodeGraphicsItem* createNode(const DANodeMetaData& md, const QPointF& pos);
     DAAbstractNodeGraphicsItem* createNode_(const DANodeMetaData& md, const QPointF& pos);
     // 创建文本框
-    DAStandardGraphicsTextItem* createText_(const QString& str = QString());
+    DAGraphicsStandardTextItem* createText_(const QString& str = QString());
     // 创建矩形
     DAGraphicsRectItem* createRect_(const QPointF& p = QPointF());
     // 通过位置获取DAAbstractNodeGraphicsItem，此函数是加强版的itemAt

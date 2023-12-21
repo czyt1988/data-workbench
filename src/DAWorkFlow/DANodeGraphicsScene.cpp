@@ -8,12 +8,11 @@
 #include "DACommandsForGraphics.h"
 #include "DACommandsForWorkFlowNodeGraphics.h"
 #include "DAGraphicsTextItem.h"
-#include "DAStandardGraphicsTextItem.h"
+#include "DAGraphicsStandardTextItem.h"
 #include "DAAbstractNode.h"
 #include "DAWorkFlow.h"
 #include "DAAbstractNodeFactory.h"
 #include "DAGraphicsRectItem.h"
-#include "DAStandardGraphicsTextItem.h"
 #include "DANodeGraphicsSceneEventListener.h"
 #include <QPointer>
 
@@ -174,12 +173,12 @@ QList< DAAbstractNodeGraphicsItem* > DANodeGraphicsScene::getNodeGraphicsItems()
  * @return
  * @sa createText_
  */
-QList< DAStandardGraphicsTextItem* > DANodeGraphicsScene::getTextGraphicsItems() const
+QList< DAGraphicsStandardTextItem* > DANodeGraphicsScene::getTextGraphicsItems() const
 {
-    QList< DAStandardGraphicsTextItem* > res;
+    QList< DAGraphicsStandardTextItem* > res;
     QList< QGraphicsItem* > its = items();
     for (QGraphicsItem* i : qAsConst(its)) {
-        DAStandardGraphicsTextItem* ni = dynamic_cast< DAStandardGraphicsTextItem* >(i);
+        DAGraphicsStandardTextItem* ni = dynamic_cast< DAGraphicsStandardTextItem* >(i);
         if (ni) {
             res.append(ni);
         }
@@ -321,9 +320,9 @@ DAAbstractNodeGraphicsItem* DANodeGraphicsScene::createNode_(const DANodeMetaDat
  * @return
  * @sa getTextGraphicsItems
  */
-DAStandardGraphicsTextItem* DANodeGraphicsScene::createText_(const QString& str)
+DAGraphicsStandardTextItem* DANodeGraphicsScene::createText_(const QString& str)
 {
-    DAStandardGraphicsTextItem* item = new DAStandardGraphicsTextItem();
+    DAGraphicsStandardTextItem* item = new DAGraphicsStandardTextItem();
     if (!str.isEmpty()) {
         item->setPlainText(str);
     }

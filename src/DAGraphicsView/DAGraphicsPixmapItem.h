@@ -19,7 +19,7 @@ public:
      */
     enum
     {
-        Type = DA::ItemType_GraphicsPixmapItem
+        Type = DA::ItemType_DAGraphicsPixmapItem
     };
     int type() const override
     {

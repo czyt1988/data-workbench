@@ -247,6 +247,19 @@ void DAGraphicsItem::setItemID(uint64_t id)
     d_ptr->mID = id;
 }
 
+/**
+   @brief 快速cast，基于type(ItemType_DAGraphicsItem_Begin,ItemType_DAGraphicsItem_End)进行快速判断
+   @param i
+   @return
+ */
+DAGraphicsItem* DAGraphicsItem::cast(QGraphicsItem* i)
+{
+    if (i->type() > ItemType_DAGraphicsItem_Begin && i->type() < ItemType_DAGraphicsItem_End) {
+        return static_cast< DAGraphicsItem* >(i);
+    }
+    return nullptr;
+}
+
 // bool DAGraphicsItem::sceneEvent(QEvent* event)
 //{
 //     qDebug() << "DAGraphicsItem::sceneEvent" << event->type();

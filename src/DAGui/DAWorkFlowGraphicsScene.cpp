@@ -11,7 +11,7 @@
 #include <QKeyEvent>
 #include <QDebug>
 #include <QGraphicsSceneDragDropEvent>
-#include <DAStandardGraphicsTextItem.h>
+#include "DAGraphicsStandardTextItem.h"
 // workflow
 #include "DAAbstractNode.h"
 #include "DANodeMimeData.h"
@@ -245,7 +245,7 @@ void DAWorkFlowGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEve
     QPointF pos = mouseEvent->scenePos();
     switch (mMouseAction) {
     case StartAddText: {
-        DAStandardGraphicsTextItem* item = createText_();
+        DAGraphicsStandardTextItem* item = createText_();
         item->setScenePos(pos);
         item->setFont(mTextFont);
         item->setDefaultTextColor(mTextColor);

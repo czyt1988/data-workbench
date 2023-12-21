@@ -6,12 +6,14 @@
 #include "DAGraphicsPixmapItem.h"
 #include "DAGraphicsRectItem.h"
 #include "DAGraphicsTextItem.h"
+#include "DAGraphicsStandardTextItem.h"
 namespace DA
 {
 /**
  * @brief 存放已经注册的item
  */
-QHash< QString, DAGraphicsItemFactory::FpCreate >* g_pRegistedItems = nullptr;
+QHash< QString, DAGraphicsItemFactory::FpItemCreate >* g_pRegistedItems = nullptr;
+QHash< int, DAGraphicsItemFactory::FpItemCreate >* g_pRegistedItems2    = nullptr;
 
 DAGraphicsItemFactory::DAGraphicsItemFactory()
 {
@@ -23,12 +25,17 @@ DAGraphicsItemFactory::~DAGraphicsItemFactory()
 
 void DAGraphicsItemFactory::initialization()
 {
+    // Qt
+
+    // DA
     registItem(DAGraphicsPixmapItem::staticMetaObject.className(),
-               []() -> DAGraphicsItem* { return new DAGraphicsPixmapItem(); });
+               []() -> QGraphicsItem* { return new DAGraphicsPixmapItem(); });
     registItem(DAGraphicsRectItem::staticMetaObject.className(),
-               []() -> DAGraphicsItem* { return new DAGraphicsRectItem(); });
+               []() -> QGraphicsItem* { return new DAGraphicsRectItem(); });
     registItem(DAGraphicsTextItem::staticMetaObject.className(),
-               []() -> DAGraphicsItem* { return new DAGraphicsTextItem(); });
+               []() -> QGraphicsItem* { return new DAGraphicsTextItem(); });
+    // Other
+    registItem("DA::DAGraphicsStandardTextItem", []() -> QGraphicsItem* { return new DAGraphicsStandardTextItem(); });
 }
 
 /**
@@ -36,22 +43,40 @@ void DAGraphicsItemFactory::initialization()
  * @param className
  * @param fp
  */
-void DAGraphicsItemFactory::registItem(const QString& className, DAGraphicsItemFactory::FpCreate fp)
+void DAGraphicsItemFactory::registItem(const QString& className, DAGraphicsItemFactory::FpItemCreate fp)
 {
     if (g_pRegistedItems == nullptr) {
-        g_pRegistedItems = new QHash< QString, DAGraphicsItemFactory::FpCreate >();
+        g_pRegistedItems = new QHash< QString, DAGraphicsItemFactory::FpItemCreate >();
     }
-    g_pRegistedItems->insert(className, fp);
+    if (g_pRegistedItems2 == nullptr) {
+        g_pRegistedItems2 = new QHash< int, DAGraphicsItemFactory::FpItemCreate >();
+    }
+    std::unique_ptr< QGraphicsItem > it(fp());
+    g_pRegistedItems->operator[](className)   = fp;
+    g_pRegistedItems2->operator[](it->type()) = fp;
 }
 
-DAGraphicsItem* DAGraphicsItemFactory::createItem(const QString& className)
+QGraphicsItem* DAGraphicsItemFactory::createItem(const QString& className)
 {
     if (g_pRegistedItems == nullptr) {
         return nullptr;
     }
-    FpCreate fp = g_pRegistedItems->value(className, nullptr);
+    FpItemCreate fp = g_pRegistedItems->value(className, nullptr);
     if (nullptr == fp) {
         qWarning() << QObject::tr("Class name %1 not registered to item factory").arg(className);
+        return nullptr;
+    }
+    return fp();
+}
+
+QGraphicsItem* DAGraphicsItemFactory::createItem(int itemType)
+{
+    if (g_pRegistedItems2 == nullptr) {
+        return nullptr;
+    }
+    FpItemCreate fp = g_pRegistedItems2->value(itemType, nullptr);
+    if (nullptr == fp) {
+        qWarning() << QObject::tr("type %1 not registered to item factory").arg(itemType);
         return nullptr;
     }
     return fp();

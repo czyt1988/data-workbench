@@ -7,7 +7,7 @@
 #include "DAAbstractNodeLinkGraphicsItem.h"
 #include "DAWorkFlow.h"
 #include "DAGraphicsItem.h"
-#include "DAStandardGraphicsTextItem.h"
+#include "DAGraphicsStandardTextItem.h"
 #include "DAQtContainerUtil.h"
 namespace DA
 {

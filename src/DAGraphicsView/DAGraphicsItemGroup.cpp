@@ -53,7 +53,27 @@ DAGraphicsItemGroup::~DAGraphicsItemGroup()
  */
 bool DAGraphicsItemGroup::saveToXml(QDomDocument* doc, QDomElement* parentElement) const
 {
-    return false;
+    QList< DAGraphicsItemGroup* > gs = childGroups();
+    QList< QGraphicsItem* > its      = childItemsExcludingGrouping();
+    if (!gs.empty()) {
+        QDomElement cgEle = doc->createElement("child-groups");
+        for (auto g : qAsConst(gs)) {
+            QDomElement liEle = doc->createElement("li");
+            liEle.appendChild(doc->createTextNode(QString::number(g->getItemID())));
+        }
+        parentElement->appendChild(cgEle);
+    }
+    if (!its.empty()) {
+        QDomElement ciEle = doc->createElement("child-items");
+        for (auto i : qAsConst(its)) {
+            DAGraphicsItem* daItem = DAGraphicsItem::cast(i);
+            if (daItem) {
+                QDomElement liEle = doc->createElement("li");
+                liEle.appendChild(doc->createTextNode(QString::number(daItem->getItemID())));
+            }
+        }
+        parentElement->appendChild(ciEle);
+    }
 }
 
 /**
@@ -63,7 +83,7 @@ bool DAGraphicsItemGroup::saveToXml(QDomDocument* doc, QDomElement* parentElemen
  */
 bool DAGraphicsItemGroup::loadFromXml(const QDomElement* parentElement)
 {
-    // todo
+
     return true;
 }
 
@@ -148,6 +168,38 @@ uint64_t DAGraphicsItemGroup::getItemID() const
 void DAGraphicsItemGroup::setItemID(uint64_t id)
 {
     d_ptr->mID = id;
+}
+
+/**
+   @brief 获取分组下的分组
+   @return
+ */
+QList< DAGraphicsItemGroup* > DAGraphicsItemGroup::childGroups() const
+{
+    QList< DAGraphicsItemGroup* > res;
+    QList< QGraphicsItem* > ci = childItems();
+    for (auto i : qAsConst(ci)) {
+        if (i->type() == ItemType_DAGraphicsItemGroup) {
+            res.append(static_cast< DAGraphicsItemGroup* >(i));
+        }
+    }
+    return res;
+}
+
+/**
+   @brief 获取不包含分组的子item
+   @return
+ */
+QList< QGraphicsItem* > DAGraphicsItemGroup::childItemsExcludingGrouping() const
+{
+    QList< QGraphicsItem* > res;
+    QList< QGraphicsItem* > ci = childItems();
+    for (auto i : qAsConst(ci)) {
+        if (i->type() != ItemType_DAGraphicsItemGroup) {
+            res.append(i);
+        }
+    }
+    return res;
 }
 
 void DAGraphicsItemGroup::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)

@@ -18,7 +18,7 @@ class DANodeGraphicsScene;
 class DAWorkFlowGraphicsScene;
 class DAAbstractNodeGraphicsItem;
 class DAGraphicsItem;
-class DAStandardGraphicsTextItem;
+class DAGraphicsStandardTextItem;
 
 /**
  * @brief 节点创建命令

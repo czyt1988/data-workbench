@@ -1,5 +1,5 @@
-#ifndef DASTANDARDGRAPHICSTEXTITEM_H
-#define DASTANDARDGRAPHICSTEXTITEM_H
+#ifndef DAGRAPHICSSTANDARDTEXTITEM_H
+#define DAGRAPHICSSTANDARDTEXTITEM_H
 
 #include <QFont>
 #include <QGraphicsTextItem>
@@ -7,7 +7,7 @@
 #include "DAUtils/DAXMLFileInterface.h"
 namespace DA
 {
-class DAGRAPHICSVIEW_API DAStandardGraphicsTextItem : public QGraphicsTextItem, public DAXMLFileInterface
+class DAGRAPHICSVIEW_API DAGraphicsStandardTextItem : public QGraphicsTextItem, public DAXMLFileInterface
 {
 public:
     /**
@@ -15,7 +15,7 @@ public:
      */
     enum
     {
-        Type = DA::ItemType_GraphicsStandardTextItem
+        Type = DA::ItemType_DAGraphicsStandardTextItem
     };
     int type() const override
     {
@@ -23,10 +23,10 @@ public:
     }
 
 public:
-    DAStandardGraphicsTextItem(QGraphicsItem* parent = nullptr);
-    DAStandardGraphicsTextItem(const QString& str, const QFont& f, QGraphicsItem* parent = nullptr);
+    DAGraphicsStandardTextItem(QGraphicsItem* parent = nullptr);
+    DAGraphicsStandardTextItem(const QString& str, const QFont& f, QGraphicsItem* parent = nullptr);
 
-    DAStandardGraphicsTextItem(const QFont& f, QGraphicsItem* parent = nullptr);
+    DAGraphicsStandardTextItem(const QFont& f, QGraphicsItem* parent = nullptr);
     // 设置编辑模式
     void setEditMode(bool on = true);
     // 保存到xml中
@@ -46,4 +46,4 @@ private:
     void initItem();
 };
 }  // end of namespace DA
-#endif  // DASTANDARDGRAPHICSTEXTITEM_H
+#endif  // DAGRAPHICSSTANDARDTEXTITEM_H

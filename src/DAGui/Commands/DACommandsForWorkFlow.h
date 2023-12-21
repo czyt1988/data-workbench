@@ -15,7 +15,7 @@ namespace DA
 class DAGraphicsPixmapItem;
 class DAWorkFlowGraphicsScene;
 class DAGraphicsItem;
-class DAStandardGraphicsTextItem;
+class DAGraphicsStandardTextItem;
 
 /**
  * @brief 添加背景
@@ -80,7 +80,7 @@ private:
 class DAGUI_API DACommandGraphicsTextItemsChangeFont : public QUndoCommand
 {
 public:
-    DACommandGraphicsTextItemsChangeFont(const QList< DAStandardGraphicsTextItem* >& items,
+    DACommandGraphicsTextItemsChangeFont(const QList< DAGraphicsStandardTextItem* >& items,
                                          const QList< QFont >& newfonts,
                                          QUndoCommand* parent = nullptr);
     ~DACommandGraphicsTextItemsChangeFont();
@@ -89,7 +89,7 @@ public:
     virtual void undo() override;
 
 private:
-    QList< DAStandardGraphicsTextItem* > m_items;
+    QList< DAGraphicsStandardTextItem* > m_items;
     QList< QFont > m_oldFonts;
     QList< QFont > m_newFonts;
 };
@@ -99,7 +99,7 @@ private:
 class DAGUI_API DACommandGraphicsTextItemsChangeColor : public QUndoCommand
 {
 public:
-    DACommandGraphicsTextItemsChangeColor(const QList< DAStandardGraphicsTextItem* >& items,
+    DACommandGraphicsTextItemsChangeColor(const QList< DAGraphicsStandardTextItem* >& items,
                                           const QList< QColor >& newcolors,
                                           QUndoCommand* parent = nullptr);
     ~DACommandGraphicsTextItemsChangeColor();
@@ -108,7 +108,7 @@ public:
     virtual void undo() override;
 
 private:
-    QList< DAStandardGraphicsTextItem* > m_items;
+    QList< DAGraphicsStandardTextItem* > m_items;
     QList< QColor > m_oldColors;
     QList< QColor > m_newColors;
 };

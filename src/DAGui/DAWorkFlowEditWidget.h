@@ -2,7 +2,7 @@
 #define DAWORKFLOWEDITWIDGET_H
 #include <QWidget>
 #include "DAGuiAPI.h"
-#include "DAStandardGraphicsTextItem.h"
+#include "DAGraphicsStandardTextItem.h"
 #include "DAWorkFlowGraphicsView.h"
 #include "DAWorkFlowGraphicsScene.h"
 #include "DAWorkFlow.h"
@@ -30,50 +30,50 @@ class DAGUI_API DAWorkFlowEditWidget : public QWidget
 public:
     explicit DAWorkFlowEditWidget(QWidget* parent = nullptr);
     ~DAWorkFlowEditWidget();
-    //获取工厂
+    // 获取工厂
     DAWorkFlow* getWorkflow() const;
-    //设置工作流
+    // 设置工作流
     void setWorkFlow(DAWorkFlow* w);
-    //获取工作流操作视图
+    // 获取工作流操作视图
     DAWorkFlowGraphicsView* getWorkFlowGraphicsView() const;
-    //获取GraphicsScene
+    // 获取GraphicsScene
     DAWorkFlowGraphicsScene* getWorkFlowGraphicsScene() const;
-    //激活UndoStack
+    // 激活UndoStack
     void setUndoStackActive();
-    //设置显示grid
+    // 设置显示grid
     void setEnableShowGrid(bool on);
-    //获取QUndoStack
+    // 获取QUndoStack
     QUndoStack* getUndoStack();
-    //运行工作流
+    // 运行工作流
     void runWorkFlow();
-    //设置鼠标动作
+    // 设置鼠标动作
     void setMouseActionFlag(DAWorkFlowGraphicsScene::MouseActionFlag mf, bool continous);
-    //设置文本字体 -- 此参数设置决定创建文本框时的字体和颜色
+    // 设置文本字体 -- 此参数设置决定创建文本框时的字体和颜色
     QFont getDefaultTextFont() const;
     void setDefaultTextFont(const QFont& f);
-    //设置文本颜色 -- 此参数设置决定创建文本框时的字体和颜色
+    // 设置文本颜色 -- 此参数设置决定创建文本框时的字体和颜色
     QColor getDefaultTextColor() const;
     void setDefaultTextColor(const QColor& c);
 public slots:
-    //添加一个背景图
+    // 添加一个背景图
     void addBackgroundPixmap(const QString& pixmapPath);
-    //锁定背景图
+    // 锁定背景图
     void setBackgroundPixmapLock(bool on);
-    //文字加粗
+    // 文字加粗
     void setSelectTextToBold(bool on);
-    //文字斜体
+    // 文字斜体
     void setSelectTextToItalic(bool on);
-    //设置文字颜色
+    // 设置文字颜色
     void setSelectTextColor(const QColor& color);
-    //设置字体样式
+    // 设置字体样式
     void setSelectTextFamily(const QString& family);
-    //设置字体大小
+    // 设置字体大小
     void setTextSize(const int size);
-    //设置当前选择的文本item的字体
+    // 设置当前选择的文本item的字体
     void setSelectTextItemFont(const QFont& f);
-    //设置当前选中的图元的背景
+    // 设置当前选中的图元的背景
     void setSelectShapeBackgroundBrush(const QBrush& b);
-    //设置当前选中的图元的背景
+    // 设置当前选中的图元的背景
     void setSelectShapeBorderPen(const QPen& v);
 signals:
 
@@ -105,9 +105,9 @@ signals:
     void finished(bool success);
 
 private:
-    //获取选中的文本
-    QList< DAStandardGraphicsTextItem* > getSelectTextItems();
-    //获取选中的基本图元
+    // 获取选中的文本
+    QList< DAGraphicsStandardTextItem* > getSelectTextItems();
+    // 获取选中的基本图元
     QList< DAGraphicsItem* > getSelectBaseItems();
     void createScene();
 

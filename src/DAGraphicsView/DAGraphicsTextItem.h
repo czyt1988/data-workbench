@@ -5,7 +5,7 @@
 #include "DAGraphicsResizeableItem.h"
 namespace DA
 {
-class DAStandardGraphicsTextItem;
+class DAGraphicsStandardTextItem;
 /**
  * @brief 支持缩放编辑的文本框Item
  */
@@ -17,7 +17,7 @@ public:
      */
     enum
     {
-        Type = DA::ItemType_GraphicsTextItem
+        Type = DA::ItemType_DAGraphicsTextItem
     };
     int type() const override
     {
@@ -35,14 +35,14 @@ public:
     virtual bool loadFromXml(const QDomElement* itemElement) override;
 
     // 获取内部的文本item
-    DAStandardGraphicsTextItem* textItem() const;
+    DAGraphicsStandardTextItem* textItem() const;
 
 protected:
     void setBodySize(const QSizeF& s) override;
     void paintBody(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget, const QRectF& bodyRect) override;
 
 private:
-    DAStandardGraphicsTextItem* m_textItem;
+    DAGraphicsStandardTextItem* m_textItem;
 };
 }
 #endif  // DAGRAPHICSTEXTITEM_H

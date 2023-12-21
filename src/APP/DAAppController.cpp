@@ -933,7 +933,7 @@ void DAAppController::onSelectionGraphicsItemChanged(QGraphicsItem* lastSelectIt
         // 通用编辑同步
         mRibbon->setEditBrush(daitem->getBackgroundBrush());
         mRibbon->setEditPen(daitem->getBorderPen());
-    } else if (DAStandardGraphicsTextItem* titem = dynamic_cast< DAStandardGraphicsTextItem* >(lastSelectItem)) {
+    } else if (DAGraphicsStandardTextItem* titem = dynamic_cast< DAGraphicsStandardTextItem* >(lastSelectItem)) {
 
         mRibbon->setWorkFlowEditFont(titem->font());
         mRibbon->setWorkFlowEditFontColor(titem->defaultTextColor());

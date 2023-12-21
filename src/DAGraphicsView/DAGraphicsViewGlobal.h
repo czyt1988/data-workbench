@@ -2,7 +2,7 @@
 #define DAGRAPHICSVIEWGLOBAL_H
 #include <QtCore/QtGlobal>
 #include "DAGlobals.h"
-
+#include <QGraphicsItem>
 #if defined(DAGRAPHICSVIEW_BUILDLIB)
 #define DAGRAPHICSVIEW_API Q_DECL_EXPORT
 #else
@@ -13,7 +13,6 @@
 #endif
 #endif
 
-#include <QGraphicsItem>
 /**
  * @brief 定义此宏使用object item
  */
@@ -53,26 +52,35 @@ enum DAGraphicsCommandIDType
 };
 
 /**
- * @brief The DAGraphicsResizeableItemType enum
+  @brief Item Type 枚举
+
+  @note 此数值不要轻易改动，会影响旧工程文件的加载，xml文件记录了此枚举值，根据枚举值来创建item，如果数值变化，会导致旧工程文件创建异常
  */
 enum DAGraphicsItemType
 {
-    ItemType_GraphicsItemBegin      = QGraphicsItem::UserType + 10,  ///< 针对DAGraphicsResizeableItem的类型开始
-    ItemType_GraphicsItem           = ItemType_GraphicsItemBegin + 1,       ///< 针对DAGraphicsResizeableItem的类型
-    ItemType_GraphicsResizeableItem = ItemType_GraphicsItemBegin + 2,       ///< 针对DAGraphicsResizeableItem的类型
-    ItemType_GraphicsRectItem       = ItemType_GraphicsItemBegin + 10,      ///< 针对DAGraphicsRectItem的类型
-    ItemType_GraphicsTextItem       = ItemType_GraphicsItemBegin + 12,      ///< 针对DAGraphicsTextItem的类型
-    ItemType_GraphicsPixmapItem     = ItemType_GraphicsItemBegin + 14,      ///< 针对DAGraphicsPixmapItem的类型
-    ItemType_GraphicsLinkItem       = ItemType_GraphicsItemBegin + 300,     ///< 针对DAGraphicsLinkItem的类型
-    ItemType_GraphicsStandardTextItem  = ItemType_GraphicsItemBegin + 500,  ///< 标准样式
-    ItemType_GraphicsResizeableItemEnd = ItemType_GraphicsItemBegin + 1000,
-    ItemType_GraphicsItemGroup         = ItemType_GraphicsItemBegin + 1100  ///< 针对DAGraphicsItemGroup的类型
+    ItemType_GraphicsItem_Begin   = QGraphicsItem::UserType + 10,     ///< 针对DAGraphicsResizeableItem的类型开始
+    ItemType_DAGraphicsItem_Begin = ItemType_GraphicsItem_Begin + 1,  ///< DAGraphicsItem Type的开始范围
+    ItemType_DAGraphicsItem       = ItemType_DAGraphicsItem_Begin + 1,  ///< 针对DAGraphicsResizeableItem的类型
+    ItemType_DAGraphicsResizeableItem_Begin = ItemType_DAGraphicsItem_Begin + 2,
+    ItemType_DAGraphicsResizeableItem = ItemType_DAGraphicsResizeableItem_Begin + 1,  ///< 针对DAGraphicsResizeableItem的类型
+    ItemType_DAGraphicsRectItem = ItemType_DAGraphicsResizeableItem_Begin + 10,  ///< 针对DAGraphicsRectItem的类型
+    ItemType_DAGraphicsTextItem = ItemType_DAGraphicsResizeableItem_Begin + 12,  ///< 针对DAGraphicsTextItem的类型
+    ItemType_DAGraphicsPixmapItem = ItemType_DAGraphicsResizeableItem_Begin + 14,  ///< 针对DAGraphicsPixmapItem的类型
+    ItemType_DAGraphicsResizeableItem_End = ItemType_DAGraphicsResizeableItem_Begin + 1000,
+    ItemType_DAGraphicsItem_End           = 2000,  ///< DAGraphicsItem的结束范围
+    ItemType_DAGraphicsLinkItem_Begin     = ItemType_DAGraphicsItem_End + 1,
+    ItemType_DAGraphicsLinkItem         = ItemType_DAGraphicsLinkItem_Begin + 1,  ///< 针对DAGraphicsLinkItem的类型
+    ItemType_DAGraphicsLinkItem_End     = 2500,                                   ///< DAGraphicsLinkItem的结束范围
+    ItemType_DAGraphicsStandardTextItem = ItemType_GraphicsItem_Begin + 3000,     ///< 标准样式
+    ItemType_DAGraphicsItemGroup        = ItemType_GraphicsItem_Begin + 4500,  ///< 针对DAGraphicsItemGroup的类型
+    ItemType_GraphicsItem_End           = ItemType_GraphicsItem_Begin + 5000
 };
 // 实现位于DAGraphicsLinkItem.cpp
 // DANodeLinkPoint::Direction 的枚举转换
 DAGRAPHICSVIEW_API QString enumToString(AspectDirection e);
 // DANodeLinkPoint::Direction 的枚举转换
 DAGRAPHICSVIEW_API AspectDirection stringToEnum(const QString& s, AspectDirection defaultEnum = AspectDirection::East);
+//
 
 }
 
