@@ -7,6 +7,7 @@
 #include <QGraphicsSceneHoverEvent>
 #include <QDebug>
 #include "DAGraphicsItem.h"
+#include "DAGraphicsScene.h"
 namespace DA
 {
 
@@ -53,37 +54,21 @@ DAGraphicsItemGroup::~DAGraphicsItemGroup()
  */
 bool DAGraphicsItemGroup::saveToXml(QDomDocument* doc, QDomElement* parentElement) const
 {
-    QList< DAGraphicsItemGroup* > gs = childGroups();
-    QList< QGraphicsItem* > its      = childItemsExcludingGrouping();
-    if (!gs.empty()) {
-        QDomElement cgEle = doc->createElement("child-groups");
-        for (auto g : qAsConst(gs)) {
-            QDomElement liEle = doc->createElement("li");
-            liEle.appendChild(doc->createTextNode(QString::number(g->getItemID())));
-        }
-        parentElement->appendChild(cgEle);
-    }
-    if (!its.empty()) {
-        QDomElement ciEle = doc->createElement("child-items");
-        for (auto i : qAsConst(its)) {
-            DAGraphicsItem* daItem = DAGraphicsItem::cast(i);
-            if (daItem) {
-                QDomElement liEle = doc->createElement("li");
-                liEle.appendChild(doc->createTextNode(QString::number(daItem->getItemID())));
-            }
-        }
-        parentElement->appendChild(ciEle);
-    }
+    Q_UNUSED(doc);
+    Q_UNUSED(parentElement);
+    return true;
 }
 
 /**
- * @brief 从xml中加载
- * @param itemElement
- * @return
+  @brief 从xml中加载
+
+  @note 注意，DAGraphicsItemGroup要先加入scene
+  @param itemElement
+  @return
  */
 bool DAGraphicsItemGroup::loadFromXml(const QDomElement* parentElement)
 {
-
+    Q_UNUSED(parentElement);
     return true;
 }
 

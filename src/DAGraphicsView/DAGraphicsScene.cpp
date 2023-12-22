@@ -4,6 +4,7 @@
 #include "DAGraphicsResizeableItem.h"
 #include "DAGraphicsLinkItem.h"
 #include "DAGraphicsItemGroup.h"
+#include "DAGraphicsStandardTextItem.h"
 #include <QPainter>
 #include <QDebug>
 
@@ -569,6 +570,55 @@ void DAGraphicsScene::setUndoStackActive()
 void DAGraphicsScene::push(QUndoCommand* cmd)
 {
     d_ptr->mUndoStack.push(cmd);
+}
+
+/**
+   @brief 通过id查找item,此函数性能为O(n)
+   @param id
+   @param recursion 递归查找
+   @return
+ */
+QGraphicsItem* DAGraphicsScene::findItemByID(uint64_t id, bool recursion) const
+{
+    QList< QGraphicsItem* > allItems = items();
+    return findItemByID(allItems, id, recursion);
+}
+
+/**
+   @brief 查找id对应的GraphicsItem*
+
+   目前有@sa DAGraphicsItem，@sa DAGraphicsItemGroup，@sa DAGraphicsStandardTextItem 存在id
+   @param its
+   @param id
+   @param recursion
+   @return
+ */
+QGraphicsItem* DAGraphicsScene::findItemByID(const QList< QGraphicsItem* >& its, uint64_t id, bool recursion)
+{
+    for (auto i : its) {
+        if (DAGraphicsItem* d = dynamic_cast< DAGraphicsItem* >(i)) {
+            if (d->getItemID() == id) {
+                return d;
+            }
+        } else if (DAGraphicsItemGroup* g = dynamic_cast< DAGraphicsItemGroup* >(i)) {
+            if (g->getItemID() == id) {
+                return g;
+            }
+        } else if (DAGraphicsStandardTextItem* s = dynamic_cast< DAGraphicsStandardTextItem* >(i)) {
+            if (s->getItemID() == id) {
+                return s;
+            }
+        }
+        if (recursion) {
+            QList< QGraphicsItem* > cs = i->childItems();
+            if (!cs.empty()) {
+                if (QGraphicsItem* c = findItemByID(cs, id, recursion)) {
+                    return c;
+                }
+            }
+        }
+    }
+    return nullptr;
 }
 
 /**

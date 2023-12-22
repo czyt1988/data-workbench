@@ -96,6 +96,10 @@ public:
     void setUndoStackActive();
     void push(QUndoCommand* cmd);
 
+    // 通过id查找item,此函数性能为O(n)
+    QGraphicsItem* findItemByID(uint64_t id, bool recursion = false) const;
+    static QGraphicsItem* findItemByID(const QList< QGraphicsItem* >& its, uint64_t id, bool recursion = false);
+
 public:
     static void addItemToGroup(QGraphicsItemGroup* group, const QList< QGraphicsItem* >& willGroupItems);
 public slots:

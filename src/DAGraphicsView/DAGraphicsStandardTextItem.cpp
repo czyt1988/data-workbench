@@ -5,6 +5,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QDomDocument>
 #include <QDomElement>
+#include "DAGraphicsItemFactory.h"
 namespace DA
 {
 
@@ -44,6 +45,7 @@ bool DAGraphicsStandardTextItem::saveToXml(QDomDocument* doc, QDomElement* paren
 {
     QDomElement textItemEle = doc->createElement("text-info");
     QPointF scPos           = scenePos();
+    textItemEle.setAttribute("id", getItemID());
     textItemEle.setAttribute("x", scPos.x());
     textItemEle.setAttribute("y", scPos.y());
     textItemEle.setAttribute("color", defaultTextColor().name());
@@ -64,8 +66,12 @@ bool DAGraphicsStandardTextItem::loadFromXml(const QDomElement* itemElement)
         return false;
     }
     QPointF pos;
+    uint64_t id;
     if (getStringRealValue(textItemEle.attribute("x"), pos.rx()) && getStringRealValue(textItemEle.attribute("y"), pos.ry())) {
         setScenePos(pos);
+    }
+    if (getStringULongLongValue(textItemEle.attribute("id"), id)) {
+        setItemID(id);
     }
     QColor color(textItemEle.attribute("color"));
     setDefaultTextColor(color);
@@ -92,6 +98,16 @@ void DAGraphicsStandardTextItem::setScenePos(qreal x, qreal y)
     setScenePos(QPointF(x, y));
 }
 
+uint64_t DAGraphicsStandardTextItem::getItemID() const
+{
+    return mID;
+}
+
+void DAGraphicsStandardTextItem::setItemID(uint64_t id)
+{
+    mID = id;
+}
+
 void DAGraphicsStandardTextItem::focusOutEvent(QFocusEvent* focusEvent)
 {
     // 在有选中的情况下，把选中的内容取消
@@ -115,6 +131,7 @@ void DAGraphicsStandardTextItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent*
 
 void DAGraphicsStandardTextItem::initItem()
 {
+    mID = DAGraphicsItemFactory::generateID(reinterpret_cast< uint32_t >(this));
     setDefaultTextColor(Qt::black);  // 设置字体颜色
     setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable | QGraphicsItem::ItemIsFocusable);
     setTextInteractionFlags(Qt::TextEditorInteraction);
