@@ -17,6 +17,8 @@
 - 自动化安装
 - 形成一个第三方方便引入的插件开发环境
 
+这里所谓第三方方便引入的开发环境，是能让第三方可以一键引入你的库，以及你依赖的第三方库
+
 但是`cmake`的缺点也是复杂，文档生涩，语法奇葩，说到底`cmake`就是一种高级别的宏
 
 下面根据我的经验，介绍一下如何通过`cmake`组织和构建一个大型的工程，适合大型工业软件的构建，构建出来的软件能给第三方用户方便的进行二次开发，同时，结合 `git` 的 `submodel` 管理第三方库，让整个工程变得更为简洁明了
@@ -45,7 +47,7 @@
 
 # 大型工程的cmake写法
 
-这里不会教你如何写cmake，而是着重讲讲大学工程的cmake要注意事项，工程顶层会有个`CMakeLists.txt`文件，这个文件定义了整个工程的信息、可选项、总体的安装步骤等，实现整个工程的构建，顶层的`CMakeLists.txt`通过`add_subdirectory`添加子目录，一般会添加src目录，以我自己的一个[一维仿真集成平台data-workbench举例](https://github.com/czyt1988/data-workbench)，介绍如何通过cmake组织一个大型的工程
+这里不会教你如何写cmake，而是着重讲讲大学工程的cmake要注意事项，工程顶层会有个`CMakeLists.txt`文件，这个文件定义了整个工程的信息、可选项、总体的安装步骤等，实现整个工程的构建，顶层的`CMakeLists.txt`通过`add_subdirectory`添加子目录，一般会添加src目录，以我自己的一个[一维仿真集成平台DAWorkbench举例](https://github.com/czyt1988/data-workbench)，介绍如何通过cmake组织一个大型的工程
 
 首先这个工程的目录结构大致如下：
 
@@ -84,9 +86,9 @@ bin目录放置编译完的二进制文件在WINDOWS系统上就是dll文件
 
 lib文件夹放置编译后的lib文件，在WINDOWS系统下，MSVC编译器编译出来就是.lib后缀的文件
 
-一般情况下，lib文件夹下还有一个`cmake`子文件夹，这个文件夹放置`cmake`的导出文件，通常来讲，这个文件夹下的导出文件放在它自身工程名的一个文件夹里，形成如：`lib/cmake/{libName}`的文件夹结构
+一般情况下，lib文件夹下还有一个`cmake`子文件夹，这个文件夹放置`cmake`的导出文件，通常来讲，这个文件夹下的导出文件放在它自身工程名的一个文件夹里，形成如：`lib/cmake/{LibName}`的文件夹结构
 
-include文件夹主要放置头文件，通常来讲头文件也是需要放在他自身工程名的一个文件夹里，形成如：`include/{libName}`的文件夹结构
+include文件夹主要放置头文件，通常来讲头文件也是需要放在他自身工程名的一个文件夹里，形成如：`include/{LibName}`的文件夹结构
 
 基本上大部分的第三方库都是按照这个目录结构进行安装，这样当你的工程包含了大量的第三方库，以及你自身的库的情况下，最终所有的dll都会安装在bin录下，所有的库文件都会安装在lib目录下，所有的头文件都会在include文件夹下面对应的自身库名的文件夹下面，所有`cmake`需要用的文件都在`lib/cmake`文件夹下对应的自身库名的文件夹下面
 
@@ -111,9 +113,67 @@ lib
        |-SARibbonBarTargets-debug.cmake
 ```
 
+## install命令
+
+cmake的install是一组命令，有多个功能
+
+### 复制文件`install(FILES)`&`install(DIRECTORY)`
+
+最简单的就是拷贝，包括`install(FILES)`,`install(DIRECTORY)`这两个都是拷贝用的，一个拷贝文件，一个拷贝目录
+
+例如，[SARibbon库](https://github.com/czyt1988/SARibbon)的Cmake文件中，头文件都在`${SARIBBON_HEADER_FILES}`这个变量下面,把它拷贝到安装目录下的`include/${SARIBBON_LIB_NAME}`路径下，就如下这样写，安装路径按照上面说的标准化走
+
+```cmake
+install(FILES
+    ${SARIBBON_HEADER_FILES}
+    DESTINATION include/${SARIBBON_LIB_NAME}
+    COMPONENT headers
+)
+```
+
+### 生成cmake目标文件`install(TARGETS)`&`install(EXPORT)`
+
+`install(TARGETS)`&`install(EXPORT)`这两个命令是要配合一起用，用来生成cmake目标文件，cmake目标文件描述了整个工程所有的依赖内容，最终生成`{LibName}Targets.cmake`和`{LibName}Targets-debug.cmake`文件
+
+这两个函数写法也比较固定,这里假如你自己的库名字叫${LIB_NAME}，那么`install(TARGETS)`&`install(EXPORT)`的写法基本如下：
+
+```cmake
+install(TARGETS ${LIB_NAME}
+    EXPORT ${LIB_NAME}Targets
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    INCLUDES DESTINATION include/${LIB_NAME}
+)
+
+install(EXPORT ${LIB_NAME}Targets
+    FILE ${LIB_NAME}Targets.cmake
+    DESTINATION lib/cmake/${LIB_NAME}
+)
+```
+
+这两个结合，把你的目标依赖内容，写到了`{LibName}Targets.cmake`文件中，并复制到安装目录下的`lib/cmake/${LIB_NAME}`下,`install(TARGETS)`用来把你的工程信息导出到`${LIB_NAME}Targets`这个变量中，`install(EXPORT)`把`${LIB_NAME}Targets`这个内容，生成到`${LIB_NAME}Targets.cmake`文件中，同时也会生成一个`{LibName}Targets-debug.cmake`文件
+
+这个文件就是第三方引入你的工程的关键，这里会把target_打头的函数相关信息写入这个文件中，例如`target_compile_definitions`和`target_include_directories`这些函数定义的信息，也会写入`${LIB_NAME}Targets.cmake`文件中，一些预定义的宏和头文件路径在加载`${LIB_NAME}Targets.cmake`后就自动加载进来了，因此，那些宏和头文件路径要暴露给第三方的，都应该使用target_xx的函数，同时也要区分构建环境还是安装环境，如果你的CMakeLists.txt作为一个子目录，那么这时属于构建环境，尤其针对include_directories，构建环境和安装环境肯定不一样的，因此要区别对待，否则作为子工程嵌入时会出错，如下区分构建环境和安装环境的路径引用
+
+```cmake
+target_include_directories(${SARIBBON_LIB_NAME} PUBLIC
+    $<INSTALL_INTERFACE:include/${SARIBBON_LIB_NAME}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)
+```
+
+### 生成config文件`configure_package_config_file`
+
+cmake的find_package函数不是加载`${LIB_NAME}Targets.cmake`，而是加载`{LibName}Config.cmake`文件，那如何生成`{LibName}Config.cmake`文件呢，需要用到`configure_package_config_file`函数，一般还会配合`write_basic_package_version_file`
+
 ## 单一模块的install写法
 
-在介绍模块化的`install`之前，先需要了解单一模块的`install`写法，单一模块的`install`写法是比较固定的，需要生成一个能被其他模块引入的config文件，一般这个config文件是相对固定的，自己的整个工程可以共用一个config文件
+在介绍模块化的`install`之前，先需要了解单一模块的`install`写法
+
+单一模块的`install`写法是比较固定的，需要生成一个能被其他模块引入的config文件(`{LibName}Config.cmake`)，一般这个config文件是相对固定的，你一般会在工程下面看到一个名为`{LibName}Config.cmake.in`，这个文件是用来辅助生成`{LibName}Config.cmake`文件使用的，因此，单一模块的install写法有如下步骤：
+
+要使用target_打头的函数，例如`target_compile_definitions`和`target_include_directories`这些函数能把你的include路径自动生成到你的`{LibName}Targets.cmake`文件中
 
 ## 多模块的install写法
 
