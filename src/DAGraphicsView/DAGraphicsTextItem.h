@@ -11,6 +11,7 @@ class DAGraphicsStandardTextItem;
  */
 class DAGRAPHICSVIEW_API DAGraphicsTextItem : public DAGraphicsResizeableItem
 {
+    Q_OBJECT
 public:
     /**
      * @brief 适用qgraphicsitem_cast

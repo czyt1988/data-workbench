@@ -60,6 +60,8 @@ public:
     // 保存一个item
     bool saveItem(const QGraphicsItem* i, QDomDocument& doc, QDomElement& itemsElement);
     QGraphicsItem* loadItem(const QDomElement& itemElement);
+    bool loadItem(QGraphicsItem* item, const QDomElement& itemElement);
+    QDomElement findItemElement(const QDomElement& parentElement);
     // 保存和加载分组
     void saveItemGroup(const DAGraphicsItemGroup* itemGroup, QDomDocument& doc, QDomElement& itemsElement);
     DAGraphicsItemGroup* loadItemGroup(DAWorkFlowGraphicsScene* scene, const QDomElement& groupElement);
@@ -430,16 +432,20 @@ bool DAXmlHelperPrivate::loadNodePropertys(DAAbstractNode::SharedPointer& node, 
 void DAXmlHelperPrivate::saveNodeItem(const DAAbstractNode::SharedPointer& node, QDomDocument& doc, QDomElement& nodeEle)
 {
     DAAbstractNodeGraphicsItem* item = node->graphicsItem();
-    QDomElement itemEle              = doc.createElement("item");
-    item->saveToXml(&doc, &itemEle);
+    QDomElement itemEle              = doc.createElement("node-item");
+    saveItem(item, doc, itemEle);
     nodeEle.appendChild(itemEle);
     mHaveBeenSaveNodeItem.insert(item);
 }
 
 bool DAXmlHelperPrivate::loadNodeItem(DAWorkFlowGraphicsScene* scene, DAAbstractNode::SharedPointer& node, const QDomElement& nodeEle)
 {
-    QDomElement ele = nodeEle.firstChildElement("item");
+    QDomElement ele = nodeEle.firstChildElement("node-item");
     if (ele.isNull()) {
+        return false;
+    }
+    QDomElement itemEle = ele.firstChildElement("item");
+    if (itemEle.isNull()) {
         return false;
     }
     DAAbstractNodeGraphicsItem* item = node->createGraphicsItem();
@@ -448,7 +454,7 @@ bool DAXmlHelperPrivate::loadNodeItem(DAWorkFlowGraphicsScene* scene, DAAbstract
                               .arg(node->getNodePrototype(), node->getNodeName(), node->getNodeGroup());
         return false;
     }
-    item->loadFromXml(&ele);
+    if (loadItem(item, itemEle)) { }
     scene->addItem(item);
     return true;
 }
@@ -470,19 +476,17 @@ void DAXmlHelperPrivate::saveNodeLinks(const DAWorkFlow* workflow, QDomDocument&
     for (auto link : itemSet) {
         QDomElement linkEle = doc.createElement("link");
         QDomElement fromEle = doc.createElement("from");
+        QDomElement toEle   = doc.createElement("to");
         fromEle.setAttribute("id", link->fromNode()->getID());
         fromEle.setAttribute("name", link->fromNodeLinkPoint().name);
-        QDomElement toEle = doc.createElement("to");
         toEle.setAttribute("id", link->toNode()->getID());
         toEle.setAttribute("name", link->toNodeLinkPoint().name);
 
         linkEle.appendChild(fromEle);
         linkEle.appendChild(toEle);
-
-        if (!link->saveToXml(&doc, &linkEle)) {
+        if (!saveItem(link, doc, linkEle)) {
             qWarning() << QObject::tr("linkitem save to xml return false");  // cn:链接线从xml加载信息返回了false
         }
-
         nodeLinkEle.appendChild(linkEle);
         mHaveBeenSaveNodeItem.insert(link);  // 加入以保存列表避免重复保存
     }
@@ -533,7 +537,8 @@ bool DAXmlHelperPrivate::loadNodeLinks(DAWorkFlowGraphicsScene* scene, DAWorkFlo
                                   .arg(fromItem->getNodeName(), fromKey, toItem->getNodeName(), toKey);
             continue;
         }
-        if (!linkitem->loadFromXml(&linkEle)) {
+        QDomElement itemEle = findItemElement(linkEle);
+        if (!loadItem(linkitem, itemEle)) {
             qWarning() << QObject::tr("linkitem load from xml return false")  // cn:链接线从xml加载信息返回了false
                     ;
         }
@@ -564,6 +569,7 @@ void DAXmlHelperPrivate::saveSpecialItem(const DAWorkFlowGraphicsScene* scene, Q
             continue;
         }
         saveItem(i, doc, itemsElement);
+        mHaveBeenSaveNodeItem.insert(const_cast< QGraphicsItem* >(i));
     }
     workflowEle.appendChild(itemsElement);
 }
@@ -613,7 +619,6 @@ bool DAXmlHelperPrivate::saveItem(const QGraphicsItem* i, QDomDocument& doc, QDo
         itemElement.setAttribute("tg", "DAGraphics");
         daItem->saveToXml(&doc, &itemElement);
         itemsElement.appendChild(itemElement);
-        mHaveBeenSaveNodeItem.insert(const_cast< QGraphicsItem* >(i));
         return true;
     } else if (const DAGraphicsStandardTextItem* si = dynamic_cast< const DAGraphicsStandardTextItem* >(i)) {
         QDomElement itemElement = doc.createElement("item");
@@ -622,7 +627,6 @@ bool DAXmlHelperPrivate::saveItem(const QGraphicsItem* i, QDomDocument& doc, QDo
         itemElement.setAttribute("tg", "DAStandardText");
         daItem->saveToXml(&doc, &itemElement);
         itemsElement.appendChild(itemElement);
-        mHaveBeenSaveNodeItem.insert(const_cast< QGraphicsItem* >(i));
         return true;
     } else if (const DAGraphicsItemGroup* gi = dynamic_cast< const DAGraphicsItemGroup* >(i)) {
         saveItemGroup(gi, doc, itemsElement);
@@ -649,14 +653,32 @@ QGraphicsItem* DAXmlHelperPrivate::loadItem(const QDomElement& itemElement)
         qWarning() << QObject::tr("Cannot create item by class name:%1,maybe unregist to DAGraphicsItemFactory").arg(className);  // 无法通过类名:%1创建元件,类名没有注册到DAGraphicsItemFactory
         return nullptr;
     }
-    DAXMLFileInterface* xml = dynamic_cast< DAXMLFileInterface* >(item.get());
-    if (xml) {
-        if (!xml->loadFromXml(&itemElement)) {
-            qWarning() << QObject::tr("Unable to load item information from file").arg(className);  // 无法通过文件加载元件信息
-            return nullptr;
-        }
+    if (!loadItem(item.get(), itemElement)) {
+        return nullptr;
     }
     return item.release();
+}
+
+bool DAXmlHelperPrivate::loadItem(QGraphicsItem* item, const QDomElement& itemElement)
+{
+    DAXMLFileInterface* xml = dynamic_cast< DAXMLFileInterface* >(item);
+    if (xml) {
+        if (!xml->loadFromXml(&itemElement)) {
+            qWarning() << QObject::tr("Unable to load item information from <%1>").arg(itemElement.tagName());  // 无法通过<%1>加载元件信息
+            return false;
+        }
+    }
+    return true;
+}
+
+/**
+ * @brief 查找item标签
+ * @param parentElement
+ * @return
+ */
+QDomElement DAXmlHelperPrivate::findItemElement(const QDomElement& parentElement)
+{
+    return parentElement.firstChildElement("item");
 }
 /**
    @brief 保存分组信息
@@ -668,42 +690,40 @@ QGraphicsItem* DAXmlHelperPrivate::loadItem(const QDomElement& itemElement)
  */
 void DAXmlHelperPrivate::saveItemGroup(const DAGraphicsItemGroup* itemGroup, QDomDocument& doc, QDomElement& itemsElement)
 {
-    // 先提取分组下的分组
-    QList< DAGraphicsItemGroup* > childGroups = itemGroup->childGroups();
-    for (auto g : qAsConst(childGroups)) {
+    qDebug() << "saveItemGroup";
+    const QList< QGraphicsItem* > childItems = itemGroup->childItems();
+    // 先保存实体信息
+    for (auto i : childItems) {
+        qDebug() << "group:" << i->type();
         // 保证子分组先保存
-        saveItemGroup(g, doc, itemsElement);
-    }
-    QList< QGraphicsItem* > childItems = itemGroup->childItemsExcludingGrouping();
-    for (auto i : qAsConst(childItems)) {
-        // 保证子分组先保存
+        if (mHaveBeenSaveNodeItem.contains(i)) {
+            continue;
+        }
         saveItem(i, doc, itemsElement);
+        mHaveBeenSaveNodeItem.insert(i);
     }
-    // 保存分组自身信息
+    // 再记录分组信息
     QDomElement gEle = doc.createElement("group");
     gEle.setAttribute("id", itemGroup->getItemID());
     // 子item
     if (!childItems.empty()) {
-        QDomElement ciEle = doc.createElement("child");
-        for (auto i : qAsConst(childItems)) {
+        QDomElement ciEle = doc.createElement("childs");
+        for (auto i : childItems) {
             if (DAGraphicsItem* daItem = DAGraphicsItem::cast(i)) {
                 QDomElement liEle = doc.createElement("li");
                 liEle.appendChild(doc.createTextNode(QString::number(daItem->getItemID())));
+                ciEle.appendChild(liEle);
             } else if (DAGraphicsStandardTextItem* si = dynamic_cast< DAGraphicsStandardTextItem* >(i)) {
                 QDomElement liEle = doc.createElement("li");
                 liEle.appendChild(doc.createTextNode(QString::number(si->getItemID())));
+                ciEle.appendChild(liEle);
+            } else if (DAGraphicsItemGroup* gi = dynamic_cast< DAGraphicsItemGroup* >(i)) {
+                QDomElement liEle = doc.createElement("li");
+                liEle.appendChild(doc.createTextNode(QString::number(gi->getItemID())));
+                ciEle.appendChild(liEle);
             }
         }
         gEle.appendChild(ciEle);
-    }
-    // 子group
-    if (!childGroups.empty()) {
-        QDomElement cgEle = doc.createElement("child");
-        for (auto g : qAsConst(childGroups)) {
-            QDomElement liEle = doc.createElement("li");
-            liEle.appendChild(doc.createTextNode(QString::number(g->getItemID())));
-        }
-        gEle.appendChild(cgEle);
     }
     itemsElement.appendChild(gEle);
 }
@@ -719,8 +739,9 @@ DAGraphicsItemGroup* DAXmlHelperPrivate::loadItemGroup(DAWorkFlowGraphicsScene* 
     }
     DAGraphicsItemGroup* group = new DAGraphicsItemGroup();
     group->setItemID(id);
+    scene->addItem(group);
     // 先查看是否有group
-    auto cgEle    = groupElement.firstChildElement("child");
+    auto cgEle    = groupElement.firstChildElement("childs");
     auto cgChilds = cgEle.childNodes();
     for (int i = 0; i < cgChilds.size(); ++i) {
         auto liEle = cgChilds.at(i).toElement();
@@ -733,7 +754,6 @@ DAGraphicsItemGroup* DAXmlHelperPrivate::loadItemGroup(DAWorkFlowGraphicsScene* 
             group->addToGroup(item);
         }
     }
-    scene->addItem(group);
     return group;
 }
 

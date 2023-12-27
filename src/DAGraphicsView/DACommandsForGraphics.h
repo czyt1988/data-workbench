@@ -227,10 +227,13 @@ public:
     ~DACommandsForGraphicsItemGrouping();
     void redo() override;
     void undo() override;
+    // 这是一个清洗，要分组的item里面，如果存在item的parent在分组的item里，就驱除，这样不会分组嵌套，形成单一的层级
+    static QList< QGraphicsItem* > toSimple(const QList< QGraphicsItem* >& groupingitems);
+    QList< QGraphicsItem* > getWillGroupItems() const;
 
 private:
     DAGraphicsScene* mScene;
-    QList< QGraphicsItem* > mItems;
+    QList< QGraphicsItem* > mWillGroupItems;
     QGraphicsItemGroup* mGroupItem { nullptr };
     bool mNeedDelete { false };
 };

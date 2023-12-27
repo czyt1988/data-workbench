@@ -10,6 +10,7 @@ namespace DA
  */
 class DAWORKFLOW_API DAStandardNodeLinkGraphicsItem : public DAAbstractNodeLinkGraphicsItem
 {
+    Q_OBJECT
 public:
     DAStandardNodeLinkGraphicsItem(QGraphicsItem* p = nullptr);
     DAStandardNodeLinkGraphicsItem(DAAbstractNodeGraphicsItem* from, DANodeLinkPoint pl, QGraphicsItem* p = nullptr);

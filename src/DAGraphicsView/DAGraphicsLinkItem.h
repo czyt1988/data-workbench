@@ -14,6 +14,7 @@ namespace DA
  */
 class DAGRAPHICSVIEW_API DAGraphicsLinkItem : public DAGraphicsItem
 {
+    Q_OBJECT
     DA_DECLARE_PRIVATE(DAGraphicsLinkItem)
 public:
     enum AnonymousType
