@@ -20,15 +20,15 @@ DAAppActions::~DAAppActions()
 
 void DAAppActions::buildActions()
 {
-    //构建主页action
+    // 构建主页action
     buildMainAction();
-    //构建数据相关的action
+    // 构建数据相关的action
     buildDataAction();
-    //构建绘图相关的action
+    // 构建绘图相关的action
     buildChartAction();
-    //构建view相关的action
+    // 构建view相关的action
     buildViewAction();
-    //构建workflow相关的action
+    // 构建workflow相关的action
     buildWorkflowAction();
     //
     buildOtherActions();
@@ -72,26 +72,26 @@ void DAAppActions::buildDataAction()
 
 void DAAppActions::buildChartAction()
 {
-    //绘图标签 Chart Category
+    // 绘图标签 Chart Category
     actionAddFigure         = createAction("actionAddFigure", ":/Icon/Icon/addFigure.svg");
     actionFigureResizeChart = createAction("actionFigureResizeChart", ":/Icon/Icon/figureResizeChart.svg", true, false);
     actionFigureNewXYAxis   = createAction("actionFigureNewXYAxis", ":/Icon/Icon/newAxis.svg");
     actionChartAddCurve     = createAction("actionChartAddCurve", ":/app/chart-type/Icon/chart-type/chart-curve.svg");
 
-    actionChartEnableGrid     = createAction("actionChartEnableGrid", ":/Icon/Icon/chart-grid.svg", true, false);
-    actionChartEnableGridX    = createAction("actionChartEnableGridX", ":/Icon/Icon/chart-grid-x.svg", true, false);
-    actionChartEnableGridY    = createAction("actionChartEnableGridY", ":/Icon/Icon/chart-grid-y.svg", true, false);
+    actionChartEnableGrid  = createAction("actionChartEnableGrid", ":/Icon/Icon/chart-grid.svg", true, false);
+    actionChartEnableGridX = createAction("actionChartEnableGridX", ":/Icon/Icon/chart-grid-x.svg", true, false);
+    actionChartEnableGridY = createAction("actionChartEnableGridY", ":/Icon/Icon/chart-grid-y.svg", true, false);
     actionChartEnableGridXMin = createAction("actionChartEnableGridXMin", ":/Icon/Icon/chart-grid-xmin.svg", true, false);
     actionChartEnableGridYMin = createAction("actionChartEnableGridYMin", ":/Icon/Icon/chart-grid-ymin.svg", true, false);
-    actionChartEnableZoom     = createAction("actionChartEnableZoom", ":/Icon/Icon/chart-zoomer.svg", true, false);
-    actionChartZoomIn         = createAction("actionChartZoomIn", ":/Icon/Icon/zoomIn.svg");
-    actionChartZoomOut        = createAction("actionChartZoomOut", ":/Icon/Icon/zoomOut.svg");
-    actionChartZoomAll        = createAction("actionChartZoomAll", ":/Icon/Icon/viewAll.svg");
-    actionChartEnablePan      = createAction("actionChartEnablePan", ":/Icon/Icon/chart-pan.svg", true, false);
+    actionChartEnableZoom = createAction("actionChartEnableZoom", ":/Icon/Icon/chart-zoomer.svg", true, false);
+    actionChartZoomIn     = createAction("actionChartZoomIn", ":/Icon/Icon/zoomIn.svg");
+    actionChartZoomOut    = createAction("actionChartZoomOut", ":/Icon/Icon/zoomOut.svg");
+    actionChartZoomAll    = createAction("actionChartZoomAll", ":/Icon/Icon/viewAll.svg");
+    actionChartEnablePan  = createAction("actionChartEnablePan", ":/Icon/Icon/chart-pan.svg", true, false);
 
     actionGroupChartPickers = new QActionGroup(this);
     actionGroupChartPickers->setObjectName(QStringLiteral("actionGroupChartPickers"));
-    actionGroupChartPickers->setExclusionPolicy(QActionGroup::ExclusionPolicy::ExclusiveOptional);  //允许都不选中
+    actionGroupChartPickers->setExclusionPolicy(QActionGroup::ExclusionPolicy::ExclusiveOptional);  // 允许都不选中
     actionChartEnablePickerCross = createAction("actionChartEnablePickerCross", ":/Icon/Icon/chart-picker.svg", true, false, actionGroupChartPickers);
     actionChartEnablePickerY = createAction("actionChartEnablePickerY", ":/Icon/Icon/chart-picker-y.svg", true, false, actionGroupChartPickers);
     actionChartEnablePickerXY = createAction("actionChartEnablePickerXY", ":/Icon/Icon/chart-picker-xy.svg", true, false, actionGroupChartPickers);
@@ -145,7 +145,7 @@ void DAAppActions::buildWorkflowAction()
     // workflow下面的状态action都是checkable状态的
     actionGroupWorkflowStartEdit = new QActionGroup(this);
     actionGroupWorkflowStartEdit->setObjectName(QStringLiteral("actionGroupWorkflowStartEdit"));
-    actionGroupWorkflowStartEdit->setExclusionPolicy(QActionGroup::ExclusionPolicy::ExclusiveOptional);  //允许都不选中
+    actionGroupWorkflowStartEdit->setExclusionPolicy(QActionGroup::ExclusionPolicy::ExclusiveOptional);  // 允许都不选中
     actionWorkflowStartDrawRect = createAction("actionStartDrawRect", ":/Icon/Icon/drawRect.svg", true, false, actionGroupWorkflowStartEdit);
     actionWorkflowStartDrawText = createAction("actionStartDrawText", ":/Icon/Icon/drawText.svg", true, false, actionGroupWorkflowStartEdit);
     // workflow-背景图相关
@@ -236,7 +236,7 @@ void DAAppActions::retranslateUi()
     actionWorkflowNew->setText(tr("New \nWorkflow"));                    // cn:新建\n工作流
     actionWorkflowEnableItemLinkageMove->setText(tr("Linkage \nMove"));  // cn:联动
     actionWorkflowEnableItemLinkageMove->setToolTip(
-        tr("When moving elements, other elements linked to this element follow the movement"));  // cn:允许移动图元时，其它和此图元链接起来的图元跟随移动
+            tr("When moving elements, other elements linked to this element follow the movement"));  // cn:允许移动图元时，其它和此图元链接起来的图元跟随移动
     actionItemGrouping->setText(tr("grouping"));                   // cn:分组
     actionItemUngroup->setText(tr("ungroup"));                     // cn:取消分组
     actionWorkflowStartDrawRect->setText(tr("Draw \nRect"));       // cn:绘制\n矩形

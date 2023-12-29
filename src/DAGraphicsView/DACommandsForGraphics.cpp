@@ -4,6 +4,7 @@
 #include "DAGraphicsScene.h"
 #include "DAGraphicsResizeableItem.h"
 #include "DAGraphicsItemGroup.h"
+#include "DAQtContainerUtil.h"
 #include <QObject>
 using namespace DA;
 
@@ -442,8 +443,9 @@ bool DACommandsForGraphicsItemRotation::mergeWith(const QUndoCommand* command)
 DACommandsForGraphicsItemGrouping::DACommandsForGraphicsItemGrouping(DAGraphicsScene* sc,
                                                                      const QList< QGraphicsItem* >& groupingitems,
                                                                      QUndoCommand* parent)
-    : QUndoCommand(parent), mScene(sc), mItems(groupingitems)
+    : QUndoCommand(parent), mScene(sc)
 {
+    mWillGroupItems = toSimple(groupingitems);
 }
 
 DACommandsForGraphicsItemGrouping::~DACommandsForGraphicsItemGrouping()
@@ -458,7 +460,7 @@ void DACommandsForGraphicsItemGrouping::redo()
     if (!mGroupItem) {
         mGroupItem = new DAGraphicsItemGroup();
     }
-    DAGraphicsScene::addItemToGroup(mGroupItem, mItems);
+    DAGraphicsScene::addItemToGroup(mGroupItem, mWillGroupItems);
     mScene->addItem(mGroupItem);
     mGroupItem->setSelected(true);
     mNeedDelete = false;
@@ -474,6 +476,39 @@ void DACommandsForGraphicsItemGrouping::undo()
     }
     mScene->removeItem(mGroupItem);
     mNeedDelete = true;
+}
+
+/**
+ * @brief 这是一个清洗，要分组的item里面，如果存在item的parent在分组的item里，就驱除，这样不会分组嵌套，形成单一的层级
+ * @param groupingitems
+ * @return
+ */
+QList< QGraphicsItem* > DACommandsForGraphicsItemGrouping::toSimple(const QList< QGraphicsItem* >& groupingitems)
+{
+    const QSet< QGraphicsItem* > willGroupItems = qlist_to_qset(groupingitems);
+    QList< QGraphicsItem* > res;
+    for (QGraphicsItem* i : groupingitems) {
+        bool ancestorsInGroup = false;
+        QGraphicsItem* par    = i->parentItem();
+        if (par) {
+            do {
+                if (willGroupItems.contains(par)) {
+                    ancestorsInGroup = true;
+                    break;
+                }
+                par = par->parentItem();
+            } while (par);
+        }
+        if (!ancestorsInGroup) {
+            res.append(i);
+        }
+    }
+    return res;
+}
+
+QList< QGraphicsItem* > DACommandsForGraphicsItemGrouping::getWillGroupItems() const
+{
+    return mWillGroupItems;
 }
 
 //==============================================================

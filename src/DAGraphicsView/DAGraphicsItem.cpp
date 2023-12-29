@@ -254,10 +254,11 @@ void DAGraphicsItem::setItemID(uint64_t id)
  */
 DAGraphicsItem* DAGraphicsItem::cast(QGraphicsItem* i)
 {
-    if (i->type() > ItemType_DAGraphicsItem_Begin && i->type() < ItemType_DAGraphicsItem_End) {
-        return static_cast< DAGraphicsItem* >(i);
-    }
-    return nullptr;
+    return dynamic_cast< DAGraphicsItem* >(i);
+    //    if (i->type() > ItemType_DAGraphicsItem_Begin && i->type() < ItemType_DAGraphicsItem_End) {
+    //        return static_cast< DAGraphicsItem* >(i);
+    //    }
+    //    return nullptr;
 }
 
 // bool DAGraphicsItem::sceneEvent(QEvent* event)

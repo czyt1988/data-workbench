@@ -383,8 +383,10 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     m_categoryDataframeOperate = m_contextDataFrame->addCategoryPage(tr("Operate"));
     // Axes pannel
     m_pannelDataframeOperateAxes = m_categoryDataframeOperate->addPannel(tr("Axes"));
-    m_pannelDataframeOperateAxes->addLargeActionMenu(m_actions->actionInsertRow, m_menuInsertRow);
-    m_pannelDataframeOperateAxes->addLargeActionMenu(m_actions->actionInsertColumnRight, m_menuInsertColumn);
+    m_actions->actionInsertRow->setMenu(m_menuInsertRow);
+    m_pannelDataframeOperateAxes->addLargeAction(m_actions->actionInsertRow, QToolButton::MenuButtonPopup);
+    m_actions->actionInsertColumnRight->setMenu(m_menuInsertColumn);
+    m_pannelDataframeOperateAxes->addLargeAction(m_actions->actionInsertColumnRight, QToolButton::MenuButtonPopup);
     m_pannelDataframeOperateAxes->addLargeAction(m_actions->actionRemoveCell);
     m_pannelDataframeOperateAxes->addMediumAction(m_actions->actionRemoveRow);
     m_pannelDataframeOperateAxes->addMediumAction(m_actions->actionRemoveColumn);
@@ -583,7 +585,8 @@ void DAAppRibbonArea::buildContextCategoryChart()
     m_pannelChartSetting->addLargeAction(m_actions->actionChartEnablePickerXY);
     m_pannelChartSetting->addLargeAction(m_actions->actionChartEnablePickerY);
     // legend
-    m_pannelChartSetting->addLargeActionMenu(m_actions->actionChartEnableLegend, m_menuChartLegendProperty);
+    m_actions->actionChartEnableLegend->setMenu(m_menuChartLegendProperty);
+    m_pannelChartSetting->addLargeAction(m_actions->actionChartEnableLegend, QToolButton::MenuButtonPopup);
 
     m_categoryChartEdit->addPannel(m_pannelChartSetting);
 }
