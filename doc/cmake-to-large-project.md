@@ -41,14 +41,35 @@
 
 # 第三方库的管理
 
-3rdparty 文件夹用来放置所有的第三方库的源代码，通常来讲，第三方库源代码不应该下载下来，放进 3rdparty 文件夹，而是通过 git 的 `submodel` 添加进去，通过 `submodel` 方式添加进去的源代码，可以随时更新到 github 上的最新版本，也可以指定这个第三方库是某个固定分支或者是某个 tag
+3rdparty 文件夹用来放置所有的第三方库的源代码，通常来讲，第三方库源代码不应该下载下来，放进 3rdparty 文件夹，而是通过 git 的 `submodule` 添加进去，通过 `submodule` 方式添加进去的源代码，可以随时更新到 github 上的最新版本，也可以指定这个第三方库是某个固定分支或者是某个 tag
+
+例如我这里需要使用ribbon界面，添加了SARibbon作为第三方库
+
+```shell
+git submodule add https://github.com/czyt1988/SARibbon.git ./src/3rdparty/SARibbon
+```
+
+> 注意，对于使用`submodule`管理第三方库的方式，首次拉取项目之后，需要执行：
+> 
+> ```shell
+> git submodule update --init --recursive
+> ```
+> 
+> 把所有库拉取下来
+>
+> 也可以clone的时候使用--recursive参数
+> 
+> ```shell
+> git clone --recursive
+> ```
 
 大部分的第三方库都提供了 `cmake`，如果不提供的话，我会 fork 一个，写一个带有 `cmake` 的版本，例如 [qwt库](https://github.com/czyt1988/QWT)，[QtPropertyBroswer库](https://github.com/czyt1988/QtPropertyBrowser)，3rdparty 文件夹下会写一个 `cmake` 文件，用来集中编译所有的第三方库，一般我会在 `cmake` 中就指定安装目录，确保第三方库的安装目录和我的程序的安装目录是一致的，这样的好处是，如果你的程序需要给其他人进行二次开发的话，能保证你程序编译出来的库和第三方库是在一个安装环境下，这样可以解决第三方库和你自身程序库的依赖问题，不需要用户在编译你的程序之前先进行大量的第三方库的编译，只需要一次统一的编译即可把所有的第三方库安装到固定目录下,最后install后，形成一个完整的开发环境
 
-开发环境bin目录
+
+连同第三方库一起发布的开发环境bin目录
 ![完整开发环境](./PIC/cmake-after-install.png)
 
-开发环境lib目录
+连同第三方库一起发布的开发环境lib目录
 ![完整开发环境2](./PIC/cmake-after-install2.png)
 
 作为第三方开发者，这个完整开发环境里面包含了所有的库，第三方开发者只需知道安装目录，就可以加载所有的依赖
@@ -529,7 +550,7 @@ install(FILES
 
 [gitee镜像:https://gitee.com/czyt1988/data-workbench](https://gitee.com/czyt1988/data-workbench)
 
-首先源码目录结构(这里为了便于显示，文件夹用[]扩起)：
+源码目录结构(这里为了便于显示，文件夹用[]扩起)：
 
 ```
 [root]
@@ -551,6 +572,12 @@ install(FILES
 ├─CMakeLists.txt
 └─DAWorkbenchConfig.cmake.in(用于生成总包的Config.cmake文件)
 ```
+
+1. 第三方库
+
+如前文所述，第三方库都在`src/3rdparty`下面，首先需要的是对第三方库的编译，`3rdparty`有个`CMakeLists.txt`文件夹用于编译安装所有第三方库，个人习惯不把`3rdparty`下的`CMakeLists.txt`纳入工程的`subdirectory`中
+
+
 
 # 第三方用户引入的方式
 
