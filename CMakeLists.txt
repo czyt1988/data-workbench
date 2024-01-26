@@ -79,22 +79,26 @@ endif()
 ########################################################
 # 安装路径设置
 ########################################################
-set(DA_BIN_DIR_NAME bin_qt${QT_VERSION}_${CMAKE_BUILD_TYPE}_${DA_PLATFORM_NAME})
+set(DA_BIN_DIR_NAME bin_qt${QT_VERSION}_${CMAKE_CXX_COMPILER_ID}_${DA_PLATFORM_NAME})
 set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/${DA_BIN_DIR_NAME}")
 
 ########################################################
-# 定义第三方库路径
+# 默认路径设置
 ########################################################
 set(DA_SRC_DIR ${CMAKE_CURRENT_LIST_DIR}/src)
 set(DA_CMAKE_DIR ${CMAKE_CURRENT_LIST_DIR}/cmake)
 set(DA_INSTALL_LIB_CMAKE_PATH ${CMAKE_INSTALL_PREFIX}/lib/cmake)
 list(APPEND CMAKE_MODULE_PATH ${DA_CMAKE_DIR} ${DA_INSTALL_LIB_CMAKE_PATH})
 
+########################################################
+# 定义第三方库路径
+########################################################
 set(SARibbonBar_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/SARibbonBar)
 set(DALiteCtk_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/DALiteCtk)
 set(qwt_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/qwt)
 set(DAWorkbench_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/${DA_PROJECT_NAME})
 set(qt${QT_VERSION_MAJOR}advanceddocking_DIR  ${DA_INSTALL_LIB_CMAKE_PATH}/qt${QT_VERSION_MAJOR}advanceddocking)
+
 ##################################
 # 初步安装 install 通用内容
 ##################################
