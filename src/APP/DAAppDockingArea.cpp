@@ -252,7 +252,9 @@ void DAAppDockingArea::buildDockingArea()
     mDataOperateDock->raise();
 
     // 左侧管理区 - 工作流节点窗口
-    auto wfna = createDockWidget(mWorkflowNodeListWidget, ads::LeftDockWidgetArea, QStringLiteral("da_workflowNodeListWidgetDock"));
+    auto wfna             = createDockWidget(mWorkflowNodeListWidget,
+                                 ads::LeftDockWidgetArea,
+                                 QStringLiteral("da_workflowNodeListWidgetDock"));
     mWorkflowNodeListDock = wfna.first;
     mWorkflowNodeListDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
 
@@ -270,7 +272,10 @@ void DAAppDockingArea::buildDockingArea()
     mSettingContainerDock = sca.first;
     mSettingContainerDock->setIcon(QIcon(":/Icon/Icon/showSettingWidget.svg"));
     // 日志窗口
-    auto ica = createDockWidget(mMessageLogViewWidget, ads::BottomDockWidgetArea, QStringLiteral("da_messageLogViewWidgetDock"), sca.second);
+    auto ica        = createDockWidget(mMessageLogViewWidget,
+                                ads::BottomDockWidgetArea,
+                                QStringLiteral("da_messageLogViewWidgetDock"),
+                                sca.second);
     mMessageLogDock = ica.first;
     mMessageLogDock->setIcon(QIcon(":/Icon/Icon/showInfomation.svg"));
 
@@ -338,8 +343,14 @@ void DAAppDockingArea::buildOtherWidgets()
 
 void DAAppDockingArea::initConnection()
 {
-    connect(mWorkFlowOperateWidget, &DAWorkFlowOperateWidget::selectNodeItemChanged, this, &DAAppDockingArea::onSelectNodeItemChanged);
-    connect(mWorkFlowOperateWidget, &DAWorkFlowOperateWidget::workflowCreated, this, &DAAppDockingArea::onWorkFlowOperateWidgetWorkflowCreated);
+    connect(mWorkFlowOperateWidget,
+            &DAWorkFlowOperateWidget::selectNodeItemChanged,
+            this,
+            &DAAppDockingArea::onSelectNodeItemChanged);
+    connect(mWorkFlowOperateWidget,
+            &DAWorkFlowOperateWidget::workflowCreated,
+            this,
+            &DAAppDockingArea::onWorkFlowOperateWidgetWorkflowCreated);
     // DADataManageWidget的数据双击，在DADataOperateWidget中显示
     connect(mDataManageWidget, &DADataManageWidget::dataDbClicked, this, &DAAppDockingArea::onDataManageWidgetDataDbClicked);
     // 设置窗口的绑定

@@ -22,19 +22,19 @@ class DASettingPageCommon : public DAAbstractSettingPage
 public:
     explicit DASettingPageCommon(QWidget* parent = nullptr);
     ~DASettingPageCommon();
-    //应用设置
+    // 应用设置
     virtual void apply() override;
-    //设置页的标题，此函数影响DASettingWidget的listwidget的显示
+    // 设置页的标题，此函数影响DASettingWidget的listwidget的显示
     virtual QString getSettingPageTitle() const override;
-    //设置页的图标,此函数影响DASettingWidget的listwidget的显示
+    // 设置页的图标,此函数影响DASettingWidget的listwidget的显示
     virtual QIcon getSettingPageIcon() const override;
-    //设置配置
+    // 设置配置
     bool setAppConfig(DAAppConfig* p);
 private slots:
     void onButtonGroupRibbonStyleClicked(int id);
-    //日志数量改变
+    // 日志数量改变
     void onSpinBoxDisplayLogsNumValueChanged(int v);
-    //程序在退出时是否保存ui的状态
+    // 程序在退出时是否保存ui的状态
     void onCheckBoxSaveUIStateStateChanged(int state);
 
 private:
@@ -45,8 +45,8 @@ private:
     QPixmap mPixmapRibbonLite;
     QPixmap mPixmapRibbonLite2Row;
     QButtonGroup mButtonGroupRibbonStyle;
-    SARibbonBar::RibbonStyle mOldRibbonStyle { SARibbonBar::WpsLiteStyleTwoRow };
-    SARibbonBar::RibbonStyle mNewRibbonStyle { SARibbonBar::WpsLiteStyleTwoRow };
+    SARibbonBar::RibbonStyles mOldRibbonStyle { SARibbonBar::RibbonStyleCompactTwoRow };
+    SARibbonBar::RibbonStyles mNewRibbonStyle { SARibbonBar::RibbonStyleCompactTwoRow };
 };
 }
 #endif  // DASETTINGPAGECOMMON_H
