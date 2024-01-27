@@ -2,6 +2,7 @@
 #include <QFileInfo>
 #include <QApplication>
 #include <QDebug>
+#include <QFileInfo>
 #include <QDir>
 // API
 #include "DAAppUI.h"
@@ -41,12 +42,12 @@ DAAppCore& DAAppCore::getInstance()
 bool DAAppCore::initialized()
 {
 #ifdef DA_ENABLE_PYTHON
-    //初始化python环境
+    // 初始化python环境
     qDebug() << "begin app core initialized";
     initializePythonEnv();
     qDebug() << "core have been initialized Python Env";
 #endif
-    //初始化数据
+    // 初始化数据
     mDataManager = new DAAppDataManager(this, this);
     qDebug() << "core have been initialized App Data Manager";
     mProject = new DAAppProject(this, this);
@@ -69,7 +70,7 @@ void DAAppCore::createUi(SARibbonMainWindow* mainwindow)
     mAppUI->createUi();
     mAppCmd = mAppUI->getAppCmd();
     if (mDataManager) {
-        //把dataManager的undo stack 注册
+        // 把dataManager的undo stack 注册
         if (mAppCmd) {
             mAppCmd->setDataManagerStack(mDataManager->getUndoStack());
         }
@@ -100,12 +101,12 @@ bool DAAppCore::initializePythonEnv()
 #ifdef DA_ENABLE_PYTHON
     try {
         DA::DAPyInterpreter& python = DA::DAPyInterpreter::getInstance();
-        //初始化python环境
+        // 初始化python环境
         QString pypath = getPythonInterpreterPath();
         qInfo() << tr("Python interpreter path is %1").arg(pypath);
         python.setPythonHomePath(pypath);
         python.initializePythonInterpreter();
-        //初始化环境成功后，加入脚本路径
+        // 初始化环境成功后，加入脚本路径
 
         DA::DAPyScripts& scripts = DA::DAPyScripts::getInstance();
         QString scriptPath       = getPythonScriptsPath();
@@ -166,8 +167,13 @@ DAAppCommand* DAAppCore::getAppCmd()
  */
 QString DAAppCore::getPythonInterpreterPath()
 {
-    QString appabsPath = QApplication::applicationDirPath();
-    return QDir::toNativeSeparators(appabsPath + "/Python");
+    QString appabsPath     = QApplication::applicationDirPath();
+    QList< QString > paths = DAPyInterpreter::wherePython();
+    if (paths.empty()) {
+        return QDir::toNativeSeparators(appabsPath + "/Python");
+    }
+    QFileInfo fi(paths.first());
+    return fi.absolutePath();
 }
 
 /**

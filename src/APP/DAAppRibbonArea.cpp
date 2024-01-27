@@ -13,6 +13,7 @@
 #include "SARibbonMenu.h"
 #include "SARibbonCtrlContainer.h"
 #include "SARibbonApplicationButton.h"
+#include "SARibbonLineWidgetContainer.h"
 // stl
 // Qt
 #include <QFileDialog>
@@ -26,6 +27,7 @@
 #include <QMenu>
 // ui
 #include "DAAppRibbonApplicationMenu.h"
+
 #ifdef DA_ENABLE_PYTHON
 // Py
 #include "DAPyScripts.h"
@@ -35,6 +37,7 @@
 #include "DAPyDTypeComboBox.h"
 #include "DADataOperateOfDataFrameWidget.h"
 #endif
+
 // api
 #include "DAAppUI.h"
 #include "DAAppCommand.h"
@@ -158,14 +161,16 @@ void DAAppRibbonArea::buildMenu()
         this->m_menuChartLegendProperty->addAction(act);
         return container;
     };
-    m_spinboxChartLegendMaxColumns = new QSpinBox(m_menuChartLegendProperty);
-    m_ctrlContainerChartLegendMaxColumns = addControlWidgetInChartLegendMenu(m_spinboxChartLegendMaxColumns, tr("Max Columns"));  // cn:列数
-    m_spinboxChartLegendMargin = new QSpinBox(m_menuChartLegendProperty);
+    m_spinboxChartLegendMaxColumns       = new QSpinBox(m_menuChartLegendProperty);
+    m_ctrlContainerChartLegendMaxColumns = addControlWidgetInChartLegendMenu(m_spinboxChartLegendMaxColumns,
+                                                                             tr("Max Columns"));  // cn:列数
+    m_spinboxChartLegendMargin           = new QSpinBox(m_menuChartLegendProperty);
     m_ctrlContainerChartLegendMargin = addControlWidgetInChartLegendMenu(m_spinboxChartLegendMargin, tr("Margin"));  // cn:图例边缘
     m_spinboxChartLegendSpacing = new QSpinBox(m_menuChartLegendProperty);
     m_ctrlContainerChartLegendSpacing = addControlWidgetInChartLegendMenu(m_spinboxChartLegendSpacing, tr("Spacing"));  // cn:图例间隔
-    m_spinboxChartLegendItemMargin = new QSpinBox(m_menuChartLegendProperty);
-    m_ctrlContainerChartLegendItemMargin = addControlWidgetInChartLegendMenu(m_spinboxChartLegendItemMargin, tr("Item Margin"));  // cn:条目边缘
+    m_spinboxChartLegendItemMargin         = new QSpinBox(m_menuChartLegendProperty);
+    m_ctrlContainerChartLegendItemMargin   = addControlWidgetInChartLegendMenu(m_spinboxChartLegendItemMargin,
+                                                                             tr("Item Margin"));  // cn:条目边缘
     m_spinboxChartLegendItemSpacing        = new QSpinBox(m_menuChartLegendProperty);
     m_ctrlContainerChartLegendItemSpacing  = addControlWidgetInChartLegendMenu(m_spinboxChartLegendItemSpacing,
                                                                               tr("Item Spacing"));  // cn:条目间隔
@@ -524,10 +529,22 @@ void DAAppRibbonArea::buildContextCategoryWorkflowEdit_()
     m_pannelWorkflowView->addLargeAction(m_actions->actionWorkflowEnableItemLinkageMove);
     //
     // connect
-    connect(m_workflowShapeEditPannelWidget, &DAShapeEditPannelWidget::borderPenChanged, this, &DAAppRibbonArea::selectedWorkflowItemPen);
-    connect(m_workflowShapeEditPannelWidget, &DAShapeEditPannelWidget::backgroundBrushChanged, this, &DAAppRibbonArea::selectedWorkflowItemBrush);
-    connect(m_workflowFontEditPannel, &DAFontEditPannelWidget::currentFontChanged, this, &DAAppRibbonArea::selectedWorkflowItemFont);
-    connect(m_workflowFontEditPannel, &DAFontEditPannelWidget::currentFontColorChanged, this, &DAAppRibbonArea::selectedWorkflowItemFontColor);
+    connect(m_workflowShapeEditPannelWidget,
+            &DAShapeEditPannelWidget::borderPenChanged,
+            this,
+            &DAAppRibbonArea::selectedWorkflowItemPen);
+    connect(m_workflowShapeEditPannelWidget,
+            &DAShapeEditPannelWidget::backgroundBrushChanged,
+            this,
+            &DAAppRibbonArea::selectedWorkflowItemBrush);
+    connect(m_workflowFontEditPannel,
+            &DAFontEditPannelWidget::currentFontChanged,
+            this,
+            &DAAppRibbonArea::selectedWorkflowItemFont);
+    connect(m_workflowFontEditPannel,
+            &DAFontEditPannelWidget::currentFontColorChanged,
+            this,
+            &DAAppRibbonArea::selectedWorkflowItemFontColor);
 }
 
 /**

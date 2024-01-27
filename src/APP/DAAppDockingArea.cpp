@@ -1,6 +1,7 @@
 ﻿#include "DAAppDockingArea.h"
 #include <QApplication>
 #include <QScreen>
+#include <QLabel>
 #include "AppMainWindow.h"
 // Qt-Advanced-Docking-System
 #include "DockManager.h"
@@ -235,10 +236,19 @@ void DAAppDockingArea::buildDockingArea()
     buildChartAboutWidgets();
     buildDataAboutWidgets();
     buildOtherWidgets();
+
+    // QLabel* centerLabel = new QLabel(mApp);
+    // auto center         = createCenterDockWidget(centerLabel, QStringLiteral("centerLabel"));
+
     auto wfoa = createCenterDockWidget(mWorkFlowOperateWidget, QStringLiteral("da_workFlowOperateWidgetDock"));
     mWorkFlowOperateDock = wfoa.first;
     mWorkFlowOperateDock->setIcon(QIcon(":/Icon/Icon/showWorkFlow.svg"));
     mWorkFlowOperateDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
+
+    // auto wfoa = createDockWidgetAsTab(mWorkFlowOperateWidget, QStringLiteral("da_workFlowOperateWidgetDock"),
+    // center.second); mWorkFlowOperateDock = wfoa.first;
+    // mWorkFlowOperateDock->setIcon(QIcon(":/Icon/Icon/showWorkFlow.svg"));
+    // mWorkFlowOperateDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
 
     auto wcoa = createDockWidgetAsTab(mChartOperateWidget, QStringLiteral("da_chartOperateWidgetDock"), wfoa.second);
     mChartOperateDock = wcoa.first;

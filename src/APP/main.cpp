@@ -10,6 +10,7 @@
 #include "DAMessageHandler.h"
 #include "DATranslatorManeger.h"
 #include "DADumpCapture.h"
+#include "SARibbonBar.h"
 #ifdef DA_ENABLE_PYTHON
 #include "DAPybind11InQt.h"
 #include "DAPyScripts.h"
@@ -20,42 +21,37 @@ void setAppFont();
 
 void enableHDPIScaling()
 {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
-    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-#endif
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
-    QApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
-#endif
+    SARibbonBar::initHighDpi();
 }
 
 int main(int argc, char* argv[])
 {
-    //程序路径捕获
+    // 程序路径捕获
     QFileInfo fi(argv[ 0 ]);
-    //进行dump捕获
+    // 进行dump捕获
     DA::DADumpCapture::initDump(fi.absolutePath());
     //
     QString logfilePath = QDir::toNativeSeparators(fi.absolutePath() + "/log/da_log.log");
-    //注册旋转文件消息捕获
+    // 注册旋转文件消息捕获
     DA::daRegisterRotatingMessageHandler(logfilePath);
     // DA::daRegisterConsolMessageHandler();
     for (int i = 0; i < argc; ++i) {
         qDebug() << "argv[" << i << "]" << argv[ i ];
     }
-    //高清屏的适配
+    // 高清屏的适配
     enableHDPIScaling();
 
-    //启动app
+    // 启动app
     QApplication app(argc, argv);
     DA::DATranslatorManeger datr;
     datr.installAllTranslator();
 #ifdef DA_ENABLE_PYTHON
-    //注册元对象
+    // 注册元对象
     DA::PY::registerMetaType();
 #endif
     setAppFont();
     DA::DAAppCore& core = DA::DAAppCore::getInstance();
-    //初始化python环境
+    // 初始化python环境
     if (!core.initialized()) {
         qCritical() << QObject::tr("Kernel initialization failed");  // cn:内核初始化失败
         return -1;

@@ -22,17 +22,23 @@ public:
 
 public:
     ~DAPyInterpreter();
-    //单例
+    // 单例
     static DAPyInterpreter& getInstance();
-    //设置python环境路径
+
+    /**
+     * @brief 执行where python命令，查询所有的python环境
+     * @return 如果没有或者异常返回false
+     */
+    static QList< QString > wherePython();
+    // 设置python环境路径
     void setPythonHomePath(const QString& path);
-    //开启python环境
+    // 开启python环境
     void initializePythonInterpreter();
-    //注册环境关闭的回调
+    // 注册环境关闭的回调
     void registerFinalizeCallback(callback_finalize fp);
 
 protected:
-    //结束python环境
+    // 结束python环境
     void finalizePythonInterpreter();
 
 private:

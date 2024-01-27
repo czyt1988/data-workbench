@@ -194,7 +194,6 @@ if(DA_ENABLE_PYTHON)
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToDatetime.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToNumeric.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.ui
-        ${DA_LIB_SUBDIR_Dialog}/DADialogPythonArgs.ui
     )
 endif()
 #MimeData

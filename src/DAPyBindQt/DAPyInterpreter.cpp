@@ -1,6 +1,7 @@
 ﻿#include "DAPyInterpreter.h"
 #include "pybind11/embed.h"
 #include <QDebug>
+#include <QProcess>
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
 //===================================================
@@ -23,6 +24,19 @@ DAPyInterpreter& DAPyInterpreter::getInstance()
 {
     static DAPyInterpreter s_python;
     return s_python;
+}
+
+QList< QString > DAPyInterpreter::wherePython()
+{
+    QProcess process;
+    QString command = "where python";
+    process.start(command);
+    if (!process.waitForFinished()) {
+        return QList< QString >();
+    }
+    QString res = process.readAll();
+    qDebug() << res;
+    return res.split("\r\n");
 }
 
 /**
