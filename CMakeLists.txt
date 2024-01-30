@@ -19,8 +19,10 @@ message(STATUS "DA Version is ${DA_VERSION}")
 ########################################################
 # 可选的变量
 ########################################################
+# 此选项将设置是否开启python
 option(DA_ENABLE_PYTHON "enable python|if ON will add DAPythonBind DAPyScript DAPyCommonWidgets COMPONENTS" ON)
-
+# 此选项将自动调用Linguist工具对翻译文件进行翻译
+option(DA_ENABLE_AUTO_TRANSLATE "This option will automatically call the Linguist tool to translate the ts file" ON)
 ########################################################
 # 定义工程
 ########################################################
@@ -143,6 +145,8 @@ if(DA_ENABLE_PYTHON)
         ${CMAKE_CURRENT_LIST_DIR}/src/PyScripts
         DESTINATION bin
     )
+    # 为了能调试的时候运行，需要把src/PyScripts文件夹复制到${CMAKE_CURRENT_BINARY_DIR}/bin
+    file(COPY "${CMAKE_CURRENT_LIST_DIR}/src/PyScripts" DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/bin)
 endif()
 
 
@@ -151,3 +155,26 @@ install(FILES
     "${CMAKE_CURRENT_LIST_DIR}/cmake/create_win32_resource_version.cmake"
     DESTINATION lib/cmake/${DA_PROJECT_NAME}
 )
+
+
+##################################
+# 翻译
+##################################
+if(DA_ENABLE_AUTO_TRANSLATE)
+    find_package(Qt${QT_VERSION_MAJOR} COMPONENTS LinguistTools QUIET)
+    if(LinguistTools_FOUND)
+        set(DA_TS_FILES
+            ${CMAKE_CURRENT_LIST_DIR}/src/da_zh_CN.ts
+            ${CMAKE_CURRENT_LIST_DIR}/src/da_en_US.ts
+        )
+        if("${QT_VERSION_MAJOR}" STREQUAL "5")
+            qt5_add_translation(DA_QM_FILES ${DA_TS_FILES})
+            message(STATUS "lrelease ${DA_TS_FILES} to ${DA_QM_FILES}")
+        else()
+            qt_add_translation(DA_QM_FILES ${DA_TS_FILES})
+            message(STATUS "lrelease ${DA_TS_FILES} to ${DA_QM_FILES}")
+        endif()
+    else()
+        message(WARNING "Qt${QT_VERSION_MAJOR} LinguistTools Was Not Found ${LinguistTools_FOUND}")
+    endif()
+endif()
