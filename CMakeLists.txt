@@ -19,7 +19,7 @@ message(STATUS "DA Version is ${DA_VERSION}")
 ########################################################
 # 可选的变量
 ########################################################
-option(DA_ENABLE_PYTHON "enable python|if ON will add DAPythonBind DAPyScript DAPyCommonWidgets COMPONENTS" OFF)
+option(DA_ENABLE_PYTHON "enable python|if ON will add DAPythonBind DAPyScript DAPyCommonWidgets COMPONENTS" ON)
 
 ########################################################
 # 定义工程
