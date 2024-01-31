@@ -14,8 +14,6 @@
 #ifdef DA_ENABLE_PYTHON
 // DA Python
 #include "DAPyInterpreter.h"
-#include "DAPybind11QtTypeCast.h"
-#include "DAPybind11InQt.h"
 #include "DAPyScripts.h"
 #endif
 //===================================================
@@ -167,13 +165,12 @@ DAAppCommand* DAAppCore::getAppCmd()
  */
 QString DAAppCore::getPythonInterpreterPath()
 {
-    QString appabsPath     = QApplication::applicationDirPath();
-    QList< QString > paths = DAPyInterpreter::wherePython();
+    QString appabsPath       = QApplication::applicationDirPath();
+    QList< QFileInfo > paths = DAPyInterpreter::wherePython();
     if (paths.empty()) {
         return QDir::toNativeSeparators(appabsPath + "/Python");
     }
-    QFileInfo fi(paths.first());
-    return fi.absolutePath();
+    return paths.first().absolutePath();
 }
 
 /**

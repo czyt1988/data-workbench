@@ -5,6 +5,7 @@
 #include "DAPyBindQtGlobal.h"
 #include <vector>
 #include <functional>
+#include <QFileInfo>
 namespace DA
 {
 /**
@@ -29,7 +30,7 @@ public:
      * @brief 执行where python命令，查询所有的python环境
      * @return 如果没有或者异常返回false
      */
-    static QList< QString > wherePython();
+    static QList< QFileInfo > wherePython();
     // 设置python环境路径
     void setPythonHomePath(const QString& path);
     // 开启python环境

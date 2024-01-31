@@ -162,7 +162,7 @@ install(FILES
 ##################################
 if(DA_ENABLE_AUTO_TRANSLATE)
     find_package(Qt${QT_VERSION_MAJOR} COMPONENTS LinguistTools QUIET)
-    if(LinguistTools_FOUND)
+    if(COMMAND qt${QT_VERSION_MAJOR}_add_translation)
         set(DA_TS_FILES
             ${CMAKE_CURRENT_LIST_DIR}/src/da_zh_CN.ts
             ${CMAKE_CURRENT_LIST_DIR}/src/da_en_US.ts
@@ -174,7 +174,15 @@ if(DA_ENABLE_AUTO_TRANSLATE)
             qt_add_translation(DA_QM_FILES ${DA_TS_FILES})
             message(STATUS "lrelease ${DA_TS_FILES} to ${DA_QM_FILES}")
         endif()
+        add_custom_target(qm DEPENDS ${DA_QM_FILES})
+        # 安装翻译 - 在build上可以使用
+        # file(COPY "${DA_QM_FILES}" DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/bin/translations)
+        # 安装翻译 - 在install上使用
+        install(FILES
+            ${DA_QM_FILES}
+            DESTINATION bin/translations
+        )
     else()
-        message(WARNING "Qt${QT_VERSION_MAJOR} LinguistTools Was Not Found ${LinguistTools_FOUND}")
+        message(WARNING "qt${QT_VERSION_MAJOR}_add_translation Was Not defined")
     endif()
 endif()
