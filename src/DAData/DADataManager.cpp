@@ -49,10 +49,10 @@ DADataManager::~DADataManager()
 void DADataManager::addData(DAData& d)
 {
     if (d_ptr->_dataMap.contains(d.id())) {
-        //说明已经添加过
+        // 说明已经添加过
         qWarning() << tr("data:%1 have been added").arg(d.getName());
         if (d.getDataManager() != this) {
-            //说明这个data引用没有获取到datamanager
+            // 说明这个data引用没有获取到datamanager
             d.setDataManager(this);
         }
         return;
@@ -247,7 +247,7 @@ void DADataManager::setUniqueDataName(DAData& d) const
         d.setName(n);
     }
     QSet< QString > names = getDatasNameSet();
-    //构造一个唯一的名字
+    // 构造一个唯一的名字
     n = DA::makeUniqueString(names, n);
     d.setName(n);
 }

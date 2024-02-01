@@ -20,7 +20,7 @@ DADataManageWidget::DADataManageWidget(QWidget* parent) : QWidget(parent), ui(ne
 {
     ui->setupUi(this);
 
-    //构建action
+    // 构建action
     mActionViewDataListByTable = new QAction(this);
     mActionViewDataListByTable->setObjectName("actionViewDataListByTable");
     mActionViewDataListByTable->setCheckable(true);
@@ -49,6 +49,7 @@ DADataManageWidget::~DADataManageWidget()
  */
 void DADataManageWidget::setDataManager(DADataManager* dmgr)
 {
+    mDataManager = dmgr;
     ui->dataMgrTableView->setDataManager(dmgr);
 }
 
