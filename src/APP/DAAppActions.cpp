@@ -169,10 +169,10 @@ void DAAppActions::buildOtherActions()
 {
     actionGroupRibbonTheme = new QActionGroup(this);
     actionGroupRibbonTheme->setObjectName(QStringLiteral("actionGroupRibbonTheme"));
-    actionRibbonThemeOffice2013     = createAction("actionRibbonThemeOffice2013", true, true, actionGroupRibbonTheme);
-    actionRibbonThemeOffice2016Blue = createAction("actionRibbonThemeOffice2013", true, false, actionGroupRibbonTheme);
-    actionRibbonThemeOffice2021Blue = createAction("actionRibbonThemeOffice2013", true, false, actionGroupRibbonTheme);
-    actionRibbonThemeDark           = createAction("actionRibbonThemeOffice2013", true, false, actionGroupRibbonTheme);
+    actionRibbonThemeOffice2013 = createAction("actionRibbonThemeOffice2013", true, true, actionGroupRibbonTheme);
+    actionRibbonThemeOffice2016Blue = createAction("actionRibbonThemeOffice2016Blue", true, false, actionGroupRibbonTheme);
+    actionRibbonThemeOffice2021Blue = createAction("actionRibbonThemeOffice2021Blue", true, false, actionGroupRibbonTheme);
+    actionRibbonThemeDark = createAction("actionRibbonThemeDark", true, false, actionGroupRibbonTheme);
 }
 
 void DAAppActions::retranslateUi()

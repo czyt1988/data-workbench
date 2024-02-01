@@ -15,6 +15,10 @@
 // DA Python
 #include "DAPyInterpreter.h"
 #include "DAPyScripts.h"
+#else
+#include <QProcess>
+#include <QList>
+#include <QFileInfo>
 #endif
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
@@ -165,12 +169,37 @@ DAAppCommand* DAAppCore::getAppCmd()
  */
 QString DAAppCore::getPythonInterpreterPath()
 {
-    QString appabsPath       = QApplication::applicationDirPath();
+    QString appabsPath = QApplication::applicationDirPath();
+#ifdef DA_ENABLE_PYTHON
     QList< QFileInfo > paths = DAPyInterpreter::wherePython();
     if (paths.empty()) {
         return QDir::toNativeSeparators(appabsPath + "/Python");
     }
     return paths.first().absolutePath();
+#else
+    QProcess process;
+    QString command = "where python";
+    process.start(command);
+    if (!process.waitForFinished()) {
+        return QString();
+    }
+    QString res = process.readAll();
+    qDebug() << res;
+    const QList< QString > pys = res.split("\r\n");
+    QList< QFileInfo > validFis;
+    // 遍历所有环境，确认是否的确是ptython路径,where 有时候会返回一些不正确的路径
+    for (const QString& p : pys) {
+        QFileInfo fi(p);
+        if (fi.isExecutable()) {
+            // 说明是可执行文件，windows下就是pythhon.exe
+            validFis.append(fi);
+        }
+    }
+    if (validFis.empty()) {
+        return QString();
+    }
+    return validFis.first().absolutePath();
+#endif
 }
 
 /**

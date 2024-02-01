@@ -162,27 +162,48 @@ install(FILES
 ##################################
 if(DA_ENABLE_AUTO_TRANSLATE)
     find_package(Qt${QT_VERSION_MAJOR} COMPONENTS LinguistTools QUIET)
-    if(COMMAND qt${QT_VERSION_MAJOR}_add_translation)
-        set(DA_TS_FILES
-            ${CMAKE_CURRENT_LIST_DIR}/src/da_zh_CN.ts
-            ${CMAKE_CURRENT_LIST_DIR}/src/da_en_US.ts
-        )
+    set(DA_TS_FILES
+        ${CMAKE_CURRENT_LIST_DIR}/src/da_zh_CN.ts
+        ${CMAKE_CURRENT_LIST_DIR}/src/da_en_US.ts
+    )
+    set(DA_BUILD_TRANSLATIONS_DIR ${CMAKE_CURRENT_BINARY_DIR}/bin/translations)
+    set(DA_INSTALL_TRANSLATIONS_DIR bin/translations)
+    # 更新翻译
+    if(COMMAND qt${QT_VERSION_MAJOR}_create_translation)
         if("${QT_VERSION_MAJOR}" STREQUAL "5")
-            qt5_add_translation(DA_QM_FILES ${DA_TS_FILES})
-            message(STATUS "lrelease ${DA_TS_FILES} to ${DA_QM_FILES}")
+            qt5_create_translation(DA_QM_FILES "${CMAKE_CURRENT_LIST_DIR}/src" ${DA_TS_FILES} OPTIONS -source-language en_US -no-obsolete)
         else()
-            qt_add_translation(DA_QM_FILES ${DA_TS_FILES})
-            message(STATUS "lrelease ${DA_TS_FILES} to ${DA_QM_FILES}")
+            qt6_create_translation(DA_QM_FILES "${CMAKE_CURRENT_LIST_DIR}/src" ${DA_TS_FILES} OPTIONS -source-language en_US -no-obsolete)
         endif()
-        add_custom_target(qm DEPENDS ${DA_QM_FILES})
-        # 安装翻译 - 在build上可以使用
-        # file(COPY "${DA_QM_FILES}" DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/bin/translations)
-        # 安装翻译 - 在install上使用
-        install(FILES
-            ${DA_QM_FILES}
-            DESTINATION bin/translations
-        )
-    else()
-        message(WARNING "qt${QT_VERSION_MAJOR}_add_translation Was Not defined")
+        # 添加更新翻译的目标
+        add_custom_target(da_update_translations DEPENDS ${DA_TS_FILES})
+
+        # 添加发布翻译的目标
+        add_custom_target(da_release_translations DEPENDS ${DA_QM_FILES})
     endif()
+
+    # 发布翻译
+    # 这里仅仅发布，不更新ts
+    #    if(COMMAND qt${QT_VERSION_MAJOR}_add_translation)
+    #        set(DA_TARGET_TRANSLATIONS da_release_translations)
+    #
+    #        # 让qm文件直接生成到DA_BUILD_TRANSLATIONS_DIR下
+    #        set_source_files_properties(${DA_TS_FILES} PROPERTIES OUTPUT_LOCATION ${DA_BUILD_TRANSLATIONS_DIR})
+    #
+    #        # 生成qm命令
+    #        if("${QT_VERSION_MAJOR}" STREQUAL "5")
+    #            qt5_add_translation(DA_QM_FILES ${DA_TS_FILES})
+    #        else()
+    #            qt6_add_translation(DA_QM_FILES ${DA_TS_FILES})
+    #        endif()
+    #
+    #        add_custom_target(${DA_TARGET_TRANSLATIONS} DEPENDS ${DA_QM_FILES})
+    #        # 安装翻译 - 在build上可以使用
+    #        # 检查并创建目录
+    #        file(MAKE_DIRECTORY ${DA_BUILD_TRANSLATIONS_DIR})
+    #        # 安装翻译 - 在install上使用
+    #        install(DIRECTORY ${DA_BUILD_TRANSLATIONS_DIR} DESTINATION bin)
+    #    else()
+    #        message(WARNING "qt${QT_VERSION_MAJOR}_add_translation Was Not defined")
+    #    endif()
 endif()
