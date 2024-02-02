@@ -17,9 +17,9 @@ class DAAppFigureWidgetPrivate
 public:
     DA_IMPL_PUBLIC(DAAppFigureWidget)
     DAAppFigureWidgetPrivate(DAAppFigureWidget* p);
-    //获取dlg指针，如果为nullptr，则创建
+    // 获取dlg指针，如果为nullptr，则创建
     DADialogChartGuide* getDlgDataframeToPointVector();
-    //绘制,如果没成功，返回nullptr
+    // 绘制,如果没成功，返回nullptr
     QwtPlotItem* plotWithGuideDialog(const DAData& data = DAData());
 
 public:
@@ -66,7 +66,7 @@ QwtPlotItem* DAAppFigureWidgetPrivate::plotWithGuideDialog(const DAData& data)
     }
     QColor clr = mColorTheme.current();
     if (DAChartUtil::setPlotItemColor(item, clr)) {
-        //成功设置颜色，就把主题颜色下移一个
+        // 成功设置颜色，就把主题颜色下移一个
         mColorTheme.moveToNext();
     }
     qDebug() << "color:" << clr.name() << "  |  ColorTheme = " << mColorTheme;
@@ -162,7 +162,7 @@ void DAAppFigureWidget::dragMoveEvent(QDragMoveEvent* e)
     }
     const QMimeData* mimeData = e->mimeData();
     if (mimeData->hasFormat(DAMIMEDATA_FORMAT_DADATA)) {
-        //数据
+        // 数据
         QWidget* w = getWidgetUnderPos(e->pos());
         if (nullptr == w) {
             e->setDropAction(Qt::IgnoreAction);
@@ -199,18 +199,18 @@ void DAAppFigureWidget::dropEvent(QDropEvent* e)
 
     const QMimeData* mimeData = e->mimeData();
     if (mimeData->hasFormat(DAMIMEDATA_FORMAT_DADATA)) {
-        //数据
+        // 数据
         const DAMimeDataForData* datamime = qobject_cast< const DAMimeDataForData* >(mimeData);
         if (nullptr == datamime) {
             return;
         }
-        QWidget* w = getWidgetUnderPos(e->pos());
+        QWidget* w = getWidgetUnderPos(Qt5Qt6Compat_QXXEvent_Pos(e));
         if (nullptr == w) {
             return;
         }
         if (DAChartWidget* chart = qobject_cast< DAChartWidget* >(w)) {
             if (getCurrentChart() != chart) {
-                //如果当前绘图不是放下的绘图，则把当前绘图设置为放下数据的绘图
+                // 如果当前绘图不是放下的绘图，则把当前绘图设置为放下数据的绘图
                 setCurrentChart(chart);
             }
             QwtPlotItem* pi = d_ptr->plotWithGuideDialog(datamime->getDAData());
@@ -218,7 +218,7 @@ void DAAppFigureWidget::dropEvent(QDropEvent* e)
                 e->ignore();
                 return;
             } else {
-                //加入
+                // 加入
                 addItem_(pi);
             }
             e->acceptProposedAction();
