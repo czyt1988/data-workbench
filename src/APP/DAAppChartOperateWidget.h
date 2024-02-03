@@ -2,11 +2,13 @@
 #define DAAPPCHARTOPERATEWIDGET_H
 #include "DAChartOperateWidget.h"
 #include "DAData.h"
+#include "DAColorTheme.h"
+
 #include "qwt_plot_item.h"
 namespace DA
 {
 class DADialogChartGuide;
-
+class DAEvenFilterDragPlotWithGuide;
 /**
  * @brief DAChartOperateWidget的app特化
  */
@@ -27,6 +29,8 @@ public:
 private:
     DADataManager* mDataMgr { nullptr };
     DADialogChartGuide* mChartGuideDlg { nullptr };
+    DAColorTheme mColorTheme;                        ///< 当前的颜色主题
+    DAEvenFilterDragPlotWithGuide* mFigEventFilter;  ///< 给DAFigureWidget的eventfilter
 };
 }
 

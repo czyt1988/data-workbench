@@ -17,31 +17,31 @@ public:
     DAIndexedVector(int size, const T& t);
     DAIndexedVector(const DAIndexedVector< T >& v);
     DAIndexedVector(const std::initializer_list< T >& v);
-    //获取下一个元素(索引后移)
+    // 获取下一个元素(索引后移)
     T next();
-    //把索引移动到下一个
+    // 把索引移动到下一个,如果超过范围，会回到头
     void moveToNext();
     DAIndexedVector& operator++();
-    //获取前一个元素(索引前移)
+    // 获取前一个元素(索引前移)
     T previous();
-    //把索引移动到下一个
+    // 把索引移动到下一个,如果超过范围，会回尾部
     void moveToPrevious();
     DAIndexedVector& operator--();
-    //获取当前的元素，在调用前使用isValidIndex确认索引的正确性
+    // 获取当前的元素，在调用前使用isValidIndex确认索引的正确性
     T current() const;
-    //判断当前索引是否是第一个
+    // 判断当前索引是否是第一个
     bool isFirstIndex() const;
-    //判断当前索引是否是最后一个
+    // 判断当前索引是否是最后一个
     bool isLastIndex() const;
-    //判断当前索引是否是合理范围内
+    // 判断当前索引是否是合理范围内
     bool isValidIndex() const;
-    //获取当前的索引
+    // 获取当前的索引
     int getCurrentIndex() const;
-    //设置当前的索引
+    // 设置当前的索引
     void setCurrentIndex(int v);
-    //获取当前索引下的元素
+    // 获取当前索引下的元素
     T get() const;
-    //设置当前索引下的元素
+    // 设置当前索引下的元素
     void set(const T& v);
 
 private:

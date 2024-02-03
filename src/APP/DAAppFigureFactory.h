@@ -13,12 +13,6 @@ public:
     DAAppFigureFactory();
     virtual ~DAAppFigureFactory();
     virtual DAFigureWidget* createFigure(QWidget* par = nullptr) override;
-
-public:
-    void setDataManager(DADataManager* mgr);
-
-private:
-    DADataManager* mDataManager { nullptr };
 };
 }
 

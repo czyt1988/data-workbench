@@ -68,6 +68,8 @@ DAFigureFactory* DAChartOperateWidget::takeFactory()
 
 /**
  * @brief 创建一个绘图
+ *
+ * @note 重载此函数，如果没有调用DAChartOperateWidget::createFigure，必须调用initFigureConnect(fig);来初始化创建的fig，同时也要发射信号figureCreated
  * @return
  */
 DAFigureWidget* DAChartOperateWidget::createFigure()
@@ -154,7 +156,7 @@ void DAChartOperateWidget::initFigureConnect(DAFigureWidget* fig)
     connect(fig, &DAFigureWidget::chartAdded, this, &DAChartOperateWidget::chartAdded);
     connect(fig, &DAFigureWidget::chartWillRemove, this, &DAChartOperateWidget::chartWillRemove);
     connect(fig, &DAFigureWidget::currentChartChanged, this, &DAChartOperateWidget::currentChartChanged);
-    connect(fig, &DAFigureWidget::windowIconChanged, this, &DAChartOperateWidget::onFigureTitleChanged);
+    connect(fig, &DAFigureWidget::windowTitleChanged, this, &DAChartOperateWidget::onFigureTitleChanged);
 }
 
 /**

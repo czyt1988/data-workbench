@@ -317,17 +317,18 @@ void DAAppDockingArea::buildWorkflowAboutWidgets()
 
 void DAAppDockingArea::buildChartAboutWidgets()
 {
-    mChartOperateWidget = new DAAppChartOperateWidget(mApp);
-    mChartOperateWidget->setObjectName(QStringLiteral("da_chartOperateWidget"));
+    DADataManager* dmgr = mDataMgr->dataManager();
+
+    DAAppChartOperateWidget* appChartOptWidget = new DAAppChartOperateWidget(mApp);
+    appChartOptWidget->setObjectName(QStringLiteral("da_chartOperateWidget"));
+    appChartOptWidget->setDataManager(dmgr);
+    appChartOptWidget->setupFigureFactory(new DAAppFigureFactory());
+    mChartOperateWidget = appChartOptWidget;
 
     mChartManageWidget = new DAChartManageWidget(mApp);
     mChartManageWidget->setObjectName(QStringLiteral("da_chartManageWidget"));
 
-    DADataManager* dmgr = mDataMgr->dataManager();
     mChartManageWidget->setChartOperateWidget(mChartOperateWidget);
-    DAAppFigureFactory* factory = new DAAppFigureFactory();
-    factory->setDataManager(dmgr);
-    mChartOperateWidget->setupFigureFactory(factory);
 }
 
 void DAAppDockingArea::buildDataAboutWidgets()

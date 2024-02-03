@@ -129,6 +129,15 @@ private:                                                                        
 #endif
 
 /**
+ * @def   模仿Q_DECLARE_PUBLIC
+ *
+ * 配套DA_DECLARE_PRIVATE使用
+ */
+#ifndef DA_PIMPL_CONSTRUCT
+#define DA_PIMPL_CONSTRUCT d_ptr(std::make_unique< PrivateData >(this))
+#endif
+
+/**
  *@def impl获取指针，参考Q_D
  */
 #ifndef DA_D
