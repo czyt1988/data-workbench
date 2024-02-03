@@ -22,10 +22,11 @@ class DAAppFigureWidget : public DAFigureWidget
 public:
     DAAppFigureWidget(QWidget* parent = 0);
     ~DAAppFigureWidget();
+    // 设置datamanager是为了响应dropEvent
     void setDataManager(DADataManager* mgr);
-    //带对话框的添加曲线
+    // 带对话框的添加曲线
     QwtPlotItem* addPlotWithGuide_();
-    //颜色主题
+    // 颜色主题
     void setColorTheme(DAColorTheme::ColorTheme th);
     DAColorTheme::ColorTheme getColorTheme() const;
 

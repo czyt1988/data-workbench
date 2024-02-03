@@ -17,6 +17,8 @@ public:
     ~DAAppChartOperateWidget();
     // 设置data manager
     void setDataManager(DADataManager* mgr);
+    // 添加一个Figure
+    virtual DAFigureWidget* createFigure() override;
 
 public:
     // 绘制,如果没成功，返回nullptr

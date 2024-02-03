@@ -26,26 +26,33 @@ class DAGUI_API DAChartOperateWidget : public QWidget
 public:
     DAChartOperateWidget(QWidget* parent = nullptr);
     ~DAChartOperateWidget();
-    //安装FigureFactory，针对继承的DAFigureWidget需要安装新的工厂,DAChartOperateWidget负责工厂的销毁
+    // 安装FigureFactory，针对继承的DAFigureWidget需要安装新的工厂,DAChartOperateWidget负责工厂的销毁
     void setupFigureFactory(DAFigureFactory* factory);
-    //添加一个Figure
-    DAFigureWidget* createFigure();
-    DAFigureWidget* createFigure(const QString& title);
-    //获取当前的fig，如果没有返回nullptr
+    // 拿出之前的工厂
+    DAFigureFactory* takeFactory();
+    // 添加一个Figure
+    virtual DAFigureWidget* createFigure();
+    // 获取当前的fig，如果没有返回nullptr
     DAFigureWidget* getCurrentFigure() const;
     DAFigureWidget* gcf() const;
-    //获取figure
+    // 获取figure
     DAFigureWidget* getFigure(int index) const;
-    //获取fig在DAChartOperateWidget的索引
+    // 获取fig在DAChartOperateWidget的索引
     int getFigureIndex(DAFigureWidget* f);
-    //获取当前的chart，如果没有返回nullptr
+    // 获取当前的chart，如果没有返回nullptr
     DAChartWidget* getCurrentChart() const;
     DAChartWidget* gca() const;
+
+protected:
+    // 初始化figure的连接，这个函数用于重载createFigure函数时创建fig后绑定槽函数到DAChartOperateWidget用
+    void initFigureConnect(DAFigureWidget* fig);
 private slots:
     // tab窗口改变
     void onTabWidgetCurrentChanged(int index);
     // tab窗口关闭
     void onTabCloseRequested(int index);
+    //
+    void onFigureTitleChanged(const QString& t);
 signals:
     /**
      * @brief 绘图即将关闭
@@ -76,7 +83,7 @@ signals:
      */
     void chartWillRemove(DA::DAChartWidget* c);
 
-    //当前选中的发生改变
+    // 当前选中的发生改变
     /**
      * @brief 当前的绘图发生了变更
      *

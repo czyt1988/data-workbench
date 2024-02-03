@@ -1,5 +1,6 @@
 ﻿#include "DAAppChartOperateWidget.h"
 #include "Dialog/DADialogChartGuide.h"
+#include "DAAppFigureWidget.h"
 namespace DA
 {
 
@@ -18,6 +19,19 @@ DAAppChartOperateWidget::~DAAppChartOperateWidget()
 void DAAppChartOperateWidget::setDataManager(DADataManager* mgr)
 {
     mDataMgr = mgr;
+}
+
+/**
+ * @brief 创建figure
+ * @return
+ */
+DAFigureWidget* DAAppChartOperateWidget::createFigure()
+{
+    DAFigureWidget* fig = DAChartOperateWidget::createFigure();
+    if (DAAppFigureWidget* appFig = qobject_cast< DAAppFigureWidget* >(fig)) {
+        appFig->setDataManager(mDataMgr);
+    }
+    return fig;
 }
 
 /**
