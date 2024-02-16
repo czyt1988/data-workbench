@@ -4,7 +4,7 @@
 #include "DADataManager.h"
 #include "Models/DADataManagerTreeModel.h"
 #include "qwt_plot_curve.h"
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
 #include "Models/DAPySeriesTableModule.h"
 #endif
 namespace DA
@@ -17,8 +17,8 @@ public:
 	DAChartAddXYSeriesWidgetPrivate(DAChartAddXYSeriesWidget* p);
 
 public:
-#ifdef DA_ENABLE_PYTHON
-	DAPySeriesTableModule* _model{ nullptr };
+#if DA_ENABLE_PYTHON
+    DAPySeriesTableModule* _model { nullptr };
 #endif
 };
 
@@ -30,19 +30,27 @@ DAChartAddXYSeriesWidgetPrivate::DAChartAddXYSeriesWidgetPrivate(DAChartAddXYSer
 //===================================================
 
 DAChartAddXYSeriesWidget::DAChartAddXYSeriesWidget(QWidget* parent)
-    : DAAbstractChartAddItemWidget(parent), ui(new Ui::DAChartAddXYSeriesWidget), d_ptr(new DAChartAddXYSeriesWidgetPrivate(this))
+    : DAAbstractChartAddItemWidget(parent)
+    , ui(new Ui::DAChartAddXYSeriesWidget)
+    , d_ptr(new DAChartAddXYSeriesWidgetPrivate(this))
 {
 	ui->setupUi(this);
 	ui->lineEditTitle->setText(tr("curve"));
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
 	d_ptr->_model = new DAPySeriesTableModule(this);
 	d_ptr->_model->setHeaderLabel({ tr("x"), tr("y") });
 	ui->tableViewXY->setModel(d_ptr->_model);
 #endif
 	QFontMetrics fm = fontMetrics();
 	ui->tableViewXY->verticalHeader()->setDefaultSectionSize(fm.lineSpacing() * 1.1);
-	connect(ui->comboBoxX, &DADataManagerComboBox::currentDataframeSeriesChanged, this, &DAChartAddXYSeriesWidget::onComboBoxXCurrentDataframeSeriesChanged);
-	connect(ui->comboBoxY, &DADataManagerComboBox::currentDataframeSeriesChanged, this, &DAChartAddXYSeriesWidget::onComboBoxYCurrentDataframeSeriesChanged);
+    connect(ui->comboBoxX,
+            &DADataManagerComboBox::currentDataframeSeriesChanged,
+            this,
+            &DAChartAddXYSeriesWidget::onComboBoxXCurrentDataframeSeriesChanged);
+    connect(ui->comboBoxY,
+            &DADataManagerComboBox::currentDataframeSeriesChanged,
+            this,
+            &DAChartAddXYSeriesWidget::onComboBoxYCurrentDataframeSeriesChanged);
 	connect(ui->groupBoxXAutoincrement, &QGroupBox::clicked, this, &DAChartAddXYSeriesWidget::onGroupBoxXAutoincrementClicked);
 	connect(ui->groupBoxYAutoincrement, &QGroupBox::clicked, this, &DAChartAddXYSeriesWidget::onGroupBoxYAutoincrementClicked);
 }
@@ -103,7 +111,7 @@ QwtPlotItem* DAChartAddXYSeriesWidget::createPlotItem()
  */
 void DAChartAddXYSeriesWidget::onComboBoxXCurrentDataframeSeriesChanged(const DAData& data, const QString& seriesName)
 {
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
 	DAPySeries series;
 	DAPyDataFrame df = data.toDataFrame();
 	if (!df.isNone()) {
@@ -120,7 +128,7 @@ void DAChartAddXYSeriesWidget::onComboBoxXCurrentDataframeSeriesChanged(const DA
  */
 void DAChartAddXYSeriesWidget::onComboBoxYCurrentDataframeSeriesChanged(const DAData& data, const QString& seriesName)
 {
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
 	DAPySeries series;
 	DAPyDataFrame df = data.toDataFrame();
 	if (!df.isNone()) {
@@ -136,14 +144,14 @@ void DAChartAddXYSeriesWidget::onComboBoxYCurrentDataframeSeriesChanged(const DA
  */
 void DAChartAddXYSeriesWidget::onGroupBoxXAutoincrementClicked(bool on)
 {
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
 	if (on) {
 		double base, step;
 		if (tryGetXSelfInc(base, step)) {
 			d_ptr->_model->setSeriesAt(0, DAAutoincrementSeries< double >(base, step));
 		}
 	} else {
-		//取消要读取回原来的设置
+        // 取消要读取回原来的设置
 		DAPySeries series;
 		DAData data = ui->comboBoxX->getCurrentDAData();
 		if (data) {
@@ -161,14 +169,14 @@ void DAChartAddXYSeriesWidget::onGroupBoxXAutoincrementClicked(bool on)
  */
 void DAChartAddXYSeriesWidget::onGroupBoxYAutoincrementClicked(bool on)
 {
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
 	if (on) {
 		double base, step;
 		if (tryGetYSelfInc(base, step)) {
 			d_ptr->_model->setSeriesAt(1, DAAutoincrementSeries< double >(base, step));
 		}
 	} else {
-		//取消要读取回原来的设置
+        // 取消要读取回原来的设置
 		DAPySeries series;
 		DAData data = ui->comboBoxY->getCurrentDAData();
 		if (data) {
@@ -261,8 +269,8 @@ bool DAChartAddXYSeriesWidget::getToVectorPointFFromUI(QVector< QPointF >& res)
 		);
 		return false;
 	}
-#ifdef DA_ENABLE_PYTHON
-	if (isXAuto) {  //不存在同时，因此这个就是x自增
+#if DA_ENABLE_PYTHON
+    if (isXAuto) {  // 不存在同时，因此这个就是x自增
 		DAAutoincrementSeries< double > xinc;
 		if (!getXAutoIncFromUI(xinc)) {
 			return false;
@@ -383,7 +391,8 @@ bool DAChartAddXYSeriesWidget::getToVectorPointFFromUI(QVector< QPointF >& res)
 				res[ i ].setY(vy[ i ]);
 			}
 		} catch (const std::exception& e) {
-			qCritical() << tr("Exception occurred during extracting from pandas.Series to double vector:%1").arg(e.what());  // cn:从pandas.Series提取为double vector过程中出现异常:%1
+            qCritical() << tr("Exception occurred during extracting from pandas.Series to double vector:%1")
+                               .arg(e.what());  // cn:从pandas.Series提取为double vector过程中出现异常:%1
 			return false;
 		}
 	}

@@ -11,7 +11,7 @@
 #include "DACommandInterface.h"
 #include "DAAppProject.h"
 #include "DAAppCommand.h"
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
 // DA Python
 #include "DAPyInterpreter.h"
 #include "DAPyScripts.h"
@@ -43,7 +43,7 @@ DAAppCore& DAAppCore::getInstance()
 
 bool DAAppCore::initialized()
 {
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
     // 初始化python环境
     qDebug() << "begin app core initialized";
     initializePythonEnv();
@@ -100,7 +100,7 @@ DADataManagerInterface* DAAppCore::getDataManagerInterface() const
 bool DAAppCore::initializePythonEnv()
 {
     mIsPythonInterpreterInitialized = false;
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
     try {
         DA::DAPyInterpreter& python = DA::DAPyInterpreter::getInstance();
         // 初始化python环境
@@ -170,7 +170,7 @@ DAAppCommand* DAAppCore::getAppCmd()
 QString DAAppCore::getPythonInterpreterPath()
 {
     QString appabsPath = QApplication::applicationDirPath();
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
     QList< QFileInfo > paths = DAPyInterpreter::wherePython();
     if (paths.empty()) {
         return QDir::toNativeSeparators(appabsPath + "/Python");

@@ -28,7 +28,7 @@
 // ui
 #include "DAAppRibbonApplicationMenu.h"
 
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
 // Py
 #include "DAPyScripts.h"
 #include "pandas/DAPyDataFrame.h"
@@ -211,7 +211,7 @@ void DAAppRibbonArea::resetText()
     m_categoryDataframeOperate->setCategoryName(tr("Operate"));  ///< DataFrame -> Operate
     m_pannelDataframeOperateAxes->setPannelName(tr("Axes"));     ///< DataFrame -> Operate -> Axes
     m_pannelDataframeOperateDType->setPannelName(tr("Type"));    ///< DataFrame -> Type
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
     m_comboxColumnTypesContainer->setPrefix(tr("Type"));  ///< DataFrame -> Type -> Type
 #endif
     m_pannelDataframeOperateStatistic->setPannelName(tr("Statistic"));  ///< DataFrame -> Statistic
@@ -401,7 +401,7 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     m_pannelDataframeOperateAxes->addLargeAction(m_actions->actionChangeToIndex);
     // Type pannel
     m_pannelDataframeOperateDType = m_categoryDataframeOperate->addPannel(tr("Type"));
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
     m_comboxColumnTypesContainer = new SARibbonLineWidgetContainer(m_pannelDataframeOperateDType);
     m_comboxColumnTypes          = new DAPyDTypeComboBox(m_comboxColumnTypesContainer);
     m_comboxColumnTypes->setMinimumWidth(m_app->fontMetrics().width("timedelta64(scoll)"));  // 设置最小宽度
@@ -530,10 +530,22 @@ void DAAppRibbonArea::buildContextCategoryWorkflowEdit_()
     m_pannelWorkflowView->addLargeAction(m_actions->actionWorkflowEnableItemLinkageMove);
     //
     // connect
-    connect(m_workflowShapeEditPannelWidget, &DAShapeEditPannelWidget::borderPenChanged, this, &DAAppRibbonArea::selectedWorkflowItemPen);
-    connect(m_workflowShapeEditPannelWidget, &DAShapeEditPannelWidget::backgroundBrushChanged, this, &DAAppRibbonArea::selectedWorkflowItemBrush);
-    connect(m_workflowFontEditPannel, &DAFontEditPannelWidget::currentFontChanged, this, &DAAppRibbonArea::selectedWorkflowItemFont);
-    connect(m_workflowFontEditPannel, &DAFontEditPannelWidget::currentFontColorChanged, this, &DAAppRibbonArea::selectedWorkflowItemFontColor);
+    connect(m_workflowShapeEditPannelWidget,
+            &DAShapeEditPannelWidget::borderPenChanged,
+            this,
+            &DAAppRibbonArea::selectedWorkflowItemPen);
+    connect(m_workflowShapeEditPannelWidget,
+            &DAShapeEditPannelWidget::backgroundBrushChanged,
+            this,
+            &DAAppRibbonArea::selectedWorkflowItemBrush);
+    connect(m_workflowFontEditPannel,
+            &DAFontEditPannelWidget::currentFontChanged,
+            this,
+            &DAAppRibbonArea::selectedWorkflowItemFont);
+    connect(m_workflowFontEditPannel,
+            &DAFontEditPannelWidget::currentFontColorChanged,
+            this,
+            &DAAppRibbonArea::selectedWorkflowItemFontColor);
 }
 
 /**
@@ -882,7 +894,7 @@ void DAAppRibbonArea::hideContextCategory(DAAppRibbonArea::ContextCategoryType t
         break;
     }
 }
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
 /**
  * @brief 设置DataFrame的类型，[Context Category - dataframe] [Type] -> Type
  * @param d

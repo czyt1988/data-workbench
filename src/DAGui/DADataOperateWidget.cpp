@@ -4,7 +4,7 @@
 // api
 #include "DADataManager.h"
 #include "DADataOperatePageWidget.h"
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
 // widget
 #include "DADataOperateOfDataFrameWidget.h"
 // py
@@ -64,7 +64,7 @@ QWidget* DADataOperateWidget::currentWidget() const
  */
 DADataOperateOfDataFrameWidget* DADataOperateWidget::getCurrentDataFrameWidget() const
 {
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
     return qobject_cast< DADataOperateOfDataFrameWidget* >(currentWidget());
 #else
     return nullptr;
@@ -106,7 +106,7 @@ bool DADataOperateWidget::removeTabWidget(QWidget* w)
     }
     w->hide();
     w->deleteLater();
-    //移除_dataToWidget记录
+    // 移除_dataToWidget记录
     for (auto i = _dataToWidget.begin(); i != _dataToWidget.end();) {
         if (i.value() == w) {
             i = _dataToWidget.erase(i);
@@ -129,7 +129,7 @@ void DADataOperateWidget::onDataRemoved(const DA::DAData& d, int index)
     if (ite == _dataToWidget.end()) {
         return;
     }
-    //标记数据已经删除
+    // 标记数据已经删除
     int ti          = ui->tabWidget->indexOf(ite.value());
     QString tabName = ui->tabWidget->tabText(ti);
     // 标记已删除
@@ -174,9 +174,9 @@ void DADataOperateWidget::onTabWidgetCurrentChanged(int index)
     if (!w) {
         return;
     }
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
     if (DADataOperateOfDataFrameWidget* d = qobject_cast< DADataOperateOfDataFrameWidget* >(w)) {
-        //激活undostack
+        // 激活undostack
         d->activeUndoStack();
     }
 #endif
@@ -197,26 +197,26 @@ void DADataOperateWidget::onTabWidgetCloseRequested(int index)
 
 void DADataOperateWidget::showDataframeData(const DA::DAData& d)
 {
-#ifdef DA_ENABLE_PYTHON
-    //先查找是否已经存在对于窗口
+#if DA_ENABLE_PYTHON
+    // 先查找是否已经存在对于窗口
     DADataOperateOfDataFrameWidget* w = qobject_cast< DADataOperateOfDataFrameWidget* >(_dataToWidget.value(d, nullptr));
     if (nullptr == w) {
-        //没有就创建
+        // 没有就创建
         w = new DADataOperateOfDataFrameWidget(d, ui->tabWidget);
         emit pageAdded(w);
-        //记录窗口
+        // 记录窗口
         _dataToWidget[ d ] = w;
     }
-    //在判断窗口是否已经存在于tabwidget
+    // 在判断窗口是否已经存在于tabwidget
     int index = ui->tabWidget->indexOf(w);
     if (index < 0) {
-        //说明tab没有，添加进去
+        // 说明tab没有，添加进去
         index = ui->tabWidget->addTab(w, d.getName());
     } else {
-        ui->tabWidget->setTabText(index, d.getName());  //防止关闭tab后，窗口不销毁，且data进行了其他操作
+        ui->tabWidget->setTabText(index, d.getName());  // 防止关闭tab后，窗口不销毁，且data进行了其他操作
     }
     ui->tabWidget->setTabToolTip(index, d.getDescribe());
-    //把当前的tabwidget唤起
+    // 把当前的tabwidget唤起
     ui->tabWidget->setCurrentIndex(index);
 #endif
 }

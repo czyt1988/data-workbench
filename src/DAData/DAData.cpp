@@ -1,6 +1,6 @@
 ﻿#include "DAData.h"
 #include "DADataManager.h"
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
 #include "DADataPyObject.h"
 #include "DADataPyDataFrame.h"
 #include "DADataPySeries.h"
@@ -25,17 +25,17 @@ DAData::DAData(const DAAbstractData::Pointer& d) : mDataMgr(nullptr)
 
 DAData::DAData(const DAData& d)
 {
-    mData = d.mData;
+    mData    = d.mData;
     mDataMgr = d.mDataMgr;
 }
 
 DAData::DAData(DAData&& d)
 {
-    mData = std::move(d.mData);
+    mData    = std::move(d.mData);
     mDataMgr = std::move(d.mDataMgr);
 }
 
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
 DAData::DAData(const DAPyDataFrame& d) : mDataMgr(nullptr)
 {
     mData = std::static_pointer_cast< DAAbstractData >(std::make_shared< DADataPyDataFrame >(d));
@@ -67,23 +67,24 @@ bool DAData::operator<(const DAData& d) const
 
 DAData& DAData::operator=(const DAData& d)
 {
-    mData = d.mData;
+    mData    = d.mData;
     mDataMgr = d.mDataMgr;
     return *this;
 }
 
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
 DAData& DAData::operator=(const DAPyDataFrame& d)
 {
-    std::shared_ptr< DAAbstractData > p = std::static_pointer_cast< DAAbstractData >(std::make_shared< DADataPyDataFrame >(d));
-    mData                               = p;
+    std::shared_ptr< DAAbstractData > p = std::static_pointer_cast< DAAbstractData >(
+        std::make_shared< DADataPyDataFrame >(d));
+    mData = p;
     return *this;
 }
 
 DAData& DAData::operator=(const DAPySeries& d)
 {
     std::shared_ptr< DAAbstractData > p = std::static_pointer_cast< DAAbstractData >(std::make_shared< DADataPySeries >(d));
-    mData                               = p;
+    mData = p;
     return *this;
 }
 #endif
@@ -228,7 +229,7 @@ bool DAData::isDataPackage() const
     }
     return (mData->getDataType() == DAAbstractData::TypeDataPackage);
 }
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
 /**
  * @brief 转换为DAPyDataFrame
  * @return 如果内部维护的不是DAPyDataFrame，返回一个默认构造的DAPyDataFrame(isNone=true)

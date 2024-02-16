@@ -2,7 +2,7 @@
 #define DAGLOBALS_H
 #include <QScopedPointer>
 #include <QString>
-
+#include "DAConfigs.h"
 /**
  *@def 前置声明的定义
  */

@@ -67,7 +67,7 @@ add_library(${DA_LIB_NAME} SHARED
 target_compile_definitions(${DA_LIB_NAME} PRIVATE DADATA_BUILDLIB)#!!!!** 注意变更 **!!!!
 if(DA_ENABLE_PYTHON)
     #此宏一定要显示声明为public让调用者知道
-    target_compile_definitions(${DA_LIB_NAME} PUBLIC "DA_ENABLE_PYTHON")
+    target_compile_definitions(${DA_LIB_NAME} PUBLIC -DDA_ENABLE_PYTHON=1)
 endif()
 add_library(${DA_PROJECT_NAME}::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
 ########################################################

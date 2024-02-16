@@ -15,6 +15,10 @@ set(DA_VERSION_MAJOR 0)
 set(DA_VERSION_MINOR 0)
 set(DA_VERSION_PATCH 2)
 set(DA_VERSION "${DA_VERSION_MAJOR}.${DA_VERSION_MINOR}.${DA_VERSION_PATCH}")
+string(TIMESTAMP DA_COMPILE_DATETIME %y%m%d)
+string(TIMESTAMP DA_COMPILE_DATETIME_YEAR %y)
+string(TIMESTAMP DA_COMPILE_DATETIME_MONTH %m)
+string(TIMESTAMP DA_COMPILE_DATETIME_DAY %d)
 message(STATUS "DA Version is ${DA_VERSION}")
 ########################################################
 # 可选的变量
@@ -130,6 +134,16 @@ install(FILES
 ########################################################
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/daworkbench_utils.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/daworkbench_3rdparty.cmake)
+
+
+########################################################
+# 自动化生成配置头文件
+########################################################
+configure_file (
+  "${CMAKE_CURRENT_LIST_DIR}/src/DAConfigs.h.in"
+  "${CMAKE_CURRENT_LIST_DIR}/src/DAConfigs.h"
+)
+
 ########################################################
 # 源码路径
 ########################################################

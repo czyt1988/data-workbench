@@ -8,7 +8,7 @@
 #include "DARibbonAreaInterface.h"
 #include "DADataManageWidget.h"
 #include "DAWorkFlowGraphicsScene.h"
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
 // Py
 #include "numpy/DAPyDType.h"
 #endif
@@ -155,7 +155,7 @@ public:
 
 public:
     // Python相关
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
     // 设置DataFrame的类型，【Context】 - 【dataframe】 DataFrame -> Type -> Type,此函数的调用忽略combox的currentindexchanged信号
     void setDataframeOperateCurrentDType(const DAPyDType& d);
 #endif
@@ -313,7 +313,7 @@ public:
     SARibbonCategory* m_categoryDataframeOperate;   ///< dataframe对应的category
     SARibbonPannel* m_pannelDataframeOperateAxes;   ///< 数据信息的编辑
     SARibbonPannel* m_pannelDataframeOperateDType;  ///< 数据类型的编辑
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
     SARibbonLineWidgetContainer* m_comboxColumnTypesContainer;  ///< 列类型选择器的container
     DAPyDTypeComboBox* m_comboxColumnTypes;                     ///< 列类型选择器
 #endif

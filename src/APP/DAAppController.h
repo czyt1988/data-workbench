@@ -6,7 +6,7 @@
 #include <QScopedPointer>
 #include "DADataManageWidget.h"
 #include "DAWorkFlowGraphicsScene.h"
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
 #include "numpy/DAPyDType.h"
 #endif
 // Qt
@@ -204,7 +204,7 @@ private slots:
     void onActionRenameColumnsTriggered();
     // 创建数据描述
     void onActionCreateDataDescribeTriggered();
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
     // 列数据类型改变
     void onComboxColumnTypesCurrentDTypeChanged(const DA::DAPyDType& dt);
     void onDataOperateDataFrameWidgetSelectTypeChanged(const QList< int >& column, DA::DAPyDType dt);
@@ -328,7 +328,7 @@ private slots:
 private:
     // 初始化信号槽
     void initConnection();
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
     // 初始化脚本信息
     void initScripts();
 #endif

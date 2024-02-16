@@ -10,8 +10,8 @@
 #include "DADataManager.h"
 #include "DAData.h"
 #include "DADataManagerTableModel.h"
-#ifdef DA_ENABLE_PYTHON
-//Py
+#if DA_ENABLE_PYTHON
+// Py
 #include "pandas/DAPyDataFrame.h"
 #endif
 //
@@ -154,9 +154,10 @@ bool DADataManagerTreeItem::isData() const
 
 QStandardItem* DADataManagerTreeItem::clone() const
 {
-    //调用QStandardItem的protected构造函数[protected] QStandardItem::QStandardItem(const QStandardItem &other)
+    // 调用QStandardItem的protected构造函数[protected] QStandardItem::QStandardItem(const QStandardItem &other)
     DADataManagerTreeItem* i = new DADataManagerTreeItem(*this);
-    qDebug() << "DADataManagerTreeItem::clone,text=" << i->text() << ",isFolder=" << i->isFolder() << ",isData=" << i->isData();
+    qDebug() << "DADataManagerTreeItem::clone,text=" << i->text() << ",isFolder=" << i->isFolder()
+             << ",isData=" << i->isData();
     return i;
 }
 
@@ -199,29 +200,29 @@ void DADataManagerTreeModel::init()
 void DADataManagerTreeModel::doExpandDataframeToSeries(bool on)
 {
     QList< DADataManagerTreeItem* > dataframeItems;
-    //找到所有的dataframe item
+    // 找到所有的dataframe item
     daAppDataManagerTreeItemIterator(
-            invisibleRootItem(),
-            [ &dataframeItems ](QStandardItem* par, DADataManagerTreeItem* curIte) -> bool {
-                Q_UNUSED(par);
-                if (curIte) {
-                    DAData d = curIte->toData();
-                    if (d.isDataFrame()) {
-                        dataframeItems.append(curIte);
-                    }
+        invisibleRootItem(),
+        [ &dataframeItems ](QStandardItem* par, DADataManagerTreeItem* curIte) -> bool {
+            Q_UNUSED(par);
+            if (curIte) {
+                DAData d = curIte->toData();
+                if (d.isDataFrame()) {
+                    dataframeItems.append(curIte);
                 }
-                return true;
-            },
-            DADataManagerTreeItem::ItemData);
-    //如果添加，则把dataframe下面添加series
+            }
+            return true;
+        },
+        DADataManagerTreeItem::ItemData);
+    // 如果添加，则把dataframe下面添加series
     for (DADataManagerTreeItem* i : qAsConst(dataframeItems)) {
         doExpandOneDataframeToSeries(i, on);
     }
     if (on) {
         ////需要添加
-        //for (DADataManagerTreeItem* i : qAsConst(dataframeItems)) {
-        //    DAPyDataFrame df = i->toData().toDataFrame();
-        //}
+        // for (DADataManagerTreeItem* i : qAsConst(dataframeItems)) {
+        //     DAPyDataFrame df = i->toData().toDataFrame();
+        // }
     }
 }
 
@@ -233,12 +234,12 @@ void DADataManagerTreeModel::doExpandDataframeToSeries(bool on)
 void DADataManagerTreeModel::doExpandOneDataframeToSeries(DADataManagerTreeItem* dfItem, bool on)
 {
     while (dfItem->rowCount() > 0) {
-        //原来已经有child，删除
+        // 原来已经有child，删除
         dfItem->removeRow(0);
     }
     if (on) {
-#ifdef DA_ENABLE_PYTHON
-        //需要添加
+#if DA_ENABLE_PYTHON
+        // 需要添加
         DAData d         = dfItem->toData();
         DAPyDataFrame df = d.toDataFrame();
         if (df.isNone()) {
@@ -248,7 +249,7 @@ void DADataManagerTreeModel::doExpandOneDataframeToSeries(DADataManagerTreeItem*
         for (const QString& name : qAsConst(sers)) {
             QStandardItem* sitem = new QStandardItem(name);
             sitem->setData((int)SeriesInnerDataframe, DADATAMANAGERTREEMODEL_ROLE_DETAIL_DATA_TYPE);
-            sitem->setData(d.id(), DADATAMANAGERTREEMODEL_ROLE_DATA_ID);  //把data id也记录
+            sitem->setData(d.id(), DADATAMANAGERTREEMODEL_ROLE_DATA_ID);  // 把data id也记录
             dfItem->appendRow(sitem);
         }
 #endif
@@ -265,18 +266,18 @@ DADataManagerTreeItem* DADataManagerTreeModel::dataToItem(const DAData& d) const
 {
     DADataManagerTreeItem* res = nullptr;
     DA::daAppDataManagerTreeItemIterator(
-            invisibleRootItem(),
-            [ &res, &d ](QStandardItem* par, DADataManagerTreeItem* i) -> bool {
-                qDebug() << "daAppDataManagerTreeItemIterator";
-                Q_UNUSED(par);
-                DAData innerd = i->toData();
-                if (innerd == d) {
-                    res = i;
-                    return false;  //结束迭代
-                }
-                return true;  //继续迭代
-            },
-            DADataManagerTreeItem::ItemData);
+        invisibleRootItem(),
+        [ &res, &d ](QStandardItem* par, DADataManagerTreeItem* i) -> bool {
+            qDebug() << "daAppDataManagerTreeItemIterator";
+            Q_UNUSED(par);
+            DAData innerd = i->toData();
+            if (innerd == d) {
+                res = i;
+                return false;  // 结束迭代
+            }
+            return true;  // 继续迭代
+        },
+        DADataManagerTreeItem::ItemData);
     return res;
 }
 
@@ -289,10 +290,10 @@ DADataManagerTreeItem* DADataManagerTreeModel::addFolder(const QString& name, DA
 {
     DADataManagerTreeItem* folder = new DADataManagerTreeItem(name);
     if (nullptr == parentFolder) {
-        //添加到顶层
+        // 添加到顶层
         appendRow(folder);
     } else {
-        //添加到子层级
+        // 添加到子层级
         if (!parentFolder->isFolder()) {
             // parent不是folder添加到顶层
             appendRow(folder);
@@ -312,12 +313,12 @@ void DADataManagerTreeModel::removeFolder(DADataManagerTreeItem* f)
 {
     Q_CHECK_PTR(f);
     QVector< QPair< QStandardItem*, DADataManagerTreeItem* > > willTakeItem;
-    //把子目录下的item获取
+    // 把子目录下的item获取
     daAppDataManagerTreeItemIterator(f, [ &willTakeItem ](QStandardItem* parItem, DADataManagerTreeItem* i) -> bool {
         willTakeItem.append(qMakePair(parItem, i));
         return true;
     });
-    //获取节点要转移的父级
+    // 获取节点要转移的父级
     QStandardItem* parfolder = f->parent();
     if (nullptr == parfolder) {
         parfolder = invisibleRootItem();
@@ -327,14 +328,14 @@ void DADataManagerTreeModel::removeFolder(DADataManagerTreeItem* f)
             parfolder = invisibleRootItem();
         }
     }
-    //节点的抽取,抽取完成后willTakeItem的second都脱离model管理
+    // 节点的抽取,抽取完成后willTakeItem的second都脱离model管理
     for (const auto& p : willTakeItem) {
         if (p.first && p.second) {
             p.first->takeChild(p.second->row(), p.second->column());
             parfolder->appendRow(p.second);
         }
     }
-    //最后删除Floder
+    // 最后删除Floder
     delete f;
 }
 /**
@@ -473,7 +474,7 @@ QVariant DADataManagerTreeModel::data(const QModelIndex& index, int role) const
             qDebug() << ti->text() << "is data but to data get null";
             return QVariant();
         }
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
         if (d.isDataFrame()) {
             //            qDebug() << ti->text() << " is df";
             DAPyDataFrame df = d.toDataFrame();
@@ -530,7 +531,7 @@ void DADataManagerTreeModel::onDataBeginRemoved(const DA::DAData& d, int dataInd
     if (nullptr == item) {
         qWarning() << tr("The data(%1) cannot find its corresponding item "
                          "in the data management tree during the removal process")
-                              .arg(d.getName());  // cn:数据在移除过程中无法找到其对应的数据管理树中的条目
+                          .arg(d.getName());  // cn:数据在移除过程中无法找到其对应的数据管理树中的条目
         return;
     }
     removeRow(item->row(), indexFromItem(item->parent()));
@@ -542,7 +543,7 @@ void DADataManagerTreeModel::onDataChanged(const DAData& d, DADataManager::Chang
     if (nullptr == item) {
         qWarning() << tr("The data(%1) cannot find its corresponding item "
                          "in the data management tree during the removal process")
-                              .arg(d.getName());  // cn:数据在移除过程中无法找到其对应的数据管理树中的条目
+                          .arg(d.getName());  // cn:数据在移除过程中无法找到其对应的数据管理树中的条目
         return;
     }
     switch (t) {
@@ -568,7 +569,9 @@ void DADataManagerTreeModel::onDataChanged(const DAData& d, DADataManager::Chang
  * @return 如果返回true，说明整个递归过程遍历了所有节点，如果返回false，说明遍历过程中断，
  * 此返回取决于回调函数，如果回调函数返回过false，则此函数必会返回false
  */
-bool DA::standardItemIterator(QStandardItem* startItem, std::function< bool(QStandardItem*, QStandardItem*) > fun, bool firstColumnOnly)
+bool DA::standardItemIterator(QStandardItem* startItem,
+                              std::function< bool(QStandardItem*, QStandardItem*) > fun,
+                              bool firstColumnOnly)
 {
     if (startItem == nullptr) {
         return false;
@@ -605,26 +608,26 @@ bool DA::daAppDataManagerTreeItemIterator(QStandardItem* startItem,
                                           DADataManagerTreeItem::TreeItemType type)
 {
     return standardItemIterator(
-            startItem,
-            [ &fun, type ](QStandardItem* par, QStandardItem* item) -> bool {
-                if (item && item->type() == DAAPPDATAMANAGERTREEITEM_USERTYPE) {
-                    DADataManagerTreeItem* ti = static_cast< DADataManagerTreeItem* >(item);
-                    if (type == DADataManagerTreeItem::ItemUnknow) {
-                        //不做限制
+        startItem,
+        [ &fun, type ](QStandardItem* par, QStandardItem* item) -> bool {
+            if (item && item->type() == DAAPPDATAMANAGERTREEITEM_USERTYPE) {
+                DADataManagerTreeItem* ti = static_cast< DADataManagerTreeItem* >(item);
+                if (type == DADataManagerTreeItem::ItemUnknow) {
+                    // 不做限制
+                    return fun(par, ti);
+                } else if (type == DADataManagerTreeItem::ItemData) {
+                    if (ti->isData()) {
                         return fun(par, ti);
-                    } else if (type == DADataManagerTreeItem::ItemData) {
-                        if (ti->isData()) {
-                            return fun(par, ti);
-                        }
-                    } else if (type == DADataManagerTreeItem::ItemFolder) {
-                        if (ti->isFolder()) {
-                            return fun(par, ti);
-                        }
+                    }
+                } else if (type == DADataManagerTreeItem::ItemFolder) {
+                    if (ti->isFolder()) {
+                        return fun(par, ti);
                     }
                 }
-                return true;
-            },
-            true);
+            }
+            return true;
+        },
+        true);
 }
 
 }  // end da

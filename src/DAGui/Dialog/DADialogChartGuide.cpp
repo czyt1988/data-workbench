@@ -14,7 +14,10 @@ DADialogChartGuide::DADialogChartGuide(QWidget* parent)
 {
 	ui->setupUi(this);
 	init();
-	connect(ui->comboBoxDataFrame, QOverload< int >::of(&QComboBox::currentIndexChanged), this, &DADialogChartGuide::onComboBoxCurrentIndexChanged);
+    connect(ui->comboBoxDataFrame,
+            QOverload< int >::of(&QComboBox::currentIndexChanged),
+            this,
+            &DADialogChartGuide::onComboBoxCurrentIndexChanged);
 	connect(ui->listWidgetChartType, &QListWidget::itemChanged, this, &DADialogChartGuide::onListWidgetItemChanged);
 }
 
@@ -31,7 +34,7 @@ void DADialogChartGuide::init()
 	item = new QListWidgetItem(QIcon(":/gui/chart-type/icon/chart-type/chart-scatter.svg"), tr("scatter"));
 	item->setData(Qt::UserRole, (int)ChartScatter);
 	ui->listWidgetChartType->addItem(item);
-	//初始化
+    // 初始化
 	ui->stackedWidget->setCurrentWidget(ui->pageCurve);
 	ui->listWidgetChartType->setCurrentRow(0);
 }
@@ -88,7 +91,7 @@ QwtPlotItem* DADialogChartGuide::createPlotItem()
 	if (nullptr == item) {
 		return nullptr;
 	}
-	//一些基本属性的设置
+    // 一些基本属性的设置
 	switch (getCurrentChartType()) {
 	case ChartScatter: {
 		QwtPlotCurve* c = static_cast< QwtPlotCurve* >(item);
@@ -114,7 +117,7 @@ void DADialogChartGuide::resetDataframeCombobox()
 	if (nullptr == _dataMgr) {
 		return;
 	}
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
 	ui->comboBoxDataFrame->clear();
 	int c = _dataMgr->getDataCount();
 	for (int i = 0; i < c; ++i) {
@@ -129,7 +132,7 @@ void DADialogChartGuide::resetDataframeCombobox()
 		// id作为data
 		ui->comboBoxDataFrame->addItem(d.getName(), d.id());
 	}
-	ui->comboBoxDataFrame->setCurrentIndex(-1);  //不选中
+    ui->comboBoxDataFrame->setCurrentIndex(-1);  // 不选中
 #endif
 }
 
