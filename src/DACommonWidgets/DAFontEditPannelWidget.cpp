@@ -1,6 +1,5 @@
 ﻿#include "DAFontEditPannelWidget.h"
 #include "ui_DAFontEditPannelWidget.h"
-#include "colorWidgets/SAColorMenu.h"
 #include <QDebug>
 namespace DA
 {
@@ -12,9 +11,6 @@ DAFontEditPannelWidget::DAFontEditPannelWidget(QWidget* parent)
         { "6", "8", "9", "10", "11", "12", "14", "16", "18", "20", "22", "24", "26", "28", "36", "48", "72" });
     ui->comboBoxFontSize->setCurrentText("10");
     ui->colorButton->setColor(Qt::black);
-    ui->colorButton->setPopupMode(QToolButton::MenuButtonPopup);
-    mColorMenu = new SAColorMenu(this);
-    mColorMenu->bindToColorToolButton(ui->colorButton);
     connect(ui->fontComboBox, &QFontComboBox::currentFontChanged, this, &DAFontEditPannelWidget::signalEmitFontChanged);
     connect(ui->colorButton, &DA::DAColorPickerButton::colorChanged, this, &DAFontEditPannelWidget::currentFontColorChanged);
     connect(ui->toolButtonBold, &QToolButton::clicked, this, &DAFontEditPannelWidget::signalEmitFontChanged);

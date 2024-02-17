@@ -156,8 +156,7 @@ QStandardItem* DADataManagerTreeItem::clone() const
 {
     // 调用QStandardItem的protected构造函数[protected] QStandardItem::QStandardItem(const QStandardItem &other)
     DADataManagerTreeItem* i = new DADataManagerTreeItem(*this);
-    qDebug() << "DADataManagerTreeItem::clone,text=" << i->text() << ",isFolder=" << i->isFolder()
-             << ",isData=" << i->isData();
+    // qDebug() << "DADataManagerTreeItem::clone,text=" << i->text() << ",isFolder=" << i->isFolder() << ",isData=" << i->isData();
     return i;
 }
 

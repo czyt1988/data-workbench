@@ -41,29 +41,29 @@ public:
 public:
     explicit DADialogChartGuide(QWidget* parent = nullptr);
     ~DADialogChartGuide();
-    //设置datamanager,会把combox填入所有的dataframe
+    // 设置datamanager,会把combox填入所有的dataframe
     void setDataManager(DADataManager* dmgr);
-    //设置datafram
+    // 设置datafram
     void setCurrentData(const DAData& d);
     DAData getCurrentData() const;
-    //获取当前的绘图类型
+    // 获取当前的绘图类型
     ChartType getCurrentChartType() const;
-    //获取绘图item，如果没有返回nullptr
+    // 获取绘图item，如果没有返回nullptr
     QwtPlotItem* createPlotItem();
-    //更新数据
+    // 更新数据
     void updateData();
 
 protected:
-    //刷新dataframe combobox
+    // 刷新dataframe combobox
     void resetDataframeCombobox();
-    //更新combobox的选则状态
+    // 更新combobox的选则状态
     void updateDataframeComboboxSelect();
-    //刷新x，y两个列选择listwidget
+    // 刷新x，y两个列选择listwidget
     void updateCurrentPageData();
 private slots:
     void onComboBoxCurrentIndexChanged(int i);
-    //选择绘图类型改变
-    void onListWidgetItemChanged(QListWidgetItem* item);
+    // 选择绘图类型改变
+    void onListWidgetCurrentItemChanged(QListWidgetItem* current, QListWidgetItem* previous);
 
 private:
     void init();

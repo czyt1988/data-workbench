@@ -1,7 +1,7 @@
 ﻿#ifndef DACOLORPICKERBUTTON_H
 #define DACOLORPICKERBUTTON_H
+//SARibbon
 #include "colorWidgets/SAColorToolButton.h"
-#include "ctkColorPickerButton.h"
 #include "DACommonWidgetsAPI.h"
 namespace DA
 {

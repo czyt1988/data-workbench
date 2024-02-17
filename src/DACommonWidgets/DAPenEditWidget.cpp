@@ -6,7 +6,6 @@
 #include <QSpinBox>
 #include "DAColorPickerButton.h"
 #include "DAPenStyleComboBox.h"
-#include "colorWidgets/SAColorMenu.h"
 namespace DA
 {
 class DAPenEditWidget::PrivateData
@@ -21,7 +20,6 @@ public:
     DAColorPickerButton* colorButton;
     DAPenStyleComboBox* comboBox;
     QSpinBox* spinBoxWidth;
-    SAColorMenu* mColorMenu { nullptr };
 };
 
 //===================================================
@@ -41,9 +39,6 @@ DAPenEditWidget::PrivateData::PrivateData(DAPenEditWidget* p) : q_ptr(p)
     colorButton->setAutoRaise(true);
     colorButton->setColor(QColor());
     colorButton->setObjectName(QStringLiteral("pushButtonColor"));
-    colorButton->setPopupMode(QToolButton::MenuButtonPopup);
-    mColorMenu = new SAColorMenu(p);
-    mColorMenu->bindToColorToolButton(colorButton);
     horizontalLayout->addWidget(colorButton);
 
     comboBox = new DAPenStyleComboBox(p);
@@ -100,12 +95,15 @@ void DAPenEditWidget::setCurrentPen(const QPen& p)
     Q_UNUSED(bl3);
     d_ptr->mPen = p;
     d_ptr->colorButton->setColor(d_ptr->mPen.color());
-    d_ptr->colorButton->setEnabled(d_ptr->mPen.style() != Qt::NoPen);
+    if (p.style() == Qt::NoPen) {
+        d_ptr->colorButton->setColor(QColor());
+    }
+    d_ptr->comboBox->setCurrentPenStyle(p.style());
     d_ptr->comboBox->setPenColor(d_ptr->mPen.color());
-    d_ptr->comboBox->setCurrentPenStyle(d_ptr->mPen.style());
     d_ptr->comboBox->setPenLineWidth(d_ptr->mPen.width());
     d_ptr->comboBox->updateItems();
     d_ptr->spinBoxWidth->setValue(d_ptr->mPen.width());
+    d_ptr->colorButton->setEnabled(d_ptr->mPen.style() != Qt::NoPen);
     emit penChanged(d_ptr->mPen);
 }
 
@@ -148,6 +146,19 @@ void DAPenEditWidget::onPenWidthValueChanged(int w)
 
 void DAPenEditWidget::onPenStyleChanged(Qt::PenStyle s)
 {
+    if (d_ptr->mPen.style() == Qt::NoPen) {
+        // 原来是no pen
+        if (Qt::NoPen != s) {
+            d_ptr->colorButton->setColor(d_ptr->mPen.color());
+        }
+    } else {
+        // 原来是不是no pen变为no pen
+        if (Qt::NoPen == s) {
+            d_ptr->colorButton->setColor(QColor());
+        }
+    }
+
+    d_ptr->colorButton->setEnabled(s != Qt::NoPen);
     d_ptr->mPen.setStyle(s);
     emit penChanged(d_ptr->mPen);
 }

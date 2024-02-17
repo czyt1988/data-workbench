@@ -18,7 +18,7 @@ DADialogChartGuide::DADialogChartGuide(QWidget* parent)
             QOverload< int >::of(&QComboBox::currentIndexChanged),
             this,
             &DADialogChartGuide::onComboBoxCurrentIndexChanged);
-	connect(ui->listWidgetChartType, &QListWidget::itemChanged, this, &DADialogChartGuide::onListWidgetItemChanged);
+    connect(ui->listWidgetChartType, &QListWidget::currentItemChanged, this, &DADialogChartGuide::onListWidgetCurrentItemChanged);
 }
 
 DADialogChartGuide::~DADialogChartGuide()
@@ -28,11 +28,14 @@ DADialogChartGuide::~DADialogChartGuide()
 
 void DADialogChartGuide::init()
 {
-	QListWidgetItem* item = new QListWidgetItem(QIcon(":/gui/chart-type/icon/chart-type/chart-curve.svg"), tr("curve"));
-	item->setData(Qt::UserRole, (int)ChartCurve);
+    QListWidgetItem* item = nullptr;
+    // curve
+    item = new QListWidgetItem(QIcon(":/gui/chart-type/icon/chart-type/chart-curve.svg"), tr("curve"));
+    item->setData(Qt::UserRole, static_cast< int >(ChartCurve));
 	ui->listWidgetChartType->addItem(item);
+    // scatter
 	item = new QListWidgetItem(QIcon(":/gui/chart-type/icon/chart-type/chart-scatter.svg"), tr("scatter"));
-	item->setData(Qt::UserRole, (int)ChartScatter);
+    item->setData(Qt::UserRole, static_cast< int >(ChartScatter));
 	ui->listWidgetChartType->addItem(item);
     // 初始化
 	ui->stackedWidget->setCurrentWidget(ui->pageCurve);
@@ -46,6 +49,7 @@ void DADialogChartGuide::setDataManager(DADataManager* dmgr)
 {
 	_dataMgr = dmgr;
 	ui->pageCurve->setDataManager(dmgr);
+    ui->pageScatter->setDataManager(dmgr);
 	updateData();
 }
 
@@ -90,15 +94,6 @@ QwtPlotItem* DADialogChartGuide::createPlotItem()
 	QwtPlotItem* item = w->createPlotItem();
 	if (nullptr == item) {
 		return nullptr;
-	}
-    // 一些基本属性的设置
-	switch (getCurrentChartType()) {
-	case ChartScatter: {
-		QwtPlotCurve* c = static_cast< QwtPlotCurve* >(item);
-		c->setStyle(QwtPlotCurve::Dots);
-	} break;
-	default:
-		break;
 	}
 	return item;
 }
@@ -170,15 +165,16 @@ void DADialogChartGuide::onComboBoxCurrentIndexChanged(int i)
 	updateCurrentPageData();
 }
 
-void DADialogChartGuide::onListWidgetItemChanged(QListWidgetItem* item)
+void DADialogChartGuide::onListWidgetCurrentItemChanged(QListWidgetItem* current, QListWidgetItem* previous)
 {
-	ChartType ct = static_cast< ChartType >(item->data(Qt::UserRole).toInt());
+    Q_UNUSED(previous);
+    ChartType ct = static_cast< ChartType >(current->data(Qt::UserRole).toInt());
 	switch (ct) {
 	case ChartCurve:
 		ui->stackedWidget->setCurrentWidget(ui->pageCurve);
 		break;
 	case ChartScatter:
-		ui->stackedWidget->setCurrentWidget(ui->pageCurve);
+        ui->stackedWidget->setCurrentWidget(ui->pageScatter);
 		break;
 	default:
 		break;

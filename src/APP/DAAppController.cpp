@@ -29,7 +29,7 @@
 #include "DADataOperateWidget.h"
 #include "DADataOperatePageWidget.h"
 #include "DADataManageWidget.h"
-#include "DAChartOperateWidget.h"
+#include "DAAppChartOperateWidget.h"
 #include "DAFigureWidget.h"
 #include "DAChartWidget.h"
 #include "SettingPages/DASettingPageCommon.h"
@@ -223,9 +223,9 @@ DADataOperateWidget* DAAppController::getDataOperateWidget() const
  * @brief 获取绘图操作窗口
  * @return
  */
-DAChartOperateWidget* DAAppController::getChartOperateWidget() const
+DAAppChartOperateWidget* DAAppController::getChartOperateWidget() const
 {
-    return mDock->getChartOperateWidget();
+    return qobject_cast< DAAppChartOperateWidget* >(mDock->getChartOperateWidget());
 }
 
 /**
@@ -311,6 +311,8 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionAddFigure, onActionAddFigureTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionFigureResizeChart, onActionFigureResizeChartTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionFigureNewXYAxis, onActionFigureNewXYAxisTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddCurve, onActionChartAddCurveTriggered);
+
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGrid, onActionChartEnableGridTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGridX, onActionChartEnableGridXTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGridY, onActionChartEnableGridYTriggered);
@@ -1094,14 +1096,11 @@ void DAAppController::onActionRemoveDataTriggered()
  */
 void DAAppController::onActionAddFigureTriggered()
 {
-    DAChartOperateWidget* chartopt = getChartOperateWidget();
-    DAFigureWidget* fig            = chartopt->createFigure();
+    DAAppChartOperateWidget* chartopt = getChartOperateWidget();
+    // 添加绘图
+    DAFigureWidget* fig = chartopt->createFigure();
     // 把fig的undostack添加
     mCommand->addStack(fig->getUndoStack());
-    // 这里不需要回退
-    DAChartWidget* chart = fig->createChart();
-    chart->setXLabel("x");
-    chart->setYLabel("y");
     mRibbon->updateFigureAboutRibbon(fig);
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
 }
@@ -1125,7 +1124,7 @@ void DAAppController::onActionFigureResizeChartTriggered(bool on)
  */
 void DAAppController::onActionFigureNewXYAxisTriggered()
 {
-    DAFigureWidget* fig = gcf();
+    DAFigureWidget* fig = getCurrentFigure();
     if (!fig) {
         qWarning() << tr("Before creating a new coordinate,you need to create a figure");  // cn:在创建一个坐标系之前，需要先创建一个绘图窗口
         return;
@@ -1145,11 +1144,8 @@ void DAAppController::onActionFigureNewXYAxisTriggered()
  */
 void DAAppController::onActionChartAddCurveTriggered()
 {
-    DAChartWidget* w = gca();
-    if (!w) {
-        qWarning() << tr("Before add a curve,you need to create a axis on figure");  // cn:在添加曲线前，需要先在绘图窗口中添加一个坐标系
-        return;
-    }
+    DAAppChartOperateWidget* chartopt = getChartOperateWidget();
+    chartopt->plotWithGuideDialog();
 }
 
 /**

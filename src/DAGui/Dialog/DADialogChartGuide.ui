@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>915</width>
-    <height>620</height>
+    <height>683</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -43,6 +43,12 @@
    </item>
    <item>
     <widget class="QSplitter" name="splitter">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
@@ -64,10 +70,17 @@
       </property>
      </widget>
      <widget class="QStackedWidget" name="stackedWidget">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="DA::DAChartAddXYSeriesWidget" name="pageCurve"/>
+      <widget class="DA::DAChartAddXYScatterWidget" name="pageScatter"/>
      </widget>
     </widget>
    </item>
@@ -102,6 +115,12 @@
    <class>DA::DAChartAddXYSeriesWidget</class>
    <extends>QWidget</extends>
    <header>DAChartAddXYSeriesWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DA::DAChartAddXYScatterWidget</class>
+   <extends>QWidget</extends>
+   <header>DAChartAddXYScatterWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

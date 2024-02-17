@@ -1,4 +1,4 @@
-#include "DAEvenFilterDragPlotWithGuide.h"
+﻿#include "DAEvenFilterDragPlotWithGuide.h"
 #include <QDragEnterEvent>
 #include <QDragMoveEvent>
 #include <QDragLeaveEvent>
@@ -138,7 +138,7 @@ bool DAEvenFilterDragPlotWithGuide::dropEvent(QDropEvent* e, DAFigureWidget* fig
             if (!mChartOptWidget) {
                 return false;
             }
-            QwtPlotItem* pi = mChartOptWidget->plotWithGuideDialog(datamime->getDAData());
+            QwtPlotItem* pi = mChartOptWidget->createPlotItemWithGuideDialog(datamime->getDAData());
             if (nullptr == pi) {
                 e->ignore();
                 return false;

@@ -33,7 +33,7 @@ class DAAppDataManager;
 class DADataOperateOfDataFrameWidget;
 class DAWorkFlowOperateWidget;
 class DADataOperateWidget;
-class DAChartOperateWidget;
+class DAAppChartOperateWidget;
 class DADataManageWidget;
 class DAFigureWidget;
 class DAChartWidget;
@@ -90,7 +90,7 @@ public:
     // 获取数据操作窗口
     DADataOperateWidget* getDataOperateWidget() const;
     // 获取绘图操作窗口
-    DAChartOperateWidget* getChartOperateWidget() const;
+    DAAppChartOperateWidget* getChartOperateWidget() const;
     // 获取数据管理窗口
     DADataManageWidget* getDataManageWidget() const;
     // 获取当前的绘图,如果没有回返回nullptr

@@ -1,4 +1,4 @@
-#ifndef DAEVENFILTERDRAGPLOTWITHGUIDE_H
+﻿#ifndef DAEVENFILTERDRAGPLOTWITHGUIDE_H
 #define DAEVENFILTERDRAGPLOTWITHGUIDE_H
 #include <QObject>
 #include <QEvent>
@@ -12,14 +12,14 @@ namespace DA
 class DAAppChartOperateWidget;
 class DAFigureWidget;
 /**
- * @brief The DAEvenFilterDragPlotWithGuide class
+ * @brief 这个是针对DAAppFigureWidget的事件过滤器，可以为DAAppFigureWidget提供拖曳功能
  */
 class DAEvenFilterDragPlotWithGuide : public QObject
 {
     Q_OBJECT
 public:
     DAEvenFilterDragPlotWithGuide(QObject* par = nullptr);
-    // 设置ChartOptWidget
+    // 设置ChartOptWidget，可以调用plotWithGuideDialog调出绘图引导对话框
     void setChartOptWidget(DAAppChartOperateWidget* c);
 
 protected:

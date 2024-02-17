@@ -1,14 +1,10 @@
 ﻿#include "DABrushEditWidget.h"
 #include "ui_DABrushEditWidget.h"
-#include "colorWidgets/SAColorMenu.h"
 namespace DA
 {
 DABrushEditWidget::DABrushEditWidget(QWidget* parent) : QWidget(parent), ui(new Ui::DABrushEditWidget)
 {
     ui->setupUi(this);
-    ui->colorButton->setPopupMode(QToolButton::MenuButtonPopup);
-    mColorMenu = new SAColorMenu(this);
-    mColorMenu->bindToColorToolButton(ui->colorButton);
     ui->colorButton->setColor(QColor());
     connect(ui->colorButton, &DAColorPickerButton::colorChanged, this, &DABrushEditWidget::onColorChanged);
     connect(ui->comboBox, &DABrushStyleComboBox::currentBrushStyleChanged, this, &DABrushEditWidget::onBrushStyleChanged);

@@ -1,5 +1,5 @@
-﻿#ifndef DACHARTADDXYSERIESWIDGET_H
-#define DACHARTADDXYSERIESWIDGET_H
+﻿#ifndef DACHARTADDXYSCATTERWIDGET_H
+#define DACHARTADDXYSCATTERWIDGET_H
 #include "DAGuiAPI.h"
 // DAData
 #include "DAData.h"
@@ -7,26 +7,29 @@
 #include "DAAutoincrementSeries.h"
 // DAGui
 #include "DAAbstractChartAddItemWidget.h"
+// qwt
+class QwtSymbol;
+
 namespace Ui
 {
-class DAChartAddXYSeriesWidget;
+class DAChartAddXYScatterWidget;
 }
 
 namespace DA
 {
 
 class DADataManager;
-DA_IMPL_FORWARD_DECL(DAChartAddXYSeriesWidget)
+DA_IMPL_FORWARD_DECL(DAChartAddXYScatterWidget)
 /**
- * @brief 添加xy series，适用QwtPlotCurve
+ * @brief 添加xy scatter，适用QwtPlotCurve
  */
-class DAGUI_API DAChartAddXYSeriesWidget : public DAAbstractChartAddItemWidget
+class DAGUI_API DAChartAddXYScatterWidget : public DAAbstractChartAddItemWidget
 {
     Q_OBJECT
-    DA_IMPL(DAChartAddXYSeriesWidget)
+    DA_IMPL(DAChartAddXYScatterWidget)
 public:
-    explicit DAChartAddXYSeriesWidget(QWidget* parent = nullptr);
-    ~DAChartAddXYSeriesWidget();
+    explicit DAChartAddXYScatterWidget(QWidget* parent = nullptr);
+    ~DAChartAddXYScatterWidget();
     //
     void setDataManager(DADataManager* dmgr);
     DADataManager* getDataManager() const;
@@ -36,7 +39,8 @@ public:
     bool isYAutoincrement() const;
     // 接口实现
     virtual QwtPlotItem* createPlotItem() override;
-
+    // 注意，此函数是工程函数
+    QwtSymbol* createSymbol() const;
 private slots:
     void onComboBoxXCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
     void onComboBoxYCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
@@ -55,7 +59,7 @@ protected:
     bool tryGetYSelfInc(double& base, double& step);
 
 private:
-    Ui::DAChartAddXYSeriesWidget* ui;
+    Ui::DAChartAddXYScatterWidget* ui;
 };
 }
 #endif  // DACHARTADDXYSCATTERWIDGET_H

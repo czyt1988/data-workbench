@@ -36,6 +36,10 @@ DAFigureWidget* DAAppChartOperateWidget::createFigure()
     if (DAAppFigureWidget* appFig = qobject_cast< DAAppFigureWidget* >(fig)) {
         appFig->installEventFilter(mFigEventFilter);
     }
+    // 这里不需要回退
+    DAChartWidget* chart = fig->createChart();
+    chart->setXLabel("x");
+    chart->setYLabel("y");
     return fig;
 }
 
@@ -44,7 +48,7 @@ DAFigureWidget* DAAppChartOperateWidget::createFigure()
  * @param data
  * @return
  */
-QwtPlotItem* DAAppChartOperateWidget::plotWithGuideDialog(const DAData& data)
+QwtPlotItem* DAAppChartOperateWidget::createPlotItemWithGuideDialog(const DAData& data)
 {
     if (nullptr == mChartGuideDlg) {
         mChartGuideDlg = new DADialogChartGuide(this);
@@ -71,6 +75,26 @@ QwtPlotItem* DAAppChartOperateWidget::plotWithGuideDialog(const DAData& data)
     }
     qDebug() << "color:" << clr.name() << "  |  ColorTheme = " << mColorTheme;
     return item;
+}
+
+/**
+ * @brief 生成绘图通过引导窗口
+ */
+void DAAppChartOperateWidget::plotWithGuideDialog()
+{
+    QwtPlotItem* item = createPlotItemWithGuideDialog();
+    if (!item) {
+        return;
+    }
+    DAFigureWidget* fig = getCurrentFigure();
+    if (!fig) {
+        fig = createFigure();
+    }
+    DAChartWidget* chart = fig->getCurrentChart();
+    if (!chart) {
+        chart = fig->createChart();
+    }
+    fig->addItem_(chart, item);
 }
 
 }  // end DA

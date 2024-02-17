@@ -14,6 +14,7 @@ class DAEvenFilterDragPlotWithGuide;
  */
 class DAAppChartOperateWidget : public DAChartOperateWidget
 {
+    Q_OBJECT
 public:
     DAAppChartOperateWidget(QWidget* parent = nullptr);
     ~DAAppChartOperateWidget();
@@ -24,7 +25,9 @@ public:
 
 public:
     // 绘制,如果没成功，返回nullptr
-    QwtPlotItem* plotWithGuideDialog(const DAData& data = DAData());
+    QwtPlotItem* createPlotItemWithGuideDialog(const DAData& data = DAData());
+    // 调用绘图引导窗口进行引导性绘图
+    void plotWithGuideDialog();
 
 private:
     DADataManager* mDataMgr { nullptr };
