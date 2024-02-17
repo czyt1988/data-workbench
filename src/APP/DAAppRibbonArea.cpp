@@ -469,6 +469,7 @@ void DAAppRibbonArea::buildRibbonFigureCategory()
     m_pannelChartAdd = new SARibbonPannel(m_categoryFigure);
     m_pannelChartAdd->setObjectName(QStringLiteral("da-pannel-figure.chart-add"));
     m_pannelChartAdd->addLargeAction(m_actions->actionChartAddCurve);
+    m_pannelChartAdd->addLargeAction(m_actions->actionChartAddScatter2D);
     m_categoryFigure->addPannel(m_pannelChartAdd);
 }
 
