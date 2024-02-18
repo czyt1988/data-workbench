@@ -69,12 +69,6 @@ QwtPlotItem* DAAppChartOperateWidget::createPlotItemWithGuideDialog(const DAData
     if (nullptr == item) {
         return nullptr;
     }
-    QColor clr = mColorTheme.current();
-    if (DAChartUtil::setPlotItemColor(item, clr)) {
-        // 成功设置颜色，就把主题颜色下移一个
-        mColorTheme.moveToNext();
-    }
-    qDebug() << "color:" << clr.name() << "  |  ColorTheme = " << mColorTheme;
     return item;
 }
 

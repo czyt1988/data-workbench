@@ -1,6 +1,7 @@
-#include "DAChartAddCurveWidget.h"
+﻿#include "DAChartAddCurveWidget.h"
 #include "ui_DAChartAddCurveWidget.h"
 #include <QButtonGroup>
+#include "qwt_plot_curve.h"
 namespace DA
 {
 
@@ -40,12 +41,26 @@ void DAChartAddCurveWidget::init()
     d_ptr->mBtnGroup->addButton(ui->toolButtonStepData);
     d_ptr->mBtnGroup->addButton(ui->toolButtonStepPlot);
     d_ptr->mBtnGroup->setExclusive(true);
-    connect(d_ptr->mBtnGroup, QOverload< QAbstractButton* >::of(&QButtonGroup::buttonClicked), this, &DAChartAddCurveWidget::onNavButtonClicked);
+    connect(d_ptr->mBtnGroup,
+            QOverload< QAbstractButton* >::of(&QButtonGroup::buttonClicked),
+            this,
+            &DAChartAddCurveWidget::onNavButtonClicked);
 }
 
+/**
+ * @brief 按照设定创建曲线
+ * @return
+ */
 QwtPlotItem* DAChartAddCurveWidget::createPlotItem()
 {
-    return nullptr;
+    QVector< QPointF > xy = ui->pageData->getSeries();
+    if (xy.empty()) {
+        return nullptr;
+    }
+    QwtPlotCurve* item = new QwtPlotCurve();
+    item->setSamples(xy);
+    ui->pagePlot->updatePlotItem(item);
+    return item;
 }
 
 void DAChartAddCurveWidget::setCurrentData(const DAData& d)
@@ -61,6 +76,16 @@ DAData DAChartAddCurveWidget::getCurrentData() const
 void DAChartAddCurveWidget::setDataManager(DADataManager* dmgr)
 {
     ui->pageData->setDataManager(dmgr);
+}
+
+void DAChartAddCurveWidget::setScatterMode(bool on)
+{
+    if (on) {
+        ui->pagePlot->setCurveStyle(QwtPlotCurve::NoCurve);
+    } else {
+        ui->pagePlot->setCurveStyle(QwtPlotCurve::Lines);
+    }
+    ui->pagePlot->enableMarkerEdit(on);
 }
 
 void DAChartAddCurveWidget::onNavButtonClicked(QAbstractButton* button)

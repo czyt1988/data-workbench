@@ -115,7 +115,10 @@ void DAPenEditWidget::retranslateUi()
 
 QPen DAPenEditWidget::getCurrentPen() const
 {
-    return d_ptr->mPen;
+    QPen p(d_ptr->colorButton->color());
+    p.setStyle(d_ptr->comboBox->getCurrentPenStyle());
+    p.setWidth(d_ptr->spinBoxWidth->value());
+    return p;
 }
 
 void DAPenEditWidget::setLineStyleTextVisible(bool on)

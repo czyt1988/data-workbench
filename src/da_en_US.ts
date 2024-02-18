@@ -103,6 +103,9 @@
         <location filename="3rdparty/ADS/examples/autohide/mainwindow.ui" line="14"/>
         <location filename="3rdparty/ADS/examples/centralwidget/mainwindow.ui" line="14"/>
         <location filename="3rdparty/ADS/examples/emptydockarea/mainwindow.ui" line="14"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="58"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="58"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="58"/>
         <source>MainWindow</source>
         <translation type="unfinished"></translation>
     </message>
@@ -110,6 +113,9 @@
         <location filename="3rdparty/ADS/examples/autohide/mainwindow.ui" line="28"/>
         <location filename="3rdparty/ADS/examples/centralwidget/mainwindow.ui" line="28"/>
         <location filename="3rdparty/ADS/examples/emptydockarea/mainwindow.ui" line="28"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="59"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="59"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="59"/>
         <source>View</source>
         <translation type="unfinished"></translation>
     </message>
@@ -117,6 +123,9 @@
         <location filename="3rdparty/ADS/examples/autohide/mainwindow.ui" line="35"/>
         <location filename="3rdparty/ADS/examples/centralwidget/mainwindow.ui" line="35"/>
         <location filename="3rdparty/ADS/examples/emptydockarea/mainwindow.ui" line="35"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="60"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="60"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="60"/>
         <source>toolBar</source>
         <translation type="unfinished"></translation>
     </message>
@@ -125,67 +134,93 @@
     <name>CStatusDialogClass</name>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="20"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="146"/>
         <source>Dock Widget Status</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="35"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="147"/>
         <source>Dock Widget:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="58"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="148"/>
         <source>Status</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="64"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="149"/>
         <source>closed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="71"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="150"/>
         <source>floating</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="78"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="151"/>
         <source>tabbed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="85"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="152"/>
         <source>is current tab</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="101"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="153"/>
         <source>Feature Flags</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="107"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="154"/>
         <source>DockWidgetClosable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="114"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="155"/>
         <source>DockWidgetMovable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="121"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="156"/>
         <source>DockWidgetFloatable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="128"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="157"/>
         <source>DockWidgetDeleteOnClose</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="135"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="158"/>
         <source>CustomCloseHandling</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA</name>
+    <message>
+        <location filename="DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="36"/>
+        <source>Exception in get selected column:%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="52"/>
+        <source>Exception in get selected series:%1</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -680,117 +715,117 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="APP/DAAppController.cpp" line="568"/>
-        <location filename="APP/DAAppController.cpp" line="644"/>
+        <location filename="APP/DAAppController.cpp" line="533"/>
+        <location filename="APP/DAAppController.cpp" line="609"/>
         <source>project file(*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="583"/>
+        <location filename="APP/DAAppController.cpp" line="548"/>
         <source>Question</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="584"/>
+        <location filename="APP/DAAppController.cpp" line="549"/>
         <source>Another project already exists. Do you want to replace it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="598"/>
-        <location filename="APP/DAAppController.cpp" line="657"/>
+        <location filename="APP/DAAppController.cpp" line="563"/>
+        <location filename="APP/DAAppController.cpp" line="622"/>
         <source>failed to load project file:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="611"/>
-        <location filename="APP/DAAppController.cpp" line="679"/>
+        <location filename="APP/DAAppController.cpp" line="576"/>
+        <location filename="APP/DAAppController.cpp" line="644"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="613"/>
+        <location filename="APP/DAAppController.cpp" line="578"/>
         <source>project file (*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="623"/>
+        <location filename="APP/DAAppController.cpp" line="588"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="624"/>
+        <location filename="APP/DAAppController.cpp" line="589"/>
         <source>Whether to overwrite the file:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="633"/>
-        <location filename="APP/DAAppController.cpp" line="690"/>
+        <location filename="APP/DAAppController.cpp" line="598"/>
+        <location filename="APP/DAAppController.cpp" line="655"/>
         <source>Project saved failed!,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="637"/>
-        <location filename="APP/DAAppController.cpp" line="708"/>
+        <location filename="APP/DAAppController.cpp" line="602"/>
+        <location filename="APP/DAAppController.cpp" line="673"/>
         <source>Project saved successfully,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="681"/>
+        <location filename="APP/DAAppController.cpp" line="646"/>
         <source>Project Files (*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="725"/>
+        <location filename="APP/DAAppController.cpp" line="690"/>
         <source>Project load successfully,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="791"/>
+        <location filename="APP/DAAppController.cpp" line="753"/>
         <source>Image files (*.png *.jpg)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="792"/>
+        <location filename="APP/DAAppController.cpp" line="754"/>
         <source>Any files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="875"/>
+        <location filename="APP/DAAppController.cpp" line="837"/>
         <source>get null project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="881"/>
+        <location filename="APP/DAAppController.cpp" line="843"/>
         <source>warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="882"/>
+        <location filename="APP/DAAppController.cpp" line="844"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1129"/>
+        <location filename="APP/DAAppController.cpp" line="1091"/>
         <source>Before creating a new coordinate,you need to create a figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1563"/>
+        <location filename="APP/DAAppController.cpp" line="1536"/>
         <source>%1_Describe</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1564"/>
+        <location filename="APP/DAAppController.cpp" line="1537"/>
         <source>Generate descriptive statistics that summarize the central tendency, dispersion and shape of a [%1]’s distribution, excluding NaN values</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1665"/>
+        <location filename="APP/DAAppController.cpp" line="1638"/>
         <source>new workflow name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1666"/>
+        <location filename="APP/DAAppController.cpp" line="1639"/>
         <source>new workflow name:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1115,187 +1150,89 @@ Config</source>
     </message>
 </context>
 <context>
-    <name>DA::DAChartAddXYScatterWidget</name>
-    <message>
-        <location filename="DAGui/DAChartAddXYScatterWidget.cpp" line="42"/>
-        <source>curve</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/DAChartAddXYScatterWidget.cpp" line="45"/>
-        <source>x</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/DAChartAddXYScatterWidget.cpp" line="45"/>
-        <source>y</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/DAChartAddXYScatterWidget.cpp" line="227"/>
-        <location filename="DAGui/DAChartAddXYScatterWidget.cpp" line="235"/>
-        <location filename="DAGui/DAChartAddXYScatterWidget.cpp" line="258"/>
-        <location filename="DAGui/DAChartAddXYScatterWidget.cpp" line="267"/>
-        <location filename="DAGui/DAChartAddXYScatterWidget.cpp" line="290"/>
-        <location filename="DAGui/DAChartAddXYScatterWidget.cpp" line="304"/>
-        <location filename="DAGui/DAChartAddXYScatterWidget.cpp" line="311"/>
-        <location filename="DAGui/DAChartAddXYScatterWidget.cpp" line="330"/>
-        <location filename="DAGui/DAChartAddXYScatterWidget.cpp" line="344"/>
-        <location filename="DAGui/DAChartAddXYScatterWidget.cpp" line="352"/>
-        <location filename="DAGui/DAChartAddXYScatterWidget.cpp" line="371"/>
-        <location filename="DAGui/DAChartAddXYScatterWidget.cpp" line="382"/>
-        <location filename="DAGui/DAChartAddXYScatterWidget.cpp" line="389"/>
-        <location filename="DAGui/DAChartAddXYScatterWidget.cpp" line="397"/>
-        <source>Warning</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/DAChartAddXYScatterWidget.cpp" line="228"/>
-        <source>The initial value of x auto increment series must be a floating-point arithmetic number</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/DAChartAddXYScatterWidget.cpp" line="236"/>
-        <source>The step value of x auto increment series must be a floating-point arithmetic number</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/DAChartAddXYScatterWidget.cpp" line="259"/>
-        <source>The initial value of y auto increment series must be a floating-point arithmetic number</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/DAChartAddXYScatterWidget.cpp" line="268"/>
-        <source>The step value of y auto increment series must be a floating-point arithmetic number</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/DAChartAddXYScatterWidget.cpp" line="291"/>
-        <source>x and y cannot be set to autoincrement at the same time</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/DAChartAddXYScatterWidget.cpp" line="305"/>
-        <location filename="DAGui/DAChartAddXYScatterWidget.cpp" line="390"/>
-        <source>y must be a series</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/DAChartAddXYScatterWidget.cpp" line="312"/>
-        <location filename="DAGui/DAChartAddXYScatterWidget.cpp" line="353"/>
-        <location filename="DAGui/DAChartAddXYScatterWidget.cpp" line="398"/>
-        <source>The None value cannot be converted to a series</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/DAChartAddXYScatterWidget.cpp" line="326"/>
-        <location filename="DAGui/DAChartAddXYScatterWidget.cpp" line="367"/>
-        <location filename="DAGui/DAChartAddXYScatterWidget.cpp" line="417"/>
-        <source>Exception occurred during extracting from pandas.Series to double vector:%1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/DAChartAddXYScatterWidget.cpp" line="331"/>
-        <location filename="DAGui/DAChartAddXYScatterWidget.cpp" line="372"/>
-        <source>Exception occurred during extracting from pandas.Series to double vector</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/DAChartAddXYScatterWidget.cpp" line="345"/>
-        <location filename="DAGui/DAChartAddXYScatterWidget.cpp" line="383"/>
-        <source>x must be a series</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>DA::DAChartAddXYSeriesWidget</name>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="38"/>
-        <source>curve</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="41"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="40"/>
         <source>x</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="41"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="40"/>
         <source>y</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="204"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="212"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="235"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="244"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="267"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="281"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="288"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="307"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="321"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="329"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="348"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="359"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="366"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="374"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="272"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="280"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="303"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="312"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="335"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="349"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="356"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="375"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="389"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="397"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="416"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="427"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="434"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="442"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="205"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="273"/>
         <source>The initial value of x auto increment series must be a floating-point arithmetic number</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="213"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="281"/>
         <source>The step value of x auto increment series must be a floating-point arithmetic number</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="236"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="304"/>
         <source>The initial value of y auto increment series must be a floating-point arithmetic number</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="245"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="313"/>
         <source>The step value of y auto increment series must be a floating-point arithmetic number</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="268"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="336"/>
         <source>x and y cannot be set to autoincrement at the same time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="282"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="367"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="350"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="435"/>
         <source>y must be a series</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="289"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="330"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="375"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="357"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="398"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="443"/>
         <source>The None value cannot be converted to a series</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="303"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="344"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="394"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="371"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="412"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="462"/>
         <source>Exception occurred during extracting from pandas.Series to double vector:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="308"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="349"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="376"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="417"/>
         <source>Exception occurred during extracting from pandas.Series to double vector</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="322"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="360"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="390"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="428"/>
         <source>x must be a series</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1303,18 +1240,28 @@ Config</source>
 <context>
     <name>DA::DAChartCurveItemSettingWidget</name>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="20"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="108"/>
         <source>Lines</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="21"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="109"/>
+        <source>Sticks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="110"/>
         <source>Steps</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="22"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="111"/>
         <source>Dots</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="112"/>
+        <source>No Curve</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1696,12 +1643,12 @@ Config</source>
 <context>
     <name>DA::DADialogChartGuide</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="33"/>
+        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="30"/>
         <source>curve</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="37"/>
+        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="34"/>
         <source>scatter</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2018,19 +1965,6 @@ Config</source>
     </message>
 </context>
 <context>
-    <name>DA::DAPyDataframeColumnsListWidget</name>
-    <message>
-        <location filename="DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="36"/>
-        <source>Exception in get selected column:%1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="52"/>
-        <source>Exception in get selected series:%1</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>DA::DARenameColumnsNameDialog</name>
     <message>
         <location filename="DAGui/Dialog/DARenameColumnsNameDialog.cpp" line="47"/>
@@ -2213,56 +2147,25 @@ Config</source>
     </message>
 </context>
 <context>
-    <name>DAChartAddXYScatterWidget</name>
+    <name>DAChartAddCurveWidget</name>
     <message>
-        <location filename="DAGui/DAChartAddXYScatterWidget.ui" line="14"/>
+        <location filename="DAGui/DAChartAddCurveWidget.ui" line="14"/>
         <source>Form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYScatterWidget.ui" line="44"/>
-        <source>Title:</source>
+        <location filename="DAGui/DAChartAddCurveWidget.ui" line="37"/>
+        <source>1.Data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYScatterWidget.ui" line="69"/>
-        <source>X</source>
+        <location filename="DAGui/DAChartAddCurveWidget.ui" line="53"/>
+        <source>&gt;&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYScatterWidget.ui" line="81"/>
-        <location filename="DAGui/DAChartAddXYScatterWidget.ui" line="142"/>
-        <source>Autoincrement series</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/DAChartAddXYScatterWidget.ui" line="96"/>
-        <location filename="DAGui/DAChartAddXYScatterWidget.ui" line="157"/>
-        <source>Initial value</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/DAChartAddXYScatterWidget.ui" line="103"/>
-        <location filename="DAGui/DAChartAddXYScatterWidget.ui" line="117"/>
-        <location filename="DAGui/DAChartAddXYScatterWidget.ui" line="164"/>
-        <location filename="DAGui/DAChartAddXYScatterWidget.ui" line="178"/>
-        <source>1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/DAChartAddXYScatterWidget.ui" line="110"/>
-        <location filename="DAGui/DAChartAddXYScatterWidget.ui" line="171"/>
-        <source>Self increasing step size</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/DAChartAddXYScatterWidget.ui" line="130"/>
-        <source>Y</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/DAChartAddXYScatterWidget.ui" line="191"/>
-        <source>Scatter</source>
+        <location filename="DAGui/DAChartAddCurveWidget.ui" line="60"/>
+        <source>2.Plot</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2274,43 +2177,43 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="29"/>
-        <source>Title:</source>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="28"/>
+        <source>Data Frame</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="54"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="63"/>
         <source>X</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="66"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="127"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="75"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="136"/>
         <source>Autoincrement series</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="81"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="142"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="90"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="151"/>
         <source>Initial value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="88"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="102"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="149"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="163"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="97"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="111"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="158"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="172"/>
         <source>1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="95"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="156"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="104"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="165"/>
         <source>Self increasing step size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="115"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="124"/>
         <source>Y</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2323,33 +2226,109 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="35"/>
-        <source>Style</source>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="27"/>
+        <source>Title</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="45"/>
-        <source>Pen</source>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="20"/>
+        <source>Curve Style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="62"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="141"/>
+        <source>Curve Attribute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="50"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Only in combination with Lines Style, tries to interpolate/smooth the curve, before it is painted. &lt;/p&gt;&lt;p&gt;Note:Curve fitting requires temporary memory for calculating coefficients and additional points.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="53"/>
+        <source>Fitted</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="167"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For Steps curve style only. Draws a step function from the right to the left.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="170"/>
+        <source>Inverted</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="40"/>
+        <source>Legend Attribute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="185"/>
+        <source>Show Line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="198"/>
+        <source>Show Symbol</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="211"/>
+        <source>Show Brush</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="60"/>
+        <source>Line Pen</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="316"/>
+        <source>Marker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="89"/>
+        <source>Other</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="107"/>
+        <source>Base line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="117"/>
+        <source>Orientation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="124"/>
+        <source>Horizontal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="131"/>
+        <source>Vertical</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="232"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="257"/>
         <source>Fill</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="74"/>
-        <source>base line</source>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="250"/>
+        <source>fill brush</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="81"/>
-        <source>The area between the curve and the baseline will be filled</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="94"/>
-        <source>Symbol</source>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="298"/>
+        <source>Marker Setting</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2496,12 +2475,7 @@ Config</source>
     <name>DADialogChartGuide</name>
     <message>
         <location filename="DAGui/Dialog/DADialogChartGuide.ui" line="14"/>
-        <source>Dialog</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogChartGuide.ui" line="28"/>
-        <source>Data Frame</source>
+        <source>Chart Guide</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3272,12 +3246,20 @@ Config</source>
         <location filename="3rdparty/ADS/examples/simple/MainWindow.ui" line="14"/>
         <location filename="3rdparty/SARibbon/src/example/NormalMenuBarExample/MainWindow.ui" line="14"/>
         <location filename="tst/FCD3Viewer/MainWindow.ui" line="14"/>
+        <location filename="3rdparty/build-SARibbon-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="70"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="87"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="70"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="121"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/simple/SimpleExample_autogen/include/ui_MainWindow.h" line="58"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="70"/>
         <source>MainWindow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="32"/>
         <location filename="3rdparty/ADS/examples/hideshow/MainWindow.ui" line="33"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="91"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="74"/>
         <source>File</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3286,71 +3268,92 @@ Config</source>
         <location filename="3rdparty/ADS/examples/hideshow/MainWindow.ui" line="28"/>
         <location filename="3rdparty/ADS/examples/sidebar/MainWindow.ui" line="75"/>
         <location filename="3rdparty/ADS/examples/simple/MainWindow.ui" line="28"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="92"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="73"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="123"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/simple/SimpleExample_autogen/include/ui_MainWindow.h" line="59"/>
         <source>View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="44"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="93"/>
         <source>About</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="49"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="94"/>
         <source>Tests</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="59"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="95"/>
         <source>toolBar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="70"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="88"/>
         <source>Exit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="75"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="89"/>
         <source>Save State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="80"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="90"/>
         <source>Restore State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/examples/hideshow/MainWindow.ui" line="44"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="71"/>
         <source>Open project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/examples/hideshow/MainWindow.ui" line="49"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="72"/>
         <source>Close project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/examples/sidebar/MainWindow.ui" line="26"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="122"/>
         <source>PushButton</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/SARibbon/src/example/NormalMenuBarExample/MainWindow.ui" line="28"/>
+        <location filename="3rdparty/build-SARibbon-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="73"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="73"/>
         <source>file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/SARibbon/src/example/NormalMenuBarExample/MainWindow.ui" line="35"/>
+        <location filename="3rdparty/build-SARibbon-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="74"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="74"/>
         <source>edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/SARibbon/src/example/NormalMenuBarExample/MainWindow.ui" line="44"/>
+        <location filename="3rdparty/build-SARibbon-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="71"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="71"/>
         <source>open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/SARibbon/src/example/NormalMenuBarExample/MainWindow.ui" line="49"/>
+        <location filename="3rdparty/build-SARibbon-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="72"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="72"/>
         <source>save</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4079,6 +4082,86 @@ Wrap</source>
     <message>
         <location filename="3rdparty/SARibbon/src/example/StaticExample/MainWindow.cpp" line="19"/>
         <source>other</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="52"/>
+        <source>Example MainWindow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="126"/>
+        <source>File(&amp;F)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="127"/>
+        <source>New(&amp;N)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="128"/>
+        <source>Open(&amp;O)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="131"/>
+        <source>Edit(&amp;E)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="132"/>
+        <source>Undo(&amp;U)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="133"/>
+        <source>Redo(&amp;R)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="136"/>
+        <source>Enable dark theme</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="146"/>
+        <source>Enable DWM blur</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="156"/>
+        <source>Enable acrylic material</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="166"/>
+        <source>Enable mica</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="176"/>
+        <source>Enable mica alt</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="186"/>
+        <source>Dark blur</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="198"/>
+        <source>Light blur</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="210"/>
+        <source>No blur</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="229"/>
+        <source>Settings(&amp;S)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5783,16 +5866,22 @@ Author:czy</source>
     <message>
         <location filename="3rdparty/SARibbon/src/example/WidgetWithRibbon/Widget.ui" line="14"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="14"/>
+        <location filename="3rdparty/build-SARibbon-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="63"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="63"/>
         <source>Widget</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/SARibbon/src/example/WidgetWithRibbon/Widget.ui" line="54"/>
+        <location filename="3rdparty/build-SARibbon-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="64"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="64"/>
         <source>Tab 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/SARibbon/src/example/WidgetWithRibbon/Widget.ui" line="59"/>
+        <location filename="3rdparty/build-SARibbon-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="65"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="65"/>
         <source>Tab 2</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6137,6 +6226,54 @@ Author:czy</source>
     <message>
         <location filename="3rdparty/ctk/ctk/ctkPathLineEdit.cpp" line="585"/>
         <source>Select a file to save </source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>main</name>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="12"/>
+        <source>Hello, world!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="150"/>
+        <source>Theme</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="158"/>
+        <source>Light</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="164"/>
+        <source>Dark</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="172"/>
+        <source>Special effect</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="181"/>
+        <source>DWM blur</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="191"/>
+        <source>Acrylic material</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="201"/>
+        <source>Mica</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="211"/>
+        <source>Mica Alt</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

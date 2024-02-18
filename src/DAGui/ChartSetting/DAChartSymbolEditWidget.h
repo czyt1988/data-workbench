@@ -30,6 +30,8 @@ public:
     // Outline
     void setSymbolOutlinePen(const QPen& v);
     QPen getSymbolOutlinePen() const;
+    // 根据ui，创建一个symbol
+    QwtSymbol* createSymbol() const;
 signals:
     /**
      * @brief 符号标记改变信号

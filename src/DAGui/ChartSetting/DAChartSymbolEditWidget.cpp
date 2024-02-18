@@ -86,6 +86,21 @@ QPen DAChartSymbolEditWidget::getSymbolOutlinePen() const
     return ui->penEditWidget->getCurrentPen();
 }
 
+/**
+ * @brief 根据ui，创建一个symbol
+ * @note 注意，这是个工程函数，创建完成后如果不使用，调用者要对symbol进行释放
+ * @return
+ */
+QwtSymbol* DAChartSymbolEditWidget::createSymbol() const
+{
+    int size     = getSymbolSize();
+    QwtSymbol* s = new QwtSymbol(getSymbolStyle());
+    s->setSize(QSize(size, size));
+    s->setBrush(getSymbolColor());
+    s->setPen(getSymbolOutlinePen());
+    return s;
+}
+
 void DAChartSymbolEditWidget::init()
 {
     ui->penEditWidget->setCurrentPen(Qt::NoPen);

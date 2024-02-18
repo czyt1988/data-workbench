@@ -35,6 +35,9 @@ public:
     bool isStyleTextVisible() const;
     // 重建所有items
     void rebuildItems();
+    // 获取当前的画笔类型
+    Qt::PenStyle getCurrentPenStyle() const;
+
 public slots:
     // 设置画笔
     void setPen(const QPen& p);

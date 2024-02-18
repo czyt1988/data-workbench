@@ -133,9 +133,11 @@ void DADialogChartGuide::onListWidgetCurrentItemChanged(QListWidgetItem* current
     switch (ct) {
     case DA::ChartTypes::Curve:
         ui->stackedWidget->setCurrentWidget(ui->pageCurve);
+        ui->pageCurve->setScatterMode(false);
         break;
     case DA::ChartTypes::Scatter:
         ui->stackedWidget->setCurrentWidget(ui->pageCurve);
+        ui->pageCurve->setScatterMode(true);
         break;
     default:
         break;

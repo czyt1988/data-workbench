@@ -1,4 +1,4 @@
-#ifndef DACHARTADDCURVEWIDGET_H
+﻿#ifndef DACHARTADDCURVEWIDGET_H
 #define DACHARTADDCURVEWIDGET_H
 #include <QWidget>
 #include "DAAbstractChartAddItemWidget.h"
@@ -31,7 +31,8 @@ public:
     // 设置datamanager,会把combox填入所有的dataframe
     void setDataManager(DADataManager* dmgr);
     // 设置仅仅只有symbol，此时会把plot类型设置为no curve，把symbol 勾上
-    void setSymbolOnly(bool true);
+    void setScatterMode(bool on);
+
 private slots:
     // 顶部导航按钮点击槽
     void onNavButtonClicked(QAbstractButton* button);
