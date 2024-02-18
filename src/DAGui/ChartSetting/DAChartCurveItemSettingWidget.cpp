@@ -1,44 +1,25 @@
-﻿#include "DAChartCurveItemSettingWidget.h"
+#include "DAChartCurveItemSettingWidget.h"
 #include "ui_DAChartCurveItemSettingWidget.h"
-
 namespace DA
 {
-
 DAChartCurveItemSettingWidget::DAChartCurveItemSettingWidget(QWidget* parent)
     : QWidget(parent), ui(new Ui::DAChartCurveItemSettingWidget)
 {
     ui->setupUi(this);
-    initUI();
 }
 
 DAChartCurveItemSettingWidget::~DAChartCurveItemSettingWidget()
 {
     delete ui;
 }
-void DAChartCurveItemSettingWidget::initUI()
+
+void DAChartCurveItemSettingWidget::setTitle(const QString& t)
 {
-    ui->comboBoxCurveStyle->addItem(tr("Lines"), (int)QwtPlotCurve::Lines);
-    ui->comboBoxCurveStyle->addItem(tr("Steps"), (int)QwtPlotCurve::Steps);
-    ui->comboBoxCurveStyle->addItem(tr("Dots"), (int)QwtPlotCurve::Dots);
-    connect(ui->comboBoxCurveStyle,
-            QOverload< int >::of(&QComboBox::currentIndexChanged),
-            this,
-            &DAChartCurveItemSettingWidget::onCurveStyleComboBoxCurrentIndexChanged);
-}
-void DAChartCurveItemSettingWidget::setChartCurveItem(QwtPlotCurve* item)
-{
-    _item = item;
+    ui->lineEditTitle->setText(t);
 }
 
-QwtPlotCurve* DAChartCurveItemSettingWidget::getChartCurveItem() const
+QString DAChartCurveItemSettingWidget::getTitle() const
 {
-    return _item;
+    return ui->lineEditTitle->text();
 }
-
-void DAChartCurveItemSettingWidget::onCurveStyleComboBoxCurrentIndexChanged(int i)
-{
-    QwtPlotCurve::CurveStyle st = static_cast< QwtPlotCurve::CurveStyle >(ui->comboBoxCurveStyle->itemData(i).toInt());
-    emit curveStyleChanged(st);
-}
-
 }

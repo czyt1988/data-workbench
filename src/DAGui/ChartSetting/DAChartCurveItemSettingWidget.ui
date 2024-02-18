@@ -6,117 +6,250 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>198</width>
-    <height>290</height>
+    <width>355</width>
+    <height>540</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout_2">
-   <property name="leftMargin">
-    <number>1</number>
-   </property>
-   <property name="topMargin">
-    <number>1</number>
-   </property>
-   <property name="rightMargin">
-    <number>1</number>
-   </property>
-   <property name="bottomMargin">
-    <number>1</number>
-   </property>
-   <property name="spacing">
-    <number>1</number>
-   </property>
-   <item row="0" column="0">
-    <widget class="QLabel" name="label_2">
-     <property name="text">
-      <string>Style</string>
-     </property>
-    </widget>
+  <layout class="QVBoxLayout" name="verticalLayout_5">
+   <item>
+    <layout class="QGridLayout" name="gridLayout_2">
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_6">
+       <property name="text">
+        <string>Title</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1" colspan="2">
+      <widget class="QLineEdit" name="lineEditTitle"/>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Curve Style</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1" colspan="2">
+      <widget class="QComboBox" name="comboBoxCurveStyle"/>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Curve Attribute</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QCheckBox" name="checkBoxFitted">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Only in combination with Lines Style, tries to interpolate/smooth the curve, before it is painted. &lt;/p&gt;&lt;p&gt;Note:Curve fitting requires temporary memory for calculating coefficients and additional points.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>Fitted</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="2">
+      <widget class="QCheckBox" name="checkBoxInverted">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For Steps curve style only. Draws a step function from the right to the left.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>Inverted</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="label_3">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>54</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Legend Attribute</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1" colspan="2">
+      <layout class="QVBoxLayout" name="verticalLayout_4">
+       <item>
+        <widget class="QCheckBox" name="checkBoxShowLine">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>18</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Show Line</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkBoxShowSymbol">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>18</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Show Symbol</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkBoxShowBrush">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>18</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Show Brush</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
    </item>
-   <item row="0" column="1">
-    <widget class="QComboBox" name="comboBoxCurveStyle"/>
-   </item>
-   <item row="1" column="0">
-    <widget class="QCheckBox" name="checkBox">
-     <property name="text">
-      <string>Pen</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="1">
-    <widget class="DA::DAPenEditWidget" name="penEditWidget" native="true">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0" colspan="2">
-    <widget class="DA::DACollapsibleGroupBox" name="groupBox">
+   <item>
+    <widget class="DA::DACollapsibleGroupBox" name="groupBoxPen">
      <property name="title">
-      <string>Fill</string>
+      <string>Line Pen</string>
      </property>
-     <property name="flat">
-      <bool>true</bool>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <property name="spacing">
+       <number>4</number>
+      </property>
+      <property name="leftMargin">
+       <number>4</number>
+      </property>
+      <property name="topMargin">
+       <number>4</number>
+      </property>
+      <property name="rightMargin">
+       <number>4</number>
+      </property>
+      <property name="bottomMargin">
+       <number>4</number>
+      </property>
+      <item>
+       <widget class="DA::DAPenEditWidget" name="penEditWidget" native="true"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="DA::DACollapsibleGroupBox" name="groupBoxSymbol">
+     <property name="title">
+      <string>Marker</string>
      </property>
      <property name="checkable">
       <bool>true</bool>
      </property>
-     <layout class="QGridLayout" name="gridLayout">
-      <item row="0" column="0">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>base line</string>
-        </property>
-       </widget>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <property name="spacing">
+       <number>4</number>
+      </property>
+      <property name="leftMargin">
+       <number>4</number>
+      </property>
+      <property name="topMargin">
+       <number>4</number>
+      </property>
+      <property name="rightMargin">
+       <number>4</number>
+      </property>
+      <property name="bottomMargin">
+       <number>4</number>
+      </property>
+      <item>
+       <widget class="DA::DAChartSymbolEditWidget" name="symbolEditWidget" native="true"/>
       </item>
-      <item row="0" column="1">
-       <widget class="QLineEdit" name="lineEditBaseLine">
-        <property name="toolTip">
-         <string>The area between the curve and the baseline will be filled</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0" colspan="2">
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="DA::DACollapsibleGroupBox" name="groupBoxFill">
+     <property name="title">
+      <string>Fill</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <property name="spacing">
+       <number>4</number>
+      </property>
+      <property name="leftMargin">
+       <number>4</number>
+      </property>
+      <property name="topMargin">
+       <number>4</number>
+      </property>
+      <property name="rightMargin">
+       <number>4</number>
+      </property>
+      <property name="bottomMargin">
+       <number>4</number>
+      </property>
+      <item>
        <widget class="DA::DABrushEditWidget" name="brushEditWidget" native="true"/>
       </item>
      </layout>
     </widget>
    </item>
-   <item row="3" column="0" colspan="2">
-    <widget class="QGroupBox" name="groupBox_2">
+   <item>
+    <widget class="QGroupBox" name="groupBox">
      <property name="title">
-      <string>Symbol</string>
+      <string>Other</string>
      </property>
-     <property name="flat">
-      <bool>true</bool>
-     </property>
-     <property name="checkable">
-      <bool>true</bool>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout">
-      <property name="spacing">
-       <number>1</number>
-      </property>
-      <property name="leftMargin">
-       <number>1</number>
-      </property>
-      <property name="topMargin">
-       <number>1</number>
-      </property>
-      <property name="rightMargin">
-       <number>1</number>
-      </property>
-      <property name="bottomMargin">
-       <number>1</number>
-      </property>
-      <item>
-       <widget class="DA::DAChartSymbolEditWidget" name="widget" native="true"/>
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>Base line</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1" colspan="2">
+       <widget class="QLineEdit" name="lineEditBaseLine"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>Orientation</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QRadioButton" name="radioButtonHorizontal">
+        <property name="text">
+         <string>Horizontal</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QRadioButton" name="radioButtonVertical">
+        <property name="text">
+         <string>Vertical</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -125,27 +258,27 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>DA::DAPenEditWidget</class>
-   <extends>QWidget</extends>
-   <header>DAPenEditWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>DA::DACollapsibleGroupBox</class>
    <extends>QGroupBox</extends>
-   <header>DACollapsibleGroupBox.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>DA::DABrushEditWidget</class>
-   <extends>QWidget</extends>
-   <header>DABrushEditWidget.h</header>
+   <header location="global">DACollapsibleGroupBox.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>DA::DAChartSymbolEditWidget</class>
    <extends>QWidget</extends>
    <header>DAChartSymbolEditWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DA::DAPenEditWidget</class>
+   <extends>QWidget</extends>
+   <header>DAPenEditWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DA::DABrushEditWidget</class>
+   <extends>QWidget</extends>
+   <header>DABrushEditWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

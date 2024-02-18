@@ -63,12 +63,12 @@
 // 未实现的功能标记
 #define DAAPPCONTROLLER_PASS()                                                                                         \
     QMessageBox::                                                                                                      \
-        warning(app(),                                                                                                 \
-                QCoreApplication::translate("DAAppRibbonArea", "warning", nullptr),                                    \
-                QCoreApplication::translate("DAAppRibbonArea",                                                         \
-                                            "The current function is not implemented, only the UI is reserved, "       \
-                                            "please pay attention: https://gitee.com/czyt1988/data-work-flow",         \
-                                            nullptr))
+            warning(app(),                                                                                             \
+                    QCoreApplication::translate("DAAppRibbonArea", "warning", nullptr),                                \
+                    QCoreApplication::translate("DAAppRibbonArea",                                                     \
+                                                "The current function is not implemented, only the UI is reserved, "   \
+                                                "please pay attention: https://gitee.com/czyt1988/data-work-flow",     \
+                                                nullptr))
 
 // 快速链接信号槽
 #define DAAPPCONTROLLER_ACTION_BIND(actionname, functionname)                                                          \
@@ -327,30 +327,12 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnablePickerY, onActionChartEnablePickerYTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnablePickerXY, onActionChartEnablePickerXYTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableLegend, onActionChartEnableLegendTriggered);
-    connect(mActions->actionGroupChartLegendAlignment,
-            &QActionGroup::triggered,
-            this,
-            &DAAppController::onActionGroupChartLegendAlignmentTriggered);
-    connect(mRibbon->m_spinboxChartLegendMaxColumns,
-            QOverload< int >::of(&QSpinBox::valueChanged),
-            this,
-            &DAAppController::onChartLegendMaxColumnsValueChanged);
-    connect(mRibbon->m_spinboxChartLegendMargin,
-            QOverload< int >::of(&QSpinBox::valueChanged),
-            this,
-            &DAAppController::onChartLegendMarginValueChanged);
-    connect(mRibbon->m_spinboxChartLegendSpacing,
-            QOverload< int >::of(&QSpinBox::valueChanged),
-            this,
-            &DAAppController::onChartLegendSpacingValueChanged);
-    connect(mRibbon->m_spinboxChartLegendItemMargin,
-            QOverload< int >::of(&QSpinBox::valueChanged),
-            this,
-            &DAAppController::onChartLegendItemMarginValueChanged);
-    connect(mRibbon->m_spinboxChartLegendItemSpacing,
-            QOverload< int >::of(&QSpinBox::valueChanged),
-            this,
-            &DAAppController::onChartLegendItemSpacingValueChanged);
+    connect(mActions->actionGroupChartLegendAlignment, &QActionGroup::triggered, this, &DAAppController::onActionGroupChartLegendAlignmentTriggered);
+    connect(mRibbon->m_spinboxChartLegendMaxColumns, QOverload< int >::of(&QSpinBox::valueChanged), this, &DAAppController::onChartLegendMaxColumnsValueChanged);
+    connect(mRibbon->m_spinboxChartLegendMargin, QOverload< int >::of(&QSpinBox::valueChanged), this, &DAAppController::onChartLegendMarginValueChanged);
+    connect(mRibbon->m_spinboxChartLegendSpacing, QOverload< int >::of(&QSpinBox::valueChanged), this, &DAAppController::onChartLegendSpacingValueChanged);
+    connect(mRibbon->m_spinboxChartLegendItemMargin, QOverload< int >::of(&QSpinBox::valueChanged), this, &DAAppController::onChartLegendItemMarginValueChanged);
+    connect(mRibbon->m_spinboxChartLegendItemSpacing, QOverload< int >::of(&QSpinBox::valueChanged), this, &DAAppController::onChartLegendItemSpacingValueChanged);
     connect(mRibbon->m_spinboxChartLegendBorderRadius,
             QOverload< double >::of(&QDoubleSpinBox::valueChanged),
             this,
@@ -372,10 +354,7 @@ void DAAppController::initConnection()
     //  connect(m_comboxColumnTypes, &DAPyDTypeComboBox::currentDTypeChanged, this,&DAAppRibbonArea::onComboxColumnTypesCurrentDTypeChanged);
     //  QObject::connect: signal not found in DAPyDTypeComboBox
 #if DA_ENABLE_PYTHON
-    connect(mRibbon->m_comboxColumnTypes,
-            SIGNAL(currentDTypeChanged(DAPyDType)),
-            this,
-            SLOT(onComboxColumnTypesCurrentDTypeChanged(DAPyDType)));
+    connect(mRibbon->m_comboxColumnTypes, SIGNAL(currentDTypeChanged(DAPyDType)), this, SLOT(onComboxColumnTypesCurrentDTypeChanged(DAPyDType)));
 #endif
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChangeToIndex, onActionChangeToIndexTriggered);
     // View Category
@@ -387,8 +366,7 @@ void DAAppController::initConnection()
 
     // workflow edit 工作流编辑
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowNew, onActionNewWorkflowTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowEnableItemLinkageMove,
-                                onActionWorkflowEnableItemLinkageMoveTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowEnableItemLinkageMove, onActionWorkflowEnableItemLinkageMoveTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionItemGrouping, onActionItemGroupingTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionItemUngroup, onActionItemUngroupTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowRun, onActionRunCurrentWorkflowTriggered);
@@ -398,8 +376,7 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowStartDrawText, onActionStartDrawTextTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowAddBackgroundPixmap, onActionAddBackgroundPixmapTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowLockBackgroundPixmap, onActionLockBackgroundPixmapTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowEnableItemMoveWithBackground,
-                                onActionEnableItemMoveWithBackgroundTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowEnableItemMoveWithBackground, onActionEnableItemMoveWithBackgroundTriggered);
 
     // other
     connect(mActions->actionGroupRibbonTheme, &QActionGroup::triggered, this, &DAAppController::onActionGroupRibbonThemeTriggered);
@@ -428,10 +405,7 @@ void DAAppController::initConnection()
 
     connect(mRibbon, &DAAppRibbonArea::selectedWorkflowItemFont, this, &DAAppController::onCurrentWorkflowFontChanged);
     connect(mRibbon, &DAAppRibbonArea::selectedWorkflowItemFontColor, this, &DAAppController::onCurrentWorkflowFontColorChanged);
-    connect(mRibbon,
-            &DAAppRibbonArea::selectedWorkflowItemBrush,
-            this,
-            &DAAppController::onCurrentWorkflowShapeBackgroundBrushChanged);
+    connect(mRibbon, &DAAppRibbonArea::selectedWorkflowItemBrush, this, &DAAppController::onCurrentWorkflowShapeBackgroundBrushChanged);
     connect(mRibbon, &DAAppRibbonArea::selectedWorkflowItemPen, this, &DAAppController::onCurrentWorkflowShapeBorderPenChanged);
 
     //===================================================
@@ -449,24 +423,15 @@ void DAAppController::initConnection()
     connect(cow, &DAChartOperateWidget::chartAdded, this, &DAAppController::onChartAdded);
     connect(cow, &DAChartOperateWidget::currentChartChanged, this, &DAAppController::onCurrentChartChanged);
     // 鼠标动作完成的触发
-    connect(mDock->getWorkFlowOperateWidget(),
-            &DAWorkFlowOperateWidget::mouseActionFinished,
-            this,
-            &DAAppController::onWorkFlowGraphicsSceneMouseActionFinished);
+    connect(mDock->getWorkFlowOperateWidget(), &DAWorkFlowOperateWidget::mouseActionFinished, this, &DAAppController::onWorkFlowGraphicsSceneMouseActionFinished);
     //
     DAWorkFlowOperateWidget* workflowOpt = mDock->getWorkFlowOperateWidget();
     connect(workflowOpt, &DAWorkFlowOperateWidget::selectionItemChanged, this, &DAAppController::onSelectionGraphicsItemChanged);
     connect(workflowOpt, &DAWorkFlowOperateWidget::workflowStartExecute, this, &DAAppController::onWorkflowStartExecute);
     connect(workflowOpt, &DAWorkFlowOperateWidget::workflowFinished, this, &DAAppController::onWorkflowFinished);
-    connect(mActions->actionWorkflowShowGrid,
-            &QAction::triggered,
-            workflowOpt,
-            &DAWorkFlowOperateWidget::setCurrentWorkflowShowGrid);
+    connect(mActions->actionWorkflowShowGrid, &QAction::triggered, workflowOpt, &DAWorkFlowOperateWidget::setCurrentWorkflowShowGrid);
     connect(mActions->actionWorkflowNew, &QAction::triggered, workflowOpt, &DAWorkFlowOperateWidget::appendWorkflowWithDialog);
-    connect(mActions->actionWorkflowWholeView,
-            &QAction::triggered,
-            workflowOpt,
-            &DAWorkFlowOperateWidget::setCurrentWorkflowWholeView);
+    connect(mActions->actionWorkflowWholeView, &QAction::triggered, workflowOpt, &DAWorkFlowOperateWidget::setCurrentWorkflowWholeView);
     connect(mActions->actionWorkflowZoomIn, &QAction::triggered, workflowOpt, &DAWorkFlowOperateWidget::setCurrentWorkflowZoomIn);
     connect(mActions->actionWorkflowZoomOut, &QAction::triggered, workflowOpt, &DAWorkFlowOperateWidget::setCurrentWorkflowZoomOut);
 }
@@ -579,10 +544,10 @@ void DAAppController::onActionOpenTriggered()
         if (project->isDirty()) {
             // TODO 没有保存。先询问是否保存
             QMessageBox::StandardButton
-                btn = QMessageBox::question(nullptr,
-                                            tr("Question"),                                                   // 提示
-                                            tr("Another project already exists. Do you want to replace it?")  // 已存在其他工程，是否要替换？
-                );
+                    btn = QMessageBox::question(nullptr,
+                                                tr("Question"),  // 提示
+                                                tr("Another project already exists. Do you want to replace it?")  // 已存在其他工程，是否要替换？
+                    );
             if (btn == QMessageBox::Yes) {
                 project->clear();
             } else {
@@ -735,10 +700,7 @@ void DAAppController::onDataOperatePageAdded(DADataOperatePageWidget* page)
     case DADataOperatePageWidget::DataOperateOfDataFrame: {
 #if DA_ENABLE_PYTHON
         DADataOperateOfDataFrameWidget* w = static_cast< DADataOperateOfDataFrameWidget* >(page);
-        connect(w,
-                &DADataOperateOfDataFrameWidget::selectTypeChanged,
-                this,
-                &DAAppController::onDataOperateDataFrameWidgetSelectTypeChanged);
+        connect(w, &DADataOperateOfDataFrameWidget::selectTypeChanged, this, &DAAppController::onDataOperateDataFrameWidgetSelectTypeChanged);
 #endif
     } break;
     default:
@@ -790,7 +752,7 @@ void DAAppController::onActionAddBackgroundPixmapTriggered()
     QStringList filters;
     filters << tr("Image files (*.png *.jpg)")  // 图片文件 (*.png *.jpg)
             << tr("Any files (*)")              // 任意文件 (*)
-        ;
+            ;
 
     QFileDialog dialog(app());
     dialog.setNameFilters(filters);
@@ -1145,7 +1107,18 @@ void DAAppController::onActionFigureNewXYAxisTriggered()
 void DAAppController::onActionChartAddCurveTriggered()
 {
     DAAppChartOperateWidget* chartopt = getChartOperateWidget();
-    chartopt->plotWithGuideDialog();
+    chartopt->plotWithGuideDialog(DA::ChartTypes::Curve);
+    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
+}
+
+/**
+ * @brief 添加散点图
+ */
+void DAAppController::onActionChartAddScatterTriggered()
+{
+    DAAppChartOperateWidget* chartopt = getChartOperateWidget();
+    chartopt->plotWithGuideDialog(DA::ChartTypes::Scatter);
+    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
 }
 
 /**
@@ -1563,7 +1536,7 @@ void DAAppController::onActionCreateDataDescribeTriggered()
         data.setName(tr("%1_Describe").arg(dfopt->data().getName()));
         data.setDescribe(tr("Generate descriptive statistics that summarize the central tendency, dispersion and "
                             "shape of a [%1]’s distribution, excluding NaN values")
-                             .arg(dfopt->data().getName()));
+                                 .arg(dfopt->data().getName()));
         mDatas->addData(data);
         // showDataOperate要在m_dataManagerStack.push之后，因为m_dataManagerStack.push可能会导致data的名字改变
         mDock->showDataOperateWidget(data);

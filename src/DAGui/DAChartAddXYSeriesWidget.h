@@ -1,12 +1,12 @@
 ﻿#ifndef DACHARTADDXYSERIESWIDGET_H
 #define DACHARTADDXYSERIESWIDGET_H
 #include "DAGuiAPI.h"
+#include <QWidget>
 // DAData
 #include "DAData.h"
 // DAUtil
 #include "DAAutoincrementSeries.h"
 // DAGui
-#include "DAAbstractChartAddItemWidget.h"
 namespace Ui
 {
 class DAChartAddXYSeriesWidget;
@@ -16,14 +16,14 @@ namespace DA
 {
 
 class DADataManager;
-DA_IMPL_FORWARD_DECL(DAChartAddXYSeriesWidget)
+
 /**
- * @brief 添加xy series，适用QwtPlotCurve
+ * @brief 添加xy series，适用二维数据绘图的系列获取
  */
-class DAGUI_API DAChartAddXYSeriesWidget : public DAAbstractChartAddItemWidget
+class DAGUI_API DAChartAddXYSeriesWidget : public QWidget
 {
     Q_OBJECT
-    DA_IMPL(DAChartAddXYSeriesWidget)
+    DA_DECLARE_PRIVATE(DAChartAddXYSeriesWidget)
 public:
     explicit DAChartAddXYSeriesWidget(QWidget* parent = nullptr);
     ~DAChartAddXYSeriesWidget();
@@ -34,16 +34,25 @@ public:
     bool isXAutoincrement() const;
     // 判断y是否是自增
     bool isYAutoincrement() const;
-    // 接口实现
-    virtual QwtPlotItem* createPlotItem() override;
-
+    // 根据配置获取数据
+    QVector< QPointF > getSeries() const;
+    // 设置datafram
+    void setCurrentData(const DAData& d);
+    DAData getCurrentData() const;
+    // 更新数据
+    void updateData();
 private slots:
     void onComboBoxXCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
     void onComboBoxYCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
     void onGroupBoxXAutoincrementClicked(bool on);
     void onGroupBoxYAutoincrementClicked(bool on);
+    void onComboBoxCurrentIndexChanged(int i);
 
 protected:
+    // 刷新dataframe combobox
+    void resetDataframeCombobox();
+    // 更新combobox的选则状态
+    void updateDataframeComboboxSelect();
     // 获取x自增
     bool getXAutoIncFromUI(DAAutoincrementSeries< double >& v);
     // 获取y自增
@@ -58,4 +67,4 @@ private:
     Ui::DAChartAddXYSeriesWidget* ui;
 };
 }
-#endif  // DACHARTADDXYSCATTERWIDGET_H
+#endif  // DACHARTADDXYSERIESWIDGET_H

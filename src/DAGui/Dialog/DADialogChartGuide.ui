@@ -6,41 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>915</width>
-    <height>683</height>
+    <width>809</width>
+    <height>698</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Chart Guide</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_4">
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_3">
-     <item>
-      <widget class="QLabel" name="label">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>Data Frame</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QComboBox" name="comboBoxDataFrame">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
+  <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QSplitter" name="splitter">
      <property name="sizePolicy">
@@ -71,16 +44,15 @@
      </widget>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
         <horstretch>0</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
-      <widget class="DA::DAChartAddXYSeriesWidget" name="pageCurve"/>
-      <widget class="DA::DAChartAddXYScatterWidget" name="pageScatter"/>
+      <widget class="DA::DAChartAddCurveWidget" name="pageCurve"/>
      </widget>
     </widget>
    </item>
@@ -112,15 +84,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>DA::DAChartAddXYSeriesWidget</class>
+   <class>DA::DAChartAddCurveWidget</class>
    <extends>QWidget</extends>
-   <header>DAChartAddXYSeriesWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>DA::DAChartAddXYScatterWidget</class>
-   <extends>QWidget</extends>
-   <header>DAChartAddXYScatterWidget.h</header>
+   <header>DAChartAddCurveWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -3,6 +3,7 @@
 #include "DAChartOperateWidget.h"
 #include "DAData.h"
 #include "DAColorTheme.h"
+#include "DAFigureAPI.h"
 
 #include "qwt_plot_item.h"
 namespace DA
@@ -25,9 +26,9 @@ public:
 
 public:
     // 绘制,如果没成功，返回nullptr
-    QwtPlotItem* createPlotItemWithGuideDialog(const DAData& data = DAData());
+    QwtPlotItem* createPlotItemWithGuideDialog(const DAData& data = DAData(), DA::ChartTypes t = DA::ChartTypes::Curve);
     // 调用绘图引导窗口进行引导性绘图
-    void plotWithGuideDialog();
+    void plotWithGuideDialog(DA::ChartTypes t = DA::ChartTypes::Curve);
 
 private:
     DADataManager* mDataMgr { nullptr };

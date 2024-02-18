@@ -2,6 +2,7 @@
 #include "ui_DADialogChartGuide.h"
 #include "DADataManager.h"
 #include "DAAbstractChartAddItemWidget.h"
+#include "DAChartAddCurveWidget.h"
 #include <iterator>
 #include <vector>
 // qwt
@@ -9,21 +10,17 @@
 namespace DA
 {
 
-DADialogChartGuide::DADialogChartGuide(QWidget* parent)
-    : QDialog(parent), ui(new Ui::DADialogChartGuide), _dataMgr(nullptr)
+DADialogChartGuide::DADialogChartGuide(QWidget* parent) : QDialog(parent), ui(new Ui::DADialogChartGuide)
 {
-	ui->setupUi(this);
-	init();
-    connect(ui->comboBoxDataFrame,
-            QOverload< int >::of(&QComboBox::currentIndexChanged),
-            this,
-            &DADialogChartGuide::onComboBoxCurrentIndexChanged);
+    ui->setupUi(this);
+    init();
+
     connect(ui->listWidgetChartType, &QListWidget::currentItemChanged, this, &DADialogChartGuide::onListWidgetCurrentItemChanged);
 }
 
 DADialogChartGuide::~DADialogChartGuide()
 {
-	delete ui;
+    delete ui;
 }
 
 void DADialogChartGuide::init()
@@ -31,15 +28,15 @@ void DADialogChartGuide::init()
     QListWidgetItem* item = nullptr;
     // curve
     item = new QListWidgetItem(QIcon(":/gui/chart-type/icon/chart-type/chart-curve.svg"), tr("curve"));
-    item->setData(Qt::UserRole, static_cast< int >(ChartCurve));
-	ui->listWidgetChartType->addItem(item);
+    item->setData(Qt::UserRole, static_cast< int >(DA::ChartTypes::Curve));
+    ui->listWidgetChartType->addItem(item);
     // scatter
-	item = new QListWidgetItem(QIcon(":/gui/chart-type/icon/chart-type/chart-scatter.svg"), tr("scatter"));
-    item->setData(Qt::UserRole, static_cast< int >(ChartScatter));
-	ui->listWidgetChartType->addItem(item);
+    item = new QListWidgetItem(QIcon(":/gui/chart-type/icon/chart-type/chart-scatter.svg"), tr("scatter"));
+    item->setData(Qt::UserRole, static_cast< int >(DA::ChartTypes::Scatter));
+    ui->listWidgetChartType->addItem(item);
     // 初始化
-	ui->stackedWidget->setCurrentWidget(ui->pageCurve);
-	ui->listWidgetChartType->setCurrentRow(0);
+    ui->stackedWidget->setCurrentWidget(ui->pageCurve);
+    ui->listWidgetChartType->setCurrentRow(0);
 }
 /**
  * @brief 设置datamanager,会把combox填入所有的dataframe
@@ -47,10 +44,7 @@ void DADialogChartGuide::init()
  */
 void DADialogChartGuide::setDataManager(DADataManager* dmgr)
 {
-	_dataMgr = dmgr;
-	ui->pageCurve->setDataManager(dmgr);
-    ui->pageScatter->setDataManager(dmgr);
-	updateData();
+    ui->pageCurve->setDataManager(dmgr);
 }
 
 /**
@@ -59,26 +53,32 @@ void DADialogChartGuide::setDataManager(DADataManager* dmgr)
  */
 void DADialogChartGuide::setCurrentData(const DAData& d)
 {
-	_currentData = d;
-	updateData();
+    QWidget* w = ui->stackedWidget->currentWidget();
+    if (DAChartAddCurveWidget* c = qobject_cast< DAChartAddCurveWidget* >(w)) {
+        c->setCurrentData(d);
+    }
 }
 
 DAData DADialogChartGuide::getCurrentData() const
 {
-	return _currentData;
+    QWidget* w = ui->stackedWidget->currentWidget();
+    if (DAChartAddCurveWidget* c = qobject_cast< DAChartAddCurveWidget* >(w)) {
+        return c->getCurrentData();
+    }
+    return DAData();
 }
 
 /**
  * @brief 获取当前的绘图类型
  * @return
  */
-DADialogChartGuide::ChartType DADialogChartGuide::getCurrentChartType() const
+DA::ChartTypes DADialogChartGuide::getCurrentChartType() const
 {
-	QListWidgetItem* item = ui->listWidgetChartType->currentItem();
-	if (item == nullptr) {
-		return UnknowChartType;
-	}
-	return static_cast< ChartType >(item->data(Qt::UserRole).toInt());
+    QListWidgetItem* item = ui->listWidgetChartType->currentItem();
+    if (item == nullptr) {
+        return DA::ChartTypes::Unknow;
+    }
+    return static_cast< DA::ChartTypes >(item->data(Qt::UserRole).toInt());
 }
 
 /**
@@ -87,97 +87,58 @@ DADialogChartGuide::ChartType DADialogChartGuide::getCurrentChartType() const
  */
 QwtPlotItem* DADialogChartGuide::createPlotItem()
 {
-	DAAbstractChartAddItemWidget* w = qobject_cast< DAAbstractChartAddItemWidget* >(ui->stackedWidget->currentWidget());
-	if (!w) {
-		return nullptr;
-	}
-	QwtPlotItem* item = w->createPlotItem();
-	if (nullptr == item) {
-		return nullptr;
-	}
-	return item;
+    DAAbstractChartAddItemWidget* w = qobject_cast< DAAbstractChartAddItemWidget* >(ui->stackedWidget->currentWidget());
+    if (!w) {
+        return nullptr;
+    }
+    QwtPlotItem* item = w->createPlotItem();
+    if (nullptr == item) {
+        return nullptr;
+    }
+    return item;
 }
 
+/**
+ * @brief 更新数据
+ */
 void DADialogChartGuide::updateData()
 {
-	updateDataframeComboboxSelect();
-	updateCurrentPageData();
+    DAAbstractChartAddItemWidget* w = qobject_cast< DAAbstractChartAddItemWidget* >(ui->stackedWidget->currentWidget());
+    if (!w) {
+        return;
+    }
+    w->updateData();
 }
 
 /**
- * @brief 刷新dataframe combobox
+ * @brief 设置当前的绘图类型
+ * @param t
  */
-void DADialogChartGuide::resetDataframeCombobox()
+void DADialogChartGuide::setCurrentChartType(DA::ChartTypes t)
 {
-	if (nullptr == _dataMgr) {
-		return;
-	}
-#if DA_ENABLE_PYTHON
-	ui->comboBoxDataFrame->clear();
-	int c = _dataMgr->getDataCount();
-	for (int i = 0; i < c; ++i) {
-		DAData d = _dataMgr->getData(i);
-		if (d.isNull() || !d.isDataFrame()) {
-			continue;
-		}
-		DAPyDataFrame df = d.toDataFrame();
-		if (df.isNone()) {
-			continue;
-		}
-		// id作为data
-		ui->comboBoxDataFrame->addItem(d.getName(), d.id());
-	}
-    ui->comboBoxDataFrame->setCurrentIndex(-1);  // 不选中
-#endif
-}
-
-/**
- * @brief 更新combobox的选中状态，但不会触发currentIndexChanged信号
- */
-void DADialogChartGuide::updateDataframeComboboxSelect()
-{
-	if (nullptr == _dataMgr) {
-		return;
-	}
-	int index = _dataMgr->getDataIndex(_currentData);
-	if (index < 0) {
-		return;
-	}
-	QSignalBlocker b(ui->comboBoxDataFrame);
-	Q_UNUSED(b);
-	ui->comboBoxDataFrame->setCurrentIndex(index);
-}
-
-/**
- * @brief 刷新x，y两个列选择listwidget
- */
-void DADialogChartGuide::updateCurrentPageData()
-{
-}
-
-void DADialogChartGuide::onComboBoxCurrentIndexChanged(int i)
-{
-	if (nullptr == _dataMgr || i < 0) {
-		return;
-	}
-	DAData d = _dataMgr->getData(i);
-	setCurrentData(d);
-	updateCurrentPageData();
+    int c = ui->listWidgetChartType->count();
+    for (int i = 0; i < c; ++i) {
+        auto item = ui->listWidgetChartType->item(i);
+        int v     = item->data(Qt::UserRole).toInt();
+        if (v == static_cast< int >(t)) {
+            ui->listWidgetChartType->setCurrentItem(item);
+        }
+    }
 }
 
 void DADialogChartGuide::onListWidgetCurrentItemChanged(QListWidgetItem* current, QListWidgetItem* previous)
 {
     Q_UNUSED(previous);
-    ChartType ct = static_cast< ChartType >(current->data(Qt::UserRole).toInt());
-	switch (ct) {
-	case ChartCurve:
-		ui->stackedWidget->setCurrentWidget(ui->pageCurve);
-		break;
-	case ChartScatter:
-        ui->stackedWidget->setCurrentWidget(ui->pageScatter);
-		break;
-	default:
-		break;
-	}
+    DA::ChartTypes ct = static_cast< DA::ChartTypes >(current->data(Qt::UserRole).toInt());
+    switch (ct) {
+    case DA::ChartTypes::Curve:
+        ui->stackedWidget->setCurrentWidget(ui->pageCurve);
+        break;
+    case DA::ChartTypes::Scatter:
+        ui->stackedWidget->setCurrentWidget(ui->pageCurve);
+        break;
+    default:
+        break;
+    }
 }
 }

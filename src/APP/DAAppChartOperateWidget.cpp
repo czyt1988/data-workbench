@@ -48,7 +48,7 @@ DAFigureWidget* DAAppChartOperateWidget::createFigure()
  * @param data
  * @return
  */
-QwtPlotItem* DAAppChartOperateWidget::createPlotItemWithGuideDialog(const DAData& data)
+QwtPlotItem* DAAppChartOperateWidget::createPlotItemWithGuideDialog(const DAData& data, ChartTypes t)
 {
     if (nullptr == mChartGuideDlg) {
         mChartGuideDlg = new DADialogChartGuide(this);
@@ -59,6 +59,7 @@ QwtPlotItem* DAAppChartOperateWidget::createPlotItemWithGuideDialog(const DAData
     } else {
         mChartGuideDlg->updateData();
     }
+    mChartGuideDlg->setCurrentChartType(t);
     if (QDialog::Accepted != mChartGuideDlg->exec()) {
         return nullptr;
     }
@@ -80,9 +81,9 @@ QwtPlotItem* DAAppChartOperateWidget::createPlotItemWithGuideDialog(const DAData
 /**
  * @brief 生成绘图通过引导窗口
  */
-void DAAppChartOperateWidget::plotWithGuideDialog()
+void DAAppChartOperateWidget::plotWithGuideDialog(DA::ChartTypes t)
 {
-    QwtPlotItem* item = createPlotItemWithGuideDialog();
+    QwtPlotItem* item = createPlotItemWithGuideDialog(DAData(), t);
     if (!item) {
         return;
     }

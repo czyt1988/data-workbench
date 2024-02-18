@@ -35,7 +35,7 @@ endif()
 set(DA_LIB_HEADER_FILES
     DAAbstractChartAddItemWidget.h
     DAChartAddXYSeriesWidget.h
-    DAChartAddXYScatterWidget.h
+    DAChartAddCurveWidget.h
     DADataManagerComboBox.h
     DADataOperatePageWidget.h
     DAFigureFactory.h
@@ -68,7 +68,7 @@ set(DA_LIB_HEADER_FILES
 set(DA_LIB_SOURCE_FILES
     DAAbstractChartAddItemWidget.cpp
     DAChartAddXYSeriesWidget.cpp
-    DAChartAddXYScatterWidget.cpp
+    DAChartAddCurveWidget.cpp
     DAChartListView.cpp
     DAChartManageWidget.cpp
     DAChartOperateWidget.cpp
@@ -99,7 +99,7 @@ set(DA_LIB_SOURCE_FILES
 )
 set(DA_LIB_QT_UI_FILES
     DAChartAddXYSeriesWidget.ui
-    DAChartAddXYScatterWidget.ui
+    DAChartAddCurveWidget.ui
     DAChartManageWidget.ui
     DAChartOperateWidget.ui
     DADataManageWidget.ui

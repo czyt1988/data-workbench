@@ -141,8 +141,10 @@ private slots:
     void onActionFigureResizeChartTriggered(bool on);
     // 新坐标系
     void onActionFigureNewXYAxisTriggered();
-    // 新坐标系
+    // 添加曲线
     void onActionChartAddCurveTriggered();
+    // 添加散点图
+    void onActionChartAddScatterTriggered();
     //===================================================
     // 绘图标签 Chart Context Category
     //===================================================

@@ -7,6 +7,9 @@ DAAbstractChartAddItemWidget::DAAbstractChartAddItemWidget(QWidget* par) : QWidg
 
 DAAbstractChartAddItemWidget::~DAAbstractChartAddItemWidget()
 {
+}
 
+void DAAbstractChartAddItemWidget::updateData()
+{
 }
 }
