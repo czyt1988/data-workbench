@@ -47,6 +47,9 @@ macro(damacro_lib_setting _lib_name _lib_description _lib_ver_major _lib_ver_min
     # C++标准要求最低C++17
     set(CMAKE_CXX_STANDARD 17)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
+    if(MSVC)
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
+	endif(MSVC)
     # 编译选项
     set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows")
     set(CMAKE_RELEASE_POSTFIX "" CACHE STRING "add a postfix, usually empty on windows")

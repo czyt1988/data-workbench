@@ -42,6 +42,13 @@ add_library(${DA_LIB_NAME} SHARED
 )	
 # 构建库定义的宏
 target_compile_definitions(${DA_LIB_NAME} PRIVATE DAWORKFLOW_BUILDLIB)#!!!!** 注意变更 **!!!!
+########################################################
+# 添加预定义宏NOMINMAX,windows系统会定义max和min宏，这个宏和std::max冲突
+########################################################
+if(WIN32)
+    target_compile_definitions(${DA_LIB_NAME} PRIVATE -DNOMINMAX)
+endif()
+
 add_library(${DA_PROJECT_NAME}::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
 ########################################################
 # 依赖链接 #!!!!** 注意变更 **!!!!

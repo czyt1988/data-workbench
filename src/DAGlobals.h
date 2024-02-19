@@ -4,14 +4,16 @@
 #include <QString>
 #include "DAConfigs.h"
 /**
- *@def 前置声明的定义
+ *@def DA_IMPL_FORWARD_DECL
+ *@brief 前置声明的定义
  */
 #ifndef DA_IMPL_FORWARD_DECL
 #define DA_IMPL_FORWARD_DECL(ClassName) class ClassName##Private;
 #endif
 
 /**
- *@def 前置声明的定义(带命名空间)
+ *@def DA_IMPL_FORWARD_DECL_NS
+ *@brief 前置声明的定义(带命名空间)
  */
 #ifndef DA_IMPL_FORWARD_DECL_NS
 #define DA_IMPL_FORWARD_DECL_NS(NS, ClassName)                                                                         \
@@ -22,7 +24,8 @@
 #endif
 
 /**
- *@def impl的简易实现
+ *@def DA_IMPL
+ *@brief impl的简易实现
  */
 #ifndef DA_IMPL
 #define DA_IMPL(Class)                                                                                                 \
@@ -40,7 +43,8 @@ private:                                                                        
 #endif
 
 /**
- *@def impl的定义
+ *@def DA_IMPL_PUBLIC
+ *@brief impl的定义
  */
 #ifndef DA_IMPL_PUBLIC
 #define DA_IMPL_PUBLIC(Class)                                                                                          \
@@ -57,7 +61,8 @@ private:                                                                        
 #endif
 
 /**
- * @def   模仿Q_DECLARE_PRIVATE，但不用前置声明而是作为一个内部类
+ * @def DA_DECLARE_PRIVATE
+ * @brief 模仿Q_DECLARE_PRIVATE，但不用前置声明而是作为一个内部类
  *
  * 例如:
  *
@@ -110,7 +115,8 @@ private:                                                                        
 #endif
 
 /**
- * @def   模仿Q_DECLARE_PUBLIC
+ * @def DA_DECLARE_PUBLIC
+ * @brief 模仿Q_DECLARE_PUBLIC
  *
  * 配套DA_DECLARE_PRIVATE使用
  */
@@ -129,48 +135,58 @@ private:                                                                        
 #endif
 
 /**
- * @def   模仿Q_DECLARE_PUBLIC
+ * @def  DA_PIMPL_CONSTRUCT
  *
- * 配套DA_DECLARE_PRIVATE使用
+ * 配套DA_DECLARE_PRIVATE使用,在构造函数中构建privatedata
  */
 #ifndef DA_PIMPL_CONSTRUCT
 #define DA_PIMPL_CONSTRUCT d_ptr(std::make_unique< PrivateData >(this))
 #endif
 
 /**
- *@def impl获取指针，参考Q_D
+ *@def DA_D
+ *@brief impl获取指针，参考Q_D
  */
 #ifndef DA_D
 #define DA_D(pointerName) PrivateData* pointerName = d_func()
 #endif
 
 /**
- *@def impl获取指针，参考Q_D
+ *@def DA_DC
+ *@brief impl获取指针，参考Q_D
  */
 #ifndef DA_DC
 #define DA_DC(pointerName) const PrivateData* pointerName = d_func()
 #endif
 
 /**
- *@def impl获取指针，参考Q_Q
+ *@def DA_Q
+ *@brief impl获取指针，参考Q_Q
  */
 #ifndef DA_Q
 #define DA_Q(classname, pointerName) classname* pointerName = q_func()
 #endif
 
 /**
- *@def impl获取指针，参考Q_Q
+ *@def DA_QC
+ *@brief impl获取指针，参考Q_Q
  */
 #ifndef DA_QC
 #define DA_QC(classname, pointerName) const classname* pointerName = q_func()
 #endif
 
 /**
- *@def QXXEvent_Pos函数的兼容宏
+ *@def Qt5Qt6Compat_QXXEvent_Pos
+ *@brief QXXEvent_Pos函数的兼容宏
+ *
  *'pos' is deprecated: Use position().toPoint()
+ *
  *qevent.h:740:5: note: 'pos' has been explicitly marked deprecated here
+ *
  *qglobal.h:369:44: note: expanded from macro 'QT_DEPRECATED_VERSION_X_6_0'
+ *
  *qglobal.h:281:33: note: expanded from macro 'QT_DEPRECATED_X'
+ *
  */
 #ifndef Qt5Qt6Compat_QXXEvent_Pos
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -180,4 +196,15 @@ private:                                                                        
 #endif
 #endif
 
+/**
+ * @def Qt5Qt6Compat_fontMetrics_width
+ * @brief QFontMetrics的字体宽度适配
+ */
+#ifndef Qt5Qt6Compat_fontMetrics_width
+#if QT_VERSION < QT_VERSION_CHECK(5, 12, 0)
+#define Qt5Qt6Compat_fontMetrics_width(fontMeter, str) fontMeter.width(str)
+#else
+#define Qt5Qt6Compat_fontMetrics_width(fontMeter, str) fontMeter.horizontalAdvance(str)
+#endif
+#endif
 #endif  // GLOBALS_H

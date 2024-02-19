@@ -75,7 +75,11 @@ void DAPyInterpreter::setPythonHomePath(const QString& path)
 
 void DAPyInterpreter::initializePythonInterpreter()
 {
-    pybind11::initialize_interpreter();
+    try {
+        pybind11::initialize_interpreter();
+    } catch (const std::exception& e) {
+        qWarning() << e.what();
+    }
 }
 
 void DAPyInterpreter::finalizePythonInterpreter()
@@ -85,7 +89,11 @@ void DAPyInterpreter::finalizePythonInterpreter()
             f();
         }
     }
-    pybind11::finalize_interpreter();
+    try {
+        pybind11::finalize_interpreter();
+    } catch (const std::exception& e) {
+        qWarning() << e.what();
+    }
 }
 
 void DAPyInterpreter::registerFinalizeCallback(DAPyInterpreter::callback_finalize fp)

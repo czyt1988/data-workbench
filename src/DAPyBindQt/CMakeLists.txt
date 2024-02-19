@@ -46,6 +46,7 @@ add_library(${DA_LIB_NAME} SHARED
 )	
 # 构建库定义的宏,必须为Private
 target_compile_definitions(${DA_LIB_NAME} PRIVATE DAPYBINDQT_BUILDLIB)#!!!!** 注意变更 **!!!!
+
 # 定义别名让DAWorkbench::${DA_LIB_NAME}也能获取到
 add_library(${DA_PROJECT_NAME}::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
 ########################################################
