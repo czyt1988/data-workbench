@@ -216,12 +216,12 @@
     <message>
         <location filename="DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="36"/>
         <source>Exception in get selected column:%1</source>
-        <translation type="unfinished">获取选中的列发生异常：%1</translation>
+        <translation>获取选中的列发生异常：%1</translation>
     </message>
     <message>
         <location filename="DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="52"/>
         <source>Exception in get selected series:%1</source>
-        <translation type="unfinished">获取选中的序列发生异常：%1</translation>
+        <translation>获取选中的序列发生异常：%1</translation>
     </message>
 </context>
 <context>
@@ -387,7 +387,7 @@ Curve</source>
         <location filename="APP/DAAppActions.cpp" line="221"/>
         <source>Add 
 Scatter</source>
-        <translation type="unfinished"></translation>
+        <translation>散点图</translation>
     </message>
     <message>
         <location filename="APP/DAAppActions.cpp" line="223"/>
@@ -585,22 +585,22 @@ Workflow</source>
         <location filename="APP/DAAppActions.cpp" line="263"/>
         <source>Linkage 
 Move</source>
-        <translation type="unfinished"></translation>
+        <translation>联动</translation>
     </message>
     <message>
         <location filename="APP/DAAppActions.cpp" line="265"/>
         <source>When moving elements, other elements linked to this element follow the movement</source>
-        <translation type="unfinished"></translation>
+        <translation>允许移动图元时，其它和此图元链接起来的图元跟随移动</translation>
     </message>
     <message>
         <location filename="APP/DAAppActions.cpp" line="266"/>
         <source>grouping</source>
-        <translation type="unfinished"></translation>
+        <translation>分组</translation>
     </message>
     <message>
         <location filename="APP/DAAppActions.cpp" line="267"/>
         <source>ungroup</source>
-        <translation type="unfinished"></translation>
+        <translation>取消分组</translation>
     </message>
     <message>
         <location filename="APP/DAAppActions.cpp" line="268"/>
@@ -650,22 +650,22 @@ Config</source>
     <message>
         <location filename="APP/DAAppActions.cpp" line="289"/>
         <source>Office 2013 theme</source>
-        <translation type="unfinished"></translation>
+        <translation>Office 2013主题</translation>
     </message>
     <message>
         <location filename="APP/DAAppActions.cpp" line="290"/>
         <source>Office 2016 blue theme</source>
-        <translation type="unfinished"></translation>
+        <translation>Office 2016蓝色主题</translation>
     </message>
     <message>
         <location filename="APP/DAAppActions.cpp" line="291"/>
         <source>Office 2021 blue theme</source>
-        <translation type="unfinished"></translation>
+        <translation>Office 2021蓝色主题</translation>
     </message>
     <message>
         <location filename="APP/DAAppActions.cpp" line="292"/>
         <source>Dark theme</source>
-        <translation type="unfinished"></translation>
+        <translation>暗色主题</translation>
     </message>
     <message>
         <location filename="APP/DAAppActions.cpp" line="230"/>
@@ -1017,7 +1017,7 @@ Table Area</source>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="197"/>
         <source> File </source>
-        <translation type="unfinished"></translation>
+        <translation> 文件 </translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="199"/>
@@ -1174,12 +1174,12 @@ Table Area</source>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="248"/>
         <source>theme</source>
-        <translation type="unfinished"></translation>
+        <translation>主题</translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="249"/>
         <source>set ribbon theme</source>
-        <translation type="unfinished"></translation>
+        <translation>设置主题</translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="251"/>
@@ -1280,27 +1280,27 @@ Table Area</source>
     <message>
         <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="108"/>
         <source>Lines</source>
-        <translation type="unfinished"></translation>
+        <translation>折线</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="109"/>
         <source>Sticks</source>
-        <translation type="unfinished"></translation>
+        <translation>线棒</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="110"/>
         <source>Steps</source>
-        <translation type="unfinished"></translation>
+        <translation>阶梯</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="111"/>
         <source>Dots</source>
-        <translation type="unfinished"></translation>
+        <translation>点</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="112"/>
         <source>No Curve</source>
-        <translation type="unfinished"></translation>
+        <translation>无连接线</translation>
     </message>
 </context>
 <context>
@@ -1493,37 +1493,37 @@ Table Area</source>
     <message>
         <location filename="DAGui/ChartSetting/DAChartSymbolComboBox.cpp" line="82"/>
         <source>Cross</source>
-        <translation>十字标记</translation>
+        <translation>+</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartSymbolComboBox.cpp" line="87"/>
         <source>Diagonal Cross</source>
-        <translation type="unfinished"></translation>
+        <translation>x</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartSymbolComboBox.cpp" line="92"/>
         <source>Horizontal Line</source>
-        <translation type="unfinished"></translation>
+        <translation>—</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartSymbolComboBox.cpp" line="97"/>
         <source>Vertical Line</source>
-        <translation type="unfinished"></translation>
+        <translation>|</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartSymbolComboBox.cpp" line="102"/>
         <source>Star 1</source>
-        <translation type="unfinished"></translation>
+        <translation>星形1</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartSymbolComboBox.cpp" line="107"/>
         <source>Star 2</source>
-        <translation type="unfinished"></translation>
+        <translation>星形2</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartSymbolComboBox.cpp" line="112"/>
         <source>Hexagon</source>
-        <translation type="unfinished"></translation>
+        <translation>六角形</translation>
     </message>
 </context>
 <context>
@@ -2197,17 +2197,17 @@ Table Area</source>
     <message>
         <location filename="DAGui/DAChartAddCurveWidget.ui" line="37"/>
         <source>1.Data</source>
-        <translation type="unfinished"></translation>
+        <translation>1.数据</translation>
     </message>
     <message>
         <location filename="DAGui/DAChartAddCurveWidget.ui" line="53"/>
         <source>&gt;&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&gt;&gt;</translation>
     </message>
     <message>
         <location filename="DAGui/DAChartAddCurveWidget.ui" line="60"/>
         <source>2.Plot</source>
-        <translation type="unfinished"></translation>
+        <translation>2.绘图</translation>
     </message>
 </context>
 <context>
@@ -2220,7 +2220,7 @@ Table Area</source>
     <message>
         <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="28"/>
         <source>Data Frame</source>
-        <translation type="unfinished">数据帧</translation>
+        <translation>数据帧</translation>
     </message>
     <message>
         <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="63"/>
@@ -2269,92 +2269,92 @@ Table Area</source>
     <message>
         <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="27"/>
         <source>Title</source>
-        <translation type="unfinished">标题</translation>
+        <translation>标题</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="20"/>
         <source>Curve Style</source>
-        <translation type="unfinished"></translation>
+        <translation>曲线样式</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="141"/>
         <source>Curve Attribute</source>
-        <translation type="unfinished"></translation>
+        <translation>曲线属性</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="50"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Only in combination with Lines Style, tries to interpolate/smooth the curve, before it is painted. &lt;/p&gt;&lt;p&gt;Note:Curve fitting requires temporary memory for calculating coefficients and additional points.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;仅在曲线样式为折线时，才会尝试在绘制曲线之前对其进行插值/平滑处理。&lt;/p&gt;&lt;p&gt;注：曲线拟合需要临时内存来计算系数和附加点。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="53"/>
         <source>Fitted</source>
-        <translation type="unfinished"></translation>
+        <translation>平滑</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="167"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For Steps curve style only. Draws a step function from the right to the left.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;仅适用于阶梯曲线样式。从右向左绘制阶跃函数。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="170"/>
         <source>Inverted</source>
-        <translation type="unfinished"></translation>
+        <translation>反向</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="40"/>
         <source>Legend Attribute</source>
-        <translation type="unfinished"></translation>
+        <translation>图例属性</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="185"/>
         <source>Show Line</source>
-        <translation type="unfinished"></translation>
+        <translation>显示线条</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="198"/>
         <source>Show Symbol</source>
-        <translation type="unfinished"></translation>
+        <translation>显示标记</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="211"/>
         <source>Show Brush</source>
-        <translation type="unfinished"></translation>
+        <translation>显示填充</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="60"/>
         <source>Line Pen</source>
-        <translation type="unfinished"></translation>
+        <translation>曲线画笔</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="316"/>
         <source>Marker</source>
-        <translation type="unfinished"></translation>
+        <translation>标记</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="89"/>
         <source>Other</source>
-        <translation type="unfinished"></translation>
+        <translation>其他</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="107"/>
         <source>Base line</source>
-        <translation type="unfinished"></translation>
+        <translation>基准线</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="117"/>
         <source>Orientation</source>
-        <translation type="unfinished"></translation>
+        <translation>填充方向</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="124"/>
         <source>Horizontal</source>
-        <translation type="unfinished"></translation>
+        <translation>水平</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="131"/>
         <source>Vertical</source>
-        <translation type="unfinished"></translation>
+        <translation>垂直</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="232"/>
@@ -2365,12 +2365,12 @@ Table Area</source>
     <message>
         <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="250"/>
         <source>fill brush</source>
-        <translation type="unfinished"></translation>
+        <translation>填充画笔</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="298"/>
         <source>Marker Setting</source>
-        <translation type="unfinished"></translation>
+        <translation>标记设置</translation>
     </message>
 </context>
 <context>
@@ -2442,7 +2442,7 @@ Table Area</source>
     <message>
         <location filename="DAGui/ChartSetting/DAChartSymbolEditWidget.ui" line="77"/>
         <source>Style</source>
-        <translation type="unfinished">样式</translation>
+        <translation>样式</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartSymbolEditWidget.ui" line="84"/>
@@ -2452,7 +2452,7 @@ Table Area</source>
     <message>
         <location filename="DAGui/ChartSetting/DAChartSymbolEditWidget.ui" line="91"/>
         <source>Outline</source>
-        <translation type="unfinished"></translation>
+        <translation>轮廓</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartSymbolEditWidget.ui" line="38"/>
@@ -2517,7 +2517,7 @@ Table Area</source>
     <message>
         <location filename="DAGui/Dialog/DADialogChartGuide.ui" line="14"/>
         <source>Chart Guide</source>
-        <translation type="unfinished"></translation>
+        <translation>绘图引导</translation>
     </message>
 </context>
 <context>
@@ -4429,7 +4429,7 @@ Wrap</source>
     <message>
         <location filename="DAGraphicsView/DAGraphicsItemFactory.cpp" line="79"/>
         <source>type %1 not registered to item factory</source>
-        <translation type="unfinished"></translation>
+        <translation>类型 %1 没有注册到元件工厂中</translation>
     </message>
     <message>
         <location filename="DAUtils/DAXMLProtocol.cpp" line="91"/>
@@ -4736,7 +4736,7 @@ Wrap</source>
     <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="488"/>
         <source>linkitem save to xml return false</source>
-        <translation type="unfinished"></translation>
+        <translation>链接线从xml加载信息返回了false</translation>
     </message>
     <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="517"/>
@@ -4757,17 +4757,17 @@ Wrap</source>
     <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="542"/>
         <source>linkitem load from xml return false</source>
-        <translation type="unfinished"></translation>
+        <translation>链接线从xml加载信息返回了false</translation>
     </message>
     <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="653"/>
         <source>Cannot create item by class name:%1,maybe unregist to DAGraphicsItemFactory</source>
-        <translation type="unfinished"></translation>
+        <translation>无法通过类名:%1创建元件,类名没有注册到DAGraphicsItemFactory</translation>
     </message>
     <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="667"/>
         <source>Unable to load item information from &lt;%1&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>无法通过&lt;%1&gt;加载元件信息</translation>
     </message>
     <message>
         <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="934"/>
@@ -4802,12 +4802,16 @@ params:
 --version : version information
 --describe : detailed information
 </source>
-        <translation type="unfinished"></translation>
+        <translation>%1(%2) build %3
+参数:
+--version : 版本信息
+--describe : 详细的描述信息
+</translation>
     </message>
     <message>
         <location filename="APP/main.cpp" line="198"/>
         <source>Unable to create dump file path:%1</source>
-        <translation type="unfinished"></translation>
+        <translation>无法创建dump文件路径：%1</translation>
     </message>
     <message>
         <location filename="DAFigure/DAFigureTreeModel.cpp" line="150"/>
@@ -4939,23 +4943,23 @@ params:
         <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="164"/>
         <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="195"/>
         <source>unable initialize %1</source>
-        <translation type="unfinished"></translation>
+        <translation>无法初始化%1</translation>
     </message>
     <message>
         <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="169"/>
         <source>file &quot;%1&quot; does not exist</source>
-        <translation type="unfinished"></translation>
+        <translation>文件“%1”不存在</translation>
     </message>
     <message>
         <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="176"/>
         <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="202"/>
         <source>can not get excel workbook</source>
-        <translation type="unfinished"></translation>
+        <translation>无法获取excel的workbook</translation>
     </message>
     <message>
         <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="505"/>
         <source>The local computer does not have Excel or WPS installed</source>
-        <translation type="unfinished"></translation>
+        <translation>当前计算机中没有安装excel或者wps</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/MainWindow.cpp" line="152"/>
@@ -5663,19 +5667,19 @@ Author:czy</source>
         <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="201"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/SAColorMenu.cpp" line="178"/>
         <source>None</source>
-        <translation type="unfinished">无</translation>
+        <translation>无</translation>
     </message>
     <message>
         <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="235"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/SAColorMenu.cpp" line="212"/>
         <source>Theme Colors</source>
-        <translation type="unfinished"></translation>
+        <translation>主题颜色</translation>
     </message>
     <message>
         <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="242"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/SAColorMenu.cpp" line="219"/>
         <source>Custom Color</source>
-        <translation type="unfinished"></translation>
+        <translation>自定义颜色</translation>
     </message>
 </context>
 <context>
