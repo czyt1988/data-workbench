@@ -1,5 +1,5 @@
 ﻿#include "DAAppCommand.h"
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
 #include "Commands/DACommandWithTemplateData.h"
 #endif
 //===================================================
@@ -13,8 +13,8 @@ using namespace DA;
 //===================================================
 DAAppCommand::DAAppCommand(DAUIInterface* u) : DACommandInterface(u)
 {
-    //创建临时数据目录
-#ifdef DA_ENABLE_PYTHON
+    // 创建临时数据目录
+#if DA_ENABLE_PYTHON
     DACommandWithTemplateData::ensureTemplateDirExists();
 #endif
 }

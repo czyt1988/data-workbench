@@ -66,14 +66,14 @@ AppMainWindow::AppMainWindow(QWidget* parent) : SARibbonMainWindow(parent)
     // 创建controller
     mController = new DAAppController(this);
     mController
-            ->setAppMainWindow(this)                      // app
-            .setAppCore(&core)                            // core
-            .setAppActions(mUI->getAppActions())          // action
-            .setAppCommand(mUI->getAppCmd())              // cmd
-            .setAppDataManager(core.getAppDatas())        // data
-            .setAppDockingArea(mUI->getAppDockingArea())  // dock
-            .setAppRibbonArea(mUI->getAppRibbonArea())    // ribbon
-            ;
+        ->setAppMainWindow(this)                      // app
+        .setAppCore(&core)                            // core
+        .setAppActions(mUI->getAppActions())          // action
+        .setAppCommand(mUI->getAppCmd())              // cmd
+        .setAppDataManager(core.getAppDatas())        // data
+        .setAppDockingArea(mUI->getAppDockingArea())  // dock
+        .setAppRibbonArea(mUI->getAppRibbonArea())    // ribbon
+        ;
     mController->initialize();
     ribbonBar()->setContentsMargins(3, 0, 3, 0);
     // 首次调用此函数会加载插件，可放置在main函数中调用
@@ -82,7 +82,7 @@ AppMainWindow::AppMainWindow(QWidget* parent) : SARibbonMainWindow(parent)
     if (isHaveStateSettingFile()) {
         restoreUIState();
     } else {
-        ribbonBar()->setRibbonStyle(SARibbonBar::WpsLiteStyleTwoRow);
+        ribbonBar()->setRibbonStyle(SARibbonBar::RibbonStyleCompactTwoRow);
         showMaximized();
     }
 }

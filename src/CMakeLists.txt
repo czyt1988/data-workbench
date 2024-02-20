@@ -53,6 +53,4 @@ add_subdirectory(DAPluginSupport)
 add_dependencies(DAPluginSupport DAInterface)
 
 add_subdirectory(APP)
-########################################################
-# install
-########################################################
+

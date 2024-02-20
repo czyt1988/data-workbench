@@ -13,22 +13,22 @@ class DAAppActions : public DAActionsInterface
 public:
     DAAppActions(DAUIInterface* u);
     ~DAAppActions();
-    //发生语言变更时会调用此函数
+    // 发生语言变更时会调用此函数
     void retranslateUi() override;
 
 protected:
     void buildActions();
-    //构建主actions
+    // 构建主actions
     void buildMainAction();
-    //构建data相关的action
+    // 构建data相关的action
     void buildDataAction();
-    //构建Chart相关的action
+    // 构建Chart相关的action
     void buildChartAction();
-    //构建视图action
+    // 构建视图action
     void buildViewAction();
-    //构建workflow action
+    // 构建workflow action
     void buildWorkflowAction();
-    //建立其他的actions
+    // 建立其他的actions
     void buildOtherActions();
 
 public:
@@ -61,10 +61,10 @@ public:
     QAction* actionInsertColumnLeft;    ///< 在左边插入列
     QAction* actionInsertColumnRight;   ///< 在右边插入列
     QAction* actionRenameColumns;       ///< 更改列名
-    QAction* actionCastToString;        ///<数据转换为文本
-    QAction* actionCastToNum;           ///<数据转换为数字
-    QAction* actionCastToDatetime;      ///<转换为日期
-    QAction* actionCreateDataDescribe;  ///<数据描述
+    QAction* actionCastToString;        ///< 数据转换为文本
+    QAction* actionCastToNum;           ///< 数据转换为数字
+    QAction* actionCastToDatetime;      ///< 转换为日期
+    QAction* actionCreateDataDescribe;  ///< 数据描述
     QAction* actionChangeToIndex;       ///< 把某列转换为index
 
     //===================================================
@@ -94,6 +94,7 @@ public:
     QAction* actionFigureResizeChart;  ///< 改变fig的chart大小
     QAction* actionFigureNewXYAxis;    ///< 新增加一个2D绘图
     QAction* actionChartAddCurve;      ///< 添加曲线
+    QAction* actionChartAddScatter2D;  ///< 添加散点图
 
     QAction* actionChartEnableGrid;         ///< 网格显示总开关
     QAction* actionChartEnableGridX;        ///< 网格显示X开关

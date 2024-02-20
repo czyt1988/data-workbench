@@ -3,6 +3,7 @@
 #include "DAGuiAPI.h"
 #include <QWidget>
 #include <QSizeF>
+#include "DAAbstractNodeGraphicsItem.h"
 namespace Ui
 {
 class DANodeItemSettingWidget;
@@ -12,7 +13,6 @@ namespace DA
 {
 class DANodeGraphicsScene;
 class DAGraphicsResizeableItem;
-class DAAbstractNodeGraphicsItem;
 class DAGUI_API DANodeItemSettingWidget : public QWidget
 {
     Q_OBJECT
@@ -20,23 +20,23 @@ class DAGUI_API DANodeItemSettingWidget : public QWidget
 public:
     explicit DANodeItemSettingWidget(QWidget* parent = nullptr);
     ~DANodeItemSettingWidget();
-    //设置需要配置的item
+    // 设置需要配置的item
     void setItem(DAGraphicsResizeableItem* item);
-    //获取维护的item
+    // 获取维护的item
     DAGraphicsResizeableItem* getItem() const;
-    //设置了DAGraphicsSceneWithUndoStack 能实现redo/undo
+    // 设置了DAGraphicsSceneWithUndoStack 能实现redo/undo
     void setScene(DANodeGraphicsScene* sc);
-    //更新
+    // 更新
     void updateData();
-    //更新位置信息
+    // 更新位置信息
     void updatePosition();
-    //更新旋转信息
+    // 更新旋转信息
     void updateRotation();
-    //更新body信息
+    // 更新body信息
     void updateBodySize();
-    //更新item的状态
+    // 更新item的状态
     void updateItemState();
-    //更新连接点的位置
+    // 更新连接点的位置
     void updateLinkPointLocation();
 private slots:
     void onDoubleSpinBoxBodyWidthValueChanged(double v);

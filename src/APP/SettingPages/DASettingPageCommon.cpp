@@ -17,16 +17,25 @@ DASettingPageCommon::DASettingPageCommon(QWidget* parent)
 {
     ui->setupUi(this);
     mButtonGroupRibbonStyle.setExclusive(true);
-    mButtonGroupRibbonStyle.addButton(ui->radioButtonStandardStyle, static_cast< int >(SARibbonBar::OfficeStyle));
-    mButtonGroupRibbonStyle.addButton(ui->radioButtonStandardStyle2Row, static_cast< int >(SARibbonBar::OfficeStyleTwoRow));
-    mButtonGroupRibbonStyle.addButton(ui->radioButtonLiteStyle, static_cast< int >(SARibbonBar::WpsLiteStyle));
-    mButtonGroupRibbonStyle.addButton(ui->radioButtonLiteStyle2Row, static_cast< int >(SARibbonBar::WpsLiteStyleTwoRow));
+    mButtonGroupRibbonStyle.addButton(ui->radioButtonStandardStyle,
+                                      static_cast< int >(SARibbonBar::RibbonStyleLooseThreeRow));
+    mButtonGroupRibbonStyle.addButton(ui->radioButtonStandardStyle2Row,
+                                      static_cast< int >(SARibbonBar::RibbonStyleLooseTwoRow));
+    mButtonGroupRibbonStyle.addButton(ui->radioButtonLiteStyle, static_cast< int >(SARibbonBar::RibbonStyleCompactThreeRow));
+    mButtonGroupRibbonStyle.addButton(ui->radioButtonLiteStyle2Row,
+                                      static_cast< int >(SARibbonBar::RibbonStyleCompactTwoRow));
 #if QT_VERSION_MAJOR >= 6
     connect(&mButtonGroupRibbonStyle, &QButtonGroup::idClicked, this, &DASettingPageCommon::onButtonGroupRibbonStyleClicked);
 #else
-    connect(&mButtonGroupRibbonStyle, QOverload< int >::of(&QButtonGroup::buttonClicked), this, &DASettingPageCommon::onButtonGroupRibbonStyleClicked);
+    connect(&mButtonGroupRibbonStyle,
+            QOverload< int >::of(&QButtonGroup::buttonClicked),
+            this,
+            &DASettingPageCommon::onButtonGroupRibbonStyleClicked);
 #endif
-    connect(ui->spinBoxDisplayLogsNum, QOverload< int >::of(&QSpinBox::valueChanged), this, &DASettingPageCommon::onSpinBoxDisplayLogsNumValueChanged);
+    connect(ui->spinBoxDisplayLogsNum,
+            QOverload< int >::of(&QSpinBox::valueChanged),
+            this,
+            &DASettingPageCommon::onSpinBoxDisplayLogsNumValueChanged);
     connect(ui->checkBoxSaveUIState, &QCheckBox::stateChanged, this, &DASettingPageCommon::onCheckBoxSaveUIStateStateChanged);
 }
 
@@ -41,9 +50,9 @@ void DASettingPageCommon::apply()
         return;
     }
     DAAppConfig& cfg = *mAppConfig;
-    //记录旧值
-    mOldRibbonStyle = static_cast< SARibbonBar::RibbonStyle >(cfg[ DA_CONFIG_KEY_RIBBON_STYLE ].toInt());
-    //更新
+    // 记录旧值
+    mOldRibbonStyle = static_cast< SARibbonBar::RibbonStyles >(cfg[ DA_CONFIG_KEY_RIBBON_STYLE ].toInt());
+    // 更新
     cfg[ DA_CONFIG_KEY_RIBBON_STYLE ]           = static_cast< int >(mNewRibbonStyle);
     cfg[ DA_CONFIG_KEY_SHOW_LOG_NUM ]           = ui->spinBoxDisplayLogsNum->value();
     cfg[ DA_CONFIG_KEY_SAVE_UI_STATE_ON_CLOSE ] = ui->checkBoxSaveUIState->isChecked();
@@ -67,36 +76,37 @@ bool DASettingPageCommon::setAppConfig(DAAppConfig* p)
         return false;
     }
     QSignalBlocker blocker(this);
-    //名字不符合，跳过
+    // 名字不符合，跳过
     mAppConfig       = p;
     DAAppConfig& cfg = *p;
     // ribbon style
-    SARibbonBar::RibbonStyle ribbonStyle = static_cast< SARibbonBar::RibbonStyle >(cfg[ DA_CONFIG_KEY_RIBBON_STYLE ].toInt());
-    mOldRibbonStyle                      = ribbonStyle;
+    SARibbonBar::RibbonStyles ribbonStyle = static_cast< SARibbonBar::RibbonStyles >(
+        cfg[ DA_CONFIG_KEY_RIBBON_STYLE ].toInt());
+    mOldRibbonStyle = ribbonStyle;
     switch (ribbonStyle) {
-    case SARibbonBar::WpsLiteStyle:
+    case SARibbonBar::RibbonStyleCompactThreeRow:
         ui->radioButtonLiteStyle->setChecked(true);
         ui->labelmage->setPixmap(mPixmapRibbonLite);
         break;
-    case SARibbonBar::WpsLiteStyleTwoRow:
+    case SARibbonBar::RibbonStyleCompactTwoRow:
         ui->radioButtonLiteStyle2Row->setChecked(true);
         ui->labelmage->setPixmap(mPixmapRibbonLite2Row);
         break;
-    case SARibbonBar::OfficeStyle:
+    case SARibbonBar::RibbonStyleLooseThreeRow:
         ui->radioButtonStandardStyle->setChecked(true);
         ui->labelmage->setPixmap(mPixmapRibbonStandard);
         break;
-    case SARibbonBar::OfficeStyleTwoRow:
+    case SARibbonBar::RibbonStyleLooseTwoRow:
         ui->radioButtonStandardStyle2Row->setChecked(true);
         ui->labelmage->setPixmap(mPixmapRibbonStandard2Row);
         break;
     default:
         break;
     }
-    //是否记录ui
+    // 是否记录ui
     bool isSaveUIState = cfg[ DA_CONFIG_KEY_SAVE_UI_STATE_ON_CLOSE ].toBool();
     ui->checkBoxSaveUIState->setChecked(isSaveUIState);
-    //日志
+    // 日志
     bool isOK = false;
     int c     = cfg[ DA_CONFIG_KEY_SHOW_LOG_NUM ].toInt(&isOK);
     if (isOK) {
@@ -108,18 +118,18 @@ bool DASettingPageCommon::setAppConfig(DAAppConfig* p)
 
 void DASettingPageCommon::onButtonGroupRibbonStyleClicked(int id)
 {
-    SARibbonBar::RibbonStyle ribbonStyle = static_cast< SARibbonBar::RibbonStyle >(id);
+    SARibbonBar::RibbonStyles ribbonStyle = static_cast< SARibbonBar::RibbonStyles >(id);
     switch (ribbonStyle) {
-    case SARibbonBar::WpsLiteStyle:
+    case SARibbonBar::RibbonStyleCompactThreeRow:
         ui->labelmage->setPixmap(mPixmapRibbonLite);
         break;
-    case SARibbonBar::WpsLiteStyleTwoRow:
+    case SARibbonBar::RibbonStyleCompactTwoRow:
         ui->labelmage->setPixmap(mPixmapRibbonLite2Row);
         break;
-    case SARibbonBar::OfficeStyle:
+    case SARibbonBar::RibbonStyleLooseThreeRow:
         ui->labelmage->setPixmap(mPixmapRibbonStandard);
         break;
-    case SARibbonBar::OfficeStyleTwoRow:
+    case SARibbonBar::RibbonStyleLooseTwoRow:
         ui->labelmage->setPixmap(mPixmapRibbonStandard2Row);
         break;
     default:

@@ -90,11 +90,11 @@ protected:
 
 private:
     Ui::DADataOperateOfDataFrameWidget* ui;
-    DAData _data;
-    DAPyDataFrameTableModule* _model;
-    QUndoStack _undoStack;
-    DADialogDataframeColumnCastToNumeric* _dlgCastNumArgs;
-    DADialogDataframeColumnCastToDatetime* _dlgCastDatetimeArgs;
+    DAData mData;
+    DAPyDataFrameTableModule* mModel;
+    QUndoStack mUndoStack;
+    DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs;
+    DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs;
 };
 }  // end of namespace DA
 #endif  // DADATAOPERATEOFDATAFRAMEWIDGET_H

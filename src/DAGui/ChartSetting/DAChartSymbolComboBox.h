@@ -20,7 +20,7 @@ public:
     static int symbolIndex(const QwtSymbol::Style& s);
 signals:
     /**
-     * @brief symbolStyleChanged
+     * @brief 符号标记改变信号
      * @param s
      */
     void symbolStyleChanged(QwtSymbol::Style s);

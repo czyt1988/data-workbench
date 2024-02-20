@@ -30,7 +30,10 @@ DADataManagerComboBox::DADataManagerComboBox(QWidget* par)
 #if QT_VERSION_MAJOR >= 6
     connect(this, &QComboBox::currentTextChanged, this, &DADataManagerComboBox::onCurrentIndexChanged);
 #else
-    connect(this, QOverload< const QString& >::of(&QComboBox::currentIndexChanged), this, &DADataManagerComboBox::onCurrentIndexChanged);
+    connect(this,
+            QOverload< const QString& >::of(&QComboBox::currentIndexChanged),
+            this,
+            &DADataManagerComboBox::onCurrentIndexChanged);
 #endif
 }
 
@@ -48,14 +51,14 @@ void DADataManagerComboBox::onCurrentIndexChanged(const QString& text)
 {
     QVariant dtype = currentData(DADATAMANAGERTREEMODEL_ROLE_DETAIL_DATA_TYPE);
     if (dtype.isNull()) {
-        //说明不是dataframe下的series
+        // 说明不是dataframe下的series
         return;
     }
     DADataManagerTreeModel::DetailDataTypeMark m = static_cast< DADataManagerTreeModel::DetailDataTypeMark >(dtype.toInt());
     if (DADataManagerTreeModel::SeriesInnerDataframe == m) {
         QVariant dvar = currentData(DADATAMANAGERTREEMODEL_ROLE_DATA_ID);
         if (dvar.isNull()) {
-            //说明不是异常
+            // 说明不是异常
             return;
         }
         DAData::IdType did  = dvar.toULongLong();
@@ -89,7 +92,7 @@ DAData DADataManagerComboBox::getCurrentDAData() const
 {
     QVariant dvar = currentData(DADATAMANAGERTREEMODEL_ROLE_DATA_ID);
     if (dvar.isNull()) {
-        //说明不是异常
+        // 说明不是异常
         return DAData();
     }
     DAData::IdType did  = dvar.toULongLong();
@@ -101,12 +104,13 @@ DAData DADataManagerComboBox::getCurrentDAData() const
 
     QVariant dtype = currentData(DADATAMANAGERTREEMODEL_ROLE_DETAIL_DATA_TYPE);
     if (dtype.isNull()) {
-        //说明选择的是dataframe这些直接是变量管理器的
+        // 说明选择的是dataframe这些直接是变量管理器的
         return d;
     } else {
-#ifdef DA_ENABLE_PYTHON
-        //说明是Dataframe下的Series
-        DADataManagerTreeModel::DetailDataTypeMark m = static_cast< DADataManagerTreeModel::DetailDataTypeMark >(dtype.toInt());
+#if DA_ENABLE_PYTHON
+        // 说明是Dataframe下的Series
+        DADataManagerTreeModel::DetailDataTypeMark m = static_cast< DADataManagerTreeModel::DetailDataTypeMark >(
+            dtype.toInt());
         if (DADataManagerTreeModel::SeriesInnerDataframe == m) {
             QString serName  = currentText();
             DAPyDataFrame df = d.toDataFrame();

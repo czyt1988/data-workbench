@@ -6,7 +6,7 @@
 #include <QScopedPointer>
 #include "DADataManageWidget.h"
 #include "DAWorkFlowGraphicsScene.h"
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
 #include "numpy/DAPyDType.h"
 #endif
 // Qt
@@ -33,7 +33,7 @@ class DAAppDataManager;
 class DADataOperateOfDataFrameWidget;
 class DAWorkFlowOperateWidget;
 class DADataOperateWidget;
-class DAChartOperateWidget;
+class DAAppChartOperateWidget;
 class DADataManageWidget;
 class DAFigureWidget;
 class DAChartWidget;
@@ -90,7 +90,7 @@ public:
     // 获取数据操作窗口
     DADataOperateWidget* getDataOperateWidget() const;
     // 获取绘图操作窗口
-    DAChartOperateWidget* getChartOperateWidget() const;
+    DAAppChartOperateWidget* getChartOperateWidget() const;
     // 获取数据管理窗口
     DADataManageWidget* getDataManageWidget() const;
     // 获取当前的绘图,如果没有回返回nullptr
@@ -141,8 +141,10 @@ private slots:
     void onActionFigureResizeChartTriggered(bool on);
     // 新坐标系
     void onActionFigureNewXYAxisTriggered();
-    // 新坐标系
+    // 添加曲线
     void onActionChartAddCurveTriggered();
+    // 添加散点图
+    void onActionChartAddScatterTriggered();
     //===================================================
     // 绘图标签 Chart Context Category
     //===================================================
@@ -204,7 +206,7 @@ private slots:
     void onActionRenameColumnsTriggered();
     // 创建数据描述
     void onActionCreateDataDescribeTriggered();
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
     // 列数据类型改变
     void onComboxColumnTypesCurrentDTypeChanged(const DA::DAPyDType& dt);
     void onDataOperateDataFrameWidgetSelectTypeChanged(const QList< int >& column, DA::DAPyDType dt);
@@ -328,7 +330,7 @@ private slots:
 private:
     // 初始化信号槽
     void initConnection();
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
     // 初始化脚本信息
     void initScripts();
 #endif

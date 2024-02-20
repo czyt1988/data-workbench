@@ -1,6 +1,7 @@
 ﻿#include "DAAppDockingArea.h"
 #include <QApplication>
 #include <QScreen>
+#include <QLabel>
 #include "AppMainWindow.h"
 // Qt-Advanced-Docking-System
 #include "DockManager.h"
@@ -235,10 +236,19 @@ void DAAppDockingArea::buildDockingArea()
     buildChartAboutWidgets();
     buildDataAboutWidgets();
     buildOtherWidgets();
+
+    // QLabel* centerLabel = new QLabel(mApp);
+    // auto center         = createCenterDockWidget(centerLabel, QStringLiteral("centerLabel"));
+
     auto wfoa = createCenterDockWidget(mWorkFlowOperateWidget, QStringLiteral("da_workFlowOperateWidgetDock"));
     mWorkFlowOperateDock = wfoa.first;
     mWorkFlowOperateDock->setIcon(QIcon(":/Icon/Icon/showWorkFlow.svg"));
     mWorkFlowOperateDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
+
+    // auto wfoa = createDockWidgetAsTab(mWorkFlowOperateWidget, QStringLiteral("da_workFlowOperateWidgetDock"),
+    // center.second); mWorkFlowOperateDock = wfoa.first;
+    // mWorkFlowOperateDock->setIcon(QIcon(":/Icon/Icon/showWorkFlow.svg"));
+    // mWorkFlowOperateDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
 
     auto wcoa = createDockWidgetAsTab(mChartOperateWidget, QStringLiteral("da_chartOperateWidgetDock"), wfoa.second);
     mChartOperateDock = wcoa.first;
@@ -252,7 +262,9 @@ void DAAppDockingArea::buildDockingArea()
     mDataOperateDock->raise();
 
     // 左侧管理区 - 工作流节点窗口
-    auto wfna = createDockWidget(mWorkflowNodeListWidget, ads::LeftDockWidgetArea, QStringLiteral("da_workflowNodeListWidgetDock"));
+    auto wfna             = createDockWidget(mWorkflowNodeListWidget,
+                                 ads::LeftDockWidgetArea,
+                                 QStringLiteral("da_workflowNodeListWidgetDock"));
     mWorkflowNodeListDock = wfna.first;
     mWorkflowNodeListDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
 
@@ -270,7 +282,10 @@ void DAAppDockingArea::buildDockingArea()
     mSettingContainerDock = sca.first;
     mSettingContainerDock->setIcon(QIcon(":/Icon/Icon/showSettingWidget.svg"));
     // 日志窗口
-    auto ica = createDockWidget(mMessageLogViewWidget, ads::BottomDockWidgetArea, QStringLiteral("da_messageLogViewWidgetDock"), sca.second);
+    auto ica        = createDockWidget(mMessageLogViewWidget,
+                                ads::BottomDockWidgetArea,
+                                QStringLiteral("da_messageLogViewWidgetDock"),
+                                sca.second);
     mMessageLogDock = ica.first;
     mMessageLogDock->setIcon(QIcon(":/Icon/Icon/showInfomation.svg"));
 
@@ -302,17 +317,18 @@ void DAAppDockingArea::buildWorkflowAboutWidgets()
 
 void DAAppDockingArea::buildChartAboutWidgets()
 {
-    mChartOperateWidget = new DAAppChartOperateWidget(mApp);
-    mChartOperateWidget->setObjectName(QStringLiteral("da_chartOperateWidget"));
+    DADataManager* dmgr = mDataMgr->dataManager();
+
+    DAAppChartOperateWidget* appChartOptWidget = new DAAppChartOperateWidget(mApp);
+    appChartOptWidget->setObjectName(QStringLiteral("da_chartOperateWidget"));
+    appChartOptWidget->setDataManager(dmgr);
+    appChartOptWidget->setupFigureFactory(new DAAppFigureFactory());
+    mChartOperateWidget = appChartOptWidget;
 
     mChartManageWidget = new DAChartManageWidget(mApp);
     mChartManageWidget->setObjectName(QStringLiteral("da_chartManageWidget"));
 
-    DADataManager* dmgr = mDataMgr->dataManager();
     mChartManageWidget->setChartOperateWidget(mChartOperateWidget);
-    DAAppFigureFactory* factory = new DAAppFigureFactory();
-    factory->setDataManager(dmgr);
-    mChartOperateWidget->setupFigureFactory(factory);
 }
 
 void DAAppDockingArea::buildDataAboutWidgets()
@@ -338,8 +354,14 @@ void DAAppDockingArea::buildOtherWidgets()
 
 void DAAppDockingArea::initConnection()
 {
-    connect(mWorkFlowOperateWidget, &DAWorkFlowOperateWidget::selectNodeItemChanged, this, &DAAppDockingArea::onSelectNodeItemChanged);
-    connect(mWorkFlowOperateWidget, &DAWorkFlowOperateWidget::workflowCreated, this, &DAAppDockingArea::onWorkFlowOperateWidgetWorkflowCreated);
+    connect(mWorkFlowOperateWidget,
+            &DAWorkFlowOperateWidget::selectNodeItemChanged,
+            this,
+            &DAAppDockingArea::onSelectNodeItemChanged);
+    connect(mWorkFlowOperateWidget,
+            &DAWorkFlowOperateWidget::workflowCreated,
+            this,
+            &DAAppDockingArea::onWorkFlowOperateWidgetWorkflowCreated);
     // DADataManageWidget的数据双击，在DADataOperateWidget中显示
     connect(mDataManageWidget, &DADataManageWidget::dataDbClicked, this, &DAAppDockingArea::onDataManageWidgetDataDbClicked);
     // 设置窗口的绑定

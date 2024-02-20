@@ -102,5 +102,6 @@
         <file>Icon/chart-type/chart-spectrocurve.svg</file>
         <file>Icon/chart-type/chart-spectrogram.svg</file>
         <file>Icon/chart-type/chart-vectorfield.svg</file>
+        <file>Icon/chart-type/chart-scatter-2d.svg</file>
     </qresource>
 </RCC>

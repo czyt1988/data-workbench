@@ -35,6 +35,7 @@ endif()
 set(DA_LIB_HEADER_FILES
     DAAbstractChartAddItemWidget.h
     DAChartAddXYSeriesWidget.h
+    DAChartAddCurveWidget.h
     DADataManagerComboBox.h
     DADataOperatePageWidget.h
     DAFigureFactory.h
@@ -67,6 +68,7 @@ set(DA_LIB_HEADER_FILES
 set(DA_LIB_SOURCE_FILES
     DAAbstractChartAddItemWidget.cpp
     DAChartAddXYSeriesWidget.cpp
+    DAChartAddCurveWidget.cpp
     DAChartListView.cpp
     DAChartManageWidget.cpp
     DAChartOperateWidget.cpp
@@ -97,6 +99,7 @@ set(DA_LIB_SOURCE_FILES
 )
 set(DA_LIB_QT_UI_FILES
     DAChartAddXYSeriesWidget.ui
+    DAChartAddCurveWidget.ui
     DAChartManageWidget.ui
     DAChartOperateWidget.ui
     DADataManageWidget.ui
@@ -194,7 +197,6 @@ if(DA_ENABLE_PYTHON)
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToDatetime.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToNumeric.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.ui
-        ${DA_LIB_SUBDIR_Dialog}/DADialogPythonArgs.ui
     )
 endif()
 #MimeData
@@ -225,6 +227,7 @@ endif()
 #ChartSetting
 file(GLOB DA_LIB_HEADER_FILES_ChartSetting ${DA_LIB_SUBDIR_ChartSetting}/*.h)
 file(GLOB DA_LIB_SOURCE_FILES_ChartSetting ${DA_LIB_SUBDIR_ChartSetting}/*.cpp)
+file(GLOB DA_LIB_UI_FILES_ChartSetting ${DA_LIB_SUBDIR_ChartSetting}/*.ui)
 
 add_library(${DA_LIB_NAME} SHARED
             #Root
@@ -248,6 +251,7 @@ add_library(${DA_LIB_NAME} SHARED
             #ChartSetting
             ${DA_LIB_HEADER_FILES_ChartSetting}
             ${DA_LIB_SOURCE_FILES_ChartSetting}
+            ${DA_LIB_UI_FILES_ChartSetting}
             #Global
             ${DA_GLOBAL_HEADER}
 )	
@@ -344,6 +348,15 @@ set_target_properties(${DA_LIB_NAME} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
+# 添加这两个位置主要是为了ui文件进行窗口提升时能找到头文件
+target_include_directories(${DA_LIB_NAME} PUBLIC
+    $<INSTALL_INTERFACE:include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/Dialog>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Dialog>
+)
+target_include_directories(${DA_LIB_NAME} PUBLIC
+    $<INSTALL_INTERFACE:include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/ChartSetting>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ChartSetting>
+)
 ########################################################
 # 安装
 ########################################################

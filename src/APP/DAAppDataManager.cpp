@@ -5,7 +5,7 @@
 #include <QDebug>
 // DAUtils
 #include "DAStringUtil.h"
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
 // DAPyScript
 #include "DAPyScripts.h"
 #endif
@@ -60,13 +60,13 @@ int DAAppDataManager::importFromFiles(const QStringList& fileNames)
     qDebug() << "data manager begin import files:" << fileNames;
     QList< DAData > importDatas;
     for (const QString& f : qAsConst(fileNames)) {
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
         qInfo() << tr("begin import file:%1").arg(f);
         DAPyObjectWrapper res = DAPyScripts::getInstance().getIO().read(f);
         if (DAPyDataFrame::isDataFrame(res.object())) {
             qInfo() << tr("file:%1,conver to dataframe").arg(f);
             QFileInfo fi(f);
-            DAPyDataFrame df = res;  //调用的是DAPyDataFrame(const DAPyObjectWrapper& df)
+            DAPyDataFrame df = res;  // 调用的是DAPyDataFrame(const DAPyObjectWrapper& df)
             DAData data      = df;
             data.setName(fi.baseName());
             data.setDescribe(fi.absoluteFilePath());

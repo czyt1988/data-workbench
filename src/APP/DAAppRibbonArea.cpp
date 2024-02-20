@@ -13,6 +13,7 @@
 #include "SARibbonMenu.h"
 #include "SARibbonCtrlContainer.h"
 #include "SARibbonApplicationButton.h"
+#include "SARibbonLineWidgetContainer.h"
 // stl
 // Qt
 #include <QFileDialog>
@@ -26,7 +27,8 @@
 #include <QMenu>
 // ui
 #include "DAAppRibbonApplicationMenu.h"
-#ifdef DA_ENABLE_PYTHON
+
+#if DA_ENABLE_PYTHON
 // Py
 #include "DAPyScripts.h"
 #include "pandas/DAPyDataFrame.h"
@@ -35,6 +37,7 @@
 #include "DAPyDTypeComboBox.h"
 #include "DADataOperateOfDataFrameWidget.h"
 #endif
+
 // api
 #include "DAAppUI.h"
 #include "DAAppCommand.h"
@@ -158,14 +161,16 @@ void DAAppRibbonArea::buildMenu()
         this->m_menuChartLegendProperty->addAction(act);
         return container;
     };
-    m_spinboxChartLegendMaxColumns = new QSpinBox(m_menuChartLegendProperty);
-    m_ctrlContainerChartLegendMaxColumns = addControlWidgetInChartLegendMenu(m_spinboxChartLegendMaxColumns, tr("Max Columns"));  // cn:列数
-    m_spinboxChartLegendMargin = new QSpinBox(m_menuChartLegendProperty);
+    m_spinboxChartLegendMaxColumns       = new QSpinBox(m_menuChartLegendProperty);
+    m_ctrlContainerChartLegendMaxColumns = addControlWidgetInChartLegendMenu(m_spinboxChartLegendMaxColumns,
+                                                                             tr("Max Columns"));  // cn:列数
+    m_spinboxChartLegendMargin           = new QSpinBox(m_menuChartLegendProperty);
     m_ctrlContainerChartLegendMargin = addControlWidgetInChartLegendMenu(m_spinboxChartLegendMargin, tr("Margin"));  // cn:图例边缘
     m_spinboxChartLegendSpacing = new QSpinBox(m_menuChartLegendProperty);
     m_ctrlContainerChartLegendSpacing = addControlWidgetInChartLegendMenu(m_spinboxChartLegendSpacing, tr("Spacing"));  // cn:图例间隔
-    m_spinboxChartLegendItemMargin = new QSpinBox(m_menuChartLegendProperty);
-    m_ctrlContainerChartLegendItemMargin = addControlWidgetInChartLegendMenu(m_spinboxChartLegendItemMargin, tr("Item Margin"));  // cn:条目边缘
+    m_spinboxChartLegendItemMargin         = new QSpinBox(m_menuChartLegendProperty);
+    m_ctrlContainerChartLegendItemMargin   = addControlWidgetInChartLegendMenu(m_spinboxChartLegendItemMargin,
+                                                                             tr("Item Margin"));  // cn:条目边缘
     m_spinboxChartLegendItemSpacing        = new QSpinBox(m_menuChartLegendProperty);
     m_ctrlContainerChartLegendItemSpacing  = addControlWidgetInChartLegendMenu(m_spinboxChartLegendItemSpacing,
                                                                               tr("Item Spacing"));  // cn:条目间隔
@@ -206,7 +211,7 @@ void DAAppRibbonArea::resetText()
     m_categoryDataframeOperate->setCategoryName(tr("Operate"));  ///< DataFrame -> Operate
     m_pannelDataframeOperateAxes->setPannelName(tr("Axes"));     ///< DataFrame -> Operate -> Axes
     m_pannelDataframeOperateDType->setPannelName(tr("Type"));    ///< DataFrame -> Type
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
     m_comboxColumnTypesContainer->setPrefix(tr("Type"));  ///< DataFrame -> Type -> Type
 #endif
     m_pannelDataframeOperateStatistic->setPannelName(tr("Statistic"));  ///< DataFrame -> Statistic
@@ -284,8 +289,9 @@ void DAAppRibbonArea::buildRibbonMainCategory()
     m_pannelMainFileOpt->addLargeAction(m_actions->actionOpen);
     m_pannelMainFileOpt->addSmallAction(m_actions->actionSave);
     m_pannelMainFileOpt->addSmallAction(m_actions->actionSaveAs);
-    m_pannelMainFileOpt->addSeparator();
-    m_pannelMainFileOpt->addSmallAction(m_actions->actionAppendProject);
+    // todo:暂时屏蔽掉插入工程功能
+    //    m_pannelMainFileOpt->addSeparator();
+    //    m_pannelMainFileOpt->addSmallAction(m_actions->actionAppendProject);
     m_categoryMain->addPannel(m_pannelMainFileOpt);
 
     //--------Data Opt--------------------------------------------------
@@ -395,10 +401,10 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     m_pannelDataframeOperateAxes->addLargeAction(m_actions->actionChangeToIndex);
     // Type pannel
     m_pannelDataframeOperateDType = m_categoryDataframeOperate->addPannel(tr("Type"));
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
     m_comboxColumnTypesContainer = new SARibbonLineWidgetContainer(m_pannelDataframeOperateDType);
     m_comboxColumnTypes          = new DAPyDTypeComboBox(m_comboxColumnTypesContainer);
-    m_comboxColumnTypes->setMinimumWidth(m_app->fontMetrics().width("timedelta64(scoll)"));  // 设置最小宽度
+    m_comboxColumnTypes->setMinimumWidth(Qt5Qt6Compat_fontMetrics_width(m_app->fontMetrics(), "timedelta64(scoll)"));  // 设置最小宽度
     m_comboxColumnTypesContainer->setPrefix(tr("Type"));
     m_comboxColumnTypesContainer->setWidget(m_comboxColumnTypes);
     m_pannelDataframeOperateDType->addWidget(m_comboxColumnTypesContainer, SARibbonPannelItem::Medium);
@@ -463,6 +469,7 @@ void DAAppRibbonArea::buildRibbonFigureCategory()
     m_pannelChartAdd = new SARibbonPannel(m_categoryFigure);
     m_pannelChartAdd->setObjectName(QStringLiteral("da-pannel-figure.chart-add"));
     m_pannelChartAdd->addLargeAction(m_actions->actionChartAddCurve);
+    m_pannelChartAdd->addLargeAction(m_actions->actionChartAddScatter2D);
     m_categoryFigure->addPannel(m_pannelChartAdd);
 }
 
@@ -876,7 +883,7 @@ void DAAppRibbonArea::hideContextCategory(DAAppRibbonArea::ContextCategoryType t
         break;
     }
 }
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
 /**
  * @brief 设置DataFrame的类型，[Context Category - dataframe] [Type] -> Type
  * @param d

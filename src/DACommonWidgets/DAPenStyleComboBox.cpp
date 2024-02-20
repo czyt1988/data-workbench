@@ -197,6 +197,15 @@ void DAPenStyleComboBox::rebuildItems()
 }
 
 /**
+ * @brief 获取当前的画笔类型
+ * @return
+ */
+Qt::PenStyle DAPenStyleComboBox::getCurrentPenStyle() const
+{
+    return static_cast< Qt::PenStyle >(currentData().toInt());
+}
+
+/**
  * @brief 设置画笔
  * @param p
  */

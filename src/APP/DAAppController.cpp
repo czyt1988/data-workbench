@@ -29,7 +29,7 @@
 #include "DADataOperateWidget.h"
 #include "DADataOperatePageWidget.h"
 #include "DADataManageWidget.h"
-#include "DAChartOperateWidget.h"
+#include "DAAppChartOperateWidget.h"
 #include "DAFigureWidget.h"
 #include "DAChartWidget.h"
 #include "SettingPages/DASettingPageCommon.h"
@@ -45,7 +45,7 @@
 // project
 #include "DAAppProject.h"
 // Py
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
 #include "DAPyDTypeComboBox.h"
 #include "DAPyScripts.h"
 #include "pandas/DAPyDataFrame.h"
@@ -175,7 +175,7 @@ AppMainWindow* DAAppController::app() const
 void DAAppController::initialize()
 {
     initConnection();
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
     initScripts();
 #endif
 }
@@ -223,9 +223,9 @@ DADataOperateWidget* DAAppController::getDataOperateWidget() const
  * @brief 获取绘图操作窗口
  * @return
  */
-DAChartOperateWidget* DAAppController::getChartOperateWidget() const
+DAAppChartOperateWidget* DAAppController::getChartOperateWidget() const
 {
-    return mDock->getChartOperateWidget();
+    return qobject_cast< DAAppChartOperateWidget* >(mDock->getChartOperateWidget());
 }
 
 /**
@@ -311,6 +311,8 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionAddFigure, onActionAddFigureTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionFigureResizeChart, onActionFigureResizeChartTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionFigureNewXYAxis, onActionFigureNewXYAxisTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddCurve, onActionChartAddCurveTriggered);
+
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGrid, onActionChartEnableGridTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGridX, onActionChartEnableGridXTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGridY, onActionChartEnableGridYTriggered);
@@ -351,7 +353,7 @@ void DAAppController::initConnection()
     // 不知为何使用函数指针无法关联信号和槽
     //  connect(m_comboxColumnTypes, &DAPyDTypeComboBox::currentDTypeChanged, this,&DAAppRibbonArea::onComboxColumnTypesCurrentDTypeChanged);
     //  QObject::connect: signal not found in DAPyDTypeComboBox
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
     connect(mRibbon->m_comboxColumnTypes, SIGNAL(currentDTypeChanged(DAPyDType)), this, SLOT(onComboxColumnTypesCurrentDTypeChanged(DAPyDType)));
 #endif
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChangeToIndex, onActionChangeToIndexTriggered);
@@ -696,7 +698,7 @@ void DAAppController::onDataOperatePageAdded(DADataOperatePageWidget* page)
 {
     switch (page->getDataOperatePageType()) {
     case DADataOperatePageWidget::DataOperateOfDataFrame: {
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
         DADataOperateOfDataFrameWidget* w = static_cast< DADataOperateOfDataFrameWidget* >(page);
         connect(w, &DADataOperateOfDataFrameWidget::selectTypeChanged, this, &DAAppController::onDataOperateDataFrameWidgetSelectTypeChanged);
 #endif
@@ -706,7 +708,7 @@ void DAAppController::onDataOperatePageAdded(DADataOperatePageWidget* page)
     }
 }
 
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
 
 /**
  * @brief 脚本定义的内容初始化
@@ -1056,14 +1058,11 @@ void DAAppController::onActionRemoveDataTriggered()
  */
 void DAAppController::onActionAddFigureTriggered()
 {
-    DAChartOperateWidget* chartopt = getChartOperateWidget();
-    DAFigureWidget* fig            = chartopt->createFigure();
+    DAAppChartOperateWidget* chartopt = getChartOperateWidget();
+    // 添加绘图
+    DAFigureWidget* fig = chartopt->createFigure();
     // 把fig的undostack添加
     mCommand->addStack(fig->getUndoStack());
-    // 这里不需要回退
-    DAChartWidget* chart = fig->createChart();
-    chart->setXLabel("x");
-    chart->setYLabel("y");
     mRibbon->updateFigureAboutRibbon(fig);
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
 }
@@ -1087,7 +1086,7 @@ void DAAppController::onActionFigureResizeChartTriggered(bool on)
  */
 void DAAppController::onActionFigureNewXYAxisTriggered()
 {
-    DAFigureWidget* fig = gcf();
+    DAFigureWidget* fig = getCurrentFigure();
     if (!fig) {
         qWarning() << tr("Before creating a new coordinate,you need to create a figure");  // cn:在创建一个坐标系之前，需要先创建一个绘图窗口
         return;
@@ -1107,11 +1106,19 @@ void DAAppController::onActionFigureNewXYAxisTriggered()
  */
 void DAAppController::onActionChartAddCurveTriggered()
 {
-    DAChartWidget* w = gca();
-    if (!w) {
-        qWarning() << tr("Before add a curve,you need to create a axis on figure");  // cn:在添加曲线前，需要先在绘图窗口中添加一个坐标系
-        return;
-    }
+    DAAppChartOperateWidget* chartopt = getChartOperateWidget();
+    chartopt->plotWithGuideDialog(DA::ChartTypes::Curve);
+    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
+}
+
+/**
+ * @brief 添加散点图
+ */
+void DAAppController::onActionChartAddScatterTriggered()
+{
+    DAAppChartOperateWidget* chartopt = getChartOperateWidget();
+    chartopt->plotWithGuideDialog(DA::ChartTypes::Scatter);
+    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
 }
 
 /**
@@ -1424,7 +1431,7 @@ void DAAppController::onChartLegendBorderRadiusValueChanged(double v)
  */
 void DAAppController::onActionRemoveRowTriggered()
 {
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
     if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
         dfopt->removeSelectRow();
     }
@@ -1436,7 +1443,7 @@ void DAAppController::onActionRemoveRowTriggered()
  */
 void DAAppController::onActionRemoveColumnTriggered()
 {
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
     if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
         dfopt->removeSelectColumn();
     }
@@ -1448,7 +1455,7 @@ void DAAppController::onActionRemoveColumnTriggered()
  */
 void DAAppController::onActionRemoveCellTriggered()
 {
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
     if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
         dfopt->removeSelectCell();
     }
@@ -1460,7 +1467,7 @@ void DAAppController::onActionRemoveCellTriggered()
  */
 void DAAppController::onActionInsertRowTriggered()
 {
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
     if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
         dfopt->insertRowBelowBySelect();
     }
@@ -1472,7 +1479,7 @@ void DAAppController::onActionInsertRowTriggered()
  */
 void DAAppController::onActionInsertRowAboveTriggered()
 {
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
     if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
         dfopt->insertRowAboveBySelect();
     }
@@ -1483,7 +1490,7 @@ void DAAppController::onActionInsertRowAboveTriggered()
  */
 void DAAppController::onActionInsertColumnRightTriggered()
 {
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
     if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
         dfopt->insertColumnRightBySelect();
     }
@@ -1494,7 +1501,7 @@ void DAAppController::onActionInsertColumnRightTriggered()
  */
 void DAAppController::onActionInsertColumnLeftTriggered()
 {
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
     if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
         dfopt->insertColumnLeftBySelect();
     }
@@ -1506,7 +1513,7 @@ void DAAppController::onActionInsertColumnLeftTriggered()
  */
 void DAAppController::onActionRenameColumnsTriggered()
 {
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
     if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
         dfopt->renameColumns();
     }
@@ -1519,7 +1526,7 @@ void DAAppController::onActionRenameColumnsTriggered()
 void DAAppController::onActionCreateDataDescribeTriggered()
 {
     // TODO 此函数应该移动到dataOperateWidget中
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
     if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
         DAPyDataFrame df = dfopt->createDataDescribe();
         if (df.isNone()) {
@@ -1542,7 +1549,7 @@ void DAAppController::onActionCreateDataDescribeTriggered()
  */
 void DAAppController::onActionCastToNumTriggered()
 {
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
     if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
         dfopt->castSelectToNum();
     }
@@ -1562,7 +1569,7 @@ void DAAppController::onActionCastToStringTriggered()
  */
 void DAAppController::onActionCastToDatetimeTriggered()
 {
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
     if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
         dfopt->castSelectToDatetime();
     }
@@ -1574,7 +1581,7 @@ void DAAppController::onActionCastToDatetimeTriggered()
  */
 void DAAppController::onActionChangeToIndexTriggered()
 {
-#ifdef DA_ENABLE_PYTHON
+#if DA_ENABLE_PYTHON
     if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
         dfopt->changeSelectColumnToIndex();
     }

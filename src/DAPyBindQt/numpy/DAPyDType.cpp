@@ -233,8 +233,24 @@ bool DAPyDType::isNumeral() const
  */
 QStringList DAPyDType::dtypeNames()
 {
-    static QStringList s_dtypeNames(
-            { "bool", "int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float16", "float32", "float64", "complex64", "complex128", "<U0", "datetime64", "timedelta64", "object" });
+    static QStringList s_dtypeNames({ "bool",
+                                      "int8",
+                                      "int16",
+                                      "int32",
+                                      "int64",
+                                      "uint8",
+                                      "uint16",
+                                      "uint32",
+                                      "uint64",
+                                      "float16",
+                                      "float32",
+                                      "float64",
+                                      "complex64",
+                                      "complex128",
+                                      "<U0",
+                                      "datetime64",
+                                      "timedelta64",
+                                      "object" });
     return s_dtypeNames;
 }
 
@@ -242,7 +258,6 @@ void DAPyDType::checkObjectValid()
 {
     if (!isDtypeObj(object())) {
         object() = pybind11::none();
-        qCritical() << QObject::tr("DAPyIndex get python object type is not pandas.Index");
     }
 }
 

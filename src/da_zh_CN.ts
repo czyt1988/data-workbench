@@ -60,73 +60,190 @@
     </message>
 </context>
 <context>
-    <name>DA</name>
+    <name>CImageViewer</name>
     <message>
-        <location filename="DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="36"/>
-        <source>Exception in get selected column:%1</source>
-        <translation>获取选中的列发生异常：%1</translation>
+        <location filename="3rdparty/ADS/demo/ImageViewer.cpp" line="83"/>
+        <source>Cannot load %1: %2</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="52"/>
-        <source>Exception in get selected series:%1</source>
-        <translation>获取选中的序列发生异常：%1</translation>
+        <location filename="3rdparty/ADS/demo/ImageViewer.cpp" line="144"/>
+        <source>Open File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/demo/ImageViewer.cpp" line="155"/>
+        <source>&amp;Open...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/demo/ImageViewer.cpp" line="161"/>
+        <source>Fit on Screen</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/demo/ImageViewer.cpp" line="166"/>
+        <source>Actual Pixels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/demo/ImageViewer.cpp" line="175"/>
+        <source>Zoom In (25%)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/demo/ImageViewer.cpp" line="180"/>
+        <source>Zoom Out (25%)</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>CMainWindow</name>
+    <message>
+        <location filename="3rdparty/ADS/examples/autohide/mainwindow.ui" line="14"/>
+        <location filename="3rdparty/ADS/examples/centralwidget/mainwindow.ui" line="14"/>
+        <location filename="3rdparty/ADS/examples/emptydockarea/mainwindow.ui" line="14"/>
+        <source>MainWindow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/examples/autohide/mainwindow.ui" line="28"/>
+        <location filename="3rdparty/ADS/examples/centralwidget/mainwindow.ui" line="28"/>
+        <location filename="3rdparty/ADS/examples/emptydockarea/mainwindow.ui" line="28"/>
+        <source>View</source>
+        <translation type="unfinished">视图</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/examples/autohide/mainwindow.ui" line="35"/>
+        <location filename="3rdparty/ADS/examples/centralwidget/mainwindow.ui" line="35"/>
+        <location filename="3rdparty/ADS/examples/emptydockarea/mainwindow.ui" line="35"/>
+        <source>toolBar</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>CStatusDialogClass</name>
+    <message>
+        <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="20"/>
+        <source>Dock Widget Status</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="35"/>
+        <source>Dock Widget:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="58"/>
+        <source>Status</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="64"/>
+        <source>closed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="71"/>
+        <source>floating</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="78"/>
+        <source>tabbed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="85"/>
+        <source>is current tab</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="101"/>
+        <source>Feature Flags</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="107"/>
+        <source>DockWidgetClosable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="114"/>
+        <source>DockWidgetMovable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="121"/>
+        <source>DockWidgetFloatable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="128"/>
+        <source>DockWidgetDeleteOnClose</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="135"/>
+        <source>CustomCloseHandling</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DA::AppMainWindow</name>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="108"/>
+        <location filename="APP/AppMainWindow.cpp" line="98"/>
         <source>Data WorkFlow</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="117"/>
+        <location filename="APP/AppMainWindow.cpp" line="107"/>
         <source>LanguageChange</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="138"/>
+        <location filename="APP/AppMainWindow.cpp" line="128"/>
         <source>success save ui state to %1</source>
         <translation>成功保存ui状态到路径%1</translation>
     </message>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="140"/>
+        <location filename="APP/AppMainWindow.cpp" line="130"/>
         <source>can not open %1,because:%2</source>
         <translation>无法打开路径%1，原因是：%2</translation>
     </message>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="145"/>
+        <location filename="APP/AppMainWindow.cpp" line="135"/>
         <source>can not remove %1</source>
         <translation>无法移除ui状态文件%1</translation>
     </message>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="181"/>
+        <location filename="APP/AppMainWindow.cpp" line="174"/>
         <source>untitle</source>
         <translation>未命名</translation>
     </message>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="199"/>
-        <location filename="APP/AppMainWindow.cpp" line="201"/>
+        <location filename="APP/AppMainWindow.cpp" line="192"/>
+        <location filename="APP/AppMainWindow.cpp" line="194"/>
         <source>infomation</source>
         <translation>信息</translation>
     </message>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="199"/>
+        <location filename="APP/AppMainWindow.cpp" line="192"/>
         <source>Topology execution completed</source>
         <translation>拓扑执行完成</translation>
     </message>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="201"/>
+        <location filename="APP/AppMainWindow.cpp" line="194"/>
         <source>Topology execution failed</source>
         <translation>拓扑执行失败</translation>
     </message>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="306"/>
+        <location filename="APP/AppMainWindow.cpp" line="299"/>
         <source>restore UI state error:%1</source>
         <translation>恢复ui状态发生错误：%1</translation>
     </message>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="316"/>
+        <location filename="APP/AppMainWindow.cpp" line="309"/>
         <source>can not read ui state file %1,because %2</source>
         <translation>无法读取ui状态文件%1，原因是：%2</translation>
     </message>
@@ -142,12 +259,12 @@
 <context>
     <name>DA::DAActionsInterface</name>
     <message>
-        <location filename="DAInterface/DAActionsInterface.cpp" line="110"/>
+        <location filename="DAInterface/DAActionsInterface.cpp" line="117"/>
         <source>DAAppActionsInterface::recordAction get null action</source>
         <translation>在记录Action过程中得到了一个空的action，此问题不会影响程序运行</translation>
     </message>
     <message>
-        <location filename="DAInterface/DAActionsInterface.cpp" line="115"/>
+        <location filename="DAInterface/DAActionsInterface.cpp" line="122"/>
         <source>DAAppActionsInterface::recordAction(QAction objname=%1) receive same object name, and the previous record will be overwritten</source>
         <translation>记录action过程中发现有相同的对象名(object name=%1),会覆盖之前记录的action</translation>
     </message>
@@ -155,37 +272,37 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="171"/>
+        <location filename="APP/DAAppActions.cpp" line="206"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="172"/>
+        <location filename="APP/DAAppActions.cpp" line="207"/>
         <source>Save</source>
         <translation>保存</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="173"/>
+        <location filename="APP/DAAppActions.cpp" line="208"/>
         <source>Save As</source>
         <translation>另存为</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="174"/>
+        <location filename="APP/DAAppActions.cpp" line="209"/>
         <source>Append To Project</source>
         <translation>追加到工程</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="176"/>
+        <location filename="APP/DAAppActions.cpp" line="211"/>
         <source>Rename Columns</source>
         <translation>重命名列</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="177"/>
+        <location filename="APP/DAAppActions.cpp" line="212"/>
         <source>Setting</source>
         <translation>设置</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="179"/>
+        <location filename="APP/DAAppActions.cpp" line="214"/>
         <source>Add 
 Data</source>
         <oldsource>Add Data</oldsource>
@@ -193,7 +310,7 @@ Data</source>
 数据</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="180"/>
+        <location filename="APP/DAAppActions.cpp" line="215"/>
         <source>Remove 
 Data</source>
         <oldsource>Remove Data</oldsource>
@@ -201,7 +318,7 @@ Data</source>
 数据</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="182"/>
+        <location filename="APP/DAAppActions.cpp" line="217"/>
         <source>Add 
 Figure</source>
         <oldsource>Add 
@@ -210,7 +327,7 @@ Folder</oldsource>
 绘图</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="183"/>
+        <location filename="APP/DAAppActions.cpp" line="218"/>
         <source>Resize 
 Chart</source>
         <oldsource>Resize Chart</oldsource>
@@ -218,7 +335,7 @@ Chart</source>
 尺寸</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="184"/>
+        <location filename="APP/DAAppActions.cpp" line="219"/>
         <source>New 
 XY Axis</source>
         <oldsource>New XY Axis</oldsource>
@@ -226,43 +343,49 @@ XY Axis</source>
 坐标系</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="185"/>
+        <location filename="APP/DAAppActions.cpp" line="220"/>
         <source>Add 
 Curve</source>
         <translation>曲线</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="187"/>
+        <location filename="APP/DAAppActions.cpp" line="221"/>
+        <source>Add 
+Scatter</source>
+        <translation>散点图</translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppActions.cpp" line="223"/>
         <source>Enable Grid</source>
         <translation>网格</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="188"/>
+        <location filename="APP/DAAppActions.cpp" line="224"/>
         <source>X Grid</source>
         <translation>横向网格</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="189"/>
+        <location filename="APP/DAAppActions.cpp" line="225"/>
         <source>Y Grid</source>
         <translation>纵向网格</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="190"/>
+        <location filename="APP/DAAppActions.cpp" line="226"/>
         <source>Xmin Grid</source>
         <translation>横向密集网格</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="191"/>
+        <location filename="APP/DAAppActions.cpp" line="227"/>
         <source>Ymin Grid</source>
         <translation>纵向密集网格</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="192"/>
+        <location filename="APP/DAAppActions.cpp" line="228"/>
         <source>Zoom</source>
         <translation>缩放</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="195"/>
+        <location filename="APP/DAAppActions.cpp" line="231"/>
         <source>Show 
 All</source>
         <oldsource>Show All</oldsource>
@@ -270,87 +393,87 @@ All</source>
 全部</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="196"/>
+        <location filename="APP/DAAppActions.cpp" line="232"/>
         <source>Pan</source>
         <translation>拖动</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="197"/>
+        <location filename="APP/DAAppActions.cpp" line="233"/>
         <source>Cross</source>
         <translation>十字标记</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="198"/>
+        <location filename="APP/DAAppActions.cpp" line="234"/>
         <source>Y Picker</source>
         <translation>y值拾取</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="199"/>
+        <location filename="APP/DAAppActions.cpp" line="235"/>
         <source>XY Picker</source>
         <translation>点拾取</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="200"/>
+        <location filename="APP/DAAppActions.cpp" line="236"/>
         <source>legend</source>
         <translation>图例</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="201"/>
+        <location filename="APP/DAAppActions.cpp" line="237"/>
         <source>Top Left</source>
         <translation>左上对齐</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="202"/>
+        <location filename="APP/DAAppActions.cpp" line="238"/>
         <source>Top</source>
         <translation>上对齐</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="203"/>
+        <location filename="APP/DAAppActions.cpp" line="239"/>
         <source>Top Right</source>
         <translation>右上对齐</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="204"/>
+        <location filename="APP/DAAppActions.cpp" line="240"/>
         <source>Right</source>
         <translation>右对齐</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="205"/>
+        <location filename="APP/DAAppActions.cpp" line="241"/>
         <source>Bottom Right</source>
         <translation>右下对齐</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="206"/>
+        <location filename="APP/DAAppActions.cpp" line="242"/>
         <source>Bottom</source>
         <translation>下对齐</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="207"/>
+        <location filename="APP/DAAppActions.cpp" line="243"/>
         <source>Bottom Left</source>
         <translation>左下对齐</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="208"/>
+        <location filename="APP/DAAppActions.cpp" line="244"/>
         <source>Left</source>
         <translation>左对齐</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="210"/>
+        <location filename="APP/DAAppActions.cpp" line="246"/>
         <source>Remove Row</source>
         <translation>删除行</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="211"/>
+        <location filename="APP/DAAppActions.cpp" line="247"/>
         <source>Remove Column</source>
         <translation>删除列</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="212"/>
+        <location filename="APP/DAAppActions.cpp" line="248"/>
         <source>Remove Cell</source>
         <translation>删除单元格</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="213"/>
+        <location filename="APP/DAAppActions.cpp" line="249"/>
         <source>Insert 
 Row</source>
         <oldsource>Insert Row</oldsource>
@@ -358,12 +481,12 @@ Row</source>
 行</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="214"/>
+        <location filename="APP/DAAppActions.cpp" line="250"/>
         <source>Insert Row(Above)</source>
         <translation>插入行(上)</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="215"/>
+        <location filename="APP/DAAppActions.cpp" line="251"/>
         <source>Insert 
 Column</source>
         <oldsource>Insert Column</oldsource>
@@ -371,52 +494,52 @@ Column</source>
 列(右)</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="216"/>
+        <location filename="APP/DAAppActions.cpp" line="252"/>
         <source>Insert Column(Left)</source>
         <translation>插入列(左)</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="217"/>
+        <location filename="APP/DAAppActions.cpp" line="253"/>
         <source>to num</source>
         <translation>转换为数值</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="218"/>
+        <location filename="APP/DAAppActions.cpp" line="254"/>
         <source>cast to num type</source>
         <translation>转换为数值类型</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="219"/>
+        <location filename="APP/DAAppActions.cpp" line="255"/>
         <source>to str</source>
         <translation>转换为文本</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="220"/>
+        <location filename="APP/DAAppActions.cpp" line="256"/>
         <source>cast to string type</source>
         <translation>转换为字符串类型</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="221"/>
+        <location filename="APP/DAAppActions.cpp" line="257"/>
         <source>to datetime</source>
         <translation>转换为日期</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="222"/>
+        <location filename="APP/DAAppActions.cpp" line="258"/>
         <source>cast to datetime type</source>
         <translation>转换为日期类型</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="223"/>
+        <location filename="APP/DAAppActions.cpp" line="259"/>
         <source>Data Describe</source>
         <translation>数据描述</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="224"/>
+        <location filename="APP/DAAppActions.cpp" line="260"/>
         <source>To Index</source>
         <translation>转换为索引</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="226"/>
+        <location filename="APP/DAAppActions.cpp" line="262"/>
         <source>New 
 Workflow</source>
         <oldsource>New Workflow</oldsource>
@@ -424,7 +547,28 @@ Workflow</source>
 工作流</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="227"/>
+        <location filename="APP/DAAppActions.cpp" line="263"/>
+        <source>Linkage 
+Move</source>
+        <translation>联动</translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppActions.cpp" line="265"/>
+        <source>When moving elements, other elements linked to this element follow the movement</source>
+        <translation>允许移动图元时，其它和此图元链接起来的图元跟随移动</translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppActions.cpp" line="266"/>
+        <source>grouping</source>
+        <translation>分组</translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppActions.cpp" line="267"/>
+        <source>ungroup</source>
+        <translation>取消分组</translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppActions.cpp" line="268"/>
         <source>Draw 
 Rect</source>
         <oldsource>Draw Rect</oldsource>
@@ -432,7 +576,7 @@ Rect</source>
 矩形</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="228"/>
+        <location filename="APP/DAAppActions.cpp" line="269"/>
         <source>Draw 
 Text</source>
         <oldsource>Draw Text</oldsource>
@@ -440,7 +584,7 @@ Text</source>
 文本</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="229"/>
+        <location filename="APP/DAAppActions.cpp" line="270"/>
         <source>Show 
 Grid</source>
         <oldsource>Show Grid</oldsource>
@@ -448,7 +592,7 @@ Grid</source>
 网格</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="230"/>
+        <location filename="APP/DAAppActions.cpp" line="271"/>
         <source>Whole 
 View</source>
         <oldsource>Whole View</oldsource>
@@ -456,32 +600,52 @@ View</source>
 可见</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="234"/>
+        <location filename="APP/DAAppActions.cpp" line="275"/>
         <source>Terminate 
 Workflow</source>
         <translation>结束</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="246"/>
+        <location filename="APP/DAAppActions.cpp" line="287"/>
         <source>Plugin 
 Config</source>
         <translation>插件
 设置</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="194"/>
-        <location filename="APP/DAAppActions.cpp" line="231"/>
+        <location filename="APP/DAAppActions.cpp" line="289"/>
+        <source>Office 2013 theme</source>
+        <translation>Office 2013主题</translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppActions.cpp" line="290"/>
+        <source>Office 2016 blue theme</source>
+        <translation>Office 2016蓝色主题</translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppActions.cpp" line="291"/>
+        <source>Office 2021 blue theme</source>
+        <translation>Office 2021蓝色主题</translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppActions.cpp" line="292"/>
+        <source>Dark theme</source>
+        <translation>暗色主题</translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppActions.cpp" line="230"/>
+        <location filename="APP/DAAppActions.cpp" line="272"/>
         <source>Zoom Out</source>
         <translation>缩小</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="193"/>
-        <location filename="APP/DAAppActions.cpp" line="232"/>
+        <location filename="APP/DAAppActions.cpp" line="229"/>
+        <location filename="APP/DAAppActions.cpp" line="273"/>
         <source>Zoom In</source>
         <translation>放大</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="233"/>
+        <location filename="APP/DAAppActions.cpp" line="274"/>
         <source>Run 
 Workflow</source>
         <oldsource>Run Workflow</oldsource>
@@ -489,7 +653,7 @@ Workflow</source>
 工作流</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="236"/>
+        <location filename="APP/DAAppActions.cpp" line="277"/>
         <source>Add 
 Background</source>
         <oldsource>Add Background</oldsource>
@@ -497,17 +661,17 @@ Background</source>
 背景</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="237"/>
+        <location filename="APP/DAAppActions.cpp" line="278"/>
         <source>Lock Background</source>
         <translation>锁定背景</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="238"/>
+        <location filename="APP/DAAppActions.cpp" line="279"/>
         <source>Move With Background</source>
         <translation>元件随背景移动</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="240"/>
+        <location filename="APP/DAAppActions.cpp" line="281"/>
         <source>Show 
 Work Flow Area</source>
         <oldsource>Show Work Flow Area</oldsource>
@@ -515,7 +679,7 @@ Work Flow Area</source>
 区域</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="241"/>
+        <location filename="APP/DAAppActions.cpp" line="282"/>
         <source>Show 
 Chart Area</source>
         <oldsource>Show Chart Area</oldsource>
@@ -523,7 +687,7 @@ Chart Area</source>
 区域</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="242"/>
+        <location filename="APP/DAAppActions.cpp" line="283"/>
         <source>Show 
 Table Area</source>
         <oldsource>Show Table Area</oldsource>
@@ -531,35 +695,24 @@ Table Area</source>
 区域</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="243"/>
+        <location filename="APP/DAAppActions.cpp" line="284"/>
         <source>Show Infomation Window</source>
         <translation>信息窗口</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="244"/>
+        <location filename="APP/DAAppActions.cpp" line="285"/>
         <source>Show Setting Window</source>
         <translation>设置窗口</translation>
     </message>
     <message>
-        <source>Plugin Config</source>
-        <translation type="vanished">插件配置</translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="249"/>
+        <location filename="APP/DAAppActions.cpp" line="296"/>
         <source>Redo</source>
         <translation>重做</translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="252"/>
+        <location filename="APP/DAAppActions.cpp" line="299"/>
         <source>Undo</source>
         <translation>撤销</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DAAppActionsInterface</name>
-    <message>
-        <source>DAAppActionsInterface::recordAction get null action</source>
-        <translation type="vanished">DAAppActionsInterface::recordAction get null action</translation>
     </message>
 </context>
 <context>
@@ -630,57 +783,52 @@ Table Area</source>
         <translation>工程加载成功，路径为：%1</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="726"/>
+        <location filename="APP/DAAppController.cpp" line="753"/>
         <source>Image files (*.png *.jpg)</source>
         <translation>图片文件 (*.png *.jpg)</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="727"/>
+        <location filename="APP/DAAppController.cpp" line="754"/>
         <source>Any files (*)</source>
         <translation>任意文件 (*)</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="760"/>
+        <location filename="APP/DAAppController.cpp" line="837"/>
         <source>get null project</source>
         <translation>空工程，接口异常</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="766"/>
+        <location filename="APP/DAAppController.cpp" line="843"/>
         <source>warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="767"/>
+        <location filename="APP/DAAppController.cpp" line="844"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="963"/>
+        <location filename="APP/DAAppController.cpp" line="1091"/>
         <source>Before creating a new coordinate,you need to create a figure</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="983"/>
-        <source>Before add a curve,you need to create a axis on figure</source>
-        <translation>添加曲线前，需要先在绘图窗口中添加一个坐标系</translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppController.cpp" line="1383"/>
+        <location filename="APP/DAAppController.cpp" line="1536"/>
         <source>%1_Describe</source>
         <translation>%1_Describe</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1384"/>
+        <location filename="APP/DAAppController.cpp" line="1537"/>
         <source>Generate descriptive statistics that summarize the central tendency, dispersion and shape of a [%1]’s distribution, excluding NaN values</source>
         <translation>生成描述性统计数据，汇总[%1]分布的中心趋势、分散度和结构（不包括NaN值）</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1489"/>
+        <location filename="APP/DAAppController.cpp" line="1638"/>
         <source>new workflow name</source>
         <translation>新工作流名称</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1490"/>
+        <location filename="APP/DAAppController.cpp" line="1639"/>
         <source>new workflow name:</source>
         <translation>工作流名称:</translation>
     </message>
@@ -688,22 +836,22 @@ Table Area</source>
 <context>
     <name>DA::DAAppCore</name>
     <message>
-        <location filename="APP/DAAppCore.cpp" line="100"/>
+        <location filename="APP/DAAppCore.cpp" line="108"/>
         <source>Python interpreter path is %1</source>
         <translation>Python环境路径为%1</translation>
     </message>
     <message>
-        <location filename="APP/DAAppCore.cpp" line="107"/>
+        <location filename="APP/DAAppCore.cpp" line="115"/>
         <source>Python scripts path is %1</source>
         <translation>Python脚本路径为%1</translation>
     </message>
     <message>
-        <location filename="APP/DAAppCore.cpp" line="110"/>
+        <location filename="APP/DAAppCore.cpp" line="118"/>
         <source>Scripts initialize error</source>
         <translation>脚本初始化错误</translation>
     </message>
     <message>
-        <location filename="APP/DAAppCore.cpp" line="115"/>
+        <location filename="APP/DAAppCore.cpp" line="123"/>
         <source>Initialize python environment error:%1</source>
         <translation>初始化Python环境错误：%1</translation>
     </message>
@@ -711,17 +859,17 @@ Table Area</source>
 <context>
     <name>DA::DAAppDataManager</name>
     <message>
-        <location filename="APP/DAAppDataManager.cpp" line="60"/>
+        <location filename="APP/DAAppDataManager.cpp" line="64"/>
         <source>begin import file:%1</source>
         <translation>开始导入文件“%1”</translation>
     </message>
     <message>
-        <location filename="APP/DAAppDataManager.cpp" line="63"/>
+        <location filename="APP/DAAppDataManager.cpp" line="67"/>
         <source>file:%1,conver to dataframe</source>
         <translation>文件“%1”转换为dataframe</translation>
     </message>
     <message>
-        <location filename="APP/DAAppDataManager.cpp" line="72"/>
+        <location filename="APP/DAAppDataManager.cpp" line="76"/>
         <source>can not import file:%1</source>
         <translation>无法导入文件“%1”</translation>
     </message>
@@ -768,17 +916,6 @@ Table Area</source>
         <source>log</source>
         <translation>消息</translation>
     </message>
-    <message>
-        <source>property</source>
-        <translation type="vanished">属性</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DAAppDockingAreaInterface</name>
-    <message>
-        <source>dock widget &quot;%1&quot; was closed and hide</source>
-        <translation type="vanished">停靠窗口“%1”隐藏并关闭</translation>
-    </message>
 </context>
 <context>
     <name>DA::DAAppPluginManager</name>
@@ -796,389 +933,309 @@ Table Area</source>
 <context>
     <name>DA::DAAppRibbonArea</name>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="112"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="197"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="142"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="239"/>
         <source>Location</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="122"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="152"/>
         <source>Property</source>
         <translation>属性</translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="135"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="199"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="166"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="241"/>
         <source>Max Columns</source>
         <translation>最大列数</translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="137"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="200"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="168"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="242"/>
         <source>Margin</source>
         <translation>图例边缘</translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="139"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="201"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="170"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="243"/>
         <source>Spacing</source>
         <translation>图例间隔</translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="141"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="202"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="173"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="244"/>
         <source>Item Margin</source>
         <translation>条目边缘</translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="144"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="203"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="176"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="245"/>
         <source>Item Spacing</source>
         <translation>条目间隔</translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="147"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="204"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="179"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="246"/>
         <source>Border Radius</source>
         <translation>圆角</translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="157"/>
-        <source>File</source>
-        <translation>文件</translation>
+        <location filename="APP/DAAppRibbonArea.cpp" line="197"/>
+        <source> File </source>
+        <translation> 文件 </translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="159"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="199"/>
         <source>Main</source>
         <translation>主页</translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="160"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="200"/>
         <source>File Operation</source>
         <translation>文件操作</translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="161"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="201"/>
         <source>Config</source>
         <translation>配置</translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="162"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="180"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="261"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="419"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="202"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="222"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="310"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="482"/>
         <source>Workflow</source>
         <translation>工作流</translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="163"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="165"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="203"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="205"/>
         <source>Data Operation</source>
         <translation>数据操作</translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="164"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="204"/>
         <source>Data</source>
         <translation>数据</translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="167"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="186"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="457"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="207"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="228"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="521"/>
         <source>View</source>
         <translation>视图</translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="168"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="208"/>
         <source>Display</source>
         <translation>视图显示</translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="170"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="338"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="210"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="387"/>
         <source>DataFrame</source>
         <translation>DataFrame</translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="171"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="340"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="211"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="389"/>
         <source>Operate</source>
         <translation>操作</translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="172"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="342"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="212"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="391"/>
         <source>Axes</source>
         <translation>Axes</translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="173"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="174"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="352"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="356"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="213"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="215"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="403"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="408"/>
         <source>Type</source>
         <translation>类型</translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="175"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="366"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="217"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="419"/>
         <source>Statistic</source>
         <translation>统计</translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="178"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="220"/>
         <source>Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="182"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="432"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="224"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="495"/>
         <source>Workflow Edit</source>
         <translation>工作流编辑</translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="183"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="436"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="225"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="499"/>
         <source>Item</source>
         <translation>图元</translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="184"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="444"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="226"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="509"/>
         <source>Text</source>
         <translation>文本</translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="185"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="450"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="227"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="514"/>
         <source>Background</source>
         <translation>背景</translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="188"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="471"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="230"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="545"/>
         <source>Workflow Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="189"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="474"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="231"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="548"/>
         <source>Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="191"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="397"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="233"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="460"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="192"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="234"/>
         <source>Figure Setting</source>
         <translation>绘图设置</translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="193"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="235"/>
         <source>Add Chart</source>
         <translation>添加绘图</translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="195"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="237"/>
         <source>Chart</source>
         <translation>绘图</translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="196"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="485"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="487"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="238"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="559"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="561"/>
         <source>Chart Edit</source>
         <translation>绘图编辑</translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="198"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="240"/>
         <source>Legend</source>
         <translation>图例</translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="206"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="248"/>
+        <source>theme</source>
+        <translation>主题</translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppRibbonArea.cpp" line="249"/>
+        <source>set ribbon theme</source>
+        <translation>设置主题</translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppRibbonArea.cpp" line="251"/>
         <source>Data Work Flow</source>
         <translation>DA</translation>
-    </message>
-    <message>
-        <source>project file(*.%1)</source>
-        <translation type="vanished">工程文件(*.%1)</translation>
-    </message>
-    <message>
-        <source>Question</source>
-        <translation type="vanished">疑问</translation>
-    </message>
-    <message>
-        <source>Another project already exists. Do you want to replace it?</source>
-        <translation type="vanished">已存在其他工程，是否要替换？</translation>
-    </message>
-    <message>
-        <source>failed to load project file:%1</source>
-        <translation type="vanished">加载工程文件“%1”失败</translation>
-    </message>
-    <message>
-        <source>Save Project</source>
-        <translation type="vanished">保存工程</translation>
-    </message>
-    <message>
-        <source>project file (*.%1)</source>
-        <translation type="vanished">工程文件(*.%1)</translation>
-    </message>
-    <message>
-        <source>Warning</source>
-        <translation type="vanished">警告</translation>
-    </message>
-    <message>
-        <source>Whether to overwrite the file:%1</source>
-        <translation type="vanished">是否覆盖文件“%1”</translation>
-    </message>
-    <message>
-        <source>Project saved failed!,path is %1</source>
-        <translation type="vanished">工程“%1”保存失败</translation>
-    </message>
-    <message>
-        <source>Project saved successfully,path is %1</source>
-        <translation type="vanished">工程保存成功，路径位于:%1</translation>
-    </message>
-    <message>
-        <source>Project Files (*.%1)</source>
-        <oldsource>Air System Project Files (*.%1)</oldsource>
-        <translation type="vanished">工程文件(*.%1)</translation>
-    </message>
-    <message>
-        <source>Project load successfully,path is %1</source>
-        <translation type="vanished">工程加载成功，路径为：%1</translation>
-    </message>
-    <message>
-        <source>Image files (*.png *.jpg)</source>
-        <translation type="vanished">图片文件 (*.png *.jpg)</translation>
-    </message>
-    <message>
-        <source>Any files (*)</source>
-        <translation type="vanished">任意文件 (*)</translation>
-    </message>
-    <message>
-        <source>get null project</source>
-        <translation type="vanished">空工程，接口异常</translation>
-    </message>
-    <message>
-        <source>warning</source>
-        <translation type="vanished">警告</translation>
-    </message>
-    <message>
-        <source>Before running the workflow, you need to save the project</source>
-        <translation type="vanished">在运行工作流之前，需要先保存工程</translation>
-    </message>
-    <message>
-        <source>%1_Describe</source>
-        <translation type="vanished">%1_Describe</translation>
-    </message>
-    <message>
-        <source>Generate descriptive statistics that summarize the central tendency, dispersion and shape of a [%1]’s distribution, excluding NaN values</source>
-        <translation type="vanished">生成描述性统计数据，汇总[%1]分布的中心趋势、分散度和结构（不包括NaN值）</translation>
-    </message>
-    <message>
-        <source>new workflow name</source>
-        <translation type="vanished">新工作流名称</translation>
-    </message>
-    <message>
-        <source>new workflow name:</source>
-        <translation type="vanished">工作流名称:</translation>
     </message>
 </context>
 <context>
     <name>DA::DAChartAddXYSeriesWidget</name>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="32"/>
-        <source>curve</source>
-        <translation>曲线</translation>
-    </message>
-    <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="34"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="40"/>
         <source>x</source>
         <translation>x</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="34"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="40"/>
         <source>y</source>
         <translation>y</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="182"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="190"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="213"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="222"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="245"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="258"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="265"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="284"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="298"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="306"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="325"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="336"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="343"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="351"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="272"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="280"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="303"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="312"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="335"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="349"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="356"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="375"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="389"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="397"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="416"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="427"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="434"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="442"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="183"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="273"/>
         <source>The initial value of x auto increment series must be a floating-point arithmetic number</source>
         <translation>x自增序列的初始值必须为浮点数</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="191"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="281"/>
         <source>The step value of x auto increment series must be a floating-point arithmetic number</source>
         <translation>x自增序列的步长必须为浮点数</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="214"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="304"/>
         <source>The initial value of y auto increment series must be a floating-point arithmetic number</source>
         <translation>y自增序列的初始值必须为浮点数</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="223"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="313"/>
         <source>The step value of y auto increment series must be a floating-point arithmetic number</source>
         <translation>y自增序列的步长必须为浮点数</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="246"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="336"/>
         <source>x and y cannot be set to autoincrement at the same time</source>
         <translation>x和y无法同时设置为自增</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="266"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="307"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="352"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="357"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="398"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="443"/>
         <source>The None value cannot be converted to a series</source>
         <translation>None值无法转换为序列</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="285"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="326"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="376"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="417"/>
         <source>Exception occurred during extracting from pandas.Series to double vector</source>
         <translation>从pandas.Series提取为double vector过程中出现异常</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="299"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="337"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="390"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="428"/>
         <source>x must be a series</source>
         <translation>x必须是序列</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="259"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="344"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="350"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="435"/>
         <source>y must be a series</source>
         <translation>y必须是序列</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="280"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="321"/>
         <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="371"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="412"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="462"/>
         <source>Exception occurred during extracting from pandas.Series to double vector:%1</source>
         <translation>从pandas.Series提取为double vector过程中出现异常:%1</translation>
     </message>
@@ -1186,115 +1243,110 @@ Table Area</source>
 <context>
     <name>DA::DAChartCurveItemSettingWidget</name>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="20"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="108"/>
         <source>Lines</source>
-        <translation>线</translation>
+        <translation>折线</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="21"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="109"/>
+        <source>Sticks</source>
+        <translation>线棒</translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="110"/>
         <source>Steps</source>
-        <translation>阶梯线</translation>
+        <translation>阶梯</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="22"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="111"/>
         <source>Dots</source>
-        <translation>散点</translation>
+        <translation>点</translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="112"/>
+        <source>No Curve</source>
+        <translation>无连接线</translation>
     </message>
 </context>
 <context>
     <name>DA::DAChartItemTableModel</name>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="496"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="525"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="555"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="566"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="497"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="526"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="556"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="567"/>
         <source>x</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="498"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="527"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="557"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="568"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="499"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="528"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="558"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="569"/>
         <source>y</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="506"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="517"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="580"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="607"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="507"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="518"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="581"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="608"/>
         <source>value</source>
         <translation>值</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="508"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="582"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="509"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="583"/>
         <source>min</source>
         <translation>最小</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="510"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="584"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="511"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="585"/>
         <source>max</source>
         <translation>最大</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="519"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="609"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="520"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="610"/>
         <source>set %1</source>
         <translation>设置%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="529"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="570"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="530"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="571"/>
         <source>z</source>
         <translation>z</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="537"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="593"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="538"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="594"/>
         <source>time</source>
         <translation>时间</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="539"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="595"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="540"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="596"/>
         <source>open</source>
         <translation>开盘</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="541"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="597"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="542"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="598"/>
         <source>high</source>
         <translation>最高</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="543"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="599"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="544"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="600"/>
         <source>low</source>
         <translation>最低</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="545"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="601"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="546"/>
+        <location filename="DAFigure/DAChartItemTableModel.cpp" line="602"/>
         <source>close</source>
         <translation>收盘</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DAChartItemTreeModel</name>
-    <message>
-        <source>item</source>
-        <translation type="vanished">条目</translation>
-    </message>
-    <message>
-        <source>figure-%1</source>
-        <translation type="vanished">图-%1</translation>
-    </message>
-    <message>
-        <source>item-%1</source>
-        <translation type="vanished">图元-%1</translation>
     </message>
 </context>
 <context>
@@ -1313,22 +1365,22 @@ Table Area</source>
 <context>
     <name>DA::DAChartOperateWidget</name>
     <message>
-        <location filename="DAGui/DAChartOperateWidget.cpp" line="63"/>
+        <location filename="DAGui/DAChartOperateWidget.cpp" line="78"/>
         <source>figure-%1</source>
         <translation>图-%1</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartOperateWidget.cpp" line="150"/>
+        <location filename="DAGui/DAChartOperateWidget.cpp" line="170"/>
         <source>chart operate widget&apos;s tab changed,but can not find figure</source>
         <translation>绘图操作窗口的标签改变信号中，无法通过标签索引找到对应的绘图</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartOperateWidget.cpp" line="163"/>
+        <location filename="DAGui/DAChartOperateWidget.cpp" line="183"/>
         <source>question</source>
         <translation>疑问</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartOperateWidget.cpp" line="163"/>
+        <location filename="DAGui/DAChartOperateWidget.cpp" line="183"/>
         <source>Whether to close the figure widget</source>
         <translation>确认关闭绘图窗口</translation>
     </message>
@@ -1406,37 +1458,37 @@ Table Area</source>
     <message>
         <location filename="DAGui/ChartSetting/DAChartSymbolComboBox.cpp" line="82"/>
         <source>Cross</source>
-        <translation>十字标记</translation>
+        <translation>+</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartSymbolComboBox.cpp" line="87"/>
         <source>Diagonal Cross</source>
-        <translation type="unfinished"></translation>
+        <translation>x</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartSymbolComboBox.cpp" line="92"/>
         <source>Horizontal Line</source>
-        <translation type="unfinished"></translation>
+        <translation>—</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartSymbolComboBox.cpp" line="97"/>
         <source>Vertical Line</source>
-        <translation type="unfinished"></translation>
+        <translation>|</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartSymbolComboBox.cpp" line="102"/>
         <source>Star 1</source>
-        <translation type="unfinished"></translation>
+        <translation>星形1</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartSymbolComboBox.cpp" line="107"/>
         <source>Star 2</source>
-        <translation type="unfinished"></translation>
+        <translation>星形2</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartSymbolComboBox.cpp" line="112"/>
         <source>Hexagon</source>
-        <translation type="unfinished"></translation>
+        <translation>六角形</translation>
     </message>
 </context>
 <context>
@@ -1461,31 +1513,16 @@ Table Area</source>
     </message>
 </context>
 <context>
-    <name>DA::DADataManageTreeView</name>
-    <message>
-        <source>Add Folder</source>
-        <translation type="vanished">新建文件夹</translation>
-    </message>
-    <message>
-        <source>untitle floder</source>
-        <translation type="vanished">未命名文件夹</translation>
-    </message>
-</context>
-<context>
     <name>DA::DADataManageWidget</name>
     <message>
-        <location filename="DAGui/DADataManageWidget.cpp" line="113"/>
+        <location filename="DAGui/DADataManageWidget.cpp" line="114"/>
         <source>Please select the data item to remove</source>
         <translation>请选择需要删除的数据条目</translation>
     </message>
     <message>
-        <location filename="DAGui/DADataManageWidget.cpp" line="121"/>
+        <location filename="DAGui/DADataManageWidget.cpp" line="122"/>
         <source>show datas in table view</source>
         <translation>表结构</translation>
-    </message>
-    <message>
-        <source>show datas in tree view</source>
-        <translation type="vanished">树结构</translation>
     </message>
 </context>
 <context>
@@ -1522,18 +1559,18 @@ Table Area</source>
 <context>
     <name>DA::DADataManagerTreeModel</name>
     <message>
-        <location filename="DAGui/Models/DADataManagerTreeModel.cpp" line="394"/>
+        <location filename="DAGui/Models/DADataManagerTreeModel.cpp" line="399"/>
         <source>name</source>
         <translation>名称</translation>
     </message>
     <message>
-        <location filename="DAGui/Models/DADataManagerTreeModel.cpp" line="394"/>
+        <location filename="DAGui/Models/DADataManagerTreeModel.cpp" line="399"/>
         <source>property</source>
         <translation>原型</translation>
     </message>
     <message>
-        <location filename="DAGui/Models/DADataManagerTreeModel.cpp" line="525"/>
-        <location filename="DAGui/Models/DADataManagerTreeModel.cpp" line="537"/>
+        <location filename="DAGui/Models/DADataManagerTreeModel.cpp" line="531"/>
+        <location filename="DAGui/Models/DADataManagerTreeModel.cpp" line="543"/>
         <source>The data(%1) cannot find its corresponding item in the data management tree during the removal process</source>
         <translation>数据(%1)在移除过程中无法找到其对应的数据管理树中的条目</translation>
     </message>
@@ -1541,36 +1578,36 @@ Table Area</source>
 <context>
     <name>DA::DADataOperateOfDataFrameWidget</name>
     <message>
-        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="161"/>
+        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="165"/>
         <source>warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="162"/>
+        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="166"/>
         <source>The name of the new column to be inserted must be specified</source>
         <translation>必须指定列的名字</translation>
     </message>
     <message>
-        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="191"/>
+        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="196"/>
         <source>please select valid data cells</source>
         <translation>请选择正确的行</translation>
     </message>
     <message>
-        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="215"/>
-        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="305"/>
-        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="333"/>
-        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="368"/>
-        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="404"/>
+        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="220"/>
+        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="312"/>
+        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="340"/>
+        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="375"/>
+        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="411"/>
         <source>please select valid column</source>
         <translation>请选择正确的列</translation>
     </message>
     <message>
-        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="239"/>
+        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="245"/>
         <source>please select valid cell</source>
         <translation>请选择正确的单元格</translation>
     </message>
     <message>
-        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="273"/>
+        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="280"/>
         <source>table have not column</source>
         <translation>表格没有列</translation>
     </message>
@@ -1578,12 +1615,12 @@ Table Area</source>
 <context>
     <name>DA::DADataOperateWidget</name>
     <message>
-        <location filename="DAGui/DADataOperateWidget.cpp" line="91"/>
+        <location filename="DAGui/DADataOperateWidget.cpp" line="97"/>
         <source>removing a widget that does not exist in tab</source>
         <translation>正在移除一个不存在的窗口</translation>
     </message>
     <message>
-        <location filename="DAGui/DADataOperateWidget.cpp" line="130"/>
+        <location filename="DAGui/DADataOperateWidget.cpp" line="136"/>
         <source>[deleted]</source>
         <translation>[已删除]</translation>
     </message>
@@ -1607,21 +1644,14 @@ Table Area</source>
     </message>
 </context>
 <context>
-    <name>DA::DADialogAppSetting</name>
-    <message>
-        <source>Common</source>
-        <translation type="vanished">通用</translation>
-    </message>
-</context>
-<context>
     <name>DA::DADialogChartGuide</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="28"/>
+        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="30"/>
         <source>curve</source>
         <translation>曲线</translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="31"/>
+        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="34"/>
         <source>scatter</source>
         <translation>散点</translation>
     </message>
@@ -1760,7 +1790,7 @@ Table Area</source>
 <context>
     <name>DA::DANodeTreeWidget</name>
     <message>
-        <location filename="DAGui/DANodeTreeWidget.cpp" line="163"/>
+        <location filename="DAGui/DANodeTreeWidget.cpp" line="164"/>
         <source>Favorite</source>
         <translation>收藏</translation>
     </message>
@@ -1768,29 +1798,29 @@ Table Area</source>
 <context>
     <name>DA::DAPluginManager</name>
     <message>
-        <location filename="DAPluginSupport/DAPluginManager.cpp" line="115"/>
+        <location filename="DAPluginSupport/DAPluginManager.cpp" line="127"/>
         <source>plugin dir is:%1</source>
         <translation>插件路径:%1</translation>
     </message>
     <message>
-        <location filename="DAPluginSupport/DAPluginManager.cpp" line="118"/>
+        <location filename="DAPluginSupport/DAPluginManager.cpp" line="130"/>
         <source>ignore plugin %1</source>
         <translation>忽略插件%1</translation>
     </message>
     <message>
-        <location filename="DAPluginSupport/DAPluginManager.cpp" line="123"/>
+        <location filename="DAPluginSupport/DAPluginManager.cpp" line="135"/>
         <source> ignore invalid file:%1</source>
         <oldsource> ignore invalid file:%2</oldsource>
         <translation> 忽略异常文件:%1</translation>
     </message>
     <message>
-        <location filename="DAPluginSupport/DAPluginManager.cpp" line="129"/>
+        <location filename="DAPluginSupport/DAPluginManager.cpp" line="141"/>
         <source>can not load plugin:%1</source>
         <oldsource>start load plugin:%1</oldsource>
         <translation>无法加载插件:%1</translation>
     </message>
     <message>
-        <location filename="DAPluginSupport/DAPluginManager.cpp" line="188"/>
+        <location filename="DAPluginSupport/DAPluginManager.cpp" line="200"/>
         <source>Plugin Manager Info:is loaded=%1,plugin counts=%2</source>
         <translation>Plugin Manager Info:加载情况=%1,插件数量=%2</translation>
     </message>
@@ -1798,37 +1828,37 @@ Table Area</source>
 <context>
     <name>DA::DAPluginManagerDialog</name>
     <message>
-        <location filename="APP/DAPluginManagerDialog.cpp" line="44"/>
+        <location filename="APP/DAPluginManagerDialog.cpp" line="43"/>
         <source>name</source>
         <translation>名称</translation>
     </message>
     <message>
-        <location filename="APP/DAPluginManagerDialog.cpp" line="44"/>
+        <location filename="APP/DAPluginManagerDialog.cpp" line="43"/>
         <source>version</source>
         <translation>版本</translation>
     </message>
     <message>
-        <location filename="APP/DAPluginManagerDialog.cpp" line="44"/>
+        <location filename="APP/DAPluginManagerDialog.cpp" line="43"/>
         <source>is loaded</source>
         <translation>是否加载</translation>
     </message>
     <message>
-        <location filename="APP/DAPluginManagerDialog.cpp" line="44"/>
+        <location filename="APP/DAPluginManagerDialog.cpp" line="43"/>
         <source>description</source>
         <translation>描述</translation>
     </message>
     <message>
-        <location filename="APP/DAPluginManagerDialog.cpp" line="50"/>
+        <location filename="APP/DAPluginManagerDialog.cpp" line="49"/>
         <source>node plugin</source>
         <translation>节点插件</translation>
     </message>
     <message>
-        <location filename="APP/DAPluginManagerDialog.cpp" line="53"/>
+        <location filename="APP/DAPluginManagerDialog.cpp" line="52"/>
         <source>plugin name is %1</source>
         <translation>插件名称为:%1</translation>
     </message>
     <message>
-        <location filename="APP/DAPluginManagerDialog.cpp" line="57"/>
+        <location filename="APP/DAPluginManagerDialog.cpp" line="56"/>
         <source>is load</source>
         <translation>已加载</translation>
     </message>
@@ -1836,7 +1866,7 @@ Table Area</source>
 <context>
     <name>DA::DAProjectInterface</name>
     <message>
-        <location filename="DAInterface/DAProjectInterface.cpp" line="295"/>
+        <location filename="DAInterface/DAProjectInterface.cpp" line="296"/>
         <source>open failed,path is %1</source>
         <translation>打开失败，路径为:%1</translation>
     </message>
@@ -1940,6 +1970,19 @@ Table Area</source>
     </message>
 </context>
 <context>
+    <name>DA::DAPyDataframeColumnsListWidget</name>
+    <message>
+        <location filename="DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="36"/>
+        <source>Exception in get selected column:%1</source>
+        <translation type="unfinished">获取选中的列发生异常：%1</translation>
+    </message>
+    <message>
+        <location filename="DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="52"/>
+        <source>Exception in get selected series:%1</source>
+        <translation type="unfinished">获取选中的序列发生异常：%1</translation>
+    </message>
+</context>
+<context>
     <name>DA::DARenameColumnsNameDialog</name>
     <message>
         <location filename="DAGui/Dialog/DARenameColumnsNameDialog.cpp" line="47"/>
@@ -1960,7 +2003,7 @@ Table Area</source>
 <context>
     <name>DA::DASettingPageCommon</name>
     <message>
-        <location filename="APP/SettingPages/DASettingPageCommon.cpp" line="52"/>
+        <location filename="APP/SettingPages/DASettingPageCommon.cpp" line="65"/>
         <source>common</source>
         <translation>通用</translation>
     </message>
@@ -1992,17 +2035,17 @@ Table Area</source>
 <context>
     <name>DA::DAWorkFlow</name>
     <message>
-        <location filename="DAWorkFlow/DAWorkFlow.cpp" line="364"/>
+        <location filename="DAWorkFlow/DAWorkFlow.cpp" line="365"/>
         <source>begin exec workflow</source>
         <translation>开始执行工作流</translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAWorkFlow.cpp" line="366"/>
+        <location filename="DAWorkFlow/DAWorkFlow.cpp" line="367"/>
         <source>empty workflow can not exec</source>
         <translation>无法执行一个空的工作流</translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAWorkFlow.cpp" line="375"/>
+        <location filename="DAWorkFlow/DAWorkFlow.cpp" line="376"/>
         <source>workflow start run</source>
         <translation>工作流开始运行</translation>
     </message>
@@ -2040,12 +2083,12 @@ Table Area</source>
 <context>
     <name>DA::DAWorkFlowNodeListWidget</name>
     <message>
-        <location filename="DAGui/DAWorkFlowNodeListWidget.cpp" line="101"/>
+        <location filename="DAGui/DAWorkFlowNodeListWidget.cpp" line="102"/>
         <source>Favorite</source>
         <translation>收藏</translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowNodeListWidget.cpp" line="102"/>
+        <location filename="DAGui/DAWorkFlowNodeListWidget.cpp" line="103"/>
         <source>Remove Favorite</source>
         <translation>移除收藏</translation>
     </message>
@@ -2063,32 +2106,32 @@ Table Area</source>
         <translation>是否确认删除工作流:%1</translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="378"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="377"/>
         <source>Title of new workflow</source>
         <translation>工作流的标题</translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="378"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="377"/>
         <source>Title:</source>
         <translation>标题:</translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="392"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="405"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="418"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="391"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="404"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="417"/>
         <source>Loss View</source>
         <translation>缺少视图</translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="431"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="449"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="575"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="430"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="448"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="574"/>
         <source>No active workflow detected</source>
         <translation>未检测到激活的工作流</translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="436"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="454"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="435"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="453"/>
         <source>Unable to get workflow correctly</source>
         <translation>无法正确获取工作流</translation>
     </message>
@@ -2096,7 +2139,7 @@ Table Area</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="APP/DAAppController.cpp" line="63"/>
+        <location filename="APP/DAAppController.cpp" line="60"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -2104,16 +2147,12 @@ Table Area</source>
 <context>
     <name>DAAppRibbonArea</name>
     <message>
-        <source>DA</source>
-        <translation type="vanished">DA</translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppController.cpp" line="70"/>
+        <location filename="APP/DAAppController.cpp" line="67"/>
         <source>warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="71"/>
+        <location filename="APP/DAAppController.cpp" line="68"/>
         <source>The current function is not implemented, only the UI is reserved, please pay attention: https://gitee.com/czyt1988/data-work-flow</source>
         <translation>当前功能未实现，仅保留UI，请留意：https://gitee.com/czyt1988/data-work-flow</translation>
     </message>
@@ -2127,6 +2166,29 @@ Table Area</source>
     </message>
 </context>
 <context>
+    <name>DAChartAddCurveWidget</name>
+    <message>
+        <location filename="DAGui/DAChartAddCurveWidget.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAChartAddCurveWidget.ui" line="37"/>
+        <source>1.Data</source>
+        <translation>1.数据</translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAChartAddCurveWidget.ui" line="53"/>
+        <source>&gt;&gt;</source>
+        <translation>&gt;&gt;</translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAChartAddCurveWidget.ui" line="60"/>
+        <source>2.Plot</source>
+        <translation>2.绘图</translation>
+    </message>
+</context>
+<context>
     <name>DAChartAddXYSeriesWidget</name>
     <message>
         <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="14"/>
@@ -2134,53 +2196,45 @@ Table Area</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="54"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="28"/>
+        <source>Data Frame</source>
+        <translation>数据帧</translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="63"/>
         <source>X</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="66"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="127"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="75"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="136"/>
         <source>Autoincrement series</source>
         <translation>自增序列</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="81"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="142"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="90"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="151"/>
         <source>Initial value</source>
         <translation>初始值</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="88"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="102"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="149"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="163"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="97"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="111"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="158"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="172"/>
         <source>1</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="95"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="156"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="104"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="165"/>
         <source>Self increasing step size</source>
         <translation>步长</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="115"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="124"/>
         <source>Y</source>
         <translation></translation>
-    </message>
-    <message>
-        <source>Y:</source>
-        <translation type="vanished">Y:</translation>
-    </message>
-    <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="29"/>
-        <source>Title:</source>
-        <translation>标题:</translation>
-    </message>
-    <message>
-        <source>X:</source>
-        <translation type="vanished">X:</translation>
     </message>
 </context>
 <context>
@@ -2191,34 +2245,110 @@ Table Area</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="35"/>
-        <source>Style</source>
-        <translation>样式</translation>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="27"/>
+        <source>Title</source>
+        <translation>标题</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="45"/>
-        <source>Pen</source>
-        <translation>画笔</translation>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="20"/>
+        <source>Curve Style</source>
+        <translation>曲线样式</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="62"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="141"/>
+        <source>Curve Attribute</source>
+        <translation>曲线属性</translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="50"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Only in combination with Lines Style, tries to interpolate/smooth the curve, before it is painted. &lt;/p&gt;&lt;p&gt;Note:Curve fitting requires temporary memory for calculating coefficients and additional points.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;仅在曲线样式为折线时，才会尝试在绘制曲线之前对其进行插值/平滑处理。&lt;/p&gt;&lt;p&gt;注：曲线拟合需要临时内存来计算系数和附加点。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="53"/>
+        <source>Fitted</source>
+        <translation>平滑</translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="167"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For Steps curve style only. Draws a step function from the right to the left.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;仅适用于阶梯曲线样式。从右向左绘制阶跃函数。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="170"/>
+        <source>Inverted</source>
+        <translation>反向</translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="40"/>
+        <source>Legend Attribute</source>
+        <translation>图例属性</translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="185"/>
+        <source>Show Line</source>
+        <translation>显示线条</translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="198"/>
+        <source>Show Symbol</source>
+        <translation>显示标记</translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="211"/>
+        <source>Show Brush</source>
+        <translation>显示填充</translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="60"/>
+        <source>Line Pen</source>
+        <translation>曲线画笔</translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="316"/>
+        <source>Marker</source>
+        <translation>标记</translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="89"/>
+        <source>Other</source>
+        <translation>其他</translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="107"/>
+        <source>Base line</source>
+        <translation>基准线</translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="117"/>
+        <source>Orientation</source>
+        <translation>填充方向</translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="124"/>
+        <source>Horizontal</source>
+        <translation>水平</translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="131"/>
+        <source>Vertical</source>
+        <translation>垂直</translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="232"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="257"/>
         <source>Fill</source>
         <translation>填充</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="74"/>
-        <source>base line</source>
-        <translation>基线</translation>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="250"/>
+        <source>fill brush</source>
+        <translation>填充画笔</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="81"/>
-        <source>The area between the curve and the baseline will be filled</source>
-        <translation>曲线和基线之间的区域将被填充</translation>
-    </message>
-    <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="94"/>
-        <source>Symbol</source>
-        <translation>符号</translation>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="298"/>
+        <source>Marker Setting</source>
+        <translation>标记设置</translation>
     </message>
 </context>
 <context>
@@ -2288,12 +2418,22 @@ Table Area</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartSymbolEditWidget.ui" line="38"/>
+        <location filename="DAGui/ChartSetting/DAChartSymbolEditWidget.ui" line="77"/>
+        <source>Style</source>
+        <translation>样式</translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartSymbolEditWidget.ui" line="84"/>
         <source>Size</source>
         <translation>大小</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartSymbolEditWidget.ui" line="55"/>
+        <location filename="DAGui/ChartSetting/DAChartSymbolEditWidget.ui" line="91"/>
+        <source>Outline</source>
+        <translation>轮廓</translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartSymbolEditWidget.ui" line="38"/>
         <source>Fill Color</source>
         <translation>填充颜色</translation>
     </message>
@@ -2351,35 +2491,11 @@ Table Area</source>
     </message>
 </context>
 <context>
-    <name>DADialogAppSetting</name>
-    <message>
-        <source>Setting</source>
-        <translation type="vanished">设置</translation>
-    </message>
-    <message>
-        <source>Apply</source>
-        <translation type="vanished">应用</translation>
-    </message>
-    <message>
-        <source>OK</source>
-        <translation type="vanished">确认</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation type="vanished">取消</translation>
-    </message>
-</context>
-<context>
     <name>DADialogChartGuide</name>
     <message>
         <location filename="DAGui/Dialog/DADialogChartGuide.ui" line="14"/>
-        <source>Dialog</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogChartGuide.ui" line="28"/>
-        <source>Data Frame</source>
-        <translation>数据帧</translation>
+        <source>Chart Guide</source>
+        <translation>绘图引导</translation>
     </message>
 </context>
 <context>
@@ -2724,7 +2840,7 @@ Table Area</source>
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="DAFigure/DAFigureWidget.cpp" line="203"/>
+        <location filename="DAFigure/DAFigureWidget.cpp" line="216"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
@@ -2912,12 +3028,12 @@ Table Area</source>
 <context>
     <name>DAPenEditWidget</name>
     <message>
-        <location filename="DACommonWidgets/DAPenEditWidget.cpp" line="114"/>
+        <location filename="DACommonWidgets/DAPenEditWidget.cpp" line="112"/>
         <source>Pen Editor</source>
         <translation>画笔编辑</translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DAPenEditWidget.cpp" line="115"/>
+        <location filename="DACommonWidgets/DAPenEditWidget.cpp" line="113"/>
         <source> px</source>
         <translation> px</translation>
     </message>
@@ -2966,8 +3082,9 @@ Table Area</source>
 <context>
     <name>DASettingContainerWidget</name>
     <message>
+        <location filename="DAGui/DASettingContainerWidget.ui" line="20"/>
         <source>Setting</source>
-        <translation type="vanished">设置</translation>
+        <translation>设置</translation>
     </message>
 </context>
 <context>
@@ -3045,10 +3162,6 @@ Table Area</source>
         <source>Language</source>
         <translation>语言</translation>
     </message>
-    <message>
-        <source>Ribbon Style</source>
-        <translation type="vanished">界面样式</translation>
-    </message>
 </context>
 <context>
     <name>DASettingWidget</name>
@@ -3074,6 +3187,24 @@ Table Area</source>
         <location filename="DACommonWidgets/DAShapeEditPannelWidget.ui" line="62"/>
         <source>Fill</source>
         <translation>填充</translation>
+    </message>
+</context>
+<context>
+    <name>DAUtilityNodeAppExecuteSettingWidget</name>
+    <message>
+        <location filename="DAPlugins/DAUtilityNodePlugin/settingWidget/DAUtilityNodeAppExecuteSettingWidget.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAPlugins/DAUtilityNodePlugin/settingWidget/DAUtilityNodeAppExecuteSettingWidget.ui" line="26"/>
+        <source>Exec path</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAPlugins/DAUtilityNodePlugin/settingWidget/DAUtilityNodeAppExecuteSettingWidget.ui" line="39"/>
+        <source>arg</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -3130,9 +3261,840 @@ Table Area</source>
     </message>
 </context>
 <context>
+    <name>MainWindow</name>
+    <message>
+        <location filename="3rdparty/ADS/demo/mainwindow.ui" line="14"/>
+        <location filename="3rdparty/ADS/examples/hideshow/MainWindow.ui" line="14"/>
+        <location filename="3rdparty/ADS/examples/sidebar/MainWindow.ui" line="14"/>
+        <location filename="3rdparty/ADS/examples/simple/MainWindow.ui" line="14"/>
+        <location filename="3rdparty/SARibbon/src/example/NormalMenuBarExample/MainWindow.ui" line="14"/>
+        <location filename="tst/FCD3Viewer/MainWindow.ui" line="14"/>
+        <source>MainWindow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/demo/mainwindow.ui" line="32"/>
+        <location filename="3rdparty/ADS/examples/hideshow/MainWindow.ui" line="33"/>
+        <source>File</source>
+        <translation type="unfinished">文件</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/demo/mainwindow.ui" line="39"/>
+        <location filename="3rdparty/ADS/examples/hideshow/MainWindow.ui" line="28"/>
+        <location filename="3rdparty/ADS/examples/sidebar/MainWindow.ui" line="75"/>
+        <location filename="3rdparty/ADS/examples/simple/MainWindow.ui" line="28"/>
+        <source>View</source>
+        <translation type="unfinished">视图</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/demo/mainwindow.ui" line="44"/>
+        <source>About</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/demo/mainwindow.ui" line="49"/>
+        <source>Tests</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/demo/mainwindow.ui" line="59"/>
+        <source>toolBar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/demo/mainwindow.ui" line="70"/>
+        <source>Exit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/demo/mainwindow.ui" line="75"/>
+        <source>Save State</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/demo/mainwindow.ui" line="80"/>
+        <source>Restore State</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/examples/hideshow/MainWindow.ui" line="44"/>
+        <source>Open project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/examples/hideshow/MainWindow.ui" line="49"/>
+        <source>Close project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/examples/sidebar/MainWindow.ui" line="26"/>
+        <source>PushButton</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/NormalMenuBarExample/MainWindow.ui" line="28"/>
+        <source>file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/NormalMenuBarExample/MainWindow.ui" line="35"/>
+        <source>edit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/NormalMenuBarExample/MainWindow.ui" line="44"/>
+        <source>open</source>
+        <translation type="unfinished">开盘</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/NormalMenuBarExample/MainWindow.ui" line="49"/>
+        <source>save</source>
+        <translation type="unfinished">保存</translation>
+    </message>
+    <message>
+        <location filename="tst/FCD3Viewer/MainWindow.ui" line="35"/>
+        <source>width:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="tst/FCD3Viewer/MainWindow.ui" line="64"/>
+        <source>Remove</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="tst/FCD3Viewer/MainWindow.ui" line="80"/>
+        <source>length:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="tst/FCD3Viewer/MainWindow.ui" line="103"/>
+        <source>view</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="tst/FCD3Viewer/MainWindow.ui" line="110"/>
+        <source>Fit View</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="tst/FCD3Viewer/MainWindow.ui" line="124"/>
+        <source>Add</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="tst/FCD3Viewer/MainWindow.ui" line="131"/>
+        <source>自动刷新</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="tst/FCD3Viewer/MainWindow.ui" line="140"/>
+        <source>Location:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="tst/FCD3Viewer/MainWindow.ui" line="160"/>
+        <source>high:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="tst/FCD3Viewer/MainWindow.ui" line="179"/>
+        <source>导入</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_typed/mainwindow.cpp" line="87"/>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_variant/mainwindow.cpp" line="86"/>
+        <source>Edit</source>
+        <translation type="unfinished">编辑</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_typed/mainwindow.cpp" line="88"/>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_variant/mainwindow.cpp" line="87"/>
+        <source>New Object</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_typed/mainwindow.cpp" line="90"/>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_variant/mainwindow.cpp" line="89"/>
+        <source>Rectangle</source>
+        <translation type="unfinished">矩形</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_typed/mainwindow.cpp" line="94"/>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_variant/mainwindow.cpp" line="93"/>
+        <source>Line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_typed/mainwindow.cpp" line="98"/>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_variant/mainwindow.cpp" line="97"/>
+        <source>Ellipse</source>
+        <translation type="unfinished">椭圆</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_typed/mainwindow.cpp" line="102"/>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_typed/mainwindow.cpp" line="267"/>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_typed/mainwindow.cpp" line="375"/>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_variant/mainwindow.cpp" line="101"/>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_variant/mainwindow.cpp" line="240"/>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_variant/mainwindow.cpp" line="350"/>
+        <source>Text</source>
+        <translation type="unfinished">文本</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_typed/mainwindow.cpp" line="106"/>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_variant/mainwindow.cpp" line="105"/>
+        <source>Delete Object</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_typed/mainwindow.cpp" line="110"/>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_variant/mainwindow.cpp" line="109"/>
+        <source>Clear All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_typed/mainwindow.cpp" line="114"/>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_variant/mainwindow.cpp" line="113"/>
+        <source>Fill View</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_typed/mainwindow.cpp" line="318"/>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_variant/mainwindow.cpp" line="291"/>
+        <source>Position X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_typed/mainwindow.cpp" line="323"/>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_variant/mainwindow.cpp" line="297"/>
+        <source>Position Y</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_typed/mainwindow.cpp" line="328"/>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_variant/mainwindow.cpp" line="303"/>
+        <source>Position Z</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_typed/mainwindow.cpp" line="336"/>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_typed/mainwindow.cpp" line="360"/>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_variant/mainwindow.cpp" line="312"/>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_variant/mainwindow.cpp" line="336"/>
+        <source>Brush Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_typed/mainwindow.cpp" line="340"/>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_typed/mainwindow.cpp" line="350"/>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_variant/mainwindow.cpp" line="316"/>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_variant/mainwindow.cpp" line="326"/>
+        <source>Pen Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_typed/mainwindow.cpp" line="344"/>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_typed/mainwindow.cpp" line="364"/>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_variant/mainwindow.cpp" line="320"/>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_variant/mainwindow.cpp" line="340"/>
+        <source>Size</source>
+        <translation type="unfinished">大小</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_typed/mainwindow.cpp" line="354"/>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_variant/mainwindow.cpp" line="330"/>
+        <source>Vector</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_typed/mainwindow.cpp" line="371"/>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_variant/mainwindow.cpp" line="346"/>
+        <source>Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_typed/mainwindow.cpp" line="379"/>
+        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_variant/mainwindow.cpp" line="354"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1081"/>
+        <source>Font</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="90"/>
+        <source>&amp;Main</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="101"/>
+        <location filename="3rdparty/SARibbon/src/example/StaticExample/MainWindow.cpp" line="18"/>
+        <source>Other</source>
+        <translation type="unfinished">其他</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="226"/>
+        <source>
+The text display of the &quot;LooseThreeRow&quot; style is word wrap and also displays the title bar. You can also control whether the button is line breaking through SARibbonBar::setEnableWordWrap,and whether the title bar is displayed through SARibbonBar::setEnableShowPannelTitle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="229"/>
+        <source>ribbonBar()-&gt;setRibbonStyle(SARibbonBar::RibbonStyleLooseThreeRow);</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="235"/>
+        <source>
+The text display of the &quot;LooseTwoRow&quot; style is not word wrap and also displays the title bar. You can also control whether the button is line breaking through SARibbonBar::setEnableWordWrap,and whether the title bar is displayed through SARibbonBar::setEnableShowPannelTitle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="238"/>
+        <source>ribbonBar()-&gt;setRibbonStyle(SARibbonBar::RibbonStyleLooseTwoRow);</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="244"/>
+        <source>
+The text display of the &quot;LooseThreeRow&quot; style is word wrap and not displays the title bar. You can also control whether the button is line breaking through SARibbonBar::setEnableWordWrap,and whether the title bar is displayed through SARibbonBar::setEnableShowPannelTitle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="247"/>
+        <source>ribbonBar()-&gt;setRibbonStyle(SARibbonBar::RibbonStyleCompactThreeRow);</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="253"/>
+        <source>
+The text display of the &quot;CompactTwoRow&quot; style is not word wrap and not displays the title bar. You can also control whether the button is line breaking through SARibbonBar::setEnableWordWrap,and whether the title bar is displayed through SARibbonBar::setEnableShowPannelTitle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="256"/>
+        <source>ribbonBar()-&gt;setRibbonStyle(SARibbonBar::RibbonStyleCompactTwoRow);</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="287"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="343"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="632"/>
+        <source>question</source>
+        <translation type="unfinished">疑问</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="288"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="344"/>
+        <source>Apply the last modification?
+If not, local data will be reset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="427"/>
+        <source>infomation</source>
+        <translation type="unfinished">信息</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="428"/>
+        <source>
+ ===============
+ SARibbonBar version:%1
+ Author:czy
+ Email:czy.t@163.com
+ ===============</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="442"/>
+        <source>  &amp;File  </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="452"/>
+        <source>select qss file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="522"/>
+        <source>By using the SARibbonBar::setEnableWordWrap function, you can set whether text breaks or not.
+By default, the two line mode will not wrap, the three line mode will wrap.
+You can force the two line mode to wrap, or the three line mode to not wrap</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="632"/>
+        <source>Confirm whether to exit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="649"/>
+        <source>Save</source>
+        <translation type="unfinished">保存</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="662"/>
+        <source>hide ribbon</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="670"/>
+        <source>show 
+hide button</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="678"/>
+        <source>word wrap</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="686"/>
+        <source>use office style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="695"/>
+        <source>use wps style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="703"/>
+        <source>use office 2 row style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="711"/>
+        <source>use wps 2row style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="725"/>
+        <source>RibbonTheme</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="742"/>
+        <source>Alignment Center</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="755"/>
+        <source>item %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="760"/>
+        <source>test 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="762"/>
+        <source>use QToolButton::MenuButtonPopup mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="765"/>
+        <source>test 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="767"/>
+        <source>use QToolButton::InstantPopup mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="772"/>
+        <source>Delayed
+Popup</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="778"/>
+        <source>Menu Button Popup</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="783"/>
+        <source>Instant Popup</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="788"/>
+        <source>Delayed Popup checkable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="794"/>
+        <source>Menu Button Popup checkable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="800"/>
+        <source>disable action</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="809"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="899"/>
+        <source>Option Action Triggered</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="817"/>
+        <source>show Context</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="822"/>
+        <source>delete Context</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="833"/>
+        <source>Word
+Wrap</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="837"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="846"/>
+        <source>Text can be manually wrapped(use \n), and will appear as 1 line in the case of SARibbonBar::setEnableWordWrap (false)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="841"/>
+        <source>Word 
+Wrap</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="853"/>
+        <source>widget test</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="859"/>
+        <source>SARibbonComboBox test</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="909"/>
+        <source>pannel one</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="917"/>
+        <source>Decrease Margin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="918"/>
+        <source>Decrease Indent</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="919"/>
+        <source>Wrap Image Left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="920"/>
+        <source>Wrap Image Right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="926"/>
+        <source>Align Right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="929"/>
+        <source>Align Left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="932"/>
+        <source>Align Center</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="961"/>
+        <source>Files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="972"/>
+        <source>Apps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="981"/>
+        <source>pannel two</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="984"/>
+        <source>remove application button</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="989"/>
+        <source>show very long text in a button,balabalabala etc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="994"/>
+        <source>style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="998"/>
+        <source>use qss</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1002"/>
+        <source>load customize from xml file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1006"/>
+        <source>window normal button</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1054"/>
+        <source>remove pannel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1059"/>
+        <source>remove this category</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1085"/>
+        <source>select font</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1109"/>
+        <source>Larger</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1112"/>
+        <source>Smaller</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1118"/>
+        <source>Font Size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1122"/>
+        <source>Larger Font Text</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1127"/>
+        <source>Grid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1144"/>
+        <source>color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1204"/>
+        <source>context</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1206"/>
+        <source>Page1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1209"/>
+        <source>Page2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1223"/>
+        <source>show and hide test</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1231"/>
+        <source>Disable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1240"/>
+        <source>unlock</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1249"/>
+        <source>1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1250"/>
+        <source>very short string</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1273"/>
+        <source>show/hide</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1280"/>
+        <source>hide beside pannel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1282"/>
+        <source>show beside pannel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1306"/>
+        <source>hide action2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1309"/>
+        <source>show action2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1315"/>
+        <source>hide action4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1318"/>
+        <source>show action4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1326"/>
+        <source>spinbox:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1334"/>
+        <source>linedit:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1490"/>
+        <source>help</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1491"/>
+        <source>Visible</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1509"/>
+        <source>Login</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1545"/>
+        <source>in common use</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1546"/>
+        <source>no icon action</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1547"/>
+        <source>have icon action</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1596"/>
+        <source>The SARibbonToolButton::setPopupMode(QToolButton::DelayedPopup) method can be used to set the menu pop-up method to delayed pop-up. This also demonstrates manually setting text wrapping</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/StaticExample/MainWindow.cpp" line="9"/>
+        <source>  File  </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/StaticExample/MainWindow.cpp" line="10"/>
+        <source>Main</source>
+        <translation type="unfinished">主页</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/StaticExample/MainWindow.cpp" line="11"/>
+        <source>actions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/StaticExample/MainWindow.cpp" line="12"/>
+        <location filename="3rdparty/SARibbon/src/example/StaticExample/MainWindow.cpp" line="20"/>
+        <source>action1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/StaticExample/MainWindow.cpp" line="13"/>
+        <source>action2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/StaticExample/MainWindow.cpp" line="14"/>
+        <source>action3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/StaticExample/MainWindow.cpp" line="15"/>
+        <source>action4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/StaticExample/MainWindow.cpp" line="16"/>
+        <source>action5</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/StaticExample/MainWindow.cpp" line="17"/>
+        <source>action6</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/StaticExample/MainWindow.cpp" line="19"/>
+        <source>other</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MyController</name>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/examples/object_controller/main.cpp" line="83"/>
+        <source>Create And Control</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/examples/object_controller/main.cpp" line="144"/>
+        <source>Controlled Object: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>QObject</name>
     <message>
-        <location filename="DAPyBindQt/numpy/DAPyDType.cpp" line="245"/>
         <location filename="DAPyBindQt/pandas/DAPyIndex.cpp" line="125"/>
         <source>DAPyIndex get python object type is not pandas.Index</source>
         <translation>python object类型不是pandas.Index</translation>
@@ -3178,78 +4140,78 @@ Table Area</source>
         <translation>raw</translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DAPenStyleComboBox.cpp" line="58"/>
+        <location filename="DACommonWidgets/DAPenStyleComboBox.cpp" line="54"/>
         <source>No Pen</source>
         <translation>无</translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DAPenStyleComboBox.cpp" line="60"/>
+        <location filename="DACommonWidgets/DAPenStyleComboBox.cpp" line="56"/>
         <source>Solid Line</source>
         <translation>实线</translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DAPenStyleComboBox.cpp" line="62"/>
+        <location filename="DACommonWidgets/DAPenStyleComboBox.cpp" line="58"/>
         <source>Dash Line</source>
         <translation>虚线</translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DAPenStyleComboBox.cpp" line="64"/>
+        <location filename="DACommonWidgets/DAPenStyleComboBox.cpp" line="60"/>
         <source>Dot Line</source>
         <translation>点线</translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DAPenStyleComboBox.cpp" line="66"/>
+        <location filename="DACommonWidgets/DAPenStyleComboBox.cpp" line="62"/>
         <source>Dash Dot Line</source>
         <translation>点划线</translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DAPenStyleComboBox.cpp" line="68"/>
+        <location filename="DACommonWidgets/DAPenStyleComboBox.cpp" line="64"/>
         <source>Dash Dot Dot Line</source>
         <translation>点点划线</translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DAPenStyleComboBox.cpp" line="70"/>
+        <location filename="DACommonWidgets/DAPenStyleComboBox.cpp" line="66"/>
         <source>Custom Dash Line</source>
         <translation>自定义虚线</translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="12"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="14"/>
         <source>Item Add</source>
         <translation>添加图元</translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="43"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="45"/>
         <source>Item Remove</source>
         <translation>删除图元</translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="84"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="86"/>
         <source>Items Move</source>
         <translation>移动（多个）图元</translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="140"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="155"/>
         <source>Item Move</source>
         <translation>移动图元</translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="199"/>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="209"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="232"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="242"/>
         <source>Item Resize</source>
         <translation>图元改变尺寸</translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="280"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="313"/>
         <source>Item Resize Width</source>
         <translation>图元改变宽度</translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="325"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="358"/>
         <source>Item Resize Height</source>
         <translation>图元改变高度</translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="370"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="403"/>
         <source>Item Rotation</source>
         <translation>旋转图元</translation>
     </message>
@@ -3264,74 +4226,79 @@ Table Area</source>
         <translation>连接线的输出必须连接输出连接点</translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAAbstractNodeLinkGraphicsItem.cpp" line="449"/>
+        <location filename="DAWorkFlow/DAAbstractNodeLinkGraphicsItem.cpp" line="453"/>
         <source>Item have not in put link point:</source>
         <translation>图元没有输入连接点:</translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAAbstractNodeLinkGraphicsItem.cpp" line="455"/>
+        <location filename="DAWorkFlow/DAAbstractNodeLinkGraphicsItem.cpp" line="459"/>
         <source>Link to must attach an input point</source>
         <translation>连接线的输入必须连接输入连接点</translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DACommandsForWorkFlowNodeGraphics.cpp" line="24"/>
+        <location filename="DAWorkFlow/DACommandsForWorkFlowNodeGraphics.cpp" line="25"/>
         <source>Create Node</source>
         <translation>创建节点</translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DANodeGraphicsScene.cpp" line="291"/>
+        <location filename="DAWorkFlow/DANodeGraphicsScene.cpp" line="290"/>
         <source>can not create node,metadata name=%1(%2)</source>
         <translation>无法创建节点，元信息：%1(%2)</translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DACommandsForWorkFlowNodeGraphics.cpp" line="94"/>
+        <location filename="DAWorkFlow/DACommandsForWorkFlowNodeGraphics.cpp" line="95"/>
         <source>Remove Select Nodes</source>
         <translation>移除选中节点</translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DACommandsForWorkFlowNodeGraphics.cpp" line="247"/>
+        <location filename="DAWorkFlow/DACommandsForWorkFlowNodeGraphics.cpp" line="248"/>
         <source>Create Link</source>
         <translation>创建连接</translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DACommandsForWorkFlowNodeGraphics.cpp" line="309"/>
+        <location filename="DAWorkFlow/DACommandsForWorkFlowNodeGraphics.cpp" line="310"/>
         <source>Remove Link</source>
         <translation>移除连接</translation>
     </message>
     <message>
-        <location filename="DAPluginSupport/DAPluginOption.cpp" line="84"/>
+        <location filename="DAPluginSupport/DAPluginOption.cpp" line="85"/>
         <source>Failed to load %1 (Reason: %2)</source>
         <translation>加载插件“%1”失败，原因为:%2</translation>
     </message>
     <message>
-        <location filename="DAPluginSupport/DAPluginOption.cpp" line="91"/>
+        <location filename="DAPluginSupport/DAPluginOption.cpp" line="92"/>
         <source>Failed to create plugin instance %1 (Reason: %2)</source>
         <translation>创建插件“%1”实例失败，原因为：%2</translation>
     </message>
     <message>
-        <location filename="DAPluginSupport/DAPluginOption.cpp" line="100"/>
+        <location filename="DAPluginSupport/DAPluginOption.cpp" line="101"/>
         <source>Failed to cast plugin to DA plugin %1</source>
         <translation>无法把加载的插件“%1”转换为DA系列插件</translation>
     </message>
     <message>
-        <location filename="DAPluginSupport/DAPluginOption.cpp" line="105"/>
+        <location filename="DAPluginSupport/DAPluginOption.cpp" line="106"/>
         <source>loaded plugin:%1</source>
         <translation>加载插件“%1”</translation>
     </message>
     <message>
-        <location filename="DAPluginSupport/DAPluginOption.cpp" line="109"/>
+        <location filename="DAPluginSupport/DAPluginOption.cpp" line="110"/>
         <source>success load plugin %1,but failed to initialize</source>
         <translation>成功加载插件%1,但插件的初始化失败</translation>
     </message>
     <message>
-        <location filename="DAPluginSupport/DAPluginOption.cpp" line="208"/>
+        <location filename="DAPluginSupport/DAPluginOption.cpp" line="209"/>
         <source>plugin file name:%1,iid:%2,name:%3,description:%4,version:%5,error string:%6</source>
         <translation>插件文件:%1,iid:%2,名称:%3,描述:%4,版本:%5,错误信息:%6</translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DAGraphicsItemFactory.cpp" line="55"/>
+        <location filename="DAGraphicsView/DAGraphicsItemFactory.cpp" line="66"/>
         <source>Class name %1 not registered to item factory</source>
         <translation>类名 %1 没有向元件工厂注册</translation>
+    </message>
+    <message>
+        <location filename="DAGraphicsView/DAGraphicsItemFactory.cpp" line="79"/>
+        <source>type %1 not registered to item factory</source>
+        <translation>类型 %1 没有注册到元件工厂中</translation>
     </message>
     <message>
         <location filename="DAUtils/DAXMLProtocol.cpp" line="91"/>
@@ -3360,97 +4327,97 @@ Table Area</source>
         <translation>移除数据</translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="42"/>
+        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="43"/>
         <source>No Brush</source>
         <translation>无</translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="44"/>
+        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="45"/>
         <source>Solid Pattern</source>
         <translation>实体填充</translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="46"/>
+        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="47"/>
         <source>Dense1 Pattern</source>
         <translation>纹理1填充</translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="48"/>
+        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="49"/>
         <source>Dense2 Pattern</source>
         <translation>纹理2填充</translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="50"/>
+        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="51"/>
         <source>Dense3 Pattern</source>
         <translation>纹理3填充</translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="52"/>
+        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="53"/>
         <source>Dense4 Pattern</source>
         <translation>纹理4填充</translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="54"/>
+        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="55"/>
         <source>Dense5 Pattern</source>
         <translation>纹理5填充</translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="56"/>
+        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="57"/>
         <source>Dense6 Pattern</source>
         <translation>纹理6填充</translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="58"/>
+        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="59"/>
         <source>Dense7 Pattern</source>
         <translation>纹理7填充</translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="60"/>
+        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="61"/>
         <source>Hor Pattern</source>
         <translation>水平纹理填充</translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="62"/>
+        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="63"/>
         <source>Ver Pattern</source>
         <translation>垂直纹理填充</translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="64"/>
+        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="65"/>
         <source>Cross Pattern</source>
         <translation>十字纹理填充</translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="66"/>
+        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="67"/>
         <source>Backward Diagonal Pattern</source>
         <translation>后对角线纹理填充</translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="68"/>
+        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="69"/>
         <source>Forward Diagonal Pattern</source>
         <translation>前对角线纹理填充</translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="70"/>
+        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="71"/>
         <source>Crossing Diagonal Pattern</source>
         <translation>交叉对角线纹理填充</translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="72"/>
+        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="73"/>
         <source>Linear Gradient Pattern</source>
         <translation>线性渐变填充</translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="74"/>
+        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="75"/>
         <source>Conical Gradient Pattern</source>
         <translation>锥形渐变填充</translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="76"/>
+        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="77"/>
         <source>Radial Gradient Pattern</source>
         <translation>径向渐变填充</translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="78"/>
+        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="79"/>
         <source>Texture Pattern</source>
         <translation>纹理填充</translation>
     </message>
@@ -3460,22 +4427,22 @@ Table Area</source>
         <translation>序列化错误</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureWidget.cpp" line="66"/>
+        <location filename="DAFigure/DAFigureWidget.cpp" line="71"/>
         <source>create chart</source>
         <translation>创建绘图</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureWidget.cpp" line="111"/>
+        <location filename="DAFigure/DAFigureWidget.cpp" line="120"/>
         <source>set figure widget size</source>
         <translation>设置绘图中窗体的尺寸</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureWidget.cpp" line="145"/>
+        <location filename="DAFigure/DAFigureWidget.cpp" line="158"/>
         <source>add item in chart</source>
         <translation>添加绘图元素</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureWidget.cpp" line="686"/>
+        <location filename="DAFigure/DAFigureWidget.cpp" line="709"/>
         <source>DAFigureWidget get invalid magic strat code</source>
         <translation>DAFigureWidget的文件头异常</translation>
     </message>
@@ -3520,192 +4487,200 @@ Table Area</source>
         <translation>转换列为索引</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="84"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="92"/>
         <source>save workflow extern info cost: %1 ms</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="87"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="95"/>
         <source>save workflow nodes cost: %1 ms</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="90"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="98"/>
         <source>save workflow links cost: %1 ms</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="93"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="101"/>
         <source>save special item cost: %1 ms</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="96"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="104"/>
         <source>save workflow factory info cost: %1 ms</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="99"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="107"/>
         <source>save secen info cost: %1 ms</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="118"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="126"/>
         <source>load workflow extern info cost: %1 ms</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="121"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="129"/>
         <source>load nodes occurce error</source>
         <translation>加载节点发生错误</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="123"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="131"/>
         <source>load workflow nodes cost: %1 ms</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="126"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="134"/>
         <source>load nodes link occurce error</source>
         <translation>加载节点连接发生错误</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="128"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="136"/>
         <source>load workflow links cost: %1 ms</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="131"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="139"/>
         <source>load special item occurce error</source>
         <translation>加载特殊图元发生错误</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="133"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="141"/>
         <source>load special item cost: %1 ms</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="138"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="146"/>
         <source>load factorys occurce error</source>
         <translation>加载工厂信息发生错误</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="140"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="148"/>
         <source>load workflow factory info cost: %1 ms</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="143"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="151"/>
         <source>load scene info occurce error</source>
         <translation>加载场景信息发射错误</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="145"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="153"/>
         <source>load secen info cost: %1 ms</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="183"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="191"/>
         <source>find unknow tag &lt;%1&gt; under &lt;factorys&gt; element</source>
         <translation>在标签 &lt;factorys&gt; 下面存在未知标签&lt;%1&gt;</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="189"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="197"/>
         <source>can not find factory prototypes = %1</source>
         <translation>通过节点的元信息（%1）无法找到对应的工厂</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="240"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="248"/>
         <source>node&apos;s id=%1 can not conver to qulonglong type ,will skip this node</source>
         <translation>节点的id（%1）无法转换为qulonglong类型，将跳过此节点</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="253"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="261"/>
         <source>workflow can not create note by metadata(prototype=%1,name=%2,group=%3),will skip this node</source>
         <translation>工作流通过元信息(原型=%1,名称=%2,分组=%3)无法创建节点,将会跳过此节点的创建</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="331"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="355"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="339"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="363"/>
         <source>node(prototype=%1,name=%2,group=%3) %4 tag loss child tag &lt;name&gt;</source>
         <translation>节点(原型=%1,名称=%2,分组=%3) %4 标签缺失&lt;name&gt;子标签</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="441"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="453"/>
         <source>node metadata(prototype=%1,name=%2,group=%3) can not create graphics item</source>
         <translation>节点(原型=%1,名称=%2,分组=%3)无法创建图元</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="477"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="488"/>
         <source>linkitem save to xml return false</source>
-        <translation type="unfinished"></translation>
+        <translation>链接线从xml加载信息返回了false</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="507"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="514"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="517"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="524"/>
         <source>link info can not find node in workflow,id = %1</source>
         <translation>加载连接信息时，无法在工作流中找到id=%1的节点</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="520"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="530"/>
         <source>can not get item by node</source>
         <translation>无法通过节点获取图元</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="526"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="536"/>
         <source>Unable to link to node %3&apos;s link point %4 through link point %2 of node %1</source>
         <translation>节点%1无法通过连接点%2链接到节点%3的连接点%4</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="531"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="542"/>
         <source>linkitem load from xml return false</source>
-        <translation type="unfinished"></translation>
+        <translation>链接线从xml加载信息返回了false</translation>
     </message>
     <message>
-        <source>%1(%2) node can not create link by from key %3</source>
-        <translation type="vanished">节点&quot;%1(%2)无法在连接点%3创建连接线</translation>
+        <location filename="DAGui/DAXmlHelper.cpp" line="653"/>
+        <source>Cannot create item by class name:%1,maybe unregist to DAGraphicsItemFactory</source>
+        <translation>无法通过类名:%1创建元件,类名没有注册到DAGraphicsItemFactory</translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="948"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="667"/>
+        <source>Unable to load item information from &lt;%1&gt;</source>
+        <translation>无法通过&lt;%1&gt;加载元件信息</translation>
+    </message>
+    <message>
+        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="934"/>
         <source>link item can not attach from node item(%1) with key=%2</source>
         <translation>无法通过节点%1的输出点%2进行连接</translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="953"/>
+        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="939"/>
         <source>link item can not attach to node item(%1) with key=%2</source>
         <translation>无法通过节点%1的输入点%2进行连接</translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="975"/>
-        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="980"/>
+        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="961"/>
+        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="966"/>
         <source>Node %1 cannot find a connection point named %2</source>
         <translation>节点%1无法找到名字为%2的连接点</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="577"/>
-        <source>There is a item that is not a DA Graphics Item system and cannot be saved</source>
-        <translation>存在不是DA Graphics Item系统的元件，无法对此元件进行保存</translation>
-    </message>
-    <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="610"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="621"/>
-        <source>Unable to load item information from file</source>
-        <translation>无法通过文件加载元件信息</translation>
-    </message>
-    <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="617"/>
-        <source>Cannot create item by class name:%1</source>
-        <translation>无法通过类名:%1创建元件</translation>
-    </message>
-    <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="797"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="924"/>
         <source>The attribute %1=%2 under the tag %3 cannot be converted to double </source>
         <translation>%3标签属性%1=%2无法转换为double类型 </translation>
     </message>
     <message>
-        <location filename="APP/main.cpp" line="46"/>
+        <location filename="APP/main.cpp" line="87"/>
         <source>Kernel initialization failed</source>
         <translation>内核初始化失败</translation>
+    </message>
+    <message>
+        <location filename="APP/main.cpp" line="106"/>
+        <source>%1(%2) build %3
+params:
+--version : version information
+--describe : detailed information
+</source>
+        <translation>%1(%2) build %3
+参数:
+--version : 版本信息
+--describe : 详细的描述信息
+</translation>
+    </message>
+    <message>
+        <location filename="APP/main.cpp" line="198"/>
+        <source>Unable to create dump file path:%1</source>
+        <translation>无法创建dump文件路径：%1</translation>
     </message>
     <message>
         <location filename="DAFigure/DAFigureTreeModel.cpp" line="150"/>
@@ -3837,22 +4812,1333 @@ Table Area</source>
         <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="164"/>
         <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="195"/>
         <source>unable initialize %1</source>
-        <translation type="unfinished"></translation>
+        <translation>无法初始化%1</translation>
     </message>
     <message>
         <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="169"/>
         <source>file &quot;%1&quot; does not exist</source>
-        <translation type="unfinished"></translation>
+        <translation>文件“%1”不存在</translation>
     </message>
     <message>
         <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="176"/>
         <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="202"/>
         <source>can not get excel workbook</source>
-        <translation type="unfinished"></translation>
+        <translation>无法获取excel的workbook</translation>
     </message>
     <message>
         <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="505"/>
         <source>The local computer does not have Excel or WPS installed</source>
+        <translation>当前计算机中没有安装excel或者wps</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/demo/MainWindow.cpp" line="152"/>
+        <source>Help</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/demo/MainWindow.cpp" line="331"/>
+        <source>Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/demo/MainWindow.cpp" line="340"/>
+        <source>Clear Editor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/demo/MainWindow.cpp" line="507"/>
+        <source>Create Editor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="193"/>
+        <source>List All Tabs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="203"/>
+        <source>Detach Group</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="228"/>
+        <source>Minimize</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/src/DockWidgetTab.cpp" line="268"/>
+        <source>Close Tab</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ctk/ctk/ctkColorDialog.cpp" line="70"/>
+        <source>Basic</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13045"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="332"/>
+        <source>SARibbon Warning !!! customize rename category,but get an empty category object name,if you want to customize SARibbon,please make sure every element has been set object name.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13069"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="356"/>
+        <source>SARibbon Warning !!! customize rename pannel,but get an empty category/pannel object name,if you want to customize SARibbon,please make sure every element has been set object name.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13091"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="378"/>
+        <source>SARibbon Warning !!! customize change category order,but get an empty category object name,if you want to customize SARibbon,please make sure every element has been set object name.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13115"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="402"/>
+        <source>SARibbon Warning !!! customize change pannel order,but get an empty category/pannel object name,if you want to customize SARibbon,please make sure every element has been set object name.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13144"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="431"/>
+        <source>SARibbon Warning !!! customize change action order,but get an empty category/pannel/action object name,if you want to customize SARibbon,please make sure every element has been set object name.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13166"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="453"/>
+        <source>SARibbon Warning !!! customize remove category,but get an empty category object name,if you want to customize SARibbon,please make sure every element has been set object name.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13186"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="473"/>
+        <source>SARibbon Warning !!! customize remove pannel,but get an empty category/pannel object name,if you want to customize SARibbon,please make sure every element has been set object name.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13212"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="499"/>
+        <source>SARibbon Warning !!! customize remove action,but get an empty category/pannel/action object name,if you want to customize SARibbon,please make sure every element has been set object name.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13234"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="521"/>
+        <source>SARibbon Warning !!! customize visible category,but get an empty category object name,if you want to customize SARibbon,please make sure every element has been set object name.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAPlugins/DAUtilityNodePlugin/DAUtilityNodeAppExecute.cpp" line="35"/>
+        <source>App Execute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAPlugins/DAUtilityNodePlugin/DAUtilityNodeAppExecute.cpp" line="36"/>
+        <source>App</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAPlugins/DAUtilityNodePlugin/DAUtilityNodeFactory.cpp" line="39"/>
+        <source>Utility</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAPlugins/DAUtilityNodePlugin/DAUtilityNodeFactory.cpp" line="44"/>
+        <source>Core nodes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAPlugins/DAUtilityNodePlugin/DAUtilityNodePlugin.cpp" line="76"/>
+        <source>Utility Nodes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAPlugins/DAUtilityNodePlugin/DAUtilityNodePlugin.cpp" line="86"/>
+        <source>Data Work Flow Utility Nodes
+Author:czy</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QtBoolEdit</name>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="253"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="263"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="288"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="315"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="325"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="350"/>
+        <source>True</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="263"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="288"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="325"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="350"/>
+        <source>False</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QtBoolPropertyManager</name>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="1565"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="1528"/>
+        <source>True</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="1566"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="1529"/>
+        <source>False</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QtCharEdit</name>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qteditorfactory.cpp" line="1471"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qteditorfactory.cpp" line="1472"/>
+        <source>Clear Char</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QtColorEditWidget</name>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qteditorfactory.cpp" line="2044"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qteditorfactory.cpp" line="2053"/>
+        <source>...</source>
+        <translation type="unfinished">...</translation>
+    </message>
+</context>
+<context>
+    <name>QtColorPropertyManager</name>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6319"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="6306"/>
+        <source>Red</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6327"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="6314"/>
+        <source>Green</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6335"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="6322"/>
+        <source>Blue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6343"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="6330"/>
+        <source>Alpha</source>
+        <translation type="unfinished">透明度</translation>
+    </message>
+</context>
+<context>
+    <name>QtCursorDatabase</name>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="54"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="30"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="89"/>
+        <source>Arrow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="56"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="33"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="92"/>
+        <source>Up Arrow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="58"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="36"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="95"/>
+        <source>Cross</source>
+        <translation type="unfinished">十字标记</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="60"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="39"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="98"/>
+        <source>Wait</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="62"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="42"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="101"/>
+        <source>IBeam</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="64"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="45"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="104"/>
+        <source>Size Vertical</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="66"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="48"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="107"/>
+        <source>Size Horizontal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="68"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="51"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="110"/>
+        <source>Size Backslash</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="70"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="54"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="113"/>
+        <source>Size Slash</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="72"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="57"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="116"/>
+        <source>Size All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="74"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="59"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="118"/>
+        <source>Blank</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="76"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="61"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="120"/>
+        <source>Split Vertical</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="78"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="64"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="123"/>
+        <source>Split Horizontal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="80"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="67"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="126"/>
+        <source>Pointing Hand</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="82"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="70"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="129"/>
+        <source>Forbidden</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="84"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="73"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="132"/>
+        <source>Open Hand</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="86"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="76"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="135"/>
+        <source>Closed Hand</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="88"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="79"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="138"/>
+        <source>What&apos;s This</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="90"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="82"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="141"/>
+        <source>Busy</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QtFontEditWidget</name>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qteditorfactory.cpp" line="2233"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qteditorfactory.cpp" line="2243"/>
+        <source>...</source>
+        <translation type="unfinished">...</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qteditorfactory.cpp" line="2253"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qteditorfactory.cpp" line="2263"/>
+        <source>Select Font</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QtFontPropertyManager</name>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="5995"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="5980"/>
+        <source>Family</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6008"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="5993"/>
+        <source>Point Size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6016"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="6001"/>
+        <source>Bold</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6023"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="6008"/>
+        <source>Italic</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6030"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="6015"/>
+        <source>Underline</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6037"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="6022"/>
+        <source>Strikeout</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6044"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="6029"/>
+        <source>Kerning</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QtLocalePropertyManager</name>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="2490"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2444"/>
+        <source>&lt;Invalid&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="2498"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2452"/>
+        <source>%1, %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="2548"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2502"/>
+        <source>Language</source>
+        <translation type="unfinished">语言</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="2556"/>
+        <source>Country</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2510"/>
+        <source>Territory</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QtPointFPropertyManager</name>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="2959"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2919"/>
+        <source>(%1, %2)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="3029"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2989"/>
+        <source>X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="3037"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2997"/>
+        <source>Y</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QtPointPropertyManager</name>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="2723"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2680"/>
+        <source>(%1, %2)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="2759"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2716"/>
+        <source>X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="2766"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2723"/>
+        <source>Y</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QtPropertyBrowserUtils</name>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="183"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="241"/>
+        <source>[%1, %2, %3] (%4)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="210"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="271"/>
+        <source>[%1, %2]</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QtRectFPropertyManager</name>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4506"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4474"/>
+        <source>[(%1, %2), %3 x %4]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4663"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4631"/>
+        <source>X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4671"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4639"/>
+        <source>Y</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4679"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4647"/>
+        <source>Width</source>
+        <translation type="unfinished">宽</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4688"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4656"/>
+        <source>Height</source>
+        <translation type="unfinished">高</translation>
+    </message>
+</context>
+<context>
+    <name>QtRectPropertyManager</name>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4079"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4048"/>
+        <source>[(%1, %2), %3 x %4]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4200"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4165"/>
+        <source>X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4207"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4172"/>
+        <source>Y</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4214"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4179"/>
+        <source>Width</source>
+        <translation type="unfinished">宽</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4222"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4187"/>
+        <source>Height</source>
+        <translation type="unfinished">高</translation>
+    </message>
+</context>
+<context>
+    <name>QtSizeFPropertyManager</name>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="3673"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="3639"/>
+        <source>%1 x %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="3821"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="3787"/>
+        <source>Width</source>
+        <translation type="unfinished">宽</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="3830"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="3796"/>
+        <source>Height</source>
+        <translation type="unfinished">高</translation>
+    </message>
+</context>
+<context>
+    <name>QtSizePolicyPropertyManager</name>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="5522"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="5523"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="5498"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="5499"/>
+        <source>&lt;Invalid&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="5524"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="5500"/>
+        <source>[%1, %2, %3, %4]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="5567"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="5543"/>
+        <source>Horizontal Policy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="5575"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="5551"/>
+        <source>Vertical Policy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="5583"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="5559"/>
+        <source>Horizontal Stretch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="5591"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="5567"/>
+        <source>Vertical Stretch</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QtSizePropertyManager</name>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="3284"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="3247"/>
+        <source>%1 x %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="3398"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="3361"/>
+        <source>Width</source>
+        <translation type="unfinished">宽</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="3406"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="3369"/>
+        <source>Height</source>
+        <translation type="unfinished">高</translation>
+    </message>
+</context>
+<context>
+    <name>QtTreePropertyBrowser</name>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qttreepropertybrowser.cpp" line="452"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qttreepropertybrowser.cpp" line="417"/>
+        <source>Property</source>
+        <translation type="unfinished">属性</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qttreepropertybrowser.cpp" line="453"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qttreepropertybrowser.cpp" line="418"/>
+        <source>Value</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QwtPlotRenderer</name>
+    <message>
+        <location filename="3rdparty/qwt/src/qwt_plot_renderer.cpp" line="1076"/>
+        <location filename="3rdparty/qwt/src/qwt_plot_renderer.cpp" line="1079"/>
+        <location filename="3rdparty/qwt/src/qwt_plot_renderer.cpp" line="1082"/>
+        <source>Documents</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/qwt/src/qwt_plot_renderer.cpp" line="1087"/>
+        <source>Images</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/qwt/src/qwt_plot_renderer.cpp" line="1102"/>
+        <source>Export File Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QwtPolarRenderer</name>
+    <message>
+        <location filename="3rdparty/qwt/src/qwt_polar_renderer.cpp" line="446"/>
+        <location filename="3rdparty/qwt/src/qwt_polar_renderer.cpp" line="449"/>
+        <location filename="3rdparty/qwt/src/qwt_polar_renderer.cpp" line="452"/>
+        <source>Documents</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/qwt/src/qwt_polar_renderer.cpp" line="457"/>
+        <source>Images</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/qwt/src/qwt_polar_renderer.cpp" line="472"/>
+        <source>Export File Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SAColorMenu</name>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="201"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/SAColorMenu.cpp" line="178"/>
+        <source>None</source>
+        <translation>无</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="235"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/SAColorMenu.cpp" line="212"/>
+        <source>Theme Colors</source>
+        <translation>主题颜色</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="242"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/SAColorMenu.cpp" line="219"/>
+        <source>Custom Color</source>
+        <translation>自定义颜色</translation>
+    </message>
+</context>
+<context>
+    <name>SARibbonActionsManager</name>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="4389"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonActionsManager.cpp" line="334"/>
+        <source>not in ribbon</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SARibbonActionsManagerModel</name>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="4584"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonActionsManager.cpp" line="529"/>
+        <source>action name</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SARibbonCategoryLayout</name>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="8171"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCategoryLayout.cpp" line="130"/>
+        <source>in SARibbonCategoryLayout cannot addItem,use addPannel instead</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SARibbonContextCategory</name>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="8825"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonContextCategory.cpp" line="67"/>
+        <source>SARibbonContextCategory have category %1,will skip</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SARibbonCustomizeDialog</name>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14964"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeDialog.cpp" line="51"/>
+        <source>Customize Dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14965"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeDialog.cpp" line="52"/>
+        <source>Cancel</source>
+        <translation type="unfinished">取消</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14966"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeDialog.cpp" line="53"/>
+        <source>OK</source>
+        <translation type="unfinished">确认</translation>
+    </message>
+</context>
+<context>
+    <name>SARibbonCustomizeWidget</name>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13764"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="357"/>
+        <source>Customize Widget</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13765"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="358"/>
+        <source>Please Select</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13768"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="362"/>
+        <source>Find Command</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13769"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="363"/>
+        <source>Add &gt;&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13770"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="364"/>
+        <source>&lt;&lt; Remove</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13771"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="366"/>
+        <source>Customize the Ribbon</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13772"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="367"/>
+        <source>Main Category</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13773"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="368"/>
+        <source>All Category</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13774"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="369"/>
+        <source>New Category</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13775"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="370"/>
+        <source>New Group</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13776"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="371"/>
+        <source>Rename</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13777"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="372"/>
+        <source>reset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13778"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="373"/>
+        <source>proportion:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14173"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14176"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="768"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="771"/>
+        <source>large</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14174"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14178"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="769"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="773"/>
+        <source>small</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14177"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="772"/>
+        <source>medium</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14559"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="1154"/>
+        <source>new category[customize]%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14586"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="1181"/>
+        <source>new pannel[customize]%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14634"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="1229"/>
+        <source>rename</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14634"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="1229"/>
+        <source>name:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14902"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="1505"/>
+        <source>Warning</source>
+        <translation type="unfinished">警告</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14903"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="1506"/>
+        <source>Are you sure reset all customize setting?</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SARibbonSystemButtonBar</name>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="2468"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonSystemButtonBar.cpp" line="312"/>
+        <source>Restore</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="2468"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonSystemButtonBar.cpp" line="312"/>
+        <source>Maximize</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>VariantManager</name>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/examples/extension/main.cpp" line="147"/>
+        <source>(%1, %2)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/examples/extension/main.cpp" line="183"/>
+        <source>Position X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/QtPropertyBrowser/examples/extension/main.cpp" line="188"/>
+        <source>Position Y</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Widget</name>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/WidgetWithRibbon/Widget.ui" line="14"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="14"/>
+        <source>Widget</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/WidgetWithRibbon/Widget.ui" line="54"/>
+        <source>Tab 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/WidgetWithRibbon/Widget.ui" line="59"/>
+        <source>Tab 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="27"/>
+        <source>ToolButtonIconOnly</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="33"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="316"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="641"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="966"/>
+        <source>No Icon</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="57"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="346"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="671"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="996"/>
+        <source>Have Icon</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="92"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="387"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="712"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="1037"/>
+        <source>Have Icon(small)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="139"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="440"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="765"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="1090"/>
+        <source>Have Icon(large)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="152"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="172"/>
+        <source>ToolButtonIconOnly,Have Icon(large)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="186"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="493"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="818"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="1143"/>
+        <source>MenuPopMode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="227"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="540"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="865"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="1190"/>
+        <source>InstantPop</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="268"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="587"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="912"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="1237"/>
+        <source>DelayedPop</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="310"/>
+        <source>ToolButtonTextOnly</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="323"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="333"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="353"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="370"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="400"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="423"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="453"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="476"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="500"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="520"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="547"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="567"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="594"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="614"/>
+        <source>Text Only</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="635"/>
+        <source>TextBesideIcon</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="648"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="658"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="678"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="695"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="725"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="748"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="778"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="801"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="825"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="845"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="872"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="892"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="919"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="939"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="973"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="983"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="1003"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="1020"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="1050"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="1073"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="1103"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="1126"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="1150"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="1170"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="1197"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="1217"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="1244"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="1264"/>
+        <source>Text</source>
+        <translation type="unfinished">文本</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="960"/>
+        <source>TextUnderIcon</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="1285"/>
+        <source>ColorGridWidget</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="1297"/>
+        <source>row=5,col=5</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="1320"/>
+        <source>colorPaletteGrid</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ads::CAutoHideTab</name>
+    <message>
+        <location filename="3rdparty/ADS/src/AutoHideTab.cpp" line="384"/>
+        <source>Detach</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/src/AutoHideTab.cpp" line="389"/>
+        <source>Pin To...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/src/AutoHideTab.cpp" line="391"/>
+        <source>Top</source>
+        <translation type="unfinished">上对齐</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/src/AutoHideTab.cpp" line="392"/>
+        <source>Left</source>
+        <translation type="unfinished">左对齐</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/src/AutoHideTab.cpp" line="393"/>
+        <source>Right</source>
+        <translation type="unfinished">右对齐</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/src/AutoHideTab.cpp" line="394"/>
+        <source>Bottom</source>
+        <translation type="unfinished">下对齐</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/src/AutoHideTab.cpp" line="396"/>
+        <source>Unpin (Dock)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/src/AutoHideTab.cpp" line="398"/>
+        <source>Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ads::CDockAreaTitleBar</name>
+    <message>
+        <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="749"/>
+        <source>Detach</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="749"/>
+        <source>Detach Group</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="754"/>
+        <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="811"/>
+        <source>Unpin (Dock)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="754"/>
+        <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="816"/>
+        <source>Pin Group</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="760"/>
+        <source>Pin Group To...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="762"/>
+        <source>Top</source>
+        <translation type="unfinished">上对齐</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="763"/>
+        <source>Left</source>
+        <translation type="unfinished">左对齐</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="764"/>
+        <source>Right</source>
+        <translation type="unfinished">右对齐</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="765"/>
+        <source>Bottom</source>
+        <translation type="unfinished">下对齐</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="773"/>
+        <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="828"/>
+        <source>Minimize</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="774"/>
+        <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="778"/>
+        <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="828"/>
+        <source>Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="778"/>
+        <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="837"/>
+        <source>Close Group</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="784"/>
+        <source>Close Other Groups</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="820"/>
+        <source>Pin Active Tab (Press Ctrl to Pin Group)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="833"/>
+        <source>Close Active Tab</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ads::CDockManager</name>
+    <message>
+        <location filename="3rdparty/ADS/src/DockManager.cpp" line="508"/>
+        <source>Show View</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ads::CDockWidgetTab</name>
+    <message>
+        <location filename="3rdparty/ADS/src/DockWidgetTab.cpp" line="544"/>
+        <source>Detach</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/src/DockWidgetTab.cpp" line="548"/>
+        <source>Pin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/src/DockWidgetTab.cpp" line="552"/>
+        <source>Pin To...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/src/DockWidgetTab.cpp" line="554"/>
+        <source>Top</source>
+        <translation type="unfinished">上对齐</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/src/DockWidgetTab.cpp" line="555"/>
+        <source>Left</source>
+        <translation type="unfinished">左对齐</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/src/DockWidgetTab.cpp" line="556"/>
+        <source>Right</source>
+        <translation type="unfinished">右对齐</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/src/DockWidgetTab.cpp" line="557"/>
+        <source>Bottom</source>
+        <translation type="unfinished">下对齐</translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/src/DockWidgetTab.cpp" line="562"/>
+        <source>Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ADS/src/DockWidgetTab.cpp" line="566"/>
+        <source>Close Others</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ctkPathLineEdit</name>
+    <message>
+        <location filename="3rdparty/ctk/ctk/ctkPathLineEdit.cpp" line="315"/>
+        <source>Open a dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/ctk/ctk/ctkPathLineEdit.cpp" line="585"/>
+        <source>Select a file to save </source>
         <translation type="unfinished"></translation>
     </message>
 </context>

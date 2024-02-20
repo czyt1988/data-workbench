@@ -21,6 +21,11 @@ public:
      * @return 如果无法创建，返回nullptr
      */
     virtual QwtPlotItem* createPlotItem() = 0;
+
+    /**
+     * @brief 更新数据，可不实现
+     */
+    virtual void updateData();
 };
 }  // end DA
 

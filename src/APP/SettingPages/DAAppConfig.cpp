@@ -16,8 +16,8 @@ namespace DA
 DAAppConfig::DAAppConfig()
 {
     mConfigFilePath = getAbsoluteConfigFilePath();
-    //先设置默认参数，这些默认参数后续如果配置文件中有会被替换掉
-    insert(DA_CONFIG_KEY_RIBBON_STYLE, int(SARibbonBar::WpsLiteStyleTwoRow));
+    // 先设置默认参数，这些默认参数后续如果配置文件中有会被替换掉
+    insert(DA_CONFIG_KEY_RIBBON_STYLE, static_cast< int >(SARibbonBar::RibbonStyleCompactTwoRow));
     insert(DA_CONFIG_KEY_SHOW_LOG_NUM, 5000);             // 5000条日志
     insert(DA_CONFIG_KEY_SAVE_UI_STATE_ON_CLOSE, false);  // 程序在退出时是否保存ui的状态
 }
@@ -37,25 +37,25 @@ bool DAAppConfig::loadConfig(bool noFileCreateNewOne)
 {
     QFile xmlConfigFile(mConfigFilePath);
     if (!xmlConfigFile.exists()) {
-        //没有配置文件
+        // 没有配置文件
         if (noFileCreateNewOne) {
             return saveConfig();
         }
         return false;
     }
     if (!xmlConfigFile.open(QIODevice::ReadWrite)) {
-        //有配置文件，但打开失败
+        // 有配置文件，但打开失败
         qWarning().noquote() << QObject::tr("can not open config file \"%1\",because %2")  // cn:无法打开配置文件\"%1\",原因是%2
-                                        .arg(mConfigFilePath, xmlConfigFile.errorString());
+                                    .arg(mConfigFilePath, xmlConfigFile.errorString());
         return false;
     }
 
-    //文件存在了才加载文件
+    // 文件存在了才加载文件
     QString err;
     QDomDocument doc;
     if (!doc.setContent(&xmlConfigFile, &err)) {
         qCritical().noquote() << QObject::tr("can not load config file \"%1\",because %2")  // cn:无法加载配置文件\"%1\",原因是%2
-                                         .arg(mConfigFilePath, err);
+                                     .arg(mConfigFilePath, err);
         return false;
     }
     QDomElement configsEle = doc.firstChildElement("configs");
@@ -63,7 +63,7 @@ bool DAAppConfig::loadConfig(bool noFileCreateNewOne)
         qWarning().noquote() << QObject::tr("config file(%1) loss <configs> tag").arg(mConfigFilePath);  // cn:配置文件(%1)缺失<configs>标签
         return false;
     }
-    //加载所有管理的配置
+    // 加载所有管理的配置
     if (!loadFromXml(&configsEle)) {
         return false;
     }
@@ -74,17 +74,17 @@ bool DAAppConfig::loadConfig(bool noFileCreateNewOne)
 bool DAAppConfig::saveConfig()
 {
     QFile xmlConfigFile(mConfigFilePath);
-    //一定要带上QIODevice::Truncate
+    // 一定要带上QIODevice::Truncate
     if (!xmlConfigFile.open(QIODevice::ReadWrite | QIODevice::Truncate)) {
-        //有配置文件，但打开失败
+        // 有配置文件，但打开失败
         qCritical() << QObject::tr("can not open config file \"%1\",because %2")  // cn:无法打开配置文件\"%1\",原因是%2
-                               .arg(mConfigFilePath, xmlConfigFile.errorString());
+                           .arg(mConfigFilePath, xmlConfigFile.errorString());
         return false;
     }
     QDomDocument doc;
     QDomElement configsEle = doc.createElement("configs");
     doc.appendChild(configsEle);
-    //加载所有管理的配置
+    // 加载所有管理的配置
     if (!saveToXml(&doc, &configsEle)) {
         return false;
     }
@@ -159,7 +159,8 @@ QString DAAppConfig::getConfigFileName()
  */
 QString DAAppConfig::getAbsoluteConfigFilePath()
 {
-    return QDir::toNativeSeparators(DAAbstractSettingPage::getConfigFileSavePath() + QDir::separator() + getConfigFileName());
+    return QDir::toNativeSeparators(DAAbstractSettingPage::getConfigFileSavePath() + QDir::separator()
+                                    + getConfigFileName());
 }
 
 /**
@@ -171,7 +172,8 @@ bool DAAppConfig::apply()
     qDebug() << "apply setting";
     SARibbonBar* bar = mMainWindow->ribbonBar();
     if (bar) {
-        SARibbonBar::RibbonStyle ribbonStyle = static_cast< SARibbonBar::RibbonStyle >(value(DA_CONFIG_KEY_RIBBON_STYLE).toInt());
+        SARibbonBar::RibbonStyles ribbonStyle = static_cast< SARibbonBar::RibbonStyles >(
+            value(DA_CONFIG_KEY_RIBBON_STYLE).toInt());
         bar->setRibbonStyle(ribbonStyle);
     }
     bool isOK  = false;

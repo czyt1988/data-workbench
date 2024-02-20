@@ -72,7 +72,6 @@ AlwaysBreakAfterReturnType: None
 PenaltyReturnTypeOnItsOwnLine: 5000
 PenaltyBreakAssignment: 5000
 PenaltyBreakBeforeFirstCallParameter: 5000
-PenaltyExcessCharacter: 1
 
 # The coding style specifies some include order categories, but also tells to
 # separate categories with an empty line. It does not specify the order within

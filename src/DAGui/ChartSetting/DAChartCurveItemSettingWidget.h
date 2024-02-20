@@ -2,18 +2,15 @@
 #define DACHARTCURVEITEMSETTINGWIDGET_H
 
 #include <QWidget>
-#include <QPointer>
 #include "qwt_plot_curve.h"
-class QwtPlot;
 namespace Ui
 {
 class DAChartCurveItemSettingWidget;
 }
+
 namespace DA
 {
-/**
- * @brief QwtPlotItem的设置页面
- */
+
 class DAChartCurveItemSettingWidget : public QWidget
 {
     Q_OBJECT
@@ -21,25 +18,49 @@ class DAChartCurveItemSettingWidget : public QWidget
 public:
     explicit DAChartCurveItemSettingWidget(QWidget* parent = nullptr);
     ~DAChartCurveItemSettingWidget();
-    //设置item
-    void setChartCurveItem(QwtPlotCurve* item);
-    QwtPlotCurve* getChartCurveItem() const;
-signals:
-    /**
-     * @brief 曲线样式发生改变
-     * @param s
-     */
-    void curveStyleChanged(QwtPlotCurve::CurveStyle s);
-private slots:
-    void onCurveStyleComboBoxCurrentIndexChanged(int i);
+    // 根据QwtPlotCurve更新ui
+    void updateUI(const QwtPlotCurve* item);
+    void updatePlotItem(QwtPlotCurve* item);
+    // 标题
+    void setTitle(const QString& t);
+    QString getTitle() const;
+    // Curve Style
+    void setCurveStyle(QwtPlotCurve::CurveStyle v);
+    QwtPlotCurve::CurveStyle getCurveStyle() const;
+    // Curve Attribute
+    void setCurveAttribute(QwtPlotCurve::CurveAttribute v);
+    QwtPlotCurve::CurveAttribute getCurveAttribute() const;
+    // Legend Attribute
+    void setLegendAttribute(QwtPlotCurve::LegendAttributes v);
+    QwtPlotCurve::LegendAttributes getLegendAttribute() const;
+    // maker编辑
+    void enableMarkerEdit(bool on = true);
+    bool isEnableMarkerEdit() const;
+    // fill编辑
+    void enableFillEdit(bool on = true);
+    bool isEnableFillEdit() const;
+    // 画笔
+    void setCurvePen(const QPen& v);
+    QPen getCurvePen() const;
+    // 填充
+    void setFillBrush(const QBrush& v);
+    QBrush getFillBrush() const;
+    // 基线
+    void setBaseLine(double v);
+    double getBaseLine() const;
+    bool isHaveBaseLine() const;
+    // 方向
+    void setOrientation(Qt::Orientation v);
+    Qt::Orientation getOrientation() const;
 
-private:
-    //初始化ui
-    void initUI();
+protected:
+    void resetCurveStyleComboBox();
+private slots:
+    void onCurveStyleCurrentIndexChanged(int index);
 
 private:
     Ui::DAChartCurveItemSettingWidget* ui;
-    QwtPlotCurve* _item { nullptr };
 };
 }
+
 #endif  // DACHARTCURVEITEMSETTINGWIDGET_H

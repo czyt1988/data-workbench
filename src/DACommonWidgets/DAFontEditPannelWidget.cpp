@@ -1,6 +1,5 @@
 ﻿#include "DAFontEditPannelWidget.h"
 #include "ui_DAFontEditPannelWidget.h"
-#include "colorWidgets/SAColorMenu.h"
 #include <QDebug>
 namespace DA
 {
@@ -9,12 +8,9 @@ DAFontEditPannelWidget::DAFontEditPannelWidget(QWidget* parent)
 {
     ui->setupUi(this);
     ui->comboBoxFontSize->addItems(
-            { "6", "8", "9", "10", "11", "12", "14", "16", "18", "20", "22", "24", "26", "28", "36", "48", "72" });
+        { "6", "8", "9", "10", "11", "12", "14", "16", "18", "20", "22", "24", "26", "28", "36", "48", "72" });
     ui->comboBoxFontSize->setCurrentText("10");
     ui->colorButton->setColor(Qt::black);
-    ui->colorButton->setPopupMode(QToolButton::MenuButtonPopup);
-    mColorMenu = new SAColorMenu(this);
-    mColorMenu->bindToColorToolButton(ui->colorButton);
     connect(ui->fontComboBox, &QFontComboBox::currentFontChanged, this, &DAFontEditPannelWidget::signalEmitFontChanged);
     connect(ui->colorButton, &DA::DAColorPickerButton::colorChanged, this, &DAFontEditPannelWidget::currentFontColorChanged);
     connect(ui->toolButtonBold, &QToolButton::clicked, this, &DAFontEditPannelWidget::signalEmitFontChanged);
@@ -36,7 +32,7 @@ DAFontEditPannelWidget::~DAFontEditPannelWidget()
  */
 QColor DAFontEditPannelWidget::getCurrentFontColor() const
 {
-    return ui->colorButton->getColor();
+    return ui->colorButton->color();
 }
 
 /**
@@ -46,7 +42,7 @@ QColor DAFontEditPannelWidget::getCurrentFontColor() const
 void DAFontEditPannelWidget::setCurrentFontColor(const QColor& c)
 {
     ui->colorButton->setColor(c);
-    //自动触发信号
+    // 自动触发信号
 }
 
 /**
@@ -57,7 +53,7 @@ void DAFontEditPannelWidget::setCurrentFontColor(const QColor& c)
 void DAFontEditPannelWidget::setCurrentFont(const QFont& f)
 {
     QSignalBlocker b1(ui->toolButtonBold), b2(ui->toolButtonItalic), b3(ui->toolButtonUnderline), b4(ui->fontComboBox),
-            b5(ui->comboBoxFontSize);
+        b5(ui->comboBoxFontSize);
     ui->toolButtonBold->setChecked(f.bold());
     ui->toolButtonItalic->setChecked(f.italic());
     ui->toolButtonUnderline->setChecked(f.underline());

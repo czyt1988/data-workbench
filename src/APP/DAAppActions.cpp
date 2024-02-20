@@ -77,6 +77,8 @@ void DAAppActions::buildChartAction()
     actionFigureResizeChart = createAction("actionFigureResizeChart", ":/Icon/Icon/figureResizeChart.svg", true, false);
     actionFigureNewXYAxis   = createAction("actionFigureNewXYAxis", ":/Icon/Icon/newAxis.svg");
     actionChartAddCurve     = createAction("actionChartAddCurve", ":/app/chart-type/Icon/chart-type/chart-curve.svg");
+    actionChartAddScatter2D = createAction("actionChartAddScatter2D",
+                                           ":/app/chart-type/Icon/chart-type/chart-scatter-2d.svg");
 
     actionChartEnableGrid  = createAction("actionChartEnableGrid", ":/Icon/Icon/chart-grid.svg", true, false);
     actionChartEnableGridX = createAction("actionChartEnableGridX", ":/Icon/Icon/chart-grid-x.svg", true, false);
@@ -92,9 +94,21 @@ void DAAppActions::buildChartAction()
     actionGroupChartPickers = new QActionGroup(this);
     actionGroupChartPickers->setObjectName(QStringLiteral("actionGroupChartPickers"));
     actionGroupChartPickers->setExclusionPolicy(QActionGroup::ExclusionPolicy::ExclusiveOptional);  // 允许都不选中
-    actionChartEnablePickerCross = createAction("actionChartEnablePickerCross", ":/Icon/Icon/chart-picker.svg", true, false, actionGroupChartPickers);
-    actionChartEnablePickerY = createAction("actionChartEnablePickerY", ":/Icon/Icon/chart-picker-y.svg", true, false, actionGroupChartPickers);
-    actionChartEnablePickerXY = createAction("actionChartEnablePickerXY", ":/Icon/Icon/chart-picker-xy.svg", true, false, actionGroupChartPickers);
+    actionChartEnablePickerCross = createAction("actionChartEnablePickerCross",
+                                                ":/Icon/Icon/chart-picker.svg",
+                                                true,
+                                                false,
+                                                actionGroupChartPickers);
+    actionChartEnablePickerY     = createAction("actionChartEnablePickerY",
+                                            ":/Icon/Icon/chart-picker-y.svg",
+                                            true,
+                                            false,
+                                            actionGroupChartPickers);
+    actionChartEnablePickerXY    = createAction("actionChartEnablePickerXY",
+                                             ":/Icon/Icon/chart-picker-xy.svg",
+                                             true,
+                                             false,
+                                             actionGroupChartPickers);
 
     actionChartEnableLegend = createAction("actionChartEnableLegend", ":/Icon/Icon/chart-legend.svg", true, false);
     actionChartLegendAlignmentInTopLeft = createAction("actionChartLegendAlignmentInTopLeft", true, false);
@@ -138,16 +152,27 @@ void DAAppActions::buildViewAction()
 void DAAppActions::buildWorkflowAction()
 {
     // workflow 编辑
-    actionWorkflowNew = createAction("actionNewWorkflow", ":/Icon/Icon/newWorkflow.svg");
-    actionWorkflowEnableItemLinkageMove = createAction("actionWorkflowEnableItemLinkageMove", ":/Icon/Icon/itemLinkageMove.svg", true, false);
-    actionItemGrouping = createAction("actionItemSetGroup", ":/Icon/Icon/item-set-group.svg");
-    actionItemUngroup  = createAction("actionItemCancelGroup", ":/Icon/Icon/item-cancel-group.svg");
+    actionWorkflowNew                   = createAction("actionNewWorkflow", ":/Icon/Icon/newWorkflow.svg");
+    actionWorkflowEnableItemLinkageMove = createAction("actionWorkflowEnableItemLinkageMove",
+                                                       ":/Icon/Icon/itemLinkageMove.svg",
+                                                       true,
+                                                       false);
+    actionItemGrouping                  = createAction("actionItemSetGroup", ":/Icon/Icon/item-set-group.svg");
+    actionItemUngroup                   = createAction("actionItemCancelGroup", ":/Icon/Icon/item-cancel-group.svg");
     // workflow下面的状态action都是checkable状态的
     actionGroupWorkflowStartEdit = new QActionGroup(this);
     actionGroupWorkflowStartEdit->setObjectName(QStringLiteral("actionGroupWorkflowStartEdit"));
     actionGroupWorkflowStartEdit->setExclusionPolicy(QActionGroup::ExclusionPolicy::ExclusiveOptional);  // 允许都不选中
-    actionWorkflowStartDrawRect = createAction("actionStartDrawRect", ":/Icon/Icon/drawRect.svg", true, false, actionGroupWorkflowStartEdit);
-    actionWorkflowStartDrawText = createAction("actionStartDrawText", ":/Icon/Icon/drawText.svg", true, false, actionGroupWorkflowStartEdit);
+    actionWorkflowStartDrawRect = createAction("actionStartDrawRect",
+                                               ":/Icon/Icon/drawRect.svg",
+                                               true,
+                                               false,
+                                               actionGroupWorkflowStartEdit);
+    actionWorkflowStartDrawText = createAction("actionStartDrawText",
+                                               ":/Icon/Icon/drawText.svg",
+                                               true,
+                                               false,
+                                               actionGroupWorkflowStartEdit);
     // workflow-背景图相关
     actionWorkflowAddBackgroundPixmap = createAction("actionAddBackgroundPixmap", ":/Icon/Icon/backgroundPixmap.svg");
     actionWorkflowLockBackgroundPixmap = createAction("actionLockBackgroundPixmap", ":/Icon/Icon/lock-bk.svg", true, false);
@@ -169,10 +194,10 @@ void DAAppActions::buildOtherActions()
 {
     actionGroupRibbonTheme = new QActionGroup(this);
     actionGroupRibbonTheme->setObjectName(QStringLiteral("actionGroupRibbonTheme"));
-    actionRibbonThemeOffice2013     = createAction("actionRibbonThemeOffice2013", true, true, actionGroupRibbonTheme);
-    actionRibbonThemeOffice2016Blue = createAction("actionRibbonThemeOffice2013", true, false, actionGroupRibbonTheme);
-    actionRibbonThemeOffice2021Blue = createAction("actionRibbonThemeOffice2013", true, false, actionGroupRibbonTheme);
-    actionRibbonThemeDark           = createAction("actionRibbonThemeOffice2013", true, false, actionGroupRibbonTheme);
+    actionRibbonThemeOffice2013 = createAction("actionRibbonThemeOffice2013", true, true, actionGroupRibbonTheme);
+    actionRibbonThemeOffice2016Blue = createAction("actionRibbonThemeOffice2016Blue", true, false, actionGroupRibbonTheme);
+    actionRibbonThemeOffice2021Blue = createAction("actionRibbonThemeOffice2021Blue", true, false, actionGroupRibbonTheme);
+    actionRibbonThemeDark = createAction("actionRibbonThemeDark", true, false, actionGroupRibbonTheme);
 }
 
 void DAAppActions::retranslateUi()
@@ -192,7 +217,8 @@ void DAAppActions::retranslateUi()
     actionAddFigure->setText(tr("Add \nFigure"));            // cn:添加\n绘图
     actionFigureResizeChart->setText(tr("Resize \nChart"));  // cn:绘图\n尺寸
     actionFigureNewXYAxis->setText(tr("New \nXY Axis"));     // cn:新建\n坐标系
-    actionChartAddCurve->setText(tr("Add \nCurve"));         // cn:曲线
+    actionChartAddCurve->setText(tr("Add \nCurve"));         // cn:折线图
+    actionChartAddScatter2D->setText(tr("Add \nScatter"));   // cn:散点图
 
     actionChartEnableGrid->setText(tr("Enable Grid"));                     // cn:网格
     actionChartEnableGridX->setText(tr("X Grid"));                         // cn:横向网格
@@ -236,7 +262,7 @@ void DAAppActions::retranslateUi()
     actionWorkflowNew->setText(tr("New \nWorkflow"));                    // cn:新建\n工作流
     actionWorkflowEnableItemLinkageMove->setText(tr("Linkage \nMove"));  // cn:联动
     actionWorkflowEnableItemLinkageMove->setToolTip(
-            tr("When moving elements, other elements linked to this element follow the movement"));  // cn:允许移动图元时，其它和此图元链接起来的图元跟随移动
+        tr("When moving elements, other elements linked to this element follow the movement"));  // cn:允许移动图元时，其它和此图元链接起来的图元跟随移动
     actionItemGrouping->setText(tr("grouping"));                   // cn:分组
     actionItemUngroup->setText(tr("ungroup"));                     // cn:取消分组
     actionWorkflowStartDrawRect->setText(tr("Draw \nRect"));       // cn:绘制\n矩形

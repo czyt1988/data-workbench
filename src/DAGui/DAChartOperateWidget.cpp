@@ -21,11 +21,11 @@ public:
     DAChartOperateWidgetPrivate(DAChartOperateWidget* p);
 
 public:
-    std::unique_ptr< DAFigureFactory > _figureFactory;
+    std::unique_ptr< DAFigureFactory > mFigureFactory;
 };
 DAChartOperateWidgetPrivate::DAChartOperateWidgetPrivate(DAChartOperateWidget* p) : q_ptr(p)
 {
-    _figureFactory = std::make_unique< DAFigureFactory >();
+    mFigureFactory = std::make_unique< DAFigureFactory >();
 }
 
 //===================================================
@@ -45,36 +45,41 @@ DAChartOperateWidget::~DAChartOperateWidget()
 }
 
 /**
- * @brief 安装FigureFactory，针对继承的DAFigureWidget需要安装新的工厂,DAChartOperateWidget负责工厂的销毁
+ * @brief 安装FigureFactory，DAChartOperateWidget负责工厂的销毁
+ *
+ * 工厂在createFigure中调用，在某些情况下，用户可以临时设置一个新工厂，生成一个特殊的figure，再设置回默认的工厂
+ * @sa takeFactory
  * @param factory
  */
 void DAChartOperateWidget::setupFigureFactory(DAFigureFactory* factory)
 {
-    d_ptr->_figureFactory.reset(factory);
+    d_ptr->mFigureFactory.reset(factory);
+}
+
+/**
+ * @brief 拿出之前的工厂
+ * @note 此函数调用后必须@ref setupFigureFactory 否则会异常
+ * @return
+ */
+DAFigureFactory* DAChartOperateWidget::takeFactory()
+{
+    return d_ptr->mFigureFactory.release();
 }
 
 /**
  * @brief 创建一个绘图
+ *
+ * @note 重载此函数，如果没有调用DAChartOperateWidget::createFigure，必须调用initFigureConnect(fig);来初始化创建的fig，同时也要发射信号figureCreated
  * @return
  */
 DAFigureWidget* DAChartOperateWidget::createFigure()
 {
     ++g_figure_cnt;
-    return createFigure(tr("figure-%1").arg(g_figure_cnt));
-}
-
-/**
- * @brief 创建一个绘图
- * @return
- */
-DAFigureWidget* DAChartOperateWidget::createFigure(const QString& title)
-{
-    DAFigureWidget* fig = d_ptr->_figureFactory->createFigure();
-    ui->tabWidget->addTab(fig, title);
-    //信号转发
-    connect(fig, &DAFigureWidget::chartAdded, this, &DAChartOperateWidget::chartAdded);
-    connect(fig, &DAFigureWidget::chartWillRemove, this, &DAChartOperateWidget::chartWillRemove);
-    connect(fig, &DAFigureWidget::currentChartChanged, this, &DAChartOperateWidget::currentChartChanged);
+    QString t           = tr("figure-%1").arg(g_figure_cnt);
+    DAFigureWidget* fig = d_ptr->mFigureFactory->createFigure();
+    fig->setWindowTitle(t);
+    ui->tabWidget->addTab(fig, t);
+    initFigureConnect(fig);
     emit figureCreated(fig);
     return fig;
 }
@@ -140,6 +145,21 @@ DAChartWidget* DAChartOperateWidget::gca() const
 }
 
 /**
+ * @brief 初始化figure的连接
+ *
+ * 这个函数用于重载createFigure函数时创建fig后绑定槽函数到DAChartOperateWidget用
+ * @param fig
+ */
+void DAChartOperateWidget::initFigureConnect(DAFigureWidget* fig)
+{
+    // 信号转发
+    connect(fig, &DAFigureWidget::chartAdded, this, &DAChartOperateWidget::chartAdded);
+    connect(fig, &DAFigureWidget::chartWillRemove, this, &DAChartOperateWidget::chartWillRemove);
+    connect(fig, &DAFigureWidget::currentChartChanged, this, &DAChartOperateWidget::currentChartChanged);
+    connect(fig, &DAFigureWidget::windowTitleChanged, this, &DAChartOperateWidget::onFigureTitleChanged);
+}
+
+/**
  * @brief tab窗口改变
  * @param index
  */
@@ -171,6 +191,21 @@ void DAChartOperateWidget::onTabCloseRequested(int index)
     }
     ui->tabWidget->removeTab(index);
     w->deleteLater();
+}
+
+/**
+ * @brief 绘图的标题改变槽函数
+ * @param t
+ */
+void DAChartOperateWidget::onFigureTitleChanged(const QString& t)
+{
+    DAFigureWidget* fig = qobject_cast< DAFigureWidget* >(sender());
+    if (fig) {
+        int i = getFigureIndex(fig);
+        if (i >= 0) {
+            ui->tabWidget->setTabText(i, t);
+        }
+    }
 }
 
 }  // end DA

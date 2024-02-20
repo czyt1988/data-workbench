@@ -9,4 +9,18 @@
 #define DAFIGURE_API Q_DECL_IMPORT
 #endif
 
+namespace DA
+{
+/**
+ * @brief 图表类型
+ */
+enum class ChartTypes
+{
+    Curve,    ///< 曲线
+    Scatter,  ///< 散点
+    Unknow = 1000
+};
+
+}
+
 #endif  // DAFIGUREAPI_H
