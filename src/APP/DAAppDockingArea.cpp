@@ -243,22 +243,17 @@ void DAAppDockingArea::buildDockingArea()
     auto wfoa = createCenterDockWidget(mWorkFlowOperateWidget, QStringLiteral("da_workFlowOperateWidgetDock"));
     mWorkFlowOperateDock = wfoa.first;
     mWorkFlowOperateDock->setIcon(QIcon(":/Icon/Icon/showWorkFlow.svg"));
-    mWorkFlowOperateDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
-
-    // auto wfoa = createDockWidgetAsTab(mWorkFlowOperateWidget, QStringLiteral("da_workFlowOperateWidgetDock"),
-    // center.second); mWorkFlowOperateDock = wfoa.first;
-    // mWorkFlowOperateDock->setIcon(QIcon(":/Icon/Icon/showWorkFlow.svg"));
     // mWorkFlowOperateDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
 
     auto wcoa = createDockWidgetAsTab(mChartOperateWidget, QStringLiteral("da_chartOperateWidgetDock"), wfoa.second);
     mChartOperateDock = wcoa.first;
     mChartOperateDock->setIcon(QIcon(":/Icon/Icon/showChart.svg"));
-    mChartOperateDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
+    // mChartOperateDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
 
     auto wdoa = createDockWidgetAsTab(mDataOperateWidget, QStringLiteral("da_dataOperateWidgetDock"), wfoa.second);
     mDataOperateDock = wdoa.first;
     mDataOperateDock->setIcon(QIcon(":/Icon/Icon/showTable.svg"));
-    mDataOperateDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
+    // mDataOperateDock->setFeature(ads::CDockWidget::DockWidgetClosable, true);
     mDataOperateDock->raise();
 
     // 左侧管理区 - 工作流节点窗口

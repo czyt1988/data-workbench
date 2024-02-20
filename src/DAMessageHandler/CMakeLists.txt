@@ -96,9 +96,3 @@ install(FILES
     DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}
     COMPONENT headers
 )
-#DAGlobal.h
-install(FILES
-    ${DA_GLOBAL_HEADER}
-    DESTINATION include/${DA_PROJECT_NAME}
-    COMPONENT headers
-)

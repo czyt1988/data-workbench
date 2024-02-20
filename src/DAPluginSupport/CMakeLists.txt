@@ -94,9 +94,4 @@ install(FILES
     COMPONENT headers
 )
 
-#DAGlobal.h
-install(FILES
-    ${DA_GLOBAL_HEADER}
-    DESTINATION include/${DA_PROJECT_NAME}
-    COMPONENT headers
-)
+

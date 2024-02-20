@@ -225,8 +225,10 @@ private slots:
     //===================================================
     // 显示工作流区域
     void onActionShowWorkFlowAreaTriggered();
+    void onActionShowWorkFlowManagerAreaTriggered();
     // 显示绘图区域
     void onActionShowChartAreaTriggered();
+    void onActionShowChartManagerAreaTriggered();
     // 显示数据区域
     void onActionShowDataAreaTriggered();
     // 显示信息区域

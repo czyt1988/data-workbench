@@ -21,7 +21,7 @@
 
 但是`cmake`的缺点也是复杂，文档生涩，语法奇葩，说到底`cmake`就是一种高级别的宏
 
-下面根据我的经验，介绍一下如何通过`cmake`组织和构建一个大型的工程，适合大型工业软件的构建，构建出来的软件能给第三方用户方便的进行二次开发，同时，结合 `git` 的 `submodel` 管理第三方库，让整个工程变得更为简洁明了
+下面根据我的经验，介绍一下如何通过`cmake`组织和构建一个大型的工程，适合大型工业软件的构建，构建出来的软件能给第三方用户方便的进行二次开发，同时，结合 `git` 的 `submodule` 管理第三方库，让整个工程变得更为简洁明了
 
 # 工程的目录结构
 
@@ -515,7 +515,7 @@ ${TOP_PROJECT_NAME}是顶层CMakeLists文件的project名称，按实际工程�
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
     "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
-    VERSION ${DA_VERSION}
+    VERSION ${PROJECT_VERSION}
     COMPATIBILITY AnyNewerVersion
 )
 configure_package_config_file(
@@ -575,12 +575,42 @@ install(FILES
 └─DAWorkbenchConfig.cmake.in(用于生成总包的Config.cmake文件)
 ```
 
-1. 第三方库
+1. 指定统一的安装目录
 
-如前文所述，第三方库都在`src/3rdparty`下面，首先需要的是对第三方库的编译，`3rdparty`有个`CMakeLists.txt`文件夹用于编译安装所有第三方库，个人习惯不把`3rdparty`下的`CMakeLists.txt`纳入工程的`subdirectory`中
+这一步可以使得第三方库和工程安装的位置一致，对于linux有比较规范的安装路径，但windows不一样，默认是在`C:\Program Files\xxx`这样的位置，没有统一放lib的地方，因此，windows下，个人习惯指定工程的自身目录下建立一个安装目录，以bin_{Debug/Release}_{x32/x64}的方式命名，如果有`Qt`，还会加上`Qt`的版本以作区分，如下所示：
 
+```cmake
+# 获取qt版本
+find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
+# 平台判断
+if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "4")
+    set(my_platform_name "x86")
+else()
+    set(my_platform_name "x64")
+endif()
+# 生成安装目录名称
+set(my_install_dir_name bin_qt${QT_VERSION}_${CMAKE_BUILD_TYPE}_${my_platform_name})
+# 设置固定的安装目录路径，具体位置具体设置，这里设置为当前cmake文件所在目录
+set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/${my_install_dir_name}")
+```
 
+2. 第三方库
+
+如前文所述，第三方库都在`src/3rdparty`下面，首先需要的是对第三方库的编译，`3rdparty`有个`CMakeLists.txt`文件夹用于编译安装所有第三方库，个人习惯不把`3rdparty`下的`CMakeLists.txt`纳入顶层工程的`subdirectory`中，因为不保证所有第三方库的cmake写的都正常，第三方库的`CMakeLists.txt`指定了`CMAKE_INSTALL_PREFIX`和顶层工程一致，确保安装路径一致
+
+3. 组织顶层工程
+
+顶层工程`CMakeLists`主要负责做以下事情：
+
+- 定义`option`
+- 定义工程名称
+- 做全局的编译设置，如c++版本要求，编译环境的POSTFIX设置
+- 通过`add_subdirectory`完成整个工程的组织
+- 工程模块化的安装（见[多模块的install写法](#多模块的install写法)）
+- 工程的完整安装
 
 # 第三方用户引入的方式
 
-对于第三方插件开发者来说，只需要知道你工程的安装的路径即可方便的引入你的开发环境，因为你的工程已经和第三方库安装在同一个目录下，这时候他只需要知道这一个路径就可以把你的工程以及其他的第三方库都引入，当然，为了让第三方开发者更好地使用你的库，你最好把第三方库的引入封装成宏，以方便第三方开发者的引入
+对于第三方插件开发者来说，首先需要clone你的工程，并进行编译，先编译第三方库，并进行安装（install），再编译工程，并进行安装（install）,这时候，第三方开发者就可以有一个完整的开发环境了
+
+![完整开发环境2](./PIC/cmake-after-install2.png)

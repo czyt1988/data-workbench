@@ -152,7 +152,18 @@ configure_file (
   "${CMAKE_CURRENT_LIST_DIR}/src/DAConfigs.h.in"
   "${CMAKE_CURRENT_LIST_DIR}/src/DAConfigs.h"
 )
-
+#DAGlobal.h
+install(FILES
+    ${CMAKE_CURRENT_LIST_DIR}/src/DAGlobals.h
+    DESTINATION include/${DA_PROJECT_NAME}
+    COMPONENT headers
+)
+#DAConfigs.h
+install(FILES
+        ${CMAKE_CURRENT_LIST_DIR}/src/DAConfigs.h
+        DESTINATION include/${DA_PROJECT_NAME}
+        COMPONENT headers
+ )
 ########################################################
 # 添加预定义宏NOMINMAX,windows系统会定义max和min宏，这个宏和std::max冲突
 ########################################################

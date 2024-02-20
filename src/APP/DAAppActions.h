@@ -124,8 +124,10 @@ public:
     //===================================================
     // 视图标签 View Category
     //===================================================
-    QAction* actionShowWorkFlowArea;  ///< 显示工作流区域
+    QAction* actionShowWorkFlowArea;         ///< 显示工作流区域
+    QAction* actionShowWorkFlowManagerArea;  ///< 显示工作流管理区域
     QAction* actionShowChartArea;
+    QAction* actionShowChartManagerArea;  ///< 显示绘图管理区域
     QAction* actionShowDataArea;
     QAction* actionShowMessageLogView;
     QAction* actionShowSettingWidget;

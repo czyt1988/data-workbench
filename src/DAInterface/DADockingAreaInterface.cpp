@@ -17,7 +17,6 @@ public:
 public:
     DAUIInterface* mUiInterface { nullptr };
     ads::CDockManager* mDockManager { nullptr };
-    QMap< QWidget*, ads::CDockWidget* > mWidgetToDockWidget;
 };
 
 //===================================================
@@ -60,23 +59,33 @@ const ads::CDockManager* DADockingAreaInterface::dockManager() const
 
 ads::CDockWidget* DADockingAreaInterface::findDockWidget(QWidget* w) const
 {
-    return d_ptr->mWidgetToDockWidget.value(w, nullptr);
+    const auto allDockWidgets = d_ptr->mDockManager->dockWidgetsMap();
+    for (auto i = allDockWidgets.begin(); i != allDockWidgets.end(); ++i) {
+        if (i.value()->widget() == w) {
+            return i.value();
+        }
+    }
+    return nullptr;
 }
 
 /**
  * @brief 隐藏某个窗体对应的dockwidget
  * @param w 传入dock内部维护的widget或dockwidget都可以
  */
-void DADockingAreaInterface::hideDockWidget(QWidget* w)
+void DADockingAreaInterface::hideDockWidget(QWidget* w, bool fource)
 {
     ads::CDockWidget* d = findDockWidget(w);
     if (d) {
-        d->closeDockWidget();
+        d->toggleView(false);
+        d->hide();
         qDebug().noquote() << tr("dock widget \"%1\" was closed and hide").arg(d->windowTitle());  // cn:停靠窗口“%1”隐藏并关闭
     } else {
         d = qobject_cast< ads::CDockWidget* >(w);
         if (d) {
-            d->closeDockWidget();
+            d->toggleView(false);
+            d->hide();
+        } else {
+            qDebug().noquote() << tr("can not find widget or dock widget ");  // cn:无法找到需要隐藏的dock 窗口
         }
     }
 }
@@ -114,12 +123,12 @@ DAWorkFlowGraphicsScene* DADockingAreaInterface::getCurrentScene() const
  * @param widgetName
  * @return
  */
-QPair< ads::CDockWidget*, ads::CDockAreaWidget* > DADockingAreaInterface::createCenterDockWidget(QWidget* w, const QString& widgetName)
+QPair< ads::CDockWidget*, ads::CDockAreaWidget* > DADockingAreaInterface::createCenterDockWidget(QWidget* w,
+                                                                                                 const QString& widgetName)
 {
     ads::CDockWidget* dockWidget = new ads::CDockWidget(widgetName);
     dockWidget->setWidget(w);
     ads::CDockAreaWidget* areaWidget = d_ptr->mDockManager->setCentralWidget(dockWidget);
-    d_ptr->mWidgetToDockWidget[ w ]  = dockWidget;
     return qMakePair(dockWidget, areaWidget);
 }
 
@@ -139,7 +148,6 @@ QPair< ads::CDockWidget*, ads::CDockAreaWidget* > DADockingAreaInterface::create
     ads::CDockWidget* dockWidget = new ads::CDockWidget(widgetName);
     dockWidget->setWidget(w);
     ads::CDockAreaWidget* areaWidget = d_ptr->mDockManager->addDockWidget(area, dockWidget, dockAreaWidget);
-    d_ptr->mWidgetToDockWidget[ w ]  = dockWidget;
     return qMakePair(dockWidget, areaWidget);
 }
 
@@ -152,7 +160,6 @@ QPair< ads::CDockWidget*, ads::CDockAreaWidget* > DADockingAreaInterface::create
     dockWidget->setFeatures(ads::CDockWidget::DefaultDockWidgetFeatures);
     dockWidget->setMinimumSizeHintMode(ads::CDockWidget::MinimumSizeHintFromDockWidget);
     ads::CDockAreaWidget* areaWidget = d_ptr->mDockManager->addDockWidgetTabToArea(dockWidget, dockAreaWidget);
-    d_ptr->mWidgetToDockWidget[ w ]  = dockWidget;
     return qMakePair(dockWidget, areaWidget);
 }
 }  // namespace DA

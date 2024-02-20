@@ -142,11 +142,13 @@ void DAAppActions::buildChartAction()
 void DAAppActions::buildViewAction()
 {
     // View Category
-    actionShowWorkFlowArea   = createAction("actionShowWorkFlowArea", ":/Icon/Icon/showWorkFlow.svg");
-    actionShowChartArea      = createAction("actionShowChartArea", ":/Icon/Icon/showChart.svg");
-    actionShowDataArea       = createAction("actionShowDataArea", ":/Icon/Icon/showTable.svg");
-    actionShowMessageLogView = createAction("actionShowMessageLogView", ":/Icon/Icon/showInfomation.svg");
-    actionShowSettingWidget  = createAction("actionShowSettingWidget", ":/Icon/Icon/showSettingWidget.svg");
+    actionShowWorkFlowArea        = createAction("actionShowWorkFlowArea", ":/Icon/Icon/showWorkFlow.svg");
+    actionShowWorkFlowManagerArea = createAction("actionShowWorkFlowManagerArea");
+    actionShowChartArea           = createAction("actionShowChartArea", ":/Icon/Icon/showChart.svg");
+    actionShowChartManagerArea    = createAction("actionShowChartManagerArea");
+    actionShowDataArea            = createAction("actionShowDataArea", ":/Icon/Icon/showTable.svg");
+    actionShowMessageLogView      = createAction("actionShowMessageLogView", ":/Icon/Icon/showInfomation.svg");
+    actionShowSettingWidget       = createAction("actionShowSettingWidget", ":/Icon/Icon/showSettingWidget.svg");
 }
 
 void DAAppActions::buildWorkflowAction()
@@ -278,11 +280,13 @@ void DAAppActions::retranslateUi()
     actionWorkflowLockBackgroundPixmap->setText(tr("Lock Background"));               // cn:锁定背景
     actionWorkflowEnableItemMoveWithBackground->setText(tr("Move With Background"));  // cn:元件随背景移动
     // View Category
-    actionShowWorkFlowArea->setText(tr("Show \nWork Flow Area"));     // cn:工作流\n区域
-    actionShowChartArea->setText(tr("Show \nChart Area"));            // cn:绘图\n区域
-    actionShowDataArea->setText(tr("Show \nTable Area"));             // cn:表格\n区域
-    actionShowMessageLogView->setText(tr("Show Infomation Window"));  // cn:信息窗口
-    actionShowSettingWidget->setText(tr("Show Setting Window"));      // cn:设置窗口
+    actionShowWorkFlowArea->setText(tr("Show \nWorkflow Area"));            // cn:工作流\n区域
+    actionShowWorkFlowManagerArea->setText(tr("Show \nWorkflow Manager"));  // cn:工作流\n管理
+    actionShowChartArea->setText(tr("Show \nChart Area"));                  // cn:绘图\n区域
+    actionShowChartManagerArea->setText(tr("Show \nChart Manager"));        // cn:绘图\n管理
+    actionShowDataArea->setText(tr("Show \nTable Area"));                   // cn:表格\n区域
+    actionShowMessageLogView->setText(tr("Show Infomation Window"));        // cn:信息窗口
+    actionShowSettingWidget->setText(tr("Show Setting Window"));            // cn:设置窗口
     // Config Category
     actionPluginManager->setText(tr("Plugin \nConfig"));  // cn:插件\n设置
     // Other
