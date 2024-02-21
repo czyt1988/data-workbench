@@ -363,6 +363,7 @@ void DAAppRibbonArea::buildRibbonViewCategory()
     m_pannelViewMainView->addLargeAction(m_actions->actionShowChartArea);
     m_pannelViewMainView->addMediumAction(m_actions->actionShowChartManagerArea);
     m_pannelViewMainView->addLargeAction(m_actions->actionShowDataArea);
+    m_pannelViewMainView->addMediumAction(m_actions->actionShowDataManagerArea);
     m_pannelViewMainView->addSeparator();
     m_pannelViewMainView->addSmallAction(m_actions->actionShowMessageLogView);
     m_pannelViewMainView->addSmallAction(m_actions->actionShowSettingWidget);

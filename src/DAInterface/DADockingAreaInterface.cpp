@@ -1,10 +1,14 @@
 ﻿#include "DADockingAreaInterface.h"
-#include "DAUIInterface.h"
-#include "SARibbonMainWindow.h"
-// Qt-Advanced-Docking-System
-#include "DockManager.h"
 #include <QMap>
 #include <QDebug>
+// DA
+#include "DAUIInterface.h"
+// Qt-Advanced-Docking-System
+#include "DockManager.h"
+// SARibbon
+//  这个头文件需要存在，ui()->mainWindow()获取的窗口需要这个头文件，不要移除
+#include "SARibbonMainWindow.h"
+
 namespace DA
 {
 class DADockingAreaInterface::PrivateData
@@ -59,6 +63,9 @@ const ads::CDockManager* DADockingAreaInterface::dockManager() const
 
 ads::CDockWidget* DADockingAreaInterface::findDockWidget(QWidget* w) const
 {
+    if (nullptr == w) {
+        return nullptr;
+    }
     const auto allDockWidgets = d_ptr->mDockManager->dockWidgetsMap();
     for (auto i = allDockWidgets.begin(); i != allDockWidgets.end(); ++i) {
         if (i.value()->widget() == w) {
@@ -68,32 +75,22 @@ ads::CDockWidget* DADockingAreaInterface::findDockWidget(QWidget* w) const
     return nullptr;
 }
 
-/**
- * @brief 隐藏某个窗体对应的dockwidget
- * @param w 传入dock内部维护的widget或dockwidget都可以
- */
-void DADockingAreaInterface::hideDockWidget(QWidget* w, bool fource)
+void DADockingAreaInterface::hideDockWidget(QWidget* w)
 {
     ads::CDockWidget* d = findDockWidget(w);
     if (d) {
         d->toggleView(false);
-        d->hide();
         qDebug().noquote() << tr("dock widget \"%1\" was closed and hide").arg(d->windowTitle());  // cn:停靠窗口“%1”隐藏并关闭
     } else {
         d = qobject_cast< ads::CDockWidget* >(w);
         if (d) {
             d->toggleView(false);
-            d->hide();
         } else {
             qDebug().noquote() << tr("can not find widget or dock widget ");  // cn:无法找到需要隐藏的dock 窗口
         }
     }
 }
 
-/**
- * @brief 唤起一个widget对应的dock widget，如果窗口关闭了，也会唤起
- * @param w
- */
 void DADockingAreaInterface::raiseDockByWidget(QWidget* w)
 {
     if (ads::CDockWidget* dw = findDockWidget(w)) {
@@ -123,43 +120,34 @@ DAWorkFlowGraphicsScene* DADockingAreaInterface::getCurrentScene() const
  * @param widgetName
  * @return
  */
-QPair< ads::CDockWidget*, ads::CDockAreaWidget* > DADockingAreaInterface::createCenterDockWidget(QWidget* w,
-                                                                                                 const QString& widgetName)
+ads::CDockWidget* DADockingAreaInterface::createCenterDockWidget(QWidget* w, const QString& widgetName)
 {
     ads::CDockWidget* dockWidget = new ads::CDockWidget(widgetName);
     dockWidget->setWidget(w);
-    ads::CDockAreaWidget* areaWidget = d_ptr->mDockManager->setCentralWidget(dockWidget);
-    return qMakePair(dockWidget, areaWidget);
+    d_ptr->mDockManager->setCentralWidget(dockWidget);
+    return dockWidget;
 }
 
-/**
- * @brief 创建一个dock窗体
- * @param w
- * @param area
- * @param widgetName 注意，这里的是作为title同时作为objectname,但多语言应该单独设置title，因此在构造之后必须在设置单独的objname
- * @param dockAreaWidget
- * @return
- */
-QPair< ads::CDockWidget*, ads::CDockAreaWidget* > DADockingAreaInterface::createDockWidget(QWidget* w,
-                                                                                           ads::DockWidgetArea area,
-                                                                                           const QString& widgetName,
-                                                                                           ads::CDockAreaWidget* dockAreaWidget)
+ads::CDockWidget* DADockingAreaInterface::createDockWidget(QWidget* w,
+                                                           ads::DockWidgetArea area,
+                                                           const QString& widgetName,
+                                                           ads::CDockAreaWidget* dockAreaWidget)
 {
     ads::CDockWidget* dockWidget = new ads::CDockWidget(widgetName);
     dockWidget->setWidget(w);
-    ads::CDockAreaWidget* areaWidget = d_ptr->mDockManager->addDockWidget(area, dockWidget, dockAreaWidget);
-    return qMakePair(dockWidget, areaWidget);
+    d_ptr->mDockManager->addDockWidget(area, dockWidget, dockAreaWidget);
+    return dockWidget;
 }
 
-QPair< ads::CDockWidget*, ads::CDockAreaWidget* > DADockingAreaInterface::createDockWidgetAsTab(QWidget* w,
-                                                                                                const QString& widgetName,
-                                                                                                ads::CDockAreaWidget* dockAreaWidget)
+ads::CDockWidget* DADockingAreaInterface::createDockWidgetAsTab(QWidget* w,
+                                                                const QString& widgetName,
+                                                                ads::CDockAreaWidget* dockAreaWidget)
 {
     ads::CDockWidget* dockWidget = new ads::CDockWidget(widgetName);
     dockWidget->setWidget(w);
     dockWidget->setFeatures(ads::CDockWidget::DefaultDockWidgetFeatures);
     dockWidget->setMinimumSizeHintMode(ads::CDockWidget::MinimumSizeHintFromDockWidget);
-    ads::CDockAreaWidget* areaWidget = d_ptr->mDockManager->addDockWidgetTabToArea(dockWidget, dockAreaWidget);
-    return qMakePair(dockWidget, areaWidget);
+    d_ptr->mDockManager->addDockWidgetTabToArea(dockWidget, dockAreaWidget);
+    return dockWidget;
 }
 }  // namespace DA

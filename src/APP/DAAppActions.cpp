@@ -147,6 +147,7 @@ void DAAppActions::buildViewAction()
     actionShowChartArea           = createAction("actionShowChartArea", ":/Icon/Icon/showChart.svg");
     actionShowChartManagerArea    = createAction("actionShowChartManagerArea");
     actionShowDataArea            = createAction("actionShowDataArea", ":/Icon/Icon/showTable.svg");
+    actionShowDataManagerArea     = createAction("actionShowDataManagerArea");
     actionShowMessageLogView      = createAction("actionShowMessageLogView", ":/Icon/Icon/showInfomation.svg");
     actionShowSettingWidget       = createAction("actionShowSettingWidget", ":/Icon/Icon/showSettingWidget.svg");
 }
@@ -285,6 +286,7 @@ void DAAppActions::retranslateUi()
     actionShowChartArea->setText(tr("Show \nChart Area"));                  // cn:绘图\n区域
     actionShowChartManagerArea->setText(tr("Show \nChart Manager"));        // cn:绘图\n管理
     actionShowDataArea->setText(tr("Show \nTable Area"));                   // cn:表格\n区域
+    actionShowDataManagerArea->setText(tr("Show \nData Manager"));          // cn:数据\n管理
     actionShowMessageLogView->setText(tr("Show Infomation Window"));        // cn:信息窗口
     actionShowSettingWidget->setText(tr("Show Setting Window"));            // cn:设置窗口
     // Config Category

@@ -101,6 +101,54 @@ public:
     // 判断是否处于焦点
     bool isDockingAreaFocused(DockingArea area) const;
 
+    /**
+     * @brief 工作流节点dock
+     * @return
+     */
+    ads::CDockWidget* getWorkflowNodeListDock() const;
+
+    /**
+     * @brief 信息窗口dock
+     * @return
+     */
+    ads::CDockWidget* getMessageLogDock() const;
+
+    /**
+     * @brief 设置窗口dock
+     * @return
+     */
+    ads::CDockWidget* getSettingContainerDock() const;
+
+    /**
+     * @brief 数据操作窗口dock
+     * @return
+     */
+    ads::CDockWidget* getDataOperateDock() const;
+
+    /**
+     * @brief 绘图操作窗口dock
+     * @return
+     */
+    ads::CDockWidget* getChartOperateDock() const;
+
+    /**
+     * @brief 工作流操作窗口dock
+     * @return
+     */
+    ads::CDockWidget* getWorkFlowOperateDock() const;
+
+    /**
+     * @brief 数据管理窗口dock
+     * @return
+     */
+    ads::CDockWidget* getDataManageDock() const;
+
+    /**
+     * @brief 图表管理窗口dock
+     * @return
+     */
+    ads::CDockWidget* getChartManageDock() const;
+
 public slots:
     // 显示数据
     void showDataOperateWidget(const DA::DAData& data);
@@ -116,8 +164,6 @@ private:
     // 初始化信号槽
     void initConnection();
 private slots:
-    //
-    void onSelectNodeItemChanged(DA::DAAbstractNodeGraphicsItem* i);
     void onDataManageWidgetDataDbClicked(const DA::DAData& data);
     // workflow窗口创建信号对应槽
     void onWorkFlowOperateWidgetWorkflowCreated(DA::DAWorkFlowEditWidget* wfw);

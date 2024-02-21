@@ -231,6 +231,7 @@ private slots:
     void onActionShowChartManagerAreaTriggered();
     // 显示数据区域
     void onActionShowDataAreaTriggered();
+    void onActionShowDataManagerAreaTriggered();
     // 显示信息区域
     void onActionShowMessageLogViewTriggered();
     // 显示设置区域

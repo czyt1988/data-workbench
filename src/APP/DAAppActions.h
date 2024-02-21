@@ -129,6 +129,7 @@ public:
     QAction* actionShowChartArea;
     QAction* actionShowChartManagerArea;  ///< 显示绘图管理区域
     QAction* actionShowDataArea;
+    QAction* actionShowDataManagerArea;  ///< 显示数据管理区域
     QAction* actionShowMessageLogView;
     QAction* actionShowSettingWidget;
     //===================================================

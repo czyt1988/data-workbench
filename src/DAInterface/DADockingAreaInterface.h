@@ -44,24 +44,40 @@ public:
     const ads::CDockManager* dockManager() const;
 
     // 创建中央dock窗体
-    QPair< ads::CDockWidget*, ads::CDockAreaWidget* > createCenterDockWidget(QWidget* w, const QString& widgetName);
+    ads::CDockWidget* createCenterDockWidget(QWidget* w, const QString& widgetName);
 
-    // 创建dock窗体
-    QPair< ads::CDockWidget*, ads::CDockAreaWidget* > createDockWidget(QWidget* w,
-                                                                       ads::DockWidgetArea area,
-                                                                       const QString& widgetName,
-                                                                       ads::CDockAreaWidget* dockAreaWidget = nullptr);
-    QPair< ads::CDockWidget*, ads::CDockAreaWidget* > createDockWidgetAsTab(QWidget* w,
-                                                                            const QString& widgetName,
-                                                                            ads::CDockAreaWidget* dockAreaWidget);
+    /**
+     * @brief 创建一个dock窗体
+     * @param w
+     * @param area
+     * @param widgetName 注意，这里的是作为title同时作为objectname,但多语言应该单独设置title，因此在构造之后必须在设置单独的objname
+     * @param dockAreaWidget
+     * @return
+     */
+    ads::CDockWidget* createDockWidget(QWidget* w,
+                                       ads::DockWidgetArea area,
+                                       const QString& widgetName,
+                                       ads::CDockAreaWidget* dockAreaWidget = nullptr);
+    ads::CDockWidget* createDockWidgetAsTab(QWidget* w, const QString& widgetName, ads::CDockAreaWidget* dockAreaWidget);
 
-    // 通过窗口查找对应的CDockWidget
+    /**
+     * @brief 通过窗口查找对应的CDockWidget
+     * @note 注意此函数是O(n)复杂度
+     * @param w 要查询的窗口
+     * @return 如果没找到，返回nullptr
+     */
     ads::CDockWidget* findDockWidget(QWidget* w) const;
 
-    // 隐藏窗口对应的dockwidget
-    void hideDockWidget(QWidget* w, bool fource = false);
+    /**
+     * @brief 隐藏某个窗体对应的dockwidget
+     * @param w 传入dock内部维护的widget或dockwidget都可以
+     */
+    void hideDockWidget(QWidget* w);
 
-    // 让某个窗口显示出来
+    /**
+     * @brief 唤起一个widget对应的dock widget，如果窗口关闭了，也会唤起
+     * @param w
+     */
     void raiseDockByWidget(QWidget* w);
 
 public:

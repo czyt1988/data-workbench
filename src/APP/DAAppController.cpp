@@ -174,6 +174,18 @@ AppMainWindow* DAAppController::app() const
  */
 void DAAppController::initialize()
 {
+    mDock->getChartOperateDock()->setToggleViewActionMode(ads::CDockWidget::ActionModeShow);
+    mDock->getChartOperateDock()->setToggleViewAction(mActions->actionShowChartArea);
+    mDock->getChartManageDock()->setToggleViewActionMode(ads::CDockWidget::ActionModeShow);
+    mDock->getChartManageDock()->setToggleViewAction(mActions->actionShowChartManagerArea);
+    mDock->getWorkFlowOperateDock()->setToggleViewActionMode(ads::CDockWidget::ActionModeShow);
+    mDock->getWorkFlowOperateDock()->setToggleViewAction(mActions->actionShowWorkFlowArea);
+    mDock->getWorkflowNodeListDock()->setToggleViewActionMode(ads::CDockWidget::ActionModeShow);
+    mDock->getWorkflowNodeListDock()->setToggleViewAction(mActions->actionShowWorkFlowManagerArea);
+    mDock->getDataOperateDock()->setToggleViewActionMode(ads::CDockWidget::ActionModeShow);
+    mDock->getDataOperateDock()->setToggleViewAction(mActions->actionShowDataArea);
+    mDock->getDataManageDock()->setToggleViewActionMode(ads::CDockWidget::ActionModeShow);
+    mDock->getDataManageDock()->setToggleViewAction(mActions->actionShowDataManagerArea);
     initConnection();
 #if DA_ENABLE_PYTHON
     initScripts();
@@ -384,6 +396,7 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowChartArea, onActionShowChartAreaTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowChartManagerArea, onActionShowChartManagerAreaTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowDataArea, onActionShowDataAreaTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowDataManagerArea, onActionShowDataManagerAreaTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowMessageLogView, onActionShowMessageLogViewTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowSettingWidget, onActionSettingWidgetTriggered);
 
@@ -1660,6 +1673,14 @@ void DAAppController::onActionShowChartManagerAreaTriggered()
 void DAAppController::onActionShowDataAreaTriggered()
 {
     mDock->raiseDockByWidget((QWidget*)(mDock->getDataOperateWidget()));
+}
+
+/**
+ * @brief 显示数据管理区域
+ */
+void DAAppController::onActionShowDataManagerAreaTriggered()
+{
+    mDock->raiseDockByWidget((QWidget*)(mDock->getDataManageWidget()));
 }
 
 /**
