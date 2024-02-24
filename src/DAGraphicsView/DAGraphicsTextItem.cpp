@@ -1,4 +1,4 @@
-#include "DAGraphicsTextItem.h"
+﻿#include "DAGraphicsTextItem.h"
 #include <QDebug>
 #include <QFont>
 #include <QPainter>
@@ -7,6 +7,7 @@
 #include "DAGraphicsStandardTextItem.h"
 namespace DA
 {
+
 class DAGraphicsTextItem::PrivateData
 {
     DA_DECLARE_PUBLIC(DAGraphicsTextItem)
@@ -58,6 +59,10 @@ DAGraphicsTextItem::DAGraphicsTextItem(const QString& str, const QFont& f, QGrap
     setFocusProxy(d_ptr->mTextItem);
 }
 
+DAGraphicsTextItem::~DAGraphicsTextItem()
+{
+}
+
 void DAGraphicsTextItem::setEditMode(bool on)
 {
     d_ptr->mTextItem->setEditMode(on);
@@ -90,35 +95,103 @@ void DAGraphicsTextItem::setBodySize(const QSizeF& s)
     d_ptr->mTextItem->adjustSize();
 }
 
+/**
+ * @brief 设置文本
+ * @param v
+ */
 void DAGraphicsTextItem::setText(const QString& v)
 {
     d_ptr->mTextItem->setPlainText(v);
 }
 
+/**
+ * @brief 文本
+ * @return
+ */
 QString DAGraphicsTextItem::getText() const
 {
     return d_ptr->mTextItem->toPlainText();
 }
 
-void DAGraphicsTextItem::setRelativePosition(qreal xp, qreal yp, Qt::Corner parentCorner)
+/**
+ * @brief 设置相对父窗口的相对定位
+ * @param xp x位置相对父级item的宽度占比，如parentCorner=Qt::TopLeftCorner,xp=0.2
+ * 那么textitem的x定位设置为parentItem.boundingRect().topLeft().x() + parentItem.width() * xp
+ * @param yp y位置相对父级item的宽度占比，如parentCorner=Qt::TopLeftCorner,yp=0.1
+ * 那么textitem的y定位设置为parentItem.boundingRect().topLeft().y() + parentItem.width() * yp5
+ */
+void DAGraphicsTextItem::setRelativePosition(qreal xp, qreal yp)
 {
-    d_ptr->mRelativeX      = xp;
-    d_ptr->mRelativeY      = yp;
-    d_ptr->mRelativeCorner = parentCorner;
+    d_ptr->mRelativeX = xp;
+    d_ptr->mRelativeY = yp;
 }
 
+QPointF DAGraphicsTextItem::getRelativePosition() const
+{
+    return QPointF(d_ptr->mRelativeX, d_ptr->mRelativeY);
+}
+
+/**
+ * @brief 设置是否开启相对定位
+ * @note 相对定位需要有父级item，否则无效
+ * @param on
+ */
 void DAGraphicsTextItem::setEnableRelativePosition(bool on)
 {
     d_ptr->mEnableRelativePosition = on;
 }
 
+/**
+ * @brief 是否开启相对定位
+ * @return
+ */
 bool DAGraphicsTextItem::isEnableRelativePosition() const
 {
     return d_ptr->mEnableRelativePosition;
 }
 
+/**
+ * @brief 更新相对位置
+ */
 void DAGraphicsTextItem::updateRelativePosition()
 {
+    QGraphicsItem* pi = parentItem();
+    if (nullptr == pi) {
+        return;
+    }
+    QRectF br = pi->boundingRect();
+    QPointF p(br.width() * d_ptr->mRelativeX, br.height() * d_ptr->mRelativeY);
+    switch (d_ptr->mRelativeCorner) {
+    case Qt::TopLeftCorner:
+        p = br.topLeft() + p;
+        break;
+    case Qt::TopRightCorner:
+        p = br.topRight() + p;
+        break;
+    case Qt::BottomLeftCorner:
+        p = br.bottomLeft() + p;
+        break;
+    case Qt::BottomRightCorner:
+        p = br.bottomRight() + p;
+        break;
+    default:
+        break;
+    }
+    setPos(p);
+}
+
+void DAGraphicsTextItem::getRelativePositionCorner(Qt::Corner v)
+{
+    d_ptr->mRelativeCorner = v;
+}
+
+/**
+ * @brief 获取相对位置对应父级item的位置
+ * @return
+ */
+Qt::Corner DAGraphicsTextItem::getRelativePositionCorner() const
+{
+    return d_ptr->mRelativeCorner;
 }
 
 /**
@@ -130,7 +203,7 @@ void DAGraphicsTextItem::updateRelativePosition()
  */
 void DAGraphicsTextItem::paintBody(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget, const QRectF& bodyRect)
 {
-    DAGraphicsResizeableItem::paintBody(painter, option, widget, bodyRect);
+    // DAGraphicsResizeableItem::paintBody(painter, option, widget, bodyRect);
 }
 
 }  // end da

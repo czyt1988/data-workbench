@@ -67,7 +67,8 @@ bool DAGraphicsStandardTextItem::loadFromXml(const QDomElement* itemElement)
     }
     QPointF pos;
     uint64_t id;
-    if (getStringRealValue(textItemEle.attribute("x"), pos.rx()) && getStringRealValue(textItemEle.attribute("y"), pos.ry())) {
+    if (getStringRealValue(textItemEle.attribute("x"), pos.rx())
+        && getStringRealValue(textItemEle.attribute("y"), pos.ry())) {
         setScenePos(pos);
     }
     if (getStringULongLongValue(textItemEle.attribute("id"), id)) {

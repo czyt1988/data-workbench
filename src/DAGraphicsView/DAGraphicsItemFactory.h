@@ -1,8 +1,7 @@
-#ifndef DAGRAPHICSITEMFACTORY_H
+﻿#ifndef DAGRAPHICSITEMFACTORY_H
 #define DAGRAPHICSITEMFACTORY_H
 #include <QHash>
 #include "DAGraphicsViewGlobal.h"
-#include "DAGraphicsResizeableItem.h"
 #include <functional>
 #include "DAGraphicsItem.h"
 namespace DA
