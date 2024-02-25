@@ -1,4 +1,4 @@
-#ifndef DAGRAPHICSSTANDARDTEXTITEM_H
+﻿#ifndef DAGRAPHICSSTANDARDTEXTITEM_H
 #define DAGRAPHICSSTANDARDTEXTITEM_H
 
 #include <QFont>
@@ -28,7 +28,8 @@ public:
 
     DAGraphicsStandardTextItem(const QFont& f, QGraphicsItem* parent = nullptr);
     // 设置编辑模式
-    void setEditMode(bool on = true);
+    void enableEdit(bool on = true);
+    bool isEditable() const;
     // 保存到xml中
     virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement) const override;
     virtual bool loadFromXml(const QDomElement* itemElement) override;

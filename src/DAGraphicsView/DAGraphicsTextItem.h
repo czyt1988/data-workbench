@@ -45,13 +45,22 @@ public:
     // 文本
     void setText(const QString& v);
     QString getText() const;
+
     // 字体
     void setFont(const QFont& v);
     QFont getFont() const;
 
+    // 设置编辑模式
+    void enableEdit(bool on = true);
+    bool isEditable() const;
+
     // 设置是否开启相对定位
-    void setEnableRelativePosition(bool on);
+    void enableRelativePosition(bool on);
     bool isEnableRelativePosition() const;
+
+    // 自动调整大小
+    void enableAutoAdjustSize(bool on);
+    bool isAutoAdjustSize() const;
 
     // 设置相对父窗口的相对定位
     void setRelativePosition(qreal xp, qreal yp);

@@ -36,9 +36,18 @@ DAGraphicsStandardTextItem::DAGraphicsStandardTextItem(const QFont& f, QGraphics
  * @brief 设置编辑模式
  * @param on
  */
-void DAGraphicsStandardTextItem::setEditMode(bool on)
+void DAGraphicsStandardTextItem::enableEdit(bool on)
 {
     setTextInteractionFlags(on ? Qt::TextEditorInteraction : Qt::NoTextInteraction);
+}
+
+/**
+ * @brief 是否可编辑
+ * @return
+ */
+bool DAGraphicsStandardTextItem::isEditable() const
+{
+    return textInteractionFlags().testFlags(Qt::TextEditorInteraction);
 }
 
 bool DAGraphicsStandardTextItem::saveToXml(QDomDocument* doc, QDomElement* parentElement) const

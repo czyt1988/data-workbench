@@ -26,6 +26,7 @@ public:
     qreal mRelativeY { 0.0 };
     ShapeKeyPoint mParentAnchorPoint { ShapeKeyPoint::BottomCenter };
     ShapeKeyPoint mItemAnchorPoint { ShapeKeyPoint::TopCenter };
+    bool mAutoAdjustSize { true };
 };
 
 DAGraphicsTextItem::PrivateData::PrivateData(DAGraphicsTextItem* p) : q_ptr(p)
@@ -78,11 +79,16 @@ void DAGraphicsTextItem::init()
     setFocusProxy(d_ptr->mTextItem);
     enableResize(false);
     enableShowBorder(false);
+    enableEdit(false);
+    enableSelect(false);
+    enableMove(false);
+    enableEdit(false);
+    d_ptr->mTextItem->setFlag(ItemIsMovable, false);
 }
 
 void DAGraphicsTextItem::setEditMode(bool on)
 {
-    d_ptr->mTextItem->setEditMode(on);
+    d_ptr->mTextItem->enableEdit(on);
 }
 
 bool DAGraphicsTextItem::saveToXml(QDomDocument* doc, QDomElement* parentElement) const
@@ -106,10 +112,11 @@ DAGraphicsStandardTextItem* DAGraphicsTextItem::textItem() const
 void DAGraphicsTextItem::setBodySize(const QSizeF& s)
 {
     DAGraphicsResizeableItem::setBodySize(s);
-    QRectF br = boundingRect();
     d_ptr->mTextItem->setPos(0, 0);
-    d_ptr->mTextItem->setTextWidth(br.width());
-    d_ptr->mTextItem->adjustSize();
+    if (!isAutoAdjustSize()) {
+        d_ptr->mTextItem->setTextWidth(s.width());
+        d_ptr->mTextItem->adjustSize();
+    }
 }
 
 /**
@@ -118,6 +125,12 @@ void DAGraphicsTextItem::setBodySize(const QSizeF& s)
  */
 void DAGraphicsTextItem::setText(const QString& v)
 {
+    if (isAutoAdjustSize()) {
+        // 自动调整大小
+        if (d_ptr->mTextItem->textWidth() != -1) {
+            d_ptr->mTextItem->setTextWidth(-1);
+        }
+    }
     d_ptr->mTextItem->setPlainText(v);
     d_ptr->mTextItem->adjustSize();
     setBodySize(d_ptr->mTextItem->boundingRect().size());
@@ -152,11 +165,29 @@ QFont DAGraphicsTextItem::getFont() const
 }
 
 /**
+ * @brief 设置编辑模式
+ * @param on
+ */
+void DAGraphicsTextItem::enableEdit(bool on)
+{
+    d_ptr->mTextItem->enableEdit(on);
+}
+
+/**
+ * @brief 是否可编辑
+ * @return
+ */
+bool DAGraphicsTextItem::isEditable() const
+{
+    return d_ptr->mTextItem->isEditable();
+}
+
+/**
  * @brief 设置是否开启相对定位
  * @note 相对定位需要有父级item，否则无效
  * @param on
  */
-void DAGraphicsTextItem::setEnableRelativePosition(bool on)
+void DAGraphicsTextItem::enableRelativePosition(bool on)
 {
     d_ptr->mEnableRelativePosition = on;
     if (on) {
@@ -171,6 +202,24 @@ void DAGraphicsTextItem::setEnableRelativePosition(bool on)
 bool DAGraphicsTextItem::isEnableRelativePosition() const
 {
     return d_ptr->mEnableRelativePosition;
+}
+
+/**
+ * @brief 自动调整大小，如果设置为true，尺寸将随着文本而调整，此模式不应该和enableResize共存
+ * @param on
+ */
+void DAGraphicsTextItem::enableAutoAdjustSize(bool on)
+{
+    d_ptr->mAutoAdjustSize = on;
+}
+
+/**
+ * @brief 自动调整大小
+ * @return
+ */
+bool DAGraphicsTextItem::isAutoAdjustSize() const
+{
+    return d_ptr->mAutoAdjustSize;
 }
 
 /**
