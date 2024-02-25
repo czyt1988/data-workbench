@@ -33,6 +33,16 @@ public:
 
 /**
  * @brief 用于调整大小的item
+ *
+ * TODO:DAGraphicsResizeableItem改为DAGraphicsResizeOverlayItem
+ *
+ * @todo 这里作为一个item的基类会有以下问题：
+ *   - 1.调整尺寸的控制点会被上层的item覆盖
+ *   - 2.再嵌套的子item中，此方案需要考虑多样化
+ *   - 3.必须继承DAGraphicsResizeableItem
+ *  为了解决上述问题，需要把DAGraphicsResizeableItem作为一个mask或者叫Overlay（覆盖层），把DAGraphicsResizeableItem改为DAGraphicsResizeOverlayItem，
+ *  在用户需要进行尺寸变换时，由scene生成DAGraphicsResizeOverlayItem，附着在要变换的item上面，
+ *  在变换完成后向scene发送requestResize信号，由scene改变对应item的大小
  */
 class DAGRAPHICSVIEW_API DAGraphicsResizeableItem : public DAGraphicsItem
 {
@@ -132,11 +142,17 @@ public:
     // 绘制resize控制点
     virtual void paintResizeControlPoints(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget);
     // 绘制背景
-    virtual void paintBackground(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget, const QRectF& bodyRect);
+    virtual void paintBackground(QPainter* painter,
+                                 const QStyleOptionGraphicsItem* option,
+                                 QWidget* widget,
+                                 const QRectF& bodyRect);
     // 绘制边框
     virtual void paintBorder(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget, const QRectF& bodyRect);
     // 绘制具体内容
-    virtual void paintBody(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget, const QRectF& bodyRect) = 0;
+    virtual void paintBody(QPainter* painter,
+                           const QStyleOptionGraphicsItem* option,
+                           QWidget* widget,
+                           const QRectF& bodyRect) = 0;
     // 生成controlPoints
     virtual QRectF controlPointRect(ControlType tp, const QRectF& bodyRect) const;
     // 控制点的大小

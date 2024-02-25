@@ -30,6 +30,7 @@ public:
     DAGraphicsTextItem(const QFont& f, QGraphicsItem* parent = nullptr);
     DAGraphicsTextItem(const QString& str, const QFont& f, QGraphicsItem* parent = nullptr);
     ~DAGraphicsTextItem();
+
     // 设置编辑模式
     void setEditMode(bool on = true);
     // 保存到xml中
@@ -44,6 +45,9 @@ public:
     // 文本
     void setText(const QString& v);
     QString getText() const;
+    // 字体
+    void setFont(const QFont& v);
+    QFont getFont() const;
 
     // 设置是否开启相对定位
     void setEnableRelativePosition(bool on);
@@ -53,12 +57,14 @@ public:
     void setRelativePosition(qreal xp, qreal yp);
     QPointF getRelativePosition() const;
 
-    // 相对父级item的相对定位点
-    void getRelativePositionCorner(Qt::Corner v);
-    Qt::Corner getRelativePositionCorner() const;
+    // 设置对齐的锚点,RelativePosition=(0,0)，那么就是描点之间的对齐
+    void setRelativeAnchorPoint(ShapeKeyPoint kParentAnchorPoint, ShapeKeyPoint thisAnchorPoint);
+    ShapeKeyPoint getParentRelativeAnchorPoint() const;
+    ShapeKeyPoint getItemRelativeAnchorPoint() const;
 
     // 更新相对位置
     void updateRelativePosition();
+    void updateRelativePosition(const QRectF& parentRect, const QRectF& itemRect);
 
 protected:
     // 绘制具体内容
@@ -66,6 +72,9 @@ protected:
                            const QStyleOptionGraphicsItem* option,
                            QWidget* widget,
                            const QRectF& bodyRect) override;
+
+private:
+    void init();
 };
 }
 #endif  // DAGRAPHICSTEXTITEM_H

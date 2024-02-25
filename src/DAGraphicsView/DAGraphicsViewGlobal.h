@@ -35,6 +35,50 @@ enum class AspectDirection
 };
 
 /**
+ * @brief 定义一个形状的9个关键位置点
+ *
+ * @details
+ *
+ * ```
+ * 1---2---3
+ * |       |
+ * 4---5---6
+ * |       |
+ * 7---8---9
+ * ```
+ *
+ */
+enum class ShapeKeyPoint
+{
+    TopLeft = 0,
+    TopCenter,
+    TopRight,
+    CenterLeft,
+    Center,
+    CenterRight,
+    BottomLeft,
+    BottomCenter,
+    BottomRight,
+    None = 128
+};
+
+/**
+ * @brief QRect对应ShapeKeyPoint的点
+ * @param r
+ * @param kp 关键点
+ * @return
+ */
+QPoint rectShapeKeyPoint(const QRect& r, ShapeKeyPoint kp);
+
+/**
+ * @brief QRectF对应ShapeKeyPoint的点
+ * @param r
+ * @param kp 关键点
+ * @return
+ */
+QPointF rectShapeKeyPoint(const QRectF& r, ShapeKeyPoint kp);
+
+/**
  * @brief 定义了Graphics相关的command id，用于标记相同的redo/undo
  */
 enum DAGraphicsCommandIDType
