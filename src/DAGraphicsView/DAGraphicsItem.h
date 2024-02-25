@@ -40,13 +40,19 @@ public:
     void setBorderPen(const QPen& p);
     QPen getBorderPen() const;
     // 设置是否显示边框
-    void setShowBorder(bool on);
+    void enableShowBorder(bool on);
     bool isShowBorder() const;
+    // 允许选中
+    void enableSelect(bool on = true);
+    bool isSelectable() const;
+    // 是否允许移动
+    void enableMove(bool on = true);
+    bool isMovable() const;
     // 背景
     void setBackgroundBrush(const QBrush& b);
     QBrush getBackgroundBrush() const;
     // 设置是否显示背景
-    void setShowBackground(bool on);
+    void enableShowBackground(bool on);
     bool isShowBackground() const;
     // 分组位置发生改变的事件
     virtual void groupPositionChanged(const QPointF& p);

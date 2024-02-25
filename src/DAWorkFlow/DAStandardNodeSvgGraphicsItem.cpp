@@ -92,7 +92,7 @@ QSizeF DAStandardNodeSvgGraphicsItem::PrivateData::getAspectRatioSize(const QSiz
 DAStandardNodeSvgGraphicsItem::DAStandardNodeSvgGraphicsItem(DAAbstractNode* n, QGraphicsItem* p)
     : DAAbstractNodeGraphicsItem(n, p), DA_PIMPL_CONSTRUCT
 {
-    setEnableResize(true);
+    enableResize(true);
     setEnableMoveText(true);
     setText(n->getNodeName());
 }
@@ -100,7 +100,7 @@ DAStandardNodeSvgGraphicsItem::DAStandardNodeSvgGraphicsItem(DAAbstractNode* n, 
 DAStandardNodeSvgGraphicsItem::DAStandardNodeSvgGraphicsItem(DAAbstractNode* n, const QString& svgfile, QGraphicsItem* p)
     : DAAbstractNodeGraphicsItem(n, p), DA_PIMPL_CONSTRUCT
 {
-    setEnableResize(true);
+    enableResize(true);
     setEnableMoveText(true);
     setSvg(svgfile);
     d_ptr->updateSvgPaintRect();
@@ -111,7 +111,7 @@ DAStandardNodeSvgGraphicsItem::DAStandardNodeSvgGraphicsItem(DAAbstractNode* n, 
     : DAAbstractNodeGraphicsItem(n, p)
     , d_ptr(std::make_unique< DAStandardNodeSvgGraphicsItem::PrivateData >(this, sharedrender))
 {
-    setEnableResize(true);
+    enableResize(true);
     setEnableMoveText(true);
     d_ptr->updateSvgPaintRect();
     setText(n->getNodeName());

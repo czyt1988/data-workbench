@@ -76,8 +76,8 @@ void DAGraphicsTextItem::init()
     setAcceptDrops(true);
     setAcceptHoverEvents(true);
     setFocusProxy(d_ptr->mTextItem);
-    setEnableResize(false);
-    setShowBorder(false);
+    enableResize(false);
+    enableShowBorder(false);
 }
 
 void DAGraphicsTextItem::setEditMode(bool on)

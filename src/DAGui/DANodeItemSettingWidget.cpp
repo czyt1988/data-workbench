@@ -58,16 +58,28 @@ DANodeItemSettingWidget::DANodeItemSettingWidget(QWidget* parent)
             QOverload< double >::of(&QDoubleSpinBox::valueChanged),
             this,
             &DANodeItemSettingWidget::onDoubleSpinBoxRotationValueChanged);
-    connect(ui->doubleSpinBoxX, QOverload< double >::of(&QDoubleSpinBox::valueChanged), this, &DANodeItemSettingWidget::onDoubleSpinBoxXValueChanged);
-    connect(ui->doubleSpinBoxY, QOverload< double >::of(&QDoubleSpinBox::valueChanged), this, &DANodeItemSettingWidget::onDoubleSpinBoxYValueChanged);
+    connect(ui->doubleSpinBoxX,
+            QOverload< double >::of(&QDoubleSpinBox::valueChanged),
+            this,
+            &DANodeItemSettingWidget::onDoubleSpinBoxXValueChanged);
+    connect(ui->doubleSpinBoxY,
+            QOverload< double >::of(&QDoubleSpinBox::valueChanged),
+            this,
+            &DANodeItemSettingWidget::onDoubleSpinBoxYValueChanged);
     connect(ui->checkBoxMovable, &QCheckBox::stateChanged, this, &DANodeItemSettingWidget::onCheckBoxMovableStateChanged);
     connect(ui->checkBoxResizable, &QCheckBox::stateChanged, this, &DANodeItemSettingWidget::onCheckBoxResizableStateChanged);
 #if QT_VERSION_MAJOR >= 6
     connect(d_ptr->mButtonGroupInputLocation, &QButtonGroup::idClicked, this, &DANodeItemSettingWidget::onButtonGroupClicked);
     connect(d_ptr->mButtonGroupOutputLocation, &QButtonGroup::idClicked, this, &DANodeItemSettingWidget::onButtonGroupClicked);
 #else
-    connect(d_ptr->mButtonGroupInputLocation, QOverload< int >::of(&QButtonGroup::buttonPressed), this, &DANodeItemSettingWidget::onButtonGroupClicked);
-    connect(d_ptr->mButtonGroupOutputLocation, QOverload< int >::of(&QButtonGroup::buttonPressed), this, &DANodeItemSettingWidget::onButtonGroupClicked);
+    connect(d_ptr->mButtonGroupInputLocation,
+            QOverload< int >::of(&QButtonGroup::buttonPressed),
+            this,
+            &DANodeItemSettingWidget::onButtonGroupClicked);
+    connect(d_ptr->mButtonGroupOutputLocation,
+            QOverload< int >::of(&QButtonGroup::buttonPressed),
+            this,
+            &DANodeItemSettingWidget::onButtonGroupClicked);
 #endif
     connect(ui->textEditTooltip, &QTextEdit::textChanged, this, &DANodeItemSettingWidget::onTextEditTooltipTextChanged);
 }
@@ -103,7 +115,10 @@ void DANodeItemSettingWidget::setScene(DANodeGraphicsScene* sc)
         return;
     }
     if (d_ptr->mScene) {
-        disconnect(d_ptr->mScene.data(), &DANodeGraphicsScene::nodeItemsRemoved, this, &DANodeItemSettingWidget::onNodeItemsRemoved);
+        disconnect(d_ptr->mScene.data(),
+                   &DANodeGraphicsScene::nodeItemsRemoved,
+                   this,
+                   &DANodeItemSettingWidget::onNodeItemsRemoved);
     }
     d_ptr->mScene = sc;
     if (d_ptr->mScene) {
@@ -169,9 +184,9 @@ void DANodeItemSettingWidget::updateItemState()
         ui->doubleSpinBoxY->setSingleStep(gs.height());
     }
     ui->checkBoxMovable->setChecked(d_ptr->mItem->isMovable());
-    ui->checkBoxResizable->setChecked(d_ptr->mItem->isEnableResize());
-    ui->doubleSpinBoxBodyWidth->setEnabled(d_ptr->mItem->isEnableResize());
-    ui->doubleSpinBoxBodyHeight->setEnabled(d_ptr->mItem->isEnableResize());
+    ui->checkBoxResizable->setChecked(d_ptr->mItem->isResizable());
+    ui->doubleSpinBoxBodyWidth->setEnabled(d_ptr->mItem->isResizable());
+    ui->doubleSpinBoxBodyHeight->setEnabled(d_ptr->mItem->isResizable());
     ui->doubleSpinBoxX->setEnabled(d_ptr->mItem->isMovable());
     ui->doubleSpinBoxY->setEnabled(d_ptr->mItem->isMovable());
     ui->textEditTooltip->setText(d_ptr->mItem->toolTip());
@@ -356,10 +371,10 @@ void DANodeItemSettingWidget::onCheckBoxMovableStateChanged(int state)
 void DANodeItemSettingWidget::onCheckBoxResizableStateChanged(int state)
 {
     if (d_ptr->mItem) {
-        d_ptr->mItem->setEnableResize(state == Qt::Checked);
+        d_ptr->mItem->enableResize(state == Qt::Checked);
         d_ptr->mItem->update();
-        ui->doubleSpinBoxBodyWidth->setEnabled(d_ptr->mItem->isEnableResize());
-        ui->doubleSpinBoxBodyHeight->setEnabled(d_ptr->mItem->isEnableResize());
+        ui->doubleSpinBoxBodyWidth->setEnabled(d_ptr->mItem->isResizable());
+        ui->doubleSpinBoxBodyHeight->setEnabled(d_ptr->mItem->isResizable());
     }
 }
 

@@ -115,8 +115,8 @@ public:  // 尺寸相关接口
     void setControlerSize(const QSizeF& s);
     QSizeF getControlerSize() const;
     // 是否允许
-    void setEnableResize(bool on);
-    bool isEnableResize() const;
+    void enableResize(bool on);
+    bool isResizable() const;
     // 设置body的位置
     void setBodyPos(const QPointF& p);
     void setBodyScenePos(const QPointF& p);
@@ -163,14 +163,11 @@ public:
     ControlType getControlPointByPos(const QPointF& pos) const;
     // 判断是否在调整大小中
     bool isResizing() const;
-    // 是否允许移动
-    void setMovable(bool on = true);
-    bool isMovable() const;
 
 public:
     // 下面四个函数是通过scene获取，如果没有scene，返回默认值
     // 是否允许对齐网格
-    bool isEnableSnapToGrid() const;
+    bool isSnapToGrid() const;
     // 设置网格尺寸
     QSize getGridSize() const;
 

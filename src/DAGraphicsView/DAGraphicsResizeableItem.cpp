@@ -12,14 +12,22 @@
 
 #define Enable_DAGraphicsResizeableItemPrivateDebugPrint 0
 #if Enable_DAGraphicsResizeableItemPrivateDebugPrint
-#define DAGraphicsResizeableItemPrivateDoResizePrint(mousePressItemPos, mousescenePos, currentControlPointTypeUnderMouse, newPos, newSize) \
-    do {                                                                                                                                   \
-        qDebug() << "mousePressItemPos=" << mousePressItemPos << ",mousescenePos=" << mousescenePos                                        \
-                 << ",currentControlPointTypeUnderMouse=" << currentControlPointTypeUnderMouse << ",newPos=" << newPos                     \
-                 << ",newSize=" << newSize << ",current pos=" << q_ptr->pos();                                                             \
+#define DAGraphicsResizeableItemPrivateDoResizePrint(mousePressItemPos,                                                \
+                                                     mousescenePos,                                                    \
+                                                     currentControlPointTypeUnderMouse,                                \
+                                                     newPos,                                                           \
+                                                     newSize)                                                          \
+    do {                                                                                                               \
+        qDebug() << "mousePressItemPos=" << mousePressItemPos << ",mousescenePos=" << mousescenePos                    \
+                 << ",currentControlPointTypeUnderMouse=" << currentControlPointTypeUnderMouse << ",newPos=" << newPos \
+                 << ",newSize=" << newSize << ",current pos=" << q_ptr->pos();                                         \
     } while (0)
 #else
-#define DAGraphicsResizeableItemPrivateDoResizePrint(mousePressItemPos, mousescenePos, currentControlPointTypeUnderMouse, newPos, newSize)
+#define DAGraphicsResizeableItemPrivateDoResizePrint(mousePressItemPos,                                                \
+                                                     mousescenePos,                                                    \
+                                                     currentControlPointTypeUnderMouse,                                \
+                                                     newPos,                                                           \
+                                                     newSize)
 #endif
 
 #if Enable_DAGraphicsResizeableItemPrivateDebugPrint
@@ -76,7 +84,9 @@ public:
 public:
     bool mEnableResize { true };                    ///< 是否允许调整大小
     bool mAutoCenterTransformOriginPoint { true };  ///< 自动更新TransformOriginPoint
-    DAGraphicsResizeableItem::ControlType mCurrentControlTypeUnderMouse { DAGraphicsResizeableItem::NotUnderAnyControlType };  ///< 鼠标当前在的控制点
+    DAGraphicsResizeableItem::ControlType mCurrentControlTypeUnderMouse {
+        DAGraphicsResizeableItem::NotUnderAnyControlType
+    };                                        ///< 鼠标当前在的控制点
     DAGraphicsScene* mSceneUndo { nullptr };  /// 保存secene
     QSizeF mSize { 30, 30 };                  ///< 尺寸
     QSizeF mMinSize { 5, 5 };                 ///< 最小尺寸
@@ -175,7 +185,8 @@ void DAGraphicsResizeableItem::PrivateData::appendControlPointInfo(DAGraphicsRes
     mControlPointInfos.append(DAGraphicsResizeableItemControlPointInfo(q_ptr->controlPointRect(t, body), t));
 }
 
-QPair< DAGraphicsResizeableItem::ControlType, QRectF > DAGraphicsResizeableItem::PrivateData::getControlPointAndUpdateByPos(const QPointF& pos)
+QPair< DAGraphicsResizeableItem::ControlType, QRectF > DAGraphicsResizeableItem::PrivateData::getControlPointAndUpdateByPos(
+    const QPointF& pos)
 {
     QPair< DAGraphicsResizeableItem::ControlType, QRectF > res = qMakePair(DAGraphicsResizeableItem::NotUnderAnyControlType,
                                                                            QRectF());
@@ -454,7 +465,7 @@ QPointF DAGraphicsResizeableItem::PrivateData::bodyConnerPoint(DAGraphicsResizea
  */
 void DAGraphicsResizeableItem::PrivateData::adjustPosToGrid(QPointF& pos)
 {
-    if (!q_ptr->isEnableSnapToGrid()) {
+    if (!q_ptr->isSnapToGrid()) {
         return;
     }
     QSize gridsize = q_ptr->getGridSize();
@@ -476,7 +487,7 @@ void DAGraphicsResizeableItem::PrivateData::adjustPosToGrid(QPointF& pos)
 
 void DAGraphicsResizeableItem::PrivateData::adjustSizeToGrid(QSizeF& s)
 {
-    if (!q_ptr->isEnableSnapToGrid()) {
+    if (!q_ptr->isSnapToGrid()) {
         return;
     }
     QSize gridsize = q_ptr->getGridSize();
@@ -492,7 +503,8 @@ void DAGraphicsResizeableItem::PrivateData::adjustSizeToGrid(QSizeF& s)
 
 DAGraphicsResizeableItem::DAGraphicsResizeableItem(QGraphicsItem* parent) : DAGraphicsItem(parent), DA_PIMPL_CONSTRUCT
 {
-    setFlags(flags() | ItemIsSelectable | ItemIsMovable | ItemSendsGeometryChanges  // 确保位置改变时能发出QGraphicsItem::ItemPositionHasChanged
+    setFlags(flags() | ItemIsSelectable | ItemIsMovable
+             | ItemSendsGeometryChanges  // 确保位置改变时能发出QGraphicsItem::ItemPositionHasChanged
     );
     setAcceptHoverEvents(true);
     // 初始化控制点
@@ -609,7 +621,7 @@ void DAGraphicsResizeableItem::hoverEnterEvent(QGraphicsSceneHoverEvent* event)
 void DAGraphicsResizeableItem::hoverMoveEvent(QGraphicsSceneHoverEvent* event)
 {
     if (isSelected()) {
-        if (isEnableResize()) {
+        if (isResizable()) {
             QPair< ControlType, QRectF > pt = d_ptr->getControlPointAndUpdateByPos(event->pos());
             if (NotUnderAnyControlType == pt.first) {
                 // 这里说明都没在控制点上
@@ -673,7 +685,7 @@ void DAGraphicsResizeableItem::hoverMoveEvent(QGraphicsSceneHoverEvent* event)
 void DAGraphicsResizeableItem::hoverLeaveEvent(QGraphicsSceneHoverEvent* event)
 {
     Q_UNUSED(event);
-    if (isEnableResize()) {
+    if (isResizable()) {
         if (NotUnderAnyControlType != d_ptr->mCurrentControlTypeUnderMouse) {
             d_ptr->mCurrentControlTypeUnderMouse = NotUnderAnyControlType;
             if (hasCursor()) {
@@ -692,7 +704,7 @@ void DAGraphicsResizeableItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
     d_ptr->mMousePressMouseOnScenePos = event->scenePos();
     d_ptr->mMousePressItemPos         = pos();
     if (event->buttons().testFlag(Qt::LeftButton)) {
-        if (isSelected() && isEnableResize()) {
+        if (isSelected() && isResizable()) {
             // 开始改变尺寸
             if (d_ptr->mCurrentControlTypeUnderMouse != NotUnderAnyControlType) {
                 // 在控制点上
@@ -796,7 +808,7 @@ void DAGraphicsResizeableItem::paint(QPainter* painter, const QStyleOptionGraphi
     paintBackground(painter, option, widget, bodyrect);
     paintBorder(painter, option, widget, bodyrect);
     paintBody(painter, option, widget, bodyrect);
-    if (isEnableResize()) {
+    if (isResizable()) {
         if (isSelected()) {
             // 绘制缩放的边框
             paintSelectedBorder(painter, option, widget);
@@ -819,7 +831,7 @@ bool DAGraphicsResizeableItem::saveToXml(QDomDocument* doc, QDomElement* parentE
 {
     DAGraphicsItem::saveToXml(doc, parentElement);
     QDomElement rsinfoEle = doc->createElement("resize-info");
-    rsinfoEle.setAttribute("enableResize", isEnableResize());
+    rsinfoEle.setAttribute("enableResize", isResizable());
     QSizeF bs = getBodySize();
     rsinfoEle.setAttribute("width", bs.width());
     rsinfoEle.setAttribute("height", bs.height());
@@ -850,7 +862,7 @@ bool DAGraphicsResizeableItem::loadFromXml(const QDomElement* itemElement)
     if (rsinfoEle.isNull()) {
         return false;
     }
-    setEnableResize(getStringBoolValue(rsinfoEle.attribute("enableResize")));
+    enableResize(getStringBoolValue(rsinfoEle.attribute("enableResize")));
     qreal v1, v2;
     if (getStringRealValue(rsinfoEle.attribute("width"), v1) && getStringRealValue(rsinfoEle.attribute("height"), v2)) {
         setBodySize(QSizeF(v1, v2));
@@ -996,7 +1008,7 @@ QSizeF DAGraphicsResizeableItem::getControlerSize() const
  * @brief 设置是否Delegate可用
  * @param on
  */
-void DAGraphicsResizeableItem::setEnableResize(bool on)
+void DAGraphicsResizeableItem::enableResize(bool on)
 {
     d_ptr->mEnableResize = on;
     if (on) {
@@ -1009,7 +1021,7 @@ void DAGraphicsResizeableItem::setEnableResize(bool on)
  * @brief 判断是否允许
  * @return
  */
-bool DAGraphicsResizeableItem::isEnableResize() const
+bool DAGraphicsResizeableItem::isResizable() const
 {
     return d_ptr->mEnableResize;
 }
@@ -1042,7 +1054,9 @@ void DAGraphicsResizeableItem::paintSelectedBorder(QPainter* painter, const QSty
  * @param widget
  * @param bodyRect
  */
-void DAGraphicsResizeableItem::paintResizeControlPoints(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
+void DAGraphicsResizeableItem::paintResizeControlPoints(QPainter* painter,
+                                                        const QStyleOptionGraphicsItem* option,
+                                                        QWidget* widget)
 {
     Q_UNUSED(widget);
     Q_UNUSED(option);
@@ -1077,7 +1091,10 @@ void DAGraphicsResizeableItem::paintResizeControlPoints(QPainter* painter, const
  * @param widget
  * @param bodyRect
  */
-void DAGraphicsResizeableItem::paintBackground(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget, const QRectF& bodyRect)
+void DAGraphicsResizeableItem::paintBackground(QPainter* painter,
+                                               const QStyleOptionGraphicsItem* option,
+                                               QWidget* widget,
+                                               const QRectF& bodyRect)
 {
     Q_UNUSED(option);
     Q_UNUSED(widget);
@@ -1096,7 +1113,10 @@ void DAGraphicsResizeableItem::paintBackground(QPainter* painter, const QStyleOp
  * @param widget
  * @param bodyRect body的尺寸
  */
-void DAGraphicsResizeableItem::paintBorder(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget, const QRectF& bodyRect)
+void DAGraphicsResizeableItem::paintBorder(QPainter* painter,
+                                           const QStyleOptionGraphicsItem* option,
+                                           QWidget* widget,
+                                           const QRectF& bodyRect)
 {
     Q_UNUSED(option);
     Q_UNUSED(widget);
@@ -1206,27 +1226,10 @@ bool DAGraphicsResizeableItem::isResizing() const
 }
 
 /**
- * @brief 设置为是否可移动
- * @param on
- */
-void DAGraphicsResizeableItem::setMovable(bool on)
-{
-    setFlag(ItemIsMovable, on);
-}
-
-/**
- * @brief 判断是否可以移动
- * @return
- */
-bool DAGraphicsResizeableItem::isMovable() const
-{
-    return flags().testFlag(ItemIsMovable);
-}
-/**
  * @brief 是否允许对齐网格
  * @return
  */
-bool DAGraphicsResizeableItem::isEnableSnapToGrid() const
+bool DAGraphicsResizeableItem::isSnapToGrid() const
 {
     DAGraphicsScene* sc = d_ptr->mSceneUndo;
     if (sc) {

@@ -73,9 +73,12 @@ enum DockingArea
 
 另外在函数命名上因遵守如下原则：
 
-- 属性前面都带get/set，不省略get以便查找函数
+- 属性前面都带get/set（布尔变量除外），不省略get以便查IDE能方便联想
 - get函数应返回值而不是引用
 - 若返回引用，不带get以和返回值的属性做区分
+- 布尔变量的属性命名为 enable/is为主，布尔变量的动作可以以set开头，但所有布尔变量的读函数都以is开头
+- 如果布尔属性有形容词xxxxble，可使用set替代enable，如setVisible,setCheckable,但为了统一，更推荐用enable
+- 布尔变量的动作应该以set开头，如setSelect，具体可通过下列例子的selectable和selected来区分
 
 
 ```cpp
@@ -86,6 +89,12 @@ public:
     //以下是返回引用
     std::string& text();//返回引用的不写get
     const std::string& text() const;//返回引用的不写get
+    //能否被选中
+    void enableSelect(bool on);
+    bool isSelectable() const;
+    //是否选中了
+    void setSelect(bool on);
+    bool isSelected() const;
 }
 ```
 

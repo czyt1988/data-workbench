@@ -40,8 +40,8 @@ void DAGraphicsRectItem::PrivateData::setTextPen(const QPen& p)
 //===================================================
 DAGraphicsRectItem::DAGraphicsRectItem(QGraphicsItem* parent) : DAGraphicsResizeableItem(parent), DA_PIMPL_CONSTRUCT
 {
-    setShowBackground(false);
-    setShowBorder(true);
+    enableShowBackground(false);
+    enableShowBorder(true);
     setBorderPen(QPen(QColor(Qt::black)));
 }
 

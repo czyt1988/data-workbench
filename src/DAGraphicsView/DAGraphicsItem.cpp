@@ -94,7 +94,8 @@ bool DAGraphicsItem::loadFromXml(const QDomElement* parentElement)
         setItemID(llv);
     }
 
-    if (getStringRealValue(infoEle.attribute("x", "0"), realValue) && getStringRealValue(infoEle.attribute("y", "0"), realValue2)) {
+    if (getStringRealValue(infoEle.attribute("x", "0"), realValue)
+        && getStringRealValue(infoEle.attribute("y", "0"), realValue2)) {
         setScenePos(realValue, realValue2);
     }
     if (getStringRealValue(infoEle.attribute("z", ""), realValue)) {
@@ -125,7 +126,7 @@ bool DAGraphicsItem::loadFromXml(const QDomElement* parentElement)
             if (!borderPenEle.isNull()) {
                 QPen p;
                 if (DAXMLFileInterface::loadElement(p, &borderPenEle)) {
-                    setShowBorder(isShowBorder);
+                    enableShowBorder(isShowBorder);
                     setBorderPen(p);
                 }
             }
@@ -135,7 +136,7 @@ bool DAGraphicsItem::loadFromXml(const QDomElement* parentElement)
             if (!bkEle.isNull()) {
                 QBrush b;
                 if (DAXMLFileInterface::loadElement(b, &bkEle)) {
-                    setShowBackground(isShowBk);
+                    enableShowBackground(isShowBk);
                     setBackgroundBrush(b);
                 }
             }
@@ -167,7 +168,7 @@ QPen DAGraphicsItem::getBorderPen() const
  * @brief 设置显示边框
  * @param on
  */
-void DAGraphicsItem::setShowBorder(bool on)
+void DAGraphicsItem::enableShowBorder(bool on)
 {
     d_ptr->mIsShowBorder = on;
 }
@@ -179,6 +180,42 @@ void DAGraphicsItem::setShowBorder(bool on)
 bool DAGraphicsItem::isShowBorder() const
 {
     return d_ptr->mIsShowBorder;
+}
+
+/**
+ * @brief 设置是否可选中
+ * @param on
+ */
+void DAGraphicsItem::enableSelect(bool on)
+{
+    setFlag(ItemIsSelectable, on);
+}
+
+/**
+ * @brief 判断可否被选中
+ * @return
+ */
+bool DAGraphicsItem::isSelectable() const
+{
+    return flags().testFlag(ItemIsSelectable);
+}
+
+/**
+ * @brief 设置为是否可移动
+ * @param on
+ */
+void DAGraphicsItem::enableMove(bool on)
+{
+    setFlag(ItemIsMovable, on);
+}
+
+/**
+ * @brief 判断是否可以移动
+ * @return
+ */
+bool DAGraphicsItem::isMovable() const
+{
+    return flags().testFlag(ItemIsMovable);
 }
 
 /**
@@ -203,7 +240,7 @@ QBrush DAGraphicsItem::getBackgroundBrush() const
  * @brief 设置显示背景
  * @param on
  */
-void DAGraphicsItem::setShowBackground(bool on)
+void DAGraphicsItem::enableShowBackground(bool on)
 {
     d_ptr->mIsShowBackground = on;
 }

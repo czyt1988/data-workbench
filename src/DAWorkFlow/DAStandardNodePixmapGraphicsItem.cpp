@@ -73,7 +73,7 @@ QSizeF DAStandardNodePixmapGraphicsItem::PrivateData::sizeHint() const
 DAStandardNodePixmapGraphicsItem::DAStandardNodePixmapGraphicsItem(DAAbstractNode* n, QGraphicsItem* p)
     : DAAbstractNodeGraphicsItem(n, p), DA_PIMPL_CONSTRUCT
 {
-    setEnableResize(true);
+    enableResize(true);
     setEnableMoveText(true);
     setText(n->getNodeName());
 }
