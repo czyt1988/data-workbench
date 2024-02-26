@@ -34,21 +34,9 @@ git submodule update --init --recursive
 
 ## bin目录
 
-DA项目编译好的二进制文件统一生成到bin_qt$$[QT_VERSION]_{msvc/mingw}_{debug/release}{/_64}目录下，如：使用qt5.14.2, msvc版本debug模式64位编译，将生成`bin_qt5.14.2_msvc_debug_64`文件夹，[common.pri](./src/common.pri)文件定义了DA项目的目录内容:
+DA项目编译好的二进制文件统一生成到bin{Debug/Release}_qt{$$QT_VERSION}_{MSVC/GNU}_{x64/x86}目录下，如：使用qt5.14.2, msvc版本debug模式64位编译，将生成`bin_Debug_qt5.14.2_MSVC_x64`文件夹
 
-```shell
-# DA_BIN_DIR为生成的bin文件夹 ./bin_qt$$[QT_VERSION]_{msvc/mingw}_{debug/release}{/_64}
-# DA_SRC_DIR为源代码路径：./src
-DA_3RD_PARTY_DIR = $${DA_SRC_DIR}/3rdparty # 第三方库路径
-BIN_APP_BUILD_DIR = $${DA_BIN_DIR}/build_apps # 生成的app路径
-BIN_LIB_BUILD_DIR = $${DA_BIN_DIR}/build_libs # 生成的lib路径
-BIN_TEST_BUILD_DIR = $${DA_BIN_DIR}/build_tst # 生成的测试程序路径
-BIN_PLUGIN_BUILD_DIR = $${DA_BIN_DIR}/build_plugins # 生成的plugin路径
-BIN_PLUGIN_DIR = $${DA_BIN_DIR}/plugins #插件的路径
-BIN_TEST_DIR = $${DA_BIN_DIR}/tst #测试程序路径
-```
-
-bin_xx目录下的build_libs将是构建的库所在目录，也是第三方库需要放置的目录，下面先讲如何编译第三方库
+用户可以自定义安装路径，需要手动调整CMakeLists.txt
 
 ## 第三方库编译
 
@@ -58,97 +46,41 @@ bin_xx目录下的build_libs将是构建的库所在目录，也是第三方库�
 git submodule update --init --recursive
 ```
 
-用Qt Creator 打开`src/3rdparty/3rdparty.pro`对第三方库进行编译
+用qt creator 打开`./src/3rdparty/CMakeLists.txt`进行编译
 
-编译完第三方库后，需要手动把第三方库编译的结果（`.a/.lib`文件）移动到`bin_xx/build_libs`文件夹下，把编译的`*.dll`文件移动到`bin_xx`目录下
-
-qwt和Qt-Advanced-Docking-System的编译结果是在build文件夹下，SARibbon会在本程序目录下建立一个bin_xx目录，在查找生成的lib时需要注意，ctk会自动把生成的dll和lib转移到对应的文件夹，无需手动移动
+编译完第三方库后，需要进行安装(install)，所有依赖将安装到bin目录下
 
 需要编译的第三方库如下：
 
-### SARibbon
+- SARibbon
+- Qt-Advanced-Docking-System
+- ctk
+- qwt
+- QtPropertyBrowser
+- spdlog
 
-用qt creator 打开`./src/3rdparty/SARibbon/SARibbon.pro`进行编译
+在需要python时将引入下面的库
 
-编译完成后会把`./src/3rdparty/SARibbon/bin_xx`目录下的`*.lib / *.a`文件拷贝到`bin_xx`目录下的`build_libs`文件夹下，把`dll`文件拷贝到`bin_xx`目录下
+- pybind11
 
-### Qt-Advanced-Docking-System
-
-用qt creator 打开`./src/3rdparty/Qt-Advanced-Docking-System/ads.pro`进行编译
-
-编译完成后的二进制文件会在`./src/build-3rdparty-Desktop_Qtxx`下的`Qt-Advanced-Docking-System`里，用户根据自己定义的情况查找，找到其lib文件夹下的lib文件和dll文件复制到`build_libs`文件夹和`bin_xx`目录下
-
-### ctk
-
-> 本程序使用的ctk是简化版ctk，仅抽取了使用到的几个类，因此称为liteCtk
-
-用qt creator 打开`./src/3rdparty/ctk/ctk.pro`进行编译
-
-此库已经自动配置编译lib和dll的位置，无需手动移动
-
-### qwt
-
-在build目录下找到qwt编译好的dll和lib文件，把lib文件拷贝到`bin_xx`目录下的`build_libs`文件夹下，把`dll`文件拷贝到`bin_xx`目录下
+> 用户可以自定义安装路径，需要手动调整CMakeLists.txt
 
 ## python环境配置
 
-DA依赖python环境：
+DA_ENABLE_PYTHON选项用于指定是否需要python环境，如果开启将自动查找系统的python环境并进行依赖，python环境有如下要求
 
 - 至少是python3.7
 - python环境需要安装pandas库
 
-把安装好pandas库的python环境整体拷贝到`bin_xx`目录下，并重命名为`Python`，DA默认的python搜索路径就是程序运行目录下的`Python`文件夹，另外需要把`./src/PyScripts`文件夹拷贝到`bin_xx`目录下，这是DA的固定脚本内容
+最好把安装好pandas库的python环境整体拷贝到`bin_xx`目录下，并指定Python3_ROOT_DIR对应到目录上
 
-如果遇到如下错误，说明你缺少Python环境设置的环节，请确保已经配置好Python环境
-
-![](./doc/PIC/build-error-nopython.png)
-
-你要保证`bin_xx`目录下有Python环境，如下图所示
-
-![](./doc/PIC/build-error-nopython-02.png)
-
-Python目录内部如下图所示
-
-![](./doc/PIC/build-error-nopython-03.png)
-
-如果用其他版本的Python，也需要配置[./src/python_lib.pri](./src/python_lib.pri)文件
-
-把DA_PYTHON设置为对应的python版本：
-
-![](./doc/PIC/build-error-nopython-04.png)
-
-如python3.7则设置为：
-
-```shell
-DA_PYTHON = python37
-```
+> tips:如果系统有多个Python，想指定某个Python环节，需要设置Python3_ROOT_DIR变量
 
 ## 编译程序
 
-在确保完成了`src/3rdparty/3rdparty.pro`的编译，以及完成Python路径的配置，直接用Qt Creator 打开`./src/DataWorkFlow.pro`进行编译，编译过程会自动把文件编译到`bin_xx`目录下
+在确保完成了`./src/3rdparty/CMakeLists.txt`的编译，以及完成Python路径的配置（如果需要依赖python），直接用Qt Creator （或vs）打开`./CMakeLists.txt`进行编译，编译完成后安装，默认的安装路径会自动把文件安装到工程目录的`bin_xx`目录下
 
-## python脚本准备
-
-`da-work-flow`的许多功能是通过python实现的，程序运行需要`data-work-flow/src/PyScripts`下的脚本支持，需要把`PyScripts`拷贝到bin_xx目录下
-
-![](./doc/PIC/copy-pyscripts.jpg)
-
-## 程序编译成功后无法运行
-
-编译成功后，但无法运行，这种情况一般是bin目录下的dll缺失，需要保证如下几点：
-
-![编译成功但无法运行](./doc/PIC/build-succ-but-unable-run.png)
-
-> 1. 3rdparty编译的dll都拷贝到bin目录下，包括：`qtadvanceddocking.dll`、`qwt.dll`、`SARibbonBar.dll`
-> 2. `qwt.dll`依赖OpenGL，因此需要OpenGL相关的库`opengl32sw.dll`、`libEGLd.dll`、`libGLESv2d.dll`，可以直接通过`windeployqt qwtd.dll`进行抓取
-> 3. PyScripts文件夹要在bin目录下
-> 4. 执行`windeployqt daWork.exe`抓取必要的dll
-> 5. 确保Python文件夹复制到bin目录下
-
-如果上述步骤执行完毕，点击daWork.exe能运行，但在Qt Creator下无法运行
-
-> 6. 把Python目录下python3x.dll复制到bin目录下
-
+如果第三方库的安装路径不是使用默认路径，需要指定各个第三方库的安装位置
 
 # 程序框架及说明
 
