@@ -119,13 +119,16 @@ enum DAGraphicsItemType
     ItemType_DAGraphicsItemGroup        = ItemType_GraphicsItem_Begin + 4500,  ///< 针对DAGraphicsItemGroup的类型
     ItemType_GraphicsItem_End           = ItemType_GraphicsItem_Begin + 5000
 };
-// 实现位于DAGraphicsLinkItem.cpp
+
 // DANodeLinkPoint::Direction 的枚举转换
 DAGRAPHICSVIEW_API QString enumToString(AspectDirection e);
 // DANodeLinkPoint::Direction 的枚举转换
 DAGRAPHICSVIEW_API AspectDirection stringToEnum(const QString& s, AspectDirection defaultEnum = AspectDirection::East);
-//
 
+// ShapeKeyPoint 的枚举转换
+DAGRAPHICSVIEW_API QString enumToString(ShapeKeyPoint e);
+// ShapeKeyPoint 的枚举转换
+DAGRAPHICSVIEW_API ShapeKeyPoint stringToEnum(const QString& s, ShapeKeyPoint defaultEnum = ShapeKeyPoint::Center);
 }
 
 #endif  // FCMETHODNODEGLOBAL_H

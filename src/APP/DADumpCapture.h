@@ -49,9 +49,9 @@ namespace DA
 using FpPreposeDump     = std::function< QString() >;
 FpPreposeDump g_fp_dump = nullptr;
 
-LONG applicationCrashHandler(EXCEPTION_POINTERS* pException);
+LONG applicationCrashHandler(_EXCEPTION_POINTERS* pException);
 // 程式异常捕获
-LONG applicationCrashHandler(EXCEPTION_POINTERS* pException)
+LONG applicationCrashHandler(_EXCEPTION_POINTERS* pException)
 {
     QString createPath  = g_fp_dump();
     std::wstring wlpstr = createPath.toStdWString();
@@ -95,9 +95,7 @@ public:
             };
         }
         g_fp_dump = fp;
-        SetUnhandledExceptionFilter([](EXCEPTION_POINTERS* pException) -> LONG {
-            return applicationCrashHandler(pException);
-        });  // 注冊异常捕获函数
+        SetUnhandledExceptionFilter(applicationCrashHandler);  // 注冊异常捕获函数
 #endif
 #endif
     }

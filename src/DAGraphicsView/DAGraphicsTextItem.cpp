@@ -95,13 +95,41 @@ bool DAGraphicsTextItem::saveToXml(QDomDocument* doc, QDomElement* parentElement
 {
     DAGraphicsResizeableItem::saveToXml(doc, parentElement);
     d_ptr->mTextItem->saveToXml(doc, parentElement);
+    QDomElement e = doc->createElement("textItem");
+    e.setAttribute("relativePosition", isEnableRelativePosition());
+    if (isEnableRelativePosition()) {
+        e.setAttribute("x", d_ptr->mRelativeX);
+        e.setAttribute("y", d_ptr->mRelativeY);
+        e.setAttribute("autoAdj", d_ptr->mAutoAdjustSize);
+        e.setAttribute("parAnchorPoint", enumToString(d_ptr->mParentAnchorPoint));
+        e.setAttribute("itemAnchorPoint", enumToString(d_ptr->mItemAnchorPoint));
+    }
+    parentElement->appendChild(e);
     return true;
 }
 
 bool DAGraphicsTextItem::loadFromXml(const QDomElement* itemElement)
 {
     DAGraphicsResizeableItem::loadFromXml(itemElement);
-    return d_ptr->mTextItem->loadFromXml(itemElement);
+    if (!d_ptr->mTextItem->loadFromXml(itemElement)) {
+        return false;
+    }
+    auto e = itemElement->firstChildElement("textItem");
+    if (e.isNull()) {
+        return false;
+    }
+    bool rp = e.attribute("relativePosition").toInt();
+
+    d_ptr->mEnableRelativePosition = rp;
+    if (rp) {
+        d_ptr->mRelativeX         = e.attribute("x").toDouble();
+        d_ptr->mRelativeY         = e.attribute("y").toDouble();
+        d_ptr->mAutoAdjustSize    = e.attribute("autoAdj").toInt();
+        d_ptr->mParentAnchorPoint = stringToEnum(e.attribute("parAnchorPoint"), ShapeKeyPoint::BottomCenter);
+        d_ptr->mItemAnchorPoint   = stringToEnum(e.attribute("itemAnchorPoint"), ShapeKeyPoint::TopCenter);
+        updateRelativePosition();
+    }
+    return true;
 }
 
 DAGraphicsStandardTextItem* DAGraphicsTextItem::textItem() const

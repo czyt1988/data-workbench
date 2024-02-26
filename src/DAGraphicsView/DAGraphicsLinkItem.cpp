@@ -1,4 +1,4 @@
-#include "DAGraphicsLinkItem.h"
+﻿#include "DAGraphicsLinkItem.h"
 #include <QPainter>
 #include <QDebug>
 #include <QGraphicsScene>
@@ -335,7 +335,10 @@ void DAGraphicsLinkItem::paint(QPainter* painter, const QStyleOptionGraphicsItem
  * @param widget
  * @param linkPath
  */
-void DAGraphicsLinkItem::paintLinkLine(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget, const QPainterPath& linkPath)
+void DAGraphicsLinkItem::paintLinkLine(QPainter* painter,
+                                       const QStyleOptionGraphicsItem* option,
+                                       QWidget* widget,
+                                       const QPainterPath& linkPath)
 {
     Q_UNUSED(widget);
     QPen pen = getPainterPen(option);
@@ -570,7 +573,10 @@ bool DAGraphicsLinkItem::isPointCanMeet(const QPointF& p1, AspectDirection d1, c
  * @param d2
  * @return
  */
-bool DAGraphicsLinkItem::isParallelPointApproachInDirection(const QPointF& p1, AspectDirection d1, const QPointF& p2, AspectDirection d2)
+bool DAGraphicsLinkItem::isParallelPointApproachInDirection(const QPointF& p1,
+                                                            AspectDirection d1,
+                                                            const QPointF& p2,
+                                                            AspectDirection d2)
 {
     if (!isDirectionOpposite(d1, d2)) {
         // 平行同向永远接近不了
@@ -825,7 +831,8 @@ bool DAGraphicsLinkItem::loadFromXml(const QDomElement* parentElement)
     }
     QDomElement lineEle = parentElement->firstChildElement("linkLine");
     if (!lineEle.isNull()) {
-        DAGraphicsLinkItem::LinkLineStyle s = DA::stringToEnum(lineEle.attribute("style"), DAGraphicsLinkItem::LinkLineKnuckle);
+        DAGraphicsLinkItem::LinkLineStyle s = DA::stringToEnum(lineEle.attribute("style"),
+                                                               DAGraphicsLinkItem::LinkLineKnuckle);
         setLinkLineStyle(s);
     }
     QDomElement linePenEle = parentElement->firstChildElement("linePen");
@@ -840,9 +847,11 @@ bool DAGraphicsLinkItem::loadFromXml(const QDomElement* parentElement)
     }
     QDomElement endPointEle = parentElement->firstChildElement("endPoint");
     if (!endPointEle.isNull()) {
-        DAGraphicsLinkItem::EndPointType etTo = DA::stringToEnum(endPointEle.attribute("toType"), DAGraphicsLinkItem::EndPointNone);
-        DAGraphicsLinkItem::EndPointType etFrom = DA::stringToEnum(endPointEle.attribute("fromType"), DAGraphicsLinkItem::EndPointNone);
-        int size = endPointEle.attribute("size").toInt();
+        DAGraphicsLinkItem::EndPointType etTo   = DA::stringToEnum(endPointEle.attribute("toType"),
+                                                                 DAGraphicsLinkItem::EndPointNone);
+        DAGraphicsLinkItem::EndPointType etFrom = DA::stringToEnum(endPointEle.attribute("fromType"),
+                                                                   DAGraphicsLinkItem::EndPointNone);
+        int size                                = endPointEle.attribute("size").toInt();
         setEndPointType(DAGraphicsLinkItem::OrientationStart, etFrom);
         setEndPointType(DAGraphicsLinkItem::OrientationEnd, etTo);
         if (size > 0) {
@@ -1084,49 +1093,4 @@ DAGraphicsLinkItem::LinkLineStyle stringToEnum(const QString& s, DAGraphicsLinkI
     return defaultEnum;
 }
 
-/**
- * @brief DANodeLinkPoint::Direction 的枚举转换
- *
- * header:DAGraphicsViewGlobal.h
- * cpp:DAGraphicsLinkItem.cpp
- * @param e
- * @return
- */
-QString enumToString(AspectDirection e)
-{
-    switch (e) {
-    case AspectDirection::East:
-        return "east";
-    case AspectDirection::South:
-        return "south";
-    case AspectDirection::West:
-        return "west";
-    case AspectDirection::North:
-        return "north";
-    default:
-        break;
-    }
-    return "east";
-}
-/**
- * @brief DANodeLinkPoint::Direction 的枚举转换
- *
- * header:DAGraphicsViewGlobal.h
- * cpp:DAGraphicsLinkItem.cpp
- * @param s
- * @return
- */
-AspectDirection stringToEnum(const QString& s, AspectDirection defaultEnum)
-{
-    if (0 == s.compare("east", Qt::CaseInsensitive)) {
-        return AspectDirection::East;
-    } else if (0 == s.compare("south", Qt::CaseInsensitive)) {
-        return AspectDirection::South;
-    } else if (0 == s.compare("west", Qt::CaseInsensitive)) {
-        return AspectDirection::West;
-    } else if (0 == s.compare("north", Qt::CaseInsensitive)) {
-        return AspectDirection::North;
-    }
-    return defaultEnum;
-}
 }  // end DA
