@@ -158,7 +158,7 @@ DAAbstractNodeGraphicsItem* DANodeGraphicsScene::getSelectedNodeGraphicsItem() c
 QList< DAAbstractNodeGraphicsItem* > DANodeGraphicsScene::getNodeGraphicsItems() const
 {
     QList< DAAbstractNodeGraphicsItem* > res;
-    QList< QGraphicsItem* > its = items();
+    QList< QGraphicsItem* > its = topItems();
     for (QGraphicsItem* i : qAsConst(its)) {
         DAAbstractNodeGraphicsItem* ni = dynamic_cast< DAAbstractNodeGraphicsItem* >(i);
         if (ni) {
@@ -176,7 +176,7 @@ QList< DAAbstractNodeGraphicsItem* > DANodeGraphicsScene::getNodeGraphicsItems()
 QList< DAGraphicsStandardTextItem* > DANodeGraphicsScene::getTextGraphicsItems() const
 {
     QList< DAGraphicsStandardTextItem* > res;
-    QList< QGraphicsItem* > its = items();
+    QList< QGraphicsItem* > its = topItems();
     for (QGraphicsItem* i : qAsConst(its)) {
         DAGraphicsStandardTextItem* ni = dynamic_cast< DAGraphicsStandardTextItem* >(i);
         if (ni) {
@@ -223,7 +223,7 @@ DAAbstractNodeLinkGraphicsItem* DANodeGraphicsScene::getSelectedNodeLinkGraphics
 QList< QGraphicsItem* > DANodeGraphicsScene::getGraphicsItemsWithoutLink() const
 {
     QList< QGraphicsItem* > res;
-    QList< QGraphicsItem* > ites = items();
+    QList< QGraphicsItem* > ites = topItems();
     for (QGraphicsItem* i : qAsConst(ites)) {
         if (nullptr == dynamic_cast< DAAbstractNodeLinkGraphicsItem* >(i)) {
             res.append(i);
@@ -359,7 +359,7 @@ DAAbstractNodeGraphicsItem* DANodeGraphicsScene::nodeItemAt(const QPointF& scene
         return nodeItem;
     }
     // 如果没找到，就要看看此点下的所有item，有可能被分组了
-    QList< QGraphicsItem* > its = items(scenePos);
+    QList< QGraphicsItem* > its = topItems(scenePos);
     for (QGraphicsItem* i : std::as_const(its)) {
         if (DAAbstractNodeGraphicsItem* n = dynamic_cast< DAAbstractNodeGraphicsItem* >(i)) {
             return n;

@@ -555,8 +555,9 @@ bool DAXmlHelperPrivate::loadNodeLinks(DAWorkFlowGraphicsScene* scene, DAWorkFlo
  */
 void DAXmlHelperPrivate::saveSpecialItem(const DAWorkFlowGraphicsScene* scene, QDomDocument& doc, QDomElement& workflowEle)
 {  // 保存文本
-    QList< QGraphicsItem* > items = scene->items();
-    QDomElement itemsElement      = doc.createElement("items");
+    QList< QGraphicsItem* > items = scene->topItems();
+    qDebug() << "saveSpecialItem,item in scene count = " << items.size();
+    QDomElement itemsElement = doc.createElement("items");
     // 背景不作为items保存
     DAGraphicsPixmapItem* bkItem = scene->getBackgroundPixmapItem();
     for (const QGraphicsItem* i : qAsConst(items)) {
@@ -568,6 +569,8 @@ void DAXmlHelperPrivate::saveSpecialItem(const DAWorkFlowGraphicsScene* scene, Q
             // 已经保存过的不进行保存
             continue;
         }
+        qDebug() << "saveSpecialItem get items not in mHaveBeenSaveNodeItem,item " << (int)i->type()
+                 << ",mHaveBeenSaveNodeItem.count = " << mHaveBeenSaveNodeItem.count();
         saveItem(i, doc, itemsElement);
         mHaveBeenSaveNodeItem.insert(const_cast< QGraphicsItem* >(i));
     }
@@ -625,7 +628,7 @@ bool DAXmlHelperPrivate::saveItem(const QGraphicsItem* i, QDomDocument& doc, QDo
         itemElement.setAttribute("className", "DA::DAGraphicsStandardTextItem");
         itemElement.setAttribute("tid", i->type());
         itemElement.setAttribute("tg", "DAStandardText");
-        daItem->saveToXml(&doc, &itemElement);
+        si->saveToXml(&doc, &itemElement);
         itemsElement.appendChild(itemElement);
         return true;
     } else if (const DAGraphicsItemGroup* gi = dynamic_cast< const DAGraphicsItemGroup* >(i)) {

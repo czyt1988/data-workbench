@@ -77,18 +77,18 @@ void DAGraphicsTextItem::init()
     setAcceptDrops(true);
     setAcceptHoverEvents(true);
     setFocusProxy(d_ptr->mTextItem);
-    enableResize(false);
-    enableShowBorder(false);
-    enableEdit(false);
-    enableSelect(false);
-    enableMove(false);
-    enableEdit(false);
+    setEnableResize(false);
+    setShowBorder(false);
+    setEditable(false);
+    setSelectable(false);
+    setMovable(false);
+    setEditable(false);
     d_ptr->mTextItem->setFlag(ItemIsMovable, false);
 }
 
 void DAGraphicsTextItem::setEditMode(bool on)
 {
-    d_ptr->mTextItem->enableEdit(on);
+    d_ptr->mTextItem->setEditable(on);
 }
 
 bool DAGraphicsTextItem::saveToXml(QDomDocument* doc, QDomElement* parentElement) const
@@ -168,9 +168,9 @@ QFont DAGraphicsTextItem::getFont() const
  * @brief 设置编辑模式
  * @param on
  */
-void DAGraphicsTextItem::enableEdit(bool on)
+void DAGraphicsTextItem::setEditable(bool on)
 {
-    d_ptr->mTextItem->enableEdit(on);
+    d_ptr->mTextItem->setEditable(on);
 }
 
 /**
@@ -187,7 +187,7 @@ bool DAGraphicsTextItem::isEditable() const
  * @note 相对定位需要有父级item，否则无效
  * @param on
  */
-void DAGraphicsTextItem::enableRelativePosition(bool on)
+void DAGraphicsTextItem::setEnableRelativePosition(bool on)
 {
     d_ptr->mEnableRelativePosition = on;
     if (on) {
@@ -208,7 +208,7 @@ bool DAGraphicsTextItem::isEnableRelativePosition() const
  * @brief 自动调整大小，如果设置为true，尺寸将随着文本而调整，此模式不应该和enableResize共存
  * @param on
  */
-void DAGraphicsTextItem::enableAutoAdjustSize(bool on)
+void DAGraphicsTextItem::setAutoAdjustSize(bool on)
 {
     d_ptr->mAutoAdjustSize = on;
 }

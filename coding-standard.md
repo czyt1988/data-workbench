@@ -76,10 +76,11 @@ enum DockingArea
 - 属性前面都带get/set（布尔变量除外），不省略get以便查IDE能方便联想
 - get函数应返回值而不是引用
 - 若返回引用，不带get以和返回值的属性做区分
-- 布尔变量的属性命名为 enable/is为主，布尔变量的动作可以以set开头，但所有布尔变量的读函数都以is开头
-- 如果布尔属性有形容词xxxxble，可使用set替代enable，如setVisible,setCheckable,但为了统一，更推荐用enable
-- 布尔变量的动作应该以set开头，如setSelect，具体可通过下列例子的selectable和selected来区分
+- 布尔变量的属性命名为 set(enable)/is为主，布尔变量的动作可以以set开头，但所有布尔变量的读函数都以is开头
+- 如果布尔属性有形容词xxxxble，可使用set替代enable，如setVisible,setCheckable,但为了统一，更推荐用setXXable的形式，也可以用setEnableXX形式
+- 布尔变量的动作应该以set开头，如setSelect和enableSelect是表达不一样的概念，具体可通过下列例子的selectable和selected来区分
 
+总之尽量使用set，让编译器能通过set联想出所有可设置属性，用get和is能联想出所有可读属性
 
 ```cpp
 class ExampleClass{
@@ -90,7 +91,8 @@ public:
     std::string& text();//返回引用的不写get
     const std::string& text() const;//返回引用的不写get
     //能否被选中
-    void enableSelect(bool on);
+    void enableSelect(bool on);//可以但不推荐，某些场合下enable更好理解可以使用
+    void setSelectable(bool on);//推荐
     bool isSelectable() const;
     //是否选中了
     void setSelect(bool on);

@@ -16,10 +16,6 @@
 
 本软件的设计就是为了解决上面遇到的这三个问题，因此软件会分为三大板块：工作流解决固定流程问题，数据处理板块会把pandas的功能进行集成，chart板块能实现交互式的数据可视化，且能生成论文级别的图片
 
-软件界面截图：
-
-更新于2022年9月
-
 # 编译
 
 编译前请确保已经拉取了第三方库，由于使用的是`git submodule`方式管理大部分第三方库，因此需要执行：
@@ -31,6 +27,8 @@ git submodule update --init --recursive
 把所有第三方库拉取
 
 具体可见：[submodule.md](./submodule.md)
+
+详细构建教程见：[doc/how-to-build.md文档](./doc/how-to-build.md)
 
 ## bin目录
 
@@ -63,24 +61,28 @@ git submodule update --init --recursive
 
 - pybind11
 
-> 用户可以自定义安装路径，需要手动调整CMakeLists.txt
+> 用户可以自定义安装路径，需要手动调整`CMakeLists.txt`
 
 ## python环境配置
 
-DA_ENABLE_PYTHON选项用于指定是否需要python环境，如果开启将自动查找系统的python环境并进行依赖，python环境有如下要求
+`DA_ENABLE_PYTHON`选项用于指定是否需要python环境，如果开启将自动查找系统的python环境并进行依赖，python环境有如下要求
 
 - 至少是python3.7
 - python环境需要安装pandas库
 
-最好把安装好pandas库的python环境整体拷贝到`bin_xx`目录下，并指定Python3_ROOT_DIR对应到目录上
+最好把安装好pandas库的python环境整体拷贝到`bin_xx`目录下，并指定`Python3_ROOT_DIR`对应到目录上
 
-> tips:如果系统有多个Python，想指定某个Python环节，需要设置Python3_ROOT_DIR变量
+> tips:如果系统有多个Python，想指定某个Python环境，可以设置`Python3_ROOT_DIR`变量
 
 ## 编译程序
 
 在确保完成了`./src/3rdparty/CMakeLists.txt`的编译，以及完成Python路径的配置（如果需要依赖python），直接用Qt Creator （或vs）打开`./CMakeLists.txt`进行编译，编译完成后安装，默认的安装路径会自动把文件安装到工程目录的`bin_xx`目录下
 
 如果第三方库的安装路径不是使用默认路径，需要指定各个第三方库的安装位置
+
+> 详细构建教程见：[doc/how-to-build.md文档](./doc/how-to-build.md)
+
+本项目开发规范：[开发规范文档:coding-standard.md](./coding-standard.md)
 
 # 程序框架及说明
 

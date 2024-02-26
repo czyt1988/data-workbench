@@ -371,7 +371,7 @@ void DANodeItemSettingWidget::onCheckBoxMovableStateChanged(int state)
 void DANodeItemSettingWidget::onCheckBoxResizableStateChanged(int state)
 {
     if (d_ptr->mItem) {
-        d_ptr->mItem->enableResize(state == Qt::Checked);
+        d_ptr->mItem->setEnableResize(state == Qt::Checked);
         d_ptr->mItem->update();
         ui->doubleSpinBoxBodyWidth->setEnabled(d_ptr->mItem->isResizable());
         ui->doubleSpinBoxBodyHeight->setEnabled(d_ptr->mItem->isResizable());

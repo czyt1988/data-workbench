@@ -40,13 +40,13 @@ public:
     void setBorderPen(const QPen& p);
     QPen getBorderPen() const;
     // 设置是否显示边框
-    void enableShowBorder(bool on);
+    void setShowBorder(bool on);
     bool isShowBorder() const;
     // 允许选中
-    void enableSelect(bool on = true);
+    void setSelectable(bool on = true);
     bool isSelectable() const;
     // 是否允许移动
-    void enableMove(bool on = true);
+    void setMovable(bool on = true);
     bool isMovable() const;
     // 背景
     void setBackgroundBrush(const QBrush& b);

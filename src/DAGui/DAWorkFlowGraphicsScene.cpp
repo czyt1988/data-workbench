@@ -249,7 +249,7 @@ void DAWorkFlowGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEve
         item->setScenePos(pos);
         item->setFont(mTextFont);
         item->setDefaultTextColor(mTextColor);
-        item->enableEdit(true);
+        item->setEditable(true);
         item->setFocus();
         emit mouseActionFinished(mMouseAction);
     } break;

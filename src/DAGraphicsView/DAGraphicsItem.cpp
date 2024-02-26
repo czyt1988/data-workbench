@@ -126,7 +126,7 @@ bool DAGraphicsItem::loadFromXml(const QDomElement* parentElement)
             if (!borderPenEle.isNull()) {
                 QPen p;
                 if (DAXMLFileInterface::loadElement(p, &borderPenEle)) {
-                    enableShowBorder(isShowBorder);
+                    setShowBorder(isShowBorder);
                     setBorderPen(p);
                 }
             }
@@ -168,7 +168,7 @@ QPen DAGraphicsItem::getBorderPen() const
  * @brief 设置显示边框
  * @param on
  */
-void DAGraphicsItem::enableShowBorder(bool on)
+void DAGraphicsItem::setShowBorder(bool on)
 {
     d_ptr->mIsShowBorder = on;
 }
@@ -186,7 +186,7 @@ bool DAGraphicsItem::isShowBorder() const
  * @brief 设置是否可选中
  * @param on
  */
-void DAGraphicsItem::enableSelect(bool on)
+void DAGraphicsItem::setSelectable(bool on)
 {
     setFlag(ItemIsSelectable, on);
 }
@@ -204,7 +204,7 @@ bool DAGraphicsItem::isSelectable() const
  * @brief 设置为是否可移动
  * @param on
  */
-void DAGraphicsItem::enableMove(bool on)
+void DAGraphicsItem::setMovable(bool on)
 {
     setFlag(ItemIsMovable, on);
 }

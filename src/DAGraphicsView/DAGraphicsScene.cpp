@@ -621,6 +621,30 @@ QGraphicsItem* DAGraphicsScene::findItemByID(const QList< QGraphicsItem* >& its,
     return nullptr;
 }
 
+QList< QGraphicsItem* > DAGraphicsScene::topItems() const
+{
+    const QList< QGraphicsItem* > its = items();
+    QList< QGraphicsItem* > r;
+    for (QGraphicsItem* d : its) {
+        if (nullptr == d->parentItem()) {
+            r.append(d);
+        }
+    }
+    return r;
+}
+
+QList< QGraphicsItem* > DAGraphicsScene::topItems(const QPointF& scenePos) const
+{
+    const QList< QGraphicsItem* > its = items(scenePos);
+    QList< QGraphicsItem* > r;
+    for (QGraphicsItem* d : its) {
+        if (nullptr == d->parentItem()) {
+            r.append(d);
+        }
+    }
+    return r;
+}
+
 /**
    @brief 通用的item分组，此操作和QGraphicsScene::createItemGroup逻辑一致
    @param group

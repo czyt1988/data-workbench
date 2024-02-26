@@ -87,7 +87,7 @@ DACommandGraphicsShapeBorderPenChange::~DACommandGraphicsShapeBorderPenChange()
 void DACommandGraphicsShapeBorderPenChange::redo()
 {
     for (DAGraphicsItem* i : m_items) {
-        i->enableShowBorder(m_newIsShow);
+        i->setShowBorder(m_newIsShow);
         i->setBorderPen(m_newPen);
         i->update();
     }
@@ -96,7 +96,7 @@ void DACommandGraphicsShapeBorderPenChange::redo()
 void DACommandGraphicsShapeBorderPenChange::undo()
 {
     for (int i = 0; i < m_items.size(); ++i) {
-        m_items[ i ]->enableShowBorder(m_oldIsShow[ i ]);
+        m_items[ i ]->setShowBorder(m_oldIsShow[ i ]);
         m_items[ i ]->setBorderPen(m_oldPens[ i ]);
         m_items[ i ]->update();
     }

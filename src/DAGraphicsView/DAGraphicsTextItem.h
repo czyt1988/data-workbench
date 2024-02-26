@@ -51,15 +51,15 @@ public:
     QFont getFont() const;
 
     // 设置编辑模式
-    void enableEdit(bool on = true);
+    void setEditable(bool on = true);
     bool isEditable() const;
 
     // 设置是否开启相对定位
-    void enableRelativePosition(bool on);
+    void setEnableRelativePosition(bool on);
     bool isEnableRelativePosition() const;
 
     // 自动调整大小
-    void enableAutoAdjustSize(bool on);
+    void setAutoAdjustSize(bool on);
     bool isAutoAdjustSize() const;
 
     // 设置相对父窗口的相对定位

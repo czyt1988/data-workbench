@@ -36,7 +36,7 @@ DAGraphicsStandardTextItem::DAGraphicsStandardTextItem(const QFont& f, QGraphics
  * @brief 设置编辑模式
  * @param on
  */
-void DAGraphicsStandardTextItem::enableEdit(bool on)
+void DAGraphicsStandardTextItem::setEditable(bool on)
 {
     setTextInteractionFlags(on ? Qt::TextEditorInteraction : Qt::NoTextInteraction);
 }
@@ -47,7 +47,7 @@ void DAGraphicsStandardTextItem::enableEdit(bool on)
  */
 bool DAGraphicsStandardTextItem::isEditable() const
 {
-    return textInteractionFlags().testFlags(Qt::TextEditorInteraction);
+    return textInteractionFlags().testFlag(Qt::TextEditorInteraction);
 }
 
 bool DAGraphicsStandardTextItem::saveToXml(QDomDocument* doc, QDomElement* parentElement) const

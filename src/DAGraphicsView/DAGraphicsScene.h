@@ -100,6 +100,10 @@ public:
     QGraphicsItem* findItemByID(uint64_t id, bool recursion = false) const;
     static QGraphicsItem* findItemByID(const QList< QGraphicsItem* >& its, uint64_t id, bool recursion = false);
 
+    //返回所有顶层的item
+    QList< QGraphicsItem* > topItems() const;
+    QList< QGraphicsItem* > topItems(const QPointF& scenePos) const;
+
 public:
     static void addItemToGroup(QGraphicsItemGroup* group, const QList< QGraphicsItem* >& willGroupItems);
 public slots:

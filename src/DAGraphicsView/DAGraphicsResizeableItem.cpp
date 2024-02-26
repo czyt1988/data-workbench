@@ -862,7 +862,7 @@ bool DAGraphicsResizeableItem::loadFromXml(const QDomElement* itemElement)
     if (rsinfoEle.isNull()) {
         return false;
     }
-    enableResize(getStringBoolValue(rsinfoEle.attribute("enableResize")));
+    setEnableResize(getStringBoolValue(rsinfoEle.attribute("enableResize")));
     qreal v1, v2;
     if (getStringRealValue(rsinfoEle.attribute("width"), v1) && getStringRealValue(rsinfoEle.attribute("height"), v2)) {
         setBodySize(QSizeF(v1, v2));
@@ -1008,7 +1008,7 @@ QSizeF DAGraphicsResizeableItem::getControlerSize() const
  * @brief 设置是否Delegate可用
  * @param on
  */
-void DAGraphicsResizeableItem::enableResize(bool on)
+void DAGraphicsResizeableItem::setEnableResize(bool on)
 {
     d_ptr->mEnableResize = on;
     if (on) {

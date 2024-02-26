@@ -115,7 +115,7 @@ public:  // 尺寸相关接口
     void setControlerSize(const QSizeF& s);
     QSizeF getControlerSize() const;
     // 是否允许
-    void enableResize(bool on);
+    void setEnableResize(bool on);
     bool isResizable() const;
     // 设置body的位置
     void setBodyPos(const QPointF& p);
