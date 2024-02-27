@@ -211,7 +211,12 @@ void DACommandsForWorkFlowRemoveSelectNodes::redo()
     for (DAAbstractNodeGraphicsItem* item : qAsConst(mSelectNodeItems)) {
         mScene->removeItem(item);
         if (wf) {
-            wf->removeNode(item->node());
+            //! 这里要把node保存下来，node是智能指针，如果用户正常操作添加，addNode_，node的智能指针是有其它地方的实例不会析构
+            //! 但是，如果是打开工程，打开后再删除，这样ndoe是没有其它地方的实例，如果这里直接removeNode,节点就会被析构，
+            //! 因此，为了避免node析构，这里要把node再保存下来
+            auto n = item->node();
+            mWillRemoveNodes.append(n);
+            wf->removeNode(n);
         }
     }
     for (QGraphicsItem* item : qAsConst(mWillRemoveNormal)) {
@@ -226,12 +231,14 @@ void DACommandsForWorkFlowRemoveSelectNodes::undo()
     for (DAAbstractNodeGraphicsItem* item : qAsConst(mSelectNodeItems)) {
         mScene->addItem(item);
         if (wf) {
+            // 因为mWillRemoveNodes保留了节点，item里的weakpoint能获取到智能指针
             wf->addNode(item->node());
         }
     }
     for (QGraphicsItem* item : qAsConst(mWillRemoveNormal)) {
         mScene->addItem(item);
     }
+    mWillRemoveNodes.clear();
     // 注意undo要放到最后
     QUndoCommand::undo();  // 此函数会执行子内容的redo/undo
 }

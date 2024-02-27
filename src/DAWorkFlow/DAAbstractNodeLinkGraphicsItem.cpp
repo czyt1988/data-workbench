@@ -69,8 +69,7 @@ DANodeGraphicsScene* DAAbstractNodeLinkGraphicsItem::PrivateData::nodeScene() co
     return (qobject_cast< DANodeGraphicsScene* >(q_ptr->scene()));
 }
 
-void DAAbstractNodeLinkGraphicsItem::PrivateData::setLinkPointNameVisible(bool on,
-                                                                          DAAbstractNodeLinkGraphicsItem::Orientations o)
+void DAAbstractNodeLinkGraphicsItem::PrivateData::setLinkPointNameVisible(bool on, DAAbstractNodeLinkGraphicsItem::Orientations o)
 {
     switch (o) {
     case DAGraphicsLinkItem::OrientationStart:
@@ -146,8 +145,7 @@ void DAAbstractNodeLinkGraphicsItem::PrivateData::updateLinkPointNameText()
     updateLinkPointNameText(mToTextItem, q_ptr->getEndPosition(), mToPoint, mPointTextPositionOffset.second);
 }
 
-void DAAbstractNodeLinkGraphicsItem::PrivateData::setPointTextColor(const QColor& c,
-                                                                    DAAbstractNodeLinkGraphicsItem::Orientations o)
+void DAAbstractNodeLinkGraphicsItem::PrivateData::setPointTextColor(const QColor& c, DAAbstractNodeLinkGraphicsItem::Orientations o)
 {
     switch (o) {
     case DAAbstractNodeLinkGraphicsItem::OrientationStart:
@@ -180,8 +178,7 @@ QColor DAAbstractNodeLinkGraphicsItem::PrivateData::getPointTextColor(DAAbstract
     return (QColor());
 }
 
-void DAAbstractNodeLinkGraphicsItem::PrivateData::setPointTextPositionOffset(int offset,
-                                                                             DAAbstractNodeLinkGraphicsItem::Orientations o)
+void DAAbstractNodeLinkGraphicsItem::PrivateData::setPointTextPositionOffset(int offset, DAAbstractNodeLinkGraphicsItem::Orientations o)
 {
     switch (o) {
     case DAAbstractNodeLinkGraphicsItem::OrientationStart:
@@ -315,8 +312,7 @@ QRectF DAAbstractNodeLinkGraphicsItem::updateBoundingRect()
  */
 QRectF DAAbstractNodeLinkGraphicsItem::rectFromTwoPoint(const QPointF& p0, const QPointF& p1)
 {
-    return (QRectF(QPointF(qMin(p0.x(), p1.x()), qMin(p0.y(), p1.y())),
-                   QPointF(qMax(p0.x(), p1.x()), qMax(p0.y(), p1.y()))));
+    return (QRectF(QPointF(qMin(p0.x(), p1.x()), qMin(p0.y(), p1.y())), QPointF(qMax(p0.x(), p1.x()), qMax(p0.y(), p1.y()))));
 }
 
 /**
@@ -342,8 +338,7 @@ bool DAAbstractNodeLinkGraphicsItem::isLinkPointNameVisible(Orientations o) cons
  * @param c
  * @param o
  */
-void DAAbstractNodeLinkGraphicsItem::setLinkPointNameTextColor(const QColor& c,
-                                                               DAAbstractNodeLinkGraphicsItem::Orientations o)
+void DAAbstractNodeLinkGraphicsItem::setLinkPointNameTextColor(const QColor& c, DAAbstractNodeLinkGraphicsItem::Orientations o)
 {
     d_ptr->setPointTextColor(c, o);
 }
@@ -363,8 +358,7 @@ QColor DAAbstractNodeLinkGraphicsItem::getLinkPointNameTextColor(DAAbstractNodeL
  * @param offset
  * @param o
  */
-void DAAbstractNodeLinkGraphicsItem::setLinkPointNamePositionOffset(int offset,
-                                                                    DAAbstractNodeLinkGraphicsItem::Orientations o)
+void DAAbstractNodeLinkGraphicsItem::setLinkPointNamePositionOffset(int offset, DAAbstractNodeLinkGraphicsItem::Orientations o)
 {
     d_ptr->setPointTextPositionOffset(offset, o);
 }
@@ -440,7 +434,12 @@ void DAAbstractNodeLinkGraphicsItem::detachFrom()
 {
     if (d_ptr->mFromItem) {
         d_ptr->mFromItem->removeLinkInfo(this, d_ptr->mFromPoint);
-        d_ptr->mFromItem->node()->detachLink(d_ptr->mFromPoint.name);  // 断开连接
+        auto node = d_ptr->mFromItem->node();
+        if (!node) {
+            qCritical() << tr("error:link item can not get from node");  // cn:错误:无法通过图元获取到对应的节点
+            return;
+        }
+        node->detachLink(d_ptr->mFromPoint.name);  // 断开连接
         d_ptr->mFromItem->detachLink(d_ptr->mFromPoint, this, DANodeLinkPoint::Output);
         d_ptr->mFromItem = nullptr;
     }

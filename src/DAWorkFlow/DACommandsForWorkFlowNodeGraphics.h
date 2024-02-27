@@ -78,6 +78,7 @@ private:
     QList< DAAbstractNodeGraphicsItem* > mSelectNodeItems;
     QList< DAAbstractNodeLinkGraphicsItem* > mWillRemoveLink;  ///< 此item仅做保存
     QList< QGraphicsItem* > mWillRemoveNormal;
+    QList< DAAbstractNode::SharedPointer > mWillRemoveNodes;  ///< 记录删除的节点，这里是为了智能指针保留实例，不至于被析构
     bool mNeedDelete;
 };
 
