@@ -41,7 +41,7 @@ void DAAppActions::buildMainAction()
     actionSave          = createAction("actionSave", ":/Icon/Icon/save.svg");
     actionSaveAs        = createAction("actionSaveAs", ":/Icon/Icon/save-as.svg");
     actionAppendProject = createAction("actionAppendProject", ":/Icon/Icon/appendProject.svg");
-
+    // 注意Redo/undo action在ribbonArea中生成
     actionRedo    = nullptr;
     actionUndo    = nullptr;
     actionSetting = createAction("actionSetting", ":/Icon/Icon/setting.svg");
