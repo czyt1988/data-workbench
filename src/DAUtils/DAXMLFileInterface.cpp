@@ -33,6 +33,15 @@
 #include <QVector3D>
 #include <QVector4D>
 #include <QPointer>
+#ifndef DAXMLFileInterfaceCheckEleClass
+#define DAXMLFileInterfaceCheckEleClass(ele, className)                                                                \
+    do {                                                                                                               \
+        if (0 != ele->attribute("class").compare(className, Qt::CaseInsensitive)) {                                    \
+            return false;                                                                                              \
+        }                                                                                                              \
+    } while (0)
+#endif
+
 namespace DA
 {
 DAXMLFileInterface::DAXMLFileInterface()
@@ -67,6 +76,7 @@ QDomElement DAXMLFileInterface::makeElement(const QRect& v, const QString& tagNa
  */
 bool DAXMLFileInterface::loadElement(QRect& p, const QDomElement* ele)
 {
+    DAXMLFileInterfaceCheckEleClass(ele, "QRect");
     int v;
     if (getStringIntValue(ele->attribute("x"), v)) {
         p.setX(v);
@@ -107,6 +117,7 @@ QDomElement DAXMLFileInterface::makeElement(const QRectF& v, const QString& tagN
  */
 bool DAXMLFileInterface::loadElement(QRectF& p, const QDomElement* ele)
 {
+    DAXMLFileInterfaceCheckEleClass(ele, "QRectF");
     qreal v;
     if (getStringRealValue(ele->attribute("x"), v)) {
         p.setX(v);
@@ -147,6 +158,7 @@ QDomElement DAXMLFileInterface::makeElement(const QPoint& v, const QString& tagN
  */
 bool DAXMLFileInterface::loadElement(QPoint& p, const QDomElement* ele)
 {
+    DAXMLFileInterfaceCheckEleClass(ele, "QPoint");
     int v;
     if (getStringIntValue(ele->attribute("x"), v)) {
         p.setX(v);
@@ -167,8 +179,8 @@ QDomElement DAXMLFileInterface::makeElement(const QPointF& v, const QString& tag
 {
     QDomElement ele = doc->createElement(tagName);
     ele.setAttribute("class", "QPointF");
-    ele.setAttribute("x", QString::number(v.x()));
-    ele.setAttribute("y", QString::number(v.y()));
+    ele.setAttribute("x", doubleToString(v.x()));
+    ele.setAttribute("y", doubleToString(v.y()));
     return ele;
 }
 
@@ -180,6 +192,7 @@ QDomElement DAXMLFileInterface::makeElement(const QPointF& v, const QString& tag
  */
 bool DAXMLFileInterface::loadElement(QPointF& p, const QDomElement* ele)
 {
+    DAXMLFileInterfaceCheckEleClass(ele, "QPointF");
     qreal v;
     if (getStringRealValue(ele->attribute("x"), v)) {
         p.setX(v);
@@ -214,6 +227,7 @@ QDomElement DAXMLFileInterface::makeElement(const QPen& v, const QString& tagNam
  */
 bool DAXMLFileInterface::loadElement(QPen& p, const QDomElement* ele)
 {
+    DAXMLFileInterfaceCheckEleClass(ele, "QPen");
     QColor c;
     c.setNamedColor(ele->attribute("color"));
     if (c.isValid()) {
@@ -271,6 +285,7 @@ QDomElement DAXMLFileInterface::makeElement(const QBrush& v, const QString& tagN
 
 bool DAXMLFileInterface::loadElement(QBrush& p, const QDomElement* ele)
 {
+    DAXMLFileInterfaceCheckEleClass(ele, "QBrush");
     if (!ele->hasAttribute("style")) {
         return false;
     }
@@ -310,13 +325,24 @@ bool DAXMLFileInterface::loadElement(QBrush& p, const QDomElement* ele)
     return true;
 }
 
+/**
+ * @brief 生成一个QFont标签
+ *
+ * @code
+ * <tagname class="QFont" bold="1" italic="0" pointSizeF="12.0" weight="Thin">
+ * @endcode
+ * @param v
+ * @param tagName 标签名字
+ * @param doc
+ * @return
+ */
 QDomElement DAXMLFileInterface::makeElement(const QFont& v, const QString& tagName, QDomDocument* doc)
 {
     QDomElement fontEle = doc->createElement(tagName);
     fontEle.setAttribute("class", "QFont");
     fontEle.setAttribute("bold", v.bold());
     fontEle.setAttribute("italic", v.italic());
-    fontEle.setAttribute("pointSizeF", v.pointSizeF());
+    fontEle.setAttribute("pointSizeF", v.pointSizeF());  //这里不需要用doubleToString
     // QFont::Weight的枚举值在qt5和qt6不一致，为了避免直接传值，都需要转换为QFont::Weight
 #if QT_VERSION_MAJOR >= 6
     fontEle.setAttribute("weight", enumToString(v.weight()));
@@ -327,13 +353,46 @@ QDomElement DAXMLFileInterface::makeElement(const QFont& v, const QString& tagNa
     return fontEle;
 }
 
+/**
+ * @brief 加载qfont
+ * @param p
+ * @param ele
+ * @return
+ */
 bool DAXMLFileInterface::loadElement(QFont& p, const QDomElement* ele)
 {
+    DAXMLFileInterfaceCheckEleClass(ele, "QFont");
     p.setBold(ele->attribute("bold").toInt());
     p.setItalic(ele->attribute("italic").toInt());
     p.setPointSizeF(ele->attribute("pointSizeF").toDouble());
     p.setWeight(stringToEnum(ele->attribute("weight"), QFont::Normal));
     p.setFamily(ele->attribute("family"));
+    return true;
+}
+
+/**
+ * @brief 生成一个QVector3D标签
+ * @param v
+ * @param tagName
+ * @param doc
+ * @return
+ */
+QDomElement DAXMLFileInterface::makeElement(const QVector3D& v, const QString& tagName, QDomDocument* doc)
+{
+    QDomElement ele = doc->createElement(tagName);
+    ele.setAttribute("class", "QVector3D");
+    ele.setAttribute("x", doubleToString(v.x()));
+    ele.setAttribute("y", doubleToString(v.y()));
+    ele.setAttribute("z", doubleToString(v.z()));
+    return ele;
+}
+
+bool DAXMLFileInterface::loadElement(QVector3D& p, const QDomElement* ele)
+{
+    DAXMLFileInterfaceCheckEleClass(ele, "QVector3D");
+    p.setX(ele->attribute("x").toDouble());
+    p.setX(ele->attribute("y").toDouble());
+    p.setX(ele->attribute("z").toDouble());
     return true;
 }
 
@@ -355,7 +414,7 @@ QDomElement DAXMLFileInterface::makeElement(const QVariant& v, const QString& ta
 #if QT_VERSION_MAJOR >= 6
     int tid = v.typeId();
 #else
-    int tid = v.type();
+    int tid  = v.type();
 #endif
     // 特殊对待
     switch (tid) {
@@ -837,7 +896,7 @@ QString DA::variantToString(const QVariant& var)
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     int tid = var.type();
 #else
-    int tid = var.typeId();
+    int tid  = var.typeId();
 #endif
     switch (tid) {
     case QMetaType::UnknownType:

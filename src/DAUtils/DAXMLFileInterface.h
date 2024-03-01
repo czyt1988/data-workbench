@@ -9,6 +9,7 @@
 #include <QPointF>
 #include <QVariant>
 #include <QIODevice>
+#include <QVector3D>
 class QDomDocument;
 namespace DA
 {
@@ -46,6 +47,9 @@ public:
     // 标准保存—— QFont
     static QDomElement makeElement(const QFont& v, const QString& tagName, QDomDocument* doc);
     static bool loadElement(QFont& p, const QDomElement* ele);
+    // 标准保存—— QVector3D
+    static QDomElement makeElement(const QVector3D& v, const QString& tagName, QDomDocument* doc);
+    static bool loadElement(QVector3D& p, const QDomElement* ele);
     // 标准保存—— QVariant
     static QDomElement makeElement(const QVariant& v, const QString& tagName, QDomDocument* doc);
     static bool loadElement(QVariant& p, const QDomElement* ele);
@@ -70,7 +74,9 @@ DAUTILS_API QString variantToString(const QVariant& var);
 DAUTILS_API QVariant stringToVariant(const QString& var, const QString& typeName);
 
 /**
- * @brief doubleToString
+ * @brief 把double转换为字符串，并且尽量不丢失精度，不会转换为xxe-5这样的情况
+ *
+ * @note 此函数效率不高，但能保证doulbe转换为文本，在转换回double的精度
  * @param a
  * @return
  */
