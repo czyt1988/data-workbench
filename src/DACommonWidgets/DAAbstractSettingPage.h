@@ -10,13 +10,10 @@ namespace DA
  *
  * DASettingWidget管理所有的DAAbstractSettingPage
  *
- * 数据的交互通过DAConfig类
+ * @ref settingChanged 信号用于通知主窗口设置发生了变换，顶层设置窗口会把这个配置页标记为dirty如果没有发射settingChanged信号,
+ * 顶层的设置管理窗口在用户点确定或应用时不会调用此窗口的apply接口
  *
- * 首先程序会加载DAConfig对象，在构建页面的时候，会调用setConfig把配置传入
- *
- * 在调用apply函数的时候需要应用设置，这时候也要同步更改DAConfig内容，DASettingWidget会调用getConfig把配置信息重新获取
- *
- * 同时会把对应的配置信息重新保存
+ * @ref settingApplyed 信号用于通知主窗口设置已经完成，顶层设置窗口会把这个配置页标记为clean,顶层的设置管理窗口在用户点确定或应用时不会调用此窗口的apply接口
  *
  * @note 重载时务必调用DAAbstractSettingPage::setConfig(c);否则getConfig函数将不起作用
  *
@@ -28,8 +25,10 @@ public:
     DAAbstractSettingPage(QWidget* parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
     ~DAAbstractSettingPage();
     /**
-     * @brief 应用设置
-     * @note 注意要更新返回的config
+     * @brief 应用设置，用户点击设置窗口的应用按钮或者确定按钮，会触发apply接口，在此接口上，可以用于保存此配置页想要保存的信息
+     *
+     * @note 注意，页面ui的设置变更时要通过@ref settingChanged 信号通知设置窗口，顶层设置窗口会把这个配置页标记为dirty
+     * 如果没有发射@ref settingChanged 信号,顶层的设置管理窗口在用户点确定或应用时不会调用此窗口的apply接口
      */
     virtual void apply() = 0;
     /**

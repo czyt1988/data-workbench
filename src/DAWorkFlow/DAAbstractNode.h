@@ -189,8 +189,7 @@ public:
     virtual DAAbstractNodeGraphicsItem* createGraphicsItem() = 0;
 
     // 获取item
-    DAAbstractNodeGraphicsItem* graphicsItem();
-    const DAAbstractNodeGraphicsItem* graphicsItem() const;
+    DAAbstractNodeGraphicsItem* graphicsItem() const;
 
 protected:
     // 记录item，此函数在DAAbstractNodeGraphicsItem构造函数中调用

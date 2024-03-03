@@ -188,7 +188,7 @@ void DAAppActions::buildWorkflowAction()
     actionWorkflowWholeView = createAction("actionWholeView", ":/Icon/Icon/viewAll.svg");
     actionWorkflowZoomIn    = createAction("actionZoomIn", ":/Icon/Icon/zoomIn.svg");
     actionWorkflowZoomOut   = createAction("actionZoomOut", ":/Icon/Icon/zoomOut.svg");
-    actionWorkflowRun       = createAction("actionRunWorkflow", ":/Icon/Icon/run.svg");
+    actionWorkflowRun       = createAction("actionWorkflowRun", ":/Icon/Icon/run.svg");
     actionWorkflowTerminate = createAction("actionWorkflowTerminate", ":/Icon/Icon/stop.svg");
     actionWorkflowTerminate->setEnabled(false);
 }

@@ -454,7 +454,8 @@ bool DAAbstractNode::linkTo(const QString& outKey, DAAbstractNode::SharedPointer
         f->nodeLinkSucceed(pointer(), outKey, inNode, inKey);
     }
 #if DA_DAABSTRACTNODE_DEBUG_PRINT
-    qDebug() << getNodeName() << "->linkTo(outKey=" << outKey << ",inNode=" << inNode->getNodeName() << ",inKey=" << inKey << ")";
+    qDebug() << getNodeName() << "->linkTo(outKey=" << outKey << ",inNode=" << inNode->getNodeName()
+             << ",inKey=" << inKey << ")";
 #endif
     return (true);
 }
@@ -809,15 +810,7 @@ DAAbstractNodeFactory* DAAbstractNode::factory() const
  * @brief 获取graphicsItem
  * @return
  */
-DAAbstractNodeGraphicsItem* DAAbstractNode::graphicsItem()
-{
-    return d_ptr->mItem;
-}
-/**
- * @brief 获取graphicsItem
- * @return
- */
-const DAAbstractNodeGraphicsItem* DAAbstractNode::graphicsItem() const
+DA::DAAbstractNodeGraphicsItem* DAAbstractNode::graphicsItem() const
 {
     return d_ptr->mItem;
 }

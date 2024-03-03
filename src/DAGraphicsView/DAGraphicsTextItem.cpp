@@ -326,9 +326,9 @@ void DAGraphicsTextItem::updateRelativePosition()
     QPointF itemPoint         = rectShapeKeyPoint(itemRect, itemKP);
     QPointF itemwillMovePoint = parPosition - itemPoint;
     itemwillMovePoint -= QPointF(parentRect.width() * d_ptr->mRelativeX, parentRect.height() * d_ptr->mRelativeY);
-    qDebug() << "updateRelativePosition,parent boundingRect=" << pi->boundingRect() << ",parentRect=" << parentRect
-             << ",parPosition=" << parPosition << "item boundingRect = " << boundingRect() << ",itemRect=" << itemRect
-             << ",itemPoint=" << itemPoint << ",itemwillMovePoint=" << itemwillMovePoint;
+    // qDebug() << "updateRelativePosition,parent boundingRect=" << pi->boundingRect() << ",parentRect=" << parentRect
+    //          << ",parPosition=" << parPosition << "item boundingRect = " << boundingRect() << ",itemRect=" << itemRect
+    //          << ",itemPoint=" << itemPoint << ",itemwillMovePoint=" << itemwillMovePoint;
     setPos(itemwillMovePoint);
 }
 

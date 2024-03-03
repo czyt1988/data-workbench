@@ -95,7 +95,9 @@ class DAWorkFlowOperateWidget;
  *     文本pannel：da-pannel-context.workflow.text
  *     背景pannel：da-pannel-context.workflow.background
  *     视图pannel：da-pannel-context.workflow.view
+ *  工作流运行category：da-ribbon-category-workflow.run
  *     运行pannel：da-pannel-context.workflow.run
+ *
  * DataFrame上下文标签:da-ribbon-contextcategory-dataframe
  * Chart上下文标签：da-ribbon-contextcategory-chart
  *  Chart编辑category：da-ribbon-category-chart.edit
