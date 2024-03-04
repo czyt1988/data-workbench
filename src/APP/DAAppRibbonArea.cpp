@@ -309,6 +309,7 @@ void DAAppRibbonArea::buildRibbonMainCategory()
     //--------Workflow Opt----------------------------------------------
     m_pannelMainWorkflowOpt = m_categoryMain->addPannel(tr("Workflow"));
     m_pannelMainWorkflowOpt->setObjectName(QStringLiteral("da-pannel-main.workflow"));
+    m_pannelMainWorkflowOpt->addLargeAction(m_actions->actionWorkflowNew);
     m_pannelMainWorkflowOpt->addLargeAction(m_actions->actionWorkflowRun);
     m_pannelMainWorkflowOpt->addLargeAction(m_actions->actionWorkflowTerminate);
     //--------Setting--------------------------------------------------
@@ -534,22 +535,10 @@ void DAAppRibbonArea::buildContextCategoryWorkflowEdit_()
     m_pannelWorkflowView->addLargeAction(m_actions->actionWorkflowEnableItemLinkageMove);
     //
     // connect
-    connect(m_workflowShapeEditPannelWidget,
-            &DAShapeEditPannelWidget::borderPenChanged,
-            this,
-            &DAAppRibbonArea::selectedWorkflowItemPen);
-    connect(m_workflowShapeEditPannelWidget,
-            &DAShapeEditPannelWidget::backgroundBrushChanged,
-            this,
-            &DAAppRibbonArea::selectedWorkflowItemBrush);
-    connect(m_workflowFontEditPannel,
-            &DAFontEditPannelWidget::currentFontChanged,
-            this,
-            &DAAppRibbonArea::selectedWorkflowItemFont);
-    connect(m_workflowFontEditPannel,
-            &DAFontEditPannelWidget::currentFontColorChanged,
-            this,
-            &DAAppRibbonArea::selectedWorkflowItemFontColor);
+    connect(m_workflowShapeEditPannelWidget, &DAShapeEditPannelWidget::borderPenChanged, this, &DAAppRibbonArea::selectedWorkflowItemPen);
+    connect(m_workflowShapeEditPannelWidget, &DAShapeEditPannelWidget::backgroundBrushChanged, this, &DAAppRibbonArea::selectedWorkflowItemBrush);
+    connect(m_workflowFontEditPannel, &DAFontEditPannelWidget::currentFontChanged, this, &DAAppRibbonArea::selectedWorkflowItemFont);
+    connect(m_workflowFontEditPannel, &DAFontEditPannelWidget::currentFontColorChanged, this, &DAAppRibbonArea::selectedWorkflowItemFontColor);
 }
 
 /**

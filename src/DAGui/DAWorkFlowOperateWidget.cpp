@@ -62,6 +62,11 @@ DAWorkFlow* DAWorkFlowOperateWidget::createWorkflow()
  */
 DAWorkFlowEditWidget* DAWorkFlowOperateWidget::appendWorkflow(const QString& name)
 {
+    if (isOnlyOneWorkflow()) {
+        if (ui->tabWidget->count() >= 1) {
+            return nullptr;
+        }
+    }
     DAWorkFlowEditWidget* wfe = new DAWorkFlowEditWidget(ui->tabWidget);
     DAWorkFlow* wf            = createWorkflow();
     wf->setParent(wfe);
@@ -85,6 +90,21 @@ DAWorkFlowEditWidget* DAWorkFlowOperateWidget::appendWorkflow(const QString& nam
     emit workflowCreated(wfe);
     ui->tabWidget->setCurrentIndex(ui->tabWidget->indexOf(wfe));
     return wfe;
+}
+
+/**
+ * @brief 创建一个新的工作流窗口
+ * @note 此函数带有交互
+ * @return
+ */
+DAWorkFlowEditWidget* DAWorkFlowOperateWidget::appendWorkflowWithDialog()
+{
+    bool ok      = false;
+    QString text = QInputDialog::getText(this, tr("Title of new workflow"), tr("Title:"), QLineEdit::Normal, QString(), &ok);
+    if (!ok || text.isEmpty()) {
+        return nullptr;
+    }
+    return appendWorkflow(text);
 }
 
 /**
@@ -367,21 +387,6 @@ void DAWorkFlowOperateWidget::setCurrentWorkflowShowGrid(bool on)
 }
 
 /**
- * @brief 创建一个新的工作流窗口
- * @note 此函数带有交互
- * @return
- */
-DAWorkFlowEditWidget* DAWorkFlowOperateWidget::appendWorkflowWithDialog()
-{
-    bool ok = false;
-    QString text = QInputDialog::getText(this, tr("Title of new workflow"), tr("Title:"), QLineEdit::Normal, QString(), &ok);
-    if (!ok || text.isEmpty()) {
-        return nullptr;
-    }
-    return appendWorkflow(text);
-}
-
-/**
  * @brief 设置当前工作流全部显示
  */
 void DAWorkFlowOperateWidget::setCurrentWorkflowWholeView()
@@ -558,6 +563,16 @@ QList< DAGraphicsStandardTextItem* > DAWorkFlowOperateWidget::getSelectTextItems
         }
     }
     return res;
+}
+
+bool DAWorkFlowOperateWidget::isOnlyOneWorkflow() const
+{
+    return mOnlyOneWorkflow;
+}
+
+void DAWorkFlowOperateWidget::setOnlyOneWorkflow(bool v)
+{
+    mOnlyOneWorkflow = v;
 }
 
 /**

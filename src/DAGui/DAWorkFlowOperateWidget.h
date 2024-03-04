@@ -31,6 +31,8 @@ public:
     virtual DAWorkFlow* createWorkflow();
     // 创建工作流页面，会触发workflowCreated信号
     DAWorkFlowEditWidget* appendWorkflow(const QString& name);
+    // 创建一个新的工作流窗口，此函数带有交互
+    DAWorkFlowEditWidget* appendWorkflowWithDialog();
     // 获取当前工作流的索引
     int getCurrentWorkflowIndex() const;
     void setCurrentWorkflow(int index);
@@ -73,8 +75,10 @@ public:
     // 设置文本颜色 -- 此参数设置决定创建文本框时的字体和颜色
     QColor getDefaultTextColor() const;
     void setDefaultTextColor(const QColor& c);
-    // 创建一个新的工作流窗口，此函数带有交互
-    DAWorkFlowEditWidget* appendWorkflowWithDialog();
+    //设置只允许一个工作流
+    bool isOnlyOneWorkflow() const;
+    void setOnlyOneWorkflow(bool v);
+
 public slots:
     // 添加一个背景图
     void addBackgroundPixmap(const QString& pixmapPath);
@@ -161,6 +165,7 @@ private:
     QColor _defaultTextColor;
     QFont _defaultFont;
     bool _isDestorying;
+    bool mOnlyOneWorkflow { false };  ///<设置只允许一个工作流
 };
 }  // namespace DA
 #endif  // DAWORKFLOWOPERATEWIDGET_H
