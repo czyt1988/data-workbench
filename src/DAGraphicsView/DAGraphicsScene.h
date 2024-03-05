@@ -100,9 +100,13 @@ public:
     QGraphicsItem* findItemByID(uint64_t id, bool recursion = false) const;
     static QGraphicsItem* findItemByID(const QList< QGraphicsItem* >& its, uint64_t id, bool recursion = false);
 
-    //返回所有顶层的item
+    // 返回所有顶层的item
     QList< QGraphicsItem* > topItems() const;
     QList< QGraphicsItem* > topItems(const QPointF& scenePos) const;
+
+    // 设置场景就绪，如果场景还没加载完成，ready为false，一般这个函数在工程加载的时候应用
+    void setReady(bool on);
+    bool isReady() const;
 
 public:
     static void addItemToGroup(QGraphicsItemGroup* group, const QList< QGraphicsItem* >& willGroupItems);
@@ -124,7 +128,9 @@ signals:
      * @param oldPos
      * @param newPos
      */
-    void itemsPositionChanged(const QList< QGraphicsItem* >& items, const QList< QPointF >& oldPos, const QList< QPointF >& newPos);
+    void itemsPositionChanged(const QList< QGraphicsItem* >& items,
+                              const QList< QPointF >& oldPos,
+                              const QList< QPointF >& newPos);
 
     /**
      * @brief 条目bodysize改变触发的信号
@@ -162,7 +168,9 @@ protected:
     // 判断点击的item是否可以移动
     virtual bool isItemCanMove(QGraphicsItem* positem, const QPointF& scenePos);
     // 调用此函数 主动触发itemsPositionChanged信号，这个函数用于 继承此类例如实现了键盘移动item，主动触发此信号
-    void emitItemsPositionChanged(const QList< QGraphicsItem* >& items, const QList< QPointF >& oldPos, const QList< QPointF >& newPos);
+    void emitItemsPositionChanged(const QList< QGraphicsItem* >& items,
+                                  const QList< QPointF >& oldPos,
+                                  const QList< QPointF >& newPos);
     // 调用此函数 主动触发itemBodySizeChanged信号
     void emitItemBodySizeChanged(DAGraphicsResizeableItem* item, const QSizeF& oldSize, const QSizeF& newSize);
     // 调用此函数 主动触发itemRotationed信号

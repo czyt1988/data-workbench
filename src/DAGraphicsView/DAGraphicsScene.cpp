@@ -58,6 +58,7 @@ public:
     /// beginLink函数调用时会把mLinkItemIsMoved设置为false，只有接收到mouseMove事件后，此变量变为true，在mousePressedEvent才会进行结束判断
     bool mLinkItemIsMoved { false };
     bool mIsIgnoreLinkEvent { false };  ///< 设置忽略链接事件的处理，主要忽略mousePressEvent，mouseMoveEvent的链接事件
+    bool mIsReady { true };  ///< 场景是否就绪标记，此参数不保存
 };
 
 ////////////////////////////////////////////////
@@ -643,6 +644,26 @@ QList< QGraphicsItem* > DAGraphicsScene::topItems(const QPointF& scenePos) const
         }
     }
     return r;
+}
+
+/**
+ * @brief 设置场景就绪
+ *
+ * 如果场景还没加载完成，ready为false，一般这个函数在工程加载的时候应用
+ * @param on
+ */
+void DAGraphicsScene::setReady(bool on)
+{
+    d_ptr->mIsReady = on;
+}
+
+/**
+ * @brief 场景是否就绪
+ * @return 如果场景还没加载完成，ready为false，一般这个函数在工程加载的时候应用
+ */
+bool DAGraphicsScene::isReady() const
+{
+    return d_ptr->mIsReady;
 }
 
 /**

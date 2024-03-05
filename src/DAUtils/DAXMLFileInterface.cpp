@@ -1,4 +1,4 @@
-#include "DAXMLFileInterface.h"
+﻿#include "DAXMLFileInterface.h"
 #include <QDomDocument>
 #include <QDomElement>
 // QVariant cast use
@@ -342,7 +342,7 @@ QDomElement DAXMLFileInterface::makeElement(const QFont& v, const QString& tagNa
     fontEle.setAttribute("class", "QFont");
     fontEle.setAttribute("bold", v.bold());
     fontEle.setAttribute("italic", v.italic());
-    fontEle.setAttribute("pointSizeF", v.pointSizeF());  //这里不需要用doubleToString
+    fontEle.setAttribute("pointSizeF", v.pointSizeF());  // 这里不需要用doubleToString
     // QFont::Weight的枚举值在qt5和qt6不一致，为了避免直接传值，都需要转换为QFont::Weight
 #if QT_VERSION_MAJOR >= 6
     fontEle.setAttribute("weight", enumToString(v.weight()));
@@ -391,8 +391,8 @@ bool DAXMLFileInterface::loadElement(QVector3D& p, const QDomElement* ele)
 {
     DAXMLFileInterfaceCheckEleClass(ele, "QVector3D");
     p.setX(ele->attribute("x").toDouble());
-    p.setX(ele->attribute("y").toDouble());
-    p.setX(ele->attribute("z").toDouble());
+    p.setY(ele->attribute("y").toDouble());
+    p.setZ(ele->attribute("z").toDouble());
     return true;
 }
 
@@ -414,7 +414,7 @@ QDomElement DAXMLFileInterface::makeElement(const QVariant& v, const QString& ta
 #if QT_VERSION_MAJOR >= 6
     int tid = v.typeId();
 #else
-    int tid  = v.type();
+    int tid = v.type();
 #endif
     // 特殊对待
     switch (tid) {
@@ -896,7 +896,7 @@ QString DA::variantToString(const QVariant& var)
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     int tid = var.type();
 #else
-    int tid  = var.typeId();
+    int tid = var.typeId();
 #endif
     switch (tid) {
     case QMetaType::UnknownType:
@@ -983,7 +983,8 @@ QString DA::variantToString(const QVariant& var)
 
     case QMetaType::QLineF: {
         QLineF d = var.toLineF();
-        return (QString("%1;%2;%3;%4").arg(doubleToString(d.x1()), doubleToString(d.y1()), doubleToString(d.x2()), doubleToString(d.y2())));
+        return (QString("%1;%2;%3;%4")
+                    .arg(doubleToString(d.x1()), doubleToString(d.y1()), doubleToString(d.x2()), doubleToString(d.y2())));
     }
 
     case QMetaType::QVariantList: {
@@ -1005,36 +1006,36 @@ QString DA::variantToString(const QVariant& var)
     case QMetaType::QTransform: {
         QTransform d = var.value< QTransform >();
         return (QString("%1;%2;%3;%4;%5;%6;%7;%8;%9")
-                        .arg(d.m11())
-                        .arg(d.m12())
-                        .arg(d.m13())
-                        .arg(d.m21())
-                        .arg(d.m22())
-                        .arg(d.m23())
-                        .arg(d.m31())
-                        .arg(d.m32())
-                        .arg(d.m33()));
+                    .arg(d.m11())
+                    .arg(d.m12())
+                    .arg(d.m13())
+                    .arg(d.m21())
+                    .arg(d.m22())
+                    .arg(d.m23())
+                    .arg(d.m31())
+                    .arg(d.m32())
+                    .arg(d.m33()));
     }
 
     case QMetaType::QMatrix4x4: {
         QMatrix4x4 d = var.value< QMatrix4x4 >();
         return (QString("%1;%2;%3;%4;%5;%6;%7;%8;%9;%10;%11;%12;%13;%14;%15;%16")
-                        .arg(d(0, 0))
-                        .arg(d(0, 1))
-                        .arg(d(0, 2))
-                        .arg(d(0, 3))
-                        .arg(d(1, 0))
-                        .arg(d(1, 1))
-                        .arg(d(1, 2))
-                        .arg(d(1, 3))
-                        .arg(d(2, 0))
-                        .arg(d(2, 1))
-                        .arg(d(2, 2))
-                        .arg(d(2, 3))
-                        .arg(d(3, 0))
-                        .arg(d(3, 1))
-                        .arg(d(3, 2))
-                        .arg(d(3, 3)));
+                    .arg(d(0, 0))
+                    .arg(d(0, 1))
+                    .arg(d(0, 2))
+                    .arg(d(0, 3))
+                    .arg(d(1, 0))
+                    .arg(d(1, 1))
+                    .arg(d(1, 2))
+                    .arg(d(1, 3))
+                    .arg(d(2, 0))
+                    .arg(d(2, 1))
+                    .arg(d(2, 2))
+                    .arg(d(2, 3))
+                    .arg(d(3, 0))
+                    .arg(d(3, 1))
+                    .arg(d(3, 2))
+                    .arg(d(3, 3)));
     }
 
     case QMetaType::QPalette: {
@@ -1096,7 +1097,9 @@ QString DA::variantToString(const QVariant& var)
 
     case QMetaType::QRectF: {
         QRectF d = var.toRectF();
-        return (QString("%1;%2;%3;%4").arg(doubleToString(d.x()), doubleToString(d.y()), doubleToString(d.width()), doubleToString(d.height())));
+        return (
+            QString("%1;%2;%3;%4")
+                .arg(doubleToString(d.x()), doubleToString(d.y()), doubleToString(d.width()), doubleToString(d.height())));
     }
 
     case QMetaType::QRegularExpression: {

@@ -90,6 +90,8 @@ void DAXmlHelperPrivate::saveWorkflow(DAWorkFlowEditWidget* wfe, QDomDocument& d
     QDomElement externEle                  = doc.createElement("extern");
     DAWorkFlow* workflow                   = wfe->getWorkflow();
     DAWorkFlowGraphicsScene* workFlowScene = wfe->getWorkFlowGraphicsScene();
+    // 保存开始，设置场景没有就绪
+    workFlowScene->setReady(false);
     workflow->saveExternInfoToXml(&doc, &externEle);
     workflowEle.appendChild(externEle);
     qDebug() << QObject::tr("save workflow extern info cost: %1 ms").arg(tes.restart());
@@ -108,6 +110,8 @@ void DAXmlHelperPrivate::saveWorkflow(DAWorkFlowEditWidget* wfe, QDomDocument& d
     // 保存scene信息
     saveSecenInfo(workFlowScene, doc, workflowEle);
     qDebug() << QObject::tr("save secen info cost: %1 ms").arg(tes.restart());
+    // 保存完成，设置场景没有就绪
+    workFlowScene->setReady(true);
 }
 
 /**
@@ -122,6 +126,8 @@ bool DAXmlHelperPrivate::loadWorkflow(DAWorkFlowEditWidget* wfe, const QDomEleme
     tes.start();
     DAWorkFlow* workflow                   = wfe->getWorkflow();
     DAWorkFlowGraphicsScene* workFlowScene = wfe->getWorkFlowGraphicsScene();
+    // 加载开始，设置场景没有就绪
+    workFlowScene->setReady(false);
     //
 
     QDomElement externEle = workflowEle.firstChildElement("extern");
@@ -154,6 +160,9 @@ bool DAXmlHelperPrivate::loadWorkflow(DAWorkFlowEditWidget* wfe, const QDomEleme
         qCritical() << QObject::tr("load scene info occurce error");
     }
     qDebug() << QObject::tr("load secen info cost: %1 ms").arg(tes.restart());
+
+    // 加载完成，设置场景没有就绪
+    workFlowScene->setReady(true);
     return true;
 }
 /**
