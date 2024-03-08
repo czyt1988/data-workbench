@@ -44,6 +44,7 @@ add_subdirectory(SARibbon)
 add_subdirectory(ADS)
 
 add_subdirectory(spdlog)
+file(COPY "${CMAKE_CURRENT_LIST_DIR}/spdlog/include/spdlog" DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
 
 # pybind11直接把文件夹复制过去
 file(COPY "${CMAKE_CURRENT_LIST_DIR}/pybind11/include/pybind11" DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
