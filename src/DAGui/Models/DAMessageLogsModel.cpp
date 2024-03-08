@@ -206,21 +206,27 @@ void DAMessageLogsModel::onMessageAppended()
 {
     //全表刷新
     //触发此信号说明队列已经满了
-    int r = rowCount();
-    int c = columnCount();
-    int qs = d_ptr->_messageQueueProxy.size();  //全局队列的容积，如果r == s 说明已经充满，不需要新增行
-    r  = (r > 0) ? r - 1 : 0;
-    c  = (c > 0) ? c - 1 : 0;
-    qs = (qs > 0) ? qs - 1 : 0;
+    int r = rowCount() - 1;
+    int c = columnCount() - 1;
+    int qs = d_ptr->_messageQueueProxy.size() - 1;  //全局队列的容积，如果r == s 说明已经充满，不需要新增行
+
+    //    r  = (r > 0) ? r - 1 : 0;//禁止这种操作，会让r在索引和数量上处于一种模糊，在r有值时是索引，无值时也应该是索引只是是-1而已，如果是0，就认为有一个数据，会出现异常
+    //    c  = (c > 0) ? c - 1 : 0;
+    //    qs = (qs > 0) ? qs - 1 : 0;
 
     if (r < qs) {
         //说明刚刚过容积线，此时需要插入到qs的长度，理论上之后都是r == qs
-        beginInsertRows(QModelIndex(), r, qs - 1);
+        //此时r已经是减去1的索引，因此插入位置要r+1
+        beginInsertRows(QModelIndex(), r + 1, qs);
         d_ptr->_rowCount = qs + 1;
         endInsertRows();
     } else {
         //这里说明总体容积已经充满，全局队列此时会一直维护一个固定容积，只需要更新数据
-        emit dataChanged(index(0, 0), index(r - 1, c - 1));
+        //全局队列是进行一个移动，这里全部更新
+        // r和c已经在数量上减去1，就是索引
+        if (r >= 0 && c >= 0) {
+            emit dataChanged(index(0, 0), index(r, c));
+        }
     }
 }
 
@@ -228,20 +234,20 @@ void DAMessageLogsModel::onMessageQueueSizeChanged(int newSize)
 {
     //全表刷新
     Q_UNUSED(newSize);
-    int r = rowCount();
-    int s = d_ptr->_messageQueueProxy.size();
+    int r = rowCount() - 1;
+    int s = d_ptr->_messageQueueProxy.size() - 1;
 
-    s = (s > 0) ? s - 1 : 0;
-    r = (r > 0) ? r - 1 : 0;
+    //    s = (s > 0) ? s - 1 : 0;
+    //    r = (r > 0) ? r - 1 : 0;
 
     if (r < s) {
-        beginInsertRows(QModelIndex(), r, s - 1);
+        beginInsertRows(QModelIndex(), r, s);
         d_ptr->_rowCount = s + 1;
         endInsertRows();
     } else if (s < r) {
         //一般是进行了clear操作导致队列的尺寸变小
-        beginRemoveRows(QModelIndex(), s, r - 1);
-        d_ptr->_rowCount = s;
+        beginRemoveRows(QModelIndex(), s, r);
+        d_ptr->_rowCount = s + 1;
         endRemoveRows();
     }
 }
