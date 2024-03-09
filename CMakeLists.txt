@@ -217,6 +217,12 @@ install(FILES
 ##################################
 if(DA_ENABLE_AUTO_TRANSLATE)
     find_package(Qt${QT_VERSION_MAJOR} COMPONENTS LinguistTools QUIET)
+    if(NOT EXISTS ${CMAKE_CURRENT_LIST_DIR}/src/da_zh_CN.ts)
+        # 如果翻译文件不在src目录，说明有可能被clean的时候删除了，把备份ts文件拷贝到src目录下
+        file(COPY ${CMAKE_CURRENT_LIST_DIR}/src/ts/da_zh_CN.ts DESTINATION ${CMAKE_CURRENT_LIST_DIR}/src)
+        file(COPY ${CMAKE_CURRENT_LIST_DIR}/src/ts/da_en_US.ts DESTINATION ${CMAKE_CURRENT_LIST_DIR}/src)
+        message(STATUS "can not find ts file on dir ./src,will copy backup ts file to dir ./src")
+    endif()
     set(DA_TS_FILES
         ${CMAKE_CURRENT_LIST_DIR}/src/da_zh_CN.ts
         ${CMAKE_CURRENT_LIST_DIR}/src/da_en_US.ts

@@ -79,6 +79,19 @@ void DAAppActions::buildChartAction()
     actionChartAddCurve     = createAction("actionChartAddCurve", ":/app/chart-type/Icon/chart-type/chart-curve.svg");
     actionChartAddScatter2D = createAction("actionChartAddScatter2D",
                                            ":/app/chart-type/Icon/chart-type/chart-scatter-2d.svg");
+    actionChartAddErrorBar  = createAction("actionChartAddErrorBar",
+                                          ":/app/chart-type/Icon/chart-type/chart-intervalcurve.svg");
+    actionChartAddBoxPlot   = createAction("actionChartAddBoxPlot", ":/app/chart-type/Icon/chart-type/chart-OHLC.svg");
+    actionChartAddBar       = createAction("actionChartAddBar", ":/app/chart-type/Icon/chart-type/chart-bar.svg");
+    actionChartAddMultiBar  = createAction("actionChartAddBar", ":/app/chart-type/Icon/chart-type/chart-multibar.svg");
+    actionChartAddHistogramBar = createAction("actionChartAddHistogramBar",
+                                              ":/app/chart-type/Icon/chart-type/chart-histogram.svg");
+    actionChartAddContourMap   = createAction("actionChartAddContourMap",
+                                            ":/app/chart-type/Icon/chart-type/chart-spectrocurve.svg");
+    actionChartAddCloudMap     = createAction("actionChartAddCloudMap",
+                                          ":/app/chart-type/Icon/chart-type/chart-spectrogram.svg");
+    actionChartAddVectorfield  = createAction("actionChartAddVectorfield",
+                                             ":/app/chart-type/Icon/chart-type/chart-vectorfield.svg");
 
     actionChartEnableGrid  = createAction("actionChartEnableGrid", ":/Icon/Icon/chart-grid.svg", true, false);
     actionChartEnableGridX = createAction("actionChartEnableGridX", ":/Icon/Icon/chart-grid-x.svg", true, false);
@@ -217,11 +230,19 @@ void DAAppActions::retranslateUi()
     actionAddData->setText(tr("Add \nData"));        // cn:添加\n数据
     actionRemoveData->setText(tr("Remove \nData"));  // cn:移除\n数据
     // Chart Category
-    actionAddFigure->setText(tr("Add \nFigure"));            // cn:添加\n绘图
-    actionFigureResizeChart->setText(tr("Resize \nChart"));  // cn:绘图\n尺寸
-    actionFigureNewXYAxis->setText(tr("New \nXY Axis"));     // cn:新建\n坐标系
-    actionChartAddCurve->setText(tr("Add \nCurve"));         // cn:折线图
-    actionChartAddScatter2D->setText(tr("Add \nScatter"));   // cn:散点图
+    actionAddFigure->setText(tr("Add \nFigure"));                  // cn:添加\n绘图
+    actionFigureResizeChart->setText(tr("Resize \nChart"));        // cn:绘图\n尺寸
+    actionFigureNewXYAxis->setText(tr("New \nXY Axis"));           // cn:新建\n坐标系
+    actionChartAddCurve->setText(tr("Add \nCurve"));               // cn:折线图
+    actionChartAddScatter2D->setText(tr("Add \nScatter"));         // cn:散点图
+    actionChartAddErrorBar->setText(tr("Add \nError Bar"));        // cn:误差棒图
+    actionChartAddBoxPlot->setText(tr("Add \nBox Plot"));          // cn:箱线图
+    actionChartAddBar->setText(tr("Add \nBar"));                   // cn:柱状图
+    actionChartAddMultiBar->setText(tr("Add \nMultiBar"));         // cn:多重柱状图
+    actionChartAddHistogramBar->setText(tr("Add \nHistogram"));    // cn:分布图
+    actionChartAddContourMap->setText(tr("Add \nContour Map"));    // cn:等高线图
+    actionChartAddCloudMap->setText(tr("Add \nCloud Map"));        // cn:云图
+    actionChartAddVectorfield->setText(tr("Add \nVector Field"));  // cn:向量场图
 
     actionChartEnableGrid->setText(tr("Enable Grid"));                     // cn:网格
     actionChartEnableGridX->setText(tr("X Grid"));                         // cn:横向网格

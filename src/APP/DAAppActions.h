@@ -90,11 +90,19 @@ public:
     //===================================================
     // 绘图标签 Chart Category
     //===================================================
-    QAction* actionAddFigure;          ///< 添加绘图
-    QAction* actionFigureResizeChart;  ///< 改变fig的chart大小
-    QAction* actionFigureNewXYAxis;    ///< 新增加一个2D绘图
-    QAction* actionChartAddCurve;      ///< 添加曲线
-    QAction* actionChartAddScatter2D;  ///< 添加散点图
+    QAction* actionAddFigure;             ///< 添加绘图
+    QAction* actionFigureResizeChart;     ///< 改变fig的chart大小
+    QAction* actionFigureNewXYAxis;       ///< 新增加一个2D绘图
+    QAction* actionChartAddCurve;         ///< 添加曲线
+    QAction* actionChartAddScatter2D;     ///< 添加散点图
+    QAction* actionChartAddErrorBar;      ///< 添加误差棒图
+    QAction* actionChartAddBoxPlot;       ///< 添加箱线图
+    QAction* actionChartAddBar;           ///< 添加柱状图
+    QAction* actionChartAddMultiBar;      ///< 添加多维柱状图
+    QAction* actionChartAddHistogramBar;  ///< 添加统计图
+    QAction* actionChartAddContourMap;    ///< 等高线图
+    QAction* actionChartAddCloudMap;      ///< 云图
+    QAction* actionChartAddVectorfield;   ///< 向量场图
 
     QAction* actionChartEnableGrid;         ///< 网格显示总开关
     QAction* actionChartEnableGridX;        ///< 网格显示X开关

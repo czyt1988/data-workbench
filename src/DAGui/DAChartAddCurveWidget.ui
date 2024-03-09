@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>Add Curve</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">
@@ -36,11 +36,24 @@
        <property name="text">
         <string>1.Data</string>
        </property>
+       <property name="icon">
+        <iconset resource="icon.qrc">
+         <normaloff>:/icon/icon/data-table.svg</normaloff>:/icon/icon/data-table.svg</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>26</width>
+         <height>26</height>
+        </size>
+       </property>
        <property name="checkable">
         <bool>true</bool>
        </property>
        <property name="checked">
         <bool>true</bool>
+       </property>
+       <property name="toolButtonStyle">
+        <enum>Qt::ToolButtonTextBesideIcon</enum>
        </property>
        <property name="autoRaise">
         <bool>true</bool>
@@ -59,8 +72,21 @@
        <property name="text">
         <string>2.Plot</string>
        </property>
+       <property name="icon">
+        <iconset resource="icon.qrc">
+         <normaloff>:/icon/icon/chart.svg</normaloff>:/icon/icon/chart.svg</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>26</width>
+         <height>26</height>
+        </size>
+       </property>
        <property name="checkable">
         <bool>true</bool>
+       </property>
+       <property name="toolButtonStyle">
+        <enum>Qt::ToolButtonTextBesideIcon</enum>
        </property>
        <property name="autoRaise">
         <bool>true</bool>
@@ -81,6 +107,16 @@
       </spacer>
      </item>
     </layout>
+   </item>
+   <item>
+    <widget class="QFrame" name="frame">
+     <property name="frameShape">
+      <enum>QFrame::HLine</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Sunken</enum>
+     </property>
+    </widget>
    </item>
    <item>
     <widget class="QStackedWidget" name="stackedWidget">
@@ -107,6 +143,8 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="icon.qrc"/>
+ </resources>
  <connections/>
 </ui>

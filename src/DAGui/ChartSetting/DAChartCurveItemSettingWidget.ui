@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>Curve Setting</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="1" column="0">
@@ -347,12 +347,6 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>DA::DAChartSymbolEditWidget</class>
-   <extends>QWidget</extends>
-   <header>DAChartSymbolEditWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>DA::DAPenEditWidget</class>
    <extends>QWidget</extends>
    <header>DAPenEditWidget.h</header>
@@ -362,6 +356,12 @@
    <class>DA::DABrushEditWidget</class>
    <extends>QWidget</extends>
    <header>DABrushEditWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DA::DAChartSymbolEditWidget</class>
+   <extends>QWidget</extends>
+   <header>DAChartSymbolEditWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
