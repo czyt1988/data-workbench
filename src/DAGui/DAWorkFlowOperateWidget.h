@@ -40,6 +40,8 @@ public:
     void setCurrentWorkflowWidget(DAWorkFlowEditWidget* wf);
     DAWorkFlowEditWidget* getCurrentWorkFlowWidget() const;
     void setCurrentWorkflowName(const QString& name);
+    // 获取所有的工作流编辑窗口
+    QList< DAWorkFlowEditWidget* > getAllWorkFlowWidgets() const;
     // 获取当前场景
     DAWorkFlowGraphicsScene* getCurrentWorkFlowScene() const;
     QList< DAWorkFlowGraphicsScene* > getAllWorkFlowScene() const;
@@ -47,6 +49,7 @@ public:
     DAWorkFlowGraphicsView* getCurrentWorkFlowView() const;
     // 获取工作流窗口
     DAWorkFlowEditWidget* getWorkFlowWidget(int index) const;
+
     // 获取工作流窗口的名称
     QString getWorkFlowWidgetName(int index) const;
     // 给工作流重命名
@@ -75,7 +78,7 @@ public:
     // 设置文本颜色 -- 此参数设置决定创建文本框时的字体和颜色
     QColor getDefaultTextColor() const;
     void setDefaultTextColor(const QColor& c);
-    //设置只允许一个工作流
+    // 设置只允许一个工作流
     bool isOnlyOneWorkflow() const;
     void setOnlyOneWorkflow(bool v);
 
@@ -117,6 +120,19 @@ signals:
      * @param wfw
      */
     void workflowCreated(DA::DAWorkFlowEditWidget* wfw);
+
+    /**
+     * @brief 工作流窗口正在移除，此时DA::DAWorkFlowEditWidget*指针还可正常操作
+     *
+     * 此时DAWorkFlowOperateWidget还管理着DA::DAWorkFlowEditWidget*，此信号之后将移除
+     * @param wfw
+     */
+    void workflowRemoving(DA::DAWorkFlowEditWidget* wfw);
+
+    /**
+     * @brief 工作流在清空，不会发射workflowRemoving信号，而是发射workflowClearing信号
+     */
+    void workflowClearing();
     /**
      * @brief 当前的工作流窗口发生了改变
      * @param w
@@ -165,7 +181,7 @@ private:
     QColor _defaultTextColor;
     QFont _defaultFont;
     bool _isDestorying;
-    bool mOnlyOneWorkflow { false };  ///<设置只允许一个工作流
+    bool mOnlyOneWorkflow { false };  ///< 设置只允许一个工作流
 };
 }  // namespace DA
 #endif  // DAWORKFLOWOPERATEWIDGET_H

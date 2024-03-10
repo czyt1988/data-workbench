@@ -53,7 +53,8 @@ LONG applicationCrashHandler(_EXCEPTION_POINTERS* pException);
 // 程式异常捕获
 LONG applicationCrashHandler(_EXCEPTION_POINTERS* pException)
 {
-    QString createPath  = g_fp_dump();
+    QString createPath = g_fp_dump();
+    qDebug() << "application have been dump,write dump file at " << createPath;
     std::wstring wlpstr = createPath.toStdWString();
     LPCWSTR lpcwStr     = wlpstr.c_str();
 
@@ -80,6 +81,10 @@ class DADumpCapture
 {
 public:
 public:
+    /**
+     * @brief 初始化dump
+     * @param fp 前置处理函数指针，返回dump文件的路径
+     */
     static void initDump(FpPreposeDump fp = nullptr)
     {
 #ifdef Q_OS_WIN

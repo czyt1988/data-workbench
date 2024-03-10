@@ -80,9 +80,10 @@ DAWorkFlowEditWidget* DAWorkFlowOperateWidget::appendWorkflow(const QString& nam
     connect(wfe, &DAWorkFlowEditWidget::mouseActionFinished, this, &DAWorkFlowOperateWidget::mouseActionFinished);
     connect(scene, &DAWorkFlowGraphicsScene::selectionChanged, this, &DAWorkFlowOperateWidget::onSelectionChanged);
     connect(wfe, &DAWorkFlowEditWidget::startExecute, this, [ this, wfe ]() { emit workflowStartExecute(wfe); });
-    connect(wfe, &DAWorkFlowEditWidget::nodeExecuteFinished, this, [ this, wfe ](DAAbstractNode::SharedPointer n, bool state) {
-        emit nodeExecuteFinished(wfe, n, state);
-    });
+    connect(wfe,
+            &DAWorkFlowEditWidget::nodeExecuteFinished,
+            this,
+            [ this, wfe ](DAAbstractNode::SharedPointer n, bool state) { emit nodeExecuteFinished(wfe, n, state); });
     connect(wfe, &DAWorkFlowEditWidget::finished, this, [ this, wfe ](bool s) { emit workflowFinished(wfe, s); });
     ui->tabWidget->addTab(wfe, name);
     // 把名字保存到DAWorkFlowEditWidget中，在DAProject保存的时候会用到
@@ -99,7 +100,7 @@ DAWorkFlowEditWidget* DAWorkFlowOperateWidget::appendWorkflow(const QString& nam
  */
 DAWorkFlowEditWidget* DAWorkFlowOperateWidget::appendWorkflowWithDialog()
 {
-    bool ok      = false;
+    bool ok = false;
     QString text = QInputDialog::getText(this, tr("Title of new workflow"), tr("Title:"), QLineEdit::Normal, QString(), &ok);
     if (!ok || text.isEmpty()) {
         return nullptr;
@@ -151,6 +152,20 @@ void DAWorkFlowOperateWidget::setCurrentWorkflowName(const QString& name)
 {
     int i = getCurrentWorkflowIndex();
     renameWorkFlowWidget(i, name);
+}
+
+/**
+ * @brief 获取所有的工作流编辑窗口
+ * @return
+ */
+QList< DAWorkFlowEditWidget* > DAWorkFlowOperateWidget::getAllWorkFlowWidgets() const
+{
+    QList< DAWorkFlowEditWidget* > res;
+    for (int i = 0; i < ui->tabWidget->count(); ++i) {
+        auto w = qobject_cast< DAWorkFlowEditWidget* >(ui->tabWidget->widget(i));
+        res.append(w);
+    }
+    return res;
 }
 
 /**
@@ -250,11 +265,14 @@ void DAWorkFlowOperateWidget::removeWorkflow(int index)
     }
     QMessageBox::StandardButton btn = QMessageBox::question(this,
                                                             tr("question"),  // 疑问
-                                                            tr("Confirm to delete workflow:%1").arg(getWorkFlowWidgetName(index))  // 是否确认删除工作流:%1
+                                                            tr("Confirm to delete workflow:%1")
+                                                                .arg(getWorkFlowWidgetName(index))  // 是否确认删除工作流:%1
     );
     if (btn != QMessageBox::Yes) {
         return;
     }
+    // 发射移除信号
+    emit workflowRemoving(qobject_cast< DA::DAWorkFlowEditWidget* >(w));
     ui->tabWidget->removeTab(index);
     w->hide();
     w->deleteLater();
@@ -593,8 +611,13 @@ bool DAWorkFlowOperateWidget::setMouseActionFlag(DAWorkFlowGraphicsScene::MouseA
     return true;
 }
 
+/**
+ * @brief 清空
+ * @note 此函数会发射@ref workflowClearing 信号
+ */
 void DAWorkFlowOperateWidget::clear()
 {
+    emit workflowClearing();
     int count = ui->tabWidget->count();
     QList< DAWorkFlowEditWidget* > wfes;
     for (int i = 0; i < count; ++i) {

@@ -21,9 +21,10 @@ public:
     ~DAAppCommand();
 
 public:
-    //数据管理的redo/undo栈
+    // 数据管理的redo/undo栈
     QUndoStack* getDataManagerStack() const;
     // TODO:工作流的redo/undo栈
+
     // TODO:绘图的redo/undo栈（每个图片一个栈）
 public:
     void setDataManagerStack(QUndoStack* s);

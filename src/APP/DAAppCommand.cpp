@@ -26,7 +26,7 @@ DAAppCommand::~DAAppCommand()
 void DAAppCommand::setDataManagerStack(QUndoStack* s)
 {
     mDataManagerStack = s;
-    undoGroup().addStack(s);
+    addStack(s);
 }
 
 QUndoStack* DAAppCommand::getDataManagerStack() const

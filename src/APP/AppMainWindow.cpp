@@ -135,8 +135,10 @@ void AppMainWindow::closeEvent(QCloseEvent* e)
         }
     } else {
         // 不保存要删除
-        if (!QFile::remove(uistateFile)) {
-            qDebug() << tr("can not remove %1").arg(uistateFile);
+        if (QFile::exists(uistateFile)) {
+            if (!QFile::remove(uistateFile)) {
+                qDebug() << tr("can not remove %1").arg(uistateFile);
+            }
         }
     }
     // Delete dock manager here to delete all floating widgets. This ensures

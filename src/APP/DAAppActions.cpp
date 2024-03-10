@@ -156,13 +156,14 @@ void DAAppActions::buildViewAction()
 {
     // View Category
     actionShowWorkFlowArea        = createAction("actionShowWorkFlowArea", ":/app/bright/Icon/showWorkFlow.svg");
-    actionShowWorkFlowManagerArea = createAction("actionShowWorkFlowManagerArea");
+    actionShowWorkFlowManagerArea = createAction("actionShowWorkFlowManagerArea",
+                                                 ":/app/bright/Icon/workflow-manager-view.svg");
     actionShowChartArea           = createAction("actionShowChartArea", ":/app/bright/Icon/showChart.svg");
-    actionShowChartManagerArea    = createAction("actionShowChartManagerArea");
-    actionShowDataArea            = createAction("actionShowDataArea", ":/app/bright/Icon/showTable.svg");
-    actionShowDataManagerArea     = createAction("actionShowDataManagerArea");
-    actionShowMessageLogView      = createAction("actionShowMessageLogView", ":/app/bright/Icon/showInfomation.svg");
-    actionShowSettingWidget       = createAction("actionShowSettingWidget", ":/app/bright/Icon/showSettingWidget.svg");
+    actionShowChartManagerArea = createAction("actionShowChartManagerArea", ":/app/bright/Icon/chart-manager-view.svg");
+    actionShowDataArea         = createAction("actionShowDataArea", ":/app/bright/Icon/showTable.svg");
+    actionShowDataManagerArea  = createAction("actionShowDataManagerArea", ":/app/bright/Icon/data-manager-view.svg");
+    actionShowMessageLogView   = createAction("actionShowMessageLogView", ":/app/bright/Icon/showInfomation.svg");
+    actionShowSettingWidget    = createAction("actionShowSettingWidget", ":/app/bright/Icon/showSettingWidget.svg");
 }
 
 void DAAppActions::buildWorkflowAction()
