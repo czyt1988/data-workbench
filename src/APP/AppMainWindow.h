@@ -32,58 +32,60 @@ public:
     AppMainWindow(QWidget* parent = nullptr);
     ~AppMainWindow();
 
-    //多语言翻译
+    // 多语言翻译
     void retranslateUi();
 
     DAAppConfig* getAppConfig() const;
-    //显示设置对话框
+    // 显示设置对话框
     void showSettingDialog();
 
-    //保存所有状态
+    // 保存所有状态
     QByteArray saveUIState() const;
     bool restoreUIState(const QByteArray& v);
-    //从默认路径恢复
+    // 从默认路径恢复
     bool restoreUIState();
-    //重置ui
+    // 重置ui
     void resetUIState();
-    //设置是否在退出时保存ui的状态
+    // 设置是否在退出时保存ui的状态
     bool isSaveUIStateOnClose() const;
     void setSaveUIStateOnClose(bool v);
-    //获取ui state 配置文件路径
+    // 获取ui state 配置文件路径
     static QString getUIStateSettingFilePath();
     // 判断是否存在状态设置文件
     static bool isHaveStateSettingFile();
+    // 把保存的窗口状态保存文件删除
+    static bool removeStateSettingFile();
 
 protected:
     void changeEvent(QEvent* e);
     void closeEvent(QCloseEvent* e);
 
 private:
-    //初始化
+    // 初始化
     void init();
 
-    //初始化插件
+    // 初始化插件
     void initPlugins();
 
-    //初始化工作流的节点
+    // 初始化工作流的节点
     void initWorkflowNodes();
 
-    //初始化设置
+    // 初始化设置
     void initConfig();
 private slots:
     //
     void onWorkflowFinished(bool success);
-    //配置文件需要保存
+    // 配置文件需要保存
     void onConfigNeedSave();
 
 private:
-    DAAppCore* mCore{ nullptr };
-    DAAppUI* mUI{ nullptr };
-    DAAppDockingArea* mDockArea{ nullptr };
-    DAAppController* mController{ nullptr };
+    DAAppCore* mCore { nullptr };
+    DAAppUI* mUI { nullptr };
+    DAAppDockingArea* mDockArea { nullptr };
+    DAAppController* mController { nullptr };
     std::unique_ptr< DAAppConfig > mConfig;
-    DAAppSettingDialog* mSettingDialog{ nullptr };  ///< 设置窗口,避免过多的中间传递
-    bool mIsSaveUIStateOnClose{ false };            ///< 是否在退出时记录程序的状态
+    DAAppSettingDialog* mSettingDialog { nullptr };  ///< 设置窗口,避免过多的中间传递
+    bool mIsSaveUIStateOnClose { false };            ///< 是否在退出时记录程序的状态
 };
 }  // namespace DA
 #endif  // METHODMAINWINDOW_H

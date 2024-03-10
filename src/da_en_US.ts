@@ -278,12 +278,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="303"/>
+        <location filename="APP/AppMainWindow.cpp" line="317"/>
         <source>restore UI state error:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="313"/>
+        <location filename="APP/AppMainWindow.cpp" line="327"/>
         <source>can not read ui state file %1,because %2</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2081,8 +2081,23 @@ Config</source>
 <context>
     <name>DA::DASettingPageCommon</name>
     <message>
-        <location filename="APP/SettingPages/DASettingPageCommon.cpp" line="65"/>
+        <location filename="APP/SettingPages/DASettingPageCommon.cpp" line="67"/>
         <source>common</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/SettingPages/DASettingPageCommon.cpp" line="165"/>
+        <source>question</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/SettingPages/DASettingPageCommon.cpp" line="166"/>
+        <source>This operation will delete the file that records the window state information. After deleting the file, if the window state information recording is not enabled, the window will open in the default layout</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/SettingPages/DASettingPageCommon.cpp" line="174"/>
+        <source>sucess remove window state record file</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

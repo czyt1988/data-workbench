@@ -228,6 +228,20 @@ bool AppMainWindow::isHaveStateSettingFile()
     return QFileInfo::exists(getUIStateSettingFilePath());
 }
 
+/**
+ * @brief 把保存的窗口状态保存文件删除
+ * @return 成功删除了文件返回true，如果文件不存在，也返回true
+ */
+bool AppMainWindow::removeStateSettingFile()
+{
+    QString path = getUIStateSettingFilePath();
+    QFile f(path);
+    if (!f.exists()) {
+        return true;
+    }
+    return f.remove();
+}
+
 DAAppConfig* AppMainWindow::getAppConfig() const
 {
     return mConfig.get();

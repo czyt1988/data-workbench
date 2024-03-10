@@ -1,5 +1,6 @@
 ﻿#include "DASettingPageCommon.h"
 #include <QSignalBlocker>
+#include <QMessageBox>
 #include "ui_DASettingPageCommon.h"
 #include "AppMainWindow.h"
 #include "SARibbonBar.h"
@@ -37,6 +38,7 @@ DASettingPageCommon::DASettingPageCommon(QWidget* parent)
             this,
             &DASettingPageCommon::onSpinBoxDisplayLogsNumValueChanged);
     connect(ui->checkBoxSaveUIState, &QCheckBox::stateChanged, this, &DASettingPageCommon::onCheckBoxSaveUIStateStateChanged);
+    connect(ui->toolButtonClearSaveState, &QToolButton::clicked, this, &DASettingPageCommon::onToolButtonClearSaveStateClicked);
 }
 
 DASettingPageCommon::~DASettingPageCommon()
@@ -151,6 +153,26 @@ void DASettingPageCommon::onCheckBoxSaveUIStateStateChanged(int state)
 {
     Q_UNUSED(state);
     emit settingChanged();
+}
+
+/**
+ * @brief 把保存文件删除
+ */
+void DASettingPageCommon::onToolButtonClearSaveStateClicked()
+{
+    auto btn = QMessageBox::
+        question(this,
+                 tr("question"),
+                 tr("This operation will delete the file that records the window state information. After "
+                    "deleting the file, if the window state information recording is not enabled, the "
+                    "window will open in the default layout"));
+    // cn:此操作将删除记录窗口位置信息的文件，删除文件后，如果不开启窗口位置信息记录，窗口将以默认布局打开
+    if (btn != QMessageBox::Yes) {
+        return;
+    }
+    if (AppMainWindow::removeStateSettingFile()) {
+        qInfo() << tr("sucess remove window state record file");  // cn:删除窗口状态记录文件
+    }
 }
 
 }  // end DA

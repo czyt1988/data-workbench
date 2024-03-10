@@ -36,6 +36,8 @@ private slots:
     void onSpinBoxDisplayLogsNumValueChanged(int v);
     // 程序在退出时是否保存ui的状态
     void onCheckBoxSaveUIStateStateChanged(int state);
+    // 清除状态按钮点击
+    void onToolButtonClearSaveStateClicked();
 
 private:
     Ui::DASettingPageCommon* ui;

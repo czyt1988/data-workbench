@@ -278,12 +278,12 @@
         <translation>拓扑执行失败</translation>
     </message>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="303"/>
+        <location filename="APP/AppMainWindow.cpp" line="317"/>
         <source>restore UI state error:%1</source>
         <translation>恢复ui状态发生错误：%1</translation>
     </message>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="313"/>
+        <location filename="APP/AppMainWindow.cpp" line="327"/>
         <source>can not read ui state file %1,because %2</source>
         <translation>无法读取ui状态文件%1，原因是：%2</translation>
     </message>
@@ -2123,9 +2123,24 @@ Table Area</source>
 <context>
     <name>DA::DASettingPageCommon</name>
     <message>
-        <location filename="APP/SettingPages/DASettingPageCommon.cpp" line="65"/>
+        <location filename="APP/SettingPages/DASettingPageCommon.cpp" line="67"/>
         <source>common</source>
         <translation>通用</translation>
+    </message>
+    <message>
+        <location filename="APP/SettingPages/DASettingPageCommon.cpp" line="165"/>
+        <source>question</source>
+        <translation>疑问</translation>
+    </message>
+    <message>
+        <location filename="APP/SettingPages/DASettingPageCommon.cpp" line="166"/>
+        <source>This operation will delete the file that records the window state information. After deleting the file, if the window state information recording is not enabled, the window will open in the default layout</source>
+        <translation>此操作将删除记录窗口位置信息的文件，删除文件后，如果不开启窗口位置信息记录，窗口将以默认布局打开</translation>
+    </message>
+    <message>
+        <location filename="APP/SettingPages/DASettingPageCommon.cpp" line="174"/>
+        <source>sucess remove window state record file</source>
+        <translation>删除窗口状态记录文件</translation>
     </message>
 </context>
 <context>
@@ -3270,7 +3285,7 @@ Table Area</source>
     <message>
         <location filename="APP/SettingPages/DASettingPageCommon.ui" line="87"/>
         <source>Clear the saved window state</source>
-        <translation type="unfinished"></translation>
+        <translation>删除窗口状态记录文件</translation>
     </message>
     <message>
         <location filename="APP/SettingPages/DASettingPageCommon.ui" line="97"/>
