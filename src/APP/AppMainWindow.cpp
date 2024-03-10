@@ -55,7 +55,7 @@ AppMainWindow::AppMainWindow(QWidget* parent) : SARibbonMainWindow(parent)
     // 让dock可以最小化到一个标签
     ads::CDockManager::setAutoHideConfigFlags({ ads::CDockManager::DefaultAutoHideConfig });
     // 建立ribbonArea，此函数的构造函数会生成界面
-    QIcon icon(":/Icon/Icon/icon.svg");
+    QIcon icon(":/app/bright/Icon/icon.svg");
     setWindowIcon(icon);
     DAAppCore& core = DAAppCore::getInstance();
     // 创建界面

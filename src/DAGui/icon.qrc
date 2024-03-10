@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/icon">
+    <qresource prefix="/DAGui">
         <file>icon/bottomSideIn.svg</file>
         <file>icon/bottomSideOut.svg</file>
         <file>icon/leftSideIn.svg</file>
@@ -27,14 +27,15 @@
         <file>icon/picture.svg</file>
         <file>icon/chart.svg</file>
         <file>icon/data-table.svg</file>
+        <file>icon/node-settting.svg</file>
     </qresource>
-    <qresource prefix="/messageType">
+    <qresource prefix="/DAGui/MessageType">
         <file>icon/messageType/messageTypeDebug.svg</file>
         <file>icon/messageType/messageTypeError.svg</file>
         <file>icon/messageType/messageTypeInfo.svg</file>
         <file>icon/messageType/messageTypeWarning.svg</file>
     </qresource>
-    <qresource prefix="/gui/chart-type">
+    <qresource prefix="/DAGui/ChartType">
         <file>icon/chart-type/chart-bar.svg</file>
         <file>icon/chart-type/chart-curve.svg</file>
         <file>icon/chart-type/chart-histogram.svg</file>
@@ -46,7 +47,7 @@
         <file>icon/chart-type/chart-spectrogram.svg</file>
         <file>icon/chart-type/chart-vectorfield.svg</file>
     </qresource>
-    <qresource prefix="/gui/chart-setting">
+    <qresource prefix="/DAGui/ChartSetting">
         <file>icon/axisLeftBottom.svg</file>
         <file>icon/axisLeftTop.svg</file>
         <file>icon/axisRightBottom.svg</file>

@@ -43,7 +43,7 @@
      <widget class="DA::DANodeSettingWidget" name="tabNodeSetting">
       <attribute name="icon">
        <iconset resource="icon.qrc">
-        <normaloff>:/icon/icon/setting-node.svg</normaloff>:/icon/icon/setting-node.svg</iconset>
+        <normaloff>:/DAGui/icon/setting-node.svg</normaloff>:/DAGui/icon/setting-node.svg</iconset>
       </attribute>
       <attribute name="title">
        <string>Node</string>
@@ -52,7 +52,7 @@
      <widget class="DA::DANodeItemSettingWidget" name="tabItemSetting">
       <attribute name="icon">
        <iconset resource="icon.qrc">
-        <normaloff>:/icon/icon/setting-item.svg</normaloff>:/icon/icon/setting-item.svg</iconset>
+        <normaloff>:/DAGui/icon/setting-item.svg</normaloff>:/DAGui/icon/setting-item.svg</iconset>
       </attribute>
       <attribute name="title">
        <string>Item</string>
@@ -61,7 +61,7 @@
      <widget class="DA::DANodeLinkItemSettingWidget" name="tabLinkSetting">
       <attribute name="icon">
        <iconset resource="icon.qrc">
-        <normaloff>:/icon/icon/setting-link.svg</normaloff>:/icon/icon/setting-link.svg</iconset>
+        <normaloff>:/DAGui/icon/setting-link.svg</normaloff>:/DAGui/icon/setting-link.svg</iconset>
       </attribute>
       <attribute name="title">
        <string>Link</string>
@@ -70,7 +70,7 @@
      <widget class="DA::DAGraphicsPixmapItemSettingWidget" name="tabPictureItemSetting">
       <attribute name="icon">
        <iconset resource="icon.qrc">
-        <normaloff>:/icon/icon/picture.svg</normaloff>:/icon/icon/picture.svg</iconset>
+        <normaloff>:/DAGui/icon/picture.svg</normaloff>:/DAGui/icon/picture.svg</iconset>
       </attribute>
       <attribute name="title">
        <string>Picture</string>

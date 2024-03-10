@@ -75,7 +75,7 @@
        </property>
        <property name="icon">
         <iconset resource="icon.qrc">
-         <normaloff>:/commonWidget/icon/icon/text-bold.svg</normaloff>:/commonWidget/icon/icon/text-bold.svg</iconset>
+         <normaloff>:/DACommonWidgets/icon/text-bold.svg</normaloff>:/DACommonWidgets/icon/text-bold.svg</iconset>
        </property>
        <property name="checkable">
         <bool>true</bool>
@@ -104,7 +104,7 @@
        </property>
        <property name="icon">
         <iconset resource="icon.qrc">
-         <normaloff>:/commonWidget/icon/icon/text-italic.svg</normaloff>:/commonWidget/icon/icon/text-italic.svg</iconset>
+         <normaloff>:/DACommonWidgets/icon/text-italic.svg</normaloff>:/DACommonWidgets/icon/text-italic.svg</iconset>
        </property>
        <property name="checkable">
         <bool>true</bool>
@@ -133,7 +133,7 @@
        </property>
        <property name="icon">
         <iconset resource="icon.qrc">
-         <normaloff>:/commonWidget/icon/icon/text-underline.svg</normaloff>:/commonWidget/icon/icon/text-underline.svg</iconset>
+         <normaloff>:/DACommonWidgets/icon/text-underline.svg</normaloff>:/DACommonWidgets/icon/text-underline.svg</iconset>
        </property>
        <property name="checkable">
         <bool>true</bool>
@@ -191,7 +191,7 @@
        </property>
        <property name="icon">
         <iconset resource="icon.qrc">
-         <normaloff>:/commonWidget/icon/icon/font-size-add.svg</normaloff>:/commonWidget/icon/icon/font-size-add.svg</iconset>
+         <normaloff>:/DACommonWidgets/icon/font-size-add.svg</normaloff>:/DACommonWidgets/icon/font-size-add.svg</iconset>
        </property>
        <property name="autoRaise">
         <bool>true</bool>
@@ -211,7 +211,7 @@
        </property>
        <property name="icon">
         <iconset resource="icon.qrc">
-         <normaloff>:/commonWidget/icon/icon/font-size-sub.svg</normaloff>:/commonWidget/icon/icon/font-size-sub.svg</iconset>
+         <normaloff>:/DACommonWidgets/icon/font-size-sub.svg</normaloff>:/DACommonWidgets/icon/font-size-sub.svg</iconset>
        </property>
        <property name="autoRaise">
         <bool>true</bool>

@@ -38,7 +38,7 @@
        </property>
        <property name="icon">
         <iconset resource="icon.qrc">
-         <normaloff>:/icon/icon/data-table.svg</normaloff>:/icon/icon/data-table.svg</iconset>
+         <normaloff>:/DAGui/icon/data-table.svg</normaloff>:/DAGui/icon/data-table.svg</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -74,7 +74,7 @@
        </property>
        <property name="icon">
         <iconset resource="icon.qrc">
-         <normaloff>:/icon/icon/chart.svg</normaloff>:/icon/icon/chart.svg</iconset>
+         <normaloff>:/DAGui/icon/chart.svg</normaloff>:/DAGui/icon/chart.svg</iconset>
        </property>
        <property name="iconSize">
         <size>

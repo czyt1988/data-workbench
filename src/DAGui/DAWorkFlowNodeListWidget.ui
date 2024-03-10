@@ -50,7 +50,7 @@
        </property>
        <property name="icon">
         <iconset resource="icon.qrc">
-         <normaloff>:/icon/icon/showDataInList.svg</normaloff>:/icon/icon/showDataInList.svg</iconset>
+         <normaloff>:/DAGui/icon/showDataInList.svg</normaloff>:/DAGui/icon/showDataInList.svg</iconset>
        </property>
        <property name="checkable">
         <bool>true</bool>
@@ -70,7 +70,7 @@
        </property>
        <property name="icon">
         <iconset resource="icon.qrc">
-         <normaloff>:/icon/icon/showDataInTree.svg</normaloff>:/icon/icon/showDataInTree.svg</iconset>
+         <normaloff>:/DAGui/icon/showDataInTree.svg</normaloff>:/DAGui/icon/showDataInTree.svg</iconset>
        </property>
        <property name="checkable">
         <bool>true</bool>

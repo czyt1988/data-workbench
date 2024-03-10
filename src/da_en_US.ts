@@ -1476,22 +1476,22 @@ Config</source>
 <context>
     <name>DA::DAChartPlotItemSettingWidget</name>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.cpp" line="23"/>
+        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.cpp" line="24"/>
         <source>Left Bottom</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.cpp" line="25"/>
+        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.cpp" line="26"/>
         <source>Left Top</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.cpp" line="27"/>
+        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.cpp" line="29"/>
         <source>Right Bottom</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.cpp" line="29"/>
+        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.cpp" line="31"/>
         <source>Right Top</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1760,32 +1760,32 @@ Config</source>
 <context>
     <name>DA::DAFigureTreeModel</name>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="427"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="429"/>
         <source>receive legend data changed signal,but can not cast sender to qwt plot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="432"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="434"/>
         <source>can not conver info to qwt plot item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="447"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="449"/>
         <source>Unable to find the tree node corresponding to the chart widget</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="473"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="475"/>
         <source>name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="474"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="476"/>
         <source>property</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="475"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="477"/>
         <source>visible</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1793,52 +1793,52 @@ Config</source>
 <context>
     <name>DA::DAMessageLogViewWidget</name>
     <message>
-        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="292"/>
+        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="295"/>
         <source>Info</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="293"/>
+        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="296"/>
         <source>Show Info Message</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="294"/>
+        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="297"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="295"/>
+        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="298"/>
         <source>Show Warning Message</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="296"/>
+        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="299"/>
         <source>Critical</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="297"/>
+        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="300"/>
         <source>Show Critical Message</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="298"/>
+        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="301"/>
         <source>Clear</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="299"/>
+        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="302"/>
         <source>Clear All Messages</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="300"/>
+        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="303"/>
         <source>Copy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="301"/>
+        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="304"/>
         <source>Copy Select Message</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1846,13 +1846,13 @@ Config</source>
 <context>
     <name>DA::DAMessageLogsModel</name>
     <message>
-        <location filename="DAGui/Models/DAMessageLogsModel.cpp" line="65"/>
+        <location filename="DAGui/Models/DAMessageLogsModel.cpp" line="68"/>
         <source>date time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Models/DAMessageLogsModel.cpp" line="67"/>
-        <location filename="DAGui/Models/DAMessageLogsModel.cpp" line="72"/>
+        <location filename="DAGui/Models/DAMessageLogsModel.cpp" line="70"/>
+        <location filename="DAGui/Models/DAMessageLogsModel.cpp" line="75"/>
         <source>message</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2152,7 +2152,7 @@ Config</source>
 <context>
     <name>DA::DAWorkFlowNodeItemSettingWidget</name>
     <message>
-        <location filename="DAGui/DAWorkFlowNodeItemSettingWidget.cpp" line="266"/>
+        <location filename="DAGui/DAWorkFlowNodeItemSettingWidget.cpp" line="284"/>
         <source>property</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2160,12 +2160,12 @@ Config</source>
 <context>
     <name>DA::DAWorkFlowNodeListWidget</name>
     <message>
-        <location filename="DAGui/DAWorkFlowNodeListWidget.cpp" line="102"/>
+        <location filename="DAGui/DAWorkFlowNodeListWidget.cpp" line="105"/>
         <source>Favorite</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowNodeListWidget.cpp" line="103"/>
+        <location filename="DAGui/DAWorkFlowNodeListWidget.cpp" line="106"/>
         <source>Remove Favorite</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3222,17 +3222,22 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/SettingPages/DASettingPageCommon.ui" line="90"/>
+        <location filename="APP/SettingPages/DASettingPageCommon.ui" line="87"/>
+        <source>Clear the saved window state</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/SettingPages/DASettingPageCommon.ui" line="97"/>
         <source>Log</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/SettingPages/DASettingPageCommon.ui" line="96"/>
+        <location filename="APP/SettingPages/DASettingPageCommon.ui" line="103"/>
         <source>Display number of logs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/SettingPages/DASettingPageCommon.ui" line="122"/>
+        <location filename="APP/SettingPages/DASettingPageCommon.ui" line="129"/>
         <source>Language</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4598,112 +4603,112 @@ params:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="150"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="152"/>
         <source>untitle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="156"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="158"/>
         <source>item[%1]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="159"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="161"/>
         <source>grid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="162"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="164"/>
         <source>scale-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="165"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="167"/>
         <source>legend-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="168"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="170"/>
         <source>marker-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="171"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="173"/>
         <source>curve-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="174"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="176"/>
         <source>spectro-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="177"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="179"/>
         <source>interval curve-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="180"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="182"/>
         <source>histogram-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="183"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="185"/>
         <source>spectrogram-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="186"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="188"/>
         <source>graphic-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="189"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="191"/>
         <source>OHLC-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="192"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="194"/>
         <source>bar-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="195"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="197"/>
         <source>multibar-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="198"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="200"/>
         <source>shape-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="201"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="203"/>
         <source>text-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="204"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="206"/>
         <source>zone-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="207"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="209"/>
         <source>quiver-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="211"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="213"/>
         <source>unknow-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="282"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="284"/>
         <source>chart-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="284"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="286"/>
         <source>untitle-chart</source>
         <translation type="unfinished"></translation>
     </message>

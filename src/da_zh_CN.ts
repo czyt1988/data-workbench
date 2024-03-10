@@ -1516,22 +1516,22 @@ Table Area</source>
 <context>
     <name>DA::DAChartPlotItemSettingWidget</name>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.cpp" line="23"/>
+        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.cpp" line="24"/>
         <source>Left Bottom</source>
         <translation>左下</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.cpp" line="25"/>
+        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.cpp" line="26"/>
         <source>Left Top</source>
         <translation>左上</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.cpp" line="27"/>
+        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.cpp" line="29"/>
         <source>Right Bottom</source>
         <translation>右下</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.cpp" line="29"/>
+        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.cpp" line="31"/>
         <source>Right Top</source>
         <translation>右上</translation>
     </message>
@@ -1800,32 +1800,32 @@ Table Area</source>
 <context>
     <name>DA::DAFigureTreeModel</name>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="427"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="429"/>
         <source>receive legend data changed signal,but can not cast sender to qwt plot</source>
         <translation>接收到legend data changed信号，但无法把发送方转换为qwt plot</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="432"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="434"/>
         <source>can not conver info to qwt plot item</source>
         <translation>无法把信息转换为qwt plot item</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="447"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="449"/>
         <source>Unable to find the tree node corresponding to the chart widget</source>
         <translation>无法找到绘图窗口对应的树形节点</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="473"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="475"/>
         <source>name</source>
         <translation>名称</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="474"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="476"/>
         <source>property</source>
         <translation>属性</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="475"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="477"/>
         <source>visible</source>
         <translation>可见性</translation>
     </message>
@@ -1833,52 +1833,52 @@ Table Area</source>
 <context>
     <name>DA::DAMessageLogViewWidget</name>
     <message>
-        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="292"/>
+        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="295"/>
         <source>Info</source>
         <translation>通知</translation>
     </message>
     <message>
-        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="293"/>
+        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="296"/>
         <source>Show Info Message</source>
         <translation>显示通知消息</translation>
     </message>
     <message>
-        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="294"/>
+        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="297"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="295"/>
+        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="298"/>
         <source>Show Warning Message</source>
         <translation>显示警告消息</translation>
     </message>
     <message>
-        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="296"/>
+        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="299"/>
         <source>Critical</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="297"/>
+        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="300"/>
         <source>Show Critical Message</source>
         <translation>显示错误消息</translation>
     </message>
     <message>
-        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="298"/>
+        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="301"/>
         <source>Clear</source>
         <translation>清空</translation>
     </message>
     <message>
-        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="299"/>
+        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="302"/>
         <source>Clear All Messages</source>
         <translation>清空所有消息</translation>
     </message>
     <message>
-        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="300"/>
+        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="303"/>
         <source>Copy</source>
         <translation>复制</translation>
     </message>
     <message>
-        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="301"/>
+        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="304"/>
         <source>Copy Select Message</source>
         <translation>复制选中的消息</translation>
     </message>
@@ -1886,13 +1886,13 @@ Table Area</source>
 <context>
     <name>DA::DAMessageLogsModel</name>
     <message>
-        <location filename="DAGui/Models/DAMessageLogsModel.cpp" line="65"/>
+        <location filename="DAGui/Models/DAMessageLogsModel.cpp" line="68"/>
         <source>date time</source>
         <translation>日期</translation>
     </message>
     <message>
-        <location filename="DAGui/Models/DAMessageLogsModel.cpp" line="67"/>
-        <location filename="DAGui/Models/DAMessageLogsModel.cpp" line="72"/>
+        <location filename="DAGui/Models/DAMessageLogsModel.cpp" line="70"/>
+        <location filename="DAGui/Models/DAMessageLogsModel.cpp" line="75"/>
         <source>message</source>
         <translation>信息</translation>
     </message>
@@ -2195,7 +2195,7 @@ Table Area</source>
 <context>
     <name>DA::DAWorkFlowNodeItemSettingWidget</name>
     <message>
-        <location filename="DAGui/DAWorkFlowNodeItemSettingWidget.cpp" line="266"/>
+        <location filename="DAGui/DAWorkFlowNodeItemSettingWidget.cpp" line="284"/>
         <source>property</source>
         <translation>属性</translation>
     </message>
@@ -2203,12 +2203,12 @@ Table Area</source>
 <context>
     <name>DA::DAWorkFlowNodeListWidget</name>
     <message>
-        <location filename="DAGui/DAWorkFlowNodeListWidget.cpp" line="102"/>
+        <location filename="DAGui/DAWorkFlowNodeListWidget.cpp" line="105"/>
         <source>Favorite</source>
         <translation>收藏</translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowNodeListWidget.cpp" line="103"/>
+        <location filename="DAGui/DAWorkFlowNodeListWidget.cpp" line="106"/>
         <source>Remove Favorite</source>
         <translation>移除收藏</translation>
     </message>
@@ -3268,17 +3268,22 @@ Table Area</source>
         <translation>是否在程序退出的时候记录程序的界面布局和位置</translation>
     </message>
     <message>
-        <location filename="APP/SettingPages/DASettingPageCommon.ui" line="90"/>
+        <location filename="APP/SettingPages/DASettingPageCommon.ui" line="87"/>
+        <source>Clear the saved window state</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/SettingPages/DASettingPageCommon.ui" line="97"/>
         <source>Log</source>
         <translation>日志</translation>
     </message>
     <message>
-        <location filename="APP/SettingPages/DASettingPageCommon.ui" line="96"/>
+        <location filename="APP/SettingPages/DASettingPageCommon.ui" line="103"/>
         <source>Display number of logs</source>
         <translation>显示的日志条数</translation>
     </message>
     <message>
-        <location filename="APP/SettingPages/DASettingPageCommon.ui" line="122"/>
+        <location filename="APP/SettingPages/DASettingPageCommon.ui" line="129"/>
         <source>Language</source>
         <translation>语言</translation>
     </message>
@@ -4912,112 +4917,112 @@ params:
         <translation>无法创建dump文件路径：%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="150"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="152"/>
         <source>untitle</source>
         <translation>未命名</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="156"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="158"/>
         <source>item[%1]</source>
         <translation>图元[%1]</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="159"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="161"/>
         <source>grid</source>
         <translation>网格</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="162"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="164"/>
         <source>scale-%1</source>
         <translation>比例图元-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="165"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="167"/>
         <source>legend-%1</source>
         <translation>图例-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="168"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="170"/>
         <source>marker-%1</source>
         <translation>标记-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="171"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="173"/>
         <source>curve-%1</source>
         <translation>曲线-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="174"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="176"/>
         <source>spectro-%1</source>
         <translation>色谱图-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="177"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="179"/>
         <source>interval curve-%1</source>
         <translation>区间图-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="180"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="182"/>
         <source>histogram-%1</source>
         <translation>直方图-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="183"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="185"/>
         <source>spectrogram-%1</source>
         <translation>谱图-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="186"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="188"/>
         <source>graphic-%1</source>
         <translation>图像-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="189"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="191"/>
         <source>OHLC-%1</source>
         <translation>OHLC图-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="192"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="194"/>
         <source>bar-%1</source>
         <translation>柱状图-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="195"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="197"/>
         <source>multibar-%1</source>
         <translation>柱状图-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="198"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="200"/>
         <source>shape-%1</source>
         <translation>形状-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="201"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="203"/>
         <source>text-%1</source>
         <translation>文本-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="204"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="206"/>
         <source>zone-%1</source>
         <translation>区间-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="207"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="209"/>
         <source>quiver-%1</source>
         <translation>流场图-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="211"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="213"/>
         <source>unknow-%1</source>
         <translation>未知-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="282"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="284"/>
         <source>chart-%1</source>
         <translation>图-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="284"/>
+        <location filename="DAFigure/DAFigureTreeModel.cpp" line="286"/>
         <source>untitle-chart</source>
         <translation>图-未命名</translation>
     </message>

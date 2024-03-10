@@ -27,7 +27,7 @@ QVariant DADataManagerTableModel::headerData(int section, Qt::Orientation orient
 {
     if (role != Qt::DisplayRole)
         return QVariant();
-    if (Qt::Horizontal == orientation) {  //说明是水平表头
+    if (Qt::Horizontal == orientation) {  // 说明是水平表头
         switch (section) {
         case 0:
             return tr("name");
@@ -142,10 +142,10 @@ QVariant DADataManagerTableModel::dataToolTip(const DAData& d, const QModelIndex
  */
 QIcon DADataManagerTableModel::dataToIcon(const DAData& d)
 {
-    static QIcon s_iconNone      = QIcon(":/dataType/Icon/typeNone.svg");
-    static QIcon s_iconDataframe = QIcon(":/dataType/Icon/typeDataframe.svg");
-    static QIcon s_iconSeries    = QIcon(":/dataType/Icon/typeDataSeries.svg");
-    static QIcon s_iconObject    = QIcon(":/dataType/Icon/typeObject.svg");
+    static QIcon s_iconNone      = QIcon(":/app/dataType/Icon/typeNone.svg");
+    static QIcon s_iconDataframe = QIcon(":/app/dataType/Icon/typeDataframe.svg");
+    static QIcon s_iconSeries    = QIcon(":/app/dataType/Icon/typeDataSeries.svg");
+    static QIcon s_iconObject    = QIcon(":/app/dataType/Icon/typeObject.svg");
     switch (d.getDataType()) {
     case DAAbstractData::TypeNone:
         return s_iconNone;

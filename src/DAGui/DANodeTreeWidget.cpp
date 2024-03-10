@@ -40,7 +40,7 @@ void DANodeTreeWidgetItem::setNodeMetaData(const DANodeMetaData& md)
 DANodeTreeWidget::DANodeTreeWidget(QWidget* par) : QTreeWidget(par), _favoriteItem(nullptr)
 {
     qRegisterMetaType< DA::DANodeMetaData >("DA::DANodeMetaData");
-    setDragEnabled(true);  //启用拖放
+    setDragEnabled(true);  // 启用拖放
     setHeaderHidden(true);
 }
 
@@ -52,7 +52,7 @@ DANodeTreeWidget::DANodeTreeWidget(QWidget* par) : QTreeWidget(par), _favoriteIt
  */
 void DANodeTreeWidget::addItems(const QList< DANodeMetaData >& nodeMetaDatas)
 {
-    //先提取分组，确认分组都建立
+    // 先提取分组，确认分组都建立
     QList< QString > orderGroup;
     QMap< DANodeMetaData, DANodeTreeWidgetItem* > nodeItems;
     for (const DANodeMetaData& md : qAsConst(nodeMetaDatas)) {
@@ -63,14 +63,14 @@ void DANodeTreeWidget::addItems(const QList< DANodeMetaData >& nodeMetaDatas)
             orderGroup.append(md.getGroup());
         }
     }
-    //创建分组的topitem
+    // 创建分组的topitem
     QHash< QString, QTreeWidgetItem* > groupItems;
     for (const QString& g : qAsConst(orderGroup)) {
         QTreeWidgetItem* gitem = new QTreeWidgetItem({ g });
         insertTopLevelItem(topLevelItemCount(), gitem);
         groupItems[ g ] = gitem;
     }
-    //把节点item挂载到分组中
+    // 把节点item挂载到分组中
     for (const DANodeMetaData& md : qAsConst(nodeMetaDatas)) {
         QTreeWidgetItem* gitem      = groupItems.value(md.getGroup(), nullptr);
         DANodeTreeWidgetItem* nitem = nodeItems.value(md, nullptr);
@@ -162,7 +162,7 @@ QTreeWidgetItem* DANodeTreeWidget::createFavoriteItem()
         return _favoriteItem;
     }
     _favoriteItem = new QTreeWidgetItem({ tr("Favorite") });
-    _favoriteItem->setIcon(0, QIcon(":/icon/icon/favorite.svg"));
+    _favoriteItem->setIcon(0, QIcon(":/DAGui/icon/favorite.svg"));
     insertTopLevelItem(0, _favoriteItem);
     return _favoriteItem;
 }

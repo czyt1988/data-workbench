@@ -180,7 +180,7 @@ void DAAppRibbonArea::buildMenu()
     //
     m_menuTheme = new SARibbonMenu(m_app);
     m_menuTheme->setObjectName("menuTheme");
-    m_menuTheme->setIcon(QIcon(":/Icon/Icon/theme.svg"));
+    m_menuTheme->setIcon(QIcon(":/app/bright/Icon/theme.svg"));
     m_menuTheme->addAction(m_actions->actionRibbonThemeOffice2013);
     m_menuTheme->addAction(m_actions->actionRibbonThemeOffice2016Blue);
     m_menuTheme->addAction(m_actions->actionRibbonThemeOffice2021Blue);
@@ -705,11 +705,11 @@ void DAAppRibbonArea::buildRedoUndo()
 
     m_actions->actionRedo = undoGroup.createRedoAction(this);
     m_actions->actionRedo->setObjectName("actionRedo");
-    m_actions->actionRedo->setIcon(QIcon(":/Icon/Icon/redo.svg"));
+    m_actions->actionRedo->setIcon(QIcon(":/app/bright/Icon/redo.svg"));
     m_actions->actionRedo->setShortcut(QKeySequence::Redo);
     m_actions->actionUndo = undoGroup.createUndoAction(this);
     m_actions->actionUndo->setObjectName("actionUndo");
-    m_actions->actionUndo->setIcon(QIcon(":/Icon/Icon/undo.svg"));
+    m_actions->actionUndo->setIcon(QIcon(":/app/bright/Icon/undo.svg"));
     m_actions->actionUndo->setShortcut(QKeySequence::Undo);
     SARibbonQuickAccessBar* bar = ribbonBar()->quickAccessBar();
     if (!bar) {

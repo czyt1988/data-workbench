@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="../icon.qrc">
-    <normaloff>:/icon/icon/renameColumns.svg</normaloff>:/icon/icon/renameColumns.svg</iconset>
+    <normaloff>:/DAGui/icon/renameColumns.svg</normaloff>:/DAGui/icon/renameColumns.svg</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -65,7 +65,7 @@
        </property>
        <property name="icon">
         <iconset resource="../icon.qrc">
-         <normaloff>:/icon/icon/accept.svg</normaloff>:/icon/icon/accept.svg</iconset>
+         <normaloff>:/DAGui/icon/accept.svg</normaloff>:/DAGui/icon/accept.svg</iconset>
        </property>
       </widget>
      </item>
@@ -76,7 +76,7 @@
        </property>
        <property name="icon">
         <iconset resource="../icon.qrc">
-         <normaloff>:/icon/icon/cancel.svg</normaloff>:/icon/icon/cancel.svg</iconset>
+         <normaloff>:/DAGui/icon/cancel.svg</normaloff>:/DAGui/icon/cancel.svg</iconset>
        </property>
       </widget>
      </item>

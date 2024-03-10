@@ -22,7 +22,9 @@
 
 namespace DA
 {
-bool standardItemIterator(QStandardItem* startItem, std::function< bool(QStandardItem*, QStandardItem*) > fun, bool firstColumnOnly);
+bool standardItemIterator(QStandardItem* startItem,
+                          std::function< bool(QStandardItem*, QStandardItem*) > fun,
+                          bool firstColumnOnly);
 //===================================================
 // DAChartItemStandardItem
 //===================================================
@@ -85,7 +87,7 @@ void DAChartItemStandardItem::setItem(QwtPlotItem* i)
 QVariant DAChartItemStandardItem::dataDisplayRole(QwtPlotItem* item, int c) const
 {
     switch (c) {
-    case 0:  //名称
+    case 0:  // 名称
     {
         return getItemName(item);
     }
@@ -98,7 +100,7 @@ QVariant DAChartItemStandardItem::dataDisplayRole(QwtPlotItem* item, int c) cons
 void DAChartItemStandardItem::setDataEditRole(const QVariant& value, QwtPlotItem* item, int c)
 {
     switch (c) {
-    case 0:  //名称 - 显示图标
+    case 0:  // 名称 - 显示图标
     {
         QString str = value.toString();
         if (str.isEmpty()) {
@@ -115,23 +117,23 @@ void DAChartItemStandardItem::setDataEditRole(const QVariant& value, QwtPlotItem
 QVariant DAChartItemStandardItem::dataDecorationRole(QwtPlotItem* item, int c) const
 {
     switch (c) {
-    case 0:  //名称 - 显示图标
+    case 0:  // 名称 - 显示图标
     {
         return DAFigureTreeModel::chartItemToIcon(item);
     }
-    case 1:  //颜色
+    case 1:  // 颜色
     {
         QBrush brush = DAChartUtil::getPlotItemBrush(item);
         if (Qt::NoBrush != brush.style()) {
             return DAFigureTreeModel::brushIcon(brush);
         }
-        //如果是NoBrush，就返回空;
+        // 如果是NoBrush，就返回空;
         return QVariant();
     }
-    case 2:  //可见性
+    case 2:  // 可见性
     {
-        static QIcon s_icon_invisible(":/da-figure/icon/chartitem-invisible.svg");
-        static QIcon s_icon_visible(":/da-figure/icon/chartitem-visible.svg");
+        static QIcon s_icon_invisible(":/DAFigure/icon/chartitem-invisible.svg");
+        static QIcon s_icon_visible(":/DAFigure/icon/chartitem-visible.svg");
         return ((item->isVisible()) ? s_icon_visible : s_icon_invisible);
     } break;
     default:
@@ -297,7 +299,7 @@ QVariant DAChartWidgetStandardItem::dataDecorationRole(int c) const
 {
     switch (c) {
     case 0: {
-        static QIcon s_charticon(":/da-figure/icon/chart.svg");
+        static QIcon s_charticon(":/DAFigure/icon/chart.svg");
         return s_charticon;
     } break;
     case 1: {
@@ -308,9 +310,9 @@ QVariant DAChartWidgetStandardItem::dataDecorationRole(int c) const
         return DAFigureTreeModel::brushIcon(b);
     } break;
     case 2: {
-        //第3列显示可见性
-        static QIcon s_icon_invisible(":/da-figure/icon/chartitem-invisible.svg");
-        static QIcon s_icon_visible(":/da-figure/icon/chartitem-visible.svg");
+        // 第3列显示可见性
+        static QIcon s_icon_invisible(":/DAFigure/icon/chartitem-invisible.svg");
+        static QIcon s_icon_visible(":/DAFigure/icon/chartitem-visible.svg");
         return ((_chart->isVisible()) ? s_icon_visible : s_icon_invisible);
     } break;
     default:
@@ -470,9 +472,9 @@ void DAFigureTreeModel::setFigure(DAFigureWidget* fig)
 {
     clear();
     setHorizontalHeaderLabels({
-            tr("name"),      // cn:名称
-            tr("property"),  // cn:属性
-            tr("visible")    // cn:可见性
+        tr("name"),      // cn:名称
+        tr("property"),  // cn:属性
+        tr("visible")    // cn:可见性
     });
     if (d_ptr->mFig) {
         disconnect(d_ptr->mFig, &DAFigureWidget::chartAdded, this, &DAFigureTreeModel::onChartAdded);
@@ -490,7 +492,7 @@ void DAFigureTreeModel::setFigure(DAFigureWidget* fig)
     connect(fig, &DAFigureWidget::chartWillRemove, this, &DAFigureTreeModel::onChartWillRemove);
     for (DAChartWidget* w : qAsConst(d_ptr->mCharts)) {
         if (w) {
-            //把已有的chart添加
+            // 把已有的chart添加
             onChartAdded(w);
             connect(w, &DAChartWidget::itemAttached, this, &DAFigureTreeModel::onChartItemAttached);
             connect(w, &DAChartWidget::legendDataChanged, this, &DAFigureTreeModel::onLegendDataChanged);
@@ -520,120 +522,120 @@ int DAFigureTreeModel::indexOfChart(DAChartWidget* c) const
  */
 QList< QStandardItem* > DAFigureTreeModel::findChartItems(QwtPlotItem* i)
 {
-    //找到item
+    // 找到item
     QList< QStandardItem* > chartitems;
     standardItemIterator(
-            invisibleRootItem(),
-            [ &chartitems, i ](QStandardItem* par, QStandardItem* ite) -> bool {
-                if (DAChartItemStandardItem_Type == ite->type()) {
-                    DAChartItemStandardItem* chartitem = static_cast< DAChartItemStandardItem* >(ite);
-                    if (chartitem->getItem() == i) {
-                        chartitems.append(ite);
-                    }
+        invisibleRootItem(),
+        [ &chartitems, i ](QStandardItem* par, QStandardItem* ite) -> bool {
+            if (DAChartItemStandardItem_Type == ite->type()) {
+                DAChartItemStandardItem* chartitem = static_cast< DAChartItemStandardItem* >(ite);
+                if (chartitem->getItem() == i) {
+                    chartitems.append(ite);
                 }
-                return true;  //遍历所有节点
-            },
-            false);
+            }
+            return true;  // 遍历所有节点
+        },
+        false);
     return chartitems;
 }
 
 QIcon DAFigureTreeModel::chartItemToIcon(const QwtPlotItem* i)
 {
-    static QIcon s_default_chart_icon(":/da-figure/icon/chart-item.svg");
+    static QIcon s_default_chart_icon(":/DAFigure/icon/chart-item.svg");
     switch (i->rtti()) {
     //! Unspecific value, that can be used, when it doesn't matter
     case QwtPlotItem::Rtti_PlotItem:
         break;
     //! For QwtPlotGrid
     case QwtPlotItem::Rtti_PlotGrid: {
-        static QIcon s_icon(":/da-figure/icon/chart-grid.svg");
+        static QIcon s_icon(":/DAFigure/icon/chart-grid.svg");
         return s_icon;
     }
     //! For QwtPlotScaleItem
     case QwtPlotItem::Rtti_PlotScale: {
-        static QIcon s_icon(":/da-figure/icon/chart-scale.svg");
+        static QIcon s_icon(":/DAFigure/icon/chart-scale.svg");
         return s_icon;
     }
     //! For QwtPlotLegendItem
     case QwtPlotItem::Rtti_PlotLegend: {
-        static QIcon s_icon(":/da-figure/icon/chart-legend.svg");
+        static QIcon s_icon(":/DAFigure/icon/chart-legend.svg");
         return s_icon;
     }
     //! For QwtPlotMarker
     case QwtPlotItem::Rtti_PlotMarker: {
-        static QIcon s_icon(":/da-figure/icon/chart-marker.svg");
+        static QIcon s_icon(":/DAFigure/icon/chart-marker.svg");
         return s_icon;
     }
 
     //! For QwtPlotCurve
     case QwtPlotItem::Rtti_PlotCurve: {
-        static QIcon s_icon(":/da-figure/icon/chart-curve.svg");
+        static QIcon s_icon(":/DAFigure/icon/chart-curve.svg");
         return s_icon;
     }
     //! For QwtPlotSpectroCurve
     case QwtPlotItem::Rtti_PlotSpectroCurve: {
-        static QIcon s_icon(":/da-figure/icon/chart-spectrocurve.svg");
+        static QIcon s_icon(":/DAFigure/icon/chart-spectrocurve.svg");
         return s_icon;
     }
     //! For QwtPlotIntervalCurve
     case QwtPlotItem::Rtti_PlotIntervalCurve: {
-        static QIcon s_icon(":/da-figure/icon/chart-intervalcurve.svg");
+        static QIcon s_icon(":/DAFigure/icon/chart-intervalcurve.svg");
         return s_icon;
     }
 
     //! For QwtPlotHistogram
     case QwtPlotItem::Rtti_PlotHistogram: {
-        static QIcon s_icon(":/da-figure/icon/chart-histogram.svg");
+        static QIcon s_icon(":/DAFigure/icon/chart-histogram.svg");
         return s_icon;
     }
     //! For QwtPlotSpectrogram
     case QwtPlotItem::Rtti_PlotSpectrogram: {
-        static QIcon s_icon(":/da-figure/icon/chart-spectrogram.svg");
+        static QIcon s_icon(":/DAFigure/icon/chart-spectrogram.svg");
         return s_icon;
     }
 
     case QwtPlotItem::Rtti_PlotGraphic: {
-        static QIcon s_icon(":/da-figure/icon/chart-graphic.svg");
+        static QIcon s_icon(":/DAFigure/icon/chart-graphic.svg");
         return s_icon;
     }
 
     //! For QwtPlotTradingCurve
     case QwtPlotItem::Rtti_PlotTradingCurve: {
-        static QIcon s_icon(":/da-figure/icon/chart-OHLC.svg");
+        static QIcon s_icon(":/DAFigure/icon/chart-OHLC.svg");
         return s_icon;
     }
 
     //! For QwtPlotBarChart
     case QwtPlotItem::Rtti_PlotBarChart: {
-        static QIcon s_icon(":/da-figure/icon/chart-bar.svg");
+        static QIcon s_icon(":/DAFigure/icon/chart-bar.svg");
         return s_icon;
     }
 
     //! For QwtPlotMultiBarChart
     case QwtPlotItem::Rtti_PlotMultiBarChart: {
-        static QIcon s_icon(":/da-figure/icon/chart-multibar.svg");
+        static QIcon s_icon(":/DAFigure/icon/chart-multibar.svg");
         return s_icon;
     }
     //! For QwtPlotShapeItem
     case QwtPlotItem::Rtti_PlotShape: {
-        static QIcon s_icon(":/da-figure/icon/chart-shapes.svg");
+        static QIcon s_icon(":/DAFigure/icon/chart-shapes.svg");
         return s_icon;
     }
 
     //! For QwtPlotTextLabel
     case QwtPlotItem::Rtti_PlotTextLabel: {
-        static QIcon s_icon(":/da-figure/icon/chart-textlabel.svg");
+        static QIcon s_icon(":/DAFigure/icon/chart-textlabel.svg");
         return s_icon;
     }
 
     //! For QwtPlotZoneItem
     case QwtPlotItem::Rtti_PlotZone: {
-        static QIcon s_icon(":/da-figure/icon/chart-zone.svg");
+        static QIcon s_icon(":/DAFigure/icon/chart-zone.svg");
         return s_icon;
     }
     //! For QwtPlotVectorField
     case QwtPlotItem::Rtti_PlotVectorField: {
-        static QIcon s_icon(":/da-figure/icon/chart-vectorfield.svg");
+        static QIcon s_icon(":/DAFigure/icon/chart-vectorfield.svg");
         return s_icon;
     }
     default:

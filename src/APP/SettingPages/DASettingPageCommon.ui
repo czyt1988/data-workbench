@@ -81,6 +81,13 @@
         </property>
        </widget>
       </item>
+      <item>
+       <widget class="QToolButton" name="toolButton">
+        <property name="text">
+         <string>Clear the saved window state</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>

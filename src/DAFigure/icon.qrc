@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/da-figure">
+    <qresource prefix="/DAFigure">
         <file>icon/figure.svg</file>
         <file>icon/chart.svg</file>
         <file>icon/chart-bar.svg</file>

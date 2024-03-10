@@ -43,17 +43,35 @@ void DAWorkFlowNodeItemSettingWidget::bindWorkFlowEditWidget(DAWorkFlowEditWidge
     if (_workflowEditWidget) {
         DAWorkFlowGraphicsScene* s = _workflowEditWidget->getWorkFlowGraphicsScene();
         disconnect(s, &DAWorkFlowGraphicsScene::selectionChanged, this, &DAWorkFlowNodeItemSettingWidget::onSceneSelectionChanged);
-        disconnect(s, &DAWorkFlowGraphicsScene::itemsPositionChanged, this, &DAWorkFlowNodeItemSettingWidget::onSceneItemsPositionChanged);
-        disconnect(s, &DAWorkFlowGraphicsScene::itemBodySizeChanged, this, &DAWorkFlowNodeItemSettingWidget::onSceneItemBodySizeChanged);
-        disconnect(s, &DAWorkFlowGraphicsScene::itemRotationChanged, this, &DAWorkFlowNodeItemSettingWidget::onSceneItemRotationChanged);
+        disconnect(s,
+                   &DAWorkFlowGraphicsScene::itemsPositionChanged,
+                   this,
+                   &DAWorkFlowNodeItemSettingWidget::onSceneItemsPositionChanged);
+        disconnect(s,
+                   &DAWorkFlowGraphicsScene::itemBodySizeChanged,
+                   this,
+                   &DAWorkFlowNodeItemSettingWidget::onSceneItemBodySizeChanged);
+        disconnect(s,
+                   &DAWorkFlowGraphicsScene::itemRotationChanged,
+                   this,
+                   &DAWorkFlowNodeItemSettingWidget::onSceneItemRotationChanged);
     }
     _workflowEditWidget = w;
     if (_workflowEditWidget) {
         DAWorkFlowGraphicsScene* s = _workflowEditWidget->getWorkFlowGraphicsScene();
         connect(s, &DAWorkFlowGraphicsScene::selectionChanged, this, &DAWorkFlowNodeItemSettingWidget::onSceneSelectionChanged);
-        connect(s, &DAWorkFlowGraphicsScene::itemsPositionChanged, this, &DAWorkFlowNodeItemSettingWidget::onSceneItemsPositionChanged);
-        connect(s, &DAWorkFlowGraphicsScene::itemBodySizeChanged, this, &DAWorkFlowNodeItemSettingWidget::onSceneItemBodySizeChanged);
-        connect(s, &DAWorkFlowGraphicsScene::itemRotationChanged, this, &DAWorkFlowNodeItemSettingWidget::onSceneItemRotationChanged);
+        connect(s,
+                &DAWorkFlowGraphicsScene::itemsPositionChanged,
+                this,
+                &DAWorkFlowNodeItemSettingWidget::onSceneItemsPositionChanged);
+        connect(s,
+                &DAWorkFlowGraphicsScene::itemBodySizeChanged,
+                this,
+                &DAWorkFlowNodeItemSettingWidget::onSceneItemBodySizeChanged);
+        connect(s,
+                &DAWorkFlowGraphicsScene::itemRotationChanged,
+                this,
+                &DAWorkFlowNodeItemSettingWidget::onSceneItemRotationChanged);
         ui->tabItemSetting->setScene(s);
         ui->tabItemSetting->updateData();
     } else {
@@ -263,7 +281,7 @@ void DAWorkFlowNodeItemSettingWidget::onSceneSelectionChanged()
             // 设置窗口不为空，就把
             if (mLastSetNodeWidget != w) {
                 removeWidget(mLastSetNodeWidget.data());
-                addWidget(w, QIcon(":/Icon/Icon/node-settting.svg"), tr("property"));
+                addWidget(w, QIcon(":/DAGui/icon/node-settting.svg"), tr("property"));
             }
         }
         mLastSetNodeWidget = w;
@@ -337,7 +355,9 @@ void DAWorkFlowNodeItemSettingWidget::onSceneItemsPositionChanged(const QList< Q
  * @param oldSize
  * @param newSize
  */
-void DAWorkFlowNodeItemSettingWidget::onSceneItemBodySizeChanged(DAGraphicsResizeableItem* item, const QSizeF& oldSize, const QSizeF& newSize)
+void DAWorkFlowNodeItemSettingWidget::onSceneItemBodySizeChanged(DAGraphicsResizeableItem* item,
+                                                                 const QSizeF& oldSize,
+                                                                 const QSizeF& newSize)
 {
     Q_UNUSED(item);
     Q_UNUSED(oldSize);

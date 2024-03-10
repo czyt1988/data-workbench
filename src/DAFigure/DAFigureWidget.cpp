@@ -208,7 +208,7 @@ public:
     void setupUI()
     {
         q_ptr->setBackgroundColor(QColor(255, 255, 255));
-        q_ptr->setWindowIcon(QIcon(":/da-figure/icon/figure.svg"));
+        q_ptr->setWindowIcon(QIcon(":/DAFigure/icon/figure.svg"));
     }
 
     void retranslateUi()

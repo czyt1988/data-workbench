@@ -22,11 +22,11 @@ DAWorkFlowNodeListWidget::DAWorkFlowNodeListWidget(QWidget* parent)
     _actionViewNodeListByToolBox = new QAction(this);
     _actionViewNodeListByToolBox->setObjectName("actionViewDataListByTable");
     _actionViewNodeListByToolBox->setCheckable(true);
-    _actionViewNodeListByToolBox->setIcon(QIcon(":/icon/icon/showDataInList.svg"));
+    _actionViewNodeListByToolBox->setIcon(QIcon(":/DAGui/icon/showDataInList.svg"));
     _actionViewNodeListByTree = new QAction(this);
     _actionViewNodeListByTree->setObjectName("actionViewDataListByTree");
     _actionViewNodeListByTree->setCheckable(true);
-    _actionViewNodeListByTree->setIcon(QIcon(":/icon/icon/showDataInTree.svg"));
+    _actionViewNodeListByTree->setIcon(QIcon(":/DAGui/icon/showDataInTree.svg"));
     _actionGroup = new QActionGroup(this);
     _actionGroup->addAction(_actionViewNodeListByToolBox);
     _actionGroup->addAction(_actionViewNodeListByTree);
@@ -34,7 +34,10 @@ DAWorkFlowNodeListWidget::DAWorkFlowNodeListWidget(QWidget* parent)
     ui->toolButtonList->setDefaultAction(_actionViewNodeListByToolBox);
     ui->toolButtonTree->setDefaultAction(_actionViewNodeListByTree);
     setDisplayMode(DisplayInToolBox);
-    connect(this, &DAWorkFlowNodeListWidget::customContextMenuRequested, this, &DAWorkFlowNodeListWidget::onCustomContextMenuRequested);
+    connect(this,
+            &DAWorkFlowNodeListWidget::customContextMenuRequested,
+            this,
+            &DAWorkFlowNodeListWidget::onCustomContextMenuRequested);
     connect(_actionGroup, &QActionGroup::triggered, this, &DAWorkFlowNodeListWidget::onActionGroupTriggered);
 }
 
@@ -99,8 +102,8 @@ DANodeTreeWidget* DAWorkFlowNodeListWidget::getTreeWidget() const
 void DAWorkFlowNodeListWidget::buildMenu()
 {
     _menu                 = new QMenu(this);
-    _actionAddFavorite    = new QAction(QIcon(":/icon/icon/favorite.svg"), tr("Favorite"), this);
-    _actionRemoveFavorite = new QAction(QIcon(":/icon/icon/removeFavorite.svg"), tr("Remove Favorite"), this);
+    _actionAddFavorite    = new QAction(QIcon(":/DAGui/icon/favorite.svg"), tr("Favorite"), this);
+    _actionRemoveFavorite = new QAction(QIcon(":/DAGui/icon/removeFavorite.svg"), tr("Remove Favorite"), this);
     _menu->addAction(_actionAddFavorite);
     _menu->addAction(_actionRemoveFavorite);
     connect(_actionAddFavorite, &QAction::triggered, this, &DAWorkFlowNodeListWidget::onActionAddFavoriteTriggered);
@@ -127,7 +130,7 @@ void DAWorkFlowNodeListWidget::onCustomContextMenuRequested(const QPoint& pos)
             return;
         }
         if (nl == tb->getFavoriteList()) {
-            //如果这个页面就是收藏页面
+            // 如果这个页面就是收藏页面
             _actionAddFavorite->setEnabled(false);
             _actionRemoveFavorite->setEnabled(true);
         } else {
@@ -148,7 +151,7 @@ void DAWorkFlowNodeListWidget::onActionAddFavoriteTriggered()
         DANodeTreeWidget* tw = getTreeWidget();
         md                   = tw->getNodeMetaData(tw->mapFromGlobal(mapToGlobal(_lastCustoRequestedPoint)));
     }
-    //添加到fav
+    // 添加到fav
     if (md) {
         getToolBox()->addToFavorite(md);
         getTreeWidget()->addToFavorite(md);

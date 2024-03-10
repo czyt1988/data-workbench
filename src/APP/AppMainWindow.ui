@@ -18,7 +18,7 @@
   <action name="actionOpen">
    <property name="icon">
     <iconset resource="icon.qrc">
-     <normaloff>:/Icon/Icon/file.svg</normaloff>:/Icon/Icon/file.svg</iconset>
+     <normaloff>:/app/bright/Icon/file.svg</normaloff>:/app/bright/Icon/file.svg</iconset>
    </property>
    <property name="text">
     <string>Open</string>
@@ -27,7 +27,7 @@
   <action name="actionSave">
    <property name="icon">
     <iconset resource="icon.qrc">
-     <normaloff>:/Icon/Icon/save.svg</normaloff>:/Icon/Icon/save.svg</iconset>
+     <normaloff>:/app/bright/Icon/save.svg</normaloff>:/app/bright/Icon/save.svg</iconset>
    </property>
    <property name="text">
     <string>save</string>
@@ -36,7 +36,7 @@
   <action name="actionSaveAs">
    <property name="icon">
     <iconset resource="icon.qrc">
-     <normaloff>:/Icon/Icon/save-as.svg</normaloff>:/Icon/Icon/save-as.svg</iconset>
+     <normaloff>:/app/bright/Icon/save-as.svg</normaloff>:/app/bright/Icon/save-as.svg</iconset>
    </property>
    <property name="text">
     <string>saveAs</string>
@@ -45,7 +45,7 @@
   <action name="actionRedo">
    <property name="icon">
     <iconset resource="icon.qrc">
-     <normaloff>:/Icon/Icon/redo.svg</normaloff>:/Icon/Icon/redo.svg</iconset>
+     <normaloff>:/app/bright/Icon/redo.svg</normaloff>:/app/bright/Icon/redo.svg</iconset>
    </property>
    <property name="text">
     <string>redo</string>
@@ -54,7 +54,7 @@
   <action name="actionUndo">
    <property name="icon">
     <iconset resource="icon.qrc">
-     <normaloff>:/Icon/Icon/undo.svg</normaloff>:/Icon/Icon/undo.svg</iconset>
+     <normaloff>:/app/bright/Icon/undo.svg</normaloff>:/app/bright/Icon/undo.svg</iconset>
    </property>
    <property name="text">
     <string>undo</string>
@@ -63,7 +63,7 @@
   <action name="actionPluginManager">
    <property name="icon">
     <iconset resource="icon.qrc">
-     <normaloff>:/Icon/Icon/plugin.svg</normaloff>:/Icon/Icon/plugin.svg</iconset>
+     <normaloff>:/app/bright/Icon/plugin.svg</normaloff>:/app/bright/Icon/plugin.svg</iconset>
    </property>
    <property name="text">
     <string>plugin</string>
@@ -72,7 +72,7 @@
   <action name="actionShowWorkFlowArea">
    <property name="icon">
     <iconset resource="icon.qrc">
-     <normaloff>:/Icon/Icon/showWorkFlow.svg</normaloff>:/Icon/Icon/showWorkFlow.svg</iconset>
+     <normaloff>:/app/bright/Icon/showWorkFlow.svg</normaloff>:/app/bright/Icon/showWorkFlow.svg</iconset>
    </property>
    <property name="text">
     <string>Show Work Flow Area</string>
@@ -81,7 +81,7 @@
   <action name="actionShowChartArea">
    <property name="icon">
     <iconset resource="icon.qrc">
-     <normaloff>:/Icon/Icon/showChart.svg</normaloff>:/Icon/Icon/showChart.svg</iconset>
+     <normaloff>:/app/bright/Icon/showChart.svg</normaloff>:/app/bright/Icon/showChart.svg</iconset>
    </property>
    <property name="text">
     <string>Show Chart Area</string>
@@ -90,7 +90,7 @@
   <action name="actionShowTableArea">
    <property name="icon">
     <iconset resource="icon.qrc">
-     <normaloff>:/Icon/Icon/showTable.svg</normaloff>:/Icon/Icon/showTable.svg</iconset>
+     <normaloff>:/app/bright/Icon/showTable.svg</normaloff>:/app/bright/Icon/showTable.svg</iconset>
    </property>
    <property name="text">
     <string>Show Table Area</string>
@@ -99,7 +99,7 @@
   <action name="actionShowInfomationWindow">
    <property name="icon">
     <iconset resource="icon.qrc">
-     <normaloff>:/Icon/Icon/showInfomation.svg</normaloff>:/Icon/Icon/showInfomation.svg</iconset>
+     <normaloff>:/app/bright/Icon/showInfomation.svg</normaloff>:/app/bright/Icon/showInfomation.svg</iconset>
    </property>
    <property name="text">
     <string>Show Infomation Window</string>

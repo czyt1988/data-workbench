@@ -65,7 +65,7 @@ DADataManagerTreeItem::DADataManagerTreeItem(const DAData& d) : QStandardItem(d.
  */
 DADataManagerTreeItem::DADataManagerTreeItem(const QString& n) : QStandardItem(n)
 {
-    setIcon(QIcon(":/icon/icon/folder.svg"));
+    setIcon(QIcon(":/DAGui/icon/folder.svg"));
     setData((int)ItemFolder, DADATAMANAGERTREEMODEL_ROLE_ITEM_TYPE);
     setEditable(false);
     setDropEnabled(true);

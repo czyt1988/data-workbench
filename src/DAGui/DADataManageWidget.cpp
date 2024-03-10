@@ -24,7 +24,7 @@ DADataManageWidget::DADataManageWidget(QWidget* parent) : QWidget(parent), ui(ne
     mActionViewDataListByTable = new QAction(this);
     mActionViewDataListByTable->setObjectName("actionViewDataListByTable");
     mActionViewDataListByTable->setCheckable(true);
-    mActionViewDataListByTable->setIcon(QIcon(":/icon/icon/showDataInList.svg"));
+    mActionViewDataListByTable->setIcon(QIcon(":/DAGui/icon/showDataInList.svg"));
 
     mActionGroup = new QActionGroup(this);
     mActionGroup->addAction(mActionViewDataListByTable);

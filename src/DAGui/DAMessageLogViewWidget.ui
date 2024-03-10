@@ -43,8 +43,8 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset>
-         <normaloff>:/messageType/Icon/messageTypeInfo.svg</normaloff>:/messageType/Icon/messageTypeInfo.svg</iconset>
+        <iconset resource="icon.qrc">
+         <normaloff>:/DAGui/MessageType/icon/messageType/messageTypeInfo.svg</normaloff>:/DAGui/MessageType/icon/messageType/messageTypeInfo.svg</iconset>
        </property>
        <property name="checkable">
         <bool>true</bool>
@@ -63,8 +63,8 @@
         <string>...</string>
        </property>
        <property name="icon">
-        <iconset>
-         <normaloff>:/messageType/Icon/messageTypeWarning.svg</normaloff>:/messageType/Icon/messageTypeWarning.svg</iconset>
+        <iconset resource="icon.qrc">
+         <normaloff>:/DAGui/MessageType/icon/messageType/messageTypeWarning.svg</normaloff>:/DAGui/MessageType/icon/messageType/messageTypeWarning.svg</iconset>
        </property>
        <property name="checkable">
         <bool>true</bool>
@@ -83,8 +83,8 @@
         <string>...</string>
        </property>
        <property name="icon">
-        <iconset>
-         <normaloff>:/messageType/Icon/messageTypeError.svg</normaloff>:/messageType/Icon/messageTypeError.svg</iconset>
+        <iconset resource="icon.qrc">
+         <normaloff>:/DAGui/MessageType/icon/messageType/messageTypeError.svg</normaloff>:/DAGui/MessageType/icon/messageType/messageTypeError.svg</iconset>
        </property>
        <property name="checkable">
         <bool>true</bool>
@@ -114,6 +114,10 @@
       <widget class="QToolButton" name="toolButtonClear">
        <property name="text">
         <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="icon.qrc">
+         <normaloff>:/DAGui/icon/clear-message.svg</normaloff>:/DAGui/icon/clear-message.svg</iconset>
        </property>
        <property name="autoRaise">
         <bool>true</bool>
@@ -161,6 +165,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="icon.qrc"/>
+ </resources>
  <connections/>
 </ui>

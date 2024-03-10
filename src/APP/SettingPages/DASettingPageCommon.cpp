@@ -67,7 +67,7 @@ QString DASettingPageCommon::getSettingPageTitle() const
 
 QIcon DASettingPageCommon::getSettingPageIcon() const
 {
-    return QIcon(":/icon/icon/setting-common.svg");
+    return QIcon(":/DAGui/icon/setting-common.svg");
 }
 
 bool DASettingPageCommon::setAppConfig(DAAppConfig* p)

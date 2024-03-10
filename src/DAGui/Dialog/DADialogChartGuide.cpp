@@ -27,11 +27,11 @@ void DADialogChartGuide::init()
 {
     QListWidgetItem* item = nullptr;
     // curve
-    item = new QListWidgetItem(QIcon(":/gui/chart-type/icon/chart-type/chart-curve.svg"), tr("curve"));
+    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-curve.svg"), tr("curve"));
     item->setData(Qt::UserRole, static_cast< int >(DA::ChartTypes::Curve));
     ui->listWidgetChartType->addItem(item);
     // scatter
-    item = new QListWidgetItem(QIcon(":/gui/chart-type/icon/chart-type/chart-scatter.svg"), tr("scatter"));
+    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-scatter.svg"), tr("scatter"));
     item->setData(Qt::UserRole, static_cast< int >(DA::ChartTypes::Scatter));
     ui->listWidgetChartType->addItem(item);
     // 初始化

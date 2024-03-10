@@ -19,14 +19,16 @@ DAChartPlotItemSettingWidget::DAChartPlotItemSettingWidget(QWidget* parent)
     : QWidget(parent), ui(new Ui::DAChartPlotItemSettingWidget)
 {
     ui->setupUi(this);
-    _actionGroupAxis = new QActionGroup(this);
-    _actionAxisLeftBottom = _actionGroupAxis->addAction(QIcon(":/gui/chart-setting/icon/axisLeftBottom.svg"), tr("Left Bottom"));
+    _actionGroupAxis      = new QActionGroup(this);
+    _actionAxisLeftBottom = _actionGroupAxis->addAction(QIcon(":/DAGui/ChartSetting/icon/axisLeftBottom.svg"),
+                                                        tr("Left Bottom"));
     _actionAxisLeftBottom->setCheckable(true);
-    _actionAxisLeftTop = _actionGroupAxis->addAction(QIcon(":/gui/chart-setting/icon/axisLeftTop.svg"), tr("Left Top"));
+    _actionAxisLeftTop = _actionGroupAxis->addAction(QIcon(":/DAGui/ChartSetting/icon/axisLeftTop.svg"), tr("Left Top"));
     _actionAxisLeftTop->setCheckable(true);
-    _actionAxisRightBottom = _actionGroupAxis->addAction(QIcon(":/gui/chart-setting/icon/axisRightBottom.svg"), tr("Right Bottom"));
+    _actionAxisRightBottom = _actionGroupAxis->addAction(QIcon(":/DAGui/ChartSetting/icon/axisRightBottom.svg"),
+                                                         tr("Right Bottom"));
     _actionAxisRightBottom->setCheckable(true);
-    _actionAxisRightTop = _actionGroupAxis->addAction(QIcon(":/gui/chart-setting/icon/axisRightTop.svg"), tr("Right Top"));
+    _actionAxisRightTop = _actionGroupAxis->addAction(QIcon(":/DAGui/ChartSetting/icon/axisRightTop.svg"), tr("Right Top"));
     _actionAxisRightTop->setCheckable(true);
     ui->toolButtonLeftBottom->setDefaultAction(_actionAxisLeftBottom);
     ui->toolButtonLeftTop->setDefaultAction(_actionAxisLeftTop);
@@ -34,7 +36,10 @@ DAChartPlotItemSettingWidget::DAChartPlotItemSettingWidget(QWidget* parent)
     ui->toolButtonRightTop->setDefaultAction(_actionAxisRightTop);
     connect(_actionGroupAxis, &QActionGroup::triggered, this, &DAChartPlotItemSettingWidget::onActionGroupAxisTriggered);
     connect(ui->lineEditTitle, &QLineEdit::editingFinished, this, &DAChartPlotItemSettingWidget::onItemTitleEditingFinished);
-    connect(ui->doubleSpinBoxZ, QOverload< double >::of(&QDoubleSpinBox::valueChanged), this, &DAChartPlotItemSettingWidget::onItemZValueChanged);
+    connect(ui->doubleSpinBoxZ,
+            QOverload< double >::of(&QDoubleSpinBox::valueChanged),
+            this,
+            &DAChartPlotItemSettingWidget::onItemZValueChanged);
 }
 
 DAChartPlotItemSettingWidget::~DAChartPlotItemSettingWidget()
@@ -49,7 +54,7 @@ DAChartPlotItemSettingWidget::~DAChartPlotItemSettingWidget()
 void DAChartPlotItemSettingWidget::setPlotItem(QwtPlotItem* item)
 {
     _item = item;
-    //如果item有plot，则把plot设置进来，plot可以知道item是否被delete
+    // 如果item有plot，则把plot设置进来，plot可以知道item是否被delete
     QwtPlot* oldPlot = _plot.data();
     _plot            = item->plot();
     if (_plot) {

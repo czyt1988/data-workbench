@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="../icon.qrc">
-    <normaloff>:/icon/icon/insertColumnRight.svg</normaloff>:/icon/icon/insertColumnRight.svg</iconset>
+    <normaloff>:/DAGui/icon/insertColumnRight.svg</normaloff>:/DAGui/icon/insertColumnRight.svg</iconset>
   </property>
   <property name="sizeGripEnabled">
    <bool>true</bool>

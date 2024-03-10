@@ -241,20 +241,20 @@ void DAAppDockingArea::buildDockingArea()
     // auto center         = createCenterDockWidget(centerLabel, QStringLiteral("centerLabel"));
 
     mWorkFlowOperateDock = createCenterDockWidget(mWorkFlowOperateWidget, QStringLiteral("da_workFlowOperateWidgetDock"));
-    mWorkFlowOperateDock->setIcon(QIcon(":/Icon/Icon/showWorkFlow.svg"));
+    mWorkFlowOperateDock->setIcon(QIcon(":/app/bright/Icon/showWorkFlow.svg"));
     mWorkFlowOperateDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
 
     mChartOperateDock = createDockWidgetAsTab(mChartOperateWidget,
                                               QStringLiteral("da_chartOperateWidgetDock"),
                                               mWorkFlowOperateDock->dockAreaWidget());
-    mChartOperateDock->setIcon(QIcon(":/Icon/Icon/showChart.svg"));
+    mChartOperateDock->setIcon(QIcon(":/app/bright/Icon/showChart.svg"));
     mChartOperateDock->setToggleViewActionMode(ads::CDockWidget::ActionModeToggle);
     mChartOperateDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
 
     mDataOperateDock = createDockWidgetAsTab(mDataOperateWidget,
                                              QStringLiteral("da_dataOperateWidgetDock"),
                                              mWorkFlowOperateDock->dockAreaWidget());
-    mDataOperateDock->setIcon(QIcon(":/Icon/Icon/showTable.svg"));
+    mDataOperateDock->setIcon(QIcon(":/app/bright/Icon/showTable.svg"));
     mDataOperateDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
     mDataOperateDock->raise();
 
@@ -279,13 +279,13 @@ void DAAppDockingArea::buildDockingArea()
     mSettingContainerDock = createDockWidget(mSettingContainerWidget,
                                              ads::RightDockWidgetArea,
                                              QStringLiteral("da_settingDock"));
-    mSettingContainerDock->setIcon(QIcon(":/Icon/Icon/showSettingWidget.svg"));
+    mSettingContainerDock->setIcon(QIcon(":/app/bright/Icon/showSettingWidget.svg"));
     // 日志窗口
     mMessageLogDock = createDockWidget(mMessageLogViewWidget,
                                        ads::BottomDockWidgetArea,
                                        QStringLiteral("da_messageLogViewWidgetDock"),
                                        mSettingContainerDock->dockAreaWidget());
-    mMessageLogDock->setIcon(QIcon(":/Icon/Icon/showInfomation.svg"));
+    mMessageLogDock->setIcon(QIcon(":/app/bright/Icon/showInfomation.svg"));
 
     // 设置dock的区域大小,默认为左1：中间4：右：1
     QScreen* screen = QApplication::primaryScreen();

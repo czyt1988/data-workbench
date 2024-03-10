@@ -21,19 +21,22 @@ DAMessageLogViewWidget::DAMessageLogViewWidget(QWidget* parent)
     : QWidget(parent), ui(new Ui::DAMessageLogViewWidget), _menu(nullptr)
 {
     ui->setupUi(this);
-    //创建action
-    _actionMessageLogShowInfo = createAction("actionMessageLogShowInfo", ":/messageType/icon/messageType/messageTypeInfo.svg", true, true);
+    // 创建action
+    _actionMessageLogShowInfo     = createAction("actionMessageLogShowInfo",
+                                             ":/DAGui/MessageType/icon/messageType/messageTypeInfo.svg",
+                                             true,
+                                             true);
     _actionMessageLogShowWarning  = createAction("actionMessageLogShowWarning",
-                                                ":/messageType/icon/messageType/messageTypeWarning.svg",
+                                                ":/DAGui/MessageType/icon/messageType/messageTypeWarning.svg",
                                                 true,
                                                 true);
     _actionMessageLogShowCritical = createAction("actionMessageLogShowCritical",
-                                                 ":/messageType/icon/messageType/messageTypeError.svg",
+                                                 ":/DAGui/MessageType/icon/messageType/messageTypeError.svg",
                                                  true,
                                                  true);
-    _actionMessageLogClear        = createAction("actionMessageLogClear", ":/icon/icon/clear-message.svg");
-    _actionCopySelectMessage      = createAction("actionCopySelectMessage", ":/icon/icon/copy.svg");
-    //构建菜单
+    _actionMessageLogClear        = createAction("actionMessageLogClear", ":/DAGui/icon/clear-message.svg");
+    _actionCopySelectMessage      = createAction("actionCopySelectMessage", ":/DAGui/icon/copy.svg");
+    // 构建菜单
 
     //
     _model           = new DAMessageLogsModel(this);
@@ -44,7 +47,7 @@ DAMessageLogViewWidget::DAMessageLogViewWidget(QWidget* parent)
     ui->tableView->horizontalHeader()->setStretchLastSection(true);
 
     QFontMetrics fm = ui->tableView->fontMetrics();
-    //高度为行高的1.2
+    // 高度为行高的1.2
     ui->tableView->verticalHeader()->setDefaultSectionSize(fm.lineSpacing() * 1.2);
 
     //
@@ -310,7 +313,7 @@ void DAMessageLogViewWidget::keyPressEvent(QKeyEvent* event)
     if (event) {
         if (Qt::ControlModifier == event->modifiers()) {
             if (Qt::Key_C == event->key()) {
-                //复制
+                // 复制
                 copySelectionMessageToClipBoard();
                 event->accept();
             } else if (Qt::Key_A == event->key()) {

@@ -172,7 +172,7 @@ QIcon DABrushStyleComboBox::generateBrushStyleIcon(Qt::BrushStyle s)
     if (!iss.isValid()) {
         return QIcon();
     }
-    static QIcon s_noBrush = QIcon(":/commonWidget/icon/icon/no-style.svg");
+    static QIcon s_noBrush = QIcon(":/DACommonWidgets/icon/no-style.svg");
     switch (s) {
     case Qt::NoBrush:
         return s_noBrush;

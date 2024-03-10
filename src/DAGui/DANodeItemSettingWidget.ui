@@ -174,7 +174,7 @@
           </property>
           <property name="icon">
            <iconset resource="icon.qrc">
-            <normaloff>:/icon/icon/leftSideIn.svg</normaloff>:/icon/icon/leftSideIn.svg</iconset>
+            <normaloff>:/DAGui/icon/leftSideIn.svg</normaloff>:/DAGui/icon/leftSideIn.svg</iconset>
           </property>
           <property name="checkable">
            <bool>true</bool>
@@ -197,7 +197,7 @@
           </property>
           <property name="icon">
            <iconset resource="icon.qrc">
-            <normaloff>:/icon/icon/rightSideIn.svg</normaloff>:/icon/icon/rightSideIn.svg</iconset>
+            <normaloff>:/DAGui/icon/rightSideIn.svg</normaloff>:/DAGui/icon/rightSideIn.svg</iconset>
           </property>
           <property name="checkable">
            <bool>true</bool>
@@ -220,7 +220,7 @@
           </property>
           <property name="icon">
            <iconset resource="icon.qrc">
-            <normaloff>:/icon/icon/topSideIn.svg</normaloff>:/icon/icon/topSideIn.svg</iconset>
+            <normaloff>:/DAGui/icon/topSideIn.svg</normaloff>:/DAGui/icon/topSideIn.svg</iconset>
           </property>
           <property name="checkable">
            <bool>true</bool>
@@ -243,7 +243,7 @@
           </property>
           <property name="icon">
            <iconset resource="icon.qrc">
-            <normaloff>:/icon/icon/bottomSideIn.svg</normaloff>:/icon/icon/bottomSideIn.svg</iconset>
+            <normaloff>:/DAGui/icon/bottomSideIn.svg</normaloff>:/DAGui/icon/bottomSideIn.svg</iconset>
           </property>
           <property name="checkable">
            <bool>true</bool>
@@ -270,7 +270,7 @@
           </property>
           <property name="icon">
            <iconset resource="icon.qrc">
-            <normaloff>:/icon/icon/leftSideOut.svg</normaloff>:/icon/icon/leftSideOut.svg</iconset>
+            <normaloff>:/DAGui/icon/leftSideOut.svg</normaloff>:/DAGui/icon/leftSideOut.svg</iconset>
           </property>
           <property name="checkable">
            <bool>true</bool>
@@ -293,7 +293,7 @@
           </property>
           <property name="icon">
            <iconset resource="icon.qrc">
-            <normaloff>:/icon/icon/rightSideOut.svg</normaloff>:/icon/icon/rightSideOut.svg</iconset>
+            <normaloff>:/DAGui/icon/rightSideOut.svg</normaloff>:/DAGui/icon/rightSideOut.svg</iconset>
           </property>
           <property name="checkable">
            <bool>true</bool>
@@ -316,7 +316,7 @@
           </property>
           <property name="icon">
            <iconset resource="icon.qrc">
-            <normaloff>:/icon/icon/topSideOut.svg</normaloff>:/icon/icon/topSideOut.svg</iconset>
+            <normaloff>:/DAGui/icon/topSideOut.svg</normaloff>:/DAGui/icon/topSideOut.svg</iconset>
           </property>
           <property name="checkable">
            <bool>true</bool>
@@ -339,7 +339,7 @@
           </property>
           <property name="icon">
            <iconset resource="icon.qrc">
-            <normaloff>:/icon/icon/bottomSideOut.svg</normaloff>:/icon/icon/bottomSideOut.svg</iconset>
+            <normaloff>:/DAGui/icon/bottomSideOut.svg</normaloff>:/DAGui/icon/bottomSideOut.svg</iconset>
           </property>
           <property name="checkable">
            <bool>true</bool>

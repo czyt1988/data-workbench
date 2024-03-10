@@ -41,7 +41,7 @@ void DAToolBox::addItems(const QMap< QString, QList< DANodeMetaData > >& datas)
  */
 void DAToolBox::addItems(const QList< DANodeMetaData >& datas)
 {
-    //先提取分组，确认分组都建立
+    // 先提取分组，确认分组都建立
     QList< QString > orderGroup;
     QHash< QString, QList< DANodeMetaData > > groupOrderNodes;
     for (const DANodeMetaData& md : qAsConst(datas)) {
@@ -51,7 +51,7 @@ void DAToolBox::addItems(const QList< DANodeMetaData >& datas)
         }
         groupOrderNodes[ md.getGroup() ].append(md);
     }
-    //创建分组的topitem
+    // 创建分组的topitem
     for (const QString& g : qAsConst(orderGroup)) {
         DANodeListWidget* gitem = new DANodeListWidget(this);
         _toolBox->addItem(gitem, g);
@@ -85,7 +85,7 @@ DANodeListWidget* DAToolBox::createFavoriteList()
     }
     _favoriteList = new DANodeListWidget(this);
     _favoriteList->setProperty("isFavoriteListWidget", true);
-    _toolBox->addItem(_favoriteList, QIcon(":/icon/icon/favorite.svg"), tr("Favorite"));
+    _toolBox->addItem(_favoriteList, QIcon(":/DAGui/icon/favorite.svg"), tr("Favorite"));
     return _favoriteList;
 }
 
@@ -146,14 +146,14 @@ void DAToolBox::adjustMinItemHight(int minHeight)
 {
     QWidget* w = _toolBox->currentWidget();
     if (w == nullptr) {
-        //没有设置窗口返回
+        // 没有设置窗口返回
         return;
     }
     int curheight = w->height();
     if (curheight >= minHeight) {
         return;
     }
-    //由于QToolBox没有获取item标签高度的接口，因此只能估算标签高度为文字高度的1.5倍,或者icon的1.1
+    // 由于QToolBox没有获取item标签高度的接口，因此只能估算标签高度为文字高度的1.5倍,或者icon的1.1
     int itemTitleHeight = _toolBox->fontMetrics().lineSpacing();
     QIcon icon          = _toolBox->itemIcon(_toolBox->currentIndex());
     if (!icon.isNull()) {
@@ -164,7 +164,7 @@ void DAToolBox::adjustMinItemHight(int minHeight)
             }
         }
     }
-    //计算最大的高度
+    // 计算最大的高度
     int willSetMinHeight = _toolBox->count() * itemTitleHeight;
     willSetMinHeight += minHeight;
     //

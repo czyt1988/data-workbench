@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/commonWidget/icon">
+    <qresource prefix="/DACommonWidgets">
         <file>icon/text-bold.svg</file>
         <file>icon/text-italic.svg</file>
         <file>icon/text-underline.svg</file>

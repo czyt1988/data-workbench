@@ -124,7 +124,7 @@ QIcon DAPenStyleComboBox::generatePenIcon(Qt::PenStyle s) const
     return QIcon(pixmap);
 #else
     if (Qt::NoPen == s) {
-        static QIcon s_noPenIcon(":/commonWidget/icon/icon/no-style.svg");
+        static QIcon s_noPenIcon(":/DACommonWidgets/icon/no-style.svg");
         return s_noPenIcon;
     }
     QSize iss = iconSize();
