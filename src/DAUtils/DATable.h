@@ -428,7 +428,9 @@ QDebug operator<<(QDebug debug, const DA::DATable< T >& t)
             if (c != 0) {
                 debug << "\t";
             }
-            debug.noquote() << t.at(r, c);
+            if (t.contain(r, c)) {
+                debug.noquote() << t.at(r, c);
+            }
         }
     }
     return (debug);

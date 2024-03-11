@@ -1190,13 +1190,13 @@ Config</source>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="230"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="570"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="561"/>
         <source>Workflow Run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="231"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="573"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="564"/>
         <source>Run</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1223,8 +1223,8 @@ Config</source>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="238"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="584"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="586"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="575"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="577"/>
         <source>Chart Edit</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1246,6 +1246,11 @@ Config</source>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="251"/>
         <source>Data Work Flow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppRibbonArea.cpp" line="543"/>
+        <source>Group</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
