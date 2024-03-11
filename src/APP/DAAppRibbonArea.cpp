@@ -538,28 +538,19 @@ void DAAppRibbonArea::buildContextCategoryWorkflowEdit_()
     m_pannelWorkflowView->addLargeAction(m_actions->actionWorkflowWholeView);
     m_pannelWorkflowView->addMediumAction(m_actions->actionWorkflowZoomIn);
     m_pannelWorkflowView->addMediumAction(m_actions->actionWorkflowZoomOut);
-    m_pannelWorkflowView->addSeparator();
-    m_pannelWorkflowView->addMediumAction(m_actions->actionItemGrouping);
-    m_pannelWorkflowView->addMediumAction(m_actions->actionItemUngroup);
-    m_pannelWorkflowView->addLargeAction(m_actions->actionWorkflowEnableItemLinkageMove);
+
+    // group
+    m_pannelWorkflowGroup = m_categoryWorkflowGraphicsEdit->addPannel(tr("Group"));
+    m_pannelWorkflowGroup->setObjectName(QStringLiteral("da-pannel-context.workflow.group"));
+    m_pannelWorkflowGroup->addMediumAction(m_actions->actionItemGrouping);
+    m_pannelWorkflowGroup->addMediumAction(m_actions->actionItemUngroup);
+    m_pannelWorkflowGroup->addLargeAction(m_actions->actionWorkflowEnableItemLinkageMove);
     //
     // connect
-    connect(m_workflowShapeEditPannelWidget,
-            &DAShapeEditPannelWidget::borderPenChanged,
-            this,
-            &DAAppRibbonArea::selectedWorkflowItemPen);
-    connect(m_workflowShapeEditPannelWidget,
-            &DAShapeEditPannelWidget::backgroundBrushChanged,
-            this,
-            &DAAppRibbonArea::selectedWorkflowItemBrush);
-    connect(m_workflowFontEditPannel,
-            &DAFontEditPannelWidget::currentFontChanged,
-            this,
-            &DAAppRibbonArea::selectedWorkflowItemFont);
-    connect(m_workflowFontEditPannel,
-            &DAFontEditPannelWidget::currentFontColorChanged,
-            this,
-            &DAAppRibbonArea::selectedWorkflowItemFontColor);
+    connect(m_workflowShapeEditPannelWidget, &DAShapeEditPannelWidget::borderPenChanged, this, &DAAppRibbonArea::selectedWorkflowItemPen);
+    connect(m_workflowShapeEditPannelWidget, &DAShapeEditPannelWidget::backgroundBrushChanged, this, &DAAppRibbonArea::selectedWorkflowItemBrush);
+    connect(m_workflowFontEditPannel, &DAFontEditPannelWidget::currentFontChanged, this, &DAAppRibbonArea::selectedWorkflowItemFont);
+    connect(m_workflowFontEditPannel, &DAFontEditPannelWidget::currentFontColorChanged, this, &DAAppRibbonArea::selectedWorkflowItemFontColor);
 }
 
 /**

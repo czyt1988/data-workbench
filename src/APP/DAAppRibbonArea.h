@@ -95,6 +95,7 @@ class DAWorkFlowOperateWidget;
  *     文本pannel：da-pannel-context.workflow.text
  *     背景pannel：da-pannel-context.workflow.background
  *     视图pannel：da-pannel-context.workflow.view
+ *     分组pannel：da-pannel-context.workflow.group
  *  工作流运行category：da-ribbon-category-workflow.run
  *     运行pannel：da-pannel-context.workflow.run
  *
@@ -337,6 +338,7 @@ public:
     SARibbonPannel* m_pannelWorkflowBackground;        ///< 背景编辑
     SARibbonPannel* m_pannelWorkflowText;              ///< 文本编辑
     SARibbonPannel* m_pannelWorkflowView;              ///< 图元视图pannel
+    SARibbonPannel* m_pannelWorkflowGroup;             ///< 图元分组相关pannel
     //----------------------------------------------------
     // Context - workflow-run
     //----------------------------------------------------
