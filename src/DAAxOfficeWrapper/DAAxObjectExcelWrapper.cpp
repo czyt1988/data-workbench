@@ -125,7 +125,7 @@ bool DAAxObjectExcelWrapper::PrivateData::isHaveWorkbooks() const
 
 bool DAAxObjectExcelWrapper::PrivateData::isHaveWorkbook() const
 {
-    return checkAxObjectValid(mAxWorkbooks);
+    return checkAxObjectValid(mAxWorkbook);
 }
 
 bool DAAxObjectExcelWrapper::PrivateData::isHaveWorkSheets() const
@@ -233,10 +233,10 @@ void DAAxObjectExcelWrapper::PrivateData::close()
         qDebug() << "close Workbook";
         mAxWorkbook->dynamicCall("Close()");
     }
-//    if (isHaveWorkbooks()) {
-//        qDebug() << "close Workbooks";
-//        mAxWorkbooks->dynamicCall("Close()");
-//    }
+    //    if (isHaveWorkbooks()) {
+    //        qDebug() << "close Workbooks";
+    //        mAxWorkbooks->dynamicCall("Close()");
+    //    }
 }
 
 void DAAxObjectExcelWrapper::PrivateData::release()
