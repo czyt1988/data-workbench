@@ -173,10 +173,10 @@ bool DAXmlHelperPrivate::loadWorkflow(DAWorkFlowEditWidget* wfe, const QDomEleme
  */
 void DAXmlHelperPrivate::saveFactoryInfo(const DAWorkFlow* workflow, QDomDocument& doc, QDomElement& workflowEle)
 {
-    QList< DAAbstractNodeFactory* > factorys = workflow->getAllFactorys();
+    const QList< std::shared_ptr< DAAbstractNodeFactory > > factorys = workflow->getAllFactorys();
     // 创建节点
     QDomElement factorysEle = doc.createElement("factorys");
-    for (const DAAbstractNodeFactory* fac : qAsConst(factorys)) {
+    for (auto fac : factorys) {
         QDomElement factoryEle = doc.createElement("factory");
         factoryEle.setAttribute("prototypes", fac->factoryPrototypes());
         QDomElement externEle = doc.createElement("extern");
@@ -203,8 +203,8 @@ bool DAXmlHelperPrivate::loadFactoryInfo(DAWorkFlow* workflow, const QDomElement
             qWarning() << QObject::tr("find unknow tag <%1> under <factorys> element").arg(factoryEle.tagName());
             continue;
         }
-        QString factoryPrototypes  = factoryEle.attribute("prototypes");
-        DAAbstractNodeFactory* fac = workflow->getFactory(factoryPrototypes);
+        QString factoryPrototypes                    = factoryEle.attribute("prototypes");
+        std::shared_ptr< DAAbstractNodeFactory > fac = workflow->getFactory(factoryPrototypes);
         if (fac == nullptr) {
             qCritical() << QObject::tr("can not find factory prototypes = %1").arg(factoryPrototypes);
             continue;

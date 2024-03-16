@@ -177,7 +177,7 @@ public:  // 连接相关
     // 获取工作流
     DAWorkFlow* workflow() const;
     // 获取工厂
-    DAAbstractNodeFactory* factory() const;
+    std::shared_ptr< DAAbstractNodeFactory > factory() const;
     //
 
 public:
@@ -202,9 +202,8 @@ protected:
 protected:
     // 注册工作流
     void registWorkflow(DAWorkFlow* wf);
-    void registFactory(DAAbstractNodeFactory* fc);
+    void registFactory(std::shared_ptr< DAAbstractNodeFactory > fc);
     void unregistWorkflow();
-    void unregistFactory();
 };
 
 }

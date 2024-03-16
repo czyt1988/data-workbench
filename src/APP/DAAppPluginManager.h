@@ -28,24 +28,24 @@ class DAAppPluginManager : public QObject
 public:
     static DAAppPluginManager& instance();
 
-    //初始化加载所有插件
+    // 初始化加载所有插件
     void initLoadPlugins(DACoreInterface* c);
 
-    //获取所有的插件
+    // 获取所有的插件
     QList< DAAbstractPlugin* > getAllPlugins() const;
 
-    //获取所有的节点插件
+    // 获取所有的节点插件
     QList< DAAbstractNodePlugin* > getNodePlugins() const;
 
-    //获取所有的节点工厂
-    QList< DA::DAAbstractNodeFactory* > getNodeFactorys() const;
+    // 获取所有的节点工厂
+    QList< std::shared_ptr< DAAbstractNodeFactory > > createNodeFactorys() const;
 
-    //获取所有的元数据
+    // 获取所有的元数据
     QList< DANodeMetaData > getAllNodeMetaDatas() const;
 
 private:
     QList< DAAbstractPlugin* > mPlugins;
-    QList< _DAPrivateWorkflowNodePluginData* > mNnodePlugins;
+    QList< DAAbstractNodePlugin* > mNodePlugins;
     QList< DANodeMetaData > mNodeMetaDatas;
 };
 }  // namespace DA

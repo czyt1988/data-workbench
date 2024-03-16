@@ -47,7 +47,7 @@ public:
     DAAbstractNode::IdType mId;
     QPointer< DAWorkFlow > mWorkflow;               ///< 持有的workflow
     DAAbstractNodeGraphicsItem* mItem { nullptr };  ///< node 对应的item
-    QPointer< DAAbstractNodeFactory > mFactory;  ///< 保存节点的工厂，工厂的设置在DAWorkFlow::createNode中
+    DAAbstractNodeFactory::WeakPointer mFactory;  ///< 保存节点的工厂，工厂的设置在DAWorkFlow::createNode中
 };
 }
 
@@ -450,7 +450,7 @@ bool DAAbstractNode::linkTo(const QString& outKey, DAAbstractNode::SharedPointer
     if (!linkTo_(outKey, inNode, inKey)) {
         return false;
     }
-    if (DAAbstractNodeFactory* f = factory()) {
+    if (auto f = factory()) {
         f->nodeLinkSucceed(pointer(), outKey, inNode, inKey);
     }
 #if DA_DAABSTRACTNODE_DEBUG_PRINT
@@ -475,7 +475,7 @@ bool DAAbstractNode::detachLink(const QString& key)
             // 说明这个是从本身连接到其他，则其他节点也需要删除这个链接
             inputNode->d_func()->mLinksInfo.removeAll(d);
             // 通知工厂的回调函数
-            if (DAAbstractNodeFactory* f = factory()) {
+            if (auto f = factory()) {
                 f->nodeLinkDetached(d.outputNode.lock(), d.outputKey, inputNode, d.inputKey);
             }
         }
@@ -488,7 +488,7 @@ bool DAAbstractNode::detachLink(const QString& key)
             // 说明这个是从本身连接到其他，则其他节点也需要删除这个链接
             outputNode->d_func()->mLinksInfo.removeAll(d);
             // 通知工厂的回调函数
-            if (DAAbstractNodeFactory* f = factory()) {
+            if (auto f = factory()) {
                 f->nodeLinkDetached(outputNode, d.outputKey, pointer(), d.inputKey);
             }
         }
@@ -529,7 +529,7 @@ void DAAbstractNode::detachAll()
             // 说明这个是从本身连接到其他，则其他节点也需要删除这个链接
             toItem->d_func()->mLinksInfo.removeAll(d);
             // 通知工厂的回调函数
-            if (DAAbstractNodeFactory* f = factory()) {
+            if (auto f = factory()) {
                 f->nodeLinkDetached(d.outputNode.lock(), d.outputKey, d.inputNode.lock(), d.inputKey);
             }
         }
@@ -801,9 +801,9 @@ DAWorkFlow* DAAbstractNode::workflow() const
  * @brief 获取工厂
  * @return
  */
-DAAbstractNodeFactory* DAAbstractNode::factory() const
+std::shared_ptr< DAAbstractNodeFactory > DAAbstractNode::factory() const
 {
-    return d_ptr->mFactory.data();
+    return d_ptr->mFactory.lock();
 }
 
 /**
@@ -901,7 +901,7 @@ void DAAbstractNode::registWorkflow(DAWorkFlow* wf)
  * @brief 记录工厂
  * @param fc
  */
-void DAAbstractNode::registFactory(DAAbstractNodeFactory* fc)
+void DAAbstractNode::registFactory(std::shared_ptr< DAAbstractNodeFactory > fc)
 {
     d_ptr->mFactory = fc;
 }
@@ -912,12 +912,4 @@ void DAAbstractNode::registFactory(DAAbstractNodeFactory* fc)
 void DAAbstractNode::unregistWorkflow()
 {
     d_ptr->mWorkflow = nullptr;
-}
-
-/**
- * @brief 把当前注册的工厂取消
- */
-void DAAbstractNode::unregistFactory()
-{
-    d_ptr->mFactory = nullptr;
 }

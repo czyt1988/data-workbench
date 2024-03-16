@@ -4,37 +4,13 @@
 #include "DAPluginManager.h"
 #include "DAAbstractNodeFactory.h"
 
-namespace DA
-{
-class _DAPrivateWorkflowNodePluginData
-{
-public:
-    _DAPrivateWorkflowNodePluginData();
-    ~_DAPrivateWorkflowNodePluginData();
-    DAAbstractNodePlugin* plugin   = { nullptr };
-    DAAbstractNodeFactory* factory = { nullptr };
-};
-}  // namespace DA
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
 //===================================================
 
-using namespace DA;
-
-//===================================================
-// _DAPrivateNodePluginData
-//===================================================
-
-_DAPrivateWorkflowNodePluginData::_DAPrivateWorkflowNodePluginData()
+namespace DA
 {
-}
 
-_DAPrivateWorkflowNodePluginData::~_DAPrivateWorkflowNodePluginData()
-{
-    if (plugin && factory) {
-        plugin->destoryNodeFactory(factory);
-    }
-}
 //===================================================
 // DAWorkFlowPluginManager
 //===================================================
@@ -44,9 +20,6 @@ DAAppPluginManager::DAAppPluginManager(QObject* p) : QObject(p)
 
 DAAppPluginManager::~DAAppPluginManager()
 {
-    for (_DAPrivateWorkflowNodePluginData* d : qAsConst(mNnodePlugins)) {
-        delete d;
-    }
 }
 
 DAAppPluginManager& DAAppPluginManager::instance()
@@ -62,13 +35,13 @@ DAAppPluginManager& DAAppPluginManager::instance()
  */
 void DAAppPluginManager::initLoadPlugins(DACoreInterface* c)
 {
-    //加载插件
+    // 加载插件
     DAPluginManager& plugin = DAPluginManager::instance();
 
     if (!plugin.isLoaded()) {
         plugin.load(c);
     }
-    //获取插件
+    // 获取插件
     QList< DAPluginOption > plugins = plugin.getPluginOptions();
     mNodeMetaDatas.clear();
     for (int i = 0; i < plugins.size(); ++i) {
@@ -79,32 +52,31 @@ void DAAppPluginManager::initLoadPlugins(DACoreInterface* c)
         DAAbstractPlugin* p = opt.plugin();
         if (p) {
             mPlugins.append(p);
-            //开始通过dynamic_cast判断插件的具体类型
+            // 开始通过dynamic_cast判断插件的具体类型
             if (DAAbstractNodePlugin* np = dynamic_cast< DAAbstractNodePlugin* >(p)) {
-                //说明是节点插件
-                _DAPrivateWorkflowNodePluginData* data = new _DAPrivateWorkflowNodePluginData();
-                data->plugin                           = np;
-                data->factory                          = np->createNodeFactory();
-                if (nullptr == data->factory) {
-                    //创建工厂失败
+                // 说明是节点插件
+                auto fac = np->createNodeFactory();
+                if (nullptr == fac) {
+                    // 创建工厂失败
                     qCritical() << tr("%1 plugin create a null node factory").arg(opt.getFileName());
                     continue;
                 }
-                mNodeMetaDatas += data->factory->getNodesMetaData();
-                mNnodePlugins.append(data);
+                // 此操作是为了获取所有节点metadata
+                mNodeMetaDatas += fac->getNodesMetaData();
+                mNodePlugins.append(np);
                 qDebug() << tr("succeed load plugin %1").arg(np->getName());
             }
         }
     }
-    //最后对_nodeMetaDatas去重，此去重要保证原来的顺序
+    // 最后对_nodeMetaDatas去重，此去重要保证原来的顺序
     QMap< DANodeMetaData, int > mapcnt;
-    //说明有重复项，需要去除
+    // 说明有重复项，需要去除
     for (auto i = mNodeMetaDatas.begin(); i != mNodeMetaDatas.end();) {
         if (!mapcnt.contains(*i)) {
             mapcnt.insert(*i, 1);
             ++i;
         } else {
-            //说明找到了重复项目
+            // 说明找到了重复项目
             i = mNodeMetaDatas.erase(i);
         }
     }
@@ -125,24 +97,19 @@ QList< DAAbstractPlugin* > DAAppPluginManager::getAllPlugins() const
  */
 QList< DAAbstractNodePlugin* > DAAppPluginManager::getNodePlugins() const
 {
-    QList< DAAbstractNodePlugin* > res;
-
-    for (_DAPrivateWorkflowNodePluginData* d : qAsConst(mNnodePlugins)) {
-        res.append(d->plugin);
-    }
-    return (res);
+    return (mNodePlugins);
 }
 
 /**
  * @brief 获取所有的节点工厂
  * @return
  */
-QList< DA::DAAbstractNodeFactory* > DAAppPluginManager::getNodeFactorys() const
+QList< std::shared_ptr< DAAbstractNodeFactory > > DAAppPluginManager::createNodeFactorys() const
 {
-    QList< DA::DAAbstractNodeFactory* > res;
+    QList< std::shared_ptr< DAAbstractNodeFactory > > res;
 
-    for (_DAPrivateWorkflowNodePluginData* d : qAsConst(mNnodePlugins)) {
-        res.append(d->factory);
+    for (DAAbstractNodePlugin* d : qAsConst(mNodePlugins)) {
+        res.append(std::shared_ptr< DAAbstractNodeFactory >(d->createNodeFactory()));
     }
     return (res);
 }
@@ -154,4 +121,6 @@ QList< DA::DAAbstractNodeFactory* > DAAppPluginManager::getNodeFactorys() const
 QList< DANodeMetaData > DAAppPluginManager::getAllNodeMetaDatas() const
 {
     return mNodeMetaDatas;
+}
+
 }

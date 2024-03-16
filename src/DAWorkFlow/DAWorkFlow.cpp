@@ -19,15 +19,15 @@ public:
     void recordNode(DAAbstractNode::SharedPointer& node);
 
 public:
-    QHash< DANodeMetaData, DAAbstractNodeFactory* > mMetaToFactory;           ///< 记录prototype对应的工厂
-    QHash< QString, DAAbstractNodeFactory* > mFactorys;                       ///< 记录所有的工厂
-    QList< DAAbstractNode::SharedPointer > mNodes;                            ///< 节点相关信息列表
-    QMap< DAAbstractNode::IdType, DAAbstractNode::SharedPointer > mIdToNode;  ///< 文本信息列表
-    DAAbstractNode::WeakPointer mStartNode;                                   ///< 开始执行的节点
-    QThread* mExecuterThread { nullptr };                                     ///< 执行器线程
-    DA::DAWorkFlowExecuter* mExecuter { nullptr };                            ///< 执行器
-    bool mIsExecuting { false };                                              ///< 正在执行
-    QString mLastErr;                                                         ///< 记录最后的错误
+    QHash< DANodeMetaData, std::shared_ptr< DAAbstractNodeFactory > > mMetaToFactory;  ///< 记录prototype对应的工厂
+    QHash< QString, std::shared_ptr< DAAbstractNodeFactory > > mFactorys;              ///< 记录所有的工厂
+    QList< DAAbstractNode::SharedPointer > mNodes;                                     ///< 节点相关信息列表
+    QMap< DAAbstractNode::IdType, DAAbstractNode::SharedPointer > mIdToNode;           ///< 文本信息列表
+    DAAbstractNode::WeakPointer mStartNode;                                            ///< 开始执行的节点
+    QThread* mExecuterThread { nullptr };                                              ///< 执行器线程
+    DA::DAWorkFlowExecuter* mExecuter { nullptr };                                     ///< 执行器
+    bool mIsExecuting { false };                                                       ///< 正在执行
+    QString mLastErr;                                                                  ///< 记录最后的错误
     QList< DAWorkFlow::CallbackPrepareStartExecute > mPrepareStartCallback;
     QList< DAWorkFlow::CallbackPrepareEndExecute > mPrepareEndCallback;
 };
@@ -50,7 +50,7 @@ void DAWorkFlow::PrivateData::createExecuter()
     }
     mExecuterThread = new QThread();
     mExecuter       = new DA::DAWorkFlowExecuter();
-    //设置开始节点
+    // 设置开始节点
     mExecuter->setStartNode(mStartNode.lock());
     mExecuter->setWorkFlow(q_ptr);
     mExecuter->moveToThread(mExecuterThread);
@@ -61,7 +61,7 @@ void DAWorkFlow::PrivateData::createExecuter()
     QObject::connect(q_ptr, &DAWorkFlow::terminateExecute, mExecuter, &DA::DAWorkFlowExecuter::terminateRequest);
     QObject::connect(mExecuter, &DA::DAWorkFlowExecuter::nodeExecuteFinished, q_ptr, &DAWorkFlow::nodeExecuteFinished);
     QObject::connect(mExecuter, &DA::DAWorkFlowExecuter::finished, q_ptr, &DAWorkFlow::onExecuteFinished);
-    //结束后，线程也结束
+    // 结束后，线程也结束
     QObject::connect(mExecuter, &DA::DAWorkFlowExecuter::finished, mExecuterThread, &QThread::quit);
     mExecuterThread->start();
 }
@@ -86,10 +86,15 @@ DAWorkFlow::~DAWorkFlow()
 }
 
 /**
- * @brief 注册工厂，工作流不保留工程的内存管理权
+ * @brief 注册工厂，工厂的内存管理根据实例情况管理，目前工作流和执行器会持有工厂的共享指针，如果这两个同时销毁，工厂也会随之销毁
+ * @note 最初设计时工作流不保留工厂的所有权，但在实际的使用过程中发现，许多工作流的工厂需要保存这个工厂的全局变量，
+ * 如果程序支持多工作流，那么每个工作流需要持有不同的工厂实例，否则会产生冲突，此操作有点违背单一职责原则，但能很好的降低复杂度
+ *
+ * @note 传入的工厂指针不应该在其他地方进行删除，也不应该在工作流之外的地方保存
+ *
  * @param factory
  */
-void DAWorkFlow::registFactory(DAAbstractNodeFactory* factory)
+void DAWorkFlow::registFactory(std::shared_ptr< DAAbstractNodeFactory > factory)
 {
     QList< DANodeMetaData > mds = factory->getNodesMetaData();
 
@@ -99,17 +104,42 @@ void DAWorkFlow::registFactory(DAAbstractNodeFactory* factory)
     }
     d_ptr->mFactorys[ factory->factoryPrototypes() ] = factory;
     factory->registWorkflow(this);
-    connect(factory, &DAAbstractNodeFactory::destroyed, this, &DAWorkFlow::onFactoryDestory);
 }
 
 /**
  * @brief 注册工厂群，工作流不保留工程的内存管理权
  * @param factory
  */
-void DAWorkFlow::registFactorys(const QList< DAAbstractNodeFactory* > factorys)
+void DAWorkFlow::registFactorys(const QList< std::shared_ptr< DAAbstractNodeFactory > > factorys)
 {
-    for (DAAbstractNodeFactory* f : qAsConst(factorys)) {
+    for (std::shared_ptr< DAAbstractNodeFactory > f : qAsConst(factorys)) {
         registFactory(f);
+    }
+}
+
+/**
+ * @brief 删除工厂，此函数一般在插件卸载时调用
+ * @param fac
+ */
+void DAWorkFlow::removeFactory(std::shared_ptr< DAAbstractNodeFactory > fac)
+{
+    // 清除_metaToFactory信息
+    auto i = d_ptr->mMetaToFactory.begin();
+    while (i != d_ptr->mMetaToFactory.end()) {
+        if (i.value() == fac) {
+            i = d_ptr->mMetaToFactory.erase(i);
+        } else {
+            ++i;
+        }
+    }
+    // 清除_factorys信息
+    auto k = d_ptr->mFactorys.begin();
+    while (k != d_ptr->mFactorys.end()) {
+        if (k.value() == fac) {
+            k = d_ptr->mFactorys.erase(k);
+        } else {
+            ++k;
+        }
     }
 }
 
@@ -117,7 +147,7 @@ void DAWorkFlow::registFactorys(const QList< DAAbstractNodeFactory* > factorys)
  * @brief 获取所有的工厂
  * @return
  */
-QList< DAAbstractNodeFactory* > DAWorkFlow::getAllFactorys() const
+QList< std::shared_ptr< DAAbstractNodeFactory > > DAWorkFlow::getAllFactorys() const
 {
     return d_ptr->mFactorys.values();
 }
@@ -126,12 +156,12 @@ QList< DAAbstractNodeFactory* > DAWorkFlow::getAllFactorys() const
  * @brief 获取使用到的工厂
  * @return
  */
-QList< DAAbstractNodeFactory* > DAWorkFlow::usedFactorys() const
+QList< std::shared_ptr< DAAbstractNodeFactory > > DAWorkFlow::usedFactorys() const
 {
     QList< DAAbstractNode::SharedPointer > ns = nodes();
-    //获取到涉及的工厂
-    QSet< DAAbstractNodeFactory* > factorys;
-    for (const DAAbstractNode::SharedPointer& n : qAsConst(ns)) {
+    // 获取到涉及的工厂
+    QSet< std::shared_ptr< DAAbstractNodeFactory > > factorys;
+    for (auto n : qAsConst(ns)) {
         factorys.insert(n->factory());
     }
     return qset_to_qlist(factorys);
@@ -151,9 +181,14 @@ int DAWorkFlow::getFactoryCount() const
  * @param name
  * @return 如果找不到，返回nullptr
  */
-DAAbstractNodeFactory* DAWorkFlow::getFactory(const QString& factoryPrototypes)
+std::shared_ptr< DAAbstractNodeFactory > DAWorkFlow::getFactory(const QString& factoryPrototypes)
 {
-    return d_ptr->mFactorys.value(factoryPrototypes, nullptr);
+    for (auto f : qAsConst(d_ptr->mFactorys)) {
+        if (0 == f->factoryPrototypes().compare(factoryPrototypes, Qt::CaseInsensitive)) {
+            return f;
+        }
+    }
+    return nullptr;
 }
 
 /**
@@ -183,7 +218,7 @@ DANodeMetaData DAWorkFlow::getNodeMetaData(const QString& protoType) const
  */
 DAAbstractNode::SharedPointer DAWorkFlow::createNode(const DANodeMetaData& md)
 {
-    DAAbstractNodeFactory* factory = d_ptr->mMetaToFactory.value(md, nullptr);
+    DAAbstractNodeFactory::SharedPointer factory = d_ptr->mMetaToFactory.value(md, nullptr);
     if (factory == nullptr) {
         return (nullptr);
     }
@@ -193,8 +228,8 @@ DAAbstractNode::SharedPointer DAWorkFlow::createNode(const DANodeMetaData& md)
     }
     node->registFactory(factory);
     node->registWorkflow(this);
-    //单一职责原则，不添加
-    //    addNode(node);
+    // 单一职责原则，不添加
+    //     addNode(node);
     return (node);
 }
 
@@ -210,7 +245,7 @@ void DAWorkFlow::addNode(DAAbstractNode::SharedPointer n)
     if (n->workflow() != this) {
         n->registWorkflow(this);
     }
-    DAAbstractNodeFactory* f = n->factory();
+    DAAbstractNodeFactory::SharedPointer f = n->factory();
     if (f) {
         f->nodeAddedToWorkflow(n);
     }
@@ -253,11 +288,11 @@ void DAWorkFlow::clear()
  */
 void DAWorkFlow::removeNode(const DAAbstractNode::SharedPointer& n)
 {
-    //先判断是否有node，没有就跳过
+    // 先判断是否有node，没有就跳过
     if (!d_ptr->mNodes.contains(n)) {
         return;
     }
-    DAAbstractNodeFactory* f = n->factory();
+    DAAbstractNodeFactory::SharedPointer f = n->factory();
     if (f) {
         f->nodeStartRemove(n);
     }
@@ -364,7 +399,7 @@ void DAWorkFlow::exec()
 {
     qDebug() << tr("begin exec workflow");
     if (isEmpty()) {
-        qWarning() << tr("empty workflow can not exec");  //无法执行一个空的工作流
+        qWarning() << tr("empty workflow can not exec");  // 无法执行一个空的工作流
         emit finished(false);
         return;
     }
@@ -466,38 +501,11 @@ void DAWorkFlow::emitNodeNameChanged(DAAbstractNode::SharedPointer node, const Q
     emit nodeNameChanged(node, oldName, newName);
 }
 
-/**
- * @brief 工厂删除时触发的信号，用于清除工厂相关的信息
- * @note 移除工厂是一个耗时的过程
- * @param fac
- */
-void DAWorkFlow::onFactoryDestory(QObject* fac)
-{
-    //清除_metaToFactory信息
-    auto i = d_ptr->mMetaToFactory.begin();
-    while (i != d_ptr->mMetaToFactory.end()) {
-        if (i.value() == (DAAbstractNodeFactory*)fac) {
-            i = d_ptr->mMetaToFactory.erase(i);
-        } else {
-            ++i;
-        }
-    }
-    //清除_factorys信息
-    auto k = d_ptr->mFactorys.begin();
-    while (k != d_ptr->mFactorys.end()) {
-        if (k.value() == (DAAbstractNodeFactory*)fac) {
-            k = d_ptr->mFactorys.erase(k);
-        } else {
-            ++k;
-        }
-    }
-}
-
 void DAWorkFlow::onExecuteFinished(bool success)
 {
     d_ptr->mIsExecuting = false;
-    //无需quit，已经结束了
-    // d_ptr->_executerThread->quit();
+    // 无需quit，已经结束了
+    //  d_ptr->_executerThread->quit();
     d_ptr->mExecuterThread = nullptr;
     d_ptr->mExecuter       = nullptr;
     emit finished(success);

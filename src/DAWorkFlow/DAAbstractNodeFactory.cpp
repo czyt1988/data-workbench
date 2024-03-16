@@ -31,12 +31,13 @@ DAAbstractNodeFactory::PrivateData::PrivateData(DAAbstractNodeFactory* p) : q_pt
 /// DAAbstractNodeFactory
 //////////////////////////////////////////////
 
-DAAbstractNodeFactory::DAAbstractNodeFactory(QObject* p) : QObject(p), DA_PIMPL_CONSTRUCT
+DAAbstractNodeFactory::DAAbstractNodeFactory() : QObject(nullptr), DA_PIMPL_CONSTRUCT
 {
 }
 
 DAAbstractNodeFactory::~DAAbstractNodeFactory()
 {
+    qDebug() << "factory destroy";
 }
 /**
  * @brief 工厂设置了workflow，此函数设置为虚函数，在某些工厂可以通过此函数的重载来绑定DAWorkFlow的信号
@@ -55,6 +56,15 @@ void DAAbstractNodeFactory::registWorkflow(DAWorkFlow* wf)
 DAWorkFlow* DAAbstractNodeFactory::getWorkFlow() const
 {
     return d_ptr->mWorkflow.data();
+}
+
+/**
+ * @brief 返回自身的指针
+ * @return
+ */
+DAAbstractNodeFactory::SharedPointer DAAbstractNodeFactory::pointer()
+{
+    return (shared_from_this());
 }
 /**
  * @brief 节点加入workflow的回调
@@ -155,6 +165,15 @@ void DAAbstractNodeFactory::loadExternInfoFromXml(const QDomElement* factoryExte
  * 创建场景事件监听器，如果需要对场景的事件进行监听，需要继承此函数并返回一个事件监听器
  *
  * 如果无需监听，可返还nullptr
+ *
+ * 正确创建方法如下：
+ * @code
+ * DA::DANodeGraphicsSceneEventListener* MyNodeFactory::createNodeGraphicsSceneEventListener()
+ * {
+ *     return new MyGraphicsSceneEventListener(shared_from_this());
+ * }
+ * @endcode
+ *
  *
  * @return
  */

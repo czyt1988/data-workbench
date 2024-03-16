@@ -97,8 +97,8 @@ void DANodeGraphicsScene::setWorkFlow(DAWorkFlow* wf)
     d_ptr->mWorkflow = wf;
     if (wf) {
         connect(wf, &DAWorkFlow::nodeNameChanged, this, &DANodeGraphicsScene::onNodeNameChanged);
-        QList< DAAbstractNodeFactory* > factorys = wf->getAllFactorys();
-        for (DAAbstractNodeFactory* f : factorys) {
+        const QList< std::shared_ptr< DAAbstractNodeFactory > > factorys = wf->getAllFactorys();
+        for (auto f : factorys) {
             DANodeGraphicsSceneEventListener* listen = f->createNodeGraphicsSceneEventListener();
             if (listen) {
                 listen->factoryAddedToScene(this);

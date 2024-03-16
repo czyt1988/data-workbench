@@ -20,12 +20,16 @@ class DANodeGraphicsSceneEventListener;
  * 因此，任何节点都需要实现一个DAAbstractNode和一个DAAbstractNodeGraphicsItem，一个实现逻辑节点的描述，
  * 一个实现前端的渲染,另外DAAbstractNodeGraphicsItem可以生成DAAbstractNodeWidget，用于设置DAAbstractNodeGraphicsItem
  */
-class DAWORKFLOW_API DAAbstractNodeFactory : public QObject
+class DAWORKFLOW_API DAAbstractNodeFactory : public QObject, public std::enable_shared_from_this< DAAbstractNodeFactory >
 {
     Q_OBJECT
     DA_DECLARE_PRIVATE(DAAbstractNodeFactory)
 public:
-    DAAbstractNodeFactory(QObject* p = nullptr);
+    using SharedPointer = std::shared_ptr< DAAbstractNodeFactory >;
+    using WeakPointer   = std::weak_ptr< DAAbstractNodeFactory >;
+
+public:
+    DAAbstractNodeFactory();
     virtual ~DAAbstractNodeFactory();
 
     // 工厂设置了workflow，此函数设置为虚函数，在某些工厂可以通过此函数的重载来绑定DAWorkFlow的信号,以及注册回调
@@ -34,6 +38,8 @@ public:
     // 获取工作流
     DAWorkFlow* getWorkFlow() const;
 
+    // 返回自身智能指针
+    SharedPointer pointer();
     /**
      * @brief 工厂的唯一标识
      * @note 每个工厂需要保证有唯一的标识，工作流将通过标识查找工厂

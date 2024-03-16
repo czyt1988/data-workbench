@@ -1057,12 +1057,12 @@ Table Area</source>
 <context>
     <name>DA::DAAppPluginManager</name>
     <message>
-        <location filename="APP/DAAppPluginManager.cpp" line="90"/>
+        <location filename="APP/DAAppPluginManager.cpp" line="61"/>
         <source>%1 plugin create a null node factory</source>
         <translation>插件“%1”创建了一个空的节点工厂</translation>
     </message>
     <message>
-        <location filename="APP/DAAppPluginManager.cpp" line="95"/>
+        <location filename="APP/DAAppPluginManager.cpp" line="67"/>
         <source>succeed load plugin %1</source>
         <translation>成功加载插件“%1”</translation>
     </message>
@@ -2197,17 +2197,17 @@ Table Area</source>
 <context>
     <name>DA::DAWorkFlow</name>
     <message>
-        <location filename="DAWorkFlow/DAWorkFlow.cpp" line="365"/>
+        <location filename="DAWorkFlow/DAWorkFlow.cpp" line="400"/>
         <source>begin exec workflow</source>
         <translation>开始执行工作流</translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAWorkFlow.cpp" line="367"/>
+        <location filename="DAWorkFlow/DAWorkFlow.cpp" line="402"/>
         <source>empty workflow can not exec</source>
         <translation>无法执行一个空的工作流</translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAWorkFlow.cpp" line="376"/>
+        <location filename="DAWorkFlow/DAWorkFlow.cpp" line="411"/>
         <source>workflow start run</source>
         <translation>工作流开始运行</translation>
     </message>
@@ -2223,12 +2223,12 @@ Table Area</source>
 <context>
     <name>DA::DAWorkFlowExecuter</name>
     <message>
-        <location filename="DAWorkFlow/DAWorkFlowExecuter.cpp" line="319"/>
+        <location filename="DAWorkFlow/DAWorkFlowExecuter.cpp" line="320"/>
         <source>execute node, name=%1,type=%2</source>
         <translation>执行节点，节点名称=%1,节点原型信息=%2</translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAWorkFlowExecuter.cpp" line="343"/>
+        <location filename="DAWorkFlow/DAWorkFlowExecuter.cpp" line="344"/>
         <source>execute node(not transmit), name=%1,type=%2</source>
         <oldsource>execute node, name=</oldsource>
         <translation>执行节点（not transmit模式），节点名称=%1,节点原型信息=%2</translation>

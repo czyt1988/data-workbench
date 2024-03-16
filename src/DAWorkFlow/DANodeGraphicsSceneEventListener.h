@@ -1,4 +1,4 @@
-#ifndef DANODEGRAPHICSSCENEEVENTLISTENER_H
+﻿#ifndef DANODEGRAPHICSSCENEEVENTLISTENER_H
 #define DANODEGRAPHICSSCENEEVENTLISTENER_H
 #include "DAWorkFlowGlobal.h"
 #include <QObject>
@@ -15,28 +15,31 @@ class DANodeGraphicsScene;
  * DANodeGraphicsScene在调用@sa DANodeGraphicsScene::setWorkFlow时，会获取这个workflow的factory，
  * 并调用@sa DAAbstractNodeFactory::createNodeGraphicsSceneEventListener函数，获取每个工厂的listener，
  * 在对应的每个事件都会调用些listener，以实现事件的捕获
+ *
+ * @note DANodeGraphicsSceneEventListener由DAAbstractNodeFactory创建，内部持有DAAbstractNodeFactory的弱指针
  */
 class DAWORKFLOW_API DANodeGraphicsSceneEventListener : public QObject
 {
     Q_OBJECT
 public:
-    DANodeGraphicsSceneEventListener(DAAbstractNodeFactory* fac);
+    DANodeGraphicsSceneEventListener(const std::shared_ptr<DAAbstractNodeFactory>& fac);
     ~DANodeGraphicsSceneEventListener();
-    //获取对应的工厂
-    DAAbstractNodeFactory* getFactory() const;
-    //获取监听的场景
+    // 获取对应的工厂
+    std::shared_ptr< DAAbstractNodeFactory > getFactory() const;
+    // 获取监听的场景
     DANodeGraphicsScene* getScene() const;
-    //场景首次添加的虚函数
+    // 场景首次添加的虚函数
     virtual void factoryAddedToScene(DANodeGraphicsScene* sc);
-    //鼠标点击事件
+    // 鼠标点击事件
     virtual void mousePressEvent(DANodeGraphicsScene* sc, QGraphicsSceneMouseEvent* mouseEvent);
-    //鼠标移动事件
+    // 鼠标移动事件
     virtual void mouseMoveEvent(DANodeGraphicsScene* sc, QGraphicsSceneMouseEvent* mouseEvent);
-    //鼠标释放
+    // 鼠标释放
     virtual void mouseReleaseEvent(DANodeGraphicsScene* sc, QGraphicsSceneMouseEvent* mouseEvent);
 
 private:
     QPointer< DANodeGraphicsScene > mScene;
+    std::weak_ptr< DAAbstractNodeFactory > mFactory;
 };
 }
 

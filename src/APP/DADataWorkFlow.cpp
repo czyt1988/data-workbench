@@ -1,4 +1,4 @@
-#include "DADataWorkFlow.h"
+﻿#include "DADataWorkFlow.h"
 #include "DAAppPluginManager.h"
 #include "DAAbstractNodeFactory.h"
 //===================================================
@@ -12,14 +12,14 @@ using namespace DA;
 //===================================================
 DADataWorkFlow::DADataWorkFlow(QObject* p) : DA::DAWorkFlow(p)
 {
-    DAAppPluginManager& pluginmgr            = DAAppPluginManager::instance();
-    QList< DAAbstractNodeFactory* > factorys = pluginmgr.getNodeFactorys();
-    //提取所有的元数据
+    DAAppPluginManager& pluginmgr = DAAppPluginManager::instance();
+    const auto factorys           = pluginmgr.createNodeFactorys();
+    // 提取所有的元数据
     QList< DANodeMetaData > nodeMetaDatas;
 
-    for (DAAbstractNodeFactory* factory : qAsConst(factorys)) {
+    for (auto factory : factorys) {
         nodeMetaDatas += factory->getNodesMetaData();
-        //注册工厂
+        // 注册工厂
         registFactory(factory);
     }
 }

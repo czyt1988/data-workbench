@@ -1,9 +1,10 @@
-#include "DANodeGraphicsSceneEventListener.h"
+﻿#include "DANodeGraphicsSceneEventListener.h"
 #include "DAAbstractNodeFactory.h"
 #include "DANodeGraphicsScene.h"
 namespace DA
 {
-DANodeGraphicsSceneEventListener::DANodeGraphicsSceneEventListener(DAAbstractNodeFactory* fac) : QObject(fac)
+DANodeGraphicsSceneEventListener::DANodeGraphicsSceneEventListener(const std::shared_ptr< DAAbstractNodeFactory >& fac)
+    : QObject(fac.get()), mFactory(fac)
 {
 }
 
@@ -15,9 +16,9 @@ DANodeGraphicsSceneEventListener::~DANodeGraphicsSceneEventListener()
  * @brief 获取对应的工厂
  * @return
  */
-DAAbstractNodeFactory* DANodeGraphicsSceneEventListener::getFactory() const
+std::shared_ptr< DAAbstractNodeFactory > DANodeGraphicsSceneEventListener::getFactory() const
 {
-    return qobject_cast< DAAbstractNodeFactory* >(parent());
+    return mFactory.lock();
 }
 
 /**
