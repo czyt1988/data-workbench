@@ -60,7 +60,7 @@ void DAWorkFlowExecuter::PrivateData::prepareStartExec()
     clear();
     // 查找孤立节点和0入度节点
     QList< DAAbstractNode::SharedPointer > nodes = mWorkflow->nodes();
-    QSet< DAAbstractNodeFactory::SharedPointer > factorys;
+    QSet< std::shared_ptr< DAAbstractNodeFactory > > factorys;
     for (const DAAbstractNode::SharedPointer& n : qAsConst(nodes)) {
         factorys.insert(n->factory());
         if (DAAbstractNode::GlobalNode == n->nodeType()) {
@@ -106,8 +106,7 @@ void DAWorkFlowExecuter::PrivateData::clear()
  * @param n
  * @param outInfo
  */
-void DAWorkFlowExecuter::PrivateData::sendParam(DAAbstractNode::SharedPointer& n,
-                                                const QList< DAAbstractNode::LinkInfo >& outInfo)
+void DAWorkFlowExecuter::PrivateData::sendParam(DAAbstractNode::SharedPointer& n, const QList< DAAbstractNode::LinkInfo >& outInfo)
 {
     for (const DAAbstractNode::LinkInfo& li : qAsConst(outInfo)) {
         QVariant v = n->getOutputData(li.key);

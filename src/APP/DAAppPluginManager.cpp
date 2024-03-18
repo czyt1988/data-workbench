@@ -55,7 +55,9 @@ void DAAppPluginManager::initLoadPlugins(DACoreInterface* c)
             // 开始通过dynamic_cast判断插件的具体类型
             if (DAAbstractNodePlugin* np = dynamic_cast< DAAbstractNodePlugin* >(p)) {
                 // 说明是节点插件
-                auto fac = np->createNodeFactory();
+                // 这里工厂仅仅为了获取节点的meta数据
+                // 此处未来看看是否优化，否则启动会相对较慢
+                std::unique_ptr< DAAbstractNodeFactory > fac(np->createNodeFactory());
                 if (nullptr == fac) {
                     // 创建工厂失败
                     qCritical() << tr("%1 plugin create a null node factory").arg(opt.getFileName());

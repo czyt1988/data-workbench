@@ -107,5 +107,16 @@ public:
     // 创建场景事件监听器，如果需要对场景的事件进行监听，需要继承此函数并返回一个事件监听器
     virtual DANodeGraphicsSceneEventListener* createNodeGraphicsSceneEventListener();
 };
+
+}  // end DA
+
+#if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
+// Qt5.14.2编译的时候，无法把std::shared_ptr放入QSet中，需要增加此函数
+template< typename T >
+uint qHash(const std::shared_ptr< T >& ptr)
+{
+    return qHash(ptr.get());
 }
+#endif
+
 #endif  // FCABSTRACTNODEFACTORY_H
