@@ -1017,12 +1017,12 @@ Config</source>
 <context>
     <name>DA::DAAppPluginManager</name>
     <message>
-        <location filename="APP/DAAppPluginManager.cpp" line="61"/>
+        <location filename="APP/DAAppPluginManager.cpp" line="63"/>
         <source>%1 plugin create a null node factory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppPluginManager.cpp" line="67"/>
+        <location filename="APP/DAAppPluginManager.cpp" line="69"/>
         <source>succeed load plugin %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2181,12 +2181,12 @@ Config</source>
 <context>
     <name>DA::DAWorkFlowExecuter</name>
     <message>
-        <location filename="DAWorkFlow/DAWorkFlowExecuter.cpp" line="320"/>
+        <location filename="DAWorkFlow/DAWorkFlowExecuter.cpp" line="319"/>
         <source>execute node, name=%1,type=%2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAWorkFlowExecuter.cpp" line="344"/>
+        <location filename="DAWorkFlow/DAWorkFlowExecuter.cpp" line="343"/>
         <source>execute node(not transmit), name=%1,type=%2</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4387,25 +4387,31 @@ params:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="164"/>
-        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="195"/>
+        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="177"/>
+        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="208"/>
         <source>unable initialize %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="169"/>
+        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="182"/>
         <source>file &quot;%1&quot; does not exist</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="176"/>
-        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="202"/>
+        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="189"/>
+        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="215"/>
         <source>can not get excel workbook</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="505"/>
+        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="688"/>
+        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="711"/>
         <source>The local computer does not have Excel or WPS installed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="694"/>
+        <source>can not open excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

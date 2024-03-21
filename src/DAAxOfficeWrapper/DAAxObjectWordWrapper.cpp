@@ -1,4 +1,4 @@
-#include "DAAxObjectWordWrapper.h"
+﻿#include "DAAxObjectWordWrapper.h"
 #include "DAAxObjectWordTableWrapper.h"
 #include <QDir>
 
@@ -9,33 +9,33 @@ class DAAxObjectWordWrapper::PrivateData
     DA_DECLARE_PUBLIC(DAAxObjectWordWrapper)
 public:
     PrivateData(DAAxObjectWordWrapper* p);
-    //尝试打开app
+    // 尝试打开app
     bool tryCreateComControl(QAxObject* obj);
-    //初始化
+    // 初始化
     bool initialize();
-    //安全清楚
+    // 安全清楚
     void safeClear();
-    //判断是否初始化完成
+    // 判断是否初始化完成
     bool isInitialize() const;
-    //是否存在文档
+    // 是否存在文档
     bool isHaveDocument() const;
-    //打开文件
+    // 打开文件
     bool open(const QString& docfile, bool isvisible = false);
-    //退出app
+    // 退出app
     void quit();
-    //关闭文档
+    // 关闭文档
     void close(bool on);
-    //保存
+    // 保存
     void save();
-    //另存
+    // 另存
     bool saveAs(const QString& docfile);
-    //选中标签
+    // 选中标签
     QAxObject* selectMark(const QString& markName);
-    //替换标签内容
+    // 替换标签内容
     bool replaceMark(const QString& markName, const QVariant& replaceContent);
-    //插入图片
+    // 插入图片
     bool insertPictureAtMark(const QString& markName, const QString& picturePath);
-    //插入表格
+    // 插入表格
     DAAxObjectWordTableWrapper insertTableAtMark(const QString& markName, int rowCnt, int colCnt);
 
 public:
@@ -53,7 +53,7 @@ DAAxObjectWordWrapper::PrivateData::PrivateData(DAAxObjectWordWrapper* p) : q_pt
 bool DAAxObjectWordWrapper::PrivateData::tryCreateComControl(QAxObject* obj)
 {
     if (!obj->setControl(cWordAppComControlName)) {
-        //无法打开word，尝试用wps打开
+        // 无法打开word，尝试用wps打开
         if (!obj->setControl(cWpsAppComControlName)) {
             return false;
         }
@@ -68,8 +68,8 @@ bool DAAxObjectWordWrapper::PrivateData::tryCreateComControl(QAxObject* obj)
 bool DAAxObjectWordWrapper::PrivateData::initialize()
 {
     mWordApp = new QAxObject(q_ptr);
-    tryCreateComControl(mWordApp);  //打开word
-    return !mWordApp->isNull();
+    tryCreateComControl(mWordApp);  // 打开word
+    return !(mWordApp->isNull());
 }
 
 /**
@@ -93,7 +93,7 @@ void DAAxObjectWordWrapper::PrivateData::safeClear()
  */
 bool DAAxObjectWordWrapper::PrivateData::isInitialize() const
 {
-    return (mWordApp != nullptr) && !(mWordApp->isNull());
+    return !qaxobject_is_null(mWordApp);
 }
 
 /**
@@ -116,22 +116,22 @@ bool DAAxObjectWordWrapper::PrivateData::open(const QString& docfile, bool isvis
     if (!isInitialize()) {
         return false;
     }
-    QAxObject* documents = mWordApp->querySubObject("Documents");  //获取所有的工作文档(返回一个指向QAxObject包含的COM对象)
-    if (!documents) {
+    QAxObject* documents = mWordApp->querySubObject("Documents");  // 获取所有的工作文档(返回一个指向QAxObject包含的COM对象)
+    if (qaxobject_is_null(documents)) {
         return false;
     }
-    documents->dynamicCall("Add(QString)", docfile);         //添加一个文档
-    mDocument = mWordApp->querySubObject("ActiveDocument");  //获取当前激活的文档
+    documents->dynamicCall("Add(QString)", docfile);         // 添加一个文档
+    mDocument = mWordApp->querySubObject("ActiveDocument");  // 获取当前激活的文档
     return (mDocument != nullptr);
 }
 
 void DAAxObjectWordWrapper::PrivateData::quit()
 {
     if (isInitialize()) {
-        //退出
-        mWordApp->dynamicCall("Quit()");  //退出word
+        // 退出
+        mWordApp->dynamicCall("Quit()");  // 退出word
     }
-    //重置状态
+    // 重置状态
 }
 
 /**
@@ -187,11 +187,14 @@ QAxObject* DAAxObjectWordWrapper::PrivateData::selectMark(const QString& markNam
 bool DAAxObjectWordWrapper::PrivateData::replaceMark(const QString& markName, const QVariant& replaceContent)
 {
     QAxObject* bookmarkCode = selectMark(markName);
-    if (!bookmarkCode) {
+    if (qaxobject_is_null(bookmarkCode)) {
         return false;
     }
-    //选中标签，将字符textg插入到标签位置
+    // 选中标签，将字符textg插入到标签位置
     QAxObject* range = bookmarkCode->querySubObject("Range");
+    if (qaxobject_is_null(range)) {
+        return false;
+    }
     range->setProperty("Text", replaceContent);
     delete range;
     return true;
@@ -206,10 +209,13 @@ bool DAAxObjectWordWrapper::PrivateData::replaceMark(const QString& markName, co
 bool DAAxObjectWordWrapper::PrivateData::insertPictureAtMark(const QString& markName, const QString& picturePath)
 {
     QAxObject* bookmarkCode = selectMark(markName);
-    if (!bookmarkCode) {
+    if (qaxobject_is_null(bookmarkCode)) {
         return false;
     }
     QAxObject* Inlineshapes = mDocument->querySubObject("InlineShapes");
+    if (qaxobject_is_null(Inlineshapes)) {
+        return false;
+    }
     Inlineshapes->dynamicCall("AddPicture(const QString&)", QDir::toNativeSeparators(picturePath));
     delete Inlineshapes;
     return true;
@@ -225,19 +231,19 @@ bool DAAxObjectWordWrapper::PrivateData::insertPictureAtMark(const QString& mark
 DAAxObjectWordTableWrapper DAAxObjectWordWrapper::PrivateData::insertTableAtMark(const QString& markName, int rowCnt, int colCnt)
 {
     QAxObject* bookmarkCode = selectMark(markName);
-    if (!bookmarkCode) {
+    if (qaxobject_is_null(bookmarkCode)) {
         return DAAxObjectWordTableWrapper(nullptr);
     }
     QAxObject* selection = mWordApp->querySubObject("Selection");
-    if (!selection) {
+    if (qaxobject_is_null(selection)) {
         return DAAxObjectWordTableWrapper(nullptr);
     }
     QAxObject* range = selection->querySubObject("Range");
-    if (!range) {
+    if (qaxobject_is_null(range)) {
         return DAAxObjectWordTableWrapper(nullptr);
     }
     QAxObject* tables = mDocument->querySubObject("Tables");
-    if (!tables) {
+    if (qaxobject_is_null(tables)) {
         return DAAxObjectWordTableWrapper(nullptr);
     }
     QAxObject* table = tables->querySubObject("Add(QVariant,int,int)", range->asVariant(), rowCnt, colCnt);
@@ -249,7 +255,7 @@ DAAxObjectWordTableWrapper DAAxObjectWordWrapper::PrivateData::insertTableAtMark
         }
     }
     //    table->setProperty("Style", QString(u8"网格型"));
-    table->dynamicCall("AutoFitBehavior(WdAutoFitBehavior)", 2);  //表格自动拉伸列 0固定  1根据内容调整  2 根据窗口调整
+    table->dynamicCall("AutoFitBehavior(WdAutoFitBehavior)", 2);  // 表格自动拉伸列 0固定  1根据内容调整  2 根据窗口调整
     return DAAxObjectWordTableWrapper(table);
 }
 
@@ -387,5 +393,14 @@ bool DAAxObjectWordWrapper::insertPictureAtMark(const QString& markName, const Q
 DAAxObjectWordTableWrapper DAAxObjectWordWrapper::insertTableAtMark(const QString& markName, int rowCount, int colCount)
 {
     return d_ptr->insertTableAtMark(markName, rowCount, colCount);
+}
+
+// 此声明位于DAAxOfficeWrapperGlobal.h
+bool qaxobject_is_null(QAxObject* obj)
+{
+    if (obj == nullptr) {
+        return true;
+    }
+    return obj->isNull();
 }
 }  // end DA

@@ -1057,12 +1057,12 @@ Table Area</source>
 <context>
     <name>DA::DAAppPluginManager</name>
     <message>
-        <location filename="APP/DAAppPluginManager.cpp" line="61"/>
+        <location filename="APP/DAAppPluginManager.cpp" line="63"/>
         <source>%1 plugin create a null node factory</source>
         <translation>插件“%1”创建了一个空的节点工厂</translation>
     </message>
     <message>
-        <location filename="APP/DAAppPluginManager.cpp" line="67"/>
+        <location filename="APP/DAAppPluginManager.cpp" line="69"/>
         <source>succeed load plugin %1</source>
         <translation>成功加载插件“%1”</translation>
     </message>
@@ -2223,12 +2223,12 @@ Table Area</source>
 <context>
     <name>DA::DAWorkFlowExecuter</name>
     <message>
-        <location filename="DAWorkFlow/DAWorkFlowExecuter.cpp" line="320"/>
+        <location filename="DAWorkFlow/DAWorkFlowExecuter.cpp" line="319"/>
         <source>execute node, name=%1,type=%2</source>
         <translation>执行节点，节点名称=%1,节点原型信息=%2</translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAWorkFlowExecuter.cpp" line="344"/>
+        <location filename="DAWorkFlow/DAWorkFlowExecuter.cpp" line="343"/>
         <source>execute node(not transmit), name=%1,type=%2</source>
         <oldsource>execute node, name=</oldsource>
         <translation>执行节点（not transmit模式），节点名称=%1,节点原型信息=%2</translation>
@@ -5014,26 +5014,32 @@ params:
         <translation>配置文件（%1）缺失&lt;configs&gt;标签</translation>
     </message>
     <message>
-        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="164"/>
-        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="195"/>
+        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="177"/>
+        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="208"/>
         <source>unable initialize %1</source>
         <translation>无法初始化%1</translation>
     </message>
     <message>
-        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="169"/>
+        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="182"/>
         <source>file &quot;%1&quot; does not exist</source>
         <translation>文件“%1”不存在</translation>
     </message>
     <message>
-        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="176"/>
-        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="202"/>
+        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="189"/>
+        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="215"/>
         <source>can not get excel workbook</source>
         <translation>无法获取excel的workbook</translation>
     </message>
     <message>
-        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="505"/>
+        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="688"/>
+        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="711"/>
         <source>The local computer does not have Excel or WPS installed</source>
         <translation>当前计算机中没有安装excel或者wps</translation>
+    </message>
+    <message>
+        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="694"/>
+        <source>can not open excel</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/MainWindow.cpp" line="152"/>
