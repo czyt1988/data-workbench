@@ -165,10 +165,15 @@ bool DAAxObjectExcelSheetWrapper::writeTable(const DATable< QVariant >& table, i
     int endColumn       = startColumn + colCnt - 1;
     QAxObject* rangeObj = range(startRow, startColumn, endRow, endColumn);
     if (qaxobject_is_null(rangeObj)) {
+        qDebug() << QString("can not get range(%1,%2,%3,%4)").arg(startRow).arg(startColumn).arg(endRow).arg(endColumn);
         return false;
     }
     QVariant varTable = tableToVaraint(table);
-    rangeObj->setProperty("Value", varTable);
+    //! Value2能兼容wps和office，
+    if (!rangeObj->setProperty("Value2", varTable)) {
+        qDebug()
+            << QString("range(%1,%2,%3,%4) failed to set value property").arg(startRow).arg(startColumn).arg(endRow).arg(endColumn);
+    }
     delete rangeObj;
     return true;
 }

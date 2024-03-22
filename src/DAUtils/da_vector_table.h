@@ -1,10 +1,12 @@
-#ifndef DA_VECTOR_TABLE_H
+﻿#ifndef DA_VECTOR_TABLE_H
 #define DA_VECTOR_TABLE_H
 #include <vector>
 namespace DA
 {
 /**
  * @brief 由vector<vector>组成的表
+ *
+ * 此数据结构适合存放非常规则的结构化表
  */
 template< typename T >
 class da_vector_table : public std::vector< std::vector< T > >
@@ -129,7 +131,7 @@ public:
      */
     std::size_t column_count(std::size_t row = 0) const
     {
-        return at(row).size();
+        return super_class::at(row).size();
     }
 
     /**

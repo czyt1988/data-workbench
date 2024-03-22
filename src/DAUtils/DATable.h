@@ -13,6 +13,9 @@
 namespace DA
 {
 
+/**
+ * @brief 是一个支持稀疏和各种算法的表
+ */
 template< typename T >
 class DATable
 {
@@ -316,6 +319,25 @@ public:
             other[ i.first ] = trFun(*i);
         }
         return other;
+    }
+
+    /**
+     * @brief operator =
+     * @param other
+     * @return
+     */
+    template< typename OtherType >
+    DATable< T >& operator=(const da_vector_table< OtherType >& other)
+    {
+        clear();
+        auto rc = other.row_count();
+        auto cc = other.column_count();
+        for (auto r = 0; r < rc; ++r) {
+            for (auto c = 0; c < cc; ++c) {
+                set(r, c, other[ r ][ c ]);
+            }
+        }
+        return *this;
     }
 
 private:

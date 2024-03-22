@@ -5015,7 +5015,7 @@ params:
     </message>
     <message>
         <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="177"/>
-        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="208"/>
+        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="206"/>
         <source>unable initialize %1</source>
         <translation>无法初始化%1</translation>
     </message>
@@ -5026,18 +5026,18 @@ params:
     </message>
     <message>
         <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="189"/>
-        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="215"/>
+        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="213"/>
         <source>can not get excel workbook</source>
         <translation>无法获取excel的workbook</translation>
     </message>
     <message>
-        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="688"/>
-        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="711"/>
+        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="718"/>
+        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="741"/>
         <source>The local computer does not have Excel or WPS installed</source>
         <translation>当前计算机中没有安装excel或者wps</translation>
     </message>
     <message>
-        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="694"/>
+        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="724"/>
         <source>can not open excel</source>
         <translation type="unfinished"></translation>
     </message>
