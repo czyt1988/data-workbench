@@ -102,6 +102,7 @@ QVariantList mList;     // 准备写入的值
 
   Range->setProperty ("Value",mList);       // 可以设置属性的方法写入
  */
+
 #ifndef NULL_AXOBJECT_CHECK_AND_RETURN
 #define NULL_AXOBJECT_CHECK_AND_RETURN()                                                                               \
     do {                                                                                                               \
@@ -254,11 +255,11 @@ QVariant DAAxObjectExcelSheetWrapper::tableToVaraint(const DATable< QVariant >& 
     for (int r = 0; r < row; ++r) {
         QList< QVariant > varRow;
         for (int c = 0; c < col; ++c) {
-            varRow.append(table.at(r, c));
+            varRow.append(table.cell(r, c));
         }
-        varll.append(varRow);
+        varll.append(QVariant(varRow));  // 一定要显示转换，不能隐式转换
     }
-    return varll;
+    return QVariant(varll);  // 一定要显示转换，不能隐式转换
 }
 
 /**
@@ -305,6 +306,10 @@ QAxObject* DAAxObjectExcelSheetWrapper::range(int startRow, int startColumn, int
 {
     NULL_AXOBJECT_CHECK_WITH_RETURN(nullptr);
     QString rangStr = makeRangeString(startRow, startColumn, endRow, endColumn);
+#if DAAXOFFICEWRAPPER_DEBUG_PRINT
+    qDebug()
+        << QString("range(%1,%2,%3,%4) , range string=%5").arg(startRow).arg(startColumn).arg(endRow).arg(endColumn).arg(rangStr);
+#endif
     return (mAxSheet->querySubObject("Range(const QString&)", rangStr));
 }
 

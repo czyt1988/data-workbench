@@ -67,6 +67,21 @@ public:
     {
         return super_class::at(std::make_pair(r, c));
     }
+
+    const T value(row_index_type r, col_index_type c) const{
+        auto ite = super_class::find(std::make_pair(r, c));
+        if(ite == super_class::end()){
+            return T();
+        }
+        return ite->second;
+    }
+    const T value(row_index_type r, col_index_type c,const T& defaultValue) const{
+        auto ite = super_class::find(std::make_pair(r, c));
+        if(ite == super_class::end()){
+            return defaultValue;
+        }
+        return ite->second;
+    }
     /**
      * @brief 计算最大的形状
      *

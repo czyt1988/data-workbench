@@ -90,13 +90,19 @@ public:
     {
         return mData.at(i);
     }
+    /**
+     * @brief cell函数返回的是值，如果单元格没有，也返回一个默认构造的值
+     * @param r
+     * @param c
+     * @return
+     */
     T cell(int r, int c) const
     {
-        return at(r, c);
+        return mData.value(r, c);
     }
     T cell(const IndexPair& i) const
     {
-        return at(i);
+        return mData.value(i);
     }
     T& operator[](const IndexPair& i)
     {

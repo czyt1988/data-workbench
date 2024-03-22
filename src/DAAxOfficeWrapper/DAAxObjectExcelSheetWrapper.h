@@ -50,7 +50,7 @@ private:
 
 private:
     QAxObject* mAxSheet { nullptr };
-    bool mAutoDelete { false };  ///< 是否自动删除，自动删除将再析构执行delete
+    bool mAutoDelete { false };  ///< 是否自动删除，自动删除将再析构执行delete,默认为false
 };
 
 }
