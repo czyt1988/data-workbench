@@ -11,6 +11,18 @@ namespace DA
 {
 /**
  * @brief excel操作封装
+ *
+ * 写操作如下
+ * @code
+ * QString excelPath = "./file.xlsx";
+ * DA::DATable< QVariant > table;
+ * ...make table
+ *
+ * DA::DAAxObjectExcelWrapper excel;
+ * DA::DAAxObjectExcelSheetWrapper sheet = excel.addSheet("main");
+ * sheet.writeTable(table);
+ * excel.saveAs(excelPath);
+ * @endcode
  */
 class DAAXOFFICEWRAPPER_API DAAxObjectExcelWrapper : public QObject
 {
