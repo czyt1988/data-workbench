@@ -4404,13 +4404,13 @@ params:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="718"/>
-        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="741"/>
+        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="726"/>
+        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="749"/>
         <source>The local computer does not have Excel or WPS installed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="724"/>
+        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="732"/>
         <source>can not open excel</source>
         <translation type="unfinished"></translation>
     </message>

@@ -5031,13 +5031,13 @@ params:
         <translation>无法获取excel的workbook</translation>
     </message>
     <message>
-        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="718"/>
-        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="741"/>
+        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="726"/>
+        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="749"/>
         <source>The local computer does not have Excel or WPS installed</source>
         <translation>当前计算机中没有安装excel或者wps</translation>
     </message>
     <message>
-        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="724"/>
+        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="732"/>
         <source>can not open excel</source>
         <translation type="unfinished"></translation>
     </message>

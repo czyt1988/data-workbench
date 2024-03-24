@@ -276,7 +276,7 @@ void DAAxObjectExcelWrapper::PrivateData::activeWorkBook()
         return;
     }
     // 文件不存在则创建
-    mAxWorkbooks->dynamicCall("Add");
+    mAxWorkbooks->querySubObject("Add");
     mAxWorkbook   = mAxApp->querySubObject("ActiveWorkBook");
     mAxWorkSheets = mAxWorkbook->querySubObject("Sheets");  // 获得所有工作表对象
 }
@@ -314,6 +314,9 @@ QAxObject* DAAxObjectExcelWrapper::PrivateData::addSheet(const QString& name)
     if (!isHaveWorkbook()) {
         activeWorkBook();
         // 首次激活workbook有个默认的sheet
+#if DAAXOFFICEWRAPPER_DEBUG_PRINT
+        qDebug() << QString("when addsheet no workbook ,activeWorkBook first");
+#endif
         if (getSheetsCount() >= 1) {
             QAxObject* defaultSheet = getSheet(0);
             DAAxObjectExcelSheetWrapper s(defaultSheet);
@@ -331,11 +334,15 @@ QAxObject* DAAxObjectExcelWrapper::PrivateData::addSheet(const QString& name)
 #if DAAXOFFICEWRAPPER_DEBUG_PRINT
     qDebug() << QString("sheet count = %1").arg(count);
 #endif
-    mAxWorkSheets->dynamicCall("ADD()");
-    QAxObject* newSheet = mAxWorkSheets->querySubObject("Item(int)", count + 1);
-    // QAxObject* newSheet = mAxWorkSheets->querySubObject("Add(QVariant)", count + 1);  // 在lastSheet之前插入一个新工作表
+    //! mAxWorkSheets->dynamicCall("ADD()");会在最前面添加，并不是添加到最后
+    //! mAxWorkSheets->dynamicCall("ADD()");
+    //! QAxObject* newSheet = mAxWorkSheets->querySubObject("Item(int)", count + 1);
+    QAxObject* lastSheet = mAxWorkSheets->querySubObject("Item(int)", count);
+    mAxWorkSheets->querySubObject("Add(QVariant)", lastSheet->asVariant());
+    QAxObject* newSheet = mAxWorkSheets->querySubObject("Item(int)", count);
+    lastSheet->dynamicCall("Move(QVariant)", newSheet->asVariant());
 #if DAAXOFFICEWRAPPER_DEBUG_PRINT
-    qDebug() << QString("WorkSheets count %1").arg(count + 1);
+    qDebug() << QString("WorkSheets count %1").arg(getSheetsCount());
 #endif
     DAAxObjectExcelSheetWrapper s(newSheet);
     s.setName(name);
