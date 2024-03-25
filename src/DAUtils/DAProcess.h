@@ -58,7 +58,7 @@ private slots:
  * mProcess.setArguments({"--value","12"});
  * @endcode
  */
-class DAProcessWithThread : public QObject
+class DAUTILS_API DAProcessWithThread : public QObject
 {
     Q_OBJECT
 public:
