@@ -25,6 +25,11 @@ void DAProcess::run(const QString& program, const QStringList& arguments, QIODev
     start(program, arguments, mode);
 }
 
+void DAProcess::setEncoding(const char* codecName)
+{
+    mCodecName = codecName;
+}
+
 void DAProcess::run(const QString& command, QIODevice::OpenMode mode)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -33,11 +38,12 @@ void DAProcess::run(const QString& command, QIODevice::OpenMode mode)
     startCommand(command, mode);
 #endif
 }
-
+#include <QTextCodec>
 void DAProcess::onReadyReadStandardOutput()
 {
     QByteArray allout = readAll();
     QTextStream ss(&allout);
+    setEncoding(&ss, mCodecName);
     while (!ss.atEnd()) {
         QString line = ss.readLine();
         emit processStarandOutput(line);
@@ -48,10 +54,33 @@ void DAProcess::onReadyReadStandardError()
 {
     QByteArray allout = readAll();
     QTextStream ss(&allout);
+    setEncoding(&ss, mCodecName);
     while (!ss.atEnd()) {
         QString line = ss.readLine();
         emit processErrorOutput(line);
     }
+}
+
+void DAProcess::setEncoding(QTextStream* ss, const QString& codec)
+{
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    if (mCodecName.isEmpty()) {
+        ss->setEncoding(QTextCodec::codecForLocale());
+    } else {
+        ss->setEncoding(mCodecName);
+    }
+#else
+    if (codec.isEmpty()) {
+        ss->setEncoding(QStringConverter::System);
+    } else {
+        auto e = QStringConverter::encodingForName(codec.toStdString().c_str());
+        if (e.has_value()) {
+            ss->setEncoding(e.value());
+        } else {
+            ss->setEncoding(QStringConverter::System);
+        }
+    }
+#endif
 }
 
 //----------------------------------------------------
