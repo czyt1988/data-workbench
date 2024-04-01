@@ -6,7 +6,7 @@
 # 请先单独编译第三方库后，安装，并把安装目录设置到和此安装目录一致
 
 #3.16是qt6要求的最低版本
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.12)
 
 ########################################################
 # 版本定义
@@ -107,11 +107,15 @@ list(APPEND CMAKE_MODULE_PATH ${DA_CMAKE_DIR} ${DA_INSTALL_LIB_CMAKE_PATH})
 # 定义第三方库路径
 ########################################################
 set(SARibbonBar_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/SARibbonBar)
+message(STATUS "SARibbonBar_DIR=${SARibbonBar_DIR}")
 set(DALiteCtk_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/DALiteCtk)
+message(STATUS "DALiteCtk_DIR=${DALiteCtk_DIR}")
 set(qwt_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/qwt)
+message(STATUS "qwt_DIR=${qwt_DIR}")
 set(DAWorkbench_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/${DA_PROJECT_NAME})
+message(STATUS "DAWorkbench_DIR=${DAWorkbench_DIR}")
 set(qt${QT_VERSION_MAJOR}advanceddocking_DIR  ${DA_INSTALL_LIB_CMAKE_PATH}/qt${QT_VERSION_MAJOR}advanceddocking)
-
+message(STATUS "qt${QT_VERSION_MAJOR}advanceddocking_DIR=${qt${QT_VERSION_MAJOR}advanceddocking_DIR}")
 ##################################
 # 初步安装 install 通用内容
 ##################################
