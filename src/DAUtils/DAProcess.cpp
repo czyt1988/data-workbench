@@ -25,15 +25,25 @@ void DAProcess::run(const QString& program, const QStringList& arguments, QIODev
     start(program, arguments, mode);
 }
 
-void DAProcess::run(const QString& command, QIODevice::OpenMode mode)
+void DAProcess::setEncoding(const char* codecName)
 {
-    start(command, mode);
+    mCodecName = codecName;
 }
 
+void DAProcess::run(const QString& command, QIODevice::OpenMode mode)
+{
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    start(command, mode);
+#else
+    startCommand(command, mode);
+#endif
+}
+#include <QTextCodec>
 void DAProcess::onReadyReadStandardOutput()
 {
     QByteArray allout = readAll();
     QTextStream ss(&allout);
+    setEncoding(&ss, mCodecName);
     while (!ss.atEnd()) {
         QString line = ss.readLine();
         emit processStarandOutput(line);
@@ -44,10 +54,33 @@ void DAProcess::onReadyReadStandardError()
 {
     QByteArray allout = readAll();
     QTextStream ss(&allout);
+    setEncoding(&ss, mCodecName);
     while (!ss.atEnd()) {
         QString line = ss.readLine();
         emit processErrorOutput(line);
     }
+}
+
+void DAProcess::setEncoding(QTextStream* ss, const QString& codec)
+{
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    if (mCodecName.isEmpty()) {
+        ss->setEncoding(QTextCodec::codecForLocale());
+    } else {
+        ss->setEncoding(mCodecName);
+    }
+#else
+    if (codec.isEmpty()) {
+        ss->setEncoding(QStringConverter::System);
+    } else {
+        auto e = QStringConverter::encodingForName(codec.toStdString().c_str());
+        if (e.has_value()) {
+            ss->setEncoding(e.value());
+        } else {
+            ss->setEncoding(QStringConverter::System);
+        }
+    }
+#endif
 }
 
 //----------------------------------------------------
@@ -91,16 +124,20 @@ void DAProcessWithThread::runProcess()
     mProcess   = new DAProcess();
     mThread    = new QThread();
     mProcess->moveToThread(mThread);
-    connect(mProcess, QOverload< int >::of(&DA::DAProcess::finished), mThread, &QThread::quit);  //进程结束，线程退出
-    connect(mThread, &QThread::finished, mProcess, &DA::DAProcess::deleteLater);  //线程结束了，实例销毁
-    connect(mThread, &QThread::finished, mThread, &QThread::deleteLater);         //线程结束了，线程自毁
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    connect(mProcess, QOverload< int >::of(&DA::DAProcess::finished), mThread, &QThread::quit);  // 进程结束，线程退出
+#else
+    connect(mProcess, &DA::DAProcess::finished, mThread, &QThread::quit);  // 进程结束，线程退出
+#endif
+    connect(mThread, &QThread::finished, mProcess, &DA::DAProcess::deleteLater);  // 线程结束了，实例销毁
+    connect(mThread, &QThread::finished, mThread, &QThread::deleteLater);         // 线程结束了，线程自毁
     connect(mThread, &QThread::finished, this, [ this ]() {
         mProcess = nullptr;
         mThread  = nullptr;
-    });  //线程结束了，指针清空
-    //把beginRunProcess 和DAProcess::run的槽绑定
-    connect(this, &DAProcessWithThread::beginRunProcess, mProcess, QOverload< void >::of(&DA::DAProcess::run));
-    //错误发生
+    });  // 线程结束了，指针清空
+    // 把beginRunProcess 和DAProcess::run的槽绑定
+    connect(this, &DAProcessWithThread::beginRunProcess, mProcess, QOverload<>::of(&DA::DAProcess::run));
+    // 错误发生
     connect(mProcess, &DA::DAProcess::errorOccurred, this, [ this ](QProcess::ProcessError error) {
         QString errstr;
         if (this->mProcess) {
@@ -110,7 +147,11 @@ void DAProcessWithThread::runProcess()
         emit errorOccurred(error, errstr);
     });
     connect(mProcess, &DA::DAProcess::started, this, &DAProcessWithThread::processStarted);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     connect(mProcess, QOverload< int >::of(&DA::DAProcess::finished), this, &DAProcessWithThread::processFinished);
+#else
+    connect(mProcess, &DA::DAProcess::finished, this, &DAProcessWithThread::processFinished);
+#endif
     connect(mProcess, &DA::DAProcess::processStarandOutput, this, &DAProcessWithThread::processStarandOutput);
     connect(mProcess, &DA::DAProcess::processErrorOutput, this, &DAProcessWithThread::processErrorOutput);
     mProcess->setProgram(mProgram);

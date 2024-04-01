@@ -3,6 +3,7 @@
 #include <QProcess>
 #include "DAUtilsAPI.h"
 class QThread;
+class QTextStream;
 namespace DA
 {
 
@@ -20,6 +21,8 @@ public slots:
     void run(QIODevice::OpenMode mode);
     void run(const QString& command, QIODevice::OpenMode mode);
     void run(const QString& program, const QStringList& arguments, QIODevice::OpenMode mode);
+    // 设置编码
+    void setEncoding(const char* codecName);
 signals:
     /**
      * @brief 标准输出
@@ -40,6 +43,12 @@ private slots:
     void onReadyReadStandardOutput();
     // 标准错误
     void onReadyReadStandardError();
+
+private:
+    void setEncoding(QTextStream* ss, const QString& codec);
+
+private:
+    QString mCodecName;  ///< 编码，决定了程序返回内容的编码解析
 };
 
 /**
