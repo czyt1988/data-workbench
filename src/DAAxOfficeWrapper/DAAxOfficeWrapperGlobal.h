@@ -24,6 +24,6 @@ namespace DA
  * @return
  * @note 实现位于DAAxObjectWordWrapper.cpp
  */
-bool qaxobject_is_null(QAxObject* obj);
+bool DAAXOFFICEWRAPPER_API qaxobject_is_null(QAxObject* obj);
 }
 #endif  // DAAXOFFICEWRAPPERGLOBAL_H

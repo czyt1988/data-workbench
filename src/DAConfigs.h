@@ -37,11 +37,7 @@
  * @def 编译的日期（字符串）
  */
 #ifndef DA_COMPILE_DATETIME
-<<<<<<< HEAD
 #define DA_COMPILE_DATETIME "240401"
-=======
-#define DA_COMPILE_DATETIME "240326"
->>>>>>> eb448c79d8eb6761fda12837ea9d210105f5ddb0
 #endif
 
 /**

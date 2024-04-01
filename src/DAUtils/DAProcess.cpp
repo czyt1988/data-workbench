@@ -1,5 +1,6 @@
 ﻿#include "DAProcess.h"
 #include <QTextStream>
+#include <QTextCodec>
 #include <QThread>
 namespace DA
 {
@@ -65,9 +66,9 @@ void DAProcess::setEncoding(QTextStream* ss, const QString& codec)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     if (mCodecName.isEmpty()) {
-        ss->setEncoding(QTextCodec::codecForLocale());
+        ss->setCodec(QTextCodec::codecForLocale());
     } else {
-        ss->setEncoding(mCodecName);
+        ss->setCodec(mCodecName.toStdString().c_str());
     }
 #else
     if (codec.isEmpty()) {
