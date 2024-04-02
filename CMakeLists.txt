@@ -73,7 +73,22 @@ if(MSVC)
     # make sure __cplusplus is defined when using msvc and enable parallel build
     string(APPEND CMAKE_CXX_FLAGS " /Zc:__cplusplus /MP")
 endif()
-
+########################################################
+# MSVC设置
+# 如果不添加会出现
+# Qt5AxContainerd.lib(qaxbase.obj) : error LNK2038  MDd_DynamicDebug MTd_StaticDebug等提示
+# Qt5AxBased.lib(qaxtypefunctions.obj) : error LNK2038:
+# 可以通过下面方式设置
+# set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MD")
+# set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MDd")
+########################################################
+if(MSVC)
+    add_compile_options(
+        $<$<CONFIG:>:/MD>
+        $<$<CONFIG:Debug>:/MDd>
+        $<$<CONFIG:Release>:/MD>
+    )
+endif()
 ########################################################
 # Qt
 ########################################################
