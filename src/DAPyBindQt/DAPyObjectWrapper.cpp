@@ -74,12 +74,12 @@ bool DAPyObjectWrapper::operator==(void* ptr) const
 
 bool DAPyObjectWrapper::operator==(const pybind11::object& obj) const
 {
-    return _object == obj;
+    return _object.is(obj);
 }
 
 bool DAPyObjectWrapper::operator==(const DAPyObjectWrapper& obj) const
 {
-    return _object == obj._object;
+    return _object.is(obj._object);
 }
 
 /**

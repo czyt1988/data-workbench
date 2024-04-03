@@ -1,0 +1,9 @@
+{
+	"plugin-base-name":"My",
+    "plugin-display-name":"My Plugin",
+    "plugin-description":"This is My Plugin",
+    "plugin-iid":"Plugin.MyPlugin",
+    "factory-prototypes":"My.Factory",
+    "factory-name":"My Factory",
+    "factory-description":"My Plugin Node Factory"
+}

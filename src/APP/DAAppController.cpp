@@ -1145,7 +1145,7 @@ void DAAppController::onActionFigureNewXYAxisTriggered()
         qWarning() << tr("Before creating a new coordinate,you need to create a figure");  // cn:在创建一个坐标系之前，需要先创建一个绘图窗口
         return;
     }
-    DAChartWidget* w = fig->createChart_(0.1, 0.1, 0.4, 0.4);
+    DAChartWidget* w = fig->createChart_(0.1f, 0.1f, 0.4f, 0.4f);
     w->enableGrid();
     w->enablePan();
     w->enableXYDataPicker();

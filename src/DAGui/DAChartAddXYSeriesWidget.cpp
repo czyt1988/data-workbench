@@ -362,8 +362,8 @@ bool DAChartAddXYSeriesWidget::getToVectorPointFFromUI(QVector< QPointF >& res)
             std::vector< double > vy;
             vy.reserve(y.size());
             y.castTo< double >(std::back_inserter(vy));
-            res.resize(s);
-            for (std::size_t i = 0; i < s; ++i) {
+            res.resize(static_cast<int>(s));
+            for (int i = 0; i < s; ++i) {
                 res[ i ].setX(xinc[ i ]);
                 res[ i ].setY(vy[ i ]);
             }
@@ -403,8 +403,8 @@ bool DAChartAddXYSeriesWidget::getToVectorPointFFromUI(QVector< QPointF >& res)
             std::vector< double > vx;
             vx.reserve(x.size());
             x.castTo< double >(std::back_inserter(vx));
-            res.resize(s);
-            for (std::size_t i = 0; i < s; ++i) {
+            res.resize(static_cast<int>(s));
+            for (auto i = 0; i < s; ++i) {
                 res[ i ].setX(vx[ i ]);
                 res[ i ].setY(yinc[ i ]);
             }
