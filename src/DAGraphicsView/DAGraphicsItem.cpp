@@ -21,6 +21,7 @@ public:
 
 DAGraphicsItem::PrivateData::PrivateData(DAGraphicsItem* p) : q_ptr(p)
 {
+    //DAGraphicsItemFactory::generateID通过一个uint32_t生成一个uint64_t的id
     mID = DAGraphicsItemFactory::generateID(reinterpret_cast< uint32_t >(q_ptr));
 }
 

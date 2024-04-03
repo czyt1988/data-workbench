@@ -195,8 +195,8 @@ void DAChartItemTableModel::getItemColumnRange(QwtPlotItem* item, int* startCol,
 int DAChartItemTableModel::calcPlotMultiBarChartDim(const QwtPlotMultiBarChart* p)
 {
     int maxDim     = 0;
-    const int size = p->dataSize();
-    for (int i = 0; i < size; ++i) {
+    const auto size = p->dataSize();
+    for (auto i = 0; i < size; ++i) {
         int s = p->sample(i).set.size();
         if (s > maxDim) {
             maxDim = s;

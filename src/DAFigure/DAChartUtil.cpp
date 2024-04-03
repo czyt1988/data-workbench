@@ -498,8 +498,8 @@ void DAChartUtil::getXYDatas(QVector< QPointF >& xys, const QwtSeriesStore< QPoi
 
 void DAChartUtil::getXYDatas(QVector< double >* xs, QVector< double >* ys, const QwtSeriesStore< QPointF >* cur)
 {
-    size_t size = cur->dataSize();
-    for (size_t i = 0; i < size; ++i) {
+    auto size = cur->dataSize();
+    for (auto i = 0; i < size; ++i) {
         QPointF p = cur->sample(i);
         if (ys)
             (*ys).push_back(p.y());
@@ -539,10 +539,10 @@ size_t DAChartUtil::getXYDatas(QVector< double >* xs,
                                const QwtSeriesStore< QPointF >* cur,
                                const QRectF& rang)
 {
-    size_t size     = cur->dataSize();
-    size_t realSize = 0;
+    auto size     = cur->dataSize();
+    auto realSize = 0;
     if (!rang.isNull() && rang.isValid()) {
-        for (size_t i = 0; i < size; ++i) {
+        for (auto i = 0; i < size; ++i) {
             QPointF p = cur->sample(i);
             if (rang.contains(p)) {
                 if (ys) {
@@ -572,10 +572,10 @@ size_t DAChartUtil::getXYDatas(QVector< double >* xs,
 ///
 size_t DAChartUtil::getXYDatas(QVector< QPointF >& xys, QVector< int >* indexs, const QwtSeriesStore< QPointF >* series, const QPainterPath& rang)
 {
-    size_t length = series->data()->size();
+    auto length = series->data()->size();
     QPointF point;
     size_t resCount = 0;
-    for (size_t i = 0; i < length; ++i) {
+    for (auto i = 0; i < length; ++i) {
         point = series->data()->sample(i);
         if (rang.contains(point)) {
             ++resCount;
@@ -852,9 +852,9 @@ void DAChartUtil::setCurvePenStyle(QwtPlotCurve* cur, Qt::PenStyle style)
 ///
 int DAChartUtil::removeDataInRang(const QRectF& removeRang, const QVector< QPointF >& rawData, QVector< QPointF >& newData)
 {
-    size_t length = rawData.size();
+    auto length = rawData.size();
     newData.reserve(length);
-    for (size_t i = 0; i < length; ++i) {
+    for (auto i = 0; i < length; ++i) {
         const QPointF& point = rawData[ i ];
         if (removeRang.contains(point))
             continue;
@@ -871,9 +871,9 @@ int DAChartUtil::removeDataInRang(const QRectF& removeRang, const QVector< QPoin
 ///
 int DAChartUtil::removeDataInRang(const QPainterPath& removeRang, const QVector< QPointF >& rawData, QVector< QPointF >& newData)
 {
-    size_t length = rawData.size();
+    auto length = rawData.size();
     newData.reserve(length);
-    for (size_t i = 0; i < length; ++i) {
+    for (auto i = 0; i < length; ++i) {
         const QPointF& point = rawData[ i ];
         if (removeRang.contains(point))
             continue;
@@ -890,11 +890,11 @@ int DAChartUtil::removeDataInRang(const QPainterPath& removeRang, const QVector<
 ///
 int DAChartUtil::removeDataInRang(const QRectF& removeRang, QwtSeriesStore< QPointF >* curve)
 {
-    size_t length = curve->data()->size();
+    auto length = curve->data()->size();
     QVector< QPointF > newLine;
     newLine.reserve(length);
     QPointF point;
-    for (size_t i = 0; i < length; ++i) {
+    for (auto i = 0; i < length; ++i) {
         point = curve->data()->sample(i);
         if (removeRang.contains(point))
             continue;
@@ -906,11 +906,11 @@ int DAChartUtil::removeDataInRang(const QRectF& removeRang, QwtSeriesStore< QPoi
 
 int DAChartUtil::removeDataInRang(const QPainterPath& removeRang, QwtSeriesStore< QPointF >* curve)
 {
-    size_t length = curve->data()->size();
+    auto length = curve->data()->size();
     QVector< QPointF > newLine;
     newLine.reserve(length);
     QPointF point;
-    for (size_t i = 0; i < length; ++i) {
+    for (auto i = 0; i < length; ++i) {
         point = curve->data()->sample(i);
         if (removeRang.contains(point))
             continue;

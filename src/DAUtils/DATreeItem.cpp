@@ -527,7 +527,7 @@ QDebug& print_item_and_child_items(QDebug& dbg, const DATreeItem& item, int inde
 {
     QString str(indent, ' ');
 
-    str += QStringLiteral("└");
+    str += u8"└";
     print_one_item(dbg, item, str);
 
     QList< DA::DATreeItem* > cis = item.getChildItems();

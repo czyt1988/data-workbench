@@ -262,12 +262,12 @@ public:
 template< typename T >
 void DAChartUtil::getSeriesData(QVector< T >& vec, const QwtSeriesStore< T >* series)
 {
-    const std::size_t size = series->dataSize();
+    const auto size = series->dataSize();
 
     if (vec.size() < size) {
         vec.reserve(size);
     }
-    for (int i = 0; i < size; ++i) {
+    for (auto i = 0; i < size; ++i) {
         vec.push_back(series->sample(i));
     }
 }
@@ -292,7 +292,7 @@ template< typename T, typename PlotItemType >
 void DAChartUtil::getVectorSampleData(QwtPlotItem* item, QVector< T >& datas)
 {
     PlotItemType* c = static_cast< PlotItemType* >(item);
-    const int size  = c->dataSize();
+    const auto size  = c->dataSize();
 
     datas.reserve(size);
     for (int i = 0; i < size; ++i) {

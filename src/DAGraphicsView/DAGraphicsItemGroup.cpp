@@ -25,6 +25,7 @@ public:
 
 DAGraphicsItemGroup::PrivateData::PrivateData(DAGraphicsItemGroup* p) : q_ptr(p)
 {
+    //DAGraphicsItemFactory::generateID通过一个uint32_t生成一个uint64_t的id
     mID = DAGraphicsItemFactory::generateID(reinterpret_cast< uint32_t >(q_ptr));
     mBorderPen.setColor(QColor(25, 152, 236));
     mBorderPen.setWidthF(1.1);
