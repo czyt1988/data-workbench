@@ -428,33 +428,33 @@ int DAChartUtil::getItemDataSize(const QwtPlotItem* item)
     case QwtPlotItem::Rtti_PlotCurve: {
         const QwtPlotCurve* p = static_cast< const QwtPlotCurve* >(item);
         if (p) {
-            return p->data()->size();
+            return static_cast<int>(p->data()->size());
         }
         break;
     }
     case QwtPlotItem::Rtti_PlotIntervalCurve: {
         const QwtPlotIntervalCurve* p = static_cast< const QwtPlotIntervalCurve* >(item);
         if (p) {
-            return p->data()->size();
+            return static_cast<int>(p->data()->size());
         }
         break;
     }
     case QwtPlotItem::Rtti_PlotHistogram: {
         const QwtPlotHistogram* p = static_cast< const QwtPlotHistogram* >(item);
         if (p) {
-            return p->data()->size();
+            return static_cast<int>(p->data()->size());
         }
     }
     case QwtPlotItem::Rtti_PlotBarChart: {
         const QwtPlotBarChart* p = static_cast< const QwtPlotBarChart* >(item);
         if (p) {
-            return p->data()->size();
+            return static_cast<int>(p->data()->size());
         }
     }
     case QwtPlotItem::Rtti_PlotMultiBarChart: {
         const QwtPlotMultiBarChart* p = static_cast< const QwtPlotMultiBarChart* >(item);
         if (p) {
-            return p->data()->size();
+            return static_cast<int>(p->data()->size());
         }
     }
     default:
@@ -517,7 +517,7 @@ void DAChartUtil::getXYDatas(QVector< double >* xs, QVector< double >* ys, const
 size_t DAChartUtil::getXYDatas(QVector< QPointF >& xys, QVector< int >* indexs, const QwtSeriesStore< QPointF >* cur, const QRectF& rang)
 {
     const QwtSeriesData< QPointF >* datas = cur->data();
-    size_t size                           = datas->size();
+    auto size                           = datas->size();
     size_t realSize                       = 0;
     if (!rang.isNull() && rang.isValid()) {
         for (size_t i = 0; i < size; ++i) {
@@ -525,7 +525,7 @@ size_t DAChartUtil::getXYDatas(QVector< QPointF >& xys, QVector< int >* indexs, 
                 xys.push_back(datas->sample(i));
                 ++realSize;
                 if (indexs) {
-                    (*indexs).append(i);
+                    (*indexs).append(static_cast<int>(i));
                 }
             }
         }
@@ -617,7 +617,7 @@ size_t DAChartUtil::getXYDatas(QVector< double >* xs,
                 (*ys).append(point.y());
             }
             if (indexs) {
-                (*indexs).append(i);
+                (*indexs).append(static_cast<int>(i));
             }
         }
     }
@@ -892,7 +892,7 @@ int DAChartUtil::removeDataInRang(const QRectF& removeRang, QwtSeriesStore< QPoi
 {
     auto length = curve->data()->size();
     QVector< QPointF > newLine;
-    newLine.reserve(length);
+    newLine.reserve(static_cast<int>(length));
     QPointF point;
     for (auto i = 0; i < length; ++i) {
         point = curve->data()->sample(i);
@@ -908,7 +908,7 @@ int DAChartUtil::removeDataInRang(const QPainterPath& removeRang, QwtSeriesStore
 {
     auto length = curve->data()->size();
     QVector< QPointF > newLine;
-    newLine.reserve(length);
+    newLine.reserve(static_cast<int>(length));
     QPointF point;
     for (auto i = 0; i < length; ++i) {
         point = curve->data()->sample(i);
@@ -1084,13 +1084,13 @@ QwtPlotItemList DAChartUtil::dynamicGetXYSeriesItemList(const QwtPlot* chart)
 int DAChartUtil::dynamicGetPlotChartItemDataCount(const QwtPlotItem* item)
 {
     if (const QwtSeriesStore< QPointF >* p = dynamic_cast< const QwtSeriesStore< QPointF >* >(item)) {
-        return p->dataSize();
+        return static_cast<int>(p->dataSize());
     } else if (const QwtSeriesStore< QwtIntervalSample >* p = dynamic_cast< const QwtSeriesStore< QwtIntervalSample >* >(item)) {
-        return p->dataSize();
+        return static_cast<int>(p->dataSize());
     } else if (const QwtSeriesStore< QwtSetSample >* p = dynamic_cast< const QwtSeriesStore< QwtSetSample >* >(item)) {
-        return p->dataSize();
+        return static_cast<int>(p->dataSize());
     } else if (const QwtSeriesStore< QwtPoint3D >* p = dynamic_cast< const QwtSeriesStore< QwtPoint3D >* >(item)) {
-        return p->dataSize();
+        return static_cast<int>(p->dataSize());
     }
     return -1;
 }

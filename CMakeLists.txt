@@ -26,10 +26,10 @@ message(STATUS "DA Version is ${DA_VERSION}")
 # 此选项将设置是否开启python
 option(DA_ENABLE_PYTHON
     "enable python|if ON will add DAPythonBind DAPyScript DAPyCommonWidgets COMPONENTS"
-    OFF)
+    ON)
 option(DA_ENABLE_AUTO_INSTALL_PYTHON_ENV
     "This parameter allows cmake to automatically search for the Python environment and copy the necessary DLLs from the Python environment to the bin directory without manual deployment. It is recommended to enable this option for Windows users who have not set the Python directory as a system environment variable"
-    OFF)
+    ON)
 # 此选项将自动调用Linguist工具对翻译文件进行翻译
 option(DA_ENABLE_AUTO_TRANSLATE
     "This option will automatically call the Linguist tool to translate the ts file"

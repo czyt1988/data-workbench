@@ -1,0 +1,12 @@
+﻿#ifndef {{PLUGIN-BASE-NAME}}GLOBAL_H
+#define {{PLUGIN-BASE-NAME}}GLOBAL_H
+#include <QtCore/QtGlobal>
+
+#if defined({{PLUGIN-BASE-NAME}}_PLUGIN_BUILD)
+#define {{PLUGIN-BASE-NAME}}_API Q_DECL_EXPORT
+#else
+#define {{PLUGIN-BASE-NAME}}_API Q_DECL_IMPORT
+#endif
+
+// Q_DECL_IMPORT.
+#endif  // {{PLUGIN-BASE-NAME}}GLOBAL_H

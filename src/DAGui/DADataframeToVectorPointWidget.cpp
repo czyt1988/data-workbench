@@ -59,7 +59,7 @@ bool DADataframeToVectorPointWidget::getToVectorPointF(QVector< QPointF >& res)
         vy.reserve(y.size());
         x.castTo< double >(std::back_inserter(vx));
         y.castTo< double >(std::back_inserter(vy));
-        res.resize(s);
+        res.resize(static_cast<int>(s));
         for (int i = 0; i < s; ++i) {
             res[ i ].setX(vx[ i ]);
             res[ i ].setY(vy[ i ]);

@@ -1,4 +1,4 @@
-﻿#include "DataAnalysisNodeFactory.h"
+﻿#include "{{plugin-base-name}}NodeFactory.h"
 //
 #include <QMainWindow>
 #include "DACoreInterface.h"
@@ -22,43 +22,43 @@
 //! REGISTE_CLASS(XXXXNode)
 
 
-DataAnalysisNodeFactory::DataAnalysisNodeFactory() : DA::DAAbstractNodeFactory()
+{{plugin-base-name}}NodeFactory::{{plugin-base-name}}NodeFactory() : DA::DAAbstractNodeFactory()
 {
 
 }
 
-DataAnalysisNodeFactory::~DataAnalysisNodeFactory()
+{{plugin-base-name}}NodeFactory::~{{plugin-base-name}}NodeFactory()
 {
 }
 
-void DataAnalysisNodeFactory::setCore(DA::DACoreInterface* c)
+void {{plugin-base-name}}NodeFactory::setCore(DA::DACoreInterface* c)
 {
     // 这里可以把一些信号关联，例如scene创建
     mCore = c;
 }
 
 
-void DataAnalysisNodeFactory::registWorkflow(DA::DAWorkFlow* wf)
+void {{plugin-base-name}}NodeFactory::registWorkflow(DA::DAWorkFlow* wf)
 {
     DA::DAAbstractNodeFactory::registWorkflow(wf);
 }
 
-QString DataAnalysisNodeFactory::factoryPrototypes() const
+QString {{plugin-base-name}}NodeFactory::factoryPrototypes() const
 {
-    return "DA.DataAnalysisNodeFactory";
+    return "{{factory-prototypes}}";
 }
 
-QString DataAnalysisNodeFactory::factoryName() const
+QString {{plugin-base-name}}NodeFactory::factoryName() const
 {
-    return u8"DataAnalysis";
+    return u8"{{factory-name}}";
 }
 
-QString DataAnalysisNodeFactory::factoryDescribe() const
+QString {{plugin-base-name}}NodeFactory::factoryDescribe() const
 {
-    return u8"DataAnalysis";
+    return u8"{{factory-description}}";
 }
 
-DA::DAAbstractNode::SharedPointer DataAnalysisNodeFactory::create(const DA::DANodeMetaData& meta)
+DA::DAAbstractNode::SharedPointer {{plugin-base-name}}NodeFactory::create(const DA::DANodeMetaData& meta)
 {
     auto fp = mPrototypeTpfp.value(meta, nullptr);
     if (fp) {
@@ -67,7 +67,7 @@ DA::DAAbstractNode::SharedPointer DataAnalysisNodeFactory::create(const DA::DANo
     return nullptr;
 }
 
-QStringList DataAnalysisNodeFactory::getPrototypes() const
+QStringList {{plugin-base-name}}NodeFactory::getPrototypes() const
 {
     QStringList res;
 
@@ -78,22 +78,22 @@ QStringList DataAnalysisNodeFactory::getPrototypes() const
     return (res);
 }
 
-QList< DA::DANodeMetaData > DataAnalysisNodeFactory::getNodesMetaData() const
+QList< DA::DANodeMetaData > {{plugin-base-name}}NodeFactory::getNodesMetaData() const
 {
     return mPrototypeTpfp.keys();
 }
 
-void DataAnalysisNodeFactory::nodeAddedToWorkflow(DA::DAAbstractNode::SharedPointer node)
+void {{plugin-base-name}}NodeFactory::nodeAddedToWorkflow(DA::DAAbstractNode::SharedPointer node)
 {
     DA::DAAbstractNodeFactory::nodeAddedToWorkflow(node);
 }
 
-void DataAnalysisNodeFactory::nodeStartRemove(DA::DAAbstractNode::SharedPointer node)
+void {{plugin-base-name}}NodeFactory::nodeStartRemove(DA::DAAbstractNode::SharedPointer node)
 {
     DA::DAAbstractNodeFactory::nodeStartRemove(node);
 }
 
-void DataAnalysisNodeFactory::nodeLinkSucceed(DA::DAAbstractNode::SharedPointer outNode,
+void {{plugin-base-name}}NodeFactory::nodeLinkSucceed(DA::DAAbstractNode::SharedPointer outNode,
                                               const QString& outKey,
                                               DA::DAAbstractNode::SharedPointer inNode,
                                               const QString& inkey)
@@ -101,7 +101,7 @@ void DataAnalysisNodeFactory::nodeLinkSucceed(DA::DAAbstractNode::SharedPointer 
     DA::DAAbstractNodeFactory::nodeLinkSucceed(outNode,outKey,inNode,inkey);
 }
 
-void DataAnalysisNodeFactory::nodeLinkDetached(DA::DAAbstractNode::SharedPointer outNode,
+void {{plugin-base-name}}NodeFactory::nodeLinkDetached(DA::DAAbstractNode::SharedPointer outNode,
                                                const QString& outKey,
                                                DA::DAAbstractNode::SharedPointer inNode,
                                                const QString& inkey)
@@ -109,23 +109,23 @@ void DataAnalysisNodeFactory::nodeLinkDetached(DA::DAAbstractNode::SharedPointer
     DA::DAAbstractNodeFactory::nodeLinkDetached(outNode,outKey,inNode,inkey);
 }
 
-void DataAnalysisNodeFactory::saveExternInfoToXml(QDomDocument* doc, QDomElement* factoryExternElement) const
+void {{plugin-base-name}}NodeFactory::saveExternInfoToXml(QDomDocument* doc, QDomElement* factoryExternElement) const
 {
     DA::DAAbstractNodeFactory::saveExternInfoToXml(doc,factoryExternElement);
 }
 
-void DataAnalysisNodeFactory::loadExternInfoFromXml(const QDomElement* factoryExternElement)
+void {{plugin-base-name}}NodeFactory::loadExternInfoFromXml(const QDomElement* factoryExternElement)
 {
     DA::DAAbstractNodeFactory::loadExternInfoFromXml(factoryExternElement);
 }
 
-DA::DANodeGraphicsSceneEventListener* DataAnalysisNodeFactory::createNodeGraphicsSceneEventListener()
+DA::DANodeGraphicsSceneEventListener* {{plugin-base-name}}NodeFactory::createNodeGraphicsSceneEventListener()
 {
     return nullptr;
 }
 
 
-QMainWindow* DataAnalysisNodeFactory::getMainWindow() const
+QMainWindow* {{plugin-base-name}}NodeFactory::getMainWindow() const
 {
     return mCore->getUiInterface()->getMainWindow();
 }

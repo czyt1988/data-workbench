@@ -265,7 +265,7 @@ void DAChartUtil::getSeriesData(QVector< T >& vec, const QwtSeriesStore< T >* se
     const auto size = series->dataSize();
 
     if (vec.size() < size) {
-        vec.reserve(size);
+        vec.reserve(static_cast<int>(size));
     }
     for (auto i = 0; i < size; ++i) {
         vec.push_back(series->sample(i));
@@ -294,8 +294,8 @@ void DAChartUtil::getVectorSampleData(QwtPlotItem* item, QVector< T >& datas)
     PlotItemType* c = static_cast< PlotItemType* >(item);
     const auto size  = c->dataSize();
 
-    datas.reserve(size);
-    for (int i = 0; i < size; ++i) {
+    datas.reserve(static_cast<int>(size));
+    for (auto i = 0; i < size; ++i) {
         datas.push_back(c->sample(i));
     }
 }
