@@ -110,11 +110,14 @@ bool DAAppCore::initializePythonEnv()
         python.initializePythonInterpreter();
         // 初始化环境成功后，加入脚本路径
 
-        DA::DAPyScripts& scripts = DA::DAPyScripts::getInstance();
-        QString scriptPath       = getPythonScriptsPath();
+        // 把脚本路径加载到系统路径下，这样才能引入库
+        QString scriptPath = getPythonScriptsPath();
         qInfo() << tr("Python scripts path is %1").arg(scriptPath);
-        scripts.appendSysPath(scriptPath);
-        if (!scripts.initScripts()) {
+        DA::DAPyScripts::appendSysPath(scriptPath);
+
+        // DA::DAPyScripts::appendSysPath必须在getInstance前执行
+        DA::DAPyScripts& scripts = DA::DAPyScripts::getInstance();
+        if (!scripts.isInitScripts()) {
             qCritical() << tr("Scripts initialize error");
             return false;
         }

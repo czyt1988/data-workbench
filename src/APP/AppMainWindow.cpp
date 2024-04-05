@@ -44,12 +44,14 @@
 
 using namespace DA;
 
+#include "Dialog/DATxtFileImportDialog.h"
 //===================================================
 // AppMainWindow
 //===================================================
 AppMainWindow::AppMainWindow(QWidget* parent) : SARibbonMainWindow(parent)
-
 {
+    DATxtFileImportDialog dlg;
+    dlg.exec();
     // 标签可高亮
     ads::CDockManager::setConfigFlag(ads::CDockManager::FocusHighlighting, true);
     // 让dock可以最小化到一个标签

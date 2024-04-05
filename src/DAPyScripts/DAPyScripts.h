@@ -32,9 +32,9 @@ class DAPYSCRIPTS_API DAPyScripts
 
 public:
     ~DAPyScripts();
-    //初始化脚本
-    void appendSysPath(const QString& path);
-    bool initScripts();
+    // 初始化脚本
+    static void appendSysPath(const QString& path);
+    bool isInitScripts() const;
     static DAPyScripts& getInstance();
     DAPyScriptsIO& getIO();
     DAPyScriptsDataFrame& getDataFrame();

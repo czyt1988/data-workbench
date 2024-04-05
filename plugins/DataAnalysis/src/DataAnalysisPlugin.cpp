@@ -1,18 +1,18 @@
 ﻿#include "DataAnalysisPlugin.h"
 #include <QDebug>
-
+#include "SARibbonCategory.h"
+#include "DataAnalysisActions.h"
+#include "DataAnalysisUI.h"
+#include "DACoreInterface.h"
+#include "DAUIInterface.h"
+#include "DARibbonAreaInterface.h"
+#include "DADockingAreaInterface.h"
 DataAnalysisPlugin::DataAnalysisPlugin() : DA::DAAbstractNodePlugin()
 {
 }
 
 DataAnalysisPlugin::~DataAnalysisPlugin()
 {
-}
-
-bool DataAnalysisPlugin::initialize()
-{
-	loadSetting();
-	return DA::DAAbstractNodePlugin::initialize();
 }
 
 QString DataAnalysisPlugin::getIID() const
@@ -33,6 +33,19 @@ QString DataAnalysisPlugin::getVersion() const
 QString DataAnalysisPlugin::getDescription() const
 {
 	return u8"DataAnalysis Plugins";
+}
+
+bool DataAnalysisPlugin::initialize()
+{
+	loadSetting();
+	buildUI();
+	return DA::DAAbstractNodePlugin::initialize();
+}
+
+void DataAnalysisPlugin::buildUI()
+{
+	mActions = new DataAnalysisActions(this);
+	mUI      = new DataAnalysisUI(core(), mActions, this);
 }
 
 DA::DAAbstractNodeFactory* DataAnalysisPlugin::createNodeFactory()
@@ -58,6 +71,13 @@ DA::DAAbstractSettingPage* DataAnalysisPlugin::createSettingPage()
 	//! 对于插件的设置页，如果需要设置，这里要返回设置页面
 	//! 返回nullptr代表没有设置页面
 	return nullptr;
+}
+
+void DataAnalysisPlugin::retranslate()
+{
+	if (mActions) {
+		mActions->retranslate();
+	}
 }
 
 void DataAnalysisPlugin::onFactoryDestroyed(QObject* obj)

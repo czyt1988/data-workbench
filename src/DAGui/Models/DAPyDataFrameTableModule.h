@@ -3,6 +3,7 @@
 #include "DAGuiAPI.h"
 #include <QtCore/qglobal.h>
 #include <QAbstractTableModel>
+#include "pandas/DAPyDataFrame.h"
 #include "DAData.h"
 #include <functional>
 class QUndoStack;
@@ -35,22 +36,23 @@ public:
     DAPyDataFrame& dataFrame();
     const DAPyDataFrame& dataFrame() const;
     void setDAData(const DAData& d);
-    //刷新
+    void setDataFrame(const DAPyDataFrame& d);
+    // 刷新
     void refreshRow(int row);
     void refreshColumn(int col);
     void refresh(int row, int col);
     void refresh(int rowStart, int colStart, int rowEnd, int colEnd);
     void refresh();
-    //行将移除
+    // 行将移除
     void rowBeginRemove(const QList< int >& r);
     void rowEndRemove();
-    //行将插入
+    // 行将插入
     void rowBeginInsert(const QList< int >& r);
     void rowEndInsert();
-    //行将移除
+    // 行将移除
     void columnBeginRemove(const QList< int >& r);
     void columnEndRemove();
-    //行将插入
+    // 行将插入
     void columnBeginInsert(const QList< int >& r);
     void columnEndInsert();
 

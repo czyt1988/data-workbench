@@ -5,7 +5,9 @@
 #include <QAction>
 #include "DataAnalysisGlobal.h"
 #include "DAAbstractNodePlugin.h"
-
+class DataAnalysisActions;
+class DataAnalysisUI;
+class SARibbonCategory;
 namespace DA
 {
 class DAAbstractNodeFactory;
@@ -59,12 +61,23 @@ public:
 	 * @return
 	 */
 	virtual DA::DAAbstractSettingPage* createSettingPage() override;
+	/**
+	 * @brief 发生语言变更事件的时候调用此函数
+	 * 默认没有实现，如果插件有涉及翻译，需要重载此函数
+	 */
+	virtual void retranslate() override;
 
 private slots:
 	void onFactoryDestroyed(QObject* obj);
 
 private:
 	bool loadSetting();
+	//
+	void buildUI();
+
+private:
+	DataAnalysisActions* mActions { nullptr };
+	DataAnalysisUI* mUI { nullptr };
 };
 
 #endif  // PIPEDESIGNERPLUGIN_H

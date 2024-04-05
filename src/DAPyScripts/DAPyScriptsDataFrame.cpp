@@ -28,6 +28,9 @@ DAPyScriptsDataFrame::PrivateData::PrivateData(DAPyScriptsDataFrame* p) : q_ptr(
 //===================================================
 DAPyScriptsDataFrame::DAPyScriptsDataFrame() : DAPyModule(), DA_PIMPL_CONSTRUCT
 {
+    if (!import()) {
+        qCritical() << QObject::tr("can not import da_dataframe module");
+    }
 }
 
 DAPyScriptsDataFrame::~DAPyScriptsDataFrame()
@@ -124,7 +127,11 @@ bool DAPyScriptsDataFrame::insert_column(DAPyDataFrame& df, int c, const QString
  * @param stop
  * @return
  */
-bool DAPyScriptsDataFrame::insert_column(DAPyDataFrame& df, int c, const QString& name, const QVariant& start, const QVariant& stop) noexcept
+bool DAPyScriptsDataFrame::insert_column(DAPyDataFrame& df,
+                                         int c,
+                                         const QString& name,
+                                         const QVariant& start,
+                                         const QVariant& stop) noexcept
 {
     try {
         pybind11::object da_insert_column = attr("da_insert_column");
@@ -134,7 +141,8 @@ bool DAPyScriptsDataFrame::insert_column(DAPyDataFrame& df, int c, const QString
         args[ "name" ]  = DA::PY::toString(name);
         args[ "start" ] = DA::PY::toPyObject(start);
         args[ "stop" ]  = DA::PY::toPyObject(stop);
-        if (start.canConvert(QMetaType::QDateTime) || start.canConvert(QMetaType::QDate) || start.canConvert(QMetaType::QTime)) {
+        if (start.canConvert(QMetaType::QDateTime) || start.canConvert(QMetaType::QDate)
+            || start.canConvert(QMetaType::QTime)) {
             args[ "dtype" ] = pybind11::dtype("datetime64");
         }
         da_insert_column(**args);
@@ -309,7 +317,7 @@ DAPySeries DAPyScriptsDataFrame::itake_column(DAPyDataFrame& df, int col) noexce
 {
     try {
         pybind11::object da_itake_column = attr("da_itake_column");
-        //执行
+        // 执行
         DAPySeries s = da_itake_column(df.object(), pybind11::int_(col));
         return s;
     } catch (const std::exception& e) {

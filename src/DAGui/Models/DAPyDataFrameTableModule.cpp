@@ -11,7 +11,6 @@ public:
     DAPyDataFrameTableModulePrivate(DAPyDataFrameTableModule* p);
 
 public:
-    DAData _data;
     DAPyDataFrame _dataframe;
     QUndoStack* _undoStack;
 };
@@ -50,7 +49,7 @@ QVariant DAPyDataFrameTableModule::headerData(int section, Qt::Orientation orien
         return QVariant();
     }
     std::pair< std::size_t, std::size_t > shape = d_ptr->_dataframe.shape();
-    if (Qt::Horizontal == orientation) {  //说明是水平表头
+    if (Qt::Horizontal == orientation) {  // 说明是水平表头
         if (section >= (int)shape.second) {
             return QVariant();
         }
@@ -60,9 +59,9 @@ QVariant DAPyDataFrameTableModule::headerData(int section, Qt::Orientation orien
             return QVariant();
         }
         QVariant h = d_ptr->_dataframe.index()[ section ];
-        //查看是否是符合index
+        // 查看是否是符合index
         if (h.canConvert(QMetaType::QVariantList)) {
-            //说明是复合表头
+            // 说明是复合表头
             QVariantList ss = h.toList();
             QString str;
             for (int i = 0; i < ss.size(); ++i) {
@@ -109,13 +108,13 @@ QVariant DAPyDataFrameTableModule::data(const QModelIndex& index, int role) cons
         return QVariant();
     }
     if (role == Qt::TextAlignmentRole) {
-        //返回的是对其方式
+        // 返回的是对其方式
         return int(Qt::AlignLeft | Qt::AlignVCenter);
     } else if (role == Qt::DisplayRole) {
-        //返回的是内容
+        // 返回的是内容
         return d_ptr->_dataframe.iat(index.row(), index.column());
     } else if (role == Qt::BackgroundRole) {
-        //背景颜色
+        // 背景颜色
         return QVariant();
     }
     return QVariant();
@@ -134,7 +133,7 @@ bool DAPyDataFrameTableModule::setData(const QModelIndex& index, const QVariant&
         return false;
     }
     if (!(d_ptr->_undoStack)) {
-        //如果d_ptr->_undoStack设置为nullptr，将不使用redo/undo
+        // 如果d_ptr->_undoStack设置为nullptr，将不使用redo/undo
         return d_ptr->_dataframe.iat(index.row(), index.column(), value);
     }
     QVariant olddata = d_ptr->_dataframe.iat(index.row(), index.column());
@@ -142,11 +141,11 @@ bool DAPyDataFrameTableModule::setData(const QModelIndex& index, const QVariant&
         new DACommandDataFrame_iat(d_ptr->_dataframe, index.row(), index.column(), olddata, value, this));
     cmd_iat->redo();
     if (!cmd_iat->isSetSuccess()) {
-        //没设置成功，退出
+        // 没设置成功，退出
         return false;
     }
     d_ptr->_undoStack->push(cmd_iat.release());  // push后会自动调用redo，第二次调用redo会被忽略
-    //这里说明设置成功了
+    // 这里说明设置成功了
     return true;
 }
 
@@ -170,13 +169,18 @@ const DAPyDataFrame& DAPyDataFrameTableModule::dataFrame() const
 void DAPyDataFrameTableModule::setDAData(const DAData& d)
 {
     if (!d.isDataFrame()) {
-        d_ptr->_data      = DAData();
         d_ptr->_dataframe = DAPyDataFrame();
         return;
     }
     beginResetModel();
-    d_ptr->_data      = d;
-    d_ptr->_dataframe = d_ptr->_data.toDataFrame();
+    d_ptr->_dataframe = d.toDataFrame();
+    endResetModel();
+}
+
+void DAPyDataFrameTableModule::setDataFrame(const DAPyDataFrame& d)
+{
+    beginResetModel();
+    d_ptr->_dataframe = d;
     endResetModel();
 }
 
@@ -273,7 +277,7 @@ void DAPyDataFrameTableModule::beginFunCall(const QList< int >& listlike, DAPyDa
     if (listlike.size() == 1) {
         fun(QModelIndex(), listlike[ 0 ], listlike[ 0 ]);
     } else {
-        //排序加去重
+        // 排序加去重
         QList< int > orderindex = listlike;
         std::sort(orderindex.begin(), orderindex.end());
         auto last = std::unique(orderindex.begin(), orderindex.end());
@@ -282,13 +286,13 @@ void DAPyDataFrameTableModule::beginFunCall(const QList< int >& listlike, DAPyDa
         for (auto i = orderindex.begin() + 1; i != orderindex.end(); ++i) {
             auto pre = i - 1;
             if ((*i) - (*pre) != 1) {
-                //后一个减去前一个不为1，说明跨越
-                //这时候就要执行beginRemoveRows，同时记录删除的数量
+                // 后一个减去前一个不为1，说明跨越
+                // 这时候就要执行beginRemoveRows，同时记录删除的数量
                 fun(QModelIndex(), first, *pre);
                 first = *i;
             }
         }
-        //对于一直连续，这个直接一次连续，对于不连续，最后一段跨度也是此
+        // 对于一直连续，这个直接一次连续，对于不连续，最后一段跨度也是此
         fun(QModelIndex(), first, orderindex.back());
     }
 }

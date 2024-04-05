@@ -1084,12 +1084,18 @@ void DAAppController::onActionAddDataTriggered()
 {
     QFileDialog dialog(app());
     dialog.setNameFilters(mFileReadFilters);
+    dialog.setFileMode(QFileDialog::ExistingFile);
     if (QDialog::Accepted != dialog.exec()) {
         return;
     }
-    QStringList fileNames = dialog.selectedFiles();
+    const QStringList fileNames = dialog.selectedFiles();
     if (fileNames.empty()) {
         return;
+    }
+    // 对txt要弹出对话框进行指引
+    for (auto f : fileNames) {
+        QFileInfo fi(f);
+        if (fi.suffix().toLower() == "txt") { }
     }
     DA_WAIT_CURSOR_SCOPED();
     int importdataCount = mDatas->importFromFiles(fileNames);

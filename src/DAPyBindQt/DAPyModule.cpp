@@ -14,6 +14,11 @@ DAPyModule::DAPyModule() : DAPyObjectWrapper()
 {
 }
 
+DAPyModule::DAPyModule(const char* moduleName)
+{
+    import(moduleName);
+}
+
 DAPyModule::~DAPyModule()
 {
 }

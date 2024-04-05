@@ -6,5 +6,6 @@
         <file>icon/font-size-add.svg</file>
         <file>icon/font-size-sub.svg</file>
         <file>icon/no-style.svg</file>
+        <file>icon/open.svg</file>
     </qresource>
 </RCC>

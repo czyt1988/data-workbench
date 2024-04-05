@@ -45,6 +45,11 @@ file(GLOB DA_APP_SOURCE_FILES_SettingPages "${CMAKE_CURRENT_SOURCE_DIR}/SettingP
 file(GLOB DA_APP_QT_UI_FILES_SettingPages ${CMAKE_CURRENT_SOURCE_DIR}/SettingPages/*.ui)
 file(GLOB DA_APP_QT_RC_FILES_SettingPages ${CMAKE_CURRENT_SOURCE_DIR}/SettingPages/*.qrc)
 
+file(GLOB DA_APP_HEADER_FILES_Dialog "${CMAKE_CURRENT_SOURCE_DIR}/Dialog/*.h")
+file(GLOB DA_APP_SOURCE_FILES_Dialog "${CMAKE_CURRENT_SOURCE_DIR}/Dialog/*.cpp")
+file(GLOB DA_APP_QT_UI_FILES_Dialog ${CMAKE_CURRENT_SOURCE_DIR}/Dialog/*.ui)
+file(GLOB DA_APP_QT_RC_FILES_Dialog ${CMAKE_CURRENT_SOURCE_DIR}/Dialog/*.qrc)
+
 add_executable(${DA_APP_NAME} WIN32
             ${DA_APP_HEADER_FILES}
             ${DA_APP_SOURCE_FILES}
@@ -55,6 +60,11 @@ add_executable(${DA_APP_NAME} WIN32
             ${DA_APP_SOURCE_FILES_SettingPages}
             ${DA_APP_QT_UI_FILES_SettingPages}
             ${DA_APP_QT_RC_FILES_SettingPages}
+            #Dialog
+            ${DA_APP_HEADER_FILES_Dialog}
+            ${DA_APP_SOURCE_FILES_Dialog}
+            ${DA_APP_QT_UI_FILES_Dialog}
+            ${DA_APP_QT_RC_FILES_Dialog}
             # Global
             ${DA_GLOBAL_HEADER}
 )	

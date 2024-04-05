@@ -12,8 +12,8 @@ public:
     PrivateData(DAPyScripts* p);
 
 public:
-    DAPyModule mPySys;
-    DAPyScriptsIO mPyIO;                ///< 对应da_io.py
+    DAPyModule mPySys { "sys" };  ///< import sys
+    DAPyScriptsIO mPyIO;          ///< 对应da_io.py | DAPyScriptsIO的构造函数参数false说明构造时不import
     DAPyScriptsDataFrame mPyDataframe;  ///< 对应da_dataframe.py
 };
 
@@ -49,7 +49,8 @@ DAPyScripts::~DAPyScripts()
 void DAPyScripts::appendSysPath(const QString& path)
 {
     try {
-        pybind11::object obj_path_append = d_ptr->mPySys.attr("path").attr("append");
+        DAPyModule pySys("sys");
+        pybind11::object obj_path_append = pySys.attr("path").attr("append");
         obj_path_append(DA::PY::toString(path));
     } catch (const std::exception& e) {
         qCritical() << QObject::tr("Initialized import sys module error:%1").arg(e.what());
@@ -61,20 +62,15 @@ void DAPyScripts::appendSysPath(const QString& path)
  * @param err
  * @return
  */
-bool DAPyScripts::initScripts()
+bool DAPyScripts::isInitScripts() const
 {
-    try {
-        if (!(d_ptr->mPyIO.import())) {
-            return false;
-        }
-        if (!(d_ptr->mPyDataframe.import())) {
-            return false;
-        }
-        return true;
-    } catch (const std::exception& e) {
-        qCritical() << QObject::tr("Initialized import py module error:%1").arg(e.what());
+    if (!(d_ptr->mPyIO.isImport())) {
+        return false;
     }
-    return false;
+    if (!(d_ptr->mPyDataframe.isImport())) {
+        return false;
+    }
+    return true;
 }
 
 DAPyScripts& DAPyScripts::getInstance()

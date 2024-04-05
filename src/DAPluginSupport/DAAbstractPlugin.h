@@ -26,7 +26,7 @@ public:
     DAAbstractPlugin();
     virtual ~DAAbstractPlugin();
 
-    //插件id
+    // 插件id
     virtual QString getIID() const = 0;
 
     /**
@@ -66,18 +66,20 @@ public:
      */
     virtual DAAbstractSettingPage* createSettingPage();
 
-    //获取core
+    // 获取core
     DACoreInterface* core() const;
+
+    //
 
 protected:
     void setCore(DACoreInterface* c);
 };
 }  // namespace DA
 
-//封装成插件需要在原本封装dll的基础上添加以下语句
+// 封装成插件需要在原本封装dll的基础上添加以下语句
 QT_BEGIN_NAMESPACE
 #define DAABSTRACTPLUGIN_IID "org.da.abstract.plugin"
 Q_DECLARE_INTERFACE(DA::DAAbstractPlugin, DAABSTRACTPLUGIN_IID)
 QT_END_NAMESPACE
 
-#endif  // FCABSTRACTPLUGIN_H
+#endif  // DAABSTRACTPLUGIN_H
