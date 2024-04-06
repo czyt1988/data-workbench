@@ -23,15 +23,16 @@ class DAAppDataManager : public DADataManagerInterface
 public:
     DAAppDataManager(DACoreInterface* c, QObject* p = nullptr);
     ~DAAppDataManager();
-    //从文件导入数据,带redo/undo
+    // 从文件导入数据,带redo/undo
+    bool importFromFile(const QString& f, const QVariantMap& args = QVariantMap(), QString* err = nullptr);
     int importFromFiles(const QStringList& fileNames);
-    //添加数据(支持redo/undo),返回数据的名字，添加数据时数据名字有可能会改变
+    // 添加数据(支持redo/undo),返回数据的名字，添加数据时数据名字有可能会改变
     virtual void addData(DAData& d) override;
     void addDatas(const QList< DAData >& datas);
-    //移除数据
+    // 移除数据
     virtual void removeData(DAData& d) override;
     void removeDatas(const QList< DAData >& datas);
-    //获取undo stack
+    // 获取undo stack
     QUndoStack* getUndoStack() const;
 };
 }  // namespace DA

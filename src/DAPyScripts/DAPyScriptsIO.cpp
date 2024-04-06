@@ -33,7 +33,7 @@
  * @endcode
  */
 #define FUNCTION_STR_DICT(returnType, functionName, pyFunctionName)                                                    \
-    returnType DAPyScriptsIO::functionName(const QString& filepath, const QVariantMap& args)                           \
+    returnType DAPyScriptsIO::functionName(const QString& filepath, const QVariantMap& args, QString* err)             \
     {                                                                                                                  \
         try {                                                                                                          \
             pybind11::object fn = attr(#pyFunctionName);                                                               \
@@ -44,7 +44,10 @@
             pybind11::object v = fn(DA::PY::toString(filepath), DA::PY::toDict(args));                                 \
             return returnType(std::move(v));                                                                           \
         } catch (const std::exception& e) {                                                                            \
-            qCritical() << e.what();                                                                                   \
+            if (err) {                                                                                                 \
+                *err = e.what();                                                                                       \
+            }                                                                                                          \
+            qDebug() << e.what();                                                                                      \
         }                                                                                                              \
         return returnType();                                                                                           \
     }
@@ -112,21 +115,26 @@ QList< QString > DAPyScriptsIO::getFileReadFilters() const
  * @param filepath
  * @return
  */
-DAPyObjectWrapper DAPyScriptsIO::read(const QString& filepath)
-{
-    try {
-        pybind11::object da_read = attr("da_read");
-        if (da_read.is_none()) {
-            qDebug() << "da_io.py have no attr da_read";
-            return DAPyObjectWrapper();
-        }
-        pybind11::object f = da_read(DA::PY::toString(filepath));
-        return DAPyObjectWrapper(std::move(f));
-    } catch (const std::exception& e) {
-        qCritical() << e.what();
-    }
-    return DAPyObjectWrapper();
-}
+FUNCTION_STR_DICT(DAPyObjectWrapper, read, da_read)
+
+// DAPyObjectWrapper DAPyScriptsIO::read(const QString& filepath, const QVariantMap& args, QString* err)
+// {
+//     try {
+//         pybind11::object da_read = attr("da_read");
+//         if (da_read.is_none()) {
+//             qDebug() << "da_io.py have no attr da_read";
+//             return DAPyObjectWrapper();
+//         }
+//         pybind11::object f = da_read(DA::PY::toString(filepath));
+//         return DAPyObjectWrapper(std::move(f));
+//     } catch (const std::exception& e) {
+//         if (err) {
+//             *err = e.what();
+//         }
+//         qDebug() << e.what();
+//     }
+//     return DAPyObjectWrapper();
+// }
 
 /**
  * @brief 读取csv

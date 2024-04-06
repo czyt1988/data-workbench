@@ -14,7 +14,7 @@ def da_get_file_read_filters() -> List[str]:
     获取支持的文件列表
         return list[str]
     '''
-    return ['csv (*.csv)','xls (*.xls)']
+    return ['text (*.txt)','csv (*.csv)','xls (*.xls)']
 
 
 def read_csv(path:str,args:Optional[Dict] = None) -> pd.DataFrame:
@@ -29,23 +29,17 @@ def read_txt(path:str,args:Optional[Dict] = None) -> pd.DataFrame:
     '''
     读取txt文件
 
-    这里不使用pd.read_table，因为txt文件读取时，需要指定分隔符，否则会报错,这里使用的是np.genfromtxt,它可以更好的猜测出数据表内容
-
-    delimiter 关键字用于定义应如何进行拆分,假设 delimiter=None ，表示该行沿空白（包括制表符）拆分，连续的空白视为单个空白
-    autostrip 默认情况下，当一行分解为一系列字符串时，单个条目不会被去掉前导空格或尾随空格。通过设置可选参数可以覆盖此行为 autostrip 达到一定的价值 True(类似trim效果)
-    skip_header,skip_footer 文件中的头可能会妨碍数据处理。在这种情况下，我们需要使用 skip_header 可选参数。在执行任何其他操作之前，此参数的值必须是与要在文件开头跳过的行数相对应的整数。同样，我们可以跳过最后一个 n 通过使用 skip_footer 属性并赋予其值 n 
-    usecols 在某些情况下，我们对数据的所有列不感兴趣，只对其中的一些列感兴趣。我们可以选择要用导入的列 usecols 参数。此参数接受与要导入的列的索引对应的单个整数或整数序列。请记住，按照惯例，第一列的索引为0。负整数的行为与常规的python负索引相同。
-    names 处理表格数据时的一种自然方法是为每一列分配一个名称,另一个简单的方法是使用 names 具有字符串序列或逗号分隔字符串的关键字：np.genfromtxt(data, names="A, B, C")
-        有时我们可能需要从数据本身定义列名。在这种情况下，我们必须使用 names 值为的关键字 True . 然后将从第一行（在 skip_header 一个），即使行被注释掉：
-        >>> data = StringIO("So it goes\n#a b c\n1 2 3\n 4 5 6")
-        >>> np.genfromtxt(data, skip_header=1, names=True)
-        array([(1.0, 2.0, 3.0), (4.0, 5.0, 6.0)],
-            dtype=[('a', '<f8'), ('b', '<f8'), ('c', '<f8')])
+    sep 默认‘\t’(制表位)字符串，默认‘\t’(制表位),此外，长度超过1个字符且不同于的分隔符 '\s+' 将被解释为正则表达式，并且还将强制使用Python解析引擎。
+    header 指定表头，数据从指定后开始解析，如果没有表头，要设置为None,header=None
+    skiprows 指定跳过的内容，第一行为表头，
+    skipfooter 文件底部要跳过的行数(引擎=‘c’不支持)。
+    nrows 要读取的文件行数。对于读取大文件片段非常有用。
+    skip_blank_lines 如果为True，则跳过空行，而不是解释为NaN值
+    skipinitialspace 布尔值，默认为False，跳过分隔符后面的空格。
     '''
     if args is None:
         args = {}
-    v = np.genfromtxt(path,**args)
-    return pd.DataFrame(v)
+    return pd.read_table(path,**args)
 
 
 
@@ -54,6 +48,7 @@ def read_txt(path:str,args:Optional[Dict] = None) -> pd.DataFrame:
 txt 不注册，需要单独处理
 '''
 da_global_reader_dict = {
+    'txt':read_txt,
     'csv':read_csv
 }
 
@@ -75,9 +70,11 @@ if __name__ == '__main__':
     print('co_argcount=',read_csv.__code__.co_argcount)
     print('co_varnames=',read_csv.__code__.co_varnames)
     
-    # res = pd.read_table(r'C:\src\Qt\data-workbench\tmp\测试数据.txt',skiprows=14,encoding='gbk',nrows=20,dtype=float)
-    # print(len(res.columns))
-    # print(res.shape)
+    res = pd.read_table(r'C:\src\Qt\data-workbench\tmp\测试数据.txt',header=14,skiprows=0,encoding='gbk',nrows=20,sep="\s+")
+    print(len(res.columns))
+    print(res.columns)
+    print(res.shape)
+    print(res)
     # v = np.genfromtxt(r'C:\src\Qt\data-workbench\tmp\测试数据.txt',skip_header=14,names=True,encoding='gbk',dtype=float)
     # print(v.shape)
     # print(v.dtype)

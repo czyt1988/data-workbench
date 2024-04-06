@@ -38,7 +38,6 @@ DATxtFileImportDialog::DATxtFileImportDialog(QWidget* parent) : QDialog(parent),
     ui->comboBoxDelimiter->addItem(tr("-(dash)"), QVariant("-"));         // cn:-横杠
     connect(ui->filePathEditWidget, &DAFilePathEditWidget::selectedPath, this, &DATxtFileImportDialog::onFilePathEditSelectedPath);
     connect(ui->pushButtonRefresh, &QPushButton::clicked, this, &DATxtFileImportDialog::refresh);
-    connect(this, &QDialog::accepted, this, &DATxtFileImportDialog::onAccept);
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     connect(ui->spinBoxSkipFooter,
             QOverload< int >::of(&QSpinBox::valueChanged),
@@ -58,6 +57,12 @@ DATxtFileImportDialog::~DATxtFileImportDialog()
 QString DATxtFileImportDialog::getTextFilePath() const
 {
     return ui->filePathEditWidget->getFilePath();
+}
+
+void DATxtFileImportDialog::setTextFilePath(const QString& p)
+{
+    ui->filePathEditWidget->setFilePath(p);
+    refresh();
 }
 
 void DATxtFileImportDialog::changeEvent(QEvent* e)
@@ -98,10 +103,12 @@ void DATxtFileImportDialog::readTextFile(const QString& p)
  * @brief 从界面获取设置内容
  * @return
  */
-QVariantMap DATxtFileImportDialog::getSettingFromUI()
+QVariantMap DATxtFileImportDialog::getSetting()
 {
     QVariantMap r;
-    if (!ui->checkBoxDelimiter->isChecked()) {
+    if (ui->checkBoxDelimiter->isChecked()) {
+        r[ "sep" ] = "\\s+";
+    } else {
         // 不是自动判断，需要delimiter参数
         auto d = ui->comboBoxDelimiter->currentData();
         QString delimiter;
@@ -110,23 +117,20 @@ QVariantMap DATxtFileImportDialog::getSettingFromUI()
         } else {
             delimiter = d.toString();
         }
-        r[ "delimiter" ] = delimiter;
+        r[ "sep" ] = delimiter;
     }
-    auto skip_header = ui->spinBoxSkipHeader->value();
-    if (skip_header > 0) {
-        r[ "skip_header" ] = skip_header;
+    if (ui->checkBoxHeaderRow->isChecked()) {
+        r[ "header" ] = ui->spinBoxHeaderRow->value() - 1;
+    } else {
+        r[ "header" ] = QVariant();  // 没有表头为none
     }
-    auto skip_footer = ui->spinBoxSkipFooter->value();
-    if (skip_footer > 0) {
-        r[ "skip_footer" ] = skip_footer;
-    }
+    r[ "skiprows" ]   = ui->spinBoxSkipHeader->value();
+    r[ "skipfooter" ] = ui->spinBoxSkipFooter->value();
     if (ui->checkBoxMaxRows->isChecked()) {
-        r[ "max_rows" ] = ui->spinBoxMaxRows->value();
+        r[ "nrows" ] = ui->spinBoxMaxRows->value();
     }
-    r[ "encoding" ] = ui->comboBoxCodec->currentText();
-    if (ui->checkBoxNames->isChecked()) {
-        r[ "names" ] = true;
-    }
+    r[ "encoding" ]         = ui->comboBoxCodec->currentText();
+    r[ "skip_blank_lines" ] = ui->checkBoxSkipBlankLines->isChecked();
     return r;
 }
 
@@ -138,12 +142,19 @@ void DATxtFileImportDialog::refresh()
     //
     readTextFile(path);
     //
-    QVariantMap args = getSettingFromUI();
+    QVariantMap args = getSetting();
     // 预览状态下，预览的最大行数单独再设置
-    args[ "max_rows" ] = ui->spinBoxPreviewMaxRow->value();
+    args[ "nrows" ] = ui->spinBoxPreviewMaxRow->value();
 #if DA_ENABLE_PYTHON
     DAPyScriptsIO io;
-    DAPyDataFrame df = io.read_txt(path, args);
+    QString err;
+    DAPyDataFrame df = io.read_txt(path, args, &err);
+    if (err.isEmpty()) {
+        ui->labelError->setText("");
+        ui->tabWidget->setCurrentIndex(1);
+    } else {
+        ui->labelError->setText(err);
+    }
     mModule->setDataFrame(df);
 #endif
 }
@@ -172,34 +183,6 @@ void DATxtFileImportDialog::onTextReadFinished(int code)
 
 void DATxtFileImportDialog::onSpinBoxSkipFooterValueChanged(int v)
 {
-}
-
-void DATxtFileImportDialog::onAccept()
-{
-    QString path = getTextFilePath();
-    // 判断文本的大小，确定是否开启线程
-    QFileInfo fi(path);
-    if (!fi.exists()) {
-        QMessageBox::warning(this, tr("warning"), tr("file %1 not exists").arg(path));
-        return;
-    }
-    QVariantMap args = getSettingFromUI();
-    int maxRow       = 0;
-    if (args.contains("max_rows")) {
-        maxRow = args[ "max_rows" ].toInt();
-    }
-    float fileSizeMB = fi.size() / 1024.0 / 1024.0;
-    if (fileSizeMB > 50 || maxRow == 0 || maxRow > 1e6) {
-        QMessageBox::
-            warning(this,
-                    tr("warning"),
-                    tr("file %1 size is %2 MB,is exceeds 50MB and data loading will be performed in the background")  // cn:文件%1的尺寸为%2MB，超过了50MB，将在后台进行数据加载
-                        .arg(path)
-                        .arg(fileSizeMB));
-        // 后台加载
-    } else {
-        // 前台加载
-    }
 }
 
 }  // end DA

@@ -36,6 +36,7 @@
 // Dialog
 #include "DAPluginManagerDialog.h"
 #include "DAAppSettingDialog.h"
+#include "Dialog/DATxtFileImportDialog.h"
 // DACommonWidgets
 #include "DAFontEditPannelWidget.h"
 #include "DAShapeEditPannelWidget.h"
@@ -1092,14 +1093,24 @@ void DAAppController::onActionAddDataTriggered()
     if (fileNames.empty()) {
         return;
     }
+    QString fileName = fileNames.back();
     // 对txt要弹出对话框进行指引
-    for (auto f : fileNames) {
-        QFileInfo fi(f);
-        if (fi.suffix().toLower() == "txt") { }
+    QVariantMap args;
+    QString err;
+    QFileInfo fi(fileName);
+    if (fi.suffix().toLower() == "txt") {
+        DATxtFileImportDialog dlg(mMainWindow);
+        dlg.setTextFilePath(fileName);
+        if (QDialog::Accepted == dlg.exec()) {
+            // 获取导入txt的配置
+            args = dlg.getSetting();
+        }
+    } else {
     }
+
     DA_WAIT_CURSOR_SCOPED();
-    int importdataCount = mDatas->importFromFiles(fileNames);
-    if (importdataCount > 0) {
+    bool r = mDatas->importFromFile(fileName, args, &err);
+    if (r) {
         mDock->raiseDockByWidget((QWidget*)(mDock->getDataManageWidget()));
     }
 }

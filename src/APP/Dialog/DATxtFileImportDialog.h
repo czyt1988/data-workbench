@@ -22,6 +22,9 @@ public:
     ~DATxtFileImportDialog();
     // 获取路径
     QString getTextFilePath() const;
+    void setTextFilePath(const QString& p);
+    // 获取设置内容
+    QVariantMap getSetting();
 public slots:
     // 刷新
     void refresh();
@@ -34,15 +37,11 @@ private slots:
     void onTextReadFinished(int code);
     // 跳过脚注数值变化槽函数，这个是为了和max——row互斥
     void onSpinBoxSkipFooterValueChanged(int v);
-    // 确认
-    void onAccept();
 
 protected:
     void changeEvent(QEvent* e);
     // 读取文本
     void readTextFile(const QString& p);
-    // 获取设置内容
-    QVariantMap getSettingFromUI();
 
 private:
     Ui::DATxtFileImportDialog* ui;
