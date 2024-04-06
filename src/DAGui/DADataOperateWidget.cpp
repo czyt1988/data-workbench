@@ -70,6 +70,45 @@ DADataOperateOfDataFrameWidget* DADataOperateWidget::getCurrentDataFrameWidget()
     return nullptr;
 #endif
 }
+
+/**
+ * @brief 获取当前表格操作选中的数据
+ *
+ * 如果用户打开一个表格，选中了其中一列，那么将返回那一列pd.Series作为数据，
+ * 如果用户选中了多列，那么每列作为一个DAData，最后组成一个QList<DAData>返回,如果用户打开了表格，但没选择任何列，这个函数返回这个表作为Data（pd.DataFrame）
+ *
+ * 如果用户没有选择列，但选中了单元格，那么相当于选中了单元格对应的列
+ *
+ * 如果什么都没选中，那么返回一个空的list
+ * @return
+ */
+QList< DAData > DADataOperateWidget::getCurrentSelectDatas() const
+{
+    QList< DAData > res;
+    DADataOperateOfDataFrameWidget* dfw = getCurrentDataFrameWidget();
+    if (!dfw) {
+        return res;
+    }
+    res = dfw->getSlectedSeries();
+    return res;
+}
+
+/**
+ * @brief 获取当前选中的Dataframe,如果用户在选中了列，返回选中的列索引
+ * @return
+ */
+std::pair< DAPyDataFrame, QList< int > > DADataOperateWidget::getCurrentSelectDataFrame() const
+{
+    std::pair< DAPyDataFrame, QList< int > > res;
+    DADataOperateOfDataFrameWidget* dfw = getCurrentDataFrameWidget();
+    if (!dfw) {
+        return res;
+    }
+    res.first  = dfw->getDataframe();
+    res.second = dfw->getSelectedDataframeCoumns();
+    return res;
+}
+
 /**
  * @brief 显示数据，如果数据已经有，唤起对应的tab，如果没有，则创建一个sheet
  * @param d

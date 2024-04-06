@@ -58,6 +58,21 @@ DAPySeries DAPyDataFrame::operator[](const QString& n) const
     return DAPySeries();
 }
 
+DAPySeries DAPyDataFrame::operator[](int n) const
+{
+    try {
+        auto headers = columns();
+        if (n < 0 || n >= headers.size()) {
+            return DAPySeries();
+        }
+        QString name = headers[ n ];
+        return operator[](name);
+    } catch (const std::exception& e) {
+        qCritical().noquote() << e.what();
+    }
+    return DAPySeries();
+}
+
 DAPyDataFrame& DAPyDataFrame::operator=(const pybind11::object& obj)
 {
     if (isDataFrame(obj)) {
@@ -366,32 +381,32 @@ QString DAPyDataFrame::toString(std::size_t maxrow) const
     QList< QList< QString > > strlist;  // std::vector<列字符>
     QList< QString > headers = columns();
     for (int c = 0; c < sh.second; ++c) {
-        //先获取名字和类型名称
+        // 先获取名字和类型名称
         strlist.push_back({ "----", headers[ c ], "----" });
     }
     if (sh.first > maxrow) {
-        //说明需要截断
+        // 说明需要截断
         int showrowCnt = (int)maxrow / 2;
         for (int c = 0; c < sh.second; ++c) {
-            //头部内容推入
+            // 头部内容推入
             for (int r = 0; r < showrowCnt; ++r) {
                 strlist[ c ].push_back(iat(r, c).toString());
             }
             strlist[ c ].push_back("...");
-            //尾部内容推入
+            // 尾部内容推入
             for (int r = (int)sh.first - 1 - showrowCnt; r < (int)sh.first; ++r) {
                 strlist[ c ].push_back(iat(r, c).toString());
             }
         }
     } else {
-        //全部推入
+        // 全部推入
         for (int c = 0; c < sh.second; ++c) {
             for (int r = 0; r < sh.first; ++r) {
                 strlist[ c ].push_back(iat(r, c).toString());
             }
         }
     }
-    //确定字符串最大长度，并对字符串的长度进行匹配
+    // 确定字符串最大长度，并对字符串的长度进行匹配
     for (QList< QString >& vecColStr : strlist) {
         int s = 0;
         for (const QString& str : vecColStr) {
@@ -407,10 +422,10 @@ QString DAPyDataFrame::toString(std::size_t maxrow) const
         }
         printRowCnt = vecColStr.size();
     }
-    //拼接为完整的字符串
+    // 拼接为完整的字符串
     QString res;
     for (int r = 0; r < printRowCnt; ++r) {
-        //逐行打印
+        // 逐行打印
         res += "| ";
         for (const QList< QString >& vecColStr : strlist) {
             res += vecColStr[ r ] + " | ";

@@ -1,6 +1,7 @@
 ﻿#ifndef DACOMMANDSDATAFRAME_H
 #define DACOMMANDSDATAFRAME_H
 #include <QUndoCommand>
+#include <QPoint>
 #include "DAGuiAPI.h"
 #include "DACommandWithRedoCount.h"
 #include "DACommandWithTemplateData.h"
@@ -76,7 +77,10 @@ private:
 class DAGUI_API DACommandDataFrame_insertNanRow : public DACommandWithTemplateData
 {
 public:
-    DACommandDataFrame_insertNanRow(const DAPyDataFrame& df, int row, DAPyDataFrameTableModule* model = nullptr, QUndoCommand* par = nullptr);
+    DACommandDataFrame_insertNanRow(const DAPyDataFrame& df,
+                                    int row,
+                                    DAPyDataFrameTableModule* model = nullptr,
+                                    QUndoCommand* par               = nullptr);
     void redo() override;
     void undo() override;
 
@@ -160,7 +164,10 @@ private:
 class DAGUI_API DACommandDataFrame_renameColumns : public QUndoCommand
 {
 public:
-    DACommandDataFrame_renameColumns(const DAPyDataFrame& df, const QList< QString >& cols, QHeaderView* hv = nullptr, QUndoCommand* par = nullptr);
+    DACommandDataFrame_renameColumns(const DAPyDataFrame& df,
+                                     const QList< QString >& cols,
+                                     QHeaderView* hv   = nullptr,
+                                     QUndoCommand* par = nullptr);
     DACommandDataFrame_renameColumns(const DAPyDataFrame& df,
                                      const QList< QString >& cols,
                                      const QList< QString >& oldcols,

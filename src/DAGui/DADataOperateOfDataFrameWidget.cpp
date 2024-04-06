@@ -240,19 +240,25 @@ int DADataOperateOfDataFrameWidget::removeSelectCell()
     if (df.isNone()) {
         return 0;
     }
-    QPair< QList< int >, QList< int > > rowcols = getSelectedDataframeCells();
-    if (rowcols.first.size() <= 0) {
+    const QList< QPoint > cells = getSelectedDataframeCells();
+    if (cells.size() <= 0) {
         qWarning() << tr("please select valid cell");  // cn:请选择正确的单元格
         return 0;
     }
-    std::unique_ptr< DACommandDataFrame_setnan > cmd(
-        new DACommandDataFrame_setnan(df, rowcols.first, rowcols.second, mModel));
+    QList< int > rows, cols;
+    rows.reserve(cells.size());
+    cols.reserve(cells.size());
+    for (const auto p : cells) {
+        rows.append(p.x());
+        cols.append(p.y());
+    }
+    std::unique_ptr< DACommandDataFrame_setnan > cmd(new DACommandDataFrame_setnan(df, rows, cols, mModel));
     cmd->redo();
     if (!cmd->isSetSuccess()) {
         return 0;
     }
     mUndoStack.push(cmd.release());
-    return rowcols.first.size();
+    return cells.size();
 }
 
 /**
@@ -550,11 +556,43 @@ int DADataOperateOfDataFrameWidget::getSelectedOneDataframeColumn(bool ensureInD
     return -1;
 }
 
-QPair< QList< int >, QList< int > > DADataOperateOfDataFrameWidget::getSelectedDataframeCells(bool ensureInDataframe) const
+/**
+ * @brief 获取当前表格操作选中的数据
+ *
+ * 如果用户打开一个表格，选中了其中一列，那么将返回那一列pd.Series作为数据，
+ * 如果用户选中了多列，那么每列作为一个DAData，最后组成一个QList<DAData>返回,如果用户打开了表格，但没选择任何列，这个函数返回一个空list
+ *
+ * 如果用户没有选择列，但选中了单元格，那么相当于选中了单元格对应的列
+ *
+ * 如果什么都没选中，那么返回一个空的list
+ *
+ * @return
+ */
+QList< DAData > DADataOperateOfDataFrameWidget::getSlectedSeries() const
 {
+    QList< DAData > res;
+    const QList< int > indexs = getSelectedDataframeCoumns(true);
+    if (indexs.isEmpty()) {
+        return res;
+    }
+    DAPyDataFrame df = mData.toDataFrame();
+    auto shape       = df.shape();
+    for (int i : indexs) {
+        if (i < shape.second) {
+            auto series = df[ i ];
+            DAData d(series);
+            res.append(d);
+        }
+    }
+    return res;
+}
+
+QList< QPoint > DADataOperateOfDataFrameWidget::getSelectedDataframeCells(bool ensureInDataframe) const
+{
+    QList< QPoint > res;
     QItemSelectionModel* selModel = ui->tableView->selectionModel();
     if (!selModel) {
-        return QPair< QList< int >, QList< int > >();
+        return res;
     }
     QList< int > rows;
     QList< int > cols;
@@ -563,23 +601,21 @@ QPair< QList< int >, QList< int > > DADataOperateOfDataFrameWidget::getSelectedD
         // 确保返回的列数都在dataframe里
         DAPyDataFrame df = getDataframe();
         if (df.isNone()) {
-            return QPair< QList< int >, QList< int > >();
+            return res;
         }
         auto shape = df.shape();
         for (const QModelIndex& index : selindexs) {
             if (index.row() < (int)shape.first && index.column() < (int)shape.second) {
-                rows.append(index.row());
-                cols.append(index.column());
+                res.append(QPoint(index.row(), index.column()));
             }
         }
     } else {
         // 不确保返回的列数都在dataframe里
         for (const QModelIndex& index : selindexs) {
-            rows.append(index.row());
-            cols.append(index.column());
+            res.append(QPoint(index.row(), index.column()));
         }
     }
-    return qMakePair(rows, cols);
+    return res;
 }
 
 /**

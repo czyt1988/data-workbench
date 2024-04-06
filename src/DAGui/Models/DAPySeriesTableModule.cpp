@@ -32,7 +32,7 @@ DAPySeriesTableModulePrivate::DAPySeriesTableModulePrivate(DAPySeriesTableModule
  */
 int DAPySeriesTableModulePrivate::columnCount() const
 {
-    int col = -1;  //这样在没有数据的时候可以返回0
+    int col = -1;  // 这样在没有数据的时候可以返回0
     if (!mSeries.isEmpty()) {
         col = mSeries.lastKey();
     }
@@ -42,7 +42,7 @@ int DAPySeriesTableModulePrivate::columnCount() const
             col = v;
         }
     }
-    if (mHeader.isEmpty()) {
+    if (!mHeader.isEmpty()) {
         int v = mHeader.lastKey();
         if (v > col) {
             col = v;
@@ -85,13 +85,13 @@ QVariant DAPySeriesTableModule::headerData(int section, Qt::Orientation orientat
     if (role != Qt::DisplayRole || d_ptr->mSeries.empty()) {
         return QVariant();
     }
-    //剩下都是DisplayRole
-    if (Qt::Horizontal == orientation) {  //说明是水平表头
+    // 剩下都是DisplayRole
+    if (Qt::Horizontal == orientation) {  // 说明是水平表头
         auto ite = d_ptr->mHeader.find(section);
         if (ite != d_ptr->mHeader.end()) {
             return ite.value();
         }
-        //如果没有，查看是否是series，series有名称，显示名称
+        // 如果没有，查看是否是series，series有名称，显示名称
         auto iteSer = d_ptr->mSeries.find(section);
         if (iteSer != d_ptr->mSeries.end()) {
             return iteSer.value().name();
@@ -128,14 +128,14 @@ QVariant DAPySeriesTableModule::data(const QModelIndex& index, int role) const
         return QVariant();
     }
     if (role == Qt::TextAlignmentRole) {
-        //返回的是对其方式
+        // 返回的是对其方式
         return int(Qt::AlignLeft | Qt::AlignVCenter);
     } else if (role == Qt::DisplayRole) {
         const int col = index.column();
         const int row = index.row();
         auto ite      = d_ptr->mSeries.find(col);
         if (ite != d_ptr->mSeries.end()) {
-            //说明是序列列
+            // 说明是序列列
             const DAPySeries& ser = ite.value();
             if (ser.isNone()) {
                 return QVariant();
@@ -146,15 +146,15 @@ QVariant DAPySeriesTableModule::data(const QModelIndex& index, int role) const
             }
             return QVariant();
         }
-        //没有在序列找到，找自增
+        // 没有在序列找到，找自增
         auto iteInc = d_ptr->mAutoincrementSeries.find(col);
         if (iteInc != d_ptr->mAutoincrementSeries.end()) {
-            //说明是序列列
+            // 说明是序列列
             const DAAutoincrementSeries< double >& serInc = iteInc.value();
             return serInc[ row ];
         }
     } else if (role == Qt::BackgroundRole) {
-        //背景颜色
+        // 背景颜色
         return QVariant();
     }
     return QVariant();
@@ -166,6 +166,22 @@ bool DAPySeriesTableModule::setData(const QModelIndex& index, const QVariant& va
     Q_UNUSED(value);
     Q_UNUSED(role);
     return false;
+}
+
+/**
+ * @brief 设置序列
+ * @param s
+ */
+void DAPySeriesTableModule::setSeries(const QList< DAPySeries >& series)
+{
+    beginResetModel();
+    d_ptr->mSeries.clear();
+    int c = 0;
+    for (const DAPySeries& s : series) {
+        d_ptr->mSeries[ c ] = s;
+        ++c;
+    }
+    endResetModel();
 }
 
 /**
@@ -202,10 +218,10 @@ void DAPySeriesTableModule::appendSeries(const DAAutoincrementSeries< double >& 
  */
 void DAPySeriesTableModule::insertSeries(int c, const DAPySeries& s)
 {
-    //先看看要刷新哪里
+    // 先看看要刷新哪里
     beginResetModel();
     d_ptr->mSeries[ c ] = s;
-    //看看这个位置是否有自增序列
+    // 看看这个位置是否有自增序列
     if (d_ptr->mAutoincrementSeries.contains(c)) {
         d_ptr->mAutoincrementSeries.remove(c);
     }
@@ -224,7 +240,7 @@ void DAPySeriesTableModule::insertSeries(int c, const DAAutoincrementSeries< dou
 {
     beginResetModel();
     d_ptr->mAutoincrementSeries[ c ] = s;
-    //看看这个位置是否有series
+    // 看看这个位置是否有series
     if (d_ptr->mSeries.contains(c)) {
         d_ptr->mSeries.remove(c);
     }

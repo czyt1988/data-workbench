@@ -25,7 +25,7 @@ public:
 	void recordAction(QAction* act);
 
 public:
-	QAction* actionImportTxt;  ///< 导入txt
+	QAction* actionSpectrum;  ///< 频谱
 	QHash< QString, QAction* > mObjectToAction;
 
 private:

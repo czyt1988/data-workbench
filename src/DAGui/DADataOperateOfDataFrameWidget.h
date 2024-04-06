@@ -31,47 +31,48 @@ public:
 public:
     explicit DADataOperateOfDataFrameWidget(const DAData& d, QWidget* parent = nullptr);
     ~DADataOperateOfDataFrameWidget();
-    //是否存在data
+    // 是否存在data
     bool haveData() const;
-    //获取dataframe
+    // 获取dataframe
     DAPyDataFrame getDataframe() const;
-    //获取Data的引用
+    // 获取Data的引用
     const DAData& data() const;
-    //创建dataframe的数据描述
+    // 创建dataframe的数据描述
     DAPyDataFrame createDataDescribe();
-    //返回选中的列数，列数不会重复
+    // 返回选中的列数，列数不会重复
     QList< int > getSelectedDataframeCoumns(bool ensureInDataframe = true) const;
     QList< int > getSelectedDataframeRows(bool ensureInDataframe = true) const;
-    QPair< QList< int >, QList< int > > getSelectedDataframeCells(bool ensureInDataframe = true) const;
+    QList< QPoint > getSelectedDataframeCells(bool ensureInDataframe = true) const;
     int getSelectedOneDataframeRow(bool ensureInDataframe = true) const;
     int getSelectedOneDataframeColumn(bool ensureInDataframe = true) const;
     QUndoStack* getUndoStack() const;
-
+    // 获取选中的序列，如果用户打开一个表格，选中了其中一列，那么将返回那一列pd.Series作为数据，如果用户选中了多列，那么每列作为一个DAData并组成list返回
+    QList< DAData > getSlectedSeries() const;
 public slots:
     void setDAData(const DA::DAData& d);
-    //在选中行后面插入行
+    // 在选中行后面插入行
     void insertRowAboveBySelect();
     void insertRowBelowBySelect();
     void insertRowAt(int row);
     void insertColumnRightBySelect();
     void insertColumnLeftBySelect();
     void insertColumnAt(int col);
-    //移除选中的行
+    // 移除选中的行
     int removeSelectRow();
-    //移除选择的列
+    // 移除选择的列
     int removeSelectColumn();
-    //设置选中单元格为nan,返回设置成功的个数
+    // 设置选中单元格为nan,返回设置成功的个数
     int removeSelectCell();
-    //激活此窗口的UndoStack
+    // 激活此窗口的UndoStack
     void activeUndoStack();
-    //列更名
+    // 列更名
     void renameColumns();
-    //设置选择列的数据类型，发射信号columnTypeChanged
+    // 设置选择列的数据类型，发射信号columnTypeChanged
     bool changeSelectColumnType(const DAPyDType& dt);
-    //把选择的行转换为数值，带交互
+    // 把选择的行转换为数值，带交互
     void castSelectToNum();
     void castSelectToDatetime();
-    //把选择的列转换为索引
+    // 把选择的列转换为索引
     bool changeSelectColumnToIndex();
 signals:
     /**

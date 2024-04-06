@@ -25,7 +25,9 @@ public:
     DAPyDataFrame(const pybind11::object& obj);
     DAPyDataFrame(pybind11::object&& obj);
     ~DAPyDataFrame();
+    // 获取列
     DAPySeries operator[](const QString& n) const;
+    DAPySeries operator[](int n) const;
     DAPyDataFrame& operator=(const pybind11::object& obj);
     DAPyDataFrame& operator=(const DAPyDataFrame& obj);
     DAPyDataFrame& operator=(const DAPyObjectWrapper& obj);
@@ -51,12 +53,12 @@ public:
     DAPySeries loc(const QString& n) const;
     bool drop(std::size_t index, int axis = 0);
     DAPyIndex index() const;
-    //获取某一列对应的dtype
+    // 获取某一列对应的dtype
     pybind11::dtype dtypes(std::size_t c) const;
     DAPyDataFrame describe() const;
 
 protected:
-    //检测是否为dataframe，如果不是将会设置为none
+    // 检测是否为dataframe，如果不是将会设置为none
     void checkObjectValid();
 
 public:

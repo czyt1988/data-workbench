@@ -3,6 +3,7 @@
 #include "SARibbonCategory.h"
 #include "DataAnalysisActions.h"
 #include "DataAnalysisUI.h"
+#include "DataAnalysController.h"
 #include "DACoreInterface.h"
 #include "DAUIInterface.h"
 #include "DARibbonAreaInterface.h"
@@ -44,8 +45,9 @@ bool DataAnalysisPlugin::initialize()
 
 void DataAnalysisPlugin::buildUI()
 {
-	mActions = new DataAnalysisActions(this);
-	mUI      = new DataAnalysisUI(core(), mActions, this);
+	mActions    = new DataAnalysisActions(this);
+	mUI         = new DataAnalysisUI(core(), mActions, this);
+	mController = new DataAnalysController(core(), mActions, this);
 }
 
 DA::DAAbstractNodeFactory* DataAnalysisPlugin::createNodeFactory()

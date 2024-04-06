@@ -20,7 +20,9 @@ public:
 private:
 	// 构建数据操作标签页
 	void buildDataOptCategory(SARibbonCategory* dataCategory);
-	//
+	// 构建数据处理Category
+	void buildDataAnalysisCategory(SARibbonCategory* dataAnalysisCategory);
+
 private:
 	bool mIsValid { true };  ///< 标定是否有效
 	DA::DACoreInterface* mCore { nullptr };
@@ -28,7 +30,8 @@ private:
 	DA::DARibbonAreaInterface* mRibbonArea { nullptr };
 	DA::DADockingAreaInterface* mDockingArea { nullptr };
 	SARibbonCategory* mRibbonCategoryDataOpt { nullptr };
-	SARibbonPannel* mDataTransform { nullptr };  ///< 数据转化pannel
+	SARibbonCategory* mRibbonCategoryDataAnalysis { nullptr };  ///< 数据处理Category
+	SARibbonPannel* mRibbonPannelSignalProcess { nullptr };     ///< 信号处理pannel
 };
 
 #endif  // DATAANALYSISUI_H

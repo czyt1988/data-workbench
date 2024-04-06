@@ -44,8 +44,8 @@ bool DADataframeToVectorPointWidget::getToVectorPointF(QVector< QPointF >& res)
     if (!_currentData.isDataFrame() || _currentData.isNull()) {
         return false;
     }
-    DAPySeries x = ui->listWidgetX->getSelectedSeries();
-    DAPySeries y = ui->listWidgetY->getSelectedSeries();
+    DAPySeries x = ui->listWidgetX->getCurrentSeries();
+    DAPySeries y = ui->listWidgetY->getCurrentSeries();
     if (x.isNone() || y.isNone()) {
         return false;
     }

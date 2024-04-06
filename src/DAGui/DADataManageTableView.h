@@ -27,7 +27,7 @@ public:
     //获取一个选中的数据
     DAData getOneSelectData() const;
     //获取所有选中的数据
-    QList< DAData > getSelectDatas() const;
+    QList< DAData > getCurrentSelectDatas() const;
 
 protected:
     void dragEnterEvent(QDragEnterEvent* e) override;

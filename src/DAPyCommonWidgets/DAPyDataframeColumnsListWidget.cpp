@@ -5,6 +5,7 @@ namespace DA
 {
 DAPyDataframeColumnsListWidget::DAPyDataframeColumnsListWidget(QWidget* parent) : QListWidget(parent)
 {
+    setSelectionMode(QAbstractItemView::SingleSelection);
 }
 
 DAPyDataframeColumnsListWidget::~DAPyDataframeColumnsListWidget()
@@ -42,7 +43,7 @@ QString DAPyDataframeColumnsListWidget::getSelectedColumn() const noexcept
  * @brief 获取选中的series
  * @return
  */
-DAPySeries DAPyDataframeColumnsListWidget::getSelectedSeries() const noexcept
+DAPySeries DAPyDataframeColumnsListWidget::getCurrentSeries() const noexcept
 {
     try {
         QString c    = getSelectedColumn();
@@ -52,6 +53,26 @@ DAPySeries DAPyDataframeColumnsListWidget::getSelectedSeries() const noexcept
         qCritical() << tr("Exception in get selected series:%1").arg(e.what());  // cn:获取选中的序列发生异常：%1
     }
     return DAPySeries();
+}
+
+/**
+ * @brief 获取所有选中的series
+ * @return
+ */
+QList< DAPySeries > DAPyDataframeColumnsListWidget::getAllSelectedSeries() const
+{
+    QList< DAPySeries > res;
+    auto indexs = selectedIndexes();
+    try {
+        for (int i = 0; i < indexs.size(); ++i) {
+            int dfIndex  = indexs[ i ].row();
+            DAPySeries s = mDataframe[ dfIndex ];
+            res.append(s);
+        }
+    } catch (const std::exception& e) {
+        qCritical() << tr("Exception in get selected series:%1").arg(e.what());  // cn:获取选中的序列发生异常：%1
+    }
+    return res;
 }
 
 /**
@@ -78,4 +99,5 @@ void DAPyDataframeColumnsListWidget::updateColumnsInfo(const DAPyDataFrame& df)
         item->setIcon(DAPyDTypeComboBox::getIconByDtypeChar(df[ cols[ i ] ].dtype().char_()));
     }
 }
-}
+
+}  // end DA

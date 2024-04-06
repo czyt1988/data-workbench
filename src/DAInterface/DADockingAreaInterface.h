@@ -3,6 +3,8 @@
 #include "DAInterfaceAPI.h"
 #include "DAGlobals.h"
 #include "DAUIExtendInterface.h"
+#include "DAData.h"
+#include <QList>
 #include <QPair>
 #include "ads_globals.h"
 
@@ -108,6 +110,18 @@ public:
 
     // 获取设置窗口,设置容器可以放置多个设置窗口
     virtual DASettingContainerWidget* getSettingContainerWidget() const = 0;
+
+    // 获取当前选中的数据，此函数会根据界面的焦点，获取当前选中的数据
+    virtual QList< DAData > getCurrentSelectDatas() const;
+
+    // 获取当前选中的Dataframe,如果用户在选中了列，返回选中的列索引
+    virtual std::pair<DAPyDataFrame,QList<int>> getCurrentSelectDataFrame() const;
+
+    // 判断DataOperateWidget是否是在焦点
+    bool isDataOperateWidgetDockOnFource() const;
+
+    // 判断DataManageWidget是否是在焦点
+    bool isDataManageWidgetDockOnFource() const;
 
 public:
     // 基于接口的快速方法

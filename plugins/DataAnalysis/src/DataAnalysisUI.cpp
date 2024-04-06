@@ -1,5 +1,6 @@
 ﻿#include "DataAnalysisUI.h"
-
+#include "DataAnalysisActions.h"
+#include "SARibbonBar.h"
 #define CHECK_VALID(action)                                                                                            \
 	do {                                                                                                               \
 		if (!mIsValid) {                                                                                               \
@@ -14,6 +15,8 @@ DataAnalysisUI::DataAnalysisUI(DA::DACoreInterface* core, DataAnalysisActions* a
 	mDockingArea           = mCore->getUiInterface()->getDockingArea();
 	mRibbonCategoryDataOpt = mRibbonArea->getCategoryByObjectName("da-ribbon-category-data");
 	buildDataOptCategory(mRibbonCategoryDataOpt);
+	mRibbonCategoryDataAnalysis = mRibbonArea->ribbonBar()->addCategoryPage("Data Analysis");
+	buildDataAnalysisCategory(mRibbonCategoryDataAnalysis);
 }
 
 DataAnalysisUI::~DataAnalysisUI()
@@ -22,8 +25,8 @@ DataAnalysisUI::~DataAnalysisUI()
 
 void DataAnalysisUI::retranslate()
 {
-	CHECK_VALID(return);
-	mDataTransform->setPannelName(tr("Transform"));  // cn:转换
+	mRibbonCategoryDataAnalysis->setCategoryName(tr("Data Analysis"));  // cn:数据处理
+	mRibbonPannelSignalProcess->setPannelName(tr("Signal Process"));    // cn:信号处理
 }
 
 /**
@@ -38,5 +41,14 @@ void DataAnalysisUI::buildDataOptCategory(SARibbonCategory* dataCategory)
 		mIsValid = false;
 		return;
 	}
-	mDataTransform = dataCategory->addPannel("Transform");
+}
+
+/**
+ * @brief 构建数据处理Category
+ * @param dataAnalysisCategory
+ */
+void DataAnalysisUI::buildDataAnalysisCategory(SARibbonCategory* dataAnalysisCategory)
+{
+	mRibbonPannelSignalProcess = dataAnalysisCategory->addPannel("Signal Process");
+	mRibbonPannelSignalProcess->addLargeAction(mActions->actionSpectrum);
 }

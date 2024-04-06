@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/DataAnalysis/icons">
         <file>icon/importTxt.svg</file>
+        <file>icon/spectrum.svg</file>
     </qresource>
 </RCC>

@@ -7,6 +7,7 @@
 #include "DAAbstractNodePlugin.h"
 class DataAnalysisActions;
 class DataAnalysisUI;
+class DataAnalysController;
 class SARibbonCategory;
 namespace DA
 {
@@ -78,6 +79,7 @@ private:
 private:
 	DataAnalysisActions* mActions { nullptr };
 	DataAnalysisUI* mUI { nullptr };
+	DataAnalysController* mController { nullptr };
 };
 
 #endif  // PIPEDESIGNERPLUGIN_H

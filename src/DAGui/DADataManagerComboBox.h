@@ -19,11 +19,15 @@ public:
     virtual void showPopup() override;
 
 public:
-    //设置DADataManager，combobox不管理DADataManager的内存
+    // 设置DADataManager，combobox不管理DADataManager的内存
     void setDataManager(DADataManager* dmgr);
     DADataManager* getDataManager() const;
-    //获取当前的Data
+    // 获取当前的Data
     DAData getCurrentDAData() const;
+    // 是否把dataframe下的series也展示,默认为true
+    void setShowSeriesUnderDataframe(bool on);
+    bool isShowSeriesUnderDataframe() const;
+
 private slots:
     void onCurrentIndexChanged(const QString& text);
 
@@ -31,7 +35,7 @@ signals:
     /**
      * @brief dataframe的series改变
      * @param data Dataframe
-     * @param seriesName 系列名
+     * @param seriesName 系列名 如果选中了dataframe，此参数为QString()
      */
     void currentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
 };

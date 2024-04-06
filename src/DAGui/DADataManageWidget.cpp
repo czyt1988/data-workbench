@@ -69,10 +69,10 @@ DAData DADataManageWidget::getOneSelectData() const
  * @brief 获取所有选中的数据
  * @return
  */
-QList< DAData > DADataManageWidget::getSelectDatas() const
+QList< DAData > DADataManageWidget::getCurrentSelectDatas() const
 {
     if (isTableView()) {
-        return ui->dataMgrTableView->getSelectDatas();
+        return ui->dataMgrTableView->getCurrentSelectDatas();
     }
     return QList< DAData >();
 }
@@ -109,7 +109,7 @@ DADataManager* DADataManageWidget::getDataManager() const
  */
 void DADataManageWidget::removeSelectData()
 {
-    QList< DAData > d = getSelectDatas();
+    QList< DAData > d = getCurrentSelectDatas();
     if (d.size() <= 0) {
         qWarning() << tr("Please select the data item to remove");  // cn:请选择需要删除的数据条目
         return;

@@ -97,7 +97,7 @@ DAData DADataManageTableView::getOneSelectData() const
  * @brief 获取所有选中的数据
  * @return
  */
-QList< DAData > DADataManageTableView::getSelectDatas() const
+QList< DAData > DADataManageTableView::getCurrentSelectDatas() const
 {
     QList< DAData > res;
     QItemSelectionModel* selectModel = selectionModel();

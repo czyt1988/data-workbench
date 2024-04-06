@@ -8,7 +8,9 @@
 // SARibbon
 //  这个头文件需要存在，ui()->mainWindow()获取的窗口需要这个头文件，不要移除
 #include "SARibbonMainWindow.h"
-
+//
+#include "DADataManageWidget.h"
+#include "DADataOperateWidget.h"
 namespace DA
 {
 class DADockingAreaInterface::PrivateData
@@ -99,6 +101,99 @@ void DADockingAreaInterface::raiseDockByWidget(QWidget* w)
         }
         dw->raise();
     }
+}
+
+/**
+ * @brief 获取当前选中的数据
+ *
+ * 如果用户当前焦点实在表格操作界面
+ *
+ * 如果用户打开一个表格，选中了其中一列，那么将返回那一列pd.Series作为数据，
+ * 如果用户选中了多列，那么每列作为一个DAData，最后组成一个QList<DAData>返回,如果用户打开了表格，但没选择任何列，这个函数返回这个表作为Data（pd.DataFrame）
+ *
+ * 如果用户没有选择列，但选中了单元格，那么相当于选中了单元格对应的列
+ *
+ * 如果什么都没选中，那么返回一个空的list
+ *
+ *
+ * 如果用户实在数据管理界面
+ *
+ * 返回选中的dataframe
+ * @return
+ */
+QList< DAData > DADockingAreaInterface::getCurrentSelectDatas() const
+{
+    QList< DAData > res;
+    // 获取当前的焦点
+    ads::CDockWidget* currentFource = dockManager()->focusedDockWidget();
+    if (currentFource == nullptr) {
+        // 说明没有焦点的窗口，返回空
+        return res;
+    }
+    // 查看是否是DataOperateWidget
+    auto dow = getDataOperateWidget();
+    auto dmw = getDataManageWidget();
+
+    if (currentFource->widget() == dow) {
+        // 数据表窗口，调用getCurrentSelectDatas
+        return dow->getCurrentSelectDatas();
+    } else if (currentFource->widget() == dmw) {
+        // 数据管理窗口，调用getSelectDatas
+        return dmw->getCurrentSelectDatas();
+    }
+
+    return res;
+}
+
+/**
+ * @brief 获取当前选中的dataframe
+ *
+ * @return pair:first 选中的dataframe，pair:second 选中的列索引，对于当前选中的是DataManageWidget，第二项返回空
+ */
+std::pair< DAPyDataFrame, QList< int > > DADockingAreaInterface::getCurrentSelectDataFrame() const
+{
+    std::pair< DAPyDataFrame, QList< int > > res;
+    // 获取当前的焦点
+    ads::CDockWidget* currentFource = dockManager()->focusedDockWidget();
+    if (currentFource == nullptr) {
+        // 说明没有焦点的窗口，返回空
+        return res;
+    }
+    // 查看是否是DataOperateWidget
+    auto dow = getDataOperateWidget();
+    auto dmw = getDataManageWidget();
+
+    if (currentFource->widget() == dow) {
+        // 数据表窗口，调用getCurrentSelectDatas
+        return dow->getCurrentSelectDataFrame();
+    } else if (currentFource->widget() == dmw) {
+        // 数据管理窗口，调用getSelectDatas
+        auto sd = dmw->getOneSelectData();
+        if (sd.isDataFrame()) {
+            res.first = sd.toDataFrame();
+        }
+    }
+    return res;
+}
+
+/**
+ * @brief 判断DataOperateWidget是否是在焦点
+ * @return
+ */
+bool DADockingAreaInterface::isDataOperateWidgetDockOnFource() const
+{
+    ads::CDockWidget* currentFource = dockManager()->focusedDockWidget();
+    return (currentFource->widget() == getDataOperateWidget());
+}
+
+/**
+ * @brief 判断DataManageWidget是否是在焦点
+ * @return
+ */
+bool DADockingAreaInterface::isDataManageWidgetDockOnFource() const
+{
+    ads::CDockWidget* currentFource = dockManager()->focusedDockWidget();
+    return (currentFource->widget() == getDataManageWidget());
 }
 
 /**

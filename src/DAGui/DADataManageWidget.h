@@ -40,7 +40,7 @@ public:
     //获取选择的数据，如果没有数据，返回一个空的data
     DAData getOneSelectData() const;
     //获取选中的数据
-    QList< DAData > getSelectDatas() const;
+    QList< DAData > getCurrentSelectDatas() const;
     //判断当前是否为table模式
     bool isTableView() const;
     //当前的显示模式

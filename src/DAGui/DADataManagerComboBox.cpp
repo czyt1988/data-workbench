@@ -11,12 +11,13 @@ public:
 
 public:
     DADataManagerTreeModel* _treeDataModel { nullptr };
+    bool mShowSeriesUnderDataframe { true };
 };
 
 DADataManagerComboBoxPrivate::DADataManagerComboBoxPrivate(DADataManagerComboBox* p) : q_ptr(p)
 {
     _treeDataModel = new DADataManagerTreeModel(q_ptr);
-    _treeDataModel->setExpandDataframeToSeries(true);
+    _treeDataModel->setExpandDataframeToSeries(mShowSeriesUnderDataframe);
     q_ptr->setModel(_treeDataModel);
 }
 
@@ -49,29 +50,26 @@ void DADataManagerComboBox::showPopup()
 
 void DADataManagerComboBox::onCurrentIndexChanged(const QString& text)
 {
-    QVariant dtype = currentData(DADATAMANAGERTREEMODEL_ROLE_DETAIL_DATA_TYPE);
-    if (dtype.isNull()) {
-        // 说明不是dataframe下的series
+    QVariant dvar = currentData(DADATAMANAGERTREEMODEL_ROLE_DATA_ID);
+    if (dvar.isNull()) {
+        // 说明不是异常
         return;
     }
-    DADataManagerTreeModel::DetailDataTypeMark m = static_cast< DADataManagerTreeModel::DetailDataTypeMark >(dtype.toInt());
-    if (DADataManagerTreeModel::SeriesInnerDataframe == m) {
-        QVariant dvar = currentData(DADATAMANAGERTREEMODEL_ROLE_DATA_ID);
-        if (dvar.isNull()) {
-            // 说明不是异常
-            return;
-        }
-        DAData::IdType did  = dvar.toULongLong();
-        DADataManager* dmgr = getDataManager();
-        if (!dmgr) {
-            return;
-        }
-        DAData d = dmgr->getDataById(did);
-        if (!d.isDataFrame()) {
-            return;
-        }
-        emit currentDataframeSeriesChanged(d, text);
+    DAData::IdType did  = dvar.toULongLong();
+    DADataManager* dmgr = getDataManager();
+    if (!dmgr) {
+        return;
     }
+    DAData d = dmgr->getDataById(did);
+    if (!d.isDataFrame()) {
+        return;
+    }
+    QString seriesName;
+    QVariant dtype = currentData(DADATAMANAGERTREEMODEL_ROLE_DETAIL_DATA_TYPE);
+    if (!dtype.isNull()) {
+        seriesName = text;
+    }
+    emit currentDataframeSeriesChanged(d, seriesName);
 }
 
 void DADataManagerComboBox::setDataManager(DADataManager* dmgr)
@@ -122,6 +120,19 @@ DAData DADataManagerComboBox::getCurrentDAData() const
 #endif
     }
     return DAData();
+}
+
+void DADataManagerComboBox::setShowSeriesUnderDataframe(bool on)
+{
+    if (d_ptr->mShowSeriesUnderDataframe != on) {
+        d_ptr->mShowSeriesUnderDataframe = on;
+        d_ptr->_treeDataModel->setExpandDataframeToSeries(on);
+    }
+}
+
+bool DADataManagerComboBox::isShowSeriesUnderDataframe() const
+{
+    return d_ptr->mShowSeriesUnderDataframe;
 }
 
 }

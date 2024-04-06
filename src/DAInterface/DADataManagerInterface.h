@@ -17,19 +17,19 @@ class DAINTERFACE_API DADataManagerInterface : public DABaseInterface
 public:
     DADataManagerInterface(DACoreInterface* c, QObject* par = nullptr);
     ~DADataManagerInterface();
-    //获取datamanager指针
+    // 获取datamanager指针
     DADataManager* dataManager() const;
-    //添加数据
+    // 添加数据
     virtual void addData(DAData& d);
-    //移除数据
+    // 移除数据
     virtual void removeData(DAData& d);
-    //获取数据量
+    // 获取数据量
     virtual int getDataCount() const;
-    //参数的索引
+    // 参数的索引
     int getDataIndex(const DAData& d) const;
-    //根据索引获取对应的值
+    // 根据索引获取对应的值
     DAData getData(int index) const;
-    //根据id获取数据
+    // 根据id获取数据
     DAData getDataById(DAData::IdType id) const;
 signals:
     /**

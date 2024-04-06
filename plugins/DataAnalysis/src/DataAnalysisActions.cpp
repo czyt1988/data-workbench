@@ -12,12 +12,12 @@ DataAnalysisActions::~DataAnalysisActions()
 
 void DataAnalysisActions::buildActions()
 {
-	actionImportTxt = createAction("actionImportTxt", ":/DataAnalysis/icons/icon/importTxt.svg");
+	actionSpectrum = createAction("actionSpectrum", ":/DataAnalysis/icons/icon/spectrum.svg");
 }
 
 void DataAnalysisActions::retranslate()
 {
-	actionImportTxt->setText(tr("Import Txt"));
+	actionSpectrum->setText(tr("Spectrum"));  // cn: 频谱
 }
 
 QAction* DataAnalysisActions::createAction(const char* objname)
