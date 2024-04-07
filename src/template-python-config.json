@@ -1,0 +1,5 @@
+﻿{
+  "config": {
+      "interpreter": "path to python interpreter"
+    }
+}

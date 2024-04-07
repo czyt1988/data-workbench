@@ -24,7 +24,8 @@ public:
     DAPySeries getCurrentSeries() const noexcept;
     // 获取所有选中的序列
     QList< DAPySeries > getAllSelectedSeries() const;
-
+    QList< int > getAllSelectedSeriesIndexs() const;
+    QList< QString > getAllSelectedSeriesNames() const;
 public slots:
     // 设置当前的dtype
     void setDataframe(const DA::DAPyDataFrame& df);

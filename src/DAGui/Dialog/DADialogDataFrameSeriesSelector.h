@@ -19,7 +19,7 @@ public:
     explicit DADialogDataFrameSeriesSelector(QWidget* parent = nullptr);
     ~DADialogDataFrameSeriesSelector();
     // 获取选中的dataframe以及选中的列
-    std::pair< DAPyDataFrame, QList< int > > getCurrentSelectDataFrame() const;
+    std::pair< DAPyDataFrame, QList< int > > getCurrentDataFrameInfos() const;
     // 设置当前的df，如果此函数设置为None，将会加载datamanager的数据列表给用户
     void setCurrentDataFrame(const DAPyDataFrame& df);
     DAPyDataFrame getCurrentDataFrame() const;
@@ -28,8 +28,8 @@ public:
     //
     void updateUI();
 private slots:
-    void onCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
-    void onDataframeColumnsListWidgetRowChanged(int i);
+    void onCurrentDataframeComboboxActivated(int i);
+    void onDataframeColumnsListWidgetItemSelectionChanged();
 protected:
     void changeEvent(QEvent* e);
 

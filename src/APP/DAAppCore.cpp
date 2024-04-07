@@ -106,7 +106,8 @@ bool DAAppCore::initializePythonEnv()
         // 初始化python环境
         QString pypath = getPythonInterpreterPath();
         qInfo() << tr("Python interpreter path is %1").arg(pypath);
-        python.setPythonHomePath(pypath);
+        QFileInfo fi(pypath);
+        python.setPythonHomePath(fi.absolutePath());
         python.initializePythonInterpreter();
         // 初始化环境成功后，加入脚本路径
 
@@ -174,11 +175,11 @@ QString DAAppCore::getPythonInterpreterPath()
 {
     QString appabsPath = QApplication::applicationDirPath();
 #if DA_ENABLE_PYTHON
-    QList< QFileInfo > paths = DAPyInterpreter::wherePython();
-    if (paths.empty()) {
+    QString path = DAPyInterpreter::getPythonInterpreterPath();
+    if (path.isEmpty()) {
         return QDir::toNativeSeparators(appabsPath + "/Python");
     }
-    return paths.first().absolutePath();
+    return path;
 #else
     QProcess process;
     QString command = "where python";

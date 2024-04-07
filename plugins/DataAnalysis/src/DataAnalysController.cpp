@@ -7,7 +7,7 @@
 #include "pandas/DAPyDataFrame.h"
 #include "Dialog/DADialogDataFrameSeriesSelector.h"
 DataAnalysController::DataAnalysController(DA::DACoreInterface* core, DataAnalysisActions* actions, QObject* p)
-	: QObject(p), mCore(core), mActions(actions)
+    : QObject(p), mCore(core), mActions(actions)
 {
 	mDockingArea       = mCore->getUiInterface()->getDockingArea();
 	mDataManagerWidget = mDockingArea->getDataManageWidget();
@@ -42,6 +42,17 @@ void DataAnalysController::onActionSpectrumTriggered()
 		// 没选中数据，弹出数据选择窗口,或者选中了数据但没有列，也弹出
 		DA::DADialogDataFrameSeriesSelector dlg(mCore->getUiInterface()->getMainWindow());
 		dlg.setDataManager(mCore->getDataManagerInterface()->dataManager());
-		if (dlg.exec() == QDialog::Accepted) { }
+        dlg.setCurrentDataFrame(selDatas.first);
+        dlg.setWindowTitle(tr("Select Series"));  // cn:选择序列
+		if (dlg.exec() == QDialog::Accepted) {
+            selDatas = dlg.getCurrentDataFrameInfos();
+        } else {
+            return;
+        }
 	}
+    // 判断是否选择好数据
+    if (!selDatas.first.isNone() || selDatas.second.empty()) {
+        return;
+    }
+    // 执行
 }

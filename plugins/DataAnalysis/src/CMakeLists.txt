@@ -45,12 +45,19 @@ file(GLOB DA_PLUGIN_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 file(GLOB DA_PLUGIN_QT_UI_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.ui")
 file(GLOB DA_PLUGIN_QT_RC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.qrc")
 
+file(GLOB DA_PLUGIN_HEADER_FILES_Dialogs "${CMAKE_CURRENT_SOURCE_DIR}/Dialogs/*.h")
+file(GLOB DA_PLUGIN_SOURCE_FILES_Dialogs "${CMAKE_CURRENT_SOURCE_DIR}/Dialogs/*.cpp")
+file(GLOB DA_PLUGIN_QT_UI_FILES_Dialogs "${CMAKE_CURRENT_SOURCE_DIR}/Dialogs/*.ui")
 
 add_library(${DA_PLUGIN_NAME} SHARED
             ${DA_PLUGIN_HEADER_FILES}
             ${DA_PLUGIN_SOURCE_FILES}
             ${DA_PLUGIN_QT_UI_FILES}
             ${DA_PLUGIN_QT_RC_FILES}
+            #Dialogs
+            ${DA_PLUGIN_HEADER_FILES_Dialogs}
+            ${DA_PLUGIN_SOURCE_FILES_Dialogs}
+            ${DA_PLUGIN_QT_UI_FILES_Dialogs}
 )	
 # 构建库定义的宏
 target_compile_definitions(${DA_PLUGIN_NAME} PRIVATE DADATAANALYSIS_PLUGIN_BUILD)#!!!!** 注意变更 **!!!!

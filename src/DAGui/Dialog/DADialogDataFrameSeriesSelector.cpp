@@ -30,18 +30,31 @@ DADialogDataFrameSeriesSelector::DADialogDataFrameSeriesSelector(QWidget* parent
     ui->tableView->setModel(d_ptr->mModule);
     ui->comboBoxDatas->setShowSeriesUnderDataframe(false);
     connect(ui->comboBoxDatas,
-            &DADataManagerComboBox::currentDataframeSeriesChanged,
+            QOverload<int>::of(&QComboBox::activated),
             this,
-            &DADialogDataFrameSeriesSelector::onCurrentDataframeSeriesChanged);
+            &DADialogDataFrameSeriesSelector::onCurrentDataframeComboboxActivated);
     connect(ui->listWidgetColumns,
-            &DAPyDataframeColumnsListWidget::currentRowChanged,
+            &DAPyDataframeColumnsListWidget::itemSelectionChanged,
             this,
-            &DADialogDataFrameSeriesSelector::onDataframeColumnsListWidgetRowChanged);
+            &DADialogDataFrameSeriesSelector::onDataframeColumnsListWidgetItemSelectionChanged);
 }
 
 DADialogDataFrameSeriesSelector::~DADialogDataFrameSeriesSelector()
 {
     delete ui;
+}
+
+/**
+ * @brief 获取选择的dataframe.
+ *  
+ * @return std::pair<dataframe,选中的series索引>
+ */
+std::pair<DAPyDataFrame, QList<int>> DA::DADialogDataFrameSeriesSelector::getCurrentDataFrameInfos() const
+{
+    std::pair<DAPyDataFrame, QList<int>> res;
+    res.first = getCurrentDataFrame();
+    res.second = ui->listWidgetColumns->getAllSelectedSeriesIndexs();
+    return res;
 }
 
 void DADialogDataFrameSeriesSelector::setCurrentDataFrame(const DAPyDataFrame& df)
@@ -65,9 +78,10 @@ void DADialogDataFrameSeriesSelector::updateUI()
     ui->listWidgetColumns->setDataframe(d_ptr->mDataframe);
 }
 
-void DADialogDataFrameSeriesSelector::onCurrentDataframeSeriesChanged(const DAData& data, const QString& seriesName)
+void DADialogDataFrameSeriesSelector::onCurrentDataframeComboboxActivated(int i)
 {
     // dataframe切换
+    DAData data = ui->comboBoxDatas->getCurrentDAData();
     if (!data.isDataFrame()) {
         return;
     }
@@ -79,10 +93,13 @@ void DADialogDataFrameSeriesSelector::onCurrentDataframeSeriesChanged(const DADa
     updateUI();
 }
 
-void DADialogDataFrameSeriesSelector::onDataframeColumnsListWidgetRowChanged(int i)
+void DADialogDataFrameSeriesSelector::onDataframeColumnsListWidgetItemSelectionChanged()
 {
+    //这时不能用getAllSelectedSeries，返回的不是选中的
     auto series = ui->listWidgetColumns->getAllSelectedSeries();
     d_ptr->mModule->setSeries(series);
+
+    qDebug() << "set series:" << series.size() << " name:" << series.back().name();
 }
 
 void DADialogDataFrameSeriesSelector::changeEvent(QEvent* e)
