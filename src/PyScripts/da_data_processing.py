@@ -3,82 +3,53 @@
 import os
 from typing import List,Dict,Optional
 import pandas as pd
-import inspect
 import numpy as np
 
-'''
-本文件da_打头的变量和函数属于da系统的默认函数，如果改动会导致da系统异常
-'''
 
-
-def da_get_file_read_filters() -> List[str]:
+def spectrum_analysis(waveform, sampling_rate, fftsize=None):
     '''
-    获取支持的文件列表
-        return list[str]
+    频谱分析
+
+    :param waveform: 输入波形数据，可以是一维数组或列表  
+    :param sampling_rate: 采样率  
+    :param fftsize: FFT变换的窗口大小，默认为None，表示使用波形的长度  
+    :return: 频谱分析结果，包含频率、振幅和相位三个部分  
+    :rtype: pd.DataFrame
     '''
-    return ['text (*.txt)','csv (*.csv)','xls (*.xls)']
-
-
-def read_csv(path:str,args:Optional[Dict] = None) -> pd.DataFrame:
-    '''
-    读取csv文件
-    '''
-    if args is None:
-        args = {}
-    return pd.read_csv(path,**args)
-
-def read_txt(path:str,args:Optional[Dict] = None) -> pd.DataFrame:
-    '''
-    读取txt文件
-
-    sep 默认‘\t’(制表位)字符串，默认‘\t’(制表位),此外，长度超过1个字符且不同于的分隔符 '\s+' 将被解释为正则表达式，并且还将强制使用Python解析引擎。
-    header 指定表头，数据从指定后开始解析，如果没有表头，要设置为None,header=None
-    skiprows 指定跳过的内容，第一行为表头，
-    skipfooter 文件底部要跳过的行数(引擎=‘c’不支持)。
-    nrows 要读取的文件行数。对于读取大文件片段非常有用。
-    skip_blank_lines 如果为True，则跳过空行，而不是解释为NaN值
-    skipinitialspace 布尔值，默认为False，跳过分隔符后面的空格。
-    '''
-    if args is None:
-        args = {}
-    return pd.read_table(path,**args)
-
-
-
-'''
-这里是注册后缀对应的处理方式
-txt 不注册，需要单独处理
-'''
-da_global_reader_dict = {
-    'txt':read_txt,
-    'csv':read_csv
-}
-
-def da_read(path:str,args:Optional[Dict] = None):
-    '''
-    读取文件
-    '''
-    suffix = os.path.splitext(path)[-1][1:]
-    fun = da_global_reader_dict.get(suffix,None)
-    if fun is None:
-        return None
-    return fun(path,args)
-
-
-
-if __name__ == '__main__':
-    print(da_get_file_read_filters())
-    print(read_csv.__defaults__)
-    print('co_argcount=',read_csv.__code__.co_argcount)
-    print('co_varnames=',read_csv.__code__.co_varnames)
-    
-    res = pd.read_table(r'C:\src\Qt\data-workbench\tmp\测试数据.txt',header=14,skiprows=0,encoding='gbk',nrows=20,sep="\s+")
-    print(len(res.columns))
-    print(res.columns)
-    print(res.shape)
-    print(res)
-    # v = np.genfromtxt(r'C:\src\Qt\data-workbench\tmp\测试数据.txt',skip_header=14,names=True,encoding='gbk',dtype=float)
-    # print(v.shape)
-    # print(v.dtype)
-    # res = pd.DataFrame(v)
-    # print(res)
+    if fftsize is None:  
+        fftsize = len(waveform)  # 如果没有指定fftsize或者fftsize为None，则使用波形的长度  
+  
+    # 如果fftsize大于波形长度，对波形进行补零  
+    if fftsize > len(waveform):  
+        waveform = np.pad(waveform, (0, fftsize - len(waveform)))  
+    # 如果fftsize小于波形长度，截取波形  
+    elif fftsize < len(waveform):  
+        waveform = waveform[:fftsize]  
+  
+    # 对波形执行FFT变换  
+    fft_values = np.fft.rfft(waveform)  
+      
+    # 获取FFT结果的频率值  
+    freq = np.fft.rfftfreq(fftsize, 1.0 / sampling_rate)  
+      
+    # 计算频谱的振幅  
+    amplitudes = np.abs(fft_values) / fftsize  # 先不进行乘以2的操作  
+      
+    # 对非直流分量和非Nyquist分量的振幅乘以2  
+    # 直流分量是第一个元素，如果fftsize是偶数，Nyquist分量是最后一个元素  
+    if fftsize % 2 == 0:  # 偶数个点  
+        amplitudes[1:-1] *= 2  # 忽略直流分量和Nyquist分量  
+    else:  # 奇数个点，没有Nyquist分量  
+        amplitudes[1:] *= 2  # 只忽略直流分量  
+      
+    # 计算频谱的相位  
+    phases = np.angle(fft_values)  
+      
+    # 构造DataFrame  
+    df = pd.DataFrame({  
+        'Frequency': freq,  
+        'Amplitude': amplitudes,  
+        'Phase': phases  
+    })  
+      
+    return df

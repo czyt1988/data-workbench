@@ -131,6 +131,38 @@
      <double>32.000000000000000</double>
     </property>
    </widget>
+   <widget class="QToolButton" name="toolButtonAboutFFTSize">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>80</y>
+      <width>24</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="toolTip">
+     <string>1.Cropping or Zero-Padding Input:
+When the FFT length is shorter than the input waveform length, cropping the input can reduce the amount of data the FFT needs to process, thereby improving computational speed. However, doing so may lose some information in the waveform.
+When the FFT length is longer than the input waveform length, zero-padding is used to increase the number of data points. This usually doesn't increase spectral resolution (because no actual signal information is added), but it can make the spectrum appear smoother and may help identify peaks more clearly during graphical presentation.
+
+2.Controlling Frequency Resolution:
+FFT converts signals from the time domain to the frequency domain, resulting in a series of complex numbers representing different frequency components. The modulus of these complex numbers indicates the amplitude of that frequency component, while the argument represents the phase.
+The FFT length (i.e., the number of points n) determines the number of frequency components. A longer FFT will produce more frequency components, providing finer frequency resolution. However, it's important to note that increasing the FFT length doesn't necessarily increase the accuracy or information content of the spectrum; it just distributes the existing spectral information across more points.
+
+3.Performance Optimization:
+Many FFT libraries (such as FFTW, KissFFT, etc.) are optimized for FFTs of specific lengths, especially when the length is a power of 2. In these cases, the FFT algorithm can utilize divide-and-conquer strategies (such as the Cooley-Tukey FFT algorithm) to compute the transformation more efficiently.
+
+4.Avoiding Spectral Leakage:
+If the signal contains periodic components (such as sine waves), and the FFT length happens to be an integer multiple of that period, the FFT result will produce a sharp peak at that frequency, while values at other frequencies will be close to zero. This helps to identify and measure periodic components in the signal more accurately.
+If the FFT length is not an integer multiple of the signal period, it can lead to spectral leakage, where the signal's energy leaks into other frequencies, making spectral analysis difficult. Choosing an appropriate FFT length (especially one that matches the signal period) can reduce this leakage.
+
+5.Saving Computational Resources:
+In some application scenarios, very high frequency resolution may not be required. In these cases, using a shorter FFT can save computation time and resources while still providing sufficient information to meet the needs.</string>
+    </property>
+    <property name="text">
+     <string>...</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
@@ -145,7 +177,7 @@
     <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
    </property>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>10</x>
