@@ -41,5 +41,4 @@ include(${DAWorkbench_DIR}/daworkbench_plugin_utils.cmake)
 set(CMAKE_INSTALL_PREFIX ${DAWorkbench_INSTALL_DIR})
 
 
-
 add_subdirectory(src)

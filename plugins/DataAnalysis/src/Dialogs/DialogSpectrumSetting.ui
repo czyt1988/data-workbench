@@ -13,135 +13,94 @@
   <property name="windowTitle">
    <string>Spectrum Setting</string>
   </property>
-  <widget class="QGroupBox" name="groupBox">
-   <property name="geometry">
-    <rect>
-     <x>200</x>
-     <y>10</y>
-     <width>471</width>
-     <height>461</height>
-    </rect>
-   </property>
-   <property name="title">
-    <string>Spectrum Setting</string>
-   </property>
-   <widget class="QLabel" name="label_3">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>30</y>
-      <width>111</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>sampling rate</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_4">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>60</y>
-      <width>54</width>
-      <height>12</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>fft size</string>
-    </property>
-   </widget>
-   <widget class="QRadioButton" name="radioButton">
-    <property name="geometry">
-     <rect>
-      <x>80</x>
-      <y>60</y>
-      <width>331</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>The length of FFT is equal to the length of data</string>
-    </property>
-   </widget>
-   <widget class="QRadioButton" name="radioButton_2">
-    <property name="geometry">
-     <rect>
-      <x>80</x>
-      <y>80</y>
-      <width>331</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>The length of FFT is a power of 2</string>
-    </property>
-   </widget>
-   <widget class="QRadioButton" name="radioButton_3">
-    <property name="geometry">
-     <rect>
-      <x>80</x>
-      <y>100</y>
-      <width>191</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>customize</string>
-    </property>
-   </widget>
-   <widget class="QDoubleSpinBox" name="doubleSpinBox">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>80</x>
-      <y>120</y>
-      <width>191</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="decimals">
-     <number>0</number>
-    </property>
-    <property name="maximum">
-     <double>1000000000000000057857959942726969827393378689175040438172647424.000000000000000</double>
-    </property>
-    <property name="singleStep">
-     <double>64.000000000000000</double>
-    </property>
-   </widget>
-   <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
-    <property name="geometry">
-     <rect>
-      <x>110</x>
-      <y>30</y>
-      <width>191</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="decimals">
-     <number>0</number>
-    </property>
-    <property name="maximum">
-     <double>100000000000000003502199685943161173046080317798311825604870144.000000000000000</double>
-    </property>
-    <property name="singleStep">
-     <double>32.000000000000000</double>
-    </property>
-   </widget>
-   <widget class="QToolButton" name="toolButtonAboutFFTSize">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>80</y>
-      <width>24</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="toolTip">
-     <string>1.Cropping or Zero-Padding Input:
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <item>
+    <widget class="QSplitter" name="splitter">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <widget class="QWidget" name="layoutWidget">
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>select series</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="DA::DADataManagerComboBox" name="comboBoxDataMgr"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>data preview</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTableView" name="tableViewPreview"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QGroupBox" name="groupBox">
+      <property name="title">
+       <string>Spectrum Setting</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>sampling rate</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QDoubleSpinBox" name="doubleSpinBoxFs">
+         <property name="decimals">
+          <number>0</number>
+         </property>
+         <property name="maximum">
+          <double>100000000000000003502199685943161173046080317798311825604870144.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>32.000000000000000</double>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="1">
+        <widget class="QRadioButton" name="radioButtonDB">
+         <property name="text">
+          <string>Decibel(dB)</string>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroupAmplitudeWay</string>
+         </attribute>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QRadioButton" name="radioButtonFFTSizeCusmize">
+         <property name="text">
+          <string>customize</string>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroupFFTSize</string>
+         </attribute>
+        </widget>
+       </item>
+       <item row="1" column="0" colspan="2">
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QLabel" name="label_4">
+           <property name="text">
+            <string>fft size</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="toolButtonAboutFFTSize">
+           <property name="toolTip">
+            <string>1.Cropping or Zero-Padding Input:
 When the FFT length is shorter than the input waveform length, cropping the input can reduce the amount of data the FFT needs to process, thereby improving computational speed. However, doing so may lose some information in the waveform.
 When the FFT length is longer than the input waveform length, zero-padding is used to increase the number of data points. This usually doesn't increase spectral resolution (because no actual signal information is added), but it can make the spectrum appear smoother and may help identify peaks more clearly during graphical presentation.
 
@@ -158,75 +117,165 @@ If the FFT length is not an integer multiple of the signal period, it can lead t
 
 5.Saving Computational Resources:
 In some application scenarios, very high frequency resolution may not be required. In these cases, using a shorter FFT can save computation time and resources while still providing sufficient information to meet the needs.</string>
-    </property>
-    <property name="text">
-     <string>...</string>
-    </property>
-   </widget>
-  </widget>
-  <widget class="QDialogButtonBox" name="buttonBox">
-   <property name="geometry">
-    <rect>
-     <x>510</x>
-     <y>500</y>
-     <width>156</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="standardButtons">
-    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-   </property>
-  </widget>
-  <widget class="QWidget" name="layoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>10</y>
-     <width>171</width>
-     <height>451</height>
-    </rect>
-   </property>
-   <layout class="QVBoxLayout" name="verticalLayout">
-    <item>
-     <widget class="QLabel" name="label">
-      <property name="text">
-       <string>select series</string>
-      </property>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset resource="../resource.qrc">
+             <normaloff>:/DataAnalysis/icons/icon/question.svg</normaloff>:/DataAnalysis/icons/icon/question.svg</iconset>
+           </property>
+           <property name="autoRaise">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+       <item row="3" column="1">
+        <widget class="QRadioButton" name="radioButtonFFTSizePower2">
+         <property name="text">
+          <string>The length of FFT is a next power of 2</string>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroupFFTSize</string>
+         </attribute>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <widget class="QDoubleSpinBox" name="doubleSpinBoxFFTSize">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="decimals">
+          <number>0</number>
+         </property>
+         <property name="maximum">
+          <double>1000000000000000057857959942726969827393378689175040438172647424.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>64.000000000000000</double>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QRadioButton" name="radioButtonFFTSizeEqual">
+         <property name="text">
+          <string>The length of FFT is equal to the length of data</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroupFFTSize</string>
+         </attribute>
+        </widget>
+       </item>
+       <item row="6" column="0" colspan="2">
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>amplitude processing method</string>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="1">
+        <widget class="QRadioButton" name="radioButtonAmplitude">
+         <property name="text">
+          <string>Amplitude</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroupAmplitudeWay</string>
+         </attribute>
+        </widget>
+       </item>
+       <item row="9" column="1">
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
      </widget>
-    </item>
-    <item>
-     <widget class="QComboBox" name="comboBox"/>
-    </item>
-    <item>
-     <widget class="QLabel" name="label_2">
-      <property name="text">
-       <string>data preview</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QTableView" name="tableView"/>
-    </item>
-   </layout>
-  </widget>
+    </widget>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
  </widget>
- <resources/>
+ <customwidgets>
+  <customwidget>
+   <class>DA::DADataManagerComboBox</class>
+   <extends>QComboBox</extends>
+   <header>DADataManagerComboBox.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="../resource.qrc"/>
+ </resources>
  <connections>
   <connection>
-   <sender>radioButton_3</sender>
+   <sender>radioButtonFFTSizeCusmize</sender>
    <signal>toggled(bool)</signal>
-   <receiver>doubleSpinBox</receiver>
+   <receiver>doubleSpinBoxFFTSize</receiver>
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>339</x>
-     <y>118</y>
+     <x>661</x>
+     <y>146</y>
     </hint>
     <hint type="destinationlabel">
-     <x>367</x>
-     <y>137</y>
+     <x>661</x>
+     <y>172</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>DialogSpectrumSetting</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>573</x>
+     <y>524</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>36</x>
+     <y>538</y>
     </hint>
    </hints>
   </connection>
  </connections>
+ <buttongroups>
+  <buttongroup name="buttonGroupAmplitudeWay"/>
+  <buttongroup name="buttonGroupFFTSize"/>
+ </buttongroups>
 </ui>

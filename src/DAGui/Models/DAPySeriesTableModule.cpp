@@ -185,6 +185,15 @@ void DAPySeriesTableModule::setSeries(const QList< DAPySeries >& series)
 }
 
 /**
+ * @brief 获取series
+ *
+ */
+QList< DAPySeries > DAPySeriesTableModule::getSeries() const
+{
+    return d_ptr->mSeries.values();
+}
+
+/**
  * @brief 插入series
  * @param s
  */

@@ -11,7 +11,7 @@ DA_IMPL_FORWARD_DECL(DAPySeriesTableModule)
 /**
  * @brief 用于显示一系列series
  */
-class DAPySeriesTableModule : public QAbstractTableModel
+class DAGUI_API DAPySeriesTableModule : public QAbstractTableModel
 {
     Q_OBJECT
     DA_IMPL(DAPySeriesTableModule)
@@ -29,6 +29,7 @@ public:
 
 public:
     void setSeries(const QList< DAPySeries >& series);
+    QList< DAPySeries > getSeries() const;
     // 追加series
     void appendSeries(const DAPySeries& s);
     void appendSeries(const DAAutoincrementSeries< double >& s);
