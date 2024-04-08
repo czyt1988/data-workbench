@@ -5,6 +5,7 @@
 #include "DAPyScriptsGlobal.h"
 #include "DAPyScriptsIO.h"
 #include "DAPyScriptsDataFrame.h"
+#include "DAPyScriptsDataProcess.h"
 namespace DA
 {
 /**
@@ -24,24 +25,27 @@ namespace DA
  *     return false;
  * }
  * @endcode
+ *
+ * @note 不建议在插件中创建DAPy相关的类，因为插件析构的顺序目前没有做保证，有可能python在插件之前析构而导致问题
  */
 class DAPYSCRIPTS_API DAPyScripts
 {
-    DA_DECLARE_PRIVATE(DAPyScripts)
-    DAPyScripts();
+	DA_DECLARE_PRIVATE(DAPyScripts)
+	DAPyScripts();
 
 public:
-    ~DAPyScripts();
-    // 初始化脚本
-    static void appendSysPath(const QString& path);
-    bool isInitScripts() const;
-    static DAPyScripts& getInstance();
-    DAPyScriptsIO& getIO();
-    DAPyScriptsDataFrame& getDataFrame();
+	~DAPyScripts();
+	// 初始化脚本
+	static void appendSysPath(const QString& path);
+	bool isInitScripts() const;
+	static DAPyScripts& getInstance();
+	DAPyScriptsIO& getIO();
+	DAPyScriptsDataFrame& getDataFrame();
+	DAPyScriptsDataProcess& getDataProcess();
 
 protected:
-    // import sys
-    bool loadSysModule();
+	// import sys
+	bool loadSysModule();
 };
 }  // namespace DA
 #endif  // DAPYSCRIPTS_H
