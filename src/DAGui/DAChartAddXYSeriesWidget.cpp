@@ -18,7 +18,6 @@ public:
 
 public:
     DADataManager* _dataMgr { nullptr };
-    DAData _currentData;
 #if DA_ENABLE_PYTHON
     DAPySeriesTableModule* _model { nullptr };
 #endif
@@ -42,9 +41,14 @@ DAChartAddXYSeriesWidget::DAChartAddXYSeriesWidget(QWidget* parent)
 #endif
     QFontMetrics fm = fontMetrics();
     ui->tableViewXY->verticalHeader()->setDefaultSectionSize(fm.lineSpacing() * 1.1);
-    connect(ui->comboBoxDataFrame, QOverload< int >::of(&QComboBox::currentIndexChanged), this, &DAChartAddXYSeriesWidget::onComboBoxCurrentIndexChanged);
-    connect(ui->comboBoxX, &DADataManagerComboBox::currentDataframeSeriesChanged, this, &DAChartAddXYSeriesWidget::onComboBoxXCurrentDataframeSeriesChanged);
-    connect(ui->comboBoxY, &DADataManagerComboBox::currentDataframeSeriesChanged, this, &DAChartAddXYSeriesWidget::onComboBoxYCurrentDataframeSeriesChanged);
+    connect(ui->comboBoxX,
+            &DADataManagerComboBox::currentDataframeSeriesChanged,
+            this,
+            &DAChartAddXYSeriesWidget::onComboBoxXCurrentDataframeSeriesChanged);
+    connect(ui->comboBoxY,
+            &DADataManagerComboBox::currentDataframeSeriesChanged,
+            this,
+            &DAChartAddXYSeriesWidget::onComboBoxYCurrentDataframeSeriesChanged);
     connect(ui->groupBoxXAutoincrement, &QGroupBox::clicked, this, &DAChartAddXYSeriesWidget::onGroupBoxXAutoincrementClicked);
     connect(ui->groupBoxYAutoincrement, &QGroupBox::clicked, this, &DAChartAddXYSeriesWidget::onGroupBoxYAutoincrementClicked);
 }
@@ -102,21 +106,9 @@ QVector< QPointF > DAChartAddXYSeriesWidget::getSeries() const
  */
 void DAChartAddXYSeriesWidget::setCurrentData(const DAData& d)
 {
-    d_ptr->_currentData = d;
-    updateData();
-}
-
-DAData DAChartAddXYSeriesWidget::getCurrentData() const
-{
-    return d_ptr->_currentData;
-}
-
-/**
- * @brief 更新
- */
-void DAChartAddXYSeriesWidget::updateData()
-{
-    updateDataframeComboboxSelect();
+    // 这里看看这个数据给它一个，默认的选择
+    ui->comboBoxX->setCurrentDAData(d);
+    ui->comboBoxY->setCurrentDAData(d);
 }
 
 /**
@@ -126,6 +118,9 @@ void DAChartAddXYSeriesWidget::updateData()
  */
 void DAChartAddXYSeriesWidget::onComboBoxXCurrentDataframeSeriesChanged(const DAData& data, const QString& seriesName)
 {
+    if (seriesName.isEmpty()) {
+        return;
+    }
 #if DA_ENABLE_PYTHON
     DAPySeries series;
     DAPyDataFrame df = data.toDataFrame();
@@ -143,6 +138,9 @@ void DAChartAddXYSeriesWidget::onComboBoxXCurrentDataframeSeriesChanged(const DA
  */
 void DAChartAddXYSeriesWidget::onComboBoxYCurrentDataframeSeriesChanged(const DAData& data, const QString& seriesName)
 {
+    if (seriesName.isEmpty()) {
+        return;
+    }
 #if DA_ENABLE_PYTHON
     DAPySeries series;
     DAPyDataFrame df = data.toDataFrame();
@@ -203,59 +201,6 @@ void DAChartAddXYSeriesWidget::onGroupBoxYAutoincrementClicked(bool on)
 #endif
 }
 
-void DAChartAddXYSeriesWidget::onComboBoxCurrentIndexChanged(int i)
-{
-    if (nullptr == d_ptr->_dataMgr || i < 0) {
-        return;
-    }
-    DAData d = d_ptr->_dataMgr->getData(i);
-    setCurrentData(d);
-}
-
-/**
- * @brief 刷新dataframe combobox
- */
-void DAChartAddXYSeriesWidget::resetDataframeCombobox()
-{
-    if (nullptr == d_ptr->_dataMgr) {
-        return;
-    }
-#if DA_ENABLE_PYTHON
-    ui->comboBoxDataFrame->clear();
-    int c = d_ptr->_dataMgr->getDataCount();
-    for (int i = 0; i < c; ++i) {
-        DAData d = d_ptr->_dataMgr->getData(i);
-        if (d.isNull() || !d.isDataFrame()) {
-            continue;
-        }
-        DAPyDataFrame df = d.toDataFrame();
-        if (df.isNone()) {
-            continue;
-        }
-        // id作为data
-        ui->comboBoxDataFrame->addItem(d.getName(), d.id());
-    }
-    ui->comboBoxDataFrame->setCurrentIndex(-1);  // 不选中
-#endif
-}
-
-/**
- * @brief 更新combobox的选中状态，但不会触发currentIndexChanged信号
- */
-void DAChartAddXYSeriesWidget::updateDataframeComboboxSelect()
-{
-    if (nullptr == d_ptr->_dataMgr) {
-        return;
-    }
-    int index = d_ptr->_dataMgr->getDataIndex(d_ptr->_currentData);
-    if (index < 0) {
-        return;
-    }
-    QSignalBlocker b(ui->comboBoxDataFrame);
-    Q_UNUSED(b);
-    ui->comboBoxDataFrame->setCurrentIndex(index);
-}
-
 /**
  * @brief 获取x自增
  * @param v
@@ -268,10 +213,10 @@ bool DAChartAddXYSeriesWidget::getXAutoIncFromUI(DAAutoincrementSeries< double >
     double base = ui->lineEditXInitValue->text().toDouble(&isOK);
     if (!isOK) {
         QMessageBox::
-                warning(this,
-                        tr("Warning"),  // cn:警告
-                        tr("The initial value of x auto increment series must be a floating-point arithmetic number")  // cn:x自增序列的初始值必须为浮点数
-                );
+            warning(this,
+                    tr("Warning"),  // cn:警告
+                    tr("The initial value of x auto increment series must be a floating-point arithmetic number")  // cn:x自增序列的初始值必须为浮点数
+            );
         return false;
     }
     double step = ui->lineEditXStepValue->text().toDouble(&isOK);
@@ -362,7 +307,7 @@ bool DAChartAddXYSeriesWidget::getToVectorPointFFromUI(QVector< QPointF >& res)
             std::vector< double > vy;
             vy.reserve(y.size());
             y.castTo< double >(std::back_inserter(vy));
-            res.resize(static_cast<int>(s));
+            res.resize(static_cast< int >(s));
             for (int i = 0; i < s; ++i) {
                 res[ i ].setX(xinc[ i ]);
                 res[ i ].setY(vy[ i ]);
@@ -370,7 +315,7 @@ bool DAChartAddXYSeriesWidget::getToVectorPointFFromUI(QVector< QPointF >& res)
         } catch (const std::exception& e) {
             qCritical() << tr("Exception occurred during extracting from "
                               "pandas.Series to double vector:%1")
-                                   .arg(e.what());  // cn:从pandas.Series提取为double vector过程中出现异常:%1
+                               .arg(e.what());  // cn:从pandas.Series提取为double vector过程中出现异常:%1
             QMessageBox::warning(this,
                                  tr("Warning"),  // cn:警告
                                  tr("Exception occurred during extracting from "
@@ -403,7 +348,7 @@ bool DAChartAddXYSeriesWidget::getToVectorPointFFromUI(QVector< QPointF >& res)
             std::vector< double > vx;
             vx.reserve(x.size());
             x.castTo< double >(std::back_inserter(vx));
-            res.resize(static_cast<int>(s));
+            res.resize(static_cast< int >(s));
             for (auto i = 0; i < s; ++i) {
                 res[ i ].setX(vx[ i ]);
                 res[ i ].setY(yinc[ i ]);
@@ -411,7 +356,7 @@ bool DAChartAddXYSeriesWidget::getToVectorPointFFromUI(QVector< QPointF >& res)
         } catch (const std::exception& e) {
             qCritical() << tr("Exception occurred during extracting from "
                               "pandas.Series to double vector:%1")
-                                   .arg(e.what());  // cn:从pandas.Series提取为double vector过程中出现异常:%1
+                               .arg(e.what());  // cn:从pandas.Series提取为double vector过程中出现异常:%1
             QMessageBox::warning(this,
                                  tr("Warning"),  // cn:警告
                                  tr("Exception occurred during extracting from "
@@ -459,7 +404,8 @@ bool DAChartAddXYSeriesWidget::getToVectorPointFFromUI(QVector< QPointF >& res)
                 res[ i ].setY(vy[ i ]);
             }
         } catch (const std::exception& e) {
-            qCritical() << tr("Exception occurred during extracting from pandas.Series to double vector:%1").arg(e.what());  // cn:从pandas.Series提取为double vector过程中出现异常:%1
+            qCritical() << tr("Exception occurred during extracting from pandas.Series to double vector:%1")
+                               .arg(e.what());  // cn:从pandas.Series提取为double vector过程中出现异常:%1
             return false;
         }
     }

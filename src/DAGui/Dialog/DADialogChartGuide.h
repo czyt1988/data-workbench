@@ -14,6 +14,7 @@ class QListWidgetItem;
 namespace DA
 {
 class DADataManager;
+class DAAbstractChartAddItemWidget;
 /**
  * @brief 把dataframe抽取两列转换为两个double-vector
  * @code
@@ -36,7 +37,6 @@ public:
     void setDataManager(DADataManager* dmgr);
     // 设置datafram
     void setCurrentData(const DAData& d);
-    DAData getCurrentData() const;
     // 获取当前的绘图类型
     DA::ChartTypes getCurrentChartType() const;
     // 设置当前的绘图类型
@@ -45,9 +45,21 @@ public:
     QwtPlotItem* createPlotItem();
     // 更新数据
     void updateData();
+    // 更新按钮的文字
+    void updateButtonTextAndState();
+    // 获取当前的绘图指引窗口
+    DAAbstractChartAddItemWidget* getCurrentChartAddItemWidget() const;
+    // 是否有下一页
+    bool hasNext(DAAbstractChartAddItemWidget* w);
+    // 是否有前一页
+    bool hasPrevious(DAAbstractChartAddItemWidget* w);
 private slots:
     // 选择绘图类型改变
     void onListWidgetCurrentItemChanged(QListWidgetItem* current, QListWidgetItem* previous);
+    //
+    void onPushButtonPreviousClicked();
+    void onPushButtonNextClicked();
+    void onPushButtonCancelClicked();
 
 private:
     void init();

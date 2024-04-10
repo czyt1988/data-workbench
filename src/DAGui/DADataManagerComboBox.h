@@ -24,6 +24,8 @@ public:
     DADataManager* getDataManager() const;
     // 获取当前的Data
     DAData getCurrentDAData() const;
+    // 设置当前选中的data
+    void setCurrentDAData(const DAData& d);
     // 是否把dataframe下的series也展示,默认为true
     void setShowSeriesUnderDataframe(bool on);
     bool isShowSeriesUnderDataframe() const;

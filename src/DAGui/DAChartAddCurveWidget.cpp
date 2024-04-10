@@ -68,11 +68,6 @@ void DAChartAddCurveWidget::setCurrentData(const DAData& d)
     ui->pageData->setCurrentData(d);
 }
 
-DAData DAChartAddCurveWidget::getCurrentData() const
-{
-    return ui->pageData->getCurrentData();
-}
-
 void DAChartAddCurveWidget::setDataManager(DADataManager* dmgr)
 {
     ui->pageData->setDataManager(dmgr);
@@ -86,6 +81,52 @@ void DAChartAddCurveWidget::setScatterMode(bool on)
         ui->pagePlot->setCurveStyle(QwtPlotCurve::Lines);
     }
     ui->pagePlot->enableMarkerEdit(on);
+}
+
+void DAChartAddCurveWidget::next()
+{
+    auto i = ui->stackedWidget->currentIndex();
+    auto c = ui->stackedWidget->count();
+    if (i < c) {
+        ++i;
+        ui->stackedWidget->setCurrentIndex(i);
+    }
+    updateNavButtonState();
+}
+
+void DAChartAddCurveWidget::previous()
+{
+    auto i = ui->stackedWidget->currentIndex();
+    --i;
+    if (i >= 0) {
+        ui->stackedWidget->setCurrentIndex(i);
+    }
+    updateNavButtonState();
+}
+
+/**
+ * @brief 获取步骤总数
+ * @return 如果为0或者1，下一步按钮将没有直接就是完成
+ */
+int DAChartAddCurveWidget::getStepCount() const
+{
+    return ui->stackedWidget->count();
+}
+
+int DAChartAddCurveWidget::getCurrentStep() const
+{
+    return ui->stackedWidget->currentIndex();
+}
+
+void DAChartAddCurveWidget::updateNavButtonState()
+{
+    auto i = ui->stackedWidget->currentIndex();
+    QSignalBlocker b(d_ptr->mBtnGroup);
+    if (0 == i) {
+        ui->toolButtonStepData->setChecked(true);
+    } else {
+        ui->toolButtonStepPlot->setChecked(true);
+    }
 }
 
 void DAChartAddCurveWidget::onNavButtonClicked(QAbstractButton* button)

@@ -122,6 +122,17 @@ DAData DADataManagerComboBox::getCurrentDAData() const
     return DAData();
 }
 
+void DADataManagerComboBox::setCurrentDAData(const DAData& d)
+{
+    auto i = d_ptr->_treeDataModel->dataToItem(d);
+    if (i) {
+        int ni = i->index().row();
+        if (ni < count()) {
+            setCurrentIndex(ni);
+        }
+    }
+}
+
 void DADataManagerComboBox::setShowSeriesUnderDataframe(bool on)
 {
     if (d_ptr->mShowSeriesUnderDataframe != on) {

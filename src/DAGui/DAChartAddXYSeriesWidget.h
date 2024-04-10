@@ -38,21 +38,13 @@ public:
     QVector< QPointF > getSeries() const;
     // 设置datafram
     void setCurrentData(const DAData& d);
-    DAData getCurrentData() const;
-    // 更新数据
-    void updateData();
 private slots:
     void onComboBoxXCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
     void onComboBoxYCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
     void onGroupBoxXAutoincrementClicked(bool on);
     void onGroupBoxYAutoincrementClicked(bool on);
-    void onComboBoxCurrentIndexChanged(int i);
 
 protected:
-    // 刷新dataframe combobox
-    void resetDataframeCombobox();
-    // 更新combobox的选则状态
-    void updateDataframeComboboxSelect();
     // 获取x自增
     bool getXAutoIncFromUI(DAAutoincrementSeries< double >& v);
     // 获取y自增

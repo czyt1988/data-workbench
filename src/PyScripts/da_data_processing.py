@@ -4,11 +4,13 @@ import os
 from typing import List,Dict,Optional
 import pandas as pd
 import numpy as np
+import scipy
 
 
-def spectrum_analysis(waveform, sampling_rate, fftsize=None,phases=False,nextpower2=False,db=False,detrend=False):
+def spectrum_analysis(waveform, sampling_rate, fftsize=None,phases=False,
+                      nextpower2=False,db=False,detrend=None):
     '''
-    频谱分析
+    频谱分析,此函数主要针对一维波形进行频谱分析
 
     :param waveform: 输入波形数据，可以是一维数组或列表  
     :param sampling_rate: 采样率  
@@ -17,9 +19,10 @@ def spectrum_analysis(waveform, sampling_rate, fftsize=None,phases=False,nextpow
     :param nextpower2: 是否将FFT变换的窗口大小取下一个2的整数次幂，默认为False，表示不取下一个2的整数次幂
                     此参数仅在fftsize为None或负数时生效
     :param db: 是否将振幅转换为分贝值，如果为True，则将振幅转换为分贝值，否则不转换
-    :param detrend: 是否进行去趋势处理，如果为True，则进行去趋势处理，否则不处理
+    :param detrend: 是否进行去趋势处理，'linear','constant'两个参数可选
     :return: 频谱分析结果，包含频率、振幅(或相位)两(三)个部分  
-    :rtype: pd.DataFrame
+    :rtype: phases=False tuple(freq(频率):np.ndarray, amplitudes(幅值):np.ndarray)
+            phases=True tuple(freq(频率):np.ndarray, amplitudes(幅值):np.ndarray ,phases(相位):np.ndarray)
     '''
     if fftsize is None or fftsize <= 1: #fftsize=1或负数是没有意义的，这里一并处理为波形长度 
         if nextpower2:  # 如果nextpower2为True，则将fftsize取下一个2的整数次幂  
@@ -34,8 +37,9 @@ def spectrum_analysis(waveform, sampling_rate, fftsize=None,phases=False,nextpow
         elif fftsize < len(waveform):  
             waveform = waveform[:fftsize]
 
-    if detrend:  # 如果需要去趋势处理,去除直流分量（即信号的平均值）  
-        waveform = waveform - np.mean(waveform)
+    #如果detrend不是None,则调用scipy.signal.detrend函数对波形进行去趋势处理
+    if detrend is not None:  
+        scipy.signal.detrend(waveform, type=detrend, overwrite_data = True) 
 
     # 对波形执行FFT变换  
     fft_values = np.fft.rfft(waveform)  
@@ -68,7 +72,7 @@ def spectrum_analysis(waveform, sampling_rate, fftsize=None,phases=False,nextpow
 
 def da_spectrum_analysis(waveform, sampling_rate, args:Optional[Dict] = None):
     '''
-    频谱分析
+    频谱分析,此函数主要针对一维波形进行频谱分析
     :param waveform: 输入波形数据，可以是一维数组或列表
     :param sampling_rate: 采样率
     :param fftsize: FFT变换的窗口大小，默认为None，表示使用波形的长度
@@ -87,4 +91,10 @@ def da_spectrum_analysis(waveform, sampling_rate, args:Optional[Dict] = None):
                 'freq': res[0],  
                 'amplitudes': res[1],   
             })  
-    
+
+if __name__ == '__main__':
+    # 获取函数spectrum_analysis的注解
+    annotations = spectrum_analysis.__annotations__
+    print(f'annotations:{annotations}')
+    doc = spectrum_analysis.__doc__
+    print(f'annotations:{doc}')

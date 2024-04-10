@@ -26,6 +26,16 @@ public:
      * @brief 更新数据，可不实现
      */
     virtual void updateData();
+
+    /// 如果要实现下一步，上一步，需要实现下面的接口
+    // 下一步
+    virtual void next();
+    // 上一步
+    virtual void previous();
+    // 获取步骤总数
+    virtual int getStepCount() const;
+    // 获取步骤总数
+    virtual int getCurrentStep() const;
 };
 }  // end DA
 
