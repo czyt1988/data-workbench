@@ -12,10 +12,10 @@
 DataAnalysController::DataAnalysController(DA::DACoreInterface* core, DataAnalysisActions* actions, QObject* p)
     : QObject(p), mCore(core), mActions(actions)
 {
-    mDataMgr           = mCore->getDataManagerInterface()->dataManager();
+	mDataMgr           = mCore->getDataManagerInterface()->dataManager();
 	mDockingArea       = mCore->getUiInterface()->getDockingArea();
 	mDataManagerWidget = mDockingArea->getDataManageWidget();
-    mExecutor          = std::make_unique< DataAnalysExecutor >();
+	mExecutor          = std::make_unique< DataAnalysExecutor >();
 	initConnect();
 }
 
@@ -43,21 +43,21 @@ void DataAnalysController::initConnect()
  */
 DialogSpectrumSetting* DataAnalysController::getSpectrumSettingDialog()
 {
-    if (mDialogSpectrumSetting) {
-        return mDialogSpectrumSetting;
-    }
-    mDialogSpectrumSetting = new DialogSpectrumSetting(mCore->getUiInterface()->getMainWindow());
-    mDialogSpectrumSetting->setDataManager(mCore->getDataManagerInterface()->dataManager());
-    return mDialogSpectrumSetting;
+	if (mDialogSpectrumSetting) {
+		return mDialogSpectrumSetting;
+	}
+	mDialogSpectrumSetting = new DialogSpectrumSetting(mCore->getUiInterface()->getMainWindow());
+	mDialogSpectrumSetting->setDataManager(mCore->getDataManagerInterface()->dataManager());
+	return mDialogSpectrumSetting;
 }
 
 DA::DAPySeries DataAnalysController::getCurrentSelectSeries()
 {
-    std::pair< DA::DAPyDataFrame, QList< int > > selDatas = mDockingArea->getCurrentSelectDataFrame();
-    if (selDatas.second.size() != 1) {
-        return DA::DAPySeries();
-    }
-    return selDatas.first[ selDatas.second.back() ];
+	std::pair< DA::DAPyDataFrame, QList< int > > selDatas = mDockingArea->getCurrentSelectDataFrame();
+	if (selDatas.second.size() != 1) {
+		return DA::DAPySeries();
+	}
+	return selDatas.first[ selDatas.second.back() ];
 }
 
 /**
@@ -65,33 +65,34 @@ DA::DAPySeries DataAnalysController::getCurrentSelectSeries()
  */
 void DataAnalysController::onActionSpectrumTriggered()
 {
-    DA::DAPySeries selSeries   = getCurrentSelectSeries();
-    DialogSpectrumSetting* dlg = getSpectrumSettingDialog();
-    if (!selSeries.isNone()) {
-        dlg->setCurrentSeries(selSeries);
-    }
-    // 执行
-    if (QDialog::Accepted != dlg->exec()) {
-        return;
-    }
-    // 频谱分析的基本参数
-    DA::DAPySeries wave = dlg->getCurrentSeries();
-    double fs           = dlg->getSamplingRate();
-    QVariantMap args    = dlg->getSpectrumSetting();
-    if (wave.isNone()) {
-        return;
-    }
-    // 执行
-    QString err;
-    DA::DAPyDataFrame df = mExecutor->spectrum_analysis(wave, fs, args, &err);
-    if (df.isNone()) {
-        if (!err.isEmpty()) {
-            qCritical() << err;
-            return;
-        }
-    }
-    // 把数据装入datamanager
-    DA::DAData d(df);
-    d.setName(QString("%1-spectrum").arg(wave.name()));
-    mDataMgr->addData_(d);
+	DA::DAPySeries selSeries   = getCurrentSelectSeries();
+	DialogSpectrumSetting* dlg = getSpectrumSettingDialog();
+	if (!selSeries.isNone()) {
+		dlg->setCurrentSeries(selSeries);
+	}
+	// 执行
+	if (QDialog::Accepted != dlg->exec()) {
+		return;
+	}
+	// 频谱分析的基本参数
+	DA::DAPySeries wave = dlg->getCurrentSeries();
+	double fs           = dlg->getSamplingRate();
+	QVariantMap args    = dlg->getSpectrumSetting();
+	if (wave.isNone()) {
+		return;
+	}
+	// 执行
+	QString err;
+	DA::DAPyDataFrame df = mExecutor->spectrum_analysis(wave, fs, args, &err);
+	if (df.isNone()) {
+		if (!err.isEmpty()) {
+			qCritical() << err;
+			return;
+		}
+	}
+	// 把数据装入datamanager
+	DA::DAData d(df);
+	d.setName(QString("%1-spectrum").arg(wave.name()));
+	mDataMgr->addData_(d);
+	// 绘图
 }

@@ -260,6 +260,9 @@
       </item>
       <item row="1" column="1" colspan="2">
        <widget class="DA::DABrushEditWidget" name="brushEditWidget" native="true">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
           <horstretch>0</horstretch>
@@ -326,6 +329,9 @@
       </item>
       <item row="1" column="1" colspan="2">
        <widget class="DA::DAChartSymbolEditWidget" name="symbolEditWidget" native="true">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
           <horstretch>0</horstretch>
@@ -371,7 +377,7 @@
    <sender>checkBoxEnableMarker</sender>
    <signal>toggled(bool)</signal>
    <receiver>symbolEditWidget</receiver>
-   <slot>setVisible(bool)</slot>
+   <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>43</x>
@@ -387,7 +393,7 @@
    <sender>checkBoxEnableFill</sender>
    <signal>toggled(bool)</signal>
    <receiver>brushEditWidget</receiver>
-   <slot>setVisible(bool)</slot>
+   <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>35</x>
@@ -396,38 +402,6 @@
     <hint type="destinationlabel">
      <x>239</x>
      <y>341</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>checkBoxEnableFill</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>label_8</receiver>
-   <slot>setVisible(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>67</x>
-     <y>305</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>57</x>
-     <y>331</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>checkBoxEnableMarker</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>labelMarker</receiver>
-   <slot>setVisible(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>73</x>
-     <y>221</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>74</x>
-     <y>242</y>
     </hint>
    </hints>
   </connection>

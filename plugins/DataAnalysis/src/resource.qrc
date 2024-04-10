@@ -3,5 +3,6 @@
         <file>icon/importTxt.svg</file>
         <file>icon/spectrum.svg</file>
         <file>icon/question.svg</file>
+        <file>icon/signal-filter.svg</file>
     </qresource>
 </RCC>

@@ -41,7 +41,11 @@ def read_txt(path:str,args:Optional[Dict] = None) -> pd.DataFrame:
     '''
     if args is None:
         args = {}
-    return pd.read_table(path,**args)
+    df = pd.read_table(path,**args)
+    #判断df的表头是否为str以外的类型，如果不是str类型，转换为str类型（header=None时自动生成的表头是int64,索引的时候使用字符串会报错）
+    if df.columns.dtype != np.dtype('<U1'):
+        df.columns = df.columns.astype(str)
+    return df
 
 
 
@@ -72,11 +76,13 @@ if __name__ == '__main__':
     print('co_argcount=',read_csv.__code__.co_argcount)
     print('co_varnames=',read_csv.__code__.co_varnames)
     
-    res = pd.read_table(r'C:\src\Qt\data-workbench\tmp\测试数据.txt',header=14,skiprows=0,encoding='gbk',nrows=20,sep="\s+")
+    res = pd.read_table(r'C:\src\Qt\data-workbench\tmp\0911-0910\CH_01_20230910_000000.txt',sep="\t",header=None)
     print(len(res.columns))
     print(res.columns)
     print(res.shape)
-    print(res)
+    
+
+    # print(res)
     # v = np.genfromtxt(r'C:\src\Qt\data-workbench\tmp\测试数据.txt',skip_header=14,names=True,encoding='gbk',dtype=float)
     # print(v.shape)
     # print(v.dtype)

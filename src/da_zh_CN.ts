@@ -936,27 +936,27 @@ Table Area</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1162"/>
+        <location filename="APP/DAAppController.cpp" line="1163"/>
         <source>Before creating a new coordinate,you need to create a figure</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1607"/>
+        <location filename="APP/DAAppController.cpp" line="1608"/>
         <source>%1_Describe</source>
         <translation>%1_Describe</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1608"/>
+        <location filename="APP/DAAppController.cpp" line="1609"/>
         <source>Generate descriptive statistics that summarize the central tendency, dispersion and shape of a [%1]’s distribution, excluding NaN values</source>
         <translation>生成描述性统计数据，汇总[%1]分布的中心趋势、分散度和结构（不包括NaN值）</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1727"/>
+        <location filename="APP/DAAppController.cpp" line="1728"/>
         <source>new workflow name</source>
         <translation>新工作流名称</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1728"/>
+        <location filename="APP/DAAppController.cpp" line="1729"/>
         <source>new workflow name:</source>
         <translation>工作流名称:</translation>
     </message>
@@ -1297,87 +1297,87 @@ Table Area</source>
 <context>
     <name>DA::DAChartAddXYSeriesWidget</name>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="40"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="39"/>
         <source>x</source>
         <translation>x</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="40"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="39"/>
         <source>y</source>
         <translation>y</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="272"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="217"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="225"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="248"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="257"/>
         <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="280"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="303"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="312"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="335"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="349"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="356"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="375"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="389"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="397"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="416"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="427"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="434"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="442"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="294"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="301"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="320"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="334"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="342"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="361"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="372"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="379"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="387"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="273"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="218"/>
         <source>The initial value of x auto increment series must be a floating-point arithmetic number</source>
         <translation>x自增序列的初始值必须为浮点数</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="281"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="226"/>
         <source>The step value of x auto increment series must be a floating-point arithmetic number</source>
         <translation>x自增序列的步长必须为浮点数</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="304"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="249"/>
         <source>The initial value of y auto increment series must be a floating-point arithmetic number</source>
         <translation>y自增序列的初始值必须为浮点数</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="313"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="258"/>
         <source>The step value of y auto increment series must be a floating-point arithmetic number</source>
         <translation>y自增序列的步长必须为浮点数</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="336"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="281"/>
         <source>x and y cannot be set to autoincrement at the same time</source>
         <translation>x和y无法同时设置为自增</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="357"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="398"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="443"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="302"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="343"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="388"/>
         <source>The None value cannot be converted to a series</source>
         <translation>None值无法转换为序列</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="376"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="417"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="321"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="362"/>
         <source>Exception occurred during extracting from pandas.Series to double vector</source>
         <translation>从pandas.Series提取为double vector过程中出现异常</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="390"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="428"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="335"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="373"/>
         <source>x must be a series</source>
         <translation>x必须是序列</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="350"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="435"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="295"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="380"/>
         <source>y must be a series</source>
         <translation>y必须是序列</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="371"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="412"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="462"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="316"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="357"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="407"/>
         <source>Exception occurred during extracting from pandas.Series to double vector:%1</source>
         <translation>从pandas.Series提取为double vector过程中出现异常:%1</translation>
     </message>
@@ -1788,12 +1788,12 @@ Table Area</source>
 <context>
     <name>DA::DADialogChartGuide</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="30"/>
+        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="35"/>
         <source>curve</source>
         <translation>曲线</translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="34"/>
+        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="39"/>
         <source>scatter</source>
         <translation>散点</translation>
     </message>
@@ -2236,8 +2236,8 @@ Table Area</source>
     </message>
     <message>
         <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="177"/>
-        <source>read txt file(%1) occure error,reason:%2</source>
-        <oldsource>read txt file(%1) occure error,reason:%3</oldsource>
+        <source>read txt file(%1) occure error,reason:%3</source>
+        <oldsource>read txt file(%1) occure error,reason:%2</oldsource>
         <translation type="unfinished">读取txt文件%1发生了错误，原因是：%2</translation>
     </message>
 </context>
@@ -2405,43 +2405,38 @@ Table Area</source>
         <translation>添加序列</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="28"/>
-        <source>Data Frame</source>
-        <translation>数据帧</translation>
-    </message>
-    <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="63"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="36"/>
         <source>X</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="75"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="136"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="48"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="109"/>
         <source>Autoincrement series</source>
         <translation>自增序列</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="90"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="151"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="63"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="124"/>
         <source>Initial value</source>
         <translation>初始值</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="97"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="111"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="158"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="172"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="70"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="84"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="131"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="145"/>
         <source>1</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="104"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="165"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="77"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="138"/>
         <source>Self increasing step size</source>
         <translation>步长</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="124"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="97"/>
         <source>Y</source>
         <translation></translation>
     </message>
@@ -2509,7 +2504,7 @@ Table Area</source>
         <translation>曲线画笔</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="316"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="319"/>
         <source>Marker</source>
         <translation>标记</translation>
     </message>
@@ -2555,7 +2550,7 @@ Table Area</source>
         <translation>填充画笔</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="298"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="301"/>
         <source>Marker Setting</source>
         <translation>标记设置</translation>
     </message>
@@ -2705,6 +2700,21 @@ Table Area</source>
         <location filename="DAGui/Dialog/DADialogChartGuide.ui" line="14"/>
         <source>Chart Guide</source>
         <translation>绘图引导</translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogChartGuide.ui" line="77"/>
+        <source>Previous</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogChartGuide.ui" line="84"/>
+        <source>Next</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogChartGuide.ui" line="91"/>
+        <source>Cancel</source>
+        <translation type="unfinished">取消</translation>
     </message>
 </context>
 <context>
@@ -4588,7 +4598,7 @@ Wrap</source>
         <translation>python object类型不是pandas.Series</translation>
     </message>
     <message>
-        <location filename="DAPyScripts/DAPyScripts.cpp" line="56"/>
+        <location filename="DAPyScripts/DAPyScripts.cpp" line="57"/>
         <source>Initialized import sys module error:%1</source>
         <translation>初始化过程导入sys模块错误:%1</translation>
     </message>
