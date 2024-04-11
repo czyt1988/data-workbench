@@ -142,3 +142,36 @@ set_target_properties(${DA_PLUGIN_NAME} PROPERTIES
 ########################################################
 damacro_plugin_install()
 
+
+
+##################################
+# 翻译
+##################################
+
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS LinguistTools QUIET)
+
+# 命名规则一定要按照qt的命名规则，否则无法找到xx_zh_CN或者xxx_en_US
+set(DA_TS_FILES
+    "${CMAKE_CURRENT_LIST_DIR}/${DA_PLUGIN_NAME}_zh_CN.ts"
+    "${CMAKE_CURRENT_LIST_DIR}/${DA_PLUGIN_NAME}_en_US.ts"
+)
+# DA 在 初始化的时候会查找translations和translations_user两个目录的翻译，插件的翻译建议在translations_user中
+set(DA_BUILD_TRANSLATIONS_DIR ${DAWorkbench_INSTALL_DIR}/bin/translations_user)
+
+# 让qm文件直接生成到DA_BUILD_TRANSLATIONS_DIR下
+set_source_files_properties(${DA_TS_FILES} PROPERTIES OUTPUT_LOCATION ${DA_BUILD_TRANSLATIONS_DIR})
+
+if("${QT_VERSION_MAJOR}" STREQUAL "5")
+    qt5_create_translation(DA_QM_FILES ${CMAKE_CURRENT_LIST_DIR} ${DA_TS_FILES} OPTIONS -source-language en_US -no-obsolete)
+else()
+    qt6_create_translation(DA_QM_FILES ${CMAKE_CURRENT_LIST_DIR} ${DA_TS_FILES} OPTIONS -source-language en_US -no-obsolete)
+endif()
+# 添加更新翻译的目标
+add_custom_target(daplugins_update_translations DEPENDS ${DA_TS_FILES})
+
+# 添加发布翻译的目标
+add_custom_target(daplugins_release_translations DEPENDS ${DA_QM_FILES})
+
+# 安装翻译 - 在install上使用
+install(DIRECTORY ${DA_BUILD_TRANSLATIONS_DIR} DESTINATION bin)
+

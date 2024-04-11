@@ -88,6 +88,7 @@ int DATranslatorManeger::installAllTranslator()
  */
 int DATranslatorManeger::installAllTranslator(const QString& langCode)
 {
+    qDebug() << "begin install translator at " << langCode;
     QList< QString > trPaths = getTranslatorFilePath();
     QList< QString > trName  = getTranslatorFileNames();
     int cnt                  = 0;
@@ -104,7 +105,7 @@ int DATranslatorManeger::installAllTranslator(const QString& langCode)
                 translators.append(translator.take());
                 qDebug() << "success load language file:" << fullName << " in dir " << dir.absolutePath();
             } else {
-                qDebug() << "can not find translator by " << fullName << " in dir " << dir.absolutePath();
+                qDebug() << "can not load translator:" << fullName << " in dir " << dir.absolutePath();
             }
         }
     }
@@ -115,7 +116,7 @@ int DATranslatorManeger::installAllTranslator(const QString& langCode)
                 d_ptr->mTranslatorLists.append(t);
             } else {
                 qWarning() << "can not install translator to application";
-                delete t;  //如果安装不成功直接删除QTranslator
+                delete t;  // 如果安装不成功直接删除QTranslator
             }
         }
     }
