@@ -42,7 +42,7 @@ public:
     QVariant dataDisplayRole(QwtPlotItem* item, int c) const;
     void setDataEditRole(const QVariant& value, QwtPlotItem* item, int c);
     QVariant dataDecorationRole(QwtPlotItem* item, int c) const;
-    //获取item的名字
+    // 获取item的名字
     QString getItemName(QwtPlotItem* item) const;
 
 private:
@@ -72,7 +72,7 @@ public:
     DAChartWidget* getChart() const;
     void setChart(DAChartWidget* getChart);
 
-    //添加item
+    // 添加item
     void appendChartItem(QwtPlotItem* i);
 
 private:
@@ -92,30 +92,32 @@ class DAFIGURE_API DAFigureTreeModel : public QStandardItemModel
 public:
     DAFigureTreeModel(QObject* parent = 0);
     ~DAFigureTreeModel();
-    //设置fig
+    // 设置fig
     void setFigure(DAFigureWidget* fig);
     DAFigureWidget* getFigure() const;
     // chart的索引
     int indexOfChart(DAChartWidget* c) const;
-    //查找和QwtPlotItem相关的QStandardItem,O(n)
+    // 查找和QwtPlotItem相关的QStandardItem,O(n)
     QList< QStandardItem* > findChartItems(QwtPlotItem* i);
 
 public:
     // item转icon
     static QIcon chartItemToIcon(const QwtPlotItem* i);
-    //通过color获取icon
+    // 通过color获取icon
     static QIcon colorIcon(const QColor& c, bool drawBorder = true);
-    //通过QBrush获取icon
+    // 通过QBrush获取icon
     static QIcon brushIcon(const QBrush& b, bool drawBorder = true);
 private slots:
-    //图表移除触发的槽
+    // 图表移除触发的槽
     void onChartWillRemove(DA::DAChartWidget* c);
-    //图表增加触发的槽
+    // 图表增加触发的槽
     void onChartAdded(DA::DAChartWidget* c);
-    //有chartitem加入或移除触发的槽
+    // 有chartitem加入或移除触发的槽
     void onChartItemAttached(QwtPlotItem* plotItem, bool on);
     // chartitem的LegendData改变槽
     void onLegendDataChanged(const QVariant& itemInfo, const QList< QwtLegendData >& data);
+    // 绘图删除触发的槽
+    void onFigureDestroyed(QObject* c);
 
 private:
     void addChartItem(QwtPlotItem* i);

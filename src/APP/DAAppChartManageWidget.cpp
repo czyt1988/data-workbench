@@ -1,6 +1,12 @@
 #include "DAAppChartManageWidget.h"
-
-DAAppChartManageWidget::DAAppChartManageWidget()
+namespace DA
 {
 
+DAAppChartManageWidget::DAAppChartManageWidget(QWidget* parent) : DAChartManageWidget(parent)
+{
+}
+
+DAAppChartManageWidget::~DAAppChartManageWidget()
+{
+}
 }

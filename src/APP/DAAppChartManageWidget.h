@@ -1,11 +1,17 @@
 #ifndef DAAPPCHARTMANAGEWIDGET_H
 #define DAAPPCHARTMANAGEWIDGET_H
+#include "DAChartManageWidget.h"
 
-
-class DAAppChartManageWidget
+namespace DA
 {
+
+class DAAppChartManageWidget : public DAChartManageWidget
+{
+    Q_OBJECT
 public:
-    DAAppChartManageWidget();
+    DAAppChartManageWidget(QWidget* parent = nullptr);
+    ~DAAppChartManageWidget();
 };
 
-#endif // DAAPPCHARTMANAGEWIDGET_H
+}  // end DA
+#endif  // DAAPPCHARTMANAGEWIDGET_H

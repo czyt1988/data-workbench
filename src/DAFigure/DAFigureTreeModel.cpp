@@ -144,8 +144,9 @@ QVariant DAChartItemStandardItem::dataDecorationRole(QwtPlotItem* item, int c) c
 
 QString DAChartItemStandardItem::getItemName(QwtPlotItem* item) const
 {
-    QString str = _item->title().text();
-    if (str.isEmpty()) {
+    QString str  = _item->title().text();
+    bool isEmpty = str.isEmpty();
+    if (isEmpty) {
         if (_chart) {
             str = QString::number(_chart->itemList().indexOf(_item) + 1);
         } else {
@@ -161,7 +162,7 @@ QString DAChartItemStandardItem::getItemName(QwtPlotItem* item) const
         return QObject::tr("grid");  // cn:网格
     //! For QwtPlotScaleItem
     case QwtPlotItem::Rtti_PlotScale:
-        return QObject::tr("scale-%1").arg(str);  // cn:比例图元-%1
+        return (isEmpty ? QObject::tr("scale-%1").arg(str) : str);  // cn:比例图元-%1
     //! For QwtPlotLegendItem
     case QwtPlotItem::Rtti_PlotLegend:
         return QObject::tr("legend-%1").arg(str);  // cn:图例-%1
@@ -170,43 +171,43 @@ QString DAChartItemStandardItem::getItemName(QwtPlotItem* item) const
         return QObject::tr("marker-%1").arg(str);  // cn:标记-%1
     //! For QwtPlotCurve
     case QwtPlotItem::Rtti_PlotCurve:
-        return QObject::tr("curve-%1").arg(str);  // cn:曲线-%1
+        return (isEmpty ? QObject::tr("curve-%1").arg(str) : str);  // cn:曲线-%1
     //! For QwtPlotSpectroCurve
     case QwtPlotItem::Rtti_PlotSpectroCurve:  // Curve that displays 3D points as dots, where the z coordinate is mapped to a color.
-        return QObject::tr("spectro-%1").arg(str);  // cn:色谱图-%1
+        return (isEmpty ? QObject::tr("spectro-%1").arg(str) : str);  // cn:色谱图-%1
     //! For QwtPlotIntervalCurve
     case QwtPlotItem::Rtti_PlotIntervalCurve:  // interval curve represents a series of samples, where each value is associated with an interval
-        return QObject::tr("interval curve-%1").arg(str);  // cn:区间图-%1
+        return (isEmpty ? QObject::tr("interval curve-%1").arg(str) : str);  // cn:区间图-%1
     //! For QwtPlotHistogram
     case QwtPlotItem::Rtti_PlotHistogram:  // histogram represents a series of samples, where an interval is associated with a value
-        return QObject::tr("histogram-%1").arg(str);  // cn:直方图-%1
+        return (isEmpty ? QObject::tr("histogram-%1").arg(str) : str);  // cn:直方图-%1
     //! For QwtPlotSpectrogram
     case QwtPlotItem::Rtti_PlotSpectrogram:  // A spectrogram displays 3-dimensional data, where the 3rd dimension ( the intensity ) is displayed using colors.
-        return QObject::tr("spectrogram-%1").arg(str);  // cn:谱图-%1
+        return (isEmpty ? QObject::tr("spectrogram-%1").arg(str) : str);  // cn:谱图-%1
     //! For QwtPlotGraphicItem, QwtPlotSvgItem
-    case QwtPlotItem::Rtti_PlotGraphic:             // display graphic
-        return QObject::tr("graphic-%1").arg(str);  // cn:图像-%1
+    case QwtPlotItem::Rtti_PlotGraphic:                               // display graphic
+        return (isEmpty ? QObject::tr("graphic-%1").arg(str) : str);  // cn:图像-%1
     //! For QwtPlotTradingCurve
     case QwtPlotItem::Rtti_PlotTradingCurve:  // OHLC illustrates movements in the price of a financial instrument over time
-        return QObject::tr("OHLC-%1").arg(str);  // cn:OHLC图-%1
+        return (isEmpty ? QObject::tr("OHLC-%1").arg(str) : str);  // cn:OHLC图-%1
     //! For QwtPlotBarChart
-    case QwtPlotItem::Rtti_PlotBarChart:        // bar chart displays a series of a values as bars
-        return QObject::tr("bar-%1").arg(str);  // cn:柱状图-%1
+    case QwtPlotItem::Rtti_PlotBarChart:                          // bar chart displays a series of a values as bars
+        return (isEmpty ? QObject::tr("bar-%1").arg(str) : str);  // cn:柱状图-%1
     //! For QwtPlotMultiBarChart
     case QwtPlotItem::Rtti_PlotMultiBarChart:  // multibar chart displays a series of a samples that consist each of a set of values
-        return QObject::tr("multibar-%1").arg(str);  // cn:柱状图-%1
+        return (isEmpty ? QObject::tr("multibar-%1").arg(str) : str);  // cn:柱状图-%1
     //! For QwtPlotShapeItem
-    case QwtPlotItem::Rtti_PlotShape:             // displays any graphical shape
-        return QObject::tr("shape-%1").arg(str);  // cn:形状-%1
+    case QwtPlotItem::Rtti_PlotShape:                               // displays any graphical shape
+        return (isEmpty ? QObject::tr("shape-%1").arg(str) : str);  // cn:形状-%1
     //! For QwtPlotTextLabel
-    case QwtPlotItem::Rtti_PlotTextLabel:        // displays a text label
-        return QObject::tr("text-%1").arg(str);  // cn:文本-%1
+    case QwtPlotItem::Rtti_PlotTextLabel:                          // displays a text label
+        return (isEmpty ? QObject::tr("text-%1").arg(str) : str);  // cn:文本-%1
     //! For QwtPlotZoneItem
-    case QwtPlotItem::Rtti_PlotZone:             // displays a zone
-        return QObject::tr("zone-%1").arg(str);  // cn:区间-%1
+    case QwtPlotItem::Rtti_PlotZone:                               // displays a zone
+        return (isEmpty ? QObject::tr("zone-%1").arg(str) : str);  // cn:区间-%1
     //! For QwtPlotVectorField
-    case QwtPlotItem::Rtti_PlotVectorField:        // quiver chart represents a vector field
-        return QObject::tr("quiver-%1").arg(str);  // cn:流场图-%1
+    case QwtPlotItem::Rtti_PlotVectorField:                          // quiver chart represents a vector field
+        return (isEmpty ? QObject::tr("quiver-%1").arg(str) : str);  // cn:流场图-%1
     default:
         break;
     }
@@ -441,6 +442,22 @@ void DAFigureTreeModel::onLegendDataChanged(const QVariant& itemInfo, const QLis
     }
 }
 
+/**
+ * @brief 绘图删除
+ * @param c
+ */
+void DAFigureTreeModel::onFigureDestroyed(QObject* c)
+{
+    clear();
+    setHorizontalHeaderLabels({
+        tr("name"),      // cn:名称
+        tr("property"),  // cn:属性
+        tr("visible")    // cn:可见性
+    });
+    d_ptr->mFig = nullptr;
+    d_ptr->mCharts.clear();
+}
+
 void DAFigureTreeModel::addChartItem(QwtPlotItem* i)
 {
     DAChartWidget* chart                       = static_cast< DAChartWidget* >(i->plot());
@@ -479,6 +496,7 @@ void DAFigureTreeModel::setFigure(DAFigureWidget* fig)
     if (d_ptr->mFig) {
         disconnect(d_ptr->mFig, &DAFigureWidget::chartAdded, this, &DAFigureTreeModel::onChartAdded);
         disconnect(d_ptr->mFig, &DAFigureWidget::chartWillRemove, this, &DAFigureTreeModel::onChartWillRemove);
+        disconnect(d_ptr->mFig, &DAFigureWidget::destroyed, this, &DAFigureTreeModel::onFigureDestroyed);
         for (DAChartWidget* w : qAsConst(d_ptr->mCharts)) {
             if (w) {
                 disconnect(w, &DAChartWidget::itemAttached, this, &DAFigureTreeModel::onChartItemAttached);
@@ -490,6 +508,7 @@ void DAFigureTreeModel::setFigure(DAFigureWidget* fig)
     d_ptr->mCharts = fig->getChartsOrdered();
     connect(fig, &DAFigureWidget::chartAdded, this, &DAFigureTreeModel::onChartAdded);
     connect(fig, &DAFigureWidget::chartWillRemove, this, &DAFigureTreeModel::onChartWillRemove);
+    connect(fig, &DAFigureWidget::destroyed, this, &DAFigureTreeModel::onFigureDestroyed);
     for (DAChartWidget* w : qAsConst(d_ptr->mCharts)) {
         if (w) {
             // 把已有的chart添加

@@ -25,7 +25,7 @@
 #include "DAChartCanvas.h"
 
 #include "DAChartUtil.h"
-
+#include "DAFigureWidget.h"
 // unsigned int ChartWave_qwt::staticValue_nAutoLineID = 0;//静态变量初始化
 namespace DA
 {
@@ -63,7 +63,7 @@ DAChartWidget::DAChartWidget(QWidget* parent) : QwtPlot(parent), DA_PIMPL_CONSTR
     pCanvas->setCursor(Qt::ArrowCursor);
     setCanvas(pCanvas);
     pCanvas->setFocusPolicy(Qt::ClickFocus);
-    //设置点击Canvas，plot获得焦点
+    // 设置点击Canvas，plot获得焦点
     pCanvas->setFocusProxy(this);
     // Qt::NoBrush无法透明，一直有一个灰色的背景
     setCanvasBackground(Qt::white);
@@ -75,7 +75,7 @@ DAChartWidget::DAChartWidget(QWidget* parent) : QwtPlot(parent), DA_PIMPL_CONSTR
     setAutoReplot(true);
     setAllAxisMargin(0);
 
-    //这个例子来着qwt-example-refreshtest
+    // 这个例子来着qwt-example-refreshtest
     for (int axisPos = 0; axisPos < QwtAxis::AxisPositions; axisPos++) {
         QwtScaleDraw* scaleDraw = axisScaleDraw(axisPos);
         if (scaleDraw) {
@@ -244,7 +244,7 @@ void DAChartWidget::makeIntervalSample(const QVector< double >& value,
 }
 
 //========================================================================================
-//网格 grid 操作
+// 网格 grid 操作
 //========================================================================================
 
 /**
@@ -258,7 +258,7 @@ QwtPlotGrid* DAChartWidget::setupGrid(const QColor& color, qreal width, Qt::PenS
 {
     QwtPlotGrid* g = new QwtPlotGrid;
     g->setMajorPen(color, width, style);
-    g->setMinorPen(color, 0, Qt::DotLine);  //小刻度的样式
+    g->setMinorPen(color, 0, Qt::DotLine);  // 小刻度的样式
     setupGrid(g);
     return g;
 }
@@ -297,7 +297,7 @@ void DAChartWidget::deleteGrid()
     d_ptr->mGrid->detach();
     delete (d_ptr->mGrid);
     d_ptr->mGrid = nullptr;
-    replot();  //刷新，否则不显示
+    replot();  // 刷新，否则不显示
 }
 
 /**
@@ -307,7 +307,7 @@ void DAChartWidget::deleteGrid()
 void DAChartWidget::enableGrid(bool enable)
 {
     if (enable == isEnableGrid()) {
-        return;  //状态一致不动作
+        return;  // 状态一致不动作
     }
     if (enable) {
         if (nullptr == d_ptr->mGrid) {
@@ -333,7 +333,7 @@ void DAChartWidget::enableGrid(bool enable)
 void DAChartWidget::enableGridX(bool enable)
 {
     if (isEnableGridX() == enable) {
-        return;  //状态一致不动作
+        return;  // 状态一致不动作
     }
     if (nullptr == d_ptr->mGrid) {
         return;
@@ -350,7 +350,7 @@ void DAChartWidget::enableGridX(bool enable)
 void DAChartWidget::enableGridY(bool enable)
 {
     if (isEnableGridY() == enable) {
-        return;  //状态一致不动作
+        return;  // 状态一致不动作
     }
     if (nullptr == d_ptr->mGrid) {
         return;
@@ -366,7 +366,7 @@ void DAChartWidget::enableGridY(bool enable)
 void DAChartWidget::enableGridXMin(bool enable)
 {
     if (isEnableGridXMin() == enable) {
-        return;  //状态一致不动作
+        return;  // 状态一致不动作
     }
     if (nullptr == d_ptr->mGrid) {
         return;
@@ -378,7 +378,7 @@ void DAChartWidget::enableGridXMin(bool enable)
 void DAChartWidget::enableGridYMin(bool enable)
 {
     if (isEnableGridYMin() == enable) {
-        return;  //状态一致不动作
+        return;  // 状态一致不动作
     }
     if (nullptr == d_ptr->mGrid) {
         return;
@@ -388,7 +388,7 @@ void DAChartWidget::enableGridYMin(bool enable)
 }
 
 //========================================================================================
-//画线和数据 操作
+// 画线和数据 操作
 //========================================================================================
 
 ///
@@ -407,7 +407,7 @@ void DAChartWidget::markYValue(double data, const QString& strLabel, QColor clr)
     valueMark->setLinePen(clr, 1);
     valueMark->setLabel(strLabel);
     valueMark->setLabelAlignment(Qt::AlignTop | Qt::AlignRight);
-    valueMark->setSpacing(1);  //设置文字和mark的间隔
+    valueMark->setSpacing(1);  // 设置文字和mark的间隔
     valueMark->attach(this);
 }
 
@@ -751,6 +751,24 @@ void DAChartWidget::setAllAxisMargin(int m)
 }
 
 /**
+ * @brief 获取figure，有可能返回nullptr
+ * @return
+ */
+DAFigureWidget* DAChartWidget::getFigure() const
+{
+    // 一直遍历parent，获取fig
+    QWidget* par = const_cast< DAChartWidget* >(this);
+    while (QWidget* pp = par->parentWidget()) {
+        DAFigureWidget* f = qobject_cast< DAFigureWidget* >(pp);
+        if (f) {
+            return f;
+        }
+        par = pp;
+    }
+    return nullptr;
+}
+
+/**
  * @brief 设置边框
  * @param c
  */
@@ -792,7 +810,7 @@ void DAChartWidget::enableCrossPicker(bool enable)
     d_ptr->mPicker->setEnabled(enable);
     if (d_ptr->mZoomer.isNull()) {
         if (isEnableZoomer()) {
-            //如果缩放开启，缩放的TrackerMode和picker重复，这里就需要把TrackerMode取消
+            // 如果缩放开启，缩放的TrackerMode和picker重复，这里就需要把TrackerMode取消
             d_ptr->mZoomer->setTrackerMode((enable ? QwtPicker::AlwaysOff : QwtPicker::AlwaysOn));
         }
     }
@@ -807,7 +825,7 @@ void DAChartWidget::enableCrossPicker(bool enable)
 void DAChartWidget::enablePan(bool enable)
 {
     if (isEnablePanner() == enable) {
-        return;  //状态一致跳出
+        return;  // 状态一致跳出
     }
     if (nullptr == d_ptr->mPanner) {
         if (!enable) {
@@ -830,7 +848,7 @@ void DAChartWidget::enablePan(bool enable)
  */
 void DAChartWidget::setupPanner()
 {
-    //设置拖动
+    // 设置拖动
     if (nullptr == d_ptr->mPanner) {
         d_ptr->mPanner = new QwtPlotPanner(canvas());
         d_ptr->mPanner->setCursor(QCursor(Qt::ClosedHandCursor));
@@ -841,7 +859,7 @@ void DAChartWidget::setupPanner()
 void DAChartWidget::deletePanner()
 {
     if (nullptr != d_ptr->mPanner) {
-        d_ptr->mPanner->setParent(nullptr);  //断开和canvas()的父子连接
+        d_ptr->mPanner->setParent(nullptr);  // 断开和canvas()的父子连接
         delete d_ptr->mPanner;
         d_ptr->mPanner = nullptr;
     }
@@ -855,7 +873,7 @@ void DAChartWidget::deletePanner()
 void DAChartWidget::enableZoomer(bool enable)
 {
     if (isEnableZoomer() == enable) {
-        return;  //状态一致不动作
+        return;  // 状态一致不动作
     }
     if (!enable) {
         if (d_ptr->mZoomer.isNull()) {
@@ -1132,7 +1150,7 @@ void DAChartWidget::setupLegend()
 void DAChartWidget::enableLegend(bool enable)
 {
     if (isEnableLegend() == enable) {
-        return;  //状态一致不动作
+        return;  // 状态一致不动作
     }
     if (enable) {
         if (d_ptr->mLegend) {
@@ -1151,7 +1169,7 @@ void DAChartWidget::enableLegend(bool enable)
 void DAChartWidget::enableLegendPanel(bool enable)
 {
     if (isEnableLegendPanel() == enable) {
-        return;  //状态一致不动作
+        return;  // 状态一致不动作
     }
     if (enable) {
         setuplegendPanel();
@@ -1185,7 +1203,7 @@ void DAChartWidget::setuplegendPanel()
 
 void DAChartWidget::deletelegendPanel()
 {
-    insertLegend(nullptr);  //内部会销毁
+    insertLegend(nullptr);  // 内部会销毁
     d_ptr->mLegendPanel = nullptr;
 }
 
@@ -1200,7 +1218,7 @@ void DAChartWidget::setupYDataPicker()
 void DAChartWidget::deleteYDataPicker()
 {
     if (nullptr != d_ptr->mYDataPicker) {
-        d_ptr->mYDataPicker->setParent(nullptr);  //断开和canvas()的父子连接
+        d_ptr->mYDataPicker->setParent(nullptr);  // 断开和canvas()的父子连接
         delete d_ptr->mYDataPicker;
         d_ptr->mYDataPicker = nullptr;
     }
@@ -1217,7 +1235,7 @@ void DAChartWidget::setupXYDataPicker()
 void DAChartWidget::deleteXYDataPicker()
 {
     if (nullptr != d_ptr->mXYDataPicker) {
-        d_ptr->mXYDataPicker->setParent(nullptr);  //断开和canvas()的父子连接
+        d_ptr->mXYDataPicker->setParent(nullptr);  // 断开和canvas()的父子连接
         delete d_ptr->mXYDataPicker;
         d_ptr->mXYDataPicker = nullptr;
     }
@@ -1226,7 +1244,7 @@ void DAChartWidget::deleteXYDataPicker()
 void DAChartWidget::enableYDataPicker(bool enable)
 {
     if (isEnableYDataPicker() == enable) {
-        return;  //状态一致不动作
+        return;  // 状态一致不动作
     }
     if (enable) {
         setupYDataPicker();
@@ -1239,7 +1257,7 @@ void DAChartWidget::enableYDataPicker(bool enable)
 void DAChartWidget::enableXYDataPicker(bool enable)
 {
     if (isEnableXYDataPicker() == enable) {
-        return;  //状态一致不动作
+        return;  // 状态一致不动作
     }
     if (enable) {
         setupXYDataPicker();
@@ -1341,7 +1359,7 @@ QwtDateScaleDraw* DAChartWidget::setAxisDateTimeScale(int axisID)
 {
     QwtDateScaleDraw* dateScale;
 
-    dateScale = new QwtDateScaleDraw;  //原来的scaleDraw会再qwt自动delete
+    dateScale = new QwtDateScaleDraw;  // 原来的scaleDraw会再qwt自动delete
     setAxisScaleDraw(axisID, dateScale);
     return (dateScale);
 }

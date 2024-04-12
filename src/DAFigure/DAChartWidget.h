@@ -42,10 +42,10 @@ class QwtDateScaleDraw;
 
 namespace DA
 {
+class DAFigureWidget;
 class _DAChartScrollZoomerScrollData;
 class DAChartYDataPicker;
 class DAChartXYDataPicker;
-
 /**
  * @brief 2d绘图
  */
@@ -62,55 +62,59 @@ public:
     ///
     QList< QwtPlotCurve* > getCurveList();
 
-    //获取所有标记
+    // 获取所有标记
     QList< QwtPlotMarker* > getMakerList();
 
-    //设置为时间坐标轴
+    // 设置为时间坐标轴
     QwtDateScaleDraw* setAxisDateTimeScale(const QString& format, int axisID, QwtDate::IntervalType intType = QwtDate::Second);
     QwtDateScaleDraw* setAxisDateTimeScale(int axisID);
 
-    //坐标的极值
+    // 坐标的极值
     double axisXmin(int axisId = QwtPlot::xBottom) const;
     double axisXmax(int axisId = QwtPlot::xBottom) const;
     double axisYmin(int axisId = QwtPlot::yLeft) const;
     double axisYmax(int axisId = QwtPlot::yLeft) const;
 
-    //清除所有editor，如zoom，panner，cross等
+    // 清除所有editor，如zoom，panner，cross等
     virtual void setEnableAllEditor(bool enable);
-    //获取背景
+    // 获取背景
     QBrush getChartBackBrush() const;
-    //获取边框颜色
+    // 获取边框颜色
     QColor getChartBorderColor() const;
-    //添加样条线
+    // 添加样条线
     QwtPlotMarker* addVLine(double val, bool representedOnLegend = false);
     QwtPlotMarker* addHLine(double val, bool representedOnLegend = false);
     QwtPlotMarker* addCrossLine(double x, double y, bool representedOnLegend = false);
-    //添加曲线(Line)
+    // 添加曲线(Line)
     QwtPlotCurve* addCurve(const double* xData, const double* yData, int size);
     QwtPlotCurve* addCurve(const QVector< QPointF >& xyDatas);
     QwtPlotCurve* addCurve(const QVector< double >& xData, const QVector< double >& yData);
-    //绘制散点图(dot)
+    // 绘制散点图(dot)
     QwtPlotCurve* addScatter(const double* xData, const double* yData, int size);
     QwtPlotCurve* addScatter(const QVector< QPointF >& xyDatas);
     QwtPlotCurve* addScatter(const QVector< double >& xData, const QVector< double >& yData);
-    //绘制误差图
+    // 绘制误差图
     QwtPlotIntervalCurve* addIntervalCurve(const QVector< QwtIntervalSample >& invDatas);
-    QwtPlotIntervalCurve* addIntervalCurve(const QVector< double >& value, const QVector< double >& min, const QVector< double >& max);
-    //添加bar
+    QwtPlotIntervalCurve* addIntervalCurve(const QVector< double >& value,
+                                           const QVector< double >& min,
+                                           const QVector< double >& max);
+    // 添加bar
     QwtPlotBarChart* addBar(const QVector< QPointF >& xyDatas, const QColor& color = QColor(0, 56, 143));
-    //此时x为0~n均匀分布
+    // 此时x为0~n均匀分布
     QwtPlotBarChart* addBar(const QVector< double >& yDatas, const QColor& color = QColor(0, 56, 143));
-    //设置所有坐标轴的Margin
+    // 设置所有坐标轴的Margin
     void setAllAxisMargin(int m);
+    // 获取figure
+    DAFigureWidget* getFigure() const;
 
 public:
-    //这里获取绘图窗口里的一些部件
+    // 这里获取绘图窗口里的一些部件
+    //==============================================================
+    //  缩放相关
     //==============================================================
     // 缩放相关
-    //==============================================================
-    //缩放相关
     QwtPlotZoomer* getZoomer() const;
-    //构建默认的缩放器
+    // 构建默认的缩放器
     void setupZoomer();
     void setupZoomer(QwtPlotZoomer* z, bool issecondZoom = false);
     QwtPlotZoomer* getZoomerSecond();
@@ -123,30 +127,30 @@ public:
     //==============================================================
     // 图例
     //==============================================================
-    //获取legend
+    // 获取legend
     QwtPlotLegendItem* getLegend() const;
 public slots:
-    //设置边框
+    // 设置边框
     void setChartBorderColor(const QColor& c);
-    //设置背景
+    // 设置背景
     void setChartBackgroundBrush(const QBrush& b);
 
-    //缩放和enablePan是互斥关系，enableZoomer(true)会调用enablePan(false)
+    // 缩放和enablePan是互斥关系，enableZoomer(true)会调用enablePan(false)
     void enableZoomer(bool enable = true);
 
-    //回到放大的最底栈
+    // 回到放大的最底栈
     void setZoomBase();
 
-    //重置放大的基准
+    // 重置放大的基准
     void setZoomReset();
 
-    //放大1.6 相当于乘以0.625
+    // 放大1.6 相当于乘以0.625
     void zoomIn();
 
-    //缩小1.6 相当于乘以1.6
+    // 缩小1.6 相当于乘以1.6
     void zoomOut();
 
-    //缩放到最适合比例，就是可以把所有图都能看清的比例
+    // 缩放到最适合比例，就是可以把所有图都能看清的比例
     void zoomInCompatible();
 
     void enableCrossPicker(bool enable = true);
@@ -155,7 +159,7 @@ public slots:
     void enableGridY(bool enable = true);
     void enableGridXMin(bool enable = true);
     void enableGridYMin(bool enable = true);
-    //拖动,拖动和缩放是互斥关系，enablePan(true)内部会调用enableZoomer(false)
+    // 拖动,拖动和缩放是互斥关系，enablePan(true)内部会调用enableZoomer(false)
     void enablePan(bool enable = true);
 
     void enableLegend(bool enable = true);
@@ -168,7 +172,7 @@ public slots:
     void enableYDataPicker(bool enable = true);
 
     void enableXYDataPicker(bool enable = true);
-    //设置xbottom-label
+    // 设置xbottom-label
     void setXLabel(const QString& label);
     void setYLabel(const QString& label);
 signals:
@@ -188,7 +192,7 @@ signals:
 public:
     bool isEnableZoomer() const;
 
-    //是否允许十字光标
+    // 是否允许十字光标
     bool isEnableCrossPicker() const;
     bool isEnableGrid() const;
     bool isEnableGridX() const;
@@ -202,7 +206,7 @@ public:
     bool isEnableXYDataPicker() const;
 
 public:
-    //把min,max,value的数组转换为QwtIntervalSample数组
+    // 把min,max,value的数组转换为QwtIntervalSample数组
     static void makeIntervalSample(const QVector< double >& value,
                                    const QVector< double >& min,
                                    const QVector< double >& max,
@@ -219,9 +223,9 @@ protected:
     void deleteZoomer();
     void enableZoomer(QwtPlotZoomer* zoomer, bool enable);
 
-    //建立一个内置的picker(十字)
+    // 建立一个内置的picker(十字)
     void setupCrossPicker();
-    //建立一个内置的Panner(拖动)，默认使用鼠标中键
+    // 建立一个内置的Panner(拖动)，默认使用鼠标中键
     void setupPanner();
     void deletePanner();
 

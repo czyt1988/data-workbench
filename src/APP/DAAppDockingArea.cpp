@@ -14,10 +14,10 @@
 #include "DAAppCommand.h"
 #include "DAAppDataManager.h"
 // chart相关
-#include "DAChartManageWidget.h"
 #include "DAChartOperateWidget.h"
 #include "DAAppFigureFactory.h"
 #include "DAAppChartOperateWidget.h"
+#include "DAAppChartManageWidget.h"
 // Data相关
 #include "DADataOperateWidget.h"
 #include "DADataManageWidget.h"
@@ -323,7 +323,7 @@ void DAAppDockingArea::buildChartAboutWidgets()
     appChartOptWidget->setupFigureFactory(new DAAppFigureFactory());
     mChartOperateWidget = appChartOptWidget;
 
-    mChartManageWidget = new DAChartManageWidget(mApp);
+    mChartManageWidget = new DAAppChartManageWidget(mApp);
     mChartManageWidget->setObjectName(QStringLiteral("da_chartManageWidget"));
 
     mChartManageWidget->setChartOperateWidget(mChartOperateWidget);
