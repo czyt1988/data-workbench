@@ -1,6 +1,8 @@
 # 概述
 
-本文讲述如何构建`data-workbench`，`data-workbench`通过cmake来建立复杂的依赖，通过git submodule来管理第三方库，在构建`data-workbench`之前，需要构建第三方库
+本文讲述如何构建`data-workbench`，整个构建过程需要加载3次cmake文件，首先是`src/3rdparty/CMakeLists.txt`，然后是`CMakeLists.txt`，最后是`plugins/CMakeLists.txt`
+
+`data-workbench`通过cmake来建立复杂的依赖，通过git submodule来管理第三方库，在构建`data-workbench`之前，需要构建第三方库
 
 如果没有构建第三方库，直接打开`data-workbench`下的CMakeLists.txt将报错
 
@@ -16,7 +18,7 @@ src\3rdparty\CMakeLists.txt
 
 ## 使用Qt Creator基于CMake构建所有第三方库
 
-1. 打开Qt Creator，文件->打开文件或项目（`Ctrl+O`），选择`src\3rdparty\CMakeLists.txt`文件
+1. 打开Qt Creator，文件->打开文件或项目（`Ctrl+O`），选择`src/3rdparty/CMakeLists.txt`文件
 
 ![](./PIC/build-3rdparty-cmake-qtc-01.png)
 
@@ -36,7 +38,7 @@ src\3rdparty\CMakeLists.txt
 
 ## 使用Qt Creator基于CMake构建data-workbench
 
-1. 打开Qt Creator，文件->打开文件或项目（`Ctrl+O`），选择`CMakeLists.txt`文件
+1. 打开Qt Creator，文件->打开文件或项目（`Ctrl+O`），选择`CMakeLists.txt`(dataworkbench顶层目录下的cmake)文件
 
 ![](./PIC/build-daworkbench-cmake-qtc-01.png)
 
@@ -60,3 +62,17 @@ set(qt${QT_VERSION_MAJOR}advanceddocking_DIR  ${DA_INSTALL_LIB_CMAKE_PATH}/qt${Q
 ```
 
 3. 点击运行（`Ctrl+R`）进行编译和安装
+
+# 构建`data-workbench plugins`
+
+`data-workbench`一切业务功能均通过plugin提供，如果不构建`plugins`,编译完的`data-workbench`无任何功能
+
+## 使用Qt Creator基于CMake构建`data-workbench plugins`
+
+1. 打开Qt Creator，文件->打开文件或项目（`Ctrl+O`），选择`plugins/CMakeLists.txt`文件
+
+![](./PIC/build-daworkbenchplugins-cmake-qtc-01.png)
+
+步骤和上述一致，这里不再赘述
+
+最后编译完成后，在bin_qt{version}_{MSVC/GNU}_x{64/32}目录下生成plugins文件夹，里面是编译好的插件dll

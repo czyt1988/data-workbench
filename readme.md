@@ -18,33 +18,15 @@
 
 # 编译
 
+## 第三方库
+
 编译前请确保已经拉取了第三方库，由于使用的是`git submodule`方式管理大部分第三方库，因此需要执行：
 
 ```shell
 git submodule update --init --recursive
 ```
 
-把所有第三方库拉取
-
-具体可见：[submodule.md](./submodule.md)
-
-详细构建教程见：[doc/how-to-build.md文档](./doc/how-to-build.md)
-
-## bin目录
-
-DA项目编译好的二进制文件统一生成到bin{Debug/Release}_qt{$$QT_VERSION}_{MSVC/GNU}_{x64/x86}目录下，如：使用qt5.14.2, msvc版本debug模式64位编译，将生成`bin_Debug_qt5.14.2_MSVC_x64`文件夹
-
-用户可以自定义安装路径，需要手动调整CMakeLists.txt
-
-## 第三方库编译
-
-首先需要编译第三方库，第三方库位于`src/3rdparty`, 第三方库使用`git submodule`形式进行管理，因此第三方库需要在根目录下（存在`.gitmodules`的目录）执行下面语句对第三方库进行拉取
-
-```shell
-git submodule update --init --recursive
-```
-
-用qt creator 打开`./src/3rdparty/CMakeLists.txt`进行编译
+把所有第三方库拉取，具体可见：[submodule.md](./submodule.md)
 
 编译完第三方库后，需要进行安装(install)，所有依赖将安装到bin目录下
 
@@ -52,27 +34,59 @@ git submodule update --init --recursive
 
 - SARibbon
 - Qt-Advanced-Docking-System
-- ctk
+- ctk(只依赖部分，这里作者对ctk进行了精简，形成一个liteCtk)
 - qwt
 - QtPropertyBrowser
 - spdlog
-
-在需要python时将引入下面的库
-
 - pybind11
 
-> 用户可以自定义安装路径，需要手动调整`CMakeLists.txt`
+## 构建简述
+
+整个构建过程需要加载3次cmake文件
+- 首先是`src/3rdparty/CMakeLists.txt`完成第三方库编译
+- 然后是`CMakeLists.txt`完成dataworkbench编译
+- 最后是`plugins/CMakeLists.txt`完成dataworkbrench的所有业务功能的插件编译。
+
+**详细构建教程见**：[doc/how-to-build.md文档](./doc/how-to-build.md)
+
+## bin目录
+
+DA项目编译好的二进制文件统一生成到bin{Debug/Release}_qt{$$QT_VERSION}_{MSVC/GNU}_{x64/x86}目录下，如：使用qt5.14.2, msvc版本debug模式64位编译，将生成`bin_Debug_qt5.14.2_MSVC_x64`文件夹
+
+用户可以自定义安装路径，需要手动调整CMakeLists.txt
+
 
 ## python环境配置
 
-`DA_ENABLE_PYTHON`选项用于指定是否需要python环境，如果开启将自动查找系统的python环境并进行依赖，python环境有如下要求
+> 用户可以自定义安装路径，需要手动调整`CMakeLists.txt`的`DA_ENABLE_PYTHON`选项
+
+如果开启将自动查找系统的python环境并进行依赖，python环境有如下要求：
 
 - 至少是python3.7
-- python环境需要安装pandas库
 
-最好把安装好pandas库的python环境整体拷贝到`bin_xx`目录下，并指定`Python3_ROOT_DIR`对应到目录上
+python环境需要安装的库：
 
-> tips:如果系统有多个Python，想指定某个Python环境，可以设置`Python3_ROOT_DIR`变量
+```
+pip install numpy
+pip install pandas
+pip install scipy
+```
+
+在需要python时将引入`pybind11`库
+
+dataworkbench查找python的逻辑是：
+
+1. 先查看程序运行目录下是否存在`python-config.json`，如果有，讲读取python-config.json里的`config/interpreter`下的值，以此作为python解析器的路径,python-config.json的模板如下：
+
+```json
+{
+  "config": {
+      "interpreter": "path to python interpreter"
+    }
+}
+```
+
+2. 如果没有`python-config.json`文件，将使用`where python`来查找系统的python环境
 
 ## 编译程序
 

@@ -2,7 +2,6 @@
 #define DAAPPCHARTOPERATEWIDGET_H
 #include "DAChartOperateWidget.h"
 #include "DAData.h"
-#include "DAColorTheme.h"
 #include "DAFigureAPI.h"
 
 #include "qwt_plot_item.h"
@@ -15,26 +14,25 @@ class DAEvenFilterDragPlotWithGuide;
  */
 class DAAppChartOperateWidget : public DAChartOperateWidget
 {
-    Q_OBJECT
+	Q_OBJECT
 public:
-    DAAppChartOperateWidget(QWidget* parent = nullptr);
-    ~DAAppChartOperateWidget();
-    // 设置data manager
-    void setDataManager(DADataManager* mgr);
-    // 添加一个Figure
-    virtual DAFigureWidget* createFigure() override;
+	DAAppChartOperateWidget(QWidget* parent = nullptr);
+	~DAAppChartOperateWidget();
+	// 设置data manager
+	void setDataManager(DADataManager* mgr);
+	// 添加一个Figure
+	virtual DAFigureWidget* createFigure() override;
 
 public:
-    // 绘制,如果没成功，返回nullptr
-    QwtPlotItem* createPlotItemWithGuideDialog(const DAData& data = DAData(), DA::ChartTypes t = DA::ChartTypes::Curve);
-    // 调用绘图引导窗口进行引导性绘图
-    void plotWithGuideDialog(DA::ChartTypes t = DA::ChartTypes::Curve);
+	// 绘制,如果没成功，返回nullptr
+	QwtPlotItem* createPlotItemWithGuideDialog(const DAData& data = DAData(), DA::ChartTypes t = DA::ChartTypes::Curve);
+	// 调用绘图引导窗口进行引导性绘图
+	void plotWithGuideDialog(DA::ChartTypes t = DA::ChartTypes::Curve);
 
 private:
-    DADataManager* mDataMgr { nullptr };
-    DADialogChartGuide* mChartGuideDlg { nullptr };
-    DAColorTheme mColorTheme;                        ///< 当前的颜色主题
-    DAEvenFilterDragPlotWithGuide* mFigEventFilter;  ///< 给DAFigureWidget的eventfilter
+	DADataManager* mDataMgr { nullptr };
+	DADialogChartGuide* mChartGuideDlg { nullptr };
+	DAEvenFilterDragPlotWithGuide* mFigEventFilter;  ///< 给DAFigureWidget的eventfilter
 };
 }
 

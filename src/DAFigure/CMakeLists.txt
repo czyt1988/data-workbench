@@ -36,6 +36,8 @@ file(GLOB DA_LIB_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 file(GLOB DA_LIB_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 file(GLOB DA_LIB_HEADER_FILES_MarkSymbol "${CMAKE_CURRENT_SOURCE_DIR}/MarkSymbol/*.h")
 file(GLOB DA_LIB_SOURCE_FILES_MarkSymbol "${CMAKE_CURRENT_SOURCE_DIR}/MarkSymbol/*.cpp")
+file(GLOB DA_LIB_HEADER_FILES_Models "${CMAKE_CURRENT_SOURCE_DIR}/Models/*.h")
+file(GLOB DA_LIB_SOURCE_FILES_Models "${CMAKE_CURRENT_SOURCE_DIR}/Models/*.cpp")
 file(GLOB DA_LIB_QT_UI_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.ui")
 file(GLOB DA_LIB_QT_RC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.qrc")
 
@@ -44,8 +46,10 @@ add_library(${DA_LIB_NAME} SHARED
             ${DA_LIB_SOURCE_FILES}
             ${DA_LIB_HEADER_FILES_MarkSymbol}
             ${DA_LIB_SOURCE_FILES_MarkSymbol}
-			${DA_LIB_QT_UI_FILES}
-			${DA_LIB_QT_RC_FILES}
+            ${DA_LIB_HEADER_FILES_Models}
+            ${DA_LIB_SOURCE_FILES_Models}
+            ${DA_LIB_QT_UI_FILES}
+            ${DA_LIB_QT_RC_FILES}
             ${DA_GLOBAL_HEADER}
 )	
 # 构建库定义的宏,注意必须为Private

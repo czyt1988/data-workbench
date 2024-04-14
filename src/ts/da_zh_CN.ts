@@ -103,9 +103,9 @@
         <location filename="3rdparty/ADS/examples/autohide/mainwindow.ui" line="14"/>
         <location filename="3rdparty/ADS/examples/centralwidget/mainwindow.ui" line="14"/>
         <location filename="3rdparty/ADS/examples/emptydockarea/mainwindow.ui" line="14"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="58"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="58"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="58"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="58"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="58"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="58"/>
         <source>MainWindow</source>
         <translation type="unfinished"></translation>
     </message>
@@ -113,9 +113,9 @@
         <location filename="3rdparty/ADS/examples/autohide/mainwindow.ui" line="28"/>
         <location filename="3rdparty/ADS/examples/centralwidget/mainwindow.ui" line="28"/>
         <location filename="3rdparty/ADS/examples/emptydockarea/mainwindow.ui" line="28"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="59"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="59"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="59"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="59"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="59"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="59"/>
         <source>View</source>
         <translation type="unfinished">视图</translation>
     </message>
@@ -123,9 +123,9 @@
         <location filename="3rdparty/ADS/examples/autohide/mainwindow.ui" line="35"/>
         <location filename="3rdparty/ADS/examples/centralwidget/mainwindow.ui" line="35"/>
         <location filename="3rdparty/ADS/examples/emptydockarea/mainwindow.ui" line="35"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="60"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="60"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="60"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="60"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="60"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="60"/>
         <source>toolBar</source>
         <translation type="unfinished"></translation>
     </message>
@@ -134,79 +134,79 @@
     <name>CStatusDialogClass</name>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="20"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="146"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="146"/>
         <source>Dock Widget Status</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="35"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="147"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="147"/>
         <source>Dock Widget:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="58"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="148"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="148"/>
         <source>Status</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="64"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="149"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="149"/>
         <source>closed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="71"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="150"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="150"/>
         <source>floating</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="78"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="151"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="151"/>
         <source>tabbed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="85"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="152"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="152"/>
         <source>is current tab</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="101"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="153"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="153"/>
         <source>Feature Flags</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="107"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="154"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="154"/>
         <source>DockWidgetClosable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="114"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="155"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="155"/>
         <source>DockWidgetMovable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="121"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="156"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="156"/>
         <source>DockWidgetFloatable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="128"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="157"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="157"/>
         <source>DockWidgetDeleteOnClose</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="135"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="158"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="158"/>
         <source>CustomCloseHandling</source>
         <translation type="unfinished"></translation>
     </message>
@@ -936,27 +936,27 @@ Table Area</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1162"/>
+        <location filename="APP/DAAppController.cpp" line="1163"/>
         <source>Before creating a new coordinate,you need to create a figure</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1607"/>
+        <location filename="APP/DAAppController.cpp" line="1608"/>
         <source>%1_Describe</source>
         <translation>%1_Describe</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1608"/>
+        <location filename="APP/DAAppController.cpp" line="1609"/>
         <source>Generate descriptive statistics that summarize the central tendency, dispersion and shape of a [%1]’s distribution, excluding NaN values</source>
         <translation>生成描述性统计数据，汇总[%1]分布的中心趋势、分散度和结构（不包括NaN值）</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1727"/>
+        <location filename="APP/DAAppController.cpp" line="1728"/>
         <source>new workflow name</source>
         <translation>新工作流名称</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1728"/>
+        <location filename="APP/DAAppController.cpp" line="1729"/>
         <source>new workflow name:</source>
         <translation>工作流名称:</translation>
     </message>
@@ -1002,7 +1002,7 @@ Table Area</source>
         <location filename="APP/DAAppDataManager.cpp" line="63"/>
         <location filename="APP/DAAppDataManager.cpp" line="101"/>
         <source>The file &apos;%1&apos; has been successfully imported, but no data can be read from the file</source>
-        <translation type="unfinished"></translation>
+        <translation>导入文件&apos;%1&apos;成功，但无法从文件中读取到数据</translation>
     </message>
     <message>
         <location filename="APP/DAAppDataManager.cpp" line="75"/>
@@ -1073,7 +1073,7 @@ Table Area</source>
         <location filename="APP/DAAppRibbonArea.cpp" line="142"/>
         <location filename="APP/DAAppRibbonArea.cpp" line="239"/>
         <source>Location</source>
-        <translation></translation>
+        <translation>位置</translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="152"/>
@@ -1291,93 +1291,93 @@ Table Area</source>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="543"/>
         <source>Group</source>
-        <translation type="unfinished">所属组</translation>
+        <translation>分组</translation>
     </message>
 </context>
 <context>
     <name>DA::DAChartAddXYSeriesWidget</name>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="40"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="39"/>
         <source>x</source>
         <translation>x</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="40"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="39"/>
         <source>y</source>
         <translation>y</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="272"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="217"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="225"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="248"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="257"/>
         <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="280"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="303"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="312"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="335"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="349"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="356"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="375"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="389"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="397"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="416"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="427"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="434"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="442"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="294"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="301"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="320"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="334"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="342"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="361"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="372"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="379"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="387"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="273"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="218"/>
         <source>The initial value of x auto increment series must be a floating-point arithmetic number</source>
         <translation>x自增序列的初始值必须为浮点数</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="281"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="226"/>
         <source>The step value of x auto increment series must be a floating-point arithmetic number</source>
         <translation>x自增序列的步长必须为浮点数</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="304"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="249"/>
         <source>The initial value of y auto increment series must be a floating-point arithmetic number</source>
         <translation>y自增序列的初始值必须为浮点数</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="313"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="258"/>
         <source>The step value of y auto increment series must be a floating-point arithmetic number</source>
         <translation>y自增序列的步长必须为浮点数</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="336"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="281"/>
         <source>x and y cannot be set to autoincrement at the same time</source>
         <translation>x和y无法同时设置为自增</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="357"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="398"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="443"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="302"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="343"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="388"/>
         <source>The None value cannot be converted to a series</source>
         <translation>None值无法转换为序列</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="376"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="417"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="321"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="362"/>
         <source>Exception occurred during extracting from pandas.Series to double vector</source>
         <translation>从pandas.Series提取为double vector过程中出现异常</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="390"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="428"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="335"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="373"/>
         <source>x must be a series</source>
         <translation>x必须是序列</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="350"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="435"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="295"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="380"/>
         <source>y must be a series</source>
         <translation>y必须是序列</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="371"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="412"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="462"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="316"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="357"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="407"/>
         <source>Exception occurred during extracting from pandas.Series to double vector:%1</source>
         <translation>从pandas.Series提取为double vector过程中出现异常:%1</translation>
     </message>
@@ -1413,80 +1413,80 @@ Table Area</source>
 <context>
     <name>DA::DAChartItemTableModel</name>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="497"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="526"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="556"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="567"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="497"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="526"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="556"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="567"/>
         <source>x</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="499"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="528"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="558"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="569"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="499"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="528"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="558"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="569"/>
         <source>y</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="507"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="518"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="581"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="608"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="507"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="518"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="581"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="608"/>
         <source>value</source>
         <translation>值</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="509"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="583"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="509"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="583"/>
         <source>min</source>
         <translation>最小</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="511"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="585"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="511"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="585"/>
         <source>max</source>
         <translation>最大</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="520"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="610"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="520"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="610"/>
         <source>set %1</source>
         <translation>设置%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="530"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="571"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="530"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="571"/>
         <source>z</source>
         <translation>z</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="538"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="594"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="538"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="594"/>
         <source>time</source>
         <translation>时间</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="540"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="596"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="540"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="596"/>
         <source>open</source>
         <translation>开盘</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="542"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="598"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="542"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="598"/>
         <source>high</source>
         <translation>最高</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="544"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="600"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="544"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="600"/>
         <source>low</source>
         <translation>最低</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="546"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="602"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="546"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="602"/>
         <source>close</source>
         <translation>收盘</translation>
     </message>
@@ -1494,12 +1494,12 @@ Table Area</source>
 <context>
     <name>DA::DAChartManageWidget</name>
     <message>
-        <location filename="DAGui/DAChartManageWidget.cpp" line="48"/>
+        <location filename="DAGui/DAChartManageWidget.cpp" line="141"/>
         <source>get figure create signal,but can not find figure index</source>
         <translation>获取了绘图创建的信号，但无法找到绘图的索引</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartManageWidget.cpp" line="62"/>
+        <location filename="DAGui/DAChartManageWidget.cpp" line="159"/>
         <source>get figure close signal,but can not find figure index</source>
         <translation>获取了绘图关闭的信号，但无法找到绘图的索引</translation>
     </message>
@@ -1636,12 +1636,12 @@ Table Area</source>
 <context>
     <name>DA::DAChartWidget</name>
     <message>
-        <location filename="DAFigure/DAChartWidget.cpp" line="1005"/>
+        <location filename="DAFigure/DAChartWidget.cpp" line="1023"/>
         <source>Before zoom in, the chart must setup a zoomer</source>
         <translation>在放大图表之前需要先建立缩放器</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartWidget.cpp" line="1034"/>
+        <location filename="DAFigure/DAChartWidget.cpp" line="1052"/>
         <source>Before zoom out, the chart must setup a zoomer</source>
         <translation>在缩小图表之前需要先建立缩放器</translation>
     </message>
@@ -1788,12 +1788,12 @@ Table Area</source>
 <context>
     <name>DA::DADialogChartGuide</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="30"/>
+        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="35"/>
         <source>curve</source>
         <translation>曲线</translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="34"/>
+        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="39"/>
         <source>scatter</source>
         <translation>散点</translation>
     </message>
@@ -1814,32 +1814,35 @@ Table Area</source>
 <context>
     <name>DA::DAFigureTreeModel</name>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="429"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="430"/>
         <source>receive legend data changed signal,but can not cast sender to qwt plot</source>
         <translation>接收到legend data changed信号，但无法把发送方转换为qwt plot</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="434"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="435"/>
         <source>can not conver info to qwt plot item</source>
         <translation>无法把信息转换为qwt plot item</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="449"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="466"/>
         <source>Unable to find the tree node corresponding to the chart widget</source>
         <translation>无法找到绘图窗口对应的树形节点</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="475"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="453"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="492"/>
         <source>name</source>
         <translation>名称</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="476"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="454"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="493"/>
         <source>property</source>
         <translation>属性</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="477"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="455"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="494"/>
         <source>visible</source>
         <translation>可见性</translation>
     </message>
@@ -2121,7 +2124,7 @@ Table Area</source>
     <message>
         <location filename="DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="73"/>
         <source>Exception in get selected series:%1</source>
-        <translation type="unfinished">获取选中的序列发生异常：%1</translation>
+        <translation>获取选中的序列发生异常：%1</translation>
     </message>
 </context>
 <context>
@@ -2178,7 +2181,7 @@ Table Area</source>
     <message>
         <location filename="DAUtils/DATextReadWriter.cpp" line="175"/>
         <source>can not open %1,because %2</source>
-        <translation type="unfinished"></translation>
+        <translation>无法打开%1，原因是 %2</translation>
     </message>
 </context>
 <context>
@@ -2202,42 +2205,43 @@ Table Area</source>
     <message>
         <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="33"/>
         <source>,(comma)</source>
-        <translation type="unfinished"></translation>
+        <translation>,逗号</translation>
     </message>
     <message>
         <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="34"/>
         <source> (space)</source>
-        <translation type="unfinished"></translation>
+        <translation> 空格</translation>
     </message>
     <message>
         <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="35"/>
         <source>\t(tab stop)</source>
-        <translation type="unfinished"></translation>
+        <translation>tab制表位</translation>
     </message>
     <message>
         <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="36"/>
         <source>;(semicolon)</source>
-        <translation type="unfinished"></translation>
+        <translation>;分号</translation>
     </message>
     <message>
         <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="37"/>
         <source>_(underscore)</source>
-        <translation type="unfinished"></translation>
+        <translation>_下横杠</translation>
     </message>
     <message>
         <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="38"/>
         <source>-(dash)</source>
-        <translation type="unfinished"></translation>
+        <translation>-横杠</translation>
     </message>
     <message>
         <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="176"/>
         <source>error</source>
-        <translation type="unfinished"></translation>
+        <translation>错误</translation>
     </message>
     <message>
         <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="177"/>
         <source>read txt file(%1) occure error,reason:%3</source>
-        <translation type="unfinished"></translation>
+        <oldsource>read txt file(%1) occure error,reason:%2</oldsource>
+        <translation type="unfinished">读取txt文件%1发生了错误，原因是：%2</translation>
     </message>
 </context>
 <context>
@@ -2404,43 +2408,38 @@ Table Area</source>
         <translation>添加序列</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="28"/>
-        <source>Data Frame</source>
-        <translation>数据帧</translation>
-    </message>
-    <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="63"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="36"/>
         <source>X</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="75"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="136"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="48"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="109"/>
         <source>Autoincrement series</source>
         <translation>自增序列</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="90"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="151"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="63"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="124"/>
         <source>Initial value</source>
         <translation>初始值</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="97"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="111"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="158"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="172"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="70"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="84"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="131"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="145"/>
         <source>1</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="104"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="165"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="77"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="138"/>
         <source>Self increasing step size</source>
         <translation>步长</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="124"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="97"/>
         <source>Y</source>
         <translation></translation>
     </message>
@@ -2508,7 +2507,7 @@ Table Area</source>
         <translation>曲线画笔</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="316"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="319"/>
         <source>Marker</source>
         <translation>标记</translation>
     </message>
@@ -2554,7 +2553,7 @@ Table Area</source>
         <translation>填充画笔</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="298"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="301"/>
         <source>Marker Setting</source>
         <translation>标记设置</translation>
     </message>
@@ -2705,6 +2704,21 @@ Table Area</source>
         <source>Chart Guide</source>
         <translation>绘图引导</translation>
     </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogChartGuide.ui" line="77"/>
+        <source>Previous</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogChartGuide.ui" line="84"/>
+        <source>Next</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogChartGuide.ui" line="91"/>
+        <source>Cancel</source>
+        <translation type="unfinished">取消</translation>
+    </message>
 </context>
 <context>
     <name>DADialogDataFrameSeriesSelector</name>
@@ -2716,12 +2730,12 @@ Table Area</source>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameSeriesSelector.ui" line="27"/>
         <source>Data</source>
-        <translation type="unfinished">数据</translation>
+        <translation>数据</translation>
     </message>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameSeriesSelector.ui" line="51"/>
         <source>Data preview</source>
-        <translation type="unfinished"></translation>
+        <translation>数据预览</translation>
     </message>
 </context>
 <context>
@@ -3076,17 +3090,17 @@ Table Area</source>
     <message>
         <location filename="DACommonWidgets/DAFilePathEditWidget.ui" line="14"/>
         <source>File Path Edit</source>
-        <translation type="unfinished"></translation>
+        <translation>路径编辑</translation>
     </message>
     <message>
         <location filename="DACommonWidgets/DAFilePathEditWidget.ui" line="38"/>
         <source>Open</source>
-        <translation type="unfinished">打开</translation>
+        <translation>打开</translation>
     </message>
     <message>
         <location filename="DACommonWidgets/DAFilePathEditWidget.ui" line="51"/>
         <source>Ctrl+O</source>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+O</translation>
     </message>
 </context>
 <context>
@@ -3448,113 +3462,113 @@ Table Area</source>
     <message>
         <location filename="APP/Dialog/DATxtFileImportDialog.ui" line="27"/>
         <source>Text File Path</source>
-        <translation type="unfinished"></translation>
+        <translation>文本路径</translation>
     </message>
     <message>
         <location filename="APP/Dialog/DATxtFileImportDialog.ui" line="42"/>
         <source>The maximum number of rows to read</source>
-        <translation type="unfinished"></translation>
+        <translation>读取的行数上限</translation>
     </message>
     <message>
         <location filename="APP/Dialog/DATxtFileImportDialog.ui" line="55"/>
         <source>The number of lines to skip at the end of the file</source>
-        <translation type="unfinished"></translation>
+        <translation>文本末尾跳过的行数</translation>
     </message>
     <message>
         <location filename="APP/Dialog/DATxtFileImportDialog.ui" line="65"/>
         <source>Auto</source>
-        <translation type="unfinished"></translation>
+        <translation>自动</translation>
     </message>
     <message>
         <location filename="APP/Dialog/DATxtFileImportDialog.ui" line="78"/>
         <source>max rows</source>
-        <translation type="unfinished"></translation>
+        <translation>最大行数</translation>
     </message>
     <message>
         <location filename="APP/Dialog/DATxtFileImportDialog.ui" line="85"/>
         <source>The number of lines to skip at the beginning of the file</source>
-        <translation type="unfinished"></translation>
+        <translation>文本开头跳过的行数</translation>
     </message>
     <message>
         <location filename="APP/Dialog/DATxtFileImportDialog.ui" line="95"/>
         <source>delimiter</source>
-        <translation type="unfinished"></translation>
+        <translation>分隔</translation>
     </message>
     <message>
         <location filename="APP/Dialog/DATxtFileImportDialog.ui" line="102"/>
         <source>skip rows</source>
-        <translation type="unfinished"></translation>
+        <translation>跳过行</translation>
     </message>
     <message>
         <location filename="APP/Dialog/DATxtFileImportDialog.ui" line="109"/>
         <source>encoding</source>
-        <translation type="unfinished"></translation>
+        <translation>编码</translation>
     </message>
     <message>
         <location filename="APP/Dialog/DATxtFileImportDialog.ui" line="119"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Character or regex pattern to treat as the delimiter&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;用于分割不同列的字符或正则&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="APP/Dialog/DATxtFileImportDialog.ui" line="129"/>
         <source>skip over blank lines rather than interpreting as NaN values</source>
-        <translation type="unfinished"></translation>
+        <translation>跳过空行，而不是用NaN填充</translation>
     </message>
     <message>
         <location filename="APP/Dialog/DATxtFileImportDialog.ui" line="132"/>
         <source>skip blank lines</source>
-        <translation type="unfinished"></translation>
+        <translation>跳过空行</translation>
     </message>
     <message>
         <location filename="APP/Dialog/DATxtFileImportDialog.ui" line="139"/>
         <source>skip footer</source>
-        <translation type="unfinished"></translation>
+        <translation>跳过尾</translation>
     </message>
     <message>
         <location filename="APP/Dialog/DATxtFileImportDialog.ui" line="146"/>
         <location filename="APP/Dialog/DATxtFileImportDialog.ui" line="159"/>
         <source>Row number(s) containing column labels and marking the start of the data</source>
-        <translation type="unfinished"></translation>
+        <translation>作为表头的行号，同时也是数据读取的开端</translation>
     </message>
     <message>
         <location filename="APP/Dialog/DATxtFileImportDialog.ui" line="149"/>
         <source>header row</source>
-        <translation type="unfinished"></translation>
+        <translation>表头行</translation>
     </message>
     <message>
         <location filename="APP/Dialog/DATxtFileImportDialog.ui" line="187"/>
         <source>No Error</source>
-        <translation type="unfinished"></translation>
+        <translation>无异常</translation>
     </message>
     <message>
         <location filename="APP/Dialog/DATxtFileImportDialog.ui" line="203"/>
         <source>Preview</source>
-        <translation type="unfinished"></translation>
+        <translation>预览</translation>
     </message>
     <message>
         <location filename="APP/Dialog/DATxtFileImportDialog.ui" line="210"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-family:&apos;-apple-system&apos;,&apos;BlinkMacSystemFont&apos;,&apos;Segoe UI&apos;,&apos;Roboto&apos;,&apos;Ubuntu&apos;,&apos;Helvetica Neue&apos;,&apos;Helvetica&apos;,&apos;Arial&apos;,&apos;PingFang SC&apos;,&apos;Hiragino Sans GB&apos;,&apos;Microsoft YaHei UI&apos;,&apos;Microsoft YaHei&apos;,&apos;Source Han Sans CN&apos;,&apos;sans-serif&apos;,&apos;Apple Color Emoji&apos;,&apos;Segoe UI Emoji&apos;; font-size:15px; color:#05073b; background-color:#fdfdfe;&quot;&gt;In order to avoid the interface stalling due to loading of large texts, the maximum number of words in this preview is limited to 100,000 characters&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>为了避免由于加载大量文本而导致界面停滞，此预览中的最大字数限制为100000个字符</translation>
     </message>
     <message>
         <location filename="APP/Dialog/DATxtFileImportDialog.ui" line="213"/>
         <source>Refresh</source>
-        <translation type="unfinished"></translation>
+        <translation>刷新</translation>
     </message>
     <message>
         <location filename="APP/Dialog/DATxtFileImportDialog.ui" line="233"/>
         <source>preview max row:</source>
-        <translation type="unfinished"></translation>
+        <translation>预览行数:</translation>
     </message>
     <message>
         <location filename="APP/Dialog/DATxtFileImportDialog.ui" line="268"/>
         <source>Text</source>
-        <translation type="unfinished">文本</translation>
+        <translation>文本</translation>
     </message>
     <message>
         <location filename="APP/Dialog/DATxtFileImportDialog.ui" line="300"/>
         <source>Data</source>
-        <translation type="unfinished">数据</translation>
+        <translation>数据</translation>
     </message>
 </context>
 <context>
@@ -3637,19 +3651,20 @@ Table Area</source>
         <location filename="3rdparty/ADS/examples/simple/MainWindow.ui" line="14"/>
         <location filename="3rdparty/SARibbon/src/example/NormalMenuBarExample/MainWindow.ui" line="14"/>
         <location filename="tst/FCD3Viewer/MainWindow.ui" line="14"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="87"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="70"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="121"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/simple/SimpleExample_autogen/include/ui_MainWindow.h" line="58"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="70"/>
+        <location filename="3rdparty/build-SARibbon-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="70"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="87"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="70"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="121"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/simple/SimpleExample_autogen/include/ui_MainWindow.h" line="58"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="70"/>
         <source>MainWindow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="32"/>
         <location filename="3rdparty/ADS/examples/hideshow/MainWindow.ui" line="33"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="91"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="74"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="91"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="74"/>
         <source>File</source>
         <translation type="unfinished">文件</translation>
     </message>
@@ -3658,88 +3673,92 @@ Table Area</source>
         <location filename="3rdparty/ADS/examples/hideshow/MainWindow.ui" line="28"/>
         <location filename="3rdparty/ADS/examples/sidebar/MainWindow.ui" line="75"/>
         <location filename="3rdparty/ADS/examples/simple/MainWindow.ui" line="28"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="92"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="73"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="123"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/simple/SimpleExample_autogen/include/ui_MainWindow.h" line="59"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="92"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="73"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="123"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/simple/SimpleExample_autogen/include/ui_MainWindow.h" line="59"/>
         <source>View</source>
         <translation type="unfinished">视图</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="44"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="93"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="93"/>
         <source>About</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="49"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="94"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="94"/>
         <source>Tests</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="59"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="95"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="95"/>
         <source>toolBar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="70"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="88"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="88"/>
         <source>Exit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="75"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="89"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="89"/>
         <source>Save State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="80"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="90"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="90"/>
         <source>Restore State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/examples/hideshow/MainWindow.ui" line="44"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="71"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="71"/>
         <source>Open project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/examples/hideshow/MainWindow.ui" line="49"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="72"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="72"/>
         <source>Close project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/examples/sidebar/MainWindow.ui" line="26"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="122"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="122"/>
         <source>PushButton</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/SARibbon/src/example/NormalMenuBarExample/MainWindow.ui" line="28"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="73"/>
+        <location filename="3rdparty/build-SARibbon-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="73"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="73"/>
         <source>file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/SARibbon/src/example/NormalMenuBarExample/MainWindow.ui" line="35"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="74"/>
+        <location filename="3rdparty/build-SARibbon-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="74"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="74"/>
         <source>edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/SARibbon/src/example/NormalMenuBarExample/MainWindow.ui" line="44"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="71"/>
+        <location filename="3rdparty/build-SARibbon-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="71"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="71"/>
         <source>open</source>
         <translation type="unfinished">开盘</translation>
     </message>
     <message>
         <location filename="3rdparty/SARibbon/src/example/NormalMenuBarExample/MainWindow.ui" line="49"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="72"/>
+        <location filename="3rdparty/build-SARibbon-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="72"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="72"/>
         <source>save</source>
         <translation type="unfinished">保存</translation>
     </message>
@@ -4470,6 +4489,86 @@ Wrap</source>
         <source>other</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="52"/>
+        <source>Example MainWindow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="126"/>
+        <source>File(&amp;F)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="127"/>
+        <source>New(&amp;N)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="128"/>
+        <source>Open(&amp;O)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="131"/>
+        <source>Edit(&amp;E)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="132"/>
+        <source>Undo(&amp;U)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="133"/>
+        <source>Redo(&amp;R)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="136"/>
+        <source>Enable dark theme</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="146"/>
+        <source>Enable DWM blur</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="156"/>
+        <source>Enable acrylic material</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="166"/>
+        <source>Enable mica</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="176"/>
+        <source>Enable mica alt</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="186"/>
+        <source>Dark blur</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="198"/>
+        <source>Light blur</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="210"/>
+        <source>No blur</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="229"/>
+        <source>Settings(&amp;S)</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MyController</name>
@@ -4502,7 +4601,7 @@ Wrap</source>
         <translation>python object类型不是pandas.Series</translation>
     </message>
     <message>
-        <location filename="DAPyScripts/DAPyScripts.cpp" line="56"/>
+        <location filename="DAPyScripts/DAPyScripts.cpp" line="57"/>
         <source>Initialized import sys module error:%1</source>
         <translation>初始化过程导入sys模块错误:%1</translation>
     </message>
@@ -5070,112 +5169,112 @@ params:
         <translation>无法创建dump文件路径：%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="152"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="153"/>
         <source>untitle</source>
         <translation>未命名</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="158"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="159"/>
         <source>item[%1]</source>
         <translation>图元[%1]</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="161"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="162"/>
         <source>grid</source>
         <translation>网格</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="164"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="165"/>
         <source>scale-%1</source>
         <translation>比例图元-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="167"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="168"/>
         <source>legend-%1</source>
         <translation>图例-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="170"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="171"/>
         <source>marker-%1</source>
         <translation>标记-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="173"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="174"/>
         <source>curve-%1</source>
         <translation>曲线-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="176"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="177"/>
         <source>spectro-%1</source>
         <translation>色谱图-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="179"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="180"/>
         <source>interval curve-%1</source>
         <translation>区间图-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="182"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="183"/>
         <source>histogram-%1</source>
         <translation>直方图-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="185"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="186"/>
         <source>spectrogram-%1</source>
         <translation>谱图-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="188"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="189"/>
         <source>graphic-%1</source>
         <translation>图像-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="191"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="192"/>
         <source>OHLC-%1</source>
         <translation>OHLC图-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="194"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="195"/>
         <source>bar-%1</source>
         <translation>柱状图-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="197"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="198"/>
         <source>multibar-%1</source>
         <translation>柱状图-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="200"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="201"/>
         <source>shape-%1</source>
         <translation>形状-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="203"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="204"/>
         <source>text-%1</source>
         <translation>文本-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="206"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="207"/>
         <source>zone-%1</source>
         <translation>区间-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="209"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="210"/>
         <source>quiver-%1</source>
         <translation>流场图-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="213"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="214"/>
         <source>unknow-%1</source>
         <translation>未知-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="284"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="285"/>
         <source>chart-%1</source>
         <translation>图-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="286"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="287"/>
         <source>untitle-chart</source>
         <translation>图-未命名</translation>
     </message>
@@ -6278,19 +6377,22 @@ Author:czy</source>
     <message>
         <location filename="3rdparty/SARibbon/src/example/WidgetWithRibbon/Widget.ui" line="14"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="14"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="63"/>
+        <location filename="3rdparty/build-SARibbon-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="63"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="63"/>
         <source>Widget</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/SARibbon/src/example/WidgetWithRibbon/Widget.ui" line="54"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="64"/>
+        <location filename="3rdparty/build-SARibbon-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="64"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="64"/>
         <source>Tab 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/SARibbon/src/example/WidgetWithRibbon/Widget.ui" line="59"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="65"/>
+        <location filename="3rdparty/build-SARibbon-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="65"/>
+        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="65"/>
         <source>Tab 2</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6630,11 +6732,59 @@ Author:czy</source>
     <message>
         <location filename="3rdparty/ctk/ctk/ctkPathLineEdit.cpp" line="315"/>
         <source>Open a dialog</source>
-        <translation type="unfinished"></translation>
+        <translation>打开对话框</translation>
     </message>
     <message>
         <location filename="3rdparty/ctk/ctk/ctkPathLineEdit.cpp" line="585"/>
         <source>Select a file to save </source>
+        <translation>选择文件保存 </translation>
+    </message>
+</context>
+<context>
+    <name>main</name>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="12"/>
+        <source>Hello, world!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="150"/>
+        <source>Theme</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="158"/>
+        <source>Light</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="164"/>
+        <source>Dark</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="172"/>
+        <source>Special effect</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="181"/>
+        <source>DWM blur</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="191"/>
+        <source>Acrylic material</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="201"/>
+        <source>Mica</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="211"/>
+        <source>Mica Alt</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

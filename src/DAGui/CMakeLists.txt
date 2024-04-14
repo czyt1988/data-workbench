@@ -41,6 +41,7 @@ set(DA_LIB_HEADER_FILES
     DAFigureFactory.h
     DAGraphicsPixmapItemSettingWidget.h
     DAGuiAPI.h
+    DAGlobalColorTheme.h
     DAChartListView.h
     DAChartManageWidget.h
     DAChartOperateWidget.h
@@ -48,6 +49,7 @@ set(DA_LIB_HEADER_FILES
     DADataManageTableView.h
     DADataManageWidget.h
     DADataOperateWidget.h
+    DAFigureSettingWidget.h
     DAMessageLogViewWidget.h
     DANodeItemSettingWidget.h
     DANodeLinkItemSettingWidget.h
@@ -78,8 +80,10 @@ set(DA_LIB_SOURCE_FILES
     DADataManagerComboBox.cpp
     DADataOperatePageWidget.cpp
     DADataOperateWidget.cpp
+    DAFigureSettingWidget.cpp
     DAFigureFactory.cpp
     DAGraphicsPixmapItemSettingWidget.cpp
+    DAGlobalColorTheme.cpp
     DAMessageLogViewWidget.cpp
     DANodeItemSettingWidget.cpp
     DANodeLinkItemSettingWidget.cpp
@@ -105,6 +109,7 @@ set(DA_LIB_QT_UI_FILES
     DADataManageWidget.ui
     DADataOperateWidget.ui
     DAGraphicsPixmapItemSettingWidget.ui
+    DAFigureSettingWidget.ui
     DAMessageLogViewWidget.ui
     DANodeItemSettingWidget.ui
     DANodeLinkItemSettingWidget.ui
@@ -258,6 +263,7 @@ add_library(${DA_LIB_NAME} SHARED
             #Global
             ${DA_GLOBAL_HEADER}
 )	
+
 # 构建库定义的宏
 target_compile_definitions(${DA_LIB_NAME} PRIVATE DAGUI_BUILDLIB)#!!!!** 注意变更 **!!!!
 add_library(${DA_PROJECT_NAME}::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})

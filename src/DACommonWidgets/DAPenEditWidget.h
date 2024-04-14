@@ -14,35 +14,35 @@ namespace DA
  */
 class DACOMMONWIDGETS_API DAPenEditWidget : public QWidget
 {
-    Q_OBJECT
-    DA_DECLARE_PRIVATE(DAPenEditWidget)
+	Q_OBJECT
+	DA_DECLARE_PRIVATE(DAPenEditWidget)
 public:
-    explicit DAPenEditWidget(QWidget* parent = nullptr);
-    explicit DAPenEditWidget(const QPen& p, QWidget* parent = nullptr);
-    ~DAPenEditWidget();
-    void retranslateUi();
-    // 获取当前的画笔
-    QPen getCurrentPen() const;
-    // 是否在样式上显示文字
-    void setLineStyleTextVisible(bool on);
-    bool isLineStyleTextVisible() const;
+	explicit DAPenEditWidget(QWidget* parent = nullptr);
+	explicit DAPenEditWidget(const QPen& p, QWidget* parent = nullptr);
+	~DAPenEditWidget();
+	void retranslateUi();
+	// 获取当前的画笔
+	QPen getCurrentPen() const;
+	// 是否在样式上显示文字
+	void setLineStyleTextVisible(bool on);
+	bool isLineStyleTextVisible() const;
 public slots:
-    // 设置画笔,设置画笔会触发penChanged信号
-    void setCurrentPen(const QPen& p);
+	// 设置画笔,设置画笔会触发penChanged信号
+	void setCurrentPen(const QPen& p);
 signals:
-    /**
-     * @brief 画笔改变信号
-     * @param p
-     */
-    void penChanged(const QPen& p);
+	/**
+	 * @brief 画笔改变信号
+	 * @param p
+	 */
+	void penChanged(const QPen& p);
 
 protected slots:
-    void onColorChanged(const QColor& c);
-    void onPenWidthValueChanged(int w);
-    void onPenStyleChanged(Qt::PenStyle s);
+	void onColorChanged(const QColor& c);
+	void onPenWidthValueChanged(double w);
+	void onPenStyleChanged(Qt::PenStyle s);
 
 private:
-    void init();
+	void initConnect();
 };
 }  // namespace DA
 #endif  // DAPENEDITWIDGET_H

@@ -1413,80 +1413,80 @@ Table Area</source>
 <context>
     <name>DA::DAChartItemTableModel</name>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="497"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="526"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="556"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="567"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="497"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="526"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="556"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="567"/>
         <source>x</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="499"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="528"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="558"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="569"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="499"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="528"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="558"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="569"/>
         <source>y</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="507"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="518"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="581"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="608"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="507"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="518"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="581"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="608"/>
         <source>value</source>
         <translation>值</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="509"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="583"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="509"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="583"/>
         <source>min</source>
         <translation>最小</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="511"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="585"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="511"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="585"/>
         <source>max</source>
         <translation>最大</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="520"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="610"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="520"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="610"/>
         <source>set %1</source>
         <translation>设置%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="530"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="571"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="530"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="571"/>
         <source>z</source>
         <translation>z</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="538"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="594"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="538"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="594"/>
         <source>time</source>
         <translation>时间</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="540"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="596"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="540"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="596"/>
         <source>open</source>
         <translation>开盘</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="542"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="598"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="542"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="598"/>
         <source>high</source>
         <translation>最高</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="544"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="600"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="544"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="600"/>
         <source>low</source>
         <translation>最低</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="546"/>
-        <location filename="DAFigure/DAChartItemTableModel.cpp" line="602"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="546"/>
+        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="602"/>
         <source>close</source>
         <translation>收盘</translation>
     </message>
@@ -1494,12 +1494,12 @@ Table Area</source>
 <context>
     <name>DA::DAChartManageWidget</name>
     <message>
-        <location filename="DAGui/DAChartManageWidget.cpp" line="48"/>
+        <location filename="DAGui/DAChartManageWidget.cpp" line="144"/>
         <source>get figure create signal,but can not find figure index</source>
         <translation>获取了绘图创建的信号，但无法找到绘图的索引</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartManageWidget.cpp" line="62"/>
+        <location filename="DAGui/DAChartManageWidget.cpp" line="162"/>
         <source>get figure close signal,but can not find figure index</source>
         <translation>获取了绘图关闭的信号，但无法找到绘图的索引</translation>
     </message>
@@ -1636,12 +1636,12 @@ Table Area</source>
 <context>
     <name>DA::DAChartWidget</name>
     <message>
-        <location filename="DAFigure/DAChartWidget.cpp" line="1005"/>
+        <location filename="DAFigure/DAChartWidget.cpp" line="1023"/>
         <source>Before zoom in, the chart must setup a zoomer</source>
         <translation>在放大图表之前需要先建立缩放器</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartWidget.cpp" line="1034"/>
+        <location filename="DAFigure/DAChartWidget.cpp" line="1052"/>
         <source>Before zoom out, the chart must setup a zoomer</source>
         <translation>在缩小图表之前需要先建立缩放器</translation>
     </message>
@@ -1814,32 +1814,35 @@ Table Area</source>
 <context>
     <name>DA::DAFigureTreeModel</name>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="429"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="430"/>
         <source>receive legend data changed signal,but can not cast sender to qwt plot</source>
         <translation>接收到legend data changed信号，但无法把发送方转换为qwt plot</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="434"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="435"/>
         <source>can not conver info to qwt plot item</source>
         <translation>无法把信息转换为qwt plot item</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="449"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="466"/>
         <source>Unable to find the tree node corresponding to the chart widget</source>
         <translation>无法找到绘图窗口对应的树形节点</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="475"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="453"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="492"/>
         <source>name</source>
         <translation>名称</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="476"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="454"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="493"/>
         <source>property</source>
         <translation>属性</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="477"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="455"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="494"/>
         <source>visible</source>
         <translation>可见性</translation>
     </message>
@@ -5166,112 +5169,112 @@ params:
         <translation>无法创建dump文件路径：%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="152"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="153"/>
         <source>untitle</source>
         <translation>未命名</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="158"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="159"/>
         <source>item[%1]</source>
         <translation>图元[%1]</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="161"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="162"/>
         <source>grid</source>
         <translation>网格</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="164"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="165"/>
         <source>scale-%1</source>
         <translation>比例图元-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="167"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="168"/>
         <source>legend-%1</source>
         <translation>图例-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="170"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="171"/>
         <source>marker-%1</source>
         <translation>标记-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="173"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="174"/>
         <source>curve-%1</source>
         <translation>曲线-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="176"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="177"/>
         <source>spectro-%1</source>
         <translation>色谱图-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="179"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="180"/>
         <source>interval curve-%1</source>
         <translation>区间图-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="182"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="183"/>
         <source>histogram-%1</source>
         <translation>直方图-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="185"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="186"/>
         <source>spectrogram-%1</source>
         <translation>谱图-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="188"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="189"/>
         <source>graphic-%1</source>
         <translation>图像-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="191"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="192"/>
         <source>OHLC-%1</source>
         <translation>OHLC图-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="194"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="195"/>
         <source>bar-%1</source>
         <translation>柱状图-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="197"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="198"/>
         <source>multibar-%1</source>
         <translation>柱状图-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="200"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="201"/>
         <source>shape-%1</source>
         <translation>形状-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="203"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="204"/>
         <source>text-%1</source>
         <translation>文本-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="206"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="207"/>
         <source>zone-%1</source>
         <translation>区间-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="209"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="210"/>
         <source>quiver-%1</source>
         <translation>流场图-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="213"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="214"/>
         <source>unknow-%1</source>
         <translation>未知-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="284"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="285"/>
         <source>chart-%1</source>
         <translation>图-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureTreeModel.cpp" line="286"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="287"/>
         <source>untitle-chart</source>
         <translation>图-未命名</translation>
     </message>

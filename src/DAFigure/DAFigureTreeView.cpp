@@ -1,5 +1,5 @@
 ﻿#include "DAFigureTreeView.h"
-#include "DAFigureTreeModel.h"
+#include "Models/DAFigureTreeModel.h"
 #include "DAFigureWidget.h"
 namespace DA
 {
@@ -10,8 +10,8 @@ namespace DA
 class DAFigureTreeView::PrivateData
 {
 public:
-    DA_DECLARE_PUBLIC(DAFigureTreeView)
-    PrivateData(DAFigureTreeView* p);
+	DA_DECLARE_PUBLIC(DAFigureTreeView)
+	PrivateData(DAFigureTreeView* p);
 };
 
 DAFigureTreeView::PrivateData::PrivateData(DAFigureTreeView* p) : q_ptr(p)
@@ -23,8 +23,8 @@ DAFigureTreeView::PrivateData::PrivateData(DAFigureTreeView* p) : q_ptr(p)
 
 DAFigureTreeView::DAFigureTreeView(QWidget* parent) : QTreeView(parent), DA_PIMPL_CONSTRUCT
 {
-    DAFigureTreeModel* m = new DAFigureTreeModel(this);
-    setModel(m);
+	DAFigureTreeModel* m = new DAFigureTreeModel(this);
+	setModel(m);
 }
 
 DAFigureTreeView::~DAFigureTreeView()
@@ -37,8 +37,8 @@ DAFigureTreeView::~DAFigureTreeView()
  */
 void DAFigureTreeView::setFigure(DA::DAFigureWidget* fig)
 {
-    DAFigureTreeModel* m = static_cast< DAFigureTreeModel* >(model());
-    m->setFigure(fig);
+	DAFigureTreeModel* m = static_cast< DAFigureTreeModel* >(model());
+	m->setFigure(fig);
 }
 
 /**
@@ -47,7 +47,7 @@ void DAFigureTreeView::setFigure(DA::DAFigureWidget* fig)
  */
 DAFigureWidget* DAFigureTreeView::getFigure() const
 {
-    DAFigureTreeModel* m = static_cast< DAFigureTreeModel* >(model());
-    return m->getFigure();
+	DAFigureTreeModel* m = static_cast< DAFigureTreeModel* >(model());
+	return m->getFigure();
 }
 }
