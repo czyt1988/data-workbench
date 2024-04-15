@@ -3,9 +3,15 @@
 #include "DAGuiAPI.h"
 #include <QWidget>
 #include <QPointer>
+#include "DAAbstractChartItemSettingWidget.h"
 #include "qwt_plot_curve.h"
+#include "qwt_symbol.h"
+
+// Qt
+class QAbstractButton;
 // qwt
 class QwtPlot;
+
 namespace Ui
 {
 class DAChartCurveItemSettingWidget;
@@ -19,20 +25,19 @@ namespace DA
  *
  * @note 注意此窗口不保存item
  */
-class DAGUI_API DAChartCurveItemSettingWidget : public QWidget
+class DAGUI_API DAChartCurveItemSettingWidget : public DAAbstractChartItemSettingWidget
 {
     Q_OBJECT
 
 public:
 	explicit DAChartCurveItemSettingWidget(QWidget* parent = nullptr);
 	~DAChartCurveItemSettingWidget();
+	// 设置item,此界面可以不设置item，仅仅当作参数获取，如果设置了item，会在对应的界面联动
+	virtual void setPlotItem(QwtPlotItem* item);
 	// 根据QwtPlotCurve更新ui
 	void updateUI(const QwtPlotCurve* item);
-    // 根据ui更新plotitem
+	// 根据ui更新plotitem
 	void updatePlotItem(QwtPlotCurve* item);
-    // 设置plotitem
-    void setPlotItem(QwtPlotCurve* item);
-    QwtPlotCurve* getPlotItem() const;
 
 	// 标题
 	void setTitle(const QString& t);
@@ -65,16 +70,32 @@ public:
 	// 方向
 	void setOrientation(Qt::Orientation v);
 	Qt::Orientation getOrientation() const;
+	// 清空界面
+	void resetUI();
 
 protected:
 	void resetCurveStyleComboBox();
 private slots:
 	void onCurveStyleCurrentIndexChanged(int index);
+	void on_checkBoxFitted_clicked(bool checked);
+	void on_checkBoxInverted_clicked(bool checked);
+	void on_checkBoxLegendShowLine_clicked(bool checked);
+	void on_checkBoxLegendShowSymbol_clicked(bool checked);
+	void on_checkBoxLegendShowBrush_clicked(bool checked);
+	void on_checkBoxEnableMarker_clicked(bool checked);
+	void on_checkBoxEnableFill_clicked(bool checked);
+	void onSymbolStyleChanged(QwtSymbol::Style s);
+	void onSymbolSizeChanged(int s);
+	void onSymbolColorChanged(const QColor& s);
+	void onSymbolOutlinePenChanged(const QPen& s);
+	void onBrushChanged(const QBrush& b);
+	void on_lineEditBaseLine_editingFinished();
+	void onButtonGroupOrientationClicked(QAbstractButton* b);
+protected slots:
+	virtual void plotItemAttached(QwtPlotItem* plotItem, bool on);
 
 private:
 	Ui::DAChartCurveItemSettingWidget* ui;
-    QwtPlotCurve* mItem { nullptr };
-    QPointer< QwtPlot > mPlot { nullptr };
 };
 }
 

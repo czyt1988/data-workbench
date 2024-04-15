@@ -806,117 +806,117 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="APP/DAAppController.cpp" line="585"/>
-        <location filename="APP/DAAppController.cpp" line="661"/>
+        <location filename="APP/DAAppController.cpp" line="618"/>
+        <location filename="APP/DAAppController.cpp" line="694"/>
         <source>project file(*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="600"/>
+        <location filename="APP/DAAppController.cpp" line="633"/>
         <source>Question</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="601"/>
+        <location filename="APP/DAAppController.cpp" line="634"/>
         <source>Another project already exists. Do you want to replace it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="615"/>
-        <location filename="APP/DAAppController.cpp" line="674"/>
+        <location filename="APP/DAAppController.cpp" line="648"/>
+        <location filename="APP/DAAppController.cpp" line="707"/>
         <source>failed to load project file:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="628"/>
-        <location filename="APP/DAAppController.cpp" line="696"/>
+        <location filename="APP/DAAppController.cpp" line="661"/>
+        <location filename="APP/DAAppController.cpp" line="729"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="630"/>
+        <location filename="APP/DAAppController.cpp" line="663"/>
         <source>project file (*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="640"/>
+        <location filename="APP/DAAppController.cpp" line="673"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="641"/>
+        <location filename="APP/DAAppController.cpp" line="674"/>
         <source>Whether to overwrite the file:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="650"/>
-        <location filename="APP/DAAppController.cpp" line="707"/>
+        <location filename="APP/DAAppController.cpp" line="683"/>
+        <location filename="APP/DAAppController.cpp" line="740"/>
         <source>Project saved failed!,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="654"/>
-        <location filename="APP/DAAppController.cpp" line="725"/>
+        <location filename="APP/DAAppController.cpp" line="687"/>
+        <location filename="APP/DAAppController.cpp" line="758"/>
         <source>Project saved successfully,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="698"/>
+        <location filename="APP/DAAppController.cpp" line="731"/>
         <source>Project Files (*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="742"/>
+        <location filename="APP/DAAppController.cpp" line="775"/>
         <source>Project load successfully,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="808"/>
+        <location filename="APP/DAAppController.cpp" line="841"/>
         <source>Image files (*.png *.jpg)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="809"/>
+        <location filename="APP/DAAppController.cpp" line="842"/>
         <source>Any files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="892"/>
+        <location filename="APP/DAAppController.cpp" line="925"/>
         <source>get null project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="898"/>
+        <location filename="APP/DAAppController.cpp" line="931"/>
         <source>warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="899"/>
+        <location filename="APP/DAAppController.cpp" line="932"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1163"/>
+        <location filename="APP/DAAppController.cpp" line="1196"/>
         <source>Before creating a new coordinate,you need to create a figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1608"/>
+        <location filename="APP/DAAppController.cpp" line="1641"/>
         <source>%1_Describe</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1609"/>
+        <location filename="APP/DAAppController.cpp" line="1642"/>
         <source>Generate descriptive statistics that summarize the central tendency, dispersion and shape of a [%1]’s distribution, excluding NaN values</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1728"/>
+        <location filename="APP/DAAppController.cpp" line="1761"/>
         <source>new workflow name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1729"/>
+        <location filename="APP/DAAppController.cpp" line="1762"/>
         <source>new workflow name:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1345,27 +1345,27 @@ Config</source>
 <context>
     <name>DA::DAChartCurveItemSettingWidget</name>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="108"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="100"/>
         <source>Lines</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="109"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="101"/>
         <source>Sticks</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="110"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="102"/>
         <source>Steps</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="111"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="103"/>
         <source>Dots</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="112"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="104"/>
         <source>No Curve</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1484,29 +1484,6 @@ Config</source>
     <message>
         <location filename="DAGui/DAChartOperateWidget.cpp" line="183"/>
         <source>Whether to close the figure widget</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DA::DAChartPlotItemSettingWidget</name>
-    <message>
-        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.cpp" line="24"/>
-        <source>Left Bottom</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.cpp" line="26"/>
-        <source>Left Top</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.cpp" line="29"/>
-        <source>Right Bottom</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.cpp" line="31"/>
-        <source>Right Top</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2308,7 +2285,7 @@ Config</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="APP/DAAppController.cpp" line="61"/>
+        <location filename="APP/DAAppController.cpp" line="62"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2316,12 +2293,12 @@ Config</source>
 <context>
     <name>DAAppRibbonArea</name>
     <message>
-        <location filename="APP/DAAppController.cpp" line="68"/>
+        <location filename="APP/DAAppController.cpp" line="69"/>
         <source>warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="69"/>
+        <location filename="APP/DAAppController.cpp" line="70"/>
         <source>The current function is not implemented, only the UI is reserved, please pay attention: https://gitee.com/czyt1988/data-work-flow</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2404,72 +2381,72 @@ Config</source>
 <context>
     <name>DAChartCurveItemSettingWidget</name>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="27"/>
-        <source>Title</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="20"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="305"/>
         <source>Curve Style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="141"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="335"/>
         <source>Curve Attribute</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="50"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="342"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Only in combination with Lines Style, tries to interpolate/smooth the curve, before it is painted. &lt;/p&gt;&lt;p&gt;Note:Curve fitting requires temporary memory for calculating coefficients and additional points.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="53"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="345"/>
         <source>Fitted</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="167"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="352"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For Steps curve style only. Draws a step function from the right to the left.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="170"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="355"/>
         <source>Inverted</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="40"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="368"/>
         <source>Legend Attribute</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="185"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="155"/>
         <source>Show Line</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="198"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="168"/>
         <source>Show Symbol</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="211"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="181"/>
         <source>Show Brush</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="60"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="190"/>
+        <source>Base</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="328"/>
         <source>Line Pen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="319"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="53"/>
         <source>Marker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="89"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="95"/>
         <source>Other</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2479,38 +2456,38 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="107"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="113"/>
         <source>Base line</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="117"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="123"/>
         <source>Orientation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="124"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="130"/>
         <source>Horizontal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="131"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="137"/>
         <source>Vertical</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="232"/>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="257"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="235"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="260"/>
         <source>Fill</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="250"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="253"/>
         <source>fill brush</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="301"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="35"/>
         <source>Marker Setting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2559,18 +2536,38 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="107"/>
+        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="85"/>
+        <source>Left bottom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="114"/>
         <source>Set X on bottom and Y axis on right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="132"/>
+        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="117"/>
+        <source>Right bottom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="146"/>
         <source>Set X on top and Y axis on left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="157"/>
+        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="149"/>
+        <source>Left top</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="178"/>
         <source>Set X on top and Y axis on right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="181"/>
+        <source>Right top</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3033,6 +3030,29 @@ Config</source>
     </message>
 </context>
 <context>
+    <name>DAFigureSettingWidget</name>
+    <message>
+        <location filename="DAGui/DAFigureSettingWidget.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAFigureSettingWidget.ui" line="22"/>
+        <source>Figure</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAFigureSettingWidget.ui" line="32"/>
+        <source>Chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAFigureSettingWidget.ui" line="42"/>
+        <source>item</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DAFigureWidget</name>
     <message>
         <location filename="DAFigure/DAFigureWidget.cpp" line="216"/>
@@ -3240,12 +3260,12 @@ Config</source>
 <context>
     <name>DAPenEditWidget</name>
     <message>
-        <location filename="DACommonWidgets/DAPenEditWidget.cpp" line="112"/>
+        <location filename="DACommonWidgets/DAPenEditWidget.cpp" line="115"/>
         <source>Pen Editor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DAPenEditWidget.cpp" line="113"/>
+        <location filename="DACommonWidgets/DAPenEditWidget.cpp" line="116"/>
         <source> px</source>
         <translation type="unfinished"></translation>
     </message>
