@@ -3,7 +3,7 @@
 
 #include <QWidget>
 #include <QPointer>
-class QActionGroup;
+class QAbstractButton;
 class QwtPlotItem;
 class QwtPlot;
 namespace Ui
@@ -22,14 +22,15 @@ class DAChartPlotItemSettingWidget : public QWidget
 public:
     explicit DAChartPlotItemSettingWidget(QWidget* parent = nullptr);
     ~DAChartPlotItemSettingWidget();
-    // plotitem
+
+    // 设置plotitem
     void setPlotItem(QwtPlotItem* item);
     QwtPlotItem* getPlotItem() const;
-    //清除
+    // 清除
     void clear();
-    //根据item值刷新ui内容，此函数不会触发信号
+    // 根据item值刷新ui内容，此函数不会触发信号
     void updateUI();
-    //更新坐标轴的设置
+    // 更新坐标轴的设置
     void updateAxis();
 private slots:
     void onItemTitleEditingFinished();
@@ -37,17 +38,12 @@ private slots:
 
 private:
     void onPlotItemAttached(QwtPlotItem* plotItem, bool on);
-    void onActionGroupAxisTriggered(QAction* act);
+    void onButtonGroupAxisClicked(QAbstractButton* btn);
 
 private:
     Ui::DAChartPlotItemSettingWidget* ui;
-    QActionGroup* _actionGroupAxis { nullptr };
-    QAction* _actionAxisLeftBottom { nullptr };
-    QAction* _actionAxisLeftTop { nullptr };
-    QAction* _actionAxisRightBottom { nullptr };
-    QAction* _actionAxisRightTop { nullptr };
-    QwtPlotItem* _item { nullptr };
-    QPointer< QwtPlot > _plot { nullptr };
+    QwtPlotItem* mItem { nullptr };
+    QPointer< QwtPlot > mPlot { nullptr };
 };
 }
 #endif  // DACHARTPLOTITEMSETTINGWIDGET_H

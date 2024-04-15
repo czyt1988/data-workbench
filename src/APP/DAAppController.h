@@ -16,6 +16,8 @@ class QMenuBar;
 class QFontComboBox;
 class QUndoStack;
 class QGraphicsItem;
+// qwt
+class QwtPlotItem;
 // Qt-Advanced-Docking-System 前置申明
 namespace ads
 {
@@ -329,6 +331,12 @@ private slots:
     //===================================================
     // 鼠标动作结束
     void onWorkFlowGraphicsSceneMouseActionFinished(DAWorkFlowGraphicsScene::MouseActionFlag mf);
+
+    //===================================================
+    // DAAppChartManageWidget
+    //===================================================
+    void onFigureItemClicked(DA::DAFigureWidget* fig, DA::DAChartWidget* chart, QwtPlotItem* item);
+    void onFigureItemDoubleClicked(DA::DAFigureWidget* fig, DA::DAChartWidget* chart, QwtPlotItem* item);
 
 private:
     // 初始化信号槽

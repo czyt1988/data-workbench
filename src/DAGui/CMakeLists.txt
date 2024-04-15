@@ -122,6 +122,7 @@ set(DA_LIB_QT_UI_FILES
 set(DA_LIB_QT_RC_FILES
     icon.qrc
 )
+# python about
 if(DA_ENABLE_PYTHON)
     list(APPEND DA_LIB_HEADER_FILES
         DADataframeToVectorPointWidget.h
@@ -232,7 +233,9 @@ if(DA_ENABLE_PYTHON)
         ${DA_LIB_SUBDIR_Commands}/DACommandsDataFrame.cpp
     )
 endif()
+
 #ChartSetting
+# 这里直接遍历，不需要区分
 file(GLOB DA_LIB_HEADER_FILES_ChartSetting ${DA_LIB_SUBDIR_ChartSetting}/*.h)
 file(GLOB DA_LIB_SOURCE_FILES_ChartSetting ${DA_LIB_SUBDIR_ChartSetting}/*.cpp)
 file(GLOB DA_LIB_UI_FILES_ChartSetting ${DA_LIB_SUBDIR_ChartSetting}/*.ui)

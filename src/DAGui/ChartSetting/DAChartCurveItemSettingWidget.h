@@ -1,8 +1,11 @@
 ﻿#ifndef DACHARTCURVEITEMSETTINGWIDGET_H
 #define DACHARTCURVEITEMSETTINGWIDGET_H
-
+#include "DAGuiAPI.h"
 #include <QWidget>
+#include <QPointer>
 #include "qwt_plot_curve.h"
+// qwt
+class QwtPlot;
 namespace Ui
 {
 class DAChartCurveItemSettingWidget;
@@ -16,7 +19,7 @@ namespace DA
  *
  * @note 注意此窗口不保存item
  */
-class DAChartCurveItemSettingWidget : public QWidget
+class DAGUI_API DAChartCurveItemSettingWidget : public QWidget
 {
     Q_OBJECT
 
@@ -25,7 +28,12 @@ public:
 	~DAChartCurveItemSettingWidget();
 	// 根据QwtPlotCurve更新ui
 	void updateUI(const QwtPlotCurve* item);
+    // 根据ui更新plotitem
 	void updatePlotItem(QwtPlotCurve* item);
+    // 设置plotitem
+    void setPlotItem(QwtPlotCurve* item);
+    QwtPlotCurve* getPlotItem() const;
+
 	// 标题
 	void setTitle(const QString& t);
 	QString getTitle() const;
@@ -65,6 +73,8 @@ private slots:
 
 private:
 	Ui::DAChartCurveItemSettingWidget* ui;
+    QwtPlotCurve* mItem { nullptr };
+    QPointer< QwtPlot > mPlot { nullptr };
 };
 }
 

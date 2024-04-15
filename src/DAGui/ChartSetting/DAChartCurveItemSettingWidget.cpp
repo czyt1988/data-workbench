@@ -3,6 +3,7 @@
 #include <QMessageBox>
 #include <QDebug>
 #include "qwt_text.h"
+#include "qwt_plot.h"
 namespace DA
 {
 DAChartCurveItemSettingWidget::DAChartCurveItemSettingWidget(QWidget* parent)
@@ -97,6 +98,31 @@ void DAChartCurveItemSettingWidget::updatePlotItem(QwtPlotCurve* item)
     if (item->orientation() != ori) {
         item->setOrientation(ori);
     }
+}
+
+void DAChartCurveItemSettingWidget::setPlotItem(QwtPlotCurve* item)
+{
+    mItem = item;
+    // 如果item有plot，则把plot设置进来，plot可以知道item是否被delete
+    QwtPlot* oldPlot = mPlot.data();
+    QwtPlot* newPlot = nullptr;
+    if (item) {
+        newPlot = item->plot();
+    }
+    if (oldPlot == newPlot) {
+        return;
+    }
+    if (oldPlot) {
+        disconnect(oldPlot, &QwtPlot::itemAttached, this, &DAChartPlotItemSettingWidget::onPlotItemAttached);
+    }
+    if (newPlot) {
+        connect(mPlot.data(), &QwtPlot::itemAttached, this, &DAChartPlotItemSettingWidget::onPlotItemAttached);
+    }
+}
+
+QwtPlotCurve* DAChartCurveItemSettingWidget::getPlotItem() const
+{
+    return mItem;
 }
 
 /**

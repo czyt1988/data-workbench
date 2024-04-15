@@ -1,17 +1,17 @@
 ﻿#include "DAChartPlotItemSettingWidget.h"
 #include "ui_DAChartPlotItemSettingWidget.h"
-#include <QActionGroup>
 #include <QDebug>
 #include "qwt_plot_item.h"
 #include "qwt_text.h"
 #include "qwt_plot.h"
 #define DAChartPlotItemSettingWidget_CheckItem()                                                                       \
     do {                                                                                                               \
-        if (nullptr == _item) {                                                                                        \
+        if (nullptr == mItem) {                                                                                        \
             qDebug() << "DAChartPlotItemSettingWidget's plot item is null";                                            \
             return;                                                                                                    \
         }                                                                                                              \
     } while (0)
+
 namespace DA
 {
 
@@ -19,22 +19,10 @@ DAChartPlotItemSettingWidget::DAChartPlotItemSettingWidget(QWidget* parent)
     : QWidget(parent), ui(new Ui::DAChartPlotItemSettingWidget)
 {
     ui->setupUi(this);
-    _actionGroupAxis      = new QActionGroup(this);
-    _actionAxisLeftBottom = _actionGroupAxis->addAction(QIcon(":/DAGui/ChartSetting/icon/axisLeftBottom.svg"),
-                                                        tr("Left Bottom"));
-    _actionAxisLeftBottom->setCheckable(true);
-    _actionAxisLeftTop = _actionGroupAxis->addAction(QIcon(":/DAGui/ChartSetting/icon/axisLeftTop.svg"), tr("Left Top"));
-    _actionAxisLeftTop->setCheckable(true);
-    _actionAxisRightBottom = _actionGroupAxis->addAction(QIcon(":/DAGui/ChartSetting/icon/axisRightBottom.svg"),
-                                                         tr("Right Bottom"));
-    _actionAxisRightBottom->setCheckable(true);
-    _actionAxisRightTop = _actionGroupAxis->addAction(QIcon(":/DAGui/ChartSetting/icon/axisRightTop.svg"), tr("Right Top"));
-    _actionAxisRightTop->setCheckable(true);
-    ui->toolButtonLeftBottom->setDefaultAction(_actionAxisLeftBottom);
-    ui->toolButtonLeftTop->setDefaultAction(_actionAxisLeftTop);
-    ui->toolButtonRightBottom->setDefaultAction(_actionAxisRightBottom);
-    ui->toolButtonRightTop->setDefaultAction(_actionAxisRightTop);
-    connect(_actionGroupAxis, &QActionGroup::triggered, this, &DAChartPlotItemSettingWidget::onActionGroupAxisTriggered);
+    connect(ui->buttonGroupAxis,
+            QOverload< QAbstractButton* >::of(&QButtonGroup::buttonClicked),
+            this,
+            &DAChartPlotItemSettingWidget::onButtonGroupAxisClicked);
     connect(ui->lineEditTitle, &QLineEdit::editingFinished, this, &DAChartPlotItemSettingWidget::onItemTitleEditingFinished);
     connect(ui->doubleSpinBoxZ,
             QOverload< double >::of(&QDoubleSpinBox::valueChanged),
@@ -53,14 +41,21 @@ DAChartPlotItemSettingWidget::~DAChartPlotItemSettingWidget()
  */
 void DAChartPlotItemSettingWidget::setPlotItem(QwtPlotItem* item)
 {
-    _item = item;
+    mItem = item;
     // 如果item有plot，则把plot设置进来，plot可以知道item是否被delete
-    QwtPlot* oldPlot = _plot.data();
-    _plot            = item->plot();
-    if (_plot) {
-        connect(_plot.data(), &QwtPlot::itemAttached, this, &DAChartPlotItemSettingWidget::onPlotItemAttached);
-    } else if (oldPlot) {
+    QwtPlot* oldPlot = mPlot.data();
+    QwtPlot* newPlot = nullptr;
+    if (item) {
+        newPlot = item->plot();
+    }
+    if (oldPlot == newPlot) {
+        return;
+    }
+    if (oldPlot) {
         disconnect(oldPlot, &QwtPlot::itemAttached, this, &DAChartPlotItemSettingWidget::onPlotItemAttached);
+    }
+    if (newPlot) {
+        connect(mPlot.data(), &QwtPlot::itemAttached, this, &DAChartPlotItemSettingWidget::onPlotItemAttached);
     }
 }
 
@@ -70,7 +65,7 @@ void DAChartPlotItemSettingWidget::setPlotItem(QwtPlotItem* item)
  */
 QwtPlotItem* DAChartPlotItemSettingWidget::getPlotItem() const
 {
-    return _item;
+    return mItem;
 }
 
 /**
@@ -78,8 +73,8 @@ QwtPlotItem* DAChartPlotItemSettingWidget::getPlotItem() const
  */
 void DAChartPlotItemSettingWidget::clear()
 {
-    _item = nullptr;
-    _plot = nullptr;
+    setPlotItem(nullptr);
+
     QSignalBlocker b1(ui->lineEditTitle), b2(ui->doubleSpinBoxZ);
     ui->lineEditTitle->clear();
     ui->doubleSpinBoxZ->setValue(0);
@@ -93,8 +88,8 @@ void DAChartPlotItemSettingWidget::updateUI()
 {
     DAChartPlotItemSettingWidget_CheckItem();
     QSignalBlocker b1(ui->lineEditTitle), b2(ui->doubleSpinBoxZ);
-    ui->lineEditTitle->setText(_item->title().text());
-    ui->doubleSpinBoxZ->setValue(_item->z());
+    ui->lineEditTitle->setText(mItem->title().text());
+    ui->doubleSpinBoxZ->setValue(mItem->z());
     updateAxis();
 }
 
@@ -104,50 +99,51 @@ void DAChartPlotItemSettingWidget::updateUI()
 void DAChartPlotItemSettingWidget::updateAxis()
 {
     DAChartPlotItemSettingWidget_CheckItem();
-    QSignalBlocker b1(_actionGroupAxis);
-    if (QwtPlot::yLeft == _item->yAxis() && QwtPlot::xBottom == _item->xAxis()) {
-        _actionAxisLeftBottom->setChecked(true);
-    } else if (QwtPlot::yLeft == _item->yAxis() && QwtPlot::xTop == _item->xAxis()) {
-        _actionAxisLeftTop->setChecked(true);
-    } else if (QwtPlot::yRight == _item->yAxis() && QwtPlot::xBottom == _item->xAxis()) {
-        _actionAxisRightBottom->setChecked(true);
-    } else if (QwtPlot::yRight == _item->yAxis() && QwtPlot::xTop == _item->xAxis()) {
-        _actionAxisRightTop->setChecked(true);
+    QSignalBlocker b(ui->buttonGroupAxis);
+    Q_UNUSED(b);
+    if (QwtPlot::yLeft == mItem->yAxis() && QwtPlot::xBottom == mItem->xAxis()) {
+        ui->toolButtonLeftBottom->setChecked(true);
+    } else if (QwtPlot::yLeft == mItem->yAxis() && QwtPlot::xTop == mItem->xAxis()) {
+        ui->toolButtonLeftTop->setChecked(true);
+    } else if (QwtPlot::yRight == mItem->yAxis() && QwtPlot::xBottom == mItem->xAxis()) {
+        ui->toolButtonRightBottom->setChecked(true);
+    } else if (QwtPlot::yRight == mItem->yAxis() && QwtPlot::xTop == mItem->xAxis()) {
+        ui->toolButtonRightTop->setChecked(true);
     } else {
-        qDebug() << "plot item get unknow axis set:x=" << _item->xAxis() << ",y=" << _item->yAxis();
+        qDebug() << "plot item get unknow axis set:x=" << mItem->xAxis() << ",y=" << mItem->yAxis();
     }
 }
 
 void DAChartPlotItemSettingWidget::onItemTitleEditingFinished()
 {
     DAChartPlotItemSettingWidget_CheckItem();
-    _item->setTitle(ui->lineEditTitle->text());
+    mItem->setTitle(ui->lineEditTitle->text());
 }
 
 void DAChartPlotItemSettingWidget::onItemZValueChanged(double z)
 {
     DAChartPlotItemSettingWidget_CheckItem();
-    _item->setZ(z);
+    mItem->setZ(z);
 }
 
 void DAChartPlotItemSettingWidget::onPlotItemAttached(QwtPlotItem* plotItem, bool on)
 {
-    if (!on && plotItem == _item) {
+    if (!on && plotItem == mItem) {
         // item脱离plot，有可能会被delete
     }
 }
 
-void DAChartPlotItemSettingWidget::onActionGroupAxisTriggered(QAction* act)
+void DAChartPlotItemSettingWidget::onButtonGroupAxisClicked(QAbstractButton* btn)
 {
     DAChartPlotItemSettingWidget_CheckItem();
-    if (act = _actionAxisLeftBottom) {
-        _item->setAxes(QwtPlot::xBottom, QwtPlot::yLeft);
-    } else if (act == _actionAxisLeftTop) {
-        _item->setAxes(QwtPlot::xTop, QwtPlot::yLeft);
-    } else if (act == _actionAxisRightBottom) {
-        _item->setAxes(QwtPlot::xBottom, QwtPlot::yRight);
-    } else if (act == _actionAxisRightTop) {
-        _item->setAxes(QwtPlot::xTop, QwtPlot::yRight);
+    if (btn == ui->toolButtonLeftBottom) {
+        mItem->setAxes(QwtPlot::xBottom, QwtPlot::yLeft);
+    } else if (btn == ui->toolButtonLeftTop) {
+        mItem->setAxes(QwtPlot::xTop, QwtPlot::yLeft);
+    } else if (btn == ui->toolButtonRightBottom) {
+        mItem->setAxes(QwtPlot::xBottom, QwtPlot::yRight);
+    } else if (btn == ui->toolButtonRightTop) {
+        mItem->setAxes(QwtPlot::xTop, QwtPlot::yRight);
     }
 }
 }

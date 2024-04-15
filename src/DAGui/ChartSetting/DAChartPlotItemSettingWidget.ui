@@ -82,7 +82,11 @@
         <string>Set X on bottom and Y axis on left</string>
        </property>
        <property name="text">
-        <string/>
+        <string>Left bottom</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../icon.qrc">
+         <normaloff>:/DAGui/ChartSetting/icon/axisLeftBottom.svg</normaloff>:/DAGui/ChartSetting/icon/axisLeftBottom.svg</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -93,6 +97,9 @@
        <property name="autoRaise">
         <bool>true</bool>
        </property>
+       <attribute name="buttonGroup">
+        <string notr="true">buttonGroupAxis</string>
+       </attribute>
       </widget>
      </item>
      <item>
@@ -107,7 +114,11 @@
         <string>Set X on bottom and Y axis on right</string>
        </property>
        <property name="text">
-        <string/>
+        <string>Right bottom</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../icon.qrc">
+         <normaloff>:/DAGui/ChartSetting/icon/axisRightBottom.svg</normaloff>:/DAGui/ChartSetting/icon/axisRightBottom.svg</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -118,6 +129,9 @@
        <property name="autoRaise">
         <bool>true</bool>
        </property>
+       <attribute name="buttonGroup">
+        <string notr="true">buttonGroupAxis</string>
+       </attribute>
       </widget>
      </item>
      <item>
@@ -132,7 +146,11 @@
         <string>Set X on top and Y axis on left</string>
        </property>
        <property name="text">
-        <string/>
+        <string>Left top</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../icon.qrc">
+         <normaloff>:/DAGui/ChartSetting/icon/axisLeftTop.svg</normaloff>:/DAGui/ChartSetting/icon/axisLeftTop.svg</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -143,6 +161,9 @@
        <property name="autoRaise">
         <bool>true</bool>
        </property>
+       <attribute name="buttonGroup">
+        <string notr="true">buttonGroupAxis</string>
+       </attribute>
       </widget>
      </item>
      <item>
@@ -157,7 +178,11 @@
         <string>Set X on top and Y axis on right</string>
        </property>
        <property name="text">
-        <string/>
+        <string>Right top</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../icon.qrc">
+         <normaloff>:/DAGui/ChartSetting/icon/axisRightTop.svg</normaloff>:/DAGui/ChartSetting/icon/axisRightTop.svg</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -168,7 +193,23 @@
        <property name="autoRaise">
         <bool>true</bool>
        </property>
+       <attribute name="buttonGroup">
+        <string notr="true">buttonGroupAxis</string>
+       </attribute>
       </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
      </item>
     </layout>
    </item>
@@ -187,6 +228,11 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../icon.qrc"/>
+ </resources>
  <connections/>
+ <buttongroups>
+  <buttongroup name="buttonGroupAxis"/>
+ </buttongroups>
 </ui>
