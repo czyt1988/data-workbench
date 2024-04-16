@@ -1,0 +1,68 @@
+﻿#ifndef DACHARTAXISSETWIDGET_H
+#define DACHARTAXISSETWIDGET_H
+#include "DAGuiAPI.h"
+#include <QWidget>
+class QwtPlot;
+class QButtonGroup;
+namespace Ui
+{
+class DAChartAxisSetWidget;
+}
+namespace DA
+{
+
+class DAGUI_API DAChartAxisSetWidget : public QWidget
+{
+	Q_OBJECT
+
+public:
+	explicit DAChartAxisSetWidget(QWidget* parent = 0);
+	~DAChartAxisSetWidget();
+	QwtPlot* getChart() const;
+	void setChart(QwtPlot* chart, int axisID);
+	void updateAxisValue();
+	void resetAxisValue();
+	void enableWidget(bool enable = true);
+signals:
+	///
+	/// \brief 允许或禁止坐标轴时发送的信号
+	/// \param enable
+	/// \param axid
+	///
+	void enableAxis(bool enable, int axid);
+private slots:
+	Q_SLOT void onEnableCheckBoxClicked(int state);
+	Q_SLOT void onLineEditTextChanged(const QString& text);
+	Q_SLOT void onAxisFontChanged(const QFont& font);
+	Q_SLOT void onAxisLabelAligmentChanged(Qt::Alignment al);
+	Q_SLOT void onAxisLabelRotationChanged(double v);
+	Q_SLOT void onAxisMarginValueChanged(int v);
+	Q_SLOT void onAxisMaxScaleChanged(double v);
+	Q_SLOT void onAxisMinScaleChanged(double v);
+	Q_SLOT void onScaleDivChanged();
+	Q_SLOT void onScaleStyleChanged(int id);
+
+private:
+	void updateUI();
+	void updateAxisValue(QwtPlot* chart, int axisID);
+
+private:
+	enum ScaleStyle
+	{
+		NormalScale,
+		DateTimeScale
+	};
+
+	void connectChartAxis();
+	void disconnectChartAxis();
+	void connectChart();
+	void disconnectChart();
+
+private:
+	Ui::DAChartAxisSetWidget* ui;
+	QwtPlot* m_chart;
+	QButtonGroup* m_buttonGroup;
+	int m_axisID;
+};
+}  // end DA
+#endif  // DAChartAxisSetWidget_H

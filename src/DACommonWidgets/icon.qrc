@@ -7,5 +7,10 @@
         <file>icon/font-size-sub.svg</file>
         <file>icon/no-style.svg</file>
         <file>icon/open.svg</file>
+        <file>icon/AligmentBottom.svg</file>
+        <file>icon/AligmentCenter.svg</file>
+        <file>icon/AligmentLeft.svg</file>
+        <file>icon/AligmentRight.svg</file>
+        <file>icon/AligmentTop.svg</file>
     </qresource>
 </RCC>
