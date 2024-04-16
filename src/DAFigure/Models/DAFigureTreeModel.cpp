@@ -258,6 +258,22 @@ void DAChartWidgetStandardItem::appendChartItem(QwtPlotItem* i)
                 new DAChartItemStandardItem(_chart, i, 2) });
 }
 
+QString DAChartWidgetStandardItem::getChartTitle(DAFigureWidget* fig, DAChartWidget* c)
+{
+    if (!c) {
+        return QObject::tr("untitle-chart");  // cn:图-未命名
+    }
+    QString str = c->getChartTitle();
+    if (!str.isEmpty()) {
+        return str;
+    }
+    if (!fig) {
+        return QObject::tr("untitle-chart");  // cn:图-未命名
+    }
+    auto charts = fig->getChartsOrdered();
+    return QObject::tr("chart-%1").arg(charts.indexOf(c));
+}
+
 QVariant DAChartWidgetStandardItem::data(int role) const
 {
     int c = column();
@@ -278,17 +294,7 @@ QVariant DAChartWidgetStandardItem::dataDisplayRole(int c) const
 {
     switch (c) {
     case 0: {
-        QString str = _chart->title().text();
-        if (str.isEmpty()) {
-            DAFigureTreeModel* m = static_cast< DAFigureTreeModel* >(model());
-            if (m) {
-                str = QObject::tr("chart-%1").arg(m->indexOfChart(getChart()));  // cn:图-%1
-            } else {
-                str = QObject::tr("untitle-chart");  // cn:图-未命名
-            }
-            return str;
-        }
-        return str;
+        return getChartTitle(_figure, _chart);
     }
     default:
         break;
@@ -397,7 +403,7 @@ void DAFigureTreeModel::onChartAdded(DAChartWidget* c)
     if (index < 0) {
         return;
     }
-    d_ptr->mCharts.insert(index, c);
+    d_ptr->mCharts = charts;
     insertRow(index,
               { new DAChartWidgetStandardItem(d_ptr->mFig, c, 0),
                 new DAChartWidgetStandardItem(d_ptr->mFig, c, 1),

@@ -21,6 +21,12 @@
        <property name="text">
         <string>Figure</string>
        </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
        <attribute name="buttonGroup">
         <string notr="true">buttonGroupType</string>
        </attribute>
@@ -31,6 +37,9 @@
        <property name="text">
         <string>Chart</string>
        </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
        <attribute name="buttonGroup">
         <string notr="true">buttonGroupType</string>
        </attribute>
@@ -40,6 +49,9 @@
       <widget class="QToolButton" name="toolButtonItem">
        <property name="text">
         <string>item</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
        </property>
        <attribute name="buttonGroup">
         <string notr="true">buttonGroupType</string>
@@ -62,18 +74,51 @@
     </layout>
    </item>
    <item>
+    <widget class="QComboBox" name="comboBoxSelectChart"/>
+   </item>
+   <item>
     <widget class="QComboBox" name="comboBoxSelectItem"/>
    </item>
    <item>
-    <widget class="QStackedWidget" name="stackedWidget">
-     <widget class="QWidget" name="page"/>
-     <widget class="QWidget" name="page_2"/>
-    </widget>
+    <widget class="QStackedWidget" name="stackedWidget"/>
    </item>
   </layout>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>toolButtonItem</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>comboBoxSelectItem</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>143</x>
+     <y>24</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>156</x>
+     <y>82</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>toolButtonChart</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>comboBoxSelectChart</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>102</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>102</x>
+     <y>37</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
  <buttongroups>
   <buttongroup name="buttonGroupType"/>
  </buttongroups>

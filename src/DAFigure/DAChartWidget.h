@@ -106,6 +106,8 @@ public:
     void setAllAxisMargin(int m);
     // 获取figure
     DAFigureWidget* getFigure() const;
+    // title的另外一种方式
+    QString getChartTitle() const;
 
 public:
     // 这里获取绘图窗口里的一些部件

@@ -769,6 +769,15 @@ DAFigureWidget* DAChartWidget::getFigure() const
 }
 
 /**
+ * @brief title的另外一种方式
+ * @return
+ */
+QString DAChartWidget::getChartTitle() const
+{
+    return title().text();
+}
+
+/**
  * @brief 设置边框
  * @param c
  */

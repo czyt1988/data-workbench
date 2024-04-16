@@ -74,6 +74,8 @@ public:
 
     // 添加item
     void appendChartItem(QwtPlotItem* i);
+    // 获取chart名字
+    static QString getChartTitle(DAFigureWidget* fig, DAChartWidget* c);
 
 private:
     DAFigureWidget* _figure { nullptr };
