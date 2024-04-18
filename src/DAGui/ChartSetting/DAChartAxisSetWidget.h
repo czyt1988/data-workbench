@@ -23,7 +23,12 @@ public:
 	void setChart(QwtPlot* chart, int axisID);
 	void updateAxisValue();
 	void resetAxisValue();
+	// axis enable
+	void setEnableAxis(bool on = true);
+	bool isEnableAxis() const;
+	//
 	void enableWidget(bool enable = true);
+
 signals:
 	///
 	/// \brief 允许或禁止坐标轴时发送的信号
@@ -32,7 +37,7 @@ signals:
 	///
 	void enableAxis(bool enable, int axid);
 private slots:
-    Q_SLOT void onCheckBoxEnableCliecked(bool on);
+	Q_SLOT void onCheckBoxEnableCliecked(bool on);
 	Q_SLOT void onLineEditTextChanged(const QString& text);
 	Q_SLOT void onAxisFontChanged(const QFont& font);
 	Q_SLOT void onAxisLabelAligmentChanged(Qt::Alignment al);
@@ -60,7 +65,7 @@ private:
 
 private:
 	Ui::DAChartAxisSetWidget* ui;
-    QPointer< QwtPlot > m_chart;
+	QPointer< QwtPlot > m_chart;
 	QButtonGroup* m_buttonGroup;
 	int m_axisID;
 };

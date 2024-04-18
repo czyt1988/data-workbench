@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>DAFigureSettingWidget</class>
- <widget class="QWidget" name="DAFigureSettingWidget">
+ <class>DAChartSettingWidget</class>
+ <widget class="QWidget" name="DAChartSettingWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -82,7 +82,7 @@
    <item>
     <widget class="QStackedWidget" name="stackedWidget">
      <widget class="QWidget" name="pageFigureSet"/>
-     <widget class="DA::DAChartSettingWidget" name="widgetChartSetting">
+     <widget class="DA::DAChartPlotSettingWidget" name="widgetChartSetting">
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <property name="spacing">
         <number>1</number>
@@ -108,15 +108,15 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>DA::DAChartSettingWidget</class>
-   <extends>QWidget</extends>
-   <header>DAChartSettingWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>DA::DAChartCommonItemsSettingWidget</class>
    <extends>QWidget</extends>
    <header>DAChartCommonItemsSettingWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DA::DAChartPlotSettingWidget</class>
+   <extends>QWidget</extends>
+   <header>DAChartPlotSettingWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -7,7 +7,7 @@
 namespace DA
 {
 class DAWorkFlowNodeItemSettingWidget;
-class DAFigureSettingWidget;
+class DAChartSettingWidget;
 /**
  * @brief 这是一个类似QStackedWidget的窗体，只内部有一个scallview
  */
@@ -25,16 +25,16 @@ public:
     // 显示默认的工作流节点设置窗口
     void showWorkFlowNodeItemSettingWidget();
     // 绘图设置
-    DAFigureSettingWidget* getFigureSettingWidget();
+    DAChartSettingWidget* getChartSettingWidget();
     // 显示默认的工作流节点设置窗口
-    void showFigureSettingWidget();
+    void showChartSettingWidget();
 
 protected:
     void initWorkFlowSettingWidgets();
 
 private:
     DAWorkFlowNodeItemSettingWidget* mWorkFlowNodeItemSettingWidget { nullptr };
-    DAFigureSettingWidget* mFigureSettingWidget { nullptr };
+	DAChartSettingWidget* mChartSettingWidget { nullptr };
 };
 }  // namespace DA
 #endif  // DASETTINGCONTAINERWIDGET_H

@@ -45,11 +45,11 @@ set(DA_LIB_HEADER_FILES
     DAChartListView.h
     DAChartManageWidget.h
     DAChartOperateWidget.h
+    DAChartSettingWidget.h
     DADataListView.h
     DADataManageTableView.h
     DADataManageWidget.h
     DADataOperateWidget.h
-    DAFigureSettingWidget.h
     DAMessageLogViewWidget.h
     DANodeItemSettingWidget.h
     DANodeLinkItemSettingWidget.h
@@ -74,13 +74,13 @@ set(DA_LIB_SOURCE_FILES
     DAChartListView.cpp
     DAChartManageWidget.cpp
     DAChartOperateWidget.cpp
+    DAChartSettingWidget.cpp
     DADataListView.cpp
     DADataManageTableView.cpp
     DADataManageWidget.cpp
     DADataManagerComboBox.cpp
     DADataOperatePageWidget.cpp
     DADataOperateWidget.cpp
-    DAFigureSettingWidget.cpp
     DAFigureFactory.cpp
     DAGraphicsPixmapItemSettingWidget.cpp
     DAGlobalColorTheme.cpp
@@ -106,10 +106,10 @@ set(DA_LIB_QT_UI_FILES
     DAChartAddCurveWidget.ui
     DAChartManageWidget.ui
     DAChartOperateWidget.ui
+    DAChartSettingWidget.ui
     DADataManageWidget.ui
     DADataOperateWidget.ui
     DAGraphicsPixmapItemSettingWidget.ui
-    DAFigureSettingWidget.ui
     DAMessageLogViewWidget.ui
     DANodeItemSettingWidget.ui
     DANodeLinkItemSettingWidget.ui
@@ -134,7 +134,7 @@ if(DA_ENABLE_PYTHON)
     )
     list(APPEND DA_LIB_QT_UI_FILES
         DADataframeToVectorPointWidget.ui
-        DADataOperateOfDataFrameWidget.cpp
+        DADataOperateOfDataFrameWidget.ui
     )
 endif()
 # 子目录

@@ -846,117 +846,117 @@ Table Area</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="APP/DAAppController.cpp" line="618"/>
-        <location filename="APP/DAAppController.cpp" line="694"/>
+        <location filename="APP/DAAppController.cpp" line="629"/>
+        <location filename="APP/DAAppController.cpp" line="705"/>
         <source>project file(*.%1)</source>
         <translation>工程文件(*.%1)</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="633"/>
+        <location filename="APP/DAAppController.cpp" line="644"/>
         <source>Question</source>
         <translation>疑问</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="634"/>
+        <location filename="APP/DAAppController.cpp" line="645"/>
         <source>Another project already exists. Do you want to replace it?</source>
         <translation>已存在其他工程，是否要替换？</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="648"/>
-        <location filename="APP/DAAppController.cpp" line="707"/>
+        <location filename="APP/DAAppController.cpp" line="659"/>
+        <location filename="APP/DAAppController.cpp" line="718"/>
         <source>failed to load project file:%1</source>
         <translation>加载工程文件“%1”失败</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="661"/>
-        <location filename="APP/DAAppController.cpp" line="729"/>
+        <location filename="APP/DAAppController.cpp" line="672"/>
+        <location filename="APP/DAAppController.cpp" line="740"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="663"/>
+        <location filename="APP/DAAppController.cpp" line="674"/>
         <source>project file (*.%1)</source>
         <translation>工程文件(*.%1)</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="673"/>
+        <location filename="APP/DAAppController.cpp" line="684"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="674"/>
+        <location filename="APP/DAAppController.cpp" line="685"/>
         <source>Whether to overwrite the file:%1</source>
         <translation>是否覆盖文件“%1”</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="683"/>
-        <location filename="APP/DAAppController.cpp" line="740"/>
+        <location filename="APP/DAAppController.cpp" line="694"/>
+        <location filename="APP/DAAppController.cpp" line="751"/>
         <source>Project saved failed!,path is %1</source>
         <translation>工程“%1”保存失败</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="687"/>
-        <location filename="APP/DAAppController.cpp" line="758"/>
+        <location filename="APP/DAAppController.cpp" line="698"/>
+        <location filename="APP/DAAppController.cpp" line="769"/>
         <source>Project saved successfully,path is %1</source>
         <translation>工程保存成功，路径位于:%1</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="731"/>
+        <location filename="APP/DAAppController.cpp" line="742"/>
         <source>Project Files (*.%1)</source>
         <translation>工程文件(*.%1)</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="775"/>
+        <location filename="APP/DAAppController.cpp" line="786"/>
         <source>Project load successfully,path is %1</source>
         <translation>工程加载成功，路径为：%1</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="841"/>
+        <location filename="APP/DAAppController.cpp" line="852"/>
         <source>Image files (*.png *.jpg)</source>
         <translation>图片文件 (*.png *.jpg)</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="842"/>
+        <location filename="APP/DAAppController.cpp" line="853"/>
         <source>Any files (*)</source>
         <translation>任意文件 (*)</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="925"/>
+        <location filename="APP/DAAppController.cpp" line="936"/>
         <source>get null project</source>
         <translation>空工程，接口异常</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="931"/>
+        <location filename="APP/DAAppController.cpp" line="942"/>
         <source>warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="932"/>
+        <location filename="APP/DAAppController.cpp" line="943"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1196"/>
+        <location filename="APP/DAAppController.cpp" line="1207"/>
         <source>Before creating a new coordinate,you need to create a figure</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1641"/>
+        <location filename="APP/DAAppController.cpp" line="1652"/>
         <source>%1_Describe</source>
         <translation>%1_Describe</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1642"/>
+        <location filename="APP/DAAppController.cpp" line="1653"/>
         <source>Generate descriptive statistics that summarize the central tendency, dispersion and shape of a [%1]’s distribution, excluding NaN values</source>
         <translation>生成描述性统计数据，汇总[%1]分布的中心趋势、分散度和结构（不包括NaN值）</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1761"/>
+        <location filename="APP/DAAppController.cpp" line="1772"/>
         <source>new workflow name</source>
         <translation>新工作流名称</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1762"/>
+        <location filename="APP/DAAppController.cpp" line="1773"/>
         <source>new workflow name:</source>
         <translation>工作流名称:</translation>
     </message>
@@ -1014,42 +1014,42 @@ Table Area</source>
 <context>
     <name>DA::DAAppDockingArea</name>
     <message>
-        <location filename="APP/DAAppDockingArea.cpp" line="62"/>
+        <location filename="APP/DAAppDockingArea.cpp" line="63"/>
         <source>workflow node</source>
         <translation>节点</translation>
     </message>
     <message>
-        <location filename="APP/DAAppDockingArea.cpp" line="63"/>
+        <location filename="APP/DAAppDockingArea.cpp" line="64"/>
         <source>charts manager</source>
         <translation>绘图管理</translation>
     </message>
     <message>
-        <location filename="APP/DAAppDockingArea.cpp" line="64"/>
+        <location filename="APP/DAAppDockingArea.cpp" line="65"/>
         <source>datas manager</source>
         <translation>数据管理</translation>
     </message>
     <message>
-        <location filename="APP/DAAppDockingArea.cpp" line="65"/>
+        <location filename="APP/DAAppDockingArea.cpp" line="66"/>
         <source>workflow operate</source>
         <translation>工作流操作</translation>
     </message>
     <message>
-        <location filename="APP/DAAppDockingArea.cpp" line="66"/>
+        <location filename="APP/DAAppDockingArea.cpp" line="67"/>
         <source>chart operate</source>
         <translation>绘图操作</translation>
     </message>
     <message>
-        <location filename="APP/DAAppDockingArea.cpp" line="67"/>
+        <location filename="APP/DAAppDockingArea.cpp" line="68"/>
         <source>data operate</source>
         <translation>数据操作</translation>
     </message>
     <message>
-        <location filename="APP/DAAppDockingArea.cpp" line="68"/>
+        <location filename="APP/DAAppDockingArea.cpp" line="69"/>
         <source>setting</source>
         <translation>设置</translation>
     </message>
     <message>
-        <location filename="APP/DAAppDockingArea.cpp" line="69"/>
+        <location filename="APP/DAAppDockingArea.cpp" line="70"/>
         <source>log</source>
         <translation>消息</translation>
     </message>
@@ -1385,27 +1385,27 @@ Table Area</source>
 <context>
     <name>DA::DAChartCurveItemSettingWidget</name>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="132"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="135"/>
         <source>Lines</source>
         <translation>折线</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="133"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="136"/>
         <source>Sticks</source>
         <translation>线棒</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="134"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="137"/>
         <source>Steps</source>
         <translation>阶梯</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="135"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="138"/>
         <source>Dots</source>
         <translation>点</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="136"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="139"/>
         <source>No Curve</source>
         <translation>无连接线</translation>
     </message>
@@ -1512,17 +1512,17 @@ Table Area</source>
         <translation>图-%1</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartOperateWidget.cpp" line="170"/>
+        <location filename="DAGui/DAChartOperateWidget.cpp" line="179"/>
         <source>chart operate widget&apos;s tab changed,but can not find figure</source>
         <translation>绘图操作窗口的标签改变信号中，无法通过标签索引找到对应的绘图</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartOperateWidget.cpp" line="183"/>
+        <location filename="DAGui/DAChartOperateWidget.cpp" line="192"/>
         <source>question</source>
         <translation>疑问</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartOperateWidget.cpp" line="183"/>
+        <location filename="DAGui/DAChartOperateWidget.cpp" line="192"/>
         <source>Whether to close the figure widget</source>
         <translation>确认关闭绘图窗口</translation>
     </message>
@@ -1791,35 +1791,35 @@ Table Area</source>
 <context>
     <name>DA::DAFigureTreeModel</name>
     <message>
-        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="436"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="437"/>
         <source>receive legend data changed signal,but can not cast sender to qwt plot</source>
         <translation>接收到legend data changed信号，但无法把发送方转换为qwt plot</translation>
     </message>
     <message>
-        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="441"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="442"/>
         <source>can not conver info to qwt plot item</source>
         <translation>无法把信息转换为qwt plot item</translation>
     </message>
     <message>
-        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="472"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="473"/>
         <source>Unable to find the tree node corresponding to the chart widget</source>
         <translation>无法找到绘图窗口对应的树形节点</translation>
     </message>
     <message>
-        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="459"/>
-        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="498"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="460"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="499"/>
         <source>name</source>
         <translation>名称</translation>
     </message>
     <message>
-        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="460"/>
-        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="499"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="461"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="500"/>
         <source>property</source>
         <translation>属性</translation>
     </message>
     <message>
-        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="461"/>
-        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="500"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="462"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="501"/>
         <source>visible</source>
         <translation>可见性</translation>
     </message>
@@ -2162,6 +2162,59 @@ Table Area</source>
     </message>
 </context>
 <context>
+    <name>DA::DATimeFormatEditWidget</name>
+    <message>
+        <location filename="DACommonWidgets/DATimeFormatEditWidget.cpp" line="40"/>
+        <source>example: 8:5</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DACommonWidgets/DATimeFormatEditWidget.cpp" line="43"/>
+        <source>example: 08:05</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DACommonWidgets/DATimeFormatEditWidget.cpp" line="46"/>
+        <source>example: 8:5:12</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DACommonWidgets/DATimeFormatEditWidget.cpp" line="49"/>
+        <source>example: 08:05:12</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DACommonWidgets/DATimeFormatEditWidget.cpp" line="52"/>
+        <source>example: 2017-8-1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DACommonWidgets/DATimeFormatEditWidget.cpp" line="55"/>
+        <source>example: 2017-8-1 8:5</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DACommonWidgets/DATimeFormatEditWidget.cpp" line="58"/>
+        <source>example: 2017-8-1 8:5:12</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DACommonWidgets/DATimeFormatEditWidget.cpp" line="61"/>
+        <source>example: 2017-08-01</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DACommonWidgets/DATimeFormatEditWidget.cpp" line="64"/>
+        <source>example: 2017-08-01 08:05</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DACommonWidgets/DATimeFormatEditWidget.cpp" line="67"/>
+        <source>example: 2017-08-01 08:05:12</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DA::DAToolBox</name>
     <message>
         <location filename="DAGui/DAToolBox.cpp" line="88"/>
@@ -2328,32 +2381,32 @@ Table Area</source>
 <context>
     <name>DAAligmentEditWidget</name>
     <message>
-        <location filename="DACommonWidgets/DAAligmentEditWidget.ui" line="14"/>
+        <location filename="DACommonWidgets/DAAligmentEditWidget.ui" line="20"/>
         <source>Aligment Edit Widget</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DAAligmentEditWidget.ui" line="35"/>
+        <location filename="DACommonWidgets/DAAligmentEditWidget.ui" line="41"/>
         <source>Aligment Left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DAAligmentEditWidget.ui" line="52"/>
+        <location filename="DACommonWidgets/DAAligmentEditWidget.ui" line="58"/>
         <source>Aligment Right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DAAligmentEditWidget.ui" line="69"/>
+        <location filename="DACommonWidgets/DAAligmentEditWidget.ui" line="75"/>
         <source>Aligment Top</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DAAligmentEditWidget.ui" line="86"/>
+        <location filename="DACommonWidgets/DAAligmentEditWidget.ui" line="92"/>
         <source>Aligment Bottom</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DAAligmentEditWidget.ui" line="103"/>
+        <location filename="DACommonWidgets/DAAligmentEditWidget.ui" line="109"/>
         <source>Aligment Center</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2361,7 +2414,7 @@ Table Area</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="APP/DAAppController.cpp" line="62"/>
+        <location filename="APP/DAAppController.cpp" line="63"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -2369,12 +2422,12 @@ Table Area</source>
 <context>
     <name>DAAppRibbonArea</name>
     <message>
-        <location filename="APP/DAAppController.cpp" line="69"/>
+        <location filename="APP/DAAppController.cpp" line="70"/>
         <source>warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="70"/>
+        <location filename="APP/DAAppController.cpp" line="71"/>
         <source>The current function is not implemented, only the UI is reserved, please pay attention: https://gitee.com/czyt1988/data-work-flow</source>
         <translation>当前功能未实现，仅保留UI，请留意：https://gitee.com/czyt1988/data-work-flow</translation>
     </message>
@@ -2382,7 +2435,7 @@ Table Area</source>
 <context>
     <name>DABrushEditWidget</name>
     <message>
-        <location filename="DACommonWidgets/DABrushEditWidget.ui" line="14"/>
+        <location filename="DACommonWidgets/DABrushEditWidget.ui" line="20"/>
         <source>Brush Edit</source>
         <translation>画刷编辑</translation>
     </message>
@@ -2463,7 +2516,7 @@ Table Area</source>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="35"/>
-        <source>enable</source>
+        <source>CheckBox</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2482,33 +2535,41 @@ Table Area</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="108"/>
+        <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="115"/>
         <source>label Rotation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="118"/>
+        <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="125"/>
         <source>margin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="132"/>
+        <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="139"/>
         <source>min scale</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="152"/>
+        <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="159"/>
         <source>max scale</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="174"/>
+        <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="181"/>
         <source>normal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="181"/>
+        <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="188"/>
         <source>Time Scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DAChartCommonItemsSettingWidget</name>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartCommonItemsSettingWidget.ui" line="14"/>
+        <source>Common Item Setting</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2651,85 +2712,147 @@ Table Area</source>
         <translation>绘图设置</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="41"/>
+        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="226"/>
         <source>Axis</source>
         <translation>坐标系</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="54"/>
+        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="236"/>
         <source>z</source>
         <translation>z</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="64"/>
+        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="207"/>
         <source>Title</source>
         <translation>标题</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="88"/>
+        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="52"/>
         <source>Set X on bottom and Y axis on left</source>
         <translation>x轴在下，y轴在左</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="91"/>
+        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="55"/>
         <source>Left bottom</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="126"/>
+        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="90"/>
         <source>Set X on bottom and Y axis on right</source>
         <translation>x轴在下，y轴在右</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="129"/>
+        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="93"/>
         <source>Right bottom</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="161"/>
+        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="125"/>
         <source>Set X on top and Y axis on left</source>
         <translation>x轴在上，y轴在左</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="164"/>
+        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="128"/>
         <source>Left top</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="196"/>
+        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="160"/>
         <source>Set X on top and Y axis on right</source>
         <translation>x轴在上，y轴在右</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="199"/>
+        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="163"/>
         <source>Right top</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DAChartPlotSettingWidget</name>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="20"/>
+        <location filename="DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="26"/>
+        <source>Title</source>
+        <translation type="unfinished">标题</translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="46"/>
+        <source>Footer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="69"/>
+        <source>X Bottom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="99"/>
+        <source>X Top</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="132"/>
+        <source>Y Left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="162"/>
+        <source>Y Right</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DAChartSettingWidget</name>
+    <message>
+        <location filename="DAGui/DAChartSettingWidget.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAChartSettingWidget.ui" line="22"/>
+        <source>Figure</source>
+        <translation type="unfinished">绘图</translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAChartSettingWidget.ui" line="38"/>
+        <source>Chart</source>
+        <translation type="unfinished">绘图</translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAChartSettingWidget.ui" line="51"/>
+        <source>item</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DAChartSymbolEditWidget</name>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartSymbolEditWidget.ui" line="14"/>
+        <location filename="DAGui/ChartSetting/DAChartSymbolEditWidget.ui" line="20"/>
         <source>Chart Symbol Edit</source>
         <translation>符号编辑</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartSymbolEditWidget.ui" line="77"/>
+        <location filename="DAGui/ChartSetting/DAChartSymbolEditWidget.ui" line="83"/>
         <source>Style</source>
         <translation>样式</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartSymbolEditWidget.ui" line="84"/>
+        <location filename="DAGui/ChartSetting/DAChartSymbolEditWidget.ui" line="90"/>
         <source>Size</source>
         <translation>大小</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartSymbolEditWidget.ui" line="91"/>
+        <location filename="DAGui/ChartSetting/DAChartSymbolEditWidget.ui" line="97"/>
         <source>Outline</source>
         <translation>轮廓</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartSymbolEditWidget.ui" line="38"/>
+        <location filename="DAGui/ChartSetting/DAChartSymbolEditWidget.ui" line="44"/>
         <source>Fill Color</source>
         <translation>填充颜色</translation>
     </message>
@@ -3167,29 +3290,6 @@ Table Area</source>
     </message>
 </context>
 <context>
-    <name>DAFigureSettingWidget</name>
-    <message>
-        <location filename="DAGui/DAFigureSettingWidget.ui" line="14"/>
-        <source>Form</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/DAFigureSettingWidget.ui" line="22"/>
-        <source>Figure</source>
-        <translation type="unfinished">绘图</translation>
-    </message>
-    <message>
-        <location filename="DAGui/DAFigureSettingWidget.ui" line="38"/>
-        <source>Chart</source>
-        <translation type="unfinished">绘图</translation>
-    </message>
-    <message>
-        <location filename="DAGui/DAFigureSettingWidget.ui" line="51"/>
-        <source>item</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>DAFigureWidget</name>
     <message>
         <location filename="DAFigure/DAFigureWidget.cpp" line="216"/>
@@ -3398,12 +3498,12 @@ Table Area</source>
 <context>
     <name>DAPenEditWidget</name>
     <message>
-        <location filename="DACommonWidgets/DAPenEditWidget.cpp" line="115"/>
+        <location filename="DACommonWidgets/DAPenEditWidget.cpp" line="117"/>
         <source>Pen Editor</source>
         <translation>画笔编辑</translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DAPenEditWidget.cpp" line="116"/>
+        <location filename="DACommonWidgets/DAPenEditWidget.cpp" line="118"/>
         <source> px</source>
         <translation> px</translation>
     </message>
@@ -3567,73 +3667,23 @@ Table Area</source>
 <context>
     <name>DATimeFormatEditWidget</name>
     <message>
-        <location filename="DACommonWidgets/DATimeFormatEditWidget.ui" line="20"/>
+        <location filename="DACommonWidgets/DATimeFormatEditWidget.ui" line="26"/>
         <source>Time Format Set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DATimeFormatEditWidget.ui" line="28"/>
+        <location filename="DACommonWidgets/DATimeFormatEditWidget.ui" line="34"/>
         <source>select time format：</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DATimeFormatEditWidget.ui" line="44"/>
+        <location filename="DACommonWidgets/DATimeFormatEditWidget.ui" line="50"/>
         <source>example:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DATimeFormatEditWidget.ui" line="72"/>
+        <location filename="DACommonWidgets/DATimeFormatEditWidget.ui" line="78"/>
         <source>TextLabel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DACommonWidgets/DATimeFormatEditWidget.cpp" line="37"/>
-        <source>example: 8:5</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DACommonWidgets/DATimeFormatEditWidget.cpp" line="40"/>
-        <source>example: 08:05</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DACommonWidgets/DATimeFormatEditWidget.cpp" line="43"/>
-        <source>example: 8:5:12</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DACommonWidgets/DATimeFormatEditWidget.cpp" line="46"/>
-        <source>example: 08:05:12</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DACommonWidgets/DATimeFormatEditWidget.cpp" line="49"/>
-        <source>example: 2017-8-1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DACommonWidgets/DATimeFormatEditWidget.cpp" line="52"/>
-        <source>example: 2017-8-1 8:5</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DACommonWidgets/DATimeFormatEditWidget.cpp" line="55"/>
-        <source>example: 2017-8-1 8:5:12</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DACommonWidgets/DATimeFormatEditWidget.cpp" line="58"/>
-        <source>example: 2017-08-01</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DACommonWidgets/DATimeFormatEditWidget.cpp" line="61"/>
-        <source>example: 2017-08-01 08:05</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DACommonWidgets/DATimeFormatEditWidget.cpp" line="64"/>
-        <source>example: 2017-08-01 08:05:12</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5354,113 +5404,113 @@ params:
         <translation>无法创建dump文件路径：%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="153"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="154"/>
         <source>untitle</source>
         <translation>未命名</translation>
     </message>
     <message>
-        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="159"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="160"/>
         <source>item[%1]</source>
         <translation>图元[%1]</translation>
     </message>
     <message>
-        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="162"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="163"/>
         <source>grid</source>
         <translation>网格</translation>
     </message>
     <message>
-        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="165"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="166"/>
         <source>scale-%1</source>
         <translation>比例图元-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="168"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="169"/>
         <source>legend-%1</source>
         <translation>图例-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="171"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="172"/>
         <source>marker-%1</source>
         <translation>标记-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="174"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="175"/>
         <source>curve-%1</source>
         <translation>曲线-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="177"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="178"/>
         <source>spectro-%1</source>
         <translation>色谱图-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="180"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="181"/>
         <source>interval curve-%1</source>
         <translation>区间图-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="183"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="184"/>
         <source>histogram-%1</source>
         <translation>直方图-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="186"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="187"/>
         <source>spectrogram-%1</source>
         <translation>谱图-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="189"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="190"/>
         <source>graphic-%1</source>
         <translation>图像-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="192"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="193"/>
         <source>OHLC-%1</source>
         <translation>OHLC图-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="195"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="196"/>
         <source>bar-%1</source>
         <translation>柱状图-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="198"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="199"/>
         <source>multibar-%1</source>
         <translation>柱状图-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="201"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="202"/>
         <source>shape-%1</source>
         <translation>形状-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="204"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="205"/>
         <source>text-%1</source>
         <translation>文本-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="207"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="208"/>
         <source>zone-%1</source>
         <translation>区间-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="210"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="211"/>
         <source>quiver-%1</source>
         <translation>流场图-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="214"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="215"/>
         <source>unknow-%1</source>
         <translation>未知-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="274"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="275"/>
         <source>chart-%1</source>
         <translation>图-%1</translation>
     </message>
     <message>
-        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="264"/>
-        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="271"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="265"/>
+        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="272"/>
         <source>untitle-chart</source>
         <translation>图-未命名</translation>
     </message>

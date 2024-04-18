@@ -24,30 +24,30 @@ DAChartAxisSetWidget::DAChartAxisSetWidget(QWidget* parent)
 	connect(ui->lineEditTitle, &QLineEdit::textChanged, this, &DAChartAxisSetWidget::onLineEditTextChanged);
 	connect(ui->fontSetWidget, &DAFontEditPannelWidget::currentFontChanged, this, &DAChartAxisSetWidget::onAxisFontChanged);
 	connect(ui->aligmentSetWidget,
-            &DAAligmentEditWidget::alignmentChanged,
-            this,
-            &DAChartAxisSetWidget::onAxisLabelAligmentChanged);
+			&DAAligmentEditWidget::alignmentChanged,
+			this,
+			&DAChartAxisSetWidget::onAxisLabelAligmentChanged);
 	connect(ui->doubleSpinBoxRotation,
-            static_cast< void (QDoubleSpinBox::*)(double v) >(&QDoubleSpinBox::valueChanged),
-            this,
-            &DAChartAxisSetWidget::onAxisLabelRotationChanged);
+			static_cast< void (QDoubleSpinBox::*)(double v) >(&QDoubleSpinBox::valueChanged),
+			this,
+			&DAChartAxisSetWidget::onAxisLabelRotationChanged);
 	connect(ui->spinBoxMargin,
-            static_cast< void (QSpinBox::*)(int v) >(&QSpinBox::valueChanged),
-            this,
-            &DAChartAxisSetWidget::onAxisMarginValueChanged);
+			static_cast< void (QSpinBox::*)(int v) >(&QSpinBox::valueChanged),
+			this,
+			&DAChartAxisSetWidget::onAxisMarginValueChanged);
 	connect(ui->doubleSpinBoxMax,
-            static_cast< void (QDoubleSpinBox::*)(double v) >(&QDoubleSpinBox::valueChanged),
-            this,
-            &DAChartAxisSetWidget::onAxisMaxScaleChanged);
+			static_cast< void (QDoubleSpinBox::*)(double v) >(&QDoubleSpinBox::valueChanged),
+			this,
+			&DAChartAxisSetWidget::onAxisMaxScaleChanged);
 	connect(ui->doubleSpinBoxMin,
-            static_cast< void (QDoubleSpinBox::*)(double v) >(&QDoubleSpinBox::valueChanged),
-            this,
-            &DAChartAxisSetWidget::onAxisMinScaleChanged);
+			static_cast< void (QDoubleSpinBox::*)(double v) >(&QDoubleSpinBox::valueChanged),
+			this,
+			&DAChartAxisSetWidget::onAxisMinScaleChanged);
 	connect(m_buttonGroup,
-            static_cast< void (QButtonGroup::*)(int) >(&QButtonGroup::buttonClicked),
-            this,
-            &DAChartAxisSetWidget::onScaleStyleChanged);
-    connect(ui->checkBoxEnable, &QAbstractButton::clicked, this, &DAChartAxisSetWidget::onCheckBoxEnableCliecked);
+			static_cast< void (QButtonGroup::*)(int) >(&QButtonGroup::buttonClicked),
+			this,
+			&DAChartAxisSetWidget::onScaleStyleChanged);
+	connect(ui->checkBoxEnable, &QAbstractButton::clicked, this, &DAChartAxisSetWidget::onCheckBoxEnableCliecked);
 }
 
 DAChartAxisSetWidget::~DAChartAxisSetWidget()
@@ -57,10 +57,10 @@ DAChartAxisSetWidget::~DAChartAxisSetWidget()
 
 void DAChartAxisSetWidget::onCheckBoxEnableCliecked(bool on)
 {
-    enableWidget(on);
-    if (m_chart) {
-        m_chart->enableAxis(m_axisID, on);
-    }
+	enableWidget(on);
+	if (m_chart) {
+		m_chart->enableAxis(m_axisID, on);
+	}
 }
 
 void DAChartAxisSetWidget::onLineEditTextChanged(const QString& text)
@@ -147,7 +147,7 @@ void DAChartAxisSetWidget::updateAxisValue(QwtPlot* chart, int axisID)
 		resetAxisValue();
 		return;
 	}
-    ui->checkBoxEnable->setChecked(chart->axisEnabled(axisID));
+	ui->checkBoxEnable->setChecked(chart->axisEnabled(axisID));
 	ui->lineEditTitle->setText(chart->axisTitle(axisID).text());
 	ui->fontSetWidget->setCurrentFont(chart->axisFont(axisID));
 
@@ -190,6 +190,20 @@ void DAChartAxisSetWidget::resetAxisValue()
 	ui->spinBoxMargin->setValue(0);
 	ui->radioButtonTimeScale->setChecked(false);
 	ui->dateTimeScaleSetWidget->setTimeFormatText("");
+}
+
+/**
+ * @brief 设置是否允许
+ * @param on
+ */
+void DAChartAxisSetWidget::setEnableAxis(bool on)
+{
+    ui->checkBoxEnable->setChecked(on);
+}
+
+bool DAChartAxisSetWidget::isEnableAxis() const
+{
+    return ui->checkBoxEnable->isChecked();
 }
 
 void DAChartAxisSetWidget::enableWidget(bool enable)
@@ -235,9 +249,9 @@ QwtPlot* DAChartAxisSetWidget::getChart() const
 
 void DAChartAxisSetWidget::setChart(QwtPlot* chart, int axisID)
 {
-    if (m_chart && m_chart != chart) {
-        disconnectChartAxis();
-    }
+	if (m_chart && m_chart != chart) {
+		disconnectChartAxis();
+	}
 
 	m_chart = nullptr;  // 先设置为null，使得槽函数不动作
 	updateAxisValue(chart, axisID);

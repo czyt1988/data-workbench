@@ -608,7 +608,7 @@ void DAAppController::onFocusedDockWidgetChanged(ads::CDockWidget* old, ads::CDo
 		// 绘图窗口激活
 		mLastFocusedOpertateWidget = LastFocusedOnChartOpt;
 		mRibbon->showContextCategory(DAAppRibbonArea::ContextCategoryChart);
-        getSettingContainerWidget()->showFigureSettingWidget();
+		getSettingContainerWidget()->showChartSettingWidget();
 	} else if (now->widget() == getDataManageWidget()) {
 		if (mCommand) {
 			QUndoStack* stack = mCommand->getDataManagerStack();

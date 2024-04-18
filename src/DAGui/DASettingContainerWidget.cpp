@@ -1,6 +1,6 @@
 ﻿#include "DASettingContainerWidget.h"
 #include "DAWorkFlowNodeItemSettingWidget.h"
-#include "DAFigureSettingWidget.h"
+#include "DAChartSettingWidget.h"
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
 //===================================================
@@ -12,8 +12,8 @@ using namespace DA;
 //===================================================
 DASettingContainerWidget::DASettingContainerWidget(QWidget* parent) : QStackedWidget(parent)
 {
-    // 初始化工作流相关的配置窗口
-    initWorkFlowSettingWidgets();
+	// 初始化工作流相关的配置窗口
+	initWorkFlowSettingWidgets();
 }
 
 DASettingContainerWidget::~DASettingContainerWidget()
@@ -27,20 +27,20 @@ DASettingContainerWidget::~DASettingContainerWidget()
  */
 bool DASettingContainerWidget::isContainWidget(QWidget* w) const
 {
-    for (int i = 0; i < count(); ++i) {
-        if (w == widget(i)) {
-            return true;
-        }
-    }
-    return false;
+	for (int i = 0; i < count(); ++i) {
+		if (w == widget(i)) {
+			return true;
+		}
+	}
+	return false;
 }
 
 void DASettingContainerWidget::initWorkFlowSettingWidgets()
 {
-    mWorkFlowNodeItemSettingWidget = new DAWorkFlowNodeItemSettingWidget();
-    addWidget(mWorkFlowNodeItemSettingWidget);
-    mFigureSettingWidget = new DAFigureSettingWidget();
-    addWidget(mFigureSettingWidget);
+	mWorkFlowNodeItemSettingWidget = new DAWorkFlowNodeItemSettingWidget();
+	addWidget(mWorkFlowNodeItemSettingWidget);
+	mChartSettingWidget = new DAChartSettingWidget();
+	addWidget(mChartSettingWidget);
 }
 
 /**
@@ -64,16 +64,16 @@ void DASettingContainerWidget::showWorkFlowNodeItemSettingWidget()
  * @brief 获取绘图设置窗口
  * @return
  */
-DAFigureSettingWidget* DASettingContainerWidget::getFigureSettingWidget()
+DAChartSettingWidget* DASettingContainerWidget::getChartSettingWidget()
 {
-    return mFigureSettingWidget;
+    return mChartSettingWidget;
 }
 
 /**
  * @brief 显示绘图设置窗口
  * @return
  */
-void DASettingContainerWidget::showFigureSettingWidget()
+void DASettingContainerWidget::showChartSettingWidget()
 {
-    setCurrentWidget(mFigureSettingWidget);
+    setCurrentWidget(mChartSettingWidget);
 }

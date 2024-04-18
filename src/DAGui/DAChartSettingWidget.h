@@ -1,5 +1,5 @@
-﻿#ifndef DAFIGURESETTINGWIDGET_H
-#define DAFIGURESETTINGWIDGET_H
+﻿#ifndef DACHARTSETTINGWIDGET_H
+#define DACHARTSETTINGWIDGET_H
 
 #include <QWidget>
 #include "DAGuiAPI.h"
@@ -10,7 +10,7 @@
 class QScrollArea;
 namespace Ui
 {
-class DAFigureSettingWidget;
+class DAChartSettingWidget;
 }
 
 namespace DA
@@ -19,22 +19,22 @@ class DAChartOperateWidget;
 /**
  * @brief 绘图设置窗口
  */
-class DAGUI_API DAFigureSettingWidget : public QWidget
+class DAGUI_API DAChartSettingWidget : public QWidget
 {
 	Q_OBJECT
-	DA_DECLARE_PRIVATE(DAFigureSettingWidget)
+	DA_DECLARE_PRIVATE(DAChartSettingWidget)
 public:
-    enum SettingType
-    {
-        SettingFigure = 0,
-        SettingChart,
-        SettingItem
-    };
+	enum SettingType
+	{
+		SettingFigure = 0,
+		SettingChart,
+		SettingItem
+	};
 
 public:
-    explicit DAFigureSettingWidget(QWidget* parent = nullptr);
-	~DAFigureSettingWidget();
-    void setChartOprateWidget(DAChartOperateWidget* opt);
+	explicit DAChartSettingWidget(QWidget* parent = nullptr);
+	~DAChartSettingWidget();
+	void setChartOprateWidget(DAChartOperateWidget* opt);
 	void setFigure(DAFigureWidget* fig);
 	void setFigure(DAFigureWidget* fig, DAChartWidget* chart);
 	void setFigure(DAFigureWidget* fig, DAChartWidget* chart, QwtPlotItem* item);
@@ -47,20 +47,20 @@ public:
 	int indexOfChart(const DAChartWidget* chart);
 	// 设置当前的chart
 	void setCurrentChart(DAChartWidget* chart);
-    // 设置当前的item
-    void setCurrentItem(QwtPlotItem* item);
+	// 设置当前的item
+	void setCurrentItem(QwtPlotItem* item);
 
 protected:
 	void changeEvent(QEvent* e);
-    // 设置charts
-    void setChartsComboBox(DAFigureWidget* fig);
-    // 设置items
-    void setItemsComboBox(const QList< QwtPlotItem* >& its);
-    void setItemsComboBox(DAChartWidget* chart);
+	// 设置charts
+	void setChartsComboBox(DAFigureWidget* fig);
+	// 设置items
+	void setItemsComboBox(const QList< QwtPlotItem* >& its);
+	void setItemsComboBox(DAChartWidget* chart);
 protected slots:
-    void onFigureCloseing(DA::DAFigureWidget* f);
-    void onFigureCreated(DA::DAFigureWidget* f);
-    void onCurrentFigureChanged(DA::DAFigureWidget* f, int index);
+	void onFigureCloseing(DA::DAFigureWidget* f);
+	void onFigureCreated(DA::DAFigureWidget* f);
+	void onCurrentFigureChanged(DA::DAFigureWidget* f, int index);
 	// 添加了chart
 	void onChartAdded(DA::DAChartWidget* c);
 	// 绘图即将移除
@@ -71,15 +71,15 @@ protected slots:
 	void onItemAttached(QwtPlotItem* plotItem, bool on);
 	// onItemAttached的特化，把chart传入
 	void onChartItemAttached(DA::DAChartWidget* c, QwtPlotItem* plotItem, bool on);
-    // current chart触发的改变
-    void onComboBoxChartIndexChanged(int i);
-    // current item触发的改变
-    void onComboBoxItemIndexChanged(int i);
-    // 按钮组点击
-    void onButtonGroupTypeButtonClicked(int id);
+	// current chart触发的改变
+	void onComboBoxChartIndexChanged(int i);
+	// current item触发的改变
+	void onComboBoxItemIndexChanged(int i);
+	// 按钮组点击
+	void onButtonGroupTypeButtonClicked(int id);
 
 private:
-	Ui::DAFigureSettingWidget* ui;
+	Ui::DAChartSettingWidget* ui;
 };
 }
-#endif  // DAFIGURESETTINGWIDGET_H
+#endif  // DACHARTSETTINGWIDGET_H
