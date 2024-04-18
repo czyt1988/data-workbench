@@ -1,5 +1,6 @@
 ﻿#include "DASettingContainerWidget.h"
 #include "DAWorkFlowNodeItemSettingWidget.h"
+#include "DAFigureSettingWidget.h"
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
 //===================================================
@@ -11,7 +12,7 @@ using namespace DA;
 //===================================================
 DASettingContainerWidget::DASettingContainerWidget(QWidget* parent) : QStackedWidget(parent)
 {
-    //初始化工作流相关的配置窗口
+    // 初始化工作流相关的配置窗口
     initWorkFlowSettingWidgets();
 }
 
@@ -38,6 +39,8 @@ void DASettingContainerWidget::initWorkFlowSettingWidgets()
 {
     mWorkFlowNodeItemSettingWidget = new DAWorkFlowNodeItemSettingWidget();
     addWidget(mWorkFlowNodeItemSettingWidget);
+    mFigureSettingWidget = new DAFigureSettingWidget();
+    addWidget(mFigureSettingWidget);
 }
 
 /**
@@ -55,4 +58,22 @@ DAWorkFlowNodeItemSettingWidget* DASettingContainerWidget::getWorkFlowNodeItemSe
 void DASettingContainerWidget::showWorkFlowNodeItemSettingWidget()
 {
     setCurrentWidget(mWorkFlowNodeItemSettingWidget);
+}
+
+/**
+ * @brief 获取绘图设置窗口
+ * @return
+ */
+DAFigureSettingWidget* DASettingContainerWidget::getFigureSettingWidget()
+{
+    return mFigureSettingWidget;
+}
+
+/**
+ * @brief 显示绘图设置窗口
+ * @return
+ */
+void DASettingContainerWidget::showFigureSettingWidget()
+{
+    setCurrentWidget(mFigureSettingWidget);
 }

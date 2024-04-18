@@ -145,6 +145,15 @@ DAChartWidget* DAChartOperateWidget::gca() const
 }
 
 /**
+ * @brief  绘图数量
+ * @return
+ */
+int DAChartOperateWidget::getFigureCount() const
+{
+    return ui->tabWidget->count();
+}
+
+/**
  * @brief 初始化figure的连接
  *
  * 这个函数用于重载createFigure函数时创建fig后绑定槽函数到DAChartOperateWidget用

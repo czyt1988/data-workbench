@@ -10,6 +10,12 @@
     <height>24</height>
    </rect>
   </property>
+  <property name="minimumSize">
+   <size>
+    <width>0</width>
+    <height>22</height>
+   </size>
+  </property>
   <property name="windowTitle">
    <string>Brush Edit</string>
   </property>

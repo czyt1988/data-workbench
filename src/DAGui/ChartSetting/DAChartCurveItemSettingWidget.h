@@ -19,7 +19,7 @@ class DAChartCurveItemSettingWidget;
 
 namespace DA
 {
-
+class DAChartPlotItemSettingWidget;
 /**
  * @brief 曲线设置窗口
  *
@@ -72,6 +72,8 @@ public:
 	Qt::Orientation getOrientation() const;
 	// 清空界面
 	void resetUI();
+    // 获取itemplot widget
+    DAChartPlotItemSettingWidget* getItemSettingWidget() const;
 
 protected:
 	void resetCurveStyleComboBox();

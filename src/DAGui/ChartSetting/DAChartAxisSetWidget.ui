@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>245</width>
-    <height>290</height>
+    <height>350</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -32,7 +32,7 @@
    <item>
     <widget class="QCheckBox" name="checkBoxEnable">
      <property name="text">
-      <string>enable</string>
+      <string>CheckBox</string>
      </property>
     </widget>
    </item>
@@ -76,7 +76,7 @@
        <property name="minimumSize">
         <size>
          <width>0</width>
-         <height>20</height>
+         <height>44</height>
         </size>
        </property>
       </widget>
@@ -96,7 +96,14 @@
       </widget>
      </item>
      <item>
-      <widget class="DA::DAAligmentEditWidget" name="aligmentSetWidget" native="true"/>
+      <widget class="DA::DAAligmentEditWidget" name="aligmentSetWidget" native="true">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>22</height>
+        </size>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
@@ -183,7 +190,14 @@
     </widget>
    </item>
    <item>
-    <widget class="DA::DATimeFormatEditWidget" name="dateTimeScaleSetWidget" native="true"/>
+    <widget class="DA::DATimeFormatEditWidget" name="dateTimeScaleSetWidget" native="true">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>100</height>
+      </size>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

@@ -32,6 +32,7 @@ class DAAppDockingArea;
 class DAAppCommand;
 class DAAppActions;
 class DAAppDataManager;
+class DASettingContainerWidget;
 class DADataOperateOfDataFrameWidget;
 class DAWorkFlowOperateWidget;
 class DADataOperateWidget;
@@ -101,6 +102,8 @@ public:
     // 获取绘图操作窗口,如果没有回返回nullptr
     DAChartWidget* getCurrentChart() const;
     DAChartWidget* gca() const;
+    // 获取设置窗口
+    DASettingContainerWidget* getSettingContainerWidget() const;
     // 判断当前是否是在绘图操作模式，就算绘图操作不在焦点，但绘图操作在前端，此函数也返回true
     bool isLastFocusedOnChartOptWidget() const;
     bool isLastFocusedOnWorkflowOptWidget() const;
@@ -353,6 +356,7 @@ private:
     DAAppCommand* mCommand { nullptr };
     DAAppActions* mActions { nullptr };
     DAAppDataManager* mDatas { nullptr };
+
     QStringList mFileReadFilters;  ///< 包含支持的文件[Images (*.png *.xpm *.jpg)] [Text files (*.txt)]
     //
     LastFocusedOpertateWidgets mLastFocusedOpertateWidget;  ///< 最后获取焦点的操作窗口

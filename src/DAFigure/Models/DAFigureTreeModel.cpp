@@ -142,13 +142,14 @@ QVariant DAChartItemStandardItem::dataDecorationRole(QwtPlotItem* item, int c) c
     return QVariant();
 }
 
-QString DAChartItemStandardItem::getItemName(QwtPlotItem* item) const
+QString DAChartItemStandardItem::getItemName(QwtPlotItem* item)
 {
-    QString str  = _item->title().text();
+    QString str  = item->title().text();
     bool isEmpty = str.isEmpty();
     if (isEmpty) {
-        if (_chart) {
-            str = QString::number(_chart->itemList().indexOf(_item) + 1);
+        auto plot = item->plot();
+        if (plot) {
+            str = QString::number(plot->itemList().indexOf(item) + 1);
         } else {
             str = QObject::tr("untitle");  // cn:未命名
         }

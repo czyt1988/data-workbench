@@ -80,10 +80,46 @@
     <widget class="QComboBox" name="comboBoxSelectItem"/>
    </item>
    <item>
-    <widget class="QStackedWidget" name="stackedWidget"/>
+    <widget class="QStackedWidget" name="stackedWidget">
+     <widget class="QWidget" name="pageFigureSet"/>
+     <widget class="DA::DAChartSettingWidget" name="widgetChartSetting">
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <property name="spacing">
+        <number>1</number>
+       </property>
+       <property name="leftMargin">
+        <number>1</number>
+       </property>
+       <property name="topMargin">
+        <number>1</number>
+       </property>
+       <property name="rightMargin">
+        <number>1</number>
+       </property>
+       <property name="bottomMargin">
+        <number>1</number>
+       </property>
+      </layout>
+     </widget>
+     <widget class="DA::DAChartCommonItemsSettingWidget" name="widgetItemSetting"/>
+    </widget>
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>DA::DAChartSettingWidget</class>
+   <extends>QWidget</extends>
+   <header>DAChartSettingWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DA::DAChartCommonItemsSettingWidget</class>
+   <extends>QWidget</extends>
+   <header>DAChartCommonItemsSettingWidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>
@@ -115,6 +151,70 @@
     <hint type="destinationlabel">
      <x>102</x>
      <y>37</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>toolButtonChart</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>comboBoxSelectItem</receiver>
+   <slot>setHidden(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>82</x>
+     <y>15</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>255</x>
+     <y>75</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>toolButtonItem</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>comboBoxSelectChart</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>138</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>132</x>
+     <y>41</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>toolButtonFigure</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>comboBoxSelectChart</receiver>
+   <slot>setHidden(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>23</x>
+     <y>24</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>26</x>
+     <y>47</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>toolButtonFigure</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>comboBoxSelectItem</receiver>
+   <slot>setHidden(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>15</x>
+     <y>23</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>47</x>
+     <y>71</y>
     </hint>
    </hints>
   </connection>

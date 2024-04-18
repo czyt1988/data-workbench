@@ -42,6 +42,8 @@ public:
     // 获取当前的chart，如果没有返回nullptr
     DAChartWidget* getCurrentChart() const;
     DAChartWidget* gca() const;
+    // 获取绘图的数量
+    int getFigureCount() const;
 
 protected:
     // 初始化figure的连接，这个函数用于重载createFigure函数时创建fig后绑定槽函数到DAChartOperateWidget用

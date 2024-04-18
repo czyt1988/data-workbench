@@ -34,6 +34,7 @@
 #include "DAChartWidget.h"
 #include "DAAppChartManageWidget.h"
 #include "SettingPages/DASettingPageCommon.h"
+#include "DASettingContainerWidget.h"
 // Dialog
 #include "DAPluginManagerDialog.h"
 #include "DAAppSettingDialog.h"
@@ -276,6 +277,15 @@ DAChartWidget* DAAppController::getCurrentChart() const
 DAChartWidget* DAAppController::gca() const
 {
     return getCurrentChart();
+}
+
+/**
+ * @brief 获取设置窗口
+ * @return
+ */
+DASettingContainerWidget* DAAppController::getSettingContainerWidget() const
+{
+    return mDock->getSettingContainerWidget();
 }
 
 /**
@@ -593,11 +603,12 @@ void DAAppController::onFocusedDockWidgetChanged(ads::CDockWidget* old, ads::CDo
 		// 此函数会激活当前窗口的stack
 		getWorkFlowOperateWidget()->setUndoStackActive();
 		mRibbon->showContextCategory(DAAppRibbonArea::ContextCategoryWorkflow);
-
+        getSettingContainerWidget()->showWorkFlowNodeItemSettingWidget();
 	} else if (now->widget() == getChartOperateWidget()) {
 		// 绘图窗口激活
 		mLastFocusedOpertateWidget = LastFocusedOnChartOpt;
 		mRibbon->showContextCategory(DAAppRibbonArea::ContextCategoryChart);
+        getSettingContainerWidget()->showFigureSettingWidget();
 	} else if (now->widget() == getDataManageWidget()) {
 		if (mCommand) {
 			QUndoStack* stack = mCommand->getDataManagerStack();

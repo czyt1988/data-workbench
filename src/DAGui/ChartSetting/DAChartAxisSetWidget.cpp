@@ -12,7 +12,7 @@ namespace DA
 {
 
 DAChartAxisSetWidget::DAChartAxisSetWidget(QWidget* parent)
-	: QWidget(parent), ui(new Ui::DAChartAxisSetWidget), m_chart(nullptr), m_axisID(QwtPlot::axisCnt)
+    : QWidget(parent), ui(new Ui::DAChartAxisSetWidget), m_chart(nullptr), m_axisID(QwtPlot::axisCnt)
 {
 	ui->setupUi(this);
 	m_buttonGroup = new QButtonGroup(this);
@@ -21,34 +21,33 @@ DAChartAxisSetWidget::DAChartAxisSetWidget(QWidget* parent)
 	ui->radioButtonNormal->setChecked(true);
 	ui->dateTimeScaleSetWidget->hide();
 
-	connect(ui->checkBoxEnable, &QCheckBox::stateChanged, this, &DAChartAxisSetWidget::onEnableCheckBoxClicked);
 	connect(ui->lineEditTitle, &QLineEdit::textChanged, this, &DAChartAxisSetWidget::onLineEditTextChanged);
 	connect(ui->fontSetWidget, &DAFontEditPannelWidget::currentFontChanged, this, &DAChartAxisSetWidget::onAxisFontChanged);
 	connect(ui->aligmentSetWidget,
-			&DAAligmentEditWidget::alignmentChanged,
-			this,
-			&DAChartAxisSetWidget::onAxisLabelAligmentChanged);
+            &DAAligmentEditWidget::alignmentChanged,
+            this,
+            &DAChartAxisSetWidget::onAxisLabelAligmentChanged);
 	connect(ui->doubleSpinBoxRotation,
-			static_cast< void (QDoubleSpinBox::*)(double v) >(&QDoubleSpinBox::valueChanged),
-			this,
-			&DAChartAxisSetWidget::onAxisLabelRotationChanged);
+            static_cast< void (QDoubleSpinBox::*)(double v) >(&QDoubleSpinBox::valueChanged),
+            this,
+            &DAChartAxisSetWidget::onAxisLabelRotationChanged);
 	connect(ui->spinBoxMargin,
-			static_cast< void (QSpinBox::*)(int v) >(&QSpinBox::valueChanged),
-			this,
-			&DAChartAxisSetWidget::onAxisMarginValueChanged);
+            static_cast< void (QSpinBox::*)(int v) >(&QSpinBox::valueChanged),
+            this,
+            &DAChartAxisSetWidget::onAxisMarginValueChanged);
 	connect(ui->doubleSpinBoxMax,
-			static_cast< void (QDoubleSpinBox::*)(double v) >(&QDoubleSpinBox::valueChanged),
-			this,
-			&DAChartAxisSetWidget::onAxisMaxScaleChanged);
+            static_cast< void (QDoubleSpinBox::*)(double v) >(&QDoubleSpinBox::valueChanged),
+            this,
+            &DAChartAxisSetWidget::onAxisMaxScaleChanged);
 	connect(ui->doubleSpinBoxMin,
-			static_cast< void (QDoubleSpinBox::*)(double v) >(&QDoubleSpinBox::valueChanged),
-			this,
-			&DAChartAxisSetWidget::onAxisMinScaleChanged);
+            static_cast< void (QDoubleSpinBox::*)(double v) >(&QDoubleSpinBox::valueChanged),
+            this,
+            &DAChartAxisSetWidget::onAxisMinScaleChanged);
 	connect(m_buttonGroup,
-			static_cast< void (QButtonGroup::*)(int) >(&QButtonGroup::buttonClicked),
-			this,
-			&DAChartAxisSetWidget::onScaleStyleChanged);
-	enableWidget(false);
+            static_cast< void (QButtonGroup::*)(int) >(&QButtonGroup::buttonClicked),
+            this,
+            &DAChartAxisSetWidget::onScaleStyleChanged);
+    connect(ui->checkBoxEnable, &QAbstractButton::clicked, this, &DAChartAxisSetWidget::onCheckBoxEnableCliecked);
 }
 
 DAChartAxisSetWidget::~DAChartAxisSetWidget()
@@ -56,19 +55,12 @@ DAChartAxisSetWidget::~DAChartAxisSetWidget()
 	delete ui;
 }
 
-void DAChartAxisSetWidget::onEnableCheckBoxClicked(int state)
+void DAChartAxisSetWidget::onCheckBoxEnableCliecked(bool on)
 {
-	bool enable = (Qt::Checked == state);
-	foreach (QObject* obj, children()) {
-		if (obj->isWidgetType()) {
-			qobject_cast< QWidget* >(obj)->setEnabled(enable);
-		}
-	}
-	ui->checkBoxEnable->setEnabled(true);
-	if (m_chart) {
-		m_chart->enableAxis(m_axisID, enable);
-	}
-	emit enableAxis(Qt::Checked == state, m_axisID);
+    enableWidget(on);
+    if (m_chart) {
+        m_chart->enableAxis(m_axisID, on);
+    }
 }
 
 void DAChartAxisSetWidget::onLineEditTextChanged(const QString& text)
@@ -148,17 +140,6 @@ void DAChartAxisSetWidget::onScaleStyleChanged(int id)
 	}
 }
 
-void DAChartAxisSetWidget::updateUI()
-{
-	bool enable = ui->checkBoxEnable->isChecked();
-	foreach (QObject* obj, children()) {
-		if (obj->isWidgetType()) {
-			qobject_cast< QWidget* >(obj)->setEnabled(enable);
-		}
-	}
-	ui->checkBoxEnable->setEnabled(true);
-}
-
 void DAChartAxisSetWidget::updateAxisValue(QwtPlot* chart, int axisID)
 {
 	enableWidget(nullptr != chart);
@@ -166,9 +147,7 @@ void DAChartAxisSetWidget::updateAxisValue(QwtPlot* chart, int axisID)
 		resetAxisValue();
 		return;
 	}
-	bool b = chart->axisEnabled(axisID);
-	ui->checkBoxEnable->setChecked(b);
-	onEnableCheckBoxClicked(b ? Qt::Checked : Qt::Unchecked);
+    ui->checkBoxEnable->setChecked(chart->axisEnabled(axisID));
 	ui->lineEditTitle->setText(chart->axisTitle(axisID).text());
 	ui->fontSetWidget->setCurrentFont(chart->axisFont(axisID));
 
@@ -201,7 +180,6 @@ void DAChartAxisSetWidget::updateAxisValue(QwtPlot* chart, int axisID)
 
 void DAChartAxisSetWidget::resetAxisValue()
 {
-	ui->checkBoxEnable->setChecked(false);
 	ui->lineEditTitle->setText("");
 	ui->fontSetWidget->setCurrentFont(QFont());
 	ui->doubleSpinBoxMin->setValue(0);
@@ -216,7 +194,6 @@ void DAChartAxisSetWidget::resetAxisValue()
 
 void DAChartAxisSetWidget::enableWidget(bool enable)
 {
-	ui->checkBoxEnable->setEnabled(enable);
 	ui->lineEditTitle->setEnabled(enable);
 	ui->fontSetWidget->setEnabled(enable);
 	ui->doubleSpinBoxMin->setEnabled(enable);
@@ -258,9 +235,9 @@ QwtPlot* DAChartAxisSetWidget::getChart() const
 
 void DAChartAxisSetWidget::setChart(QwtPlot* chart, int axisID)
 {
-	if (chart && m_chart && (m_chart != chart)) {
-		disconnectChartAxis();
-	}
+    if (m_chart && m_chart != chart) {
+        disconnectChartAxis();
+    }
 
 	m_chart = nullptr;  // 先设置为null，使得槽函数不动作
 	updateAxisValue(chart, axisID);

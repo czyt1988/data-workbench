@@ -2,6 +2,7 @@
 #define DACHARTAXISSETWIDGET_H
 #include "DAGuiAPI.h"
 #include <QWidget>
+#include <QPointer>
 class QwtPlot;
 class QButtonGroup;
 namespace Ui
@@ -31,7 +32,7 @@ signals:
 	///
 	void enableAxis(bool enable, int axid);
 private slots:
-	Q_SLOT void onEnableCheckBoxClicked(int state);
+    Q_SLOT void onCheckBoxEnableCliecked(bool on);
 	Q_SLOT void onLineEditTextChanged(const QString& text);
 	Q_SLOT void onAxisFontChanged(const QFont& font);
 	Q_SLOT void onAxisLabelAligmentChanged(Qt::Alignment al);
@@ -43,7 +44,6 @@ private slots:
 	Q_SLOT void onScaleStyleChanged(int id);
 
 private:
-	void updateUI();
 	void updateAxisValue(QwtPlot* chart, int axisID);
 
 private:
@@ -60,7 +60,7 @@ private:
 
 private:
 	Ui::DAChartAxisSetWidget* ui;
-	QwtPlot* m_chart;
+    QPointer< QwtPlot > m_chart;
 	QButtonGroup* m_buttonGroup;
 	int m_axisID;
 };

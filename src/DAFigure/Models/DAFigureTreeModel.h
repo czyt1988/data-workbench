@@ -43,7 +43,7 @@ public:
     void setDataEditRole(const QVariant& value, QwtPlotItem* item, int c);
     QVariant dataDecorationRole(QwtPlotItem* item, int c) const;
     // 获取item的名字
-    QString getItemName(QwtPlotItem* item) const;
+    static QString getItemName(QwtPlotItem* item);
 
 private:
     DAChartWidget* _chart { nullptr };

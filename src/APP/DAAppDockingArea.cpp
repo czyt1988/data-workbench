@@ -18,6 +18,7 @@
 #include "DAAppFigureFactory.h"
 #include "DAAppChartOperateWidget.h"
 #include "DAAppChartManageWidget.h"
+#include "DAFigureSettingWidget.h"
 // Data相关
 #include "DADataOperateWidget.h"
 #include "DADataManageWidget.h"
@@ -360,6 +361,7 @@ void DAAppDockingArea::initConnection()
     connect(mDataManageWidget, &DADataManageWidget::dataDbClicked, this, &DAAppDockingArea::onDataManageWidgetDataDbClicked);
     // 设置窗口的绑定
     mSettingContainerWidget->getWorkFlowNodeItemSettingWidget()->setWorkFlowOperateWidget(mWorkFlowOperateWidget);
+    mSettingContainerWidget->getFigureSettingWidget()->setChartOprateWidget(mChartOperateWidget);
 }
 
 void DAAppDockingArea::onDataManageWidgetDataDbClicked(const DA::DAData& data)
