@@ -26,6 +26,7 @@ void DAAbstractChartItemSettingWidget::setPlotItem(QwtPlotItem* item)
 	QwtPlot* newPlot = nullptr;
 	if (item) {
 		newPlot = mPlotItem->plot();
+        mPlot   = newPlot;
 	}
 	if (oldPlot == newPlot) {
 		return;
@@ -34,7 +35,7 @@ void DAAbstractChartItemSettingWidget::setPlotItem(QwtPlotItem* item)
 		disconnect(oldPlot, &QwtPlot::itemAttached, this, &DAAbstractChartItemSettingWidget::plotItemAttached);
 	}
 	if (newPlot) {
-		connect(mPlot.data(), &QwtPlot::itemAttached, this, &DAAbstractChartItemSettingWidget::plotItemAttached);
+        connect(newPlot, &QwtPlot::itemAttached, this, &DAAbstractChartItemSettingWidget::plotItemAttached);
 	}
 }
 

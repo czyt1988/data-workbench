@@ -45,6 +45,9 @@ DAChartCurveItemSettingWidget::~DAChartCurveItemSettingWidget()
 
 void DAChartCurveItemSettingWidget::setPlotItem(QwtPlotItem* item)
 {
+    if (nullptr == item) {
+        return;
+    }
 	if (item->rtti() != QwtPlotItem::Rtti_PlotCurve) {
 		return;
 	}
