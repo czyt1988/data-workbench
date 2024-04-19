@@ -23,6 +23,17 @@ public:
 	~DAChartPlotSettingWidget();
 	// 设置chart
 	void setChartWidget(DAChartWidget* w);
+    DAChartWidget* getChartWidget() const;
+public slots:
+    // 标题内容设置
+    void setTitleText(const QString& t);
+    void setTitleFont(const QFont& f);
+    void setTitleColor(const QColor& c);
+    // footer内容设置
+    void setFooterText(const QString& t);
+    void setFooterFont(const QFont& f);
+    void setFooterColor(const QColor& c);
+private slots:
 
 private:
 	Ui::DAChartPlotSettingWidget* ui;

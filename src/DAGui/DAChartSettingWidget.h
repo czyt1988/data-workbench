@@ -45,10 +45,15 @@ public:
 	void unbindFigure(DAFigureWidget* fig);
 	// 获取chart在combobox的索引
 	int indexOfChart(const DAChartWidget* chart);
+    int indexOfItem(const QwtPlotItem* item);
 	// 设置当前的chart
 	void setCurrentChart(DAChartWidget* chart);
 	// 设置当前的item
 	void setCurrentItem(QwtPlotItem* item);
+    // 显示设置
+    void showFigureSettingWidget();
+    void showPlotSettingWidget();
+    void showItemSettingWidget();
 
 protected:
 	void changeEvent(QEvent* e);
@@ -76,7 +81,7 @@ protected slots:
 	// current item触发的改变
 	void onComboBoxItemIndexChanged(int i);
 	// 按钮组点击
-	void onButtonGroupTypeButtonClicked(int id);
+    void onButtonGroupTypeButtonClicked(int id);
 
 private:
 	Ui::DAChartSettingWidget* ui;

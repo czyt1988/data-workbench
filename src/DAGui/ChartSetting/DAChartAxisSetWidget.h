@@ -21,7 +21,7 @@ public:
 	~DAChartAxisSetWidget();
 	QwtPlot* getChart() const;
 	void setChart(QwtPlot* chart, int axisID);
-	void updateAxisValue();
+    void updateUI();
 	void resetAxisValue();
 	// axis enable
 	void setEnableAxis(bool on = true);
@@ -49,7 +49,7 @@ private slots:
 	Q_SLOT void onScaleStyleChanged(int id);
 
 private:
-	void updateAxisValue(QwtPlot* chart, int axisID);
+    void updateUI(QwtPlot* chart, int axisID);
 
 private:
 	enum ScaleStyle

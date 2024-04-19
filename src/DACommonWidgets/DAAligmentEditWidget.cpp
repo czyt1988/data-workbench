@@ -20,8 +20,23 @@ DAAligmentEditWidget::~DAAligmentEditWidget()
 	delete ui;
 }
 
+/**
+ * @brief 设置对其
+ * @param al
+ */
 void DAAligmentEditWidget::setCurrentAlignment(Qt::Alignment al)
 {
+    if (al.testFlag(Qt::AlignLeft)) {
+        ui->toolButtonAligmentLeft->setChecked(true);
+    } else if (al.testFlag(Qt::AlignRight)) {
+        ui->toolButtonAligmentRight->setChecked(true);
+    } else if (al.testFlag(Qt::AlignTop)) {
+        ui->toolButtonAligmentTop->setChecked(true);
+    } else if (al.testFlag(Qt::AlignBottom)) {
+        ui->toolButtonAligmentBottom->setChecked(true);
+    } else if (al.testFlag(Qt::AlignCenter) || al.testFlag(Qt::AlignHCenter) || al.testFlag(Qt::AlignVCenter)) {
+        ui->toolButtonAligmentCenter->setChecked(true);
+    }
 }
 
 void DAAligmentEditWidget::changeEvent(QEvent* e)

@@ -16,6 +16,9 @@ DAChartCommonItemsSettingWidget::~DAChartCommonItemsSettingWidget()
 void DAChartCommonItemsSettingWidget::setPlotItem(QwtPlotItem* item)
 {
     DAAbstractChartItemSettingWidget::setPlotItem(item);
+    if (nullptr == item) {
+        return;
+    }
     switch (item->rtti()) {
 
     //! For QwtPlotGrid

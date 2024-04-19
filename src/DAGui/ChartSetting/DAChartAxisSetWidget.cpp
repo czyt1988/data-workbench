@@ -24,29 +24,29 @@ DAChartAxisSetWidget::DAChartAxisSetWidget(QWidget* parent)
 	connect(ui->lineEditTitle, &QLineEdit::textChanged, this, &DAChartAxisSetWidget::onLineEditTextChanged);
 	connect(ui->fontSetWidget, &DAFontEditPannelWidget::currentFontChanged, this, &DAChartAxisSetWidget::onAxisFontChanged);
 	connect(ui->aligmentSetWidget,
-			&DAAligmentEditWidget::alignmentChanged,
-			this,
-			&DAChartAxisSetWidget::onAxisLabelAligmentChanged);
+            &DAAligmentEditWidget::alignmentChanged,
+            this,
+            &DAChartAxisSetWidget::onAxisLabelAligmentChanged);
 	connect(ui->doubleSpinBoxRotation,
-			static_cast< void (QDoubleSpinBox::*)(double v) >(&QDoubleSpinBox::valueChanged),
-			this,
-			&DAChartAxisSetWidget::onAxisLabelRotationChanged);
+            static_cast< void (QDoubleSpinBox::*)(double v) >(&QDoubleSpinBox::valueChanged),
+            this,
+            &DAChartAxisSetWidget::onAxisLabelRotationChanged);
 	connect(ui->spinBoxMargin,
-			static_cast< void (QSpinBox::*)(int v) >(&QSpinBox::valueChanged),
-			this,
-			&DAChartAxisSetWidget::onAxisMarginValueChanged);
+            static_cast< void (QSpinBox::*)(int v) >(&QSpinBox::valueChanged),
+            this,
+            &DAChartAxisSetWidget::onAxisMarginValueChanged);
 	connect(ui->doubleSpinBoxMax,
-			static_cast< void (QDoubleSpinBox::*)(double v) >(&QDoubleSpinBox::valueChanged),
-			this,
-			&DAChartAxisSetWidget::onAxisMaxScaleChanged);
+            static_cast< void (QDoubleSpinBox::*)(double v) >(&QDoubleSpinBox::valueChanged),
+            this,
+            &DAChartAxisSetWidget::onAxisMaxScaleChanged);
 	connect(ui->doubleSpinBoxMin,
-			static_cast< void (QDoubleSpinBox::*)(double v) >(&QDoubleSpinBox::valueChanged),
-			this,
-			&DAChartAxisSetWidget::onAxisMinScaleChanged);
+            static_cast< void (QDoubleSpinBox::*)(double v) >(&QDoubleSpinBox::valueChanged),
+            this,
+            &DAChartAxisSetWidget::onAxisMinScaleChanged);
 	connect(m_buttonGroup,
-			static_cast< void (QButtonGroup::*)(int) >(&QButtonGroup::buttonClicked),
-			this,
-			&DAChartAxisSetWidget::onScaleStyleChanged);
+            static_cast< void (QButtonGroup::*)(int) >(&QButtonGroup::buttonClicked),
+            this,
+            &DAChartAxisSetWidget::onScaleStyleChanged);
 	connect(ui->checkBoxEnable, &QAbstractButton::clicked, this, &DAChartAxisSetWidget::onCheckBoxEnableCliecked);
 }
 
@@ -140,16 +140,20 @@ void DAChartAxisSetWidget::onScaleStyleChanged(int id)
 	}
 }
 
-void DAChartAxisSetWidget::updateAxisValue(QwtPlot* chart, int axisID)
+void DAChartAxisSetWidget::updateUI(QwtPlot* chart, int axisID)
 {
 	enableWidget(nullptr != chart);
 	if (nullptr == chart) {
 		resetAxisValue();
 		return;
 	}
+    QSignalBlocker b1(ui->checkBoxEnable), b2(ui->lineEditTitle), b3(ui->fontSetWidget), b4(ui->doubleSpinBoxMin),
+        b5(ui->doubleSpinBoxMax), b6(ui->radioButtonNormal), b7(ui->doubleSpinBoxRotation), b8(ui->aligmentSetWidget),
+        b9(ui->spinBoxMargin), b10(ui->radioButtonTimeScale), b11(ui->dateTimeScaleSetWidget);
 	ui->checkBoxEnable->setChecked(chart->axisEnabled(axisID));
-	ui->lineEditTitle->setText(chart->axisTitle(axisID).text());
-	ui->fontSetWidget->setCurrentFont(chart->axisFont(axisID));
+    qDebug() << "chart->axisTitle(axisID).text()=" << chart->axisTitle(axisID).text();
+    ui->lineEditTitle->setText(chart->axisTitle(axisID).text());
+    ui->fontSetWidget->setCurrentFont(chart->axisFont(axisID));
 
 	QwtInterval inv = chart->axisInterval(axisID);
 	ui->doubleSpinBoxMin->setValue(inv.minValue());
@@ -162,10 +166,11 @@ void DAChartAxisSetWidget::updateAxisValue(QwtPlot* chart, int axisID)
 		ui->radioButtonNormal->setChecked(true);
 		return;
 	}
+
 	QwtScaleDraw* sd = ax->scaleDraw();
 	if (sd) {
 		ui->doubleSpinBoxRotation->setValue(sd->labelRotation());
-		ui->labelAligment->setAlignment(sd->labelAlignment());
+        ui->aligmentSetWidget->setCurrentAlignment(sd->labelAlignment());
 	}
 	ui->spinBoxMargin->setValue(ax->margin());
 	QwtDateScaleDraw* dsd = dynamic_cast< QwtDateScaleDraw* >(sd);
@@ -254,15 +259,15 @@ void DAChartAxisSetWidget::setChart(QwtPlot* chart, int axisID)
 	}
 
 	m_chart = nullptr;  // 先设置为null，使得槽函数不动作
-	updateAxisValue(chart, axisID);
+    updateUI(chart, axisID);
 	m_chart  = chart;
 	m_axisID = axisID;
 	connectChartAxis();
 }
 
-void DAChartAxisSetWidget::updateAxisValue()
+void DAChartAxisSetWidget::updateUI()
 {
-	updateAxisValue(m_chart, m_axisID);
+    updateUI(m_chart, m_axisID);
 }
 
 }  // end DA
