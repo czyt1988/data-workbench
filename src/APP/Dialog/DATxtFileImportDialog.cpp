@@ -174,7 +174,7 @@ void DATxtFileImportDialog::onTextReadFinished(int code)
 	if (code != DATextReadWriter::NoError) {
 		QMessageBox::critical(this,
 							  tr("error"),
-							  tr("read txt file(%1) occure error,reason:%3")
+							  tr("read txt file(%1) occure error,reason:%2")
 								  .arg(getTextFilePath())
 								  .arg(DATextReadWriter::errorCodeToString(static_cast< DATextReadWriter::ErrorCode >(code))));
 		return;

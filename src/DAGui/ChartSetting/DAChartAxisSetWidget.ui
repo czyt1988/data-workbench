@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>245</width>
-    <height>350</height>
+    <height>384</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -32,7 +32,7 @@
    <item>
     <widget class="QCheckBox" name="checkBoxEnable">
      <property name="text">
-      <string>CheckBox</string>
+      <string>Axis Enable</string>
      </property>
     </widget>
    </item>

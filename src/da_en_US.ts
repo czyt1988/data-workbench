@@ -1345,27 +1345,27 @@ Config</source>
 <context>
     <name>DA::DAChartCurveItemSettingWidget</name>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="135"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="138"/>
         <source>Lines</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="136"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="139"/>
         <source>Sticks</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="137"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="140"/>
         <source>Steps</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="138"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="141"/>
         <source>Dots</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="139"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="142"/>
         <source>No Curve</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2227,8 +2227,8 @@ Config</source>
     </message>
     <message>
         <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="177"/>
-        <source>read txt file(%1) occure error,reason:%3</source>
-        <oldsource>read txt file(%1) occure error,reason:%2</oldsource>
+        <source>read txt file(%1) occure error,reason:%2</source>
+        <oldsource>read txt file(%1) occure error,reason:%3</oldsource>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2473,7 +2473,7 @@ Config</source>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="35"/>
-        <source>CheckBox</source>
+        <source>Axis Enable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2733,6 +2733,10 @@ Config</source>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="20"/>
+        <source>Title&amp;&amp;Footer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="26"/>
         <source>Title</source>
         <translation type="unfinished"></translation>
@@ -2776,12 +2780,12 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartSettingWidget.ui" line="38"/>
+        <location filename="DAGui/DAChartSettingWidget.ui" line="54"/>
         <source>Chart</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartSettingWidget.ui" line="51"/>
+        <location filename="DAGui/DAChartSettingWidget.ui" line="83"/>
         <source>item</source>
         <translation type="unfinished"></translation>
     </message>

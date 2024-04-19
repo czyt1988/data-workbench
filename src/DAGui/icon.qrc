@@ -28,6 +28,9 @@
         <file>icon/chart.svg</file>
         <file>icon/data-table.svg</file>
         <file>icon/node-settting.svg</file>
+        <file>icon/figure-setting.svg</file>
+        <file>icon/plot-item-setting.svg</file>
+        <file>icon/plot-setting.svg</file>
     </qresource>
     <qresource prefix="/DAGui/MessageType">
         <file>icon/messageType/messageTypeDebug.svg</file>
@@ -52,5 +55,9 @@
         <file>icon/axisLeftTop.svg</file>
         <file>icon/axisRightBottom.svg</file>
         <file>icon/axisRightTop.svg</file>
+        <file>icon/axisXBottom.svg</file>
+        <file>icon/axisXTop.svg</file>
+        <file>icon/axisYLeft.svg</file>
+        <file>icon/axisYRight.svg</file>
     </qresource>
 </RCC>

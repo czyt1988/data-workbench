@@ -21,14 +21,16 @@ public:
 	~DAChartAxisSetWidget();
 	QwtPlot* getChart() const;
 	void setChart(QwtPlot* chart, int axisID);
-    void updateUI();
+	void updateUI();
 	void resetAxisValue();
 	// axis enable
 	void setEnableAxis(bool on = true);
 	bool isEnableAxis() const;
 	//
 	void enableWidget(bool enable = true);
-
+	// 设置启用axis checkbox的图标
+	void setEnableCheckBoxIcon(const QIcon& icon);
+	QIcon getEnableCheckBoxIcon() const;
 signals:
 	///
 	/// \brief 允许或禁止坐标轴时发送的信号
@@ -49,7 +51,7 @@ private slots:
 	Q_SLOT void onScaleStyleChanged(int id);
 
 private:
-    void updateUI(QwtPlot* chart, int axisID);
+	void updateUI(QwtPlot* chart, int axisID);
 
 private:
 	enum ScaleStyle

@@ -1385,27 +1385,27 @@ Table Area</source>
 <context>
     <name>DA::DAChartCurveItemSettingWidget</name>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="135"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="138"/>
         <source>Lines</source>
         <translation>折线</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="136"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="139"/>
         <source>Sticks</source>
         <translation>线棒</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="137"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="140"/>
         <source>Steps</source>
         <translation>阶梯</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="138"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="141"/>
         <source>Dots</source>
         <translation>点</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="139"/>
+        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="142"/>
         <source>No Curve</source>
         <translation>无连接线</translation>
     </message>
@@ -2166,52 +2166,52 @@ Table Area</source>
     <message>
         <location filename="DACommonWidgets/DATimeFormatEditWidget.cpp" line="40"/>
         <source>example: 8:5</source>
-        <translation type="unfinished"></translation>
+        <translation>示例: 8:5</translation>
     </message>
     <message>
         <location filename="DACommonWidgets/DATimeFormatEditWidget.cpp" line="43"/>
         <source>example: 08:05</source>
-        <translation type="unfinished"></translation>
+        <translation>示例: 08:05</translation>
     </message>
     <message>
         <location filename="DACommonWidgets/DATimeFormatEditWidget.cpp" line="46"/>
         <source>example: 8:5:12</source>
-        <translation type="unfinished"></translation>
+        <translation>示例: 6:5:12</translation>
     </message>
     <message>
         <location filename="DACommonWidgets/DATimeFormatEditWidget.cpp" line="49"/>
         <source>example: 08:05:12</source>
-        <translation type="unfinished"></translation>
+        <translation>示例: 08:05:12</translation>
     </message>
     <message>
         <location filename="DACommonWidgets/DATimeFormatEditWidget.cpp" line="52"/>
         <source>example: 2017-8-1</source>
-        <translation type="unfinished"></translation>
+        <translation>示例: 2017-8-1</translation>
     </message>
     <message>
         <location filename="DACommonWidgets/DATimeFormatEditWidget.cpp" line="55"/>
         <source>example: 2017-8-1 8:5</source>
-        <translation type="unfinished"></translation>
+        <translation>示例: 2017-8-1 6:5</translation>
     </message>
     <message>
         <location filename="DACommonWidgets/DATimeFormatEditWidget.cpp" line="58"/>
         <source>example: 2017-8-1 8:5:12</source>
-        <translation type="unfinished"></translation>
+        <translation>示例: 2017-8-1 6:5:12</translation>
     </message>
     <message>
         <location filename="DACommonWidgets/DATimeFormatEditWidget.cpp" line="61"/>
         <source>example: 2017-08-01</source>
-        <translation type="unfinished"></translation>
+        <translation>示例: 2017-08-01</translation>
     </message>
     <message>
         <location filename="DACommonWidgets/DATimeFormatEditWidget.cpp" line="64"/>
         <source>example: 2017-08-01 08:05</source>
-        <translation type="unfinished"></translation>
+        <translation>示例: 2017-08-01 08:05</translation>
     </message>
     <message>
         <location filename="DACommonWidgets/DATimeFormatEditWidget.cpp" line="67"/>
         <source>example: 2017-08-01 08:05:12</source>
-        <translation type="unfinished"></translation>
+        <translation>示例: 2017-08-01 08:05:12</translation>
     </message>
 </context>
 <context>
@@ -2269,9 +2269,9 @@ Table Area</source>
     </message>
     <message>
         <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="177"/>
-        <source>read txt file(%1) occure error,reason:%3</source>
-        <oldsource>read txt file(%1) occure error,reason:%2</oldsource>
-        <translation type="unfinished">读取txt文件%1发生了错误，原因是：%2</translation>
+        <source>read txt file(%1) occure error,reason:%2</source>
+        <oldsource>read txt file(%1) occure error,reason:%3</oldsource>
+        <translation>读取txt文件%1发生了错误，原因是：%2</translation>
     </message>
 </context>
 <context>
@@ -2383,32 +2383,32 @@ Table Area</source>
     <message>
         <location filename="DACommonWidgets/DAAligmentEditWidget.ui" line="20"/>
         <source>Aligment Edit Widget</source>
-        <translation type="unfinished"></translation>
+        <translation>对齐编辑窗口</translation>
     </message>
     <message>
         <location filename="DACommonWidgets/DAAligmentEditWidget.ui" line="41"/>
         <source>Aligment Left</source>
-        <translation type="unfinished"></translation>
+        <translation>左对齐</translation>
     </message>
     <message>
         <location filename="DACommonWidgets/DAAligmentEditWidget.ui" line="58"/>
         <source>Aligment Right</source>
-        <translation type="unfinished"></translation>
+        <translation>右对齐</translation>
     </message>
     <message>
         <location filename="DACommonWidgets/DAAligmentEditWidget.ui" line="75"/>
         <source>Aligment Top</source>
-        <translation type="unfinished"></translation>
+        <translation>顶部对齐</translation>
     </message>
     <message>
         <location filename="DACommonWidgets/DAAligmentEditWidget.ui" line="92"/>
         <source>Aligment Bottom</source>
-        <translation type="unfinished"></translation>
+        <translation>底部对齐</translation>
     </message>
     <message>
         <location filename="DACommonWidgets/DAAligmentEditWidget.ui" line="109"/>
         <source>Aligment Center</source>
-        <translation type="unfinished"></translation>
+        <translation>中间对齐</translation>
     </message>
 </context>
 <context>
@@ -2512,57 +2512,57 @@ Table Area</source>
     <message>
         <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="14"/>
         <source>Axis Set</source>
-        <translation type="unfinished"></translation>
+        <translation>坐标轴设置</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="35"/>
-        <source>CheckBox</source>
-        <translation type="unfinished"></translation>
+        <source>Axis Enable</source>
+        <translation>绑定坐标轴</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="47"/>
         <source>title</source>
-        <translation type="unfinished"></translation>
+        <translation>标题</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="64"/>
         <source>font</source>
-        <translation type="unfinished"></translation>
+        <translation>字体</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="94"/>
         <source>label Aligment</source>
-        <translation type="unfinished"></translation>
+        <translation>标签对齐方式</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="115"/>
         <source>label Rotation</source>
-        <translation type="unfinished"></translation>
+        <translation>标签旋转角度</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="125"/>
         <source>margin</source>
-        <translation type="unfinished"></translation>
+        <translation>间隔</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="139"/>
         <source>min scale</source>
-        <translation type="unfinished"></translation>
+        <translation>最小刻度</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="159"/>
         <source>max scale</source>
-        <translation type="unfinished"></translation>
+        <translation>最大刻度</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="181"/>
         <source>normal</source>
-        <translation type="unfinished"></translation>
+        <translation>普通坐标轴</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="188"/>
         <source>Time Scale</source>
-        <translation type="unfinished"></translation>
+        <translation>时间坐标轴</translation>
     </message>
 </context>
 <context>
@@ -2570,7 +2570,7 @@ Table Area</source>
     <message>
         <location filename="DAGui/ChartSetting/DAChartCommonItemsSettingWidget.ui" line="14"/>
         <source>Common Item Setting</source>
-        <translation type="unfinished"></translation>
+        <translation>通用绘图图元设置窗口</translation>
     </message>
 </context>
 <context>
@@ -2628,7 +2628,7 @@ Table Area</source>
     <message>
         <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="26"/>
         <source>Base</source>
-        <translation type="unfinished"></translation>
+        <translation>通用设置</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="179"/>
@@ -2734,7 +2734,7 @@ Table Area</source>
     <message>
         <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="55"/>
         <source>Left bottom</source>
-        <translation type="unfinished"></translation>
+        <translation>左+底部</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="90"/>
@@ -2744,7 +2744,7 @@ Table Area</source>
     <message>
         <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="93"/>
         <source>Right bottom</source>
-        <translation type="unfinished"></translation>
+        <translation>右+上部</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="125"/>
@@ -2754,7 +2754,7 @@ Table Area</source>
     <message>
         <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="128"/>
         <source>Left top</source>
-        <translation type="unfinished"></translation>
+        <translation>左+顶部</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="160"/>
@@ -2764,7 +2764,7 @@ Table Area</source>
     <message>
         <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="163"/>
         <source>Right top</source>
-        <translation type="unfinished"></translation>
+        <translation>右+顶部</translation>
     </message>
 </context>
 <context>
@@ -2776,34 +2776,38 @@ Table Area</source>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="20"/>
+        <source>Title&amp;&amp;Footer</source>
+        <translation>标题和脚注</translation>
+    </message>
+    <message>
         <location filename="DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="26"/>
         <source>Title</source>
-        <translation type="unfinished">标题</translation>
+        <translation>标题</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="46"/>
         <source>Footer</source>
-        <translation type="unfinished"></translation>
+        <translation>脚注</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="69"/>
         <source>X Bottom</source>
-        <translation type="unfinished"></translation>
+        <translation>X轴底部坐标</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="99"/>
         <source>X Top</source>
-        <translation type="unfinished"></translation>
+        <translation>X轴顶部坐标</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="132"/>
         <source>Y Left</source>
-        <translation type="unfinished"></translation>
+        <translation>Y轴左坐标</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="162"/>
         <source>Y Right</source>
-        <translation type="unfinished"></translation>
+        <translation>Y轴右坐标</translation>
     </message>
 </context>
 <context>
@@ -2816,17 +2820,17 @@ Table Area</source>
     <message>
         <location filename="DAGui/DAChartSettingWidget.ui" line="22"/>
         <source>Figure</source>
-        <translation type="unfinished">绘图</translation>
+        <translation>绘图窗口</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartSettingWidget.ui" line="38"/>
+        <location filename="DAGui/DAChartSettingWidget.ui" line="54"/>
         <source>Chart</source>
-        <translation type="unfinished">绘图</translation>
+        <translation>图表</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartSettingWidget.ui" line="51"/>
+        <location filename="DAGui/DAChartSettingWidget.ui" line="83"/>
         <source>item</source>
-        <translation type="unfinished"></translation>
+        <translation>图元</translation>
     </message>
 </context>
 <context>
@@ -2919,17 +2923,17 @@ Table Area</source>
     <message>
         <location filename="DAGui/Dialog/DADialogChartGuide.ui" line="77"/>
         <source>Previous</source>
-        <translation type="unfinished"></translation>
+        <translation>上一步</translation>
     </message>
     <message>
         <location filename="DAGui/Dialog/DADialogChartGuide.ui" line="84"/>
         <source>Next</source>
-        <translation type="unfinished"></translation>
+        <translation>下一步</translation>
     </message>
     <message>
         <location filename="DAGui/Dialog/DADialogChartGuide.ui" line="91"/>
         <source>Cancel</source>
-        <translation type="unfinished">取消</translation>
+        <translation>取消取消</translation>
     </message>
 </context>
 <context>
@@ -3669,22 +3673,22 @@ Table Area</source>
     <message>
         <location filename="DACommonWidgets/DATimeFormatEditWidget.ui" line="26"/>
         <source>Time Format Set</source>
-        <translation type="unfinished"></translation>
+        <translation>时间格式设置窗口</translation>
     </message>
     <message>
         <location filename="DACommonWidgets/DATimeFormatEditWidget.ui" line="34"/>
         <source>select time format：</source>
-        <translation type="unfinished"></translation>
+        <translation>选择时间格式:</translation>
     </message>
     <message>
         <location filename="DACommonWidgets/DATimeFormatEditWidget.ui" line="50"/>
         <source>example:</source>
-        <translation type="unfinished"></translation>
+        <translation>示例:</translation>
     </message>
     <message>
         <location filename="DACommonWidgets/DATimeFormatEditWidget.ui" line="78"/>
         <source>TextLabel</source>
-        <translation type="unfinished"></translation>
+        <translation>文本</translation>
     </message>
 </context>
 <context>
@@ -5556,7 +5560,7 @@ params:
     <message>
         <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="732"/>
         <source>can not open excel</source>
-        <translation type="unfinished"></translation>
+        <translation>无法打开excel</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/MainWindow.cpp" line="152"/>
@@ -5776,17 +5780,17 @@ Author:czy</source>
     <message>
         <location filename="DAUtils/DATextReadWriter.cpp" line="417"/>
         <source>User Terminate</source>
-        <translation type="unfinished"></translation>
+        <translation>用户终止</translation>
     </message>
     <message>
         <location filename="DAUtils/DATextReadWriter.cpp" line="421"/>
         <source>Unknow Error</source>
-        <translation type="unfinished"></translation>
+        <translation>未知错误</translation>
     </message>
     <message>
         <location filename="DAPyScripts/DAPyScriptsDataProcess.cpp" line="9"/>
         <source>can not import da_data_processing module</source>
-        <translation type="unfinished"></translation>
+        <translation>python无法导入da_data_processing模块</translation>
     </message>
 </context>
 <context>
