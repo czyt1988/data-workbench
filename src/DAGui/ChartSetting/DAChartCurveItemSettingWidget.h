@@ -32,13 +32,12 @@ class DAGUI_API DAChartCurveItemSettingWidget : public DAAbstractChartItemSettin
 public:
 	explicit DAChartCurveItemSettingWidget(QWidget* parent = nullptr);
 	~DAChartCurveItemSettingWidget();
-	// 设置item,此界面可以不设置item，仅仅当作参数获取，如果设置了item，会在对应的界面联动
-	virtual void setPlotItem(QwtPlotItem* item);
+	// item设置了
+	virtual void plotItemSet(QwtPlotItem* item) override;
 	// 根据QwtPlotCurve更新ui
 	void updateUI(const QwtPlotCurve* item);
 	// 根据ui更新plotitem
 	void updatePlotItem(QwtPlotCurve* item);
-
 	// 标题
 	void setTitle(const QString& t);
 	QString getTitle() const;
@@ -58,13 +57,10 @@ public:
 	void enableFillEdit(bool on = true);
 	bool isEnableFillEdit() const;
 	// 画笔
-	void setCurvePen(const QPen& v);
 	QPen getCurvePen() const;
 	// 填充
-	void setFillBrush(const QBrush& v);
 	QBrush getFillBrush() const;
 	// 基线
-	void setBaseLine(double v);
 	double getBaseLine() const;
 	bool isHaveBaseLine() const;
 	// 方向
@@ -72,8 +68,15 @@ public:
 	Qt::Orientation getOrientation() const;
 	// 清空界面
 	void resetUI();
-    // 获取itemplot widget
-    DAChartPlotItemSettingWidget* getItemSettingWidget() const;
+	// 获取itemplot widget
+	DAChartPlotItemSettingWidget* getItemSettingWidget() const;
+public slots:
+	// 画笔
+	void setCurvePen(const QPen& v);
+	// 填充
+	void setFillBrush(const QBrush& v);
+	// 基线
+	void setBaseLine(double v);
 
 protected:
 	void resetCurveStyleComboBox();

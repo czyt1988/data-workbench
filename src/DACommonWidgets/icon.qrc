@@ -12,5 +12,14 @@
         <file>icon/AligmentLeft.svg</file>
         <file>icon/AligmentRight.svg</file>
         <file>icon/AligmentTop.svg</file>
+        <file>icon/bottom.svg</file>
+        <file>icon/bottomLeft.svg</file>
+        <file>icon/bottomRight.svg</file>
+        <file>icon/center.svg</file>
+        <file>icon/left.svg</file>
+        <file>icon/right.svg</file>
+        <file>icon/top.svg</file>
+        <file>icon/topleft.svg</file>
+        <file>icon/topRight.svg</file>
     </qresource>
 </RCC>

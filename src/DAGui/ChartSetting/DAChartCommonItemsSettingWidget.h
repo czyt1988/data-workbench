@@ -1,4 +1,4 @@
-#ifndef DACHARTCOMMONITEMSSETTINGWIDGET_H
+﻿#ifndef DACHARTCOMMONITEMSSETTINGWIDGET_H
 #define DACHARTCOMMONITEMSSETTINGWIDGET_H
 #include "DAGuiAPI.h"
 #include "DAAbstractChartItemSettingWidget.h"
@@ -18,13 +18,13 @@ class DAGUI_API DAChartCommonItemsSettingWidget : public DAAbstractChartItemSett
     Q_OBJECT
 
 public:
-    explicit DAChartCommonItemsSettingWidget(QWidget* parent = nullptr);
-    ~DAChartCommonItemsSettingWidget();
-    // 设置plotitem
-    virtual void setPlotItem(QwtPlotItem* item) override;
+	explicit DAChartCommonItemsSettingWidget(QWidget* parent = nullptr);
+	~DAChartCommonItemsSettingWidget();
+	//
+	virtual void plotItemSet(QwtPlotItem* item) override;
 
 private:
-    Ui::DAChartCommonItemsSettingWidget* ui;
+	Ui::DAChartCommonItemsSettingWidget* ui;
 };
 }  // end DA
 #endif  // DACHARTCOMMONITEMSSETTINGWIDGET_H

@@ -5,9 +5,9 @@ namespace DA
 
 DAShapeEditPannelWidget::DAShapeEditPannelWidget(QWidget* parent) : QWidget(parent), ui(new Ui::DAShapeEditPannelWidget)
 {
-    ui->setupUi(this);
-    connect(ui->widgetPenEdit, &DAPenEditWidget::penChanged, this, &DAShapeEditPannelWidget::borderPenChanged);
-    connect(ui->widgetBrushEdit, &DABrushEditWidget::brushChanged, this, &DAShapeEditPannelWidget::backgroundBrushChanged);
+	ui->setupUi(this);
+	connect(ui->widgetPenEdit, &DAPenEditWidget::penChanged, this, &DAShapeEditPannelWidget::borderPenChanged);
+	connect(ui->widgetBrushEdit, &DABrushEditWidget::brushChanged, this, &DAShapeEditPannelWidget::backgroundBrushChanged);
 }
 
 DAShapeEditPannelWidget::~DAShapeEditPannelWidget()
@@ -40,8 +40,11 @@ QPen DAShapeEditPannelWidget::getBorderPen() const
  */
 void DAShapeEditPannelWidget::setBackgroundBrush(const QBrush& b)
 {
-    //此函数会触发DABrushEditWidget::brushChanged信号，从而触发onBrushChanged
-    ui->widgetBrushEdit->setCurrentBrush(b);
+	if (b == getBackgroundBrush()) {
+		return;
+	}
+	// 此函数会触发DABrushEditWidget::brushChanged信号，从而触发onBrushChanged
+	ui->widgetBrushEdit->setCurrentBrush(b);
 }
 
 /**

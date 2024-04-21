@@ -2412,6 +2412,14 @@ Table Area</source>
     </message>
 </context>
 <context>
+    <name>DAAligmentPositionEditWidget</name>
+    <message>
+        <location filename="DACommonWidgets/DAAligmentPositionEditWidget.ui" line="20"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DAAppController</name>
     <message>
         <location filename="APP/DAAppController.cpp" line="63"/>
@@ -2535,32 +2543,32 @@ Table Area</source>
         <translation>标签对齐方式</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="115"/>
+        <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="127"/>
         <source>label Rotation</source>
         <translation>标签旋转角度</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="125"/>
+        <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="144"/>
         <source>margin</source>
         <translation>间隔</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="139"/>
+        <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="164"/>
         <source>min scale</source>
         <translation>最小刻度</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="159"/>
+        <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="190"/>
         <source>max scale</source>
         <translation>最大刻度</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="181"/>
+        <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="218"/>
         <source>normal</source>
         <translation>普通坐标轴</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="188"/>
+        <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="225"/>
         <source>Time Scale</source>
         <translation>时间坐标轴</translation>
     </message>
@@ -2689,6 +2697,48 @@ Table Area</source>
     </message>
 </context>
 <context>
+    <name>DAChartGridSettingWidget</name>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartGridSettingWidget.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartGridSettingWidget.ui" line="26"/>
+        <source>Grid Major Line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartGridSettingWidget.ui" line="41"/>
+        <source>Major Line Pen:</source>
+        <oldsource>Line Pen:</oldsource>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartGridSettingWidget.ui" line="76"/>
+        <source>Grid Minor Line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartGridSettingWidget.ui" line="91"/>
+        <source>Minor Line Pen:</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DAChartLegendItemSettingWidget</name>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartLegendItemSettingWidget.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartLegendItemSettingWidget.ui" line="26"/>
+        <source>position</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DAChartManageWidget</name>
     <message>
         <location filename="DAGui/DAChartManageWidget.ui" line="14"/>
@@ -2785,27 +2835,27 @@ Table Area</source>
         <translation>标题</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="46"/>
+        <location filename="DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="52"/>
         <source>Footer</source>
         <translation>脚注</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="69"/>
+        <location filename="DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="81"/>
         <source>X Bottom</source>
         <translation>X轴底部坐标</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="99"/>
+        <location filename="DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="111"/>
         <source>X Top</source>
         <translation>X轴顶部坐标</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="132"/>
+        <location filename="DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="144"/>
         <source>Y Left</source>
         <translation>Y轴左坐标</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="162"/>
+        <location filename="DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="174"/>
         <source>Y Right</source>
         <translation>Y轴右坐标</translation>
     </message>
@@ -3502,12 +3552,12 @@ Table Area</source>
 <context>
     <name>DAPenEditWidget</name>
     <message>
-        <location filename="DACommonWidgets/DAPenEditWidget.cpp" line="117"/>
+        <location filename="DACommonWidgets/DAPenEditWidget.cpp" line="120"/>
         <source>Pen Editor</source>
         <translation>画笔编辑</translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DAPenEditWidget.cpp" line="118"/>
+        <location filename="DACommonWidgets/DAPenEditWidget.cpp" line="121"/>
         <source> px</source>
         <translation> px</translation>
     </message>

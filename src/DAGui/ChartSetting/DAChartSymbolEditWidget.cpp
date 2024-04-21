@@ -5,8 +5,8 @@ namespace DA
 {
 DAChartSymbolEditWidget::DAChartSymbolEditWidget(QWidget* parent) : QWidget(parent), ui(new Ui::DAChartSymbolEditWidget)
 {
-    ui->setupUi(this);
-    init();
+	ui->setupUi(this);
+	init();
 }
 
 DAChartSymbolEditWidget::~DAChartSymbolEditWidget()
@@ -93,28 +93,28 @@ QPen DAChartSymbolEditWidget::getSymbolOutlinePen() const
  */
 QwtSymbol* DAChartSymbolEditWidget::createSymbol() const
 {
-    int size     = getSymbolSize();
-    QwtSymbol* s = new QwtSymbol(getSymbolStyle());
-    s->setSize(QSize(size, size));
-    s->setBrush(getSymbolColor());
-    s->setPen(getSymbolOutlinePen());
-    return s;
+	int size     = getSymbolSize();
+	QwtSymbol* s = new QwtSymbol(getSymbolStyle());
+	s->setSize(QSize(size, size));
+	s->setBrush(getSymbolColor());
+	s->setPen(getSymbolOutlinePen());
+	return s;
 }
 
 void DAChartSymbolEditWidget::init()
 {
-    ui->penEditWidget->setCurrentPen(Qt::NoPen);
-    connect(ui->comboBoxSymbolStyle,
-            &DAChartSymbolComboBox::symbolStyleChanged,
-            this,
-            &DAChartSymbolEditWidget::symbolStyleChanged);
+	ui->penEditWidget->setCurrentPen(Qt::NoPen);
+	connect(ui->comboBoxSymbolStyle,
+			&DAChartSymbolComboBox::symbolStyleChanged,
+			this,
+			&DAChartSymbolEditWidget::symbolStyleChanged);
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    connect(ui->spinBoxSize, QOverload< int >::of(&QSpinBox::valueChanged), this, &DAChartSymbolEditWidget::symbolSizeChanged);
+	connect(ui->spinBoxSize, QOverload< int >::of(&QSpinBox::valueChanged), this, &DAChartSymbolEditWidget::symbolSizeChanged);
 #else
-    connect(ui->spinBoxSize, &QSpinBox::valueChanged, this, &DAChartSymbolEditWidget::symbolSizeChanged);
+	connect(ui->spinBoxSize, &QSpinBox::valueChanged, this, &DAChartSymbolEditWidget::symbolSizeChanged);
 #endif
-    connect(ui->pushButtonColor, &DAColorPickerButton::colorChanged, this, &DAChartSymbolEditWidget::symbolColorChanged);
-    connect(ui->penEditWidget, &DAPenEditWidget::penChanged, this, &DAChartSymbolEditWidget::symbolOutlinePenChanged);
+	connect(ui->pushButtonColor, &DAColorPickerButton::colorChanged, this, &DAChartSymbolEditWidget::symbolColorChanged);
+	connect(ui->penEditWidget, &DAPenEditWidget::penChanged, this, &DAChartSymbolEditWidget::symbolOutlinePenChanged);
 }
 
 }  // end DA

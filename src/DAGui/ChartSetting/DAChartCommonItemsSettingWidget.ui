@@ -32,6 +32,8 @@
    <item>
     <widget class="QStackedWidget" name="stackedWidget">
      <widget class="DA::DAChartCurveItemSettingWidget" name="widgetCurveItem"/>
+     <widget class="DA::DAChartLegendItemSettingWidget" name="widgetLegendItem"/>
+     <widget class="DA::DAChartGridSettingWidget" name="widgetGridItem"/>
     </widget>
    </item>
   </layout>
@@ -41,6 +43,18 @@
    <class>DA::DAChartCurveItemSettingWidget</class>
    <extends>QWidget</extends>
    <header>DAChartCurveItemSettingWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DA::DAChartGridSettingWidget</class>
+   <extends>QWidget</extends>
+   <header>DAChartGridSettingWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DA::DAChartLegendItemSettingWidget</class>
+   <extends>QWidget</extends>
+   <header>DAChartLegendItemSettingWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

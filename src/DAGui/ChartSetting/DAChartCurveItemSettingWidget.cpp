@@ -12,30 +12,31 @@ DAChartCurveItemSettingWidget::DAChartCurveItemSettingWidget(QWidget* parent)
 	ui->setupUi(this);
 	resetUI();
 	connect(ui->comboBoxCurveStyle,
-            QOverload< int >::of(&QComboBox::currentIndexChanged),
-            this,
-            &DAChartCurveItemSettingWidget::onCurveStyleCurrentIndexChanged);
+			QOverload< int >::of(&QComboBox::currentIndexChanged),
+			this,
+			&DAChartCurveItemSettingWidget::onCurveStyleCurrentIndexChanged);
 	connect(ui->symbolEditWidget,
-            &DAChartSymbolEditWidget::symbolStyleChanged,
-            this,
-            &DAChartCurveItemSettingWidget::onSymbolStyleChanged);
+			&DAChartSymbolEditWidget::symbolStyleChanged,
+			this,
+			&DAChartCurveItemSettingWidget::onSymbolStyleChanged);
 	connect(ui->symbolEditWidget,
-            &DAChartSymbolEditWidget::symbolSizeChanged,
-            this,
-            &DAChartCurveItemSettingWidget::onSymbolSizeChanged);
+			&DAChartSymbolEditWidget::symbolSizeChanged,
+			this,
+			&DAChartCurveItemSettingWidget::onSymbolSizeChanged);
 	connect(ui->symbolEditWidget,
-            &DAChartSymbolEditWidget::symbolColorChanged,
-            this,
-            &DAChartCurveItemSettingWidget::onSymbolColorChanged);
+			&DAChartSymbolEditWidget::symbolColorChanged,
+			this,
+			&DAChartCurveItemSettingWidget::onSymbolColorChanged);
 	connect(ui->symbolEditWidget,
-            &DAChartSymbolEditWidget::symbolOutlinePenChanged,
-            this,
-            &DAChartCurveItemSettingWidget::onSymbolOutlinePenChanged);
+			&DAChartSymbolEditWidget::symbolOutlinePenChanged,
+			this,
+			&DAChartCurveItemSettingWidget::onSymbolOutlinePenChanged);
 	connect(ui->brushEditWidget, &DABrushEditWidget::brushChanged, this, &DAChartCurveItemSettingWidget::onBrushChanged);
 	connect(ui->buttonGroupOrientation,
-            QOverload< QAbstractButton* >::of(&QButtonGroup::buttonClicked),
-            this,
-            &DAChartCurveItemSettingWidget::onButtonGroupOrientationClicked);
+			QOverload< QAbstractButton* >::of(&QButtonGroup::buttonClicked),
+			this,
+			&DAChartCurveItemSettingWidget::onButtonGroupOrientationClicked);
+	connect(ui->penEditWidget, &DAPenEditWidget::penChanged, this, &DAChartCurveItemSettingWidget::setCurvePen);
 }
 
 DAChartCurveItemSettingWidget::~DAChartCurveItemSettingWidget()
@@ -43,15 +44,14 @@ DAChartCurveItemSettingWidget::~DAChartCurveItemSettingWidget()
 	delete ui;
 }
 
-void DAChartCurveItemSettingWidget::setPlotItem(QwtPlotItem* item)
+void DAChartCurveItemSettingWidget::plotItemSet(QwtPlotItem* item)
 {
-    if (nullptr == item) {
-        return;
-    }
+	if (nullptr == item) {
+		return;
+	}
 	if (item->rtti() != QwtPlotItem::Rtti_PlotCurve) {
 		return;
 	}
-	DAAbstractChartItemSettingWidget::setPlotItem(item);
 	ui->widgetItemSetting->setPlotItem(item);
 	QwtPlotCurve* curItem = static_cast< QwtPlotCurve* >(item);
 	updateUI(curItem);
@@ -86,10 +86,10 @@ void DAChartCurveItemSettingWidget::updateUI(const QwtPlotCurve* item)
  */
 void DAChartCurveItemSettingWidget::updatePlotItem(QwtPlotCurve* item)
 {
-    // plot item
-    ui->widgetItemSetting->updatePlotItem(item);
-    // plot curve
-    item->setTitle(getTitle());
+	// plot item
+	ui->widgetItemSetting->updatePlotItem(item);
+	// plot curve
+	item->setTitle(getTitle());
 	auto s = getCurveStyle();
 	if (item->style() != s) {
 		item->setStyle(s);
@@ -390,7 +390,7 @@ void DAChartCurveItemSettingWidget::resetUI()
 	enableMarkerEdit(false);
 	enableFillEdit(false);
 	setBaseLine(0.0);
-    setOrientation(Qt::Horizontal);
+	setOrientation(Qt::Horizontal);
 }
 
 /**

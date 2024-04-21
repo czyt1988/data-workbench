@@ -43,25 +43,29 @@ public:
 	QwtPlotItem* getItem() const;
 	void bindFigure(DAFigureWidget* fig);
 	void unbindFigure(DAFigureWidget* fig);
+	void bindChart(DAChartWidget* chart);
+	void unbindChart(DAChartWidget* chart);
 	// 获取chart在combobox的索引
 	int indexOfChart(const DAChartWidget* chart);
-    int indexOfItem(const QwtPlotItem* item);
+	int indexOfItem(const QwtPlotItem* item);
 	// 设置当前的chart
 	void setCurrentChart(DAChartWidget* chart);
 	// 设置当前的item
 	void setCurrentItem(QwtPlotItem* item);
-    // 显示设置
-    void showFigureSettingWidget();
-    void showPlotSettingWidget();
-    void showItemSettingWidget();
+	// 显示设置
+	void showFigureSettingWidget();
+	void showPlotSettingWidget();
+	void showItemSettingWidget();
+	// 把chart列表从combobox中移除
+	void removeChartFromComboBox(DAChartWidget* chart);
 
 protected:
 	void changeEvent(QEvent* e);
 	// 设置charts
-	void setChartsComboBox(DAFigureWidget* fig);
+	void resetChartsComboBox(DAFigureWidget* fig);
 	// 设置items
 	void setItemsComboBox(const QList< QwtPlotItem* >& its);
-	void setItemsComboBox(DAChartWidget* chart);
+	void resetItemsComboBox(DAChartWidget* chart);
 protected slots:
 	void onFigureCloseing(DA::DAFigureWidget* f);
 	void onFigureCreated(DA::DAFigureWidget* f);
@@ -77,11 +81,11 @@ protected slots:
 	// onItemAttached的特化，把chart传入
 	void onChartItemAttached(DA::DAChartWidget* c, QwtPlotItem* plotItem, bool on);
 	// current chart触发的改变
-	void onComboBoxChartIndexChanged(int i);
+	void onComboBoxChartActivated(int i);
 	// current item触发的改变
-	void onComboBoxItemIndexChanged(int i);
+	void onComboBoxItemActived(int i);
 	// 按钮组点击
-    void onButtonGroupTypeButtonClicked(int id);
+	void onButtonGroupTypeButtonClicked(int id);
 
 private:
 	Ui::DAChartSettingWidget* ui;

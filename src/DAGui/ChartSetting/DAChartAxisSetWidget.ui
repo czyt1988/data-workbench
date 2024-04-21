@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>245</width>
-    <height>384</height>
+    <height>404</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,7 +15,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">
-    <number>4</number>
+    <number>6</number>
    </property>
    <property name="leftMargin">
     <number>1</number>
@@ -76,7 +76,7 @@
        <property name="minimumSize">
         <size>
          <width>0</width>
-         <height>44</height>
+         <height>54</height>
         </size>
        </property>
       </widget>
@@ -109,6 +109,18 @@
    </item>
    <item>
     <layout class="QGridLayout" name="gridLayout">
+     <property name="leftMargin">
+      <number>1</number>
+     </property>
+     <property name="topMargin">
+      <number>1</number>
+     </property>
+     <property name="rightMargin">
+      <number>1</number>
+     </property>
+     <property name="bottomMargin">
+      <number>1</number>
+     </property>
      <item row="0" column="0">
       <widget class="QLabel" name="labelRotation">
        <property name="text">
@@ -117,7 +129,14 @@
       </widget>
      </item>
      <item row="0" column="1">
-      <widget class="QDoubleSpinBox" name="doubleSpinBoxRotation"/>
+      <widget class="QDoubleSpinBox" name="doubleSpinBoxRotation">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>20</height>
+        </size>
+       </property>
+      </widget>
      </item>
      <item row="1" column="0">
       <widget class="QLabel" name="labelMargin">
@@ -128,6 +147,12 @@
      </item>
      <item row="1" column="1">
       <widget class="QSpinBox" name="spinBoxMargin">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>20</height>
+        </size>
+       </property>
        <property name="minimum">
         <number>-10</number>
        </property>
@@ -142,6 +167,12 @@
      </item>
      <item row="2" column="1">
       <widget class="QDoubleSpinBox" name="doubleSpinBoxMin">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>20</height>
+        </size>
+       </property>
        <property name="decimals">
         <number>5</number>
        </property>
@@ -162,6 +193,12 @@
      </item>
      <item row="3" column="1">
       <widget class="QDoubleSpinBox" name="doubleSpinBoxMax">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>20</height>
+        </size>
+       </property>
        <property name="decimals">
         <number>5</number>
        </property>

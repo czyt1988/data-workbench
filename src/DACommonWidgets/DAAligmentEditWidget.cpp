@@ -26,17 +26,46 @@ DAAligmentEditWidget::~DAAligmentEditWidget()
  */
 void DAAligmentEditWidget::setCurrentAlignment(Qt::Alignment al)
 {
-    if (al.testFlag(Qt::AlignLeft)) {
-        ui->toolButtonAligmentLeft->setChecked(true);
-    } else if (al.testFlag(Qt::AlignRight)) {
-        ui->toolButtonAligmentRight->setChecked(true);
-    } else if (al.testFlag(Qt::AlignTop)) {
-        ui->toolButtonAligmentTop->setChecked(true);
-    } else if (al.testFlag(Qt::AlignBottom)) {
-        ui->toolButtonAligmentBottom->setChecked(true);
-    } else if (al.testFlag(Qt::AlignCenter) || al.testFlag(Qt::AlignHCenter) || al.testFlag(Qt::AlignVCenter)) {
-        ui->toolButtonAligmentCenter->setChecked(true);
-    }
+	auto cur = getCurrentAlignment();
+	if (cur == al) {
+		return;
+	}
+	if (al.testFlag(Qt::AlignLeft)) {
+		ui->toolButtonAligmentLeft->setChecked(true);
+	} else if (al.testFlag(Qt::AlignRight)) {
+		ui->toolButtonAligmentRight->setChecked(true);
+	} else if (al.testFlag(Qt::AlignTop)) {
+		ui->toolButtonAligmentTop->setChecked(true);
+	} else if (al.testFlag(Qt::AlignBottom)) {
+		ui->toolButtonAligmentBottom->setChecked(true);
+	} else if (al.testFlag(Qt::AlignCenter) || al.testFlag(Qt::AlignHCenter) || al.testFlag(Qt::AlignVCenter)) {
+		if (cur.testFlag(Qt::AlignCenter) || cur.testFlag(Qt::AlignHCenter) || cur.testFlag(Qt::AlignVCenter)) {
+			// 这个相当于cur == al
+			return;
+		}
+		ui->toolButtonAligmentCenter->setChecked(true);
+	}
+	emit alignmentChanged(al);
+}
+
+/**
+ * @brief DAAligmentEditWidget::getCurrentAlignment
+ * @return
+ */
+Qt::Alignment DAAligmentEditWidget::getCurrentAlignment() const
+{
+	if (ui->toolButtonAligmentLeft->isChecked()) {
+		return Qt::AlignLeft;
+	} else if (ui->toolButtonAligmentRight->isChecked()) {
+		return Qt::AlignRight;
+	} else if (ui->toolButtonAligmentTop->isChecked()) {
+		return Qt::AlignTop;
+	} else if (ui->toolButtonAligmentBottom->isChecked()) {
+		return Qt::AlignBottom;
+	} else if (ui->toolButtonAligmentCenter->isChecked()) {
+		return Qt::AlignCenter;
+	}
+	return Qt::AlignCenter;
 }
 
 void DAAligmentEditWidget::changeEvent(QEvent* e)

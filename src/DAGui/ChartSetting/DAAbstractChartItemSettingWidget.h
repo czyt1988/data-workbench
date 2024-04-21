@@ -4,7 +4,7 @@
 #include <QWidget>
 #include <QPointer>
 // qwt
-class QwtPlotItem;
+#include "qwt_plot_item.h"
 class QwtPlot;
 
 /**
@@ -34,9 +34,12 @@ public:
 	DAAbstractChartItemSettingWidget(QWidget* parent = nullptr);
 	~DAAbstractChartItemSettingWidget();
 	// 设置plotitem
-	virtual void setPlotItem(QwtPlotItem* item);
+	void setPlotItem(QwtPlotItem* item);
 	QwtPlotItem* getPlotItem() const;
-
+	// 判断是否有item
+	bool isHaveItem() const;
+	// 判断当前item是否是对应的rtti，如果没有item也返回false
+	bool checkItemRTTI(QwtPlotItem::RttiValues rtti) const;
 	/**
 	 * @brief 快捷转换为别的item
 	 * @return
@@ -55,6 +58,8 @@ public:
 	{
 		return static_cast< T >(mPlotItem);
 	}
+	// setPlotItem之后调用的虚函数
+	virtual void plotItemSet(QwtPlotItem* item);
 protected slots:
 	virtual void plotItemAttached(QwtPlotItem* plotItem, bool on);
 

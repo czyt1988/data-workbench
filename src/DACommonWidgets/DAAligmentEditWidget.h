@@ -20,6 +20,10 @@ class DACOMMONWIDGETS_API DAAligmentEditWidget : public QWidget
 public:
 	explicit DAAligmentEditWidget(QWidget* parent = nullptr);
 	~DAAligmentEditWidget();
+	// 设置对齐方式
+	Qt::Alignment getCurrentAlignment() const;
+public slots:
+	// 设置对齐，此函数发射alignmentChanged信号
 	void setCurrentAlignment(Qt::Alignment al);
 signals:
 	/**

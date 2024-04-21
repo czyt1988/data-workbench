@@ -59,7 +59,7 @@ DAPenEditWidget::PrivateData::PrivateData(DAPenEditWidget* p) : q_ptr(p)
 	spinBoxWidth->setSingleStep(0.5);
 	horizontalLayout->addWidget(spinBoxWidth);
 
-    p->setMinimumHeight(22);
+	p->setMinimumHeight(22);
 }
 
 //===================================================
@@ -92,6 +92,9 @@ DAPenEditWidget::~DAPenEditWidget()
  */
 void DAPenEditWidget::setCurrentPen(const QPen& p)
 {
+	if (p == d_ptr->mPen) {
+		return;
+	}
 	QSignalBlocker bl(d_ptr->colorButton);
 	QSignalBlocker bl2(d_ptr->comboBox);
 	QSignalBlocker bl3(d_ptr->spinBoxWidth);
@@ -175,9 +178,9 @@ void DAPenEditWidget::initConnect()
 {
 	connect(d_ptr->colorButton, &DAColorPickerButton::colorChanged, this, &DAPenEditWidget::onColorChanged);
 	connect(d_ptr->spinBoxWidth,
-            QOverload< double >::of(&QDoubleSpinBox::valueChanged),
-            this,
-            &DAPenEditWidget::onPenWidthValueChanged);
+			QOverload< double >::of(&QDoubleSpinBox::valueChanged),
+			this,
+			&DAPenEditWidget::onPenWidthValueChanged);
 	connect(d_ptr->comboBox, &DAPenStyleComboBox::currentPenStyleChanged, this, &DAPenEditWidget::onPenStyleChanged);
 }
 }  // namespace DA

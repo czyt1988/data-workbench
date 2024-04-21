@@ -26,22 +26,54 @@ void DAAbstractChartItemSettingWidget::setPlotItem(QwtPlotItem* item)
 	QwtPlot* newPlot = nullptr;
 	if (item) {
 		newPlot = mPlotItem->plot();
-        mPlot   = newPlot;
+		mPlot   = newPlot;
 	}
-	if (oldPlot == newPlot) {
-		return;
+	if (oldPlot != newPlot) {
+		if (oldPlot) {
+			disconnect(oldPlot, &QwtPlot::itemAttached, this, &DAAbstractChartItemSettingWidget::plotItemAttached);
+		}
+		if (newPlot) {
+			connect(newPlot, &QwtPlot::itemAttached, this, &DAAbstractChartItemSettingWidget::plotItemAttached);
+		}
 	}
-	if (oldPlot) {
-		disconnect(oldPlot, &QwtPlot::itemAttached, this, &DAAbstractChartItemSettingWidget::plotItemAttached);
-	}
-	if (newPlot) {
-        connect(newPlot, &QwtPlot::itemAttached, this, &DAAbstractChartItemSettingWidget::plotItemAttached);
-	}
+	plotItemSet(item);
 }
 
+/**
+ * @brief setPlotItem之后调用的虚函数
+ * @param item
+ * @return
+ */
 QwtPlotItem* DAAbstractChartItemSettingWidget::getPlotItem() const
 {
 	return mPlotItem;
+}
+
+/**
+ * @brief 判断是否有item
+ * @return
+ */
+bool DAAbstractChartItemSettingWidget::isHaveItem() const
+{
+    return (mPlotItem != nullptr);
+}
+
+/**
+ * @brief 判断当前item是否是对应的rtti，如果没有item也返回false
+ * @param rtti
+ * @return
+ */
+bool DAAbstractChartItemSettingWidget::checkItemRTTI(QwtPlotItem::RttiValues rtti) const
+{
+	if (!mPlotItem) {
+		return false;
+	}
+	return (mPlotItem->rtti() == rtti);
+}
+
+void DAAbstractChartItemSettingWidget::plotItemSet(QwtPlotItem* item)
+{
+	Q_UNUSED(item);
 }
 
 void DAAbstractChartItemSettingWidget::plotItemAttached(QwtPlotItem* plotItem, bool on)
