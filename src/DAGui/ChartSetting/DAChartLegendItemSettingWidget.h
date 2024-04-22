@@ -17,15 +17,17 @@ class DAGUI_API DAChartLegendItemSettingWidget : public DAAbstractChartItemSetti
 public:
 	explicit DAChartLegendItemSettingWidget(QWidget* parent = nullptr);
 	~DAChartLegendItemSettingWidget();
-    // setPlotItem之后调用的虚函数
-    virtual void plotItemSet(QwtPlotItem* item);
-    // 更新界面
-    void updateUI(const QwtPlotLegendItem* item);
+	// setPlotItem之后调用的虚函数
+	virtual void plotItemSet(QwtPlotItem* item);
+	// 更新界面
+	void updateUI(const QwtPlotLegendItem* item);
 
 protected:
 	void changeEvent(QEvent* e);
 private slots:
-    void onAligmentPositionChanged(Qt::Alignment al);
+	void onAligmentPositionChanged(Qt::Alignment al);
+	void onSpinBoxHorizontalOffsetValueChanged(int v);
+	void onSpinBoxVerticalOffsetValueChanged(int v);
 
 private:
 	Ui::DAChartLegendItemSettingWidget* ui;

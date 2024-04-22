@@ -71,6 +71,8 @@ macro(damacro_lib_setting _lib_name _lib_description _lib_ver_major _lib_ver_min
     # 默认的CMAKE_INSTALL_PREFIX
     set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/../../${DA_BIN_DIR_NAME}")
     set(DA_GLOBAL_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/../DAGlobals.h)
+    # DAShared目录
+    set(DA_SHARED_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../DAShared)
     set(${DA_PROJECT_NAME}_DIR "${CMAKE_BINARY_DIR}")
     ########################################################
     # 打印信息
@@ -79,6 +81,7 @@ macro(damacro_lib_setting _lib_name _lib_description _lib_ver_major _lib_ver_min
     message("${DA_LIB_FULL_DESCRIPTION}")
     message(STATUS "  | => DA_LIB_NAME=${DA_LIB_NAME}")
     message(STATUS "  | => DA_GLOBAL_HEADER=${DA_GLOBAL_HEADER}")
+    message(STATUS "  | => DA_SHARED_DIR=${DA_SHARED_DIR}")
     message(STATUS "  | => CMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}")
     message(STATUS "  | => CMAKE_CURRENT_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}")
     message(STATUS "  | => CMAKE_CURRENT_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}")
@@ -119,12 +122,16 @@ macro(damacro_lib_install)
         $<INSTALL_INTERFACE:include/${DA_PROJECT_NAME}/${DA_LIB_NAME}>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     )
-
+    # 这个主要是DAGlobal.h
     target_include_directories(${DA_LIB_NAME} PUBLIC
         $<INSTALL_INTERFACE:include/${DA_PROJECT_NAME}>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../>
     )
-    
+    # 这个主要是DAShared
+    target_include_directories(${DA_LIB_NAME} PUBLIC
+        $<INSTALL_INTERFACE:include/${DA_PROJECT_NAME}/DAShared>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../DAShared>
+    )
     # DALibConfig.cmake.in中，会让此变量和“${PACKAGE_PREFIX_DIR}/”进行拼接，也就是${PACKAGE_PREFIX_DIR}/@DA_LIB_INCLUDE_INSTALL_DIR@
     # PACKAGE_PREFIX_DIR = ${CMAKE_CURRENT_LIST_DIR}/../..
     # 最终变为${CMAKE_CURRENT_LIST_DIR}/../../include/${DA_PROJECT_NAME}/${DA_LIB_NAME}

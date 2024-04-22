@@ -10,30 +10,30 @@ namespace DA
  */
 class DAGUI_API DAChartSymbolComboBox : public QComboBox
 {
-    Q_OBJECT
+	Q_OBJECT
 public:
-    DAChartSymbolComboBox(QWidget* par = 0);
-    //
-    void setSymbolStyle(const QwtSymbol::Style& s);
-    QwtSymbol::Style getSymbolStyle() const;
-    static QwtSymbol::Style style(int index);
-    static int symbolIndex(const QwtSymbol::Style& s);
+	DAChartSymbolComboBox(QWidget* par = 0);
+	//
+	void setSymbolStyle(const QwtSymbol::Style& s);
+	QwtSymbol::Style getSymbolStyle() const;
+	static QwtSymbol::Style style(int index);
+	static int symbolIndex(const QwtSymbol::Style& s);
 signals:
-    /**
-     * @brief 符号标记改变信号
-     * @param s
-     */
-    void symbolStyleChanged(QwtSymbol::Style s);
+	/**
+	 * @brief 符号标记改变信号
+	 * @param s
+	 */
+	void symbolStyleChanged(QwtSymbol::Style s);
 private slots:
-    void onCurrentIndexChanged(int index);
+	void onCurrentIndexChanged(int index);
 
 private:
-    void buildItems();
+	void buildItems();
 
 private:
-    //    static const QwtSymbol::Style s_symbols[];
+	//    static const QwtSymbol::Style s_symbols[];
 };
 }
-Q_DECLARE_METATYPE(QwtSymbol::Style)
+// Q_DECLARE_METATYPE(QwtSymbol::Style)
 
 #endif  // DACHARTSYMBOLCOMBOBOX_H

@@ -46,10 +46,7 @@ DAChartSettingWidget::DAChartSettingWidget(QWidget* parent)
 			QOverload< int >::of(&QComboBox::activated),
 			this,
 			&DAChartSettingWidget::onComboBoxItemActived);
-	connect(ui->buttonGroupType,
-			QOverload< int >::of(&QButtonGroup::buttonClicked),
-			this,
-			&DAChartSettingWidget::onButtonGroupTypeButtonClicked);
+	Qt5Qt6Compat_Connect_ButtonGroupClicked_int(ui->buttonGroupType, DAChartSettingWidget::onButtonGroupTypeButtonClicked);
 }
 
 DAChartSettingWidget::~DAChartSettingWidget()
@@ -369,6 +366,7 @@ void DAChartSettingWidget::onFigureCreated(DAFigureWidget* f)
 	if (f) {
 		DAChartWidget* c = f->getCurrentChart();
 		setFigure(f, c);
+		showFigureSettingWidget();
 	}
 }
 
@@ -388,6 +386,7 @@ void DAChartSettingWidget::onChartAdded(DAChartWidget* c)
 		qDebug() << "onChartAdded";
 		bindChart(c);
 		resetChartsComboBox(d_ptr->mFigure);
+		showPlotSettingWidget();
 	}
 }
 
@@ -422,6 +421,12 @@ void DAChartSettingWidget::onChartItemAttached(DAChartWidget* c, QwtPlotItem* pl
 {
 	if (c) {
 		resetItemsComboBox(c);
+		if (on) {
+			// 有新增的item，把设置显示出来
+			//  按照item类型显示
+			showItemSettingWidget();
+			ui->widgetItemSetting->setPlotItem(plotItem);
+		}
 	}
 }
 

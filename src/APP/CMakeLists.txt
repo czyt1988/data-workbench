@@ -26,6 +26,7 @@ find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
     Concurrent
     PrintSupport
     AxContainer
+    Core5Compat
     REQUIRED
 )
 if(Qt5_POSITION_INDEPENDENT_CODE)

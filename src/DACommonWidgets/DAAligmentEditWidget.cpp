@@ -6,8 +6,7 @@ namespace DA
 DAAligmentEditWidget::DAAligmentEditWidget(QWidget* parent) : QWidget(parent), ui(new Ui::DAAligmentEditWidget)
 {
 	ui->setupUi(this);
-
-	connect(ui->buttonGroup, QOverload< int >::of(&QButtonGroup::buttonClicked), this, &DAAligmentEditWidget::onButtonGroupClicked);
+	Qt5Qt6Compat_Connect_ButtonGroupClicked_int(ui->buttonGroup, DAAligmentEditWidget::onButtonGroupClicked);
 	ui->buttonGroup->setId(ui->toolButtonAligmentBottom, static_cast< int >(Qt::AlignBottom));
 	ui->buttonGroup->setId(ui->toolButtonAligmentTop, static_cast< int >(Qt::AlignTop));
 	ui->buttonGroup->setId(ui->toolButtonAligmentLeft, static_cast< int >(Qt::AlignLeft));

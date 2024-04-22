@@ -181,6 +181,12 @@ install(FILES
         DESTINATION include/${DA_PROJECT_NAME}
         COMPONENT headers
  )
+#DAShared
+install(DIRECTORY
+        ${CMAKE_CURRENT_LIST_DIR}/src/DAShared
+        DESTINATION include/${DA_PROJECT_NAME}
+        COMPONENT headers
+ )
 ########################################################
 # 添加预定义宏NOMINMAX,windows系统会定义max和min宏，这个宏和std::max冲突
 ########################################################

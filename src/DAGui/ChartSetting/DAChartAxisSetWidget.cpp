@@ -43,10 +43,7 @@ DAChartAxisSetWidget::DAChartAxisSetWidget(QWidget* parent)
 			static_cast< void (QDoubleSpinBox::*)(double v) >(&QDoubleSpinBox::valueChanged),
 			this,
 			&DAChartAxisSetWidget::onAxisMinScaleChanged);
-	connect(m_buttonGroup,
-			static_cast< void (QButtonGroup::*)(int) >(&QButtonGroup::buttonClicked),
-			this,
-			&DAChartAxisSetWidget::onScaleStyleChanged);
+	Qt5Qt6Compat_Connect_ButtonGroupClicked_int(m_buttonGroup, DAChartAxisSetWidget::onScaleStyleChanged);
 	connect(ui->checkBoxEnable, &QAbstractButton::clicked, this, &DAChartAxisSetWidget::onCheckBoxEnableCliecked);
 }
 

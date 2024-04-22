@@ -1,6 +1,10 @@
 ﻿#include "DATxtFileImportDialog.h"
 #include "ui_DATxtFileImportDialog.h"
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include <QTextCodec>
+#else
+#include <QStringConverter>
+#endif
 #include <QThread>
 #include <QMessageBox>
 #include <QFileInfo>
@@ -23,12 +27,24 @@ DATxtFileImportDialog::DATxtFileImportDialog(QWidget* parent) : QDialog(parent),
 	mModule = new DAPyDataFrameTableModule(nullptr, ui->tableView);
 	ui->tableView->setModel(mModule);
 #endif
-	ui->comboBoxCodec->setCurrentText(QString(QTextCodec::codecForLocale()->name()));
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	// 存在qt6不兼容性
 	QList< QByteArray > codecs = QTextCodec::availableCodecs();
 	for (int i = 0; i < codecs.size(); ++i) {
 		ui->comboBoxCodec->addItem(QString(codecs[ i ]), codecs[ i ]);
 	}
+	ui->comboBoxCodec->setCurrentText(QString(QTextCodec::codecForLocale()->name()));
+#else
+	ui->comboBoxCodec->addItem("UTF-8", static_cast< int >(QStringConverter::Utf8));
+	ui->comboBoxCodec->addItem("UTF-16", static_cast< int >(QStringConverter::Utf16));
+	ui->comboBoxCodec->addItem("UTF-32", static_cast< int >(QStringConverter::Utf32));
+	ui->comboBoxCodec->addItem("ISO-8859-1 (Latin-1)", static_cast< int >(QStringConverter::Latin1));
+	ui->comboBoxCodec->addItem("System", static_cast< int >(QStringConverter::System));
+	ui->comboBoxCodec->addItem("UTF-16BE", static_cast< int >(QStringConverter::Utf16BE));
+	ui->comboBoxCodec->addItem("UTF-16LE", static_cast< int >(QStringConverter::Utf16LE));
+	ui->comboBoxCodec->addItem("UTF-32BE", static_cast< int >(QStringConverter::Utf32BE));
+	ui->comboBoxCodec->addItem("UTF-32LE", static_cast< int >(QStringConverter::Utf32LE));
+#endif
 	// 分隔符
 	ui->comboBoxDelimiter->addItem(tr(",(comma)"), QVariant(","));        // cn:,逗号
 	ui->comboBoxDelimiter->addItem(tr(" (space)"), QVariant(" "));        // cn: 空格
