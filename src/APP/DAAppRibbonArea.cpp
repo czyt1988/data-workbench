@@ -138,45 +138,6 @@ void DAAppRibbonArea::buildMenu()
     m_menuInsertColumn = new SARibbonMenu(m_app);
     m_menuInsertColumn->setObjectName("menuInsertColumn");
     m_menuInsertColumn->addAction(m_actions->actionInsertColumnLeft);
-    m_menuChartLegendProperty                 = new SARibbonMenu(m_app);
-    m_actionOfMenuChartLegendAlignmentSection = m_menuChartLegendProperty->addSection(tr("Location"));
-    m_menuChartLegendProperty->addAction(m_actions->actionChartLegendAlignmentInTopLeft);
-    m_menuChartLegendProperty->addAction(m_actions->actionChartLegendAlignmentInTop);
-    m_menuChartLegendProperty->addAction(m_actions->actionChartLegendAlignmentInTopRight);
-    m_menuChartLegendProperty->addAction(m_actions->actionChartLegendAlignmentInRight);
-    m_menuChartLegendProperty->addAction(m_actions->actionChartLegendAlignmentInBottomRight);
-    m_menuChartLegendProperty->addAction(m_actions->actionChartLegendAlignmentInBottom);
-    m_menuChartLegendProperty->addAction(m_actions->actionChartLegendAlignmentInBottomLeft);
-    m_menuChartLegendProperty->addAction(m_actions->actionChartLegendAlignmentInLeft);
-    //
-    m_menuChartLegendProperty->addSection(tr("Property"));
-    // 构建最大列数的窗口
-    auto addControlWidgetInChartLegendMenu = [ this ](QWidget* w, const QString& text) -> SARibbonCtrlContainer* {
-        SARibbonCtrlContainer* container = new SARibbonCtrlContainer(this->m_menuChartLegendProperty);
-        container->setContainerWidget(w);
-        container->setEnableShowTitle(true);
-        container->setText(text);
-        QWidgetAction* act = new QWidgetAction(this->m_menuChartLegendProperty);
-        act->setDefaultWidget(container);
-        this->m_menuChartLegendProperty->addAction(act);
-        return container;
-    };
-    m_spinboxChartLegendMaxColumns       = new QSpinBox(m_menuChartLegendProperty);
-    m_ctrlContainerChartLegendMaxColumns = addControlWidgetInChartLegendMenu(m_spinboxChartLegendMaxColumns,
-                                                                             tr("Max Columns"));  // cn:列数
-    m_spinboxChartLegendMargin           = new QSpinBox(m_menuChartLegendProperty);
-    m_ctrlContainerChartLegendMargin = addControlWidgetInChartLegendMenu(m_spinboxChartLegendMargin, tr("Margin"));  // cn:图例边缘
-    m_spinboxChartLegendSpacing = new QSpinBox(m_menuChartLegendProperty);
-    m_ctrlContainerChartLegendSpacing = addControlWidgetInChartLegendMenu(m_spinboxChartLegendSpacing, tr("Spacing"));  // cn:图例间隔
-    m_spinboxChartLegendItemMargin         = new QSpinBox(m_menuChartLegendProperty);
-    m_ctrlContainerChartLegendItemMargin   = addControlWidgetInChartLegendMenu(m_spinboxChartLegendItemMargin,
-                                                                             tr("Item Margin"));  // cn:条目边缘
-    m_spinboxChartLegendItemSpacing        = new QSpinBox(m_menuChartLegendProperty);
-    m_ctrlContainerChartLegendItemSpacing  = addControlWidgetInChartLegendMenu(m_spinboxChartLegendItemSpacing,
-                                                                              tr("Item Spacing"));  // cn:条目间隔
-    m_spinboxChartLegendBorderRadius       = new QDoubleSpinBox(m_menuChartLegendProperty);
-    m_ctrlContainerChartLegendBorderRadius = addControlWidgetInChartLegendMenu(m_spinboxChartLegendBorderRadius,
-                                                                               tr("Border Radius"));  // cn:圆角
     //
     m_menuTheme = new SARibbonMenu(m_app);
     m_menuTheme->setObjectName("menuTheme");
@@ -234,16 +195,8 @@ void DAAppRibbonArea::resetText()
     m_pannelFigureSetting->setPannelName(tr("Figure Setting"));  // cn:绘图设置
     m_pannelChartAdd->setPannelName(tr("Add Chart"));            // cn:添加绘图
     // 绘图上下文标签
-    m_contextChart->setContextTitle(tr("Chart"));                        // cn:绘图
-    m_categoryChartEdit->setCategoryName(tr("Chart Edit"));              // cn:绘图编辑
-    m_actionOfMenuChartLegendAlignmentSection->setText(tr("Location"));  // cn:方位
-    m_menuChartLegendProperty->setTitle(tr("Legend"));
-    m_ctrlContainerChartLegendMaxColumns->setText(tr("Max Columns"));      // cn:列数
-    m_ctrlContainerChartLegendMargin->setText(tr("Margin"));               // cn:图例边缘
-    m_ctrlContainerChartLegendSpacing->setText(tr("Spacing"));             // cn:图例间隔
-    m_ctrlContainerChartLegendItemMargin->setText(tr("Item Margin"));      // cn:条目边缘
-    m_ctrlContainerChartLegendItemSpacing->setText(tr("Item Spacing"));    // cn:条目间隔
-    m_ctrlContainerChartLegendBorderRadius->setText(tr("Border Radius"));  // cn:圆角
+    m_contextChart->setContextTitle(tr("Chart"));            // cn:绘图
+    m_categoryChartEdit->setCategoryName(tr("Chart Edit"));  // cn:绘图编辑
     // 其他
     m_menuTheme->setTitle(tr("theme"));               // cn:主题
     m_menuTheme->setToolTip(tr("set ribbon theme"));  // cn:设置主题
@@ -547,10 +500,22 @@ void DAAppRibbonArea::buildContextCategoryWorkflowEdit_()
     m_pannelWorkflowGroup->addLargeAction(m_actions->actionWorkflowEnableItemLinkageMove);
     //
     // connect
-    connect(m_workflowShapeEditPannelWidget, &DAShapeEditPannelWidget::borderPenChanged, this, &DAAppRibbonArea::selectedWorkflowItemPen);
-    connect(m_workflowShapeEditPannelWidget, &DAShapeEditPannelWidget::backgroundBrushChanged, this, &DAAppRibbonArea::selectedWorkflowItemBrush);
-    connect(m_workflowFontEditPannel, &DAFontEditPannelWidget::currentFontChanged, this, &DAAppRibbonArea::selectedWorkflowItemFont);
-    connect(m_workflowFontEditPannel, &DAFontEditPannelWidget::currentFontColorChanged, this, &DAAppRibbonArea::selectedWorkflowItemFontColor);
+    connect(m_workflowShapeEditPannelWidget,
+            &DAShapeEditPannelWidget::borderPenChanged,
+            this,
+            &DAAppRibbonArea::selectedWorkflowItemPen);
+    connect(m_workflowShapeEditPannelWidget,
+            &DAShapeEditPannelWidget::backgroundBrushChanged,
+            this,
+            &DAAppRibbonArea::selectedWorkflowItemBrush);
+    connect(m_workflowFontEditPannel,
+            &DAFontEditPannelWidget::currentFontChanged,
+            this,
+            &DAAppRibbonArea::selectedWorkflowItemFont);
+    connect(m_workflowFontEditPannel,
+            &DAFontEditPannelWidget::currentFontColorChanged,
+            this,
+            &DAAppRibbonArea::selectedWorkflowItemFontColor);
 }
 
 /**
@@ -608,8 +573,7 @@ void DAAppRibbonArea::buildContextCategoryChart()
     m_pannelChartSetting->addLargeAction(m_actions->actionChartEnablePickerXY);
     m_pannelChartSetting->addLargeAction(m_actions->actionChartEnablePickerY);
     // legend
-    m_actions->actionChartEnableLegend->setMenu(m_menuChartLegendProperty);
-    m_pannelChartSetting->addLargeAction(m_actions->actionChartEnableLegend, QToolButton::MenuButtonPopup);
+    m_pannelChartSetting->addLargeAction(m_actions->actionChartEnableLegend);
 
     m_categoryChartEdit->addPannel(m_pannelChartSetting);
 }
@@ -810,37 +774,6 @@ void DAAppRibbonArea::updateChartLegendAboutRibbon(DAChartWidget* chart)
         return;
     }
     m_actions->actionChartEnableLegend->setChecked(legend->isVisible());
-    Qt::Alignment al    = legend->alignmentInCanvas();
-    bool needIteActions = true;
-    QAction* ca         = m_actions->actionGroupChartLegendAlignment->checkedAction();
-    if (ca) {
-        if (ca->data().toInt() == static_cast< int >(al)) {
-            // 状态不变，无需迭代
-            needIteActions = false;
-        }
-    }
-    if (needIteActions) {
-        // 需要迭代所有情况
-        QList< QAction* > acts = m_actions->actionGroupChartLegendAlignment->actions();
-        for (QAction* a : qAsConst(acts)) {
-            if (a->data().toInt() == static_cast< int >(al)) {
-                a->setChecked(true);
-                break;
-            }
-        }
-    }
-    QSignalBlocker b1(m_spinboxChartLegendMaxColumns);
-    m_spinboxChartLegendMaxColumns->setValue(legend->maxColumns());
-    QSignalBlocker b2(m_spinboxChartLegendMargin);
-    m_spinboxChartLegendMargin->setValue(legend->margin());
-    QSignalBlocker b3(m_spinboxChartLegendSpacing);
-    m_spinboxChartLegendSpacing->setValue(legend->spacing());
-    QSignalBlocker b4(m_spinboxChartLegendItemMargin);
-    m_spinboxChartLegendItemMargin->setValue(legend->itemMargin());
-    QSignalBlocker b5(m_spinboxChartLegendItemSpacing);
-    m_spinboxChartLegendItemSpacing->setValue(legend->itemSpacing());
-    QSignalBlocker b6(m_spinboxChartLegendBorderRadius);
-    m_spinboxChartLegendBorderRadius->setValue(legend->borderRadius());
 }
 
 /**

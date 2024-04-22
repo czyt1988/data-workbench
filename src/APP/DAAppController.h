@@ -181,15 +181,6 @@ private slots:
     void onActionChartEnablePickerXYTriggered(bool on);
     // 允许绘图图例
     void onActionChartEnableLegendTriggered(bool on);
-    // 绘图图例对齐的actiongroup
-    void onActionGroupChartLegendAlignmentTriggered(QAction* a);
-    // 绘图图例的最大列数、margin、spacing等发生改变
-    void onChartLegendMaxColumnsValueChanged(int v);
-    void onChartLegendMarginValueChanged(int v);
-    void onChartLegendSpacingValueChanged(int v);
-    void onChartLegendItemMarginValueChanged(int v);
-    void onChartLegendItemSpacingValueChanged(int v);
-    void onChartLegendBorderRadiusValueChanged(double v);
     //===================================================
     // 数据操作的上下文标签 Data Operate Context Category
     //===================================================

@@ -353,21 +353,6 @@ public:
     SARibbonPannel* m_pannelChartSetting;                         ///< 图表的设置
     SARibbonButtonGroupWidget* m_chartGridDirActionsButtonGroup;  ///< grid的方向
     SARibbonButtonGroupWidget* m_chartGridMinActionsButtonGroup;  ///< grid的min设置
-    QMenu* m_menuChartLegendProperty;                             ///< legend的属性设置
-    QAction* m_actionOfMenuChartLegendAlignmentSection;           ///< m_menuChartLegendProperty对应的Section
-    QSpinBox* m_spinboxChartLegendMaxColumns;                     ///< legend setMaxColumns
-    SARibbonCtrlContainer* m_ctrlContainerChartLegendMaxColumns;
-    QSpinBox* m_spinboxChartLegendMargin;  ///< legend setMargin
-    SARibbonCtrlContainer* m_ctrlContainerChartLegendMargin;
-    QSpinBox* m_spinboxChartLegendSpacing;  ///< legend setSpacing
-    SARibbonCtrlContainer* m_ctrlContainerChartLegendSpacing;
-    QSpinBox* m_spinboxChartLegendItemMargin;  ///< legend setItemMargin
-    SARibbonCtrlContainer* m_ctrlContainerChartLegendItemMargin;
-    QSpinBox* m_spinboxChartLegendItemSpacing;  ///< legend setItemSpacing
-    SARibbonCtrlContainer* m_ctrlContainerChartLegendItemSpacing;
-    QDoubleSpinBox* m_spinboxChartLegendBorderRadius;  ///< legend setBorderRadius
-    SARibbonCtrlContainer* m_ctrlContainerChartLegendBorderRadius;
-    //
     QStringList m_fileReadFilters;
     QMenu* m_menuInsertRow;     ///< 针对insertrow的action menu
     QMenu* m_menuInsertColumn;  ///< 这对insertcol的action menu

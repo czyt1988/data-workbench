@@ -119,16 +119,6 @@ public:
     QAction* actionChartEnablePickerY;      ///< y拾取器
     QAction* actionChartEnablePickerXY;     ///< xy拾取器
     QAction* actionChartEnableLegend;       ///< legend
-
-    QActionGroup* actionGroupChartLegendAlignment;     ///< legend对齐的action group
-    QAction* actionChartLegendAlignmentInTopLeft;      ///< Qt::AlignTop|Qt::AlignLeft
-    QAction* actionChartLegendAlignmentInTop;          ///< Qt::AlignTop
-    QAction* actionChartLegendAlignmentInTopRight;     ///< Qt::AlignTop|Qt::AlignRight
-    QAction* actionChartLegendAlignmentInRight;        ///< Qt::AlignRight
-    QAction* actionChartLegendAlignmentInBottomRight;  ///< Qt::AlignBottom|Qt::AlignRight
-    QAction* actionChartLegendAlignmentInBottom;       ///< Qt::AlignBottom
-    QAction* actionChartLegendAlignmentInBottomLeft;   ///< Qt::AlignBottom|Qt::AlignLeft
-    QAction* actionChartLegendAlignmentInLeft;         ///< Qt::AlignLeft
     //===================================================
     // 视图标签 View Category
     //===================================================

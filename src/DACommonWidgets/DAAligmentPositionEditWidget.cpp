@@ -3,7 +3,7 @@
 namespace DA
 {
 DAAligmentPositionEditWidget::DAAligmentPositionEditWidget(QWidget* parent)
-	: QWidget(parent), ui(new Ui::DAAligmentPositionEditWidget)
+    : QWidget(parent), ui(new Ui::DAAligmentPositionEditWidget)
 {
 	ui->setupUi(this);
 	ui->buttonGroup->setId(ui->toolButtonTopLeft, static_cast< int >(Qt::AlignLeft | Qt::AlignTop));
@@ -15,6 +15,11 @@ DAAligmentPositionEditWidget::DAAligmentPositionEditWidget(QWidget* parent)
 	ui->buttonGroup->setId(ui->toolButtonBottomLeft, static_cast< int >(Qt::AlignLeft | Qt::AlignBottom));
 	ui->buttonGroup->setId(ui->toolButtonBottom, static_cast< int >(Qt::AlignBottom | Qt::AlignHCenter));
 	ui->buttonGroup->setId(ui->toolButtonBottomRight, static_cast< int >(Qt::AlignBottom | Qt::AlignRight));
+
+    connect(ui->buttonGroup,
+            QOverload< int >::of(&QButtonGroup::buttonClicked),
+            this,
+            &DAAligmentPositionEditWidget::onButtonClicked);
 }
 
 DAAligmentPositionEditWidget::~DAAligmentPositionEditWidget()
@@ -24,29 +29,10 @@ DAAligmentPositionEditWidget::~DAAligmentPositionEditWidget()
 
 void DAAligmentPositionEditWidget::setAligmentPosition(Qt::Alignment al)
 {
-	if (al == getAligmentPosition()) {
-		return;
-	}
-	Qt::Alignment realal;
-	if (al.testFlag(Qt::AlignLeft) && al.testFlag(Qt::AlignTop)) {
-		realal = Qt::AlignLeft | Qt::AlignTop;
-	} else if (al.testFlag(Qt::AlignTop) && al.testFlag(Qt::AlignHCenter)) {
-		realal = Qt::AlignTop | Qt::AlignHCenter;
-	} else if (al.testFlag(Qt::AlignTop) && al.testFlag(Qt::AlignRight)) {
-		realal = Qt::AlignTop | Qt::AlignRight;
-	} else if (al.testFlag(Qt::AlignLeft) && al.testFlag(Qt::AlignVCenter)) {
-		realal = Qt::AlignLeft | Qt::AlignVCenter;
-	} else if (al.testFlag(Qt::AlignCenter)) {
-		realal = Qt::AlignCenter;
-	} else if (al.testFlag(Qt::AlignRight) && al.testFlag(Qt::AlignVCenter)) {
-		realal = Qt::AlignRight | Qt::AlignVCenter;
-	} else if (al.testFlag(Qt::AlignLeft) && al.testFlag(Qt::AlignBottom)) {
-		realal = Qt::AlignLeft | Qt::AlignBottom;
-	} else if (al.testFlag(Qt::AlignBottom) && al.testFlag(Qt::AlignHCenter)) {
-		realal = Qt::AlignBottom | Qt::AlignHCenter;
-	} else if (al.testFlag(Qt::AlignRight) && al.testFlag(Qt::AlignBottom)) {
-		realal = Qt::AlignRight | Qt::AlignBottom;
-	}
+    Qt::Alignment realal = acceptAligment(al);
+    if (realal == getAligmentPosition()) {
+        return;
+    }
 	auto button = ui->buttonGroup->button(static_cast< int >(realal));
 	if (button) {
 		if (!button->isChecked()) {
@@ -58,7 +44,32 @@ void DAAligmentPositionEditWidget::setAligmentPosition(Qt::Alignment al)
 
 Qt::Alignment DAAligmentPositionEditWidget::getAligmentPosition() const
 {
-	return static_cast< Qt::Alignment >(ui->buttonGroup->checkedId());
+    return static_cast< Qt::Alignment >(ui->buttonGroup->checkedId());
+}
+
+Qt::Alignment DAAligmentPositionEditWidget::acceptAligment(Qt::Alignment al)
+{
+    Qt::Alignment realal;
+    if (al.testFlag(Qt::AlignLeft) && al.testFlag(Qt::AlignTop)) {
+        realal = Qt::AlignLeft | Qt::AlignTop;
+    } else if (al.testFlag(Qt::AlignTop) && al.testFlag(Qt::AlignHCenter)) {
+        realal = Qt::AlignTop | Qt::AlignHCenter;
+    } else if (al.testFlag(Qt::AlignTop) && al.testFlag(Qt::AlignRight)) {
+        realal = Qt::AlignTop | Qt::AlignRight;
+    } else if (al.testFlag(Qt::AlignLeft) && al.testFlag(Qt::AlignVCenter)) {
+        realal = Qt::AlignLeft | Qt::AlignVCenter;
+    } else if (al.testFlag(Qt::AlignCenter)) {
+        realal = Qt::AlignCenter;
+    } else if (al.testFlag(Qt::AlignRight) && al.testFlag(Qt::AlignVCenter)) {
+        realal = Qt::AlignRight | Qt::AlignVCenter;
+    } else if (al.testFlag(Qt::AlignLeft) && al.testFlag(Qt::AlignBottom)) {
+        realal = Qt::AlignLeft | Qt::AlignBottom;
+    } else if (al.testFlag(Qt::AlignBottom) && al.testFlag(Qt::AlignHCenter)) {
+        realal = Qt::AlignBottom | Qt::AlignHCenter;
+    } else if (al.testFlag(Qt::AlignRight) && al.testFlag(Qt::AlignBottom)) {
+        realal = Qt::AlignRight | Qt::AlignBottom;
+    }
+    return realal;
 }
 
 void DAAligmentPositionEditWidget::changeEvent(QEvent* e)
@@ -70,6 +81,11 @@ void DAAligmentPositionEditWidget::changeEvent(QEvent* e)
 		break;
 	default:
 		break;
-	}
+    }
+}
+
+void DAAligmentPositionEditWidget::onButtonClicked(int id)
+{
+    emit aligmentPositionChanged(static_cast< Qt::Alignment >(id));
 }
 }

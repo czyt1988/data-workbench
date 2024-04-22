@@ -124,32 +124,6 @@ void DAAppActions::buildChartAction()
                                              actionGroupChartPickers);
 
     actionChartEnableLegend = createAction("actionChartEnableLegend", ":/app/bright/Icon/chart-legend.svg", true, false);
-    actionChartLegendAlignmentInTopLeft = createAction("actionChartLegendAlignmentInTopLeft", true, false);
-    actionChartLegendAlignmentInTopLeft->setData(int(Qt::AlignTop | Qt::AlignLeft));
-    actionChartLegendAlignmentInTop = createAction("actionChartLegendAlignmentInTop", true, false);
-    actionChartLegendAlignmentInTop->setData(int(Qt::AlignTop | Qt::AlignHCenter));
-    actionChartLegendAlignmentInTopRight = createAction("actionChartLegendAlignmentInTopRight", true, false);
-    actionChartLegendAlignmentInTopRight->setData(int(Qt::AlignTop | Qt::AlignRight));
-    actionChartLegendAlignmentInRight = createAction("actionChartLegendAlignmentInRight", true, false);
-    actionChartLegendAlignmentInRight->setData(int(Qt::AlignVCenter | Qt::AlignRight));
-    actionChartLegendAlignmentInBottomRight = createAction("actionChartLegendAlignmentInBottomRight", true, false);
-    actionChartLegendAlignmentInBottomRight->setData(int(Qt::AlignBottom | Qt::AlignRight));
-    actionChartLegendAlignmentInBottom = createAction("actionChartLegendAlignmentInBottom", true, false);
-    actionChartLegendAlignmentInBottom->setData(int(Qt::AlignBottom | Qt::AlignHCenter));
-    actionChartLegendAlignmentInBottomLeft = createAction("actionChartLegendAlignmentInBottomLeft", true, false);
-    actionChartLegendAlignmentInBottomLeft->setData(int(Qt::AlignBottom | Qt::AlignLeft));
-    actionChartLegendAlignmentInLeft = createAction("actionChartLegendAlignmentInLeft", true, false);
-    actionChartLegendAlignmentInLeft->setData(int(Qt::AlignVCenter | Qt::AlignLeft));
-    actionGroupChartLegendAlignment = new QActionGroup(this);
-    actionGroupChartLegendAlignment->setObjectName(QStringLiteral("actionGroupChartLegendAlignment"));
-    actionGroupChartLegendAlignment->addAction(actionChartLegendAlignmentInTopLeft);
-    actionGroupChartLegendAlignment->addAction(actionChartLegendAlignmentInTop);
-    actionGroupChartLegendAlignment->addAction(actionChartLegendAlignmentInTopRight);
-    actionGroupChartLegendAlignment->addAction(actionChartLegendAlignmentInRight);
-    actionGroupChartLegendAlignment->addAction(actionChartLegendAlignmentInBottomRight);
-    actionGroupChartLegendAlignment->addAction(actionChartLegendAlignmentInBottom);
-    actionGroupChartLegendAlignment->addAction(actionChartLegendAlignmentInBottomLeft);
-    actionGroupChartLegendAlignment->addAction(actionChartLegendAlignmentInLeft);
 }
 
 void DAAppActions::buildViewAction()
@@ -245,28 +219,21 @@ void DAAppActions::retranslateUi()
     actionChartAddCloudMap->setText(tr("Add \nCloud Map"));        // cn:云图
     actionChartAddVectorfield->setText(tr("Add \nVector Field"));  // cn:向量场图
 
-    actionChartEnableGrid->setText(tr("Enable Grid"));                     // cn:网格
-    actionChartEnableGridX->setText(tr("X Grid"));                         // cn:横向网格
-    actionChartEnableGridY->setText(tr("Y Grid"));                         // cn:纵向网格
-    actionChartEnableGridXMin->setText(tr("Xmin Grid"));                   // cn:横向密集网格
-    actionChartEnableGridYMin->setText(tr("Ymin Grid"));                   // cn:纵向密集网格
-    actionChartEnableZoom->setText(tr("Zoom"));                            // cn:缩放
-    actionChartZoomIn->setText(tr("Zoom In"));                             // cn:放大
-    actionChartZoomOut->setText(tr("Zoom Out"));                           // cn:缩小
-    actionChartZoomAll->setText(tr("Show \nAll"));                         // cn:显示\n全部
-    actionChartEnablePan->setText(tr("Pan"));                              // cn:拖动
-    actionChartEnablePickerCross->setText(tr("Cross"));                    // cn:十字标记
-    actionChartEnablePickerY->setText(tr("Y Picker"));                     // cn:y值拾取
-    actionChartEnablePickerXY->setText(tr("XY Picker"));                   // cn:点拾取
-    actionChartEnableLegend->setText(tr("legend"));                        // cn:图例
-    actionChartLegendAlignmentInTopLeft->setText(tr("Top Left"));          // cn:左上对齐
-    actionChartLegendAlignmentInTop->setText(tr("Top"));                   // cn:上对齐
-    actionChartLegendAlignmentInTopRight->setText(tr("Top Right"));        // cn:右上对齐
-    actionChartLegendAlignmentInRight->setText(tr("Right"));               // cn:右对齐
-    actionChartLegendAlignmentInBottomRight->setText(tr("Bottom Right"));  // cn:右下对齐
-    actionChartLegendAlignmentInBottom->setText(tr("Bottom"));             // cn:下对齐
-    actionChartLegendAlignmentInBottomLeft->setText(tr("Bottom Left"));    // cn:左下对齐
-    actionChartLegendAlignmentInLeft->setText(tr("Left"));                 // cn:左对齐
+    actionChartEnableGrid->setText(tr("Enable Grid"));    // cn:网格
+    actionChartEnableGridX->setText(tr("X Grid"));        // cn:横向网格
+    actionChartEnableGridY->setText(tr("Y Grid"));        // cn:纵向网格
+    actionChartEnableGridXMin->setText(tr("Xmin Grid"));  // cn:横向密集网格
+    actionChartEnableGridYMin->setText(tr("Ymin Grid"));  // cn:纵向密集网格
+    actionChartEnableZoom->setText(tr("Zoom"));           // cn:缩放
+    actionChartZoomIn->setText(tr("Zoom In"));            // cn:放大
+    actionChartZoomOut->setText(tr("Zoom Out"));          // cn:缩小
+    actionChartZoomAll->setText(tr("Show \nAll"));        // cn:显示\n全部
+    actionChartEnablePan->setText(tr("Pan"));             // cn:拖动
+    actionChartEnablePickerCross->setText(tr("Cross"));   // cn:十字标记
+    actionChartEnablePickerY->setText(tr("Y Picker"));    // cn:y值拾取
+    actionChartEnablePickerXY->setText(tr("XY Picker"));  // cn:点拾取
+    actionChartEnableLegend->setText(tr("legend"));       // cn:图例
+
     // 数据操作的上下文标签 Data Operate Context Category
     actionRemoveRow->setText(tr("Remove Row"));                  // cn:删除行
     actionRemoveColumn->setText(tr("Remove Column"));            // cn:删除列

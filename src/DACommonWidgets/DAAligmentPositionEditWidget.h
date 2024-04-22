@@ -21,6 +21,8 @@ public:
 	~DAAligmentPositionEditWidget();
 	// 设置aligment
 	Qt::Alignment getAligmentPosition() const;
+    // 把输入的al进行过滤，得到本控件支持的组合
+    static Qt::Alignment acceptAligment(Qt::Alignment al);
 public slots:
 	void setAligmentPosition(Qt::Alignment al);
 signals:
@@ -28,6 +30,8 @@ signals:
 
 protected:
 	void changeEvent(QEvent* e);
+private slots:
+    void onButtonClicked(int id);
 
 private:
 	Ui::DAAligmentPositionEditWidget* ui;
