@@ -151,6 +151,13 @@ FUNCTION_STR_DICT(DAPyDataFrame, read_csv, read_csv)
 FUNCTION_STR_DICT(DAPyDataFrame, read_txt, read_txt)
 
 /**
+ * @brief 读取pkl
+ * @param filepath
+ * @return
+ */
+FUNCTION_STR_DICT(DAPyDataFrame, read_pkl, read_pkl)
+
+/**
  * @brief 导入库
  */
 bool DAPyScriptsIO::import()
