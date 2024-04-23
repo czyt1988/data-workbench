@@ -2614,23 +2614,23 @@ Table Area</source>
     <message>
         <location filename="DAGui/ChartSetting/DAChartGridSettingWidget.ui" line="26"/>
         <source>Grid Major Line</source>
-        <translation type="unfinished"></translation>
+        <translation>主网格</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartGridSettingWidget.ui" line="41"/>
         <source>Major Line Pen:</source>
         <oldsource>Line Pen:</oldsource>
-        <translation type="unfinished"></translation>
+        <translation>主网格线:</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartGridSettingWidget.ui" line="76"/>
         <source>Grid Minor Line</source>
-        <translation type="unfinished"></translation>
+        <translation>副网格</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartGridSettingWidget.ui" line="91"/>
         <source>Minor Line Pen:</source>
-        <translation type="unfinished"></translation>
+        <translation>副网格线:</translation>
     </message>
 </context>
 <context>
@@ -2644,67 +2644,67 @@ Table Area</source>
         <location filename="DAGui/ChartSetting/DAChartLegendItemSettingWidget.ui" line="26"/>
         <source>Position</source>
         <oldsource>position</oldsource>
-        <translation type="unfinished">位置</translation>
+        <translation>位置</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartLegendItemSettingWidget.ui" line="43"/>
         <source>Horizontal Offset In Canvas</source>
-        <translation type="unfinished"></translation>
+        <translation>水平偏移</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartLegendItemSettingWidget.ui" line="60"/>
         <source>Vertical Offset In Canvas</source>
-        <translation type="unfinished"></translation>
+        <translation>垂直偏移</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartLegendItemSettingWidget.ui" line="77"/>
         <source>Margin around legend items</source>
-        <translation type="unfinished"></translation>
+        <translation>图例周围边距</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartLegendItemSettingWidget.ui" line="94"/>
         <source>Spacing between the legend items</source>
-        <translation type="unfinished"></translation>
+        <translation>条目周围间隔</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartLegendItemSettingWidget.ui" line="111"/>
         <source>Margin around each item</source>
-        <translation type="unfinished"></translation>
+        <translation>条目周围边距</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartLegendItemSettingWidget.ui" line="128"/>
         <source>Spacing inside of each item</source>
-        <translation type="unfinished"></translation>
+        <translation>条目内部间隔</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartLegendItemSettingWidget.ui" line="150"/>
         <source>Shape</source>
-        <translation type="unfinished"></translation>
+        <translation>形状</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartLegendItemSettingWidget.ui" line="162"/>
         <source>Max columns</source>
-        <translation type="unfinished"></translation>
+        <translation>行数</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartLegendItemSettingWidget.ui" line="179"/>
         <source>Radius for the border</source>
-        <translation type="unfinished"></translation>
+        <translation>圆角</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartLegendItemSettingWidget.ui" line="206"/>
         <source>Border pen</source>
-        <translation type="unfinished"></translation>
+        <translation>边框</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartLegendItemSettingWidget.ui" line="213"/>
         <source>Background</source>
-        <translation type="unfinished">背景</translation>
+        <translation>背景</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartLegendItemSettingWidget.ui" line="186"/>
         <source>Font</source>
-        <translation type="unfinished"></translation>
+        <translation>字体</translation>
     </message>
 </context>
 <context>
