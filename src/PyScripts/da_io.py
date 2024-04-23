@@ -16,7 +16,7 @@ def da_get_file_read_filters() -> List[str]:
     获取支持的文件列表
         return list[str]
     '''
-    return ['text (*.txt)','csv (*.csv)','xls (*.xls)']
+    return ['text (*.txt)','csv (*.csv)','xls (*.xls)','pickle (*.pkl)']
 
 
 def read_csv(path:str,args:Optional[Dict] = None) -> pd.DataFrame:
@@ -26,6 +26,20 @@ def read_csv(path:str,args:Optional[Dict] = None) -> pd.DataFrame:
     if args is None:
         args = {}
     return pd.read_csv(path,**args)
+
+def read_pkl(path:str,args:Optional[Dict] = None) -> pd.DataFrame:
+    '''
+    读取pkl文件
+    '''
+    if args is None:
+        args = {}
+    df=pd.read_pickle(path,**args)
+#    df[0] = pd.to_datetime(df[0], unit='ns')
+    
+    #判断df的表头是否为str以外的类型，如果不是str类型，转换为str类型（header=None时自动生成的表头是int64,索引的时候使用字符串会报错）
+    if df.columns.dtype != np.dtype('<U1'):
+        df.columns = df.columns.astype(str)
+    return df
 
 def read_txt(path:str,args:Optional[Dict] = None) -> pd.DataFrame:
     '''
@@ -55,7 +69,8 @@ txt 不注册，需要单独处理
 '''
 da_global_reader_dict = {
     'txt':read_txt,
-    'csv':read_csv
+    'csv':read_csv,
+    'pkl':read_pkl
 }
 
 def da_read(path:str,args:Optional[Dict] = None):

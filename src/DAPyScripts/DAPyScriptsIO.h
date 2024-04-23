@@ -26,6 +26,8 @@ public:
     DAPyDataFrame read_csv(const QString& filepath, const QVariantMap& args, QString* err = nullptr);
     // 读取txt
     DAPyDataFrame read_txt(const QString& filepath, const QVariantMap& args, QString* err = nullptr);
+    // 读取pkl
+    DAPyDataFrame read_pkl(const QString& filepath, const QVariantMap& args, QString* err = nullptr);
     // 引入
     bool import();
 };
