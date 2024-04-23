@@ -103,6 +103,9 @@
         <location filename="3rdparty/ADS/examples/autohide/mainwindow.ui" line="14"/>
         <location filename="3rdparty/ADS/examples/centralwidget/mainwindow.ui" line="14"/>
         <location filename="3rdparty/ADS/examples/emptydockarea/mainwindow.ui" line="14"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="58"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="58"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="58"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="58"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="58"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="58"/>
@@ -113,6 +116,9 @@
         <location filename="3rdparty/ADS/examples/autohide/mainwindow.ui" line="28"/>
         <location filename="3rdparty/ADS/examples/centralwidget/mainwindow.ui" line="28"/>
         <location filename="3rdparty/ADS/examples/emptydockarea/mainwindow.ui" line="28"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="59"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="59"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="59"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="59"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="59"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="59"/>
@@ -123,6 +129,9 @@
         <location filename="3rdparty/ADS/examples/autohide/mainwindow.ui" line="35"/>
         <location filename="3rdparty/ADS/examples/centralwidget/mainwindow.ui" line="35"/>
         <location filename="3rdparty/ADS/examples/emptydockarea/mainwindow.ui" line="35"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="60"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="60"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="60"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="60"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="60"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="60"/>
@@ -134,78 +143,91 @@
     <name>CStatusDialogClass</name>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="20"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="146"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="146"/>
         <source>Dock Widget Status</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="35"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="147"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="147"/>
         <source>Dock Widget:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="58"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="148"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="148"/>
         <source>Status</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="64"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="149"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="149"/>
         <source>closed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="71"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="150"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="150"/>
         <source>floating</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="78"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="151"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="151"/>
         <source>tabbed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="85"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="152"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="152"/>
         <source>is current tab</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="101"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="153"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="153"/>
         <source>Feature Flags</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="107"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="154"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="154"/>
         <source>DockWidgetClosable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="114"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="155"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="155"/>
         <source>DockWidgetMovable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="121"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="156"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="156"/>
         <source>DockWidgetFloatable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="128"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="157"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="157"/>
         <source>DockWidgetDeleteOnClose</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="135"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="158"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="158"/>
         <source>CustomCloseHandling</source>
         <translation type="unfinished"></translation>
@@ -2064,7 +2086,7 @@ Table Area</source>
 <context>
     <name>DA::DATextReadWriter</name>
     <message>
-        <location filename="DAUtils/DATextReadWriter.cpp" line="175"/>
+        <location filename="DAUtils/DATextReadWriter.cpp" line="179"/>
         <source>can not open %1,because %2</source>
         <translation>无法打开%1，原因是 %2</translation>
     </message>
@@ -2141,42 +2163,42 @@ Table Area</source>
 <context>
     <name>DA::DATxtFileImportDialog</name>
     <message>
-        <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="33"/>
+        <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="49"/>
         <source>,(comma)</source>
         <translation>,逗号</translation>
     </message>
     <message>
-        <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="34"/>
+        <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="50"/>
         <source> (space)</source>
         <translation> 空格</translation>
     </message>
     <message>
-        <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="35"/>
+        <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="51"/>
         <source>\t(tab stop)</source>
         <translation>tab制表位</translation>
     </message>
     <message>
-        <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="36"/>
+        <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="52"/>
         <source>;(semicolon)</source>
         <translation>;分号</translation>
     </message>
     <message>
-        <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="37"/>
+        <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="53"/>
         <source>_(underscore)</source>
         <translation>_下横杠</translation>
     </message>
     <message>
-        <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="38"/>
+        <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="54"/>
         <source>-(dash)</source>
         <translation>-横杠</translation>
     </message>
     <message>
-        <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="176"/>
+        <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="192"/>
         <source>error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="177"/>
+        <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="193"/>
         <source>read txt file(%1) occure error,reason:%2</source>
         <oldsource>read txt file(%1) occure error,reason:%3</oldsource>
         <translation>读取txt文件%1发生了错误，原因是：%2</translation>
@@ -3910,6 +3932,11 @@ Table Area</source>
         <location filename="3rdparty/SARibbon/src/example/NormalMenuBarExample/MainWindow.ui" line="14"/>
         <location filename="tst/FCD3Viewer/MainWindow.ui" line="14"/>
         <location filename="3rdparty/build-SARibbon-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="70"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="87"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="70"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="121"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/examples/simple/SimpleExample_autogen/include/ui_MainWindow.h" line="58"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="70"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="87"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="70"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="121"/>
@@ -3921,6 +3948,8 @@ Table Area</source>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="32"/>
         <location filename="3rdparty/ADS/examples/hideshow/MainWindow.ui" line="33"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="91"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="74"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="91"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="74"/>
         <source>File</source>
@@ -3931,6 +3960,10 @@ Table Area</source>
         <location filename="3rdparty/ADS/examples/hideshow/MainWindow.ui" line="28"/>
         <location filename="3rdparty/ADS/examples/sidebar/MainWindow.ui" line="75"/>
         <location filename="3rdparty/ADS/examples/simple/MainWindow.ui" line="28"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="92"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="73"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="123"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/examples/simple/SimpleExample_autogen/include/ui_MainWindow.h" line="59"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="92"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="73"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="123"/>
@@ -3940,54 +3973,63 @@ Table Area</source>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="44"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="93"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="93"/>
         <source>About</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="49"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="94"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="94"/>
         <source>Tests</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="59"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="95"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="95"/>
         <source>toolBar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="70"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="88"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="88"/>
         <source>Exit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="75"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="89"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="89"/>
         <source>Save State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="80"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="90"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="90"/>
         <source>Restore State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/examples/hideshow/MainWindow.ui" line="44"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="71"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="71"/>
         <source>Open project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/examples/hideshow/MainWindow.ui" line="49"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="72"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="72"/>
         <source>Close project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/examples/sidebar/MainWindow.ui" line="26"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="122"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="122"/>
         <source>PushButton</source>
         <translation type="unfinished"></translation>
@@ -3995,6 +4037,7 @@ Table Area</source>
     <message>
         <location filename="3rdparty/SARibbon/src/example/NormalMenuBarExample/MainWindow.ui" line="28"/>
         <location filename="3rdparty/build-SARibbon-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="73"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="73"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="73"/>
         <source>file</source>
         <translation type="unfinished"></translation>
@@ -4002,6 +4045,7 @@ Table Area</source>
     <message>
         <location filename="3rdparty/SARibbon/src/example/NormalMenuBarExample/MainWindow.ui" line="35"/>
         <location filename="3rdparty/build-SARibbon-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="74"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="74"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="74"/>
         <source>edit</source>
         <translation type="unfinished"></translation>
@@ -4009,6 +4053,7 @@ Table Area</source>
     <message>
         <location filename="3rdparty/SARibbon/src/example/NormalMenuBarExample/MainWindow.ui" line="44"/>
         <location filename="3rdparty/build-SARibbon-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="71"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="71"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="71"/>
         <source>open</source>
         <translation type="unfinished">开盘</translation>
@@ -4016,6 +4061,7 @@ Table Area</source>
     <message>
         <location filename="3rdparty/SARibbon/src/example/NormalMenuBarExample/MainWindow.ui" line="49"/>
         <location filename="3rdparty/build-SARibbon-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="72"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="72"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="72"/>
         <source>save</source>
         <translation type="unfinished">保存</translation>
@@ -5722,87 +5768,87 @@ Author:czy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAUtils/DATextReadWriter.cpp" line="387"/>
+        <location filename="DAUtils/DATextReadWriter.cpp" line="403"/>
         <source>No error occurred</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAUtils/DATextReadWriter.cpp" line="389"/>
+        <location filename="DAUtils/DATextReadWriter.cpp" line="405"/>
         <source>An error occurred when reading from the file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAUtils/DATextReadWriter.cpp" line="391"/>
+        <location filename="DAUtils/DATextReadWriter.cpp" line="407"/>
         <source>An error occurred when writing to the file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAUtils/DATextReadWriter.cpp" line="393"/>
+        <location filename="DAUtils/DATextReadWriter.cpp" line="409"/>
         <source>A fatal error occurred</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAUtils/DATextReadWriter.cpp" line="395"/>
+        <location filename="DAUtils/DATextReadWriter.cpp" line="411"/>
         <source>Out of resources (eg, too many open files, out of memory, etc)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAUtils/DATextReadWriter.cpp" line="397"/>
+        <location filename="DAUtils/DATextReadWriter.cpp" line="413"/>
         <source>The file could not be opened</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAUtils/DATextReadWriter.cpp" line="399"/>
+        <location filename="DAUtils/DATextReadWriter.cpp" line="415"/>
         <source>The operation was aborted</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAUtils/DATextReadWriter.cpp" line="401"/>
+        <location filename="DAUtils/DATextReadWriter.cpp" line="417"/>
         <source>A timeout occurred</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAUtils/DATextReadWriter.cpp" line="403"/>
+        <location filename="DAUtils/DATextReadWriter.cpp" line="419"/>
         <source>An unspecified error occurred</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAUtils/DATextReadWriter.cpp" line="405"/>
+        <location filename="DAUtils/DATextReadWriter.cpp" line="421"/>
         <source>The file could not be removed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAUtils/DATextReadWriter.cpp" line="407"/>
+        <location filename="DAUtils/DATextReadWriter.cpp" line="423"/>
         <source>The file could not be renamed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAUtils/DATextReadWriter.cpp" line="409"/>
+        <location filename="DAUtils/DATextReadWriter.cpp" line="425"/>
         <source>The position in the file could not be changed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAUtils/DATextReadWriter.cpp" line="411"/>
+        <location filename="DAUtils/DATextReadWriter.cpp" line="427"/>
         <source>The file could not be resized</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAUtils/DATextReadWriter.cpp" line="413"/>
+        <location filename="DAUtils/DATextReadWriter.cpp" line="429"/>
         <source>The file could not be accessed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAUtils/DATextReadWriter.cpp" line="415"/>
+        <location filename="DAUtils/DATextReadWriter.cpp" line="431"/>
         <source>The file could not be copied</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAUtils/DATextReadWriter.cpp" line="417"/>
+        <location filename="DAUtils/DATextReadWriter.cpp" line="433"/>
         <source>User Terminate</source>
         <translation>用户终止</translation>
     </message>
     <message>
-        <location filename="DAUtils/DATextReadWriter.cpp" line="421"/>
+        <location filename="DAUtils/DATextReadWriter.cpp" line="437"/>
         <source>Unknow Error</source>
         <translation>未知错误</translation>
     </message>
@@ -6637,6 +6683,7 @@ Author:czy</source>
         <location filename="3rdparty/SARibbon/src/example/WidgetWithRibbon/Widget.ui" line="14"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="14"/>
         <location filename="3rdparty/build-SARibbon-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="63"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/SARibbon/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="63"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="63"/>
         <source>Widget</source>
         <translation type="unfinished"></translation>
@@ -6644,6 +6691,7 @@ Author:czy</source>
     <message>
         <location filename="3rdparty/SARibbon/src/example/WidgetWithRibbon/Widget.ui" line="54"/>
         <location filename="3rdparty/build-SARibbon-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="64"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/SARibbon/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="64"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="64"/>
         <source>Tab 1</source>
         <translation type="unfinished"></translation>
@@ -6651,6 +6699,7 @@ Author:czy</source>
     <message>
         <location filename="3rdparty/SARibbon/src/example/WidgetWithRibbon/Widget.ui" line="59"/>
         <location filename="3rdparty/build-SARibbon-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="65"/>
+        <location filename="build-3rdparty-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug/SARibbon/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="65"/>
         <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="65"/>
         <source>Tab 2</source>
         <translation type="unfinished"></translation>

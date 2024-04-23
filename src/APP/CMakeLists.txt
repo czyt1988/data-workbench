@@ -26,9 +26,16 @@ find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
     Concurrent
     PrintSupport
     AxContainer
-    Core5Compat
     REQUIRED
 )
+# qt6,引入Core5Compat
+if(QT_VERSION_MAJOR EQUAL 6)
+    find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
+        Core5Compat
+        REQUIRED
+    )
+endif()
+
 if(Qt5_POSITION_INDEPENDENT_CODE)
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif()
