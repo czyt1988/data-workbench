@@ -142,8 +142,19 @@ bool DAPenEditWidget::isLineStyleTextVisible() const
 void DAPenEditWidget::onColorChanged(const QColor& c)
 {
 	d_ptr->mPen.setColor(c);
-	d_ptr->comboBox->setPenColor(c);
-	d_ptr->comboBox->updateItems();
+	QSignalBlocker b(d_ptr->comboBox);
+	if (!c.isValid()) {
+		// 设置了QColor(),也就是设置NoPen
+		d_ptr->comboBox->setCurrentPenStyle(Qt::NoPen);
+	} else {
+		if (d_ptr->mPen.style() == Qt::NoPen) {
+			// 原来是no pen设置颜色，要不style设置为solid
+			d_ptr->comboBox->setCurrentPenStyle(Qt::SolidLine);
+			d_ptr->mPen.setStyle(Qt::SolidLine);
+		}
+		d_ptr->comboBox->setPenColor(c);
+		d_ptr->comboBox->updateItems();
+	}
 	emit penChanged(d_ptr->mPen);
 }
 
@@ -157,19 +168,23 @@ void DAPenEditWidget::onPenWidthValueChanged(double w)
 
 void DAPenEditWidget::onPenStyleChanged(Qt::PenStyle s)
 {
+	QSignalBlocker b(d_ptr->colorButton);
 	if (d_ptr->mPen.style() == Qt::NoPen) {
-		// 原来是no pen
+		// 原来是no pen,设置为非no pen，则要把颜色设置回来
 		if (Qt::NoPen != s) {
-			d_ptr->colorButton->setColor(d_ptr->mPen.color());
+			if (d_ptr->mPen.color().isValid()) {
+				d_ptr->colorButton->setColor(d_ptr->mPen.color());
+			} else {
+				d_ptr->colorButton->setColor(Qt::black);
+				d_ptr->mPen.setColor(Qt::black);
+			}
 		}
 	} else {
-		// 原来是不是no pen变为no pen
+		// 原来不是no pen，现在变为no pen
 		if (Qt::NoPen == s) {
 			d_ptr->colorButton->setColor(QColor());
 		}
 	}
-
-	d_ptr->colorButton->setEnabled(s != Qt::NoPen);
 	d_ptr->mPen.setStyle(s);
 	emit penChanged(d_ptr->mPen);
 }

@@ -21,6 +21,40 @@ DAChartLegendItemSettingWidget::DAChartLegendItemSettingWidget(QWidget* parent)
 			QOverload< int >::of(&QSpinBox::valueChanged),
 			this,
 			&DAChartLegendItemSettingWidget::onSpinBoxVerticalOffsetValueChanged);
+	connect(ui->spinBoxMargin,
+			QOverload< int >::of(&QSpinBox::valueChanged),
+			this,
+			&DAChartLegendItemSettingWidget::onSpinBoxMarginValueChanged);
+	connect(ui->spinBoxSpacing,
+			QOverload< int >::of(&QSpinBox::valueChanged),
+			this,
+			&DAChartLegendItemSettingWidget::onSpinBoxSpacingValueChanged);
+	connect(ui->spinBoxItemMargin,
+			QOverload< int >::of(&QSpinBox::valueChanged),
+			this,
+			&DAChartLegendItemSettingWidget::onSpinBoxItemMarginValueChanged);
+	connect(ui->spinBoxItemSpacing,
+			QOverload< int >::of(&QSpinBox::valueChanged),
+			this,
+			&DAChartLegendItemSettingWidget::onSpinBoxItemSpacingValueChanged);
+	connect(ui->spinBoxMaxColumns,
+			QOverload< int >::of(&QSpinBox::valueChanged),
+			this,
+			&DAChartLegendItemSettingWidget::onSpinBoxMaxColumnsValueChanged);
+	connect(ui->doubleSpinBoxRadius,
+			QOverload< double >::of(&QDoubleSpinBox::valueChanged),
+			this,
+			&DAChartLegendItemSettingWidget::onDoubleSpinBoxRadiusValueChanged);
+	connect(ui->widgetBorderPen, &DAPenEditWidget::penChanged, this, &DAChartLegendItemSettingWidget::onBorderPenChanged);
+	connect(ui->widgetFont,
+			&DAFontEditPannelWidget::currentFontChanged,
+			this,
+			&DAChartLegendItemSettingWidget::onLegendFontChanged);
+	connect(ui->widgetFont,
+			&DAFontEditPannelWidget::currentFontColorChanged,
+			this,
+			&DAChartLegendItemSettingWidget::onLegendFontColorChanged);
+	connect(ui->widgetBKBrush, &DABrushEditWidget::brushChanged, this, &DAChartLegendItemSettingWidget::onLegendBKBrushChanged);
 }
 
 DAChartLegendItemSettingWidget::~DAChartLegendItemSettingWidget()
@@ -103,5 +137,102 @@ void DAChartLegendItemSettingWidget::onSpinBoxHorizontalOffsetValueChanged(int v
 
 void DAChartLegendItemSettingWidget::onSpinBoxVerticalOffsetValueChanged(int v)
 {
+	if (!checkItemRTTI(QwtPlotItem::Rtti_PlotLegend)) {
+		return;
+	}
+	QwtPlotLegendItem* legend = s_cast< QwtPlotLegendItem* >();
+	legend->setOffsetInCanvas(Qt::Vertical, v);
+}
+
+void DAChartLegendItemSettingWidget::onSpinBoxMarginValueChanged(int v)
+{
+	if (!checkItemRTTI(QwtPlotItem::Rtti_PlotLegend)) {
+		return;
+	}
+	QwtPlotLegendItem* legend = s_cast< QwtPlotLegendItem* >();
+	legend->setMargin(v);
+}
+
+void DAChartLegendItemSettingWidget::onSpinBoxSpacingValueChanged(int v)
+{
+	if (!checkItemRTTI(QwtPlotItem::Rtti_PlotLegend)) {
+		return;
+	}
+	QwtPlotLegendItem* legend = s_cast< QwtPlotLegendItem* >();
+	legend->setSpacing(v);
+}
+
+void DAChartLegendItemSettingWidget::onSpinBoxItemMarginValueChanged(int v)
+{
+	if (!checkItemRTTI(QwtPlotItem::Rtti_PlotLegend)) {
+		return;
+	}
+	QwtPlotLegendItem* legend = s_cast< QwtPlotLegendItem* >();
+	legend->setItemMargin(v);
+}
+
+void DAChartLegendItemSettingWidget::onSpinBoxItemSpacingValueChanged(int v)
+{
+	if (!checkItemRTTI(QwtPlotItem::Rtti_PlotLegend)) {
+		return;
+	}
+	QwtPlotLegendItem* legend = s_cast< QwtPlotLegendItem* >();
+	legend->setItemSpacing(v);
+}
+
+void DAChartLegendItemSettingWidget::onSpinBoxMaxColumnsValueChanged(int v)
+{
+	if (!checkItemRTTI(QwtPlotItem::Rtti_PlotLegend)) {
+		return;
+	}
+	QwtPlotLegendItem* legend = s_cast< QwtPlotLegendItem* >();
+	legend->setMaxColumns(v);
+}
+
+void DAChartLegendItemSettingWidget::onDoubleSpinBoxRadiusValueChanged(double v)
+{
+	if (!checkItemRTTI(QwtPlotItem::Rtti_PlotLegend)) {
+		return;
+	}
+	QwtPlotLegendItem* legend = s_cast< QwtPlotLegendItem* >();
+	legend->setBorderRadius(v);
+}
+
+void DAChartLegendItemSettingWidget::onBorderPenChanged(const QPen& v)
+{
+	if (!checkItemRTTI(QwtPlotItem::Rtti_PlotLegend)) {
+		return;
+	}
+	QwtPlotLegendItem* legend = s_cast< QwtPlotLegendItem* >();
+	legend->setBorderPen(v);
+}
+
+void DAChartLegendItemSettingWidget::onLegendFontChanged(const QFont& v)
+{
+	if (!checkItemRTTI(QwtPlotItem::Rtti_PlotLegend)) {
+		return;
+	}
+	QwtPlotLegendItem* legend = s_cast< QwtPlotLegendItem* >();
+	legend->setFont(v);
+}
+
+void DAChartLegendItemSettingWidget::onLegendFontColorChanged(const QColor& v)
+{
+	if (!checkItemRTTI(QwtPlotItem::Rtti_PlotLegend)) {
+		return;
+	}
+	QwtPlotLegendItem* legend = s_cast< QwtPlotLegendItem* >();
+	auto p                    = legend->textPen();
+	p.setColor(v);
+	legend->setTextPen(p);
+}
+
+void DAChartLegendItemSettingWidget::onLegendBKBrushChanged(const QBrush& v)
+{
+	if (!checkItemRTTI(QwtPlotItem::Rtti_PlotLegend)) {
+		return;
+	}
+	QwtPlotLegendItem* legend = s_cast< QwtPlotLegendItem* >();
+	legend->setBackgroundBrush(v);
 }
 }

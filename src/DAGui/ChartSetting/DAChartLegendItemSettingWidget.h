@@ -28,6 +28,16 @@ private slots:
 	void onAligmentPositionChanged(Qt::Alignment al);
 	void onSpinBoxHorizontalOffsetValueChanged(int v);
 	void onSpinBoxVerticalOffsetValueChanged(int v);
+	void onSpinBoxMarginValueChanged(int v);
+	void onSpinBoxSpacingValueChanged(int v);
+	void onSpinBoxItemMarginValueChanged(int v);
+	void onSpinBoxItemSpacingValueChanged(int v);
+	void onSpinBoxMaxColumnsValueChanged(int v);
+	void onDoubleSpinBoxRadiusValueChanged(double v);
+	void onBorderPenChanged(const QPen& v);
+	void onLegendFontChanged(const QFont& v);
+	void onLegendFontColorChanged(const QColor& v);
+	void onLegendBKBrushChanged(const QBrush& v);
 
 private:
 	Ui::DAChartLegendItemSettingWidget* ui;
