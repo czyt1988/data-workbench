@@ -173,5 +173,6 @@ add_custom_target(daplugins_update_translations DEPENDS ${DA_TS_FILES})
 add_custom_target(daplugins_release_translations DEPENDS ${DA_QM_FILES})
 
 # 安装翻译 - 在install上使用
+set(CMAKE_INSTALL_PREFIX ${DAWorkbench_INSTALL_DIR})
 install(DIRECTORY ${DA_BUILD_TRANSLATIONS_DIR} DESTINATION bin)
 

@@ -36,7 +36,7 @@ DAChartCurveItemSettingWidget::DAChartCurveItemSettingWidget(QWidget* parent)
 			QOverload< QAbstractButton* >::of(&QButtonGroup::buttonClicked),
 			this,
 			&DAChartCurveItemSettingWidget::onButtonGroupOrientationClicked);
-	connect(ui->penEditWidget, &DAPenEditWidget::penChanged, this, &DAChartCurveItemSettingWidget::setCurvePen);
+	connect(ui->penEditWidget, &DAPenEditWidget::penChanged, this, &DAChartCurveItemSettingWidget::onCurvePenChanged);
 }
 
 DAChartCurveItemSettingWidget::~DAChartCurveItemSettingWidget()
@@ -508,6 +508,13 @@ void DAChartCurveItemSettingWidget::onButtonGroupOrientationClicked(QAbstractBut
 	if (c->orientation() != ori) {
 		c->setOrientation(ori);
 	}
+}
+
+void DAChartCurveItemSettingWidget::onCurvePenChanged(const QPen& p)
+{
+	DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
+	QwtPlotCurve* c = s_cast< QwtPlotCurve* >();
+	c->setPen(p);
 }
 
 }

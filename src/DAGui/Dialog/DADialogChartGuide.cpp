@@ -14,34 +14,34 @@ namespace DA
 
 DADialogChartGuide::DADialogChartGuide(QWidget* parent) : QDialog(parent), ui(new Ui::DADialogChartGuide)
 {
-    ui->setupUi(this);
-    init();
-    connect(ui->pushButtonPrevious, &QPushButton::clicked, this, &DADialogChartGuide::onPushButtonPreviousClicked);
-    connect(ui->pushButtonNext, &QPushButton::clicked, this, &DADialogChartGuide::onPushButtonNextClicked);
-    connect(ui->pushButtonCancel, &QPushButton::clicked, this, &DADialogChartGuide::onPushButtonCancelClicked);
-    connect(ui->listWidgetChartType, &QListWidget::currentItemChanged, this, &DADialogChartGuide::onListWidgetCurrentItemChanged);
-    updateButtonTextAndState();
+	ui->setupUi(this);
+	init();
+	connect(ui->pushButtonPrevious, &QPushButton::clicked, this, &DADialogChartGuide::onPushButtonPreviousClicked);
+	connect(ui->pushButtonNext, &QPushButton::clicked, this, &DADialogChartGuide::onPushButtonNextClicked);
+	connect(ui->pushButtonCancel, &QPushButton::clicked, this, &DADialogChartGuide::onPushButtonCancelClicked);
+	connect(ui->listWidgetChartType, &QListWidget::currentItemChanged, this, &DADialogChartGuide::onListWidgetCurrentItemChanged);
+	updateButtonTextAndState();
 }
 
 DADialogChartGuide::~DADialogChartGuide()
 {
-    delete ui;
+	delete ui;
 }
 
 void DADialogChartGuide::init()
 {
-    QListWidgetItem* item = nullptr;
-    // curve
-    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-curve.svg"), tr("curve"));
-    item->setData(Qt::UserRole, static_cast< int >(DA::ChartTypes::Curve));
-    ui->listWidgetChartType->addItem(item);
-    // scatter
-    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-scatter.svg"), tr("scatter"));
-    item->setData(Qt::UserRole, static_cast< int >(DA::ChartTypes::Scatter));
-    ui->listWidgetChartType->addItem(item);
-    // 初始化
-    ui->stackedWidget->setCurrentWidget(ui->pageCurve);
-    ui->listWidgetChartType->setCurrentRow(0);
+	QListWidgetItem* item = nullptr;
+	// curve
+	item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-curve.svg"), tr("curve"));
+	item->setData(Qt::UserRole, static_cast< int >(DA::ChartTypes::Curve));
+	ui->listWidgetChartType->addItem(item);
+	// scatter
+	item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-scatter.svg"), tr("scatter"));
+	item->setData(Qt::UserRole, static_cast< int >(DA::ChartTypes::Scatter));
+	ui->listWidgetChartType->addItem(item);
+	// 初始化
+	ui->stackedWidget->setCurrentWidget(ui->pageCurve);
+	ui->listWidgetChartType->setCurrentRow(0);
 }
 /**
  * @brief 设置datamanager,会把combox填入所有的dataframe
@@ -58,10 +58,12 @@ void DADialogChartGuide::setDataManager(DADataManager* dmgr)
  */
 void DADialogChartGuide::setCurrentData(const DAData& d)
 {
-    QWidget* w = ui->stackedWidget->currentWidget();
-    if (DAChartAddCurveWidget* c = qobject_cast< DAChartAddCurveWidget* >(w)) {
-        c->setCurrentData(d);
-    }
+	QWidget* w = ui->stackedWidget->currentWidget();
+	if (DAChartAddCurveWidget* c = qobject_cast< DAChartAddCurveWidget* >(w)) {
+		c->setCurrentData(d);
+		// 重新设置数据的话，步骤回到第一步
+		c->toFirst();
+	}
 }
 
 /**
@@ -70,11 +72,11 @@ void DADialogChartGuide::setCurrentData(const DAData& d)
  */
 DA::ChartTypes DADialogChartGuide::getCurrentChartType() const
 {
-    QListWidgetItem* item = ui->listWidgetChartType->currentItem();
-    if (item == nullptr) {
-        return DA::ChartTypes::Unknow;
-    }
-    return static_cast< DA::ChartTypes >(item->data(Qt::UserRole).toInt());
+	QListWidgetItem* item = ui->listWidgetChartType->currentItem();
+	if (item == nullptr) {
+		return DA::ChartTypes::Unknow;
+	}
+	return static_cast< DA::ChartTypes >(item->data(Qt::UserRole).toInt());
 }
 
 /**
@@ -83,15 +85,15 @@ DA::ChartTypes DADialogChartGuide::getCurrentChartType() const
  */
 QwtPlotItem* DADialogChartGuide::createPlotItem()
 {
-    DAAbstractChartAddItemWidget* w = qobject_cast< DAAbstractChartAddItemWidget* >(ui->stackedWidget->currentWidget());
-    if (!w) {
-        return nullptr;
-    }
-    QwtPlotItem* item = w->createPlotItem();
-    if (nullptr == item) {
-        return nullptr;
-    }
-    return item;
+	DAAbstractChartAddItemWidget* w = qobject_cast< DAAbstractChartAddItemWidget* >(ui->stackedWidget->currentWidget());
+	if (!w) {
+		return nullptr;
+	}
+	QwtPlotItem* item = w->createPlotItem();
+	if (nullptr == item) {
+		return nullptr;
+	}
+	return item;
 }
 
 /**
@@ -99,58 +101,96 @@ QwtPlotItem* DADialogChartGuide::createPlotItem()
  */
 void DADialogChartGuide::updateData()
 {
-    DAAbstractChartAddItemWidget* w = getCurrentChartAddItemWidget();
-    if (!w) {
-        return;
-    }
-    w->updateData();
+	DAAbstractChartAddItemWidget* w = getCurrentChartAddItemWidget();
+	if (!w) {
+		return;
+	}
+	w->updateData();
 }
 
 void DADialogChartGuide::updateButtonTextAndState()
 {
-    DAAbstractChartAddItemWidget* w = getCurrentChartAddItemWidget();
-    if (!w) {
-        ui->pushButtonNext->setText(STR_DADIALOGCHARTGUIDE_FINISHE);  // cn:完成
-        ui->pushButtonPrevious->setEnabled(false);
-        return;
-    }
-    if (hasNext(w)) {
-        ui->pushButtonNext->setText(STR_DADIALOGCHARTGUIDE_NEXT);
-    } else {
-        ui->pushButtonNext->setText(STR_DADIALOGCHARTGUIDE_FINISHE);
-    }
-    ui->pushButtonPrevious->setEnabled(hasPrevious(w));
+	DAAbstractChartAddItemWidget* w = getCurrentChartAddItemWidget();
+	if (!w) {
+		ui->pushButtonNext->setText(STR_DADIALOGCHARTGUIDE_FINISHE);  // cn:完成
+		ui->pushButtonPrevious->setEnabled(false);
+		return;
+	}
+	if (hasNext(w)) {
+		ui->pushButtonNext->setText(STR_DADIALOGCHARTGUIDE_NEXT);
+	} else {
+		ui->pushButtonNext->setText(STR_DADIALOGCHARTGUIDE_FINISHE);
+	}
+	ui->pushButtonPrevious->setEnabled(hasPrevious(w));
 }
 
 DAAbstractChartAddItemWidget* DADialogChartGuide::getCurrentChartAddItemWidget() const
 {
-    return qobject_cast< DAAbstractChartAddItemWidget* >(ui->stackedWidget->currentWidget());
+	return qobject_cast< DAAbstractChartAddItemWidget* >(ui->stackedWidget->currentWidget());
 }
 
 bool DADialogChartGuide::hasNext(DAAbstractChartAddItemWidget* w)
 {
-    int sc = w->getStepCount();
-    int cc = w->getCurrentStep();
-    if (sc <= 1) {
-        return false;
-    }
-    if (cc < sc - 1) {
-        return true;
-    }
-    return false;
+	int sc = w->getStepCount();
+	int cc = w->getCurrentStep();
+	if (sc <= 1) {
+		return false;
+	}
+	if (cc < sc - 1) {
+		return true;
+	}
+	return false;
 }
 
 bool DADialogChartGuide::hasPrevious(DAAbstractChartAddItemWidget* w)
 {
-    int sc = w->getStepCount();
-    int cc = w->getCurrentStep();
-    if (sc <= 1) {
-        return false;
-    }
-    if (cc != 0) {
-        return true;
-    }
-    return false;
+	int sc = w->getStepCount();
+	int cc = w->getCurrentStep();
+	if (sc <= 1) {
+		return false;
+	}
+	if (cc != 0) {
+		return true;
+	}
+	return false;
+}
+
+/**
+ * @brief 设置到第一步
+ */
+void DADialogChartGuide::allToFirst()
+{
+	int c = ui->stackedWidget->count();
+	for (int i = 0; i < c; ++i) {
+		if (DAAbstractChartAddItemWidget* w = qobject_cast< DAAbstractChartAddItemWidget* >(ui->stackedWidget->widget(i))) {
+			w->toFirst();
+		}
+	}
+	updateButtonTextAndState();
+}
+
+/**
+ * @brief 设置到第最后一步
+ */
+void DADialogChartGuide::allToLast()
+{
+	int c = ui->stackedWidget->count();
+	for (int i = 0; i < c; ++i) {
+		if (DAAbstractChartAddItemWidget* w = qobject_cast< DAAbstractChartAddItemWidget* >(ui->stackedWidget->widget(i))) {
+			w->toLast();
+		}
+	}
+	updateButtonTextAndState();
+}
+
+/**
+ * @brief 显示的时候，把窗口设置为第一步
+ * @param event
+ */
+void DADialogChartGuide::showEvent(QShowEvent* event)
+{
+	allToFirst();
+	QDialog::showEvent(event);
 }
 
 /**
@@ -159,64 +199,64 @@ bool DADialogChartGuide::hasPrevious(DAAbstractChartAddItemWidget* w)
  */
 void DADialogChartGuide::setCurrentChartType(DA::ChartTypes t)
 {
-    int c = ui->listWidgetChartType->count();
-    for (int i = 0; i < c; ++i) {
-        auto item = ui->listWidgetChartType->item(i);
-        int v     = item->data(Qt::UserRole).toInt();
-        if (v == static_cast< int >(t)) {
-            ui->listWidgetChartType->setCurrentItem(item);
-        }
-    }
+	int c = ui->listWidgetChartType->count();
+	for (int i = 0; i < c; ++i) {
+		auto item = ui->listWidgetChartType->item(i);
+		int v     = item->data(Qt::UserRole).toInt();
+		if (v == static_cast< int >(t)) {
+			ui->listWidgetChartType->setCurrentItem(item);
+		}
+	}
 }
 
 void DADialogChartGuide::onListWidgetCurrentItemChanged(QListWidgetItem* current, QListWidgetItem* previous)
 {
-    Q_UNUSED(previous);
-    DA::ChartTypes ct = static_cast< DA::ChartTypes >(current->data(Qt::UserRole).toInt());
-    switch (ct) {
-    case DA::ChartTypes::Curve:
-        ui->stackedWidget->setCurrentWidget(ui->pageCurve);
-        ui->pageCurve->setScatterMode(false);
-        break;
-    case DA::ChartTypes::Scatter:
-        ui->stackedWidget->setCurrentWidget(ui->pageCurve);
-        ui->pageCurve->setScatterMode(true);
-        break;
-    default:
-        break;
-    }
-    updateButtonTextAndState();
+	Q_UNUSED(previous);
+	DA::ChartTypes ct = static_cast< DA::ChartTypes >(current->data(Qt::UserRole).toInt());
+	switch (ct) {
+	case DA::ChartTypes::Curve:
+		ui->stackedWidget->setCurrentWidget(ui->pageCurve);
+		ui->pageCurve->setScatterMode(false);
+		break;
+	case DA::ChartTypes::Scatter:
+		ui->stackedWidget->setCurrentWidget(ui->pageCurve);
+		ui->pageCurve->setScatterMode(true);
+		break;
+	default:
+		break;
+	}
+	updateButtonTextAndState();
 }
 
 void DADialogChartGuide::onPushButtonPreviousClicked()
 {
-    DAAbstractChartAddItemWidget* w = getCurrentChartAddItemWidget();
-    if (!w) {
-        return;
-    }
-    if (hasPrevious(w)) {
-        w->previous();
-    }
-    updateButtonTextAndState();
+	DAAbstractChartAddItemWidget* w = getCurrentChartAddItemWidget();
+	if (!w) {
+		return;
+	}
+	if (hasPrevious(w)) {
+		w->previous();
+	}
+	updateButtonTextAndState();
 }
 
 void DADialogChartGuide::onPushButtonNextClicked()
 {
-    DAAbstractChartAddItemWidget* w = getCurrentChartAddItemWidget();
-    if (!w) {
-        return;
-    }
-    if (hasNext(w)) {
-        w->next();
-    } else {
-        // 如果不是next，就是确认
-        accept();
-    }
-    updateButtonTextAndState();
+	DAAbstractChartAddItemWidget* w = getCurrentChartAddItemWidget();
+	if (!w) {
+		return;
+	}
+	if (hasNext(w)) {
+		w->next();
+	} else {
+		// 如果不是next，就是确认
+		accept();
+	}
+	updateButtonTextAndState();
 }
 
 void DADialogChartGuide::onPushButtonCancelClicked()
 {
-    reject();
+	reject();
 }
 }

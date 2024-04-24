@@ -31,41 +31,49 @@ class DAGUI_API DADialogChartGuide : public QDialog
     Q_OBJECT
 
 public:
-    explicit DADialogChartGuide(QWidget* parent = nullptr);
-    ~DADialogChartGuide();
-    // 设置datamanager,会把combox填入所有的dataframe
-    void setDataManager(DADataManager* dmgr);
-    // 设置datafram
-    void setCurrentData(const DAData& d);
-    // 获取当前的绘图类型
-    DA::ChartTypes getCurrentChartType() const;
-    // 设置当前的绘图类型
-    void setCurrentChartType(DA::ChartTypes t);
-    // 获取绘图item，如果没有返回nullptr
-    QwtPlotItem* createPlotItem();
-    // 更新数据
-    void updateData();
-    // 更新按钮的文字
-    void updateButtonTextAndState();
-    // 获取当前的绘图指引窗口
-    DAAbstractChartAddItemWidget* getCurrentChartAddItemWidget() const;
-    // 是否有下一页
-    bool hasNext(DAAbstractChartAddItemWidget* w);
-    // 是否有前一页
-    bool hasPrevious(DAAbstractChartAddItemWidget* w);
+	explicit DADialogChartGuide(QWidget* parent = nullptr);
+	~DADialogChartGuide();
+	// 设置datamanager,会把combox填入所有的dataframe
+	void setDataManager(DADataManager* dmgr);
+	// 设置datafram
+	void setCurrentData(const DAData& d);
+	// 获取当前的绘图类型
+	DA::ChartTypes getCurrentChartType() const;
+	// 设置当前的绘图类型
+	void setCurrentChartType(DA::ChartTypes t);
+	// 获取绘图item，如果没有返回nullptr
+	QwtPlotItem* createPlotItem();
+	// 更新数据
+	void updateData();
+	// 更新按钮的文字
+	void updateButtonTextAndState();
+	// 获取当前的绘图指引窗口
+	DAAbstractChartAddItemWidget* getCurrentChartAddItemWidget() const;
+	// 是否有下一页
+	bool hasNext(DAAbstractChartAddItemWidget* w);
+	// 是否有前一页
+	bool hasPrevious(DAAbstractChartAddItemWidget* w);
+	// 设置到第一步
+	void allToFirst();
+	// 设置到第最后一步
+	void allToLast();
+
+protected:
+	// 显示的时候，把窗口设置为第一步
+	virtual void showEvent(QShowEvent* event) override;
 private slots:
-    // 选择绘图类型改变
-    void onListWidgetCurrentItemChanged(QListWidgetItem* current, QListWidgetItem* previous);
-    //
-    void onPushButtonPreviousClicked();
-    void onPushButtonNextClicked();
-    void onPushButtonCancelClicked();
+	// 选择绘图类型改变
+	void onListWidgetCurrentItemChanged(QListWidgetItem* current, QListWidgetItem* previous);
+	//
+	void onPushButtonPreviousClicked();
+	void onPushButtonNextClicked();
+	void onPushButtonCancelClicked();
 
 private:
-    void init();
+	void init();
 
 private:
-    Ui::DADialogChartGuide* ui;
+	Ui::DADialogChartGuide* ui;
 };
 }  // end DA
 #endif  // DADIALOGDATAFRAMEPLOT_H

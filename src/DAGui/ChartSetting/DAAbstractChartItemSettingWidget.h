@@ -40,6 +40,8 @@ public:
 	bool isHaveItem() const;
 	// 判断当前item是否是对应的rtti，如果没有item也返回false
 	bool checkItemRTTI(QwtPlotItem::RttiValues rtti) const;
+	// 获取plot
+	QwtPlot* getPlot() const;
 	/**
 	 * @brief 快捷转换为别的item
 	 * @return

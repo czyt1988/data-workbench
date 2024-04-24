@@ -48,6 +48,7 @@ void DAChartAddCurveWidget::init()
 			QOverload< QAbstractButton* >::of(&QButtonGroup::buttonClicked),
 			this,
 			&DAChartAddCurveWidget::onNavButtonClicked);
+	connect(ui->stackedWidget, &QStackedWidget::currentChanged, this, &DAChartAddCurveWidget::onStackWidgetCurrentChanged);
 	QColor c = DAGlobalColorTheme::getInstance().color();
 	ui->pagePlot->setCurvePen(QPen(c, 1.0));
 }
@@ -126,7 +127,6 @@ int DAChartAddCurveWidget::getCurrentStep() const
 void DAChartAddCurveWidget::updateNavButtonState()
 {
 	auto i = ui->stackedWidget->currentIndex();
-	QSignalBlocker b(d_ptr->mBtnGroup);
 	if (0 == i) {
 		ui->toolButtonStepData->setChecked(true);
 	} else {
@@ -139,7 +139,16 @@ void DAChartAddCurveWidget::onNavButtonClicked(QAbstractButton* button)
 	if (button == ui->toolButtonStepData) {
 		ui->stackedWidget->setCurrentWidget(ui->pageData);
 	} else if (button == ui->toolButtonStepPlot) {
-		ui->stackedWidget->setCurrentWidget(ui->pagePlot);
+		ui->stackedWidget->setCurrentWidget(ui->pagePlotScrollWidget);
+	}
+}
+
+void DAChartAddCurveWidget::onStackWidgetCurrentChanged(int i)
+{
+	if (0 == i) {
+		ui->toolButtonStepData->setChecked(true);
+	} else {
+		ui->toolButtonStepPlot->setChecked(true);
 	}
 }
 

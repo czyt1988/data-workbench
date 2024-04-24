@@ -71,6 +71,15 @@ bool DAAbstractChartItemSettingWidget::checkItemRTTI(QwtPlotItem::RttiValues rtt
 	return (mPlotItem->rtti() == rtti);
 }
 
+/**
+ * @brief 获取绘图
+ * @return
+ */
+QwtPlot* DAAbstractChartItemSettingWidget::getPlot() const
+{
+    return mPlot;
+}
+
 void DAAbstractChartItemSettingWidget::plotItemSet(QwtPlotItem* item)
 {
 	Q_UNUSED(item);

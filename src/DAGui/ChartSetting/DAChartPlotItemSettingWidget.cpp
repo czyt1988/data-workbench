@@ -13,14 +13,14 @@ DAChartPlotItemSettingWidget::DAChartPlotItemSettingWidget(QWidget* parent)
 {
 	ui->setupUi(this);
 	connect(ui->buttonGroupAxis,
-            QOverload< QAbstractButton* >::of(&QButtonGroup::buttonClicked),
-            this,
-            &DAChartPlotItemSettingWidget::onButtonGroupAxisClicked);
+			QOverload< QAbstractButton* >::of(&QButtonGroup::buttonClicked),
+			this,
+			&DAChartPlotItemSettingWidget::onButtonGroupAxisClicked);
 	connect(ui->lineEditTitle, &QLineEdit::editingFinished, this, &DAChartPlotItemSettingWidget::onItemTitleEditingFinished);
 	connect(ui->doubleSpinBoxZ,
-            QOverload< double >::of(&QDoubleSpinBox::valueChanged),
-            this,
-            &DAChartPlotItemSettingWidget::onItemZValueChanged);
+			QOverload< double >::of(&QDoubleSpinBox::valueChanged),
+			this,
+			&DAChartPlotItemSettingWidget::onItemZValueChanged);
 }
 
 DAChartPlotItemSettingWidget::~DAChartPlotItemSettingWidget()
@@ -56,21 +56,21 @@ void DAChartPlotItemSettingWidget::clear()
  */
 void DAChartPlotItemSettingWidget::updateUI(const QwtPlotItem* item)
 {
-    if (nullptr == item) {
-        return;
-    }
+	if (nullptr == item) {
+		return;
+	}
 	QSignalBlocker b1(ui->lineEditTitle), b2(ui->doubleSpinBoxZ);
 	ui->lineEditTitle->setText(item->title().text());
 	ui->doubleSpinBoxZ->setValue(item->z());
-    updateAxis(item);
+	updateAxis(item);
 }
 
 void DAChartPlotItemSettingWidget::updatePlotItem(QwtPlotItem* item)
 {
-    QPair< int, int > axisids = getAxisIDs();
-    item->setAxes(static_cast< QwtAxisId >(axisids.first), static_cast< QwtAxisId >(axisids.second));
-    item->setTitle(ui->lineEditTitle->text());
-    item->setZ(ui->doubleSpinBoxZ->value());
+	QPair< int, int > axisids = getAxisIDs();
+	item->setAxes(static_cast< QwtAxisId >(axisids.first), static_cast< QwtAxisId >(axisids.second));
+	item->setTitle(ui->lineEditTitle->text());
+	item->setZ(ui->doubleSpinBoxZ->value());
 }
 
 /**
@@ -78,9 +78,9 @@ void DAChartPlotItemSettingWidget::updatePlotItem(QwtPlotItem* item)
  */
 void DAChartPlotItemSettingWidget::updateAxis(const QwtPlotItem* item)
 {
-    if (nullptr == item) {
-        return;
-    }
+	if (nullptr == item) {
+		return;
+	}
 	QSignalBlocker b(ui->buttonGroupAxis);
 	Q_UNUSED(b);
 	if (QwtPlot::yLeft == item->yAxis() && QwtPlot::xBottom == item->xAxis()) {
@@ -92,7 +92,7 @@ void DAChartPlotItemSettingWidget::updateAxis(const QwtPlotItem* item)
 	} else if (QwtPlot::yRight == item->yAxis() && QwtPlot::xTop == item->xAxis()) {
 		ui->toolButtonRightTop->setChecked(true);
 	} else {
-		qDebug() << "plot item get unknow axis set:x=" << mItem->xAxis() << ",y=" << mItem->yAxis();
+		qDebug() << "plot item get unknow axis set:x=" << item->xAxis() << ",y=" << item->yAxis();
 	}
 }
 
@@ -120,16 +120,16 @@ QString DAChartPlotItemSettingWidget::getItemTitle() const
  */
 QPair< int, int > DAChartPlotItemSettingWidget::getAxisIDs() const
 {
-    if (ui->toolButtonLeftBottom->isChecked()) {
-        return qMakePair(QwtPlot::xBottom, QwtPlot::yLeft);
-    } else if (ui->toolButtonLeftTop->isChecked()) {
-        return qMakePair(QwtPlot::xTop, QwtPlot::yLeft);
-    } else if (ui->toolButtonRightBottom->isChecked()) {
-        return qMakePair(QwtPlot::xBottom, QwtPlot::yRight);
-    } else if (ui->toolButtonRightTop->isChecked()) {
-        return qMakePair(QwtPlot::xTop, QwtPlot::yRight);
-    }
-    return qMakePair(QwtPlot::xBottom, QwtPlot::yLeft);
+	if (ui->toolButtonLeftBottom->isChecked()) {
+		return qMakePair(QwtPlot::xBottom, QwtPlot::yLeft);
+	} else if (ui->toolButtonLeftTop->isChecked()) {
+		return qMakePair(QwtPlot::xTop, QwtPlot::yLeft);
+	} else if (ui->toolButtonRightBottom->isChecked()) {
+		return qMakePair(QwtPlot::xBottom, QwtPlot::yRight);
+	} else if (ui->toolButtonRightTop->isChecked()) {
+		return qMakePair(QwtPlot::xTop, QwtPlot::yRight);
+	}
+	return qMakePair(QwtPlot::xBottom, QwtPlot::yLeft);
 }
 
 void DAChartPlotItemSettingWidget::onItemTitleEditingFinished()
@@ -149,14 +149,15 @@ void DAChartPlotItemSettingWidget::onItemZValueChanged(double z)
 void DAChartPlotItemSettingWidget::onButtonGroupAxisClicked(QAbstractButton* btn)
 {
 	DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
+	auto item = getPlotItem();
 	if (btn == ui->toolButtonLeftBottom) {
-		mItem->setAxes(QwtPlot::xBottom, QwtPlot::yLeft);
+		item->setAxes(QwtPlot::xBottom, QwtPlot::yLeft);
 	} else if (btn == ui->toolButtonLeftTop) {
-		mItem->setAxes(QwtPlot::xTop, QwtPlot::yLeft);
+		item->setAxes(QwtPlot::xTop, QwtPlot::yLeft);
 	} else if (btn == ui->toolButtonRightBottom) {
-		mItem->setAxes(QwtPlot::xBottom, QwtPlot::yRight);
+		item->setAxes(QwtPlot::xBottom, QwtPlot::yRight);
 	} else if (btn == ui->toolButtonRightTop) {
-		mItem->setAxes(QwtPlot::xTop, QwtPlot::yRight);
+		item->setAxes(QwtPlot::xTop, QwtPlot::yRight);
 	}
 }
 }

@@ -48,8 +48,6 @@ private slots:
 
 private:
 	Ui::DAChartPlotItemSettingWidget* ui;
-	QwtPlotItem* mItem { nullptr };
-	QPointer< QwtPlot > mPlot { nullptr };
 };
 }
 #endif  // DACHARTPLOTITEMSETTINGWIDGET_H

@@ -96,6 +96,7 @@ private slots:
 	void onBrushChanged(const QBrush& b);
 	void on_lineEditBaseLine_editingFinished();
 	void onButtonGroupOrientationClicked(QAbstractButton* b);
+	void onCurvePenChanged(const QPen& p);
 protected slots:
 	virtual void plotItemAttached(QwtPlotItem* plotItem, bool on);
 

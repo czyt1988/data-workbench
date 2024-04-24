@@ -1,4 +1,5 @@
 ﻿#include "DAAbstractChartAddItemWidget.h"
+#include <QDebug>
 namespace DA
 {
 DAAbstractChartAddItemWidget::DAAbstractChartAddItemWidget(QWidget* par) : QWidget(par)
@@ -66,5 +67,45 @@ int DAAbstractChartAddItemWidget::getStepCount() const
 int DAAbstractChartAddItemWidget::getCurrentStep() const
 {
     return -1;
+}
+
+/**
+ * @brief 设置到第一步
+ */
+void DAAbstractChartAddItemWidget::toFirst()
+{
+	int c = getStepCount();
+	// 防止异常的继承导致程序奔溃
+	int max = 99;
+	if (c > 0) {
+		int step = 0;
+		while (getCurrentStep() != 0 || step < max) {
+			previous();
+			++step;
+		}
+		if (step == max) {
+			qDebug() << "Critual widget toFirstStep have get max step";
+		}
+	}
+}
+
+/**
+ * @brief 跳转到最后一步
+ */
+void DAAbstractChartAddItemWidget::toLast()
+{
+	int c = getStepCount();
+	c -= 1;
+	int max = 99;
+	if (c > 0) {
+		int step = 0;
+		while (getCurrentStep() != c || step < max) {
+			next();
+			++step;
+		}
+		if (step == max) {
+			qDebug() << "Critual widget toLastStep have get max step";
+		}
+	}
 }
 }
