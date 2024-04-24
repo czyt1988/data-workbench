@@ -26,6 +26,7 @@ public:
 
 public:
 	QAction* actionSpectrum;  ///< 频谱
+	QAction* actionFilter;    ///< 滤波
 	QHash< QString, QAction* > mObjectToAction;
 
 private:

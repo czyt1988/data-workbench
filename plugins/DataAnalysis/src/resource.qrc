@@ -4,5 +4,6 @@
         <file>icon/spectrum.svg</file>
         <file>icon/question.svg</file>
         <file>icon/signal-filter.svg</file>
+        <file>icon/filter.svg</file>
     </qresource>
 </RCC>

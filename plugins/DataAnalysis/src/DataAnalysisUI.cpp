@@ -35,7 +35,7 @@ void DataAnalysisUI::retranslate()
  */
 void DataAnalysisUI::buildDataOptCategory(SARibbonCategory* dataCategory)
 {
-	CHECK_VALID(return);
+	CHECK_VALID(return );
 	if (dataCategory == nullptr) {
 		qCritical() << tr("loss \"da-ribbon-category-data\" category page");  // cn:缺失\"da-ribbon-category-data\"标签页
 		mIsValid = false;
@@ -51,4 +51,5 @@ void DataAnalysisUI::buildDataAnalysisCategory(SARibbonCategory* dataAnalysisCat
 {
 	mRibbonPannelSignalProcess = dataAnalysisCategory->addPannel("Signal Process");
 	mRibbonPannelSignalProcess->addLargeAction(mActions->actionSpectrum);
+	mRibbonPannelSignalProcess->addLargeAction(mActions->actionFilter);
 }
