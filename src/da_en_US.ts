@@ -3276,6 +3276,14 @@ Config</source>
     </message>
 </context>
 <context>
+    <name>DAFigureWidgetSettingWidget</name>
+    <message>
+        <location filename="DAGui/ChartSetting/DAFigureWidgetSettingWidget.ui" line="16"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DAFilePathEditWidget</name>
     <message>
         <location filename="DACommonWidgets/DAFilePathEditWidget.ui" line="14"/>

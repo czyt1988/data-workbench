@@ -3321,6 +3321,14 @@ Table Area</source>
     </message>
 </context>
 <context>
+    <name>DAFigureWidgetSettingWidget</name>
+    <message>
+        <location filename="DAGui/ChartSetting/DAFigureWidgetSettingWidget.ui" line="16"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DAFilePathEditWidget</name>
     <message>
         <location filename="DACommonWidgets/DAFilePathEditWidget.ui" line="14"/>
@@ -4182,7 +4190,7 @@ Table Area</source>
         <location filename="3rdparty/QtPropertyBrowser/examples/canvas_variant/mainwindow.cpp" line="354"/>
         <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1081"/>
         <source>Font</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">字体</translation>
     </message>
     <message>
         <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="90"/>

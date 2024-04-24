@@ -4,17 +4,22 @@
 <context>
     <name>DataAnalysisActions</name>
     <message>
-        <location filename="DataAnalysisActions.cpp" line="20"/>
+        <location filename="DataAnalysisActions.cpp" line="21"/>
         <source>Spectrum</source>
         <translation>频谱</translation>
     </message>
     <message>
-        <location filename="DataAnalysisActions.cpp" line="67"/>
+        <location filename="DataAnalysisActions.cpp" line="22"/>
+        <source>Filter</source>
+        <translation>滤波</translation>
+    </message>
+    <message>
+        <location filename="DataAnalysisActions.cpp" line="69"/>
         <source>DAAppActionsInterface::recordAction get null action</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DataAnalysisActions.cpp" line="72"/>
+        <location filename="DataAnalysisActions.cpp" line="74"/>
         <source>DAAppActionsInterface::recordAction(QAction objname=%1) receive same object name, and the previous record will be overwritten</source>
         <translation></translation>
     </message>
@@ -35,6 +40,114 @@
         <location filename="DataAnalysisUI.cpp" line="40"/>
         <source>loss &quot;da-ribbon-category-data&quot; category page</source>
         <translation>缺失 &quot;da-ribbon-category-data&quot; 标签页</translation>
+    </message>
+</context>
+<context>
+    <name>DialogFilterSetting</name>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.ui" line="14"/>
+        <location filename="Dialogs/DialogFilterSetting.ui" line="48"/>
+        <source>Filter Setting</source>
+        <translation>滤波设置</translation>
+    </message>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.ui" line="27"/>
+        <source>select series</source>
+        <translation>选择序列</translation>
+    </message>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.ui" line="37"/>
+        <source>data preview</source>
+        <translation>数据预览</translation>
+    </message>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.ui" line="54"/>
+        <source>forward and backward filtering</source>
+        <translation>向前向后滤波</translation>
+    </message>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.ui" line="62"/>
+        <source>lowpass</source>
+        <translation>低通滤波</translation>
+    </message>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.ui" line="67"/>
+        <source>highpass</source>
+        <translation>高通滤波</translation>
+    </message>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.ui" line="72"/>
+        <source>bandpass</source>
+        <translation>带通滤波</translation>
+    </message>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.ui" line="77"/>
+        <source>bandstop</source>
+        <translation>带阻滤波</translation>
+    </message>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.ui" line="98"/>
+        <source>Sampling Frequency</source>
+        <translation>采样频率</translation>
+    </message>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.ui" line="105"/>
+        <source>Filter Order</source>
+        <translation>滤波器阶数</translation>
+    </message>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.ui" line="145"/>
+        <source>Filter Type</source>
+        <translation>滤波类型</translation>
+    </message>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.ui" line="155"/>
+        <source>Cut-off Frequency</source>
+        <translation>截止频率</translation>
+    </message>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.ui" line="162"/>
+        <source>Lower Cut-off Frequency</source>
+        <translation>截止频率下限</translation>
+    </message>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.ui" line="169"/>
+        <source>Upper Cut-off Frequency</source>
+        <translation>截止频率上限</translation>
+    </message>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.cpp" line="128"/>
+        <location filename="Dialogs/DialogFilterSetting.cpp" line="137"/>
+        <location filename="Dialogs/DialogFilterSetting.cpp" line="150"/>
+        <location filename="Dialogs/DialogFilterSetting.cpp" line="158"/>
+        <location filename="Dialogs/DialogFilterSetting.cpp" line="167"/>
+        <source>warning</source>
+        <translation>警告</translation>
+    </message>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.cpp" line="129"/>
+        <source>You need to select a waveform data for spectrum analysis</source>
+        <translation>你需要选择一个波形数据进行滤波分析</translation>
+    </message>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.cpp" line="138"/>
+        <source>The sampling rate cannot be 0</source>
+        <translation>采样率不能为0</translation>
+    </message>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.cpp" line="151"/>
+        <source>The cut-off frequency cannot be 0</source>
+        <translation>截止频率不能为0</translation>
+    </message>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.cpp" line="159"/>
+        <source>The lower cut-off frequency or upper cut-off frequency cannot be 0</source>
+        <translation>截止频率上限或下限不能为0</translation>
+    </message>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.cpp" line="168"/>
+        <source>The filter order cannot be 0</source>
+        <translation>滤波器阶数不能为0</translation>
     </message>
 </context>
 <context>

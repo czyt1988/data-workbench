@@ -7,6 +7,7 @@
 #include "pandas/DAPyDataFrame.h"
 #include "Dialog/DADialogDataFrameSeriesSelector.h"
 #include "Dialogs/DialogSpectrumSetting.h"
+#include "Dialogs/DialogFilterSetting.h"
 #include "DataAnalysExecutor.h"
 #include "DADataManager.h"
 DataAnalysController::DataAnalysController(DA::DACoreInterface* core, DataAnalysisActions* actions, QObject* p)
@@ -34,7 +35,8 @@ DA::DAData DataAnalysController::getCurrentSelectData() const
 
 void DataAnalysController::initConnect()
 {
-    connect(mActions->actionSpectrum, &QAction::triggered, this, &DataAnalysController::onActionSpectrumTriggered);
+	connect(mActions->actionSpectrum, &QAction::triggered, this, &DataAnalysController::onActionSpectrumTriggered);
+	connect(mActions->actionFilter, &QAction::triggered, this, &DataAnalysController::onActionFilterTriggered);
 }
 
 /**
@@ -49,6 +51,20 @@ DialogSpectrumSetting* DataAnalysController::getSpectrumSettingDialog()
 	mDialogSpectrumSetting = new DialogSpectrumSetting(mCore->getUiInterface()->getMainWindow());
 	mDialogSpectrumSetting->setDataManager(mCore->getDataManagerInterface()->dataManager());
 	return mDialogSpectrumSetting;
+}
+
+/**
+ * @brief 滤波设置窗口
+ * @return
+ */
+DialogFilterSetting* DataAnalysController::getFilterSettingDialog()
+{
+	if (mDialogFilterSetting) {
+		return mDialogFilterSetting;
+	}
+	mDialogFilterSetting = new DialogFilterSetting(mCore->getUiInterface()->getMainWindow());
+	mDialogFilterSetting->setDataManager(mCore->getDataManagerInterface()->dataManager());
+	return mDialogFilterSetting;
 }
 
 DA::DAPySeries DataAnalysController::getCurrentSelectSeries()
@@ -93,6 +109,44 @@ void DataAnalysController::onActionSpectrumTriggered()
 	// 把数据装入datamanager
 	DA::DAData d(df);
 	d.setName(QString("%1-spectrum").arg(wave.name()));
+	mDataMgr->addData_(d);
+	// 绘图
+}
+
+/**
+ * @brief 滤波
+ */
+void DataAnalysController::onActionFilterTriggered()
+{
+	DA::DAPySeries selSeries = getCurrentSelectSeries();
+	DialogFilterSetting* dlg = getFilterSettingDialog();
+	if (!selSeries.isNone()) {
+		dlg->setCurrentSeries(selSeries);
+	}
+	// 执行
+	if (QDialog::Accepted != dlg->exec()) {
+		return;
+	}
+	// 滤波的基本参数
+	DA::DAPySeries wave = dlg->getCurrentSeries();
+	double fs           = dlg->getSamplingRate();
+	int fo              = dlg->getFilterorder();
+	QVariantMap args    = dlg->getFilterSetting();
+	if (wave.isNone()) {
+		return;
+	}
+	// 执行
+	QString err;
+	DA::DAPyDataFrame df = mExecutor->butterworth_filter(wave, fs, fo, args, &err);
+	if (df.isNone()) {
+		if (!err.isEmpty()) {
+			qCritical() << err;
+			return;
+		}
+	}
+	// 把数据装入datamanager
+	DA::DAData d(df);
+	d.setName(QString("%1-filter").arg(wave.name()));
 	mDataMgr->addData_(d);
 	// 绘图
 }

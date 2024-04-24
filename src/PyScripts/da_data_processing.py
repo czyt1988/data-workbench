@@ -69,6 +69,44 @@ def spectrum_analysis(waveform, sampling_rate, fftsize=None,phases=False,
         return freq,amplitudes,phases
     return freq,amplitudes
 
+def butterworth_filter(waveform, sampling_freq, filter_order, filter_type = 'lowpass', cutoff_freq = 0, 
+                        upper_freq = 0, lower_freq = 0,  phases = False):
+    '''
+    巴特沃斯滤波器
+    
+    :param waveform:输入波形数据
+    :param cutoff_freq:滤波器截止频率，标量或长度为2的序列，
+        如果cutoff_freq为长度为2的序列，要保证cutoff_freq[0] < cutoff_freq[1]
+    :param sampling_freq:采样频率
+    :param filter_order:滤波器阶数
+    :param filter_type:滤波器类型，可以选择lowpass, highpass, bandpass, bandstop
+    :param phases:是否计算相位，如果为True，则计算相位，否则不计算相位，默认不计算
+    :return: 滤波后的波形结果
+    '''
+    nyq = 0.5 * sampling_freq # 奈奎斯特采样频率
+    
+    # 如果滤波器类型位低通/高通滤波，则通过截止频率来计算归一化频率，传入参数为截止频率(数)
+    if filter_type in ['lowpass', 'highpass']: 
+        # 计算归一化截止频率
+        normal_cutoff = cutoff_freq / nyq
+        
+        b, a = scipy.signal.butter(filter_order, normal_cutoff, btype=filter_type, analog=False) 
+    
+    # 如果滤波器类型位带通/带阻滤波，则通过截止频率上下限来计算归一化频率，传入参数为频率上下限(一维数组)
+    elif filter_type in ['bandpass', 'bandstop']: 
+        # 计算归一化截止频率上下限
+        normal_lower_freq = lower_freq / nyq
+        normal_upper_freq = upper_freq / nyq
+        
+        b, a = scipy.signal.butter(filter_order, [normal_lower_freq, normal_upper_freq], btype = filter_type, analog=False)
+    
+    # 计算滤波之后的数据
+    if phases: # 如果phase为True，则计算为零相位差
+        filtered_data = scipy.signal.filtfilt(b, a, waveform)
+    elif not phases: # 如果为False,则在滤波时引入延迟
+        filtered_data = scipy.signal.lfilter(b, a, waveform)
+        
+    return filtered_data
 
 def da_spectrum_analysis(waveform, sampling_rate, args:Optional[Dict] = None):
     '''
@@ -91,6 +129,18 @@ def da_spectrum_analysis(waveform, sampling_rate, args:Optional[Dict] = None):
                 'freq': res[0],  
                 'amplitudes': res[1],   
             })  
+
+def da_butterworth_filter(waveform, sampling_freq, filter_order, args:Optional[Dict] = None):
+    '''
+    巴特沃斯滤波器，此函数主要针对一维波形进行滤波
+    :param waveform: 输入波形数据，可以是一维数组或列表
+    :param sampling_freq: 采样频率
+    :return: 滤波结果，一个dataframe，包含滤波后的波形数据
+    '''
+    res = butterworth_filter(waveform, sampling_freq, filter_order, **args)
+    return pd.DataFrame({
+        'filtered_wave': res
+    })
 
 if __name__ == '__main__':
     # 获取函数spectrum_analysis的注解

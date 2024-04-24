@@ -4,17 +4,22 @@
 <context>
     <name>DataAnalysisActions</name>
     <message>
-        <location filename="DataAnalysisActions.cpp" line="20"/>
+        <location filename="DataAnalysisActions.cpp" line="21"/>
         <source>Spectrum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DataAnalysisActions.cpp" line="67"/>
+        <location filename="DataAnalysisActions.cpp" line="22"/>
+        <source>Filter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DataAnalysisActions.cpp" line="69"/>
         <source>DAAppActionsInterface::recordAction get null action</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DataAnalysisActions.cpp" line="72"/>
+        <location filename="DataAnalysisActions.cpp" line="74"/>
         <source>DAAppActionsInterface::recordAction(QAction objname=%1) receive same object name, and the previous record will be overwritten</source>
         <translation type="unfinished"></translation>
     </message>
@@ -34,6 +39,114 @@
     <message>
         <location filename="DataAnalysisUI.cpp" line="40"/>
         <source>loss &quot;da-ribbon-category-data&quot; category page</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DialogFilterSetting</name>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.ui" line="14"/>
+        <location filename="Dialogs/DialogFilterSetting.ui" line="48"/>
+        <source>Filter Setting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.ui" line="27"/>
+        <source>select series</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.ui" line="37"/>
+        <source>data preview</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.ui" line="54"/>
+        <source>forward and backward filtering</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.ui" line="62"/>
+        <source>lowpass</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.ui" line="67"/>
+        <source>highpass</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.ui" line="72"/>
+        <source>bandpass</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.ui" line="77"/>
+        <source>bandstop</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.ui" line="98"/>
+        <source>Sampling Frequency</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.ui" line="105"/>
+        <source>Filter Order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.ui" line="145"/>
+        <source>Filter Type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.ui" line="155"/>
+        <source>Cut-off Frequency</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.ui" line="162"/>
+        <source>Lower Cut-off Frequency</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.ui" line="169"/>
+        <source>Upper Cut-off Frequency</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.cpp" line="128"/>
+        <location filename="Dialogs/DialogFilterSetting.cpp" line="137"/>
+        <location filename="Dialogs/DialogFilterSetting.cpp" line="150"/>
+        <location filename="Dialogs/DialogFilterSetting.cpp" line="158"/>
+        <location filename="Dialogs/DialogFilterSetting.cpp" line="167"/>
+        <source>warning</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.cpp" line="129"/>
+        <source>You need to select a waveform data for spectrum analysis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.cpp" line="138"/>
+        <source>The sampling rate cannot be 0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.cpp" line="151"/>
+        <source>The cut-off frequency cannot be 0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.cpp" line="159"/>
+        <source>The lower cut-off frequency or upper cut-off frequency cannot be 0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="Dialogs/DialogFilterSetting.cpp" line="168"/>
+        <source>The filter order cannot be 0</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

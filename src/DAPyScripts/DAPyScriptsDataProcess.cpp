@@ -30,7 +30,30 @@ DAPyDataFrame DAPyScriptsDataProcess::spectrum_analysis(const DAPySeries& wave, 
 			qDebug() << "da_data_processing.py have no attr da_spectrum_analysis";
 			return DAPyDataFrame();
 		}
-        pybind11::object v = fn(wave.object(), fs, DA::PY::toDict(args));
+		pybind11::object v = fn(wave.object(), fs, DA::PY::toDict(args));
+		return DAPyDataFrame(std::move(v));
+	} catch (const std::exception& e) {
+		if (err) {
+			*err = e.what();
+		}
+		qDebug() << e.what();
+	}
+	return DAPyDataFrame();
+}
+
+DAPyDataFrame DAPyScriptsDataProcess::butterworth_filter(const DAPySeries& wave,
+                                                         double fs,
+                                                         int fo,
+                                                         const QVariantMap& args,
+                                                         QString* err)
+{
+	try {
+		pybind11::object fn = attr("da_butterworth_filter");
+		if (fn.is_none()) {
+			qDebug() << "da_data_processing.py have no attr da_butterworth_filter";
+			return DAPyDataFrame();
+		}
+		pybind11::object v = fn(wave.object(), fs, fo, DA::PY::toDict(args));
 		return DAPyDataFrame(std::move(v));
 	} catch (const std::exception& e) {
 		if (err) {

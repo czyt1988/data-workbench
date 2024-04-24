@@ -13,11 +13,13 @@ DataAnalysisActions::~DataAnalysisActions()
 void DataAnalysisActions::buildActions()
 {
 	actionSpectrum = createAction("actionSpectrum", ":/DataAnalysis/icons/icon/spectrum.svg");
+	actionFilter   = createAction("actionFilter", ":/DataAnalysis/icons/icon/filter.svg");
 }
 
 void DataAnalysisActions::retranslate()
 {
 	actionSpectrum->setText(tr("Spectrum"));  // cn: 频谱
+	actionFilter->setText(tr("Filter"));      // cn: 滤波
 }
 
 QAction* DataAnalysisActions::createAction(const char* objname)
