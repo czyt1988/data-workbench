@@ -50,8 +50,10 @@ public:
 	int indexOfItem(const QwtPlotItem* item);
 	// 设置当前的chart
 	void setCurrentChart(DAChartWidget* chart);
+    DAChartWidget* getCurrentChart() const;
 	// 设置当前的item
 	void setCurrentItem(QwtPlotItem* item);
+    QwtPlotItem* getCurrentItem() const;
 	// 显示设置
 	void showFigureSettingWidget();
 	void showPlotSettingWidget();
@@ -86,6 +88,12 @@ protected slots:
 	void onComboBoxItemActived(int i);
 	// 按钮组点击
 	void onButtonGroupTypeButtonClicked(int id);
+
+private:
+    // chart的ui显示设置
+    void setChartUI(DAChartWidget* chart);
+    // item的ui显示设置
+    void setItemUI(QwtPlotItem* item);
 
 private:
 	Ui::DAChartSettingWidget* ui;
