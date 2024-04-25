@@ -37,6 +37,10 @@ private slots:
 	void onActionFilterTriggered();
 
 private:
+	// 转换为波形
+	std::pair< std::vector< double >, std::vector< double > > toWave(const DA::DAPySeries& wave, double fs);
+
+private:
 	DA::DACoreInterface* mCore { nullptr };
 	DataAnalysisActions* mActions { nullptr };
 	DA::DADataManager* mDataMgr { nullptr };

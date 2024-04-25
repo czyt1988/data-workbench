@@ -50,10 +50,10 @@ public:
 	int indexOfItem(const QwtPlotItem* item);
 	// 设置当前的chart
 	void setCurrentChart(DAChartWidget* chart);
-    DAChartWidget* getCurrentChart() const;
+	DAChartWidget* getCurrentChart() const;
 	// 设置当前的item
 	void setCurrentItem(QwtPlotItem* item);
-    QwtPlotItem* getCurrentItem() const;
+	QwtPlotItem* getCurrentItem() const;
 	// 显示设置
 	void showFigureSettingWidget();
 	void showPlotSettingWidget();
@@ -90,10 +90,14 @@ protected slots:
 	void onButtonGroupTypeButtonClicked(int id);
 
 private:
-    // chart的ui显示设置
-    void setChartUI(DAChartWidget* chart);
-    // item的ui显示设置
-    void setItemUI(QwtPlotItem* item);
+	// chart的ui显示设置
+	void setChartUI(DAChartWidget* chart);
+	void updateChartUI();
+	// item的ui显示设置
+	void setItemUI(QwtPlotItem* item);
+	void updateItemUI();
+	// 通过索引获取chart
+	DAChartWidget* getChartByIndex(int i) const;
 
 private:
 	Ui::DAChartSettingWidget* ui;

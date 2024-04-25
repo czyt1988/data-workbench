@@ -10,6 +10,10 @@
 #include "Dialogs/DialogFilterSetting.h"
 #include "DataAnalysExecutor.h"
 #include "DADataManager.h"
+#include "DAChartOperateWidget.h"
+#include "DAFigureWidget.h"
+#include "DAChartWidget.h"
+#include "DAAutoincrementSeries.h"
 DataAnalysController::DataAnalysController(DA::DACoreInterface* core, DataAnalysisActions* actions, QObject* p)
     : QObject(p), mCore(core), mActions(actions)
 {
@@ -110,7 +114,37 @@ void DataAnalysController::onActionSpectrumTriggered()
 	DA::DAData d(df);
 	d.setName(QString("%1-spectrum").arg(wave.name()));
 	mDataMgr->addData_(d);
-	// 绘图
+	//! 绘图
+	//! ----------
+	//! | 波形图  |
+	//! ----------
+	//! |  频谱   |
+	//! ----------
+	auto plt = mDockingArea->getChartOperateWidget();
+	auto fig = plt->createFigure();
+	{  // wave chart
+		auto waveChart = fig->getCurrentChart();
+		if (!waveChart) {
+			waveChart = fig->createChart();
+		}
+		fig->setWidgetPosPercent(waveChart, 0.05, 0.05, 0.9, 0.45);  // 对应的是x位置占比，y位置占比，宽度占比，高度占比，y位置是从上往下
+		auto xy = toWave(wave, fs);
+		waveChart->addCurve(xy.first.data(), xy.second.data(), xy.first.size());
+		waveChart->setXLabel("time(s)");
+		waveChart->setYLabel("amplitudes");
+		waveChart->setTitle("wave");
+	}
+	{  // fft chart
+		auto spectrumChart      = fig->createChart(0.05, 0.5, 0.9, 0.45);
+		auto freq               = df[ "freq" ];
+		auto amplitudes         = df[ "amplitudes" ];
+		std::vector< double > x = DA::toVectorDouble(freq);
+		std::vector< double > y = DA::toVectorDouble(amplitudes);
+		spectrumChart->addCurve(x.data(), y.data(), x.size());
+		spectrumChart->setXLabel("frequency(Hz)");
+		spectrumChart->setYLabel("amplitudes");
+		spectrumChart->setTitle("spectrum");
+	}
 }
 
 /**
@@ -149,4 +183,20 @@ void DataAnalysController::onActionFilterTriggered()
 	d.setName(QString("%1-filter").arg(wave.name()));
 	mDataMgr->addData_(d);
 	// 绘图
+}
+
+/**
+ * @brief 转换为波形
+ * @param wave
+ * @return
+ */
+std::pair< std::vector< double >, std::vector< double > > DataAnalysController::toWave(const DA::DAPySeries& wave, double fs)
+{
+	std::pair< std::vector< double >, std::vector< double > > res;
+	std::vector< double > y = DA::toVectorDouble(wave);
+	DA::DAAutoincrementSeries xgenrator(0.0, fs);
+	std::vector< double > x;
+	x.resize(y.size());
+	xgenrator.generate(x.begin(), x.end());
+	return std::make_pair(x, y);
 }
