@@ -88,6 +88,8 @@ protected slots:
 	void onComboBoxItemActived(int i);
 	// 按钮组点击
 	void onButtonGroupTypeButtonClicked(int id);
+	// 绘图的属性发生变化，刷新设置界面
+	void onChartPropertyHasChanged(DAChartWidget* chart);
 
 private:
 	// chart的ui显示设置

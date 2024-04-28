@@ -240,12 +240,12 @@ In some application scenarios, very high frequency resolution may not be require
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="Dialogs/DialogSpectrumSetting.ui" line="233"/>
+        <location filename="Dialogs/DialogSpectrumSetting.ui" line="236"/>
         <source>constant</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="Dialogs/DialogSpectrumSetting.ui" line="243"/>
+        <location filename="Dialogs/DialogSpectrumSetting.ui" line="246"/>
         <source>linear</source>
         <translation type="unfinished"></translation>
     </message>

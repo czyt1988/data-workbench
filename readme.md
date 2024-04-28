@@ -70,6 +70,7 @@ python环境需要安装的库：
 pip install numpy
 pip install pandas
 pip install scipy
+pip install Loguru
 ```
 
 在需要python时将引入`pybind11`库

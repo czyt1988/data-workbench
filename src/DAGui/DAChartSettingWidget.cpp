@@ -166,6 +166,7 @@ void DAChartSettingWidget::bindChart(DAChartWidget* chart)
 	qDebug() << "bindChart ptr=" << qintptr(chart);
 	if (chart) {
 		connect(chart, &DAChartWidget::itemAttached, this, &DAChartSettingWidget::onItemAttached);
+		connect(chart, &DAChartWidget::chartPropertyHasChanged, this, &DAChartSettingWidget::onChartPropertyHasChanged);
 	}
 }
 
@@ -174,6 +175,7 @@ void DAChartSettingWidget::unbindChart(DAChartWidget* chart)
 	qDebug() << "unbindChart ptr=" << qintptr(chart);
 	if (chart) {
 		disconnect(chart, &DAChartWidget::itemAttached, this, &DAChartSettingWidget::onItemAttached);
+		disconnect(chart, &DAChartWidget::chartPropertyHasChanged, this, &DAChartSettingWidget::onChartPropertyHasChanged);
 	}
 }
 
@@ -431,7 +433,7 @@ void DAChartSettingWidget::onChartAdded(DAChartWidget* c)
 		qDebug() << "onChartAdded";
 		bindChart(c);
 		resetChartsComboBox(d_ptr->mFigure);
-		setCurrentChart(c);
+		// setCurrentChart(c);//这个函数无必要，addchart会默认把current设置为add的那个chart
 		showPlotSettingWidget();
 	}
 }
@@ -526,6 +528,21 @@ void DAChartSettingWidget::onButtonGroupTypeButtonClicked(int id)
 	case SettingItem:
 		showItemSettingWidget();
 		break;
+	}
+}
+
+/**
+ * @brief 绘图的属性发生变化，刷新设置界面
+ * @param chart
+ */
+void DAChartSettingWidget::onChartPropertyHasChanged(DAChartWidget* chart)
+{
+	if (d_ptr->mFigure) {
+		// 刷新chart
+		resetChartsComboBox(d_ptr->mFigure);
+		if (getCurrentChart() == chart) {
+			updateChartUI();
+		}
 	}
 }
 

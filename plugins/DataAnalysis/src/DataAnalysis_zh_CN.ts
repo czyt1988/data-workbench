@@ -240,12 +240,12 @@ In some application scenarios, very high frequency resolution may not be require
         <translation>去趋势</translation>
     </message>
     <message>
-        <location filename="Dialogs/DialogSpectrumSetting.ui" line="233"/>
+        <location filename="Dialogs/DialogSpectrumSetting.ui" line="236"/>
         <source>constant</source>
         <translation>常数</translation>
     </message>
     <message>
-        <location filename="Dialogs/DialogSpectrumSetting.ui" line="243"/>
+        <location filename="Dialogs/DialogSpectrumSetting.ui" line="246"/>
         <source>linear</source>
         <translation>线性</translation>
     </message>

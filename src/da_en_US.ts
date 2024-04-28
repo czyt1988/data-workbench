@@ -1397,22 +1397,22 @@ Config</source>
 <context>
     <name>DA::DAChartOperateWidget</name>
     <message>
-        <location filename="DAGui/DAChartOperateWidget.cpp" line="78"/>
+        <location filename="DAGui/DAChartOperateWidget.cpp" line="87"/>
         <source>figure-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartOperateWidget.cpp" line="179"/>
+        <location filename="DAGui/DAChartOperateWidget.cpp" line="191"/>
         <source>chart operate widget&apos;s tab changed,but can not find figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartOperateWidget.cpp" line="192"/>
+        <location filename="DAGui/DAChartOperateWidget.cpp" line="204"/>
         <source>question</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartOperateWidget.cpp" line="192"/>
+        <location filename="DAGui/DAChartOperateWidget.cpp" line="204"/>
         <source>Whether to close the figure widget</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5304,7 +5304,7 @@ params:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureWidget.cpp" line="709"/>
+        <location filename="DAFigure/DAFigureWidget.cpp" line="745"/>
         <source>DAFigureWidget get invalid magic strat code</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5628,7 +5628,7 @@ Author:czy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAPyBindQt/pandas/DAPySeries.cpp" line="151"/>
+        <location filename="DAPyBindQt/pandas/DAPySeries.cpp" line="154"/>
         <source>DAPySeries  get python object type is not pandas.Series</source>
         <translation type="unfinished"></translation>
     </message>

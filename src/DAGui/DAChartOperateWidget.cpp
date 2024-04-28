@@ -67,6 +67,15 @@ DAFigureFactory* DAChartOperateWidget::takeFactory()
 }
 
 /**
+ * @brief 获取工厂
+ * @return
+ */
+DAFigureFactory* DAChartOperateWidget::getFigureFactory() const
+{
+    return d_ptr->mFigureFactory.get();
+}
+
+/**
  * @brief 创建一个绘图
  *
  * @note 重载此函数，如果没有调用DAChartOperateWidget::createFigure，必须调用initFigureConnect(fig);来初始化创建的fig，同时也要发射信号figureCreated
@@ -76,10 +85,10 @@ DAFigureWidget* DAChartOperateWidget::createFigure()
 {
 	++g_figure_cnt;
 	QString t           = tr("figure-%1").arg(g_figure_cnt);
-	DAFigureWidget* fig = d_ptr->mFigureFactory->createFigure();
+	DAFigureWidget* fig = getFigureFactory()->createFigure();
 	fig->setWindowTitle(t);
-	// 先发射figureCreated信号
-	// ui->tabWidget->addTab会触发currentFigureChanged信号，这里已经发射了figureCreated，不触发currentFigureChanged信号
+
+	// ui->tabWidget->addTab会触发currentFigureChanged信号，这里会发射figureCreated，不触发currentFigureChanged信号
 	QSignalBlocker b(ui->tabWidget);
 	ui->tabWidget->addTab(fig, t);
 	initFigureConnect(fig);

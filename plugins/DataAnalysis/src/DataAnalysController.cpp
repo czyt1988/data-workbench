@@ -101,6 +101,7 @@ void DataAnalysController::onActionSpectrumTriggered()
 	if (wave.isNone()) {
 		return;
 	}
+	qDebug() << "Spectrum args:" << args;
 	// 执行
 	QString err;
 	DA::DAPyDataFrame df = mExecutor->spectrum_analysis(wave, fs, args, &err);
@@ -121,18 +122,17 @@ void DataAnalysController::onActionSpectrumTriggered()
 	//! |  频谱   |
 	//! ----------
 	auto plt = mDockingArea->getChartOperateWidget();
-	auto fig = plt->createFigure();
+	auto fig = plt->createFigure();  // 注意，DAAppChartOperateWidget的createFigure会创建一个chart，因此，第一个chart是不需要创建的
 	{  // wave chart
-		auto waveChart = fig->getCurrentChart();
-		if (!waveChart) {
-			waveChart = fig->createChart();
-		}
+		// currentChart函数不会返回null
+		auto waveChart = fig->currentChart();
 		fig->setWidgetPosPercent(waveChart, 0.05, 0.05, 0.9, 0.45);  // 对应的是x位置占比，y位置占比，宽度占比，高度占比，y位置是从上往下
-		auto xy = toWave(wave, fs);
-		waveChart->addCurve(xy.first.data(), xy.second.data(), xy.first.size());
+		auto xy    = toWave(wave, fs);
+		auto curve = waveChart->addCurve(xy.first.data(), xy.second.data(), xy.first.size());
 		waveChart->setXLabel("time(s)");
 		waveChart->setYLabel("amplitudes");
-		waveChart->setTitle("wave");
+		waveChart->setTitle("Wave Chart");
+		curve->setTitle("Wave");
 	}
 	{  // fft chart
 		auto spectrumChart      = fig->createChart(0.05, 0.5, 0.9, 0.45);
@@ -140,11 +140,15 @@ void DataAnalysController::onActionSpectrumTriggered()
 		auto amplitudes         = df[ "amplitudes" ];
 		std::vector< double > x = DA::toVectorDouble(freq);
 		std::vector< double > y = DA::toVectorDouble(amplitudes);
-		spectrumChart->addCurve(x.data(), y.data(), x.size());
+		auto spectrum           = spectrumChart->addCurve(x.data(), y.data(), x.size());
 		spectrumChart->setXLabel("frequency(Hz)");
 		spectrumChart->setYLabel("amplitudes");
-		spectrumChart->setTitle("spectrum");
+		spectrumChart->setTitle("Spectrum Chart");
+		spectrum->setTitle("spectrum");
+		spectrumChart->notifyChartPropertyHasChanged();
 	}
+	// 把绘图窗口抬起
+	mDockingArea->raiseDockByWidget(mDockingArea->getChartOperateWidget());
 }
 
 /**

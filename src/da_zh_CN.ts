@@ -1437,22 +1437,22 @@ Table Area</source>
 <context>
     <name>DA::DAChartOperateWidget</name>
     <message>
-        <location filename="DAGui/DAChartOperateWidget.cpp" line="78"/>
+        <location filename="DAGui/DAChartOperateWidget.cpp" line="87"/>
         <source>figure-%1</source>
         <translation>图-%1</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartOperateWidget.cpp" line="179"/>
+        <location filename="DAGui/DAChartOperateWidget.cpp" line="191"/>
         <source>chart operate widget&apos;s tab changed,but can not find figure</source>
         <translation>绘图操作窗口的标签改变信号中，无法通过标签索引找到对应的绘图</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartOperateWidget.cpp" line="192"/>
+        <location filename="DAGui/DAChartOperateWidget.cpp" line="204"/>
         <source>question</source>
         <translation>疑问</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartOperateWidget.cpp" line="192"/>
+        <location filename="DAGui/DAChartOperateWidget.cpp" line="204"/>
         <source>Whether to close the figure widget</source>
         <translation>确认关闭绘图窗口</translation>
     </message>
@@ -4908,7 +4908,7 @@ Wrap</source>
         <translation>使用utf-8打开文件“%1”错误，尝试使用ansi编码</translation>
     </message>
     <message>
-        <location filename="DAPyBindQt/pandas/DAPySeries.cpp" line="151"/>
+        <location filename="DAPyBindQt/pandas/DAPySeries.cpp" line="154"/>
         <source>DAPySeries  get python object type is not pandas.Series</source>
         <translation>python object类型不是pandas.Series</translation>
     </message>
@@ -5240,7 +5240,7 @@ Wrap</source>
         <translation>添加绘图元素</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureWidget.cpp" line="709"/>
+        <location filename="DAFigure/DAFigureWidget.cpp" line="745"/>
         <source>DAFigureWidget get invalid magic strat code</source>
         <translation>DAFigureWidget的文件头异常</translation>
     </message>

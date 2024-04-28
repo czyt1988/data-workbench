@@ -225,6 +225,9 @@ In some application scenarios, very high frequency resolution may not be require
          <property name="text">
           <string>detrend</string>
          </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
         </widget>
        </item>
        <item row="10" column="1">

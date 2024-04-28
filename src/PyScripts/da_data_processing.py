@@ -5,7 +5,13 @@ from typing import List,Dict,Optional
 import pandas as pd
 import numpy as np
 import scipy
+from loguru import logger
 
+#获取当前python脚本文件的上级目录的log文件夹
+log_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'log'))
+
+#日志初始化，添加一个可旋转的日志文件，旋转大小为10Mb，把日志文件存入log_path文件夹下，文件名为da_py_log.log
+logger.add(log_path+"/da_py_log{time}.log",rotation="10 MB",level="DEBUG")
 
 def spectrum_analysis(waveform, sampling_rate, fftsize=None,phases=False,
                       nextpower2=False,db=False,detrend=None):
@@ -24,6 +30,8 @@ def spectrum_analysis(waveform, sampling_rate, fftsize=None,phases=False,
     :rtype: phases=False tuple(freq(频率):np.ndarray, amplitudes(幅值):np.ndarray)
             phases=True tuple(freq(频率):np.ndarray, amplitudes(幅值):np.ndarray ,phases(相位):np.ndarray)
     '''
+    #通过loguru打印函数的所有输入的参数
+    logger.debug(f"spectrum_analysis(sampling_rate={sampling_rate},fftsize={fftsize},phases={phases},nextpower2={nextpower2},db={db},detrend={detrend})")
     if fftsize is None or fftsize <= 1: #fftsize=1或负数是没有意义的，这里一并处理为波形长度 
         if nextpower2:  # 如果nextpower2为True，则将fftsize取下一个2的整数次幂  
             fftsize = 2 ** int(np.ceil(np.log2(len(waveform))))
@@ -39,7 +47,7 @@ def spectrum_analysis(waveform, sampling_rate, fftsize=None,phases=False,
 
     #如果detrend不是None,则调用scipy.signal.detrend函数对波形进行去趋势处理
     if detrend is not None:  
-        scipy.signal.detrend(waveform, type=detrend, overwrite_data = True) 
+        waveform = scipy.signal.detrend(waveform, type=detrend)
 
     # 对波形执行FFT变换  
     fft_values = np.fft.rfft(waveform)  
@@ -83,6 +91,7 @@ def butterworth_filter(waveform, sampling_freq, filter_order, filter_type = 'low
     :param phases:是否计算相位，如果为True，则计算相位，否则不计算相位，默认不计算
     :return: 滤波后的波形结果
     '''
+    logger.debug(f"butterworth_filter(sampling_freq={sampling_freq},filter_order={filter_order},filter_type={filter_type},cutoff_freq={cutoff_freq},upper_freq={upper_freq},lower_freq={lower_freq},phases={phases})")
     nyq = 0.5 * sampling_freq # 奈奎斯特采样频率
     
     # 如果滤波器类型位低通/高通滤波，则通过截止频率来计算归一化频率，传入参数为截止频率(数)
@@ -117,6 +126,7 @@ def da_spectrum_analysis(waveform, sampling_rate, args:Optional[Dict] = None):
     :param phases: 是否计算相位，如果为True，则计算相位，否则不计算相位
     :return: 频谱分析结果，一个dataframe,根据参数，包含频率、振幅，或者相位
     '''
+    logger.debug(f"da_spectrum_analysis(sampling_rate={sampling_rate},args={args})")
     res = spectrum_analysis(waveform,sampling_rate,**args)
     if 3 == len(res):
         return pd.DataFrame({  
@@ -137,6 +147,7 @@ def da_butterworth_filter(waveform, sampling_freq, filter_order, args:Optional[D
     :param sampling_freq: 采样频率
     :return: 滤波结果，一个dataframe，包含滤波后的波形数据
     '''
+    logger.debug(f"da_butterworth_filter(sampling_freq={sampling_freq},filter_order={filter_order},args={args})")
     res = butterworth_filter(waveform, sampling_freq, filter_order, **args)
     return pd.DataFrame({
         'filtered_wave': res
