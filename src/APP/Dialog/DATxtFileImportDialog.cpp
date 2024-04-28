@@ -33,7 +33,11 @@ DATxtFileImportDialog::DATxtFileImportDialog(QWidget* parent) : QDialog(parent),
 	for (int i = 0; i < codecs.size(); ++i) {
 		ui->comboBoxCodec->addItem(QString(codecs[ i ]), codecs[ i ]);
 	}
-	ui->comboBoxCodec->setCurrentText(QString(QTextCodec::codecForLocale()->name()));
+	QString defaultCodec = QTextCodec::codecForLocale()->name();
+	if (defaultCodec == "System") {
+		defaultCodec = "UTF-8";
+	}
+	ui->comboBoxCodec->setCurrentText(defaultCodec);
 #else
 	ui->comboBoxCodec->addItem("UTF-8", static_cast< int >(QStringConverter::Utf8));
 	ui->comboBoxCodec->addItem("UTF-16", static_cast< int >(QStringConverter::Utf16));
