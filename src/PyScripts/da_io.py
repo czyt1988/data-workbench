@@ -11,13 +11,6 @@ import numpy as np
 '''
 
 
-def da_get_file_read_filters() -> List[str]:
-    '''
-    获取支持的文件列表
-        return list[str]
-    '''
-    return ['text (*.txt)','csv (*.csv)','xls (*.xls)','pickle (*.pkl)']
-
 
 def read_csv(path:str,args:Optional[Dict] = None) -> pd.DataFrame:
     '''
@@ -63,15 +56,7 @@ def read_txt(path:str,args:Optional[Dict] = None) -> pd.DataFrame:
 
 
 
-'''
-这里是注册后缀对应的处理方式
-txt 不注册，需要单独处理
-'''
-da_global_reader_dict = {
-    'txt':read_txt,
-    'csv':read_csv,
-    'pkl':read_pkl
-}
+
 
 def da_read(path:str,args:Optional[Dict] = None):
     '''
@@ -83,6 +68,29 @@ def da_read(path:str,args:Optional[Dict] = None):
         return None
     return fun(path,args)
 
+
+def da_get_file_read_filters() -> List[str]:
+    '''
+    获取支持的文件列表
+        return list[str]
+    '''
+    return ['all support(*.txt *.csv *.xls *.pkl)',
+            'text (*.txt)',
+            'csv (*.csv)',
+            'xls (*.xls)',
+            'pickle (*.pkl)',
+            'all(*.*)'
+            ]
+
+'''
+这里是注册后缀对应的处理方式
+注意这个变量一定要在最后写
+'''
+da_global_reader_dict = {
+    'txt':read_txt,
+    'csv':read_csv,
+    'pkl':read_pkl
+}
 
 
 if __name__ == '__main__':

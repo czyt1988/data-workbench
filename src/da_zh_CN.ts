@@ -2163,42 +2163,42 @@ Table Area</source>
 <context>
     <name>DA::DATxtFileImportDialog</name>
     <message>
-        <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="49"/>
+        <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="53"/>
         <source>,(comma)</source>
         <translation>,逗号</translation>
     </message>
     <message>
-        <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="50"/>
+        <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="54"/>
         <source> (space)</source>
         <translation> 空格</translation>
     </message>
     <message>
-        <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="51"/>
+        <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="55"/>
         <source>\t(tab stop)</source>
         <translation>tab制表位</translation>
     </message>
     <message>
-        <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="52"/>
+        <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="56"/>
         <source>;(semicolon)</source>
         <translation>;分号</translation>
     </message>
     <message>
-        <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="53"/>
+        <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="57"/>
         <source>_(underscore)</source>
         <translation>_下横杠</translation>
     </message>
     <message>
-        <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="54"/>
+        <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="58"/>
         <source>-(dash)</source>
         <translation>-横杠</translation>
     </message>
     <message>
-        <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="192"/>
+        <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="196"/>
         <source>error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="193"/>
+        <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="197"/>
         <source>read txt file(%1) occure error,reason:%2</source>
         <oldsource>read txt file(%1) occure error,reason:%3</oldsource>
         <translation>读取txt文件%1发生了错误，原因是：%2</translation>
