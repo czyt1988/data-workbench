@@ -55,18 +55,18 @@ class DAFigureWidgetCommandCreateChart : public DAFigureWidgetCommandBase
 {
 public:
 	DAFigureWidgetCommandCreateChart(DAFigureWidget* fig,
-									 float xPresent,
-									 float yPresent,
-									 float wPresent,
-									 float hPresent,
-									 QUndoCommand* par = nullptr)
-		: DAFigureWidgetCommandBase(fig, par)
-		, mChart(nullptr)
-		, mXPresent(xPresent)
-		, mYPresent(yPresent)
-		, mWPresent(wPresent)
-		, mHPresent(hPresent)
-		, mNeedDelete(false)
+                                     float xPresent,
+                                     float yPresent,
+                                     float wPresent,
+                                     float hPresent,
+                                     QUndoCommand* par = nullptr)
+        : DAFigureWidgetCommandBase(fig, par)
+        , mChart(nullptr)
+        , mXPresent(xPresent)
+        , mYPresent(yPresent)
+        , mWPresent(wPresent)
+        , mHPresent(hPresent)
+        , mNeedDelete(false)
 	{
 		setText(QObject::tr("create chart"));  // cn:创建绘图
 	}
@@ -111,11 +111,11 @@ class DAFigureWidgetCommandResizeWidget : public DAFigureWidgetCommandBase
 {
 public:
 	DAFigureWidgetCommandResizeWidget(DAFigureWidget* fig,
-									  QWidget* w,
-									  const QRectF& oldPresent,
-									  const QRectF& newPresent,
-									  QUndoCommand* par = nullptr)
-		: DAFigureWidgetCommandBase(fig, par), mWidget(w), mOldPresent(oldPresent), mNewPresent(newPresent)
+                                      QWidget* w,
+                                      const QRectF& oldPresent,
+                                      const QRectF& newPresent,
+                                      QUndoCommand* par = nullptr)
+        : DAFigureWidgetCommandBase(fig, par), mWidget(w), mOldPresent(oldPresent), mNewPresent(newPresent)
 	{
 		setText(QObject::tr("set figure widget size"));  // cn:设置绘图中窗体的尺寸
 	}
@@ -149,11 +149,11 @@ public:
 	 * @param par
 	 */
 	DAFigureWidgetCommandAttachItem(DAFigureWidget* fig,
-									DAChartWidget* chart,
-									QwtPlotItem* item,
-									bool skipFirst    = true,
-									QUndoCommand* par = nullptr)
-		: DAFigureWidgetCommandBase(fig, par), mChart(chart), mItem(item), mSkipFirst(skipFirst), mNeedDelete(false)
+                                    DAChartWidget* chart,
+                                    QwtPlotItem* item,
+                                    bool skipFirst    = true,
+                                    QUndoCommand* par = nullptr)
+        : DAFigureWidgetCommandBase(fig, par), mChart(chart), mItem(item), mSkipFirst(skipFirst), mNeedDelete(false)
 	{
 		setText(QObject::tr("add item in chart"));  // cn:设置绘图中窗体的尺寸
 	}
@@ -199,6 +199,7 @@ public:
 	QBrush mBackgroundBrush;                                            ///< 背景
 	QUndoStack mUndoStack;                                              ///<
 	QScopedPointer< DAChartFactory > mFactory;                          ///< 绘图创建的工厂
+    DAColorTheme mColorTheme;                                           ///< 主题
 public:
 	PrivateData(DAFigureWidget* p) : q_ptr(p)
 	{
@@ -509,13 +510,13 @@ void DAFigureWidget::enableSubChartEditor(bool enable)
 		if (nullptr == d_ptr->mChartEditorOverlay) {
 			d_ptr->mChartEditorOverlay = new DAFigureWidgetOverlayChartEditor(this);
 			connect(d_ptr->mChartEditorOverlay,
-					&DAFigureWidgetOverlayChartEditor::widgetGeometryChanged,
-					this,
-					&DAFigureWidget::onWidgetGeometryChanged);
+                    &DAFigureWidgetOverlayChartEditor::widgetGeometryChanged,
+                    this,
+                    &DAFigureWidget::onWidgetGeometryChanged);
 			connect(d_ptr->mChartEditorOverlay,
-					&DAFigureWidgetOverlayChartEditor::activeWidgetChanged,
-					this,
-					&DAFigureWidget::onOverlayActiveWidgetChanged);
+                    &DAFigureWidgetOverlayChartEditor::activeWidgetChanged,
+                    this,
+                    &DAFigureWidget::onOverlayActiveWidgetChanged);
 			d_ptr->mChartEditorOverlay->show();
 			d_ptr->mChartEditorOverlay->raise();  // 同时提升最前
 		} else {
@@ -569,7 +570,39 @@ int DAFigureWidget::getChartCount() const
 			++c;
 		}
 	}
-	return (c);
+    return (c);
+}
+
+/**
+ * @brief 获取默认的绘图颜色
+ *
+ * 每次调用figure的绘图相关函数，会调用getDefaultColor获取默认颜色为曲线填充，
+ * 默认会根据颜色主题来变换颜色，也可以继承此函数，让figure每次给出自定义的颜色
+ * @return
+ */
+QColor DAFigureWidget::getDefaultColor() const
+{
+    return figureColorTheme()++;
+}
+
+void DAFigureWidget::setFigureColorTheme(const DAColorTheme& th)
+{
+    d_ptr->mColorTheme = th;
+}
+
+DAColorTheme DAFigureWidget::getFigureColorTheme() const
+{
+    return d_ptr->mColorTheme;
+}
+
+const DAColorTheme& DAFigureWidget::figureColorTheme() const
+{
+    return d_ptr->mColorTheme;
+}
+
+DAColorTheme& DAFigureWidget::figureColorTheme()
+{
+    return d_ptr->mColorTheme;
 }
 
 /**
@@ -742,7 +775,7 @@ QDataStream& operator>>(QDataStream& in, DAFigureWidget* p)
 	in >> tmp;
 	if (tmp != magicStart) {
 		throw DABadSerializeExpection(
-			QObject::tr("DAFigureWidget get invalid magic strat code"));  // cn: DAFigureWidget的文件头异常
+            QObject::tr("DAFigureWidget get invalid magic strat code"));  // cn: DAFigureWidget的文件头异常
 		return (in);
 	}
 	QByteArray geometryData, stateData;

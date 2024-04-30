@@ -6,6 +6,7 @@
 #include "DAChartWidget.h"
 #include "DAFigureContainer.h"
 #include "DAChartFactory.h"
+#include "DAColorTheme.h"
 class QPaintEvent;
 class QFocusEvent;
 class QUndoCommand;
@@ -69,6 +70,13 @@ public:
 	bool isEnableSubChartEditor() const;
 	// 获取图表的数量
 	int getChartCount() const;
+    // 获取默认的绘图颜色
+    virtual QColor getDefaultColor() const;
+    // 设置颜色主题
+    void setFigureColorTheme(const DAColorTheme& th);
+    DAColorTheme getFigureColorTheme() const;
+    const DAColorTheme& figureColorTheme() const;
+    DAColorTheme& figureColorTheme();
 
 public:
 	// 绘图相关
