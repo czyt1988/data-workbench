@@ -34,7 +34,8 @@ def spectrum_analysis(waveform, sampling_rate, fftsize=None,phases=False,
     logger.debug(f"spectrum_analysis(sampling_rate={sampling_rate},fftsize={fftsize},phases={phases},nextpower2={nextpower2},db={db},detrend={detrend})")
     if fftsize is None or fftsize <= 1: #fftsize=1或负数是没有意义的，这里一并处理为波形长度 
         if nextpower2:  # 如果nextpower2为True，则将fftsize取下一个2的整数次幂  
-            fftsize = 2 ** int(np.ceil(np.log2(len(waveform))))
+            # fftsize = 2 ** int(np.ceil(np.log2(len(waveform))))
+            fftsize = scipy.fft.next_fast_len(len(waveform))
         else:
             fftsize = len(waveform)  # 如果没有指定fftsize或者fftsize为None，则使用波形的长度  
     else:

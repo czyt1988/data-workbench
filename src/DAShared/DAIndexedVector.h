@@ -21,7 +21,10 @@ public:
     T next();
     // 把索引移动到下一个,如果超过范围，会回到头
     void moveToNext();
-    DAIndexedVector& operator++();
+    // 前缀操作
+    T operator++();
+    // 后缀操作
+    T operator++(int);
     // 获取前一个元素(索引前移)
     T previous();
     // 把索引移动到下一个,如果超过范围，会回尾部
@@ -35,7 +38,10 @@ public:
     bool isLastIndex() const;
     // 判断当前索引是否是合理范围内
     bool isValidIndex() const;
-    // 获取当前的索引
+    /**
+     * @brief 获取当前的索引
+     * @return
+     */
     int getCurrentIndex() const;
     // 设置当前的索引
     void setCurrentIndex(int v);
@@ -79,7 +85,7 @@ T DAIndexedVector< T >::next()
 template< typename T >
 void DAIndexedVector< T >::moveToNext()
 {
-    if (mIndex < QVector< T >::size() - 1) {
+    if (mIndex >= 0 && mIndex < QVector< T >::size() - 1) {
         ++mIndex;
     } else {
         mIndex = 0;
@@ -87,10 +93,17 @@ void DAIndexedVector< T >::moveToNext()
 }
 
 template< typename T >
-DAIndexedVector< T >& DAIndexedVector< T >::operator++()
+T DAIndexedVector< T >::operator++()
 {
     moveToNext();
-    return *this;
+    return current();
+}
+template< typename T >
+T DAIndexedVector< T >::operator++(int)
+{
+    auto oldv = current();
+    moveToNext();
+    return oldv;
 }
 
 template< typename T >
@@ -103,7 +116,7 @@ T DAIndexedVector< T >::previous()
 template< typename T >
 void DAIndexedVector< T >::moveToPrevious()
 {
-    if (mIndex > 0) {
+    if (mIndex > 0 && mIndex < QVector< T >::size()) {
         --mIndex;
     } else {
         mIndex = QVector< T >::size() - 1;
