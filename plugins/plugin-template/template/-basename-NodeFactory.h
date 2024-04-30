@@ -13,7 +13,7 @@ class DAWorkFlowGraphicsScene;
 }
 
 
-class {{PLUGIN-BASE-NAME}}_API {{plugin-base-name}}NodeFactory : public DA::DAAbstractNodeFactory
+class {{plugin-base-name}}NodeFactory : public DA::DAAbstractNodeFactory
 {
     Q_OBJECT
 public:

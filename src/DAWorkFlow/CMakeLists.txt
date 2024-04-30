@@ -69,6 +69,7 @@ if(${DA_PROJECT_NAME}_FOUND)
     message(STATUS "  |-link DA::DAGraphicsView")
     message(STATUS "  | |-include dir:${DAGraphicsView_INCLUDE_DIR}")
 endif()
+
 target_link_libraries(${DA_LIB_NAME} PRIVATE
     ${DA_PROJECT_NAME}::DAUtils
 )

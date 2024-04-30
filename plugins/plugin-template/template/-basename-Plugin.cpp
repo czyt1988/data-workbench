@@ -1,4 +1,5 @@
 ﻿#include "{{plugin-base-name}}Plugin.h"
+#include "{{plugin-base-name}}NodeFactory.h"
 #include <QDebug>
 
 {{plugin-base-name}}Plugin::{{plugin-base-name}}Plugin() : DA::DAAbstractNodePlugin()
@@ -37,7 +38,7 @@ QString {{plugin-base-name}}Plugin::getDescription() const
 
 DA::DAAbstractNodeFactory* {{plugin-base-name}}Plugin::createNodeFactory()
 {
-	auto fac = new {{plugin-base-name}}NodeFactory;
+	auto fac = new {{plugin-base-name}}NodeFactory();
 	fac->setCore(core());
 	connect(fac, &{{plugin-base-name}}NodeFactory::destroyed, this, &{{plugin-base-name}}Plugin::onFactoryDestroyed);
 	return fac;

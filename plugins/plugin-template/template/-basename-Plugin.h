@@ -11,7 +11,7 @@ namespace DA
 class DAAbstractNodeFactory;
 }
 
-class {{PLUGIN-BASE-NAME}}_API {{plugin-base-name}}Plugin : public QObject, public DA::DAAbstractNodePlugin
+class {{plugin-base-name}}Plugin : public QObject, public DA::DAAbstractNodePlugin
 {
 	Q_OBJECT
 	Q_PLUGIN_METADATA(IID DAABSTRACTNODEPLUGIN_IID)
