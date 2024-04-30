@@ -8,6 +8,7 @@ cmake_minimum_required(VERSION 3.5)
 ########################################################
 # 加载库
 ########################################################
+add_subdirectory(DAShared)
 add_subdirectory(DAUtils)
 
 add_subdirectory(DAAxOfficeWrapper)

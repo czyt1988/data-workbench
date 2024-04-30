@@ -13,6 +13,7 @@
 #include "DAChartOperateWidget.h"
 #include "DAFigureWidget.h"
 #include "DAChartWidget.h"
+#include "DAChartUtil.h"
 #include "DAAutoincrementSeries.h"
 DataAnalysController::DataAnalysController(DA::DACoreInterface* core, DataAnalysisActions* actions, QObject* p)
     : QObject(p), mCore(core), mActions(actions)
@@ -129,10 +130,11 @@ void DataAnalysController::onActionSpectrumTriggered()
 		fig->setWidgetPosPercent(waveChart, 0.05, 0.05, 0.9, 0.45);  // 对应的是x位置占比，y位置占比，宽度占比，高度占比，y位置是从上往下
 		auto xy    = toWave(wave, fs);
 		auto curve = waveChart->addCurve(xy.first.data(), xy.second.data(), xy.first.size());
+		curve->setTitle("Wave");
+		DA::DAChartUtil::setPlotItemColor(curve, fig->getDefaultColor());
 		waveChart->setXLabel("time(s)");
 		waveChart->setYLabel("amplitudes");
 		waveChart->setTitle("Wave Chart");
-		curve->setTitle("Wave");
 	}
 	{  // fft chart
 		auto spectrumChart      = fig->createChart(0.05, 0.5, 0.9, 0.45);
@@ -141,10 +143,11 @@ void DataAnalysController::onActionSpectrumTriggered()
 		std::vector< double > x = DA::toVectorDouble(freq);
 		std::vector< double > y = DA::toVectorDouble(amplitudes);
 		auto spectrum           = spectrumChart->addCurve(x.data(), y.data(), x.size());
+		spectrum->setTitle("spectrum");
+		DA::DAChartUtil::setPlotItemColor(spectrum, fig->getDefaultColor());
 		spectrumChart->setXLabel("frequency(Hz)");
 		spectrumChart->setYLabel("amplitudes");
 		spectrumChart->setTitle("Spectrum Chart");
-		spectrum->setTitle("spectrum");
 		spectrumChart->notifyChartPropertyHasChanged();
 	}
 	// 把绘图窗口抬起

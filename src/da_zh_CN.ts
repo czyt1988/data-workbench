@@ -3337,7 +3337,7 @@ Table Area</source>
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="DAFigure/DAFigureWidget.cpp" line="216"/>
+        <location filename="DAFigure/DAFigureWidget.cpp" line="217"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
@@ -5240,7 +5240,7 @@ Wrap</source>
         <translation>添加绘图元素</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureWidget.cpp" line="745"/>
+        <location filename="DAFigure/DAFigureWidget.cpp" line="778"/>
         <source>DAFigureWidget get invalid magic strat code</source>
         <translation>DAFigureWidget的文件头异常</translation>
     </message>

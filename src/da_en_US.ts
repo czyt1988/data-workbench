@@ -3292,7 +3292,7 @@ Config</source>
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="DAFigure/DAFigureWidget.cpp" line="216"/>
+        <location filename="DAFigure/DAFigureWidget.cpp" line="217"/>
         <source>Figure</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5304,7 +5304,7 @@ params:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureWidget.cpp" line="745"/>
+        <location filename="DAFigure/DAFigureWidget.cpp" line="778"/>
         <source>DAFigureWidget get invalid magic strat code</source>
         <translation type="unfinished"></translation>
     </message>

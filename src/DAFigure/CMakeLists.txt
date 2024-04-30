@@ -67,6 +67,10 @@ target_link_libraries(${DA_LIB_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Concurrent
     Qt${QT_VERSION_MAJOR}::PrintSupport
 )
+
+target_link_libraries(${DA_LIB_NAME} PRIVATE
+    ${DA_PROJECT_NAME}::DAUtils
+)
 # -------------link 3rdparty qwt--------------------------
 damacro_import_qwt(${DA_LIB_NAME})
 

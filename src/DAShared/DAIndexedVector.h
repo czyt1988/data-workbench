@@ -6,6 +6,15 @@ namespace DA
 /**
  * @brief 这是个带当前索引的vector，提供next，previous等带索引记忆的操作
  *
+ * 通过++方法可以进行快捷的位移和迭代
+ * 如：
+ * @code
+ * DAIndexedVector<int> v({1,2,3});
+ * int a = v++;//a=2,当前游标在位置0，v++会让游标移动一位，然后返回当前位置，也就是返回2
+ * int b = ++v;//b=2,当前位置为1，++v，会返回当前位置，再移动，因此b还是2，但v的游标已经移动到下一个位置
+ * int c = v.current();//c = 3
+ * int d = v++;//d=1,之前是在游标索引为2的地方，再移动已经到末尾，会回到初始位置，返回1
+ * @endcode
  *
  */
 template< typename T >
@@ -21,15 +30,18 @@ public:
     T next();
     // 把索引移动到下一个,如果超过范围，会回到头
     void moveToNext();
-    // 前缀操作
+    // 前缀操作,++v,返回下一个
     T operator++();
-    // 后缀操作
+    // 后缀操作,v++，返回当前，并移动到下一个
     T operator++(int);
     // 获取前一个元素(索引前移)
     T previous();
     // 把索引移动到下一个,如果超过范围，会回尾部
     void moveToPrevious();
-    DAIndexedVector& operator--();
+    //前缀操作--v,回退并返回值
+    T operator--();
+    // 后缀操作,v--，返回当前，并回退
+    T operator--(int);
     // 获取当前的元素，在调用前使用isValidIndex确认索引的正确性
     T current() const;
     // 判断当前索引是否是第一个
@@ -98,6 +110,7 @@ T DAIndexedVector< T >::operator++()
     moveToNext();
     return current();
 }
+
 template< typename T >
 T DAIndexedVector< T >::operator++(int)
 {
@@ -124,10 +137,18 @@ void DAIndexedVector< T >::moveToPrevious()
 }
 
 template< typename T >
-DAIndexedVector< T >& DAIndexedVector< T >::operator--()
+T DAIndexedVector< T >::operator--()
 {
     moveToPrevious();
-    return *this;
+    return current();
+}
+
+template< typename T >
+T DAIndexedVector< T >::operator--(int)
+{
+    auto oldv = current();
+    moveToPrevious();
+    return oldv;
 }
 
 template< typename T >
