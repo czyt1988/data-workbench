@@ -9,20 +9,26 @@ namespace DA
 
 class DAGraphicsItem::PrivateData
 {
-    DA_DECLARE_PUBLIC(DAGraphicsItem)
+	DA_DECLARE_PUBLIC(DAGraphicsItem)
 public:
-    PrivateData(DAGraphicsItem* p);
-    bool mIsShowBorder { false };      ///< 是否显示边框
-    bool mIsShowBackground { false };  ///< 是否显示背景
-    QPen mBorderPen;                   ///< 边框画笔
-    QBrush mBackgroundBrush;           ///< 背景画刷
-    uint64_t mID { 0 };                ///< id
+	PrivateData(DAGraphicsItem* p);
+	bool mIsShowBorder { false };      ///< 是否显示边框
+	bool mIsShowBackground { false };  ///< 是否显示背景
+	QPen mBorderPen;                   ///< 边框画笔
+	QBrush mBackgroundBrush;           ///< 背景画刷
+	uint64_t mID { 0 };                ///< id
 };
 
 DAGraphicsItem::PrivateData::PrivateData(DAGraphicsItem* p) : q_ptr(p)
 {
-    //DAGraphicsItemFactory::generateID通过一个uint32_t生成一个uint64_t的id
-    mID = DAGraphicsItemFactory::generateID(reinterpret_cast< uint32_t >(q_ptr));
+	// DAGraphicsItemFactory::generateID通过一个uint32_t生成一个uint64_t的id
+	union Combine__ {
+		uint32_t a;
+		void* b;
+	};
+	Combine__ tmp;
+	tmp.b = p;
+	mID   = DAGraphicsItemFactory::generateID(tmp.a);
 }
 
 //===================================================
@@ -43,37 +49,37 @@ DAGraphicsItem::~DAGraphicsItem()
  */
 bool DAGraphicsItem::saveToXml(QDomDocument* doc, QDomElement* parentElement) const
 {
-    QDomElement infoEle = doc->createElement("info");
-    QPointF scPos       = scenePos();
-    infoEle.setAttribute("id", getItemID());
-    infoEle.setAttribute("x", scPos.x());
-    infoEle.setAttribute("y", scPos.y());
-    infoEle.setAttribute("z", zValue());
-    infoEle.setAttribute("acceptDrops", acceptDrops());
-    infoEle.setAttribute("enable", isEnabled());
-    infoEle.setAttribute("opacity", opacity());
-    infoEle.setAttribute("rotation", rotation());
-    infoEle.setAttribute("scale", scale());
-    QString tt = toolTip();
-    if (!tt.isEmpty()) {
-        QDomElement toolTipEle = doc->createElement("toolTip");
-        toolTipEle.appendChild(doc->createTextNode(tt));
-        infoEle.appendChild(toolTipEle);
-    }
-    QDomElement shapeInfoEle = doc->createElement("shape-info");
-    shapeInfoEle.setAttribute("show-border", isShowBorder());
-    shapeInfoEle.setAttribute("show-bk", isShowBackground());
-    if (isShowBorder()) {
-        QDomElement borderPenEle = DAXMLFileInterface::makeElement(getBorderPen(), "border-pen", doc);
-        shapeInfoEle.appendChild(borderPenEle);
-    }
-    if (isShowBackground()) {
-        QDomElement bkEle = DAXMLFileInterface::makeElement(getBackgroundBrush(), "bk-brush", doc);
-        shapeInfoEle.appendChild(bkEle);
-    }
-    infoEle.appendChild(shapeInfoEle);
-    parentElement->appendChild(infoEle);
-    return true;
+	QDomElement infoEle = doc->createElement("info");
+	QPointF scPos       = scenePos();
+	infoEle.setAttribute("id", getItemID());
+	infoEle.setAttribute("x", scPos.x());
+	infoEle.setAttribute("y", scPos.y());
+	infoEle.setAttribute("z", zValue());
+	infoEle.setAttribute("acceptDrops", acceptDrops());
+	infoEle.setAttribute("enable", isEnabled());
+	infoEle.setAttribute("opacity", opacity());
+	infoEle.setAttribute("rotation", rotation());
+	infoEle.setAttribute("scale", scale());
+	QString tt = toolTip();
+	if (!tt.isEmpty()) {
+		QDomElement toolTipEle = doc->createElement("toolTip");
+		toolTipEle.appendChild(doc->createTextNode(tt));
+		infoEle.appendChild(toolTipEle);
+	}
+	QDomElement shapeInfoEle = doc->createElement("shape-info");
+	shapeInfoEle.setAttribute("show-border", isShowBorder());
+	shapeInfoEle.setAttribute("show-bk", isShowBackground());
+	if (isShowBorder()) {
+		QDomElement borderPenEle = DAXMLFileInterface::makeElement(getBorderPen(), "border-pen", doc);
+		shapeInfoEle.appendChild(borderPenEle);
+	}
+	if (isShowBackground()) {
+		QDomElement bkEle = DAXMLFileInterface::makeElement(getBackgroundBrush(), "bk-brush", doc);
+		shapeInfoEle.appendChild(bkEle);
+	}
+	infoEle.appendChild(shapeInfoEle);
+	parentElement->appendChild(infoEle);
+	return true;
 }
 
 /**
@@ -83,67 +89,67 @@ bool DAGraphicsItem::saveToXml(QDomDocument* doc, QDomElement* parentElement) co
  */
 bool DAGraphicsItem::loadFromXml(const QDomElement* parentElement)
 {
-    QDomElement infoEle = parentElement->firstChildElement("info");
-    if (infoEle.isNull()) {
-        // 没有找到info节点，返回错误
-        return false;
-    }
-    qreal realValue;
-    qreal realValue2;
-    uint64_t llv;
-    if (getStringULongLongValue(infoEle.attribute("id"), llv)) {
-        setItemID(llv);
-    }
+	QDomElement infoEle = parentElement->firstChildElement("info");
+	if (infoEle.isNull()) {
+		// 没有找到info节点，返回错误
+		return false;
+	}
+	qreal realValue;
+	qreal realValue2;
+	uint64_t llv;
+	if (getStringULongLongValue(infoEle.attribute("id"), llv)) {
+		setItemID(llv);
+	}
 
-    if (getStringRealValue(infoEle.attribute("x", "0"), realValue)
-        && getStringRealValue(infoEle.attribute("y", "0"), realValue2)) {
-        setScenePos(realValue, realValue2);
-    }
-    if (getStringRealValue(infoEle.attribute("z", ""), realValue)) {
-        setZValue(realValue);
-    }
-    setAcceptDrops(getStringBoolValue(infoEle.attribute("acceptDrops", "0")));
-    setEnabled(getStringBoolValue(infoEle.attribute("enable", "1")));
-    if (getStringRealValue(infoEle.attribute("opacity", ""), realValue)) {
-        setOpacity(realValue);
-    }
-    if (getStringRealValue(infoEle.attribute("rotation", ""), realValue)) {
-        setRotation(realValue);
-    }
-    if (getStringRealValue(infoEle.attribute("scale", ""), realValue)) {
-        setScale(realValue);
-    }
-    QDomElement toolTipEle = infoEle.firstChildElement("toolTip");
-    if (!toolTipEle.isNull()) {
-        setToolTip(toolTipEle.text());
-    }
-    QDomElement shapeInfoEle = infoEle.firstChildElement("shape-info");
-    if (!shapeInfoEle.isNull()) {
-        // 解析shapeInfoEle信息
-        bool isShowBorder = getStringBoolValue(shapeInfoEle.attribute("show-border", "0"));
-        bool isShowBk     = getStringBoolValue(shapeInfoEle.attribute("show-bk", "0"));
-        if (isShowBorder) {
-            QDomElement borderPenEle = shapeInfoEle.firstChildElement("border-pen");
-            if (!borderPenEle.isNull()) {
-                QPen p;
-                if (DAXMLFileInterface::loadElement(p, &borderPenEle)) {
-                    setShowBorder(isShowBorder);
-                    setBorderPen(p);
-                }
-            }
-        }
-        if (isShowBk) {
-            QDomElement bkEle = shapeInfoEle.firstChildElement("bk-brush");
-            if (!bkEle.isNull()) {
-                QBrush b;
-                if (DAXMLFileInterface::loadElement(b, &bkEle)) {
-                    enableShowBackground(isShowBk);
-                    setBackgroundBrush(b);
-                }
-            }
-        }
-    }
-    return true;
+	if (getStringRealValue(infoEle.attribute("x", "0"), realValue)
+		&& getStringRealValue(infoEle.attribute("y", "0"), realValue2)) {
+		setScenePos(realValue, realValue2);
+	}
+	if (getStringRealValue(infoEle.attribute("z", ""), realValue)) {
+		setZValue(realValue);
+	}
+	setAcceptDrops(getStringBoolValue(infoEle.attribute("acceptDrops", "0")));
+	setEnabled(getStringBoolValue(infoEle.attribute("enable", "1")));
+	if (getStringRealValue(infoEle.attribute("opacity", ""), realValue)) {
+		setOpacity(realValue);
+	}
+	if (getStringRealValue(infoEle.attribute("rotation", ""), realValue)) {
+		setRotation(realValue);
+	}
+	if (getStringRealValue(infoEle.attribute("scale", ""), realValue)) {
+		setScale(realValue);
+	}
+	QDomElement toolTipEle = infoEle.firstChildElement("toolTip");
+	if (!toolTipEle.isNull()) {
+		setToolTip(toolTipEle.text());
+	}
+	QDomElement shapeInfoEle = infoEle.firstChildElement("shape-info");
+	if (!shapeInfoEle.isNull()) {
+		// 解析shapeInfoEle信息
+		bool isShowBorder = getStringBoolValue(shapeInfoEle.attribute("show-border", "0"));
+		bool isShowBk     = getStringBoolValue(shapeInfoEle.attribute("show-bk", "0"));
+		if (isShowBorder) {
+			QDomElement borderPenEle = shapeInfoEle.firstChildElement("border-pen");
+			if (!borderPenEle.isNull()) {
+				QPen p;
+				if (DAXMLFileInterface::loadElement(p, &borderPenEle)) {
+					setShowBorder(isShowBorder);
+					setBorderPen(p);
+				}
+			}
+		}
+		if (isShowBk) {
+			QDomElement bkEle = shapeInfoEle.firstChildElement("bk-brush");
+			if (!bkEle.isNull()) {
+				QBrush b;
+				if (DAXMLFileInterface::loadElement(b, &bkEle)) {
+					enableShowBackground(isShowBk);
+					setBackgroundBrush(b);
+				}
+			}
+		}
+	}
+	return true;
 }
 
 /**
@@ -292,11 +298,11 @@ void DAGraphicsItem::setItemID(uint64_t id)
  */
 DAGraphicsItem* DAGraphicsItem::cast(QGraphicsItem* i)
 {
-    return dynamic_cast< DAGraphicsItem* >(i);
-    //    if (i->type() > ItemType_DAGraphicsItem_Begin && i->type() < ItemType_DAGraphicsItem_End) {
-    //        return static_cast< DAGraphicsItem* >(i);
-    //    }
-    //    return nullptr;
+	return dynamic_cast< DAGraphicsItem* >(i);
+	//    if (i->type() > ItemType_DAGraphicsItem_Begin && i->type() < ItemType_DAGraphicsItem_End) {
+	//        return static_cast< DAGraphicsItem* >(i);
+	//    }
+	//    return nullptr;
 }
 
 // bool DAGraphicsItem::sceneEvent(QEvent* event)
