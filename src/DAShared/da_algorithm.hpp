@@ -317,4 +317,4 @@ OutputIterator transform(InputIterator1 first1,
 }
 }
 
-#endif  // SAALGORITHM_H
+#endif  // DA_ALGORITHM_H

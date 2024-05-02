@@ -134,7 +134,7 @@ void DATextReadWriter::setSkipHeader(size_t v)
 
 int DATextReadWriter::getSkipHeader() const
 {
-    return d_ptr->skipHeader;
+    return static_cast< int >(d_ptr->skipHeader);
 }
 
 ///

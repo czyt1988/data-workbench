@@ -1,12 +1,11 @@
 ﻿#include "DAWorkFlowOperateWidget.h"
+#include "ui_DAWorkFlowOperateWidget.h"
 // qt
 #include <QImage>
 #include <QDebug>
 #include <QMessageBox>
 #include <QInputDialog>
 #include <QUndoStack>
-// moc
-#include "ui_DAWorkFlowOperateWidget.h"
 // workflow
 #include "DAWorkFlowGraphicsView.h"
 #include "DAWorkFlowGraphicsScene.h"
@@ -27,18 +26,18 @@ namespace DA
 DAWorkFlowOperateWidget::DAWorkFlowOperateWidget(QWidget* parent)
     : QWidget(parent), ui(new Ui::DAWorkFlowOperateWidget), _isShowGrid(true), _defaultTextColor(Qt::black)
 {
-    _isDestorying = false;
-    ui->setupUi(this);
-    connect(ui->tabWidget, &QTabWidget::currentChanged, this, &DAWorkFlowOperateWidget::onTabWidgetCurrentChanged);
-    connect(ui->tabWidget, &QTabWidget::tabCloseRequested, this, &DAWorkFlowOperateWidget::onTabWidgetTabCloseRequested);
+	_isDestorying = false;
+	ui->setupUi(this);
+	connect(ui->tabWidget, &QTabWidget::currentChanged, this, &DAWorkFlowOperateWidget::onTabWidgetCurrentChanged);
+	connect(ui->tabWidget, &QTabWidget::tabCloseRequested, this, &DAWorkFlowOperateWidget::onTabWidgetTabCloseRequested);
 }
 
 DAWorkFlowOperateWidget::~DAWorkFlowOperateWidget()
 {
-    qDebug() << "DAWorkFlowOperateWidget begin delete ui";
-    _isDestorying = true;
-    delete ui;
-    qDebug() << "DAWorkFlowOperateWidget end delete ui";
+	qDebug() << "DAWorkFlowOperateWidget begin delete ui";
+	_isDestorying = true;
+	delete ui;
+	qDebug() << "DAWorkFlowOperateWidget end delete ui";
 }
 
 /**
@@ -62,35 +61,35 @@ DAWorkFlow* DAWorkFlowOperateWidget::createWorkflow()
  */
 DAWorkFlowEditWidget* DAWorkFlowOperateWidget::appendWorkflow(const QString& name)
 {
-    if (isOnlyOneWorkflow()) {
-        if (ui->tabWidget->count() >= 1) {
-            return nullptr;
-        }
-    }
-    DAWorkFlowEditWidget* wfe = new DAWorkFlowEditWidget(ui->tabWidget);
-    DAWorkFlow* wf            = createWorkflow();
-    wf->setParent(wfe);
-    wfe->setWorkFlow(wf);
-    // 把undo添加进去
-    wfe->setEnableShowGrid(_isShowGrid);
-    wfe->setDefaultTextColor(_defaultTextColor);
-    wfe->setDefaultTextFont(_defaultFont);
-    DAWorkFlowGraphicsScene* scene = wfe->getWorkFlowGraphicsScene();
-    connect(wfe, &DAWorkFlowEditWidget::selectNodeItemChanged, this, &DAWorkFlowOperateWidget::selectNodeItemChanged);
-    connect(wfe, &DAWorkFlowEditWidget::mouseActionFinished, this, &DAWorkFlowOperateWidget::mouseActionFinished);
-    connect(scene, &DAWorkFlowGraphicsScene::selectionChanged, this, &DAWorkFlowOperateWidget::onSelectionChanged);
-    connect(wfe, &DAWorkFlowEditWidget::startExecute, this, [ this, wfe ]() { emit workflowStartExecute(wfe); });
-    connect(wfe,
-            &DAWorkFlowEditWidget::nodeExecuteFinished,
-            this,
-            [ this, wfe ](DAAbstractNode::SharedPointer n, bool state) { emit nodeExecuteFinished(wfe, n, state); });
-    connect(wfe, &DAWorkFlowEditWidget::finished, this, [ this, wfe ](bool s) { emit workflowFinished(wfe, s); });
-    ui->tabWidget->addTab(wfe, name);
-    // 把名字保存到DAWorkFlowEditWidget中，在DAProject保存的时候会用到
-    wfe->setWindowTitle(name);
-    emit workflowCreated(wfe);
-    ui->tabWidget->setCurrentIndex(ui->tabWidget->indexOf(wfe));
-    return wfe;
+	if (isOnlyOneWorkflow()) {
+		if (ui->tabWidget->count() >= 1) {
+			return nullptr;
+		}
+	}
+	DAWorkFlowEditWidget* wfe = new DAWorkFlowEditWidget(ui->tabWidget);
+	DAWorkFlow* wf            = createWorkflow();
+	wf->setParent(wfe);
+	wfe->setWorkFlow(wf);
+	// 把undo添加进去
+	wfe->setEnableShowGrid(_isShowGrid);
+	wfe->setDefaultTextColor(_defaultTextColor);
+	wfe->setDefaultTextFont(_defaultFont);
+	DAWorkFlowGraphicsScene* scene = wfe->getWorkFlowGraphicsScene();
+	connect(wfe, &DAWorkFlowEditWidget::selectNodeItemChanged, this, &DAWorkFlowOperateWidget::selectNodeItemChanged);
+	connect(wfe, &DAWorkFlowEditWidget::mouseActionFinished, this, &DAWorkFlowOperateWidget::mouseActionFinished);
+	connect(scene, &DAWorkFlowGraphicsScene::selectionChanged, this, &DAWorkFlowOperateWidget::onSelectionChanged);
+	connect(wfe, &DAWorkFlowEditWidget::startExecute, this, [ this, wfe ]() { emit workflowStartExecute(wfe); });
+	connect(wfe,
+			&DAWorkFlowEditWidget::nodeExecuteFinished,
+			this,
+			[ this, wfe ](DAAbstractNode::SharedPointer n, bool state) { emit nodeExecuteFinished(wfe, n, state); });
+	connect(wfe, &DAWorkFlowEditWidget::finished, this, [ this, wfe ](bool s) { emit workflowFinished(wfe, s); });
+	ui->tabWidget->addTab(wfe, name);
+	// 把名字保存到DAWorkFlowEditWidget中，在DAProject保存的时候会用到
+	wfe->setWindowTitle(name);
+	emit workflowCreated(wfe);
+	ui->tabWidget->setCurrentIndex(ui->tabWidget->indexOf(wfe));
+	return wfe;
 }
 
 /**
@@ -100,12 +99,12 @@ DAWorkFlowEditWidget* DAWorkFlowOperateWidget::appendWorkflow(const QString& nam
  */
 DAWorkFlowEditWidget* DAWorkFlowOperateWidget::appendWorkflowWithDialog()
 {
-    bool ok = false;
-    QString text = QInputDialog::getText(this, tr("Title of new workflow"), tr("Title:"), QLineEdit::Normal, QString(), &ok);
-    if (!ok || text.isEmpty()) {
-        return nullptr;
-    }
-    return appendWorkflow(text);
+	bool ok = false;
+	QString text = QInputDialog::getText(this, tr("Title of new workflow"), tr("Title:"), QLineEdit::Normal, QString(), &ok);
+	if (!ok || text.isEmpty()) {
+		return nullptr;
+	}
+	return appendWorkflow(text);
 }
 
 /**
@@ -141,17 +140,17 @@ void DAWorkFlowOperateWidget::setCurrentWorkflowWidget(DAWorkFlowEditWidget* wf)
  */
 DAWorkFlowEditWidget* DAWorkFlowOperateWidget::getCurrentWorkFlowWidget() const
 {
-    QWidget* w = ui->tabWidget->currentWidget();
-    if (nullptr == w) {
-        return nullptr;
-    }
-    return qobject_cast< DAWorkFlowEditWidget* >(w);
+	QWidget* w = ui->tabWidget->currentWidget();
+	if (nullptr == w) {
+		return nullptr;
+	}
+	return qobject_cast< DAWorkFlowEditWidget* >(w);
 }
 
 void DAWorkFlowOperateWidget::setCurrentWorkflowName(const QString& name)
 {
-    int i = getCurrentWorkflowIndex();
-    renameWorkFlowWidget(i, name);
+	int i = getCurrentWorkflowIndex();
+	renameWorkFlowWidget(i, name);
 }
 
 /**
@@ -160,12 +159,12 @@ void DAWorkFlowOperateWidget::setCurrentWorkflowName(const QString& name)
  */
 QList< DAWorkFlowEditWidget* > DAWorkFlowOperateWidget::getAllWorkFlowWidgets() const
 {
-    QList< DAWorkFlowEditWidget* > res;
-    for (int i = 0; i < ui->tabWidget->count(); ++i) {
-        auto w = qobject_cast< DAWorkFlowEditWidget* >(ui->tabWidget->widget(i));
-        res.append(w);
-    }
-    return res;
+	QList< DAWorkFlowEditWidget* > res;
+	for (int i = 0; i < ui->tabWidget->count(); ++i) {
+		auto w = qobject_cast< DAWorkFlowEditWidget* >(ui->tabWidget->widget(i));
+		res.append(w);
+	}
+	return res;
 }
 
 /**
@@ -174,11 +173,11 @@ QList< DAWorkFlowEditWidget* > DAWorkFlowOperateWidget::getAllWorkFlowWidgets() 
  */
 DAWorkFlowGraphicsScene* DAWorkFlowOperateWidget::getCurrentWorkFlowScene() const
 {
-    DAWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
-    if (nullptr == w) {
-        return nullptr;
-    }
-    return w->getWorkFlowGraphicsScene();
+	DAWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
+	if (nullptr == w) {
+		return nullptr;
+	}
+	return w->getWorkFlowGraphicsScene();
 }
 
 /**
@@ -187,18 +186,18 @@ DAWorkFlowGraphicsScene* DAWorkFlowOperateWidget::getCurrentWorkFlowScene() cons
  */
 QList< DAWorkFlowGraphicsScene* > DAWorkFlowOperateWidget::getAllWorkFlowScene() const
 {
-    QList< DAWorkFlowGraphicsScene* > res;
-    int c = ui->tabWidget->count();
-    for (int i = 0; i < c; ++i) {
-        DAWorkFlowEditWidget* we = qobject_cast< DAWorkFlowEditWidget* >(ui->tabWidget->widget(i));
-        if (we) {
-            DAWorkFlowGraphicsScene* sc = we->getWorkFlowGraphicsScene();
-            if (sc) {
-                res.append(sc);
-            }
-        }
-    }
-    return res;
+	QList< DAWorkFlowGraphicsScene* > res;
+	int c = ui->tabWidget->count();
+	for (int i = 0; i < c; ++i) {
+		DAWorkFlowEditWidget* we = qobject_cast< DAWorkFlowEditWidget* >(ui->tabWidget->widget(i));
+		if (we) {
+			DAWorkFlowGraphicsScene* sc = we->getWorkFlowGraphicsScene();
+			if (sc) {
+				res.append(sc);
+			}
+		}
+	}
+	return res;
 }
 
 /**
@@ -207,11 +206,11 @@ QList< DAWorkFlowGraphicsScene* > DAWorkFlowOperateWidget::getAllWorkFlowScene()
  */
 DAWorkFlowGraphicsView* DAWorkFlowOperateWidget::getCurrentWorkFlowView() const
 {
-    DAWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
-    if (nullptr == w) {
-        return nullptr;
-    }
-    return w->getWorkFlowGraphicsView();
+	DAWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
+	if (nullptr == w) {
+		return nullptr;
+	}
+	return w->getWorkFlowGraphicsView();
 }
 
 /**
@@ -259,23 +258,23 @@ int DAWorkFlowOperateWidget::count() const
  */
 void DAWorkFlowOperateWidget::removeWorkflow(int index)
 {
-    QWidget* w = ui->tabWidget->widget(index);
-    if (nullptr == w) {
-        return;
-    }
-    QMessageBox::StandardButton btn = QMessageBox::question(this,
-                                                            tr("question"),  // 疑问
-                                                            tr("Confirm to delete workflow:%1")
-                                                                .arg(getWorkFlowWidgetName(index))  // 是否确认删除工作流:%1
-    );
-    if (btn != QMessageBox::Yes) {
-        return;
-    }
-    // 发射移除信号
-    emit workflowRemoving(qobject_cast< DA::DAWorkFlowEditWidget* >(w));
-    ui->tabWidget->removeTab(index);
-    w->hide();
-    w->deleteLater();
+	QWidget* w = ui->tabWidget->widget(index);
+	if (nullptr == w) {
+		return;
+	}
+	QMessageBox::StandardButton btn = QMessageBox::question(this,
+															tr("question"),  // 疑问
+															tr("Confirm to delete workflow:%1")
+																.arg(getWorkFlowWidgetName(index))  // 是否确认删除工作流:%1
+	);
+	if (btn != QMessageBox::Yes) {
+		return;
+	}
+	// 发射移除信号
+	emit workflowRemoving(qobject_cast< DA::DAWorkFlowEditWidget* >(w));
+	ui->tabWidget->removeTab(index);
+	w->hide();
+	w->deleteLater();
 }
 
 /**
@@ -283,10 +282,10 @@ void DAWorkFlowOperateWidget::removeWorkflow(int index)
  */
 void DAWorkFlowOperateWidget::setUndoStackActive()
 {
-    DAWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
-    if (w) {
-        w->setUndoStackActive();
-    }
+	DAWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
+	if (w) {
+		w->setUndoStackActive();
+	}
 }
 
 /**
@@ -297,15 +296,15 @@ void DAWorkFlowOperateWidget::setUndoStackActive()
  */
 void DAWorkFlowOperateWidget::setEnableShowGrid(bool on)
 {
-    _isShowGrid = on;
-    const int c = count();
-    for (int i = 0; i < c; ++i) {
-        DAWorkFlowEditWidget* w = getWorkFlowWidget(i);
-        if (w == nullptr) {
-            continue;
-        }
-        w->setEnableShowGrid(_isShowGrid);
-    }
+	_isShowGrid = on;
+	const int c = count();
+	for (int i = 0; i < c; ++i) {
+		DAWorkFlowEditWidget* w = getWorkFlowWidget(i);
+		if (w == nullptr) {
+			continue;
+		}
+		w->setEnableShowGrid(_isShowGrid);
+	}
 }
 
 /**
@@ -323,71 +322,71 @@ bool DAWorkFlowOperateWidget::isEnableShowGrid() const
  */
 QUndoStack* DAWorkFlowOperateWidget::getUndoStack()
 {
-    DAWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
-    if (w) {
-        return w->getUndoStack();
-    }
-    return nullptr;
+	DAWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
+	if (w) {
+		return w->getUndoStack();
+	}
+	return nullptr;
 }
 
 void DAWorkFlowOperateWidget::addBackgroundPixmap(const QString& pixmapPath)
 {
-    DAWorkFlowGraphicsScene* s = getCurrentWorkFlowScene();
-    if (nullptr == s) {
-        return;
-    }
-    QImage img(pixmapPath);
-    QPixmap px;
-    px.convertFromImage(img);
-    DAGraphicsPixmapItem* item = s->setBackgroundPixmap(px);
-    item->setSelectable(true);
-    item->setMoveable(true);
+	DAWorkFlowGraphicsScene* s = getCurrentWorkFlowScene();
+	if (nullptr == s) {
+		return;
+	}
+	QImage img(pixmapPath);
+	QPixmap px;
+	px.convertFromImage(img);
+	DAGraphicsPixmapItem* item = s->setBackgroundPixmap(px);
+	item->setSelectable(true);
+	item->setMoveable(true);
 }
 
 void DAWorkFlowOperateWidget::setBackgroundPixmapLock(bool on)
 {
-    DAWorkFlowGraphicsScene* s = getCurrentWorkFlowScene();
-    if (nullptr == s) {
-        return;
-    }
-    DAGraphicsPixmapItem* item = s->getBackgroundPixmapItem();
-    if (nullptr == item) {
-        return;
-    }
-    item->setSelectable(!on);
-    item->setMoveable(!on);
+	DAWorkFlowGraphicsScene* s = getCurrentWorkFlowScene();
+	if (nullptr == s) {
+		return;
+	}
+	DAGraphicsPixmapItem* item = s->getBackgroundPixmapItem();
+	if (nullptr == item) {
+		return;
+	}
+	item->setSelectable(!on);
+	item->setMoveable(!on);
 }
 
 void DAWorkFlowOperateWidget::setSelectTextColor(const QColor& color)
 {
-    DAWorkFlowEditWidget* ww = getCurrentWorkFlowWidget();
-    if (ww) {
-        ww->setSelectTextColor(color);
-    }
+	DAWorkFlowEditWidget* ww = getCurrentWorkFlowWidget();
+	if (ww) {
+		ww->setSelectTextColor(color);
+	}
 }
 
 void DAWorkFlowOperateWidget::setSelectShapeBackgroundBrush(const QBrush& b)
 {
-    DAWorkFlowEditWidget* ww = getCurrentWorkFlowWidget();
-    if (ww) {
-        ww->setSelectShapeBackgroundBrush(b);
-    }
+	DAWorkFlowEditWidget* ww = getCurrentWorkFlowWidget();
+	if (ww) {
+		ww->setSelectShapeBackgroundBrush(b);
+	}
 }
 
 void DAWorkFlowOperateWidget::setSelectShapeBorderPen(const QPen& v)
 {
-    DAWorkFlowEditWidget* ww = getCurrentWorkFlowWidget();
-    if (ww) {
-        ww->setSelectShapeBorderPen(v);
-    }
+	DAWorkFlowEditWidget* ww = getCurrentWorkFlowWidget();
+	if (ww) {
+		ww->setSelectShapeBorderPen(v);
+	}
 }
 
 void DAWorkFlowOperateWidget::setSelectTextFont(const QFont& f)
 {
-    DAWorkFlowEditWidget* ww = getCurrentWorkFlowWidget();
-    if (ww) {
-        ww->setSelectTextItemFont(f);
-    }
+	DAWorkFlowEditWidget* ww = getCurrentWorkFlowWidget();
+	if (ww) {
+		ww->setSelectTextItemFont(f);
+	}
 }
 
 /**
@@ -396,12 +395,12 @@ void DAWorkFlowOperateWidget::setSelectTextFont(const QFont& f)
  */
 void DAWorkFlowOperateWidget::setCurrentWorkflowShowGrid(bool on)
 {
-    DAWorkFlowGraphicsScene* secen = getCurrentWorkFlowScene();
-    if (nullptr == secen) {
-        return;
-    }
-    secen->showGridLine(on);
-    secen->update();
+	DAWorkFlowGraphicsScene* secen = getCurrentWorkFlowScene();
+	if (nullptr == secen) {
+		return;
+	}
+	secen->showGridLine(on);
+	secen->update();
 }
 
 /**
@@ -409,12 +408,12 @@ void DAWorkFlowOperateWidget::setCurrentWorkflowShowGrid(bool on)
  */
 void DAWorkFlowOperateWidget::setCurrentWorkflowWholeView()
 {
-    DAWorkFlowGraphicsView* view = getCurrentWorkFlowView();
-    if (!view) {
-        qWarning() << tr("Loss View");  // cn:缺少视图
-        return;
-    }
-    view->setWholeView();
+	DAWorkFlowGraphicsView* view = getCurrentWorkFlowView();
+	if (!view) {
+		qWarning() << tr("Loss View");  // cn:缺少视图
+		return;
+	}
+	view->setWholeView();
 }
 
 /**
@@ -422,12 +421,12 @@ void DAWorkFlowOperateWidget::setCurrentWorkflowWholeView()
  */
 void DAWorkFlowOperateWidget::setCurrentWorkflowZoomIn()
 {
-    DAWorkFlowGraphicsView* view = getCurrentWorkFlowView();
-    if (!view) {
-        qWarning() << tr("Loss View");  // cn:缺少视图
-        return;
-    }
-    view->zoomIn();
+	DAWorkFlowGraphicsView* view = getCurrentWorkFlowView();
+	if (!view) {
+		qWarning() << tr("Loss View");  // cn:缺少视图
+		return;
+	}
+	view->zoomIn();
 }
 
 /**
@@ -435,12 +434,12 @@ void DAWorkFlowOperateWidget::setCurrentWorkflowZoomIn()
  */
 void DAWorkFlowOperateWidget::setCurrentWorkflowZoomOut()
 {
-    DAWorkFlowGraphicsView* view = getCurrentWorkFlowView();
-    if (!view) {
-        qWarning() << tr("Loss View");  // cn:缺少视图
-        return;
-    }
-    view->zoomOut();
+	DAWorkFlowGraphicsView* view = getCurrentWorkFlowView();
+	if (!view) {
+		qWarning() << tr("Loss View");  // cn:缺少视图
+		return;
+	}
+	view->zoomOut();
 }
 
 /**
@@ -448,17 +447,17 @@ void DAWorkFlowOperateWidget::setCurrentWorkflowZoomOut()
  */
 void DAWorkFlowOperateWidget::runCurrentWorkFlow()
 {
-    DAWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
-    if (nullptr == w) {
-        qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
-        return;
-    }
-    DAWorkFlow* wf = w->getWorkflow();
-    if (nullptr == wf) {
-        qCritical() << tr("Unable to get workflow correctly");  // 无法正确获取工作流
-        return;
-    }
-    wf->exec();
+	DAWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
+	if (nullptr == w) {
+		qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
+		return;
+	}
+	DAWorkFlow* wf = w->getWorkflow();
+	if (nullptr == wf) {
+		qCritical() << tr("Unable to get workflow correctly");  // 无法正确获取工作流
+		return;
+	}
+	wf->exec();
 }
 
 /**
@@ -466,17 +465,17 @@ void DAWorkFlowOperateWidget::runCurrentWorkFlow()
  */
 void DAWorkFlowOperateWidget::terminateCurrentWorkFlow()
 {
-    DAWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
-    if (nullptr == w) {
-        qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
-        return;
-    }
-    DAWorkFlow* wf = w->getWorkflow();
-    if (nullptr == wf) {
-        qCritical() << tr("Unable to get workflow correctly");  // 无法正确获取工作流
-        return;
-    }
-    wf->terminate();
+	DAWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
+	if (nullptr == w) {
+		qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
+		return;
+	}
+	DAWorkFlow* wf = w->getWorkflow();
+	if (nullptr == wf) {
+		qCritical() << tr("Unable to get workflow correctly");  // 无法正确获取工作流
+		return;
+	}
+	wf->terminate();
 }
 
 /**
@@ -493,11 +492,11 @@ QFont DAWorkFlowOperateWidget::getDefaultTextFont() const
  */
 void DAWorkFlowOperateWidget::setDefaultTextFont(const QFont& f)
 {
-    _defaultFont                             = f;
-    QList< DAWorkFlowGraphicsScene* > secens = getAllWorkFlowScene();
-    for (DAWorkFlowGraphicsScene* sc : qAsConst(secens)) {
-        sc->setDefaultTextFont(f);
-    }
+	_defaultFont                             = f;
+	QList< DAWorkFlowGraphicsScene* > secens = getAllWorkFlowScene();
+	for (DAWorkFlowGraphicsScene* sc : qAsConst(secens)) {
+		sc->setDefaultTextFont(f);
+	}
 }
 /**
  * @brief 文本颜色
@@ -513,11 +512,11 @@ QColor DAWorkFlowOperateWidget::getDefaultTextColor() const
  */
 void DAWorkFlowOperateWidget::setDefaultTextColor(const QColor& c)
 {
-    _defaultTextColor                        = c;
-    QList< DAWorkFlowGraphicsScene* > secens = getAllWorkFlowScene();
-    for (DAWorkFlowGraphicsScene* sc : secens) {
-        sc->setDefaultTextColor(c);
-    }
+	_defaultTextColor                        = c;
+	QList< DAWorkFlowGraphicsScene* > secens = getAllWorkFlowScene();
+	for (DAWorkFlowGraphicsScene* sc : secens) {
+		sc->setDefaultTextColor(c);
+	}
 }
 
 /**
@@ -526,11 +525,11 @@ void DAWorkFlowOperateWidget::setDefaultTextColor(const QColor& c)
  */
 void DAWorkFlowOperateWidget::onTabWidgetCurrentChanged(int index)
 {
-    DAWorkFlowEditWidget* w = getWorkFlowWidget(index);
-    if (nullptr == w) {
-        return;
-    }
-    emit currentWorkFlowWidgetChanged(w);
+	DAWorkFlowEditWidget* w = getWorkFlowWidget(index);
+	if (nullptr == w) {
+		return;
+	}
+	emit currentWorkFlowWidgetChanged(w);
 }
 
 /**
@@ -547,45 +546,45 @@ void DAWorkFlowOperateWidget::onTabWidgetTabCloseRequested(int index)
  */
 void DAWorkFlowOperateWidget::onSelectionChanged()
 {
-    if (_isDestorying) {
-        //! 很奇怪，DAWorkFlowGraphicsScene已经析构了，但此槽函数还是能调用，在DAWorkFlowOperateWidget
-        //! 开始delete ui的时候，先析构DAWorkFlowGraphicsView，再析构DAWorkFlowGraphicsScene
-        //! 然后就会调用此槽函数，这时导致错误，从qt原理上，在析构时应该会把槽函数都断开连接才合理
-        return;
-    }
-    DAWorkFlowGraphicsScene* scene = getCurrentWorkFlowScene();
-    if (nullptr == scene) {
-        return;
-    }
-    QList< QGraphicsItem* > sits = scene->selectedItems();
-    if (sits.isEmpty()) {
-        return;
-    }
-    emit selectionItemChanged(sits.last());
+	if (_isDestorying) {
+		//! 很奇怪，DAWorkFlowGraphicsScene已经析构了，但此槽函数还是能调用，在DAWorkFlowOperateWidget
+		//! 开始delete ui的时候，先析构DAWorkFlowGraphicsView，再析构DAWorkFlowGraphicsScene
+		//! 然后就会调用此槽函数，这时导致错误，从qt原理上，在析构时应该会把槽函数都断开连接才合理
+		return;
+	}
+	DAWorkFlowGraphicsScene* scene = getCurrentWorkFlowScene();
+	if (nullptr == scene) {
+		return;
+	}
+	QList< QGraphicsItem* > sits = scene->selectedItems();
+	if (sits.isEmpty()) {
+		return;
+	}
+	emit selectionItemChanged(sits.last());
 }
 
 QList< DAGraphicsStandardTextItem* > DAWorkFlowOperateWidget::getSelectTextItems()
 {
-    QList< DAGraphicsStandardTextItem* > res;
-    DAWorkFlowGraphicsScene* secen = getCurrentWorkFlowScene();
-    if (nullptr == secen) {
-        return res;
-    }
-    QList< QGraphicsItem* > its = secen->selectedItems();
-    if (its.size() == 0) {
-        return res;
-    }
-    for (QGraphicsItem* item : qAsConst(its)) {
-        if (DAGraphicsStandardTextItem* textItem = dynamic_cast< DAGraphicsStandardTextItem* >(item)) {
-            res.append(textItem);
-        }
-    }
-    return res;
+	QList< DAGraphicsStandardTextItem* > res;
+	DAWorkFlowGraphicsScene* secen = getCurrentWorkFlowScene();
+	if (nullptr == secen) {
+		return res;
+	}
+	QList< QGraphicsItem* > its = secen->selectedItems();
+	if (its.size() == 0) {
+		return res;
+	}
+	for (QGraphicsItem* item : qAsConst(its)) {
+		if (DAGraphicsStandardTextItem* textItem = dynamic_cast< DAGraphicsStandardTextItem* >(item)) {
+			res.append(textItem);
+		}
+	}
+	return res;
 }
 
 bool DAWorkFlowOperateWidget::isOnlyOneWorkflow() const
 {
-    return mOnlyOneWorkflow;
+	return mOnlyOneWorkflow;
 }
 
 void DAWorkFlowOperateWidget::setOnlyOneWorkflow(bool v)
@@ -602,13 +601,13 @@ void DAWorkFlowOperateWidget::setOnlyOneWorkflow(bool v)
  */
 bool DAWorkFlowOperateWidget::setMouseActionFlag(DAWorkFlowGraphicsScene::MouseActionFlag mf, bool continous)
 {
-    DAWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
-    if (nullptr == w) {
-        qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
-        return false;
-    }
-    w->setMouseActionFlag(mf, continous);
-    return true;
+	DAWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
+	if (nullptr == w) {
+		qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
+		return false;
+	}
+	w->setMouseActionFlag(mf, continous);
+	return true;
 }
 
 /**
@@ -617,22 +616,22 @@ bool DAWorkFlowOperateWidget::setMouseActionFlag(DAWorkFlowGraphicsScene::MouseA
  */
 void DAWorkFlowOperateWidget::clear()
 {
-    emit workflowClearing();
-    int count = ui->tabWidget->count();
-    QList< DAWorkFlowEditWidget* > wfes;
-    for (int i = 0; i < count; ++i) {
-        DAWorkFlowEditWidget* wfe = getWorkFlowWidget(i);
-        wfes.append(wfe);
-    }
-    // 清空tab
-    while (ui->tabWidget->count() > 0) {
-        ui->tabWidget->removeTab(0);
-    }
-    // 清空
-    for (DAWorkFlowEditWidget* w : wfes) {
-        w->hide();
-        w->deleteLater();
-    }
+	emit workflowClearing();
+	int count = ui->tabWidget->count();
+	QList< DAWorkFlowEditWidget* > wfes;
+	for (int i = 0; i < count; ++i) {
+		DAWorkFlowEditWidget* wfe = getWorkFlowWidget(i);
+		wfes.append(wfe);
+	}
+	// 清空tab
+	while (ui->tabWidget->count() > 0) {
+		ui->tabWidget->removeTab(0);
+	}
+	// 清空
+	for (DAWorkFlowEditWidget* w : wfes) {
+		w->hide();
+		w->deleteLater();
+	}
 }
 
 /**
@@ -641,12 +640,12 @@ void DAWorkFlowOperateWidget::clear()
  */
 QList< QString > DAWorkFlowOperateWidget::getAllWorkflowNames() const
 {
-    QList< QString > names;
-    int c = ui->tabWidget->count();
-    for (int i = 0; i < c; ++i) {
-        names.append(ui->tabWidget->tabText(i));
-    }
-    return names;
+	QList< QString > names;
+	int c = ui->tabWidget->count();
+	for (int i = 0; i < c; ++i) {
+		names.append(ui->tabWidget->tabText(i));
+	}
+	return names;
 }
 
 }

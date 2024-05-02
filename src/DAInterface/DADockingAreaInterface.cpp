@@ -15,14 +15,14 @@ namespace DA
 {
 class DADockingAreaInterface::PrivateData
 {
-    DA_DECLARE_PUBLIC(DADockingAreaInterface)
+	DA_DECLARE_PUBLIC(DADockingAreaInterface)
 public:
-    PrivateData(DADockingAreaInterface* p);
-    void buildDock();
+	PrivateData(DADockingAreaInterface* p);
+	void buildDock();
 
 public:
-    DAUIInterface* mUiInterface { nullptr };
-    ads::CDockManager* mDockManager { nullptr };
+	DAUIInterface* mUiInterface { nullptr };
+	ads::CDockManager* mDockManager { nullptr };
 };
 
 //===================================================
@@ -35,18 +35,18 @@ DADockingAreaInterface::PrivateData::PrivateData(DADockingAreaInterface* p) : q_
 
 void DADockingAreaInterface::PrivateData::buildDock()
 {
-    ads::CDockManager::setConfigFlag(ads::CDockManager::OpaqueSplitterResize, true);
-    ads::CDockManager::setConfigFlag(ads::CDockManager::XmlCompressionEnabled, false);
-    ads::CDockManager::setConfigFlag(ads::CDockManager::FocusHighlighting, true);
-    mDockManager = new ads::CDockManager(q_ptr->ui()->mainWindow());
+	ads::CDockManager::setConfigFlag(ads::CDockManager::OpaqueSplitterResize, true);
+	ads::CDockManager::setConfigFlag(ads::CDockManager::XmlCompressionEnabled, false);
+	ads::CDockManager::setConfigFlag(ads::CDockManager::FocusHighlighting, true);
+	mDockManager = new ads::CDockManager(q_ptr->ui()->mainWindow());
 }
 //===================================================
 // DAAppDockingAreaInterface
 //===================================================
 DADockingAreaInterface::DADockingAreaInterface(DAUIInterface* u) : DAUIExtendInterface(u), DA_PIMPL_CONSTRUCT
 {
-    d_ptr->mUiInterface = u;
-    d_ptr->buildDock();
+	d_ptr->mUiInterface = u;
+	d_ptr->buildDock();
 }
 
 DADockingAreaInterface::~DADockingAreaInterface()
@@ -55,52 +55,52 @@ DADockingAreaInterface::~DADockingAreaInterface()
 
 ads::CDockManager* DADockingAreaInterface::dockManager()
 {
-    return d_ptr->mDockManager;
+	return d_ptr->mDockManager;
 }
 
 const ads::CDockManager* DADockingAreaInterface::dockManager() const
 {
-    return d_ptr->mDockManager;
+	return d_ptr->mDockManager;
 }
 
 ads::CDockWidget* DADockingAreaInterface::findDockWidget(QWidget* w) const
 {
-    if (nullptr == w) {
-        return nullptr;
-    }
-    const auto allDockWidgets = d_ptr->mDockManager->dockWidgetsMap();
-    for (auto i = allDockWidgets.begin(); i != allDockWidgets.end(); ++i) {
-        if (i.value()->widget() == w) {
-            return i.value();
-        }
-    }
-    return nullptr;
+	if (nullptr == w) {
+		return nullptr;
+	}
+	const auto allDockWidgets = d_ptr->mDockManager->dockWidgetsMap();
+	for (auto i = allDockWidgets.begin(); i != allDockWidgets.end(); ++i) {
+		if (i.value()->widget() == w) {
+			return i.value();
+		}
+	}
+	return nullptr;
 }
 
 void DADockingAreaInterface::hideDockWidget(QWidget* w)
 {
-    ads::CDockWidget* d = findDockWidget(w);
-    if (d) {
-        d->toggleView(false);
-        qDebug().noquote() << tr("dock widget \"%1\" was closed and hide").arg(d->windowTitle());  // cn:停靠窗口“%1”隐藏并关闭
-    } else {
-        d = qobject_cast< ads::CDockWidget* >(w);
-        if (d) {
-            d->toggleView(false);
-        } else {
-            qDebug().noquote() << tr("can not find widget or dock widget ");  // cn:无法找到需要隐藏的dock 窗口
-        }
-    }
+	ads::CDockWidget* d = findDockWidget(w);
+	if (d) {
+		d->toggleView(false);
+		qDebug().noquote() << tr("dock widget \"%1\" was closed and hide").arg(d->windowTitle());  // cn:停靠窗口“%1”隐藏并关闭
+	} else {
+		d = qobject_cast< ads::CDockWidget* >(w);
+		if (d) {
+			d->toggleView(false);
+		} else {
+			qDebug().noquote() << tr("can not find widget or dock widget ");  // cn:无法找到需要隐藏的dock 窗口
+		}
+	}
 }
 
 void DADockingAreaInterface::raiseDockByWidget(QWidget* w)
 {
-    if (ads::CDockWidget* dw = findDockWidget(w)) {
-        if (dw->isClosed()) {
-            dw->toggleView();
-        }
-        dw->raise();
-    }
+	if (ads::CDockWidget* dw = findDockWidget(w)) {
+		if (dw->isClosed()) {
+			dw->toggleView();
+		}
+		dw->raise();
+	}
 }
 
 /**
@@ -123,28 +123,28 @@ void DADockingAreaInterface::raiseDockByWidget(QWidget* w)
  */
 QList< DAData > DADockingAreaInterface::getCurrentSelectDatas() const
 {
-    QList< DAData > res;
-    // 获取当前的焦点
-    ads::CDockWidget* currentFource = dockManager()->focusedDockWidget();
-    if (currentFource == nullptr) {
-        // 说明没有焦点的窗口，返回空
-        return res;
-    }
-    // 查看是否是DataOperateWidget
-    auto dow = getDataOperateWidget();
-    auto dmw = getDataManageWidget();
+	QList< DAData > res;
+	// 获取当前的焦点
+	ads::CDockWidget* currentFource = dockManager()->focusedDockWidget();
+	if (currentFource == nullptr) {
+		// 说明没有焦点的窗口，返回空
+		return res;
+	}
+	// 查看是否是DataOperateWidget
+	auto dow = getDataOperateWidget();
+	auto dmw = getDataManageWidget();
 
-    if (currentFource->widget() == dow) {
-        // 数据表窗口，调用getCurrentSelectDatas
-        return dow->getCurrentSelectDatas();
-    } else if (currentFource->widget() == dmw) {
-        // 数据管理窗口，调用getSelectDatas
-        return dmw->getCurrentSelectDatas();
-    }
+	if (currentFource->widget() == dow) {
+		// 数据表窗口，调用getCurrentSelectDatas
+		return dow->getCurrentSelectDatas();
+	} else if (currentFource->widget() == dmw) {
+		// 数据管理窗口，调用getSelectDatas
+		return dmw->getCurrentSelectDatas();
+	}
 
-    return res;
+	return res;
 }
-
+#if DA_ENABLE_PYTHON
 /**
  * @brief 获取当前选中的dataframe
  *
@@ -152,38 +152,38 @@ QList< DAData > DADockingAreaInterface::getCurrentSelectDatas() const
  */
 std::pair< DAPyDataFrame, QList< int > > DADockingAreaInterface::getCurrentSelectDataFrame() const
 {
-    std::pair< DAPyDataFrame, QList< int > > res;
-    // 获取当前的焦点
-    ads::CDockWidget* currentFource = dockManager()->focusedDockWidget();
-    if (currentFource == nullptr) {
-        // 说明没有焦点的窗口，返回空
-        return res;
-    }
-    // 查看是否是DataOperateWidget
-    auto dow = getDataOperateWidget();
-    auto dmw = getDataManageWidget();
+	std::pair< DAPyDataFrame, QList< int > > res;
+	// 获取当前的焦点
+	ads::CDockWidget* currentFource = dockManager()->focusedDockWidget();
+	if (currentFource == nullptr) {
+		// 说明没有焦点的窗口，返回空
+		return res;
+	}
+	// 查看是否是DataOperateWidget
+	auto dow = getDataOperateWidget();
+	auto dmw = getDataManageWidget();
 
-    if (currentFource->widget() == dow) {
-        // 数据表窗口，调用getCurrentSelectDatas
-        return dow->getCurrentSelectDataFrame();
-    } else if (currentFource->widget() == dmw) {
-        // 数据管理窗口，调用getSelectDatas
-        auto sd = dmw->getOneSelectData();
-        if (sd.isDataFrame()) {
-            res.first = sd.toDataFrame();
-        }
-    }
-    return res;
+	if (currentFource->widget() == dow) {
+		// 数据表窗口，调用getCurrentSelectDatas
+		return dow->getCurrentSelectDataFrame();
+	} else if (currentFource->widget() == dmw) {
+		// 数据管理窗口，调用getSelectDatas
+		auto sd = dmw->getOneSelectData();
+		if (sd.isDataFrame()) {
+			res.first = sd.toDataFrame();
+		}
+	}
+	return res;
 }
-
+#endif
 /**
  * @brief 判断DataOperateWidget是否是在焦点
  * @return
  */
 bool DADockingAreaInterface::isDataOperateWidgetDockOnFource() const
 {
-    ads::CDockWidget* currentFource = dockManager()->focusedDockWidget();
-    return (currentFource->widget() == getDataOperateWidget());
+	ads::CDockWidget* currentFource = dockManager()->focusedDockWidget();
+	return (currentFource->widget() == getDataOperateWidget());
 }
 
 /**
@@ -192,8 +192,8 @@ bool DADockingAreaInterface::isDataOperateWidgetDockOnFource() const
  */
 bool DADockingAreaInterface::isDataManageWidgetDockOnFource() const
 {
-    ads::CDockWidget* currentFource = dockManager()->focusedDockWidget();
-    return (currentFource->widget() == getDataManageWidget());
+	ads::CDockWidget* currentFource = dockManager()->focusedDockWidget();
+	return (currentFource->widget() == getDataManageWidget());
 }
 
 /**
@@ -202,11 +202,11 @@ bool DADockingAreaInterface::isDataManageWidgetDockOnFource() const
  */
 DAWorkFlowGraphicsScene* DADockingAreaInterface::getCurrentScene() const
 {
-    DAWorkFlowOperateWidget* ow = getWorkFlowOperateWidget();
-    if (ow) {
-        return ow->getCurrentWorkFlowScene();
-    }
-    return nullptr;
+	DAWorkFlowOperateWidget* ow = getWorkFlowOperateWidget();
+	if (ow) {
+		return ow->getCurrentWorkFlowScene();
+	}
+	return nullptr;
 }
 
 /**
@@ -217,10 +217,10 @@ DAWorkFlowGraphicsScene* DADockingAreaInterface::getCurrentScene() const
  */
 ads::CDockWidget* DADockingAreaInterface::createCenterDockWidget(QWidget* w, const QString& widgetName)
 {
-    ads::CDockWidget* dockWidget = new ads::CDockWidget(widgetName);
-    dockWidget->setWidget(w);
-    d_ptr->mDockManager->setCentralWidget(dockWidget);
-    return dockWidget;
+	ads::CDockWidget* dockWidget = new ads::CDockWidget(widgetName);
+	dockWidget->setWidget(w);
+	d_ptr->mDockManager->setCentralWidget(dockWidget);
+	return dockWidget;
 }
 
 ads::CDockWidget* DADockingAreaInterface::createDockWidget(QWidget* w,
@@ -228,21 +228,21 @@ ads::CDockWidget* DADockingAreaInterface::createDockWidget(QWidget* w,
                                                            const QString& widgetName,
                                                            ads::CDockAreaWidget* dockAreaWidget)
 {
-    ads::CDockWidget* dockWidget = new ads::CDockWidget(widgetName);
-    dockWidget->setWidget(w);
-    d_ptr->mDockManager->addDockWidget(area, dockWidget, dockAreaWidget);
-    return dockWidget;
+	ads::CDockWidget* dockWidget = new ads::CDockWidget(widgetName);
+	dockWidget->setWidget(w);
+	d_ptr->mDockManager->addDockWidget(area, dockWidget, dockAreaWidget);
+	return dockWidget;
 }
 
 ads::CDockWidget* DADockingAreaInterface::createDockWidgetAsTab(QWidget* w,
                                                                 const QString& widgetName,
                                                                 ads::CDockAreaWidget* dockAreaWidget)
 {
-    ads::CDockWidget* dockWidget = new ads::CDockWidget(widgetName);
-    dockWidget->setWidget(w);
-    dockWidget->setFeatures(ads::CDockWidget::DefaultDockWidgetFeatures);
-    dockWidget->setMinimumSizeHintMode(ads::CDockWidget::MinimumSizeHintFromDockWidget);
-    d_ptr->mDockManager->addDockWidgetTabToArea(dockWidget, dockAreaWidget);
-    return dockWidget;
+	ads::CDockWidget* dockWidget = new ads::CDockWidget(widgetName);
+	dockWidget->setWidget(w);
+	dockWidget->setFeatures(ads::CDockWidget::DefaultDockWidgetFeatures);
+	dockWidget->setMinimumSizeHintMode(ads::CDockWidget::MinimumSizeHintFromDockWidget);
+	d_ptr->mDockManager->addDockWidgetTabToArea(dockWidget, dockAreaWidget);
+	return dockWidget;
 }
 }  // namespace DA
