@@ -25,8 +25,13 @@ public:
 	DAAbstractNodeGraphicsItem* getItem() const;
 	// 绘制连接点
 	void paintLinkPoints(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget);
+	// 显示连接点的文字
+	void showLinkPointText(bool on);
+	bool isShowLinkPointText() const;
 
 public:
+	// 重新计算linkpoint的信息
+	virtual void layoutLinkPoints(QList< DA::DANodeLinkPoint >& lps, const QRectF& bodyRect);
 	// 获取连接点的矩形绘图区域范围
 	//  此函数会影响到场景链接过程选中的状态，比较关键，决定了DANodeGraphicsScene::nodeItemLinkPointSelected能否发射,paintLinkPoint函数会调用此函数确定绘图区域
 	virtual QPainterPath getlinkPointPainterRegion(const DANodeLinkPoint& pl) const;
@@ -37,6 +42,11 @@ public:
 								QPainter* painter,
 								const QStyleOptionGraphicsItem* option,
 								QWidget* widget);
+	// 绘制连接点文本，会先绘制连接点，再绘制连接点文本
+	virtual void paintLinkPointText(const DANodeLinkPoint& pl,
+									QPainter* painter,
+									const QStyleOptionGraphicsItem* option,
+									QWidget* widget);
 };
 
 }  // end of namespace DA

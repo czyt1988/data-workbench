@@ -737,110 +737,8 @@ QList< DANodeLinkPoint > DAAbstractNodeGraphicsItem::generateLinkPoint() const
 		lp.name      = k;
 		res.append(lp);
 	}
-	changeLinkPointPos(res, getBodyRect());
+	getLinkPointDrawDelegate()->layoutLinkPoints(res, getBodyRect());
 	return (res);
-}
-
-/**
- * @brief 更新连接点
- *
- * 传入已有的连接点和总体尺寸，通过此函数的重写可以改变连接点的位置，
- * 如果想改变连接点的绘制应该通过setLinkPointDrawDelegate实现
- * @param lp
- * @param bodyRect
- */
-void DAAbstractNodeGraphicsItem::changeLinkPointPos(QList< DANodeLinkPoint >& lps, const QRectF& bodyRect) const
-{
-	int inputCnt  = 0;
-	int outputCnt = 0;
-	for (const DANodeLinkPoint& lp : lps) {
-		if (lp.way == DANodeLinkPoint::Output) {
-			++outputCnt;
-		} else {
-			++inputCnt;
-		}
-	}
-	// 离开边界的距离
-	const qreal spaceSide = 2;
-	// 获取出入口位置
-	const LinkPointLocation inLoc  = getLinkPointLocation(DANodeLinkPoint::Input);
-	const LinkPointLocation outLoc = getLinkPointLocation(DANodeLinkPoint::Output);
-	// 计算出入口的每次偏移量
-	qreal dtIn  = 0;
-	qreal dtOut = 0;
-	switch (inLoc) {
-	case LinkPointLocationOnLeftSide:
-	case LinkPointLocationOnRightSide:
-		dtIn = (bodyRect.height() - 2 * spaceSide) / (inputCnt + 1.0);
-		break;
-	case LinkPointLocationOnTopSide:
-	case LinkPointLocationOnBottomSide:
-		dtIn = (bodyRect.width() - 2 * spaceSide) / (inputCnt + 1.0);
-	default:
-		break;
-	}
-	switch (outLoc) {
-	case LinkPointLocationOnLeftSide:
-	case LinkPointLocationOnRightSide:
-		dtOut = (bodyRect.height() - 2 * spaceSide) / (outputCnt + 1.0);
-		break;
-	case LinkPointLocationOnTopSide:
-	case LinkPointLocationOnBottomSide:
-		dtOut = (bodyRect.width() - 2 * spaceSide) / (outputCnt + 1.0);
-	default:
-		break;
-	}
-	// 计数清零
-	inputCnt  = 0;
-	outputCnt = 0;
-	for (DANodeLinkPoint& lp : lps) {
-		if (lp.isInput()) {
-			++inputCnt;
-			switch (inLoc) {
-			case LinkPointLocationOnLeftSide:
-				lp.direction = AspectDirection::West;
-				lp.position  = QPointF(bodyRect.left() + spaceSide, bodyRect.top() + spaceSide + (inputCnt * dtIn));
-				break;
-			case LinkPointLocationOnTopSide:
-				lp.direction = AspectDirection::North;
-				lp.position  = QPointF(bodyRect.left() + spaceSide + (inputCnt * dtIn), bodyRect.top() + spaceSide);
-				break;
-			case LinkPointLocationOnRightSide:
-				lp.direction = AspectDirection::East;
-				lp.position  = QPointF(bodyRect.right() - spaceSide, bodyRect.top() + spaceSide + (inputCnt * dtIn));
-				break;
-			case LinkPointLocationOnBottomSide:
-				lp.direction = AspectDirection::South;
-				lp.position  = QPointF(bodyRect.left() + spaceSide + (inputCnt * dtIn), bodyRect.bottom() - spaceSide);
-				break;
-			default:
-				break;
-			}
-		} else {
-			// 出口
-			++outputCnt;
-			switch (outLoc) {
-			case LinkPointLocationOnLeftSide:
-				lp.direction = AspectDirection::West;
-				lp.position  = QPointF(bodyRect.left() + spaceSide, bodyRect.top() + spaceSide + (outputCnt * dtOut));
-				break;
-			case LinkPointLocationOnTopSide:
-				lp.direction = AspectDirection::North;
-				lp.position  = QPointF(bodyRect.left() + spaceSide + (outputCnt * dtOut), bodyRect.top() + spaceSide);
-				break;
-			case LinkPointLocationOnRightSide:
-				lp.direction = AspectDirection::East;
-				lp.position  = QPointF(bodyRect.right() - spaceSide, bodyRect.top() + spaceSide + (outputCnt * dtOut));
-				break;
-			case LinkPointLocationOnBottomSide:
-				lp.direction = AspectDirection::South;
-				lp.position = QPointF(bodyRect.left() + spaceSide + (outputCnt * dtOut), bodyRect.bottom() - spaceSide);
-				break;
-			default:
-				break;
-			}
-		}
-	}
 }
 
 /**
@@ -989,6 +887,17 @@ DAAbstractNodeLinkGraphicsItem* DAAbstractNodeGraphicsItem::linkTo(const QString
 }
 
 /**
+ * @brief 设置尺寸，这里要随之更新连接点
+ * @param s
+ */
+void DAAbstractNodeGraphicsItem::setBodySize(const QSizeF& s)
+{
+	DAGraphicsResizeableItem::setBodySize(s);
+	// 最后重新计算连接点必须在setBodySize之后
+	updateLinkPointPos();
+}
+
+/**
  * @brief 清除链接信息
  */
 void DAAbstractNodeGraphicsItem::clearLinkData()
@@ -1044,13 +953,14 @@ int DAAbstractNodeGraphicsItem::getLinkChainRecursion(DAAbstractNodeGraphicsItem
 void DAAbstractNodeGraphicsItem::updateLinkPointPos()
 {
 	QList< DANodeLinkPoint > lps = d_ptr->getLinkPoints();
-	changeLinkPointPos(lps, getBodyRect());
+	getLinkPointDrawDelegate()->layoutLinkPoints(lps, getBodyRect());
 	// 更新到linkData
 	int s = qMin(lps.size(), d_ptr->mLinkInfos.size());
 	for (int i = 0; i < s; ++i) {
+		// 把更新过后的linkpoint info设置回去
 		d_ptr->mLinkInfos[ i ].point = lps[ i ];
 		for (DAAbstractNodeLinkGraphicsItem* item : qAsConst(d_ptr->mLinkInfos[ i ].linkitems)) {
-			if (lps[ i ].way == DANodeLinkPoint::Input) {
+			if (lps[ i ].isInput()) {
 				item->updateToLinkPointInfo(lps[ i ]);
 			} else {
 				item->updateFromLinkPointInfo(lps[ i ]);
@@ -1069,6 +979,25 @@ void DAAbstractNodeGraphicsItem::updateLinkItems()
 			li->updatePos();
 		}
 	}
+}
+
+/**
+ * @brief 显示连接点的文字
+ * @param on
+ */
+void DAAbstractNodeGraphicsItem::showLinkPointText(bool on)
+{
+	if (auto delegate = getLinkPointDrawDelegate()) {
+		delegate->showLinkPointText(on);
+	}
+}
+
+bool DAAbstractNodeGraphicsItem::isShowLinkPointText() const
+{
+	if (auto delegate = getLinkPointDrawDelegate()) {
+		return delegate->isShowLinkPointText();
+	}
+	return false;
 }
 
 /**

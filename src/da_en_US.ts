@@ -5602,18 +5602,18 @@ Author:czy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="934"/>
+        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="850"/>
         <source>link item can not attach from node item(%1) with key=%2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="939"/>
+        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="855"/>
         <source>link item can not attach to node item(%1) with key=%2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="961"/>
-        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="966"/>
+        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="877"/>
+        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="882"/>
         <source>Node %1 cannot find a connection point named %2</source>
         <translation type="unfinished"></translation>
     </message>

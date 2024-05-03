@@ -5386,18 +5386,18 @@ Wrap</source>
         <translation>无法通过&lt;%1&gt;加载元件信息</translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="934"/>
+        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="850"/>
         <source>link item can not attach from node item(%1) with key=%2</source>
         <translation>无法通过节点%1的输出点%2进行连接</translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="939"/>
+        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="855"/>
         <source>link item can not attach to node item(%1) with key=%2</source>
         <translation>无法通过节点%1的输入点%2进行连接</translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="961"/>
-        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="966"/>
+        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="877"/>
+        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="882"/>
         <source>Node %1 cannot find a connection point named %2</source>
         <translation>节点%1无法找到名字为%2的连接点</translation>
     </message>

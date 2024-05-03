@@ -141,7 +141,9 @@ public:
 	void updateLinkPointPos();
 	// 更新linkitem
 	void updateLinkItems();
-
+	// 显示连接点的文字
+	void showLinkPointText(bool on);
+	bool isShowLinkPointText() const;
 	// 获取当前链接上的LinkGraphicsItem
 	QList< DAAbstractNodeLinkGraphicsItem* > getLinkItems() const;
 	// 获取所有链接进来这个节点的连接线
@@ -170,6 +172,7 @@ public:
 	DAAbstractNodeLinkGraphicsItem* linkTo(const QString& fromPointName,
 										   DAAbstractNodeGraphicsItem* toItem,
 										   const QString& toPointName);
+	virtual void setBodySize(const QSizeF& s) override;
 
 public:
 	// prepare系列函数，用于在改变前的回调
@@ -209,8 +212,6 @@ protected:
 	// 重置连接点，此函数会自动调用generateLinkPoint，如果想自定义，重载此函数
 	// 如果重载了generateLinkPoint或changeLinkPointPos，在构造函数中调用此函数
 	void resetLinkPoint();
-	// 更新连接点，传入已有的连接点和总体尺寸，通过此函数的重写可以改变连接点的位置，如果想改变连接点的绘制应该通过setLinkPointDrawDelegate实现
-	virtual void changeLinkPointPos(QList< DANodeLinkPoint >& lps, const QRectF& bodyRect) const;
 	// 有新的连接点加入
 	void addLinkPoint(const DANodeLinkPoint& lp);
 

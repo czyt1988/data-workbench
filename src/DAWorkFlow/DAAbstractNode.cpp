@@ -40,8 +40,10 @@ public:
 public:
 	PrivateData(DAAbstractNode* p);
 	DANodeMetaData mMetaData;
-	QList< LinkData > mLinksInfo;            ///< 记录所有连接信息
-	QHash< QString, QVariant > mInputData;   ///< 节点输入数据
+	QList< LinkData > mLinksInfo;  ///< 记录所有连接信息
+	QList< QString > mInputKeys;   ///< 记录输入节点，原来使用mInputData的keys，但这样无法保证有序
+	QHash< QString, QVariant > mInputData;  ///< 节点输入数据
+	QList< QString > mOutputKeys;  ///< 记录输出节点，原来使用mOutputData的keys，但这样无法保证有序
 	QHash< QString, QVariant > mOutputData;  ///< 节点输出数据
 	QHash< QString, QVariant > mPropertys;   ///< 属性数据
 	DAAbstractNode::IdType mId;
@@ -370,7 +372,7 @@ DAAbstractNode::NodeType DAAbstractNode::nodeType() const
  */
 QList< QString > DAAbstractNode::getInputKeys() const
 {
-    return d_ptr->mInputData.keys();
+    return d_ptr->mInputKeys;
 }
 
 /**
@@ -379,7 +381,7 @@ QList< QString > DAAbstractNode::getInputKeys() const
  */
 int DAAbstractNode::getInputKeysConut() const
 {
-    return d_ptr->mInputData.size();
+    return d_ptr->mInputKeys.size();
 }
 
 /**
@@ -405,7 +407,7 @@ QList< QString > DAAbstractNode::getLinkedInputKeys() const
  */
 QList< QString > DAAbstractNode::getOutputKeys() const
 {
-    return d_ptr->mOutputData.keys();
+    return d_ptr->mOutputKeys;
 }
 
 /**
@@ -414,7 +416,7 @@ QList< QString > DAAbstractNode::getOutputKeys() const
  */
 int DAAbstractNode::getOutputKeysConut() const
 {
-    return d_ptr->mOutputData.size();
+    return d_ptr->mOutputKeys.size();
 }
 
 /**
@@ -440,7 +442,10 @@ QList< QString > DAAbstractNode::getLinkedOutputKeys() const
  */
 void DAAbstractNode::addInputKey(const QString& k)
 {
-    d_ptr->mInputData[ k ] = QVariant();
+	if (d_ptr->mInputKeys.contains(k)) {
+		return;
+	}
+	d_ptr->mInputKeys.append(k);
 }
 /**
  * @brief 添加一个输出参数
@@ -448,7 +453,10 @@ void DAAbstractNode::addInputKey(const QString& k)
  */
 void DAAbstractNode::addOutputKey(const QString& k)
 {
-    d_ptr->mOutputData[ k ] = QVariant();
+	if (d_ptr->mOutputKeys.contains(k)) {
+		return;
+	}
+	d_ptr->mOutputKeys.append(k);
 }
 
 /**
@@ -719,7 +727,10 @@ int DAAbstractNode::getOutputNodesCount() const
  */
 void DAAbstractNode::setInputData(const QString& key, const QVariant& dp)
 {
-    d_ptr->mInputData[ key ] = dp;
+	if (!d_ptr->mInputKeys.contains(key)) {
+		return;
+	}
+	d_ptr->mInputData[ key ] = dp;
 }
 
 /**
@@ -895,7 +906,8 @@ void DAAbstractNode::setOutputData(const QString& key, const QVariant& dp)
  */
 void DAAbstractNode::removeInputKey(const QString& key)
 {
-    d_ptr->mInputData.remove(key);
+	d_ptr->mInputKeys.removeAll(key);
+	d_ptr->mInputData.remove(key);
 }
 /**
  * @brief 移除输出,如果有数据，数据也会移除
@@ -903,7 +915,8 @@ void DAAbstractNode::removeInputKey(const QString& key)
  */
 void DAAbstractNode::removeOutputKey(const QString& key)
 {
-    d_ptr->mOutputData.remove(key);
+	d_ptr->mOutputKeys.removeAll(key);
+	d_ptr->mOutputData.remove(key);
 }
 
 /**

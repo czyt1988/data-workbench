@@ -5,12 +5,12 @@ namespace DA
 {
 class DAStandardNodeWidgetGraphicsItem::PrivateData
 {
-    DA_DECLARE_PUBLIC(DAStandardNodeWidgetGraphicsItem)
+	DA_DECLARE_PUBLIC(DAStandardNodeWidgetGraphicsItem)
 public:
-    PrivateData(DAStandardNodeWidgetGraphicsItem* p);
+	PrivateData(DAStandardNodeWidgetGraphicsItem* p);
 
 public:
-    QGraphicsProxyWidget* mProxyWidget;
+	QGraphicsProxyWidget* mProxyWidget;
 };
 
 //===================================================
@@ -18,7 +18,7 @@ public:
 //===================================================
 DAStandardNodeWidgetGraphicsItem::PrivateData::PrivateData(DAStandardNodeWidgetGraphicsItem* p) : q_ptr(p)
 {
-    mProxyWidget = new QGraphicsProxyWidget(p);
+	mProxyWidget = new QGraphicsProxyWidget(p);
 }
 
 //==============================================================
@@ -34,18 +34,21 @@ DAStandardNodeWidgetGraphicsItem::~DAStandardNodeWidgetGraphicsItem()
 {
 }
 
-void DAStandardNodeWidgetGraphicsItem::paintBody(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget, const QRectF& bodyRect)
+void DAStandardNodeWidgetGraphicsItem::paintBody(QPainter* painter,
+                                                 const QStyleOptionGraphicsItem* option,
+                                                 QWidget* widget,
+                                                 const QRectF& bodyRect)
 {
-    Q_UNUSED(painter);
-    Q_UNUSED(option);
-    Q_UNUSED(widget);
-    Q_UNUSED(bodyRect);
+	Q_UNUSED(painter);
+	Q_UNUSED(option);
+	Q_UNUSED(widget);
+	Q_UNUSED(bodyRect);
 }
 
 void DAStandardNodeWidgetGraphicsItem::setBodySize(const QSizeF& s)
 {
-    d_ptr->mProxyWidget->resize(s);
-    DAAbstractNodeGraphicsItem::setBodySize(s);
+	d_ptr->mProxyWidget->resize(s);
+	DAAbstractNodeGraphicsItem::setBodySize(s);
 }
 /**
  * @brief 获取widget代理item
@@ -62,9 +65,19 @@ QGraphicsProxyWidget* DAStandardNodeWidgetGraphicsItem::proxyWidgetItem()
  */
 void DAStandardNodeWidgetGraphicsItem::setWidget(QWidget* w)
 {
-    QSize s = w->size();
-    d_ptr->mProxyWidget->setWidget(w);
-    changeBodySize(s);
+	QWidget* oldwidget = d_ptr->mProxyWidget->widget();
+	if (oldwidget == w) {
+		return;
+	}
+	if (oldwidget) {
+		oldwidget->hide();
+	}
+	QSize s = w->size();
+	d_ptr->mProxyWidget->setWidget(w);
+	changeBodySize(s);
+	if (oldwidget) {
+		oldwidget->deleteLater();
+	}
 }
 
 /**
