@@ -31,8 +31,6 @@ file(GLOB DA_LIB_HPP_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.hpp")
 # Build the headers-only target
 add_library(${DA_LIB_NAME} INTERFACE)
 add_library(${DA_PROJECT_NAME}::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
-# 构建库定义的宏,必须为Private
-target_compile_definitions(${DA_LIB_NAME} INTERFACE DASHARED_BUILD)
 
 
 # 设置HEADER_ONLY属性
