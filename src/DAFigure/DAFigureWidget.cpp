@@ -200,9 +200,9 @@ public:
 	QBrush mBackgroundBrush;                                            ///< 背景
 	QUndoStack mUndoStack;                                              ///<
 	QScopedPointer< DAChartFactory > mFactory;                          ///< 绘图创建的工厂
-	DAColorTheme mColorTheme { DAColorTheme::ColorTheme_Archambault };  ///< 主题
+	DAColorTheme mColorTheme;  ///< 主题，注意，这里不要用DAColorTheme mColorTheme { DAColorTheme::ColorTheme_Archambault }这样的初始化，会被当作std::initializer_list< QColor >捕获
 public:
-	PrivateData(DAFigureWidget* p) : q_ptr(p)
+	PrivateData(DAFigureWidget* p) : q_ptr(p), mColorTheme(DAColorTheme::ColorTheme_Archambault)
 	{
 		mFactory.reset(new DAChartFactory());
 	}

@@ -131,7 +131,8 @@ void DataAnalysController::onActionSpectrumTriggered()
 		auto xy    = toWave(wave, fs);
 		auto curve = waveChart->addCurve(xy.first.data(), xy.second.data(), xy.first.size());
 		curve->setTitle("Wave");
-		DA::DAChartUtil::setPlotItemColor(curve, fig->getDefaultColor());
+		auto c = fig->getDefaultColor();
+		DA::DAChartUtil::setPlotItemColor(curve, c);
 		waveChart->setXLabel("time(s)");
 		waveChart->setYLabel("amplitudes");
 		waveChart->setTitle("Wave Chart");
@@ -144,7 +145,8 @@ void DataAnalysController::onActionSpectrumTriggered()
 		std::vector< double > y = DA::toVectorDouble(amplitudes);
 		auto spectrum           = spectrumChart->addCurve(x.data(), y.data(), x.size());
 		spectrum->setTitle("spectrum");
-		DA::DAChartUtil::setPlotItemColor(spectrum, fig->getDefaultColor());
+		auto c = fig->getDefaultColor();
+		DA::DAChartUtil::setPlotItemColor(spectrum, c);
 		spectrumChart->setXLabel("frequency(Hz)");
 		spectrumChart->setYLabel("amplitudes");
 		spectrumChart->setTitle("Spectrum Chart");

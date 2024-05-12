@@ -55,6 +55,10 @@ public:
 	DAColorTheme() : DAIndexedVector< QColor >()
 	{
 	}
+	/**
+	 * @brief 不要用DAColorTheme mColorTheme { DAColorTheme::ColorTheme_Archambault }这样的初始化，会被当作std::initializer_list< QColor >捕获
+	 * @param th
+	 */
 	DAColorTheme(ColorTheme th) : DAIndexedVector< QColor >()
 	{
 		*this = DAColorTheme::create(th);
