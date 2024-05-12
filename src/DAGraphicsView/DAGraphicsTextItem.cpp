@@ -11,37 +11,37 @@ namespace DA
 
 class DAGraphicsTextItem::PrivateData
 {
-    DA_DECLARE_PUBLIC(DAGraphicsTextItem)
+	DA_DECLARE_PUBLIC(DAGraphicsTextItem)
 public:
-    PrivateData(DAGraphicsTextItem* p);
-    // 判断锚点是否固定了
-    bool isAnchorFixBoth() const;
-    // 只有，没有固定任何方向
-    bool isAnchorFree() const;
+	PrivateData(DAGraphicsTextItem* p);
+	// 判断锚点是否固定了
+	bool isAnchorFixBoth() const;
+	// 只有，没有固定任何方向
+	bool isAnchorFree() const;
 
 public:
-    DAGraphicsStandardTextItem* mTextItem { nullptr };
-    bool mEnableRelativePosition { false };
-    qreal mRelativeX { 0.0 };
-    qreal mRelativeY { 0.0 };
-    ShapeKeyPoint mParentAnchorPoint { ShapeKeyPoint::BottomCenter };
-    ShapeKeyPoint mItemAnchorPoint { ShapeKeyPoint::TopCenter };
-    bool mAutoAdjustSize { true };
+	DAGraphicsStandardTextItem* mTextItem { nullptr };
+	bool mEnableRelativePosition { false };
+	qreal mRelativeX { 0.0 };
+	qreal mRelativeY { 0.0 };
+	ShapeKeyPoint mParentAnchorPoint { ShapeKeyPoint::BottomCenter };
+	ShapeKeyPoint mItemAnchorPoint { ShapeKeyPoint::TopCenter };
+	bool mAutoAdjustSize { true };
 };
 
 DAGraphicsTextItem::PrivateData::PrivateData(DAGraphicsTextItem* p) : q_ptr(p)
 {
-    mTextItem = new DAGraphicsStandardTextItem(p);
+	mTextItem = new DAGraphicsStandardTextItem(p);
 }
 
 bool DAGraphicsTextItem::PrivateData::isAnchorFixBoth() const
 {
-    return (mParentAnchorPoint != ShapeKeyPoint::None) && (mItemAnchorPoint != ShapeKeyPoint::None);
+	return (mParentAnchorPoint != ShapeKeyPoint::None) && (mItemAnchorPoint != ShapeKeyPoint::None);
 }
 
 bool DAGraphicsTextItem::PrivateData::isAnchorFree() const
 {
-    return (mParentAnchorPoint == ShapeKeyPoint::None) || (mItemAnchorPoint == ShapeKeyPoint::None);
+	return (mParentAnchorPoint == ShapeKeyPoint::None) || (mItemAnchorPoint == ShapeKeyPoint::None);
 }
 
 //----------------------------------------------------
@@ -56,16 +56,16 @@ DAGraphicsTextItem::DAGraphicsTextItem(QGraphicsItem* parent) : DAGraphicsResize
 DAGraphicsTextItem::DAGraphicsTextItem(const QFont& f, QGraphicsItem* parent)
     : DAGraphicsResizeableItem(parent), DA_PIMPL_CONSTRUCT
 {
-    setFont(f);
-    init();
+	setFont(f);
+	init();
 }
 
 DAGraphicsTextItem::DAGraphicsTextItem(const QString& str, const QFont& f, QGraphicsItem* parent)
     : DAGraphicsResizeableItem(parent), DA_PIMPL_CONSTRUCT
 {
-    setFont(f);
-    setText(str);
-    init();
+	setFont(f);
+	setText(str);
+	init();
 }
 
 DAGraphicsTextItem::~DAGraphicsTextItem()
@@ -74,77 +74,71 @@ DAGraphicsTextItem::~DAGraphicsTextItem()
 
 void DAGraphicsTextItem::init()
 {
-    setAcceptDrops(true);
-    setAcceptHoverEvents(true);
-    setFocusProxy(d_ptr->mTextItem);
-    setEnableResize(false);
-    setShowBorder(false);
-    setEditable(false);
-    setSelectable(false);
-    setMovable(false);
-    setEditable(false);
-    d_ptr->mTextItem->setFlag(ItemIsMovable, false);
-}
-
-void DAGraphicsTextItem::setEditMode(bool on)
-{
-    d_ptr->mTextItem->setEditable(on);
+	setAcceptDrops(true);
+	setAcceptHoverEvents(true);
+	setFocusProxy(d_ptr->mTextItem);
+	setEnableResize(false);
+	setShowBorder(false);
+	setEditable(false);
+	setSelectable(false);
+	setMovable(false);
+	d_ptr->mTextItem->setFlag(ItemIsMovable, false);
 }
 
 bool DAGraphicsTextItem::saveToXml(QDomDocument* doc, QDomElement* parentElement) const
 {
-    DAGraphicsResizeableItem::saveToXml(doc, parentElement);
-    d_ptr->mTextItem->saveToXml(doc, parentElement);
-    QDomElement e = doc->createElement("textItem");
-    e.setAttribute("relativePosition", isEnableRelativePosition());
-    if (isEnableRelativePosition()) {
-        e.setAttribute("x", d_ptr->mRelativeX);
-        e.setAttribute("y", d_ptr->mRelativeY);
-        e.setAttribute("autoAdj", d_ptr->mAutoAdjustSize);
-        e.setAttribute("parAnchorPoint", enumToString(d_ptr->mParentAnchorPoint));
-        e.setAttribute("itemAnchorPoint", enumToString(d_ptr->mItemAnchorPoint));
-    }
-    parentElement->appendChild(e);
-    return true;
+	DAGraphicsResizeableItem::saveToXml(doc, parentElement);
+	d_ptr->mTextItem->saveToXml(doc, parentElement);
+	QDomElement e = doc->createElement("textItem");
+	e.setAttribute("relativePosition", isEnableRelativePosition());
+	if (isEnableRelativePosition()) {
+		e.setAttribute("x", d_ptr->mRelativeX);
+		e.setAttribute("y", d_ptr->mRelativeY);
+		e.setAttribute("autoAdj", d_ptr->mAutoAdjustSize);
+		e.setAttribute("parAnchorPoint", enumToString(d_ptr->mParentAnchorPoint));
+		e.setAttribute("itemAnchorPoint", enumToString(d_ptr->mItemAnchorPoint));
+	}
+	parentElement->appendChild(e);
+	return true;
 }
 
 bool DAGraphicsTextItem::loadFromXml(const QDomElement* itemElement)
 {
-    DAGraphicsResizeableItem::loadFromXml(itemElement);
-    if (!d_ptr->mTextItem->loadFromXml(itemElement)) {
-        return false;
-    }
-    auto e = itemElement->firstChildElement("textItem");
-    if (e.isNull()) {
-        return false;
-    }
-    bool rp = e.attribute("relativePosition").toInt();
+	DAGraphicsResizeableItem::loadFromXml(itemElement);
+	if (!d_ptr->mTextItem->loadFromXml(itemElement)) {
+		return false;
+	}
+	auto e = itemElement->firstChildElement("textItem");
+	if (e.isNull()) {
+		return false;
+	}
+	bool rp = e.attribute("relativePosition").toInt();
 
-    d_ptr->mEnableRelativePosition = rp;
-    if (rp) {
-        d_ptr->mRelativeX         = e.attribute("x").toDouble();
-        d_ptr->mRelativeY         = e.attribute("y").toDouble();
-        d_ptr->mAutoAdjustSize    = e.attribute("autoAdj").toInt();
-        d_ptr->mParentAnchorPoint = stringToEnum(e.attribute("parAnchorPoint"), ShapeKeyPoint::BottomCenter);
-        d_ptr->mItemAnchorPoint   = stringToEnum(e.attribute("itemAnchorPoint"), ShapeKeyPoint::TopCenter);
-        updateRelativePosition();
-    }
-    return true;
+	d_ptr->mEnableRelativePosition = rp;
+	if (rp) {
+		d_ptr->mRelativeX         = e.attribute("x").toDouble();
+		d_ptr->mRelativeY         = e.attribute("y").toDouble();
+		d_ptr->mAutoAdjustSize    = e.attribute("autoAdj").toInt();
+		d_ptr->mParentAnchorPoint = stringToEnum(e.attribute("parAnchorPoint"), ShapeKeyPoint::BottomCenter);
+		d_ptr->mItemAnchorPoint   = stringToEnum(e.attribute("itemAnchorPoint"), ShapeKeyPoint::TopCenter);
+		updateRelativePosition();
+	}
+	return true;
 }
 
 DAGraphicsStandardTextItem* DAGraphicsTextItem::textItem() const
 {
-    return d_ptr->mTextItem;
+	return d_ptr->mTextItem;
 }
 
 void DAGraphicsTextItem::setBodySize(const QSizeF& s)
 {
-    DAGraphicsResizeableItem::setBodySize(s);
-    d_ptr->mTextItem->setPos(0, 0);
-    if (!isAutoAdjustSize()) {
-        d_ptr->mTextItem->setTextWidth(s.width());
-        d_ptr->mTextItem->adjustSize();
-    }
+	DAGraphicsResizeableItem::setBodySize(s);
+	d_ptr->mTextItem->setPos(0, 0);
+	if (!isAutoAdjustSize()) {
+		d_ptr->mTextItem->setTextWidth(s.width());
+		d_ptr->mTextItem->adjustSize();
+	}
 }
 
 /**
@@ -153,16 +147,16 @@ void DAGraphicsTextItem::setBodySize(const QSizeF& s)
  */
 void DAGraphicsTextItem::setText(const QString& v)
 {
-    if (isAutoAdjustSize()) {
-        // 自动调整大小
-        if (d_ptr->mTextItem->textWidth() != -1) {
-            d_ptr->mTextItem->setTextWidth(-1);
-        }
-    }
-    d_ptr->mTextItem->setPlainText(v);
-    d_ptr->mTextItem->adjustSize();
-    setBodySize(d_ptr->mTextItem->boundingRect().size());
-    updateRelativePosition();
+	if (isAutoAdjustSize()) {
+		// 自动调整大小
+		if (d_ptr->mTextItem->textWidth() != -1) {
+			d_ptr->mTextItem->setTextWidth(-1);
+		}
+	}
+	d_ptr->mTextItem->setPlainText(v);
+	d_ptr->mTextItem->adjustSize();
+	setBodySize(d_ptr->mTextItem->boundingRect().size());
+	updateRelativePosition();
 }
 
 /**
@@ -217,10 +211,10 @@ bool DAGraphicsTextItem::isEditable() const
  */
 void DAGraphicsTextItem::setEnableRelativePosition(bool on)
 {
-    d_ptr->mEnableRelativePosition = on;
-    if (on) {
-        updateRelativePosition();
-    }
+	d_ptr->mEnableRelativePosition = on;
+	if (on) {
+		updateRelativePosition();
+	}
 }
 
 /**
@@ -259,9 +253,9 @@ bool DAGraphicsTextItem::isAutoAdjustSize() const
  */
 void DAGraphicsTextItem::setRelativePosition(qreal xp, qreal yp)
 {
-    d_ptr->mRelativeX = xp;
-    d_ptr->mRelativeY = yp;
-    updateRelativePosition();
+	d_ptr->mRelativeX = xp;
+	d_ptr->mRelativeY = yp;
+	updateRelativePosition();
 }
 
 QPointF DAGraphicsTextItem::getRelativePosition() const
@@ -281,9 +275,9 @@ QPointF DAGraphicsTextItem::getRelativePosition() const
  */
 void DAGraphicsTextItem::setRelativeAnchorPoint(ShapeKeyPoint kParentAnchorPoint, ShapeKeyPoint thisAnchorPoint)
 {
-    d_ptr->mParentAnchorPoint = kParentAnchorPoint;
-    d_ptr->mItemAnchorPoint   = thisAnchorPoint;
-    updateRelativePosition();
+	d_ptr->mParentAnchorPoint = kParentAnchorPoint;
+	d_ptr->mItemAnchorPoint   = thisAnchorPoint;
+	updateRelativePosition();
 }
 
 /**
@@ -304,32 +298,32 @@ ShapeKeyPoint DAGraphicsTextItem::getItemRelativeAnchorPoint() const
 
 void DAGraphicsTextItem::updateRelativePosition()
 {
-    if (!isEnableRelativePosition()) {
-        return;
-    }
-    QGraphicsItem* pi = parentItem();
-    if (nullptr == pi) {
-        return;
-    }
+	if (!isEnableRelativePosition()) {
+		return;
+	}
+	QGraphicsItem* pi = parentItem();
+	if (nullptr == pi) {
+		return;
+	}
 
-    QRectF parentRect = pi->boundingRect();
-    if (DAGraphicsResizeableItem* ri = dynamic_cast< DAGraphicsResizeableItem* >(pi)) {
-        parentRect = ri->getBodyRect();
-    }
-    QRectF itemRect = getBodyRect();
+	QRectF parentRect = pi->boundingRect();
+	if (DAGraphicsResizeableItem* ri = dynamic_cast< DAGraphicsResizeableItem* >(pi)) {
+		parentRect = ri->getBodyRect();
+	}
+	QRectF itemRect = getBodyRect();
 
-    ShapeKeyPoint parKP       = d_ptr->mParentAnchorPoint == ShapeKeyPoint::None ? ShapeKeyPoint::BottomCenter
-                                                                                 : d_ptr->mParentAnchorPoint;
-    ShapeKeyPoint itemKP      = d_ptr->mItemAnchorPoint == ShapeKeyPoint::None ? ShapeKeyPoint::TopCenter
-                                                                               : d_ptr->mItemAnchorPoint;
-    QPointF parPosition       = rectShapeKeyPoint(parentRect, parKP);
-    QPointF itemPoint         = rectShapeKeyPoint(itemRect, itemKP);
-    QPointF itemwillMovePoint = parPosition - itemPoint;
-    itemwillMovePoint -= QPointF(parentRect.width() * d_ptr->mRelativeX, parentRect.height() * d_ptr->mRelativeY);
-    // qDebug() << "updateRelativePosition,parent boundingRect=" << pi->boundingRect() << ",parentRect=" << parentRect
-    //          << ",parPosition=" << parPosition << "item boundingRect = " << boundingRect() << ",itemRect=" << itemRect
-    //          << ",itemPoint=" << itemPoint << ",itemwillMovePoint=" << itemwillMovePoint;
-    setPos(itemwillMovePoint);
+	ShapeKeyPoint parKP       = d_ptr->mParentAnchorPoint == ShapeKeyPoint::None ? ShapeKeyPoint::BottomCenter
+																				 : d_ptr->mParentAnchorPoint;
+	ShapeKeyPoint itemKP      = d_ptr->mItemAnchorPoint == ShapeKeyPoint::None ? ShapeKeyPoint::TopCenter
+																			   : d_ptr->mItemAnchorPoint;
+	QPointF parPosition       = rectShapeKeyPoint(parentRect, parKP);
+	QPointF itemPoint         = rectShapeKeyPoint(itemRect, itemKP);
+	QPointF itemwillMovePoint = parPosition - itemPoint;
+	itemwillMovePoint -= QPointF(parentRect.width() * d_ptr->mRelativeX, parentRect.height() * d_ptr->mRelativeY);
+	// qDebug() << "updateRelativePosition,parent boundingRect=" << pi->boundingRect() << ",parentRect=" << parentRect
+	//          << ",parPosition=" << parPosition << "item boundingRect = " << boundingRect() << ",itemRect=" << itemRect
+	//          << ",itemPoint=" << itemPoint << ",itemwillMovePoint=" << itemwillMovePoint;
+	setPos(itemwillMovePoint);
 }
 
 /**
@@ -337,24 +331,24 @@ void DAGraphicsTextItem::updateRelativePosition()
  */
 void DAGraphicsTextItem::updateRelativePosition(const QRectF& parentRect, const QRectF& itemRect)
 {
-    // QGraphicsItem* pi = parentItem();
-    // if (nullptr == pi) {
-    //     return;
-    // }
-    // ShapeKeyPoint parKP       = d_ptr->mParentAnchorPoint == ShapeKeyPoint::None ? ShapeKeyPoint::BottomCenter
-    //                                                                              : d_ptr->mParentAnchorPoint;
-    // ShapeKeyPoint thisKP      = d_ptr->mItemAnchorPoint == ShapeKeyPoint::None ? ShapeKeyPoint::TopCenter
-    //                                                                            : d_ptr->mItemAnchorPoint;
-    // QPointF parPosition       = rectShapeKeyPoint(parentRect, parKP);
-    // QPointF itemPoint         = rectShapeKeyPoint(itemRect, thisKP);
-    // QPointF itemwillMovePoint = parPosition - itemPoint;
-    // // 当前计算出来的itemwillMovePoint是基于bodyRect,而实际的boundrect
+	// QGraphicsItem* pi = parentItem();
+	// if (nullptr == pi) {
+	//     return;
+	// }
+	// ShapeKeyPoint parKP       = d_ptr->mParentAnchorPoint == ShapeKeyPoint::None ? ShapeKeyPoint::BottomCenter
+	//                                                                              : d_ptr->mParentAnchorPoint;
+	// ShapeKeyPoint thisKP      = d_ptr->mItemAnchorPoint == ShapeKeyPoint::None ? ShapeKeyPoint::TopCenter
+	//                                                                            : d_ptr->mItemAnchorPoint;
+	// QPointF parPosition       = rectShapeKeyPoint(parentRect, parKP);
+	// QPointF itemPoint         = rectShapeKeyPoint(itemRect, thisKP);
+	// QPointF itemwillMovePoint = parPosition - itemPoint;
+	// // 当前计算出来的itemwillMovePoint是基于bodyRect,而实际的boundrect
 
-    // qDebug() << "updateRelativePosition,parent parentRect=" << parentRect << ",parPosition=" << parPosition
-    //          << ",itemRect=" << itemRect << ",itemPoint=" << itemPoint << ",itemwillMovePoint=" << itemwillMovePoint;
-    // itemwillMovePoint -= QPointF(parentRect.width() * d_ptr->mRelativeX, parentRect.height() * d_ptr->mRelativeY);
-    // qDebug() << "updateRelativePosition,origin after offset = " << itemwillMovePoint;
-    // setPos(itemwillMovePoint);
+	// qDebug() << "updateRelativePosition,parent parentRect=" << parentRect << ",parPosition=" << parPosition
+	//          << ",itemRect=" << itemRect << ",itemPoint=" << itemPoint << ",itemwillMovePoint=" << itemwillMovePoint;
+	// itemwillMovePoint -= QPointF(parentRect.width() * d_ptr->mRelativeX, parentRect.height() * d_ptr->mRelativeY);
+	// qDebug() << "updateRelativePosition,origin after offset = " << itemwillMovePoint;
+	// setPos(itemwillMovePoint);
 }
 
 /**
@@ -366,13 +360,13 @@ void DAGraphicsTextItem::updateRelativePosition(const QRectF& parentRect, const 
  */
 void DAGraphicsTextItem::paintBody(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget, const QRectF& bodyRect)
 {
-    // DAGraphicsResizeableItem::paintBody(painter, option, widget, bodyRect);
-    if (isShowBorder()) {
-        painter->save();
-        painter->setPen(getBorderPen());
-        painter->drawRect(bodyRect);
-        painter->restore();
-    }
+	// DAGraphicsResizeableItem::paintBody(painter, option, widget, bodyRect);
+	if (isShowBorder()) {
+		painter->save();
+		painter->setPen(getBorderPen());
+		painter->drawRect(bodyRect);
+		painter->restore();
+	}
 }
 
 }  // end da

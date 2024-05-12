@@ -890,13 +890,13 @@ void DAAppController::onActionItemUngroupTriggered()
 void DAAppController::onActionGroupRibbonThemeTriggered(QAction* a)
 {
 	if (mActions->actionRibbonThemeOffice2013 == a) {
-		mMainWindow->setRibbonTheme(SARibbonMainWindow::RibbonThemeOffice2013);
+		mMainWindow->setRibbonTheme(SARibbonTheme::RibbonThemeOffice2013);
 	} else if (mActions->actionRibbonThemeOffice2016Blue == a) {
-		mMainWindow->setRibbonTheme(SARibbonMainWindow::RibbonThemeOffice2016Blue);
+		mMainWindow->setRibbonTheme(SARibbonTheme::RibbonThemeOffice2016Blue);
 	} else if (mActions->actionRibbonThemeOffice2021Blue == a) {
-		mMainWindow->setRibbonTheme(SARibbonMainWindow::RibbonThemeOffice2021Blue);
+		mMainWindow->setRibbonTheme(SARibbonTheme::RibbonThemeOffice2021Blue);
 	} else if (mActions->actionRibbonThemeDark == a) {
-		mMainWindow->setRibbonTheme(SARibbonMainWindow::RibbonThemeDark);
+		mMainWindow->setRibbonTheme(SARibbonTheme::RibbonThemeDark);
 	}
 }
 

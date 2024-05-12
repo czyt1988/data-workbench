@@ -1,5 +1,5 @@
-﻿#ifndef FCMIMEDATA_H
-#define FCMIMEDATA_H
+﻿#ifndef DAMIMEDATA_H
+#define DAMIMEDATA_H
 #include <QtCore/qglobal.h>
 #include <QMimeData>
 #include "DAGlobals.h"
@@ -11,9 +11,9 @@ namespace DA
  */
 class DAUTILS_API DAMimeData : public QMimeData
 {
-    Q_OBJECT
+	Q_OBJECT
 public:
-    DAMimeData();
+	DAMimeData();
 };
 }  // namespace DA
 #endif  // DAMIMEDATA_H

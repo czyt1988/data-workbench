@@ -16,13 +16,7 @@ damacro_lib_setting(
 # Qt
 ########################################################
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
-    Core
-    Gui
-    Xml
-    Widgets
-    REQUIRED
-)
+
 if(Qt5_POSITION_INDEPENDENT_CODE)
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif()
@@ -34,14 +28,10 @@ endif()
 file(GLOB DA_LIB_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 file(GLOB DA_LIB_HPP_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.hpp")
 
-# 这里是header spdlog_header_only
+# Build the headers-only target
 add_library(${DA_LIB_NAME} INTERFACE)
 add_library(${DA_PROJECT_NAME}::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
 
-target_sources(${DA_LIB_NAME} INTERFACE
-  ${DA_LIB_HEADER_FILES}
-  ${DA_LIB_HPP_FILES}
-)
 
 # 设置HEADER_ONLY属性
 set_target_properties(${DA_LIB_NAME} PROPERTIES HEADER_ONLY ON)

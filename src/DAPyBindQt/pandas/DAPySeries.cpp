@@ -232,7 +232,7 @@ QVector< double > toQVectorDouble(const DAPySeries& ser)
 			return QVector< double >();
 		}
 		QVector< double > res;
-		res.reserve(ser.size());
+		res.reserve(static_cast< int >(ser.size()));
 		ser.castTo< double >(std::back_insert_iterator< QVector< double > >(res));
 		return res;
 	} catch (const std::exception& e) {

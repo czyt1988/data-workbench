@@ -15,16 +15,12 @@ class DAWorkFlowGraphicsScene;
  */
 class DAAppProject : public DAProjectInterface
 {
-    Q_OBJECT
+	Q_OBJECT
 public:
-    DAAppProject(DACoreInterface* c, QObject* p = nullptr);
-    ~DAAppProject();
-    //清除工程
-    virtual void clear() override;
-
-public:
-    //获取工程文件的后缀
-    static QString getProjectFileSuffix();
+	DAAppProject(DACoreInterface* c, QObject* p = nullptr);
+	~DAAppProject();
+	// 清除工程
+	virtual void clear() override;
 };
 }  // namespace DA
 #endif  // FCPROJECT_H

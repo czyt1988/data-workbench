@@ -2,18 +2,20 @@
 #define DACHARTMANAGEWIDGET_H
 #include "DAGuiAPI.h"
 #include <QWidget>
-#include "Models/DAFigureTreeModel.h"
+
 namespace Ui
 {
 class DAChartManageWidget;
 }
 
+class QwtPlotItem;
 namespace DA
 {
 class DAChartOperateWidget;
 class DAFigureWidget;
 class DAChartWidget;
-
+class DAChartItemStandardItem;
+class DAChartWidgetStandardItem;
 /**
  * @brief 绘图管理窗口
  */

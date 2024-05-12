@@ -43,9 +43,9 @@ git submodule update --init --recursive
 ## 构建简述
 
 整个构建过程需要加载3次cmake文件
-- 首先是`src/3rdparty/CMakeLists.txt`完成第三方库编译
-- 然后是`CMakeLists.txt`完成dataworkbench编译
-- 最后是`plugins/CMakeLists.txt`完成dataworkbrench的所有业务功能的插件编译。
+- 首先是`src/3rdparty/CMakeLists.txt`完成第三方库编译,同时要进行install，否则第二步无法找到第三方库
+- 然后是`CMakeLists.txt`完成`DataWorkbench`编译，同时要进行install，否则第三步无法找到`DAWorkbench`
+- 最后是`plugins/CMakeLists.txt`完成`DataWorkbench`的所有业务功能的插件编译。
 
 **详细构建教程见**：[doc/how-to-build.md文档](./doc/how-to-build.md)
 

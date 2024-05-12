@@ -6,7 +6,7 @@
 #include <memory>
 #include <functional>
 // DA
-#include "DAAlgorithm.h"
+#include "da_algorithm.hpp"
 #include "da_hash_table.h"
 #include "da_vector_table.h"
 #include "da_array_table.h"

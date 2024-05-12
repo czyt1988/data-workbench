@@ -13,22 +13,28 @@ namespace DA
 
 class DAGraphicsItemGroup::PrivateData
 {
-    DA_DECLARE_PUBLIC(DAGraphicsItemGroup)
+	DA_DECLARE_PUBLIC(DAGraphicsItemGroup)
 public:
-    PrivateData(DAGraphicsItemGroup* p);
-    bool mIsShowBorder { false };      ///< 是否显示边框
-    bool mIsShowBackground { false };  ///< 是否显示背景
-    QPen mBorderPen;                   ///< 边框画笔
-    QBrush mBackgroundBrush;           ///< 背景画刷
-    uint64_t mID { 0 };                ///< id
+	PrivateData(DAGraphicsItemGroup* p);
+	bool mIsShowBorder { false };      ///< 是否显示边框
+	bool mIsShowBackground { false };  ///< 是否显示背景
+	QPen mBorderPen;                   ///< 边框画笔
+	QBrush mBackgroundBrush;           ///< 背景画刷
+	uint64_t mID { 0 };                ///< id
 };
 
 DAGraphicsItemGroup::PrivateData::PrivateData(DAGraphicsItemGroup* p) : q_ptr(p)
 {
-    //DAGraphicsItemFactory::generateID通过一个uint32_t生成一个uint64_t的id
-    mID = DAGraphicsItemFactory::generateID(reinterpret_cast< uint32_t >(q_ptr));
-    mBorderPen.setColor(QColor(25, 152, 236));
-    mBorderPen.setWidthF(1.1);
+	// DAGraphicsItemFactory::generateID通过一个uint32_t生成一个uint64_t的id
+	union Combine__ {
+		uint32_t a;
+		void* b;
+	};
+	Combine__ tmp;
+	tmp.b = p;
+	mID   = DAGraphicsItemFactory::generateID(tmp.a);
+	mBorderPen.setColor(QColor(25, 152, 236));
+	mBorderPen.setWidthF(1.1);
 }
 
 //===================================================
@@ -36,12 +42,12 @@ DAGraphicsItemGroup::PrivateData::PrivateData(DAGraphicsItemGroup* p) : q_ptr(p)
 //===================================================
 DAGraphicsItemGroup::DAGraphicsItemGroup(QGraphicsItem* parent) : QGraphicsItemGroup(parent), DA_PIMPL_CONSTRUCT
 {
-    setFlag(QGraphicsItem::ItemIsMovable);
-    setFlag(QGraphicsItem::ItemIsSelectable);
-    setFlag(QGraphicsItem::ItemIsFocusable);
-    setFlag(QGraphicsItem::ItemSendsGeometryChanges);
-    setAcceptHoverEvents(true);
-    setHandlesChildEvents(false);
+	setFlag(QGraphicsItem::ItemIsMovable);
+	setFlag(QGraphicsItem::ItemIsSelectable);
+	setFlag(QGraphicsItem::ItemIsFocusable);
+	setFlag(QGraphicsItem::ItemSendsGeometryChanges);
+	setAcceptHoverEvents(true);
+	setHandlesChildEvents(false);
 }
 
 DAGraphicsItemGroup::~DAGraphicsItemGroup()
@@ -55,9 +61,9 @@ DAGraphicsItemGroup::~DAGraphicsItemGroup()
  */
 bool DAGraphicsItemGroup::saveToXml(QDomDocument* doc, QDomElement* parentElement) const
 {
-    Q_UNUSED(doc);
-    Q_UNUSED(parentElement);
-    return true;
+	Q_UNUSED(doc);
+	Q_UNUSED(parentElement);
+	return true;
 }
 
 /**
@@ -69,8 +75,8 @@ bool DAGraphicsItemGroup::saveToXml(QDomDocument* doc, QDomElement* parentElemen
  */
 bool DAGraphicsItemGroup::loadFromXml(const QDomElement* parentElement)
 {
-    Q_UNUSED(parentElement);
-    return true;
+	Q_UNUSED(parentElement);
+	return true;
 }
 
 /**
@@ -162,14 +168,14 @@ void DAGraphicsItemGroup::setItemID(uint64_t id)
  */
 QList< DAGraphicsItemGroup* > DAGraphicsItemGroup::childGroups() const
 {
-    QList< DAGraphicsItemGroup* > res;
-    QList< QGraphicsItem* > ci = childItems();
-    for (auto i : qAsConst(ci)) {
-        if (i->type() == ItemType_DAGraphicsItemGroup) {
-            res.append(static_cast< DAGraphicsItemGroup* >(i));
-        }
-    }
-    return res;
+	QList< DAGraphicsItemGroup* > res;
+	QList< QGraphicsItem* > ci = childItems();
+	for (auto i : qAsConst(ci)) {
+		if (i->type() == ItemType_DAGraphicsItemGroup) {
+			res.append(static_cast< DAGraphicsItemGroup* >(i));
+		}
+	}
+	return res;
 }
 
 /**
@@ -178,41 +184,41 @@ QList< DAGraphicsItemGroup* > DAGraphicsItemGroup::childGroups() const
  */
 QList< QGraphicsItem* > DAGraphicsItemGroup::childItemsExcludingGrouping() const
 {
-    QList< QGraphicsItem* > res;
-    QList< QGraphicsItem* > ci = childItems();
-    for (auto i : qAsConst(ci)) {
-        if (i->type() != ItemType_DAGraphicsItemGroup) {
-            res.append(i);
-        }
-    }
-    return res;
+	QList< QGraphicsItem* > res;
+	QList< QGraphicsItem* > ci = childItems();
+	for (auto i : qAsConst(ci)) {
+		if (i->type() != ItemType_DAGraphicsItemGroup) {
+			res.append(i);
+		}
+	}
+	return res;
 }
 
 void DAGraphicsItemGroup::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
-    if (option->state & QStyle::State_Selected) {
-        painter->setBrush(Qt::NoBrush);
-        painter->setPen(d_ptr->mBorderPen);
-        painter->drawRect(boundingRect());
-    }
+	if (option->state & QStyle::State_Selected) {
+		painter->setBrush(Qt::NoBrush);
+		painter->setPen(d_ptr->mBorderPen);
+		painter->drawRect(boundingRect());
+	}
 }
 
 QVariant DAGraphicsItemGroup::itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant& value)
 {
-    switch (change) {
-    case QGraphicsItem::ItemPositionHasChanged: {
-        QPointF p                   = value.toPointF();
-        QList< QGraphicsItem* > cis = childItems();
-        for (QGraphicsItem* i : std::as_const(cis)) {
-            if (DAGraphicsItem* di = dynamic_cast< DAGraphicsItem* >(i)) {
-                di->groupPositionChanged(p);
-            }
-        }
-    }
-    default:
-        break;
-    }
-    return QGraphicsItemGroup::itemChange(change, value);
+	switch (change) {
+	case QGraphicsItem::ItemPositionHasChanged: {
+		QPointF p                   = value.toPointF();
+		QList< QGraphicsItem* > cis = childItems();
+		for (QGraphicsItem* i : std::as_const(cis)) {
+			if (DAGraphicsItem* di = dynamic_cast< DAGraphicsItem* >(i)) {
+				di->groupPositionChanged(p);
+			}
+		}
+	}
+	default:
+		break;
+	}
+	return QGraphicsItemGroup::itemChange(change, value);
 }
 
 }  // end of DA
