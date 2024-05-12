@@ -29,19 +29,10 @@ DAAppProject::~DAAppProject()
  */
 void DAAppProject::clear()
 {
-    DAWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
-    Q_CHECK_PTR(wfo);
-    wfo->clear();
-    DAProjectInterface::clear();
-}
-
-/**
- * @brief 工程文件的后缀
- * @return
- */
-QString DAAppProject::getProjectFileSuffix()
-{
-    return "asproj";
+	DAWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
+	Q_CHECK_PTR(wfo);
+	wfo->clear();
+	DAProjectInterface::clear();
 }
 
 }  // end DA

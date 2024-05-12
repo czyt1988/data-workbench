@@ -13,22 +13,28 @@ namespace DA
 //===================================================
 class DAProjectInterface::PrivateData
 {
-    DA_DECLARE_PUBLIC(DAProjectInterface)
+	DA_DECLARE_PUBLIC(DAProjectInterface)
 public:
-    PrivateData(DAProjectInterface* p);
-    // 存在路径
-    bool isHaveProjectFilePath() const;
-    // 在parent下，插入一个tag，tag下包含文字text
-    void appendElementWithText(QDomElement& parent, const QString& tagName, const QString& text, QDomDocument& doc) const;
-    // 保存本地信息包括时间日期等等
-    void saveLocalInfo(QDomElement& root, QDomDocument& doc) const;
+	PrivateData(DAProjectInterface* p);
+	// 存在路径
+	bool isHaveProjectFilePath() const;
+	// 在parent下，插入一个tag，tag下包含文字text
+	void appendElementWithText(QDomElement& parent, const QString& tagName, const QString& text, QDomDocument& doc) const;
+	// 保存本地信息包括时间日期等等
+	void saveLocalInfo(QDomElement& root, QDomDocument& doc) const;
 
 public:
-    bool mIsDirty { false };  ///< 脏标识
-    DAWorkFlowOperateWidget* mWorkFlowOperateWidget { nullptr };
-    QFileInfo mProjectFileInfo;  ///< 记录工程文件信息
-    DAXmlHelper mXml;
+	bool mIsDirty { false };  ///< 脏标识
+	DAWorkFlowOperateWidget* mWorkFlowOperateWidget { nullptr };
+	QFileInfo mProjectFileInfo;  ///< 记录工程文件信息
+	DAXmlHelper mXml;
+	static QString s_suffix;  ///< 工程文件后缀
 };
+
+/**
+ * @brief 工程文件默认后缀
+ */
+QString DAProjectInterface::PrivateData::s_suffix = QString("asproj");
 
 DAProjectInterface::PrivateData::PrivateData(DAProjectInterface* p) : q_ptr(p)
 {
@@ -59,9 +65,9 @@ void DAProjectInterface::PrivateData::appendElementWithText(QDomElement& parent,
                                                             const QString& text,
                                                             QDomDocument& doc) const
 {
-    QDomElement ele = doc.createElement(tagName);
-    ele.appendChild(doc.createTextNode(text));
-    parent.appendChild(ele);
+	QDomElement ele = doc.createElement(tagName);
+	ele.appendChild(doc.createTextNode(text));
+	parent.appendChild(ele);
 }
 
 /**
@@ -71,18 +77,18 @@ void DAProjectInterface::PrivateData::appendElementWithText(QDomElement& parent,
  */
 void DAProjectInterface::PrivateData::saveLocalInfo(QDomElement& root, QDomDocument& doc) const
 {
-    QDomElement localInfo = doc.createElement("local-info");
-    // 获得计算机的名称
-    appendElementWithText(localInfo, "machineHostName", QSysInfo::machineHostName(), doc);
-    // 获得计算机的位数
-    appendElementWithText(localInfo, "cpuArch", QSysInfo::currentCpuArchitecture(), doc);
-    // 获得kernelType
-    appendElementWithText(localInfo, "kernelType", QSysInfo::kernelType(), doc);
-    // 获得kernelType
-    appendElementWithText(localInfo, "kernelVersion", QSysInfo::kernelVersion(), doc);
-    // 获得kernelType
-    appendElementWithText(localInfo, "prettyProductName", QSysInfo::prettyProductName(), doc);
-    root.appendChild(localInfo);
+	QDomElement localInfo = doc.createElement("local-info");
+	// 获得计算机的名称
+	appendElementWithText(localInfo, "machineHostName", QSysInfo::machineHostName(), doc);
+	// 获得计算机的位数
+	appendElementWithText(localInfo, "cpuArch", QSysInfo::currentCpuArchitecture(), doc);
+	// 获得kernelType
+	appendElementWithText(localInfo, "kernelType", QSysInfo::kernelType(), doc);
+	// 获得kernelType
+	appendElementWithText(localInfo, "kernelVersion", QSysInfo::kernelVersion(), doc);
+	// 获得kernelType
+	appendElementWithText(localInfo, "prettyProductName", QSysInfo::prettyProductName(), doc);
+	root.appendChild(localInfo);
 }
 //===================================================
 // DAProjectInterface
@@ -119,10 +125,10 @@ DAWorkFlowOperateWidget* DAProjectInterface::getWorkFlowOperateWidget() const
  */
 QString DAProjectInterface::getProjectBaseName() const
 {
-    if (!d_ptr->isHaveProjectFilePath()) {
-        return QString();
-    }
-    return (d_ptr->mProjectFileInfo.baseName());
+	if (!d_ptr->isHaveProjectFilePath()) {
+		return QString();
+	}
+	return (d_ptr->mProjectFileInfo.baseName());
 }
 
 /**
@@ -133,10 +139,10 @@ QString DAProjectInterface::getProjectBaseName() const
  */
 QString DAProjectInterface::getProjectDir() const
 {
-    if (!d_ptr->isHaveProjectFilePath()) {
-        return QString();
-    }
-    return d_ptr->mProjectFileInfo.absolutePath();
+	if (!d_ptr->isHaveProjectFilePath()) {
+		return QString();
+	}
+	return d_ptr->mProjectFileInfo.absolutePath();
 }
 
 /**
@@ -146,10 +152,10 @@ QString DAProjectInterface::getProjectDir() const
  */
 QString DAProjectInterface::getProjectFilePath() const
 {
-    if (!d_ptr->isHaveProjectFilePath()) {
-        return QString();
-    }
-    return d_ptr->mProjectFileInfo.absoluteFilePath();
+	if (!d_ptr->isHaveProjectFilePath()) {
+		return QString();
+	}
+	return d_ptr->mProjectFileInfo.absoluteFilePath();
 }
 
 /**
@@ -169,10 +175,10 @@ void DAProjectInterface::setProjectPath(const QString& projectPath)
  */
 QString DAProjectInterface::getWorkingDirectory() const
 {
-    if (!d_ptr->isHaveProjectFilePath()) {
-        return QString();
-    }
-    return d_ptr->mProjectFileInfo.absolutePath();
+	if (!d_ptr->isHaveProjectFilePath()) {
+		return QString();
+	}
+	return d_ptr->mProjectFileInfo.absolutePath();
 }
 /**
  * @brief 工程是否脏
@@ -188,9 +194,9 @@ bool DAProjectInterface::isDirty() const
  */
 void DAProjectInterface::clear()
 {
-    setDirty(false);
-    d_ptr->mProjectFileInfo = QFileInfo();
-    emit projectIsCleaned();
+	setDirty(false);
+	d_ptr->mProjectFileInfo = QFileInfo();
+	emit projectIsCleaned();
 }
 
 /**
@@ -200,47 +206,47 @@ void DAProjectInterface::clear()
  */
 bool DAProjectInterface::appendWorkflowInProject(const QString& path, bool skipIndex)
 {
-    // 加载之前先清空
-    DAWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
-    Q_CHECK_PTR(wfo);
-    QDomDocument doc;
-    QFile file(path);
-    if (!file.open(QIODevice::ReadOnly)) {
-        return false;
-    }
-    QString error;
-    if (!doc.setContent(&file, &error)) {
-        qCritical() << "load setContent error:" << error;
-        file.close();
-        return false;
-    }
-    file.close();
-    int oldProjectHaveWorkflow = wfo->count();  // 已有的工作流数量
-    bool isok                  = true;
-    QDomElement docElem        = doc.documentElement();                  // root
-    QDomElement proEle         = docElem.firstChildElement("project");   // project
-    QDomElement workflowsEle   = proEle.firstChildElement("workflows");  // workflows
-    QDomNodeList wfListNodes   = workflowsEle.childNodes();
-    QSet< QString > names      = qlist_to_qset(wfo->getAllWorkflowNames());
-    for (int i = 0; i < wfListNodes.size(); ++i) {
-        QDomElement workflowEle = wfListNodes.at(i).toElement();
-        if (workflowEle.tagName() != "workflow") {
-            continue;
-        }
-        QString name = workflowEle.attribute("name");
-        // 生成一个唯一名字
-        name = DA::makeUniqueString(names, name);
-        // 建立工作流窗口
-        DAWorkFlowEditWidget* wfe = wfo->appendWorkflow(name);
-        isok &= d_ptr->mXml.loadElement(wfe, &workflowEle);
-    }
-    if (skipIndex) {
-        int index = workflowsEle.attribute("currentIndex").toInt();
-        index += oldProjectHaveWorkflow;
-        wfo->setCurrentWorkflow(index);
-    }
-    setDirty(isok);
-    return isok;
+	// 加载之前先清空
+	DAWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
+	Q_CHECK_PTR(wfo);
+	QDomDocument doc;
+	QFile file(path);
+	if (!file.open(QIODevice::ReadOnly)) {
+		return false;
+	}
+	QString error;
+	if (!doc.setContent(&file, &error)) {
+		qCritical() << "load setContent error:" << error;
+		file.close();
+		return false;
+	}
+	file.close();
+	int oldProjectHaveWorkflow = wfo->count();  // 已有的工作流数量
+	bool isok                  = true;
+	QDomElement docElem        = doc.documentElement();                  // root
+	QDomElement proEle         = docElem.firstChildElement("project");   // project
+	QDomElement workflowsEle   = proEle.firstChildElement("workflows");  // workflows
+	QDomNodeList wfListNodes   = workflowsEle.childNodes();
+	QSet< QString > names      = qlist_to_qset(wfo->getAllWorkflowNames());
+	for (int i = 0; i < wfListNodes.size(); ++i) {
+		QDomElement workflowEle = wfListNodes.at(i).toElement();
+		if (workflowEle.tagName() != "workflow") {
+			continue;
+		}
+		QString name = workflowEle.attribute("name");
+		// 生成一个唯一名字
+		name = DA::makeUniqueString(names, name);
+		// 建立工作流窗口
+		DAWorkFlowEditWidget* wfe = wfo->appendWorkflow(name);
+		isok &= d_ptr->mXml.loadElement(wfe, &workflowEle);
+	}
+	if (skipIndex) {
+		int index = workflowsEle.attribute("currentIndex").toInt();
+		index += oldProjectHaveWorkflow;
+		wfo->setCurrentWorkflow(index);
+	}
+	setDirty(isok);
+	return isok;
 }
 
 /**
@@ -250,6 +256,25 @@ bool DAProjectInterface::appendWorkflowInProject(const QString& path, bool skipI
 QVersionNumber DAProjectInterface::getProjectVersion()
 {
     return QVersionNumber(1, 3, 0);
+}
+
+/**
+ * @brief 获取工程文件的后缀
+ * @return
+ */
+QString DAProjectInterface::getProjectFileSuffix()
+{
+    return DAProjectInterface::PrivateData::s_suffix;
+}
+
+/**
+ * @brief 设置工程文件的后缀
+ * @param f
+ * @return
+ */
+void DAProjectInterface::setProjectFileSuffix(const QString& f)
+{
+    DAProjectInterface::PrivateData::s_suffix = f;
 }
 
 /**
@@ -267,16 +292,16 @@ QVersionNumber DAProjectInterface::getProjectVersion()
  */
 bool DAProjectInterface::load(const QString& path)
 {
-    // 加载之前先清空
-    DAWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
-    Q_CHECK_PTR(wfo);
-    clear();
-    bool isok = appendWorkflowInProject(path, true);
-    if (isok) {
-        setProjectPath(path);
-        emit projectLoaded(path);
-    }
-    return isok;
+	// 加载之前先清空
+	DAWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
+	Q_CHECK_PTR(wfo);
+	clear();
+	bool isok = appendWorkflowInProject(path, true);
+	if (isok) {
+		setProjectPath(path);
+		emit projectLoaded(path);
+	}
+	return isok;
 }
 /**
  * @brief 保存工程
@@ -293,34 +318,34 @@ bool DAProjectInterface::load(const QString& path)
  */
 bool DAProjectInterface::save(const QString& path)
 {
-    DAWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
-    Q_CHECK_PTR(wfo);
-    QFile file(path);
-    if (!file.open(QIODevice::ReadWrite | QIODevice::Truncate)) {
-        qCritical() << tr("open failed,path is %1").arg(path);
-        return false;
-    }
-    QDomDocument doc;
-    QDomProcessingInstruction processInstruction = doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\"");
-    doc.appendChild(processInstruction);
-    QDomElement root = doc.createElement("root");
-    root.setAttribute("type", "project");
-    doc.appendChild(root);
-    // 保存本机信息
-    d_ptr->saveLocalInfo(root, doc);
-    QDomElement project = doc.createElement("project");
-    project.setAttribute("version", getProjectVersion().toString());  // 版本
-    root.appendChild(project);
-    // 把所有的工作流保存
-    QDomElement workflowsElement = d_ptr->mXml.makeElement(wfo, "workflows", &doc);
-    project.appendChild(workflowsElement);
-    QTextStream outFile(&file);
-    doc.save(outFile, 4);
-    file.close();
-    setProjectPath(path);
-    emit projectSaved(path);
-    setDirty(false);
-    return true;
+	DAWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
+	Q_CHECK_PTR(wfo);
+	QFile file(path);
+	if (!file.open(QIODevice::ReadWrite | QIODevice::Truncate)) {
+		qCritical() << tr("open failed,path is %1").arg(path);
+		return false;
+	}
+	QDomDocument doc;
+	QDomProcessingInstruction processInstruction = doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\"");
+	doc.appendChild(processInstruction);
+	QDomElement root = doc.createElement("root");
+	root.setAttribute("type", "project");
+	doc.appendChild(root);
+	// 保存本机信息
+	d_ptr->saveLocalInfo(root, doc);
+	QDomElement project = doc.createElement("project");
+	project.setAttribute("version", getProjectVersion().toString());  // 版本
+	root.appendChild(project);
+	// 把所有的工作流保存
+	QDomElement workflowsElement = d_ptr->mXml.makeElement(wfo, "workflows", &doc);
+	project.appendChild(workflowsElement);
+	QTextStream outFile(&file);
+	doc.save(outFile, 4);
+	file.close();
+	setProjectPath(path);
+	emit projectSaved(path);
+	setDirty(false);
+	return true;
 }
 
 /**
@@ -329,8 +354,8 @@ bool DAProjectInterface::save(const QString& path)
  */
 void DAProjectInterface::setDirty(bool on)
 {
-    d_ptr->mIsDirty = on;
-    emit becomeDirty(on);
+	d_ptr->mIsDirty = on;
+	emit becomeDirty(on);
 }
 
 }
