@@ -176,6 +176,7 @@ void DataAnalysController::onActionFilterTriggered()
 	if (wave.isNone()) {
 		return;
 	}
+	qDebug() << "Filter args:" << args;
 	// 执行
 	QString err;
 	DA::DAPyDataFrame df = mExecutor->butterworth_filter(wave, fs, fo, args, &err);
@@ -189,7 +190,35 @@ void DataAnalysController::onActionFilterTriggered()
 	DA::DAData d(df);
 	d.setName(QString("%1-filter").arg(wave.name()));
 	mDataMgr->addData_(d);
-	// 绘图
+	//! 绘图
+	//! ----------
+	//! | 波形图  |
+	//! ----------
+	//! |  滤波   |
+	//! ----------
+	auto plt = mDockingArea->getChartOperateWidget();
+	auto fig = plt->createFigure();
+	// origin wave chart
+	auto waveChart = fig->currentChart();
+	fig->setWidgetPosPercent(waveChart, 0.05, 0.05, 0.9, 0.9);  // 对应的是x位置占比，y位置占比，宽度占比，高度占比，y位置是从上往下
+	auto xy    = toWave(wave, fs);
+	auto curve = waveChart->addCurve(xy.first.data(), xy.second.data(), xy.first.size());
+	curve->setTitle("Origin Wave");
+	DA::DAChartUtil::setPlotItemColor(curve, QColor("#ff9999"));
+
+	// filtered wave chart
+	auto filtered_wave      = df[ "filtered_wave" ];
+	std::vector< double > y = DA::toVectorDouble(filtered_wave);
+	auto filter             = waveChart->addCurve(xy.first.data(), y.data(), xy.first.size());
+	filter->setTitle("Filtered Wave");
+	DA::DAChartUtil::setPlotItemColor(filter, fig->getDefaultColor());
+
+	waveChart->setXLabel("time(s)");
+	waveChart->setYLabel("amplitudes");
+	waveChart->setTitle("Origin and Filtered Wave Chart");
+
+	// 把绘图窗口抬起
+	mDockingArea->raiseDockByWidget(mDockingArea->getChartOperateWidget());
 }
 
 /**
