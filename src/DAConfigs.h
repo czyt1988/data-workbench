@@ -37,7 +37,7 @@
  * @def 编译的日期（字符串）
  */
 #ifndef DA_COMPILE_DATETIME
-#define DA_COMPILE_DATETIME "240512"
+#define DA_COMPILE_DATETIME "240513"
 #endif
 
 /**
@@ -58,14 +58,14 @@
  * @def 编译的日期（字符串）
  */
 #ifndef DA_COMPILE_DATETIME_DAY
-#define DA_COMPILE_DATETIME_DAY "12"
+#define DA_COMPILE_DATETIME_DAY "13"
 #endif
 
 /**
  * @def 是否开启python（bool）
  */
 #ifndef DA_ENABLE_PYTHON
-#define DA_ENABLE_PYTHON 0
+#define DA_ENABLE_PYTHON 1
 #endif
 
 /**
