@@ -1,7 +1,7 @@
 ﻿
 # Cmake的命令不区分打下写，例如message，set等命令；但Cmake的变量区分大小写
 # 为统一风格，本项目的Cmake命令全部采用小写，变量全部采用大写加下划线组合。
-# {{plugin-base-name}}Plugin 库
+# BasePlugin 库
 
 cmake_minimum_required(VERSION 3.5)
 
@@ -38,9 +38,10 @@ set(CMAKE_INSTALL_PREFIX ${DAWorkbench_INSTALL_DIR})
 ########################################################
 # 定义插件的信息，自动设置安装位置
 # 此宏会定义DA_PLUGIN_NAME变量
+
 damacro_plugin_setting(
-    "{{plugin-base-name}}"
-    "{{plugin-description}}"
+    "Base"
+    "This is DA Base Plugin"
     0
     0
     1
@@ -80,7 +81,7 @@ add_library(${DA_PLUGIN_NAME} SHARED
             ${DA_PLUGIN_QT_RC_FILES}
 )	
 # 构建库定义的宏
-target_compile_definitions(${DA_PLUGIN_NAME} PRIVATE {{PLUGIN-BASE-NAME}}_PLUGIN_BUILD)#!!!!** 注意变更 **!!!!
+target_compile_definitions(${DA_PLUGIN_NAME} PRIVATE BASE_PLUGIN_BUILD)#!!!!** 注意变更 **!!!!
 ########################################################
 # 依赖链接 #!!!!** 注意变更 **!!!!
 ########################################################
@@ -91,8 +92,6 @@ target_link_libraries(${DA_PLUGIN_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Widgets
     Qt${QT_VERSION_MAJOR}::Xml
     Qt${QT_VERSION_MAJOR}::Svg
-    Qt${QT_VERSION_MAJOR}::Concurrent
-    Qt${QT_VERSION_MAJOR}::PrintSupport
 )
 
 # 以下这些宏由daworkbench_plugin_utils.cmake提供，此文件会在DAWorkBench安装的时候一同安装到lib/cmake目录下

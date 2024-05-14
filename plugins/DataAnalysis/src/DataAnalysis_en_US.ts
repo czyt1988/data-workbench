@@ -2,6 +2,62 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="en_US" sourcelanguage="en_US">
 <context>
+    <name>DataAnalysController</name>
+    <message>
+        <location filename="DataAnalysController.cpp" line="133"/>
+        <source>Wave</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DataAnalysController.cpp" line="135"/>
+        <location filename="DataAnalysController.cpp" line="214"/>
+        <source>time(s)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DataAnalysController.cpp" line="136"/>
+        <location filename="DataAnalysController.cpp" line="149"/>
+        <location filename="DataAnalysController.cpp" line="215"/>
+        <source>amplitudes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DataAnalysController.cpp" line="137"/>
+        <source>Wave Chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DataAnalysController.cpp" line="146"/>
+        <source>spectrum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DataAnalysController.cpp" line="148"/>
+        <source>frequency(Hz)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DataAnalysController.cpp" line="150"/>
+        <source>Spectrum Chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DataAnalysController.cpp" line="204"/>
+        <source>Origin Wave</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DataAnalysController.cpp" line="211"/>
+        <source>Filtered Wave</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DataAnalysController.cpp" line="216"/>
+        <source>Origin and Filtered Wave Chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DataAnalysisActions</name>
     <message>
         <location filename="DataAnalysisActions.cpp" line="21"/>

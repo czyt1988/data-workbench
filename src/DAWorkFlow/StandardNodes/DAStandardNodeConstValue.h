@@ -1,4 +1,4 @@
-﻿#ifndef DASTANDARDNODECONSTVALUE_H
+#ifndef DASTANDARDNODECONSTVALUE_H
 #define DASTANDARDNODECONSTVALUE_H
 #include "DAAbstractNode.h"
 namespace DA

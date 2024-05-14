@@ -115,7 +115,7 @@ void DataAnalysController::onActionSpectrumTriggered()
 	// 把数据装入datamanager
 	DA::DAData d(df);
 	d.setName(QString("%1-spectrum").arg(wave.name()));
-	mDataMgr->addData_(d);
+	mDataMgr->addData(d);  // 不可撤销
 	//! 绘图
 	//! ----------
 	//! | 波形图  |
@@ -130,12 +130,11 @@ void DataAnalysController::onActionSpectrumTriggered()
 		fig->setWidgetPosPercent(waveChart, 0.05, 0.05, 0.9, 0.45);  // 对应的是x位置占比，y位置占比，宽度占比，高度占比，y位置是从上往下
 		auto xy    = toWave(wave, fs);
 		auto curve = waveChart->addCurve(xy.first.data(), xy.second.data(), xy.first.size());
-		curve->setTitle("Wave");
-		auto c = fig->getDefaultColor();
-		DA::DAChartUtil::setPlotItemColor(curve, c);
-		waveChart->setXLabel("time(s)");
-		waveChart->setYLabel("amplitudes");
-		waveChart->setTitle("Wave Chart");
+		curve->setTitle(tr("Wave"));  // cn:波形
+		DA::DAChartUtil::setPlotItemColor(curve, fig->getDefaultColor());
+		waveChart->setXLabel(tr("time(s)"));     // cn:时间(s)
+		waveChart->setYLabel(tr("amplitudes"));  // cn:幅值
+		waveChart->setTitle(tr("Wave Chart"));   // cn:波形图
 	}
 	{  // fft chart
 		auto spectrumChart      = fig->createChart(0.05, 0.5, 0.9, 0.45);
@@ -144,12 +143,11 @@ void DataAnalysController::onActionSpectrumTriggered()
 		std::vector< double > x = DA::toVectorDouble(freq);
 		std::vector< double > y = DA::toVectorDouble(amplitudes);
 		auto spectrum           = spectrumChart->addCurve(x.data(), y.data(), x.size());
-		spectrum->setTitle("spectrum");
-		auto c = fig->getDefaultColor();
-		DA::DAChartUtil::setPlotItemColor(spectrum, c);
-		spectrumChart->setXLabel("frequency(Hz)");
-		spectrumChart->setYLabel("amplitudes");
-		spectrumChart->setTitle("Spectrum Chart");
+		spectrum->setTitle(tr("spectrum"));  // cn:频谱
+		DA::DAChartUtil::setPlotItemColor(spectrum, fig->getDefaultColor());
+		spectrumChart->setXLabel(tr("frequency(Hz)"));  // cn:频率(Hz)
+		spectrumChart->setYLabel(tr("amplitudes"));     // cn:幅值
+		spectrumChart->setTitle(tr("Spectrum Chart"));  // cn:频谱图
 		spectrumChart->notifyChartPropertyHasChanged();
 	}
 	// 把绘图窗口抬起
@@ -191,13 +189,11 @@ void DataAnalysController::onActionFilterTriggered()
 	// 把数据装入datamanager
 	DA::DAData d(df);
 	d.setName(QString("%1-filter").arg(wave.name()));
-	mDataMgr->addData_(d);
+	mDataMgr->addData(d);  // 不可撤销
 	//! 绘图
-	//! ----------
-	//! | 波形图  |
-	//! ----------
-	//! |  滤波   |
-	//! ----------
+	//! ---------------------
+	//! | 原始波形和滤波波形  |
+	//! ---------------------
 	auto plt = mDockingArea->getChartOperateWidget();
 	auto fig = plt->createFigure();
 	// origin wave chart
@@ -205,19 +201,19 @@ void DataAnalysController::onActionFilterTriggered()
 	fig->setWidgetPosPercent(waveChart, 0.05, 0.05, 0.9, 0.9);  // 对应的是x位置占比，y位置占比，宽度占比，高度占比，y位置是从上往下
 	auto xy    = toWave(wave, fs);
 	auto curve = waveChart->addCurve(xy.first.data(), xy.second.data(), xy.first.size());
-	curve->setTitle("Origin Wave");
-	DA::DAChartUtil::setPlotItemColor(curve, QColor("#ff9999"));
+	curve->setTitle(tr("Origin Wave"));  // cn:原始波形
+	DA::DAChartUtil::setPlotItemColor(curve, fig->getDefaultColor());
 
 	// filtered wave chart
 	auto filtered_wave      = df[ "filtered_wave" ];
 	std::vector< double > y = DA::toVectorDouble(filtered_wave);
 	auto filter             = waveChart->addCurve(xy.first.data(), y.data(), xy.first.size());
-	filter->setTitle("Filtered Wave");
+	filter->setTitle(tr("Filtered Wave"));  // cn:滤波波形
 	DA::DAChartUtil::setPlotItemColor(filter, fig->getDefaultColor());
 
-	waveChart->setXLabel("time(s)");
-	waveChart->setYLabel("amplitudes");
-	waveChart->setTitle("Origin and Filtered Wave Chart");
+	waveChart->setXLabel(tr("time(s)"));                        // cn:时间(s)
+	waveChart->setYLabel(tr("amplitudes"));                     // cn:幅值
+	waveChart->setTitle(tr("Origin and Filtered Wave Chart"));  // cn:原始波形和滤波波形
 
 	// 把绘图窗口抬起
 	mDockingArea->raiseDockByWidget(mDockingArea->getChartOperateWidget());
@@ -232,7 +228,7 @@ std::pair< std::vector< double >, std::vector< double > > DataAnalysController::
 {
 	std::pair< std::vector< double >, std::vector< double > > res;
 	std::vector< double > y = DA::toVectorDouble(wave);
-	DA::DAAutoincrementSeries xgenrator(0.0, fs);
+	DA::DAAutoincrementSeries< double > xgenrator(0.0, fs);
 	std::vector< double > x;
 	x.resize(y.size());
 	xgenrator.generate(x.begin(), x.end());
