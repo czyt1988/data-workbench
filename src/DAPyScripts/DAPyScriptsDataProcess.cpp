@@ -1,12 +1,21 @@
-#include "DAPyScriptsDataProcess.h"
+﻿#include "DAPyScriptsDataProcess.h"
 #include "DAPybind11QtTypeCast.h"
 namespace DA
 {
 
-DAPyScriptsDataProcess::DAPyScriptsDataProcess() : DAPyModule()
+DAPyScriptsDataProcess::DAPyScriptsDataProcess(bool autoImport) : DAPyModule()
 {
-	if (!import()) {
-		qCritical() << QObject::tr("can not import da_data_processing module");
+	if (autoImport) {
+		if (!import()) {
+			qCritical() << QObject::tr("can not import da_data_processing module");
+		}
+	}
+}
+
+DAPyScriptsDataProcess::DAPyScriptsDataProcess(const pybind11::object& obj) : DAPyModule(obj)
+{
+	if (isModule()) {
+		qCritical() << QObject::tr("can not import DAWorkBench.data_processing");
 	}
 }
 
@@ -27,7 +36,7 @@ DAPyDataFrame DAPyScriptsDataProcess::spectrum_analysis(const DAPySeries& wave, 
 	try {
 		pybind11::object fn = attr("da_spectrum_analysis");
 		if (fn.is_none()) {
-			qDebug() << "da_data_processing.py have no attr da_spectrum_analysis";
+			qDebug() << "DAWorkbench.data_processing.py have no attr da_spectrum_analysis";
 			return DAPyDataFrame();
 		}
 		pybind11::object v = fn(wave.object(), fs, DA::PY::toDict(args));
@@ -50,7 +59,7 @@ DAPyDataFrame DAPyScriptsDataProcess::butterworth_filter(const DAPySeries& wave,
 	try {
 		pybind11::object fn = attr("da_butterworth_filter");
 		if (fn.is_none()) {
-			qDebug() << "da_data_processing.py have no attr da_butterworth_filter";
+			qDebug() << "DAWorkbench.data_processing.py have no attr da_butterworth_filter";
 			return DAPyDataFrame();
 		}
 		pybind11::object v = fn(wave.object(), fs, fo, DA::PY::toDict(args));
@@ -66,7 +75,14 @@ DAPyDataFrame DAPyScriptsDataProcess::butterworth_filter(const DAPySeries& wave,
 
 bool DAPyScriptsDataProcess::import()
 {
-	return DAPyModule::import("da_data_processing");
+	try {
+		pybind11::module m = pybind11::module::import("DAWorkbench");
+		object()           = m.attr("data_processing");
+	} catch (const std::exception& e) {
+		qCritical() << e.what();
+		return false;
+	}
+	return true;
 }
 
 }  // end DA

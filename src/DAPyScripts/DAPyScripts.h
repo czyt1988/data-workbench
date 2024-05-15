@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QtCore/qglobal.h>
 #include "DAPyScriptsGlobal.h"
+#include "DAPyWorkBench.h"
 #include "DAPyScriptsIO.h"
 #include "DAPyScriptsDataFrame.h"
 #include "DAPyScriptsDataProcess.h"

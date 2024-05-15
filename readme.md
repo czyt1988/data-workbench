@@ -71,7 +71,10 @@ pip install numpy
 pip install pandas
 pip install scipy
 pip install Loguru
+pip install openpyxl
 ```
+
+> openpyxl是pandas导入excel文件的依赖，如果没有安装，则无法导入excel文件
 
 在需要python时将引入`pybind11`库
 

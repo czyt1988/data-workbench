@@ -1,4 +1,4 @@
-#ifndef DAPYSCRIPTSDATAPROCESS_H
+﻿#ifndef DAPYSCRIPTSDATAPROCESS_H
 #define DAPYSCRIPTSDATAPROCESS_H
 #include "DAPyScriptsGlobal.h"
 #include "DAPyModule.h"
@@ -15,7 +15,8 @@ namespace DA
 class DAPYSCRIPTS_API DAPyScriptsDataProcess : public DAPyModule
 {
 public:
-	DAPyScriptsDataProcess();
+	DAPyScriptsDataProcess(bool autoImport = true);
+	DAPyScriptsDataProcess(const pybind11::object& obj);
 	~DAPyScriptsDataProcess();
 	// 频谱分析da_spectrum_analysis
 	DAPyDataFrame spectrum_analysis(const DAPySeries& wave, double fs, const QVariantMap& args, QString* err = nullptr);

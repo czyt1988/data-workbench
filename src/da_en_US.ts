@@ -5584,7 +5584,7 @@ params:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAPyScripts/DAPyScripts.cpp" line="57"/>
+        <location filename="DAPyScripts/DAPyScripts.cpp" line="55"/>
         <source>Initialized import sys module error:%1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5665,13 +5665,19 @@ params:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAPyScripts/DAPyScriptsDataFrame.cpp" line="32"/>
+        <location filename="DAPyScripts/DAPyScriptsDataFrame.cpp" line="14"/>
         <source>can not import da_dataframe module</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAPyScripts/DAPyScriptsIO.cpp" line="76"/>
+        <location filename="DAPyScripts/DAPyScriptsIO.cpp" line="77"/>
         <source>can not import da_io module</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAPyScripts/DAPyScriptsDataFrame.cpp" line="22"/>
+        <location filename="DAPyScripts/DAPyScriptsIO.cpp" line="85"/>
+        <source>can not import DAWorkBench.io</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -5760,8 +5766,18 @@ params:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAPyScripts/DAPyScriptsDataProcess.cpp" line="9"/>
+        <location filename="DAPyScripts/DAPyScriptsDataProcess.cpp" line="10"/>
         <source>can not import da_data_processing module</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAPyScripts/DAPyScriptsDataProcess.cpp" line="18"/>
+        <source>can not import DAWorkBench.data_processing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAPyScripts/DAPyWorkBench.cpp" line="35"/>
+        <source>can not import DAWorkbench module</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

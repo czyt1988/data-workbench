@@ -13,9 +13,7 @@ public:
 
 public:
 	DAPyModule mPySys { "sys" };  ///< import sys
-	DAPyScriptsIO mPyIO;          ///< 对应da_io.py | DAPyScriptsIO的构造函数参数false说明构造时不import
-	DAPyScriptsDataFrame mPyDataframe;      ///< 对应da_dataframe.py
-	DAPyScriptsDataProcess mPyDataProcess;  ///< da_data_processing.py
+	DAPyWorkBench mPyDA;
 };
 
 //===================================================
@@ -65,10 +63,7 @@ void DAPyScripts::appendSysPath(const QString& path)
  */
 bool DAPyScripts::isInitScripts() const
 {
-	if (!(d_ptr->mPyIO.isImport())) {
-		return false;
-	}
-	if (!(d_ptr->mPyDataframe.isImport())) {
+	if (!(d_ptr->mPyDA.isImport())) {
 		return false;
 	}
 	return true;
@@ -86,7 +81,7 @@ DAPyScripts& DAPyScripts::getInstance()
  */
 DAPyScriptsIO& DAPyScripts::getIO()
 {
-    return d_ptr->mPyIO;
+    return d_ptr->mPyDA.getIO();
 }
 
 /**
@@ -95,12 +90,12 @@ DAPyScriptsIO& DAPyScripts::getIO()
  */
 DAPyScriptsDataFrame& DAPyScripts::getDataFrame()
 {
-    return d_ptr->mPyDataframe;
+    return d_ptr->mPyDA.getDataFrame();
 }
 
 DAPyScriptsDataProcess& DAPyScripts::getDataProcess()
 {
-    return d_ptr->mPyDataProcess;
+    return d_ptr->mPyDA.getDataProcess();
 }
 
 /**

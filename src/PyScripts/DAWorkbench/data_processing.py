@@ -7,11 +7,6 @@ import numpy as np
 import scipy
 from loguru import logger
 
-#获取当前python脚本文件的上级目录的log文件夹
-log_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'log'))
-
-#日志初始化，添加一个可旋转的日志文件，旋转大小为10Mb，把日志文件存入log_path文件夹下，文件名为da_py_log.log
-logger.add(log_path+"/da_py_log{time}.log",rotation="10 MB",level="DEBUG")
 
 def spectrum_analysis(waveform, sampling_rate, fftsize=None,phases=False,
                       nextpower2=False,db=False,detrend=None):

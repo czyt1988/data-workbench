@@ -5,6 +5,7 @@ from typing import List,Dict,Optional
 import pandas as pd
 import inspect
 import numpy as np
+from loguru import logger
 
 '''
 本文件da_打头的变量和函数属于da系统的默认函数，如果改动会导致da系统异常
@@ -54,8 +55,13 @@ def read_txt(path:str,args:Optional[Dict] = None) -> pd.DataFrame:
         df.columns = df.columns.astype(str)
     return df
 
-
-
+def read_excel(path:str,args:Optional[Dict] = None)-> pd.DataFrame:
+    '''
+    读取excel文件
+    '''
+    if args is None:
+        args = {}
+    return pd.read_excel(path,**args)
 
 
 def da_read(path:str,args:Optional[Dict] = None):
@@ -74,10 +80,10 @@ def da_get_file_read_filters() -> List[str]:
     获取支持的文件列表
         return list[str]
     '''
-    return ['all support(*.txt *.csv *.xls *.pkl)',
+    return ['all support(*.txt *.csv *.xls *.xlsx *.pkl)',
             'text (*.txt)',
             'csv (*.csv)',
-            'xls (*.xls)',
+            'xls (*.xls),xlsx (*.xlsx)',
             'pickle (*.pkl)',
             'all(*.*)'
             ]
@@ -89,7 +95,9 @@ def da_get_file_read_filters() -> List[str]:
 da_global_reader_dict = {
     'txt':read_txt,
     'csv':read_csv,
-    'pkl':read_pkl
+    'pkl':read_pkl,
+    'xls':read_excel,
+    'xlsx':read_excel,
 }
 
 
@@ -99,11 +107,7 @@ if __name__ == '__main__':
     print('co_argcount=',read_csv.__code__.co_argcount)
     print('co_varnames=',read_csv.__code__.co_varnames)
     
-    res = pd.read_table(r'C:\src\Qt\data-workbench\tmp\0911-0910\CH_01_20230910_000000.txt',sep="\t",header=None)
-    print(len(res.columns))
-    print(res.columns)
-    print(res.shape)
-    
+    da_read(r'C:\src\Qt\pipe-designer-plugin\test-project-files\阀门14-四端参数.xlsx')
 
     # print(res)
     # v = np.genfromtxt(r'C:\src\Qt\data-workbench\tmp\测试数据.txt',skip_header=14,names=True,encoding='gbk',dtype=float)

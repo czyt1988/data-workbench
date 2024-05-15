@@ -12,21 +12,23 @@ namespace DA
 class DAPYBINDQT_API DAPyModule : public DAPyObjectWrapper
 {
 public:
-    DAPyModule();
-    DAPyModule(const char* moduleName);
-    virtual ~DAPyModule();
-    DAPyModule& operator=(const DAPyObjectWrapper& obj);
-    DAPyModule& operator=(const pybind11::object& obj);
+	DAPyModule();
+	DAPyModule(const char* moduleName);
+	DAPyModule(const pybind11::object& obj);
+	DAPyModule(pybind11::object&& obj);
+	virtual ~DAPyModule();
+	DAPyModule& operator=(const DAPyObjectWrapper& obj);
+	DAPyModule& operator=(const pybind11::object& obj);
 
 public:
-    // 判断模块是否导入
-    bool isImport() const;
-    // 获取module的名字
-    QString moduleName() const;
-    // 重新加载模块
-    void reload();
-    // 导入模块
-    bool import(const char* module_n) noexcept;
+	// 判断模块是否导入
+	bool isImport() const;
+	// 获取module的名字
+	QString moduleName() const;
+	// 重新加载模块
+	void reload();
+	// 导入模块
+	bool import(const char* module_n) noexcept;
 };
 }  // namespace DA
 #endif  // DAPYMODULE_H
