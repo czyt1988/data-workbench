@@ -9,13 +9,12 @@ cmake_minimum_required(VERSION 3.5)
 
 # 定义插件的信息，自动设置安装位置
 # 此宏会定义DA_PLUGIN_NAME变量
-damacro_plugin_setting(
+_damacro_plugin_setting(
     "DataAnalysis"
     "Plugin For Data Analysis"
     0
     0
     1
-    ${DAWorkbench_INSTALL_DIR}
 )
 
 ########################################################

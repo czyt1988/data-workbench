@@ -25,15 +25,14 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/../../${DA_BIN_DIR_NAME}")
 # 第三方库参数设置
 ########################################################
 #spdlog
-set(SPDLOG_BUILD_EXAMPLE OFF)
-set(SPDLOG_BUILD_TESTS OFF)
-set(SPDLOG_INSTALL ON)
+set(SPDLOG_BUILD_EXAMPLE OFF CACHE BOOL "force set SPDLOG_BUILD_EXAMPLE off" FORCE)
+set(SPDLOG_BUILD_TESTS OFF CACHE BOOL "force set SPDLOG_BUILD_TESTS off" FORCE)
+set(SPDLOG_INSTALL ON CACHE BOOL "force set SPDLOG_INSTALL ON" FORCE)
 #ADS
-set(BUILD_EXAMPLES OFF)
+set(BUILD_EXAMPLES OFF CACHE BOOL "force set BUILD_EXAMPLES OFF" FORCE)
 #SARibbon
-set(SARIBBON_BUILD_EXAMPLES OFF)
-#magic_enum
-set(MAGIC_ENUM_OPT_INSTALL ON)
+set(SARIBBON_BUILD_EXAMPLES OFF CACHE BOOL "force set SARIBBON_BUILD_EXAMPLES off" FORCE)
+
 ########################################################
 # 安装第三方库
 ########################################################
@@ -44,7 +43,7 @@ add_subdirectory(SARibbon)
 add_subdirectory(ADS)
 
 add_subdirectory(spdlog)
-file(COPY "${CMAKE_CURRENT_LIST_DIR}/spdlog/include/spdlog" DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
+#file(COPY "${CMAKE_CURRENT_LIST_DIR}/spdlog/include/spdlog" DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
 
 # pybind11直接把文件夹复制过去
 file(COPY "${CMAKE_CURRENT_LIST_DIR}/pybind11/include/pybind11" DESTINATION ${CMAKE_INSTALL_PREFIX}/include)

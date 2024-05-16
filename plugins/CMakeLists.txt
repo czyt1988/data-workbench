@@ -45,8 +45,9 @@ find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
 ########################################################
 # 子工程加载
 ########################################################
-add_subdirectory(Base)
-add_subdirectory(DataAnalysis)
-
+if(DA_ENABLE_PYTHON)
+    add_subdirectory(Base)
+    add_subdirectory(DataAnalysis)
+endif()
 
 
