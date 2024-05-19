@@ -1,5 +1,6 @@
-macro(damacro_set_bin_name _var)
-    set(DA_MIN_QT_VERSION 5.14)
+﻿# 获取默认安装目录
+function(dafun_set_bin_name _var)
+    set(_MIN_QT_VERSION 5.14)
     find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
     ########################################################
     # 平台判断
@@ -9,11 +10,17 @@ macro(damacro_set_bin_name _var)
     else()
         set(_platform_name "x64")
     endif()
+    if(NOT DEFINED CMAKE_CXX_COMPILER_ID OR CMAKE_CXX_COMPILER_ID STREQUAL "")
+        message(WARNING "CMAKE_CXX_COMPILER_ID is NULL,maybe your cmake env error")
+        set(_CXX_COMPILER_ID "MSVC")
+    else()
+        set(_CXX_COMPILER_ID ${CMAKE_CXX_COMPILER_ID})
+    endif()
     ########################################################
-    # 安装路径设置
+    # 安装路径设置 设置变量值，并传递到父作用域
     ########################################################
-    set(_var bin_qt${QT_VERSION}_${CMAKE_BUILD_TYPE}_${_platform_name})
-endmacro(damacro_set_bin_name)
+    set(${_var} "bin_${CMAKE_BUILD_TYPE}_qt${QT_VERSION}_${_CXX_COMPILER_ID}_${_platform_name}" PARENT_SCOPE)
+endfunction()
 
 
 
@@ -28,7 +35,7 @@ endmacro(damacro_set_bin_name)
 # 生成：DA_MIN_QT_VERSION 最低qt版本要求
 macro(damacro_lib_setting _lib_name _lib_description _lib_ver_major _lib_ver_minor _lib_ver_path)
     set(DA_MIN_QT_VERSION 5.14)
-	set(DA_LIB_NAME ${_lib_name})
+        set(DA_LIB_NAME ${_lib_name})
     set(DA_LIB_DESCRIPTION ${_lib_description})
     set(DA_LIB_VERSION_MAJOR ${_lib_ver_major})
     set(DA_LIB_VERSION_MINOR ${_lib_ver_minor})
@@ -36,8 +43,8 @@ macro(damacro_lib_setting _lib_name _lib_description _lib_ver_major _lib_ver_min
     set(DA_LIB_VERSION "${DA_LIB_VERSION_MAJOR}.${DA_LIB_VERSION_MINOR}.${DA_LIB_VERSION_PATCH}")
     set(DA_LIB_FULL_DESCRIPTION "${DA_PROJECT_NAME}::${DA_LIB_NAME} ${DA_LIB_VERSION} | ${DA_LIB_DESCRIPTION}")
 
-    project(${DA_LIB_NAME} 
-        VERSION ${DA_LIB_VERSION} 
+    project(${DA_LIB_NAME}
+        VERSION ${DA_LIB_VERSION}
         LANGUAGES CXX
         DESCRIPTION ${DA_LIB_FULL_DESCRIPTION}
     )
@@ -48,8 +55,8 @@ macro(damacro_lib_setting _lib_name _lib_description _lib_ver_major _lib_ver_min
     set(CMAKE_CXX_STANDARD 17)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
     if(MSVC)
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
-	endif(MSVC)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
+        endif(MSVC)
     # 编译选项
     set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows")
     set(CMAKE_RELEASE_POSTFIX "" CACHE STRING "add a postfix, usually empty on windows")
@@ -164,7 +171,7 @@ macro(damacro_lib_install)
         NAMESPACE ${DA_PROJECT_NAME}::
         DESTINATION lib/cmake/${DA_PROJECT_NAME}
     )
-    
+
     install(FILES
         "${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}Config.cmake"
         "${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}ConfigVersion.cmake"
@@ -190,7 +197,7 @@ endmacro(damacro_lib_install)
 # 生成：DA_MIN_QT_VERSION 最低qt版本要求
 macro(damacro_app_setting _app_name _app_description _app_ver_major _app_ver_minor _app_ver_path)
     set(DA_MIN_QT_VERSION 5.14)
-	set(DA_APP_NAME ${_app_name})
+        set(DA_APP_NAME ${_app_name})
     set(DA_APP_DESCRIPTION ${_app_description})
     set(DA_APP_VERSION_MAJOR ${_app_ver_major})
     set(DA_APP_VERSION_MINOR ${_app_ver_minor})
@@ -198,8 +205,8 @@ macro(damacro_app_setting _app_name _app_description _app_ver_major _app_ver_min
     set(DA_APP_VERSION "${DA_APP_VERSION_MAJOR}.${DA_APP_VERSION_MINOR}.${DA_APP_VERSION_PATCH}")
     set(DA_APP_FULL_DESCRIPTION "${DA_APP_NAME} ${DA_APP_VERSION} | ${DA_APP_DESCRIPTION}")
 
-    project(${DA_APP_NAME} 
-        VERSION ${DA_APP_VERSION} 
+    project(${DA_APP_NAME}
+        VERSION ${DA_APP_VERSION}
         LANGUAGES CXX
         DESCRIPTION ${DA_APP_FULL_DESCRIPTION}
     )

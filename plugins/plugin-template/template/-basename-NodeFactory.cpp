@@ -24,7 +24,9 @@
 
 {{plugin-base-name}}NodeFactory::{{plugin-base-name}}NodeFactory() : DA::DAAbstractNodeFactory()
 {
-
+   //注册节点创建的函数指针,create函数会使用mPrototypeTpfp进行查询函数指针
+   // REGISTE_CLASS(MyNode1);
+   // REGISTE_CLASS(MyNode2);
 }
 
 {{plugin-base-name}}NodeFactory::~{{plugin-base-name}}NodeFactory()
@@ -43,21 +45,43 @@ void {{plugin-base-name}}NodeFactory::registWorkflow(DA::DAWorkFlow* wf)
     DA::DAAbstractNodeFactory::registWorkflow(wf);
 }
 
+/**
+ * @brief 工厂的唯一id
+ */
 QString {{plugin-base-name}}NodeFactory::factoryPrototypes() const
 {
     return "{{factory-prototypes}}";
 }
 
+/**
+ * @brief 工厂名称
+ *
+ * 目前暂时无用
+ */
 QString {{plugin-base-name}}NodeFactory::factoryName() const
 {
     return u8"{{factory-name}}";
 }
 
+/**
+ * @brief 工厂描述
+ *
+ * 目前暂时无用
+ */
 QString {{plugin-base-name}}NodeFactory::factoryDescribe() const
 {
     return u8"{{factory-description}}";
 }
 
+/**
+ * @brief 工厂创建节点的函数
+ *
+ * 此函数是工厂最核心的函数，通过元对象信息创建节点，模板使用了一个map管理了元对象和创建的函数指针的关系，
+ * map应在构造函数中赋值
+ *
+ * @param meta 节点的元对象信息
+ * @return 节点指针
+ */
 DA::DAAbstractNode::SharedPointer {{plugin-base-name}}NodeFactory::create(const DA::DANodeMetaData& meta)
 {
     auto fp = mPrototypeTpfp.value(meta, nullptr);

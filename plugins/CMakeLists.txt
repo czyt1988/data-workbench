@@ -37,11 +37,28 @@ project(${DA_PROJECT_NAME}
         LANGUAGES CXX
         DESCRIPTION "DataWorkBench Plugins"
         )
+# 获取默认安装文件夹
+include(${CMAKE_CURRENT_LIST_DIR}/../cmake/daworkbench_plugin_utils.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/../cmake/daworkbench_utils.cmake)
+set(DAWorkbench_INSTALL_FOLDER_NAME)
+dafun_set_bin_name(DAWorkbench_INSTALL_FOLDER_NAME)
+
 ########################################################
-# Qt
+# DA安装路径设置
 ########################################################
 set(DA_MIN_QT_VERSION 5.14)
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
+if(NOT DEFINED DAWorkbench_INSTALL_DIR)
+    set(DAWorkbench_INSTALL_DIR "${CMAKE_CURRENT_LIST_DIR}/../${DAWorkbench_INSTALL_FOLDER_NAME}")
+    message(STATUS "NOT DEFINED DAWorkbench_INSTALL_DIR，Define to ${DAWorkbench_INSTALL_DIR}")
+endif()
+
+
+
+
+
+set(CMAKE_INSTALL_PREFIX ${DAWorkbench_INSTALL_DIR})
+
 ########################################################
 # 子工程加载
 ########################################################
@@ -51,3 +68,34 @@ if(DA_ENABLE_PYTHON)
 endif()
 
 
+##################################
+# 翻译
+##################################
+
+# find_package(Qt${QT_VERSION_MAJOR} COMPONENTS LinguistTools QUIET)
+
+# # 命名规则一定要按照qt的命名规则，否则无法找到xx_zh_CN或者xxx_en_US
+# set(DA_TS_FILES
+#     "${CMAKE_CURRENT_LIST_DIR}/da_plugins_zh_CN.ts"
+#     "${CMAKE_CURRENT_LIST_DIR}/da_plugins_en_US.ts"
+# )
+# # DA 在 初始化的时候会查找translations和translations_user两个目录的翻译，插件的翻译建议在translations_user中
+# set(DA_BUILD_TRANSLATIONS_DIR ${DAWorkbench_INSTALL_DIR}/bin/translations_user)
+
+# # 让qm文件直接生成到DA_BUILD_TRANSLATIONS_DIR下
+# set_source_files_properties(${DA_TS_FILES} PROPERTIES OUTPUT_LOCATION ${DA_BUILD_TRANSLATIONS_DIR})
+
+# if("${QT_VERSION_MAJOR}" STREQUAL "5")
+#     qt5_create_translation(DA_QM_FILES ${CMAKE_CURRENT_LIST_DIR} ${DA_TS_FILES} OPTIONS -source-language en_US -no-obsolete)
+# else()
+#     qt6_create_translation(DA_QM_FILES ${CMAKE_CURRENT_LIST_DIR} ${DA_TS_FILES} OPTIONS -source-language en_US -no-obsolete)
+# endif()
+# # 添加更新翻译的目标
+# add_custom_target(daplugins_update_translations DEPENDS ${DA_TS_FILES})
+
+# # 添加发布翻译的目标
+# add_custom_target(daplugins_release_translations DEPENDS ${DA_QM_FILES})
+
+# # 安装翻译 - 在install上使用
+# set(CMAKE_INSTALL_PREFIX ${DAWorkbench_INSTALL_DIR})
+# install(DIRECTORY ${DA_BUILD_TRANSLATIONS_DIR} DESTINATION bin)

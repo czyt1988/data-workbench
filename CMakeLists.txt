@@ -34,6 +34,21 @@ option(DA_ENABLE_AUTO_INSTALL_PYTHON_ENV
 option(DA_ENABLE_AUTO_TRANSLATE
     "This option will automatically call the Linguist tool to translate the ts file"
     ON)
+# 此选项将让da自动把结果安装到本地目录下
+option(DA_AUTO_INSTALL_PREFIX
+    "This option will allow DA to automatically install the results to the local directory"
+    ON)
+
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/daworkbench_utils.cmake)
+if(DA_AUTO_INSTALL_PREFIX)
+    message(STATUS "DA Auto Install")
+    set(DA_BIN_DIR_NAME)
+    dafun_set_bin_name(DA_BIN_DIR_NAME)
+    set(DAWorkbench_INSTALL_DIR "${CMAKE_CURRENT_LIST_DIR}/${DA_BIN_DIR_NAME}")
+    set(CMAKE_INSTALL_PREFIX ${DAWorkbench_INSTALL_DIR} CACHE PATH "Installation prefix" FORCE)
+    message(STATUS "DA_BIN_DIR_NAME=${DA_BIN_DIR_NAME}")
+    message(STATUS "DAWorkbench_INSTALL_DIR=${DAWorkbench_INSTALL_DIR}")
+endif()
 ########################################################
 # 定义工程
 ########################################################
@@ -95,20 +110,6 @@ endif()
 set(DA_MIN_QT_VERSION 5.14)
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
 
-########################################################
-# 平台判断
-########################################################
-if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "4")
-    set(DA_PLATFORM_NAME "x86")
-else()
-    set(DA_PLATFORM_NAME "x64")
-endif()
-########################################################
-# 安装路径设置
-########################################################
-
-set(DA_BIN_DIR_NAME bin_${CMAKE_BUILD_TYPE}_qt${QT_VERSION}_${CMAKE_CXX_COMPILER_ID}_${DA_PLATFORM_NAME})
-set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/${DA_BIN_DIR_NAME}")
 
 ########################################################
 # 默认路径设置

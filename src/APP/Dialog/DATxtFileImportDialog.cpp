@@ -14,7 +14,7 @@
 
 #if DA_ENABLE_PYTHON
 #include "pandas/DAPyDataFrame.h"
-#include "DAPyScriptsIO.h"
+#include "DAPyScripts.h"
 #include "Models/DAPyDataFrameTableModule.h"
 #endif
 namespace DA
@@ -166,7 +166,7 @@ void DATxtFileImportDialog::refresh()
 	// 预览状态下，预览的最大行数单独再设置
 	args[ "nrows" ] = ui->spinBoxPreviewMaxRow->value();
 #if DA_ENABLE_PYTHON
-	DAPyScriptsIO io;
+	DAPyScriptsIO& io = DAPyScripts::getInstance().getIO();
 	QString err;
 	DAPyDataFrame df = io.read_txt(path, args, &err);
 	if (err.isEmpty()) {
