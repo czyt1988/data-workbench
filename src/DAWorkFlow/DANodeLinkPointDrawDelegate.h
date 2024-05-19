@@ -37,16 +37,21 @@ public:
 	virtual QPainterPath getlinkPointPainterRegion(const DANodeLinkPoint& pl) const;
 	// 获取连接点,正常情况，不需要继承此函数，此函数只有比较特殊的情况继承
 	virtual QList< DANodeLinkPoint > getLinkPoints() const;
-	// 绘制某个连接点
-	virtual void paintLinkPoint(const DANodeLinkPoint& pl,
-								QPainter* painter,
-								const QStyleOptionGraphicsItem* option,
-								QWidget* widget);
+	// 绘制连接点
+	virtual void paintLinkPoints(const QList< DANodeLinkPoint >& pls,
+								 QPainter* painter,
+								 const QStyleOptionGraphicsItem* option,
+								 QWidget* widget);
 	// 绘制连接点文本，会先绘制连接点，再绘制连接点文本
-	virtual void paintLinkPointText(const DANodeLinkPoint& pl,
-									QPainter* painter,
-									const QStyleOptionGraphicsItem* option,
-									QWidget* widget);
+	virtual void paintLinkPointTexts(const QList< DANodeLinkPoint >& pls,
+									 QPainter* painter,
+									 const QStyleOptionGraphicsItem* option,
+									 QWidget* widget);
+
+protected:
+	// 绘制某个连接点
+	void paintLinkPoint(const DANodeLinkPoint& pl, QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget);
+	void paintLinkPointText(const DANodeLinkPoint& pl, QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget);
 };
 
 }  // end of namespace DA

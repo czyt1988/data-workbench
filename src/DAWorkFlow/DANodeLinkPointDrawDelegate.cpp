@@ -63,11 +63,9 @@ DAAbstractNodeGraphicsItem* DANodeLinkPointDrawDelegate::getItem() const
 void DANodeLinkPointDrawDelegate::paintLinkPoints(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
 	QList< DANodeLinkPoint > pls = getLinkPoints();
-	for (const DANodeLinkPoint& pl : qAsConst(pls)) {
-		paintLinkPoint(pl, painter, option, widget);
-		if (d_ptr->mShowText) {
-			paintLinkPointText(pl, painter, option, widget);
-		}
+	paintLinkPoints(pls, painter, option, widget);
+	if (d_ptr->mShowText) {
+		paintLinkPointTexts(pls, painter, option, widget);
 	}
 }
 
@@ -199,6 +197,39 @@ void DANodeLinkPointDrawDelegate::layoutLinkPoints(QList< DANodeLinkPoint >& lps
 QList< DANodeLinkPoint > DANodeLinkPointDrawDelegate::getLinkPoints() const
 {
     return d_ptr->mItem->getLinkPoints();
+}
+
+/**
+ * @brief 绘制连接点
+ * @param pl 连接点
+ * @param painter
+ * @param option
+ * @param widget
+ */
+void DANodeLinkPointDrawDelegate::paintLinkPoints(const QList< DANodeLinkPoint >& pls,
+                                                  QPainter* painter,
+                                                  const QStyleOptionGraphicsItem* option,
+                                                  QWidget* widget)
+{
+	for (const DANodeLinkPoint& pl : pls) {
+		paintLinkPoint(pl, painter, option, widget);
+	}
+}
+/**
+ * @brief 绘制连接点文本
+ * @param pl
+ * @param painter
+ * @param option
+ * @param widget
+ */
+void DANodeLinkPointDrawDelegate::paintLinkPointTexts(const QList< DANodeLinkPoint >& pls,
+                                                      QPainter* painter,
+                                                      const QStyleOptionGraphicsItem* option,
+                                                      QWidget* widget)
+{
+	for (const DANodeLinkPoint& pl : pls) {
+		paintLinkPointText(pl, painter, option, widget);
+	}
 }
 
 /**

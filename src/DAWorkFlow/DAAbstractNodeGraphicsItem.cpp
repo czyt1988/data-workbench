@@ -396,7 +396,9 @@ bool DAAbstractNodeGraphicsItem::isLinkPointLinked(const DANodeLinkPoint& pl)
 /**
  * @brief 绘制默认连接点
  *
- * 每个连接点的绘制调用@sa paintLinkPoint 函数,此函数不作为虚函数，因为连接点的绘制修改可通过设置@sa DANodeLinkPointDrawDelegate 来调整
+ * 在paintbody中调用此函数，用于绘制连接点
+ *
+ * 此函数会调用代理的paintLinkPoints函数
  */
 void DAAbstractNodeGraphicsItem::paintLinkPoints(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {

@@ -120,7 +120,7 @@ public:
 	bool isHaveLinkPoint(const DANodeLinkPoint& pl) const;
 	// 判断连接点是否已经链接
 	bool isLinkPointLinked(const DANodeLinkPoint& pl);
-	// 绘制连接点，如果要绘制自己的连接点，可注入DANodeLinkPointDrawDelegate
+	// 绘制连接点，在paintbody中调用此函数，用于绘制连接点
 	void paintLinkPoints(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget);
 
 	// 获取节点对应的窗口，一般保存节点的设置
