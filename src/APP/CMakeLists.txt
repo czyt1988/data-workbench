@@ -9,7 +9,7 @@ damacro_app_setting(
     "DAWorkBench App | https://github.com/czyt1988"
     0
     0
-    1
+    2
 )
 
 ########################################################
@@ -130,6 +130,9 @@ target_link_libraries(${DA_APP_NAME} PUBLIC
 )
 
 if(DA_ENABLE_PYTHON)
+    # -------------link python--------------------------
+    damacro_import_Python(${DA_APP_NAME})
+
     find_package(${DA_PROJECT_NAME} COMPONENTS
         DAPyBindQt
         DAPyScripts
@@ -145,9 +148,6 @@ if(DA_ENABLE_PYTHON)
     message(STATUS "  | |-include dir:${DAPyBindQt_INCLUDE_DIR}")
     message(STATUS "  |-link ${DA_PROJECT_NAME}::DAPyScripts")
     message(STATUS "  | |-include dir:${DAPyScripts_INCLUDE_DIR}")
-
-    # -------------link python--------------------------
-    damacro_import_Python(${DA_APP_NAME})
 endif()
 
 # -------------link Dbghelp--------------------------

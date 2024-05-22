@@ -208,7 +208,7 @@ private:                                                                        
  */
 #ifndef Qt5Qt6Compat_QXXEvent_x
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#define Qt5Qt6Compat_QXXEvent_x(valuePtr) valuePtr->x()
+#define Qt5Qt6Compat_QXXEvent_x(valuePtr) valuePtr->pos().x()
 #else
 #define Qt5Qt6Compat_QXXEvent_x(valuePtr) valuePtr->position().x()
 #endif
@@ -224,7 +224,7 @@ private:                                                                        
  */
 #ifndef Qt5Qt6Compat_QXXEvent_y
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#define Qt5Qt6Compat_QXXEvent_y(valuePtr) valuePtr->y()
+#define Qt5Qt6Compat_QXXEvent_y(valuePtr) valuePtr->pos().y()
 #else
 #define Qt5Qt6Compat_QXXEvent_y(valuePtr) valuePtr->position().y()
 #endif
