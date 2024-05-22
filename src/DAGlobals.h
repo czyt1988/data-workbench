@@ -1,6 +1,7 @@
 ﻿#ifndef DAGLOBALS_H
 #define DAGLOBALS_H
 #include <QScopedPointer>
+#include <memory>
 #include <QString>
 #include "DAConfigs.h"
 /**
@@ -208,18 +209,39 @@ private:                                                                        
 #endif
 #endif
 
-
 #ifndef Qt5Qt6Compat_Connect_ButtonGroupClicked_int
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#define Qt5Qt6Compat_Connect_ButtonGroupClicked_int(buttonGroup, funName) \
-    do{\
-        connect(buttonGroup, QOverload< int >::of(&QButtonGroup::buttonClicked), this, &funName);\
-    }while(0)
+#define Qt5Qt6Compat_Connect_ButtonGroupClicked_int(buttonGroup, funName)                                              \
+    do {                                                                                                               \
+        connect(buttonGroup, QOverload< int >::of(&QButtonGroup::buttonClicked), this, &funName);                      \
+    } while (0)
 #else
-#define Qt5Qt6Compat_Connect_ButtonGroupClicked_int(buttonGroup, funName) \
-    do{ \
-        connect(buttonGroup, &QButtonGroup::idClicked, this, &funName);\
-    }while(0)
+#define Qt5Qt6Compat_Connect_ButtonGroupClicked_int(buttonGroup, funName)                                              \
+    do {                                                                                                               \
+        connect(buttonGroup, &QButtonGroup::idClicked, this, &funName);                                                \
+    } while (0)
 #endif
 #endif
+
+// 有些qt版本没有qHash对std::shared_ptr的重载，如果在这里出现错误，注释掉即可
+/**
+ * @brief 针对智能指针的qHash函数，可以让std::shared_ptr作为QHash和QSet的key
+ * @param ptr
+ * @param seed
+ * @return
+ */
+template< typename T >
+uint qHash(const std::shared_ptr< T >& ptr, uint seed = 0)
+{
+    return qHash(ptr.get(), seed);
+}
+// 模板特化的比较函数，用于 std::shared_ptr
+template< typename T >
+struct DASharedPtrEqual
+{
+    bool operator()(const std::shared_ptr< T >& a, const std::shared_ptr< T >& b) const
+    {
+        return a == b;
+    }
+};
 #endif  // GLOBALS_H

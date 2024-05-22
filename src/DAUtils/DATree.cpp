@@ -70,7 +70,7 @@ DATree& DATree::operator=(const DATree& tree)
 void DATree::clear()
 {
     d_ptr->mRootItem.reset();
-    d_ptr->mProperty.clear();  //属性清除
+    d_ptr->mProperty.clear();  // 属性清除
 }
 /**
  * @brief 获取子节点的个数
@@ -104,7 +104,7 @@ QList< DATreeItem* > DATree::getItems() const
  */
 void DATree::appendItem(DATreeItem* item)
 {
-    //会自动设置树指针
+    // 会自动设置树指针
     d_ptr->mRootItem->appendChild(item);
 }
 /**
@@ -114,7 +114,7 @@ void DATree::appendItem(DATreeItem* item)
  */
 void DATree::insertItem(DATreeItem* item, int row)
 {
-    //会自动设置树指针
+    // 会自动设置树指针
     d_ptr->mRootItem->insertChild(item, row);
 }
 /**
@@ -132,7 +132,7 @@ bool DATree::haveItem(DATreeItem* item) const
  */
 void DATree::takeItem(DATreeItem* item)
 {
-    //会自动设置树指针为空
+    // 会自动设置树指针为空
     d_ptr->mRootItem->takeChild(item);
 }
 /**
@@ -141,7 +141,7 @@ void DATree::takeItem(DATreeItem* item)
  */
 DATreeItem* DATree::takeItemByIndex(int row)
 {
-    //会自动设置树指针为空
+    // 会自动设置树指针为空
     return d_ptr->mRootItem->takeChild(row);
 }
 /**
@@ -234,15 +234,6 @@ QList< QString > DATree::getChildItemNames(const DATreeItem* parent) const
         return invisibleRootItem()->getChildItemNames();
     }
     return parent->getChildItemNames();
-}
-
-QDebug& DA::operator<<(QDebug& dbg, const DA::DATree& tree)
-{
-    QList< DA::DATreeItem* > items = tree.getItems();
-    for (const DA::DATreeItem* i : qAsConst(items)) {
-        dbg << *(i);
-    }
-    return dbg;
 }
 
 /**
@@ -347,7 +338,7 @@ bool read_item_from_json(const QJsonObject& json, DATreeItem* item)
     }
     i = json.find("childItems");
     if (i != json.end()) {
-        //读取子节点
+        // 读取子节点
         if (i.value().isArray()) {
             QJsonArray jArrVal = i.value().toArray();
             for (auto i = jArrVal.begin(); i != jArrVal.end(); ++i) {
@@ -383,7 +374,7 @@ bool fromJson(const QString& json, DA::DATree* tree)
         tree->setTreeProperty(i.key(), i.value().toVariant());
     }
 
-    //解析值
+    // 解析值
     const auto size = jsonArr.size();
     for (int i = 0; i < size; ++i) {
         std::unique_ptr< DATreeItem > item(new DATreeItem());
@@ -395,3 +386,12 @@ bool fromJson(const QString& json, DA::DATree* tree)
     return true;
 }
 }  // end DA
+
+QDebug& DA::operator<<(QDebug& dbg, const DA::DATree& tree)
+{
+    QList< DA::DATreeItem* > items = tree.getItems();
+    for (const DA::DATreeItem* i : qAsConst(items)) {
+        dbg << *(i);
+    }
+    return dbg;
+}

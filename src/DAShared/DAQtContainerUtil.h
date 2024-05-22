@@ -7,18 +7,6 @@
 #include <QMap>
 #include <memory>
 
-/**
- * @brief 针对智能指针的qHash函数，可以让std::shared_ptr作为QHash和QSet的key
- * @param ptr
- * @param seed
- * @return
- */
-template< typename T >
-uint qHash(const std::shared_ptr< T >& ptr, uint seed = 0)
-{
-    return qHash(ptr.get(), seed);
-}
-
 namespace DA
 {
 
