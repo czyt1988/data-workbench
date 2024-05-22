@@ -1,7 +1,7 @@
 #ifndef DAVECTOR_H
 #define DAVECTOR_H
 // DA
-#include "DAAlgorithm.h"
+#include "da_algorithm.hpp"
 // Qt
 #include <QVector>
 #include <QDebug>

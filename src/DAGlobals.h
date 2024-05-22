@@ -1,6 +1,7 @@
 ﻿#ifndef DAGLOBALS_H
 #define DAGLOBALS_H
 #include <QScopedPointer>
+#include <QHash>
 #include <memory>
 #include <QString>
 #include "DAConfigs.h"

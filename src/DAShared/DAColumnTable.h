@@ -3,7 +3,7 @@
 // std
 #include <memory>
 // DA
-#include "DAAlgorithm.h"
+#include "da_algorithm.hpp"
 #include "DAVector.h"
 // Qt
 #include <QDebug>
