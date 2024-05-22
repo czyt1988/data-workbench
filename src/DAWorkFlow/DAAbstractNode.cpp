@@ -3,7 +3,7 @@
 #include "DANodeMetaData.h"
 #include "DAWorkFlow.h"
 #include "DAAbstractNodeFactory.h"
-#include "DAQtContainerUtil.h"
+#include "DAQtContainerUtil.hpp"
 // Qxml
 #include <QPointer>
 #include <QDomComment>

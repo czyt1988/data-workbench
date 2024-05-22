@@ -6,7 +6,7 @@
 #include <QDomDocument>
 #include <QDomElement>
 #include <memory>
-#include "DAQtContainerUtil.h"
+#include "DAQtContainerUtil.hpp"
 #include "DAAbstractNode.h"
 #include "DAAbstractNodeLinkGraphicsItem.h"
 #include "DAAbstractNodeWidget.h"

@@ -1,7 +1,7 @@
 ﻿#include "DAChartLegendItemSettingWidget.h"
 #include "ui_DAChartLegendItemSettingWidget.h"
 #include "qwt_plot_legenditem.h"
-#include "DASignalBlockers.h"
+#include "DASignalBlockers.hpp"
 namespace DA
 {
 

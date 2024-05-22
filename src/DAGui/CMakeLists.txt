@@ -25,9 +25,6 @@ find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
     Svg
     REQUIRED
 )
-if(Qt5_POSITION_INDEPENDENT_CODE)
-    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-endif()
 
 ########################################################
 # 文件加载 #!!!!** 注意变更 **!!!!
@@ -281,14 +278,11 @@ target_link_libraries(${DA_LIB_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Xml
     Qt${QT_VERSION_MAJOR}::Svg
 )
-# -------------link SARibbon--------------------------
-damacro_import_SARibbonBar(${DA_LIB_NAME})
+if(${QT_VERSION_MAJOR} EQUAL 6)
+    find_package(Qt6 REQUIRED COMPONENTS Core5Compat)
+    target_link_libraries(${DA_LIB_NAME} PRIVATE Qt6::Core5Compat)
+endif()
 
-# -------------link QtAdvancedDockingSystem--------------------------
-damacro_import_QtAdvancedDocking(${DA_LIB_NAME})
-
-# -------------link 3rdparty--------------------------
-damacro_import_qwt(${DA_LIB_NAME})
 
 
 # -------------link DAWorkBench--------------------------
@@ -315,7 +309,7 @@ if(${DA_PROJECT_NAME}_FOUND)
     message(STATUS "  |-link ${DA_PROJECT_NAME}::DAFigure")
     message(STATUS "  | |-include dir:${DAFigure_INCLUDE_DIR}")
 endif()
-target_link_libraries(${DA_LIB_NAME} PUBLIC
+target_link_libraries(${DA_LIB_NAME} PRIVATE
     ${DA_PROJECT_NAME}::DAUtils
     ${DA_PROJECT_NAME}::DAMessageHandler
     ${DA_PROJECT_NAME}::DAData
@@ -328,6 +322,7 @@ target_link_libraries(${DA_LIB_NAME} PUBLIC
 
 if(DA_ENABLE_PYTHON)
     find_package(${DA_PROJECT_NAME} COMPONENTS
+        DAPyBindQt
         DAPyScripts
         DAPyCommonWidgets
     )
@@ -337,11 +332,27 @@ if(DA_ENABLE_PYTHON)
         message(STATUS "  |-link ${DA_PROJECT_NAME}::DAPyCommonWidgets")
         message(STATUS "  | |-include dir:${DAPyCommonWidgets_INCLUDE_DIR}")
     endif()
-    target_link_libraries(${DA_LIB_NAME} PUBLIC
+    target_link_libraries(${DA_LIB_NAME} PRIVATE
+        ${DA_PROJECT_NAME}::DAPyBindQt
         ${DA_PROJECT_NAME}::DAPyScripts
         ${DA_PROJECT_NAME}::DAPyCommonWidgets
     )
+
+    # -------------link python--------------------------
+    damacro_import_Python(${DA_LIB_NAME})
 endif()
+
+# -------------link SARibbon--------------------------
+damacro_import_SARibbonBar(${DA_LIB_NAME})
+
+# -------------link QtAdvancedDockingSystem--------------------------
+damacro_import_QtAdvancedDocking(${DA_LIB_NAME})
+
+# -------------link qwt--------------------------
+damacro_import_qwt(${DA_LIB_NAME})
+
+# -------------link ctk--------------------------
+damacro_import_DALiteCtk(${DA_LIB_NAME})
 
 
 ########################################################

@@ -17,7 +17,7 @@ const int c_arg_line_space = 35;
 /**
  * @brief item的默认宽度
  */
-const int c_item_default_width_space = 35;
+const int c_stadardnodeitem_default_width_space = 35;
 DAStandardNodeInputOutputGraphicsItem::DAStandardNodeInputOutputGraphicsItem(DA::DAAbstractNode* n, QGraphicsItem* p)
 	: DAAbstractNodeGraphicsItem(n, p)
 {
@@ -68,7 +68,7 @@ QSize DAStandardNodeInputOutputGraphicsItem::calcSize() const
 			maxOutText = p;
 		}
 	}
-	int minW = fm.horizontalAdvance(maxInText + maxOutText) + getLinkpointSize().width() * 2 + c_item_default_width_space;
+	int minW = fm.horizontalAdvance(maxInText + maxOutText) + getLinkpointSize().width() * 2 + c_stadardnodeitem_default_width_space;
 	qDebug() << "maxInText=" << maxInText << ",maxOutText=" << maxOutText << ",minW=" << minW;
 	// 根据数量，计算高度
 	int h = qMax((inCnt + 1) * c_arg_line_space, (outCnt + 1) * c_arg_line_space);

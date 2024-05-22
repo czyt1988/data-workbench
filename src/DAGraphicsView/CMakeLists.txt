@@ -24,9 +24,7 @@ find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
     Xml
     REQUIRED
 )
-if(Qt5_POSITION_INDEPENDENT_CODE)
-    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-endif()
+
 
 ########################################################
 # 文件加载 #!!!!** 注意变更 **!!!!
@@ -48,6 +46,7 @@ add_library(${DA_PROJECT_NAME}::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
 ########################################################
 # -------------link Qt--------------------------
 message(STATUS "${DA_LIB_NAME} Qt${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
+
 target_link_libraries(${DA_LIB_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
@@ -62,6 +61,7 @@ if(${DA_PROJECT_NAME}_FOUND)
     message(STATUS "  |-link ${DA_PROJECT_NAME}::DAUtils")
     message(STATUS "  | |-include dir:${DAUtils_INCLUDE_DIR}")
 endif()
+
 target_link_libraries(${DA_LIB_NAME} PRIVATE
     ${DA_PROJECT_NAME}::DAUtils
 )

@@ -21,6 +21,22 @@ string(TIMESTAMP DA_COMPILE_DATETIME_MONTH %m)
 string(TIMESTAMP DA_COMPILE_DATETIME_DAY %d)
 message(STATUS "DA Version is ${DA_VERSION}")
 ########################################################
+# 定义工程
+########################################################
+set(DA_PROJECT_NAME "DAWorkbench")
+
+project(${DA_PROJECT_NAME}
+        VERSION ${DA_VERSION}
+        LANGUAGES CXX
+        DESCRIPTION "DataWorkBench : A Workflow Integration Workbench"
+        )
+
+########################################################
+# include
+########################################################
+
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/daworkbench_utils.cmake)
+########################################################
 # 可选的变量
 ########################################################
 # 此选项将设置是否开启python
@@ -39,7 +55,7 @@ option(DA_AUTO_INSTALL_PREFIX
     "This option will allow DA to automatically install the results to the local directory"
     ON)
 
-include(${CMAKE_CURRENT_LIST_DIR}/cmake/daworkbench_utils.cmake)
+
 if(DA_AUTO_INSTALL_PREFIX)
     message(STATUS "DA Auto Install")
     set(DA_BIN_DIR_NAME)
@@ -49,16 +65,7 @@ if(DA_AUTO_INSTALL_PREFIX)
     message(STATUS "DA_BIN_DIR_NAME=${DA_BIN_DIR_NAME}")
     message(STATUS "DAWorkbench_INSTALL_DIR=${DAWorkbench_INSTALL_DIR}")
 endif()
-########################################################
-# 定义工程
-########################################################
-set(DA_PROJECT_NAME "DAWorkbench")
 
-project(${DA_PROJECT_NAME} 
-        VERSION ${DA_VERSION} 
-        LANGUAGES CXX
-        DESCRIPTION "DataWorkBench : A Workflow Integration Workbench"
-        )
 
 
 ########################################################
@@ -200,7 +207,7 @@ endif()
 # 源码路径
 ########################################################
 add_subdirectory(src)
-add_subdirectory(plugins)
+#add_subdirectory(plugins)
 
 ##################################
 # 最终安装 install

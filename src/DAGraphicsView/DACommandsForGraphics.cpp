@@ -4,7 +4,7 @@
 #include "DAGraphicsScene.h"
 #include "DAGraphicsResizeableItem.h"
 #include "DAGraphicsItemGroup.h"
-#include "DAQtContainerUtil.h"
+#include "DAQtContainerUtil.hpp"
 #include <QObject>
 using namespace DA;
 
@@ -16,25 +16,25 @@ DACommandsForGraphicsItemAdd::DACommandsForGraphicsItemAdd(QGraphicsItem* item, 
 
 DACommandsForGraphicsItemAdd::~DACommandsForGraphicsItemAdd()
 {
-    if (mNeedDelete) {
-        delete mItem;
-    }
+	if (mNeedDelete) {
+		delete mItem;
+	}
 }
 
 void DACommandsForGraphicsItemAdd::redo()
 {
-    QUndoCommand::redo();
-    if (mItem->scene() != mScene) {
-        mScene->addItem(mItem);
-    }
-    mNeedDelete = false;
+	QUndoCommand::redo();
+	if (mItem->scene() != mScene) {
+		mScene->addItem(mItem);
+	}
+	mNeedDelete = false;
 }
 
 void DACommandsForGraphicsItemAdd::undo()
 {
-    QUndoCommand::undo();
-    mScene->removeItem(mItem);
-    mNeedDelete = true;
+	QUndoCommand::undo();
+	mScene->removeItem(mItem);
+	mNeedDelete = true;
 }
 
 ////////////////////////////////////////////////////////////
@@ -47,23 +47,23 @@ DACommandsForGraphicsItemRemove::DACommandsForGraphicsItemRemove(QGraphicsItem* 
 
 DACommandsForGraphicsItemRemove::~DACommandsForGraphicsItemRemove()
 {
-    if (mNeedDelete) {
-        delete mItem;
-    }
+	if (mNeedDelete) {
+		delete mItem;
+	}
 }
 
 void DACommandsForGraphicsItemRemove::redo()
 {
-    QUndoCommand::redo();
-    mScene->removeItem(mItem);
-    mNeedDelete = true;
+	QUndoCommand::redo();
+	mScene->removeItem(mItem);
+	mNeedDelete = true;
 }
 
 void DACommandsForGraphicsItemRemove::undo()
 {
-    QUndoCommand::undo();
-    mScene->addItem(mItem);
-    mNeedDelete = false;
+	QUndoCommand::undo();
+	mScene->addItem(mItem);
+	mNeedDelete = false;
 }
 
 ////////////////////////////////////////////////////////////
@@ -88,27 +88,27 @@ DACommandsForGraphicsItemsMoved::DACommandsForGraphicsItemsMoved(const QList< QG
 
 void DACommandsForGraphicsItemsMoved::redo()
 {
-    QUndoCommand::redo();
-    if (mSkipFirst) {
-        mSkipFirst = false;
-        return;
-    }
-    for (int i = 0; i < mItems.size(); ++i) {
-        mItems[ i ]->setPos(mEndsPos[ i ]);
-    }
+	QUndoCommand::redo();
+	if (mSkipFirst) {
+		mSkipFirst = false;
+		return;
+	}
+	for (int i = 0; i < mItems.size(); ++i) {
+		mItems[ i ]->setPos(mEndsPos[ i ]);
+	}
 }
 
 void DACommandsForGraphicsItemsMoved::undo()
 {
-    QUndoCommand::undo();
-    for (int i = 0; i < mItems.size(); ++i) {
-        mItems[ i ]->setPos(mStartsPos[ i ]);
-    }
+	QUndoCommand::undo();
+	for (int i = 0; i < mItems.size(); ++i) {
+		mItems[ i ]->setPos(mStartsPos[ i ]);
+	}
 }
 
 int DACommandsForGraphicsItemsMoved::id() const
 {
-    return CmdID_ItemsMove;
+	return CmdID_ItemsMove;
 }
 
 //==============================================================
@@ -125,21 +125,21 @@ DACommandsForGraphicsItemsMoved_Merge::DACommandsForGraphicsItemsMoved_Merge(con
 
 int DACommandsForGraphicsItemsMoved_Merge::id() const
 {
-    return CmdID_ItemsMoveMerge;
+	return CmdID_ItemsMoveMerge;
 }
 
 bool DACommandsForGraphicsItemsMoved_Merge::mergeWith(const QUndoCommand* command)
 {
-    const DACommandsForGraphicsItemsMoved_Merge* other = dynamic_cast< const DACommandsForGraphicsItemsMoved_Merge* >(command);
-    if (nullptr == other) {
-        return false;
-    }
-    if (other->mItems != mItems) {
-        // items不一样不能合并
-        return false;
-    }
-    mEndsPos = other->mEndsPos;
-    return true;
+	const DACommandsForGraphicsItemsMoved_Merge* other = dynamic_cast< const DACommandsForGraphicsItemsMoved_Merge* >(command);
+	if (nullptr == other) {
+		return false;
+	}
+	if (other->mItems != mItems) {
+		// items不一样不能合并
+		return false;
+	}
+	mEndsPos = other->mEndsPos;
+	return true;
 }
 //==============================================================
 // DACommandsForGraphicsItemMoved
@@ -157,22 +157,22 @@ DACommandsForGraphicsItemMoved::DACommandsForGraphicsItemMoved(QGraphicsItem* it
 
 void DACommandsForGraphicsItemMoved::redo()
 {
-    QUndoCommand::redo();
-    if (mSkipFirst) {
-        mSkipFirst = false;
-        return;
-    }
-    mItem->setPos(mEndPos);
+	QUndoCommand::redo();
+	if (mSkipFirst) {
+		mSkipFirst = false;
+		return;
+	}
+	mItem->setPos(mEndPos);
 }
 
 void DACommandsForGraphicsItemMoved::undo()
 {
-    mItem->setPos(mStartPos);
+	mItem->setPos(mStartPos);
 }
 
 int DACommandsForGraphicsItemMoved::id() const
 {
-    return CmdID_ItemMove;
+	return CmdID_ItemMove;
 }
 
 //==============================================================
@@ -190,21 +190,21 @@ DACommandsForGraphicsItemMoved_Merge::DACommandsForGraphicsItemMoved_Merge(QGrap
 
 int DACommandsForGraphicsItemMoved_Merge::id() const
 {
-    return CmdID_ItemMoveMerge;
+	return CmdID_ItemMoveMerge;
 }
 
 bool DACommandsForGraphicsItemMoved_Merge::mergeWith(const QUndoCommand* command)
 {
-    const DACommandsForGraphicsItemMoved_Merge* other = dynamic_cast< const DACommandsForGraphicsItemMoved_Merge* >(command);
-    if (nullptr == other) {
-        return false;
-    }
-    if (mItem != other->mItem) {
-        return false;
-    }
-    // 合并只改变最后的位置
-    mEndPos = other->mEndPos;
-    return true;
+	const DACommandsForGraphicsItemMoved_Merge* other = dynamic_cast< const DACommandsForGraphicsItemMoved_Merge* >(command);
+	if (nullptr == other) {
+		return false;
+	}
+	if (mItem != other->mItem) {
+		return false;
+	}
+	// 合并只改变最后的位置
+	mEndPos = other->mEndPos;
+	return true;
 }
 
 //==============================================================
@@ -227,7 +227,13 @@ DACommandsForGraphicsItemResized::DACommandsForGraphicsItemResized(DAGraphicsRes
                                                                    const QSizeF& newSize,
                                                                    bool skipFirst,
                                                                    QUndoCommand* parent)
-    : QUndoCommand(parent), mItem(item), mOldpos(oldpos), mOldSize(oldSize), mNewPosition(newpos), mNewSize(newSize), mSkipFirst(skipFirst)
+    : QUndoCommand(parent)
+    , mItem(item)
+    , mOldpos(oldpos)
+    , mOldSize(oldSize)
+    , mNewPosition(newpos)
+    , mNewSize(newSize)
+    , mSkipFirst(skipFirst)
 {
     setText(QObject::tr("Item Resize"));
 }
@@ -239,58 +245,58 @@ DACommandsForGraphicsItemResized::DACommandsForGraphicsItemResized(DAGraphicsRes
                                                                    QUndoCommand* parent)
     : QUndoCommand(parent), mItem(item), mOldSize(oldSize), mNewSize(newSize), mSkipFirst(skipFirst)
 {
-    setText(QObject::tr("Item Resize"));
-    mOldpos = mNewPosition = item->pos();
+	setText(QObject::tr("Item Resize"));
+	mOldpos = mNewPosition = item->pos();
 }
 
 void DACommandsForGraphicsItemResized::redo()
 {
-    QUndoCommand::redo();
-    if (mSkipFirst) {
-        mSkipFirst = false;
-        return;
-    }
-    if (mItem) {
-        if (mNewSize.isValid()) {
-            mItem->setBodySize(mNewSize);
-        }
-        if (!mNewPosition.isNull()) {
-            mItem->setPos(mNewPosition);
-        }
-    }
+	QUndoCommand::redo();
+	if (mSkipFirst) {
+		mSkipFirst = false;
+		return;
+	}
+	if (mItem) {
+		if (mNewSize.isValid()) {
+			mItem->setBodySize(mNewSize);
+		}
+		if (!mNewPosition.isNull()) {
+			mItem->setPos(mNewPosition);
+		}
+	}
 }
 
 void DACommandsForGraphicsItemResized::undo()
 {
-    QUndoCommand::undo();
-    if (mItem) {
-        if (mOldSize.isValid()) {
-            mItem->setBodySize(mOldSize);
-        }
-        if (!mOldpos.isNull()) {
-            mItem->setPos(mOldpos);
-        }
-    }
+	QUndoCommand::undo();
+	if (mItem) {
+		if (mOldSize.isValid()) {
+			mItem->setBodySize(mOldSize);
+		}
+		if (!mOldpos.isNull()) {
+			mItem->setPos(mOldpos);
+		}
+	}
 }
 
 int DACommandsForGraphicsItemResized::id() const
 {
-    return CmdID_ItemResize;
+	return CmdID_ItemResize;
 }
 
 bool DACommandsForGraphicsItemResized::mergeWith(const QUndoCommand* command)
 {
-    const DACommandsForGraphicsItemResized* other = dynamic_cast< const DACommandsForGraphicsItemResized* >(command);
-    if (nullptr == other) {
-        return false;
-    }
-    if (mItem != other->mItem) {
-        return false;
-    }
-    // 合并只改变最后的位置
-    mNewPosition = other->mNewPosition;
-    mNewSize     = other->mNewSize;
-    return true;
+	const DACommandsForGraphicsItemResized* other = dynamic_cast< const DACommandsForGraphicsItemResized* >(command);
+	if (nullptr == other) {
+		return false;
+	}
+	if (mItem != other->mItem) {
+		return false;
+	}
+	// 合并只改变最后的位置
+	mNewPosition = other->mNewPosition;
+	mNewSize     = other->mNewSize;
+	return true;
 }
 
 //==============================================================
@@ -310,40 +316,40 @@ DACommandsForGraphicsItemResizeWidth::DACommandsForGraphicsItemResizeWidth(DAGra
                                                                            QUndoCommand* parent)
     : QUndoCommand(parent), mItem(item), mOldWidth(oldWidth), mNewWidth(newWidth), mSkipfirst(skipfirst)
 {
-    setText(QObject::tr("Item Resize Width"));
-    mHeight = item->getBodySize().height();
+	setText(QObject::tr("Item Resize Width"));
+	mHeight = item->getBodySize().height();
 }
 
 void DACommandsForGraphicsItemResizeWidth::redo()
 {
-    if (mSkipfirst) {
-        mSkipfirst = false;
-        return;
-    }
-    mItem->setBodySize(QSizeF(mNewWidth, mHeight));
+	if (mSkipfirst) {
+		mSkipfirst = false;
+		return;
+	}
+	mItem->setBodySize(QSizeF(mNewWidth, mHeight));
 }
 
 void DACommandsForGraphicsItemResizeWidth::undo()
 {
-    mItem->setBodySize(QSizeF(mOldWidth, mHeight));
+	mItem->setBodySize(QSizeF(mOldWidth, mHeight));
 }
 
 int DACommandsForGraphicsItemResizeWidth::id() const
 {
-    return CmdID_ItemResizeWidth;
+	return CmdID_ItemResizeWidth;
 }
 
 bool DACommandsForGraphicsItemResizeWidth::mergeWith(const QUndoCommand* command)
 {
-    const DACommandsForGraphicsItemResizeWidth* other = dynamic_cast< const DACommandsForGraphicsItemResizeWidth* >(command);
-    if (nullptr == other) {
-        return false;
-    }
-    if (mItem != other->mItem) {
-        return false;
-    }
-    mNewWidth = other->mNewWidth;
-    return true;
+	const DACommandsForGraphicsItemResizeWidth* other = dynamic_cast< const DACommandsForGraphicsItemResizeWidth* >(command);
+	if (nullptr == other) {
+		return false;
+	}
+	if (mItem != other->mItem) {
+		return false;
+	}
+	mNewWidth = other->mNewWidth;
+	return true;
 }
 //==============================================================
 // DACommandsForGraphicsItemResizeHeight
@@ -355,40 +361,40 @@ DACommandsForGraphicsItemResizeHeight::DACommandsForGraphicsItemResizeHeight(DAG
                                                                              QUndoCommand* parent)
     : QUndoCommand(parent), mItem(item), mOldHeight(oldHeight), mNewHeight(newHeight), mSkipfirst(skipfirst)
 {
-    setText(QObject::tr("Item Resize Height"));
-    mWidth = item->getBodySize().width();
+	setText(QObject::tr("Item Resize Height"));
+	mWidth = item->getBodySize().width();
 }
 
 void DACommandsForGraphicsItemResizeHeight::redo()
 {
-    if (mSkipfirst) {
-        mSkipfirst = false;
-        return;
-    }
-    mItem->setBodySize(QSizeF(mWidth, mNewHeight));
+	if (mSkipfirst) {
+		mSkipfirst = false;
+		return;
+	}
+	mItem->setBodySize(QSizeF(mWidth, mNewHeight));
 }
 
 void DACommandsForGraphicsItemResizeHeight::undo()
 {
-    mItem->setBodySize(QSizeF(mWidth, mOldHeight));
+	mItem->setBodySize(QSizeF(mWidth, mOldHeight));
 }
 
 int DACommandsForGraphicsItemResizeHeight::id() const
 {
-    return CmdID_ItemResizeHeight;
+	return CmdID_ItemResizeHeight;
 }
 
 bool DACommandsForGraphicsItemResizeHeight::mergeWith(const QUndoCommand* command)
 {
-    const DACommandsForGraphicsItemResizeHeight* other = dynamic_cast< const DACommandsForGraphicsItemResizeHeight* >(command);
-    if (nullptr == other) {
-        return false;
-    }
-    if (mItem != other->mItem) {
-        return false;
-    }
-    mNewHeight = other->mNewHeight;
-    return true;
+	const DACommandsForGraphicsItemResizeHeight* other = dynamic_cast< const DACommandsForGraphicsItemResizeHeight* >(command);
+	if (nullptr == other) {
+		return false;
+	}
+	if (mItem != other->mItem) {
+		return false;
+	}
+	mNewHeight = other->mNewHeight;
+	return true;
 }
 //==============================================================
 // DACommandsForGraphicsItemRotation
@@ -405,35 +411,35 @@ DACommandsForGraphicsItemRotation::DACommandsForGraphicsItemRotation(DAGraphicsR
 
 void DACommandsForGraphicsItemRotation::redo()
 {
-    if (mSkipfirst) {
-        mSkipfirst = false;
-        return;
-    }
-    mItem->setRotation(mNewRotation);
+	if (mSkipfirst) {
+		mSkipfirst = false;
+		return;
+	}
+	mItem->setRotation(mNewRotation);
 }
 
 void DACommandsForGraphicsItemRotation::undo()
 {
-    // qDebug() << "Item Reset Rotation " << _oldRotation;
-    mItem->setRotation(mOldRotation);
+	// qDebug() << "Item Reset Rotation " << _oldRotation;
+	mItem->setRotation(mOldRotation);
 }
 
 int DACommandsForGraphicsItemRotation::id() const
 {
-    return CmdID_ItemRotation;
+	return CmdID_ItemRotation;
 }
 
 bool DACommandsForGraphicsItemRotation::mergeWith(const QUndoCommand* command)
 {
-    const DACommandsForGraphicsItemRotation* other = dynamic_cast< const DACommandsForGraphicsItemRotation* >(command);
-    if (nullptr == other) {
-        return false;
-    }
-    if (mItem != other->mItem) {
-        return false;
-    }
-    mNewRotation = other->mNewRotation;
-    return true;
+	const DACommandsForGraphicsItemRotation* other = dynamic_cast< const DACommandsForGraphicsItemRotation* >(command);
+	if (nullptr == other) {
+		return false;
+	}
+	if (mItem != other->mItem) {
+		return false;
+	}
+	mNewRotation = other->mNewRotation;
+	return true;
 }
 
 //==============================================================
@@ -450,32 +456,32 @@ DACommandsForGraphicsItemGrouping::DACommandsForGraphicsItemGrouping(DAGraphicsS
 
 DACommandsForGraphicsItemGrouping::~DACommandsForGraphicsItemGrouping()
 {
-    if (mNeedDelete) {
-        delete mGroupItem;
-    }
+	if (mNeedDelete) {
+		delete mGroupItem;
+	}
 }
 
 void DACommandsForGraphicsItemGrouping::redo()
 {
-    if (!mGroupItem) {
-        mGroupItem = new DAGraphicsItemGroup();
-    }
-    DAGraphicsScene::addItemToGroup(mGroupItem, mWillGroupItems);
-    mScene->addItem(mGroupItem);
-    mGroupItem->setSelected(true);
-    mNeedDelete = false;
+	if (!mGroupItem) {
+		mGroupItem = new DAGraphicsItemGroup();
+	}
+	DAGraphicsScene::addItemToGroup(mGroupItem, mWillGroupItems);
+	mScene->addItem(mGroupItem);
+	mGroupItem->setSelected(true);
+	mNeedDelete = false;
 }
 
 void DACommandsForGraphicsItemGrouping::undo()
 {
-    // 不能用destroyItemGroup，destroyItemGroup会删除mGroupItem，如果之前做过移动操作，mGroupItem会被保存在其它的cmd中，这时候就会触发异常
-    const auto items = mGroupItem->childItems();
-    for (QGraphicsItem* item : items) {
-        mGroupItem->removeFromGroup(item);
-        item->setSelected(false);
-    }
-    mScene->removeItem(mGroupItem);
-    mNeedDelete = true;
+	// 不能用destroyItemGroup，destroyItemGroup会删除mGroupItem，如果之前做过移动操作，mGroupItem会被保存在其它的cmd中，这时候就会触发异常
+	const auto items = mGroupItem->childItems();
+	for (QGraphicsItem* item : items) {
+		mGroupItem->removeFromGroup(item);
+		item->setSelected(false);
+	}
+	mScene->removeItem(mGroupItem);
+	mNeedDelete = true;
 }
 
 /**
@@ -485,37 +491,39 @@ void DACommandsForGraphicsItemGrouping::undo()
  */
 QList< QGraphicsItem* > DACommandsForGraphicsItemGrouping::toSimple(const QList< QGraphicsItem* >& groupingitems)
 {
-    const QSet< QGraphicsItem* > willGroupItems = qlist_to_qset(groupingitems);
-    QList< QGraphicsItem* > res;
-    for (QGraphicsItem* i : groupingitems) {
-        bool ancestorsInGroup = false;
-        QGraphicsItem* par    = i->parentItem();
-        if (par) {
-            do {
-                if (willGroupItems.contains(par)) {
-                    ancestorsInGroup = true;
-                    break;
-                }
-                par = par->parentItem();
-            } while (par);
-        }
-        if (!ancestorsInGroup) {
-            res.append(i);
-        }
-    }
-    return res;
+	const QSet< QGraphicsItem* > willGroupItems = qlist_to_qset(groupingitems);
+	QList< QGraphicsItem* > res;
+	for (QGraphicsItem* i : groupingitems) {
+		bool ancestorsInGroup = false;
+		QGraphicsItem* par    = i->parentItem();
+		if (par) {
+			do {
+				if (willGroupItems.contains(par)) {
+					ancestorsInGroup = true;
+					break;
+				}
+				par = par->parentItem();
+			} while (par);
+		}
+		if (!ancestorsInGroup) {
+			res.append(i);
+		}
+	}
+	return res;
 }
 
 QList< QGraphicsItem* > DACommandsForGraphicsItemGrouping::getWillGroupItems() const
 {
-    return mWillGroupItems;
+	return mWillGroupItems;
 }
 
 //==============================================================
 // DACommandsForGraphicsItemUngrouping
 //==============================================================
 
-DACommandsForGraphicsItemUngrouping::DACommandsForGraphicsItemUngrouping(QGraphicsScene* sc, QGraphicsItemGroup* group, QUndoCommand* parent)
+DACommandsForGraphicsItemUngrouping::DACommandsForGraphicsItemUngrouping(QGraphicsScene* sc,
+                                                                         QGraphicsItemGroup* group,
+                                                                         QUndoCommand* parent)
     : QUndoCommand(parent), mScene(sc), mGroupItem(group)
 {
     mItems = mGroupItem->childItems();
@@ -523,25 +531,25 @@ DACommandsForGraphicsItemUngrouping::DACommandsForGraphicsItemUngrouping(QGraphi
 
 DACommandsForGraphicsItemUngrouping::~DACommandsForGraphicsItemUngrouping()
 {
-    if (mNeedDelete) {
-        delete mGroupItem;
-    }
+	if (mNeedDelete) {
+		delete mGroupItem;
+	}
 }
 
 void DACommandsForGraphicsItemUngrouping::redo()
 {
-    for (QGraphicsItem* item : qAsConst(mItems)) {
-        mGroupItem->removeFromGroup(item);
-        item->setSelected(false);
-    }
-    mScene->removeItem(mGroupItem);
-    mNeedDelete = true;
+	for (QGraphicsItem* item : qAsConst(mItems)) {
+		mGroupItem->removeFromGroup(item);
+		item->setSelected(false);
+	}
+	mScene->removeItem(mGroupItem);
+	mNeedDelete = true;
 }
 
 void DACommandsForGraphicsItemUngrouping::undo()
 {
-    DAGraphicsScene::addItemToGroup(mGroupItem, mItems);
-    mScene->addItem(mGroupItem);
-    mGroupItem->setSelected(true);
-    mNeedDelete = false;
+	DAGraphicsScene::addItemToGroup(mGroupItem, mItems);
+	mScene->addItem(mGroupItem);
+	mGroupItem->setSelected(true);
+	mNeedDelete = false;
 }

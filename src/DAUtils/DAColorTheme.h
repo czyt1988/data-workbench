@@ -1,6 +1,6 @@
 ﻿#ifndef DACOLORTHEME_H
 #define DACOLORTHEME_H
-#include "DAIndexedVector.h"
+#include "DAIndexedVector.hpp"
 #include <initializer_list>
 #include <QColor>
 #include <QDebug>

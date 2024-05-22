@@ -23,10 +23,10 @@
 #include "DAFigureWidgetOverlayChartEditor.h"
 namespace DA
 {
-const float c_default_x = 0.05f;
-const float c_default_y = 0.05f;
-const float c_default_w = 0.9f;
-const float c_default_h = 0.9f;
+const float c_figurewidget_default_x = 0.05f;
+const float c_figurewidget_default_y = 0.05f;
+const float c_figurewidget_default_w = 0.9f;
+const float c_figurewidget_default_h = 0.9f;
 //===================================================
 // command
 //===================================================
@@ -261,7 +261,7 @@ void DAFigureWidget::setupChartFactory(DAChartFactory* fac)
  */
 DAChartWidget* DAFigureWidget::createChart()
 {
-    return (createChart(c_default_x, c_default_y, c_default_w, c_default_h));
+    return (createChart(c_figurewidget_default_x, c_figurewidget_default_y, c_figurewidget_default_w, c_figurewidget_default_h));
 }
 
 /**
@@ -300,7 +300,7 @@ void DAFigureWidget::removeChart(DAChartWidget* chart)
  */
 DAChartWidget* DAFigureWidget::createChart_()
 {
-    return createChart_(c_default_x, c_default_y, c_default_w, c_default_h);
+    return createChart_(c_figurewidget_default_x, c_figurewidget_default_y, c_figurewidget_default_w, c_figurewidget_default_h);
 }
 
 /**
@@ -790,10 +790,11 @@ QDataStream& operator>>(QDataStream& in, DAFigureWidget* p)
 	try {
 		for (int i = 0; i < pos.size(); ++i) {
 			const QRectF& r = pos[ i ];
-			QScopedPointer< DAChartWidget > chart(p->createChart(r.x(), r.y(), r.width(), r.height()));
-			in >> chart.data();
+			auto chart      = p->createChart(r.x(), r.y(), r.width(), r.height());
+			std::unique_ptr< DAChartWidget > chart_guard(chart);
+			in >> chart;
 			chart->show();
-			chart.take();
+			chart_guard.release();
 		}
 	} catch (const DABadSerializeExpection& exp) {
 		throw exp;

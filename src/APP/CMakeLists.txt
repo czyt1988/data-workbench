@@ -36,9 +36,6 @@ if(QT_VERSION_MAJOR EQUAL 6)
     )
 endif()
 
-if(Qt5_POSITION_INDEPENDENT_CODE)
-    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-endif()
 
 ########################################################
 # 文件加载 #!!!!** 注意变更 **!!!!
@@ -106,19 +103,50 @@ damacro_import_qwt(${DA_APP_NAME})
 # -------------link DAWorkBench--------------------------
 # DAPluginSupport
 # 指定DAWorkbench_DIR为工程的顶层BINARY_DIR，否则找不到${DA_PROJECT_NAME}
-find_package(${DA_PROJECT_NAME} COMPONENTS DAPluginSupport)
-if(${DA_PROJECT_NAME}_FOUND)
-    message(STATUS "  |-link ${DA_PROJECT_NAME}::DAPluginSupport")
-    message(STATUS "  | |-include dir:${DAPluginSupport_INCLUDE_DIR}")
-endif()
-
+find_package(${DA_PROJECT_NAME} COMPONENTS
+    DAUtils
+    DAMessageHandler
+    DAData
+    DACommonWidgets
+    DAGraphicsView
+    DAWorkFlow
+    DAFigure
+    DAGui
+    DAInterface
+    DAPluginSupport
+)
 
 target_link_libraries(${DA_APP_NAME} PUBLIC
+    ${DA_PROJECT_NAME}::DAUtils
+    ${DA_PROJECT_NAME}::DAMessageHandler
+    ${DA_PROJECT_NAME}::DAData
     ${DA_PROJECT_NAME}::DACommonWidgets
+    ${DA_PROJECT_NAME}::DAGraphicsView
+    ${DA_PROJECT_NAME}::DAWorkFlow
+    ${DA_PROJECT_NAME}::DAFigure
     ${DA_PROJECT_NAME}::DAGui
     ${DA_PROJECT_NAME}::DAInterface
     ${DA_PROJECT_NAME}::DAPluginSupport
 )
+
+if(DA_ENABLE_PYTHON)
+    find_package(${DA_PROJECT_NAME} COMPONENTS
+        DAPyBindQt
+        DAPyScripts
+        DAPyCommonWidgets
+    )
+    # DAData的头文件包含了DAPyBindQt库的内容，因此DAPyBindQt需要公开链接
+    target_link_libraries(${DA_APP_NAME} PRIVATE
+        ${DA_PROJECT_NAME}::DAPyBindQt
+        ${DA_PROJECT_NAME}::DAPyScripts
+        ${DA_PROJECT_NAME}::DAPyCommonWidgets
+    )
+    message(STATUS "  |-link ${DA_PROJECT_NAME}::DAPyBindQt")
+    message(STATUS "  | |-include dir:${DAPyBindQt_INCLUDE_DIR}")
+    message(STATUS "  |-link ${DA_PROJECT_NAME}::DAPyScripts")
+    message(STATUS "  | |-include dir:${DAPyScripts_INCLUDE_DIR}")
+endif()
+
 # -------------link Dbghelp--------------------------
 if(WIN32)
     target_link_libraries(${DA_APP_NAME} PRIVATE

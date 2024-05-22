@@ -23,9 +23,6 @@ find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
     Widgets
     REQUIRED
 )
-if(Qt5_POSITION_INDEPENDENT_CODE)
-    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-endif()
 
 ########################################################
 # 文件加载 #!!!!** 注意变更 **!!!!
@@ -104,7 +101,7 @@ target_link_libraries(${DA_LIB_NAME} PRIVATE
 if(DA_ENABLE_PYTHON)
     find_package(${DA_PROJECT_NAME} COMPONENTS DAPyBindQt DAPyScripts)
     # DAData的头文件包含了DAPyBindQt库的内容，因此DAPyBindQt需要公开链接
-    target_link_libraries(${DA_LIB_NAME} PUBLIC
+    target_link_libraries(${DA_LIB_NAME} PRIVATE
         ${DA_PROJECT_NAME}::DAPyBindQt
         ${DA_PROJECT_NAME}::DAPyScripts
     )

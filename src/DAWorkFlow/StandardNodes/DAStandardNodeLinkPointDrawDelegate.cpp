@@ -8,11 +8,11 @@ namespace DA
 /**
  * @brief 连接点的宽度，针对东西方向的，如果变为南北方向，宽高要调换
  */
-const int linkpoint_width = 10;
+const int c_linkpoint_width = 10;
 /**
  * @brief 连接点的高度，针对东西方向的，如果变为南北方向，宽高要调换
  */
-const int linkpoint_height = 15;
+const int c_linkpoint_height = 15;
 
 DAStandardNodeLinkPointDrawDelegate::DAStandardNodeLinkPointDrawDelegate(DA::DAAbstractNodeGraphicsItem* i)
     : DA::DANodeLinkPointDrawDelegate(i)
@@ -160,31 +160,31 @@ QPainterPath DAStandardNodeLinkPointDrawDelegate::getlinkPointPainterRegion(cons
 		case DA::AspectDirection::East:
 			//! ◁|→
 			return closePainterPath(pl.position,
-									QPointF(pl.position.x(), pl.position.y() - linkpoint_height / 2),
-									QPointF(pl.position.x() - linkpoint_width, pl.position.y()),
-									QPointF(pl.position.x(), pl.position.y() + linkpoint_height / 2));
+									QPointF(pl.position.x(), pl.position.y() - c_linkpoint_height / 2),
+									QPointF(pl.position.x() - c_linkpoint_width, pl.position.y()),
+									QPointF(pl.position.x(), pl.position.y() + c_linkpoint_height / 2));
 		case DA::AspectDirection::West:
 			//! ←|▷
 			return closePainterPath(pl.position,
-									QPointF(pl.position.x(), pl.position.y() - linkpoint_height / 2),
-									QPointF(pl.position.x() + linkpoint_width, pl.position.y()),
-									QPointF(pl.position.x(), pl.position.y() + linkpoint_height / 2));
+									QPointF(pl.position.x(), pl.position.y() - c_linkpoint_height / 2),
+									QPointF(pl.position.x() + c_linkpoint_width, pl.position.y()),
+									QPointF(pl.position.x(), pl.position.y() + c_linkpoint_height / 2));
 		case DA::AspectDirection::North:  // 南北方向，高和宽调换
 			//! ↑
 			//! -
 			//! ▽
 			return closePainterPath(pl.position,
-									QPointF(pl.position.x() + linkpoint_height / 2, pl.position.y()),
-									QPointF(pl.position.x(), pl.position.y() + linkpoint_width),
-									QPointF(pl.position.x() - linkpoint_height / 2, pl.position.y()));
+									QPointF(pl.position.x() + c_linkpoint_height / 2, pl.position.y()),
+									QPointF(pl.position.x(), pl.position.y() + c_linkpoint_width),
+									QPointF(pl.position.x() - c_linkpoint_height / 2, pl.position.y()));
 		case DA::AspectDirection::South:  // 南北方向，高和宽调换
 			//! △
 			//! -
 			//! ↓
 			return closePainterPath(pl.position,
-									QPointF(pl.position.x() + linkpoint_height / 2, pl.position.y()),
-									QPointF(pl.position.x(), pl.position.y() - linkpoint_width),
-									QPointF(pl.position.x() - linkpoint_height / 2, pl.position.y()));
+									QPointF(pl.position.x() + c_linkpoint_height / 2, pl.position.y()),
+									QPointF(pl.position.x(), pl.position.y() - c_linkpoint_width),
+									QPointF(pl.position.x() - c_linkpoint_height / 2, pl.position.y()));
 			break;
 		default:
 			break;
@@ -194,40 +194,40 @@ QPainterPath DAStandardNodeLinkPointDrawDelegate::getlinkPointPainterRegion(cons
 		case DA::AspectDirection::East:
 			//! |▷→
 			return closePainterPath(pl.position,
-									QPointF(pl.position.x(), pl.position.y() - linkpoint_height / 2),
-									QPointF(pl.position.x() + linkpoint_width, pl.position.y()),
-									QPointF(pl.position.x(), pl.position.y() + linkpoint_height / 2));
+									QPointF(pl.position.x(), pl.position.y() - c_linkpoint_height / 2),
+									QPointF(pl.position.x() + c_linkpoint_width, pl.position.y()),
+									QPointF(pl.position.x(), pl.position.y() + c_linkpoint_height / 2));
 		case DA::AspectDirection::West:
 			//! ←◁|
 			return closePainterPath(pl.position,
-									QPointF(pl.position.x(), pl.position.y() - linkpoint_height / 2),
-									QPointF(pl.position.x() - linkpoint_width, pl.position.y()),
-									QPointF(pl.position.x(), pl.position.y() + linkpoint_height / 2));
+									QPointF(pl.position.x(), pl.position.y() - c_linkpoint_height / 2),
+									QPointF(pl.position.x() - c_linkpoint_width, pl.position.y()),
+									QPointF(pl.position.x(), pl.position.y() + c_linkpoint_height / 2));
 		case DA::AspectDirection::North:  // 南北方向，高和宽调换
 			//! ↑
 			//! △
 			//! -
 			return closePainterPath(pl.position,
-									QPointF(pl.position.x() + linkpoint_height / 2, pl.position.y()),
-									QPointF(pl.position.x(), pl.position.y() - linkpoint_width),
-									QPointF(pl.position.x() - linkpoint_height / 2, pl.position.y()));
+									QPointF(pl.position.x() + c_linkpoint_height / 2, pl.position.y()),
+									QPointF(pl.position.x(), pl.position.y() - c_linkpoint_width),
+									QPointF(pl.position.x() - c_linkpoint_height / 2, pl.position.y()));
 		case DA::AspectDirection::South:  // 南北方向，高和宽调换
 			//! -
 			//! ▽
 			//! ↓
 			return closePainterPath(pl.position,
-									QPointF(pl.position.x() + linkpoint_height / 2, pl.position.y()),
-									QPointF(pl.position.x(), pl.position.y() + linkpoint_width),
-									QPointF(pl.position.x() - linkpoint_height / 2, pl.position.y()));
+									QPointF(pl.position.x() + c_linkpoint_height / 2, pl.position.y()),
+									QPointF(pl.position.x(), pl.position.y() + c_linkpoint_width),
+									QPointF(pl.position.x() - c_linkpoint_height / 2, pl.position.y()));
 			break;
 		default:
 			break;
 		}
 	}
 	return closePainterPath(pl.position,
-							QPointF(pl.position.x(), pl.position.y() - linkpoint_height / 2),
-							QPointF(pl.position.x() + linkpoint_width, pl.position.y()),
-							QPointF(pl.position.x(), pl.position.y() + linkpoint_height / 2));
+							QPointF(pl.position.x(), pl.position.y() - c_linkpoint_height / 2),
+							QPointF(pl.position.x() + c_linkpoint_width, pl.position.y()),
+							QPointF(pl.position.x(), pl.position.y() + c_linkpoint_height / 2));
 }
 
 /**
@@ -325,6 +325,6 @@ QPainterPath DAStandardNodeLinkPointDrawDelegate::closePainterPath(const QPointF
  */
 QSize DAStandardNodeLinkPointDrawDelegate::getLinkPointSize() const
 {
-    return QSize(linkpoint_width, linkpoint_height);
+    return QSize(c_linkpoint_width, c_linkpoint_height);
 }
 }

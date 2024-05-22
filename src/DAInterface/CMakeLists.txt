@@ -24,9 +24,7 @@ find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
     Xml
     REQUIRED
 )
-if(Qt5_POSITION_INDEPENDENT_CODE)
-    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-endif()
+
 
 ########################################################
 # 文件加载 #!!!!** 注意变更 **!!!!
@@ -56,14 +54,30 @@ target_link_libraries(${DA_LIB_NAME} PRIVATE
 # -------------link DAWorkBench--------------------------
 # DAGui
 # 指定DAWorkbench_DIR为工程的顶层BINARY_DIR，否则找不到${DA_PROJECT_NAME}
-find_package(${DA_PROJECT_NAME} COMPONENTS DAGui)
+find_package(${DA_PROJECT_NAME} COMPONENTS
+    DAUtils
+    DAMessageHandler
+    DAData
+    DACommonWidgets
+    DAGraphicsView
+    DAWorkFlow
+    DAFigure
+    DAGui
+)
 if(${DA_PROJECT_NAME}_FOUND)
     message(STATUS "  |-link ${DA_PROJECT_NAME}::DAGui")
     message(STATUS "  | |-include dir:${DAGui_INCLUDE_DIR}")
 endif()
 
 
-target_link_libraries(${DA_LIB_NAME} PUBLIC
+target_link_libraries(${DA_LIB_NAME} PRIVATE
+    ${DA_PROJECT_NAME}::DAUtils
+    ${DA_PROJECT_NAME}::DAMessageHandler
+    ${DA_PROJECT_NAME}::DAData
+    ${DA_PROJECT_NAME}::DACommonWidgets
+    ${DA_PROJECT_NAME}::DAGraphicsView
+    ${DA_PROJECT_NAME}::DAWorkFlow
+    ${DA_PROJECT_NAME}::DAFigure
     ${DA_PROJECT_NAME}::DAGui
 )
 
