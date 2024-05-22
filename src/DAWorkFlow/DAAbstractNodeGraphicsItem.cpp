@@ -844,7 +844,7 @@ DAAbstractNodeLinkGraphicsItem* DAAbstractNodeGraphicsItem::linkTo(const DANodeL
                                                                    const DANodeLinkPoint& toPoint)
 {
 	// 创建链接线
-	QScopedPointer< DAAbstractNodeLinkGraphicsItem > linkitem(createLinkItem(fromPoint));
+	auto linkitem = std::make_unique< DAAbstractNodeLinkGraphicsItem >(createLinkItem(fromPoint));
 	if (nullptr == linkitem) {
 		return nullptr;
 	}
@@ -859,7 +859,7 @@ DAAbstractNodeLinkGraphicsItem* DAAbstractNodeGraphicsItem::linkTo(const DANodeL
 
 		return nullptr;
 	}
-	return linkitem.take();
+	return linkitem.release();
 }
 
 /**

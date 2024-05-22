@@ -1,4 +1,4 @@
-#ifndef DASTANDARDNODECONSTVALUEGRAPHICSITEM_H
+﻿#ifndef DASTANDARDNODECONSTVALUEGRAPHICSITEM_H
 #define DASTANDARDNODECONSTVALUEGRAPHICSITEM_H
 #include "DAStandardNodeTextGraphicsItem.h"
 #include <QGraphicsProxyWidget>
@@ -18,8 +18,8 @@ public:
 	~DAStandardNodeConstValueGraphicsItem();
 	virtual void nodeDisplayNameChanged(const QString& name);
 	// 获取当前的值
-	QVariant::Type getCurrentValueType() const;
-	void setCurrentValueType(QVariant::Type v);
+	QMetaType::Type getCurrentValueType() const;
+	void setCurrentValueType(QMetaType::Type v);
 	// 内部维护窗口，paintbody不做任何动作
 	void paintBody(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget, const QRectF& bodyRect) override;
 
@@ -29,7 +29,7 @@ public:
 
 private:
 	qreal mRectRadius { 5 };  ///< 外轮廓的圆角
-	QVariant::Type mValueType;
+	QMetaType::Type mValueType;
 };
 }
 #endif  // DASTANDARDNODECONSTVALUEGRAPHICSITEM_H

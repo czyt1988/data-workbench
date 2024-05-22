@@ -1,6 +1,8 @@
 ﻿#ifndef DAGLOBALS_H
 #define DAGLOBALS_H
 #include <QScopedPointer>
+#include <QHash>
+#include <memory>
 #include <QString>
 #include "DAConfigs.h"
 /**
@@ -17,10 +19,10 @@
  */
 #ifndef DA_IMPL_FORWARD_DECL_NS
 #define DA_IMPL_FORWARD_DECL_NS(NS, ClassName)                                                                         \
-    namespace NS                                                                                                       \
-    {                                                                                                                  \
-    class ClassName##Private;                                                                                          \
-    }
+	namespace NS                                                                                                       \
+	{                                                                                                                  \
+	class ClassName##Private;                                                                                          \
+	}
 #endif
 
 /**
@@ -30,16 +32,16 @@
 #ifndef DA_IMPL
 #define DA_IMPL(Class)                                                                                                 \
 private:                                                                                                               \
-    inline Class##Private* d_func()                                                                                    \
-    {                                                                                                                  \
-        return (d_ptr.data());                                                                                         \
-    }                                                                                                                  \
-    inline const Class##Private* d_func() const                                                                        \
-    {                                                                                                                  \
-        return (d_ptr.data());                                                                                         \
-    }                                                                                                                  \
-    friend class Class##Private;                                                                                       \
-    QScopedPointer< Class##Private > d_ptr;
+	inline Class##Private* d_func()                                                                                    \
+	{                                                                                                                  \
+		return (d_ptr.data());                                                                                         \
+	}                                                                                                                  \
+	inline const Class##Private* d_func() const                                                                        \
+	{                                                                                                                  \
+		return (d_ptr.data());                                                                                         \
+	}                                                                                                                  \
+	friend class Class##Private;                                                                                       \
+	QScopedPointer< Class##Private > d_ptr;
 #endif
 
 /**
@@ -48,16 +50,16 @@ private:                                                                        
  */
 #ifndef DA_IMPL_PUBLIC
 #define DA_IMPL_PUBLIC(Class)                                                                                          \
-    inline Class* q_func()                                                                                             \
-    {                                                                                                                  \
-        return (static_cast< Class* >(q_ptr));                                                                         \
-    }                                                                                                                  \
-    inline const Class* q_func() const                                                                                 \
-    {                                                                                                                  \
-        return (static_cast< const Class* >(q_ptr));                                                                   \
-    }                                                                                                                  \
-    friend class Class;                                                                                                \
-    Class* q_ptr;
+	inline Class* q_func()                                                                                             \
+	{                                                                                                                  \
+		return (static_cast< Class* >(q_ptr));                                                                         \
+	}                                                                                                                  \
+	inline const Class* q_func() const                                                                                 \
+	{                                                                                                                  \
+		return (static_cast< const Class* >(q_ptr));                                                                   \
+	}                                                                                                                  \
+	friend class Class;                                                                                                \
+	Class* q_ptr;
 #endif
 
 /**
@@ -101,17 +103,17 @@ private:                                                                        
  */
 #ifndef DA_DECLARE_PRIVATE
 #define DA_DECLARE_PRIVATE(classname)                                                                                  \
-    class PrivateData;                                                                                                 \
-    friend class classname::PrivateData;                                                                               \
-    std::unique_ptr< PrivateData > d_ptr;                                                                              \
-    inline PrivateData* d_func()                                                                                       \
-    {                                                                                                                  \
-        return (d_ptr.get());                                                                                          \
-    }                                                                                                                  \
-    inline const PrivateData* d_func() const                                                                           \
-    {                                                                                                                  \
-        return (d_ptr.get());                                                                                          \
-    }
+	class PrivateData;                                                                                                 \
+	friend class classname::PrivateData;                                                                               \
+	std::unique_ptr< PrivateData > d_ptr;                                                                              \
+	inline PrivateData* d_func()                                                                                       \
+	{                                                                                                                  \
+		return (d_ptr.get());                                                                                          \
+	}                                                                                                                  \
+	inline const PrivateData* d_func() const                                                                           \
+	{                                                                                                                  \
+		return (d_ptr.get());                                                                                          \
+	}
 #endif
 
 /**
@@ -122,16 +124,16 @@ private:                                                                        
  */
 #ifndef DA_DECLARE_PUBLIC
 #define DA_DECLARE_PUBLIC(classname)                                                                                   \
-    friend class classname;                                                                                            \
-    classname* q_ptr { nullptr };                                                                                      \
-    inline classname* q_func()                                                                                         \
-    {                                                                                                                  \
-        return (static_cast< classname* >(q_ptr));                                                                     \
-    }                                                                                                                  \
-    inline const classname* q_func() const                                                                             \
-    {                                                                                                                  \
-        return (static_cast< const classname* >(q_ptr));                                                               \
-    }
+	friend class classname;                                                                                            \
+	classname* q_ptr { nullptr };                                                                                      \
+	inline classname* q_func()                                                                                         \
+	{                                                                                                                  \
+		return (static_cast< classname* >(q_ptr));                                                                     \
+	}                                                                                                                  \
+	inline const classname* q_func() const                                                                             \
+	{                                                                                                                  \
+		return (static_cast< const classname* >(q_ptr));                                                               \
+	}
 #endif
 
 /**
@@ -197,6 +199,37 @@ private:                                                                        
 #endif
 
 /**
+ *@def Qt5Qt6Compat_QXXEvent_x
+ *@brief QXXEvent_x函数的兼容宏
+ *
+ * warning: 'int QMouseEvent::x() const' is deprecated: Use position()
+ *
+ * QMouseEvent::x
+ */
+#ifndef Qt5Qt6Compat_QXXEvent_x
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#define Qt5Qt6Compat_QXXEvent_x(valuePtr) valuePtr->x()
+#else
+#define Qt5Qt6Compat_QXXEvent_x(valuePtr) valuePtr->position().x()
+#endif
+#endif
+
+/**
+ *@def Qt5Qt6Compat_QXXEvent_y
+ *@brief QXXEvent_y函数的兼容宏
+ *
+ * warning: 'int QMouseEvent::y() const' is deprecated: Use position()
+ *
+ * QMouseEvent::y
+ */
+#ifndef Qt5Qt6Compat_QXXEvent_y
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#define Qt5Qt6Compat_QXXEvent_y(valuePtr) valuePtr->y()
+#else
+#define Qt5Qt6Compat_QXXEvent_y(valuePtr) valuePtr->position().y()
+#endif
+#endif
+/**
  * @def Qt5Qt6Compat_fontMetrics_width
  * @brief QFontMetrics的字体宽度适配
  */
@@ -208,18 +241,39 @@ private:                                                                        
 #endif
 #endif
 
-
 #ifndef Qt5Qt6Compat_Connect_ButtonGroupClicked_int
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#define Qt5Qt6Compat_Connect_ButtonGroupClicked_int(buttonGroup, funName) \
-    do{\
-        connect(buttonGroup, QOverload< int >::of(&QButtonGroup::buttonClicked), this, &funName);\
-    }while(0)
+#define Qt5Qt6Compat_Connect_ButtonGroupClicked_int(buttonGroup, funName)                                              \
+	do {                                                                                                               \
+		connect(buttonGroup, QOverload< int >::of(&QButtonGroup::buttonClicked), this, &funName);                      \
+	} while (0)
 #else
-#define Qt5Qt6Compat_Connect_ButtonGroupClicked_int(buttonGroup, funName) \
-    do{ \
-        connect(buttonGroup, &QButtonGroup::idClicked, this, &funName);\
-    }while(0)
+#define Qt5Qt6Compat_Connect_ButtonGroupClicked_int(buttonGroup, funName)                                              \
+	do {                                                                                                               \
+		connect(buttonGroup, &QButtonGroup::idClicked, this, &funName);                                                \
+	} while (0)
 #endif
 #endif
+
+// 有些qt版本没有qHash对std::shared_ptr的重载，如果在这里出现错误，注释掉即可
+/**
+ * @brief 针对智能指针的qHash函数，可以让std::shared_ptr作为QHash和QSet的key
+ * @param ptr
+ * @param seed
+ * @return
+ */
+template< typename T >
+uint qHash(const std::shared_ptr< T >& ptr, uint seed = 0)
+{
+    return qHash(ptr.get(), seed);
+}
+// 模板特化的比较函数，用于 std::shared_ptr
+template< typename T >
+struct DASharedPtrEqual
+{
+	bool operator()(const std::shared_ptr< T >& a, const std::shared_ptr< T >& b) const
+	{
+		return a == b;
+	}
+};
 #endif  // GLOBALS_H

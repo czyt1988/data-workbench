@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QPointer>
 // qwt
+#include "qwt_plot.h"
 #include "qwt_plot_item.h"
 class QwtPlot;
 

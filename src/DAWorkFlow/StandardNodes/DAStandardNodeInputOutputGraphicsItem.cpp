@@ -53,7 +53,7 @@ QSize DAStandardNodeInputOutputGraphicsItem::calcSize() const
 	}
 	int inCnt  = n->getInputKeysConut();
 	int outCnt = n->getOutputKeysConut();
-	auto fm    = QApplication::fontMetrics();
+	QFontMetrics fm((QFont()));
 	// 找到最长的输入
 	const auto inpoints  = n->getInputKeys();
 	const auto outpoints = n->getOutputKeys();
@@ -68,7 +68,8 @@ QSize DAStandardNodeInputOutputGraphicsItem::calcSize() const
 			maxOutText = p;
 		}
 	}
-	int minW = fm.horizontalAdvance(maxInText + maxOutText) + getLinkpointSize().width() * 2 + c_stadardnodeitem_default_width_space;
+	int minW = fm.horizontalAdvance(maxInText + maxOutText) + getLinkpointSize().width() * 2
+			   + c_stadardnodeitem_default_width_space;
 	qDebug() << "maxInText=" << maxInText << ",maxOutText=" << maxOutText << ",minW=" << minW;
 	// 根据数量，计算高度
 	int h = qMax((inCnt + 1) * c_arg_line_space, (outCnt + 1) * c_arg_line_space);

@@ -8,15 +8,15 @@ namespace DA
 {
 class DAUIInterface::PrivateData
 {
-    DA_DECLARE_PUBLIC(DAUIInterface)
+	DA_DECLARE_PUBLIC(DAUIInterface)
 public:
-    DAUIInterface::PrivateData(DAUIInterface* p);
+	PrivateData(DAUIInterface* p);
 
 public:
-    SARibbonMainWindow* mMainWindow;
-    DACommandInterface* mCmd { nullptr };
-    DAActionsInterface* mActionMgr { nullptr };
-    QList< DAUIExtendInterface* > mExtends;
+	SARibbonMainWindow* mMainWindow;
+	DACommandInterface* mCmd { nullptr };
+	DAActionsInterface* mActionMgr { nullptr };
+	QList< DAUIExtendInterface* > mExtends;
 };
 
 //===================================================
@@ -31,17 +31,17 @@ DAUIInterface::PrivateData::PrivateData(DAUIInterface* p) : q_ptr(p)
 //===================================================
 DAUIInterface::DAUIInterface(SARibbonMainWindow* m, DACoreInterface* c) : DABaseInterface(c, m), DA_PIMPL_CONSTRUCT
 {
-    d_ptr->mMainWindow = m;
-    if (m) {
-        m->installEventFilter(this);
-    }
+	d_ptr->mMainWindow = m;
+	if (m) {
+		m->installEventFilter(this);
+	}
 }
 
 DAUIInterface::~DAUIInterface()
 {
-    if (mainWindow()) {
-        mainWindow()->removeEventFilter(this);
-    }
+	if (mainWindow()) {
+		mainWindow()->removeEventFilter(this);
+	}
 }
 
 /**
@@ -60,13 +60,13 @@ SARibbonMainWindow* DAUIInterface::mainWindow() const
  */
 void DAUIInterface::retranslateUi()
 {
-    int es = getExtendCount();
-    for (int i = 0; i < es; ++i) {
-        getExtend(i)->retranslateUi();
-    }
-    if (d_ptr->mActionMgr) {
-        d_ptr->mActionMgr->retranslateUi();
-    }
+	int es = getExtendCount();
+	for (int i = 0; i < es; ++i) {
+		getExtend(i)->retranslateUi();
+	}
+	if (d_ptr->mActionMgr) {
+		d_ptr->mActionMgr->retranslateUi();
+	}
 }
 
 void DAUIInterface::registeAction(DAActionsInterface* ac)
@@ -136,12 +136,12 @@ DAActionsInterface* DAUIInterface::getActionInterface() const
 
 bool DAUIInterface::eventFilter(QObject* watched, QEvent* event)
 {
-    if (watched == mainWindow()) {
-        //如果发现语言变更，调用retranslateUi()
-        if (event && (event->type() == QEvent::LanguageChange)) {
-            retranslateUi();
-        }
-    }
-    return (QObject::eventFilter(watched, event));
+	if (watched == mainWindow()) {
+		// 如果发现语言变更，调用retranslateUi()
+		if (event && (event->type() == QEvent::LanguageChange)) {
+			retranslateUi();
+		}
+	}
+	return (QObject::eventFilter(watched, event));
 }
 }  // namespace DA

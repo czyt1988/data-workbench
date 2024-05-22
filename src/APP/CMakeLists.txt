@@ -145,6 +145,9 @@ if(DA_ENABLE_PYTHON)
     message(STATUS "  | |-include dir:${DAPyBindQt_INCLUDE_DIR}")
     message(STATUS "  |-link ${DA_PROJECT_NAME}::DAPyScripts")
     message(STATUS "  | |-include dir:${DAPyScripts_INCLUDE_DIR}")
+
+    # -------------link python--------------------------
+    damacro_import_Python(${DA_APP_NAME})
 endif()
 
 # -------------link Dbghelp--------------------------

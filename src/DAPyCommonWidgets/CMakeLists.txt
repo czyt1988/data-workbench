@@ -103,77 +103,12 @@ target_include_directories(${DA_LIB_NAME} PUBLIC
 ########################################################
 # 安装
 ########################################################
-message(STATUS "${DA_LIB_NAME} install dir is : ${CMAKE_INSTALL_PREFIX}")
+damacro_lib_install()
 
-# DALibConfig.cmake.in中，会让此变量和“${PACKAGE_PREFIX_DIR}/”进行拼接，也就是${PACKAGE_PREFIX_DIR}/@DA_LIB_INCLUDE_INSTALL_DIR@
-# PACKAGE_PREFIX_DIR = ${CMAKE_CURRENT_LIST_DIR}/../..
-# 最终变为${CMAKE_CURRENT_LIST_DIR}/../../include/${DA_PROJECT_NAME}/${DA_LIB_NAME}
-set(DA_LIB_INCLUDE_INSTALL_DIR include/${DA_PROJECT_NAME}/${DA_LIB_NAME})
-
-# Generate library version info which will generate xxxConfigVersion.cmake,
-# the ${PACKAGE_VERSION} is the version defined in project()
-include(CMakePackageConfigHelpers)
-write_basic_package_version_file(
-    ${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}ConfigVersion.cmake
-    VERSION ${DA_LIB_VERSION}
-    COMPATIBILITY SameMajorVersion
-)
-configure_package_config_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/../DALibConfig.cmake.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}Config.cmake"
-  INSTALL_DESTINATION lib/cmake/${DA_PROJECT_NAME}
-  PATH_VARS DA_LIB_INCLUDE_INSTALL_DIR
-)
-
-# 声明导出target的名称
-install(TARGETS ${DA_LIB_NAME}
-    EXPORT "${DA_LIB_NAME}Targets"
-    INCLUDES DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}
-    RUNTIME DESTINATION bin
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
-)
-install(EXPORT "${DA_LIB_NAME}Targets"
-    FILE ${DA_LIB_NAME}Targets.cmake # 导出的文件基准名。
-    NAMESPACE ${DA_PROJECT_NAME}::
-    DESTINATION lib/cmake/${DA_PROJECT_NAME}
-)
-
-
-install(FILES
-    "${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}Config.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}ConfigVersion.cmake"
-    DESTINATION lib/cmake/${DA_PROJECT_NAME}
-)
 install(FILES
     ${DA_LIB_HEADER_FILES}
     DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}
     COMPONENT headers
 )
 
-#DAGlobal.h
-install(FILES
-    ${DA_GLOBAL_HEADER}
-    DESTINATION include/${DA_PROJECT_NAME}
-    COMPONENT headers
-)
 
-export(EXPORT ${DA_LIB_NAME}Targets
-       FILE ${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}Targets.cmake
-       NAMESPACE ${DA_PROJECT_NAME}::
-       )
-########################################################
-# dll资源信息
-########################################################
-include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/create_win32_resource_version.cmake)
-if(WIN32)
-        create_win32_resource_version(
-                TARGET ${DA_LIB_NAME}
-                FILENAME ${DA_LIB_NAME}
-                VERSION ${DA_LIB_VERSION}
-                EXT "dll"
-                COMPANYNAME "DA"
-                COPYRIGHT "czy"
-                DESCRIPTION ${DA_LIB_DESCRIPTION}
-        )
-endif()

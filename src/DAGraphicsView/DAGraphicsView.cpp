@@ -10,20 +10,20 @@ namespace DA
 {
 class DAGraphicsView::PrivateData
 {
-    DA_DECLARE_PUBLIC(DAGraphicsView)
+	DA_DECLARE_PUBLIC(DAGraphicsView)
 public:
-    PrivateData(DAGraphicsView* p);
+	PrivateData(DAGraphicsView* p);
 
 public:
-    qreal mScaleMax { 3.0 };
-    qreal mScaleMin { 0.333 };
-    qreal mZoomStep { 0.1 };
-    qreal mScaleValue { 1.0 };  ///< 记录缩放的值
-    bool mIsPadding { false };  ///< 标记是否开始拖动
-    QPointF mMouseScenePos;
-    QPoint mStartPadPos;  ///< 记录开始拖动的位置
-    DAGraphicsView::ZoomFlags mZoomFlags { DAGraphicsView::ZoomUseWheelAndCtrl };
-    DAGraphicsView::PadFlags mPadFlags { DAGraphicsView::PadByWheelMiddleButton };
+	qreal mScaleMax { 3.0 };
+	qreal mScaleMin { 0.333 };
+	qreal mZoomStep { 0.1 };
+	qreal mScaleValue { 1.0 };  ///< 记录缩放的值
+	bool mIsPadding { false };  ///< 标记是否开始拖动
+	QPointF mMouseScenePos;
+	QPoint mStartPadPos;  ///< 记录开始拖动的位置
+	DAGraphicsView::ZoomFlags mZoomFlags { DAGraphicsView::ZoomUseWheelAndCtrl };
+	DAGraphicsView::PadFlags mPadFlags { DAGraphicsView::PadByWheelMiddleButton };
 };
 
 DAGraphicsView::PrivateData::PrivateData(DAGraphicsView* p) : q_ptr(p)
@@ -51,23 +51,23 @@ DAGraphicsView::~DAGraphicsView()
 
 void DAGraphicsView::init()
 {
-    setMouseTracking(true);
-    setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-    setResizeAnchor(QGraphicsView::AnchorUnderMouse);
-    setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
-    setDragMode(QGraphicsView::RubberBandDrag);
-    // setDragMode(QGraphicsView::ScrollHandDrag);
+	setMouseTracking(true);
+	setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+	setResizeAnchor(QGraphicsView::AnchorUnderMouse);
+	setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+	setDragMode(QGraphicsView::RubberBandDrag);
+	// setDragMode(QGraphicsView::ScrollHandDrag);
 }
 
 void DAGraphicsView::setScaleRange(qreal min, qreal max)
 {
-    d_ptr->mScaleMin = min;
-    d_ptr->mScaleMax = max;
+	d_ptr->mScaleMin = min;
+	d_ptr->mScaleMax = max;
 }
 
 qreal DAGraphicsView::getScaleMaxFactor() const
 {
-    return (d_ptr->mScaleMax);
+	return (d_ptr->mScaleMax);
 }
 
 qreal DAGraphicsView::getScaleMinFactor() const
@@ -80,18 +80,18 @@ qreal DAGraphicsView::getScaleMinFactor() const
  */
 void DAGraphicsView::zoomIn()
 {
-    //    qreal scaleFactor = this->matrix().m11();
-    //    if (scaleFactor >= m_scaleMax) {
-    //        return;
-    //    }
-    //    scale(1 + d_ptr->mZoomStep, 1 + d_ptr->mZoomStep);
+	//    qreal scaleFactor = this->matrix().m11();
+	//    if (scaleFactor >= m_scaleMax) {
+	//        return;
+	//    }
+	//    scale(1 + d_ptr->mZoomStep, 1 + d_ptr->mZoomStep);
 
-    qreal scale = d_ptr->mScaleValue + d_ptr->mZoomStep;
-    if (scale >= d_ptr->mScaleMax) {
-        scale = d_ptr->mScaleMax;
-    }
-    d_ptr->mScaleValue = scale;
-    setTransform(QTransform::fromScale(d_ptr->mScaleValue, d_ptr->mScaleValue));
+	qreal scale = d_ptr->mScaleValue + d_ptr->mZoomStep;
+	if (scale >= d_ptr->mScaleMax) {
+		scale = d_ptr->mScaleMax;
+	}
+	d_ptr->mScaleValue = scale;
+	setTransform(QTransform::fromScale(d_ptr->mScaleValue, d_ptr->mScaleValue));
 }
 
 /**
@@ -99,18 +99,18 @@ void DAGraphicsView::zoomIn()
  */
 void DAGraphicsView::zoomOut()
 {
-    //    qreal scaleFactor = this->matrix().m11();
-    //    if (scaleFactor <= d_ptr->mScaleMin) {
-    //        return;
-    //    }
-    //    scale(1 - d_ptr->mScaleMin, 1 - d_ptr->mScaleMin);
+	//    qreal scaleFactor = this->matrix().m11();
+	//    if (scaleFactor <= d_ptr->mScaleMin) {
+	//        return;
+	//    }
+	//    scale(1 - d_ptr->mScaleMin, 1 - d_ptr->mScaleMin);
 
-    qreal scale = d_ptr->mScaleValue - d_ptr->mZoomStep;
-    if (scale < d_ptr->mScaleMin) {
-        scale = d_ptr->mScaleMin;
-    }
-    d_ptr->mScaleValue = scale;
-    setTransform(QTransform::fromScale(d_ptr->mScaleValue, d_ptr->mScaleValue));
+	qreal scale = d_ptr->mScaleValue - d_ptr->mZoomStep;
+	if (scale < d_ptr->mScaleMin) {
+		scale = d_ptr->mScaleMin;
+	}
+	d_ptr->mScaleValue = scale;
+	setTransform(QTransform::fromScale(d_ptr->mScaleValue, d_ptr->mScaleValue));
 }
 
 /**
@@ -119,73 +119,78 @@ void DAGraphicsView::zoomOut()
  */
 void DAGraphicsView::wheelEvent(QWheelEvent* event)
 {
-    if (d_ptr->mZoomFlags.testFlag(ZoomNotUseWheel)) {
-        QGraphicsView::wheelEvent(event);
-        return;
-    }
-    if (d_ptr->mZoomFlags.testFlag(ZoomUseWheelAndCtrl)) {
-        // 通过ctrl来缩放，需要判断是否按住了ctrl
-        if (event->modifiers().testFlag(Qt::ControlModifier)) {
-            wheelZoom(event);
-            event->accept();
-            return;
-        }
-    } else if (d_ptr->mZoomFlags.testFlag(ZoomUseWheel)) {
-        wheelZoom(event);
-        event->accept();
-        return;
-    }
-    QGraphicsView::wheelEvent(event);
+	if (d_ptr->mZoomFlags.testFlag(ZoomNotUseWheel)) {
+		QGraphicsView::wheelEvent(event);
+		return;
+	}
+	if (d_ptr->mZoomFlags.testFlag(ZoomUseWheelAndCtrl)) {
+		// 通过ctrl来缩放，需要判断是否按住了ctrl
+		if (event->modifiers().testFlag(Qt::ControlModifier)) {
+			wheelZoom(event);
+			event->accept();
+			return;
+		}
+	} else if (d_ptr->mZoomFlags.testFlag(ZoomUseWheel)) {
+		wheelZoom(event);
+		event->accept();
+		return;
+	}
+	QGraphicsView::wheelEvent(event);
 }
 
 void DAGraphicsView::mouseMoveEvent(QMouseEvent* event)
 {
-    d_ptr->mMouseScenePos = mapToScene(event->pos());
-    if (isPadding()) {
-        //        qDebug() << tr("isPadding horizontalScrollBar value=%1,dx=%2,verticalScrollBar value=%3 dy=%4")
-        //                            .arg(horizontalScrollBar()->value())
-        //                            .arg(event->x() - d_ptr->mStartPadPos.x())
-        //                            .arg(verticalScrollBar()->value())
-        //                            .arg(event->y() - d_ptr->mStartPadPos.y());
-        horizontalScrollBar()->setValue(horizontalScrollBar()->value() - (event->x() - d_ptr->mStartPadPos.x()));
-        verticalScrollBar()->setValue(verticalScrollBar()->value() - (event->y() - d_ptr->mStartPadPos.y()));
-        d_ptr->mStartPadPos = event->pos();
-        // 移动状态不把事件向下传递
-        event->accept();
-    }
-    QGraphicsView::mouseMoveEvent(event);
+	d_ptr->mMouseScenePos = mapToScene(event->pos());
+	if (isPadding()) {
+//        qDebug() << tr("isPadding horizontalScrollBar value=%1,dx=%2,verticalScrollBar value=%3 dy=%4")
+//                            .arg(horizontalScrollBar()->value())
+//                            .arg(event->x() - d_ptr->mStartPadPos.x())
+//                            .arg(verticalScrollBar()->value())
+//                            .arg(event->y() - d_ptr->mStartPadPos.y());
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#else
+#endif
+		horizontalScrollBar()->setValue(horizontalScrollBar()->value()
+										- (Qt5Qt6Compat_QXXEvent_x(event) - d_ptr->mStartPadPos.x()));
+		verticalScrollBar()->setValue(verticalScrollBar()->value()
+									  - (Qt5Qt6Compat_QXXEvent_x(event) - d_ptr->mStartPadPos.y()));
+		d_ptr->mStartPadPos = Qt5Qt6Compat_QXXEvent_Pos(event);
+		// 移动状态不把事件向下传递
+		event->accept();
+	}
+	QGraphicsView::mouseMoveEvent(event);
 }
 
 void DAGraphicsView::mousePressEvent(QMouseEvent* event)
 {
-    if (d_ptr->mPadFlags.testFlag(PadDiable)) {
-        QGraphicsView::mousePressEvent(event);
-        return;
-    }
-    if (d_ptr->mPadFlags.testFlag(PadByWheelMiddleButton)) {
-        if (event->button() == Qt::MiddleButton) {
-            // 设置了中间拖动
-            startPad(event);
-            // 把事件截断
-            event->accept();
-            return;
-        }
-    }
-    QGraphicsView::mousePressEvent(event);
+	if (d_ptr->mPadFlags.testFlag(PadDiable)) {
+		QGraphicsView::mousePressEvent(event);
+		return;
+	}
+	if (d_ptr->mPadFlags.testFlag(PadByWheelMiddleButton)) {
+		if (event->button() == Qt::MiddleButton) {
+			// 设置了中间拖动
+			startPad(event);
+			// 把事件截断
+			event->accept();
+			return;
+		}
+	}
+	QGraphicsView::mousePressEvent(event);
 }
 
 void DAGraphicsView::mouseReleaseEvent(QMouseEvent* event)
 {
-    if (isPadding()) {
-        if (d_ptr->mPadFlags.testFlag(PadByWheelMiddleButton)) {
-            if (event->button() == Qt::MiddleButton) {
-                endPad();
-                event->accept();
-                return;
-            }
-        }
-    }
-    QGraphicsView::mouseReleaseEvent(event);
+	if (isPadding()) {
+		if (d_ptr->mPadFlags.testFlag(PadByWheelMiddleButton)) {
+			if (event->button() == Qt::MiddleButton) {
+				endPad();
+				event->accept();
+				return;
+			}
+		}
+	}
+	QGraphicsView::mouseReleaseEvent(event);
 }
 
 /**
@@ -194,32 +199,32 @@ void DAGraphicsView::mouseReleaseEvent(QMouseEvent* event)
  */
 void DAGraphicsView::keyPressEvent(QKeyEvent* event)
 {
-    if (event->modifiers().testFlag(Qt::ControlModifier)) {
-        // Ctrl键
-        switch (event->key()) {
-        case Qt::Key_Equal:  // Ctrl + 放大
-            zoomIn();
-            event->accept();
-            return;
-        case Qt::Key_Minus:  // Ctrl - 缩小
-            zoomOut();
-            event->accept();
-            return;
-        case Qt::Key_A:  // Ctrl + A
-            selectAll();
-            event->accept();
-            return;
-        default:
-            break;
-        }
-    } else {
-        //        switch (event->key()) {
-        //        default:
-        //            break;
-        //        }
-    }
-    // 向下传递
-    QGraphicsView::keyPressEvent(event);
+	if (event->modifiers().testFlag(Qt::ControlModifier)) {
+		// Ctrl键
+		switch (event->key()) {
+		case Qt::Key_Equal:  // Ctrl + 放大
+			zoomIn();
+			event->accept();
+			return;
+		case Qt::Key_Minus:  // Ctrl - 缩小
+			zoomOut();
+			event->accept();
+			return;
+		case Qt::Key_A:  // Ctrl + A
+			selectAll();
+			event->accept();
+			return;
+		default:
+			break;
+		}
+	} else {
+		//        switch (event->key()) {
+		//        default:
+		//            break;
+		//        }
+	}
+	// 向下传递
+	QGraphicsView::keyPressEvent(event);
 }
 
 /**
@@ -229,14 +234,14 @@ void DAGraphicsView::keyPressEvent(QKeyEvent* event)
 void DAGraphicsView::wheelZoom(QWheelEvent* event)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    if (event->delta() > 0) {
+	if (event->delta() > 0) {
 #else
-    if (event->angleDelta().y() > 0) {
+	if (event->angleDelta().y() > 0) {
 #endif
-        zoomIn();
-    } else {
-        zoomOut();
-    }
+		zoomIn();
+	} else {
+		zoomOut();
+	}
 }
 
 /**
@@ -245,10 +250,10 @@ void DAGraphicsView::wheelZoom(QWheelEvent* event)
  */
 void DAGraphicsView::startPad(QMouseEvent* event)
 {
-    d_ptr->mIsPadding   = true;
-    d_ptr->mStartPadPos = event->pos();
-    setCursor(Qt::ClosedHandCursor);
-    setDragMode(QGraphicsView::NoDrag);
+	d_ptr->mIsPadding   = true;
+	d_ptr->mStartPadPos = event->pos();
+	setCursor(Qt::ClosedHandCursor);
+	setDragMode(QGraphicsView::NoDrag);
 }
 
 /**
@@ -257,9 +262,9 @@ void DAGraphicsView::startPad(QMouseEvent* event)
  */
 void DAGraphicsView::endPad()
 {
-    d_ptr->mIsPadding = false;
-    setCursor(Qt::ArrowCursor);
-    setDragMode(QGraphicsView::RubberBandDrag);
+	d_ptr->mIsPadding = false;
+	setCursor(Qt::ArrowCursor);
+	setDragMode(QGraphicsView::RubberBandDrag);
 }
 
 /**
@@ -322,23 +327,23 @@ DAGraphicsView::PadFlags DAGraphicsView::getPaddingFrags() const
  */
 void DAGraphicsView::setWholeView()
 {
-    QGraphicsScene* sc = scene();
-    if (!sc) {
-        return;
-    }
-    QRectF rect;
-    QList< QGraphicsItem* > items = sc->items();
-    if (items.isEmpty()) {
-        return;
-    }
-    for (const auto& item : qAsConst(items)) {
-        QRectF boundingRect = item->boundingRect();
-        boundingRect.moveTo(item->scenePos());
-        rect = rect.united(boundingRect);
-    }
-    int space = 10;
-    rect.adjust(-space, -space, space, space);
-    fitInView(rect, Qt::KeepAspectRatio);
+	QGraphicsScene* sc = scene();
+	if (!sc) {
+		return;
+	}
+	QRectF rect;
+	QList< QGraphicsItem* > items = sc->items();
+	if (items.isEmpty()) {
+		return;
+	}
+	for (const auto& item : qAsConst(items)) {
+		QRectF boundingRect = item->boundingRect();
+		boundingRect.moveTo(item->scenePos());
+		rect = rect.united(boundingRect);
+	}
+	int space = 10;
+	rect.adjust(-space, -space, space, space);
+	fitInView(rect, Qt::KeepAspectRatio);
 }
 
 /**
@@ -346,35 +351,35 @@ void DAGraphicsView::setWholeView()
  */
 void DAGraphicsView::selectAll()
 {
-    DAGraphicsScene* s = qobject_cast< DAGraphicsScene* >(scene());
-    if (s) {
-        // DAGraphicsSceneWithUndoStack的selectAll只发射一次selectionChanged信号
-        s->selectAll();
-    } else {
-        // 非DAGraphicsSceneWithUndoStack，就执行选中所有
-        QList< QGraphicsItem* > its = items();
-        for (QGraphicsItem* i : its) {
-            if (!i->isSelected() && i->flags().testFlag(QGraphicsItem::ItemIsSelectable)) {
-                // 只有没有被选上，且是可选的才会执行选中动作
-                i->setSelected(true);
-            }
-        }
-    }
+	DAGraphicsScene* s = qobject_cast< DAGraphicsScene* >(scene());
+	if (s) {
+		// DAGraphicsSceneWithUndoStack的selectAll只发射一次selectionChanged信号
+		s->selectAll();
+	} else {
+		// 非DAGraphicsSceneWithUndoStack，就执行选中所有
+		QList< QGraphicsItem* > its = items();
+		for (QGraphicsItem* i : its) {
+			if (!i->isSelected() && i->flags().testFlag(QGraphicsItem::ItemIsSelectable)) {
+				// 只有没有被选上，且是可选的才会执行选中动作
+				i->setSelected(true);
+			}
+		}
+	}
 }
 
 bool DAGraphicsView::isEnaleWheelZoom() const
 {
-    return !d_ptr->mZoomFlags.testFlag(ZoomNotUseWheel);
+	return !d_ptr->mZoomFlags.testFlag(ZoomNotUseWheel);
 }
 
 void DAGraphicsView::setEnaleWheelZoom(bool enaleWheelZoom, ZoomFlags zf)
 {
-    if (!enaleWheelZoom) {
-        setZoomFrags(ZoomNotUseWheel);
-    } else {
-        zf.setFlag(ZoomNotUseWheel, false);
-        setZoomFrags(zf);
-    }
+	if (!enaleWheelZoom) {
+		setZoomFrags(ZoomNotUseWheel);
+	} else {
+		zf.setFlag(ZoomNotUseWheel, false);
+		setZoomFrags(zf);
+	}
 }
 
 }  // end DA

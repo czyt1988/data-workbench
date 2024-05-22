@@ -64,11 +64,20 @@ find_package(${DA_PROJECT_NAME} COMPONENTS
     DAFigure
     DAGui
 )
-if(${DA_PROJECT_NAME}_FOUND)
-    message(STATUS "  |-link ${DA_PROJECT_NAME}::DAGui")
-    message(STATUS "  | |-include dir:${DAGui_INCLUDE_DIR}")
-endif()
 
+
+
+# -------------link SARibbon--------------------------
+damacro_import_SARibbonBar(${DA_LIB_NAME})
+
+# -------------link QtAdvancedDockingSystem--------------------------
+damacro_import_QtAdvancedDocking(${DA_LIB_NAME})
+
+# -------------link qwt--------------------------
+damacro_import_qwt(${DA_LIB_NAME})
+
+# -------------link ctk--------------------------
+damacro_import_DALiteCtk(${DA_LIB_NAME})
 
 target_link_libraries(${DA_LIB_NAME} PRIVATE
     ${DA_PROJECT_NAME}::DAUtils
@@ -80,7 +89,20 @@ target_link_libraries(${DA_LIB_NAME} PRIVATE
     ${DA_PROJECT_NAME}::DAFigure
     ${DA_PROJECT_NAME}::DAGui
 )
-
+if(DA_ENABLE_PYTHON)
+    find_package(${DA_PROJECT_NAME} COMPONENTS
+        DAPyBindQt
+        DAPyScripts
+        DAPyCommonWidgets
+    )
+    target_link_libraries(${DA_LIB_NAME} PRIVATE
+        ${DA_PROJECT_NAME}::DAPyBindQt
+        ${DA_PROJECT_NAME}::DAPyScripts
+        ${DA_PROJECT_NAME}::DAPyCommonWidgets
+    )
+    # -------------link python--------------------------
+    damacro_import_Python(${DA_LIB_NAME})
+endif()
 ########################################################
 # Qt的moc
 ########################################################

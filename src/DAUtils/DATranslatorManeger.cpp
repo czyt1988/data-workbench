@@ -9,31 +9,31 @@ namespace DA
 
 class DATranslatorManeger::PrivateData
 {
-    DA_DECLARE_PUBLIC(DATranslatorManeger)
+	DA_DECLARE_PUBLIC(DATranslatorManeger)
 public:
-    PrivateData(DATranslatorManeger* p);
-    void clearAllTranslator();
+	PrivateData(DATranslatorManeger* p);
+	void clearAllTranslator();
 
 public:
-    QLocale mLocal;
-    QList< QString > mTranslatorFilePaths;
-    QList< QString > mTranslatorNames;
-    QList< QTranslator* > mTranslatorLists;
-    //    QList< QString > mLoadedFiles;  ///< 记录加载的翻译文件
+	QLocale mLocal;
+	QList< QString > mTranslatorFilePaths;
+	QList< QString > mTranslatorNames;
+	QList< QTranslator* > mTranslatorLists;
+	//    QList< QString > mLoadedFiles;  ///< 记录加载的翻译文件
 };
 
 DATranslatorManeger::PrivateData::PrivateData(DATranslatorManeger* p) : q_ptr(p)
 {
-    mTranslatorNames << "qt"
-                     << "da";
+	mTranslatorNames << "qt"
+					 << "da";
 }
 
 void DATranslatorManeger::PrivateData::clearAllTranslator()
 {
-    for (QTranslator* t : qAsConst(mTranslatorLists)) {
-        delete t;
-    }
-    mTranslatorLists.clear();
+	for (QTranslator* t : qAsConst(mTranslatorLists)) {
+		delete t;
+	}
+	mTranslatorLists.clear();
 }
 
 //==============================================================
@@ -41,19 +41,19 @@ void DATranslatorManeger::PrivateData::clearAllTranslator()
 //==============================================================
 DATranslatorManeger::DATranslatorManeger() : d_ptr(new DATranslatorManeger::PrivateData(this))
 {
-    const QLocale& locale = d_ptr->mLocal;
-    qDebug() << "Setting up translator:"
-             << "\nLanguage:" << QLocale::languageToString(locale.language())
-             << "\nCountry:" << QLocale::countryToString(locale.country())
-             << "\nScript:" << QLocale::scriptToString(locale.script()) << "\nName:" << locale.name()
-             << "\nbcp47 Name:" << locale.bcp47Name() << "\n ui language:" << locale.uiLanguages()
-             << "\nAm Text:" << locale.amText() << "\nPm Text:" << locale.pmText()
-             << "\nCurrency Symbol:" << locale.currencySymbol() << "\nDate Format:" << locale.dateFormat()
-             << "\nDate Time Format:" << locale.dateTimeFormat() << "\nDecimal point:" << locale.decimalPoint()
-             << "\nGroup separator:" << locale.groupSeparator() << "\nExponential:" << locale.exponential()
-             << "\nZero digit:" << locale.zeroDigit() << "\nPercent:" << locale.percent()
-             << "\nPositive sign:" << locale.positiveSign() << "\nNegative sign:" << locale.negativeSign();
-    setTranslatorFilePaths(getDefaultTranslatorFilePath());
+	const QLocale& locale = d_ptr->mLocal;
+	qDebug() << "Setting up translator:"
+			 << "\nLanguage:" << QLocale::languageToString(locale.language())
+			 << "\nCountry:" << QLocale::countryToString(locale.country())
+			 << "\nScript:" << QLocale::scriptToString(locale.script()) << "\nName:" << locale.name()
+			 << "\nbcp47 Name:" << locale.bcp47Name() << "\n ui language:" << locale.uiLanguages()
+			 << "\nAm Text:" << locale.amText() << "\nPm Text:" << locale.pmText()
+			 << "\nCurrency Symbol:" << locale.currencySymbol() << "\nDate Format:" << locale.dateFormat()
+			 << "\nDate Time Format:" << locale.dateTimeFormat() << "\nDecimal point:" << locale.decimalPoint()
+			 << "\nGroup separator:" << locale.groupSeparator() << "\nExponential:" << locale.exponential()
+			 << "\nZero digit:" << locale.zeroDigit() << "\nPercent:" << locale.percent()
+			 << "\nPositive sign:" << locale.positiveSign() << "\nNegative sign:" << locale.negativeSign();
+	setTranslatorFilePaths(getDefaultTranslatorFilePath());
 }
 
 /**
@@ -63,8 +63,8 @@ DATranslatorManeger::DATranslatorManeger() : d_ptr(new DATranslatorManeger::Priv
 DATranslatorManeger::DATranslatorManeger(const QList< QString >& fileNames)
     : d_ptr(new DATranslatorManeger::PrivateData(this))
 {
-    setTranslatorFilePaths(getDefaultTranslatorFilePath());
-    setTranslatorFileNames(fileNames);
+	setTranslatorFilePaths(getDefaultTranslatorFilePath());
+	setTranslatorFileNames(fileNames);
 }
 
 DATranslatorManeger::~DATranslatorManeger()
@@ -77,8 +77,8 @@ DATranslatorManeger::~DATranslatorManeger()
  */
 int DATranslatorManeger::installAllTranslator()
 {
-    QString langCode = locale().name();
-    return installAllTranslator(langCode);
+	QString langCode = locale().name();
+	return installAllTranslator(langCode);
 }
 
 /**
@@ -88,39 +88,39 @@ int DATranslatorManeger::installAllTranslator()
  */
 int DATranslatorManeger::installAllTranslator(const QString& langCode)
 {
-    qDebug() << "begin install translator at " << langCode;
-    QList< QString > trPaths = getTranslatorFilePath();
-    QList< QString > trName  = getTranslatorFileNames();
-    int cnt                  = 0;
-    QList< QTranslator* > translators;
-    for (const QString& p : qAsConst(trPaths)) {
-        QDir dir(p);
-        if (!dir.exists()) {
-            continue;
-        }
-        for (const QString& name : qAsConst(trName)) {
-            QScopedPointer< QTranslator > translator(new QTranslator());
-            QString fullName = name + "_" + langCode;
-            if (translator->load(fullName, dir.absolutePath())) {
-                translators.append(translator.take());
-                qDebug() << "success load language file:" << fullName << " in dir " << dir.absolutePath();
-            } else {
-                qDebug() << "can not load translator:" << fullName << " in dir " << dir.absolutePath();
-            }
-        }
-    }
-    if (translators.size() > 0) {
-        d_ptr->clearAllTranslator();
-        for (QTranslator* t : qAsConst(translators)) {
-            if (QCoreApplication::installTranslator(t)) {
-                d_ptr->mTranslatorLists.append(t);
-            } else {
-                qWarning() << "can not install translator to application";
-                delete t;  // 如果安装不成功直接删除QTranslator
-            }
-        }
-    }
-    return cnt;
+	qDebug() << "begin install translator at " << langCode;
+	QList< QString > trPaths = getTranslatorFilePath();
+	QList< QString > trName  = getTranslatorFileNames();
+	int cnt                  = 0;
+	QList< QTranslator* > translators;
+	for (const QString& p : qAsConst(trPaths)) {
+		QDir dir(p);
+		if (!dir.exists()) {
+			continue;
+		}
+		for (const QString& name : qAsConst(trName)) {
+			std::unique_ptr< QTranslator > translator = std::make_unique< QTranslator >();
+			QString fullName                          = name + "_" + langCode;
+			if (translator->load(fullName, dir.absolutePath())) {
+				translators.append(translator.release());
+				qDebug() << "success load language file:" << fullName << " in dir " << dir.absolutePath();
+			} else {
+				qDebug() << "can not load translator:" << fullName << " in dir " << dir.absolutePath();
+			}
+		}
+	}
+	if (translators.size() > 0) {
+		d_ptr->clearAllTranslator();
+		for (QTranslator* t : qAsConst(translators)) {
+			if (QCoreApplication::installTranslator(t)) {
+				d_ptr->mTranslatorLists.append(t);
+			} else {
+				qWarning() << "can not install translator to application";
+				delete t;  // 如果安装不成功直接删除QTranslator
+			}
+		}
+	}
+	return cnt;
 }
 /**
  * @brief 设置扫描文件路径
@@ -200,10 +200,10 @@ QLocale DATranslatorManeger::getLocale() const
  */
 QList< QString > DATranslatorManeger::getDefaultTranslatorFilePath()
 {
-    QString basePath   = QCoreApplication::applicationDirPath();
-    QString pathQtTr   = QDir::toNativeSeparators(basePath + "/translations");
-    QString pathUserTr = QDir::toNativeSeparators(basePath + "/translations_user");
-    return { pathQtTr, pathUserTr };
+	QString basePath   = QCoreApplication::applicationDirPath();
+	QString pathQtTr   = QDir::toNativeSeparators(basePath + "/translations");
+	QString pathUserTr = QDir::toNativeSeparators(basePath + "/translations_user");
+	return { pathQtTr, pathUserTr };
 }
 
 }

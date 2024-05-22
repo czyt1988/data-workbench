@@ -127,17 +127,17 @@ macro(damacro_lib_install)
     ########################################################
     target_include_directories(${DA_LIB_NAME} PUBLIC
         $<INSTALL_INTERFACE:include/${DA_PROJECT_NAME}/${DA_LIB_NAME}>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>
     )
     # 这个主要是DAGlobal.h
     target_include_directories(${DA_LIB_NAME} PUBLIC
         $<INSTALL_INTERFACE:include/${DA_PROJECT_NAME}>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/../>
     )
     # 这个主要是DAShared
     target_include_directories(${DA_LIB_NAME} PUBLIC
         $<INSTALL_INTERFACE:include/${DA_PROJECT_NAME}/DAShared>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../DAShared>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/../DAShared>
     )
     # DALibConfig.cmake.in中，会让此变量和“${PACKAGE_PREFIX_DIR}/”进行拼接，也就是${PACKAGE_PREFIX_DIR}/@DA_LIB_INCLUDE_INSTALL_DIR@
     # PACKAGE_PREFIX_DIR = ${CMAKE_CURRENT_LIST_DIR}/../..

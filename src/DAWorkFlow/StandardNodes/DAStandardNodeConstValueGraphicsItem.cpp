@@ -13,7 +13,7 @@ DAStandardNodeConstValueGraphicsItem::DAStandardNodeConstValueGraphicsItem(DASta
 	setEditable(true);
 	setSelectable(true);
 	setMovable(true);
-	setCurrentValueType(QVariant::String);
+	setCurrentValueType(QMetaType::QString);
 	setAutoAdjustSize(false);
 	setBodySize(QSize(150, 30));
 	getLinkPointDrawDelegate()->showLinkPointText(false);  // 不显示
@@ -27,26 +27,26 @@ void DAStandardNodeConstValueGraphicsItem::nodeDisplayNameChanged(const QString&
 {
 }
 
-QVariant::Type DAStandardNodeConstValueGraphicsItem::getCurrentValueType() const
+QMetaType::Type DAStandardNodeConstValueGraphicsItem::getCurrentValueType() const
 {
 	return mValueType;
 }
 
-void DAStandardNodeConstValueGraphicsItem::setCurrentValueType(QVariant::Type v)
+void DAStandardNodeConstValueGraphicsItem::setCurrentValueType(QMetaType::Type v)
 {
 	switch (v) {
-	case QVariant::String:
-	case QVariant::Int:
-	case QVariant::UInt:
-	case QVariant::LongLong:
-	case QVariant::ULongLong:
-	case QVariant::Double:
-	case QVariant::Char:
-	case QVariant::Bool: {
+	case QMetaType::QString:
+	case QMetaType::Int:
+	case QMetaType::UInt:
+	case QMetaType::LongLong:
+	case QMetaType::ULongLong:
+	case QMetaType::Double:
+	case QMetaType::Char:
+	case QMetaType::Bool: {
 		// 生成窗口
 	} break;
 	default:
-		v = QVariant::String;
+		v = QMetaType::QString;
 		break;
 	}
 	mValueType = v;
