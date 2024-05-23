@@ -5,6 +5,7 @@
 #include <QSet>
 #include "DAWorkFlow.h"
 #include "DAAbstractNodeFactory.h"
+
 namespace DA
 {
 class DAWorkFlowExecuter::PrivateData
@@ -106,7 +107,8 @@ void DAWorkFlowExecuter::PrivateData::clear()
  * @param n
  * @param outInfo
  */
-void DAWorkFlowExecuter::PrivateData::sendParam(DAAbstractNode::SharedPointer& n, const QList< DAAbstractNode::LinkInfo >& outInfo)
+void DAWorkFlowExecuter::PrivateData::sendParam(DAAbstractNode::SharedPointer& n,
+                                                const QList< DAAbstractNode::LinkInfo >& outInfo)
 {
     for (const DAAbstractNode::LinkInfo& li : qAsConst(outInfo)) {
         QVariant v = n->getOutputData(li.key);

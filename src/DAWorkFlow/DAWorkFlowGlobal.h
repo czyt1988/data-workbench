@@ -35,4 +35,5 @@ enum DANodeGraphicsItemType
 };
 
 }  // namespace DA
+
 #endif  // FCMETHODNODEGLOBAL_H

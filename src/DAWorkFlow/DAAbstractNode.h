@@ -211,16 +211,7 @@ protected:
 };
 
 }  // end DA
-#if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
-/**
- * @brief qHash
- * @param ptr
- * @param seed
- * @return
- */
-uint qHash(const std::shared_ptr< DA::DAAbstractNode >& ptr, uint seed)
-{
-    return qHash(ptr.get(), seed);
-}
-#endif
+
+QHASH_SHARED_SUPPORT(DA::DAAbstractNode)
+
 #endif  // DAABSTRACTNODE_H

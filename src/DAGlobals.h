@@ -255,29 +255,24 @@ private:                                                                        
 #endif
 #endif
 
+#ifndef QHASH_SHARED_SUPPORT
 #if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
-// 有些qt版本没有qHash对std::shared_ptr的重载，如果在这里出现错误，注释掉即可
-/**
- * @brief 针对智能指针的qHash函数，可以让std::shared_ptr作为QHash和QSet的key
- * @param ptr
- * @param seed
- * @return
- */
-template< typename T >
-uint qHash(const std::shared_ptr< T >& ptr, uint seed = 0)
-{
-    return qHash(ptr.get(), seed);
-}
-
-// 模板特化的比较函数，用于 std::shared_ptr
-template< typename T >
-struct DASharedPtrEqual
-{
-	bool operator()(const std::shared_ptr< T >& a, const std::shared_ptr< T >& b) const
-	{
-		return a == b;
-	}
-};
-#endif
+#define QHASH_SHARED_SUPPORT(ClassName)                                                                                \
+    uint qHash(const std::shared_ptr< ClassName >& ptr, uint seed = 0)                                                 \
+    {                                                                                                                  \
+        return qHash(ptr.get(), seed);                                                                                 \
+    }                                                                                                                  \
+                                                                                                                       \
+    struct _##ClassNameSharedPtrEqual_                                                                                 \
+    {                                                                                                                  \
+        bool operator()(const std::shared_ptr< ClassName >& a, const std::shared_ptr< ClassName >& b) const            \
+        {                                                                                                              \
+            return a == b;                                                                                             \
+        }                                                                                                              \
+    };
+#else
+#define QHASH_SHARED_SUPPORT
+#endif  // QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
+#endif  // QHASH_SHARED_SUPPORT
 
 #endif  // GLOBALS_H

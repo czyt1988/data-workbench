@@ -109,5 +109,5 @@ public:
 };
 
 }  // end DA
-
+QHASH_SHARED_SUPPORT(DA::DAAbstractNodeFactory)
 #endif  // FCABSTRACTNODEFACTORY_H
