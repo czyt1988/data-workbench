@@ -3,6 +3,23 @@
 namespace DA
 {
 
+DAColorTheme::DAColorTheme()
+{
+}
+
+DAColorTheme::DAColorTheme(ColorTheme th)
+{
+	*this = DAColorTheme::create(th);
+}
+
+DAColorTheme::DAColorTheme(const std::initializer_list< QColor >& v) : mColorList(v)
+{
+}
+
+DAColorTheme::~DAColorTheme()
+{
+}
+
 DAColorTheme DAColorTheme::create(DAColorTheme::ColorTheme t)
 {
 	switch (t) {
@@ -179,6 +196,111 @@ DAColorTheme& DAColorTheme::operator=(const ColorTheme& th)
 {
 	*this = DAColorTheme::create(th);
 	return *this;
+}
+
+QColor DAColorTheme::next()
+{
+	return mColorList.next();
+}
+
+void DAColorTheme::moveToNext()
+{
+	mColorList.moveToNext();
+}
+
+QColor DAColorTheme::operator++()
+{
+	return ++mColorList;
+}
+
+QColor DAColorTheme::operator++(int)
+{
+	return mColorList++;
+}
+
+QColor DAColorTheme::previous()
+{
+	return mColorList.previous();
+}
+
+void DAColorTheme::moveToPrevious()
+{
+	mColorList.moveToPrevious();
+}
+
+QColor DAColorTheme::operator--()
+{
+	return --mColorList;
+}
+
+QColor DAColorTheme::operator--(int)
+{
+	return mColorList--;
+}
+
+QColor DAColorTheme::current() const
+{
+	return mColorList.current();
+}
+
+bool DAColorTheme::isFirstIndex() const
+{
+	return mColorList.isFirstIndex();
+}
+
+bool DAColorTheme::isLastIndex() const
+{
+	return mColorList.isLastIndex();
+}
+
+bool DAColorTheme::isValidIndex() const
+{
+	return mColorList.isValidIndex();
+}
+
+int DAColorTheme::getCurrentIndex() const
+{
+	return mColorList.getCurrentIndex();
+}
+
+void DAColorTheme::setCurrentIndex(int v)
+{
+	mColorList.setCurrentIndex(v);
+}
+
+QColor DAColorTheme::get() const
+{
+	return mColorList.get();
+}
+
+void DAColorTheme::set(const QColor& v)
+{
+	mColorList.set(v);
+}
+
+DAColorTheme::iterator DAColorTheme::begin()
+{
+	return mColorList.begin();
+}
+
+DAColorTheme::const_iterator DAColorTheme::begin() const
+{
+	return mColorList.begin();
+}
+
+DAColorTheme::iterator DAColorTheme::end()
+{
+	return mColorList.end();
+}
+
+DAColorTheme::const_iterator DAColorTheme::end() const
+{
+	return mColorList.end();
+}
+
+int DAColorTheme::size() const
+{
+	return mColorList.size();
 }
 
 }  // end DA

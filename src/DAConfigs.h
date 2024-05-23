@@ -65,7 +65,7 @@
  * @def 是否开启python（bool）
  */
 #ifndef DA_ENABLE_PYTHON
-#define DA_ENABLE_PYTHON 0
+#define DA_ENABLE_PYTHON 1
 #endif
 
 /**

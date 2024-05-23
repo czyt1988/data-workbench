@@ -260,8 +260,6 @@ add_library(${DA_LIB_NAME} SHARED
             ${DA_LIB_HEADER_FILES_ChartSetting}
             ${DA_LIB_SOURCE_FILES_ChartSetting}
             ${DA_LIB_UI_FILES_ChartSetting}
-            #Global
-            ${DA_GLOBAL_HEADER}
 )	
 
 # 构建库定义的宏
@@ -380,6 +378,17 @@ target_include_directories(${DA_LIB_NAME} PUBLIC
     $<INSTALL_INTERFACE:include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/ChartSetting>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ChartSetting>
 )
+
+########################################################
+# 附加编译选项
+########################################################
+if(${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
+    # 这里是为 MSVC 编译器设置的选项
+    target_link_options(${DA_LIB_NAME} PRIVATE /VERBOSE)
+    # 或者设置其他 MSVC 特定的编译或链接选项
+else()
+    # 这里是为非 MSVC 编译器设置的选项（如果有的话）
+endif()
 ########################################################
 # 安装
 ########################################################

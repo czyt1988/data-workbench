@@ -255,24 +255,12 @@ private:                                                                        
 #endif
 #endif
 
-#ifndef QHASH_SHARED_SUPPORT
 #if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
-#define QHASH_SHARED_SUPPORT(ClassName)                                                                                \
-    uint qHash(const std::shared_ptr< ClassName >& ptr, uint seed = 0)                                                 \
-    {                                                                                                                  \
-        return qHash(ptr.get(), seed);                                                                                 \
-    }                                                                                                                  \
-                                                                                                                       \
-    struct _##ClassNameSharedPtrEqual_                                                                                 \
-    {                                                                                                                  \
-        bool operator()(const std::shared_ptr< ClassName >& a, const std::shared_ptr< ClassName >& b) const            \
-        {                                                                                                              \
-            return a == b;                                                                                             \
-        }                                                                                                              \
-    };
-#else
-#define QHASH_SHARED_SUPPORT
+template< typename T >
+uint qHash(const std::shared_ptr< T >& ptr, uint seed = 0)
+{
+	return qHash(ptr.get(), seed);
+}
 #endif  // QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
-#endif  // QHASH_SHARED_SUPPORT
 
 #endif  // GLOBALS_H

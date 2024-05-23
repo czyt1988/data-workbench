@@ -32,7 +32,6 @@ endif()
 # 文件加载
 ########################################################
 file(GLOB DA_LIB_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
-file(GLOB DA_LIB_HPP_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.hpp")
 file(GLOB DA_LIB_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
 
@@ -76,7 +75,16 @@ set_target_properties(${DA_LIB_NAME} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
-
+########################################################
+# 附加编译选项
+########################################################
+if(${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
+    # 这里是为 MSVC 编译器设置的选项
+    target_link_options(${DA_LIB_NAME} PRIVATE /VERBOSE)
+    # 或者设置其他 MSVC 特定的编译或链接选项
+else()
+    # 这里是为非 MSVC 编译器设置的选项（如果有的话）
+endif()
 ########################################################
 # 安装
 ########################################################
@@ -84,7 +92,6 @@ damacro_lib_install()
 
 install(FILES
     ${DA_LIB_HEADER_FILES}
-    ${DA_LIB_HPP_FILES}
     DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}
     COMPONENT headers
 )

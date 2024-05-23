@@ -224,3 +224,10 @@ int DAAbstractNode::getInputNodesCount() const
 ```
 
 包括功能的调整，禁止使用注释而应该使用宏
+
+# 编码禁止列表
+
+- 禁止头文件中使用`using namespace`
+- 基类如果用于继承，析构函数必须使用`virtual`修饰符
+- 库导出类禁止继承于库的模板类，例如class xx : public QList<QColor> 这种情况在一些编译器会导致符号冲突
+

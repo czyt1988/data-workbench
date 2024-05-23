@@ -1,11 +1,11 @@
-#ifndef DAQTCONTAINERUTIL_H
+﻿#ifndef DAQTCONTAINERUTIL_H
 #define DAQTCONTAINERUTIL_H
 #include <QList>
 #include <QSet>
 #include <QVector>
 #include <QHash>
 #include <QMap>
-#include <memory>
+
 
 namespace DA
 {

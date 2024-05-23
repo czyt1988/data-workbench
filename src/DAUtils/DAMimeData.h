@@ -2,7 +2,6 @@
 #define DAMIMEDATA_H
 #include <QtCore/qglobal.h>
 #include <QMimeData>
-#include "DAGlobals.h"
 #include "DAUtilsAPI.h"
 namespace DA
 {

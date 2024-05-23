@@ -212,6 +212,4 @@ protected:
 
 }  // end DA
 
-QHASH_SHARED_SUPPORT(DA::DAAbstractNode)
-
 #endif  // DAABSTRACTNODE_H
