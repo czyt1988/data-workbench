@@ -110,13 +110,4 @@ public:
 
 }  // end DA
 
-#if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
-// Qt5.14.2编译的时候，无法把std::shared_ptr放入QSet中，需要增加此函数
-template< typename T >
-uint qHash(const std::shared_ptr< T >& ptr)
-{
-    return qHash(ptr.get());
-}
-#endif
-
 #endif  // FCABSTRACTNODEFACTORY_H

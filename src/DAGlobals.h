@@ -255,6 +255,7 @@ private:                                                                        
 #endif
 #endif
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
 // 有些qt版本没有qHash对std::shared_ptr的重载，如果在这里出现错误，注释掉即可
 /**
  * @brief 针对智能指针的qHash函数，可以让std::shared_ptr作为QHash和QSet的key
@@ -267,6 +268,7 @@ uint qHash(const std::shared_ptr< T >& ptr, uint seed = 0)
 {
     return qHash(ptr.get(), seed);
 }
+
 // 模板特化的比较函数，用于 std::shared_ptr
 template< typename T >
 struct DASharedPtrEqual
@@ -276,4 +278,6 @@ struct DASharedPtrEqual
 		return a == b;
 	}
 };
+#endif
+
 #endif  // GLOBALS_H
