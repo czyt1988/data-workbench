@@ -229,5 +229,5 @@ int DAAbstractNode::getInputNodesCount() const
 
 - 禁止头文件中使用`using namespace`
 - 基类如果用于继承，析构函数必须使用`virtual`修饰符
-- 库导出类禁止继承于库的模板类，例如class xx : public QList<QColor> 这种情况在一些编译器会导致符号冲突
+- 库导出类禁止继承于库的模板类，例如`dllexport class xx : public QList<QColor>`，这种情况在一些编译器会导致符号冲突，且如果出现虚函数，基类析构函数没有虚函数会导致内存泄漏，如果要继承模板类，此类也应该为模板类
 
