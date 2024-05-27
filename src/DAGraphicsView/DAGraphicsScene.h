@@ -3,6 +3,7 @@
 #include "DAGraphicsViewGlobal.h"
 #include <QGraphicsScene>
 #include <QUndoStack>
+#include <QImage>
 
 namespace DA
 {
@@ -55,8 +56,10 @@ public:
     QUndoCommand* addItem_(QGraphicsItem* item, bool autopush = true);
     // 等同removeItem，但使用redo/undo来添加，可以进行redo/undo操作
     QUndoCommand* removeItem_(QGraphicsItem* item, bool autopush = true);
-    // 导出为pixmap
-    QPixmap toPixamp();
+    // 导出为pixmap,dpi=0代表不考虑dpi
+    QPixmap toPixamp(int dpi = 0);
+    // 保存为图片
+    QImage toImage(int dpi = 0);
     // 链接模式
     void beginLink(DAGraphicsLinkItem* linkItem, LinkMode lm = LinkModeAutoStartEndFollowMouseClick);
     // 判断当前是否是链接模式
@@ -107,6 +110,10 @@ public:
     // 设置场景就绪，如果场景还没加载完成，ready为false，一般这个函数在工程加载的时候应用
     void setReady(bool on);
     bool isReady() const;
+    // 获取默认的dpi
+    static int getDefaultDPI();
+    // dpi转为像素
+    static int dpiToPx(int dpi, int r);
 
 public:
     static void addItemToGroup(QGraphicsItemGroup* group, const QList< QGraphicsItem* >& willGroupItems);

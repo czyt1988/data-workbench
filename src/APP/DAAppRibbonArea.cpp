@@ -482,7 +482,7 @@ void DAAppRibbonArea::buildContextCategoryWorkflowEdit_()
     m_pannelWorkflowBackground->addLargeAction(m_actions->actionWorkflowAddBackgroundPixmap);
     m_pannelWorkflowBackground->addMediumAction(m_actions->actionWorkflowLockBackgroundPixmap);
     m_pannelWorkflowBackground->addMediumAction(m_actions->actionWorkflowEnableItemMoveWithBackground);
-
+    m_pannelWorkflowBackground->addLargeAction(m_actions->actionExportWorkflowScenePNG);
     // View
     m_pannelWorkflowView = m_categoryWorkflowGraphicsEdit->addPannel(tr("View"));
     m_pannelWorkflowView->setObjectName(QStringLiteral("da-pannel-context.workflow.view"));

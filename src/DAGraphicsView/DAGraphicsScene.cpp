@@ -7,6 +7,8 @@
 #include "DAGraphicsStandardTextItem.h"
 #include <QPainter>
 #include <QDebug>
+#include <QApplication>
+#include <QScreen>
 
 namespace DA
 {
@@ -262,15 +264,57 @@ QUndoCommand* DAGraphicsScene::removeItem_(QGraphicsItem* item, bool autopush)
  * @brief 导出为pixmap
  * @return
  */
-QPixmap DAGraphicsScene::toPixamp()
+QPixmap DAGraphicsScene::toPixamp(int dpi)
 {
     QRectF br = itemsBoundingRect();
+    if (dpi > 0) {
+        br.setWidth(dpiToPx(dpi, br.width()));
+        br.setHeight(dpiToPx(dpi, br.height()));
+    }
     QPixmap res(br.size().toSize() + QSize(10, 10));
     res.fill(Qt::transparent);
     QPainter painter(&res);
-    painter.setRenderHint(QPainter::SmoothPixmapTransform);
+    painter.setRenderHint(QPainter::Antialiasing, true);
+    painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
+    // 设置DPI，虽然这对最终的图像质量没有直接影响，但可能影响渲染过程中的一些细节
+
     render(&painter, QRectF(10, 10, br.width(), br.height()), br);
     return res;
+}
+
+/**
+ * @brief 转换为设备相关的图片
+ * @param dpi
+ * @return
+ */
+QImage DAGraphicsScene::toImage(int dpi)
+{
+    QRectF br = itemsBoundingRect();
+    if (dpi > 0) {
+        br.setWidth(dpiToPx(dpi, br.width()));
+        br.setHeight(dpiToPx(dpi, br.height()));
+    }
+    // 创建一个足够大的QImage对象来保存场景
+    QImage image(br.width(), br.height(), QImage::Format_ARGB32);
+    image.fill(Qt::transparent);  // 设置背景色为透明
+
+    // 在QImage上创建一个QPainter对象
+    QPainter painter(&image);
+    painter.setRenderHint(QPainter::Antialiasing, true);
+    painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
+
+    // 设置DPI
+    if (dpi > 0) {
+        image.setDotsPerMeterX(dpi);
+        image.setDotsPerMeterY(dpi);
+    }
+
+    // 渲染场景到QImage上
+    render(&painter);
+
+    // 结束绘制
+    painter.end();
+    return image;
 }
 
 /**
@@ -664,6 +708,31 @@ void DAGraphicsScene::setReady(bool on)
 bool DAGraphicsScene::isReady() const
 {
     return d_ptr->mIsReady;
+}
+
+/**
+ * @brief 获取默认的dpi
+ * @return
+ */
+int DAGraphicsScene::getDefaultDPI()
+{
+    QScreen* screen = QApplication::primaryScreen();
+    if (screen) {
+        return screen->physicalDotsPerInch();
+    }
+    // 如果无法获取屏幕的DPI，则返回一个默认的DPI值，例如96
+    return 96;
+}
+
+/**
+ * @brief dpi转为像素
+ * @param dpi
+ * @param r
+ * @return
+ */
+int DAGraphicsScene::dpiToPx(int dpi, int r)
+{
+    return r * dpi / 72;
 }
 
 /**

@@ -85,8 +85,9 @@ public:
     QAction* actionWorkflowLockBackgroundPixmap;          ///< 锁定背景图
     QAction* actionWorkflowEnableItemMoveWithBackground;  ///< 背景图跟随元件移动
     QAction* actionWorkflowEnableItemLinkageMove;  ///< 图元联动，所谓联动，就是随着一个图元的移动，所有和这个图元链接的图元跟随移动
-    QAction* actionItemGrouping;  ///< 分组
-    QAction* actionItemUngroup;   ///< 取消分组
+    QAction* actionItemGrouping;            ///< 分组
+    QAction* actionItemUngroup;             ///< 取消分组
+    QAction* actionExportWorkflowScenePNG;  ///< 导出png格式
     //===================================================
     // 绘图标签 Chart Category
     //===================================================

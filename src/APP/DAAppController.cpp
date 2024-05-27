@@ -66,12 +66,12 @@
 // 未实现的功能标记
 #define DAAPPCONTROLLER_PASS()                                                                                         \
 	QMessageBox::                                                                                                      \
-		warning(app(),                                                                                                 \
-				QCoreApplication::translate("DAAppRibbonArea", "warning", nullptr),                                    \
-				QCoreApplication::translate("DAAppRibbonArea",                                                         \
-											"The current function is not implemented, only the UI is reserved, "       \
-											"please pay attention: https://gitee.com/czyt1988/data-work-flow",         \
-											nullptr))
+        warning(app(),                                                                                                 \
+                QCoreApplication::translate("DAAppRibbonArea", "warning", nullptr),                                    \
+                QCoreApplication::translate("DAAppRibbonArea",                                                         \
+                                            "The current function is not implemented, only the UI is reserved, "       \
+                                            "please pay attention: https://gitee.com/czyt1988/data-work-flow",         \
+                                            nullptr))
 
 // 快速链接信号槽
 #define DAAPPCONTROLLER_ACTION_BIND(actionname, functionname)                                                          \
@@ -370,9 +370,9 @@ void DAAppController::initConnection()
 	//  QObject::connect: signal not found in DAPyDTypeComboBox
 #if DA_ENABLE_PYTHON
 	connect(mRibbon->m_comboxColumnTypes,
-			SIGNAL(currentDTypeChanged(DAPyDType)),
-			this,
-			SLOT(onComboxColumnTypesCurrentDTypeChanged(DAPyDType)));
+            SIGNAL(currentDTypeChanged(DAPyDType)),
+            this,
+            SLOT(onComboxColumnTypesCurrentDTypeChanged(DAPyDType)));
 #endif
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChangeToIndex, onActionChangeToIndexTriggered);
 	// View Category
@@ -388,7 +388,7 @@ void DAAppController::initConnection()
 	// workflow edit 工作流编辑
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowNew, onActionNewWorkflowTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowEnableItemLinkageMove,
-								onActionWorkflowEnableItemLinkageMoveTriggered);
+                                onActionWorkflowEnableItemLinkageMoveTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionItemGrouping, onActionItemGroupingTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionItemUngroup, onActionItemUngroupTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowRun, onActionRunCurrentWorkflowTriggered);
@@ -399,8 +399,8 @@ void DAAppController::initConnection()
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowAddBackgroundPixmap, onActionAddBackgroundPixmapTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowLockBackgroundPixmap, onActionLockBackgroundPixmapTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowEnableItemMoveWithBackground,
-								onActionEnableItemMoveWithBackgroundTriggered);
-
+                                onActionEnableItemMoveWithBackgroundTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionExportWorkflowScenePNG, onActionExportWorkflowScenePNGTriggered);
 	// other
 	connect(mActions->actionGroupRibbonTheme, &QActionGroup::triggered, this, &DAAppController::onActionGroupRibbonThemeTriggered);
 	//===================================================
@@ -429,9 +429,9 @@ void DAAppController::initConnection()
 	connect(mRibbon, &DAAppRibbonArea::selectedWorkflowItemFont, this, &DAAppController::onCurrentWorkflowFontChanged);
 	connect(mRibbon, &DAAppRibbonArea::selectedWorkflowItemFontColor, this, &DAAppController::onCurrentWorkflowFontColorChanged);
 	connect(mRibbon,
-			&DAAppRibbonArea::selectedWorkflowItemBrush,
-			this,
-			&DAAppController::onCurrentWorkflowShapeBackgroundBrushChanged);
+            &DAAppRibbonArea::selectedWorkflowItemBrush,
+            this,
+            &DAAppController::onCurrentWorkflowShapeBackgroundBrushChanged);
 	connect(mRibbon, &DAAppRibbonArea::selectedWorkflowItemPen, this, &DAAppController::onCurrentWorkflowShapeBorderPenChanged);
 
 	//===================================================
@@ -454,22 +454,22 @@ void DAAppController::initConnection()
 	connect(cow, &DAChartOperateWidget::currentChartChanged, this, &DAAppController::onCurrentChartChanged);
 	// 鼠标动作完成的触发
 	connect(mDock->getWorkFlowOperateWidget(),
-			&DAWorkFlowOperateWidget::mouseActionFinished,
-			this,
-			&DAAppController::onWorkFlowGraphicsSceneMouseActionFinished);
+            &DAWorkFlowOperateWidget::mouseActionFinished,
+            this,
+            &DAAppController::onWorkFlowGraphicsSceneMouseActionFinished);
 	//
 	DAWorkFlowOperateWidget* workflowOpt = mDock->getWorkFlowOperateWidget();
 	connect(workflowOpt, &DAWorkFlowOperateWidget::selectionItemChanged, this, &DAAppController::onSelectionGraphicsItemChanged);
 	connect(workflowOpt, &DAWorkFlowOperateWidget::workflowStartExecute, this, &DAAppController::onWorkflowStartExecute);
 	connect(workflowOpt, &DAWorkFlowOperateWidget::workflowFinished, this, &DAAppController::onWorkflowFinished);
 	connect(mActions->actionWorkflowShowGrid,
-			&QAction::triggered,
-			workflowOpt,
-			&DAWorkFlowOperateWidget::setCurrentWorkflowShowGrid);
+            &QAction::triggered,
+            workflowOpt,
+            &DAWorkFlowOperateWidget::setCurrentWorkflowShowGrid);
 	connect(mActions->actionWorkflowWholeView,
-			&QAction::triggered,
-			workflowOpt,
-			&DAWorkFlowOperateWidget::setCurrentWorkflowWholeView);
+            &QAction::triggered,
+            workflowOpt,
+            &DAWorkFlowOperateWidget::setCurrentWorkflowWholeView);
 	connect(mActions->actionWorkflowZoomIn, &QAction::triggered, workflowOpt, &DAWorkFlowOperateWidget::setCurrentWorkflowZoomIn);
 	connect(mActions->actionWorkflowZoomOut, &QAction::triggered, workflowOpt, &DAWorkFlowOperateWidget::setCurrentWorkflowZoomOut);
 }
@@ -613,10 +613,10 @@ void DAAppController::onActionOpenTriggered()
 		if (project->isDirty()) {
 			// TODO 没有保存。先询问是否保存
 			QMessageBox::StandardButton
-				btn = QMessageBox::question(nullptr,
-											tr("Question"),                                                   // 提示
-											tr("Another project already exists. Do you want to replace it?")  // 已存在其他工程，是否要替换？
-				);
+                btn = QMessageBox::question(nullptr,
+                                            tr("Question"),                                                   // 提示
+                                            tr("Another project already exists. Do you want to replace it?")  // 已存在其他工程，是否要替换？
+                );
 			if (btn == QMessageBox::Yes) {
 				project->clear();
 			} else {
@@ -642,9 +642,9 @@ void DAAppController::onActionOpenTriggered()
 void DAAppController::onActionSaveAsTriggered()
 {
 	QString projectPath = QFileDialog::getSaveFileName(app(),
-													   tr("Save Project"),  // 保存工程
-													   QString(),
-													   tr("project file (*.%1)").arg(DAAppProject::getProjectFileSuffix())  // 工程文件
+                                                       tr("Save Project"),  // 保存工程
+                                                       QString(),
+                                                       tr("project file (*.%1)").arg(DAAppProject::getProjectFileSuffix())  // 工程文件
 	);
 	if (projectPath.isEmpty()) {
 		// 取消退出
@@ -654,8 +654,8 @@ void DAAppController::onActionSaveAsTriggered()
 	if (fi.exists()) {
 		// 说明是目录
 		QMessageBox::StandardButton btn = QMessageBox::question(nullptr,
-																tr("Warning"),
-																tr("Whether to overwrite the file:%1").arg(fi.absoluteFilePath()));
+                                                                tr("Warning"),
+                                                                tr("Whether to overwrite the file:%1").arg(fi.absoluteFilePath()));
 		if (btn != QMessageBox::Yes) {
 			return;
 		}
@@ -710,9 +710,9 @@ void DAAppController::onActionSaveTriggered()
 	if (projectFilePath.isEmpty()) {
 		QString desktop = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
 		projectFilePath = QFileDialog::getSaveFileName(nullptr,
-													   tr("Save Project"),  // 保存工程
-													   desktop,
-													   tr("Project Files (*.%1)").arg(DAAppProject::getProjectFileSuffix())  // 工程文件 (*.%1)
+                                                       tr("Save Project"),  // 保存工程
+                                                       desktop,
+                                                       tr("Project Files (*.%1)").arg(DAAppProject::getProjectFileSuffix())  // 工程文件 (*.%1)
 		);
 		if (projectFilePath.isEmpty()) {
 			// 取消退出
@@ -770,9 +770,9 @@ void DAAppController::onDataOperatePageAdded(DADataOperatePageWidget* page)
 #if DA_ENABLE_PYTHON
 		DADataOperateOfDataFrameWidget* w = static_cast< DADataOperateOfDataFrameWidget* >(page);
 		connect(w,
-				&DADataOperateOfDataFrameWidget::selectTypeChanged,
-				this,
-				&DAAppController::onDataOperateDataFrameWidgetSelectTypeChanged);
+                &DADataOperateOfDataFrameWidget::selectTypeChanged,
+                this,
+                &DAAppController::onDataOperateDataFrameWidgetSelectTypeChanged);
 #endif
 	} break;
 	default:
@@ -823,8 +823,8 @@ void DAAppController::onActionAddBackgroundPixmapTriggered()
 {
 	QStringList filters;
 	filters << tr("Image files (*.png *.jpg)")  // 图片文件 (*.png *.jpg)
-			<< tr("Any files (*)")              // 任意文件 (*)
-		;
+            << tr("Any files (*)")              // 任意文件 (*)
+        ;
 
 	QFileDialog dialog(app());
 	dialog.setNameFilters(filters);
@@ -880,7 +880,18 @@ void DAAppController::onActionItemUngroupTriggered()
 {
 	if (DAWorkFlowGraphicsScene* s = mDock->getWorkFlowOperateWidget()->getCurrentWorkFlowScene()) {
 		s->removeSelectItemGroup_();
-	}
+    }
+}
+
+/**
+ * @brief 导出png
+ */
+void DAAppController::onActionExportWorkflowScenePNGTriggered()
+{
+    if (DAWorkFlowGraphicsScene* s = mDock->getWorkFlowOperateWidget()->getCurrentWorkFlowScene()) {
+        auto image = s->toImage(300);
+        image.save("scene-test.png");
+    }
 }
 
 /**
@@ -912,8 +923,8 @@ void DAAppController::onActionRunCurrentWorkflowTriggered()
 	QString bn = p->getProjectBaseName();
 	if (bn.isEmpty()) {
 		QMessageBox::warning(app(),
-							 tr("warning"),                                                   // cn:警告
-							 tr("Before running the workflow, you need to save the project")  // cn：在运行工作流之前，需要先保存工程
+                             tr("warning"),                                                   // cn:警告
+                             tr("Before running the workflow, you need to save the project")  // cn：在运行工作流之前，需要先保存工程
 		);
 		return;
 	}
@@ -1498,8 +1509,8 @@ void DAAppController::onActionCreateDataDescribeTriggered()
 		DAData data = df;
 		data.setName(tr("%1_Describe").arg(dfopt->data().getName()));
 		data.setDescribe(tr("Generate descriptive statistics that summarize the central tendency, dispersion and "
-							"shape of a [%1]’s distribution, excluding NaN values")
-							 .arg(dfopt->data().getName()));
+                            "shape of a [%1]’s distribution, excluding NaN values")
+                             .arg(dfopt->data().getName()));
 		mDatas->addData(data);
 		// showDataOperate要在m_dataManagerStack.push之后，因为m_dataManagerStack.push可能会导致data的名字改变
 		mDock->showDataOperateWidget(data);
@@ -1616,11 +1627,11 @@ void DAAppController::onActionNewWorkflowTriggered()
 {
 	bool ok      = false;
 	QString text = QInputDialog::getText(app(),
-										 tr("new workflow name"),   // cn:新工作流名称
-										 tr("new workflow name:"),  // cn:新工作流名称
-										 QLineEdit::Normal,
-										 QString(),
-										 &ok);
+                                         tr("new workflow name"),   // cn:新工作流名称
+                                         tr("new workflow name:"),  // cn:新工作流名称
+                                         QLineEdit::Normal,
+                                         QString(),
+                                         &ok);
 	if (!ok || text.isEmpty()) {
 		return;
 	}

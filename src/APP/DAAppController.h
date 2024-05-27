@@ -273,6 +273,8 @@ private slots:
     void onActionItemGroupingTriggered();
     // 取消分组
     void onActionItemUngroupTriggered();
+    // 导出png
+    void onActionExportWorkflowScenePNGTriggered();
     //===================================================
     // 其他
     //===================================================

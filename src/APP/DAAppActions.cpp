@@ -179,6 +179,9 @@ void DAAppActions::buildWorkflowAction()
     actionWorkflowRun       = createAction("actionWorkflowRun", ":/app/bright/Icon/run.svg");
     actionWorkflowTerminate = createAction("actionWorkflowTerminate", ":/app/bright/Icon/stop.svg");
     actionWorkflowTerminate->setEnabled(false);
+    //
+    actionExportWorkflowScenePNG = createAction("actionExportWorkflowScenePNG",
+                                                ":/app/bright/Icon/exportWorkflowSceneToPng.svg");
 }
 
 void DAAppActions::buildOtherActions()
@@ -269,6 +272,8 @@ void DAAppActions::retranslateUi()
     actionWorkflowAddBackgroundPixmap->setText(tr("Add \nBackground"));               // cn:添加\n背景
     actionWorkflowLockBackgroundPixmap->setText(tr("Lock Background"));               // cn:锁定背景
     actionWorkflowEnableItemMoveWithBackground->setText(tr("Move With Background"));  // cn:元件随背景移动
+
+    actionExportWorkflowScenePNG->setText(tr("Export To PNG"));  // cn:导出为PNG
     // View Category
     actionShowWorkFlowArea->setText(tr("Show \nWorkflow Area"));            // cn:工作流\n区域
     actionShowWorkFlowManagerArea->setText(tr("Show \nWorkflow Manager"));  // cn:工作流\n管理
