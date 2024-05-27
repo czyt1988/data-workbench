@@ -75,7 +75,8 @@
         <file>Icon/chart-manager-view.svg</file>
         <file>Icon/data-manager-view.svg</file>
         <file>Icon/workflow-manager-view.svg</file>
-        <file>Icon/exportWorkflowSceneToPng.svg</file>
+        <file>Icon/exportToPic.svg</file>
+        <file>Icon/exportToPng.svg</file>
     </qresource>
     <qresource prefix="/app/dataType">
         <file>Icon/typeDataframe.svg</file>
