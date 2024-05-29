@@ -44,6 +44,7 @@ public:
 	QAction* actionUndo;
 	QAction* actionSetting;        ///< 设置
 	QAction* actionPluginManager;  ///< 插件管理
+    QAction* actionAbout;           ///< about
 	//===================================================
 	// 数据标签 Data Category
 	//===================================================

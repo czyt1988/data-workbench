@@ -5,6 +5,15 @@
 #include <memory>
 #include <QString>
 #include "DAConfigs.h"
+#ifndef DA_VERSION_MAJ
+#define DA_VERSION_MAJ 0
+#endif
+#ifndef DA_VERSION_MIN
+#define DA_VERSION_MIN 0
+#endif
+#ifndef DA_VERSION_PAR
+#define DA_VERSION_PAR 4
+#endif
 /**
  *@def DA_IMPL_FORWARD_DECL
  *@brief 前置声明的定义

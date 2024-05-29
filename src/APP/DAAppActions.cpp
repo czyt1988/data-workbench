@@ -47,6 +47,8 @@ void DAAppActions::buildMainAction()
 	actionSetting = createAction("actionSetting", ":/app/bright/Icon/setting.svg");
 	// Config Category
 	actionPluginManager = createAction("actionPluginManager", ":/app/bright/Icon/plugin.svg");
+    //
+    actionAbout = createAction("actionAbout", ":/app/bright/Icon/about.svg");
 }
 
 void DAAppActions::buildDataAction()
@@ -203,7 +205,8 @@ void DAAppActions::retranslateUi()
 	actionAppendProject->setText(tr("Append To Project"));
 
 	actionRenameColumns->setText(tr("Rename Columns"));
-	actionSetting->setText(tr("Setting"));
+    actionSetting->setText(tr("Setting"));//cn:设置
+    actionAbout->setText(tr("About"));//cn:关于
 	// Data Category
 	actionAddData->setText(tr("Add \nData"));        // cn:添加\n数据
 	actionRemoveData->setText(tr("Remove \nData"));  // cn:移除\n数据
