@@ -33,7 +33,9 @@ public:
     ~DAXmlHelper();
 
 public:
-    void setVersionNumber(const QVersionNumber& v);
+    void setLoadedVersionNumber(const QVersionNumber& v);
+    QVersionNumber getLoaderVersionNumber() const;
+    QVersionNumber getCurrentVersionNumber() const;
     // 标准保存—— DAWorkFlowEditWidget
     QDomElement makeElement(DAWorkFlowEditWidget* wfe, const QString& tagName, QDomDocument* doc);
     bool loadElement(DAWorkFlowEditWidget* wfe, const QDomElement* ele);

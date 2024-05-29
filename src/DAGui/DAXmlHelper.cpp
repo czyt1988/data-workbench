@@ -74,10 +74,11 @@ public:
 	//
 public:
 	QSet< QGraphicsItem* > mHaveBeenSaveNodeItem;  ///< 记录已经被保存过的node item
-	QVersionNumber mVersion;                       ///< 不同版本号有不同解析方式
+    QVersionNumber mLoadedVersion;                       ///< 不同版本号有不同解析方式
+    const QVersionNumber mCurrentVersion;///< 当前版本，这个是用于保存的
 };
 
-DAXmlHelperPrivate::DAXmlHelperPrivate(DAXmlHelper* p) : q_ptr(p)
+DAXmlHelperPrivate::DAXmlHelperPrivate(DAXmlHelper* p) : q_ptr(p),mCurrentVersion(0,1,0)
 {
 }
 
@@ -333,9 +334,9 @@ void DAXmlHelperPrivate::saveNodeInputOutput(const DAAbstractNode::SharedPointer
 
 bool DAXmlHelperPrivate::loadNodeInPutOutputKey(DAAbstractNode::SharedPointer& node, const QDomElement& eleNode)
 {
-	if (mVersion.majorVersion() == 1 && mVersion.minorVersion() < 3) {
+    if (mLoadedVersion.majorVersion() == 1 && mLoadedVersion.minorVersion() < 3) {
 		return loadNodeInPutOutputKey_v110(node, eleNode);
-	} else if (mVersion.majorVersion() >= 1 && mVersion.minorVersion() >= 3) {
+    } else if (mLoadedVersion.majorVersion() >= 1 && mLoadedVersion.minorVersion() >= 3) {
 		return loadNodeInPutOutputKey_v130(node, eleNode);
 	}
 	return true;
@@ -507,7 +508,11 @@ bool DAXmlHelperPrivate::loadNodeItem(DAWorkFlowGraphicsScene* scene,
                                       DAAbstractNode::SharedPointer& node,
                                       const QDomElement& nodeEle)
 {
-	QDomElement ele = nodeEle.firstChildElement("node-item");
+    QString nodeEleName = "node-item";
+    if (mLoadedVersion.majorVersion() == 1 && mLoadedVersion.minorVersion() < 3) {
+        nodeEleName = "nodeItem";
+    }
+    QDomElement ele = nodeEle.firstChildElement(nodeEleName);
 	if (ele.isNull()) {
 		return false;
 	}
@@ -683,12 +688,13 @@ bool DAXmlHelperPrivate::loadSpecialItem(DAWorkFlowGraphicsScene* scene, const Q
  */
 bool DAXmlHelperPrivate::saveItem(const QGraphicsItem* i, QDomDocument& doc, QDomElement& itemsElement)
 {
+    itemsElement.setAttribute("v",mCurrentVersion.toString());
 	if (const DAGraphicsItem* daItem = dynamic_cast< const DAGraphicsItem* >(i)) {
 		QDomElement itemElement = doc.createElement("item");
 		itemElement.setAttribute("className", daItem->metaObject()->className());
 		itemElement.setAttribute("tid", i->type());
 		itemElement.setAttribute("tg", "DAGraphics");
-		daItem->saveToXml(&doc, &itemElement);
+        daItem->saveToXml(&doc, &itemElement,mCurrentVersion);
 		itemsElement.appendChild(itemElement);
 		return true;
 	} else if (const DAGraphicsStandardTextItem* si = dynamic_cast< const DAGraphicsStandardTextItem* >(i)) {
@@ -696,7 +702,7 @@ bool DAXmlHelperPrivate::saveItem(const QGraphicsItem* i, QDomDocument& doc, QDo
 		itemElement.setAttribute("className", "DA::DAGraphicsStandardTextItem");
 		itemElement.setAttribute("tid", i->type());
 		itemElement.setAttribute("tg", "DAStandardText");
-		si->saveToXml(&doc, &itemElement);
+        si->saveToXml(&doc, &itemElement,mCurrentVersion);
 		itemsElement.appendChild(itemElement);
 		return true;
 	} else if (const DAGraphicsItemGroup* gi = dynamic_cast< const DAGraphicsItemGroup* >(i)) {
@@ -735,7 +741,7 @@ bool DAXmlHelperPrivate::loadItem(QGraphicsItem* item, const QDomElement& itemEl
 {
 	DAXMLFileInterface* xml = dynamic_cast< DAXMLFileInterface* >(item);
 	if (xml) {
-		if (!xml->loadFromXml(&itemElement)) {
+        if (!xml->loadFromXml(&itemElement,mLoadedVersion)) {
 			qWarning() << QObject::tr("Unable to load item information from <%1>").arg(itemElement.tagName());  // 无法通过<%1>加载元件信息
 			return false;
 		}
@@ -841,7 +847,7 @@ void DAXmlHelperPrivate::saveSecenInfo(DAWorkFlowGraphicsScene* scene, QDomDocum
 	auto item = scene->getBackgroundPixmapItem();
 	if (item) {
 		QDomElement imageEle = doc.createElement("background");
-		item->saveToXml(&doc, &imageEle);
+        item->saveToXml(&doc, &imageEle,mCurrentVersion);
 		sceneEle.appendChild(imageEle);
 	}
 
@@ -864,7 +870,7 @@ bool DAXmlHelperPrivate::loadSecenInfo(DAWorkFlowGraphicsScene* scene, const QDo
 	QDomElement imageEle = sceneEle.firstChildElement("background");
 	if (!imageEle.isNull()) {
 		std::unique_ptr< DAGraphicsPixmapItem > item = std::make_unique< DAGraphicsPixmapItem >();
-		if (item->loadFromXml(&imageEle)) {
+        if (item->loadFromXml(&imageEle,mLoadedVersion)) {
 			scene->setBackgroundPixmapItem(item.release());
 		}
 	}
@@ -881,9 +887,19 @@ DAXmlHelper::~DAXmlHelper()
 {
 }
 
-void DAXmlHelper::setVersionNumber(const QVersionNumber& v)
+void DAXmlHelper::setLoadedVersionNumber(const QVersionNumber& v)
 {
-	d_ptr->mVersion = v;
+    d_ptr->mLoadedVersion = v;
+}
+
+QVersionNumber DAXmlHelper::getLoaderVersionNumber() const
+{
+    return d_ptr->mLoadedVersion;
+}
+
+QVersionNumber DAXmlHelper::getCurrentVersionNumber() const
+{
+    return d_ptr->mCurrentVersion;
 }
 
 QDomElement DAXmlHelper::makeElement(DAWorkFlowEditWidget* wfe, const QString& tagName, QDomDocument* doc)
@@ -952,7 +968,7 @@ bool DAXmlHelper::loadElement(DAWorkFlowOperateWidget* wfo, const QDomElement* w
 QDomElement DAXmlHelper::makeElement(DAGraphicsResizeableItem* item, const QString& tagName, QDomDocument* doc)
 {
 	QDomElement tag = doc->createElement(tagName);
-	item->saveToXml(doc, &tag);
+    item->saveToXml(doc, &tag,getCurrentVersionNumber());
 	return tag;
 }
 
@@ -964,7 +980,7 @@ QDomElement DAXmlHelper::makeElement(DAGraphicsResizeableItem* item, const QStri
  */
 bool DAXmlHelper::loadElement(DAGraphicsResizeableItem* item, const QDomElement* tag)
 {
-    return item->loadFromXml(tag);
+    return item->loadFromXml(tag,getLoaderVersionNumber());
 }
 
 /**

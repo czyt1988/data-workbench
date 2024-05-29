@@ -79,9 +79,9 @@ void DAGraphicsRectItem::setTextPen(const QPen& p)
     d_ptr->setTextPen(p);
 }
 
-bool DAGraphicsRectItem::saveToXml(QDomDocument* doc, QDomElement* parentElement) const
+bool DAGraphicsRectItem::saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const
 {
-    DAGraphicsResizeableItem::saveToXml(doc, parentElement);
+    DAGraphicsResizeableItem::saveToXml(doc, parentElement,ver);
     QDomElement rectEle = doc->createElement("rect-info");
 
     QDomElement textEle = doc->createElement("text");
@@ -94,9 +94,9 @@ bool DAGraphicsRectItem::saveToXml(QDomDocument* doc, QDomElement* parentElement
     return true;
 }
 
-bool DAGraphicsRectItem::loadFromXml(const QDomElement* itemElement)
+bool DAGraphicsRectItem::loadFromXml(const QDomElement* itemElement,const QVersionNumber& ver)
 {
-    if (!DAGraphicsResizeableItem::loadFromXml(itemElement)) {
+    if (!DAGraphicsResizeableItem::loadFromXml(itemElement,ver)) {
         return false;
     }
     QDomElement rectEle = itemElement->firstChildElement("rect-info");

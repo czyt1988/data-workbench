@@ -38,7 +38,7 @@ QString DAProjectInterface::PrivateData::s_suffix = QString("asproj");
 
 DAProjectInterface::PrivateData::PrivateData(DAProjectInterface* p) : q_ptr(p)
 {
-    mXml.setVersionNumber(DAProjectInterface::getProjectVersion());
+    mXml.setLoadedVersionNumber(DAProjectInterface::getProjectVersion());
 }
 
 bool DAProjectInterface::PrivateData::isHaveProjectFilePath() const

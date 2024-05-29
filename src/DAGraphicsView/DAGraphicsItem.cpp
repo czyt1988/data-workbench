@@ -47,10 +47,11 @@ DAGraphicsItem::~DAGraphicsItem()
  * @param parentElement
  * @return
  */
-bool DAGraphicsItem::saveToXml(QDomDocument* doc, QDomElement* parentElement) const
+bool DAGraphicsItem::saveToXml(QDomDocument* doc, QDomElement* parentElement,const QVersionNumber& ver) const
 {
 	QDomElement infoEle = doc->createElement("info");
 	QPointF scPos       = scenePos();
+    infoEle.setAttribute("v", "1.0");// 版本号，如果后续有区别，通过这个版本号判断
 	infoEle.setAttribute("id", getItemID());
 	infoEle.setAttribute("x", scPos.x());
 	infoEle.setAttribute("y", scPos.y());
@@ -87,7 +88,7 @@ bool DAGraphicsItem::saveToXml(QDomDocument* doc, QDomElement* parentElement) co
  * @param itemElement
  * @return
  */
-bool DAGraphicsItem::loadFromXml(const QDomElement* parentElement)
+bool DAGraphicsItem::loadFromXml(const QDomElement* parentElement,const QVersionNumber& ver)
 {
 	QDomElement infoEle = parentElement->firstChildElement("info");
 	if (infoEle.isNull()) {

@@ -212,9 +212,9 @@ void DAGraphicsPixmapItem::setBodySize(const QSizeF& s)
  * @param parentElement
  * @return
  */
-bool DAGraphicsPixmapItem::saveToXml(QDomDocument* doc, QDomElement* parentElement) const
+bool DAGraphicsPixmapItem::saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const
 {
-    if (!DAGraphicsResizeableItem::saveToXml(doc, parentElement)) {
+    if (!DAGraphicsResizeableItem::saveToXml(doc, parentElement,ver)) {
         return false;
     }
     QDomElement pixmapEle = doc->createElement("pixmap-info");
@@ -234,7 +234,7 @@ bool DAGraphicsPixmapItem::saveToXml(QDomDocument* doc, QDomElement* parentEleme
  * @param itemElement
  * @return
  */
-bool DAGraphicsPixmapItem::loadFromXml(const QDomElement* itemElement)
+bool DAGraphicsPixmapItem::loadFromXml(const QDomElement* itemElement, const QVersionNumber& ver)
 {
     // 先加载图片
     QDomElement pixmapInfoEle = itemElement->firstChildElement("pixmap-info");
@@ -266,7 +266,7 @@ bool DAGraphicsPixmapItem::loadFromXml(const QDomElement* itemElement)
     setPixmap(pix);
     setTransformationMode(tm);
     setAspectRatioMode(ar);
-    return DAGraphicsResizeableItem::loadFromXml(itemElement);
+    return DAGraphicsResizeableItem::loadFromXml(itemElement,ver);
 }
 
 void DAGraphicsPixmapItem::paintBody(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget, const QRectF& bodyRect)

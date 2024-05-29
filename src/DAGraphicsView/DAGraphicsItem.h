@@ -34,8 +34,8 @@ public:
     DAGraphicsItem(QGraphicsItem* parent = nullptr);
     ~DAGraphicsItem();
     // 保存到xml中
-    virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement) const override;
-    virtual bool loadFromXml(const QDomElement* parentElement) override;
+    virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement,const QVersionNumber& ver) const override;
+    virtual bool loadFromXml(const QDomElement* parentElement,const QVersionNumber& ver) override;
     // 设置边框画笔，如果设置一个QPen,则不绘制边框
     void setBorderPen(const QPen& p);
     QPen getBorderPen() const;

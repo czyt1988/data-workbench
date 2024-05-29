@@ -522,9 +522,9 @@ bool DAAbstractNodeLinkGraphicsItem::isLinked() const
     return d_ptr->isLinked();
 }
 
-bool DAAbstractNodeLinkGraphicsItem::saveToXml(QDomDocument* doc, QDomElement* parentElement) const
+bool DAAbstractNodeLinkGraphicsItem::saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const
 {
-    DAGraphicsLinkItem::saveToXml(doc, parentElement);
+    DAGraphicsLinkItem::saveToXml(doc, parentElement,ver);
     QDomElement pointEle = doc->createElement("linkPoint");
     pointEle.setAttribute("visible", isLinkPointNameVisible());
     pointEle.setAttribute("fromTextColor", getLinkPointNameTextColor(DAGraphicsLinkItem::OrientationStart).name());
@@ -535,9 +535,9 @@ bool DAAbstractNodeLinkGraphicsItem::saveToXml(QDomDocument* doc, QDomElement* p
     return true;
 }
 
-bool DAAbstractNodeLinkGraphicsItem::loadFromXml(const QDomElement* parentElement)
+bool DAAbstractNodeLinkGraphicsItem::loadFromXml(const QDomElement* parentElement, const QVersionNumber& ver)
 {
-    bool on              = DAGraphicsLinkItem::loadFromXml(parentElement);
+    bool on              = DAGraphicsLinkItem::loadFromXml(parentElement,ver);
     QDomElement pointEle = parentElement->firstChildElement("linkPoint");
     if (!pointEle.isNull()) {
         bool visible = pointEle.attribute("visible").toInt();

@@ -92,8 +92,8 @@ public:
     //
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
     // 保存到xml中
-    virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement) const override;
-    virtual bool loadFromXml(const QDomElement* itemElement) override;
+    virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement,const QVersionNumber& ver) const override;
+    virtual bool loadFromXml(const QDomElement* itemElement,const QVersionNumber& ver) override;
 
 public:  // 尺寸相关接口
     // 测试一下setBodySize之后getBodySize能得到的尺寸

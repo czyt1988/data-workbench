@@ -32,8 +32,8 @@ public:
 	~DAGraphicsTextItem();
 
 	// 保存到xml中
-	virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement) const override;
-	virtual bool loadFromXml(const QDomElement* itemElement) override;
+    virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement,const QVersionNumber& ver) const override;
+    virtual bool loadFromXml(const QDomElement* itemElement,const QVersionNumber& ver) override;
 
 	// 获取内部的文本item
 	DAGraphicsStandardTextItem* textItem() const;

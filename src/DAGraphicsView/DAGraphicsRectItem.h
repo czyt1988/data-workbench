@@ -42,8 +42,8 @@ public:
     QBrush getRectFillBrush() const;
     void setRectFillBrush(const QBrush& b);
     // 保存到xml中
-    virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement) const override;
-    virtual bool loadFromXml(const QDomElement* itemElement) override;
+    virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement,const QVersionNumber& ver) const override;
+    virtual bool loadFromXml(const QDomElement* itemElement,const QVersionNumber& ver) override;
 
 public:
     // 绘制body

@@ -159,8 +159,8 @@ public:
 	// 获取连接item
 	QList< DAAbstractNodeLinkGraphicsItem* > getLinkItem(const QString& name) const;
 	// 保存到xml中
-	virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement) const override;
-	virtual bool loadFromXml(const QDomElement* itemElement) override;
+    virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement,const QVersionNumber& ver) const override;
+    virtual bool loadFromXml(const QDomElement* itemElement, const QVersionNumber& ver) override;
 	// 创建连接，继承此函数可以生成连接，如果返回nullptr，scene将不会进行连接
 	// 默认使用DAStandardNodeLinkGraphicsItem来进行连接的创建，如果需要自定义连接，可以继承此函数
 	// 返回的link无需attach，attach过程由scene负责

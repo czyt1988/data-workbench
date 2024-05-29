@@ -827,9 +827,9 @@ void DAGraphicsResizeableItem::paint(QPainter* painter, const QStyleOptionGraphi
     }
 }
 
-bool DAGraphicsResizeableItem::saveToXml(QDomDocument* doc, QDomElement* parentElement) const
+bool DAGraphicsResizeableItem::saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const
 {
-    DAGraphicsItem::saveToXml(doc, parentElement);
+    DAGraphicsItem::saveToXml(doc, parentElement,ver);
     QDomElement rsinfoEle = doc->createElement("resize-info");
     rsinfoEle.setAttribute("enableResize", isResizable());
     QSizeF bs = getBodySize();
@@ -853,9 +853,9 @@ bool DAGraphicsResizeableItem::saveToXml(QDomDocument* doc, QDomElement* parentE
     return true;
 }
 
-bool DAGraphicsResizeableItem::loadFromXml(const QDomElement* itemElement)
+bool DAGraphicsResizeableItem::loadFromXml(const QDomElement* itemElement,const QVersionNumber& ver)
 {
-    if (!DAGraphicsItem::loadFromXml(itemElement)) {
+    if (!DAGraphicsItem::loadFromXml(itemElement,ver)) {
         return false;
     }
     QDomElement rsinfoEle = itemElement->firstChildElement("resize-info");

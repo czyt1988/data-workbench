@@ -51,8 +51,8 @@ public:
     void setTransformationMode(Qt::TransformationMode m);
     Qt::TransformationMode getTransformationMode() const;
     //保存到xml中
-    virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement) const override;
-    virtual bool loadFromXml(const QDomElement* itemElement) override;
+    virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement,const QVersionNumber& ver) const override;
+    virtual bool loadFromXml(const QDomElement* itemElement,const QVersionNumber& ver) override;
 
 protected:
     //添加事件处理

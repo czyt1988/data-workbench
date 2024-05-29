@@ -753,9 +753,9 @@ void DAAbstractNodeGraphicsItem::addLinkPoint(const DANodeLinkPoint& lp)
     d_ptr->addLinkPoint(lp);
 }
 
-bool DAAbstractNodeGraphicsItem::saveToXml(QDomDocument* doc, QDomElement* parentElement) const
+bool DAAbstractNodeGraphicsItem::saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const
 {
-	DAGraphicsResizeableItem::saveToXml(doc, parentElement);
+    DAGraphicsResizeableItem::saveToXml(doc, parentElement,ver);
 	QDomElement nodeEle = doc->createElement("nodeItem");
 	QDomElement lpEle   = doc->createElement("linkpoints");
 	lpEle.setAttribute("input-loc", enumToString(getLinkPointLocation(DANodeLinkPoint::Input)));
@@ -772,9 +772,9 @@ bool DAAbstractNodeGraphicsItem::saveToXml(QDomDocument* doc, QDomElement* paren
 	return true;
 }
 
-bool DAAbstractNodeGraphicsItem::loadFromXml(const QDomElement* itemElement)
+bool DAAbstractNodeGraphicsItem::loadFromXml(const QDomElement* itemElement,const QVersionNumber& ver)
 {
-	if (!DAGraphicsResizeableItem::loadFromXml(itemElement)) {
+    if (!DAGraphicsResizeableItem::loadFromXml(itemElement,ver)) {
 		return false;
 	}
 	QDomElement nodeEle = itemElement->firstChildElement("nodeItem");

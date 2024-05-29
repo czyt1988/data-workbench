@@ -117,8 +117,8 @@ public:
     // 如果此函数返回false，将代表不接受链接，这时候，结束动作会被跳过，也就是鼠标点击是没有无法结束链接而生成连接线
     virtual bool willCompleteLink();
     // 保存到xml中
-    virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement) const override;
-    virtual bool loadFromXml(const QDomElement* parentElement) override;
+    virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement,const QVersionNumber& ver) const override;
+    virtual bool loadFromXml(const QDomElement* parentElement,const QVersionNumber& ver) override;
     // 设置在场景的位置，如果没有分组，和setPos一样，如果分组了，最终也能保证位置在pos位置
     void setScenePos(const QPointF& p);
     void setScenePos(qreal x, qreal y);
