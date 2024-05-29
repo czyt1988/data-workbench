@@ -74,11 +74,11 @@ public:
 	//
 public:
 	QSet< QGraphicsItem* > mHaveBeenSaveNodeItem;  ///< 记录已经被保存过的node item
-    QVersionNumber mLoadedVersion;                       ///< 不同版本号有不同解析方式
-    const QVersionNumber mCurrentVersion;///< 当前版本，这个是用于保存的
+    QVersionNumber mLoadedVersion;                 ///< 不同版本号有不同解析方式
+    const QVersionNumber mCurrentVersion;          ///< 当前版本，这个是用于保存的
 };
 
-DAXmlHelperPrivate::DAXmlHelperPrivate(DAXmlHelper* p) : q_ptr(p),mCurrentVersion(0,1,0)
+DAXmlHelperPrivate::DAXmlHelperPrivate(DAXmlHelper* p) : q_ptr(p), mCurrentVersion(0, 1, 0)
 {
 }
 
@@ -93,7 +93,7 @@ void DAXmlHelperPrivate::saveWorkflow(DAWorkFlowEditWidget* wfe, QDomDocument& d
 	DAWorkFlowGraphicsScene* workFlowScene = wfe->getWorkFlowGraphicsScene();
 	// 保存开始，设置场景没有就绪
 	workFlowScene->setReady(false);
-    workflow->saveExternInfoToXml(&doc, &externEle,mCurrentVersion);
+    workflow->saveExternInfoToXml(&doc, &externEle, mCurrentVersion);
 	workflowEle.appendChild(externEle);
 	qDebug() << QObject::tr("save workflow extern info cost: %1 ms").arg(tes.restart());
 	// 保存所有节点
@@ -132,7 +132,7 @@ bool DAXmlHelperPrivate::loadWorkflow(DAWorkFlowEditWidget* wfe, const QDomEleme
 	//
 
 	QDomElement externEle = workflowEle.firstChildElement("extern");
-    workflow->loadExternInfoFromXml(&externEle,mLoadedVersion);
+    workflow->loadExternInfoFromXml(&externEle, mLoadedVersion);
 	qDebug() << QObject::tr("load workflow extern info cost: %1 ms").arg(tes.restart());
 
 	if (!loadNodes(wfe, workflowEle)) {
@@ -177,7 +177,7 @@ void DAXmlHelperPrivate::saveFactoryInfo(const DAWorkFlow* workflow, QDomDocumen
 	const QList< std::shared_ptr< DAAbstractNodeFactory > > factorys = workflow->getAllFactorys();
 	// 创建节点
 	QDomElement factorysEle = doc.createElement("factorys");
-	for (auto fac : factorys) {
+    for (const auto& fac : factorys) {
 		QDomElement factoryEle = doc.createElement("factory");
 		factoryEle.setAttribute("prototypes", fac->factoryPrototypes());
 		QDomElement externEle = doc.createElement("extern");
@@ -234,7 +234,7 @@ void DAXmlHelperPrivate::saveNodes(const DAWorkFlowEditWidget* wfe, QDomDocument
 		// 保存节点属性
 		saveNodePropertys(node, doc, nodeEle);
 		// 保存额外信息
-        node->saveExternInfoToXml(&doc, &nodeEle,mCurrentVersion);
+        node->saveExternInfoToXml(&doc, &nodeEle, mCurrentVersion);
 		// 添加节点Item信息
 		saveNodeItem(node, doc, nodeEle);
 		nodesEle.appendChild(nodeEle);
@@ -285,7 +285,7 @@ bool DAXmlHelperPrivate::loadNodes(DAWorkFlowEditWidget* wfe, const QDomElement&
 		// 加载节点的属性
 		loadNodePropertys(node, nodeEle);
 		// 加载额外信息
-        node->loadExternInfoFromXml(&nodeEle,mLoadedVersion);
+        node->loadExternInfoFromXml(&nodeEle, mLoadedVersion);
 		// 加载item
 		loadNodeItem(workFlowScene, node, nodeEle);
 		// 最后再添加
@@ -538,7 +538,7 @@ void DAXmlHelperPrivate::saveNodeLinks(const DAWorkFlow* workflow, QDomDocument&
 	QDomElement nodeLinkEle = doc.createElement("links");
 
 	QSet< DAAbstractNodeLinkGraphicsItem* > itemSet;
-	for (auto node : nodes) {
+    for (const auto& node : nodes) {
 		auto links = node->graphicsItem()->getLinkItems();
 		for (auto link : qAsConst(links)) {
 			itemSet.insert(link);
@@ -610,10 +610,17 @@ bool DAXmlHelperPrivate::loadNodeLinks(DAWorkFlowGraphicsScene* scene, DAWorkFlo
                               .arg(fromItem->getNodeName(), fromKey, toItem->getNodeName(), toKey);
 			continue;
 		}
-		QDomElement itemEle = findItemElement(linkEle);
-		if (!loadItem(linkitem, itemEle)) {
-			qWarning() << QObject::tr("linkitem load from xml return false")  // cn:链接线从xml加载信息返回了false
-                ;
+        if (mLoadedVersion.majorVersion() == 1 && mLoadedVersion.minorVersion() <= 3) {
+            if (!loadItem(linkitem, linkEle)) {
+                qWarning() << QObject::tr("linkitem load from xml return false")  // cn:链接线从xml加载信息返回了false
+                    ;
+            }
+        } else {
+            QDomElement itemEle = findItemElement(linkEle);
+            if (!loadItem(linkitem, itemEle)) {
+                qWarning() << QObject::tr("linkitem load from xml return false")  // cn:链接线从xml加载信息返回了false
+                    ;
+            }
 		}
 		scene->addItem(linkitem);
 		linkitem->updatePos();
@@ -688,13 +695,13 @@ bool DAXmlHelperPrivate::loadSpecialItem(DAWorkFlowGraphicsScene* scene, const Q
  */
 bool DAXmlHelperPrivate::saveItem(const QGraphicsItem* i, QDomDocument& doc, QDomElement& itemsElement)
 {
-    itemsElement.setAttribute("v",mCurrentVersion.toString());
+    itemsElement.setAttribute("v", mCurrentVersion.toString());
 	if (const DAGraphicsItem* daItem = dynamic_cast< const DAGraphicsItem* >(i)) {
 		QDomElement itemElement = doc.createElement("item");
 		itemElement.setAttribute("className", daItem->metaObject()->className());
 		itemElement.setAttribute("tid", i->type());
 		itemElement.setAttribute("tg", "DAGraphics");
-        daItem->saveToXml(&doc, &itemElement,mCurrentVersion);
+        daItem->saveToXml(&doc, &itemElement, mCurrentVersion);
 		itemsElement.appendChild(itemElement);
 		return true;
 	} else if (const DAGraphicsStandardTextItem* si = dynamic_cast< const DAGraphicsStandardTextItem* >(i)) {
@@ -702,7 +709,7 @@ bool DAXmlHelperPrivate::saveItem(const QGraphicsItem* i, QDomDocument& doc, QDo
 		itemElement.setAttribute("className", "DA::DAGraphicsStandardTextItem");
 		itemElement.setAttribute("tid", i->type());
 		itemElement.setAttribute("tg", "DAStandardText");
-        si->saveToXml(&doc, &itemElement,mCurrentVersion);
+        si->saveToXml(&doc, &itemElement, mCurrentVersion);
 		itemsElement.appendChild(itemElement);
 		return true;
 	} else if (const DAGraphicsItemGroup* gi = dynamic_cast< const DAGraphicsItemGroup* >(i)) {
@@ -741,7 +748,7 @@ bool DAXmlHelperPrivate::loadItem(QGraphicsItem* item, const QDomElement& itemEl
 {
 	DAXMLFileInterface* xml = dynamic_cast< DAXMLFileInterface* >(item);
 	if (xml) {
-        if (!xml->loadFromXml(&itemElement,mLoadedVersion)) {
+        if (!xml->loadFromXml(&itemElement, mLoadedVersion)) {
 			qWarning() << QObject::tr("Unable to load item information from <%1>").arg(itemElement.tagName());  // 无法通过<%1>加载元件信息
 			return false;
 		}
@@ -847,7 +854,7 @@ void DAXmlHelperPrivate::saveSecenInfo(DAWorkFlowGraphicsScene* scene, QDomDocum
 	auto item = scene->getBackgroundPixmapItem();
 	if (item) {
 		QDomElement imageEle = doc.createElement("background");
-        item->saveToXml(&doc, &imageEle,mCurrentVersion);
+        item->saveToXml(&doc, &imageEle, mCurrentVersion);
 		sceneEle.appendChild(imageEle);
 	}
 
@@ -870,7 +877,7 @@ bool DAXmlHelperPrivate::loadSecenInfo(DAWorkFlowGraphicsScene* scene, const QDo
 	QDomElement imageEle = sceneEle.firstChildElement("background");
 	if (!imageEle.isNull()) {
 		std::unique_ptr< DAGraphicsPixmapItem > item = std::make_unique< DAGraphicsPixmapItem >();
-        if (item->loadFromXml(&imageEle,mLoadedVersion)) {
+        if (item->loadFromXml(&imageEle, mLoadedVersion)) {
 			scene->setBackgroundPixmapItem(item.release());
 		}
 	}
@@ -968,7 +975,7 @@ bool DAXmlHelper::loadElement(DAWorkFlowOperateWidget* wfo, const QDomElement* w
 QDomElement DAXmlHelper::makeElement(DAGraphicsResizeableItem* item, const QString& tagName, QDomDocument* doc)
 {
 	QDomElement tag = doc->createElement(tagName);
-    item->saveToXml(doc, &tag,getCurrentVersionNumber());
+    item->saveToXml(doc, &tag, getCurrentVersionNumber());
 	return tag;
 }
 
@@ -980,7 +987,7 @@ QDomElement DAXmlHelper::makeElement(DAGraphicsResizeableItem* item, const QStri
  */
 bool DAXmlHelper::loadElement(DAGraphicsResizeableItem* item, const QDomElement* tag)
 {
-    return item->loadFromXml(tag,getLoaderVersionNumber());
+    return item->loadFromXml(tag, getLoaderVersionNumber());
 }
 
 /**
