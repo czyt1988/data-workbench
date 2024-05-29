@@ -350,10 +350,11 @@ DAAbstractNodeGraphicsItem* DAWorkFlow::getNodeGraphicsItem(const DAAbstractNode
  * @param doc
  * @param nodeElement
  */
-void DAWorkFlow::saveExternInfoToXml(QDomDocument* doc, QDomElement* nodeElement) const
+void DAWorkFlow::saveExternInfoToXml(QDomDocument* doc, QDomElement* nodeElement,const QVersionNumber& ver) const
 {
 	Q_UNUSED(doc);
 	Q_UNUSED(nodeElement);
+    Q_UNUSED(ver);
 }
 
 /**
@@ -367,9 +368,10 @@ void DAWorkFlow::saveExternInfoToXml(QDomDocument* doc, QDomElement* nodeElement
  * -# 加载scene信息
  * @param nodeElement
  */
-void DAWorkFlow::loadExternInfoFromXml(const QDomElement* nodeElement)
+void DAWorkFlow::loadExternInfoFromXml(const QDomElement* nodeElement,const QVersionNumber& ver)
 {
     Q_UNUSED(nodeElement);
+    Q_UNUSED(ver);
 }
 
 /**

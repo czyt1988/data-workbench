@@ -93,7 +93,7 @@ void DAXmlHelperPrivate::saveWorkflow(DAWorkFlowEditWidget* wfe, QDomDocument& d
 	DAWorkFlowGraphicsScene* workFlowScene = wfe->getWorkFlowGraphicsScene();
 	// 保存开始，设置场景没有就绪
 	workFlowScene->setReady(false);
-	workflow->saveExternInfoToXml(&doc, &externEle);
+    workflow->saveExternInfoToXml(&doc, &externEle,mCurrentVersion);
 	workflowEle.appendChild(externEle);
 	qDebug() << QObject::tr("save workflow extern info cost: %1 ms").arg(tes.restart());
 	// 保存所有节点
@@ -132,7 +132,7 @@ bool DAXmlHelperPrivate::loadWorkflow(DAWorkFlowEditWidget* wfe, const QDomEleme
 	//
 
 	QDomElement externEle = workflowEle.firstChildElement("extern");
-	workflow->loadExternInfoFromXml(&externEle);
+    workflow->loadExternInfoFromXml(&externEle,mLoadedVersion);
 	qDebug() << QObject::tr("load workflow extern info cost: %1 ms").arg(tes.restart());
 
 	if (!loadNodes(wfe, workflowEle)) {
@@ -234,7 +234,7 @@ void DAXmlHelperPrivate::saveNodes(const DAWorkFlowEditWidget* wfe, QDomDocument
 		// 保存节点属性
 		saveNodePropertys(node, doc, nodeEle);
 		// 保存额外信息
-		node->saveExternInfoToXml(&doc, &nodeEle);
+        node->saveExternInfoToXml(&doc, &nodeEle,mCurrentVersion);
 		// 添加节点Item信息
 		saveNodeItem(node, doc, nodeEle);
 		nodesEle.appendChild(nodeEle);
@@ -285,7 +285,7 @@ bool DAXmlHelperPrivate::loadNodes(DAWorkFlowEditWidget* wfe, const QDomElement&
 		// 加载节点的属性
 		loadNodePropertys(node, nodeEle);
 		// 加载额外信息
-		node->loadExternInfoFromXml(&nodeEle);
+        node->loadExternInfoFromXml(&nodeEle,mLoadedVersion);
 		// 加载item
 		loadNodeItem(workFlowScene, node, nodeEle);
 		// 最后再添加

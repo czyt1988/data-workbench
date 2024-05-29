@@ -342,10 +342,11 @@ QList< QString > DAAbstractNode::getPropertyKeys() const
  * @param doc
  * @param parentElement
  */
-void DAAbstractNode::saveExternInfoToXml(QDomDocument* doc, QDomElement* nodeElement) const
+void DAAbstractNode::saveExternInfoToXml(QDomDocument* doc, QDomElement* nodeElement,const QVersionNumber& ver) const
 {
 	Q_UNUSED(doc);
 	Q_UNUSED(nodeElement);
+    Q_UNUSED(ver);
 }
 
 /**
@@ -354,9 +355,10 @@ void DAAbstractNode::saveExternInfoToXml(QDomDocument* doc, QDomElement* nodeEle
  * DAAbstractNode的此函数不会实现任何功能，继承的node要加载一些参数可以通过继承此函数实现
  * @param parentElement
  */
-void DAAbstractNode::loadExternInfoFromXml(const QDomElement* nodeElement)
+void DAAbstractNode::loadExternInfoFromXml(const QDomElement* nodeElement,const QVersionNumber& ver)
 {
     Q_UNUSED(nodeElement);
+    Q_UNUSED(ver);
 }
 
 /**

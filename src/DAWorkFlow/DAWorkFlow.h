@@ -3,6 +3,7 @@
 #include <QtCore/qglobal.h>
 #include <memory>
 #include <QObject>
+#include <QVersionNumber>
 #include "DAWorkFlowGlobal.h"
 #include "DAAbstractNode.h"
 class QDomDocument;
@@ -61,9 +62,9 @@ public:
     // 通过节点ID获取节点Item
     DAAbstractNodeGraphicsItem* getNodeGraphicsItem(const DAAbstractNode::IdType id);
     // 把扩展信息保存到xml上
-    virtual void saveExternInfoToXml(QDomDocument* doc, QDomElement* nodeElement) const;
+    virtual void saveExternInfoToXml(QDomDocument* doc, QDomElement* nodeElement,const QVersionNumber& ver) const;
     // 从xml加载扩展信息
-    virtual void loadExternInfoFromXml(const QDomElement* nodeElement);
+    virtual void loadExternInfoFromXml(const QDomElement* nodeElement,const QVersionNumber& ver);
     // 设置开始节点
     void setStartNode(DAAbstractNode::SharedPointer p);
     // 获取开始执行的节点
