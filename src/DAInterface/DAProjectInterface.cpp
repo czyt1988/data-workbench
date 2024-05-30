@@ -223,11 +223,19 @@ bool DAProjectInterface::appendWorkflowInProject(const QString& path, bool skipI
 	file.close();
 	int oldProjectHaveWorkflow = wfo->count();  // 已有的工作流数量
 	bool isok                  = true;
-	QDomElement docElem        = doc.documentElement();                  // root
-	QDomElement proEle         = docElem.firstChildElement("project");   // project
-	QDomElement workflowsEle   = proEle.firstChildElement("workflows");  // workflows
-	QDomNodeList wfListNodes   = workflowsEle.childNodes();
-	QSet< QString > names      = qlist_to_qset(wfo->getAllWorkflowNames());
+    QDomElement docElem        = doc.documentElement();                 // root
+    QDomElement proEle         = docElem.firstChildElement("project");  // project
+    // 获取版本
+    QString verString = proEle.attribute("version");
+    if (!verString.isEmpty()) {
+        QVersionNumber version = QVersionNumber::fromString(verString);
+        if (!version.isNull()) {
+            d_ptr->mXml.setLoadedVersionNumber(version);
+        }
+    }
+    QDomElement workflowsEle = proEle.firstChildElement("workflows");  // workflows
+    QDomNodeList wfListNodes = workflowsEle.childNodes();
+    QSet< QString > names    = qlist_to_qset(wfo->getAllWorkflowNames());
 	for (int i = 0; i < wfListNodes.size(); ++i) {
 		QDomElement workflowEle = wfListNodes.at(i).toElement();
 		if (workflowEle.tagName() != "workflow") {
