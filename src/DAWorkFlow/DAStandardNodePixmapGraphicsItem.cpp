@@ -257,9 +257,9 @@ Qt::TransformationMode DAStandardNodePixmapGraphicsItem::getTransformationMode()
     return d_ptr->mTransformationMode;
 }
 
-bool DAStandardNodePixmapGraphicsItem::saveToXml(QDomDocument* doc, QDomElement* parentElement) const
+bool DAStandardNodePixmapGraphicsItem::saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const
 {
-	DAAbstractNodeGraphicsItem::saveToXml(doc, parentElement);
+    DAAbstractNodeGraphicsItem::saveToXml(doc, parentElement,ver);
 	QDomElement pixmapEle = doc->createElement("pixmap-info");
 	QSize sz              = getPixmapSize();
 
@@ -285,9 +285,9 @@ bool DAStandardNodePixmapGraphicsItem::saveToXml(QDomDocument* doc, QDomElement*
 	return true;
 }
 
-bool DAStandardNodePixmapGraphicsItem::loadFromXml(const QDomElement* itemElement)
+bool DAStandardNodePixmapGraphicsItem::loadFromXml(const QDomElement* itemElement,const QVersionNumber& ver)
 {
-	if (!DAAbstractNodeGraphicsItem::loadFromXml(itemElement)) {
+    if (!DAAbstractNodeGraphicsItem::loadFromXml(itemElement,ver)) {
 		return false;
 	}
 	QDomElement pixmapEle = itemElement->firstChildElement("pixmap-info");

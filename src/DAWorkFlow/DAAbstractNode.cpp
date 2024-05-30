@@ -336,16 +336,35 @@ QList< QString > DAAbstractNode::getPropertyKeys() const
 }
 
 /**
+ * @brief 属性引用
+ * @return
+ */
+const QHash< QString, QVariant >& DAAbstractNode::propertys() const
+{
+    return d_ptr->mPropertys;
+}
+
+/**
+ * @brief 属性引用
+ * @return
+ */
+QHash< QString, QVariant >& DAAbstractNode::propertys()
+{
+    return d_ptr->mPropertys;
+}
+
+/**
  * @brief 把信息保存到xml上
  *
  * DAAbstractNode的此函数不会实现任何功能，继承的node要保存一些参数可以通过继承此函数实现
  * @param doc
  * @param parentElement
  */
-void DAAbstractNode::saveExternInfoToXml(QDomDocument* doc, QDomElement* nodeElement) const
+void DAAbstractNode::saveExternInfoToXml(QDomDocument* doc, QDomElement* nodeElement, const QVersionNumber& ver) const
 {
 	Q_UNUSED(doc);
 	Q_UNUSED(nodeElement);
+    Q_UNUSED(ver);
 }
 
 /**
@@ -354,9 +373,10 @@ void DAAbstractNode::saveExternInfoToXml(QDomDocument* doc, QDomElement* nodeEle
  * DAAbstractNode的此函数不会实现任何功能，继承的node要加载一些参数可以通过继承此函数实现
  * @param parentElement
  */
-void DAAbstractNode::loadExternInfoFromXml(const QDomElement* nodeElement)
+void DAAbstractNode::loadExternInfoFromXml(const QDomElement* nodeElement, const QVersionNumber& ver)
 {
     Q_UNUSED(nodeElement);
+    Q_UNUSED(ver);
 }
 
 /**
@@ -531,8 +551,8 @@ void DAAbstractNode::detachAll()
 {
 #if DA_DAABSTRACTNODE_DEBUG_PRINT
 	qDebug() << "---------------------------";
-	qDebug() << "-start detachAll"
-             << "\n- node name:" << getNodeName() << ",prototype:" << metaData().getNodePrototype() << "\n- link infos:";
+    qDebug() << "-start detachAll" << "\n- node name:" << getNodeName()
+             << ",prototype:" << metaData().getNodePrototype() << "\n- link infos:";
 	for (const DAAbstractNodePrivate::LinkData& d : qAsConst(d_ptr->_linksInfo)) {
 		SharedPointer from = d.outputNode.lock();
 		SharedPointer to   = d.inputNode.lock();
@@ -540,8 +560,7 @@ void DAAbstractNode::detachAll()
 			qDebug().noquote() << from->getNodeName() << "[" << d.outputKey << "] -> " << to->getNodeName() << "["
                                << d.inputKey << "]";
 		} else if (from && to == nullptr) {
-			qDebug().noquote() << from->getNodeName() << "[" << d.outputKey << "] -> "
-                               << "null";
+            qDebug().noquote() << from->getNodeName() << "[" << d.outputKey << "] -> " << "null";
 		} else if (from == nullptr && to) {
 			qDebug().noquote() << "null -> " << to->getNodeName() << "[" << d.inputKey << "]";
 		} else {

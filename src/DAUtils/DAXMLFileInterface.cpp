@@ -408,8 +408,7 @@ bool DAXMLFileInterface::loadElement(QVector3D& p, const QDomElement* ele)
 QDomElement DAXMLFileInterface::makeElement(const QVariant& v, const QString& tagName, QDomDocument* doc)
 {
     QDomElement varEle = doc->createElement(tagName);
-    varEle.setAttribute("class", "QVariant");
-    QString vartype = v.typeName();
+    QString vartype    = v.typeName();
     varEle.setAttribute("type", vartype);
 #if QT_VERSION_MAJOR >= 6
     int tid = v.typeId();

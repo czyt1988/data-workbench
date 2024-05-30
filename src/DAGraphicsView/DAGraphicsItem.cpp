@@ -47,38 +47,42 @@ DAGraphicsItem::~DAGraphicsItem()
  * @param parentElement
  * @return
  */
-bool DAGraphicsItem::saveToXml(QDomDocument* doc, QDomElement* parentElement) const
+bool DAGraphicsItem::saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const
 {
-	QDomElement infoEle = doc->createElement("info");
-	QPointF scPos       = scenePos();
-	infoEle.setAttribute("id", getItemID());
-	infoEle.setAttribute("x", scPos.x());
-	infoEle.setAttribute("y", scPos.y());
-	infoEle.setAttribute("z", zValue());
-	infoEle.setAttribute("acceptDrops", acceptDrops());
-	infoEle.setAttribute("enable", isEnabled());
-	infoEle.setAttribute("opacity", opacity());
-	infoEle.setAttribute("rotation", rotation());
-	infoEle.setAttribute("scale", scale());
-	QString tt = toolTip();
-	if (!tt.isEmpty()) {
-		QDomElement toolTipEle = doc->createElement("toolTip");
-		toolTipEle.appendChild(doc->createTextNode(tt));
-		infoEle.appendChild(toolTipEle);
-	}
-	QDomElement shapeInfoEle = doc->createElement("shape-info");
-	shapeInfoEle.setAttribute("show-border", isShowBorder());
-	shapeInfoEle.setAttribute("show-bk", isShowBackground());
-	if (isShowBorder()) {
-		QDomElement borderPenEle = DAXMLFileInterface::makeElement(getBorderPen(), "border-pen", doc);
-		shapeInfoEle.appendChild(borderPenEle);
-	}
-	if (isShowBackground()) {
-		QDomElement bkEle = DAXMLFileInterface::makeElement(getBackgroundBrush(), "bk-brush", doc);
-		shapeInfoEle.appendChild(bkEle);
-	}
-	infoEle.appendChild(shapeInfoEle);
-	parentElement->appendChild(infoEle);
+    // if (ver.isNull() || (ver.majorVersion() == 1 && ver.minorVersion() <= 1))
+
+    // v1.3.0
+    QDomElement infoEle = doc->createElement("info");
+    QPointF scPos       = scenePos();
+    infoEle.setAttribute("id", getItemID());
+    infoEle.setAttribute("x", scPos.x());
+    infoEle.setAttribute("y", scPos.y());
+    infoEle.setAttribute("z", zValue());
+    infoEle.setAttribute("acceptDrops", acceptDrops());
+    infoEle.setAttribute("enable", isEnabled());
+    infoEle.setAttribute("opacity", opacity());
+    infoEle.setAttribute("rotation", rotation());
+    infoEle.setAttribute("scale", scale());
+    QString tt = toolTip();
+    if (!tt.isEmpty()) {
+        QDomElement toolTipEle = doc->createElement("toolTip");
+        toolTipEle.appendChild(doc->createTextNode(tt));
+        infoEle.appendChild(toolTipEle);
+    }
+    QDomElement shapeInfoEle = doc->createElement("shape-info");
+    shapeInfoEle.setAttribute("show-border", isShowBorder());
+    shapeInfoEle.setAttribute("show-bk", isShowBackground());
+    if (isShowBorder()) {
+        QDomElement borderPenEle = DAXMLFileInterface::makeElement(getBorderPen(), "border-pen", doc);
+        shapeInfoEle.appendChild(borderPenEle);
+    }
+    if (isShowBackground()) {
+        QDomElement bkEle = DAXMLFileInterface::makeElement(getBackgroundBrush(), "bk-brush", doc);
+        shapeInfoEle.appendChild(bkEle);
+    }
+    infoEle.appendChild(shapeInfoEle);
+    parentElement->appendChild(infoEle);
+
 	return true;
 }
 
@@ -87,7 +91,7 @@ bool DAGraphicsItem::saveToXml(QDomDocument* doc, QDomElement* parentElement) co
  * @param itemElement
  * @return
  */
-bool DAGraphicsItem::loadFromXml(const QDomElement* parentElement)
+bool DAGraphicsItem::loadFromXml(const QDomElement* parentElement, const QVersionNumber& ver)
 {
 	QDomElement infoEle = parentElement->firstChildElement("info");
 	if (infoEle.isNull()) {
@@ -102,7 +106,7 @@ bool DAGraphicsItem::loadFromXml(const QDomElement* parentElement)
 	}
 
 	if (getStringRealValue(infoEle.attribute("x", "0"), realValue)
-		&& getStringRealValue(infoEle.attribute("y", "0"), realValue2)) {
+        && getStringRealValue(infoEle.attribute("y", "0"), realValue2)) {
 		setScenePos(realValue, realValue2);
 	}
 	if (getStringRealValue(infoEle.attribute("z", ""), realValue)) {

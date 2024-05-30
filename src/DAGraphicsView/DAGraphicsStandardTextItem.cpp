@@ -50,7 +50,7 @@ bool DAGraphicsStandardTextItem::isEditable() const
     return textInteractionFlags().testFlag(Qt::TextEditorInteraction);
 }
 
-bool DAGraphicsStandardTextItem::saveToXml(QDomDocument* doc, QDomElement* parentElement) const
+bool DAGraphicsStandardTextItem::saveToXml(QDomDocument* doc, QDomElement* parentElement,const QVersionNumber& ver) const
 {
 	QDomElement textItemEle = doc->createElement("text-info");
 	QPointF scPos           = scenePos();
@@ -68,7 +68,7 @@ bool DAGraphicsStandardTextItem::saveToXml(QDomDocument* doc, QDomElement* paren
 	return true;
 }
 
-bool DAGraphicsStandardTextItem::loadFromXml(const QDomElement* itemElement)
+bool DAGraphicsStandardTextItem::loadFromXml(const QDomElement* itemElement, const QVersionNumber& ver)
 {
 	QDomElement textItemEle = itemElement->firstChildElement("text-info");
 	if (textItemEle.isNull()) {

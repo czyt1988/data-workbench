@@ -38,7 +38,7 @@ QString DAProjectInterface::PrivateData::s_suffix = QString("asproj");
 
 DAProjectInterface::PrivateData::PrivateData(DAProjectInterface* p) : q_ptr(p)
 {
-    mXml.setVersionNumber(DAProjectInterface::getProjectVersion());
+    mXml.setLoadedVersionNumber(DAProjectInterface::getProjectVersion());
 }
 
 bool DAProjectInterface::PrivateData::isHaveProjectFilePath() const
@@ -223,11 +223,29 @@ bool DAProjectInterface::appendWorkflowInProject(const QString& path, bool skipI
 	file.close();
 	int oldProjectHaveWorkflow = wfo->count();  // 已有的工作流数量
 	bool isok                  = true;
-	QDomElement docElem        = doc.documentElement();                  // root
-	QDomElement proEle         = docElem.firstChildElement("project");   // project
-	QDomElement workflowsEle   = proEle.firstChildElement("workflows");  // workflows
-	QDomNodeList wfListNodes   = workflowsEle.childNodes();
-	QSet< QString > names      = qlist_to_qset(wfo->getAllWorkflowNames());
+    QDomElement docElem        = doc.documentElement();                 // root
+    QDomElement proEle         = docElem.firstChildElement("project");  // project
+    // 获取版本
+    QString verString = proEle.attribute("version");
+    if (!verString.isEmpty()) {
+        QVersionNumber version = QVersionNumber::fromString(verString);
+        if (!version.isNull()) {
+            // 针对工程版本的操作！！
+        }
+    }
+    QDomElement workflowsEle  = proEle.firstChildElement("workflows");  // workflows
+    QString workflowVerString = workflowsEle.attribute("ver");
+    if (!workflowVerString.isEmpty()) {
+        QVersionNumber workflowVersion = QVersionNumber::fromString(workflowVerString);
+        if (!workflowVersion.isNull()) {
+            d_ptr->mXml.setLoadedVersionNumber(workflowVersion);
+        }
+    } else {
+        // 说明是较低版本，设置为v1.1
+        d_ptr->mXml.setLoadedVersionNumber(QVersionNumber(1, 1, 0));
+    }
+    QDomNodeList wfListNodes = workflowsEle.childNodes();
+    QSet< QString > names    = qlist_to_qset(wfo->getAllWorkflowNames());
 	for (int i = 0; i < wfListNodes.size(); ++i) {
 		QDomElement workflowEle = wfListNodes.at(i).toElement();
 		if (workflowEle.tagName() != "workflow") {
@@ -255,7 +273,8 @@ bool DAProjectInterface::appendWorkflowInProject(const QString& path, bool skipI
  */
 QVersionNumber DAProjectInterface::getProjectVersion()
 {
-    return QVersionNumber(1, 3, 0);
+    static QVersionNumber s_version = QVersionNumber(1, 3, 0);
+    return s_version;
 }
 
 /**

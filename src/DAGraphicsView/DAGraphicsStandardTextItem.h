@@ -31,8 +31,8 @@ public:
     void setEditable(bool on = true);
     bool isEditable() const;
     // 保存到xml中
-    virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement) const override;
-    virtual bool loadFromXml(const QDomElement* itemElement) override;
+    virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement,const QVersionNumber& ver) const override;
+    virtual bool loadFromXml(const QDomElement* itemElement,const QVersionNumber& ver) override;
     // 设置在场景的位置，如果没有分组，和setPos一样，如果分组了，最终也能保证位置在pos位置
     void setScenePos(const QPointF& p);
     void setScenePos(qreal x, qreal y);

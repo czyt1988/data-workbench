@@ -281,6 +281,7 @@ void DAAppRibbonArea::buildRibbonMainCategory()
 	m_pannelSetting->setObjectName(QStringLiteral("da-pannel-main.setting"));
 	m_pannelSetting->addLargeAction(m_actions->actionSetting);
 	m_pannelSetting->addLargeAction(m_actions->actionPluginManager);
+    m_pannelSetting->addLargeAction(m_actions->actionAbout);
 	m_categoryMain->addPannel(m_pannelSetting);
 	//----------------------------------------------------------
 

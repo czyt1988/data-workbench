@@ -2,6 +2,7 @@
 #define DAABSTRACTNODE_H
 #include <memory>
 #include <QMetaEnum>
+#include <QVersionNumber>
 #include "DAWorkFlowGlobal.h"
 #include "DANodeMetaData.h"
 class QDomElement;
@@ -119,10 +120,13 @@ public:
 	QVariant getProperty(const QString& k, const QVariant& defaultVal = QVariant()) const;
 	bool removeProperty(const QString& k);
 	QList< QString > getPropertyKeys() const;
+    // 属性引用
+    const QHash< QString, QVariant >& propertys() const;
+    QHash< QString, QVariant >& propertys();
 	// 把扩展信息保存到xml上
-	virtual void saveExternInfoToXml(QDomDocument* doc, QDomElement* nodeElement) const;
+    virtual void saveExternInfoToXml(QDomDocument* doc, QDomElement* nodeElement, const QVersionNumber& ver) const;
 	// 从xml加载扩展信息
-	virtual void loadExternInfoFromXml(const QDomElement* nodeElement);
+    virtual void loadExternInfoFromXml(const QDomElement* nodeElement, const QVersionNumber& ver);
 	// 节点类型默认都为NormalNode
 	virtual NodeType nodeType() const;
 

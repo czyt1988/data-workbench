@@ -100,8 +100,8 @@ public:
     // 已经连接完成，在from和to都有节点时，返回true
     bool isLinked() const;
     // 保存到xml中
-    virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement) const override;
-    virtual bool loadFromXml(const QDomElement* parentElement) override;
+    virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement,const QVersionNumber& ver) const override;
+    virtual bool loadFromXml(const QDomElement* parentElement,const QVersionNumber& ver) override;
 
 protected:
     //

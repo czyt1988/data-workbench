@@ -15,6 +15,7 @@ namespace DA
 
 DAAppConfig::DAAppConfig()
 {
+    mVersion = QVersionNumber(0,0,2);
     mConfigFilePath = getAbsoluteConfigFilePath();
     // 先设置默认参数，这些默认参数后续如果配置文件中有会被替换掉
     insert(DA_CONFIG_KEY_RIBBON_STYLE, static_cast< int >(SARibbonBar::RibbonStyleCompactTwoRow));
@@ -63,8 +64,13 @@ bool DAAppConfig::loadConfig(bool noFileCreateNewOne)
         qWarning().noquote() << QObject::tr("config file(%1) loss <configs> tag").arg(mConfigFilePath);  // cn:配置文件(%1)缺失<configs>标签
         return false;
     }
+    QVersionNumber version=mVersion;
+    QString ver = configsEle.attribute("ver");
+    if(ver.isEmpty()){
+        version = QVersionNumber();
+    }
     // 加载所有管理的配置
-    if (!loadFromXml(&configsEle)) {
+    if (!loadFromXml(&configsEle,version)) {
         return false;
     }
 
@@ -83,9 +89,10 @@ bool DAAppConfig::saveConfig()
     }
     QDomDocument doc;
     QDomElement configsEle = doc.createElement("configs");
+    configsEle.setAttribute("ver",mVersion.toString());
     doc.appendChild(configsEle);
     // 加载所有管理的配置
-    if (!saveToXml(&doc, &configsEle)) {
+    if (!saveToXml(&doc, &configsEle,mVersion)) {
         return false;
     }
     QTextStream s(&xmlConfigFile);
@@ -100,7 +107,7 @@ bool DAAppConfig::saveConfig()
  * @param parentElement
  * @return
  */
-bool DAAppConfig::saveToXml(QDomDocument* doc, QDomElement* parentElement) const
+bool DAAppConfig::saveToXml(QDomDocument* doc, QDomElement* parentElement,const QVersionNumber& ver) const
 {
     auto i = begin();
     for (; i != end(); ++i) {
@@ -119,7 +126,7 @@ bool DAAppConfig::saveToXml(QDomDocument* doc, QDomElement* parentElement) const
  * @param parentElement
  * @return
  */
-bool DAAppConfig::loadFromXml(const QDomElement* parentElement)
+bool DAAppConfig::loadFromXml(const QDomElement* parentElement,const QVersionNumber& ver)
 {
     QDomNodeList ns = parentElement->childNodes();
     for (int i = 0; i < ns.size(); ++i) {

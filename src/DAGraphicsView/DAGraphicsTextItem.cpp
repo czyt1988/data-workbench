@@ -85,10 +85,10 @@ void DAGraphicsTextItem::init()
 	d_ptr->mTextItem->setFlag(ItemIsMovable, false);
 }
 
-bool DAGraphicsTextItem::saveToXml(QDomDocument* doc, QDomElement* parentElement) const
+bool DAGraphicsTextItem::saveToXml(QDomDocument* doc, QDomElement* parentElement,const QVersionNumber& ver) const
 {
-	DAGraphicsResizeableItem::saveToXml(doc, parentElement);
-	d_ptr->mTextItem->saveToXml(doc, parentElement);
+    DAGraphicsResizeableItem::saveToXml(doc, parentElement,ver);
+    d_ptr->mTextItem->saveToXml(doc, parentElement,ver);
 	QDomElement e = doc->createElement("textItem");
 	e.setAttribute("relativePosition", isEnableRelativePosition());
 	if (isEnableRelativePosition()) {
@@ -102,10 +102,10 @@ bool DAGraphicsTextItem::saveToXml(QDomDocument* doc, QDomElement* parentElement
 	return true;
 }
 
-bool DAGraphicsTextItem::loadFromXml(const QDomElement* itemElement)
+bool DAGraphicsTextItem::loadFromXml(const QDomElement* itemElement,const QVersionNumber& ver)
 {
-	DAGraphicsResizeableItem::loadFromXml(itemElement);
-	if (!d_ptr->mTextItem->loadFromXml(itemElement)) {
+    DAGraphicsResizeableItem::loadFromXml(itemElement,ver);
+    if (!d_ptr->mTextItem->loadFromXml(itemElement,ver)) {
 		return false;
 	}
 	auto e = itemElement->firstChildElement("textItem");

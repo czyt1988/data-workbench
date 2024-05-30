@@ -774,9 +774,9 @@ bool DAGraphicsLinkItem::willCompleteLink()
     return true;
 }
 
-bool DAGraphicsLinkItem::saveToXml(QDomDocument* doc, QDomElement* parentElement) const
+bool DAGraphicsLinkItem::saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const
 {
-    DAGraphicsItem::saveToXml(doc, parentElement);
+    DAGraphicsItem::saveToXml(doc, parentElement,ver);
     QDomElement posEle = doc->createElement("pos");
     posEle.setAttribute("BezierControlScale", d_ptr->mBezierControlScale);
     QDomElement startPosEle     = makeElement(d_ptr->mStartPos, "startPos", doc);
@@ -806,9 +806,9 @@ bool DAGraphicsLinkItem::saveToXml(QDomDocument* doc, QDomElement* parentElement
     return true;
 }
 
-bool DAGraphicsLinkItem::loadFromXml(const QDomElement* parentElement)
+bool DAGraphicsLinkItem::loadFromXml(const QDomElement* parentElement, const QVersionNumber& ver)
 {
-    DAGraphicsItem::loadFromXml(parentElement);
+    DAGraphicsItem::loadFromXml(parentElement,ver);
     QDomElement posEle = parentElement->firstChildElement("pos");
     if (!posEle.isNull()) {
         bool isok = false;

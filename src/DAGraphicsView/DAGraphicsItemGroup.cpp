@@ -59,7 +59,7 @@ DAGraphicsItemGroup::~DAGraphicsItemGroup()
  * @param parentElement
  * @return
  */
-bool DAGraphicsItemGroup::saveToXml(QDomDocument* doc, QDomElement* parentElement) const
+bool DAGraphicsItemGroup::saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const
 {
 	Q_UNUSED(doc);
 	Q_UNUSED(parentElement);
@@ -73,7 +73,7 @@ bool DAGraphicsItemGroup::saveToXml(QDomDocument* doc, QDomElement* parentElemen
   @param itemElement
   @return
  */
-bool DAGraphicsItemGroup::loadFromXml(const QDomElement* parentElement)
+bool DAGraphicsItemGroup::loadFromXml(const QDomElement* parentElement, const QVersionNumber& ver)
 {
 	Q_UNUSED(parentElement);
 	return true;

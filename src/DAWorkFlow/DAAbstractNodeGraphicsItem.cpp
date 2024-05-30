@@ -352,11 +352,21 @@ DANodeLinkPoint DAAbstractNodeGraphicsItem::getOutputLinkPoint(const QString& na
  * @param name
  * @param d
  */
-bool DAAbstractNodeGraphicsItem::setNodeLinkPointDirection(const QString& name, AspectDirection d)
+bool DAAbstractNodeGraphicsItem::setLinkPointDirection(const QString& name, AspectDirection d)
 {
 	for (DAAbstractNodeGraphicsItem::PrivateData::LinkInfo& dp : d_ptr->mLinkInfos) {
 		if (dp.point.name == name) {
+            auto oldlp         = dp.point;
 			dp.point.direction = d;
+            // 对应的link也要跟着变换
+            //  已经连接到的link信息也要变更
+            for (auto link : qAsConst(dp.linkitems)) {
+                if (oldlp == link->fromNodeLinkPoint()) {
+                    link->updateFromLinkPointInfo(dp.point);
+                } else if (oldlp == link->toNodeLinkPoint()) {
+                    link->updateToLinkPointInfo(dp.point);
+                }
+            }
 			return true;
 		}
 	}
@@ -753,9 +763,33 @@ void DAAbstractNodeGraphicsItem::addLinkPoint(const DANodeLinkPoint& lp)
     d_ptr->addLinkPoint(lp);
 }
 
-bool DAAbstractNodeGraphicsItem::saveToXml(QDomDocument* doc, QDomElement* parentElement) const
+/**
+ * @brief 更改连接点的信息，name是连接点名字，如果有重名，只修改第一个查找到的名字的连接点
+ * @param name
+ * @param newLinkpoint
+ */
+void DAAbstractNodeGraphicsItem::setLinkPoint(const QString& name, const DANodeLinkPoint& newLinkpoint)
 {
-	DAGraphicsResizeableItem::saveToXml(doc, parentElement);
+    for (auto& v : d_ptr->mLinkInfos) {
+        if (v.point.name != name) {
+            continue;
+        }
+        DANodeLinkPoint oldLp = v.point;
+        v.point               = newLinkpoint;
+        // 已经连接到的link信息也要变更
+        for (auto link : qAsConst(v.linkitems)) {
+            if (oldLp == link->fromNodeLinkPoint()) {
+                link->updateFromLinkPointInfo(newLinkpoint);
+            } else if (oldLp == link->toNodeLinkPoint()) {
+                link->updateToLinkPointInfo(newLinkpoint);
+            }
+        }
+    }
+}
+
+bool DAAbstractNodeGraphicsItem::saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const
+{
+    DAGraphicsResizeableItem::saveToXml(doc, parentElement, ver);
 	QDomElement nodeEle = doc->createElement("nodeItem");
 	QDomElement lpEle   = doc->createElement("linkpoints");
 	lpEle.setAttribute("input-loc", enumToString(getLinkPointLocation(DANodeLinkPoint::Input)));
@@ -772,9 +806,9 @@ bool DAAbstractNodeGraphicsItem::saveToXml(QDomDocument* doc, QDomElement* paren
 	return true;
 }
 
-bool DAAbstractNodeGraphicsItem::loadFromXml(const QDomElement* itemElement)
+bool DAAbstractNodeGraphicsItem::loadFromXml(const QDomElement* itemElement, const QVersionNumber& ver)
 {
-	if (!DAGraphicsResizeableItem::loadFromXml(itemElement)) {
+    if (!DAGraphicsResizeableItem::loadFromXml(itemElement, ver)) {
 		return false;
 	}
 	QDomElement nodeEle = itemElement->firstChildElement("nodeItem");
@@ -800,7 +834,7 @@ bool DAAbstractNodeGraphicsItem::loadFromXml(const QDomElement* itemElement)
 			if (name.isEmpty()) {
 				continue;
 			}
-			setNodeLinkPointDirection(name, stringToEnum(le.attribute("direction"), AspectDirection::East));
+            setLinkPointDirection(name, stringToEnum(le.attribute("direction"), AspectDirection::East));
 		}
 	}
 	return true;

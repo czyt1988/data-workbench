@@ -40,6 +40,7 @@
 #include "DAAppSettingDialog.h"
 #include "Dialog/DATxtFileImportDialog.h"
 #include "Dialog/DAExportToPngSettingDialog.h"
+#include "Dialog/DAWorkbenchAboutDialog.h"
 // DACommonWidgets
 #include "DAFontEditPannelWidget.h"
 #include "DAShapeEditPannelWidget.h"
@@ -329,6 +330,7 @@ void DAAppController::initConnection()
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionAppendProject, onActionAppendProjectTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionSetting, onActionSettingTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionPluginManager, onActionPluginManagerTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionAbout, onActionAboutTriggered);
 	// Data Category
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionAddData, onActionAddDataTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionRemoveData, onActionRemoveDataTriggered);
@@ -540,7 +542,16 @@ void DAAppController::onActionPluginManagerTriggered(bool on)
 	Q_UNUSED(on);
 	DAPluginManagerDialog dlg(app());
 
-	dlg.exec();
+    dlg.exec();
+}
+
+/**
+ * @brief 关于
+ */
+void DAAppController::onActionAboutTriggered()
+{
+    DAWorkbenchAboutDialog dlg(mMainWindow);
+    dlg.exec();
 }
 
 /**

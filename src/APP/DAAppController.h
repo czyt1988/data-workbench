@@ -130,6 +130,8 @@ private slots:
     void onActionSettingTriggered();
     // 插件管理对话框触发
     void onActionPluginManagerTriggered(bool on);
+    // about
+    void onActionAboutTriggered();
     //===================================================
     // 数据标签 Data Category
     //===================================================

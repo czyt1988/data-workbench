@@ -116,37 +116,37 @@ bool DANodeLinkPoint::isPointCanMeet(const QPointF& p1, AspectDirection d1, cons
     switch (d1) {
     case AspectDirection::East: {
         if (d2 == AspectDirection::South) {
-            //南
+            // 南
             return (p1.x() < p2.x()) && (p1.y() > p2.y());
         } else {
-            //北
+            // 北
             return (p1.x() < p2.x()) && (p1.y() < p2.y());
         }
     } break;
     case AspectDirection::South: {
         if (d2 == AspectDirection::East) {
-            //东
+            // 东
             return (p1.x() > p2.x()) && (p1.y() < p2.y());
         } else {
-            //西
+            // 西
             return (p1.x() < p2.x()) && (p1.y() < p2.y());
         }
     } break;
     case AspectDirection::West: {
         if (d2 == AspectDirection::South) {
-            //南
+            // 南
             return (p1.x() > p2.x()) && (p1.y() > p2.y());
         } else {
-            //北
+            // 北
             return (p1.x() > p2.x()) && (p1.y() < p2.y());
         }
     } break;
     case AspectDirection::North: {
         if (d2 == AspectDirection::East) {
-            //东
+            // 东
             return (p1.x() > p2.x()) && (p1.y() > p2.y());
         } else {
-            //西
+            // 西
             return (p1.x() < p2.x()) && (p1.y() > p2.y());
         }
     } break;
@@ -162,13 +162,16 @@ bool DANodeLinkPoint::isPointCanMeet(const QPointF& p1, AspectDirection d1, cons
  * @param d2
  * @return
  */
-bool DANodeLinkPoint::isParallelPointApproachInDirection(const QPointF& p1, AspectDirection d1, const QPointF& p2, AspectDirection d2)
+bool DANodeLinkPoint::isParallelPointApproachInDirection(const QPointF& p1,
+                                                         AspectDirection d1,
+                                                         const QPointF& p2,
+                                                         AspectDirection d2)
 {
     if (!isDirectionOpposite(d1, d2)) {
-        //平行同向永远接近不了
+        // 平行同向永远接近不了
         return false;
     }
-    //这里说明必定反向
+    // 这里说明必定反向
     switch (d1) {
     case AspectDirection::East:
         return p1.x() < p2.x();
@@ -229,7 +232,7 @@ AspectDirection DANodeLinkPoint::relativeDirectionOfPoint(const QPointF& p1, con
         }
         return AspectDirection::North;
     }
-    //不可能达到
+    // 不可能达到
     return AspectDirection::East;
 }
 
@@ -255,7 +258,7 @@ bool DANodeLinkPoint::isEqualWayName(const DANodeLinkPoint& other) const
 }
 
 /**
- * @brief FCNodeLinkPoint 的等于号操作符
+ * @brief DANodeLinkPoint 的等于号操作符
  * @param a
  * @param b
  * @return
@@ -316,8 +319,8 @@ DANodeLinkPoint::Way DA::stringToEnum(const QString& s, DANodeLinkPoint::Way def
     return defaultEnum;
 }
 
-//把qHash放入DA命名空间为了ADL查找
-// DANodeLinkPoint是DA命名空间，根据ADL原则，会去DA命名空间查找qHash
+// 把qHash放入DA命名空间为了ADL查找
+//  DANodeLinkPoint是DA命名空间，根据ADL原则，会去DA命名空间查找qHash
 namespace DA
 {
 uint qHash(const DANodeLinkPoint& key, uint seed)

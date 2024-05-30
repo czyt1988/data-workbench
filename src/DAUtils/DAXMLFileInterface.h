@@ -10,6 +10,7 @@
 #include <QVariant>
 #include <QIODevice>
 #include <QVector3D>
+#include <QVersionNumber>
 class QDomDocument;
 namespace DA
 {
@@ -22,8 +23,8 @@ public:
     DAXMLFileInterface();
     virtual ~DAXMLFileInterface();
     // 保存到xml中
-    virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement) const = 0;
-    virtual bool loadFromXml(const QDomElement* parentElement)                  = 0;
+    virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement,const QVersionNumber& ver) const = 0;
+    virtual bool loadFromXml(const QDomElement* parentElement,const QVersionNumber& ver)                  = 0;
 
 public:
     // 标准保存—— QRect

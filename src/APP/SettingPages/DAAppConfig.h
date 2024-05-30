@@ -3,6 +3,7 @@
 #include "DAProperties.h"
 #include "DAXMLFileInterface.h"
 #include "DAAppCore.h"
+#include <QVersionNumber>
 /**
  *@def ribbon的样式
  */
@@ -33,8 +34,8 @@ public:
     //保存配置
     bool saveConfig();
     //保存到xml中
-    virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement) const;
-    virtual bool loadFromXml(const QDomElement* parentElement);
+    virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement,const QVersionNumber& ver) const override;
+    virtual bool loadFromXml(const QDomElement* parentElement,const QVersionNumber& ver) override;
     //获取配置文件名字
     static QString getConfigFileName();
     //获取配置文件的绝对路径
@@ -50,6 +51,7 @@ private:
     DAAppCore* mCore { nullptr };
     DAAppUI* mUI { nullptr };
     AppMainWindow* mMainWindow { nullptr };
+    QVersionNumber mVersion;
 };
 }
 
