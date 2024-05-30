@@ -83,7 +83,7 @@ void DAAppActions::buildChartAction()
                                           ":/app/chart-type/Icon/chart-type/chart-intervalcurve.svg");
     actionChartAddBoxPlot   = createAction("actionChartAddBoxPlot", ":/app/chart-type/Icon/chart-type/chart-OHLC.svg");
     actionChartAddBar       = createAction("actionChartAddBar", ":/app/chart-type/Icon/chart-type/chart-bar.svg");
-    actionChartAddMultiBar  = createAction("actionChartAddBar", ":/app/chart-type/Icon/chart-type/chart-multibar.svg");
+    actionChartAddMultiBar = createAction("actionChartAddMultiBar", ":/app/chart-type/Icon/chart-type/chart-multibar.svg");
     actionChartAddHistogramBar = createAction("actionChartAddHistogramBar",
                                               ":/app/chart-type/Icon/chart-type/chart-histogram.svg");
     actionChartAddContourMap   = createAction("actionChartAddContourMap",
