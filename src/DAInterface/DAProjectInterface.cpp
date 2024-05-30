@@ -230,10 +230,20 @@ bool DAProjectInterface::appendWorkflowInProject(const QString& path, bool skipI
     if (!verString.isEmpty()) {
         QVersionNumber version = QVersionNumber::fromString(verString);
         if (!version.isNull()) {
-            d_ptr->mXml.setLoadedVersionNumber(version);
+            // 针对工程版本的操作！！
         }
     }
-    QDomElement workflowsEle = proEle.firstChildElement("workflows");  // workflows
+    QDomElement workflowsEle  = proEle.firstChildElement("workflows");  // workflows
+    QString workflowVerString = workflowsEle.attribute("ver");
+    if (!workflowVerString.isEmpty()) {
+        QVersionNumber workflowVersion = QVersionNumber::fromString(workflowVerString);
+        if (!workflowVersion.isNull()) {
+            d_ptr->mXml.setLoadedVersionNumber(workflowVersion);
+        }
+    } else {
+        // 说明是较低版本，设置为v1.1
+        d_ptr->mXml.setLoadedVersionNumber(QVersionNumber(1, 1, 0));
+    }
     QDomNodeList wfListNodes = workflowsEle.childNodes();
     QSet< QString > names    = qlist_to_qset(wfo->getAllWorkflowNames());
 	for (int i = 0; i < wfListNodes.size(); ++i) {
@@ -263,7 +273,8 @@ bool DAProjectInterface::appendWorkflowInProject(const QString& path, bool skipI
  */
 QVersionNumber DAProjectInterface::getProjectVersion()
 {
-    return QVersionNumber(1, 3, 0);
+    static QVersionNumber s_version = QVersionNumber(1, 3, 0);
+    return s_version;
 }
 
 /**

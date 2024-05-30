@@ -24,6 +24,10 @@ class DAGraphicsResizeableItem;
  * DAXmlHelper会根据QVersionNumber来进行低版本的兼容
  *
  * 低版本兼容主要体现在load函数，save函数统一都只有一个版本
+ *
+ * v1.1.0 最初始版本
+ * v1.3.0 优化了item的保存信息，优化了连接点的保存
+ * v1.4.0 优化了属性的保存
  */
 class DAGUI_API DAXmlHelper
 {
@@ -48,7 +52,7 @@ public:
 
 public:
     // 生成一个qvariant element
-    static QDomElement createVariantValueElement(QDomDocument& doc, const QVariant& var);
+    static QDomElement createVariantValueElement(QDomDocument& doc, const QString& tagName, const QVariant& var);
     static QVariant loadVariantValueElement(const QDomElement& item, const QVariant& defaultVal);
     // 带提示的属性转double
     static qreal attributeToDouble(const QDomElement& item, const QString& att);

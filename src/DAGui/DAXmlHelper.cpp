@@ -50,6 +50,7 @@ public:
 	// 保存属性
 	void saveNodePropertys(const DAAbstractNode::SharedPointer& node, QDomDocument& doc, QDomElement& nodeEle);
 	bool loadNodePropertys(DAAbstractNode::SharedPointer& node, const QDomElement& nodeEle);
+    bool loadNodePropertys_v110(DAAbstractNode::SharedPointer& node, const QDomElement& nodeEle);
 	// 保存item
 	void saveNodeItem(const DAAbstractNode::SharedPointer& node, QDomDocument& doc, QDomElement& nodeEle);
 	bool loadNodeItem(DAWorkFlowGraphicsScene* scene, DAAbstractNode::SharedPointer& node, const QDomElement& nodeEle);
@@ -70,7 +71,9 @@ public:
 	// SecenInfo
 	void saveSecenInfo(DAWorkFlowGraphicsScene* scene, QDomDocument& doc, QDomElement& workflowEle);
 	bool loadSecenInfo(DAWorkFlowGraphicsScene* scene, const QDomElement& workflowEle);
-
+    // 保存属性
+    void savePropertys(const QHash< QString, QVariant >& props, QDomDocument& doc, QDomElement& parentEle);
+    bool loadPropertys(QHash< QString, QVariant >& props, const QDomElement& parentEle);
 	//
 public:
 	QSet< QGraphicsItem* > mHaveBeenSaveNodeItem;  ///< 记录已经被保存过的node item
@@ -78,7 +81,7 @@ public:
     const QVersionNumber mCurrentVersion;          ///< 当前版本，这个是用于保存的
 };
 
-DAXmlHelperPrivate::DAXmlHelperPrivate(DAXmlHelper* p) : q_ptr(p), mCurrentVersion(0, 1, 0)
+DAXmlHelperPrivate::DAXmlHelperPrivate(DAXmlHelper* p) : q_ptr(p), mCurrentVersion(1, 4, 0)
 {
 }
 
@@ -283,7 +286,11 @@ bool DAXmlHelperPrivate::loadNodes(DAWorkFlowEditWidget* wfe, const QDomElement&
 		// 加载节点的输入输出
 		loadNodeInPutOutputKey(node, nodeEle);
 		// 加载节点的属性
-		loadNodePropertys(node, nodeEle);
+        if (mLoadedVersion.majorVersion() == 1 && mLoadedVersion.minorVersion() < 4) {
+            loadNodePropertys_v110(node, nodeEle);
+        } else {
+            loadNodePropertys(node, nodeEle);
+        }
 		// 加载额外信息
         node->loadExternInfoFromXml(&nodeEle, mLoadedVersion);
 		// 加载item
@@ -309,7 +316,7 @@ void DAXmlHelperPrivate::saveNodeInputOutput(const DAAbstractNode::SharedPointer
 		inputEle.setAttribute("name", key);
 		QVariant v = node->getInputData(key);
 		if (v.isValid()) {
-			QDomElement varEle = DAXmlHelper::createVariantValueElement(doc, v);
+            QDomElement varEle = DAXmlHelper::createVariantValueElement(doc, "value", v);
 			inputEle.appendChild(varEle);
 		}
 		inputsEle.appendChild(inputEle);
@@ -323,7 +330,7 @@ void DAXmlHelperPrivate::saveNodeInputOutput(const DAAbstractNode::SharedPointer
 		outputEle.setAttribute("name", key);
 		QVariant v = node->getOutputData(key);
 		if (v.isValid()) {
-			QDomElement varEle = DAXmlHelper::createVariantValueElement(doc, v);
+            QDomElement varEle = DAXmlHelper::createVariantValueElement(doc, "data", v);
 			outputEle.appendChild(varEle);
 		}
 		outputsEle.appendChild(outputEle);
@@ -336,9 +343,9 @@ bool DAXmlHelperPrivate::loadNodeInPutOutputKey(DAAbstractNode::SharedPointer& n
 {
     if (mLoadedVersion.majorVersion() == 1 && mLoadedVersion.minorVersion() < 3) {
 		return loadNodeInPutOutputKey_v110(node, eleNode);
-    } else if (mLoadedVersion.majorVersion() >= 1 && mLoadedVersion.minorVersion() >= 3) {
+    } else if (mLoadedVersion.majorVersion() >= 1 && mLoadedVersion.minorVersion() > 3) {
 		return loadNodeInPutOutputKey_v130(node, eleNode);
-	}
+    }
 	return true;
 }
 
@@ -365,7 +372,7 @@ bool DAXmlHelperPrivate::loadNodeInPutOutputKey_v110(DAAbstractNode::SharedPoint
 			}
 			QString key = nameEle.text();
 			node->addInputKey(key);
-			QDomElement variantEle = inputEle.firstChildElement("variant");
+            QDomElement variantEle = inputEle.firstChildElement("data");
 			if (!variantEle.isNull()) {
 				QVariant d = DAXmlHelper::loadVariantValueElement(variantEle, QVariant());
 				node->setInputData(key, d);
@@ -392,7 +399,7 @@ bool DAXmlHelperPrivate::loadNodeInPutOutputKey_v110(DAAbstractNode::SharedPoint
 			}
 			QString key = nameEle.text();
 			node->addOutputKey(key);
-			QDomElement variantEle = outputEle.firstChildElement("variant");
+            QDomElement variantEle = outputEle.firstChildElement("data");
 			if (!variantEle.isNull()) {
 				QVariant d = DAXmlHelper::loadVariantValueElement(variantEle, QVariant());
 				node->setOutputData(key, d);
@@ -416,7 +423,7 @@ bool DAXmlHelperPrivate::loadNodeInPutOutputKey_v130(DAAbstractNode::SharedPoint
 			}
 			QString key = inputEle.attribute("name");
 			node->addInputKey(key);
-			QDomElement variantEle = inputEle.firstChildElement("variant");
+            QDomElement variantEle = inputEle.firstChildElement("data");
 			if (!variantEle.isNull()) {
 				QVariant d = DAXmlHelper::loadVariantValueElement(variantEle, QVariant());
 				node->setInputData(key, d);
@@ -434,14 +441,14 @@ bool DAXmlHelperPrivate::loadNodeInPutOutputKey_v130(DAAbstractNode::SharedPoint
 			}
 			QString key = outputEle.attribute("name");
 			node->addOutputKey(key);
-			QDomElement variantEle = outputEle.firstChildElement("variant");
+            QDomElement variantEle = outputEle.firstChildElement("data");
 			if (!variantEle.isNull()) {
 				QVariant d = DAXmlHelper::loadVariantValueElement(variantEle, QVariant());
 				node->setOutputData(key, d);
 			}
 		}
 	}
-	return true;
+    return true;
 }
 
 /**
@@ -454,49 +461,83 @@ bool DAXmlHelperPrivate::loadNodeInPutOutputKey_v130(DAAbstractNode::SharedPoint
  */
 void DAXmlHelperPrivate::saveNodePropertys(const DAAbstractNode::SharedPointer& node, QDomDocument& doc, QDomElement& nodeEle)
 {
-	QDomElement propertysEle      = doc.createElement("propertys");
-	QList< QString > propertyKeys = node->getPropertyKeys();
-	for (const QString& k : qAsConst(propertyKeys)) {
-		QVariant v = node->getProperty(k);
-		if (!v.isValid()) {
-			continue;
-		}
-		QDomElement nameEle = doc.createElement("name");
-		QDomText nameVal    = doc.createTextNode(k);
-		nameEle.appendChild(nameVal);
-		QDomElement varEle      = DAXmlHelper::createVariantValueElement(doc, v);
-		QDomElement propertyEle = doc.createElement("property");
-		propertyEle.appendChild(nameEle);
-		propertyEle.appendChild(varEle);
-		propertysEle.appendChild(propertyEle);
-	}
-	nodeEle.appendChild(propertysEle);
+    const QHash< QString, QVariant >& props = node->propertys();
+    savePropertys(props, doc, nodeEle);
+    //    QDomElement propertysEle      = doc.createElement("props");
+    //	QList< QString > propertyKeys = node->getPropertyKeys();
+    //	for (const QString& k : qAsConst(propertyKeys)) {
+    //		QVariant v = node->getProperty(k);
+    //		if (!v.isValid()) {
+    //			continue;
+    //		}
+    //        QDomElement nameEle = doc.createElement("key");
+    //		QDomText nameVal    = doc.createTextNode(k);
+    //		nameEle.appendChild(nameVal);
+    //        QDomElement varEle      = DAXmlHelper::createVariantValueElement(doc, "value", v);
+    //        QDomElement propertyEle = doc.createElement("prop");
+    //		propertyEle.appendChild(nameEle);
+    //		propertyEle.appendChild(varEle);
+    //		propertysEle.appendChild(propertyEle);
+    //	}
+    //	nodeEle.appendChild(propertysEle);
 }
 
 bool DAXmlHelperPrivate::loadNodePropertys(DAAbstractNode::SharedPointer& node, const QDomElement& nodeEle)
 {
-	QDomElement propertysEle = nodeEle.firstChildElement("propertys");
-	if (propertysEle.isNull()) {
-		return false;
-	}
-	QDomNodeList propertyslist = propertysEle.childNodes();
-	for (int i = 0; i < propertyslist.size(); ++i) {
-		QDomElement propertyEle = propertyslist.at(i).toElement();
-		if (propertyEle.tagName() != "property") {
-			continue;
-		}
-		QDomElement nameEle = propertyEle.firstChildElement("name");
-		if (nameEle.isNull()) {
-			continue;
-		}
-		QDomElement variantEle = propertyEle.firstChildElement("variant");
-		if (variantEle.isNull()) {
-			continue;
-		}
-		QVariant v = DAXmlHelper::loadVariantValueElement(variantEle, QVariant());
-		node->setProperty(nameEle.text(), v);
-	}
-	return true;
+    QHash< QString, QVariant > props;
+    if (loadPropertys(props, nodeEle)) {
+        node->propertys() = props;
+        return true;
+    }
+    return false;
+    //	QDomElement propertysEle = nodeEle.firstChildElement("propertys");
+    //	if (propertysEle.isNull()) {
+    //		return false;
+    //	}
+    //	QDomNodeList propertyslist = propertysEle.childNodes();
+    //	for (int i = 0; i < propertyslist.size(); ++i) {
+    //		QDomElement propertyEle = propertyslist.at(i).toElement();
+    //		if (propertyEle.tagName() != "property") {
+    //			continue;
+    //		}
+    //		QDomElement nameEle = propertyEle.firstChildElement("name");
+    //		if (nameEle.isNull()) {
+    //			continue;
+    //		}
+    //		QDomElement variantEle = propertyEle.firstChildElement("variant");
+    //		if (variantEle.isNull()) {
+    //			continue;
+    //		}
+    //		QVariant v = DAXmlHelper::loadVariantValueElement(variantEle, QVariant());
+    //		node->setProperty(nameEle.text(), v);
+    //	}
+    //    return true;
+}
+
+bool DAXmlHelperPrivate::loadNodePropertys_v110(DAAbstractNode::SharedPointer& node, const QDomElement& nodeEle)
+{
+    QDomElement propertysEle = nodeEle.firstChildElement("propertys");
+    if (propertysEle.isNull()) {
+        return false;
+    }
+    QDomNodeList propertyslist = propertysEle.childNodes();
+    for (int i = 0; i < propertyslist.size(); ++i) {
+        QDomElement propertyEle = propertyslist.at(i).toElement();
+        if (propertyEle.tagName() != "property") {
+            continue;
+        }
+        QDomElement nameEle = propertyEle.firstChildElement("name");
+        if (nameEle.isNull()) {
+            continue;
+        }
+        QDomElement variantEle = propertyEle.firstChildElement("variant");
+        if (variantEle.isNull()) {
+            continue;
+        }
+        QVariant v = DAXmlHelper::loadVariantValueElement(variantEle, QVariant());
+        node->setProperty(nameEle.text(), v);
+    }
+    return true;
 }
 
 void DAXmlHelperPrivate::saveNodeItem(const DAAbstractNode::SharedPointer& node, QDomDocument& doc, QDomElement& nodeEle)
@@ -915,7 +956,52 @@ bool DAXmlHelperPrivate::loadSecenInfo(DAWorkFlowGraphicsScene* scene, const QDo
 			scene->setBackgroundPixmapItem(item.release());
 		}
 	}
-	return true;
+    return true;
+}
+
+void DAXmlHelperPrivate::savePropertys(const QHash< QString, QVariant >& props, QDomDocument& doc, QDomElement& parentEle)
+{
+    QDomElement propertysEle = doc.createElement("props");
+    for (auto i = props.begin(); i != props.end(); ++i) {
+        QVariant v = i.value();
+        if (!v.isValid()) {
+            continue;
+        }
+        QDomElement keyEle = doc.createElement("key");
+        keyEle.appendChild(doc.createTextNode(i.key()));
+        QDomElement valueEle    = DAXmlHelper::createVariantValueElement(doc, "value", v);
+        QDomElement propertyEle = doc.createElement("prop");
+        propertyEle.appendChild(keyEle);
+        propertyEle.appendChild(valueEle);
+        propertysEle.appendChild(propertyEle);
+    }
+    parentEle.appendChild(propertysEle);
+}
+
+bool DAXmlHelperPrivate::loadPropertys(QHash< QString, QVariant >& props, const QDomElement& parentEle)
+{
+    QDomElement propertysEle = parentEle.firstChildElement("props");
+    if (propertysEle.isNull()) {
+        return false;
+    }
+    QDomNodeList propertyslist = propertysEle.childNodes();
+    for (int i = 0; i < propertyslist.size(); ++i) {
+        QDomElement propertyEle = propertyslist.at(i).toElement();
+        if (propertyEle.tagName() != "prop") {
+            continue;
+        }
+        QDomElement nameEle = propertyEle.firstChildElement("key");
+        if (nameEle.isNull()) {
+            continue;
+        }
+        QDomElement variantEle = propertyEle.firstChildElement("value");
+        if (variantEle.isNull()) {
+            continue;
+        }
+        QVariant v              = DAXmlHelper::loadVariantValueElement(variantEle, QVariant());
+        props[ nameEle.text() ] = v;
+    }
+    return true;
 }
 //==============================================================
 // DAXmlHelper
@@ -968,6 +1054,7 @@ QDomElement DAXmlHelper::makeElement(DAWorkFlowOperateWidget* wfo, const QString
 	}
 	int currentIndex = wfo->getCurrentWorkflowIndex();
 	workflowsElement.setAttribute("currentIndex", currentIndex);
+    workflowsElement.setAttribute("ver", getCurrentVersionNumber().toString());
 	return workflowsElement;
 }
 
@@ -984,6 +1071,17 @@ bool DAXmlHelper::loadElement(DAWorkFlowOperateWidget* wfo, const QDomElement* w
 	// 先获取当前的窗口名字，避免重名
 	QSet< QString > names    = qlist_to_qset(wfo->getAllWorkflowNames());
 	QDomNodeList wfListNodes = workflowsEle->childNodes();
+    QString verString        = workflowsEle->attribute("ver");
+    if (!verString.isEmpty()) {
+        QVersionNumber ver = QVersionNumber::fromString(verString);
+        if (!ver.isNull()) {
+            setLoadedVersionNumber(ver);
+        }
+    } else {
+        // 说明是较低版本，设置为v1.1
+        setLoadedVersionNumber(QVersionNumber(1, 1, 0));
+    }
+    qInfo() << QObject::tr("current workflow file version:").arg(getLoaderVersionNumber().toString());
 	for (int i = 0; i < wfListNodes.size(); ++i) {
 		QDomElement workflowEle = wfListNodes.at(i).toElement();
 		if (workflowEle.tagName() != "workflow") {
@@ -1030,9 +1128,9 @@ bool DAXmlHelper::loadElement(DAGraphicsResizeableItem* item, const QDomElement*
  * @param v
  * @return
  */
-QDomElement DAXmlHelper::createVariantValueElement(QDomDocument& doc, const QVariant& var)
+QDomElement DAXmlHelper::createVariantValueElement(QDomDocument& doc, const QString& tagName, const QVariant& var)
 {
-    return DAXMLFileInterface::makeElement(var, "variant", &doc);
+    return DAXMLFileInterface::makeElement(var, tagName, &doc);
 }
 
 QVariant DAXmlHelper::loadVariantValueElement(const QDomElement& item, const QVariant& defaultVal)
@@ -1058,6 +1156,7 @@ qreal DAXmlHelper::attributeToDouble(const QDomElement& item, const QString& att
 		qWarning() << QObject::tr("The attribute %1=%2 under the tag %3 cannot be converted to double ")
                           .arg(att, item.attribute(att), item.tagName());
 	}
-	return r;
+    return r;
 }
+
 }

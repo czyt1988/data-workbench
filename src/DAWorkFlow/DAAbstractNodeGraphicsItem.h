@@ -114,7 +114,7 @@ public:
 	DANodeLinkPoint getInputLinkPoint(const QString& name) const;
 	DANodeLinkPoint getOutputLinkPoint(const QString& name) const;
 	// 对linkpoint的属性设置,linkpoint 方向设置只会影响显示，不会影响工作流的链接
-	bool setNodeLinkPointDirection(const QString& name, AspectDirection d);
+    bool setLinkPointDirection(const QString& name, AspectDirection d);
 
 	// 判断是否存在连接点
 	bool isHaveLinkPoint(const DANodeLinkPoint& pl) const;
@@ -159,7 +159,7 @@ public:
 	// 获取连接item
 	QList< DAAbstractNodeLinkGraphicsItem* > getLinkItem(const QString& name) const;
 	// 保存到xml中
-    virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement,const QVersionNumber& ver) const override;
+    virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const override;
     virtual bool loadFromXml(const QDomElement* itemElement, const QVersionNumber& ver) override;
 	// 创建连接，继承此函数可以生成连接，如果返回nullptr，scene将不会进行连接
 	// 默认使用DAStandardNodeLinkGraphicsItem来进行连接的创建，如果需要自定义连接，可以继承此函数
@@ -167,11 +167,11 @@ public:
 	virtual DAAbstractNodeLinkGraphicsItem* createLinkItem(const DA::DANodeLinkPoint& lp);
 	// 从fromPoint链接到toItem的toPoint点，如果链接失败返回nullptr
 	DAAbstractNodeLinkGraphicsItem* linkTo(const DA::DANodeLinkPoint& fromPoint,
-										   DAAbstractNodeGraphicsItem* toItem,
-										   const DA::DANodeLinkPoint& toPoint);
+                                           DAAbstractNodeGraphicsItem* toItem,
+                                           const DA::DANodeLinkPoint& toPoint);
 	DAAbstractNodeLinkGraphicsItem* linkTo(const QString& fromPointName,
-										   DAAbstractNodeGraphicsItem* toItem,
-										   const QString& toPointName);
+                                           DAAbstractNodeGraphicsItem* toItem,
+                                           const QString& toPointName);
 	virtual void setBodySize(const QSizeF& s) override;
 
 public:
@@ -181,9 +181,9 @@ public:
 	virtual void tryLinkOnItemPos(const QPointF& p, DAAbstractNodeLinkGraphicsItem* linkItem, DANodeLinkPoint::Way way);
 	// 链接结束回调，对应旧版的prepareLinkInputFailed,prepareLinkInputSucceed,prepareLinkOutputFailed,prepareLinkOutputSucceed四个回调
 	virtual void finishLink(const DANodeLinkPoint& p,
-							DAAbstractNodeLinkGraphicsItem* linkItem,
-							DANodeLinkPoint::Way way,
-							bool isSuccess);
+                            DAAbstractNodeLinkGraphicsItem* linkItem,
+                            DANodeLinkPoint::Way way,
+                            bool isSuccess);
 	// 断开连接的回调，detach是针对已经连接上的断开
 	virtual void detachLink(const DANodeLinkPoint& p, DAAbstractNodeLinkGraphicsItem* linkItem, DANodeLinkPoint::Way way);
 	// 节点名字改变准备函数，通过此函数，让节点对名字进行重新绘制
@@ -214,6 +214,8 @@ protected:
 	void resetLinkPoint();
 	// 有新的连接点加入
 	void addLinkPoint(const DANodeLinkPoint& lp);
+    // 更改连接点的信息，name是连接点名字，如果有重名，只修改第一个查找到的名字的连接点
+    void setLinkPoint(const QString& name, const DANodeLinkPoint& newLinkpoint);
 
 private:
 	void clearLinkData();
