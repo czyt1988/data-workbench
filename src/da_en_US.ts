@@ -2252,43 +2252,62 @@ Config</source>
 <context>
     <name>DA::DAWorkFlowOperateWidget</name>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="266"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="268"/>
         <source>question</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="267"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="269"/>
         <source>Confirm to delete workflow:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="103"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="105"/>
         <source>Title of new workflow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="103"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="105"/>
         <source>Title:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="413"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="426"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="439"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="415"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="428"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="441"/>
         <source>Loss View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="452"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="470"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="606"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="454"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="472"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="490"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="656"/>
         <source>No active workflow detected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="457"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="475"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="459"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="477"/>
         <source>Unable to get workflow correctly</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="627"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="628"/>
+        <source>Copy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="629"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="630"/>
+        <source>Cut</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="631"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="632"/>
+        <source>Paste</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5494,175 +5513,175 @@ params:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="100"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="105"/>
         <source>save workflow extern info cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="103"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="108"/>
         <source>save workflow nodes cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="106"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="111"/>
         <source>save workflow links cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="109"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="114"/>
         <source>save special item cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="112"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="117"/>
         <source>save workflow factory info cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="115"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="120"/>
         <source>save secen info cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="138"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="143"/>
         <source>load workflow extern info cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="141"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="146"/>
         <source>load nodes occurce error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="143"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="148"/>
         <source>load workflow nodes cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="146"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="151"/>
         <source>load nodes link occurce error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="148"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="153"/>
         <source>load workflow links cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="151"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="156"/>
         <source>load special item occurce error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="153"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="158"/>
         <source>load special item cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="158"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="163"/>
         <source>load factorys occurce error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="160"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="165"/>
         <source>load workflow factory info cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="163"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="168"/>
         <source>load scene info occurce error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="165"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="170"/>
         <source>load secen info cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="206"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="211"/>
         <source>find unknow tag &lt;%1&gt; under &lt;factorys&gt; element</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="212"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="217"/>
         <source>can not find factory prototypes = %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="263"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="300"/>
         <source>node&apos;s id=%1 can not conver to qulonglong type ,will skip this node</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="277"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="314"/>
         <source>workflow can not create note by metadata(prototype=%1,name=%2,group=%3),will skip this node</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="365"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="392"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="402"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="429"/>
         <source>node(prototype=%1,name=%2,group=%3) %4 tag loss child tag &lt;name&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="562"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="599"/>
         <source>can not find &lt;item&gt; tag under &lt;node&gt; tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="567"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="604"/>
         <source>node metadata(prototype=%1,name=%2,group=%3) can not create graphics item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="602"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="660"/>
         <source>linkitem save to xml return false</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="632"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="639"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="686"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="693"/>
         <source>link info can not find node in workflow,id = %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="645"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="699"/>
         <source>can not get item by node</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="651"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="705"/>
         <source>Unable to link to node %3&apos;s link point %4 through link point %2 of node %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="667"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="695"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="721"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="749"/>
         <source>linkitem load from xml return false</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="776"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="830"/>
         <source>Unable to generate graphics item element during the saveing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1019"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1073"/>
         <source>current workflow file version:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1065"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1196"/>
         <source>Cannot create item by class name:%1,maybe unregist to DAGraphicsItemFactory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="802"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="856"/>
         <source>Unable to load item information from &lt;%1&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1210"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1341"/>
         <source>The attribute %1=%2 under the tag %3 cannot be converted to double </source>
         <translation type="unfinished"></translation>
     </message>

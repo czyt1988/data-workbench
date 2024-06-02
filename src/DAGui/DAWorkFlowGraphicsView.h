@@ -7,7 +7,6 @@
 #include "DAGraphicsView.h"
 #include "DAGraphicsItem.h"
 #include "DAAbstractNodeWidget.h"
-
 namespace DA
 {
 class DAWorkFlowGraphicsScene;
@@ -32,8 +31,7 @@ public:
 protected:
 	void keyPressEvent(QKeyEvent* event) Q_DECL_OVERRIDE;
 public slots:
-	// 复制到剪切板
-	void copyItems(QList< DAGraphicsItem* > its);
+
 signals:
 
 	/**

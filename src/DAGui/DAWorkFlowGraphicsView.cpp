@@ -2,6 +2,9 @@
 #include <QDragEnterEvent>
 #include <QDebug>
 #include <QKeyEvent>
+#include <QMimeData>
+#include <QApplication>
+#include <QClipboard>
 #include "DAAbstractNode.h"
 #include "DANodeMetaData.h"
 #include "DAWorkFlowGraphicsScene.h"
@@ -141,19 +144,6 @@ void DAWorkFlowGraphicsView::keyPressEvent(QKeyEvent* event)
 	}
 	// 向下传递
 	DAGraphicsView::keyPressEvent(event);
-}
-
-/**
- * @brief 复制条目
- * @param its
- */
-void DAWorkFlowGraphicsView::copyItems(const QList< DAGraphicsItem* > its)
-{
-	DAXmlHelper xml;
-	QDomDocument doc;
-	QDomElement rootEle = xml.makeClipBoardElement(its, &doc, true);
-
-	//! 4.保存节点
 }
 
 }  // end DA

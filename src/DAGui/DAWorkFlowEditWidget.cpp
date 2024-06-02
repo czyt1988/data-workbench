@@ -6,18 +6,21 @@
 #include <QUndoStack>
 #include <QColor>
 #include <QList>
-
+#include <QMimeData>
+#include <QClipboard>
+#include <QApplication>
 // workflow
 #include "DAWorkFlowGraphicsView.h"
 #include "DAWorkFlowGraphicsScene.h"
 #include "DAGraphicsPixmapItem.h"
 //
 #include "Commands/DACommandsForWorkFlow.h"
+#include "DAXmlHelper.h"
 namespace DA
 {
 
 DAWorkFlowEditWidget::DAWorkFlowEditWidget(QWidget* parent)
-    : QWidget(parent), ui(new Ui::DAWorkFlowEditWidget), _scene(nullptr)
+    : QWidget(parent), ui(new Ui::DAWorkFlowEditWidget), mScene(nullptr)
 {
 	ui->setupUi(this);
 	createScene();
@@ -63,12 +66,12 @@ DAWorkFlowGraphicsView* DAWorkFlowEditWidget::getWorkFlowGraphicsView() const
  */
 DAWorkFlowGraphicsScene* DAWorkFlowEditWidget::getWorkFlowGraphicsScene() const
 {
-    return _scene;
+	return mScene;
 }
 
 void DAWorkFlowEditWidget::setUndoStackActive()
 {
-    getWorkFlowGraphicsView()->setUndoStackActive();
+	getWorkFlowGraphicsView()->setUndoStackActive();
 }
 
 void DAWorkFlowEditWidget::setEnableShowGrid(bool on)
@@ -250,7 +253,7 @@ void DAWorkFlowEditWidget::setSelectShapeBackgroundBrush(const QBrush& b)
 	if (!secen) {
 		return;
 	}
-	QList< DAGraphicsItem* > items = getSelectBaseItems();
+	QList< DAGraphicsItem* > items = getSelectDAItems();
 	if (items.isEmpty()) {
 		return;
 	}
@@ -267,12 +270,85 @@ void DAWorkFlowEditWidget::setSelectShapeBorderPen(const QPen& v)
 	if (!secen) {
 		return;
 	}
-	QList< DAGraphicsItem* > items = getSelectBaseItems();
+	QList< DAGraphicsItem* > items = getSelectDAItems();
 	if (items.isEmpty()) {
 		return;
 	}
 	DA::DACommandGraphicsShapeBorderPenChange* cmd = new DA::DACommandGraphicsShapeBorderPenChange(items, v);
 	secen->push(cmd);
+}
+
+/**
+ * @brief 复制当前选中的items
+ */
+void DAWorkFlowEditWidget::copySelectItems()
+{
+	QList< DAGraphicsItem* > its = ui->workflowGraphicsView->selectedDAItems();
+	copyItems(its);
+}
+
+/**
+ * @brief 复制条目
+ * @param its
+ */
+void DAWorkFlowEditWidget::copyItems(QList< DAGraphicsItem* > its)
+{
+	DAXmlHelper xml;
+	QDomDocument doc;
+	QDomElement rootEle = xml.makeClipBoardElement(its, QStringLiteral("da-clip"), &doc, true);
+	doc.appendChild(rootEle);
+	QMimeData* mimeData = new QMimeData;
+	mimeData->setData(QStringLiteral("text/da-xml"), doc.toByteArray());
+	QClipboard* clipboard = QApplication::clipboard();
+	if (clipboard) {
+		clipboard->setMimeData(mimeData);
+		qDebug().noquote() << "copy items,da-xml:" << doc.toString();
+	}
+}
+
+void DAWorkFlowEditWidget::cutSelectItems()
+{
+    qDebug() << "DAWorkFlowEditWidget::cutSelectItems";
+}
+
+/**
+ * @brief 粘贴动作，把目标粘贴到view中心区域
+ */
+void DAWorkFlowEditWidget::paste(PasteMode mode)
+{
+	//! 首先获取剪切板信息
+	QClipboard* clipboard = QApplication::clipboard();
+	if (!clipboard) {
+		qDebug() << "can not get clipboard";
+		return;
+	}
+	QDomDocument doc;
+	const QMimeData* mimeData = clipboard->mimeData();
+
+	if (mimeData->hasImage()) {
+		// 粘贴图片
+		qDebug() << "clipboard paste Image";
+	} else if (mimeData->hasText()) {
+		// 粘贴文本
+		qDebug() << "clipboard paste Text";
+	} else {
+		qDebug() << "clipboard paste text/da-xml";
+		QByteArray daxmlData = mimeData->data(QStringLiteral("text/da-xml"));
+		if (!doc.setContent(daxmlData)) {
+			qInfo() << tr("Unrecognized mime formats:%1,paste failed").arg(mimeData->formats().join(","));  // cn:无法识别的mime类型:%1,粘贴失败
+			return;
+		}
+		QDomElement rootEle = doc.firstChildElement(QStringLiteral("da-clip"));
+		if (rootEle.isNull()) {
+			qInfo() << tr("Unsupported pasted content");  // cn:不支持的粘贴内容
+			return;
+		}
+		DAXmlHelper xml;
+		if (!xml.loadClipBoardElement(&rootEle, this)) {
+			qInfo() << tr("An exception occurred during the process of parsing and pasting content");  // cn:解析粘贴内容过程出现异常
+			return;
+		}
+	}
 }
 
 QFont DAWorkFlowEditWidget::getDefaultTextFont() const
@@ -322,37 +398,27 @@ QList< DAGraphicsStandardTextItem* > DAWorkFlowEditWidget::getSelectTextItems()
  * @brief 获取选中的基本图元
  * @return
  */
-QList< DAGraphicsItem* > DAWorkFlowEditWidget::getSelectBaseItems()
+QList< DAGraphicsItem* > DAWorkFlowEditWidget::getSelectDAItems()
 {
-	QList< DAGraphicsItem* > res;
 	auto secen = getWorkFlowGraphicsScene();
 	if (!secen) {
-		return res;
+		return QList< DAGraphicsItem* >();
 	}
-	QList< QGraphicsItem* > its = secen->selectedItems();
-	if (its.size() == 0) {
-		return res;
-	}
-	for (QGraphicsItem* item : qAsConst(its)) {
-		if (DAGraphicsItem* i = dynamic_cast< DAGraphicsItem* >(item)) {
-			res.append(i);
-		}
-	}
-	return res;
+	return secen->selectedDAItems();
 }
 
 void DAWorkFlowEditWidget::createScene()
 {
-	_scene = new DAWorkFlowGraphicsScene(this);
-	ui->workflowGraphicsView->setScene(_scene);
+	mScene = new DAWorkFlowGraphicsScene(this);
+	ui->workflowGraphicsView->setScene(mScene);
 	//    connect(_scene, &DAWorkFlowGraphicsScene::selectNodeItemChanged, this, [ this ](DAGraphicsItem* i) {
 	//        if (DAAbstractNodeGraphicsItem* ni = dynamic_cast< DAAbstractNodeGraphicsItem* >(i)) {
 	//            emit selectNodeItemChanged(ni);
 	//        }
 	//    });
 
-	connect(_scene, &DAWorkFlowGraphicsScene::selectNodeItemChanged, this, &DAWorkFlowEditWidget::selectNodeItemChanged);
-	connect(_scene, &DAWorkFlowGraphicsScene::mouseActionFinished, this, &DAWorkFlowEditWidget::mouseActionFinished);
+	connect(mScene, &DAWorkFlowGraphicsScene::selectNodeItemChanged, this, &DAWorkFlowEditWidget::selectNodeItemChanged);
+	connect(mScene, &DAWorkFlowGraphicsScene::mouseActionFinished, this, &DAWorkFlowEditWidget::mouseActionFinished);
 }
 
 }  // end of DA

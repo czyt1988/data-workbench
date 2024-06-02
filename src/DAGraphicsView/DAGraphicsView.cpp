@@ -322,6 +322,30 @@ DAGraphicsView::PadFlags DAGraphicsView::getPaddingFrags() const
 }
 
 /**
+ * @brief 选中的item
+ * @return
+ */
+QList< DAGraphicsItem* > DAGraphicsView::selectedDAItems() const
+{
+	QGraphicsScene* sc    = scene();
+	DAGraphicsScene* dasc = qobject_cast< DAGraphicsScene* >(sc);
+	if (!sc) {
+		return QList< DAGraphicsItem* >();
+	}
+	if (dasc) {
+		return dasc->selectedDAItems();
+	}
+	QList< DAGraphicsItem* > res;
+	const QList< QGraphicsItem* > its = sc->selectedItems();
+	for (QGraphicsItem* item : its) {
+		if (DAGraphicsItem* i = dynamic_cast< DAGraphicsItem* >(item)) {
+			res.append(i);
+		}
+	}
+	return res;
+}
+
+/**
  * @brief 设置全部可见尺寸
  * @note 如果是空场景，此函数无动作
  */

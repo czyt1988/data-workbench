@@ -1,6 +1,7 @@
 ﻿#include "DAWorkFlowOperateWidget.h"
 #include "ui_DAWorkFlowOperateWidget.h"
 // qt
+#include <QAction>
 #include <QImage>
 #include <QDebug>
 #include <QMessageBox>
@@ -24,10 +25,11 @@ namespace DA
 // DAWorkFlowOperateWidget
 //===================================================
 DAWorkFlowOperateWidget::DAWorkFlowOperateWidget(QWidget* parent)
-    : QWidget(parent), ui(new Ui::DAWorkFlowOperateWidget), _isShowGrid(true), _defaultTextColor(Qt::black)
+    : QWidget(parent), ui(new Ui::DAWorkFlowOperateWidget), mIsShowGrid(true), mDefaultTextColor(Qt::black)
 {
-	_isDestorying = false;
+	mIsDestorying = false;
 	ui->setupUi(this);
+	initActions();
 	connect(ui->tabWidget, &QTabWidget::currentChanged, this, &DAWorkFlowOperateWidget::onTabWidgetCurrentChanged);
 	connect(ui->tabWidget, &QTabWidget::tabCloseRequested, this, &DAWorkFlowOperateWidget::onTabWidgetTabCloseRequested);
 }
@@ -35,7 +37,7 @@ DAWorkFlowOperateWidget::DAWorkFlowOperateWidget(QWidget* parent)
 DAWorkFlowOperateWidget::~DAWorkFlowOperateWidget()
 {
 	qDebug() << "DAWorkFlowOperateWidget begin delete ui";
-	_isDestorying = true;
+	mIsDestorying = true;
 	delete ui;
 	qDebug() << "DAWorkFlowOperateWidget end delete ui";
 }
@@ -71,9 +73,9 @@ DAWorkFlowEditWidget* DAWorkFlowOperateWidget::appendWorkflow(const QString& nam
 	wf->setParent(wfe);
 	wfe->setWorkFlow(wf);
 	// 把undo添加进去
-	wfe->setEnableShowGrid(_isShowGrid);
-	wfe->setDefaultTextColor(_defaultTextColor);
-	wfe->setDefaultTextFont(_defaultFont);
+	wfe->setEnableShowGrid(mIsShowGrid);
+	wfe->setDefaultTextColor(mDefaultTextColor);
+	wfe->setDefaultTextFont(mDefaultFont);
 	DAWorkFlowGraphicsScene* scene = wfe->getWorkFlowGraphicsScene();
 	connect(wfe, &DAWorkFlowEditWidget::selectNodeItemChanged, this, &DAWorkFlowOperateWidget::selectNodeItemChanged);
 	connect(wfe, &DAWorkFlowEditWidget::mouseActionFinished, this, &DAWorkFlowOperateWidget::mouseActionFinished);
@@ -296,14 +298,14 @@ void DAWorkFlowOperateWidget::setUndoStackActive()
  */
 void DAWorkFlowOperateWidget::setEnableShowGrid(bool on)
 {
-	_isShowGrid = on;
+	mIsShowGrid = on;
 	const int c = count();
 	for (int i = 0; i < c; ++i) {
 		DAWorkFlowEditWidget* w = getWorkFlowWidget(i);
 		if (w == nullptr) {
 			continue;
 		}
-		w->setEnableShowGrid(_isShowGrid);
+		w->setEnableShowGrid(mIsShowGrid);
 	}
 }
 
@@ -313,7 +315,7 @@ void DAWorkFlowOperateWidget::setEnableShowGrid(bool on)
  */
 bool DAWorkFlowOperateWidget::isEnableShowGrid() const
 {
-    return _isShowGrid;
+	return mIsShowGrid;
 }
 
 /**
@@ -479,12 +481,42 @@ void DAWorkFlowOperateWidget::terminateCurrentWorkFlow()
 }
 
 /**
+ * @brief 复制当前选中的items
+ */
+void DAWorkFlowOperateWidget::copyCurrentSelectItems()
+{
+	DAWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
+	if (nullptr == w) {
+		qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
+		return;
+	}
+	w->copySelectItems();
+}
+
+void DAWorkFlowOperateWidget::cutCurrentSelectItems()
+{
+}
+
+/**
+ * @brief ctrl+v动作
+ */
+void DAWorkFlowOperateWidget::pasteFromClipBoard()
+{
+	DAWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
+	if (nullptr == w) {
+		qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
+		return;
+	}
+	w->paste(DAWorkFlowEditWidget::PaseteRangeCenterToViewCenter);
+}
+
+/**
  * @brief 文本字体
  * @param c
  */
 QFont DAWorkFlowOperateWidget::getDefaultTextFont() const
 {
-    return _defaultFont;
+	return mDefaultFont;
 }
 /**
  * @brief 设置文本字体
@@ -492,7 +524,7 @@ QFont DAWorkFlowOperateWidget::getDefaultTextFont() const
  */
 void DAWorkFlowOperateWidget::setDefaultTextFont(const QFont& f)
 {
-	_defaultFont                             = f;
+	mDefaultFont                             = f;
 	QList< DAWorkFlowGraphicsScene* > secens = getAllWorkFlowScene();
 	for (DAWorkFlowGraphicsScene* sc : qAsConst(secens)) {
 		sc->setDefaultTextFont(f);
@@ -504,7 +536,7 @@ void DAWorkFlowOperateWidget::setDefaultTextFont(const QFont& f)
  */
 QColor DAWorkFlowOperateWidget::getDefaultTextColor() const
 {
-    return _defaultTextColor;
+	return mDefaultTextColor;
 }
 /**
  * @brief 设置默认的文本颜色
@@ -512,7 +544,7 @@ QColor DAWorkFlowOperateWidget::getDefaultTextColor() const
  */
 void DAWorkFlowOperateWidget::setDefaultTextColor(const QColor& c)
 {
-	_defaultTextColor                        = c;
+	mDefaultTextColor                        = c;
 	QList< DAWorkFlowGraphicsScene* > secens = getAllWorkFlowScene();
 	for (DAWorkFlowGraphicsScene* sc : secens) {
 		sc->setDefaultTextColor(c);
@@ -546,7 +578,7 @@ void DAWorkFlowOperateWidget::onTabWidgetTabCloseRequested(int index)
  */
 void DAWorkFlowOperateWidget::onSelectionChanged()
 {
-	if (_isDestorying) {
+	if (mIsDestorying) {
 		//! 很奇怪，DAWorkFlowGraphicsScene已经析构了，但此槽函数还是能调用，在DAWorkFlowOperateWidget
 		//! 开始delete ui的时候，先析构DAWorkFlowGraphicsView，再析构DAWorkFlowGraphicsScene
 		//! 然后就会调用此槽函数，这时导致错误，从qt原理上，在析构时应该会把槽函数都断开连接才合理
@@ -580,6 +612,38 @@ QList< DAGraphicsStandardTextItem* > DAWorkFlowOperateWidget::getSelectTextItems
 		}
 	}
 	return res;
+}
+
+void DAWorkFlowOperateWidget::initActions()
+{
+	mActionCopy = new QAction(this);
+	mActionCopy->setIcon(QIcon(":/DAGui/icon/copy.svg"));
+	mActionCopy->setShortcuts(QKeySequence::Copy);
+	connect(mActionCopy, &QAction::triggered, this, &DAWorkFlowOperateWidget::copyCurrentSelectItems);
+
+	mActionCut = new QAction(this);
+	mActionCut->setIcon(QIcon(":/DAGui/icon/cut.svg"));
+	mActionCut->setShortcuts(QKeySequence::Cut);
+
+	mActionPaste = new QAction(this);
+	mActionPaste->setIcon(QIcon(":/DAGui/icon/paste.svg"));
+	mActionPaste->setShortcuts(QKeySequence::Paste);
+	connect(mActionPaste, &QAction::triggered, this, &DAWorkFlowOperateWidget::pasteFromClipBoard);
+
+	addAction(mActionCopy);
+	addAction(mActionCut);
+	addAction(mActionPaste);
+	retranslateUi();
+}
+
+void DAWorkFlowOperateWidget::retranslateUi()
+{
+	mActionCopy->setStatusTip(tr("Copy"));
+	mActionCopy->setText(tr("Copy"));
+	mActionCut->setStatusTip(tr("Cut"));
+	mActionCut->setText(tr("Cut"));
+	mActionPaste->setStatusTip(tr("Paste"));
+	mActionPaste->setText(tr("Paste"));
 }
 
 bool DAWorkFlowOperateWidget::isOnlyOneWorkflow() const

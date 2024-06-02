@@ -3,9 +3,7 @@
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg version="1.1" id="图层_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 width="200px" height="200px" viewBox="0 0 200 200" enable-background="new 0 0 200 200" xml:space="preserve">
-<path fill="#727272" d="M133.334,55.556H77.778v100H11.111V11.111h122.223V55.556z M122.223,22.222h-100v122.222h44.444v-100h55.556
-	V22.222z"/>
-<path fill="#5280C1" d="M66.667,44.444h122.222v144.444H66.667V44.444z M77.778,55.556v122.222h100V55.556H77.778z"/>
-<path fill="#669E8B" d="M122.223,77.778h11.111v77.778h-11.111V77.778z"/>
-<path fill="#669E8B" d="M88.889,111.111h77.777v11.111H88.889V111.111z"/>
+<path fill="#5280C1" d="M44.444,11.111h11.111v144.444H44.444V11.111z"/>
+<path fill="#5280C1" d="M44.444,144.444h144.444v11.111H44.444V144.444z M11.111,44.444h144.444v11.111H11.111V44.444z"/>
+<path fill="#5280C1" d="M144.444,44.444h11.111v144.444h-11.111V44.444z"/>
 </svg>

@@ -16,6 +16,7 @@ DA_IMPL_FORWARD_DECL(DAXmlHelper)
 class DAWorkFlowEditWidget;
 class DAWorkFlow;
 class DAWorkFlowGraphicsScene;
+class DAWorkFlowGraphicsView;
 class DAWorkFlowOperateWidget;
 class DAGraphicsItem;
 class DAGraphicsScene;
@@ -49,7 +50,11 @@ public:
 	QDomElement makeElement(DAWorkFlowOperateWidget* wfo, const QString& tagName, QDomDocument* doc);
 	bool loadElement(DAWorkFlowOperateWidget* wfo, const QDomElement* workflowsEle);
 	// 创建剪切板描述xml
-	QDomElement makeClipBoardElement(const QList< DAGraphicsItem* > its, QDomDocument* doc, bool isCopyType = true);
+	QDomElement makeClipBoardElement(const QList< DAGraphicsItem* > its,
+									 const QString& tagName,
+									 QDomDocument* doc,
+									 bool isCopyType = true);
+	bool loadClipBoardElement(const QDomElement* clipBoardElement, DAWorkFlowEditWidget* wfe);
 	// DAGraphicsItem的通用保存
 	static QDomElement makeElement(const DAGraphicsItem* item, const QString& tagName, QDomDocument* doc);
 	static bool loadElement(DAGraphicsItem* item, const QDomElement* tag, const QVersionNumber& v = QVersionNumber());

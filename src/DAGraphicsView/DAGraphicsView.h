@@ -2,6 +2,7 @@
 #define DAGRAPHICSVIEW_H
 #include <QGraphicsView>
 #include "DAGraphicsViewGlobal.h"
+#include "DAGraphicsItem.h"
 class QWheelEvent;
 namespace DA
 {
@@ -66,8 +67,9 @@ public:
 	// 设置拖动属性
 	void setPaddingFrags(PadFlags pf);
 	PadFlags getPaddingFrags() const;
+	// 选中的item
+	QList< DAGraphicsItem* > selectedDAItems() const;
 
-	//
 public slots:
 	// 放大
 	void zoomIn();

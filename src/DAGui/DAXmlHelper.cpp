@@ -36,6 +36,8 @@ public:
 	// 保存工作流
 	void saveWorkflow(DAWorkFlowEditWidget* wfe, QDomDocument& doc, QDomElement& workflowEle);
 	bool loadWorkflow(DAWorkFlowEditWidget* wfe, const QDomElement& workflowEle);
+	// 加载copy type类型
+	bool loadWorkflowFromClipBoardCopy(DAWorkFlowEditWidget* wfe, const QDomElement& workflowEle);
 	// 保存工厂相关的扩展信息
 	void saveFactoryInfo(const DAWorkFlow* workflow, QDomDocument& doc, QDomElement& workflowEle);
 	bool loadFactoryInfo(DAWorkFlow* workflow, const QDomElement& workflowEle);
@@ -45,7 +47,16 @@ public:
 								 const QString& tagName,
 								 QDomDocument& doc);
 	QDomElement makeNodeElement(const DAAbstractNode::SharedPointer& node, const QString& tagName, QDomDocument& doc);
-	bool loadNodes(DAWorkFlowEditWidget* wfe, const QDomElement& workflowEle);
+	bool loadNodes(DAWorkFlow* workflow, DAWorkFlowGraphicsScene* workFlowScene, const QDomElement& workflowEle);
+	bool loadClipBoardNodes(DAWorkFlow* workflow,
+							DAWorkFlowGraphicsScene* workFlowScene,
+							const QDomElement& workflowEle,
+							QMap< qulonglong, qulonglong >& idMap);
+	DAAbstractNode::SharedPointer loadNode(const QDomElement& nodeEle, DAWorkFlow* workflow, bool isLoadID = true);
+	// 这种是针对需要redo/undo的加载节点
+	DAAbstractNodeGraphicsItem* loadNodeAndItemWithUndo(const QDomElement& nodeEle,
+														DAWorkFlowGraphicsScene* workFlowScene,
+														QMap< qulonglong, qulonglong >& idMap);
 	// 保存输入输出
 	void saveNodeInputOutput(const DAAbstractNode::SharedPointer& node, QDomDocument& doc, QDomElement& nodeEle);
 	bool loadNodeInPutOutputKey(DAAbstractNode::SharedPointer& node, const QDomElement& eleNode);
@@ -57,7 +68,7 @@ public:
 	bool loadNodePropertys_v110(DAAbstractNode::SharedPointer& node, const QDomElement& nodeEle);
 	// 保存item
 	void saveNodeItem(const DAAbstractNode::SharedPointer& node, QDomDocument& doc, QDomElement& nodeEle);
-	bool loadNodeItem(DAWorkFlowGraphicsScene* scene, DAAbstractNode::SharedPointer& node, const QDomElement& nodeEle);
+	DAAbstractNodeGraphicsItem* loadNodeItem(DAAbstractNode::SharedPointer& node, const QDomElement& nodeEle);
 	// 保存链接
 	void saveNodeLinks(const DAWorkFlow* workflow, QDomDocument& doc, QDomElement& workflowEle);
 	QDomElement makeNodeLinkElement(DAAbstractNodeLinkGraphicsItem* link, const QString& tagName, QDomDocument& doc);
@@ -79,10 +90,11 @@ public:
 	// 保存属性
 	void savePropertys(const QHash< QString, QVariant >& props, QDomDocument& doc, QDomElement& parentEle);
 	bool loadPropertys(QHash< QString, QVariant >& props, const QDomElement& parentEle);
-	//
+
 public:
-	QSet< QGraphicsItem* > mHaveBeenSaveNodeItem;  ///< 记录已经被保存过的node item
-	QVersionNumber mLoadedVersion;                 ///< 不同版本号有不同解析方式
+	QSet< QGraphicsItem* > mHaveBeenSaveNodeItem;    ///< 记录已经被保存过的node item
+	QVersionNumber mLoadedVersion;                   ///< 不同版本号有不同解析方式
+	QMap< qulonglong, qulonglong > mPasteNodeIdMap;  ///< 记录粘贴时，旧id和新id的映射
 };
 
 DAXmlHelperPrivate::DAXmlHelperPrivate(DAXmlHelper* p) : q_ptr(p)
@@ -139,10 +151,12 @@ bool DAXmlHelperPrivate::loadWorkflow(DAWorkFlowEditWidget* wfe, const QDomEleme
 	//
 
 	QDomElement externEle = workflowEle.firstChildElement("extern");
-	workflow->loadExternInfoFromXml(&externEle, mLoadedVersion);
-	qDebug() << QObject::tr("load workflow extern info cost: %1 ms").arg(tes.restart());
-
-	if (!loadNodes(wfe, workflowEle)) {
+	if (!externEle.isNull()) {
+		workflow->loadExternInfoFromXml(&externEle, mLoadedVersion);
+		qDebug() << QObject::tr("load workflow extern info cost: %1 ms").arg(tes.restart());
+	}
+	// 从文件加载，必须第四个参数为true
+	if (!loadNodes(workflow, workFlowScene, workflowEle)) {
 		qCritical() << QObject::tr("load nodes occurce error");
 	}
 	qDebug() << QObject::tr("load workflow nodes cost: %1 ms").arg(tes.restart());
@@ -171,6 +185,23 @@ bool DAXmlHelperPrivate::loadWorkflow(DAWorkFlowEditWidget* wfe, const QDomEleme
 
 	// 加载完成，设置场景没有就绪
 	workFlowScene->setReady(true);
+	return true;
+}
+
+bool DAXmlHelperPrivate::loadWorkflowFromClipBoardCopy(DAWorkFlowEditWidget* wfe, const QDomElement& workflowEle)
+{
+	DAWorkFlow* workflow                   = wfe->getWorkflow();
+	DAWorkFlowGraphicsScene* workFlowScene = wfe->getWorkFlowGraphicsScene();
+	// 加载开始，设置场景没有就绪
+	workFlowScene->setReady(false);
+	// 对于复制，loadNodes第三个参数必须为false
+	workFlowScene->getUndoStack()->beginMacro(QObject::tr("Load Nodes"));  // cn:加载节点
+	QMap< qulonglong, qulonglong > idMaps;
+	if (!loadClipBoardNodes(workflow, workFlowScene, workflowEle, idMaps)) {
+		qCritical() << QObject::tr("load nodes occurce error");
+	}
+
+	workFlowScene->getUndoStack()->endMacro();
 	return true;
 }
 /**
@@ -281,12 +312,19 @@ QDomElement DAXmlHelperPrivate::makeNodeElement(const DAAbstractNode::SharedPoin
 	return nodeEle;
 }
 
-bool DAXmlHelperPrivate::loadNodes(DAWorkFlowEditWidget* wfe, const QDomElement& workflowEle)
+/**
+ * @brief 加载节点
+ * @param workflow
+ * @param workFlowScene
+ * @param workflowEle
+ * @param isLoadID 是否要用保存的id覆盖新节点的id，对于文件加载，这个是true，对于复制粘贴，这个应该为false
+ * @param isNeedUndo 是否需要undo,对于文件加载，这个是false，对于复制粘贴，这个是ture
+ * @return
+ */
+bool DAXmlHelperPrivate::loadNodes(DAWorkFlow* workflow, DAWorkFlowGraphicsScene* workFlowScene, const QDomElement& workflowEle)
 {
-	DAWorkFlow* workflow                   = wfe->getWorkflow();
-	DAWorkFlowGraphicsScene* workFlowScene = wfe->getWorkFlowGraphicsScene();
-	QDomElement nodesEle                   = workflowEle.firstChildElement("nodes");
-	QDomNodeList nodeslist                 = nodesEle.childNodes();
+	QDomElement nodesEle   = workflowEle.firstChildElement("nodes");
+	QDomNodeList nodeslist = nodesEle.childNodes();
 
 	for (int i = 0; i < nodeslist.size(); ++i) {
 		QDomElement nodeEle = nodeslist.at(i).toElement();
@@ -294,47 +332,151 @@ bool DAXmlHelperPrivate::loadNodes(DAWorkFlowEditWidget* wfe, const QDomElement&
 			qDebug() << "nodeEle.tagName()=" << nodeEle.tagName() << ",skip and continue";
 			continue;
 		}
-		bool isok     = false;
-		qulonglong id = nodeEle.attribute("id").toULongLong(&isok);
-		if (!isok) {
-			qWarning() << QObject::tr("node's id=%1 can not conver to qulonglong type ,will skip this node")
-							  .arg(nodeEle.attribute("id"));
-			continue;
-		}
-		if (workflow->hasNodeID(id)) {
-			qDebug() << "duplicate node id";
-			continue;
-		}
-		QString name      = nodeEle.attribute("name");
-		QString protoType = nodeEle.attribute("protoType");
-		// 创建节点
-		DANodeMetaData metadata            = workflow->getNodeMetaData(protoType);
-		DAAbstractNode::SharedPointer node = workflow->createNode(metadata);
-		if (nullptr == node) {
-			qWarning() << QObject::tr("workflow can not create note by "
-									  "metadata(prototype=%1,name=%2,group=%3),will skip this node")
-							  .arg(metadata.getNodePrototype(), metadata.getNodeName(), metadata.getGroup());
-			continue;
-		}
 
-		node->setID(id);
-		node->setNodeName(name);
-		// 加载节点的输入输出
-		loadNodeInPutOutputKey(node, nodeEle);
-		// 加载节点的属性
-		if (mLoadedVersion.majorVersion() == 1 && mLoadedVersion.minorVersion() < 4) {
-			loadNodePropertys_v110(node, nodeEle);
-		} else {
-			loadNodePropertys(node, nodeEle);
+		DAAbstractNode::SharedPointer node = loadNode(nodeEle, workflow, true);
+		if (!node) {
+			// 异常提示在loadNode函数中已经有，不用重复提示
+			continue;
 		}
-		// 加载额外信息
-		node->loadExternInfoFromXml(&nodeEle, mLoadedVersion);
 		// 加载item
-		loadNodeItem(workFlowScene, node, nodeEle);
-		// 最后再添加
+		DAAbstractNodeGraphicsItem* item = loadNodeItem(node, nodeEle);
+		if (!item) {
+			continue;
+		}
+		workFlowScene->addItem(item);
 		workflow->addNode(node);
+		// 最后再添加
 	}
 	return true;
+}
+
+bool DAXmlHelperPrivate::loadClipBoardNodes(DAWorkFlow* workflow,
+                                            DAWorkFlowGraphicsScene* workFlowScene,
+                                            const QDomElement& workflowEle,
+                                            QMap< qulonglong, qulonglong >& idMap)
+{
+	QDomElement nodesEle   = workflowEle.firstChildElement("nodes");
+	QDomNodeList nodeslist = nodesEle.childNodes();
+
+	for (int i = 0; i < nodeslist.size(); ++i) {
+		QDomElement nodeEle = nodeslist.at(i).toElement();
+		if (nodeEle.tagName() != "node") {
+			qDebug() << "nodeEle.tagName()=" << nodeEle.tagName() << ",skip and continue";
+			continue;
+		}
+		loadNodeAndItemWithUndo(nodeEle, workFlowScene, idMap);
+	}
+	return true;
+}
+
+/**
+ * @brief 加载节点
+ * @note 此函数workflow不会把节点添加进去，需要手动添加
+ * @param nodeEle
+ * @param workflow
+ * @param isLoadID 是否把保存的id也设置回来，有些情况是不要设置id的，如复制粘贴
+ * @return
+ */
+DAAbstractNode::SharedPointer DAXmlHelperPrivate::loadNode(const QDomElement& nodeEle, DAWorkFlow* workflow, bool isLoadID)
+{
+	bool isok     = false;
+	qulonglong id = nodeEle.attribute("id").toULongLong(&isok);
+	if (!isok) {
+		qWarning() << QObject::tr("node's id=%1 can not conver to qulonglong type ,will skip this node")
+						  .arg(nodeEle.attribute("id"));
+		return nullptr;
+	}
+	if (workflow->hasNodeID(id)) {
+		qDebug() << "duplicate node id";
+		return nullptr;
+	}
+	QString name      = nodeEle.attribute("name");
+	QString protoType = nodeEle.attribute("protoType");
+	// 创建节点
+	DANodeMetaData metadata            = workflow->getNodeMetaData(protoType);
+	DAAbstractNode::SharedPointer node = workflow->createNode(metadata);
+	if (nullptr == node) {
+		qWarning() << QObject::tr("Unable to create node by metadata(prototype=%1,name=%2,group=%3)-0")
+						  .arg(metadata.getNodePrototype(),
+							   metadata.getNodeName(),
+							   metadata.getGroup());  // cn:无法通过元数据创建节点(类型=%1,名称=%2,分组=%3)创建节点-0
+		return nullptr;
+	}
+	// 这里是要把保存的id加载，有些情况是不要设置id的，如复制粘贴
+	if (isLoadID) {
+		node->setID(id);
+	}
+	node->setNodeName(name);
+	// 加载节点的输入输出
+	loadNodeInPutOutputKey(node, nodeEle);
+	// 加载节点的属性
+	if (mLoadedVersion.majorVersion() == 1 && mLoadedVersion.minorVersion() < 4) {
+		loadNodePropertys_v110(node, nodeEle);
+	} else {
+		loadNodePropertys(node, nodeEle);
+	}
+	// 加载额外信息
+	node->loadExternInfoFromXml(&nodeEle, mLoadedVersion);
+	return node;
+}
+
+DAAbstractNodeGraphicsItem* DAXmlHelperPrivate::loadNodeAndItemWithUndo(const QDomElement& nodeEle,
+                                                                        DAWorkFlowGraphicsScene* workFlowScene,
+                                                                        QMap< qulonglong, qulonglong >& idMap)
+{
+	DAWorkFlow* workflow = workFlowScene->getWorkflow();
+	if (!workflow) {
+		return nullptr;
+	}
+	bool isok = false;
+	// 这个id暂时要记录下来
+	qulonglong id = nodeEle.attribute("id").toULongLong(&isok);
+	if (!isok) {
+		qWarning() << QObject::tr("node's id=%1 can not conver to qulonglong type ,will skip this node")
+						  .arg(nodeEle.attribute("id"));
+		return nullptr;
+	}
+
+	QString name      = nodeEle.attribute("name");
+	QString protoType = nodeEle.attribute("protoType");
+	// 创建节点
+	DANodeMetaData metadata          = workflow->getNodeMetaData(protoType);
+	DAAbstractNodeGraphicsItem* item = workFlowScene->createNode_(metadata, QPoint(0, 0));
+	if (!item) {
+		qWarning() << QObject::tr("Unable to create node by metadata(prototype=%1,name=%2,group=%3)-1")
+						  .arg(metadata.getNodePrototype(),
+							   metadata.getNodeName(),
+							   metadata.getGroup());  // cn:无法通过元数据创建节点(类型=%1,名称=%2,分组=%3)创建节点-1
+		return nullptr;
+	}
+	DAAbstractNode::SharedPointer node = item->node();
+	if (nullptr == node) {
+		qWarning() << QObject::tr("Unable to create node by metadata(prototype=%1,name=%2,group=%3)-2")
+						  .arg(metadata.getNodePrototype(),
+							   metadata.getNodeName(),
+							   metadata.getGroup());  // cn:无法通过元数据创建节点(类型=%1,名称=%2,分组=%3)创建节点-2
+		return nullptr;
+	}
+	node->setNodeName(name);
+	// 加载节点的输入输出
+	loadNodeInPutOutputKey(node, nodeEle);
+	// 加载节点的属性
+	if (mLoadedVersion.majorVersion() == 1 && mLoadedVersion.minorVersion() < 4) {
+		loadNodePropertys_v110(node, nodeEle);
+	} else {
+		loadNodePropertys(node, nodeEle);
+	}
+	// 加载额外信息
+	node->loadExternInfoFromXml(&nodeEle, mLoadedVersion);
+	// 加载item信息
+	QDomElement itemEle = nodeEle.firstChildElement("item");
+	if (itemEle.isNull()) {
+		qWarning() << QObject::tr("can not find <item> tag under <node> tag");  // cn:无法在<node>标签下查询到<item>标签
+		return nullptr;
+	}
+	loadItem(item, itemEle);
+	idMap[ id ] = node->getID();
+	return item;
 }
 /**
  * @brief DAProjectPrivate::saveNodeInputOutput
@@ -584,30 +726,28 @@ void DAXmlHelperPrivate::saveNodeItem(const DAAbstractNode::SharedPointer& node,
 
 /**
  * @brief 加载<node>节点下的<node-item>节点
+ * @note 此函数不会把加载的item添加到scene
  * @param scene
  * @param node
  * @param nodeEle <node>节点
  * @return
  */
-bool DAXmlHelperPrivate::loadNodeItem(DAWorkFlowGraphicsScene* scene,
-                                      DAAbstractNode::SharedPointer& node,
-                                      const QDomElement& nodeEle)
+DAAbstractNodeGraphicsItem* DAXmlHelperPrivate::loadNodeItem(DAAbstractNode::SharedPointer& node, const QDomElement& nodeEle)
 {
 
 	QDomElement itemEle = nodeEle.firstChildElement("item");
 	if (itemEle.isNull()) {
 		qWarning() << QObject::tr("can not find <item> tag under <node> tag");  // cn:无法在<node>标签下查询到<item>标签
-		return false;
+		return nullptr;
 	}
 	DAAbstractNodeGraphicsItem* item = node->createGraphicsItem();
 	if (nullptr == item) {
 		qWarning() << QObject::tr("node metadata(prototype=%1,name=%2,group=%3) can not create graphics item")
 						  .arg(node->getNodePrototype(), node->getNodeName(), node->getNodeGroup());
-		return false;
+		return nullptr;
 	}
 	loadItem(item, itemEle);
-	scene->addItem(item);
-	return true;
+	return item;
 }
 
 void DAXmlHelperPrivate::saveNodeLinks(const DAWorkFlow* workflow, QDomDocument& doc, QDomElement& workflowEle)
@@ -991,6 +1131,7 @@ bool DAXmlHelperPrivate::loadPropertys(QHash< QString, QVariant >& props, const 
 	}
 	return true;
 }
+
 //==============================================================
 // DAXmlHelper
 //==============================================================
@@ -1092,9 +1233,12 @@ bool DAXmlHelper::loadElement(DAWorkFlowOperateWidget* wfo, const QDomElement* w
  * @param doc
  * @return
  */
-QDomElement DAXmlHelper::makeClipBoardElement(const QList< DAGraphicsItem* > its, QDomDocument* doc, bool isCopyType)
+QDomElement DAXmlHelper::makeClipBoardElement(const QList< DAGraphicsItem* > its,
+                                              const QString& tagName,
+                                              QDomDocument* doc,
+                                              bool isCopyType)
 {
-	QDomElement rootEle = doc->createElement(QStringLiteral("da-clip"));
+	QDomElement rootEle = doc->createElement(tagName);
 	if (isCopyType) {
 		rootEle.setAttribute("type", "copy");  // copy 和 cut之分
 	} else {
@@ -1158,6 +1302,28 @@ QDomElement DAXmlHelper::makeClipBoardElement(const QList< DAGraphicsItem* > its
 	workflowEle.appendChild(itemsElement);
 	rootEle.appendChild(workflowEle);
 	return rootEle;
+}
+
+bool DAXmlHelper::loadClipBoardElement(const QDomElement* clipBoardElement, DAWorkFlowEditWidget* wf)
+{
+	//! 先识别类型
+	QString typestr = clipBoardElement->attribute("type");
+	if (typestr.isEmpty()) {
+		qDebug() << QObject::tr("An exception occurred during the process of processing pasted content XML, with the "
+								"root node missing the type attribute");  // cn:在处理粘贴内容xml过程出现异常，根节点缺失type属性
+		return false;
+	}
+	if (typestr == "copy") {
+		QDomElement workflowEle = clipBoardElement->firstChildElement("workflow");
+		//! 首先找到workflow节点
+		if (workflowEle.isNull()) {
+			qWarning() << QObject::tr(
+				"An exception occurred during the process of parsing and pasting content,miss workflow tag");  // cn:解析粘贴内容过程出现异常,缺失workflow标签
+			return false;
+		}
+		d_ptr->loadWorkflowFromClipBoardCopy(wf, workflowEle);
+	}
+	return true;
 }
 
 QDomElement DAXmlHelper::makeElement(const DAGraphicsItem* item, const QString& tagName, QDomDocument* doc)
