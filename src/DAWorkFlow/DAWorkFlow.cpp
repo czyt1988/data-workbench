@@ -350,11 +350,11 @@ DAAbstractNodeGraphicsItem* DAWorkFlow::getNodeGraphicsItem(const DAAbstractNode
  * @param doc
  * @param nodeElement
  */
-void DAWorkFlow::saveExternInfoToXml(QDomDocument* doc, QDomElement* nodeElement,const QVersionNumber& ver) const
+void DAWorkFlow::saveExternInfoToXml(QDomDocument* doc, QDomElement* nodeElement, const QVersionNumber& ver) const
 {
 	Q_UNUSED(doc);
 	Q_UNUSED(nodeElement);
-    Q_UNUSED(ver);
+	Q_UNUSED(ver);
 }
 
 /**
@@ -368,10 +368,10 @@ void DAWorkFlow::saveExternInfoToXml(QDomDocument* doc, QDomElement* nodeElement
  * -# 加载scene信息
  * @param nodeElement
  */
-void DAWorkFlow::loadExternInfoFromXml(const QDomElement* nodeElement,const QVersionNumber& ver)
+void DAWorkFlow::loadExternInfoFromXml(const QDomElement* nodeElement, const QVersionNumber& ver)
 {
-    Q_UNUSED(nodeElement);
-    Q_UNUSED(ver);
+	Q_UNUSED(nodeElement);
+	Q_UNUSED(ver);
 }
 
 /**
@@ -501,6 +501,17 @@ QList< DAWorkFlow::CallbackPrepareEndExecute > DAWorkFlow::getEndWorkflowCallbac
 void DAWorkFlow::emitNodeNameChanged(DAAbstractNode::SharedPointer node, const QString& oldName, const QString& newName)
 {
     emit nodeNameChanged(node, oldName, newName);
+}
+
+/**
+ * @brief 节点的id信息变更
+ * @param node
+ * @param oldId
+ */
+void DAWorkFlow::nodeIDChanged(const DAAbstractNode::SharedPointer& node, const DAAbstractNode::IdType& oldId)
+{
+	d_ptr->mIdToNode.remove(oldId);
+	d_ptr->mIdToNode[ node->getID() ] = node;
 }
 
 void DAWorkFlow::onExecuteFinished(bool success)
