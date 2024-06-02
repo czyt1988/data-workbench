@@ -17,6 +17,8 @@ class DAWorkFlowEditWidget;
 class DAWorkFlow;
 class DAWorkFlowGraphicsScene;
 class DAWorkFlowOperateWidget;
+class DAGraphicsItem;
+class DAGraphicsScene;
 class DAGraphicsResizeableItem;
 
 /**
@@ -31,31 +33,43 @@ class DAGraphicsResizeableItem;
  */
 class DAGUI_API DAXmlHelper
 {
-    DA_IMPL(DAXmlHelper)
+	DA_IMPL(DAXmlHelper)
 public:
-    DAXmlHelper();
-    ~DAXmlHelper();
+	DAXmlHelper();
+	~DAXmlHelper();
 
 public:
-    void setLoadedVersionNumber(const QVersionNumber& v);
-    QVersionNumber getLoaderVersionNumber() const;
-    QVersionNumber getCurrentVersionNumber() const;
-    // 标准保存—— DAWorkFlowEditWidget
-    QDomElement makeElement(DAWorkFlowEditWidget* wfe, const QString& tagName, QDomDocument* doc);
-    bool loadElement(DAWorkFlowEditWidget* wfe, const QDomElement* ele);
-    // 标准保存—— DAWorkFlowEditWidget
-    QDomElement makeElement(DAWorkFlowOperateWidget* wfo, const QString& tagName, QDomDocument* doc);
-    bool loadElement(DAWorkFlowOperateWidget* wfo, const QDomElement* workflowsEle);
-    // ResizeableItem的通用保存
-    QDomElement makeElement(DAGraphicsResizeableItem* item, const QString& tagName, QDomDocument* doc);
-    bool loadElement(DAGraphicsResizeableItem* item, const QDomElement* tag);
+	void setLoadedVersionNumber(const QVersionNumber& v);
+	QVersionNumber getLoaderVersionNumber() const;
+	static QVersionNumber getCurrentVersionNumber();
+	// 标准保存—— DAWorkFlowEditWidget
+	QDomElement makeElement(DAWorkFlowEditWidget* wfe, const QString& tagName, QDomDocument* doc);
+	bool loadElement(DAWorkFlowEditWidget* wfe, const QDomElement* ele);
+	// 标准保存—— DAWorkFlowEditWidget
+	QDomElement makeElement(DAWorkFlowOperateWidget* wfo, const QString& tagName, QDomDocument* doc);
+	bool loadElement(DAWorkFlowOperateWidget* wfo, const QDomElement* workflowsEle);
+	// 创建剪切板描述xml
+	QDomElement makeClipBoardElement(const QList< DAGraphicsItem* > its, QDomDocument* doc, bool isCopyType = true);
+	// DAGraphicsItem的通用保存
+	static QDomElement makeElement(const DAGraphicsItem* item, const QString& tagName, QDomDocument* doc);
+	static bool loadElement(DAGraphicsItem* item, const QDomElement* tag, const QVersionNumber& v = QVersionNumber());
+	static QGraphicsItem* loadItemElement(const QDomElement* itemEle, const QVersionNumber& v = QVersionNumber());
+	// DAGraphicsItemGroup的通用保存,注意！！！此函数并不会把子item的信息保存，仅仅记录子item的id
+	static QDomElement makeElement(const DAGraphicsItemGroup* itemGroup, const QString& tagName, QDomDocument* doc);
+	static bool loadElement(DAGraphicsScene* scene,
+							DAGraphicsItemGroup* group,
+							const QDomElement* groupElement,
+							const QVersionNumber& v = QVersionNumber());
+	// DA支持的所有QGraphicsItem的通用保存
+	static QDomElement makeElement(const QGraphicsItem* item, const QString& tagName, QDomDocument* doc);
+	static bool loadElement(QGraphicsItem* item, const QDomElement* tag, const QVersionNumber& v = QVersionNumber());
 
 public:
-    // 生成一个qvariant element
-    static QDomElement createVariantValueElement(QDomDocument& doc, const QString& tagName, const QVariant& var);
-    static QVariant loadVariantValueElement(const QDomElement& item, const QVariant& defaultVal);
-    // 带提示的属性转double
-    static qreal attributeToDouble(const QDomElement& item, const QString& att);
+	// 生成一个qvariant element
+	static QDomElement createVariantValueElement(QDomDocument& doc, const QString& tagName, const QVariant& var);
+	static QVariant loadVariantValueElement(const QDomElement& item, const QVariant& defaultVal);
+	// 带提示的属性转double
+	static qreal attributeToDouble(const QDomElement& item, const QString& att);
 };
 }
 
