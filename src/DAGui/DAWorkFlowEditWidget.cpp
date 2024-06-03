@@ -1,6 +1,7 @@
 ﻿#include "DAWorkFlowEditWidget.h"
 #include "ui_DAWorkFlowEditWidget.h"
 // qt
+#include <QUrl>
 #include <QImage>
 #include <QDebug>
 #include <QUndoStack>
@@ -275,7 +276,7 @@ void DAWorkFlowEditWidget::setSelectShapeBorderPen(const QPen& v)
 		return;
 	}
 	DA::DACommandGraphicsShapeBorderPenChange* cmd = new DA::DACommandGraphicsShapeBorderPenChange(items, v);
-    secen->push(cmd);
+	secen->push(cmd);
 }
 
 /**
@@ -283,11 +284,11 @@ void DAWorkFlowEditWidget::setSelectShapeBorderPen(const QPen& v)
  */
 void DAWorkFlowEditWidget::selectAll()
 {
-    auto secen = getWorkFlowGraphicsScene();
-    if (!secen) {
-        return;
-    }
-    secen->selectAll();
+	auto secen = getWorkFlowGraphicsScene();
+	if (!secen) {
+		return;
+	}
+	secen->selectAll();
 }
 
 /**
@@ -295,11 +296,11 @@ void DAWorkFlowEditWidget::selectAll()
  */
 void DAWorkFlowEditWidget::clearSelection()
 {
-    auto secen = getWorkFlowGraphicsScene();
-    if (!secen) {
-        return;
-    }
-    secen->clearSelection();
+	auto secen = getWorkFlowGraphicsScene();
+	if (!secen) {
+		return;
+	}
+	secen->clearSelection();
 }
 
 /**
@@ -307,9 +308,9 @@ void DAWorkFlowEditWidget::clearSelection()
  */
 void DAWorkFlowEditWidget::copySelectItems()
 {
-    qDebug() << "DAWorkFlowEditWidget::copySelectItems";
+	qDebug() << "DAWorkFlowEditWidget::copySelectItems";
 	QList< DAGraphicsItem* > its = ui->workflowGraphicsView->selectedDAItems();
-    copyItems(its, true);
+	copyItems(its, true);
 }
 
 /**
@@ -321,7 +322,7 @@ void DAWorkFlowEditWidget::copyItems(QList< DAGraphicsItem* > its, bool isCopy)
 {
 	DAXmlHelper xml;
 	QDomDocument doc;
-	QDomElement rootEle = xml.makeClipBoardElement(its, QStringLiteral("da-clip"), &doc, true);
+	QDomElement rootEle = xml.makeClipBoardElement(its, QStringLiteral("da-clip"), &doc, isCopy);
 	doc.appendChild(rootEle);
 	QMimeData* mimeData = new QMimeData;
 	mimeData->setData(QStringLiteral("text/da-xml"), doc.toByteArray());
@@ -337,16 +338,16 @@ void DAWorkFlowEditWidget::copyItems(QList< DAGraphicsItem* > its, bool isCopy)
  */
 void DAWorkFlowEditWidget::cutSelectItems()
 {
-    qDebug() << "DAWorkFlowEditWidget::cutSelectItems";
-    QList< DAGraphicsItem* > its = ui->workflowGraphicsView->selectedDAItems();
-    copyItems(its, false);
-    // 复制完成后要删除
-    auto scene = DAWorkFlowGraphicsScene();
-    getUndoStack()->beginMacro(tr("cut"));
-    for (DAGraphicsItem* i : qAsConst(its)) {
-        scene.removeItem_(i);
-    }
-    getUndoStack()->endMacro();
+	qDebug() << "DAWorkFlowEditWidget::cutSelectItems";
+	QList< DAGraphicsItem* > its = ui->workflowGraphicsView->selectedDAItems();
+	copyItems(its, false);
+	// 复制完成后要删除
+	auto scene = getWorkFlowGraphicsScene();
+	getUndoStack()->beginMacro(tr("cut"));
+	for (DAGraphicsItem* i : qAsConst(its)) {
+		scene->removeItem_(i);
+	}
+	getUndoStack()->endMacro();
 }
 
 /**
@@ -363,15 +364,10 @@ void DAWorkFlowEditWidget::paste(PasteMode mode)
 	QDomDocument doc;
 	const QMimeData* mimeData = clipboard->mimeData();
 
-	if (mimeData->hasImage()) {
-		// 粘贴图片
-		qDebug() << "clipboard paste Image";
-	} else if (mimeData->hasText()) {
-		// 粘贴文本
-		qDebug() << "clipboard paste Text";
-	} else {
+	// 优先判断是否有text/da-xml
+	QByteArray daxmlData = mimeData->data(QStringLiteral("text/da-xml"));
+	if (daxmlData.size() > 0) {
 		qDebug() << "clipboard paste text/da-xml";
-		QByteArray daxmlData = mimeData->data(QStringLiteral("text/da-xml"));
 		if (!doc.setContent(daxmlData)) {
 			qInfo() << tr("Unrecognized mime formats:%1,paste failed").arg(mimeData->formats().join(","));  // cn:无法识别的mime类型:%1,粘贴失败
 			return;
@@ -386,11 +382,28 @@ void DAWorkFlowEditWidget::paste(PasteMode mode)
 			qInfo() << tr("An exception occurred during the process of parsing and pasting content");  // cn:解析粘贴内容过程出现异常
 			return;
 		}
-        //!把原来选中的取消选中，把粘贴的选中
-        clearSelection();
-        QList< QGraphicsItem* > loadedItems = xml.getAllDealItems();
-        setSelectionState(loadedItems, true);
-    }
+		//!把原来选中的取消选中，把粘贴的选中
+		clearSelection();
+		QList< QGraphicsItem* > loadedItems = xml.getAllDealItems();
+		setSelectionState(loadedItems, true);
+	} else if (mimeData->hasImage()) {
+		// 粘贴图片
+		qDebug() << "clipboard paste Image";
+		QImage image = qvariant_cast< QImage >(mimeData->imageData());
+	} else if (mimeData->hasText()) {
+		// 粘贴文本
+		QString textData = mimeData->text();
+		qDebug() << "clipboard paste Text:" << textData;
+		// 有可能选中了多个文件,多个文件会用/n分割，这里不处理
+		QUrl url(textData);
+		if (url.isValid() && url.scheme() == QStringLiteral("file")) {
+			// 转换为本地文件路径
+			QString filePath = url.toLocalFile();
+			qDebug() << "clipboard paste local file:" << filePath;
+		} else {
+			// 单纯复制文本，直接生成一个文本框
+		}
+	}
 }
 
 /**
@@ -406,15 +419,15 @@ void DAWorkFlowEditWidget::removeSelectItems()
  */
 void DAWorkFlowEditWidget::cancel()
 {
-    DANodeGraphicsScene* sc = getWorkFlowGraphicsScene();
-    if (sc) {
-        if (sc->isStartLink()) {
-            sc->cancelLink();
-        } else {
-            // 不在连线状态按下esc，就取消选择
-            sc->clearSelection();
-        }
-    }
+	DANodeGraphicsScene* sc = getWorkFlowGraphicsScene();
+	if (sc) {
+		if (sc->isStartLink()) {
+			sc->cancelLink();
+		} else {
+			// 不在连线状态按下esc，就取消选择
+			sc->clearSelection();
+		}
+	}
 }
 
 QFont DAWorkFlowEditWidget::getDefaultTextFont() const
@@ -484,16 +497,16 @@ void DAWorkFlowEditWidget::createScene()
 	//    });
 
 	connect(mScene, &DAWorkFlowGraphicsScene::selectNodeItemChanged, this, &DAWorkFlowEditWidget::selectNodeItemChanged);
-    connect(mScene, &DAWorkFlowGraphicsScene::mouseActionFinished, this, &DAWorkFlowEditWidget::mouseActionFinished);
+	connect(mScene, &DAWorkFlowGraphicsScene::mouseActionFinished, this, &DAWorkFlowEditWidget::mouseActionFinished);
 }
 
 void DAWorkFlowEditWidget::setSelectionState(const QList< QGraphicsItem* >& items, bool isSelect)
 {
-    auto scene = getWorkFlowGraphicsScene();
-    if (!scene) {
-        return;
-    }
-    scene->setSelectionState(items, isSelect);
+	auto scene = getWorkFlowGraphicsScene();
+	if (!scene) {
+		return;
+	}
+	scene->setSelectionState(items, isSelect);
 }
 
 }  // end of DA
