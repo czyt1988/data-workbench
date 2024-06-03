@@ -2248,27 +2248,27 @@ Table Area</source>
 <context>
     <name>DA::DAWorkFlowEditWidget</name>
     <message>
-        <location filename="DAGui/DAWorkFlowEditWidget.cpp" line="95"/>
+        <location filename="DAGui/DAWorkFlowEditWidget.cpp" line="96"/>
         <source>no workflow set</source>
         <translation>没有设置工作流</translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowEditWidget.cpp" line="345"/>
+        <location filename="DAGui/DAWorkFlowEditWidget.cpp" line="346"/>
         <source>cut</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowEditWidget.cpp" line="376"/>
+        <location filename="DAGui/DAWorkFlowEditWidget.cpp" line="372"/>
         <source>Unrecognized mime formats:%1,paste failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowEditWidget.cpp" line="381"/>
+        <location filename="DAGui/DAWorkFlowEditWidget.cpp" line="377"/>
         <source>Unsupported pasted content</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowEditWidget.cpp" line="386"/>
+        <location filename="DAGui/DAWorkFlowEditWidget.cpp" line="382"/>
         <source>An exception occurred during the process of parsing and pasting content</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2346,7 +2346,7 @@ Table Area</source>
         <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="531"/>
         <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="544"/>
         <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="557"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="810"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="811"/>
         <source>No active workflow detected</source>
         <translation>未检测到激活的工作流</translation>
     </message>
@@ -2357,72 +2357,72 @@ Table Area</source>
         <translation>无法正确获取工作流</translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="737"/>
         <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="738"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="739"/>
         <source>Copy</source>
         <translation type="unfinished">复制</translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="739"/>
         <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="740"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="741"/>
         <source>Cut</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="741"/>
         <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="742"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="743"/>
         <source>Paste</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="743"/>
         <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="744"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="745"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="745"/>
         <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="746"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="747"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="747"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="748"/>
         <source>Select All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="748"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="749"/>
         <source>Select all items</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="749"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="750"/>
         <source>Zoom In</source>
         <translation type="unfinished">放大</translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="750"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="751"/>
         <source>Zoom in graphics view</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="751"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="752"/>
         <source>Zoom Out</source>
         <translation type="unfinished">缩小</translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="752"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="753"/>
         <source>Zoom Out graphics view</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="753"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="754"/>
         <source>Zoom to Fit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="754"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="755"/>
         <source>Zoom to fit screen size</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5471,215 +5471,215 @@ Wrap</source>
         <translation>转换列为索引</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="135"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="136"/>
         <source>save workflow extern info cost: %1 ms</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="138"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="139"/>
         <source>save workflow nodes cost: %1 ms</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="141"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="142"/>
         <source>save workflow links cost: %1 ms</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="144"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="145"/>
         <source>save special item cost: %1 ms</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="147"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="148"/>
         <source>save workflow factory info cost: %1 ms</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="150"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="151"/>
         <source>save secen info cost: %1 ms</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="174"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="175"/>
         <source>load workflow extern info cost: %1 ms</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="178"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="289"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="179"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="300"/>
         <source>load nodes occurce error</source>
         <translation>加载节点发生错误</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="180"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="181"/>
         <source>load workflow nodes cost: %1 ms</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="183"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="292"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="184"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="303"/>
         <source>load nodes link occurce error</source>
         <translation>加载节点连接发生错误</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="185"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="186"/>
         <source>load workflow links cost: %1 ms</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="188"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="189"/>
         <source>load special item occurce error</source>
         <translation>加载特殊图元发生错误</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="190"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="191"/>
         <source>load special item cost: %1 ms</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="195"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="196"/>
         <source>load factorys occurce error</source>
         <translation>加载工厂信息发生错误</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="197"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="198"/>
         <source>load workflow factory info cost: %1 ms</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="200"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="201"/>
         <source>load scene info occurce error</source>
         <translation>加载场景信息发射错误</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="202"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="203"/>
         <source>load secen info cost: %1 ms</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="286"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="294"/>
         <source>Load Nodes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="332"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="345"/>
         <source>find unknow tag &lt;%1&gt; under &lt;factorys&gt; element</source>
         <translation>在标签 &lt;factorys&gt; 下面存在未知标签&lt;%1&gt;</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="338"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="351"/>
         <source>can not find factory prototypes = %1</source>
         <translation>通过节点的元信息（%1）无法找到对应的工厂</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="500"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="549"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="615"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="513"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="562"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="637"/>
         <source>node&apos;s id=%1 can not conver to qulonglong type ,will skip this node</source>
         <translation>节点的id（%1）无法转换为qulonglong类型，将跳过此节点</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="727"/>
         <location filename="DAGui/DAXmlHelper.cpp" line="754"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="781"/>
         <source>node(prototype=%1,name=%2,group=%3) %4 tag loss child tag &lt;name&gt;</source>
         <translation>节点(原型=%1,名称=%2,分组=%3) %4 标签缺失&lt;name&gt;子标签</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="593"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="654"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="923"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="606"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="679"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="950"/>
         <source>can not find &lt;item&gt; tag under &lt;node&gt; tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="514"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="527"/>
         <source>Unable to create node by metadata(prototype=%1,name=%2,group=%3)-0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="564"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="626"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="577"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="647"/>
         <source>Unable to create node by metadata(prototype=%1,name=%2,group=%3)-1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="573"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="634"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="586"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="655"/>
         <source>Unable to create node by metadata(prototype=%1,name=%2,group=%3)-2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="928"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="955"/>
         <source>node metadata(prototype=%1,name=%2,group=%3) can not create graphics item</source>
         <translation>节点(原型=%1,名称=%2,分组=%3)无法创建图元</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="983"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1010"/>
         <source>linkitem save to xml return false</source>
         <translation>链接线从xml加载信息返回了false</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1009"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1016"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1111"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1124"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1036"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1043"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1144"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1163"/>
         <source>link info can not find node in workflow,id = %1</source>
         <translation>加载连接信息时，无法在工作流中找到id=%1的节点</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1022"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1130"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1049"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1170"/>
         <source>can not get item by node</source>
         <translation>无法通过节点获取图元</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1028"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1136"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1055"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1176"/>
         <source>Unable to link to node %3&apos;s link point %4 through link point %2 of node %1</source>
         <translation>节点%1无法通过连接点%2链接到节点%3的连接点%4</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1044"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1072"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1152"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1180"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1071"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1099"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1192"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1220"/>
         <source>linkitem load from xml return false</source>
         <translation>链接线从xml加载信息返回了false</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1106"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1118"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1136"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1155"/>
         <source>During the pasting process, the mapping corresponding to ID(%1) cannot be found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1261"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1302"/>
         <source>Unable to generate graphics item element during the saveing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1549"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1590"/>
         <source>current workflow file version:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1594"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1635"/>
         <source>An exception occurred during the process of processing pasted content XML, with the root node missing the type attribute</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1602"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1642"/>
         <source>An exception occurred during the process of parsing and pasting content,miss workflow tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1641"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1684"/>
         <source>Cannot create item by class name:%1,maybe unregist to DAGraphicsItemFactory</source>
         <translation>无法通过类名:%1创建元件,类名没有注册到DAGraphicsItemFactory</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1287"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1328"/>
         <source>Unable to load item information from &lt;%1&gt;</source>
         <translation>无法通过&lt;%1&gt;加载元件信息</translation>
     </message>
@@ -5700,7 +5700,7 @@ Wrap</source>
         <translation>节点%1无法找到名字为%2的连接点</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1796"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1839"/>
         <source>The attribute %1=%2 under the tag %3 cannot be converted to double </source>
         <translation>%3标签属性%1=%2无法转换为double类型 </translation>
     </message>
