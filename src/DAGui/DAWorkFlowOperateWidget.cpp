@@ -428,6 +428,7 @@ void DAWorkFlowOperateWidget::setCurrentWorkflowZoomIn()
 		qWarning() << tr("Loss View");  // cn:缺少视图
 		return;
 	}
+    qDebug() << "zoomIn";
 	view->zoomIn();
 }
 
@@ -441,7 +442,21 @@ void DAWorkFlowOperateWidget::setCurrentWorkflowZoomOut()
 		qWarning() << tr("Loss View");  // cn:缺少视图
 		return;
 	}
-	view->zoomOut();
+    qDebug() << "zoomOut";
+    view->zoomOut();
+}
+
+/**
+ * @brief 全选
+ */
+void DAWorkFlowOperateWidget::setCurrentWorkflowSelectAll()
+{
+    DAWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
+    if (nullptr == w) {
+        qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
+        return;
+    }
+    w->selectAll();
 }
 
 /**
@@ -643,49 +658,81 @@ QList< DAGraphicsStandardTextItem* > DAWorkFlowOperateWidget::getSelectTextItems
 void DAWorkFlowOperateWidget::initActions()
 {
 	mActionCopy = new QAction(this);
-	mActionCopy->setIcon(QIcon(":/DAGui/icon/copy.svg"));
+    mActionCopy->setObjectName(QStringLiteral("actionCopyToDAWorkFlowOperateWidget"));
+    mActionCopy->setIcon(QIcon(QStringLiteral(":/DAGui/icon/copy.svg")));
 	mActionCopy->setShortcuts(QKeySequence::Copy);
 	connect(mActionCopy, &QAction::triggered, this, &DAWorkFlowOperateWidget::copyCurrentSelectItems);
 
 	mActionCut = new QAction(this);
-	mActionCut->setIcon(QIcon(":/DAGui/icon/cut.svg"));
+    mActionCut->setObjectName(QStringLiteral("actionCutToDAWorkFlowOperateWidget"));
+    mActionCut->setIcon(QIcon(QStringLiteral(":/DAGui/icon/cut.svg")));
 	mActionCut->setShortcuts(QKeySequence::Cut);
 
 	mActionPaste = new QAction(this);
-	mActionPaste->setIcon(QIcon(":/DAGui/icon/paste.svg"));
+    mActionPaste->setObjectName(QStringLiteral("actionPasteToDAWorkFlowOperateWidget"));
+    mActionPaste->setIcon(QIcon(QStringLiteral(":/DAGui/icon/paste.svg")));
 	mActionPaste->setShortcuts(QKeySequence::Paste);
 	connect(mActionPaste, &QAction::triggered, this, &DAWorkFlowOperateWidget::pasteFromClipBoard);
 
     mActionDelete = new QAction(this);
-    mActionDelete->setIcon(QIcon(":/DAGui/icon/delete.svg"));
+    mActionDelete->setObjectName(QStringLiteral("actionDeleteToDAWorkFlowOperateWidget"));
+    mActionDelete->setIcon(QIcon(QStringLiteral(":/DAGui/icon/delete.svg")));
     mActionDelete->setShortcuts(QKeySequence::Delete);
     connect(mActionDelete, &QAction::triggered, this, &DAWorkFlowOperateWidget::removeCurrentSelectItems);
 
     mActionCancel = new QAction(this);
-    mActionCancel->setIcon(QIcon(":/DAGui/icon/cancel.svg"));
+    mActionCancel->setObjectName(QStringLiteral("actionCancelToDAWorkFlowOperateWidget"));
+    mActionCancel->setIcon(QIcon(QStringLiteral(":/DAGui/icon/cancel.svg")));
     mActionCancel->setShortcuts(QKeySequence::Cancel);
     connect(mActionCancel, &QAction::triggered, this, &DAWorkFlowOperateWidget::cancelCurrent);
+
+    mActionSelectAll = new QAction(this);
+    mActionSelectAll->setObjectName(QStringLiteral("actionSelectAllToDAWorkFlowOperateWidget"));
+    mActionSelectAll->setIcon(QIcon(QStringLiteral(":/DAGui/icon/select-all.svg")));
+    mActionSelectAll->setShortcuts(QKeySequence::SelectAll);
+    connect(mActionSelectAll, &QAction::triggered, this, &DAWorkFlowOperateWidget::setCurrentWorkflowSelectAll);
+
+    mActionZoomIn = new QAction(this);
+    mActionZoomIn->setObjectName(QStringLiteral("actionZoomInToDAWorkFlowOperateWidget"));
+    mActionZoomIn->setIcon(QIcon(QStringLiteral(":/DAGui/icon/zoomIn.svg")));
+    mActionZoomIn->setShortcuts({ QKeySequence(QKeySequence::ZoomIn), QKeySequence(QStringLiteral("CTRL+=")) });
+    connect(mActionZoomIn, &QAction::triggered, this, &DAWorkFlowOperateWidget::setCurrentWorkflowZoomIn);
+
+    mActionZoomOut = new QAction(this);
+    mActionZoomOut->setObjectName(QStringLiteral("actionZoomOutToDAWorkFlowOperateWidget"));
+    mActionZoomOut->setIcon(QIcon(QStringLiteral(":/DAGui/icon/zoomOut.svg")));
+    mActionZoomOut->setShortcuts(QKeySequence::ZoomOut);
+    connect(mActionZoomOut, &QAction::triggered, this, &DAWorkFlowOperateWidget::setCurrentWorkflowZoomOut);
 
 	addAction(mActionCopy);
 	addAction(mActionCut);
 	addAction(mActionPaste);
     addAction(mActionDelete);
     addAction(mActionCancel);
+    addAction(mActionSelectAll);
+    addAction(mActionZoomIn);
+    addAction(mActionZoomOut);
 	retranslateUi();
 }
 
 void DAWorkFlowOperateWidget::retranslateUi()
 {
-    mActionCopy->setText(tr("Copy"));           // cn:复制
-    mActionCopy->setStatusTip(tr("Copy"));      // cn:复制
-    mActionCut->setText(tr("Cut"));             // cn:剪切
-    mActionCut->setStatusTip(tr("Cut"));        // cn:剪切
-    mActionPaste->setText(tr("Paste"));         // cn:粘贴
-    mActionPaste->setStatusTip(tr("Paste"));    // cn:粘贴
-    mActionDelete->setText(tr("Delete"));       // cn:删除
-    mActionDelete->setStatusTip(tr("Delete"));  // cn:删除
-    mActionCancel->setText(tr("Cancel"));       // cn:取消
-    mActionCancel->setStatusTip(tr("Cancel"));  // cn:取消
+    mActionCopy->setText(tr("Copy"));                            // cn:复制
+    mActionCopy->setStatusTip(tr("Copy"));                       // cn:复制
+    mActionCut->setText(tr("Cut"));                              // cn:剪切
+    mActionCut->setStatusTip(tr("Cut"));                         // cn:剪切
+    mActionPaste->setText(tr("Paste"));                          // cn:粘贴
+    mActionPaste->setStatusTip(tr("Paste"));                     // cn:粘贴
+    mActionDelete->setText(tr("Delete"));                        // cn:删除
+    mActionDelete->setStatusTip(tr("Delete"));                   // cn:删除
+    mActionCancel->setText(tr("Cancel"));                        // cn:取消
+    mActionCancel->setStatusTip(tr("Cancel"));                   // cn:取消
+    mActionSelectAll->setText(tr("Select All"));                 // cn:全选
+    mActionSelectAll->setStatusTip(tr("Select all items"));      // cn:全选所有图元
+    mActionZoomIn->setText(tr("Zoom In"));                       // cn:放大
+    mActionZoomIn->setStatusTip(tr("Zoom in graphics view"));    // cn:放大画布
+    mActionZoomOut->setText(tr("Zoom Out"));                     // cn:缩小
+    mActionZoomOut->setStatusTip(tr("Zoom Out graphics view"));  // cn:缩小画布
 }
 
 bool DAWorkFlowOperateWidget::isOnlyOneWorkflow() const
@@ -696,6 +743,36 @@ bool DAWorkFlowOperateWidget::isOnlyOneWorkflow() const
 void DAWorkFlowOperateWidget::setOnlyOneWorkflow(bool v)
 {
     mOnlyOneWorkflow = v;
+}
+
+/**
+ * @brief 获取窗口内置的action，一般这个函数用来把action设置到工具栏或者菜单中
+ * @param act
+ * @return
+ */
+QAction* DAWorkFlowOperateWidget::getInnerAction(DAWorkFlowOperateWidget::InnerActions act)
+{
+    switch (act) {
+    case ActionCopy:
+        return mActionCopy;
+    case ActionCut:
+        return mActionCut;
+    case ActionPaste:
+        return mActionPaste;
+    case ActionDelete:
+        return mActionDelete;
+    case ActionCancel:
+        return mActionCancel;
+    case ActionSelectAll:
+        return mActionSelectAll;
+    case ActionZoomIn:
+        return mActionZoomIn;
+    case ActionZoomOut:
+        return mActionZoomOut;
+    default:
+        break;
+    }
+    return nullptr;
 }
 
 /**

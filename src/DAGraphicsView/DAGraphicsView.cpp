@@ -194,40 +194,6 @@ void DAGraphicsView::mouseReleaseEvent(QMouseEvent* event)
 }
 
 /**
- * @brief 处理按钮事件
- * @param event
- */
-void DAGraphicsView::keyPressEvent(QKeyEvent* event)
-{
-	if (event->modifiers().testFlag(Qt::ControlModifier)) {
-		// Ctrl键
-		switch (event->key()) {
-		case Qt::Key_Equal:  // Ctrl + 放大
-			zoomIn();
-			event->accept();
-			return;
-		case Qt::Key_Minus:  // Ctrl - 缩小
-			zoomOut();
-			event->accept();
-			return;
-		case Qt::Key_A:  // Ctrl + A
-			selectAll();
-			event->accept();
-			return;
-		default:
-			break;
-		}
-	} else {
-		//        switch (event->key()) {
-		//        default:
-		//            break;
-		//        }
-	}
-	// 向下传递
-	QGraphicsView::keyPressEvent(event);
-}
-
-/**
  * @brief 滚轮事件的缩放
  * @param event
  */

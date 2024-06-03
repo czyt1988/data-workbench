@@ -22,6 +22,21 @@ class DAAbstractNodeGraphicsItem;
 class DAGUI_API DAWorkFlowOperateWidget : public QWidget
 {
     Q_OBJECT
+public:
+    /**
+     * @brief DAWorkFlowOperateWidget窗口内部的action
+     */
+    enum InnerActions
+    {
+        ActionCopy = 0,
+        ActionCut,
+        ActionPaste,
+        ActionDelete,
+        ActionCancel,
+        ActionSelectAll,
+        ActionZoomIn,
+        ActionZoomOut
+    };
 
 public:
 	DAWorkFlowOperateWidget(QWidget* parent = nullptr);
@@ -81,7 +96,8 @@ public:
 	// 设置只允许一个工作流
 	bool isOnlyOneWorkflow() const;
 	void setOnlyOneWorkflow(bool v);
-
+    // 获取窗口内置的action，一般这个函数用来把action设置到工具栏或者菜单中
+    QAction* getInnerAction(InnerActions act);
 public slots:
     // 添加一个背景图
     void addBackgroundPixmap(const QString& pixmapPath);
@@ -103,6 +119,8 @@ public slots:
 	void setCurrentWorkflowZoomIn();
 	// 设置当前工作流全部显示
 	void setCurrentWorkflowZoomOut();
+    // 全选
+    void setCurrentWorkflowSelectAll();
 	// 运行工作流
 	void runCurrentWorkFlow();
 	// 终止工作流
@@ -199,8 +217,11 @@ private:
 	QAction* mActionCopy { nullptr };
 	QAction* mActionCut { nullptr };
 	QAction* mActionPaste { nullptr };
-    QAction* mActionDelete { nullptr };  ///< 删除选中
-    QAction* mActionCancel { nullptr };  ///< 取消动作
+    QAction* mActionDelete { nullptr };     ///< 删除选中
+    QAction* mActionCancel { nullptr };     ///< 取消动作
+    QAction* mActionSelectAll { nullptr };  ///< 全选
+    QAction* mActionZoomIn { nullptr };     ///< 放大
+    QAction* mActionZoomOut { nullptr };    ///< 缩小
 };
 }  // namespace DA
 #endif  // DAWORKFLOWOPERATEWIDGET_H

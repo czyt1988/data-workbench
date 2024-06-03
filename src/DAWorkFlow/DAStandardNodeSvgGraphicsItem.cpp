@@ -187,7 +187,6 @@ void DAStandardNodeSvgGraphicsItem::paintBody(QPainter* painter,
 
 	if (d_ptr->mElemId.isEmpty()) {
 		d_ptr->mRenderer->render(painter, d_ptr->mSvgPaintRect);
-		qDebug() << "mSvgPaintRect=" << d_ptr->mSvgPaintRect;
 	} else {
 		d_ptr->mRenderer->render(painter, d_ptr->mElemId, d_ptr->mSvgPaintRect);
 	}
