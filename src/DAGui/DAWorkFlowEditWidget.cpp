@@ -275,7 +275,31 @@ void DAWorkFlowEditWidget::setSelectShapeBorderPen(const QPen& v)
 		return;
 	}
 	DA::DACommandGraphicsShapeBorderPenChange* cmd = new DA::DACommandGraphicsShapeBorderPenChange(items, v);
-	secen->push(cmd);
+    secen->push(cmd);
+}
+
+/**
+ * @brief 全选
+ */
+void DAWorkFlowEditWidget::selectAll()
+{
+    auto secen = getWorkFlowGraphicsScene();
+    if (!secen) {
+        return;
+    }
+    secen->selectAll();
+}
+
+/**
+ * @brief 取消选中
+ */
+void DAWorkFlowEditWidget::clearSelection()
+{
+    auto secen = getWorkFlowGraphicsScene();
+    if (!secen) {
+        return;
+    }
+    secen->clearSelection();
 }
 
 /**
@@ -348,7 +372,35 @@ void DAWorkFlowEditWidget::paste(PasteMode mode)
 			qInfo() << tr("An exception occurred during the process of parsing and pasting content");  // cn:解析粘贴内容过程出现异常
 			return;
 		}
-	}
+        //!把原来选中的取消选中，把粘贴的选中
+        clearSelection();
+        QList< QGraphicsItem* > loadedItems = xml.getAllDealItems();
+        setSelectionState(loadedItems, true);
+    }
+}
+
+/**
+ * @brief 移除选中的条目
+ */
+void DAWorkFlowEditWidget::removeSelectItems()
+{
+    getWorkFlowGraphicsScene()->removeSelectedItems_();
+}
+
+/**
+ * @brief 执行取消动作
+ */
+void DAWorkFlowEditWidget::cancel()
+{
+    DANodeGraphicsScene* sc = getWorkFlowGraphicsScene();
+    if (sc) {
+        if (sc->isStartLink()) {
+            sc->cancelLink();
+        } else {
+            // 不在连线状态按下esc，就取消选择
+            sc->clearSelection();
+        }
+    }
 }
 
 QFont DAWorkFlowEditWidget::getDefaultTextFont() const
@@ -418,7 +470,16 @@ void DAWorkFlowEditWidget::createScene()
 	//    });
 
 	connect(mScene, &DAWorkFlowGraphicsScene::selectNodeItemChanged, this, &DAWorkFlowEditWidget::selectNodeItemChanged);
-	connect(mScene, &DAWorkFlowGraphicsScene::mouseActionFinished, this, &DAWorkFlowEditWidget::mouseActionFinished);
+    connect(mScene, &DAWorkFlowGraphicsScene::mouseActionFinished, this, &DAWorkFlowEditWidget::mouseActionFinished);
+}
+
+void DAWorkFlowEditWidget::setSelectionState(const QList< QGraphicsItem* >& items, bool isSelect)
+{
+    auto scene = getWorkFlowGraphicsScene();
+    if (!scene) {
+        return;
+    }
+    scene->setSelectionState(items, isSelect);
 }
 
 }  // end of DA

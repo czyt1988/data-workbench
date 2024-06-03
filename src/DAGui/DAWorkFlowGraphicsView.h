@@ -27,9 +27,6 @@ public:
 	void setUndoStackActive();
 	QUndoStack* getUndoStack();
 	DAWorkFlowGraphicsScene* getWorkFlowGraphicsScene();
-
-protected:
-	void keyPressEvent(QKeyEvent* event) Q_DECL_OVERRIDE;
 public slots:
 
 signals:

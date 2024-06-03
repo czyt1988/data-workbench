@@ -151,9 +151,9 @@ void DAGraphicsView::mouseMoveEvent(QMouseEvent* event)
 #else
 #endif
 		horizontalScrollBar()->setValue(horizontalScrollBar()->value()
-										- (Qt5Qt6Compat_QXXEvent_x(event) - d_ptr->mStartPadPos.x()));
+                                        - (Qt5Qt6Compat_QXXEvent_x(event) - d_ptr->mStartPadPos.x()));
 		verticalScrollBar()->setValue(verticalScrollBar()->value()
-									  - (Qt5Qt6Compat_QXXEvent_x(event) - d_ptr->mStartPadPos.y()));
+                                      - (Qt5Qt6Compat_QXXEvent_x(event) - d_ptr->mStartPadPos.y()));
 		d_ptr->mStartPadPos = Qt5Qt6Compat_QXXEvent_Pos(event);
 		// 移动状态不把事件向下传递
 		event->accept();
@@ -388,7 +388,28 @@ void DAGraphicsView::selectAll()
 				i->setSelected(true);
 			}
 		}
-	}
+    }
+}
+
+/**
+ * @brief 取消所有选中
+ */
+void DAGraphicsView::clearSelection()
+{
+    DAGraphicsScene* s = qobject_cast< DAGraphicsScene* >(scene());
+    if (s) {
+        // DAGraphicsSceneWithUndoStack的selectAll只发射一次selectionChanged信号
+        s->clearSelection();
+    } else {
+        // 非DAGraphicsSceneWithUndoStack，就执行选中所有
+        QList< QGraphicsItem* > its = items();
+        for (QGraphicsItem* i : its) {
+            if (!i->isSelected() && i->flags().testFlag(QGraphicsItem::ItemIsSelectable)) {
+                // 只有没有被选上，且是可选的才会执行选中动作
+                i->setSelected(false);
+            }
+        }
+    }
 }
 
 bool DAGraphicsView::isEnaleWheelZoom() const

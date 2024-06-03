@@ -83,9 +83,9 @@ public:
 	void setOnlyOneWorkflow(bool v);
 
 public slots:
-	// 添加一个背景图
-	void addBackgroundPixmap(const QString& pixmapPath);
-	// 锁定背景图
+    // 添加一个背景图
+    void addBackgroundPixmap(const QString& pixmapPath);
+    // 锁定背景图
 	void setBackgroundPixmapLock(bool on);
 	// 设置字体
 	void setSelectTextFont(const QFont& f);
@@ -113,6 +113,10 @@ public slots:
 	void cutCurrentSelectItems();
 	// 重剪切板粘贴
 	void pasteFromClipBoard();
+    // 删除当前的item
+    void removeCurrentSelectItems();
+    // 当前的wf执行取消动作
+    void cancelCurrent();
 signals:
 
 	/**
@@ -195,6 +199,8 @@ private:
 	QAction* mActionCopy { nullptr };
 	QAction* mActionCut { nullptr };
 	QAction* mActionPaste { nullptr };
+    QAction* mActionDelete { nullptr };  ///< 删除选中
+    QAction* mActionCancel { nullptr };  ///< 取消动作
 };
 }  // namespace DA
 #endif  // DAWORKFLOWOPERATEWIDGET_H

@@ -174,6 +174,11 @@ set_target_properties(${DA_APP_NAME} PROPERTIES
 if(MSVC)
     target_compile_options(${DA_APP_NAME} PRIVATE "/utf-8")
     target_compile_definitions(${DA_APP_NAME} PRIVATE "_UNICODE" "UNICODE")
+    # 为 MSVC 设置链接器标志以禁止生成清单文件
+    # 这是因为某些操作系统下会遇到general error c101008d: Failed to write the updated manifest to the resource of file "bin\DAWorkBench.exe的错误
+    # 主要是操作系统杀毒软件的原因，某些生产环节下是无法禁用杀毒软件的
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /MANIFEST:NO")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /MANIFEST:NO")
 endif()
 ########################################################
 # 安装

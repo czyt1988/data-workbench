@@ -79,6 +79,8 @@ public slots:
 	void setWholeView();
 	// 选中所有可选的item
 	void selectAll();
+    // 取消所有选中
+    void clearSelection();
 
 protected:
 	// void paintEvent(QPaintEvent * event);

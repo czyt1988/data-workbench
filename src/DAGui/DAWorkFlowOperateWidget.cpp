@@ -82,9 +82,9 @@ DAWorkFlowEditWidget* DAWorkFlowOperateWidget::appendWorkflow(const QString& nam
 	connect(scene, &DAWorkFlowGraphicsScene::selectionChanged, this, &DAWorkFlowOperateWidget::onSelectionChanged);
 	connect(wfe, &DAWorkFlowEditWidget::startExecute, this, [ this, wfe ]() { emit workflowStartExecute(wfe); });
 	connect(wfe,
-			&DAWorkFlowEditWidget::nodeExecuteFinished,
-			this,
-			[ this, wfe ](DAAbstractNode::SharedPointer n, bool state) { emit nodeExecuteFinished(wfe, n, state); });
+            &DAWorkFlowEditWidget::nodeExecuteFinished,
+            this,
+            [ this, wfe ](DAAbstractNode::SharedPointer n, bool state) { emit nodeExecuteFinished(wfe, n, state); });
 	connect(wfe, &DAWorkFlowEditWidget::finished, this, [ this, wfe ](bool s) { emit workflowFinished(wfe, s); });
 	ui->tabWidget->addTab(wfe, name);
 	// 把名字保存到DAWorkFlowEditWidget中，在DAProject保存的时候会用到
@@ -265,9 +265,9 @@ void DAWorkFlowOperateWidget::removeWorkflow(int index)
 		return;
 	}
 	QMessageBox::StandardButton btn = QMessageBox::question(this,
-															tr("question"),  // 疑问
-															tr("Confirm to delete workflow:%1")
-																.arg(getWorkFlowWidgetName(index))  // 是否确认删除工作流:%1
+                                                            tr("question"),  // 疑问
+                                                            tr("Confirm to delete workflow:%1")
+                                                                .arg(getWorkFlowWidgetName(index))  // 是否确认删除工作流:%1
 	);
 	if (btn != QMessageBox::Yes) {
 		return;
@@ -507,7 +507,33 @@ void DAWorkFlowOperateWidget::pasteFromClipBoard()
 		qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
 		return;
 	}
-	w->paste(DAWorkFlowEditWidget::PaseteRangeCenterToViewCenter);
+    w->paste(DAWorkFlowEditWidget::PaseteRangeCenterToViewCenter);
+}
+
+/**
+ * @brief 删除当前的item
+ */
+void DAWorkFlowOperateWidget::removeCurrentSelectItems()
+{
+    DAWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
+    if (nullptr == w) {
+        qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
+        return;
+    }
+    w->removeSelectItems();
+}
+
+/**
+ * @brief 当前的wf执行取消动作
+ */
+void DAWorkFlowOperateWidget::cancelCurrent()
+{
+    DAWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
+    if (nullptr == w) {
+        qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
+        return;
+    }
+    w->cancel();
 }
 
 /**
@@ -630,25 +656,41 @@ void DAWorkFlowOperateWidget::initActions()
 	mActionPaste->setShortcuts(QKeySequence::Paste);
 	connect(mActionPaste, &QAction::triggered, this, &DAWorkFlowOperateWidget::pasteFromClipBoard);
 
+    mActionDelete = new QAction(this);
+    mActionDelete->setIcon(QIcon(":/DAGui/icon/delete.svg"));
+    mActionDelete->setShortcuts(QKeySequence::Delete);
+    connect(mActionDelete, &QAction::triggered, this, &DAWorkFlowOperateWidget::removeCurrentSelectItems);
+
+    mActionCancel = new QAction(this);
+    mActionCancel->setIcon(QIcon(":/DAGui/icon/cancel.svg"));
+    mActionCancel->setShortcuts(QKeySequence::Cancel);
+    connect(mActionCancel, &QAction::triggered, this, &DAWorkFlowOperateWidget::cancelCurrent);
+
 	addAction(mActionCopy);
 	addAction(mActionCut);
 	addAction(mActionPaste);
+    addAction(mActionDelete);
+    addAction(mActionCancel);
 	retranslateUi();
 }
 
 void DAWorkFlowOperateWidget::retranslateUi()
 {
-	mActionCopy->setStatusTip(tr("Copy"));
-	mActionCopy->setText(tr("Copy"));
-	mActionCut->setStatusTip(tr("Cut"));
-	mActionCut->setText(tr("Cut"));
-	mActionPaste->setStatusTip(tr("Paste"));
-	mActionPaste->setText(tr("Paste"));
+    mActionCopy->setText(tr("Copy"));           // cn:复制
+    mActionCopy->setStatusTip(tr("Copy"));      // cn:复制
+    mActionCut->setText(tr("Cut"));             // cn:剪切
+    mActionCut->setStatusTip(tr("Cut"));        // cn:剪切
+    mActionPaste->setText(tr("Paste"));         // cn:粘贴
+    mActionPaste->setStatusTip(tr("Paste"));    // cn:粘贴
+    mActionDelete->setText(tr("Delete"));       // cn:删除
+    mActionDelete->setStatusTip(tr("Delete"));  // cn:删除
+    mActionCancel->setText(tr("Cancel"));       // cn:取消
+    mActionCancel->setStatusTip(tr("Cancel"));  // cn:取消
 }
 
 bool DAWorkFlowOperateWidget::isOnlyOneWorkflow() const
 {
-	return mOnlyOneWorkflow;
+    return mOnlyOneWorkflow;
 }
 
 void DAWorkFlowOperateWidget::setOnlyOneWorkflow(bool v)

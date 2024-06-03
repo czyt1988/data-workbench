@@ -33,6 +33,7 @@
         <file>icon/plot-setting.svg</file>
         <file>icon/cut.svg</file>
         <file>icon/paste.svg</file>
+        <file>icon/delete.svg</file>
     </qresource>
     <qresource prefix="/DAGui/MessageType">
         <file>icon/messageType/messageTypeDebug.svg</file>

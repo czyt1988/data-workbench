@@ -51,9 +51,9 @@ public:
 	bool loadElement(DAWorkFlowOperateWidget* wfo, const QDomElement* workflowsEle);
 	// 创建剪切板描述xml
 	QDomElement makeClipBoardElement(const QList< DAGraphicsItem* > its,
-									 const QString& tagName,
-									 QDomDocument* doc,
-									 bool isCopyType = true);
+                                     const QString& tagName,
+                                     QDomDocument* doc,
+                                     bool isCopyType = true);
 	bool loadClipBoardElement(const QDomElement* clipBoardElement, DAWorkFlowEditWidget* wfe);
 	// DAGraphicsItem的通用保存
 	static QDomElement makeElement(const DAGraphicsItem* item, const QString& tagName, QDomDocument* doc);
@@ -62,12 +62,14 @@ public:
 	// DAGraphicsItemGroup的通用保存,注意！！！此函数并不会把子item的信息保存，仅仅记录子item的id
 	static QDomElement makeElement(const DAGraphicsItemGroup* itemGroup, const QString& tagName, QDomDocument* doc);
 	static bool loadElement(DAGraphicsScene* scene,
-							DAGraphicsItemGroup* group,
-							const QDomElement* groupElement,
-							const QVersionNumber& v = QVersionNumber());
+                            DAGraphicsItemGroup* group,
+                            const QDomElement* groupElement,
+                            const QVersionNumber& v = QVersionNumber());
 	// DA支持的所有QGraphicsItem的通用保存
 	static QDomElement makeElement(const QGraphicsItem* item, const QString& tagName, QDomDocument* doc);
 	static bool loadElement(QGraphicsItem* item, const QDomElement* tag, const QVersionNumber& v = QVersionNumber());
+    // 获取所有处理过的item
+    QList< QGraphicsItem* > getAllDealItems() const;
 
 public:
 	// 生成一个qvariant element

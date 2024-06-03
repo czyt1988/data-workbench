@@ -104,46 +104,4 @@ DAWorkFlowGraphicsScene* DAWorkFlowGraphicsView::getWorkFlowGraphicsScene()
     return qobject_cast< DAWorkFlowGraphicsScene* >(scene());
 }
 
-void DAWorkFlowGraphicsView::keyPressEvent(QKeyEvent* event)
-{
-	// qDebug() << "DAWorkFlowGraphicsView::keyPressEvent isAccepted =" << event->isAccepted();
-	if (event->modifiers().testFlag(Qt::ControlModifier)) {
-		// Ctrl键
-
-	} else {
-		switch (event->key()) {
-		case Qt::Key_Delete:  // 删除操作
-		{
-			DAWorkFlowGraphicsScene* sc = getWorkFlowGraphicsScene();
-			if (sc) {
-				if (sc->removeSelectedItems_() > 0) {
-					// 说明成功删除了
-					event->accept();
-					return;
-				}
-			}
-		} break;
-		case Qt::Key_Escape:  // 取消操作
-		{
-			DANodeGraphicsScene* sc = getWorkFlowGraphicsScene();
-			if (sc) {
-				if (sc->isStartLink()) {
-					sc->cancelLink();
-					event->accept();
-				} else {
-					// 不在连线状态按下esc，就取消选择
-					sc->clearSelection();
-					event->accept();
-				}
-				return;
-			}
-		} break;
-		default:
-			break;
-		}
-	}
-	// 向下传递
-	DAGraphicsView::keyPressEvent(event);
-}
-
 }  // end DA
