@@ -80,7 +80,7 @@ void DAAppActions::buildChartAction()
 	actionFigureNewXYAxis   = createAction("actionFigureNewXYAxis", ":/app/bright/Icon/newAxis.svg");
 	actionChartAddCurve     = createAction("actionChartAddCurve", ":/app/chart-type/Icon/chart-type/chart-curve.svg");
 	actionChartAddScatter2D = createAction("actionChartAddScatter2D",
-										   ":/app/chart-type/Icon/chart-type/chart-scatter-2d.svg");
+                                           ":/app/chart-type/Icon/chart-type/chart-scatter-2d.svg");
 	actionChartAddErrorBar  = createAction("actionChartAddErrorBar",
                                           ":/app/chart-type/Icon/chart-type/chart-intervalcurve.svg");
     actionChartAddBoxPlot   = createAction("actionChartAddBoxPlot", ":/app/chart-type/Icon/chart-type/chart-OHLC.svg");
@@ -110,10 +110,10 @@ void DAAppActions::buildChartAction()
 	actionGroupChartPickers->setObjectName(QStringLiteral("actionGroupChartPickers"));
 	actionGroupChartPickers->setExclusionPolicy(QActionGroup::ExclusionPolicy::ExclusiveOptional);  // 允许都不选中
 	actionChartEnablePickerCross = createAction("actionChartEnablePickerCross",
-												":/app/bright/Icon/chart-picker.svg",
-												true,
-												false,
-												actionGroupChartPickers);
+                                                ":/app/bright/Icon/chart-picker.svg",
+                                                true,
+                                                false,
+                                                actionGroupChartPickers);
 	actionChartEnablePickerY     = createAction("actionChartEnablePickerY",
                                             ":/app/bright/Icon/chart-picker-y.svg",
                                             true,
@@ -133,7 +133,7 @@ void DAAppActions::buildViewAction()
 	// View Category
 	actionShowWorkFlowArea        = createAction("actionShowWorkFlowArea", ":/app/bright/Icon/showWorkFlow.svg");
 	actionShowWorkFlowManagerArea = createAction("actionShowWorkFlowManagerArea",
-												 ":/app/bright/Icon/workflow-manager-view.svg");
+                                                 ":/app/bright/Icon/workflow-manager-view.svg");
 	actionShowChartArea           = createAction("actionShowChartArea", ":/app/bright/Icon/showChart.svg");
 	actionShowChartManagerArea = createAction("actionShowChartManagerArea", ":/app/bright/Icon/chart-manager-view.svg");
 	actionShowDataArea         = createAction("actionShowDataArea", ":/app/bright/Icon/showTable.svg");
@@ -147,9 +147,9 @@ void DAAppActions::buildWorkflowAction()
 	// workflow 编辑
 	actionWorkflowNew                   = createAction("actionNewWorkflow", ":/app/bright/Icon/newWorkflow.svg");
 	actionWorkflowEnableItemLinkageMove = createAction("actionWorkflowEnableItemLinkageMove",
-													   ":/app/bright/Icon/itemLinkageMove.svg",
-													   true,
-													   false);
+                                                       ":/app/bright/Icon/itemLinkageMove.svg",
+                                                       true,
+                                                       false);
 	actionItemGrouping                  = createAction("actionItemSetGroup", ":/app/bright/Icon/item-set-group.svg");
 	actionItemUngroup = createAction("actionItemCancelGroup", ":/app/bright/Icon/item-cancel-group.svg");
 	// workflow下面的状态action都是checkable状态的
@@ -157,27 +157,24 @@ void DAAppActions::buildWorkflowAction()
 	actionGroupWorkflowStartEdit->setObjectName(QStringLiteral("actionGroupWorkflowStartEdit"));
 	actionGroupWorkflowStartEdit->setExclusionPolicy(QActionGroup::ExclusionPolicy::ExclusiveOptional);  // 允许都不选中
 	actionWorkflowStartDrawRect = createAction("actionStartDrawRect",
-											   ":/app/bright/Icon/drawRect.svg",
-											   true,
-											   false,
-											   actionGroupWorkflowStartEdit);
+                                               ":/app/bright/Icon/drawRect.svg",
+                                               true,
+                                               false,
+                                               actionGroupWorkflowStartEdit);
 	actionWorkflowStartDrawText = createAction("actionStartDrawText",
-											   ":/app/bright/Icon/drawText.svg",
-											   true,
-											   false,
-											   actionGroupWorkflowStartEdit);
+                                               ":/app/bright/Icon/drawText.svg",
+                                               true,
+                                               false,
+                                               actionGroupWorkflowStartEdit);
 	// workflow-背景图相关
 	actionWorkflowAddBackgroundPixmap = createAction("actionAddBackgroundPixmap", ":/app/bright/Icon/backgroundPixmap.svg");
 	actionWorkflowLockBackgroundPixmap = createAction("actionLockBackgroundPixmap", ":/app/bright/Icon/lock-bk.svg", true, false);
 	actionWorkflowEnableItemMoveWithBackground = createAction("actionEnableItemMoveWithBackground",
-															  ":/app/bright/Icon/itemMoveWithBackground.svg",
-															  true,
-															  false);
+                                                              ":/app/bright/Icon/itemMoveWithBackground.svg",
+                                                              true,
+                                                              false);
 	// workflow-视图操作
 	actionWorkflowShowGrid  = createAction("actionWorkflowShowGrid", ":/app/bright/Icon/showGrid.svg", true, true);
-	actionWorkflowWholeView = createAction("actionWholeView", ":/app/bright/Icon/viewAll.svg");
-	actionWorkflowZoomIn    = createAction("actionZoomIn", ":/app/bright/Icon/zoomIn.svg");
-	actionWorkflowZoomOut   = createAction("actionZoomOut", ":/app/bright/Icon/zoomOut.svg");
 	actionWorkflowRun       = createAction("actionWorkflowRun", ":/app/bright/Icon/run.svg");
 	actionWorkflowTerminate = createAction("actionWorkflowTerminate", ":/app/bright/Icon/stop.svg");
 	actionWorkflowTerminate->setEnabled(false);
@@ -205,8 +202,8 @@ void DAAppActions::retranslateUi()
 	actionAppendProject->setText(tr("Append To Project"));
 
 	actionRenameColumns->setText(tr("Rename Columns"));
-    actionSetting->setText(tr("Setting"));//cn:设置
-    actionAbout->setText(tr("About"));//cn:关于
+    actionSetting->setText(tr("Setting"));  // cn:设置
+    actionAbout->setText(tr("About"));      // cn:关于
 	// Data Category
 	actionAddData->setText(tr("Add \nData"));        // cn:添加\n数据
 	actionRemoveData->setText(tr("Remove \nData"));  // cn:移除\n数据
@@ -260,15 +257,12 @@ void DAAppActions::retranslateUi()
 	actionWorkflowNew->setText(tr("New \nWorkflow"));                    // cn:新建\n工作流
 	actionWorkflowEnableItemLinkageMove->setText(tr("Linkage \nMove"));  // cn:联动
 	actionWorkflowEnableItemLinkageMove->setToolTip(
-		tr("When moving elements, other elements linked to this element follow the movement"));  // cn:允许移动图元时，其它和此图元链接起来的图元跟随移动
+        tr("When moving elements, other elements linked to this element follow the movement"));  // cn:允许移动图元时，其它和此图元链接起来的图元跟随移动
 	actionItemGrouping->setText(tr("grouping"));                   // cn:分组
 	actionItemUngroup->setText(tr("ungroup"));                     // cn:取消分组
 	actionWorkflowStartDrawRect->setText(tr("Draw \nRect"));       // cn:绘制\n矩形
 	actionWorkflowStartDrawText->setText(tr("Draw \nText"));       // cn:绘制\n文本
 	actionWorkflowShowGrid->setText(tr("Show \nGrid"));            // cn:显示\n网格
-	actionWorkflowWholeView->setText(tr("Whole \nView"));          // cn:全部\n可见
-	actionWorkflowZoomOut->setText(tr("Zoom Out"));                // cn:缩小
-	actionWorkflowZoomIn->setText(tr("Zoom In"));                  // cn:放大
 	actionWorkflowRun->setText(tr("Run \nWorkflow"));              // cn:运行\n工作流
 	actionWorkflowTerminate->setText(tr("Terminate \nWorkflow"));  // cn:停止\n工作流
 

@@ -88,7 +88,7 @@ public slots:
 	// 复制当前选中的items
 	void copySelectItems();
 	// 复制到剪切板
-	void copyItems(QList< DAGraphicsItem* > its);
+    void copyItems(QList< DAGraphicsItem* > its,bool isCopy = true);
 	// 复制当前选中的items
 	void cutSelectItems();
 	// 粘贴

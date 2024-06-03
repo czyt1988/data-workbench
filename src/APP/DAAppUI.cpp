@@ -50,6 +50,7 @@ void DAAppUI::createUi()
     createActions();  // Actions第二个创建
     createDockingArea();
     createRibbonArea();
+    m_ribbonArea->setDockingArea(m_dockingArea);
     createStatusBar();
 }
 
@@ -85,7 +86,7 @@ DAAppRibbonArea* DAAppUI::getAppRibbonArea()
 void DAAppUI::createActions()
 {
     m_actions = new DAAppActions(this);
-    m_actions->retranslateUi();  //显示调用文字翻译
+    m_actions->retranslateUi();  // 显示调用文字翻译
     registeAction(m_actions);
 }
 

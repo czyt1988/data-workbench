@@ -35,7 +35,8 @@ public:
         ActionCancel,
         ActionSelectAll,
         ActionZoomIn,
-        ActionZoomOut
+        ActionZoomOut,
+        ActionZoomFit
     };
 
 public:
@@ -222,6 +223,7 @@ private:
     QAction* mActionSelectAll { nullptr };  ///< 全选
     QAction* mActionZoomIn { nullptr };     ///< 放大
     QAction* mActionZoomOut { nullptr };    ///< 缩小
+    QAction* mActionZoomFit { nullptr };    ///< 全部显示
 };
 }  // namespace DA
 #endif  // DAWORKFLOWOPERATEWIDGET_H

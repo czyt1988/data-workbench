@@ -307,15 +307,17 @@ void DAWorkFlowEditWidget::clearSelection()
  */
 void DAWorkFlowEditWidget::copySelectItems()
 {
+    qDebug() << "DAWorkFlowEditWidget::copySelectItems";
 	QList< DAGraphicsItem* > its = ui->workflowGraphicsView->selectedDAItems();
-	copyItems(its);
+    copyItems(its, true);
 }
 
 /**
  * @brief 复制条目
  * @param its
+ * @param isCopy 为true代表是复制，为false代表是剪切
  */
-void DAWorkFlowEditWidget::copyItems(QList< DAGraphicsItem* > its)
+void DAWorkFlowEditWidget::copyItems(QList< DAGraphicsItem* > its, bool isCopy)
 {
 	DAXmlHelper xml;
 	QDomDocument doc;
@@ -330,9 +332,21 @@ void DAWorkFlowEditWidget::copyItems(QList< DAGraphicsItem* > its)
 	}
 }
 
+/**
+ * @brief 剪切
+ */
 void DAWorkFlowEditWidget::cutSelectItems()
 {
     qDebug() << "DAWorkFlowEditWidget::cutSelectItems";
+    QList< DAGraphicsItem* > its = ui->workflowGraphicsView->selectedDAItems();
+    copyItems(its, false);
+    // 复制完成后要删除
+    auto scene = DAWorkFlowGraphicsScene();
+    getUndoStack()->beginMacro(tr("cut"));
+    for (DAGraphicsItem* i : qAsConst(its)) {
+        scene.removeItem_(i);
+    }
+    getUndoStack()->endMacro();
 }
 
 /**

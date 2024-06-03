@@ -44,7 +44,7 @@ public:
 	QAction* actionUndo;
 	QAction* actionSetting;        ///< 设置
 	QAction* actionPluginManager;  ///< 插件管理
-    QAction* actionAbout;           ///< about
+    QAction* actionAbout;          ///< about
 	//===================================================
 	// 数据标签 Data Category
 	//===================================================
@@ -77,9 +77,6 @@ public:
 	QAction* actionWorkflowStartDrawText;        ///< 绘制文本框
 	// workflow的视图操作
 	QAction* actionWorkflowShowGrid;                      ///< 显示网格
-	QAction* actionWorkflowWholeView;                     ///< 全部可见
-	QAction* actionWorkflowZoomIn;                        ///< 放大
-	QAction* actionWorkflowZoomOut;                       ///< 缩小
 	QAction* actionWorkflowRun;                           ///< 运行工作流
 	QAction* actionWorkflowTerminate;                     ///< 停止工作流
 	QAction* actionWorkflowAddBackgroundPixmap;           ///< 添加背景图
@@ -89,7 +86,7 @@ public:
 	QAction* actionItemGrouping;                ///< 分组
 	QAction* actionItemUngroup;                 ///< 取消分组
 	QAction* actionExportWorkflowSceneToImage;  ///< 导出png格式
-	QAction* actionExportWorkflowSceneToPNG;      ///< 导出png格式
+    QAction* actionExportWorkflowSceneToPNG;    ///< 导出png格式
 	//===================================================
 	// 绘图标签 Chart Category
 	//===================================================

@@ -197,6 +197,11 @@ private:
 	DAAPPRIBBONAREA_COMMON_SETTING_H(Edit)
 	DAAPPRIBBONAREA_COMMON_SETTING_H(WorkFlowEdit)
 
+    /**
+     * @brief 设置dock区，有些pannel的action是依赖dock界面的，统一在这里设置
+     * @param dock
+     */
+    void setDockingArea(DAAppDockingArea* dock);
 signals:
 	/**
 	   @fn selectedPen
@@ -211,7 +216,7 @@ signals:
 	   @fn selectedBrush
 	   @brief 画刷选中了
 
-		这是一个通用的画刷选中信号
+        这是一个通用的画刷选中信号
 	   @param b
 	 */
 	void selectedBrush(const QBrush& b);
@@ -245,7 +250,7 @@ signals:
 	/**
 	   @brief 画刷选中了
 
-		这是一个通用的画刷选中信号
+        这是一个通用的画刷选中信号
 	   @param b
 	 */
 	void selectedWorkflowItemBrush(const QBrush& b);
@@ -334,6 +339,7 @@ public:
 	DAShapeEditPannelWidget* m_workflowShapeEditPannelWidget;  ///< 图框编辑
 
 	SARibbonCategory* m_categoryWorkflowGraphicsEdit;  ///< 工作流绘图编辑
+    SARibbonPannel* m_pannelClipBoard;                 ///< 剪切板
 	SARibbonPannel* m_pannelWorkflowItem;              ///< 图元编辑
 	SARibbonPannel* m_pannelWorkflowBackground;        ///< 背景编辑
 	SARibbonPannel* m_pannelWorkflowText;              ///< 文本编辑

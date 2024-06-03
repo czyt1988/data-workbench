@@ -508,8 +508,17 @@ void DAWorkFlowOperateWidget::copyCurrentSelectItems()
 	w->copySelectItems();
 }
 
+/**
+ * @brief 剪切当前选中的items
+ */
 void DAWorkFlowOperateWidget::cutCurrentSelectItems()
 {
+    DAWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
+    if (nullptr == w) {
+        qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
+        return;
+    }
+    w->cutSelectItems();
 }
 
 /**
@@ -704,6 +713,13 @@ void DAWorkFlowOperateWidget::initActions()
     mActionZoomOut->setShortcuts(QKeySequence::ZoomOut);
     connect(mActionZoomOut, &QAction::triggered, this, &DAWorkFlowOperateWidget::setCurrentWorkflowZoomOut);
 
+    // 缩放到适合屏幕
+    mActionZoomFit = new QAction(this);
+    mActionZoomFit->setObjectName(QStringLiteral("actionZoomFullToDAWorkFlowOperateWidget"));
+    mActionZoomFit->setIcon(QIcon(QStringLiteral(":/DAGui/icon/viewAll.svg")));
+    mActionZoomFit->setShortcut(QKeySequence(QStringLiteral("CTRL+0")));
+    connect(mActionZoomFit, &QAction::triggered, this, &DAWorkFlowOperateWidget::setCurrentWorkflowWholeView);
+
 	addAction(mActionCopy);
 	addAction(mActionCut);
 	addAction(mActionPaste);
@@ -712,27 +728,30 @@ void DAWorkFlowOperateWidget::initActions()
     addAction(mActionSelectAll);
     addAction(mActionZoomIn);
     addAction(mActionZoomOut);
+    addAction(mActionZoomFit);
 	retranslateUi();
 }
 
 void DAWorkFlowOperateWidget::retranslateUi()
 {
-    mActionCopy->setText(tr("Copy"));                            // cn:复制
-    mActionCopy->setStatusTip(tr("Copy"));                       // cn:复制
-    mActionCut->setText(tr("Cut"));                              // cn:剪切
-    mActionCut->setStatusTip(tr("Cut"));                         // cn:剪切
-    mActionPaste->setText(tr("Paste"));                          // cn:粘贴
-    mActionPaste->setStatusTip(tr("Paste"));                     // cn:粘贴
-    mActionDelete->setText(tr("Delete"));                        // cn:删除
-    mActionDelete->setStatusTip(tr("Delete"));                   // cn:删除
-    mActionCancel->setText(tr("Cancel"));                        // cn:取消
-    mActionCancel->setStatusTip(tr("Cancel"));                   // cn:取消
-    mActionSelectAll->setText(tr("Select All"));                 // cn:全选
-    mActionSelectAll->setStatusTip(tr("Select all items"));      // cn:全选所有图元
-    mActionZoomIn->setText(tr("Zoom In"));                       // cn:放大
-    mActionZoomIn->setStatusTip(tr("Zoom in graphics view"));    // cn:放大画布
-    mActionZoomOut->setText(tr("Zoom Out"));                     // cn:缩小
-    mActionZoomOut->setStatusTip(tr("Zoom Out graphics view"));  // cn:缩小画布
+    mActionCopy->setText(tr("Copy"));                             // cn:复制
+    mActionCopy->setStatusTip(tr("Copy"));                        // cn:复制
+    mActionCut->setText(tr("Cut"));                               // cn:剪切
+    mActionCut->setStatusTip(tr("Cut"));                          // cn:剪切
+    mActionPaste->setText(tr("Paste"));                           // cn:粘贴
+    mActionPaste->setStatusTip(tr("Paste"));                      // cn:粘贴
+    mActionDelete->setText(tr("Delete"));                         // cn:删除
+    mActionDelete->setStatusTip(tr("Delete"));                    // cn:删除
+    mActionCancel->setText(tr("Cancel"));                         // cn:取消
+    mActionCancel->setStatusTip(tr("Cancel"));                    // cn:取消
+    mActionSelectAll->setText(tr("Select All"));                  // cn:全选
+    mActionSelectAll->setStatusTip(tr("Select all items"));       // cn:全选所有图元
+    mActionZoomIn->setText(tr("Zoom In"));                        // cn:放大
+    mActionZoomIn->setStatusTip(tr("Zoom in graphics view"));     // cn:放大画布
+    mActionZoomOut->setText(tr("Zoom Out"));                      // cn:缩小
+    mActionZoomOut->setStatusTip(tr("Zoom Out graphics view"));   // cn:缩小画布
+    mActionZoomFit->setText(tr("Zoom to Fit"));                   // cn:适合屏幕
+    mActionZoomFit->setStatusTip(tr("Zoom to fit screen size"));  // cn:缩放到适合屏幕大小
 }
 
 bool DAWorkFlowOperateWidget::isOnlyOneWorkflow() const
@@ -769,6 +788,8 @@ QAction* DAWorkFlowOperateWidget::getInnerAction(DAWorkFlowOperateWidget::InnerA
         return mActionZoomIn;
     case ActionZoomOut:
         return mActionZoomOut;
+    case ActionZoomFit:
+        return mActionZoomFit;
     default:
         break;
     }
