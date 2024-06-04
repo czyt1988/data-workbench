@@ -29,20 +29,17 @@ DAWorkFlow* DAAppWorkFlowOperateWidget::createWorkflow()
 void DAAppWorkFlowOperateWidget::onWorkflowCreated(DAWorkFlowEditWidget* wfw)
 {
     cmd()->addStack(wfw->getUndoStack());
-    qInfo() << "workflow created";
 }
 
 void DAAppWorkFlowOperateWidget::onCurrentWorkFlowWidgetChanged(DAWorkFlowEditWidget* w)
 {
     if (w) {
-        qInfo() << "workflow cmd active";
         w->getUndoStack()->setActive(true);
     }
 }
 
 void DAAppWorkFlowOperateWidget::onWorkflowRemoving(DAWorkFlowEditWidget* w)
 {
-    qInfo() << "workflow remove";
     cmd()->removeStack(w->getUndoStack());
 }
 

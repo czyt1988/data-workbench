@@ -201,7 +201,10 @@ void DANodeItemSettingWidget::updateLinkPointLocation()
         return;
     }
     DAAbstractNodeGraphicsItem* nodeItem = qobject_cast< DAAbstractNodeGraphicsItem* >(d_ptr->mItem);
-
+    if (nullptr == nodeItem) {
+        // 说明不是node link
+        return;
+    }
     QSignalBlocker b1(d_ptr->mButtonGroupInputLocation), b2(d_ptr->mButtonGroupOutputLocation);
     Q_UNUSED(b1);
     Q_UNUSED(b2);

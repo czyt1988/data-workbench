@@ -29,6 +29,7 @@ public:
 public:
     DAGraphicsPixmapItem(QGraphicsItem* parent = nullptr);
     DAGraphicsPixmapItem(const QPixmap& pixmap, QGraphicsItem* parent = nullptr);
+    DAGraphicsPixmapItem(QPixmap&& pixmap, QGraphicsItem* parent = nullptr);
     ~DAGraphicsPixmapItem();
     // 移动操作
     void setMoveable(bool on = true);
@@ -54,13 +55,16 @@ public:
     // 接口函数
     virtual void setBodySize(const QSizeF& s) override;
     // 保存到xml中
-    virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement,const QVersionNumber& ver) const override;
-    virtual bool loadFromXml(const QDomElement* itemElement,const QVersionNumber& ver) override;
+    virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const override;
+    virtual bool loadFromXml(const QDomElement* itemElement, const QVersionNumber& ver) override;
 signals:
     void itemPosChange(const QPointF& oldPos, const QPointF& newPos);
 
 protected:
-    virtual void paintBody(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget, const QRectF& bodyRect) override;
+    virtual void paintBody(QPainter* painter,
+                           const QStyleOptionGraphicsItem* option,
+                           QWidget* widget,
+                           const QRectF& bodyRect) override;
 
 private:
 };

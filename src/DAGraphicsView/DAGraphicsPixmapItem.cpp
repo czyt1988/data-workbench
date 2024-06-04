@@ -97,6 +97,14 @@ DAGraphicsPixmapItem::DAGraphicsPixmapItem(const QPixmap& pixmap, QGraphicsItem*
     changeBodySize(pixmap.size());
 }
 
+DAGraphicsPixmapItem::DAGraphicsPixmapItem(QPixmap&& pixmap, QGraphicsItem* parent)
+    : DAGraphicsResizeableItem(parent), DA_PIMPL_CONSTRUCT
+{
+    d_ptr->mPixmap       = std::move(pixmap);
+    d_ptr->mPixmapOrigin = d_ptr->mPixmap;
+    changeBodySize(d_ptr->mPixmap.size());
+}
+
 DAGraphicsPixmapItem::~DAGraphicsPixmapItem()
 {
 }
@@ -214,7 +222,7 @@ void DAGraphicsPixmapItem::setBodySize(const QSizeF& s)
  */
 bool DAGraphicsPixmapItem::saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const
 {
-    if (!DAGraphicsResizeableItem::saveToXml(doc, parentElement,ver)) {
+    if (!DAGraphicsResizeableItem::saveToXml(doc, parentElement, ver)) {
         return false;
     }
     QDomElement pixmapEle = doc->createElement("pixmap-info");
@@ -266,10 +274,13 @@ bool DAGraphicsPixmapItem::loadFromXml(const QDomElement* itemElement, const QVe
     setPixmap(pix);
     setTransformationMode(tm);
     setAspectRatioMode(ar);
-    return DAGraphicsResizeableItem::loadFromXml(itemElement,ver);
+    return DAGraphicsResizeableItem::loadFromXml(itemElement, ver);
 }
 
-void DAGraphicsPixmapItem::paintBody(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget, const QRectF& bodyRect)
+void DAGraphicsPixmapItem::paintBody(QPainter* painter,
+                                     const QStyleOptionGraphicsItem* option,
+                                     QWidget* widget,
+                                     const QRectF& bodyRect)
 {
     Q_UNUSED(widget);
     Q_UNUSED(option);

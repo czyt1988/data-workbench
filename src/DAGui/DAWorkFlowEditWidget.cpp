@@ -10,6 +10,7 @@
 #include <QMimeData>
 #include <QClipboard>
 #include <QApplication>
+#include <QFileInfo>
 // workflow
 #include "DAWorkFlowGraphicsView.h"
 #include "DAWorkFlowGraphicsScene.h"
@@ -67,7 +68,11 @@ DAWorkFlowGraphicsView* DAWorkFlowEditWidget::getWorkFlowGraphicsView() const
  */
 DAWorkFlowGraphicsScene* DAWorkFlowEditWidget::getWorkFlowGraphicsScene() const
 {
-	return mScene;
+#if 1
+    return mScene;
+#else
+    return qobject_cast< DAWorkFlowGraphicsScene* >(ui->workflowGraphicsView->scene());
+#endif
 }
 
 void DAWorkFlowEditWidget::setUndoStackActive()
@@ -390,6 +395,12 @@ void DAWorkFlowEditWidget::paste(PasteMode mode)
 		// 粘贴图片
 		qDebug() << "clipboard paste Image";
 		QImage image = qvariant_cast< QImage >(mimeData->imageData());
+        if (image.isNull()) {
+            return;
+        }
+        if (DAGraphicsPixmapItem* pixmapItem = addPixmapItem_(image)) {
+            moveItemToViewSceneCenter(pixmapItem);
+        }
 	} else if (mimeData->hasText()) {
 		// 粘贴文本
 		QString textData = mimeData->text();
@@ -399,7 +410,16 @@ void DAWorkFlowEditWidget::paste(PasteMode mode)
 		if (url.isValid() && url.scheme() == QStringLiteral("file")) {
 			// 转换为本地文件路径
 			QString filePath = url.toLocalFile();
-			qDebug() << "clipboard paste local file:" << filePath;
+            qDebug() << "clipboard paste local file:" << filePath;
+            // QFileInfo fi(filePath);
+            //! 1.首先判断是否是project工程，如果是工程的话，直接把工程复制进来
+            // TODO
+
+            //! 2.如果不是工程，判断是否是图片
+            if (DAGraphicsPixmapItem* pixmapItem = addPixmapItem_(QImage(filePath))) {
+                moveItemToViewSceneCenter(pixmapItem);
+            }
+
 		} else {
 			// 单纯复制文本，直接生成一个文本框
 		}
@@ -451,6 +471,47 @@ void DAWorkFlowEditWidget::setDefaultTextColor(const QColor& c)
 }
 
 /**
+ * @brief 添加一个图片
+ * @param img
+ */
+DAGraphicsPixmapItem* DAWorkFlowEditWidget::addPixmapItem_(const QImage& img)
+{
+    if (img.isNull()) {
+        return nullptr;
+    }
+    QPixmap pixmap = QPixmap::fromImage(img);
+    if (pixmap.isNull()) {
+        return nullptr;
+    }
+    DAGraphicsPixmapItem* pixmapItem = new DAGraphicsPixmapItem(pixmap);
+    getWorkFlowGraphicsScene()->addItem_(pixmapItem);
+    return pixmapItem;
+}
+
+/**
+ * @brief 获取当前view视图下的scene中心
+ * @return
+ */
+QPointF DAWorkFlowEditWidget::getViewSceneCenter() const
+{
+    auto r = ui->workflowGraphicsView->sceneRect();
+    return r.center();
+}
+
+/**
+ * @brief 把item移动到屏幕中心
+ * @param item
+ */
+void DAWorkFlowEditWidget::moveItemToViewSceneCenter(QGraphicsItem* item)
+{
+    QPointF c = getViewSceneCenter();
+    auto br   = item->boundingRect();
+    c.rx() -= br.width();
+    c.ry() -= br.height();
+    item->setPos(c);
+}
+
+/**
  * @brief 获取选中的文本
  * @return
  */
@@ -488,16 +549,18 @@ QList< DAGraphicsItem* > DAWorkFlowEditWidget::getSelectDAItems()
 
 void DAWorkFlowEditWidget::createScene()
 {
-	mScene = new DAWorkFlowGraphicsScene(this);
-	ui->workflowGraphicsView->setScene(mScene);
+    DAWorkFlowGraphicsScene* sc = new DAWorkFlowGraphicsScene(this);
+
+    mScene = sc;
+    ui->workflowGraphicsView->setScene(sc);
 	//    connect(_scene, &DAWorkFlowGraphicsScene::selectNodeItemChanged, this, [ this ](DAGraphicsItem* i) {
 	//        if (DAAbstractNodeGraphicsItem* ni = dynamic_cast< DAAbstractNodeGraphicsItem* >(i)) {
 	//            emit selectNodeItemChanged(ni);
 	//        }
 	//    });
 
-	connect(mScene, &DAWorkFlowGraphicsScene::selectNodeItemChanged, this, &DAWorkFlowEditWidget::selectNodeItemChanged);
-	connect(mScene, &DAWorkFlowGraphicsScene::mouseActionFinished, this, &DAWorkFlowEditWidget::mouseActionFinished);
+    connect(sc, &DAWorkFlowGraphicsScene::selectNodeItemChanged, this, &DAWorkFlowEditWidget::selectNodeItemChanged);
+    connect(sc, &DAWorkFlowGraphicsScene::mouseActionFinished, this, &DAWorkFlowEditWidget::mouseActionFinished);
 }
 
 void DAWorkFlowEditWidget::setSelectionState(const QList< QGraphicsItem* >& items, bool isSelect)

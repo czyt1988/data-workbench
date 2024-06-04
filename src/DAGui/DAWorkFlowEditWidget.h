@@ -1,6 +1,7 @@
 ﻿#ifndef DAWORKFLOWEDITWIDGET_H
 #define DAWORKFLOWEDITWIDGET_H
 #include <QWidget>
+#include <QImage>
 #include "DAGuiAPI.h"
 #include "DAGraphicsStandardTextItem.h"
 #include "DAWorkFlowGraphicsView.h"
@@ -60,6 +61,12 @@ public:
 	// 设置文本颜色 -- 此参数设置决定创建文本框时的字体和颜色
 	QColor getDefaultTextColor() const;
 	void setDefaultTextColor(const QColor& c);
+    // 添加一个图片item
+    DAGraphicsPixmapItem* addPixmapItem_(const QImage& img);
+    // 获取当前view视图下的scene中心
+    QPointF getViewSceneCenter() const;
+    // 把item移动到屏幕中心
+    void moveItemToViewSceneCenter(QGraphicsItem* item);
 public slots:
 	// 添加一个背景图
 	void addBackgroundPixmap(const QString& pixmapPath);
@@ -88,7 +95,7 @@ public slots:
 	// 复制当前选中的items
 	void copySelectItems();
 	// 复制到剪切板
-    void copyItems(QList< DAGraphicsItem* > its,bool isCopy = true);
+    void copyItems(QList< DAGraphicsItem* > its, bool isCopy = true);
 	// 复制当前选中的items
 	void cutSelectItems();
 	// 粘贴

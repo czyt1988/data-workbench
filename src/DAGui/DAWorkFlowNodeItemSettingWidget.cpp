@@ -32,10 +32,6 @@ DAWorkFlowNodeItemSettingWidget::~DAWorkFlowNodeItemSettingWidget()
 void DAWorkFlowNodeItemSettingWidget::init()
 {
     connect(ui->tabWidget, &QTabWidget::currentChanged, this, &DAWorkFlowNodeItemSettingWidget::onTabBarCurrentIndexChanged);
-    connect(ui->tabPictureItemSetting,
-            &DAGraphicsPixmapItemSettingWidget::pixmapAlphaValueChanged,
-            this,
-            &DAWorkFlowNodeItemSettingWidget::onPixmapItemAlphaChanged);
 }
 
 void DAWorkFlowNodeItemSettingWidget::bindWorkFlowEditWidget(DAWorkFlowEditWidget* w)
@@ -254,18 +250,31 @@ void DAWorkFlowNodeItemSettingWidget::onSceneSelectionChanged()
     QGraphicsItem* item = its.last();
     // 此注释给新手：
     //  注意C语言的条件赋值，如果是nullptr就不会执行if内容
+    if (DAGraphicsResizeableItem* rsItem = dynamic_cast< DAGraphicsResizeableItem* >(item)) {
+        setItemSettingEnable(true);
+        if (isTabContainWidget(ui->tabItemSetting)) {
+            ui->tabItemSetting->setItem(rsItem);
+        }
+        // 图片有单独设置
+        if (DAGraphicsPixmapItem* pitem = dynamic_cast< DAGraphicsPixmapItem* >(item)) {
+            setPixmapItemSettingEnable(true);
+            if (isTabContainWidget(ui->tabPictureItemSetting)) {
+                ui->tabPictureItemSetting->setItem(pitem);
+            }
+        } else {
+            setPixmapItemSettingEnable(false);
+        }
+    }
     if (DAAbstractNodeGraphicsItem* nodeItem = dynamic_cast< DAAbstractNodeGraphicsItem* >(item)) {
         // 说明是node
         setLinkSettingEnable(false);
         setNodeSettingEnable(true);
-        setItemSettingEnable(true);
+
         setPixmapItemSettingEnable(false);
         if (isTabContainWidget(ui->tabNodeSetting)) {
             ui->tabNodeSetting->setNode(nodeItem->node());
         }
-        if (isTabContainWidget(ui->tabItemSetting)) {
-            ui->tabItemSetting->setItem(nodeItem);
-        }
+
         if (isTabContainWidget(ui->tabLinkSetting)) {
             ui->tabLinkSetting->setLinkItem(nullptr);
         }
@@ -304,21 +313,11 @@ void DAWorkFlowNodeItemSettingWidget::onSceneSelectionChanged()
         // 说明是其他item
         setLinkSettingEnable(false);
         setNodeSettingEnable(false);
-        setItemSettingEnable(true);
         if (isTabContainWidget(ui->tabNodeSetting)) {
             ui->tabNodeSetting->setNode(nullptr);
         }
-        if (isTabContainWidget(ui->tabItemSetting)) {
-            ui->tabItemSetting->setItem(nullptr);
-        }
         if (isTabContainWidget(ui->tabLinkSetting)) {
             ui->tabLinkSetting->setLinkItem(nullptr);
-        }
-        if (DAGraphicsPixmapItem* pitem = dynamic_cast< DAGraphicsPixmapItem* >(item)) {
-            setPixmapItemSettingEnable(true);
-            updatePixmapItemSettingWidget(pitem);
-        } else {
-            setPixmapItemSettingEnable(false);
         }
     }
     // 把最后用户点击的页面记录下来并显示
@@ -395,33 +394,5 @@ void DAWorkFlowNodeItemSettingWidget::onWorkFlowEditWidgetChanged(DAWorkFlowEdit
 {
     if (w) {
         bindWorkFlowEditWidget(w);
-    }
-}
-
-/**
- * @brief 图片元素的透明度 改变
- * @param v
- */
-void DAWorkFlowNodeItemSettingWidget::onPixmapItemAlphaChanged(int v)
-{
-    DAWorkFlowGraphicsScene* scene = getCurrentScene();
-    if (nullptr == scene) {
-        return;
-    }
-    DAGraphicsPixmapItem* pixmapItem = scene->getBackgroundPixmapItem();
-    if (nullptr == pixmapItem) {
-        return;
-    }
-    pixmapItem->setAlpha(v);
-}
-
-/**
- * @brief 更新PixmapItemSettingWidget
- * @param pitem
- */
-void DAWorkFlowNodeItemSettingWidget::updatePixmapItemSettingWidget(DAGraphicsPixmapItem* pitem)
-{
-    if (isTabContainWidget(ui->tabPictureItemSetting)) {
-        ui->tabPictureItemSetting->setCurrentAlphaValue(pitem->getAlpha());
     }
 }
