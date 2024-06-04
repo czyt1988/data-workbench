@@ -5927,7 +5927,7 @@ params:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DANodeGraphicsScene.cpp" line="290"/>
+        <location filename="DAWorkFlow/DANodeGraphicsScene.cpp" line="291"/>
         <source>can not create node,metadata name=%1(%2)</source>
         <translation type="unfinished"></translation>
     </message>

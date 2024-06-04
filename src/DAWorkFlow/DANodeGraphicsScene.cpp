@@ -5,6 +5,7 @@
 #include <QPainter>
 #include "DAGraphicsPixmapItem.h"
 #include "DAStandardNodeLinkGraphicsItem.h"
+#include "DAGraphicsTextItem.h"
 #include "DACommandsForGraphics.h"
 #include "DACommandsForWorkFlowNodeGraphics.h"
 #include "DAGraphicsTextItem.h"
@@ -320,11 +321,11 @@ DAAbstractNodeGraphicsItem* DANodeGraphicsScene::createNode_(const DANodeMetaDat
  * @return
  * @sa getTextGraphicsItems
  */
-DAGraphicsStandardTextItem* DANodeGraphicsScene::createText_(const QString& str)
+DAGraphicsTextItem* DANodeGraphicsScene::createText_(const QString& str)
 {
-	DAGraphicsStandardTextItem* item = new DAGraphicsStandardTextItem();
+	DAGraphicsTextItem* item = new DAGraphicsTextItem();
 	if (!str.isEmpty()) {
-		item->setPlainText(str);
+		item->setText(str);
 	}
 	addItem_(item);
 	return (item);

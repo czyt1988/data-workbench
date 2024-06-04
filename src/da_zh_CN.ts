@@ -5225,7 +5225,7 @@ Wrap</source>
         <translation>创建节点</translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DANodeGraphicsScene.cpp" line="290"/>
+        <location filename="DAWorkFlow/DANodeGraphicsScene.cpp" line="291"/>
         <source>can not create node,metadata name=%1(%2)</source>
         <translation>无法创建节点，元信息：%1(%2)</translation>
     </message>

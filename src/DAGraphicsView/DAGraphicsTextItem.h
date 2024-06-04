@@ -32,8 +32,8 @@ public:
 	~DAGraphicsTextItem();
 
 	// 保存到xml中
-    virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement,const QVersionNumber& ver) const override;
-    virtual bool loadFromXml(const QDomElement* itemElement,const QVersionNumber& ver) override;
+	virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const override;
+	virtual bool loadFromXml(const QDomElement* itemElement, const QVersionNumber& ver) override;
 
 	// 获取内部的文本item
 	DAGraphicsStandardTextItem* textItem() const;
@@ -44,6 +44,10 @@ public:
 	void setText(const QString& v);
 	QString getText() const;
 
+	// 文本颜色
+	void setTextColor(const QColor& v);
+	QColor getTextColor() const;
+
 	// 字体
 	void setFont(const QFont& v);
 	QFont getFont() const;
@@ -52,33 +56,13 @@ public:
 	void setEditable(bool on = true);
 	bool isEditable() const;
 
-	// 设置是否开启相对定位
-	void setEnableRelativePosition(bool on);
-	bool isEnableRelativePosition() const;
-
-	// 自动调整大小
-	void setAutoAdjustSize(bool on);
-	bool isAutoAdjustSize() const;
-
-	// 设置相对父窗口的相对定位
-	void setRelativePosition(qreal xp, qreal yp);
-	QPointF getRelativePosition() const;
-
-	// 设置对齐的锚点,RelativePosition=(0,0)，那么就是描点之间的对齐
-	void setRelativeAnchorPoint(ShapeKeyPoint kParentAnchorPoint, ShapeKeyPoint thisAnchorPoint);
-	ShapeKeyPoint getParentRelativeAnchorPoint() const;
-	ShapeKeyPoint getItemRelativeAnchorPoint() const;
-
-	// 更新相对位置
-	void updateRelativePosition();
-	void updateRelativePosition(const QRectF& parentRect, const QRectF& itemRect);
-
 protected:
 	// 绘制具体内容
 	virtual void paintBody(QPainter* painter,
 						   const QStyleOptionGraphicsItem* option,
 						   QWidget* widget,
 						   const QRectF& bodyRect) override;
+	virtual void mousePressEvent(QGraphicsSceneMouseEvent* e) override;
 
 private:
 	void init();
