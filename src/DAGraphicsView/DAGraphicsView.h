@@ -36,8 +36,9 @@ public:
 	 */
 	enum PadFlag
 	{
-		PadDiable              = 0x0001,  ///< 不允许拖动
-        PadByWheelMiddleButton = 0x0002   ///< 通过滚轮中键移动
+        PadDiable                     = 0x0001,  ///< 不允许拖动
+        PadByWheelMiddleButton        = 0x0002,  ///< 通过滚轮中键移动
+        PadBySpaceWithMouseLeftButton = 0x0004   ///< 通过长按空格和鼠标左键实现拖动
 	};
 	Q_DECLARE_FLAGS(PadFlags, PadFlag)
 	Q_FLAG(PadFlag)
@@ -84,10 +85,12 @@ public slots:
 
 protected:
 	// void paintEvent(QPaintEvent * event);
-	void wheelEvent(QWheelEvent* event) override;
-	void mouseMoveEvent(QMouseEvent* event) override;
-	void mousePressEvent(QMouseEvent* event) override;
-	void mouseReleaseEvent(QMouseEvent* event) override;
+    virtual void wheelEvent(QWheelEvent* event) override;
+    virtual void mouseMoveEvent(QMouseEvent* event) override;
+    virtual void mousePressEvent(QMouseEvent* event) override;
+    virtual void mouseReleaseEvent(QMouseEvent* event) override;
+    virtual void keyPressEvent(QKeyEvent* event) override;
+    virtual void keyReleaseEvent(QKeyEvent* event) override;
 
 protected:
 	void wheelZoom(QWheelEvent* event);
