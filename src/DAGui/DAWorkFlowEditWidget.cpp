@@ -494,7 +494,7 @@ DAGraphicsPixmapItem* DAWorkFlowEditWidget::addPixmapItem_(const QImage& img)
  */
 QPointF DAWorkFlowEditWidget::getViewCenterMapToScene() const
 {
-    auto r = ui->workflowGraphicsView->rect().center();
+    auto r = ui->workflowGraphicsView->viewport()->rect().center();
     return ui->workflowGraphicsView->mapToScene(r);
 }
 
@@ -506,8 +506,8 @@ void DAWorkFlowEditWidget::moveItemToViewSceneCenter(QGraphicsItem* item)
 {
     QPointF c = getViewCenterMapToScene();
     auto br   = item->boundingRect();
-    c.rx() -= br.width();
-    c.ry() -= br.height();
+    c.rx() -= (br.width() / 2);
+    c.ry() -= (br.height() / 2);
     item->setPos(c);
 }
 
