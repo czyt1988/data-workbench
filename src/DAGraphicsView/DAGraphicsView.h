@@ -37,7 +37,7 @@ public:
 	enum PadFlag
 	{
 		PadDiable              = 0x0001,  ///< 不允许拖动
-		PadByWheelMiddleButton = 0x0002   ///< 通过中键移动
+        PadByWheelMiddleButton = 0x0002   ///< 通过滚轮中键移动
 	};
 	Q_DECLARE_FLAGS(PadFlags, PadFlag)
 	Q_FLAG(PadFlag)
@@ -76,7 +76,7 @@ public slots:
 	// 缩小
 	void zoomOut();
 	// 设置最适合视图尺寸
-	void setWholeView();
+    void zoomFit();
 	// 选中所有可选的item
 	void selectAll();
     // 取消所有选中

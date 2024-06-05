@@ -64,7 +64,7 @@ public:
     // 添加一个图片item
     DAGraphicsPixmapItem* addPixmapItem_(const QImage& img);
     // 获取当前view视图下的scene中心
-    QPointF getViewSceneCenter() const;
+    QPointF getViewCenterMapToScene() const;
     // 把item移动到屏幕中心
     void moveItemToViewSceneCenter(QGraphicsItem* item);
 public slots:

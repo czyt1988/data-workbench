@@ -492,10 +492,10 @@ DAGraphicsPixmapItem* DAWorkFlowEditWidget::addPixmapItem_(const QImage& img)
  * @brief 获取当前view视图下的scene中心
  * @return
  */
-QPointF DAWorkFlowEditWidget::getViewSceneCenter() const
+QPointF DAWorkFlowEditWidget::getViewCenterMapToScene() const
 {
-    auto r = ui->workflowGraphicsView->sceneRect();
-    return r.center();
+    auto r = ui->workflowGraphicsView->rect().center();
+    return ui->workflowGraphicsView->mapToScene(r);
 }
 
 /**
@@ -504,7 +504,7 @@ QPointF DAWorkFlowEditWidget::getViewSceneCenter() const
  */
 void DAWorkFlowEditWidget::moveItemToViewSceneCenter(QGraphicsItem* item)
 {
-    QPointF c = getViewSceneCenter();
+    QPointF c = getViewCenterMapToScene();
     auto br   = item->boundingRect();
     c.rx() -= br.width();
     c.ry() -= br.height();

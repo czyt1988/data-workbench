@@ -24,7 +24,7 @@ DAGraphicsPixmapItemSettingWidget::PrivateData::PrivateData(DAGraphicsPixmapItem
 //----------------------------------------------------
 
 DAGraphicsPixmapItemSettingWidget::DAGraphicsPixmapItemSettingWidget(QWidget* parent)
-    : QWidget(parent), ui(new Ui::DAGraphicsPixmapItemSettingWidget), DA_PIMPL_CONSTRUCT
+    : QWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DAGraphicsPixmapItemSettingWidget)
 {
     ui->setupUi(this);
     connect(ui->horizontalSliderAlpha,

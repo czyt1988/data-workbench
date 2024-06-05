@@ -114,6 +114,38 @@ void DAGraphicsView::zoomOut()
 }
 
 /**
+ * @brief 设置全部可见尺寸
+ * @note 如果是空场景，此函数无动作
+ */
+void DAGraphicsView::zoomFit()
+{
+    QGraphicsScene* sc = scene();
+    if (!sc) {
+        return;
+    }
+    QRectF rect;
+    QList< QGraphicsItem* > items = sc->items();
+    if (items.isEmpty()) {
+        return;
+    }
+    for (const auto& item : qAsConst(items)) {
+        QRectF boundingRect = item->boundingRect();
+        boundingRect.moveTo(item->scenePos());
+        rect = rect.united(boundingRect);
+    }
+    int space = 10;
+    rect.adjust(-space, -space, space, space);
+    fitInView(rect, Qt::KeepAspectRatio);
+    // 这时要更新scale值m11和m22,这里只取m11
+    auto tm            = transform();
+    d_ptr->mScaleValue = tm.m11();
+    // 这时更新最小scale
+    if (d_ptr->mScaleValue < d_ptr->mScaleMin) {
+        d_ptr->mScaleMin = d_ptr->mScaleValue;
+    }
+}
+
+/**
  * @brief 中键滚动
  * @param event
  */
@@ -142,19 +174,30 @@ void DAGraphicsView::mouseMoveEvent(QMouseEvent* event)
 {
 	d_ptr->mMouseScenePos = mapToScene(event->pos());
 	if (isPadding()) {
-//        qDebug() << tr("isPadding horizontalScrollBar value=%1,dx=%2,verticalScrollBar value=%3 dy=%4")
-//                            .arg(horizontalScrollBar()->value())
-//                            .arg(event->x() - d_ptr->mStartPadPos.x())
-//                            .arg(verticalScrollBar()->value())
-//                            .arg(event->y() - d_ptr->mStartPadPos.y());
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #else
 #endif
-		horizontalScrollBar()->setValue(horizontalScrollBar()->value()
-                                        - (Qt5Qt6Compat_QXXEvent_x(event) - d_ptr->mStartPadPos.x()));
-		verticalScrollBar()->setValue(verticalScrollBar()->value()
-                                      - (Qt5Qt6Compat_QXXEvent_x(event) - d_ptr->mStartPadPos.y()));
+        int dx = Qt5Qt6Compat_QXXEvent_x(event) - d_ptr->mStartPadPos.x();
+        int dy = Qt5Qt6Compat_QXXEvent_y(event) - d_ptr->mStartPadPos.y();
+        qDebug() << QString("isPadding begin move,mStartPadPos=(%1,%2) horizontalScrollBar "
+                            "value=%3,dx=%4,verticalScrollBar value=%5 dy=%6,event.x=%7,y=%8")
+                        .arg(d_ptr->mStartPadPos.x())
+                        .arg(d_ptr->mStartPadPos.y())
+                        .arg(horizontalScrollBar()->value())
+                        .arg(dx)
+                        .arg(verticalScrollBar()->value())
+                        .arg(dy)
+                        .arg(Qt5Qt6Compat_QXXEvent_x(event))
+                        .arg(Qt5Qt6Compat_QXXEvent_y(event));
+        horizontalScrollBar()->setValue(horizontalScrollBar()->value() - dx);
+        verticalScrollBar()->setValue(verticalScrollBar()->value() - dy);
 		d_ptr->mStartPadPos = Qt5Qt6Compat_QXXEvent_Pos(event);
+        qDebug() << QString(
+                        "isPadding end,mStartPadPos=(%1,%2) horizontalScrollBar value=%3,verticalScrollBar value=%4")
+                        .arg(d_ptr->mStartPadPos.x())
+                        .arg(d_ptr->mStartPadPos.y())
+                        .arg(horizontalScrollBar()->value())
+                        .arg(verticalScrollBar()->value());
 		// 移动状态不把事件向下传递
 		event->accept();
 	}
@@ -309,31 +352,6 @@ QList< DAGraphicsItem* > DAGraphicsView::selectedDAItems() const
 		}
 	}
 	return res;
-}
-
-/**
- * @brief 设置全部可见尺寸
- * @note 如果是空场景，此函数无动作
- */
-void DAGraphicsView::setWholeView()
-{
-	QGraphicsScene* sc = scene();
-	if (!sc) {
-		return;
-	}
-	QRectF rect;
-	QList< QGraphicsItem* > items = sc->items();
-	if (items.isEmpty()) {
-		return;
-	}
-	for (const auto& item : qAsConst(items)) {
-		QRectF boundingRect = item->boundingRect();
-		boundingRect.moveTo(item->scenePos());
-		rect = rect.united(boundingRect);
-	}
-	int space = 10;
-	rect.adjust(-space, -space, space, space);
-	fitInView(rect, Qt::KeepAspectRatio);
 }
 
 /**
