@@ -50,11 +50,7 @@ public:
                                  QDomDocument& doc);
 	QDomElement makeNodeElement(const DAAbstractNode::SharedPointer& node, const QString& tagName, QDomDocument& doc);
 	bool loadNodes(DAWorkFlow* workflow, DAWorkFlowGraphicsScene* workFlowScene, const QDomElement& workflowEle);
-	bool loadNodesClipBoard(DAWorkFlow* workflow,
-                            DAWorkFlowGraphicsScene* workFlowScene,
-                            const QDomElement& workflowEle,
-                            QMap< qulonglong, qulonglong >* idMap,
-                            const QRectF& currentViewsceneRect);
+    bool loadNodesClipBoard(DAWorkFlowEditWidget* wfe, const QDomElement& workflowEle, QMap< qulonglong, qulonglong >* idMap);
 
 	[[deprecated("This function is deprecated. Use loadNodeAndItem() instead.")]]
 	DAAbstractNode::SharedPointer loadNode(const QDomElement& nodeEle, DAWorkFlow* workflow, bool isLoadID = true);
@@ -80,8 +76,7 @@ public:
 	void saveNodeLinks(const DAWorkFlow* workflow, QDomDocument& doc, QDomElement& workflowEle);
 	QDomElement makeNodeLinkElement(DAAbstractNodeLinkGraphicsItem* link, const QString& tagName, QDomDocument& doc);
 	bool loadNodeLinks(DAWorkFlowGraphicsScene* scene, DAWorkFlow* wf, const QDomElement& workflowEle);
-	bool loadNodeLinksClipBoardCopy(DAWorkFlowGraphicsScene* scene,
-                                    DAWorkFlow* wf,
+    bool loadNodeLinksClipBoardCopy(DAWorkFlowEditWidget* wfe,
                                     const QDomElement& workflowEle,
                                     const QMap< qulonglong, qulonglong >* idMap);
 	// 保存特殊的item，主要为文本
@@ -102,8 +97,6 @@ public:
 	// 保存属性
 	void savePropertys(const QHash< QString, QVariant >& props, QDomDocument& doc, QDomElement& parentEle);
 	bool loadPropertys(QHash< QString, QVariant >& props, const QDomElement& parentEle);
-	// 计算item所包含的范围，这个范围存入xml中，以便让scene第一时间知道总体范围
-	static QRectF calcMaxSceneRange(const QList< DAGraphicsItem* > its);
 	// 清空处理列表
 	void clearDealItemSet();
 	void recordDealItem(QGraphicsItem* i);
@@ -245,7 +238,7 @@ void DAXmlHelperPrivate::saveWorkflowFromClipBoard(const QList< DAGraphicsItem* 
 	//! 4.先把记忆清空
 	clearDealItemSet();  // 清空保存过的item的记录
 	//! 把工作流的总体范围保存
-	QRectF sceneRange = DAXmlHelperPrivate::calcMaxSceneRange(its);
+    QRectF sceneRange = DAWorkFlowEditWidget::calcAllItemsSceneRange(DAWorkFlowEditWidget::cast(its));
 	workflowEle.setAttribute("sc-x", sceneRange.x());
 	workflowEle.setAttribute("sc-y", sceneRange.y());
 	workflowEle.setAttribute("sc-w", sceneRange.width());
@@ -277,12 +270,9 @@ void DAXmlHelperPrivate::saveWorkflowFromClipBoard(const QList< DAGraphicsItem* 
 bool DAXmlHelperPrivate::loadWorkflowFromClipBoard(DAWorkFlowEditWidget* wfe, const QDomElement& workflowEle, bool isCreateNewId)
 {
     // 对于复制，loadNodes第三个参数必须为false
-	auto workflow = wfe->getWorkflow();
-	auto view     = wfe->getWorkFlowGraphicsView();
-	auto scene    = wfe->getWorkFlowGraphicsScene();
+    auto scene = wfe->getWorkFlowGraphicsScene();
 	clearDealItemSet();  // 清空保存过的item的记录
 	// 计算当前view的中心点
-	QRectF viewsceneRect = view->sceneRect();
 	// 加载开始，设置场景没有就绪
 	scene->setReady(false);
 	scene->getUndoStack()->beginMacro(QObject::tr("Load Nodes"));  // cn:加载节点
@@ -290,10 +280,10 @@ bool DAXmlHelperPrivate::loadWorkflowFromClipBoard(DAWorkFlowEditWidget* wfe, co
 	if (isCreateNewId) {
 		idMaps = std::make_unique< QMap< qulonglong, qulonglong > >();
 	}
-	if (!loadNodesClipBoard(workflow, scene, workflowEle, idMaps.get(), viewsceneRect)) {
+    if (!loadNodesClipBoard(wfe, workflowEle, idMaps.get())) {
 		qCritical() << QObject::tr("load nodes occurce error");
 	}
-	if (!loadNodeLinksClipBoardCopy(scene, workflow, workflowEle, idMaps.get())) {
+    if (!loadNodeLinksClipBoardCopy(wfe, workflowEle, idMaps.get())) {
 		qCritical() << QObject::tr("load nodes link occurce error");
 	}
     // 加载其它
@@ -464,13 +454,12 @@ bool DAXmlHelperPrivate::loadNodes(DAWorkFlow* workflow, DAWorkFlowGraphicsScene
  * @param currentViewsceneRect 当前视图的显示区域，用来进行偏移
  * @return
  */
-bool DAXmlHelperPrivate::loadNodesClipBoard(DAWorkFlow* workflow,
-                                            DAWorkFlowGraphicsScene* workFlowScene,
+bool DAXmlHelperPrivate::loadNodesClipBoard(DAWorkFlowEditWidget* wfe,
                                             const QDomElement& workflowEle,
-                                            QMap< qulonglong, qulonglong >* idMap,
-                                            const QRectF& currentViewsceneRect)
+                                            QMap< qulonglong, qulonglong >* idMap)
 {
-	QDomElement nodesEle = workflowEle.firstChildElement("nodes");
+    DAWorkFlowGraphicsScene* workFlowScene = wfe->getWorkFlowGraphicsScene();
+    QDomElement nodesEle                   = workflowEle.firstChildElement("nodes");
 	//! 加载原来的scenet区域
 	QRectF sceneRange;
 	sceneRange.setX(workflowEle.attribute("sc-x").toDouble());
@@ -478,7 +467,6 @@ bool DAXmlHelperPrivate::loadNodesClipBoard(DAWorkFlow* workflow,
 	sceneRange.setWidth(workflowEle.attribute("sc-w").toDouble());
 	sceneRange.setHeight(workflowEle.attribute("sc-h").toDouble());
 	//! 计算sceneRange和currentViewsceneRect的中心偏移
-	QPointF offset         = currentViewsceneRect.center() - sceneRange.center();
 	QDomNodeList nodeslist = nodesEle.childNodes();
 
 	for (int i = 0; i < nodeslist.size(); ++i) {
@@ -487,11 +475,7 @@ bool DAXmlHelperPrivate::loadNodesClipBoard(DAWorkFlow* workflow,
 			qDebug() << "nodeEle.tagName()=" << nodeEle.tagName() << ",skip and continue";
 			continue;
 		}
-		auto item = loadNodeAndItemWithUndo(nodeEle, workFlowScene, idMap);
-		if (item) {
-			// 这里需要对item进一次偏移，以保障粘贴的节点位于view的中心
-			item->setPos(item->pos() + offset);
-		}
+        loadNodeAndItemWithUndo(nodeEle, workFlowScene, idMap);
 	}
 	return true;
 }
@@ -1105,13 +1089,14 @@ bool DAXmlHelperPrivate::loadNodeLinks(DAWorkFlowGraphicsScene* scene, DAWorkFlo
 	return true;
 }
 
-bool DAXmlHelperPrivate::loadNodeLinksClipBoardCopy(DAWorkFlowGraphicsScene* scene,
-                                                    DAWorkFlow* wf,
+bool DAXmlHelperPrivate::loadNodeLinksClipBoardCopy(DAWorkFlowEditWidget* wfe,
                                                     const QDomElement& workflowEle,
                                                     const QMap< qulonglong, qulonglong >* idMap)
 {
-	QDomElement linksEle = workflowEle.firstChildElement("links");
-	QDomNodeList list    = linksEle.childNodes();
+    DAWorkFlowGraphicsScene* scene = wfe->getWorkFlowGraphicsScene();
+    DAWorkFlow* wf                 = wfe->getWorkflow();
+    QDomElement linksEle           = workflowEle.firstChildElement("links");
+    QDomNodeList list              = linksEle.childNodes();
 	for (int i = 0; i < list.size(); ++i) {
 		QDomElement linkEle = list.at(i).toElement();
 		if (linkEle.tagName() != "link") {
@@ -1483,24 +1468,6 @@ bool DAXmlHelperPrivate::loadPropertys(QHash< QString, QVariant >& props, const 
 		props[ nameEle.text() ] = v;
 	}
 	return true;
-}
-
-/**
- * @brief 计算item所包含的范围，这个范围存入xml中，以便让scene第一时间知道总体范围
- * @param its
- * @return
- */
-QRectF DAXmlHelperPrivate::calcMaxSceneRange(const QList< DAGraphicsItem* > its)
-{
-	if (its.empty()) {
-		return QRectF();
-	}
-	QRectF range = its.first()->sceneBoundingRect();
-	for (int i = 1; i < its.size(); ++i) {
-		range.united(its[ i ]->sceneBoundingRect());
-	}
-	qDebug() << "calcMaxSceneRange=" << range;
-	return range;
 }
 
 void DAXmlHelperPrivate::clearDealItemSet()

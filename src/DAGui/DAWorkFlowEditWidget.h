@@ -67,6 +67,10 @@ public:
     QPointF getViewCenterMapToScene() const;
     // 把item移动到屏幕中心
     void moveItemToViewSceneCenter(QGraphicsItem* item);
+    // 计算item所包含的范围，这个范围存入xml中，以便让scene第一时间知道总体范围
+    static QRectF calcAllItemsSceneRange(const QList< QGraphicsItem* >& its);
+    //
+    static QList< QGraphicsItem* > cast(const QList< DAGraphicsItem* >& its);
 public slots:
 	// 添加一个背景图
 	void addBackgroundPixmap(const QString& pixmapPath);
@@ -141,6 +145,8 @@ private:
 	void createScene();
     // 设置item的选中状态
     void setSelectionState(const QList< QGraphicsItem* >& items, bool isSelect);
+    // 粘贴到视图中心
+    void pasteToViewCenter();
 
 private:
 	Ui::DAWorkFlowEditWidget* ui;
