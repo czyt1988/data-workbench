@@ -342,7 +342,26 @@ DAGraphicsRectItem* DANodeGraphicsScene::createRect_(const QPointF& p)
 	if (!p.isNull()) {
 		item->setPos(p);
 	}
-	return (item);
+    return (item);
+}
+
+/**
+ * @brief 添加一个图片item
+ * @param img
+ * @return
+ */
+DAGraphicsPixmapItem* DANodeGraphicsScene::addPixmapItem_(const QImage& img)
+{
+    if (img.isNull()) {
+        return nullptr;
+    }
+    QPixmap pixmap = QPixmap::fromImage(img);
+    if (pixmap.isNull()) {
+        return nullptr;
+    }
+    DAGraphicsPixmapItem* pixmapItem = new DAGraphicsPixmapItem(pixmap);
+    addItem_(pixmapItem);
+    return pixmapItem;
 }
 
 /**

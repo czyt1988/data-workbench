@@ -27,12 +27,6 @@ class DAAbstractNodeGraphicsItem;
 class DAGUI_API DAWorkFlowEditWidget : public QWidget
 {
 	Q_OBJECT
-public:
-	enum PasteMode
-	{
-		PaseteRangeCenterToViewCenter,  ///< 粘贴内容的中心到视图的中心
-		PaseteRangeCenterToCursor       ///< 粘贴内容的中心到光标点击处
-	};
 
 public:
 	explicit DAWorkFlowEditWidget(QWidget* parent = nullptr);
@@ -98,12 +92,10 @@ public slots:
     void clearSelection();
 	// 复制当前选中的items
 	void copySelectItems();
-	// 复制到剪切板
-    void copyItems(QList< DAGraphicsItem* > its, bool isCopy = true);
 	// 复制当前选中的items
 	void cutSelectItems();
 	// 粘贴
-	void paste(PasteMode mode = PaseteRangeCenterToViewCenter);
+    void paste(DAWorkFlowGraphicsView::PasteMode mode = DAWorkFlowGraphicsView::PaseteRangeCenterToViewCenter);
     // 移除选中的条目
     void removeSelectItems();
     // 执行取消动作
@@ -143,10 +135,6 @@ private:
 	// 获取选中的基本图元
 	QList< DAGraphicsItem* > getSelectDAItems();
 	void createScene();
-    // 设置item的选中状态
-    void setSelectionState(const QList< QGraphicsItem* >& items, bool isSelect);
-    // 粘贴到视图中心
-    void pasteToViewCenter();
 
 private:
 	Ui::DAWorkFlowEditWidget* ui;

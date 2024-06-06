@@ -54,7 +54,7 @@ public:
                                      const QString& tagName,
                                      QDomDocument* doc,
                                      bool isCopyType = true);
-	bool loadClipBoardElement(const QDomElement* clipBoardElement, DAWorkFlowEditWidget* wfe);
+    bool loadClipBoardElement(const QDomElement* clipBoardElement, DAWorkFlowGraphicsScene* sc);
 	// DAGraphicsItem的通用保存
 	static QDomElement makeElement(const DAGraphicsItem* item, const QString& tagName, QDomDocument* doc);
 	static bool loadElement(DAGraphicsItem* item, const QDomElement* tag, const QVersionNumber& v = QVersionNumber());

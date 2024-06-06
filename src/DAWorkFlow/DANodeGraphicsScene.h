@@ -1,6 +1,7 @@
 ﻿#ifndef DANODEGRAPHICSSCENE_H
 #define DANODEGRAPHICSSCENE_H
 #include <QtCore/qglobal.h>
+#include <QImage>
 #include "DANodeMetaData.h"
 #include "DAWorkFlowGlobal.h"
 #include "DAGraphicsScene.h"
@@ -74,6 +75,8 @@ public:
     DAGraphicsStandardTextItem* createText_(const QString& str = QString());
     // 创建矩形
     DAGraphicsRectItem* createRect_(const QPointF& p = QPointF());
+    // 添加一个图片item
+    DAGraphicsPixmapItem* addPixmapItem_(const QImage& img);
     // 通过位置获取DAAbstractNodeGraphicsItem，此函数是加强版的itemAt
     DAAbstractNodeGraphicsItem* nodeItemAt(const QPointF& scenePos) const;
 signals:
@@ -83,7 +86,9 @@ signals:
      * @param item 节点item
      * @param lp 连接点
      */
-    void nodeItemLinkPointSelected(DA::DAAbstractNodeGraphicsItem* item, const DA::DANodeLinkPoint& lp, QGraphicsSceneMouseEvent* event);
+    void nodeItemLinkPointSelected(DA::DAAbstractNodeGraphicsItem* item,
+                                   const DA::DANodeLinkPoint& lp,
+                                   QGraphicsSceneMouseEvent* event);
 
     /**
      * @brief 说明link已经为空，这时会自动remove

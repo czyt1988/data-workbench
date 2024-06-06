@@ -290,11 +290,7 @@ void DAWorkFlowEditWidget::setSelectShapeBorderPen(const QPen& v)
  */
 void DAWorkFlowEditWidget::selectAll()
 {
-	auto secen = getWorkFlowGraphicsScene();
-	if (!secen) {
-		return;
-	}
-	secen->selectAll();
+    ui->workflowGraphicsView->selectAll();
 }
 
 /**
@@ -302,11 +298,7 @@ void DAWorkFlowEditWidget::selectAll()
  */
 void DAWorkFlowEditWidget::clearSelection()
 {
-	auto secen = getWorkFlowGraphicsScene();
-	if (!secen) {
-		return;
-	}
-	secen->clearSelection();
+    ui->workflowGraphicsView->clearSelection();
 }
 
 /**
@@ -314,29 +306,7 @@ void DAWorkFlowEditWidget::clearSelection()
  */
 void DAWorkFlowEditWidget::copySelectItems()
 {
-	qDebug() << "DAWorkFlowEditWidget::copySelectItems";
-	QList< DAGraphicsItem* > its = ui->workflowGraphicsView->selectedDAItems();
-	copyItems(its, true);
-}
-
-/**
- * @brief 复制条目
- * @param its
- * @param isCopy 为true代表是复制，为false代表是剪切
- */
-void DAWorkFlowEditWidget::copyItems(QList< DAGraphicsItem* > its, bool isCopy)
-{
-	DAXmlHelper xml;
-	QDomDocument doc;
-	QDomElement rootEle = xml.makeClipBoardElement(its, QStringLiteral("da-clip"), &doc, isCopy);
-	doc.appendChild(rootEle);
-	QMimeData* mimeData = new QMimeData;
-	mimeData->setData(QStringLiteral("text/da-xml"), doc.toByteArray());
-	QClipboard* clipboard = QApplication::clipboard();
-	if (clipboard) {
-		clipboard->setMimeData(mimeData);
-		qDebug().noquote() << "copy items,da-xml:" << doc.toString();
-	}
+    ui->workflowGraphicsView->copySelectItems();
 }
 
 /**
@@ -344,32 +314,15 @@ void DAWorkFlowEditWidget::copyItems(QList< DAGraphicsItem* > its, bool isCopy)
  */
 void DAWorkFlowEditWidget::cutSelectItems()
 {
-	qDebug() << "DAWorkFlowEditWidget::cutSelectItems";
-	QList< DAGraphicsItem* > its = ui->workflowGraphicsView->selectedDAItems();
-	copyItems(its, false);
-	// 复制完成后要删除
-	auto scene = getWorkFlowGraphicsScene();
-	getUndoStack()->beginMacro(tr("cut"));
-	for (DAGraphicsItem* i : qAsConst(its)) {
-		scene->removeItem_(i);
-	}
-	getUndoStack()->endMacro();
+    ui->workflowGraphicsView->cutSelectItems();
 }
 
 /**
  * @brief 粘贴动作，把目标粘贴到view中心区域
  */
-void DAWorkFlowEditWidget::paste(PasteMode mode)
+void DAWorkFlowEditWidget::paste(DAWorkFlowGraphicsView::PasteMode mode)
 {
-    switch (mode) {
-    case PaseteRangeCenterToViewCenter:
-        pasteToViewCenter();
-        break;
-    case PaseteRangeCenterToCursor:
-        break;
-    default:
-        break;
-    }
+    ui->workflowGraphicsView->paste(mode);
 }
 
 /**
@@ -534,94 +487,6 @@ void DAWorkFlowEditWidget::createScene()
 
     connect(sc, &DAWorkFlowGraphicsScene::selectNodeItemChanged, this, &DAWorkFlowEditWidget::selectNodeItemChanged);
     connect(sc, &DAWorkFlowGraphicsScene::mouseActionFinished, this, &DAWorkFlowEditWidget::mouseActionFinished);
-}
-
-void DAWorkFlowEditWidget::setSelectionState(const QList< QGraphicsItem* >& items, bool isSelect)
-{
-	auto scene = getWorkFlowGraphicsScene();
-	if (!scene) {
-		return;
-	}
-    scene->setSelectionState(items, isSelect);
-}
-
-void DAWorkFlowEditWidget::pasteToViewCenter()
-{
-    //! 首先获取剪切板信息
-    QPointF viewCenterPoint = getViewCenterMapToScene();
-    QClipboard* clipboard   = QApplication::clipboard();
-    if (!clipboard) {
-        qDebug() << "can not get clipboard";
-        return;
-    }
-    QDomDocument doc;
-    const QMimeData* mimeData = clipboard->mimeData();
-
-    // 优先判断是否有text/da-xml
-    QByteArray daxmlData = mimeData->data(QStringLiteral("text/da-xml"));
-    if (daxmlData.size() > 0) {
-        qDebug() << "clipboard paste text/da-xml";
-        if (!doc.setContent(daxmlData)) {
-            qInfo() << tr("Unrecognized mime formats:%1,paste failed").arg(mimeData->formats().join(","));  // cn:无法识别的mime类型:%1,粘贴失败
-            return;
-        }
-        QDomElement rootEle = doc.firstChildElement(QStringLiteral("da-clip"));
-        if (rootEle.isNull()) {
-            qInfo() << tr("Unsupported pasted content");  // cn:不支持的粘贴内容
-            return;
-        }
-        DAXmlHelper xml;
-        if (!xml.loadClipBoardElement(&rootEle, this)) {
-            qInfo() << tr("An exception occurred during the process of parsing and pasting content");  // cn:解析粘贴内容过程出现异常
-            return;
-        }
-        //!把原来选中的取消选中，把粘贴的选中
-        clearSelection();
-        const auto loadedItems = xml.getAllDealItems();
-        QRectF range           = calcAllItemsSceneRange(loadedItems);
-        // 计算偏移
-        QPointF offset = range.center() - viewCenterPoint;
-        for (QGraphicsItem* i : loadedItems) {
-            if (DAGraphicsLinkItem* link = dynamic_cast< DAGraphicsLinkItem* >(i)) {
-                continue;
-            }
-            i->setPos(i->pos() - offset);
-        }
-        // 进行偏移让所有item回到视图中心
-        setSelectionState(loadedItems, true);
-    } else if (mimeData->hasImage()) {
-        // 粘贴图片
-        qDebug() << "clipboard paste Image";
-        QImage image = qvariant_cast< QImage >(mimeData->imageData());
-        if (image.isNull()) {
-            return;
-        }
-        if (DAGraphicsPixmapItem* pixmapItem = addPixmapItem_(image)) {
-            moveItemToViewSceneCenter(pixmapItem);
-        }
-    } else if (mimeData->hasText()) {
-        // 粘贴文本
-        QString textData = mimeData->text();
-        qDebug() << "clipboard paste Text:" << textData;
-        // 有可能选中了多个文件,多个文件会用/n分割，这里不处理
-        QUrl url(textData);
-        if (url.isValid() && url.scheme() == QStringLiteral("file")) {
-            // 转换为本地文件路径
-            QString filePath = url.toLocalFile();
-            qDebug() << "clipboard paste local file:" << filePath;
-            // QFileInfo fi(filePath);
-            //! 1.首先判断是否是project工程，如果是工程的话，直接把工程复制进来
-            // TODO
-
-            //! 2.如果不是工程，判断是否是图片
-            if (DAGraphicsPixmapItem* pixmapItem = addPixmapItem_(QImage(filePath))) {
-                moveItemToViewSceneCenter(pixmapItem);
-            }
-
-        } else {
-            // 单纯复制文本，直接生成一个文本框
-        }
-    }
 }
 
 }  // end of DA
