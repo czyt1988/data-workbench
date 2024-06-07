@@ -17,13 +17,7 @@ class DADataWorkFlow;
 class DAGUI_API DAWorkFlowGraphicsView : public DAGraphicsView
 {
 	Q_OBJECT
-public:
-    enum PasteMode
-    {
-        PaseteRangeCenterToViewCenter,  ///< 粘贴内容的中心到视图的中心
-        PaseteRangeCenterToCursor       ///< 粘贴内容的中心到光标点击处
-    };
-
+    DA_DECLARE_PRIVATE(DAWorkFlowGraphicsView)
 public:
 	DAWorkFlowGraphicsView(QWidget* parent = 0);
 	DAWorkFlowGraphicsView(QGraphicsScene* scene, QWidget* parent = 0);
@@ -39,13 +33,17 @@ public:
     // 把item移动到屏幕中心
     void moveItemToViewCenter(QGraphicsItem* item);
     // 复制当前选中的items
-    void copySelectItems();
+    bool copySelectItems();
     // 复制到剪切板
     void copyItems(const QList< DAGraphicsItem* >& its, bool isCopy = true);
     // 复制当前选中的items
     void cutSelectItems();
     // 粘贴
-    void paste(PasteMode mode = PaseteRangeCenterToViewCenter);
+    QList< QGraphicsItem* > paste();
+    // 粘贴到视图中心
+    void pasteToViewCenter();
+    // 粘贴，同时偏移一个距离
+    void pasteByOffset(const QPointF& offset);
     // 设置item的选中状态
     void setSelectionState(const QList< QGraphicsItem* >& items, bool isSelect);
     // 取消选中
@@ -56,6 +54,8 @@ public:
     static QRectF calcItemsSceneRange(const QList< QGraphicsItem* >& its);
     //
     static QList< QGraphicsItem* > cast(const QList< DAGraphicsItem* >& its);
+    // 所有item偏移一个距离
+    void offsetItems(const QList< QGraphicsItem* >& its, const QPointF& offset);
 signals:
 
 	/**
@@ -70,8 +70,9 @@ protected:
     virtual void mouseReleaseEvent(QMouseEvent* event) override;
     virtual void keyPressEvent(QKeyEvent* event) override;
     virtual void keyReleaseEvent(QKeyEvent* event) override;
-    // 粘贴到视图中心
-    void pasteToViewCenter();
+
+private:
+    void resetCursor();
 };
 
 }  // namespace DA

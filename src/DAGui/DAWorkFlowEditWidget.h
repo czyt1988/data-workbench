@@ -94,8 +94,8 @@ public slots:
 	void copySelectItems();
 	// 复制当前选中的items
 	void cutSelectItems();
-	// 粘贴
-    void paste(DAWorkFlowGraphicsView::PasteMode mode = DAWorkFlowGraphicsView::PaseteRangeCenterToViewCenter);
+    // 粘贴到视图中心
+    void pasteToViewCenter();
     // 移除选中的条目
     void removeSelectItems();
     // 执行取消动作

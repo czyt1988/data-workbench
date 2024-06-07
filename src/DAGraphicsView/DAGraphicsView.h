@@ -70,7 +70,8 @@ public:
 	PadFlags getPaddingFrags() const;
 	// 选中的item
 	QList< DAGraphicsItem* > selectedDAItems() const;
-
+    // 是否空格被按下
+    bool isSpacebarPressed() const;
 public slots:
 	// 放大
 	void zoomIn();

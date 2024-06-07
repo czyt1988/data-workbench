@@ -320,9 +320,9 @@ void DAWorkFlowEditWidget::cutSelectItems()
 /**
  * @brief 粘贴动作，把目标粘贴到view中心区域
  */
-void DAWorkFlowEditWidget::paste(DAWorkFlowGraphicsView::PasteMode mode)
+void DAWorkFlowEditWidget::pasteToViewCenter()
 {
-    ui->workflowGraphicsView->paste(mode);
+    ui->workflowGraphicsView->pasteToViewCenter();
 }
 
 /**

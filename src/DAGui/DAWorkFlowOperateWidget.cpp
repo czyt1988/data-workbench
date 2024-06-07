@@ -531,7 +531,7 @@ void DAWorkFlowOperateWidget::pasteFromClipBoard()
 		qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
 		return;
 	}
-    w->paste(DAWorkFlowGraphicsView::PaseteRangeCenterToViewCenter);
+    w->pasteToViewCenter();
 }
 
 /**

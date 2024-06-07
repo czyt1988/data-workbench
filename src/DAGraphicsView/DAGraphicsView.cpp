@@ -20,9 +20,9 @@ public:
 	qreal mScaleMax { 3.0 };
 	qreal mScaleMin { 0.333 };
 	qreal mZoomStep { 0.1 };
-    qreal mScaleValue { 1.0 };        ///< 记录缩放的值
-    bool mIsPadding { false };        ///< 标记是否开始拖动
-    bool mSpacebarPressed { false };  ///< 标记空格是否被按下
+    qreal mScaleValue { 1.0 };          ///< 记录缩放的值
+    bool mIsPadding { false };          ///< 标记是否开始拖动
+    bool mIsSpacebarPressed { false };  ///< 标记空格是否被按下
 	QPointF mMouseScenePos;
 	QPoint mStartPadPos;  ///< 记录开始拖动的位置
 	DAGraphicsView::ZoomFlags mZoomFlags { DAGraphicsView::ZoomUseWheelAndCtrl };
@@ -229,7 +229,7 @@ void DAGraphicsView::mousePressEvent(QMouseEvent* event)
     }
     if (d_ptr->mPadFlags.testFlag(PadBySpaceWithMouseLeftButton)) {
         // 设置了空格鼠标拖动
-        if (event->button() == Qt::LeftButton && d_ptr->mSpacebarPressed) {
+        if (event->button() == Qt::LeftButton && d_ptr->mIsSpacebarPressed) {
             qDebug() << "mose press2";
             startPad(event);
             // 把事件截断
@@ -265,7 +265,7 @@ void DAGraphicsView::mouseReleaseEvent(QMouseEvent* event)
 void DAGraphicsView::keyPressEvent(QKeyEvent* event)
 {
     if (event->key() == Qt::Key_Space) {
-        d_ptr->mSpacebarPressed = true;
+        d_ptr->mIsSpacebarPressed = true;
     }
     QGraphicsView::keyPressEvent(event);
 }
@@ -273,7 +273,7 @@ void DAGraphicsView::keyPressEvent(QKeyEvent* event)
 void DAGraphicsView::keyReleaseEvent(QKeyEvent* event)
 {
     if (event->key() == Qt::Key_Space) {
-        d_ptr->mSpacebarPressed = false;
+        d_ptr->mIsSpacebarPressed = false;
     }
     QGraphicsView::keyReleaseEvent(event);
 }
@@ -393,7 +393,16 @@ QList< DAGraphicsItem* > DAGraphicsView::selectedDAItems() const
 			res.append(i);
 		}
 	}
-	return res;
+    return res;
+}
+
+/**
+ * @brief 是否空格被按下
+ * @return
+ */
+bool DAGraphicsView::isSpacebarPressed() const
+{
+    return d_ptr->mIsSpacebarPressed;
 }
 
 /**
