@@ -1740,6 +1740,14 @@ Config</source>
     </message>
 </context>
 <context>
+    <name>DA::DAGraphicsTextItem</name>
+    <message>
+        <location filename="DAGraphicsView/DAGraphicsTextItem.cpp" line="74"/>
+        <source>Text</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DA::DAMessageLogViewWidget</name>
     <message>
         <location filename="DAGui/DAMessageLogViewWidget.cpp" line="295"/>
@@ -2208,27 +2216,54 @@ Config</source>
 <context>
     <name>DA::DAWorkFlowEditWidget</name>
     <message>
-        <location filename="DAGui/DAWorkFlowEditWidget.cpp" line="96"/>
+        <location filename="DAGui/DAWorkFlowEditWidget.cpp" line="97"/>
         <source>no workflow set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowEditWidget.cpp" line="346"/>
+        <location filename="DAGui/DAWorkFlowEditWidget.cpp" line="162"/>
+        <location filename="DAGui/DAWorkFlowEditWidget.cpp" line="326"/>
+        <location filename="DAGui/DAWorkFlowEditWidget.cpp" line="354"/>
+        <source>set item font</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAWorkFlowEditWidget.cpp" line="196"/>
+        <source>set item text italic</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAWorkFlowEditWidget.cpp" line="225"/>
+        <source>set item text color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAWorkFlowEditWidget.cpp" line="259"/>
+        <source>set item text family</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAWorkFlowEditWidget.cpp" line="292"/>
+        <source>set item text size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAWorkFlowEditWidget.cpp" line="468"/>
         <source>cut</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowEditWidget.cpp" line="372"/>
+        <location filename="DAGui/DAWorkFlowEditWidget.cpp" line="494"/>
         <source>Unrecognized mime formats:%1,paste failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowEditWidget.cpp" line="377"/>
+        <location filename="DAGui/DAWorkFlowEditWidget.cpp" line="499"/>
         <source>Unsupported pasted content</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowEditWidget.cpp" line="382"/>
+        <location filename="DAGui/DAWorkFlowEditWidget.cpp" line="504"/>
         <source>An exception occurred during the process of parsing and pasting content</source>
         <translation type="unfinished"></translation>
     </message>

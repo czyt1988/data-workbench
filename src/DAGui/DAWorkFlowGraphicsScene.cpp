@@ -260,8 +260,8 @@ void DAWorkFlowGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEve
 	case StartAddText: {
 		auto item = createText_();
 		item->setScenePos(pos);
-		item->setFont(mTextFont);
-		item->setTextColor(mTextColor);
+		item->setSelectTextFont(mTextFont);
+		item->setSelectTextColor(mTextColor);
 		item->setEditable(true);
 		item->setFocus();
 		emit mouseActionFinished(mMouseAction);

@@ -9,6 +9,8 @@ namespace DA
 {
 /**
  * @brief QGraphicsTextItem是一个非常复杂的item，里面包含了QWidgetTextControl多达3000行，暂时不尝试写一个类似的控件
+ *
+ * 这个控件不是继承DAGraphicsItem，但增加了id和xml接口，可以进行关联
  */
 class DAGRAPHICSVIEW_API DAGraphicsStandardTextItem : public QGraphicsTextItem, public DAXMLFileInterface
 {
@@ -42,6 +44,13 @@ public:
 	// 获取item的id，id是这个id唯一的标识，id主要为了能单独的找到这个item，在分组加载时使用
 	uint64_t getItemID() const;
 	void setItemID(uint64_t id);
+	// 设置选中文本颜色，如果没选中，将设置全部
+	void setSelectTextColor(const QColor& v);
+	QColor getSelectTextColor() const;
+	// 设置选中文本字体，如果没选中，将设置全部
+	void setSelectTextFont(const QFont& v);
+	QFont getSelectTextFont() const;
+	//
 
 protected:
 	// 焦点移出事件

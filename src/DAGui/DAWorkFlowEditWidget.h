@@ -81,22 +81,22 @@ public slots:
 	void setSelectShapeBackgroundBrush(const QBrush& b);
 	// 设置当前选中的图元的背景
 	void setSelectShapeBorderPen(const QPen& v);
-    // 全选
-    void selectAll();
-    // 取消选中
-    void clearSelection();
+	// 全选
+	void selectAll();
+	// 取消选中
+	void clearSelection();
 	// 复制当前选中的items
 	void copySelectItems();
 	// 复制到剪切板
-    void copyItems(QList< DAGraphicsItem* > its,bool isCopy = true);
+	void copyItems(QList< DAGraphicsItem* > its, bool isCopy = true);
 	// 复制当前选中的items
 	void cutSelectItems();
 	// 粘贴
 	void paste(PasteMode mode = PaseteRangeCenterToViewCenter);
-    // 移除选中的条目
-    void removeSelectItems();
-    // 执行取消动作
-    void cancel();
+	// 移除选中的条目
+	void removeSelectItems();
+	// 执行取消动作
+	void cancel();
 signals:
 
 	/**
@@ -128,12 +128,13 @@ signals:
 
 private:
 	// 获取选中的文本
-	QList< DAGraphicsStandardTextItem* > getSelectTextItems();
+	QList< DAGraphicsStandardTextItem* > getSelectStandardTextItems();
+	QList< DAGraphicsTextItem* > getSelectTextItems();
 	// 获取选中的基本图元
 	QList< DAGraphicsItem* > getSelectDAItems();
 	void createScene();
-    // 设置item的选中状态
-    void setSelectionState(const QList< QGraphicsItem* >& items, bool isSelect);
+	// 设置item的选中状态
+	void setSelectionState(const QList< QGraphicsItem* >& items, bool isSelect);
 
 private:
 	Ui::DAWorkFlowEditWidget* ui;

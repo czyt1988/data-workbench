@@ -43,15 +43,15 @@ DAGraphicsTextItem::DAGraphicsTextItem(QGraphicsItem* parent) : DAGraphicsResize
 DAGraphicsTextItem::DAGraphicsTextItem(const QFont& f, QGraphicsItem* parent)
     : DAGraphicsResizeableItem(parent), DA_PIMPL_CONSTRUCT
 {
-	setFont(f);
+	setSelectTextFont(f);
 	init();
 }
 
 DAGraphicsTextItem::DAGraphicsTextItem(const QString& str, const QFont& f, QGraphicsItem* parent)
     : DAGraphicsResizeableItem(parent), DA_PIMPL_CONSTRUCT
 {
-	setFont(f);
-	setText(str);
+	setSelectTextFont(f);
+	setPlainText(str);
 	init();
 }
 
@@ -71,7 +71,7 @@ void DAGraphicsTextItem::init()
 	setMovable(true);
 	d_ptr->mTextItem->setFlag(ItemIsSelectable, false);
 	d_ptr->mTextItem->setFlag(ItemIsMovable, false);
-	setText(tr("Text"));  // cn:文本
+	setPlainText(tr("Text"));  // cn:文本
 }
 
 bool DAGraphicsTextItem::saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const
@@ -105,16 +105,15 @@ void DAGraphicsTextItem::setBodySize(const QSizeF& s)
 {
 	DAGraphicsResizeableItem::setBodySize(s);
 	d_ptr->mTextItem->setPos(0, 0);
-	qDebug() << "set text width=" << s.width();
-	d_ptr->mTextItem->setTextWidth(s.width());
-	d_ptr->mTextItem->adjustSize();
+	d_ptr->mTextItem->document()->setPageSize(s);
+	// d_ptr->mTextItem->setTextWidth(s.width());
 }
 
 /**
  * @brief 设置文本
  * @param v
  */
-void DAGraphicsTextItem::setText(const QString& v)
+void DAGraphicsTextItem::setPlainText(const QString& v)
 {
 	d_ptr->mTextItem->setPlainText(v);
 	d_ptr->mTextItem->adjustSize();
@@ -124,7 +123,7 @@ void DAGraphicsTextItem::setText(const QString& v)
  * @brief 文本
  * @return
  */
-QString DAGraphicsTextItem::getText() const
+QString DAGraphicsTextItem::getPlainText() const
 {
     return d_ptr->mTextItem->toPlainText();
 }
@@ -133,36 +132,36 @@ QString DAGraphicsTextItem::getText() const
  * @brief 设置文本颜色
  * @param v
  */
-void DAGraphicsTextItem::setTextColor(const QColor& v)
+void DAGraphicsTextItem::setSelectTextColor(const QColor& v)
 {
-    d_ptr->mTextItem->setDefaultTextColor(v);
+    d_ptr->mTextItem->setSelectTextColor(v);
 }
 
 /**
  * @brief 获取文本颜色
  * @return
  */
-QColor DAGraphicsTextItem::getTextColor() const
+QColor DAGraphicsTextItem::getSelectTextColor() const
 {
-    return d_ptr->mTextItem->defaultTextColor();
+    return d_ptr->mTextItem->getSelectTextColor();
 }
 
 /**
  * @brief 设置字体
  * @param v
  */
-void DAGraphicsTextItem::setFont(const QFont& v)
+void DAGraphicsTextItem::setSelectTextFont(const QFont& v)
 {
-    d_ptr->mTextItem->setFont(v);
+    d_ptr->mTextItem->setSelectTextFont(v);
 }
 
 /**
  * @brief 获取字体
  * @return
  */
-QFont DAGraphicsTextItem::getFont() const
+QFont DAGraphicsTextItem::getSelectTextFont() const
 {
-    return d_ptr->mTextItem->font();
+    return d_ptr->mTextItem->getSelectTextFont();
 }
 
 /**
@@ -181,6 +180,38 @@ void DAGraphicsTextItem::setEditable(bool on)
 bool DAGraphicsTextItem::isEditable() const
 {
     return d_ptr->mTextItem->isEditable();
+}
+
+/**
+ * @brief 获取doc
+ * @return
+ */
+QTextDocument* DAGraphicsTextItem::document() const
+{
+    return d_ptr->mTextItem->document();
+}
+
+/**
+ * @brief QGraphicsTextItem::textCursor
+ * @return
+ */
+QTextCursor DAGraphicsTextItem::textCursor() const
+{
+    return d_ptr->mTextItem->textCursor();
+}
+
+/**
+ * @brief 保存为富文本
+ * @return
+ */
+QString DAGraphicsTextItem::toHtml() const
+{
+    return d_ptr->mTextItem->toHtml();
+}
+
+void DAGraphicsTextItem::setHtml(const QString& html)
+{
+    d_ptr->mTextItem->setHtml(html);
 }
 
 /**

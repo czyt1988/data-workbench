@@ -50,7 +50,7 @@ bool DAGraphicsStandardTextItem::isEditable() const
     return textInteractionFlags().testFlag(Qt::TextEditorInteraction);
 }
 
-bool DAGraphicsStandardTextItem::saveToXml(QDomDocument* doc, QDomElement* parentElement,const QVersionNumber& ver) const
+bool DAGraphicsStandardTextItem::saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const
 {
 	QDomElement textItemEle = doc->createElement("text-info");
 	QPointF scPos           = scenePos();
@@ -116,6 +116,68 @@ uint64_t DAGraphicsStandardTextItem::getItemID() const
 void DAGraphicsStandardTextItem::setItemID(uint64_t id)
 {
 	mID = id;
+}
+
+/**
+ * @brief 设置选中的颜色，如果没有选中对象，尝试全选
+ * @param v
+ */
+void DAGraphicsStandardTextItem::setSelectTextColor(const QColor& v)
+{
+	QTextCursor cursor = textCursor();
+	if (!cursor.hasSelection()) {
+		cursor.select(QTextCursor::Document);
+	}
+	QTextCharFormat format;
+	// 设置文本颜色
+	format.setForeground(QBrush(v));
+	// 应用格式到选中文本
+	cursor.setCharFormat(format);
+}
+
+/**
+ * @brief 获取选中的颜色，如果没有选中对象，尝试全选
+ * @return
+ */
+QColor DAGraphicsStandardTextItem::getSelectTextColor() const
+{
+	QTextCursor cursor = textCursor();
+	if (!cursor.hasSelection()) {
+		cursor.select(QTextCursor::Document);
+	}
+	return cursor.charFormat().foreground().color();
+}
+
+/**
+ * @brief 设置选中文本字体，如果没选中，将设置全部
+ * @param v
+ */
+void DAGraphicsStandardTextItem::setSelectTextFont(const QFont& v)
+{
+	QTextCursor cursor = textCursor();
+	if (!cursor.hasSelection()) {
+		cursor.select(QTextCursor::Document);
+	}
+	// 说明有选中文本
+	QTextCharFormat format;
+	format.setFont(v);
+	// 应用格式到选中文本
+	cursor.setCharFormat(format);
+}
+
+/**
+ * @brief 选中文本字体，如果没选中，将设置全部
+ * @return
+ */
+QFont DAGraphicsStandardTextItem::getSelectTextFont() const
+{
+	QTextCursor cursor = textCursor();
+	if (!cursor.hasSelection()) {
+		cursor.select(QTextCursor::Document);
+	}
+	// 获取该位置的字符格式
+	QTextCharFormat format = cursor.charFormat();
+	return format.font();
 }
 
 void DAGraphicsStandardTextItem::focusOutEvent(QFocusEvent* focusEvent)

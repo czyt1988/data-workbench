@@ -325,7 +325,7 @@ DAGraphicsTextItem* DANodeGraphicsScene::createText_(const QString& str)
 {
 	DAGraphicsTextItem* item = new DAGraphicsTextItem();
 	if (!str.isEmpty()) {
-		item->setText(str);
+		item->setPlainText(str);
 	}
 	addItem_(item);
 	return (item);

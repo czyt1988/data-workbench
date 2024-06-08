@@ -2,6 +2,8 @@
 #define DAGRAPHICSTEXTITEM_H
 #include <QGraphicsTextItem>
 #include "DAGraphicsResizeableItem.h"
+#include <QTextCursor>
+class QTextDocument;
 namespace DA
 {
 class DAGraphicsStandardTextItem;
@@ -41,20 +43,29 @@ public:
 	void setBodySize(const QSizeF& s) override;
 
 	// 文本
-	void setText(const QString& v);
-	QString getText() const;
+	void setPlainText(const QString& v);
+	QString getPlainText() const;
 
 	// 文本颜色
-	void setTextColor(const QColor& v);
-	QColor getTextColor() const;
+	void setSelectTextColor(const QColor& v);
+	QColor getSelectTextColor() const;
 
 	// 字体
-	void setFont(const QFont& v);
-	QFont getFont() const;
+	void setSelectTextFont(const QFont& v);
+	QFont getSelectTextFont() const;
 
 	// 设置编辑模式
 	void setEditable(bool on = true);
 	bool isEditable() const;
+
+	// 获取doc
+	QTextDocument* document() const;
+	// textCursor
+	QTextCursor textCursor() const;
+
+	// 转换为富文本
+	QString toHtml() const;
+	void setHtml(const QString& html);
 
 protected:
 	// 绘制具体内容
