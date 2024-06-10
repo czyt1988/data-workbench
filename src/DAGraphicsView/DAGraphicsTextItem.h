@@ -76,7 +76,7 @@ protected:
 	virtual void mousePressEvent(QGraphicsSceneMouseEvent* e) override;
 
 private:
-	void init();
+	void init(const QString& initText);
 };
 }
 #endif  // DAGRAPHICSTEXTITEM_H

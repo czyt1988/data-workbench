@@ -96,6 +96,7 @@ void DANodeGraphicsScene::setWorkFlow(DAWorkFlow* wf)
 		disconnect(d_ptr->mWorkflow.data(), &DAWorkFlow::nodeNameChanged, this, &DANodeGraphicsScene::onNodeNameChanged);
 	}
 	d_ptr->mWorkflow = wf;
+	wf->recordScene(this);
 	if (wf) {
 		connect(wf, &DAWorkFlow::nodeNameChanged, this, &DANodeGraphicsScene::onNodeNameChanged);
 		const QList< std::shared_ptr< DAAbstractNodeFactory > > factorys = wf->getAllFactorys();
@@ -328,6 +329,7 @@ DAGraphicsTextItem* DANodeGraphicsScene::createText_(const QString& str)
 		item->setPlainText(str);
 	}
 	addItem_(item);
+	item->setSelected(true);
 	return (item);
 }
 
@@ -343,6 +345,7 @@ DAGraphicsRectItem* DANodeGraphicsScene::createRect_(const QPointF& p)
 	if (!p.isNull()) {
 		item->setPos(p);
 	}
+	item->setSelected(true);
 	return (item);
 }
 

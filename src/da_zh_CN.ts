@@ -2263,7 +2263,6 @@ Table Area</source>
     <message>
         <location filename="DAGui/DAWorkFlowEditWidget.cpp" line="162"/>
         <location filename="DAGui/DAWorkFlowEditWidget.cpp" line="326"/>
-        <location filename="DAGui/DAWorkFlowEditWidget.cpp" line="354"/>
         <source>set item font</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5194,43 +5193,43 @@ Wrap</source>
         <translation>自定义虚线</translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="14"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="16"/>
         <source>Item Add</source>
         <translation>添加图元</translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="45"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="47"/>
         <source>Item Remove</source>
         <translation>删除图元</translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="86"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="88"/>
         <source>Items Move</source>
         <translation>移动（多个）图元</translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="155"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="157"/>
         <source>Item Move</source>
         <translation>移动图元</translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="238"/>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="248"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="240"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="250"/>
         <source>Item Resize</source>
         <translation>图元改变尺寸</translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="319"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="321"/>
         <source>Item Resize Width</source>
         <translation>图元改变宽度</translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="364"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="366"/>
         <source>Item Resize Height</source>
         <translation>图元改变高度</translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="409"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="411"/>
         <source>Item Rotation</source>
         <translation>旋转图元</translation>
     </message>

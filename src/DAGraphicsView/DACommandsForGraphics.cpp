@@ -6,7 +6,9 @@
 #include "DAGraphicsItemGroup.h"
 #include "DAQtContainerUtil.hpp"
 #include <QObject>
-using namespace DA;
+#include <QTextDocument>
+namespace DA
+{
 
 DACommandsForGraphicsItemAdd::DACommandsForGraphicsItemAdd(QGraphicsItem* item, QGraphicsScene* scene, QUndoCommand* parent)
     : QUndoCommand(parent), mItem(item), mScene(scene), mNeedDelete(false)
@@ -552,4 +554,34 @@ void DACommandsForGraphicsItemUngrouping::undo()
 	mScene->addItem(mGroupItem);
 	mGroupItem->setSelected(true);
 	mNeedDelete = false;
+}
+//===============================================================
+// DACommandTextDocumentWrapper
+//===============================================================
+DACommandTextDocumentWrapper::DACommandTextDocumentWrapper(QTextDocument* doc, QUndoCommand* parent)
+	: QUndoCommand(parent), mDoc(doc)
+{
+}
+
+DACommandTextDocumentWrapper::~DACommandTextDocumentWrapper()
+{
+}
+
+void DACommandTextDocumentWrapper::redo()
+{
+	if (mDoc) {
+		if (mDoc->isRedoAvailable()) {
+			mDoc->redo();
+		}
+	}
+}
+
+void DACommandTextDocumentWrapper::undo()
+{
+	if (mDoc) {
+		if (mDoc->isUndoAvailable()) {
+			mDoc->undo();
+		}
+	}
+}
 }

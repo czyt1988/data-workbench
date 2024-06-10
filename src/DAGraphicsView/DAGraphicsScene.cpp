@@ -513,10 +513,10 @@ void DAGraphicsScene::showGridLine(bool on)
  */
 void DAGraphicsScene::selectAll()
 {
-    int selectCnt = changeAllSelection(true);
+	int selectCnt = changeAllSelection(true);
 	if (selectCnt > 0) {
 		emit selectionChanged();
-    }
+	}
 }
 
 /**
@@ -524,10 +524,10 @@ void DAGraphicsScene::selectAll()
  */
 void DAGraphicsScene::clearSelection()
 {
-    int selectCnt = changeAllSelection(false);
-    if (selectCnt > 0) {
-        emit selectionChanged();
-    }
+	int selectCnt = changeAllSelection(false);
+	if (selectCnt > 0) {
+		emit selectionChanged();
+	}
 }
 
 /**
@@ -537,15 +537,29 @@ void DAGraphicsScene::clearSelection()
  */
 int DAGraphicsScene::setSelectionState(const QList< QGraphicsItem* >& its, bool isSelect)
 {
-    int changeCnt = 0;
-    for (QGraphicsItem* i : its) {
-        if (i->flags().testFlag(QGraphicsItem::ItemIsSelectable)) {
-            // 只有没有被选上，且是可选的才会执行选中动作
-            i->setSelected(isSelect);
-            ++changeCnt;
-        }
-    }
-    return changeCnt;
+	int changeCnt = 0;
+	for (QGraphicsItem* i : its) {
+		if (i->flags().testFlag(QGraphicsItem::ItemIsSelectable)) {
+			// 只有没有被选上，且是可选的才会执行选中动作
+			i->setSelected(isSelect);
+			++changeCnt;
+		}
+	}
+	return changeCnt;
+}
+
+/**
+ * @brief 针对QTextDocument的undocmd管理到scene的undocmd的槽
+ *
+ * 这个槽的目的是为例针对QGraphicsTextItem的富文本QTextDocument的redo/undo,
+ * 用户在操作QTextDocument后，产生的命令由DAGraphicsScene的undo stack来管理
+ * @param doc
+ */
+void DAGraphicsScene::textDocumentUndoCommandAdded(QTextDocument* doc)
+{
+	qDebug() << "textDocumentUndoCommandAdded";
+	DACommandTextDocumentWrapper* cmd = new DACommandTextDocumentWrapper(doc);
+	push(cmd);
 }
 /**
  * @brief 是否显示网格线
@@ -946,7 +960,7 @@ void DAGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 			DAGraphicsResizeableItem* ri = dynamic_cast< DAGraphicsResizeableItem* >(its);
 			if (ri) {
 				if (DAGraphicsResizeableItem::NotUnderAnyControlType
-                    != ri->getControlPointByPos(ri->mapFromScene(mouseEvent->scenePos()))) {
+					!= ri->getControlPointByPos(ri->mapFromScene(mouseEvent->scenePos()))) {
 					// 说明点击在了控制点上，需要跳过
 					d_ptr->mIsMovingItems = false;
 					return;
@@ -994,16 +1008,16 @@ void DAGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		d_ptr->mIsMovingItems = false;
 		QPointF releasePos    = mouseEvent->scenePos();
 		if (qFuzzyCompare(releasePos.x(), d_ptr->mLastMousePressScenePos.x())
-            && qFuzzyCompare(releasePos.y(), d_ptr->mLastMousePressScenePos.y())) {
+			&& qFuzzyCompare(releasePos.y(), d_ptr->mLastMousePressScenePos.y())) {
 			// 位置相等，不做处理
 			return;
 		}
 		// 位置不等，属于正常移动
 		d_ptr->mMovingInfos.updateEndPos();
 		DACommandsForGraphicsItemsMoved* cmd = new DACommandsForGraphicsItemsMoved(d_ptr->mMovingInfos.items,
-                                                                                   d_ptr->mMovingInfos.startsPos,
-                                                                                   d_ptr->mMovingInfos.endsPos,
-                                                                                   true);
+																				   d_ptr->mMovingInfos.startsPos,
+																				   d_ptr->mMovingInfos.endsPos,
+																				   true);
 		push(cmd);
 		// 位置改变信号
 		//         qDebug() << "emit itemsPositionChanged";
@@ -1055,12 +1069,12 @@ void DAGraphicsScene::checkSelectItem(QGraphicsItem* item)
 				checkSelectItem(i);
 			}
 		}
-    }
+	}
 }
 
 int DAGraphicsScene::changeAllSelection(bool setSelect)
 {
-    return setSelectionState(items(), setSelect);
+	return setSelectionState(items(), setSelect);
 }
 
 }  // end DA

@@ -351,16 +351,6 @@ void DAWorkFlowEditWidget::setSelectTextItemFont(const QFont& f)
 		oldHtml.append(i->toHtml());
 		i->setSelectTextFont(f);
 	}
-	secen->getUndoStack()->beginMacro(tr("set item font"));  // 设置图元字体
-	if (standarditems.size() > 0) {
-		auto cmd = new DA::DACommandGraphicsStandardTextItemsChangeHtml(standarditems, sandardOldHtml);
-		secen->push(cmd);
-	}
-	if (items.size() > 0) {
-		auto cmd = new DA::DACommandGraphicsTextItemsChangeHtml(items, oldHtml);
-		secen->push(cmd);
-	}
-	secen->getUndoStack()->endMacro();
 #endif
 }
 

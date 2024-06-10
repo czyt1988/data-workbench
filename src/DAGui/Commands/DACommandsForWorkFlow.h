@@ -207,20 +207,6 @@ private:
 	bool mSkipFirstRedo;
 };
 
-/**
- * @brief 改变GraphicsTextItem内容
- */
-class DAGUI_API DACommandTextDocumentWrapper : public QUndoCommand
-{
-public:
-	DACommandTextDocumentWrapper(QTextDocument* doc, QUndoCommand* parent = nullptr);
-	~DACommandTextDocumentWrapper();
-	virtual void redo() override;
-	virtual void undo() override;
-
-private:
-	QPointer< QTextDocument > mDoc;
-};
 }
 
 #endif  // DACOMMANDSFORWORKFLOWNODEGRAPHICS_H

@@ -5,6 +5,10 @@
 #include <QGraphicsTextItem>
 #include "DAGraphicsViewGlobal.h"
 #include "DAUtils/DAXMLFileInterface.h"
+class QInputMethodEvent;
+class QFocusEvent;
+class QGraphicsSceneMouseEvent;
+
 namespace DA
 {
 /**
@@ -50,17 +54,22 @@ public:
 	// 设置选中文本字体，如果没选中，将设置全部
 	void setSelectTextFont(const QFont& v);
 	QFont getSelectTextFont() const;
-	//
+	// 是否自动绑定DAGraphicsScene的redo/undo，这样QDocumentText的redo/undo会自动被DAGraphicsScene的redo/undo捕获
+	bool getAutoBindRedoundoToScene() const;
+	void setAutoBindRedoundoToScene(bool v);
 
 protected:
 	// 焦点移出事件
 	virtual void focusOutEvent(QFocusEvent* focusEvent) override;
 	// 鼠标双击事件进入编辑
 	virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent* event) override;
+	//
+	virtual QVariant itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant& value) override;
 
 private:
 	void initItem();
 	uint64_t mID { 0 };
+	bool mAutoBindRedoundoToScene { true };  ///< 标记是否自动绑定DAGraphicsScene的redo/undo
 };
 }  // end of namespace DA
 #endif  // DAGRAPHICSSTANDARDTEXTITEM_H

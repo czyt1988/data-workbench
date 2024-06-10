@@ -37,29 +37,29 @@ DAGraphicsTextItem::PrivateData::PrivateData(DAGraphicsTextItem* p) : q_ptr(p)
 
 DAGraphicsTextItem::DAGraphicsTextItem(QGraphicsItem* parent) : DAGraphicsResizeableItem(parent), DA_PIMPL_CONSTRUCT
 {
-    init();
+    init(tr("Text"));
 }
 
 DAGraphicsTextItem::DAGraphicsTextItem(const QFont& f, QGraphicsItem* parent)
     : DAGraphicsResizeableItem(parent), DA_PIMPL_CONSTRUCT
 {
+	init(tr("Text"));
 	setSelectTextFont(f);
-	init();
 }
 
 DAGraphicsTextItem::DAGraphicsTextItem(const QString& str, const QFont& f, QGraphicsItem* parent)
     : DAGraphicsResizeableItem(parent), DA_PIMPL_CONSTRUCT
 {
+	init(QString());
 	setSelectTextFont(f);
 	setPlainText(str);
-	init();
 }
 
 DAGraphicsTextItem::~DAGraphicsTextItem()
 {
 }
 
-void DAGraphicsTextItem::init()
+void DAGraphicsTextItem::init(const QString& initText)
 {
 	setAcceptDrops(true);
 	setAcceptHoverEvents(true);
@@ -71,7 +71,9 @@ void DAGraphicsTextItem::init()
 	setMovable(true);
 	d_ptr->mTextItem->setFlag(ItemIsSelectable, false);
 	d_ptr->mTextItem->setFlag(ItemIsMovable, false);
-	setPlainText(tr("Text"));  // cn:文本
+	if (!initText.isEmpty()) {
+		setPlainText(initText);  // cn:文本
+	}
 }
 
 bool DAGraphicsTextItem::saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const
@@ -116,7 +118,6 @@ void DAGraphicsTextItem::setBodySize(const QSizeF& s)
 void DAGraphicsTextItem::setPlainText(const QString& v)
 {
 	d_ptr->mTextItem->setPlainText(v);
-	d_ptr->mTextItem->adjustSize();
 }
 
 /**
@@ -234,6 +235,7 @@ void DAGraphicsTextItem::paintBody(QPainter* painter, const QStyleOptionGraphics
 
 void DAGraphicsTextItem::mousePressEvent(QGraphicsSceneMouseEvent* e)
 {
+	// qDebug() << "DAGraphicsTextItem::mousePressEvent";
 	DAGraphicsResizeableItem::mousePressEvent(e);
 	if (!isResizing()) {
 		auto br = d_ptr->mTextItem->boundingRect();

@@ -6,6 +6,7 @@
 #include <QDomDocument>
 #include <QDomElement>
 #include "DAGraphicsItemFactory.h"
+#include "DAGraphicsScene.h"
 namespace DA
 {
 
@@ -201,6 +202,24 @@ void DAGraphicsStandardTextItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent*
 	QGraphicsTextItem::mouseDoubleClickEvent(event);
 }
 
+QVariant DAGraphicsStandardTextItem::itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant& value)
+{
+	if (change == QGraphicsItem::ItemSceneChange) {
+		if (QGraphicsScene* newScene = value.value< QGraphicsScene* >()) {
+			if (DAGraphicsScene* daScene = qobject_cast< DAGraphicsScene* >(newScene)) {
+				QTextDocument* doc = document();
+				if (doc) {
+					connect(doc,
+							&QTextDocument::undoCommandAdded,
+							daScene,
+							std::bind(&DAGraphicsScene::textDocumentUndoCommandAdded, daScene, doc));
+				}
+			}
+		}
+	}
+	return QGraphicsTextItem::itemChange(change, value);
+}
+
 void DAGraphicsStandardTextItem::initItem()
 {
 	union Combine__ {
@@ -212,6 +231,26 @@ void DAGraphicsStandardTextItem::initItem()
 	mID   = DAGraphicsItemFactory::generateID(tmp.a);
 	setDefaultTextColor(Qt::black);  // 设置字体颜色
 	setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable | QGraphicsItem::ItemIsFocusable);
-	setTextInteractionFlags(Qt::TextEditorInteraction);
+	// setTextInteractionFlags(Qt::TextEditorInteraction);
+}
+
+/**
+ * @brief 是否自动绑定DAGraphicsScene的redo/undo
+ * @return
+ */
+bool DAGraphicsStandardTextItem::getAutoBindRedoundoToScene() const
+{
+    return mAutoBindRedoundoToScene;
+}
+
+/**
+ * @brief 设置自动绑定DAGraphicsScene的redo/undo
+ *
+ * 如果是，这样QDocumentText的redo/undo会自动被DAGraphicsScene的redo/undo捕获
+ * @param v
+ */
+void DAGraphicsStandardTextItem::setAutoBindRedoundoToScene(bool v)
+{
+    mAutoBindRedoundoToScene = v;
 }
 }

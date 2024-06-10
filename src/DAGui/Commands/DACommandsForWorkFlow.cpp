@@ -356,30 +356,4 @@ void DACommandGraphicsTextItemsChangeHtml::undo()
 	}
 }
 
-DACommandTextDocumentWrapper::DACommandTextDocumentWrapper(QTextDocument* doc, QUndoCommand* parent) : QUndoCommand(parent), mDoc(doc)
-{
-}
-
-DACommandTextDocumentWrapper::~DACommandTextDocumentWrapper()
-{
-}
-
-void DACommandTextDocumentWrapper::redo()
-{
-	if (mDoc) {
-		if (mDoc->isRedoAvailable()) {
-			mDoc->redo();
-		}
-	}
-}
-
-void DACommandTextDocumentWrapper::undo()
-{
-	if (mDoc) {
-		if (mDoc->isUndoAvailable()) {
-			mDoc->undo();
-		}
-	}
-}
-
 }  // end DA
