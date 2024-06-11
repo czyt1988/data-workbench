@@ -212,7 +212,7 @@ DAGraphicsPixmapItem* DAWorkFlowGraphicsScene::ensureGetBackgroundPixmapItem()
 	}
 	return mBackgroundPixmapItem;
 }
-
+#if 0
 void DAWorkFlowGraphicsScene::dragEnterEvent(QGraphicsSceneDragDropEvent* event)
 {
 	if (event->mimeData()->hasFormat(DANodeMimeData::formatString())) {
@@ -246,7 +246,7 @@ void DAWorkFlowGraphicsScene::dropEvent(QGraphicsSceneDragDropEvent* event)
 		createNode_(nodemeta, event->scenePos());
 	}
 }
-
+#endif
 void DAWorkFlowGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
 	if (mMouseAction == NoMouseAction) {
