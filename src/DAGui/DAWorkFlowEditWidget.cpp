@@ -11,6 +11,7 @@
 #include <QClipboard>
 #include <QApplication>
 #include <QFileInfo>
+#include "DAGraphicsTextItem.h"
 // workflow
 #include "DAWorkFlowGraphicsView.h"
 #include "DAWorkFlowGraphicsScene.h"
@@ -70,9 +71,9 @@ DAWorkFlowGraphicsView* DAWorkFlowEditWidget::getWorkFlowGraphicsView() const
 DAWorkFlowGraphicsScene* DAWorkFlowEditWidget::getWorkFlowGraphicsScene() const
 {
 #if 1
-    return mScene;
+	return mScene;
 #else
-    return qobject_cast< DAWorkFlowGraphicsScene* >(ui->workflowGraphicsView->scene());
+	return qobject_cast< DAWorkFlowGraphicsScene* >(ui->workflowGraphicsView->scene());
 #endif
 }
 
@@ -149,15 +150,15 @@ void DAWorkFlowEditWidget::setSelectTextToBold(bool on)
 	if (!secen) {
 		return;
 	}
-	QList< DAGraphicsStandardTextItem* > items = getSelectTextItems();
-	QList< QFont > newFonts;
-	for (DAGraphicsStandardTextItem* item : qAsConst(items)) {
-		QFont font = item->font();
-		font.setBold(on);
-		newFonts.append(font);
+	const auto standarditems = getSelectStandardTextItems();
+	for (auto item : standarditems) {
+		item->setSelectTextBold(on);
 	}
-	DA::DACommandGraphicsTextItemsChangeFont* cmd = new DA::DACommandGraphicsTextItemsChangeFont(items, newFonts);
-	secen->push(cmd);
+
+	const auto items = getSelectTextItems();
+	for (auto item : items) {
+		item->setSelectTextBold(on);
+	}
 }
 
 void DAWorkFlowEditWidget::setSelectTextToItalic(bool on)
@@ -166,15 +167,15 @@ void DAWorkFlowEditWidget::setSelectTextToItalic(bool on)
 	if (!secen) {
 		return;
 	}
-	QList< DAGraphicsStandardTextItem* > items = getSelectTextItems();
-	QList< QFont > newFonts;
-	for (DAGraphicsStandardTextItem* item : qAsConst(items)) {
-		QFont font = item->font();
-		font.setItalic(on);
-		newFonts.append(font);
+	const auto standarditems = getSelectStandardTextItems();
+	for (auto item : standarditems) {
+		item->setSelectTextItalic(on);
 	}
-	DA::DACommandGraphicsTextItemsChangeFont* cmd = new DA::DACommandGraphicsTextItemsChangeFont(items, newFonts);
-	secen->push(cmd);
+
+	const auto items = getSelectTextItems();
+	for (auto item : items) {
+		item->setSelectTextItalic(on);
+	}
 }
 
 void DAWorkFlowEditWidget::setSelectTextColor(const QColor& color)
@@ -183,13 +184,15 @@ void DAWorkFlowEditWidget::setSelectTextColor(const QColor& color)
 	if (!secen) {
 		return;
 	}
-	QList< DAGraphicsStandardTextItem* > items = getSelectTextItems();
-	QList< QColor > colors;
-	for (int i = 0; i < items.size(); ++i) {
-		colors.append(color);
+	const auto standarditems = getSelectStandardTextItems();
+	for (auto item : standarditems) {
+		item->setSelectTextColor(color);
 	}
-	DA::DACommandGraphicsTextItemsChangeColor* cmd = new DA::DACommandGraphicsTextItemsChangeColor(items, colors);
-	secen->push(cmd);
+
+	const auto items = getSelectTextItems();
+	for (auto item : items) {
+		item->setSelectTextColor(color);
+	}
 }
 
 void DAWorkFlowEditWidget::setSelectTextFamily(const QString& family)
@@ -198,36 +201,37 @@ void DAWorkFlowEditWidget::setSelectTextFamily(const QString& family)
 	if (!secen) {
 		return;
 	}
-	QList< DAGraphicsStandardTextItem* > items = getSelectTextItems();
-	QList< QFont > newFonts;
-	for (DAGraphicsStandardTextItem* item : qAsConst(items)) {
-		QFont font = item->font();
-		font.setFamily(family);
-		newFonts.append(font);
+	const auto standarditems = getSelectStandardTextItems();
+	for (auto item : standarditems) {
+		item->setSelectTextFamily(family);
 	}
-	DA::DACommandGraphicsTextItemsChangeFont* cmd = new DA::DACommandGraphicsTextItemsChangeFont(items, newFonts);
-	secen->push(cmd);
+
+	const auto items = getSelectTextItems();
+	for (auto item : items) {
+		item->setSelectTextFamily(family);
+	}
 }
 
-void DAWorkFlowEditWidget::setTextSize(const int size)
+void DAWorkFlowEditWidget::setSelectTextPointSize(const int size)
 {
 	auto secen = getWorkFlowGraphicsScene();
 	if (!secen) {
 		return;
 	}
-	QList< DAGraphicsStandardTextItem* > items = getSelectTextItems();
-	QList< QFont > newFonts;
-	for (DAGraphicsStandardTextItem* item : qAsConst(items)) {
-		QFont font = item->font();
-		font.setPointSize(size);
-		newFonts.append(font);
+	const auto standarditems = getSelectStandardTextItems();
+	for (auto item : standarditems) {
+		item->setSelectTextPointSize(size);
 	}
-	DA::DACommandGraphicsTextItemsChangeFont* cmd = new DA::DACommandGraphicsTextItemsChangeFont(items, newFonts);
-	secen->push(cmd);
+	const auto items = getSelectTextItems();
+	for (auto item : items) {
+		item->setSelectTextPointSize(size);
+	}
 }
 
 /**
  * @brief 设置选中的textitem的字体
+ *
+ * @note 此操作自带redo/undo，DAGraphicsStandardTextItem会自动把命令放入scene的undo stack中
  * @param f
  */
 void DAWorkFlowEditWidget::setSelectTextItemFont(const QFont& f)
@@ -236,16 +240,14 @@ void DAWorkFlowEditWidget::setSelectTextItemFont(const QFont& f)
 	if (!secen) {
 		return;
 	}
-	QList< DAGraphicsStandardTextItem* > items = getSelectTextItems();
-	if (items.isEmpty()) {
-		return;
+	auto standarditems = getSelectStandardTextItems();
+	for (auto item : standarditems) {
+		item->setSelectTextFont(f);
 	}
-	QList< QFont > newFonts;
-	for (int i = 0; i < items.size(); ++i) {
-		newFonts.append(f);
+	auto items = getSelectTextItems();
+	for (auto item : items) {
+		item->setSelectTextFont(f);
 	}
-	DA::DACommandGraphicsTextItemsChangeFont* cmd = new DA::DACommandGraphicsTextItemsChangeFont(items, newFonts);
-	secen->push(cmd);
 }
 
 /**
@@ -264,7 +266,7 @@ void DAWorkFlowEditWidget::setSelectShapeBackgroundBrush(const QBrush& b)
 	if (items.isEmpty()) {
 		return;
 	}
-	DA::DACommandGraphicsShapeBackgroundBrushChange* cmd = new DA::DACommandGraphicsShapeBackgroundBrushChange(items, b);
+	auto cmd = new DA::DACommandGraphicsShapeBackgroundBrushChange(items, b);
 	secen->push(cmd);
 }
 /**
@@ -375,16 +377,16 @@ void DAWorkFlowEditWidget::setDefaultTextColor(const QColor& c)
  */
 DAGraphicsPixmapItem* DAWorkFlowEditWidget::addPixmapItem_(const QImage& img)
 {
-    if (img.isNull()) {
-        return nullptr;
-    }
-    QPixmap pixmap = QPixmap::fromImage(img);
-    if (pixmap.isNull()) {
-        return nullptr;
-    }
-    DAGraphicsPixmapItem* pixmapItem = new DAGraphicsPixmapItem(pixmap);
-    getWorkFlowGraphicsScene()->addItem_(pixmapItem);
-    return pixmapItem;
+	if (img.isNull()) {
+		return nullptr;
+	}
+	QPixmap pixmap = QPixmap::fromImage(img);
+	if (pixmap.isNull()) {
+		return nullptr;
+	}
+	DAGraphicsPixmapItem* pixmapItem = new DAGraphicsPixmapItem(pixmap);
+	getWorkFlowGraphicsScene()->addItem_(pixmapItem);
+	return pixmapItem;
 }
 
 /**
@@ -393,8 +395,8 @@ DAGraphicsPixmapItem* DAWorkFlowEditWidget::addPixmapItem_(const QImage& img)
  */
 QPointF DAWorkFlowEditWidget::getViewCenterMapToScene() const
 {
-    auto r = ui->workflowGraphicsView->viewport()->rect().center();
-    return ui->workflowGraphicsView->mapToScene(r);
+	auto r = ui->workflowGraphicsView->viewport()->rect().center();
+	return ui->workflowGraphicsView->mapToScene(r);
 }
 
 /**
@@ -403,11 +405,11 @@ QPointF DAWorkFlowEditWidget::getViewCenterMapToScene() const
  */
 void DAWorkFlowEditWidget::moveItemToViewSceneCenter(QGraphicsItem* item)
 {
-    QPointF c = getViewCenterMapToScene();
-    auto br   = item->boundingRect();
-    c.rx() -= (br.width() / 2);
-    c.ry() -= (br.height() / 2);
-    item->setPos(c);
+	QPointF c = getViewCenterMapToScene();
+	auto br   = item->boundingRect();
+	c.rx() -= (br.width() / 2);
+	c.ry() -= (br.height() / 2);
+	item->setPos(c);
 }
 
 /**
@@ -417,31 +419,31 @@ void DAWorkFlowEditWidget::moveItemToViewSceneCenter(QGraphicsItem* item)
  */
 QRectF DAWorkFlowEditWidget::calcAllItemsSceneRange(const QList< QGraphicsItem* >& its)
 {
-    if (its.empty()) {
-        return QRectF();
-    }
-    QRectF range = its.first()->sceneBoundingRect();
-    for (int i = 1; i < its.size(); ++i) {
-        range.united(its[ i ]->sceneBoundingRect());
-    }
-    return range;
+	if (its.empty()) {
+		return QRectF();
+	}
+	QRectF range = its.first()->sceneBoundingRect();
+	for (int i = 1; i < its.size(); ++i) {
+		range.united(its[ i ]->sceneBoundingRect());
+	}
+	return range;
 }
 
 QList< QGraphicsItem* > DAWorkFlowEditWidget::cast(const QList< DAGraphicsItem* >& its)
 {
-    QList< QGraphicsItem* > res;
-    res.reserve(its.size());
-    for (DAGraphicsItem* i : its) {
-        res.append(static_cast< QGraphicsItem* >(i));
-    }
-    return res;
+	QList< QGraphicsItem* > res;
+	res.reserve(its.size());
+	for (DAGraphicsItem* i : its) {
+		res.append(static_cast< QGraphicsItem* >(i));
+	}
+	return res;
 }
 
 /**
  * @brief 获取选中的文本
  * @return
  */
-QList< DAGraphicsStandardTextItem* > DAWorkFlowEditWidget::getSelectTextItems()
+QList< DAGraphicsStandardTextItem* > DAWorkFlowEditWidget::getSelectStandardTextItems()
 {
 	QList< DAGraphicsStandardTextItem* > res;
 	auto secen = getWorkFlowGraphicsScene();
@@ -454,6 +456,29 @@ QList< DAGraphicsStandardTextItem* > DAWorkFlowEditWidget::getSelectTextItems()
 	}
 	for (QGraphicsItem* item : qAsConst(its)) {
 		if (DAGraphicsStandardTextItem* textItem = dynamic_cast< DAGraphicsStandardTextItem* >(item)) {
+			res.append(textItem);
+		}
+	}
+	return res;
+}
+
+/**
+ * @brief getSelectTextItems
+ * @return
+ */
+QList< DAGraphicsTextItem* > DAWorkFlowEditWidget::getSelectTextItems()
+{
+	QList< DAGraphicsTextItem* > res;
+	auto secen = getWorkFlowGraphicsScene();
+	if (!secen) {
+		return res;
+	}
+	const QList< QGraphicsItem* > its = secen->selectedItems();
+	if (its.size() == 0) {
+		return res;
+	}
+	for (QGraphicsItem* item : its) {
+		if (DAGraphicsTextItem* textItem = dynamic_cast< DAGraphicsTextItem* >(item)) {
 			res.append(textItem);
 		}
 	}
@@ -475,18 +500,18 @@ QList< DAGraphicsItem* > DAWorkFlowEditWidget::getSelectDAItems()
 
 void DAWorkFlowEditWidget::createScene()
 {
-    DAWorkFlowGraphicsScene* sc = new DAWorkFlowGraphicsScene(this);
+	DAWorkFlowGraphicsScene* sc = new DAWorkFlowGraphicsScene(this);
 
-    mScene = sc;
-    ui->workflowGraphicsView->setScene(sc);
+	mScene = sc;
+	ui->workflowGraphicsView->setScene(sc);
 	//    connect(_scene, &DAWorkFlowGraphicsScene::selectNodeItemChanged, this, [ this ](DAGraphicsItem* i) {
 	//        if (DAAbstractNodeGraphicsItem* ni = dynamic_cast< DAAbstractNodeGraphicsItem* >(i)) {
 	//            emit selectNodeItemChanged(ni);
 	//        }
 	//    });
 
-    connect(sc, &DAWorkFlowGraphicsScene::selectNodeItemChanged, this, &DAWorkFlowEditWidget::selectNodeItemChanged);
-    connect(sc, &DAWorkFlowGraphicsScene::mouseActionFinished, this, &DAWorkFlowEditWidget::mouseActionFinished);
+	connect(sc, &DAWorkFlowGraphicsScene::selectNodeItemChanged, this, &DAWorkFlowEditWidget::selectNodeItemChanged);
+	connect(sc, &DAWorkFlowGraphicsScene::mouseActionFinished, this, &DAWorkFlowEditWidget::mouseActionFinished);
 }
 
 }  // end of DA

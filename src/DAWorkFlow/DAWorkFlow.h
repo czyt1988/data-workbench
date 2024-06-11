@@ -13,7 +13,7 @@ namespace DA
 {
 class DAWorkFlowExecuter;
 class DAAbstractNodeFactory;
-
+class DANodeGraphicsScene;
 /**
  * @brief 基本的工作流,这个也是总工厂，汇总了所有插件的工厂
  */
@@ -22,6 +22,7 @@ class DAWORKFLOW_API DAWorkFlow : public QObject
 	Q_OBJECT
 	DA_DECLARE_PRIVATE(DAWorkFlow)
 	friend class DAAbstractNode;
+	friend class DANodeGraphicsScene;
 
 public:
 	using CallbackPrepareStartExecute = std::function< bool(DAWorkFlowExecuter*) >;
@@ -85,6 +86,8 @@ public:
 	QList< CallbackPrepareStartExecute > getStartWorkflowCallback() const;
 	// 获取所有注册的结束回调
 	QList< CallbackPrepareEndExecute > getEndWorkflowCallback() const;
+	// 获取这个工作流加入的scene
+	DANodeGraphicsScene* getScene() const;
 public slots:
 	// 运行工作流
 	void exec();
@@ -144,6 +147,10 @@ private slots:
 
 	// 执行器执行结束
 	void onExecuteFinished(bool success);
+
+private:
+	// 记录工作流对应的scene
+	void recordScene(DANodeGraphicsScene* sc);
 };
 }  // end of namespace DA
 #endif  // FCWORKFLOW_H

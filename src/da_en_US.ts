@@ -1740,6 +1740,15 @@ Config</source>
     </message>
 </context>
 <context>
+    <name>DA::DAGraphicsTextItem</name>
+    <message>
+        <location filename="DAGraphicsView/DAGraphicsTextItem.cpp" line="40"/>
+        <location filename="DAGraphicsView/DAGraphicsTextItem.cpp" line="46"/>
+        <source>Text</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DA::DAMessageLogViewWidget</name>
     <message>
         <location filename="DAGui/DAMessageLogViewWidget.cpp" line="295"/>
@@ -2190,17 +2199,17 @@ Config</source>
 <context>
     <name>DA::DAWorkFlow</name>
     <message>
-        <location filename="DAWorkFlow/DAWorkFlow.cpp" line="402"/>
+        <location filename="DAWorkFlow/DAWorkFlow.cpp" line="403"/>
         <source>begin exec workflow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAWorkFlow.cpp" line="404"/>
+        <location filename="DAWorkFlow/DAWorkFlow.cpp" line="405"/>
         <source>empty workflow can not exec</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAWorkFlow.cpp" line="413"/>
+        <location filename="DAWorkFlow/DAWorkFlow.cpp" line="414"/>
         <source>workflow start run</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2208,7 +2217,7 @@ Config</source>
 <context>
     <name>DA::DAWorkFlowEditWidget</name>
     <message>
-        <location filename="DAGui/DAWorkFlowEditWidget.cpp" line="102"/>
+        <location filename="DAGui/DAWorkFlowEditWidget.cpp" line="103"/>
         <source>no workflow set</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3469,16 +3478,6 @@ Config</source>
 <context>
     <name>DAExportToPngSettingDialog</name>
     <message>
-        <location filename="APP/Dialog/DAExportToPngSettingDialog.ui" line="122"/>
-        <source>Export</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/Dialog/DAExportToPngSettingDialog.ui" line="115"/>
-        <source>Cancel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="APP/Dialog/DAExportToPngSettingDialog.ui" line="14"/>
         <source>Export PNG</source>
         <translation type="unfinished"></translation>
@@ -3501,6 +3500,16 @@ Config</source>
     <message>
         <location filename="APP/Dialog/DAExportToPngSettingDialog.ui" line="59"/>
         <source>DPI</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/Dialog/DAExportToPngSettingDialog.ui" line="115"/>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/Dialog/DAExportToPngSettingDialog.ui" line="122"/>
+        <source>Export</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5500,43 +5509,43 @@ params:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="14"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="16"/>
         <source>Item Add</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="45"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="47"/>
         <source>Item Remove</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="86"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="88"/>
         <source>Items Move</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="155"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="157"/>
         <source>Item Move</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="238"/>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="248"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="240"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="250"/>
         <source>Item Resize</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="319"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="321"/>
         <source>Item Resize Width</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="364"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="366"/>
         <source>Item Resize Height</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="409"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="411"/>
         <source>Item Rotation</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5711,30 +5720,6 @@ params:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="590"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="663"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="934"/>
-        <source>can not find &lt;item&gt; tag under &lt;node&gt; tag</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="511"/>
-        <source>Unable to create node by metadata(prototype=%1,name=%2,group=%3)-0</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="561"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="631"/>
-        <source>Unable to create node by metadata(prototype=%1,name=%2,group=%3)-1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="570"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="639"/>
-        <source>Unable to create node by metadata(prototype=%1,name=%2,group=%3)-2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="939"/>
         <source>node metadata(prototype=%1,name=%2,group=%3) can not create graphics item</source>
         <translation type="unfinished"></translation>
@@ -5806,6 +5791,30 @@ params:
     <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="1333"/>
         <source>Unable to load item information from &lt;%1&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAXmlHelper.cpp" line="511"/>
+        <source>Unable to create node by metadata(prototype=%1,name=%2,group=%3)-0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAXmlHelper.cpp" line="561"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="631"/>
+        <source>Unable to create node by metadata(prototype=%1,name=%2,group=%3)-1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAXmlHelper.cpp" line="570"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="639"/>
+        <source>Unable to create node by metadata(prototype=%1,name=%2,group=%3)-2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAXmlHelper.cpp" line="590"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="663"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="934"/>
+        <source>can not find &lt;item&gt; tag under &lt;node&gt; tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -5935,7 +5944,7 @@ params:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DANodeGraphicsScene.cpp" line="285"/>
+        <location filename="DAWorkFlow/DANodeGraphicsScene.cpp" line="279"/>
         <source>can not create node,metadata name=%1(%2)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5945,14 +5954,14 @@ params:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAPyScripts/DAPyScriptsIO.cpp" line="77"/>
-        <source>can not import da_io module</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="DAPyScripts/DAPyScriptsDataFrame.cpp" line="22"/>
         <location filename="DAPyScripts/DAPyScriptsIO.cpp" line="85"/>
         <source>can not import DAWorkBench.io</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAPyScripts/DAPyScriptsIO.cpp" line="77"/>
+        <source>can not import da_io module</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

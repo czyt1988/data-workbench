@@ -30,6 +30,7 @@ public:
 	QString mLastErr;                                                                  ///< 记录最后的错误
 	QList< DAWorkFlow::CallbackPrepareStartExecute > mPrepareStartCallback;
 	QList< DAWorkFlow::CallbackPrepareEndExecute > mPrepareEndCallback;
+	DANodeGraphicsScene* mScene { nullptr };  ///< 记录工作流对应的scene，让工作流能获取scene指针
 };
 
 //===================================================
@@ -498,6 +499,15 @@ QList< DAWorkFlow::CallbackPrepareEndExecute > DAWorkFlow::getEndWorkflowCallbac
     return d_ptr->mPrepareEndCallback;
 }
 
+/**
+ * @brief 获取这个工作流加入的scene
+ * @return
+ */
+DANodeGraphicsScene* DAWorkFlow::getScene() const
+{
+    return d_ptr->mScene;
+}
+
 void DAWorkFlow::emitNodeNameChanged(DAAbstractNode::SharedPointer node, const QString& oldName, const QString& newName)
 {
     emit nodeNameChanged(node, oldName, newName);
@@ -522,5 +532,16 @@ void DAWorkFlow::onExecuteFinished(bool success)
 	d_ptr->mExecuterThread = nullptr;
 	d_ptr->mExecuter       = nullptr;
 	emit finished(success);
+}
+
+/**
+ * @brief 记录工作流对应的scene
+ *
+ * 让工作流能获取scene指针
+ * @param sc
+ */
+void DAWorkFlow::recordScene(DANodeGraphicsScene* sc)
+{
+    d_ptr->mScene = sc;
 }
 }  // end of namespace DA

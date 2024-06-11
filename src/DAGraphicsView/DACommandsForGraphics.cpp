@@ -6,7 +6,9 @@
 #include "DAGraphicsItemGroup.h"
 #include "DAQtContainerUtil.hpp"
 #include <QObject>
-using namespace DA;
+#include <QTextDocument>
+namespace DA
+{
 
 DACommandsForGraphicsItemAdd::DACommandsForGraphicsItemAdd(QGraphicsItem* item, QGraphicsScene* scene, QUndoCommand* parent)
     : QUndoCommand(parent), mItem(item), mScene(scene), mNeedDelete(false)
@@ -552,4 +554,87 @@ void DACommandsForGraphicsItemUngrouping::undo()
 	mScene->addItem(mGroupItem);
 	mGroupItem->setSelected(true);
 	mNeedDelete = false;
+}
+//===============================================================
+// DACommandTextDocumentWrapper
+//===============================================================
+DACommandTextDocumentWrapper::DACommandTextDocumentWrapper(QTextDocument* doc, QUndoCommand* parent)
+	: QUndoCommand(parent), mDoc(doc)
+{
+}
+
+DACommandTextDocumentWrapper::~DACommandTextDocumentWrapper()
+{
+}
+
+void DACommandTextDocumentWrapper::redo()
+{
+	if (mDoc) {
+		if (mDoc->isRedoAvailable()) {
+			qDebug() << "doc redo";
+			mDoc->redo();
+		}
+	}
+}
+
+void DACommandTextDocumentWrapper::undo()
+{
+	if (mDoc) {
+		if (mDoc->isUndoAvailable()) {
+			qDebug() << "doc undo";
+			mDoc->undo();
+		}
+	}
+}
+//===============================================================
+// DACommandTextItemHtmlContentChanged
+//===============================================================
+DACommandTextItemHtmlContentChanged::DACommandTextItemHtmlContentChanged(QGraphicsTextItem* item,
+                                                                         const QString& oldHtml,
+                                                                         const QString& newHtml,
+                                                                         QUndoCommand* parent)
+    : QUndoCommand(parent), mItem(item), mOldHtml(oldHtml), mNewHtml(newHtml), mDate(QDateTime::currentDateTime())
+{
+}
+
+DACommandTextItemHtmlContentChanged::~DACommandTextItemHtmlContentChanged()
+{
+}
+
+void DACommandTextItemHtmlContentChanged::redo()
+{
+	QUndoCommand::redo();
+	if (mSkipFirst) {
+		mSkipFirst = false;
+		return;
+	}
+	QSignalBlocker b(mItem->document());
+	mItem->setHtml(mNewHtml);
+}
+
+void DACommandTextItemHtmlContentChanged::undo()
+{
+	QUndoCommand::undo();
+	QSignalBlocker b(mItem->document());
+	mItem->setHtml(mOldHtml);
+}
+
+bool DACommandTextItemHtmlContentChanged::mergeWith(const QUndoCommand* command)
+{
+	if (id() != command->id()) {
+		return false;
+	}
+	const DACommandTextItemHtmlContentChanged* other = static_cast< const DACommandTextItemHtmlContentChanged* >(command);
+	if (mItem != other->mItem) {
+		return false;
+	}
+	// 时间是否满足
+	// 两次操作间隔超过1分钟就不合并了
+	if (qAbs(mDate.secsTo(other->mDate)) > 60) {
+		return false;
+	}
+	mNewHtml = other->mNewHtml;
+	return true;
+}
+
 }

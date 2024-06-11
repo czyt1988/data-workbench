@@ -15,6 +15,7 @@ namespace DA
 class DAGraphicsPixmapItem;
 class DAGraphicsRectItem;
 class DAGraphicsStandardTextItem;
+class DAGraphicsTextItem;
 
 /**
  * @brief DAAbstractNodeGraphicsItem对应的QGraphicsScene,通过此scene，管理DAWorkFlow内容
@@ -72,7 +73,7 @@ public:
 	DAAbstractNodeGraphicsItem* createNode(const DANodeMetaData& md, const QPointF& pos);
 	DAAbstractNodeGraphicsItem* createNode_(const DANodeMetaData& md, const QPointF& pos);
 	// 创建文本框
-	DAGraphicsStandardTextItem* createText_(const QString& str = QString());
+	DAGraphicsTextItem* createText_(const QString& str = QString());
 	// 创建矩形
 	DAGraphicsRectItem* createRect_(const QPointF& p = QPointF());
 	// 添加一个图片item

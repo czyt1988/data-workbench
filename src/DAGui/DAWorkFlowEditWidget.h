@@ -55,16 +55,16 @@ public:
 	// 设置文本颜色 -- 此参数设置决定创建文本框时的字体和颜色
 	QColor getDefaultTextColor() const;
 	void setDefaultTextColor(const QColor& c);
-    // 添加一个图片item
-    DAGraphicsPixmapItem* addPixmapItem_(const QImage& img);
-    // 获取当前view视图下的scene中心
-    QPointF getViewCenterMapToScene() const;
-    // 把item移动到屏幕中心
-    void moveItemToViewSceneCenter(QGraphicsItem* item);
-    // 计算item所包含的范围，这个范围存入xml中，以便让scene第一时间知道总体范围
-    static QRectF calcAllItemsSceneRange(const QList< QGraphicsItem* >& its);
-    //
-    static QList< QGraphicsItem* > cast(const QList< DAGraphicsItem* >& its);
+	// 添加一个图片item
+	DAGraphicsPixmapItem* addPixmapItem_(const QImage& img);
+	// 获取当前view视图下的scene中心
+	QPointF getViewCenterMapToScene() const;
+	// 把item移动到屏幕中心
+	void moveItemToViewSceneCenter(QGraphicsItem* item);
+	// 计算item所包含的范围，这个范围存入xml中，以便让scene第一时间知道总体范围
+	static QRectF calcAllItemsSceneRange(const QList< QGraphicsItem* >& its);
+	//
+	static QList< QGraphicsItem* > cast(const QList< DAGraphicsItem* >& its);
 public slots:
 	// 添加一个背景图
 	void addBackgroundPixmap(const QString& pixmapPath);
@@ -79,27 +79,27 @@ public slots:
 	// 设置字体样式
 	void setSelectTextFamily(const QString& family);
 	// 设置字体大小
-	void setTextSize(const int size);
+	void setSelectTextPointSize(const int size);
 	// 设置当前选择的文本item的字体
 	void setSelectTextItemFont(const QFont& f);
 	// 设置当前选中的图元的背景
 	void setSelectShapeBackgroundBrush(const QBrush& b);
 	// 设置当前选中的图元的背景
 	void setSelectShapeBorderPen(const QPen& v);
-    // 全选
-    void selectAll();
-    // 取消选中
-    void clearSelection();
+	// 全选
+	void selectAll();
+	// 取消选中
+	void clearSelection();
 	// 复制当前选中的items
 	void copySelectItems();
 	// 复制当前选中的items
 	void cutSelectItems();
-    // 粘贴到视图中心
-    void pasteToViewCenter();
-    // 移除选中的条目
-    void removeSelectItems();
-    // 执行取消动作
-    void cancel();
+	// 粘贴到视图中心
+	void pasteToViewCenter();
+	// 移除选中的条目
+	void removeSelectItems();
+	// 执行取消动作
+	void cancel();
 signals:
 
 	/**
@@ -131,10 +131,13 @@ signals:
 
 private:
 	// 获取选中的文本
-	QList< DAGraphicsStandardTextItem* > getSelectTextItems();
+	QList< DAGraphicsStandardTextItem* > getSelectStandardTextItems();
+	QList< DAGraphicsTextItem* > getSelectTextItems();
 	// 获取选中的基本图元
 	QList< DAGraphicsItem* > getSelectDAItems();
 	void createScene();
+	// 设置item的选中状态
+	void setSelectionState(const QList< QGraphicsItem* >& items, bool isSelect);
 
 private:
 	Ui::DAWorkFlowEditWidget* ui;

@@ -5,6 +5,7 @@
 #include <QPainter>
 #include "DAGraphicsPixmapItem.h"
 #include "DAStandardNodeLinkGraphicsItem.h"
+#include "DAGraphicsTextItem.h"
 #include "DACommandsForGraphics.h"
 #include "DACommandsForWorkFlowNodeGraphics.h"
 #include "DAGraphicsTextItem.h"
@@ -86,6 +87,7 @@ void DANodeGraphicsScene::setWorkFlow(DAWorkFlow* wf)
 		disconnect(d_ptr->mWorkflow.data(), &DAWorkFlow::nodeNameChanged, this, &DANodeGraphicsScene::onNodeNameChanged);
 	}
 	d_ptr->mWorkflow = wf;
+	wf->recordScene(this);
 	if (wf) {
 		connect(wf, &DAWorkFlow::nodeNameChanged, this, &DANodeGraphicsScene::onNodeNameChanged);
 		const QList< std::shared_ptr< DAAbstractNodeFactory > > factorys = wf->getAllFactorys();
@@ -307,13 +309,14 @@ DAAbstractNodeGraphicsItem* DANodeGraphicsScene::createNode_(const DANodeMetaDat
  * @return
  * @sa getTextGraphicsItems
  */
-DAGraphicsStandardTextItem* DANodeGraphicsScene::createText_(const QString& str)
+DAGraphicsTextItem* DANodeGraphicsScene::createText_(const QString& str)
 {
-	DAGraphicsStandardTextItem* item = new DAGraphicsStandardTextItem();
+	DAGraphicsTextItem* item = new DAGraphicsTextItem();
 	if (!str.isEmpty()) {
 		item->setPlainText(str);
 	}
 	addItem_(item);
+	item->setSelected(true);
 	return (item);
 }
 
@@ -329,6 +332,7 @@ DAGraphicsRectItem* DANodeGraphicsScene::createRect_(const QPointF& p)
 	if (!p.isNull()) {
 		item->setPos(p);
 	}
+	item->setSelected(true);
 	return (item);
 }
 
