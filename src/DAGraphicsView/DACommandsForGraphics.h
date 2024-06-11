@@ -3,8 +3,10 @@
 #include "DAGraphicsViewGlobal.h"
 #include <QUndoCommand>
 #include <QPointer>
+#include <QDateTime>
 class QGraphicsScene;
 class QGraphicsItem;
+class QGraphicsTextItem;
 class QTextDocument;
 
 /**
@@ -28,6 +30,10 @@ public:
 	~DACommandsForGraphicsItemAdd();
 	void redo() override;
 	void undo() override;
+	virtual int id() const override
+	{
+		return CmdID_ItemAdd;
+	}
 
 private:
 	QGraphicsItem* mItem;
@@ -45,6 +51,10 @@ public:
 	~DACommandsForGraphicsItemRemove();
 	void redo() override;
 	void undo() override;
+	virtual int id() const override
+	{
+		return CmdID_ItemRemove;
+	}
 
 private:
 	QGraphicsItem* mItem;
@@ -242,6 +252,10 @@ public:
 	// 这是一个清洗，要分组的item里面，如果存在item的parent在分组的item里，就驱除，这样不会分组嵌套，形成单一的层级
 	static QList< QGraphicsItem* > toSimple(const QList< QGraphicsItem* >& groupingitems);
 	QList< QGraphicsItem* > getWillGroupItems() const;
+	virtual int id() const override
+	{
+		return CmdID_ItemGrouping;
+	}
 
 private:
 	DAGraphicsScene* mScene;
@@ -262,6 +276,10 @@ public:
 	~DACommandsForGraphicsItemUngrouping();
 	void redo() override;
 	void undo() override;
+	virtual int id() const override
+	{
+		return CmdID_ItemUnGrouping;
+	}
 
 private:
 	QGraphicsScene* mScene;
@@ -280,9 +298,43 @@ public:
 	~DACommandTextDocumentWrapper();
 	virtual void redo() override;
 	virtual void undo() override;
+	virtual int id() const override
+	{
+		return CmdID_ItemTextDocumentWrapper;
+	}
 
 private:
 	QPointer< QTextDocument > mDoc;
+};
+
+/**
+ * @brief QGraphicsTextItem的内容发生变化
+ *
+ * 这个命令只记录html内容
+ */
+class DAGRAPHICSVIEW_API DACommandTextItemHtmlContentChanged : public QUndoCommand
+{
+public:
+	DACommandTextItemHtmlContentChanged(QGraphicsTextItem* item,
+										const QString& oldHtml,
+										const QString& newHtml,
+										QUndoCommand* parent = nullptr);
+	~DACommandTextItemHtmlContentChanged();
+	virtual void redo() override;
+	virtual void undo() override;
+	virtual int id() const override
+	{
+		return CmdID_ItemTextHtmlContentChanged;
+	}
+	// 合并
+	virtual bool mergeWith(const QUndoCommand* command) override;
+
+private:
+	QGraphicsTextItem* mItem;
+	QString mOldHtml;
+	QString mNewHtml;
+	bool mSkipFirst { true };
+	QDateTime mDate;
 };
 }
 #endif  // DACOMMANDSFORGRAPHICS_H

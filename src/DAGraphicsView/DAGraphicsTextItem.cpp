@@ -166,6 +166,78 @@ QFont DAGraphicsTextItem::getSelectTextFont() const
 }
 
 /**
+ * @brief 设置选中文本字体，如果没选中，将设置全部
+ * @param v
+ */
+void DAGraphicsTextItem::setSelectTextFamily(const QString& v)
+{
+    d_ptr->mTextItem->setSelectTextFamily(v);
+}
+
+/**
+ * @brief DAGraphicsTextItem::getSelectTextFamily
+ * @return
+ */
+QString DAGraphicsTextItem::getSelectTextFamily() const
+{
+    return d_ptr->mTextItem->getSelectTextFamily();
+}
+
+/**
+ * @brief 选中文本的字体大小
+ * @param v
+ */
+void DAGraphicsTextItem::setSelectTextPointSize(int v)
+{
+    d_ptr->mTextItem->setSelectTextPointSize(v);
+}
+
+/**
+ * @brief 选中文本的字体大小
+ * @return
+ */
+int DAGraphicsTextItem::getSelectTextPointSize() const
+{
+    return d_ptr->mTextItem->getSelectTextPointSize();
+}
+
+/**
+ * @brief 文字斜体
+ * @param on
+ */
+void DAGraphicsTextItem::setSelectTextItalic(bool on)
+{
+    d_ptr->mTextItem->setSelectTextItalic(on);
+}
+
+/**
+ * @brief 文字斜体
+ * @return
+ */
+bool DAGraphicsTextItem::getSelectTextItalic() const
+{
+    return d_ptr->mTextItem->getSelectTextItalic();
+}
+
+/**
+ * @brief 文字粗体
+ * @param on
+ */
+void DAGraphicsTextItem::setSelectTextBold(bool on)
+{
+    d_ptr->mTextItem->setSelectTextBold(on);
+}
+
+/**
+ * @brief 文字粗体
+ * @return
+ */
+bool DAGraphicsTextItem::getSelectTextBold() const
+{
+    return d_ptr->mTextItem->getSelectTextBold();
+}
+
+/**
  * @brief 设置编辑模式
  * @param on
  */
@@ -247,6 +319,23 @@ void DAGraphicsTextItem::mousePressEvent(QGraphicsSceneMouseEvent* e)
 			d_ptr->mTextItem->setFocus();  // 确保获得焦点以显示光标
 		}
 	}
+}
+
+QVariant DAGraphicsTextItem::itemChange(GraphicsItemChange change, const QVariant& value)
+{
+	switch (change) {
+	case QGraphicsItem::ItemSelectedHasChanged: {
+		// The value argument is the new selected state (i.e., true or false).
+		bool isselect = value.toBool();
+		if (!isselect) {
+			// 失去选中，把mTextItem的选中状态清楚
+			d_ptr->mTextItem->clearTextSelection();
+		}
+	}
+	default:
+		break;
+	}
+	return DAGraphicsResizeableItem::itemChange(change, value);
 }
 
 }  // end da

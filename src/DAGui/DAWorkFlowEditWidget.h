@@ -74,7 +74,7 @@ public slots:
 	// 设置字体样式
 	void setSelectTextFamily(const QString& family);
 	// 设置字体大小
-	void setTextSize(const int size);
+	void setSelectTextPointSize(const int size);
 	// 设置当前选择的文本item的字体
 	void setSelectTextItemFont(const QFont& f);
 	// 设置当前选中的图元的背景

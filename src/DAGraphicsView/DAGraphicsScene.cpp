@@ -549,19 +549,6 @@ int DAGraphicsScene::setSelectionState(const QList< QGraphicsItem* >& its, bool 
 }
 
 /**
- * @brief 针对QTextDocument的undocmd管理到scene的undocmd的槽
- *
- * 这个槽的目的是为例针对QGraphicsTextItem的富文本QTextDocument的redo/undo,
- * 用户在操作QTextDocument后，产生的命令由DAGraphicsScene的undo stack来管理
- * @param doc
- */
-void DAGraphicsScene::textDocumentUndoCommandAdded(QTextDocument* doc)
-{
-	qDebug() << "textDocumentUndoCommandAdded";
-	DACommandTextDocumentWrapper* cmd = new DACommandTextDocumentWrapper(doc);
-	push(cmd);
-}
-/**
  * @brief 是否显示网格线
  * @return
  */

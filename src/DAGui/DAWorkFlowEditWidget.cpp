@@ -144,31 +144,15 @@ void DAWorkFlowEditWidget::setSelectTextToBold(bool on)
 	if (!secen) {
 		return;
 	}
-	const QList< DAGraphicsStandardTextItem* > standarditems = getSelectStandardTextItems();
-	QList< QFont > newStandardFonts;
-	for (DAGraphicsStandardTextItem* item : standarditems) {
-		QFont font = item->font();
-		font.setBold(on);
-		newStandardFonts.append(font);
+	const auto standarditems = getSelectStandardTextItems();
+	for (auto item : standarditems) {
+		item->setSelectTextBold(on);
 	}
 
-	const QList< DAGraphicsTextItem* > items = getSelectTextItems();
-	QList< QFont > newFonts;
-	for (DAGraphicsTextItem* item : items) {
-		QFont font = item->getSelectTextFont();
-		font.setBold(on);
-		newFonts.append(font);
+	const auto items = getSelectTextItems();
+	for (auto item : items) {
+		item->setSelectTextBold(on);
 	}
-	secen->getUndoStack()->beginMacro(tr("set item font"));  // 设置粗体
-	if (standarditems.size() > 0) {
-		auto cmd = new DA::DACommandGraphicsStandardTextItemsChangeFont(standarditems, newStandardFonts);
-		secen->push(cmd);
-	}
-	if (items.size() > 0) {
-		auto cmd = new DA::DACommandGraphicsTextItemsChangeFont(items, newFonts);
-		secen->push(cmd);
-	}
-	secen->getUndoStack()->endMacro();
 }
 
 void DAWorkFlowEditWidget::setSelectTextToItalic(bool on)
@@ -177,32 +161,15 @@ void DAWorkFlowEditWidget::setSelectTextToItalic(bool on)
 	if (!secen) {
 		return;
 	}
-	QList< DAGraphicsStandardTextItem* > standarditems = getSelectStandardTextItems();
-	QList< QFont > newstandardFonts;
-	for (DAGraphicsStandardTextItem* item : qAsConst(standarditems)) {
-		QFont font = item->font();
-		font.setItalic(on);
-		newstandardFonts.append(font);
+	const auto standarditems = getSelectStandardTextItems();
+	for (auto item : standarditems) {
+		item->setSelectTextItalic(on);
 	}
 
-	QList< DAGraphicsTextItem* > items = getSelectTextItems();
-	QList< QFont > newFonts;
-	for (DAGraphicsTextItem* item : items) {
-		QFont font = item->getSelectTextFont();
-		font.setItalic(on);
-		newFonts.append(font);
+	const auto items = getSelectTextItems();
+	for (auto item : items) {
+		item->setSelectTextItalic(on);
 	}
-
-	secen->getUndoStack()->beginMacro(tr("set item text italic"));  // 设置斜体
-	if (standarditems.size() > 0) {
-		auto cmd = new DA::DACommandGraphicsStandardTextItemsChangeFont(standarditems, newstandardFonts);
-		secen->push(cmd);
-	}
-	if (items.size() > 0) {
-		auto cmd = new DA::DACommandGraphicsTextItemsChangeFont(items, newFonts);
-		secen->push(cmd);
-	}
-	secen->getUndoStack()->endMacro();
 }
 
 void DAWorkFlowEditWidget::setSelectTextColor(const QColor& color)
@@ -211,27 +178,15 @@ void DAWorkFlowEditWidget::setSelectTextColor(const QColor& color)
 	if (!secen) {
 		return;
 	}
-	QList< DAGraphicsStandardTextItem* > standarditems = getSelectStandardTextItems();
-	QList< QColor > standardcolors;
-	for (int i = 0; i < standarditems.size(); ++i) {
-		standardcolors.append(color);
+	const auto standarditems = getSelectStandardTextItems();
+	for (auto item : standarditems) {
+		item->setSelectTextColor(color);
 	}
 
-	QList< DAGraphicsTextItem* > items = getSelectTextItems();
-	QList< QColor > newcolors;
-	for (int i = 0; i < items.size(); ++i) {
-		newcolors.append(color);
+	const auto items = getSelectTextItems();
+	for (auto item : items) {
+		item->setSelectTextColor(color);
 	}
-	secen->getUndoStack()->beginMacro(tr("set item text color"));  // 设置字体颜色
-	if (standarditems.size() > 0) {
-		auto cmd = new DA::DACommandGraphicsStandardTextItemsChangeColor(standarditems, standardcolors);
-		secen->push(cmd);
-	}
-	if (items.size() > 0) {
-		auto cmd = new DA::DACommandGraphicsTextItemsChangeColor(items, newcolors);
-		secen->push(cmd);
-	}
-	secen->getUndoStack()->endMacro();
 }
 
 void DAWorkFlowEditWidget::setSelectTextFamily(const QString& family)
@@ -240,118 +195,53 @@ void DAWorkFlowEditWidget::setSelectTextFamily(const QString& family)
 	if (!secen) {
 		return;
 	}
-	QList< DAGraphicsStandardTextItem* > standarditems = getSelectStandardTextItems();
-	QList< QFont > newstandardFonts;
-	for (DAGraphicsStandardTextItem* item : qAsConst(standarditems)) {
-		QFont font = item->font();
-		font.setFamily(family);
-		newstandardFonts.append(font);
+	const auto standarditems = getSelectStandardTextItems();
+	for (auto item : standarditems) {
+		item->setSelectTextFamily(family);
 	}
 
-	QList< DAGraphicsTextItem* > items = getSelectTextItems();
-	QList< QFont > newFonts;
-	for (DAGraphicsTextItem* item : items) {
-		QFont font = item->getSelectTextFont();
-		font.setFamily(family);
-		newFonts.append(font);
+	const auto items = getSelectTextItems();
+	for (auto item : items) {
+		item->setSelectTextFamily(family);
 	}
-
-	secen->getUndoStack()->beginMacro(tr("set item text family"));  // 设置字体
-	if (standarditems.size() > 0) {
-		auto cmd = new DA::DACommandGraphicsStandardTextItemsChangeFont(standarditems, newstandardFonts);
-		secen->push(cmd);
-	}
-	if (items.size() > 0) {
-		auto cmd = new DA::DACommandGraphicsTextItemsChangeFont(items, newFonts);
-		secen->push(cmd);
-	}
-	secen->getUndoStack()->endMacro();
 }
 
-void DAWorkFlowEditWidget::setTextSize(const int size)
+void DAWorkFlowEditWidget::setSelectTextPointSize(const int size)
 {
 	auto secen = getWorkFlowGraphicsScene();
 	if (!secen) {
 		return;
 	}
-	QList< DAGraphicsStandardTextItem* > standarditems = getSelectStandardTextItems();
-	QList< QFont > newstandardFonts;
-	for (DAGraphicsStandardTextItem* item : qAsConst(standarditems)) {
-		QFont font = item->font();
-		font.setPointSize(size);
-		newstandardFonts.append(font);
+	const auto standarditems = getSelectStandardTextItems();
+	for (auto item : standarditems) {
+		item->setSelectTextPointSize(size);
 	}
-
-	QList< DAGraphicsTextItem* > items = getSelectTextItems();
-	QList< QFont > newFonts;
-	for (DAGraphicsTextItem* item : items) {
-		QFont font = item->getSelectTextFont();
-		font.setPointSize(size);
-		newFonts.append(font);
+	const auto items = getSelectTextItems();
+	for (auto item : items) {
+		item->setSelectTextPointSize(size);
 	}
-	secen->getUndoStack()->beginMacro(tr("set item text size"));  // 设置字体尺寸
-	if (standarditems.size() > 0) {
-		auto cmd = new DA::DACommandGraphicsStandardTextItemsChangeFont(standarditems, newstandardFonts);
-		secen->push(cmd);
-	}
-	if (items.size() > 0) {
-		auto cmd = new DA::DACommandGraphicsTextItemsChangeFont(items, newFonts);
-		secen->push(cmd);
-	}
-	secen->getUndoStack()->endMacro();
 }
 
 /**
  * @brief 设置选中的textitem的字体
+ *
+ * @note 此操作自带redo/undo，DAGraphicsStandardTextItem会自动把命令放入scene的undo stack中
  * @param f
  */
 void DAWorkFlowEditWidget::setSelectTextItemFont(const QFont& f)
 {
-#if 0
 	auto secen = getWorkFlowGraphicsScene();
 	if (!secen) {
 		return;
 	}
-	QList< DAGraphicsStandardTextItem* > standarditems = getSelectStandardTextItems();
-	QList< QFont > newstandardFonts;
-	for (int i = 0; i < standarditems.size(); ++i) {
-		newstandardFonts.append(f);
+	auto standarditems = getSelectStandardTextItems();
+	for (auto item : standarditems) {
+		item->setSelectTextFont(f);
 	}
-
-	QList< DAGraphicsTextItem* > items = getSelectTextItems();
-	QList< QFont > newFonts;
-	for (int i = 0; i < items.size(); ++i) {
-		newFonts.append(f);
+	auto items = getSelectTextItems();
+	for (auto item : items) {
+		item->setSelectTextFont(f);
 	}
-	secen->getUndoStack()->beginMacro(tr("set item font"));  // 设置图元字体
-	if (standarditems.size() > 0) {
-		auto cmd = new DA::DACommandGraphicsStandardTextItemsChangeFont(standarditems, newstandardFonts);
-		secen->push(cmd);
-	}
-	if (items.size() > 0) {
-		auto cmd = new DA::DACommandGraphicsTextItemsChangeFont(items, newFonts);
-		secen->push(cmd);
-	}
-	secen->getUndoStack()->endMacro();
-#else
-	auto secen = getWorkFlowGraphicsScene();
-	if (!secen) {
-		return;
-	}
-	const QList< DAGraphicsStandardTextItem* > standarditems = getSelectStandardTextItems();
-	QList< QString > sandardOldHtml;
-	for (DAGraphicsStandardTextItem* i : standarditems) {
-		sandardOldHtml.append(i->toHtml());
-		i->setSelectTextFont(f);
-	}
-
-	const QList< DAGraphicsTextItem* > items = getSelectTextItems();
-	QList< QString > oldHtml;
-	for (DAGraphicsTextItem* i : items) {
-		oldHtml.append(i->toHtml());
-		i->setSelectTextFont(f);
-	}
-#endif
 }
 
 /**

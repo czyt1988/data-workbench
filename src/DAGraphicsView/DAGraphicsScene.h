@@ -129,8 +129,6 @@ public slots:
 	void clearSelection();
 	// 设置item的选中状态
 	int setSelectionState(const QList< QGraphicsItem* >& its, bool isSelect);
-	// 针对QTextDocument的undocmd管理到scene的undocmd的槽
-	void textDocumentUndoCommandAdded(QTextDocument* doc);
 signals:
 	/**
 	 * @brief item移动发射的信号

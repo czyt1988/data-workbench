@@ -7,6 +7,7 @@
 #include <QDomElement>
 #include "DAGraphicsItemFactory.h"
 #include "DAGraphicsScene.h"
+#include "DACommandsForGraphics.h"
 namespace DA
 {
 
@@ -31,6 +32,28 @@ DAGraphicsStandardTextItem::DAGraphicsStandardTextItem(const QFont& f, QGraphics
 {
 	initItem();
 	setFont(f);
+}
+
+DAGraphicsStandardTextItem::~DAGraphicsStandardTextItem()
+{
+}
+
+void DAGraphicsStandardTextItem::initItem()
+{
+	union Combine__ {
+		uint32_t a;
+		void* b;
+	};
+	Combine__ tmp;
+	tmp.b = this;
+	mID   = DAGraphicsItemFactory::generateID(tmp.a);
+	setDefaultTextColor(Qt::black);  // 设置字体颜色
+	setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable | QGraphicsItem::ItemIsFocusable);
+	QTextDocument* doc = document();
+	if (doc) {
+		doc->clearUndoRedoStacks(QTextDocument::UndoAndRedoStacks);
+		doc->setUndoRedoEnabled(false);
+	}
 }
 
 /**
@@ -120,6 +143,40 @@ void DAGraphicsStandardTextItem::setItemID(uint64_t id)
 }
 
 /**
+ * @brief 设置选中文本字体，如果没选中，将设置全部
+ * @param v
+ */
+void DAGraphicsStandardTextItem::setSelectTextFamily(const QString& v)
+{
+	QTextCursor cursor = textCursor();
+	if (!cursor.hasSelection()) {
+		cursor.select(QTextCursor::Document);
+	}
+	QTextCharFormat format;
+	// 设置文本颜色
+	format.setFontFamily(v);
+	// 应用格式到选中文本
+	cursor.setCharFormat(format);
+}
+
+/**
+ * @brief 获取选中文本字体字体名称，如果无法获取，返回QString()
+ * @return
+ */
+QString DAGraphicsStandardTextItem::getSelectTextFamily() const
+{
+	QTextCursor cursor = textCursor();
+	if (!cursor.hasSelection()) {
+		cursor.select(QTextCursor::Document);
+	}
+	QTextCharFormat format = cursor.charFormat();
+	if (format.isValid() || format.isEmpty()) {
+		return QString();
+	}
+	return format.fontFamily();
+}
+
+/**
  * @brief 设置选中的颜色，如果没有选中对象，尝试全选
  * @param v
  */
@@ -146,7 +203,11 @@ QColor DAGraphicsStandardTextItem::getSelectTextColor() const
 	if (!cursor.hasSelection()) {
 		cursor.select(QTextCursor::Document);
 	}
-	return cursor.charFormat().foreground().color();
+	QTextCharFormat format = cursor.charFormat();
+	if (format.isValid() || format.isEmpty()) {
+		return QColor();
+	}
+	return format.foreground().color();
 }
 
 /**
@@ -178,16 +239,126 @@ QFont DAGraphicsStandardTextItem::getSelectTextFont() const
 	}
 	// 获取该位置的字符格式
 	QTextCharFormat format = cursor.charFormat();
+	if (format.isValid() || format.isEmpty()) {
+		return QFont();
+	}
 	return format.font();
+}
+
+/**
+ * @brief 设置选中文本的字体大小
+ * @param v
+ */
+void DAGraphicsStandardTextItem::setSelectTextPointSize(int v)
+{
+	QTextCursor cursor = textCursor();
+	if (!cursor.hasSelection()) {
+		cursor.select(QTextCursor::Document);
+	}
+	// 说明有选中文本
+	QTextCharFormat format;
+	format.setFontPointSize(v);
+	// 应用格式到选中文本
+	cursor.setCharFormat(format);
+}
+
+/**
+ * @brief 选中文本的字体大小
+ * @return 如果无法获取选中的尺寸，返回-1
+ */
+int DAGraphicsStandardTextItem::getSelectTextPointSize() const
+{
+	QTextCursor cursor = textCursor();
+	if (!cursor.hasSelection()) {
+		cursor.select(QTextCursor::Document);
+	}
+	// 获取该位置的字符格式
+	QTextCharFormat format = cursor.charFormat();
+	if (format.isValid() || format.isEmpty()) {
+		return -1;
+	}
+	return format.fontPointSize();
+}
+
+/**
+ * @brief 文字斜体
+ * @param on
+ */
+void DAGraphicsStandardTextItem::setSelectTextItalic(bool on)
+{
+	QTextCursor cursor = textCursor();
+	if (!cursor.hasSelection()) {
+		cursor.select(QTextCursor::Document);
+	}
+	// 说明有选中文本
+	QTextCharFormat format;
+	format.setFontItalic(on);
+	// 应用格式到选中文本
+	cursor.setCharFormat(format);
+}
+
+/**
+ * @brief 文字斜体
+ * @return
+ */
+bool DAGraphicsStandardTextItem::getSelectTextItalic() const
+{
+	QTextCursor cursor = textCursor();
+	if (!cursor.hasSelection()) {
+		cursor.select(QTextCursor::Document);
+	}
+	// 获取该位置的字符格式
+	QTextCharFormat format = cursor.charFormat();
+	if (format.isValid() || format.isEmpty()) {
+		return false;
+	}
+	return format.fontItalic();
+}
+
+/**
+ * @brief 文字粗体
+ * @param on
+ */
+void DAGraphicsStandardTextItem::setSelectTextBold(bool on)
+{
+	QTextCursor cursor = textCursor();
+	if (!cursor.hasSelection()) {
+		cursor.select(QTextCursor::Document);
+	}
+	// 说明有选中文本
+	QTextCharFormat format;
+	format.setFontWeight(on ? QFont::Bold : QFont::Normal);
+	// 应用格式到选中文本
+	cursor.setCharFormat(format);
+}
+
+/**
+ * @brief 文字粗体
+ * @return
+ */
+bool DAGraphicsStandardTextItem::getSelectTextBold() const
+{
+	QTextCursor cursor = textCursor();
+	if (!cursor.hasSelection()) {
+		cursor.select(QTextCursor::Document);
+	}
+	// 获取该位置的字符格式
+	QTextCharFormat format = cursor.charFormat();
+	if (format.isValid() || format.isEmpty()) {
+		return false;
+	}
+	auto w = format.fontWeight();
+	return w == QFont::Bold;
 }
 
 void DAGraphicsStandardTextItem::focusOutEvent(QFocusEvent* focusEvent)
 {
-	// 在有选中的情况下，把选中的内容取消
-	QTextCursor cursor = textCursor();
-	cursor.clearSelection();
-	cursor.setPosition(QTextCursor::Start);
-	setTextCursor(cursor);
+	//! 这里不能执行下面这些语句，尤其把选中内容取消，这样会导致一些控件无法选中文本进行修改，
+	//! 例如颜色改变按钮，是个弹出的menu，如果失去焦点就情况选中，会把选中擦去，就无法改变局部颜色
+	// QTextCursor cursor = textCursor();
+	// cursor.clearSelection();
+	// cursor.setPosition(QTextCursor::Start);
+	// setTextCursor(cursor);
 	setTextInteractionFlags(Qt::NoTextInteraction);
 	QGraphicsTextItem::focusOutEvent(focusEvent);
 }
@@ -209,29 +380,42 @@ QVariant DAGraphicsStandardTextItem::itemChange(QGraphicsItem::GraphicsItemChang
 			if (DAGraphicsScene* daScene = qobject_cast< DAGraphicsScene* >(newScene)) {
 				QTextDocument* doc = document();
 				if (doc) {
-					connect(doc,
-							&QTextDocument::undoCommandAdded,
-							daScene,
-							std::bind(&DAGraphicsScene::textDocumentUndoCommandAdded, daScene, doc));
+
+					//! 此方法有问题，前面有2个不知名的command
+					// connect(doc,
+					// 		&QTextDocument::undoCommandAdded,
+					// 		daScene,
+					// 		std::bind(&DAGraphicsScene::textDocumentUndoCommandAdded, daScene, doc));
+
+					//! 此方法不行，undoCommandAdded获取的html不是文本改变后的html
+					//  connect(doc, &QTextDocument::undoCommandAdded, daScene, [ this, daScene ]() {
+					//  	QString hnew = this->toHtml();
+					//  	qDebug() << hnew;
+					//  	if (mOldHtml != hnew) {
+					//  		daScene->push(new DACommandTextItemHtmlContentChanged(this, mOldHtml, hnew));
+					//  		mOldHtml = hnew;
+					//  	}
+					//  });
+
+					//! 此方法可行，但是需要记录非常多的命令，每个字符串的变化都会记录，虽然可以做压缩，
+					//! 通过记录变更日期和内容进行时间和内容的压缩，但还是会每敲一个字就触发一次记录
+					//! 通过focusOutEvent，无法捕获到全局的变化，如全局的颜色设置等
+					connect(doc, &QTextDocument::contentsChanged, this, [ this, doc, daScene ]() {
+						QString hnew = doc->toHtml("utf-8");
+						if (mOldHtml.isEmpty()) {
+							mOldHtml = hnew;
+							return;
+						}
+						if (this->mOldHtml != hnew) {
+							daScene->push(new DACommandTextItemHtmlContentChanged(this, mOldHtml, hnew));
+							mOldHtml = hnew;
+						}
+					});
 				}
 			}
 		}
 	}
 	return QGraphicsTextItem::itemChange(change, value);
-}
-
-void DAGraphicsStandardTextItem::initItem()
-{
-	union Combine__ {
-		uint32_t a;
-		void* b;
-	};
-	Combine__ tmp;
-	tmp.b = this;
-	mID   = DAGraphicsItemFactory::generateID(tmp.a);
-	setDefaultTextColor(Qt::black);  // 设置字体颜色
-	setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable | QGraphicsItem::ItemIsFocusable);
-	// setTextInteractionFlags(Qt::TextEditorInteraction);
 }
 
 /**
@@ -252,5 +436,15 @@ bool DAGraphicsStandardTextItem::getAutoBindRedoundoToScene() const
 void DAGraphicsStandardTextItem::setAutoBindRedoundoToScene(bool v)
 {
     mAutoBindRedoundoToScene = v;
+}
+
+/**
+ * @brief 清除文字的选中
+ */
+void DAGraphicsStandardTextItem::clearTextSelection()
+{
+	QTextCursor cursor = textCursor();
+	cursor.clearSelection();
+	setTextCursor(cursor);
 }
 }

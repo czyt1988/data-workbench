@@ -28,10 +28,10 @@ namespace DA
  */
 enum class AspectDirection
 {
-    East,
-    South,
-    West,
-    North
+	East,
+	South,
+	West,
+	North
 };
 
 /**
@@ -50,16 +50,16 @@ enum class AspectDirection
  */
 enum class ShapeKeyPoint
 {
-    TopLeft = 0,
-    TopCenter,
-    TopRight,
-    CenterLeft,
-    Center,
-    CenterRight,
-    BottomLeft,
-    BottomCenter,
-    BottomRight,
-    None = 128
+	TopLeft = 0,
+	TopCenter,
+	TopRight,
+	CenterLeft,
+	Center,
+	CenterRight,
+	BottomLeft,
+	BottomCenter,
+	BottomRight,
+	None = 128
 };
 
 /**
@@ -83,16 +83,24 @@ QPointF rectShapeKeyPoint(const QRectF& r, ShapeKeyPoint kp);
  */
 enum DAGraphicsCommandIDType
 {
-    CmdID_GraphicsBegin    = 0x100,                    ///< Graphics相关的command id的起始
-    CmdID_ItemMove         = CmdID_GraphicsBegin + 1,  ///< item移动
-    CmdID_ItemMoveMerge    = CmdID_GraphicsBegin + 2,  ///< item移动
-    CmdID_ItemsMove        = CmdID_GraphicsBegin + 3,  ///< 多个item移动
-    CmdID_ItemsMoveMerge   = CmdID_GraphicsBegin + 4,  ///< 多个item移动
-    CmdID_ItemResize       = CmdID_GraphicsBegin + 5,  ///< item resize
-    CmdID_ItemResizeWidth  = CmdID_GraphicsBegin + 6,  ///< item resize width
-    CmdID_ItemResizeHeight = CmdID_GraphicsBegin + 7,  ///< item resize height
-    CmdID_ItemRotation     = CmdID_GraphicsBegin + 8,  ///< item rotation
-    CmdID_GraphicsEnd      = 0x200                     ///< Graphics相关的command id的结束
+	CmdID_GraphicsBegin    = 0x100,                     ///< Graphics相关的command id的起始
+	CmdID_ItemAdd          = CmdID_GraphicsBegin + 1,   ///< item移动
+	CmdID_ItemRemove       = CmdID_GraphicsBegin + 2,   ///< item移动
+	CmdID_ItemMove         = CmdID_GraphicsBegin + 3,   ///< item移动
+	CmdID_ItemMoveMerge    = CmdID_GraphicsBegin + 4,   ///< item移动
+	CmdID_ItemsMove        = CmdID_GraphicsBegin + 5,   ///< 多个item移动
+	CmdID_ItemsMoveMerge   = CmdID_GraphicsBegin + 6,   ///< 多个item移动
+	CmdID_ItemResize       = CmdID_GraphicsBegin + 7,   ///< item resize
+	CmdID_ItemResizeWidth  = CmdID_GraphicsBegin + 8,   ///< item resize width
+	CmdID_ItemResizeHeight = CmdID_GraphicsBegin + 9,   ///< item resize height
+	CmdID_ItemRotation     = CmdID_GraphicsBegin + 10,  ///< item rotation
+	// group
+	CmdID_ItemGrouping   = CmdID_GraphicsBegin + 50,  ///< item Grouping
+	CmdID_ItemUnGrouping = CmdID_GraphicsBegin + 51,  ///< item Grouping
+	// text item
+	CmdID_ItemTextDocumentWrapper    = CmdID_GraphicsBegin + 100,  ///< Text Document Wrapper
+	CmdID_ItemTextHtmlContentChanged = CmdID_GraphicsBegin + 101,  ///< Text Document Wrapper
+	CmdID_GraphicsEnd                = 0x200                       ///< Graphics相关的command id的结束
 };
 
 /**
@@ -102,22 +110,22 @@ enum DAGraphicsCommandIDType
  */
 enum DAGraphicsItemType
 {
-    ItemType_GraphicsItem_Begin   = QGraphicsItem::UserType + 10,     ///< 针对DAGraphicsResizeableItem的类型开始
-    ItemType_DAGraphicsItem_Begin = ItemType_GraphicsItem_Begin + 1,  ///< DAGraphicsItem Type的开始范围
-    ItemType_DAGraphicsItem       = ItemType_DAGraphicsItem_Begin + 1,  ///< 针对DAGraphicsResizeableItem的类型
-    ItemType_DAGraphicsResizeableItem_Begin = ItemType_DAGraphicsItem_Begin + 2,
-    ItemType_DAGraphicsResizeableItem = ItemType_DAGraphicsResizeableItem_Begin + 1,  ///< 针对DAGraphicsResizeableItem的类型
-    ItemType_DAGraphicsRectItem = ItemType_DAGraphicsResizeableItem_Begin + 10,  ///< 针对DAGraphicsRectItem的类型
-    ItemType_DAGraphicsTextItem = ItemType_DAGraphicsResizeableItem_Begin + 12,  ///< 针对DAGraphicsTextItem的类型
-    ItemType_DAGraphicsPixmapItem = ItemType_DAGraphicsResizeableItem_Begin + 14,  ///< 针对DAGraphicsPixmapItem的类型
-    ItemType_DAGraphicsResizeableItem_End = ItemType_DAGraphicsResizeableItem_Begin + 1000,
-    ItemType_DAGraphicsItem_End           = 2000,  ///< DAGraphicsItem的结束范围
-    ItemType_DAGraphicsLinkItem_Begin     = ItemType_DAGraphicsItem_End + 1,
-    ItemType_DAGraphicsLinkItem         = ItemType_DAGraphicsLinkItem_Begin + 1,  ///< 针对DAGraphicsLinkItem的类型
-    ItemType_DAGraphicsLinkItem_End     = 2500,                                   ///< DAGraphicsLinkItem的结束范围
-    ItemType_DAGraphicsStandardTextItem = ItemType_GraphicsItem_Begin + 3000,     ///< 标准样式
-    ItemType_DAGraphicsItemGroup        = ItemType_GraphicsItem_Begin + 4500,  ///< 针对DAGraphicsItemGroup的类型
-    ItemType_GraphicsItem_End           = ItemType_GraphicsItem_Begin + 5000
+	ItemType_GraphicsItem_Begin   = QGraphicsItem::UserType + 10,     ///< 针对DAGraphicsResizeableItem的类型开始
+	ItemType_DAGraphicsItem_Begin = ItemType_GraphicsItem_Begin + 1,  ///< DAGraphicsItem Type的开始范围
+	ItemType_DAGraphicsItem       = ItemType_DAGraphicsItem_Begin + 1,  ///< 针对DAGraphicsResizeableItem的类型
+	ItemType_DAGraphicsResizeableItem_Begin = ItemType_DAGraphicsItem_Begin + 2,
+	ItemType_DAGraphicsResizeableItem = ItemType_DAGraphicsResizeableItem_Begin + 1,  ///< 针对DAGraphicsResizeableItem的类型
+	ItemType_DAGraphicsRectItem = ItemType_DAGraphicsResizeableItem_Begin + 10,  ///< 针对DAGraphicsRectItem的类型
+	ItemType_DAGraphicsTextItem = ItemType_DAGraphicsResizeableItem_Begin + 12,  ///< 针对DAGraphicsTextItem的类型
+	ItemType_DAGraphicsPixmapItem = ItemType_DAGraphicsResizeableItem_Begin + 14,  ///< 针对DAGraphicsPixmapItem的类型
+	ItemType_DAGraphicsResizeableItem_End = ItemType_DAGraphicsResizeableItem_Begin + 1000,
+	ItemType_DAGraphicsItem_End           = 2000,  ///< DAGraphicsItem的结束范围
+	ItemType_DAGraphicsLinkItem_Begin     = ItemType_DAGraphicsItem_End + 1,
+	ItemType_DAGraphicsLinkItem         = ItemType_DAGraphicsLinkItem_Begin + 1,  ///< 针对DAGraphicsLinkItem的类型
+	ItemType_DAGraphicsLinkItem_End     = 2500,                                   ///< DAGraphicsLinkItem的结束范围
+	ItemType_DAGraphicsStandardTextItem = ItemType_GraphicsItem_Begin + 3000,     ///< 标准样式
+	ItemType_DAGraphicsItemGroup        = ItemType_GraphicsItem_Begin + 4500,  ///< 针对DAGraphicsItemGroup的类型
+	ItemType_GraphicsItem_End           = ItemType_GraphicsItem_Begin + 5000
 };
 
 // DANodeLinkPoint::Direction 的枚举转换

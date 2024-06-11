@@ -54,6 +54,22 @@ public:
 	void setSelectTextFont(const QFont& v);
 	QFont getSelectTextFont() const;
 
+	// 设置选中文本字体，如果没选中，将设置全部
+	void setSelectTextFamily(const QString& v);
+	QString getSelectTextFamily() const;
+
+	// 设置选中文本的字体大小
+	void setSelectTextPointSize(int v);
+	int getSelectTextPointSize() const;
+
+	// 文字斜体
+	void setSelectTextItalic(bool on);
+	bool getSelectTextItalic() const;
+
+	// 文字粗体
+	void setSelectTextBold(bool on);
+	bool getSelectTextBold() const;
+
 	// 设置编辑模式
 	void setEditable(bool on = true);
 	bool isEditable() const;
@@ -74,6 +90,8 @@ protected:
 						   QWidget* widget,
 						   const QRectF& bodyRect) override;
 	virtual void mousePressEvent(QGraphicsSceneMouseEvent* e) override;
+	//
+	virtual QVariant itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant& value) override;
 
 private:
 	void init(const QString& initText);
