@@ -33,7 +33,6 @@ public:
 
 public:
 	QPointer< DAWorkFlow > mWorkflow;
-	QVector< QPointer< DANodeGraphicsSceneEventListener > > mEventListeners;
 };
 
 DANodeGraphicsScene::PrivateData::PrivateData(DANodeGraphicsScene* p) : q_ptr(p)
@@ -99,11 +98,7 @@ void DANodeGraphicsScene::setWorkFlow(DAWorkFlow* wf)
 		connect(wf, &DAWorkFlow::nodeNameChanged, this, &DANodeGraphicsScene::onNodeNameChanged);
 		const QList< std::shared_ptr< DAAbstractNodeFactory > > factorys = wf->getAllFactorys();
 		for (auto f : factorys) {
-			DANodeGraphicsSceneEventListener* listen = f->createNodeGraphicsSceneEventListener();
-			if (listen) {
-				listen->factoryAddedToScene(this);
-				d_ptr->mEventListeners.append(listen);
-			}
+            f->uiInitialization(this);
 		}
 	}
 }

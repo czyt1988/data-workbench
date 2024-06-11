@@ -160,26 +160,13 @@ void DAAbstractNodeFactory::loadExternInfoFromXml(const QDomElement* factoryExte
 }
 
 /**
- * @brief 创建DANodeGraphicsScene的事件监听器
- *
- * 创建场景事件监听器，如果需要对场景的事件进行监听，需要继承此函数并返回一个事件监听器
- *
- * 如果无需监听，可返还nullptr
- *
- * 正确创建方法如下：
- * @code
- * DA::DANodeGraphicsSceneEventListener* MyNodeFactory::createNodeGraphicsSceneEventListener()
- * {
- *     return new MyGraphicsSceneEventListener(shared_from_this());
- * }
- * @endcode
- *
- *
- * @return
+ * @brief 界面初始化，这个回调发生在工作流和工厂被加入到场景中触发
+ * @param scene
+ * @note 此函数的回调发生DANodeGraphicsScene::setWorkFlow
  */
-DANodeGraphicsSceneEventListener* DAAbstractNodeFactory::createNodeGraphicsSceneEventListener()
+void DAAbstractNodeFactory::uiInitialization(DANodeGraphicsScene* scene)
 {
-    return nullptr;
+    Q_UNUSED(scene);
 }
 
 }  // end DA

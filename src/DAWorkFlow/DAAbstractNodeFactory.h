@@ -12,7 +12,6 @@ namespace DA
 
 class DAWorkFlow;
 class DANodeGraphicsScene;
-class DANodeGraphicsSceneEventListener;
 /**
  * @brief FCAbstractNode的工厂基类，所有自定义的node集合最后都需要提供一个工厂
  *
@@ -92,20 +91,22 @@ public:
 	// 注意仅仅是节点的链接完成，这里不要操作graphicsItem,
 	// 要处理连接线完全连接两个节点后的情况，使用DAAbstractNodeLinkGraphicsItem::finishedLink来处理
 	virtual void nodeLinkSucceed(DAAbstractNode::SharedPointer outNode,
-								 const QString& outKey,
-								 DAAbstractNode::SharedPointer inNode,
-								 const QString& inkey);
+                                 const QString& outKey,
+                                 DAAbstractNode::SharedPointer inNode,
+                                 const QString& inkey);
 	// 节点连线删除的回调
 	virtual void nodeLinkDetached(DAAbstractNode::SharedPointer outNode,
-								  const QString& outKey,
-								  DAAbstractNode::SharedPointer inNode,
-								  const QString& inkey);
+                                  const QString& outKey,
+                                  DAAbstractNode::SharedPointer inNode,
+                                  const QString& inkey);
 	// 把扩展信息保存到xml上
 	virtual void saveExternInfoToXml(QDomDocument* doc, QDomElement* factoryExternElement) const;
 	// 从xml加载扩展信息
 	virtual void loadExternInfoFromXml(const QDomElement* factoryExternElement);
 	// 创建场景事件监听器，如果需要对场景的事件进行监听，需要继承此函数并返回一个事件监听器
 	virtual DANodeGraphicsSceneEventListener* createNodeGraphicsSceneEventListener();
+    // 界面初始化，这个回调发生在工作流和工厂被加入到场景中触发
+    virtual void uiInitialization(DANodeGraphicsScene* scene);
 };
 
 }  // end DA
