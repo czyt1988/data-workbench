@@ -13,15 +13,7 @@
 #include "DAWorkFlow.h"
 #include "DAAbstractNodeFactory.h"
 #include "DAGraphicsRectItem.h"
-#include "DANodeGraphicsSceneEventListener.h"
 #include <QPointer>
-
-#define DANODEGRAPHICSSCENE_EVENTLISTENER(eventName, e)                                                                \
-	for (int i = 0; i < d_ptr->mEventListeners.size(); ++i) {                                                          \
-		if (d_ptr->mEventListeners[ i ]) {                                                                             \
-			d_ptr->mEventListeners[ i ]->eventName(this, e);                                                           \
-		}                                                                                                              \
-	}
 
 namespace DA
 {
@@ -98,7 +90,7 @@ void DANodeGraphicsScene::setWorkFlow(DAWorkFlow* wf)
 		connect(wf, &DAWorkFlow::nodeNameChanged, this, &DANodeGraphicsScene::onNodeNameChanged);
 		const QList< std::shared_ptr< DAAbstractNodeFactory > > factorys = wf->getAllFactorys();
 		for (auto f : factorys) {
-            f->uiInitialization(this);
+			f->uiInitialization(this);
 		}
 	}
 }
@@ -337,7 +329,7 @@ DAGraphicsRectItem* DANodeGraphicsScene::createRect_(const QPointF& p)
 	if (!p.isNull()) {
 		item->setPos(p);
 	}
-    return (item);
+	return (item);
 }
 
 /**
@@ -347,16 +339,16 @@ DAGraphicsRectItem* DANodeGraphicsScene::createRect_(const QPointF& p)
  */
 DAGraphicsPixmapItem* DANodeGraphicsScene::addPixmapItem_(const QImage& img)
 {
-    if (img.isNull()) {
-        return nullptr;
-    }
-    QPixmap pixmap = QPixmap::fromImage(img);
-    if (pixmap.isNull()) {
-        return nullptr;
-    }
-    DAGraphicsPixmapItem* pixmapItem = new DAGraphicsPixmapItem(pixmap);
-    addItem_(pixmapItem);
-    return pixmapItem;
+	if (img.isNull()) {
+		return nullptr;
+	}
+	QPixmap pixmap = QPixmap::fromImage(img);
+	if (pixmap.isNull()) {
+		return nullptr;
+	}
+	DAGraphicsPixmapItem* pixmapItem = new DAGraphicsPixmapItem(pixmap);
+	addItem_(pixmapItem);
+	return pixmapItem;
 }
 
 /**
@@ -454,7 +446,6 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 			cancelLink();
 		}
 		DAGraphicsScene::mousePressEvent(mouseEvent);
-		DANODEGRAPHICSSCENE_EVENTLISTENER(mousePressEvent, mouseEvent)
 		return;
 	}
 	// 先检查是否点击到了连接点
@@ -472,7 +463,6 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 			// 注意，有可能进行了分组，这时候，点击的是分组
 			// 点击的不是节点item就退出
 			DAGraphicsScene::mousePressEvent(mouseEvent);
-			DANODEGRAPHICSSCENE_EVENTLISTENER(mousePressEvent, mouseEvent)
 			return;
 		}
 		// 如果点击到了DAAbstractNodeGraphicsItem，要看看是否点击到了连接点
@@ -486,7 +476,6 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 			} else {
 				qDebug() << "is start link,but link item can not cast to DAAbstractNodeLinkGraphicsItem";
 				DAGraphicsScene::mousePressEvent(mouseEvent);
-				DANODEGRAPHICSSCENE_EVENTLISTENER(mousePressEvent, mouseEvent)
 				return;
 			}
 			DANodeLinkPoint lp;
@@ -498,7 +487,6 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 				setIgnoreLinkEvent(true);
 				DAGraphicsScene::mousePressEvent(mouseEvent);
 				setIgnoreLinkEvent(false);
-				DANODEGRAPHICSSCENE_EVENTLISTENER(mousePressEvent, mouseEvent)
 				return;
 			}
 			// 点击了连接点
@@ -510,7 +498,6 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 				setIgnoreLinkEvent(true);
 				DAGraphicsScene::mousePressEvent(mouseEvent);
 				setIgnoreLinkEvent(false);
-				DANODEGRAPHICSSCENE_EVENTLISTENER(mousePressEvent, mouseEvent)
 				return;
 			}
 			// 连接成功，把item脱离管理
@@ -538,18 +525,6 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		}
 	}
 	DAGraphicsScene::mousePressEvent(mouseEvent);
-	DANODEGRAPHICSSCENE_EVENTLISTENER(mousePressEvent, mouseEvent)
 }
 
-void DANodeGraphicsScene::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
-{
-	DAGraphicsScene::mouseMoveEvent(mouseEvent);
-	DANODEGRAPHICSSCENE_EVENTLISTENER(mouseMoveEvent, mouseEvent)
-}
-
-void DANodeGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
-{
-	DAGraphicsScene::mouseReleaseEvent(mouseEvent);
-	DANODEGRAPHICSSCENE_EVENTLISTENER(mouseReleaseEvent, mouseEvent)
-}
 }  // end DA
