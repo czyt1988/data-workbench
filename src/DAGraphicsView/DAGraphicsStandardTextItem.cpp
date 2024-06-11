@@ -111,15 +111,11 @@ bool DAGraphicsStandardTextItem::loadFromXml(const QDomElement* itemElement, con
 	}
 	QDomElement htmlEle = textItemEle.firstChildElement("html");
 	if (!htmlEle.isNull()) {
-		auto n = htmlEle.childNodes();
-		if (!n.isEmpty()) {
-			QDomElement htmlContent = n.at(0).toElement();
-			QString html;
-			QTextStream ss(&html);
-			htmlContent.save(ss, 0);
-			// 此函数会触发redo/undo
-			setHtml(html);
-		}
+		QString html;
+		QTextStream ss(&html);
+		htmlEle.save(ss, 0);
+		// 此函数会触发redo/undo
+		setHtml(html);
 	}
 	return true;
 }
