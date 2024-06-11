@@ -5,6 +5,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QDomDocument>
 #include <QDomElement>
+#include <QTextStream>
 #include "DAGraphicsItemFactory.h"
 #include "DAGraphicsScene.h"
 #include "DACommandsForGraphics.h"
@@ -81,13 +82,14 @@ bool DAGraphicsStandardTextItem::saveToXml(QDomDocument* doc, QDomElement* paren
 	textItemEle.setAttribute("id", getItemID());
 	textItemEle.setAttribute("x", scPos.x());
 	textItemEle.setAttribute("y", scPos.y());
-	textItemEle.setAttribute("color", defaultTextColor().name());
-	QDomElement textEle = doc->createElement("text");
-	textEle.appendChild(doc->createTextNode(toPlainText()));
-
-	textItemEle.appendChild(DAXMLFileInterface::makeElement(font(), "font", doc));
-	textItemEle.appendChild(textEle);
-
+	QTextDocument* textDoc = document();
+	if (textDoc) {
+		QString html = textDoc->toHtml();
+		QDomDocument tempDoc;
+		tempDoc.setContent(html);
+		QDomElement innerHtmlElement = tempDoc.firstChildElement();  //<html>
+		textItemEle.appendChild(innerHtmlElement);
+	}
 	parentElement->appendChild(textItemEle);
 	return true;
 }
@@ -107,17 +109,17 @@ bool DAGraphicsStandardTextItem::loadFromXml(const QDomElement* itemElement, con
 	if (getStringULongLongValue(textItemEle.attribute("id"), id)) {
 		setItemID(id);
 	}
-	QColor color(textItemEle.attribute("color"));
-	setDefaultTextColor(color);
-	QDomElement fontEle = textItemEle.firstChildElement("font");
-	if (!fontEle.isNull()) {
-		QFont f = font();
-		DAXMLFileInterface::loadElement(f, &fontEle);
-		setFont(f);
-	}
-	QDomElement textEle = textItemEle.firstChildElement("text");
-	if (!textEle.isNull()) {
-		setPlainText(textEle.text());
+	QDomElement htmlEle = textItemEle.firstChildElement("html");
+	if (!htmlEle.isNull()) {
+		auto n = htmlEle.childNodes();
+		if (!n.isEmpty()) {
+			QDomElement htmlContent = n.at(0).toElement();
+			QString html;
+			QTextStream ss(&html);
+			htmlContent.save(ss, 0);
+			// 此函数会触发redo/undo
+			setHtml(html);
+		}
 	}
 	return true;
 }
