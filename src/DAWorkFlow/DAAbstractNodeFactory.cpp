@@ -1,7 +1,6 @@
 ﻿#include "DAAbstractNodeFactory.h"
 #include <QPointer>
 #include <DAWorkFlow.h>
-#include "DANodeGraphicsSceneEventListener.h"
 
 namespace DA
 {
