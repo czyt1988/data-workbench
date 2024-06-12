@@ -44,6 +44,10 @@ public:
 	bool mMouseLeftButtonPressed { false };  ///< 记录鼠标左键是否按下
 	bool mStartDragCopy { false };           ///< 标记 开始拖拽复制
 	QPoint mMouseLeftButtonPressedPos;       ///< 记录ctrl按下后鼠标点击的位置
+	/**
+	 *@brief 被拖入的节点,这个是记录节点被拖入的指针，这个指针不为空，代表这个拖入是拖入到节点上
+	 */
+	DAAbstractNodeGraphicsItem* mDragInNodeItem { nullptr };
 };
 DAWorkFlowGraphicsView::PrivateData::PrivateData(DAWorkFlowGraphicsView* p) : q_ptr(p)
 {
@@ -483,6 +487,9 @@ void DAWorkFlowGraphicsView::keyReleaseEvent(QKeyEvent* event)
 
 void DAWorkFlowGraphicsView::dragEnterEvent(QDragEnterEvent* event)
 {
+	if (d_ptr->mDragInNodeItem) {
+		d_ptr->mDragInNodeItem = nullptr;
+	}
 	if (event->mimeData()->hasFormat(DANodeMimeData::formatString())) {
 		// 说明有节点的meta数据拖入
 		event->acceptProposedAction();
@@ -493,20 +500,61 @@ void DAWorkFlowGraphicsView::dragEnterEvent(QDragEnterEvent* event)
 
 void DAWorkFlowGraphicsView::dragMoveEvent(QDragMoveEvent* event)
 {
-	auto sc = getWorkFlowGraphicsScene();
-	if (sc) {
-		QGraphicsItem* it = itemAt(event->pos());
-		if (it) {
-			event->setDropAction(Qt::LinkAction);
-			qDebug() << "LinkAction";
-		}
-	}
+	// 嵌套过深的优化：
+	//  auto sc = getWorkFlowGraphicsScene();
+	//  if (sc) {
+	//  	QGraphicsItem* it = itemAt(event->pos());
+	//  	if (it) {
+	//  		if(DAAbstractNodeGraphicsItem* nodeItem = dynamic_cast<DAAbstractNodeGraphicsItem*>(it)){
+	//  			if(nodeItem->acceptDragOn())
+	//  		}
+	//  	}
+	//  }
+	//  event->acceptProposedAction();
 
+	do {
+		auto sc = getWorkFlowGraphicsScene();
+		if (!sc) {
+			break;
+		}
+		auto viewPos      = event->pos();
+		QGraphicsItem* it = itemAt(viewPos);
+		if (!it) {
+			break;
+		}
+		DAAbstractNodeGraphicsItem* nodeItem = dynamic_cast< DAAbstractNodeGraphicsItem* >(it);
+		if (!nodeItem) {
+			break;
+		}
+		// 说明是节点
+		const DANodeMimeData* nodemime = qobject_cast< const DANodeMimeData* >(event->mimeData());
+		if (nullptr == nodemime) {
+			break;
+		}
+		DANodeMetaData nodemeta = nodemime->getNodeMetaData();
+		auto scenePos           = mapToScene(viewPos);
+		if (!nodeItem->acceptDragOn(nodemeta, scenePos)) {
+			qDebug() << "acceptDragOn false";
+			break;
+		}
+		// 说明接受了拖曳上的nodemeta
+		//  改变拖曳过程的鼠标样式
+		d_ptr->mDragInNodeItem = nodeItem;
+		event->setDropAction(Qt::CopyAction);
+		event->accept();
+		return;
+	} while (false);
+	if (d_ptr->mDragInNodeItem) {
+		d_ptr->mDragInNodeItem = nullptr;
+	}
 	event->acceptProposedAction();
 }
 
 void DAWorkFlowGraphicsView::dragLeaveEvent(QDragLeaveEvent* event)
 {
+	if (d_ptr->mDragInNodeItem) {
+		d_ptr->mDragInNodeItem = nullptr;
+	}
 	DAGraphicsView::dragLeaveEvent(event);
 }
 
@@ -518,9 +566,15 @@ void DAWorkFlowGraphicsView::dropEvent(QDropEvent* event)
 		if (nullptr == nodemime) {
 			return;
 		}
-		clearSelection();
 		DANodeMetaData nodemeta = nodemime->getNodeMetaData();
-		createNode_(nodemeta, event->pos());
+		// 两种情况，一种是节点托入到另外一个节点上面放下，这个会触发节点的drag函数
+		if (d_ptr->mDragInNodeItem) {
+			d_ptr->mDragInNodeItem->drop(nodemeta, mapToScene(event->pos()));
+		} else {
+			// 正常的拖入操作
+			clearSelection();
+			createNode_(nodemeta, event->pos());
+		}
 	}
 }
 

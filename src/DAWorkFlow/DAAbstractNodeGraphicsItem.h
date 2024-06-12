@@ -177,6 +177,13 @@ public:
 	// 如果重载了generateLinkPoint或changeLinkPointPos，在构造函数中调用此函数
 	void resetLinkPoint();
 
+	/// @defgroup 拖曳操作
+	/// @{
+	// 是否接受DANodeMetaData拖曳在此节点上
+	virtual bool acceptDragOn(DANodeMetaData mime, const QPointF& scenePos);
+	// 释放DANodeMetaData操作
+	virtual bool drop(DANodeMetaData mime, const QPointF& scenePos);
+	/// @}
 public:
 	// prepare系列函数，用于在改变前的回调
 	// 此函数是在准备调用getLinkPointByPos之前调用的函数，用来准备输入节点

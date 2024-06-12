@@ -356,17 +356,17 @@ bool DAAbstractNodeGraphicsItem::setLinkPointDirection(const QString& name, Aspe
 {
 	for (DAAbstractNodeGraphicsItem::PrivateData::LinkInfo& dp : d_ptr->mLinkInfos) {
 		if (dp.point.name == name) {
-            auto oldlp         = dp.point;
+			auto oldlp         = dp.point;
 			dp.point.direction = d;
-            // 对应的link也要跟着变换
-            //  已经连接到的link信息也要变更
-            for (auto link : qAsConst(dp.linkitems)) {
-                if (oldlp == link->fromNodeLinkPoint()) {
-                    link->updateFromLinkPointInfo(dp.point);
-                } else if (oldlp == link->toNodeLinkPoint()) {
-                    link->updateToLinkPointInfo(dp.point);
-                }
-            }
+			// 对应的link也要跟着变换
+			//  已经连接到的link信息也要变更
+			for (auto link : qAsConst(dp.linkitems)) {
+				if (oldlp == link->fromNodeLinkPoint()) {
+					link->updateFromLinkPointInfo(dp.point);
+				} else if (oldlp == link->toNodeLinkPoint()) {
+					link->updateToLinkPointInfo(dp.point);
+				}
+			}
 			return true;
 		}
 	}
@@ -439,6 +439,36 @@ void DAAbstractNodeGraphicsItem::resetLinkPoint()
 	for (const DANodeLinkPoint& d : qAsConst(linkPoints)) {
 		addLinkPoint(d);
 	}
+}
+
+/**
+ * @brief 是否接受DANodeMetaData拖曳在此节点上
+ *
+ * 如果此函数返回true，说明这个节点接受一个新节点拖曳到此节点上，这时候drop函数就生效
+ *
+ * acceptDragOn接口和drop接口是为了实现如下场景：
+ *
+ * 一个新节点拖曳在旧节点上实现替换或者链接操作
+ * @param mime
+ * @return
+ */
+bool DAAbstractNodeGraphicsItem::acceptDragOn(DANodeMetaData mime, const QPointF& scenePos)
+{
+	Q_UNUSED(mime);
+	Q_UNUSED(scenePos);
+	return true;
+}
+
+/**
+ * @brief 拖放
+ * @param mime
+ * @return
+ */
+bool DAAbstractNodeGraphicsItem::drop(DANodeMetaData mime, const QPointF& scenePos)
+{
+	Q_UNUSED(mime);
+	Q_UNUSED(scenePos);
+	return false;
 }
 
 /**
@@ -770,26 +800,26 @@ void DAAbstractNodeGraphicsItem::addLinkPoint(const DANodeLinkPoint& lp)
  */
 void DAAbstractNodeGraphicsItem::setLinkPoint(const QString& name, const DANodeLinkPoint& newLinkpoint)
 {
-    for (auto& v : d_ptr->mLinkInfos) {
-        if (v.point.name != name) {
-            continue;
-        }
-        DANodeLinkPoint oldLp = v.point;
-        v.point               = newLinkpoint;
-        // 已经连接到的link信息也要变更
-        for (auto link : qAsConst(v.linkitems)) {
-            if (oldLp == link->fromNodeLinkPoint()) {
-                link->updateFromLinkPointInfo(newLinkpoint);
-            } else if (oldLp == link->toNodeLinkPoint()) {
-                link->updateToLinkPointInfo(newLinkpoint);
-            }
-        }
-    }
+	for (auto& v : d_ptr->mLinkInfos) {
+		if (v.point.name != name) {
+			continue;
+		}
+		DANodeLinkPoint oldLp = v.point;
+		v.point               = newLinkpoint;
+		// 已经连接到的link信息也要变更
+		for (auto link : qAsConst(v.linkitems)) {
+			if (oldLp == link->fromNodeLinkPoint()) {
+				link->updateFromLinkPointInfo(newLinkpoint);
+			} else if (oldLp == link->toNodeLinkPoint()) {
+				link->updateToLinkPointInfo(newLinkpoint);
+			}
+		}
+	}
 }
 
 bool DAAbstractNodeGraphicsItem::saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const
 {
-    DAGraphicsResizeableItem::saveToXml(doc, parentElement, ver);
+	DAGraphicsResizeableItem::saveToXml(doc, parentElement, ver);
 	QDomElement nodeEle = doc->createElement("nodeItem");
 	QDomElement lpEle   = doc->createElement("linkpoints");
 	lpEle.setAttribute("input-loc", enumToString(getLinkPointLocation(DANodeLinkPoint::Input)));
@@ -808,7 +838,7 @@ bool DAAbstractNodeGraphicsItem::saveToXml(QDomDocument* doc, QDomElement* paren
 
 bool DAAbstractNodeGraphicsItem::loadFromXml(const QDomElement* itemElement, const QVersionNumber& ver)
 {
-    if (!DAGraphicsResizeableItem::loadFromXml(itemElement, ver)) {
+	if (!DAGraphicsResizeableItem::loadFromXml(itemElement, ver)) {
 		return false;
 	}
 	QDomElement nodeEle = itemElement->firstChildElement("nodeItem");
@@ -834,7 +864,7 @@ bool DAAbstractNodeGraphicsItem::loadFromXml(const QDomElement* itemElement, con
 			if (name.isEmpty()) {
 				continue;
 			}
-            setLinkPointDirection(name, stringToEnum(le.attribute("direction"), AspectDirection::East));
+			setLinkPointDirection(name, stringToEnum(le.attribute("direction"), AspectDirection::East));
 		}
 	}
 	return true;
@@ -878,18 +908,18 @@ DAAbstractNodeLinkGraphicsItem* DAAbstractNodeGraphicsItem::linkTo(const DANodeL
                                                                    const DANodeLinkPoint& toPoint)
 {
 	// 创建链接线
-    auto linkitem = std::unique_ptr< DAAbstractNodeLinkGraphicsItem >(createLinkItem(fromPoint));
+	auto linkitem = std::unique_ptr< DAAbstractNodeLinkGraphicsItem >(createLinkItem(fromPoint));
 	if (nullptr == linkitem) {
 		return nullptr;
 	}
 	if (!linkitem->attachFrom(this, fromPoint)) {
 		qDebug() << QObject::tr("link item can not attach from node item(%1) with key=%2")
-                        .arg(this->getNodeName(), fromPoint.name);  // cn:无法在节点(%1)的连接点%2上建立链接
+						.arg(this->getNodeName(), fromPoint.name);  // cn:无法在节点(%1)的连接点%2上建立链接
 		return nullptr;
 	}
 	if (!linkitem->attachTo(toItem, toPoint)) {
 		qDebug() << QObject::tr("link item can not attach to node item(%1) with key=%2")  // cn:无法链接到节点(%1)的连接点%2
-                        .arg(toItem->getNodeName(), toPoint.name);
+						.arg(toItem->getNodeName(), toPoint.name);
 
 		return nullptr;
 	}
@@ -911,12 +941,12 @@ DAAbstractNodeLinkGraphicsItem* DAAbstractNodeGraphicsItem::linkTo(const QString
 	DANodeLinkPoint tolp   = toItem->getInputLinkPoint(toPointName);
 	if (!fromlp.isValid()) {
 		qDebug() << QObject::tr("Node %1 cannot find a connection point named %2")  // cn:节点%1无法找到名字为%2的连接点
-                        .arg(getNodeName(), fromPointName);
+						.arg(getNodeName(), fromPointName);
 		return nullptr;
 	}
 	if (!tolp.isValid()) {
 		qDebug() << QObject::tr("Node %1 cannot find a connection point named %2")  // cn:节点%1无法找到名字为%2的连接点
-                        .arg(toItem->getNodeName(), toPointName);
+						.arg(toItem->getNodeName(), toPointName);
 		return nullptr;
 	}
 	return linkTo(fromlp, toItem, tolp);
