@@ -86,6 +86,70 @@ DAAbstractNode::SharedPointer DACommandsForWorkFlowCreateNode::node() const
 	return mNode;
 }
 
+//===============================================================
+// DACommandsForWorkFlowRemoveNodeItem
+//===============================================================
+DACommandsForWorkFlowRemoveNodeItem::DACommandsForWorkFlowRemoveNodeItem(DANodeGraphicsScene* scene,
+                                                                         DAAbstractNodeGraphicsItem* item,
+                                                                         QUndoCommand* parent)
+    : QUndoCommand(parent), mScene(scene), mNodeItem(item)
+{
+	setText(QObject::tr("Remove Node Item"));
+	//! 针对在命令的构造函数中就直接执行了创建或者删除动作的情况，
+	//! 创建的命令mNeedDelete初始要为true，否则创建此命令，但没推入stack就会出现内存泄露
+	//! 反之亦然，删除的命令，needdelete应该为false
+	mNeedDelete = false;
+
+	mWillRemoveLink = item->getLinkItems();
+	for (DAAbstractNodeLinkGraphicsItem* lk : qAsConst(mWillRemoveLink)) {
+		new DACommandsForWorkFlowRemoveLink(lk, scene, this);
+	}
+}
+
+DACommandsForWorkFlowRemoveNodeItem::~DACommandsForWorkFlowRemoveNodeItem()
+{
+	if (mNeedDelete) {
+		if (mNodeItem) {
+			delete mNodeItem;
+		}
+	}
+}
+
+void DACommandsForWorkFlowRemoveNodeItem::redo()
+{  // 注意QUndoCommand::redo()要放到最前，QUndoCommand::undo()要放到最后
+	mNeedDelete = true;
+	QUndoCommand::redo();  // 此函数会执行子内容的redo/undo,也就是先删除link
+	mScene->removeItem(mNodeItem);
+	DAWorkFlow* wf = mScene->getWorkflow();
+	if (wf) {
+		//! 这里要把node保存下来，node是智能指针，如果用户正常操作添加，addNode_，node的智能指针是有其它地方的实例不会析构
+		//! 但是，如果是打开工程，打开后再删除，这样ndoe是没有其它地方的实例，wf->removeNode会直接把node析构了，
+		//! 如果这里直接removeNode,节点就会被析构，
+		//! 因此，为了避免node析构，这里要把node再保存下来
+		mWillRemoveNode = mNodeItem->node();
+		wf->removeNode(mWillRemoveNode);
+	}
+}
+
+void DACommandsForWorkFlowRemoveNodeItem::undo()
+{
+	mNeedDelete = false;
+	mScene->addItem(mNodeItem);
+	DAWorkFlow* wf = mScene->getWorkflow();
+	if (wf) {
+		// 因为mWillRemoveNodes保留了节点，item里的weakpoint能获取到智能指针
+		wf->addNode(mNodeItem->node());
+	}
+	mWillRemoveNode = nullptr;
+	// 注意undo要放到最后
+	QUndoCommand::undo();  // 此函数会执行子内容的redo/undo
+}
+
+QList< DAAbstractNodeLinkGraphicsItem* > DACommandsForWorkFlowRemoveNodeItem::getRemovedNodeLinkItems() const
+{
+	return mWillRemoveLink;
+}
+
 //==============================================================
 // DACommandsForWorkFlowRemoveNode
 //==============================================================

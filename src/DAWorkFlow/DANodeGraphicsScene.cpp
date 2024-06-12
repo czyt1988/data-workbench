@@ -234,7 +234,6 @@ int DANodeGraphicsScene::removeSelectedItems_()
 	//  QGraphicsItem不进行处理,因此普通的item需要调用addItem_而不是addItem
 	// 需要先找到节点下面所以得link，和选中的link进行分组
 	//! 注意： 如果处于链接状态（isStartLink() == true）那么不能删除正在链接的那个元素的节点，否则会导致异常
-	qDebug() << "removeSelectedItems_";
 	// 移除元素过程中，先要删除链接
 	cancelLink();
 	auto cmd = std::make_unique< DA::DACommandsForWorkFlowRemoveSelectNodes >(this);
@@ -258,6 +257,11 @@ int DANodeGraphicsScene::removeSelectedItems_()
 		emit itemRemoved(gl);
 	}
 	return rc;
+}
+
+void DANodeGraphicsScene::removeNodeItem_(DAAbstractNodeGraphicsItem* i)
+{
+    push(new DACommandsForWorkFlowRemoveNodeItem(this, i));
 }
 
 /**

@@ -68,7 +68,8 @@ public:
 
 	// 删除选中的item，此函数支持redo/undo,返回删除的数量
 	int removeSelectedItems_();
-
+	// 带redo/undo的节点item删除，此操作会顺带删除节点对应的连接线，避免悬空连接线
+	void removeNodeItem_(DAAbstractNodeGraphicsItem* i);
 	// 通过node元对象创建工作流节点
 	DAAbstractNodeGraphicsItem* createNode(const DANodeMetaData& md, const QPointF& pos);
 	DAAbstractNodeGraphicsItem* createNode_(const DANodeMetaData& md, const QPointF& pos);
