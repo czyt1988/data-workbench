@@ -123,7 +123,8 @@ enum DAGraphicsItemType
 	ItemType_DAGraphicsLinkItem_Begin     = ItemType_DAGraphicsItem_End + 1,
 	ItemType_DAGraphicsLinkItem         = ItemType_DAGraphicsLinkItem_Begin + 1,  ///< 针对DAGraphicsLinkItem的类型
 	ItemType_DAGraphicsLinkItem_End     = 2500,                                   ///< DAGraphicsLinkItem的结束范围
-	ItemType_DAGraphicsStandardTextItem = ItemType_GraphicsItem_Begin + 3000,     ///< 标准样式
+	ItemType_DAGraphicsStandardTextItem = ItemType_GraphicsItem_Begin + 3000,     ///< 标准文本
+	ItemType_DAGraphicsLabelItem        = ItemType_GraphicsItem_Begin + 3001,     ///< 标准label
 	ItemType_DAGraphicsItemGroup        = ItemType_GraphicsItem_Begin + 4500,  ///< 针对DAGraphicsItemGroup的类型
 	ItemType_GraphicsItem_End           = ItemType_GraphicsItem_Begin + 5000
 };

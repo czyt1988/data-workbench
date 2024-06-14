@@ -20,40 +20,43 @@ namespace DA
 class DAUTILS_API DAXMLFileInterface
 {
 public:
-    DAXMLFileInterface();
-    virtual ~DAXMLFileInterface();
-    // 保存到xml中
-    virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement,const QVersionNumber& ver) const = 0;
-    virtual bool loadFromXml(const QDomElement* parentElement,const QVersionNumber& ver)                  = 0;
+	DAXMLFileInterface();
+	virtual ~DAXMLFileInterface();
+	// 保存到xml中
+	virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const = 0;
+	virtual bool loadFromXml(const QDomElement* parentElement, const QVersionNumber& ver)                  = 0;
 
 public:
-    // 标准保存—— QRect
-    static QDomElement makeElement(const QRect& v, const QString& tagName, QDomDocument* doc);
-    static bool loadElement(QRect& p, const QDomElement* ele);
-    // 标准保存—— QRectF
-    static QDomElement makeElement(const QRectF& v, const QString& tagName, QDomDocument* doc);
-    static bool loadElement(QRectF& p, const QDomElement* ele);
-    // 标准保存—— QPoint
-    static QDomElement makeElement(const QPoint& v, const QString& tagName, QDomDocument* doc);
-    static bool loadElement(QPoint& p, const QDomElement* ele);
-    // 标准保存—— QPointF
-    static QDomElement makeElement(const QPointF& v, const QString& tagName, QDomDocument* doc);
-    static bool loadElement(QPointF& p, const QDomElement* ele);
-    // 标准保存—— QPen 画笔
-    static QDomElement makeElement(const QPen& v, const QString& tagName, QDomDocument* doc);
-    static bool loadElement(QPen& p, const QDomElement* ele);
-    // 标准保存—— QBrush 画笔
-    static QDomElement makeElement(const QBrush& v, const QString& tagName, QDomDocument* doc);
-    static bool loadElement(QBrush& p, const QDomElement* ele);
-    // 标准保存—— QFont
-    static QDomElement makeElement(const QFont& v, const QString& tagName, QDomDocument* doc);
-    static bool loadElement(QFont& p, const QDomElement* ele);
-    // 标准保存—— QVector3D
-    static QDomElement makeElement(const QVector3D& v, const QString& tagName, QDomDocument* doc);
-    static bool loadElement(QVector3D& p, const QDomElement* ele);
-    // 标准保存—— QVariant
-    static QDomElement makeElement(const QVariant& v, const QString& tagName, QDomDocument* doc);
-    static bool loadElement(QVariant& p, const QDomElement* ele);
+	// 标准保存—— QString
+	static QDomElement makeElement(const QString& v, const QString& tagName, QDomDocument* doc);
+	static bool loadElement(QString& p, const QDomElement* ele);
+	// 标准保存—— QRect
+	static QDomElement makeElement(const QRect& v, const QString& tagName, QDomDocument* doc);
+	static bool loadElement(QRect& p, const QDomElement* ele);
+	// 标准保存—— QRectF
+	static QDomElement makeElement(const QRectF& v, const QString& tagName, QDomDocument* doc);
+	static bool loadElement(QRectF& p, const QDomElement* ele);
+	// 标准保存—— QPoint
+	static QDomElement makeElement(const QPoint& v, const QString& tagName, QDomDocument* doc);
+	static bool loadElement(QPoint& p, const QDomElement* ele);
+	// 标准保存—— QPointF
+	static QDomElement makeElement(const QPointF& v, const QString& tagName, QDomDocument* doc);
+	static bool loadElement(QPointF& p, const QDomElement* ele);
+	// 标准保存—— QPen 画笔
+	static QDomElement makeElement(const QPen& v, const QString& tagName, QDomDocument* doc);
+	static bool loadElement(QPen& p, const QDomElement* ele);
+	// 标准保存—— QBrush 画笔
+	static QDomElement makeElement(const QBrush& v, const QString& tagName, QDomDocument* doc);
+	static bool loadElement(QBrush& p, const QDomElement* ele);
+	// 标准保存—— QFont
+	static QDomElement makeElement(const QFont& v, const QString& tagName, QDomDocument* doc);
+	static bool loadElement(QFont& p, const QDomElement* ele);
+	// 标准保存—— QVector3D
+	static QDomElement makeElement(const QVector3D& v, const QString& tagName, QDomDocument* doc);
+	static bool loadElement(QVector3D& p, const QDomElement* ele);
+	// 标准保存—— QVariant
+	static QDomElement makeElement(const QVariant& v, const QString& tagName, QDomDocument* doc);
+	static bool loadElement(QVariant& p, const QDomElement* ele);
 };
 
 /**
@@ -90,14 +93,14 @@ DAUTILS_API QString doubleToString(const double a);
 template< typename T >
 QString converVariantToBase64String(const QVariant& var)
 {
-    if (var.canConvert< T >()) {
-        QByteArray byte;
-        QDataStream st(&byte, QIODevice::ReadWrite);
-        T ba = var.value< T >();
-        st << ba;
-        return (QString(byte.toBase64()));
-    }
-    return (QString());
+	if (var.canConvert< T >()) {
+		QByteArray byte;
+		QDataStream st(&byte, QIODevice::ReadWrite);
+		T ba = var.value< T >();
+		st << ba;
+		return (QString(byte.toBase64()));
+	}
+	return (QString());
 }
 
 /**
@@ -108,12 +111,12 @@ QString converVariantToBase64String(const QVariant& var)
 template< typename T >
 QVariant converBase64StringToVariant(const QString& base64)
 {
-    QByteArray byte = QByteArray::fromBase64(base64.toLocal8Bit());
-    QDataStream st(&byte, QIODevice::ReadWrite);
-    T ba;
+	QByteArray byte = QByteArray::fromBase64(base64.toLocal8Bit());
+	QDataStream st(&byte, QIODevice::ReadWrite);
+	T ba;
 
-    st >> ba;
-    return (QVariant::fromValue(ba));
+	st >> ba;
+	return (QVariant::fromValue(ba));
 }
 
 // 获取qreal值
@@ -146,7 +149,8 @@ DAUTILS_API Qt::AspectRatioMode stringToEnum(const QString& s, Qt::AspectRatioMo
 // Qt::TransformationMode的枚举转换
 DAUTILS_API QString enumToString(Qt::TransformationMode e);
 // Qt::TransformationMode的枚举转换
-DAUTILS_API Qt::TransformationMode stringToEnum(const QString& s, Qt::TransformationMode defaultEnum = Qt::FastTransformation);
+DAUTILS_API Qt::TransformationMode stringToEnum(const QString& s,
+												Qt::TransformationMode defaultEnum = Qt::FastTransformation);
 
 // Qt::TransformationMode的枚举转换
 DAUTILS_API QString enumToString(QFont::Weight e);

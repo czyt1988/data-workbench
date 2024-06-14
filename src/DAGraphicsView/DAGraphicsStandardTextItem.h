@@ -4,7 +4,7 @@
 #include <QFont>
 #include <QGraphicsTextItem>
 #include "DAGraphicsViewGlobal.h"
-#include "DAUtils/DAXMLFileInterface.h"
+#include "DAXMLFileInterface.h"
 class QInputMethodEvent;
 class QFocusEvent;
 class QGraphicsSceneMouseEvent;

@@ -78,10 +78,14 @@ bool DAGraphicsStandardTextItem::isEditable() const
 bool DAGraphicsStandardTextItem::saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const
 {
 	QDomElement textItemEle = doc->createElement("text-info");
-	QPointF scPos           = scenePos();
+	QPointF p               = pos();
+	textItemEle.setAttribute("flags", static_cast< int >(flags()));
 	textItemEle.setAttribute("id", getItemID());
-	textItemEle.setAttribute("x", scPos.x());
-	textItemEle.setAttribute("y", scPos.y());
+	textItemEle.setAttribute("x", p.x());
+	textItemEle.setAttribute("y", p.y());
+	textItemEle.setAttribute("z", zValue());
+	textItemEle.setAttribute("rotation", rotation());
+	textItemEle.setAttribute("scale", scale());
 	QTextDocument* textDoc = document();
 	if (textDoc) {
 		QString html = textDoc->toHtml();
@@ -102,12 +106,31 @@ bool DAGraphicsStandardTextItem::loadFromXml(const QDomElement* itemElement, con
 	}
 	QPointF pos;
 	uint64_t id;
+	qreal realValue;
+	QString strflags = textItemEle.attribute("flags");
+	if (!strflags.isEmpty()) {
+		bool ok       = false;
+		int flagvalue = strflags.toInt(&ok);
+		if (ok) {
+			GraphicsItemFlags f = static_cast< GraphicsItemFlags >(flagvalue);
+			setFlags(f);
+		}
+	}
 	if (getStringRealValue(textItemEle.attribute("x"), pos.rx())
 		&& getStringRealValue(textItemEle.attribute("y"), pos.ry())) {
-		setScenePos(pos);
+		setPos(pos);
 	}
 	if (getStringULongLongValue(textItemEle.attribute("id"), id)) {
 		setItemID(id);
+	}
+	if (getStringRealValue(textItemEle.attribute("z", ""), realValue)) {
+		setZValue(realValue);
+	}
+	if (getStringRealValue(textItemEle.attribute("rotation", ""), realValue)) {
+		setRotation(realValue);
+	}
+	if (getStringRealValue(textItemEle.attribute("scale", ""), realValue)) {
+		setScale(realValue);
 	}
 	QDomElement htmlEle = textItemEle.firstChildElement("html");
 	if (!htmlEle.isNull()) {

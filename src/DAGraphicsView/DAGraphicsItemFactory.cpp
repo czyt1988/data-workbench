@@ -1,4 +1,4 @@
-#include "DAGraphicsItemFactory.h"
+﻿#include "DAGraphicsItemFactory.h"
 #include <QDebug>
 #include <QObject>
 #include <QDateTime>
@@ -7,6 +7,7 @@
 #include "DAGraphicsRectItem.h"
 #include "DAGraphicsTextItem.h"
 #include "DAGraphicsStandardTextItem.h"
+#include "DAGraphicsLabelItem.h"
 namespace DA
 {
 /**
@@ -25,17 +26,18 @@ DAGraphicsItemFactory::~DAGraphicsItemFactory()
 
 void DAGraphicsItemFactory::initialization()
 {
-    // Qt
+	// Qt
 
-    // DA
-    registItem(DAGraphicsPixmapItem::staticMetaObject.className(),
-               []() -> QGraphicsItem* { return new DAGraphicsPixmapItem(); });
-    registItem(DAGraphicsRectItem::staticMetaObject.className(),
-               []() -> QGraphicsItem* { return new DAGraphicsRectItem(); });
-    registItem(DAGraphicsTextItem::staticMetaObject.className(),
-               []() -> QGraphicsItem* { return new DAGraphicsTextItem(); });
-    // Other
-    registItem("DA::DAGraphicsStandardTextItem", []() -> QGraphicsItem* { return new DAGraphicsStandardTextItem(); });
+	// DA
+	registItem(DAGraphicsPixmapItem::staticMetaObject.className(),
+			   []() -> QGraphicsItem* { return new DAGraphicsPixmapItem(); });
+	registItem(DAGraphicsRectItem::staticMetaObject.className(),
+			   []() -> QGraphicsItem* { return new DAGraphicsRectItem(); });
+	registItem(DAGraphicsTextItem::staticMetaObject.className(),
+			   []() -> QGraphicsItem* { return new DAGraphicsTextItem(); });
+	// Other
+	registItem("DA::DAGraphicsStandardTextItem", []() -> QGraphicsItem* { return new DAGraphicsStandardTextItem(); });
+	registItem("DA::DAGraphicsLabelItem", []() -> QGraphicsItem* { return new DAGraphicsLabelItem(); });
 }
 
 /**
@@ -45,41 +47,41 @@ void DAGraphicsItemFactory::initialization()
  */
 void DAGraphicsItemFactory::registItem(const QString& className, DAGraphicsItemFactory::FpItemCreate fp)
 {
-    if (g_pRegistedItems == nullptr) {
-        g_pRegistedItems = new QHash< QString, DAGraphicsItemFactory::FpItemCreate >();
-    }
-    if (g_pRegistedItems2 == nullptr) {
-        g_pRegistedItems2 = new QHash< int, DAGraphicsItemFactory::FpItemCreate >();
-    }
-    std::unique_ptr< QGraphicsItem > it(fp());
-    g_pRegistedItems->operator[](className)   = fp;
-    g_pRegistedItems2->operator[](it->type()) = fp;
+	if (g_pRegistedItems == nullptr) {
+		g_pRegistedItems = new QHash< QString, DAGraphicsItemFactory::FpItemCreate >();
+	}
+	if (g_pRegistedItems2 == nullptr) {
+		g_pRegistedItems2 = new QHash< int, DAGraphicsItemFactory::FpItemCreate >();
+	}
+	std::unique_ptr< QGraphicsItem > it(fp());
+	g_pRegistedItems->operator[](className)   = fp;
+	g_pRegistedItems2->operator[](it->type()) = fp;
 }
 
 QGraphicsItem* DAGraphicsItemFactory::createItem(const QString& className)
 {
-    if (g_pRegistedItems == nullptr) {
-        return nullptr;
-    }
-    FpItemCreate fp = g_pRegistedItems->value(className, nullptr);
-    if (nullptr == fp) {
-        qWarning() << QObject::tr("Class name %1 not registered to item factory").arg(className);
-        return nullptr;
-    }
-    return fp();
+	if (g_pRegistedItems == nullptr) {
+		return nullptr;
+	}
+	FpItemCreate fp = g_pRegistedItems->value(className, nullptr);
+	if (nullptr == fp) {
+		qWarning() << QObject::tr("Class name %1 not registered to item factory").arg(className);
+		return nullptr;
+	}
+	return fp();
 }
 
 QGraphicsItem* DAGraphicsItemFactory::createItem(int itemType)
 {
-    if (g_pRegistedItems2 == nullptr) {
-        return nullptr;
-    }
-    FpItemCreate fp = g_pRegistedItems2->value(itemType, nullptr);
-    if (nullptr == fp) {
-        qWarning() << QObject::tr("type %1 not registered to item factory").arg(itemType);
-        return nullptr;
-    }
-    return fp();
+	if (g_pRegistedItems2 == nullptr) {
+		return nullptr;
+	}
+	FpItemCreate fp = g_pRegistedItems2->value(itemType, nullptr);
+	if (nullptr == fp) {
+		qWarning() << QObject::tr("type %1 not registered to item factory").arg(itemType);
+		return nullptr;
+	}
+	return fp();
 }
 
 void DAGraphicsItemFactory::destoryItem(DAGraphicsItem* i)
@@ -93,15 +95,15 @@ void DAGraphicsItemFactory::destoryItem(DAGraphicsItem* i)
  */
 uint64_t DAGraphicsItemFactory::generateID(uint32_t rand)
 {
-    union {
-        uint64_t id;
-        uint32_t raw[ 2 ];
-    } mem;
-    QDateTime dt = QDateTime::currentDateTime();
+	union {
+		uint64_t id;
+		uint32_t raw[ 2 ];
+	} mem;
+	QDateTime dt = QDateTime::currentDateTime();
 
-    mem.id       = uint64_t(dt.toMSecsSinceEpoch());
-    mem.raw[ 1 ] = rand;
-    return mem.id;
+	mem.id       = uint64_t(dt.toMSecsSinceEpoch());
+	mem.raw[ 1 ] = rand;
+	return mem.id;
 }
 
 }  // end DA
