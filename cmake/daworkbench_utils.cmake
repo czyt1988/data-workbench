@@ -96,6 +96,7 @@ endmacro(damacro_lib_setting)
 
 # 通用的安装
 macro(damacro_lib_install)
+    target_compile_definitions(${DA_LIB_NAME} PRIVATE QT_MESSAGELOGCONTEXT)
     ########################################################
     # dll资源信息添加到 target_sources中
     ########################################################
@@ -197,7 +198,7 @@ endmacro(damacro_lib_install)
 # 生成：DA_MIN_QT_VERSION 最低qt版本要求
 macro(damacro_app_setting _app_name _app_description _app_ver_major _app_ver_minor _app_ver_path)
     set(DA_MIN_QT_VERSION 5.14)
-        set(DA_APP_NAME ${_app_name})
+    set(DA_APP_NAME ${_app_name})
     set(DA_APP_DESCRIPTION ${_app_description})
     set(DA_APP_VERSION_MAJOR ${_app_ver_major})
     set(DA_APP_VERSION_MINOR ${_app_ver_minor})
