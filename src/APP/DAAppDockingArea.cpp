@@ -289,11 +289,14 @@ void DAAppDockingArea::buildDockingArea()
 	mMessageLogDock->setIcon(QIcon(":/app/bright/Icon/showInfomation.svg"));
 
 	// 设置dock的区域大小,默认为左1：中间4：右：1
+	resetDefaultSplitterSizes();
+#if 0
 	QScreen* screen = QApplication::primaryScreen();
 	int leftwidth   = screen->size().width() / 6;
 	int rightwidth  = leftwidth;
 	int centerwidth = screen->size().width() - leftwidth - rightwidth;
 	dockManager()->setSplitterSizes(mWorkflowNodeListDock->dockAreaWidget(), { leftwidth, centerwidth, rightwidth });
+#endif
 	//
 
 	initConnection();

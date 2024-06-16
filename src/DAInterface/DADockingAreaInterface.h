@@ -82,6 +82,23 @@ public:
 	 */
 	void raiseDockByWidget(QWidget* w);
 
+	/**
+	 * @brief 获取中心区域
+	 * @return
+	 */
+	ads::CDockAreaWidget* getCenterArea() const;
+
+	/**
+	 * @brief 获取中心窗口
+	 * @return
+	 */
+	ads::CDockWidget* getCentralWidget() const;
+
+	/**
+	 * @brief 重置分割尺寸
+	 */
+	void resetDefaultSplitterSizes();
+
 public:
 	/*
 	 * 接口:

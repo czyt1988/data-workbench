@@ -1,10 +1,13 @@
 ﻿#include "DADockingAreaInterface.h"
 #include <QMap>
 #include <QDebug>
+#include <QApplication>
+#include <QScreen>
 // DA
 #include "DAUIInterface.h"
 // Qt-Advanced-Docking-System
 #include "DockManager.h"
+#include "DockAreaWidget.h"
 // SARibbon
 //  这个头文件需要存在，ui()->mainWindow()获取的窗口需要这个头文件，不要移除
 #include "SARibbonMainWindow.h"
@@ -23,6 +26,7 @@ public:
 public:
 	DAUIInterface* mUiInterface { nullptr };
 	ads::CDockManager* mDockManager { nullptr };
+	ads::CDockAreaWidget* mCenterArea { nullptr };
 };
 
 //===================================================
@@ -101,6 +105,25 @@ void DADockingAreaInterface::raiseDockByWidget(QWidget* w)
 		}
 		dw->raise();
 	}
+}
+
+ads::CDockAreaWidget* DADockingAreaInterface::getCenterArea() const
+{
+	return d_ptr->mCenterArea;
+}
+
+ads::CDockWidget* DADockingAreaInterface::getCentralWidget() const
+{
+	return d_ptr->mDockManager->centralWidget();
+}
+
+void DADockingAreaInterface::resetDefaultSplitterSizes()
+{
+	QScreen* screen = QApplication::primaryScreen();
+	int leftwidth   = screen->size().width() / 6;
+	int rightwidth  = leftwidth;
+	int centerwidth = screen->size().width() - leftwidth - rightwidth;
+	dockManager()->setSplitterSizes(getCenterArea(), { leftwidth, centerwidth, rightwidth });
 }
 
 /**
@@ -219,7 +242,7 @@ ads::CDockWidget* DADockingAreaInterface::createCenterDockWidget(QWidget* w, con
 {
 	ads::CDockWidget* dockWidget = new ads::CDockWidget(widgetName);
 	dockWidget->setWidget(w);
-	d_ptr->mDockManager->setCentralWidget(dockWidget);
+	d_ptr->mCenterArea = d_ptr->mDockManager->setCentralWidget(dockWidget);
 	return dockWidget;
 }
 
