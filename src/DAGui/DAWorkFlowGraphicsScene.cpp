@@ -131,13 +131,13 @@ void DAWorkFlowGraphicsScene::setBackgroundPixmapItem(DAGraphicsPixmapItem* item
 	if (item) {
 #if DA_USE_QGRAPHICSOBJECT
 		connect(mBackgroundPixmapItem,
-				&DAGraphicsPixmapItem::xChanged,
-				this,
-				&DAWorkFlowGraphicsScene::backgroundPixmapItemXChanged);
+                &DAGraphicsPixmapItem::xChanged,
+                this,
+                &DAWorkFlowGraphicsScene::backgroundPixmapItemXChanged);
 		connect(mBackgroundPixmapItem,
-				&DAGraphicsPixmapItem::yChanged,
-				this,
-				&DAWorkFlowGraphicsScene::backgroundPixmapItemYChanged);
+                &DAGraphicsPixmapItem::yChanged,
+                this,
+                &DAWorkFlowGraphicsScene::backgroundPixmapItemYChanged);
 #endif
 		item->setZValue(-9999);
 		addItem(mBackgroundPixmapItem);
@@ -158,13 +158,13 @@ DAGraphicsPixmapItem* DAWorkFlowGraphicsScene::removeBackgroundPixmapItem()
 	if (mBackgroundPixmapItem) {
 #if DA_USE_QGRAPHICSOBJECT
 		disconnect(mBackgroundPixmapItem,
-				   &DAGraphicsPixmapItem::xChanged,
-				   this,
-				   &DAWorkFlowGraphicsScene::backgroundPixmapItemXChanged);
+                   &DAGraphicsPixmapItem::xChanged,
+                   this,
+                   &DAWorkFlowGraphicsScene::backgroundPixmapItemXChanged);
 		disconnect(mBackgroundPixmapItem,
-				   &DAGraphicsPixmapItem::yChanged,
-				   this,
-				   &DAWorkFlowGraphicsScene::backgroundPixmapItemYChanged);
+                   &DAGraphicsPixmapItem::yChanged,
+                   this,
+                   &DAWorkFlowGraphicsScene::backgroundPixmapItemYChanged);
 #endif
 		removeItem(mBackgroundPixmapItem);
 	}
@@ -371,7 +371,7 @@ void DAWorkFlowGraphicsScene::onItemsPositionChanged(const QList< QGraphicsItem*
 				continue;
 			}
 			willRemove.insert(nitem);
-			QList< DAAbstractNodeGraphicsItem* > chain = nitem->getLinkChain();
+            QList< DAAbstractNodeGraphicsItem* > chain = nitem->getOutPutLinkChain();
 			linkedItems += QSet(chain.begin(), chain.end());
 		}
 		// 获取到的链条要把items移除，因为已经移动过了

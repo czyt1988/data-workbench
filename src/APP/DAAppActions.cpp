@@ -145,7 +145,7 @@ void DAAppActions::buildViewAction()
 void DAAppActions::buildWorkflowAction()
 {
 	// workflow 编辑
-	actionWorkflowNew                   = createAction("actionNewWorkflow", ":/app/bright/Icon/newWorkflow.svg");
+    actionWorkflowNew                   = createAction("actionWorkflowNew", ":/app/bright/Icon/newWorkflow.svg");
 	actionWorkflowEnableItemLinkageMove = createAction("actionWorkflowEnableItemLinkageMove",
                                                        ":/app/bright/Icon/itemLinkageMove.svg",
                                                        true,

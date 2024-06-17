@@ -914,12 +914,12 @@ DAAbstractNodeLinkGraphicsItem* DAAbstractNodeGraphicsItem::linkTo(const DANodeL
 	}
 	if (!linkitem->attachFrom(this, fromPoint)) {
 		qDebug() << QObject::tr("link item can not attach from node item(%1) with key=%2")
-						.arg(this->getNodeName(), fromPoint.name);  // cn:无法在节点(%1)的连接点%2上建立链接
+                        .arg(this->getNodeName(), fromPoint.name);  // cn:无法在节点(%1)的连接点%2上建立链接
 		return nullptr;
 	}
 	if (!linkitem->attachTo(toItem, toPoint)) {
 		qDebug() << QObject::tr("link item can not attach to node item(%1) with key=%2")  // cn:无法链接到节点(%1)的连接点%2
-						.arg(toItem->getNodeName(), toPoint.name);
+                        .arg(toItem->getNodeName(), toPoint.name);
 
 		return nullptr;
 	}
@@ -941,12 +941,12 @@ DAAbstractNodeLinkGraphicsItem* DAAbstractNodeGraphicsItem::linkTo(const QString
 	DANodeLinkPoint tolp   = toItem->getInputLinkPoint(toPointName);
 	if (!fromlp.isValid()) {
 		qDebug() << QObject::tr("Node %1 cannot find a connection point named %2")  // cn:节点%1无法找到名字为%2的连接点
-						.arg(getNodeName(), fromPointName);
+                        .arg(getNodeName(), fromPointName);
 		return nullptr;
 	}
 	if (!tolp.isValid()) {
 		qDebug() << QObject::tr("Node %1 cannot find a connection point named %2")  // cn:节点%1无法找到名字为%2的连接点
-						.arg(toItem->getNodeName(), toPointName);
+                        .arg(toItem->getNodeName(), toPointName);
 		return nullptr;
 	}
 	return linkTo(fromlp, toItem, tolp);
@@ -1009,7 +1009,47 @@ int DAAbstractNodeGraphicsItem::getLinkChainRecursion(DAAbstractNodeGraphicsItem
 		++finded;
 		getLinkChainRecursion(d, res);
 	}
-	return finded;
+    return finded;
+}
+
+/**
+ * @brief 递归获取item出口相关的所有连接的节点.
+ * @param item
+ * @param res
+ */
+void DAAbstractNodeGraphicsItem::getOutLinkChainRecursion(DAAbstractNodeGraphicsItem* item,
+                                                          QSet< DAAbstractNodeGraphicsItem* >& res) const
+{
+    // 找出口
+    QList< DAAbstractNodeGraphicsItem* > items = item->getOutputItems();
+    for (DAAbstractNodeGraphicsItem* d : qAsConst(items)) {
+        if (res.contains(d)) {
+            continue;
+        }
+        // 必须先在结果插入后再递归，否则会无限循环
+        res.insert(d);
+        getLinkChainRecursion(d, res);
+    }
+}
+
+/**
+ * @brief 递归获取item入口相关的所有连接的节点.
+ * @param item
+ * @param res
+ */
+void DAAbstractNodeGraphicsItem::getInLinkChainRecursion(DAAbstractNodeGraphicsItem* item,
+                                                         QSet< DAAbstractNodeGraphicsItem* >& res) const
+{
+    // 找进口
+    QList< DAAbstractNodeGraphicsItem* > items = item->getInputItems();
+    for (DAAbstractNodeGraphicsItem* d : qAsConst(items)) {
+        if (res.contains(d)) {
+            continue;
+        }
+        // 必须先在结果插入后再递归，否则会无限循环
+        res.insert(d);
+        getLinkChainRecursion(d, res);
+    }
 }
 
 /**
@@ -1178,32 +1218,74 @@ QList< DAAbstractNodeLinkGraphicsItem* > DAAbstractNodeGraphicsItem::getLinkItem
  */
 QList< DAAbstractNodeGraphicsItem* > DAAbstractNodeGraphicsItem::getLinkChain() const
 {
-	QSet< DAAbstractNodeGraphicsItem* > res;
-	// 先插入一个，避免回环
-	res.insert(const_cast< DAAbstractNodeGraphicsItem* >(this));
+    QList< DAAbstractNodeGraphicsItem* > all = getOutPutLinkChain();
+    all += getInPutLinkChain();
+    QSet< DAAbstractNodeGraphicsItem* > res(all.begin(), all.end());
+    return qset_to_qlist(res);
+}
 
-	QList< DAAbstractNodeGraphicsItem* > items = getOutputItems();
-	for (DAAbstractNodeGraphicsItem* d : qAsConst(items)) {
-		if (res.contains(d)) {
-			continue;
-		}
-		// 必须先在结果插入后再递归，否则会无限循环
-		res.insert(d);
-		getLinkChainRecursion(d, res);
-	}
-	// 找进口
-	items = getInputItems();
-	for (DAAbstractNodeGraphicsItem* d : qAsConst(items)) {
-		if (res.contains(d)) {
-			continue;
-		}
-		// 必须先在结果插入后再递归，否则会无限循环
-		res.insert(d);
-		getLinkChainRecursion(d, res);
-	}
-	// 把自身去掉
-	res.remove(const_cast< DAAbstractNodeGraphicsItem* >(this));
-	return qset_to_qlist(res);
+/**
+ * @brief 获取输出链接链路的所有节点
+ *
+ *        F
+ *
+ *        |
+ *
+ * this-> A->B->C->D
+ *
+ *  如上图，返回{A,B,C,D,F},注意是乱序
+ *
+ * @return 返回输出链路上所有的item，这个链路如果有环，item不会重复出现，返回的链路不会包含自身
+ * @node 返回节点无序
+ */
+QList< DAAbstractNodeGraphicsItem* > DAAbstractNodeGraphicsItem::getOutPutLinkChain() const
+{
+    QSet< DAAbstractNodeGraphicsItem* > res;
+    // 先插入一个，避免回环
+    res.insert(const_cast< DAAbstractNodeGraphicsItem* >(this));
+    QList< DAAbstractNodeGraphicsItem* > items = getOutputItems();
+    for (DAAbstractNodeGraphicsItem* d : qAsConst(items)) {
+        if (res.contains(d)) {
+            continue;
+        }
+        // 必须先在结果插入后再递归，否则会无限循环
+        res.insert(d);
+        getOutLinkChainRecursion(d, res);
+    }
+    // 把自身去掉
+    res.remove(const_cast< DAAbstractNodeGraphicsItem* >(this));
+    return qset_to_qlist(res);
+}
+
+/**
+ * @brief 获取输入链接链路的所有节点
+ *
+ *        F------>this
+ *             |
+ *  A->B->C->D--
+ *
+ *  如上图，返回{A,B,C,D,F},注意是乱序
+ *
+ * @return 返回输入链路上所有的item，这个链路如果有环，item不会重复出现，返回的链路不会包含自身
+ * @node 返回节点无序
+ */
+QList< DAAbstractNodeGraphicsItem* > DAAbstractNodeGraphicsItem::getInPutLinkChain() const
+{
+    QSet< DAAbstractNodeGraphicsItem* > res;
+    // 先插入一个，避免回环
+    res.insert(const_cast< DAAbstractNodeGraphicsItem* >(this));
+    QList< DAAbstractNodeGraphicsItem* > items = getInputItems();
+    for (DAAbstractNodeGraphicsItem* d : qAsConst(items)) {
+        if (res.contains(d)) {
+            continue;
+        }
+        // 必须先在结果插入后再递归，否则会无限循环
+        res.insert(d);
+        getInLinkChainRecursion(d, res);
+    }
+    // 把自身去掉
+    res.remove(const_cast< DAAbstractNodeGraphicsItem* >(this));
+    return qset_to_qlist(res);
 }
 
 QString enumToString(DAAbstractNodeGraphicsItem::LinkPointLocation e)

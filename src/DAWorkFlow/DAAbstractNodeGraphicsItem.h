@@ -154,8 +154,12 @@ public:
 	QList< DAAbstractNodeGraphicsItem* > getInputItems() const;
 	// 获取这个节点链接出去的所有节点
 	QList< DAAbstractNodeGraphicsItem* > getOutputItems() const;
-	// 获取链接链路，上所有的item，这个链路如果有环，item不会重复出现，返回的链路不会包含自身
+    // 获取链接链路，上所有的item，这个链路如果有环，item不会重复出现，返回的链路不会包含自身
 	QList< DAAbstractNodeGraphicsItem* > getLinkChain() const;
+    // 获取输出链接链路，返回输出链路上所有的item，这个链路如果有环，item不会重复出现，返回的链路不会包含自身
+    QList< DAAbstractNodeGraphicsItem* > getOutPutLinkChain() const;
+    // 获取输出链接链路，返回输出链路上所有的item，这个链路如果有环，item不会重复出现，返回的链路不会包含自身
+    QList< DAAbstractNodeGraphicsItem* > getInPutLinkChain() const;
 	// 获取连接item
 	QList< DAAbstractNodeLinkGraphicsItem* > getLinkItem(const QString& name) const;
 	// 保存到xml中
@@ -167,11 +171,11 @@ public:
 	virtual DAAbstractNodeLinkGraphicsItem* createLinkItem(const DA::DANodeLinkPoint& lp);
 	// 从fromPoint链接到toItem的toPoint点，如果链接失败返回nullptr
 	DAAbstractNodeLinkGraphicsItem* linkTo(const DA::DANodeLinkPoint& fromPoint,
-										   DAAbstractNodeGraphicsItem* toItem,
-										   const DA::DANodeLinkPoint& toPoint);
+                                           DAAbstractNodeGraphicsItem* toItem,
+                                           const DA::DANodeLinkPoint& toPoint);
 	DAAbstractNodeLinkGraphicsItem* linkTo(const QString& fromPointName,
-										   DAAbstractNodeGraphicsItem* toItem,
-										   const QString& toPointName);
+                                           DAAbstractNodeGraphicsItem* toItem,
+                                           const QString& toPointName);
 	virtual void setBodySize(const QSizeF& s) override;
 	// 重置连接点，此函数会自动调用generateLinkPoint，如果想自定义，重载此函数
 	// 如果重载了generateLinkPoint或changeLinkPointPos，在构造函数中调用此函数
@@ -191,9 +195,9 @@ public:
 	virtual void tryLinkOnItemPos(const QPointF& p, DAAbstractNodeLinkGraphicsItem* linkItem, DANodeLinkPoint::Way way);
 	// 链接结束回调，对应旧版的prepareLinkInputFailed,prepareLinkInputSucceed,prepareLinkOutputFailed,prepareLinkOutputSucceed四个回调
 	virtual void finishLink(const DANodeLinkPoint& p,
-							DAAbstractNodeLinkGraphicsItem* linkItem,
-							DANodeLinkPoint::Way way,
-							bool isSuccess);
+                            DAAbstractNodeLinkGraphicsItem* linkItem,
+                            DANodeLinkPoint::Way way,
+                            bool isSuccess);
 	// 断开连接的回调，detach是针对已经连接上的断开
 	virtual void detachLink(const DANodeLinkPoint& p, DAAbstractNodeLinkGraphicsItem* linkItem, DANodeLinkPoint::Way way);
 	// 节点名字改变准备函数，通过此函数，让节点对名字进行重新绘制
@@ -229,6 +233,10 @@ private:
 	void clearLinkData();
 	// 递归获取链接的原件
 	int getLinkChainRecursion(DAAbstractNodeGraphicsItem* item, QSet< DAAbstractNodeGraphicsItem* >& res) const;
+    // 递归获取链接的原件
+    void getOutLinkChainRecursion(DAAbstractNodeGraphicsItem* item, QSet< DAAbstractNodeGraphicsItem* >& res) const;
+    // 递归获取链接的原件
+    void getInLinkChainRecursion(DAAbstractNodeGraphicsItem* item, QSet< DAAbstractNodeGraphicsItem* >& res) const;
 };
 // DA::DAAbstractNodeGraphicsItem::LinkPointLocation的枚举转换
 DAWORKFLOW_API QString enumToString(DA::DAAbstractNodeGraphicsItem::LinkPointLocation e);

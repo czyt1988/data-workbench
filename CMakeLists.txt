@@ -54,7 +54,10 @@ option(DA_ENABLE_AUTO_TRANSLATE
 option(DA_AUTO_INSTALL_PREFIX
     "This option will allow DA to automatically install the results to the local directory"
     ON)
-
+# 此选项将让da自动更新DAConfig.h文件，此选项仅库开发者需要设置为ON，库使用者默认应该为OFF
+option(DA_AUTO_UPDATE_CONFIG_INFO
+    "This option will allow DA to automatically update DAConfig.h, This option only needs to be set to ON by library developers, and library users should default to OFF"
+    OFF)
 
 if(DA_AUTO_INSTALL_PREFIX)
     message(STATUS "DA Auto Install")
@@ -173,10 +176,12 @@ include(${CMAKE_CURRENT_LIST_DIR}/cmake/daworkbench_3rdparty.cmake)
 ########################################################
 # 自动化生成配置头文件
 ########################################################
-configure_file (
-  "${CMAKE_CURRENT_LIST_DIR}/src/DAConfigs.h.in"
-  "${CMAKE_CURRENT_LIST_DIR}/src/DAConfigs.h"
-)
+if(DA_AUTO_UPDATE_CONFIG_INFO)
+    configure_file (
+      "${CMAKE_CURRENT_LIST_DIR}/src/DAConfigs.h.in"
+      "${CMAKE_CURRENT_LIST_DIR}/src/DAConfigs.h"
+    )
+endif()
 #DAGlobal.h
 install(FILES
     ${CMAKE_CURRENT_LIST_DIR}/src/DAGlobals.h
@@ -196,7 +201,7 @@ install(DIRECTORY
         COMPONENT headers
  )
 ########################################################
-# 添加预定义宏NOMINMAX,windows系统会定义max和min宏，这个宏和std::max冲突
+# 添加预定义宏NOMINMAX,windows系统会定义max和min宏，这个宏和std::max冲突,因此在高版本的c++，应该取消minmax宏
 ########################################################
 if(WIN32)
     ADD_COMPILE_DEFINITIONS(NOMINMAX)
