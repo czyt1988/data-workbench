@@ -54,9 +54,9 @@ option(DA_ENABLE_AUTO_TRANSLATE
 option(DA_AUTO_INSTALL_PREFIX
     "This option will allow DA to automatically install the results to the local directory"
     ON)
-# 此选项将让da自动更新DAConfig.h文件，此选项仅库开发者需要设置为ON，库使用者默认应该为OFF
-option(DA_AUTO_UPDATE_CONFIG_INFO
-    "This option will allow DA to automatically update DAConfig.h, This option only needs to be set to ON by library developers, and library users should default to OFF"
+# 此选项将让da自动生成DAConfig.h文件，此选项仅库开发者需要设置为ON，库使用者默认应该为OFF
+option(DA_AUTO_GENERATE_CONFIG_INFO
+    "This option will allow DA to automatically generate DAConfig.h, This option only needs to be set to ON by library developers, and library users should default to OFF"
     OFF)
 
 if(DA_AUTO_INSTALL_PREFIX)

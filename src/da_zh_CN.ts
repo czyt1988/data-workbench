@@ -103,6 +103,12 @@
         <location filename="3rdparty/ADS/examples/autohide/mainwindow.ui" line="14"/>
         <location filename="3rdparty/ADS/examples/centralwidget/mainwindow.ui" line="14"/>
         <location filename="3rdparty/ADS/examples/emptydockarea/mainwindow.ui" line="14"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="58"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="58"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="58"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="58"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="58"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="58"/>
         <source>MainWindow</source>
         <translation type="unfinished"></translation>
     </message>
@@ -110,6 +116,12 @@
         <location filename="3rdparty/ADS/examples/autohide/mainwindow.ui" line="28"/>
         <location filename="3rdparty/ADS/examples/centralwidget/mainwindow.ui" line="28"/>
         <location filename="3rdparty/ADS/examples/emptydockarea/mainwindow.ui" line="28"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="59"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="59"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="59"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="59"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="59"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="59"/>
         <source>View</source>
         <translation type="unfinished">视图</translation>
     </message>
@@ -117,6 +129,12 @@
         <location filename="3rdparty/ADS/examples/autohide/mainwindow.ui" line="35"/>
         <location filename="3rdparty/ADS/examples/centralwidget/mainwindow.ui" line="35"/>
         <location filename="3rdparty/ADS/examples/emptydockarea/mainwindow.ui" line="35"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="60"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="60"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="60"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="60"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="60"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="60"/>
         <source>toolBar</source>
         <translation type="unfinished"></translation>
     </message>
@@ -125,66 +143,92 @@
     <name>CStatusDialogClass</name>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="20"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="146"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="146"/>
         <source>Dock Widget Status</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="35"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="147"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="147"/>
         <source>Dock Widget:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="58"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="148"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="148"/>
         <source>Status</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="64"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="149"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="149"/>
         <source>closed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="71"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="150"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="150"/>
         <source>floating</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="78"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="151"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="151"/>
         <source>tabbed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="85"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="152"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="152"/>
         <source>is current tab</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="101"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="153"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="153"/>
         <source>Feature Flags</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="107"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="154"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="154"/>
         <source>DockWidgetClosable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="114"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="155"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="155"/>
         <source>DockWidgetMovable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="121"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="156"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="156"/>
         <source>DockWidgetFloatable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="128"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="157"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="157"/>
         <source>DockWidgetDeleteOnClose</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="135"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="158"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="158"/>
         <source>CustomCloseHandling</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1755,7 +1799,7 @@ Table Area</source>
         <location filename="DAGraphicsView/DAGraphicsTextItem.cpp" line="40"/>
         <location filename="DAGraphicsView/DAGraphicsTextItem.cpp" line="46"/>
         <source>Text</source>
-        <translation type="unfinished">文本</translation>
+        <translation>文本</translation>
     </message>
 </context>
 <context>
@@ -2253,22 +2297,22 @@ Table Area</source>
     <message>
         <location filename="DAGui/DAWorkFlowGraphicsView.cpp" line="221"/>
         <source>cut</source>
-        <translation type="unfinished">剪切</translation>
+        <translation>剪切</translation>
     </message>
     <message>
         <location filename="DAGui/DAWorkFlowGraphicsView.cpp" line="246"/>
         <source>Unrecognized mime formats:%1,paste failed</source>
-        <translation type="unfinished">无法识别的mime类型:%1,粘贴失败</translation>
+        <translation>无法识别的mime类型:%1,粘贴失败</translation>
     </message>
     <message>
         <location filename="DAGui/DAWorkFlowGraphicsView.cpp" line="251"/>
         <source>Unsupported pasted content</source>
-        <translation type="unfinished">不支持的粘贴内容</translation>
+        <translation>不支持的粘贴内容</translation>
     </message>
     <message>
         <location filename="DAGui/DAWorkFlowGraphicsView.cpp" line="256"/>
         <source>An exception occurred during the process of parsing and pasting content</source>
-        <translation type="unfinished"></translation>
+        <translation>解析粘贴内容过程出现异常</translation>
     </message>
 </context>
 <context>
@@ -2431,7 +2475,7 @@ Table Area</source>
     <message>
         <location filename="APP/Dialog/DAWorkbenchAboutDialog.cpp" line="30"/>
         <source>third party list:</source>
-        <translation type="unfinished"></translation>
+        <translation>第三方库列表:</translation>
     </message>
     <message>
         <location filename="APP/Dialog/DAWorkbenchAboutDialog.cpp" line="31"/>
@@ -2456,7 +2500,7 @@ Table Area</source>
     <message>
         <location filename="APP/Dialog/DAWorkbenchAboutDialog.cpp" line="37"/>
         <source>This is a Python dependent version</source>
-        <translation type="unfinished"></translation>
+        <translation>此版本依赖python环境</translation>
     </message>
     <message>
         <location filename="APP/Dialog/DAWorkbenchAboutDialog.cpp" line="38"/>
@@ -2501,7 +2545,7 @@ Table Area</source>
     <name>DAAligmentPositionEditWidget</name>
     <message>
         <location filename="DACommonWidgets/DAAligmentPositionEditWidget.ui" line="20"/>
-        <source>Form</source>
+        <source>Aligment Position</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2786,7 +2830,7 @@ Table Area</source>
     <name>DAChartGridSettingWidget</name>
     <message>
         <location filename="DAGui/ChartSetting/DAChartGridSettingWidget.ui" line="14"/>
-        <source>Form</source>
+        <source>Chart Guide Setting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2815,7 +2859,7 @@ Table Area</source>
     <name>DAChartLegendItemSettingWidget</name>
     <message>
         <location filename="DAGui/ChartSetting/DAChartLegendItemSettingWidget.ui" line="14"/>
-        <source>Form</source>
+        <source>Chart Legend Item Setting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2968,8 +3012,8 @@ Table Area</source>
     <name>DAChartPlotSettingWidget</name>
     <message>
         <location filename="DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="14"/>
-        <source>Form</source>
-        <translation type="unfinished"></translation>
+        <source>Plot Setting</source>
+        <translation type="unfinished">绘图设置</translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="20"/>
@@ -3011,7 +3055,7 @@ Table Area</source>
     <name>DAChartSettingWidget</name>
     <message>
         <location filename="DAGui/DAChartSettingWidget.ui" line="14"/>
-        <source>Form</source>
+        <source>Chart Setting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3831,7 +3875,7 @@ Table Area</source>
     <name>DASettingPageCommon</name>
     <message>
         <location filename="APP/SettingPages/DASettingPageCommon.ui" line="14"/>
-        <source>Form</source>
+        <source>Common Setting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3938,7 +3982,7 @@ Table Area</source>
     <name>DATxtFileImportDialog</name>
     <message>
         <location filename="APP/Dialog/DATxtFileImportDialog.ui" line="14"/>
-        <source>Dialog</source>
+        <source>Txt Import</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4144,12 +4188,26 @@ Table Area</source>
         <location filename="3rdparty/ADS/examples/simple/MainWindow.ui" line="14"/>
         <location filename="3rdparty/SARibbon/src/example/NormalMenuBarExample/MainWindow.ui" line="14"/>
         <location filename="tst/FCD3Viewer/MainWindow.ui" line="14"/>
+        <location filename="3rdparty/build-SARibbon-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="70"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="87"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="70"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="121"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/simple/SimpleExample_autogen/include/ui_MainWindow.h" line="58"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="87"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="70"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="121"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/simple/SimpleExample_autogen/include/ui_MainWindow.h" line="58"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="70"/>
         <source>MainWindow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="32"/>
         <location filename="3rdparty/ADS/examples/hideshow/MainWindow.ui" line="33"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="91"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="74"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="91"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="74"/>
         <source>File</source>
         <translation type="unfinished">文件</translation>
     </message>
@@ -4158,71 +4216,105 @@ Table Area</source>
         <location filename="3rdparty/ADS/examples/hideshow/MainWindow.ui" line="28"/>
         <location filename="3rdparty/ADS/examples/sidebar/MainWindow.ui" line="75"/>
         <location filename="3rdparty/ADS/examples/simple/MainWindow.ui" line="28"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="92"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="73"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="123"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/simple/SimpleExample_autogen/include/ui_MainWindow.h" line="59"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="92"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="73"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="123"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/simple/SimpleExample_autogen/include/ui_MainWindow.h" line="59"/>
         <source>View</source>
         <translation type="unfinished">视图</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="44"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="93"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="93"/>
         <source>About</source>
         <translation type="unfinished">关于</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="49"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="94"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="94"/>
         <source>Tests</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="59"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="95"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="95"/>
         <source>toolBar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="70"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="88"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="88"/>
         <source>Exit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="75"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="89"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="89"/>
         <source>Save State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="80"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="90"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="90"/>
         <source>Restore State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/examples/hideshow/MainWindow.ui" line="44"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="71"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="71"/>
         <source>Open project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/examples/hideshow/MainWindow.ui" line="49"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="72"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="72"/>
         <source>Close project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/examples/sidebar/MainWindow.ui" line="26"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="122"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="122"/>
         <source>PushButton</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/SARibbon/src/example/NormalMenuBarExample/MainWindow.ui" line="28"/>
+        <location filename="3rdparty/build-SARibbon-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="73"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="73"/>
         <source>file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/SARibbon/src/example/NormalMenuBarExample/MainWindow.ui" line="35"/>
+        <location filename="3rdparty/build-SARibbon-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="74"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="74"/>
         <source>edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/SARibbon/src/example/NormalMenuBarExample/MainWindow.ui" line="44"/>
+        <location filename="3rdparty/build-SARibbon-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="71"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="71"/>
         <source>open</source>
         <translation type="unfinished">开盘</translation>
     </message>
     <message>
         <location filename="3rdparty/SARibbon/src/example/NormalMenuBarExample/MainWindow.ui" line="49"/>
+        <location filename="3rdparty/build-SARibbon-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="72"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="72"/>
         <source>save</source>
         <translation type="unfinished">保存</translation>
     </message>
@@ -5118,7 +5210,7 @@ Wrap</source>
     <message>
         <location filename="DAWorkFlow/DACommandsForWorkFlowNodeGraphics.cpp" line="97"/>
         <source>Remove Node Item</source>
-        <translation type="unfinished"></translation>
+        <translation>移除节点</translation>
     </message>
     <message>
         <location filename="DAWorkFlow/DACommandsForWorkFlowNodeGraphics.cpp" line="160"/>
@@ -5451,12 +5543,12 @@ Wrap</source>
     <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="280"/>
         <source>Load Nodes</source>
-        <translation type="unfinished"></translation>
+        <translation>加载节点</translation>
     </message>
     <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="294"/>
         <source>load items occurce error</source>
-        <translation type="unfinished"></translation>
+        <translation>加载节点过程出现错误</translation>
     </message>
     <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="336"/>
@@ -5486,24 +5578,24 @@ Wrap</source>
         <location filename="DAGui/DAXmlHelper.cpp" line="663"/>
         <location filename="DAGui/DAXmlHelper.cpp" line="934"/>
         <source>can not find &lt;item&gt; tag under &lt;node&gt; tag</source>
-        <translation type="unfinished"></translation>
+        <translation>无法在&lt;node&gt;标签下查询到&lt;item&gt;标签</translation>
     </message>
     <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="511"/>
         <source>Unable to create node by metadata(prototype=%1,name=%2,group=%3)-0</source>
-        <translation type="unfinished"></translation>
+        <translation>无法创建节点(prototype=%1,name=%2,group=%3)-0</translation>
     </message>
     <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="561"/>
         <location filename="DAGui/DAXmlHelper.cpp" line="631"/>
         <source>Unable to create node by metadata(prototype=%1,name=%2,group=%3)-1</source>
-        <translation type="unfinished"></translation>
+        <translation>无法创建节点(prototype=%1,name=%2,group=%3)-1</translation>
     </message>
     <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="570"/>
         <location filename="DAGui/DAXmlHelper.cpp" line="639"/>
         <source>Unable to create node by metadata(prototype=%1,name=%2,group=%3)-2</source>
-        <translation type="unfinished"></translation>
+        <translation>无法创建节点(prototype=%1,name=%2,group=%3)-2</translation>
     </message>
     <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="939"/>
@@ -5547,27 +5639,27 @@ Wrap</source>
         <location filename="DAGui/DAXmlHelper.cpp" line="1120"/>
         <location filename="DAGui/DAXmlHelper.cpp" line="1139"/>
         <source>During the pasting process, the mapping corresponding to ID(%1) cannot be found</source>
-        <translation type="unfinished"></translation>
+        <translation>在解析过程中ID(%1)的对应关系无法找到</translation>
     </message>
     <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="1307"/>
         <source>Unable to generate graphics item element during the saveing</source>
-        <translation type="unfinished"></translation>
+        <translation>保存过程中，无法生成图元元素</translation>
     </message>
     <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="1577"/>
         <source>current workflow file version:</source>
-        <translation type="unfinished"></translation>
+        <translation>当前工作流文件版本:</translation>
     </message>
     <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="1622"/>
         <source>An exception occurred during the process of processing pasted content XML, with the root node missing the type attribute</source>
-        <translation type="unfinished"></translation>
+        <translation>在处理粘贴内容xml过程出现异常，根节点缺失type属性</translation>
     </message>
     <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="1629"/>
         <source>An exception occurred during the process of parsing and pasting content,miss workflow tag</source>
-        <translation type="unfinished"></translation>
+        <translation>解析粘贴内容过程出现异常,缺失workflow标签</translation>
     </message>
     <message>
         <location filename="DAGui/DAXmlHelper.cpp" line="1671"/>
@@ -5781,47 +5873,47 @@ params:
     <message>
         <location filename="3rdparty/ADS/demo/MainWindow.cpp" line="152"/>
         <source>Help</source>
-        <translation type="unfinished"></translation>
+        <translation>帮助</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/MainWindow.cpp" line="331"/>
         <source>Options</source>
-        <translation type="unfinished"></translation>
+        <translation>选项</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/MainWindow.cpp" line="340"/>
         <source>Clear Editor</source>
-        <translation type="unfinished"></translation>
+        <translation>清除编辑器</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/MainWindow.cpp" line="507"/>
         <source>Create Editor</source>
-        <translation type="unfinished"></translation>
+        <translation>创建编辑器</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="193"/>
         <source>List All Tabs</source>
-        <translation type="unfinished"></translation>
+        <translation>列出所有标签</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="203"/>
         <source>Detach Group</source>
-        <translation type="unfinished"></translation>
+        <translation>脱离分组</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="228"/>
         <source>Minimize</source>
-        <translation type="unfinished"></translation>
+        <translation>最小化</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/src/DockWidgetTab.cpp" line="268"/>
         <source>Close Tab</source>
-        <translation type="unfinished"></translation>
+        <translation>关闭标签</translation>
     </message>
     <message>
         <location filename="3rdparty/ctk/ctk/ctkColorDialog.cpp" line="70"/>
         <source>Basic</source>
-        <translation type="unfinished"></translation>
+        <translation>继承</translation>
     </message>
     <message>
         <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13217"/>
@@ -5880,18 +5972,18 @@ params:
     <message>
         <location filename="DAPyScripts/DAPyScriptsDataFrame.cpp" line="14"/>
         <source>can not import da_dataframe module</source>
-        <translation type="unfinished"></translation>
+        <translation>无法导入da_dataframe模块</translation>
     </message>
     <message>
         <location filename="DAPyScripts/DAPyScriptsIO.cpp" line="77"/>
         <source>can not import da_io module</source>
-        <translation type="unfinished"></translation>
+        <translation>无法导入da_io模块</translation>
     </message>
     <message>
         <location filename="DAPyScripts/DAPyScriptsDataFrame.cpp" line="22"/>
         <location filename="DAPyScripts/DAPyScriptsIO.cpp" line="85"/>
         <source>can not import DAWorkBench.io</source>
-        <translation type="unfinished"></translation>
+        <translation>无法导入DAWorkBench.io模块</translation>
     </message>
     <message>
         <location filename="DAUtils/DATextReadWriter.cpp" line="403"/>
@@ -5986,31 +6078,31 @@ params:
     <message>
         <location filename="DAPyScripts/DAPyScriptsDataProcess.cpp" line="18"/>
         <source>can not import DAWorkBench.data_processing</source>
-        <translation type="unfinished"></translation>
+        <translation>无法导入DAWorkBench.data_processing模块</translation>
     </message>
     <message>
         <location filename="DAPyScripts/DAPyWorkBench.cpp" line="35"/>
         <source>can not import DAWorkbench module</source>
-        <translation type="unfinished"></translation>
+        <translation>无法导入DAWorkbench模块</translation>
     </message>
 </context>
 <context>
     <name>QtBoolEdit</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="253"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="263"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="288"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="315"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="325"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="350"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="253"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="263"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="288"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="315"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="325"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="350"/>
         <source>True</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="263"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="288"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="325"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="350"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="263"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="288"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="325"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="350"/>
         <source>False</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6018,14 +6110,14 @@ params:
 <context>
     <name>QtBoolPropertyManager</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="1565"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="1538"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="1565"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="1528"/>
         <source>True</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="1566"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="1539"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="1566"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="1529"/>
         <source>False</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6033,8 +6125,8 @@ params:
 <context>
     <name>QtCharEdit</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5editorfactory.cpp" line="1471"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6editorfactory.cpp" line="1472"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qteditorfactory.cpp" line="1471"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qteditorfactory.cpp" line="1472"/>
         <source>Clear Char</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6042,8 +6134,8 @@ params:
 <context>
     <name>QtColorEditWidget</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5editorfactory.cpp" line="2044"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6editorfactory.cpp" line="2053"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qteditorfactory.cpp" line="2044"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qteditorfactory.cpp" line="2053"/>
         <source>...</source>
         <translation type="unfinished">...</translation>
     </message>
@@ -6051,26 +6143,26 @@ params:
 <context>
     <name>QtColorPropertyManager</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="6319"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="6318"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6319"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="6306"/>
         <source>Red</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="6327"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="6326"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6327"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="6314"/>
         <source>Green</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="6335"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="6334"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6335"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="6322"/>
         <source>Blue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="6343"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="6342"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6343"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="6330"/>
         <source>Alpha</source>
         <translation type="unfinished">透明度</translation>
     </message>
@@ -6078,135 +6170,135 @@ params:
 <context>
     <name>QtCursorDatabase</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="54"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="30"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="89"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="54"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="30"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="89"/>
         <source>Arrow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="56"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="33"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="92"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="56"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="33"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="92"/>
         <source>Up Arrow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="58"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="36"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="95"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="58"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="36"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="95"/>
         <source>Cross</source>
         <translation type="unfinished">十字标记</translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="60"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="39"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="98"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="60"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="39"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="98"/>
         <source>Wait</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="62"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="42"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="101"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="62"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="42"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="101"/>
         <source>IBeam</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="64"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="45"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="104"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="64"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="45"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="104"/>
         <source>Size Vertical</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="66"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="48"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="107"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="66"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="48"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="107"/>
         <source>Size Horizontal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="68"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="51"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="110"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="68"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="51"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="110"/>
         <source>Size Backslash</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="70"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="54"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="113"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="70"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="54"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="113"/>
         <source>Size Slash</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="72"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="57"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="116"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="72"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="57"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="116"/>
         <source>Size All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="74"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="59"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="118"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="74"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="59"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="118"/>
         <source>Blank</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="76"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="61"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="120"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="76"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="61"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="120"/>
         <source>Split Vertical</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="78"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="64"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="123"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="78"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="64"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="123"/>
         <source>Split Horizontal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="80"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="67"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="126"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="80"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="67"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="126"/>
         <source>Pointing Hand</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="82"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="70"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="129"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="82"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="70"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="129"/>
         <source>Forbidden</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="84"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="73"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="132"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="84"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="73"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="132"/>
         <source>Open Hand</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="86"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="76"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="135"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="86"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="76"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="135"/>
         <source>Closed Hand</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="88"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="79"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="138"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="88"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="79"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="138"/>
         <source>What&apos;s This</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="90"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="82"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="141"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="90"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="82"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="141"/>
         <source>Busy</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6214,14 +6306,14 @@ params:
 <context>
     <name>QtFontEditWidget</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5editorfactory.cpp" line="2233"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6editorfactory.cpp" line="2243"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qteditorfactory.cpp" line="2233"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qteditorfactory.cpp" line="2243"/>
         <source>...</source>
         <translation type="unfinished">...</translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5editorfactory.cpp" line="2253"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6editorfactory.cpp" line="2263"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qteditorfactory.cpp" line="2253"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qteditorfactory.cpp" line="2263"/>
         <source>Select Font</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6229,44 +6321,44 @@ params:
 <context>
     <name>QtFontPropertyManager</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="5995"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="5992"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="5995"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="5980"/>
         <source>Family</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="6008"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="6005"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6008"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="5993"/>
         <source>Point Size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="6016"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="6013"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6016"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="6001"/>
         <source>Bold</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="6023"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="6020"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6023"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="6008"/>
         <source>Italic</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="6030"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="6027"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6030"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="6015"/>
         <source>Underline</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="6037"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="6034"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6037"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="6022"/>
         <source>Strikeout</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="6044"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="6041"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6044"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="6029"/>
         <source>Kerning</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6274,30 +6366,30 @@ params:
 <context>
     <name>QtLocalePropertyManager</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="2490"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="2456"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="2490"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2444"/>
         <source>&lt;Invalid&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="2498"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="2464"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="2498"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2452"/>
         <source>%1, %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="2548"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="2514"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="2548"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2502"/>
         <source>Language</source>
         <translation type="unfinished">语言</translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="2556"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="2556"/>
         <source>Country</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="2522"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2510"/>
         <source>Territory</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6305,20 +6397,20 @@ params:
 <context>
     <name>QtPointFPropertyManager</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="2959"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="2931"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="2959"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2919"/>
         <source>(%1, %2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="3029"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="3001"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="3029"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2989"/>
         <source>X</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="3037"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="3009"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="3037"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2997"/>
         <source>Y</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6326,20 +6418,20 @@ params:
 <context>
     <name>QtPointPropertyManager</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="2723"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="2692"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="2723"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2680"/>
         <source>(%1, %2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="2759"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="2728"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="2759"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2716"/>
         <source>X</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="2766"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="2735"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="2766"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2723"/>
         <source>Y</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6347,14 +6439,14 @@ params:
 <context>
     <name>QtPropertyBrowserUtils</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="183"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="241"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="183"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="241"/>
         <source>[%1, %2, %3] (%4)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="210"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="271"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="210"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="271"/>
         <source>[%1, %2]</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6362,32 +6454,32 @@ params:
 <context>
     <name>QtRectFPropertyManager</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="4506"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="4486"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4506"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4474"/>
         <source>[(%1, %2), %3 x %4]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="4663"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="4643"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4663"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4631"/>
         <source>X</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="4671"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="4651"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4671"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4639"/>
         <source>Y</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="4679"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="4659"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4679"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4647"/>
         <source>Width</source>
         <translation type="unfinished">宽</translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="4688"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="4668"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4688"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4656"/>
         <source>Height</source>
         <translation type="unfinished">高</translation>
     </message>
@@ -6395,32 +6487,32 @@ params:
 <context>
     <name>QtRectPropertyManager</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="4079"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="4060"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4079"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4048"/>
         <source>[(%1, %2), %3 x %4]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="4200"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="4177"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4200"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4165"/>
         <source>X</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="4207"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="4184"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4207"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4172"/>
         <source>Y</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="4214"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="4191"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4214"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4179"/>
         <source>Width</source>
         <translation type="unfinished">宽</translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="4222"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="4199"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4222"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4187"/>
         <source>Height</source>
         <translation type="unfinished">高</translation>
     </message>
@@ -6428,20 +6520,20 @@ params:
 <context>
     <name>QtSizeFPropertyManager</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="3673"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="3651"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="3673"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="3639"/>
         <source>%1 x %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="3821"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="3799"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="3821"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="3787"/>
         <source>Width</source>
         <translation type="unfinished">宽</translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="3830"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="3808"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="3830"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="3796"/>
         <source>Height</source>
         <translation type="unfinished">高</translation>
     </message>
@@ -6449,40 +6541,40 @@ params:
 <context>
     <name>QtSizePolicyPropertyManager</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="5522"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="5523"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="5510"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="5511"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="5522"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="5523"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="5498"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="5499"/>
         <source>&lt;Invalid&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="5524"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="5512"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="5524"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="5500"/>
         <source>[%1, %2, %3, %4]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="5567"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="5555"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="5567"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="5543"/>
         <source>Horizontal Policy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="5575"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="5563"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="5575"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="5551"/>
         <source>Vertical Policy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="5583"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="5571"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="5583"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="5559"/>
         <source>Horizontal Stretch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="5591"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="5579"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="5591"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="5567"/>
         <source>Vertical Stretch</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6490,20 +6582,20 @@ params:
 <context>
     <name>QtSizePropertyManager</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="3284"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="3259"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="3284"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="3247"/>
         <source>%1 x %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="3398"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="3373"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="3398"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="3361"/>
         <source>Width</source>
         <translation type="unfinished">宽</translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="3406"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="3381"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="3406"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="3369"/>
         <source>Height</source>
         <translation type="unfinished">高</translation>
     </message>
@@ -6511,14 +6603,14 @@ params:
 <context>
     <name>QtTreePropertyBrowser</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5treepropertybrowser.cpp" line="452"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6treepropertybrowser.cpp" line="417"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qttreepropertybrowser.cpp" line="452"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qttreepropertybrowser.cpp" line="417"/>
         <source>Property</source>
         <translation type="unfinished">属性</translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5treepropertybrowser.cpp" line="453"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6treepropertybrowser.cpp" line="418"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qttreepropertybrowser.cpp" line="453"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qttreepropertybrowser.cpp" line="418"/>
         <source>Value</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6817,6 +6909,9 @@ params:
     <name>Widget</name>
     <message>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="14"/>
+        <location filename="3rdparty/build-SARibbon-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="59"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="59"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/SARibbon/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="63"/>
         <source>Widget</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6967,48 +7062,62 @@ params:
         <source>colorPaletteGrid</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="3rdparty/build-SARibbon-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="60"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="60"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/SARibbon/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="64"/>
+        <source>Tab 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/build-SARibbon-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="61"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="61"/>
+        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/SARibbon/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="65"/>
+        <source>Tab 2</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ads::CAutoHideTab</name>
     <message>
         <location filename="3rdparty/ADS/src/AutoHideTab.cpp" line="384"/>
         <source>Detach</source>
-        <translation type="unfinished"></translation>
+        <translation>分离</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/src/AutoHideTab.cpp" line="389"/>
         <source>Pin To...</source>
-        <translation type="unfinished"></translation>
+        <translation>固定到...</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/src/AutoHideTab.cpp" line="391"/>
         <source>Top</source>
-        <translation type="unfinished">上对齐</translation>
+        <translation>顶</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/src/AutoHideTab.cpp" line="392"/>
         <source>Left</source>
-        <translation type="unfinished">左对齐</translation>
+        <translation>左</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/src/AutoHideTab.cpp" line="393"/>
         <source>Right</source>
-        <translation type="unfinished">右对齐</translation>
+        <translation>右</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/src/AutoHideTab.cpp" line="394"/>
         <source>Bottom</source>
-        <translation type="unfinished">下对齐</translation>
+        <translation>下</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/src/AutoHideTab.cpp" line="396"/>
         <source>Unpin (Dock)</source>
-        <translation type="unfinished"></translation>
+        <translation>取消固定</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/src/AutoHideTab.cpp" line="398"/>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation>关闭</translation>
     </message>
 </context>
 <context>
@@ -7016,83 +7125,83 @@ params:
     <message>
         <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="749"/>
         <source>Detach</source>
-        <translation type="unfinished"></translation>
+        <translation>分离</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="749"/>
         <source>Detach Group</source>
-        <translation type="unfinished"></translation>
+        <translation>脱离分组</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="754"/>
         <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="811"/>
         <source>Unpin (Dock)</source>
-        <translation type="unfinished"></translation>
+        <translation>取消固定</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="754"/>
         <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="816"/>
         <source>Pin Group</source>
-        <translation type="unfinished"></translation>
+        <translation>固定分组</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="760"/>
         <source>Pin Group To...</source>
-        <translation type="unfinished"></translation>
+        <translation>固定分组到...</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="762"/>
         <source>Top</source>
-        <translation type="unfinished">上对齐</translation>
+        <translation>顶</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="763"/>
         <source>Left</source>
-        <translation type="unfinished">左对齐</translation>
+        <translation>左</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="764"/>
         <source>Right</source>
-        <translation type="unfinished">右对齐</translation>
+        <translation>右</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="765"/>
         <source>Bottom</source>
-        <translation type="unfinished">下对齐</translation>
+        <translation>下</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="773"/>
         <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="828"/>
         <source>Minimize</source>
-        <translation type="unfinished"></translation>
+        <translation>最小化</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="774"/>
         <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="778"/>
         <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="828"/>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation>关闭</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="778"/>
         <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="837"/>
         <source>Close Group</source>
-        <translation type="unfinished"></translation>
+        <translation>关闭分组</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="784"/>
         <source>Close Other Groups</source>
-        <translation type="unfinished"></translation>
+        <translation>关闭其它分组</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="820"/>
         <source>Pin Active Tab (Press Ctrl to Pin Group)</source>
-        <translation type="unfinished"></translation>
+        <translation>固定激活的标签</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="833"/>
         <source>Close Active Tab</source>
-        <translation type="unfinished"></translation>
+        <translation>关闭激活的标签</translation>
     </message>
 </context>
 <context>
@@ -7100,7 +7209,7 @@ params:
     <message>
         <location filename="3rdparty/ADS/src/DockManager.cpp" line="508"/>
         <source>Show View</source>
-        <translation type="unfinished"></translation>
+        <translation>显示视图</translation>
     </message>
 </context>
 <context>
@@ -7108,47 +7217,47 @@ params:
     <message>
         <location filename="3rdparty/ADS/src/DockWidgetTab.cpp" line="544"/>
         <source>Detach</source>
-        <translation type="unfinished"></translation>
+        <translation>分离</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/src/DockWidgetTab.cpp" line="548"/>
         <source>Pin</source>
-        <translation type="unfinished"></translation>
+        <translation>固定</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/src/DockWidgetTab.cpp" line="552"/>
         <source>Pin To...</source>
-        <translation type="unfinished"></translation>
+        <translation>固定到...</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/src/DockWidgetTab.cpp" line="554"/>
         <source>Top</source>
-        <translation type="unfinished">上对齐</translation>
+        <translation>顶</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/src/DockWidgetTab.cpp" line="555"/>
         <source>Left</source>
-        <translation type="unfinished">左对齐</translation>
+        <translation>左</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/src/DockWidgetTab.cpp" line="556"/>
         <source>Right</source>
-        <translation type="unfinished">右对齐</translation>
+        <translation>右</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/src/DockWidgetTab.cpp" line="557"/>
         <source>Bottom</source>
-        <translation type="unfinished">下对齐</translation>
+        <translation>下</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/src/DockWidgetTab.cpp" line="562"/>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation>关闭</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/src/DockWidgetTab.cpp" line="566"/>
         <source>Close Others</source>
-        <translation type="unfinished"></translation>
+        <translation>关闭其它</translation>
     </message>
 </context>
 <context>
