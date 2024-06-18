@@ -94,6 +94,15 @@ public:
 	QColor operator--(int);
 	// 获取当前的元素，在调用前使用isValidIndex确认索引的正确性
 	QColor current() const;
+    // 按照索引获取
+    QColor at(int index) const;
+    //[]操作
+    QColor& operator[](int index);
+    const QColor& operator[](int index) const;
+    // 最后的颜色
+    QColor lastColor() const;
+    // 第一个颜色
+    QColor firstColor() const;
 	// 判断当前索引是否是第一个
 	bool isFirstIndex() const;
 	// 判断当前索引是否是最后一个
@@ -115,6 +124,10 @@ public:
 	const_iterator end() const;
 	// 数量
 	int size() const;
+    // 按照比例获取颜色，颜色将使用插值获取，proportion必须为0~1之间
+    QColor getColorAtPosition(float proportion) const;
+    // 颜色插值，在颜色1和2之间的比例取值,t必须为0~1之间的数
+    static QColor interpolateColor(const QColor& color1, const QColor& color2, float t);
 
 private:
 	DAIndexedVector< QColor > mColorList;  ///< 原来DAColorTheme是继承DAIndexedVector< QColor >，但会导致符号重复导出的编译错误
