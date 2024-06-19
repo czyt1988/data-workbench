@@ -103,15 +103,6 @@
         <location filename="3rdparty/ADS/examples/autohide/mainwindow.ui" line="14"/>
         <location filename="3rdparty/ADS/examples/centralwidget/mainwindow.ui" line="14"/>
         <location filename="3rdparty/ADS/examples/emptydockarea/mainwindow.ui" line="14"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="58"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="58"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="58"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="58"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="58"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="58"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="58"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="58"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="58"/>
         <source>MainWindow</source>
         <translation type="unfinished"></translation>
     </message>
@@ -119,15 +110,6 @@
         <location filename="3rdparty/ADS/examples/autohide/mainwindow.ui" line="28"/>
         <location filename="3rdparty/ADS/examples/centralwidget/mainwindow.ui" line="28"/>
         <location filename="3rdparty/ADS/examples/emptydockarea/mainwindow.ui" line="28"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="59"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="59"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="59"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="59"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="59"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="59"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="59"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="59"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="59"/>
         <source>View</source>
         <translation type="unfinished"></translation>
     </message>
@@ -135,15 +117,6 @@
         <location filename="3rdparty/ADS/examples/autohide/mainwindow.ui" line="35"/>
         <location filename="3rdparty/ADS/examples/centralwidget/mainwindow.ui" line="35"/>
         <location filename="3rdparty/ADS/examples/emptydockarea/mainwindow.ui" line="35"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="60"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="60"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="60"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="60"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="60"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="60"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="60"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="60"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="60"/>
         <source>toolBar</source>
         <translation type="unfinished"></translation>
     </message>
@@ -152,105 +125,66 @@
     <name>CStatusDialogClass</name>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="20"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="146"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="146"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="146"/>
         <source>Dock Widget Status</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="35"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="147"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="147"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="147"/>
         <source>Dock Widget:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="58"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="148"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="148"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="148"/>
         <source>Status</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="64"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="149"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="149"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="149"/>
         <source>closed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="71"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="150"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="150"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="150"/>
         <source>floating</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="78"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="151"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="151"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="151"/>
         <source>tabbed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="85"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="152"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="152"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="152"/>
         <source>is current tab</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="101"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="153"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="153"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="153"/>
         <source>Feature Flags</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="107"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="154"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="154"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="154"/>
         <source>DockWidgetClosable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="114"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="155"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="155"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="155"/>
         <source>DockWidgetMovable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="121"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="156"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="156"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="156"/>
         <source>DockWidgetFloatable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="128"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="157"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="157"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="157"/>
         <source>DockWidgetDeleteOnClose</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="135"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="158"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="158"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="158"/>
         <source>CustomCloseHandling</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4165,32 +4099,12 @@ Config</source>
         <location filename="3rdparty/ADS/examples/simple/MainWindow.ui" line="14"/>
         <location filename="3rdparty/SARibbon/src/example/NormalMenuBarExample/MainWindow.ui" line="14"/>
         <location filename="tst/FCD3Viewer/MainWindow.ui" line="14"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="87"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="70"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="121"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/examples/simple/SimpleExample_autogen/include/ui_MainWindow.h" line="58"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="87"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="70"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="121"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/simple/SimpleExample_autogen/include/ui_MainWindow.h" line="58"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="70"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="87"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="70"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="121"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/simple/SimpleExample_autogen/include/ui_MainWindow.h" line="58"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="70"/>
         <source>MainWindow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="32"/>
         <location filename="3rdparty/ADS/examples/hideshow/MainWindow.ui" line="33"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="91"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="74"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="91"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="74"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="91"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="74"/>
         <source>File</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4199,118 +4113,71 @@ Config</source>
         <location filename="3rdparty/ADS/examples/hideshow/MainWindow.ui" line="28"/>
         <location filename="3rdparty/ADS/examples/sidebar/MainWindow.ui" line="75"/>
         <location filename="3rdparty/ADS/examples/simple/MainWindow.ui" line="28"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="92"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="73"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="123"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/examples/simple/SimpleExample_autogen/include/ui_MainWindow.h" line="59"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="92"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="73"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="123"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/simple/SimpleExample_autogen/include/ui_MainWindow.h" line="59"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="92"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="73"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="123"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/simple/SimpleExample_autogen/include/ui_MainWindow.h" line="59"/>
         <source>View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="44"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="93"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="93"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="93"/>
         <source>About</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="49"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="94"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="94"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="94"/>
         <source>Tests</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="59"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="95"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="95"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="95"/>
         <source>toolBar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="70"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="88"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="88"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="88"/>
         <source>Exit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="75"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="89"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="89"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="89"/>
         <source>Save State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="80"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="90"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="90"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="90"/>
         <source>Restore State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/examples/hideshow/MainWindow.ui" line="44"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="71"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="71"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="71"/>
         <source>Open project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/examples/hideshow/MainWindow.ui" line="49"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="72"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="72"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="72"/>
         <source>Close project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/examples/sidebar/MainWindow.ui" line="26"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="122"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="122"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="122"/>
         <source>PushButton</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/SARibbon/src/example/NormalMenuBarExample/MainWindow.ui" line="28"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="73"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="73"/>
         <source>file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/SARibbon/src/example/NormalMenuBarExample/MainWindow.ui" line="35"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="74"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="74"/>
         <source>edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/SARibbon/src/example/NormalMenuBarExample/MainWindow.ui" line="44"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="71"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="71"/>
         <source>open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/SARibbon/src/example/NormalMenuBarExample/MainWindow.ui" line="49"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="72"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="72"/>
         <source>save</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5039,86 +4906,6 @@ Wrap</source>
     <message>
         <location filename="3rdparty/SARibbon/src/example/StaticExample/MainWindow.cpp" line="19"/>
         <source>other</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="60"/>
-        <source>Example MainWindow</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="144"/>
-        <source>File(&amp;F)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="145"/>
-        <source>New(&amp;N)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="146"/>
-        <source>Open(&amp;O)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="149"/>
-        <source>Edit(&amp;E)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="150"/>
-        <source>Undo(&amp;U)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="151"/>
-        <source>Redo(&amp;R)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="154"/>
-        <source>Enable dark theme</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="164"/>
-        <source>Enable DWM blur</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="174"/>
-        <source>Enable acrylic material</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="184"/>
-        <source>Enable mica</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="194"/>
-        <source>Enable mica alt</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="204"/>
-        <source>Dark blur</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="216"/>
-        <source>Light blur</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="228"/>
-        <source>No blur</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="247"/>
-        <source>Settings(&amp;S)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6160,20 +5947,20 @@ params:
 <context>
     <name>QtBoolEdit</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="253"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="263"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="288"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="315"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="325"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="350"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="253"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="263"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="288"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="315"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="325"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="350"/>
         <source>True</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="263"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="288"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="325"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="350"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="263"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="288"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="325"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="350"/>
         <source>False</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6181,14 +5968,14 @@ params:
 <context>
     <name>QtBoolPropertyManager</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="1565"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="1528"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="1565"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="1538"/>
         <source>True</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="1566"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="1529"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="1566"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="1539"/>
         <source>False</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6196,8 +5983,8 @@ params:
 <context>
     <name>QtCharEdit</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qteditorfactory.cpp" line="1471"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qteditorfactory.cpp" line="1472"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5editorfactory.cpp" line="1471"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6editorfactory.cpp" line="1472"/>
         <source>Clear Char</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6205,8 +5992,8 @@ params:
 <context>
     <name>QtColorEditWidget</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qteditorfactory.cpp" line="2044"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qteditorfactory.cpp" line="2053"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5editorfactory.cpp" line="2044"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6editorfactory.cpp" line="2053"/>
         <source>...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6214,26 +6001,26 @@ params:
 <context>
     <name>QtColorPropertyManager</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6319"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="6306"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="6319"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="6318"/>
         <source>Red</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6327"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="6314"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="6327"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="6326"/>
         <source>Green</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6335"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="6322"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="6335"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="6334"/>
         <source>Blue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6343"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="6330"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="6343"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="6342"/>
         <source>Alpha</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6241,135 +6028,135 @@ params:
 <context>
     <name>QtCursorDatabase</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="54"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="30"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="89"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="54"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="30"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="89"/>
         <source>Arrow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="56"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="33"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="92"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="56"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="33"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="92"/>
         <source>Up Arrow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="58"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="36"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="95"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="58"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="36"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="95"/>
         <source>Cross</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="60"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="39"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="98"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="60"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="39"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="98"/>
         <source>Wait</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="62"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="42"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="101"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="62"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="42"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="101"/>
         <source>IBeam</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="64"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="45"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="104"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="64"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="45"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="104"/>
         <source>Size Vertical</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="66"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="48"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="107"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="66"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="48"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="107"/>
         <source>Size Horizontal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="68"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="51"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="110"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="68"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="51"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="110"/>
         <source>Size Backslash</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="70"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="54"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="113"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="70"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="54"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="113"/>
         <source>Size Slash</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="72"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="57"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="116"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="72"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="57"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="116"/>
         <source>Size All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="74"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="59"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="118"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="74"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="59"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="118"/>
         <source>Blank</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="76"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="61"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="120"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="76"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="61"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="120"/>
         <source>Split Vertical</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="78"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="64"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="123"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="78"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="64"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="123"/>
         <source>Split Horizontal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="80"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="67"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="126"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="80"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="67"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="126"/>
         <source>Pointing Hand</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="82"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="70"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="129"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="82"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="70"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="129"/>
         <source>Forbidden</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="84"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="73"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="132"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="84"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="73"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="132"/>
         <source>Open Hand</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="86"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="76"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="135"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="86"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="76"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="135"/>
         <source>Closed Hand</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="88"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="79"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="138"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="88"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="79"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="138"/>
         <source>What&apos;s This</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="90"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="82"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="141"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="90"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="82"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="141"/>
         <source>Busy</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6377,14 +6164,14 @@ params:
 <context>
     <name>QtFontEditWidget</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qteditorfactory.cpp" line="2233"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qteditorfactory.cpp" line="2243"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5editorfactory.cpp" line="2233"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6editorfactory.cpp" line="2243"/>
         <source>...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qteditorfactory.cpp" line="2253"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qteditorfactory.cpp" line="2263"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5editorfactory.cpp" line="2253"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6editorfactory.cpp" line="2263"/>
         <source>Select Font</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6392,44 +6179,44 @@ params:
 <context>
     <name>QtFontPropertyManager</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="5995"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="5980"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="5995"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="5992"/>
         <source>Family</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6008"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="5993"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="6008"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="6005"/>
         <source>Point Size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6016"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="6001"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="6016"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="6013"/>
         <source>Bold</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6023"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="6008"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="6023"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="6020"/>
         <source>Italic</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6030"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="6015"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="6030"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="6027"/>
         <source>Underline</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6037"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="6022"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="6037"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="6034"/>
         <source>Strikeout</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6044"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="6029"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="6044"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="6041"/>
         <source>Kerning</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6437,30 +6224,30 @@ params:
 <context>
     <name>QtLocalePropertyManager</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="2490"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2444"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="2490"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="2456"/>
         <source>&lt;Invalid&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="2498"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2452"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="2498"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="2464"/>
         <source>%1, %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="2548"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2502"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="2548"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="2514"/>
         <source>Language</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="2556"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="2556"/>
         <source>Country</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2510"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="2522"/>
         <source>Territory</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6468,20 +6255,20 @@ params:
 <context>
     <name>QtPointFPropertyManager</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="2959"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2919"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="2959"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="2931"/>
         <source>(%1, %2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="3029"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2989"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="3029"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="3001"/>
         <source>X</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="3037"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2997"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="3037"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="3009"/>
         <source>Y</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6489,20 +6276,20 @@ params:
 <context>
     <name>QtPointPropertyManager</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="2723"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2680"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="2723"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="2692"/>
         <source>(%1, %2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="2759"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2716"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="2759"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="2728"/>
         <source>X</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="2766"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2723"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="2766"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="2735"/>
         <source>Y</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6510,14 +6297,14 @@ params:
 <context>
     <name>QtPropertyBrowserUtils</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="183"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="241"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="183"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="241"/>
         <source>[%1, %2, %3] (%4)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="210"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="271"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="210"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="271"/>
         <source>[%1, %2]</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6525,32 +6312,32 @@ params:
 <context>
     <name>QtRectFPropertyManager</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4506"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4474"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="4506"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="4486"/>
         <source>[(%1, %2), %3 x %4]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4663"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4631"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="4663"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="4643"/>
         <source>X</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4671"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4639"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="4671"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="4651"/>
         <source>Y</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4679"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4647"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="4679"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="4659"/>
         <source>Width</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4688"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4656"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="4688"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="4668"/>
         <source>Height</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6558,32 +6345,32 @@ params:
 <context>
     <name>QtRectPropertyManager</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4079"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4048"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="4079"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="4060"/>
         <source>[(%1, %2), %3 x %4]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4200"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4165"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="4200"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="4177"/>
         <source>X</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4207"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4172"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="4207"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="4184"/>
         <source>Y</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4214"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4179"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="4214"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="4191"/>
         <source>Width</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4222"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4187"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="4222"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="4199"/>
         <source>Height</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6591,20 +6378,20 @@ params:
 <context>
     <name>QtSizeFPropertyManager</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="3673"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="3639"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="3673"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="3651"/>
         <source>%1 x %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="3821"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="3787"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="3821"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="3799"/>
         <source>Width</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="3830"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="3796"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="3830"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="3808"/>
         <source>Height</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6612,40 +6399,40 @@ params:
 <context>
     <name>QtSizePolicyPropertyManager</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="5522"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="5523"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="5498"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="5499"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="5522"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="5523"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="5510"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="5511"/>
         <source>&lt;Invalid&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="5524"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="5500"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="5524"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="5512"/>
         <source>[%1, %2, %3, %4]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="5567"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="5543"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="5567"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="5555"/>
         <source>Horizontal Policy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="5575"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="5551"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="5575"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="5563"/>
         <source>Vertical Policy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="5583"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="5559"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="5583"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="5571"/>
         <source>Horizontal Stretch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="5591"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="5567"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="5591"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="5579"/>
         <source>Vertical Stretch</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6653,20 +6440,20 @@ params:
 <context>
     <name>QtSizePropertyManager</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="3284"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="3247"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="3284"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="3259"/>
         <source>%1 x %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="3398"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="3361"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="3398"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="3373"/>
         <source>Width</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="3406"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="3369"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="3406"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="3381"/>
         <source>Height</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6674,14 +6461,14 @@ params:
 <context>
     <name>QtTreePropertyBrowser</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qttreepropertybrowser.cpp" line="452"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qttreepropertybrowser.cpp" line="417"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5treepropertybrowser.cpp" line="452"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6treepropertybrowser.cpp" line="417"/>
         <source>Property</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qttreepropertybrowser.cpp" line="453"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qttreepropertybrowser.cpp" line="418"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5treepropertybrowser.cpp" line="453"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6treepropertybrowser.cpp" line="418"/>
         <source>Value</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6980,8 +6767,6 @@ params:
     <name>Widget</name>
     <message>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="14"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="63"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/SARibbon/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="63"/>
         <source>Widget</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7130,18 +6915,6 @@ params:
     <message>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="1320"/>
         <source>colorPaletteGrid</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="64"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/SARibbon/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="64"/>
-        <source>Tab 1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="65"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/SARibbon/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="65"/>
-        <source>Tab 2</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -7338,54 +7111,6 @@ params:
     <message>
         <location filename="3rdparty/ctk/ctk/ctkPathLineEdit.cpp" line="585"/>
         <source>Select a file to save </source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>main</name>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="12"/>
-        <source>Hello, world!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="150"/>
-        <source>Theme</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="158"/>
-        <source>Light</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="164"/>
-        <source>Dark</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="172"/>
-        <source>Special effect</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="181"/>
-        <source>DWM blur</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="191"/>
-        <source>Acrylic material</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="201"/>
-        <source>Mica</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="211"/>
-        <source>Mica Alt</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

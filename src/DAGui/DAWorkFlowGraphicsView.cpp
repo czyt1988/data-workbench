@@ -204,7 +204,7 @@ void DAWorkFlowGraphicsView::copyItems(const QList< DAGraphicsItem* >& its, bool
 	QClipboard* clipboard = QApplication::clipboard();
 	if (clipboard) {
 		clipboard->setMimeData(mimeData);
-		qDebug().noquote() << "copy items,da-xml:" << doc.toString();
+        //		qDebug().noquote() << "copy items,da-xml:" << doc.toString();
 	}
 }
 
@@ -213,7 +213,7 @@ void DAWorkFlowGraphicsView::copyItems(const QList< DAGraphicsItem* >& its, bool
  */
 void DAWorkFlowGraphicsView::cutSelectItems()
 {
-	qDebug() << "DAWorkFlowEditWidget::cutSelectItems";
+    //	qDebug() << "DAWorkFlowEditWidget::cutSelectItems";
 	QList< DAGraphicsItem* > its = selectedDAItems();
 	copyItems(its, false);
 	// 复制完成后要删除
@@ -241,7 +241,7 @@ QList< QGraphicsItem* > DAWorkFlowGraphicsView::paste()
 	// 优先判断是否有text/da-xml
 	QByteArray daxmlData = mimeData->data(QStringLiteral("text/da-xml"));
 	if (daxmlData.size() > 0) {
-		qDebug() << "clipboard paste text/da-xml";
+        //		qDebug() << "clipboard paste text/da-xml";
 		if (!doc.setContent(daxmlData)) {
 			qInfo() << tr("Unrecognized mime formats:%1,paste failed").arg(mimeData->formats().join(","));  // cn:无法识别的mime类型:%1,粘贴失败
 			return res;
@@ -262,7 +262,7 @@ QList< QGraphicsItem* > DAWorkFlowGraphicsView::paste()
 		setSelectionState(res, true);
 	} else if (mimeData->hasImage()) {
 		// 粘贴图片
-		qDebug() << "clipboard paste Image";
+        //		qDebug() << "clipboard paste Image";
 		QImage image = qvariant_cast< QImage >(mimeData->imageData());
 		if (image.isNull()) {
 			return res;
@@ -274,13 +274,13 @@ QList< QGraphicsItem* > DAWorkFlowGraphicsView::paste()
 	} else if (mimeData->hasText()) {
 		// 粘贴文本
 		QString textData = mimeData->text();
-		qDebug() << "clipboard paste Text:" << textData;
+        //		qDebug() << "clipboard paste Text:" << textData;
 		// 有可能选中了多个文件,多个文件会用/n分割，这里不处理
 		QUrl url(textData);
 		if (url.isValid() && url.scheme() == QStringLiteral("file")) {
 			// 转换为本地文件路径
 			QString filePath = url.toLocalFile();
-			qDebug() << "clipboard paste local file:" << filePath;
+            //			qDebug() << "clipboard paste local file:" << filePath;
 			// QFileInfo fi(filePath);
 			//! 1.首先判断是否是project工程，如果是工程的话，直接把工程复制进来
 			// TODO
