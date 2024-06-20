@@ -81,7 +81,7 @@ public:
 	};
 
 public:
-	DAAbstractNode();
+    DAAbstractNode(const std::shared_ptr< DAAbstractNodeFactory >& fac);
 	virtual ~DAAbstractNode();
 
 	// 获取node的名字
@@ -182,7 +182,7 @@ public:  // 连接相关
 	QList< LinkInfo > getAllOutputLinkInfo() const;
 	// 生成一个uint64_t的唯一id
 	IdType generateID() const;
-	// 获取工作流
+    // 获取工作流,有可能返回nullptr
 	DAWorkFlow* workflow() const;
 	// 获取工厂
 	std::shared_ptr< DAAbstractNodeFactory > factory() const;
@@ -209,9 +209,7 @@ protected:
 
 protected:
 	// 注册工作流
-	void registWorkflow(DAWorkFlow* wf);
 	void registFactory(std::shared_ptr< DAAbstractNodeFactory > fc);
-	void unregistWorkflow();
 };
 
 }  // end DA

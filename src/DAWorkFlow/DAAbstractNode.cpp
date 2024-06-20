@@ -38,6 +38,7 @@ public:
 	};
 	QList< LinkData > getOutputLinkData(const QString& k);
 	QList< LinkData > getInputLinkData(const QString& k);
+    static bool isEnableCallback(const std::shared_ptr< DAAbstractNodeFactory >& f);
 
 public:
 	PrivateData(DAAbstractNode* p);
@@ -80,7 +81,7 @@ DAAbstractNode::PrivateData::LinkData::LinkData(const DAAbstractNode::PrivateDat
 bool DAAbstractNode::PrivateData::LinkData::operator==(const DAAbstractNode::PrivateData::LinkData& d) const
 {
 	return (inputNode.lock() == d.inputNode.lock()) && (inputKey == d.inputKey)
-		   && (outputNode.lock() == d.outputNode.lock()) && (outputKey == d.outputKey);
+           && (outputNode.lock() == d.outputNode.lock()) && (outputKey == d.outputKey);
 }
 
 /**
@@ -112,7 +113,18 @@ QList< DAAbstractNode::PrivateData::LinkData > DAAbstractNode::PrivateData::getI
 			res.append(d);
 		}
 	}
-	return res;
+    return res;
+}
+
+bool DAAbstractNode::PrivateData::isEnableCallback(const std::shared_ptr< DAAbstractNodeFactory >& f)
+{
+    if (f) {
+        auto wf = f->getWorkFlow();
+        if (wf) {
+            return wf->isEnableFactoryCallBack();
+        }
+    }
+    return false;
 }
 
 //==============================================================
@@ -136,8 +148,10 @@ DAAbstractNode::LinkInfo::LinkInfo()
 // DAAbstractNode
 //================================================
 
-DAAbstractNode::DAAbstractNode() : d_ptr(new DAAbstractNode::PrivateData(this))
+DAAbstractNode::DAAbstractNode(const std::shared_ptr< DAAbstractNodeFactory >& fac)
+    : d_ptr(new DAAbstractNode::PrivateData(this))
 {
+    d_ptr->mFactory = fac;
 }
 
 /**
@@ -167,8 +181,9 @@ void DAAbstractNode::setNodeName(const QString& name)
 {
 	QString oldname = d_ptr->mMetaData.getNodeName();
 	d_ptr->mMetaData.setNodeName(name);
-	if (d_ptr->mWorkflow) {
-		d_ptr->mWorkflow->emitNodeNameChanged(shared_from_this(), oldname, name);
+    auto wf = workflow();
+    if (wf) {
+        wf->emitNodeNameChanged(shared_from_this(), oldname, name);
 	}
 }
 
@@ -504,11 +519,13 @@ bool DAAbstractNode::linkTo(const QString& outKey, DAAbstractNode::SharedPointer
 		return false;
 	}
 	if (auto f = factory()) {
-		f->nodeLinkSucceed(pointer(), outKey, inNode, inKey);
+        if (DAAbstractNode::PrivateData::isEnableCallback(f)) {
+            f->nodeLinkSucceed(pointer(), outKey, inNode, inKey);
+        }
 	}
 #if DA_DAABSTRACTNODE_DEBUG_PRINT
 	qDebug() << getNodeName() << "->linkTo(outKey=" << outKey << ",inNode=" << inNode->getNodeName()
-			 << ",inKey=" << inKey << ")";
+             << ",inKey=" << inKey << ")";
 #endif
 	return (true);
 }
@@ -529,7 +546,9 @@ bool DAAbstractNode::detachLink(const QString& key)
 			inputNode->d_func()->mLinksInfo.removeAll(d);
 			// 通知工厂的回调函数
 			if (auto f = factory()) {
-				f->nodeLinkDetached(d.outputNode.lock(), d.outputKey, inputNode, d.inputKey);
+                if (DAAbstractNode::PrivateData::isEnableCallback(f)) {
+                    f->nodeLinkDetached(d.outputNode.lock(), d.outputKey, inputNode, d.inputKey);
+                }
 			}
 		}
 	}
@@ -542,7 +561,9 @@ bool DAAbstractNode::detachLink(const QString& key)
 			outputNode->d_func()->mLinksInfo.removeAll(d);
 			// 通知工厂的回调函数
 			if (auto f = factory()) {
-				f->nodeLinkDetached(outputNode, d.outputKey, pointer(), d.inputKey);
+                if (DAAbstractNode::PrivateData::isEnableCallback(f)) {
+                    f->nodeLinkDetached(outputNode, d.outputKey, pointer(), d.inputKey);
+                }
 			}
 		}
 	}
@@ -557,13 +578,13 @@ void DAAbstractNode::detachAll()
 #if DA_DAABSTRACTNODE_DEBUG_PRINT
 	qDebug() << "---------------------------";
 	qDebug() << "-start detachAll" << "\n- node name:" << getNodeName()
-			 << ",prototype:" << metaData().getNodePrototype() << "\n- link infos:";
+             << ",prototype:" << metaData().getNodePrototype() << "\n- link infos:";
 	for (const DAAbstractNodePrivate::LinkData& d : qAsConst(d_ptr->_linksInfo)) {
 		SharedPointer from = d.outputNode.lock();
 		SharedPointer to   = d.inputNode.lock();
 		if (from && to) {
 			qDebug().noquote() << from->getNodeName() << "[" << d.outputKey << "] -> " << to->getNodeName() << "["
-							   << d.inputKey << "]";
+                               << d.inputKey << "]";
 		} else if (from && to == nullptr) {
 			qDebug().noquote() << from->getNodeName() << "[" << d.outputKey << "] -> " << "null";
 		} else if (from == nullptr && to) {
@@ -582,11 +603,15 @@ void DAAbstractNode::detachAll()
 			toItem->d_func()->mLinksInfo.removeAll(d);
 			// 通知工厂的回调函数
 			if (auto f = factory()) {
-				f->nodeLinkDetached(d.outputNode.lock(), d.outputKey, d.inputNode.lock(), d.inputKey);
+                if (DAAbstractNode::PrivateData::isEnableCallback(f)) {
+                    f->nodeLinkDetached(d.outputNode.lock(), d.outputKey, d.inputNode.lock(), d.inputKey);
+                }
 			}
 		}
 	}
 	d_ptr->mLinksInfo.clear();
+    d_ptr->mWorkflow = nullptr;  // 清空关系
+    d_ptr->mFactory.reset();
 }
 
 /**
@@ -712,13 +737,13 @@ int DAAbstractNode::getInputNodesCount() const
 	int res = 0;
 #if DA_DAABSTRACTNODE_DEBUG_PRINT
 	qDebug() << getNodeName()
-			 << "-> getInputNodesCount()\n"
-				"    _linksInfo:";
+             << "-> getInputNodesCount()\n"
+                "    _linksInfo:";
 #endif
 	for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(d_ptr->mLinksInfo)) {
 #if DA_DAABSTRACTNODE_DEBUG_PRINT
 		qDebug() << "    outputKey=" << d.outputKey << "(" << d.outputNode.lock()->getNodeName()
-				 << ")--->inputKey=" << d.inputKey << "(" << d.inputNode.lock()->getNodeName() << ")";
+                 << ")--->inputKey=" << d.inputKey << "(" << d.inputNode.lock()->getNodeName() << ")";
 #endif
 		SharedPointer toNode = d.inputNode.lock();
 		if (toNode.get() == this) {
@@ -849,7 +874,11 @@ DAAbstractNode::IdType DAAbstractNode::generateID() const
  */
 DAWorkFlow* DAAbstractNode::workflow() const
 {
-    return d_ptr->mWorkflow;
+    auto fac = d_ptr->mFactory.lock();
+    if (!fac) {
+        return nullptr;
+    }
+    return fac->getWorkFlow();
 }
 
 /**
@@ -946,27 +975,10 @@ void DAAbstractNode::removeOutputKey(const QString& key)
 }
 
 /**
- * @brief 记录DAWorkFlow
- * @param wf
- */
-void DAAbstractNode::registWorkflow(DAWorkFlow* wf)
-{
-    d_ptr->mWorkflow = wf;
-}
-
-/**
  * @brief 记录工厂
  * @param fc
  */
 void DAAbstractNode::registFactory(std::shared_ptr< DAAbstractNodeFactory > fc)
 {
     d_ptr->mFactory = fc;
-}
-
-/**
- * @brief 把当前注册的工作流取消
- */
-void DAAbstractNode::unregistWorkflow()
-{
-    d_ptr->mWorkflow = nullptr;
 }

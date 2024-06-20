@@ -31,6 +31,7 @@ public:
 	QList< DAWorkFlow::CallbackPrepareStartExecute > mPrepareStartCallback;
 	QList< DAWorkFlow::CallbackPrepareEndExecute > mPrepareEndCallback;
 	DANodeGraphicsScene* mScene { nullptr };  ///< 记录工作流对应的scene，让工作流能获取scene指针
+    bool mEnableFactoryCb { true };           ///< 是否允许工厂回调
 };
 
 //===================================================
@@ -227,8 +228,6 @@ DAAbstractNode::SharedPointer DAWorkFlow::createNode(const DANodeMetaData& md)
 	if (nullptr == node) {
 		return nullptr;
 	}
-	node->registFactory(factory);
-	node->registWorkflow(this);
 	// 单一职责原则，不添加
 	//     addNode(node);
 	return (node);
@@ -243,14 +242,13 @@ void DAWorkFlow::addNode(DAAbstractNode::SharedPointer n)
 	if (nullptr == n) {
 		return;
 	}
-	if (n->workflow() != this) {
-		n->registWorkflow(this);
-	}
-	DAAbstractNodeFactory::SharedPointer f = n->factory();
-	if (f) {
-		f->nodeAddedToWorkflow(n);
-	}
 	d_ptr->recordNode(n);
+    if (isEnableFactoryCallBack()) {
+        DAAbstractNodeFactory::SharedPointer f = n->factory();
+        if (f) {
+            f->nodeAddedToWorkflow(n);
+        }
+    }
 	emit nodeAdded(n);
 }
 
@@ -272,7 +270,6 @@ void DAWorkFlow::clear()
 {
 	QList< DAAbstractNode::SharedPointer > ns = nodes();
 	for (DAAbstractNode::SharedPointer& node : ns) {
-		node->unregistWorkflow();
 		node->detachAll();
 	}
 	d_ptr->mNodes.clear();
@@ -293,15 +290,17 @@ void DAWorkFlow::removeNode(const DAAbstractNode::SharedPointer& n)
 	if (!d_ptr->mNodes.contains(n)) {
 		return;
 	}
-	DAAbstractNodeFactory::SharedPointer f = n->factory();
-	if (f) {
-		f->nodeStartRemove(n);
+    if (isEnableFactoryCallBack()) {
+        DAAbstractNodeFactory::SharedPointer f = n->factory();
+        if (f) {
+            f->nodeStartRemove(n);
+        }
 	}
 	emit nodeStartRemove(n);
 	n->detachAll();
-	n->unregistWorkflow();
 	d_ptr->mNodes.removeAll(n);
 	d_ptr->mIdToNode.remove(n->getID());
+    emit nodeRemoved(n);
 }
 
 /**
@@ -506,6 +505,42 @@ QList< DAWorkFlow::CallbackPrepareEndExecute > DAWorkFlow::getEndWorkflowCallbac
 DANodeGraphicsScene* DAWorkFlow::getScene() const
 {
     return d_ptr->mScene;
+}
+
+/**
+ * @brief 触发工作流完成信号
+ */
+void DAWorkFlow::callWorkflowReady()
+{
+    for (auto fac : qAsConst(d_ptr->mFactorys)) {
+        fac->workflowReady();
+    }
+    emit workflowReady();
+}
+
+/**
+ * @brief 禁止所有工厂回调，这个一般用于文件加载过程，避免回调过多
+ */
+void DAWorkFlow::disableFactoryCallBack()
+{
+    d_ptr->mEnableFactoryCb = false;
+}
+
+/**
+ * @brief 允许工厂回调，这个一般用于文件加载过程，避免回调过多
+ */
+void DAWorkFlow::enableFactoryCallBack()
+{
+    d_ptr->mEnableFactoryCb = true;
+}
+
+/**
+ * @brief 是否允许工厂回调
+ * @return
+ */
+bool DAWorkFlow::isEnableFactoryCallBack() const
+{
+    return d_ptr->mEnableFactoryCb;
 }
 
 void DAWorkFlow::emitNodeNameChanged(DAAbstractNode::SharedPointer node, const QString& oldName, const QString& newName)

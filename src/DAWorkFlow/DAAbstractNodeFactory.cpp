@@ -168,4 +168,13 @@ void DAAbstractNodeFactory::uiInitialization(DANodeGraphicsScene* scene)
     Q_UNUSED(scene);
 }
 
+/**
+ * @brief 工作流准备完成回调
+ *
+ * 文件加载过程中不会触发nodeAdded信号，在整个文件加载完成后会触发workflowReady用来通知其他告知工作流加载完成
+ */
+void DAAbstractNodeFactory::workflowReady()
+{
+}
+
 }  // end DA

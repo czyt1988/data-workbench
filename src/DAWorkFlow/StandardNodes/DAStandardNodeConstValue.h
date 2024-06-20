@@ -3,13 +3,14 @@
 #include "DAAbstractNode.h"
 namespace DA
 {
+class DAAbstractNodeFactory;
 /**
  * @brief 常数节点
  */
 class DAWORKFLOW_API DAStandardNodeConstValue : public DA::DAAbstractNode
 {
 public:
-	DAStandardNodeConstValue();
+    DAStandardNodeConstValue(const std::shared_ptr< DAAbstractNodeFactory >& fac);
 	virtual ~DAStandardNodeConstValue();
 	// 运行
 	virtual bool exec() override;

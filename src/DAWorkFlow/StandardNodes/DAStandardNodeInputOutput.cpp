@@ -4,7 +4,8 @@
 namespace DA
 {
 
-DAStandardNodeInputOutput::DAStandardNodeInputOutput() : DAAbstractNode()
+DAStandardNodeInputOutput::DAStandardNodeInputOutput(const std::shared_ptr< DAAbstractNodeFactory >& fac)
+    : DAAbstractNode(fac)
 {
 	metaData().setNodePrototype("DA.StandardInputOutputNode");
 	metaData().setGroup(u8"fucntion");

@@ -162,6 +162,7 @@ bool DAXmlHelperPrivate::loadWorkflow(DAWorkFlowEditWidget* wfe, const QDomEleme
 	DAWorkFlow* workflow                   = wfe->getWorkflow();
 	DAWorkFlowGraphicsScene* workFlowScene = wfe->getWorkFlowGraphicsScene();
 	// 加载开始，设置场景没有就绪
+    workflow->disableFactoryCallBack();
 	workFlowScene->setReady(false);
 	//
 	clearDealItemSet();  // 清空保存过的item的记录
@@ -200,6 +201,8 @@ bool DAXmlHelperPrivate::loadWorkflow(DAWorkFlowEditWidget* wfe, const QDomEleme
 
 	// 加载完成，设置场景没有就绪
 	workFlowScene->setReady(true);
+    workflow->enableFactoryCallBack();
+    workflow->callWorkflowReady();
 	return true;
 }
 
@@ -723,7 +726,7 @@ bool DAXmlHelperPrivate::loadNodeInPutOutputKey(DAAbstractNode::SharedPointer& n
 
 bool DAXmlHelperPrivate::loadNodeInPutOutputKey_v110(DAAbstractNode::SharedPointer& node, const QDomElement& eleNode)
 {
-	qDebug() << "loadNodeInPutOutputKey_v110";
+    //	qDebug() << "loadNodeInPutOutputKey_v110";
 	// v1.1.0以下解析方法
 	QDomElement e = eleNode.firstChildElement("inputs");
 	if (!e.isNull()) {
@@ -783,7 +786,7 @@ bool DAXmlHelperPrivate::loadNodeInPutOutputKey_v110(DAAbstractNode::SharedPoint
 
 bool DAXmlHelperPrivate::loadNodeInPutOutputKey_v130(DAAbstractNode::SharedPointer& node, const QDomElement& eleNode)
 {
-	qDebug() << "loadNodeInPutOutputKey_v130";
+    //	qDebug() << "loadNodeInPutOutputKey_v130";
 	// v1.3.0解析方法
 	QDomElement e = eleNode.firstChildElement("inputs");
 	if (!e.isNull()) {

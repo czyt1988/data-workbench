@@ -88,6 +88,13 @@ public:
 	QList< CallbackPrepareEndExecute > getEndWorkflowCallback() const;
 	// 获取这个工作流加入的scene
 	DANodeGraphicsScene* getScene() const;
+    // 触发工作流完成信号
+    void callWorkflowReady();
+    // 禁止所有工厂回调，这个一般用于文件加载过程，避免回调过多
+    // 主要影响以下回调函数nodeAddedToWorkflow,nodeStartRemove,nodeLinkSucceed,nodeLinkDetached
+    void disableFactoryCallBack();
+    void enableFactoryCallBack();
+    bool isEnableFactoryCallBack() const;
 public slots:
 	// 运行工作流
 	void exec();
@@ -111,6 +118,17 @@ signals:
 	 * @param node
 	 */
 	void nodeStartRemove(DAAbstractNode::SharedPointer node);
+    /**
+     * @brief 节点移除完成信号
+     * 这时此信号携带的n是这个节点唯一的生命周期，如果接收此信号后还保留这个节点，这个节点将不销毁
+     */
+    void nodeRemoved(DAAbstractNode::SharedPointer n);
+    /**
+     * @brief 工作流就绪信号，此信号在文件加载过程完成后触发
+     *
+     * 文件加载过程中不会触发nodeAdded信号，在整个文件加载完成后会触发workflowReady用来通知其他告知工作流加载完成
+     */
+    void workflowReady();
 	/**
 	 * @brief 节点名字变更
 	 * @param node
