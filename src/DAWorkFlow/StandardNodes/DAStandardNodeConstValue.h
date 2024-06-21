@@ -1,4 +1,4 @@
-#ifndef DASTANDARDNODECONSTVALUE_H
+﻿#ifndef DASTANDARDNODECONSTVALUE_H
 #define DASTANDARDNODECONSTVALUE_H
 #include "DAAbstractNode.h"
 namespace DA
@@ -10,7 +10,7 @@ class DAAbstractNodeFactory;
 class DAWORKFLOW_API DAStandardNodeConstValue : public DA::DAAbstractNode
 {
 public:
-    DAStandardNodeConstValue(const std::shared_ptr< DAAbstractNodeFactory >& fac);
+	DAStandardNodeConstValue();
 	virtual ~DAStandardNodeConstValue();
 	// 运行
 	virtual bool exec() override;

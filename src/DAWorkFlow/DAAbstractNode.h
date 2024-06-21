@@ -81,7 +81,7 @@ public:
 	};
 
 public:
-    DAAbstractNode(const std::shared_ptr< DAAbstractNodeFactory >& fac);
+	DAAbstractNode();
 	virtual ~DAAbstractNode();
 
 	// 获取node的名字
@@ -120,13 +120,13 @@ public:
 	QVariant getProperty(const QString& k, const QVariant& defaultVal = QVariant()) const;
 	bool removeProperty(const QString& k);
 	QList< QString > getPropertyKeys() const;
-    // 属性引用
-    const QHash< QString, QVariant >& propertys() const;
-    QHash< QString, QVariant >& propertys();
+	// 属性引用
+	const QHash< QString, QVariant >& propertys() const;
+	QHash< QString, QVariant >& propertys();
 	// 把扩展信息保存到xml上
-    virtual void saveExternInfoToXml(QDomDocument* doc, QDomElement* nodeElement, const QVersionNumber& ver) const;
+	virtual void saveExternInfoToXml(QDomDocument* doc, QDomElement* nodeElement, const QVersionNumber& ver) const;
 	// 从xml加载扩展信息
-    virtual void loadExternInfoFromXml(const QDomElement* nodeElement, const QVersionNumber& ver);
+	virtual void loadExternInfoFromXml(const QDomElement* nodeElement, const QVersionNumber& ver);
 	// 节点类型默认都为NormalNode
 	virtual NodeType nodeType() const;
 
@@ -182,7 +182,7 @@ public:  // 连接相关
 	QList< LinkInfo > getAllOutputLinkInfo() const;
 	// 生成一个uint64_t的唯一id
 	IdType generateID() const;
-    // 获取工作流,有可能返回nullptr
+	// 获取工作流,有可能返回nullptr
 	DAWorkFlow* workflow() const;
 	// 获取工厂
 	std::shared_ptr< DAAbstractNodeFactory > factory() const;
@@ -209,7 +209,7 @@ protected:
 
 protected:
 	// 注册工作流
-	void registFactory(std::shared_ptr< DAAbstractNodeFactory > fc);
+	void registFactory(const std::shared_ptr< DAAbstractNodeFactory >& fc);
 };
 
 }  // end DA

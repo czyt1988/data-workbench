@@ -1,4 +1,4 @@
-#ifndef DASTANDARDNODEINPUTOUTPUT_H
+﻿#ifndef DASTANDARDNODEINPUTOUTPUT_H
 #define DASTANDARDNODEINPUTOUTPUT_H
 #include "DAAbstractNode.h"
 namespace DA
@@ -10,7 +10,7 @@ class DAAbstractNodeFactory;
 class DAWORKFLOW_API DAStandardNodeInputOutput : public DAAbstractNode
 {
 public:
-    DAStandardNodeInputOutput(const std::shared_ptr< DAAbstractNodeFactory >& fac);
+	DAStandardNodeInputOutput();
 	~DAStandardNodeInputOutput();
 	// 设置显示名字
 	void setDisplayName(const QString& name);

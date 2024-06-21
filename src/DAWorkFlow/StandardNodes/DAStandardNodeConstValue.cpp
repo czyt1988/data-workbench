@@ -3,8 +3,7 @@
 namespace DA
 {
 
-DAStandardNodeConstValue::DAStandardNodeConstValue(const std::shared_ptr< DAAbstractNodeFactory >& fac)
-    : DAAbstractNode(fac)
+DAStandardNodeConstValue::DAStandardNodeConstValue() : DAAbstractNode()
 {
 	metaData().setNodePrototype("DA.ConstValue");
 	metaData().setGroup(u8"common");
