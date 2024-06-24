@@ -170,8 +170,10 @@ public:  // 连接相关
 	void setOutputData(const QString& key, const QVariant& dp);
 	// 移除输入
 	void removeInputKey(const QString& key);
+    void removeAllInputKeys();
 	// 移除输出
 	void removeOutputKey(const QString& key);
+    void removeAllOutputKeys();
 	// 获取input的数据包,此函数返回的FCDataPackage是引用，不发生拷贝，修改将直接改变input所维护的FCDataPackage内容
 	QVariant getInputData(const QString& key) const;
 	// 输出参数

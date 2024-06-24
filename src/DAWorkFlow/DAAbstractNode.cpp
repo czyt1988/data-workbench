@@ -81,7 +81,7 @@ DAAbstractNode::PrivateData::LinkData::LinkData(const DAAbstractNode::PrivateDat
 bool DAAbstractNode::PrivateData::LinkData::operator==(const DAAbstractNode::PrivateData::LinkData& d) const
 {
 	return (inputNode.lock() == d.inputNode.lock()) && (inputKey == d.inputKey)
-		   && (outputNode.lock() == d.outputNode.lock()) && (outputKey == d.outputKey);
+           && (outputNode.lock() == d.outputNode.lock()) && (outputKey == d.outputKey);
 }
 
 /**
@@ -523,7 +523,7 @@ bool DAAbstractNode::linkTo(const QString& outKey, DAAbstractNode::SharedPointer
 	}
 #if DA_DAABSTRACTNODE_DEBUG_PRINT
 	qDebug() << getNodeName() << "->linkTo(outKey=" << outKey << ",inNode=" << inNode->getNodeName()
-			 << ",inKey=" << inKey << ")";
+             << ",inKey=" << inKey << ")";
 #endif
 	return (true);
 }
@@ -576,13 +576,13 @@ void DAAbstractNode::detachAll()
 #if DA_DAABSTRACTNODE_DEBUG_PRINT
 	qDebug() << "---------------------------";
 	qDebug() << "-start detachAll" << "\n- node name:" << getNodeName()
-			 << ",prototype:" << metaData().getNodePrototype() << "\n- link infos:";
+             << ",prototype:" << metaData().getNodePrototype() << "\n- link infos:";
 	for (const DAAbstractNodePrivate::LinkData& d : qAsConst(d_ptr->_linksInfo)) {
 		SharedPointer from = d.outputNode.lock();
 		SharedPointer to   = d.inputNode.lock();
 		if (from && to) {
 			qDebug().noquote() << from->getNodeName() << "[" << d.outputKey << "] -> " << to->getNodeName() << "["
-							   << d.inputKey << "]";
+                               << d.inputKey << "]";
 		} else if (from && to == nullptr) {
 			qDebug().noquote() << from->getNodeName() << "[" << d.outputKey << "] -> " << "null";
 		} else if (from == nullptr && to) {
@@ -735,13 +735,13 @@ int DAAbstractNode::getInputNodesCount() const
 	int res = 0;
 #if DA_DAABSTRACTNODE_DEBUG_PRINT
 	qDebug() << getNodeName()
-			 << "-> getInputNodesCount()\n"
-				"    _linksInfo:";
+             << "-> getInputNodesCount()\n"
+                "    _linksInfo:";
 #endif
 	for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(d_ptr->mLinksInfo)) {
 #if DA_DAABSTRACTNODE_DEBUG_PRINT
 		qDebug() << "    outputKey=" << d.outputKey << "(" << d.outputNode.lock()->getNodeName()
-				 << ")--->inputKey=" << d.inputKey << "(" << d.inputNode.lock()->getNodeName() << ")";
+                 << ")--->inputKey=" << d.inputKey << "(" << d.inputNode.lock()->getNodeName() << ")";
 #endif
 		SharedPointer toNode = d.inputNode.lock();
 		if (toNode.get() == this) {
@@ -960,7 +960,18 @@ void DAAbstractNode::setOutputData(const QString& key, const QVariant& dp)
 void DAAbstractNode::removeInputKey(const QString& key)
 {
 	d_ptr->mInputKeys.removeAll(key);
-	d_ptr->mInputData.remove(key);
+    d_ptr->mInputData.remove(key);
+}
+
+/**
+ * @brief 移除所有输入节点
+ */
+void DAAbstractNode::removeAllInputKeys()
+{
+    for (const QString& key : qAsConst(d_ptr->mInputKeys)) {
+        d_ptr->mInputData.remove(key);
+    }
+    d_ptr->mInputKeys.clear();
 }
 /**
  * @brief 移除输出,如果有数据，数据也会移除
@@ -969,7 +980,18 @@ void DAAbstractNode::removeInputKey(const QString& key)
 void DAAbstractNode::removeOutputKey(const QString& key)
 {
 	d_ptr->mOutputKeys.removeAll(key);
-	d_ptr->mOutputData.remove(key);
+    d_ptr->mOutputData.remove(key);
+}
+
+/**
+ * @brief 移除所有输出节点
+ */
+void DAAbstractNode::removeAllOutputKeys()
+{
+    for (const QString& key : qAsConst(d_ptr->mOutputKeys)) {
+        d_ptr->mOutputData.remove(key);
+    }
+    d_ptr->mOutputKeys.clear();
 }
 
 /**

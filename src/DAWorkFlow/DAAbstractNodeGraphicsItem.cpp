@@ -415,7 +415,9 @@ void DAAbstractNodeGraphicsItem::paintLinkPoints(QPainter* painter, const QStyle
 	if (!d_ptr->mIsShowLinkPoint) {
 		return;
 	}
-	d_ptr->mLinkPointDrawDelegate->paintLinkPoints(painter, option, widget);
+    if (auto delegate = getLinkPointDrawDelegate()) {
+        delegate->paintLinkPoints(painter, option, widget);
+    }
 }
 
 /**
@@ -598,6 +600,10 @@ void DAAbstractNodeGraphicsItem::groupPositionChanged(const QPointF& pos)
  */
 DANodeLinkPoint DAAbstractNodeGraphicsItem::getLinkPointByPos(const QPointF& p, DANodeLinkPoint::Way way) const
 {
+    auto delegate = getLinkPointDrawDelegate();
+    if (!delegate) {
+        return DANodeLinkPoint();
+    }
 	QList< DANodeLinkPoint > lps;
 	if (DANodeLinkPoint::Output == way) {
 		lps = getOutputLinkPoints();
@@ -605,7 +611,7 @@ DANodeLinkPoint DAAbstractNodeGraphicsItem::getLinkPointByPos(const QPointF& p, 
 		lps = getInputLinkPoints();
 	}
 	for (const DANodeLinkPoint& lp : qAsConst(lps)) {
-		if (d_ptr->mLinkPointDrawDelegate->getlinkPointPainterRegion(lp).contains(p)) {
+        if (delegate->getlinkPointPainterRegion(lp).contains(p)) {
 			return lp;
 		}
 	}
@@ -779,7 +785,9 @@ QList< DANodeLinkPoint > DAAbstractNodeGraphicsItem::generateLinkPoint() const
 		lp.name      = k;
 		res.append(lp);
 	}
-	getLinkPointDrawDelegate()->layoutLinkPoints(res, getBodyRect());
+    if (auto delegate = getLinkPointDrawDelegate()) {
+        delegate->layoutLinkPoints(res, getBodyRect());
+    }
 	return (res);
 }
 
@@ -1059,7 +1067,9 @@ void DAAbstractNodeGraphicsItem::getInLinkChainRecursion(DAAbstractNodeGraphicsI
 void DAAbstractNodeGraphicsItem::updateLinkPointPos()
 {
 	QList< DANodeLinkPoint > lps = d_ptr->getLinkPoints();
-	getLinkPointDrawDelegate()->layoutLinkPoints(lps, getBodyRect());
+    if (auto delegate = getLinkPointDrawDelegate()) {
+        delegate->layoutLinkPoints(lps, getBodyRect());
+    }
 	// 更新到linkData
 	int s = qMin(lps.size(), d_ptr->mLinkInfos.size());
 	for (int i = 0; i < s; ++i) {
