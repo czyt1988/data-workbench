@@ -11,6 +11,7 @@ class DAGraphicsResizeableItem;
 class DAGraphicsItem;
 class DAGraphicsLinkItem;
 class DAGraphicsItemGroup;
+class DAAbstractGraphicsSceneAction;
 /**
  * @brief 这是带着undostack的GraphicsScene
  * 此QGraphicsScene支持：
@@ -115,6 +116,13 @@ public:
 	static int getDefaultDPI();
 	// dpi转为像素
 	static int dpiToPx(int dpi, int r);
+
+	// 激活一个场景动作
+	void activeSceneAction(DAAbstractGraphicsSceneAction* act);
+	// 是否当前存在场景动作
+	bool isHaveSceneAction() const;
+	// 清除场景动作
+	void clearSceneAction();
 
 public:
 	static void addItemToGroup(QGraphicsItemGroup* group, const QList< QGraphicsItem* >& willGroupItems);

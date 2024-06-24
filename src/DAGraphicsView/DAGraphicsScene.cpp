@@ -5,6 +5,7 @@
 #include "DAGraphicsLinkItem.h"
 #include "DAGraphicsItemGroup.h"
 #include "DAGraphicsStandardTextItem.h"
+#include "DAAbstractGraphicsSceneAction.h"
 #include <QPainter>
 #include <QDebug>
 #include <QApplication>
@@ -61,6 +62,7 @@ public:
 	bool mLinkItemIsMoved { false };
 	bool mIsIgnoreLinkEvent { false };  ///< 设置忽略链接事件的处理，主要忽略mousePressEvent，mouseMoveEvent的链接事件
 	bool mIsReady { true };  ///< 场景是否就绪标记，此参数不保存
+	std::unique_ptr< DAAbstractGraphicsSceneAction > mSceneAction;
 };
 
 ////////////////////////////////////////////////
@@ -770,6 +772,41 @@ int DAGraphicsScene::dpiToPx(int dpi, int r)
 }
 
 /**
+ * @brief 激活场景动作
+ * @param act
+ */
+void DAGraphicsScene::activeSceneAction(DAAbstractGraphicsSceneAction* act)
+{
+	if (d_ptr->mSceneAction) {
+		d_ptr->mSceneAction->endAction();
+	}
+	d_ptr->mSceneAction.reset(act);
+	if (act) {
+		act->beginActive();
+	}
+}
+
+/**
+ * @brief 判断当前是否存在场景动作
+ * @return
+ */
+bool DAGraphicsScene::isHaveSceneAction() const
+{
+    return (d_ptr->mSceneAction != nullptr);
+}
+
+/**
+ * @brief 清除场景动作
+ */
+void DAGraphicsScene::clearSceneAction()
+{
+	if (d_ptr->mSceneAction) {
+		d_ptr->mSceneAction->endAction();
+	}
+	d_ptr->mSceneAction.reset(nullptr);
+}
+
+/**
    @brief 通用的item分组，此操作和QGraphicsScene::createItemGroup逻辑一致
    @param group
    @param willGroupItems
@@ -899,6 +936,13 @@ void DAGraphicsScene::emitItemRotationChanged(DAGraphicsResizeableItem* item, co
 
 void DAGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
+	if (d_ptr->mSceneAction) {
+		// 存在场景动作
+		if (d_ptr->mSceneAction->mousePressEvent(mouseEvent)) {
+			// 场景动作返回true，直接返回此动作，代表场景动作劫持了此事件
+			return;
+		}
+	}
 	// 记录鼠标点击的位置
 	d_ptr->mLastMousePressScenePos = mouseEvent->scenePos();
 	// 先传递下去使得能处理选中状态
@@ -965,8 +1009,12 @@ void DAGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 
 void DAGraphicsScene::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
-	if (nullptr == mouseEvent) {
-		return;
+	if (d_ptr->mSceneAction) {
+		// 存在场景动作
+		if (d_ptr->mSceneAction->mouseMoveEvent(mouseEvent)) {
+			// 场景动作返回true，直接返回此动作，代表场景动作劫持了此事件
+			return;
+		}
 	}
 	d_ptr->mLastMouseScenePos = mouseEvent->scenePos();
 	if (!isIgnoreLinkEvent()) {
@@ -987,8 +1035,12 @@ void DAGraphicsScene::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
 
 void DAGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
-	if (nullptr == mouseEvent) {
-		return;
+	if (d_ptr->mSceneAction) {
+		// 存在场景动作
+		if (d_ptr->mSceneAction->mouseReleaseEvent(mouseEvent)) {
+			// 场景动作返回true，直接返回此动作，代表场景动作劫持了此事件
+			return;
+		}
 	}
 	QGraphicsScene::mouseReleaseEvent(mouseEvent);
 	if (d_ptr->mIsMovingItems) {
