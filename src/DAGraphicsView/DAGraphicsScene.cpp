@@ -397,7 +397,13 @@ void DAGraphicsScene::cancelLink()
 	}
 	DAGraphicsLinkItem* linkItem = d_ptr->mLinkItem.get();
 	removeItem(linkItem);
-	d_ptr->mLinkItem.reset();
+    d_ptr->mLinkItem.reset();
+}
+
+void DAGraphicsScene::cancel()
+{
+    cancelLink();
+    clearSceneAction();
 }
 
 /**
@@ -991,7 +997,7 @@ void DAGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 			DAGraphicsResizeableItem* ri = dynamic_cast< DAGraphicsResizeableItem* >(its);
 			if (ri) {
 				if (DAGraphicsResizeableItem::NotUnderAnyControlType
-					!= ri->getControlPointByPos(ri->mapFromScene(mouseEvent->scenePos()))) {
+                    != ri->getControlPointByPos(ri->mapFromScene(mouseEvent->scenePos()))) {
 					// 说明点击在了控制点上，需要跳过
 					d_ptr->mIsMovingItems = false;
 					return;
@@ -1047,16 +1053,16 @@ void DAGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		d_ptr->mIsMovingItems = false;
 		QPointF releasePos    = mouseEvent->scenePos();
 		if (qFuzzyCompare(releasePos.x(), d_ptr->mLastMousePressScenePos.x())
-			&& qFuzzyCompare(releasePos.y(), d_ptr->mLastMousePressScenePos.y())) {
+            && qFuzzyCompare(releasePos.y(), d_ptr->mLastMousePressScenePos.y())) {
 			// 位置相等，不做处理
 			return;
 		}
 		// 位置不等，属于正常移动
 		d_ptr->mMovingInfos.updateEndPos();
 		DACommandsForGraphicsItemsMoved* cmd = new DACommandsForGraphicsItemsMoved(d_ptr->mMovingInfos.items,
-																				   d_ptr->mMovingInfos.startsPos,
-																				   d_ptr->mMovingInfos.endsPos,
-																				   true);
+                                                                                   d_ptr->mMovingInfos.startsPos,
+                                                                                   d_ptr->mMovingInfos.endsPos,
+                                                                                   true);
 		push(cmd);
 		// 位置改变信号
 		//         qDebug() << "emit itemsPositionChanged";

@@ -20,23 +20,27 @@ class DAGraphicsScene;
  */
 class DAGRAPHICSVIEW_API DAAbstractGraphicsSceneAction
 {
+    friend class DAGraphicsScene;
+
 public:
 	DAAbstractGraphicsSceneAction(DAGraphicsScene* sc);
 	virtual ~DAAbstractGraphicsSceneAction();
 	// 场景
 	DAGraphicsScene* scene() const;
-	// 开始激活，这是使用setAction后调用的函数
-	virtual void beginActive();
-	// 鼠标点击事件,返回true，代表action劫持了此事件，不会在scene中继续传递事件,默认返回false
-	virtual bool mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent);
-	// 鼠标移动事件,返回true，代表action劫持了此事件，不会在scene中继续传递事件,默认返回false
-	virtual bool mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent);
-	// 鼠标释放,返回true，代表action劫持了此事件，不会在scene中继续传递事件,默认返回false
-	virtual bool mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent);
-	// 结束激活，这是使用删除action前调用的函数
-	virtual void endAction();
-	// 结束action
+    // 结束action,此行数会删除action，end后不能有任何成员函数的操作，否则会出现异常
 	void end();
+
+protected:
+    // 开始激活，这是使用setAction后调用的函数
+    virtual void beginActive();
+    // 鼠标点击事件,返回true，代表action劫持了此事件，不会在scene中继续传递事件,默认返回false
+    virtual bool mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent);
+    // 鼠标移动事件,返回true，代表action劫持了此事件，不会在scene中继续传递事件,默认返回false
+    virtual bool mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent);
+    // 鼠标释放,返回true，代表action劫持了此事件，不会在scene中继续传递事件,默认返回false
+    virtual bool mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent);
+    // 结束激活，这是使用删除action前调用的函数
+    virtual void endAction();
 
 protected:
 	DAGraphicsScene* mScene { nullptr };
