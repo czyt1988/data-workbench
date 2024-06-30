@@ -308,11 +308,19 @@ public:
 
     /**
      * @brief 按照trFun遍历所有元素，并返回一个新的table
+     *
+     * 这个函数一般做表格的格式转换用，例如吧DATable<double>转换为DATable<int>
+     *
+     * @code
+     * DATable<double> doubleTable;
+     * ...
+     * DATable<int> intTable = doubleTable.transfered([](const double& v)->int{return v;});
+     * @endcode
      * @param trFun
      * @return
      */
     template< typename OtherType >
-    DATable< OtherType > transfered(std::function< OtherType(const value_type& v) > trFun) const
+    DATable< OtherType > transfered(std::function< OtherType(const T& v) > trFun) const
     {
         DATable< OtherType > other;
         for (auto i = mData.cbegin(), last = mData.cend(); i != last; ++i) {
@@ -320,6 +328,24 @@ public:
         }
         return other;
     }
+
+	/**
+	 * @brief 按照trFun遍历一列
+	 * @param trFun 如果返回true,继续迭代，如果返回false，就退出迭代
+	 * @return
+	 */
+	void transferColumn(IndexType col, std::function< bool(const T& v) > trFun) const
+	{
+		auto rowCnt = rowCount();
+		for (auto r = 0;r<rowCnt;++r) {
+			auto ite = mData.find(IndexPair(r,col));
+			if(ite!=mData.end()){
+				if(!trFun(ite->second)){
+					return;
+				}
+			}
+		}
+	}
 
     /**
      * @brief operator =
@@ -463,5 +489,6 @@ QDebug operator<<(QDebug debug, const DA::DATable< T >& t)
     }
     return (debug);
 }
+
 
 #endif  // DATABLE_H

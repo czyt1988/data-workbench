@@ -11,6 +11,7 @@
 #include <QIODevice>
 #include <QVector3D>
 #include <QVersionNumber>
+#include "da_qstring_util.hpp"
 class QDomDocument;
 namespace DA
 {
@@ -27,6 +28,8 @@ public:
 	virtual bool loadFromXml(const QDomElement* parentElement, const QVersionNumber& ver)                  = 0;
 
 public:
+	/// @defgroup qt类型 这是qt类型的xml保存
+	/// @{
 	// 标准保存—— QString
 	static QDomElement makeElement(const QString& v, const QString& tagName, QDomDocument* doc);
 	static bool loadElement(QString& p, const QDomElement* ele);
@@ -57,6 +60,46 @@ public:
 	// 标准保存—— QVariant
 	static QDomElement makeElement(const QVariant& v, const QString& tagName, QDomDocument* doc);
 	static bool loadElement(QVariant& p, const QDomElement* ele);
+	/// @}
+
+	/// @defgroup stl类型 这是针对stl类型的xml保存
+	/// @{
+	template< typename T >
+	QDomElement makeElement(const std::vector< T >& v, const QString& tagName, QDomDocument* doc)
+	{
+		auto ele = doc->createElement(tagName);
+		ele.setAttribute("class", QString("std::vector<%1>").arg(typeid(T).name()));
+		ele.setAttribute("size", v.size());
+		for (const auto& r : v) {
+			auto eleR     = doc->createElement("r");
+			auto textNode = doc->createTextNode(toQString(r));
+			eleR.appendChild(textNode);
+			ele.appendChild(eleR);
+		}
+		return ele;
+	}
+	template< typename T >
+	bool loadElement(std::vector< T >& v, const QDomElement* ele)
+	{
+		bool isok = false;
+		auto size = ele->attribute("size").toUInt(&isok);
+		if (!isok) {
+			return false;
+		}
+		v.resize(size);
+		auto cns = ele->childNodes();
+		for (int i = 0; i < cns.size(); ++i) {
+			auto rEle = cns.at(i).toElement();
+			if (rEle.tagName() != "r") {
+				continue;
+			}
+			typename std::vector< T >::value_type r = fromQString< typename std::vector< T >::value_type >(rEle.text());
+
+			v[ i ] = r;
+		}
+		return true;
+	}
+	///@}
 };
 
 /**
