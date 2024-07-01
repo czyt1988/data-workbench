@@ -21,23 +21,23 @@ class DAAbstractNodeGraphicsItem;
  */
 class DAGUI_API DAWorkFlowOperateWidget : public QWidget
 {
-    Q_OBJECT
+	Q_OBJECT
 public:
-    /**
-     * @brief DAWorkFlowOperateWidget窗口内部的action
-     */
-    enum InnerActions
-    {
-        ActionCopy = 0,
-        ActionCut,
-        ActionPaste,
-        ActionDelete,
-        ActionCancel,
-        ActionSelectAll,
-        ActionZoomIn,
-        ActionZoomOut,
-        ActionZoomFit
-    };
+	/**
+	 * @brief DAWorkFlowOperateWidget窗口内部的action
+	 */
+	enum InnerActions
+	{
+		ActionCopy = 0,
+		ActionCut,
+		ActionPaste,
+		ActionDelete,
+		ActionCancel,
+		ActionSelectAll,
+		ActionZoomIn,
+		ActionZoomOut,
+		ActionZoomFit
+	};
 
 public:
 	DAWorkFlowOperateWidget(QWidget* parent = nullptr);
@@ -52,10 +52,12 @@ public:
 	// 获取当前工作流的索引
 	int getCurrentWorkflowIndex() const;
 	void setCurrentWorkflow(int index);
+	DAWorkFlow* getCurrentWorkflow() const;
 	// 设置当前的工作流
 	void setCurrentWorkflowWidget(DAWorkFlowEditWidget* wf);
 	DAWorkFlowEditWidget* getCurrentWorkFlowWidget() const;
 	void setCurrentWorkflowName(const QString& name);
+	//
 	// 获取所有的工作流编辑窗口
 	QList< DAWorkFlowEditWidget* > getAllWorkFlowWidgets() const;
 	// 获取当前场景
@@ -97,12 +99,12 @@ public:
 	// 设置只允许一个工作流
 	bool isOnlyOneWorkflow() const;
 	void setOnlyOneWorkflow(bool v);
-    // 获取窗口内置的action，一般这个函数用来把action设置到工具栏或者菜单中
-    QAction* getInnerAction(InnerActions act);
+	// 获取窗口内置的action，一般这个函数用来把action设置到工具栏或者菜单中
+	QAction* getInnerAction(InnerActions act);
 public slots:
-    // 添加一个背景图
-    void addBackgroundPixmap(const QString& pixmapPath);
-    // 锁定背景图
+	// 添加一个背景图
+	void addBackgroundPixmap(const QString& pixmapPath);
+	// 锁定背景图
 	void setBackgroundPixmapLock(bool on);
 	// 设置字体
 	void setSelectTextFont(const QFont& f);
@@ -120,8 +122,8 @@ public slots:
 	void setCurrentWorkflowZoomIn();
 	// 设置当前工作流全部显示
 	void setCurrentWorkflowZoomOut();
-    // 全选
-    void setCurrentWorkflowSelectAll();
+	// 全选
+	void setCurrentWorkflowSelectAll();
 	// 运行工作流
 	void runCurrentWorkFlow();
 	// 终止工作流
@@ -132,10 +134,10 @@ public slots:
 	void cutCurrentSelectItems();
 	// 重剪切板粘贴
 	void pasteFromClipBoard();
-    // 删除当前的item
-    void removeCurrentSelectItems();
-    // 当前的wf执行取消动作
-    void cancelCurrent();
+	// 删除当前的item
+	void removeCurrentSelectItems();
+	// 当前的wf执行取消动作
+	void cancelCurrent();
 signals:
 
 	/**
@@ -218,12 +220,12 @@ private:
 	QAction* mActionCopy { nullptr };
 	QAction* mActionCut { nullptr };
 	QAction* mActionPaste { nullptr };
-    QAction* mActionDelete { nullptr };     ///< 删除选中
-    QAction* mActionCancel { nullptr };     ///< 取消动作
-    QAction* mActionSelectAll { nullptr };  ///< 全选
-    QAction* mActionZoomIn { nullptr };     ///< 放大
-    QAction* mActionZoomOut { nullptr };    ///< 缩小
-    QAction* mActionZoomFit { nullptr };    ///< 全部显示
+	QAction* mActionDelete { nullptr };     ///< 删除选中
+	QAction* mActionCancel { nullptr };     ///< 取消动作
+	QAction* mActionSelectAll { nullptr };  ///< 全选
+	QAction* mActionZoomIn { nullptr };     ///< 放大
+	QAction* mActionZoomOut { nullptr };    ///< 缩小
+	QAction* mActionZoomFit { nullptr };    ///< 全部显示
 };
 }  // namespace DA
 #endif  // DAWORKFLOWOPERATEWIDGET_H

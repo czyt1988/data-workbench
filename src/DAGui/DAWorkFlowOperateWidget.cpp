@@ -82,9 +82,9 @@ DAWorkFlowEditWidget* DAWorkFlowOperateWidget::appendWorkflow(const QString& nam
 	connect(scene, &DAWorkFlowGraphicsScene::selectionChanged, this, &DAWorkFlowOperateWidget::onSelectionChanged);
 	connect(wfe, &DAWorkFlowEditWidget::startExecute, this, [ this, wfe ]() { emit workflowStartExecute(wfe); });
 	connect(wfe,
-            &DAWorkFlowEditWidget::nodeExecuteFinished,
-            this,
-            [ this, wfe ](DAAbstractNode::SharedPointer n, bool state) { emit nodeExecuteFinished(wfe, n, state); });
+			&DAWorkFlowEditWidget::nodeExecuteFinished,
+			this,
+			[ this, wfe ](DAAbstractNode::SharedPointer n, bool state) { emit nodeExecuteFinished(wfe, n, state); });
 	connect(wfe, &DAWorkFlowEditWidget::finished, this, [ this, wfe ](bool s) { emit workflowFinished(wfe, s); });
 	ui->tabWidget->addTab(wfe, name);
 	// 把名字保存到DAWorkFlowEditWidget中，在DAProject保存的时候会用到
@@ -125,6 +125,18 @@ int DAWorkFlowOperateWidget::getCurrentWorkflowIndex() const
 void DAWorkFlowOperateWidget::setCurrentWorkflow(int index)
 {
     ui->tabWidget->setCurrentIndex(index);
+}
+
+/**
+ * @brief 获取当前的工作流
+ * @return
+ */
+DAWorkFlow* DAWorkFlowOperateWidget::getCurrentWorkflow() const
+{
+	if (auto w = getCurrentWorkFlowWidget()) {
+		return w->getWorkflow();
+	}
+	return nullptr;
 }
 
 /**
@@ -265,9 +277,9 @@ void DAWorkFlowOperateWidget::removeWorkflow(int index)
 		return;
 	}
 	QMessageBox::StandardButton btn = QMessageBox::question(this,
-                                                            tr("question"),  // 疑问
-                                                            tr("Confirm to delete workflow:%1")
-                                                                .arg(getWorkFlowWidgetName(index))  // 是否确认删除工作流:%1
+															tr("question"),  // 疑问
+															tr("Confirm to delete workflow:%1")
+																.arg(getWorkFlowWidgetName(index))  // 是否确认删除工作流:%1
 	);
 	if (btn != QMessageBox::Yes) {
 		return;
@@ -415,7 +427,7 @@ void DAWorkFlowOperateWidget::setCurrentWorkflowWholeView()
 		qWarning() << tr("Loss View");  // cn:缺少视图
 		return;
 	}
-    view->zoomFit();
+	view->zoomFit();
 }
 
 /**
@@ -531,7 +543,7 @@ void DAWorkFlowOperateWidget::pasteFromClipBoard()
 		qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
 		return;
 	}
-    w->pasteToViewCenter();
+	w->pasteToViewCenter();
 }
 
 /**

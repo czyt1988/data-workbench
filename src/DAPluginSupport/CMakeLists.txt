@@ -69,7 +69,6 @@ if(${DA_PROJECT_NAME}_FOUND)
     message(STATUS "  | |-include dir:${DAInterface_INCLUDE_DIR}")
 endif()
 
-
 target_link_libraries(${DA_LIB_NAME} PRIVATE
     ${DA_PROJECT_NAME}::DAUtils
     ${DA_PROJECT_NAME}::DAMessageHandler
@@ -81,6 +80,11 @@ target_link_libraries(${DA_LIB_NAME} PRIVATE
     ${DA_PROJECT_NAME}::DAGui
     ${DA_PROJECT_NAME}::DAInterface
 )
+
+
+# -------------link QtAdvancedDockingSystem--------------------------
+damacro_import_QtAdvancedDocking(${DA_LIB_NAME})
+
 
 ########################################################
 # Qt的moc
