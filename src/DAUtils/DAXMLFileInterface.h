@@ -2,6 +2,7 @@
 #define DAXMLFILEINTERFACE_H
 #include <QString>
 #include "DAUtilsAPI.h"
+// #include "DAStringUtil.h"
 #include <QPen>
 #include <QFont>
 #include <QBrush>
@@ -11,10 +12,11 @@
 #include <QIODevice>
 #include <QVector3D>
 #include <QVersionNumber>
-#include "da_qstring_util.hpp"
+#include "da_qstring_cast.h"
 class QDomDocument;
 namespace DA
 {
+
 /**
  * @brief 所有支持xml文件保存的类继承于它，从而提供saveToXml和loadFromXml接口
  */
@@ -64,43 +66,54 @@ public:
 
 	/// @defgroup stl类型 这是针对stl类型的xml保存
 	/// @{
-	template< typename T >
-	QDomElement makeElement(const std::vector< T >& v, const QString& tagName, QDomDocument* doc)
-	{
-		auto ele = doc->createElement(tagName);
-		ele.setAttribute("class", QString("std::vector<%1>").arg(typeid(T).name()));
-		ele.setAttribute("size", v.size());
-		for (const auto& r : v) {
-			auto eleR     = doc->createElement("r");
-			auto textNode = doc->createTextNode(toQString(r));
-			eleR.appendChild(textNode);
-			ele.appendChild(eleR);
-		}
-		return ele;
-	}
-	template< typename T >
-	bool loadElement(std::vector< T >& v, const QDomElement* ele)
-	{
-		bool isok = false;
-		auto size = ele->attribute("size").toUInt(&isok);
-		if (!isok) {
-			return false;
-		}
-		v.resize(size);
-		auto cns = ele->childNodes();
-		for (int i = 0; i < cns.size(); ++i) {
-			auto rEle = cns.at(i).toElement();
-			if (rEle.tagName() != "r") {
-				continue;
-			}
-			typename std::vector< T >::value_type r = fromQString< typename std::vector< T >::value_type >(rEle.text());
-
-			v[ i ] = r;
-		}
-		return true;
-	}
-	///@}
+    template< typename std_container_like >
+    static QDomElement makeElement(const std_container_like& v, const QString& tagName, QDomDocument* doc);
+    template< typename std_container_like >
+    static bool loadElement(std_container_like& v, const QDomElement* ele);
+    ///@}
 };
+
+template< typename std_container_like >
+QDomElement DAXMLFileInterface::makeElement(const std_container_like& v, const QString& tagName, QDomDocument* doc)
+{
+    // using T = std_container_like::value_type;
+    auto ele = doc->createElement(tagName);
+    ele.setAttribute("class", QString("%1").arg(typeid(std_container_like).name()));
+    ele.setAttribute("size", v.size());
+    for (const auto& r : v) {
+        auto eleR     = doc->createElement("r");
+        auto textNode = doc->createTextNode(toQString(r));
+        eleR.appendChild(textNode);
+        ele.appendChild(eleR);
+    }
+    return ele;
+}
+
+template< typename std_container_like >
+bool DAXMLFileInterface::loadElement(std_container_like& v, const QDomElement* ele)
+{
+    using T   = std_container_like::value_type;
+    bool isok = false;
+    auto size = ele->attribute("size").toUInt(&isok);
+    if (!isok) {
+        return false;
+    }
+    v.resize(size);
+    auto cns = ele->childNodes();
+    for (int i = 0; i < cns.size(); ++i) {
+        auto rEle = cns.at(i).toElement();
+        if (rEle.tagName() != "r") {
+            continue;
+        }
+        T r;
+        if (!fromQString(rEle.text(), r)) {
+            continue;
+        }
+
+        v[ i ] = r;
+    }
+    return true;
+}
 
 /**
  * @brief QVariant转为QString
@@ -127,7 +140,7 @@ DAUTILS_API QVariant stringToVariant(const QString& var, const QString& typeName
  * @param a
  * @return
  */
-DAUTILS_API QString doubleToString(const double a);
+DAUTILS_API QString doubleToString(double a);
 /**
  * @brief 把QVariant转换为Base64字符
  * @param var
@@ -193,7 +206,7 @@ DAUTILS_API Qt::AspectRatioMode stringToEnum(const QString& s, Qt::AspectRatioMo
 DAUTILS_API QString enumToString(Qt::TransformationMode e);
 // Qt::TransformationMode的枚举转换
 DAUTILS_API Qt::TransformationMode stringToEnum(const QString& s,
-												Qt::TransformationMode defaultEnum = Qt::FastTransformation);
+                                                Qt::TransformationMode defaultEnum = Qt::FastTransformation);
 
 // Qt::TransformationMode的枚举转换
 DAUTILS_API QString enumToString(QFont::Weight e);

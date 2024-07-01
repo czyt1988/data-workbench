@@ -206,8 +206,8 @@ QDomElement DAXMLFileInterface::makeElement(const QPointF& v, const QString& tag
 {
 	QDomElement ele = doc->createElement(tagName);
 	ele.setAttribute("class", "QPointF");
-	ele.setAttribute("x", doubleToString(v.x()));
-	ele.setAttribute("y", doubleToString(v.y()));
+    ele.setAttribute("x", doubleToString(v.x()));
+    ele.setAttribute("y", doubleToString(v.y()));
 	return ele;
 }
 
@@ -369,7 +369,7 @@ QDomElement DAXMLFileInterface::makeElement(const QFont& v, const QString& tagNa
 	fontEle.setAttribute("class", "QFont");
 	fontEle.setAttribute("bold", v.bold());
 	fontEle.setAttribute("italic", v.italic());
-	fontEle.setAttribute("pointSizeF", v.pointSizeF());  // 这里不需要用doubleToString
+    fontEle.setAttribute("pointSizeF", v.pointSizeF());  // 这里不需要用doubleToString
 	// QFont::Weight的枚举值在qt5和qt6不一致，为了避免直接传值，都需要转换为QFont::Weight
 #if QT_VERSION_MAJOR >= 6
 	fontEle.setAttribute("weight", enumToString(v.weight()));
@@ -408,9 +408,9 @@ QDomElement DAXMLFileInterface::makeElement(const QVector3D& v, const QString& t
 {
 	QDomElement ele = doc->createElement(tagName);
 	ele.setAttribute("class", "QVector3D");
-	ele.setAttribute("x", doubleToString(v.x()));
-	ele.setAttribute("y", doubleToString(v.y()));
-	ele.setAttribute("z", doubleToString(v.z()));
+    ele.setAttribute("x", doubleToString(v.x()));
+    ele.setAttribute("y", doubleToString(v.y()));
+    ele.setAttribute("z", doubleToString(v.z()));
 	return ele;
 }
 
@@ -966,7 +966,7 @@ QString DA::variantToString(const QVariant& var)
 
 	case QMetaType::Double: {
 		double d = var.toDouble();
-		return (doubleToString(d));  // 针对double，用非科学计数法会对小数丢失精度，因此采样g最合理，但小数点较多时需要适当处理
+        return (doubleToString(d));  // 针对double，用非科学计数法会对小数丢失精度，因此采样g最合理，但小数点较多时需要适当处理
 	}
 
 	case QMetaType::QEasingCurve: {
@@ -1009,8 +1009,8 @@ QString DA::variantToString(const QVariant& var)
 
 	case QMetaType::QLineF: {
 		QLineF d = var.toLineF();
-		return (QString("%1;%2;%3;%4")
-					.arg(doubleToString(d.x1()), doubleToString(d.y1()), doubleToString(d.x2()), doubleToString(d.y2())));
+        return (QString("%1;%2;%3;%4")
+                    .arg(doubleToString(d.x1()), doubleToString(d.y1()), doubleToString(d.x2()), doubleToString(d.y2())));
 	}
 
 	case QMetaType::QVariantList: {
@@ -1032,36 +1032,36 @@ QString DA::variantToString(const QVariant& var)
 	case QMetaType::QTransform: {
 		QTransform d = var.value< QTransform >();
 		return (QString("%1;%2;%3;%4;%5;%6;%7;%8;%9")
-					.arg(d.m11())
-					.arg(d.m12())
-					.arg(d.m13())
-					.arg(d.m21())
-					.arg(d.m22())
-					.arg(d.m23())
-					.arg(d.m31())
-					.arg(d.m32())
-					.arg(d.m33()));
+                    .arg(d.m11())
+                    .arg(d.m12())
+                    .arg(d.m13())
+                    .arg(d.m21())
+                    .arg(d.m22())
+                    .arg(d.m23())
+                    .arg(d.m31())
+                    .arg(d.m32())
+                    .arg(d.m33()));
 	}
 
 	case QMetaType::QMatrix4x4: {
 		QMatrix4x4 d = var.value< QMatrix4x4 >();
 		return (QString("%1;%2;%3;%4;%5;%6;%7;%8;%9;%10;%11;%12;%13;%14;%15;%16")
-					.arg(d(0, 0))
-					.arg(d(0, 1))
-					.arg(d(0, 2))
-					.arg(d(0, 3))
-					.arg(d(1, 0))
-					.arg(d(1, 1))
-					.arg(d(1, 2))
-					.arg(d(1, 3))
-					.arg(d(2, 0))
-					.arg(d(2, 1))
-					.arg(d(2, 2))
-					.arg(d(2, 3))
-					.arg(d(3, 0))
-					.arg(d(3, 1))
-					.arg(d(3, 2))
-					.arg(d(3, 3)));
+                    .arg(d(0, 0))
+                    .arg(d(0, 1))
+                    .arg(d(0, 2))
+                    .arg(d(0, 3))
+                    .arg(d(1, 0))
+                    .arg(d(1, 1))
+                    .arg(d(1, 2))
+                    .arg(d(1, 3))
+                    .arg(d(2, 0))
+                    .arg(d(2, 1))
+                    .arg(d(2, 2))
+                    .arg(d(2, 3))
+                    .arg(d(3, 0))
+                    .arg(d(3, 1))
+                    .arg(d(3, 2))
+                    .arg(d(3, 3)));
 	}
 
 	case QMetaType::QPalette: {
@@ -1083,7 +1083,7 @@ QString DA::variantToString(const QVariant& var)
 
 	case QMetaType::QPointF: {
 		QPointF d = var.toPointF();
-		return (QString("%1;%2").arg(doubleToString(d.x()), doubleToString(d.y())));
+        return (QString("%1;%2").arg(doubleToString(d.x()), doubleToString(d.y())));
 	}
 
 	case QMetaType::QPolygon: {
@@ -1103,11 +1103,11 @@ QString DA::variantToString(const QVariant& var)
 		QString str;
 		if (!d.isEmpty()) {
 			////用g,而不用f，f会导致小数位过多，并不适合协议传输，但针对double类型，默认是用f
-			str += QString("%1;%2").arg(doubleToString(d[ 0 ].x()), doubleToString(d[ 0 ].y()));
+            str += QString("%1;%2").arg(doubleToString(d[ 0 ].x()), doubleToString(d[ 0 ].y()));
 		}
 		// 用非科学计数法转换，避免精度的丢失
 		for (int i = 1; i < d.size(); ++i) {
-			str += QString("|%1;%2").arg(doubleToString(d[ i ].x()), doubleToString(d[ i ].y()));
+            str += QString("|%1;%2").arg(doubleToString(d[ i ].x()), doubleToString(d[ i ].y()));
 		}
 		return (str);
 	}
@@ -1123,9 +1123,9 @@ QString DA::variantToString(const QVariant& var)
 
 	case QMetaType::QRectF: {
 		QRectF d = var.toRectF();
-		return (
-			QString("%1;%2;%3;%4")
-				.arg(doubleToString(d.x()), doubleToString(d.y()), doubleToString(d.width()), doubleToString(d.height())));
+        return (
+            QString("%1;%2;%3;%4")
+                .arg(doubleToString(d.x()), doubleToString(d.y()), doubleToString(d.width()), doubleToString(d.height())));
 	}
 
 	case QMetaType::QRegularExpression: {
@@ -1143,7 +1143,7 @@ QString DA::variantToString(const QVariant& var)
 
 	case QMetaType::QSizeF: {
 		QSizeF d = var.toSizeF();
-		return (QString("%1;%2").arg(doubleToString(d.width()), doubleToString(d.height())));
+        return (QString("%1;%2").arg(doubleToString(d.width()), doubleToString(d.height())));
 	}
 
 	case QMetaType::QSizePolicy: {
@@ -1335,14 +1335,14 @@ QVariant DA::stringToVariant(const QString& var, const QString& typeName)
 			return (QVariant());
 		}
 		QTransform d(list[ 0 ].toDouble(),
-					 list[ 1 ].toDouble(),
-					 list[ 2 ].toDouble(),
-					 list[ 3 ].toDouble(),
-					 list[ 4 ].toDouble(),
-					 list[ 5 ].toDouble(),
-					 list[ 6 ].toDouble(),
-					 list[ 7 ].toDouble(),
-					 list[ 8 ].toDouble());
+                     list[ 1 ].toDouble(),
+                     list[ 2 ].toDouble(),
+                     list[ 3 ].toDouble(),
+                     list[ 4 ].toDouble(),
+                     list[ 5 ].toDouble(),
+                     list[ 6 ].toDouble(),
+                     list[ 7 ].toDouble(),
+                     list[ 8 ].toDouble());
 		return (d);
 	}
 
@@ -1352,21 +1352,21 @@ QVariant DA::stringToVariant(const QString& var, const QString& typeName)
 			return (QVariant());
 		}
 		QMatrix4x4 d(list[ 0 ].toDouble(),
-					 list[ 1 ].toDouble(),
-					 list[ 2 ].toDouble(),
-					 list[ 3 ].toDouble(),
-					 list[ 4 ].toDouble(),
-					 list[ 5 ].toDouble(),
-					 list[ 6 ].toDouble(),
-					 list[ 7 ].toDouble(),
-					 list[ 8 ].toDouble(),
-					 list[ 9 ].toDouble(),
-					 list[ 10 ].toDouble(),
-					 list[ 11 ].toDouble(),
-					 list[ 12 ].toDouble(),
-					 list[ 13 ].toDouble(),
-					 list[ 14 ].toDouble(),
-					 list[ 15 ].toDouble());
+                     list[ 1 ].toDouble(),
+                     list[ 2 ].toDouble(),
+                     list[ 3 ].toDouble(),
+                     list[ 4 ].toDouble(),
+                     list[ 5 ].toDouble(),
+                     list[ 6 ].toDouble(),
+                     list[ 7 ].toDouble(),
+                     list[ 8 ].toDouble(),
+                     list[ 9 ].toDouble(),
+                     list[ 10 ].toDouble(),
+                     list[ 11 ].toDouble(),
+                     list[ 12 ].toDouble(),
+                     list[ 13 ].toDouble(),
+                     list[ 14 ].toDouble(),
+                     list[ 15 ].toDouble());
 		return (d);
 	}
 
@@ -1542,57 +1542,7 @@ QVariant DA::stringToVariant(const QString& var, const QString& typeName)
 	return (QVariant());
 }
 
-QString DA::doubleToString(const double a)
+QString DA::doubleToString(double a)
 {
-	char f        = 'g';
-	int precision = 6;
-
-	if (a > 1e6) {
-		// 当数据非常大时，精度需要根据大小进行调整
-		int tmp = a / 1e6;
-		while (tmp / 10 != 0)  // && precision < 16 precision不大于16
-		{
-			tmp /= 10;
-			++precision;
-		}
-		// 精度还可以扩充，继续去处理小数位
-		// 取出double的小数位
-		double decimal = a - floor(a);
-		// 把小数转换为最大可处理的整形以便处理
-		tmp = decimal * pow(10, 9);
-		// 把整形的小位的0去除
-		while (tmp)  // precision不大于16
-		{
-			if (0 != tmp % 10) {
-				break;
-			}
-			tmp /= 10;
-		}
-		// 把整形剩余位取出，作为精度
-		while (tmp / 10 != 0)  // && precision < 16 precision不大于16
-		{
-			tmp /= 10;
-			++precision;
-		}
-	} else if ((a < 1e-6) && !qFuzzyCompare(a + 1, 1)) {
-		// 当数据非常小时
-		// 先把数据上调
-		int i     = 0;
-		double ta = a;
-		while (ta < 1 && i < 308) {
-			ta *= 10;
-			++i;  // 防止ta == 0
-		}
-		precision = 16;
-		int tmp   = ta * 1e16;
-		// 把整形的小位的0去除
-		while (tmp && precision > 6)  // precision不小于6
-		{
-			if (0 == tmp % 10) {
-				--precision;
-			}
-			tmp /= 10;
-		}
-	}
-	return (QString::number(a, f, precision));
+    return toQString< double >(a);
 }
