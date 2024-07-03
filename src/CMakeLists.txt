@@ -11,8 +11,11 @@ cmake_minimum_required(VERSION 3.5)
 # add_subdirectory(DAShared)
 add_subdirectory(DAUtils)
 
-add_subdirectory(DAAxOfficeWrapper)
-add_dependencies(DAAxOfficeWrapper DAUtils)
+if(WIN32)
+    # DAAxOfficeWrapper基于Axcontainer是windows独有的技术
+    add_subdirectory(DAAxOfficeWrapper)
+    add_dependencies(DAAxOfficeWrapper DAUtils)
+endif()
 
 add_subdirectory(DAMessageHandler)
 add_dependencies(DAMessageHandler DAUtils)
