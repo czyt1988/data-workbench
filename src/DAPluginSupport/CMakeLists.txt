@@ -53,39 +53,42 @@ target_link_libraries(${DA_LIB_NAME} PRIVATE
 # -------------link DAWorkBench--------------------------
 # DAPluginSupport
 # 指定DAWorkbench_DIR为工程的顶层BINARY_DIR，否则找不到${DA_PROJECT_NAME}
-find_package(${DA_PROJECT_NAME} COMPONENTS
-    DAUtils
-    DAMessageHandler
-    DAData
-    DACommonWidgets
-    DAGraphicsView
-    DAWorkFlow
-    DAFigure
-    DAGui
-    DAInterface
-)
-if(${DA_PROJECT_NAME}_FOUND)
-    message(STATUS "  |-link ${DA_PROJECT_NAME}::DAInterface")
-    message(STATUS "  | |-include dir:${DAInterface_INCLUDE_DIR}")
-endif()
-
-target_link_libraries(${DA_LIB_NAME} PRIVATE
-    ${DA_PROJECT_NAME}::DAUtils
-    ${DA_PROJECT_NAME}::DAMessageHandler
-    ${DA_PROJECT_NAME}::DAData
-    ${DA_PROJECT_NAME}::DACommonWidgets
-    ${DA_PROJECT_NAME}::DAGraphicsView
-    ${DA_PROJECT_NAME}::DAWorkFlow
-    ${DA_PROJECT_NAME}::DAFigure
-    ${DA_PROJECT_NAME}::DAGui
+# find_package(${DA_PROJECT_NAME} COMPONENTS
+#     DAUtils
+#     DAMessageHandler
+#     DAData
+#     DACommonWidgets
+#     DAGraphicsView
+#     DAWorkFlow
+#     DAFigure
+#     DAGui
+#     DAInterface
+# )
+# if(${DA_PROJECT_NAME}_FOUND)
+#     message(STATUS "  |-link ${DA_PROJECT_NAME}::DAInterface")
+#     message(STATUS "  | |-include dir:${DAInterface_INCLUDE_DIR}")
+# endif()
+# target_link_libraries(${DA_LIB_NAME} PUBLIC
+#     ${DA_PROJECT_NAME}::DAUtils
+#     ${DA_PROJECT_NAME}::DAMessageHandler
+#     ${DA_PROJECT_NAME}::DAData
+#     ${DA_PROJECT_NAME}::DACommonWidgets
+#     ${DA_PROJECT_NAME}::DAWorkFlow
+#     ${DA_PROJECT_NAME}::DAFigure
+#     ${DA_PROJECT_NAME}::DAGui
+#     ${DA_PROJECT_NAME}::DAInterface
+# )
+target_link_libraries(${DA_LIB_NAME} PUBLIC
     ${DA_PROJECT_NAME}::DAInterface
 )
-
 
 # -------------link QtAdvancedDockingSystem--------------------------
 damacro_import_QtAdvancedDocking(${DA_LIB_NAME})
 
-
+if(DA_ENABLE_PYTHON)
+    # -------------link python--------------------------
+    damacro_import_Python(${DA_LIB_NAME})
+endif()
 ########################################################
 # Qt的moc
 ########################################################

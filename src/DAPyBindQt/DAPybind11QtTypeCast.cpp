@@ -9,10 +9,6 @@
 #include "pandas/DAPyDataFrame.h"
 #include "pandas/DAPySeries.h"
 #include "pandas/DAPyIndex.h"
-#include "pybind11/stl.h"
-#include "pybind11/numpy.h"
-#include "pybind11/chrono.h"
-#include "pybind11/cast.h"
 namespace DA
 {
 namespace PY

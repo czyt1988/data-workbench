@@ -422,7 +422,11 @@ QVariant DAGraphicsStandardTextItem::itemChange(QGraphicsItem::GraphicsItemChang
 					//! 通过记录变更日期和内容进行时间和内容的压缩，但还是会每敲一个字就触发一次记录
 					//! 通过focusOutEvent，无法捕获到全局的变化，如全局的颜色设置等
 					connect(doc, &QTextDocument::contentsChanged, this, [ this, doc, daScene ]() {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 						QString hnew = doc->toHtml("utf-8");
+#else
+						QString hnew = doc->toHtml();
+#endif
 						if (mOldHtml.isEmpty()) {
 							mOldHtml = hnew;
 							return;

@@ -16,6 +16,8 @@
 #include "pybind11/numpy.h"
 #include "pybind11/cast.h"
 #include "pybind11/embed.h"
+#include "pybind11/stl.h"
+#include "pybind11/chrono.h"
 #define slots Q_SLOTS
 
 #endif  // DAPYBIND11INQT_H

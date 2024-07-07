@@ -71,10 +71,10 @@ if(${DA_PROJECT_NAME}_FOUND)
     message(STATUS "  | |-include dir:${DAGraphicsView_INCLUDE_DIR}")
 endif()
 
-target_link_libraries(${DA_LIB_NAME} PRIVATE
+target_link_libraries(${DA_LIB_NAME} PUBLIC
     ${DA_PROJECT_NAME}::DAUtils
 )
-target_link_libraries(${DA_LIB_NAME} PRIVATE
+target_link_libraries(${DA_LIB_NAME} PUBLIC
     ${DA_PROJECT_NAME}::DAGraphicsView
 )
 

@@ -51,19 +51,7 @@ target_link_libraries(${DA_LIB_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Widgets
     Qt${QT_VERSION_MAJOR}::Xml
 )
-# -------------link DAWorkBench--------------------------
-# DAGui
-# 指定DAWorkbench_DIR为工程的顶层BINARY_DIR，否则找不到${DA_PROJECT_NAME}
-find_package(${DA_PROJECT_NAME} COMPONENTS
-    DAUtils
-    DAMessageHandler
-    DAData
-    DACommonWidgets
-    DAGraphicsView
-    DAWorkFlow
-    DAFigure
-    DAGui
-)
+
 
 
 
@@ -79,30 +67,56 @@ damacro_import_qwt(${DA_LIB_NAME})
 # -------------link ctk--------------------------
 damacro_import_DALiteCtk(${DA_LIB_NAME})
 
-target_link_libraries(${DA_LIB_NAME} PRIVATE
-    ${DA_PROJECT_NAME}::DAUtils
-    ${DA_PROJECT_NAME}::DAMessageHandler
-    ${DA_PROJECT_NAME}::DAData
-    ${DA_PROJECT_NAME}::DACommonWidgets
-    ${DA_PROJECT_NAME}::DAGraphicsView
-    ${DA_PROJECT_NAME}::DAWorkFlow
-    ${DA_PROJECT_NAME}::DAFigure
-    ${DA_PROJECT_NAME}::DAGui
-)
 if(DA_ENABLE_PYTHON)
-    find_package(${DA_PROJECT_NAME} COMPONENTS
-        DAPyBindQt
-        DAPyScripts
-        DAPyCommonWidgets
-    )
-    target_link_libraries(${DA_LIB_NAME} PRIVATE
-        ${DA_PROJECT_NAME}::DAPyBindQt
-        ${DA_PROJECT_NAME}::DAPyScripts
-        ${DA_PROJECT_NAME}::DAPyCommonWidgets
-    )
     # -------------link python--------------------------
     damacro_import_Python(${DA_LIB_NAME})
 endif()
+# -------------link DAWorkBench--------------------------
+# DAGui
+# 指定DAWorkbench_DIR为工程的顶层BINARY_DIR，否则找不到${DA_PROJECT_NAME}
+# find_package(${DA_PROJECT_NAME} COMPONENTS
+#     DAUtils
+#     DAMessageHandler
+#     DAData
+#     DACommonWidgets
+#     DAGraphicsView
+#     DAWorkFlow
+#     DAFigure
+#     DAGui
+# )
+# target_link_libraries(${DA_LIB_NAME} PUBLIC
+#     ${DA_PROJECT_NAME}::DAUtils
+#     ${DA_PROJECT_NAME}::DAMessageHandler
+#     ${DA_PROJECT_NAME}::DAData
+#     ${DA_PROJECT_NAME}::DACommonWidgets
+#     ${DA_PROJECT_NAME}::DAGraphicsView
+#     ${DA_PROJECT_NAME}::DAWorkFlow
+#     ${DA_PROJECT_NAME}::DAFigure
+#     ${DA_PROJECT_NAME}::DAGui
+# )
+# python相关依赖
+# if(DA_ENABLE_PYTHON)
+#     find_package(${DA_PROJECT_NAME} COMPONENTS
+#         DAPyBindQt
+#         DAPyScripts
+#         DAPyCommonWidgets
+#     )
+#     target_link_libraries(${DA_LIB_NAME} PRIVATE
+#         ${DA_PROJECT_NAME}::DAPyBindQt
+#         ${DA_PROJECT_NAME}::DAPyScripts
+#         ${DA_PROJECT_NAME}::DAPyCommonWidgets
+#     )
+#     # -------------link python--------------------------
+#     damacro_import_Python(${DA_LIB_NAME})
+# endif()
+
+find_package(${DA_PROJECT_NAME} COMPONENTS
+    DAGui
+)
+target_link_libraries(${DA_LIB_NAME} PUBLIC
+    ${DA_PROJECT_NAME}::DAGui
+)
+
 ########################################################
 # Qt的moc
 ########################################################

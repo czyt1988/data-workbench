@@ -58,7 +58,7 @@ if(${DA_PROJECT_NAME}_FOUND)
     message(STATUS "  |-link ${DA_PROJECT_NAME}::DAPyBindQt")
     message(STATUS "  | |-include dir:${DAPyBindQt_INCLUDE_DIR}")
 endif()
-target_link_libraries(${DA_LIB_NAME} PRIVATE
+target_link_libraries(${DA_LIB_NAME} PUBLIC
     ${DA_PROJECT_NAME}::DAPyBindQt
 )
 ########################################################

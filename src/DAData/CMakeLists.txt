@@ -99,9 +99,11 @@ target_link_libraries(${DA_LIB_NAME} PRIVATE
 )
 
 if(DA_ENABLE_PYTHON)
-    find_package(${DA_PROJECT_NAME} COMPONENTS DAPyBindQt DAPyScripts)
+    find_package(${DA_PROJECT_NAME} COMPONENTS
+        DAPyBindQt
+        DAPyScripts)
     # DAData的头文件包含了DAPyBindQt库的内容，因此DAPyBindQt需要公开链接
-    target_link_libraries(${DA_LIB_NAME} PRIVATE
+    target_link_libraries(${DA_LIB_NAME} PUBLIC
         ${DA_PROJECT_NAME}::DAPyBindQt
         ${DA_PROJECT_NAME}::DAPyScripts
     )

@@ -66,53 +66,53 @@ public:
 
 	/// @defgroup stl类型 这是针对stl类型的xml保存
 	/// @{
-    template< typename std_container_like >
-    static QDomElement makeElement(const std_container_like& v, const QString& tagName, QDomDocument* doc);
-    template< typename std_container_like >
-    static bool loadElement(std_container_like& v, const QDomElement* ele);
-    ///@}
+	template< typename std_container_like >
+	static QDomElement makeElement(const std_container_like& v, const QString& tagName, QDomDocument* doc);
+	template< typename std_container_like >
+	static bool loadElement(std_container_like& v, const QDomElement* ele);
+	///@}
 };
 
 template< typename std_container_like >
 QDomElement DAXMLFileInterface::makeElement(const std_container_like& v, const QString& tagName, QDomDocument* doc)
 {
-    // using T = std_container_like::value_type;
-    auto ele = doc->createElement(tagName);
-    ele.setAttribute("class", QString("%1").arg(typeid(std_container_like).name()));
-    ele.setAttribute("size", v.size());
-    for (const auto& r : v) {
-        auto eleR     = doc->createElement("r");
-        auto textNode = doc->createTextNode(toQString(r));
-        eleR.appendChild(textNode);
-        ele.appendChild(eleR);
-    }
-    return ele;
+	// using T = std_container_like::value_type;
+	auto ele = doc->createElement(tagName);
+	ele.setAttribute("class", QString("%1").arg(typeid(std_container_like).name()));
+	ele.setAttribute("size", v.size());
+	for (const auto& r : v) {
+		auto eleR     = doc->createElement("r");
+		auto textNode = doc->createTextNode(toQString(r));
+		eleR.appendChild(textNode);
+		ele.appendChild(eleR);
+	}
+	return ele;
 }
 
 template< typename std_container_like >
 bool DAXMLFileInterface::loadElement(std_container_like& v, const QDomElement* ele)
 {
-    using T   = std_container_like::value_type;
-    bool isok = false;
-    auto size = ele->attribute("size").toUInt(&isok);
-    if (!isok) {
-        return false;
-    }
-    v.resize(size);
-    auto cns = ele->childNodes();
-    for (int i = 0; i < cns.size(); ++i) {
-        auto rEle = cns.at(i).toElement();
-        if (rEle.tagName() != "r") {
-            continue;
-        }
-        T r;
-        if (!fromQString(rEle.text(), r)) {
-            continue;
-        }
+	using T   = typename std_container_like::value_type;
+	bool isok = false;
+	auto size = ele->attribute("size").toUInt(&isok);
+	if (!isok) {
+		return false;
+	}
+	v.resize(size);
+	auto cns = ele->childNodes();
+	for (int i = 0; i < cns.size(); ++i) {
+		auto rEle = cns.at(i).toElement();
+		if (rEle.tagName() != "r") {
+			continue;
+		}
+		T r;
+		if (!fromQString(rEle.text(), r)) {
+			continue;
+		}
 
-        v[ i ] = r;
-    }
-    return true;
+		v[ i ] = r;
+	}
+	return true;
 }
 
 /**

@@ -286,53 +286,50 @@ endif()
 # -------------link DAWorkBench--------------------------
 # DAUtils
 # 指定DAWorkbench_DIR为工程的顶层BINARY_DIR，否则找不到${DA_PROJECT_NAME}
+# find_package(${DA_PROJECT_NAME} COMPONENTS
+#     DAUtils
+#     DAMessageHandler
+#     DAData
+#     DACommonWidgets
+#     DAGraphicsView
+#     DAWorkFlow
+#     DAFigure
+# )
+# target_link_libraries(${DA_LIB_NAME} PUBLIC
+#     ${DA_PROJECT_NAME}::DAUtils
+#     ${DA_PROJECT_NAME}::DAMessageHandler
+#     ${DA_PROJECT_NAME}::DAData
+#     ${DA_PROJECT_NAME}::DACommonWidgets
+#     ${DA_PROJECT_NAME}::DAGraphicsView
+#     ${DA_PROJECT_NAME}::DAWorkFlow
+#     ${DA_PROJECT_NAME}::DAFigure
+# )
 find_package(${DA_PROJECT_NAME} COMPONENTS
     DAUtils
     DAMessageHandler
     DAData
     DACommonWidgets
-    DAGraphicsView
     DAWorkFlow
     DAFigure
 )
-if(${DA_PROJECT_NAME}_FOUND)
-    message(STATUS "  |-link ${DA_PROJECT_NAME}::DAMessageHandler")
-    message(STATUS "  | |-include dir:${DAMessageHandler_INCLUDE_DIR}")
-    message(STATUS "  |-link ${DA_PROJECT_NAME}::DAData")
-    message(STATUS "  | |-include dir:${DAData_INCLUDE_DIR}")
-    message(STATUS "  |-link ${DA_PROJECT_NAME}::DACommonWidgets")
-    message(STATUS "  | |-include dir:${DACommonWidgets_INCLUDE_DIR}")
-    message(STATUS "  |-link ${DA_PROJECT_NAME}::DAWorkFlow")
-    message(STATUS "  | |-include dir:${DAWorkFlow_INCLUDE_DIR}")
-    message(STATUS "  |-link ${DA_PROJECT_NAME}::DAFigure")
-    message(STATUS "  | |-include dir:${DAFigure_INCLUDE_DIR}")
-endif()
-target_link_libraries(${DA_LIB_NAME} PRIVATE
+target_link_libraries(${DA_LIB_NAME} PUBLIC
     ${DA_PROJECT_NAME}::DAUtils
     ${DA_PROJECT_NAME}::DAMessageHandler
     ${DA_PROJECT_NAME}::DAData
     ${DA_PROJECT_NAME}::DACommonWidgets
-    ${DA_PROJECT_NAME}::DAGraphicsView
     ${DA_PROJECT_NAME}::DAWorkFlow
     ${DA_PROJECT_NAME}::DAFigure
 )
 
-
 if(DA_ENABLE_PYTHON)
     find_package(${DA_PROJECT_NAME} COMPONENTS
-        DAPyBindQt
-        DAPyScripts
         DAPyCommonWidgets
     )
     if(${DA_PROJECT_NAME}_FOUND)
-        message(STATUS "  |-link ${DA_PROJECT_NAME}::DAPyScripts")
-        message(STATUS "  | |-include dir:${DAPyScripts_INCLUDE_DIR}")
         message(STATUS "  |-link ${DA_PROJECT_NAME}::DAPyCommonWidgets")
         message(STATUS "  | |-include dir:${DAPyCommonWidgets_INCLUDE_DIR}")
     endif()
-    target_link_libraries(${DA_LIB_NAME} PRIVATE
-        ${DA_PROJECT_NAME}::DAPyBindQt
-        ${DA_PROJECT_NAME}::DAPyScripts
+    target_link_libraries(${DA_LIB_NAME} PUBLIC
         ${DA_PROJECT_NAME}::DAPyCommonWidgets
     )
 
