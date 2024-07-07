@@ -259,15 +259,14 @@ int DACsvStream::advplain(const QString& s, QString& fld, int i)
 	return j;
 }
 
-}  // end DA
-
 ///
 /// \brief endl
 /// \param s
 /// \return
 ///
-DA::DACsvStream& endl(DA::DACsvStream& s)
+DACsvStream& endl(DACsvStream& s)
 {
 	s.newLine();
 	return s;
 }
+}  // end DA

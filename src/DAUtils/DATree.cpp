@@ -11,13 +11,13 @@ namespace DA
 {
 class DATree::PrivateData
 {
-    DA_DECLARE_PUBLIC(DATree)
+	DA_DECLARE_PUBLIC(DATree)
 public:
-    PrivateData(DATree* c);
+	PrivateData(DATree* c);
 
 public:
-    std::unique_ptr< DATreeItem > mRootItem;  ///< 树上有个隐藏的顶层item
-    QMap< QString, QVariant > mProperty;      ///< 记录tree的属性
+	std::unique_ptr< DATreeItem > mRootItem;  ///< 树上有个隐藏的顶层item
+	QMap< QString, QVariant > mProperty;      ///< 记录tree的属性
 };
 
 QJsonObject write_item_to_json(DATreeItem* item);
@@ -36,13 +36,13 @@ DATree::PrivateData::PrivateData(DATree* c) : q_ptr(c)
 
 DATree::DATree() : DA_PIMPL_CONSTRUCT
 {
-    d_ptr->mRootItem.reset(new DATreeItem());
-    d_ptr->mRootItem->setTree(this);
+	d_ptr->mRootItem.reset(new DATreeItem());
+	d_ptr->mRootItem->setTree(this);
 }
 
 DATree::DATree(const DATree& c) : d_ptr(new DATree::PrivateData(this))
 {
-    *this = c;
+	*this = c;
 }
 
 DATree::~DATree()
@@ -56,21 +56,21 @@ DATree::~DATree()
  */
 DATree& DATree::operator=(const DATree& tree)
 {
-    clear();
-    QList< DATreeItem* > items = tree.getItems();
-    const int c                = items.size();
-    for (int i = 0; i < c; ++i) {
-        DATreeItem* item = new DATreeItem();
-        *item            = *(items[ c ]);
-        appendItem(item);
-    }
-    return *this;
+	clear();
+	QList< DATreeItem* > items = tree.getItems();
+	const int c                = items.size();
+	for (int i = 0; i < c; ++i) {
+		DATreeItem* item = new DATreeItem();
+		*item            = *(items[ c ]);
+		appendItem(item);
+	}
+	return *this;
 }
 
 void DATree::clear()
 {
-    d_ptr->mRootItem.reset();
-    d_ptr->mProperty.clear();  // 属性清除
+	d_ptr->mRootItem.reset();
+	d_ptr->mProperty.clear();  // 属性清除
 }
 /**
  * @brief 获取子节点的个数
@@ -104,8 +104,8 @@ QList< DATreeItem* > DATree::getItems() const
  */
 void DATree::appendItem(DATreeItem* item)
 {
-    // 会自动设置树指针
-    d_ptr->mRootItem->appendChild(item);
+	// 会自动设置树指针
+	d_ptr->mRootItem->appendChild(item);
 }
 /**
  * @brief 插入子条目
@@ -114,8 +114,8 @@ void DATree::appendItem(DATreeItem* item)
  */
 void DATree::insertItem(DATreeItem* item, int row)
 {
-    // 会自动设置树指针
-    d_ptr->mRootItem->insertChild(item, row);
+	// 会自动设置树指针
+	d_ptr->mRootItem->insertChild(item, row);
 }
 /**
  * @brief 判断是否存在子节点
@@ -132,8 +132,8 @@ bool DATree::haveItem(DATreeItem* item) const
  */
 void DATree::takeItem(DATreeItem* item)
 {
-    // 会自动设置树指针为空
-    d_ptr->mRootItem->takeChild(item);
+	// 会自动设置树指针为空
+	d_ptr->mRootItem->takeChild(item);
 }
 /**
  * @brief 根据索引把item返回，同时解除satree的关系
@@ -141,8 +141,8 @@ void DATree::takeItem(DATreeItem* item)
  */
 DATreeItem* DATree::takeItemByIndex(int row)
 {
-    // 会自动设置树指针为空
-    return d_ptr->mRootItem->takeChild(row);
+	// 会自动设置树指针为空
+	return d_ptr->mRootItem->takeChild(row);
 }
 /**
  * @brief 返回item对应的树层级
@@ -230,10 +230,10 @@ bool DATree::isRootItem(const DATreeItem* item) const
  */
 QList< QString > DATree::getChildItemNames(const DATreeItem* parent) const
 {
-    if (nullptr == parent) {
-        return invisibleRootItem()->getChildItemNames();
-    }
-    return parent->getChildItemNames();
+	if (nullptr == parent) {
+		return invisibleRootItem()->getChildItemNames();
+	}
+	return parent->getChildItemNames();
 }
 
 /**
@@ -241,115 +241,115 @@ QList< QString > DATree::getChildItemNames(const DATreeItem* parent) const
  * @param tree tree指针
  * @return
  */
-QString toJson(const DA::DATree* tree)
+QString toJson(const DATree* tree)
 {
-    QList< DATreeItem* > items = tree->getItems();
-    const auto c               = items.size();
-    QJsonArray mainJTree;
-    for (auto i = 0; i < c; ++i) {
-        DATreeItem* item = items[ i ];
-        mainJTree.append(write_item_to_json(item));
-    }
-    QJsonObject propobj;
-    QList< QString > props = tree->getTreePropertyNames();
-    for (const QString& k : props) {
-        propobj.insert(k, QJsonValue::fromVariant(tree->getTreeProperty(k)));
-    }
-    QJsonObject mainobj;
-    mainobj.insert("prop", propobj);
-    mainobj.insert("item", mainJTree);
-    QJsonDocument json(mainobj);
-    return json.toJson();
+	QList< DATreeItem* > items = tree->getItems();
+	const auto c               = items.size();
+	QJsonArray mainJTree;
+	for (auto i = 0; i < c; ++i) {
+		DATreeItem* item = items[ i ];
+		mainJTree.append(write_item_to_json(item));
+	}
+	QJsonObject propobj;
+	QList< QString > props = tree->getTreePropertyNames();
+	for (const QString& k : props) {
+		propobj.insert(k, QJsonValue::fromVariant(tree->getTreeProperty(k)));
+	}
+	QJsonObject mainobj;
+	mainobj.insert("prop", propobj);
+	mainobj.insert("item", mainJTree);
+	QJsonDocument json(mainobj);
+	return json.toJson();
 }
 
 QJsonObject write_item_to_json(DATreeItem* item)
 {
-    QJsonObject itemObj;
-    itemObj.insert("name", item->getName());
-    QIcon icon = item->getIcon();
-    if (!icon.isNull()) {
-        QByteArray byte;
-        QDataStream st(&byte, QIODevice::ReadWrite);
-        st << icon;
-        itemObj.insert("icon", QString(byte.toBase64()));
-    }
-    const auto c = item->getPropertyCount();
-    if (c > 0) {
-        QJsonObject propObj;
-        for (auto i = 0; i < c; ++i) {
-            int id;
-            QVariant var;
-            item->property(i, id, var);
-            propObj.insert(QString::number(id), QJsonValue::fromVariant(var));
-        }
-        itemObj.insert("porperty", propObj);
-    }
-    const auto cc = item->childItemCount();
-    if (cc > 0) {
-        QJsonArray jArrVal;
-        for (auto i = 0; i < cc; ++i) {
-            QJsonObject cj = write_item_to_json(item->childItem(i));
-            jArrVal.append(cj);
-        }
-        itemObj.insert("childItems", jArrVal);
-    }
-    return itemObj;
+	QJsonObject itemObj;
+	itemObj.insert("name", item->getName());
+	QIcon icon = item->getIcon();
+	if (!icon.isNull()) {
+		QByteArray byte;
+		QDataStream st(&byte, QIODevice::ReadWrite);
+		st << icon;
+		itemObj.insert("icon", QString(byte.toBase64()));
+	}
+	const auto c = item->getPropertyCount();
+	if (c > 0) {
+		QJsonObject propObj;
+		for (auto i = 0; i < c; ++i) {
+			int id;
+			QVariant var;
+			item->property(i, id, var);
+			propObj.insert(QString::number(id), QJsonValue::fromVariant(var));
+		}
+		itemObj.insert("porperty", propObj);
+	}
+	const auto cc = item->childItemCount();
+	if (cc > 0) {
+		QJsonArray jArrVal;
+		for (auto i = 0; i < cc; ++i) {
+			QJsonObject cj = write_item_to_json(item->childItem(i));
+			jArrVal.append(cj);
+		}
+		itemObj.insert("childItems", jArrVal);
+	}
+	return itemObj;
 }
 
 QJsonObject write_property_to_json(QMap< QString, QVariant >* prop)
 {
-    QJsonObject objprop;
-    for (auto i = prop->begin(); i != prop->end(); ++i) {
-        if (i.value().isValid()) {
-            objprop[ i.key() ] = QJsonValue::fromVariant(i.value());
-        }
-    }
-    return objprop;
+	QJsonObject objprop;
+	for (auto i = prop->begin(); i != prop->end(); ++i) {
+		if (i.value().isValid()) {
+			objprop[ i.key() ] = QJsonValue::fromVariant(i.value());
+		}
+	}
+	return objprop;
 }
 
 bool read_item_from_json(const QJsonObject& json, DATreeItem* item)
 {
-    auto i = json.find("name");
-    if (i != json.end()) {
-        item->setName(i.value().toString());
-    }
-    i = json.find("icon");
-    if (i != json.end()) {
-        QIcon icon;
-        QByteArray byte = QByteArray::fromBase64(i.value().toString().toLocal8Bit());
-        QDataStream st(&byte, QIODevice::ReadWrite);
-        st >> icon;
-        if (!icon.isNull())
-            item->setIcon(icon);
-    }
-    i = json.find("porperty");
-    if (i != json.end()) {
-        if (i.value().isObject()) {
-            QJsonObject propObj = i.value().toObject();
-            for (auto oi = propObj.begin(); oi != propObj.end(); ++oi) {
-                bool isKeyOk = false;
-                int propID   = oi.key().toInt(&isKeyOk);
-                if (!isKeyOk)
-                    continue;
-                QVariant var = oi.value().toVariant();
-                item->setProperty(propID, var);
-            }
-        }
-    }
-    i = json.find("childItems");
-    if (i != json.end()) {
-        // 读取子节点
-        if (i.value().isArray()) {
-            QJsonArray jArrVal = i.value().toArray();
-            for (auto i = jArrVal.begin(); i != jArrVal.end(); ++i) {
-                std::unique_ptr< DATreeItem > childitem(new DATreeItem());
-                if (read_item_from_json((*i).toObject(), childitem.get())) {
-                    item->appendChild(childitem.release());
-                }
-            }
-        }
-    }
-    return true;
+	auto i = json.find("name");
+	if (i != json.end()) {
+		item->setName(i.value().toString());
+	}
+	i = json.find("icon");
+	if (i != json.end()) {
+		QIcon icon;
+		QByteArray byte = QByteArray::fromBase64(i.value().toString().toLocal8Bit());
+		QDataStream st(&byte, QIODevice::ReadWrite);
+		st >> icon;
+		if (!icon.isNull())
+			item->setIcon(icon);
+	}
+	i = json.find("porperty");
+	if (i != json.end()) {
+		if (i.value().isObject()) {
+			QJsonObject propObj = i.value().toObject();
+			for (auto oi = propObj.begin(); oi != propObj.end(); ++oi) {
+				bool isKeyOk = false;
+				int propID   = oi.key().toInt(&isKeyOk);
+				if (!isKeyOk)
+					continue;
+				QVariant var = oi.value().toVariant();
+				item->setProperty(propID, var);
+			}
+		}
+	}
+	i = json.find("childItems");
+	if (i != json.end()) {
+		// 读取子节点
+		if (i.value().isArray()) {
+			QJsonArray jArrVal = i.value().toArray();
+			for (auto i = jArrVal.begin(); i != jArrVal.end(); ++i) {
+				std::unique_ptr< DATreeItem > childitem(new DATreeItem());
+				if (read_item_from_json((*i).toObject(), childitem.get())) {
+					item->appendChild(childitem.release());
+				}
+			}
+		}
+	}
+	return true;
 }
 
 /**
@@ -358,40 +358,40 @@ bool read_item_from_json(const QJsonObject& json, DATreeItem* item)
  * @param tree 待修改的tree
  * @return 如果转换成功返回true
  */
-bool fromJson(const QString& json, DA::DATree* tree)
+bool fromJson(const QString& json, DATree* tree)
 {
-    QJsonParseError error;
-    QJsonDocument jsonDocument = QJsonDocument::fromJson(json.toUtf8(), &error);
-    if (!jsonDocument.isObject()) {
-        return false;
-    }
-    QJsonObject mainobj = jsonDocument.object();
-    QJsonObject propobj = mainobj.value("prop").toObject();
-    QJsonArray jsonArr  = mainobj.value("item").toArray();
+	QJsonParseError error;
+	QJsonDocument jsonDocument = QJsonDocument::fromJson(json.toUtf8(), &error);
+	if (!jsonDocument.isObject()) {
+		return false;
+	}
+	QJsonObject mainobj = jsonDocument.object();
+	QJsonObject propobj = mainobj.value("prop").toObject();
+	QJsonArray jsonArr  = mainobj.value("item").toArray();
 
-    // 解析属性
-    for (auto i = propobj.begin(); i != propobj.end(); ++i) {
-        tree->setTreeProperty(i.key(), i.value().toVariant());
-    }
+	// 解析属性
+	for (auto i = propobj.begin(); i != propobj.end(); ++i) {
+		tree->setTreeProperty(i.key(), i.value().toVariant());
+	}
 
-    // 解析值
-    const auto size = jsonArr.size();
-    for (int i = 0; i < size; ++i) {
-        std::unique_ptr< DATreeItem > item(new DATreeItem());
-        QJsonValue v = jsonArr[ i ];
-        if (read_item_from_json(v.toObject(), item.get())) {
-            tree->appendItem(item.release());
-        }
-    }
-    return true;
+	// 解析值
+	const auto size = jsonArr.size();
+	for (int i = 0; i < size; ++i) {
+		std::unique_ptr< DATreeItem > item(new DATreeItem());
+		QJsonValue v = jsonArr[ i ];
+		if (read_item_from_json(v.toObject(), item.get())) {
+			tree->appendItem(item.release());
+		}
+	}
+	return true;
 }
-}  // end DA
 
-QDebug& DA::operator<<(QDebug& dbg, const DA::DATree& tree)
+QDebug& operator<<(QDebug& dbg, const DATree& tree)
 {
-    QList< DA::DATreeItem* > items = tree.getItems();
-    for (const DA::DATreeItem* i : qAsConst(items)) {
-        dbg << *(i);
-    }
-    return dbg;
+	QList< DATreeItem* > items = tree.getItems();
+	for (const DATreeItem* i : qAsConst(items)) {
+		dbg << *(i);
+	}
+	return dbg;
 }
+}  // end namespace DA

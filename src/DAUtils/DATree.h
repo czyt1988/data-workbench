@@ -75,13 +75,14 @@ public:
 	QList< QString > getChildItemNames(const DATreeItem* parent = nullptr) const;
 };
 
-DAUTILS_API QDebug& operator<<(QDebug& dbg, const DA::DATree& tree);
+DAUTILS_API QDebug& operator<<(QDebug& dbg, const DATree& tree);
 // 把satree转换为json string
-DAUTILS_API QString toJson(const DA::DATree* tree);
+DAUTILS_API QString toJson(const DATree* tree);
 
 // 从标准json sting转换到tree
-DAUTILS_API bool fromJson(const QString& json, DA::DATree* tree);
-}  // end of DA
+DAUTILS_API bool fromJson(const QString& json, DATree* tree);
+
+}  // end namespace DA
 Q_DECLARE_METATYPE(DA::DATree)
 
 // debug输出

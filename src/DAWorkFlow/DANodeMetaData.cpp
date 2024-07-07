@@ -26,7 +26,7 @@ DANodeMetaData::DANodeMetaData(const QString& prototype, const QString& name, co
 
 QString DANodeMetaData::getNodePrototype() const
 {
-    return (mPrototype);
+	return (mPrototype);
 }
 
 void DANodeMetaData::setNodePrototype(const QString& prototype)
@@ -150,43 +150,43 @@ QString DANodeMetaData::fullName(const DANodeMetaData& m)
 #if QT_VERSION_MAJOR >= 6
 std::size_t qHash(const DANodeMetaData& key, std::size_t seed)
 {
-    return qHash(DANodeMetaData::fullName(key), seed);
+	return qHash(DANodeMetaData::fullName(key), seed);
 }
 #else
 uint qHash(const DANodeMetaData& key, uint seed)
 {
-    return qHash(DANodeMetaData::fullName(key), seed);
+	return qHash(DANodeMetaData::fullName(key), seed);
 }
 #endif
 
+QDataStream& operator<<(QDataStream& out, const DANodeMetaData& b)
+{
+	out << b.getNodePrototype() << b.getNodeName() << b.getGroup() << b.getNodeTooltip() << b.getIcon();
+	return out;
+}
+
+QDataStream& operator>>(QDataStream& in, DANodeMetaData& b)
+{
+	QString s;
+	in >> s;
+	b.setNodePrototype(s);
+	in >> s;
+	b.setNodeName(s);
+	in >> s;
+	b.setGroup(s);
+	in >> s;
+	b.setNodeTooltip(s);
+	QIcon ic;
+	in >> ic;
+	b.setIcon(ic);
+	return in;
+}
+
+QDebug operator<<(QDebug debug, const DANodeMetaData& c)
+{
+	QDebugStateSaver saver(debug);
+	debug.nospace() << "[" << c.getGroup() << "/" << c.getNodePrototype() << "]" << c.getNodeName();
+	return debug;
+}
+
 }  // end of namespace DA
-
-QDataStream& operator<<(QDataStream& out, const DA::DANodeMetaData& b)
-{
-    out << b.getNodePrototype() << b.getNodeName() << b.getGroup() << b.getNodeTooltip() << b.getIcon();
-    return out;
-}
-
-QDataStream& operator>>(QDataStream& in, DA::DANodeMetaData& b)
-{
-    QString s;
-    in >> s;
-    b.setNodePrototype(s);
-    in >> s;
-    b.setNodeName(s);
-    in >> s;
-    b.setGroup(s);
-    in >> s;
-    b.setNodeTooltip(s);
-    QIcon ic;
-    in >> ic;
-    b.setIcon(ic);
-    return in;
-}
-
-QDebug operator<<(QDebug debug, const DA::DANodeMetaData& c)
-{
-    QDebugStateSaver saver(debug);
-    debug.nospace() << "[" << c.getGroup() << "/" << c.getNodePrototype() << "]" << c.getNodeName();
-    return debug;
-}

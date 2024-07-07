@@ -74,7 +74,7 @@ DAAbstractNode::PrivateData::LinkData::LinkData(const DAAbstractNode::PrivateDat
                                                 const QString& outKey,
                                                 const DAAbstractNode::PrivateData::LinkData::NodeSharedPtr& inNode,
                                                 const QString& inKey)
-    : outputNode(outNode), outputKey(outKey), inputNode(inNode), inputKey(inKey)
+    : inputNode(inNode), inputKey(inKey), outputNode(outNode), outputKey(outKey)
 {
 }
 

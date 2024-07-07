@@ -231,3 +231,37 @@ int DAAbstractNode::getInputNodesCount() const
 - 基类如果用于继承，析构函数必须使用`virtual`修饰符
 - 库导出类禁止继承于库的模板类，例如`dllexport class xx : public QList<QColor>`，这种情况在一些编译器会导致符号冲突，且如果出现虚函数，基类析构函数没有虚函数会导致内存泄漏，如果要继承模板类，此类也应该为模板类
 
+
+# 语法规范性条例
+
+下面这些内容是涉及一些语法相关的规范和条例，通用规范条例常见effective cpp和effective modern cpp
+
+## 在命名空间中的类进行操作符重载时，重载函数也应该定义在该命名空间中
+
+提供使用ADL发现操作符的能力,编译器首先在当前作用域以及包含该函数或操作符的作用域中查找
+
+如下是**正确**的做法：
+
+```cpp
+namespace DA
+{
+class DANodeLinkPoint
+{
+}
+
+bool operator==(const DANodeLinkPoint& a, const DANodeLinkPoint& b);
+}// end namespace DA
+```
+
+如下是**错误**的做法：
+
+```cpp
+namespace DA
+{
+class DANodeLinkPoint
+{
+}
+}// end namespace DA
+//操作符重载不应该定义在命名空间以外
+bool operator==(const DA::DANodeLinkPoint& a, const DA::DANodeLinkPoint& b);
+```

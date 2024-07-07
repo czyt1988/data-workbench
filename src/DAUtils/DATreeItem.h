@@ -111,7 +111,7 @@ public:
     void setTree(DATree* tree);
 };
 
-DAUTILS_API QDebug& operator<<(QDebug& dbg, const DA::DATreeItem& item);
+DAUTILS_API QDebug& operator<<(QDebug& dbg, const DATreeItem& item);
 
 }  // end of DA
 

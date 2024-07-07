@@ -3,6 +3,7 @@
 // stl
 #include <functional>
 // qt
+#include <QDebug>
 #include <QtGlobal>
 #include <QObject>
 #include <QMessageBox>

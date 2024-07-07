@@ -378,10 +378,8 @@ QColor DAColorTheme::interpolateColor(const QColor& color1, const QColor& color2
 	return QColor(r, g, b);
 }
 
-}  // end DA
-
 // QDebug的打印支持
-QDebug operator<<(QDebug debug, const DA::DAColorTheme& th)
+QDebug operator<<(QDebug debug, const DAColorTheme& th)
 {
 	QDebugStateSaver saver(debug);
 	Q_UNUSED(saver);
@@ -391,3 +389,4 @@ QDebug operator<<(QDebug debug, const DA::DAColorTheme& th)
 	}
 	return debug;
 }
+}  // end DA
