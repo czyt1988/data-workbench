@@ -49,52 +49,52 @@ bool parsingArguments(const QStringList& args);
  */
 int main(int argc, char* argv[])
 {
-    // 程序路径捕获
-    QFileInfo fi(argv[ 0 ]);
-    // 进行dump捕获
-    DA::DADumpCapture::initDump([]() -> QString { return appPreposeDump(); });
-    //
-    QString logfilePath = QDir::toNativeSeparators(fi.absolutePath() + "/log/da_log.log");
-    // 注册旋转文件消息捕获
-    DA::daRegisterRotatingMessageHandler(logfilePath);
-    // DA::daRegisterConsolMessageHandler();
-    for (int i = 0; i < argc; ++i) {
-        qDebug() << "argv[" << i << "]" << argv[ i ];
-    }
-    // 高清屏的适配
-    enableHDPIScaling();
+	// 程序路径捕获
+	QFileInfo fi(argv[ 0 ]);
+	// 进行dump捕获
+	DA::DADumpCapture::initDump([]() -> QString { return appPreposeDump(); });
+	//
+	QString logfilePath = QDir::toNativeSeparators(fi.absolutePath() + "/log/da_log.log");
+	// 注册旋转文件消息捕获
+	DA::daRegisterRotatingMessageHandler(logfilePath);
+	// DA::daRegisterConsolMessageHandler();
+	for (int i = 0; i < argc; ++i) {
+		qDebug() << "argv[" << i << "]" << argv[ i ];
+	}
+	// 高清屏的适配
+	enableHDPIScaling();
 
-    // 启动app
-    QApplication app(argc, argv);
+	// 启动app
+	QApplication app(argc, argv);
 
-    // 安装翻译
-    DA::DATranslatorManeger datr;
-    datr.installAllTranslator();
+	// 安装翻译
+	DA::DATranslatorManeger datr;
+	datr.installAllTranslator();
 
-    // 解析命令行参数
-    QStringList appArguments = app.arguments();
-    if (!parsingArguments(appArguments)) {
-        return 0;
-    }
+	// 解析命令行参数
+	QStringList appArguments = app.arguments();
+	if (!parsingArguments(appArguments)) {
+		return 0;
+	}
 #if DA_ENABLE_PYTHON
-    // 注册元对象
-    DA::PY::registerMetaType();
+	// 注册元对象
+	DA::PY::registerMetaType();
 #endif
-    setAppFont();
-    DA::DAAppCore& core = DA::DAAppCore::getInstance();
-    // 初始化python环境
-    if (!core.initialized()) {
-        qCritical() << QObject::tr("Kernel initialization failed");  // cn:内核初始化失败
-        return -1;
-    }
+	setAppFont();
+	DA::DAAppCore& core = DA::DAAppCore::getInstance();
+	// 初始化python环境
+	if (!core.initialized()) {
+		qCritical() << QObject::tr("Kernel initialization failed");  // cn:内核初始化失败
+		return -1;
+	}
 
-    // TODO 此处进行一些核心的初始化操作
-    DA::AppMainWindow w;
+	// TODO 此处进行一些核心的初始化操作
+	DA::AppMainWindow w;
 
-    w.show();
-    int r = app.exec();
-    DA::daUnregisterMessageHandler();
-    return r;
+	w.show();
+	int r = app.exec();
+	DA::daUnregisterMessageHandler();
+	return r;
 }
 
 /**
@@ -103,16 +103,16 @@ int main(int argc, char* argv[])
  */
 QString daHelp()
 {
-    QString str = QObject::tr(""
-                              "%1(%2) build %3\n"  // DAWorkbench(0.0.2) build 240215
-                              "params:\n"
-                              "--version : version information\n"    //--version :版本信息
-                              "--describe : detailed information\n"  //--describe :详细信息
-                              )
-                      .arg(DA_PROJECT_NAME)
-                      .arg(DA_VERSION)
-                      .arg(DA_COMPILE_DATETIME);
-    return str;
+	QString str = QObject::tr(""
+							  "%1(%2) build %3\n"  // DAWorkbench(0.0.2) build 240215
+							  "params:\n"
+							  "--version : version information\n"    //--version :版本信息
+							  "--describe : detailed information\n"  //--describe :详细信息
+							  )
+					  .arg(DA_PROJECT_NAME)
+					  .arg(DA_VERSION)
+					  .arg(DA_COMPILE_DATETIME);
+	return str;
 }
 
 /**
@@ -130,11 +130,11 @@ QString daVersionInfo()
  */
 QString daDescribe()
 {
-    QString descibe = QString("version:%1,compile datetime:%2,enable python:%3")
-                          .arg(DA_VERSION)
-                          .arg(DA_COMPILE_DATETIME)
-                          .arg(DA_ENABLE_PYTHON);
-    return descibe;
+	QString descibe = QString("version:%1,compile datetime:%2,enable python:%3")
+						  .arg(DA_VERSION)
+						  .arg(DA_COMPILE_DATETIME)
+						  .arg(DA_ENABLE_PYTHON);
+	return descibe;
 }
 
 /**
@@ -144,20 +144,20 @@ QString daDescribe()
  */
 bool parsingArguments(const QStringList& args)
 {
-    if (args.contains("--help")) {
-        QTextStream st(stdout);
-        st << daHelp() << Qt::endl;
-        return false;
-    } else if (args.contains("--version")) {
-        QTextStream st(stdout);
-        st << daVersionInfo() << Qt::endl;
-        return false;
-    } else if (args.contains("--describe")) {
-        QTextStream st(stdout);
-        st << daDescribe() << Qt::endl;
-        return false;
-    }
-    return true;
+	if (args.contains("--help")) {
+		QTextStream st(stdout);
+		st << daHelp() << Qt::endl;
+		return false;
+	} else if (args.contains("--version")) {
+		QTextStream st(stdout);
+		st << daVersionInfo() << Qt::endl;
+		return false;
+	} else if (args.contains("--describe")) {
+		QTextStream st(stdout);
+		st << daDescribe() << Qt::endl;
+		return false;
+	}
+	return true;
 }
 
 /**
@@ -173,9 +173,11 @@ void enableHDPIScaling()
  */
 void setAppFont()
 {
-    QFont font = QApplication::font();
-    font.setFamily(QStringLiteral(u"微软雅黑"));
-    QApplication::setFont(font);
+#ifdef Q_OS_WIN
+	QFont font = QApplication::font();
+	font.setFamily(QStringLiteral(u"微软雅黑"));
+	QApplication::setFont(font);
+#endif
 }
 
 /**
@@ -186,28 +188,28 @@ void setAppFont()
  */
 QString appPreposeDump()
 {
-    QString dumpFileDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    if (dumpFileDir.isEmpty()) {
-        dumpFileDir = QApplication::applicationDirPath();
-    }
-    dumpFileDir = QDir::toNativeSeparators(dumpFileDir + "/dumps");
-    QDir dir;
-    // 如果无法创建路径，将qcritual
-    // mkpath回保证能有此路径，否则会返回false
-    if (!dir.mkpath(dumpFileDir)) {
-        qCritical() << QObject::tr("Unable to create dump file path:%1");  // cn:无法创建音乐配置路径：%1
-    }
-    QString baseName           = QDateTime::currentDateTime().toString("yyyyMMddhhmmss.zzz");
-    QString dumpfileName       = QString("dump%1.dmp").arg(baseName);
-    QString systemInfofileName = QString("dump%1.sysinfo").arg(baseName);
-    // 生成sysinfo
-    QFile sysfi(QDir::toNativeSeparators(dumpFileDir + "/" + systemInfofileName));
-    if (sysfi.open(QIODevice::ReadWrite | QIODevice::Text | QIODevice::Truncate)) {
-        QTextStream st(&sysfi);
-        QSysInfo s;
-        // 先写入da的信息
-        st << daDescribe() << "\r\n" << s << Qt::endl;
-    }
-    sysfi.close();
-    return QDir::toNativeSeparators(dumpFileDir + "/" + dumpfileName);
+	QString dumpFileDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+	if (dumpFileDir.isEmpty()) {
+		dumpFileDir = QApplication::applicationDirPath();
+	}
+	dumpFileDir = QDir::toNativeSeparators(dumpFileDir + "/dumps");
+	QDir dir;
+	// 如果无法创建路径，将qcritual
+	// mkpath回保证能有此路径，否则会返回false
+	if (!dir.mkpath(dumpFileDir)) {
+		qCritical() << QObject::tr("Unable to create dump file path:%1");  // cn:无法创建音乐配置路径：%1
+	}
+	QString baseName           = QDateTime::currentDateTime().toString("yyyyMMddhhmmss.zzz");
+	QString dumpfileName       = QString("dump%1.dmp").arg(baseName);
+	QString systemInfofileName = QString("dump%1.sysinfo").arg(baseName);
+	// 生成sysinfo
+	QFile sysfi(QDir::toNativeSeparators(dumpFileDir + "/" + systemInfofileName));
+	if (sysfi.open(QIODevice::ReadWrite | QIODevice::Text | QIODevice::Truncate)) {
+		QTextStream st(&sysfi);
+		QSysInfo s;
+		// 先写入da的信息
+		st << daDescribe() << "\r\n" << s << Qt::endl;
+	}
+	sysfi.close();
+	return QDir::toNativeSeparators(dumpFileDir + "/" + dumpfileName);
 }
