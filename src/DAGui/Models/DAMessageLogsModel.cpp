@@ -214,7 +214,6 @@ void DAMessageLogsModel::onMessageAppended()
 	int qs = d_ptr->_messageQueueProxy.size() - 1;  // 全局队列的容积，如果r == s 说明已经充满，不需要新增行
 
 	// 防止清空队列后出现负索引
-
 	r = (r > 0) ? r : 0;  // 禁止这种操作，会让r在索引和数量上处于一种模糊，在r有值时是索引，无值时也应该是索引只是是-1而已，如果是0，就认为有一个数据，会出现异常
 	c  = (c > 0) ? c : 0;
 	qs = (qs > 0) ? qs : 0;
@@ -222,14 +221,19 @@ void DAMessageLogsModel::onMessageAppended()
 	if (r < qs) {
 		// 说明刚刚过容积线，此时需要插入到qs的长度，理论上之后都是r == qs
 		// 此时r已经是减去1的索引，因此插入位置要r+1
-		beginInsertRows(QModelIndex(), r + 1, qs);
-		d_ptr->_rowCount = qs + 1;
-		endInsertRows();
+		if (r != 0) {
+			// r为空不需要处理,一般是刚启动的时候的情况
+			// qDebug() << "beginInsertRows(QModelIndex()," << r + 1 << "," << qs << ")";
+			beginInsertRows(QModelIndex(), r + 1, qs);
+			d_ptr->_rowCount = qs + 1;
+			endInsertRows();
+		}
 	} else {
 		// 这里说明总体容积已经充满，全局队列此时会一直维护一个固定容积，只需要更新数据
 		// 全局队列是进行一个移动，这里全部更新
 		//  r和c已经在数量上减去1，就是索引
 		if (r >= 0 && c >= 0) {
+			// qDebug() << "emit dataChanged(index(0, 0), index(" << r << "," << c << ")";
 			emit dataChanged(index(0, 0), index(r, c));
 		}
 	}
@@ -241,7 +245,7 @@ void DAMessageLogsModel::onMessageQueueSizeChanged(int newSize)
 	Q_UNUSED(newSize);
 	int r = rowCount() - 1;
 	int s = d_ptr->_messageQueueProxy.size() - 1;
-
+	qDebug() << "onMessageQueueSizeChanged:" << newSize;
 	// 防止清空队列后出现负索引
 	s = (s > 0) ? s : 0;
 	r = (r > 0) ? r : 0;
