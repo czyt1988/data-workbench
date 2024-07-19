@@ -17,21 +17,26 @@ void DAAbstractNodePlugin::afterLoadedNodes()
 {
 }
 
+DAWorkFlowOperateWidget* DAAbstractNodePlugin::getCurrentActiveWorkflowOperateWidget() const
+{
+    auto c = core();
+    if (!c) {
+        return nullptr;
+    }
+    auto ui = c->getUiInterface();
+    if (!ui) {
+        return nullptr;
+    }
+    auto d = ui->getDockingArea();
+    if (!d) {
+        return nullptr;
+    }
+    return d->getWorkFlowOperateWidget();
+}
+
 DAWorkFlow* DAAbstractNodePlugin::getCurrentActiveWorkFlow() const
 {
-	auto c = core();
-	if (!c) {
-		return nullptr;
-	}
-	auto ui = c->getUiInterface();
-	if (!ui) {
-		return nullptr;
-	}
-	auto d = ui->getDockingArea();
-	if (!d) {
-		return nullptr;
-	}
-	auto optWF = d->getWorkFlowOperateWidget();
+    auto optWF = getCurrentActiveWorkflowOperateWidget();
 	if (!optWF) {
 		return nullptr;
 	}
