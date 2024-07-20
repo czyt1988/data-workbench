@@ -76,6 +76,7 @@ public:
 
     // 完成链接的回调
     virtual void finishedLink();
+
     // 在将要结束链接的回调，通过此回调可以执行完成链接后的相关操作，例如判断末端链接的图元，从而实现路径调整
     // 如果此函数返回false，将代表不接受链接，这时候，结束动作会被跳过，也就是鼠标点击是没有无法结束链接而生成连接线
     virtual bool willCompleteLink() override;
@@ -100,8 +101,8 @@ public:
     // 已经连接完成，在from和to都有节点时，返回true
     bool isLinked() const;
     // 保存到xml中
-    virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement,const QVersionNumber& ver) const override;
-    virtual bool loadFromXml(const QDomElement* parentElement,const QVersionNumber& ver) override;
+    virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const override;
+    virtual bool loadFromXml(const QDomElement* parentElement, const QVersionNumber& ver) override;
 
 protected:
     //

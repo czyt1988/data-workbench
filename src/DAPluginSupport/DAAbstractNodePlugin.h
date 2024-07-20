@@ -7,6 +7,7 @@
 
 namespace DA
 {
+class DAWorkFlowOperateWidget;
 /**
  * @brief 节点插件
  *
@@ -58,6 +59,12 @@ public:
 	 * 此函数默认不做任何动作
 	 */
 	virtual void afterLoadedNodes();
+
+    /**
+     * @brief 获取当前激活的工作流编辑窗口，所谓当前激活就是当前界面上正在打开的工作流编辑窗口
+     * @return
+     */
+    DAWorkFlowOperateWidget* getCurrentActiveWorkflowOperateWidget() const;
 
 	/**
 	 * @brief 获取当前激活的工作流，所谓当前激活就是当前界面上正在打开的工作流

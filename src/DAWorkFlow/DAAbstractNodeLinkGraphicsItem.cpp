@@ -69,7 +69,8 @@ DANodeGraphicsScene* DAAbstractNodeLinkGraphicsItem::PrivateData::nodeScene() co
     return (qobject_cast< DANodeGraphicsScene* >(q_ptr->scene()));
 }
 
-void DAAbstractNodeLinkGraphicsItem::PrivateData::setLinkPointNameVisible(bool on, DAAbstractNodeLinkGraphicsItem::Orientations o)
+void DAAbstractNodeLinkGraphicsItem::PrivateData::setLinkPointNameVisible(bool on,
+                                                                          DAAbstractNodeLinkGraphicsItem::Orientations o)
 {
     switch (o) {
     case DAGraphicsLinkItem::OrientationStart:
@@ -145,7 +146,8 @@ void DAAbstractNodeLinkGraphicsItem::PrivateData::updateLinkPointNameText()
     updateLinkPointNameText(mToTextItem, q_ptr->getEndPosition(), mToPoint, mPointTextPositionOffset.second);
 }
 
-void DAAbstractNodeLinkGraphicsItem::PrivateData::setPointTextColor(const QColor& c, DAAbstractNodeLinkGraphicsItem::Orientations o)
+void DAAbstractNodeLinkGraphicsItem::PrivateData::setPointTextColor(const QColor& c,
+                                                                    DAAbstractNodeLinkGraphicsItem::Orientations o)
 {
     switch (o) {
     case DAAbstractNodeLinkGraphicsItem::OrientationStart:
@@ -178,7 +180,8 @@ QColor DAAbstractNodeLinkGraphicsItem::PrivateData::getPointTextColor(DAAbstract
     return (QColor());
 }
 
-void DAAbstractNodeLinkGraphicsItem::PrivateData::setPointTextPositionOffset(int offset, DAAbstractNodeLinkGraphicsItem::Orientations o)
+void DAAbstractNodeLinkGraphicsItem::PrivateData::setPointTextPositionOffset(int offset,
+                                                                             DAAbstractNodeLinkGraphicsItem::Orientations o)
 {
     switch (o) {
     case DAAbstractNodeLinkGraphicsItem::OrientationStart:
@@ -312,7 +315,8 @@ QRectF DAAbstractNodeLinkGraphicsItem::updateBoundingRect()
  */
 QRectF DAAbstractNodeLinkGraphicsItem::rectFromTwoPoint(const QPointF& p0, const QPointF& p1)
 {
-    return (QRectF(QPointF(qMin(p0.x(), p1.x()), qMin(p0.y(), p1.y())), QPointF(qMax(p0.x(), p1.x()), qMax(p0.y(), p1.y()))));
+    return (QRectF(QPointF(qMin(p0.x(), p1.x()), qMin(p0.y(), p1.y())),
+                   QPointF(qMax(p0.x(), p1.x()), qMax(p0.y(), p1.y()))));
 }
 
 /**
@@ -338,7 +342,8 @@ bool DAAbstractNodeLinkGraphicsItem::isLinkPointNameVisible(Orientations o) cons
  * @param c
  * @param o
  */
-void DAAbstractNodeLinkGraphicsItem::setLinkPointNameTextColor(const QColor& c, DAAbstractNodeLinkGraphicsItem::Orientations o)
+void DAAbstractNodeLinkGraphicsItem::setLinkPointNameTextColor(const QColor& c,
+                                                               DAAbstractNodeLinkGraphicsItem::Orientations o)
 {
     d_ptr->setPointTextColor(c, o);
 }
@@ -358,7 +363,8 @@ QColor DAAbstractNodeLinkGraphicsItem::getLinkPointNameTextColor(DAAbstractNodeL
  * @param offset
  * @param o
  */
-void DAAbstractNodeLinkGraphicsItem::setLinkPointNamePositionOffset(int offset, DAAbstractNodeLinkGraphicsItem::Orientations o)
+void DAAbstractNodeLinkGraphicsItem::setLinkPointNamePositionOffset(int offset,
+                                                                    DAAbstractNodeLinkGraphicsItem::Orientations o)
 {
     d_ptr->setPointTextPositionOffset(offset, o);
 }
@@ -524,7 +530,7 @@ bool DAAbstractNodeLinkGraphicsItem::isLinked() const
 
 bool DAAbstractNodeLinkGraphicsItem::saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const
 {
-    DAGraphicsLinkItem::saveToXml(doc, parentElement,ver);
+    DAGraphicsLinkItem::saveToXml(doc, parentElement, ver);
     QDomElement pointEle = doc->createElement("linkPoint");
     pointEle.setAttribute("visible", isLinkPointNameVisible());
     pointEle.setAttribute("fromTextColor", getLinkPointNameTextColor(DAGraphicsLinkItem::OrientationStart).name());
@@ -537,7 +543,7 @@ bool DAAbstractNodeLinkGraphicsItem::saveToXml(QDomDocument* doc, QDomElement* p
 
 bool DAAbstractNodeLinkGraphicsItem::loadFromXml(const QDomElement* parentElement, const QVersionNumber& ver)
 {
-    bool on              = DAGraphicsLinkItem::loadFromXml(parentElement,ver);
+    bool on              = DAGraphicsLinkItem::loadFromXml(parentElement, ver);
     QDomElement pointEle = parentElement->firstChildElement("linkPoint");
     if (!pointEle.isNull()) {
         bool visible = pointEle.attribute("visible").toInt();
@@ -678,12 +684,11 @@ DAAbstractNode::SharedPointer DAAbstractNodeLinkGraphicsItem::toNode() const
 }
 
 /**
- * @brief 完成链接的回调函数，to和from都链接完成才算完成链接
- *
- * 默认不做任何处理
+ * @brief 完成连接
  */
 void DAAbstractNodeLinkGraphicsItem::finishedLink()
 {
+    // 默认不做任何处理
 }
 
 /**

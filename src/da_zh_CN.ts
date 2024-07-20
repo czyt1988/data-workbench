@@ -103,11 +103,6 @@
         <location filename="3rdparty/ADS/examples/autohide/mainwindow.ui" line="14"/>
         <location filename="3rdparty/ADS/examples/centralwidget/mainwindow.ui" line="14"/>
         <location filename="3rdparty/ADS/examples/emptydockarea/mainwindow.ui" line="14"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="58"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="58"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="58"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="58"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="58"/>
         <source>MainWindow</source>
         <translation type="unfinished"></translation>
     </message>
@@ -115,11 +110,6 @@
         <location filename="3rdparty/ADS/examples/autohide/mainwindow.ui" line="28"/>
         <location filename="3rdparty/ADS/examples/centralwidget/mainwindow.ui" line="28"/>
         <location filename="3rdparty/ADS/examples/emptydockarea/mainwindow.ui" line="28"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="59"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="59"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="59"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="59"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="59"/>
         <source>View</source>
         <translation type="unfinished">视图</translation>
     </message>
@@ -127,11 +117,6 @@
         <location filename="3rdparty/ADS/examples/autohide/mainwindow.ui" line="35"/>
         <location filename="3rdparty/ADS/examples/centralwidget/mainwindow.ui" line="35"/>
         <location filename="3rdparty/ADS/examples/emptydockarea/mainwindow.ui" line="35"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="60"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="60"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="60"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="60"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="60"/>
         <source>toolBar</source>
         <translation type="unfinished"></translation>
     </message>
@@ -140,79 +125,66 @@
     <name>CStatusDialogClass</name>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="20"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="146"/>
         <source>Dock Widget Status</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="35"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="147"/>
         <source>Dock Widget:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="58"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="148"/>
         <source>Status</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="64"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="149"/>
         <source>closed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="71"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="150"/>
         <source>floating</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="78"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="151"/>
         <source>tabbed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="85"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="152"/>
         <source>is current tab</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="101"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="153"/>
         <source>Feature Flags</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="107"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="154"/>
         <source>DockWidgetClosable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="114"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="155"/>
         <source>DockWidgetMovable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="121"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="156"/>
         <source>DockWidgetFloatable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="128"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="157"/>
         <source>DockWidgetDeleteOnClose</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="135"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="158"/>
         <source>CustomCloseHandling</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1909,7 +1881,7 @@ Table Area</source>
         <translation>无法加载插件:%1</translation>
     </message>
     <message>
-        <location filename="DAPluginSupport/DAPluginManager.cpp" line="198"/>
+        <location filename="DAPluginSupport/DAPluginManager.cpp" line="200"/>
         <source>Plugin Manager Info:is loaded=%1,plugin counts=%2</source>
         <translation>Plugin Manager Info:加载情况=%1,插件数量=%2</translation>
     </message>
@@ -2239,17 +2211,17 @@ Table Area</source>
 <context>
     <name>DA::DAWorkFlow</name>
     <message>
-        <location filename="DAWorkFlow/DAWorkFlow.cpp" line="402"/>
+        <location filename="DAWorkFlow/DAWorkFlow.cpp" line="403"/>
         <source>begin exec workflow</source>
         <translation>开始执行工作流</translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAWorkFlow.cpp" line="404"/>
+        <location filename="DAWorkFlow/DAWorkFlow.cpp" line="405"/>
         <source>empty workflow can not exec</source>
         <translation>无法执行一个空的工作流</translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAWorkFlow.cpp" line="413"/>
+        <location filename="DAWorkFlow/DAWorkFlow.cpp" line="414"/>
         <source>workflow start run</source>
         <translation>工作流开始运行</translation>
     </message>
@@ -2323,12 +2295,12 @@ Table Area</source>
 <context>
     <name>DA::DAWorkFlowOperateWidget</name>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="280"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="268"/>
         <source>question</source>
         <translation>疑问</translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="281"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="269"/>
         <source>Confirm to delete workflow:%1</source>
         <translation>是否确认删除工作流:%1</translation>
     </message>
@@ -2343,98 +2315,98 @@ Table Area</source>
         <translation>标题:</translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="427"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="440"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="454"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="415"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="428"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="442"/>
         <source>Loss View</source>
         <translation>缺少视图</translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="468"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="481"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="499"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="517"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="530"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="543"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="556"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="569"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="823"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="456"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="469"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="487"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="505"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="518"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="531"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="544"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="557"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="811"/>
         <source>No active workflow detected</source>
         <translation>未检测到激活的工作流</translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="486"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="504"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="474"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="492"/>
         <source>Unable to get workflow correctly</source>
         <translation>无法正确获取工作流</translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="750"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="751"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="738"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="739"/>
         <source>Copy</source>
         <translation>复制</translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="752"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="753"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="740"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="741"/>
         <source>Cut</source>
         <translation>剪切</translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="754"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="755"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="742"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="743"/>
         <source>Paste</source>
         <translation>粘贴</translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="756"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="757"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="744"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="745"/>
         <source>Delete</source>
         <translation>删除</translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="758"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="759"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="746"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="747"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="760"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="748"/>
         <source>Select All</source>
         <translation>全选</translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="761"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="749"/>
         <source>Select all items</source>
         <translation>全选所有图元</translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="762"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="750"/>
         <source>Zoom In</source>
         <translation>放大</translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="763"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="751"/>
         <source>Zoom in graphics view</source>
         <translation>放大画布</translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="764"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="752"/>
         <source>Zoom Out</source>
         <translation>缩小</translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="765"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="753"/>
         <source>Zoom Out graphics view</source>
         <translation>缩小画布</translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="766"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="754"/>
         <source>Zoom to Fit</source>
         <translation>适合屏幕</translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="767"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="755"/>
         <source>Zoom to fit screen size</source>
         <translation>缩放到适合屏幕大小</translation>
     </message>
@@ -2442,53 +2414,53 @@ Table Area</source>
 <context>
     <name>DA::DAWorkbenchAboutDialog</name>
     <message>
-        <location filename="APP/Dialog/DAWorkbenchAboutDialog.cpp" line="27"/>
+        <location filename="APP/Dialog/DAWorkbenchAboutDialog.cpp" line="26"/>
         <source>DAWorkBench,LGPL, Version:%1.%2.%3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/Dialog/DAWorkbenchAboutDialog.cpp" line="28"/>
+        <location filename="APP/Dialog/DAWorkbenchAboutDialog.cpp" line="27"/>
         <source>email:czy.t@163.com</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/Dialog/DAWorkbenchAboutDialog.cpp" line="29"/>
+        <location filename="APP/Dialog/DAWorkbenchAboutDialog.cpp" line="28"/>
         <source>github:https://github.com/czyt1988/data-workbench</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/Dialog/DAWorkbenchAboutDialog.cpp" line="31"/>
+        <location filename="APP/Dialog/DAWorkbenchAboutDialog.cpp" line="30"/>
         <source>third party list:</source>
         <translation>第三方库列表:</translation>
     </message>
     <message>
-        <location filename="APP/Dialog/DAWorkbenchAboutDialog.cpp" line="32"/>
+        <location filename="APP/Dialog/DAWorkbenchAboutDialog.cpp" line="31"/>
         <source>SARibbon, MIT, Version:%1.%2.%3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/Dialog/DAWorkbenchAboutDialog.cpp" line="37"/>
+        <location filename="APP/Dialog/DAWorkbenchAboutDialog.cpp" line="32"/>
         <source>spdlog, MIT, Version:%1.%2.%3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/Dialog/DAWorkbenchAboutDialog.cpp" line="38"/>
+        <location filename="APP/Dialog/DAWorkbenchAboutDialog.cpp" line="33"/>
         <source>Qt-Advanced-Docking-System, LGPL v2.1, Version:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/Dialog/DAWorkbenchAboutDialog.cpp" line="39"/>
+        <location filename="APP/Dialog/DAWorkbenchAboutDialog.cpp" line="34"/>
         <source>qwt, LGPL, Version:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/Dialog/DAWorkbenchAboutDialog.cpp" line="42"/>
+        <location filename="APP/Dialog/DAWorkbenchAboutDialog.cpp" line="37"/>
         <source>This is a Python dependent version</source>
         <translation>此版本依赖python环境</translation>
     </message>
     <message>
-        <location filename="APP/Dialog/DAWorkbenchAboutDialog.cpp" line="43"/>
-        <source>pybind11,BSD,Version:%1.%2</source>
+        <location filename="APP/Dialog/DAWorkbenchAboutDialog.cpp" line="38"/>
+        <source>pybind11,BSD,Version:%1.%2.%3</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2529,7 +2501,7 @@ Table Area</source>
     <name>DAAligmentPositionEditWidget</name>
     <message>
         <location filename="DACommonWidgets/DAAligmentPositionEditWidget.ui" line="20"/>
-        <source>Aligment Position</source>
+        <source>Form</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2814,7 +2786,7 @@ Table Area</source>
     <name>DAChartGridSettingWidget</name>
     <message>
         <location filename="DAGui/ChartSetting/DAChartGridSettingWidget.ui" line="14"/>
-        <source>Chart Guide Setting</source>
+        <source>Form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2843,7 +2815,7 @@ Table Area</source>
     <name>DAChartLegendItemSettingWidget</name>
     <message>
         <location filename="DAGui/ChartSetting/DAChartLegendItemSettingWidget.ui" line="14"/>
-        <source>Chart Legend Item Setting</source>
+        <source>Form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2996,8 +2968,8 @@ Table Area</source>
     <name>DAChartPlotSettingWidget</name>
     <message>
         <location filename="DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="14"/>
-        <source>Plot Setting</source>
-        <translation type="unfinished">绘图设置</translation>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="20"/>
@@ -3039,7 +3011,7 @@ Table Area</source>
     <name>DAChartSettingWidget</name>
     <message>
         <location filename="DAGui/DAChartSettingWidget.ui" line="14"/>
-        <source>Chart Setting</source>
+        <source>Form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3859,7 +3831,7 @@ Table Area</source>
     <name>DASettingPageCommon</name>
     <message>
         <location filename="APP/SettingPages/DASettingPageCommon.ui" line="14"/>
-        <source>Common Setting</source>
+        <source>Form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3966,7 +3938,7 @@ Table Area</source>
     <name>DATxtFileImportDialog</name>
     <message>
         <location filename="APP/Dialog/DATxtFileImportDialog.ui" line="14"/>
-        <source>Txt Import</source>
+        <source>Dialog</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4172,23 +4144,12 @@ Table Area</source>
         <location filename="3rdparty/ADS/examples/simple/MainWindow.ui" line="14"/>
         <location filename="3rdparty/SARibbon/src/example/NormalMenuBarExample/MainWindow.ui" line="14"/>
         <location filename="tst/FCD3Viewer/MainWindow.ui" line="14"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="87"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="70"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="121"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/simple/SimpleExample_autogen/include/ui_MainWindow.h" line="58"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="70"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="121"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/simple/SimpleExample_autogen/include/ui_MainWindow.h" line="58"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="70"/>
         <source>MainWindow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="32"/>
         <location filename="3rdparty/ADS/examples/hideshow/MainWindow.ui" line="33"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="91"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="74"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="74"/>
         <source>File</source>
         <translation type="unfinished">文件</translation>
     </message>
@@ -4197,94 +4158,71 @@ Table Area</source>
         <location filename="3rdparty/ADS/examples/hideshow/MainWindow.ui" line="28"/>
         <location filename="3rdparty/ADS/examples/sidebar/MainWindow.ui" line="75"/>
         <location filename="3rdparty/ADS/examples/simple/MainWindow.ui" line="28"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="92"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="73"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="123"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/simple/SimpleExample_autogen/include/ui_MainWindow.h" line="59"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="73"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="123"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/simple/SimpleExample_autogen/include/ui_MainWindow.h" line="59"/>
         <source>View</source>
         <translation type="unfinished">视图</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="44"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="93"/>
         <source>About</source>
         <translation type="unfinished">关于</translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="49"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="94"/>
         <source>Tests</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="59"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="95"/>
         <source>toolBar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="70"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="88"/>
         <source>Exit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="75"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="89"/>
         <source>Save State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="80"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="90"/>
         <source>Restore State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/examples/hideshow/MainWindow.ui" line="44"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="71"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="71"/>
         <source>Open project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/examples/hideshow/MainWindow.ui" line="49"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="72"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="72"/>
         <source>Close project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/examples/sidebar/MainWindow.ui" line="26"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="122"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="122"/>
         <source>PushButton</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/SARibbon/src/example/NormalMenuBarExample/MainWindow.ui" line="28"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="73"/>
         <source>file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/SARibbon/src/example/NormalMenuBarExample/MainWindow.ui" line="35"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="74"/>
         <source>edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/SARibbon/src/example/NormalMenuBarExample/MainWindow.ui" line="44"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="71"/>
         <source>open</source>
         <translation type="unfinished">开盘</translation>
     </message>
     <message>
         <location filename="3rdparty/SARibbon/src/example/NormalMenuBarExample/MainWindow.ui" line="49"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="72"/>
         <source>save</source>
         <translation type="unfinished">保存</translation>
     </message>
@@ -4453,7 +4391,7 @@ Table Area</source>
     <message>
         <location filename="3rdparty/QtPropertyBrowser/examples/canvas_typed/mainwindow.cpp" line="379"/>
         <location filename="3rdparty/QtPropertyBrowser/examples/canvas_variant/mainwindow.cpp" line="354"/>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1090"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1073"/>
         <source>Font</source>
         <translation type="unfinished">字体</translation>
     </message>
@@ -4469,70 +4407,70 @@ Table Area</source>
         <translation type="unfinished">其他</translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="234"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="233"/>
         <source>
 The text display of the &quot;LooseThreeRow&quot; style is word wrap and also displays the title bar. You can also control whether the button is line breaking through SARibbonBar::setEnableWordWrap,and whether the title bar is displayed through SARibbonBar::setEnableShowPannelTitle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="237"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="236"/>
         <source>ribbonBar()-&gt;setRibbonStyle(SARibbonBar::RibbonStyleLooseThreeRow);</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="243"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="242"/>
         <source>
 The text display of the &quot;LooseTwoRow&quot; style is not word wrap and also displays the title bar. You can also control whether the button is line breaking through SARibbonBar::setEnableWordWrap,and whether the title bar is displayed through SARibbonBar::setEnableShowPannelTitle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="246"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="245"/>
         <source>ribbonBar()-&gt;setRibbonStyle(SARibbonBar::RibbonStyleLooseTwoRow);</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="252"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="251"/>
         <source>
 The text display of the &quot;LooseThreeRow&quot; style is word wrap and not displays the title bar. You can also control whether the button is line breaking through SARibbonBar::setEnableWordWrap,and whether the title bar is displayed through SARibbonBar::setEnableShowPannelTitle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="255"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="254"/>
         <source>ribbonBar()-&gt;setRibbonStyle(SARibbonBar::RibbonStyleCompactThreeRow);</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="261"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="260"/>
         <source>
 The text display of the &quot;CompactTwoRow&quot; style is not word wrap and not displays the title bar. You can also control whether the button is line breaking through SARibbonBar::setEnableWordWrap,and whether the title bar is displayed through SARibbonBar::setEnableShowPannelTitle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="264"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="263"/>
         <source>ribbonBar()-&gt;setRibbonStyle(SARibbonBar::RibbonStyleCompactTwoRow);</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="295"/>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="351"/>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="639"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="290"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="344"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="631"/>
         <source>question</source>
         <translation type="unfinished">疑问</translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="296"/>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="352"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="290"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="344"/>
         <source>Apply the last modification?
 If not, local data will be reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="435"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="426"/>
         <source>infomation</source>
         <translation type="unfinished">信息</translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="436"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="427"/>
         <source>
  ===============
  SARibbonBar version:%1
@@ -4542,425 +4480,425 @@ If not, local data will be reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="450"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="441"/>
         <source>  &amp;File  </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="460"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="451"/>
         <source>select qss file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="530"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="521"/>
         <source>By using the SARibbonBar::setEnableWordWrap function, you can set whether text breaks or not.
 By default, the two line mode will not wrap, the three line mode will wrap.
 You can force the two line mode to wrap, or the three line mode to not wrap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="639"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="631"/>
         <source>Confirm whether to exit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="656"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="648"/>
         <source>Save</source>
         <translation type="unfinished">保存</translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="669"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="661"/>
         <source>hide ribbon</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="677"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="669"/>
         <source>show 
 hide button</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="685"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="677"/>
         <source>word wrap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="693"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="685"/>
         <source>use office style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="702"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="694"/>
         <source>use wps style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="710"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="702"/>
         <source>use office 2 row style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="718"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="710"/>
         <source>use wps 2row style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="732"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="724"/>
         <source>RibbonTheme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="749"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="738"/>
         <source>Alignment Center</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="762"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="751"/>
         <source>item %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="767"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="756"/>
         <source>test 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="771"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="760"/>
         <source>use QToolButton::MenuButtonPopup mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="774"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="763"/>
         <source>test 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="776"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="765"/>
         <source>use QToolButton::InstantPopup mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="781"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="770"/>
         <source>Delayed
 Popup</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="787"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="776"/>
         <source>Menu Button Popup</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="792"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="781"/>
         <source>Instant Popup</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="797"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="786"/>
         <source>Delayed Popup checkable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="803"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="792"/>
         <source>Menu Button Popup checkable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="809"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="798"/>
         <source>disable action</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="818"/>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="908"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="807"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="897"/>
         <source>Option Action Triggered</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="826"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="815"/>
         <source>show Context</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="831"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="820"/>
         <source>delete Context</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="842"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="831"/>
         <source>Word
 Wrap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="846"/>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="855"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="835"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="844"/>
         <source>Text can be manually wrapped(use \n), and will appear as 1 line in the case of SARibbonBar::setEnableWordWrap (false)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="850"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="839"/>
         <source>Word 
 Wrap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="862"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="851"/>
         <source>widget test</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="868"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="857"/>
         <source>SARibbonComboBox test</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="918"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="907"/>
         <source>pannel one</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="926"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="915"/>
         <source>Decrease Margin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="927"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="916"/>
         <source>Decrease Indent</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="928"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="917"/>
         <source>Wrap Image Left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="929"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="918"/>
         <source>Wrap Image Right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="935"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="924"/>
         <source>Align Right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="938"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="927"/>
         <source>Align Left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="941"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="930"/>
         <source>Align Center</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="970"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="958"/>
         <source>Files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="981"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="968"/>
         <source>Apps</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="990"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="977"/>
         <source>pannel two</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="993"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="980"/>
         <source>remove application button</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="998"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="985"/>
         <source>show very long text in a button,balabalabala etc</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1003"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="988"/>
         <source>style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1007"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="992"/>
         <source>use qss</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1011"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="996"/>
         <source>load customize from xml file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1015"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1000"/>
         <source>window normal button</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1063"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1046"/>
         <source>remove pannel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1068"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1051"/>
         <source>remove this category</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1094"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1077"/>
         <source>select font</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1118"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1101"/>
         <source>Larger</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1121"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1104"/>
         <source>Smaller</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1127"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1110"/>
         <source>Font Size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1131"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1114"/>
         <source>Larger Font Text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1136"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1119"/>
         <source>Grid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1153"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1136"/>
         <source>color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1213"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1196"/>
         <source>context</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1215"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1198"/>
         <source>Page1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1218"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1201"/>
         <source>Page2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1232"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1215"/>
         <source>show and hide test</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1240"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1223"/>
         <source>Disable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1249"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1232"/>
         <source>unlock</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1258"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1241"/>
         <source>1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1259"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1242"/>
         <source>very short string</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1282"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1265"/>
         <source>show/hide</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1289"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1272"/>
         <source>hide beside pannel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1291"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1274"/>
         <source>show beside pannel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1315"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1298"/>
         <source>hide action2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1318"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1301"/>
         <source>show action2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1324"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1307"/>
         <source>hide action4</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1327"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1310"/>
         <source>show action4</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1335"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1318"/>
         <source>spinbox:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1343"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1326"/>
         <source>linedit:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1499"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1456"/>
         <source>help</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1500"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1457"/>
         <source>Visible</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1518"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1475"/>
         <source>Login</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1554"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1511"/>
         <source>in common use</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1555"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1512"/>
         <source>no icon action</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1556"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1513"/>
         <source>have icon action</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1605"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1562"/>
         <source>The SARibbonToolButton::setPopupMode(QToolButton::DelayedPopup) method can be used to set the menu pop-up method to delayed pop-up. This also demonstrates manually setting text wrapping</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5013,86 +4951,6 @@ Wrap</source>
     <message>
         <location filename="3rdparty/SARibbon/src/example/StaticExample/MainWindow.cpp" line="19"/>
         <source>other</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="52"/>
-        <source>Example MainWindow</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="126"/>
-        <source>File(&amp;F)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="127"/>
-        <source>New(&amp;N)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="128"/>
-        <source>Open(&amp;O)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="131"/>
-        <source>Edit(&amp;E)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="132"/>
-        <source>Undo(&amp;U)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="133"/>
-        <source>Redo(&amp;R)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="136"/>
-        <source>Enable dark theme</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="146"/>
-        <source>Enable DWM blur</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="156"/>
-        <source>Enable acrylic material</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="166"/>
-        <source>Enable mica</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="176"/>
-        <source>Enable mica alt</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="186"/>
-        <source>Dark blur</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="198"/>
-        <source>Light blur</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="210"/>
-        <source>No blur</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="229"/>
-        <source>Settings(&amp;S)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5303,7 +5161,7 @@ Wrap</source>
         <translation>成功加载插件%1,但插件的初始化失败</translation>
     </message>
     <message>
-        <location filename="DAPluginSupport/DAPluginOption.cpp" line="208"/>
+        <location filename="DAPluginSupport/DAPluginOption.cpp" line="209"/>
         <source>plugin file name:%1,iid:%2,name:%3,description:%4,version:%5,error string:%6</source>
         <translation>插件文件:%1,iid:%2,名称:%3,描述:%4,版本:%5,错误信息:%6</translation>
     </message>
@@ -5534,211 +5392,211 @@ Wrap</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="173"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="171"/>
         <source>load workflow extern info cost: %1 ms</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="177"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="294"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="175"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="286"/>
         <source>load nodes occurce error</source>
         <translation>加载节点发生错误</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="179"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="177"/>
         <source>load workflow nodes cost: %1 ms</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="182"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="297"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="180"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="289"/>
         <source>load nodes link occurce error</source>
         <translation>加载节点连接发生错误</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="184"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="182"/>
         <source>load workflow links cost: %1 ms</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="187"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="185"/>
         <source>load special item occurce error</source>
         <translation>加载特殊图元发生错误</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="189"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="187"/>
         <source>load special item cost: %1 ms</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="194"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="192"/>
         <source>load factorys occurce error</source>
         <translation>加载工厂信息发生错误</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="196"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="194"/>
         <source>load workflow factory info cost: %1 ms</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="199"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="197"/>
         <source>load scene info occurce error</source>
         <translation>加载场景信息发射错误</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="201"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="199"/>
         <source>load secen info cost: %1 ms</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="288"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="280"/>
         <source>Load Nodes</source>
         <translation>加载节点</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="302"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="294"/>
         <source>load items occurce error</source>
         <translation>加载节点过程出现错误</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="346"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="336"/>
         <source>find unknow tag &lt;%1&gt; under &lt;factorys&gt; element</source>
         <translation>在标签 &lt;factorys&gt; 下面存在未知标签&lt;%1&gt;</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="352"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="342"/>
         <source>can not find factory prototypes = %1</source>
         <translation>通过节点的元信息（%1）无法找到对应的工厂</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="507"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="556"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="631"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="497"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="546"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="621"/>
         <source>node&apos;s id=%1 can not conver to qulonglong type ,will skip this node</source>
         <translation>节点的id（%1）无法转换为qulonglong类型，将跳过此节点</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="748"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="775"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="738"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="765"/>
         <source>node(prototype=%1,name=%2,group=%3) %4 tag loss child tag &lt;name&gt;</source>
         <translation>节点(原型=%1,名称=%2,分组=%3) %4 标签缺失&lt;name&gt;子标签</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="600"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="673"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="944"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="590"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="663"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="934"/>
         <source>can not find &lt;item&gt; tag under &lt;node&gt; tag</source>
         <translation>无法在&lt;node&gt;标签下查询到&lt;item&gt;标签</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="521"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="511"/>
         <source>Unable to create node by metadata(prototype=%1,name=%2,group=%3)-0</source>
         <translation>无法创建节点(prototype=%1,name=%2,group=%3)-0</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="571"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="641"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="561"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="631"/>
         <source>Unable to create node by metadata(prototype=%1,name=%2,group=%3)-1</source>
         <translation>无法创建节点(prototype=%1,name=%2,group=%3)-1</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="580"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="649"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="570"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="639"/>
         <source>Unable to create node by metadata(prototype=%1,name=%2,group=%3)-2</source>
         <translation>无法创建节点(prototype=%1,name=%2,group=%3)-2</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="949"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="939"/>
         <source>node metadata(prototype=%1,name=%2,group=%3) can not create graphics item</source>
         <translation>节点(原型=%1,名称=%2,分组=%3)无法创建图元</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1004"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="994"/>
         <source>linkitem save to xml return false</source>
         <translation>链接线从xml加载信息返回了false</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1030"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1037"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1138"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1157"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1020"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1027"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1128"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1147"/>
         <source>link info can not find node in workflow,id = %1</source>
         <translation>加载连接信息时，无法在工作流中找到id=%1的节点</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1043"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1164"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1033"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1154"/>
         <source>can not get item by node</source>
         <translation>无法通过节点获取图元</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1049"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1170"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1039"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1160"/>
         <source>Unable to link to node %3&apos;s link point %4 through link point %2 of node %1</source>
         <translation>节点%1无法通过连接点%2链接到节点%3的连接点%4</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1065"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1093"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1186"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1214"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1055"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1083"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1176"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1204"/>
         <source>linkitem load from xml return false</source>
         <translation>链接线从xml加载信息返回了false</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1130"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1149"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1120"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1139"/>
         <source>During the pasting process, the mapping corresponding to ID(%1) cannot be found</source>
         <translation>在解析过程中ID(%1)的对应关系无法找到</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1317"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1307"/>
         <source>Unable to generate graphics item element during the saveing</source>
         <translation>保存过程中，无法生成图元元素</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1587"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1577"/>
         <source>current workflow file version:</source>
         <translation>当前工作流文件版本:</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1632"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1622"/>
         <source>An exception occurred during the process of processing pasted content XML, with the root node missing the type attribute</source>
         <translation>在处理粘贴内容xml过程出现异常，根节点缺失type属性</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1639"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1629"/>
         <source>An exception occurred during the process of parsing and pasting content,miss workflow tag</source>
         <translation>解析粘贴内容过程出现异常,缺失workflow标签</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1681"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1671"/>
         <source>Cannot create item by class name:%1,maybe unregist to DAGraphicsItemFactory</source>
         <translation>无法通过类名:%1创建元件,类名没有注册到DAGraphicsItemFactory</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1343"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1333"/>
         <source>Unable to load item information from &lt;%1&gt;</source>
         <translation>无法通过&lt;%1&gt;加载元件信息</translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="924"/>
+        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="916"/>
         <source>link item can not attach from node item(%1) with key=%2</source>
         <translation>无法通过节点%1的输出点%2进行连接</translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="929"/>
+        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="921"/>
         <source>link item can not attach to node item(%1) with key=%2</source>
         <translation>无法通过节点%1的输入点%2进行连接</translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="951"/>
-        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="956"/>
+        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="943"/>
+        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="948"/>
         <source>Node %1 cannot find a connection point named %2</source>
         <translation>节点%1无法找到名字为%2的连接点</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1836"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1826"/>
         <source>The attribute %1=%2 under the tag %3 cannot be converted to double </source>
         <translation>%3标签属性%1=%2无法转换为double类型 </translation>
     </message>
@@ -5761,7 +5619,7 @@ params:
 </translation>
     </message>
     <message>
-        <location filename="APP/main.cpp" line="200"/>
+        <location filename="APP/main.cpp" line="198"/>
         <source>Unable to create dump file path:%1</source>
         <translation>无法创建dump文件路径：%1</translation>
     </message>
@@ -6139,20 +5997,20 @@ params:
 <context>
     <name>QtBoolEdit</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="253"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="263"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="288"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="315"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="325"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="350"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="253"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="263"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="288"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="315"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="325"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="350"/>
         <source>True</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="263"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="288"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="325"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="350"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="263"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="288"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="325"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="350"/>
         <source>False</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6160,14 +6018,14 @@ params:
 <context>
     <name>QtBoolPropertyManager</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="1565"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="1528"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="1565"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="1538"/>
         <source>True</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="1566"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="1529"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="1566"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="1539"/>
         <source>False</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6175,8 +6033,8 @@ params:
 <context>
     <name>QtCharEdit</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qteditorfactory.cpp" line="1471"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qteditorfactory.cpp" line="1472"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5editorfactory.cpp" line="1471"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6editorfactory.cpp" line="1472"/>
         <source>Clear Char</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6184,8 +6042,8 @@ params:
 <context>
     <name>QtColorEditWidget</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qteditorfactory.cpp" line="2044"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qteditorfactory.cpp" line="2053"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5editorfactory.cpp" line="2044"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6editorfactory.cpp" line="2053"/>
         <source>...</source>
         <translation type="unfinished">...</translation>
     </message>
@@ -6193,26 +6051,26 @@ params:
 <context>
     <name>QtColorPropertyManager</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6319"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="6306"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="6319"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="6318"/>
         <source>Red</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6327"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="6314"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="6327"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="6326"/>
         <source>Green</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6335"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="6322"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="6335"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="6334"/>
         <source>Blue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6343"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="6330"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="6343"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="6342"/>
         <source>Alpha</source>
         <translation type="unfinished">透明度</translation>
     </message>
@@ -6220,135 +6078,135 @@ params:
 <context>
     <name>QtCursorDatabase</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="54"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="30"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="89"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="54"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="30"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="89"/>
         <source>Arrow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="56"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="33"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="92"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="56"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="33"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="92"/>
         <source>Up Arrow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="58"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="36"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="95"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="58"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="36"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="95"/>
         <source>Cross</source>
         <translation type="unfinished">十字标记</translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="60"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="39"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="98"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="60"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="39"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="98"/>
         <source>Wait</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="62"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="42"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="101"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="62"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="42"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="101"/>
         <source>IBeam</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="64"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="45"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="104"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="64"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="45"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="104"/>
         <source>Size Vertical</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="66"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="48"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="107"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="66"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="48"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="107"/>
         <source>Size Horizontal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="68"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="51"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="110"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="68"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="51"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="110"/>
         <source>Size Backslash</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="70"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="54"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="113"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="70"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="54"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="113"/>
         <source>Size Slash</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="72"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="57"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="116"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="72"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="57"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="116"/>
         <source>Size All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="74"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="59"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="118"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="74"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="59"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="118"/>
         <source>Blank</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="76"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="61"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="120"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="76"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="61"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="120"/>
         <source>Split Vertical</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="78"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="64"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="123"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="78"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="64"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="123"/>
         <source>Split Horizontal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="80"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="67"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="126"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="80"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="67"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="126"/>
         <source>Pointing Hand</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="82"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="70"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="129"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="82"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="70"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="129"/>
         <source>Forbidden</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="84"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="73"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="132"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="84"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="73"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="132"/>
         <source>Open Hand</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="86"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="76"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="135"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="86"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="76"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="135"/>
         <source>Closed Hand</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="88"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="79"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="138"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="88"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="79"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="138"/>
         <source>What&apos;s This</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="90"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="82"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="141"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="90"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="82"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="141"/>
         <source>Busy</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6356,14 +6214,14 @@ params:
 <context>
     <name>QtFontEditWidget</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qteditorfactory.cpp" line="2233"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qteditorfactory.cpp" line="2243"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5editorfactory.cpp" line="2233"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6editorfactory.cpp" line="2243"/>
         <source>...</source>
         <translation type="unfinished">...</translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qteditorfactory.cpp" line="2253"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qteditorfactory.cpp" line="2263"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5editorfactory.cpp" line="2253"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6editorfactory.cpp" line="2263"/>
         <source>Select Font</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6371,44 +6229,44 @@ params:
 <context>
     <name>QtFontPropertyManager</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="5995"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="5980"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="5995"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="5992"/>
         <source>Family</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6008"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="5993"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="6008"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="6005"/>
         <source>Point Size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6016"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="6001"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="6016"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="6013"/>
         <source>Bold</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6023"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="6008"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="6023"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="6020"/>
         <source>Italic</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6030"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="6015"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="6030"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="6027"/>
         <source>Underline</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6037"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="6022"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="6037"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="6034"/>
         <source>Strikeout</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="6044"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="6029"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="6044"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="6041"/>
         <source>Kerning</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6416,30 +6274,30 @@ params:
 <context>
     <name>QtLocalePropertyManager</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="2490"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2444"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="2490"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="2456"/>
         <source>&lt;Invalid&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="2498"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2452"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="2498"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="2464"/>
         <source>%1, %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="2548"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2502"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="2548"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="2514"/>
         <source>Language</source>
         <translation type="unfinished">语言</translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="2556"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="2556"/>
         <source>Country</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2510"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="2522"/>
         <source>Territory</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6447,20 +6305,20 @@ params:
 <context>
     <name>QtPointFPropertyManager</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="2959"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2919"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="2959"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="2931"/>
         <source>(%1, %2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="3029"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2989"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="3029"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="3001"/>
         <source>X</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="3037"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2997"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="3037"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="3009"/>
         <source>Y</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6468,20 +6326,20 @@ params:
 <context>
     <name>QtPointPropertyManager</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="2723"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2680"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="2723"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="2692"/>
         <source>(%1, %2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="2759"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2716"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="2759"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="2728"/>
         <source>X</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="2766"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="2723"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="2766"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="2735"/>
         <source>Y</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6489,14 +6347,14 @@ params:
 <context>
     <name>QtPropertyBrowserUtils</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="183"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="241"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="183"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="241"/>
         <source>[%1, %2, %3] (%4)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="210"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="271"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertybrowserutils.cpp" line="210"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertybrowserutils.cpp" line="271"/>
         <source>[%1, %2]</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6504,32 +6362,32 @@ params:
 <context>
     <name>QtRectFPropertyManager</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4506"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4474"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="4506"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="4486"/>
         <source>[(%1, %2), %3 x %4]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4663"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4631"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="4663"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="4643"/>
         <source>X</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4671"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4639"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="4671"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="4651"/>
         <source>Y</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4679"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4647"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="4679"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="4659"/>
         <source>Width</source>
         <translation type="unfinished">宽</translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4688"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4656"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="4688"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="4668"/>
         <source>Height</source>
         <translation type="unfinished">高</translation>
     </message>
@@ -6537,32 +6395,32 @@ params:
 <context>
     <name>QtRectPropertyManager</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4079"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4048"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="4079"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="4060"/>
         <source>[(%1, %2), %3 x %4]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4200"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4165"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="4200"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="4177"/>
         <source>X</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4207"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4172"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="4207"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="4184"/>
         <source>Y</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4214"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4179"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="4214"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="4191"/>
         <source>Width</source>
         <translation type="unfinished">宽</translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="4222"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="4187"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="4222"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="4199"/>
         <source>Height</source>
         <translation type="unfinished">高</translation>
     </message>
@@ -6570,20 +6428,20 @@ params:
 <context>
     <name>QtSizeFPropertyManager</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="3673"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="3639"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="3673"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="3651"/>
         <source>%1 x %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="3821"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="3787"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="3821"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="3799"/>
         <source>Width</source>
         <translation type="unfinished">宽</translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="3830"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="3796"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="3830"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="3808"/>
         <source>Height</source>
         <translation type="unfinished">高</translation>
     </message>
@@ -6591,40 +6449,40 @@ params:
 <context>
     <name>QtSizePolicyPropertyManager</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="5522"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="5523"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="5498"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="5499"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="5522"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="5523"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="5510"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="5511"/>
         <source>&lt;Invalid&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="5524"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="5500"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="5524"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="5512"/>
         <source>[%1, %2, %3, %4]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="5567"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="5543"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="5567"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="5555"/>
         <source>Horizontal Policy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="5575"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="5551"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="5575"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="5563"/>
         <source>Vertical Policy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="5583"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="5559"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="5583"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="5571"/>
         <source>Horizontal Stretch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="5591"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="5567"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="5591"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="5579"/>
         <source>Vertical Stretch</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6632,20 +6490,20 @@ params:
 <context>
     <name>QtSizePropertyManager</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="3284"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="3247"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="3284"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="3259"/>
         <source>%1 x %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="3398"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="3361"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="3398"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="3373"/>
         <source>Width</source>
         <translation type="unfinished">宽</translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="3406"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="3369"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5propertymanager.cpp" line="3406"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6propertymanager.cpp" line="3381"/>
         <source>Height</source>
         <translation type="unfinished">高</translation>
     </message>
@@ -6653,14 +6511,14 @@ params:
 <context>
     <name>QtTreePropertyBrowser</name>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qttreepropertybrowser.cpp" line="452"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qttreepropertybrowser.cpp" line="417"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5treepropertybrowser.cpp" line="452"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6treepropertybrowser.cpp" line="417"/>
         <source>Property</source>
         <translation type="unfinished">属性</translation>
     </message>
     <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qttreepropertybrowser.cpp" line="453"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qttreepropertybrowser.cpp" line="418"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt5treepropertybrowser.cpp" line="453"/>
+        <location filename="3rdparty/QtPropertyBrowser/src/qt6treepropertybrowser.cpp" line="418"/>
         <source>Value</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6926,13 +6784,13 @@ params:
     <name>SARibbonSystemButtonBar</name>
     <message>
         <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="2559"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonSystemButtonBar.cpp" line="314"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonSystemButtonBar.cpp" line="312"/>
         <source>Restore</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="2559"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonSystemButtonBar.cpp" line="314"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonSystemButtonBar.cpp" line="312"/>
         <source>Maximize</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6959,7 +6817,6 @@ params:
     <name>Widget</name>
     <message>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="14"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/SARibbon/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="63"/>
         <source>Widget</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7108,16 +6965,6 @@ params:
     <message>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="1320"/>
         <source>colorPaletteGrid</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/SARibbon/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="64"/>
-        <source>Tab 1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/SARibbon/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="65"/>
-        <source>Tab 2</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -7315,54 +7162,6 @@ params:
         <location filename="3rdparty/ctk/ctk/ctkPathLineEdit.cpp" line="585"/>
         <source>Select a file to save </source>
         <translation>选择文件保存 </translation>
-    </message>
-</context>
-<context>
-    <name>main</name>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="12"/>
-        <source>Hello, world!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="150"/>
-        <source>Theme</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="158"/>
-        <source>Light</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="164"/>
-        <source>Dark</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="172"/>
-        <source>Special effect</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="181"/>
-        <source>DWM blur</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="191"/>
-        <source>Acrylic material</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="201"/>
-        <source>Mica</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="211"/>
-        <source>Mica Alt</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>
