@@ -24,10 +24,10 @@ public:
 	static QString toCsvStringLine(const QStringList& sectionLine);
 	// 解析一行csv字符
 	static QStringList fromCsvLine(const QString& lineStr);
-	DACsvStream& operator<<(const QString& str);
-	DACsvStream& operator<<(int d);
-	DACsvStream& operator<<(double d);
-	DACsvStream& operator<<(float d);
+	friend DACsvStream& operator<<(DACsvStream& csv, const QString& str);
+	friend DACsvStream& operator<<(DACsvStream& csv, int d);
+	friend DACsvStream& operator<<(DACsvStream& csv, double d);
+	friend DACsvStream& operator<<(DACsvStream& csv, float d);
 	// 另起一行
 	void newLine();
 	// 获取输入输出流

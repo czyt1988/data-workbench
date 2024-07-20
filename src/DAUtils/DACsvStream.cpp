@@ -159,28 +159,28 @@ QStringList DACsvStream::fromCsvLine(const QString& lineStr)
 /// \param str 需要写入的csv文件一个单元得字符串
 /// \return
 ///
-DACsvStream& DACsvStream::operator<<(const QString& str)
+DACsvStream& operator<<(DACsvStream& csv, const QString& str)
 {
-	d_ptr->formatTextStream() << toCsvString(str);
-	return *this;
+	csv.d_func()->formatTextStream() << DACsvStream::toCsvString(str);
+	return csv;
 }
 
-DACsvStream& DACsvStream::operator<<(int d)
+DACsvStream& operator<<(DACsvStream& csv, int d)
 {
-	d_ptr->formatTextStream() << d;
-	return *this;
+	csv.d_func()->formatTextStream() << d;
+	return csv;
 }
 
-DACsvStream& DACsvStream::operator<<(double d)
+DACsvStream& operator<<(DACsvStream& csv, double d)
 {
-	d_ptr->formatTextStream() << d;
-	return *this;
+	csv.d_func()->formatTextStream() << d;
+	return csv;
 }
 
-DACsvStream& DACsvStream::operator<<(float d)
+DACsvStream& operator<<(DACsvStream& csv, float d)
 {
-	d_ptr->formatTextStream() << d;
-	return *this;
+	csv.d_func()->formatTextStream() << d;
+	return csv;
 }
 
 ///
