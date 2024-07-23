@@ -170,12 +170,12 @@ public:
 	// 返回的link无需attach，attach过程由scene负责
 	virtual DAAbstractNodeLinkGraphicsItem* createLinkItem(const DA::DANodeLinkPoint& lp);
 	// 从fromPoint链接到toItem的toPoint点，如果链接失败返回nullptr
-	DAAbstractNodeLinkGraphicsItem* linkTo(const DA::DANodeLinkPoint& fromPoint,
-                                           DAAbstractNodeGraphicsItem* toItem,
-                                           const DA::DANodeLinkPoint& toPoint);
-	DAAbstractNodeLinkGraphicsItem* linkTo(const QString& fromPointName,
-                                           DAAbstractNodeGraphicsItem* toItem,
-                                           const QString& toPointName);
+    virtual DAAbstractNodeLinkGraphicsItem* linkTo(const DA::DANodeLinkPoint& fromPoint,
+                                                   DAAbstractNodeGraphicsItem* toItem,
+                                                   const DA::DANodeLinkPoint& toPoint);
+    DAAbstractNodeLinkGraphicsItem* linkToByName(const QString& fromPointName,
+                                                 DAAbstractNodeGraphicsItem* toItem,
+                                                 const QString& toPointName);
 	virtual void setBodySize(const QSizeF& s) override;
 	// 重置连接点，此函数会自动调用generateLinkPoint，如果想自定义，重载此函数
 	// 如果重载了generateLinkPoint或changeLinkPointPos，在构造函数中调用此函数

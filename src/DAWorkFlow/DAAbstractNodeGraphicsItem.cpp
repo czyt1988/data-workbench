@@ -906,6 +906,9 @@ DAAbstractNodeLinkGraphicsItem* DAAbstractNodeGraphicsItem::createLinkItem(const
 
 /**
  * @brief 从fromPoint链接到toItem的toPoint点
+ *
+ * @note 此函数会调用@sa createLinkItem 如果重写此函数，建议调用DAAbstractNodeGraphicsItem::linkTo
+ *
  * @param fromPoint 出口链接点
  * @param toItem 链接到的item
  * @param toPoint 链接到的链接点
@@ -936,28 +939,38 @@ DAAbstractNodeLinkGraphicsItem* DAAbstractNodeGraphicsItem::linkTo(const DANodeL
 
 /**
  * @brief 从fromPointName链接到toItem的toPointName点
+ *
+ * 此函数最终调用的是
+ * @code
+ * DAAbstractNodeGraphicsItem::linkTo(const DANodeLinkPoint& fromPoint,
+ *                                                                  DAAbstractNodeGraphicsItem* toItem,
+ *                                                                  const DANodeLinkPoint& toPoint)
+ * @endcode
+ *
+ * 因此重写上面虚函数即可
+ *
  * @param fromPointName
  * @param toItem
  * @param toPointName
  * @return 如果链接失败返回nullptr
  */
-DAAbstractNodeLinkGraphicsItem* DAAbstractNodeGraphicsItem::linkTo(const QString& fromPointName,
-                                                                   DAAbstractNodeGraphicsItem* toItem,
-                                                                   const QString& toPointName)
+DAAbstractNodeLinkGraphicsItem* DAAbstractNodeGraphicsItem::linkToByName(const QString& fromPointName,
+                                                                         DAAbstractNodeGraphicsItem* toItem,
+                                                                         const QString& toPointName)
 {
-	DANodeLinkPoint fromlp = getOutputLinkPoint(fromPointName);
-	DANodeLinkPoint tolp   = toItem->getInputLinkPoint(toPointName);
-	if (!fromlp.isValid()) {
-		qDebug() << QObject::tr("Node %1 cannot find a connection point named %2")  // cn:节点%1无法找到名字为%2的连接点
+    DANodeLinkPoint fromlp = getOutputLinkPoint(fromPointName);
+    DANodeLinkPoint tolp   = toItem->getInputLinkPoint(toPointName);
+    if (!fromlp.isValid()) {
+        qDebug() << QObject::tr("Node %1 cannot find a connection point named %2")  // cn:节点%1无法找到名字为%2的连接点
                         .arg(getNodeName(), fromPointName);
-		return nullptr;
-	}
-	if (!tolp.isValid()) {
-		qDebug() << QObject::tr("Node %1 cannot find a connection point named %2")  // cn:节点%1无法找到名字为%2的连接点
+        return nullptr;
+    }
+    if (!tolp.isValid()) {
+        qDebug() << QObject::tr("Node %1 cannot find a connection point named %2")  // cn:节点%1无法找到名字为%2的连接点
                         .arg(toItem->getNodeName(), toPointName);
-		return nullptr;
-	}
-	return linkTo(fromlp, toItem, tolp);
+        return nullptr;
+    }
+    return linkTo(fromlp, toItem, tolp);
 }
 
 /**

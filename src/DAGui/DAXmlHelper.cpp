@@ -1044,7 +1044,7 @@ bool DAXmlHelperPrivate::loadNodeLinks(DAWorkFlowGraphicsScene* scene, DAWorkFlo
 			continue;
 		}
 		// 建立链接线
-		DAAbstractNodeLinkGraphicsItem* linkitem = fromItem->linkTo(fromKey, toItem, toKey);
+        DAAbstractNodeLinkGraphicsItem* linkitem = fromItem->linkToByName(fromKey, toItem, toKey);
 		if (nullptr == linkitem) {
 			qWarning() << QObject::tr("Unable to link to node %3's link point %4 through link point %2 of node %1")  // cn:节点%1无法通过连接点%2链接到节点%3的连接点%4
                               .arg(fromItem->getNodeName(), fromKey, toItem->getNodeName(), toKey);
@@ -1165,7 +1165,7 @@ bool DAXmlHelperPrivate::loadNodeLinksClipBoardCopy(DAWorkFlowGraphicsScene* sce
 			continue;
 		}
 		// 建立链接线
-		DAAbstractNodeLinkGraphicsItem* linkitem = fromItem->linkTo(fromKey, toItem, toKey);
+        DAAbstractNodeLinkGraphicsItem* linkitem = fromItem->linkToByName(fromKey, toItem, toKey);
 		if (nullptr == linkitem) {
 			qWarning() << QObject::tr("Unable to link to node %3's link point %4 through link point %2 of node %1")  // cn:节点%1无法通过连接点%2链接到节点%3的连接点%4
                               .arg(fromItem->getNodeName(), fromKey, toItem->getNodeName(), toKey);
