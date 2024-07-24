@@ -1215,8 +1215,7 @@ bool DAXmlHelperPrivate::loadNodeLinksClipBoardCopy(DAWorkFlowGraphicsScene* sce
                     ;
 			}
 		}
-		DACommandsForWorkFlowCreateLink* cmd = new DACommandsForWorkFlowCreateLink(linkitem, scene);
-		scene->push(cmd);
+        scene->addNodeLink_(linkitem);
 		linkitem->updatePos();
 	}
 	return true;

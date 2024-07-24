@@ -220,7 +220,11 @@ void DAWorkFlowGraphicsView::cutSelectItems()
 	auto scene = getWorkFlowGraphicsScene();
 	getUndoStack()->beginMacro(tr("cut"));
 	for (DAGraphicsItem* i : qAsConst(its)) {
-		scene->removeItem_(i);
+        if (DAAbstractNodeGraphicsItem* ni = dynamic_cast< DAAbstractNodeGraphicsItem* >(i)) {
+            scene->removeNodeItem_(ni);
+        } else {
+            scene->removeItem_(i);
+        }
 	}
 	getUndoStack()->endMacro();
 }

@@ -226,6 +226,7 @@ QList< QGraphicsItem* > DANodeGraphicsScene::getGraphicsItemsWithoutLink() const
  *
  * @return 返回删除的数量，如果没有删除，返回0
  *
+ * @note 此函数会把item对应的节点也删除
  * @note 有些连带删除，例如选择了一个node，它有连线，删除节点会把连线也删除，这时候返回的删除结果会比较多
  */
 int DANodeGraphicsScene::removeSelectedItems_()
@@ -262,6 +263,16 @@ int DANodeGraphicsScene::removeSelectedItems_()
 void DANodeGraphicsScene::removeNodeItem_(DAAbstractNodeGraphicsItem* i)
 {
     push(new DACommandsForWorkFlowRemoveNodeItem(this, i));
+}
+
+void DANodeGraphicsScene::addNodeItem_(DAAbstractNodeGraphicsItem* i)
+{
+    push(new DACommandsForWorkFlowAddNodeItem(this, i));
+}
+
+void DANodeGraphicsScene::addNodeLink_(DAAbstractNodeLinkGraphicsItem* link)
+{
+    push(new DACommandsForWorkFlowCreateLink(link, this));
 }
 
 /**
@@ -510,8 +521,7 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 			}
 			// 连接成功，把item脱离管理
 			//! 记录到redo/undo中
-			DACommandsForWorkFlowCreateLink* cmd = new DACommandsForWorkFlowCreateLink(linkItem, this);
-			push(cmd);
+            addNodeLink_(linkItem);
 			// 跳出if 到DAGraphicsSceneWithUndoStack::mousePressEvent(mouseEvent);
 		} else {
 			// 非开始链接状态，此时点击的是output

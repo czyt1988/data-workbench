@@ -85,7 +85,57 @@ DAAbstractNode::SharedPointer DACommandsForWorkFlowCreateNode::node() const
 {
 	return mNode;
 }
+//----------------------------------------------------
+// DACommandsForWorkFlowAddNodeItem
+//----------------------------------------------------
 
+DACommandsForWorkFlowAddNodeItem::DACommandsForWorkFlowAddNodeItem(DANodeGraphicsScene* scene,
+                                                                   DAAbstractNodeGraphicsItem* item,
+                                                                   QUndoCommand* parent)
+    : QUndoCommand(parent), mScene(scene), mNodeItem(item)
+{
+    setText(QObject::tr("Add node Item"));  // cn:添加节点
+    //! 针对在命令的构造函数中就直接执行了创建或者删除动作的情况，
+    //! 创建的命令mNeedDelete初始要为true，否则创建此命令，但没推入stack就会出现内存泄露
+    //! 但要注意redo时一定要把mNeedDelete设置好
+    //! 反之亦然，删除的命令，needdelete应该为false
+    mNeedDelete = true;
+}
+
+DACommandsForWorkFlowAddNodeItem::~DACommandsForWorkFlowAddNodeItem()
+{
+    if (mNeedDelete) {
+        if (mNodeItem) {
+            delete mNodeItem;
+        }
+    }
+}
+
+void DACommandsForWorkFlowAddNodeItem::redo()
+{
+    DAWorkFlow* wf = mScene->getWorkflow();
+    if (wf) {
+        //! 这里要把node保存下来，node是智能指针，如果用户正常操作添加，addNode_，node的智能指针是有其它地方的实例不会析构
+        //! 但是，如果是打开工程，打开后再删除，这样ndoe是没有其它地方的实例，wf->removeNode会直接把node析构了，
+        //! 如果这里直接removeNode,节点就会被析构，
+        //! 因此，为了避免node析构，这里要把node再保存下来
+        auto n = mNodeItem->node();
+        wf->addNode(n);
+    }
+    mScene->addItem(mNodeItem);
+    mNeedDelete = false;
+}
+
+void DACommandsForWorkFlowAddNodeItem::undo()
+{
+    mScene->removeItem(mNodeItem);
+    DAWorkFlow* wf = mScene->getWorkflow();
+    if (wf) {
+        auto n = mNodeItem->node();
+        wf->removeNode(n);
+    }
+    mNeedDelete = true;
+}
 //===============================================================
 // DACommandsForWorkFlowRemoveNodeItem
 //===============================================================
@@ -172,7 +222,7 @@ DACommandsForWorkFlowRemoveSelectNodes::DACommandsForWorkFlowRemoveSelectNodes(D
 		new DACommandsForWorkFlowRemoveLink(lk, scene, this);
 	}
 	mIsvalid = (nodeLinks.size() > 0) || (mWillRemoveLink.size() > 0) || mSelectNodeItems.size() > 0
-			   || mWillRemoveNormal.size() > 0;
+               || mWillRemoveNormal.size() > 0;
 }
 
 DACommandsForWorkFlowRemoveSelectNodes::~DACommandsForWorkFlowRemoveSelectNodes()
@@ -221,7 +271,7 @@ void DACommandsForWorkFlowRemoveSelectNodes::classifyItems(DANodeGraphicsScene* 
 }
 
 QList< DAAbstractNodeLinkGraphicsItem* > DACommandsForWorkFlowRemoveSelectNodes::getNodesLinks(
-	const QList< DAAbstractNodeGraphicsItem* >& nodeItems)
+    const QList< DAAbstractNodeGraphicsItem* >& nodeItems)
 {
 	QList< DAAbstractNodeLinkGraphicsItem* > res;
 	for (DAAbstractNodeGraphicsItem* n : qAsConst(nodeItems)) {
@@ -413,7 +463,7 @@ void DACommandsForWorkFlowRemoveLink::undo()
 	mLinkitem->attachFrom(mFromitem, mFromPointName);
 	mLinkitem->attachTo(mToitem, mToPointName);
 	mScene->addItem(mLinkitem);
-	mNeedDelete = false;
+    mNeedDelete = false;
 }
 
 }  // end DA

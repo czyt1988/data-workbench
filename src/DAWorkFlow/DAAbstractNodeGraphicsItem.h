@@ -154,6 +154,10 @@ public:
 	QList< DAAbstractNodeGraphicsItem* > getInputItems() const;
 	// 获取这个节点链接出去的所有节点
 	QList< DAAbstractNodeGraphicsItem* > getOutputItems() const;
+    // 获取输入的信息,把节点和连接点都获取到
+    QList< std::pair< DAAbstractNodeGraphicsItem*, DANodeLinkPoint > > getInputInfos() const;
+    // 获取输出的信息,把节点和连接点都获取到
+    QList< std::pair< DAAbstractNodeGraphicsItem*, DANodeLinkPoint > > getOutputInfos() const;
     // 获取链接链路，上所有的item，这个链路如果有环，item不会重复出现，返回的链路不会包含自身
 	QList< DAAbstractNodeGraphicsItem* > getLinkChain() const;
     // 获取输出链接链路，返回输出链路上所有的item，这个链路如果有环，item不会重复出现，返回的链路不会包含自身

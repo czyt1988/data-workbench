@@ -70,6 +70,10 @@ public:
 	int removeSelectedItems_();
 	// 带redo/undo的节点item删除，此操作会顺带删除节点对应的连接线，避免悬空连接线
 	void removeNodeItem_(DAAbstractNodeGraphicsItem* i);
+    // 带redo/undo的节点item的添加，此函数适用于自己通过factory创建node，然后用node创建item，再加入场景中
+    void addNodeItem_(DAAbstractNodeGraphicsItem* i);
+    // 添加带redo/undo的链接线
+    void addNodeLink_(DAAbstractNodeLinkGraphicsItem* link);
 	// 通过node元对象创建工作流节点
 	DAAbstractNodeGraphicsItem* createNode(const DANodeMetaData& md, const QPointF& pos);
 	DAAbstractNodeGraphicsItem* createNode_(const DANodeMetaData& md, const QPointF& pos);
@@ -89,8 +93,8 @@ signals:
 	 * @param lp 连接点
 	 */
 	void nodeItemLinkPointSelected(DA::DAAbstractNodeGraphicsItem* item,
-								   const DA::DANodeLinkPoint& lp,
-								   QGraphicsSceneMouseEvent* event);
+                                   const DA::DANodeLinkPoint& lp,
+                                   QGraphicsSceneMouseEvent* event);
 
 	/**
 	 * @brief 说明link已经为空，这时会自动remove

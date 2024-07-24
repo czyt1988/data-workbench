@@ -1211,7 +1211,39 @@ QList< DAAbstractNodeGraphicsItem* > DAAbstractNodeGraphicsItem::getOutputItems(
 			res.insert(ti);
 		}
 	}
-	return qset_to_qlist(res);
+    return qset_to_qlist(res);
+}
+
+/**
+ * @brief 获取输入的信息
+ * @return
+ */
+QList< std::pair< DAAbstractNodeGraphicsItem*, DANodeLinkPoint > > DAAbstractNodeGraphicsItem::getInputInfos() const
+{
+    QList< std::pair< DAAbstractNodeGraphicsItem*, DANodeLinkPoint > > res;
+    const QList< DAAbstractNodeLinkGraphicsItem* > inputLinks = getInputLinkItems();
+    for (DAAbstractNodeLinkGraphicsItem* li : inputLinks) {
+        if (DAAbstractNodeGraphicsItem* fi = li->fromNodeItem()) {
+            res.append(std::make_pair(fi, li->fromNodeLinkPoint()));
+        }
+    }
+    return res;
+}
+
+/**
+ * @brief 获取输出的信息
+ * @return
+ */
+QList< std::pair< DAAbstractNodeGraphicsItem*, DANodeLinkPoint > > DAAbstractNodeGraphicsItem::getOutputInfos() const
+{
+    QList< std::pair< DAAbstractNodeGraphicsItem*, DANodeLinkPoint > > res;
+    const QList< DAAbstractNodeLinkGraphicsItem* > outputLinks = getOutputLinkItems();
+    for (DAAbstractNodeLinkGraphicsItem* li : outputLinks) {
+        if (DAAbstractNodeGraphicsItem* fi = li->toNodeItem()) {
+            res.append(std::make_pair(fi, li->toNodeLinkPoint()));
+        }
+    }
+    return res;
 }
 
 QList< DAAbstractNodeLinkGraphicsItem* > DAAbstractNodeGraphicsItem::getLinkItem(const QString& name) const
