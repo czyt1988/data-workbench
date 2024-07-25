@@ -262,12 +262,12 @@ int DANodeGraphicsScene::removeSelectedItems_()
 
 void DANodeGraphicsScene::removeNodeItem_(DAAbstractNodeGraphicsItem* i)
 {
-    push(new DACommandsForWorkFlowRemoveNodeItem(this, i));
+	push(new DACommandsForWorkFlowRemoveNodeItem(this, i));
 }
 
 void DANodeGraphicsScene::addNodeItem_(DAAbstractNodeGraphicsItem* i)
 {
-    push(new DACommandsForWorkFlowAddNodeItem(this, i));
+	push(new DACommandsForWorkFlowAddNodeItem(this, i));
 }
 
 void DANodeGraphicsScene::addNodeLink_(DAAbstractNodeLinkGraphicsItem* link)
@@ -521,7 +521,8 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 			}
 			// 连接成功，把item脱离管理
 			//! 记录到redo/undo中
-            addNodeLink_(linkItem);
+			linkItem->updatePos();
+			addNodeLink_(linkItem);
 			// 跳出if 到DAGraphicsSceneWithUndoStack::mousePressEvent(mouseEvent);
 		} else {
 			// 非开始链接状态，此时点击的是output
