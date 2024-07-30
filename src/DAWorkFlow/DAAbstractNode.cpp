@@ -608,8 +608,10 @@ void DAAbstractNode::detachAll()
 		}
 	}
 	d_ptr->mLinksInfo.clear();
-	d_ptr->mWorkflow = nullptr;  // 清空关系
-	d_ptr->mFactory.reset();
+    //! 清空关系这里，不能清除workflow和factory的关系，尤其不能清除factory的关系
+    //! 因为在redo/undo下，undo后factory会丢失
+    //	d_ptr->mWorkflow = nullptr;  // 清空关系
+    //	d_ptr->mFactory.reset();
 }
 
 /**
