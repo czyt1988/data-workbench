@@ -9,7 +9,9 @@
 #include <QTextDocument>
 namespace DA
 {
-
+//----------------------------------------------------
+// DACommandsForGraphicsItemAdd
+//----------------------------------------------------
 DACommandsForGraphicsItemAdd::DACommandsForGraphicsItemAdd(QGraphicsItem* item, QGraphicsScene* scene, QUndoCommand* parent)
     : QUndoCommand(parent), mItem(item), mScene(scene), mNeedDelete(false)
 {
@@ -38,8 +40,51 @@ void DACommandsForGraphicsItemAdd::undo()
 	mScene->removeItem(mItem);
 	mNeedDelete = true;
 }
+//----------------------------------------------------
+// DACommandsForGraphicsItemsAdd
+//----------------------------------------------------
 
-////////////////////////////////////////////////////////////
+DACommandsForGraphicsItemsAdd::DACommandsForGraphicsItemsAdd(const QList< QGraphicsItem* > its,
+                                                             QGraphicsScene* scene,
+                                                             QUndoCommand* parent)
+    : QUndoCommand(parent), mItems(its), mScene(scene), mNeedDelete(false)
+{
+    setText(QObject::tr("Items Add"));
+}
+
+DACommandsForGraphicsItemsAdd::~DACommandsForGraphicsItemsAdd()
+{
+    if (mNeedDelete) {
+        for (QGraphicsItem* i : qAsConst(mItems)) {
+            delete i;
+        }
+    }
+}
+
+void DACommandsForGraphicsItemsAdd::redo()
+{
+    QUndoCommand::redo();
+    for (QGraphicsItem* item : qAsConst(mItems)) {
+        if (item->scene() != mScene) {
+            mScene->addItem(item);
+        }
+    }
+    mNeedDelete = false;
+}
+
+void DACommandsForGraphicsItemsAdd::undo()
+{
+    QUndoCommand::undo();
+    for (QGraphicsItem* item : qAsConst(mItems)) {
+        mScene->removeItem(item);
+    }
+
+    mNeedDelete = true;
+}
+
+//----------------------------------------------------
+//  DACommandsForGraphicsItemRemove
+//----------------------------------------------------
 
 DACommandsForGraphicsItemRemove::DACommandsForGraphicsItemRemove(QGraphicsItem* item, QGraphicsScene* scene, QUndoCommand* parent)
     : QUndoCommand(parent), mItem(item), mScene(scene), mNeedDelete(false)
@@ -68,8 +113,46 @@ void DACommandsForGraphicsItemRemove::undo()
 	mNeedDelete = false;
 }
 
-////////////////////////////////////////////////////////////
+//----------------------------------------------------
+//  DACommandsForGraphicsItemsRemove
+//----------------------------------------------------
+DACommandsForGraphicsItemsRemove::DACommandsForGraphicsItemsRemove(const QList< QGraphicsItem* > its,
+                                                                   QGraphicsScene* scene,
+                                                                   QUndoCommand* parent)
+    : QUndoCommand(parent), mItems(its), mScene(scene), mNeedDelete(false)
+{
+    setText(QObject::tr("Items Remove"));
+}
 
+DACommandsForGraphicsItemsRemove::~DACommandsForGraphicsItemsRemove()
+{
+    if (mNeedDelete) {
+        for (QGraphicsItem* i : qAsConst(mItems)) {
+            delete i;
+        }
+    }
+}
+
+void DACommandsForGraphicsItemsRemove::redo()
+{
+    QUndoCommand::redo();
+    for (QGraphicsItem* item : qAsConst(mItems)) {
+        if (item->scene() != mScene) {
+            mScene->removeItem(item);
+        }
+    }
+    mNeedDelete = true;
+}
+
+void DACommandsForGraphicsItemsRemove::undo()
+{
+    QUndoCommand::undo();
+    for (QGraphicsItem* item : qAsConst(mItems)) {
+        mScene->addItem(item);
+    }
+
+    mNeedDelete = false;
+}
 /**
  * @brief DACommandsForGraphicsItemMoved::DACommandsForGraphicsItemMoved
  * @param items 需要移动的items
@@ -559,7 +642,7 @@ void DACommandsForGraphicsItemUngrouping::undo()
 // DACommandTextDocumentWrapper
 //===============================================================
 DACommandTextDocumentWrapper::DACommandTextDocumentWrapper(QTextDocument* doc, QUndoCommand* parent)
-	: QUndoCommand(parent), mDoc(doc)
+    : QUndoCommand(parent), mDoc(doc)
 {
 }
 
@@ -634,7 +717,7 @@ bool DACommandTextItemHtmlContentChanged::mergeWith(const QUndoCommand* command)
 		return false;
 	}
 	mNewHtml = other->mNewHtml;
-	return true;
+    return true;
 }
 
 }

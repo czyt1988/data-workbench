@@ -237,8 +237,11 @@ int DANodeGraphicsScene::removeSelectedItems_()
 	//! 注意： 如果处于链接状态（isStartLink() == true）那么不能删除正在链接的那个元素的节点，否则会导致异常
 	// 移除元素过程中，先要删除链接
 	cancelLink();
-	auto cmd = std::make_unique< DA::DACommandsForWorkFlowRemoveSelectNodes >(this);
-	int rc   = cmd->removeCount();
+
+    --这里把DACommandsForWorkFlowRemoveSelectNodes的内容拆解到这里，直接调用removeItems_
+
+        auto cmd = std::make_unique< DA::DACommandsForWorkFlowRemoveSelectNodes >(this);
+    int rc       = cmd->removeCount();
 	if (!cmd->isValid()) {
 		qDebug() << "remove select is invalid";
 		return 0;
@@ -255,7 +258,7 @@ int DANodeGraphicsScene::removeSelectedItems_()
 	}
 	QList< QGraphicsItem* > gl = rawcmd->getRemovedItems();
 	if (gl.size() > 0) {
-		emit itemRemoved(gl);
+        emit itemsRemoved(gl);
 	}
 	return rc;
 }

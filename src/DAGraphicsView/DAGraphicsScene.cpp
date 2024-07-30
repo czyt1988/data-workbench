@@ -235,16 +235,27 @@ QList< QGraphicsItem* > DAGraphicsScene::getSelectedMovableItems()
 /**
  * @brief 等同additem，但使用redo/undo来添加，可以进行redo/undo操作
  * @param item
- * @param autopush 自动推入redo/undo栈，对于无需操作返回的cmd，此值需要设置为true，否则需要手动调用push函数，把返回的cmd推入
  * @return 返回执行的命令
  */
-QUndoCommand* DAGraphicsScene::addItem_(QGraphicsItem* item, bool autopush)
+QUndoCommand* DAGraphicsScene::addItem_(QGraphicsItem* item)
 {
 	DA::DACommandsForGraphicsItemAdd* cmd = new DA::DACommandsForGraphicsItemAdd(item, this);
-	if (autopush) {
-		push(cmd);
-	}
-	return cmd;
+    push(cmd);
+    emit itemsAdded({ item });
+    return cmd;
+}
+
+/**
+ * @brief 等同多次additem，但使用redo/undo来添加，可以进行redo/undo操作
+ * @param item
+ * @return 返回执行的命令
+ */
+QUndoCommand* DAGraphicsScene::addItems_(const QList< QGraphicsItem* >& its)
+{
+    DA::DACommandsForGraphicsItemsAdd* cmd = new DA::DACommandsForGraphicsItemsAdd(its, this);
+    push(cmd);
+    emit itemsAdded(its);
+    return cmd;
 }
 
 /**
@@ -253,13 +264,20 @@ QUndoCommand* DAGraphicsScene::addItem_(QGraphicsItem* item, bool autopush)
  * @param autopush 自动推入redo/undo栈，对于无需操作返回的cmd，此值需要设置为true，否则需要手动调用push函数，把返回的cmd推入
  * @return
  */
-QUndoCommand* DAGraphicsScene::removeItem_(QGraphicsItem* item, bool autopush)
+QUndoCommand* DAGraphicsScene::removeItem_(QGraphicsItem* item)
 {
 	DA::DACommandsForGraphicsItemRemove* cmd = new DA::DACommandsForGraphicsItemRemove(item, this);
-	if (autopush) {
-		push(cmd);
-	}
-	return cmd;
+    push(cmd);
+    emit itemsRemoved({ item });
+    return cmd;
+}
+
+QUndoCommand* DAGraphicsScene::removeItems_(const QList< QGraphicsItem* >& its)
+{
+    DA::DACommandsForGraphicsItemsRemove* cmd = new DA::DACommandsForGraphicsItemsRemove(its, this);
+    push(cmd);
+    emit itemsRemoved(its);
+    return cmd;
 }
 
 /**

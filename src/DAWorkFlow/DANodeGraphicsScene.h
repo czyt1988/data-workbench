@@ -131,19 +131,6 @@ signals:
 	 */
 	void nodeLinksRemoved(const QList< DA::DAAbstractNodeLinkGraphicsItem* >& items);
 
-	/**
-	 * @brief QGraphicsItem的移除，注意，QGraphicsItem是不包含DAAbstractNodeGraphicsItem和DAAbstractNodeLinkGraphicsItem
-	 *
-	 * @sa DAAbstractNodeGraphicsItem 和@sa DAAbstractNodeLinkGraphicsItem 的移除触发@sa nodeItemsRemoved 和 @sa
-	 * nodeLinksRemoved， 非@sa DAAbstractNodeGraphicsItem 和@sa DAAbstractNodeLinkGraphicsItem 才会触发此信号
-	 * @param items 被移除的item
-	 * @note 如果一次性删除了@sa DAAbstractNodeGraphicsItem 、@sa DAAbstractNodeLinkGraphicsItem、QGraphicsItem，那么信号的触发顺序是：
-	 * - @sa nodeItemsRemoved
-	 * - @sa nodeLinksRemoved
-	 * - @sa itemRemoved
-	 */
-	void itemRemoved(const QList< QGraphicsItem* >& items);
-
 protected slots:
 	void onSelectItemChanged(DAGraphicsItem* item);
 	void onSelectLinkChanged(DAGraphicsLinkItem* item);

@@ -94,6 +94,8 @@ enum DAGraphicsCommandIDType
 	CmdID_ItemResizeWidth  = CmdID_GraphicsBegin + 8,   ///< item resize width
 	CmdID_ItemResizeHeight = CmdID_GraphicsBegin + 9,   ///< item resize height
 	CmdID_ItemRotation     = CmdID_GraphicsBegin + 10,  ///< item rotation
+    CmdID_ItemsAdd         = CmdID_GraphicsBegin + 11,  ///< items添加
+    CmdID_ItemsRemove      = CmdID_GraphicsBegin + 12,  ///< items删除
 	// group
 	CmdID_ItemGrouping   = CmdID_GraphicsBegin + 50,  ///< item Grouping
 	CmdID_ItemUnGrouping = CmdID_GraphicsBegin + 51,  ///< item Grouping

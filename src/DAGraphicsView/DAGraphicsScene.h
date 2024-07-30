@@ -54,9 +54,11 @@ public:
 	// 获取选中且能移动的item
 	QList< QGraphicsItem* > getSelectedMovableItems();
 	// 等同additem，但使用redo/undo来添加，可以进行redo/undo操作
-	QUndoCommand* addItem_(QGraphicsItem* item, bool autopush = true);
+    QUndoCommand* addItem_(QGraphicsItem* item);
+    QUndoCommand* addItems_(const QList< QGraphicsItem* >& its);
 	// 等同removeItem，但使用redo/undo来添加，可以进行redo/undo操作
-	QUndoCommand* removeItem_(QGraphicsItem* item, bool autopush = true);
+    QUndoCommand* removeItem_(QGraphicsItem* item);
+    QUndoCommand* removeItems_(const QList< QGraphicsItem* >& its);
 	// 导出为pixmap,dpi=0代表不考虑dpi
 	QPixmap toPixamp(int dpi = 0);
 	// 保存为图片
@@ -185,6 +187,26 @@ signals:
 	   @param item
 	 */
 	void selectLinkChanged(DAGraphicsLinkItem* item);
+
+    /**
+     * @brief item添加的信号
+     *
+     * @note 此信号是通过@ref DAGraphicsScene::addItem_ 或是@ref DAGraphicsScene::addItems_ 函数才会触发，
+     * 直接调用@ref QGraphicsScene::addItem 函数不会触发此函数
+     *
+     * @param item
+     */
+    void itemsAdded(const QList< QGraphicsItem* >& its);
+
+    /**
+     * @brief item移除的信号
+     *
+     * @note 此信号是通过@ref DAGraphicsScene::removeItem_ 或是@ref DAGraphicsScene::removeItems_ 函数才会触发，
+     * 直接调用@ref QGraphicsScene::removeItem 函数不会触发此函数
+     *
+     * @param item
+     */
+    void itemsRemoved(const QList< QGraphicsItem* >& its);
 
 protected:
 	// 判断点击的item是否可以移动
