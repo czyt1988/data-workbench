@@ -90,11 +90,13 @@ class DAWorkFlowOperateWidget;
  *     绘图编辑：da-pannel-figure.fig_setting
  *     添加绘图：da-pannel-figure.chart-add
  * 工作流编辑上下文标签：da-ribbon-contextcategory-workflow
+ *  工作流视图category：da-ribbon-category-workflow.view
+ *     视图pannel：da-pannel-context.workflow.view
+ *     导出pannel：da-pannel-context.workflow.export
  *  工作流编辑category：da-ribbon-category-workflow.edit
  *     条目pannel：da-pannel-context.workflow.item
  *     文本pannel：da-pannel-context.workflow.text
  *     背景pannel：da-pannel-context.workflow.background
- *     视图pannel：da-pannel-context.workflow.view
  *     分组pannel：da-pannel-context.workflow.group
  *  工作流运行category：da-ribbon-category-workflow.run
  *     运行pannel：da-pannel-context.workflow.run
@@ -185,6 +187,8 @@ private:
 	void buildContextCategoryWorkflow();
 	// 构建Workflow-编辑的上下文标签
 	void buildContextCategoryWorkflowEdit_();
+    // 构建Workflow-视图的上下文标签
+    void buildContextCategoryWorkflowView_();
 	// 构建workflow-运行的上下文标签
 	void buildContextCategoryWorkflowRun_();
 	// 构建chart上下文
@@ -331,7 +335,12 @@ public:
 	// Context - workflow
 	//----------------------------------------------------
 	SARibbonContextCategory* m_contextWorkflow;  ///< 对应workflow的上下文
-
+    //----------------------------------------------------
+    // Context - workflow-view
+    //----------------------------------------------------
+    SARibbonCategory* m_categoryWorkflowGraphicsView;  ///< 工作流视图
+    SARibbonPannel* m_pannelWorkflowView;              ///< 图元视图pannel
+    SARibbonPannel* m_pannelWorkflowExport;            ///< 视图导出
 	//----------------------------------------------------
 	// Context - workflow-edit
 	//----------------------------------------------------
@@ -343,9 +352,9 @@ public:
 	SARibbonPannel* m_pannelWorkflowItem;              ///< 图元编辑
 	SARibbonPannel* m_pannelWorkflowBackground;        ///< 背景编辑
 	SARibbonPannel* m_pannelWorkflowText;              ///< 文本编辑
-	SARibbonPannel* m_pannelWorkflowView;              ///< 图元视图pannel
-	SARibbonPannel* m_pannelWorkflowGroup;             ///< 图元分组相关pannel
-	QMenu* mExportWorkflowSceneToImageMenu;            ///< scene导出为图片菜单
+
+    SARibbonPannel* m_pannelWorkflowGroup;   ///< 图元分组相关pannel
+    QMenu* mExportWorkflowSceneToImageMenu;  ///< scene导出为图片菜单
 	//----------------------------------------------------
 	// Context - workflow-run
 	//----------------------------------------------------

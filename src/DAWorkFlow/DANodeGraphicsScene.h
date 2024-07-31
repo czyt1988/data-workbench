@@ -16,7 +16,6 @@ class DAGraphicsPixmapItem;
 class DAGraphicsRectItem;
 class DAGraphicsStandardTextItem;
 class DAGraphicsTextItem;
-
 /**
  * @brief DAAbstractNodeGraphicsItem对应的QGraphicsScene,通过此scene，管理DAWorkFlow内容
  *
@@ -85,6 +84,7 @@ public:
 	DAGraphicsPixmapItem* addPixmapItem_(const QImage& img);
 	// 通过位置获取DAAbstractNodeGraphicsItem，此函数是加强版的itemAt
 	DAAbstractNodeGraphicsItem* nodeItemAt(const QPointF& scenePos) const;
+
 signals:
 
 	/**
@@ -147,8 +147,18 @@ protected:
 	// itemlink都没用节点连接时会调用这个函数，发出
 	void callNodeItemLinkIsEmpty(DAAbstractNodeLinkGraphicsItem* link);
 
+    // 对item进行分类
+    static void classifyItems(const QList< QGraphicsItem* >& sourceItems,
+                              QList< DAAbstractNodeGraphicsItem* >& nodeItems,
+                              QList< DAAbstractNodeLinkGraphicsItem* >& linkItems,
+                              QList< QGraphicsItem* >& normalItem);
+    // 获取node item的所有连接线
+    static QList< DAAbstractNodeLinkGraphicsItem* > getNodesAllLinkItems(const QList< DAAbstractNodeGraphicsItem* >& nodeItems);
+    // 所有节点item对应的node
+    static QList< DAAbstractNode::SharedPointer > nodeItemsToNodes(const QList< DAAbstractNodeGraphicsItem* >& nodeItems);
+
 private:
-	void initConnect();
+    void initConnect();
 };
 }
 #endif  // FCNODEGRAPHICSSCENE_H

@@ -78,6 +78,7 @@
         <file>Icon/viewAll.svg</file>
         <file>Icon/zoomIn.svg</file>
         <file>Icon/zoomOut.svg</file>
+        <file>Icon/lock-view.svg</file>
     </qresource>
     <qresource prefix="/app/dataType">
         <file>Icon/typeDataframe.svg</file>

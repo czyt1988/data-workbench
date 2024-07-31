@@ -80,8 +80,7 @@ public:
 	// 激活UndoStack
 	void setUndoStackActive();
 	// 设置显示grid
-	void setEnableShowGrid(bool on);
-	bool isEnableShowGrid() const;
+    bool isCurrentWorkflowShowGrid() const;
 	// 获取QUndoStack
 	QUndoStack* getUndoStack();
 	// 设置鼠标动作
@@ -116,6 +115,8 @@ public slots:
 	void setSelectShapeBorderPen(const QPen& v);
 	// 设置当前工作流的网格显示与否
 	void setCurrentWorkflowShowGrid(bool on);
+    // 设置当前工作流锁定
+    void setCurrentWorkflowLock(bool on);
 	// 设置当前工作流全部显示
 	void setCurrentWorkflowWholeView();
 	// 设置当前工作流全部显示

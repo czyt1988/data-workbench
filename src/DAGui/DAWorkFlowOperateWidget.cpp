@@ -82,9 +82,9 @@ DAWorkFlowEditWidget* DAWorkFlowOperateWidget::appendWorkflow(const QString& nam
 	connect(scene, &DAWorkFlowGraphicsScene::selectionChanged, this, &DAWorkFlowOperateWidget::onSelectionChanged);
 	connect(wfe, &DAWorkFlowEditWidget::startExecute, this, [ this, wfe ]() { emit workflowStartExecute(wfe); });
 	connect(wfe,
-			&DAWorkFlowEditWidget::nodeExecuteFinished,
-			this,
-			[ this, wfe ](DAAbstractNode::SharedPointer n, bool state) { emit nodeExecuteFinished(wfe, n, state); });
+            &DAWorkFlowEditWidget::nodeExecuteFinished,
+            this,
+            [ this, wfe ](DAAbstractNode::SharedPointer n, bool state) { emit nodeExecuteFinished(wfe, n, state); });
 	connect(wfe, &DAWorkFlowEditWidget::finished, this, [ this, wfe ](bool s) { emit workflowFinished(wfe, s); });
 	ui->tabWidget->addTab(wfe, name);
 	// 把名字保存到DAWorkFlowEditWidget中，在DAProject保存的时候会用到
@@ -277,9 +277,9 @@ void DAWorkFlowOperateWidget::removeWorkflow(int index)
 		return;
 	}
 	QMessageBox::StandardButton btn = QMessageBox::question(this,
-															tr("question"),  // 疑问
-															tr("Confirm to delete workflow:%1")
-																.arg(getWorkFlowWidgetName(index))  // 是否确认删除工作流:%1
+                                                            tr("question"),  // 疑问
+                                                            tr("Confirm to delete workflow:%1")
+                                                                .arg(getWorkFlowWidgetName(index))  // 是否确认删除工作流:%1
 	);
 	if (btn != QMessageBox::Yes) {
 		return;
@@ -303,31 +303,16 @@ void DAWorkFlowOperateWidget::setUndoStackActive()
 }
 
 /**
- * @brief 设置显示grid
- *
- * 此函数影响所有工作流编辑窗口
- * @param on
- */
-void DAWorkFlowOperateWidget::setEnableShowGrid(bool on)
-{
-	mIsShowGrid = on;
-	const int c = count();
-	for (int i = 0; i < c; ++i) {
-		DAWorkFlowEditWidget* w = getWorkFlowWidget(i);
-		if (w == nullptr) {
-			continue;
-		}
-		w->setEnableShowGrid(mIsShowGrid);
-	}
-}
-
-/**
  * @brief 是否显示网格
  * @return
  */
-bool DAWorkFlowOperateWidget::isEnableShowGrid() const
+bool DAWorkFlowOperateWidget::isCurrentWorkflowShowGrid() const
 {
-	return mIsShowGrid;
+    DAWorkFlowGraphicsScene* sc = getCurrentWorkFlowScene();
+    if (!sc) {
+        return false;
+    }
+    return sc->isShowGridLine();
 }
 
 /**
@@ -409,12 +394,30 @@ void DAWorkFlowOperateWidget::setSelectTextFont(const QFont& f)
  */
 void DAWorkFlowOperateWidget::setCurrentWorkflowShowGrid(bool on)
 {
-	DAWorkFlowGraphicsScene* secen = getCurrentWorkFlowScene();
-	if (nullptr == secen) {
+    DAWorkFlowGraphicsScene* sc = getCurrentWorkFlowScene();
+    if (!sc) {
 		return;
 	}
-	secen->showGridLine(on);
-	secen->update();
+    sc->showGridLine(on);
+    sc->update();
+    mIsShowGrid = on;  // 记录最后的状态
+}
+
+/**
+ * @brief 设置当前工作流锁定
+ * @param on
+ */
+void DAWorkFlowOperateWidget::setCurrentWorkflowLock(bool on)
+{
+    DAWorkFlowGraphicsScene* sc = getCurrentWorkFlowScene();
+    if (!sc) {
+        return;
+    }
+    if (on) {
+        sc->lock();
+    } else {
+        sc->unlock();
+    }
 }
 
 /**

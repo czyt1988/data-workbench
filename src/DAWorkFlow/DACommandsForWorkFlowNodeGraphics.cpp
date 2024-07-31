@@ -85,6 +85,40 @@ DAAbstractNode::SharedPointer DACommandsForWorkFlowCreateNode::node() const
 {
 	return mNode;
 }
+
+//----------------------------------------------------
+// DACommandsForWorkFlowRemoveNodes
+//----------------------------------------------------
+DACommandsForWorkFlowRemoveNodes::DACommandsForWorkFlowRemoveNodes(DAWorkFlow* wf,
+                                                                   const QList< DAAbstractNode::SharedPointer >& ns,
+                                                                   QUndoCommand* par)
+    : QUndoCommand(par), mWorkflow(wf), mNodes(ns)
+{
+    setText(QObject::tr("Remove Nodes"));
+}
+
+DACommandsForWorkFlowRemoveNodes::~DACommandsForWorkFlowRemoveNodes()
+{
+}
+
+void DACommandsForWorkFlowRemoveNodes::redo()
+{
+    if (mWorkflow) {
+        for (const auto& n : qAsConst(mNodes)) {
+            mWorkflow->removeNode(n);
+        }
+    }
+}
+
+void DACommandsForWorkFlowRemoveNodes::undo()
+{
+    if (mWorkflow) {
+        for (const auto& n : qAsConst(mNodes)) {
+            mWorkflow->addNode(n);
+        }
+    }
+}
+
 //----------------------------------------------------
 // DACommandsForWorkFlowAddNodeItem
 //----------------------------------------------------
@@ -221,7 +255,7 @@ DACommandsForWorkFlowRemoveSelectNodes::DACommandsForWorkFlowRemoveSelectNodes(D
 		new DACommandsForWorkFlowRemoveLink(lk, scene, this);
 	}
 	mIsvalid = (nodeLinks.size() > 0) || (mWillRemoveLink.size() > 0) || mSelectNodeItems.size() > 0
-			   || mWillRemoveNormal.size() > 0;
+               || mWillRemoveNormal.size() > 0;
 }
 
 DACommandsForWorkFlowRemoveSelectNodes::~DACommandsForWorkFlowRemoveSelectNodes()
@@ -309,12 +343,19 @@ QList< DAAbstractNodeLinkGraphicsItem* > DACommandsForWorkFlowRemoveSelectNodes:
     return mWillRemoveLink;
 }
 /**
- * @brief 获取移除的QGraphicsItem,此函数构造后即可调用
+ * @brief 获取所有移除的QGraphicsItem
  * @return
  */
-QList< QGraphicsItem* > DACommandsForWorkFlowRemoveSelectNodes::getRemovedItems() const
+QList< QGraphicsItem* > DACommandsForWorkFlowRemoveSelectNodes::getAllRemovedItems() const
 {
-    return mWillRemoveNormal;
+    QList< QGraphicsItem* > res = mWillRemoveNormal;
+    for (DAAbstractNodeGraphicsItem* i : qAsConst(mSelectNodeItems)) {
+        res.append(i);
+    }
+    for (DAAbstractNodeLinkGraphicsItem* i : qAsConst(mWillRemoveLink)) {
+        res.append(i);
+    }
+    return res;
 }
 
 void DACommandsForWorkFlowRemoveSelectNodes::redo()
@@ -462,7 +503,7 @@ void DACommandsForWorkFlowRemoveLink::undo()
 	mLinkitem->attachFrom(mFromitem, mFromPointName);
 	mLinkitem->attachTo(mToitem, mToPointName);
 	mScene->addItem(mLinkitem);
-	mNeedDelete = false;
+    mNeedDelete = false;
 }
 
 }  // end DA

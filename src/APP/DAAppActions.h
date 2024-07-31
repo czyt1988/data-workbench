@@ -87,6 +87,7 @@ public:
 	QAction* actionItemUngroup;                 ///< 取消分组
 	QAction* actionExportWorkflowSceneToImage;  ///< 导出png格式
     QAction* actionExportWorkflowSceneToPNG;    ///< 导出png格式
+    QAction* actionWorkflowViewLock;            ///< 锁定视图
 	//===================================================
 	// 绘图标签 Chart Category
 	//===================================================

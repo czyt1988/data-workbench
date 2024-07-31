@@ -12,6 +12,7 @@ class DAGraphicsItem;
 class DAGraphicsLinkItem;
 class DAGraphicsItemGroup;
 class DAAbstractGraphicsSceneAction;
+class DAGraphicsLayout;
 /**
  * @brief 这是带着undostack的GraphicsScene
  * 此QGraphicsScene支持：
@@ -127,6 +128,8 @@ public:
 	bool isHaveSceneAction() const;
 	// 清除场景动作
 	void clearSceneAction();
+    // 获取图层
+    QList< DAGraphicsLayout* > getLayouts() const;
 
 public:
 	static void addItemToGroup(QGraphicsItemGroup* group, const QList< QGraphicsItem* >& willGroupItems);
@@ -141,6 +144,10 @@ public slots:
 	void clearSelection();
 	// 设置item的选中状态
 	int setSelectionState(const QList< QGraphicsItem* >& its, bool isSelect);
+    // 锁定
+    void lock();
+    // 恢复锁定
+    void unlock();
 signals:
 	/**
 	 * @brief item移动发射的信号

@@ -6,6 +6,7 @@
 #include "DAGraphicsItemGroup.h"
 #include "DAGraphicsStandardTextItem.h"
 #include "DAAbstractGraphicsSceneAction.h"
+#include "DAGraphicsLayout.h"
 #include <QPainter>
 #include <QDebug>
 #include <QApplication>
@@ -61,8 +62,11 @@ public:
 	/// beginLink函数调用时会把mLinkItemIsMoved设置为false，只有接收到mouseMove事件后，此变量变为true，在mousePressedEvent才会进行结束判断
 	bool mLinkItemIsMoved { false };
 	bool mIsIgnoreLinkEvent { false };  ///< 设置忽略链接事件的处理，主要忽略mousePressEvent，mouseMoveEvent的链接事件
-	bool mIsReady { true };  ///< 场景是否就绪标记，此参数不保存
+    bool mIsReady { true };              ///< 场景是否就绪标记，此参数不保存
+    QList< DAGraphicsLayout* > mLayout;  ///< 保存所有的图层
 	std::unique_ptr< DAAbstractGraphicsSceneAction > mSceneAction;
+    QHash< QGraphicsItem*, QGraphicsItem::GraphicsItemFlags > mItemsOriginFlags;  ///< 记录锁定前item的状态，用于恢复
+    bool mIsLockMode { false };                                                   ///< 是否在lock状态
 };
 
 ////////////////////////////////////////////////
@@ -571,7 +575,51 @@ int DAGraphicsScene::setSelectionState(const QList< QGraphicsItem* >& its, bool 
 			++changeCnt;
 		}
 	}
-	return changeCnt;
+    return changeCnt;
+}
+
+/**
+ * @brief 锁定
+ *
+ * 锁定后，无法移动，无法编辑，进入只读模式
+ */
+void DAGraphicsScene::lock()
+{
+    DA_D(d);
+    d->mItemsOriginFlags.clear();
+    const QList< QGraphicsItem* > its = items();
+    QGraphicsItem::GraphicsItemFlags lockflags;
+    lockflags.setFlag(QGraphicsItem::ItemIsMovable, false);
+    lockflags.setFlag(QGraphicsItem::ItemIsSelectable, false);
+    lockflags.setFlag(QGraphicsItem::ItemIsFocusable, false);
+    lockflags.setFlag(QGraphicsItem::ItemAcceptsInputMethod, false);
+    for (QGraphicsItem* i : its) {
+        // 记录旧状态
+        d->mItemsOriginFlags[ i ] = i->flags();
+        // 设置锁定状态
+        i->setFlags(lockflags);
+    }
+    d->mIsLockMode = true;
+}
+
+/**
+ * @brief 解锁
+ */
+void DAGraphicsScene::unlock()
+{
+    DA_D(d);
+    const QList< QGraphicsItem* > its = items();
+    const auto endIte                 = d->mItemsOriginFlags.end();
+    for (QGraphicsItem* i : its) {
+        // 恢复旧状态
+        auto ite = d->mItemsOriginFlags.find(i);
+        if (ite != endIte) {
+            // 设置锁定状态
+            i->setFlags(ite.value());
+        }
+    }
+    d->mItemsOriginFlags.clear();
+    d->mIsLockMode = false;
 }
 
 /**
@@ -827,7 +875,16 @@ void DAGraphicsScene::clearSceneAction()
 	if (d_ptr->mSceneAction) {
 		d_ptr->mSceneAction->endAction();
 	}
-	d_ptr->mSceneAction.reset(nullptr);
+    d_ptr->mSceneAction.reset(nullptr);
+}
+
+/**
+ * @brief 获取所有图层
+ * @return
+ */
+QList< DAGraphicsLayout* > DAGraphicsScene::getLayouts() const
+{
+    return d_ptr->mLayout;
 }
 
 /**

@@ -174,11 +174,14 @@ void DAAppActions::buildWorkflowAction()
                                                               true,
                                                               false);
 	// workflow-视图操作
-	actionWorkflowShowGrid  = createAction("actionWorkflowShowGrid", ":/app/bright/Icon/showGrid.svg", true, true);
-	actionWorkflowRun       = createAction("actionWorkflowRun", ":/app/bright/Icon/run.svg");
+    actionWorkflowShowGrid = createAction("actionWorkflowShowGrid", ":/app/bright/Icon/showGrid.svg", true, true);
+    actionWorkflowViewLock = createAction("actionWorkflowViewLock", ":/app/bright/Icon/lock-view.svg", true, false);
+
+    // 运行
+    actionWorkflowRun       = createAction("actionWorkflowRun", ":/app/bright/Icon/run.svg");
 	actionWorkflowTerminate = createAction("actionWorkflowTerminate", ":/app/bright/Icon/stop.svg");
 	actionWorkflowTerminate->setEnabled(false);
-	//
+    // 导出
 	actionExportWorkflowSceneToImage = createAction("actionExportWorkflowSceneToImage", ":/app/bright/Icon/exportToPic.svg");
 	actionExportWorkflowSceneToPNG = createAction("actionExportWorkflowSceneToPNG", ":/app/bright/Icon/exportToPng.svg");
 }
@@ -263,6 +266,7 @@ void DAAppActions::retranslateUi()
 	actionWorkflowStartDrawRect->setText(tr("Draw \nRect"));       // cn:绘制\n矩形
 	actionWorkflowStartDrawText->setText(tr("Draw \nText"));       // cn:绘制\n文本
 	actionWorkflowShowGrid->setText(tr("Show \nGrid"));            // cn:显示\n网格
+    actionWorkflowViewLock->setText(tr("Lock \nView"));            // cn:锁定\n视图
 	actionWorkflowRun->setText(tr("Run \nWorkflow"));              // cn:运行\n工作流
 	actionWorkflowTerminate->setText(tr("Terminate \nWorkflow"));  // cn:停止\n工作流
 

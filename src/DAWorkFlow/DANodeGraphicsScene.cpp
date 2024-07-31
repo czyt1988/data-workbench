@@ -14,6 +14,7 @@
 #include "DAWorkFlow.h"
 #include "DAAbstractNodeFactory.h"
 #include "DAGraphicsRectItem.h"
+#include "DAQtContainerUtil.hpp"
 #include <QPointer>
 
 namespace DA
@@ -237,11 +238,8 @@ int DANodeGraphicsScene::removeSelectedItems_()
 	//! 注意： 如果处于链接状态（isStartLink() == true）那么不能删除正在链接的那个元素的节点，否则会导致异常
 	// 移除元素过程中，先要删除链接
 	cancelLink();
-
-    --这里把DACommandsForWorkFlowRemoveSelectNodes的内容拆解到这里，直接调用removeItems_
-
-        auto cmd = std::make_unique< DA::DACommandsForWorkFlowRemoveSelectNodes >(this);
-    int rc       = cmd->removeCount();
+    auto cmd = std::make_unique< DA::DACommandsForWorkFlowRemoveSelectNodes >(this);
+    int rc   = cmd->removeCount();
 	if (!cmd->isValid()) {
 		qDebug() << "remove select is invalid";
 		return 0;
@@ -256,7 +254,7 @@ int DANodeGraphicsScene::removeSelectedItems_()
 	if (rl.size() > 0) {
 		emit nodeLinksRemoved(rl);
 	}
-	QList< QGraphicsItem* > gl = rawcmd->getRemovedItems();
+    QList< QGraphicsItem* > gl = rawcmd->getAllRemovedItems();
 	if (gl.size() > 0) {
         emit itemsRemoved(gl);
 	}
@@ -393,7 +391,7 @@ DAAbstractNodeGraphicsItem* DANodeGraphicsScene::nodeItemAt(const QPointF& scene
 			return n;
 		}
 	}
-	return nullptr;
+    return nullptr;
 }
 
 void DANodeGraphicsScene::initConnect()
@@ -411,7 +409,62 @@ void DANodeGraphicsScene::initConnect()
 void DANodeGraphicsScene::callNodeItemLinkIsEmpty(DAAbstractNodeLinkGraphicsItem* link)
 {
 	removeItem(link);
-	emit nodeLinkItemIsEmpty(link);
+    emit nodeLinkItemIsEmpty(link);
+}
+
+/**
+ * @brief 对item进行分类
+ * @param sourceItems
+ * @param nodeItems
+ * @param linkItems
+ * @param normalItem
+ */
+void DANodeGraphicsScene::classifyItems(const QList< QGraphicsItem* >& sourceItems,
+                                        QList< DAAbstractNodeGraphicsItem* >& nodeItems,
+                                        QList< DAAbstractNodeLinkGraphicsItem* >& linkItems,
+                                        QList< QGraphicsItem* >& normalItem)
+{
+    if (sourceItems.size() <= 0) {
+        return;
+    }
+    for (QGraphicsItem* i : qAsConst(sourceItems)) {
+        if (DAAbstractNodeGraphicsItem* ni = dynamic_cast< DAAbstractNodeGraphicsItem* >(i)) {
+            nodeItems.append(ni);
+        } else if (DAAbstractNodeLinkGraphicsItem* li = dynamic_cast< DAAbstractNodeLinkGraphicsItem* >(i)) {
+            linkItems.append(li);
+        } else {
+            normalItem.append(i);
+        }
+    }
+}
+
+/**
+ * @brief 获取node item的所有连接线
+ * @param nodeItems
+ * @return 注意返回的是无序的
+ */
+QList< DAAbstractNodeLinkGraphicsItem* > DANodeGraphicsScene::getNodesAllLinkItems(
+    const QList< DAAbstractNodeGraphicsItem* >& nodeItems)
+{
+    QList< DAAbstractNodeLinkGraphicsItem* > res;
+    for (DAAbstractNodeGraphicsItem* n : qAsConst(nodeItems)) {
+        res += n->getLinkItems();
+    }
+    return unique_qlist(res);
+}
+
+/**
+ * @brief 所有节点item对应的node
+ * @param nodeItems
+ * @return
+ */
+QList< DAAbstractNode::SharedPointer > DANodeGraphicsScene::nodeItemsToNodes(const QList< DAAbstractNodeGraphicsItem* >& nodeItems)
+{
+    QList< DAAbstractNode::SharedPointer > res;
+    for (const DAAbstractNodeGraphicsItem* i : nodeItems) {
+        res.append(i->node());
+    }
+    return res;
 }
 
 /**

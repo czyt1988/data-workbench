@@ -198,6 +198,162 @@ void DAAppController::initialize()
 }
 
 /**
+ * @brief 基本绑定
+ * @note 在setDockAreaInterface函数中还有很多绑定操作
+ */
+void DAAppController::initConnection()
+{
+	// Main Category
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionOpen, onActionOpenTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionSave, onActionSaveTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionSaveAs, onActionSaveAsTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionAppendProject, onActionAppendProjectTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionSetting, onActionSettingTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionPluginManager, onActionPluginManagerTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionAbout, onActionAboutTriggered);
+	// Data Category
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionAddData, onActionAddDataTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionRemoveData, onActionRemoveDataTriggered);
+	// Chart Category
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionAddFigure, onActionAddFigureTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionFigureResizeChart, onActionFigureResizeChartTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionFigureNewXYAxis, onActionFigureNewXYAxisTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddCurve, onActionChartAddCurveTriggered);
+
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGrid, onActionChartEnableGridTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGridX, onActionChartEnableGridXTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGridY, onActionChartEnableGridYTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGridXMin, onActionChartEnableGridXMinEnableTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGridYMin, onActionChartEnableGridYMinTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableZoom, onActionChartEnableZoomTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartZoomIn, onActionChartZoomInTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartZoomOut, onActionChartZoomOutTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartZoomAll, onActionChartZoomAllTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnablePan, onActionChartEnablePanTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnablePickerCross, onActionChartEnablePickerCrossTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnablePickerY, onActionChartEnablePickerYTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnablePickerXY, onActionChartEnablePickerXYTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableLegend, onActionChartEnableLegendTriggered);
+
+	// 数据操作的上下文标签 Data Operate Context Category
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionInsertRow, onActionInsertRowTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionInsertRowAbove, onActionInsertRowAboveTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionInsertColumnRight, onActionInsertColumnRightTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionInsertColumnLeft, onActionInsertColumnLeftTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionRemoveRow, onActionRemoveRowTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionRemoveColumn, onActionRemoveColumnTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionRemoveCell, onActionRemoveCellTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionRenameColumns, onActionRenameColumnsTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCreateDataDescribe, onActionCreateDataDescribeTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToNum, onActionCastToNumTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToString, onActionCastToStringTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToDatetime, onActionCastToDatetimeTriggered);
+	// 不知为何使用函数指针无法关联信号和槽
+	//  connect(m_comboxColumnTypes, &DAPyDTypeComboBox::currentDTypeChanged, this,&DAAppRibbonArea::onComboxColumnTypesCurrentDTypeChanged);
+	//  QObject::connect: signal not found in DAPyDTypeComboBox
+#if DA_ENABLE_PYTHON
+	connect(mRibbon->m_comboxColumnTypes,
+            SIGNAL(currentDTypeChanged(DAPyDType)),
+            this,
+            SLOT(onComboxColumnTypesCurrentDTypeChanged(DAPyDType)));
+#endif
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChangeToIndex, onActionChangeToIndexTriggered);
+	// View Category
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowArea, onActionShowWorkFlowAreaTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowManagerArea, onActionShowWorkFlowManagerAreaTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowChartArea, onActionShowChartAreaTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowChartManagerArea, onActionShowChartManagerAreaTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowDataArea, onActionShowDataAreaTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowDataManagerArea, onActionShowDataManagerAreaTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowMessageLogView, onActionShowMessageLogViewTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowSettingWidget, onActionSettingWidgetTriggered);
+    // workflow view 工作流视图
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowViewLock, onActionWorkflowViewLockTriggered);
+
+	// workflow edit 工作流编辑
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowNew, onActionNewWorkflowTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowEnableItemLinkageMove,
+                                onActionWorkflowEnableItemLinkageMoveTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionItemGrouping, onActionItemGroupingTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionItemUngroup, onActionItemUngroupTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowRun, onActionRunCurrentWorkflowTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowTerminate, onActionTerminateCurrentWorkflowTriggered);
+	// workflow edit 工作流编辑/data edit 绘图编辑
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowStartDrawRect, onActionStartDrawRectTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowStartDrawText, onActionStartDrawTextTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowAddBackgroundPixmap, onActionAddBackgroundPixmapTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowLockBackgroundPixmap, onActionLockBackgroundPixmapTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowEnableItemMoveWithBackground,
+                                onActionEnableItemMoveWithBackgroundTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionExportWorkflowSceneToPNG, onActionExportWorkflowScenePNGTriggered);
+	// other
+	connect(mActions->actionGroupRibbonTheme, &QActionGroup::triggered, this, &DAAppController::onActionGroupRibbonThemeTriggered);
+	//===================================================
+	// setDockAreaInterface 有其他的绑定
+	//===================================================
+	//! 注意！！
+	//! 在setDockAreaInterface函数中还有很多绑定操作
+	//
+	DAAppProject* p = mCore->getAppProject();
+	if (p) {
+		connect(p, &DAAppProject::projectSaved, this, &DAAppController::onProjectSaved);
+		connect(p, &DAAppProject::projectLoaded, this, &DAAppController::onProjectLoaded);
+	}
+	//===================================================
+	// Edit标签字体相关信号槽
+	//===================================================
+	connect(mRibbon, &DAAppRibbonArea::selectedFont, this, &DAAppController::onEditFontChanged);
+	connect(mRibbon, &DAAppRibbonArea::selectedFontColor, this, &DAAppController::onEditFontColorChanged);
+	connect(mRibbon, &DAAppRibbonArea::selectedBrush, this, &DAAppController::onEditBrushChanged);
+	connect(mRibbon, &DAAppRibbonArea::selectedPen, this, &DAAppController::onEditPenChanged);
+
+	//===================================================
+	// workflow窗口字体相关信号槽
+	//===================================================
+
+	connect(mRibbon, &DAAppRibbonArea::selectedWorkflowItemFont, this, &DAAppController::onCurrentWorkflowFontChanged);
+	connect(mRibbon, &DAAppRibbonArea::selectedWorkflowItemFontColor, this, &DAAppController::onCurrentWorkflowFontColorChanged);
+	connect(mRibbon,
+            &DAAppRibbonArea::selectedWorkflowItemBrush,
+            this,
+            &DAAppController::onCurrentWorkflowShapeBackgroundBrushChanged);
+	connect(mRibbon, &DAAppRibbonArea::selectedWorkflowItemPen, this, &DAAppController::onCurrentWorkflowShapeBorderPenChanged);
+
+	//===================================================
+	// name
+	//===================================================
+	connect(mDock->dockManager(), &ads::CDockManager::focusedDockWidgetChanged, this, &DAAppController::onFocusedDockWidgetChanged);
+	// DADataManageWidget 数据操作
+	// DADataOperateWidget
+	DADataOperateWidget* dow = mDock->getDataOperateWidget();
+	connect(dow, &DADataOperateWidget::pageAdded, this, &DAAppController::onDataOperatePageAdded);
+	// DAChartManager
+	DAChartManageWidget* cmw = mDock->getChartManageWidget();
+	connect(cmw, &DAChartManageWidget::figureItemClicked, this, &DAAppController::onFigureItemClicked);
+	connect(cmw, &DAChartManageWidget::figureItemDoubleClicked, this, &DAAppController::onFigureItemDoubleClicked);
+	// DAChartOperateWidget
+	DAChartOperateWidget* cow = mDock->getChartOperateWidget();
+	connect(cow, &DAChartOperateWidget::figureCreated, this, &DAAppController::onFigureCreated);
+	connect(cow, &DAChartOperateWidget::currentFigureChanged, this, &DAAppController::onCurrentFigureChanged);
+	connect(cow, &DAChartOperateWidget::chartAdded, this, &DAAppController::onChartAdded);
+	connect(cow, &DAChartOperateWidget::currentChartChanged, this, &DAAppController::onCurrentChartChanged);
+	// 鼠标动作完成的触发
+	connect(mDock->getWorkFlowOperateWidget(),
+            &DAWorkFlowOperateWidget::mouseActionFinished,
+            this,
+            &DAAppController::onWorkFlowGraphicsSceneMouseActionFinished);
+	//
+	DAWorkFlowOperateWidget* workflowOpt = mDock->getWorkFlowOperateWidget();
+	connect(workflowOpt, &DAWorkFlowOperateWidget::selectionItemChanged, this, &DAAppController::onSelectionGraphicsItemChanged);
+	connect(workflowOpt, &DAWorkFlowOperateWidget::workflowStartExecute, this, &DAAppController::onWorkflowStartExecute);
+	connect(workflowOpt, &DAWorkFlowOperateWidget::workflowFinished, this, &DAAppController::onWorkflowFinished);
+	connect(mActions->actionWorkflowShowGrid,
+            &QAction::triggered,
+            workflowOpt,
+            &DAWorkFlowOperateWidget::setCurrentWorkflowShowGrid);
+}
+
+/**
  * @brief 获取当前dataframeOperateWidget,如果没有返回nullptr
  *
  * 此函数不返回nullptr的前提是:DataOperateWidget处于焦点，且是DataFrameOperateWidget
@@ -206,16 +362,16 @@ void DAAppController::initialize()
  */
 DADataOperateOfDataFrameWidget* DAAppController::getCurrentDataFrameOperateWidget(bool checkDataOperateAreaFocused)
 {
-	if (nullptr == mDock) {
-		return nullptr;
-	}
-	if (checkDataOperateAreaFocused) {
-		if (!(mDock->isDockingAreaFocused(DAAppDockingArea::DockingAreaDataOperate))) {
-			// 窗口未选中就退出
-			return nullptr;
-		}
-	}
-	return mDock->getDataOperateWidget()->getCurrentDataFrameWidget();
+    if (nullptr == mDock) {
+        return nullptr;
+    }
+    if (checkDataOperateAreaFocused) {
+        if (!(mDock->isDockingAreaFocused(DAAppDockingArea::DockingAreaDataOperate))) {
+            // 窗口未选中就退出
+            return nullptr;
+        }
+    }
+    return mDock->getDataOperateWidget()->getCurrentDataFrameWidget();
 }
 
 /**
@@ -315,160 +471,6 @@ bool DAAppController::isLastFocusedOnWorkflowOptWidget() const
 bool DAAppController::isLastFocusedOnDataOptWidget() const
 {
     return mLastFocusedOpertateWidget.testFlag(LastFocusedOnDataOpt);
-}
-
-/**
- * @brief 基本绑定
- * @note 在setDockAreaInterface函数中还有很多绑定操作
- */
-void DAAppController::initConnection()
-{
-	// Main Category
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionOpen, onActionOpenTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionSave, onActionSaveTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionSaveAs, onActionSaveAsTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionAppendProject, onActionAppendProjectTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionSetting, onActionSettingTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionPluginManager, onActionPluginManagerTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionAbout, onActionAboutTriggered);
-	// Data Category
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionAddData, onActionAddDataTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionRemoveData, onActionRemoveDataTriggered);
-	// Chart Category
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionAddFigure, onActionAddFigureTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionFigureResizeChart, onActionFigureResizeChartTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionFigureNewXYAxis, onActionFigureNewXYAxisTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddCurve, onActionChartAddCurveTriggered);
-
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGrid, onActionChartEnableGridTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGridX, onActionChartEnableGridXTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGridY, onActionChartEnableGridYTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGridXMin, onActionChartEnableGridXMinEnableTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGridYMin, onActionChartEnableGridYMinTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableZoom, onActionChartEnableZoomTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartZoomIn, onActionChartZoomInTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartZoomOut, onActionChartZoomOutTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartZoomAll, onActionChartZoomAllTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnablePan, onActionChartEnablePanTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnablePickerCross, onActionChartEnablePickerCrossTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnablePickerY, onActionChartEnablePickerYTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnablePickerXY, onActionChartEnablePickerXYTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableLegend, onActionChartEnableLegendTriggered);
-
-	// 数据操作的上下文标签 Data Operate Context Category
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionInsertRow, onActionInsertRowTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionInsertRowAbove, onActionInsertRowAboveTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionInsertColumnRight, onActionInsertColumnRightTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionInsertColumnLeft, onActionInsertColumnLeftTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionRemoveRow, onActionRemoveRowTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionRemoveColumn, onActionRemoveColumnTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionRemoveCell, onActionRemoveCellTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionRenameColumns, onActionRenameColumnsTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCreateDataDescribe, onActionCreateDataDescribeTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToNum, onActionCastToNumTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToString, onActionCastToStringTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToDatetime, onActionCastToDatetimeTriggered);
-	// 不知为何使用函数指针无法关联信号和槽
-	//  connect(m_comboxColumnTypes, &DAPyDTypeComboBox::currentDTypeChanged, this,&DAAppRibbonArea::onComboxColumnTypesCurrentDTypeChanged);
-	//  QObject::connect: signal not found in DAPyDTypeComboBox
-#if DA_ENABLE_PYTHON
-	connect(mRibbon->m_comboxColumnTypes,
-            SIGNAL(currentDTypeChanged(DAPyDType)),
-            this,
-            SLOT(onComboxColumnTypesCurrentDTypeChanged(DAPyDType)));
-#endif
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChangeToIndex, onActionChangeToIndexTriggered);
-	// View Category
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowArea, onActionShowWorkFlowAreaTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowManagerArea, onActionShowWorkFlowManagerAreaTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowChartArea, onActionShowChartAreaTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowChartManagerArea, onActionShowChartManagerAreaTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowDataArea, onActionShowDataAreaTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowDataManagerArea, onActionShowDataManagerAreaTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowMessageLogView, onActionShowMessageLogViewTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowSettingWidget, onActionSettingWidgetTriggered);
-
-	// workflow edit 工作流编辑
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowNew, onActionNewWorkflowTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowEnableItemLinkageMove,
-                                onActionWorkflowEnableItemLinkageMoveTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionItemGrouping, onActionItemGroupingTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionItemUngroup, onActionItemUngroupTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowRun, onActionRunCurrentWorkflowTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowTerminate, onActionTerminateCurrentWorkflowTriggered);
-	// workflow edit 工作流编辑/data edit 绘图编辑
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowStartDrawRect, onActionStartDrawRectTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowStartDrawText, onActionStartDrawTextTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowAddBackgroundPixmap, onActionAddBackgroundPixmapTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowLockBackgroundPixmap, onActionLockBackgroundPixmapTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowEnableItemMoveWithBackground,
-                                onActionEnableItemMoveWithBackgroundTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionExportWorkflowSceneToPNG, onActionExportWorkflowScenePNGTriggered);
-	// other
-	connect(mActions->actionGroupRibbonTheme, &QActionGroup::triggered, this, &DAAppController::onActionGroupRibbonThemeTriggered);
-	//===================================================
-	// setDockAreaInterface 有其他的绑定
-	//===================================================
-	//! 注意！！
-	//! 在setDockAreaInterface函数中还有很多绑定操作
-	//
-	DAAppProject* p = mCore->getAppProject();
-	if (p) {
-		connect(p, &DAAppProject::projectSaved, this, &DAAppController::onProjectSaved);
-		connect(p, &DAAppProject::projectLoaded, this, &DAAppController::onProjectLoaded);
-	}
-	//===================================================
-	// Edit标签字体相关信号槽
-	//===================================================
-	connect(mRibbon, &DAAppRibbonArea::selectedFont, this, &DAAppController::onEditFontChanged);
-	connect(mRibbon, &DAAppRibbonArea::selectedFontColor, this, &DAAppController::onEditFontColorChanged);
-	connect(mRibbon, &DAAppRibbonArea::selectedBrush, this, &DAAppController::onEditBrushChanged);
-	connect(mRibbon, &DAAppRibbonArea::selectedPen, this, &DAAppController::onEditPenChanged);
-
-	//===================================================
-	// workflow窗口字体相关信号槽
-	//===================================================
-
-	connect(mRibbon, &DAAppRibbonArea::selectedWorkflowItemFont, this, &DAAppController::onCurrentWorkflowFontChanged);
-	connect(mRibbon, &DAAppRibbonArea::selectedWorkflowItemFontColor, this, &DAAppController::onCurrentWorkflowFontColorChanged);
-	connect(mRibbon,
-            &DAAppRibbonArea::selectedWorkflowItemBrush,
-            this,
-            &DAAppController::onCurrentWorkflowShapeBackgroundBrushChanged);
-	connect(mRibbon, &DAAppRibbonArea::selectedWorkflowItemPen, this, &DAAppController::onCurrentWorkflowShapeBorderPenChanged);
-
-	//===================================================
-	// name
-	//===================================================
-	connect(mDock->dockManager(), &ads::CDockManager::focusedDockWidgetChanged, this, &DAAppController::onFocusedDockWidgetChanged);
-	// DADataManageWidget 数据操作
-	// DADataOperateWidget
-	DADataOperateWidget* dow = mDock->getDataOperateWidget();
-	connect(dow, &DADataOperateWidget::pageAdded, this, &DAAppController::onDataOperatePageAdded);
-	// DAChartManager
-	DAChartManageWidget* cmw = mDock->getChartManageWidget();
-	connect(cmw, &DAChartManageWidget::figureItemClicked, this, &DAAppController::onFigureItemClicked);
-	connect(cmw, &DAChartManageWidget::figureItemDoubleClicked, this, &DAAppController::onFigureItemDoubleClicked);
-	// DAChartOperateWidget
-	DAChartOperateWidget* cow = mDock->getChartOperateWidget();
-	connect(cow, &DAChartOperateWidget::figureCreated, this, &DAAppController::onFigureCreated);
-	connect(cow, &DAChartOperateWidget::currentFigureChanged, this, &DAAppController::onCurrentFigureChanged);
-	connect(cow, &DAChartOperateWidget::chartAdded, this, &DAAppController::onChartAdded);
-	connect(cow, &DAChartOperateWidget::currentChartChanged, this, &DAAppController::onCurrentChartChanged);
-	// 鼠标动作完成的触发
-	connect(mDock->getWorkFlowOperateWidget(),
-            &DAWorkFlowOperateWidget::mouseActionFinished,
-            this,
-            &DAAppController::onWorkFlowGraphicsSceneMouseActionFinished);
-	//
-	DAWorkFlowOperateWidget* workflowOpt = mDock->getWorkFlowOperateWidget();
-	connect(workflowOpt, &DAWorkFlowOperateWidget::selectionItemChanged, this, &DAAppController::onSelectionGraphicsItemChanged);
-	connect(workflowOpt, &DAWorkFlowOperateWidget::workflowStartExecute, this, &DAAppController::onWorkflowStartExecute);
-	connect(workflowOpt, &DAWorkFlowOperateWidget::workflowFinished, this, &DAAppController::onWorkflowFinished);
-	connect(mActions->actionWorkflowShowGrid,
-            &QAction::triggered,
-            workflowOpt,
-            &DAWorkFlowOperateWidget::setCurrentWorkflowShowGrid);
 }
 
 DAAppConfig* DAAppController::getConfig() const
@@ -906,7 +908,18 @@ void DAAppController::onActionExportWorkflowScenePNGTriggered()
 		} else {
 			qCritical() << tr("Image save failed at path %1").arg(p);  // cn:图片保存失败：%1
 		}
-	}
+    }
+}
+
+/**
+ * @brief 工作流视图锁定
+ * @param on
+ */
+void DAAppController::onActionWorkflowViewLockTriggered(bool on)
+{
+    if (DAWorkFlowOperateWidget* s = mDock->getWorkFlowOperateWidget()) {
+        s->setCurrentWorkflowLock(on);
+    }
 }
 
 /**

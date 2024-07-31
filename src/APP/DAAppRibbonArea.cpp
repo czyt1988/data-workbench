@@ -456,6 +456,7 @@ void DAAppRibbonArea::buildContextCategoryWorkflow()
 {
 	m_contextWorkflow = ribbonBar()->addContextCategory(tr("Workflow"));
 	m_contextWorkflow->setObjectName(QStringLiteral("da-ribbon-contextcategory-workflow"));
+    buildContextCategoryWorkflowView_();
 	buildContextCategoryWorkflowEdit_();
 	buildContextCategoryWorkflowRun_();
 	ribbonBar()->showContextCategory(m_contextWorkflow);
@@ -477,8 +478,6 @@ void DAAppRibbonArea::buildContextCategoryWorkflowEdit_()
 	//  Item
 	m_pannelWorkflowItem = m_categoryWorkflowGraphicsEdit->addPannel(tr("Item"));
 	m_pannelWorkflowItem->setObjectName(QStringLiteral("da-pannel-context.workflow.item"));
-	m_pannelWorkflowItem->addLargeAction(m_actions->actionWorkflowNew);
-	m_pannelWorkflowItem->addSeparator();
 	m_workflowShapeEditPannelWidget = new DAShapeEditPannelWidget(m_pannelWorkflowItem);
 	m_pannelWorkflowItem->addWidget(m_workflowShapeEditPannelWidget, SARibbonPannelItem::Large);
 	m_pannelWorkflowItem->addSeparator();
@@ -495,17 +494,6 @@ void DAAppRibbonArea::buildContextCategoryWorkflowEdit_()
 	m_pannelWorkflowBackground->addLargeAction(m_actions->actionWorkflowAddBackgroundPixmap);
 	m_pannelWorkflowBackground->addMediumAction(m_actions->actionWorkflowLockBackgroundPixmap);
 	m_pannelWorkflowBackground->addMediumAction(m_actions->actionWorkflowEnableItemMoveWithBackground);
-	m_pannelWorkflowBackground->addMenu(mExportWorkflowSceneToImageMenu,
-                                        SARibbonPannelItem::Large,
-                                        QToolButton::MenuButtonPopup);
-	// View
-	m_pannelWorkflowView = m_categoryWorkflowGraphicsEdit->addPannel(tr("View"));
-	m_pannelWorkflowView->setObjectName(QStringLiteral("da-pannel-context.workflow.view"));
-	m_pannelWorkflowView->addLargeAction(m_actions->actionWorkflowShowGrid);
-	m_pannelWorkflowView->addSeparator();
-    m_pannelWorkflowView->addLargeAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionZoomFit));
-    m_pannelWorkflowView->addMediumAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionZoomIn));
-    m_pannelWorkflowView->addMediumAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionZoomOut));
 
 	// group
 	m_pannelWorkflowGroup = m_categoryWorkflowGraphicsEdit->addPannel(tr("Group"));
@@ -531,6 +519,25 @@ void DAAppRibbonArea::buildContextCategoryWorkflowEdit_()
             &DAFontEditPannelWidget::currentFontColorChanged,
             this,
             &DAAppRibbonArea::selectedWorkflowItemFontColor);
+}
+
+void DAAppRibbonArea::buildContextCategoryWorkflowView_()
+{
+    DAWorkFlowOperateWidget* wfo   = m_dockArea->getWorkFlowOperateWidget();
+    m_categoryWorkflowGraphicsView = m_contextWorkflow->addCategoryPage(tr("Workflow View"));  // cn:工作流视图
+    m_categoryWorkflowGraphicsView->setObjectName(QStringLiteral("da-ribbon-category-workflow.view"));
+    // View
+    m_pannelWorkflowView = m_categoryWorkflowGraphicsView->addPannel(tr("View"));  // cn:视图
+    m_pannelWorkflowView->setObjectName(QStringLiteral("da-pannel-context.workflow.view"));
+    m_pannelWorkflowView->addLargeAction(m_actions->actionWorkflowViewLock);
+    m_pannelWorkflowView->addLargeAction(m_actions->actionWorkflowShowGrid);
+    m_pannelWorkflowView->addSeparator();
+    m_pannelWorkflowView->addLargeAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionZoomFit));
+    m_pannelWorkflowView->addMediumAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionZoomIn));
+    m_pannelWorkflowView->addMediumAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionZoomOut));
+    m_pannelWorkflowExport = m_categoryWorkflowGraphicsView->addPannel(tr("Export"));  // cn:导出
+    m_pannelWorkflowExport->setObjectName(QStringLiteral("da-pannel-context.workflow.export"));
+    m_pannelWorkflowExport->addMenu(mExportWorkflowSceneToImageMenu, SARibbonPannelItem::Large, QToolButton::MenuButtonPopup);
 }
 
 /**

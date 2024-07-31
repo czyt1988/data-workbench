@@ -245,11 +245,6 @@ private slots:
     void onActionStartDrawRectTriggered(bool on);
     // 绘制文本框
     void onActionStartDrawTextTriggered(bool on);
-    // 运行
-    void onActionRunCurrentWorkflowTriggered();
-    // 终止
-    void onActionTerminateCurrentWorkflowTriggered();
-
     // 通用的字体变更
     void onEditFontChanged(const QFont& f);
     void onEditFontColorChanged(const QColor& c);
@@ -275,8 +270,17 @@ private slots:
     void onActionItemGroupingTriggered();
     // 取消分组
     void onActionItemUngroupTriggered();
+
+    /////////---视图------
     // 导出png
     void onActionExportWorkflowScenePNGTriggered();
+    // 锁定视图
+    void onActionWorkflowViewLockTriggered(bool on);
+    /////////---运行------
+    // 运行
+    void onActionRunCurrentWorkflowTriggered();
+    // 终止
+    void onActionTerminateCurrentWorkflowTriggered();
     //===================================================
     // 其他
     //===================================================
