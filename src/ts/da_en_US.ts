@@ -757,127 +757,127 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="APP/DAAppController.cpp" line="608"/>
-        <location filename="APP/DAAppController.cpp" line="684"/>
+        <location filename="APP/DAAppController.cpp" line="610"/>
+        <location filename="APP/DAAppController.cpp" line="686"/>
         <source>project file(*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="623"/>
+        <location filename="APP/DAAppController.cpp" line="625"/>
         <source>Question</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="624"/>
+        <location filename="APP/DAAppController.cpp" line="626"/>
         <source>Another project already exists. Do you want to replace it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="638"/>
-        <location filename="APP/DAAppController.cpp" line="697"/>
+        <location filename="APP/DAAppController.cpp" line="640"/>
+        <location filename="APP/DAAppController.cpp" line="699"/>
         <source>failed to load project file:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="651"/>
-        <location filename="APP/DAAppController.cpp" line="719"/>
+        <location filename="APP/DAAppController.cpp" line="653"/>
+        <location filename="APP/DAAppController.cpp" line="721"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="653"/>
+        <location filename="APP/DAAppController.cpp" line="655"/>
         <source>project file (*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="663"/>
+        <location filename="APP/DAAppController.cpp" line="665"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="664"/>
+        <location filename="APP/DAAppController.cpp" line="666"/>
         <source>Whether to overwrite the file:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="673"/>
-        <location filename="APP/DAAppController.cpp" line="730"/>
+        <location filename="APP/DAAppController.cpp" line="675"/>
+        <location filename="APP/DAAppController.cpp" line="732"/>
         <source>Project saved failed!,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="677"/>
-        <location filename="APP/DAAppController.cpp" line="748"/>
+        <location filename="APP/DAAppController.cpp" line="679"/>
+        <location filename="APP/DAAppController.cpp" line="750"/>
         <source>Project saved successfully,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="721"/>
+        <location filename="APP/DAAppController.cpp" line="723"/>
         <source>Project Files (*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="765"/>
+        <location filename="APP/DAAppController.cpp" line="767"/>
         <source>Project load successfully,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="831"/>
+        <location filename="APP/DAAppController.cpp" line="833"/>
         <source>Image files (*.png *.jpg)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="832"/>
+        <location filename="APP/DAAppController.cpp" line="834"/>
         <source>Any files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="905"/>
+        <location filename="APP/DAAppController.cpp" line="907"/>
         <source>The image was successfully saved in path %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="907"/>
+        <location filename="APP/DAAppController.cpp" line="909"/>
         <source>Image save failed at path %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="935"/>
+        <location filename="APP/DAAppController.cpp" line="948"/>
         <source>get null project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="941"/>
+        <location filename="APP/DAAppController.cpp" line="954"/>
         <source>warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="942"/>
+        <location filename="APP/DAAppController.cpp" line="955"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1206"/>
+        <location filename="APP/DAAppController.cpp" line="1219"/>
         <source>Before creating a new coordinate,you need to create a figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1525"/>
+        <location filename="APP/DAAppController.cpp" line="1538"/>
         <source>%1_Describe</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1526"/>
+        <location filename="APP/DAAppController.cpp" line="1539"/>
         <source>Generate descriptive statistics that summarize the central tendency, dispersion and shape of a [%1]’s distribution, excluding NaN values</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1645"/>
+        <location filename="APP/DAAppController.cpp" line="1658"/>
         <source>new workflow name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1646"/>
+        <location filename="APP/DAAppController.cpp" line="1659"/>
         <source>new workflow name:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1032,7 +1032,7 @@ Config</source>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="172"/>
         <location filename="APP/DAAppRibbonArea.cpp" line="194"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="529"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="530"/>
         <source>View</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1110,13 +1110,13 @@ Config</source>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="196"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="546"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="548"/>
         <source>Workflow Run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="197"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="549"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="551"/>
         <source>Run</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1143,8 +1143,8 @@ Config</source>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="204"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="560"/>
         <location filename="APP/DAAppRibbonArea.cpp" line="562"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="564"/>
         <source>Chart Edit</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1184,7 +1184,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="537"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="538"/>
         <source>Export</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2290,98 +2290,98 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="427"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="440"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="454"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="430"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="443"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="457"/>
         <source>Loss View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="468"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="481"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="499"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="517"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="530"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="543"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="556"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="569"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="823"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="471"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="484"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="502"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="520"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="533"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="546"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="559"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="572"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="826"/>
         <source>No active workflow detected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="486"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="504"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="489"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="507"/>
         <source>Unable to get workflow correctly</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="750"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="751"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="753"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="754"/>
         <source>Copy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="752"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="753"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="755"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="756"/>
         <source>Cut</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="754"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="755"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="757"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="758"/>
         <source>Paste</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="756"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="757"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="759"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="760"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="758"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="759"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="761"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="762"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="760"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="763"/>
         <source>Select All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="761"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="764"/>
         <source>Select all items</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="762"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="765"/>
         <source>Zoom In</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="763"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="766"/>
         <source>Zoom in graphics view</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="764"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="767"/>
         <source>Zoom Out</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="765"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="768"/>
         <source>Zoom Out graphics view</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="766"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="769"/>
         <source>Zoom to Fit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="767"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="770"/>
         <source>Zoom to fit screen size</source>
         <translation type="unfinished"></translation>
     </message>
