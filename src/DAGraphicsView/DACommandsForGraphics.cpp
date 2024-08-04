@@ -3,6 +3,7 @@
 #include <QGraphicsItem>
 #include "DAGraphicsScene.h"
 #include "DAGraphicsResizeableItem.h"
+#include "DAGraphicsItem.h"
 #include "DAGraphicsItemGroup.h"
 #include "DAQtContainerUtil.hpp"
 #include <QObject>
@@ -54,32 +55,32 @@ DACommandsForGraphicsItemsAdd::DACommandsForGraphicsItemsAdd(const QList< QGraph
 
 DACommandsForGraphicsItemsAdd::~DACommandsForGraphicsItemsAdd()
 {
-    if (mNeedDelete) {
-        for (QGraphicsItem* i : qAsConst(mItems)) {
-            delete i;
-        }
-    }
+	if (mNeedDelete) {
+		for (QGraphicsItem* i : qAsConst(mItems)) {
+			delete i;
+		}
+	}
 }
 
 void DACommandsForGraphicsItemsAdd::redo()
 {
-    QUndoCommand::redo();
-    for (QGraphicsItem* item : qAsConst(mItems)) {
-        if (item->scene() != mScene) {
-            mScene->addItem(item);
-        }
-    }
-    mNeedDelete = false;
+	QUndoCommand::redo();
+	for (QGraphicsItem* item : qAsConst(mItems)) {
+		if (item->scene() != mScene) {
+			mScene->addItem(item);
+		}
+	}
+	mNeedDelete = false;
 }
 
 void DACommandsForGraphicsItemsAdd::undo()
 {
-    QUndoCommand::undo();
-    for (QGraphicsItem* item : qAsConst(mItems)) {
-        mScene->removeItem(item);
-    }
+	QUndoCommand::undo();
+	for (QGraphicsItem* item : qAsConst(mItems)) {
+		mScene->removeItem(item);
+	}
 
-    mNeedDelete = true;
+	mNeedDelete = true;
 }
 
 //----------------------------------------------------
@@ -126,32 +127,32 @@ DACommandsForGraphicsItemsRemove::DACommandsForGraphicsItemsRemove(const QList< 
 
 DACommandsForGraphicsItemsRemove::~DACommandsForGraphicsItemsRemove()
 {
-    if (mNeedDelete) {
-        for (QGraphicsItem* i : qAsConst(mItems)) {
-            delete i;
-        }
-    }
+	if (mNeedDelete) {
+		for (QGraphicsItem* i : qAsConst(mItems)) {
+			delete i;
+		}
+	}
 }
 
 void DACommandsForGraphicsItemsRemove::redo()
 {
-    QUndoCommand::redo();
-    for (QGraphicsItem* item : qAsConst(mItems)) {
-        if (item->scene() != mScene) {
-            mScene->removeItem(item);
-        }
-    }
-    mNeedDelete = true;
+	QUndoCommand::redo();
+	for (QGraphicsItem* item : qAsConst(mItems)) {
+		if (item->scene() != mScene) {
+			mScene->removeItem(item);
+		}
+	}
+	mNeedDelete = true;
 }
 
 void DACommandsForGraphicsItemsRemove::undo()
 {
-    QUndoCommand::undo();
-    for (QGraphicsItem* item : qAsConst(mItems)) {
-        mScene->addItem(item);
-    }
+	QUndoCommand::undo();
+	for (QGraphicsItem* item : qAsConst(mItems)) {
+		mScene->addItem(item);
+	}
 
-    mNeedDelete = false;
+	mNeedDelete = false;
 }
 /**
  * @brief DACommandsForGraphicsItemMoved::DACommandsForGraphicsItemMoved
@@ -717,7 +718,7 @@ bool DACommandTextItemHtmlContentChanged::mergeWith(const QUndoCommand* command)
 		return false;
 	}
 	mNewHtml = other->mNewHtml;
-    return true;
+	return true;
 }
 
 }
