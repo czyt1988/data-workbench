@@ -189,18 +189,25 @@ DATable< QVariant > DAAxObjectExcelSheetWrapper::readTable()
     if (var.isNull()) {
         return res;
     }
-    QVariantList varRows = var.toList();
-    if (varRows.isEmpty()) {
+    // 只有一个单元格时，是不会转换为list的
+    if (var.canConvert(QMetaType::QVariantList)) {
+        QVariantList varRows = var.toList();
+        if (varRows.isEmpty()) {
+            return res;
+        }
+        const int rowCount = varRows.size();
+        for (int r = 0; r < rowCount; ++r) {
+            QVariantList rowData;
+            rowData = varRows[ r ].toList();
+            for (int c = 0; c < rowData.size(); ++c) {
+                res[ { r, c } ] = rowData[ c ];
+            }
+        }
         return res;
     }
-    const int rowCount = varRows.size();
-    for (int r = 0; r < rowCount; ++r) {
-        QVariantList rowData;
-        rowData = varRows[ r ].toList();
-        for (int c = 0; c < rowData.size(); ++c) {
-            res[ { r, c } ] = rowData[ c ];
-        }
-    }
+
+    // 无法转换为list，说明是单一数据或空
+    res[ { 0, 0 } ] = var;
     return res;
 }
 /**
