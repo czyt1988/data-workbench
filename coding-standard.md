@@ -275,3 +275,61 @@ class DANodeLinkPoint
 //操作符重载不应该定义在命名空间以外
 bool operator==(const DA::DANodeLinkPoint& a, const DA::DANodeLinkPoint& b);
 ```
+
+# Qt编程注意事项
+
+## 不同屏幕缩放比例下QPixmap绘制问题
+
+在不同屏幕缩放比例下，QPixmap的长宽高尺寸是不一样的
+
+有如下程序，先从QIcon获取QPixmap
+
+```cpp
+QPixmap mPixmap;
+QIcon mIcon;
+
+...
+
+mPixmap = mIcon.pixmap(getBodySize().toSize());
+```
+
+在paintEvent里绘制,这里演示是要把pixmap绘制到bodyRect的中心，下面是错误的绘制方法
+
+```cpp
+void xxx::paintBody(QPainter* painter,
+                    const QStyleOptionGraphicsItem* option,
+                    QWidget* widget,
+                    const QRectF& bodyRect)
+{
+    painter->save();
+    QRect pixmapRect = mPixmap.rect();
+    // 计算位图绘制的起始点
+    int xoffset = bodyRect.x() + (bodyRect.width() - pixmapRect.width()) / 2;
+    int yoffset = bodyRect.y() + (bodyRect.height() - pixmapRect.height()) / 2;
+    painter->setRenderHint(QPainter::SmoothPixmapTransform, true);
+    painter->drawPixmap(QPoint(xoffset, yoffset), mPixmap);
+    painter->restore();
+    ...
+}
+```
+
+上面方法之所以错误，是因为没有考虑devicePixelRatio，在缩放比例为100%时，上面代码绘制的图片没有问题，但缩放比例不是100%，上面的代码绘制出来是不正确的位置，主要异常在xoffset和yoffset，因为pixmapRect.width()/height()并非QPixmap在当前绘图坐标系下的宽高，这时两个坐标系是不一致的，你要获取当前绘图坐标系下的宽高，需要除以devicePixelRatio，正确的操作如下
+
+```cpp
+void xxx::paintBody(QPainter* painter,
+                    const QStyleOptionGraphicsItem* option,
+                    QWidget* widget,
+                    const QRectF& bodyRect)
+{
+    painter->save();
+    QRect pixmapRect = mPixmap.rect();
+    qreal dr         = mPixmap.devicePixelRatio();
+    // 注意在不同屏幕缩放比例下，pixmap的实际尺寸要除以devicePixelRatio
+    int xoffset = bodyRect.x() + (bodyRect.width() - pixmapRect.width() / dr) / 2;
+    int yoffset = bodyRect.y() + (bodyRect.height() - pixmapRect.height() / dr) / 2;
+    painter->setRenderHint(QPainter::SmoothPixmapTransform, true);
+    painter->drawPixmap(QPoint(xoffset, yoffset), mPixmap);
+    painter->restore();
+    ...
+}
+```

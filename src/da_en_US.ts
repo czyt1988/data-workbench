@@ -4113,6 +4113,7 @@ Config</source>
         <location filename="3rdparty/ADS/examples/hideshow/MainWindow.ui" line="14"/>
         <location filename="3rdparty/ADS/examples/sidebar/MainWindow.ui" line="14"/>
         <location filename="3rdparty/ADS/examples/simple/MainWindow.ui" line="14"/>
+        <location filename="3rdparty/SARibbon/src/example/MdiAreaWindowExample/MainWindow.ui" line="14"/>
         <location filename="3rdparty/SARibbon/src/example/NormalMenuBarExample/MainWindow.ui" line="14"/>
         <location filename="tst/FCD3Viewer/MainWindow.ui" line="14"/>
         <source>MainWindow</source>
@@ -4144,6 +4145,7 @@ Config</source>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="59"/>
+        <location filename="3rdparty/SARibbon/src/example/MdiAreaWindowExample/MainWindow.ui" line="29"/>
         <source>toolBar</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4362,7 +4364,7 @@ Config</source>
     <message>
         <location filename="3rdparty/QtPropertyBrowser/examples/canvas_typed/mainwindow.cpp" line="379"/>
         <location filename="3rdparty/QtPropertyBrowser/examples/canvas_variant/mainwindow.cpp" line="354"/>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1073"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1120"/>
         <source>Font</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4378,70 +4380,70 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="233"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="234"/>
         <source>
 The text display of the &quot;LooseThreeRow&quot; style is word wrap and also displays the title bar. You can also control whether the button is line breaking through SARibbonBar::setEnableWordWrap,and whether the title bar is displayed through SARibbonBar::setEnableShowPannelTitle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="236"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="237"/>
         <source>ribbonBar()-&gt;setRibbonStyle(SARibbonBar::RibbonStyleLooseThreeRow);</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="242"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="243"/>
         <source>
 The text display of the &quot;LooseTwoRow&quot; style is not word wrap and also displays the title bar. You can also control whether the button is line breaking through SARibbonBar::setEnableWordWrap,and whether the title bar is displayed through SARibbonBar::setEnableShowPannelTitle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="245"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="246"/>
         <source>ribbonBar()-&gt;setRibbonStyle(SARibbonBar::RibbonStyleLooseTwoRow);</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="251"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="252"/>
         <source>
 The text display of the &quot;LooseThreeRow&quot; style is word wrap and not displays the title bar. You can also control whether the button is line breaking through SARibbonBar::setEnableWordWrap,and whether the title bar is displayed through SARibbonBar::setEnableShowPannelTitle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="254"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="255"/>
         <source>ribbonBar()-&gt;setRibbonStyle(SARibbonBar::RibbonStyleCompactThreeRow);</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="260"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="261"/>
         <source>
 The text display of the &quot;CompactTwoRow&quot; style is not word wrap and not displays the title bar. You can also control whether the button is line breaking through SARibbonBar::setEnableWordWrap,and whether the title bar is displayed through SARibbonBar::setEnableShowPannelTitle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="263"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="264"/>
         <source>ribbonBar()-&gt;setRibbonStyle(SARibbonBar::RibbonStyleCompactTwoRow);</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="290"/>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="344"/>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="631"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="295"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="351"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="669"/>
         <source>question</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="290"/>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="344"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="296"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="352"/>
         <source>Apply the last modification?
 If not, local data will be reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="426"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="435"/>
         <source>infomation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="427"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="436"/>
         <source>
  ===============
  SARibbonBar version:%1
@@ -4451,425 +4453,425 @@ If not, local data will be reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="441"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="450"/>
         <source>  &amp;File  </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="451"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="460"/>
         <source>select qss file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="521"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="530"/>
         <source>By using the SARibbonBar::setEnableWordWrap function, you can set whether text breaks or not.
 By default, the two line mode will not wrap, the three line mode will wrap.
 You can force the two line mode to wrap, or the three line mode to not wrap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="631"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="669"/>
         <source>Confirm whether to exit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="648"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="686"/>
         <source>Save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="661"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="699"/>
         <source>hide ribbon</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="669"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="707"/>
         <source>show 
 hide button</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="677"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="715"/>
         <source>word wrap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="685"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="723"/>
         <source>use office style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="694"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="732"/>
         <source>use wps style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="702"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="740"/>
         <source>use office 2 row style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="710"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="748"/>
         <source>use wps 2row style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="724"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="762"/>
         <source>RibbonTheme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="738"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="779"/>
         <source>Alignment Center</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="751"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="792"/>
         <source>item %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="756"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="797"/>
         <source>test 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="760"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="801"/>
         <source>use QToolButton::MenuButtonPopup mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="763"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="804"/>
         <source>test 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="765"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="806"/>
         <source>use QToolButton::InstantPopup mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="770"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="811"/>
         <source>Delayed
 Popup</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="776"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="817"/>
         <source>Menu Button Popup</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="781"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="822"/>
         <source>Instant Popup</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="786"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="827"/>
         <source>Delayed Popup checkable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="792"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="833"/>
         <source>Menu Button Popup checkable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="798"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="839"/>
         <source>disable action</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="807"/>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="897"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="848"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="938"/>
         <source>Option Action Triggered</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="815"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="856"/>
         <source>show Context</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="820"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="861"/>
         <source>delete Context</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="831"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="872"/>
         <source>Word
 Wrap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="835"/>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="844"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="876"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="885"/>
         <source>Text can be manually wrapped(use \n), and will appear as 1 line in the case of SARibbonBar::setEnableWordWrap (false)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="839"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="880"/>
         <source>Word 
 Wrap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="851"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="892"/>
         <source>widget test</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="857"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="898"/>
         <source>SARibbonComboBox test</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="907"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="948"/>
         <source>pannel one</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="915"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="956"/>
         <source>Decrease Margin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="916"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="957"/>
         <source>Decrease Indent</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="917"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="958"/>
         <source>Wrap Image Left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="918"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="959"/>
         <source>Wrap Image Right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="924"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="965"/>
         <source>Align Right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="927"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="968"/>
         <source>Align Left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="930"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="971"/>
         <source>Align Center</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="958"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1000"/>
         <source>Files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="968"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1011"/>
         <source>Apps</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="977"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1020"/>
         <source>pannel two</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="980"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1023"/>
         <source>remove application button</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="985"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1028"/>
         <source>show very long text in a button,balabalabala etc</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="988"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1033"/>
         <source>style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="992"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1037"/>
         <source>use qss</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="996"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1041"/>
         <source>load customize from xml file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1000"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1045"/>
         <source>window normal button</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1046"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1093"/>
         <source>remove pannel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1051"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1098"/>
         <source>remove this category</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1077"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1124"/>
         <source>select font</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1101"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1148"/>
         <source>Larger</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1104"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1151"/>
         <source>Smaller</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1110"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1157"/>
         <source>Font Size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1114"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1161"/>
         <source>Larger Font Text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1119"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1167"/>
         <source>Grid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1136"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1255"/>
         <source>color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1196"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1315"/>
         <source>context</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1198"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1317"/>
         <source>Page1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1201"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1320"/>
         <source>Page2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1215"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1334"/>
         <source>show and hide test</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1223"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1342"/>
         <source>Disable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1232"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1351"/>
         <source>unlock</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1241"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1360"/>
         <source>1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1242"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1361"/>
         <source>very short string</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1265"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1384"/>
         <source>show/hide</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1272"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1391"/>
         <source>hide beside pannel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1274"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1393"/>
         <source>show beside pannel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1298"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1417"/>
         <source>hide action2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1301"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1420"/>
         <source>show action2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1307"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1426"/>
         <source>hide action4</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1310"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1429"/>
         <source>show action4</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1318"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1437"/>
         <source>spinbox:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1326"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1445"/>
         <source>linedit:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1456"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1601"/>
         <source>help</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1457"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1602"/>
         <source>Visible</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1475"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1620"/>
         <source>Login</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1511"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1656"/>
         <source>in common use</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1512"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1657"/>
         <source>no icon action</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1513"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1658"/>
         <source>have icon action</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1562"/>
+        <location filename="3rdparty/SARibbon/src/example/MainWindowExample/mainwindow.cpp" line="1707"/>
         <source>The SARibbonToolButton::setPopupMode(QToolButton::DelayedPopup) method can be used to set the menu pop-up method to delayed pop-up. This also demonstrates manually setting text wrapping</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4922,6 +4924,11 @@ Wrap</source>
     <message>
         <location filename="3rdparty/SARibbon/src/example/StaticExample/MainWindow.cpp" line="19"/>
         <source>other</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/SARibbon/src/example/MdiAreaWindowExample/MainWindow.ui" line="57"/>
+        <source>add window</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4986,56 +4993,56 @@ Wrap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13217"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="332"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13486"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="336"/>
         <source>SARibbon Warning !!! customize rename category,but get an empty category object name,if you want to customize SARibbon,please make sure every element has been set object name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13241"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="356"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13510"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="360"/>
         <source>SARibbon Warning !!! customize rename pannel,but get an empty category/pannel object name,if you want to customize SARibbon,please make sure every element has been set object name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13264"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="378"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13533"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="383"/>
         <source>SARibbon Warning !!! customize change category order,but get an empty category object name,if you want to customize SARibbon,please make sure every element has been set object name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13288"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="402"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13557"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="407"/>
         <source>SARibbon Warning !!! customize change pannel order,but get an empty category/pannel object name,if you want to customize SARibbon,please make sure every element has been set object name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13317"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="431"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13586"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="436"/>
         <source>SARibbon Warning !!! customize change action order,but get an empty category/pannel/action object name,if you want to customize SARibbon,please make sure every element has been set object name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13339"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="453"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13608"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="458"/>
         <source>SARibbon Warning !!! customize remove category,but get an empty category object name,if you want to customize SARibbon,please make sure every element has been set object name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13360"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="473"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13629"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="479"/>
         <source>SARibbon Warning !!! customize remove pannel,but get an empty category/pannel object name,if you want to customize SARibbon,please make sure every element has been set object name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13386"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="499"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13655"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="505"/>
         <source>SARibbon Warning !!! customize remove action,but get an empty category/pannel/action object name,if you want to customize SARibbon,please make sure every element has been set object name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13408"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="521"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13677"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="527"/>
         <source>SARibbon Warning !!! customize visible category,but get an empty category object name,if you want to customize SARibbon,please make sure every element has been set object name.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5399,53 +5406,53 @@ params:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="18"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="19"/>
         <source>Item Add</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="52"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="53"/>
         <source>Items Add</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="92"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="93"/>
         <source>Item Remove</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="124"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="125"/>
         <source>Items Remove</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="171"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="172"/>
         <source>Items Move</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="240"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="241"/>
         <source>Item Move</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="323"/>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="333"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="324"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="334"/>
         <source>Item Resize</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="404"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="405"/>
         <source>Item Resize Width</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="449"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="450"/>
         <source>Item Resize Height</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="494"/>
+        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="495"/>
         <source>Item Rotation</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6573,7 +6580,7 @@ params:
 <context>
     <name>SARibbonActionsManager</name>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="4504"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="4542"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonActionsManager.cpp" line="334"/>
         <source>not in ribbon</source>
         <translation type="unfinished"></translation>
@@ -6582,7 +6589,7 @@ params:
 <context>
     <name>SARibbonActionsManagerModel</name>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="4699"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="4737"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonActionsManager.cpp" line="529"/>
         <source>action name</source>
         <translation type="unfinished"></translation>
@@ -6591,7 +6598,7 @@ params:
 <context>
     <name>SARibbonCategoryLayout</name>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="8301"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="8503"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCategoryLayout.cpp" line="130"/>
         <source>in SARibbonCategoryLayout cannot addItem,use addPannel instead</source>
         <translation type="unfinished"></translation>
@@ -6600,7 +6607,7 @@ params:
 <context>
     <name>SARibbonContextCategory</name>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="8959"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="9160"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonContextCategory.cpp" line="67"/>
         <source>SARibbonContextCategory have category %1,will skip</source>
         <translation type="unfinished"></translation>
@@ -6609,19 +6616,19 @@ params:
 <context>
     <name>SARibbonCustomizeDialog</name>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15153"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15422"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeDialog.cpp" line="51"/>
         <source>Customize Dialog</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15154"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15423"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeDialog.cpp" line="52"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15155"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15424"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeDialog.cpp" line="53"/>
         <source>OK</source>
         <translation type="unfinished"></translation>
@@ -6630,137 +6637,137 @@ params:
 <context>
     <name>SARibbonCustomizeWidget</name>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13943"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14212"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="357"/>
         <source>Customize Widget</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13944"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14213"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="358"/>
         <source>Please Select</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13948"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14217"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="362"/>
         <source>Find Command</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13949"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14218"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="363"/>
         <source>Add &gt;&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13950"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14219"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="364"/>
         <source>&lt;&lt; Remove</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13952"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14221"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="366"/>
         <source>Customize the Ribbon</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13953"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14222"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="367"/>
         <source>Main Category</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13954"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14223"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="368"/>
         <source>All Category</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13955"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14224"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="369"/>
         <source>New Category</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13956"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14225"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="370"/>
         <source>New Group</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13957"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14226"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="371"/>
         <source>Rename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13958"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14227"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="372"/>
         <source>reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13959"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14228"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="373"/>
         <source>proportion:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14354"/>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14357"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14623"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14626"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="768"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="771"/>
         <source>large</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14355"/>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14359"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14624"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14628"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="769"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="773"/>
         <source>small</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14358"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14627"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="772"/>
         <source>medium</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14740"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15009"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="1154"/>
         <source>new category[customize]%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14767"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15036"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="1181"/>
         <source>new pannel[customize]%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14815"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15084"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="1229"/>
         <source>rename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14815"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15084"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="1229"/>
         <source>name:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15091"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15360"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="1505"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15092"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15361"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="1506"/>
         <source>Are you sure reset all customize setting?</source>
         <translation type="unfinished"></translation>
@@ -6769,14 +6776,14 @@ params:
 <context>
     <name>SARibbonSystemButtonBar</name>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="2559"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonSystemButtonBar.cpp" line="312"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="2562"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonSystemButtonBar.cpp" line="315"/>
         <source>Restore</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="2559"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonSystemButtonBar.cpp" line="312"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="2562"/>
+        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonSystemButtonBar.cpp" line="315"/>
         <source>Maximize</source>
         <translation type="unfinished"></translation>
     </message>
