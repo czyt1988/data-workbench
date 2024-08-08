@@ -77,20 +77,24 @@ DAWorkFlowEditWidget* DAWorkFlowOperateWidget::appendWorkflow(const QString& nam
 	wfe->setDefaultTextColor(mDefaultTextColor);
 	wfe->setDefaultTextFont(mDefaultFont);
 	DAWorkFlowGraphicsScene* scene = wfe->getWorkFlowGraphicsScene();
+	// 同步状态
+	scene->setEnableNodeLink(isEnableWorkflowLink());
+
 	connect(wfe, &DAWorkFlowEditWidget::selectNodeItemChanged, this, &DAWorkFlowOperateWidget::selectNodeItemChanged);
 	connect(wfe, &DAWorkFlowEditWidget::mouseActionFinished, this, &DAWorkFlowOperateWidget::mouseActionFinished);
 	connect(scene, &DAWorkFlowGraphicsScene::selectionChanged, this, &DAWorkFlowOperateWidget::onSelectionChanged);
 	connect(wfe, &DAWorkFlowEditWidget::startExecute, this, [ this, wfe ]() { emit workflowStartExecute(wfe); });
 	connect(wfe,
-            &DAWorkFlowEditWidget::nodeExecuteFinished,
-            this,
-            [ this, wfe ](DAAbstractNode::SharedPointer n, bool state) { emit nodeExecuteFinished(wfe, n, state); });
+			&DAWorkFlowEditWidget::nodeExecuteFinished,
+			this,
+			[ this, wfe ](DAAbstractNode::SharedPointer n, bool state) { emit nodeExecuteFinished(wfe, n, state); });
 	connect(wfe, &DAWorkFlowEditWidget::finished, this, [ this, wfe ](bool s) { emit workflowFinished(wfe, s); });
 	ui->tabWidget->addTab(wfe, name);
 	// 把名字保存到DAWorkFlowEditWidget中，在DAProject保存的时候会用到
 	wfe->setWindowTitle(name);
 	emit workflowCreated(wfe);
 	ui->tabWidget->setCurrentIndex(ui->tabWidget->indexOf(wfe));
+
 	return wfe;
 }
 
@@ -277,9 +281,9 @@ void DAWorkFlowOperateWidget::removeWorkflow(int index)
 		return;
 	}
 	QMessageBox::StandardButton btn = QMessageBox::question(this,
-                                                            tr("question"),  // 疑问
-                                                            tr("Confirm to delete workflow:%1")
-                                                                .arg(getWorkFlowWidgetName(index))  // 是否确认删除工作流:%1
+															tr("question"),  // 疑问
+															tr("Confirm to delete workflow:%1")
+																.arg(getWorkFlowWidgetName(index))  // 是否确认删除工作流:%1
 	);
 	if (btn != QMessageBox::Yes) {
 		return;
@@ -308,11 +312,11 @@ void DAWorkFlowOperateWidget::setUndoStackActive()
  */
 bool DAWorkFlowOperateWidget::isCurrentWorkflowShowGrid() const
 {
-    DAWorkFlowGraphicsScene* sc = getCurrentWorkFlowScene();
-    if (!sc) {
-        return false;
-    }
-    return sc->isShowGridLine();
+	DAWorkFlowGraphicsScene* sc = getCurrentWorkFlowScene();
+	if (!sc) {
+		return false;
+	}
+	return sc->isShowGridLine();
 }
 
 /**
@@ -394,13 +398,13 @@ void DAWorkFlowOperateWidget::setSelectTextFont(const QFont& f)
  */
 void DAWorkFlowOperateWidget::setCurrentWorkflowShowGrid(bool on)
 {
-    DAWorkFlowGraphicsScene* sc = getCurrentWorkFlowScene();
-    if (!sc) {
+	DAWorkFlowGraphicsScene* sc = getCurrentWorkFlowScene();
+	if (!sc) {
 		return;
 	}
-    sc->showGridLine(on);
-    sc->update();
-    mIsShowGrid = on;  // 记录最后的状态
+	sc->showGridLine(on);
+	sc->update();
+	mIsShowGrid = on;  // 记录最后的状态
 }
 
 /**
@@ -409,15 +413,15 @@ void DAWorkFlowOperateWidget::setCurrentWorkflowShowGrid(bool on)
  */
 void DAWorkFlowOperateWidget::setCurrentWorkflowLock(bool on)
 {
-    DAWorkFlowGraphicsScene* sc = getCurrentWorkFlowScene();
-    if (!sc) {
-        return;
-    }
-    if (on) {
-        sc->lock();
-    } else {
-        sc->unlock();
-    }
+	DAWorkFlowGraphicsScene* sc = getCurrentWorkFlowScene();
+	if (!sc) {
+		return;
+	}
+	if (on) {
+		sc->lock();
+	} else {
+		sc->unlock();
+	}
 }
 
 /**
@@ -576,6 +580,28 @@ void DAWorkFlowOperateWidget::cancelCurrent()
 }
 
 /**
+ * @brief 设置是否允许连接
+ * @param on
+ */
+void DAWorkFlowOperateWidget::setEnableWorkflowLink(bool on)
+{
+	mEnableWorkflowLink = on;
+	iteratorScene([ on ](DAWorkFlowGraphicsScene* sc) -> bool {
+		sc->setEnableNodeLink(on);
+		return true;
+	});
+}
+
+/**
+ * @brief 是否允许连接
+ * @return
+ */
+bool DAWorkFlowOperateWidget::isEnableWorkflowLink() const
+{
+    return mEnableWorkflowLink;
+}
+
+/**
  * @brief 文本字体
  * @param c
  */
@@ -589,11 +615,11 @@ QFont DAWorkFlowOperateWidget::getDefaultTextFont() const
  */
 void DAWorkFlowOperateWidget::setDefaultTextFont(const QFont& f)
 {
-	mDefaultFont                             = f;
-	QList< DAWorkFlowGraphicsScene* > secens = getAllWorkFlowScene();
-	for (DAWorkFlowGraphicsScene* sc : qAsConst(secens)) {
+	mDefaultFont = f;
+	iteratorScene([ f ](DAWorkFlowGraphicsScene* sc) -> bool {
 		sc->setDefaultTextFont(f);
-	}
+		return true;
+	});
 }
 /**
  * @brief 文本颜色
@@ -609,11 +635,11 @@ QColor DAWorkFlowOperateWidget::getDefaultTextColor() const
  */
 void DAWorkFlowOperateWidget::setDefaultTextColor(const QColor& c)
 {
-	mDefaultTextColor                        = c;
-	QList< DAWorkFlowGraphicsScene* > secens = getAllWorkFlowScene();
-	for (DAWorkFlowGraphicsScene* sc : secens) {
+	mDefaultTextColor = c;
+	iteratorScene([ c ](DAWorkFlowGraphicsScene* sc) -> bool {
 		sc->setDefaultTextColor(c);
-	}
+		return true;
+	});
 }
 
 /**
@@ -810,6 +836,21 @@ QAction* DAWorkFlowOperateWidget::getInnerAction(DAWorkFlowOperateWidget::InnerA
 		break;
 	}
 	return nullptr;
+}
+
+/**
+ * @brief 迭代场景操作
+ * @param fp 函数指：bool(DAWorkFlowGraphicsScene*)，返回false代表迭代结束，返回true，代表迭代继续
+ * @sa FpScenesOpt
+ */
+void DAWorkFlowOperateWidget::iteratorScene(FpScenesOpt fp)
+{
+	const QList< DAWorkFlowGraphicsScene* > secens = getAllWorkFlowScene();
+	for (DAWorkFlowGraphicsScene* sc : secens) {
+		if (!fp(sc)) {
+			return;
+		}
+	}
 }
 
 /**

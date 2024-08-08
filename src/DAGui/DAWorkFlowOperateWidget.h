@@ -1,6 +1,7 @@
 ﻿#ifndef DAWORKFLOWOPERATEWIDGET_H
 #define DAWORKFLOWOPERATEWIDGET_H
 #include <QWidget>
+#include <functional>
 #include "DAGuiAPI.h"
 #include "DAGraphicsStandardTextItem.h"
 #include "DAWorkFlowGraphicsScene.h"
@@ -22,6 +23,17 @@ class DAAbstractNodeGraphicsItem;
 class DAGUI_API DAWorkFlowOperateWidget : public QWidget
 {
 	Q_OBJECT
+public:
+	/**
+	 * @brief 场景操作的迭代函数指针，传入场景指针，返回false代表迭代中断，返回true代表迭代继续
+	 */
+	using FpScenesOpt = std::function< bool(DAWorkFlowGraphicsScene*) >;
+
+	/**
+	 * @brief DAWorkFlowEditWidget操作的迭代函数指针，传入DAWorkFlowEditWidget指针，返回false代表迭代中断，返回true代表迭代继续
+	 */
+	using FpEditWidgetOpt = std::function< bool(DAWorkFlowEditWidget*) >;
+
 public:
 	/**
 	 * @brief DAWorkFlowOperateWidget窗口内部的action
@@ -80,7 +92,7 @@ public:
 	// 激活UndoStack
 	void setUndoStackActive();
 	// 设置显示grid
-    bool isCurrentWorkflowShowGrid() const;
+	bool isCurrentWorkflowShowGrid() const;
 	// 获取QUndoStack
 	QUndoStack* getUndoStack();
 	// 设置鼠标动作
@@ -100,6 +112,8 @@ public:
 	void setOnlyOneWorkflow(bool v);
 	// 获取窗口内置的action，一般这个函数用来把action设置到工具栏或者菜单中
 	QAction* getInnerAction(InnerActions act);
+	// 迭代场景操作
+	void iteratorScene(FpScenesOpt fp);
 public slots:
 	// 添加一个背景图
 	void addBackgroundPixmap(const QString& pixmapPath);
@@ -115,8 +129,8 @@ public slots:
 	void setSelectShapeBorderPen(const QPen& v);
 	// 设置当前工作流的网格显示与否
 	void setCurrentWorkflowShowGrid(bool on);
-    // 设置当前工作流锁定
-    void setCurrentWorkflowLock(bool on);
+	// 设置当前工作流锁定
+	void setCurrentWorkflowLock(bool on);
 	// 设置当前工作流全部显示
 	void setCurrentWorkflowWholeView();
 	// 设置当前工作流全部显示
@@ -139,6 +153,9 @@ public slots:
 	void removeCurrentSelectItems();
 	// 当前的wf执行取消动作
 	void cancelCurrent();
+	// 设置是否允许连接
+	void setEnableWorkflowLink(bool on);
+	bool isEnableWorkflowLink() const;
 signals:
 
 	/**
@@ -217,7 +234,8 @@ private:
 	QColor mDefaultTextColor;
 	QFont mDefaultFont;
 	bool mIsDestorying;
-	bool mOnlyOneWorkflow { false };  ///< 设置只允许一个工作流
+	bool mOnlyOneWorkflow { false };    ///< 设置只允许一个工作流
+	bool mEnableWorkflowLink { true };  ///< 是否允许工作流连接
 	QAction* mActionCopy { nullptr };
 	QAction* mActionCut { nullptr };
 	QAction* mActionPaste { nullptr };

@@ -69,10 +69,10 @@ public:
 	int removeSelectedItems_();
 	// 带redo/undo的节点item删除，此操作会顺带删除节点对应的连接线，避免悬空连接线
 	void removeNodeItem_(DAAbstractNodeGraphicsItem* i);
-    // 带redo/undo的节点item的添加，此函数适用于自己通过factory创建node，然后用node创建item，再加入场景中
-    void addNodeItem_(DAAbstractNodeGraphicsItem* i);
-    // 添加带redo/undo的链接线
-    void addNodeLink_(DAAbstractNodeLinkGraphicsItem* link);
+	// 带redo/undo的节点item的添加，此函数适用于自己通过factory创建node，然后用node创建item，再加入场景中
+	void addNodeItem_(DAAbstractNodeGraphicsItem* i);
+	// 添加带redo/undo的链接线
+	void addNodeLink_(DAAbstractNodeLinkGraphicsItem* link);
 	// 通过node元对象创建工作流节点
 	DAAbstractNodeGraphicsItem* createNode(const DANodeMetaData& md, const QPointF& pos);
 	DAAbstractNodeGraphicsItem* createNode_(const DANodeMetaData& md, const QPointF& pos);
@@ -84,7 +84,9 @@ public:
 	DAGraphicsPixmapItem* addPixmapItem_(const QImage& img);
 	// 通过位置获取DAAbstractNodeGraphicsItem，此函数是加强版的itemAt
 	DAAbstractNodeGraphicsItem* nodeItemAt(const QPointF& scenePos) const;
-
+	// 是否允许节点链接
+	void setEnableNodeLink(bool on);
+	bool isEnableNodeLink() const;
 signals:
 
 	/**
@@ -93,8 +95,8 @@ signals:
 	 * @param lp 连接点
 	 */
 	void nodeItemLinkPointSelected(DA::DAAbstractNodeGraphicsItem* item,
-                                   const DA::DANodeLinkPoint& lp,
-                                   QGraphicsSceneMouseEvent* event);
+								   const DA::DANodeLinkPoint& lp,
+								   QGraphicsSceneMouseEvent* event);
 
 	/**
 	 * @brief 说明link已经为空，这时会自动remove
@@ -147,18 +149,18 @@ protected:
 	// itemlink都没用节点连接时会调用这个函数，发出
 	void callNodeItemLinkIsEmpty(DAAbstractNodeLinkGraphicsItem* link);
 
-    // 对item进行分类
-    static void classifyItems(const QList< QGraphicsItem* >& sourceItems,
-                              QList< DAAbstractNodeGraphicsItem* >& nodeItems,
-                              QList< DAAbstractNodeLinkGraphicsItem* >& linkItems,
-                              QList< QGraphicsItem* >& normalItem);
-    // 获取node item的所有连接线
-    static QList< DAAbstractNodeLinkGraphicsItem* > getNodesAllLinkItems(const QList< DAAbstractNodeGraphicsItem* >& nodeItems);
-    // 所有节点item对应的node
-    static QList< DAAbstractNode::SharedPointer > nodeItemsToNodes(const QList< DAAbstractNodeGraphicsItem* >& nodeItems);
+	// 对item进行分类
+	static void classifyItems(const QList< QGraphicsItem* >& sourceItems,
+							  QList< DAAbstractNodeGraphicsItem* >& nodeItems,
+							  QList< DAAbstractNodeLinkGraphicsItem* >& linkItems,
+							  QList< QGraphicsItem* >& normalItem);
+	// 获取node item的所有连接线
+	static QList< DAAbstractNodeLinkGraphicsItem* > getNodesAllLinkItems(const QList< DAAbstractNodeGraphicsItem* >& nodeItems);
+	// 所有节点item对应的node
+	static QList< DAAbstractNode::SharedPointer > nodeItemsToNodes(const QList< DAAbstractNodeGraphicsItem* >& nodeItems);
 
 private:
-    void initConnect();
+	void initConnect();
 };
 }
 #endif  // FCNODEGRAPHICSSCENE_H

@@ -62,11 +62,11 @@ public:
 	/// beginLink函数调用时会把mLinkItemIsMoved设置为false，只有接收到mouseMove事件后，此变量变为true，在mousePressedEvent才会进行结束判断
 	bool mLinkItemIsMoved { false };
 	bool mIsIgnoreLinkEvent { false };  ///< 设置忽略链接事件的处理，主要忽略mousePressEvent，mouseMoveEvent的链接事件
-    bool mIsReady { true };              ///< 场景是否就绪标记，此参数不保存
-    QList< DAGraphicsLayout* > mLayout;  ///< 保存所有的图层
+	bool mIsReady { true };              ///< 场景是否就绪标记，此参数不保存
+	QList< DAGraphicsLayout* > mLayout;  ///< 保存所有的图层
 	std::unique_ptr< DAAbstractGraphicsSceneAction > mSceneAction;
-    QHash< QGraphicsItem*, QGraphicsItem::GraphicsItemFlags > mItemsOriginFlags;  ///< 记录锁定前item的状态，用于恢复
-    bool mIsLockMode { false };                                                   ///< 是否在lock状态
+	QHash< QGraphicsItem*, QGraphicsItem::GraphicsItemFlags > mItemsOriginFlags;  ///< 记录锁定前item的状态，用于恢复
+	bool mIsLockMode { false };                                                   ///< 是否在lock状态
 };
 
 ////////////////////////////////////////////////
@@ -244,9 +244,9 @@ QList< QGraphicsItem* > DAGraphicsScene::getSelectedMovableItems()
 QUndoCommand* DAGraphicsScene::addItem_(QGraphicsItem* item)
 {
 	DA::DACommandsForGraphicsItemAdd* cmd = new DA::DACommandsForGraphicsItemAdd(item, this);
-    push(cmd);
-    emit itemsAdded({ item });
-    return cmd;
+	push(cmd);
+	emit itemsAdded({ item });
+	return cmd;
 }
 
 /**
@@ -256,10 +256,10 @@ QUndoCommand* DAGraphicsScene::addItem_(QGraphicsItem* item)
  */
 QUndoCommand* DAGraphicsScene::addItems_(const QList< QGraphicsItem* >& its)
 {
-    DA::DACommandsForGraphicsItemsAdd* cmd = new DA::DACommandsForGraphicsItemsAdd(its, this);
-    push(cmd);
-    emit itemsAdded(its);
-    return cmd;
+	DA::DACommandsForGraphicsItemsAdd* cmd = new DA::DACommandsForGraphicsItemsAdd(its, this);
+	push(cmd);
+	emit itemsAdded(its);
+	return cmd;
 }
 
 /**
@@ -271,17 +271,17 @@ QUndoCommand* DAGraphicsScene::addItems_(const QList< QGraphicsItem* >& its)
 QUndoCommand* DAGraphicsScene::removeItem_(QGraphicsItem* item)
 {
 	DA::DACommandsForGraphicsItemRemove* cmd = new DA::DACommandsForGraphicsItemRemove(item, this);
-    push(cmd);
-    emit itemsRemoved({ item });
-    return cmd;
+	push(cmd);
+	emit itemsRemoved({ item });
+	return cmd;
 }
 
 QUndoCommand* DAGraphicsScene::removeItems_(const QList< QGraphicsItem* >& its)
 {
-    DA::DACommandsForGraphicsItemsRemove* cmd = new DA::DACommandsForGraphicsItemsRemove(its, this);
-    push(cmd);
-    emit itemsRemoved(its);
-    return cmd;
+	DA::DACommandsForGraphicsItemsRemove* cmd = new DA::DACommandsForGraphicsItemsRemove(its, this);
+	push(cmd);
+	emit itemsRemoved(its);
+	return cmd;
 }
 
 /**
@@ -419,13 +419,13 @@ void DAGraphicsScene::cancelLink()
 	}
 	DAGraphicsLinkItem* linkItem = d_ptr->mLinkItem.get();
 	removeItem(linkItem);
-    d_ptr->mLinkItem.reset();
+	d_ptr->mLinkItem.reset();
 }
 
 void DAGraphicsScene::cancel()
 {
-    cancelLink();
-    clearSceneAction();
+	cancelLink();
+	clearSceneAction();
 }
 
 /**
@@ -575,7 +575,7 @@ int DAGraphicsScene::setSelectionState(const QList< QGraphicsItem* >& its, bool 
 			++changeCnt;
 		}
 	}
-    return changeCnt;
+	return changeCnt;
 }
 
 /**
@@ -585,21 +585,21 @@ int DAGraphicsScene::setSelectionState(const QList< QGraphicsItem* >& its, bool 
  */
 void DAGraphicsScene::lock()
 {
-    DA_D(d);
-    d->mItemsOriginFlags.clear();
-    const QList< QGraphicsItem* > its = items();
-    QGraphicsItem::GraphicsItemFlags lockflags;
-    lockflags.setFlag(QGraphicsItem::ItemIsMovable, false);
-    lockflags.setFlag(QGraphicsItem::ItemIsSelectable, false);
-    lockflags.setFlag(QGraphicsItem::ItemIsFocusable, false);
-    lockflags.setFlag(QGraphicsItem::ItemAcceptsInputMethod, false);
-    for (QGraphicsItem* i : its) {
-        // 记录旧状态
-        d->mItemsOriginFlags[ i ] = i->flags();
-        // 设置锁定状态
-        i->setFlags(lockflags);
-    }
-    d->mIsLockMode = true;
+	DA_D(d);
+	d->mItemsOriginFlags.clear();
+	const QList< QGraphicsItem* > its = items();
+	QGraphicsItem::GraphicsItemFlags lockflags;
+	lockflags.setFlag(QGraphicsItem::ItemIsMovable, false);
+	lockflags.setFlag(QGraphicsItem::ItemIsSelectable, false);
+	lockflags.setFlag(QGraphicsItem::ItemIsFocusable, false);
+	lockflags.setFlag(QGraphicsItem::ItemAcceptsInputMethod, false);
+	for (QGraphicsItem* i : its) {
+		// 记录旧状态
+		d->mItemsOriginFlags[ i ] = i->flags();
+		// 设置锁定状态
+		i->setFlags(lockflags);
+	}
+	d->mIsLockMode = true;
 }
 
 /**
@@ -607,19 +607,19 @@ void DAGraphicsScene::lock()
  */
 void DAGraphicsScene::unlock()
 {
-    DA_D(d);
-    const QList< QGraphicsItem* > its = items();
-    const auto endIte                 = d->mItemsOriginFlags.end();
-    for (QGraphicsItem* i : its) {
-        // 恢复旧状态
-        auto ite = d->mItemsOriginFlags.find(i);
-        if (ite != endIte) {
-            // 设置锁定状态
-            i->setFlags(ite.value());
-        }
-    }
-    d->mItemsOriginFlags.clear();
-    d->mIsLockMode = false;
+	DA_D(d);
+	const QList< QGraphicsItem* > its = items();
+	const auto endIte                 = d->mItemsOriginFlags.end();
+	for (QGraphicsItem* i : its) {
+		// 恢复旧状态
+		auto ite = d->mItemsOriginFlags.find(i);
+		if (ite != endIte) {
+			// 设置锁定状态
+			i->setFlags(ite.value());
+		}
+	}
+	d->mItemsOriginFlags.clear();
+	d->mIsLockMode = false;
 }
 
 /**
@@ -845,9 +845,12 @@ int DAGraphicsScene::dpiToPx(int dpi, int r)
 
 /**
  * @brief 激活场景动作
+ *
+ * @note DAAbstractGraphicsSceneAction的内存归scene管理
  * @param act
+ * @sa DAAbstractGraphicsSceneAction
  */
-void DAGraphicsScene::activeSceneAction(DAAbstractGraphicsSceneAction* act)
+void DAGraphicsScene::setupSceneAction(DAAbstractGraphicsSceneAction* act)
 {
 	if (d_ptr->mSceneAction) {
 		d_ptr->mSceneAction->endAction();
@@ -875,7 +878,7 @@ void DAGraphicsScene::clearSceneAction()
 	if (d_ptr->mSceneAction) {
 		d_ptr->mSceneAction->endAction();
 	}
-    d_ptr->mSceneAction.reset(nullptr);
+	d_ptr->mSceneAction.reset(nullptr);
 }
 
 /**
@@ -1072,7 +1075,7 @@ void DAGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 			DAGraphicsResizeableItem* ri = dynamic_cast< DAGraphicsResizeableItem* >(its);
 			if (ri) {
 				if (DAGraphicsResizeableItem::NotUnderAnyControlType
-                    != ri->getControlPointByPos(ri->mapFromScene(mouseEvent->scenePos()))) {
+					!= ri->getControlPointByPos(ri->mapFromScene(mouseEvent->scenePos()))) {
 					// 说明点击在了控制点上，需要跳过
 					d_ptr->mIsMovingItems = false;
 					return;
@@ -1128,16 +1131,16 @@ void DAGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		d_ptr->mIsMovingItems = false;
 		QPointF releasePos    = mouseEvent->scenePos();
 		if (qFuzzyCompare(releasePos.x(), d_ptr->mLastMousePressScenePos.x())
-            && qFuzzyCompare(releasePos.y(), d_ptr->mLastMousePressScenePos.y())) {
+			&& qFuzzyCompare(releasePos.y(), d_ptr->mLastMousePressScenePos.y())) {
 			// 位置相等，不做处理
 			return;
 		}
 		// 位置不等，属于正常移动
 		d_ptr->mMovingInfos.updateEndPos();
 		DACommandsForGraphicsItemsMoved* cmd = new DACommandsForGraphicsItemsMoved(d_ptr->mMovingInfos.items,
-                                                                                   d_ptr->mMovingInfos.startsPos,
-                                                                                   d_ptr->mMovingInfos.endsPos,
-                                                                                   true);
+																				   d_ptr->mMovingInfos.startsPos,
+																				   d_ptr->mMovingInfos.endsPos,
+																				   true);
 		push(cmd);
 		// 位置改变信号
 		//         qDebug() << "emit itemsPositionChanged";

@@ -44,7 +44,7 @@ public:
 	QAction* actionUndo;
 	QAction* actionSetting;        ///< 设置
 	QAction* actionPluginManager;  ///< 插件管理
-    QAction* actionAbout;          ///< about
+	QAction* actionAbout;          ///< about
 	//===================================================
 	// 数据标签 Data Category
 	//===================================================
@@ -85,9 +85,10 @@ public:
 	QAction* actionWorkflowEnableItemLinkageMove;  ///< 图元联动，所谓联动，就是随着一个图元的移动，所有和这个图元链接的图元跟随移动
 	QAction* actionItemGrouping;                ///< 分组
 	QAction* actionItemUngroup;                 ///< 取消分组
+	QAction* actionWorkflowLinkEnable;          ///< 允许连接
 	QAction* actionExportWorkflowSceneToImage;  ///< 导出png格式
-    QAction* actionExportWorkflowSceneToPNG;    ///< 导出png格式
-    QAction* actionWorkflowViewLock;            ///< 锁定视图
+	QAction* actionExportWorkflowSceneToPNG;    ///< 导出png格式
+	QAction* actionWorkflowViewLock;            ///< 锁定视图
 	//===================================================
 	// 绘图标签 Chart Category
 	//===================================================

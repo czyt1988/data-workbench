@@ -117,7 +117,7 @@ DAAppRibbonArea::DAAppRibbonArea(DAUIInterface* u) : DARibbonAreaInterface(u)
 	m_app          = qobject_cast< AppMainWindow* >(appui->mainWindow());
 	m_actions      = qobject_cast< DAAppActions* >(u->getActionInterface());
 	m_appCmd       = qobject_cast< DAAppCommand* >(u->getCommandInterface());
-    // ribbon的构建在setDockingArea进行，为了保证ribbon在dock之后构建
+	// ribbon的构建在setDockingArea进行，为了保证ribbon在dock之后构建
 }
 
 DAAppRibbonArea::~DAAppRibbonArea()
@@ -187,7 +187,7 @@ void DAAppRibbonArea::resetText()
 	m_contextWorkflow->setContextTitle(tr("Workflow"));  // cn:工作流
 
 	m_categoryWorkflowGraphicsEdit->setCategoryName(tr("Workflow Edit"));  // cn:工作流编辑
-    m_pannelClipBoard->setPannelName(tr("ClipBoard"));                     // cn:剪切板
+	m_pannelClipBoard->setPannelName(tr("ClipBoard"));                     // cn:剪切板
 	m_pannelWorkflowItem->setPannelName(tr("Item"));                       // cn:图元
 	m_pannelWorkflowText->setPannelName(tr("Text"));                       // cn:文本
 	m_pannelWorkflowBackground->setPannelName(tr("Background"));           // cn:背景
@@ -279,7 +279,7 @@ void DAAppRibbonArea::buildRibbonMainCategory()
 	m_pannelSetting->setObjectName(QStringLiteral("da-pannel-main.setting"));
 	m_pannelSetting->addLargeAction(m_actions->actionSetting);
 	m_pannelSetting->addLargeAction(m_actions->actionPluginManager);
-    m_pannelSetting->addLargeAction(m_actions->actionAbout);
+	m_pannelSetting->addLargeAction(m_actions->actionAbout);
 	m_categoryMain->addPannel(m_pannelSetting);
 	//----------------------------------------------------------
 
@@ -456,7 +456,7 @@ void DAAppRibbonArea::buildContextCategoryWorkflow()
 {
 	m_contextWorkflow = ribbonBar()->addContextCategory(tr("Workflow"));
 	m_contextWorkflow->setObjectName(QStringLiteral("da-ribbon-contextcategory-workflow"));
-    buildContextCategoryWorkflowView_();
+	buildContextCategoryWorkflowView_();
 	buildContextCategoryWorkflowEdit_();
 	buildContextCategoryWorkflowRun_();
 	ribbonBar()->showContextCategory(m_contextWorkflow);
@@ -467,17 +467,20 @@ void DAAppRibbonArea::buildContextCategoryWorkflow()
  */
 void DAAppRibbonArea::buildContextCategoryWorkflowEdit_()
 {
-    DAWorkFlowOperateWidget* wfo   = m_dockArea->getWorkFlowOperateWidget();
+	DAWorkFlowOperateWidget* wfo   = m_dockArea->getWorkFlowOperateWidget();
 	m_categoryWorkflowGraphicsEdit = m_contextWorkflow->addCategoryPage(tr("Workflow Edit"));
 	m_categoryWorkflowGraphicsEdit->setObjectName(QStringLiteral("da-ribbon-category-workflow.edit"));
 	// 条目pannel
-    m_pannelClipBoard = m_categoryWorkflowGraphicsEdit->addPannel(tr("ClipBoard"));  // cn:剪切板
-    m_pannelClipBoard->addLargeAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionPaste));
-    m_pannelClipBoard->addSmallAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionCut));
-    m_pannelClipBoard->addSmallAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionCopy));
+
+	// 剪切板
+	m_pannelClipBoard = m_categoryWorkflowGraphicsEdit->addPannel(tr("ClipBoard"));  // cn:剪切板
+	m_pannelClipBoard->addLargeAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionPaste));
+	m_pannelClipBoard->addSmallAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionCut));
+	m_pannelClipBoard->addSmallAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionCopy));
 	//  Item
 	m_pannelWorkflowItem = m_categoryWorkflowGraphicsEdit->addPannel(tr("Item"));
 	m_pannelWorkflowItem->setObjectName(QStringLiteral("da-pannel-context.workflow.item"));
+	m_pannelWorkflowItem->addLargeAction(m_actions->actionWorkflowLinkEnable);  // 连线
 	m_workflowShapeEditPannelWidget = new DAShapeEditPannelWidget(m_pannelWorkflowItem);
 	m_pannelWorkflowItem->addWidget(m_workflowShapeEditPannelWidget, SARibbonPannelItem::Large);
 	m_pannelWorkflowItem->addSeparator();
@@ -504,40 +507,40 @@ void DAAppRibbonArea::buildContextCategoryWorkflowEdit_()
 	//
 	// connect
 	connect(m_workflowShapeEditPannelWidget,
-            &DAShapeEditPannelWidget::borderPenChanged,
-            this,
-            &DAAppRibbonArea::selectedWorkflowItemPen);
+			&DAShapeEditPannelWidget::borderPenChanged,
+			this,
+			&DAAppRibbonArea::selectedWorkflowItemPen);
 	connect(m_workflowShapeEditPannelWidget,
-            &DAShapeEditPannelWidget::backgroundBrushChanged,
-            this,
-            &DAAppRibbonArea::selectedWorkflowItemBrush);
+			&DAShapeEditPannelWidget::backgroundBrushChanged,
+			this,
+			&DAAppRibbonArea::selectedWorkflowItemBrush);
 	connect(m_workflowFontEditPannel,
-            &DAFontEditPannelWidget::currentFontChanged,
-            this,
-            &DAAppRibbonArea::selectedWorkflowItemFont);
+			&DAFontEditPannelWidget::currentFontChanged,
+			this,
+			&DAAppRibbonArea::selectedWorkflowItemFont);
 	connect(m_workflowFontEditPannel,
-            &DAFontEditPannelWidget::currentFontColorChanged,
-            this,
-            &DAAppRibbonArea::selectedWorkflowItemFontColor);
+			&DAFontEditPannelWidget::currentFontColorChanged,
+			this,
+			&DAAppRibbonArea::selectedWorkflowItemFontColor);
 }
 
 void DAAppRibbonArea::buildContextCategoryWorkflowView_()
 {
-    DAWorkFlowOperateWidget* wfo   = m_dockArea->getWorkFlowOperateWidget();
-    m_categoryWorkflowGraphicsView = m_contextWorkflow->addCategoryPage(tr("Workflow View"));  // cn:工作流视图
-    m_categoryWorkflowGraphicsView->setObjectName(QStringLiteral("da-ribbon-category-workflow.view"));
-    // View
-    m_pannelWorkflowView = m_categoryWorkflowGraphicsView->addPannel(tr("View"));  // cn:视图
-    m_pannelWorkflowView->setObjectName(QStringLiteral("da-pannel-context.workflow.view"));
-    m_pannelWorkflowView->addLargeAction(m_actions->actionWorkflowViewLock);
-    m_pannelWorkflowView->addLargeAction(m_actions->actionWorkflowShowGrid);
-    m_pannelWorkflowView->addSeparator();
-    m_pannelWorkflowView->addLargeAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionZoomFit));
-    m_pannelWorkflowView->addMediumAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionZoomIn));
-    m_pannelWorkflowView->addMediumAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionZoomOut));
-    m_pannelWorkflowExport = m_categoryWorkflowGraphicsView->addPannel(tr("Export"));  // cn:导出
-    m_pannelWorkflowExport->setObjectName(QStringLiteral("da-pannel-context.workflow.export"));
-    m_pannelWorkflowExport->addMenu(mExportWorkflowSceneToImageMenu, SARibbonPannelItem::Large, QToolButton::MenuButtonPopup);
+	DAWorkFlowOperateWidget* wfo   = m_dockArea->getWorkFlowOperateWidget();
+	m_categoryWorkflowGraphicsView = m_contextWorkflow->addCategoryPage(tr("Workflow View"));  // cn:工作流视图
+	m_categoryWorkflowGraphicsView->setObjectName(QStringLiteral("da-ribbon-category-workflow.view"));
+	// View
+	m_pannelWorkflowView = m_categoryWorkflowGraphicsView->addPannel(tr("View"));  // cn:视图
+	m_pannelWorkflowView->setObjectName(QStringLiteral("da-pannel-context.workflow.view"));
+	m_pannelWorkflowView->addLargeAction(m_actions->actionWorkflowViewLock);
+	m_pannelWorkflowView->addLargeAction(m_actions->actionWorkflowShowGrid);
+	m_pannelWorkflowView->addSeparator();
+	m_pannelWorkflowView->addLargeAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionZoomFit));
+	m_pannelWorkflowView->addMediumAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionZoomIn));
+	m_pannelWorkflowView->addMediumAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionZoomOut));
+	m_pannelWorkflowExport = m_categoryWorkflowGraphicsView->addPannel(tr("Export"));  // cn:导出
+	m_pannelWorkflowExport->setObjectName(QStringLiteral("da-pannel-context.workflow.export"));
+	m_pannelWorkflowExport->addMenu(mExportWorkflowSceneToImageMenu, SARibbonPannelItem::Large, QToolButton::MenuButtonPopup);
 }
 
 /**
@@ -617,16 +620,16 @@ void DAAppRibbonArea::buildRightButtonBar()
 {
 	ribbonBar()->activeRightButtonGroup();
 	SARibbonButtonGroupWidget* rbar = ribbonBar()->rightButtonGroup();
-    rbar->addMenu(m_menuTheme);
+	rbar->addMenu(m_menuTheme);
 }
 
 void DAAppRibbonArea::setDockingArea(DAAppDockingArea* dock)
 {
-    m_dockArea = dock;
-    buildMenu();
-    buildRibbon();
-    buildRedoUndo();
-    resetText();
+	m_dockArea = dock;
+	buildMenu();
+	buildRibbon();
+	buildRedoUndo();
+	resetText();
 }
 
 /**

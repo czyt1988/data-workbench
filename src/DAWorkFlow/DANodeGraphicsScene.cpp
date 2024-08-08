@@ -27,6 +27,7 @@ public:
 
 public:
 	QPointer< DAWorkFlow > mWorkflow;
+	bool mEnableNodeLink { true };
 };
 
 DANodeGraphicsScene::PrivateData::PrivateData(DANodeGraphicsScene* p) : q_ptr(p)
@@ -238,8 +239,8 @@ int DANodeGraphicsScene::removeSelectedItems_()
 	//! 注意： 如果处于链接状态（isStartLink() == true）那么不能删除正在链接的那个元素的节点，否则会导致异常
 	// 移除元素过程中，先要删除链接
 	cancelLink();
-    auto cmd = std::make_unique< DA::DACommandsForWorkFlowRemoveSelectNodes >(this);
-    int rc   = cmd->removeCount();
+	auto cmd = std::make_unique< DA::DACommandsForWorkFlowRemoveSelectNodes >(this);
+	int rc   = cmd->removeCount();
 	if (!cmd->isValid()) {
 		qDebug() << "remove select is invalid";
 		return 0;
@@ -254,9 +255,9 @@ int DANodeGraphicsScene::removeSelectedItems_()
 	if (rl.size() > 0) {
 		emit nodeLinksRemoved(rl);
 	}
-    QList< QGraphicsItem* > gl = rawcmd->getAllRemovedItems();
+	QList< QGraphicsItem* > gl = rawcmd->getAllRemovedItems();
 	if (gl.size() > 0) {
-        emit itemsRemoved(gl);
+		emit itemsRemoved(gl);
 	}
 	return rc;
 }
@@ -391,7 +392,24 @@ DAAbstractNodeGraphicsItem* DANodeGraphicsScene::nodeItemAt(const QPointF& scene
 			return n;
 		}
 	}
-    return nullptr;
+	return nullptr;
+}
+
+/**
+ * @brief 是否允许节点链接
+ * @param on
+ */
+void DANodeGraphicsScene::setEnableNodeLink(bool on)
+{
+	d_ptr->mEnableNodeLink = on;
+	if (!on) {
+		cancelLink();
+	}
+}
+
+bool DANodeGraphicsScene::isEnableNodeLink() const
+{
+	return d_ptr->mEnableNodeLink;
 }
 
 void DANodeGraphicsScene::initConnect()
@@ -409,7 +427,7 @@ void DANodeGraphicsScene::initConnect()
 void DANodeGraphicsScene::callNodeItemLinkIsEmpty(DAAbstractNodeLinkGraphicsItem* link)
 {
 	removeItem(link);
-    emit nodeLinkItemIsEmpty(link);
+	emit nodeLinkItemIsEmpty(link);
 }
 
 /**
@@ -424,18 +442,18 @@ void DANodeGraphicsScene::classifyItems(const QList< QGraphicsItem* >& sourceIte
                                         QList< DAAbstractNodeLinkGraphicsItem* >& linkItems,
                                         QList< QGraphicsItem* >& normalItem)
 {
-    if (sourceItems.size() <= 0) {
-        return;
-    }
-    for (QGraphicsItem* i : qAsConst(sourceItems)) {
-        if (DAAbstractNodeGraphicsItem* ni = dynamic_cast< DAAbstractNodeGraphicsItem* >(i)) {
-            nodeItems.append(ni);
-        } else if (DAAbstractNodeLinkGraphicsItem* li = dynamic_cast< DAAbstractNodeLinkGraphicsItem* >(i)) {
-            linkItems.append(li);
-        } else {
-            normalItem.append(i);
-        }
-    }
+	if (sourceItems.size() <= 0) {
+		return;
+	}
+	for (QGraphicsItem* i : qAsConst(sourceItems)) {
+		if (DAAbstractNodeGraphicsItem* ni = dynamic_cast< DAAbstractNodeGraphicsItem* >(i)) {
+			nodeItems.append(ni);
+		} else if (DAAbstractNodeLinkGraphicsItem* li = dynamic_cast< DAAbstractNodeLinkGraphicsItem* >(i)) {
+			linkItems.append(li);
+		} else {
+			normalItem.append(i);
+		}
+	}
 }
 
 /**
@@ -446,11 +464,11 @@ void DANodeGraphicsScene::classifyItems(const QList< QGraphicsItem* >& sourceIte
 QList< DAAbstractNodeLinkGraphicsItem* > DANodeGraphicsScene::getNodesAllLinkItems(
     const QList< DAAbstractNodeGraphicsItem* >& nodeItems)
 {
-    QList< DAAbstractNodeLinkGraphicsItem* > res;
-    for (DAAbstractNodeGraphicsItem* n : qAsConst(nodeItems)) {
-        res += n->getLinkItems();
-    }
-    return unique_qlist(res);
+	QList< DAAbstractNodeLinkGraphicsItem* > res;
+	for (DAAbstractNodeGraphicsItem* n : qAsConst(nodeItems)) {
+		res += n->getLinkItems();
+	}
+	return unique_qlist(res);
 }
 
 /**
@@ -460,11 +478,11 @@ QList< DAAbstractNodeLinkGraphicsItem* > DANodeGraphicsScene::getNodesAllLinkIte
  */
 QList< DAAbstractNode::SharedPointer > DANodeGraphicsScene::nodeItemsToNodes(const QList< DAAbstractNodeGraphicsItem* >& nodeItems)
 {
-    QList< DAAbstractNode::SharedPointer > res;
-    for (const DAAbstractNodeGraphicsItem* i : nodeItems) {
-        res.append(i->node());
-    }
-    return res;
+	QList< DAAbstractNode::SharedPointer > res;
+	for (const DAAbstractNodeGraphicsItem* i : nodeItems) {
+		res.append(i->node());
+	}
+	return res;
 }
 
 /**
@@ -524,76 +542,79 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		return;
 	}
 	// 先检查是否点击到了连接点
-	if (mouseEvent->buttons().testFlag(Qt::LeftButton)) {
+	if (isEnableNodeLink()) {
+		if (mouseEvent->buttons().testFlag(Qt::LeftButton)) {
 
-		// 左键点击
-		//         QGraphicsItem* positem = itemAt(mouseEvent->scenePos(), QTransform());
-		//         if (nullptr == positem) {
-		//             DAGraphicsSceneWithUndoStack::mousePressEvent(mouseEvent);
-		//             return;
-		//         }
-		// 看看是否点击到了节点item
-		DAAbstractNodeGraphicsItem* nodeItem = nodeItemAt(mouseEvent->scenePos());
-		if (nullptr == nodeItem) {
-			// 注意，有可能进行了分组，这时候，点击的是分组
-			// 点击的不是节点item就退出
-			DAGraphicsScene::mousePressEvent(mouseEvent);
-			return;
-		}
-		// 如果点击到了DAAbstractNodeGraphicsItem，要看看是否点击到了连接点
-		QPointF itempos = nodeItem->mapFromScene(mouseEvent->scenePos());
-		if (isStartLink()) {
-			// 开始链接状态，此时理论要点击的是input
-			DAAbstractNodeLinkGraphicsItem* linkItem = dynamic_cast< DAAbstractNodeLinkGraphicsItem* >(getCurrentLinkItem());
-			if (linkItem) {
-				// 调用nodeitem的tryLinkOnItemPos用于构建一些响应式连接点
-				nodeItem->tryLinkOnItemPos(itempos, linkItem, DANodeLinkPoint::Input);
-			} else {
-				qDebug() << "is start link,but link item can not cast to DAAbstractNodeLinkGraphicsItem";
+			// 左键点击
+			//         QGraphicsItem* positem = itemAt(mouseEvent->scenePos(), QTransform());
+			//         if (nullptr == positem) {
+			//             DAGraphicsSceneWithUndoStack::mousePressEvent(mouseEvent);
+			//             return;
+			//         }
+			// 看看是否点击到了节点item
+			DAAbstractNodeGraphicsItem* nodeItem = nodeItemAt(mouseEvent->scenePos());
+			if (nullptr == nodeItem) {
+				// 注意，有可能进行了分组，这时候，点击的是分组
+				// 点击的不是节点item就退出
 				DAGraphicsScene::mousePressEvent(mouseEvent);
 				return;
 			}
-			DANodeLinkPoint lp;
-			lp = nodeItem->getLinkPointByPos(itempos, DANodeLinkPoint::Input);
-			if (!lp.isValid() || lp.isOutput()) {  // 正常时要到input，链接到output点就忽略
-				//! 说明没有点击到连接点，正常传递到DAGraphicsSceneWithUndoStack
-				//! DAGraphicsSceneWithUndoStack的连线在这时候就结束，但这里并不想结束，
-				//! 因此需要调用setIgnoreLinkEvent忽略掉链接模式的事件
-				setIgnoreLinkEvent(true);
-				DAGraphicsScene::mousePressEvent(mouseEvent);
-				setIgnoreLinkEvent(false);
-				return;
-			}
-			// 点击了连接点
-			emit nodeItemLinkPointSelected(nodeItem, lp, mouseEvent);
-
-			// 此时连接到to点
-			if (!(linkItem->attachTo(nodeItem, lp))) {
-				// 连接失败
-				setIgnoreLinkEvent(true);
-				DAGraphicsScene::mousePressEvent(mouseEvent);
-				setIgnoreLinkEvent(false);
-				return;
-			}
-			// 连接成功，把item脱离管理
-			//! 记录到redo/undo中
-			linkItem->updatePos();
-			addNodeLink_(linkItem);
-			// 跳出if 到DAGraphicsSceneWithUndoStack::mousePressEvent(mouseEvent);
-		} else {
-			// 非开始链接状态，此时点击的是output
-			nodeItem->tryLinkOnItemPos(itempos, nullptr, DANodeLinkPoint::Output);
-			DANodeLinkPoint lp;
-			lp = nodeItem->getLinkPointByPos(itempos, DANodeLinkPoint::Output);
-			if (lp.isValid() && lp.isOutput()) {
-				emit nodeItemLinkPointSelected(nodeItem, lp, mouseEvent);
-				// 此时说明开始进行连线
-				std::unique_ptr< DAAbstractNodeLinkGraphicsItem > linkItem(nodeItem->createLinkItem(lp));
+			// 如果点击到了DAAbstractNodeGraphicsItem，要看看是否点击到了连接点
+			QPointF itempos = nodeItem->mapFromScene(mouseEvent->scenePos());
+			if (isStartLink()) {
+				// 开始链接状态，此时理论要点击的是input
+				DAAbstractNodeLinkGraphicsItem* linkItem = dynamic_cast< DAAbstractNodeLinkGraphicsItem* >(
+					getCurrentLinkItem());
 				if (linkItem) {
-					if (linkItem->attachFrom(nodeItem, lp)) {
-						linkItem->setStartScenePosition(nodeItem->mapToScene(lp.position));
-						beginLink(linkItem.release());
-						// 这里不需要return，因为beginLink后如果不移动，DAGraphicsSceneWithUndoStack::mousePressEvent不会触发结束
+					// 调用nodeitem的tryLinkOnItemPos用于构建一些响应式连接点
+					nodeItem->tryLinkOnItemPos(itempos, linkItem, DANodeLinkPoint::Input);
+				} else {
+					qDebug() << "is start link,but link item can not cast to DAAbstractNodeLinkGraphicsItem";
+					DAGraphicsScene::mousePressEvent(mouseEvent);
+					return;
+				}
+				DANodeLinkPoint lp;
+				lp = nodeItem->getLinkPointByPos(itempos, DANodeLinkPoint::Input);
+				if (!lp.isValid() || lp.isOutput()) {  // 正常时要到input，链接到output点就忽略
+					//! 说明没有点击到连接点，正常传递到DAGraphicsSceneWithUndoStack
+					//! DAGraphicsSceneWithUndoStack的连线在这时候就结束，但这里并不想结束，
+					//! 因此需要调用setIgnoreLinkEvent忽略掉链接模式的事件
+					setIgnoreLinkEvent(true);
+					DAGraphicsScene::mousePressEvent(mouseEvent);
+					setIgnoreLinkEvent(false);
+					return;
+				}
+				// 点击了连接点
+				emit nodeItemLinkPointSelected(nodeItem, lp, mouseEvent);
+
+				// 此时连接到to点
+				if (!(linkItem->attachTo(nodeItem, lp))) {
+					// 连接失败
+					setIgnoreLinkEvent(true);
+					DAGraphicsScene::mousePressEvent(mouseEvent);
+					setIgnoreLinkEvent(false);
+					return;
+				}
+				// 连接成功，把item脱离管理
+				//! 记录到redo/undo中
+				linkItem->updatePos();
+				addNodeLink_(linkItem);
+				// 跳出if 到DAGraphicsSceneWithUndoStack::mousePressEvent(mouseEvent);
+			} else {
+				// 非开始链接状态，此时点击的是output
+				nodeItem->tryLinkOnItemPos(itempos, nullptr, DANodeLinkPoint::Output);
+				DANodeLinkPoint lp;
+				lp = nodeItem->getLinkPointByPos(itempos, DANodeLinkPoint::Output);
+				if (lp.isValid() && lp.isOutput()) {
+					emit nodeItemLinkPointSelected(nodeItem, lp, mouseEvent);
+					// 此时说明开始进行连线
+					std::unique_ptr< DAAbstractNodeLinkGraphicsItem > linkItem(nodeItem->createLinkItem(lp));
+					if (linkItem) {
+						if (linkItem->attachFrom(nodeItem, lp)) {
+							linkItem->setStartScenePosition(nodeItem->mapToScene(lp.position));
+							beginLink(linkItem.release());
+							// 这里不需要return，因为beginLink后如果不移动，DAGraphicsSceneWithUndoStack::mousePressEvent不会触发结束
+						}
 					}
 				}
 			}

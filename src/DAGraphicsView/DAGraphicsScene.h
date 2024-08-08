@@ -55,11 +55,11 @@ public:
 	// 获取选中且能移动的item
 	QList< QGraphicsItem* > getSelectedMovableItems();
 	// 等同additem，但使用redo/undo来添加，可以进行redo/undo操作
-    QUndoCommand* addItem_(QGraphicsItem* item);
-    QUndoCommand* addItems_(const QList< QGraphicsItem* >& its);
+	QUndoCommand* addItem_(QGraphicsItem* item);
+	QUndoCommand* addItems_(const QList< QGraphicsItem* >& its);
 	// 等同removeItem，但使用redo/undo来添加，可以进行redo/undo操作
-    QUndoCommand* removeItem_(QGraphicsItem* item);
-    QUndoCommand* removeItems_(const QList< QGraphicsItem* >& its);
+	QUndoCommand* removeItem_(QGraphicsItem* item);
+	QUndoCommand* removeItems_(const QList< QGraphicsItem* >& its);
 	// 导出为pixmap,dpi=0代表不考虑dpi
 	QPixmap toPixamp(int dpi = 0);
 	// 保存为图片
@@ -71,9 +71,9 @@ public:
 	// 结束链接模式
 	void endLink();
 	// 取消链接模式
-    virtual void cancelLink();
-    // 取消
-    virtual void cancel();
+	virtual void cancelLink();
+	// 取消
+	virtual void cancel();
 	// 获取当前正在进行连线的连接线item
 	DAGraphicsLinkItem* getCurrentLinkItem() const;
 	// 设置忽略链接事件的处理，主要忽略mousePressEvent，mouseMoveEvent的链接事件，
@@ -122,14 +122,14 @@ public:
 	// dpi转为像素
 	static int dpiToPx(int dpi, int r);
 
-	// 激活一个场景动作
-	void activeSceneAction(DAAbstractGraphicsSceneAction* act);
+	// 激活一个场景动作，DAAbstractGraphicsSceneAction的内存归scene管理
+	void setupSceneAction(DAAbstractGraphicsSceneAction* act);
 	// 是否当前存在场景动作
 	bool isHaveSceneAction() const;
 	// 清除场景动作
 	void clearSceneAction();
-    // 获取图层
-    QList< DAGraphicsLayout* > getLayouts() const;
+	// 获取图层
+	QList< DAGraphicsLayout* > getLayouts() const;
 
 public:
 	static void addItemToGroup(QGraphicsItemGroup* group, const QList< QGraphicsItem* >& willGroupItems);
@@ -144,10 +144,10 @@ public slots:
 	void clearSelection();
 	// 设置item的选中状态
 	int setSelectionState(const QList< QGraphicsItem* >& its, bool isSelect);
-    // 锁定
-    void lock();
-    // 恢复锁定
-    void unlock();
+	// 锁定
+	void lock();
+	// 恢复锁定
+	void unlock();
 signals:
 	/**
 	 * @brief item移动发射的信号
@@ -160,8 +160,8 @@ signals:
 	 * @param newPos
 	 */
 	void itemsPositionChanged(const QList< QGraphicsItem* >& items,
-                              const QList< QPointF >& oldPos,
-                              const QList< QPointF >& newPos);
+							  const QList< QPointF >& oldPos,
+							  const QList< QPointF >& newPos);
 
 	/**
 	 * @brief 条目bodysize改变触发的信号
@@ -195,33 +195,33 @@ signals:
 	 */
 	void selectLinkChanged(DAGraphicsLinkItem* item);
 
-    /**
-     * @brief item添加的信号
-     *
-     * @note 此信号是通过@ref DAGraphicsScene::addItem_ 或是@ref DAGraphicsScene::addItems_ 函数才会触发，
-     * 直接调用@ref QGraphicsScene::addItem 函数不会触发此函数
-     *
-     * @param item
-     */
-    void itemsAdded(const QList< QGraphicsItem* >& its);
+	/**
+	 * @brief item添加的信号
+	 *
+	 * @note 此信号是通过@ref DAGraphicsScene::addItem_ 或是@ref DAGraphicsScene::addItems_ 函数才会触发，
+	 * 直接调用@ref QGraphicsScene::addItem 函数不会触发此函数
+	 *
+	 * @param item
+	 */
+	void itemsAdded(const QList< QGraphicsItem* >& its);
 
-    /**
-     * @brief item移除的信号
-     *
-     * @note 此信号是通过@ref DAGraphicsScene::removeItem_ 或是@ref DAGraphicsScene::removeItems_ 函数才会触发，
-     * 直接调用@ref QGraphicsScene::removeItem 函数不会触发此函数
-     *
-     * @param item
-     */
-    void itemsRemoved(const QList< QGraphicsItem* >& its);
+	/**
+	 * @brief item移除的信号
+	 *
+	 * @note 此信号是通过@ref DAGraphicsScene::removeItem_ 或是@ref DAGraphicsScene::removeItems_ 函数才会触发，
+	 * 直接调用@ref QGraphicsScene::removeItem 函数不会触发此函数
+	 *
+	 * @param item
+	 */
+	void itemsRemoved(const QList< QGraphicsItem* >& its);
 
 protected:
 	// 判断点击的item是否可以移动
 	virtual bool isItemCanMove(QGraphicsItem* positem, const QPointF& scenePos);
 	// 调用此函数 主动触发itemsPositionChanged信号，这个函数用于 继承此类例如实现了键盘移动item，主动触发此信号
 	void emitItemsPositionChanged(const QList< QGraphicsItem* >& items,
-                                  const QList< QPointF >& oldPos,
-                                  const QList< QPointF >& newPos);
+								  const QList< QPointF >& oldPos,
+								  const QList< QPointF >& newPos);
 	// 调用此函数 主动触发itemBodySizeChanged信号
 	void emitItemBodySizeChanged(DAGraphicsResizeableItem* item, const QSizeF& oldSize, const QSizeF& newSize);
 	// 调用此函数 主动触发itemRotationed信号
