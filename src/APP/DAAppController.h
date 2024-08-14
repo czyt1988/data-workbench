@@ -27,6 +27,7 @@ namespace DA
 {
 class AppMainWindow;
 class DAAppCore;
+class DAProjectInterface;
 class DAAppRibbonArea;
 class DAAppDockingArea;
 class DAAppCommand;
@@ -110,7 +111,9 @@ public:
 	bool isLastFocusedOnDataOptWidget() const;
 	DAAppConfig* getConfig() const;
 	void setConfig(DAAppConfig* config);
-
+    // 设置工程为dirty
+    void setDirty(bool on = true);
+    bool isDirty() const;
 private slots:
 
 	//===================================================
@@ -350,9 +353,12 @@ private:
 	// 初始化脚本信息
 	void initScripts();
 #endif
+
 private:
 	AppMainWindow* mMainWindow { nullptr };
 	DAAppCore* mCore { nullptr };
+    DAProjectInterface* mProject { nullptr };
+    ;
 	DAAppRibbonArea* mRibbon { nullptr };
 	DAAppDockingArea* mDock { nullptr };
 	DAAppCommand* mCommand { nullptr };
@@ -362,7 +368,7 @@ private:
 	QStringList mFileReadFilters;  ///< 包含支持的文件[Images (*.png *.xpm *.jpg)] [Text files (*.txt)]
 	//
 	LastFocusedOpertateWidgets mLastFocusedOpertateWidget;  ///< 最后获取焦点的操作窗口
-															//
+                                                            //
 	DAAppSettingDialog* mSettingDialog { nullptr };         ///< 设置窗口
 	DAAppConfig* mConfig;                                   ///< 设置类
 };

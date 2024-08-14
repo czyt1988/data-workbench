@@ -51,8 +51,8 @@ public:
     //保存工程，保存成功后需要发射projectSaved信号
     virtual bool save(const QString& path);
 public slots:
-    //设置为dirty
-    void setDirty(bool on);
+    //设置为dirty,会发射becomeDirty
+    void setDirty(bool on = true);
 signals:
     /**
      * @brief 工程加载完成

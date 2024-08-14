@@ -122,6 +122,15 @@ void AppMainWindow::changeEvent(QEvent* e)
  */
 void AppMainWindow::closeEvent(QCloseEvent* e)
 {
+    // 判断是否需要保存
+    if (mController->isDirty()) {
+        // 是否保存
+        QMessageBox::question(this,
+                              tr("Question"),                          // cn:疑问
+                              tr("Do you need to save the project?"),  // cn:是否需要保存工程？
+                              QMessageBox::StandardButton::Yes | QMessageBox::StandardButton::No,
+                              QMessageBox::StandardButton::Yes);
+    }
     QString uistateFile = getUIStateSettingFilePath();
     if (mIsSaveUIStateOnClose) {
         QFile file(uistateFile);
