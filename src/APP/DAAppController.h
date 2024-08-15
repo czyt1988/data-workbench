@@ -111,23 +111,22 @@ public:
 	bool isLastFocusedOnDataOptWidget() const;
 	DAAppConfig* getConfig() const;
 	void setConfig(DAAppConfig* config);
-    // 设置工程为dirty
-    void setDirty(bool on = true);
-    bool isDirty() const;
+	// 设置工程为dirty
+	void setDirty(bool on = true);
+	bool isDirty() const;
+public slots:
+	// 保存
+	void save();
+	// 另存为
+	void saveAs();
+	// 打开文件
+	void open();
 private slots:
 
 	//===================================================
 	// 主页标签 Main Category
 	//===================================================
-	// 打开文件
-	void onActionOpenTriggered();
-
 	void onActionAppendProjectTriggered();
-
-	// 保存工程
-	void onActionSaveTriggered();
-	// 另存为
-	void onActionSaveAsTriggered();
 
 	// app设定
 	void onActionSettingTriggered();
@@ -357,8 +356,8 @@ private:
 private:
 	AppMainWindow* mMainWindow { nullptr };
 	DAAppCore* mCore { nullptr };
-    DAProjectInterface* mProject { nullptr };
-    ;
+	DAProjectInterface* mProject { nullptr };
+	;
 	DAAppRibbonArea* mRibbon { nullptr };
 	DAAppDockingArea* mDock { nullptr };
 	DAAppCommand* mCommand { nullptr };
@@ -368,7 +367,7 @@ private:
 	QStringList mFileReadFilters;  ///< 包含支持的文件[Images (*.png *.xpm *.jpg)] [Text files (*.txt)]
 	//
 	LastFocusedOpertateWidgets mLastFocusedOpertateWidget;  ///< 最后获取焦点的操作窗口
-                                                            //
+															//
 	DAAppSettingDialog* mSettingDialog { nullptr };         ///< 设置窗口
 	DAAppConfig* mConfig;                                   ///< 设置类
 };
