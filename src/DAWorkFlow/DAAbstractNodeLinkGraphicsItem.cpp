@@ -401,6 +401,14 @@ bool DAAbstractNodeLinkGraphicsItem::attachFrom(DAAbstractNodeGraphicsItem* item
 	return attachFrom(item, pl);
 }
 
+/**
+ * @brief 从item的出口开始进行连接
+ *
+ * @note 此函数不会触发节点的连接，仅仅在attachTo才会触发节点的linkto
+ * @param item
+ * @param pl
+ * @return
+ */
 bool DAAbstractNodeLinkGraphicsItem::attachFrom(DAAbstractNodeGraphicsItem* item, const DANodeLinkPoint& pl)
 {
 	if (!item->isHaveLinkPoint(pl)) {
@@ -445,7 +453,8 @@ void DAAbstractNodeLinkGraphicsItem::detachFrom()
 			qCritical() << tr("error:link item can not get from node");  // cn:错误:无法通过图元获取到对应的节点
 			return;
 		}
-		node->detachLink(d_ptr->mFromPoint.name);  // 断开连接
+		// 连接线的from，对于from node，就是node的出口
+		node->detachOutputLinks(d_ptr->mFromPoint.name);  // 断开连接
 		d_ptr->mFromItem->detachLink(d_ptr->mFromPoint, this, DANodeLinkPoint::Output);
 		d_ptr->mFromItem = nullptr;
 	}
@@ -458,6 +467,14 @@ bool DAAbstractNodeLinkGraphicsItem::attachTo(DAAbstractNodeGraphicsItem* item, 
 	return attachTo(item, pl);
 }
 
+/**
+ * @brief 连接到结束节点
+ *
+ * @note 此函数会触发节点的linkTo
+ * @param item
+ * @param pl
+ * @return
+ */
 bool DAAbstractNodeLinkGraphicsItem::attachTo(DAAbstractNodeGraphicsItem* item, const DANodeLinkPoint& pl)
 {
 	if (!item->isHaveLinkPoint(pl)) {
@@ -512,7 +529,13 @@ void DAAbstractNodeLinkGraphicsItem::detachTo()
 {
 	if (d_ptr->mToItem) {
 		d_ptr->mToItem->removeLinkInfo(this, d_ptr->mToPoint);
-		d_ptr->mToItem->node()->detachLink(d_ptr->mToPoint.name);  // 断开连接
+		auto node = d_ptr->mToItem->node();
+		if (!node) {
+			qCritical() << tr("error:link item can not get to node");  // cn:错误:无法通过图元获取到对应的节点
+			return;
+		}
+		// 对于连接线的to node，detach的是它的input
+		node->detachInputLinks(d_ptr->mToPoint.name);  // 断开连接
 		d_ptr->mToItem->detachLink(d_ptr->mToPoint, this, DANodeLinkPoint::Input);
 		d_ptr->mToItem = nullptr;
 	}
