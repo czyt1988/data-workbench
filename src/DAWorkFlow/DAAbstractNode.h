@@ -151,6 +151,10 @@ public:  // 连接相关
 	virtual bool linkTo(const QString& outKey, SharedPointer inNode, const QString& inKey);
 	// 移除连接,节点对应的连接全部解除
 	bool detachLink(const QString& key);
+	// 移除连接,节点对应的连接全部解除
+	bool detachInputLinks(const QString& key);
+	// 移除连接,节点对应的连接全部解除
+	bool detachOutputLinks(const QString& key);
 	// 移除所有依赖，一般是节点被删除时会调用此函数
 	void detachAll();
 	// 获取所有连接了输入keys的节点
@@ -170,10 +174,10 @@ public:  // 连接相关
 	void setOutputData(const QString& key, const QVariant& dp);
 	// 移除输入
 	void removeInputKey(const QString& key);
-    void removeAllInputKeys();
+	void removeAllInputKeys();
 	// 移除输出
 	void removeOutputKey(const QString& key);
-    void removeAllOutputKeys();
+	void removeAllOutputKeys();
 	// 获取input的数据包,此函数返回的FCDataPackage是引用，不发生拷贝，修改将直接改变input所维护的FCDataPackage内容
 	QVariant getInputData(const QString& key) const;
 	// 输出参数
