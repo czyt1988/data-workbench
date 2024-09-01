@@ -270,7 +270,7 @@ void DAAppController::initConnection()
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowMessageLogView, onActionShowMessageLogViewTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowSettingWidget, onActionSettingWidgetTriggered);
 	// workflow view 工作流视图
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowViewLock, onActionWorkflowViewLockTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowViewReadOnly, onActionWorkflowViewReadOnlyTriggered);
 
 	// workflow edit 工作流编辑
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowNew, onActionNewWorkflowTriggered);
@@ -938,10 +938,10 @@ void DAAppController::onActionExportWorkflowScenePNGTriggered()
  * @brief 工作流视图锁定
  * @param on
  */
-void DAAppController::onActionWorkflowViewLockTriggered(bool on)
+void DAAppController::onActionWorkflowViewReadOnlyTriggered(bool on)
 {
 	if (DAWorkFlowOperateWidget* s = mDock->getWorkFlowOperateWidget()) {
-		s->setCurrentWorkflowLock(on);
+		s->setCurrentWorkflowReadOnly(on);
 	}
 }
 

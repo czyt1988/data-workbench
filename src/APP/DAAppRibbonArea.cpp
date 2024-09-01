@@ -532,7 +532,7 @@ void DAAppRibbonArea::buildContextCategoryWorkflowView_()
 	// View
 	m_pannelWorkflowView = m_categoryWorkflowGraphicsView->addPannel(tr("View"));  // cn:视图
 	m_pannelWorkflowView->setObjectName(QStringLiteral("da-pannel-context.workflow.view"));
-	m_pannelWorkflowView->addLargeAction(m_actions->actionWorkflowViewLock);
+	m_pannelWorkflowView->addLargeAction(m_actions->actionWorkflowViewReadOnly);
 	m_pannelWorkflowView->addLargeAction(m_actions->actionWorkflowShowGrid);
 	m_pannelWorkflowView->addSeparator();
 	m_pannelWorkflowView->addLargeAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionZoomFit));

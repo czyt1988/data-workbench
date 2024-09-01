@@ -117,10 +117,6 @@ public:
 	// 设置场景就绪，如果场景还没加载完成，ready为false，一般这个函数在工程加载的时候应用
 	void setReady(bool on);
 	bool isReady() const;
-	// 获取默认的dpi
-	static int getDefaultDPI();
-	// dpi转为像素
-	static int dpiToPx(int dpi, int r);
 
 	// 激活一个场景动作，DAAbstractGraphicsSceneAction的内存归scene管理
 	void setupSceneAction(DAAbstractGraphicsSceneAction* act);
@@ -130,8 +126,15 @@ public:
 	void clearSceneAction();
 	// 获取图层
 	QList< DAGraphicsLayout* > getLayouts() const;
+	// 是否为只读模式，只读模式不能编辑
+	bool isReadOnly() const;
 
 public:
+	// 获取默认的dpi
+	static int getDefaultDPI();
+	// dpi转为像素
+	static int dpiToPx(int dpi, int r);
+	// 把item添加到分组
 	static void addItemToGroup(QGraphicsItemGroup* group, const QList< QGraphicsItem* >& willGroupItems);
 public slots:
 	// 设置对齐网格
@@ -144,10 +147,8 @@ public slots:
 	void clearSelection();
 	// 设置item的选中状态
 	int setSelectionState(const QList< QGraphicsItem* >& its, bool isSelect);
-	// 锁定
-	void lock();
-	// 恢复锁定
-	void unlock();
+	// 锁定,具体的锁定，有item自行处理，scene只是持有只读的状态，一般item在itemChange中判断是否只读，然后进行动作判断
+	void setReadOnly(bool on);
 signals:
 	/**
 	 * @brief item移动发射的信号

@@ -280,7 +280,7 @@ private slots:
 	// 导出png
 	void onActionExportWorkflowScenePNGTriggered();
 	// 锁定视图
-	void onActionWorkflowViewLockTriggered(bool on);
+	void onActionWorkflowViewReadOnlyTriggered(bool on);
 	/////////---运行------
 	// 运行
 	void onActionRunCurrentWorkflowTriggered();

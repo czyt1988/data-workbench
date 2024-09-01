@@ -78,7 +78,7 @@ DAWorkFlowEditWidget* DAWorkFlowOperateWidget::appendWorkflow(const QString& nam
 	wfe->setDefaultTextFont(mDefaultFont);
 	DAWorkFlowGraphicsScene* scene = wfe->getWorkFlowGraphicsScene();
 	// 同步状态
-	scene->setEnableNodeLink(isEnableWorkflowLink());
+	scene->setIgnoreLinkEvent(!isEnableWorkflowLink());
 
 	connect(wfe, &DAWorkFlowEditWidget::selectNodeItemChanged, this, &DAWorkFlowOperateWidget::selectNodeItemChanged);
 	connect(wfe, &DAWorkFlowEditWidget::mouseActionFinished, this, &DAWorkFlowOperateWidget::mouseActionFinished);
@@ -411,17 +411,13 @@ void DAWorkFlowOperateWidget::setCurrentWorkflowShowGrid(bool on)
  * @brief 设置当前工作流锁定
  * @param on
  */
-void DAWorkFlowOperateWidget::setCurrentWorkflowLock(bool on)
+void DAWorkFlowOperateWidget::setCurrentWorkflowReadOnly(bool on)
 {
 	DAWorkFlowGraphicsScene* sc = getCurrentWorkFlowScene();
 	if (!sc) {
 		return;
 	}
-	if (on) {
-		sc->lock();
-	} else {
-		sc->unlock();
-	}
+	sc->setReadOnly(on);
 }
 
 /**
@@ -587,7 +583,7 @@ void DAWorkFlowOperateWidget::setEnableWorkflowLink(bool on)
 {
 	mEnableWorkflowLink = on;
 	iteratorScene([ on ](DAWorkFlowGraphicsScene* sc) -> bool {
-		sc->setEnableNodeLink(on);
+		sc->setIgnoreLinkEvent(!on);
 		return true;
 	});
 }

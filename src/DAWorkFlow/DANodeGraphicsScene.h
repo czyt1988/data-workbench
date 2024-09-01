@@ -84,9 +84,6 @@ public:
 	DAGraphicsPixmapItem* addPixmapItem_(const QImage& img);
 	// 通过位置获取DAAbstractNodeGraphicsItem，此函数是加强版的itemAt
 	DAAbstractNodeGraphicsItem* nodeItemAt(const QPointF& scenePos) const;
-	// 是否允许节点链接
-	void setEnableNodeLink(bool on);
-	bool isEnableNodeLink() const;
 signals:
 
 	/**

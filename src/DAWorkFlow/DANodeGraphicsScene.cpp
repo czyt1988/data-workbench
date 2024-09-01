@@ -27,7 +27,6 @@ public:
 
 public:
 	QPointer< DAWorkFlow > mWorkflow;
-	bool mEnableNodeLink { true };
 };
 
 DANodeGraphicsScene::PrivateData::PrivateData(DANodeGraphicsScene* p) : q_ptr(p)
@@ -395,23 +394,6 @@ DAAbstractNodeGraphicsItem* DANodeGraphicsScene::nodeItemAt(const QPointF& scene
 	return nullptr;
 }
 
-/**
- * @brief 是否允许节点链接
- * @param on
- */
-void DANodeGraphicsScene::setEnableNodeLink(bool on)
-{
-	d_ptr->mEnableNodeLink = on;
-	if (!on) {
-		cancelLink();
-	}
-}
-
-bool DANodeGraphicsScene::isEnableNodeLink() const
-{
-	return d_ptr->mEnableNodeLink;
-}
-
 void DANodeGraphicsScene::initConnect()
 {
 	qRegisterMetaType< DANodeLinkPoint >("DANodeLinkPoint");
@@ -542,7 +524,7 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		return;
 	}
 	// 先检查是否点击到了连接点
-	if (isEnableNodeLink()) {
+	if (!isIgnoreLinkEvent()) {
 		if (mouseEvent->buttons().testFlag(Qt::LeftButton)) {
 
 			// 左键点击

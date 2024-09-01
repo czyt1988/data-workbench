@@ -130,7 +130,7 @@ public slots:
 	// 设置当前工作流的网格显示与否
 	void setCurrentWorkflowShowGrid(bool on);
 	// 设置当前工作流锁定
-	void setCurrentWorkflowLock(bool on);
+	void setCurrentWorkflowReadOnly(bool on);
 	// 设置当前工作流全部显示
 	void setCurrentWorkflowWholeView();
 	// 设置当前工作流全部显示

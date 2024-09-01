@@ -4,6 +4,7 @@
 #include <QDomElement>
 #include <QDebug>
 #include <QEvent>
+#include "DAGraphicsScene.h"
 namespace DA
 {
 
@@ -308,13 +309,89 @@ void DAGraphicsItem::setItemID(uint64_t id)
 }
 
 /**
-   @brief 快速cast，基于type(ItemType_DAGraphicsItem_Begin,ItemType_DAGraphicsItem_End)进行快速判断
+   @brief dynamic_cast为DAGraphicsItem
    @param i
    @return
  */
 DAGraphicsItem* DAGraphicsItem::cast(QGraphicsItem* i)
 {
 	return dynamic_cast< DAGraphicsItem* >(i);
+}
+
+DAGraphicsScene* DAGraphicsItem::daScene() const
+{
+	return dynamic_cast< DAGraphicsScene* >(scene());
+}
+
+/**
+ * @brief 判断当前场景是否为只读模式，只读模式不允许操作
+ *
+ * 在继承此类时要通过此函数判断当前的状态
+ *
+ * 只读模式下，一些值会被过滤，例如：
+ * @code
+ * QVariant DAGraphicsItem::itemChange(GraphicsItemChange change, const QVariant& value)
+ * {
+ *     switch (change) {
+ *     case QGraphicsItem::ItemRotationChange: {
+ *         if (isSceneReadOnly()) {
+ *             return rotation();
+ *         }
+ *     } break;
+ *     case QGraphicsItem::ItemPositionChange: {
+ *         if (isSceneReadOnly()) {
+ *             return pos();
+ *         }
+ *     } break;
+ *     case QGraphicsItem::ItemOpacityChange: {
+ *         if (isSceneReadOnly()) {
+ *             return opacity();
+ *         }
+ *     } break;
+ *     default:
+ *         break;
+ *     }
+ *     return QGraphicsObject::itemChange(change, value);
+ * }
+ * @endcode
+ * @return
+ */
+bool DAGraphicsItem::isSceneReadOnly() const
+{
+	if (DAGraphicsScene* sc = daScene()) {
+		return sc->isReadOnly();
+	}
+	return false;
+}
+
+/**
+ * @brief 这里主要对只读模式的过滤
+ * @param change
+ * @param value
+ * @return
+ */
+QVariant DAGraphicsItem::itemChange(GraphicsItemChange change, const QVariant& value)
+{
+	switch (change) {
+	case QGraphicsItem::ItemRotationChange: {
+		if (isSceneReadOnly()) {
+			return rotation();
+		}
+	} break;
+	case QGraphicsItem::ItemPositionChange: {
+		if (isSceneReadOnly()) {
+			return pos();
+		}
+	} break;
+	case QGraphicsItem::ItemOpacityChange: {
+		if (isSceneReadOnly()) {
+			return opacity();
+		}
+	} break;
+	default:
+		break;
+	}
+	return QGraphicsObject::itemChange(change, value);
 }
 
 // bool DAGraphicsItem::sceneEvent(QEvent* event)

@@ -8,6 +8,7 @@ class QDomElement;
 
 namespace DA
 {
+class DAGraphicsScene;
 /**
  * @brief DAGraphicsView的基本元件
  *
@@ -60,8 +61,15 @@ public:
 	// 获取item的id，id是这个id唯一的标识，id主要为了能单独的找到这个item，在分组加载时使用
 	uint64_t getItemID() const;
 	void setItemID(uint64_t id);
-	// 快速cast，基于type进行快速判断
+	// dynamic_cast为DAGraphicsItem
 	static DAGraphicsItem* cast(QGraphicsItem* i);
+	// 判断是否为只读模式
+	bool isSceneReadOnly() const;
+
+protected:
+	// 获取DAGraphicsScene
+	DAGraphicsScene* daScene() const;
+	virtual QVariant itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant& value) override;
 };
 
 }
