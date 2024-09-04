@@ -12,43 +12,43 @@ namespace DA
  */
 class DAUTILS_API DAProcess : public QProcess
 {
-    Q_OBJECT
+	Q_OBJECT
 public:
-    DAProcess(QObject* par = nullptr);
+	DAProcess(QObject* par = nullptr);
 public slots:
-    // 对start函数的槽映射，可以通过object-with-thread模式跨线程运行
-    void run();
-    void run(QIODevice::OpenMode mode);
-    void run(const QString& command, QIODevice::OpenMode mode);
-    void run(const QString& program, const QStringList& arguments, QIODevice::OpenMode mode);
-    // 设置编码
-    void setEncoding(const char* codecName);
+	// 对start函数的槽映射，可以通过object-with-thread模式跨线程运行
+	void run();
+	void run(QIODevice::OpenMode mode);
+	void run(const QString& command, QIODevice::OpenMode mode);
+	void run(const QString& program, const QStringList& arguments, QIODevice::OpenMode mode);
+	// 设置编码
+	void setEncoding(const char* codecName);
 signals:
-    /**
-     * @brief 标准输出
-     *
-     * 此标准输出以行的形式发出
-     * @param str
-     */
-    void processStarandOutput(const QString& str);
-    /**
-     * @brief 标准错误输出
-     *
-     * 此标准输出以行的形式发出
-     * @param str
-     */
-    void processErrorOutput(const QString& str);
+	/**
+	 * @brief 标准输出
+	 *
+	 * 此标准输出以行的形式发出
+	 * @param str
+	 */
+	void processStarandOutput(const QString& str);
+	/**
+	 * @brief 标准错误输出
+	 *
+	 * 此标准输出以行的形式发出
+	 * @param str
+	 */
+	void processErrorOutput(const QString& str);
 private slots:
-    // 标准输出
-    void onReadyReadStandardOutput();
-    // 标准错误
-    void onReadyReadStandardError();
+	// 标准输出
+	void onReadyReadStandardOutput();
+	// 标准错误
+	void onReadyReadStandardError();
 
 private:
-    void setEncoding(QTextStream* ss, const QString& codec);
+	void setEncoding(QTextStream* ss, const QString& codec);
 
 private:
-    QString mCodecName;  ///< 编码，决定了程序返回内容的编码解析
+	QString mCodecName;  ///< 编码，决定了程序返回内容的编码解析
 };
 
 /**
@@ -69,62 +69,74 @@ private:
  */
 class DAUTILS_API DAProcessWithThread : public QObject
 {
-    Q_OBJECT
+	Q_OBJECT
 public:
-    DAProcessWithThread(QObject* par = nullptr);
-    ~DAProcessWithThread();
-    // 参数
-    void setArguments(const QStringList& arguments);
-    QStringList getArguments() const;
-    // 设置程序
-    void setProgram(const QString& program);
-    QString getProgram() const;
-
+	DAProcessWithThread(QObject* par = nullptr);
+	~DAProcessWithThread();
+	// 参数
+	void setArguments(const QStringList& arguments);
+	QStringList getArguments() const;
+	// 设置程序
+	void setProgram(const QString& program);
+	QString getProgram() const;
+	//
 public slots:
-    // 运行进程，发射beginRunProcess
-    void runProcess();
+	// 运行进程，发射beginRunProcess
+	void runProcess();
+	// kill,发射beginKillProcess
+	void kill();
+	// terminate,发射beginTerminateProcess
+	void terminate();
 signals:
-    /**
-     * @brief 发生错误
-     * @param error
-     */
-    void errorOccurred(QProcess::ProcessError error, const QString& errString);
-    /**
-     * @brief 标准输出
-     *
-     * 此标准输出以行的形式发出
-     * @param str
-     */
-    void processStarandOutput(const QString& str);
-    /**
-     * @brief 标准错误输出
-     *
-     * 此标准输出以行的形式发出
-     * @param str
-     */
-    void processErrorOutput(const QString& str);
-    /**
-     * @brief 开始运行进程的信号
-     */
-    void beginRunProcess();
-    /**
-     * @brief 进程已经开始
-     */
-    void processStarted();
-    /**
-     * @brief 进程结束
-     * @param code 结束返回的代码
-     */
-    void processFinished(int code);
+	/**
+	 * @brief 发生错误
+	 * @param error
+	 */
+	void errorOccurred(QProcess::ProcessError error, const QString& errString);
+	/**
+	 * @brief 标准输出
+	 *
+	 * 此标准输出以行的形式发出
+	 * @param str
+	 */
+	void processStarandOutput(const QString& str);
+	/**
+	 * @brief 标准错误输出
+	 *
+	 * 此标准输出以行的形式发出
+	 * @param str
+	 */
+	void processErrorOutput(const QString& str);
+	/**
+	 * @brief 开始运行进程的信号
+	 */
+	void beginRunProcess();
+	/**
+	 * @brief 进程已经开始
+	 */
+	void processStarted();
+	/**
+	 * @brief 进程结束
+	 * @param code 结束返回的代码
+	 */
+	void processFinished(int code);
+	/**
+	 * @brief 进程开始kill
+	 */
+	void beginKillProcess();
+	/**
+	 * @brief 进程开始terminate
+	 */
+	void beginTerminateProcess();
 
 private:
-    DAProcess* mProcess { nullptr };
-    QThread* mThread { nullptr };
-    //
-    QString mProgram;
-    QStringList mArguments;
-    // 记录最后的错误
-    QString mLastError;
+	DAProcess* mProcess { nullptr };
+	QThread* mThread { nullptr };
+	//
+	QString mProgram;
+	QStringList mArguments;
+	// 记录最后的错误
+	QString mLastError;
 };
 
 }
