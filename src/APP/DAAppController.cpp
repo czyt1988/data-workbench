@@ -131,6 +131,7 @@ DAAppController& DAAppController::setAppRibbonArea(DAAppRibbonArea* ribbon)
 DAAppController& DAAppController::setAppDockingArea(DAAppDockingArea* dock)
 {
 	mDock = dock;
+
 	return (*this);
 }
 
@@ -347,9 +348,11 @@ void DAAppController::initConnection()
 			&DAAppController::onWorkFlowGraphicsSceneMouseActionFinished);
 	//
 	DAWorkFlowOperateWidget* workflowOpt = mDock->getWorkFlowOperateWidget();
-	connect(workflowOpt, &DAWorkFlowOperateWidget::selectionItemChanged, this, &DAAppController::onSelectionGraphicsItemChanged);
+	connect(workflowOpt, &DAWorkFlowOperateWidget::selectionItemChanged, this, &DAAppController::onWorkflowSceneSelectionItemChanged);
 	connect(workflowOpt, &DAWorkFlowOperateWidget::workflowStartExecute, this, &DAAppController::onWorkflowStartExecute);
 	connect(workflowOpt, &DAWorkFlowOperateWidget::workflowFinished, this, &DAAppController::onWorkflowFinished);
+	connect(workflowOpt, &DAWorkFlowOperateWidget::itemsAdded, this, &DAAppController::onWorkflowSceneitemsAdded);
+	connect(workflowOpt, &DAWorkFlowOperateWidget::itemsRemoved, this, &DAAppController::onWorkflowSceneitemsRemoved);
 	connect(mActions->actionWorkflowShowGrid,
 			&QAction::triggered,
 			workflowOpt,
@@ -1060,7 +1063,7 @@ void DAAppController::onCurrentWorkflowShapeBorderPenChanged(const QPen& p)
 	setDirty();
 }
 
-void DAAppController::onSelectionGraphicsItemChanged(QGraphicsItem* lastSelectItem)
+void DAAppController::onWorkflowSceneSelectionItemChanged(QGraphicsItem* lastSelectItem)
 {
 	if (lastSelectItem == nullptr) {
 		return;
@@ -1102,6 +1105,26 @@ void DAAppController::onWorkflowFinished(DAWorkFlowEditWidget* wfw, bool success
 {
 	mActions->actionWorkflowRun->setEnabled(true);
 	mActions->actionWorkflowTerminate->setEnabled(false);
+}
+
+/**
+ * @brief 场景有item添加
+ * @param sc
+ * @param its
+ */
+void DAAppController::onWorkflowSceneitemsAdded(DAGraphicsScene* sc, const QList< QGraphicsItem* >& its)
+{
+    mProject->setDirty(true);
+}
+
+/**
+ * @brief 场景有item删除
+ * @param sc
+ * @param its
+ */
+void DAAppController::onWorkflowSceneitemsRemoved(DAGraphicsScene* sc, const QList< QGraphicsItem* >& its)
+{
+    mProject->setDirty(true);
 }
 
 /**

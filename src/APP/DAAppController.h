@@ -295,9 +295,11 @@ private slots:
 	//===================================================
 	// DAWorkFlowOperateWidget的槽
 	//===================================================
-	void onSelectionGraphicsItemChanged(QGraphicsItem* lastSelectItem);
+	void onWorkflowSceneSelectionItemChanged(QGraphicsItem* lastSelectItem);
 	void onWorkflowStartExecute(DA::DAWorkFlowEditWidget* wfw);
 	void onWorkflowFinished(DA::DAWorkFlowEditWidget* wfw, bool success);
+	void onWorkflowSceneitemsAdded(DA::DAGraphicsScene* sc, const QList< QGraphicsItem* >& its);
+	void onWorkflowSceneitemsRemoved(DA::DAGraphicsScene* sc, const QList< QGraphicsItem* >& its);
 	//===================================================
 	// DAChartOperateWidget
 	//===================================================

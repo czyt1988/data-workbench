@@ -264,16 +264,19 @@ int DANodeGraphicsScene::removeSelectedItems_()
 void DANodeGraphicsScene::removeNodeItem_(DAAbstractNodeGraphicsItem* i)
 {
 	push(new DACommandsForWorkFlowRemoveNodeItem(this, i));
+	emit itemsRemoved({ i });
 }
 
 void DANodeGraphicsScene::addNodeItem_(DAAbstractNodeGraphicsItem* i)
 {
 	push(new DACommandsForWorkFlowAddNodeItem(this, i));
+	emit itemsAdded({ i });
 }
 
 void DANodeGraphicsScene::addNodeLink_(DAAbstractNodeLinkGraphicsItem* link)
 {
-    push(new DACommandsForWorkFlowCreateLink(link, this));
+	push(new DACommandsForWorkFlowCreateLink(link, this));
+	emit itemsAdded({ link });
 }
 
 /**
@@ -296,6 +299,7 @@ DAAbstractNodeGraphicsItem* DANodeGraphicsScene::createNode(const DANodeMetaData
 	} else {
 		nodeitem = n->createGraphicsItem();
 		if (nodeitem) {
+			addItemWithSignal(nodeitem);
 			nodeitem->setPos(pos);
 			d_ptr->mWorkflow->addNode(n);
 		}
@@ -310,12 +314,13 @@ DAAbstractNodeGraphicsItem* DANodeGraphicsScene::createNode(const DANodeMetaData
  */
 DAAbstractNodeGraphicsItem* DANodeGraphicsScene::createNode_(const DANodeMetaData& md, const QPointF& pos)
 {
-	auto cmd                         = std::make_unique< DA::DACommandsForWorkFlowCreateNode >(md, this, pos);
+	auto cmd                         = std::make_unique< DA::DACommandsForWorkFlowCreateNode >(md, this, pos, true);
 	DAAbstractNodeGraphicsItem* item = cmd->item();
 	if (item == nullptr) {
 		return nullptr;
 	}
 	push(cmd.release());
+	emit itemsAdded({ item });
 	return item;
 }
 

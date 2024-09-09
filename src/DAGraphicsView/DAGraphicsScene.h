@@ -227,6 +227,8 @@ protected:
 	void emitItemBodySizeChanged(DAGraphicsResizeableItem* item, const QSizeF& oldSize, const QSizeF& newSize);
 	// 调用此函数 主动触发itemRotationed信号
 	void emitItemRotationChanged(DAGraphicsResizeableItem* item, const qreal& rotation);
+	// 带信号的addItm
+	void addItemWithSignal(QGraphicsItem* item);
 
 protected:
 	// 鼠标点击事件

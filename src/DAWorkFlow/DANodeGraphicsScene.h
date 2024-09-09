@@ -73,8 +73,9 @@ public:
 	void addNodeItem_(DAAbstractNodeGraphicsItem* i);
 	// 添加带redo/undo的链接线
 	void addNodeLink_(DAAbstractNodeLinkGraphicsItem* link);
-	// 通过node元对象创建工作流节点
+	// 通过node元对象创建工作流节点，（item没有设置到场景中）
 	DAAbstractNodeGraphicsItem* createNode(const DANodeMetaData& md, const QPointF& pos);
+	// 创建节点同时把item设置到场景中
 	DAAbstractNodeGraphicsItem* createNode_(const DANodeMetaData& md, const QPointF& pos);
 	// 创建文本框
 	DAGraphicsTextItem* createText_(const QString& str = QString());

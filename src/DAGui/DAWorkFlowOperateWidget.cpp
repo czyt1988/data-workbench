@@ -83,6 +83,8 @@ DAWorkFlowEditWidget* DAWorkFlowOperateWidget::appendWorkflow(const QString& nam
 	connect(wfe, &DAWorkFlowEditWidget::selectNodeItemChanged, this, &DAWorkFlowOperateWidget::selectNodeItemChanged);
 	connect(wfe, &DAWorkFlowEditWidget::mouseActionFinished, this, &DAWorkFlowOperateWidget::mouseActionFinished);
 	connect(scene, &DAWorkFlowGraphicsScene::selectionChanged, this, &DAWorkFlowOperateWidget::onSelectionChanged);
+	connect(scene, &DAWorkFlowGraphicsScene::itemsAdded, this, &DAWorkFlowOperateWidget::onSceneItemsAdded);
+	connect(scene, &DAWorkFlowGraphicsScene::itemsRemoved, this, &DAWorkFlowOperateWidget::onSceneItemsRemoved);
 	connect(wfe, &DAWorkFlowEditWidget::startExecute, this, [ this, wfe ]() { emit workflowStartExecute(wfe); });
 	connect(wfe,
 			&DAWorkFlowEditWidget::nodeExecuteFinished,
@@ -680,6 +682,22 @@ void DAWorkFlowOperateWidget::onSelectionChanged()
 		return;
 	}
 	emit selectionItemChanged(sits.last());
+}
+
+void DAWorkFlowOperateWidget::onSceneItemsAdded(const QList< QGraphicsItem* >& its)
+{
+	DAGraphicsScene* sc = qobject_cast< DAGraphicsScene* >(sender());
+	if (sc) {
+		emit itemsAdded(sc, its);
+	}
+}
+
+void DAWorkFlowOperateWidget::onSceneItemsRemoved(const QList< QGraphicsItem* >& its)
+{
+	DAGraphicsScene* sc = qobject_cast< DAGraphicsScene* >(sender());
+	if (sc) {
+		emit itemsRemoved(sc, its);
+	}
 }
 
 QList< DAGraphicsStandardTextItem* > DAWorkFlowOperateWidget::getSelectTextItems()

@@ -213,6 +213,26 @@ signals:
 	 * @param success 成功全部执行完成为true
 	 */
 	void workflowFinished(DA::DAWorkFlowEditWidget* wfw, bool success);
+
+	/**
+	 * @brief item添加的信号
+	 *
+	 * @note 此信号是通过@ref DAGraphicsScene::addItem_ 或是@ref DAGraphicsScene::addItems_ 函数才会触发，
+	 * 直接调用@ref QGraphicsScene::addItem 函数不会触发此函数
+	 * @param sc
+	 * @param item
+	 */
+	void itemsAdded(DA::DAGraphicsScene* sc, const QList< QGraphicsItem* >& its);
+
+	/**
+	 * @brief item移除的信号
+	 *
+	 * @note 此信号是通过@ref DAGraphicsScene::removeItem_ 或是@ref DAGraphicsScene::removeItems_ 函数才会触发，
+	 * 直接调用@ref QGraphicsScene::removeItem 函数不会触发此函数
+	 * @param sc
+	 * @param item
+	 */
+	void itemsRemoved(DA::DAGraphicsScene* sc, const QList< QGraphicsItem* >& its);
 private slots:
 	// 当前tab发生了改变
 	void onTabWidgetCurrentChanged(int index);
@@ -220,6 +240,9 @@ private slots:
 	void onTabWidgetTabCloseRequested(int index);
 	// 选中改变
 	void onSelectionChanged();
+	//
+	void onSceneItemsAdded(const QList< QGraphicsItem* >& its);
+	void onSceneItemsRemoved(const QList< QGraphicsItem* >& its);
 
 private:
 	QList< DAGraphicsStandardTextItem* > getSelectTextItems();

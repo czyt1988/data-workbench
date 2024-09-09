@@ -990,6 +990,16 @@ void DAGraphicsScene::emitItemRotationChanged(DAGraphicsResizeableItem* item, co
     emit itemRotationChanged(item, rotation);
 }
 
+/**
+ * @brief 带信号的addItm
+ * @param item
+ */
+void DAGraphicsScene::addItemWithSignal(QGraphicsItem* item)
+{
+	addItem(item);
+	emit itemsAdded({ item });
+}
+
 void DAGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
 	if (d_ptr->mSceneAction) {
