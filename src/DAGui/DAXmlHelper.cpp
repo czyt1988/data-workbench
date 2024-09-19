@@ -584,6 +584,7 @@ DAAbstractNodeGraphicsItem* DAXmlHelperPrivate::loadNodeAndItem(const QDomElemen
 	}
 	// 加载额外信息
 	node->loadExternInfoFromXml(&nodeEle, mLoadedVersion);
+	workflow->addNode(node);
 	// 加载item信息
 	// 注意，这里时createNode，不是createNode_
 	std::unique_ptr< DAAbstractNodeGraphicsItem > item(node->createGraphicsItem());
