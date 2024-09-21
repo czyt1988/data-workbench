@@ -7,6 +7,8 @@
 #include "DAGraphicsStandardTextItem.h"
 #include "DAAbstractGraphicsSceneAction.h"
 #include "DAGraphicsLayout.h"
+#include "DAGraphicsTextItem.h"
+#include "DAGraphicsRectItem.h"
 #include <QPainter>
 #include <QDebug>
 #include <QApplication>
@@ -816,6 +818,7 @@ int DAGraphicsScene::dpiToPx(int dpi, int r)
  * @note DAAbstractGraphicsSceneAction的内存归scene管理
  * @param act
  * @sa DAAbstractGraphicsSceneAction
+ * @note 此函数发射@ref sceneActionActived 信号
  */
 void DAGraphicsScene::setupSceneAction(DAAbstractGraphicsSceneAction* act)
 {
@@ -825,6 +828,7 @@ void DAGraphicsScene::setupSceneAction(DAAbstractGraphicsSceneAction* act)
 	d_ptr->mSceneAction.reset(act);
 	if (act) {
 		act->beginActive();
+		emit sceneActionActived(act);
 	}
 }
 
@@ -839,11 +843,13 @@ bool DAGraphicsScene::isHaveSceneAction() const
 
 /**
  * @brief 清除场景动作
+ * @note 此函数会把scene维护的场景动作指针销毁，销毁前会发射sceneActionDeactived信号
  */
 void DAGraphicsScene::clearSceneAction()
 {
 	if (d_ptr->mSceneAction) {
 		d_ptr->mSceneAction->endAction();
+		emit sceneActionDeactived(d_ptr->mSceneAction.get());
 	}
 	d_ptr->mSceneAction.reset(nullptr);
 }
@@ -860,6 +866,39 @@ QList< DAGraphicsLayout* > DAGraphicsScene::getLayouts() const
 bool DAGraphicsScene::isReadOnly() const
 {
     return d_ptr->mIsReadOnlyMode;
+}
+
+/**
+ * @brief 创建并加入一个文本框
+ * @param pos
+ * @return
+ * @sa getTextGraphicsItems
+ */
+DAGraphicsTextItem* DAGraphicsScene::createText_(const QString& str)
+{
+	DAGraphicsTextItem* item = new DAGraphicsTextItem();
+	if (!str.isEmpty()) {
+		item->setPlainText(str);
+	}
+	addItem_(item);
+	item->setSelected(true);
+	return (item);
+}
+
+/**
+ * @brief 在画布中创建一个矩形
+ * @param p 矩形的位置
+ * @return
+ */
+DAGraphicsRectItem* DAGraphicsScene::createRect_(const QPointF& p)
+{
+	DAGraphicsRectItem* item = new DAGraphicsRectItem();
+	addItem_(item);
+	if (!p.isNull()) {
+		item->setPos(p);
+	}
+	item->setSelected(true);
+	return (item);
 }
 
 /**
@@ -1119,10 +1158,8 @@ void DAGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		}
 		// 位置不等，属于正常移动
 		d_ptr->mMovingInfos.updateEndPos();
-		DACommandsForGraphicsItemsMoved* cmd = new DACommandsForGraphicsItemsMoved(d_ptr->mMovingInfos.items,
-																				   d_ptr->mMovingInfos.startsPos,
-																				   d_ptr->mMovingInfos.endsPos,
-																				   true);
+		DACommandsForGraphicsItemsMoved* cmd = new DACommandsForGraphicsItemsMoved(
+			d_ptr->mMovingInfos.items, d_ptr->mMovingInfos.startsPos, d_ptr->mMovingInfos.endsPos, true);
 		push(cmd);
 		// 位置改变信号
 		//         qDebug() << "emit itemsPositionChanged";

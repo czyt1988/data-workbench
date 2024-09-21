@@ -77,10 +77,7 @@ public:
 	DAAbstractNodeGraphicsItem* createNode(const DANodeMetaData& md, const QPointF& pos);
 	// 创建节点同时把item设置到场景中
 	DAAbstractNodeGraphicsItem* createNode_(const DANodeMetaData& md, const QPointF& pos);
-	// 创建文本框
-	DAGraphicsTextItem* createText_(const QString& str = QString());
-	// 创建矩形
-	DAGraphicsRectItem* createRect_(const QPointF& p = QPointF());
+
 	// 添加一个图片item
 	DAGraphicsPixmapItem* addPixmapItem_(const QImage& img);
 	// 通过位置获取DAAbstractNodeGraphicsItem，此函数是加强版的itemAt

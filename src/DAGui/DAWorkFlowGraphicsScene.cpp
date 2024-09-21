@@ -21,6 +21,8 @@
 #include "Commands/DACommandsForWorkFlow.h"
 #include "DACommandsForGraphics.h"
 #include "DAGraphicsTextItem.h"
+#include "DAGraphicsDrawRectSceneAction.h"
+#include "DAGraphicsDrawTextItemSceneAction.h"
 //===================================================
 // using DA namespace -- 禁止在头文件using!!
 //===================================================
@@ -31,11 +33,7 @@ using namespace DA;
 // DAWorkFlowGraphicsScene
 //===================================================
 DAWorkFlowGraphicsScene::DAWorkFlowGraphicsScene(QObject* parent)
-    : DANodeGraphicsScene(parent)
-    , mBackgroundPixmapItem(nullptr)
-    , mMouseAction(NoMouseAction)
-    , mIsMouseActionContinuoue(false)
-    , mEnableItemMoveWithBackground(false)
+	: DANodeGraphicsScene(parent), mBackgroundPixmapItem(nullptr), mEnableItemMoveWithBackground(false)
 {
 	mTextFont = QApplication::font();
 	connect(this, &DAGraphicsScene::itemsPositionChanged, this, &DAWorkFlowGraphicsScene::onItemsPositionChanged);
@@ -97,26 +95,18 @@ DAGraphicsPixmapItem* DAWorkFlowGraphicsScene::createBackgroundPixmapItem()
  * @param mf 鼠标动作
  * @param continuous 是否连续执行
  */
-void DAWorkFlowGraphicsScene::setMouseAction(DAWorkFlowGraphicsScene::MouseActionFlag mf, bool continuous)
+void DAWorkFlowGraphicsScene::setPreDefineSceneAction(DAWorkFlowGraphicsScene::SceneActionFlag mf)
 {
-	mMouseAction             = mf;
-	mIsMouseActionContinuoue = continuous;
-}
-/**
- * @brief 获取当前的鼠标动作标记
- * @return
- */
-DAWorkFlowGraphicsScene::MouseActionFlag DAWorkFlowGraphicsScene::getMouseAction() const
-{
-    return mMouseAction;
-}
-/**
- * @brief 鼠标动作是否连续执行
- * @return
- */
-bool DAWorkFlowGraphicsScene::isMouseActionContinuoue() const
-{
-    return mIsMouseActionContinuoue;
+	switch (mf) {
+	case AddRectItemAction:
+		setupSceneAction(new DAGraphicsDrawRectSceneAction(this));
+		break;
+	case AddTextItemAction:
+		setupSceneAction(new DAGraphicsDrawTextItemSceneAction(this));
+		break;
+	default:
+		break;
+	}
 }
 
 /**
@@ -131,13 +121,13 @@ void DAWorkFlowGraphicsScene::setBackgroundPixmapItem(DAGraphicsPixmapItem* item
 	if (item) {
 #if DA_USE_QGRAPHICSOBJECT
 		connect(mBackgroundPixmapItem,
-                &DAGraphicsPixmapItem::xChanged,
-                this,
-                &DAWorkFlowGraphicsScene::backgroundPixmapItemXChanged);
+				&DAGraphicsPixmapItem::xChanged,
+				this,
+				&DAWorkFlowGraphicsScene::backgroundPixmapItemXChanged);
 		connect(mBackgroundPixmapItem,
-                &DAGraphicsPixmapItem::yChanged,
-                this,
-                &DAWorkFlowGraphicsScene::backgroundPixmapItemYChanged);
+				&DAGraphicsPixmapItem::yChanged,
+				this,
+				&DAWorkFlowGraphicsScene::backgroundPixmapItemYChanged);
 #endif
 		item->setZValue(-9999);
 		addItem(mBackgroundPixmapItem);
@@ -158,13 +148,13 @@ DAGraphicsPixmapItem* DAWorkFlowGraphicsScene::removeBackgroundPixmapItem()
 	if (mBackgroundPixmapItem) {
 #if DA_USE_QGRAPHICSOBJECT
 		disconnect(mBackgroundPixmapItem,
-                   &DAGraphicsPixmapItem::xChanged,
-                   this,
-                   &DAWorkFlowGraphicsScene::backgroundPixmapItemXChanged);
+				   &DAGraphicsPixmapItem::xChanged,
+				   this,
+				   &DAWorkFlowGraphicsScene::backgroundPixmapItemXChanged);
 		disconnect(mBackgroundPixmapItem,
-                   &DAGraphicsPixmapItem::yChanged,
-                   this,
-                   &DAWorkFlowGraphicsScene::backgroundPixmapItemYChanged);
+				   &DAGraphicsPixmapItem::yChanged,
+				   this,
+				   &DAWorkFlowGraphicsScene::backgroundPixmapItemYChanged);
 #endif
 		removeItem(mBackgroundPixmapItem);
 	}
@@ -247,44 +237,6 @@ void DAWorkFlowGraphicsScene::dropEvent(QGraphicsSceneDragDropEvent* event)
 	}
 }
 #endif
-void DAWorkFlowGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
-{
-	if (mMouseAction == NoMouseAction) {
-		// 说明没有鼠标动作要执行，正常传递鼠标事件
-		DANodeGraphicsScene::mousePressEvent(mouseEvent);
-		return;
-	}
-	// 说明有鼠标事件要执行
-	QPointF pos = mouseEvent->scenePos();
-	switch (mMouseAction) {
-	case StartAddText: {
-		auto item = createText_();
-		item->setScenePos(pos);
-		item->setSelectTextFont(mTextFont);
-		item->setSelectTextColor(mTextColor);
-		item->setEditable(true);
-		item->setFocus();
-		emit mouseActionFinished(mMouseAction);
-	} break;
-	case StartAddRect: {
-		DAGraphicsRectItem* item = createRect_(pos);
-		item->setSelected(true);
-		item->setZValue(-10);
-		emit mouseActionFinished(mMouseAction);
-	}
-	default:
-		break;
-	}
-	if (!mIsMouseActionContinuoue) {
-		mMouseAction = NoMouseAction;
-	}
-	mouseEvent->accept();  // 接受事件，通知下面的mousePressEvent函数事件已经接收，无需执行动作
-}
-
-void DAWorkFlowGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
-{
-	DANodeGraphicsScene::mouseReleaseEvent(mouseEvent);
-}
 
 #if DA_USE_QGRAPHICSOBJECT
 void DAWorkFlowGraphicsScene::backgroundPixmapItemXChanged()
@@ -371,7 +323,7 @@ void DAWorkFlowGraphicsScene::onItemsPositionChanged(const QList< QGraphicsItem*
 				continue;
 			}
 			willRemove.insert(nitem);
-            QList< DAAbstractNodeGraphicsItem* > chain = nitem->getOutPutLinkChain();
+			QList< DAAbstractNodeGraphicsItem* > chain = nitem->getOutPutLinkChain();
 			linkedItems += QSet(chain.begin(), chain.end());
 		}
 		// 获取到的链条要把items移除，因为已经移动过了

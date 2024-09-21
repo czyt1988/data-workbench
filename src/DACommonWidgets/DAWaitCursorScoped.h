@@ -2,30 +2,29 @@
 #define DAWAITCURSORSCOPED_H
 #include <QCursor>
 #include "DACommonWidgetsAPI.h"
+#include "DACursorScoped.h"
 namespace DA
 {
 /**
  * @brief 一个等待鼠标的保护类
  */
-class DACOMMONWIDGETS_API DAWaitCursorScoped
+class DACOMMONWIDGETS_API DAWaitCursorScoped : public DACursorScoped
 {
 public:
-    DAWaitCursorScoped();
-    ~DAWaitCursorScoped();
-    void setWaitCursor();
-    void setCursor(const QCursor& cur = QCursor(Qt::WaitCursor));
-    void release();
+	DAWaitCursorScoped();
+	virtual ~DAWaitCursorScoped();
 };
-}  // namespace DA
+}  // end namespace DA
 
 #ifndef DA_WAIT_CURSOR_SCOPED
 #define DA_WAIT_CURSOR_SCOPED()                                                                                        \
-    DAWaitCursorScoped __da__wait__cursor;                                                                             \
-    Q_UNUSED(__da__wait__cursor)
+	DAWaitCursorScoped __da__wait__cursor;                                                                             \
+	Q_UNUSED(__da__wait__cursor)
 #endif
+
 #ifndef DA_WAIT_CURSOR_SCOPED_NS
 #define DA_WAIT_CURSOR_SCOPED_NS()                                                                                     \
-    DA::DAWaitCursorScoped __da__wait__cursor;                                                                         \
-    Q_UNUSED(__da__wait__cursor)
+	DA::DAWaitCursorScoped __da__wait__cursor;                                                                         \
+	Q_UNUSED(__da__wait__cursor)
 #endif
 #endif  // DAWAITCURSORSCOPED_H

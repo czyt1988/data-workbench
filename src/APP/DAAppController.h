@@ -339,7 +339,7 @@ private slots:
 	// DAWorkFlowGraphicsScene
 	//===================================================
 	// 鼠标动作结束
-	void onWorkFlowGraphicsSceneMouseActionFinished(DAWorkFlowGraphicsScene::MouseActionFlag mf);
+	void onWorkFlowGraphicsSceneActionDeactive(DA::DAAbstractGraphicsSceneAction* scAction);
 
 	//===================================================
 	// DAAppChartManageWidget

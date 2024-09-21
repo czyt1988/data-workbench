@@ -81,7 +81,8 @@ DAWorkFlowEditWidget* DAWorkFlowOperateWidget::appendWorkflow(const QString& nam
 	scene->setIgnoreLinkEvent(!isEnableWorkflowLink());
 
 	connect(wfe, &DAWorkFlowEditWidget::selectNodeItemChanged, this, &DAWorkFlowOperateWidget::selectNodeItemChanged);
-	connect(wfe, &DAWorkFlowEditWidget::mouseActionFinished, this, &DAWorkFlowOperateWidget::mouseActionFinished);
+	connect(wfe, &DAWorkFlowEditWidget::sceneActionActived, this, &DAWorkFlowOperateWidget::sceneActionActived);
+	connect(wfe, &DAWorkFlowEditWidget::sceneActionDeactived, this, &DAWorkFlowOperateWidget::sceneActionDeactived);
 	connect(scene, &DAWorkFlowGraphicsScene::selectionChanged, this, &DAWorkFlowOperateWidget::onSelectionChanged);
 	connect(scene, &DAWorkFlowGraphicsScene::itemsAdded, this, &DAWorkFlowOperateWidget::onSceneItemsAdded);
 	connect(scene, &DAWorkFlowGraphicsScene::itemsRemoved, this, &DAWorkFlowOperateWidget::onSceneItemsRemoved);
@@ -282,10 +283,10 @@ void DAWorkFlowOperateWidget::removeWorkflow(int index)
 	if (nullptr == w) {
 		return;
 	}
-	QMessageBox::StandardButton btn = QMessageBox::question(this,
-															tr("question"),  // 疑问
-															tr("Confirm to delete workflow:%1")
-																.arg(getWorkFlowWidgetName(index))  // 是否确认删除工作流:%1
+	QMessageBox::StandardButton btn = QMessageBox::question(
+		this,
+		tr("question"),                                                        // 疑问
+		tr("Confirm to delete workflow:%1").arg(getWorkFlowWidgetName(index))  // 是否确认删除工作流:%1
 	);
 	if (btn != QMessageBox::Yes) {
 		return;
@@ -874,14 +875,14 @@ void DAWorkFlowOperateWidget::iteratorScene(FpScenesOpt fp)
  * @param mf 鼠标动作
  * @param continuous 是否连续执行
  */
-bool DAWorkFlowOperateWidget::setMouseActionFlag(DAWorkFlowGraphicsScene::MouseActionFlag mf, bool continous)
+bool DAWorkFlowOperateWidget::setPreDefineSceneAction(DAWorkFlowGraphicsScene::SceneActionFlag mf)
 {
 	DAWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
 	if (nullptr == w) {
 		qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
 		return false;
 	}
-	w->setMouseActionFlag(mf, continous);
+	w->setPreDefineSceneAction(mf);
 	return true;
 }
 

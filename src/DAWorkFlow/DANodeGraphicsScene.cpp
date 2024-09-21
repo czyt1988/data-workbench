@@ -325,39 +325,6 @@ DAAbstractNodeGraphicsItem* DANodeGraphicsScene::createNode_(const DANodeMetaDat
 }
 
 /**
- * @brief 创建并加入一个文本框
- * @param pos
- * @return
- * @sa getTextGraphicsItems
- */
-DAGraphicsTextItem* DANodeGraphicsScene::createText_(const QString& str)
-{
-	DAGraphicsTextItem* item = new DAGraphicsTextItem();
-	if (!str.isEmpty()) {
-		item->setPlainText(str);
-	}
-	addItem_(item);
-	item->setSelected(true);
-	return (item);
-}
-
-/**
- * @brief 在画布中创建一个矩形
- * @param p 矩形的位置
- * @return
- */
-DAGraphicsRectItem* DANodeGraphicsScene::createRect_(const QPointF& p)
-{
-	DAGraphicsRectItem* item = new DAGraphicsRectItem();
-	addItem_(item);
-	if (!p.isNull()) {
-		item->setPos(p);
-	}
-	item->setSelected(true);
-	return (item);
-}
-
-/**
  * @brief 添加一个图片item
  * @param img
  * @return
@@ -448,8 +415,8 @@ void DANodeGraphicsScene::classifyItems(const QList< QGraphicsItem* >& sourceIte
  * @param nodeItems
  * @return 注意返回的是无序的
  */
-QList< DAAbstractNodeLinkGraphicsItem* > DANodeGraphicsScene::getNodesAllLinkItems(
-    const QList< DAAbstractNodeGraphicsItem* >& nodeItems)
+QList< DAAbstractNodeLinkGraphicsItem* >
+DANodeGraphicsScene::getNodesAllLinkItems(const QList< DAAbstractNodeGraphicsItem* >& nodeItems)
 {
 	QList< DAAbstractNodeLinkGraphicsItem* > res;
 	for (DAAbstractNodeGraphicsItem* n : qAsConst(nodeItems)) {
@@ -550,8 +517,8 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 			QPointF itempos = nodeItem->mapFromScene(mouseEvent->scenePos());
 			if (isStartLink()) {
 				// 开始链接状态，此时理论要点击的是input
-				DAAbstractNodeLinkGraphicsItem* linkItem = dynamic_cast< DAAbstractNodeLinkGraphicsItem* >(
-					getCurrentLinkItem());
+				DAAbstractNodeLinkGraphicsItem* linkItem =
+					dynamic_cast< DAAbstractNodeLinkGraphicsItem* >(getCurrentLinkItem());
 				if (linkItem) {
 					// 调用nodeitem的tryLinkOnItemPos用于构建一些响应式连接点
 					nodeItem->tryLinkOnItemPos(itempos, linkItem, DANodeLinkPoint::Input);

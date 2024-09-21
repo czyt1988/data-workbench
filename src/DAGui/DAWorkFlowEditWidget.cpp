@@ -106,11 +106,11 @@ void DAWorkFlowEditWidget::runWorkFlow()
 	wf->exec();
 }
 
-void DAWorkFlowEditWidget::setMouseActionFlag(DAWorkFlowGraphicsScene::MouseActionFlag mf, bool continous)
+void DAWorkFlowEditWidget::setPreDefineSceneAction(DAWorkFlowGraphicsScene::SceneActionFlag mf)
 {
 	auto sc = getWorkFlowGraphicsScene();
 	if (sc) {
-		sc->setMouseAction(mf, continous);
+		sc->setPreDefineSceneAction(mf);
 	}
 }
 
@@ -511,7 +511,8 @@ void DAWorkFlowEditWidget::createScene()
 	//    });
 
 	connect(sc, &DAWorkFlowGraphicsScene::selectNodeItemChanged, this, &DAWorkFlowEditWidget::selectNodeItemChanged);
-	connect(sc, &DAWorkFlowGraphicsScene::mouseActionFinished, this, &DAWorkFlowEditWidget::mouseActionFinished);
+	connect(sc, &DAWorkFlowGraphicsScene::sceneActionActived, this, &DAWorkFlowEditWidget::sceneActionActived);
+	connect(sc, &DAWorkFlowGraphicsScene::sceneActionDeactived, this, &DAWorkFlowEditWidget::sceneActionDeactived);
 }
 
 }  // end of DA

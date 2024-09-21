@@ -96,7 +96,7 @@ public:
 	// 获取QUndoStack
 	QUndoStack* getUndoStack();
 	// 设置鼠标动作
-	bool setMouseActionFlag(DAWorkFlowGraphicsScene::MouseActionFlag mf, bool continous);
+	bool setPreDefineSceneAction(DAWorkFlowGraphicsScene::SceneActionFlag mf);
 	// 清空所有工程
 	void clear();
 	// 获取所有工作流的名字
@@ -187,11 +187,18 @@ signals:
 	 * @param w
 	 */
 	void currentWorkFlowWidgetChanged(DA::DAWorkFlowEditWidget* w);
+
 	/**
-	 * @brief 鼠标动作已经执行完毕
-	 * @param mf 已经执行完的鼠标动作
+	 * @brief 场景动作激活
+	 * @param scAction 场景动作
 	 */
-	void mouseActionFinished(DA::DAWorkFlowGraphicsScene::MouseActionFlag mf);
+	void sceneActionActived(DA::DAAbstractGraphicsSceneAction* scAction);
+
+	/**
+	 * @brief 场景动作取消
+	 * @param scAction 场景动作
+	 */
+	void sceneActionDeactived(DA::DAAbstractGraphicsSceneAction* scAction);
 
 	/**
 	 * @brief 选中的item改变发送的信号

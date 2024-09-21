@@ -9,6 +9,8 @@ namespace DA
 {
 class DAGraphicsResizeableItem;
 class DAGraphicsItem;
+class DAGraphicsTextItem;
+class DAGraphicsRectItem;
 class DAGraphicsLinkItem;
 class DAGraphicsItemGroup;
 class DAAbstractGraphicsSceneAction;
@@ -118,16 +120,17 @@ public:
 	void setReady(bool on);
 	bool isReady() const;
 
-	// 激活一个场景动作，DAAbstractGraphicsSceneAction的内存归scene管理
-	void setupSceneAction(DAAbstractGraphicsSceneAction* act);
 	// 是否当前存在场景动作
 	bool isHaveSceneAction() const;
-	// 清除场景动作
-	void clearSceneAction();
+
 	// 获取图层
 	QList< DAGraphicsLayout* > getLayouts() const;
 	// 是否为只读模式，只读模式不能编辑
 	bool isReadOnly() const;
+	// 创建文本框
+	DAGraphicsTextItem* createText_(const QString& str = QString());
+	// 创建矩形
+	DAGraphicsRectItem* createRect_(const QPointF& p = QPointF());
 
 public:
 	// 获取默认的dpi
@@ -149,6 +152,10 @@ public slots:
 	int setSelectionState(const QList< QGraphicsItem* >& its, bool isSelect);
 	// 锁定,具体的锁定，有item自行处理，scene只是持有只读的状态，一般item在itemChange中判断是否只读，然后进行动作判断
 	void setReadOnly(bool on);
+	// 激活一个场景动作，DAAbstractGraphicsSceneAction的内存归scene管理,此函数发射sceneActionActived
+	void setupSceneAction(DA::DAAbstractGraphicsSceneAction* act);
+	// 清除场景动作，发射sceneActionDeactived信号
+	void clearSceneAction();
 signals:
 	/**
 	 * @brief item移动发射的信号
@@ -215,6 +222,18 @@ signals:
 	 * @param item
 	 */
 	void itemsRemoved(const QList< QGraphicsItem* >& its);
+
+	/**
+	 * @brief 一个场景动作被激活的信号
+	 * @param act
+	 */
+	void sceneActionActived(DA::DAAbstractGraphicsSceneAction* act);
+
+	/**
+	 * @brief 一个场景动作已经解除激活的信号
+	 * @param act
+	 */
+	void sceneActionDeactived(DA::DAAbstractGraphicsSceneAction* act);
 
 protected:
 	// 判断点击的item是否可以移动
