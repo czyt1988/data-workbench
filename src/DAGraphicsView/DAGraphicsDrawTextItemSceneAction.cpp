@@ -3,6 +3,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QDebug>
 #include "DAGraphicsTextItem.h"
+#include "DAGraphicsRubberBandItem.h"
 namespace DA
 {
 DAGraphicsDrawTextItemSceneAction::DAGraphicsDrawTextItemSceneAction(DAGraphicsScene* sc)
@@ -30,6 +31,11 @@ bool DAGraphicsDrawTextItemSceneAction::mousePressEvent(QGraphicsSceneMouseEvent
 		if (!mHaveBeingPressed) {
 			mStartPoint       = mouseEvent->scenePos();
 			mHaveBeingPressed = true;
+			if (!mRubberBand) {
+				mRubberBand = std::make_unique< DAGraphicsRubberBandItem >();
+				scene()->addItem(mRubberBand.get());
+			}
+			mRubberBand->setBeginScenePos(mStartPoint);
 			return true;
 		} else {
 			// 说明已经点击过，这里是要完成矩形的创建
@@ -39,6 +45,9 @@ bool DAGraphicsDrawTextItemSceneAction::mousePressEvent(QGraphicsSceneMouseEvent
 			item->setPos(itemPos);
 			item->setBodySize(pointRectSize(mStartPoint, endPos));
 			item->setSelected(true);
+			mRubberBand->hide();
+			scene()->removeItem(mRubberBand.get());
+			mRubberBand.reset();
 			end();
 			return true;
 		}
@@ -51,6 +60,9 @@ bool DAGraphicsDrawTextItemSceneAction::mousePressEvent(QGraphicsSceneMouseEvent
 
 bool DAGraphicsDrawTextItemSceneAction::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
+	if (mRubberBand) {
+		mRubberBand->setCurrentMousePos(mouseEvent->scenePos());
+	}
 	return DAAbstractGraphicsSceneAction::mouseMoveEvent(mouseEvent);
 }
 }

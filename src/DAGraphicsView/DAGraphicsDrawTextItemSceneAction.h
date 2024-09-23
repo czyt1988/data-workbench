@@ -4,6 +4,7 @@
 #include "DAAbstractGraphicsSceneAction.h"
 namespace DA
 {
+class DAGraphicsRubberBandItem;
 /**
  * @brief 绘制文本action
  */
@@ -24,6 +25,7 @@ protected:
 private:
 	QPointF mStartPoint;
 	bool mHaveBeingPressed { false };
+	std::unique_ptr< DAGraphicsRubberBandItem > mRubberBand;
 };
 }
 #endif  // DAGRAPHICSDRAWTEXTITEMSCENEACTION_H
