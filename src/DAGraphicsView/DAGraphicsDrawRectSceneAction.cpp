@@ -29,34 +29,39 @@ bool DAGraphicsDrawRectSceneAction::mousePressEvent(QGraphicsSceneMouseEvent* mo
 {
 	if (mouseEvent->button() == Qt::LeftButton) {
 		// 左键点击
-		if (!mHaveBeingPressed) {
-			mStartPoint       = mouseEvent->scenePos();
-			mHaveBeingPressed = true;
+        if (!mIsStarted) {
+            mStartPoint = mouseEvent->scenePos();
+            mIsStarted  = true;
 			if (!mRubberBand) {
 				mRubberBand = std::make_unique< DAGraphicsRubberBandItem >();
 				scene()->addItem(mRubberBand.get());
 			}
 			mRubberBand->setBeginScenePos(mStartPoint);
+			return true;
+        }
+    }
+    return false;
+}
 
-			return true;
-		} else {
-			// 说明已经点击过，这里是要完成矩形的创建
-			QPointF endPos           = mouseEvent->scenePos();
-			QPointF rectPos          = topLeftPoint(mStartPoint, endPos);
-			DAGraphicsRectItem* item = scene()->createRect_(rectPos);
-			item->setBodySize(pointRectSize(mStartPoint, endPos));
-			item->setSelected(true);
-			mRubberBand->hide();
-			scene()->removeItem(mRubberBand.get());
-			mRubberBand.reset();
-			end();
-			return true;
-		}
-	} else if (mouseEvent->button() == Qt::RightButton) {
-		end();
-		return false;
-	}
-	return false;
+bool DAGraphicsDrawRectSceneAction::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
+{
+    if (mouseEvent->button() == Qt::LeftButton) {
+        if (mIsStarted) {
+            // 说明已经点击过，这里是要完成矩形的创建
+            mIsStarted               = false;
+            QPointF endPos           = mouseEvent->scenePos();
+            QPointF rectPos          = topLeftPoint(mStartPoint, endPos);
+            DAGraphicsRectItem* item = scene()->createRect_(rectPos);
+            item->setBodySize(pointRectSize(mStartPoint, endPos));
+            item->setSelected(true);
+            mRubberBand->hide();
+            scene()->removeItem(mRubberBand.get());
+            mRubberBand.reset();
+            end();
+            return true;
+        }
+    }
+    return false;
 }
 
 bool DAGraphicsDrawRectSceneAction::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)

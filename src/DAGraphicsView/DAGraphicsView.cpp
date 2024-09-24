@@ -278,6 +278,21 @@ void DAGraphicsView::keyReleaseEvent(QKeyEvent* event)
     QGraphicsView::keyReleaseEvent(event);
 }
 
+void DAGraphicsView::resizeEvent(QResizeEvent* event)
+{
+    QGraphicsView::resizeEvent(event);
+    // 获取 view 的当前大小
+    if (QGraphicsScene* sc = scene()) {
+        QRectF sr          = sc->sceneRect();
+        QRect viewportRect = viewport()->rect();
+        qDebug() << "scene rect =" << sr << ",viewportRect=" << viewportRect;
+        if (sr.width() < viewportRect.width() || sr.height() < viewportRect.height()) {
+            setSceneRect(viewportRect);
+            qDebug() << "set scene rect=" << viewportRect;
+        }
+    }
+}
+
 /**
  * @brief 滚轮事件的缩放
  * @param event

@@ -19,12 +19,14 @@ protected:
 	virtual void beginActive();
 	// 鼠标点击事件,返回true，代表action劫持了此事件，不会在scene中继续传递事件,默认返回false
 	virtual bool mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent);
-	// 鼠标移动事件,返回true，代表action劫持了此事件，不会在scene中继续传递事件,默认返回false
+    // 鼠标释放
+    virtual bool mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent);
+    // 鼠标移动事件,返回true，代表action劫持了此事件，不会在scene中继续传递事件,默认返回false
 	virtual bool mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent);
 
 private:
 	QPointF mStartPoint;
-	bool mHaveBeingPressed { false };
+    bool mIsStarted { false };
 	std::unique_ptr< DAGraphicsRubberBandItem > mRubberBand;
 };
 }

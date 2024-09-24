@@ -17,7 +17,7 @@ public:
 	// 选框的跟随鼠标点
 	void setCurrentMousePos(const QPointF& scenePos);
 	// 用于适应尺寸
-	void adjustBeginPosToMouse(QGraphicsScene* sc, const QPoint& screenPos, const QPointF& scenePos);
+    static void adjustBeginPosToMouse(QGraphicsScene* sc, const QPoint& screenPos, const QPointF& scenePos);
 };
 
 }  // end namespace DA
