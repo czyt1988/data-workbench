@@ -57,9 +57,10 @@ public:
 	 * @return
 	 */
 	ads::CDockWidget* createDockWidget(QWidget* w,
-									   ads::DockWidgetArea area,
-									   const QString& widgetName,
-									   ads::CDockAreaWidget* dockAreaWidget = nullptr);
+                                       ads::DockWidgetArea area,
+                                       const QString& widgetName,
+                                       ads::CDockAreaWidget* dockAreaWidget = nullptr);
+    ads::CDockWidget* createFloatingDockWidget(QWidget* w, const QString& widgetName, const QPoint& pos);
 	ads::CDockWidget* createDockWidgetAsTab(QWidget* w, const QString& widgetName, ads::CDockAreaWidget* dockAreaWidget);
 
 	/**

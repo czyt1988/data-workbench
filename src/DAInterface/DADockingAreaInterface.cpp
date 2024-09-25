@@ -8,6 +8,7 @@
 // Qt-Advanced-Docking-System
 #include "DockManager.h"
 #include "DockAreaWidget.h"
+#include "FloatingDockContainer.h"
 // SARibbon
 //  这个头文件需要存在，ui()->mainWindow()获取的窗口需要这个头文件，不要移除
 #include "SARibbonMainWindow.h"
@@ -254,7 +255,17 @@ ads::CDockWidget* DADockingAreaInterface::createDockWidget(QWidget* w,
 	ads::CDockWidget* dockWidget = new ads::CDockWidget(widgetName);
 	dockWidget->setWidget(w);
 	d_ptr->mDockManager->addDockWidget(area, dockWidget, dockAreaWidget);
-	return dockWidget;
+    return dockWidget;
+}
+
+ads::CDockWidget* DADockingAreaInterface::createFloatingDockWidget(QWidget* w, const QString& widgetName, const QPoint& pos)
+{
+    ads::CDockWidget* dockWidget = new ads::CDockWidget(widgetName);
+    dockWidget->setWidget(w);
+    ads::CFloatingDockContainer* fc = d_ptr->mDockManager->addDockWidgetFloating(dockWidget);
+
+    fc->move(pos);
+    return dockWidget;
 }
 
 ads::CDockWidget* DADockingAreaInterface::createDockWidgetAsTab(QWidget* w,
