@@ -263,7 +263,6 @@ ads::CDockWidget* DADockingAreaInterface::createFloatingDockWidget(QWidget* w, c
     ads::CDockWidget* dockWidget = new ads::CDockWidget(widgetName);
     dockWidget->setWidget(w);
     ads::CFloatingDockContainer* fc = d_ptr->mDockManager->addDockWidgetFloating(dockWidget);
-
     fc->move(pos);
     return dockWidget;
 }
