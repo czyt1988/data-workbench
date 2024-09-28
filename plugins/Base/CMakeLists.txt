@@ -1,4 +1,4 @@
-﻿
+
 # Cmake的命令不区分打下写，例如message，set等命令；但Cmake的变量区分大小写
 # 为统一风格，本项目的Cmake命令全部采用小写，变量全部采用大写加下划线组合。
 # BasePlugin 库
@@ -20,20 +20,23 @@ endif()
 ########################################################
 # DA安装路径设置
 ########################################################
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
-if(NOT DEFINED CMAKE_CXX_COMPILER_ID OR CMAKE_CXX_COMPILER_ID STREQUAL "")
-    message(WARNING "CMAKE_CXX_COMPILER_ID is NULL,maybe your cmake env error")
-    set(DAWorkbench_INSTALL_FOLDER_NAME bin_${CMAKE_BUILD_TYPE}_qt${QT_VERSION}_MSVC_${_platform_name})
-else()
-    set(DAWorkbench_INSTALL_FOLDER_NAME bin_${CMAKE_BUILD_TYPE}_qt${QT_VERSION}_${CMAKE_CXX_COMPILER_ID}_${_platform_name})
+if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+    find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
+    include(${CMAKE_CURRENT_LIST_DIR}/../../cmake/daworkbench_plugin_utils.cmake)
+    include(${CMAKE_CURRENT_LIST_DIR}/../../cmake/daworkbench_utils.cmake)
+    include(${CMAKE_CURRENT_LIST_DIR}/../../cmake/daworkbench_3rdparty.cmake)
+    set(DAWorkbench_INSTALL_FOLDER_NAME)
+    dafun_set_bin_name(DAWorkbench_INSTALL_FOLDER_NAME)
+
+    if(NOT DEFINED DAWorkbench_INSTALL_PATH)
+        set(DAWorkbench_INSTALL_PATH "${CMAKE_CURRENT_LIST_DIR}/../../${DAWorkbench_INSTALL_FOLDER_NAME}")
+        message(STATUS "NOT DEFINED DAWorkbench_INSTALL_PATH,set to ${DAWorkbench_INSTALL_PATH}")
+    endif()
+
+    set(DAWorkbench_DIR ${DAWorkbench_INSTALL_PATH}/lib/cmake/DAWorkbench)
+
+    set(CMAKE_INSTALL_PREFIX ${DAWorkbench_INSTALL_PATH})
 endif()
-set(DAWorkbench_INSTALL_DIR "${CMAKE_CURRENT_LIST_DIR}/../../${DAWorkbench_INSTALL_FOLDER_NAME}")
-
-
-include(${CMAKE_CURRENT_LIST_DIR}/../../cmake/daworkbench_plugin_utils.cmake)
-
-set(CMAKE_INSTALL_PREFIX ${DAWorkbench_INSTALL_DIR})
-
 ########################################################
 # 定义插件的信息
 ########################################################
@@ -97,11 +100,11 @@ target_link_libraries(${DA_PLUGIN_NAME} PUBLIC
 # 以下这些宏由daworkbench_plugin_utils.cmake提供，此文件会在DAWorkBench安装的时候一同安装到lib/cmake目录下
 # 只需要把DAWorkbench的cmake文件安装目录(lib/cmake)append到CMAKE_MODULE_PATH即可调用
 # list(APPEND CMAKE_MODULE_PATH ${DAWorkbench_CMake_DIR})
-damacro_import_SARibbonBar(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_DIR})
-damacro_import_DALiteCtk(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_DIR})
-damacro_import_QtAdvancedDocking(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_DIR})
-damacro_import_QtPropertyBrowser(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_DIR})
-damacro_import_qwt(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_DIR})
+damacro_import_SARibbonBar(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_PATH})
+damacro_import_DALiteCtk(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_PATH})
+damacro_import_QtAdvancedDocking(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_PATH})
+damacro_import_QtPropertyBrowser(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_PATH})
+damacro_import_qwt(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_PATH})
 # -------------link DAWorkBench--------------------------
 message(STATUS "DAWorkbench_DIR=${DAWorkbench_DIR}")
 # DAInterface
@@ -153,7 +156,7 @@ set_target_properties(${DA_PLUGIN_NAME} PROPERTIES
     EXPORT_NAME ${DA_PLUGIN_NAME}
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    RUNTIME_OUTPUT_DIRECTORY "${DAWorkbench_INSTALL_DIR}/bin/plugins"
+    RUNTIME_OUTPUT_DIRECTORY "${DAWorkbench_INSTALL_PATH}/bin/plugins"
 )
 
 ########################################################

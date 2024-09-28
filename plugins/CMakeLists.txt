@@ -1,4 +1,4 @@
-﻿
+
 # Cmake的命令不区分打下写，例如message，set等命令；但Cmake的变量区分大小写
 # 为统一风格，本项目的Cmake命令全部采用小写，变量全部采用大写加下划线组合。
 # DA WorkBench Plugins 顶层Cmake文件
@@ -40,6 +40,7 @@ project(${DA_PROJECT_NAME}
 # 获取默认安装文件夹
 include(${CMAKE_CURRENT_LIST_DIR}/../cmake/daworkbench_plugin_utils.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/../cmake/daworkbench_utils.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/../cmake/daworkbench_3rdparty.cmake)
 set(DAWorkbench_INSTALL_FOLDER_NAME)
 dafun_set_bin_name(DAWorkbench_INSTALL_FOLDER_NAME)
 
@@ -48,16 +49,20 @@ dafun_set_bin_name(DAWorkbench_INSTALL_FOLDER_NAME)
 ########################################################
 set(DA_MIN_QT_VERSION 5.14)
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
-if(NOT DEFINED DAWorkbench_INSTALL_DIR)
-    set(DAWorkbench_INSTALL_DIR "${CMAKE_CURRENT_LIST_DIR}/../${DAWorkbench_INSTALL_FOLDER_NAME}")
-    message(STATUS "NOT DEFINED DAWorkbench_INSTALL_DIR，Define to ${DAWorkbench_INSTALL_DIR}")
+if(NOT DEFINED DAWorkbench_INSTALL_PATH)
+    set(DAWorkbench_INSTALL_PATH "${CMAKE_CURRENT_LIST_DIR}/../${DAWorkbench_INSTALL_FOLDER_NAME}")
+    message(STATUS "NOT DEFINED DAWorkbench_INSTALL_PATH,set to ${DAWorkbench_INSTALL_PATH}")
+endif()
+
+
+if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+    set(DA_ENABLE_PYTHON ON)
+    set(DAWorkbench_DIR ${DAWorkbench_INSTALL_PATH}/lib/cmake/DAWorkbench)
 endif()
 
 
 
-
-
-set(CMAKE_INSTALL_PREFIX ${DAWorkbench_INSTALL_DIR})
+set(CMAKE_INSTALL_PREFIX ${DAWorkbench_INSTALL_PATH})
 
 ########################################################
 # 子工程加载
