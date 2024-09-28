@@ -15,11 +15,13 @@ set(DA_PLUGINS_VERSION_MAJOR 0)
 set(DA_PLUGINS_VERSION_MINOR 0)
 set(DA_PLUGINS_VERSION_PATCH 1)
 set(DA_PLUGINS_VERSION "${DA_PLUGINS_VERSION_MAJOR}.${DA_PLUGINS_VERSION_MINOR}.${DA_PLUGINS_VERSION_PATCH}")
-string(TIMESTAMP DA_COMPILE_DATETIME %y%m%d)
-string(TIMESTAMP DA_COMPILE_DATETIME_YEAR %y)
-string(TIMESTAMP DA_COMPILE_DATETIME_MONTH %m)
-string(TIMESTAMP DA_COMPILE_DATETIME_DAY %d)
-message(STATUS "DA Plugins Version is ${DA_PLUGINS_VERSION}")
+if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+    string(TIMESTAMP DA_COMPILE_DATETIME %y%m%d)
+    string(TIMESTAMP DA_COMPILE_DATETIME_YEAR %y)
+    string(TIMESTAMP DA_COMPILE_DATETIME_MONTH %m)
+    string(TIMESTAMP DA_COMPILE_DATETIME_DAY %d)
+    message(STATUS "DA Plugins Version is ${DA_PLUGINS_VERSION}")
+endif()
 ########################################################
 # 可选的变量
 ########################################################
@@ -30,9 +32,7 @@ option(DA_PLUGIN_ENABLE_AUTO_TRANSLATE
 ########################################################
 # 定义工程
 ########################################################
-set(DA_PROJECT_NAME "DAWorkbench-Plugins")
-
-project(${DA_PROJECT_NAME} 
+project("DAWorkbench-Plugins"
         VERSION ${DA_PLUGINS_VERSION}
         LANGUAGES CXX
         DESCRIPTION "DataWorkBench Plugins"
@@ -49,17 +49,17 @@ dafun_set_bin_name(DAWorkbench_INSTALL_FOLDER_NAME)
 ########################################################
 set(DA_MIN_QT_VERSION 5.14)
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
-if(NOT DEFINED DAWorkbench_INSTALL_PATH)
-    set(DAWorkbench_INSTALL_PATH "${CMAKE_CURRENT_LIST_DIR}/../${DAWorkbench_INSTALL_FOLDER_NAME}")
-    message(STATUS "NOT DEFINED DAWorkbench_INSTALL_PATH,set to ${DAWorkbench_INSTALL_PATH}")
-endif()
-
-
-if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
-    set(DA_ENABLE_PYTHON ON)
+find_package(DAWorkbench QUIET)
+if(NOT DAWorkbench_FOUND)
+    if(NOT DEFINED DAWorkbench_INSTALL_PATH)
+        set(DAWorkbench_INSTALL_PATH "${CMAKE_CURRENT_LIST_DIR}/../${DAWorkbench_INSTALL_FOLDER_NAME}")
+        message(STATUS "NOT DEFINED DAWorkbench_INSTALL_PATH,set to ${DAWorkbench_INSTALL_PATH}")
+    endif()
     set(DAWorkbench_DIR ${DAWorkbench_INSTALL_PATH}/lib/cmake/DAWorkbench)
 endif()
-
+if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+    set(DA_ENABLE_PYTHON ON)
+endif()
 
 
 set(CMAKE_INSTALL_PREFIX ${DAWorkbench_INSTALL_PATH})

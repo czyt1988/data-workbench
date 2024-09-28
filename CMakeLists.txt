@@ -1,4 +1,4 @@
-﻿
+
 # Cmake的命令不区分打下写，例如message，set等命令；但Cmake的变量区分大小写
 # 为统一风格，本项目的Cmake命令全部采用小写，变量全部采用大写加下划线组合。
 # DA WorkBench 顶层Cmake文件
@@ -58,7 +58,10 @@ option(DA_AUTO_INSTALL_PREFIX
 option(DA_AUTO_GENERATE_CONFIG_INFO
     "This option will allow DA to automatically generate DAConfig.h, This option only needs to be set to ON by library developers, and library users should default to OFF"
     OFF)
-
+# 此选项将让da自动生成构建plugin
+option(DA_BUILD_PLUGINS
+    "This option will build plugin"
+    ON)
 if(DA_AUTO_INSTALL_PREFIX)
     message(STATUS "DA Auto Install")
     set(DA_BIN_DIR_NAME)
@@ -212,7 +215,11 @@ endif()
 # 源码路径
 ########################################################
 add_subdirectory(src)
-#add_subdirectory(plugins)
+
+# 插件
+if(DA_BUILD_PLUGINS)
+    add_subdirectory(plugins)
+endif()
 
 ##################################
 # 最终安装 install
