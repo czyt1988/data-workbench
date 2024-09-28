@@ -82,6 +82,7 @@ damacro_import_DALiteCtk(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_PATH})
 damacro_import_QtAdvancedDocking(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_PATH})
 damacro_import_QtPropertyBrowser(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_PATH})
 damacro_import_qwt(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_PATH})
+damacro_import_Python(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_PATH})
 # -------------link DAWorkBench--------------------------
 message(STATUS "DAWorkbench_DIR=${DAWorkbench_DIR}")
 # DAInterface

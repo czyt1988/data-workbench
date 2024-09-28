@@ -1,6 +1,6 @@
-#ifndef BASENODEFACTORY_H
-#define BASENODEFACTORY_H
-#include "BaseGlobal.h"
+#ifndef DATAANALYSISNODEFACTORY_H
+#define DATAANALYSISNODEFACTORY_H
+#include "DataAnalysisGlobal.h"
 #include "DAAbstractNodeFactory.h"
 #include <QMap>
 class QMainWindow;
@@ -12,15 +12,15 @@ class DAAbstractNodeLinkGraphicsItem;
 class DAWorkFlowGraphicsScene;
 }
 
-class BaseNodeFactory : public DA::DAAbstractNodeFactory
+class DADATAANALYSIS_API DataAnalysisNodeFactory : public DA::DAAbstractNodeFactory
 {
 	Q_OBJECT
 public:
 	using FpCreate = std::function< DA::DAAbstractNode::SharedPointer(void) >;
 
 public:
-	BaseNodeFactory();
-	virtual ~BaseNodeFactory() override;
+	DataAnalysisNodeFactory();
+	virtual ~DataAnalysisNodeFactory() override;
 	// 设置core
 	void setCore(DA::DACoreInterface* c);
 
@@ -102,4 +102,4 @@ private:
 	QMap< DA::DANodeMetaData, FpCreate > mPrototypeTpfp;
 };
 
-#endif  // BASENODEFACTORY_H
+#endif  // DATAANALYSISNODEFACTORY_H
