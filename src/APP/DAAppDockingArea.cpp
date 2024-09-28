@@ -1,4 +1,4 @@
-﻿#include "DAAppDockingArea.h"
+#include "DAAppDockingArea.h"
 #include <QApplication>
 #include <QScreen>
 #include <QLabel>
@@ -143,66 +143,6 @@ DASettingContainerWidget* DAAppDockingArea::getSettingContainerWidget() const
 }
 
 /**
- * @brief 枚举DockingArea对应的窗口指针
- * @param area
- * @return
- */
-ads::CDockWidget* DAAppDockingArea::dockingAreaToDockWidget(DAAppDockingArea::DockingArea area) const
-{
-	switch (area) {
-	case DockingAreaChartManager:
-		return mChartManageDock;
-	case DockingAreaChartOperate:
-		return mChartOperateDock;
-	case DockingAreaDataManager:
-		return mDataManageDock;
-	case DockingAreaDataOperate:
-		return mDataOperateDock;
-	case DockingAreaMessageLog:
-		return mMessageLogDock;
-	case DockingAreaSetting:
-		return mSettingContainerDock;
-	case DockingAreaWorkFlowManager:
-		return mWorkflowNodeListDock;
-	case DockingAreaWorkFlowOperate:
-		return mWorkFlowOperateDock;
-	default:
-		break;
-	}
-	return nullptr;
-}
-
-/**
- * @brief 唤起一个dock widget，如果窗口关闭了，也会唤起
- * @param area
- */
-void DAAppDockingArea::raiseDockingArea(DAAppDockingArea::DockingArea area)
-{
-	ads::CDockWidget* dw = dockingAreaToDockWidget(area);
-	if (dw) {
-		if (dw->isClosed()) {
-			dw->toggleView();
-		}
-		dw->raise();
-	}
-}
-
-/**
- * @brief 判断是否处于焦点
- * @param area
- * @return
- */
-bool DAAppDockingArea::isDockingAreaFocused(DAAppDockingArea::DockingArea area) const
-{
-	ads::CDockWidget* dw = dockingAreaToDockWidget(area);
-	ads::CDockWidget* fd = dockManager()->focusedDockWidget();
-	if (dw) {
-		return (dw == fd);
-	}
-	return false;
-}
-
-/**
  * @brief 显示数据
  * @param data
  */
@@ -245,41 +185,35 @@ void DAAppDockingArea::buildDockingArea()
 	mWorkFlowOperateDock->setIcon(QIcon(":/app/bright/Icon/showWorkFlow.svg"));
 	mWorkFlowOperateDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
 
-	mChartOperateDock = createDockWidgetAsTab(mChartOperateWidget,
-											  QStringLiteral("da_chartOperateWidgetDock"),
-											  mWorkFlowOperateDock->dockAreaWidget());
+	mChartOperateDock = createDockWidgetAsTab(
+		mChartOperateWidget, QStringLiteral("da_chartOperateWidgetDock"), mWorkFlowOperateDock->dockAreaWidget());
 	mChartOperateDock->setIcon(QIcon(":/app/bright/Icon/showChart.svg"));
 	mChartOperateDock->setToggleViewActionMode(ads::CDockWidget::ActionModeToggle);
 	mChartOperateDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
 
-	mDataOperateDock = createDockWidgetAsTab(mDataOperateWidget,
-											 QStringLiteral("da_dataOperateWidgetDock"),
-											 mWorkFlowOperateDock->dockAreaWidget());
+	mDataOperateDock = createDockWidgetAsTab(
+		mDataOperateWidget, QStringLiteral("da_dataOperateWidgetDock"), mWorkFlowOperateDock->dockAreaWidget());
 	mDataOperateDock->setIcon(QIcon(":/app/bright/Icon/showTable.svg"));
 	mDataOperateDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
 	mDataOperateDock->raise();
 
 	// 左侧管理区 - 工作流节点窗口
-	mWorkflowNodeListDock = createDockWidget(mWorkflowNodeListWidget,
-											 ads::LeftDockWidgetArea,
-											 QStringLiteral("da_workflowNodeListWidgetDock"));
+	mWorkflowNodeListDock = createDockWidget(
+		mWorkflowNodeListWidget, ads::LeftDockWidgetArea, QStringLiteral("da_workflowNodeListWidgetDock"));
 	mWorkflowNodeListDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
 
-	mChartManageDock = createDockWidgetAsTab(mChartManageWidget,
-											 QStringLiteral("da_chartManageWidgetDock"),
-											 mWorkflowNodeListDock->dockAreaWidget());
+	mChartManageDock = createDockWidgetAsTab(
+		mChartManageWidget, QStringLiteral("da_chartManageWidgetDock"), mWorkflowNodeListDock->dockAreaWidget());
 	mChartManageDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
 
-	mDataManageDock = createDockWidgetAsTab(mDataManageWidget,
-											QStringLiteral("da_dataManageWidgetDock"),
-											mWorkflowNodeListDock->dockAreaWidget());
+	mDataManageDock = createDockWidgetAsTab(
+		mDataManageWidget, QStringLiteral("da_dataManageWidgetDock"), mWorkflowNodeListDock->dockAreaWidget());
 	mDataManageDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
 	mDataManageDock->raise();
 
 	// 右侧附属区 - 添加设置视图
-	mSettingContainerDock = createDockWidget(mSettingContainerWidget,
-											 ads::RightDockWidgetArea,
-											 QStringLiteral("da_settingDock"));
+	mSettingContainerDock =
+		createDockWidget(mSettingContainerWidget, ads::RightDockWidgetArea, QStringLiteral("da_settingDock"));
 	mSettingContainerDock->setIcon(QIcon(":/app/bright/Icon/showSettingWidget.svg"));
 	// 日志窗口
 	mMessageLogDock = createDockWidget(mMessageLogViewWidget,

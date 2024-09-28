@@ -1,4 +1,4 @@
-﻿#ifndef DADOCKINGAREAINTERFACE_H
+#ifndef DADOCKINGAREAINTERFACE_H
 #define DADOCKINGAREAINTERFACE_H
 #include "DAInterfaceAPI.h"
 #include "DAGlobals.h"
@@ -39,6 +39,22 @@ class DAINTERFACE_API DADockingAreaInterface : public DAUIExtendInterface
 	Q_OBJECT
 	DA_DECLARE_PRIVATE(DADockingAreaInterface)
 public:
+	/**
+	 * @brief 定义了固定的dock窗口
+	 */
+	enum DockingArea
+	{
+		DockingAreaWorkFlowOperate,
+		DockingAreaDataOperate,
+		DockingAreaChartOperate,
+		DockingAreaWorkFlowManager,
+		DockingAreaDataManager,
+		DockingAreaChartManager,
+		DockingAreaSetting,
+		DockingAreaMessageLog
+	};
+
+public:
 	DADockingAreaInterface(DAUIInterface* u);
 	~DADockingAreaInterface();
 	// 获取CDockManager
@@ -57,10 +73,10 @@ public:
 	 * @return
 	 */
 	ads::CDockWidget* createDockWidget(QWidget* w,
-                                       ads::DockWidgetArea area,
-                                       const QString& widgetName,
-                                       ads::CDockAreaWidget* dockAreaWidget = nullptr);
-    ads::CDockWidget* createFloatingDockWidget(QWidget* w, const QString& widgetName, const QPoint& pos);
+									   ads::DockWidgetArea area,
+									   const QString& widgetName,
+									   ads::CDockAreaWidget* dockAreaWidget = nullptr);
+	ads::CDockWidget* createFloatingDockWidget(QWidget* w, const QString& widgetName, const QPoint& pos);
 	ads::CDockWidget* createDockWidgetAsTab(QWidget* w, const QString& widgetName, ads::CDockAreaWidget* dockAreaWidget);
 
 	/**
@@ -99,6 +115,14 @@ public:
 	 * @brief 重置分割尺寸
 	 */
 	void resetDefaultSplitterSizes();
+	// DockingArea对应的dock窗口指针
+	ads::CDockWidget* dockingAreaToDockWidget(DockingArea area) const;
+
+	// 提升显示工作流操作页面
+	void raiseDockingArea(DockingArea area);
+
+	// 判断是否处于焦点
+	bool isDockingAreaFocused(DockingArea area) const;
 
 public:
 	/*
@@ -131,6 +155,54 @@ public:
 
 	// 获取当前选中的数据，此函数会根据界面的焦点，获取当前选中的数据
 	virtual QList< DAData > getCurrentSelectDatas() const;
+
+	/**
+	 * @brief 工作流节点dock
+	 * @return
+	 */
+	virtual ads::CDockWidget* getWorkflowNodeListDock() const = 0;
+
+	/**
+	 * @brief 信息窗口dock
+	 * @return
+	 */
+	virtual ads::CDockWidget* getMessageLogDock() const = 0;
+
+	/**
+	 * @brief 设置窗口dock
+	 * @return
+	 */
+	virtual ads::CDockWidget* getSettingContainerDock() const = 0;
+
+	/**
+	 * @brief 数据操作窗口dock
+	 * @return
+	 */
+	virtual ads::CDockWidget* getDataOperateDock() const = 0;
+
+	/**
+	 * @brief 绘图操作窗口dock
+	 * @return
+	 */
+	virtual ads::CDockWidget* getChartOperateDock() const = 0;
+
+	/**
+	 * @brief 工作流操作窗口dock
+	 * @return
+	 */
+	virtual ads::CDockWidget* getWorkFlowOperateDock() const = 0;
+
+	/**
+	 * @brief 数据管理窗口dock
+	 * @return
+	 */
+	virtual ads::CDockWidget* getDataManageDock() const = 0;
+
+	/**
+	 * @brief 图表管理窗口dock
+	 * @return
+	 */
+	virtual ads::CDockWidget* getChartManageDock() const = 0;
 #if DA_ENABLE_PYTHON
 	// 获取当前选中的Dataframe,如果用户在选中了列，返回选中的列索引
 	virtual std::pair< DAPyDataFrame, QList< int > > getCurrentSelectDataFrame() const;
@@ -145,5 +217,6 @@ public:
 	// 基于接口的快速方法
 	DAWorkFlowGraphicsScene* getCurrentScene() const;
 };
+
 }  // namespace DA
 #endif  // DAAPPDOCKINGAREAINTERFACE_H

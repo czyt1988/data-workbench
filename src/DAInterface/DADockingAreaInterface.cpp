@@ -1,4 +1,4 @@
-﻿#include "DADockingAreaInterface.h"
+#include "DADockingAreaInterface.h"
 #include <QMap>
 #include <QDebug>
 #include <QApplication>
@@ -234,6 +234,65 @@ DAWorkFlowGraphicsScene* DADockingAreaInterface::getCurrentScene() const
 }
 
 /**
+ * @brief 枚举DockingArea对应的窗口指针
+ * @param area
+ * @return
+ */
+ads::CDockWidget* DADockingAreaInterface::dockingAreaToDockWidget(DockingArea area) const
+{
+	switch (area) {
+	case DockingAreaChartManager:
+		return getChartManageDock();
+	case DockingAreaChartOperate:
+		return getChartOperateDock();
+	case DockingAreaDataManager:
+		return getDataManageDock();
+	case DockingAreaDataOperate:
+		return getDataOperateDock();
+	case DockingAreaMessageLog:
+		return getMessageLogDock();
+	case DockingAreaSetting:
+		return getSettingContainerDock();
+	case DockingAreaWorkFlowManager:
+		return getWorkflowNodeListDock();
+	case DockingAreaWorkFlowOperate:
+		return getWorkFlowOperateDock();
+	default:
+		break;
+	}
+	return nullptr;
+}
+
+/**
+ * @brief 唤起一个dock widget，如果窗口关闭了，也会唤起
+ * @param area
+ */
+void DADockingAreaInterface::raiseDockingArea(DockingArea area)
+{
+	ads::CDockWidget* dw = dockingAreaToDockWidget(area);
+	if (dw) {
+		if (dw->isClosed()) {
+			dw->toggleView();
+		}
+		dw->raise();
+	}
+}
+
+/**
+ * @brief 判断是否处于焦点
+ * @param area
+ * @return
+ */
+bool DADockingAreaInterface::isDockingAreaFocused(DockingArea area) const
+{
+	ads::CDockWidget* dw = dockingAreaToDockWidget(area);
+	ads::CDockWidget* fd = dockManager()->focusedDockWidget();
+	if (dw) {
+		return (dw == fd);
+	}
+	return false;
+}
+/**
  * @brief 创建中央dock窗体
  * @param w
  * @param widgetName
@@ -255,16 +314,16 @@ ads::CDockWidget* DADockingAreaInterface::createDockWidget(QWidget* w,
 	ads::CDockWidget* dockWidget = new ads::CDockWidget(widgetName);
 	dockWidget->setWidget(w);
 	d_ptr->mDockManager->addDockWidget(area, dockWidget, dockAreaWidget);
-    return dockWidget;
+	return dockWidget;
 }
 
 ads::CDockWidget* DADockingAreaInterface::createFloatingDockWidget(QWidget* w, const QString& widgetName, const QPoint& pos)
 {
-    ads::CDockWidget* dockWidget = new ads::CDockWidget(widgetName);
-    dockWidget->setWidget(w);
-    ads::CFloatingDockContainer* fc = d_ptr->mDockManager->addDockWidgetFloating(dockWidget);
-    fc->move(pos);
-    return dockWidget;
+	ads::CDockWidget* dockWidget = new ads::CDockWidget(widgetName);
+	dockWidget->setWidget(w);
+	ads::CFloatingDockContainer* fc = d_ptr->mDockManager->addDockWidgetFloating(dockWidget);
+	fc->move(pos);
+	return dockWidget;
 }
 
 ads::CDockWidget* DADockingAreaInterface::createDockWidgetAsTab(QWidget* w,
