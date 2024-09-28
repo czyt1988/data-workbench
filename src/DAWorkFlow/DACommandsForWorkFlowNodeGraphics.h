@@ -25,14 +25,16 @@ class DAGraphicsStandardTextItem;
 /**
  * @brief 节点创建命令
  * @note 此函数不能继承id进行压缩，因为推入stack后需要操作这个cmd指针
+ * @note 此命令会执行addItem
  */
 class DAWORKFLOW_API DACommandsForWorkFlowCreateNode : public QUndoCommand
 {
 public:
 	DACommandsForWorkFlowCreateNode(const DANodeMetaData& md,
-                                    DANodeGraphicsScene* scene,
-                                    const QPointF& pos,
-                                    QUndoCommand* parent = nullptr);
+									DANodeGraphicsScene* scene,
+									const QPointF& pos,
+									bool addItemToScene  = true,
+									QUndoCommand* parent = nullptr);
 	~DACommandsForWorkFlowCreateNode();
 	void redo();
 	void undo();
@@ -46,7 +48,8 @@ private:
 	DANodeMetaData mMetadata;
 	QPointF mScenePos;
 	DAAbstractNode::SharedPointer mNode;
-	DAAbstractNodeGraphicsItem* mItem;
+	bool mAddItemToScene { true };
+	DAAbstractNodeGraphicsItem* mItem { nullptr };
 	bool mNeedDelete;
 	bool mSkipFirstRedo { true };
 };
@@ -57,16 +60,16 @@ private:
 class DAWORKFLOW_API DACommandsForWorkFlowRemoveNodes : public QUndoCommand
 {
 public:
-    DACommandsForWorkFlowRemoveNodes(DAWorkFlow* wf,
-                                     const QList< DAAbstractNode::SharedPointer >& ns,
-                                     QUndoCommand* par = nullptr);
-    ~DACommandsForWorkFlowRemoveNodes();
-    void redo();
-    void undo();
+	DACommandsForWorkFlowRemoveNodes(DAWorkFlow* wf,
+									 const QList< DAAbstractNode::SharedPointer >& ns,
+									 QUndoCommand* par = nullptr);
+	~DACommandsForWorkFlowRemoveNodes();
+	void redo();
+	void undo();
 
 private:
-    QPointer< DAWorkFlow > mWorkflow;
-    QList< DAAbstractNode::SharedPointer > mNodes;
+	QPointer< DAWorkFlow > mWorkflow;
+	QList< DAAbstractNode::SharedPointer > mNodes;
 };
 
 /**
@@ -77,8 +80,8 @@ class DAWORKFLOW_API DACommandsForWorkFlowAddNodeItem : public QUndoCommand
 {
 public:
 	DACommandsForWorkFlowAddNodeItem(DANodeGraphicsScene* scene,
-                                     DAAbstractNodeGraphicsItem* item,
-                                     QUndoCommand* parent = nullptr);
+									 DAAbstractNodeGraphicsItem* item,
+									 QUndoCommand* parent = nullptr);
 	~DACommandsForWorkFlowAddNodeItem();
 	void redo();
 	void undo();
@@ -100,8 +103,8 @@ class DAWORKFLOW_API DACommandsForWorkFlowRemoveNodeItem : public QUndoCommand
 {
 public:
 	DACommandsForWorkFlowRemoveNodeItem(DANodeGraphicsScene* scene,
-                                        DAAbstractNodeGraphicsItem* item,
-                                        QUndoCommand* parent = nullptr);
+										DAAbstractNodeGraphicsItem* item,
+										QUndoCommand* parent = nullptr);
 	~DACommandsForWorkFlowRemoveNodeItem();
 	void redo();
 	void undo();
@@ -128,9 +131,9 @@ public:
 	void redo();
 	void undo();
 	void classifyItems(DANodeGraphicsScene* scene,
-                       QList< DAAbstractNodeGraphicsItem* >& nodeItems,
-                       QList< DAAbstractNodeLinkGraphicsItem* >& linkItems,
-                       QList< QGraphicsItem* >& normalItem);
+					   QList< DAAbstractNodeGraphicsItem* >& nodeItems,
+					   QList< DAAbstractNodeLinkGraphicsItem* >& linkItems,
+					   QList< QGraphicsItem* >& normalItem);
 	// 获取节点的链接，只返回唯一值
 	static QList< DAAbstractNodeLinkGraphicsItem* > getNodesLinks(const QList< DAAbstractNodeGraphicsItem* >& nodeItems);
 	// 是否有效
@@ -140,7 +143,7 @@ public:
 	// 获取选择的节点,此函数构造后即可调用
 	QList< DAAbstractNodeGraphicsItem* > getRemovedNodeItems() const;
 	QList< DAAbstractNodeLinkGraphicsItem* > getRemovedNodeLinkItems() const;
-    QList< QGraphicsItem* > getAllRemovedItems() const;
+	QList< QGraphicsItem* > getAllRemovedItems() const;
 
 private:
 	bool mIsvalid;  ///< 标记这个cmd是否有效，如果选择的内容没有效，则为false
@@ -160,8 +163,8 @@ class DAWORKFLOW_API DACommandsForWorkFlowCreateLink : public QUndoCommand
 public:
 	// 这两个构造函数是在linkitem已经完成且确认连接后执行，在第一次redo时，不会进行操作，第二次才是真实操作
 	DACommandsForWorkFlowCreateLink(DAAbstractNodeLinkGraphicsItem* linkitem,
-                                    DANodeGraphicsScene* sc,
-                                    QUndoCommand* parent = nullptr);
+									DANodeGraphicsScene* sc,
+									QUndoCommand* parent = nullptr);
 	~DACommandsForWorkFlowCreateLink();
 	void redo() override;
 	void undo() override;
@@ -185,8 +188,8 @@ class DAWORKFLOW_API DACommandsForWorkFlowRemoveLink : public QUndoCommand
 public:
 	// 这两个构造函数是在linkitem已经完成且确认连接后执行，在第一次redo时，不会进行操作，第二次才是真实操作
 	DACommandsForWorkFlowRemoveLink(DAAbstractNodeLinkGraphicsItem* linkitem,
-                                    DANodeGraphicsScene* sc,
-                                    QUndoCommand* parent = nullptr);
+									DANodeGraphicsScene* sc,
+									QUndoCommand* parent = nullptr);
 	~DACommandsForWorkFlowRemoveLink();
 	void redo() override;
 	void undo() override;

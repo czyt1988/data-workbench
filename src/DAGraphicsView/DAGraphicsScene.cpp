@@ -7,6 +7,8 @@
 #include "DAGraphicsStandardTextItem.h"
 #include "DAAbstractGraphicsSceneAction.h"
 #include "DAGraphicsLayout.h"
+#include "DAGraphicsTextItem.h"
+#include "DAGraphicsRectItem.h"
 #include <QPainter>
 #include <QDebug>
 #include <QApplication>
@@ -65,8 +67,7 @@ public:
 	bool mIsReady { true };              ///< 场景是否就绪标记，此参数不保存
 	QList< DAGraphicsLayout* > mLayout;  ///< 保存所有的图层
 	std::unique_ptr< DAAbstractGraphicsSceneAction > mSceneAction;
-	QHash< QGraphicsItem*, QGraphicsItem::GraphicsItemFlags > mItemsOriginFlags;  ///< 记录锁定前item的状态，用于恢复
-	bool mIsLockMode { false };                                                   ///< 是否在lock状态
+	bool mIsReadOnlyMode { false };  ///< 是否为只读状态
 };
 
 ////////////////////////////////////////////////
@@ -579,47 +580,15 @@ int DAGraphicsScene::setSelectionState(const QList< QGraphicsItem* >& its, bool 
 }
 
 /**
- * @brief 锁定
+ * @brief 设定为只读模式
  *
  * 锁定后，无法移动，无法编辑，进入只读模式
  */
-void DAGraphicsScene::lock()
+void DAGraphicsScene::setReadOnly(bool on)
 {
 	DA_D(d);
-	d->mItemsOriginFlags.clear();
-	const QList< QGraphicsItem* > its = items();
-	QGraphicsItem::GraphicsItemFlags lockflags;
-	lockflags.setFlag(QGraphicsItem::ItemIsMovable, false);
-	lockflags.setFlag(QGraphicsItem::ItemIsSelectable, false);
-	lockflags.setFlag(QGraphicsItem::ItemIsFocusable, false);
-	lockflags.setFlag(QGraphicsItem::ItemAcceptsInputMethod, false);
-	for (QGraphicsItem* i : its) {
-		// 记录旧状态
-		d->mItemsOriginFlags[ i ] = i->flags();
-		// 设置锁定状态
-		i->setFlags(lockflags);
-	}
-	d->mIsLockMode = true;
-}
-
-/**
- * @brief 解锁
- */
-void DAGraphicsScene::unlock()
-{
-	DA_D(d);
-	const QList< QGraphicsItem* > its = items();
-	const auto endIte                 = d->mItemsOriginFlags.end();
-	for (QGraphicsItem* i : its) {
-		// 恢复旧状态
-		auto ite = d->mItemsOriginFlags.find(i);
-		if (ite != endIte) {
-			// 设置锁定状态
-			i->setFlags(ite.value());
-		}
-	}
-	d->mItemsOriginFlags.clear();
-	d->mIsLockMode = false;
+	d->mIsReadOnlyMode = on;
+	setIgnoreLinkEvent(on);
 }
 
 /**
@@ -849,6 +818,7 @@ int DAGraphicsScene::dpiToPx(int dpi, int r)
  * @note DAAbstractGraphicsSceneAction的内存归scene管理
  * @param act
  * @sa DAAbstractGraphicsSceneAction
+ * @note 此函数发射@ref sceneActionActived 信号
  */
 void DAGraphicsScene::setupSceneAction(DAAbstractGraphicsSceneAction* act)
 {
@@ -858,6 +828,7 @@ void DAGraphicsScene::setupSceneAction(DAAbstractGraphicsSceneAction* act)
 	d_ptr->mSceneAction.reset(act);
 	if (act) {
 		act->beginActive();
+		emit sceneActionActived(act);
 	}
 }
 
@@ -872,11 +843,13 @@ bool DAGraphicsScene::isHaveSceneAction() const
 
 /**
  * @brief 清除场景动作
+ * @note 此函数会把scene维护的场景动作指针销毁，销毁前会发射sceneActionDeactived信号
  */
 void DAGraphicsScene::clearSceneAction()
 {
 	if (d_ptr->mSceneAction) {
 		d_ptr->mSceneAction->endAction();
+		emit sceneActionDeactived(d_ptr->mSceneAction.get());
 	}
 	d_ptr->mSceneAction.reset(nullptr);
 }
@@ -888,6 +861,44 @@ void DAGraphicsScene::clearSceneAction()
 QList< DAGraphicsLayout* > DAGraphicsScene::getLayouts() const
 {
     return d_ptr->mLayout;
+}
+
+bool DAGraphicsScene::isReadOnly() const
+{
+    return d_ptr->mIsReadOnlyMode;
+}
+
+/**
+ * @brief 创建并加入一个文本框
+ * @param pos
+ * @return
+ * @sa getTextGraphicsItems
+ */
+DAGraphicsTextItem* DAGraphicsScene::createText_(const QString& str)
+{
+	DAGraphicsTextItem* item = new DAGraphicsTextItem();
+	if (!str.isEmpty()) {
+		item->setPlainText(str);
+	}
+	addItem_(item);
+	item->setSelected(true);
+	return (item);
+}
+
+/**
+ * @brief 在画布中创建一个矩形
+ * @param p 矩形的位置
+ * @return
+ */
+DAGraphicsRectItem* DAGraphicsScene::createRect_(const QPointF& p)
+{
+	DAGraphicsRectItem* item = new DAGraphicsRectItem();
+	addItem_(item);
+	if (!p.isNull()) {
+		item->setPos(p);
+	}
+	item->setSelected(true);
+	return (item);
 }
 
 /**
@@ -1018,6 +1029,16 @@ void DAGraphicsScene::emitItemRotationChanged(DAGraphicsResizeableItem* item, co
     emit itemRotationChanged(item, rotation);
 }
 
+/**
+ * @brief 带信号的addItm
+ * @param item
+ */
+void DAGraphicsScene::addItemWithSignal(QGraphicsItem* item)
+{
+	addItem(item);
+	emit itemsAdded({ item });
+}
+
 void DAGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
 	if (d_ptr->mSceneAction) {
@@ -1137,10 +1158,8 @@ void DAGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		}
 		// 位置不等，属于正常移动
 		d_ptr->mMovingInfos.updateEndPos();
-		DACommandsForGraphicsItemsMoved* cmd = new DACommandsForGraphicsItemsMoved(d_ptr->mMovingInfos.items,
-																				   d_ptr->mMovingInfos.startsPos,
-																				   d_ptr->mMovingInfos.endsPos,
-																				   true);
+		DACommandsForGraphicsItemsMoved* cmd = new DACommandsForGraphicsItemsMoved(
+			d_ptr->mMovingInfos.items, d_ptr->mMovingInfos.startsPos, d_ptr->mMovingInfos.endsPos, true);
 		push(cmd);
 		// 位置改变信号
 		//         qDebug() << "emit itemsPositionChanged";

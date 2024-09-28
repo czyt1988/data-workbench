@@ -27,7 +27,6 @@ public:
 
 public:
 	QPointer< DAWorkFlow > mWorkflow;
-	bool mEnableNodeLink { true };
 };
 
 DANodeGraphicsScene::PrivateData::PrivateData(DANodeGraphicsScene* p) : q_ptr(p)
@@ -265,16 +264,19 @@ int DANodeGraphicsScene::removeSelectedItems_()
 void DANodeGraphicsScene::removeNodeItem_(DAAbstractNodeGraphicsItem* i)
 {
 	push(new DACommandsForWorkFlowRemoveNodeItem(this, i));
+	emit itemsRemoved({ i });
 }
 
 void DANodeGraphicsScene::addNodeItem_(DAAbstractNodeGraphicsItem* i)
 {
 	push(new DACommandsForWorkFlowAddNodeItem(this, i));
+	emit itemsAdded({ i });
 }
 
 void DANodeGraphicsScene::addNodeLink_(DAAbstractNodeLinkGraphicsItem* link)
 {
-    push(new DACommandsForWorkFlowCreateLink(link, this));
+	push(new DACommandsForWorkFlowCreateLink(link, this));
+	emit itemsAdded({ link });
 }
 
 /**
@@ -297,6 +299,7 @@ DAAbstractNodeGraphicsItem* DANodeGraphicsScene::createNode(const DANodeMetaData
 	} else {
 		nodeitem = n->createGraphicsItem();
 		if (nodeitem) {
+			addItemWithSignal(nodeitem);
 			nodeitem->setPos(pos);
 			d_ptr->mWorkflow->addNode(n);
 		}
@@ -311,46 +314,14 @@ DAAbstractNodeGraphicsItem* DANodeGraphicsScene::createNode(const DANodeMetaData
  */
 DAAbstractNodeGraphicsItem* DANodeGraphicsScene::createNode_(const DANodeMetaData& md, const QPointF& pos)
 {
-	auto cmd                         = std::make_unique< DA::DACommandsForWorkFlowCreateNode >(md, this, pos);
+	auto cmd                         = std::make_unique< DA::DACommandsForWorkFlowCreateNode >(md, this, pos, true);
 	DAAbstractNodeGraphicsItem* item = cmd->item();
 	if (item == nullptr) {
 		return nullptr;
 	}
 	push(cmd.release());
+	emit itemsAdded({ item });
 	return item;
-}
-
-/**
- * @brief 创建并加入一个文本框
- * @param pos
- * @return
- * @sa getTextGraphicsItems
- */
-DAGraphicsTextItem* DANodeGraphicsScene::createText_(const QString& str)
-{
-	DAGraphicsTextItem* item = new DAGraphicsTextItem();
-	if (!str.isEmpty()) {
-		item->setPlainText(str);
-	}
-	addItem_(item);
-	item->setSelected(true);
-	return (item);
-}
-
-/**
- * @brief 在画布中创建一个矩形
- * @param p 矩形的位置
- * @return
- */
-DAGraphicsRectItem* DANodeGraphicsScene::createRect_(const QPointF& p)
-{
-	DAGraphicsRectItem* item = new DAGraphicsRectItem();
-	addItem_(item);
-	if (!p.isNull()) {
-		item->setPos(p);
-	}
-	item->setSelected(true);
-	return (item);
 }
 
 /**
@@ -393,23 +364,6 @@ DAAbstractNodeGraphicsItem* DANodeGraphicsScene::nodeItemAt(const QPointF& scene
 		}
 	}
 	return nullptr;
-}
-
-/**
- * @brief 是否允许节点链接
- * @param on
- */
-void DANodeGraphicsScene::setEnableNodeLink(bool on)
-{
-	d_ptr->mEnableNodeLink = on;
-	if (!on) {
-		cancelLink();
-	}
-}
-
-bool DANodeGraphicsScene::isEnableNodeLink() const
-{
-	return d_ptr->mEnableNodeLink;
 }
 
 void DANodeGraphicsScene::initConnect()
@@ -461,8 +415,8 @@ void DANodeGraphicsScene::classifyItems(const QList< QGraphicsItem* >& sourceIte
  * @param nodeItems
  * @return 注意返回的是无序的
  */
-QList< DAAbstractNodeLinkGraphicsItem* > DANodeGraphicsScene::getNodesAllLinkItems(
-    const QList< DAAbstractNodeGraphicsItem* >& nodeItems)
+QList< DAAbstractNodeLinkGraphicsItem* >
+DANodeGraphicsScene::getNodesAllLinkItems(const QList< DAAbstractNodeGraphicsItem* >& nodeItems)
 {
 	QList< DAAbstractNodeLinkGraphicsItem* > res;
 	for (DAAbstractNodeGraphicsItem* n : qAsConst(nodeItems)) {
@@ -542,7 +496,7 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		return;
 	}
 	// 先检查是否点击到了连接点
-	if (isEnableNodeLink()) {
+	if (!isIgnoreLinkEvent()) {
 		if (mouseEvent->buttons().testFlag(Qt::LeftButton)) {
 
 			// 左键点击
@@ -563,8 +517,8 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 			QPointF itempos = nodeItem->mapFromScene(mouseEvent->scenePos());
 			if (isStartLink()) {
 				// 开始链接状态，此时理论要点击的是input
-				DAAbstractNodeLinkGraphicsItem* linkItem = dynamic_cast< DAAbstractNodeLinkGraphicsItem* >(
-					getCurrentLinkItem());
+				DAAbstractNodeLinkGraphicsItem* linkItem =
+					dynamic_cast< DAAbstractNodeLinkGraphicsItem* >(getCurrentLinkItem());
 				if (linkItem) {
 					// 调用nodeitem的tryLinkOnItemPos用于构建一些响应式连接点
 					nodeItem->tryLinkOnItemPos(itempos, linkItem, DANodeLinkPoint::Input);

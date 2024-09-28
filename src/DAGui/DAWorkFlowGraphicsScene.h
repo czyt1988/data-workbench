@@ -6,7 +6,7 @@
 #include <QUndoStack>
 #include "DAWorkFlow.h"
 #include "DANodeGraphicsScene.h"
-#include "DAAbstractNodeGraphicsItem.h"
+
 class QGraphicsSceneWheelEvent;
 namespace DA
 {
@@ -21,21 +21,17 @@ public:
 	/**
 	 * @brief 鼠标动作标记
 	 */
-	enum MouseActionFlag
+	enum SceneActionFlag
 	{
-		NoMouseAction,  ///< 无鼠标动作
-		StartAddRect,   ///< 开始添加矩形
-		StartAddText    ///< 开始添加文本
+		AddRectItemAction,  ///< 开始添加矩形
+		AddTextItemAction   ///< 开始添加文本
 	};
-	Q_ENUM(MouseActionFlag)
+	Q_ENUM(SceneActionFlag)
 public:
 	DAWorkFlowGraphicsScene(QObject* parent = 0);
 	~DAWorkFlowGraphicsScene();
 	// 设置鼠标动作，一旦设置鼠标动作，鼠标点击后就会触发此动作，continuous来标记动作结束后继续保持还是还原为无动作
-	void setMouseAction(MouseActionFlag mf, bool continuous = false);
-	MouseActionFlag getMouseAction() const;
-	// 鼠标动作是否连续执行
-	bool isMouseActionContinuoue() const;
+	void setPreDefineSceneAction(SceneActionFlag mf);
 	//===================================================
 	// 背景图相关操作
 	//===================================================
@@ -72,16 +68,7 @@ protected:
 	virtual void dragLeaveEvent(QGraphicsSceneDragDropEvent* event) override;
 	virtual void dropEvent(QGraphicsSceneDragDropEvent* event) override;
 #endif
-	// 鼠标点击事件
-	virtual void mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent) override;
-	// 鼠标释放
-	virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent) override;
-signals:
-	/**
-	 * @brief 鼠标动作已经执行完毕
-	 * @param mf 已经执行完的鼠标动作
-	 */
-	void mouseActionFinished(DA::DAWorkFlowGraphicsScene::MouseActionFlag mf);
+
 private slots:
 #if DA_USE_QGRAPHICSOBJECT
 	void backgroundPixmapItemXChanged();
@@ -93,8 +80,7 @@ private slots:
 
 private:
 	DAGraphicsPixmapItem* mBackgroundPixmapItem;
-	MouseActionFlag mMouseAction;           ///< 鼠标动作
-	bool mIsMouseActionContinuoue;          ///< 鼠标动作是否连续执行
+	SceneActionFlag mMouseAction;           ///< 鼠标动作
 	bool mEnableItemMoveWithBackground;     ///< 允许item跟随背景图移动
 	bool mEnableItemLinkageMove { false };  ///< 允许链接好的item进行跟随移动
 	QColor mTextColor;                      ///< 文本的颜色

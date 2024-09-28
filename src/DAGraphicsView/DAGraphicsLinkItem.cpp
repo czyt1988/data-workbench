@@ -8,7 +8,7 @@
 #include <QStyleOptionGraphicsItem>
 #include <QLineF>
 #include <math.h>
-
+#include "DAGraphicsScene.h"
 namespace DA
 {
 //===============================================================
@@ -16,25 +16,25 @@ namespace DA
 //===============================================================
 class DAGraphicsLinkItem::PrivateData
 {
-    DA_DECLARE_PUBLIC(DAGraphicsLinkItem)
+	DA_DECLARE_PUBLIC(DAGraphicsLinkItem)
 public:
-    PrivateData(DAGraphicsLinkItem* p);
+	PrivateData(DAGraphicsLinkItem* p);
 
 public:
-    DAGraphicsLinkItem::LinkLineStyle mLinkLineStyle { DAGraphicsLinkItem::LinkLineKnuckle };
-    QPointF mStartPos { 0, 0 };
-    QPointF mEndPos { 100, 100 };
-    QRectF mBoundingRect { 0, 0, 100, 100 };  ///< 记录boundingRect
-    qreal mBezierControlScale { 0.35 };       ///< 贝塞尔曲线的控制点的缩放比例
-    QPainterPath mLinePath;                   ///< 通过点得到的绘图线段
-    QPainterPath mLineShapePath;              ///_linePath的轮廓，用于shape函数
-    QPen mLinePen { QColor(101, 103, 106) };  ///< 线的画笔(默认灰色)
-    // 端点样式
-    DAGraphicsLinkItem::EndPointType mStartEndPointType { DAGraphicsLinkItem::EndPointNone };  ///< from的端点样式
-    DAGraphicsLinkItem::EndPointType mEndEndPointType { DAGraphicsLinkItem::EndPointNone };    ///< to的端点样式
-    QPainterPath mSrartEndPointPainterPath;  ///< 记录from的端点样式
-    QPainterPath mEndEndPointPainterPath;    ///< 记录to的端点样式
-    int mEndPointSize { 12 };                ///< 记录端点大小
+	DAGraphicsLinkItem::LinkLineStyle mLinkLineStyle { DAGraphicsLinkItem::LinkLineKnuckle };
+	QPointF mStartPos { 0, 0 };
+	QPointF mEndPos { 100, 100 };
+	QRectF mBoundingRect { 0, 0, 100, 100 };  ///< 记录boundingRect
+	qreal mBezierControlScale { 0.35 };       ///< 贝塞尔曲线的控制点的缩放比例
+	QPainterPath mLinePath;                   ///< 通过点得到的绘图线段
+	QPainterPath mLineShapePath;              ///_linePath的轮廓，用于shape函数
+	QPen mLinePen { QColor(101, 103, 106) };  ///< 线的画笔(默认灰色)
+	// 端点样式
+	DAGraphicsLinkItem::EndPointType mStartEndPointType { DAGraphicsLinkItem::EndPointNone };  ///< from的端点样式
+	DAGraphicsLinkItem::EndPointType mEndEndPointType { DAGraphicsLinkItem::EndPointNone };    ///< to的端点样式
+	QPainterPath mSrartEndPointPainterPath;  ///< 记录from的端点样式
+	QPainterPath mEndEndPointPainterPath;    ///< 记录to的端点样式
+	int mEndPointSize { 12 };                ///< 记录端点大小
 };
 
 DAGraphicsLinkItem::PrivateData::PrivateData(DAGraphicsLinkItem* p) : q_ptr(p)
@@ -46,11 +46,11 @@ DAGraphicsLinkItem::PrivateData::PrivateData(DAGraphicsLinkItem* p) : q_ptr(p)
 //===============================================================
 DAGraphicsLinkItem::DAGraphicsLinkItem(QGraphicsItem* p) : DAGraphicsItem(p), DA_PIMPL_CONSTRUCT
 {
-    setFlags(flags() | ItemIsSelectable);
-    setEndPointType(OrientationStart, EndPointNone);
-    setEndPointType(OrientationEnd, EndPointTriangType);
-    setLinkLineStyle(LinkLineBezier);
-    setZValue(-1);  // 连接线在-1层，这样避免在节点上面
+	setFlags(flags() | ItemIsSelectable);
+	setEndPointType(OrientationStart, EndPointNone);
+	setEndPointType(OrientationEnd, EndPointTriangType);
+	setLinkLineStyle(LinkLineBezier);
+	setZValue(-1);  // 连接线在-1层，这样避免在节点上面
 }
 
 DAGraphicsLinkItem::~DAGraphicsLinkItem()
@@ -64,28 +64,28 @@ DAGraphicsLinkItem::~DAGraphicsLinkItem()
  */
 void DAGraphicsLinkItem::setEndPointType(DAGraphicsLinkItem::Orientations o, DAGraphicsLinkItem::EndPointType epType)
 {
-    switch (o) {
-    case OrientationStart: {
-        if (d_ptr->mStartEndPointType == epType) {
-            return;
-        }
-        d_ptr->mStartEndPointType        = epType;
-        d_ptr->mSrartEndPointPainterPath = generateEndPointPainterPath(epType, d_ptr->mEndPointSize);
-    } break;
-    case OrientationEnd: {
-        if (d_ptr->mEndEndPointType == epType) {
-            return;
-        }
-        d_ptr->mEndEndPointType        = epType;
-        d_ptr->mEndEndPointPainterPath = generateEndPointPainterPath(epType, d_ptr->mEndPointSize);
-    } break;
-    case OrientationBoth: {
-        setEndPointType(OrientationStart, epType);
-        setEndPointType(OrientationEnd, epType);
-    }
-    default:
-        break;
-    }
+	switch (o) {
+	case OrientationStart: {
+		if (d_ptr->mStartEndPointType == epType) {
+			return;
+		}
+		d_ptr->mStartEndPointType        = epType;
+		d_ptr->mSrartEndPointPainterPath = generateEndPointPainterPath(epType, d_ptr->mEndPointSize);
+	} break;
+	case OrientationEnd: {
+		if (d_ptr->mEndEndPointType == epType) {
+			return;
+		}
+		d_ptr->mEndEndPointType        = epType;
+		d_ptr->mEndEndPointPainterPath = generateEndPointPainterPath(epType, d_ptr->mEndPointSize);
+	} break;
+	case OrientationBoth: {
+		setEndPointType(OrientationStart, epType);
+		setEndPointType(OrientationEnd, epType);
+	}
+	default:
+		break;
+	}
 }
 
 /**
@@ -95,15 +95,15 @@ void DAGraphicsLinkItem::setEndPointType(DAGraphicsLinkItem::Orientations o, DAG
  */
 DAGraphicsLinkItem::EndPointType DAGraphicsLinkItem::getEndPointType(DAGraphicsLinkItem::Orientations o) const
 {
-    switch (o) {
-    case OrientationStart:
-        return d_ptr->mStartEndPointType;
-    case OrientationEnd:
-        return d_ptr->mEndEndPointType;
-    default:
-        break;
-    }
-    return (d_ptr->mStartEndPointType == d_ptr->mEndEndPointType) ? d_ptr->mStartEndPointType : EndPointNone;
+	switch (o) {
+	case OrientationStart:
+		return d_ptr->mStartEndPointType;
+	case OrientationEnd:
+		return d_ptr->mEndEndPointType;
+	default:
+		break;
+	}
+	return (d_ptr->mStartEndPointType == d_ptr->mEndEndPointType) ? d_ptr->mStartEndPointType : EndPointNone;
 }
 
 /**
@@ -130,8 +130,8 @@ void DAGraphicsLinkItem::setEndPointSize(int v)
  */
 void DAGraphicsLinkItem::setLinkLineStyle(DAGraphicsLinkItem::LinkLineStyle s)
 {
-    d_ptr->mLinkLineStyle = s;
-    updateBoundingRect();
+	d_ptr->mLinkLineStyle = s;
+	updateBoundingRect();
 }
 
 /**
@@ -170,15 +170,15 @@ QPen DAGraphicsLinkItem::getLinePen() const
  */
 QRectF DAGraphicsLinkItem::updateBoundingRect()
 {
-    //! 通过调用prepareGeometryChange()通知范围变更，避免出现残影
-    prepareGeometryChange();
-    d_ptr->mLinePath = generateLinePainterPath(d_ptr->mStartPos, d_ptr->mEndPos, getLinkLineStyle());
-    QPainterPathStroker stroker;
-    int w = d_ptr->mLinePen.width() + 2;
-    stroker.setWidth((w < 6) ? 6 : w);
-    d_ptr->mLineShapePath = stroker.createStroke(d_ptr->mLinePath);
-    d_ptr->mBoundingRect = d_ptr->mLinePath.boundingRect().adjusted(-2, -2, 2, 2);  // 留足选中后画笔变宽的绘制余量
-    return d_ptr->mBoundingRect;
+	//! 通过调用prepareGeometryChange()通知范围变更，避免出现残影
+	prepareGeometryChange();
+	d_ptr->mLinePath = generateLinePainterPath(d_ptr->mStartPos, d_ptr->mEndPos, getLinkLineStyle());
+	QPainterPathStroker stroker;
+	int w = d_ptr->mLinePen.width() + 2;
+	stroker.setWidth((w < 6) ? 6 : w);
+	d_ptr->mLineShapePath = stroker.createStroke(d_ptr->mLinePath);
+	d_ptr->mBoundingRect = d_ptr->mLinePath.boundingRect().adjusted(-2, -2, 2, 2);  // 留足选中后画笔变宽的绘制余量
+	return d_ptr->mBoundingRect;
 }
 
 /**
@@ -247,8 +247,8 @@ const QPointF& DAGraphicsLinkItem::getEndPosition() const
  */
 void DAGraphicsLinkItem::setStartScenePosition(const QPointF& scenepostion)
 {
-    setScenePos(scenepostion);
-    d_ptr->mStartPos = mapFromScene(scenepostion);
+	setScenePos(scenepostion);
+	d_ptr->mStartPos = mapFromScene(scenepostion);
 }
 
 /**
@@ -294,15 +294,15 @@ QPainterPath DAGraphicsLinkItem::getLinkLinePainterPath() const
  */
 QPainterPath DAGraphicsLinkItem::getEndPointPainterPath(Orientations epType) const
 {
-    switch (epType) {
-    case OrientationStart:
-        return d_ptr->mSrartEndPointPainterPath;
-    case OrientationEnd:
-        return d_ptr->mEndEndPointPainterPath;
-    default:
-        break;
-    }
-    return QPainterPath();
+	switch (epType) {
+	case OrientationStart:
+		return d_ptr->mSrartEndPointPainterPath;
+	case OrientationEnd:
+		return d_ptr->mEndEndPointPainterPath;
+	default:
+		break;
+	}
+	return QPainterPath();
 }
 
 /**
@@ -313,19 +313,19 @@ QPainterPath DAGraphicsLinkItem::getEndPointPainterPath(Orientations epType) con
  */
 void DAGraphicsLinkItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
-    painter->save();
-    paintLinkLine(painter, option, widget, d_ptr->mLinePath);
-    // 绘制端点
-    paintEndPoint(painter,
-                  option,
-                  d_ptr->mStartPos,
-                  d_ptr->mStartEndPointType,
-                  d_ptr->mSrartEndPointPainterPath,
-                  d_ptr->mEndPos,
-                  d_ptr->mEndEndPointType,
-                  d_ptr->mEndEndPointPainterPath,
-                  d_ptr->mLinePath);
-    painter->restore();
+	painter->save();
+	paintLinkLine(painter, option, widget, d_ptr->mLinePath);
+	// 绘制端点
+	paintEndPoint(painter,
+				  option,
+				  d_ptr->mStartPos,
+				  d_ptr->mStartEndPointType,
+				  d_ptr->mSrartEndPointPainterPath,
+				  d_ptr->mEndPos,
+				  d_ptr->mEndEndPointType,
+				  d_ptr->mEndEndPointPainterPath,
+				  d_ptr->mLinePath);
+	painter->restore();
 }
 
 /**
@@ -340,10 +340,10 @@ void DAGraphicsLinkItem::paintLinkLine(QPainter* painter,
                                        QWidget* widget,
                                        const QPainterPath& linkPath)
 {
-    Q_UNUSED(widget);
-    QPen pen = getPainterPen(option);
-    painter->setPen(pen);
-    painter->drawPath(linkPath);
+	Q_UNUSED(widget);
+	QPen pen = getPainterPen(option);
+	painter->setPen(pen);
+	painter->drawPath(linkPath);
 }
 
 /**
@@ -363,43 +363,43 @@ void DAGraphicsLinkItem::paintEndPoint(QPainter* painter,
                                        const QPainterPath& endPainterPath,
                                        const QPainterPath& linkPath)
 {
-    if (etStart == EndPointNone && etEnd == EndPointNone) {
-        return;
-    }
-    // 根据DANodeLinkPoint计算旋转的角度
-    painter->save();
-    QPen pen = getPainterPen(option);
-    painter->setPen(pen);
-    painter->setBrush(pen.color());
-    // 首先绘制开端箭头
-    if (etStart != EndPointNone) {
-        painter->save();
-        //
-        QPointF pTrend = calcPainterPathEndPoint(linkPath, true, 18);  // 折线的延长线是20，因此这里设定18
-        QLineF lf(pStart, pTrend);
-        // 先移动再旋转
-        painter->translate(pStart);
-        painter->rotate(360 - lf.angle());  // painter的rotate是顺时针旋转，而line的angle是逆时针
-        painter->drawPath(startPainterPath);
-        painter->restore();
-    }
-    // 再绘制结束箭头
-    if (etEnd != EndPointNone) {
-        painter->save();
-        QPointF pTrend = calcPainterPathEndPoint(linkPath, false, 18);  // 折线的延长线是20，因此这里设定18
-        QLineF lf(pEnd, pTrend);
-        // 先移动再旋转
-        painter->translate(pEnd);
-        painter->rotate(360 - lf.angle());  // painter的rotate是顺时针旋转，而line的angle是逆时针
-        painter->drawPath(endPainterPath);
-        painter->restore();
-    }
-    painter->restore();
+	if (etStart == EndPointNone && etEnd == EndPointNone) {
+		return;
+	}
+	// 根据DANodeLinkPoint计算旋转的角度
+	painter->save();
+	QPen pen = getPainterPen(option);
+	painter->setPen(pen);
+	painter->setBrush(pen.color());
+	// 首先绘制开端箭头
+	if (etStart != EndPointNone) {
+		painter->save();
+		//
+		QPointF pTrend = calcPainterPathEndPoint(linkPath, true, 18);  // 折线的延长线是20，因此这里设定18
+		QLineF lf(pStart, pTrend);
+		// 先移动再旋转
+		painter->translate(pStart);
+		painter->rotate(360 - lf.angle());  // painter的rotate是顺时针旋转，而line的angle是逆时针
+		painter->drawPath(startPainterPath);
+		painter->restore();
+	}
+	// 再绘制结束箭头
+	if (etEnd != EndPointNone) {
+		painter->save();
+		QPointF pTrend = calcPainterPathEndPoint(linkPath, false, 18);  // 折线的延长线是20，因此这里设定18
+		QLineF lf(pEnd, pTrend);
+		// 先移动再旋转
+		painter->translate(pEnd);
+		painter->rotate(360 - lf.angle());  // painter的rotate是顺时针旋转，而line的angle是逆时针
+		painter->drawPath(endPainterPath);
+		painter->restore();
+	}
+	painter->restore();
 }
 
 QRectF DAGraphicsLinkItem::boundingRect() const
 {
-    return (d_ptr->mBoundingRect);
+	return (d_ptr->mBoundingRect);
 }
 
 QPainterPath DAGraphicsLinkItem::shape() const
@@ -412,9 +412,9 @@ QPainterPath DAGraphicsLinkItem::shape() const
  */
 void DAGraphicsLinkItem::updateEndPoint()
 {
-    d_ptr->mSrartEndPointPainterPath = generateEndPointPainterPath(d_ptr->mStartEndPointType, d_ptr->mEndPointSize);
-    d_ptr->mEndEndPointPainterPath   = generateEndPointPainterPath(d_ptr->mEndEndPointType, d_ptr->mEndPointSize);
-    update();
+	d_ptr->mSrartEndPointPainterPath = generateEndPointPainterPath(d_ptr->mStartEndPointType, d_ptr->mEndPointSize);
+	d_ptr->mEndEndPointPainterPath   = generateEndPointPainterPath(d_ptr->mEndEndPointType, d_ptr->mEndPointSize);
+	update();
 }
 
 /**
@@ -437,20 +437,20 @@ qreal DAGraphicsLinkItem::pointLength(const QPointF& a, const QPointF& b)
  */
 QPointF DAGraphicsLinkItem::elongation(const QPointF& orgPoint, AspectDirection d, qreal externLen)
 {
-    switch (d) {
-    case AspectDirection::East:
-        return (QPointF(orgPoint.x() + externLen, orgPoint.y()));
+	switch (d) {
+	case AspectDirection::East:
+		return (QPointF(orgPoint.x() + externLen, orgPoint.y()));
 
-    case AspectDirection::South:
-        return (QPointF(orgPoint.x(), orgPoint.y() + externLen));
+	case AspectDirection::South:
+		return (QPointF(orgPoint.x(), orgPoint.y() + externLen));
 
-    case AspectDirection::West:
-        return (QPointF(orgPoint.x() - externLen, orgPoint.y()));
+	case AspectDirection::West:
+		return (QPointF(orgPoint.x() - externLen, orgPoint.y()));
 
-    case AspectDirection::North:
-        return (QPointF(orgPoint.x(), orgPoint.y() - externLen));
-    }
-    return (orgPoint);
+	case AspectDirection::North:
+		return (QPointF(orgPoint.x(), orgPoint.y() - externLen));
+	}
+	return (orgPoint);
 }
 
 /**
@@ -461,17 +461,17 @@ QPointF DAGraphicsLinkItem::elongation(const QPointF& orgPoint, AspectDirection 
  */
 bool DAGraphicsLinkItem::isDirectionOpposite(AspectDirection d1, AspectDirection d2)
 {
-    switch (d1) {
-    case AspectDirection::East:
-        return d2 == AspectDirection::West;
-    case AspectDirection::South:
-        return d2 == AspectDirection::North;
-    case AspectDirection::West:
-        return d2 == AspectDirection::East;
-    case AspectDirection::North:
-        return d2 == AspectDirection::South;
-    }
-    return false;
+	switch (d1) {
+	case AspectDirection::East:
+		return d2 == AspectDirection::West;
+	case AspectDirection::South:
+		return d2 == AspectDirection::North;
+	case AspectDirection::West:
+		return d2 == AspectDirection::East;
+	case AspectDirection::North:
+		return d2 == AspectDirection::South;
+	}
+	return false;
 }
 
 /**
@@ -482,10 +482,10 @@ bool DAGraphicsLinkItem::isDirectionOpposite(AspectDirection d1, AspectDirection
  */
 bool DAGraphicsLinkItem::isDirectionParallel(AspectDirection d1, AspectDirection d2)
 {
-    if (d1 == d2) {
-        return true;
-    }
-    return isDirectionOpposite(d1, d2);
+	if (d1 == d2) {
+		return true;
+	}
+	return isDirectionOpposite(d1, d2);
 }
 
 /**
@@ -498,17 +498,17 @@ bool DAGraphicsLinkItem::isDirectionParallel(AspectDirection d1, AspectDirection
  */
 bool DAGraphicsLinkItem::isPointInFront(const QPointF& p1, AspectDirection d1, const QPointF& p2)
 {
-    switch (d1) {
-    case AspectDirection::East:
-        return p2.x() > p1.x();
-    case AspectDirection::South:
-        return p2.y() > p1.y();
-    case AspectDirection::West:
-        return p2.x() < p1.x();
-    case AspectDirection::North:
-        return p2.y() < p1.y();
-    }
-    return false;
+	switch (d1) {
+	case AspectDirection::East:
+		return p2.x() > p1.x();
+	case AspectDirection::South:
+		return p2.y() > p1.y();
+	case AspectDirection::West:
+		return p2.x() < p1.x();
+	case AspectDirection::North:
+		return p2.y() < p1.y();
+	}
+	return false;
 }
 
 /**
@@ -521,48 +521,48 @@ bool DAGraphicsLinkItem::isPointInFront(const QPointF& p1, AspectDirection d1, c
  */
 bool DAGraphicsLinkItem::isPointCanMeet(const QPointF& p1, AspectDirection d1, const QPointF& p2, AspectDirection d2)
 {
-    if (isDirectionParallel(d1, d2)) {
-        return false;
-    }
-    switch (d1) {
-    case AspectDirection::East: {
-        if (d2 == AspectDirection::South) {
-            // 南
-            return (p1.x() < p2.x()) && (p1.y() > p2.y());
-        } else {
-            // 北
-            return (p1.x() < p2.x()) && (p1.y() < p2.y());
-        }
-    } break;
-    case AspectDirection::South: {
-        if (d2 == AspectDirection::East) {
-            // 东
-            return (p1.x() > p2.x()) && (p1.y() < p2.y());
-        } else {
-            // 西
-            return (p1.x() < p2.x()) && (p1.y() < p2.y());
-        }
-    } break;
-    case AspectDirection::West: {
-        if (d2 == AspectDirection::South) {
-            // 南
-            return (p1.x() > p2.x()) && (p1.y() > p2.y());
-        } else {
-            // 北
-            return (p1.x() > p2.x()) && (p1.y() < p2.y());
-        }
-    } break;
-    case AspectDirection::North: {
-        if (d2 == AspectDirection::East) {
-            // 东
-            return (p1.x() > p2.x()) && (p1.y() > p2.y());
-        } else {
-            // 西
-            return (p1.x() < p2.x()) && (p1.y() > p2.y());
-        }
-    } break;
-    }
-    return false;
+	if (isDirectionParallel(d1, d2)) {
+		return false;
+	}
+	switch (d1) {
+	case AspectDirection::East: {
+		if (d2 == AspectDirection::South) {
+			// 南
+			return (p1.x() < p2.x()) && (p1.y() > p2.y());
+		} else {
+			// 北
+			return (p1.x() < p2.x()) && (p1.y() < p2.y());
+		}
+	} break;
+	case AspectDirection::South: {
+		if (d2 == AspectDirection::East) {
+			// 东
+			return (p1.x() > p2.x()) && (p1.y() < p2.y());
+		} else {
+			// 西
+			return (p1.x() < p2.x()) && (p1.y() < p2.y());
+		}
+	} break;
+	case AspectDirection::West: {
+		if (d2 == AspectDirection::South) {
+			// 南
+			return (p1.x() > p2.x()) && (p1.y() > p2.y());
+		} else {
+			// 北
+			return (p1.x() > p2.x()) && (p1.y() < p2.y());
+		}
+	} break;
+	case AspectDirection::North: {
+		if (d2 == AspectDirection::East) {
+			// 东
+			return (p1.x() > p2.x()) && (p1.y() > p2.y());
+		} else {
+			// 西
+			return (p1.x() < p2.x()) && (p1.y() > p2.y());
+		}
+	} break;
+	}
+	return false;
 }
 
 /**
@@ -578,22 +578,22 @@ bool DAGraphicsLinkItem::isParallelPointApproachInDirection(const QPointF& p1,
                                                             const QPointF& p2,
                                                             AspectDirection d2)
 {
-    if (!isDirectionOpposite(d1, d2)) {
-        // 平行同向永远接近不了
-        return false;
-    }
-    // 这里说明必定反向
-    switch (d1) {
-    case AspectDirection::East:
-        return p1.x() < p2.x();
-    case AspectDirection::South:
-        return p1.y() < p2.y();
-    case AspectDirection::West:
-        return p1.x() > p2.x();
-    case AspectDirection::North:
-        return p1.y() > p2.y();
-    }
-    return false;
+	if (!isDirectionOpposite(d1, d2)) {
+		// 平行同向永远接近不了
+		return false;
+	}
+	// 这里说明必定反向
+	switch (d1) {
+	case AspectDirection::East:
+		return p1.x() < p2.x();
+	case AspectDirection::South:
+		return p1.y() < p2.y();
+	case AspectDirection::West:
+		return p1.x() > p2.x();
+	case AspectDirection::North:
+		return p1.y() > p2.y();
+	}
+	return false;
 }
 
 /**
@@ -603,19 +603,19 @@ bool DAGraphicsLinkItem::isParallelPointApproachInDirection(const QPointF& p1,
  */
 AspectDirection DAGraphicsLinkItem::oppositeDirection(AspectDirection d)
 {
-    switch (d) {
-    case AspectDirection::East:
-        return AspectDirection::West;
-    case AspectDirection::South:
-        return AspectDirection::North;
-    case AspectDirection::West:
-        return AspectDirection::East;
-    case AspectDirection::North:
-        return AspectDirection::South;
-    default:
-        break;
-    }
-    return AspectDirection::East;
+	switch (d) {
+	case AspectDirection::East:
+		return AspectDirection::West;
+	case AspectDirection::South:
+		return AspectDirection::North;
+	case AspectDirection::West:
+		return AspectDirection::East;
+	case AspectDirection::North:
+		return AspectDirection::South;
+	default:
+		break;
+	}
+	return AspectDirection::East;
 }
 
 /**
@@ -633,23 +633,23 @@ AspectDirection DAGraphicsLinkItem::oppositeDirection(AspectDirection d)
  */
 AspectDirection DAGraphicsLinkItem::relativeDirectionOfPoint(const QPointF& p1, const QPointF& p2)
 {
-    qreal dx = p1.x() - p2.x();
-    qreal dy = p1.y() - p2.y();
-    if (qAbs(dx) > qAbs(dy)) {
-        // x方向大于y方向
-        if (dx > 0) {
-            return AspectDirection::East;
-        }
-        return AspectDirection::West;
-    } else {
-        // x方向小于y方向
-        if (dy > 0) {
-            return AspectDirection::South;
-        }
-        return AspectDirection::North;
-    }
-    // 不可能达到
-    return AspectDirection::East;
+	qreal dx = p1.x() - p2.x();
+	qreal dy = p1.y() - p2.y();
+	if (qAbs(dx) > qAbs(dy)) {
+		// x方向大于y方向
+		if (dx > 0) {
+			return AspectDirection::East;
+		}
+		return AspectDirection::West;
+	} else {
+		// x方向小于y方向
+		if (dy > 0) {
+			return AspectDirection::South;
+		}
+		return AspectDirection::North;
+	}
+	// 不可能达到
+	return AspectDirection::East;
 }
 
 /**
@@ -666,20 +666,25 @@ AspectDirection DAGraphicsLinkItem::relativeDirectionOfPoint(const QPointF& p1, 
  */
 QPointF DAGraphicsLinkItem::calcPainterPathEndPoint(const QPainterPath& path, bool fromStart, qreal distanceMaxPx, int maxTryCnt)
 {
-    qreal basePercent = fromStart ? 0.0 : 1.0;
-    qreal dt          = fromStart ? 0.05 : -0.05;
+	qreal basePercent = fromStart ? 0.0 : 1.0;
+	qreal dt          = fromStart ? 0.05 : -0.05;
 
-    QPointF endpoint  = path.pointAtPercent(basePercent);
-    QPointF testpoint = path.pointAtPercent(basePercent + dt);
-    qreal dist        = pointLength(endpoint, testpoint);
-    int tryCnt        = 0;
-    while (dist > distanceMaxPx && tryCnt < maxTryCnt) {
-        dt /= 2.0;
-        testpoint = path.pointAtPercent(basePercent + dt);
-        dist      = pointLength(endpoint, testpoint);
-        ++tryCnt;
-    }
-    return testpoint;
+	QPointF endpoint  = path.pointAtPercent(basePercent);
+	QPointF testpoint = path.pointAtPercent(basePercent + dt);
+	qreal dist        = pointLength(endpoint, testpoint);
+	int tryCnt        = 0;
+	while (dist > distanceMaxPx && tryCnt < maxTryCnt) {
+		dt /= 2.0;
+		testpoint = path.pointAtPercent(basePercent + dt);
+		dist      = pointLength(endpoint, testpoint);
+		++tryCnt;
+	}
+	return testpoint;
+}
+
+DAGraphicsScene* DAGraphicsLinkItem::daScene() const
+{
+    return dynamic_cast< DAGraphicsScene* >(scene());
 }
 
 /**
@@ -691,13 +696,13 @@ QPointF DAGraphicsLinkItem::calcPainterPathEndPoint(const QPainterPath& path, bo
  */
 QPen DAGraphicsLinkItem::getPainterPen(const QStyleOptionGraphicsItem* option) const
 {
-    QPen pen = d_ptr->mLinePen;
-    if (option->state.testFlag(QStyle::State_Selected)) {
-        // 说明选中了
-        pen.setWidth(pen.width() + 2);
-        pen.setColor(pen.color().darker(150));
-    }
-    return pen;
+	QPen pen = d_ptr->mLinePen;
+	if (option->state.testFlag(QStyle::State_Selected)) {
+		// 说明选中了
+		pen.setWidth(pen.width() + 2);
+		pen.setColor(pen.color().darker(150));
+	}
+	return pen;
 }
 
 /**
@@ -709,27 +714,27 @@ QPen DAGraphicsLinkItem::getPainterPen(const QStyleOptionGraphicsItem* option) c
  */
 QPainterPath DAGraphicsLinkItem::generateLinePainterPath(const QPointF& fromPoint, const QPointF& toPoint, LinkLineStyle linestyle)
 {
-    QPainterPath res;
-    switch (linestyle) {
-    case LinkLineBezier:
-        res = generateLinkLineBezierPainterPath(fromPoint,
-                                                relativeDirectionOfPoint(toPoint, fromPoint),
-                                                toPoint,
-                                                relativeDirectionOfPoint(fromPoint, toPoint));
-        break;
-    case LinkLineStraight:
-        res = generateLinkLineStraightPainterPath(fromPoint, toPoint);
-        break;
-    case LinkLineKnuckle:
-        res = generateLinkLineKnucklePainterPath(fromPoint,
-                                                 relativeDirectionOfPoint(toPoint, fromPoint),
-                                                 toPoint,
-                                                 relativeDirectionOfPoint(fromPoint, toPoint));
-        break;
-    default:
-        break;
-    }
-    return res;
+	QPainterPath res;
+	switch (linestyle) {
+	case LinkLineBezier:
+		res = generateLinkLineBezierPainterPath(fromPoint,
+												relativeDirectionOfPoint(toPoint, fromPoint),
+												toPoint,
+												relativeDirectionOfPoint(fromPoint, toPoint));
+		break;
+	case LinkLineStraight:
+		res = generateLinkLineStraightPainterPath(fromPoint, toPoint);
+		break;
+	case LinkLineKnuckle:
+		res = generateLinkLineKnucklePainterPath(fromPoint,
+												 relativeDirectionOfPoint(toPoint, fromPoint),
+												 toPoint,
+												 relativeDirectionOfPoint(fromPoint, toPoint));
+		break;
+	default:
+		break;
+	}
+	return res;
 }
 
 /**
@@ -751,18 +756,18 @@ QPainterPath DAGraphicsLinkItem::generateLinePainterPath(const QPointF& fromPoin
  */
 QPainterPath DAGraphicsLinkItem::generateEndPointPainterPath(DAGraphicsLinkItem::EndPointType epType, int size)
 {
-    QPainterPath path;
-    switch (epType) {
-    case EndPointTriangType:  // 三角形
-        path.moveTo(0, 0);
-        path.lineTo(size, -size / 2);
-        path.lineTo(size, size / 2);
-        path.lineTo(0, 0);
-        break;
-    default:
-        break;
-    }
-    return path;
+	QPainterPath path;
+	switch (epType) {
+	case EndPointTriangType:  // 三角形
+		path.moveTo(0, 0);
+		path.lineTo(size, -size / 2);
+		path.lineTo(size, size / 2);
+		path.lineTo(0, 0);
+		break;
+	default:
+		break;
+	}
+	return path;
 }
 
 /**
@@ -776,78 +781,78 @@ bool DAGraphicsLinkItem::willCompleteLink()
 
 bool DAGraphicsLinkItem::saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const
 {
-    DAGraphicsItem::saveToXml(doc, parentElement,ver);
-    QDomElement posEle = doc->createElement("pos");
-    posEle.setAttribute("BezierControlScale", d_ptr->mBezierControlScale);
-    QDomElement startPosEle     = makeElement(d_ptr->mStartPos, "startPos", doc);
-    QDomElement endPosEle       = makeElement(d_ptr->mEndPos, "endPos", doc);
-    QDomElement boundingRectEle = makeElement(d_ptr->mBoundingRect, "boundingRect", doc);
-    posEle.appendChild(startPosEle);
-    posEle.appendChild(endPosEle);
-    posEle.appendChild(boundingRectEle);
+	DAGraphicsItem::saveToXml(doc, parentElement, ver);
+	QDomElement posEle = doc->createElement("pos");
+	posEle.setAttribute("BezierControlScale", d_ptr->mBezierControlScale);
+	QDomElement startPosEle     = makeElement(d_ptr->mStartPos, "startPos", doc);
+	QDomElement endPosEle       = makeElement(d_ptr->mEndPos, "endPos", doc);
+	QDomElement boundingRectEle = makeElement(d_ptr->mBoundingRect, "boundingRect", doc);
+	posEle.appendChild(startPosEle);
+	posEle.appendChild(endPosEle);
+	posEle.appendChild(boundingRectEle);
 
-    QDomElement lineEle = doc->createElement("linkLine");
-    lineEle.setAttribute("style", enumToString(getLinkLineStyle()));
+	QDomElement lineEle = doc->createElement("linkLine");
+	lineEle.setAttribute("style", enumToString(getLinkLineStyle()));
 
-    QDomElement linePenEle = doc->createElement("linePen");
-    linePenEle.setAttribute("color", getLinePen().color().name());
-    linePenEle.setAttribute("style", enumToString(getLinePen().style()));
-    linePenEle.setAttribute("width", getLinePen().width());
+	QDomElement linePenEle = doc->createElement("linePen");
+	linePenEle.setAttribute("color", getLinePen().color().name());
+	linePenEle.setAttribute("style", enumToString(getLinePen().style()));
+	linePenEle.setAttribute("width", getLinePen().width());
 
-    QDomElement endPointEle = doc->createElement("endPoint");
-    endPointEle.setAttribute("toType", DA::enumToString(getEndPointType(DAGraphicsLinkItem::OrientationEnd)));
-    endPointEle.setAttribute("fromType", DA::enumToString(getEndPointType(DAGraphicsLinkItem::OrientationStart)));
-    endPointEle.setAttribute("size", getEndPointSize());
+	QDomElement endPointEle = doc->createElement("endPoint");
+	endPointEle.setAttribute("toType", DA::enumToString(getEndPointType(DAGraphicsLinkItem::OrientationEnd)));
+	endPointEle.setAttribute("fromType", DA::enumToString(getEndPointType(DAGraphicsLinkItem::OrientationStart)));
+	endPointEle.setAttribute("size", getEndPointSize());
 
-    parentElement->appendChild(posEle);
-    parentElement->appendChild(lineEle);
-    parentElement->appendChild(linePenEle);
-    parentElement->appendChild(endPointEle);
-    return true;
+	parentElement->appendChild(posEle);
+	parentElement->appendChild(lineEle);
+	parentElement->appendChild(linePenEle);
+	parentElement->appendChild(endPointEle);
+	return true;
 }
 
 bool DAGraphicsLinkItem::loadFromXml(const QDomElement* parentElement, const QVersionNumber& ver)
 {
-    DAGraphicsItem::loadFromXml(parentElement,ver);
-    QDomElement posEle = parentElement->firstChildElement("pos");
-    if (!posEle.isNull()) {
-        bool isok = false;
-        qreal v   = posEle.attribute("BezierControlScale").toDouble(&isok);
-        if (isok) {
-            d_ptr->mBezierControlScale = v;
-        }
-        QDomElement ele = posEle.firstChildElement("startPos");
-        if (!ele.isNull()) {
-            loadElement(d_ptr->mStartPos, &ele);
-        }
-        ele = posEle.firstChildElement("endPos");
-        if (!ele.isNull()) {
-            loadElement(d_ptr->mEndPos, &ele);
-        }
-        ele = posEle.firstChildElement("boundingRect");
-        if (!ele.isNull()) {
-            loadElement(d_ptr->mBoundingRect, &ele);
-        }
-    }
-    QDomElement lineEle = parentElement->firstChildElement("linkLine");
-    if (!lineEle.isNull()) {
-        DAGraphicsLinkItem::LinkLineStyle s = DA::stringToEnum(lineEle.attribute("style"),
-                                                               DAGraphicsLinkItem::LinkLineKnuckle);
-        setLinkLineStyle(s);
-    }
-    QDomElement linePenEle = parentElement->firstChildElement("linePen");
-    if (!linePenEle.isNull()) {
-        QColor pencolor(linePenEle.attribute("color"));
-        int width          = linePenEle.attribute("width").toInt();
-        Qt::PenStyle style = stringToEnum(linePenEle.attribute("style"), Qt::SolidLine);
-        QPen pen(pencolor);
-        pen.setWidth(width);
-        pen.setStyle(style);
-        setLinePen(pen);
-    }
-    QDomElement endPointEle = parentElement->firstChildElement("endPoint");
-    if (!endPointEle.isNull()) {
-        DAGraphicsLinkItem::EndPointType etTo   = DA::stringToEnum(endPointEle.attribute("toType"),
+	DAGraphicsItem::loadFromXml(parentElement, ver);
+	QDomElement posEle = parentElement->firstChildElement("pos");
+	if (!posEle.isNull()) {
+		bool isok = false;
+		qreal v   = posEle.attribute("BezierControlScale").toDouble(&isok);
+		if (isok) {
+			d_ptr->mBezierControlScale = v;
+		}
+		QDomElement ele = posEle.firstChildElement("startPos");
+		if (!ele.isNull()) {
+			loadElement(d_ptr->mStartPos, &ele);
+		}
+		ele = posEle.firstChildElement("endPos");
+		if (!ele.isNull()) {
+			loadElement(d_ptr->mEndPos, &ele);
+		}
+		ele = posEle.firstChildElement("boundingRect");
+		if (!ele.isNull()) {
+			loadElement(d_ptr->mBoundingRect, &ele);
+		}
+	}
+	QDomElement lineEle = parentElement->firstChildElement("linkLine");
+	if (!lineEle.isNull()) {
+		DAGraphicsLinkItem::LinkLineStyle s = DA::stringToEnum(lineEle.attribute("style"),
+															   DAGraphicsLinkItem::LinkLineKnuckle);
+		setLinkLineStyle(s);
+	}
+	QDomElement linePenEle = parentElement->firstChildElement("linePen");
+	if (!linePenEle.isNull()) {
+		QColor pencolor(linePenEle.attribute("color"));
+		int width          = linePenEle.attribute("width").toInt();
+		Qt::PenStyle style = stringToEnum(linePenEle.attribute("style"), Qt::SolidLine);
+		QPen pen(pencolor);
+		pen.setWidth(width);
+		pen.setStyle(style);
+		setLinePen(pen);
+	}
+	QDomElement endPointEle = parentElement->firstChildElement("endPoint");
+	if (!endPointEle.isNull()) {
+		DAGraphicsLinkItem::EndPointType etTo   = DA::stringToEnum(endPointEle.attribute("toType"),
                                                                  DAGraphicsLinkItem::EndPointNone);
         DAGraphicsLinkItem::EndPointType etFrom = DA::stringToEnum(endPointEle.attribute("fromType"),
                                                                    DAGraphicsLinkItem::EndPointNone);
@@ -882,20 +887,20 @@ QPainterPath DAGraphicsLinkItem::generateLinkLineBezierPainterPath(const QPointF
                                                                    const QPointF& toPos,
                                                                    AspectDirection toDirect)
 {
-    // 贝塞尔的引导线根据伸出点的方向偏移两个点距离的1/5
-    //! 1 先求出两个点距离
-    qreal length = pointLength(fromPos, toPos);
+	// 贝塞尔的引导线根据伸出点的方向偏移两个点距离的1/5
+	//! 1 先求出两个点距离
+	qreal length = pointLength(fromPos, toPos);
 
-    length *= getBezierControlScale();
-    //! 2.通过伸出方向，得到两个控制点的位置
-    QPointF fromcCrtlPoint = elongation(fromPos, fromDirect, length);
-    QPointF toCrtlPoint    = elongation(toPos, toDirect, length);
+	length *= getBezierControlScale();
+	//! 2.通过伸出方向，得到两个控制点的位置
+	QPointF fromcCrtlPoint = elongation(fromPos, fromDirect, length);
+	QPointF toCrtlPoint    = elongation(toPos, toDirect, length);
 
-    //! 3.生成贝塞尔曲线
-    QPainterPath path;
-    path.moveTo(fromPos);
-    path.cubicTo(fromcCrtlPoint, toCrtlPoint, toPos);
-    return path;
+	//! 3.生成贝塞尔曲线
+	QPainterPath path;
+	path.moveTo(fromPos);
+	path.cubicTo(fromcCrtlPoint, toCrtlPoint, toPos);
+	return path;
 }
 
 /**
@@ -906,10 +911,10 @@ QPainterPath DAGraphicsLinkItem::generateLinkLineBezierPainterPath(const QPointF
  */
 QPainterPath DAGraphicsLinkItem::generateLinkLineStraightPainterPath(const QPointF& fromPos, const QPointF& toPos)
 {
-    QPainterPath path;
-    path.moveTo(fromPos);
-    path.lineTo(toPos);
-    return path;
+	QPainterPath path;
+	path.moveTo(fromPos);
+	path.lineTo(toPos);
+	return path;
 }
 
 /**
@@ -923,105 +928,105 @@ QPainterPath DAGraphicsLinkItem::generateLinkLineKnucklePainterPath(const QPoint
                                                                     const QPointF& toPos,
                                                                     AspectDirection toDirect)
 {
-    const int extendLength = 20;  // 延长线的长度
-    QPointF extendFrom     = elongation(fromPos, fromDirect, extendLength);
-    QPointF extendTo       = elongation(toPos, toDirect, extendLength);
-    QPainterPath path;
-    path.moveTo(fromPos);
-    path.lineTo(extendFrom);
-    qreal dx = extendTo.x() - extendFrom.x();
-    qreal dy = extendTo.y() - extendFrom.y();
-    if ((fromDirect == AspectDirection::East) || (fromDirect == AspectDirection::West)) {
-        // from沿着x方向
-        if (isDirectionParallel(fromDirect, toDirect)) {
-            // 平行
-            if (isDirectionOpposite(fromDirect, toDirect)) {
-                // 反向
-                if (isParallelPointApproachInDirection(extendFrom, fromDirect, extendTo, toDirect)) {
-                    // from沿着x方向、平行，反向接近
-                    path.lineTo(extendFrom.x() + dx / 2, extendFrom.y());
-                    path.lineTo(extendFrom.x() + dx / 2, extendTo.y());
-                } else {
-                    // from沿着x方向、平行，反向远离
-                    path.lineTo(extendFrom.x(), extendFrom.y() + dy / 2);
-                    path.lineTo(extendTo.x(), extendFrom.y() + dy / 2);
-                }
-            } else {
-                // 同向
-                if (isPointInFront(extendFrom, fromDirect, extendTo)) {
-                    // from沿着x方向，平行，同向靠前
-                    path.lineTo(extendTo.x(), extendFrom.y());
-                } else {
-                    // from沿着x方向，平行，同向靠后
-                    path.lineTo(extendFrom.x(), extendTo.y());
-                }
-            }
-        } else {
-            // 垂直
-            if (isPointCanMeet(extendFrom, fromDirect, extendTo, toDirect)) {
-                // from沿着x方向，垂直,能相遇使用
-                path.lineTo(extendTo.x(), extendFrom.y());
-            } else if (isPointCanMeet(extendFrom, fromDirect, extendTo, oppositeDirection(toDirect))) {
-                // from沿着x方向，垂直,to调转后能相遇使用
-                path.lineTo(extendFrom.x() + dx / 2, extendFrom.y());
-                path.lineTo(extendFrom.x() + dx / 2, extendTo.y());
-            } else if (isPointCanMeet(extendFrom, oppositeDirection(fromDirect), extendTo, toDirect)) {
-                // from沿着x方向，垂直,from调转后能相遇使用
-                path.lineTo(extendFrom.x(), extendFrom.y() + dy / 2);
-                path.lineTo(extendTo.x(), extendFrom.y() + dy / 2);
-            } else {
-                // from沿着x方向，垂直,两边同时调转后能相遇使用
-                path.lineTo(extendFrom.x(), extendTo.y());
-            }
-        }
-    } else {
-        // from沿着y方向
-        if (isDirectionParallel(fromDirect, toDirect)) {
-            // 平行
-            if (isDirectionOpposite(fromDirect, toDirect)) {
-                // 反向
-                if (isParallelPointApproachInDirection(extendFrom, fromDirect, extendTo, toDirect)) {
-                    // from沿着y方向、平行，反向接近
-                    path.lineTo(extendFrom.x(), extendFrom.y() + dy / 2);
-                    path.lineTo(extendTo.x(), extendFrom.y() + dy / 2);
-                } else {
-                    // from沿着y方向、平行，反向远离
+	const int extendLength = 20;  // 延长线的长度
+	QPointF extendFrom     = elongation(fromPos, fromDirect, extendLength);
+	QPointF extendTo       = elongation(toPos, toDirect, extendLength);
+	QPainterPath path;
+	path.moveTo(fromPos);
+	path.lineTo(extendFrom);
+	qreal dx = extendTo.x() - extendFrom.x();
+	qreal dy = extendTo.y() - extendFrom.y();
+	if ((fromDirect == AspectDirection::East) || (fromDirect == AspectDirection::West)) {
+		// from沿着x方向
+		if (isDirectionParallel(fromDirect, toDirect)) {
+			// 平行
+			if (isDirectionOpposite(fromDirect, toDirect)) {
+				// 反向
+				if (isParallelPointApproachInDirection(extendFrom, fromDirect, extendTo, toDirect)) {
+					// from沿着x方向、平行，反向接近
+					path.lineTo(extendFrom.x() + dx / 2, extendFrom.y());
+					path.lineTo(extendFrom.x() + dx / 2, extendTo.y());
+				} else {
+					// from沿着x方向、平行，反向远离
+					path.lineTo(extendFrom.x(), extendFrom.y() + dy / 2);
+					path.lineTo(extendTo.x(), extendFrom.y() + dy / 2);
+				}
+			} else {
+				// 同向
+				if (isPointInFront(extendFrom, fromDirect, extendTo)) {
+					// from沿着x方向，平行，同向靠前
+					path.lineTo(extendTo.x(), extendFrom.y());
+				} else {
+					// from沿着x方向，平行，同向靠后
+					path.lineTo(extendFrom.x(), extendTo.y());
+				}
+			}
+		} else {
+			// 垂直
+			if (isPointCanMeet(extendFrom, fromDirect, extendTo, toDirect)) {
+				// from沿着x方向，垂直,能相遇使用
+				path.lineTo(extendTo.x(), extendFrom.y());
+			} else if (isPointCanMeet(extendFrom, fromDirect, extendTo, oppositeDirection(toDirect))) {
+				// from沿着x方向，垂直,to调转后能相遇使用
+				path.lineTo(extendFrom.x() + dx / 2, extendFrom.y());
+				path.lineTo(extendFrom.x() + dx / 2, extendTo.y());
+			} else if (isPointCanMeet(extendFrom, oppositeDirection(fromDirect), extendTo, toDirect)) {
+				// from沿着x方向，垂直,from调转后能相遇使用
+				path.lineTo(extendFrom.x(), extendFrom.y() + dy / 2);
+				path.lineTo(extendTo.x(), extendFrom.y() + dy / 2);
+			} else {
+				// from沿着x方向，垂直,两边同时调转后能相遇使用
+				path.lineTo(extendFrom.x(), extendTo.y());
+			}
+		}
+	} else {
+		// from沿着y方向
+		if (isDirectionParallel(fromDirect, toDirect)) {
+			// 平行
+			if (isDirectionOpposite(fromDirect, toDirect)) {
+				// 反向
+				if (isParallelPointApproachInDirection(extendFrom, fromDirect, extendTo, toDirect)) {
+					// from沿着y方向、平行，反向接近
+					path.lineTo(extendFrom.x(), extendFrom.y() + dy / 2);
+					path.lineTo(extendTo.x(), extendFrom.y() + dy / 2);
+				} else {
+					// from沿着y方向、平行，反向远离
 
-                    path.lineTo(extendFrom.x() + dx / 2, extendFrom.y());
-                    path.lineTo(extendFrom.x() + dx / 2, extendTo.y());
-                }
-            } else {
-                // 同向
-                if (isPointInFront(extendFrom, fromDirect, extendTo)) {
-                    // from沿着y方向，平行，同向靠前
-                    path.lineTo(extendFrom.x(), extendTo.y());
-                } else {
-                    // from沿着y方向，平行，同向靠后
-                    path.lineTo(extendTo.x(), extendFrom.y());
-                }
-            }
-        } else {
-            // 垂直
-            if (isPointCanMeet(extendFrom, fromDirect, extendTo, toDirect)) {
-                // from沿着y方向，垂直,能相遇使用
-                path.lineTo(extendFrom.x(), extendTo.y());
-            } else if (isPointCanMeet(extendFrom, fromDirect, extendTo, oppositeDirection(toDirect))) {
-                // from沿着y方向，垂直,to调转后能相遇使用
-                path.lineTo(extendFrom.x(), extendFrom.y() + dy / 2);
-                path.lineTo(extendTo.x(), extendFrom.y() + dy / 2);
-            } else if (isPointCanMeet(extendFrom, oppositeDirection(fromDirect), extendTo, toDirect)) {
-                // from沿着y方向，垂直,from调转后能相遇使用
-                path.lineTo(extendFrom.x() + dx / 2, extendFrom.y());
-                path.lineTo(extendFrom.x() + dx / 2, extendTo.y());
-            } else {
-                // from沿着y方向，垂直,两边同时调转后能相遇使用
-                path.lineTo(extendTo.x(), extendFrom.y());
-            }
-        }
-    }
-    path.lineTo(extendTo);
-    path.lineTo(toPos);
-    return path;
+					path.lineTo(extendFrom.x() + dx / 2, extendFrom.y());
+					path.lineTo(extendFrom.x() + dx / 2, extendTo.y());
+				}
+			} else {
+				// 同向
+				if (isPointInFront(extendFrom, fromDirect, extendTo)) {
+					// from沿着y方向，平行，同向靠前
+					path.lineTo(extendFrom.x(), extendTo.y());
+				} else {
+					// from沿着y方向，平行，同向靠后
+					path.lineTo(extendTo.x(), extendFrom.y());
+				}
+			}
+		} else {
+			// 垂直
+			if (isPointCanMeet(extendFrom, fromDirect, extendTo, toDirect)) {
+				// from沿着y方向，垂直,能相遇使用
+				path.lineTo(extendFrom.x(), extendTo.y());
+			} else if (isPointCanMeet(extendFrom, fromDirect, extendTo, oppositeDirection(toDirect))) {
+				// from沿着y方向，垂直,to调转后能相遇使用
+				path.lineTo(extendFrom.x(), extendFrom.y() + dy / 2);
+				path.lineTo(extendTo.x(), extendFrom.y() + dy / 2);
+			} else if (isPointCanMeet(extendFrom, oppositeDirection(fromDirect), extendTo, toDirect)) {
+				// from沿着y方向，垂直,from调转后能相遇使用
+				path.lineTo(extendFrom.x() + dx / 2, extendFrom.y());
+				path.lineTo(extendFrom.x() + dx / 2, extendTo.y());
+			} else {
+				// from沿着y方向，垂直,两边同时调转后能相遇使用
+				path.lineTo(extendTo.x(), extendFrom.y());
+			}
+		}
+	}
+	path.lineTo(extendTo);
+	path.lineTo(toPos);
+	return path;
 }
 
 /**
@@ -1032,15 +1037,15 @@ QPainterPath DAGraphicsLinkItem::generateLinkLineKnucklePainterPath(const QPoint
 QString enumToString(DAGraphicsLinkItem::EndPointType e)
 {
 
-    switch (e) {
-    case DAGraphicsLinkItem::EndPointNone:
-        return "none";
-    case DAGraphicsLinkItem::EndPointTriangType:
-        return "triang";
-    default:
-        break;
-    }
-    return "none";
+	switch (e) {
+	case DAGraphicsLinkItem::EndPointNone:
+		return "none";
+	case DAGraphicsLinkItem::EndPointTriangType:
+		return "triang";
+	default:
+		break;
+	}
+	return "none";
 }
 
 /**
@@ -1050,12 +1055,12 @@ QString enumToString(DAGraphicsLinkItem::EndPointType e)
  */
 DAGraphicsLinkItem::EndPointType stringToEnum(const QString& s, DAGraphicsLinkItem::EndPointType defaultEnum)
 {
-    if (0 == s.compare("none", Qt::CaseInsensitive)) {
-        return DAGraphicsLinkItem::EndPointNone;
-    } else if (0 == s.compare("triang", Qt::CaseInsensitive)) {
-        return DAGraphicsLinkItem::EndPointTriangType;
-    }
-    return defaultEnum;
+	if (0 == s.compare("none", Qt::CaseInsensitive)) {
+		return DAGraphicsLinkItem::EndPointNone;
+	} else if (0 == s.compare("triang", Qt::CaseInsensitive)) {
+		return DAGraphicsLinkItem::EndPointTriangType;
+	}
+	return defaultEnum;
 }
 /**
  * @brief DAAbstractNodeLinkGraphicsItem::LinkLineStyle的枚举转换
@@ -1064,17 +1069,17 @@ DAGraphicsLinkItem::EndPointType stringToEnum(const QString& s, DAGraphicsLinkIt
  */
 QString enumToString(DAGraphicsLinkItem::LinkLineStyle e)
 {
-    switch (e) {
-    case DAGraphicsLinkItem::LinkLineBezier:
-        return "bezier";
-    case DAGraphicsLinkItem::LinkLineStraight:
-        return "straight";
-    case DAGraphicsLinkItem::LinkLineKnuckle:
-        return "knuckle";
-    default:
-        break;
-    }
-    return "knuckle";
+	switch (e) {
+	case DAGraphicsLinkItem::LinkLineBezier:
+		return "bezier";
+	case DAGraphicsLinkItem::LinkLineStraight:
+		return "straight";
+	case DAGraphicsLinkItem::LinkLineKnuckle:
+		return "knuckle";
+	default:
+		break;
+	}
+	return "knuckle";
 }
 /**
  * @brief DAAbstractNodeLinkGraphicsItem::LinkLineStyle的枚举转换
@@ -1083,14 +1088,14 @@ QString enumToString(DAGraphicsLinkItem::LinkLineStyle e)
  */
 DAGraphicsLinkItem::LinkLineStyle stringToEnum(const QString& s, DAGraphicsLinkItem::LinkLineStyle defaultEnum)
 {
-    if (0 == s.compare("knuckle", Qt::CaseInsensitive)) {
-        return DAGraphicsLinkItem::LinkLineKnuckle;
-    } else if (0 == s.compare("bezier", Qt::CaseInsensitive)) {
-        return DAGraphicsLinkItem::LinkLineBezier;
-    } else if (0 == s.compare("straight", Qt::CaseInsensitive)) {
-        return DAGraphicsLinkItem::LinkLineStraight;
-    }
-    return defaultEnum;
+	if (0 == s.compare("knuckle", Qt::CaseInsensitive)) {
+		return DAGraphicsLinkItem::LinkLineKnuckle;
+	} else if (0 == s.compare("bezier", Qt::CaseInsensitive)) {
+		return DAGraphicsLinkItem::LinkLineBezier;
+	} else if (0 == s.compare("straight", Qt::CaseInsensitive)) {
+		return DAGraphicsLinkItem::LinkLineStraight;
+	}
+	return defaultEnum;
 }
 
 }  // end DA

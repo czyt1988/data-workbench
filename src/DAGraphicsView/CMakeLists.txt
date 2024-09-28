@@ -22,6 +22,7 @@ find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
     Gui
     Widgets
     Xml
+    Svg
     REQUIRED
 )
 
@@ -31,10 +32,11 @@ find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
 ########################################################
 file(GLOB DA_LIB_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 file(GLOB DA_LIB_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
-
+file(GLOB DA_LIB_RESOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.qrc")
 add_library(${DA_LIB_NAME} SHARED
             ${DA_LIB_HEADER_FILES}
             ${DA_LIB_SOURCE_FILES}
+            ${DA_LIB_RESOURCE_FILES}
             ${DA_GLOBAL_HEADER}
 )	
 # 构建库定义的宏
@@ -52,6 +54,7 @@ target_link_libraries(${DA_LIB_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Widgets
     Qt${QT_VERSION_MAJOR}::Xml
+    Qt${QT_VERSION_MAJOR}::Svg
 )
 # -------------link DAWorkbench--------------------------
 # DAUtils

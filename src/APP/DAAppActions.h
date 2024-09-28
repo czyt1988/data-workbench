@@ -88,7 +88,7 @@ public:
 	QAction* actionWorkflowLinkEnable;          ///< 允许连接
 	QAction* actionExportWorkflowSceneToImage;  ///< 导出png格式
 	QAction* actionExportWorkflowSceneToPNG;    ///< 导出png格式
-	QAction* actionWorkflowViewLock;            ///< 锁定视图
+	QAction* actionWorkflowViewReadOnly;            ///< 锁定视图
 	//===================================================
 	// 绘图标签 Chart Category
 	//===================================================

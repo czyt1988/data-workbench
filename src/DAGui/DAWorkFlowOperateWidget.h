@@ -96,7 +96,7 @@ public:
 	// 获取QUndoStack
 	QUndoStack* getUndoStack();
 	// 设置鼠标动作
-	bool setMouseActionFlag(DAWorkFlowGraphicsScene::MouseActionFlag mf, bool continous);
+	bool setPreDefineSceneAction(DAWorkFlowGraphicsScene::SceneActionFlag mf);
 	// 清空所有工程
 	void clear();
 	// 获取所有工作流的名字
@@ -130,7 +130,7 @@ public slots:
 	// 设置当前工作流的网格显示与否
 	void setCurrentWorkflowShowGrid(bool on);
 	// 设置当前工作流锁定
-	void setCurrentWorkflowLock(bool on);
+	void setCurrentWorkflowReadOnly(bool on);
 	// 设置当前工作流全部显示
 	void setCurrentWorkflowWholeView();
 	// 设置当前工作流全部显示
@@ -187,11 +187,18 @@ signals:
 	 * @param w
 	 */
 	void currentWorkFlowWidgetChanged(DA::DAWorkFlowEditWidget* w);
+
 	/**
-	 * @brief 鼠标动作已经执行完毕
-	 * @param mf 已经执行完的鼠标动作
+	 * @brief 场景动作激活
+	 * @param scAction 场景动作
 	 */
-	void mouseActionFinished(DA::DAWorkFlowGraphicsScene::MouseActionFlag mf);
+	void sceneActionActived(DA::DAAbstractGraphicsSceneAction* scAction);
+
+	/**
+	 * @brief 场景动作取消
+	 * @param scAction 场景动作
+	 */
+	void sceneActionDeactived(DA::DAAbstractGraphicsSceneAction* scAction);
 
 	/**
 	 * @brief 选中的item改变发送的信号
@@ -213,6 +220,26 @@ signals:
 	 * @param success 成功全部执行完成为true
 	 */
 	void workflowFinished(DA::DAWorkFlowEditWidget* wfw, bool success);
+
+	/**
+	 * @brief item添加的信号
+	 *
+	 * @note 此信号是通过@ref DAGraphicsScene::addItem_ 或是@ref DAGraphicsScene::addItems_ 函数才会触发，
+	 * 直接调用@ref QGraphicsScene::addItem 函数不会触发此函数
+	 * @param sc
+	 * @param item
+	 */
+	void itemsAdded(DA::DAGraphicsScene* sc, const QList< QGraphicsItem* >& its);
+
+	/**
+	 * @brief item移除的信号
+	 *
+	 * @note 此信号是通过@ref DAGraphicsScene::removeItem_ 或是@ref DAGraphicsScene::removeItems_ 函数才会触发，
+	 * 直接调用@ref QGraphicsScene::removeItem 函数不会触发此函数
+	 * @param sc
+	 * @param item
+	 */
+	void itemsRemoved(DA::DAGraphicsScene* sc, const QList< QGraphicsItem* >& its);
 private slots:
 	// 当前tab发生了改变
 	void onTabWidgetCurrentChanged(int index);
@@ -220,6 +247,9 @@ private slots:
 	void onTabWidgetTabCloseRequested(int index);
 	// 选中改变
 	void onSelectionChanged();
+	//
+	void onSceneItemsAdded(const QList< QGraphicsItem* >& its);
+	void onSceneItemsRemoved(const QList< QGraphicsItem* >& its);
 
 private:
 	QList< DAGraphicsStandardTextItem* > getSelectTextItems();

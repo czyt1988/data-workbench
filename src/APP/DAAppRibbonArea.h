@@ -72,6 +72,7 @@ class DAWorkFlowOperateWidget;
  *
  * @todo 后续抽象出DAAppRibbonAreaInterface，DAAppRibbonArea继承DAAppRibbonAreaInterface，并把可暴露的方法暴露出来，实现插件化
  *
+ *```
  * 标签的固定objectname
  * 主页标签:da-ribbon-category-main
  *     通用pannel:da-ribbon-pannel-main.common
@@ -106,6 +107,7 @@ class DAWorkFlowOperateWidget;
  *  Chart编辑category：da-ribbon-category-chart.edit
  *     绘图窗口设置pannel:da-pannel-context-chartedit.fig_setting
  *     图表设置pannel:da-pannel-context-chartedit.chart_setting
+ * ```
  */
 class DAAppRibbonArea : public DARibbonAreaInterface
 {
@@ -187,8 +189,8 @@ private:
 	void buildContextCategoryWorkflow();
 	// 构建Workflow-编辑的上下文标签
 	void buildContextCategoryWorkflowEdit_();
-    // 构建Workflow-视图的上下文标签
-    void buildContextCategoryWorkflowView_();
+	// 构建Workflow-视图的上下文标签
+	void buildContextCategoryWorkflowView_();
 	// 构建workflow-运行的上下文标签
 	void buildContextCategoryWorkflowRun_();
 	// 构建chart上下文
@@ -201,11 +203,11 @@ private:
 	DAAPPRIBBONAREA_COMMON_SETTING_H(Edit)
 	DAAPPRIBBONAREA_COMMON_SETTING_H(WorkFlowEdit)
 
-    /**
-     * @brief 设置dock区，有些pannel的action是依赖dock界面的，统一在这里设置
-     * @param dock
-     */
-    void setDockingArea(DAAppDockingArea* dock);
+	/**
+	 * @brief 设置dock区，有些pannel的action是依赖dock界面的，统一在这里设置
+	 * @param dock
+	 */
+	void setDockingArea(DAAppDockingArea* dock);
 signals:
 	/**
 	   @fn selectedPen
@@ -220,7 +222,7 @@ signals:
 	   @fn selectedBrush
 	   @brief 画刷选中了
 
-        这是一个通用的画刷选中信号
+		这是一个通用的画刷选中信号
 	   @param b
 	 */
 	void selectedBrush(const QBrush& b);
@@ -254,7 +256,7 @@ signals:
 	/**
 	   @brief 画刷选中了
 
-        这是一个通用的画刷选中信号
+		这是一个通用的画刷选中信号
 	   @param b
 	 */
 	void selectedWorkflowItemBrush(const QBrush& b);
@@ -335,12 +337,12 @@ public:
 	// Context - workflow
 	//----------------------------------------------------
 	SARibbonContextCategory* m_contextWorkflow;  ///< 对应workflow的上下文
-    //----------------------------------------------------
-    // Context - workflow-view
-    //----------------------------------------------------
-    SARibbonCategory* m_categoryWorkflowGraphicsView;  ///< 工作流视图
-    SARibbonPannel* m_pannelWorkflowView;              ///< 图元视图pannel
-    SARibbonPannel* m_pannelWorkflowExport;            ///< 视图导出
+	//----------------------------------------------------
+	// Context - workflow-view
+	//----------------------------------------------------
+	SARibbonCategory* m_categoryWorkflowGraphicsView;  ///< 工作流视图
+	SARibbonPannel* m_pannelWorkflowView;              ///< 图元视图pannel
+	SARibbonPannel* m_pannelWorkflowExport;            ///< 视图导出
 	//----------------------------------------------------
 	// Context - workflow-edit
 	//----------------------------------------------------
@@ -348,13 +350,13 @@ public:
 	DAShapeEditPannelWidget* m_workflowShapeEditPannelWidget;  ///< 图框编辑
 
 	SARibbonCategory* m_categoryWorkflowGraphicsEdit;  ///< 工作流绘图编辑
-    SARibbonPannel* m_pannelClipBoard;                 ///< 剪切板
+	SARibbonPannel* m_pannelClipBoard;                 ///< 剪切板
 	SARibbonPannel* m_pannelWorkflowItem;              ///< 图元编辑
 	SARibbonPannel* m_pannelWorkflowBackground;        ///< 背景编辑
 	SARibbonPannel* m_pannelWorkflowText;              ///< 文本编辑
 
-    SARibbonPannel* m_pannelWorkflowGroup;   ///< 图元分组相关pannel
-    QMenu* mExportWorkflowSceneToImageMenu;  ///< scene导出为图片菜单
+	SARibbonPannel* m_pannelWorkflowGroup;   ///< 图元分组相关pannel
+	QMenu* mExportWorkflowSceneToImageMenu;  ///< scene导出为图片菜单
 	//----------------------------------------------------
 	// Context - workflow-run
 	//----------------------------------------------------

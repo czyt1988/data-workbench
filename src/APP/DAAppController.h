@@ -280,7 +280,7 @@ private slots:
 	// 导出png
 	void onActionExportWorkflowScenePNGTriggered();
 	// 锁定视图
-	void onActionWorkflowViewLockTriggered(bool on);
+	void onActionWorkflowViewReadOnlyTriggered(bool on);
 	/////////---运行------
 	// 运行
 	void onActionRunCurrentWorkflowTriggered();
@@ -295,9 +295,11 @@ private slots:
 	//===================================================
 	// DAWorkFlowOperateWidget的槽
 	//===================================================
-	void onSelectionGraphicsItemChanged(QGraphicsItem* lastSelectItem);
+	void onWorkflowSceneSelectionItemChanged(QGraphicsItem* lastSelectItem);
 	void onWorkflowStartExecute(DA::DAWorkFlowEditWidget* wfw);
 	void onWorkflowFinished(DA::DAWorkFlowEditWidget* wfw, bool success);
+	void onWorkflowSceneitemsAdded(DA::DAGraphicsScene* sc, const QList< QGraphicsItem* >& its);
+	void onWorkflowSceneitemsRemoved(DA::DAGraphicsScene* sc, const QList< QGraphicsItem* >& its);
 	//===================================================
 	// DAChartOperateWidget
 	//===================================================
@@ -337,7 +339,7 @@ private slots:
 	// DAWorkFlowGraphicsScene
 	//===================================================
 	// 鼠标动作结束
-	void onWorkFlowGraphicsSceneMouseActionFinished(DAWorkFlowGraphicsScene::MouseActionFlag mf);
+	void onWorkFlowGraphicsSceneActionDeactive(DA::DAAbstractGraphicsSceneAction* scAction);
 
 	//===================================================
 	// DAAppChartManageWidget

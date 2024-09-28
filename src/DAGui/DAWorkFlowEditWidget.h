@@ -7,6 +7,7 @@
 #include "DAWorkFlowGraphicsView.h"
 #include "DAWorkFlowGraphicsScene.h"
 #include "DAWorkFlow.h"
+#include "DAAbstractGraphicsSceneAction.h"
 namespace Ui
 {
 class DAWorkFlowEditWidget;
@@ -48,7 +49,7 @@ public:
 	// 运行工作流
 	void runWorkFlow();
 	// 设置鼠标动作
-	void setMouseActionFlag(DAWorkFlowGraphicsScene::MouseActionFlag mf, bool continous);
+	void setPreDefineSceneAction(DAWorkFlowGraphicsScene::SceneActionFlag mf);
 	// 设置文本字体 -- 此参数设置决定创建文本框时的字体和颜色
 	QFont getDefaultTextFont() const;
 	void setDefaultTextFont(const QFont& f);
@@ -109,10 +110,16 @@ signals:
 	void selectNodeItemChanged(DA::DAAbstractNodeGraphicsItem* i);
 
 	/**
-	 * @brief 鼠标动作已经执行完毕
-	 * @param mf 已经执行完的鼠标动作
+	 * @brief 场景动作激活
+	 * @param scAction 场景动作指针
 	 */
-	void mouseActionFinished(DAWorkFlowGraphicsScene::MouseActionFlag mf);
+	void sceneActionActived(DA::DAAbstractGraphicsSceneAction* scAction);
+
+	/**
+	 * @brief 场景动作结束
+	 * @param scAction 场景动作指针
+	 */
+	void sceneActionDeactived(DA::DAAbstractGraphicsSceneAction* scAction);
 	/**
 	 * @brief 开始执行，exec函数调用后会触发此信号
 	 */

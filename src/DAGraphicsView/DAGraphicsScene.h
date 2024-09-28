@@ -9,6 +9,8 @@ namespace DA
 {
 class DAGraphicsResizeableItem;
 class DAGraphicsItem;
+class DAGraphicsTextItem;
+class DAGraphicsRectItem;
 class DAGraphicsLinkItem;
 class DAGraphicsItemGroup;
 class DAAbstractGraphicsSceneAction;
@@ -117,21 +119,25 @@ public:
 	// 设置场景就绪，如果场景还没加载完成，ready为false，一般这个函数在工程加载的时候应用
 	void setReady(bool on);
 	bool isReady() const;
+
+	// 是否当前存在场景动作
+	bool isHaveSceneAction() const;
+
+	// 获取图层
+	QList< DAGraphicsLayout* > getLayouts() const;
+	// 是否为只读模式，只读模式不能编辑
+	bool isReadOnly() const;
+	// 创建文本框
+	DAGraphicsTextItem* createText_(const QString& str = QString());
+	// 创建矩形
+	DAGraphicsRectItem* createRect_(const QPointF& p = QPointF());
+
+public:
 	// 获取默认的dpi
 	static int getDefaultDPI();
 	// dpi转为像素
 	static int dpiToPx(int dpi, int r);
-
-	// 激活一个场景动作，DAAbstractGraphicsSceneAction的内存归scene管理
-	void setupSceneAction(DAAbstractGraphicsSceneAction* act);
-	// 是否当前存在场景动作
-	bool isHaveSceneAction() const;
-	// 清除场景动作
-	void clearSceneAction();
-	// 获取图层
-	QList< DAGraphicsLayout* > getLayouts() const;
-
-public:
+	// 把item添加到分组
 	static void addItemToGroup(QGraphicsItemGroup* group, const QList< QGraphicsItem* >& willGroupItems);
 public slots:
 	// 设置对齐网格
@@ -144,10 +150,12 @@ public slots:
 	void clearSelection();
 	// 设置item的选中状态
 	int setSelectionState(const QList< QGraphicsItem* >& its, bool isSelect);
-	// 锁定
-	void lock();
-	// 恢复锁定
-	void unlock();
+	// 锁定,具体的锁定，有item自行处理，scene只是持有只读的状态，一般item在itemChange中判断是否只读，然后进行动作判断
+	void setReadOnly(bool on);
+	// 激活一个场景动作，DAAbstractGraphicsSceneAction的内存归scene管理,此函数发射sceneActionActived
+	void setupSceneAction(DA::DAAbstractGraphicsSceneAction* act);
+	// 清除场景动作，发射sceneActionDeactived信号
+	void clearSceneAction();
 signals:
 	/**
 	 * @brief item移动发射的信号
@@ -215,6 +223,18 @@ signals:
 	 */
 	void itemsRemoved(const QList< QGraphicsItem* >& its);
 
+	/**
+	 * @brief 一个场景动作被激活的信号
+	 * @param act
+	 */
+	void sceneActionActived(DA::DAAbstractGraphicsSceneAction* act);
+
+	/**
+	 * @brief 一个场景动作已经解除激活的信号
+	 * @param act
+	 */
+	void sceneActionDeactived(DA::DAAbstractGraphicsSceneAction* act);
+
 protected:
 	// 判断点击的item是否可以移动
 	virtual bool isItemCanMove(QGraphicsItem* positem, const QPointF& scenePos);
@@ -226,6 +246,8 @@ protected:
 	void emitItemBodySizeChanged(DAGraphicsResizeableItem* item, const QSizeF& oldSize, const QSizeF& newSize);
 	// 调用此函数 主动触发itemRotationed信号
 	void emitItemRotationChanged(DAGraphicsResizeableItem* item, const qreal& rotation);
+	// 带信号的addItm
+	void addItemWithSignal(QGraphicsItem* item);
 
 protected:
 	// 鼠标点击事件

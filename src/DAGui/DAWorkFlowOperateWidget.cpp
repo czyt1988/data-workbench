@@ -78,11 +78,14 @@ DAWorkFlowEditWidget* DAWorkFlowOperateWidget::appendWorkflow(const QString& nam
 	wfe->setDefaultTextFont(mDefaultFont);
 	DAWorkFlowGraphicsScene* scene = wfe->getWorkFlowGraphicsScene();
 	// 同步状态
-	scene->setEnableNodeLink(isEnableWorkflowLink());
+	scene->setIgnoreLinkEvent(!isEnableWorkflowLink());
 
 	connect(wfe, &DAWorkFlowEditWidget::selectNodeItemChanged, this, &DAWorkFlowOperateWidget::selectNodeItemChanged);
-	connect(wfe, &DAWorkFlowEditWidget::mouseActionFinished, this, &DAWorkFlowOperateWidget::mouseActionFinished);
+	connect(wfe, &DAWorkFlowEditWidget::sceneActionActived, this, &DAWorkFlowOperateWidget::sceneActionActived);
+	connect(wfe, &DAWorkFlowEditWidget::sceneActionDeactived, this, &DAWorkFlowOperateWidget::sceneActionDeactived);
 	connect(scene, &DAWorkFlowGraphicsScene::selectionChanged, this, &DAWorkFlowOperateWidget::onSelectionChanged);
+	connect(scene, &DAWorkFlowGraphicsScene::itemsAdded, this, &DAWorkFlowOperateWidget::onSceneItemsAdded);
+	connect(scene, &DAWorkFlowGraphicsScene::itemsRemoved, this, &DAWorkFlowOperateWidget::onSceneItemsRemoved);
 	connect(wfe, &DAWorkFlowEditWidget::startExecute, this, [ this, wfe ]() { emit workflowStartExecute(wfe); });
 	connect(wfe,
 			&DAWorkFlowEditWidget::nodeExecuteFinished,
@@ -280,10 +283,10 @@ void DAWorkFlowOperateWidget::removeWorkflow(int index)
 	if (nullptr == w) {
 		return;
 	}
-	QMessageBox::StandardButton btn = QMessageBox::question(this,
-															tr("question"),  // 疑问
-															tr("Confirm to delete workflow:%1")
-																.arg(getWorkFlowWidgetName(index))  // 是否确认删除工作流:%1
+	QMessageBox::StandardButton btn = QMessageBox::question(
+		this,
+		tr("question"),                                                        // 疑问
+		tr("Confirm to delete workflow:%1").arg(getWorkFlowWidgetName(index))  // 是否确认删除工作流:%1
 	);
 	if (btn != QMessageBox::Yes) {
 		return;
@@ -411,17 +414,13 @@ void DAWorkFlowOperateWidget::setCurrentWorkflowShowGrid(bool on)
  * @brief 设置当前工作流锁定
  * @param on
  */
-void DAWorkFlowOperateWidget::setCurrentWorkflowLock(bool on)
+void DAWorkFlowOperateWidget::setCurrentWorkflowReadOnly(bool on)
 {
 	DAWorkFlowGraphicsScene* sc = getCurrentWorkFlowScene();
 	if (!sc) {
 		return;
 	}
-	if (on) {
-		sc->lock();
-	} else {
-		sc->unlock();
-	}
+	sc->setReadOnly(on);
 }
 
 /**
@@ -587,7 +586,7 @@ void DAWorkFlowOperateWidget::setEnableWorkflowLink(bool on)
 {
 	mEnableWorkflowLink = on;
 	iteratorScene([ on ](DAWorkFlowGraphicsScene* sc) -> bool {
-		sc->setEnableNodeLink(on);
+		sc->setIgnoreLinkEvent(!on);
 		return true;
 	});
 }
@@ -684,6 +683,22 @@ void DAWorkFlowOperateWidget::onSelectionChanged()
 		return;
 	}
 	emit selectionItemChanged(sits.last());
+}
+
+void DAWorkFlowOperateWidget::onSceneItemsAdded(const QList< QGraphicsItem* >& its)
+{
+	DAGraphicsScene* sc = qobject_cast< DAGraphicsScene* >(sender());
+	if (sc) {
+		emit itemsAdded(sc, its);
+	}
+}
+
+void DAWorkFlowOperateWidget::onSceneItemsRemoved(const QList< QGraphicsItem* >& its)
+{
+	DAGraphicsScene* sc = qobject_cast< DAGraphicsScene* >(sender());
+	if (sc) {
+		emit itemsRemoved(sc, its);
+	}
 }
 
 QList< DAGraphicsStandardTextItem* > DAWorkFlowOperateWidget::getSelectTextItems()
@@ -860,14 +875,14 @@ void DAWorkFlowOperateWidget::iteratorScene(FpScenesOpt fp)
  * @param mf 鼠标动作
  * @param continuous 是否连续执行
  */
-bool DAWorkFlowOperateWidget::setMouseActionFlag(DAWorkFlowGraphicsScene::MouseActionFlag mf, bool continous)
+bool DAWorkFlowOperateWidget::setPreDefineSceneAction(DAWorkFlowGraphicsScene::SceneActionFlag mf)
 {
 	DAWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
 	if (nullptr == w) {
 		qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
 		return false;
 	}
-	w->setMouseActionFlag(mf, continous);
+	w->setPreDefineSceneAction(mf);
 	return true;
 }
 
