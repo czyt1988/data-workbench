@@ -78,7 +78,7 @@ void DAVariantTableModelSetDataCommand::undo()
 //----------------------------------------------------
 // DAVariantTableModel
 //----------------------------------------------------
-DAVariantTableModel::DAVariantTableModel(QObject* p) : QAbstractTableModel(p)
+DAVariantTableModel::DAVariantTableModel(QObject* p) : QAbstractTableModel(p), DA_PIMPL_CONSTRUCT
 {
 }
 
@@ -129,7 +129,7 @@ int DAVariantTableModel::rowCount(const QModelIndex& parent) const
 
 QVariant DAVariantTableModel::data(const QModelIndex& index, int role) const
 {
-	if (!index.isValid() || nullptr == d_ptr->mData) {
+	if (!index.isValid() || !d_ptr->mData) {
 		return QVariant();
 	}
 	if (index.row() >= d_ptr->mData->rowCount()) {
@@ -155,7 +155,7 @@ bool DAVariantTableModel::setData(const QModelIndex& index, const QVariant& valu
 	if (Qt::EditRole != role) {
 		return false;
 	}
-	if (!index.isValid() || nullptr == d_ptr->mData) {
+	if (!index.isValid() || !d_ptr->mData) {
 		return false;
 	}
 	DAVariantTableModelSetDataCommand* cmd = new DAVariantTableModelSetDataCommand(this, index.row(), index.column(), value);
@@ -165,7 +165,7 @@ bool DAVariantTableModel::setData(const QModelIndex& index, const QVariant& valu
 
 Qt::ItemFlags DAVariantTableModel::flags(const QModelIndex& index) const
 {
-	if (!index.isValid()) {
+	if (!index.isValid() || !d_ptr->mData) {
 		return Qt::NoItemFlags;
 	}
 	return d_ptr->mItemFlags;
