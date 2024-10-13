@@ -20,6 +20,7 @@ git submodule update src/3rdparty/SARibbon
 git submodule update src/3rdparty/ADS
 git submodule update src/3rdparty/pybind11
 git submodule update src/3rdparty/QtPropertyBrowser
+git submodule update src/3rdparty/ordered-map
 ```
 
 ## submodule的添加
@@ -43,6 +44,7 @@ git submodule add https://github.com/czyt1988/SARibbon.git ./src/3rdparty/SARibb
 git submodule add https://github.com/pybind/pybind11.git ./src/3rdparty/pybind11
 git submodule add https://github.com/czyt1988/QtPropertyBrowser ./src/3rdparty/QtPropertyBrowser
 git submodule add https://github.com/czyt1988/QWT.git ./src/3rdparty/qwt
+git submodule add https://github.com/Tessil/ordered-map ./src/3rdparty/ordered-map
 ```
 
 gitee版本：
@@ -53,6 +55,7 @@ git submodule add https://gitee.com/czyt1988/SARibbon.git ./src/3rdparty/SARibbo
 git submodule add https://gitee.com/czyt1988/pybind11.git ./src/3rdparty/pybind11
 git submodule add https://gitee.com/czyt1988/QtPropertyBrowser.git ./src/3rdparty/QtPropertyBrowser
 git submodule add https://gitee.com/czyt1988/QWT.git ./src/3rdparty/qwt
+git submodule add https://gitee.com/czyt1988/ordered-map.git ./src/3rdparty/ordered-map
 ```
 ## submodule的更新
 

@@ -1964,7 +1964,7 @@ Config</source>
 <context>
     <name>DA::DAProjectInterface</name>
     <message>
-        <location filename="DAInterface/DAProjectInterface.cpp" line="344"/>
+        <location filename="DAInterface/DAProjectInterface.cpp" line="346"/>
         <source>open failed,path is %1</source>
         <translation type="unfinished"></translation>
     </message>

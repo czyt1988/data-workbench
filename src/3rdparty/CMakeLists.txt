@@ -51,6 +51,8 @@ file(COPY "${CMAKE_CURRENT_LIST_DIR}/pybind11/include/pybind11" DESTINATION ${CM
 add_subdirectory(ctk)
 
 add_subdirectory(QtPropertyBrowser)
+
+add_subdirectory(ordered-map)
 ########################################################
 # install
 ########################################################

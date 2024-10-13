@@ -3,7 +3,7 @@
 #include <QVector>
 #include <QDebug>
 #include "DATree.h"
-#include "da_order_map.hpp"
+#include "da_order_small_map.hpp"
 
 namespace DA
 {
@@ -17,7 +17,7 @@ public:
 	DATreeItem::id_type mID { 0 };
 	DATree* mTree { nullptr };  ///< 绑定的树
 	QList< DATreeItem* > mChilds;
-	da_order_map< int, QVariant, QVector< int >, QVector< QVariant > > mPropertys;  ///< 定义属性
+	da_order_small_map< int, QVariant, QVector< int >, QVector< QVariant > > mPropertys;  ///< 定义属性
 public:
 	PrivateData(DATreeItem* par) : q_ptr(par), mID(reinterpret_cast< DATreeItem::id_type >(par))
 	{
