@@ -90,7 +90,7 @@ endmacro(damacro_plugin_setting)
 # 生成：DA_MIN_QT_VERSION 最低qt版本要求
 macro(_damacro_plugin_setting _plugin_name _plugin_description _plugin_ver_major _plugin_ver_minor _plugin_ver_path)
     set(DA_MIN_QT_VERSION 5.14)
-        set(DA_PLUGIN_NAME ${_plugin_name})
+    set(DA_PLUGIN_NAME ${_plugin_name})
     set(DA_PLUGIN_DESCRIPTION ${_plugin_description})
     set(DA_PLUGIN_VERSION_MAJOR ${_plugin_ver_major})
     set(DA_PLUGIN_VERSION_MINOR ${_plugin_ver_minor})
@@ -139,6 +139,7 @@ macro(_damacro_plugin_setting _plugin_name _plugin_description _plugin_ver_major
     message(STATUS "  | => PLUGIN CMAKE_CURRENT_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}")
     message(STATUS "  | => PLUGIN CMAKE_CURRENT_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}")
 endmacro(_damacro_plugin_setting)
+
 # 获取插件的runtime所在目录，也就是dll放置的位置
 macro(damacro_get_plugin_runtime_install_dir _var_plugin_install_dir _daworkbench_install_root_dir)
     ########################################################
@@ -235,8 +236,7 @@ macro(damacro_import_spdlog __target_name __install_dir)
         message(STATUS "  | |-include dir:${spdlog_INCLUDE_DIR}")
     endif()
     # 链接的第三方库
-    target_link_libraries(${__target_name} PUBLIC spdlog)
-    target_include_directories(${__target_name} PUBLIC ${spdlog_INCLUDE_DIR})
+    target_link_libraries(${__target_name} PUBLIC spdlog::spdlog)
 endmacro(damacro_import_spdlog)
 
 macro(damacro_import_Python __target_name)
@@ -254,5 +254,14 @@ macro(damacro_import_Python __target_name)
     target_include_directories(${__target_name} PUBLIC ${Python3_INCLUDE_DIRS})
 endmacro(damacro_import_Python)
 
-
+macro(damacro_import_orderedmap __target_name __install_dir)
+    # 3rdparty - orderedmap
+    find_package(tsl-ordered-map)
+    if(tsl-ordered-map_FOUND)
+        message(STATUS "  |-link tsl-ordered-map")
+        message(STATUS "  | |-include dir:${tsl-ordered-map_INCLUDE_DIR}")
+    endif()
+    # 链接的第三方库
+    target_link_libraries(${__target_name} PUBLIC tsl::ordered_map)
+endmacro(damacro_import_orderedmap)
 

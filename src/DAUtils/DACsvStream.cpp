@@ -1,4 +1,4 @@
-﻿#include "DACsvStream.h"
+#include "DACsvStream.h"
 #include <QTextStream>
 #include <QFile>
 namespace DA
@@ -95,6 +95,7 @@ QString DACsvStream::toCsvString(const QString& rawStr)
 	}
 	return res;
 }
+
 ///
 /// \brief 把一行要用逗号分隔的字符串转换为一行标准csv字符串
 /// \param sectionLine 如：xxx,xxxx,xxxxx 传入{'xxx','xxxx','xxxxx'}
@@ -165,7 +166,48 @@ DACsvStream& operator<<(DACsvStream& csv, const QString& str)
 	return csv;
 }
 
+DACsvStream& operator<<(DACsvStream& csv, short d)
+{
+	csv.d_func()->formatTextStream() << d;
+	return csv;
+}
+DACsvStream& operator<<(DACsvStream& csv, unsigned short d)
+{
+	csv.d_func()->formatTextStream() << d;
+	return csv;
+}
+
 DACsvStream& operator<<(DACsvStream& csv, int d)
+{
+	csv.d_func()->formatTextStream() << d;
+	return csv;
+}
+
+DACsvStream& operator<<(DACsvStream& csv, unsigned int d)
+{
+	csv.d_func()->formatTextStream() << d;
+	return csv;
+}
+
+DACsvStream& operator<<(DACsvStream& csv, long d)
+{
+	csv.d_func()->formatTextStream() << d;
+	return csv;
+}
+
+DACsvStream& operator<<(DACsvStream& csv, unsigned long d)
+{
+	csv.d_func()->formatTextStream() << d;
+	return csv;
+}
+
+DACsvStream& operator<<(DACsvStream& csv, qlonglong d)
+{
+	csv.d_func()->formatTextStream() << d;
+	return csv;
+}
+
+DACsvStream& operator<<(DACsvStream& csv, qulonglong d)
 {
 	csv.d_func()->formatTextStream() << d;
 	return csv;
@@ -183,6 +225,11 @@ DACsvStream& operator<<(DACsvStream& csv, float d)
 	return csv;
 }
 
+DACsvStream& operator>>(DACsvStream& csv, QStringList& d)
+{
+	d = csv.readCsvLine();
+	return csv;
+}
 ///
 /// \brief 换行
 ///

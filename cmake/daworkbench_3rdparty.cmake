@@ -1,4 +1,4 @@
-﻿
+
 # damacro_import_SARibbonBar(${DA_LIB_NAME})
 macro(damacro_import_SARibbonBar __target_name)
     find_package(SARibbonBar)
@@ -88,6 +88,29 @@ macro(damacro_import_qwt __target_name)
         qwt
     )
 endmacro(damacro_import_qwt)
+
+
+macro(damacro_import_QtPropertyBrowser __target_name)
+    # 3rdparty - qwt
+    find_package(QtPropertyBrowser)
+    if(QtPropertyBrowser_FOUND)
+        message(STATUS "  |-link QtPropertyBrowser")
+        message(STATUS "  | |-include dir:${QtPropertyBrowser_INCLUDE_DIR}")
+    endif()
+    if(DEFINED DA_SRC_DIR)
+        set(_src_dir ${DA_SRC_DIR})
+    else()
+        set(_src_dir ${CMAKE_CURRENT_SOURCE_DIR}/..)
+    endif()
+    # target_include_directories(${__target_name} PUBLIC
+    #         $<INSTALL_INTERFACE:include/qwt>
+    #         $<BUILD_INTERFACE:${_src_dir}/3rdparty/qwt/src>
+    # )
+    # 链接的第三方库
+    target_link_libraries(${__target_name} PRIVATE
+        QtPropertyBrowser
+    )
+endmacro(damacro_import_QtPropertyBrowser)
 
 macro(damacro_import_spdlog __target_name)
     if(DEFINED DA_SRC_DIR)

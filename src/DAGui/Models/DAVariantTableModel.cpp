@@ -5,16 +5,17 @@ namespace DA
 class DAVariantTableModel::PrivateData
 {
 public:
-    DA_DECLARE_PUBLIC(DAVariantTableModel)
+	DA_DECLARE_PUBLIC(DAVariantTableModel)
 public:
-    PrivateData(DAVariantTableModel* p);
+	PrivateData(DAVariantTableModel* p);
 
 public:
-    DATable< QVariant >* mData { nullptr };
-    Qt::ItemFlags mItemFlags { Qt::ItemIsSelectable | Qt::ItemIsEnabled };
-    QUndoStack mStack;
+	DATable< QVariant >* mData { nullptr };
+	Qt::ItemFlags mItemFlags { Qt::ItemIsSelectable | Qt::ItemIsEnabled };
+	QUndoStack mStack;
 
-    DAVariantTableModel::FpToDisplayString mToDisplayString { nullptr };  ///< 显示设置
+	DAVariantTableModel::FpToDisplayString mToDisplayString { nullptr };  ///< 显示设置
+	QStringList mHeader;                                                  ///< 表头
 };
 
 DAVariantTableModel::PrivateData::PrivateData(DAVariantTableModel* p) : q_ptr(p)
@@ -28,16 +29,20 @@ DAVariantTableModel::PrivateData::PrivateData(DAVariantTableModel* p) : q_ptr(p)
 class DAVariantTableModelSetDataCommand : public QUndoCommand
 {
 public:
-    DAVariantTableModelSetDataCommand(DAVariantTableModel* model, int row, int col, const QVariant& value, QUndoCommand* par = nullptr);
-    void redo() override;
-    void undo() override;
+	DAVariantTableModelSetDataCommand(DAVariantTableModel* model,
+									  int row,
+									  int col,
+									  const QVariant& value,
+									  QUndoCommand* par = nullptr);
+	void redo() override;
+	void undo() override;
 
 public:
-    DAVariantTableModel* mModel;
-    int mRow;
-    int mCol;
-    QVariant mValue;
-    QVariant mOldValue;
+	DAVariantTableModel* mModel;
+	int mRow;
+	int mCol;
+	QVariant mValue;
+	QVariant mOldValue;
 };
 
 DAVariantTableModelSetDataCommand::DAVariantTableModelSetDataCommand(DAVariantTableModel* model,
@@ -52,28 +57,28 @@ DAVariantTableModelSetDataCommand::DAVariantTableModelSetDataCommand(DAVariantTa
 
 void DAVariantTableModelSetDataCommand::redo()
 {
-    if (mValue.isNull()) {
-        // 说明没有值要移除
-        mModel->removeTableCell(mRow, mCol);
-    } else {
-        mModel->setTableData(mRow, mCol, mValue);
-    }
+	if (mValue.isNull()) {
+		// 说明没有值要移除
+		mModel->removeTableCell(mRow, mCol);
+	} else {
+		mModel->setTableData(mRow, mCol, mValue);
+	}
 }
 
 void DAVariantTableModelSetDataCommand::undo()
 {
-    if (mOldValue.isNull()) {
-        // 说明没有值要移除
-        mModel->removeTableCell(mRow, mCol);
-    } else {
-        mModel->setTableData(mRow, mCol, mOldValue);
-    }
+	if (mOldValue.isNull()) {
+		// 说明没有值要移除
+		mModel->removeTableCell(mRow, mCol);
+	} else {
+		mModel->setTableData(mRow, mCol, mOldValue);
+	}
 }
 
 //----------------------------------------------------
 // DAVariantTableModel
 //----------------------------------------------------
-DAVariantTableModel::DAVariantTableModel(QObject* p) : QAbstractTableModel(p)
+DAVariantTableModel::DAVariantTableModel(QObject* p) : QAbstractTableModel(p), DA_PIMPL_CONSTRUCT
 {
 }
 
@@ -89,79 +94,87 @@ DAVariantTableModel::~DAVariantTableModel()
 
 QVariant DAVariantTableModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
-    Q_UNUSED(orientation);
-    if (role != Qt::DisplayRole) {
-        return QVariant();
-    }
-    return section + 1;
+	Q_UNUSED(orientation);
+
+	if (role != Qt::DisplayRole) {
+		return QVariant();
+	}
+	if (Qt::Horizontal == orientation) {
+		// 水平表头
+		if (section < d_ptr->mHeader.size()) {
+			return d_ptr->mHeader[ section ];
+		}
+		return QVariant();
+	}
+	return section + 1;
 }
 
 int DAVariantTableModel::columnCount(const QModelIndex& parent) const
 {
-    Q_UNUSED(parent);
-    if (d_ptr->mData) {
-        return d_ptr->mData->columnCount();
-    }
-    return 0;
+	Q_UNUSED(parent);
+	if (d_ptr->mData) {
+		return d_ptr->mData->columnCount();
+	}
+	return 0;
 }
 
 int DAVariantTableModel::rowCount(const QModelIndex& parent) const
 {
-    Q_UNUSED(parent);
-    if (d_ptr->mData) {
-        return d_ptr->mData->rowCount();
-    }
-    return 0;
+	Q_UNUSED(parent);
+	if (d_ptr->mData) {
+		return d_ptr->mData->rowCount();
+	}
+	return 0;
 }
 
 QVariant DAVariantTableModel::data(const QModelIndex& index, int role) const
 {
-    if (!index.isValid() || nullptr == d_ptr->mData) {
-        return QVariant();
-    }
-    if (index.row() >= d_ptr->mData->rowCount()) {
-        return QVariant();
-    }
-    if (index.column() >= d_ptr->mData->columnCount()) {
-        return QVariant();
-    }
-    switch (role) {
-    case Qt::TextAlignmentRole:
-        return int(Qt::AlignLeft | Qt::AlignVCenter);
-    case Qt::DisplayRole:
-        return getTableData(index.row(), index.column());
-    default:
-        break;
-    }
+	if (!index.isValid() || !d_ptr->mData) {
+		return QVariant();
+	}
+	if (index.row() >= d_ptr->mData->rowCount()) {
+		return QVariant();
+	}
+	if (index.column() >= d_ptr->mData->columnCount()) {
+		return QVariant();
+	}
+	switch (role) {
+	case Qt::TextAlignmentRole:
+		return int(Qt::AlignLeft | Qt::AlignVCenter);
+	case Qt::DisplayRole:
+		return getTableData(index.row(), index.column());
+	default:
+		break;
+	}
 
-    return QVariant();
+	return QVariant();
 }
 
 bool DAVariantTableModel::setData(const QModelIndex& index, const QVariant& value, int role)
 {
-    if (Qt::EditRole != role) {
-        return false;
-    }
-    if (!index.isValid() || nullptr == d_ptr->mData) {
-        return false;
-    }
-    DAVariantTableModelSetDataCommand* cmd = new DAVariantTableModelSetDataCommand(this, index.row(), index.column(), value);
-    d_ptr->mStack.push(cmd);
-    return true;
+	if (Qt::EditRole != role) {
+		return false;
+	}
+	if (!index.isValid() || !d_ptr->mData) {
+		return false;
+	}
+	DAVariantTableModelSetDataCommand* cmd = new DAVariantTableModelSetDataCommand(this, index.row(), index.column(), value);
+	d_ptr->mStack.push(cmd);
+	return true;
 }
 
 Qt::ItemFlags DAVariantTableModel::flags(const QModelIndex& index) const
 {
-    if (!index.isValid()) {
-        return Qt::NoItemFlags;
-    }
-    return d_ptr->mItemFlags;
+	if (!index.isValid() || !d_ptr->mData) {
+		return Qt::NoItemFlags;
+	}
+	return d_ptr->mItemFlags;
 }
 
 void DAVariantTableModel::update()
 {
-    beginResetModel();
-    endResetModel();
+	beginResetModel();
+	endResetModel();
 }
 
 /**
@@ -186,10 +199,10 @@ QUndoStack* DAVariantTableModel::getUndoStack() const
  */
 void DAVariantTableModel::setTable(DATable< QVariant >* t)
 {
-    d_ptr->mStack.clear();
-    beginResetModel();
-    d_ptr->mData = t;
-    endResetModel();
+	d_ptr->mStack.clear();
+	beginResetModel();
+	d_ptr->mData = t;
+	endResetModel();
 }
 
 /**
@@ -210,11 +223,11 @@ DATable< QVariant >* DAVariantTableModel::getTable() const
  */
 void DAVariantTableModel::clearTable()
 {
-    if (d_ptr->mData) {
-        beginResetModel();
-        d_ptr->mData->clear();
-        endResetModel();
-    }
+	if (d_ptr->mData) {
+		beginResetModel();
+		d_ptr->mData->clear();
+		endResetModel();
+	}
 }
 
 /**
@@ -232,6 +245,11 @@ void DAVariantTableModel::registDisplayFun(DAVariantTableModel::FpToDisplayStrin
     d_ptr->mToDisplayString = fp;
 }
 
+void DAVariantTableModel::setHeader(const QStringList& h)
+{
+    d_ptr->mHeader = h;
+}
+
 void DAVariantTableModel::redo()
 {
     d_ptr->mStack.redo();
@@ -244,10 +262,10 @@ void DAVariantTableModel::undo()
 
 void DAVariantTableModel::setTableData(int row, int col, const QVariant& v)
 {
-    d_ptr->mData->set(row, col, v);
-    qDebug() << "setTableData(" << row << "," << col << "," << v << ")";
-    qDebug() << "after set :" << getTableData(row, col);
-    emit dataChanged(index(row, col), index(row, col));
+	d_ptr->mData->set(row, col, v);
+	qDebug() << "setTableData(" << row << "," << col << "," << v << ")";
+	qDebug() << "after set :" << getTableData(row, col);
+	emit dataChanged(index(row, col), index(row, col));
 }
 
 /**
@@ -258,15 +276,15 @@ void DAVariantTableModel::setTableData(int row, int col, const QVariant& v)
  */
 QVariant DAVariantTableModel::getTableData(int row, int col) const
 {
-    auto i = d_ptr->mData->find(row, col);
-    if (i == d_ptr->mData->end()) {
-        return QVariant();
-    }
-    if (d_ptr->mToDisplayString) {
-        // 如果注册了显示函数指针，先调用显示函数指针
-        return d_ptr->mToDisplayString(i->second);
-    }
-    return i->second;
+	auto i = d_ptr->mData->find(row, col);
+	if (i == d_ptr->mData->end()) {
+		return QVariant();
+	}
+	if (d_ptr->mToDisplayString) {
+		// 如果注册了显示函数指针，先调用显示函数指针
+		return d_ptr->mToDisplayString(i->second);
+	}
+	return i->second;
 }
 
 /**

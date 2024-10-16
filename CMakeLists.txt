@@ -58,7 +58,10 @@ option(DA_AUTO_INSTALL_PREFIX
 option(DA_AUTO_GENERATE_CONFIG_INFO
     "This option will allow DA to automatically generate DAConfig.h, This option only needs to be set to ON by library developers, and library users should default to OFF"
     OFF)
-
+# 此选项将让da自动生成构建plugin
+option(DA_BUILD_PLUGINS
+    "This option will build plugin"
+    ON)
 if(DA_AUTO_INSTALL_PREFIX)
     message(STATUS "DA Auto Install")
     set(DA_BIN_DIR_NAME)
@@ -195,11 +198,11 @@ install(FILES
         COMPONENT headers
  )
 #DAShared
-install(DIRECTORY
-        ${CMAKE_CURRENT_LIST_DIR}/src/DAShared
-        DESTINATION include/${DA_PROJECT_NAME}
-        COMPONENT headers
- )
+# install(DIRECTORY
+#         ${CMAKE_CURRENT_LIST_DIR}/src/DAShared
+#         DESTINATION include/${DA_PROJECT_NAME}
+#         COMPONENT headers
+#  )
 ########################################################
 # 添加预定义宏NOMINMAX,windows系统会定义max和min宏，这个宏和std::max冲突,因此在高版本的c++，应该取消minmax宏
 ########################################################
@@ -212,7 +215,11 @@ endif()
 # 源码路径
 ########################################################
 add_subdirectory(src)
-#add_subdirectory(plugins)
+
+# 插件
+if(DA_BUILD_PLUGINS)
+    add_subdirectory(plugins)
+endif()
 
 ##################################
 # 最终安装 install

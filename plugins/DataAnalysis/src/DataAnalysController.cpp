@@ -1,4 +1,4 @@
-﻿#include "DataAnalysController.h"
+#include "DataAnalysController.h"
 #include <QMainWindow>
 #include "DataAnalysisActions.h"
 #include "DAUIInterface.h"
@@ -14,7 +14,7 @@
 #include "DAFigureWidget.h"
 #include "DAChartWidget.h"
 #include "DAChartUtil.h"
-#include "DAAutoincrementSeries.h"
+#include "DAAutoincrementSeries.hpp"
 DataAnalysController::DataAnalysController(DA::DACoreInterface* core, DataAnalysisActions* actions, QObject* p)
     : QObject(p), mCore(core), mActions(actions)
 {

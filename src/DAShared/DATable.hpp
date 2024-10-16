@@ -1,4 +1,4 @@
-﻿#ifndef DATABLE_H
+#ifndef DATABLE_H
 #define DATABLE_H
 // Qt
 #include <QDebug>
@@ -15,6 +15,8 @@ namespace DA
 
 /**
  * @brief 是一个支持稀疏和各种算法的表
+ *
+ * 其内部使用da_hash_table，但封装了shape，让获取尺寸更方便
  */
 template< typename T >
 class DATable

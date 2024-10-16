@@ -1,4 +1,4 @@
-﻿#include "DADockingAreaInterface.h"
+#include "DADockingAreaInterface.h"
 #include <QMap>
 #include <QDebug>
 #include <QApplication>
@@ -127,24 +127,6 @@ void DADockingAreaInterface::resetDefaultSplitterSizes()
 	dockManager()->setSplitterSizes(getCenterArea(), { leftwidth, centerwidth, rightwidth });
 }
 
-/**
- * @brief 获取当前选中的数据
- *
- * 如果用户当前焦点实在表格操作界面
- *
- * 如果用户打开一个表格，选中了其中一列，那么将返回那一列pd.Series作为数据，
- * 如果用户选中了多列，那么每列作为一个DAData，最后组成一个QList<DAData>返回,如果用户打开了表格，但没选择任何列，这个函数返回这个表作为Data（pd.DataFrame）
- *
- * 如果用户没有选择列，但选中了单元格，那么相当于选中了单元格对应的列
- *
- * 如果什么都没选中，那么返回一个空的list
- *
- *
- * 如果用户实在数据管理界面
- *
- * 返回选中的dataframe
- * @return
- */
 QList< DAData > DADockingAreaInterface::getCurrentSelectDatas() const
 {
 	QList< DAData > res;
@@ -200,30 +182,19 @@ std::pair< DAPyDataFrame, QList< int > > DADockingAreaInterface::getCurrentSelec
 	return res;
 }
 #endif
-/**
- * @brief 判断DataOperateWidget是否是在焦点
- * @return
- */
+
 bool DADockingAreaInterface::isDataOperateWidgetDockOnFource() const
 {
 	ads::CDockWidget* currentFource = dockManager()->focusedDockWidget();
 	return (currentFource->widget() == getDataOperateWidget());
 }
 
-/**
- * @brief 判断DataManageWidget是否是在焦点
- * @return
- */
 bool DADockingAreaInterface::isDataManageWidgetDockOnFource() const
 {
 	ads::CDockWidget* currentFource = dockManager()->focusedDockWidget();
 	return (currentFource->widget() == getDataManageWidget());
 }
 
-/**
- * @brief 获取当前的场景
- * @return
- */
 DAWorkFlowGraphicsScene* DADockingAreaInterface::getCurrentScene() const
 {
 	DAWorkFlowOperateWidget* ow = getWorkFlowOperateWidget();
@@ -233,12 +204,57 @@ DAWorkFlowGraphicsScene* DADockingAreaInterface::getCurrentScene() const
 	return nullptr;
 }
 
+ads::CDockWidget* DADockingAreaInterface::dockingAreaToDockWidget(DockingArea area) const
+{
+	switch (area) {
+	case DockingAreaChartManager:
+		return getChartManageDock();
+	case DockingAreaChartOperate:
+		return getChartOperateDock();
+	case DockingAreaDataManager:
+		return getDataManageDock();
+	case DockingAreaDataOperate:
+		return getDataOperateDock();
+	case DockingAreaMessageLog:
+		return getMessageLogDock();
+	case DockingAreaSetting:
+		return getSettingContainerDock();
+	case DockingAreaWorkFlowManager:
+		return getWorkflowNodeListDock();
+	case DockingAreaWorkFlowOperate:
+		return getWorkFlowOperateDock();
+	default:
+		break;
+	}
+	return nullptr;
+}
+
+void DADockingAreaInterface::raiseDockingArea(DockingArea area)
+{
+	ads::CDockWidget* dw = dockingAreaToDockWidget(area);
+	if (dw) {
+		if (dw->isClosed()) {
+			dw->toggleView();
+		}
+		dw->raise();
+	}
+}
+
 /**
- * @brief 创建中央dock窗体
- * @param w
- * @param widgetName
+ * @brief 判断是否处于焦点
+ * @param area
  * @return
  */
+bool DADockingAreaInterface::isDockingAreaFocused(DockingArea area) const
+{
+	ads::CDockWidget* dw = dockingAreaToDockWidget(area);
+	ads::CDockWidget* fd = dockManager()->focusedDockWidget();
+	if (dw) {
+		return (dw == fd);
+	}
+	return false;
+}
+
 ads::CDockWidget* DADockingAreaInterface::createCenterDockWidget(QWidget* w, const QString& widgetName)
 {
 	ads::CDockWidget* dockWidget = new ads::CDockWidget(widgetName);
@@ -255,16 +271,16 @@ ads::CDockWidget* DADockingAreaInterface::createDockWidget(QWidget* w,
 	ads::CDockWidget* dockWidget = new ads::CDockWidget(widgetName);
 	dockWidget->setWidget(w);
 	d_ptr->mDockManager->addDockWidget(area, dockWidget, dockAreaWidget);
-    return dockWidget;
+	return dockWidget;
 }
 
 ads::CDockWidget* DADockingAreaInterface::createFloatingDockWidget(QWidget* w, const QString& widgetName, const QPoint& pos)
 {
-    ads::CDockWidget* dockWidget = new ads::CDockWidget(widgetName);
-    dockWidget->setWidget(w);
-    ads::CFloatingDockContainer* fc = d_ptr->mDockManager->addDockWidgetFloating(dockWidget);
-    fc->move(pos);
-    return dockWidget;
+	ads::CDockWidget* dockWidget = new ads::CDockWidget(widgetName);
+	dockWidget->setWidget(w);
+	ads::CFloatingDockContainer* fc = d_ptr->mDockManager->addDockWidgetFloating(dockWidget);
+	fc->move(pos);
+	return dockWidget;
 }
 
 ads::CDockWidget* DADockingAreaInterface::createDockWidgetAsTab(QWidget* w,

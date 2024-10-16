@@ -1,4 +1,4 @@
-﻿#ifndef DADOCKINGAREAINTERFACE_H
+#ifndef DADOCKINGAREAINTERFACE_H
 #define DADOCKINGAREAINTERFACE_H
 #include "DAInterfaceAPI.h"
 #include "DAGlobals.h"
@@ -39,13 +39,42 @@ class DAINTERFACE_API DADockingAreaInterface : public DAUIExtendInterface
 	Q_OBJECT
 	DA_DECLARE_PRIVATE(DADockingAreaInterface)
 public:
+	/**
+	 * @brief 定义了固定的dock窗口
+	 */
+	enum DockingArea
+	{
+		DockingAreaWorkFlowOperate,
+		DockingAreaDataOperate,
+		DockingAreaChartOperate,
+		DockingAreaWorkFlowManager,
+		DockingAreaDataManager,
+		DockingAreaChartManager,
+		DockingAreaSetting,
+		DockingAreaMessageLog
+	};
+
+public:
 	DADockingAreaInterface(DAUIInterface* u);
 	~DADockingAreaInterface();
-	// 获取CDockManager
+
+	/**
+	 * @brief 获取CDockManager
+	 * @return
+	 */
 	ads::CDockManager* dockManager();
+	/**
+	 * @brief 获取CDockManager
+	 * @return
+	 */
 	const ads::CDockManager* dockManager() const;
 
-	// 创建中央dock窗体
+	/**
+	 * @brief 创建中央dock窗体
+	 * @param w
+	 * @param widgetName
+	 * @return
+	 */
 	ads::CDockWidget* createCenterDockWidget(QWidget* w, const QString& widgetName);
 
 	/**
@@ -57,10 +86,25 @@ public:
 	 * @return
 	 */
 	ads::CDockWidget* createDockWidget(QWidget* w,
-                                       ads::DockWidgetArea area,
-                                       const QString& widgetName,
-                                       ads::CDockAreaWidget* dockAreaWidget = nullptr);
-    ads::CDockWidget* createFloatingDockWidget(QWidget* w, const QString& widgetName, const QPoint& pos);
+									   ads::DockWidgetArea area,
+									   const QString& widgetName,
+									   ads::CDockAreaWidget* dockAreaWidget = nullptr);
+	/**
+	 * @brief 创建一个浮动窗体
+	 * @param w 窗口
+	 * @param widgetName 窗体名称
+	 * @param pos 位置
+	 * @return
+	 */
+	ads::CDockWidget* createFloatingDockWidget(QWidget* w, const QString& widgetName, const QPoint& pos);
+
+	/**
+	 * @brief 创建一个tab dock
+	 * @param w 窗口
+	 * @param widgetName 窗体名称
+	 * @param dockAreaWidget 停靠区域
+	 * @return
+	 */
 	ads::CDockWidget* createDockWidgetAsTab(QWidget* w, const QString& widgetName, ads::CDockAreaWidget* dockAreaWidget);
 
 	/**
@@ -78,10 +122,28 @@ public:
 	void hideDockWidget(QWidget* w);
 
 	/**
+	 * @brief 枚举DockingArea对应的窗口指针
+	 * @param area
+	 * @return
+	 */
+	ads::CDockWidget* dockingAreaToDockWidget(DockingArea area) const;
+
+	/**
 	 * @brief 唤起一个widget对应的dock widget，如果窗口关闭了，也会唤起
 	 * @param w
+	 * @sa raiseDockingArea
 	 */
 	void raiseDockByWidget(QWidget* w);
+
+	/**
+	 * @brief 唤起一个dock widget，如果窗口关闭了，也会唤起
+	 * @param area
+	 * @sa raiseDockByWidget
+	 */
+	void raiseDockingArea(DockingArea area);
+
+	// 判断是否处于焦点
+	bool isDockingAreaFocused(DockingArea area) const;
 
 	/**
 	 * @brief 获取中心区域
@@ -129,21 +191,90 @@ public:
 	// 获取设置窗口,设置容器可以放置多个设置窗口
 	virtual DASettingContainerWidget* getSettingContainerWidget() const = 0;
 
-	// 获取当前选中的数据，此函数会根据界面的焦点，获取当前选中的数据
+	/**
+	 * @brief 获取当前选中的数据
+	 * 	 * 如果用户当前焦点实在表格操作界面
+	 * 	 * 如果用户打开一个表格，选中了其中一列，那么将返回那一列pd.Series作为数据，
+	 * 如果用户选中了多列，那么每列作为一个DAData，最后组成一个QList<DAData>返回,如果用户打开了表格，但没选择任何列，这个函数返回这个表作为Data（pd.DataFrame）
+	 * 	 * 如果用户没有选择列，但选中了单元格，那么相当于选中了单元格对应的列
+	 * 	 * 如果什么都没选中，那么返回一个空的list
+	 * 	 * 	 * 如果用户实在数据管理界面
+	 * 	 * 返回选中的dataframe
+	 * @return
+	 */
 	virtual QList< DAData > getCurrentSelectDatas() const;
+
+	/**
+	 * @brief 工作流节点dock
+	 * @return
+	 */
+	virtual ads::CDockWidget* getWorkflowNodeListDock() const = 0;
+
+	/**
+	 * @brief 信息窗口dock
+	 * @return
+	 */
+	virtual ads::CDockWidget* getMessageLogDock() const = 0;
+
+	/**
+	 * @brief 设置窗口dock
+	 * @return
+	 */
+	virtual ads::CDockWidget* getSettingContainerDock() const = 0;
+
+	/**
+	 * @brief 数据操作窗口dock
+	 * @return
+	 */
+	virtual ads::CDockWidget* getDataOperateDock() const = 0;
+
+	/**
+	 * @brief 绘图操作窗口dock
+	 * @return
+	 */
+	virtual ads::CDockWidget* getChartOperateDock() const = 0;
+
+	/**
+	 * @brief 工作流操作窗口dock
+	 * @return
+	 */
+	virtual ads::CDockWidget* getWorkFlowOperateDock() const = 0;
+
+	/**
+	 * @brief 数据管理窗口dock
+	 * @return
+	 */
+	virtual ads::CDockWidget* getDataManageDock() const = 0;
+
+	/**
+	 * @brief 图表管理窗口dock
+	 * @return
+	 */
+	virtual ads::CDockWidget* getChartManageDock() const = 0;
 #if DA_ENABLE_PYTHON
 	// 获取当前选中的Dataframe,如果用户在选中了列，返回选中的列索引
 	virtual std::pair< DAPyDataFrame, QList< int > > getCurrentSelectDataFrame() const;
 #endif
-	// 判断DataOperateWidget是否是在焦点
+
+	/**
+	 * @brief 判断DataOperateWidget是否是在焦点
+	 * @return
+	 */
 	bool isDataOperateWidgetDockOnFource() const;
 
-	// 判断DataManageWidget是否是在焦点
+	/**
+	 * @brief 判断DataManageWidget是否是在焦点
+	 * @return
+	 */
 	bool isDataManageWidgetDockOnFource() const;
 
 public:
-	// 基于接口的快速方法
+	/**
+	 * @brief 获取当前的场景
+	 * @return
+	 */
 	DAWorkFlowGraphicsScene* getCurrentScene() const;
 };
+
 }  // namespace DA
 #endif  // DAAPPDOCKINGAREAINTERFACE_H

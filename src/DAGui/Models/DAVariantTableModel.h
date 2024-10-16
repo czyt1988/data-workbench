@@ -1,4 +1,4 @@
-﻿#ifndef DAVARIANTTABLEMODEL_H
+#ifndef DAVARIANTTABLEMODEL_H
 #define DAVARIANTTABLEMODEL_H
 #include "DAGuiAPI.h"
 #include "DATable.hpp"
@@ -44,6 +44,8 @@ public:
 	void clearTable();
 	// 注册显示函数，把QVariant转换为文本显示出来
 	void registDisplayFun(FpToDisplayString fp);
+	// 设置表头
+	void setHeader(const QStringList& h);
 public slots:
 	void redo();
 	void undo();
