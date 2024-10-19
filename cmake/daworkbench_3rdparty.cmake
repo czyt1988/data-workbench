@@ -1,4 +1,4 @@
-
+﻿
 # damacro_import_SARibbonBar(${DA_LIB_NAME})
 macro(damacro_import_SARibbonBar __target_name)
     find_package(SARibbonBar)
@@ -19,7 +19,7 @@ macro(damacro_import_SARibbonBar __target_name)
     # )
     # 链接的第三方库
     target_link_libraries(${__target_name} PRIVATE
-        SARibbonBar
+        SARibbonBar::SARibbonBar
     )
 endmacro(damacro_import_SARibbonBar)
 

@@ -172,7 +172,7 @@ macro(damacro_import_SARibbonBar __target_name __install_dir)
     endif()
     # 链接的第三方库
     target_link_libraries(${__target_name} PUBLIC
-        SARibbonBar
+        SARibbonBar::SARibbonBar
     )
 endmacro(damacro_import_SARibbonBar)
 
