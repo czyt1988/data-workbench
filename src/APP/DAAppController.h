@@ -121,6 +121,8 @@ public slots:
 	void saveAs();
 	// 打开文件
 	void open();
+    // 打开工程文件
+    bool openProjectFile(const QString& projectFilePath);
 private slots:
 
 	//===================================================

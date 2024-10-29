@@ -45,6 +45,7 @@ bool parsingArguments(const QStringList& args);
  * 参数：--version 返回版本信息
  * 参数：--describe 返回详细信息
  * 参数：--help 返回帮助信息
+ * 参数：文件地址 直接打开文件
  * @return
  */
 int main(int argc, char* argv[])
@@ -90,7 +91,13 @@ int main(int argc, char* argv[])
 
 	// TODO 此处进行一些核心的初始化操作
 	DA::AppMainWindow w;
-
+    if(appArguments.size() > 1){
+        //说明有可能是双击文件打开，这时候要看参数2是否为一个工程文件
+        QFileInfo openfi(appArguments[1]);
+        if(openfi.exists()){
+            w.openProject(openfi.absoluteFilePath());
+        }
+    }
 	w.show();
 	int r = app.exec();
 	DA::daUnregisterMessageHandler();
@@ -144,6 +151,7 @@ QString daDescribe()
  */
 bool parsingArguments(const QStringList& args)
 {
+    //信息输出
 	if (args.contains("--help")) {
 		QTextStream st(stdout);
 		st << daHelp() << Qt::endl;

@@ -38,11 +38,8 @@
 #include "SettingPages/DAAppConfig.h"
 // Qt-Advanced-Docking-System
 #include "DockManager.h"
-//===================================================
-// using DA namespace -- 禁止在头文件using！！
-//===================================================
-
-using namespace DA;
+namespace DA
+{
 
 //===================================================
 // AppMainWindow
@@ -65,14 +62,14 @@ AppMainWindow::AppMainWindow(QWidget* parent) : SARibbonMainWindow(parent)
 	// 创建controller
 	mController = new DAAppController(this);
 	mController
-		->setAppMainWindow(this)                      // app
-		.setAppCore(&core)                            // core
-		.setAppActions(mUI->getAppActions())          // action
-		.setAppCommand(mUI->getAppCmd())              // cmd
-		.setAppDataManager(core.getAppDatas())        // data
-		.setAppDockingArea(mUI->getAppDockingArea())  // dock
-		.setAppRibbonArea(mUI->getAppRibbonArea())    // ribbon
-		;
+	    ->setAppMainWindow(this)                      // app
+	    .setAppCore(&core)                            // core
+	    .setAppActions(mUI->getAppActions())          // action
+	    .setAppCommand(mUI->getAppCmd())              // cmd
+	    .setAppDataManager(core.getAppDatas())        // data
+	    .setAppDockingArea(mUI->getAppDockingArea())  // dock
+	    .setAppRibbonArea(mUI->getAppRibbonArea())    // ribbon
+	    ;
 	mController->initialize();
 	ribbonBar()->setContentsMargins(3, 0, 3, 0);
 	// 界面状态的加载要在init之前，因为inti的插件会改变界面，如果在之后就永远改变不了界面了
@@ -126,11 +123,11 @@ void AppMainWindow::closeEvent(QCloseEvent* e)
 	if (mController->isDirty()) {
 		// 是否保存
 		auto btn = QMessageBox::question(this,
-										 tr("Question"),                          // cn:疑问
-										 tr("Do you need to save the project?"),  // cn:是否需要保存工程？
-										 QMessageBox::StandardButton::Yes | QMessageBox::StandardButton::No
-											 | QMessageBox::StandardButton::Cancel,
-										 QMessageBox::StandardButton::Yes);
+		                                 tr("Question"),                          // cn:疑问
+		                                 tr("Do you need to save the project?"),  // cn:是否需要保存工程？
+		                                 QMessageBox::StandardButton::Yes | QMessageBox::StandardButton::No
+		                                     | QMessageBox::StandardButton::Cancel,
+		                                 QMessageBox::StandardButton::Yes);
 		if (QMessageBox::StandardButton::Yes == btn) {
 			mController->save();
 		} else if (QMessageBox::StandardButton::Cancel == btn) {
@@ -233,7 +230,7 @@ void AppMainWindow::setSaveUIStateOnClose(bool v)
 
 QString AppMainWindow::getUIStateSettingFilePath()
 {
-    return QDir::toNativeSeparators(QString("%1/.dawork-ui-state").arg(DAAbstractSettingPage::getConfigFileSavePath()));
+	return QDir::toNativeSeparators(QString("%1/.dawork-ui-state").arg(DAAbstractSettingPage::getConfigFileSavePath()));
 }
 
 /**
@@ -242,7 +239,7 @@ QString AppMainWindow::getUIStateSettingFilePath()
  */
 bool AppMainWindow::isHaveStateSettingFile()
 {
-    return QFileInfo::exists(getUIStateSettingFilePath());
+	return QFileInfo::exists(getUIStateSettingFilePath());
 }
 
 /**
@@ -259,9 +256,20 @@ bool AppMainWindow::removeStateSettingFile()
 	return f.remove();
 }
 
+/**
+ * @brief 打开已有工程
+ *
+ * @param 工程路径
+ * @return 成功打开返回true，否则返回false
+ */
+bool AppMainWindow::openProject(const QString& projectFilePath)
+{
+    return mController->openProjectFile(projectFilePath);
+}
+
 DAAppConfig* AppMainWindow::getAppConfig() const
 {
-    return mConfig.get();
+	return mConfig.get();
 }
 
 /**
@@ -354,3 +362,5 @@ void AppMainWindow::resetUIState()
 {
 	// TODO:重置ui
 }
+
+}  // end DA namespace

@@ -688,13 +688,26 @@ void DAAppController::open()
 		}
 	}
 	DA_WAIT_CURSOR_SCOPED();
+    openProjectFile(fileNames.first());
+}
 
-	if (!project->load(fileNames.first())) {
-		qCritical() << tr("failed to load project file:%1").arg(fileNames.first());
-		return;
+/**
+ * @brief 打开工程文件
+ *  
+ * @param $PARAMS 
+ * @return 成功返回true
+ */
+bool DAAppController::openProjectFile(const QString & projectFilePath)
+{
+    DAAppProject* project = DA_APP_CORE.getAppProject();
+
+	if (!project->load(projectFilePath)) {
+		qCritical() << tr("failed to load project file:%1").arg(projectFilePath);
+		return false;
 	}
 	// 设置工程名称给标题
 	app()->setWindowTitle(QString("%1").arg(project->getProjectBaseName()));
+    return true;
 }
 
 /**
