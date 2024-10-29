@@ -230,7 +230,7 @@ endmacro(damacro_import_QtPropertyBrowser)
 
 macro(damacro_import_spdlog __target_name __install_dir)
     # 3rdparty - spdlog
-    find_package(spdlog)
+    find_package(spdlog PATHS ${__install_dir})
     if(spdlog_FOUND)
         message(STATUS "  |-link spdlog")
         message(STATUS "  | |-include dir:${spdlog_INCLUDE_DIR}")
@@ -256,10 +256,12 @@ endmacro(damacro_import_Python)
 
 macro(damacro_import_orderedmap __target_name __install_dir)
     # 3rdparty - orderedmap
-    find_package(tsl-ordered-map)
+    find_package(tsl-ordered-map PATHS ${__install_dir})
     if(tsl-ordered-map_FOUND)
         message(STATUS "  |-link tsl-ordered-map")
         message(STATUS "  | |-include dir:${tsl-ordered-map_INCLUDE_DIR}")
+    else()
+        message(STATUS "  × can not find tsl-ordered-map")
     endif()
     # 链接的第三方库
     target_link_libraries(${__target_name} PUBLIC tsl::ordered_map)
