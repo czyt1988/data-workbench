@@ -284,9 +284,10 @@ void DANodeGraphicsScene::addNodeLink_(DAAbstractNodeLinkGraphicsItem* link)
  * @note 注意，节点会记录在工作流中,如果返回的是nullptr，则不会记录
  * @param md
  * @param pos
- * @return
+ * @param addItemToScene 控制是否创建节点对应的item加入场景中，默认为true
+ * @return 返回节点对应的item，注意此item会加入场景中
  */
-DAAbstractNodeGraphicsItem* DANodeGraphicsScene::createNode(const DANodeMetaData& md, const QPointF& pos)
+DAAbstractNodeGraphicsItem* DANodeGraphicsScene::createNode(const DANodeMetaData& md, const QPointF& pos, bool addItemToScene)
 {
 	if (nullptr == d_ptr->mWorkflow) {
 		return nullptr;
@@ -299,8 +300,10 @@ DAAbstractNodeGraphicsItem* DANodeGraphicsScene::createNode(const DANodeMetaData
 	} else {
 		nodeitem = n->createGraphicsItem();
 		if (nodeitem) {
-			addItemWithSignal(nodeitem);
-			nodeitem->setPos(pos);
+			if (addItemToScene) {
+				addItemWithSignal(nodeitem);
+				nodeitem->setPos(pos);
+			}
 			d_ptr->mWorkflow->addNode(n);
 		}
 	}

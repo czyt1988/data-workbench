@@ -29,13 +29,8 @@ DACommandsForWorkFlowCreateNode::DACommandsForWorkFlowCreateNode(const DANodeMet
 	//! 反之亦然，删除的命令，needdelete应该为false
 	mNeedDelete = true;
 	mMetadata   = md;
-	mItem       = scene->createNode(md, pos);
-	if (mItem) {
-		mNode = mItem->node();
-		if (mAddItemToScene) {
-			mScene->addItem(mItem);
-		}
-	}
+	mItem       = scene->createNode(md, pos, addItemToScene);
+	mNode       = mItem->node();
 }
 
 DACommandsForWorkFlowCreateNode::~DACommandsForWorkFlowCreateNode()
@@ -306,8 +301,8 @@ void DACommandsForWorkFlowRemoveSelectNodes::classifyItems(DANodeGraphicsScene* 
 	}
 }
 
-QList< DAAbstractNodeLinkGraphicsItem* > DACommandsForWorkFlowRemoveSelectNodes::getNodesLinks(
-    const QList< DAAbstractNodeGraphicsItem* >& nodeItems)
+QList< DAAbstractNodeLinkGraphicsItem* >
+DACommandsForWorkFlowRemoveSelectNodes::getNodesLinks(const QList< DAAbstractNodeGraphicsItem* >& nodeItems)
 {
 	QList< DAAbstractNodeLinkGraphicsItem* > res;
 	for (DAAbstractNodeGraphicsItem* n : qAsConst(nodeItems)) {
