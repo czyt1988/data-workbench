@@ -59,9 +59,15 @@ private:
 };
 // qHash
 #if QT_VERSION_MAJOR >= 6
-DAWORKFLOW_API std::size_t qHash(const DANodeMetaData& key, std::size_t seed = 0);
+inline std::size_t qHash(const DANodeMetaData& key, std::size_t seed = 0)
+{
+	return qHash(DANodeMetaData::fullName(key), seed);
+}
 #else
-DAWORKFLOW_API uint qHash(const DANodeMetaData& key, uint seed = 0);
+inline uint qHash(const DANodeMetaData& key, uint seed = 0)
+{
+	return qHash(DANodeMetaData::fullName(key), seed);
+}
 #endif
 
 DAWORKFLOW_API QDataStream& operator<<(QDataStream& out, const DANodeMetaData& b);

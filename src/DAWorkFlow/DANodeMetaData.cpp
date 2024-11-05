@@ -145,20 +145,6 @@ QString DANodeMetaData::fullName(const DANodeMetaData& m)
     return (m.getGroup() + "/" + m.getNodePrototype());
 }
 
-// 把qHash放入DA命名空间为了ADL查找
-// DANodeLinkPoint是DA命名空间，根据ADL原则，会去DA命名空间查找qHash
-#if QT_VERSION_MAJOR >= 6
-std::size_t qHash(const DANodeMetaData& key, std::size_t seed)
-{
-	return qHash(DANodeMetaData::fullName(key), seed);
-}
-#else
-uint qHash(const DANodeMetaData& key, uint seed)
-{
-	return qHash(DANodeMetaData::fullName(key), seed);
-}
-#endif
-
 QDataStream& operator<<(QDataStream& out, const DANodeMetaData& b)
 {
 	out << b.getNodePrototype() << b.getNodeName() << b.getGroup() << b.getNodeTooltip() << b.getIcon();
