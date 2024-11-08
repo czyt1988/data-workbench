@@ -88,7 +88,7 @@ endif()
 ########################################################
 # 安装
 ########################################################
-damacro_lib_install()
+damacro_lib_install_no_rc()
 
 install(FILES
     ${DA_LIB_HEADER_FILES}

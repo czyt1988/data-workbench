@@ -823,22 +823,13 @@ int DAGraphicsScene::dpiToPx(int dpi, int r)
 void DAGraphicsScene::setupSceneAction(DAAbstractGraphicsSceneAction* act)
 {
 	if (d_ptr->mSceneAction) {
-		d_ptr->mSceneAction->endAction();
+		clearSceneAction();
 	}
 	d_ptr->mSceneAction.reset(act);
 	if (act) {
 		act->beginActive();
 		emit sceneActionActived(act);
 	}
-}
-
-/**
- * @brief 判断当前是否存在场景动作
- * @return
- */
-bool DAGraphicsScene::isHaveSceneAction() const
-{
-    return (d_ptr->mSceneAction != nullptr);
 }
 
 /**
@@ -853,6 +844,16 @@ void DAGraphicsScene::clearSceneAction()
 	}
 	d_ptr->mSceneAction.reset(nullptr);
 }
+
+/**
+ * @brief 判断当前是否存在场景动作
+ * @return
+ */
+bool DAGraphicsScene::isHaveSceneAction() const
+{
+    return (d_ptr->mSceneAction != nullptr);
+}
+
 
 /**
  * @brief 获取所有图层

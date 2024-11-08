@@ -58,12 +58,13 @@ if(NOT DAWorkbench_FOUND)
     set(DAWorkbench_DIR ${DAWorkbench_INSTALL_PATH}/lib/cmake/DAWorkbench)
 endif()
 if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+    message(STATUS "set DA_ENABLE_PYTHON=ON")
     set(DA_ENABLE_PYTHON ON)
 endif()
 
 
 set(CMAKE_INSTALL_PREFIX ${DAWorkbench_INSTALL_PATH})
-
+message(STATUS "DA Plugins build,DA_ENABLE_PYTHON=${DA_ENABLE_PYTHON}")
 ########################################################
 # 子工程加载
 ########################################################

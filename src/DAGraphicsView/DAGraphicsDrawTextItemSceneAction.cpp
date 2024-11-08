@@ -57,7 +57,7 @@ bool DAGraphicsDrawTextItemSceneAction::mouseReleaseEvent(QGraphicsSceneMouseEve
             mRubberBand->hide();
             scene()->removeItem(mRubberBand.get());
             mRubberBand.reset();
-            end();
+            destroy();
             return true;
         }
     }

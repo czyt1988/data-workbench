@@ -46,7 +46,7 @@ void DAAbstractGraphicsSceneAction::endAction()
 {
 }
 
-void DAAbstractGraphicsSceneAction::end()
+void DAAbstractGraphicsSceneAction::destroy()
 {
 	auto sc = scene();
 	if (sc) {

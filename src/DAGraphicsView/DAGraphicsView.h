@@ -3,11 +3,15 @@
 #include <QGraphicsView>
 #include "DAGraphicsViewGlobal.h"
 #include "DAGraphicsItem.h"
+#include "DAAbstractGraphicsViewAction.h"
 class QWheelEvent;
 namespace DA
 {
+
 /**
  * @brief 支持缩放和拖动的GraphicsView
+ * 
+ * DAGraphicsView的特殊功能都通过@ref DA::DAAbstractGraphicsViewAction 提供
  *
  * 快捷键说明：
  * Ctrl++ 放大
@@ -42,6 +46,7 @@ public:
 	};
 	Q_DECLARE_FLAGS(PadFlags, PadFlag)
 	Q_FLAG(PadFlag)
+
 public:
 	DAGraphicsView(QWidget* parent = 0);
 	DAGraphicsView(QGraphicsScene* scene, QWidget* parent = 0);
@@ -72,6 +77,10 @@ public:
 	QList< DAGraphicsItem* > selectedDAItems() const;
     // 是否空格被按下
     bool isSpacebarPressed() const;
+    // 激活一个动作，DAAbstractGraphicsViewAction的内存归view管理,此函数发射viewActionActived
+	void setupViewAction(DAAbstractGraphicsViewAction* act);
+    // 清除视图action，此操作会把当前维护的视图action清除
+    void clearViewAction();
 public slots:
 	// 放大
 	void zoomIn();
@@ -93,7 +102,8 @@ protected:
     virtual void keyPressEvent(QKeyEvent* event) override;
     virtual void keyReleaseEvent(QKeyEvent* event) override;
     virtual void resizeEvent(QResizeEvent* event) override;
-
+    virtual void paintEvent(QPaintEvent *event) override;
+    virtual void paintCrossLine(QPainter* painter, const QPoint viewPos);
 protected:
 	void wheelZoom(QWheelEvent* event);
 	// 开始拖动
@@ -103,6 +113,19 @@ protected:
 
 private:
 	void init();
+
+Q_SIGNALS:
+    /**
+	 * @brief 一个视图动作被激活的信号
+	 * @param act
+	 */
+	void viewActionActived(DA::DAAbstractGraphicsViewAction* act);
+
+	/**
+	 * @brief 一个视图动作已经解除激活的信号
+	 * @param act
+	 */
+	void viewActionDeactived(DA::DAAbstractGraphicsViewAction* act);
 
 private:
 };

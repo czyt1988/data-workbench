@@ -94,35 +94,10 @@ macro(damacro_lib_setting _lib_name _lib_description _lib_ver_major _lib_ver_min
     message(STATUS "  | => CMAKE_CURRENT_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}")
 endmacro(damacro_lib_setting)
 
-# 通用的安装
-macro(damacro_lib_install)
-    target_compile_definitions(${DA_LIB_NAME} PRIVATE QT_MESSAGELOGCONTEXT)
-    ########################################################
-    # dll资源信息添加到 target_sources中
-    ########################################################
-    include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/create_win32_resource_version.cmake)
-    if(WIN32)
-            create_win32_resource_version(
-                    TARGET ${DA_LIB_NAME}
-                    FILENAME ${DA_LIB_NAME}
-                    VERSION ${DA_LIB_VERSION}
-                    EXT "dll"
-                    DESCRIPTION ${DA_LIB_DESCRIPTION}
-            )
 
-            # set(__rc_path "${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}.rc")
-            # if(NOT EXISTS "${__rc_path}")
-            #     generate_win32_rc_file(
-            #         PATH "${__rc_path}"
-            #         VERSION "${DA_LIB_VERSION}"
-            #         COMPANY "czy"
-            #         DESCRIPTION "${DA_LIB_DESCRIPTION}"
-            #         COPYRIGHT "LGPL License"
-            #         PRODUCT "${DA_LIB_NAME}"
-            #     )
-            # endif()
-            # target_sources(${DA_LIB_NAME} PRIVATE "${__rc_path}")
-    endif()
+# 通用的安装
+macro(damacro_lib_install_no_rc)
+    target_compile_definitions(${DA_LIB_NAME} PRIVATE QT_MESSAGELOGCONTEXT)
     ########################################################
     # 目标依赖目录
     ########################################################
@@ -184,7 +159,39 @@ macro(damacro_lib_install)
        NAMESPACE ${DA_PROJECT_NAME}::
     )
     message(STATUS "${DA_LIB_NAME} install dir is : ${CMAKE_INSTALL_PREFIX}")
+endmacro(damacro_lib_install_no_rc)
+
+# 通用的安装
+macro(damacro_lib_install)
+    ########################################################
+    # dll资源信息添加到 target_sources中
+    ########################################################
+    include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/create_win32_resource_version.cmake)
+    if(WIN32)
+            create_win32_resource_version(
+                    TARGET ${DA_LIB_NAME}
+                    FILENAME ${DA_LIB_NAME}
+                    VERSION ${DA_LIB_VERSION}
+                    EXT "dll"
+                    DESCRIPTION ${DA_LIB_DESCRIPTION}
+            )
+
+            # set(__rc_path "${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}.rc")
+            # if(NOT EXISTS "${__rc_path}")
+            #     generate_win32_rc_file(
+            #         PATH "${__rc_path}"
+            #         VERSION "${DA_LIB_VERSION}"
+            #         COMPANY "czy"
+            #         DESCRIPTION "${DA_LIB_DESCRIPTION}"
+            #         COPYRIGHT "LGPL License"
+            #         PRODUCT "${DA_LIB_NAME}"
+            #     )
+            # endif()
+            # target_sources(${DA_LIB_NAME} PRIVATE "${__rc_path}")
+    endif()
+    damacro_lib_install_no_rc()
 endmacro(damacro_lib_install)
+
 
 
 # 定义DA_APP的宏

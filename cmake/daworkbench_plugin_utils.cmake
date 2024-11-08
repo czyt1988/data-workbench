@@ -256,7 +256,7 @@ endmacro(damacro_import_Python)
 
 macro(damacro_import_orderedmap __target_name __install_dir)
     # 3rdparty - orderedmap
-    find_package(tsl-ordered-map PATHS ${__install_dir})
+    find_package(tsl-ordered-map PATHS ${__install_dir}/share/cmake)
     if(tsl-ordered-map_FOUND)
         message(STATUS "  |-link tsl-ordered-map")
         message(STATUS "  | |-include dir:${tsl-ordered-map_INCLUDE_DIR}")

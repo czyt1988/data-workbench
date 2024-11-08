@@ -4,8 +4,11 @@
 #include <QDebug>
 #include <QScrollBar>
 #include <QKeyEvent>
+#include <QPainter>
+#include <QPaintEvent>
+#include "DAAbstractGraphicsViewAction.h"
 #include "DAGraphicsScene.h"
-
+#include "DAGraphicsMouseCrossLineViewAction.h"
 #define DAGRAPHICSVIEW_DEBUG_PRINT 0
 
 namespace DA
@@ -17,6 +20,7 @@ public:
 	PrivateData(DAGraphicsView* p);
 
 public:
+	bool mIsPaintCrossLine;  ///< 是否绘制十字线
 	qreal mScaleMax { 3.0 };
 	qreal mScaleMin { 0.333 };
 	qreal mZoomStep { 0.1 };
@@ -27,7 +31,8 @@ public:
 	QPoint mStartPadPos;  ///< 记录开始拖动的位置
 	DAGraphicsView::ZoomFlags mZoomFlags { DAGraphicsView::ZoomUseWheelAndCtrl };
 	DAGraphicsView::PadFlags mPadFlags { DAGraphicsView::PadByWheelMiddleButton
-										 | DAGraphicsView::PadBySpaceWithMouseLeftButton };
+		                                 | DAGraphicsView::PadBySpaceWithMouseLeftButton };
+	std::unique_ptr< DAAbstractGraphicsViewAction > mViewAction;
 };
 
 DAGraphicsView::PrivateData::PrivateData(DAGraphicsView* p) : q_ptr(p)
@@ -40,13 +45,13 @@ DAGraphicsView::PrivateData::PrivateData(DAGraphicsView* p) : q_ptr(p)
 
 DAGraphicsView::DAGraphicsView(QWidget* parent) : QGraphicsView(parent), DA_PIMPL_CONSTRUCT
 {
-    init();
+	init();
 }
 
 DAGraphicsView::DAGraphicsView(QGraphicsScene* scene, QWidget* parent)
     : QGraphicsView(scene, parent), DA_PIMPL_CONSTRUCT
 {
-    init();
+	init();
 }
 
 DAGraphicsView::~DAGraphicsView()
@@ -61,6 +66,8 @@ void DAGraphicsView::init()
 	setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
 	setDragMode(QGraphicsView::RubberBandDrag);
 	// setDragMode(QGraphicsView::ScrollHandDrag);
+
+    setupViewAction(new DAGraphicsMouseCrossLineViewAction(this));
 }
 
 void DAGraphicsView::setScaleRange(qreal min, qreal max)
@@ -76,7 +83,7 @@ qreal DAGraphicsView::getScaleMaxFactor() const
 
 qreal DAGraphicsView::getScaleMinFactor() const
 {
-    return (d_ptr->mScaleMin);
+	return (d_ptr->mScaleMin);
 }
 
 /**
@@ -176,6 +183,12 @@ void DAGraphicsView::wheelEvent(QWheelEvent* event)
 
 void DAGraphicsView::mouseMoveEvent(QMouseEvent* event)
 {
+	if (d_ptr->mViewAction) {
+		if (d_ptr->mViewAction->mouseMoveEvent(event)) {
+			//如果接受事件就返回，否则继续往下
+			return;
+		}
+	}
 	d_ptr->mMouseScenePos = mapToScene(event->pos());
 	if (isPadding()) {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -185,26 +198,26 @@ void DAGraphicsView::mouseMoveEvent(QMouseEvent* event)
 		int dy = Qt5Qt6Compat_QXXEvent_y(event) - d_ptr->mStartPadPos.y();
 #if DAGRAPHICSVIEW_DEBUG_PRINT
 		qDebug() << QString("isPadding begin move,mStartPadPos=(%1,%2) horizontalScrollBar "
-							"value=%3,dx=%4,verticalScrollBar value=%5 dy=%6,event.x=%7,y=%8")
-						.arg(d_ptr->mStartPadPos.x())
-						.arg(d_ptr->mStartPadPos.y())
-						.arg(horizontalScrollBar()->value())
-						.arg(dx)
-						.arg(verticalScrollBar()->value())
-						.arg(dy)
-						.arg(Qt5Qt6Compat_QXXEvent_x(event))
-						.arg(Qt5Qt6Compat_QXXEvent_y(event));
+		                    "value=%3,dx=%4,verticalScrollBar value=%5 dy=%6,event.x=%7,y=%8")
+		                .arg(d_ptr->mStartPadPos.x())
+		                .arg(d_ptr->mStartPadPos.y())
+		                .arg(horizontalScrollBar()->value())
+		                .arg(dx)
+		                .arg(verticalScrollBar()->value())
+		                .arg(dy)
+		                .arg(Qt5Qt6Compat_QXXEvent_x(event))
+		                .arg(Qt5Qt6Compat_QXXEvent_y(event));
 #endif
 		horizontalScrollBar()->setValue(horizontalScrollBar()->value() - dx);
 		verticalScrollBar()->setValue(verticalScrollBar()->value() - dy);
 		d_ptr->mStartPadPos = Qt5Qt6Compat_QXXEvent_Pos(event);
 #if DAGRAPHICSVIEW_DEBUG_PRINT
 		qDebug() << QString(
-						"isPadding end,mStartPadPos=(%1,%2) horizontalScrollBar value=%3,verticalScrollBar value=%4")
-						.arg(d_ptr->mStartPadPos.x())
-						.arg(d_ptr->mStartPadPos.y())
-						.arg(horizontalScrollBar()->value())
-						.arg(verticalScrollBar()->value());
+		                "isPadding end,mStartPadPos=(%1,%2) horizontalScrollBar value=%3,verticalScrollBar value=%4")
+		                .arg(d_ptr->mStartPadPos.x())
+		                .arg(d_ptr->mStartPadPos.y())
+		                .arg(horizontalScrollBar()->value())
+		                .arg(verticalScrollBar()->value());
 #endif
 		// 移动状态不把事件向下传递
 		event->accept();
@@ -214,6 +227,12 @@ void DAGraphicsView::mouseMoveEvent(QMouseEvent* event)
 
 void DAGraphicsView::mousePressEvent(QMouseEvent* event)
 {
+	if (d_ptr->mViewAction) {
+		if (d_ptr->mViewAction->mousePressEvent(event)) {
+			//如果接受事件就返回，否则继续往下
+			return;
+		}
+	}
 	if (d_ptr->mPadFlags.testFlag(PadDiable)) {
 		QGraphicsView::mousePressEvent(event);
 		return;
@@ -242,6 +261,12 @@ void DAGraphicsView::mousePressEvent(QMouseEvent* event)
 
 void DAGraphicsView::mouseReleaseEvent(QMouseEvent* event)
 {
+	if (d_ptr->mViewAction) {
+		if (d_ptr->mViewAction->mouseReleaseEvent(event)) {
+			//如果接受事件就返回，否则继续往下
+			return;
+		}
+	}
 	if (isPadding()) {
 		if (d_ptr->mPadFlags.testFlag(PadByWheelMiddleButton)) {
 			if (event->button() == Qt::MiddleButton) {
@@ -264,6 +289,12 @@ void DAGraphicsView::mouseReleaseEvent(QMouseEvent* event)
 
 void DAGraphicsView::keyPressEvent(QKeyEvent* event)
 {
+	if (d_ptr->mViewAction) {
+		if (d_ptr->mViewAction->keyPressEvent(event)) {
+			//如果接受事件就返回，否则继续往下
+			return;
+		}
+	}
 	if (event->key() == Qt::Key_Space) {
 		d_ptr->mIsSpacebarPressed = true;
 	}
@@ -272,6 +303,12 @@ void DAGraphicsView::keyPressEvent(QKeyEvent* event)
 
 void DAGraphicsView::keyReleaseEvent(QKeyEvent* event)
 {
+	if (d_ptr->mViewAction) {
+		if (d_ptr->mViewAction->keyReleaseEvent(event)) {
+			//如果接受事件就返回，否则继续往下
+			return;
+		}
+	}
 	if (event->key() == Qt::Key_Space) {
 		d_ptr->mIsSpacebarPressed = false;
 	}
@@ -289,6 +326,34 @@ void DAGraphicsView::resizeEvent(QResizeEvent* event)
 	//         setSceneRect(viewportRect);
 	//     }
 	// }
+}
+
+/**
+ * @brief .
+ *
+ * @param $PARAMS
+ * @return $RETURN
+ */
+void DAGraphicsView::paintEvent(QPaintEvent* event)
+{
+	if (d_ptr->mViewAction) {
+		if (d_ptr->mViewAction->paintEvent(event)) {
+			//如果接受事件就返回，否则继续往下
+			return;
+		}
+	}
+	QGraphicsView::paintEvent(event);
+	//绘制十字标线
+}
+
+/**
+ * @brief .
+ *
+ * @param $PARAMS
+ * @return $RETURN
+ */
+void DA::DAGraphicsView::paintCrossLine(QPainter* painter, const QPoint viewPos)
+{
 }
 
 /**
@@ -337,7 +402,7 @@ void DAGraphicsView::endPad()
  */
 QPointF DAGraphicsView::getMouseScenePos() const
 {
-    return d_ptr->mMouseScenePos;
+	return d_ptr->mMouseScenePos;
 }
 
 /**
@@ -346,7 +411,7 @@ QPointF DAGraphicsView::getMouseScenePos() const
  */
 void DAGraphicsView::setZoomFrags(ZoomFlags zf)
 {
-    d_ptr->mZoomFlags = zf;
+	d_ptr->mZoomFlags = zf;
 }
 
 /**
@@ -355,7 +420,7 @@ void DAGraphicsView::setZoomFrags(ZoomFlags zf)
  */
 DAGraphicsView::ZoomFlags DAGraphicsView::getZoomFlags() const
 {
-    return d_ptr->mZoomFlags;
+	return d_ptr->mZoomFlags;
 }
 
 /**
@@ -364,7 +429,7 @@ DAGraphicsView::ZoomFlags DAGraphicsView::getZoomFlags() const
  */
 bool DAGraphicsView::isPadding() const
 {
-    return d_ptr->mIsPadding;
+	return d_ptr->mIsPadding;
 }
 
 /**
@@ -373,7 +438,7 @@ bool DAGraphicsView::isPadding() const
  */
 void DAGraphicsView::setPaddingFrags(PadFlags pf)
 {
-    d_ptr->mPadFlags = pf;
+	d_ptr->mPadFlags = pf;
 }
 
 /**
@@ -382,7 +447,7 @@ void DAGraphicsView::setPaddingFrags(PadFlags pf)
  */
 DAGraphicsView::PadFlags DAGraphicsView::getPaddingFrags() const
 {
-    return d_ptr->mPadFlags;
+	return d_ptr->mPadFlags;
 }
 
 /**
@@ -415,7 +480,37 @@ QList< DAGraphicsItem* > DAGraphicsView::selectedDAItems() const
  */
 bool DAGraphicsView::isSpacebarPressed() const
 {
-    return d_ptr->mIsSpacebarPressed;
+	return d_ptr->mIsSpacebarPressed;
+}
+
+/**
+ * @brief 激活一个动作，@ref DA::DAAbstractGraphicsViewAction 的内存归view管理,此函数发射@ref viewActionActived
+ *  
+ * @param act 动作指针
+ */
+void DAGraphicsView::setupViewAction(DAAbstractGraphicsViewAction * act)
+{
+    if (d_ptr->mViewAction) {
+		clearViewAction();
+	}
+	d_ptr->mViewAction.reset(act);
+	if (act) {
+		act->beginActive();
+		emit viewActionActived(act);
+	}
+}
+
+/**
+ * @brief 清除视图action，此操作会把当前维护的视图action清除.
+ *
+ */
+void DAGraphicsView::clearViewAction()
+{
+	if (d_ptr->mViewAction) {
+		d_ptr->mViewAction->endAction();
+		emit viewActionDeactived(d_ptr->mViewAction.get());
+	}
+	d_ptr->mViewAction.reset(nullptr);
 }
 
 /**

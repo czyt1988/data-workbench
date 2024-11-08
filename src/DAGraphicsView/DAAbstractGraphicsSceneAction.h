@@ -28,7 +28,7 @@ public:
 	// 场景
 	DAGraphicsScene* scene() const;
 	// 结束action,此行数会删除action，end后不能有任何成员函数的操作，否则会出现异常
-	void end();
+	void destroy();
 	// 设置光标的图像
 	void setCursorPixmap(const QPixmap& p);
 	// 设置光标
@@ -62,6 +62,6 @@ protected:
 	DAGraphicsScene* mScene { nullptr };
 	QPixmap mCursorPixmap;
 };
-}
+}//end ns DA
 
 #endif  // DAABSTRACTGRAPHICSSCENEACTION_H
