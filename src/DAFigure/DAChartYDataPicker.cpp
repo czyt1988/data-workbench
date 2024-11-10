@@ -183,7 +183,6 @@ QPointF DAChartYDataPicker::keyPoint(QwtPlotItem* item, const QPointF& pos) cons
 
 void DAChartYDataPicker::drawRubberBand(QPainter* painter) const
 {
-	qDebug() << "drawRubberBand";
 	if (!isActive() || rubberBand() == NoRubberBand || rubberBandPen().style() == Qt::NoPen) {
 		return;
 	}
@@ -290,9 +289,8 @@ QLineF DAChartYDataPicker::getCurveLine(QwtPlotCurve* curve, double x) const
 	if (curve->dataSize() >= 2) {
 		const QRectF br = curve->boundingRect();
 		if (br.isValid() && x >= br.left() && x <= br.right()) {
-			int index = qwtUpperSampleIndex< QPointF >(*curve->data(), x, [](const double x, const QPointF& pos) -> bool {
-				return (x < pos.x());
-			});
+			int index = qwtUpperSampleIndex< QPointF >(
+				*curve->data(), x, [](const double x, const QPointF& pos) -> bool { return (x < pos.x()); });
 
 			if (index == -1 && x == curve->sample(static_cast< int >(curve->dataSize() - 1)).x()) {
 				// the last sample is excluded from qwtUpperSampleIndex
@@ -314,9 +312,8 @@ double DAChartYDataPicker::getBarValue(QwtPlotBarChart* bar, double x) const
 	if (bar->dataSize() >= 2) {
 		const QRectF br = bar->boundingRect();
 		if (br.isValid() && x >= br.left() && x <= br.right()) {
-			int index = qwtUpperSampleIndex< QPointF >(*bar->data(), x, [](const double& x1, const QPointF& p) -> bool {
-				return (x1 < p.x());
-			});
+			int index = qwtUpperSampleIndex< QPointF >(
+				*bar->data(), x, [](const double& x1, const QPointF& p) -> bool { return (x1 < p.x()); });
 			if (index == -1 && x == bar->sample(static_cast< int >(bar->dataSize() - 1)).x()) {
 				// the last sample is excluded from qwtUpperSampleIndex
 				index = static_cast< int >(bar->dataSize() - 1);

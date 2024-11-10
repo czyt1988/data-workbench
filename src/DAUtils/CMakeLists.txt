@@ -50,8 +50,8 @@ target_compile_definitions(${DA_LIB_NAME} PRIVATE DAUTILS_BUILD)
 target_link_libraries(${DA_LIB_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
-    Qt${QT_VERSION_MAJOR}::Xml
     Qt${QT_VERSION_MAJOR}::Widgets
+    Qt${QT_VERSION_MAJOR}::Xml
 )
 
 if(${QT_VERSION_MAJOR} EQUAL 6)
