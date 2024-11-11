@@ -1,4 +1,4 @@
-#include "DAGraphicsView.h"
+﻿#include "DAGraphicsView.h"
 #include <QWheelEvent>
 #include <QPainter>
 #include <QDebug>
@@ -66,8 +66,7 @@ void DAGraphicsView::init()
 	setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
 	setDragMode(QGraphicsView::RubberBandDrag);
 	// setDragMode(QGraphicsView::ScrollHandDrag);
-
-    setupViewAction(new DAGraphicsMouseCrossLineViewAction(this));
+	setupViewAction(new DAGraphicsMouseCrossLineViewAction(this, DAGraphicsMouseCrossLineViewAction::FollowMouse));
 }
 
 void DAGraphicsView::setScaleRange(qreal min, qreal max)
@@ -185,7 +184,7 @@ void DAGraphicsView::mouseMoveEvent(QMouseEvent* event)
 {
 	if (d_ptr->mViewAction) {
 		if (d_ptr->mViewAction->mouseMoveEvent(event)) {
-			//如果接受事件就返回，否则继续往下
+			// 如果接受事件就返回，否则继续往下
 			return;
 		}
 	}
@@ -229,7 +228,7 @@ void DAGraphicsView::mousePressEvent(QMouseEvent* event)
 {
 	if (d_ptr->mViewAction) {
 		if (d_ptr->mViewAction->mousePressEvent(event)) {
-			//如果接受事件就返回，否则继续往下
+			// 如果接受事件就返回，否则继续往下
 			return;
 		}
 	}
@@ -263,7 +262,7 @@ void DAGraphicsView::mouseReleaseEvent(QMouseEvent* event)
 {
 	if (d_ptr->mViewAction) {
 		if (d_ptr->mViewAction->mouseReleaseEvent(event)) {
-			//如果接受事件就返回，否则继续往下
+			// 如果接受事件就返回，否则继续往下
 			return;
 		}
 	}
@@ -291,7 +290,7 @@ void DAGraphicsView::keyPressEvent(QKeyEvent* event)
 {
 	if (d_ptr->mViewAction) {
 		if (d_ptr->mViewAction->keyPressEvent(event)) {
-			//如果接受事件就返回，否则继续往下
+			// 如果接受事件就返回，否则继续往下
 			return;
 		}
 	}
@@ -305,7 +304,7 @@ void DAGraphicsView::keyReleaseEvent(QKeyEvent* event)
 {
 	if (d_ptr->mViewAction) {
 		if (d_ptr->mViewAction->keyReleaseEvent(event)) {
-			//如果接受事件就返回，否则继续往下
+			// 如果接受事件就返回，否则继续往下
 			return;
 		}
 	}
@@ -336,24 +335,11 @@ void DAGraphicsView::resizeEvent(QResizeEvent* event)
  */
 void DAGraphicsView::paintEvent(QPaintEvent* event)
 {
-	if (d_ptr->mViewAction) {
-		if (d_ptr->mViewAction->paintEvent(event)) {
-			//如果接受事件就返回，否则继续往下
-			return;
-		}
-	}
 	QGraphicsView::paintEvent(event);
-	//绘制十字标线
-}
-
-/**
- * @brief .
- *
- * @param $PARAMS
- * @return $RETURN
- */
-void DA::DAGraphicsView::paintCrossLine(QPainter* painter, const QPoint viewPos)
-{
+	if (d_ptr->mViewAction) {
+		d_ptr->mViewAction->paintEvent(event);
+	}
+	// 绘制十字标线
 }
 
 /**
@@ -485,12 +471,12 @@ bool DAGraphicsView::isSpacebarPressed() const
 
 /**
  * @brief 激活一个动作，@ref DA::DAAbstractGraphicsViewAction 的内存归view管理,此函数发射@ref viewActionActived
- *  
+ *
  * @param act 动作指针
  */
-void DAGraphicsView::setupViewAction(DAAbstractGraphicsViewAction * act)
+void DAGraphicsView::setupViewAction(DAAbstractGraphicsViewAction* act)
 {
-    if (d_ptr->mViewAction) {
+	if (d_ptr->mViewAction) {
 		clearViewAction();
 	}
 	d_ptr->mViewAction.reset(act);
@@ -511,6 +497,21 @@ void DAGraphicsView::clearViewAction()
 		emit viewActionDeactived(d_ptr->mViewAction.get());
 	}
 	d_ptr->mViewAction.reset(nullptr);
+}
+
+/**
+ * @brief 标记一个点，让这个点显示出来
+ *
+ * 任何操作这个标记点都会消失
+ * @param scenePoint
+ * @param pen
+ */
+void DAGraphicsView::markPoint(const QPointF& scenePoint, const QPen& pen)
+{
+	auto act = new DAGraphicsMouseCrossLineViewAction(this);
+	act->setDrawPen(pen);
+	act->setCrossScenePos(scenePoint);
+	setupViewAction(act);
 }
 
 /**

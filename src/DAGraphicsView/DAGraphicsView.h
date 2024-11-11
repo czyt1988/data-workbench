@@ -10,7 +10,7 @@ namespace DA
 
 /**
  * @brief 支持缩放和拖动的GraphicsView
- * 
+ *
  * DAGraphicsView的特殊功能都通过@ref DA::DAAbstractGraphicsViewAction 提供
  *
  * 快捷键说明：
@@ -40,9 +40,9 @@ public:
 	 */
 	enum PadFlag
 	{
-        PadDiable                     = 0x0001,  ///< 不允许拖动
-        PadByWheelMiddleButton        = 0x0002,  ///< 通过滚轮中键移动
-        PadBySpaceWithMouseLeftButton = 0x0004   ///< 通过长按空格和鼠标左键实现拖动
+		PadDiable                     = 0x0001,  ///< 不允许拖动
+		PadByWheelMiddleButton        = 0x0002,  ///< 通过滚轮中键移动
+		PadBySpaceWithMouseLeftButton = 0x0004   ///< 通过长按空格和鼠标左键实现拖动
 	};
 	Q_DECLARE_FLAGS(PadFlags, PadFlag)
 	Q_FLAG(PadFlag)
@@ -75,35 +75,37 @@ public:
 	PadFlags getPaddingFrags() const;
 	// 选中的item
 	QList< DAGraphicsItem* > selectedDAItems() const;
-    // 是否空格被按下
-    bool isSpacebarPressed() const;
-    // 激活一个动作，DAAbstractGraphicsViewAction的内存归view管理,此函数发射viewActionActived
+	// 是否空格被按下
+	bool isSpacebarPressed() const;
+	// 激活一个动作，DAAbstractGraphicsViewAction的内存归view管理,此函数发射viewActionActived
 	void setupViewAction(DAAbstractGraphicsViewAction* act);
-    // 清除视图action，此操作会把当前维护的视图action清除
-    void clearViewAction();
+	// 清除视图action，此操作会把当前维护的视图action清除
+	void clearViewAction();
+	// 标记一个点,标记完成后
+	void markPoint(const QPointF& scenePoint, const QPen& pen = QPen(Qt::blue));
 public slots:
 	// 放大
 	void zoomIn();
 	// 缩小
 	void zoomOut();
 	// 设置最适合视图尺寸
-    void zoomFit();
+	void zoomFit();
 	// 选中所有可选的item
 	void selectAll();
-    // 取消所有选中
-    void clearSelection();
+	// 取消所有选中
+	void clearSelection();
 
 protected:
 	// void paintEvent(QPaintEvent * event);
-    virtual void wheelEvent(QWheelEvent* event) override;
-    virtual void mouseMoveEvent(QMouseEvent* event) override;
-    virtual void mousePressEvent(QMouseEvent* event) override;
-    virtual void mouseReleaseEvent(QMouseEvent* event) override;
-    virtual void keyPressEvent(QKeyEvent* event) override;
-    virtual void keyReleaseEvent(QKeyEvent* event) override;
-    virtual void resizeEvent(QResizeEvent* event) override;
-    virtual void paintEvent(QPaintEvent *event) override;
-    virtual void paintCrossLine(QPainter* painter, const QPoint viewPos);
+	virtual void wheelEvent(QWheelEvent* event) override;
+	virtual void mouseMoveEvent(QMouseEvent* event) override;
+	virtual void mousePressEvent(QMouseEvent* event) override;
+	virtual void mouseReleaseEvent(QMouseEvent* event) override;
+	virtual void keyPressEvent(QKeyEvent* event) override;
+	virtual void keyReleaseEvent(QKeyEvent* event) override;
+	virtual void resizeEvent(QResizeEvent* event) override;
+	virtual void paintEvent(QPaintEvent* event) override;
+
 protected:
 	void wheelZoom(QWheelEvent* event);
 	// 开始拖动
@@ -115,7 +117,7 @@ private:
 	void init();
 
 Q_SIGNALS:
-    /**
+	/**
 	 * @brief 一个视图动作被激活的信号
 	 * @param act
 	 */

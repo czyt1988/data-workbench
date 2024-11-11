@@ -1,17 +1,13 @@
-#include "DAAbstractGraphicsViewAction.h"
-#include "DAAbstractGraphicsViewAction.h"
-#include "DAAbstractGraphicsViewAction.h"
-#include "DAAbstractGraphicsViewAction.h"
-#include "DAAbstractGraphicsViewAction.h"
-#include "DAAbstractGraphicsViewAction.h"
+ï»¿#include "DAAbstractGraphicsViewAction.h"
 #include <QPaintEvent>
 #include <QKeyEvent>
 #include <QMouseEvent>
 #include "DAGraphicsView.h"
 
-namespace DA{
+namespace DA
+{
 
-DAAbstractGraphicsViewAction::DAAbstractGraphicsViewAction(DAGraphicsView * v):mView(v)
+DAAbstractGraphicsViewAction::DAAbstractGraphicsViewAction(DAGraphicsView* v) : mView(v)
 {
 }
 
@@ -19,14 +15,14 @@ DAAbstractGraphicsViewAction::~DAAbstractGraphicsViewAction()
 {
 }
 
-DAGraphicsView * DAAbstractGraphicsViewAction::view() const
+DAGraphicsView* DAAbstractGraphicsViewAction::view() const
 {
-    return mView;
+	return mView;
 }
 
 void DAAbstractGraphicsViewAction::destroy()
 {
-    auto v = view();
+	auto v = view();
 	if (v) {
 		v->clearViewAction();
 	}
@@ -40,46 +36,45 @@ void DAAbstractGraphicsViewAction::endAction()
 {
 }
 
-/**
- * @brief ²¶»ñ»æÍ¼ÊÂ¼þ.
- *  
- * @param »æÍ¼ÊÂ¼þ
- * @return ·µ»Øtrue£¬´ú±íaction½Ù³ÖÁË´ËÊÂ¼þ£¬²»»áÔÚsceneÖÐ¼ÌÐø´«µÝÊÂ¼þ,Ä¬ÈÏ·µ»Øfalse
- * @note Õý³£Çé¿öÏÂ£¬´Ëº¯Êý¶¼²»Ó¦¸Ã·µ»Øtrue
- */
-bool DAAbstractGraphicsViewAction::paintEvent(QPaintEvent * event)
+void DAAbstractGraphicsViewAction::paintEvent(QPaintEvent* event)
 {
-    return false;
+	Q_UNUSED(event);
 }
 
-bool DAAbstractGraphicsViewAction::keyPressEvent(QKeyEvent * event)
+bool DAAbstractGraphicsViewAction::keyPressEvent(QKeyEvent* event)
 {
-    return false;
+	Q_UNUSED(event);
+	return false;
 }
 
-bool DAAbstractGraphicsViewAction::keyReleaseEvent(QKeyEvent * event)
+bool DAAbstractGraphicsViewAction::keyReleaseEvent(QKeyEvent* event)
 {
-    return false;
+	Q_UNUSED(event);
+	return false;
 }
 
-bool DAAbstractGraphicsViewAction::mouseDoubleClickEvent(QMouseEvent * event)
+bool DAAbstractGraphicsViewAction::mouseDoubleClickEvent(QMouseEvent* event)
 {
-    return false;
+	Q_UNUSED(event);
+	return false;
 }
 
-bool DAAbstractGraphicsViewAction::mouseMoveEvent(QMouseEvent * event)
+bool DAAbstractGraphicsViewAction::mouseMoveEvent(QMouseEvent* event)
 {
-    return false;
+	Q_UNUSED(event);
+	return false;
 }
 
-bool DAAbstractGraphicsViewAction::mousePressEvent(QMouseEvent * event)
+bool DAAbstractGraphicsViewAction::mousePressEvent(QMouseEvent* event)
 {
-    return false;
+	Q_UNUSED(event);
+	return false;
 }
 
-bool DAAbstractGraphicsViewAction::mouseReleaseEvent(QMouseEvent * event)
+bool DAAbstractGraphicsViewAction::mouseReleaseEvent(QMouseEvent* event)
 {
-    return false;
+	Q_UNUSED(event);
+	return false;
 }
 
 }

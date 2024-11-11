@@ -29,39 +29,48 @@ bool DAGraphicsDrawRectSceneAction::mousePressEvent(QGraphicsSceneMouseEvent* mo
 {
 	if (mouseEvent->button() == Qt::LeftButton) {
 		// 左键点击
-        if (!mIsStarted) {
-            mStartPoint = mouseEvent->scenePos();
-            mIsStarted  = true;
+		if (!mIsStarted) {
+			mStartPoint = mouseEvent->scenePos();
+			mIsStarted  = true;
 			if (!mRubberBand) {
 				mRubberBand = std::make_unique< DAGraphicsRubberBandItem >();
 				scene()->addItem(mRubberBand.get());
 			}
 			mRubberBand->setBeginScenePos(mStartPoint);
 			return true;
-        }
-    }
-    return false;
+		}
+	}
+	return false;
 }
 
 bool DAGraphicsDrawRectSceneAction::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
-    if (mouseEvent->button() == Qt::LeftButton) {
-        if (mIsStarted) {
-            // 说明已经点击过，这里是要完成矩形的创建
-            mIsStarted               = false;
-            QPointF endPos           = mouseEvent->scenePos();
-            QPointF rectPos          = topLeftPoint(mStartPoint, endPos);
-            DAGraphicsRectItem* item = scene()->createRect_(rectPos);
-            item->setBodySize(pointRectSize(mStartPoint, endPos));
-            item->setSelected(true);
-            mRubberBand->hide();
-            scene()->removeItem(mRubberBand.get());
-            mRubberBand.reset();
-            destroy();
-            return true;
-        }
-    }
-    return false;
+	if (mouseEvent->button() == Qt::LeftButton) {
+		if (mIsStarted) {
+			// 说明已经点击过，这里是要完成矩形的创建
+			mIsStarted      = false;
+			QPointF endPos  = mouseEvent->scenePos();
+			QPointF rectPos = topLeftPoint(mStartPoint, endPos);
+			QSizeF drawSize = pointRectSize(mStartPoint, endPos);
+			// 如果绘制太小，默认绘制100*100
+			qDebug() << "drawSize" << drawSize;
+			if (drawSize.width() <= 5) {
+				drawSize.setWidth(100);
+			}
+			if (drawSize.height() <= 5) {
+				drawSize.setHeight(100);
+			}
+			DAGraphicsRectItem* item = scene()->createRect_(rectPos);
+			item->setBodySize(drawSize);
+			item->setSelected(true);
+			mRubberBand->hide();
+			scene()->removeItem(mRubberBand.get());
+			mRubberBand.reset();
+			destroy();
+			return true;
+		}
+	}
+	return false;
 }
 
 bool DAGraphicsDrawRectSceneAction::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)

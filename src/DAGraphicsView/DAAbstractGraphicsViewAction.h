@@ -1,16 +1,16 @@
-#ifndef DAABSTRACTGRAPHICSVIEWACTION_H
+ï»¿#ifndef DAABSTRACTGRAPHICSVIEWACTION_H
 #define DAABSTRACTGRAPHICSVIEWACTION_H
 #include "DAGraphicsViewGlobal.h"
 class QPaintEvent;
 class QKeyEvent;
 class QMouseEvent;
-
+class QPainter;
 namespace DA
 {
 class DAGraphicsView;
 
 /**
- * @brief Õë¶ÔDAGraphicsViewµÄaction.
+ * @brief é’ˆå¯¹DAGraphicsViewçš„action.
  *
  */
 class DAGRAPHICSVIEW_API DAAbstractGraphicsViewAction
@@ -20,18 +20,43 @@ class DAGRAPHICSVIEW_API DAAbstractGraphicsViewAction
 public:
 	DAAbstractGraphicsViewAction(DAGraphicsView* v);
 	virtual ~DAAbstractGraphicsViewAction();
-	// ÊÓÍ¼
+	/**
+	 * @brief è§†å›¾
+	 * @return
+	 */
 	DAGraphicsView* view() const;
-	// ½áÊøaction,´ËĞĞÊı»áÉ¾³ıaction£¬endºó²»ÄÜÓĞÈÎºÎ³ÉÔ±º¯ÊıµÄ²Ù×÷£¬·ñÔò»á³öÏÖÒì³£
+
+	/**
+	 * @brief ç»“æŸaction
+	 *
+	 * æ­¤è¡Œæ•°ä¼šåˆ é™¤actionï¼Œdestroyåä¸èƒ½æœ‰ä»»ä½•æˆå‘˜å‡½æ•°çš„æ“ä½œï¼Œå¦åˆ™ä¼šå‡ºç°å¼‚å¸¸
+	 */
 	void destroy();
 
 protected:
-	// ¿ªÊ¼¼¤»î£¬ÕâÊÇÊ¹ÓÃsetActionºóµ÷ÓÃµÄº¯Êı
+	/**
+	 * @brief å¼€å§‹æ¿€æ´»æ—¶çš„å›è°ƒ
+	 */
 	virtual void beginActive();
-	// ½áÊø¼¤»î£¬ÕâÊÇÊ¹ÓÃÉ¾³ıactionÇ°µ÷ÓÃµÄº¯Êı
+
+	/**
+	 * @brief ç»“æŸæ¿€æ´»æ—¶çš„å›è°ƒ
+	 */
 	virtual void endAction();
-	// ²¶»ñ»æÍ¼ÊÂ¼ş,·µ»Øtrue£¬´ú±íaction½Ù³ÖÁË´ËÊÂ¼ş£¬²»»áÔÚsceneÖĞ¼ÌĞø´«µİÊÂ¼ş,Ä¬ÈÏ·µ»Øfalse
-	virtual bool paintEvent(QPaintEvent* event);
+
+	/**
+	 * @brief æ•è·ç»˜å›¾äº‹ä»¶
+	 *
+	 * æ­¤paintEventä¼šåœ¨viewçš„painteventä¹‹åä»‹å…¥ï¼Œæ— æ³•æ•è·
+	 * @param event
+	 */
+	virtual void paintEvent(QPaintEvent* event);
+
+	/**
+	 * @brief æ•è·çš„æŒ‰é’®ç‚¹å‡»äº‹ä»¶
+	 * @param event
+	 * @return
+	 */
 	virtual bool keyPressEvent(QKeyEvent* event);
 	virtual bool keyReleaseEvent(QKeyEvent* event);
 	virtual bool mouseDoubleClickEvent(QMouseEvent* event);
