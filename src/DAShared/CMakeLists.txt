@@ -31,53 +31,6 @@ endif()
 file(GLOB DA_LIB_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 file(GLOB DA_LIB_HPP_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.hpp")
 
-
-add_library(${DA_LIB_NAME} SHARED
-        ${DA_LIB_HEADER_FILES}
-        ${DA_LIB_HPP_FILES}
-        ${DA_GLOBAL_HEADER}
-)	
-# 定义别名让DAWorkbench::${DA_LIB_NAME}也能获取到
-add_library(${DA_PROJECT_NAME}::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
-
-########################################################
-# 依赖链接
-########################################################
-target_link_libraries(${DA_LIB_NAME} PRIVATE
-    Qt${QT_VERSION_MAJOR}::Core
-)
-
-if(${QT_VERSION_MAJOR} EQUAL 6)
-    find_package(Qt6 REQUIRED COMPONENTS Core5Compat)
-    target_link_libraries(${DA_LIB_NAME} PRIVATE Qt6::Core5Compat)
-endif()
-########################################################
-# 设置target属性，以及Qt的moc
-########################################################
-# 在同一个 CMake build tree 中，每个项目的 targets 对外都是可见的
-set_target_properties(${DA_LIB_NAME} PROPERTIES
-    AUTOMOC ON
-    AUTOUIC ON
-    AUTORCC ON
-    CXX_EXTENSIONS OFF
-    DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
-    VERSION ${DA_LIB_VERSION}
-    EXPORT_NAME ${DA_LIB_NAME}
-    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-)
-
-########################################################
-# 附加编译选项
-########################################################
-if(${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
-    # 这里是为 MSVC 编译器设置的选项
-    target_link_options(${DA_LIB_NAME} PRIVATE /VERBOSE)
-    # 或者设置其他 MSVC 特定的编译或链接选项
-else()
-    # 这里是为非 MSVC 编译器设置的选项（如果有的话）
-endif()
 ########################################################
 # 安装
 ########################################################

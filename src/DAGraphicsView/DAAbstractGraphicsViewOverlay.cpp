@@ -1,5 +1,6 @@
 ﻿#include "DAAbstractGraphicsViewOverlay.h"
 #include <QMouseEvent>
+#include <QHoverEvent>
 #include <QDebug>
 #include <QGraphicsView>
 namespace DA
@@ -7,11 +8,9 @@ namespace DA
 DAAbstractGraphicsViewOverlay::DAAbstractGraphicsViewOverlay(QGraphicsView* parent) : DAAbstractWidgetOverlay(parent)
 {
 	setActive(true);
-	//真正鼠标事件是在viewport中
-	mViewPort = parent->viewport();
-	if (mViewPort) {
-		mViewPort->installEventFilter(this);
-	}
+    //QGraphicsView要捕获hover move而不是mouse move
+    parent->setAttribute(Qt::WA_Hover, true);
+    parent->setMouseTracking(true);
 }
 
 DAAbstractGraphicsViewOverlay::~DAAbstractGraphicsViewOverlay()
@@ -45,15 +44,13 @@ void DAAbstractGraphicsViewOverlay::setActive(bool v)
 
 bool DAAbstractGraphicsViewOverlay::eventFilter(QObject* obj, QEvent* event)
 {
-	if (obj && obj == mViewPort) {
+	if (obj && obj == parentWidget()) {
 		qDebug() << "eventFilter ok,even type = " << event->type();
 		switch (event->type()) {
-		case QEvent::MouseMove: {
-			QMouseEvent* me = static_cast< QMouseEvent* >(event);
+		case QEvent::HoverMove: {
+			QHoverEvent* he = static_cast< QHoverEvent* >(event);
 			//这时是viewport的鼠标移动事件，需要转换到view上面
-			QPoint pos  = mViewPort->mapToParent(me->pos());
-			qDebug() << "ViewPort pos = " << me->pos() << ",mapToParent=" << pos ;
-			viewMouseMove(pos);
+			viewMouseMove(he->pos());
 			break;
 		}
 		case QEvent::MouseButtonPress: {
