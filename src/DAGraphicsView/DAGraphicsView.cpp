@@ -9,6 +9,7 @@
 #include "DAAbstractGraphicsViewAction.h"
 #include "DAGraphicsScene.h"
 #include "DAGraphicsMouseCrossLineViewAction.h"
+#include "DAGraphicsViewOverlayMouseMarker.h"
 #define DAGRAPHICSVIEW_DEBUG_PRINT 0
 
 namespace DA
@@ -67,6 +68,7 @@ void DAGraphicsView::init()
 	setDragMode(QGraphicsView::RubberBandDrag);
 	// setDragMode(QGraphicsView::ScrollHandDrag);
 	setupViewAction(new DAGraphicsMouseCrossLineViewAction(this, DAGraphicsMouseCrossLineViewAction::FollowMouse));
+    new DAGraphicsViewOverlayMouseMarker(this);
 }
 
 void DAGraphicsView::setScaleRange(qreal min, qreal max)

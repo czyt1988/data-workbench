@@ -61,12 +61,10 @@ void DAGraphicsMouseCrossLineViewAction::setCrossScenePos(const QPointF& p)
 	DAGraphicsView* v = view();
 	QPoint vp         = v->mapFromScene(p);
 	QRectF f(0, 0, 100, 100);
-	qDebug() << "p=" << p << ",vp=" << vp;
 	f.moveCenter(p);
 	v->ensureVisible(f);
 	// 移动后要重新设置位置
 	vp = v->mapFromScene(p);
-	qDebug() << "p=" << p << ",vp=" << vp;
 	mPos = vp;
 	v->update();
 }
@@ -107,7 +105,6 @@ void DAGraphicsMouseCrossLineViewAction::paintEvent(QPaintEvent* event)
 	if (mPos.isNull() || !viewRect.contains(mPos)) {
 		return;
 	}
-	qDebug() << "paint";
 	QPainter painter(view()->viewport());
 	painter.setPen(mDrawPen);
 	paintCross(&painter, mPos, viewRect);
@@ -145,10 +142,8 @@ bool DAGraphicsMouseCrossLineViewAction::mouseReleaseEvent(QMouseEvent* event)
 
 bool DAGraphicsMouseCrossLineViewAction::mouseMoveEvent(QMouseEvent* event)
 {
-	qDebug() << "mouseMoveEvent";
 	if (FollowMouse == mType) {
 		// 更新位置
-		qDebug() << "mouseMoveEvent mPos= " << mPos;
 		mPos = event->pos();
 		view()->update();
 	}

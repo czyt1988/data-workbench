@@ -3,6 +3,7 @@
 #include "DAGraphicsViewGlobal.h"
 #include "DAAbstractGraphicsViewOverlay.h"
 #include <QPen>
+class QGraphicsView;
 namespace DA
 {
 
@@ -28,7 +29,7 @@ public:
 	};
 
 public:
-	explicit DAGraphicsViewOverlayMouseMarker(QWidget* parent);
+	explicit DAGraphicsViewOverlayMouseMarker(QGraphicsView* parent);
 	~DAGraphicsViewOverlayMouseMarker();
 	/**
 	 * @brief 画笔
@@ -54,27 +55,14 @@ public:
 	 */
 	void setMarkerStyle(MarkerStyle v);
 
-	/**
-	 * @brief 是否激活
-	 * @return
-	 */
-	bool isActive() const;
-
-	/**
-	 * @brief 激活
-	 * @param v
-	 */
-	void setActive(bool v);
-
+	
 protected:
 	virtual void drawOverlay(QPainter* painter) const override;
 	virtual QRegion maskHint() const override;
 
 private:
-	bool mIsActive { true };
 	MarkerStyle mMarkerStyle { CrossLine };  ///< 标记样式
 	QPen mDrawPen { Qt::black };             ///< 绘制画笔
-	QPoint mPoint;                           ///< 记录当前鼠标位置
 };
 }  // end ns da
 

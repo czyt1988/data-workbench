@@ -1,9 +1,10 @@
 ﻿#include "DAGraphicsViewOverlayMouseMarker.h"
 #include <QPainter>
-
+#include <QDebug>
+#include <QGraphicsView>
 namespace DA
 {
-DAGraphicsViewOverlayMouseMarker::DAGraphicsViewOverlayMouseMarker(QWidget* parent)
+DAGraphicsViewOverlayMouseMarker::DAGraphicsViewOverlayMouseMarker(QGraphicsView* parent)
 	: DAAbstractGraphicsViewOverlay(parent)
 {
 	setMaskMode(DAAbstractWidgetOverlay::MaskHint);
@@ -18,18 +19,20 @@ void DAGraphicsViewOverlayMouseMarker::drawOverlay(QPainter* painter) const
 	if (!isActive() || mDrawPen == Qt::NoPen) {
 		return;
 	}
-	QRect r = overlayRect();
+	const QRect r = overlayRect();
+    const QPoint p = getMousePos();
+    qDebug() << "r=" << r << ",p=" << p;
 	painter->setPen(mDrawPen);
 	switch (mMarkerStyle) {
 	case HLine:
-		painter->drawLine(r.left(), mPoint.y(), r.right(), mPoint.y());
+		painter->drawLine(r.left(), p.y(), r.right(), p.y());
 		break;
 	case VLine:
-		painter->drawLine(mPoint.x(), r.top(), mPoint.x(), r.bottom());
+		painter->drawLine(p.x(), r.top(), p.x(), r.bottom());
 		break;
 	case CrossLine:
-		painter->drawLine(r.left(), mPoint.y(), r.right(), mPoint.y());
-		painter->drawLine(mPoint.x(), r.top(), mPoint.x(), r.bottom());
+		painter->drawLine(r.left(), p.y(), r.right(), p.y());
+		painter->drawLine(p.x(), r.top(), p.x(), r.bottom());
 		break;
 	default:
 		break;
@@ -41,32 +44,26 @@ QRegion DAGraphicsViewOverlayMouseMarker::maskHint() const
 	QRegion mask;
 	const int pw  = mDrawPen.width();
 	const QRect r = overlayRect();
+    const QPoint p = getMousePos();
 	switch (mMarkerStyle) {
 	case HLine:
-		mask += maskRegionVOrHLine(QLine(r.left(), mPoint.y(), r.right(), mPoint.y()), pw);
+		mask += maskRegionVOrHLine(QLine(r.left(), p.y(), r.right(), p.y()), pw);
 		break;
 	case VLine:
-		mask += maskRegionVOrHLine(QLine(mPoint.x(), r.top(), mPoint.x(), r.bottom()), pw);
+		mask += maskRegionVOrHLine(QLine(p.x(), r.top(), p.x(), r.bottom()), pw);
 		break;
 	case CrossLine:
-		mask += maskRegionVOrHLine(QLine(r.left(), mPoint.y(), r.right(), mPoint.y()), pw);
-		mask += maskRegionVOrHLine(QLine(mPoint.x(), r.top(), mPoint.x(), r.bottom()), pw);
+		mask += maskRegionVOrHLine(QLine(r.left(), p.y(), r.right(), p.y()), pw);
+		mask += maskRegionVOrHLine(QLine(p.x(), r.top(), p.x(), r.bottom()), pw);
 		break;
 	default:
 		break;
 	}
+    qDebug() << "mask=" << mask;
 	return mask;
 }
 
-bool DAGraphicsViewOverlayMouseMarker::isActive() const
-{
-	return mIsActive;
-}
 
-void DAGraphicsViewOverlayMouseMarker::setActive(bool v)
-{
-	mIsActive = v;
-}
 
 DAGraphicsViewOverlayMouseMarker::MarkerStyle DAGraphicsViewOverlayMouseMarker::getMarkerStyle() const
 {

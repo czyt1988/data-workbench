@@ -35,7 +35,7 @@ endfunction()
 # 生成：DA_MIN_QT_VERSION 最低qt版本要求
 macro(damacro_lib_setting _lib_name _lib_description _lib_ver_major _lib_ver_minor _lib_ver_path)
     set(DA_MIN_QT_VERSION 5.14)
-        set(DA_LIB_NAME ${_lib_name})
+    set(DA_LIB_NAME ${_lib_name})
     set(DA_LIB_DESCRIPTION ${_lib_description})
     set(DA_LIB_VERSION_MAJOR ${_lib_ver_major})
     set(DA_LIB_VERSION_MINOR ${_lib_ver_minor})
