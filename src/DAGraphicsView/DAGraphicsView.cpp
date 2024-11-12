@@ -67,7 +67,7 @@ void DAGraphicsView::init()
 	setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
 	setDragMode(QGraphicsView::RubberBandDrag);
 	// setDragMode(QGraphicsView::ScrollHandDrag);
-	setupViewAction(new DAGraphicsMouseCrossLineViewAction(this, DAGraphicsMouseCrossLineViewAction::FollowMouse));
+	// setupViewAction(new DAGraphicsMouseCrossLineViewAction(this, DAGraphicsMouseCrossLineViewAction::FollowMouse));
     new DAGraphicsViewOverlayMouseMarker(this);
 }
 
