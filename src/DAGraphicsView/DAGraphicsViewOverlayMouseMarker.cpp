@@ -19,9 +19,8 @@ void DAGraphicsViewOverlayMouseMarker::drawOverlay(QPainter* painter) const
 	if (!isActive() || mDrawPen == Qt::NoPen) {
 		return;
 	}
-	const QRect r = overlayRect();
-    const QPoint p = getMousePos();
-    
+	const QRect r  = overlayRect();
+	const QPoint p = getMousePos();
 	painter->setPen(mDrawPen);
 	switch (mMarkerStyle) {
 	case HLine:
@@ -37,23 +36,14 @@ void DAGraphicsViewOverlayMouseMarker::drawOverlay(QPainter* painter) const
 	default:
 		break;
 	}
-
-
-    if(1){
-        painter->setBrush(Qt::red);
-        QPainterPath path;
-        path.addRegion(maskHint());
-        painter->drawPath(path);
-        qDebug() << "r=" << r << ",p=" << p<<",mask="<<path;
-    }
 }
 
 QRegion DAGraphicsViewOverlayMouseMarker::maskHint() const
 {
 	QRegion mask;
-	const int pw  = mDrawPen.width();
-	const QRect r = overlayRect();
-    const QPoint p = getMousePos();
+	const int pw   = mDrawPen.width();
+	const QRect r  = overlayRect();
+	const QPoint p = getMousePos();
 	switch (mMarkerStyle) {
 	case HLine:
 		mask += maskRegionVOrHLine(QLine(r.left(), p.y(), r.right(), p.y()), pw);
@@ -71,8 +61,6 @@ QRegion DAGraphicsViewOverlayMouseMarker::maskHint() const
 
 	return mask;
 }
-
-
 
 DAGraphicsViewOverlayMouseMarker::MarkerStyle DAGraphicsViewOverlayMouseMarker::getMarkerStyle() const
 {

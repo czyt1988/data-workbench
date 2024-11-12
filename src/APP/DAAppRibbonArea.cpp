@@ -150,6 +150,7 @@ void DAAppRibbonArea::buildMenu()
 	mExportWorkflowSceneToImageMenu->setIcon(QIcon(":/app/bright/Icon/exportToPic.svg"));
 	mExportWorkflowSceneToImageMenu->setDefaultAction(m_actions->actionExportWorkflowSceneToImage);
 	mExportWorkflowSceneToImageMenu->addAction(m_actions->actionExportWorkflowSceneToPNG);
+	//
 }
 
 void DAAppRibbonArea::retranslateUi()
@@ -205,6 +206,9 @@ void DAAppRibbonArea::resetText()
 	// 其他
 	m_menuTheme->setTitle(tr("theme"));               // cn:主题
 	m_menuTheme->setToolTip(tr("set ribbon theme"));  // cn:设置主题
+	//
+	m_menuViewLineMarkers->setTitle(tr("Cross Marker"));         // cn:十字标记
+	m_menuViewLineMarkers->setToolTip(tr("Cross Line Marker"));  // cn:十字线标记
 	//
 	mExportWorkflowSceneToImageMenu->setTitle(tr("Export Image"));                               // cn:导出为图片
 	mExportWorkflowSceneToImageMenu->setToolTip(tr("Export Workflow Graphics Scene To Image"));  // cn:把工作流的场景导出为图片
@@ -538,6 +542,14 @@ void DAAppRibbonArea::buildContextCategoryWorkflowView_()
 	m_pannelWorkflowView->addLargeAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionZoomFit));
 	m_pannelWorkflowView->addMediumAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionZoomIn));
 	m_pannelWorkflowView->addMediumAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionZoomOut));
+	m_menuViewLineMarkers = new SARibbonMenu(m_app);
+	m_menuViewLineMarkers->setObjectName("menuViewLineMarkers");
+	m_menuViewLineMarkers->setIcon(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionCrossLineMarker)->icon());
+	m_menuViewLineMarkers->setDefaultAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionCrossLineMarker));
+	m_menuViewLineMarkers->addAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionHLineMarker));
+	m_menuViewLineMarkers->addAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionVLineMarker));
+	m_pannelWorkflowView->addLargeMenu(m_menuViewLineMarkers, QToolButton::MenuButtonPopup);
+
 	m_pannelWorkflowExport = m_categoryWorkflowGraphicsView->addPannel(tr("Export"));  // cn:导出
 	m_pannelWorkflowExport->setObjectName(QStringLiteral("da-pannel-context.workflow.export"));
 	m_pannelWorkflowExport->addMenu(mExportWorkflowSceneToImageMenu, SARibbonPannelItem::Large, QToolButton::MenuButtonPopup);

@@ -38,6 +38,9 @@
         <file>icon/zoomOut.svg</file>
         <file>icon/select-all.svg</file>
         <file>icon/viewAll.svg</file>
+        <file>icon/view-corss-marker.svg</file>
+        <file>icon/view-hline-marker.svg</file>
+        <file>icon/view-vline-marker.svg</file>
     </qresource>
     <qresource prefix="/DAGui/MessageType">
         <file>icon/messageType/messageTypeDebug.svg</file>

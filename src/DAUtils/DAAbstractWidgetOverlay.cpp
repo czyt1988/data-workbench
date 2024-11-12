@@ -5,6 +5,7 @@
 #include <QImage>
 #include <QEvent>
 #include <QPaintEvent>
+#include <QDebug>
 namespace DA
 {
 
@@ -153,12 +154,17 @@ DAAbstractWidgetOverlay::RenderMode DAAbstractWidgetOverlay::getRenderMode() con
 
 bool DAAbstractWidgetOverlay::eventFilter(QObject* object, QEvent* event)
 {
-	if (object == parent() && event->type() == QEvent::Resize) {
-		QResizeEvent* resizeEvent = static_cast< QResizeEvent* >(event);
-		resize(resizeEvent->size());
+	if (object && object == parent()) {
+		switch (event->type()) {
+		case QEvent::Resize: {
+			QResizeEvent* resizeEvent = static_cast< QResizeEvent* >(event);
+			resize(resizeEvent->size());
+		} break;
+		default:
+			break;
+		}
 	}
-
-	return QObject::eventFilter(object, event);
+	return QWidget::eventFilter(object, event);
 }
 
 QRegion DAAbstractWidgetOverlay::maskRegion(const QRect& r, int penWidth)

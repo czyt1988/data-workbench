@@ -76,19 +76,22 @@ public:
 	QAction* actionWorkflowStartDrawRect;        ///< 绘制矩形
 	QAction* actionWorkflowStartDrawText;        ///< 绘制文本框
 	// workflow的视图操作
-	QAction* actionWorkflowShowGrid;                      ///< 显示网格
-	QAction* actionWorkflowRun;                           ///< 运行工作流
-	QAction* actionWorkflowTerminate;                     ///< 停止工作流
+	QAction* actionWorkflowShowGrid;  ///< 显示网格
+
+	QAction* actionWorkflowViewReadOnly;        ///< 锁定视图
+	QAction* actionExportWorkflowSceneToImage;  ///< 导出png格式
+	QAction* actionExportWorkflowSceneToPNG;    ///< 导出png格式
+	// workflow的建模操作
 	QAction* actionWorkflowAddBackgroundPixmap;           ///< 添加背景图
 	QAction* actionWorkflowLockBackgroundPixmap;          ///< 锁定背景图
 	QAction* actionWorkflowEnableItemMoveWithBackground;  ///< 背景图跟随元件移动
 	QAction* actionWorkflowEnableItemLinkageMove;  ///< 图元联动，所谓联动，就是随着一个图元的移动，所有和这个图元链接的图元跟随移动
-	QAction* actionItemGrouping;                ///< 分组
-	QAction* actionItemUngroup;                 ///< 取消分组
-	QAction* actionWorkflowLinkEnable;          ///< 允许连接
-	QAction* actionExportWorkflowSceneToImage;  ///< 导出png格式
-	QAction* actionExportWorkflowSceneToPNG;    ///< 导出png格式
-	QAction* actionWorkflowViewReadOnly;            ///< 锁定视图
+	QAction* actionItemGrouping;        ///< 分组
+	QAction* actionItemUngroup;         ///< 取消分组
+	QAction* actionWorkflowLinkEnable;  ///< 允许连接
+	// workflow的运行操作
+	QAction* actionWorkflowRun;        ///< 运行工作流
+	QAction* actionWorkflowTerminate;  ///< 停止工作流
 	//===================================================
 	// 绘图标签 Chart Category
 	//===================================================

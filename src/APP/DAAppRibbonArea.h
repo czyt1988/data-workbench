@@ -342,6 +342,7 @@ public:
 	//----------------------------------------------------
 	SARibbonCategory* m_categoryWorkflowGraphicsView;  ///< 工作流视图
 	SARibbonPannel* m_pannelWorkflowView;              ///< 图元视图pannel
+	QMenu* m_menuViewLineMarkers;                      ///< 视图标记线
 	SARibbonPannel* m_pannelWorkflowExport;            ///< 视图导出
 	//----------------------------------------------------
 	// Context - workflow-edit

@@ -40,17 +40,18 @@ public:
 	 */
 	virtual bool eventFilter(QObject* obj, QEvent* event);
 
-    /**
-     * @brief 获取view
-     *  
-     * @return 如果没有返回nullptr
-     */
-    QGraphicsView* view() const;
+	/**
+	 * @brief 获取view
+	 *
+	 * @return 如果没有返回nullptr
+	 */
+	QGraphicsView* view() const;
 
-    /**
-     * @brief 判断是否有效，如果view没有场景，就属于无效
-     */
-    bool isValid() const;
+	/**
+	 * @brief 判断是否有效，如果view没有场景，就属于无效
+	 */
+	bool isValid() const;
+
 protected:
 	/**
 	 * @brief view的鼠标移动事件
@@ -60,7 +61,7 @@ protected:
 	 *
 	 * @note 注意，在继承此虚函数，要保证父类的虚函数运行，否则@ref DAAbstractGraphicsViewOverlay::getMousePos 将不起作用
 	 */
-	virtual void viewMouseMove(const QPoint& viewPos,const QPointF& secnePos);
+	virtual void viewMouseMove(const QPoint& viewPos);
 
 	/**
 	 * @brief view的鼠标点击事件
@@ -70,7 +71,7 @@ protected:
 	 *
 	 * @note 注意，在继承此虚函数，要保证父类的虚函数运行，否则@ref DAAbstractGraphicsViewOverlay::getMousePos 将不起作用
 	 */
-	virtual void viewMousePress(const QPoint& viewPos,const QPointF& secnePos);
+	virtual void viewMousePress(const QPoint& viewPos);
 
 	/**
 	 * @brief view的鼠标释放事件
@@ -80,15 +81,16 @@ protected:
 	 *
 	 * @note 注意，在继承此虚函数，要保证父类的虚函数运行，否则@ref DAAbstractGraphicsViewOverlay::getMousePos 将不起作用
 	 */
-	virtual void viewMouseRelease(const QPoint& viewPos,const QPointF& secnePos);
+	virtual void viewMouseRelease(const QPoint& viewPos);
+
 private:
-    bool tryInstall();
+	bool tryInstall();
+
 private:
 	bool mIsActive { true };
 	QPoint mMousePos;
-    QWidget* mViewPort{nullptr};
-    QPointer<QGraphicsScene> mScene{ nullptr };
-    bool mIsInstalled{ false };
+	QWidget* mViewPort { nullptr };
+	bool mIsInstalled { false };
 };
 }
 #endif  // DAABSTRACTGRAPHICSVIEWOVERLAY_H

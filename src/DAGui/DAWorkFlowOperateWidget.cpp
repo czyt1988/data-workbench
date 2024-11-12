@@ -2,6 +2,7 @@
 #include "ui_DAWorkFlowOperateWidget.h"
 // qt
 #include <QAction>
+#include <QActionGroup>
 #include <QImage>
 #include <QDebug>
 #include <QMessageBox>
@@ -14,20 +15,47 @@
 //
 #include "DAWorkFlowEditWidget.h"
 #include "DACommandsForWorkFlowNodeGraphics.h"
-//===================================================
-// using DA namespace -- 禁止在头文件using！！
-//===================================================
 
 namespace DA
 {
+
+class DAWorkFlowOperateWidget::PrivateData
+{
+	DA_DECLARE_PUBLIC(DAWorkFlowOperateWidget)
+public:
+	PrivateData(DAWorkFlowOperateWidget* p);
+
+	bool mIsShowGrid { true };
+	QColor mDefaultTextColor { Qt::black };
+	QFont mDefaultFont;
+	bool mIsDestorying { false };
+	bool mOnlyOneWorkflow { false };    ///< 设置只允许一个工作流
+	bool mEnableWorkflowLink { true };  ///< 是否允许工作流连接
+	QAction* mActionCopy { nullptr };
+	QAction* mActionCut { nullptr };
+	QAction* mActionPaste { nullptr };
+	QAction* mActionDelete { nullptr };              ///< 删除选中
+	QAction* mActionCancel { nullptr };              ///< 取消动作
+	QAction* mActionSelectAll { nullptr };           ///< 全选
+	QAction* mActionZoomIn { nullptr };              ///< 放大
+	QAction* mActionZoomOut { nullptr };             ///< 缩小
+	QAction* mActionZoomFit { nullptr };             ///< 全部显示
+	QAction* actionViewCrossLineMarker { nullptr };  ///< 视图的十字标记线
+	QAction* actionViewHLineMarker { nullptr };      ///< 视图的水平标记线
+	QAction* actionViewVLineMarker { nullptr };      ///< 视图的垂直标记线
+	QActionGroup* actionGroupViewLineMarkers { nullptr };
+};
+
+DAWorkFlowOperateWidget::PrivateData::PrivateData(DAWorkFlowOperateWidget* p) : q_ptr(p)
+{
+}
 
 //===================================================
 // DAWorkFlowOperateWidget
 //===================================================
 DAWorkFlowOperateWidget::DAWorkFlowOperateWidget(QWidget* parent)
-    : QWidget(parent), ui(new Ui::DAWorkFlowOperateWidget), mIsShowGrid(true), mDefaultTextColor(Qt::black)
+	: QWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DAWorkFlowOperateWidget)
 {
-	mIsDestorying = false;
 	ui->setupUi(this);
 	initActions();
 	connect(ui->tabWidget, &QTabWidget::currentChanged, this, &DAWorkFlowOperateWidget::onTabWidgetCurrentChanged);
@@ -37,7 +65,7 @@ DAWorkFlowOperateWidget::DAWorkFlowOperateWidget(QWidget* parent)
 DAWorkFlowOperateWidget::~DAWorkFlowOperateWidget()
 {
 	qDebug() << "DAWorkFlowOperateWidget begin delete ui";
-	mIsDestorying = true;
+	d_ptr->mIsDestorying = true;
 	delete ui;
 	qDebug() << "DAWorkFlowOperateWidget end delete ui";
 }
@@ -68,14 +96,15 @@ DAWorkFlowEditWidget* DAWorkFlowOperateWidget::appendWorkflow(const QString& nam
 			return nullptr;
 		}
 	}
+	DA_D(d);
 	DAWorkFlowEditWidget* wfe = new DAWorkFlowEditWidget(ui->tabWidget);
 	DAWorkFlow* wf            = createWorkflow();
 	wf->setParent(wfe);
 	wfe->setWorkFlow(wf);
 	// 把undo添加进去
-	wfe->setEnableShowGrid(mIsShowGrid);
-	wfe->setDefaultTextColor(mDefaultTextColor);
-	wfe->setDefaultTextFont(mDefaultFont);
+	wfe->setEnableShowGrid(d->mIsShowGrid);
+	wfe->setDefaultTextColor(d->mDefaultTextColor);
+	wfe->setDefaultTextFont(d->mDefaultFont);
 	DAWorkFlowGraphicsScene* scene = wfe->getWorkFlowGraphicsScene();
 	// 同步状态
 	scene->setIgnoreLinkEvent(!isEnableWorkflowLink());
@@ -407,7 +436,7 @@ void DAWorkFlowOperateWidget::setCurrentWorkflowShowGrid(bool on)
 	}
 	sc->showGridLine(on);
 	sc->update();
-	mIsShowGrid = on;  // 记录最后的状态
+	d_ptr->mIsShowGrid = on;  // 记录最后的状态
 }
 
 /**
@@ -584,7 +613,7 @@ void DAWorkFlowOperateWidget::cancelCurrent()
  */
 void DAWorkFlowOperateWidget::setEnableWorkflowLink(bool on)
 {
-	mEnableWorkflowLink = on;
+	d_ptr->mEnableWorkflowLink = on;
 	iteratorScene([ on ](DAWorkFlowGraphicsScene* sc) -> bool {
 		sc->setIgnoreLinkEvent(!on);
 		return true;
@@ -597,7 +626,7 @@ void DAWorkFlowOperateWidget::setEnableWorkflowLink(bool on)
  */
 bool DAWorkFlowOperateWidget::isEnableWorkflowLink() const
 {
-    return mEnableWorkflowLink;
+    return d_ptr->mEnableWorkflowLink;
 }
 
 /**
@@ -606,7 +635,7 @@ bool DAWorkFlowOperateWidget::isEnableWorkflowLink() const
  */
 QFont DAWorkFlowOperateWidget::getDefaultTextFont() const
 {
-	return mDefaultFont;
+    return d_ptr->mDefaultFont;
 }
 /**
  * @brief 设置文本字体
@@ -614,7 +643,7 @@ QFont DAWorkFlowOperateWidget::getDefaultTextFont() const
  */
 void DAWorkFlowOperateWidget::setDefaultTextFont(const QFont& f)
 {
-	mDefaultFont = f;
+	d_ptr->mDefaultFont = f;
 	iteratorScene([ f ](DAWorkFlowGraphicsScene* sc) -> bool {
 		sc->setDefaultTextFont(f);
 		return true;
@@ -626,7 +655,7 @@ void DAWorkFlowOperateWidget::setDefaultTextFont(const QFont& f)
  */
 QColor DAWorkFlowOperateWidget::getDefaultTextColor() const
 {
-	return mDefaultTextColor;
+    return d_ptr->mDefaultTextColor;
 }
 /**
  * @brief 设置默认的文本颜色
@@ -634,7 +663,7 @@ QColor DAWorkFlowOperateWidget::getDefaultTextColor() const
  */
 void DAWorkFlowOperateWidget::setDefaultTextColor(const QColor& c)
 {
-	mDefaultTextColor = c;
+	d_ptr->mDefaultTextColor = c;
 	iteratorScene([ c ](DAWorkFlowGraphicsScene* sc) -> bool {
 		sc->setDefaultTextColor(c);
 		return true;
@@ -668,7 +697,7 @@ void DAWorkFlowOperateWidget::onTabWidgetTabCloseRequested(int index)
  */
 void DAWorkFlowOperateWidget::onSelectionChanged()
 {
-	if (mIsDestorying) {
+	if (d_ptr->mIsDestorying) {
 		//! 很奇怪，DAWorkFlowGraphicsScene已经析构了，但此槽函数还是能调用，在DAWorkFlowOperateWidget
 		//! 开始delete ui的时候，先析构DAWorkFlowGraphicsView，再析构DAWorkFlowGraphicsScene
 		//! 然后就会调用此槽函数，这时导致错误，从qt原理上，在析构时应该会把槽函数都断开连接才合理
@@ -701,6 +730,17 @@ void DAWorkFlowOperateWidget::onSceneItemsRemoved(const QList< QGraphicsItem* >&
 	}
 }
 
+void DAWorkFlowOperateWidget::onActionGroupViewLineMarkersTriggered(QAction* act)
+{
+	if (act == d_ptr->actionViewCrossLineMarker) {
+		setCurrentViewLineMarker(act->isChecked() ? CrossLineMarker : NoneLineMarker);
+	} else if (act == d_ptr->actionViewHLineMarker) {
+		setCurrentViewLineMarker(act->isChecked() ? HLineMarker : NoneLineMarker);
+	} else if (act == d_ptr->actionViewVLineMarker) {
+		setCurrentViewLineMarker(act->isChecked() ? VLineMarker : NoneLineMarker);
+	}
+}
+
 QList< DAGraphicsStandardTextItem* > DAWorkFlowOperateWidget::getSelectTextItems()
 {
 	QList< DAGraphicsStandardTextItem* > res;
@@ -722,103 +762,145 @@ QList< DAGraphicsStandardTextItem* > DAWorkFlowOperateWidget::getSelectTextItems
 
 void DAWorkFlowOperateWidget::initActions()
 {
-	mActionCopy = new QAction(this);
-	mActionCopy->setObjectName(QStringLiteral("actionCopyToDAWorkFlowOperateWidget"));
-	mActionCopy->setIcon(QIcon(QStringLiteral(":/DAGui/icon/copy.svg")));
-	mActionCopy->setShortcuts(QKeySequence::Copy);
-	connect(mActionCopy, &QAction::triggered, this, &DAWorkFlowOperateWidget::copyCurrentSelectItems);
+	DA_D(d);
 
-	mActionCut = new QAction(this);
-	mActionCut->setObjectName(QStringLiteral("actionCutToDAWorkFlowOperateWidget"));
-	mActionCut->setIcon(QIcon(QStringLiteral(":/DAGui/icon/cut.svg")));
-	mActionCut->setShortcuts(QKeySequence::Cut);
-	connect(mActionCut, &QAction::triggered, this, &DAWorkFlowOperateWidget::cutCurrentSelectItems);
+	d->mActionCopy = new QAction(this);
+	d->mActionCopy->setObjectName(QStringLiteral("actionCopyToDAWorkFlowOperateWidget"));
+	d->mActionCopy->setIcon(QIcon(QStringLiteral(":/DAGui/icon/copy.svg")));
+	d->mActionCopy->setShortcuts(QKeySequence::Copy);
+	connect(d->mActionCopy, &QAction::triggered, this, &DAWorkFlowOperateWidget::copyCurrentSelectItems);
 
-	mActionPaste = new QAction(this);
-	mActionPaste->setObjectName(QStringLiteral("actionPasteToDAWorkFlowOperateWidget"));
-	mActionPaste->setIcon(QIcon(QStringLiteral(":/DAGui/icon/paste.svg")));
-	mActionPaste->setShortcuts(QKeySequence::Paste);
-	connect(mActionPaste, &QAction::triggered, this, &DAWorkFlowOperateWidget::pasteFromClipBoard);
+	d->mActionCut = new QAction(this);
+	d->mActionCut->setObjectName(QStringLiteral("actionCutToDAWorkFlowOperateWidget"));
+	d->mActionCut->setIcon(QIcon(QStringLiteral(":/DAGui/icon/cut.svg")));
+	d->mActionCut->setShortcuts(QKeySequence::Cut);
+	connect(d->mActionCut, &QAction::triggered, this, &DAWorkFlowOperateWidget::cutCurrentSelectItems);
 
-	mActionDelete = new QAction(this);
-	mActionDelete->setObjectName(QStringLiteral("actionDeleteToDAWorkFlowOperateWidget"));
-	mActionDelete->setIcon(QIcon(QStringLiteral(":/DAGui/icon/delete.svg")));
-	mActionDelete->setShortcuts(QKeySequence::Delete);
-	connect(mActionDelete, &QAction::triggered, this, &DAWorkFlowOperateWidget::removeCurrentSelectItems);
+	d->mActionPaste = new QAction(this);
+	d->mActionPaste->setObjectName(QStringLiteral("actionPasteToDAWorkFlowOperateWidget"));
+	d->mActionPaste->setIcon(QIcon(QStringLiteral(":/DAGui/icon/paste.svg")));
+	d->mActionPaste->setShortcuts(QKeySequence::Paste);
+	connect(d->mActionPaste, &QAction::triggered, this, &DAWorkFlowOperateWidget::pasteFromClipBoard);
 
-	mActionCancel = new QAction(this);
-	mActionCancel->setObjectName(QStringLiteral("actionCancelToDAWorkFlowOperateWidget"));
-	mActionCancel->setIcon(QIcon(QStringLiteral(":/DAGui/icon/cancel.svg")));
-	mActionCancel->setShortcuts(QKeySequence::Cancel);
-	connect(mActionCancel, &QAction::triggered, this, &DAWorkFlowOperateWidget::cancelCurrent);
+	d->mActionDelete = new QAction(this);
+	d->mActionDelete->setObjectName(QStringLiteral("actionDeleteToDAWorkFlowOperateWidget"));
+	d->mActionDelete->setIcon(QIcon(QStringLiteral(":/DAGui/icon/delete.svg")));
+	d->mActionDelete->setShortcuts(QKeySequence::Delete);
+	connect(d->mActionDelete, &QAction::triggered, this, &DAWorkFlowOperateWidget::removeCurrentSelectItems);
 
-	mActionSelectAll = new QAction(this);
-	mActionSelectAll->setObjectName(QStringLiteral("actionSelectAllToDAWorkFlowOperateWidget"));
-	mActionSelectAll->setIcon(QIcon(QStringLiteral(":/DAGui/icon/select-all.svg")));
-	mActionSelectAll->setShortcuts(QKeySequence::SelectAll);
-	connect(mActionSelectAll, &QAction::triggered, this, &DAWorkFlowOperateWidget::setCurrentWorkflowSelectAll);
+	d->mActionCancel = new QAction(this);
+	d->mActionCancel->setObjectName(QStringLiteral("actionCancelToDAWorkFlowOperateWidget"));
+	d->mActionCancel->setIcon(QIcon(QStringLiteral(":/DAGui/icon/cancel.svg")));
+	d->mActionCancel->setShortcuts(QKeySequence::Cancel);
+	connect(d->mActionCancel, &QAction::triggered, this, &DAWorkFlowOperateWidget::cancelCurrent);
 
-	mActionZoomIn = new QAction(this);
-	mActionZoomIn->setObjectName(QStringLiteral("actionZoomInToDAWorkFlowOperateWidget"));
-	mActionZoomIn->setIcon(QIcon(QStringLiteral(":/DAGui/icon/zoomIn.svg")));
-	mActionZoomIn->setShortcuts({ QKeySequence(QKeySequence::ZoomIn), QKeySequence(QStringLiteral("CTRL+=")) });
-	connect(mActionZoomIn, &QAction::triggered, this, &DAWorkFlowOperateWidget::setCurrentWorkflowZoomIn);
+	d->mActionSelectAll = new QAction(this);
+	d->mActionSelectAll->setObjectName(QStringLiteral("actionSelectAllToDAWorkFlowOperateWidget"));
+	d->mActionSelectAll->setIcon(QIcon(QStringLiteral(":/DAGui/icon/select-all.svg")));
+	d->mActionSelectAll->setShortcuts(QKeySequence::SelectAll);
+	connect(d->mActionSelectAll, &QAction::triggered, this, &DAWorkFlowOperateWidget::setCurrentWorkflowSelectAll);
 
-	mActionZoomOut = new QAction(this);
-	mActionZoomOut->setObjectName(QStringLiteral("actionZoomOutToDAWorkFlowOperateWidget"));
-	mActionZoomOut->setIcon(QIcon(QStringLiteral(":/DAGui/icon/zoomOut.svg")));
-	mActionZoomOut->setShortcuts(QKeySequence::ZoomOut);
-	connect(mActionZoomOut, &QAction::triggered, this, &DAWorkFlowOperateWidget::setCurrentWorkflowZoomOut);
+	d->mActionZoomIn = new QAction(this);
+	d->mActionZoomIn->setObjectName(QStringLiteral("actionZoomInToDAWorkFlowOperateWidget"));
+	d->mActionZoomIn->setIcon(QIcon(QStringLiteral(":/DAGui/icon/zoomIn.svg")));
+	d->mActionZoomIn->setShortcuts({ QKeySequence(QKeySequence::ZoomIn), QKeySequence(QStringLiteral("CTRL+=")) });
+	connect(d->mActionZoomIn, &QAction::triggered, this, &DAWorkFlowOperateWidget::setCurrentWorkflowZoomIn);
+
+	d->mActionZoomOut = new QAction(this);
+	d->mActionZoomOut->setObjectName(QStringLiteral("actionZoomOutToDAWorkFlowOperateWidget"));
+	d->mActionZoomOut->setIcon(QIcon(QStringLiteral(":/DAGui/icon/zoomOut.svg")));
+	d->mActionZoomOut->setShortcuts(QKeySequence::ZoomOut);
+	connect(d->mActionZoomOut, &QAction::triggered, this, &DAWorkFlowOperateWidget::setCurrentWorkflowZoomOut);
 
 	// 缩放到适合屏幕
-	mActionZoomFit = new QAction(this);
-	mActionZoomFit->setObjectName(QStringLiteral("actionZoomFullToDAWorkFlowOperateWidget"));
-	mActionZoomFit->setIcon(QIcon(QStringLiteral(":/DAGui/icon/viewAll.svg")));
-	mActionZoomFit->setShortcut(QKeySequence(QStringLiteral("CTRL+0")));
-	connect(mActionZoomFit, &QAction::triggered, this, &DAWorkFlowOperateWidget::setCurrentWorkflowWholeView);
+	d->mActionZoomFit = new QAction(this);
+	d->mActionZoomFit->setObjectName(QStringLiteral("actionZoomFullToDAWorkFlowOperateWidget"));
+	d->mActionZoomFit->setIcon(QIcon(QStringLiteral(":/DAGui/icon/viewAll.svg")));
+	d->mActionZoomFit->setShortcut(QKeySequence(QStringLiteral("CTRL+0")));
+	connect(d->mActionZoomFit, &QAction::triggered, this, &DAWorkFlowOperateWidget::setCurrentWorkflowWholeView);
 
-	addAction(mActionCopy);
-	addAction(mActionCut);
-	addAction(mActionPaste);
-	addAction(mActionDelete);
-	addAction(mActionCancel);
-	addAction(mActionSelectAll);
-	addAction(mActionZoomIn);
-	addAction(mActionZoomOut);
-	addAction(mActionZoomFit);
+	// 十字标记线
+	d->actionViewCrossLineMarker = new QAction(this);
+	d->actionViewCrossLineMarker->setCheckable(true);
+	d->actionViewCrossLineMarker->setChecked(false);
+	d->actionViewCrossLineMarker->setObjectName(QStringLiteral("actionViewCrossLineMarker"));
+	d->actionViewCrossLineMarker->setIcon(QIcon(QStringLiteral(":/DAGui/icon/view-corss-marker.svg")));
+
+	// 水平标记线
+	d->actionViewHLineMarker = new QAction(this);
+	d->actionViewHLineMarker->setCheckable(true);
+	d->actionViewHLineMarker->setChecked(false);
+	d->actionViewHLineMarker->setObjectName(QStringLiteral("actionViewHLineMarker"));
+	d->actionViewHLineMarker->setIcon(QIcon(QStringLiteral(":/DAGui/icon/view-hline-marker.svg")));
+
+	// 竖直标记线
+	d->actionViewVLineMarker = new QAction(this);
+	d->actionViewVLineMarker->setCheckable(true);
+	d->actionViewVLineMarker->setChecked(false);
+	d->actionViewVLineMarker->setObjectName(QStringLiteral("actionViewVLineMarker"));
+	d->actionViewVLineMarker->setIcon(QIcon(QStringLiteral(":/DAGui/icon/view-vline-marker.svg")));
+
+	d->actionGroupViewLineMarkers = new QActionGroup(this);
+	d->actionGroupViewLineMarkers->addAction(d->actionViewCrossLineMarker);
+	d->actionGroupViewLineMarkers->addAction(d->actionViewHLineMarker);
+	d->actionGroupViewLineMarkers->addAction(d->actionViewVLineMarker);
+	connect(d->actionGroupViewLineMarkers,
+			&QActionGroup::triggered,
+			this,
+			&DAWorkFlowOperateWidget::onActionGroupViewLineMarkersTriggered);
+
+	addAction(d->mActionCopy);
+	addAction(d->mActionCut);
+	addAction(d->mActionPaste);
+	addAction(d->mActionDelete);
+	addAction(d->mActionCancel);
+	addAction(d->mActionSelectAll);
+	addAction(d->mActionZoomIn);
+	addAction(d->mActionZoomOut);
+	addAction(d->mActionZoomFit);
+	addAction(d->actionViewCrossLineMarker);
+	addAction(d->actionViewHLineMarker);
+	addAction(d->actionViewVLineMarker);
 	retranslateUi();
 }
 
 void DAWorkFlowOperateWidget::retranslateUi()
 {
-	mActionCopy->setText(tr("Copy"));                             // cn:复制
-	mActionCopy->setStatusTip(tr("Copy"));                        // cn:复制
-	mActionCut->setText(tr("Cut"));                               // cn:剪切
-	mActionCut->setStatusTip(tr("Cut"));                          // cn:剪切
-	mActionPaste->setText(tr("Paste"));                           // cn:粘贴
-	mActionPaste->setStatusTip(tr("Paste"));                      // cn:粘贴
-	mActionDelete->setText(tr("Delete"));                         // cn:删除
-	mActionDelete->setStatusTip(tr("Delete"));                    // cn:删除
-	mActionCancel->setText(tr("Cancel"));                         // cn:取消
-	mActionCancel->setStatusTip(tr("Cancel"));                    // cn:取消
-	mActionSelectAll->setText(tr("Select All"));                  // cn:全选
-	mActionSelectAll->setStatusTip(tr("Select all items"));       // cn:全选所有图元
-	mActionZoomIn->setText(tr("Zoom In"));                        // cn:放大
-	mActionZoomIn->setStatusTip(tr("Zoom in graphics view"));     // cn:放大画布
-	mActionZoomOut->setText(tr("Zoom Out"));                      // cn:缩小
-	mActionZoomOut->setStatusTip(tr("Zoom Out graphics view"));   // cn:缩小画布
-	mActionZoomFit->setText(tr("Zoom to Fit"));                   // cn:适合屏幕
-	mActionZoomFit->setStatusTip(tr("Zoom to fit screen size"));  // cn:缩放到适合屏幕大小
+	DA_D(d);
+	d->mActionCopy->setText(tr("Copy"));                                   // cn:复制
+	d->mActionCopy->setStatusTip(tr("Copy"));                              // cn:复制
+	d->mActionCut->setText(tr("Cut"));                                     // cn:剪切
+	d->mActionCut->setStatusTip(tr("Cut"));                                // cn:剪切
+	d->mActionPaste->setText(tr("Paste"));                                 // cn:粘贴
+	d->mActionPaste->setStatusTip(tr("Paste"));                            // cn:粘贴
+	d->mActionDelete->setText(tr("Delete"));                               // cn:删除
+	d->mActionDelete->setStatusTip(tr("Delete"));                          // cn:删除
+	d->mActionCancel->setText(tr("Cancel"));                               // cn:取消
+	d->mActionCancel->setStatusTip(tr("Cancel"));                          // cn:取消
+	d->mActionSelectAll->setText(tr("Select All"));                        // cn:全选
+	d->mActionSelectAll->setStatusTip(tr("Select all items"));             // cn:全选所有图元
+	d->mActionZoomIn->setText(tr("Zoom In"));                              // cn:放大
+	d->mActionZoomIn->setStatusTip(tr("Zoom in graphics view"));           // cn:放大画布
+	d->mActionZoomOut->setText(tr("Zoom Out"));                            // cn:缩小
+	d->mActionZoomOut->setStatusTip(tr("Zoom Out graphics view"));         // cn:缩小画布
+	d->mActionZoomFit->setText(tr("Zoom to Fit"));                         // cn:适合屏幕
+	d->mActionZoomFit->setStatusTip(tr("Zoom to fit screen size"));        // cn:缩放到适合屏幕大小
+	d->actionViewCrossLineMarker->setText(tr("Cross Line Marker"));        // cn:十字标记线
+	d->actionViewCrossLineMarker->setStatusTip(tr("Cross Line Marker"));   // cn:十字标记线
+	d->actionViewHLineMarker->setText(tr("Horizontal Line Marker"));       // cn:水平标记线
+	d->actionViewHLineMarker->setStatusTip(tr("Horizontal Line Marker"));  // cn:水平标记线
+	d->actionViewVLineMarker->setText(tr("Vertical Line Marker"));         // cn:垂直标记线
+	d->actionViewVLineMarker->setStatusTip(tr("Vertical Line Marker"));    // cn:垂直标记线
 }
 
 bool DAWorkFlowOperateWidget::isOnlyOneWorkflow() const
 {
-	return mOnlyOneWorkflow;
+	return d_ptr->mOnlyOneWorkflow;
 }
 
 void DAWorkFlowOperateWidget::setOnlyOneWorkflow(bool v)
 {
-    mOnlyOneWorkflow = v;
+    d_ptr->mOnlyOneWorkflow = v;
 }
 
 /**
@@ -830,23 +912,29 @@ QAction* DAWorkFlowOperateWidget::getInnerAction(DAWorkFlowOperateWidget::InnerA
 {
 	switch (act) {
 	case ActionCopy:
-		return mActionCopy;
+		return d_ptr->mActionCopy;
 	case ActionCut:
-		return mActionCut;
+		return d_ptr->mActionCut;
 	case ActionPaste:
-		return mActionPaste;
+		return d_ptr->mActionPaste;
 	case ActionDelete:
-		return mActionDelete;
+		return d_ptr->mActionDelete;
 	case ActionCancel:
-		return mActionCancel;
+		return d_ptr->mActionCancel;
 	case ActionSelectAll:
-		return mActionSelectAll;
+		return d_ptr->mActionSelectAll;
 	case ActionZoomIn:
-		return mActionZoomIn;
+		return d_ptr->mActionZoomIn;
 	case ActionZoomOut:
-		return mActionZoomOut;
+		return d_ptr->mActionZoomOut;
 	case ActionZoomFit:
-		return mActionZoomFit;
+		return d_ptr->mActionZoomFit;
+	case ActionCrossLineMarker:
+		return d_ptr->actionViewCrossLineMarker;
+	case ActionHLineMarker:
+		return d_ptr->actionViewHLineMarker;
+	case ActionVLineMarker:
+		return d_ptr->actionViewVLineMarker;
 	default:
 		break;
 	}
@@ -866,6 +954,14 @@ void DAWorkFlowOperateWidget::iteratorScene(FpScenesOpt fp)
 			return;
 		}
 	}
+}
+
+/**
+ * @brief 设置当前视图的标记线
+ * @param s
+ */
+void DAWorkFlowOperateWidget::setCurrentViewLineMarker(ViewLineMarkerStyle s)
+{
 }
 
 /**

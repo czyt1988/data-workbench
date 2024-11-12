@@ -23,6 +23,7 @@ class DAAbstractNodeGraphicsItem;
 class DAGUI_API DAWorkFlowOperateWidget : public QWidget
 {
 	Q_OBJECT
+	DA_DECLARE_PRIVATE(DAWorkFlowOperateWidget)
 public:
 	/**
 	 * @brief 场景操作的迭代函数指针，传入场景指针，返回false代表迭代中断，返回true代表迭代继续
@@ -48,7 +49,21 @@ public:
 		ActionSelectAll,
 		ActionZoomIn,
 		ActionZoomOut,
-		ActionZoomFit
+		ActionZoomFit,
+		ActionCrossLineMarker,  ///< 十字线
+		ActionHLineMarker,      ///< 水平线
+		ActionVLineMarker,      ///< 垂直线
+	};
+
+	/**
+	 * @brief 视图线标记样式
+	 */
+	enum ViewLineMarkerStyle
+	{
+		NoneLineMarker,
+		CrossLineMarker,
+		HLineMarker,
+		VLineMarker
 	};
 
 public:
@@ -114,7 +129,9 @@ public:
 	QAction* getInnerAction(InnerActions act);
 	// 迭代场景操作
 	void iteratorScene(FpScenesOpt fp);
-public slots:
+	// 设置当前视图的标记线
+	void setCurrentViewLineMarker(ViewLineMarkerStyle s);
+public Q_SLOTS:
 	// 添加一个背景图
 	void addBackgroundPixmap(const QString& pixmapPath);
 	// 锁定背景图
@@ -156,7 +173,7 @@ public slots:
 	// 设置是否允许连接
 	void setEnableWorkflowLink(bool on);
 	bool isEnableWorkflowLink() const;
-signals:
+Q_SIGNALS:
 
 	/**
 	 * @brief 选中了某个节点的设置窗口
@@ -240,7 +257,7 @@ signals:
 	 * @param item
 	 */
 	void itemsRemoved(DA::DAGraphicsScene* sc, const QList< QGraphicsItem* >& its);
-private slots:
+private Q_SLOTS:
 	// 当前tab发生了改变
 	void onTabWidgetCurrentChanged(int index);
 	// 请求关闭
@@ -250,6 +267,8 @@ private slots:
 	//
 	void onSceneItemsAdded(const QList< QGraphicsItem* >& its);
 	void onSceneItemsRemoved(const QList< QGraphicsItem* >& its);
+	//
+	void onActionGroupViewLineMarkersTriggered(QAction* act);
 
 private:
 	QList< DAGraphicsStandardTextItem* > getSelectTextItems();
@@ -260,21 +279,6 @@ private:
 
 private:
 	Ui::DAWorkFlowOperateWidget* ui;
-	bool mIsShowGrid;
-	QColor mDefaultTextColor;
-	QFont mDefaultFont;
-	bool mIsDestorying;
-	bool mOnlyOneWorkflow { false };    ///< 设置只允许一个工作流
-	bool mEnableWorkflowLink { true };  ///< 是否允许工作流连接
-	QAction* mActionCopy { nullptr };
-	QAction* mActionCut { nullptr };
-	QAction* mActionPaste { nullptr };
-	QAction* mActionDelete { nullptr };     ///< 删除选中
-	QAction* mActionCancel { nullptr };     ///< 取消动作
-	QAction* mActionSelectAll { nullptr };  ///< 全选
-	QAction* mActionZoomIn { nullptr };     ///< 放大
-	QAction* mActionZoomOut { nullptr };    ///< 缩小
-	QAction* mActionZoomFit { nullptr };    ///< 全部显示
 };
 }  // namespace DA
 #endif  // DAWORKFLOWOPERATEWIDGET_H

@@ -45,37 +45,31 @@ void DAAbstractGraphicsViewOverlay::setActive(bool v)
 
 bool DAAbstractGraphicsViewOverlay::eventFilter(QObject* obj, QEvent* event)
 {
-    if(!mIsInstalled){
-        mIsInstalled = tryInstall();
-    }
-	if (obj && (obj == mScene)) {
+	if (!mIsInstalled) {
+		mIsInstalled = tryInstall();
+	}
+	if (obj && (obj == mViewPort)) {
 		switch (event->type()) {
-		case QEvent::GraphicsSceneMouseMove: {
-			QGraphicsSceneMouseEvent* sme = static_cast< QGraphicsSceneMouseEvent* >(event);
-			//这时是Scene的鼠标事件，需要转换到view上面
-            QPointF sp = sme->scenePos();
-			viewMouseMove(view()->mapFromScene(sp));
+		case QEvent::MouseMove: {
+			QMouseEvent* me = static_cast< QMouseEvent* >(event);
+			viewMouseMove(view()->mapFromGlobal(mViewPort->mapToGlobal(me->pos())));
 			break;
 		}
-		case QEvent::GraphicsSceneMousePress: {
-			QGraphicsSceneMouseEvent* sme = static_cast< QGraphicsSceneMouseEvent* >(event);
-			//这时是Scene的鼠标事件，需要转换到view上面
-            QPointF sp = sme->scenePos();
-			viewMousePress(view()->mapFromScene(sp));
+		case QEvent::MouseButtonPress: {
+			QMouseEvent* me = static_cast< QMouseEvent* >(event);
+			viewMousePress(view()->mapFromGlobal(mViewPort->mapToGlobal(me->pos())));
 			break;
 		}
-		case QEvent::GraphicsSceneMouseRelease: {
-			QGraphicsSceneMouseEvent* sme = static_cast< QGraphicsSceneMouseEvent* >(event);
-			//这时是Scene的鼠标事件，需要转换到view上面
-            QPointF sp = sme->scenePos();
-			viewMouseRelease(view()->mapFromScene(sp));
+		case QEvent::MouseButtonRelease: {
+			QMouseEvent* me = static_cast< QMouseEvent* >(event);
+			viewMouseRelease(view()->mapFromGlobal(mViewPort->mapToGlobal(me->pos())));
 			break;
 		}
 		default:
 			break;
 		}
 	}
-	return false;
+	return DAAbstractWidgetOverlay::eventFilter(obj, event);
 }
 
 QGraphicsView* DAAbstractGraphicsViewOverlay::view() const
@@ -85,29 +79,28 @@ QGraphicsView* DAAbstractGraphicsViewOverlay::view() const
 
 bool DAAbstractGraphicsViewOverlay::isValid() const
 {
-	return !mScene.isNull();
+	return mViewPort != nullptr;
 }
 
-void DAAbstractGraphicsViewOverlay::viewMouseMove(const QPoint& viewPos,const QPointF& secnePos)
+void DAAbstractGraphicsViewOverlay::viewMouseMove(const QPoint& viewPos)
 {
-	qDebug() << "viewMouseMove:" << pos;
-	mMousePos = pos;
+	mMousePos = viewPos;
 	if (isActive()) {
 		updateOverlay();
 	}
 }
 
-void DAAbstractGraphicsViewOverlay::viewMousePress(const QPoint& viewPos,const QPointF& secnePos)
+void DAAbstractGraphicsViewOverlay::viewMousePress(const QPoint& viewPos)
 {
-	mMousePos = pos;
+	mMousePos = viewPos;
 	if (isActive()) {
 		updateOverlay();
 	}
 }
 
-void DAAbstractGraphicsViewOverlay::viewMouseRelease(const QPoint& viewPos,const QPointF& secnePos)
+void DAAbstractGraphicsViewOverlay::viewMouseRelease(const QPoint& viewPos)
 {
-	mMousePos = pos;
+	mMousePos = viewPos;
 	if (isActive()) {
 		updateOverlay();
 	}
@@ -115,21 +108,17 @@ void DAAbstractGraphicsViewOverlay::viewMouseRelease(const QPoint& viewPos,const
 
 bool DAAbstractGraphicsViewOverlay::tryInstall()
 {
-	QGraphicsView* v   = view();
-	QGraphicsScene* sc = v->scene();
-	if (!sc) {
+	QGraphicsView* v = view();
+	QWidget* vp      = v->viewport();
+	if (!vp) {
 		return false;
 	}
-	if (sc == mScene) {
-		// sc不为空且和原来的一样，返回true，表示安装完成
+	if (vp == mViewPort) {
+		// vp不为空且和原来的一样，返回true，表示安装完成
 		return true;
 	}
-	if (mScene) {
-        //如果scene非空，且不和sc相等，说明view切换了场景，需要移除监控
-		mScene->removeEventFilter(this);
-	}
-	mScene = sc;
-	mScene->installEventFilter(this);
+	mViewPort = vp;
+	mViewPort->installEventFilter(this);
 	return true;
 }
 }  // end ns da
