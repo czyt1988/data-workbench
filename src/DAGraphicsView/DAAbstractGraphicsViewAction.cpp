@@ -36,11 +36,6 @@ void DAAbstractGraphicsViewAction::endAction()
 {
 }
 
-void DAAbstractGraphicsViewAction::paintEvent(QPaintEvent* event)
-{
-	Q_UNUSED(event);
-}
-
 bool DAAbstractGraphicsViewAction::keyPressEvent(QKeyEvent* event)
 {
 	Q_UNUSED(event);

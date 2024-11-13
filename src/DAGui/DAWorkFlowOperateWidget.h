@@ -54,18 +54,7 @@ public:
 		ActionCrossLineMarker,  ///< 十字线
 		ActionHLineMarker,      ///< 水平线
 		ActionVLineMarker,      ///< 垂直线
-        ActionNoneMarker,      ///< 无标记线
-    };
-
-	/**
-	 * @brief 视图线标记样式
-	 */
-	enum ViewLineMarkerStyle
-	{
-		NoneLineMarker,
-		CrossLineMarker,
-		HLineMarker,
-		VLineMarker
+		ActionNoneMarker,       ///< 无标记线
 	};
 
 public:
@@ -132,9 +121,9 @@ public:
 	// 迭代场景操作
 	void iteratorScene(FpScenesOpt fp);
 	// 设置当前视图的标记线
-	void setCurrentViewLineMarker(ViewLineMarkerStyle s);
-    //获取LineMarker的ActionGroup
-    QActionGroup* getLineMarkerActionGroup() const;
+	void setCurrentViewLineMarker(DAGraphicsViewOverlayMouseMarker::MarkerStyle s);
+	// 获取LineMarker的ActionGroup
+	QActionGroup* getLineMarkerActionGroup() const;
 public Q_SLOTS:
 	// 添加一个背景图
 	void addBackgroundPixmap(const QString& pixmapPath);

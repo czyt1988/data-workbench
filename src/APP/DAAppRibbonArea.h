@@ -66,6 +66,7 @@ class DAFigureWidget;
 class DAChartOperateWidget;
 class DAChartWidget;
 class DADataOperateWidget;
+class DAWorkFlowEditWidget;
 class DAWorkFlowOperateWidget;
 /**
  * @brief App的Ribbon区域接口，负责ribbon层的管理和调度
@@ -157,6 +158,8 @@ public:
 	void updateChartZoomPanAboutRibbon(DAChartWidget* chart);
 	void updateChartPickerAboutRibbon(DAChartWidget* chart);
 	void updateChartLegendAboutRibbon(DAChartWidget* chart);
+	//
+	void updateWorkflowAboutRibbon(DAWorkFlowOperateWidget* wfo);
 	// 重置文字
 	void resetText();
 

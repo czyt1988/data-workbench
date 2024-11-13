@@ -16,7 +16,7 @@ DAGraphicsViewOverlayMouseMarker::~DAGraphicsViewOverlayMouseMarker()
 
 void DAGraphicsViewOverlayMouseMarker::drawOverlay(QPainter* painter) const
 {
-	if (!isActive() || mDrawPen == Qt::NoPen) {
+	if (!isActive() || mDrawPen == Qt::NoPen || mMarkerStyle == NoMarkerStyle) {
 		return;
 	}
 	const QRect r  = overlayRect();
@@ -41,6 +41,9 @@ void DAGraphicsViewOverlayMouseMarker::drawOverlay(QPainter* painter) const
 QRegion DAGraphicsViewOverlayMouseMarker::maskHint() const
 {
 	QRegion mask;
+	if (mMarkerStyle == NoMarkerStyle) {
+		return mask;
+	}
 	const int pw   = mDrawPen.width();
 	const QRect r  = overlayRect();
 	const QPoint p = getMousePos();

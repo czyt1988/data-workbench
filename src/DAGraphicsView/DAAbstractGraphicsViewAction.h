@@ -45,14 +45,6 @@ protected:
 	virtual void endAction();
 
 	/**
-	 * @brief 捕获绘图事件
-	 *
-	 * 此paintEvent会在view的paintevent之后介入，无法捕获
-	 * @param event
-	 */
-	virtual void paintEvent(QPaintEvent* event);
-
-	/**
 	 * @brief 捕获的按钮点击事件
 	 * @param event
 	 * @return

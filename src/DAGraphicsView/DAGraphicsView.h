@@ -3,11 +3,11 @@
 #include <QGraphicsView>
 #include "DAGraphicsViewGlobal.h"
 #include "DAGraphicsItem.h"
-#include "DAAbstractGraphicsViewAction.h"
+#include "DAGraphicsViewOverlayMouseMarker.h"
 class QWheelEvent;
 namespace DA
 {
-
+class DAAbstractGraphicsViewAction;
 /**
  * @brief 支持缩放和拖动的GraphicsView
  *
@@ -83,6 +83,12 @@ public:
 	void clearViewAction();
 	// 标记一个点,标记完成后
 	void markPoint(const QPointF& scenePoint, const QPen& pen = QPen(Qt::blue));
+	// 是否marker生效
+	bool isEnableMarker() const;
+	// 获取当前的markerstyle，如果没生效，返回DAGraphicsViewOverlayMouseMarker::NoMarkerStyle
+	DAGraphicsViewOverlayMouseMarker::MarkerStyle getCurrentMarkerStyle() const;
+	// 获取marker指针
+	DAGraphicsViewOverlayMouseMarker* getMarker() const;
 public slots:
 	// 放大
 	void zoomIn();
@@ -94,9 +100,12 @@ public slots:
 	void selectAll();
 	// 取消所有选中
 	void clearSelection();
+	// 设置标记，此操作基于DAGraphicsViewOverlayMouseMarker
+	void setViewMarkerStyle(DAGraphicsViewOverlayMouseMarker::MarkerStyle style);
+	// 设置标记是否生效
+	void setViewMarkerEnable(bool on);
 
 protected:
-	// void paintEvent(QPaintEvent * event);
 	virtual void wheelEvent(QWheelEvent* event) override;
 	virtual void mouseMoveEvent(QMouseEvent* event) override;
 	virtual void mousePressEvent(QMouseEvent* event) override;
@@ -104,7 +113,6 @@ protected:
 	virtual void keyPressEvent(QKeyEvent* event) override;
 	virtual void keyReleaseEvent(QKeyEvent* event) override;
 	virtual void resizeEvent(QResizeEvent* event) override;
-	virtual void paintEvent(QPaintEvent* event) override;
 
 protected:
 	void wheelZoom(QWheelEvent* event);
@@ -112,10 +120,13 @@ protected:
 	void startPad(QMouseEvent* event);
 	// 结束拖动
 	void endPad();
+	// 创建鼠标标记，如果重载了DAGraphicsViewOverlayMouseMarker，需要重载此函数返回自己的MouseMarker
+	virtual DAGraphicsViewOverlayMouseMarker* createMarker();
 
 private:
 	void init();
-
+	//
+	void tryInitViewMarker();
 Q_SIGNALS:
 	/**
 	 * @brief 一个视图动作被激活的信号

@@ -543,7 +543,6 @@ void DAAppRibbonArea::buildContextCategoryWorkflowView_()
 	m_pannelWorkflowView->addMediumAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionZoomIn));
 	m_pannelWorkflowView->addMediumAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionZoomOut));
 
-    
 	m_menuViewLineMarkers = new SARibbonMenu(m_app);
 	m_menuViewLineMarkers->setObjectName("menuViewLineMarkers");
 	m_menuViewLineMarkers->setIcon(QIcon(":/app/bright/Icon/view-marker.svg"));
@@ -551,24 +550,22 @@ void DAAppRibbonArea::buildContextCategoryWorkflowView_()
 	m_menuViewLineMarkers->addAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionHLineMarker));
 	m_menuViewLineMarkers->addAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionVLineMarker));
 	m_menuViewLineMarkers->addAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionNoneMarker));
-	
 
 	if (QActionGroup* ag = wfo->getLineMarkerActionGroup()) {
-		connect(ag, &QActionGroup::triggered, this, [ this,wfo ](QAction* act) {
-            QAction* actMarker = m_actions->actionWorkflowViewMarker;
-            QAction* noneAct = wfo->getInnerAction(DAWorkFlowOperateWidget::ActionNoneMarker);
-            if(act != noneAct && act->isChecked()){
-                actMarker->setIcon(act->icon());
-                actMarker->setChecked(true);
-            }
-            else{
-                actMarker->setIcon(QIcon(":/app/bright/Icon/view-marker.svg"));
-                actMarker->setChecked(false);
-            }
+		connect(ag, &QActionGroup::triggered, this, [ this, wfo ](QAction* act) {
+			QAction* actMarker = m_actions->actionWorkflowViewMarker;
+			QAction* noneAct   = wfo->getInnerAction(DAWorkFlowOperateWidget::ActionNoneMarker);
+			if (act != noneAct && act->isChecked()) {
+				actMarker->setIcon(act->icon());
+				actMarker->setChecked(true);
+			} else {
+				actMarker->setIcon(QIcon(":/app/bright/Icon/view-marker.svg"));
+				actMarker->setChecked(false);
+			}
 		});
 	}
-    m_actions->actionWorkflowViewMarker->setMenu(m_menuViewLineMarkers);
-    m_pannelWorkflowView->addLargeAction(m_actions->actionWorkflowViewMarker, QToolButton::MenuButtonPopup);
+	m_actions->actionWorkflowViewMarker->setMenu(m_menuViewLineMarkers);
+	m_pannelWorkflowView->addLargeAction(m_actions->actionWorkflowViewMarker, QToolButton::MenuButtonPopup);
 
 	m_pannelWorkflowExport = m_categoryWorkflowGraphicsView->addPannel(tr("Export"));  // cn:导出
 	m_pannelWorkflowExport->setObjectName(QStringLiteral("da-pannel-context.workflow.export"));
@@ -840,6 +837,28 @@ void DAAppRibbonArea::updateChartLegendAboutRibbon(DAChartWidget* chart)
 		return;
 	}
 	m_actions->actionChartEnableLegend->setChecked(legend->isVisible());
+}
+
+/**
+ * @brief DAAppRibbonArea::updateWorkflowViewAboutRibbon
+ * @param wf
+ */
+void DAAppRibbonArea::updateWorkflowAboutRibbon(DAWorkFlowOperateWidget* wfo)
+{
+	DAWorkFlowEditWidget* wf     = wfo->getCurrentWorkFlowWidget();
+	DAWorkFlowGraphicsView* view = wf->getWorkFlowGraphicsView();
+	// 要判断DAWorkFlowGraphicsView的MarkerStyle
+	if (view) {
+		QAction* actMarker = m_actions->actionWorkflowViewMarker;
+		QAction* act       = wfo->getLineMarkerActionGroup()->checkedAction();
+		if (!act || act == wfo->getInnerAction(DAWorkFlowOperateWidget::ActionNoneMarker)) {
+			actMarker->setIcon(QIcon(":/app/bright/Icon/view-marker.svg"));
+			actMarker->setChecked(false);
+		} else {
+			actMarker->setIcon(act->icon());
+			actMarker->setChecked(true);
+		}
+	}
 }
 
 /**

@@ -121,8 +121,8 @@ public slots:
 	void saveAs();
 	// 打开文件
 	void open();
-    // 打开工程文件
-    bool openProjectFile(const QString& projectFilePath);
+	// 打开工程文件
+	bool openProjectFile(const QString& projectFilePath);
 private slots:
 
 	//===================================================
@@ -238,7 +238,8 @@ private slots:
 	void onActionShowMessageLogViewTriggered();
 	// 显示设置区域
 	void onActionSettingWidgetTriggered();
-
+	// 显示标记线 - 此action有个menu，menu的action选中会设置当前action的图标，具体实现放在DAAppRibbonArea::buildContextCategoryWorkflowView_函数中
+	void onActionWorkflowViewMarkerTriggered(bool on);
 	//===================================================
 	// workflow上下文
 	//===================================================
@@ -302,6 +303,7 @@ private slots:
 	void onWorkflowFinished(DA::DAWorkFlowEditWidget* wfw, bool success);
 	void onWorkflowSceneitemsAdded(DA::DAGraphicsScene* sc, const QList< QGraphicsItem* >& its);
 	void onWorkflowSceneitemsRemoved(DA::DAGraphicsScene* sc, const QList< QGraphicsItem* >& its);
+	void onCurrentWorkflowWidgetChanged(DA::DAWorkFlowEditWidget* wfw);
 	//===================================================
 	// DAChartOperateWidget
 	//===================================================

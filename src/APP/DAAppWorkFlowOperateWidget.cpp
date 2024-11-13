@@ -8,13 +8,13 @@ namespace DA
 {
 DAAppWorkFlowOperateWidget::DAAppWorkFlowOperateWidget(QWidget* parent) : DAWorkFlowOperateWidget(parent)
 {
-    connect(this, &DAAppWorkFlowOperateWidget::workflowCreated, this, &DAAppWorkFlowOperateWidget::onWorkflowCreated);
-    connect(this, &DAAppWorkFlowOperateWidget::workflowRemoving, this, &DAAppWorkFlowOperateWidget::onWorkflowRemoving);
-    connect(this,
-            &DAAppWorkFlowOperateWidget::currentWorkFlowWidgetChanged,
-            this,
-            &DAAppWorkFlowOperateWidget::onCurrentWorkFlowWidgetChanged);
-    connect(this, &DAAppWorkFlowOperateWidget::workflowClearing, this, &DAAppWorkFlowOperateWidget::onWorkflowClearing);
+	connect(this, &DAAppWorkFlowOperateWidget::workflowCreated, this, &DAAppWorkFlowOperateWidget::onWorkflowCreated);
+	connect(this, &DAAppWorkFlowOperateWidget::workflowRemoving, this, &DAAppWorkFlowOperateWidget::onWorkflowRemoving);
+	connect(this,
+			&DAAppWorkFlowOperateWidget::currentWorkFlowWidgetChanged,
+			this,
+			&DAAppWorkFlowOperateWidget::onCurrentWorkFlowWidgetChanged);
+	connect(this, &DAAppWorkFlowOperateWidget::workflowClearing, this, &DAAppWorkFlowOperateWidget::onWorkflowClearing);
 }
 
 DAAppWorkFlowOperateWidget::~DAAppWorkFlowOperateWidget()
@@ -23,7 +23,7 @@ DAAppWorkFlowOperateWidget::~DAAppWorkFlowOperateWidget()
 
 DAWorkFlow* DAAppWorkFlowOperateWidget::createWorkflow()
 {
-    return (new DADataWorkFlow());
+	return (new DADataWorkFlow());
 }
 
 void DAAppWorkFlowOperateWidget::onWorkflowCreated(DAWorkFlowEditWidget* wfw)
@@ -31,29 +31,33 @@ void DAAppWorkFlowOperateWidget::onWorkflowCreated(DAWorkFlowEditWidget* wfw)
     cmd()->addStack(wfw->getUndoStack());
 }
 
+/**
+ * @brief 切换workflow
+ * @param w
+ */
 void DAAppWorkFlowOperateWidget::onCurrentWorkFlowWidgetChanged(DAWorkFlowEditWidget* w)
 {
-    if (w) {
-        w->getUndoStack()->setActive(true);
-    }
+	if (w) {
+		w->getUndoStack()->setActive(true);
+	}
 }
 
 void DAAppWorkFlowOperateWidget::onWorkflowRemoving(DAWorkFlowEditWidget* w)
 {
-    cmd()->removeStack(w->getUndoStack());
+	cmd()->removeStack(w->getUndoStack());
 }
 
 void DAAppWorkFlowOperateWidget::onWorkflowClearing()
 {
-    // 把所有的stack脱离
-    const QList< DAWorkFlowEditWidget* > all = getAllWorkFlowWidgets();
-    for (DAWorkFlowEditWidget* w : all) {
-        cmd()->removeStack(w->getUndoStack());
-    }
+	// 把所有的stack脱离
+	const QList< DAWorkFlowEditWidget* > all = getAllWorkFlowWidgets();
+	for (DAWorkFlowEditWidget* w : all) {
+		cmd()->removeStack(w->getUndoStack());
+	}
 }
 
 DAAppCommand* DAAppWorkFlowOperateWidget::cmd() const
 {
-    return DAAppCore::getInstance().getAppCmd();
+	return DAAppCore::getInstance().getAppCmd();
 }
 }

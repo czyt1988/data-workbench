@@ -138,7 +138,7 @@ DAWorkFlowEditWidget* DAWorkFlowOperateWidget::appendWorkflow(const QString& nam
  */
 DAWorkFlowEditWidget* DAWorkFlowOperateWidget::appendWorkflowWithDialog()
 {
-	bool ok      = false;
+	bool ok = false;
 	QString text = QInputDialog::getText(this, tr("Title of new workflow"), tr("Title:"), QLineEdit::Normal, QString(), &ok);
 	if (!ok || text.isEmpty()) {
 		return nullptr;
@@ -313,10 +313,10 @@ void DAWorkFlowOperateWidget::removeWorkflow(int index)
 	if (nullptr == w) {
 		return;
 	}
-	QMessageBox::StandardButton btn = QMessageBox::question(this,
-	                                                        tr("question"),  // 疑问
-	                                                        tr("Confirm to delete workflow:%1")
-	                                                            .arg(getWorkFlowWidgetName(index))  // 是否确认删除工作流:%1
+	QMessageBox::StandardButton btn = QMessageBox::question(
+		this,
+		tr("question"),                                                        // 疑问
+		tr("Confirm to delete workflow:%1").arg(getWorkFlowWidgetName(index))  // 是否确认删除工作流:%1
 	);
 	if (btn != QMessageBox::Yes) {
 		return;
@@ -681,6 +681,22 @@ void DAWorkFlowOperateWidget::onTabWidgetCurrentChanged(int index)
 	if (nullptr == w) {
 		return;
 	}
+	// 更新action的状态
+	if (DAWorkFlowGraphicsView* view = w->getWorkFlowGraphicsView()) {
+		auto markerStyle = view->getCurrentMarkerStyle();
+		switch (markerStyle) {
+		case DAGraphicsViewOverlayMouseMarker::CrossLine:
+			d_ptr->actionViewCrossLineMarker->setChecked(true);
+		case DAGraphicsViewOverlayMouseMarker::VLine:
+			d_ptr->actionViewVLineMarker->setChecked(true);
+		case DAGraphicsViewOverlayMouseMarker::HLine:
+			d_ptr->actionViewHLineMarker->setChecked(true);
+		case DAGraphicsViewOverlayMouseMarker::NoMarkerStyle:
+			d_ptr->actionViewNoneMarker->setChecked(true);
+		default:
+			break;
+		}
+	}
 	emit currentWorkFlowWidgetChanged(w);
 }
 
@@ -734,13 +750,16 @@ void DAWorkFlowOperateWidget::onSceneItemsRemoved(const QList< QGraphicsItem* >&
 void DAWorkFlowOperateWidget::onActionGroupViewLineMarkersTriggered(QAction* act)
 {
 	if (act == d_ptr->actionViewCrossLineMarker) {
-		setCurrentViewLineMarker(act->isChecked() ? CrossLineMarker : NoneLineMarker);
+		setCurrentViewLineMarker(act->isChecked() ? DAGraphicsViewOverlayMouseMarker::CrossLine
+												  : DAGraphicsViewOverlayMouseMarker::NoMarkerStyle);
 	} else if (act == d_ptr->actionViewHLineMarker) {
-		setCurrentViewLineMarker(act->isChecked() ? HLineMarker : NoneLineMarker);
+		setCurrentViewLineMarker(act->isChecked() ? DAGraphicsViewOverlayMouseMarker::HLine
+												  : DAGraphicsViewOverlayMouseMarker::NoMarkerStyle);
 	} else if (act == d_ptr->actionViewVLineMarker) {
-		setCurrentViewLineMarker(act->isChecked() ? VLineMarker : NoneLineMarker);
+		setCurrentViewLineMarker(act->isChecked() ? DAGraphicsViewOverlayMouseMarker::VLine
+												  : DAGraphicsViewOverlayMouseMarker::NoMarkerStyle);
 	} else if (act == d_ptr->actionViewNoneMarker) {
-		setCurrentViewLineMarker(NoneLineMarker);
+		setCurrentViewLineMarker(DAGraphicsViewOverlayMouseMarker::NoMarkerStyle);
 	}
 }
 
@@ -981,11 +1000,16 @@ void DAWorkFlowOperateWidget::iteratorScene(FpScenesOpt fp)
  * @brief 设置当前视图的标记线
  * @param s
  */
-void DAWorkFlowOperateWidget::setCurrentViewLineMarker(ViewLineMarkerStyle s)
+void DAWorkFlowOperateWidget::setCurrentViewLineMarker(DAGraphicsViewOverlayMouseMarker::MarkerStyle s)
 {
+	DAWorkFlowGraphicsView* v = getCurrentWorkFlowView();
+	if (!v) {
+		return;
+	}
+	v->setViewMarkerStyle(s);
 }
 
-QActionGroup * DAWorkFlowOperateWidget::getLineMarkerActionGroup() const
+QActionGroup* DAWorkFlowOperateWidget::getLineMarkerActionGroup() const
 {
     return d_ptr->actionGroupViewLineMarkers;
 }

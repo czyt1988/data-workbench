@@ -274,7 +274,7 @@ void DAAppController::initConnection()
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowSettingWidget, onActionSettingWidgetTriggered);
 	// workflow view 工作流视图
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowViewReadOnly, onActionWorkflowViewReadOnlyTriggered);
-
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowViewMarker, onActionWorkflowViewMarkerTriggered);
 	// workflow edit 工作流编辑
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowNew, onActionNewWorkflowTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowEnableItemLinkageMove,
@@ -354,6 +354,10 @@ void DAAppController::initConnection()
 			&DAWorkFlowOperateWidget::selectionItemChanged,
 			this,
 			&DAAppController::onWorkflowSceneSelectionItemChanged);
+	connect(workflowOpt,
+			&DAWorkFlowOperateWidget::currentWorkFlowWidgetChanged,
+			this,
+			&DAAppController::onCurrentWorkflowWidgetChanged);
 	connect(workflowOpt, &DAWorkFlowOperateWidget::workflowStartExecute, this, &DAAppController::onWorkflowStartExecute);
 	connect(workflowOpt, &DAWorkFlowOperateWidget::workflowFinished, this, &DAAppController::onWorkflowFinished);
 	connect(workflowOpt, &DAWorkFlowOperateWidget::itemsAdded, this, &DAAppController::onWorkflowSceneitemsAdded);
@@ -688,18 +692,18 @@ void DAAppController::open()
 		}
 	}
 	DA_WAIT_CURSOR_SCOPED();
-    openProjectFile(fileNames.first());
+	openProjectFile(fileNames.first());
 }
 
 /**
  * @brief 打开工程文件
- *  
- * @param $PARAMS 
+ *
+ * @param $PARAMS
  * @return 成功返回true
  */
-bool DAAppController::openProjectFile(const QString & projectFilePath)
+bool DAAppController::openProjectFile(const QString& projectFilePath)
 {
-    DAAppProject* project = DA_APP_CORE.getAppProject();
+	DAAppProject* project = DA_APP_CORE.getAppProject();
 
 	if (!project->load(projectFilePath)) {
 		qCritical() << tr("failed to load project file:%1").arg(projectFilePath);
@@ -707,7 +711,7 @@ bool DAAppController::openProjectFile(const QString & projectFilePath)
 	}
 	// 设置工程名称给标题
 	app()->setWindowTitle(QString("%1").arg(project->getProjectBaseName()));
-    return true;
+	return true;
 }
 
 /**
@@ -1139,6 +1143,16 @@ void DAAppController::onWorkflowSceneitemsAdded(DAGraphicsScene* sc, const QList
 void DAAppController::onWorkflowSceneitemsRemoved(DAGraphicsScene* sc, const QList< QGraphicsItem* >& its)
 {
     mProject->setDirty(true);
+}
+
+/**
+ * @brief 当前的wf切换
+ * @param wfw
+ */
+void DAAppController::onCurrentWorkflowWidgetChanged(DAWorkFlowEditWidget* wfw)
+{
+	DAWorkFlowOperateWidget* workflowOpt = mDock->getWorkFlowOperateWidget();
+	mRibbon->updateWorkflowAboutRibbon(workflowOpt);
 }
 
 /**
@@ -1731,6 +1745,36 @@ void DAAppController::onActionShowMessageLogViewTriggered()
 void DAAppController::onActionSettingWidgetTriggered()
 {
     mDock->raiseDockByWidget((QWidget*)(mDock->getSettingContainerWidget()));
+}
+
+/**
+ * @brief 显示标记线
+ *
+ * 此action有个menu，menu的action选中会设置当前action的图标，具体实现放在@ref DAAppRibbonArea::buildContextCategoryWorkflowView_ 函数中
+ * @param on
+ * @sa DAAppRibbonArea::buildContextCategoryWorkflowView_
+ */
+void DAAppController::onActionWorkflowViewMarkerTriggered(bool on)
+{
+	auto wo = mDock->getWorkFlowOperateWidget();
+	if (!wo) {
+		return;
+	}
+	if (on) {
+		// 激活marker
+		auto actionCross = wo->getInnerAction(DAWorkFlowOperateWidget::ActionCrossLineMarker);
+		if (!actionCross) {
+			return;
+		}
+		actionCross->trigger();
+	} else {
+		// 激活marker
+		auto actionNone = wo->getInnerAction(DAWorkFlowOperateWidget::ActionNoneMarker);
+		if (!actionNone) {
+			return;
+		}
+		actionNone->trigger();
+	}
 }
 
 /**

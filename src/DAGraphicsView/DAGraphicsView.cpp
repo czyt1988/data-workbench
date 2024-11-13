@@ -8,7 +8,6 @@
 #include <QPaintEvent>
 #include "DAAbstractGraphicsViewAction.h"
 #include "DAGraphicsScene.h"
-#include "DAGraphicsMouseCrossLineViewAction.h"
 #include "DAGraphicsViewOverlayMouseMarker.h"
 #define DAGRAPHICSVIEW_DEBUG_PRINT 0
 
@@ -34,6 +33,7 @@ public:
 	DAGraphicsView::PadFlags mPadFlags { DAGraphicsView::PadByWheelMiddleButton
 		                                 | DAGraphicsView::PadBySpaceWithMouseLeftButton };
 	std::unique_ptr< DAAbstractGraphicsViewAction > mViewAction;
+	DAGraphicsViewOverlayMouseMarker* mMarker { nullptr };  ///< 标记线绘制
 };
 
 DAGraphicsView::PrivateData::PrivateData(DAGraphicsView* p) : q_ptr(p)
@@ -67,8 +67,14 @@ void DAGraphicsView::init()
 	setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
 	setDragMode(QGraphicsView::RubberBandDrag);
 	// setDragMode(QGraphicsView::ScrollHandDrag);
-	// setupViewAction(new DAGraphicsMouseCrossLineViewAction(this, DAGraphicsMouseCrossLineViewAction::FollowMouse));
-    new DAGraphicsViewOverlayMouseMarker(this);
+}
+
+void DAGraphicsView::tryInitViewMarker()
+{
+	if (!d_ptr->mMarker) {
+		d_ptr->mMarker = createMarker();
+		d_ptr->mMarker->setMarkerStyle(DAGraphicsViewOverlayMouseMarker::CrossLine);
+	}
 }
 
 void DAGraphicsView::setScaleRange(qreal min, qreal max)
@@ -330,21 +336,6 @@ void DAGraphicsView::resizeEvent(QResizeEvent* event)
 }
 
 /**
- * @brief .
- *
- * @param $PARAMS
- * @return $RETURN
- */
-void DAGraphicsView::paintEvent(QPaintEvent* event)
-{
-	QGraphicsView::paintEvent(event);
-	if (d_ptr->mViewAction) {
-		d_ptr->mViewAction->paintEvent(event);
-	}
-	// 绘制十字标线
-}
-
-/**
  * @brief 滚轮事件的缩放
  * @param event
  */
@@ -382,6 +373,15 @@ void DAGraphicsView::endPad()
 	d_ptr->mIsPadding = false;
 	setCursor(Qt::ArrowCursor);
 	setDragMode(QGraphicsView::RubberBandDrag);
+}
+
+/**
+ * @brief 创建鼠标标记，如果重载了DAGraphicsViewOverlayMouseMarker，需要重载此函数返回自己的MouseMarker
+ * @return
+ */
+DAGraphicsViewOverlayMouseMarker* DAGraphicsView::createMarker()
+{
+    return new DAGraphicsViewOverlayMouseMarker(this);
 }
 
 /**
@@ -510,10 +510,43 @@ void DAGraphicsView::clearViewAction()
  */
 void DAGraphicsView::markPoint(const QPointF& scenePoint, const QPen& pen)
 {
-	auto act = new DAGraphicsMouseCrossLineViewAction(this);
-	act->setDrawPen(pen);
-	act->setCrossScenePos(scenePoint);
-	setupViewAction(act);
+	// auto act = new DAGraphicsMouseCrossLineViewAction(this);
+	// act->setDrawPen(pen);
+	// act->setCrossScenePos(scenePoint);
+	// setupViewAction(act);
+}
+
+/**
+ * @brief marker是否生效
+ * @return 未激活也认为不生效
+ */
+bool DAGraphicsView::isEnableMarker() const
+{
+	if (!d_ptr->mMarker) {
+		return false;
+	}
+	return d_ptr->mMarker->isActive();
+}
+
+/**
+ * @brief 获取当前的markerstyle，如果没生效，返回DAGraphicsViewOverlayMouseMarker::NoMarkerStyle
+ * @return
+ */
+DAGraphicsViewOverlayMouseMarker::MarkerStyle DAGraphicsView::getCurrentMarkerStyle() const
+{
+	if (!isEnableMarker()) {
+		return DAGraphicsViewOverlayMouseMarker::NoMarkerStyle;
+	}
+	return d_ptr->mMarker->getMarkerStyle();
+}
+
+/**
+ * @brief 获取marker指针
+ * @return
+ */
+DAGraphicsViewOverlayMouseMarker* DAGraphicsView::getMarker() const
+{
+    return d_ptr->mMarker;
 }
 
 /**
@@ -556,6 +589,26 @@ void DAGraphicsView::clearSelection()
 			}
 		}
 	}
+}
+
+/**
+ * @brief 设置标记
+ * @param style
+ */
+void DAGraphicsView::setViewMarkerStyle(DAGraphicsViewOverlayMouseMarker::MarkerStyle style)
+{
+	tryInitViewMarker();
+	d_ptr->mMarker->setMarkerStyle(style);
+}
+
+/**
+ * @brief 设置mark是否生效
+ * @param on
+ */
+void DAGraphicsView::setViewMarkerEnable(bool on)
+{
+	tryInitViewMarker();
+	d_ptr->mMarker->setActive(on);
 }
 
 bool DAGraphicsView::isEnaleWheelZoom() const

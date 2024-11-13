@@ -23,9 +23,10 @@ public:
 	 */
 	enum MarkerStyle
 	{
-		HLine,     ///< 水平线
-		VLine,     ///< 垂直线
-		CrossLine  ///< 十字线
+		HLine,      ///< 水平线
+		VLine,      ///< 垂直线
+		CrossLine,  ///< 十字线
+		NoMarkerStyle
 	};
 
 public:
@@ -55,7 +56,6 @@ public:
 	 */
 	void setMarkerStyle(MarkerStyle v);
 
-	
 protected:
 	virtual void drawOverlay(QPainter* painter) const override;
 	virtual QRegion maskHint() const override;
