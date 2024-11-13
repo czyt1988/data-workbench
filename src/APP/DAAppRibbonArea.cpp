@@ -511,21 +511,21 @@ void DAAppRibbonArea::buildContextCategoryWorkflowEdit_()
 	//
 	// connect
 	connect(m_workflowShapeEditPannelWidget,
-			&DAShapeEditPannelWidget::borderPenChanged,
-			this,
-			&DAAppRibbonArea::selectedWorkflowItemPen);
+	        &DAShapeEditPannelWidget::borderPenChanged,
+	        this,
+	        &DAAppRibbonArea::selectedWorkflowItemPen);
 	connect(m_workflowShapeEditPannelWidget,
-			&DAShapeEditPannelWidget::backgroundBrushChanged,
-			this,
-			&DAAppRibbonArea::selectedWorkflowItemBrush);
+	        &DAShapeEditPannelWidget::backgroundBrushChanged,
+	        this,
+	        &DAAppRibbonArea::selectedWorkflowItemBrush);
 	connect(m_workflowFontEditPannel,
-			&DAFontEditPannelWidget::currentFontChanged,
-			this,
-			&DAAppRibbonArea::selectedWorkflowItemFont);
+	        &DAFontEditPannelWidget::currentFontChanged,
+	        this,
+	        &DAAppRibbonArea::selectedWorkflowItemFont);
 	connect(m_workflowFontEditPannel,
-			&DAFontEditPannelWidget::currentFontColorChanged,
-			this,
-			&DAAppRibbonArea::selectedWorkflowItemFontColor);
+	        &DAFontEditPannelWidget::currentFontColorChanged,
+	        this,
+	        &DAAppRibbonArea::selectedWorkflowItemFontColor);
 }
 
 void DAAppRibbonArea::buildContextCategoryWorkflowView_()
@@ -542,13 +542,33 @@ void DAAppRibbonArea::buildContextCategoryWorkflowView_()
 	m_pannelWorkflowView->addLargeAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionZoomFit));
 	m_pannelWorkflowView->addMediumAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionZoomIn));
 	m_pannelWorkflowView->addMediumAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionZoomOut));
+
+    
 	m_menuViewLineMarkers = new SARibbonMenu(m_app);
 	m_menuViewLineMarkers->setObjectName("menuViewLineMarkers");
-	m_menuViewLineMarkers->setIcon(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionCrossLineMarker)->icon());
-	m_menuViewLineMarkers->setDefaultAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionCrossLineMarker));
+	m_menuViewLineMarkers->setIcon(QIcon(":/app/bright/Icon/view-marker.svg"));
+	m_menuViewLineMarkers->addAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionCrossLineMarker));
 	m_menuViewLineMarkers->addAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionHLineMarker));
 	m_menuViewLineMarkers->addAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionVLineMarker));
-	m_pannelWorkflowView->addLargeMenu(m_menuViewLineMarkers, QToolButton::MenuButtonPopup);
+	m_menuViewLineMarkers->addAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionNoneMarker));
+	
+
+	if (QActionGroup* ag = wfo->getLineMarkerActionGroup()) {
+		connect(ag, &QActionGroup::triggered, this, [ this,wfo ](QAction* act) {
+            QAction* actMarker = m_actions->actionWorkflowViewMarker;
+            QAction* noneAct = wfo->getInnerAction(DAWorkFlowOperateWidget::ActionNoneMarker);
+            if(act != noneAct && act->isChecked()){
+                actMarker->setIcon(act->icon());
+                actMarker->setChecked(true);
+            }
+            else{
+                actMarker->setIcon(QIcon(":/app/bright/Icon/view-marker.svg"));
+                actMarker->setChecked(false);
+            }
+		});
+	}
+    m_actions->actionWorkflowViewMarker->setMenu(m_menuViewLineMarkers);
+    m_pannelWorkflowView->addLargeAction(m_actions->actionWorkflowViewMarker, QToolButton::MenuButtonPopup);
 
 	m_pannelWorkflowExport = m_categoryWorkflowGraphicsView->addPannel(tr("Export"));  // cn:导出
 	m_pannelWorkflowExport->setObjectName(QStringLiteral("da-pannel-context.workflow.export"));
@@ -683,7 +703,7 @@ AppMainWindow* DAAppRibbonArea::app() const
 
 SARibbonBar* DAAppRibbonArea::ribbonBar() const
 {
-    return (app()->ribbonBar());
+	return (app()->ribbonBar());
 }
 
 /**
@@ -692,7 +712,7 @@ SARibbonBar* DAAppRibbonArea::ribbonBar() const
  */
 SARibbonCategory* DAAppRibbonArea::getRibbonCategoryMain() const
 {
-    return (m_categoryMain);
+	return (m_categoryMain);
 }
 
 /**

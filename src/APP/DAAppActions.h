@@ -77,6 +77,7 @@ public:
 	QAction* actionWorkflowStartDrawText;        ///< 绘制文本框
 	// workflow的视图操作
 	QAction* actionWorkflowShowGrid;  ///< 显示网格
+    QAction* actionWorkflowViewMarker;  ///< 视图标记
 
 	QAction* actionWorkflowViewReadOnly;        ///< 锁定视图
 	QAction* actionExportWorkflowSceneToImage;  ///< 导出png格式

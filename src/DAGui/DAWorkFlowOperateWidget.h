@@ -11,6 +11,7 @@ namespace Ui
 class DAWorkFlowOperateWidget;
 }
 class QUndoStack;
+class QActionGroup;
 
 namespace DA
 {
@@ -53,7 +54,8 @@ public:
 		ActionCrossLineMarker,  ///< 十字线
 		ActionHLineMarker,      ///< 水平线
 		ActionVLineMarker,      ///< 垂直线
-	};
+        ActionNoneMarker,      ///< 无标记线
+    };
 
 	/**
 	 * @brief 视图线标记样式
@@ -131,6 +133,8 @@ public:
 	void iteratorScene(FpScenesOpt fp);
 	// 设置当前视图的标记线
 	void setCurrentViewLineMarker(ViewLineMarkerStyle s);
+    //获取LineMarker的ActionGroup
+    QActionGroup* getLineMarkerActionGroup() const;
 public Q_SLOTS:
 	// 添加一个背景图
 	void addBackgroundPixmap(const QString& pixmapPath);

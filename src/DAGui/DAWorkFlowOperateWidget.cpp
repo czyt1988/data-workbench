@@ -43,6 +43,7 @@ public:
 	QAction* actionViewCrossLineMarker { nullptr };  ///< 视图的十字标记线
 	QAction* actionViewHLineMarker { nullptr };      ///< 视图的水平标记线
 	QAction* actionViewVLineMarker { nullptr };      ///< 视图的垂直标记线
+	QAction* actionViewNoneMarker { nullptr };       ///< 无标记线
 	QActionGroup* actionGroupViewLineMarkers { nullptr };
 };
 
@@ -54,7 +55,7 @@ DAWorkFlowOperateWidget::PrivateData::PrivateData(DAWorkFlowOperateWidget* p) : 
 // DAWorkFlowOperateWidget
 //===================================================
 DAWorkFlowOperateWidget::DAWorkFlowOperateWidget(QWidget* parent)
-	: QWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DAWorkFlowOperateWidget)
+    : QWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DAWorkFlowOperateWidget)
 {
 	ui->setupUi(this);
 	initActions();
@@ -80,7 +81,7 @@ DAWorkFlowOperateWidget::~DAWorkFlowOperateWidget()
  */
 DAWorkFlow* DAWorkFlowOperateWidget::createWorkflow()
 {
-    return (new DAWorkFlow());
+	return (new DAWorkFlow());
 }
 
 /**
@@ -117,9 +118,9 @@ DAWorkFlowEditWidget* DAWorkFlowOperateWidget::appendWorkflow(const QString& nam
 	connect(scene, &DAWorkFlowGraphicsScene::itemsRemoved, this, &DAWorkFlowOperateWidget::onSceneItemsRemoved);
 	connect(wfe, &DAWorkFlowEditWidget::startExecute, this, [ this, wfe ]() { emit workflowStartExecute(wfe); });
 	connect(wfe,
-			&DAWorkFlowEditWidget::nodeExecuteFinished,
-			this,
-			[ this, wfe ](DAAbstractNode::SharedPointer n, bool state) { emit nodeExecuteFinished(wfe, n, state); });
+	        &DAWorkFlowEditWidget::nodeExecuteFinished,
+	        this,
+	        [ this, wfe ](DAAbstractNode::SharedPointer n, bool state) { emit nodeExecuteFinished(wfe, n, state); });
 	connect(wfe, &DAWorkFlowEditWidget::finished, this, [ this, wfe ](bool s) { emit workflowFinished(wfe, s); });
 	ui->tabWidget->addTab(wfe, name);
 	// 把名字保存到DAWorkFlowEditWidget中，在DAProject保存的时候会用到
@@ -137,7 +138,7 @@ DAWorkFlowEditWidget* DAWorkFlowOperateWidget::appendWorkflow(const QString& nam
  */
 DAWorkFlowEditWidget* DAWorkFlowOperateWidget::appendWorkflowWithDialog()
 {
-	bool ok = false;
+	bool ok      = false;
 	QString text = QInputDialog::getText(this, tr("Title of new workflow"), tr("Title:"), QLineEdit::Normal, QString(), &ok);
 	if (!ok || text.isEmpty()) {
 		return nullptr;
@@ -151,7 +152,7 @@ DAWorkFlowEditWidget* DAWorkFlowOperateWidget::appendWorkflowWithDialog()
  */
 int DAWorkFlowOperateWidget::getCurrentWorkflowIndex() const
 {
-    return ui->tabWidget->currentIndex();
+	return ui->tabWidget->currentIndex();
 }
 
 /**
@@ -160,7 +161,7 @@ int DAWorkFlowOperateWidget::getCurrentWorkflowIndex() const
  */
 void DAWorkFlowOperateWidget::setCurrentWorkflow(int index)
 {
-    ui->tabWidget->setCurrentIndex(index);
+	ui->tabWidget->setCurrentIndex(index);
 }
 
 /**
@@ -181,7 +182,7 @@ DAWorkFlow* DAWorkFlowOperateWidget::getCurrentWorkflow() const
  */
 void DAWorkFlowOperateWidget::setCurrentWorkflowWidget(DAWorkFlowEditWidget* wf)
 {
-    ui->tabWidget->setCurrentWidget(wf);
+	ui->tabWidget->setCurrentWidget(wf);
 }
 
 /**
@@ -270,7 +271,7 @@ DAWorkFlowGraphicsView* DAWorkFlowOperateWidget::getCurrentWorkFlowView() const
  */
 DAWorkFlowEditWidget* DAWorkFlowOperateWidget::getWorkFlowWidget(int index) const
 {
-    return qobject_cast< DAWorkFlowEditWidget* >(ui->tabWidget->widget(index));
+	return qobject_cast< DAWorkFlowEditWidget* >(ui->tabWidget->widget(index));
 }
 
 /**
@@ -280,7 +281,7 @@ DAWorkFlowEditWidget* DAWorkFlowOperateWidget::getWorkFlowWidget(int index) cons
  */
 QString DAWorkFlowOperateWidget::getWorkFlowWidgetName(int index) const
 {
-    return ui->tabWidget->tabText(index);
+	return ui->tabWidget->tabText(index);
 }
 
 /**
@@ -290,7 +291,7 @@ QString DAWorkFlowOperateWidget::getWorkFlowWidgetName(int index) const
  */
 void DAWorkFlowOperateWidget::renameWorkFlowWidget(int index, const QString& name)
 {
-    ui->tabWidget->setTabText(index, name);
+	ui->tabWidget->setTabText(index, name);
 }
 
 /**
@@ -299,7 +300,7 @@ void DAWorkFlowOperateWidget::renameWorkFlowWidget(int index, const QString& nam
  */
 int DAWorkFlowOperateWidget::count() const
 {
-    return ui->tabWidget->count();
+	return ui->tabWidget->count();
 }
 
 /**
@@ -312,10 +313,10 @@ void DAWorkFlowOperateWidget::removeWorkflow(int index)
 	if (nullptr == w) {
 		return;
 	}
-	QMessageBox::StandardButton btn = QMessageBox::question(
-		this,
-		tr("question"),                                                        // 疑问
-		tr("Confirm to delete workflow:%1").arg(getWorkFlowWidgetName(index))  // 是否确认删除工作流:%1
+	QMessageBox::StandardButton btn = QMessageBox::question(this,
+	                                                        tr("question"),  // 疑问
+	                                                        tr("Confirm to delete workflow:%1")
+	                                                            .arg(getWorkFlowWidgetName(index))  // 是否确认删除工作流:%1
 	);
 	if (btn != QMessageBox::Yes) {
 		return;
@@ -626,7 +627,7 @@ void DAWorkFlowOperateWidget::setEnableWorkflowLink(bool on)
  */
 bool DAWorkFlowOperateWidget::isEnableWorkflowLink() const
 {
-    return d_ptr->mEnableWorkflowLink;
+	return d_ptr->mEnableWorkflowLink;
 }
 
 /**
@@ -635,7 +636,7 @@ bool DAWorkFlowOperateWidget::isEnableWorkflowLink() const
  */
 QFont DAWorkFlowOperateWidget::getDefaultTextFont() const
 {
-    return d_ptr->mDefaultFont;
+	return d_ptr->mDefaultFont;
 }
 /**
  * @brief 设置文本字体
@@ -655,7 +656,7 @@ void DAWorkFlowOperateWidget::setDefaultTextFont(const QFont& f)
  */
 QColor DAWorkFlowOperateWidget::getDefaultTextColor() const
 {
-    return d_ptr->mDefaultTextColor;
+	return d_ptr->mDefaultTextColor;
 }
 /**
  * @brief 设置默认的文本颜色
@@ -689,7 +690,7 @@ void DAWorkFlowOperateWidget::onTabWidgetCurrentChanged(int index)
  */
 void DAWorkFlowOperateWidget::onTabWidgetTabCloseRequested(int index)
 {
-    removeWorkflow(index);
+	removeWorkflow(index);
 }
 
 /**
@@ -738,6 +739,8 @@ void DAWorkFlowOperateWidget::onActionGroupViewLineMarkersTriggered(QAction* act
 		setCurrentViewLineMarker(act->isChecked() ? HLineMarker : NoneLineMarker);
 	} else if (act == d_ptr->actionViewVLineMarker) {
 		setCurrentViewLineMarker(act->isChecked() ? VLineMarker : NoneLineMarker);
+	} else if (act == d_ptr->actionViewNoneMarker) {
+		setCurrentViewLineMarker(NoneLineMarker);
 	}
 }
 
@@ -840,14 +843,27 @@ void DAWorkFlowOperateWidget::initActions()
 	d->actionViewVLineMarker->setObjectName(QStringLiteral("actionViewVLineMarker"));
 	d->actionViewVLineMarker->setIcon(QIcon(QStringLiteral(":/DAGui/icon/view-vline-marker.svg")));
 
+	// 无标记线
+	d->actionViewNoneMarker = new QAction(this);
+	d->actionViewNoneMarker->setCheckable(true);
+	d->actionViewNoneMarker->setChecked(false);
+	d->actionViewNoneMarker->setObjectName(QStringLiteral("actionViewNoneMarker"));
+	d->actionViewNoneMarker->setIcon(QIcon(QStringLiteral(":/DAGui/icon/view-none-marker.svg")));
+
 	d->actionGroupViewLineMarkers = new QActionGroup(this);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+	d->actionGroupViewLineMarkers->setExclusionPolicy(QActionGroup::ExclusionPolicy::ExclusiveOptional);
+#endif
+	d->actionGroupViewLineMarkers->setExclusive(true);
 	d->actionGroupViewLineMarkers->addAction(d->actionViewCrossLineMarker);
 	d->actionGroupViewLineMarkers->addAction(d->actionViewHLineMarker);
 	d->actionGroupViewLineMarkers->addAction(d->actionViewVLineMarker);
+	d->actionGroupViewLineMarkers->addAction(d->actionViewNoneMarker);
+
 	connect(d->actionGroupViewLineMarkers,
-			&QActionGroup::triggered,
-			this,
-			&DAWorkFlowOperateWidget::onActionGroupViewLineMarkersTriggered);
+	        &QActionGroup::triggered,
+	        this,
+	        &DAWorkFlowOperateWidget::onActionGroupViewLineMarkersTriggered);
 
 	addAction(d->mActionCopy);
 	addAction(d->mActionCut);
@@ -861,6 +877,7 @@ void DAWorkFlowOperateWidget::initActions()
 	addAction(d->actionViewCrossLineMarker);
 	addAction(d->actionViewHLineMarker);
 	addAction(d->actionViewVLineMarker);
+	addAction(d->actionViewNoneMarker);
 	retranslateUi();
 }
 
@@ -891,6 +908,8 @@ void DAWorkFlowOperateWidget::retranslateUi()
 	d->actionViewHLineMarker->setStatusTip(tr("Horizontal Line Marker"));  // cn:水平标记线
 	d->actionViewVLineMarker->setText(tr("Vertical Line Marker"));         // cn:垂直标记线
 	d->actionViewVLineMarker->setStatusTip(tr("Vertical Line Marker"));    // cn:垂直标记线
+	d->actionViewNoneMarker->setText(tr("None Marker"));                   // cn:无标记线
+	d->actionViewNoneMarker->setStatusTip(tr("None Marker"));              // cn:无标记线
 }
 
 bool DAWorkFlowOperateWidget::isOnlyOneWorkflow() const
@@ -900,7 +919,7 @@ bool DAWorkFlowOperateWidget::isOnlyOneWorkflow() const
 
 void DAWorkFlowOperateWidget::setOnlyOneWorkflow(bool v)
 {
-    d_ptr->mOnlyOneWorkflow = v;
+	d_ptr->mOnlyOneWorkflow = v;
 }
 
 /**
@@ -935,6 +954,8 @@ QAction* DAWorkFlowOperateWidget::getInnerAction(DAWorkFlowOperateWidget::InnerA
 		return d_ptr->actionViewHLineMarker;
 	case ActionVLineMarker:
 		return d_ptr->actionViewVLineMarker;
+	case ActionNoneMarker:
+		return d_ptr->actionViewNoneMarker;
 	default:
 		break;
 	}
@@ -962,6 +983,11 @@ void DAWorkFlowOperateWidget::iteratorScene(FpScenesOpt fp)
  */
 void DAWorkFlowOperateWidget::setCurrentViewLineMarker(ViewLineMarkerStyle s)
 {
+}
+
+QActionGroup * DAWorkFlowOperateWidget::getLineMarkerActionGroup() const
+{
+    return d_ptr->actionGroupViewLineMarkers;
 }
 
 /**

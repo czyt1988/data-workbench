@@ -80,6 +80,7 @@
         <file>Icon/zoomOut.svg</file>
         <file>Icon/lock-view.svg</file>
         <file>Icon/link.svg</file>
+        <file>Icon/view-marker.svg</file>
     </qresource>
     <qresource prefix="/app/dataType">
         <file>Icon/typeDataframe.svg</file>

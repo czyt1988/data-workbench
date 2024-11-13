@@ -208,7 +208,7 @@ private:
 	 * @param dock
 	 */
 	void setDockingArea(DAAppDockingArea* dock);
-signals:
+Q_SIGNALS:
 	/**
 	   @fn selectedPen
 	   @brief 画笔选中了
@@ -276,6 +276,7 @@ signals:
 	   @param f
 	 */
 	void selectedWorkflowItemFontColor(const QColor& c);
+private Q_SLOTS:
 
 public:
 	///////////////////////////////////////////
