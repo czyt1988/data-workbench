@@ -207,8 +207,8 @@ void DAAppRibbonArea::resetText()
 	m_menuTheme->setTitle(tr("theme"));               // cn:主题
 	m_menuTheme->setToolTip(tr("set ribbon theme"));  // cn:设置主题
 	//
-	m_menuViewLineMarkers->setTitle(tr("Cross Marker"));         // cn:十字标记
-	m_menuViewLineMarkers->setToolTip(tr("Cross Line Marker"));  // cn:十字线标记
+	m_menuViewLineMarkers->setTitle(tr("View Marker"));    // cn:视图标记
+	m_menuViewLineMarkers->setToolTip(tr("View Marker"));  // cn:视图标记
 	//
 	mExportWorkflowSceneToImageMenu->setTitle(tr("Export Image"));                               // cn:导出为图片
 	mExportWorkflowSceneToImageMenu->setToolTip(tr("Export Workflow Graphics Scene To Image"));  // cn:把工作流的场景导出为图片

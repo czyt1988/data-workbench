@@ -810,127 +810,127 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="APP/DAAppController.cpp" line="663"/>
-        <location filename="APP/DAAppController.cpp" line="752"/>
+        <location filename="APP/DAAppController.cpp" line="667"/>
+        <location filename="APP/DAAppController.cpp" line="756"/>
         <source>project file(*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="678"/>
+        <location filename="APP/DAAppController.cpp" line="682"/>
         <source>Question</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="679"/>
+        <location filename="APP/DAAppController.cpp" line="683"/>
         <source>Another project already exists. Do you want to replace it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="705"/>
-        <location filename="APP/DAAppController.cpp" line="765"/>
+        <location filename="APP/DAAppController.cpp" line="709"/>
+        <location filename="APP/DAAppController.cpp" line="769"/>
         <source>failed to load project file:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="399"/>
-        <location filename="APP/DAAppController.cpp" line="720"/>
+        <location filename="APP/DAAppController.cpp" line="403"/>
+        <location filename="APP/DAAppController.cpp" line="724"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="722"/>
+        <location filename="APP/DAAppController.cpp" line="726"/>
         <source>project file (*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="732"/>
+        <location filename="APP/DAAppController.cpp" line="736"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="732"/>
+        <location filename="APP/DAAppController.cpp" line="736"/>
         <source>Whether to overwrite the file:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="410"/>
-        <location filename="APP/DAAppController.cpp" line="741"/>
+        <location filename="APP/DAAppController.cpp" line="414"/>
+        <location filename="APP/DAAppController.cpp" line="745"/>
         <source>Project saved failed!,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="745"/>
-        <location filename="APP/DAAppController.cpp" line="790"/>
+        <location filename="APP/DAAppController.cpp" line="749"/>
+        <location filename="APP/DAAppController.cpp" line="794"/>
         <source>Project saved successfully,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="401"/>
+        <location filename="APP/DAAppController.cpp" line="405"/>
         <source>Project Files (*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="807"/>
+        <location filename="APP/DAAppController.cpp" line="811"/>
         <source>Project load successfully,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="873"/>
+        <location filename="APP/DAAppController.cpp" line="877"/>
         <source>Image files (*.png *.jpg)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="874"/>
+        <location filename="APP/DAAppController.cpp" line="878"/>
         <source>Any files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="947"/>
+        <location filename="APP/DAAppController.cpp" line="951"/>
         <source>The image was successfully saved in path %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="949"/>
+        <location filename="APP/DAAppController.cpp" line="953"/>
         <source>Image save failed at path %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="988"/>
+        <location filename="APP/DAAppController.cpp" line="992"/>
         <source>get null project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="994"/>
+        <location filename="APP/DAAppController.cpp" line="998"/>
         <source>warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="995"/>
+        <location filename="APP/DAAppController.cpp" line="999"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1286"/>
+        <location filename="APP/DAAppController.cpp" line="1300"/>
         <source>Before creating a new coordinate,you need to create a figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1619"/>
+        <location filename="APP/DAAppController.cpp" line="1633"/>
         <source>%1_Describe</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1620"/>
+        <location filename="APP/DAAppController.cpp" line="1634"/>
         <source>Generate descriptive statistics that summarize the central tendency, dispersion and shape of a [%1]’s distribution, excluding NaN values</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1743"/>
+        <location filename="APP/DAAppController.cpp" line="1787"/>
         <source>new workflow name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1744"/>
+        <location filename="APP/DAAppController.cpp" line="1788"/>
         <source>new workflow name:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1163,13 +1163,13 @@ Config</source>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="197"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="583"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="580"/>
         <source>Workflow Run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="198"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="586"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="583"/>
         <source>Run</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1196,8 +1196,8 @@ Config</source>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="205"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="597"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="599"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="594"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="596"/>
         <source>Chart Edit</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1247,7 +1247,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="573"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="570"/>
         <source>Export</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2346,12 +2346,12 @@ Config</source>
 <context>
     <name>DA::DAWorkFlowOperateWidget</name>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="317"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="318"/>
         <source>question</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="318"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="319"/>
         <source>Confirm to delete workflow:%1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2381,7 +2381,7 @@ Config</source>
         <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="579"/>
         <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="592"/>
         <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="605"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="1004"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="1028"/>
         <source>No active workflow detected</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2392,96 +2392,96 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="887"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="888"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="906"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="907"/>
         <source>Copy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="889"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="890"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="908"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="909"/>
         <source>Cut</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="891"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="892"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="910"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="911"/>
         <source>Paste</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="893"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="894"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="912"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="913"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="895"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="896"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="914"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="915"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="897"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="916"/>
         <source>Select All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="898"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="917"/>
         <source>Select all items</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="899"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="918"/>
         <source>Zoom In</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="900"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="919"/>
         <source>Zoom in graphics view</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="901"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="920"/>
         <source>Zoom Out</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="902"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="921"/>
         <source>Zoom Out graphics view</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="903"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="922"/>
         <source>Zoom to Fit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="904"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="923"/>
         <source>Zoom to fit screen size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="905"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="906"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="924"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="925"/>
         <source>Cross Line Marker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="907"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="908"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="926"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="927"/>
         <source>Horizontal Line Marker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="909"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="910"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="928"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="929"/>
         <source>Vertical Line Marker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="911"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="912"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="930"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="931"/>
         <source>None Marker</source>
         <translation type="unfinished"></translation>
     </message>
