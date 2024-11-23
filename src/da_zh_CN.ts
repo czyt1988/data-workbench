@@ -1252,13 +1252,17 @@ Table Area</source>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="210"/>
-        <source>Cross Marker</source>
-        <translation>视图标记</translation>
+        <location filename="APP/DAAppRibbonArea.cpp" line="211"/>
+        <source>View Marker</source>
+        <oldsource>Cross Marker</oldsource>
+        <translation type="unfinished">视图标记</translation>
     </message>
     <message>
+        <location filename="APP/DAAppRibbonArea.cpp" line="210"/>
         <location filename="APP/DAAppRibbonArea.cpp" line="211"/>
-        <source>Cross Line Marker</source>
-        <translation>视图标记</translation>
+        <source>View Marker</source>
+        <oldsource>Cross Line Marker</oldsource>
+        <translation type="unfinished">视图标记</translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="213"/>

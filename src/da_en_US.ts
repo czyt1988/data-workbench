@@ -1213,12 +1213,8 @@ Config</source>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="210"/>
-        <source>Cross Marker</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="211"/>
-        <source>Cross Line Marker</source>
+        <source>View Marker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
