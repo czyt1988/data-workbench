@@ -145,7 +145,9 @@ public slots:
 	// 显示网格
 	void showGridLine(bool on);
 	// 选中所有item
-	void selectAll();
+    int selectAll();
+    // 取消选择
+    int unselectAll();
 	// 取消选中
 	void clearSelection();
 	// 设置item的选中状态

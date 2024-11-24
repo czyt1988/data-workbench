@@ -15,12 +15,11 @@ class DAGraphicsMarkItem::PrivateData
 	DA_DECLARE_PUBLIC(DAGraphicsMarkItem)
 public:
 	PrivateData(DAGraphicsMarkItem* p);
-    int markShapeStyle;///< 对应DAGraphicsMarkItem::MarkShape
+	int markShapeStyle;  ///< 对应DAGraphicsMarkItem::MarkShape
 };
 
 DAGraphicsMarkItem::PrivateData::PrivateData(DAGraphicsMarkItem* p) : q_ptr(p)
 {
-
 }
 
 //===================================================
@@ -42,45 +41,43 @@ DAGraphicsMarkItem::~DAGraphicsMarkItem()
  */
 bool DAGraphicsMarkItem::saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const
 {
-	
-
-	return true;
+	return DAGraphicsItem::saveToXml(doc, parentElement, ver);
 }
 
 void DAGraphicsMarkItem::setMarkShape(int shapeStyle)
 {
-    d_ptr->markShapeStyle = shapeStyle;
+	d_ptr->markShapeStyle = shapeStyle;
 }
 
 int DAGraphicsMarkItem::getMarkShape() const
 {
-    return d_ptr->markShapeStyle;
+	return d_ptr->markShapeStyle;
 }
 
-void DAGraphicsMarkItem::paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget)
+void DAGraphicsMarkItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
-    qDebug() << option->rect;
-    painter->setPen(getBorderPen());
-    painter->setBrush(getBackgroundBrush());
-    switch (getMarkShape()) {
-    case DAGraphicsMarkItem::ShapeRect: {
-        painter->drawRect(option->rect);
-    }break;
-    case DAGraphicsMarkItem::ShapeCross: {
-        //获取parent的中心
-    }break;
-    default:
-        break;
-    }
+	qDebug() << option->rect;
+	painter->setPen(getBorderPen());
+	painter->setBrush(getBackgroundBrush());
+	switch (getMarkShape()) {
+	case DAGraphicsMarkItem::ShapeRect: {
+		painter->drawRect(option->rect);
+	} break;
+	case DAGraphicsMarkItem::ShapeCross: {
+		//获取parent的中心
+	} break;
+	default:
+		break;
+	}
 }
 
 QRectF DAGraphicsMarkItem::boundingRect() const
 {
-    auto pi = parentItem();
-    if (pi) {
-        return pi->boundingRect().adjusted(-3, -3, 3, 3);
-    }
-    return QRectF(-50,-50,100,100);
+	auto pi = parentItem();
+	if (pi) {
+		return pi->boundingRect().adjusted(-3, -3, 3, 3);
+	}
+	return QRectF(-50, -50, 100, 100);
 }
 
 /**
@@ -88,16 +85,9 @@ QRectF DAGraphicsMarkItem::boundingRect() const
  * @param itemElement
  * @return
  */
-bool DAGraphicsItem::loadFromXml(const QDomElement* parentElement, const QVersionNumber& ver)
+bool DAGraphicsMarkItem::loadFromXml(const QDomElement* parentElement, const QVersionNumber& ver)
 {
-	QDomElement infoEle = parentElement->firstChildElement("info");
-	if (infoEle.isNull()) {
-		// 没有找到info节点，返回错误
-		return false;
-	}
-	
-	return true;
+	return DAGraphicsItem::loadFromXml(parentElement, ver);
 }
-
 
 }  // end of DA

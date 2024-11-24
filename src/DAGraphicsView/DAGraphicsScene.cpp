@@ -541,14 +541,31 @@ void DAGraphicsScene::showGridLine(bool on)
  * @brief 选中所有item
  *
  * @note 此函数会发射一次selectionChanged信号
+ * @return 返回选中的条目
  */
-void DAGraphicsScene::selectAll()
+int DAGraphicsScene::selectAll()
 {
 	int selectCnt = changeAllSelection(true);
 	if (selectCnt > 0) {
 		emit selectionChanged();
 	}
+    return selectCnt;
 }
+
+/**
+ * @brief 取消选择，把所有item设置为非选中状态
+ *
+ * @note 此函数会发射一次selectionChanged信号
+ * @return 返回取消选中的条目
+ */
+int DA::DAGraphicsScene::unselectAll()
+ {
+     int selectCnt = changeAllSelection(false);
+     if (selectCnt > 0) {
+         emit selectionChanged();
+     }
+     return selectCnt;
+ }
 
 /**
  * @brief 取消选中item
