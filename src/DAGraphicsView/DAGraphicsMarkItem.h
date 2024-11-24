@@ -44,6 +44,8 @@ public:
 	// 保存到xml中
 	virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const override;
 	virtual bool loadFromXml(const QDomElement* parentElement, const QVersionNumber& ver) override;
+	// 设置边界，如果设置QRectF(),则相当于清除手动设置的边界
+	void setMarkBoundingRect(const QRectF& r);
 	// 设置形状
 	void setMarkShape(int shapeStyle);
 	int getMarkShape() const;

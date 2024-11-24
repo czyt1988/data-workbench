@@ -6,6 +6,7 @@
 #include <QEvent>
 #include <QPainter>
 #include <QStyleOptionGraphicsItem>
+#include <optional>
 #include "DAGraphicsScene.h"
 namespace DA
 {
@@ -15,7 +16,8 @@ class DAGraphicsMarkItem::PrivateData
 	DA_DECLARE_PUBLIC(DAGraphicsMarkItem)
 public:
 	PrivateData(DAGraphicsMarkItem* p);
-	int markShapeStyle;  ///< 对应DAGraphicsMarkItem::MarkShape
+	std::optional< QRectF > optBoundingRect;  ///< 边界，可以设置，如果不设置就以父item为对象
+	int markShapeStyle;                       ///< 对应DAGraphicsMarkItem::MarkShape
 };
 
 DAGraphicsMarkItem::PrivateData::PrivateData(DAGraphicsMarkItem* p) : q_ptr(p)
@@ -56,6 +58,15 @@ bool DAGraphicsMarkItem::loadFromXml(const QDomElement* parentElement, const QVe
 	return true;
 }
 
+void DAGraphicsMarkItem::setMarkBoundingRect(const QRectF& r)
+{
+	if (r.isNull()) {
+		d_ptr->optBoundingRect = std::nullopt;
+	} else {
+		d_ptr->optBoundingRect = r;
+	}
+}
+
 void DAGraphicsMarkItem::setMarkShape(int shapeStyle)
 {
 	d_ptr->markShapeStyle = shapeStyle;
@@ -76,7 +87,10 @@ void DAGraphicsMarkItem::paint(QPainter* painter, const QStyleOptionGraphicsItem
 		painter->drawRect(option->rect);
 	} break;
 	case DAGraphicsMarkItem::ShapeCross: {
-		// 获取parent的中心
+		// 获取中心
+		QPointF center = option->rect.center();
+		painter->drawLine(option->rect.left(), center.y(), option->rect.right(), center.y());
+		painter->drawLine(center.x(), option->rect.top(), center.x(), option->rect.bottom());
 	} break;
 	default:
 		break;
@@ -85,8 +99,12 @@ void DAGraphicsMarkItem::paint(QPainter* painter, const QStyleOptionGraphicsItem
 
 QRectF DAGraphicsMarkItem::boundingRect() const
 {
+	if (d_ptr->optBoundingRect) {
+		return d_ptr->optBoundingRect.value();
+	}
 	auto pi = parentItem();
 	if (pi) {
+		// 略微比父级大一点
 		return pi->boundingRect().adjusted(-3, -3, 3, 3);
 	}
 	return QRectF(-50, -50, 100, 100);
