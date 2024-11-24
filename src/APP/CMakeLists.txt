@@ -25,9 +25,16 @@ find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
     Svg
     Concurrent
     PrintSupport
-    AxContainer
     REQUIRED
 )
+
+if(WIN32)
+    find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
+        AxContainer
+        REQUIRED
+    )
+endif()
+
 # qt6,引入Core5Compat
 if(QT_VERSION_MAJOR EQUAL 6)
     find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
@@ -87,10 +94,13 @@ target_link_libraries(${DA_APP_NAME} PUBLIC
     Qt${QT_VERSION_MAJOR}::Xml
     Qt${QT_VERSION_MAJOR}::Svg
     Qt${QT_VERSION_MAJOR}::Concurrent
-    Qt${QT_VERSION_MAJOR}::PrintSupport
     Qt${QT_VERSION_MAJOR}::AxContainer
 )
-
+if(WIN32)
+    target_link_libraries(${DA_APP_NAME} PUBLIC
+        Qt${QT_VERSION_MAJOR}::AxContainer
+    )
+endif()
 # -------------link 3rdparty DALiteCtk--------------------------
 damacro_import_DALiteCtk(${DA_APP_NAME})
 # -------------link 3rdparty SARibbon--------------------------

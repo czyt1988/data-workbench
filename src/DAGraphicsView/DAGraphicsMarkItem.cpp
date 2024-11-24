@@ -41,7 +41,19 @@ DAGraphicsMarkItem::~DAGraphicsMarkItem()
  */
 bool DAGraphicsMarkItem::saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const
 {
-	return DAGraphicsItem::saveToXml(doc, parentElement, ver);
+	DAGraphicsItem::saveToXml(doc, parentElement, ver);
+	return true;
+}
+
+/**
+ * @brief 从xml中加载
+ * @param itemElement
+ * @return
+ */
+bool DAGraphicsMarkItem::loadFromXml(const QDomElement* parentElement, const QVersionNumber& ver)
+{
+	DAGraphicsItem::loadFromXml(parentElement, ver);
+	return true;
 }
 
 void DAGraphicsMarkItem::setMarkShape(int shapeStyle)
@@ -64,7 +76,7 @@ void DAGraphicsMarkItem::paint(QPainter* painter, const QStyleOptionGraphicsItem
 		painter->drawRect(option->rect);
 	} break;
 	case DAGraphicsMarkItem::ShapeCross: {
-		//获取parent的中心
+		// 获取parent的中心
 	} break;
 	default:
 		break;
@@ -78,16 +90,6 @@ QRectF DAGraphicsMarkItem::boundingRect() const
 		return pi->boundingRect().adjusted(-3, -3, 3, 3);
 	}
 	return QRectF(-50, -50, 100, 100);
-}
-
-/**
- * @brief 从xml中加载
- * @param itemElement
- * @return
- */
-bool DAGraphicsMarkItem::loadFromXml(const QDomElement* parentElement, const QVersionNumber& ver)
-{
-	return DAGraphicsItem::loadFromXml(parentElement, ver);
 }
 
 }  // end of DA

@@ -33,8 +33,8 @@ public:
 	 */
 	enum MarkShape
 	{
-		ShapeRect,  ///< 矩形
-        ShapeCross,  ///< 十字
+		ShapeRect,   ///< 矩形
+		ShapeCross,  ///< 十字
 		ShapeUserDefine = 1000
 	};
 
@@ -44,12 +44,12 @@ public:
 	// 保存到xml中
 	virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const override;
 	virtual bool loadFromXml(const QDomElement* parentElement, const QVersionNumber& ver) override;
-	//设置形状
+	// 设置形状
 	void setMarkShape(int shapeStyle);
 	int getMarkShape() const;
 	//
-	virtual void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget = nullptr);
-	virtual QRectF boundingRect() const;
+	virtual void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget = nullptr) override;
+	virtual QRectF boundingRect() const override;
 };
 
 }
