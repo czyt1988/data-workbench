@@ -130,7 +130,7 @@ public:
 	// clang-format on
 private:
 	QDomElement* mParentElement { nullptr };
-	QDomElement* mCurrentElement { nullptr };
+	QDomElement mCurrentElement;
 };
 
 template< typename std_container_like >

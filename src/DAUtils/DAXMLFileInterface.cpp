@@ -494,7 +494,7 @@ QDomElement DAXMLFileInterface::makeElement(const QVariant& v, const QString& ta
 #if QT_VERSION_MAJOR >= 6
 	int tid = v.typeId();
 #else
-	int tid  = v.type();
+	int tid = v.type();
 #endif
 	// 特殊对待
 	switch (tid) {
@@ -634,9 +634,15 @@ DAXMLElementSerialization& DAXMLElementSerialization::operator<<(const short& t)
 }
 DAXMLElementSerialization& DAXMLElementSerialization::operator>>(short& t)
 {
-	if (mCurrentElement == nullptr) {
+	if (mCurrentElement.isNull()) {
 		mCurrentElement = mParentElement->firstChildElement("v");
+	} else {
+		mCurrentElement = mCurrentElement.nextSiblingElement("v");
 	}
+	if (!DAXMLFileInterface::loadElement(t, &mCurrentElement)) {
+		throw std::runtime_error("can not load to short");
+	}
+	return *this;
 }
 
 //===================================================
@@ -1003,7 +1009,7 @@ QString DA::variantToString(const QVariant& var)
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	int tid = var.type();
 #else
-	int tid  = var.typeId();
+	int tid = var.typeId();
 #endif
 	switch (tid) {
 	case QMetaType::UnknownType:

@@ -1258,13 +1258,6 @@ Table Area</source>
         <translation type="unfinished">视图标记</translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="210"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="211"/>
-        <source>View Marker</source>
-        <oldsource>Cross Line Marker</oldsource>
-        <translation type="unfinished">视图标记</translation>
-    </message>
-    <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="213"/>
         <source>Export Image</source>
         <translation>导出为图片</translation>
