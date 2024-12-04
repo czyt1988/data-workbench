@@ -14,6 +14,11 @@
 #include <QVersionNumber>
 #include "da_qstring_cast.h"
 class QDomDocument;
+#ifndef DAXMLFILEINTERFACE_POD_NUMBER_H
+#define DAXMLFILEINTERFACE_TYPE_MAKE_H(pod_type)                                                                       \
+	static QDomElement makeElement(const pod_type& v, const QString& tagName, QDomDocument* doc);                      \
+	static bool loadElement(pod_type& p, const QDomElement* ele);
+#endif
 namespace DA
 {
 
@@ -30,38 +35,34 @@ public:
 	virtual bool loadFromXml(const QDomElement* parentElement, const QVersionNumber& ver)                  = 0;
 
 public:
+	/// @defgroup POD类型 这是POD类型的xml保存
+	/// @{
+	DAXMLFILEINTERFACE_TYPE_MAKE_H(short)
+	DAXMLFILEINTERFACE_TYPE_MAKE_H(unsigned short)
+	DAXMLFILEINTERFACE_TYPE_MAKE_H(int)
+	DAXMLFILEINTERFACE_TYPE_MAKE_H(unsigned int)
+	DAXMLFILEINTERFACE_TYPE_MAKE_H(long)
+	DAXMLFILEINTERFACE_TYPE_MAKE_H(unsigned long)
+	DAXMLFILEINTERFACE_TYPE_MAKE_H(long long)
+	DAXMLFILEINTERFACE_TYPE_MAKE_H(unsigned long long)
+	DAXMLFILEINTERFACE_TYPE_MAKE_H(double)
+	DAXMLFILEINTERFACE_TYPE_MAKE_H(float)
+	DAXMLFILEINTERFACE_TYPE_MAKE_H(std::string)
+	/// @}
+
 	/// @defgroup qt类型 这是qt类型的xml保存
 	/// @{
 	// 标准保存—— QString
-	static QDomElement makeElement(const QString& v, const QString& tagName, QDomDocument* doc);
-	static bool loadElement(QString& p, const QDomElement* ele);
-	// 标准保存—— QRect
-	static QDomElement makeElement(const QRect& v, const QString& tagName, QDomDocument* doc);
-	static bool loadElement(QRect& p, const QDomElement* ele);
-	// 标准保存—— QRectF
-	static QDomElement makeElement(const QRectF& v, const QString& tagName, QDomDocument* doc);
-	static bool loadElement(QRectF& p, const QDomElement* ele);
-	// 标准保存—— QPoint
-	static QDomElement makeElement(const QPoint& v, const QString& tagName, QDomDocument* doc);
-	static bool loadElement(QPoint& p, const QDomElement* ele);
-	// 标准保存—— QPointF
-	static QDomElement makeElement(const QPointF& v, const QString& tagName, QDomDocument* doc);
-	static bool loadElement(QPointF& p, const QDomElement* ele);
-	// 标准保存—— QPen 画笔
-	static QDomElement makeElement(const QPen& v, const QString& tagName, QDomDocument* doc);
-	static bool loadElement(QPen& p, const QDomElement* ele);
-	// 标准保存—— QBrush 画笔
-	static QDomElement makeElement(const QBrush& v, const QString& tagName, QDomDocument* doc);
-	static bool loadElement(QBrush& p, const QDomElement* ele);
-	// 标准保存—— QFont
-	static QDomElement makeElement(const QFont& v, const QString& tagName, QDomDocument* doc);
-	static bool loadElement(QFont& p, const QDomElement* ele);
-	// 标准保存—— QVector3D
-	static QDomElement makeElement(const QVector3D& v, const QString& tagName, QDomDocument* doc);
-	static bool loadElement(QVector3D& p, const QDomElement* ele);
-	// 标准保存—— QVariant
-	static QDomElement makeElement(const QVariant& v, const QString& tagName, QDomDocument* doc);
-	static bool loadElement(QVariant& p, const QDomElement* ele);
+	DAXMLFILEINTERFACE_TYPE_MAKE_H(QString)
+	DAXMLFILEINTERFACE_TYPE_MAKE_H(QRect)
+	DAXMLFILEINTERFACE_TYPE_MAKE_H(QRectF)
+	DAXMLFILEINTERFACE_TYPE_MAKE_H(QPoint)
+	DAXMLFILEINTERFACE_TYPE_MAKE_H(QPointF)
+	DAXMLFILEINTERFACE_TYPE_MAKE_H(QPen)
+	DAXMLFILEINTERFACE_TYPE_MAKE_H(QBrush)
+	DAXMLFILEINTERFACE_TYPE_MAKE_H(QFont)
+	DAXMLFILEINTERFACE_TYPE_MAKE_H(QVector3D)
+	DAXMLFILEINTERFACE_TYPE_MAKE_H(QVariant)
 	/// @}
 
 	/// @defgroup stl类型 这是针对stl类型的xml保存
@@ -71,6 +72,65 @@ public:
 	template< typename std_container_like >
 	static bool loadElement(std_container_like& v, const QDomElement* ele);
 	///@}
+};
+
+#ifndef DAXMLELEMENTSERIALIZATION_INOUT_H
+#define DAXMLELEMENTSERIALIZATION_INOUT_H(type)                                                                        \
+	DAXMLElementSerialization& operator<<(const type& t);                                                              \
+	DAXMLElementSerialization& operator>>(type& t);
+#endif
+
+/**
+ * @brief 针对xml文件序列化，实现类似二进制文件一样<<和>>的序列化
+ *
+ * 举例：
+ * @code
+ * QDomElement parentElement;
+ * QString v1;
+ * QPoint v2;
+ * double v3;
+ * int v4;
+ * std::string v5;
+ * ...
+ * // write
+ * DAXMLSerialization s(&parentElement);
+ * s << v1 << v2 << v3 << v4 << v5;
+ *
+ * // read
+ * s >> v1 >> v2 >> v3 >> v4 >> v5;
+ * @endcode
+ */
+class DAUTILS_API DAXMLElementSerialization
+{
+public:
+	DAXMLElementSerialization(QDomElement* parentElement);
+	~DAXMLElementSerialization();
+	// clang-format off
+    DAXMLELEMENTSERIALIZATION_INOUT_H(short) 
+    DAXMLELEMENTSERIALIZATION_INOUT_H(unsigned short)
+    DAXMLELEMENTSERIALIZATION_INOUT_H(int)
+    DAXMLELEMENTSERIALIZATION_INOUT_H(unsigned int)
+    DAXMLELEMENTSERIALIZATION_INOUT_H(long)
+    DAXMLELEMENTSERIALIZATION_INOUT_H(unsigned long) 
+    DAXMLELEMENTSERIALIZATION_INOUT_H(long long)
+    DAXMLELEMENTSERIALIZATION_INOUT_H(unsigned long long) 
+    DAXMLELEMENTSERIALIZATION_INOUT_H(double)
+    DAXMLELEMENTSERIALIZATION_INOUT_H(float) 
+    DAXMLELEMENTSERIALIZATION_INOUT_H(std::string)
+    DAXMLELEMENTSERIALIZATION_INOUT_H(QString) 
+    DAXMLELEMENTSERIALIZATION_INOUT_H(QRect)
+    DAXMLELEMENTSERIALIZATION_INOUT_H(QRectF) 
+    DAXMLELEMENTSERIALIZATION_INOUT_H(QPoint)
+    DAXMLELEMENTSERIALIZATION_INOUT_H(QPointF) 
+    DAXMLELEMENTSERIALIZATION_INOUT_H(QPen)
+    DAXMLELEMENTSERIALIZATION_INOUT_H(QBrush) 
+    DAXMLELEMENTSERIALIZATION_INOUT_H(QFont)
+    DAXMLELEMENTSERIALIZATION_INOUT_H(QVector3D) 
+    DAXMLELEMENTSERIALIZATION_INOUT_H(QVariant)
+	// clang-format on
+private:
+	QDomElement* mParentElement { nullptr };
+	QDomElement* mCurrentElement { nullptr };
 };
 
 template< typename std_container_like >

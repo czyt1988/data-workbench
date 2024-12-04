@@ -1,4 +1,5 @@
 ﻿#include "DAXMLFileInterface.h"
+#include <exception>
 #include <QDomDocument>
 #include <QDomElement>
 // QVariant cast use
@@ -42,6 +43,43 @@
 	} while (0)
 #endif
 
+#ifndef DAXMLFILEINTERFACE_SIMPLE_QSTRING_CAST1_CPP
+#define DAXMLFILEINTERFACE_SIMPLE_QSTRING_CAST1_CPP(value_type, to_qstring_fun, from_qstring_fun)                      \
+	QDomElement DAXMLFileInterface::makeElement(const value_type& v, const QString& tagName, QDomDocument* doc)        \
+	{                                                                                                                  \
+		QDomElement ele = doc->createElement(tagName);                                                                 \
+		ele.setAttribute("class", #value_type);                                                                        \
+		QDomText t = doc->createTextNode(to_qstring_fun(v));                                                           \
+		ele.appendChild(t);                                                                                            \
+		return ele;                                                                                                    \
+	}                                                                                                                  \
+	bool DAXMLFileInterface::loadElement(value_type& p, const QDomElement* ele)                                        \
+	{                                                                                                                  \
+		QString text = ele->text();                                                                                    \
+		bool res     = false;                                                                                          \
+		p            = text.##from_qstring_fun(&res);                                                                  \
+		return res;                                                                                                    \
+	}
+#endif
+
+#ifndef DAXMLFILEINTERFACE_SIMPLE_QSTRING_CAST0_CPP
+#define DAXMLFILEINTERFACE_SIMPLE_QSTRING_CAST0_CPP(value_type, to_qstring_fun, from_qstring_fun)                      \
+	QDomElement DAXMLFileInterface::makeElement(const value_type& v, const QString& tagName, QDomDocument* doc)        \
+	{                                                                                                                  \
+		QDomElement ele = doc->createElement(tagName);                                                                 \
+		ele.setAttribute("class", #value_type);                                                                        \
+		QDomText t = doc->createTextNode(to_qstring_fun(v));                                                           \
+		ele.appendChild(t);                                                                                            \
+		return ele;                                                                                                    \
+	}                                                                                                                  \
+	bool DAXMLFileInterface::loadElement(value_type& p, const QDomElement* ele)                                        \
+	{                                                                                                                  \
+		QString text = ele->text();                                                                                    \
+		p            = text.##from_qstring_fun();                                                                      \
+		return true;                                                                                                   \
+	}
+#endif
+
 namespace DA
 {
 DAXMLFileInterface::DAXMLFileInterface()
@@ -52,6 +90,18 @@ DAXMLFileInterface::~DAXMLFileInterface()
 {
 }
 
+DAXMLFILEINTERFACE_SIMPLE_QSTRING_CAST1_CPP(short, QString::number, toShort)
+DAXMLFILEINTERFACE_SIMPLE_QSTRING_CAST1_CPP(unsigned short, QString::number, toUShort)
+DAXMLFILEINTERFACE_SIMPLE_QSTRING_CAST1_CPP(int, QString::number, toInt)
+DAXMLFILEINTERFACE_SIMPLE_QSTRING_CAST1_CPP(unsigned int, QString::number, toUInt)
+DAXMLFILEINTERFACE_SIMPLE_QSTRING_CAST1_CPP(long, QString::number, toLong)
+DAXMLFILEINTERFACE_SIMPLE_QSTRING_CAST1_CPP(unsigned long, QString::number, toULong)
+DAXMLFILEINTERFACE_SIMPLE_QSTRING_CAST1_CPP(long long, QString::number, toLongLong)
+DAXMLFILEINTERFACE_SIMPLE_QSTRING_CAST1_CPP(unsigned long long, QString::number, toULongLong)
+DAXMLFILEINTERFACE_SIMPLE_QSTRING_CAST1_CPP(float, QString::number, toFloat)
+DAXMLFILEINTERFACE_SIMPLE_QSTRING_CAST1_CPP(double, QString::number, toDouble)
+
+DAXMLFILEINTERFACE_SIMPLE_QSTRING_CAST0_CPP(std::string, QString::fromStdString, toStdString)
 /**
  * @brief 生成一个文本
  * @param v
@@ -62,7 +112,9 @@ DAXMLFileInterface::~DAXMLFileInterface()
 QDomElement DAXMLFileInterface::makeElement(const QString& v, const QString& tagName, QDomDocument* doc)
 {
 	QDomElement ele = doc->createElement(tagName);
-	QDomText t      = doc->createTextNode(v);
+	// class属性是用于识别类型
+	ele.setAttribute("class", "QString");
+	QDomText t = doc->createTextNode(v);
 	ele.appendChild(t);
 	return ele;
 }
@@ -206,8 +258,8 @@ QDomElement DAXMLFileInterface::makeElement(const QPointF& v, const QString& tag
 {
 	QDomElement ele = doc->createElement(tagName);
 	ele.setAttribute("class", "QPointF");
-    ele.setAttribute("x", doubleToString(v.x()));
-    ele.setAttribute("y", doubleToString(v.y()));
+	ele.setAttribute("x", doubleToString(v.x()));
+	ele.setAttribute("y", doubleToString(v.y()));
 	return ele;
 }
 
@@ -369,7 +421,7 @@ QDomElement DAXMLFileInterface::makeElement(const QFont& v, const QString& tagNa
 	fontEle.setAttribute("class", "QFont");
 	fontEle.setAttribute("bold", v.bold());
 	fontEle.setAttribute("italic", v.italic());
-    fontEle.setAttribute("pointSizeF", v.pointSizeF());  // 这里不需要用doubleToString
+	fontEle.setAttribute("pointSizeF", v.pointSizeF());  // 这里不需要用doubleToString
 	// QFont::Weight的枚举值在qt5和qt6不一致，为了避免直接传值，都需要转换为QFont::Weight
 #if QT_VERSION_MAJOR >= 6
 	fontEle.setAttribute("weight", enumToString(v.weight()));
@@ -408,9 +460,9 @@ QDomElement DAXMLFileInterface::makeElement(const QVector3D& v, const QString& t
 {
 	QDomElement ele = doc->createElement(tagName);
 	ele.setAttribute("class", "QVector3D");
-    ele.setAttribute("x", doubleToString(v.x()));
-    ele.setAttribute("y", doubleToString(v.y()));
-    ele.setAttribute("z", doubleToString(v.z()));
+	ele.setAttribute("x", doubleToString(v.x()));
+	ele.setAttribute("y", doubleToString(v.y()));
+	ele.setAttribute("z", doubleToString(v.z()));
 	return ele;
 }
 
@@ -436,11 +488,13 @@ QDomElement DAXMLFileInterface::makeElement(const QVariant& v, const QString& ta
 {
 	QDomElement varEle = doc->createElement(tagName);
 	QString vartype    = v.typeName();
+	// class属性是用于识别类型
+	varEle.setAttribute("class", "QVariant");
 	varEle.setAttribute("type", vartype);
 #if QT_VERSION_MAJOR >= 6
 	int tid = v.typeId();
 #else
-	int tid = v.type();
+	int tid  = v.type();
 #endif
 	// 特殊对待
 	switch (tid) {
@@ -558,6 +612,35 @@ bool DAXMLFileInterface::loadElement(QVariant& p, const QDomElement* ele)
 	return ok;
 }
 
+//===================================================
+
+DAXMLElementSerialization::DAXMLElementSerialization(QDomElement* parentElement) : mParentElement(parentElement)
+{
+}
+
+DAXMLElementSerialization::~DAXMLElementSerialization()
+{
+}
+
+DAXMLElementSerialization& DAXMLElementSerialization::operator<<(const short& t)
+{
+	QDomDocument doc = mParentElement->ownerDocument();
+	if (doc.isNull()) {
+		throw std::runtime_error("null dom document");
+	}
+	QDomElement vEle = DAXMLFileInterface::makeElement(t, "v", &doc);
+	mParentElement->appendChild(vEle);
+	return *this;
+}
+DAXMLElementSerialization& DAXMLElementSerialization::operator>>(short& t)
+{
+	if (mCurrentElement == nullptr) {
+		mCurrentElement = mParentElement->firstChildElement("v");
+	}
+}
+
+//===================================================
+
 /**
  * @brief 获取int值
  * @param valuestring
@@ -617,7 +700,7 @@ bool getStringRealValue(const QString& valuestring, qreal& v)
  */
 bool getStringBoolValue(const QString& valuestring)
 {
-    return valuestring.toInt();
+	return valuestring.toInt();
 }
 
 QString enumToString(Qt::PenStyle e)
@@ -912,8 +995,6 @@ QFont::Weight stringToEnum(const QString& s, QFont::Weight defaultEnum)
 	return QFont::Normal;
 }
 
-//===================================================
-
 }  // end of DA
 
 QString DA::variantToString(const QVariant& var)
@@ -922,7 +1003,7 @@ QString DA::variantToString(const QVariant& var)
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	int tid = var.type();
 #else
-	int tid = var.typeId();
+	int tid  = var.typeId();
 #endif
 	switch (tid) {
 	case QMetaType::UnknownType:
@@ -966,7 +1047,7 @@ QString DA::variantToString(const QVariant& var)
 
 	case QMetaType::Double: {
 		double d = var.toDouble();
-        return (doubleToString(d));  // 针对double，用非科学计数法会对小数丢失精度，因此采样g最合理，但小数点较多时需要适当处理
+		return (doubleToString(d));  // 针对double，用非科学计数法会对小数丢失精度，因此采样g最合理，但小数点较多时需要适当处理
 	}
 
 	case QMetaType::QEasingCurve: {
@@ -1009,8 +1090,8 @@ QString DA::variantToString(const QVariant& var)
 
 	case QMetaType::QLineF: {
 		QLineF d = var.toLineF();
-        return (QString("%1;%2;%3;%4")
-                    .arg(doubleToString(d.x1()), doubleToString(d.y1()), doubleToString(d.x2()), doubleToString(d.y2())));
+		return (QString("%1;%2;%3;%4")
+		            .arg(doubleToString(d.x1()), doubleToString(d.y1()), doubleToString(d.x2()), doubleToString(d.y2())));
 	}
 
 	case QMetaType::QVariantList: {
@@ -1032,36 +1113,36 @@ QString DA::variantToString(const QVariant& var)
 	case QMetaType::QTransform: {
 		QTransform d = var.value< QTransform >();
 		return (QString("%1;%2;%3;%4;%5;%6;%7;%8;%9")
-                    .arg(d.m11())
-                    .arg(d.m12())
-                    .arg(d.m13())
-                    .arg(d.m21())
-                    .arg(d.m22())
-                    .arg(d.m23())
-                    .arg(d.m31())
-                    .arg(d.m32())
-                    .arg(d.m33()));
+		            .arg(d.m11())
+		            .arg(d.m12())
+		            .arg(d.m13())
+		            .arg(d.m21())
+		            .arg(d.m22())
+		            .arg(d.m23())
+		            .arg(d.m31())
+		            .arg(d.m32())
+		            .arg(d.m33()));
 	}
 
 	case QMetaType::QMatrix4x4: {
 		QMatrix4x4 d = var.value< QMatrix4x4 >();
 		return (QString("%1;%2;%3;%4;%5;%6;%7;%8;%9;%10;%11;%12;%13;%14;%15;%16")
-                    .arg(d(0, 0))
-                    .arg(d(0, 1))
-                    .arg(d(0, 2))
-                    .arg(d(0, 3))
-                    .arg(d(1, 0))
-                    .arg(d(1, 1))
-                    .arg(d(1, 2))
-                    .arg(d(1, 3))
-                    .arg(d(2, 0))
-                    .arg(d(2, 1))
-                    .arg(d(2, 2))
-                    .arg(d(2, 3))
-                    .arg(d(3, 0))
-                    .arg(d(3, 1))
-                    .arg(d(3, 2))
-                    .arg(d(3, 3)));
+		            .arg(d(0, 0))
+		            .arg(d(0, 1))
+		            .arg(d(0, 2))
+		            .arg(d(0, 3))
+		            .arg(d(1, 0))
+		            .arg(d(1, 1))
+		            .arg(d(1, 2))
+		            .arg(d(1, 3))
+		            .arg(d(2, 0))
+		            .arg(d(2, 1))
+		            .arg(d(2, 2))
+		            .arg(d(2, 3))
+		            .arg(d(3, 0))
+		            .arg(d(3, 1))
+		            .arg(d(3, 2))
+		            .arg(d(3, 3)));
 	}
 
 	case QMetaType::QPalette: {
@@ -1083,7 +1164,7 @@ QString DA::variantToString(const QVariant& var)
 
 	case QMetaType::QPointF: {
 		QPointF d = var.toPointF();
-        return (QString("%1;%2").arg(doubleToString(d.x()), doubleToString(d.y())));
+		return (QString("%1;%2").arg(doubleToString(d.x()), doubleToString(d.y())));
 	}
 
 	case QMetaType::QPolygon: {
@@ -1103,11 +1184,11 @@ QString DA::variantToString(const QVariant& var)
 		QString str;
 		if (!d.isEmpty()) {
 			////用g,而不用f，f会导致小数位过多，并不适合协议传输，但针对double类型，默认是用f
-            str += QString("%1;%2").arg(doubleToString(d[ 0 ].x()), doubleToString(d[ 0 ].y()));
+			str += QString("%1;%2").arg(doubleToString(d[ 0 ].x()), doubleToString(d[ 0 ].y()));
 		}
 		// 用非科学计数法转换，避免精度的丢失
 		for (int i = 1; i < d.size(); ++i) {
-            str += QString("|%1;%2").arg(doubleToString(d[ i ].x()), doubleToString(d[ i ].y()));
+			str += QString("|%1;%2").arg(doubleToString(d[ i ].x()), doubleToString(d[ i ].y()));
 		}
 		return (str);
 	}
@@ -1123,9 +1204,9 @@ QString DA::variantToString(const QVariant& var)
 
 	case QMetaType::QRectF: {
 		QRectF d = var.toRectF();
-        return (
-            QString("%1;%2;%3;%4")
-                .arg(doubleToString(d.x()), doubleToString(d.y()), doubleToString(d.width()), doubleToString(d.height())));
+		return (
+		    QString("%1;%2;%3;%4")
+		        .arg(doubleToString(d.x()), doubleToString(d.y()), doubleToString(d.width()), doubleToString(d.height())));
 	}
 
 	case QMetaType::QRegularExpression: {
@@ -1143,7 +1224,7 @@ QString DA::variantToString(const QVariant& var)
 
 	case QMetaType::QSizeF: {
 		QSizeF d = var.toSizeF();
-        return (QString("%1;%2").arg(doubleToString(d.width()), doubleToString(d.height())));
+		return (QString("%1;%2").arg(doubleToString(d.width()), doubleToString(d.height())));
 	}
 
 	case QMetaType::QSizePolicy: {
@@ -1335,14 +1416,14 @@ QVariant DA::stringToVariant(const QString& var, const QString& typeName)
 			return (QVariant());
 		}
 		QTransform d(list[ 0 ].toDouble(),
-                     list[ 1 ].toDouble(),
-                     list[ 2 ].toDouble(),
-                     list[ 3 ].toDouble(),
-                     list[ 4 ].toDouble(),
-                     list[ 5 ].toDouble(),
-                     list[ 6 ].toDouble(),
-                     list[ 7 ].toDouble(),
-                     list[ 8 ].toDouble());
+		             list[ 1 ].toDouble(),
+		             list[ 2 ].toDouble(),
+		             list[ 3 ].toDouble(),
+		             list[ 4 ].toDouble(),
+		             list[ 5 ].toDouble(),
+		             list[ 6 ].toDouble(),
+		             list[ 7 ].toDouble(),
+		             list[ 8 ].toDouble());
 		return (d);
 	}
 
@@ -1352,21 +1433,21 @@ QVariant DA::stringToVariant(const QString& var, const QString& typeName)
 			return (QVariant());
 		}
 		QMatrix4x4 d(list[ 0 ].toDouble(),
-                     list[ 1 ].toDouble(),
-                     list[ 2 ].toDouble(),
-                     list[ 3 ].toDouble(),
-                     list[ 4 ].toDouble(),
-                     list[ 5 ].toDouble(),
-                     list[ 6 ].toDouble(),
-                     list[ 7 ].toDouble(),
-                     list[ 8 ].toDouble(),
-                     list[ 9 ].toDouble(),
-                     list[ 10 ].toDouble(),
-                     list[ 11 ].toDouble(),
-                     list[ 12 ].toDouble(),
-                     list[ 13 ].toDouble(),
-                     list[ 14 ].toDouble(),
-                     list[ 15 ].toDouble());
+		             list[ 1 ].toDouble(),
+		             list[ 2 ].toDouble(),
+		             list[ 3 ].toDouble(),
+		             list[ 4 ].toDouble(),
+		             list[ 5 ].toDouble(),
+		             list[ 6 ].toDouble(),
+		             list[ 7 ].toDouble(),
+		             list[ 8 ].toDouble(),
+		             list[ 9 ].toDouble(),
+		             list[ 10 ].toDouble(),
+		             list[ 11 ].toDouble(),
+		             list[ 12 ].toDouble(),
+		             list[ 13 ].toDouble(),
+		             list[ 14 ].toDouble(),
+		             list[ 15 ].toDouble());
 		return (d);
 	}
 
@@ -1544,5 +1625,5 @@ QVariant DA::stringToVariant(const QString& var, const QString& typeName)
 
 QString DA::doubleToString(double a)
 {
-    return toQString< double >(a);
+	return toQString< double >(a);
 }
