@@ -42,6 +42,9 @@ public:
 
 	// 获取所有插件信息
 	QList< DAPluginOption > getPluginOptions() const;
+
+	// 获取插件路径
+	static QString getPluginDirPath();
 signals:
 	/**
 	 * @brief 开始加载插件信号

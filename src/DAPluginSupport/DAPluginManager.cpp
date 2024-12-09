@@ -17,6 +17,10 @@ public:
 	bool hasIgnoreFile() const;
 	// 更新忽略set
 	void updateIgnoreSet();
+	//创建忽略文件，如果已经存在将跳过
+	void ensureIgnoreFileExist();
+	//
+	static QString getIgnoreFilePath();
 
 public:
 	QDir mPluginDir;
@@ -31,47 +35,23 @@ public:
 
 DAPluginManager::PrivateData::PrivateData(DAPluginManager* p) : q_ptr(p)
 {
-	mPluginDir.setPath(QDir::toNativeSeparators(QCoreApplication::applicationDirPath() + "/plugins"));
+	mPluginDir.setPath(DAPluginManager::getPluginDirPath());
 	updateIgnoreSet();
 }
 
 bool DAPluginManager::PrivateData::hasIgnoreFile() const
 {
-	return mPluginDir.exists(".pluginignore");
+	return QFile::exists(getIgnoreFilePath());
 }
 
 void DAPluginManager::PrivateData::updateIgnoreSet()
 {
-	if (!hasIgnoreFile()) {
-		return;
-	}
-	QFile ignoreFile(mPluginDir.absoluteFilePath(".pluginignore"));
-	if (!ignoreFile.exists()) {
-		// 不存在，则创建一个
-		if (ignoreFile.open(QIODevice::ReadWrite)) {
-			QTextStream txt(&ignoreFile);
-#if QT_VERSION_MAJOR >= 6
-			txt.setEncoding(QStringConverter::Utf8);
-#else
-			txt.setCodec("utf-8");
-#endif
-			txt << "# pluginignore file,Plugins that you do not want to load are described in this file,only write the "
-				   "file base name, do not need to write suffixes"
-#if QT_VERSION_MAJOR >= 6
-				<< Qt::endl;
-#else
-				<< endl;
-#endif
-			txt << "# 不想加载的插件在此文件描述，写入基本文件名，无需后缀"
-#if QT_VERSION_MAJOR >= 6
-				<< Qt::endl;
-#else
-				<< endl;
-#endif
-		}
-		return;
-	}
+	ensureIgnoreFileExist();
+	QFile ignoreFile(getIgnoreFilePath());
 	if (!ignoreFile.open(QIODevice::ReadOnly)) {
+		qWarning() << DAPluginManager::tr(
+		                  "The file .pluginignore exists, but it failed to read due to the following reason:%1")
+		                  .arg(ignoreFile.errorString());
 		return;
 	}
 	QTextStream ss(&ignoreFile);
@@ -86,6 +66,47 @@ void DAPluginManager::PrivateData::updateIgnoreSet()
 		}
 		mIgnorePluginBaseName.insert(line.toLower());
 	}
+	qDebug() << "will ignore plugin:" << mIgnorePluginBaseName;
+}
+
+void DAPluginManager::PrivateData::ensureIgnoreFileExist()
+{
+	if (hasIgnoreFile()) {
+		return;
+	}
+	QFile ignoreFile(getIgnoreFilePath());
+	qDebug() << DAPluginManager::tr("No plugins ignore files, a %1 file will be automatically generated")
+	                .arg(ignoreFile.fileName());  // cn:缺少插件忽略文件，将自动生成.pluginignore文件
+	if (!ignoreFile.exists()) {
+		// 不存在，则创建一个
+		if (ignoreFile.open(QIODevice::ReadWrite)) {
+			QTextStream txt(&ignoreFile);
+#if QT_VERSION_MAJOR >= 6
+			txt.setEncoding(QStringConverter::Utf8);
+#else
+			txt.setCodec("utf-8");
+#endif
+			txt << u8"# pluginignore file,Plugins that you do not want to load are described in this file,only write "
+			       u8"the "
+			       "file base name, do not need to write suffixes"
+#if QT_VERSION_MAJOR >= 6
+			    << Qt::endl;
+#else
+			    << endl;
+#endif
+			txt << u8"# 不想加载的插件在此文件描述，写入基本文件名，无需后缀"
+#if QT_VERSION_MAJOR >= 6
+			    << Qt::endl;
+#else
+			    << endl;
+#endif
+		}
+	}
+}
+
+QString DAPluginManager::PrivateData::getIgnoreFilePath()
+{
+	return QDir::toNativeSeparators(DAPluginManager::getPluginDirPath() + "/.pluginignore");
 }
 
 //===================================================
@@ -114,7 +135,7 @@ DAPluginManager& DAPluginManager::instance()
  */
 void DAPluginManager::setIgnoreList(const QStringList ignorePluginsName)
 {
-    d_ptr->mIgnorePluginBaseName = QSet< QString >(ignorePluginsName.begin(), ignorePluginsName.end());
+	d_ptr->mIgnorePluginBaseName = QSet< QString >(ignorePluginsName.begin(), ignorePluginsName.end());
 }
 
 /**
@@ -148,7 +169,7 @@ void DAPluginManager::load(DACoreInterface* c)
 
 bool DAPluginManager::isLoaded() const
 {
-    return (d_ptr->mIsLoaded);
+	return (d_ptr->mIsLoaded);
 }
 
 /**
@@ -156,7 +177,7 @@ bool DAPluginManager::isLoaded() const
  */
 void DAPluginManager::setPluginPath(const QString& path)
 {
-    d_ptr->mPluginDir.setPath(path);
+	d_ptr->mPluginDir.setPath(path);
 }
 
 /**
@@ -165,7 +186,7 @@ void DAPluginManager::setPluginPath(const QString& path)
  */
 int DAPluginManager::getPluginCount() const
 {
-    return (d_ptr->mPluginOptions.size());
+	return (d_ptr->mPluginOptions.size());
 }
 
 /**
@@ -188,7 +209,17 @@ QList< QString > DAPluginManager::getPluginNames() const
  */
 QList< DAPluginOption > DAPluginManager::getPluginOptions() const
 {
-    return (d_ptr->mPluginOptions);
+	return (d_ptr->mPluginOptions);
+}
+
+/**
+ * @brief 获取插件目录的绝对路径
+ *
+ * @return 返回插件的绝对路径
+ */
+QString DAPluginManager::getPluginDirPath()
+{
+	return QDir::toNativeSeparators(QCoreApplication::applicationDirPath() + "/plugins");
 }
 
 QDebug operator<<(QDebug debug, const DAPluginManager& fmg)
@@ -196,12 +227,12 @@ QDebug operator<<(QDebug debug, const DAPluginManager& fmg)
 	QDebugStateSaver saver(debug);
 
 	debug.nospace() << DAPluginManager::tr("Plugin Manager Info:is loaded=%1,plugin counts=%2")
-						   .arg(fmg.isLoaded())
-						   .arg(fmg.getPluginCount())
+	                       .arg(fmg.isLoaded())
+	                       .arg(fmg.getPluginCount())
 #if QT_VERSION_MAJOR >= 6
-					<< Qt::endl;
+	                << Qt::endl;
 #else
-					<< endl;
+	                << endl;
 #endif
 	QList< DAPluginOption > opts = fmg.getPluginOptions();
 
