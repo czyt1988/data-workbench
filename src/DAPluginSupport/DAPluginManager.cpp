@@ -17,7 +17,7 @@ public:
 	bool hasIgnoreFile() const;
 	// 更新忽略set
 	void updateIgnoreSet();
-	//创建忽略文件，如果已经存在将跳过
+	// 创建忽略文件，如果已经存在将跳过
 	void ensureIgnoreFileExist();
 	//
 	static QString getIgnoreFilePath();
@@ -35,7 +35,9 @@ public:
 
 DAPluginManager::PrivateData::PrivateData(DAPluginManager* p) : q_ptr(p)
 {
-	mPluginDir.setPath(DAPluginManager::getPluginDirPath());
+	QString pluginPath = DAPluginManager::getPluginDirPath();
+	mPluginDir.mkpath(pluginPath);
+	mPluginDir.setPath(pluginPath);
 	updateIgnoreSet();
 }
 
@@ -102,11 +104,12 @@ void DAPluginManager::PrivateData::ensureIgnoreFileExist()
 #endif
 		}
 	}
+	ignoreFile.close();
 }
 
 QString DAPluginManager::PrivateData::getIgnoreFilePath()
 {
-	return QDir::toNativeSeparators(DAPluginManager::getPluginDirPath() + "/.pluginignore");
+	return QDir::toNativeSeparators(DAPluginManager::getPluginDirPath() + QDir::separator() + getPluginIgnoreFileName());
 }
 
 //===================================================
@@ -131,7 +134,6 @@ DAPluginManager& DAPluginManager::instance()
 /**
  * @brief FCPluginManager::setIgnoreList
  * @param ignorePluginsName
- * @todo 还未实现
  */
 void DAPluginManager::setIgnoreList(const QStringList ignorePluginsName)
 {
@@ -143,17 +145,21 @@ void DAPluginManager::setIgnoreList(const QStringList ignorePluginsName)
  */
 void DAPluginManager::load(DACoreInterface* c)
 {
-	QFileInfoList fileInfos = d_ptr->mPluginDir.entryInfoList(QDir::Files);
+	const QFileInfoList fileInfos = d_ptr->mPluginDir.entryInfoList(QDir::Files);
 
-	qInfo() << tr("plugin dir is:%1").arg(d_ptr->mPluginDir.absolutePath());
-	for (const QFileInfo& fi : qAsConst(fileInfos)) {
+	qInfo().noquote() << tr("plugin dir is:%1").arg(d_ptr->mPluginDir.absolutePath());
+	for (const QFileInfo& fi : fileInfos) {
+		if (fi.baseName().isEmpty()) {
+			//".开头的文件，如.pluginignore"
+			continue;
+		}
 		if (d_ptr->mIgnorePluginBaseName.contains(fi.baseName().toLower())) {
-			qInfo() << tr("ignore plugin %1").arg(fi.baseName());
+			qInfo().noquote() << tr("ignore plugin %1").arg(fi.baseName());
 			continue;
 		}
 		const QString filepath = fi.absoluteFilePath();
 		if (!QLibrary::isLibrary(filepath)) {
-			qWarning() << tr(" ignore invalid file:%1").arg(fi.absoluteFilePath());
+			qWarning().noquote() << tr(" ignore invalid file:%1").arg(fi.absoluteFilePath());
 			continue;
 		}
 		DAPluginOption pluginopt;
@@ -220,6 +226,15 @@ QList< DAPluginOption > DAPluginManager::getPluginOptions() const
 QString DAPluginManager::getPluginDirPath()
 {
 	return QDir::toNativeSeparators(QCoreApplication::applicationDirPath() + "/plugins");
+}
+
+/**
+ * @brief 忽略文件名
+ * @return
+ */
+QString DAPluginManager::getPluginIgnoreFileName()
+{
+    return QString(".pluginignore");
 }
 
 QDebug operator<<(QDebug debug, const DAPluginManager& fmg)

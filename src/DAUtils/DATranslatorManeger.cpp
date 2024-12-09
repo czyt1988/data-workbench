@@ -24,8 +24,7 @@ public:
 
 DATranslatorManeger::PrivateData::PrivateData(DATranslatorManeger* p) : q_ptr(p)
 {
-	mTranslatorNames << "qt"
-					 << "da";
+	mTranslatorNames << "qt" << "da";
 }
 
 void DATranslatorManeger::PrivateData::clearAllTranslator()
@@ -42,8 +41,7 @@ void DATranslatorManeger::PrivateData::clearAllTranslator()
 DATranslatorManeger::DATranslatorManeger() : d_ptr(new DATranslatorManeger::PrivateData(this))
 {
 	const QLocale& locale = d_ptr->mLocal;
-	qDebug() << "Setting up translator:"
-			 << "\nLanguage:" << QLocale::languageToString(locale.language())
+	qDebug() << "Setting up translator:" << "\nLanguage:" << QLocale::languageToString(locale.language())
 			 << "\nCountry:" << QLocale::countryToString(locale.country())
 			 << "\nScript:" << QLocale::scriptToString(locale.script()) << "\nName:" << locale.name()
 			 << "\nbcp47 Name:" << locale.bcp47Name() << "\n ui language:" << locale.uiLanguages()
@@ -78,7 +76,9 @@ DATranslatorManeger::~DATranslatorManeger()
 int DATranslatorManeger::installAllTranslator()
 {
 	QString langCode = locale().name();
-	return installAllTranslator(langCode);
+	int r            = installAllTranslator(langCode);
+	qDebug() << QString("success install %1 translator").arg(r);
+	return r;
 }
 
 /**
@@ -89,29 +89,16 @@ int DATranslatorManeger::installAllTranslator()
 int DATranslatorManeger::installAllTranslator(const QString& langCode)
 {
 	qDebug() << "begin install translator at " << langCode;
-	QList< QString > trPaths = getTranslatorFilePath();
-	QList< QString > trName  = getTranslatorFileNames();
-	int cnt                  = 0;
-	QList< QTranslator* > translators;
-	for (const QString& p : qAsConst(trPaths)) {
-		QDir dir(p);
-		if (!dir.exists()) {
-			continue;
-		}
-		for (const QString& name : qAsConst(trName)) {
-			std::unique_ptr< QTranslator > translator = std::make_unique< QTranslator >();
-			QString fullName                          = name + "_" + langCode;
-			if (translator->load(fullName, dir.absolutePath())) {
-				translators.append(translator.release());
-				qDebug() << "success load language file:" << fullName << " in dir " << dir.absolutePath();
-			} else {
-				qDebug() << "can not load translator:" << fullName << " in dir " << dir.absolutePath();
-			}
-		}
-	}
+	const QList< QTranslator* > translators = getAvailableTranslators(langCode);
 	if (translators.size() > 0) {
 		d_ptr->clearAllTranslator();
-		for (QTranslator* t : qAsConst(translators)) {
+		for (QTranslator* t : translators) {
+			if (t->isEmpty()) {
+				qDebug() << "get empty translator";
+				// getAvailableTranslators生成的对象，如果不使用，必须delete；
+				delete t;
+				continue;
+			}
 			if (QCoreApplication::installTranslator(t)) {
 				d_ptr->mTranslatorLists.append(t);
 			} else {
@@ -120,7 +107,7 @@ int DATranslatorManeger::installAllTranslator(const QString& langCode)
 			}
 		}
 	}
-	return cnt;
+	return d_ptr->mTranslatorLists.size();
 }
 /**
  * @brief 设置扫描文件路径
@@ -167,6 +154,31 @@ void DATranslatorManeger::addTranslatorFileNames(const QString& ps)
 void DATranslatorManeger::setLocale(const QLocale& l)
 {
     d_ptr->mLocal = l;
+}
+
+QList< QTranslator* > DATranslatorManeger::getAvailableTranslators(const QString& langCode)
+{
+	QList< QString > trPaths = getTranslatorFilePath();
+	QList< QString > trName  = getTranslatorFileNames();
+	QList< QTranslator* > translators;
+	for (const QString& p : qAsConst(trPaths)) {
+		QDir dir(p);
+		if (!dir.exists()) {
+			continue;
+		}
+		for (const QString& name : qAsConst(trName)) {
+			std::unique_ptr< QTranslator > translator = std::make_unique< QTranslator >();
+			QString fullName                          = name + "_" + langCode;
+			QString trDir                             = dir.absolutePath();
+			if (translator->load(fullName, trDir)) {
+				translators.append(translator.release());
+				qDebug() << "success load language file:" << fullName << " in dir " << trDir;
+			} else {
+				qDebug() << "can not load translator:" << fullName << " in dir " << trDir;
+			}
+		}
+	}
+	return translators;
 }
 /**
  * @brief 获取QLocale

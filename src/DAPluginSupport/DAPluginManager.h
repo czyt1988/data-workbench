@@ -45,6 +45,9 @@ public:
 
 	// 获取插件路径
 	static QString getPluginDirPath();
+
+	// 忽略文件名
+	static QString getPluginIgnoreFileName();
 signals:
 	/**
 	 * @brief 开始加载插件信号
