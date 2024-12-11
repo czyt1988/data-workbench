@@ -8,15 +8,24 @@
 #include "DAMessageQueueProxy.h"
 #include "da_concurrent_queue.hpp"
 #include <atomic>
+#ifndef SPDLOG_WCHAR_FILENAMES
+#define SPDLOG_WCHAR_FILENAMES
+#endif
 #include "spdlog/spdlog.h"
 #include "spdlog/async.h"
 #include "spdlog/sinks/rotating_file_sink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/sinks/rotating_file_sink.h"
+#include <QTextCodec>
+#include <QByteArray>
+#ifdef Q_OS_WIN
+#include <Windows.h>
+#endif
 
 #ifndef globalMessageHandleValues
 #define globalMessageHandleValues DAMessageHandlerGlobalValues_Private::getInstance()
 #endif
+
 namespace DA
 {
 /**
@@ -24,153 +33,188 @@ namespace DA
  */
 class DAMessageHandlerGlobalValues_Private
 {
-    DAMessageHandlerGlobalValues_Private();
+	DAMessageHandlerGlobalValues_Private();
 
 public:
-    /**
-     * @brief 消息处理类型
-     */
-    enum class MsgHandleType
-    {
-        UnknowHandleType,
-        HandleMsgStdout,     ///< 消息输出到stdout
-        HandleMsgRotateFile  ///< 消息写入文件，文件可旋转
-    };
+	/**
+	 * @brief 消息处理类型
+	 */
+	enum class MsgHandleType
+	{
+		UnknowHandleType,
+		HandleMsgStdout,     ///< 消息输出到stdout
+		HandleMsgRotateFile  ///< 消息写入文件，文件可旋转
+	};
 
 public:
-    ~DAMessageHandlerGlobalValues_Private();
-    //获取单例
-    static DAMessageHandlerGlobalValues_Private& getInstance();
-    // spdlog日志
-    void setLogger(const std::shared_ptr< spdlog::logger >& logger);
-    spdlog::logger* logger();
-    //判断是否捕获到全局队列中，通过这个可以临时跳过一些捕获
-    void setEnableMessageCaptureToQueue(bool on);
-    bool isEnableMessageCaptureToQueue() const;
-    //判断是否使用spdlog
-    void setEnableSpdLog(bool on);
-    bool enableSpdLog() const;
-    //获取全局队列的引用
-    DAMessageQueueProxy& msgQueue();
-    //设置消息的类型
-    void setMsgHandleType(MsgHandleType t);
-    MsgHandleType getMsgHandleType() const;
+	~DAMessageHandlerGlobalValues_Private();
+	//获取单例
+	static DAMessageHandlerGlobalValues_Private& getInstance();
+	// spdlog日志
+	void setLogger(const std::shared_ptr< spdlog::logger >& logger);
+	spdlog::logger* logger();
+	//判断是否捕获到全局队列中，通过这个可以临时跳过一些捕获
+	void setEnableMessageCaptureToQueue(bool on);
+	bool isEnableMessageCaptureToQueue() const;
+	//判断是否使用spdlog
+	void setEnableSpdLog(bool on);
+	bool enableSpdLog() const;
+	//获取全局队列的引用
+	DAMessageQueueProxy& msgQueue();
+	//设置消息的类型
+	void setMsgHandleType(MsgHandleType t);
+	MsgHandleType getMsgHandleType() const;
 
-    //设置记录进入全局消息队列的消息等级，默认为QtWarningMsg
-    QtMsgType getMsgQueueRecordMsgType() const;
-    void setMsgQueueRecordMsgType(QtMsgType t);
-    //获取patter
-    const char* getPatternChar() const;
-    void setPattern(const QString& p);
+	//设置记录进入全局消息队列的消息等级，默认为QtWarningMsg
+	QtMsgType getMsgQueueRecordMsgType() const;
+	void setMsgQueueRecordMsgType(QtMsgType t);
+	//获取patter
+	const char* getPatternChar() const;
+	void setPattern(const QString& p);
 
 private:
-    QtMsgType _recordMsgType;
-    /**
-     * @brief 全局的spdlog日志
-     */
-    std::shared_ptr< spdlog::logger > _daLogger;
-    /**
-     * @brief m_enableMsgHandleSpdlog
-     */
-    std::atomic_bool _enableSpdlog;
-    /**
-     * @brief 消息缓存
-     *
-     * @note DAMessageQueueProxy内部有个单例，当前这个类也是单例，不能实例化，否则有不可预估的错误可能
-     */
-    DAMessageQueueProxy* _msgQueue { nullptr };
-    /**
-     * @brief 消息处理的类型
-     */
-    MsgHandleType _type;
+	QtMsgType _recordMsgType;
+	/**
+	 * @brief 全局的spdlog日志
+	 */
+	std::shared_ptr< spdlog::logger > _daLogger;
+	/**
+	 * @brief m_enableMsgHandleSpdlog
+	 */
+	std::atomic_bool _enableSpdlog;
+	/**
+	 * @brief 消息缓存
+	 *
+	 * @note DAMessageQueueProxy内部有个单例，当前这个类也是单例，不能实例化，否则有不可预估的错误可能
+	 */
+	DAMessageQueueProxy* _msgQueue { nullptr };
+	/**
+	 * @brief 消息处理的类型
+	 */
+	MsgHandleType _type;
 
-    /**
-     * @brief 记录格式
-     */
-    std::string _pattern;
+	/**
+	 * @brief 记录格式
+	 */
+	std::string _pattern;
 
-    /**
-     * @brief 允许消息捕获
-     */
-    std::atomic_bool _enableCaptureToQueue { true };
+	/**
+	 * @brief 允许消息捕获
+	 */
+	std::atomic_bool _enableCaptureToQueue { true };
 };
 
 DAMessageHandlerGlobalValues_Private::DAMessageHandlerGlobalValues_Private()
     : _recordMsgType(QtWarningMsg), _type(MsgHandleType::UnknowHandleType), _pattern("> {5} | [{1}]({2}){3},{4}")
 {
-    _enableSpdlog.store(true);
-    _enableCaptureToQueue.store(true);
+	_enableSpdlog.store(true);
+	_enableCaptureToQueue.store(true);
 }
 
 DAMessageHandlerGlobalValues_Private::~DAMessageHandlerGlobalValues_Private()
 {
-    if (_msgQueue) {
-        delete _msgQueue;
-    }
+	if (_msgQueue) {
+		delete _msgQueue;
+	}
 }
 
 DAMessageHandlerGlobalValues_Private& DAMessageHandlerGlobalValues_Private::getInstance()
 {
-    static DAMessageHandlerGlobalValues_Private s_msg_handle_values;
-    return s_msg_handle_values;
+	static DAMessageHandlerGlobalValues_Private s_msg_handle_values;
+	return s_msg_handle_values;
 }
 
 void DAMessageHandlerGlobalValues_Private::setLogger(const std::shared_ptr< spdlog::logger >& logger)
 {
-    this->_daLogger = logger;
+	this->_daLogger = logger;
 }
 
 spdlog::logger* DAMessageHandlerGlobalValues_Private::logger()
 {
-    return this->_daLogger.get();
+	return this->_daLogger.get();
 }
 
 void DAMessageHandlerGlobalValues_Private::setEnableMessageCaptureToQueue(bool on)
 {
-    return this->_enableCaptureToQueue.store(on);
+	return this->_enableCaptureToQueue.store(on);
 }
 
 bool DAMessageHandlerGlobalValues_Private::isEnableMessageCaptureToQueue() const
 {
-    return this->_enableCaptureToQueue.load();
+	return this->_enableCaptureToQueue.load();
 }
 
 void DAMessageHandlerGlobalValues_Private::setEnableSpdLog(bool on)
 {
-    _enableSpdlog.store(on);
+	_enableSpdlog.store(on);
 }
 
 bool DAMessageHandlerGlobalValues_Private::enableSpdLog() const
 {
-    return _enableSpdlog.load();
+	return _enableSpdlog.load();
 }
 
 DAMessageQueueProxy& DAMessageHandlerGlobalValues_Private::msgQueue()
 {
-    if (nullptr == _msgQueue) {
-        _msgQueue = new DAMessageQueueProxy(nullptr);
-    }
-    return *_msgQueue;
+	if (nullptr == _msgQueue) {
+		_msgQueue = new DAMessageQueueProxy(nullptr);
+	}
+	return *_msgQueue;
 }
 
 void DAMessageHandlerGlobalValues_Private::setMsgHandleType(DAMessageHandlerGlobalValues_Private::MsgHandleType t)
 {
-    _type = t;
+	_type = t;
 }
 
 DAMessageHandlerGlobalValues_Private::MsgHandleType DAMessageHandlerGlobalValues_Private::getMsgHandleType() const
 {
-    return _type;
+	return _type;
 }
 
 QtMsgType DAMessageHandlerGlobalValues_Private::getMsgQueueRecordMsgType() const
 {
-    return _recordMsgType;
+	return _recordMsgType;
 }
 
 void DAMessageHandlerGlobalValues_Private::setMsgQueueRecordMsgType(QtMsgType t)
 {
-    _recordMsgType = t;
+	_recordMsgType = t;
+}
+
+std::wstring QStringToSystemWString(const QString& qstr)
+{
+#ifdef Q_OS_WIN
+	// Windows平台
+	// 获取系统编码的 QTextCodec
+	QTextCodec* codec = QTextCodec::codecForLocale();
+	if (!codec) {
+		// 如果无法获取系统编码的 codec，则使用 UTF-8 作为备选
+		codec = QTextCodec::codecForName("UTF-8");
+	}
+
+	// 将 QString 转换为系统编码的 QByteArray
+	QByteArray encodedBytes = codec->fromUnicode(qstr);
+
+	// 计算转换为 wchar_t 数组所需的字符数
+	int wcharCount = MultiByteToWideChar(codec->mibEnum(), 0, encodedBytes.constData(), -1, nullptr, 0);
+	if (wcharCount == 0) {
+		// 如果转换失败，则返回一个空的 std::wstring
+		return std::wstring();
+	}
+
+	// 分配 wchar_t 数组并转换
+	std::wstring result(wcharCount - 1, 0);
+	MultiByteToWideChar(codec->mibEnum(), 0, encodedBytes.constData(), -1, &result[ 0 ], wcharCount);
+
+	return result;
+#else
+	// Linux平台（或其他非Windows平台）
+	// 假设系统使用 UTF-8 编码
+	std::wstring result;
+	result.assign(qstr.toStdWString());
+	return result;
+#endif
 }
 
 /**
@@ -182,7 +226,7 @@ void DAMessageHandlerGlobalValues_Private::setMsgQueueRecordMsgType(QtMsgType t)
  * @param output_stdout
  * @param async_logger
  */
-void _initializeRotatingSpdlog(const std::string& filename,
+void _initializeRotatingSpdlog(const spdlog::filename_t& filename,
                                int maxfile_size    = 1048576 * 10,
                                int maxfile_counts  = 5,
                                int flush_every_sec = 15,
@@ -203,76 +247,80 @@ void daMessageHandler(QtMsgType type, const QMessageLogContext& context, const Q
  */
 void _initializeConsolSpdlog(int flush_every_sec, bool async_logger)
 {
-    std::vector< spdlog::sink_ptr > sinks;
-    auto stdout_sink = std::make_shared< spdlog::sinks::stdout_color_sink_mt >();
-    sinks.emplace_back(stdout_sink);
+	std::vector< spdlog::sink_ptr > sinks;
+	auto stdout_sink = std::make_shared< spdlog::sinks::stdout_color_sink_mt >();
+	sinks.emplace_back(stdout_sink);
 
-    std::shared_ptr< spdlog::logger > logger;
-    if (async_logger) {
-        //初始化异步线程的参数
-        spdlog::init_thread_pool(10240, 1);
-        logger = std::make_shared< spdlog::async_logger >("da_global",
-                                                          sinks.begin(),
-                                                          sinks.end(),
-                                                          spdlog::thread_pool(),
-                                                          spdlog::async_overflow_policy::block);
-    } else {
-        logger = std::make_shared< spdlog::logger >("da_global", sinks.begin(), sinks.end());
-    }
+	std::shared_ptr< spdlog::logger > logger;
+	if (async_logger) {
+		//初始化异步线程的参数
+		spdlog::init_thread_pool(10240, 1);
+		logger = std::make_shared< spdlog::async_logger >("da_global",
+		                                                  sinks.begin(),
+		                                                  sinks.end(),
+		                                                  spdlog::thread_pool(),
+		                                                  spdlog::async_overflow_policy::block);
+	} else {
+		logger = std::make_shared< spdlog::logger >("da_global", sinks.begin(), sinks.end());
+	}
 
-    //由于都通过DAMessageLogItem控制，因此，字需要输出内容即可
-    logger->set_pattern("%v");
-    //
-    logger->set_level(spdlog::level::trace);
-    logger->flush_on(spdlog::level::info);
-    //同时每10秒flush一次
-    spdlog::flush_every(std::chrono::seconds(flush_every_sec));
-    spdlog::set_default_logger(logger);
-    globalMessageHandleValues.setLogger(logger);
+	//由于都通过DAMessageLogItem控制，因此，字需要输出内容即可
+	logger->set_pattern("%v");
+	//
+	logger->set_level(spdlog::level::trace);
+	logger->flush_on(spdlog::level::info);
+	//同时每10秒flush一次
+	spdlog::flush_every(std::chrono::seconds(flush_every_sec));
+	spdlog::set_default_logger(logger);
+	globalMessageHandleValues.setLogger(logger);
 }
 
-void _initializeRotatingSpdlog(const std::string& filename, int maxfile_size, int maxfile_counts, int flush_every_sec, bool output_stdout, bool async_logger)
+void _initializeRotatingSpdlog(const spdlog::filename_t& filename,
+                               int maxfile_size,
+                               int maxfile_counts,
+                               int flush_every_sec,
+                               bool output_stdout,
+                               bool async_logger)
 {
-    if (maxfile_size < 0) {
-        maxfile_size = 10485760;
-    }
-    if (maxfile_counts < 0) {
-        maxfile_counts = 1;
-    }
+	if (maxfile_size < 0) {
+		maxfile_size = 10485760;
+	}
+	if (maxfile_counts < 0) {
+		maxfile_counts = 1;
+	}
 
-    spdlog::filename_t filename_nor = filename;
-    std::vector< spdlog::sink_ptr > sinks;
+	std::vector< spdlog::sink_ptr > sinks;
 
-    if (output_stdout) {
-        auto stdout_sink = std::make_shared< spdlog::sinks::stdout_color_sink_mt >();
-        sinks.emplace_back(stdout_sink);
-    }
+	if (output_stdout) {
+		auto stdout_sink = std::make_shared< spdlog::sinks::stdout_color_sink_mt >();
+		sinks.emplace_back(stdout_sink);
+	}
 
-    auto rotating_normal_sink = std::make_shared< spdlog::sinks::rotating_file_sink_mt >(filename_nor, maxfile_size, maxfile_counts);
-    sinks.emplace_back(rotating_normal_sink);
-    std::shared_ptr< spdlog::logger > logger;
-    if (async_logger) {
-        //初始化异步线程的参数
-        spdlog::init_thread_pool(10240, 1);
-        logger = std::make_shared< spdlog::async_logger >("da_global",
-                                                          sinks.begin(),
-                                                          sinks.end(),
-                                                          spdlog::thread_pool(),
-                                                          spdlog::async_overflow_policy::block);
-    } else {
-        logger = std::make_shared< spdlog::logger >("da_global", sinks.begin(), sinks.end());
-    }
+	auto rotating_normal_sink = std::make_shared< spdlog::sinks::rotating_file_sink_mt >(filename, maxfile_size, maxfile_counts);
+	sinks.emplace_back(rotating_normal_sink);
+	std::shared_ptr< spdlog::logger > logger;
+	if (async_logger) {
+		//初始化异步线程的参数
+		spdlog::init_thread_pool(10240, 1);
+		logger = std::make_shared< spdlog::async_logger >("da_global",
+		                                                  sinks.begin(),
+		                                                  sinks.end(),
+		                                                  spdlog::thread_pool(),
+		                                                  spdlog::async_overflow_policy::block);
+	} else {
+		logger = std::make_shared< spdlog::logger >("da_global", sinks.begin(), sinks.end());
+	}
 
-    //由于都通过DAMessageLogItem控制，因此，字需要输出内容即可
-    logger->set_pattern("%v");
-    //
-    logger->set_level(spdlog::level::trace);
-    logger->flush_on(spdlog::level::info);
-    //同时每10秒flush一次
-    spdlog::flush_every(std::chrono::seconds(flush_every_sec));
-    spdlog::set_default_logger(logger);
-    globalMessageHandleValues.setLogger(logger);
-    // spdlog::set_automatic_registration(true);
+	//由于都通过DAMessageLogItem控制，因此，字需要输出内容即可
+	logger->set_pattern("%v");
+	//
+	logger->set_level(spdlog::level::trace);
+	logger->flush_on(spdlog::level::info);
+	//同时每10秒flush一次
+	spdlog::flush_every(std::chrono::seconds(flush_every_sec));
+	spdlog::set_default_logger(logger);
+	globalMessageHandleValues.setLogger(logger);
+	// spdlog::set_automatic_registration(true);
 }
 
 /**
@@ -283,45 +331,45 @@ void _initializeRotatingSpdlog(const std::string& filename, int maxfile_size, in
  */
 void daMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg)
 {
-    DAMessageLogItem item(type, context, msg);
-    if (type >= globalMessageHandleValues.getMsgQueueRecordMsgType()) {
-        //只有type大于等于设定的msgtype才会记录到队列中
-        if (globalMessageHandleValues.isEnableMessageCaptureToQueue()) {
-            //只有允许消息捕获时，消息才会推入到队列中
-            globalMessageHandleValues.msgQueue().append(item);
-        }
-    }
+	DAMessageLogItem item(type, context, msg);
+	if (type >= globalMessageHandleValues.getMsgQueueRecordMsgType()) {
+		//只有type大于等于设定的msgtype才会记录到队列中
+		if (globalMessageHandleValues.isEnableMessageCaptureToQueue()) {
+			//只有允许消息捕获时，消息才会推入到队列中
+			globalMessageHandleValues.msgQueue().append(item);
+		}
+	}
 
-    if (globalMessageHandleValues.enableSpdLog()) {
-        std::string dt         = item.datetimeToString().toStdString();
-        std::string ms         = item.getMsg().toStdString();
-        int line               = item.getLine();
-        const char* file       = context.file ? context.file : "";
-        const char* fun        = context.function ? context.function : "";
-        spdlog::logger* logger = globalMessageHandleValues.logger();
-        if (logger) {
-            //        const char* pattern    = "[{0}][{1}][{2}:{3}]:{4}";
-            const char* pattern = globalMessageHandleValues.getPatternChar();
-            switch (type) {
-            case QtDebugMsg:
-                logger->debug(pattern, "debug", dt, line, fun, file, ms);
-                break;
-            case QtWarningMsg:
-                logger->warn(pattern, "warn", dt, line, fun, file, ms);
-                break;
-            case QtCriticalMsg:
-                logger->critical(pattern, "critical", dt, line, fun, file, ms);
-                break;
-            case QtFatalMsg:
-                logger->error(pattern, "error", dt, line, fun, file, ms);
-                break;
-            case QtInfoMsg:
-            default:
-                logger->info(pattern, "info", dt, line, fun, file, ms);
-                break;
-            }
-        }
-    }
+	if (globalMessageHandleValues.enableSpdLog()) {
+		std::string dt         = item.datetimeToString().toStdString();
+		std::string ms         = item.getMsg().toStdString();
+		int line               = item.getLine();
+		const char* file       = context.file ? context.file : "";
+		const char* fun        = context.function ? context.function : "";
+		spdlog::logger* logger = globalMessageHandleValues.logger();
+		if (logger) {
+			//        const char* pattern    = "[{0}][{1}][{2}:{3}]:{4}";
+			const char* pattern = globalMessageHandleValues.getPatternChar();
+			switch (type) {
+			case QtDebugMsg:
+				logger->debug(pattern, "debug", dt, line, fun, file, ms);
+				break;
+			case QtWarningMsg:
+				logger->warn(pattern, "warn", dt, line, fun, file, ms);
+				break;
+			case QtCriticalMsg:
+				logger->critical(pattern, "critical", dt, line, fun, file, ms);
+				break;
+			case QtFatalMsg:
+				logger->error(pattern, "error", dt, line, fun, file, ms);
+				break;
+			case QtInfoMsg:
+			default:
+				logger->info(pattern, "info", dt, line, fun, file, ms);
+				break;
+			}
+		}
+	}
 }
 
 /**
@@ -329,18 +377,18 @@ void daMessageHandler(QtMsgType type, const QMessageLogContext& context, const Q
  */
 void daUnregisterMessageHandler()
 {
-    qInstallMessageHandler(0);
-    globalMessageHandleValues.setEnableSpdLog(false);
-    switch (globalMessageHandleValues.getMsgHandleType()) {
-    case DAMessageHandlerGlobalValues_Private::MsgHandleType::HandleMsgRotateFile:
-    case DAMessageHandlerGlobalValues_Private::MsgHandleType::HandleMsgStdout: {
-        //这些需要调用spdlog
-        spdlog::drop_all();
-        spdlog::shutdown();
-    } break;
-    default:
-        break;
-    }
+	qInstallMessageHandler(0);
+	globalMessageHandleValues.setEnableSpdLog(false);
+	switch (globalMessageHandleValues.getMsgHandleType()) {
+	case DAMessageHandlerGlobalValues_Private::MsgHandleType::HandleMsgRotateFile:
+	case DAMessageHandlerGlobalValues_Private::MsgHandleType::HandleMsgStdout: {
+		//这些需要调用spdlog
+		spdlog::drop_all();
+		spdlog::shutdown();
+	} break;
+	default:
+		break;
+	}
 }
 
 /**
@@ -358,12 +406,22 @@ void daUnregisterMessageHandler()
  * @param output_stdout 输出到stdout
  * @param async_logger 使用异步日志,默认使用
  */
-void daRegisterRotatingMessageHandler(const QString& filename, int maxfile_size, int maxfile_counts, int flush_every_sec, bool output_stdout, bool async_logger)
+void daRegisterRotatingMessageHandler(const QString& filename,
+                                      int maxfile_size,
+                                      int maxfile_counts,
+                                      int flush_every_sec,
+                                      bool output_stdout,
+                                      bool async_logger)
 {
-    _initializeRotatingSpdlog(filename.toStdString(), maxfile_size, maxfile_counts, flush_every_sec, output_stdout, async_logger);
-    globalMessageHandleValues.setEnableSpdLog(true);
-    globalMessageHandleValues.setMsgHandleType(DAMessageHandlerGlobalValues_Private::MsgHandleType::HandleMsgRotateFile);
-    qInstallMessageHandler(daMessageHandler);
+#ifdef SPDLOG_WCHAR_FILENAMES
+	spdlog::filename_t path = QStringToSystemWString(filename);
+#else
+	spdlog::filename_t path = filename.toStdString();
+#endif
+	_initializeRotatingSpdlog(path, maxfile_size, maxfile_counts, flush_every_sec, output_stdout, async_logger);
+	globalMessageHandleValues.setEnableSpdLog(true);
+	globalMessageHandleValues.setMsgHandleType(DAMessageHandlerGlobalValues_Private::MsgHandleType::HandleMsgRotateFile);
+	qInstallMessageHandler(daMessageHandler);
 }
 
 /**
@@ -373,20 +431,20 @@ void daRegisterRotatingMessageHandler(const QString& filename, int maxfile_size,
  */
 void daRegisterConsolMessageHandler(int flush_every_sec, bool async_logger)
 {
-    _initializeConsolSpdlog(flush_every_sec, async_logger);
-    globalMessageHandleValues.setEnableSpdLog(true);
-    globalMessageHandleValues.setMsgHandleType(DAMessageHandlerGlobalValues_Private::MsgHandleType::HandleMsgStdout);
-    qInstallMessageHandler(daMessageHandler);
+	_initializeConsolSpdlog(flush_every_sec, async_logger);
+	globalMessageHandleValues.setEnableSpdLog(true);
+	globalMessageHandleValues.setMsgHandleType(DAMessageHandlerGlobalValues_Private::MsgHandleType::HandleMsgStdout);
+	qInstallMessageHandler(daMessageHandler);
 }
 
 void daSetMsgQueueRecordMsgType(QtMsgType type)
 {
-    globalMessageHandleValues.setMsgQueueRecordMsgType(type);
+	globalMessageHandleValues.setMsgQueueRecordMsgType(type);
 }
 
 void daSetMessagePattern(const QString& p)
 {
-    globalMessageHandleValues.setPattern(p);
+	globalMessageHandleValues.setPattern(p);
 }
 
 /**
@@ -404,36 +462,36 @@ void daSetMessagePattern(const QString& p)
  */
 void DAMessageHandlerGlobalValues_Private::setPattern(const QString& p)
 {
-    //对占位符进行替换
-    QString s = p;
-    s.replace("{level}", "{0}");
-    s.replace("{datetime}", "{1}");
-    s.replace("{line}", "{2}");
-    s.replace("{fun}", "{3}");
-    s.replace("{file}", "{4}");
-    s.replace("{msg}", "{5}");
-    _pattern = s.toStdString();
-    //[{1}]{5}\n   ->({2}){3},{4}
+	//对占位符进行替换
+	QString s = p;
+	s.replace("{level}", "{0}");
+	s.replace("{datetime}", "{1}");
+	s.replace("{line}", "{2}");
+	s.replace("{fun}", "{3}");
+	s.replace("{file}", "{4}");
+	s.replace("{msg}", "{5}");
+	_pattern = s.toStdString();
+	//[{1}]{5}\n   ->({2}){3},{4}
 }
 
 const char* DAMessageHandlerGlobalValues_Private::getPatternChar() const
 {
-    return _pattern.c_str();
+	return _pattern.c_str();
 }
 
 void daDisableMessageQueueCapture()
 {
-    globalMessageHandleValues.setEnableMessageCaptureToQueue(false);
+	globalMessageHandleValues.setEnableMessageCaptureToQueue(false);
 }
 
 void daEnableMessageQueueCapture()
 {
-    globalMessageHandleValues.setEnableMessageCaptureToQueue(true);
+	globalMessageHandleValues.setEnableMessageCaptureToQueue(true);
 }
 
 bool daIsEnableMessageQueueCapture()
 {
-    return globalMessageHandleValues.isEnableMessageCaptureToQueue();
+	return globalMessageHandleValues.isEnableMessageCaptureToQueue();
 }
 
 }  // namespace DA

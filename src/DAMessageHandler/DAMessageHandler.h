@@ -3,11 +3,21 @@
 #include "DAMessageHandlerGlobal.h"
 #include <QObject>
 #include <QTextStream>
+#include <string>
 namespace DA
 {
+
+/**
+ * @brief QString转换为系统编码的wstring
+ *
+ * 此函数主要针对windows操作系统，把QString转换为系统编码的std::wstring
+ */
+std::wstring QStringToSystemWString(const QString& qstr);
+
 /**
  * @brief 禁止MessageQueueCapture，如果针对一些qDebug、qInfo不想被捕获的，可以调用此函数，次数消息不会推入队列中，但会被spdlog写入文件中
  */
+
 void DAMESSAGEHANDLER_API daDisableMessageQueueCapture();
 /**
    @brief 允许MessageQueueCapture

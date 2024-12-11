@@ -28,6 +28,9 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/../../${DA_BIN_DIR_NAME}")
 set(SPDLOG_BUILD_EXAMPLE OFF CACHE BOOL "force set SPDLOG_BUILD_EXAMPLE off" FORCE)
 set(SPDLOG_BUILD_TESTS OFF CACHE BOOL "force set SPDLOG_BUILD_TESTS off" FORCE)
 set(SPDLOG_INSTALL ON CACHE BOOL "force set SPDLOG_INSTALL ON" FORCE)
+if(WIN32)
+	set(SPDLOG_WCHAR_FILENAMES ON CACHE BOOL "force set SPDLOG_WCHAR_FILENAMES ON enable chinese file path" FORCE)
+endif()
 #ADS
 set(BUILD_EXAMPLES OFF CACHE BOOL "force set BUILD_EXAMPLES OFF" FORCE)
 #SARibbon
@@ -43,7 +46,6 @@ add_subdirectory(SARibbon)
 add_subdirectory(ADS)
 
 add_subdirectory(spdlog)
-#file(COPY "${CMAKE_CURRENT_LIST_DIR}/spdlog/include/spdlog" DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
 
 # pybind11直接把文件夹复制过去
 file(COPY "${CMAKE_CURRENT_LIST_DIR}/pybind11/include/pybind11" DESTINATION ${CMAKE_INSTALL_PREFIX}/include)

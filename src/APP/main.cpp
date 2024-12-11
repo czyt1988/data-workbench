@@ -56,6 +56,7 @@ int main(int argc, char* argv[])
 	DA::DADumpCapture::initDump([]() -> QString { return appPreposeDump(); });
 	//
 	QString logfilePath = QDir::toNativeSeparators(fi.absolutePath() + "/log/da_log.log");
+	qDebug() << "logfilePath=" << logfilePath;
 	// 注册旋转文件消息捕获
 	DA::daRegisterRotatingMessageHandler(logfilePath);
 	// DA::daRegisterConsolMessageHandler();
@@ -91,13 +92,13 @@ int main(int argc, char* argv[])
 
 	// TODO 此处进行一些核心的初始化操作
 	DA::AppMainWindow w;
-    if(appArguments.size() > 1){
-        //说明有可能是双击文件打开，这时候要看参数2是否为一个工程文件
-        QFileInfo openfi(appArguments[1]);
-        if(openfi.exists()){
-            w.openProject(openfi.absoluteFilePath());
-        }
-    }
+	if (appArguments.size() > 1) {
+		//说明有可能是双击文件打开，这时候要看参数2是否为一个工程文件
+		QFileInfo openfi(appArguments[ 1 ]);
+		if (openfi.exists()) {
+			w.openProject(openfi.absoluteFilePath());
+		}
+	}
 	w.show();
 	int r = app.exec();
 	DA::daUnregisterMessageHandler();
@@ -111,14 +112,14 @@ int main(int argc, char* argv[])
 QString daHelp()
 {
 	QString str = QObject::tr(""
-							  "%1(%2) build %3\n"  // DAWorkbench(0.0.2) build 240215
-							  "params:\n"
-							  "--version : version information\n"    //--version :版本信息
-							  "--describe : detailed information\n"  //--describe :详细信息
-							  )
-					  .arg(DA_PROJECT_NAME)
-					  .arg(DA_VERSION)
-					  .arg(DA_COMPILE_DATETIME);
+	                          "%1(%2) build %3\n"  // DAWorkbench(0.0.2) build 240215
+	                          "params:\n"
+	                          "--version : version information\n"    //--version :版本信息
+	                          "--describe : detailed information\n"  //--describe :详细信息
+	                          )
+	                  .arg(DA_PROJECT_NAME)
+	                  .arg(DA_VERSION)
+	                  .arg(DA_COMPILE_DATETIME);
 	return str;
 }
 
@@ -128,7 +129,7 @@ QString daHelp()
  */
 QString daVersionInfo()
 {
-    return DA_VERSION;
+	return DA_VERSION;
 }
 
 /**
@@ -138,9 +139,9 @@ QString daVersionInfo()
 QString daDescribe()
 {
 	QString descibe = QString("version:%1,compile datetime:%2,enable python:%3")
-						  .arg(DA_VERSION)
-						  .arg(DA_COMPILE_DATETIME)
-						  .arg(DA_ENABLE_PYTHON);
+	                      .arg(DA_VERSION)
+	                      .arg(DA_COMPILE_DATETIME)
+	                      .arg(DA_ENABLE_PYTHON);
 	return descibe;
 }
 
@@ -151,7 +152,7 @@ QString daDescribe()
  */
 bool parsingArguments(const QStringList& args)
 {
-    //信息输出
+	//信息输出
 	if (args.contains("--help")) {
 		QTextStream st(stdout);
 		st << daHelp() << Qt::endl;
@@ -173,7 +174,7 @@ bool parsingArguments(const QStringList& args)
  */
 void enableHDPIScaling()
 {
-    SARibbonBar::initHighDpi();
+	SARibbonBar::initHighDpi();
 }
 
 /**
