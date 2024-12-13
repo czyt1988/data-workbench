@@ -12,6 +12,7 @@
 #include <QDir>
 #include <QStandardPaths>
 // DA
+#include "DAPathUtil.h"
 #include "DAConfigs.h"
 #include "DAAppCore.h"
 #include "DAMessageHandler.h"
@@ -50,19 +51,20 @@ bool parsingArguments(const QStringList& args);
  */
 int main(int argc, char* argv[])
 {
-	// 程序路径捕获
-	QFileInfo fi(argv[ 0 ]);
 	// 进行dump捕获
 	DA::DADumpCapture::initDump([]() -> QString { return appPreposeDump(); });
 	//
-	QString logfilePath = QDir::toNativeSeparators(fi.absolutePath() + "/log/da_log.log");
-	qDebug() << "logfilePath=" << logfilePath;
+	QString exePath     = DA::DAPathUtil::getExecutablePath();
+	QString logfilePath = QDir::toNativeSeparators(exePath + "/log/da_log.log");
+
 	// 注册旋转文件消息捕获
 	DA::daRegisterRotatingMessageHandler(logfilePath);
 	// DA::daRegisterConsolMessageHandler();
 	for (int i = 0; i < argc; ++i) {
-		qDebug() << "argv[" << i << "]" << argv[ i ];
+		qDebug() << "argv[" << i << "]" << argv[ i ] << endl;
 	}
+	qDebug() << "logfilePath=" << logfilePath << endl;
+	qDebug() << "exePath=" << exePath << endl;
 	// 高清屏的适配
 	enableHDPIScaling();
 
@@ -93,7 +95,7 @@ int main(int argc, char* argv[])
 	// TODO 此处进行一些核心的初始化操作
 	DA::AppMainWindow w;
 	if (appArguments.size() > 1) {
-		//说明有可能是双击文件打开，这时候要看参数2是否为一个工程文件
+		// 说明有可能是双击文件打开，这时候要看参数2是否为一个工程文件
 		QFileInfo openfi(appArguments[ 1 ]);
 		if (openfi.exists()) {
 			w.openProject(openfi.absoluteFilePath());
@@ -138,10 +140,8 @@ QString daVersionInfo()
  */
 QString daDescribe()
 {
-	QString descibe = QString("version:%1,compile datetime:%2,enable python:%3")
-	                      .arg(DA_VERSION)
-	                      .arg(DA_COMPILE_DATETIME)
-	                      .arg(DA_ENABLE_PYTHON);
+	QString descibe =
+		QString("version:%1,compile datetime:%2,enable python:%3").arg(DA_VERSION).arg(DA_COMPILE_DATETIME).arg(DA_ENABLE_PYTHON);
 	return descibe;
 }
 
@@ -152,7 +152,7 @@ QString daDescribe()
  */
 bool parsingArguments(const QStringList& args)
 {
-	//信息输出
+	// 信息输出
 	if (args.contains("--help")) {
 		QTextStream st(stdout);
 		st << daHelp() << Qt::endl;

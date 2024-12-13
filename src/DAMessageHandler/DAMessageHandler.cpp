@@ -8,9 +8,9 @@
 #include "DAMessageQueueProxy.h"
 #include "da_concurrent_queue.hpp"
 #include <atomic>
-#ifndef SPDLOG_WCHAR_FILENAMES
-#define SPDLOG_WCHAR_FILENAMES
-#endif
+// #ifndef SPDLOG_WCHAR_FILENAMES
+// #define SPDLOG_WCHAR_FILENAMES
+// #endif
 #include "spdlog/spdlog.h"
 #include "spdlog/async.h"
 #include "spdlog/sinks/rotating_file_sink.h"
@@ -18,10 +18,7 @@
 #include "spdlog/sinks/rotating_file_sink.h"
 #include <QTextCodec>
 #include <QByteArray>
-#ifdef Q_OS_WIN
-#include <Windows.h>
-#endif
-
+#include "DAStringUtil.h"
 #ifndef globalMessageHandleValues
 #define globalMessageHandleValues DAMessageHandlerGlobalValues_Private::getInstance()
 #endif
@@ -48,27 +45,27 @@ public:
 
 public:
 	~DAMessageHandlerGlobalValues_Private();
-	//获取单例
+	// 获取单例
 	static DAMessageHandlerGlobalValues_Private& getInstance();
 	// spdlog日志
 	void setLogger(const std::shared_ptr< spdlog::logger >& logger);
 	spdlog::logger* logger();
-	//判断是否捕获到全局队列中，通过这个可以临时跳过一些捕获
+	// 判断是否捕获到全局队列中，通过这个可以临时跳过一些捕获
 	void setEnableMessageCaptureToQueue(bool on);
 	bool isEnableMessageCaptureToQueue() const;
-	//判断是否使用spdlog
+	// 判断是否使用spdlog
 	void setEnableSpdLog(bool on);
 	bool enableSpdLog() const;
-	//获取全局队列的引用
+	// 获取全局队列的引用
 	DAMessageQueueProxy& msgQueue();
-	//设置消息的类型
+	// 设置消息的类型
 	void setMsgHandleType(MsgHandleType t);
 	MsgHandleType getMsgHandleType() const;
 
-	//设置记录进入全局消息队列的消息等级，默认为QtWarningMsg
+	// 设置记录进入全局消息队列的消息等级，默认为QtWarningMsg
 	QtMsgType getMsgQueueRecordMsgType() const;
 	void setMsgQueueRecordMsgType(QtMsgType t);
-	//获取patter
+	// 获取patter
 	const char* getPatternChar() const;
 	void setPattern(const QString& p);
 
@@ -182,41 +179,6 @@ void DAMessageHandlerGlobalValues_Private::setMsgQueueRecordMsgType(QtMsgType t)
 	_recordMsgType = t;
 }
 
-std::wstring QStringToSystemWString(const QString& qstr)
-{
-#ifdef Q_OS_WIN
-	// Windows平台
-	// 获取系统编码的 QTextCodec
-	QTextCodec* codec = QTextCodec::codecForLocale();
-	if (!codec) {
-		// 如果无法获取系统编码的 codec，则使用 UTF-8 作为备选
-		codec = QTextCodec::codecForName("UTF-8");
-	}
-
-	// 将 QString 转换为系统编码的 QByteArray
-	QByteArray encodedBytes = codec->fromUnicode(qstr);
-
-	// 计算转换为 wchar_t 数组所需的字符数
-	int wcharCount = MultiByteToWideChar(codec->mibEnum(), 0, encodedBytes.constData(), -1, nullptr, 0);
-	if (wcharCount == 0) {
-		// 如果转换失败，则返回一个空的 std::wstring
-		return std::wstring();
-	}
-
-	// 分配 wchar_t 数组并转换
-	std::wstring result(wcharCount - 1, 0);
-	MultiByteToWideChar(codec->mibEnum(), 0, encodedBytes.constData(), -1, &result[ 0 ], wcharCount);
-
-	return result;
-#else
-	// Linux平台（或其他非Windows平台）
-	// 假设系统使用 UTF-8 编码
-	std::wstring result;
-	result.assign(qstr.toStdWString());
-	return result;
-#endif
-}
-
 /**
  * @brief 初始化旋转日志
  * @param filename
@@ -253,23 +215,20 @@ void _initializeConsolSpdlog(int flush_every_sec, bool async_logger)
 
 	std::shared_ptr< spdlog::logger > logger;
 	if (async_logger) {
-		//初始化异步线程的参数
+		// 初始化异步线程的参数
 		spdlog::init_thread_pool(10240, 1);
-		logger = std::make_shared< spdlog::async_logger >("da_global",
-		                                                  sinks.begin(),
-		                                                  sinks.end(),
-		                                                  spdlog::thread_pool(),
-		                                                  spdlog::async_overflow_policy::block);
+		logger = std::make_shared< spdlog::async_logger >(
+			"da_global", sinks.begin(), sinks.end(), spdlog::thread_pool(), spdlog::async_overflow_policy::block);
 	} else {
 		logger = std::make_shared< spdlog::logger >("da_global", sinks.begin(), sinks.end());
 	}
 
-	//由于都通过DAMessageLogItem控制，因此，字需要输出内容即可
+	// 由于都通过DAMessageLogItem控制，因此，字需要输出内容即可
 	logger->set_pattern("%v");
 	//
 	logger->set_level(spdlog::level::trace);
 	logger->flush_on(spdlog::level::info);
-	//同时每10秒flush一次
+	// 同时每10秒flush一次
 	spdlog::flush_every(std::chrono::seconds(flush_every_sec));
 	spdlog::set_default_logger(logger);
 	globalMessageHandleValues.setLogger(logger);
@@ -296,27 +255,25 @@ void _initializeRotatingSpdlog(const spdlog::filename_t& filename,
 		sinks.emplace_back(stdout_sink);
 	}
 
-	auto rotating_normal_sink = std::make_shared< spdlog::sinks::rotating_file_sink_mt >(filename, maxfile_size, maxfile_counts);
+	auto rotating_normal_sink =
+		std::make_shared< spdlog::sinks::rotating_file_sink_mt >(filename, maxfile_size, maxfile_counts);
 	sinks.emplace_back(rotating_normal_sink);
 	std::shared_ptr< spdlog::logger > logger;
 	if (async_logger) {
-		//初始化异步线程的参数
+		// 初始化异步线程的参数
 		spdlog::init_thread_pool(10240, 1);
-		logger = std::make_shared< spdlog::async_logger >("da_global",
-		                                                  sinks.begin(),
-		                                                  sinks.end(),
-		                                                  spdlog::thread_pool(),
-		                                                  spdlog::async_overflow_policy::block);
+		logger = std::make_shared< spdlog::async_logger >(
+			"da_global", sinks.begin(), sinks.end(), spdlog::thread_pool(), spdlog::async_overflow_policy::block);
 	} else {
 		logger = std::make_shared< spdlog::logger >("da_global", sinks.begin(), sinks.end());
 	}
 
-	//由于都通过DAMessageLogItem控制，因此，字需要输出内容即可
+	// 由于都通过DAMessageLogItem控制，因此，字需要输出内容即可
 	logger->set_pattern("%v");
 	//
 	logger->set_level(spdlog::level::trace);
 	logger->flush_on(spdlog::level::info);
-	//同时每10秒flush一次
+	// 同时每10秒flush一次
 	spdlog::flush_every(std::chrono::seconds(flush_every_sec));
 	spdlog::set_default_logger(logger);
 	globalMessageHandleValues.setLogger(logger);
@@ -333,9 +290,9 @@ void daMessageHandler(QtMsgType type, const QMessageLogContext& context, const Q
 {
 	DAMessageLogItem item(type, context, msg);
 	if (type >= globalMessageHandleValues.getMsgQueueRecordMsgType()) {
-		//只有type大于等于设定的msgtype才会记录到队列中
+		// 只有type大于等于设定的msgtype才会记录到队列中
 		if (globalMessageHandleValues.isEnableMessageCaptureToQueue()) {
-			//只有允许消息捕获时，消息才会推入到队列中
+			// 只有允许消息捕获时，消息才会推入到队列中
 			globalMessageHandleValues.msgQueue().append(item);
 		}
 	}
@@ -382,7 +339,7 @@ void daUnregisterMessageHandler()
 	switch (globalMessageHandleValues.getMsgHandleType()) {
 	case DAMessageHandlerGlobalValues_Private::MsgHandleType::HandleMsgRotateFile:
 	case DAMessageHandlerGlobalValues_Private::MsgHandleType::HandleMsgStdout: {
-		//这些需要调用spdlog
+		// 这些需要调用spdlog
 		spdlog::drop_all();
 		spdlog::shutdown();
 	} break;
@@ -414,9 +371,28 @@ void daRegisterRotatingMessageHandler(const QString& filename,
                                       bool async_logger)
 {
 #ifdef SPDLOG_WCHAR_FILENAMES
-	spdlog::filename_t path = QStringToSystemWString(filename);
+	spdlog::filename_t path = qstringToSystemWString(filename);
 #else
-	spdlog::filename_t path = filename.toStdString();
+	std::string str(filename.toLocal8Bit().constData());
+	spdlog::filename_t path = str;
+#endif
+	_initializeRotatingSpdlog(path, maxfile_size, maxfile_counts, flush_every_sec, output_stdout, async_logger);
+	globalMessageHandleValues.setEnableSpdLog(true);
+	globalMessageHandleValues.setMsgHandleType(DAMessageHandlerGlobalValues_Private::MsgHandleType::HandleMsgRotateFile);
+	qInstallMessageHandler(daMessageHandler);
+}
+
+void daRegisterRotatingMessageHandler(const std::string& filename,
+                                      int maxfile_size,
+                                      int maxfile_counts,
+                                      int flush_every_sec,
+                                      bool output_stdout,
+                                      bool async_logger)
+{
+#ifdef SPDLOG_WCHAR_FILENAMES
+	spdlog::filename_t path = stringToSystemWString(filename);
+#else
+	spdlog::filename_t path = filename;
 #endif
 	_initializeRotatingSpdlog(path, maxfile_size, maxfile_counts, flush_every_sec, output_stdout, async_logger);
 	globalMessageHandleValues.setEnableSpdLog(true);
@@ -462,7 +438,7 @@ void daSetMessagePattern(const QString& p)
  */
 void DAMessageHandlerGlobalValues_Private::setPattern(const QString& p)
 {
-	//对占位符进行替换
+	// 对占位符进行替换
 	QString s = p;
 	s.replace("{level}", "{0}");
 	s.replace("{datetime}", "{1}");

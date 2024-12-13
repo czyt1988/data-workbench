@@ -4,15 +4,9 @@
 #include <QObject>
 #include <QTextStream>
 #include <string>
+
 namespace DA
 {
-
-/**
- * @brief QString转换为系统编码的wstring
- *
- * 此函数主要针对windows操作系统，把QString转换为系统编码的std::wstring
- */
-std::wstring QStringToSystemWString(const QString& qstr);
 
 /**
  * @brief 禁止MessageQueueCapture，如果针对一些qDebug、qInfo不想被捕获的，可以调用此函数，次数消息不会推入队列中，但会被spdlog写入文件中
@@ -30,17 +24,22 @@ void DAMESSAGEHANDLER_API daEnableMessageQueueCapture();
  */
 bool DAMESSAGEHANDLER_API daIsEnableMessageQueueCapture();
 
-//注册控制台的消息处理
+// 注册控制台的消息处理
 void DAMESSAGEHANDLER_API daRegisterConsolMessageHandler(int flush_every_sec = 1, bool async_logger = true);
 
-//注册一个旋转文件的消息处理
+// 注册一个旋转文件的消息处理
 void DAMESSAGEHANDLER_API daRegisterRotatingMessageHandler(const QString& filename,
                                                            int maxfile_size    = 1048576 * 10,
                                                            int maxfile_counts  = 5,
                                                            int flush_every_sec = 15,
                                                            bool output_stdout  = true,
                                                            bool async_logger   = true);
-
+void DAMESSAGEHANDLER_API daRegisterRotatingMessageHandler(const std::string& filename,
+                                                           int maxfile_size    = 1048576 * 10,
+                                                           int maxfile_counts  = 5,
+                                                           int flush_every_sec = 15,
+                                                           bool output_stdout  = true,
+                                                           bool async_logger   = true);
 /**
  * @brief 设置消息的模板
  *

@@ -1,8 +1,9 @@
-#ifndef DASTRINGUTIL_H
+﻿#ifndef DASTRINGUTIL_H
 #define DASTRINGUTIL_H
 #include "DAUtilsAPI.h"
 #include <QSet>
 #include <QString>
+#include <string>
 #ifndef DA_STRING_CAST_D_H
 #define DA_STRING_CAST_D_H(type, value) DAUTILS_API type fromQString(const QString& str, type defaultValue = value);
 #endif
@@ -16,6 +17,18 @@ namespace DA
 {
 // 生成一个唯一的字符串，如果出现了重复字符串，将会在这个字符串后面加上_1,这个函数常用于生成一个唯一的名字
 DAUTILS_API QString makeUniqueString(const QSet< QString >& stringSet, const QString& str, const QString& split = "_");
+
+/**
+ * @brief QString转换为系统编码的wstring
+ *
+ * 此函数主要针对windows操作系统，把QString转换为系统编码的std::wstring
+ */
+DAUTILS_API std::wstring qstringToSystemWString(const QString& qstr);
+DAUTILS_API std::wstring stringToSystemWString(const std::string& str);
+DAUTILS_API int getSystemCodePage();
+#ifdef Q_OS_WIN
+DAUTILS_API std::string convertToUtf8(const std::string& str, unsigned int codePage);
+#endif
 // 字符串转换为值
 // type fromQString
 /**
