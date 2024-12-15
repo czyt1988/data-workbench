@@ -373,6 +373,7 @@ void daRegisterRotatingMessageHandler(const QString& filename,
 #ifdef SPDLOG_WCHAR_FILENAMES
 	spdlog::filename_t path = qstringToSystemWString(filename);
 #else
+	// 不要直接使用tostdstring
 	std::string str(filename.toLocal8Bit().constData());
 	spdlog::filename_t path = str;
 #endif
