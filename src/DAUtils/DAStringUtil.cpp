@@ -162,7 +162,6 @@ std::string convertToUtf8(const std::string& str, unsigned int codePage)
  * @return 转换的结果
  */
 
-/**
 DA_STRING_CAST_QSTRINGINNER_WITHBOOL_CPP(short, toShort)
 DA_STRING_CAST_QSTRINGINNER_WITHBOOL_CPP(unsigned short, toUShort)
 DA_STRING_CAST_QSTRINGINNER_WITHBOOL_CPP(int, toInt)
@@ -177,6 +176,5 @@ DA_STRING_CAST_QSTRINGINNER_CPP(std::string, toStdString)
 DA_STRING_CAST_QSTRINGINNER_CPP(std::u16string, toStdU16String)
 DA_STRING_CAST_QSTRINGINNER_CPP(std::u32string, toStdU32String)
 DA_STRING_CAST_QSTRINGINNER_CPP(std::wstring, toStdWString)
-**/
 
 }
