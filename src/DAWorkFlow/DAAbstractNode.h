@@ -192,7 +192,17 @@ public:  // 连接相关
 	DAWorkFlow* workflow() const;
 	// 获取工厂
 	std::shared_ptr< DAAbstractNodeFactory > factory() const;
-	//
+
+    /**
+     * @brief 转换为其他具体类型节点
+     * @return 如果成功返回一个不为空的指针
+     * @note 注意此操作通过dynamic_pointer_cast实现
+     */
+    template< typename T >
+    std::shared_ptr< T > castTo()
+    {
+        return std::dynamic_pointer_cast< T >(pointer());
+    }
 
 public:
 	// 执行
