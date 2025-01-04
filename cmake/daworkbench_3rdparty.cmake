@@ -21,6 +21,29 @@
     endif()
 endmacro(damacro_import_x_x)
 
+# 这个宏是引入share/cmake目录的库，例如tsl-ordered-map
+macro(damacro_import_x_x_sharepath x_namespace x_libname __target_name)
+    find_package(${x_libname})
+    if(${x_libname}_FOUND)
+        message(STATUS "  |-finded ${x_libname}")
+    else()
+        message(STATUS "  |-can not find ${x_libname}")
+        if(DEFINED DA_INSTALL_LIB_SHARE_PATH)
+            set(_lib_dir ${DA_INSTALL_LIB_SHARE_PATH}/${x_libname})
+            message(STATUS "  |-try to find in ${_lib_dir}")
+            find_package(${x_libname} PATHS ${_lib_dir})
+        endif()
+    endif()
+    # 链接的第三方库
+    if(${x_libname}_FOUND)
+        target_link_libraries(${__target_name} PRIVATE
+            ${x_namespace}::${x_libname}
+        )
+        message(STATUS "  |-link ${x_namespace}::${x_libname}")
+    else()
+        message(FATAL_ERROR "  can not find ${x_libname}")
+    endif()
+endmacro(damacro_import_x_x_sharepath)
 
 macro(damacro_import_x x_libname __target_name)
     damacro_import_x_x(${x_libname} ${x_libname} ${__target_name})
@@ -120,6 +143,8 @@ endmacro(damacro_import_pybind11)
 macro(damacro_import_orderedmap __target_name)
     # tsl-ordered-map的安装位置不是在lib/cmake
     # 而是在share/cmake下面
+    # tsl-ordered-map无法使用damacro_import_x_x_sharepath或者damacro_import_x_x这些宏
+    # 因为他的package名称为tsl-ordered-map，他的库名称为ordered_map
     find_package(tsl-ordered-map)
     if(tsl-ordered-map_FOUND)
         message(STATUS "  |-finded tsl-ordered-map")
@@ -131,9 +156,10 @@ macro(damacro_import_orderedmap __target_name)
             find_package(tsl-ordered-map PATHS ${_lib_dir})
         endif()
     endif()
+    # 链接的第三方库
     if(tsl-ordered-map_FOUND)
-        # 链接的第三方库
         target_link_libraries(${__target_name} PUBLIC tsl::ordered_map)
+        message(STATUS "  |-link tsl::ordered_map")
     else()
         message(FATAL_ERROR "  can not find tsl-ordered-map")
     endif()
