@@ -21,17 +21,22 @@ public:
 public:
 	QHash< DANodeMetaData, std::shared_ptr< DAAbstractNodeFactory > > mMetaToFactory;  ///< 记录prototype对应的工厂
 	QHash< QString, std::shared_ptr< DAAbstractNodeFactory > > mFactorys;              ///< 记录所有的工厂
-	QList< DAAbstractNode::SharedPointer > mNodes;                                     ///< 节点相关信息列表
-	QMap< DAAbstractNode::IdType, DAAbstractNode::SharedPointer > mIdToNode;           ///< 文本信息列表
-	DAAbstractNode::WeakPointer mStartNode;                                            ///< 开始执行的节点
-	QThread* mExecuterThread { nullptr };                                              ///< 执行器线程
-	DA::DAWorkFlowExecuter* mExecuter { nullptr };                                     ///< 执行器
-	bool mIsExecuting { false };                                                       ///< 正在执行
-	QString mLastErr;                                                                  ///< 记录最后的错误
+	/**
+	 * @brief 节点相关信息列表
+	 *
+	 * 这里不用tsl::ordered_map<DAAbstractNode::IdType, DAAbstractNode::SharedPointer>，因为要单独返回values
+	 */
+	QList< DAAbstractNode::SharedPointer > mNodes;
+	QMap< DAAbstractNode::IdType, DAAbstractNode::SharedPointer > mIdToNode;  ///< 文本信息列表
+	DAAbstractNode::WeakPointer mStartNode;                                   ///< 开始执行的节点
+	QThread* mExecuterThread { nullptr };                                     ///< 执行器线程
+	DA::DAWorkFlowExecuter* mExecuter { nullptr };                            ///< 执行器
+	bool mIsExecuting { false };                                              ///< 正在执行
+	QString mLastErr;                                                         ///< 记录最后的错误
 	QList< DAWorkFlow::CallbackPrepareStartExecute > mPrepareStartCallback;
 	QList< DAWorkFlow::CallbackPrepareEndExecute > mPrepareEndCallback;
 	DANodeGraphicsScene* mScene { nullptr };  ///< 记录工作流对应的scene，让工作流能获取scene指针
-    bool mEnableFactoryCb { true };           ///< 是否允许工厂回调
+	bool mEnableFactoryCb { true };           ///< 是否允许工厂回调
 };
 
 //===================================================
@@ -243,12 +248,12 @@ void DAWorkFlow::addNode(DAAbstractNode::SharedPointer n)
 		return;
 	}
 	d_ptr->recordNode(n);
-    if (isEnableFactoryCallBack()) {
-        DAAbstractNodeFactory::SharedPointer f = n->factory();
-        if (f) {
-            f->nodeAddedToWorkflow(n);
-        }
-    }
+	if (isEnableFactoryCallBack()) {
+		DAAbstractNodeFactory::SharedPointer f = n->factory();
+		if (f) {
+			f->nodeAddedToWorkflow(n);
+		}
+	}
 	emit nodeAdded(n);
 }
 
@@ -290,17 +295,17 @@ void DAWorkFlow::removeNode(const DAAbstractNode::SharedPointer& n)
 	if (!d_ptr->mNodes.contains(n)) {
 		return;
 	}
-    if (isEnableFactoryCallBack()) {
-        DAAbstractNodeFactory::SharedPointer f = n->factory();
-        if (f) {
-            f->nodeStartRemove(n);
-        }
+	if (isEnableFactoryCallBack()) {
+		DAAbstractNodeFactory::SharedPointer f = n->factory();
+		if (f) {
+			f->nodeStartRemove(n);
+		}
 	}
 	emit nodeStartRemove(n);
 	n->detachAll();
 	d_ptr->mNodes.removeAll(n);
 	d_ptr->mIdToNode.remove(n->getID());
-    emit nodeRemoved(n);
+	emit nodeRemoved(n);
 }
 
 /**
@@ -512,10 +517,10 @@ DANodeGraphicsScene* DAWorkFlow::getScene() const
  */
 void DAWorkFlow::callWorkflowReady()
 {
-    for (auto fac : qAsConst(d_ptr->mFactorys)) {
-        fac->workflowReady();
-    }
-    emit workflowReady();
+	for (auto fac : qAsConst(d_ptr->mFactorys)) {
+		fac->workflowReady();
+	}
+	emit workflowReady();
 }
 
 /**

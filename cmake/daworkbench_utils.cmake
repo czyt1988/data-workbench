@@ -211,12 +211,13 @@ macro(damacro_app_setting _app_name _app_description _app_ver_major _app_ver_min
     set(DA_APP_VERSION_MINOR ${_app_ver_minor})
     set(DA_APP_VERSION_PATCH ${_app_ver_path})
     set(DA_APP_VERSION "${DA_APP_VERSION_MAJOR}.${DA_APP_VERSION_MINOR}.${DA_APP_VERSION_PATCH}")
-    set(DA_APP_FULL_DESCRIPTION "${DA_APP_NAME} ${DA_APP_VERSION} | ${DA_APP_DESCRIPTION}")
+    set(DA_APP_FULL_DESCRIPTION "${DA_APP_DESCRIPTION}")
 
     project(${DA_APP_NAME}
         VERSION ${DA_APP_VERSION}
         LANGUAGES CXX
-        DESCRIPTION ${DA_APP_FULL_DESCRIPTION}
+        DESCRIPTION ${DA_APP_NAME}
+        HOMEPAGE_URL "https://github.com/czyt1988"
     )
     ########################################################
     # 通用常规设置

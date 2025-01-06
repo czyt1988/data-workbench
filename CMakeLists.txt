@@ -138,14 +138,26 @@ list(APPEND CMAKE_MODULE_PATH ${DA_CMAKE_DIR} ${DA_INSTALL_LIB_CMAKE_PATH})
 ########################################################
 set(SARibbonBar_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/SARibbonBar)
 message(STATUS "SARibbonBar_DIR=${SARibbonBar_DIR}")
+
 set(DALiteCtk_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/DALiteCtk)
 message(STATUS "DALiteCtk_DIR=${DALiteCtk_DIR}")
+
 set(qwt_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/qwt)
 message(STATUS "qwt_DIR=${qwt_DIR}")
-set(DAWorkbench_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/${DA_PROJECT_NAME})
-message(STATUS "DAWorkbench_DIR=${DAWorkbench_DIR}")
+
+set(QtPropertyBrowser_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/QtPropertyBrowser)
+message(STATUS "QtPropertyBrowser_DIR=${QtPropertyBrowser_DIR}")
+
+set(spdlog_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/spdlog)
+message(STATUS "spdlog_DIR=${spdlog_DIR}")
+
+# 注意tsl-ordered-map的安装位置在share/cmake,而不是lib/cmake
+set(tsl-ordered-map_DIR ${DA_INSTALL_LIB_SHARE_PATH}/tsl-ordered-map)
+message(STATUS "tsl-ordered-map_DIR=${tsl-ordered-map_DIR}")
+
 set(qt${QT_VERSION_MAJOR}advanceddocking_DIR  ${DA_INSTALL_LIB_CMAKE_PATH}/qt${QT_VERSION_MAJOR}advanceddocking)
 message(STATUS "qt${QT_VERSION_MAJOR}advanceddocking_DIR=${qt${QT_VERSION_MAJOR}advanceddocking_DIR}")
+
 ##################################
 # 初步安装 install 通用内容
 ##################################

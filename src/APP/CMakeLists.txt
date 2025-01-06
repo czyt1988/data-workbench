@@ -6,7 +6,7 @@
 cmake_minimum_required(VERSION 3.5)
 damacro_app_setting(
     "DAWorkBench"
-    "DAWorkBench App | https://github.com/czyt1988"
+    "DAWorkBench App"
     0
     0
     2
