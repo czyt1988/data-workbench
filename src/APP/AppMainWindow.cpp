@@ -61,8 +61,8 @@ AppMainWindow::AppMainWindow(QWidget* parent) : SARibbonMainWindow(parent)
 	mDockArea = mUI->getAppDockingArea();
 	// 创建controller
 	mController = new DAAppController(this);
-	mController
-	    ->setAppMainWindow(this)                      // app
+    (*mController)
+        .setAppMainWindow(this)                       // app
 	    .setAppCore(&core)                            // core
 	    .setAppActions(mUI->getAppActions())          // action
 	    .setAppCommand(mUI->getAppCmd())              // cmd
