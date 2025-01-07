@@ -29,7 +29,7 @@ set(SPDLOG_BUILD_EXAMPLE OFF CACHE BOOL "force set SPDLOG_BUILD_EXAMPLE off" FOR
 set(SPDLOG_BUILD_TESTS OFF CACHE BOOL "force set SPDLOG_BUILD_TESTS off" FORCE)
 set(SPDLOG_INSTALL ON CACHE BOOL "force set SPDLOG_INSTALL ON" FORCE)
 if(WIN32)
-	set(SPDLOG_WCHAR_FILENAMES ON CACHE BOOL "force set SPDLOG_WCHAR_FILENAMES ON enable chinese file path" FORCE)
+    set(SPDLOG_WCHAR_FILENAMES ON CACHE BOOL "force set SPDLOG_WCHAR_FILENAMES ON enable chinese file path" FORCE)
 endif()
 #ADS
 set(BUILD_EXAMPLES OFF CACHE BOOL "force set BUILD_EXAMPLES OFF" FORCE)
@@ -39,6 +39,7 @@ set(SARIBBON_BUILD_EXAMPLES OFF CACHE BOOL "force set SARIBBON_BUILD_EXAMPLES of
 ########################################################
 # 安装第三方库
 ########################################################
+include(GNUInstallDirs)
 add_subdirectory(qwt)
 
 add_subdirectory(SARibbon)

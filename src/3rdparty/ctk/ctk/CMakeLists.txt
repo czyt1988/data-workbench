@@ -113,13 +113,14 @@ set_target_properties(${DACTK_LIB_NAME} PROPERTIES
 # install
 ##################################
 include(CMakePackageConfigHelpers)
+include(GNUInstallDirs)
 
 # xxxConfig.cmake.in中，会让此变量和“${PACKAGE_PREFIX_DIR}/”进行拼接，也就是${PACKAGE_PREFIX_DIR}/@DA_LIB_INCLUDE_INSTALL_DIR@
 # PACKAGE_PREFIX_DIR等于${CMAKE_CURRENT_LIST_DIR}/../..
 # 最终变为${CMAKE_CURRENT_LIST_DIR}/../../include/${DACTK_LIB_NAME}
 # 注意此处是替换，不要出现引号
 
-set(DA_LIB_INCLUDE_INSTALL_DIR include/${DACTK_LIB_NAME})
+set(DA_LIB_INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR}/${DACTK_LIB_NAME})
 # Generate library version info which will generate xxxConfigVersion.cmake,
 # the ${PACKAGE_VERSION} is the version defined in project()
 include(CMakePackageConfigHelpers)
