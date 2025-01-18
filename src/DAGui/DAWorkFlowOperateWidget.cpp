@@ -55,7 +55,7 @@ DAWorkFlowOperateWidget::PrivateData::PrivateData(DAWorkFlowOperateWidget* p) : 
 // DAWorkFlowOperateWidget
 //===================================================
 DAWorkFlowOperateWidget::DAWorkFlowOperateWidget(QWidget* parent)
-    : QWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DAWorkFlowOperateWidget)
+	: DAAbstractOperateWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DAWorkFlowOperateWidget)
 {
 	ui->setupUi(this);
 	initActions();
@@ -680,6 +680,13 @@ void DAWorkFlowOperateWidget::onTabWidgetCurrentChanged(int index)
 	DAWorkFlowEditWidget* w = getWorkFlowWidget(index);
 	if (nullptr == w) {
 		return;
+	}
+	// 激活undostack
+	auto un = w->getUndoStack();
+	if (un) {
+		if (!un->isActive()) {
+			un->setActive(true);
+		}
 	}
 	// 更新action的状态
 	if (DAWorkFlowGraphicsView* view = w->getWorkFlowGraphicsView()) {

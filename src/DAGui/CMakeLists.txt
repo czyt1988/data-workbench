@@ -31,6 +31,7 @@ find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
 ########################################################
 set(DA_LIB_HEADER_FILES
     DAAbstractChartAddItemWidget.h
+    DAAbstractOperateWidget.h
     DAChartAddXYSeriesWidget.h
     DAChartAddCurveWidget.h
     DADataManagerComboBox.h
@@ -66,6 +67,7 @@ set(DA_LIB_HEADER_FILES
 )
 set(DA_LIB_SOURCE_FILES
     DAAbstractChartAddItemWidget.cpp
+    DAAbstractOperateWidget.cpp
     DAChartAddXYSeriesWidget.cpp
     DAChartAddCurveWidget.cpp
     DAChartListView.cpp

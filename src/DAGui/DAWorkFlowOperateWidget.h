@@ -3,6 +3,7 @@
 #include <QWidget>
 #include <functional>
 #include "DAGuiAPI.h"
+#include "DAAbstractOperateWidget.h"
 #include "DAGraphicsStandardTextItem.h"
 #include "DAWorkFlowGraphicsScene.h"
 #include "DAWorkFlowEditWidget.h"
@@ -21,7 +22,7 @@ class DAAbstractNodeGraphicsItem;
 /**
  * @brief 工作流绘图建模窗口
  */
-class DAGUI_API DAWorkFlowOperateWidget : public QWidget
+class DAGUI_API DAWorkFlowOperateWidget : public DAAbstractOperateWidget
 {
 	Q_OBJECT
 	DA_DECLARE_PRIVATE(DAWorkFlowOperateWidget)
@@ -100,7 +101,7 @@ public:
 	// 设置显示grid
 	bool isCurrentWorkflowShowGrid() const;
 	// 获取QUndoStack
-	QUndoStack* getUndoStack();
+	QUndoStack* getUndoStack() override;
 	// 设置鼠标动作
 	bool setPreDefineSceneAction(DAWorkFlowGraphicsScene::SceneActionFlag mf);
 	// 清空所有工程

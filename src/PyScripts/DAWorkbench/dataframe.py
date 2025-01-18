@@ -3,6 +3,7 @@ import os
 from typing import List, Dict, Optional, Tuple
 import pandas as pd
 import numpy as np
+from DAWorkbench.logger import log_function_call  # type: ignore # 引入装饰器
 import copy
 
 '''
@@ -11,7 +12,7 @@ import copy
 此文件封装dataframe的操作
 '''
 
-
+@log_function_call
 def da_drop_irow(df: pd.DataFrame, index: List[int]):
     '''
     传入行索引，并把对应的行删除
@@ -22,7 +23,7 @@ def da_drop_irow(df: pd.DataFrame, index: List[int]):
     i = df.index[index]
     df.drop(index=i, axis=0, inplace=True)
 
-
+@log_function_call
 def da_drop_icolumn(df: pd.DataFrame, index: List[int]):
     '''
     传入列索引，并把对应的列删除
@@ -33,7 +34,7 @@ def da_drop_icolumn(df: pd.DataFrame, index: List[int]):
     cols = df.columns[index]
     df.drop(cols, axis=1, inplace=True)
 
-
+@log_function_call
 def da_to_pickle(df: pd.DataFrame, path: str):
     '''
     把dataframe写到文件
@@ -43,7 +44,7 @@ def da_to_pickle(df: pd.DataFrame, path: str):
     '''
     df.to_pickle(path)
 
-
+@log_function_call
 def da_from_pickle(df: pd.DataFrame, path: str):
     '''
     从文件加载到dataframe
@@ -54,7 +55,7 @@ def da_from_pickle(df: pd.DataFrame, path: str):
     tmp = pd.read_pickle(path)
     df.__init__(tmp)
 
-
+@log_function_call
 def da_astype(df: pd.DataFrame, colsIndex: List[int], dtype: np.dtype):
     '''
     通过列索引改变dataframe的数据类型
@@ -66,7 +67,7 @@ def da_astype(df: pd.DataFrame, colsIndex: List[int], dtype: np.dtype):
     cols = [df.columns[v] for v in colsIndex]
     df[cols] = df[cols].astype(dtype)
 
-
+@log_function_call
 def da_setnan(df: pd.DataFrame, rowindex: List[int], colindex: List[int]):
     '''
     设置nan值
@@ -80,7 +81,7 @@ def da_setnan(df: pd.DataFrame, rowindex: List[int], colindex: List[int]):
     for r, c in zip(rowindex, colindex):
         df.iat[r, c] = np.nan
 
-
+@log_function_call
 def da_cast_to_num(df: pd.DataFrame,
                    colsIndex: List[int],
                    errors: str = 'coerce',
@@ -95,6 +96,7 @@ def da_cast_to_num(df: pd.DataFrame,
             df[col], errors=errors, downcast=downcast)
 
 
+@log_function_call
 def da_cast_to_datetime(df: pd.DataFrame,
                         colsIndex: List[int],
                         errors: str = 'coerce',
@@ -121,7 +123,7 @@ def da_cast_to_datetime(df: pd.DataFrame,
             unit=unit, infer_datetime_format=infer_datetime_format,
             origin=origin, cache=cache)
 
-
+@log_function_call
 def da_setindex(df: pd.DataFrame, colsIndex: List[int]):
     '''
     设置索引
@@ -151,7 +153,7 @@ def da_setindex(df: pd.DataFrame, colsIndex: List[int]):
     # 把列转换为index
     df.set_index(cols, inplace=True)
 
-
+@log_function_call
 def da_insert_nanrow(df: pd.DataFrame, row: int):
     '''
     插入一行，插入的行默认为nan
@@ -170,7 +172,7 @@ def da_insert_nanrow(df: pd.DataFrame, row: int):
     else:
         df.__init__(pd.concat([df1, dfnanrow, df2], ignore_index=False))
 
-
+@log_function_call
 def da_insert_column(df: pd.DataFrame, col: int, name: str,
                      dtype: Optional[np.dtype] = None,
                      defaultvalue=np.nan,
@@ -210,6 +212,7 @@ def da_insert_column(df: pd.DataFrame, col: int, name: str,
                 s = np.linspace(start,start+df.shape[0],df.shape[0])
         df.insert(col,name,s)
 
+@log_function_call
 def da_itake_column(df: pd.DataFrame, col: int) -> pd.Series:
     '''提取一列
 
@@ -221,8 +224,10 @@ def da_itake_column(df: pd.DataFrame, col: int) -> pd.Series:
     da_drop_icolumn(df=df,index=[col])
     return s
 
+@log_function_call
 def da_insert_at(df: pd.DataFrame, col: int,series:pd.Series):
     df.insert(col,series.name,series)
+
 
 def make_dataframe(size: int = 100) -> pd.DataFrame:
     '''构建一个数据类型较全面的dataframe

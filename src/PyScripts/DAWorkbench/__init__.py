@@ -10,4 +10,4 @@ da_log_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'
 logger.add(da_log_path+"/da_pyscript.log",rotation="10 MB",level="DEBUG")
 
 # 你还可以导入包中的其他模块，以便它们可以在包加载时立即可用。  
-from . import io, dataframe, data_processing
+from . import io, dataframe, data_processing, logger

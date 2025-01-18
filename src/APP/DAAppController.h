@@ -325,7 +325,7 @@ private slots:
 	// DADataOperatePageWidget数据操作相关
 	//===================================================
 	// 数据操作窗口添加，需要绑定相关信号槽到ribbon的页面
-	void onDataOperatePageAdded(DA::DADataOperatePageWidget* page);
+	void onDataOperatePageCreated(DA::DADataOperatePageWidget* page);
 
 	//==========================================
 	// Qt-Advanced-Docking-System
@@ -344,7 +344,8 @@ private slots:
 	//===================================================
 	// 鼠标动作结束
 	void onWorkFlowGraphicsSceneActionDeactive(DA::DAAbstractGraphicsSceneAction* scAction);
-
+	// 工作流页面创建槽
+	void onWorkflowCreated(DA::DAWorkFlowEditWidget* wfw);
 	//===================================================
 	// DAAppChartManageWidget
 	//===================================================

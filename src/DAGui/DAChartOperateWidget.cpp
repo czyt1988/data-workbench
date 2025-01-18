@@ -32,7 +32,7 @@ DAChartOperateWidgetPrivate::DAChartOperateWidgetPrivate(DAChartOperateWidget* p
 // DAChartOperateWidget
 //===================================================
 DAChartOperateWidget::DAChartOperateWidget(QWidget* parent)
-    : QWidget(parent), d_ptr(new DAChartOperateWidgetPrivate(this)), ui(new Ui::DAChartOperateWidget)
+	: DAAbstractOperateWidget(parent), d_ptr(new DAChartOperateWidgetPrivate(this)), ui(new Ui::DAChartOperateWidget)
 {
 	ui->setupUi(this);
 	connect(ui->tabWidget, &QTabWidget::currentChanged, this, &DAChartOperateWidget::onTabWidgetCurrentChanged);
@@ -165,6 +165,15 @@ int DAChartOperateWidget::getFigureCount() const
     return ui->tabWidget->count();
 }
 
+QUndoStack* DAChartOperateWidget::getUndoStack()
+{
+	DAFigureWidget* fig = getCurrentFigure();
+	if (fig) {
+		return fig->getUndoStack();
+	}
+	return nullptr;
+}
+
 /**
  * @brief 初始化figure的连接
  *
@@ -191,7 +200,12 @@ void DAChartOperateWidget::onTabWidgetCurrentChanged(int index)
 		qCritical() << tr("chart operate widget's tab changed,but can not find figure");  // cn:绘图操作窗口的标签改变信号中，无法通过标签索引找到对应的绘图
 		return;
 	}
-	fig->getUndoStack()->setActive();
+	auto un = fig->getUndoStack();
+	if (un) {
+		if (!un->isActive()) {
+			un->setActive(true);
+		}
+	}
 	emit currentFigureChanged(fig, index);
 }
 
@@ -208,7 +222,7 @@ void DAChartOperateWidget::onTabCloseRequested(int index)
 	QWidget* w          = ui->tabWidget->widget(index);
 	DAFigureWidget* fig = qobject_cast< DAFigureWidget* >(w);
 	if (fig) {
-		emit figureCloseing(fig);
+		emit figureRemoving(fig);
 	}
 	ui->tabWidget->removeTab(index);
 	w->deleteLater();

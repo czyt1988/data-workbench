@@ -15,32 +15,37 @@ DACommandWithRedoCount::~DACommandWithRedoCount()
 
 void DACommandWithRedoCount::addRedoCnt()
 {
-    ++m_redocnt;
+	++m_redocnt;
 }
 
 void DACommandWithRedoCount::subRedoCnt()
 {
-    --m_redocnt;
+	--m_redocnt;
 }
 
 bool DACommandWithRedoCount::isEqualTwo() const
 {
-    return m_redocnt == 2;
+	return m_redocnt == 2;
 }
 
 size_t DACommandWithRedoCount::getRedoCnt() const
 {
-    return m_redocnt;
+	return m_redocnt;
 }
 
-bool DACommandWithRedoCount::isSetSuccess() const
+bool DACommandWithRedoCount::isSuccess() const
 {
-    return m_isSuccess;
+	return m_isSuccess;
 }
 
 void DACommandWithRedoCount::setSuccess(bool on)
 {
-    m_isSuccess = on;
+	m_isSuccess = on;
+}
+
+bool DACommandWithRedoCount::isFirstRunRedo()
+{
+	return m_redocnt == 1;
 }
 
 }

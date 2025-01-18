@@ -1,4 +1,4 @@
-#include "DAAppDockingArea.h"
+﻿#include "DAAppDockingArea.h"
 #include <QApplication>
 #include <QScreen>
 #include <QLabel>
@@ -290,10 +290,6 @@ void DAAppDockingArea::buildOtherWidgets()
 
 void DAAppDockingArea::initConnection()
 {
-	connect(mWorkFlowOperateWidget,
-			&DAWorkFlowOperateWidget::workflowCreated,
-			this,
-			&DAAppDockingArea::onWorkFlowOperateWidgetWorkflowCreated);
 	// DADataManageWidget的数据双击，在DADataOperateWidget中显示
 	connect(mDataManageWidget, &DADataManageWidget::dataDbClicked, this, &DAAppDockingArea::onDataManageWidgetDataDbClicked);
 	// 设置窗口的绑定
@@ -303,19 +299,7 @@ void DAAppDockingArea::initConnection()
 
 void DAAppDockingArea::onDataManageWidgetDataDbClicked(const DA::DAData& data)
 {
-    showDataOperateWidget(data);
-}
-
-/**
- * @brief DAWorkFlowOperateWidget有新的工作流窗口创建会触发此槽
- * @param wfw
- */
-void DAAppDockingArea::onWorkFlowOperateWidgetWorkflowCreated(DA::DAWorkFlowEditWidget* wfw)
-{
-	if (mAppCmd) {
-		// 新加的DAWorkFlowEditWidget，把undostack加入command
-		mAppCmd->addStack(wfw->getUndoStack());
-	}
+	showDataOperateWidget(data);
 }
 
 ads::CDockWidget* DAAppDockingArea::getChartManageDock() const

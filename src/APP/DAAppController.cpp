@@ -332,7 +332,7 @@ void DAAppController::initConnection()
 	// DADataManageWidget 数据操作
 	// DADataOperateWidget
 	DADataOperateWidget* dow = mDock->getDataOperateWidget();
-	connect(dow, &DADataOperateWidget::pageAdded, this, &DAAppController::onDataOperatePageAdded);
+	connect(dow, &DADataOperateWidget::dataTableCreated, this, &DAAppController::onDataOperatePageCreated);
 	// DAChartManager
 	DAChartManageWidget* cmw = mDock->getChartManageWidget();
 	connect(cmw, &DAChartManageWidget::figureItemClicked, this, &DAAppController::onFigureItemClicked);
@@ -343,13 +343,13 @@ void DAAppController::initConnection()
 	connect(cow, &DAChartOperateWidget::currentFigureChanged, this, &DAAppController::onCurrentFigureChanged);
 	connect(cow, &DAChartOperateWidget::chartAdded, this, &DAAppController::onChartAdded);
 	connect(cow, &DAChartOperateWidget::currentChartChanged, this, &DAAppController::onCurrentChartChanged);
+	//
+	DAWorkFlowOperateWidget* workflowOpt = mDock->getWorkFlowOperateWidget();
 	// 鼠标动作完成的触发
-	connect(mDock->getWorkFlowOperateWidget(),
+	connect(workflowOpt,
 			&DAWorkFlowOperateWidget::sceneActionDeactived,
 			this,
 			&DAAppController::onWorkFlowGraphicsSceneActionDeactive);
-	//
-	DAWorkFlowOperateWidget* workflowOpt = mDock->getWorkFlowOperateWidget();
 	connect(workflowOpt,
 			&DAWorkFlowOperateWidget::selectionItemChanged,
 			this,
@@ -366,6 +366,7 @@ void DAAppController::initConnection()
 			&QAction::triggered,
 			workflowOpt,
 			&DAWorkFlowOperateWidget::setCurrentWorkflowShowGrid);
+	connect(workflowOpt, &DAWorkFlowOperateWidget::workflowCreated, this, &DAAppController::onWorkflowCreated);
 }
 
 /**
@@ -555,6 +556,17 @@ void DAAppController::onWorkFlowGraphicsSceneActionDeactive(DA::DAAbstractGraphi
 		mActions->actionWorkflowStartDrawRect->setChecked(false);
 	} else if (DAGraphicsDrawTextItemSceneAction* d = dynamic_cast< DAGraphicsDrawTextItemSceneAction* >(scAction)) {
 		mActions->actionWorkflowStartDrawText->setChecked(false);
+	}
+}
+
+/**
+ * @brief DAWorkFlowOperateWidget有新的工作流窗口创建会触发此槽
+ * @param wfw
+ */
+void DAAppController::onWorkflowCreated(DAWorkFlowEditWidget* wfw)
+{
+	if (mCommand) {
+		mCommand->addStack(wfw->getUndoStack());
 	}
 }
 
@@ -815,8 +827,11 @@ void DAAppController::onProjectLoaded(const QString& path)
  * @brief 数据操作窗口添加，需要绑定相关信号槽到ribbon的页面
  * @param page
  */
-void DAAppController::onDataOperatePageAdded(DADataOperatePageWidget* page)
+void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
 {
+	if (mCommand) {
+		mCommand->addStack(page->getUndoStack());
+	}
 	switch (page->getDataOperatePageType()) {
 	case DADataOperatePageWidget::DataOperateOfDataFrame: {
 #if DA_ENABLE_PYTHON
@@ -1165,7 +1180,9 @@ void DAAppController::onFigureCreated(DAFigureWidget* f)
 		return;
 	}
 	qDebug() << "DAAppController::onFigureCreate";
-	f->getUndoStack()->setActive();
+	if (mCommand) {
+		mCommand->addStack(f->getUndoStack());
+	}
 	// updateFigureAboutRibbon(f);//在onActionAddFigureTriggered中调用了
 	setDirty();
 }
@@ -1182,7 +1199,6 @@ void DAAppController::onCurrentFigureChanged(DAFigureWidget* f, int index)
 		return;
 	}
 	qDebug() << "DAAppController::onCurrentFigureChanged";
-	f->getUndoStack()->setActive();
 	mRibbon->updateFigureAboutRibbon(f);
 }
 
