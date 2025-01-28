@@ -67,7 +67,7 @@ public:
 	QAction* actionCastToDatetime;      ///< 转换为日期
 	QAction* actionCreateDataDescribe;  ///< 数据描述
 	QAction* actionChangeToIndex;       ///< 把某列转换为index
-
+	QAction* actionDataFrameDropNone;   ///< 删除缺失值
 	//===================================================
 	// workflow的上下文标签
 	//===================================================
@@ -76,8 +76,8 @@ public:
 	QAction* actionWorkflowStartDrawRect;        ///< 绘制矩形
 	QAction* actionWorkflowStartDrawText;        ///< 绘制文本框
 	// workflow的视图操作
-	QAction* actionWorkflowShowGrid;  ///< 显示网格
-    QAction* actionWorkflowViewMarker;  ///< 视图标记
+	QAction* actionWorkflowShowGrid;    ///< 显示网格
+	QAction* actionWorkflowViewMarker;  ///< 视图标记
 
 	QAction* actionWorkflowViewReadOnly;        ///< 锁定视图
 	QAction* actionExportWorkflowSceneToImage;  ///< 导出png格式

@@ -14,6 +14,9 @@ namespace DA
 class DAAbstractNodeFactory;
 }
 
+/**
+ * @brief 数据分析相关插件
+ */
 class DADATAANALYSIS_API DataAnalysisPlugin : public QObject, public DA::DAAbstractNodePlugin
 {
 	Q_OBJECT

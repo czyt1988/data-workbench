@@ -35,6 +35,19 @@ def da_drop_icolumn(df: pd.DataFrame, index: List[int]):
     df.drop(cols, axis=1, inplace=True)
 
 @log_function_call
+def da_drop_na(df: pd.DataFrame, index: List[int]):
+    '''
+    传入列索引，并把对应的空行删除
+    :param df:  pd.DataFrame
+    :param index: 列索引
+    :return: 此函数不返回值，直接改变df
+    '''
+    subset = None
+    if index is not None:
+        subset = df.columns[index]
+    df.dropna(axis=0,subset=subset, inplace=True)
+
+@log_function_call
 def da_to_pickle(df: pd.DataFrame, path: str):
     '''
     把dataframe写到文件

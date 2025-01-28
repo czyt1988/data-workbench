@@ -61,6 +61,7 @@ public:
 						   QUndoCommand* par               = nullptr);
 	void redo() override;
 	void undo() override;
+	void exec();
 
 private:
 	DAPyDataFrame m_dataframe;
@@ -83,6 +84,7 @@ public:
 									QUndoCommand* par               = nullptr);
 	void redo() override;
 	void undo() override;
+	void exec();
 
 private:
 	int m_row;
@@ -110,6 +112,7 @@ public:
 									QUndoCommand* par               = nullptr);
 	void redo() override;
 	void undo() override;
+	void exec();
 
 private:
 	bool m_isRangeMode;  ///< 标记是否是一个范围生成
@@ -134,6 +137,7 @@ public:
 								QUndoCommand* par               = nullptr);
 	void redo() override;
 	void undo() override;
+	void exec();
 
 private:
 	QList< int > m_index;
@@ -152,6 +156,7 @@ public:
 								   QUndoCommand* par               = nullptr);
 	void redo() override;
 	void undo() override;
+	void exec();
 
 private:
 	QList< int > m_index;
@@ -196,6 +201,7 @@ public:
 							  QUndoCommand* par               = nullptr);
 	void redo() override;
 	void undo() override;
+	void exec();
 
 private:
 	QList< int > m_index;
@@ -216,6 +222,7 @@ public:
 							  QUndoCommand* par               = nullptr);
 	void redo() override;
 	void undo() override;
+	void exec();
 
 private:
 	DAPyDataFrame m_dataframe;
@@ -238,6 +245,7 @@ public:
 							   QUndoCommand* par               = nullptr);
 	void redo() override;
 	void undo() override;
+	void exec();
 
 private:
 	QList< int > m_index;
@@ -281,6 +289,7 @@ public:
 								QUndoCommand* par               = nullptr);
 	void redo() override;
 	void undo() override;
+	void exec();
 
 private:
 	QList< int > m_index;

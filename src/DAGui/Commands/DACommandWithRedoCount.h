@@ -43,8 +43,6 @@ public:
 	void addRedoCnt();
 	// 计数减
 	void subRedoCnt();
-	// 计数是否等于2
-	bool isEqualTwo() const;
 	// 获取redocnt
 	size_t getRedoCnt() const;
 	// 设置成功

@@ -335,8 +335,9 @@ public:
 	SARibbonLineWidgetContainer* m_comboxColumnTypesContainer;  ///< 列类型选择器的container
 	DAPyDTypeComboBox* m_comboxColumnTypes;                     ///< 列类型选择器
 #endif
-	SARibbonButtonGroupWidget* m_castActionsButtonGroup;  ///< 管理强制转换的action的工具栏
-	SARibbonPannel* m_pannelDataframeOperateStatistic;    ///< 统计相关操作
+	SARibbonButtonGroupWidget* m_castActionsButtonGroup;   ///< 管理强制转换的action的工具栏
+	SARibbonPannel* m_pannelDataframeOperateStatistic;     ///< 统计相关操作
+	SARibbonPannel* m_pannelDataframeOperateDataCleaning;  ///< 数据清洗
 	//----------------------------------------------------
 	// Context - workflow
 	//----------------------------------------------------

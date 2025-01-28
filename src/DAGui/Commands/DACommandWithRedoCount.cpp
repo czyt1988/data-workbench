@@ -23,11 +23,6 @@ void DACommandWithRedoCount::subRedoCnt()
 	--m_redocnt;
 }
 
-bool DACommandWithRedoCount::isEqualTwo() const
-{
-	return m_redocnt == 2;
-}
-
 size_t DACommandWithRedoCount::getRedoCnt() const
 {
 	return m_redocnt;

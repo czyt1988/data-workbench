@@ -116,7 +116,6 @@ void DADataOperateOfDataFrameWidget::insertRowAt(int row)
 {
 	std::unique_ptr< DACommandDataFrame_insertNanRow > cmd(
 		new DACommandDataFrame_insertNanRow(mData.toDataFrame(), row, mModel));
-	cmd->redo();
 	if (!cmd->isSuccess()) {
 		return;
 	}
@@ -173,7 +172,6 @@ void DADataOperateOfDataFrameWidget::insertColumnAt(int col)
 	} else {
 		cmd.reset(new DACommandDataFrame_insertColumn(mData.toDataFrame(), col, name, dlg.getDefaultValue(), mModel));
 	}
-	cmd->redo();
 	if (!cmd->isSuccess()) {
 		return;
 	}
@@ -196,7 +194,6 @@ int DADataOperateOfDataFrameWidget::removeSelectRow()
 		return 0;
 	}
 	std::unique_ptr< DACommandDataFrame_dropIRow > cmd(new DACommandDataFrame_dropIRow(mData.toDataFrame(), rows, mModel));
-	cmd->redo();
 	if (!cmd->isSuccess()) {
 		return 0;
 	}
@@ -221,7 +218,6 @@ int DADataOperateOfDataFrameWidget::removeSelectColumn()
 	}
 	std::unique_ptr< DACommandDataFrame_dropIColumn > cmd(
 		new DACommandDataFrame_dropIColumn(mData.toDataFrame(), columns, mModel));
-	cmd->redo();
 	if (!cmd->isSuccess()) {
 		return 0;
 	}
@@ -252,7 +248,6 @@ int DADataOperateOfDataFrameWidget::removeSelectCell()
 		cols.append(p.y());
 	}
 	std::unique_ptr< DACommandDataFrame_setnan > cmd(new DACommandDataFrame_setnan(df, rows, cols, mModel));
-	cmd->redo();
 	if (!cmd->isSuccess()) {
 		return 0;
 	}
@@ -312,7 +307,6 @@ bool DADataOperateOfDataFrameWidget::changeSelectColumnType(const DAPyDType& dt)
 		return false;
 	}
 	std::unique_ptr< DACommandDataFrame_astype > cmd(new DACommandDataFrame_astype(df, selColumns, dt, mModel));
-	cmd->redo();
 	if (!cmd->isSuccess()) {
 		// 说明没有设置成功
 		emit selectTypeChanged({}, DAPyDType());
@@ -347,7 +341,6 @@ void DADataOperateOfDataFrameWidget::castSelectToNum()
 	DAPyDType dt        = df.dtypes(colsIndex.first());
 	pybind11::dict args = mDialogCastNumArgs->getArgs();
 	std::unique_ptr< DACommandDataFrame_castNum > cmd(new DACommandDataFrame_castNum(df, colsIndex, args, mModel));
-	cmd->redo();  // 先执行
 	if (!cmd->isSuccess()) {
 		return;
 	}
@@ -410,11 +403,23 @@ bool DADataOperateOfDataFrameWidget::changeSelectColumnToIndex()
 	}
 	std::unique_ptr< DACommandDataFrame_setIndex > cmd(
 		new DACommandDataFrame_setIndex(df, colsIndex, ui->tableView->verticalHeader(), mModel));
-	cmd->redo();  // 先执行
 	if (!cmd->isSuccess()) {
 		return false;
 	}
 	getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
+	return true;
+}
+
+/**
+ * @brief 删除缺失值
+ */
+bool DADataOperateOfDataFrameWidget::dropna()
+{
+	DAPyDataFrame df = getDataframe();
+	if (df.isNone()) {
+		return false;
+	}
+
 	return true;
 }
 

@@ -21,20 +21,18 @@ DACommandDataFrame_iat::DACommandDataFrame_iat(const DAPyDataFrame& df,
                                                QUndoCommand* par)
     : DACommandWithRedoCount(par), m_dataframe(df), m_row(row), m_col(col), m_oldData(olddata), m_newData(newdata), m_model(model)
 {
-    setText(QObject::tr("set dataframe data"));  // cn:改变单元格数据
+	setText(QObject::tr("set dataframe data"));  // cn:改变单元格数据
+	exec();
 }
 
 void DACommandDataFrame_iat::redo()
 {
 	addRedoCnt();
-	if (isEqualTwo()) {
-		// 第二次执行跳过，推入栈
+	if (isFirstRunRedo()) {
+		// 第1次执行跳过，推入栈
 		return;
 	}
-	setSuccess(m_dataframe.iat(m_row, m_col, m_newData));
-	if (m_model) {
-		m_model->refresh(m_row, m_col);
-	}
+	exec();
 }
 
 void DACommandDataFrame_iat::undo()
@@ -47,6 +45,14 @@ void DACommandDataFrame_iat::undo()
 	}
 }
 
+void DACommandDataFrame_iat::exec()
+{
+	setSuccess(m_dataframe.iat(m_row, m_col, m_newData));
+	if (m_model) {
+		m_model->refresh(m_row, m_col);
+	}
+}
+
 ///////////////////////////////
 
 DACommandDataFrame_insertNanRow::DACommandDataFrame_insertNanRow(const DAPyDataFrame& df,
@@ -55,25 +61,18 @@ DACommandDataFrame_insertNanRow::DACommandDataFrame_insertNanRow(const DAPyDataF
                                                                  QUndoCommand* par)
     : DACommandWithTemplateData(df, par), m_row(row), m_model(model)
 {
-    setText(QObject::tr("insert row"));  // cn:插入一行
+	setText(QObject::tr("insert row"));  // cn:插入一行
+	exec();
 }
 
 void DACommandDataFrame_insertNanRow::redo()
 {
 	addRedoCnt();
-	if (isEqualTwo()) {
+	if (isFirstRunRedo()) {
 		// 第二次执行跳过，推入栈
 		return;
 	}
-	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
-	if (!pydf.insert_nanrow(dataframe(), m_row)) {
-		return;
-	}
-	setSuccess();
-	if (m_model) {
-		m_model->rowBeginInsert({ m_row });
-		m_model->rowEndInsert();
-	}
+	exec();
 }
 
 void DACommandDataFrame_insertNanRow::undo()
@@ -82,6 +81,19 @@ void DACommandDataFrame_insertNanRow::undo()
 	if (m_model) {
 		m_model->rowBeginRemove({ m_row });
 		m_model->rowEndRemove();
+	}
+}
+
+void DACommandDataFrame_insertNanRow::exec()
+{
+	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+	if (!pydf.insert_nanrow(dataframe(), m_row)) {
+		return;
+	}
+	setSuccess();
+	if (m_model) {
+		m_model->rowBeginInsert({ m_row });
+		m_model->rowEndInsert();
 	}
 }
 
@@ -111,6 +123,8 @@ DACommandDataFrame_insertColumn::DACommandDataFrame_insertColumn(const DAPyDataF
     , m_defaultvalue(defaultvalue)
     , m_model(model)
 {
+	setText(QObject::tr("insert column \"%1\"").arg(name));  // cn: 插入列“%1”
+	exec();
 }
 
 /**
@@ -141,15 +155,33 @@ DACommandDataFrame_insertColumn::DACommandDataFrame_insertColumn(const DAPyDataF
     , m_stop(stop)
     , m_model(model)
 {
+	setText(QObject::tr("insert column \"%1\"").arg(name));  // cn: 插入列“%1”
+	exec();
 }
 
 void DACommandDataFrame_insertColumn::redo()
 {
 	addRedoCnt();
-	if (isEqualTwo()) {
-		// 第二次执行跳过，推入栈
+	if (isFirstRunRedo()) {
+		// 第1次执行跳过，推入栈
 		return;
 	}
+	exec();
+}
+
+void DACommandDataFrame_insertColumn::undo()
+{
+	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+	m_insertedSeries           = pydf.itake_column(dataframe(), m_col);
+	if (m_model) {
+		// 此操作会删除一列，添加一列，整个modelreflash
+		m_model->columnBeginRemove({ m_col });
+		m_model->columnEndRemove();
+	}
+}
+
+void DACommandDataFrame_insertColumn::exec()
+{
 	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
 	if (m_insertedSeries.isNone()) {
 		if (m_isRangeMode) {
@@ -174,17 +206,6 @@ void DACommandDataFrame_insertColumn::redo()
 	}
 }
 
-void DACommandDataFrame_insertColumn::undo()
-{
-	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
-	m_insertedSeries           = pydf.itake_column(dataframe(), m_col);
-	if (m_model) {
-		// 此操作会删除一列，添加一列，整个modelreflash
-		m_model->columnBeginRemove({ m_col });
-		m_model->columnEndRemove();
-	}
-}
-
 ////////////////////////////////
 
 /**
@@ -199,25 +220,18 @@ DACommandDataFrame_dropIRow::DACommandDataFrame_dropIRow(const DAPyDataFrame& df
                                                          QUndoCommand* par)
     : DACommandWithTemplateData(df, par), m_index(index), m_model(model)
 {
-    setText(QObject::tr("drop dataframe rows"));  // cn:移除dataframe行
+	setText(QObject::tr("drop dataframe rows"));  // cn:移除dataframe行
+	exec();
 }
 
 void DACommandDataFrame_dropIRow::redo()
 {
 	addRedoCnt();
-	if (isEqualTwo()) {
-		// 第二次执行跳过，推入栈
+	if (isFirstRunRedo()) {
+		// 第1次执行跳过，推入栈
 		return;
 	}
-	DAPyScriptsDataFrame& py = DAPyScripts::getInstance().getDataFrame();
-	if (!py.drop_irow(m_dataframe, m_index)) {
-		return;
-	}
-	setSuccess();
-	if (m_model) {
-		m_model->rowBeginRemove(m_index);
-		m_model->rowEndRemove();
-	}
+	exec();
 }
 
 void DACommandDataFrame_dropIRow::undo()
@@ -229,6 +243,19 @@ void DACommandDataFrame_dropIRow::undo()
 	}
 }
 
+void DACommandDataFrame_dropIRow::exec()
+{
+	DAPyScriptsDataFrame& py = DAPyScripts::getInstance().getDataFrame();
+	if (!py.drop_irow(m_dataframe, m_index)) {
+		return;
+	}
+	setSuccess();
+	if (m_model) {
+		m_model->rowBeginRemove(m_index);
+		m_model->rowEndRemove();
+	}
+}
+
 ////////////////////
 
 DACommandDataFrame_dropIColumn::DACommandDataFrame_dropIColumn(const DAPyDataFrame& df,
@@ -237,25 +264,18 @@ DACommandDataFrame_dropIColumn::DACommandDataFrame_dropIColumn(const DAPyDataFra
                                                                QUndoCommand* par)
     : DACommandWithTemplateData(df, par), m_index(index), m_model(model)
 {
-    setText(QObject::tr("drop dataframe columns"));  // cn:移除dataframe列
+	setText(QObject::tr("drop dataframe columns"));  // cn:移除dataframe列
+	exec();
 }
 
 void DACommandDataFrame_dropIColumn::redo()
 {
 	addRedoCnt();
-	if (isEqualTwo()) {
+	if (isFirstRunRedo()) {
 		// 第二次执行跳过，推入栈
 		return;
 	}
-	DAPyScriptsDataFrame& py = DAPyScripts::getInstance().getDataFrame();
-	if (!py.drop_icolumn(m_dataframe, m_index)) {
-		return;
-	}
-	setSuccess();
-	if (m_model) {
-		m_model->columnBeginRemove(m_index);
-		m_model->columnEndRemove();
-	}
+	exec();
 }
 
 void DACommandDataFrame_dropIColumn::undo()
@@ -264,6 +284,19 @@ void DACommandDataFrame_dropIColumn::undo()
 	if (m_model) {
 		m_model->columnBeginInsert(m_index);
 		m_model->columnEndInsert();
+	}
+}
+
+void DACommandDataFrame_dropIColumn::exec()
+{
+	DAPyScriptsDataFrame& py = DAPyScripts::getInstance().getDataFrame();
+	if (!py.drop_icolumn(m_dataframe, m_index)) {
+		return;
+	}
+	setSuccess();
+	if (m_model) {
+		m_model->columnBeginRemove(m_index);
+		m_model->columnEndRemove();
 	}
 }
 
@@ -312,16 +345,32 @@ DACommandDataFrame_astype::DACommandDataFrame_astype(const DAPyDataFrame& df,
                                                      QUndoCommand* par)
     : DACommandWithTemplateData(df, par), m_index(index), m_dtype(dt), m_model(model)
 {
-    setText(QObject::tr("change column type"));  // cn:改变列数据类型
+	setText(QObject::tr("change column type"));  // cn:改变列数据类型
+	exec();
 }
 
 void DACommandDataFrame_astype::redo()
 {
 	addRedoCnt();
-	if (isEqualTwo()) {
-		// 第二次执行跳过，推入栈
+	if (isFirstRunRedo()) {
+		// 第1次执行跳过，推入栈
 		return;
 	}
+	exec();
+}
+
+void DACommandDataFrame_astype::undo()
+{
+	load();
+	if (m_model) {
+		for (int c : m_index) {
+			m_model->refreshColumn(c);
+		}
+	}
+}
+
+void DACommandDataFrame_astype::exec()
+{
 	if (m_dtype.isNone()) {
 		return;
 	}
@@ -330,16 +379,6 @@ void DACommandDataFrame_astype::redo()
 		return;
 	}
 	setSuccess();
-	if (m_model) {
-		for (int c : m_index) {
-			m_model->refreshColumn(c);
-		}
-	}
-}
-
-void DACommandDataFrame_astype::undo()
-{
-	load();
 	if (m_model) {
 		for (int c : m_index) {
 			m_model->refreshColumn(c);
@@ -360,15 +399,29 @@ DACommandDataFrame_setnan::DACommandDataFrame_setnan(const DAPyDataFrame& df,
 	for (int i = 0; i < m_rows.size(); ++i) {
 		m_olddatas.append(df.iatObj(rows[ i ], columns[ i ]));
 	}
+	exec();
 }
 
 void DACommandDataFrame_setnan::redo()
 {
 	addRedoCnt();
-	if (isEqualTwo()) {
-		// 第二次执行跳过，推入栈
+	if (isFirstRunRedo()) {
+		// 第1次执行跳过，推入栈
 		return;
 	}
+	exec();
+}
+
+void DACommandDataFrame_setnan::undo()
+{
+	for (int i = 0; i < m_rows.size(); ++i) {
+		m_dataframe.iat(m_rows[ i ], m_columns[ i ], m_olddatas[ i ]);
+		m_model->refresh(m_rows[ i ], m_columns[ i ]);
+	}
+}
+
+void DACommandDataFrame_setnan::exec()
+{
 	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
 	if (!pydf.setnan(m_dataframe, m_rows, m_columns)) {
 		return;
@@ -381,14 +434,6 @@ void DACommandDataFrame_setnan::redo()
 	}
 }
 
-void DACommandDataFrame_setnan::undo()
-{
-	for (int i = 0; i < m_rows.size(); ++i) {
-		m_dataframe.iat(m_rows[ i ], m_columns[ i ], m_olddatas[ i ]);
-		m_model->refresh(m_rows[ i ], m_columns[ i ]);
-	}
-}
-
 ///////////////////
 
 DACommandDataFrame_castNum::DACommandDataFrame_castNum(const DAPyDataFrame& df,
@@ -398,21 +443,23 @@ DACommandDataFrame_castNum::DACommandDataFrame_castNum(const DAPyDataFrame& df,
                                                        QUndoCommand* par)
     : DACommandWithTemplateData(df, par), m_index(index), m_args(args), m_model(model)
 {
-    setText(QObject::tr("cast column to num"));  // cn:改变列数据为数值
+	setText(QObject::tr("cast column to num"));  // cn:改变列数据为数值
+	exec();
 }
 
 void DACommandDataFrame_castNum::redo()
 {
 	addRedoCnt();
-	if (isEqualTwo()) {
-		// 第二次执行跳过，推入栈
+	if (isFirstRunRedo()) {
+		// 第1次执行跳过，推入栈
 		return;
 	}
-	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
-	if (!pydf.cast_to_num(m_dataframe, m_index, m_args)) {
-		return;
-	}
-	setSuccess();
+	exec();
+}
+
+void DACommandDataFrame_castNum::undo()
+{
+	load();
 	if (m_model) {
 		for (int c : m_index) {
 			m_model->refreshColumn(c);
@@ -420,9 +467,13 @@ void DACommandDataFrame_castNum::redo()
 	}
 }
 
-void DACommandDataFrame_castNum::undo()
+void DACommandDataFrame_castNum::exec()
 {
-	load();
+	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+	if (!pydf.cast_to_num(m_dataframe, m_index, m_args)) {
+		return;
+	}
+	setSuccess();
 	if (m_model) {
 		for (int c : m_index) {
 			m_model->refreshColumn(c);
@@ -486,16 +537,30 @@ DACommandDataFrame_setIndex::DACommandDataFrame_setIndex(const DAPyDataFrame& df
                                                          QUndoCommand* par)
     : DACommandWithTemplateData(df, par), m_index(index), m_headerView(hv), m_model(model)
 {
-    setText(QObject::tr("set column to index"));  // cn:转换列为索引
+	setText(QObject::tr("set column to index"));  // cn:转换列为索引
+	exec();
 }
 
 void DACommandDataFrame_setIndex::redo()
 {
 	addRedoCnt();
-	if (isEqualTwo()) {
-		// 第二次执行跳过，推入栈
+	if (isFirstRunRedo()) {
+		// 第1次执行跳过，推入栈
 		return;
 	}
+	exec();
+}
+
+void DACommandDataFrame_setIndex::undo()
+{
+	load();
+	if (m_model) {
+		m_model->refresh();
+	}
+}
+
+void DACommandDataFrame_setIndex::exec()
+{
 	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
 	if (!pydf.set_index(dataframe(), m_index)) {
 		return;
@@ -503,14 +568,6 @@ void DACommandDataFrame_setIndex::redo()
 	setSuccess();
 	if (m_model) {
 		// 此操作会删除一列，添加一列，整个modelreflash
-		m_model->refresh();
-	}
-}
-
-void DACommandDataFrame_setIndex::undo()
-{
-	load();
-	if (m_model) {
 		m_model->refresh();
 	}
 }

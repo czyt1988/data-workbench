@@ -1,4 +1,4 @@
-#include "DataAnalysController.h"
+﻿#include "DataAnalysController.h"
 #include <QMainWindow>
 #include "DataAnalysisActions.h"
 #include "DAUIInterface.h"

@@ -48,7 +48,7 @@ public:
 
 	// 获取选中的序列，如果用户打开一个表格，选中了其中一列，那么将返回那一列pd.Series作为数据，如果用户选中了多列，那么每列作为一个DAData并组成list返回
 	QList< DAData > getSlectedSeries() const;
-public slots:
+public Q_SLOTS:
 	void setDAData(const DA::DAData& d);
 	// 在选中行后面插入行
 	void insertRowAboveBySelect();
@@ -73,7 +73,9 @@ public slots:
 	void castSelectToDatetime();
 	// 把选择的列转换为索引
 	bool changeSelectColumnToIndex();
-signals:
+	// 删除缺失值
+	bool dropna();
+Q_SIGNALS:
 	/**
 	 * @brief 选中的列或者类型发生了变化
 	 * @param column 列 如果返回空说明影响的列不确定,如果多选，返回
@@ -81,7 +83,7 @@ signals:
 	 * @note 此函数主要是通知主界面ribbon上面的类型变化，调用setDataframeOperateCurrentDType
 	 */
 	void selectTypeChanged(const QList< int >& column, DA::DAPyDType dt);
-private slots:
+private Q_SLOTS:
 	// 表格点击
 	void onTableViewClicked(const QModelIndex& index);
 
