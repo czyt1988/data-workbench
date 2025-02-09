@@ -1,4 +1,4 @@
-#include "DAProjectInterface.h"
+﻿#include "DAProjectInterface.h"
 #include <QFileInfo>
 #include <QSysInfo>
 #include "DAWorkFlowOperateWidget.h"
@@ -194,7 +194,7 @@ bool DAProjectInterface::isDirty() const
  */
 void DAProjectInterface::clear()
 {
-	setDirty(false);
+	setModified(false);
 	d_ptr->mProjectFileInfo = QFileInfo();
 	emit projectIsCleaned();
 }
@@ -263,7 +263,7 @@ bool DAProjectInterface::appendWorkflowInProject(const QString& path, bool skipI
 		index += oldProjectHaveWorkflow;
 		wfo->setCurrentWorkflow(index);
 	}
-	setDirty(isok);
+	setModified(isok);
 	return isok;
 }
 
@@ -322,6 +322,7 @@ bool DAProjectInterface::load(const QString& path)
 	} else {
 		setProjectPath(QString());
 	}
+	setModified(false);
 	return isok;
 }
 /**
@@ -366,7 +367,7 @@ bool DAProjectInterface::save(const QString& path)
 	file.close();
 	setProjectPath(path);
 	emit projectSaved(path);
-	setDirty(false);
+	setModified(false);
 	return true;
 }
 
@@ -374,10 +375,12 @@ bool DAProjectInterface::save(const QString& path)
  * @brief 设置为dirty
  * @param on
  */
-void DAProjectInterface::setDirty(bool on)
+void DAProjectInterface::setModified(bool on)
 {
-	d_ptr->mIsDirty = on;
-	emit becomeDirty(on);
+	if (on != d_ptr->mIsDirty) {
+		d_ptr->mIsDirty = on;
+		emit dirtyStateChanged(on);
+	}
 }
 
 }

@@ -114,7 +114,7 @@ public:
 	// 设置工程为dirty
 	void setDirty(bool on = true);
 	bool isDirty() const;
-public slots:
+public Q_SLOTS:
 	// 保存
 	void save();
 	// 另存为
@@ -123,8 +123,9 @@ public slots:
 	void open();
 	// 打开工程文件
 	bool openProjectFile(const QString& projectFilePath);
-private slots:
-
+private Q_SLOTS:
+	// 工程的胀状态改变槽
+	void onProjectDirtyStateChanged(bool isdirty);
 	//===================================================
 	// 主页标签 Main Category
 	//===================================================
@@ -210,6 +211,8 @@ private slots:
 	void onActionCreateDataDescribeTriggered();
 	// 删除缺失值
 	void onActionDataFrameDropNoneTriggered();
+	// 删除缺失值(Column)
+	void onActionDataFrameDropNoneColumnTriggered();
 #if DA_ENABLE_PYTHON
 	// 列数据类型改变
 	void onComboxColumnTypesCurrentDTypeChanged(const DA::DAPyDType& dt);

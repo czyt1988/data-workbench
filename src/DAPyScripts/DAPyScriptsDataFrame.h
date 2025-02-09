@@ -51,6 +51,12 @@ public:
 	DAPySeries itake_column(DAPyDataFrame& df, int col) noexcept;
 	// 在col位置插入series
 	bool insert_at(DAPyDataFrame& df, int col, const DAPySeries& series) noexcept;
+	// dropna(axis=0,how="any")
+	bool dropna(DAPyDataFrame& df,
+				int axis                   = 0,
+				const QString& how         = QStringLiteral("any"),
+				const QList< int >& indexs = QList< int >(),
+				int thresh                 = -1);
 };
 }  // namespace DA
 #endif  // DAPYSCRIPTSDATAFRAME_H

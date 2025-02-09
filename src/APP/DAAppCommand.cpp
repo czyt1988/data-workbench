@@ -13,10 +13,6 @@ using namespace DA;
 //===================================================
 DAAppCommand::DAAppCommand(DAUIInterface* u) : DACommandInterface(u)
 {
-    // 创建临时数据目录
-#if DA_ENABLE_PYTHON
-    DACommandWithTemplateData::ensureTemplateDirExists();
-#endif
 }
 
 DAAppCommand::~DAAppCommand()
@@ -25,11 +21,11 @@ DAAppCommand::~DAAppCommand()
 
 void DAAppCommand::setDataManagerStack(QUndoStack* s)
 {
-    mDataManagerStack = s;
-    addStack(s);
+	mDataManagerStack = s;
+	addStack(s);
 }
 
 QUndoStack* DAAppCommand::getDataManagerStack() const
 {
-    return mDataManagerStack.data();
+	return mDataManagerStack.data();
 }

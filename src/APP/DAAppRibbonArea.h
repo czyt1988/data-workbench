@@ -347,8 +347,8 @@ public:
 	//----------------------------------------------------
 	SARibbonCategory* m_categoryWorkflowGraphicsView;  ///< 工作流视图
 	SARibbonPannel* m_pannelWorkflowView;              ///< 图元视图pannel
-	QMenu* m_menuViewLineMarkers;                      ///< 视图标记线
-	SARibbonPannel* m_pannelWorkflowExport;            ///< 视图导出
+
+	SARibbonPannel* m_pannelWorkflowExport;  ///< 视图导出
 	//----------------------------------------------------
 	// Context - workflow-edit
 	//----------------------------------------------------
@@ -360,9 +360,8 @@ public:
 	SARibbonPannel* m_pannelWorkflowItem;              ///< 图元编辑
 	SARibbonPannel* m_pannelWorkflowBackground;        ///< 背景编辑
 	SARibbonPannel* m_pannelWorkflowText;              ///< 文本编辑
+	SARibbonPannel* m_pannelWorkflowGroup;             ///< 图元分组相关pannel
 
-	SARibbonPannel* m_pannelWorkflowGroup;   ///< 图元分组相关pannel
-	QMenu* mExportWorkflowSceneToImageMenu;  ///< scene导出为图片菜单
 	//----------------------------------------------------
 	// Context - workflow-run
 	//----------------------------------------------------
@@ -378,12 +377,15 @@ public:
 	SARibbonButtonGroupWidget* m_chartGridDirActionsButtonGroup;  ///< grid的方向
 	SARibbonButtonGroupWidget* m_chartGridMinActionsButtonGroup;  ///< grid的min设置
 	QStringList m_fileReadFilters;
-	QMenu* m_menuInsertRow;     ///< 针对insertrow的action menu
-	QMenu* m_menuInsertColumn;  ///< 这对insertcol的action menu
 	// ApplicationMenu
 	DAAppRibbonApplicationMenu* mApplicationMenu;  ///< ribbon-app menu
-	//
-	QMenu* m_menuTheme;  ///< 主题菜单
+	// 菜单相关
+	QMenu* mExportWorkflowSceneToImageMenu { nullptr };  ///< scene导出为图片菜单
+	QMenu* m_menuViewLineMarkers { nullptr };            ///< 视图标记线
+	QMenu* m_menuInsertRow { nullptr };                  ///< 针对insertrow的action menu
+	QMenu* m_menuInsertColumn { nullptr };               ///< 这对insertcol的action menu
+	QMenu* m_menuDropNan { nullptr };                    ///< dropna相关的菜单
+	QMenu* m_menuTheme { nullptr };                      ///< 主题菜单
 };
 }  // namespace DA
 #endif  // DAAPPRIBBONAREA_H

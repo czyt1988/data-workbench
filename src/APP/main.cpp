@@ -12,12 +12,12 @@
 #include <QDir>
 #include <QStandardPaths>
 // DA
-#include "DAPathUtil.h"
 #include "DAConfigs.h"
 #include "DAAppCore.h"
 #include "DAMessageHandler.h"
 #include "DATranslatorManeger.h"
 #include "DADumpCapture.h"
+#include "DADir.h"
 #if DA_ENABLE_PYTHON
 #include "DAPybind11InQt.h"
 #include "DAPyScripts.h"
@@ -54,20 +54,17 @@ int main(int argc, char* argv[])
 	// 进行dump捕获
 	DA::DADumpCapture::initDump([]() -> QString { return appPreposeDump(); });
 	//
-	QString exePath     = DA::DAPathUtil::getExecutablePath();
-	QString logfilePath = QDir::toNativeSeparators(exePath + "/log/da_log.log");
 
 	// 注册旋转文件消息捕获
-	DA::daRegisterRotatingMessageHandler(logfilePath);
+	DA::daRegisterRotatingMessageHandler(DA::DADir::getFullLogFilePath());
 	// DA::daRegisterConsolMessageHandler();
 	for (int i = 0; i < argc; ++i) {
 		qDebug() << "argv[" << i << "]" << argv[ i ] << endl;
 	}
-	qDebug() << "logfilePath=" << logfilePath << endl;
-	qDebug() << "exePath=" << exePath << endl;
 	// 高清屏的适配
 	enableHDPIScaling();
-
+	// 打印程序默认路径
+	qDebug() << DA::DADir();
 	// 启动app
 	QApplication app(argc, argv);
 
@@ -197,7 +194,7 @@ void setAppFont()
  */
 QString appPreposeDump()
 {
-	QString dumpFileDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+	QString dumpFileDir = DA::DADir::getAppDataPath();
 	if (dumpFileDir.isEmpty()) {
 		dumpFileDir = QApplication::applicationDirPath();
 	}

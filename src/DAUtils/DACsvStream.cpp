@@ -160,11 +160,7 @@ QStringList DACsvStream::fromCsvLine(const QString& lineStr)
 /// \param str 需要写入的csv文件一个单元得字符串
 /// \return
 ///
-DACsvStream& operator<<(DACsvStream& csv, const QString& str)
-{
-	csv.d_func()->formatTextStream() << DACsvStream::toCsvString(str);
-	return csv;
-}
+
 
 DACsvStream& operator<<(DACsvStream& csv, short d)
 {

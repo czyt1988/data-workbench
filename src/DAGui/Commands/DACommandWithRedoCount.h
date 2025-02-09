@@ -39,22 +39,15 @@ class DAGUI_API DACommandWithRedoCount : public QUndoCommand
 public:
 	DACommandWithRedoCount(QUndoCommand* par = nullptr);
 	~DACommandWithRedoCount();
-	// 计数加
-	void addRedoCnt();
-	// 计数减
-	void subRedoCnt();
-	// 获取redocnt
-	size_t getRedoCnt() const;
-	// 设置成功
-	bool isSuccess() const;
-	// 设置成功
-	void setSuccess(bool on = true);
-	// 是否首次运行redo
-	bool isFirstRunRedo();
+	virtual void redo() override;
+	/**
+	 * @brief 执行函数，此函数返回false，说明执行失败，不应该被放入command stack中，在DACommandWithRedoCount中，exec函数应该替代redo函数
+	 * @return
+	 */
+	virtual bool exec();
 
 protected:
-	size_t m_redocnt;
-	bool m_isSuccess;
+	bool mIsFirstRedo { true };
 };
 }  // end of namespace DA
 #endif  // DACOMMANDWITHREDOCOUNT_H

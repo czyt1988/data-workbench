@@ -39,9 +39,15 @@ public:
 	const DAData& data() const;
 	// 创建dataframe的数据描述
 	DAPyDataFrame createDataDescribe();
+	// dataframe表格是否有选中项
+	bool isDataframeTableHaveSelection() const;
 	// 返回选中的列数，列数不会重复
 	QList< int > getSelectedDataframeCoumns(bool ensureInDataframe = true) const;
 	QList< int > getSelectedDataframeRows(bool ensureInDataframe = true) const;
+	// 返回选中的列/行
+	QList< int > getFullySelectedDataframeColumns(bool ensureInDataframe = true) const;
+	QList< int > getFullySelectedDataframeRows(bool ensureInDataframe = true) const;
+
 	QList< QPoint > getSelectedDataframeCells(bool ensureInDataframe = true) const;
 	int getSelectedOneDataframeRow(bool ensureInDataframe = true) const;
 	int getSelectedOneDataframeColumn(bool ensureInDataframe = true) const;
@@ -73,8 +79,8 @@ public Q_SLOTS:
 	void castSelectToDatetime();
 	// 把选择的列转换为索引
 	bool changeSelectColumnToIndex();
-	// 删除缺失值
-	bool dropna();
+	// 删除缺失值,返回删除的数量
+	int dropna(const QString& how = QStringLiteral("any"), int thresh = -1);
 Q_SIGNALS:
 	/**
 	 * @brief 选中的列或者类型发生了变化

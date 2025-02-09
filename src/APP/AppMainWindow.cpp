@@ -51,7 +51,7 @@ AppMainWindow::AppMainWindow(QWidget* parent) : SARibbonMainWindow(parent)
 	// 让dock可以最小化到一个标签
 	ads::CDockManager::setAutoHideConfigFlags({ ads::CDockManager::DefaultAutoHideConfig });
 	// 建立ribbonArea，此函数的构造函数会生成界面
-	QIcon icon(":/app/bright/Icon/icon.svg");
+	QIcon icon(QStringLiteral(":/app/bright/Icon/icon.svg"));
 	setWindowIcon(icon);
 	DAAppCore& core = DAAppCore::getInstance();
 	// 创建界面
@@ -61,8 +61,8 @@ AppMainWindow::AppMainWindow(QWidget* parent) : SARibbonMainWindow(parent)
 	mDockArea = mUI->getAppDockingArea();
 	// 创建controller
 	mController = new DAAppController(this);
-    (*mController)
-        .setAppMainWindow(this)                       // app
+	(*mController)
+		.setAppMainWindow(this)                       // app
 	    .setAppCore(&core)                            // core
 	    .setAppActions(mUI->getAppActions())          // action
 	    .setAppCommand(mUI->getAppCmd())              // cmd
@@ -94,8 +94,8 @@ AppMainWindow::~AppMainWindow()
 
 void AppMainWindow::retranslateUi()
 {
-	// TODO:工程加载后，标题可能需要改变
-	setWindowTitle(tr("Data WorkFlow"));
+	// [*]为改变标记占位符
+	setWindowTitle(tr("Data WorkFlow [*]"));
 	mUI->retranslateUi();
 }
 

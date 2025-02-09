@@ -341,4 +341,31 @@ bool DAPyScriptsDataFrame::insert_at(DAPyDataFrame& df, int col, const DAPySerie
 	}
 	return false;
 }
+
+/**
+ * @brief dropna方法的wrapper
+ * @param df
+ * @param axis
+ * @param how
+ * @param indexs
+ * @param thresh
+ * @return
+ */
+bool DAPyScriptsDataFrame::dropna(DAPyDataFrame& df, int axis, const QString& how, const QList< int >& indexs, int thresh)
+{
+	try {
+		pybind11::object da_drop_na = attr("da_drop_na");
+		pybind11::object threshobj;
+		if (thresh <= 0) {
+			threshobj = pybind11::none();
+		} else {
+			threshobj = pybind11::int_(thresh);
+		}
+		da_drop_na(df.object(), axis, DA::PY::toString(how), DA::PY::toList(indexs), threshobj);
+		return true;
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return false;
+}
 }  // end DA namespace

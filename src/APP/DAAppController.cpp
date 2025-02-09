@@ -305,6 +305,7 @@ void DAAppController::initConnection()
 	if (p) {
 		connect(p, &DAAppProject::projectSaved, this, &DAAppController::onProjectSaved);
 		connect(p, &DAAppProject::projectLoaded, this, &DAAppController::onProjectLoaded);
+		connect(p, &DAAppProject::dirtyStateChanged, this, &DAAppController::onProjectDirtyStateChanged);
 	}
 	//===================================================
 	// Edit标签字体相关信号槽
@@ -372,12 +373,14 @@ void DAAppController::initConnection()
 
 /**
  * @brief 设置工程为脏
+ *
+ * @note 如果工程状态已经是脏，此函数不会做任何动作也不会触发任何信号
  * @param on
  */
 void DAAppController::setDirty(bool on)
 {
 	if (mProject) {
-		mProject->setDirty(on);
+		mProject->setModified(on);
 	}
 }
 
@@ -725,6 +728,15 @@ bool DAAppController::openProjectFile(const QString& projectFilePath)
 	// 设置工程名称给标题
 	app()->setWindowTitle(QString("%1").arg(project->getProjectBaseName()));
 	return true;
+}
+
+/**
+ * @brief 工程的胀状态改变槽
+ * @param isdirty
+ */
+void DAAppController::onProjectDirtyStateChanged(bool isdirty)
+{
+    app()->setWindowModified(isdirty);
 }
 
 /**
@@ -1148,7 +1160,7 @@ void DAAppController::onWorkflowFinished(DAWorkFlowEditWidget* wfw, bool success
  */
 void DAAppController::onWorkflowSceneitemsAdded(DAGraphicsScene* sc, const QList< QGraphicsItem* >& its)
 {
-    mProject->setDirty(true);
+    mProject->setModified(true);
 }
 
 /**
@@ -1158,7 +1170,7 @@ void DAAppController::onWorkflowSceneitemsAdded(DAGraphicsScene* sc, const QList
  */
 void DAAppController::onWorkflowSceneitemsRemoved(DAGraphicsScene* sc, const QList< QGraphicsItem* >& its)
 {
-    mProject->setDirty(true);
+    mProject->setModified(true);
 }
 
 /**
@@ -1663,6 +1675,19 @@ void DAAppController::onActionCreateDataDescribeTriggered()
  * @brief 删除缺失值
  */
 void DAAppController::onActionDataFrameDropNoneTriggered()
+{
+#if DA_ENABLE_PYTHON
+	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+
+		setDirty();
+	}
+#endif
+}
+
+/**
+ * @brief 删除缺失值(列)
+ */
+void DAAppController::onActionDataFrameDropNoneColumnTriggered()
 {
 #if DA_ENABLE_PYTHON
 	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {

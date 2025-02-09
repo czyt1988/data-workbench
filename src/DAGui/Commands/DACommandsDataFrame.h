@@ -59,17 +59,16 @@ public:
 						   const QVariant& newdata,
 						   DAPyDataFrameTableModule* model = nullptr,
 						   QUndoCommand* par               = nullptr);
-	void redo() override;
-	void undo() override;
-	void exec();
+	virtual void undo() override;
+	virtual bool exec() override;
 
 private:
-	DAPyDataFrame m_dataframe;
-	int m_row;
-	int m_col;
-	QVariant m_oldData;
-	QVariant m_newData;
-	DAPyDataFrameTableModule* m_model;
+	DAPyDataFrame mDataframe;
+	int mRow;
+	int mCol;
+	QVariant mOldData;
+	QVariant mNewData;
+	DAPyDataFrameTableModule* mModel;
 };
 
 /**
@@ -82,13 +81,12 @@ public:
 									int row,
 									DAPyDataFrameTableModule* model = nullptr,
 									QUndoCommand* par               = nullptr);
-	void redo() override;
-	void undo() override;
-	void exec();
+	virtual void undo() override;
+	virtual bool exec() override;
 
 private:
-	int m_row;
-	DAPyDataFrameTableModule* m_model;
+	int mRow;
+	DAPyDataFrameTableModule* mModel;
 };
 
 /**
@@ -110,19 +108,18 @@ public:
 									const QVariant& stop,
 									DAPyDataFrameTableModule* model = nullptr,
 									QUndoCommand* par               = nullptr);
-	void redo() override;
-	void undo() override;
-	void exec();
+	virtual void undo() override;
+	virtual bool exec() override;
 
 private:
-	bool m_isRangeMode;  ///< 标记是否是一个范围生成
-	int m_col;           ///< 插入的列
-	QString m_name;
-	QVariant m_defaultvalue;
-	QVariant m_start;
-	QVariant m_stop;
-	DAPyDataFrameTableModule* m_model;
-	DAPySeries m_insertedSeries;
+	bool mIsRangeMode;  ///< 标记是否是一个范围生成
+	int mCol;           ///< 插入的列
+	QString mName;
+	QVariant mDefaultvalue;
+	QVariant mStart;
+	QVariant mStop;
+	DAPyDataFrameTableModule* mModel;
+	DAPySeries mInsertedSeries;
 };
 
 /**
@@ -135,13 +132,13 @@ public:
 								const QList< int >& index,
 								DAPyDataFrameTableModule* model = nullptr,
 								QUndoCommand* par               = nullptr);
-	void redo() override;
-	void undo() override;
-	void exec();
+
+	virtual void undo() override;
+	virtual bool exec() override;
 
 private:
-	QList< int > m_index;
-	DAPyDataFrameTableModule* m_model;
+	QList< int > mIndex;
+	DAPyDataFrameTableModule* mModel;
 };
 
 /**
@@ -154,19 +151,18 @@ public:
 								   const QList< int >& index,
 								   DAPyDataFrameTableModule* model = nullptr,
 								   QUndoCommand* par               = nullptr);
-	void redo() override;
-	void undo() override;
-	void exec();
+	virtual void undo() override;
+	virtual bool exec() override;
 
 private:
-	QList< int > m_index;
-	DAPyDataFrameTableModule* m_model;
+	QList< int > mIndex;
+	DAPyDataFrameTableModule* mModel;
 };
 
 /**
  * @brief 更改列名
  */
-class DAGUI_API DACommandDataFrame_renameColumns : public QUndoCommand
+class DAGUI_API DACommandDataFrame_renameColumns : public DACommandWithRedoCount
 {
 public:
 	DACommandDataFrame_renameColumns(const DAPyDataFrame& df,
@@ -178,14 +174,14 @@ public:
 									 const QList< QString >& oldcols,
 									 QHeaderView* hv   = nullptr,
 									 QUndoCommand* par = nullptr);
-	void redo() override;
-	void undo() override;
+	virtual void undo() override;
+	virtual bool exec() override;
 
 private:
-	DAPyDataFrame m_dataframe;
-	QList< QString > m_cols;
-	QHeaderView* m_headerView;
-	QList< QString > m_oldcols;
+	DAPyDataFrame mDataframe;
+	QList< QString > mCols;
+	QHeaderView* mHeaderView;
+	QList< QString > mOldcols;
 };
 
 /**
@@ -199,14 +195,13 @@ public:
 							  const DAPyDType& dt,
 							  DAPyDataFrameTableModule* model = nullptr,
 							  QUndoCommand* par               = nullptr);
-	void redo() override;
-	void undo() override;
-	void exec();
+	virtual void undo() override;
+	virtual bool exec() override;
 
 private:
-	QList< int > m_index;
-	DAPyDType m_dtype;
-	DAPyDataFrameTableModule* m_model;
+	QList< int > mIndex;
+	DAPyDType mDtype;
+	DAPyDataFrameTableModule* mModel;
 };
 
 /**
@@ -220,18 +215,43 @@ public:
 							  const QList< int >& columns,
 							  DAPyDataFrameTableModule* model = nullptr,
 							  QUndoCommand* par               = nullptr);
-	void redo() override;
-	void undo() override;
-	void exec();
+	virtual void undo() override;
+	virtual bool exec() override;
 
 private:
-	DAPyDataFrame m_dataframe;
-	QList< int > m_rows;
-	QList< int > m_columns;
-	DAPyDataFrameTableModule* m_model;
-	QList< pybind11::object > m_olddatas;
+	DAPyDataFrame mDataframe;
+	QList< int > mRows;
+	QList< int > mColumns;
+	DAPyDataFrameTableModule* mModel;
+	QList< pybind11::object > mOlddatas;
 };
 
+/**
+ * @brief dropnan
+ */
+class DAGUI_API DACommandDataFrame_dropna : public DACommandWithTemplateData
+{
+public:
+	DACommandDataFrame_dropna(const DAPyDataFrame& df,
+							  DAPyDataFrameTableModule* model = nullptr,
+							  int axis                        = 0,
+							  const QString& how              = QStringLiteral("any"),
+							  const QList< int >& index       = QList< int >(),
+							  int thresh                      = -1,
+							  QUndoCommand* par               = nullptr);
+	virtual void undo() override;
+	virtual bool exec() override;
+
+	int getDropedCount() const;
+
+private:
+	DAPyDataFrameTableModule* mModel { nullptr };
+	int mAxis { 0 };
+	QString mHow;
+	QList< int > mIndex;
+	int mThresh { -1 };
+	int mDropedCount { 0 };  ///< 记录删除了多少行或列
+};
 /**
  * @brief 转换列的数据类型
  */
@@ -243,14 +263,13 @@ public:
 							   const pybind11::dict& args,
 							   DAPyDataFrameTableModule* model = nullptr,
 							   QUndoCommand* par               = nullptr);
-	void redo() override;
-	void undo() override;
-	void exec();
+	virtual void undo() override;
+	virtual bool exec() override;
 
 private:
-	QList< int > m_index;
-	pybind11::dict m_args;
-	DAPyDataFrameTableModule* m_model;
+	QList< int > mIndex;
+	pybind11::dict mArgs;
+	DAPyDataFrameTableModule* mModel;
 };
 
 /**
@@ -264,16 +283,13 @@ public:
 									const pybind11::dict& args,
 									DAPyDataFrameTableModule* model = nullptr,
 									QUndoCommand* par               = nullptr);
-	void redo() override;
-	void undo() override;
-
-protected:
-	void run();
+	virtual void undo() override;
+	virtual bool exec() override;
 
 private:
-	QList< int > m_index;
-	pybind11::dict m_args;
-	DAPyDataFrameTableModule* m_model;
+	QList< int > mIndex;
+	pybind11::dict mArgs;
+	DAPyDataFrameTableModule* mModel;
 };
 
 /**
@@ -287,14 +303,12 @@ public:
 								QHeaderView* hv                 = nullptr,
 								DAPyDataFrameTableModule* model = nullptr,
 								QUndoCommand* par               = nullptr);
-	void redo() override;
-	void undo() override;
-	void exec();
+	virtual void undo() override;
+	virtual bool exec() override;
 
 private:
-	QList< int > m_index;
-	QHeaderView* m_headerView;
-	DAPyDataFrameTableModule* m_model;
+	QList< int > mIndex;
+	DAPyDataFrameTableModule* mModel;
 };
 }  // end of namespace DA
 #endif  // DACOMMANDSDATAFRAME_H

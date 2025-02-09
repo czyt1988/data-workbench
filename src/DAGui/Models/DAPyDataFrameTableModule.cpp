@@ -143,7 +143,7 @@ bool DAPyDataFrameTableModule::setData(const QModelIndex& index, const QVariant&
 	}
 	std::unique_ptr< DACommandDataFrame_iat > cmd_iat(
 		new DACommandDataFrame_iat(d_ptr->_dataframe, index.row(), index.column(), olddata, value, this));
-	if (!cmd_iat->isSuccess()) {
+	if (!cmd_iat->exec()) {
 		// 没设置成功，退出
 		return false;
 	}
