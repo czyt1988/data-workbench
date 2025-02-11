@@ -58,27 +58,17 @@ message(STATUS "${DA_LIB_NAME} Qt${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VE
 set(${DA_PROJECT_NAME}_DIR "${CMAKE_BINARY_DIR}")
 find_package(${DA_PROJECT_NAME} COMPONENTS DAUtils)
 if(${DA_PROJECT_NAME}_FOUND)
-    message(STATUS "  |-link DAUtils")
+    message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAUtils")
 endif()
 target_link_libraries(${DA_LIB_NAME} PUBLIC
     ${DA_PROJECT_NAME}::DAUtils
 )
 
+
 ########################################################
-# Qt的moc
+# 设置通用库属性
 ########################################################
-set_target_properties(${DA_LIB_NAME} PROPERTIES
-    AUTOMOC ON
-    AUTOUIC ON
-    AUTORCC ON
-    CXX_EXTENSIONS OFF
-    DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
-    VERSION ${DA_LIB_VERSION}
-    EXPORT_NAME ${DA_LIB_NAME}
-    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-)
+damacro_set_lib_properties(${DA_LIB_NAME} ${DA_LIB_VERSION})
 
 ########################################################
 # 安装

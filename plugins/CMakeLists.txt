@@ -1,4 +1,4 @@
-
+﻿
 # Cmake的命令不区分打下写，例如message，set等命令；但Cmake的变量区分大小写
 # 为统一风格，本项目的Cmake命令全部采用小写，变量全部采用大写加下划线组合。
 # DA WorkBench Plugins 顶层Cmake文件
@@ -38,6 +38,7 @@ project("DAWorkbench-Plugins"
         DESCRIPTION "DataWorkBench Plugins"
         )
 # 获取默认安装文件夹
+
 include(${CMAKE_CURRENT_LIST_DIR}/../cmake/daworkbench_plugin_utils.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/../cmake/daworkbench_utils.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/../cmake/daworkbench_3rdparty.cmake)
@@ -48,23 +49,51 @@ dafun_set_bin_name(DAWorkbench_INSTALL_FOLDER_NAME)
 # DA安装路径设置
 ########################################################
 set(DA_MIN_QT_VERSION 5.14)
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
-find_package(DAWorkbench QUIET)
-if(NOT DAWorkbench_FOUND)
-    if(NOT DEFINED DAWorkbench_INSTALL_PATH)
-        set(DAWorkbench_INSTALL_PATH "${CMAKE_CURRENT_LIST_DIR}/../${DAWorkbench_INSTALL_FOLDER_NAME}")
-        message(STATUS "NOT DEFINED DAWorkbench_INSTALL_PATH,set to ${DAWorkbench_INSTALL_PATH}")
-    endif()
-    set(DAWorkbench_DIR ${DAWorkbench_INSTALL_PATH}/lib/cmake/DAWorkbench)
-endif()
 if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
-    message(STATUS "set DA_ENABLE_PYTHON=ON")
-    set(DA_ENABLE_PYTHON ON)
+    find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
+
+    find_package(DAWorkbench QUIET)
+    if(NOT DAWorkbench_FOUND)
+        if(NOT DEFINED DAWorkbench_INSTALL_PATH)
+            set(DAWorkbench_INSTALL_PATH "${CMAKE_CURRENT_LIST_DIR}/../${DAWorkbench_INSTALL_FOLDER_NAME}")
+            message(STATUS "NOT DEFINED DAWorkbench_INSTALL_PATH,set to ${DAWorkbench_INSTALL_PATH}")
+        endif()
+        set(DAWorkbench_DIR ${DAWorkbench_INSTALL_PATH}/lib/cmake/DAWorkbench)
+    endif()
+    if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+        message(STATUS "set DA_ENABLE_PYTHON=ON")
+        set(DA_ENABLE_PYTHON ON)
+    endif()
+    set(CMAKE_INSTALL_PREFIX ${DAWorkbench_INSTALL_PATH})
+    message(STATUS "DA Plugins build,DA_ENABLE_PYTHON=${DA_ENABLE_PYTHON}")
+    set(DA_INSTALL_LIB_CMAKE_PATH ${DAWorkbench_INSTALL_PATH}/lib/cmake)
+    set(DA_INSTALL_LIB_SHARE_PATH ${DAWorkbench_INSTALL_PATH}/share/cmake)
+    ########################################################
+    # 定义第三方库路径
+    ########################################################
+    set(SARibbonBar_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/SARibbonBar)
+    message(STATUS "SARibbonBar_DIR=${SARibbonBar_DIR}")
+
+    set(DALiteCtk_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/DALiteCtk)
+    message(STATUS "DALiteCtk_DIR=${DALiteCtk_DIR}")
+
+    set(qwt_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/qwt)
+    message(STATUS "qwt_DIR=${qwt_DIR}")
+
+    set(QtPropertyBrowser_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/QtPropertyBrowser)
+    message(STATUS "QtPropertyBrowser_DIR=${QtPropertyBrowser_DIR}")
+
+    set(spdlog_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/spdlog)
+    message(STATUS "spdlog_DIR=${spdlog_DIR}")
+
+    # 注意tsl-ordered-map的安装位置在share/cmake,而不是lib/cmake
+    set(tsl-ordered-map_DIR ${DA_INSTALL_LIB_SHARE_PATH}/tsl-ordered-map)
+    message(STATUS "tsl-ordered-map_DIR=${tsl-ordered-map_DIR}")
+
+    set(qt${QT_VERSION_MAJOR}advanceddocking_DIR  ${DA_INSTALL_LIB_CMAKE_PATH}/qt${QT_VERSION_MAJOR}advanceddocking)
+    message(STATUS "qt${QT_VERSION_MAJOR}advanceddocking_DIR=${qt${QT_VERSION_MAJOR}advanceddocking_DIR}")
 endif()
 
-
-set(CMAKE_INSTALL_PREFIX ${DAWorkbench_INSTALL_PATH})
-message(STATUS "DA Plugins build,DA_ENABLE_PYTHON=${DA_ENABLE_PYTHON}")
 ########################################################
 # 子工程加载
 ########################################################

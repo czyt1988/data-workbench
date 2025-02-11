@@ -8,6 +8,7 @@ namespace DA
 {
 /**
  * @brief 此命令实现了临时文件接口，需要保存临时文件的继承此类
+ * TODO:这个类的名字需要修改为DACommandDataframeWithTemplateData
  */
 class DAGUI_API DACommandWithTemplateData : public DACommandWithRedoCount
 {

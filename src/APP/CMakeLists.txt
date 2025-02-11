@@ -114,36 +114,12 @@ if(DA_ENABLE_PYTHON)
     damacro_import_Python(${DA_APP_NAME})
 endif()
 
-# -------------link DAWorkBench--------------------------
-# DAPluginSupport
-# 指定DAWorkbench_DIR为工程的顶层BINARY_DIR，否则找不到${DA_PROJECT_NAME}
-# find_package(${DA_PROJECT_NAME} COMPONENTS
-#     DAUtils
-#     DAMessageHandler
-#     DAData
-#     DACommonWidgets
-#     DAGraphicsView
-#     DAWorkFlow
-#     DAFigure
-#     DAGui
-#     DAInterface
-#     DAPluginSupport
-# )
-# target_link_libraries(${DA_APP_NAME} PUBLIC
-#     ${DA_PROJECT_NAME}::DAUtils
-#     ${DA_PROJECT_NAME}::DAMessageHandler
-#     ${DA_PROJECT_NAME}::DAData
-#     ${DA_PROJECT_NAME}::DACommonWidgets
-#     ${DA_PROJECT_NAME}::DAGraphicsView
-#     ${DA_PROJECT_NAME}::DAWorkFlow
-#     ${DA_PROJECT_NAME}::DAFigure
-#     ${DA_PROJECT_NAME}::DAGui
-#     ${DA_PROJECT_NAME}::DAInterface
-#     ${DA_PROJECT_NAME}::DAPluginSupport
-# )
 find_package(${DA_PROJECT_NAME} COMPONENTS
     DAPluginSupport
 )
+if(${DA_PROJECT_NAME}_FOUND)
+    message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAPluginSupport")
+endif()
 target_link_libraries(${DA_APP_NAME} PUBLIC
     ${DA_PROJECT_NAME}::DAPluginSupport
 )
@@ -155,30 +131,12 @@ if(WIN32)
         Dbghelp
     )
 endif()
+
 ########################################################
-# Qt的moc
+# app 属性设置
 ########################################################
-set_target_properties(${DA_APP_NAME} PROPERTIES
-    AUTOMOC ON
-    AUTOUIC ON
-    AUTORCC ON
-    CXX_EXTENSIONS OFF
-    DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
-    VERSION ${DA_APP_VERSION}
-    EXPORT_NAME ${DA_APP_NAME}
-    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-)
-if(MSVC)
-    target_compile_options(${DA_APP_NAME} PRIVATE "/utf-8")
-    target_compile_definitions(${DA_APP_NAME} PRIVATE "_UNICODE" "UNICODE")
-    # 为 MSVC 设置链接器标志以禁止生成清单文件
-    # 这是因为某些操作系统下会遇到general error c101008d: Failed to write the updated manifest to the resource of file "bin\DAWorkBench.exe的错误
-    # 主要是操作系统杀毒软件的原因，某些生产环节下是无法禁用杀毒软件的
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /MANIFEST:NO")
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /MANIFEST:NO")
-endif()
+damacro_set_app_properties(${DA_APP_NAME} ${DA_APP_VERSION})
+
 ########################################################
 # 安装
 ########################################################

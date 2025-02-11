@@ -94,31 +94,70 @@ macro(damacro_lib_setting _lib_name _lib_description _lib_ver_major _lib_ver_min
     message(STATUS "  | => CMAKE_CURRENT_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}")
 endmacro(damacro_lib_setting)
 
+macro(damacro_set_lib_properties _target_name _version_str)
+    set_target_properties(${_target_name} PROPERTIES
+        AUTOMOC ON
+        AUTOUIC ON
+        AUTORCC ON
+        CXX_EXTENSIONS OFF
+        DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
+        VERSION ${_version_str}
+        EXPORT_NAME ${_target_name}
+        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+    )
+endmacro(damacro_set_lib_properties)
+
+macro(damacro_set_app_properties _target_name _version_str)
+    set_target_properties(${_target_name} PROPERTIES
+        AUTOMOC ON
+        AUTOUIC ON
+        AUTORCC ON
+        CXX_EXTENSIONS OFF
+        DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
+        VERSION ${_version_str}
+        EXPORT_NAME ${_target_name}
+        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+    )
+    if(MSVC)
+        target_compile_options(${_target_name} PRIVATE "/utf-8")
+        target_compile_definitions(${_target_name} PRIVATE "_UNICODE" "UNICODE")
+        # 为 MSVC 设置链接器标志以禁止生成清单文件
+        # 这是因为某些操作系统下会遇到general error c101008d: Failed to write the updated manifest to the resource of file "bin\DAWorkBench.exe的错误
+        # 主要是操作系统杀毒软件的原因，某些生产环节下是无法禁用杀毒软件的
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /MANIFEST:NO")
+        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /MANIFEST:NO")
+    endif()
+endmacro(damacro_set_app_properties)
 
 # 通用的安装
 macro(damacro_lib_install_no_rc)
+    include(GNUInstallDirs)
     target_compile_definitions(${DA_LIB_NAME} PRIVATE QT_MESSAGELOGCONTEXT)
     ########################################################
     # 目标依赖目录
     ########################################################
     target_include_directories(${DA_LIB_NAME} PUBLIC
-        $<INSTALL_INTERFACE:include/${DA_PROJECT_NAME}/${DA_LIB_NAME}>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${DA_PROJECT_NAME}/${DA_LIB_NAME}>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>
     )
     # 这个主要是DAGlobal.h
     target_include_directories(${DA_LIB_NAME} PUBLIC
-        $<INSTALL_INTERFACE:include/${DA_PROJECT_NAME}>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${DA_PROJECT_NAME}>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/../>
     )
     # 这个主要是DAShared
     target_include_directories(${DA_LIB_NAME} PUBLIC
-        $<INSTALL_INTERFACE:include/${DA_PROJECT_NAME}/DAShared>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${DA_PROJECT_NAME}/DAShared>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/../DAShared>
     )
     # DALibConfig.cmake.in中，会让此变量和“${PACKAGE_PREFIX_DIR}/”进行拼接，也就是${PACKAGE_PREFIX_DIR}/@DA_LIB_INCLUDE_INSTALL_DIR@
     # PACKAGE_PREFIX_DIR = ${CMAKE_CURRENT_LIST_DIR}/../..
     # 最终变为${CMAKE_CURRENT_LIST_DIR}/../../include/${DA_PROJECT_NAME}/${DA_LIB_NAME}
-    set(DA_LIB_INCLUDE_INSTALL_DIR include/${DA_PROJECT_NAME}/${DA_LIB_NAME})
+    set(DA_LIB_INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR}/${DA_PROJECT_NAME}/${DA_LIB_NAME})
 
     include(CMakePackageConfigHelpers)
     # Generate library version info which will generate xxxConfigVersion.cmake,
@@ -131,27 +170,27 @@ macro(damacro_lib_install_no_rc)
     configure_package_config_file(
       "${CMAKE_CURRENT_SOURCE_DIR}/../DALibConfig.cmake.in"
       "${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}Config.cmake"
-      INSTALL_DESTINATION lib/cmake/${DA_PROJECT_NAME}
+      INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${DA_PROJECT_NAME}
       PATH_VARS DA_LIB_INCLUDE_INSTALL_DIR
     )
     # 声明导出target的名称
     install(TARGETS ${DA_LIB_NAME}
         EXPORT ${DA_LIB_NAME}Targets
-        INCLUDES DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}
-        RUNTIME DESTINATION bin
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib
+        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${DA_PROJECT_NAME}/${DA_LIB_NAME}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
     install(EXPORT "${DA_LIB_NAME}Targets"
         FILE ${DA_LIB_NAME}Targets.cmake # 导出的文件基准名。
         NAMESPACE ${DA_PROJECT_NAME}::
-        DESTINATION lib/cmake/${DA_PROJECT_NAME}
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${DA_PROJECT_NAME}
     )
 
     install(FILES
         "${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}Config.cmake"
         "${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}ConfigVersion.cmake"
-        DESTINATION lib/cmake/${DA_PROJECT_NAME}
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${DA_PROJECT_NAME}
     )
 
     export(EXPORT ${DA_LIB_NAME}Targets

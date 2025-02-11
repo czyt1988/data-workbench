@@ -314,6 +314,14 @@ find_package(${DA_PROJECT_NAME} COMPONENTS
     DAWorkFlow
     DAFigure
 )
+if(${DA_PROJECT_NAME}_FOUND)
+    message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAUtils")
+    message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAMessageHandler")
+    message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAData")
+    message(STATUS "  |-linked ${DA_PROJECT_NAME}::DACommonWidgets")
+    message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAWorkFlow")
+    message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAFigure")
+endif()
 target_link_libraries(${DA_LIB_NAME} PUBLIC
     ${DA_PROJECT_NAME}::DAUtils
     ${DA_PROJECT_NAME}::DAMessageHandler
@@ -328,8 +336,7 @@ if(DA_ENABLE_PYTHON)
         DAPyCommonWidgets
     )
     if(${DA_PROJECT_NAME}_FOUND)
-        message(STATUS "  |-link ${DA_PROJECT_NAME}::DAPyCommonWidgets")
-        message(STATUS "  | |-include dir:${DAPyCommonWidgets_INCLUDE_DIR}")
+        message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAPyCommonWidgets")
     endif()
     target_link_libraries(${DA_LIB_NAME} PUBLIC
         ${DA_PROJECT_NAME}::DAPyCommonWidgets
@@ -353,20 +360,9 @@ damacro_import_DALiteCtk(${DA_LIB_NAME})
 
 
 ########################################################
-# Qt的moc
+# 设置通用库属性
 ########################################################
-set_target_properties(${DA_LIB_NAME} PROPERTIES
-    AUTOMOC ON
-    AUTOUIC ON
-    AUTORCC ON
-    CXX_EXTENSIONS OFF
-    DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
-    VERSION ${DA_LIB_VERSION}
-    EXPORT_NAME ${DA_LIB_NAME}
-    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-)
+damacro_set_lib_properties(${DA_LIB_NAME} ${DA_LIB_VERSION})
 
 # 添加这两个位置主要是为了ui文件进行窗口提升时能找到头文件
 target_include_directories(${DA_LIB_NAME} PUBLIC

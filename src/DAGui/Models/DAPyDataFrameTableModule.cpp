@@ -190,6 +190,9 @@ void DAPyDataFrameTableModule::setDataFrame(const DAPyDataFrame& d)
 
 void DAPyDataFrameTableModule::refreshRow(int row)
 {
+	if (row >= rowCount()) {
+		return;
+	}
 	int c = columnCount() - 1;
 	if (c < 0) {
 		c = 0;
@@ -199,6 +202,9 @@ void DAPyDataFrameTableModule::refreshRow(int row)
 
 void DAPyDataFrameTableModule::refreshColumn(int col)
 {
+	if (col >= columnCount()) {
+		return;
+	}
 	int r = rowCount() - 1;
 	if (r < 0) {
 		r = 0;
@@ -213,12 +219,18 @@ void DAPyDataFrameTableModule::refreshColumn(int col)
  */
 void DAPyDataFrameTableModule::refresh(int row, int col)
 {
-    emit dataChanged(createIndex(row, col), createIndex(row, col));
+	if (row >= rowCount() || col >= columnCount()) {
+		return;
+	}
+	emit dataChanged(createIndex(row, col), createIndex(row, col));
 }
 
 void DAPyDataFrameTableModule::refresh(int rowStart, int colStart, int rowEnd, int colEnd)
 {
-    emit dataChanged(createIndex(rowStart, colStart), createIndex(rowEnd, colEnd));
+	if (rowEnd >= rowCount() || colEnd >= columnCount()) {
+		return;
+	}
+	emit dataChanged(createIndex(rowStart, colStart), createIndex(rowEnd, colEnd));
 }
 
 /**

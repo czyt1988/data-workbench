@@ -6,6 +6,7 @@ namespace DA
 {
 /**
  * @brief 加上计数的cmd
+ * TODO:这个类的名字需要修改为DACommandInitialSkipRedo
  * @code
  * auto cmd = new DACommandDataFrame_iat(...);
  * cmd->redo();

@@ -47,6 +47,7 @@ target_compile_definitions(${DA_LIB_NAME} PRIVATE DAPYBINDQT_BUILDLIB)#!!!!** �
 
 # 定义别名让DAWorkbench::${DA_LIB_NAME}也能获取到
 add_library(${DA_PROJECT_NAME}::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
+
 ########################################################
 # 依赖链接 #!!!!** 注意变更 **!!!!
 ########################################################
@@ -62,21 +63,9 @@ damacro_import_Python(${DA_LIB_NAME})
 damacro_import_pybind11(${DA_LIB_NAME})
 
 ########################################################
-# Qt的moc
+# 设置通用库属性
 ########################################################
-set_target_properties(${DA_LIB_NAME} PROPERTIES
-    AUTOMOC ON
-    AUTOUIC ON
-    AUTORCC ON
-    CXX_EXTENSIONS OFF
-    DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
-    VERSION ${DA_LIB_VERSION}
-    EXPORT_NAME ${DA_LIB_NAME}
-    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-)
-
+damacro_set_lib_properties(${DA_LIB_NAME} ${DA_LIB_VERSION})
 
 ########################################################
 # 安装
@@ -98,9 +87,4 @@ install(FILES
     DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/numpy
     COMPONENT headers
 )
-#DAGlobal.h
-install(FILES
-    ${DA_GLOBAL_HEADER}
-    DESTINATION include/${DA_PROJECT_NAME}
-    COMPONENT headers
-)
+
