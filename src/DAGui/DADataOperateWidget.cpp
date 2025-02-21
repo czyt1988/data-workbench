@@ -118,10 +118,12 @@ QList< DAData > DADataOperateWidget::getCurrentSelectDatas() const
 
 QUndoStack* DADataOperateWidget::getUndoStack()
 {
+#if DA_ENABLE_PYTHON
 	DADataOperateOfDataFrameWidget* w = getCurrentDataFrameWidget();
 	if (w) {
 		return w->getUndoStack();
 	}
+#endif
 	return nullptr;
 }
 
