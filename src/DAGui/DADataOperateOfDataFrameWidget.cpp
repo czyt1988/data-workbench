@@ -442,6 +442,19 @@ int DADataOperateOfDataFrameWidget::dropna(const QString& how, int thresh)
 			}
 		}
 	}
+	return dropna(df, axis, how, index, thresh);
+}
+
+/**
+ * @brief 删除缺失值
+ * @param axis 删除轴向0，代表删除行，1代表删除列
+ * @param how 可选参数，表示删除的条件。默认值为’any’，表示只要存在一个缺失值就删除整行或整列；设置为’all’表示只有当整行或整列都是缺失值时才删除
+ * @param index 可选参数，用于指定要检查缺失值的特定列名或行索引。
+ * @param thresh 可选参数，表示在删除之前需要满足的非缺失值的最小数量。如果行或列中的非缺失值数量小于等于thresh，则会被删除，-1代表不生效
+ * @return 返回删除的数量，0代表没有删除任何内容
+ */
+int DADataOperateOfDataFrameWidget::dropna(const DAPyDataFrame& df, int axis, const QString& how, const QList< int > index, int thresh)
+{
 	std::unique_ptr< DACommandDataFrame_dropna > cmd(new DACommandDataFrame_dropna(df, mModel, axis, how, index, thresh));
 	if (!cmd->exec()) {
 		return 0;

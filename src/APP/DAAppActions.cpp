@@ -71,8 +71,6 @@ void DAAppActions::buildDataAction()
 	actionCreateDataDescribe = createAction("actionCreateDataDescribe", ":/app/bright/Icon/dataDescribe.svg");
 	actionChangeToIndex      = createAction("actionChangeToIndex", ":/app/bright/Icon/changeToIndex.svg");
 	actionDataFrameDropNone  = createAction("actionDataFrameDropNone", ":/app/bright/Icon/dataframe-drop-none.svg");
-	actionDataFrameDropNoneColumn =
-		createAction("actionDataFrameDropNoneColumn", ":/app/bright/Icon/dataframe-drop-none-col.svg");
 }
 
 void DAAppActions::buildChartAction()
@@ -188,7 +186,8 @@ void DAAppActions::buildOtherActions()
 void DAAppActions::retranslateUi()
 {
 	// Main Category
-	actionOpen->setText(tr("Open"));
+	actionOpen->setText(tr("Open"));                     // cn:打开
+	actionOpen->setToolTip(tr("Open file or project"));  // cn:打开文件或项目
 	actionSave->setText(tr("Save"));
 	actionSaveAs->setText(tr("Save As"));
 	actionAppendProject->setText(tr("Append To Project"));
@@ -247,8 +246,6 @@ void DAAppActions::retranslateUi()
 	actionChangeToIndex->setText(tr("To Index"));                                       // cn:转换为\n索引
 	actionDataFrameDropNone->setText(tr("Drop None"));                                  // cn:删除\n缺失值
 	actionDataFrameDropNone->setToolTip(tr("Drop rows which contain missing values"));  // cn:删除包含缺失值的行
-	actionDataFrameDropNoneColumn->setText(tr("Drop None(colum)"));                     // cn:删除(列)\n缺失值
-	actionDataFrameDropNoneColumn->setToolTip(tr("Drop columns which contain missing value"));  // cn:删除包含缺失值的列
 	// workflow 编辑
 	actionWorkflowNew->setText(tr("New \nWorkflow"));                    // cn:新建\n工作流
 	actionWorkflowEnableItemLinkageMove->setText(tr("Linkage \nMove"));  // cn:联动

@@ -136,10 +136,6 @@ void DAAppRibbonArea::buildMenu()
 	m_menuInsertColumn = new SARibbonMenu(m_app);
 	m_menuInsertColumn->setObjectName(QStringLiteral("menuInsertColumn"));
 	m_menuInsertColumn->addAction(m_actions->actionInsertColumnLeft);
-
-	m_menuDropNan = new SARibbonMenu(m_app);
-	m_menuDropNan->setObjectName(QStringLiteral("menuDropNan"));
-	m_menuDropNan->addAction(m_actions->actionDataFrameDropNoneColumn);
 	//
 	m_menuTheme = new SARibbonMenu(m_app);
 	m_menuTheme->setObjectName(QStringLiteral("menuTheme"));
@@ -392,8 +388,7 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
 	m_pannelDataframeOperateDType->addWidget(m_castActionsButtonGroup, SARibbonPannelItem::Medium);
 	// 数据清洗
 	m_pannelDataframeOperateDataCleaning = m_categoryDataframeOperate->addPannel(tr("Data Cleaning"));  // cn：数据清洗
-	m_actions->actionDataFrameDropNone->setMenu(m_menuDropNan);
-	m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDataFrameDropNone, QToolButton::MenuButtonPopup);
+	m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDataFrameDropNone);
 	//  Statistic Pannel
 	m_pannelDataframeOperateStatistic = m_categoryDataframeOperate->addPannel(tr("Statistic"));  // cn：统计
 	m_pannelDataframeOperateStatistic->addLargeAction(m_actions->actionCreateDataDescribe);

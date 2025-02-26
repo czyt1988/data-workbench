@@ -1678,20 +1678,7 @@ void DAAppController::onActionDataFrameDropNoneTriggered()
 {
 #if DA_ENABLE_PYTHON
 	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-
-		setDirty();
-	}
-#endif
-}
-
-/**
- * @brief 删除缺失值(列)
- */
-void DAAppController::onActionDataFrameDropNoneColumnTriggered()
-{
-#if DA_ENABLE_PYTHON
-	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-
+		dfopt->dropna();
 		setDirty();
 	}
 #endif

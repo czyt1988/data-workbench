@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
-from typing import List, Dict, Optional, Tuple
+from typing import List, Dict, Optional, Tuple, Literal
 import pandas as pd
 import numpy as np
 from DAWorkbench.logger import log_function_call  # type: ignore # 引入装饰器
@@ -35,11 +35,14 @@ def da_drop_icolumn(df: pd.DataFrame, index: List[int]):
     df.drop(cols, axis=1, inplace=True)
 
 @log_function_call
-def da_drop_na(df: pd.DataFrame, axis:int = 0,index:Optional[List[int]]=None,thresh=None):
+def da_drop_na(df: pd.DataFrame, axis:int = 0, how:Literal['any','all']='any', index:Optional[List[int]]=None, thresh:int|None=None):
     '''
-    传入列索引，并把对应的空行删除
-    :param df:  pd.DataFrame
+    删除dataframe中的nan值
+    :param df: pd.DataFrame
+    :param axis: 0为行，1为列
+    :param how: any为只要有nan就删除，all为全为nan才删除
     :param index: 列索引
+    :param thresh: 可选参数，表示在删除之前需要满足的非缺失值的最小数量。如果行或列中的非缺失值数量小于等于thresh，则会被删除
     :return: 此函数不返回值，直接改变df
     '''
     subset = None
@@ -48,7 +51,7 @@ def da_drop_na(df: pd.DataFrame, axis:int = 0,index:Optional[List[int]]=None,thr
             subset = df.columns[index]
         else:
             subset = df.index[index]
-    df.dropna(axis=axis,subset=subset, thresh=thresh, inplace=True)
+    df.dropna(axis=axis,how=how ,subset=subset, thresh=thresh, inplace=True)
 
 @log_function_call
 def da_to_pickle(df: pd.DataFrame, path: str):

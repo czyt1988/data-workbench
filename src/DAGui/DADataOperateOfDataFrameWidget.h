@@ -81,6 +81,11 @@ public Q_SLOTS:
 	bool changeSelectColumnToIndex();
 	// 删除缺失值,返回删除的数量
 	int dropna(const QString& how = QStringLiteral("any"), int thresh = -1);
+	int dropna(const DAPyDataFrame& df,
+			   int axis,
+			   const QString& how       = QStringLiteral("any"),
+			   const QList< int > index = QList< int >(),
+			   int thresh               = -1);
 Q_SIGNALS:
 	/**
 	 * @brief 选中的列或者类型发生了变化

@@ -384,7 +384,6 @@ public:
 	QMenu* m_menuViewLineMarkers { nullptr };            ///< 视图标记线
 	QMenu* m_menuInsertRow { nullptr };                  ///< 针对insertrow的action menu
 	QMenu* m_menuInsertColumn { nullptr };               ///< 这对insertcol的action menu
-	QMenu* m_menuDropNan { nullptr };                    ///< dropna相关的菜单
 	QMenu* m_menuTheme { nullptr };                      ///< 主题菜单
 };
 }  // namespace DA
