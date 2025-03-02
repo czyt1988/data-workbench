@@ -264,7 +264,7 @@ private:                                                                        
 #endif
 #endif
 
-#if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 template< typename T >
 uint qHash(const std::shared_ptr< T >& ptr, uint seed = 0)
 {
