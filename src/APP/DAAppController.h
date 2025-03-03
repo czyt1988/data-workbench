@@ -211,6 +211,8 @@ private Q_SLOTS:
 	void onActionCreateDataDescribeTriggered();
 	// 删除缺失值
 	void onActionDataFrameDropNoneTriggered();
+	// 填充缺失值
+	void onActionDataFrameFillNoneTriggered();
 #if DA_ENABLE_PYTHON
 	// 列数据类型改变
 	void onComboxColumnTypesCurrentDTypeChanged(const DA::DAPyDType& dt);

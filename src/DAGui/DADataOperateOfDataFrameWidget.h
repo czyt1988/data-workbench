@@ -86,6 +86,9 @@ public Q_SLOTS:
 			   const QString& how       = QStringLiteral("any"),
 			   const QList< int > index = QList< int >(),
 			   int thresh               = -1);
+	// 填充缺失值，返回填充的数量
+	int fillna(const int filltype, const float value, const QString& method);
+	int fillna(const DAPyDataFrame& df, int filltype, const float value = 0.0, const QString& method = QStringLiteral("pad"));
 Q_SIGNALS:
 	/**
 	 * @brief 选中的列或者类型发生了变化

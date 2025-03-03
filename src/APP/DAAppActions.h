@@ -68,6 +68,9 @@ public:
 	QAction* actionCreateDataDescribe;  ///< 数据描述
 	QAction* actionChangeToIndex;       ///< 把某列转换为index
 	QAction* actionDataFrameDropNone;   ///< 删除缺失值
+
+	QAction* actionDataFrameFillNone;  ///< 填充缺失值
+
 	//===================================================
 	// workflow的上下文标签
 	//===================================================
