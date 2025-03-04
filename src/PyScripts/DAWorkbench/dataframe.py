@@ -54,6 +54,21 @@ def da_drop_na(df: pd.DataFrame, axis:int = 0, how:Literal['any','all']='any', i
     df.dropna(axis=axis,how=how ,subset=subset, thresh=thresh, inplace=True)
 
 @log_function_call
+def da_fill_na(df: pd.DataFrame, filltype:int = 1, value:float|None=None, method:Literal['pad','ffill','backfill','bfill']=None):
+    '''
+    填充dataframe中的nan值
+    :param df: pd.DataFrame
+    :param filltype: 填充类型，1为值填充，其他为方法填充
+    :param value: 填充的数值
+    :param method: backfill/bfill用后面行/列的值，填充当前行/列的空值;pad / ffill表示用前面行/列的值，填充当前行/列的空值.
+    :return: 此函数不返回值，直接改变df
+    '''
+    if filltype == 1:
+        df.fillna(value = value, inplace = True)
+    else:
+        df.fillna(method = method, inplace = True)
+
+@log_function_call
 def da_to_pickle(df: pd.DataFrame, path: str):
     '''
     把dataframe写到文件
