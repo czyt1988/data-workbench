@@ -252,6 +252,29 @@ private:
 	int mThresh { -1 };
 	int mDropedCount { 0 };  ///< 记录删除了多少行或列
 };
+
+/**
+ * @brief fillnan
+ */
+class DAGUI_API DACommandDataFrame_fillna : public DACommandWithTemplateData
+{
+public:
+	DACommandDataFrame_fillna(const DAPyDataFrame& df,
+							  DAPyDataFrameTableModule* model = nullptr,
+							  int filltype                    = 0,
+							  float value                     = 0.0,
+							  const QString& method           = QStringLiteral(" "),
+							  QUndoCommand* par               = nullptr);
+	virtual void undo() override;
+	virtual bool exec() override;
+
+private:
+	DAPyDataFrameTableModule* mModel { nullptr };
+	int mFilltype { 1 };
+	float mValue { 0.0 };
+	QString mMethod;
+};
+
 /**
  * @brief 转换列的数据类型
  */

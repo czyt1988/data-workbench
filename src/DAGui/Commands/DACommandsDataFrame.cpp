@@ -403,6 +403,43 @@ int DACommandDataFrame_dropna::getDropedCount() const
 
 ///////////////////
 
+DACommandDataFrame_fillna::DACommandDataFrame_fillna(const DAPyDataFrame& df,
+                                                     DAPyDataFrameTableModule* model,
+                                                     int filltype,
+                                                     float value,
+                                                     const QString& method,
+                                                     QUndoCommand* par)
+    : DACommandWithTemplateData(df, par), mModel(model), mFilltype(filltype), mValue(value), mMethod(method)
+{
+    setText(QObject::tr("fill nan"));  // cn:填充缺失值
+}
+
+void DACommandDataFrame_fillna::undo()
+{
+	load();
+	// 说明填充了空行
+	if (mModel) {
+		mModel->refresh();
+	}
+}
+
+bool DACommandDataFrame_fillna::exec()
+{
+	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+
+	if (!pydf.fillna(dataframe(), mFilltype, mValue, mMethod)) {
+		return false;
+	}
+
+	// 说明填充了空行
+	if (mModel) {
+		mModel->refresh();
+	}
+	return true;
+}
+
+///////////////////
+
 DACommandDataFrame_castNum::DACommandDataFrame_castNum(const DAPyDataFrame& df,
                                                        const QList< int >& index,
                                                        const pybind11::dict& args,

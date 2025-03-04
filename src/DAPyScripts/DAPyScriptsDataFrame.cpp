@@ -368,4 +368,25 @@ bool DAPyScriptsDataFrame::dropna(DAPyDataFrame& df, int axis, const QString& ho
 	}
 	return false;
 }
+
+/**
+ * @brief fillna方法的wrapper
+ * @param df
+ * @param value
+ * @param method
+ * @param axis
+ * @param indexs
+ * @return
+ */
+bool DAPyScriptsDataFrame::fillna(DAPyDataFrame& df, int filltype, float value, const QString& method)
+{
+	try {
+		pybind11::object da_fill_na = attr("da_fill_na");
+		da_fill_na(df.object(), filltype, value, DA::PY::toString(method));
+		return true;
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return false;
+}
 }  // end DA namespace
