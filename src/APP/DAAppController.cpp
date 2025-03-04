@@ -42,6 +42,7 @@
 #include "Dialog/DATxtFileImportDialog.h"
 #include "Dialog/DAExportToPngSettingDialog.h"
 #include "Dialog/DAWorkbenchAboutDialog.h"
+#include "Dialog/DADialogDataFrameFillna.h"
 // DACommonWidgets
 #include "DAFontEditPannelWidget.h"
 #include "DAShapeEditPannelWidget.h"
@@ -70,13 +71,13 @@
 
 // 未实现的功能标记
 #define DAAPPCONTROLLER_PASS()                                                                                         \
-	QMessageBox::warning(                                                                                              \
-		app(),                                                                                                         \
-		QCoreApplication::translate("DAAppRibbonArea", "warning", nullptr),                                            \
-		QCoreApplication::translate("DAAppRibbonArea",                                                                 \
-									"The current function is not implemented, only the UI is reserved, "               \
-									"please pay attention: https://gitee.com/czyt1988/data-work-flow",                 \
-									nullptr))
+	QMessageBox::                                                                                                      \
+		warning(app(),                                                                                                 \
+				QCoreApplication::translate("DAAppRibbonArea", "warning", nullptr),                                    \
+				QCoreApplication::translate("DAAppRibbonArea",                                                         \
+											"The current function is not implemented, only the UI is reserved, "       \
+											"please pay attention: https://gitee.com/czyt1988/data-work-flow",         \
+											nullptr))
 
 // 快速链接信号槽
 #define DAAPPCONTROLLER_ACTION_BIND(actionname, functionname)                                                          \
@@ -250,6 +251,7 @@ void DAAppController::initConnection()
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionRemoveCell, onActionRemoveCellTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionRenameColumns, onActionRenameColumnsTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameDropNone, onActionDataFrameDropNoneTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameFillNone, onActionDataFrameFillNoneTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCreateDataDescribe, onActionCreateDataDescribeTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToNum, onActionCastToNumTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToString, onActionCastToStringTriggered);
@@ -403,11 +405,10 @@ void DAAppController::save()
 	qDebug() << "Save Project,Path=" << projectFilePath;
 	if (projectFilePath.isEmpty()) {
 		QString desktop = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
-		projectFilePath = QFileDialog::getSaveFileName(
-			nullptr,
-			tr("Save Project"),  // 保存工程
-			desktop,
-			tr("Project Files (*.%1)").arg(DAAppProject::getProjectFileSuffix())  // 工程文件 (*.%1)
+		projectFilePath = QFileDialog::getSaveFileName(nullptr,
+													   tr("Save Project"),  // 保存工程
+													   desktop,
+													   tr("Project Files (*.%1)").arg(DAAppProject::getProjectFileSuffix())  // 工程文件 (*.%1)
 		);
 		if (projectFilePath.isEmpty()) {
 			// 取消退出
@@ -693,11 +694,11 @@ void DAAppController::open()
 	if (!project->getProjectDir().isEmpty()) {
 		if (project->isDirty()) {
 			// TODO 没有保存。先询问是否保存
-			QMessageBox::StandardButton btn = QMessageBox::question(
-				nullptr,
-				tr("Question"),                                                   // 提示
-				tr("Another project already exists. Do you want to replace it?")  // 已存在其他工程，是否要替换？
-			);
+			QMessageBox::StandardButton
+				btn = QMessageBox::question(nullptr,
+											tr("Question"),                                                   // 提示
+											tr("Another project already exists. Do you want to replace it?")  // 已存在其他工程，是否要替换？
+				);
 			if (btn == QMessageBox::Yes) {
 				project->clear();
 			} else {
@@ -744,12 +745,11 @@ void DAAppController::onProjectDirtyStateChanged(bool isdirty)
  */
 void DAAppController::saveAs()
 {
-	QString projectPath =
-		QFileDialog::getSaveFileName(app(),
-									 tr("Save Project"),  // 保存工程
-									 QString(),
-									 tr("project file (*.%1)").arg(DAAppProject::getProjectFileSuffix())  // 工程文件
-		);
+	QString projectPath = QFileDialog::getSaveFileName(app(),
+													   tr("Save Project"),  // 保存工程
+													   QString(),
+													   tr("project file (*.%1)").arg(DAAppProject::getProjectFileSuffix())  // 工程文件
+	);
 	if (projectPath.isEmpty()) {
 		// 取消退出
 		return;
@@ -757,8 +757,9 @@ void DAAppController::saveAs()
 	QFileInfo fi(projectPath);
 	if (fi.exists()) {
 		// 说明是目录
-		QMessageBox::StandardButton btn = QMessageBox::question(
-			nullptr, tr("Warning"), tr("Whether to overwrite the file:%1").arg(fi.absoluteFilePath()));
+		QMessageBox::StandardButton btn = QMessageBox::question(nullptr,
+																tr("Warning"),
+																tr("Whether to overwrite the file:%1").arg(fi.absoluteFilePath()));
 		if (btn != QMessageBox::Yes) {
 			return;
 		}
@@ -1679,6 +1680,19 @@ void DAAppController::onActionDataFrameDropNoneTriggered()
 #if DA_ENABLE_PYTHON
 	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
 		dfopt->dropna();
+		setDirty();
+	}
+#endif
+}
+
+/**
+ * @brief 填充缺失值
+ */
+void DAAppController::onActionDataFrameFillNoneTriggered()
+{
+#if DA_ENABLE_PYTHON
+	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+		dfopt->fillna(1, 0.0, "pad");
 		setDirty();
 	}
 #endif
