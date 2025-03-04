@@ -19,3 +19,9 @@
 [submodule "src/3rdparty/ordered-map"]
 	path = src/3rdparty/ordered-map
 	url = https://gitee.com/czyt1988/ordered-map.git
+[submodule "src/3rdparty/quazip"]
+	path = src/3rdparty/quazip
+	url = https://gitee.com/czyt1988/quazip.git
+[submodule "src/3rdparty/zlib"]
+	path = src/3rdparty/zlib
+	url = https://gitee.com/czyt1988/zlib
