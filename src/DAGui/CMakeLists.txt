@@ -192,6 +192,7 @@ if(DA_ENABLE_PYTHON)
         ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogPythonArgs.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.h
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillna.h
     )
     list(APPEND DA_LIB_SOURCE_FILES_Dialog
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToDatetime.cpp
@@ -199,12 +200,14 @@ if(DA_ENABLE_PYTHON)
         ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogPythonArgs.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.cpp
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillna.cpp
     )
     list(APPEND DA_LIB_QT_UI_FILES_Dialog
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToDatetime.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToNumeric.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.ui
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillna.ui
     )
 endif()
 #MimeData
@@ -262,7 +265,7 @@ add_library(${DA_LIB_NAME} SHARED
             ${DA_LIB_HEADER_FILES_ChartSetting}
             ${DA_LIB_SOURCE_FILES_ChartSetting}
             ${DA_LIB_UI_FILES_ChartSetting}
-)	
+)   
 
 # 构建库定义的宏
 target_compile_definitions(${DA_LIB_NAME} PRIVATE DAGUI_BUILDLIB)#!!!!** 注意变更 **!!!!

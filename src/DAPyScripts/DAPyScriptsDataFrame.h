@@ -57,6 +57,8 @@ public:
 				const QString& how         = QStringLiteral("any"),
 				const QList< int >& indexs = QList< int >(),
 				int thresh                 = -1);
+	// fillna()
+	bool fillna(DAPyDataFrame& df, double value = 0.0, int limit = -1);
 };
 }  // namespace DA
 #endif  // DAPYSCRIPTSDATAFRAME_H

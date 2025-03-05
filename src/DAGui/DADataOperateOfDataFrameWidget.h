@@ -18,6 +18,7 @@ class DAPyDataFrameTableModule;
 class DAAppRibbonArea;
 class DADialogDataframeColumnCastToNumeric;
 class DADialogDataframeColumnCastToDatetime;
+class DADialogDataFrameFillna;
 
 /**
  * @brief 针对DataFrame的操作窗口
@@ -86,6 +87,9 @@ public Q_SLOTS:
 			   const QString& how       = QStringLiteral("any"),
 			   const QList< int > index = QList< int >(),
 			   int thresh               = -1);
+	// 填充缺失值，执行成功返回true
+	bool fillna();
+	bool fillna(const DAPyDataFrame& df, double value = 0.0, int limit = -1);
 Q_SIGNALS:
 	/**
 	 * @brief 选中的列或者类型发生了变化
@@ -104,10 +108,11 @@ protected:
 private:
 	Ui::DADataOperateOfDataFrameWidget* ui;
 	DAData mData;
-	DAPyDataFrameTableModule* mModel;
+	DAPyDataFrameTableModule* mModel { nullptr };
 
-	DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs;
-	DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs;
+	DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs { nullptr };
+	DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs { nullptr };
+	DADialogDataFrameFillna* mDialogDataFrameFillna { nullptr };
 };
 }  // end of namespace DA
 #endif  // DADATAOPERATEOFDATAFRAMEWIDGET_H

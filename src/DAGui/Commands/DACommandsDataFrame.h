@@ -252,6 +252,27 @@ private:
 	int mThresh { -1 };
 	int mDropedCount { 0 };  ///< 记录删除了多少行或列
 };
+
+/**
+ * @brief fillnan命令
+ */
+class DAGUI_API DACommandDataFrame_fillna : public DACommandWithTemplateData
+{
+public:
+	DACommandDataFrame_fillna(const DAPyDataFrame& df,
+							  DAPyDataFrameTableModule* model = nullptr,
+							  double value                    = 0.0,
+							  int limit                       = -1,
+							  QUndoCommand* par               = nullptr);
+	virtual void undo() override;
+	virtual bool exec() override;
+
+private:
+	DAPyDataFrameTableModule* mModel { nullptr };
+	double mValue { 0.0 };
+	int mLimit { -1 };
+};
+
 /**
  * @brief 转换列的数据类型
  */

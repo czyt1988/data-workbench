@@ -42,6 +42,7 @@
 #include "Dialog/DATxtFileImportDialog.h"
 #include "Dialog/DAExportToPngSettingDialog.h"
 #include "Dialog/DAWorkbenchAboutDialog.h"
+#include "Dialog/DADialogDataFrameFillna.h"
 // DACommonWidgets
 #include "DAFontEditPannelWidget.h"
 #include "DAShapeEditPannelWidget.h"
@@ -250,6 +251,7 @@ void DAAppController::initConnection()
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionRemoveCell, onActionRemoveCellTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionRenameColumns, onActionRenameColumnsTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameDropNone, onActionDataFrameDropNoneTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameFillNone, onActionDataFrameFillNoneTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDropDuplicates, onActionDropDuplicatesTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCreateDataDescribe, onActionCreateDataDescribeTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToNum, onActionCastToNumTriggered);
@@ -1161,7 +1163,7 @@ void DAAppController::onWorkflowFinished(DAWorkFlowEditWidget* wfw, bool success
  */
 void DAAppController::onWorkflowSceneitemsAdded(DAGraphicsScene* sc, const QList< QGraphicsItem* >& its)
 {
-    mProject->setModified(true);
+    setDirty(true);
 }
 
 /**
@@ -1171,7 +1173,7 @@ void DAAppController::onWorkflowSceneitemsAdded(DAGraphicsScene* sc, const QList
  */
 void DAAppController::onWorkflowSceneitemsRemoved(DAGraphicsScene* sc, const QList< QGraphicsItem* >& its)
 {
-    mProject->setModified(true);
+    setDirty(true);
 }
 
 /**
@@ -1686,7 +1688,34 @@ void DAAppController::onActionDataFrameDropNoneTriggered()
 }
 
 /**
+ * @brief 填充缺失值
+ */
+void DAAppController::onActionDataFrameFillNoneTriggered()
+{
+#if DA_ENABLE_PYTHON
+	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+		if (dfopt->fillna()) {
+			setDirty();
+		}
+	}
+#endif
+}
+
+/**
+ */
  * @brief 删除重复值
+ */
+void DAAppController::onActionDropDuplicatesTriggered()
+{
+#if DA_ENABLE_PYTHON
+	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+		//		dfopt->unique();
+		setDirty();
+	}
+#endif
+}
+
+/**
  */
 void DAAppController::onActionDropDuplicatesTriggered()
 {

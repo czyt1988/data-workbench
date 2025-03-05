@@ -211,6 +211,8 @@ private Q_SLOTS:
 	void onActionCreateDataDescribeTriggered();
 	// 删除缺失值
 	void onActionDataFrameDropNoneTriggered();
+	// 填充缺失值
+	void onActionDataFrameFillNoneTriggered();
 	// 删除重复值
 	void onActionDropDuplicatesTriggered();
 #if DA_ENABLE_PYTHON
