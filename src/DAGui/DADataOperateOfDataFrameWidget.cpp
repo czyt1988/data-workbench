@@ -20,6 +20,7 @@
 #include "Dialog/DADialogDataframeColumnCastToNumeric.h"
 #include "Dialog/DADialogDataframeColumnCastToDatetime.h"
 #include "Dialog/DADialogInsertNewColumn.h"
+#include "Dialog/DADialogDataFrameFillna.h"
 
 //===================================================
 // using DA namespace -- 禁止在头文件using!!
@@ -167,8 +168,8 @@ void DADataOperateOfDataFrameWidget::insertColumnAt(int col)
 	}
 	DAPyDType dt = dlg.getDType();
 	if (dlg.isRangeMode()) {
-		cmd.reset(
-			new DACommandDataFrame_insertColumn(mData.toDataFrame(), col, name, dlg.getStartValue(), dlg.getStopValue(), mModel));
+		cmd.reset(new DACommandDataFrame_insertColumn(
+			mData.toDataFrame(), col, name, dlg.getStartValue(), dlg.getStopValue(), mModel));
 	} else {
 		cmd.reset(new DACommandDataFrame_insertColumn(mData.toDataFrame(), col, name, dlg.getDefaultValue(), mModel));
 	}
@@ -457,45 +458,41 @@ int DADataOperateOfDataFrameWidget::dropna(const DAPyDataFrame& df, int axis, co
 {
 	std::unique_ptr< DACommandDataFrame_dropna > cmd(new DACommandDataFrame_dropna(df, mModel, axis, how, index, thresh));
 	if (!cmd->exec()) {
-		return 0;
+		return false;
 	}
-	if (cmd->getDropedCount() == 0) {
+	int dropcnt = cmd->getDropedCount();
+	if (dropcnt == 0) {
 		// 说明没有删除任何内容，也返回0
-		return 0;
+		return false;
 	}
 	getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
-	return true;
+	return dropcnt;
 }
 
 /**
  * @brief 填充缺失值
- * @param value 可选参数，将缺失值填充为某特定值
  * @return 返回删除的数量，0代表没有删除任何内容
  */
-int DADataOperateOfDataFrameWidget::fillna(const int filltype, const float value, const QString& method)
+bool DADataOperateOfDataFrameWidget::fillna()
 {
 	DAPyDataFrame df = getDataframe();
 	if (df.isNone()) {
-		return 0;
+		return false;
 	}
-	int axis = 0;
-	//	QList< int > index;
-	//	if (isDataframeTableHaveSelection()) {
-	//		// 先看看是否选中了列
-	//		index = getFullySelectedDataframeColumns();
-	//		if (!index.isEmpty()) {
-	//			// 说明单独选中了一列，这时只针对列进行fillna
-	//			axis = 0;
-	//		} else {
-	//			// 如果没有，就看看是否选中了行
-	//			index = getFullySelectedDataframeRows();
-	//			if (!index.isEmpty()) {
-	//				// 说明单独选中了一些行，这时就是删除这些选中行里包含空的列
-	//				axis = 1;
-	//			}
-	//		}
-	//	}
-	return fillna(df, filltype, value, method);
+	if (!mDialogDataFrameFillna) {
+		mDialogDataFrameFillna = new DADialogDataFrameFillna(this);
+	}
+	if (QDialog::Accepted != mDialogDataFrameFillna->exec()) {
+		// 说明用户取消
+		return false;
+	}
+	// 获取填充值
+	double value   = mDialogDataFrameFillna->getFillNanValue();
+	int limitCount = -1;  // 如果-1证明没有设置
+	if (mDialogDataFrameFillna->isEnableLimitCount()) {
+		limitCount = mDialogDataFrameFillna->getLimitCount();
+	}
+	return fillna(df, value, limitCount);
 }
 
 /**
@@ -506,11 +503,12 @@ int DADataOperateOfDataFrameWidget::fillna(const int filltype, const float value
  * @param method 可选参数，表示填充的方法，backfill/bfill用后面行/列的值，填充当前行/列的空值;pad / ffill表示用前面行/列的值，填充当前行/列的空值。
  * @return 返回填充的数量，0代表没有填充任何内容
  */
-int DADataOperateOfDataFrameWidget::fillna(const DAPyDataFrame& df, int filltype, const float value, const QString& method)
+bool DADataOperateOfDataFrameWidget::fillna(const DAPyDataFrame& df, double value, int limit)
 {
-	std::unique_ptr< DACommandDataFrame_fillna > cmd(new DACommandDataFrame_fillna(df, mModel, filltype, value, method));
+	std::unique_ptr< DACommandDataFrame_fillna > cmd =
+		std::make_unique< DACommandDataFrame_fillna >(df, mModel, value, limit);
 	if (!cmd->exec()) {
-		return 0;
+		return false;
 	}
 	getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
 	return true;

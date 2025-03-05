@@ -355,13 +355,16 @@ bool DAPyScriptsDataFrame::dropna(DAPyDataFrame& df, int axis, const QString& ho
 {
 	try {
 		pybind11::object da_drop_na = attr("da_drop_na");
-		pybind11::object threshobj;
-		if (thresh <= 0) {
-			threshobj = pybind11::none();
-		} else {
+		pybind11::object threshobj  = pybind11::none();
+		if (thresh > 0) {
 			threshobj = pybind11::int_(thresh);
 		}
-		da_drop_na(df.object(), axis, DA::PY::toString(how), DA::PY::toList(indexs), threshobj);
+		pybind11::dict args;
+		args[ "axis" ]   = axis;
+		args[ "how" ]    = DA::PY::toString(how);
+		args[ "index" ]  = DA::PY::toList(indexs);
+		args[ "thresh" ] = threshobj;
+		da_drop_na(df.object(), **args);
 		return true;
 	} catch (const std::exception& e) {
 		dealException(e);
@@ -372,17 +375,22 @@ bool DAPyScriptsDataFrame::dropna(DAPyDataFrame& df, int axis, const QString& ho
 /**
  * @brief fillna方法的wrapper
  * @param df
- * @param value
- * @param method
- * @param axis
- * @param indexs
+ * @param value 要填充的值
+ * @param limit 填充限制，-1代表不限制，大于0生效
  * @return
  */
-bool DAPyScriptsDataFrame::fillna(DAPyDataFrame& df, int filltype, float value, const QString& method)
+bool DAPyScriptsDataFrame::fillna(DAPyDataFrame& df, double value, int limit)
 {
 	try {
 		pybind11::object da_fill_na = attr("da_fill_na");
-		da_fill_na(df.object(), filltype, value, DA::PY::toString(method));
+		pybind11::object limitObj   = pybind11::none();
+		if (limit > 0) {
+			limitObj = pybind11::int_(limit);
+		}
+		pybind11::dict args;
+		args[ "value" ] = value;
+		args[ "limit" ] = limitObj;
+		da_fill_na(df.object(), **args);
 		return true;
 	} catch (const std::exception& e) {
 		dealException(e);

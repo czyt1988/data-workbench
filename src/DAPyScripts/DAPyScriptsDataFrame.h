@@ -58,7 +58,7 @@ public:
 				const QList< int >& indexs = QList< int >(),
 				int thresh                 = -1);
 	// fillna()
-	bool fillna(DAPyDataFrame& df, const int filltype = 0, const float value = 0.0, const QString& method = QStringLiteral(""));
+	bool fillna(DAPyDataFrame& df, double value = 0.0, int limit = -1);
 };
 }  // namespace DA
 #endif  // DAPYSCRIPTSDATAFRAME_H

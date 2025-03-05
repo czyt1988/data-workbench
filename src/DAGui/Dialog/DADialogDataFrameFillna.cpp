@@ -1,11 +1,13 @@
-#include "DADialogDataFrameFillna.h"
+﻿#include "DADialogDataFrameFillna.h"
 #include "ui_DADialogDataFrameFillna.h"
 #include <QButtonGroup>
+#include <QDebug>
+namespace DA
+{
 
 DADialogDataFrameFillna::DADialogDataFrameFillna(QWidget* parent) : QDialog(parent), ui(new Ui::DADialogDataFrameFillna)
 {
 	ui->setupUi(this);
-	this->initCheckBoxGroup();
 }
 
 DADialogDataFrameFillna::~DADialogDataFrameFillna()
@@ -13,46 +15,40 @@ DADialogDataFrameFillna::~DADialogDataFrameFillna()
 	delete ui;
 }
 
-void DADialogDataFrameFillna::initCheckBoxGroup()
+void DADialogDataFrameFillna::setFillNanValue(double d)
 {
-	QButtonGroup* pButtonGroup = new QButtonGroup(this);
-	pButtonGroup->addButton(ui->valueFilledCheckBox, 1);
-	pButtonGroup->addButton(ui->padCheckBox, 2);
-	pButtonGroup->addButton(ui->ffillCheckBox, 3);
-	pButtonGroup->addButton(ui->backfillCheckBox, 4);
-	pButtonGroup->addButton(ui->bfillCheckBox, 5);
+	ui->lineEditValue->setText(QString::number(d));
 }
 
-int DADialogDataFrameFillna::getCheckBoxStatus()
+double DADialogDataFrameFillna::getFillNanValue() const
 {
-	if (ui->valueFilledCheckBox->isChecked())
-		return 1;
-	if (ui->padCheckBox->isChecked())
-		return 2;
-	if (ui->ffillCheckBox->isChecked())
-		return 3;
-	if (ui->backfillCheckBox->isChecked())
-		return 4;
-	if (ui->bfillCheckBox->isChecked())
-		return 5;
-	return -1;
+	bool isok = false;
+	double v  = ui->lineEditValue->text().toDouble(&isok);
+	if (!isok) {
+		qCritical() << tr("The current input cannot be converted to a floating-point number.");  // cn:当前输入内容无法转换为浮点数
+		return 0.0;
+	}
+	return v;
 }
 
-float DADialogDataFrameFillna::getFilledValue()
+bool DADialogDataFrameFillna::isEnableLimitCount() const
 {
-	return ui->valueSpinBox->value();
+	return ui->checkBoxLimit->isChecked();
 }
 
-QString DADialogDataFrameFillna::getFillMethod(int filltype)
+void DADialogDataFrameFillna::setEnableLimit(bool on)
 {
-	QString method = "";
-	if (filltype == 2)
-		method = ui->padCheckBox->text();
-	if (filltype == 3)
-		method = ui->ffillCheckBox->text();
-	if (filltype == 4)
-		method = ui->backfillCheckBox->text();
-	if (filltype == 5)
-		method = ui->bfillCheckBox->text();
-	return method;
+	ui->checkBoxLimit->setChecked(on);
 }
+
+int DADialogDataFrameFillna::getLimitCount() const
+{
+	return ui->spinBoxLimit->value();
+}
+
+void DADialogDataFrameFillna::setLimitCount(int d)
+{
+	ui->spinBoxLimit->setValue(d);
+}
+
+}  // end DA

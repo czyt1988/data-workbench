@@ -15,6 +15,8 @@ git submodule update --init --recursive
 当然也可以逐个拉取：
 
 ```shell
+git submodule update src/3rdparty/zlib
+git submodule update src/3rdparty/quazip
 git submodule update src/3rdparty/spdlog
 git submodule update src/3rdparty/SARibbon
 git submodule update src/3rdparty/ADS
@@ -31,7 +33,7 @@ git submodule update src/3rdparty/quazip
 
 添加submodule，以pybind11举例
 
-`git submodule add https://github.com/pybind/pybind11.git ./src/3rdparty/pybind11`
+`git submodule add https://github.com/pybind/pybind11 ./src/3rdparty/pybind11`
 
 - 注意最后路径是`./src/3rdparty/pybind11`,库名称文件夹要指定
 
@@ -40,28 +42,28 @@ DA目前添加的submodule有如下：
 github版本：
 
 ```shell
-git submodule add https://github.com/gabime/spdlog.git ./src/3rdparty/spdlog
-git submodule add https://github.com/githubuser0xFFFF/Qt-Advanced-Docking-System.git ./src/3rdparty/ADS
-git submodule add https://github.com/czyt1988/SARibbon.git ./src/3rdparty/SARibbon
-git submodule add https://github.com/pybind/pybind11.git ./src/3rdparty/pybind11
-git submodule add https://github.com/czyt1988/QtPropertyBrowser.git ./src/3rdparty/QtPropertyBrowser
-git submodule add https://github.com/czyt1988/QWT.git ./src/3rdparty/qwt
-git submodule add https://github.com/Tessil/ordered-map.git ./src/3rdparty/ordered-map
-git submodule add https://github.com/madler/zlib.git ./src/3rdparty/zlib
-git submodule add https://github.com/stachenov/quazip.git ./src/3rdparty/quazip
+git submodule add https://github.com/madler/zlib ./src/3rdparty/zlib
+git submodule add https://github.com/stachenov/quazip ./src/3rdparty/quazip
+git submodule add https://github.com/gabime/spdlog ./src/3rdparty/spdlog
+git submodule add https://github.com/githubuser0xFFFF/Qt-Advanced-Docking-System ./src/3rdparty/ADS
+git submodule add https://github.com/czyt1988/SARibbon ./src/3rdparty/SARibbon
+git submodule add https://github.com/pybind/pybind11 ./src/3rdparty/pybind11
+git submodule add https://github.com/czyt1988/QtPropertyBrowser ./src/3rdparty/QtPropertyBrowser
+git submodule add https://github.com/czyt1988/QWT ./src/3rdparty/qwt
+git submodule add https://github.com/Tessil/ordered-map ./src/3rdparty/ordered-map
 ```
 
 gitee版本：
 ```shell
-git submodule add https://gitee.com/czyt1988/spdlog.git ./src/3rdparty/spdlog
-git submodule add https://gitee.com/czyt1988/Qt-Advanced-Docking-System.git ./src/3rdparty/ADS
-git submodule add https://gitee.com/czyt1988/SARibbon.git ./src/3rdparty/SARibbon
-git submodule add https://gitee.com/czyt1988/pybind11.git ./src/3rdparty/pybind11
-git submodule add https://gitee.com/czyt1988/QtPropertyBrowser.git ./src/3rdparty/QtPropertyBrowser
-git submodule add https://gitee.com/czyt1988/QWT.git ./src/3rdparty/qwt
-git submodule add https://gitee.com/czyt1988/ordered-map.git ./src/3rdparty/ordered-map
 git submodule add https://gitee.com/czyt1988/zlib ./src/3rdparty/zlib
-git submodule add https://gitee.com/czyt1988/quazip.git ./src/3rdparty/quazip
+git submodule add https://gitee.com/czyt1988/quazip ./src/3rdparty/quazip
+git submodule add https://gitee.com/czyt1988/spdlog ./src/3rdparty/spdlog
+git submodule add https://gitee.com/czyt1988/Qt-Advanced-Docking-System ./src/3rdparty/ADS
+git submodule add https://gitee.com/czyt1988/SARibbon ./src/3rdparty/SARibbon
+git submodule add https://gitee.com/czyt1988/pybind11 ./src/3rdparty/pybind11
+git submodule add https://gitee.com/czyt1988/QtPropertyBrowser ./src/3rdparty/QtPropertyBrowser
+git submodule add https://gitee.com/czyt1988/QWT ./src/3rdparty/qwt
+git submodule add https://gitee.com/czyt1988/ordered-map ./src/3rdparty/ordered-map
 ```
 ## submodule的更新
 
@@ -79,9 +81,9 @@ git submodule update --remote src/3rdparty/SARibbon
 
 如 git submodule foreach 'git checkout main'
 
-# 针对中国地区访问github缓慢的问题
+# 替换为github源
 
-用编辑器打开
+由于github访问域限制，目前项目默认的subbmodule'的url都是gitee的，如果要切换为github的，可以按照如下步骤执行：
 
 ```
 .git/config
@@ -153,4 +155,4 @@ gitee地址
 	active = true
 ```
 
-同时把根目录的`.gitmodules`用`.gitmodules-gitee`的内容替代
+2. 打开`./.git/config`文件，把url替换为github的url

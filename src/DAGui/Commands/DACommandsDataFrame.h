@@ -254,25 +254,23 @@ private:
 };
 
 /**
- * @brief fillnan
+ * @brief fillnan命令
  */
 class DAGUI_API DACommandDataFrame_fillna : public DACommandWithTemplateData
 {
 public:
 	DACommandDataFrame_fillna(const DAPyDataFrame& df,
 							  DAPyDataFrameTableModule* model = nullptr,
-							  int filltype                    = 0,
-							  float value                     = 0.0,
-							  const QString& method           = QStringLiteral(" "),
+							  double value                    = 0.0,
+							  int limit                       = -1,
 							  QUndoCommand* par               = nullptr);
 	virtual void undo() override;
 	virtual bool exec() override;
 
 private:
 	DAPyDataFrameTableModule* mModel { nullptr };
-	int mFilltype { 1 };
-	float mValue { 0.0 };
-	QString mMethod;
+	double mValue { 0.0 };
+	int mLimit { -1 };
 };
 
 /**

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>233</height>
+    <width>411</width>
+    <height>169</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,65 +15,54 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QGroupBox" name="fillnaGroupBox">
+    <widget class="QGroupBox" name="groupBoxFillna">
      <property name="title">
-      <string>Fillna</string>
+      <string>Fill NA/NaN values</string>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_2">
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <item>
-         <widget class="QCheckBox" name="valueFilledCheckBox">
-          <property name="text">
-           <string>Filled By Value</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QDoubleSpinBox" name="valueSpinBox"/>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="padCheckBox">
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="checkBoxLimit">
+        <property name="toolTip">
+         <string>This is the maximum number of consecutive NaN values to forward/backward fill. In other words, if there is a gap with more than this number of consecutive NaNs, it will only be partially filled</string>
+        </property>
         <property name="text">
-         <string>pad</string>
+         <string>limit</string>
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QCheckBox" name="ffillCheckBox">
-        <property name="text">
-         <string>ffill</string>
+      <item row="1" column="1">
+       <widget class="QSpinBox" name="spinBoxLimit">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="toolTip">
+         <string>This is the maximum number of entries along the entire axis where NaNs will be filled. Must be greater than 0</string>
+        </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>999999999</number>
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QCheckBox" name="backfillCheckBox">
-        <property name="text">
-         <string>backfill</string>
-        </property>
-       </widget>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="lineEditValue"/>
       </item>
-      <item>
-       <widget class="QCheckBox" name="bfillCheckBox">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label">
         <property name="text">
-         <string>bfill</string>
+         <string>Value to use to fill holes</string>
         </property>
        </widget>
       </item>
      </layout>
-     <zorder>backfillCheckBox</zorder>
-     <zorder>padCheckBox</zorder>
-     <zorder>horizontalLayoutWidget_2</zorder>
-     <zorder>ffillCheckBox</zorder>
-     <zorder>bfillCheckBox</zorder>
     </widget>
    </item>
    <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
-      <enum>Qt::Vertical</enum>
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
@@ -88,7 +77,7 @@
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -106,6 +95,9 @@
        <property name="icon">
         <iconset resource="../icon.qrc">
          <normaloff>:/DAGui/icon/accept.svg</normaloff>:/DAGui/icon/accept.svg</iconset>
+       </property>
+       <property name="default">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -127,5 +119,54 @@
  <resources>
   <include location="../icon.qrc"/>
  </resources>
- <connections/>
+ <connections>
+  <connection>
+   <sender>pushButtonOK</sender>
+   <signal>clicked()</signal>
+   <receiver>DADialogDataFrameFillna</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>278</x>
+     <y>151</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>154</x>
+     <y>130</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButtonCancel</sender>
+   <signal>clicked()</signal>
+   <receiver>DADialogDataFrameFillna</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>346</x>
+     <y>143</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>311</x>
+     <y>115</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBoxLimit</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>spinBoxLimit</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>46</x>
+     <y>68</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>216</x>
+     <y>68</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

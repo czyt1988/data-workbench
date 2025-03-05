@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 from typing import List, Dict, Optional, Tuple, Literal
+from pandas._typing import Axis, Scalar
 import pandas as pd
 import numpy as np
 from DAWorkbench.logger import log_function_call  # type: ignore # 引入装饰器
@@ -54,19 +55,26 @@ def da_drop_na(df: pd.DataFrame, axis:int = 0, how:Literal['any','all']='any', i
     df.dropna(axis=axis,how=how ,subset=subset, thresh=thresh, inplace=True)
 
 @log_function_call
-def da_fill_na(df: pd.DataFrame, filltype:int = 1, value:float|None=None, method:Literal['pad','ffill','backfill','bfill']=None):
+def da_fill_na(df: pd.DataFrame, value:Scalar | dict | None = None,axis:Axis|None=None, limit:int|None=None, downcast: dict | None = None):
     '''
     填充dataframe中的nan值
     :param df: pd.DataFrame
-    :param filltype: 填充类型，1为值填充，其他为方法填充
-    :param value: 填充的数值
-    :param method: backfill/bfill用后面行/列的值，填充当前行/列的空值;pad / ffill表示用前面行/列的值，填充当前行/列的空值.
+    :param value: 用于填充缺失值的值或字典。可以是一个标量值、字典、Series 或 DataFrame
+    :param axis: 填充的轴方向，0 或 'index' 表示按行填充，1 或 'columns' 表示按列填充。
+    :param limit: 限制向前或向后填充的最大数量
+    :param downcast:可选的字典，指定向下转型操作（例如将浮点数转换为整数等）。
     :return: 此函数不返回值，直接改变df
+    :example:
+    df = pd.DataFrame([[np.nan, 2, np.nan, 0],
+                    [3, 4, np.nan, 1],
+                    [np.nan, np.nan, np.nan, np.nan],
+                    [np.nan, 3, np.nan, 4]],
+                    columns=list("ABCD"))
+    values = {"A": 0, "B": 1, "C": 2, "D": 3}
+    df.fillna(value=values)
     '''
-    if filltype == 1:
-        df.fillna(value = value, inplace = True)
-    else:
-        df.fillna(method = method, inplace = True)
+    df.fillna(axis = axis, value = value,downcast=downcast,inplace = True)
+
 
 @log_function_call
 def da_to_pickle(df: pd.DataFrame, path: str):
@@ -355,13 +363,18 @@ def __tst_insert_column():
     da_insert_column(df=df, col=3, name='insert-datetime2',dtype=np.datetime64,start='2020-01-01',stop='2021-01-01')
     print(df)
 
+def __tst_fill_na():
+    df = pd.DataFrame([[np.nan, 2, np.nan, 0],
+                    [3, 4, np.nan, 1],
+                    [np.nan, np.nan, np.nan, np.nan],
+                    [np.nan, 3, np.nan, 4]],
+                    columns=list("ABCD"))
+    print(df)
+    values = {"A": 0, "B": 1, "C": 2, "D": 3}
+    da_fill_na(df,value=values)
+    print(df)
+
 
 if __name__ == '__main__':
-    # __tst_insert_column()
-    df = make_dataframe();
-    print(df)
-    s = da_itake_column(df,1)
-    print(df)
-    print(s)
-    da_insert_at(df,1,s)
-    print(df)
+    __tst_fill_na()
+
