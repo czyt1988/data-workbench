@@ -71,6 +71,7 @@ void DAAppActions::buildDataAction()
 	actionCreateDataDescribe = createAction("actionCreateDataDescribe", ":/app/bright/Icon/dataDescribe.svg");
 	actionChangeToIndex      = createAction("actionChangeToIndex", ":/app/bright/Icon/changeToIndex.svg");
 	actionDataFrameDropNone  = createAction("actionDataFrameDropNone", ":/app/bright/Icon/dataframe-drop-none.svg");
+	actionDropDuplicates     = createAction("actionDropDuplicates", ":/app/bright/Icon/process-duplicate-data.svg");
 }
 
 void DAAppActions::buildChartAction()
@@ -177,10 +178,10 @@ void DAAppActions::buildOtherActions()
 {
 	actionGroupRibbonTheme = new QActionGroup(this);
 	actionGroupRibbonTheme->setObjectName(QStringLiteral("actionGroupRibbonTheme"));
-	actionRibbonThemeOffice2013 = createAction("actionRibbonThemeOffice2013", true, true, actionGroupRibbonTheme);
+	actionRibbonThemeOffice2013     = createAction("actionRibbonThemeOffice2013", true, true, actionGroupRibbonTheme);
 	actionRibbonThemeOffice2016Blue = createAction("actionRibbonThemeOffice2016Blue", true, false, actionGroupRibbonTheme);
 	actionRibbonThemeOffice2021Blue = createAction("actionRibbonThemeOffice2021Blue", true, false, actionGroupRibbonTheme);
-	actionRibbonThemeDark = createAction("actionRibbonThemeDark", true, false, actionGroupRibbonTheme);
+	actionRibbonThemeDark           = createAction("actionRibbonThemeDark", true, false, actionGroupRibbonTheme);
 }
 
 void DAAppActions::retranslateUi()
@@ -246,6 +247,8 @@ void DAAppActions::retranslateUi()
 	actionChangeToIndex->setText(tr("To Index"));                                       // cn:转换为\n索引
 	actionDataFrameDropNone->setText(tr("Drop None"));                                  // cn:删除\n缺失值
 	actionDataFrameDropNone->setToolTip(tr("Drop rows which contain missing values"));  // cn:删除包含缺失值的行
+	actionDropDuplicates->setText(tr("Drop Duplicates"));                               // cn:删除\n重复值
+	actionDropDuplicates->setToolTip(tr("Drop duplicate datas"));  // cn:删除数据中的重复记录
 	// workflow 编辑
 	actionWorkflowNew->setText(tr("New \nWorkflow"));                    // cn:新建\n工作流
 	actionWorkflowEnableItemLinkageMove->setText(tr("Linkage \nMove"));  // cn:联动

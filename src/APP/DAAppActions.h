@@ -68,6 +68,7 @@ public:
 	QAction* actionCreateDataDescribe;  ///< 数据描述
 	QAction* actionChangeToIndex;       ///< 把某列转换为index
 	QAction* actionDataFrameDropNone;   ///< 删除缺失值
+	QAction* actionDropDuplicates;      ///< 重复值处理
 	//===================================================
 	// workflow的上下文标签
 	//===================================================
