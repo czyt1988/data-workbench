@@ -470,6 +470,46 @@ int DADataOperateOfDataFrameWidget::dropna(const DAPyDataFrame& df, int axis, co
 }
 
 /**
+ * @brief 删除重复值
+ * @param keep 可选参数，表示指定保留哪个重复的行。默认值为'first'，表示保留第一次出现的重复行；设置为'last'表示保留最后一次出现的重复行,False表示删除所有重复的行。
+ * @return 返回删除的数量，0代表没有删除任何内容
+ */
+int DADataOperateOfDataFrameWidget::dropduplicates(const QString& keep)
+{
+	DAPyDataFrame df = getDataframe();
+	if (df.isNone()) {
+		return 0;
+	}
+	QList< int > index;
+	if (isDataframeTableHaveSelection()) {
+		// 获取选中的列
+		index = getFullySelectedDataframeColumns();
+	}
+	return dropduplicates(df, keep, index);
+}
+
+/**
+ * @brief 删除重复值
+ * @param keep 可选参数，表示指定保留哪个重复的行。默认值为'first'，表示保留第一次出现的重复行；设置为'last'表示保留最后一次出现的重复行,False表示删除所有重复的行。
+ * @param index 可选参数，用于指定用于判断重复的列或列列表。如果为 None，则使用所有列。
+ * @return 返回删除的数量，0代表没有删除任何内容
+ */
+int DADataOperateOfDataFrameWidget::dropduplicates(const DAPyDataFrame& df, const QString& keep, const QList< int > index)
+{
+	std::unique_ptr< DACommandDataFrame_dropduplicates > cmd(new DACommandDataFrame_dropduplicates(df, mModel, keep, index));
+	if (!cmd->exec()) {
+		return false;
+	}
+	int dropcnt = cmd->getDropedCount();
+	if (dropcnt == 0) {
+		// 说明没有删除任何内容，也返回0
+		return false;
+	}
+	getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
+	return dropcnt;
+}
+
+/**
  * @brief 填充缺失值
  * @return 返回删除的数量，0代表没有删除任何内容
  */

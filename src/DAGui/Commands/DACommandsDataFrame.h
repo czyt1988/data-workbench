@@ -245,12 +245,35 @@ public:
 	int getDropedCount() const;
 
 private:
-	DAPyDataFrameTableModule* mModel { nullptr };
-	int mAxis { 0 };
+	DAPyDataFrameTableModule* mModel{ nullptr };
+	int mAxis{ 0 };
 	QString mHow;
 	QList< int > mIndex;
-	int mThresh { -1 };
-	int mDropedCount { 0 };  ///< 记录删除了多少行或列
+	int mThresh{ -1 };
+	int mDropedCount{ 0 };  ///< 记录删除了多少行或列
+};
+
+/**
+ * @brief dropduplicates
+ */
+class DAGUI_API DACommandDataFrame_dropduplicates : public DACommandWithTemplateData
+{
+public:
+	DACommandDataFrame_dropduplicates(const DAPyDataFrame& df,
+									  DAPyDataFrameTableModule* model = nullptr,
+									  const QString& keep             = QStringLiteral("first"),
+									  const QList< int >& index       = QList< int >(),
+									  QUndoCommand* par               = nullptr);
+	virtual void undo() override;
+	virtual bool exec() override;
+
+	int getDropedCount() const;
+
+private:
+	DAPyDataFrameTableModule* mModel{ nullptr };
+	QString mKeep;
+	QList< int > mIndex;
+	int mDropedCount{ 0 };  ///< 记录删除了多少行或列
 };
 
 /**
@@ -268,9 +291,9 @@ public:
 	virtual bool exec() override;
 
 private:
-	DAPyDataFrameTableModule* mModel { nullptr };
-	double mValue { 0.0 };
-	int mLimit { -1 };
+	DAPyDataFrameTableModule* mModel{ nullptr };
+	double mValue{ 0.0 };
+	int mLimit{ -1 };
 };
 
 /**

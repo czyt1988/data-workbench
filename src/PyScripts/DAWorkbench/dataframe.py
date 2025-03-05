@@ -75,6 +75,19 @@ def da_fill_na(df: pd.DataFrame, value:Scalar | dict | None = None,axis:Axis|Non
     '''
     df.fillna(axis = axis, value = value,downcast=downcast,inplace = True)
 
+@log_function_call
+def da_drop_duplicates(df: pd.DataFrame,keep:Literal['first','last','False']='first', index:Optional[List[int]]=None):
+    '''
+    删除dataframe中的nan值
+    :param df: pd.DataFrame
+    :param keep: 指定保留哪个重复的行,'first'：保留第一次出现的重复行（默认）,'last'：保留最后一次出现的重复行,False：删除所有重复的行。
+    :param index: 列索引
+    :return: 此函数不返回值,直接改变df
+    '''
+    subset = None
+    if index is not None:
+        subset = df.columns[index]
+    df.drop_duplicates(subset=subset, keep=keep, inplace=True)
 
 @log_function_call
 def da_to_pickle(df: pd.DataFrame, path: str):

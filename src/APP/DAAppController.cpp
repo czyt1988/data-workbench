@@ -1702,26 +1702,13 @@ void DAAppController::onActionDataFrameFillNoneTriggered()
 }
 
 /**
- */
  * @brief 删除重复值
  */
 void DAAppController::onActionDropDuplicatesTriggered()
 {
 #if DA_ENABLE_PYTHON
 	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-		//		dfopt->unique();
-		setDirty();
-	}
-#endif
-}
-
-/**
- */
-void DAAppController::onActionDropDuplicatesTriggered()
-{
-#if DA_ENABLE_PYTHON
-	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-		//		dfopt->unique();
+		dfopt->dropduplicates();
 		setDirty();
 	}
 #endif

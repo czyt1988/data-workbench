@@ -373,6 +373,28 @@ bool DAPyScriptsDataFrame::dropna(DAPyDataFrame& df, int axis, const QString& ho
 }
 
 /**
+ * @brief dropduplicates方法的wrapper
+ * @param df
+ * @param keep
+ * @param indexs
+ * @return
+ */
+bool DAPyScriptsDataFrame::dropduplicates(DAPyDataFrame& df, const QString& keep, const QList< int >& indexs)
+{
+	try {
+		pybind11::object da_drop_duplicates = attr("da_drop_duplicates");
+		pybind11::dict args;
+		args[ "keep" ]  = DA::PY::toString(keep);
+		args[ "index" ] = DA::PY::toList(indexs);
+		da_drop_duplicates(df.object(), **args);
+		return true;
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return false;
+}
+
+/**
  * @brief fillna方法的wrapper
  * @param df
  * @param value 要填充的值
