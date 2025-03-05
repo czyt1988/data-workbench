@@ -252,6 +252,7 @@ void DAAppController::initConnection()
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionRenameColumns, onActionRenameColumnsTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameDropNone, onActionDataFrameDropNoneTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameFillNone, onActionDataFrameFillNoneTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDropDuplicates, onActionDropDuplicatesTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCreateDataDescribe, onActionCreateDataDescribeTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToNum, onActionCastToNumTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToString, onActionCastToStringTriggered);
@@ -1696,6 +1697,19 @@ void DAAppController::onActionDataFrameFillNoneTriggered()
 		if (dfopt->fillna()) {
 			setDirty();
 		}
+	}
+#endif
+}
+
+/**
+ * @brief 删除重复值
+ */
+void DAAppController::onActionDropDuplicatesTriggered()
+{
+#if DA_ENABLE_PYTHON
+	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+		dfopt->dropduplicates();
+		setDirty();
 	}
 #endif
 }

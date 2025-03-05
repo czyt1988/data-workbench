@@ -87,6 +87,12 @@ public Q_SLOTS:
 			   const QString& how       = QStringLiteral("any"),
 			   const QList< int > index = QList< int >(),
 			   int thresh               = -1);
+	// 删除重复值
+	int dropduplicates(const QString& keep = QStringLiteral("first"));
+	int dropduplicates(const DAPyDataFrame& df,
+					   const QString& keep      = QStringLiteral("first"),
+					   const QList< int > index = QList< int >());
+
 	// 填充缺失值，执行成功返回true
 	bool fillna();
 	bool fillna(const DAPyDataFrame& df, double value = 0.0, int limit = -1);
@@ -108,11 +114,11 @@ protected:
 private:
 	Ui::DADataOperateOfDataFrameWidget* ui;
 	DAData mData;
-	DAPyDataFrameTableModule* mModel { nullptr };
+	DAPyDataFrameTableModule* mModel{ nullptr };
 
-	DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs { nullptr };
-	DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs { nullptr };
-	DADialogDataFrameFillna* mDialogDataFrameFillna { nullptr };
+	DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs{ nullptr };
+	DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs{ nullptr };
+	DADialogDataFrameFillna* mDialogDataFrameFillna{ nullptr };
 };
 }  // end of namespace DA
 #endif  // DADATAOPERATEOFDATAFRAMEWIDGET_H

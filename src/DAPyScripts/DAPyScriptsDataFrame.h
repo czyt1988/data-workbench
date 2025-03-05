@@ -57,6 +57,8 @@ public:
 				const QString& how         = QStringLiteral("any"),
 				const QList< int >& indexs = QList< int >(),
 				int thresh                 = -1);
+	//	dropduplicates(keep = "first")
+	bool dropduplicates(DAPyDataFrame& df, const QString& keep, const QList< int >& indexs);
 	// fillna()
 	bool fillna(DAPyDataFrame& df, double value = 0.0, int limit = -1);
 };
