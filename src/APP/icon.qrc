@@ -83,6 +83,7 @@
         <file>Icon/view-marker.svg</file>
         <file>Icon/dataframe-drop-none.svg</file>
         <file>Icon/dataframe-fill-none.svg</file>
+        <file>Icon/process-duplicate-data.svg</file>
     </qresource>
     <qresource prefix="/app/dataType">
         <file>Icon/typeDataframe.svg</file>
