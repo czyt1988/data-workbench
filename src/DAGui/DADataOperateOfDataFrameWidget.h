@@ -19,6 +19,7 @@ class DAAppRibbonArea;
 class DADialogDataframeColumnCastToNumeric;
 class DADialogDataframeColumnCastToDatetime;
 class DADialogDataFrameFillna;
+class DADialogDataFrameInterpolate;
 
 /**
  * @brief 针对DataFrame的操作窗口
@@ -96,6 +97,9 @@ public Q_SLOTS:
 	// 填充缺失值，执行成功返回true
 	bool fillna();
 	bool fillna(const DAPyDataFrame& df, double value = 0.0, int limit = -1);
+	// 插值法填充缺失值，成功返回true
+	bool interpolate();
+	bool interpolate(const DAPyDataFrame& df, const QString& method, int order, int limit);
 	// 前向填充缺失值，执行成功返回true
 	bool ffillna();
 	bool ffillna(const DAPyDataFrame& df, int axis = 0, int limit = -1);
@@ -120,11 +124,12 @@ protected:
 private:
 	Ui::DADataOperateOfDataFrameWidget* ui;
 	DAData mData;
-	DAPyDataFrameTableModule* mModel{ nullptr };
+	DAPyDataFrameTableModule* mModel { nullptr };
 
-	DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs{ nullptr };
-	DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs{ nullptr };
-	DADialogDataFrameFillna* mDialogDataFrameFillna{ nullptr };
+	DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs { nullptr };
+	DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs { nullptr };
+	DADialogDataFrameFillna* mDialogDataFrameFillna { nullptr };
+	DADialogDataFrameInterpolate* mDialogDataFrameInterpolate { nullptr };
 };
 }  // end of namespace DA
 #endif  // DADATAOPERATEOFDATAFRAMEWIDGET_H

@@ -72,7 +72,7 @@ public:
 	QAction* actionDataFrameFillNone;   ///< 填充缺失值
 	QAction* actionDataFrameFFillNone;  ///< 前向填充缺失值
 	QAction* actionDataFrameBFillNone;  ///< 后向填充缺失值
-
+  QAction* actionDataFrameInterpolate;  ///< 插值法填充缺失值
 	//===================================================
 	// workflow的上下文标签
 	//===================================================

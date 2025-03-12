@@ -213,12 +213,15 @@ private Q_SLOTS:
 	void onActionDataFrameDropNoneTriggered();
 	// 填充缺失值
 	void onActionDataFrameFillNoneTriggered();
+	// 插值填充缺失值
+	void onActionDataFrameInterpolateTriggered();
 	// 前向填充缺失值
 	void onActionDataFrameFFillNoneTriggered();
 	// 后向填充缺失值
 	void onActionDataFrameBFillNoneTriggered();
 	// 删除重复值
 	void onActionDropDuplicatesTriggered();
+
 #if DA_ENABLE_PYTHON
 	// 列数据类型改变
 	void onComboxColumnTypesCurrentDTypeChanged(const DA::DAPyDType& dt);
@@ -372,21 +375,21 @@ private:
 #endif
 
 private:
-	AppMainWindow* mMainWindow{ nullptr };
-	DAAppCore* mCore{ nullptr };
-	DAProjectInterface* mProject{ nullptr };
+	AppMainWindow* mMainWindow { nullptr };
+	DAAppCore* mCore { nullptr };
+	DAProjectInterface* mProject { nullptr };
 	;
-	DAAppRibbonArea* mRibbon{ nullptr };
-	DAAppDockingArea* mDock{ nullptr };
-	DAAppCommand* mCommand{ nullptr };
-	DAAppActions* mActions{ nullptr };
-	DAAppDataManager* mDatas{ nullptr };
+	DAAppRibbonArea* mRibbon { nullptr };
+	DAAppDockingArea* mDock { nullptr };
+	DAAppCommand* mCommand { nullptr };
+	DAAppActions* mActions { nullptr };
+	DAAppDataManager* mDatas { nullptr };
 
 	QStringList mFileReadFilters;  ///< 包含支持的文件[Images (*.png *.xpm *.jpg)] [Text files (*.txt)]
 	//
 	LastFocusedOpertateWidgets mLastFocusedOpertateWidget;  ///< 最后获取焦点的操作窗口
 															//
-	DAAppSettingDialog* mSettingDialog{ nullptr };          ///< 设置窗口
+	DAAppSettingDialog* mSettingDialog { nullptr };         ///< 设置窗口
 	DAAppConfig* mConfig;                                   ///< 设置类
 };
 }

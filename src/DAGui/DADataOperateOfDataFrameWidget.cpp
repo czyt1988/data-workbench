@@ -21,6 +21,7 @@
 #include "Dialog/DADialogDataframeColumnCastToDatetime.h"
 #include "Dialog/DADialogInsertNewColumn.h"
 #include "Dialog/DADialogDataFrameFillna.h"
+#include "Dialog/DADialogDataFrameInterpolate.h"
 
 //===================================================
 // using DA namespace -- 禁止在头文件using!!
@@ -513,7 +514,7 @@ int DADataOperateOfDataFrameWidget::dropduplicates(const DAPyDataFrame& df, cons
 
 /**
  * @brief 填充缺失值
- * @return 返回删除的数量，0代表没有删除任何内容
+ * @return 成功返回true,反之返回false
  */
 bool DADataOperateOfDataFrameWidget::fillna()
 {
@@ -539,11 +540,9 @@ bool DADataOperateOfDataFrameWidget::fillna()
 
 /**
  * @brief 填充缺失值
- * @param filltype 填充类型，1为按值填充，其他为按方法填充
- * @param axis 填充轴向，0代表填充行，1代表填充列
  * @param value 可选参数，将缺失值填充为某特定值
- * @param method 可选参数，表示填充的方法，backfill/bfill用后面行/列的值，填充当前行/列的空值;pad / ffill表示用前面行/列的值，填充当前行/列的空值。
- * @return 返回填充的数量，0代表没有填充任何内容
+ * @param limit 可选参数，表示填充行数/列数的限制。
+ * @return 成功返回true,反之返回false
  */
 bool DADataOperateOfDataFrameWidget::fillna(const DAPyDataFrame& df, double value, int limit)
 {
@@ -556,17 +555,46 @@ bool DADataOperateOfDataFrameWidget::fillna(const DAPyDataFrame& df, double valu
 	return true;
 }
 
+**
+ * @brief 插值法填充缺失值
+ * @return 成功返回true,反之返回false
+ */
+bool DADataOperateOfDataFrameWidget::interpolate()
+{
+    DAPyDataFrame df = getDataframe();
+	if (df.isNone()) {
+		return false;
+	}
+    if (!mDialogDataFrameInterpolate) {
+		mDialogDataFrameInterpolate = new DADialogDataFrameInterpolate(this);
+	}
+	if (QDialog::Accepted != mDialogDataFrameInterpolate->exec()) {
+		// 说明用户取消
+		return false;
+	}
+	// 获取插值填充方法
+	QString method = mDialogDataFrameInterpolate->getInterpolateMethod();
+	// 获取多项式插值次数
+	int order      = mDialogDataFrameInterpolate->getInterpolateOrder();
+	int limitCount = -1;  // 如果-1证明没有设置
+	if (mDialogDataFrameInterpolate->isEnableLimitCount()) {
+		limitCount = mDialogDataFrameInterpolate->getLimitCount();
+	}
+	return interpolate(df, method, order, limitCount);
+}
+
+
 /**
  * @brief 前向填充缺失值
  * @return 返回删除的数量，0代表没有删除任何内容
  */
 bool DADataOperateOfDataFrameWidget::ffillna()
 {
-	DAPyDataFrame df = getDataframe();
+    DAPyDataFrame df = getDataframe();
 	if (df.isNone()) {
 		return false;
 	}
-	int axis = 0;
+    int axis = 0;
 	//	QList< int > index;
 	//	if (isDataframeTableHaveSelection()) {
 	//		// 先看看是否选中了列
@@ -627,6 +655,7 @@ bool DADataOperateOfDataFrameWidget::bfillna(const DAPyDataFrame& df, int axis, 
 {
 	std::unique_ptr< DACommandDataFrame_bfillna > cmd =
 		std::make_unique< DACommandDataFrame_bfillna >(df, mModel, axis, limit);
+
 	if (!cmd->exec()) {
 		return false;
 	}
