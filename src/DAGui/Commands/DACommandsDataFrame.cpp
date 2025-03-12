@@ -485,6 +485,8 @@ bool DACommandDataFrame_fillna::exec()
 
 ///////////////////
 
+
+
 DACommandDataFrame_interpolate::DACommandDataFrame_interpolate(const DAPyDataFrame& df,
                                                                DAPyDataFrameTableModule* model,
                                                                const QString& method,
@@ -496,8 +498,7 @@ DACommandDataFrame_interpolate::DACommandDataFrame_interpolate(const DAPyDataFra
     setText(QObject::tr("interpolate"));  // cn:插值填充缺失值
 }
 
-void DACommandDataFrame_interpolate::undo()
-{
+void DACommandDataFrame_interpolate::undo(){
 	load();
 	if (mModel) {
 		mModel->refresh();
@@ -509,6 +510,75 @@ bool DACommandDataFrame_interpolate::exec()
 	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
 
 	if (!pydf.interpolate(dataframe(), mMethod, mOrder, mLimit)) {
+		return false;
+	}
+
+	// 说明填充了空行
+	if (mModel) {
+		mModel->refresh();
+	}
+	return true;
+}
+
+
+DACommandDataFrame_ffillna::DACommandDataFrame_ffillna(const DAPyDataFrame& df,
+                                                       DAPyDataFrameTableModule* model,
+                                                       int axis,
+                                                       int limit,
+                                                       QUndoCommand* par)
+    : DACommandWithTemplateData(df, par), mModel(model), mAxis(axis), mLimit(limit)
+{
+    setText(QObject::tr("ffill nan"));  // cn:前向填充缺失值
+}
+
+void DACommandDataFrame_ffillna::undo()
+{
+	load();
+	if (mModel) {
+		mModel->refresh();
+	}
+}
+
+bool DACommandDataFrame_ffillna::exec()
+{
+	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+
+	if (!pydf.ffillna(dataframe(), mAxis, mLimit)) {
+		return false;
+	}
+
+	// 说明填充了空行
+	if (mModel) {
+		mModel->refresh();
+	}
+	return true;
+}
+
+///////////////////
+
+DACommandDataFrame_bfillna::DACommandDataFrame_bfillna(const DAPyDataFrame& df,
+                                                       DAPyDataFrameTableModule* model,
+                                                       int axis,
+                                                       int limit,
+                                                       QUndoCommand* par)
+    : DACommandWithTemplateData(df, par), mModel(model), mAxis(axis), mLimit(limit)
+{
+    setText(QObject::tr("bfill nan"));  // cn:后向填充缺失值
+}
+
+void DACommandDataFrame_bfillna::undo()
+{
+	load();
+	if (mModel) {
+		mModel->refresh();
+	}
+}
+
+bool DACommandDataFrame_bfillna::exec()
+{
+	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+
+	if (!pydf.bfillna(dataframe(), mAxis, mLimit)) {
 		return false;
 	}
 

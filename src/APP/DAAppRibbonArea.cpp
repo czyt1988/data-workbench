@@ -391,6 +391,8 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
 	m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDataFrameDropNone);
 	m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDataFrameFillNone);
 	m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDataFrameInterpolate);
+	m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDataFrameFFillNone);
+	m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDataFrameBFillNone);
 	m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDropDuplicates);
 
 	//  Statistic Pannel

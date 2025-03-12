@@ -86,6 +86,8 @@
         <file>Icon/process-duplicate-data.svg</file>
         <file>Icon/dateframe-duplicate-data.svg</file>
         <file>Icon/dataframe-interpolate.svg</file>
+        <file>Icon/dataframe-bfill-none.svg</file>
+        <file>Icon/dataframe-ffill-none.svg</file>
     </qresource>
     <qresource prefix="/app/dataType">
         <file>Icon/typeDataframe.svg</file>

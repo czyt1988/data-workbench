@@ -74,6 +74,8 @@ void DAAppActions::buildDataAction()
 	actionDropDuplicates     = createAction("actionDropDuplicates", ":/app/bright/Icon/process-duplicate-data.svg");
 	actionDataFrameFillNone  = createAction("actionDataFrameFillNone", ":/app/bright/Icon/dataframe-fill-none.svg");
 	actionDataFrameInterpolate = createAction("actionDataFrameInterpolate", ":/app/bright/Icon/dataframe-interpolate.svg");
+	actionDataFrameFFillNone = createAction("actionDataFrameFFillNone", ":/app/bright/Icon/dataframe-ffill-none.svg");
+	actionDataFrameBFillNone = createAction("actionDataFrameBFillNone", ":/app/bright/Icon/dataframe-bfill-none.svg");
 }
 
 void DAAppActions::buildChartAction()
@@ -251,9 +253,17 @@ void DAAppActions::retranslateUi()
 	actionDataFrameDropNone->setToolTip(tr("Drop rows which contain missing values"));  // cn:删除包含缺失值的行
 	actionDataFrameFillNone->setText(tr("Fill None"));                                  // cn:填充\n缺失值
 	actionDataFrameFillNone->setToolTip(tr("Fill rows which contain missing values"));  // cn:填充包含缺失值的行
+
 	actionDataFrameInterpolate->setText(tr("Fill Interpolate"));                        // cn:插值填充
 	actionDataFrameInterpolate->setToolTip(tr("Fill rows which contain missing values by interpolate"));  // cn:插值法填充包含缺失值的行
 	actionDropDuplicates->setText(tr("Drop Duplicates"));          // cn:删除\n重复值
+
+	actionDataFrameFFillNone->setText(tr("FFill None"));                                // cn:前向填充\n缺失值
+	actionDataFrameFFillNone->setToolTip(tr("FFill rows which contain missing values"));  // cn:填充包含缺失值的行或列
+	actionDataFrameBFillNone->setText(tr("BFill None"));                                  // cn:后向填充\n缺失值
+	actionDataFrameBFillNone->setToolTip(tr("BFill rows which contain missing values"));  // cn:填充包含缺失值的行或列
+	actionDropDuplicates->setText(tr("Drop Duplicates"));                                 // cn:删除\n重复值
+
 	actionDropDuplicates->setToolTip(tr("Drop duplicate datas"));  // cn:删除数据中的重复记录
 
 	// workflow 编辑

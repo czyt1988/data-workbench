@@ -425,6 +425,57 @@ bool DAPyScriptsDataFrame::fillna(DAPyDataFrame& df, double value, int limit)
 }
 
 /**
+ * @brief ffillna方法的wrapper
+ * @param df
+ * @param axis
+ * @param limit 填充限制，-1代表不限制，大于0生效
+ * @return
+ */
+bool DAPyScriptsDataFrame::ffillna(DAPyDataFrame& df, int axis, int limit)
+{
+	try {
+		pybind11::object da_ffill_na = attr("da_ffill_na");
+		pybind11::object limitObj    = pybind11::none();
+    if (limit > 0) {
+			limitObj = pybind11::int_(limit);
+		}
+    pybind11::dict args;
+		args[ "axis" ]  = axis;
+		args[ "limit" ] = limitObj;
+		da_ffill_na(df.object(), **args);
+		return true;
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return false;
+}
+
+/**
+ * @brief bfillna方法的wrapper
+ * @param df
+ * @param axis
+ * @param limit 填充限制，-1代表不限制，大于0生效
+ * @return
+ */
+bool DAPyScriptsDataFrame::bfillna(DAPyDataFrame& df, int axis, int limit)
+{
+	try {
+		pybind11::object da_bfill_na = attr("da_bfill_na");
+		pybind11::object limitObj    = pybind11::none();
+		if (limit > 0) {
+			limitObj = pybind11::int_(limit);
+		}
+		pybind11::dict args;
+		args[ "axis" ]  = axis;
+		args[ "limit" ] = limitObj;
+		da_bfill_na(df.object(), **args);
+		return true;
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return false;
+}
+
  * @brief interpolate方法的wrapper
  * @param df
  * @param method 插值填充的方法
@@ -451,4 +502,5 @@ bool DAPyScriptsDataFrame::interpolate(DAPyDataFrame& df, const QString& method,
 	}
 	return false;
 }
+  
 }  // end DA namespace

@@ -100,6 +100,12 @@ public Q_SLOTS:
 	// 插值法填充缺失值，成功返回true
 	bool interpolate();
 	bool interpolate(const DAPyDataFrame& df, const QString& method, int order, int limit);
+	// 前向填充缺失值，执行成功返回true
+	bool ffillna();
+	bool ffillna(const DAPyDataFrame& df, int axis = 0, int limit = -1);
+	// 后向填充缺失值，执行成功返回true
+	bool bfillna();
+	bool bfillna(const DAPyDataFrame& df, int axis = 0, int limit = -1);
 Q_SIGNALS:
 	/**
 	 * @brief 选中的列或者类型发生了变化

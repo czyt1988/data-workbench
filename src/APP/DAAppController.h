@@ -215,6 +215,10 @@ private Q_SLOTS:
 	void onActionDataFrameFillNoneTriggered();
 	// 插值填充缺失值
 	void onActionDataFrameInterpolateTriggered();
+	// 前向填充缺失值
+	void onActionDataFrameFFillNoneTriggered();
+	// 后向填充缺失值
+	void onActionDataFrameBFillNoneTriggered();
 	// 删除重复值
 	void onActionDropDuplicatesTriggered();
 
