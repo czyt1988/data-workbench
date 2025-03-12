@@ -297,6 +297,46 @@ private:
 };
 
 /**
+ * @brief ffillnan命令
+ */
+class DAGUI_API DACommandDataFrame_ffillna : public DACommandWithTemplateData
+{
+public:
+	DACommandDataFrame_ffillna(const DAPyDataFrame& df,
+							   DAPyDataFrameTableModule* model = nullptr,
+							   int axis                        = 0,
+							   int limit                       = -1,
+							   QUndoCommand* par               = nullptr);
+	virtual void undo() override;
+	virtual bool exec() override;
+
+private:
+	DAPyDataFrameTableModule* mModel{ nullptr };
+	int mAxis{ 0 };
+	int mLimit{ -1 };
+};
+
+/**
+ * @brief bfillnan命令
+ */
+class DAGUI_API DACommandDataFrame_bfillna : public DACommandWithTemplateData
+{
+public:
+	DACommandDataFrame_bfillna(const DAPyDataFrame& df,
+							   DAPyDataFrameTableModule* model = nullptr,
+							   int axis                        = 0,
+							   int limit                       = -1,
+							   QUndoCommand* par               = nullptr);
+	virtual void undo() override;
+	virtual bool exec() override;
+
+private:
+	DAPyDataFrameTableModule* mModel{ nullptr };
+	int mAxis{ 0 };
+	int mLimit{ -1 };
+};
+
+/**
  * @brief 转换列的数据类型
  */
 class DAGUI_API DACommandDataFrame_castNum : public DACommandWithTemplateData

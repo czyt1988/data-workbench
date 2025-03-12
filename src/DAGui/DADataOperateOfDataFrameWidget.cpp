@@ -557,6 +557,84 @@ bool DADataOperateOfDataFrameWidget::fillna(const DAPyDataFrame& df, double valu
 }
 
 /**
+ * @brief 前向填充缺失值
+ * @return 返回删除的数量，0代表没有删除任何内容
+ */
+bool DADataOperateOfDataFrameWidget::ffillna()
+{
+	DAPyDataFrame df = getDataframe();
+	if (df.isNone()) {
+		return false;
+	}
+	int axis = 0;
+	//	QList< int > index;
+	//	if (isDataframeTableHaveSelection()) {
+	//		// 先看看是否选中了列
+	//		index = getFullySelectedDataframeColumns();
+	//		if (!index.isEmpty()) {
+	//			// 说明单独选中了一列，这时只针对列进行ffillna
+	//			axis = 1;
+	//		}
+	//	}
+	return ffillna(df, axis, -1);
+}
+
+/**
+ * @brief 前向填充缺失值
+ * @param axis 填充轴向，0代表按行填充，1代表按列填充
+ * @return 返回填充的数量，0代表没有填充任何内容
+ */
+bool DADataOperateOfDataFrameWidget::ffillna(const DAPyDataFrame& df, int axis, int limit)
+{
+	std::unique_ptr< DACommandDataFrame_ffillna > cmd =
+		std::make_unique< DACommandDataFrame_ffillna >(df, mModel, axis, limit);
+	if (!cmd->exec()) {
+		return false;
+	}
+	getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
+	return true;
+}
+
+/**
+ * @brief 后向填充缺失值
+ * @return 返回删除的数量，0代表没有删除任何内容
+ */
+bool DADataOperateOfDataFrameWidget::bfillna()
+{
+	DAPyDataFrame df = getDataframe();
+	if (df.isNone()) {
+		return false;
+	}
+	int axis = 0;
+	//	QList< int > index;
+	//	if (isDataframeTableHaveSelection()) {
+	//		// 先看看是否选中了列
+	//		index = getFullySelectedDataframeColumns();
+	//		if (!index.isEmpty()) {
+	//			// 说明单独选中了一列，这时只针对列进行bfillna
+	//			axis = 1;
+	//		}
+	//	}
+	return bfillna(df, axis, -1);
+}
+
+/**
+ * @brief 后向填充缺失值
+ * @param axis 填充轴向，0代表按行填充，1代表按列填充
+ * @return 返回填充的数量，0代表没有填充任何内容
+ */
+bool DADataOperateOfDataFrameWidget::bfillna(const DAPyDataFrame& df, int axis, int limit)
+{
+	std::unique_ptr< DACommandDataFrame_bfillna > cmd =
+		std::make_unique< DACommandDataFrame_bfillna >(df, mModel, axis, limit);
+	if (!cmd->exec()) {
+		return false;
+	}
+	getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
+	return true;
+}
+
+/**
  * @brief 创建一个数据描述
  * @return
  */

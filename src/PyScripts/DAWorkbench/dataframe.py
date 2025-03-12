@@ -76,7 +76,31 @@ def da_fill_na(df: pd.DataFrame, value:Scalar | dict | None = None,axis:Axis|Non
     df.fillna(axis = axis, value = value,downcast=downcast,inplace = True)
 
 @log_function_call
-def da_drop_duplicates(df: pd.DataFrame,keep:Literal['first','last','False']='first', index:Optional[List[int]]=None):
+def da_ffill_na(df: pd.DataFrame, axis:Axis|None=None, limit:int|None=None, downcast: dict | None = None):
+    '''
+    填充dataframe中的nan值
+    :param df: pd.DataFrame
+    :param axis: 填充的轴方向，0 或 'index' 表示按行向下填充，1 或 'columns' 表示按列向右填充。
+    :param limit: 限制向后填充的最大数量
+    :param downcast:可选的字典，指定向下转型操作（例如将浮点数转换为整数等）。
+    :return: 此函数不返回值，直接改变df
+    '''
+    df.ffill(axis = axis, inplace = True,limit = limit,downcast=downcast)
+    
+@log_function_call
+def da_bfill_na(df: pd.DataFrame, axis:Axis|None=None, limit:int|None=None, limit_area:Literal[None,'inside','outside']=None):
+    '''
+    填充dataframe中的nan值
+    :param df: pd.DataFrame
+    :param axis: 填充的轴方向,0表示按行向上填充,1表示按列向左填充。
+    :param limit: 限制向前填充的最大数量
+    :param limit_area: 字符串，默认为 None。可选值为 None、inside 或 outside。inside 表示只填充被有效值包围的缺失值，outside 表示只填充在有效值之前或之后的缺失值。
+    :return: 此函数不返回值，直接改变df
+    '''
+    df.bfill(axis = axis, inplace = True,limit = limit,limit_area=limit_area)
+
+@log_function_call
+def da_drop_duplicates(df: pd.DataFrame,keep:Literal['first','last',False]='first', index:Optional[List[int]]=None):
     '''
     删除dataframe中的nan值
     :param df: pd.DataFrame
