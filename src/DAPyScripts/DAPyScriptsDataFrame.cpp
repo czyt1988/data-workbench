@@ -384,8 +384,12 @@ bool DAPyScriptsDataFrame::dropduplicates(DAPyDataFrame& df, const QString& keep
 	try {
 		pybind11::object da_drop_duplicates = attr("da_drop_duplicates");
 		pybind11::dict args;
-		args[ "keep" ]  = DA::PY::toString(keep);
-		args[ "index" ] = DA::PY::toList(indexs);
+		args[ "keep" ] = DA::PY::toString(keep);
+		if (indexs.empty()) {
+			args[ "index" ] = pybind11::none();
+		} else {
+			args[ "index" ] = DA::PY::toList(indexs);
+		}
 		da_drop_duplicates(df.object(), **args);
 		return true;
 	} catch (const std::exception& e) {
