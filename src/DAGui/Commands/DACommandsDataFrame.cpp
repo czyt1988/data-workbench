@@ -487,7 +487,7 @@ bool DACommandDataFrame_fillna::exec()
 
 
 
-DACommandDataFrame_interpolate::DACommandDataFrame_interpolate(const DAPyDataFrame& df,
+DACommandDataFrame_fillInterpolate::DACommandDataFrame_fillInterpolate(const DAPyDataFrame& df,
                                                                DAPyDataFrameTableModule* model,
                                                                const QString& method,
                                                                int order,
@@ -498,14 +498,14 @@ DACommandDataFrame_interpolate::DACommandDataFrame_interpolate(const DAPyDataFra
     setText(QObject::tr("interpolate"));  // cn:插值填充缺失值
 }
 
-void DACommandDataFrame_interpolate::undo(){
+void DACommandDataFrame_fillInterpolate::undo(){
 	load();
 	if (mModel) {
 		mModel->refresh();
 	}
 }
 
-bool DACommandDataFrame_interpolate::exec()
+bool DACommandDataFrame_fillInterpolate::exec()
 {
 	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
 

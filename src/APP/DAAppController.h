@@ -214,7 +214,7 @@ private Q_SLOTS:
 	// 填充缺失值
 	void onActionDataFrameFillNoneTriggered();
 	// 插值填充缺失值
-	void onActionDataFrameInterpolateTriggered();
+	void onActionDataFrameFillInterpolateTriggered();
 	// 前向填充缺失值
 	void onActionDataFrameFFillNoneTriggered();
 	// 后向填充缺失值

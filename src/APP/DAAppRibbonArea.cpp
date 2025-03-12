@@ -389,11 +389,11 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
 	// 数据清洗
 	m_pannelDataframeOperateDataCleaning = m_categoryDataframeOperate->addPannel(tr("Data Cleaning"));  // cn：数据清洗
 	m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDataFrameDropNone);
-	m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDataFrameFillNone);
-	m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDataFrameInterpolate);
-	m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDataFrameFFillNone);
-	m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDataFrameBFillNone);
 	m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDropDuplicates);
+	m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDataFrameFillNone);
+	m_pannelDataframeOperateDataCleaning->addMediumAction(m_actions->actionDataFrameFFillNone);
+	m_pannelDataframeOperateDataCleaning->addMediumAction(m_actions->actionDataFrameBFillNone);
+	m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDataFrameFillInterpolate);
 
 	//  Statistic Pannel
 	m_pannelDataframeOperateStatistic = m_categoryDataframeOperate->addPannel(tr("Statistic"));  // cn：统计

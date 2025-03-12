@@ -299,10 +299,10 @@ private:
 /**
  * @brief interpolate命令
  */
-class DAGUI_API DACommandDataFrame_interpolate : public DACommandWithTemplateData
+class DAGUI_API DACommandDataFrame_fillInterpolate : public DACommandWithTemplateData
 {
 public:
-	DACommandDataFrame_interpolate(const DAPyDataFrame& df,
+	DACommandDataFrame_fillInterpolate(const DAPyDataFrame& df,
 								   DAPyDataFrameTableModule* model = nullptr,
 								   const QString& method           = QStringLiteral("spline"),
 								   int order                       = 1,

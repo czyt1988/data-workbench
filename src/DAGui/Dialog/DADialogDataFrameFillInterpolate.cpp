@@ -1,17 +1,17 @@
-#include "DADialogDataFrameInterpolate.h"
-#include "ui_DADialogDataFrameInterpolate.h"
+﻿#include "DADialogDataFrameFillInterpolate.h"
+#include "ui_DADialogDataFrameFillInterpolate.h"
 #include <QDebug>
 
 namespace DA
 {
-DADialogDataFrameInterpolate::DADialogDataFrameInterpolate(QWidget* parent)
-	: QDialog(parent), ui(new Ui::DADialogDataFrameInterpolate)
+DADialogDataFrameFillInterpolate::DADialogDataFrameFillInterpolate(QWidget* parent)
+	: QDialog(parent), ui(new Ui::DADialogDataFrameFillInterpolate)
 {
 	ui->setupUi(this);
 	this->initDialogDataFrameInterpolate();
 }
 
-DADialogDataFrameInterpolate::~DADialogDataFrameInterpolate()
+DADialogDataFrameFillInterpolate::~DADialogDataFrameFillInterpolate()
 {
     delete ui;
 }
@@ -19,7 +19,7 @@ DADialogDataFrameInterpolate::~DADialogDataFrameInterpolate()
 /**
  * @brief 初始化插值法填充界面，多项式插值显示次数设置
  */
-void DADialogDataFrameInterpolate::initDialogDataFrameInterpolate()
+void DADialogDataFrameFillInterpolate::initDialogDataFrameInterpolate()
 {
 	ui->labelOrder->setVisible(false);
 	ui->lineEditOrder->setVisible(false);
@@ -37,17 +37,17 @@ void DADialogDataFrameInterpolate::initDialogDataFrameInterpolate()
 			});
 }
 
-QString DADialogDataFrameInterpolate::getInterpolateMethod() const
+QString DADialogDataFrameFillInterpolate::getInterpolateMethod() const
 {
 	return ui->comboBoxMethod->currentText();
 }
 
-void DADialogDataFrameInterpolate::setInterpolateOrder(double d)
+void DADialogDataFrameFillInterpolate::setInterpolateOrder(double d)
 {
 	ui->lineEditOrder->setText(QString::number(d));
 }
 
-double DADialogDataFrameInterpolate::getInterpolateOrder() const
+double DADialogDataFrameFillInterpolate::getInterpolateOrder() const
 {
 	bool isok = false;
 	double v  = ui->lineEditOrder->text().toInt(&isok);
@@ -58,23 +58,24 @@ double DADialogDataFrameInterpolate::getInterpolateOrder() const
 	return v;
 }
 
-bool DADialogDataFrameInterpolate::isEnableLimitCount() const
+bool DADialogDataFrameFillInterpolate::isEnableLimitCount() const
 {
 	return ui->checkBoxLimit->isChecked();
 }
 
-void DADialogDataFrameInterpolate::setEnableLimit(bool on)
+void DADialogDataFrameFillInterpolate::setEnableLimit(bool on)
 {
 	ui->checkBoxLimit->setChecked(on);
 }
 
-int DADialogDataFrameInterpolate::getLimitCount() const
+int DADialogDataFrameFillInterpolate::getLimitCount() const
 {
 	return ui->spinBoxLimit->value();
 }
 
-void DADialogDataFrameInterpolate::setLimitCount(int d)
+void DADialogDataFrameFillInterpolate::setLimitCount(int d)
 {
 	ui->spinBoxLimit->setValue(d);
 }
-}
+
+}  // end of DA

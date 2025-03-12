@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>DADialogDataFrameInterpolate</class>
- <widget class="QDialog" name="DADialogDataFrameInterpolate">
+ <class>DADialogDataFrameFillInterpolate</class>
+ <widget class="QDialog" name="DADialogDataFrameFillInterpolate">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -17,7 +17,7 @@
    <item>
     <widget class="QGroupBox" name="groupBoxDADialogDataFrameInterpolate">
      <property name="title">
-      <string>Fill NA/NaN values</string>
+      <string>Fill Interpolate</string>
      </property>
      <layout class="QGridLayout" name="gridLayout">
       <item row="1" column="0">
@@ -93,7 +93,7 @@
    <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
-      <enum>Qt::Vertical</enum>
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
@@ -108,7 +108,7 @@
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
-        <enum>Qt::Vertical</enum>
+        <enum>Qt::Orientation::Vertical</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -121,7 +121,7 @@
      <item>
       <spacer name="horizontalSpacer_2">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -167,7 +167,7 @@
   <connection>
    <sender>pushButtonOK</sender>
    <signal>clicked()</signal>
-   <receiver>DADialogDataFrameInterpolate</receiver>
+   <receiver>DADialogDataFrameFillInterpolate</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -183,7 +183,7 @@
   <connection>
    <sender>pushButtonCancel</sender>
    <signal>clicked()</signal>
-   <receiver>DADialogDataFrameInterpolate</receiver>
+   <receiver>DADialogDataFrameFillInterpolate</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

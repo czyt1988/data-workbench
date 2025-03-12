@@ -19,7 +19,7 @@ class DAAppRibbonArea;
 class DADialogDataframeColumnCastToNumeric;
 class DADialogDataframeColumnCastToDatetime;
 class DADialogDataFrameFillna;
-class DADialogDataFrameInterpolate;
+class DADialogDataFrameFillInterpolate;
 
 /**
  * @brief 针对DataFrame的操作窗口
@@ -98,8 +98,8 @@ public Q_SLOTS:
 	bool fillna();
 	bool fillna(const DAPyDataFrame& df, double value = 0.0, int limit = -1);
 	// 插值法填充缺失值，成功返回true
-	bool interpolate();
-	bool interpolate(const DAPyDataFrame& df, const QString& method, int order, int limit);
+	bool fillInterpolate();
+	bool fillInterpolate(const DAPyDataFrame& df, const QString& method, int order, int limit);
 	// 前向填充缺失值，执行成功返回true
 	bool ffillna();
 	bool ffillna(const DAPyDataFrame& df, int axis = 0, int limit = -1);
@@ -129,7 +129,7 @@ private:
 	DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs { nullptr };
 	DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs { nullptr };
 	DADialogDataFrameFillna* mDialogDataFrameFillna { nullptr };
-	DADialogDataFrameInterpolate* mDialogDataFrameInterpolate { nullptr };
+	DADialogDataFrameFillInterpolate* mDialogDataFrameFillInterpolate { nullptr };
 };
 }  // end of namespace DA
 #endif  // DADATAOPERATEOFDATAFRAMEWIDGET_H

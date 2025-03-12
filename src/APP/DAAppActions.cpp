@@ -73,7 +73,8 @@ void DAAppActions::buildDataAction()
 	actionDataFrameDropNone  = createAction("actionDataFrameDropNone", ":/app/bright/Icon/dataframe-drop-none.svg");
 	actionDropDuplicates     = createAction("actionDropDuplicates", ":/app/bright/Icon/process-duplicate-data.svg");
 	actionDataFrameFillNone  = createAction("actionDataFrameFillNone", ":/app/bright/Icon/dataframe-fill-none.svg");
-	actionDataFrameInterpolate = createAction("actionDataFrameInterpolate", ":/app/bright/Icon/dataframe-interpolate.svg");
+	actionDataFrameFillInterpolate =
+		createAction("actionDataFrameInterpolate", ":/app/bright/Icon/dataframe-interpolate.svg");
 	actionDataFrameFFillNone = createAction("actionDataFrameFFillNone", ":/app/bright/Icon/dataframe-ffill-none.svg");
 	actionDataFrameBFillNone = createAction("actionDataFrameBFillNone", ":/app/bright/Icon/dataframe-bfill-none.svg");
 }
@@ -182,10 +183,10 @@ void DAAppActions::buildOtherActions()
 {
 	actionGroupRibbonTheme = new QActionGroup(this);
 	actionGroupRibbonTheme->setObjectName(QStringLiteral("actionGroupRibbonTheme"));
-	actionRibbonThemeOffice2013     = createAction("actionRibbonThemeOffice2013", true, true, actionGroupRibbonTheme);
+	actionRibbonThemeOffice2013 = createAction("actionRibbonThemeOffice2013", true, true, actionGroupRibbonTheme);
 	actionRibbonThemeOffice2016Blue = createAction("actionRibbonThemeOffice2016Blue", true, false, actionGroupRibbonTheme);
 	actionRibbonThemeOffice2021Blue = createAction("actionRibbonThemeOffice2021Blue", true, false, actionGroupRibbonTheme);
-	actionRibbonThemeDark           = createAction("actionRibbonThemeDark", true, false, actionGroupRibbonTheme);
+	actionRibbonThemeDark = createAction("actionRibbonThemeDark", true, false, actionGroupRibbonTheme);
 }
 
 void DAAppActions::retranslateUi()
@@ -254,15 +255,18 @@ void DAAppActions::retranslateUi()
 	actionDataFrameFillNone->setText(tr("Fill None"));                                  // cn:填充\n缺失值
 	actionDataFrameFillNone->setToolTip(tr("Fill rows which contain missing values"));  // cn:填充包含缺失值的行
 
-	actionDataFrameInterpolate->setText(tr("Fill Interpolate"));                        // cn:插值填充
-	actionDataFrameInterpolate->setToolTip(tr("Fill rows which contain missing values by interpolate"));  // cn:插值法填充包含缺失值的行
-	actionDropDuplicates->setText(tr("Drop Duplicates"));          // cn:删除\n重复值
+	actionDataFrameFillInterpolate->setText(tr("Fill Interpolate"));  // cn:插值填充
+	actionDataFrameFillInterpolate->setToolTip(
+		tr("Fill rows which contain missing values by interpolate"));  // cn:插值法填充包含缺失值的行
+	actionDropDuplicates->setText(tr("Drop Duplicates"));              // cn:删除\n重复值
 
-	actionDataFrameFFillNone->setText(tr("FFill None"));                                // cn:前向填充\n缺失值
-	actionDataFrameFFillNone->setToolTip(tr("FFill rows which contain missing values"));  // cn:填充包含缺失值的行或列
-	actionDataFrameBFillNone->setText(tr("BFill None"));                                  // cn:后向填充\n缺失值
-	actionDataFrameBFillNone->setToolTip(tr("BFill rows which contain missing values"));  // cn:填充包含缺失值的行或列
-	actionDropDuplicates->setText(tr("Drop Duplicates"));                                 // cn:删除\n重复值
+	actionDataFrameFFillNone->setText(tr("Forward Fill"));  // cn:前向填充\n缺失值
+	actionDataFrameFFillNone->setToolTip(
+		tr("Fill NA/NaN values by propagating the last valid observation to next valid."));  // cn:将第一个有效值填充到缺失值。
+	actionDataFrameBFillNone->setText(tr("Back Fill"));  // cn:反向填充\n缺失值
+	actionDataFrameBFillNone->setToolTip(
+		tr("Fill NA/NaN values by using the next valid observation to fill the gap."));  // cn:将最后一个有效值反向填充缺失值。
+	actionDropDuplicates->setText(tr("Drop Duplicates"));                                // cn:删除\n重复值
 
 	actionDropDuplicates->setToolTip(tr("Drop duplicate datas"));  // cn:删除数据中的重复记录
 

@@ -1,12 +1,12 @@
-#ifndef DADIALOGDATAFRAMEINTERPOLATE_H
-#define DADIALOGDATAFRAMEINTERPOLATE_H
+﻿#ifndef DADIALOGDATAFRAMEFILLINTERPOLATE_H
+#define DADIALOGDATAFRAMEFILLINTERPOLATE_H
 
 #include <QDialog>
 #include "DAGuiAPI.h"
 
 namespace Ui
 {
-class DADialogDataFrameInterpolate;
+class DADialogDataFrameFillInterpolate;
 }
 
 namespace DA
@@ -14,15 +14,15 @@ namespace DA
 /**
  * @brief interpolate参数设置
  */
-class DAGUI_API DADialogDataFrameInterpolate : public QDialog
+class DAGUI_API DADialogDataFrameFillInterpolate : public QDialog
 {
 	Q_OBJECT
 
 public:
-	explicit DADialogDataFrameInterpolate(QWidget* parent = nullptr);
-	~DADialogDataFrameInterpolate();
+	explicit DADialogDataFrameFillInterpolate(QWidget* parent = nullptr);
+	~DADialogDataFrameFillInterpolate();
 
-	//初始化界面
+	// 初始化界面
 	void initDialogDataFrameInterpolate();
 	// method参数
 	QString getInterpolateMethod() const;
@@ -41,7 +41,7 @@ public:
 	void setLimitCount(int d);
 
 private:
-	Ui::DADialogDataFrameInterpolate* ui;
+	Ui::DADialogDataFrameFillInterpolate* ui;
 };
 }
-#endif  // DADIALOGDATAFRAMEINTERPOLATE_H
+#endif  // DADIALOGDATAFRAMEFILLINTERPOLATE_H
