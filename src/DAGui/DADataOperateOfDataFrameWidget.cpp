@@ -406,8 +406,8 @@ bool DADataOperateOfDataFrameWidget::changeSelectColumnToIndex()
 		qWarning() << tr("please select valid column");  // cn:请选择正确的列
 		return false;
 	}
-	std::unique_ptr< DACommandDataFrame_setIndex > cmd(
-		new DACommandDataFrame_setIndex(df, colsIndex, ui->tableView->verticalHeader(), mModel));
+	std::unique_ptr< DACommandDataFrame_setIndex > cmd =
+		std::make_unique< DACommandDataFrame_setIndex >(df, colsIndex, ui->tableView->verticalHeader(), mModel);
 	if (!cmd->exec()) {
 		return false;
 	}
@@ -457,7 +457,8 @@ int DADataOperateOfDataFrameWidget::dropna(const QString& how, int thresh)
  */
 int DADataOperateOfDataFrameWidget::dropna(const DAPyDataFrame& df, int axis, const QString& how, const QList< int > index, int thresh)
 {
-	std::unique_ptr< DACommandDataFrame_dropna > cmd(new DACommandDataFrame_dropna(df, mModel, axis, how, index, thresh));
+	std::unique_ptr< DACommandDataFrame_dropna > cmd =
+		std::make_unique< DACommandDataFrame_dropna >(df, mModel, axis, how, index, thresh);
 	if (!cmd->exec()) {
 		return false;
 	}
@@ -497,14 +498,15 @@ int DADataOperateOfDataFrameWidget::dropduplicates(const QString& keep)
  */
 int DADataOperateOfDataFrameWidget::dropduplicates(const DAPyDataFrame& df, const QString& keep, const QList< int > index)
 {
-	std::unique_ptr< DACommandDataFrame_dropduplicates > cmd(new DACommandDataFrame_dropduplicates(df, mModel, keep, index));
+	std::unique_ptr< DACommandDataFrame_dropduplicates > cmd =
+		std::make_unique< DACommandDataFrame_dropduplicates >(df, mModel, keep, index);
 	if (!cmd->exec()) {
-		return false;
+		return 0;
 	}
 	int dropcnt = cmd->getDropedCount();
 	if (dropcnt == 0) {
 		// 说明没有删除任何内容，也返回0
-		return false;
+		return 0;
 	}
 	getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
 	return dropcnt;
