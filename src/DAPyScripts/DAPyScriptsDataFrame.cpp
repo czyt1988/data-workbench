@@ -132,7 +132,7 @@ bool DAPyScriptsDataFrame::insert_column(DAPyDataFrame& df,
 		args[ "start" ] = DA::PY::toPyObject(start);
 		args[ "stop" ]  = DA::PY::toPyObject(stop);
 		if (start.canConvert(QMetaType::QDateTime) || start.canConvert(QMetaType::QDate)
-			|| start.canConvert(QMetaType::QTime)) {
+            || start.canConvert(QMetaType::QTime)) {
 			args[ "dtype" ] = pybind11::dtype("datetime64");
 		}
 		da_insert_column(**args);
@@ -436,10 +436,10 @@ bool DAPyScriptsDataFrame::ffillna(DAPyDataFrame& df, int axis, int limit)
 	try {
 		pybind11::object da_ffill_na = attr("da_ffill_na");
 		pybind11::object limitObj    = pybind11::none();
-    if (limit > 0) {
+        if (limit > 0) {
 			limitObj = pybind11::int_(limit);
 		}
-    pybind11::dict args;
+        pybind11::dict args;
 		args[ "axis" ]  = axis;
 		args[ "limit" ] = limitObj;
 		da_ffill_na(df.object(), **args);
@@ -476,6 +476,7 @@ bool DAPyScriptsDataFrame::bfillna(DAPyDataFrame& df, int axis, int limit)
 	return false;
 }
 
+/**
  * @brief interpolate方法的wrapper
  * @param df
  * @param method 插值填充的方法
@@ -502,5 +503,5 @@ bool DAPyScriptsDataFrame::interpolate(DAPyDataFrame& df, const QString& method,
 	}
 	return false;
 }
-  
+
 }  // end DA namespace
