@@ -70,6 +70,8 @@ public:
 	QAction* actionDataFrameDropNone;   ///< 删除缺失值
 	QAction* actionDropDuplicates;      ///< 重复值处理
 	QAction* actionDataFrameFillNone;   ///< 填充缺失值
+	QAction* actionDataFrameFFillNone;  ///< 前向填充缺失值
+	QAction* actionDataFrameBFillNone;  ///< 后向填充缺失值
 
 	//===================================================
 	// workflow的上下文标签

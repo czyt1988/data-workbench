@@ -503,6 +503,76 @@ bool DACommandDataFrame_fillna::exec()
 
 ///////////////////
 
+DACommandDataFrame_ffillna::DACommandDataFrame_ffillna(const DAPyDataFrame& df,
+                                                       DAPyDataFrameTableModule* model,
+                                                       int axis,
+                                                       int limit,
+                                                       QUndoCommand* par)
+    : DACommandWithTemplateData(df, par), mModel(model), mAxis(axis), mLimit(limit)
+{
+    setText(QObject::tr("ffill nan"));  // cn:前向填充缺失值
+}
+
+void DACommandDataFrame_ffillna::undo()
+{
+	load();
+	if (mModel) {
+		mModel->refresh();
+	}
+}
+
+bool DACommandDataFrame_ffillna::exec()
+{
+	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+
+	if (!pydf.ffillna(dataframe(), mAxis, mLimit)) {
+		return false;
+	}
+
+	// 说明填充了空行
+	if (mModel) {
+		mModel->refresh();
+	}
+	return true;
+}
+
+///////////////////
+
+DACommandDataFrame_bfillna::DACommandDataFrame_bfillna(const DAPyDataFrame& df,
+                                                       DAPyDataFrameTableModule* model,
+                                                       int axis,
+                                                       int limit,
+                                                       QUndoCommand* par)
+    : DACommandWithTemplateData(df, par), mModel(model), mAxis(axis), mLimit(limit)
+{
+    setText(QObject::tr("bfill nan"));  // cn:后向填充缺失值
+}
+
+void DACommandDataFrame_bfillna::undo()
+{
+	load();
+	if (mModel) {
+		mModel->refresh();
+	}
+}
+
+bool DACommandDataFrame_bfillna::exec()
+{
+	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+
+	if (!pydf.bfillna(dataframe(), mAxis, mLimit)) {
+		return false;
+	}
+
+	// 说明填充了空行
+	if (mModel) {
+		mModel->refresh();
+	}
+	return true;
+}
+
+///////////////////
+
 DACommandDataFrame_castNum::DACommandDataFrame_castNum(const DAPyDataFrame& df,
                                                        const QList< int >& index,
                                                        const pybind11::dict& args,

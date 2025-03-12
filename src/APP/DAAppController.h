@@ -213,6 +213,10 @@ private Q_SLOTS:
 	void onActionDataFrameDropNoneTriggered();
 	// 填充缺失值
 	void onActionDataFrameFillNoneTriggered();
+	// 前向填充缺失值
+	void onActionDataFrameFFillNoneTriggered();
+	// 后向填充缺失值
+	void onActionDataFrameBFillNoneTriggered();
 	// 删除重复值
 	void onActionDropDuplicatesTriggered();
 #if DA_ENABLE_PYTHON
