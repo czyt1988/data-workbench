@@ -353,15 +353,6 @@ bool DACommandDataFrame_setnan::exec()
 	return true;
 }
 ////////////////////////////
-/// \brief DACommandDataFrame_dropna::DACommandDataFrame_dropna
-/// \param df
-/// \param model
-/// \param axis
-/// \param how
-/// \param index
-/// \param thresh
-/// \param par
-///
 
 DACommandDataFrame_dropna::DACommandDataFrame_dropna(const DAPyDataFrame& df,
                                                      DAPyDataFrameTableModule* model,
@@ -411,15 +402,6 @@ int DACommandDataFrame_dropna::getDropedCount() const
 }
 
 ///////////////////
-/// \brief DACommandDataFrame_dropduplicates::DACommandDataFrame_dropduplicates
-/// \param df
-/// \param model
-/// \param axis
-/// \param how
-/// \param index
-/// \param thresh
-/// \param par
-///
 
 DACommandDataFrame_dropduplicates::DACommandDataFrame_dropduplicates(const DAPyDataFrame& df,
                                                                      DAPyDataFrameTableModule* model,
@@ -491,6 +473,42 @@ bool DACommandDataFrame_fillna::exec()
 	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
 
 	if (!pydf.fillna(dataframe(), mValue, mLimit)) {
+		return false;
+	}
+
+	// 说明填充了空行
+	if (mModel) {
+		mModel->refresh();
+	}
+	return true;
+}
+
+///////////////////
+
+DACommandDataFrame_interpolate::DACommandDataFrame_interpolate(const DAPyDataFrame& df,
+                                                               DAPyDataFrameTableModule* model,
+                                                               const QString& method,
+                                                               int order,
+                                                               int limit,
+                                                               QUndoCommand* par)
+    : DACommandWithTemplateData(df, par), mModel(model), mMethod(method), mOrder(order), mLimit(limit)
+{
+    setText(QObject::tr("interpolate"));  // cn:插值填充缺失值
+}
+
+void DACommandDataFrame_interpolate::undo()
+{
+	load();
+	if (mModel) {
+		mModel->refresh();
+	}
+}
+
+bool DACommandDataFrame_interpolate::exec()
+{
+	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+
+	if (!pydf.interpolate(dataframe(), mMethod, mOrder, mLimit)) {
 		return false;
 	}
 

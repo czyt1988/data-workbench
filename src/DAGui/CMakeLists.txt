@@ -193,6 +193,7 @@ if(DA_ENABLE_PYTHON)
         ${DA_LIB_SUBDIR_Dialog}/DADialogPythonArgs.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillna.h
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameInterpolate.h
     )
     list(APPEND DA_LIB_SOURCE_FILES_Dialog
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToDatetime.cpp
@@ -201,6 +202,7 @@ if(DA_ENABLE_PYTHON)
         ${DA_LIB_SUBDIR_Dialog}/DADialogPythonArgs.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillna.cpp
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameInterpolate.cpp
     )
     list(APPEND DA_LIB_QT_UI_FILES_Dialog
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToDatetime.ui
@@ -208,6 +210,7 @@ if(DA_ENABLE_PYTHON)
         ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillna.ui
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameInterpolate.ui
     )
 endif()
 #MimeData

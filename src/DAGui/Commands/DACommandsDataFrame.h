@@ -245,12 +245,12 @@ public:
 	int getDropedCount() const;
 
 private:
-	DAPyDataFrameTableModule* mModel{ nullptr };
-	int mAxis{ 0 };
+	DAPyDataFrameTableModule* mModel { nullptr };
+	int mAxis { 0 };
 	QString mHow;
 	QList< int > mIndex;
-	int mThresh{ -1 };
-	int mDropedCount{ 0 };  ///< 记录删除了多少行或列
+	int mThresh { -1 };
+	int mDropedCount { 0 };  ///< 记录删除了多少行或列
 };
 
 /**
@@ -270,10 +270,10 @@ public:
 	int getDropedCount() const;
 
 private:
-	DAPyDataFrameTableModule* mModel{ nullptr };
+	DAPyDataFrameTableModule* mModel { nullptr };
 	QString mKeep;
 	QList< int > mIndex;
-	int mDropedCount{ 0 };  ///< 记录删除了多少行或列
+	int mDropedCount { 0 };  ///< 记录删除了多少行或列
 };
 
 /**
@@ -291,9 +291,31 @@ public:
 	virtual bool exec() override;
 
 private:
-	DAPyDataFrameTableModule* mModel{ nullptr };
-	double mValue{ 0.0 };
-	int mLimit{ -1 };
+	DAPyDataFrameTableModule* mModel { nullptr };
+	double mValue { 0.0 };
+	int mLimit { -1 };
+};
+
+/**
+ * @brief interpolate命令
+ */
+class DAGUI_API DACommandDataFrame_interpolate : public DACommandWithTemplateData
+{
+public:
+	DACommandDataFrame_interpolate(const DAPyDataFrame& df,
+								   DAPyDataFrameTableModule* model = nullptr,
+								   const QString& method           = QStringLiteral("spline"),
+								   int order                       = 1,
+								   int limit                       = -1,
+								   QUndoCommand* par               = nullptr);
+	virtual void undo() override;
+	virtual bool exec() override;
+
+private:
+	DAPyDataFrameTableModule* mModel { nullptr };
+	QString mMethod;
+	int mOrder { 1 };
+	int mLimit { -1 };
 };
 
 /**
