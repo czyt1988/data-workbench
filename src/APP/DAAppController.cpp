@@ -782,6 +782,10 @@ void DAAppController::saveAs()
 	qInfo() << tr("Project saved successfully,path is %1").arg(projectPath);  // 工程保存成功，路径位于:%1
 }
 
+/**
+ * @brief 追加工作流
+ * TODO: 此处应该调整到DAAPPProjectInterface
+ */
 void DAAppController::onActionAppendProjectTriggered()
 {
 	QFileDialog dialog(app());
@@ -798,15 +802,19 @@ void DAAppController::onActionAppendProjectTriggered()
 	DAAppProject* project = DA_APP_CORE.getAppProject();
 	DA_WAIT_CURSOR_SCOPED();
 
-	if (!project->appendWorkflowInProject(fileNames.first(), true)) {
+	QFile file(fileNames.first());
+	if (!file.open(QIODevice::ReadOnly)) {
+		return;
+	}
+	if (!project->appendWorkflowInProject(file.readAll(), true)) {
 		qCritical() << tr("failed to load project file:%1").arg(fileNames.first());
 		return;
 	}
 	// 设置工程名称给标题
 	if (project->getProjectBaseName().isEmpty()) {
-		app()->setWindowTitle(QString("untitle"));
+		app()->setWindowTitle(QString("untitle [*]"));
 	} else {
-		app()->setWindowTitle(QString("%1").arg(project->getProjectBaseName()));
+		app()->setWindowTitle(QString("%1 [*]").arg(project->getProjectBaseName()));
 	}
 }
 
@@ -1714,12 +1722,12 @@ void DAAppController::onActionDataFrameFillInterpolateTriggered()
 #if DA_ENABLE_PYTHON
 	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
 		if (dfopt->fillInterpolate()) {
-      setDirty();
-    }
-  }
+			setDirty();
+		}
+	}
 #endif
 }
-                    
+
 /**
  * @brief 前向填充缺失值
  */

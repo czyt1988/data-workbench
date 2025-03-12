@@ -54,6 +54,7 @@ bool DAAppCore::initialized()
 	mDataManager = new DAAppDataManager(this, this);
 	qDebug() << "core have been initialized App Data Manager";
 	mProject = new DAAppProject(this, this);
+	mProject->setDataManagerInterface(mDataManager);
 	return true;
 }
 

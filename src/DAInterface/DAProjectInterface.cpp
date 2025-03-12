@@ -5,6 +5,7 @@
 #include "DAStringUtil.h"
 #include "DAXmlHelper.h"
 #include "DAQtContainerUtil.hpp"
+#include "DADataManagerInterface.h"
 namespace DA
 {
 
@@ -26,6 +27,7 @@ public:
 public:
 	bool mIsDirty { false };  ///< 脏标识
 	DAWorkFlowOperateWidget* mWorkFlowOperateWidget { nullptr };
+	DADataManagerInterface* mDataManagerInterface { nullptr };
 	QFileInfo mProjectFileInfo;  ///< 记录工程文件信息
 	DAXmlHelper mXml;
 	static QString s_suffix;  ///< 工程文件后缀
@@ -117,6 +119,25 @@ DAWorkFlowOperateWidget* DAProjectInterface::getWorkFlowOperateWidget() const
 {
     return d_ptr->mWorkFlowOperateWidget;
 }
+
+/**
+ * @brief 设置数据管理接口
+ * @param d
+ */
+void DAProjectInterface::setDataManagerInterface(DADataManagerInterface* d)
+{
+    d_ptr->mDataManagerInterface = d;
+}
+
+/**
+ * @brief 获取数据管理接口
+ * @return
+ */
+DADataManagerInterface* DAProjectInterface::getDataManagerInterface()
+{
+    return d_ptr->mDataManagerInterface;
+}
+
 /**
  * @brief 获取工程名
  *
@@ -204,23 +225,17 @@ void DAProjectInterface::clear()
  * @param path
  * @param skipIndex 是否跳转到保存的tab索引
  */
-bool DAProjectInterface::appendWorkflowInProject(const QString& path, bool skipIndex)
+bool DAProjectInterface::appendWorkflowInProject(const QByteArray& data, bool skipIndex)
 {
 	// 加载之前先清空
 	DAWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
 	Q_CHECK_PTR(wfo);
 	QDomDocument doc;
-	QFile file(path);
-	if (!file.open(QIODevice::ReadOnly)) {
-		return false;
-	}
 	QString error;
-	if (!doc.setContent(&file, &error)) {
+	if (!doc.setContent(data, &error)) {
 		qCritical() << "load setContent error:" << error;
-		file.close();
 		return false;
 	}
-	file.close();
 	int oldProjectHaveWorkflow = wfo->count();  // 已有的工作流数量
 	bool isok                  = true;
 	QDomElement docElem        = doc.documentElement();                 // root
@@ -312,11 +327,15 @@ void DAProjectInterface::setProjectFileSuffix(const QString& f)
 bool DAProjectInterface::load(const QString& path)
 {
 	// 加载之前先清空
-	DAWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
-	Q_CHECK_PTR(wfo);
 	clear();
 	setProjectPath(path);
-	bool isok = appendWorkflowInProject(path, true);
+	QFile file(path);
+	if (!file.open(QIODevice::ReadOnly)) {
+		return false;
+	}
+	QByteArray dataWorkflow = file.readAll();
+	bool isok               = loadWorkflow(dataWorkflow);
+
 	if (isok) {
 		emit projectLoaded(path);
 	} else {
@@ -347,6 +366,19 @@ bool DAProjectInterface::save(const QString& path)
 		qCritical() << tr("open failed,path is %1").arg(path);
 		return false;
 	}
+	QByteArray workflow = saveWorkflow();
+	file.write(workflow);
+	file.close();
+	setProjectPath(path);
+	emit projectSaved(path);
+	setModified(false);
+	return true;
+}
+
+QByteArray DAProjectInterface::saveWorkflow()
+{
+	DAWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
+	Q_CHECK_PTR(wfo);
 	QDomDocument doc;
 	QDomProcessingInstruction processInstruction =
 		doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\"");
@@ -362,13 +394,37 @@ bool DAProjectInterface::save(const QString& path)
 	// 把所有的工作流保存
 	QDomElement workflowsElement = d_ptr->mXml.makeElement(wfo, "workflows", &doc);
 	project.appendChild(workflowsElement);
-	QTextStream outFile(&file);
-	doc.save(outFile, 4);
-	file.close();
-	setProjectPath(path);
-	emit projectSaved(path);
-	setModified(false);
-	return true;
+	return doc.toByteArray();
+}
+
+bool DAProjectInterface::loadWorkflow(const QByteArray& data)
+{
+	// 加载之前先清空
+	DAWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
+	Q_CHECK_PTR(wfo);
+	bool isok = appendWorkflowInProject(data, true);
+	return isok;
+}
+
+/**
+ * @brief 保存datamanager
+ * @return
+ */
+QByteArray DAProjectInterface::saveDataManager()
+{
+	DADataManagerInterface* dataMgr = getDataManagerInterface();
+	int datacnt                     = dataMgr->getDataCount();
+	QDomDocument doc;
+	QDomProcessingInstruction processInstruction =
+		doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\"");
+	doc.appendChild(processInstruction);
+	QDomElement root = doc.createElement("root");
+	root.setAttribute("type", "data manager");
+	doc.appendChild(root);
+	// 保存DAData基本信息
+	QDomElement dataListEle = doc.createElement("datas");
+
+	return doc.toByteArray();
 }
 
 /**

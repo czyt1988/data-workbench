@@ -8,6 +8,7 @@ namespace DA
 {
 class DACoreInterface;
 class DAWorkFlowOperateWidget;
+class DADataManagerInterface;
 /**
  * @brief 负责总体工程的接口
  *
@@ -23,6 +24,9 @@ public:
 	// 设置工作流操作窗口
 	void setWorkFlowOperateWidget(DAWorkFlowOperateWidget* w);
 	DAWorkFlowOperateWidget* getWorkFlowOperateWidget() const;
+	// 设置数据管理接口
+	void setDataManagerInterface(DADataManagerInterface* d);
+	DADataManagerInterface* getDataManagerInterface();
 	// 获取工程文件的基础名
 	QString getProjectBaseName() const;
 	// 工程路径,如D:/project
@@ -38,7 +42,7 @@ public:
 	// 清空工程
 	virtual void clear();
 	// 追加一个工厂的工作流进入本工程中，注意这个操作不会清空当前的工作流
-	bool appendWorkflowInProject(const QString& path, bool skipIndex = false);
+	bool appendWorkflowInProject(const QByteArray& data, bool skipIndex = false);
 	// 工程文件的版本,版本组成有大版本.中间版本.小版本组成，例如0.1.1
 	static QVersionNumber getProjectVersion();
 
@@ -52,10 +56,17 @@ public:
 	virtual bool load(const QString& path);
 	// 保存工程，保存成功后需要发射projectSaved信号
 	virtual bool save(const QString& path);
-public slots:
+	//
+protected:
+	// 保存workflow相关内容（以xml形式）
+	QByteArray saveWorkflow();
+	bool loadWorkflow(const QByteArray& data);
+	// 保存dataManager结构
+	QByteArray saveDataManager();
+public Q_SLOTS:
 	// 设置为dirty,会发射becomeDirty
 	void setModified(bool on = true);
-signals:
+Q_SIGNALS:
 	/**
 	 * @brief 工程加载完成
 	 * @param path 工程的路径
