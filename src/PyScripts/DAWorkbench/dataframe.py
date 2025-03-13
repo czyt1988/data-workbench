@@ -1,6 +1,16 @@
 # -*- coding: utf-8 -*-
 import os
-from typing import List, Dict, Optional, Tuple, Literal
+import sys
+from typing import List, Dict, Optional, Union
+# 根据Python版本动态导入Literal
+if sys.version_info >= (3, 8):
+    from typing import Literal
+else:
+    from typing_extensions import Literal
+# 在Python 3.10及之后的版本中引入了|操作符用于类型联合，而在此之前的版本并不支持这种语法,为了支持win7（python3.7）,
+# 这里不应使用|操作符可以使用Union替换|，Literal是3.8之后才支持，这里也不应该引入
+# 如果确实是在Python 3.7环境下并且需要使用Literal，可以引入typing_extensions包，from typing_extensions import Literal
+
 from pandas._typing import Axis, Scalar
 import pandas as pd
 import numpy as np
@@ -36,7 +46,7 @@ def da_drop_icolumn(df: pd.DataFrame, index: List[int]):
     df.drop(cols, axis=1, inplace=True)
 
 @log_function_call
-def da_drop_na(df: pd.DataFrame, axis:int = 0, how:Literal['any','all']='any', index:Optional[List[int]]=None, thresh:int|None=None):
+def da_drop_na(df: pd.DataFrame, axis:int = 0, how:Literal['any','all']='any', index:Optional[List[int]]=None, thresh:Optional[int]=None):
     '''
     删除dataframe中的nan值
     :param df: pd.DataFrame
@@ -55,7 +65,7 @@ def da_drop_na(df: pd.DataFrame, axis:int = 0, how:Literal['any','all']='any', i
     df.dropna(axis=axis,how=how ,subset=subset, thresh=thresh, inplace=True)
 
 @log_function_call
-def da_fill_na(df: pd.DataFrame, value:Scalar | dict | None = None,axis:Axis|None=None, limit:int|None=None, downcast: dict | None = None):
+def da_fill_na(df: pd.DataFrame, value:Union[Scalar,dict,None] = None,axis:Optional[Axis]=None, limit:Optional[int]=None, downcast:Optional[dict]= None):
     '''
     填充dataframe中的nan值
     :param df: pd.DataFrame
@@ -76,7 +86,7 @@ def da_fill_na(df: pd.DataFrame, value:Scalar | dict | None = None,axis:Axis|Non
     df.fillna(axis = axis, value = value,downcast=downcast,inplace = True)
 
 @log_function_call
-def da_ffill_na(df: pd.DataFrame, axis:Axis|None=None, limit:int|None=None, downcast: dict | None = None):
+def da_ffill_na(df: pd.DataFrame, axis:Optional[Axis]=None, limit:Optional[int]=None, downcast: Optional[dict] = None):
     '''
     填充dataframe中的nan值
     :param df: pd.DataFrame
@@ -88,7 +98,7 @@ def da_ffill_na(df: pd.DataFrame, axis:Axis|None=None, limit:int|None=None, down
     df.ffill(axis = axis, inplace = True,limit = limit,downcast=downcast)
     
 @log_function_call
-def da_bfill_na(df: pd.DataFrame, axis:Axis|None=None, limit:int|None=None, limit_area:Literal[None,'inside','outside']=None):
+def da_bfill_na(df: pd.DataFrame, axis:Optional[Axis]=None, limit:Optional[int]=None, limit_area:Optional[Literal['inside','outside']]=None):
     '''
     填充dataframe中的nan值
     :param df: pd.DataFrame
@@ -114,8 +124,8 @@ def da_drop_duplicates(df: pd.DataFrame,keep:Literal['first','last',False]='firs
     df.drop_duplicates(subset=subset, keep=keep, inplace=True)
 
 @log_function_call
-def da_fill_interpolate(df: pd.DataFrame, method:Literal['spline','polynomial']='spline',order:int=1, axis:int = 0, limit:int|None=None, 
-                        limit_direction: Literal["forward", "backward", "both"]="forward",limit_area:Literal["inside", "outside"]|None=None,downcast: dict | None = None):
+def da_fill_interpolate(df: pd.DataFrame, method:Literal['spline','polynomial']='spline',order:int=1, axis:int = 0, limit:Optional[int]=None, 
+                        limit_direction: Literal["forward", "backward", "both"]="forward",limit_area:Literal["inside", "outside",None]=None,downcast: Optional[dict] = None):
     '''
     插值法填充dataframe中的nan值
     :param df: pd.DataFrame。

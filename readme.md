@@ -62,6 +62,13 @@ pip install Loguru
 pip install openpyxl
 pip install chardet
 ```
+
+如果你的python版本小于3.8，还需额外导入
+
+```
+pip install typing_extensions
+```
+
 > Loguru主要用于进行python脚本的日志记录
 > 
 > openpyxl是pandas导入excel文件的依赖，如果没有安装，则无法导入excel文件
