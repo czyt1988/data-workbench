@@ -32,22 +32,22 @@ public:
     DAAbstractData();
     virtual ~DAAbstractData();
 
-    //变量类型
+    // 变量类型
     virtual DataType getDataType() const = 0;
 
-    //变量值
+    // 变量值
     virtual QVariant toVariant() const       = 0;
     virtual bool setValue(const QVariant& v) = 0;
 
-    //变量名
+    // 变量名
     QString getName() const;
     void setName(const QString& n);
 
-    //变量描述
+    // 变量描述
     QString getDescribe() const;
     void setDescribe(const QString& d);
 
-    //返回其父节点（一般此函数之会对DADataPackage有用）
+    // 返回其父节点（一般此函数之会对DADataPackage有用）
     Pointer getParent() const;
     void setParent(Pointer& p);
 
@@ -56,9 +56,10 @@ public:
     virtual bool read(QDataStream& in);
     // id操作
     IdType id() const;
+    void setID(IdType d);
 
 public:
-    //类型转换为文字
+    // 类型转换为文字
     static QString typeToString(DataType d);
 
 private:
@@ -67,5 +68,10 @@ private:
     Pointer mParent;    ///< 记录父级节点
     IdType mID;         ///< id
 };
+
+QString DADATA_API enumToString(DAAbstractData::DataType t);
+DAAbstractData::DataType DADATA_API stringToEnum(const QString& str,
+                                                 DAAbstractData::DataType defaultType = DAAbstractData::TypeNone);
+
 }  // namespace DA
 #endif  // DAABSTRACTDATA_H

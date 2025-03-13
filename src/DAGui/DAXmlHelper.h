@@ -4,6 +4,7 @@
 #include <QDomDocument>
 #include <QVariant>
 #include <QVersionNumber>
+#include "DAData.h"
 #include "DAAbstractNode.h"
 #include "DAGraphicsItemGroup.h"
 /**
@@ -12,7 +13,6 @@
 
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DAXmlHelper)
 class DAWorkFlowEditWidget;
 class DAWorkFlow;
 class DAWorkFlowGraphicsScene;
@@ -34,7 +34,7 @@ class DAGraphicsResizeableItem;
  */
 class DAGUI_API DAXmlHelper
 {
-	DA_IMPL(DAXmlHelper)
+    DA_DECLARE_PRIVATE(DAXmlHelper)
 public:
 	DAXmlHelper();
 	~DAXmlHelper();
@@ -70,6 +70,9 @@ public:
 	static bool loadElement(QGraphicsItem* item, const QDomElement* tag, const QVersionNumber& v = QVersionNumber());
     // 获取所有处理过的item
     QList< QGraphicsItem* > getAllDealItems() const;
+    // DAData的序列化
+    static QDomElement makeElement(const DAData* data, const QString& tagName, QDomDocument* doc);
+    static bool loadElement(DAData* data, const QDomElement* tag, const QVersionNumber& v = QVersionNumber());
 
 public:
 	// 生成一个qvariant element

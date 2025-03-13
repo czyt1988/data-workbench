@@ -1,17 +1,15 @@
 ﻿#include "DAAbstractData.h"
 #include <QObject>
 
-//===================================================
-// using DA namespace -- 禁止在头文件using！！
-//===================================================
-
-using namespace DA;
+namespace DA
+{
 
 //===================================================
 // DAAbstractData
 //===================================================
 DAAbstractData::DAAbstractData() : mParent(nullptr)
 {
+    mID = (IdType)this;
 }
 
 DAAbstractData::~DAAbstractData()
@@ -88,7 +86,12 @@ bool DAAbstractData::read(QDataStream& in)
  */
 DAAbstractData::IdType DAAbstractData::id() const
 {
-    return (IdType)this;
+    return mID;
+}
+
+void DAAbstractData::setID(DAAbstractData::IdType d)
+{
+    mID = d;
 }
 
 QString DAAbstractData::typeToString(DAAbstractData::DataType d)
@@ -107,3 +110,43 @@ QString DAAbstractData::typeToString(DAAbstractData::DataType d)
     }
     return QString();
 }
+
+QString enumToString(DAAbstractData::DataType t)
+{
+    switch (t) {
+    case DAAbstractData::TypeNone:
+        return QStringLiteral("None");
+    case DAAbstractData::TypeDataPackage:
+        return QStringLiteral("Package");
+    case DAAbstractData::TypePythonObject:
+        return QStringLiteral("Object");
+    case DAAbstractData::TypePythonDataFrame:
+        return QStringLiteral("DataFrame");
+    case DAAbstractData::TypePythonSeries:
+        return QStringLiteral("Series");
+    case DAAbstractData::TypeInnerData:
+        return QStringLiteral("InnerData");
+    default:
+        break;
+    }
+    return QStringLiteral("None");
+}
+
+DAAbstractData::DataType stringToEnum(const QString& str, DAAbstractData::DataType defaultType)
+{
+    if (0 == str.compare(QStringLiteral("None"), Qt::CaseInsensitive)) {
+        return DAAbstractData::TypeNone;
+    } else if (0 == str.compare(QStringLiteral("Package"), Qt::CaseInsensitive)) {
+        return DAAbstractData::TypeDataPackage;
+    } else if (0 == str.compare(QStringLiteral("Object"), Qt::CaseInsensitive)) {
+        return DAAbstractData::TypePythonObject;
+    } else if (0 == str.compare(QStringLiteral("DataFrame"), Qt::CaseInsensitive)) {
+        return DAAbstractData::TypePythonDataFrame;
+    } else if (0 == str.compare(QStringLiteral("Series"), Qt::CaseInsensitive)) {
+        return DAAbstractData::TypePythonSeries;
+    } else if (0 == str.compare(QStringLiteral("InnerData"), Qt::CaseInsensitive)) {
+        return DAAbstractData::TypeInnerData;
+    }
+    return defaultType;
+}
+}  // end of DA
