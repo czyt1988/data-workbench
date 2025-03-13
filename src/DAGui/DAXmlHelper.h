@@ -5,6 +5,7 @@
 #include <QVariant>
 #include <QVersionNumber>
 #include "DAData.h"
+#include "DADataManager.h"
 #include "DAAbstractNode.h"
 #include "DAGraphicsItemGroup.h"
 /**
@@ -34,7 +35,7 @@ class DAGraphicsResizeableItem;
  */
 class DAGUI_API DAXmlHelper
 {
-    DA_DECLARE_PRIVATE(DAXmlHelper)
+	DA_DECLARE_PRIVATE(DAXmlHelper)
 public:
 	DAXmlHelper();
 	~DAXmlHelper();
@@ -51,10 +52,10 @@ public:
 	bool loadElement(DAWorkFlowOperateWidget* wfo, const QDomElement* workflowsEle);
 	// 创建剪切板描述xml
 	QDomElement makeClipBoardElement(const QList< DAGraphicsItem* > its,
-                                     const QString& tagName,
-                                     QDomDocument* doc,
-                                     bool isCopyType = true);
-    bool loadClipBoardElement(const QDomElement* clipBoardElement, DAWorkFlowGraphicsScene* sc);
+									 const QString& tagName,
+									 QDomDocument* doc,
+									 bool isCopyType = true);
+	bool loadClipBoardElement(const QDomElement* clipBoardElement, DAWorkFlowGraphicsScene* sc);
 	// DAGraphicsItem的通用保存
 	static QDomElement makeElement(const DAGraphicsItem* item, const QString& tagName, QDomDocument* doc);
 	static bool loadElement(DAGraphicsItem* item, const QDomElement* tag, const QVersionNumber& v = QVersionNumber());
@@ -62,17 +63,20 @@ public:
 	// DAGraphicsItemGroup的通用保存,注意！！！此函数并不会把子item的信息保存，仅仅记录子item的id
 	static QDomElement makeElement(const DAGraphicsItemGroup* itemGroup, const QString& tagName, QDomDocument* doc);
 	static bool loadElement(DAGraphicsScene* scene,
-                            DAGraphicsItemGroup* group,
-                            const QDomElement* groupElement,
-                            const QVersionNumber& v = QVersionNumber());
+							DAGraphicsItemGroup* group,
+							const QDomElement* groupElement,
+							const QVersionNumber& v = QVersionNumber());
 	// DA支持的所有QGraphicsItem的通用保存
 	static QDomElement makeElement(const QGraphicsItem* item, const QString& tagName, QDomDocument* doc);
 	static bool loadElement(QGraphicsItem* item, const QDomElement* tag, const QVersionNumber& v = QVersionNumber());
-    // 获取所有处理过的item
-    QList< QGraphicsItem* > getAllDealItems() const;
-    // DAData的序列化
-    static QDomElement makeElement(const DAData* data, const QString& tagName, QDomDocument* doc);
-    static bool loadElement(DAData* data, const QDomElement* tag, const QVersionNumber& v = QVersionNumber());
+	// 获取所有处理过的item
+	QList< QGraphicsItem* > getAllDealItems() const;
+	// DAData的序列化
+	static QDomElement makeElement(const DAData* data, const QString& tagName, QDomDocument* doc);
+	static bool loadElement(DAData* data, const QDomElement* tag, const QVersionNumber& v = QVersionNumber());
+	// DADataManager的序列化
+	static QDomElement makeElement(const DADataManager* dmgr, const QString& tagName, QDomDocument* doc);
+	static bool loadElement(DADataManager* dmgr, const QDomElement* tag, const QVersionNumber& v = QVersionNumber());
 
 public:
 	// 生成一个qvariant element

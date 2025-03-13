@@ -4,7 +4,7 @@
 #include "DAWorkFlow.h"
 #include "DAAbstractNodeFactory.h"
 #include "DAQtContainerUtil.hpp"
-#include "DAGlobals.h"
+#include "DAUniqueIDGenerater.h"
 // Qxml
 #include <QPointer>
 #include <QDomComment>
@@ -867,17 +867,9 @@ QList< DAAbstractNode::LinkInfo > DAAbstractNode::getAllOutputLinkInfo() const
  * @brief 生成一个唯一id
  * @return
  */
-DAAbstractNode::IdType DAAbstractNode::generateID() const
+DAAbstractNode::IdType DAAbstractNode::generateID()
 {
-	union {
-		IdType id;
-		uint32_t raw[ 2 ];
-	} mem;
-	QDateTime dt = QDateTime::currentDateTime();
-
-	mem.raw[ 0 ] = uint32_t(dt.toMSecsSinceEpoch());
-	mem.raw[ 1 ] = uintptr_t(this);
-	return mem.id;
+    return DAUniqueIDGenerater::id();
 }
 
 /**

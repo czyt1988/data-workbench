@@ -187,22 +187,22 @@ public:  // 连接相关
 	// 获取输出的链接信息
 	QList< LinkInfo > getAllOutputLinkInfo() const;
 	// 生成一个uint64_t的唯一id
-	IdType generateID() const;
+	static IdType generateID();
 	// 获取工作流,有可能返回nullptr
 	DAWorkFlow* workflow() const;
 	// 获取工厂
 	std::shared_ptr< DAAbstractNodeFactory > factory() const;
 
-    /**
-     * @brief 转换为其他具体类型节点
-     * @return 如果成功返回一个不为空的指针
-     * @note 注意此操作通过dynamic_pointer_cast实现
-     */
-    template< typename T >
-    std::shared_ptr< T > castTo()
-    {
-        return std::dynamic_pointer_cast< T >(pointer());
-    }
+	/**
+	 * @brief 转换为其他具体类型节点
+	 * @return 如果成功返回一个不为空的指针
+	 * @note 注意此操作通过dynamic_pointer_cast实现
+	 */
+	template< typename T >
+	std::shared_ptr< T > castTo()
+	{
+		return std::dynamic_pointer_cast< T >(pointer());
+	}
 
 public:
 	// 执行
