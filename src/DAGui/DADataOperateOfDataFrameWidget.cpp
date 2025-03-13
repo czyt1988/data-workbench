@@ -559,7 +559,7 @@ bool DADataOperateOfDataFrameWidget::fillna(const DAPyDataFrame& df, double valu
  * @brief 插值法填充缺失值
  * @return 成功返回true,反之返回false
  */
-bool DADataOperateOfDataFrameWidget::fillInterpolate()
+bool DADataOperateOfDataFrameWidget::interpolate()
 {
 	DAPyDataFrame df = getDataframe();
 	if (df.isNone()) {
@@ -580,13 +580,13 @@ bool DADataOperateOfDataFrameWidget::fillInterpolate()
 	if (mDialogDataFrameFillInterpolate->isEnableLimitCount()) {
 		limitCount = mDialogDataFrameFillInterpolate->getLimitCount();
 	}
-	return fillInterpolate(df, method, order, limitCount);
+	return interpolate(df, method, order, limitCount);
 }
 
-bool DADataOperateOfDataFrameWidget::fillInterpolate(const DAPyDataFrame& df, const QString& method, int order, int limit)
+bool DADataOperateOfDataFrameWidget::interpolate(const DAPyDataFrame& df, const QString& method, int order, int limit)
 {
-	std::unique_ptr< DACommandDataFrame_fillInterpolate > cmd =
-		std::make_unique< DACommandDataFrame_fillInterpolate >(df, mModel, method, order, limit);
+	std::unique_ptr< DACommandDataFrame_interpolate > cmd =
+		std::make_unique< DACommandDataFrame_interpolate >(df, mModel, method, order, limit);
 	if (!cmd->exec()) {
 		return false;
 	}

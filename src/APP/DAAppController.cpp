@@ -1713,7 +1713,7 @@ void DAAppController::onActionDataFrameFillInterpolateTriggered()
 {
 #if DA_ENABLE_PYTHON
 	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-		if (dfopt->fillInterpolate()) {
+		if (dfopt->interpolate()) {
       setDirty();
     }
   }

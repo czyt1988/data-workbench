@@ -84,22 +84,22 @@ public Q_SLOTS:
 	// 删除缺失值,返回删除的数量
 	int dropna(const QString& how = QStringLiteral("any"), int thresh = -1);
 	int dropna(const DAPyDataFrame& df,
-			   int axis,
-			   const QString& how       = QStringLiteral("any"),
-			   const QList< int > index = QList< int >(),
-			   int thresh               = -1);
+               int axis,
+               const QString& how       = QStringLiteral("any"),
+               const QList< int > index = QList< int >(),
+               int thresh               = -1);
 	// 删除重复值
 	int dropduplicates(const QString& keep = QStringLiteral("first"));
 	int dropduplicates(const DAPyDataFrame& df,
-					   const QString& keep      = QStringLiteral("first"),
-					   const QList< int > index = QList< int >());
+                       const QString& keep      = QStringLiteral("first"),
+                       const QList< int > index = QList< int >());
 
 	// 填充缺失值，执行成功返回true
 	bool fillna();
 	bool fillna(const DAPyDataFrame& df, double value = 0.0, int limit = -1);
 	// 插值法填充缺失值，成功返回true
-	bool fillInterpolate();
-	bool fillInterpolate(const DAPyDataFrame& df, const QString& method, int order, int limit);
+    bool interpolate();
+    bool interpolate(const DAPyDataFrame& df, const QString& method, int order, int limit);
 	// 前向填充缺失值，执行成功返回true
 	bool ffillna();
 	bool ffillna(const DAPyDataFrame& df, int axis = 0, int limit = -1);
