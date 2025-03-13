@@ -100,18 +100,67 @@ def da_bfill_na(df: pd.DataFrame, axis:Axis|None=None, limit:int|None=None, limi
     df.bfill(axis = axis, inplace = True,limit = limit,limit_area=limit_area)
 
 @log_function_call
-def da_drop_duplicates(df: pd.DataFrame,keep:Literal['first','last',False]='first', index:Optional[List[int]]=None):
-    '''
-    删除dataframe中的nan值
-    :param df: pd.DataFrame
-    :param keep: 指定保留哪个重复的行,'first'：保留第一次出现的重复行（默认）,'last'：保留最后一次出现的重复行,False：删除所有重复的行。
-    :param index: 列索引
-    :return: 此函数不返回值,直接改变df
-    '''
-    subset = None
-    if index is not None:
-        subset = df.columns[index]
-    df.drop_duplicates(subset=subset, keep=keep, inplace=True)
+def n_std_filter(df: pd.DataFrame, n=3, axis=1, index: Optional[List[int]] = None):
+    """
+    使用n倍标准差法过滤DataFrame的行或列（直接在原数据上修改）
+    :param df: 输入的pd.DataFrame
+    :param n: 标准差的倍数，范围是0.1~10，默认为3
+    :param axis: 过滤方向，1表示基于选中列过滤行(默认)，0表示基于选中行过滤列
+    :param index: 需要过滤的行或列的索引列表，如果为None，则过滤所有行或列
+    :return: 过滤后的DataFrame
+    """
+    # 如果未指定索引，则默认过滤所有行或列
+    if index is None:
+        index = list(range(df.shape[1 if axis == 1 else 0]))
+
+    # 计算均值和标准差
+    if axis == 1:  # 计算选中列的值，过滤行
+        data = df.iloc[:, index]
+        mean = data.mean(axis=0)  # 沿着行的方向，计算每一列的平均值
+        std = data.std(axis=0)    # 沿着行的方向，计算每一列的标准差
+        
+        # 为每一列创建掩码，标识该列中哪些行在均值±n*标准差范围内
+        # 初始化一个全True的掩码数组
+        keep_rows = pd.Series([True] * df.shape[0], index=df.index)
+        
+        # 检查每一列，确定哪些行需要保留
+        for i, col_idx in enumerate(index):
+            col_data = df.iloc[:, col_idx]
+            col_mean = mean.iloc[i]
+            col_std = std.iloc[i]
+            col_lower = col_mean - n * col_std
+            col_upper = col_mean + n * col_std
+            
+            # 更新keep_rows，只保留在所有选中列都在范围内的行
+            keep_rows = keep_rows & (col_data >= col_lower) & (col_data <= col_upper)
+        
+        # 直接删除不符合条件的行
+        df.drop(df.index[~keep_rows], inplace=True)
+        
+    elif axis == 0:  # 计算选中的行的值，过滤列
+        data = df.iloc[index]
+        mean = data.mean(axis=1)  # 沿着列的方向，计算每一行的平均值
+        std = data.std(axis=1)    # 沿着列的方向，计算每一行的平均值
+        
+        # 为每一行创建掩码，标识该行中哪些列在均值±n*标准差范围内
+        keep_cols = pd.Series([True] * df.shape[1], index=df.columns)
+        
+        # 检查每一行，确定哪些列需要保留
+        for i, row_idx in enumerate(index):
+            row_data = df.iloc[row_idx]
+            row_mean = mean[i]
+            row_std = std[i]
+            row_lower = row_mean - n * row_std
+            row_upper = row_mean + n * row_std
+            
+            # 更新keep_cols，只保留在所有选中行都在范围内的列
+            keep_cols = keep_cols & (row_data >= row_lower) & (row_data <= row_upper)
+        
+        # 直接删除不符合条件的列
+        df.drop(columns=df.columns[~keep_cols], inplace=True)
+    
+    else:
+        raise ValueError("axis 必须是 0（基于选中行过滤列）或 1（基于选中列过滤行）")
 
 @log_function_call
 def da_to_pickle(df: pd.DataFrame, path: str):

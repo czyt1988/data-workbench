@@ -72,6 +72,7 @@ void DAAppActions::buildDataAction()
 	actionChangeToIndex      = createAction("actionChangeToIndex", ":/app/bright/Icon/changeToIndex.svg");
 	actionDataFrameDropNone  = createAction("actionDataFrameDropNone", ":/app/bright/Icon/dataframe-drop-none.svg");
 	actionDropDuplicates     = createAction("actionDropDuplicates", ":/app/bright/Icon/process-duplicate-data.svg");
+	actionstdfilter          = createAction("actionstdfilter", ":/app/bright/Icon/nstd-filter.svg");
 	actionDataFrameFillNone  = createAction("actionDataFrameFillNone", ":/app/bright/Icon/dataframe-fill-none.svg");
 	actionDataFrameFFillNone = createAction("actionDataFrameFFillNone", ":/app/bright/Icon/dataframe-ffill-none.svg");
 	actionDataFrameBFillNone = createAction("actionDataFrameBFillNone", ":/app/bright/Icon/dataframe-bfill-none.svg");
@@ -258,6 +259,8 @@ void DAAppActions::retranslateUi()
 	actionDataFrameBFillNone->setToolTip(tr("BFill rows which contain missing values"));  // cn:填充包含缺失值的行或列
 	actionDropDuplicates->setText(tr("Drop Duplicates"));                                 // cn:删除\n重复值
 	actionDropDuplicates->setToolTip(tr("Drop duplicate datas"));  // cn:删除数据中的重复记录
+	actionstdfilter->setText(tr("nstd filter"));                   // cn: 过滤\n异常值
+	actionstdfilter->setToolTip(tr("nstd filter datas"));          // cn:删除n倍标准差外的异常值
 
 	// workflow 编辑
 	actionWorkflowNew->setText(tr("New \nWorkflow"));                    // cn:新建\n工作流

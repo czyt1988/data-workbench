@@ -102,6 +102,9 @@ public Q_SLOTS:
 	// 后向填充缺失值，执行成功返回true
 	bool bfillna();
 	bool bfillna(const DAPyDataFrame& df, int axis = 0, int limit = -1);
+	// n倍标准差过滤异常值
+	int nstdfilter(double n = 3);
+	int nstdfilter(const DAPyDataFrame& df, double n = 3, int axis = 0, const QList< int > index = QList< int >());
 Q_SIGNALS:
 	/**
 	 * @brief 选中的列或者类型发生了变化

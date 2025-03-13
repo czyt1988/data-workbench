@@ -86,6 +86,7 @@
         <file>Icon/process-duplicate-data.svg</file>
         <file>Icon/dataframe-bfill-none.svg</file>
         <file>Icon/dataframe-ffill-none.svg</file>
+        <file>Icon/nstd-filter.svg</file>
     </qresource>
     <qresource prefix="/app/dataType">
         <file>Icon/typeDataframe.svg</file>
@@ -118,4 +119,5 @@
         <file>Icon/chart-type/chart-vectorfield.svg</file>
         <file>Icon/chart-type/chart-scatter-2d.svg</file>
     </qresource>
+    <qresource prefix="/"/>
 </RCC>

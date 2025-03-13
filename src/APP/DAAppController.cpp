@@ -255,6 +255,7 @@ void DAAppController::initConnection()
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameFFillNone, onActionDataFrameFFillNoneTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameBFillNone, onActionDataFrameBFillNoneTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDropDuplicates, onActionDropDuplicatesTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionstdfilter, onActionstdfilterTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCreateDataDescribe, onActionCreateDataDescribeTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToNum, onActionCastToNumTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToString, onActionCastToStringTriggered);
@@ -1739,6 +1740,19 @@ void DAAppController::onActionDropDuplicatesTriggered()
 #if DA_ENABLE_PYTHON
 	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
 		dfopt->dropduplicates();
+		setDirty();
+	}
+#endif
+}
+
+/**
+ * @brief n倍标准差过滤异常值
+ */
+void DAAppController::onActionstdfilterTriggered()
+{
+#if DA_ENABLE_PYTHON
+	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+		dfopt->nstdfilter();
 		setDirty();
 	}
 #endif

@@ -393,6 +393,7 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
 	m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDataFrameFFillNone);
 	m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDataFrameBFillNone);
 	m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDropDuplicates);
+	m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionstdfilter);
 	//  Statistic Pannel
 	m_pannelDataframeOperateStatistic = m_categoryDataframeOperate->addPannel(tr("Statistic"));  // cn：统计
 	m_pannelDataframeOperateStatistic->addLargeAction(m_actions->actionCreateDataDescribe);

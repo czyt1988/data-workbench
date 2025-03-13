@@ -373,32 +373,6 @@ bool DAPyScriptsDataFrame::dropna(DAPyDataFrame& df, int axis, const QString& ho
 }
 
 /**
- * @brief dropduplicates方法的wrapper
- * @param df
- * @param keep
- * @param indexs
- * @return
- */
-bool DAPyScriptsDataFrame::dropduplicates(DAPyDataFrame& df, const QString& keep, const QList< int >& indexs)
-{
-	try {
-		pybind11::object da_drop_duplicates = attr("da_drop_duplicates");
-		pybind11::dict args;
-		args[ "keep" ] = DA::PY::toString(keep);
-		if (indexs.empty()) {
-			args[ "index" ] = pybind11::none();
-		} else {
-			args[ "index" ] = DA::PY::toList(indexs);
-		}
-		da_drop_duplicates(df.object(), **args);
-		return true;
-	} catch (const std::exception& e) {
-		dealException(e);
-	}
-	return false;
-}
-
-/**
  * @brief fillna方法的wrapper
  * @param df
  * @param value 要填充的值
@@ -469,6 +443,62 @@ bool DAPyScriptsDataFrame::bfillna(DAPyDataFrame& df, int axis, int limit)
 		args[ "axis" ]  = axis;
 		args[ "limit" ] = limitObj;
 		da_bfill_na(df.object(), **args);
+		return true;
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return false;
+}
+
+/**
+ * @brief dropduplicates方法的wrapper
+ * @param df
+ * @param keep
+ * @param indexs
+ * @return
+ */
+bool DAPyScriptsDataFrame::dropduplicates(DAPyDataFrame& df, const QString& keep, const QList< int >& indexs)
+{
+	try {
+		pybind11::object da_drop_duplicates = attr("da_drop_duplicates");
+		pybind11::dict args;
+		args[ "keep" ] = DA::PY::toString(keep);
+		if (indexs.empty()) {
+			args[ "index" ] = pybind11::none();
+		} else {
+			args[ "index" ] = DA::PY::toList(indexs);
+		}
+		da_drop_duplicates(df.object(), **args);
+		return true;
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return false;
+}
+
+/**
+ * @brief nstdfilter方法的wrapper
+ * @param df
+ * @param axis
+ * @param n 标准差的倍数，范围是0.1~10，默认为3
+ * @return
+ */
+bool DAPyScriptsDataFrame::nstdfilter(DAPyDataFrame& df, double n, int axis, const QList< int >& indexs)
+{
+	try {
+		pybind11::object n_std_filter = attr("n_std_filter");
+		if (n > 10 || n < 0.1) {
+			throw std::invalid_argument("n must be between 0.1 and 10.");
+		}
+		pybind11::dict args;
+		args[ "n" ]    = n;
+		args[ "axis" ] = pybind11::int_(axis);
+		if (indexs.empty()) {
+			args[ "index" ] = pybind11::none();
+		} else {
+			args[ "index" ] = DA::PY::toList(indexs);
+		}
+		n_std_filter(df.object(), **args);
 		return true;
 	} catch (const std::exception& e) {
 		dealException(e);

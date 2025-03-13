@@ -219,6 +219,8 @@ private Q_SLOTS:
 	void onActionDataFrameBFillNoneTriggered();
 	// 删除重复值
 	void onActionDropDuplicatesTriggered();
+	// n倍标准差过滤异常值
+	void onActionstdfilterTriggered();
 #if DA_ENABLE_PYTHON
 	// 列数据类型改变
 	void onComboxColumnTypesCurrentDTypeChanged(const DA::DAPyDType& dt);

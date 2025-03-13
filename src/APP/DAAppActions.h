@@ -72,6 +72,7 @@ public:
 	QAction* actionDataFrameFillNone;   ///< 填充缺失值
 	QAction* actionDataFrameFFillNone;  ///< 前向填充缺失值
 	QAction* actionDataFrameBFillNone;  ///< 后向填充缺失值
+	QAction* actionstdfilter;           ///< n倍标准差过滤异常值
 
 	//===================================================
 	// workflow的上下文标签
