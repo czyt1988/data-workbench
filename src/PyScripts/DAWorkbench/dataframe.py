@@ -163,6 +163,23 @@ def n_std_filter(df: pd.DataFrame, n=3, axis=1, index: Optional[List[int]] = Non
         raise ValueError("axis 必须是 0（基于选中行过滤列）或 1（基于选中列过滤行）")
 
 @log_function_call
+def da_fill_interpolate(df: pd.DataFrame, method:Literal['spline','polynomial']='spline',order:int=1, axis:int = 0, limit:int|None=None, 
+                        limit_direction: Literal["forward", "backward", "both"]="forward",limit_area:Literal["inside", "outside"]|None=None,downcast: dict | None = None):
+    '''
+    插值法填充dataframe中的nan值
+    :param df: pd.DataFrame。
+    :param method: 用于插值法填充缺失值的方法。spline代表线程插值，polynomial代表多项式插值。
+    :param order: 插值多项式的次数。
+    :param axis: 填充的轴方向，0 或 'index' 表示按行填充，1 或 'columns' 表示按列填充。
+    :param limit: 限制向前或向后填充的最大数量
+    :param limit_direction: 限制插值的方向，默认为'forward'。
+    :param limit_area: 限制插值的区域，在有效值的内部或外部，默认为None,。
+    :param downcast:可选的字典，指定向下转型操作（例如将浮点数转换为整数等）。
+    :return: 此函数不返回值，直接改变df
+    '''
+    df.interpolate(method = method, order = order, axis = axis, downcast = downcast, inplace = True)
+    
+@log_function_call
 def da_to_pickle(df: pd.DataFrame, path: str):
     '''
     把dataframe写到文件

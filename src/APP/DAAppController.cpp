@@ -252,8 +252,10 @@ void DAAppController::initConnection()
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionRenameColumns, onActionRenameColumnsTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameDropNone, onActionDataFrameDropNoneTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameFillNone, onActionDataFrameFillNoneTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameFillInterpolate, onActionDataFrameFillInterpolateTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameFFillNone, onActionDataFrameFFillNoneTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameBFillNone, onActionDataFrameBFillNoneTriggered);
+
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDropDuplicates, onActionDropDuplicatesTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionstdfilter, onActionstdfilterTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCreateDataDescribe, onActionCreateDataDescribeTriggered);
@@ -1704,6 +1706,20 @@ void DAAppController::onActionDataFrameFillNoneTriggered()
 #endif
 }
 
+/**
+ * @brief 插值法填充缺失值
+ */
+void DAAppController::onActionDataFrameFillInterpolateTriggered()
+{
+#if DA_ENABLE_PYTHON
+	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+		if (dfopt->fillInterpolate()) {
+      setDirty();
+    }
+  }
+#endif
+}
+                    
 /**
  * @brief 前向填充缺失值
  */

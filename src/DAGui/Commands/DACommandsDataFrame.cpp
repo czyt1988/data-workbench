@@ -353,15 +353,6 @@ bool DACommandDataFrame_setnan::exec()
 	return true;
 }
 ////////////////////////////
-/// \brief DACommandDataFrame_dropna::DACommandDataFrame_dropna
-/// \param df
-/// \param model
-/// \param axis
-/// \param how
-/// \param index
-/// \param thresh
-/// \param par
-///
 
 DACommandDataFrame_dropna::DACommandDataFrame_dropna(const DAPyDataFrame& df,
                                                      DAPyDataFrameTableModule* model,
@@ -446,6 +437,42 @@ bool DACommandDataFrame_fillna::exec()
 }
 
 ///////////////////
+
+
+
+DACommandDataFrame_fillInterpolate::DACommandDataFrame_fillInterpolate(const DAPyDataFrame& df,
+                                                               DAPyDataFrameTableModule* model,
+                                                               const QString& method,
+                                                               int order,
+                                                               int limit,
+                                                               QUndoCommand* par)
+    : DACommandWithTemplateData(df, par), mModel(model), mMethod(method), mOrder(order), mLimit(limit)
+{
+    setText(QObject::tr("interpolate"));  // cn:插值填充缺失值
+}
+
+void DACommandDataFrame_fillInterpolate::undo(){
+	load();
+	if (mModel) {
+		mModel->refresh();
+	}
+}
+
+bool DACommandDataFrame_fillInterpolate::exec()
+{
+	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+
+	if (!pydf.interpolate(dataframe(), mMethod, mOrder, mLimit)) {
+		return false;
+	}
+
+	// 说明填充了空行
+	if (mModel) {
+		mModel->refresh();
+	}
+	return true;
+}
+
 
 DACommandDataFrame_ffillna::DACommandDataFrame_ffillna(const DAPyDataFrame& df,
                                                        DAPyDataFrameTableModule* model,

@@ -59,6 +59,8 @@ public:
 				int thresh                 = -1);
 	// fillna()
 	bool fillna(DAPyDataFrame& df, double value = 0.0, int limit = -1);
+	// interpolate()
+	bool interpolate(DAPyDataFrame& df, const QString& method = "spline", int order = 1, int limit = -1);
 	// ffillna()
 	bool ffillna(DAPyDataFrame& df, int axis, int limit);
 	// bfillna()
