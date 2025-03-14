@@ -245,12 +245,12 @@ public:
 	int getDropedCount() const;
 
 private:
-	DAPyDataFrameTableModule* mModel { nullptr };
-	int mAxis { 0 };
+	DAPyDataFrameTableModule* mModel{ nullptr };
+	int mAxis{ 0 };
 	QString mHow;
 	QList< int > mIndex;
-	int mThresh { -1 };
-	int mDropedCount { 0 };  ///< 记录删除了多少行或列
+	int mThresh{ -1 };
+	int mDropedCount{ 0 };  ///< 记录删除了多少行或列
 };
 
 /**
@@ -268,9 +268,9 @@ public:
 	virtual bool exec() override;
 
 private:
-	DAPyDataFrameTableModule* mModel { nullptr };
-	double mValue { 0.0 };
-	int mLimit { -1 };
+	DAPyDataFrameTableModule* mModel{ nullptr };
+	double mValue{ 0.0 };
+	int mLimit{ -1 };
 };
 
 /**
@@ -280,19 +280,19 @@ class DAGUI_API DACommandDataFrame_fillInterpolate : public DACommandWithTemplat
 {
 public:
 	DACommandDataFrame_fillInterpolate(const DAPyDataFrame& df,
-								   DAPyDataFrameTableModule* model = nullptr,
-								   const QString& method           = QStringLiteral("spline"),
-								   int order                       = 1,
-								   int limit                       = -1,
-								   QUndoCommand* par               = nullptr);
+									   DAPyDataFrameTableModule* model = nullptr,
+									   const QString& method           = QStringLiteral("spline"),
+									   int order                       = 1,
+									   int limit                       = -1,
+									   QUndoCommand* par               = nullptr);
 	virtual void undo() override;
 	virtual bool exec() override;
 
 private:
-	DAPyDataFrameTableModule* mModel { nullptr };
+	DAPyDataFrameTableModule* mModel{ nullptr };
 	QString mMethod;
-	int mOrder { 1 };
-	int mLimit { -1 };
+	int mOrder{ 1 };
+	int mLimit{ -1 };
 };
 
 /**
@@ -359,17 +359,17 @@ private:
 };
 
 /**
- * @brief nstdfilter
+ * @brief nstdfilteroutlier
  */
-class DAGUI_API DACommandDataFrame_nstdfilter : public DACommandWithTemplateData
+class DAGUI_API DACommandDataFrame_nstdfilteroutlier : public DACommandWithTemplateData
 {
 public:
-	DACommandDataFrame_nstdfilter(const DAPyDataFrame& df,
-								  DAPyDataFrameTableModule* model = nullptr,
-								  double n                        = 3,
-								  int axis                        = 1,
-								  const QList< int >& index       = QList< int >(),
-								  QUndoCommand* par               = nullptr);
+	DACommandDataFrame_nstdfilteroutlier(const DAPyDataFrame& df,
+										 DAPyDataFrameTableModule* model = nullptr,
+										 double n                        = 3,
+										 int axis                        = 1,
+										 const QList< int >& index       = QList< int >(),
+										 QUndoCommand* par               = nullptr);
 	virtual void undo() override;
 	virtual bool exec() override;
 	int getDropedCount() const;
@@ -380,6 +380,29 @@ private:
 	int mAxis{ 0 };
 	QList< int > mIndex;
 	int mDropedCount{ 0 };  ///< 记录删除了多少行或列
+};
+
+/**
+ * @brief clipoutlier
+ */
+class DAGUI_API DACommandDataFrame_clipoutlier : public DACommandWithTemplateData
+{
+public:
+	DACommandDataFrame_clipoutlier(const DAPyDataFrame& df,
+								   DAPyDataFrameTableModule* model = nullptr,
+								   double lowervalue               = 0.0,
+								   double uppervalue               = 0.0,
+								   int axis                        = 0,
+								   QUndoCommand* par               = nullptr);
+	virtual void undo() override;
+	virtual bool exec() override;
+
+private:
+	DAPyDataFrameTableModule* mModel{ nullptr };
+	double mlowervalue{ 0.0 };
+	double mUppervalue{ 0.0 };
+	int mAxis{ 0 };
+	QList< int > mIndex;
 };
 
 /**

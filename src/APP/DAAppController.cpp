@@ -255,13 +255,13 @@ void DAAppController::initConnection()
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameFillInterpolate, onActionDataFrameFillInterpolateTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameFFillNone, onActionDataFrameFFillNoneTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameBFillNone, onActionDataFrameBFillNoneTriggered);
-
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDropDuplicates, onActionDropDuplicatesTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionstdfilter, onActionstdfilterTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionNstdFilterOutlier, onActionNstdFilterOutlierTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCreateDataDescribe, onActionCreateDataDescribeTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToNum, onActionCastToNumTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToString, onActionCastToStringTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToDatetime, onActionCastToDatetimeTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameClipOutlier, onActionDataFrameClipOutlierTriggered);
 	// 不知为何使用函数指针无法关联信号和槽
 	//  connect(m_comboxColumnTypes, &DAPyDTypeComboBox::currentDTypeChanged, this,&DAAppRibbonArea::onComboxColumnTypesCurrentDTypeChanged);
 	//  QObject::connect: signal not found in DAPyDTypeComboBox
@@ -1714,12 +1714,12 @@ void DAAppController::onActionDataFrameFillInterpolateTriggered()
 #if DA_ENABLE_PYTHON
 	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
 		if (dfopt->fillInterpolate()) {
-      setDirty();
-    }
-  }
+			setDirty();
+		}
+	}
 #endif
 }
-                    
+
 /**
  * @brief 前向填充缺失值
  */
@@ -1764,11 +1764,24 @@ void DAAppController::onActionDropDuplicatesTriggered()
 /**
  * @brief n倍标准差过滤异常值
  */
-void DAAppController::onActionstdfilterTriggered()
+void DAAppController::onActionNstdFilterOutlierTriggered()
 {
 #if DA_ENABLE_PYTHON
 	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-		dfopt->nstdfilter();
+		dfopt->nstdfilteroutlier();
+		setDirty();
+	}
+#endif
+}
+
+/**
+ * @brief 替换界限外异常值
+ */
+void DAAppController::onActionDataFrameClipOutlierTriggered()
+{
+#if DA_ENABLE_PYTHON
+	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+		dfopt->clipoutlier();
 		setDirty();
 	}
 #endif

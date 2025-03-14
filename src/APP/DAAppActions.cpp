@@ -72,12 +72,13 @@ void DAAppActions::buildDataAction()
 	actionChangeToIndex      = createAction("actionChangeToIndex", ":/app/bright/Icon/changeToIndex.svg");
 	actionDataFrameDropNone  = createAction("actionDataFrameDropNone", ":/app/bright/Icon/dataframe-drop-none.svg");
 	actionDropDuplicates     = createAction("actionDropDuplicates", ":/app/bright/Icon/process-duplicate-data.svg");
-	actionstdfilter          = createAction("actionstdfilter", ":/app/bright/Icon/nstd-filter.svg");
+	actionNstdFilterOutlier  = createAction("actionNstdFilterOutlier", ":/app/bright/Icon/nstd-filter.svg");
 	actionDataFrameFillNone  = createAction("actionDataFrameFillNone", ":/app/bright/Icon/dataframe-fill-none.svg");
 	actionDataFrameFillInterpolate =
 		createAction("actionDataFrameInterpolate", ":/app/bright/Icon/dataframe-interpolate.svg");
 	actionDataFrameFFillNone = createAction("actionDataFrameFFillNone", ":/app/bright/Icon/dataframe-ffill-none.svg");
 	actionDataFrameBFillNone = createAction("actionDataFrameBFillNone", ":/app/bright/Icon/dataframe-bfill-none.svg");
+	actionDataFrameClipOutlier = createAction("actionDataFrameClipOutlier", ":/app/bright/Icon/dataframe-clip-outlier.svg");
 }
 
 void DAAppActions::buildChartAction()
@@ -184,10 +185,10 @@ void DAAppActions::buildOtherActions()
 {
 	actionGroupRibbonTheme = new QActionGroup(this);
 	actionGroupRibbonTheme->setObjectName(QStringLiteral("actionGroupRibbonTheme"));
-	actionRibbonThemeOffice2013 = createAction("actionRibbonThemeOffice2013", true, true, actionGroupRibbonTheme);
+	actionRibbonThemeOffice2013     = createAction("actionRibbonThemeOffice2013", true, true, actionGroupRibbonTheme);
 	actionRibbonThemeOffice2016Blue = createAction("actionRibbonThemeOffice2016Blue", true, false, actionGroupRibbonTheme);
 	actionRibbonThemeOffice2021Blue = createAction("actionRibbonThemeOffice2021Blue", true, false, actionGroupRibbonTheme);
-	actionRibbonThemeDark = createAction("actionRibbonThemeDark", true, false, actionGroupRibbonTheme);
+	actionRibbonThemeDark           = createAction("actionRibbonThemeDark", true, false, actionGroupRibbonTheme);
 }
 
 void DAAppActions::retranslateUi()
@@ -260,18 +261,19 @@ void DAAppActions::retranslateUi()
 	actionDataFrameFillInterpolate->setToolTip(
 		tr("Fill rows which contain missing values by interpolate"));  // cn:插值法填充包含缺失值的行
 	actionDropDuplicates->setText(tr("Drop Duplicates"));              // cn:删除\n重复值
-
-	actionDataFrameFFillNone->setText(tr("Forward Fill"));  // cn:前向填充\n缺失值
+	actionDataFrameFFillNone->setText(tr("Forward Fill"));             // cn:前向填充\n缺失值
 	actionDataFrameFFillNone->setToolTip(
 		tr("Fill NA/NaN values by propagating the last valid observation to next valid."));  // cn:将第一个有效值填充到缺失值。
 	actionDataFrameBFillNone->setText(tr("Back Fill"));  // cn:反向填充\n缺失值
 	actionDataFrameBFillNone->setToolTip(
 		tr("Fill NA/NaN values by using the next valid observation to fill the gap."));  // cn:将最后一个有效值反向填充缺失值。
 	actionDropDuplicates->setText(tr("Drop Duplicates"));                                // cn:删除\n重复值
-
 	actionDropDuplicates->setToolTip(tr("Drop duplicate datas"));  // cn:删除数据中的重复记录
-	actionstdfilter->setText(tr("nstd filter"));                   // cn: 过滤\n异常值
-	actionstdfilter->setToolTip(tr("nstd filter datas"));          // cn:删除n倍标准差外的异常值
+	actionNstdFilterOutlier->setText(tr("nstd filter outlier"));   // cn: 过滤\n异常值
+	actionNstdFilterOutlier->setToolTip(tr("Remove the outliers beyond n times the standard deviation"));  // cn:删除n倍标准差外的异常值
+	actionDataFrameClipOutlier->setText(tr("Clip Outlier"));  // cn: 替换\n异常值
+	actionDataFrameClipOutlier->setToolTip(
+		tr("Replace the outlier values that exceed the specified lower and upper limits with the respective limits."));  // cn:将超出限定上下限的异常值替换为上下限
 
 	// workflow 编辑
 	actionWorkflowNew->setText(tr("New \nWorkflow"));                    // cn:新建\n工作流

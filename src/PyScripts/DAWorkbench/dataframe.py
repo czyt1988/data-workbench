@@ -100,7 +100,7 @@ def da_bfill_na(df: pd.DataFrame, axis:Axis|None=None, limit:int|None=None, limi
     df.bfill(axis = axis, inplace = True,limit = limit,limit_area=limit_area)
 
 @log_function_call
-def n_std_filter(df: pd.DataFrame, n=3, axis=1, index: Optional[List[int]] = None):
+def da_nstd_filter_outlier(df: pd.DataFrame, n=3, axis:Axis|None=None, index: Optional[List[int]] = None):
     """
     使用n倍标准差法过滤DataFrame的行或列（直接在原数据上修改）
     :param df: 输入的pd.DataFrame
@@ -158,9 +158,6 @@ def n_std_filter(df: pd.DataFrame, n=3, axis=1, index: Optional[List[int]] = Non
         
         # 直接删除不符合条件的列
         df.drop(columns=df.columns[~keep_cols], inplace=True)
-    
-    else:
-        raise ValueError("axis 必须是 0（基于选中行过滤列）或 1（基于选中列过滤行）")
 
 @log_function_call
 def da_fill_interpolate(df: pd.DataFrame, method:Literal['spline','polynomial']='spline',order:int=1, axis:int = 0, limit:int|None=None, 
@@ -178,7 +175,19 @@ def da_fill_interpolate(df: pd.DataFrame, method:Literal['spline','polynomial']=
     :return: 此函数不返回值，直接改变df
     '''
     df.interpolate(method = method, order = order, axis = axis, downcast = downcast, inplace = True)
-    
+
+@log_function_call
+def da_clip_outlier(df: pd.DataFrame, lower:float|None=None,upper:float|None=None,axis:int = 0):
+    '''
+    替换dataframe的异常值
+    :param df: pd.DataFrame。
+    :param lower: 所有小于 lower 的值会被替换为 lower。如果为 None，则不应用下界。
+    :param upper: 所有大于 upper 的值会被替换为 upper。如果为 None，则不应用上界。
+    :param axis: 填充的轴方向，0 或 'index' 表示按行填充，1 或 'columns' 表示按列填充。
+    :return: 此函数不返回值，直接改变df
+    '''
+    df.clip(lower=lower, upper=upper, axis=axis, inplace=True)
+
 @log_function_call
 def da_to_pickle(df: pd.DataFrame, path: str):
     '''

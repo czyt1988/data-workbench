@@ -222,7 +222,9 @@ private Q_SLOTS:
 	// 删除重复值
 	void onActionDropDuplicatesTriggered();
 	// n倍标准差过滤异常值
-	void onActionstdfilterTriggered();
+	void onActionNstdFilterOutlierTriggered();
+	// 替换界限外异常值
+	void onActionDataFrameClipOutlierTriggered();
 #if DA_ENABLE_PYTHON
 	// 列数据类型改变
 	void onComboxColumnTypesCurrentDTypeChanged(const DA::DAPyDType& dt);
@@ -376,21 +378,21 @@ private:
 #endif
 
 private:
-	AppMainWindow* mMainWindow { nullptr };
-	DAAppCore* mCore { nullptr };
-	DAProjectInterface* mProject { nullptr };
+	AppMainWindow* mMainWindow{ nullptr };
+	DAAppCore* mCore{ nullptr };
+	DAProjectInterface* mProject{ nullptr };
 	;
-	DAAppRibbonArea* mRibbon { nullptr };
-	DAAppDockingArea* mDock { nullptr };
-	DAAppCommand* mCommand { nullptr };
-	DAAppActions* mActions { nullptr };
-	DAAppDataManager* mDatas { nullptr };
+	DAAppRibbonArea* mRibbon{ nullptr };
+	DAAppDockingArea* mDock{ nullptr };
+	DAAppCommand* mCommand{ nullptr };
+	DAAppActions* mActions{ nullptr };
+	DAAppDataManager* mDatas{ nullptr };
 
 	QStringList mFileReadFilters;  ///< 包含支持的文件[Images (*.png *.xpm *.jpg)] [Text files (*.txt)]
 	//
 	LastFocusedOpertateWidgets mLastFocusedOpertateWidget;  ///< 最后获取焦点的操作窗口
 															//
-	DAAppSettingDialog* mSettingDialog { nullptr };         ///< 设置窗口
+	DAAppSettingDialog* mSettingDialog{ nullptr };          ///< 设置窗口
 	DAAppConfig* mConfig;                                   ///< 设置类
 };
 }

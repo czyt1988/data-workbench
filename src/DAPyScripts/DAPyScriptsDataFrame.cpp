@@ -132,7 +132,7 @@ bool DAPyScriptsDataFrame::insert_column(DAPyDataFrame& df,
 		args[ "start" ] = DA::PY::toPyObject(start);
 		args[ "stop" ]  = DA::PY::toPyObject(stop);
 		if (start.canConvert(QMetaType::QDateTime) || start.canConvert(QMetaType::QDate)
-            || start.canConvert(QMetaType::QTime)) {
+			|| start.canConvert(QMetaType::QTime)) {
 			args[ "dtype" ] = pybind11::dtype("datetime64");
 		}
 		da_insert_column(**args);
@@ -410,10 +410,10 @@ bool DAPyScriptsDataFrame::ffillna(DAPyDataFrame& df, int axis, int limit)
 	try {
 		pybind11::object da_ffill_na = attr("da_ffill_na");
 		pybind11::object limitObj    = pybind11::none();
-        if (limit > 0) {
+		if (limit > 0) {
 			limitObj = pybind11::int_(limit);
 		}
-        pybind11::dict args;
+		pybind11::dict args;
 		args[ "axis" ]  = axis;
 		args[ "limit" ] = limitObj;
 		da_ffill_na(df.object(), **args);
@@ -509,10 +509,10 @@ bool DAPyScriptsDataFrame::dropduplicates(DAPyDataFrame& df, const QString& keep
  * @param n 标准差的倍数，范围是0.1~10，默认为3
  * @return
  */
-bool DAPyScriptsDataFrame::nstdfilter(DAPyDataFrame& df, double n, int axis, const QList< int >& indexs)
+bool DAPyScriptsDataFrame::nstdfilteroutlier(DAPyDataFrame& df, double n, int axis, const QList< int >& indexs)
 {
 	try {
-		pybind11::object n_std_filter = attr("n_std_filter");
+		pybind11::object da_nstd_filter_outlier = attr("da_nstd_filter_outlier");
 		if (n > 10 || n < 0.1) {
 			throw std::invalid_argument("n must be between 0.1 and 10.");
 		}
@@ -524,7 +524,38 @@ bool DAPyScriptsDataFrame::nstdfilter(DAPyDataFrame& df, double n, int axis, con
 		} else {
 			args[ "index" ] = DA::PY::toList(indexs);
 		}
-		n_std_filter(df.object(), **args);
+		da_nstd_filter_outlier(df.object(), **args);
+		return true;
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return false;
+}
+
+/**
+ * @brief clipoutlier方法的wrapper
+ * @param df
+ * @param keep
+ * @param indexs
+ * @return
+ */
+bool DAPyScriptsDataFrame::clipoutlier(DAPyDataFrame& df, double lowervalue, double uppervalue, int axis)
+{
+	try {
+		pybind11::object da_clip_outlier = attr("da_clip_outlier");
+		pybind11::dict args;
+		if (lowervalue == 0.0) {
+			args[ "lower" ] = pybind11::none();
+		} else {
+			args[ "lower" ] = lowervalue;
+		}
+		if (uppervalue == 0.0) {
+			args[ "upper" ] = pybind11::none();
+		} else {
+			args[ "upper" ] = uppervalue;
+		}
+		args[ "axis" ] = pybind11::int_(axis);
+		da_clip_outlier(df.object(), **args);
 		return true;
 	} catch (const std::exception& e) {
 		dealException(e);

@@ -22,6 +22,7 @@
 #include "Dialog/DADialogInsertNewColumn.h"
 #include "Dialog/DADialogDataFrameFillna.h"
 #include "Dialog/DADialogDataFrameFillInterpolate.h"
+#include "Dialog/DADialogDataFrameClipOutlier.h"
 
 //===================================================
 // using DA namespace -- 禁止在头文件using!!
@@ -564,15 +565,6 @@ bool DADataOperateOfDataFrameWidget::ffillna()
 		return false;
 	}
 	int axis = 0;
-	//	QList< int > index;
-	//	if (isDataframeTableHaveSelection()) {
-	//		// 先看看是否选中了列
-	//		index = getFullySelectedDataframeColumns();
-	//		if (!index.isEmpty()) {
-	//			// 说明单独选中了一列，这时只针对列进行ffillna
-	//			axis = 1;
-	//		}
-	//	}
 	return ffillna(df, axis, -1);
 }
 
@@ -603,15 +595,6 @@ bool DADataOperateOfDataFrameWidget::bfillna()
 		return false;
 	}
 	int axis = 0;
-	//	QList< int > index;
-	//	if (isDataframeTableHaveSelection()) {
-	//		// 先看看是否选中了列
-	//		index = getFullySelectedDataframeColumns();
-	//		if (!index.isEmpty()) {
-	//			// 说明单独选中了一列，这时只针对列进行bfillna
-	//			axis = 1;
-	//		}
-	//	}
 	return bfillna(df, axis, -1);
 }
 
@@ -677,7 +660,7 @@ int DADataOperateOfDataFrameWidget::dropduplicates(const DAPyDataFrame& df, cons
  * @brief n倍标准差法删除异常值
  * @return 返回删除的数量，0代表没有删除任何内容
  */
-int DADataOperateOfDataFrameWidget::nstdfilter(double n)
+int DADataOperateOfDataFrameWidget::nstdfilteroutlier(double n)
 {
 	DAPyDataFrame df = getDataframe();
 	if (df.isNone()) {
@@ -688,19 +671,8 @@ int DADataOperateOfDataFrameWidget::nstdfilter(double n)
 	if (isDataframeTableHaveSelection()) {
 		// 先看看是否选中了列
 		index = getFullySelectedDataframeColumns();
-		if (!index.isEmpty()) {
-			// 如果选中了列，在这些列上过滤
-			axis = 1;
-		} else {
-			// 如果没有选中列，检查是否选中了行
-			index = getFullySelectedDataframeRows();
-			if (!index.isEmpty()) {
-				// 如果选中了行，在这些行上过滤
-				axis = 0;
-			}
-		}
 	}
-	return nstdfilter(df, n, axis, index);
+	return nstdfilteroutlier(df, n, axis, index);
 }
 
 /**
@@ -708,10 +680,53 @@ int DADataOperateOfDataFrameWidget::nstdfilter(double n)
  * @param axis 填充轴向，0代表按行填充，1代表按列填充
  * @return 返回填充的数量，0代表没有填充任何内容
  */
-int DADataOperateOfDataFrameWidget::nstdfilter(const DAPyDataFrame& df, double n, int axis, const QList< int > index)
+int DADataOperateOfDataFrameWidget::nstdfilteroutlier(const DAPyDataFrame& df, double n, int axis, const QList< int > index)
 {
-	std::unique_ptr< DACommandDataFrame_nstdfilter > cmd =
-		std::make_unique< DACommandDataFrame_nstdfilter >(df, mModel, n, axis, index);
+	std::unique_ptr< DACommandDataFrame_nstdfilteroutlier > cmd =
+		std::make_unique< DACommandDataFrame_nstdfilteroutlier >(df, mModel, n, axis, index);
+	if (!cmd->exec()) {
+		return false;
+	}
+	getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
+	return true;
+}
+
+/**
+ * @brief 替换规定界限外的异常值
+ * @return 成功返回true,反之返回false
+ */
+bool DADataOperateOfDataFrameWidget::clipoutlier()
+{
+	DAPyDataFrame df = getDataframe();
+	if (df.isNone()) {
+		return false;
+	}
+	if (!mDialogDataFrameClipOutlier) {
+		mDialogDataFrameClipOutlier = new DADialogDataFrameClipOutlier(this);
+	}
+	if (QDialog::Accepted != mDialogDataFrameClipOutlier->exec()) {
+		// 说明用户取消
+		return false;
+	}
+	// 获取填充值
+	double lowervalue = mDialogDataFrameClipOutlier->getLowerValue();
+	double uppervalue = mDialogDataFrameClipOutlier->getUpperValue();
+
+	int axis = 0;
+
+	return clipoutlier(df, lowervalue, uppervalue, axis);
+}
+
+/**
+ * @brief 替换规定界限外的异常值
+ * @param lower 可选参数，下界值
+ * @param upper 可选参数，上界值。
+ * @return 成功返回true,反之返回false
+ */
+bool DADataOperateOfDataFrameWidget::clipoutlier(const DAPyDataFrame& df, double lower, double upper, int axis)
+{
+	std::unique_ptr< DACommandDataFrame_clipoutlier > cmd =
+		std::make_unique< DACommandDataFrame_clipoutlier >(df, mModel, lower, upper, axis);
 	if (!cmd->exec()) {
 		return false;
 	}

@@ -67,8 +67,10 @@ public:
 	bool bfillna(DAPyDataFrame& df, int axis, int limit);
 	//	dropduplicates(keep = "first")
 	bool dropduplicates(DAPyDataFrame& df, const QString& keep, const QList< int >& indexs);
-	// nstdfilter()
-	bool nstdfilter(DAPyDataFrame& df, double n, int axis, const QList< int >& indexs);
+	// nstdfilteroutlier()
+	bool nstdfilteroutlier(DAPyDataFrame& df, double n, int axis, const QList< int >& indexs);
+	// clipoutlier()
+	bool clipoutlier(DAPyDataFrame& df, double lowervalue, double uppervalue, int axis);
 };
 }  // namespace DA
 #endif  // DAPYSCRIPTSDATAFRAME_H
