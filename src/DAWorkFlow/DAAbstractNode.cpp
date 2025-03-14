@@ -869,7 +869,7 @@ QList< DAAbstractNode::LinkInfo > DAAbstractNode::getAllOutputLinkInfo() const
  */
 DAAbstractNode::IdType DAAbstractNode::generateID()
 {
-    return DAUniqueIDGenerater::id();
+    return DAUniqueIDGenerater::id_uint64();
 }
 
 /**

@@ -8,7 +8,7 @@ DAUniqueIDGenerater::DAUniqueIDGenerater()
 {
 }
 
-uint64_t DAUniqueIDGenerater::id()
+uint64_t DAUniqueIDGenerater::id_uint64()
 {
 	static std::atomic< std::uint64_t > last_timestamp { 0 };  // 保存上一次的时间戳
 	static std::atomic< std::uint32_t > sequence { 0 };        // 序列号，用于在同一纳秒内生成不同的ID

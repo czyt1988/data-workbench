@@ -14,10 +14,10 @@ class DAUTILS_API DAUniqueIDGenerater
 public:
 	DAUniqueIDGenerater();
 	/**
-	 * @brief 生成当前进程唯一id
+     * @brief 生成当前进程唯一uint64_t类型的id
 	 * @return
 	 */
-	static uint64_t id();
+    static uint64_t id_uint64();
 };
 
 }
