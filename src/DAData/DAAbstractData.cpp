@@ -118,7 +118,7 @@ QString DAAbstractData::typeToString(DAAbstractData::DataType d)
  */
 DAAbstractData::IdType DAAbstractData::generateID()
 {
-    return DAUniqueIDGenerater::id();
+    return DAUniqueIDGenerater::id_uint64();
 }
 
 QString enumToString(DAAbstractData::DataType t)
