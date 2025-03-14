@@ -303,11 +303,12 @@ class DAGUI_API DACommandDataFrame_fillInterpolate : public DACommandWithTemplat
 {
 public:
 	DACommandDataFrame_fillInterpolate(const DAPyDataFrame& df,
-								   DAPyDataFrameTableModule* model = nullptr,
-								   const QString& method           = QStringLiteral("spline"),
-								   int order                       = 1,
-								   int limit                       = -1,
-								   QUndoCommand* par               = nullptr);
+									   DAPyDataFrameTableModule* model = nullptr,
+									   const QString& method           = QStringLiteral("spline"),
+									   int order                       = 1,
+									   int axis                        = 0,
+									   int limit                       = -1,
+									   QUndoCommand* par               = nullptr);
 	virtual void undo() override;
 	virtual bool exec() override;
 
@@ -315,6 +316,7 @@ private:
 	DAPyDataFrameTableModule* mModel { nullptr };
 	QString mMethod;
 	int mOrder { 1 };
+	int mAixs { 0 };
 	int mLimit { -1 };
 };
 
@@ -333,9 +335,9 @@ public:
 	virtual bool exec() override;
 
 private:
-	DAPyDataFrameTableModule* mModel{ nullptr };
-	int mAxis{ 0 };
-	int mLimit{ -1 };
+	DAPyDataFrameTableModule* mModel { nullptr };
+	int mAxis { 0 };
+	int mLimit { -1 };
 };
 
 /**
@@ -353,9 +355,9 @@ public:
 	virtual bool exec() override;
 
 private:
-	DAPyDataFrameTableModule* mModel{ nullptr };
-	int mAxis{ 0 };
-	int mLimit{ -1 };
+	DAPyDataFrameTableModule* mModel { nullptr };
+	int mAxis { 0 };
+	int mLimit { -1 };
 };
 
 /**

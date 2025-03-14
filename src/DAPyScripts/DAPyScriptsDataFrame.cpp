@@ -132,7 +132,7 @@ bool DAPyScriptsDataFrame::insert_column(DAPyDataFrame& df,
 		args[ "start" ] = DA::PY::toPyObject(start);
 		args[ "stop" ]  = DA::PY::toPyObject(stop);
 		if (start.canConvert(QMetaType::QDateTime) || start.canConvert(QMetaType::QDate)
-            || start.canConvert(QMetaType::QTime)) {
+			|| start.canConvert(QMetaType::QTime)) {
 			args[ "dtype" ] = pybind11::dtype("datetime64");
 		}
 		da_insert_column(**args);
@@ -436,10 +436,10 @@ bool DAPyScriptsDataFrame::ffillna(DAPyDataFrame& df, int axis, int limit)
 	try {
 		pybind11::object da_ffill_na = attr("da_ffill_na");
 		pybind11::object limitObj    = pybind11::none();
-        if (limit > 0) {
+		if (limit > 0) {
 			limitObj = pybind11::int_(limit);
 		}
-        pybind11::dict args;
+		pybind11::dict args;
 		args[ "axis" ]  = axis;
 		args[ "limit" ] = limitObj;
 		da_ffill_na(df.object(), **args);
@@ -484,7 +484,7 @@ bool DAPyScriptsDataFrame::bfillna(DAPyDataFrame& df, int axis, int limit)
  * @param limit 填充限制，-1代表不限制，大于0生效
  * @return
  */
-bool DAPyScriptsDataFrame::interpolate(DAPyDataFrame& df, const QString& method, int order, int limit)
+bool DAPyScriptsDataFrame::interpolate(DAPyDataFrame& df, const QString& method, int order, int axis, int limit)
 {
 	try {
 		pybind11::object da_interpolate = attr("da_fill_interpolate");
@@ -495,6 +495,7 @@ bool DAPyScriptsDataFrame::interpolate(DAPyDataFrame& df, const QString& method,
 		pybind11::dict args;
 		args[ "method" ] = DA::PY::toString(method);
 		args[ "order" ]  = order;
+		args[ "axis" ]   = axis;
 		args[ "limit" ]  = limitObj;
 		da_interpolate(df.object(), **args);
 		return true;

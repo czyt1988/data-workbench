@@ -99,7 +99,11 @@ public Q_SLOTS:
 	bool fillna(const DAPyDataFrame& df, double value = 0.0, int limit = -1);
 	// 插值法填充缺失值，成功返回true
 	bool fillInterpolate();
-	bool fillInterpolate(const DAPyDataFrame& df, const QString& method, int order, int limit);
+	bool fillInterpolate(const DAPyDataFrame& df,
+						 const QString& method = QStringLiteral("spline"),
+						 int order             = 1,
+						 int axis              = 0,
+						 int limit             = -1);
 	// 前向填充缺失值，执行成功返回true
 	bool ffillna();
 	bool ffillna(const DAPyDataFrame& df, int axis = 0, int limit = -1);
