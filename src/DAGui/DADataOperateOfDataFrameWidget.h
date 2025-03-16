@@ -20,6 +20,7 @@ class DADialogDataframeColumnCastToNumeric;
 class DADialogDataframeColumnCastToDatetime;
 class DADialogDataFrameFillna;
 class DADialogDataFrameFillInterpolate;
+class DADialogDataFrameClipOutlier;
 
 /**
  * @brief 针对DataFrame的操作窗口
@@ -110,6 +111,12 @@ public Q_SLOTS:
 	// 后向填充缺失值，执行成功返回true
 	bool bfillna();
 	bool bfillna(const DAPyDataFrame& df, int axis = 0, int limit = -1);
+	// n倍标准差过滤异常值
+	int nstdfilteroutlier(double n = 3);
+	int nstdfilteroutlier(const DAPyDataFrame& df, double n = 3, int axis = 0, const QList< int > index = QList< int >());
+	// 替换规定界限外的异常值
+	bool clipoutlier();
+	bool clipoutlier(const DAPyDataFrame& df, double lower = 0.0, double upper = 0.0, int axis = 0);
 Q_SIGNALS:
 	/**
 	 * @brief 选中的列或者类型发生了变化
@@ -128,12 +135,13 @@ protected:
 private:
 	Ui::DADataOperateOfDataFrameWidget* ui;
 	DAData mData;
-	DAPyDataFrameTableModule* mModel { nullptr };
+	DAPyDataFrameTableModule* mModel{ nullptr };
 
-	DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs { nullptr };
-	DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs { nullptr };
-	DADialogDataFrameFillna* mDialogDataFrameFillna { nullptr };
-	DADialogDataFrameFillInterpolate* mDialogDataFrameFillInterpolate { nullptr };
+	DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs{ nullptr };
+	DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs{ nullptr };
+	DADialogDataFrameFillna* mDialogDataFrameFillna{ nullptr };
+	DADialogDataFrameFillInterpolate* mDialogDataFrameFillInterpolate{ nullptr };
+	DADialogDataFrameClipOutlier* mDialogDataFrameClipOutlier{ nullptr };
 };
 }  // end of namespace DA
 #endif  // DADATAOPERATEOFDATAFRAMEWIDGET_H
