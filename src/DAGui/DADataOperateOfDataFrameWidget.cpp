@@ -534,19 +534,21 @@ bool DADataOperateOfDataFrameWidget::fillInterpolate()
 	}
 	// 获取插值填充方法
 	QString method = mDialogDataFrameFillInterpolate->getInterpolateMethod();
+	// 获取插值方向
+	int axis = mDialogDataFrameFillInterpolate->getInterPolateAxis();
 	// 获取多项式插值次数
 	int order      = mDialogDataFrameFillInterpolate->getInterpolateOrder();
 	int limitCount = -1;  // 如果-1证明没有设置
 	if (mDialogDataFrameFillInterpolate->isEnableLimitCount()) {
 		limitCount = mDialogDataFrameFillInterpolate->getLimitCount();
 	}
-	return fillInterpolate(df, method, order, limitCount);
+	return fillInterpolate(df, method, order, axis, limitCount);
 }
 
-bool DADataOperateOfDataFrameWidget::fillInterpolate(const DAPyDataFrame& df, const QString& method, int order, int limit)
+bool DADataOperateOfDataFrameWidget::fillInterpolate(const DAPyDataFrame& df, const QString& method, int order, int axis, int limit)
 {
 	std::unique_ptr< DACommandDataFrame_fillInterpolate > cmd =
-		std::make_unique< DACommandDataFrame_fillInterpolate >(df, mModel, method, order, limit);
+		std::make_unique< DACommandDataFrame_fillInterpolate >(df, mModel, method, order, axis, limit);
 	if (!cmd->exec()) {
 		return false;
 	}

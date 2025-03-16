@@ -461,7 +461,7 @@ bool DACommandDataFrame_fillInterpolate::exec()
 {
 	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
 
-	if (!pydf.interpolate(dataframe(), mMethod, mOrder, mLimit)) {
+	if (!pydf.interpolate(dataframe(), mMethod, mOrder, mAixs, mLimit)) {
 		return false;
 	}
 
@@ -471,6 +471,10 @@ bool DACommandDataFrame_fillInterpolate::exec()
 	}
 	return true;
 }
+
+
+///////////////////
+
 
 DACommandDataFrame_ffillna::DACommandDataFrame_ffillna(const DAPyDataFrame& df,
                                                        DAPyDataFrameTableModule* model,

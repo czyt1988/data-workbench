@@ -58,9 +58,9 @@ public:
 				const QList< int >& indexs = QList< int >(),
 				int thresh                 = -1);
 	// fillna()
-	bool fillna(DAPyDataFrame& df, double value = 0.0, int limit = -1);
+	bool fillna(DAPyDataFrame& df, double value, int limit);
 	// interpolate()
-	bool interpolate(DAPyDataFrame& df, const QString& method = "spline", int order = 1, int limit = -1);
+	bool interpolate(DAPyDataFrame& df, const QString& method, int order, int axis, int limit);
 	// ffillna()
 	bool ffillna(DAPyDataFrame& df, int axis, int limit);
 	// bfillna()

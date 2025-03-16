@@ -33,6 +33,10 @@ public:
 
 	void setInterpolateOrder(double d);
 	double getInterpolateOrder() const;
+
+	// axis参数
+	bool getInterPolateAxis() const;
+
 	// limit参数
 	bool isEnableLimitCount() const;
 	void setEnableLimit(bool on);

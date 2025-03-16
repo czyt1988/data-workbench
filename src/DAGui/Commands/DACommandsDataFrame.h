@@ -310,9 +310,9 @@ public:
 	virtual bool exec() override;
 
 private:
-	DAPyDataFrameTableModule* mModel{ nullptr };
-	int mAxis{ 0 };
-	int mLimit{ -1 };
+	DAPyDataFrameTableModule* mModel { nullptr };
+	int mAxis { 0 };
+	int mLimit { -1 };
 };
 
 /**
@@ -330,9 +330,9 @@ public:
 	virtual bool exec() override;
 
 private:
-	DAPyDataFrameTableModule* mModel{ nullptr };
-	int mAxis{ 0 };
-	int mLimit{ -1 };
+	DAPyDataFrameTableModule* mModel { nullptr };
+	int mAxis { 0 };
+	int mLimit { -1 };
 };
 
 /**
