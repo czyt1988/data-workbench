@@ -57,8 +57,6 @@ public:
 				const QString& how         = QStringLiteral("any"),
 				const QList< int >& indexs = QList< int >(),
 				int thresh                 = -1);
-	//	dropduplicates(keep = "first")
-	bool dropduplicates(DAPyDataFrame& df, const QString& keep, const QList< int >& indexs);
 	// fillna()
 	bool fillna(DAPyDataFrame& df, double value = 0.0, int limit = -1);
 	// interpolate()
@@ -67,6 +65,12 @@ public:
 	bool ffillna(DAPyDataFrame& df, int axis, int limit);
 	// bfillna()
 	bool bfillna(DAPyDataFrame& df, int axis, int limit);
+	//	dropduplicates(keep = "first")
+	bool dropduplicates(DAPyDataFrame& df, const QString& keep, const QList< int >& indexs);
+	// nstdfilteroutlier()
+	bool nstdfilteroutlier(DAPyDataFrame& df, double n, int axis, const QList< int >& indexs);
+	// clipoutlier()
+	bool clipoutlier(DAPyDataFrame& df, double lowervalue, double uppervalue, int axis);
 };
 }  // namespace DA
 #endif  // DAPYSCRIPTSDATAFRAME_H
