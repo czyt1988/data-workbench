@@ -686,7 +686,7 @@ Workflow</source>
     <message>
         <location filename="APP/DAAppActions.cpp" line="280"/>
         <source>Show Marker</source>
-        <translation type="unfinished"></translation>
+        <translation>显示标记</translation>
     </message>
     <message>
         <location filename="APP/DAAppActions.cpp" line="282"/>
@@ -1226,7 +1226,7 @@ Table Area</source>
         <location filename="APP/DAAppRibbonArea.cpp" line="210"/>
         <location filename="APP/DAAppRibbonArea.cpp" line="211"/>
         <source>View Marker</source>
-        <translation type="unfinished"></translation>
+        <translation>视图标记</translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="213"/>
@@ -2485,25 +2485,25 @@ Table Area</source>
         <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="924"/>
         <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="925"/>
         <source>Cross Line Marker</source>
-        <translation type="unfinished"></translation>
+        <translation>十字线标记</translation>
     </message>
     <message>
         <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="926"/>
         <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="927"/>
         <source>Horizontal Line Marker</source>
-        <translation type="unfinished"></translation>
+        <translation>水平线标记</translation>
     </message>
     <message>
         <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="928"/>
         <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="929"/>
         <source>Vertical Line Marker</source>
-        <translation type="unfinished"></translation>
+        <translation>垂直线标记</translation>
     </message>
     <message>
         <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="930"/>
         <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="931"/>
         <source>None Marker</source>
-        <translation type="unfinished"></translation>
+        <translation>无标记</translation>
     </message>
 </context>
 <context>
