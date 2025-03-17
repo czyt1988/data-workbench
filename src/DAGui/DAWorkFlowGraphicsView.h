@@ -44,7 +44,7 @@ public:
 	void copyItems(const QList< DAGraphicsItem* >& its, bool isCopy = true);
 	// 复制当前选中的items
 	void cutSelectItems();
-	// 粘贴
+    // 粘贴,会发射pastedItems信号
 	QList< QGraphicsItem* > paste();
 	// 粘贴到视图中心
 	void pasteToViewCenter();
@@ -73,6 +73,15 @@ signals:
 	 * @param item 节点
 	 */
 	void nodeItemDeleted(const QList< QGraphicsItem* >& items);
+
+    /**
+     * @brief 粘贴触发的信号
+     *
+     * 此信号在粘贴完成时触发
+     *
+     * @param items 粘贴产生的新节点，此时节点都已经加入了场景中
+     */
+    void pastedItems(const QList< QGraphicsItem* >& items);
 
 protected:
 	virtual void mouseMoveEvent(QMouseEvent* event) override;

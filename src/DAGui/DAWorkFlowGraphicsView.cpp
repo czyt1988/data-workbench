@@ -298,6 +298,7 @@ QList< QGraphicsItem* > DAWorkFlowGraphicsView::paste()
 			// 单纯复制文本，直接生成一个文本框
 		}
 	}
+    Q_EMIT pastedItems(res);
 	return res;
 }
 
