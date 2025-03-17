@@ -132,7 +132,7 @@ bool DAPyScriptsDataFrame::insert_column(DAPyDataFrame& df,
 		args[ "start" ] = DA::PY::toPyObject(start);
 		args[ "stop" ]  = DA::PY::toPyObject(stop);
 		if (start.canConvert(QMetaType::QDateTime) || start.canConvert(QMetaType::QDate)
-			|| start.canConvert(QMetaType::QTime)) {
+            || start.canConvert(QMetaType::QTime)) {
 			args[ "dtype" ] = pybind11::dtype("datetime64");
 		}
 		da_insert_column(**args);
@@ -341,4 +341,226 @@ bool DAPyScriptsDataFrame::insert_at(DAPyDataFrame& df, int col, const DAPySerie
 	}
 	return false;
 }
+
+/**
+ * @brief dropna方法的wrapper
+ * @param df
+ * @param axis
+ * @param how
+ * @param indexs
+ * @param thresh
+ * @return
+ */
+bool DAPyScriptsDataFrame::dropna(DAPyDataFrame& df, int axis, const QString& how, const QList< int >& indexs, int thresh)
+{
+	try {
+		pybind11::object da_drop_na = attr("da_drop_na");
+		pybind11::object threshobj  = pybind11::none();
+		if (thresh > 0) {
+			threshobj = pybind11::int_(thresh);
+		}
+		pybind11::dict args;
+		args[ "axis" ]   = axis;
+		args[ "how" ]    = DA::PY::toString(how);
+		args[ "index" ]  = DA::PY::toList(indexs);
+		args[ "thresh" ] = threshobj;
+		da_drop_na(df.object(), **args);
+		return true;
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return false;
+}
+
+/**
+ * @brief fillna方法的wrapper
+ * @param df
+ * @param value 要填充的值
+ * @param limit 填充限制，-1代表不限制，大于0生效
+ * @return
+ */
+bool DAPyScriptsDataFrame::fillna(DAPyDataFrame& df, double value, int limit)
+{
+	try {
+		pybind11::object da_fill_na = attr("da_fill_na");
+		pybind11::object limitObj   = pybind11::none();
+		if (limit > 0) {
+			limitObj = pybind11::int_(limit);
+		}
+		pybind11::dict args;
+		args[ "value" ] = value;
+		args[ "limit" ] = limitObj;
+		da_fill_na(df.object(), **args);
+		return true;
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return false;
+}
+
+/**
+ * @brief ffillna方法的wrapper
+ * @param df
+ * @param axis
+ * @param limit 填充限制，-1代表不限制，大于0生效
+ * @return
+ */
+bool DAPyScriptsDataFrame::ffillna(DAPyDataFrame& df, int axis, int limit)
+{
+	try {
+		pybind11::object da_ffill_na = attr("da_ffill_na");
+		pybind11::object limitObj    = pybind11::none();
+		if (limit > 0) {
+			limitObj = pybind11::int_(limit);
+		}
+		pybind11::dict args;
+		args[ "axis" ]  = axis;
+		args[ "limit" ] = limitObj;
+		da_ffill_na(df.object(), **args);
+		return true;
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return false;
+}
+
+/**
+ * @brief bfillna方法的wrapper
+ * @param df
+ * @param axis
+ * @param limit 填充限制，-1代表不限制，大于0生效
+ * @return
+ */
+bool DAPyScriptsDataFrame::bfillna(DAPyDataFrame& df, int axis, int limit)
+{
+	try {
+		pybind11::object da_bfill_na = attr("da_bfill_na");
+		pybind11::object limitObj    = pybind11::none();
+		if (limit > 0) {
+			limitObj = pybind11::int_(limit);
+		}
+		pybind11::dict args;
+		args[ "axis" ]  = axis;
+		args[ "limit" ] = limitObj;
+		da_bfill_na(df.object(), **args);
+		return true;
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return false;
+}
+/**
+ * @brief interpolate方法的wrapper
+ * @param df
+ * @param method 插值填充的方法
+ * @param order 多项式插值的次数
+ * @param limit 填充限制，-1代表不限制，大于0生效
+ * @return
+ */
+bool DAPyScriptsDataFrame::interpolate(DAPyDataFrame& df, const QString& method, int order, int limit)
+{
+	try {
+		pybind11::object da_interpolate = attr("da_fill_interpolate");
+		pybind11::object limitObj       = pybind11::none();
+		if (limit > 0) {
+			limitObj = pybind11::int_(limit);
+		}
+		pybind11::dict args;
+		args[ "method" ] = DA::PY::toString(method);
+		args[ "order" ]  = order;
+		args[ "limit" ]  = limitObj;
+		da_interpolate(df.object(), **args);
+		return true;
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return false;
+}
+/**
+ * @brief dropduplicates方法的wrapper
+ * @param df
+ * @param keep
+ * @param indexs
+ * @return
+ */
+bool DAPyScriptsDataFrame::dropduplicates(DAPyDataFrame& df, const QString& keep, const QList< int >& indexs)
+{
+	try {
+		pybind11::object da_drop_duplicates = attr("da_drop_duplicates");
+		pybind11::dict args;
+		args[ "keep" ] = DA::PY::toString(keep);
+		if (indexs.empty()) {
+			args[ "index" ] = pybind11::none();
+		} else {
+			args[ "index" ] = DA::PY::toList(indexs);
+		}
+		da_drop_duplicates(df.object(), **args);
+		return true;
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return false;
+}
+
+/**
+ * @brief nstdfilter方法的wrapper
+ * @param df
+ * @param axis
+ * @param n 标准差的倍数，范围是0.1~10，默认为3
+ * @return
+ */
+bool DAPyScriptsDataFrame::nstdfilteroutlier(DAPyDataFrame& df, double n, int axis, const QList< int >& indexs)
+{
+	try {
+		pybind11::object da_nstd_filter_outlier = attr("da_nstd_filter_outlier");
+		if (n > 10 || n < 0.1) {
+			throw std::invalid_argument("n must be between 0.1 and 10.");
+		}
+		pybind11::dict args;
+		args[ "n" ]    = n;
+		args[ "axis" ] = pybind11::int_(axis);
+		if (indexs.empty()) {
+			args[ "index" ] = pybind11::none();
+		} else {
+			args[ "index" ] = DA::PY::toList(indexs);
+		}
+		da_nstd_filter_outlier(df.object(), **args);
+		return true;
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return false;
+}
+
+/**
+ * @brief clipoutlier方法的wrapper
+ * @param df
+ * @param keep
+ * @param indexs
+ * @return
+ */
+bool DAPyScriptsDataFrame::clipoutlier(DAPyDataFrame& df, double lowervalue, double uppervalue, int axis)
+{
+	try {
+		pybind11::object da_clip_outlier = attr("da_clip_outlier");
+		pybind11::dict args;
+		if (lowervalue == 0.0) {
+			args[ "lower" ] = pybind11::none();
+		} else {
+			args[ "lower" ] = lowervalue;
+		}
+		if (uppervalue == 0.0) {
+			args[ "upper" ] = pybind11::none();
+		} else {
+			args[ "upper" ] = uppervalue;
+		}
+		args[ "axis" ] = pybind11::int_(axis);
+		da_clip_outlier(df.object(), **args);
+		return true;
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return false;
+}
+
 }  // end DA namespace

@@ -58,22 +58,11 @@ if(${QT_VERSION_MAJOR} EQUAL 6)
     find_package(Qt6 REQUIRED COMPONENTS Core5Compat)
     target_link_libraries(${DA_LIB_NAME} PRIVATE Qt6::Core5Compat)
 endif()
+
 ########################################################
-# 设置target属性，以及Qt的moc
+# 设置通用库属性
 ########################################################
-# 在同一个 CMake build tree 中，每个项目的 targets 对外都是可见的
-set_target_properties(${DA_LIB_NAME} PROPERTIES
-    AUTOMOC ON
-    AUTOUIC ON
-    AUTORCC ON
-    CXX_EXTENSIONS OFF
-    DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
-    VERSION ${DA_LIB_VERSION}
-    EXPORT_NAME ${DA_LIB_NAME}
-    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-)
+damacro_set_lib_properties(${DA_LIB_NAME} ${DA_LIB_VERSION})
 
 ########################################################
 # 附加编译选项

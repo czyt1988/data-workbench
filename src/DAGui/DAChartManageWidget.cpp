@@ -43,12 +43,12 @@ void DAChartManageWidget::setChartOperateWidget(DAChartOperateWidget* cow)
 	if (d_ptr->mChartOptWidget) {
 		DAChartOperateWidget* old = d_ptr->mChartOptWidget;
 		disconnect(old, &DAChartOperateWidget::figureCreated, this, &DAChartManageWidget::onFigureCreated);
-		disconnect(old, &DAChartOperateWidget::figureCloseing, this, &DAChartManageWidget::onFigureCloseing);
+		disconnect(old, &DAChartOperateWidget::figureRemoving, this, &DAChartManageWidget::onFigureCloseing);
 		disconnect(old, &DAChartOperateWidget::currentFigureChanged, this, &DAChartManageWidget::onCurrentFigureChanged);
 	}
 	d_ptr->mChartOptWidget = cow;
 	connect(cow, &DAChartOperateWidget::figureCreated, this, &DAChartManageWidget::onFigureCreated);
-	connect(cow, &DAChartOperateWidget::figureCloseing, this, &DAChartManageWidget::onFigureCloseing);
+	connect(cow, &DAChartOperateWidget::figureRemoving, this, &DAChartManageWidget::onFigureCloseing);
 	connect(cow, &DAChartOperateWidget::currentFigureChanged, this, &DAChartManageWidget::onCurrentFigureChanged);
 }
 

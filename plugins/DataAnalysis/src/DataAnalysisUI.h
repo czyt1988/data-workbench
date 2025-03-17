@@ -9,6 +9,9 @@
 #include "SARibbonPannel.h"
 
 class DataAnalysisActions;
+/**
+ * @brief 这个类用于构建截面
+ */
 class DataAnalysisUI : public QObject
 {
 public:

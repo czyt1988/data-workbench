@@ -5,7 +5,7 @@ namespace DA
 //===================================================
 // DACommandWithRedoCount
 //===================================================
-DACommandWithRedoCount::DACommandWithRedoCount(QUndoCommand* par) : QUndoCommand(par), m_redocnt(0), m_isSuccess(false)
+DACommandWithRedoCount::DACommandWithRedoCount(QUndoCommand* par) : QUndoCommand(par)
 {
 }
 
@@ -13,34 +13,19 @@ DACommandWithRedoCount::~DACommandWithRedoCount()
 {
 }
 
-void DACommandWithRedoCount::addRedoCnt()
+void DACommandWithRedoCount::redo()
 {
-    ++m_redocnt;
+	if (mIsFirstRedo) {
+		// 第一次执行redo，将跳过，这里exec函数认为已经执行
+		mIsFirstRedo = false;
+		return;
+	}
+	exec();
 }
 
-void DACommandWithRedoCount::subRedoCnt()
+bool DACommandWithRedoCount::exec()
 {
-    --m_redocnt;
-}
-
-bool DACommandWithRedoCount::isEqualTwo() const
-{
-    return m_redocnt == 2;
-}
-
-size_t DACommandWithRedoCount::getRedoCnt() const
-{
-    return m_redocnt;
-}
-
-bool DACommandWithRedoCount::isSetSuccess() const
-{
-    return m_isSuccess;
-}
-
-void DACommandWithRedoCount::setSuccess(bool on)
-{
-    m_isSuccess = on;
+	return false;
 }
 
 }

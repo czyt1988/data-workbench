@@ -6,7 +6,7 @@
 cmake_minimum_required(VERSION 3.5)
 damacro_lib_setting(
     "DAPyScripts"
-    "wrapper python | https://github.com/czyt1988"
+    "wrapper python scripts | https://github.com/czyt1988"
     0
     0
     1
@@ -35,8 +35,10 @@ add_library(${DA_LIB_NAME} SHARED
 )	
 # 构建库定义的宏,必须为Private
 target_compile_definitions(${DA_LIB_NAME} PRIVATE DAPYSCRIPTS_BUILDLIB)#!!!!** 注意变更 **!!!!
+
 # 定义别名让DA::${DA_LIB_NAME}也能获取到
 add_library(${DA_PROJECT_NAME}::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
+
 ########################################################
 # 依赖链接 #!!!!** 注意变更 **!!!!
 ########################################################
@@ -44,38 +46,29 @@ target_link_libraries(${DA_LIB_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Core
 )
 message(STATUS "${DA_LIB_NAME} Qt${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
+
+
+# -------------link DAWorkbench--------------------------
+find_package(${DA_PROJECT_NAME} COMPONENTS
+    DAPyBindQt
+)
+if(${DA_PROJECT_NAME}_FOUND)
+    message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAPyBindQt")
+endif()
+target_link_libraries(${DA_LIB_NAME} PUBLIC
+    ${DA_PROJECT_NAME}::DAPyBindQt
+)
+
 # -------------link 3rdparty python--------------------------
 damacro_import_Python(${DA_LIB_NAME})
 
 # -------------link 3rdparty pybind11--------------------------
 damacro_import_pybind11(${DA_LIB_NAME})
 
-# -------------link DAWorkbench--------------------------
-# DAPyBindQt
-# 指定DAWorkbench_DIR为工程的顶层BINARY_DIR，否则找不到DAWorkbench
-find_package(${DA_PROJECT_NAME} COMPONENTS DAPyBindQt)
-if(${DA_PROJECT_NAME}_FOUND)
-    message(STATUS "  |-link ${DA_PROJECT_NAME}::DAPyBindQt")
-    message(STATUS "  | |-include dir:${DAPyBindQt_INCLUDE_DIR}")
-endif()
-target_link_libraries(${DA_LIB_NAME} PUBLIC
-    ${DA_PROJECT_NAME}::DAPyBindQt
-)
 ########################################################
-# Qt的moc
+# 设置通用库属性
 ########################################################
-set_target_properties(${DA_LIB_NAME} PROPERTIES
-    AUTOMOC ON
-    AUTOUIC ON
-    AUTORCC ON
-    CXX_EXTENSIONS OFF
-    DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
-    VERSION ${DA_LIB_VERSION}
-    EXPORT_NAME ${DA_LIB_NAME}
-    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-)
+damacro_set_lib_properties(${DA_LIB_NAME} ${DA_LIB_VERSION})
 
 ########################################################
 # 安装

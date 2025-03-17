@@ -1,130 +1,104 @@
-﻿
-# damacro_import_SARibbonBar(${DA_LIB_NAME})
-macro(damacro_import_SARibbonBar __target_name)
-    find_package(SARibbonBar)
-    if(SARibbonBar_FOUND)
-        message(STATUS "  |-link SARibbonBar")
-        message(STATUS "  | |-include dir:${SARibbonBar_INCLUDE_DIR}")
-    endif()
-    if(DEFINED DA_SRC_DIR)
-        set(_src_dir ${DA_SRC_DIR})
+﻿macro(damacro_import_x_x x_namespace x_libname __target_name)
+    find_package(${x_libname})
+    if(${x_libname}_FOUND)
+        message(STATUS "  |-finded ${x_libname}")
     else()
-        set(_src_dir ${CMAKE_CURRENT_SOURCE_DIR}/..)
+        message(STATUS "  |-can not find ${x_libname}")
+        if(DEFINED DA_INSTALL_LIB_CMAKE_PATH)
+            set(_lib_dir ${DA_INSTALL_LIB_CMAKE_PATH}/${x_libname})
+            message(STATUS "  |-try to find in ${_lib_dir}")
+            find_package(${x_libname} PATHS ${_lib_dir})
+        endif()
     endif()
-    # target_include_directories(${__target_name} PUBLIC
-    #     $<INSTALL_INTERFACE:include/SARibbonBar>
-    #     $<INSTALL_INTERFACE:include/SARibbonBar/3rdparty/framelesshelper/include>
-    #     $<BUILD_INTERFACE:${_src_dir}/3rdparty/SARibbon/src/SARibbonBar>
-    #     $<BUILD_INTERFACE:${_src_dir}/3rdparty/SARibbon/src/SARibbonBar/3rdparty/framelesshelper/include>
-    # )
     # 链接的第三方库
-    target_link_libraries(${__target_name} PRIVATE
-        SARibbonBar::SARibbonBar
-    )
+    if(${x_libname}_FOUND)
+        target_link_libraries(${__target_name} PRIVATE
+            ${x_namespace}::${x_libname}
+        )
+        message(STATUS "  |-link ${x_namespace}::${x_libname}")
+    else()
+        message(FATAL_ERROR "  can not find ${x_libname}")
+    endif()
+endmacro(damacro_import_x_x)
+
+# 这个宏是引入share/cmake目录的库，例如tsl-ordered-map
+macro(damacro_import_x_x_sharepath x_namespace x_libname __target_name)
+    find_package(${x_libname})
+    if(${x_libname}_FOUND)
+        message(STATUS "  |-finded ${x_libname}")
+    else()
+        message(STATUS "  |-can not find ${x_libname}")
+        if(DEFINED DA_INSTALL_LIB_SHARE_PATH)
+            set(_lib_dir ${DA_INSTALL_LIB_SHARE_PATH}/${x_libname})
+            message(STATUS "  |-try to find in ${_lib_dir}")
+            find_package(${x_libname} PATHS ${_lib_dir})
+        endif()
+    endif()
+    # 链接的第三方库
+    if(${x_libname}_FOUND)
+        target_link_libraries(${__target_name} PRIVATE
+            ${x_namespace}::${x_libname}
+        )
+        message(STATUS "  |-link ${x_namespace}::${x_libname}")
+    else()
+        message(FATAL_ERROR "  can not find ${x_libname}")
+    endif()
+endmacro(damacro_import_x_x_sharepath)
+
+macro(damacro_import_x x_libname __target_name)
+    damacro_import_x_x(${x_libname} ${x_libname} ${__target_name})
+endmacro(damacro_import_x)
+
+# damacro_import_SARibbonBar(${DA_LIB_NAME})
+#macro(damacro_import_SARibbonBar __target_name)
+#    find_package(SARibbonBar)
+#    if(SARibbonBar_FOUND)
+#        message(STATUS "  |-finded SARibbonBar")
+#        message(STATUS "  | |-include dir:${SARibbonBar_INCLUDE_DIR}")
+#    else()
+#        message(STATUS "  |-can not find SARibbonBar")
+#        if(DEFINED DA_INSTALL_LIB_CMAKE_PATH)
+#            set(_lib_dir ${DA_INSTALL_LIB_CMAKE_PATH}/SARibbonBar)
+#            message(STATUS "  |-try to find in ${_lib_dir}")
+#            find_package(SARibbonBar PATHS ${_lib_dir})
+#        endif()
+#    endif()
+#    # 链接的第三方库
+#    if(SARibbonBar_FOUND)
+#        target_link_libraries(${__target_name} PRIVATE
+#            SARibbonBar::SARibbonBar
+#        )
+#        message(STATUS "  |-link SARibbonBar::SARibbonBar")
+#    else()
+#        message(ERROR "  can not find SARibbonBar")
+#    endif()
+#endmacro(damacro_import_SARibbonBar)
+
+macro(damacro_import_SARibbonBar __target_name)
+    damacro_import_x(SARibbonBar ${__target_name})
 endmacro(damacro_import_SARibbonBar)
 
-
 macro(damacro_import_DALiteCtk __target_name)
-    find_package(DALiteCtk)
-    if(DALiteCtk_FOUND)
-        message(STATUS "  |-link DALiteCtk")
-        message(STATUS "  | |-include dir:${DALiteCtk_INCLUDE_DIR}")
-    endif()
-    if(DEFINED DA_SRC_DIR)
-        set(_src_dir ${DA_SRC_DIR})
-    else()
-        set(_src_dir ${CMAKE_CURRENT_SOURCE_DIR}/..)
-    endif()
-    # target_include_directories(${__target_name} PUBLIC
-    #     $<INSTALL_INTERFACE:include/DALiteCtk>
-    #     $<BUILD_INTERFACE:${_src_dir}/3rdparty/ctk>
-    # )
-    # 链接的第三方库
-    target_link_libraries(${__target_name} PRIVATE
-        DALiteCtk
-    )
+    damacro_import_x(DALiteCtk ${__target_name})
 endmacro(damacro_import_DALiteCtk)
 
-
 macro(damacro_import_QtAdvancedDocking __target_name)
-    find_package(qt${QT_VERSION_MAJOR}advanceddocking)
-    if(qt${QT_VERSION_MAJOR}advanceddocking_FOUND)
-        message(STATUS "  |-link qt${QT_VERSION_MAJOR}advanceddocking")
-        message(STATUS "  | |-include dir:${qt${QT_VERSION_MAJOR}advanceddocking_INCLUDE_DIR}")
-    endif()
-    if(DEFINED DA_SRC_DIR)
-        set(_src_dir ${DA_SRC_DIR})
-    else()
-        set(_src_dir ${CMAKE_CURRENT_SOURCE_DIR}/..)
-    endif()
-    # target_include_directories(${__target_name} PUBLIC
-    #     $<INSTALL_INTERFACE:include/qt${QT_VERSION_MAJOR}advanceddocking>
-    #     $<BUILD_INTERFACE:${_src_dir}/3rdparty/ADS/src>
-    # )
-    target_link_libraries(${__target_name} PRIVATE
-        ads::qt${QT_VERSION_MAJOR}advanceddocking
-    )
+    set(_lib_name qt${QT_VERSION_MAJOR}advanceddocking)
+    damacro_import_x_x(ads ${_lib_name} ${__target_name})
 endmacro(damacro_import_QtAdvancedDocking)
 
-
 macro(damacro_import_qwt __target_name)
-    # 3rdparty - qwt
-    find_package(qwt)
-    if(qwt_FOUND)
-        message(STATUS "  |-link qwt")
-        message(STATUS "  | |-include dir:${qwt_INCLUDE_DIR}")
-    endif()
-    if(DEFINED DA_SRC_DIR)
-        set(_src_dir ${DA_SRC_DIR})
-    else()
-        set(_src_dir ${CMAKE_CURRENT_SOURCE_DIR}/..)
-    endif()
-    # target_include_directories(${__target_name} PUBLIC
-    #         $<INSTALL_INTERFACE:include/qwt>
-    #         $<BUILD_INTERFACE:${_src_dir}/3rdparty/qwt/src>
-    # )
-    # 链接的第三方库
-    target_link_libraries(${__target_name} PRIVATE
-        qwt
-    )
+    damacro_import_x(qwt ${__target_name})
 endmacro(damacro_import_qwt)
 
-
 macro(damacro_import_QtPropertyBrowser __target_name)
-    # 3rdparty - qwt
-    find_package(QtPropertyBrowser)
-    if(QtPropertyBrowser_FOUND)
-        message(STATUS "  |-link QtPropertyBrowser")
-        message(STATUS "  | |-include dir:${QtPropertyBrowser_INCLUDE_DIR}")
-    endif()
-    if(DEFINED DA_SRC_DIR)
-        set(_src_dir ${DA_SRC_DIR})
-    else()
-        set(_src_dir ${CMAKE_CURRENT_SOURCE_DIR}/..)
-    endif()
-    # target_include_directories(${__target_name} PUBLIC
-    #         $<INSTALL_INTERFACE:include/qwt>
-    #         $<BUILD_INTERFACE:${_src_dir}/3rdparty/qwt/src>
-    # )
-    # 链接的第三方库
-    target_link_libraries(${__target_name} PRIVATE
-        QtPropertyBrowser
-    )
+    damacro_import_x(QtPropertyBrowser ${__target_name})
 endmacro(damacro_import_QtPropertyBrowser)
 
 macro(damacro_import_spdlog __target_name)
-    if(DEFINED DA_SRC_DIR)
-        set(_src_dir ${DA_SRC_DIR})
-    else()
-        set(_src_dir ${CMAKE_CURRENT_SOURCE_DIR}/..)
-    endif()
-    # spdlog是header only
-    target_include_directories(${__target_name} PUBLIC
-        $<INSTALL_INTERFACE:include/spdlog>
-        $<BUILD_INTERFACE:${_src_dir}/3rdparty/spdlog/include>
-    )
-    message(STATUS "  |-spdlog include: ${spdlog_DIR}/include")
+    damacro_import_x(spdlog ${__target_name})
 endmacro(damacro_import_spdlog)
+
 
 macro(damacro_import_Python __target_name)
     # Python
@@ -165,3 +139,28 @@ macro(damacro_import_pybind11 __target_name)
         $<BUILD_INTERFACE:${_src_dir}/3rdparty/pybind11/include>
     )
 endmacro(damacro_import_pybind11)
+
+macro(damacro_import_orderedmap __target_name)
+    # tsl-ordered-map的安装位置不是在lib/cmake
+    # 而是在share/cmake下面
+    # tsl-ordered-map无法使用damacro_import_x_x_sharepath或者damacro_import_x_x这些宏
+    # 因为他的package名称为tsl-ordered-map，他的库名称为ordered_map
+    find_package(tsl-ordered-map)
+    if(tsl-ordered-map_FOUND)
+        message(STATUS "  |-finded tsl-ordered-map")
+    else()
+        message(STATUS "  |-can not find tsl-ordered-map")
+        if(DEFINED DA_INSTALL_LIB_SHARE_PATH)
+            set(_lib_dir ${DA_INSTALL_LIB_SHARE_PATH}/tsl-ordered-map)
+            message(STATUS "  |-try to find in ${_lib_dir}")
+            find_package(tsl-ordered-map PATHS ${_lib_dir})
+        endif()
+    endif()
+    # 链接的第三方库
+    if(tsl-ordered-map_FOUND)
+        target_link_libraries(${__target_name} PUBLIC tsl::ordered_map)
+        message(STATUS "  |-link tsl::ordered_map")
+    else()
+        message(FATAL_ERROR "  can not find tsl-ordered-map")
+    endif()
+endmacro(damacro_import_orderedmap)

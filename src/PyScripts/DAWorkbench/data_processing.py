@@ -5,9 +5,10 @@ from typing import List,Dict,Optional
 import pandas as pd
 import numpy as np
 import scipy
+from DAWorkbench.logger import log_function_call  # type: ignore # 引入装饰器
 from loguru import logger
 
-
+@log_function_call
 def spectrum_analysis(waveform, sampling_rate, fftsize=None,phases=False,
                       nextpower2=False,db=False,detrend=None):
     '''
@@ -26,7 +27,6 @@ def spectrum_analysis(waveform, sampling_rate, fftsize=None,phases=False,
             phases=True tuple(freq(频率):np.ndarray, amplitudes(幅值):np.ndarray ,phases(相位):np.ndarray)
     '''
     #通过loguru打印函数的所有输入的参数
-    logger.debug(f"spectrum_analysis(sampling_rate={sampling_rate},fftsize={fftsize},phases={phases},nextpower2={nextpower2},db={db},detrend={detrend})")
     if fftsize is None or fftsize <= 1: #fftsize=1或负数是没有意义的，这里一并处理为波形长度 
         if nextpower2:  # 如果nextpower2为True，则将fftsize取下一个2的整数次幂  
             # fftsize = 2 ** int(np.ceil(np.log2(len(waveform))))
@@ -73,6 +73,7 @@ def spectrum_analysis(waveform, sampling_rate, fftsize=None,phases=False,
         return freq,amplitudes,phases
     return freq,amplitudes
 
+@log_function_call
 def butterworth_filter(waveform, sampling_freq, filter_order, filter_type = 'lowpass', cutoff_freq = 0, 
                         upper_freq = 0, lower_freq = 0,  phases = False):
     '''
@@ -87,7 +88,6 @@ def butterworth_filter(waveform, sampling_freq, filter_order, filter_type = 'low
     :param phases:是否计算相位，如果为True，则计算相位，否则不计算相位，默认不计算
     :return: 滤波后的波形结果
     '''
-    logger.debug(f"butterworth_filter(sampling_freq={sampling_freq},filter_order={filter_order},filter_type={filter_type},cutoff_freq={cutoff_freq},upper_freq={upper_freq},lower_freq={lower_freq},phases={phases})")
     nyq = 0.5 * sampling_freq # 奈奎斯特采样频率
     
     # 如果滤波器类型位低通/高通滤波，则通过截止频率来计算归一化频率，传入参数为截止频率(数)
@@ -113,6 +113,7 @@ def butterworth_filter(waveform, sampling_freq, filter_order, filter_type = 'low
         
     return filtered_data
 
+@log_function_call
 def da_spectrum_analysis(waveform, sampling_rate, args:Optional[Dict] = None):
     '''
     频谱分析,此函数主要针对一维波形进行频谱分析
@@ -122,7 +123,6 @@ def da_spectrum_analysis(waveform, sampling_rate, args:Optional[Dict] = None):
     :param phases: 是否计算相位，如果为True，则计算相位，否则不计算相位
     :return: 频谱分析结果，一个dataframe,根据参数，包含频率、振幅，或者相位
     '''
-    logger.debug(f"da_spectrum_analysis(sampling_rate={sampling_rate},args={args})")
     res = spectrum_analysis(waveform,sampling_rate,**args)
     if 3 == len(res):
         return pd.DataFrame({  
@@ -136,6 +136,7 @@ def da_spectrum_analysis(waveform, sampling_rate, args:Optional[Dict] = None):
                 'amplitudes': res[1],   
             })  
 
+@log_function_call
 def da_butterworth_filter(waveform, sampling_freq, filter_order, args:Optional[Dict] = None):
     '''
     巴特沃斯滤波器，此函数主要针对一维波形进行滤波
@@ -143,7 +144,6 @@ def da_butterworth_filter(waveform, sampling_freq, filter_order, args:Optional[D
     :param sampling_freq: 采样频率
     :return: 滤波结果，一个dataframe，包含滤波后的波形数据
     '''
-    logger.debug(f"da_butterworth_filter(sampling_freq={sampling_freq},filter_order={filter_order},args={args})")
     res = butterworth_filter(waveform, sampling_freq, filter_order, **args)
     return pd.DataFrame({
         'filtered_wave': res

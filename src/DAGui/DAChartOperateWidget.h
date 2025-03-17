@@ -3,7 +3,7 @@
 #include <QWidget>
 #include "DAGuiAPI.h"
 #include "DAFigureWidget.h"
-
+#include "DAAbstractOperateWidget.h"
 namespace Ui
 {
 class DAChartOperateWidget;
@@ -19,7 +19,7 @@ class DAFigureFactory;
  *
  * 通过DAChartOperateWidget可以实现DAFigureWidget和DAChartWidget
  */
-class DAGUI_API DAChartOperateWidget : public QWidget
+class DAGUI_API DAChartOperateWidget : public DAAbstractOperateWidget
 {
 	Q_OBJECT
 	DA_IMPL(DAChartOperateWidget)
@@ -46,6 +46,8 @@ public:
 	DAChartWidget* gca() const;
 	// 获取绘图的数量
 	int getFigureCount() const;
+	// 获取QUndoStack
+	QUndoStack* getUndoStack() override;
 
 protected:
 	// 初始化figure的连接，这个函数用于重载createFigure函数时创建fig后绑定槽函数到DAChartOperateWidget用
@@ -57,12 +59,12 @@ private slots:
 	void onTabCloseRequested(int index);
 	//
 	void onFigureTitleChanged(const QString& t);
-signals:
+Q_SIGNALS:
 	/**
 	 * @brief 绘图即将关闭
 	 * @param f
 	 */
-	void figureCloseing(DA::DAFigureWidget* f);
+	void figureRemoving(DA::DAFigureWidget* f);
 	/**
 	 * @brief 创建了一个绘图
 	 * @param f

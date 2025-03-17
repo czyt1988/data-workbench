@@ -1,44 +1,24 @@
 ﻿#include "DACommandWithTemplateData.h"
 #include <QApplication>
 #include <QDir>
+#include "DADir.h"
 #include "DAPyScripts.h"
 namespace DA
 {
-
+QString DACommandWithTemplateData::s_temp_dataframe = DADir::createTempPath("dataframe");
 //===================================================
 // DACommandWithTemplateData
 //===================================================
-DACommandWithTemplateData::DACommandWithTemplateData(const DAPyDataFrame& df, QUndoCommand* par)
-    : DACommandWithRedoCount(par), m_dataframe(df)
+DACommandWithTemplateData::DACommandWithTemplateData(const DAPyDataFrame& df, QUndoCommand* par, bool saveOnConstruct)
+    : DACommandWithRedoCount(par), mDataframe(df)
 {
-    m_tempDir.setPath(getTemplateDirPath());
-    DAPyScriptsDataFrame& py = DAPyScripts::getInstance().getDataFrame();
-    py.to_pickle(m_dataframe, getTemplateFilePath());
+	if (saveOnConstruct) {
+		save();
+	}
 }
 
 DACommandWithTemplateData::~DACommandWithTemplateData()
 {
-    m_tempDir.remove(getTemplateFileName());  //析构时删除临时文件
-}
-
-/**
- * @brief 获取临时路径
- * @return
- */
-QString DACommandWithTemplateData::getTemplateDirPath()
-{
-    QString appPath = QApplication::applicationDirPath();
-    return QDir::toNativeSeparators(appPath + "/tempData");
-}
-
-/**
- * @brief 确保临时路径存在
- * @return
- */
-bool DACommandWithTemplateData::ensureTemplateDirExists()
-{
-    QDir tmp(getTemplateDirPath());
-    return tmp.mkpath(getTemplateDirPath());
 }
 
 /**
@@ -54,9 +34,10 @@ QString DACommandWithTemplateData::getTemplateFileName() const
  * @brief 获得临时路径
  * @return
  */
-QDir& DACommandWithTemplateData::templateDir()
+QDir DACommandWithTemplateData::templateDir() const
 {
-    return m_tempDir;
+	QDir dir(getDataframeTempPath());
+	return dir;
 }
 
 /**
@@ -65,7 +46,17 @@ QDir& DACommandWithTemplateData::templateDir()
  */
 QString DACommandWithTemplateData::getTemplateFilePath() const
 {
-    return m_tempDir.absoluteFilePath(getTemplateFileName());
+    return templateDir().absoluteFilePath(getTemplateFileName());
+}
+
+/**
+ * @brief 把dataframe保存到临时文件中
+ * @return
+ */
+bool DACommandWithTemplateData::save()
+{
+	DAPyScriptsDataFrame& py = DAPyScripts::getInstance().getDataFrame();
+	return py.to_pickle(mDataframe, getTemplateFilePath());
 }
 
 /**
@@ -74,18 +65,23 @@ QString DACommandWithTemplateData::getTemplateFilePath() const
  */
 bool DACommandWithTemplateData::load()
 {
-    DAPyScriptsDataFrame& py = DAPyScripts::getInstance().getDataFrame();
-    return py.from_pickle(m_dataframe, getTemplateFilePath());
+	DAPyScriptsDataFrame& py = DAPyScripts::getInstance().getDataFrame();
+	return py.from_pickle(mDataframe, getTemplateFilePath());
 }
 
 DAPyDataFrame& DACommandWithTemplateData::dataframe()
 {
-    return m_dataframe;
+	return mDataframe;
 }
 
 const DAPyDataFrame& DACommandWithTemplateData::dataframe() const
 {
-    return m_dataframe;
+	return mDataframe;
+}
+
+QString DACommandWithTemplateData::getDataframeTempPath()
+{
+	return s_temp_dataframe;
 }
 
 }

@@ -51,33 +51,10 @@ target_link_libraries(${DA_LIB_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Xml
 )
 # -------------link DAWorkBench--------------------------
-# DAPluginSupport
-# 指定DAWorkbench_DIR为工程的顶层BINARY_DIR，否则找不到${DA_PROJECT_NAME}
-# find_package(${DA_PROJECT_NAME} COMPONENTS
-#     DAUtils
-#     DAMessageHandler
-#     DAData
-#     DACommonWidgets
-#     DAGraphicsView
-#     DAWorkFlow
-#     DAFigure
-#     DAGui
-#     DAInterface
-# )
-# if(${DA_PROJECT_NAME}_FOUND)
-#     message(STATUS "  |-link ${DA_PROJECT_NAME}::DAInterface")
-#     message(STATUS "  | |-include dir:${DAInterface_INCLUDE_DIR}")
-# endif()
-# target_link_libraries(${DA_LIB_NAME} PUBLIC
-#     ${DA_PROJECT_NAME}::DAUtils
-#     ${DA_PROJECT_NAME}::DAMessageHandler
-#     ${DA_PROJECT_NAME}::DAData
-#     ${DA_PROJECT_NAME}::DACommonWidgets
-#     ${DA_PROJECT_NAME}::DAWorkFlow
-#     ${DA_PROJECT_NAME}::DAFigure
-#     ${DA_PROJECT_NAME}::DAGui
-#     ${DA_PROJECT_NAME}::DAInterface
-# )
+find_package(${DA_PROJECT_NAME} COMPONENTS DAInterface)
+if(${DA_PROJECT_NAME}_FOUND)
+    message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAInterface")
+endif()
 target_link_libraries(${DA_LIB_NAME} PUBLIC
     ${DA_PROJECT_NAME}::DAInterface
 )
@@ -89,21 +66,11 @@ if(DA_ENABLE_PYTHON)
     # -------------link python--------------------------
     damacro_import_Python(${DA_LIB_NAME})
 endif()
+
 ########################################################
-# Qt的moc
+# 设置通用库属性
 ########################################################
-set_target_properties(${DA_LIB_NAME} PROPERTIES
-    AUTOMOC ON
-    AUTOUIC ON
-    AUTORCC ON
-    CXX_EXTENSIONS OFF
-    DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
-    VERSION ${DA_LIB_VERSION}
-    EXPORT_NAME ${DA_LIB_NAME}
-    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-)
+damacro_set_lib_properties(${DA_LIB_NAME} ${DA_LIB_VERSION})
 
 ########################################################
 # 安装

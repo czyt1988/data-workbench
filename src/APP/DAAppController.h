@@ -114,7 +114,7 @@ public:
 	// 设置工程为dirty
 	void setDirty(bool on = true);
 	bool isDirty() const;
-public slots:
+public Q_SLOTS:
 	// 保存
 	void save();
 	// 另存为
@@ -123,8 +123,9 @@ public slots:
 	void open();
 	// 打开工程文件
 	bool openProjectFile(const QString& projectFilePath);
-private slots:
-
+private Q_SLOTS:
+	// 工程的胀状态改变槽
+	void onProjectDirtyStateChanged(bool isdirty);
 	//===================================================
 	// 主页标签 Main Category
 	//===================================================
@@ -208,6 +209,22 @@ private slots:
 	void onActionRenameColumnsTriggered();
 	// 创建数据描述
 	void onActionCreateDataDescribeTriggered();
+	// 删除缺失值
+	void onActionDataFrameDropNoneTriggered();
+	// 填充缺失值
+	void onActionDataFrameFillNoneTriggered();
+	// 插值填充缺失值
+	void onActionDataFrameFillInterpolateTriggered();
+	// 前向填充缺失值
+	void onActionDataFrameFFillNoneTriggered();
+	// 后向填充缺失值
+	void onActionDataFrameBFillNoneTriggered();
+	// 删除重复值
+	void onActionDropDuplicatesTriggered();
+	// n倍标准差过滤异常值
+	void onActionNstdFilterOutlierTriggered();
+	// 替换界限外异常值
+	void onActionDataFrameClipOutlierTriggered();
 #if DA_ENABLE_PYTHON
 	// 列数据类型改变
 	void onComboxColumnTypesCurrentDTypeChanged(const DA::DAPyDType& dt);
@@ -325,7 +342,7 @@ private slots:
 	// DADataOperatePageWidget数据操作相关
 	//===================================================
 	// 数据操作窗口添加，需要绑定相关信号槽到ribbon的页面
-	void onDataOperatePageAdded(DA::DADataOperatePageWidget* page);
+	void onDataOperatePageCreated(DA::DADataOperatePageWidget* page);
 
 	//==========================================
 	// Qt-Advanced-Docking-System
@@ -344,7 +361,8 @@ private slots:
 	//===================================================
 	// 鼠标动作结束
 	void onWorkFlowGraphicsSceneActionDeactive(DA::DAAbstractGraphicsSceneAction* scAction);
-
+	// 工作流页面创建槽
+	void onWorkflowCreated(DA::DAWorkFlowEditWidget* wfw);
 	//===================================================
 	// DAAppChartManageWidget
 	//===================================================
@@ -360,21 +378,21 @@ private:
 #endif
 
 private:
-	AppMainWindow* mMainWindow { nullptr };
-	DAAppCore* mCore { nullptr };
-	DAProjectInterface* mProject { nullptr };
+	AppMainWindow* mMainWindow{ nullptr };
+	DAAppCore* mCore{ nullptr };
+	DAProjectInterface* mProject{ nullptr };
 	;
-	DAAppRibbonArea* mRibbon { nullptr };
-	DAAppDockingArea* mDock { nullptr };
-	DAAppCommand* mCommand { nullptr };
-	DAAppActions* mActions { nullptr };
-	DAAppDataManager* mDatas { nullptr };
+	DAAppRibbonArea* mRibbon{ nullptr };
+	DAAppDockingArea* mDock{ nullptr };
+	DAAppCommand* mCommand{ nullptr };
+	DAAppActions* mActions{ nullptr };
+	DAAppDataManager* mDatas{ nullptr };
 
 	QStringList mFileReadFilters;  ///< 包含支持的文件[Images (*.png *.xpm *.jpg)] [Text files (*.txt)]
 	//
 	LastFocusedOpertateWidgets mLastFocusedOpertateWidget;  ///< 最后获取焦点的操作窗口
 															//
-	DAAppSettingDialog* mSettingDialog { nullptr };         ///< 设置窗口
+	DAAppSettingDialog* mSettingDialog{ nullptr };          ///< 设置窗口
 	DAAppConfig* mConfig;                                   ///< 设置类
 };
 }

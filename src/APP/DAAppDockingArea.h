@@ -1,4 +1,4 @@
-#ifndef DAAPPDOCKINGAREA_H
+﻿#ifndef DAAPPDOCKINGAREA_H
 #define DAAPPDOCKINGAREA_H
 #include "DADockingAreaInterface.h"
 //
@@ -141,8 +141,6 @@ private:
 	void initConnection();
 private slots:
 	void onDataManageWidgetDataDbClicked(const DA::DAData& data);
-	// workflow窗口创建信号对应槽
-	void onWorkFlowOperateWidgetWorkflowCreated(DA::DAWorkFlowEditWidget* wfw);
 
 private:
 	AppMainWindow* mApp;

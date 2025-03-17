@@ -1,6 +1,7 @@
 ﻿#ifndef DADATAOPERATEPAGEWIDGET_H
 #define DADATAOPERATEPAGEWIDGET_H
 #include <QWidget>
+#include <QUndoStack>
 #include "DAGuiAPI.h"
 namespace DA
 {
@@ -9,18 +10,24 @@ namespace DA
  */
 class DAGUI_API DADataOperatePageWidget : public QWidget
 {
-    Q_OBJECT
+	Q_OBJECT
 public:
-    enum DataOperatePageType
-    {
-        DataOperateOfDataFrame  = 1,
-        DataOperateOfUserDefine = 1000
-    };
+	enum DataOperatePageType
+	{
+		DataOperateOfDataFrame  = 1,
+		DataOperateOfUserDefine = 1000
+	};
 
 public:
-    DADataOperatePageWidget(QWidget* par = nullptr);
-    ~DADataOperatePageWidget();
-    virtual int getDataOperatePageType() const = 0;
+	DADataOperatePageWidget(QWidget* par = nullptr);
+	~DADataOperatePageWidget();
+	virtual int getDataOperatePageType() const = 0;
+	QUndoStack* getUndoStack();
+	// 激活此窗口的UndoStack
+	void activeUndoStack();
+
+protected:
+	QUndoStack mUndoStack;
 };
 }  // end da
 #endif  // DADATAOPERATEPAGEWIDGET_H

@@ -63,7 +63,7 @@ void DAChartSettingWidget::setChartOprateWidget(DAChartOperateWidget* opt)
 		return;
 	}
 	if (d_ptr->mChartOpt) {
-		disconnect(d_ptr->mChartOpt, &DAChartOperateWidget::figureCloseing, this, &DAChartSettingWidget::onFigureCloseing);
+		disconnect(d_ptr->mChartOpt, &DAChartOperateWidget::figureRemoving, this, &DAChartSettingWidget::onFigureCloseing);
 		disconnect(d_ptr->mChartOpt, &DAChartOperateWidget::figureCreated, this, &DAChartSettingWidget::onFigureCreated);
 		disconnect(d_ptr->mChartOpt,
 				   &DAChartOperateWidget::currentFigureChanged,
@@ -72,7 +72,7 @@ void DAChartSettingWidget::setChartOprateWidget(DAChartOperateWidget* opt)
 	}
 	d_ptr->mChartOpt = opt;
 	if (opt) {
-		connect(opt, &DAChartOperateWidget::figureCloseing, this, &DAChartSettingWidget::onFigureCloseing);
+		connect(opt, &DAChartOperateWidget::figureRemoving, this, &DAChartSettingWidget::onFigureCloseing);
 		connect(opt, &DAChartOperateWidget::figureCreated, this, &DAChartSettingWidget::onFigureCreated);
 		connect(opt, &DAChartOperateWidget::currentFigureChanged, this, &DAChartSettingWidget::onCurrentFigureChanged);
 	}

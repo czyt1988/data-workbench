@@ -20,6 +20,9 @@
 #include "Dialog/DADialogDataframeColumnCastToNumeric.h"
 #include "Dialog/DADialogDataframeColumnCastToDatetime.h"
 #include "Dialog/DADialogInsertNewColumn.h"
+#include "Dialog/DADialogDataFrameFillna.h"
+#include "Dialog/DADialogDataFrameFillInterpolate.h"
+#include "Dialog/DADialogDataFrameClipOutlier.h"
 
 //===================================================
 // using DA namespace -- 禁止在头文件using!!
@@ -42,15 +45,14 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     , mDialogCastDatetimeArgs(nullptr)
 {
     ui->setupUi(this);
-    mUndoStack.setUndoLimit(20);
-    mUndoStack.setActive();
-    mModel = new DAPyDataFrameTableModule(&mUndoStack, this);
-    ui->tableView->setModel(mModel);
-    QFontMetrics fm = fontMetrics();
-    ui->tableView->verticalHeader()->setDefaultSectionSize(fm.lineSpacing() * 1.2);
 
-    setDAData(d);
-    connect(ui->tableView, &QTableView::clicked, this, &DADataOperateOfDataFrameWidget::onTableViewClicked);
+	mModel = new DAPyDataFrameTableModule(getUndoStack(), this);
+	ui->tableView->setModel(mModel);
+	QFontMetrics fm = fontMetrics();
+	ui->tableView->verticalHeader()->setDefaultSectionSize(fm.lineSpacing() * 1.2);
+
+	setDAData(d);
+	connect(ui->tableView, &QTableView::clicked, this, &DADataOperateOfDataFrameWidget::onTableViewClicked);
 }
 
 DADataOperateOfDataFrameWidget::~DADataOperateOfDataFrameWidget()
@@ -87,26 +89,26 @@ const DAData& DADataOperateOfDataFrameWidget::data() const
 
 void DADataOperateOfDataFrameWidget::setDAData(const DA::DAData& d)
 {
-    mData = d;
-    mModel->setDAData(d);
+	mData = d;
+	mModel->setDAData(d);
 }
 
 void DADataOperateOfDataFrameWidget::insertRowAboveBySelect()
 {
-    int r = getSelectedOneDataframeRow();
-    if (r < 0) {
-        return;
-    }
-    insertRowAt(r);
+	int r = getSelectedOneDataframeRow();
+	if (r < 0) {
+		return;
+	}
+	insertRowAt(r);
 }
 
 void DADataOperateOfDataFrameWidget::insertRowBelowBySelect()
 {
-    int r = getSelectedOneDataframeRow();
-    if (r < 0) {
-        return;
-    }
-    insertRowAt(r + 1);
+	int r = getSelectedOneDataframeRow();
+	if (r < 0) {
+		return;
+	}
+	insertRowAt(r + 1);
 }
 
 /**
@@ -115,13 +117,12 @@ void DADataOperateOfDataFrameWidget::insertRowBelowBySelect()
  */
 void DADataOperateOfDataFrameWidget::insertRowAt(int row)
 {
-    std::unique_ptr< DACommandDataFrame_insertNanRow > cmd(
+	std::unique_ptr< DACommandDataFrame_insertNanRow > cmd(
         new DACommandDataFrame_insertNanRow(mData.toDataFrame(), row, mModel));
-    cmd->redo();
-    if (!cmd->isSetSuccess()) {
-        return;
-    }
-    mUndoStack.push(cmd.release());
+	if (!cmd->exec()) {
+		return;
+	}
+	getUndoStack()->push(cmd.release());
 }
 
 /**
@@ -129,11 +130,11 @@ void DADataOperateOfDataFrameWidget::insertRowAt(int row)
  */
 void DADataOperateOfDataFrameWidget::insertColumnRightBySelect()
 {
-    int c = getSelectedOneDataframeColumn();
-    if (c < 0) {
-        return;
-    }
-    insertColumnAt(c + 1);
+	int c = getSelectedOneDataframeColumn();
+	if (c < 0) {
+		return;
+	}
+	insertColumnAt(c + 1);
 }
 
 /**
@@ -141,11 +142,11 @@ void DADataOperateOfDataFrameWidget::insertColumnRightBySelect()
  */
 void DADataOperateOfDataFrameWidget::insertColumnLeftBySelect()
 {
-    int c = getSelectedOneDataframeColumn();
-    if (c < 0) {
-        return;
-    }
-    insertColumnAt(c);
+	int c = getSelectedOneDataframeColumn();
+	if (c < 0) {
+		return;
+	}
+	insertColumnAt(c);
 }
 
 /**
@@ -154,31 +155,30 @@ void DADataOperateOfDataFrameWidget::insertColumnLeftBySelect()
  */
 void DADataOperateOfDataFrameWidget::insertColumnAt(int col)
 {
-    DADialogInsertNewColumn dlg(this);
-    if (QDialog::Accepted != dlg.exec()) {
-        return;
-    }
-    std::unique_ptr< DACommandDataFrame_insertColumn > cmd;
-    QString name = dlg.getName();
-    if (name.isEmpty()) {
-        QMessageBox::warning(this,
+	DADialogInsertNewColumn dlg(this);
+	if (QDialog::Accepted != dlg.exec()) {
+		return;
+	}
+	std::unique_ptr< DACommandDataFrame_insertColumn > cmd;
+	QString name = dlg.getName();
+	if (name.isEmpty()) {
+		QMessageBox::warning(this,
                              tr("warning"),                                                     // cn: 警告
                              tr("The name of the new column to be inserted must be specified")  // cn:必须指定列的名字
-        );
-        return;
-    }
-    DAPyDType dt = dlg.getDType();
-    if (dlg.isRangeMode()) {
+		);
+		return;
+	}
+	DAPyDType dt = dlg.getDType();
+	if (dlg.isRangeMode()) {
         cmd.reset(
             new DACommandDataFrame_insertColumn(mData.toDataFrame(), col, name, dlg.getStartValue(), dlg.getStopValue(), mModel));
-    } else {
-        cmd.reset(new DACommandDataFrame_insertColumn(mData.toDataFrame(), col, name, dlg.getDefaultValue(), mModel));
-    }
-    cmd->redo();
-    if (!cmd->isSetSuccess()) {
-        return;
-    }
-    mUndoStack.push(cmd.release());
+	} else {
+		cmd.reset(new DACommandDataFrame_insertColumn(mData.toDataFrame(), col, name, dlg.getDefaultValue(), mModel));
+	}
+	if (!cmd->exec()) {
+		return;
+	}
+	getUndoStack()->push(cmd.release());
 }
 
 /**
@@ -187,22 +187,21 @@ void DADataOperateOfDataFrameWidget::insertColumnAt(int col)
  */
 int DADataOperateOfDataFrameWidget::removeSelectRow()
 {
-    DAPyDataFrame df = getDataframe();
-    if (df.isNone()) {
-        return 0;
-    }
-    QList< int > rows = getSelectedDataframeRows();
-    if (rows.size() <= 0) {
-        qWarning() << tr("please select valid data cells");  // cn:请选择正确的行
-        return 0;
-    }
-    std::unique_ptr< DACommandDataFrame_dropIRow > cmd(new DACommandDataFrame_dropIRow(mData.toDataFrame(), rows, mModel));
-    cmd->redo();
-    if (!cmd->isSetSuccess()) {
-        return 0;
-    }
-    mUndoStack.push(cmd.release());
-    return rows.size();
+	DAPyDataFrame df = getDataframe();
+	if (df.isNone()) {
+		return 0;
+	}
+	QList< int > rows = getSelectedDataframeRows();
+	if (rows.size() <= 0) {
+		qWarning() << tr("please select valid data cells");  // cn:请选择正确的行
+		return 0;
+	}
+	std::unique_ptr< DACommandDataFrame_dropIRow > cmd(new DACommandDataFrame_dropIRow(mData.toDataFrame(), rows, mModel));
+	if (!cmd->exec()) {
+		return 0;
+	}
+	getUndoStack()->push(cmd.release());
+	return rows.size();
 }
 
 /**
@@ -211,23 +210,22 @@ int DADataOperateOfDataFrameWidget::removeSelectRow()
  */
 int DADataOperateOfDataFrameWidget::removeSelectColumn()
 {
-    DAPyDataFrame df = getDataframe();
-    if (df.isNone()) {
-        return 0;
-    }
-    QList< int > columns = getSelectedDataframeCoumns();
-    if (columns.size() <= 0) {
-        qWarning() << tr("please select valid column");  // cn:请选择正确的列
-        return 0;
-    }
-    std::unique_ptr< DACommandDataFrame_dropIColumn > cmd(
+	DAPyDataFrame df = getDataframe();
+	if (df.isNone()) {
+		return 0;
+	}
+	QList< int > columns = getSelectedDataframeCoumns();
+	if (columns.size() <= 0) {
+		qWarning() << tr("please select valid column");  // cn:请选择正确的列
+		return 0;
+	}
+	std::unique_ptr< DACommandDataFrame_dropIColumn > cmd(
         new DACommandDataFrame_dropIColumn(mData.toDataFrame(), columns, mModel));
-    cmd->redo();
-    if (!cmd->isSetSuccess()) {
-        return 0;
-    }
-    mUndoStack.push(cmd.release());
-    return columns.size();
+	if (!cmd->exec()) {
+		return 0;
+	}
+	getUndoStack()->push(cmd.release());
+	return columns.size();
 }
 
 /**
@@ -236,68 +234,63 @@ int DADataOperateOfDataFrameWidget::removeSelectColumn()
  */
 int DADataOperateOfDataFrameWidget::removeSelectCell()
 {
-    DAPyDataFrame df = getDataframe();
-    if (df.isNone()) {
-        return 0;
-    }
-    const QList< QPoint > cells = getSelectedDataframeCells();
-    if (cells.size() <= 0) {
-        qWarning() << tr("please select valid cell");  // cn:请选择正确的单元格
-        return 0;
-    }
-    QList< int > rows, cols;
-    rows.reserve(cells.size());
-    cols.reserve(cells.size());
-    for (const auto p : cells) {
-        rows.append(p.x());
-        cols.append(p.y());
-    }
-    std::unique_ptr< DACommandDataFrame_setnan > cmd(new DACommandDataFrame_setnan(df, rows, cols, mModel));
-    cmd->redo();
-    if (!cmd->isSetSuccess()) {
-        return 0;
-    }
-    mUndoStack.push(cmd.release());
-    return cells.size();
+	DAPyDataFrame df = getDataframe();
+	if (df.isNone()) {
+		return 0;
+	}
+	const QList< QPoint > cells = getSelectedDataframeCells();
+	if (cells.size() <= 0) {
+		qWarning() << tr("please select valid cell");  // cn:请选择正确的单元格
+		return 0;
+	}
+	QList< int > rows, cols;
+	rows.reserve(cells.size());
+	cols.reserve(cells.size());
+	for (const auto p : cells) {
+		rows.append(p.x());
+		cols.append(p.y());
+	}
+	std::unique_ptr< DACommandDataFrame_setnan > cmd(new DACommandDataFrame_setnan(df, rows, cols, mModel));
+	if (!cmd->exec()) {
+		return 0;
+	}
+	getUndoStack()->push(cmd.release());
+	return cells.size();
 }
 
 /**
  * @brief 激活此窗口的UndoStack
  */
-void DADataOperateOfDataFrameWidget::activeUndoStack()
-{
-    qDebug() << "DADataOperateOfDataFrameWidget activeUndoStack ";
-    if (!mUndoStack.isActive()) {
-        mUndoStack.setActive();
-    }
-}
 
 /**
  * @brief 更改列名
  */
 void DADataOperateOfDataFrameWidget::renameColumns()
 {
-    DAPyDataFrame df = getDataframe();
-    if (df.isNone()) {
-        return;
-    }
-    QList< QString > oldcols = df.columns();
-    if (oldcols.size() <= 0) {
-        qWarning() << tr("table have not column");  // cn:表格没有列
-        return;
-    }
-    DARenameColumnsNameDialog dlg(this);
-    dlg.setDataName(mData.getName());
-    dlg.setColumnsName(oldcols);
-    if (QDialog::Accepted != dlg.exec()) {
-        return;
-    }
-    QList< QString > cols = dlg.getColumnsName();
-    // 唯一判断在DARenameColumnsNameDialog里进行
-    //  header提前获取
-    QHeaderView* hv                       = ui->tableView->horizontalHeader();
-    DACommandDataFrame_renameColumns* cmd = new DACommandDataFrame_renameColumns(df, cols, oldcols, hv);
-    mUndoStack.push(cmd);
+	DAPyDataFrame df = getDataframe();
+	if (df.isNone()) {
+		return;
+	}
+	QList< QString > oldcols = df.columns();
+	if (oldcols.size() <= 0) {
+		qWarning() << tr("table have not column");  // cn:表格没有列
+		return;
+	}
+	DARenameColumnsNameDialog dlg(this);
+	dlg.setDataName(mData.getName());
+	dlg.setColumnsName(oldcols);
+	if (QDialog::Accepted != dlg.exec()) {
+		return;
+	}
+	QList< QString > cols = dlg.getColumnsName();
+	// 唯一判断在DARenameColumnsNameDialog里进行
+	//  header提前获取
+	QHeaderView* hv                       = ui->tableView->horizontalHeader();
+	DACommandDataFrame_renameColumns* cmd = new DACommandDataFrame_renameColumns(df, cols, oldcols, hv);
+	if (!cmd->exec()) {
+		return;
+	}
+	getUndoStack()->push(cmd);
 }
 
 /**
@@ -307,29 +300,28 @@ void DADataOperateOfDataFrameWidget::renameColumns()
  */
 bool DADataOperateOfDataFrameWidget::changeSelectColumnType(const DAPyDType& dt)
 {
-    qDebug() << "changeSelectColumnType:" << dt;
-    DAPyDataFrame df = getDataframe();
-    if (df.isNone()) {
-        emit selectTypeChanged({}, DAPyDType());
-        return false;
-    }
-    QList< int > selColumns = getSelectedDataframeCoumns();
-    if (selColumns.size() <= 0) {
-        qWarning() << tr("please select valid column");  // cn:请选择正确的列
-        emit selectTypeChanged({}, DAPyDType());
-        return false;
-    }
-    std::unique_ptr< DACommandDataFrame_astype > cmd(new DACommandDataFrame_astype(df, selColumns, dt, mModel));
-    cmd->redo();
-    if (!cmd->isSetSuccess()) {
-        // 说明没有设置成功
-        emit selectTypeChanged({}, DAPyDType());
-        return false;
-    }
-    mUndoStack.push(cmd.release());  // 成功，push会执行redo但会跳过
-    emit selectTypeChanged(selColumns, dt);
-    // 这里说明设置成功了
-    return true;
+	qDebug() << "changeSelectColumnType:" << dt;
+	DAPyDataFrame df = getDataframe();
+	if (df.isNone()) {
+		emit selectTypeChanged({}, DAPyDType());
+		return false;
+	}
+	QList< int > selColumns = getSelectedDataframeCoumns();
+	if (selColumns.size() <= 0) {
+		qWarning() << tr("please select valid column");  // cn:请选择正确的列
+		emit selectTypeChanged({}, DAPyDType());
+		return false;
+	}
+	std::unique_ptr< DACommandDataFrame_astype > cmd(new DACommandDataFrame_astype(df, selColumns, dt, mModel));
+	if (!cmd->exec()) {
+		// 说明没有设置成功
+		emit selectTypeChanged({}, DAPyDType());
+		return false;
+	}
+	getUndoStack()->push(cmd.release());  // 成功，push会执行redo但会跳过
+	emit selectTypeChanged(selColumns, dt);
+	// 这里说明设置成功了
+	return true;
 }
 
 /**
@@ -337,34 +329,33 @@ bool DADataOperateOfDataFrameWidget::changeSelectColumnType(const DAPyDType& dt)
  */
 void DADataOperateOfDataFrameWidget::castSelectToNum()
 {
-    DAPyDataFrame df = getDataframe();
-    if (df.isNone()) {
-        return;
-    }
-    QList< int > colsIndex = getSelectedDataframeCoumns();
-    if (colsIndex.size() <= 0) {
-        qWarning() << tr("please select valid column");  // cn:请选择正确的列
-        return;
-    }
-    if (mDialogCastNumArgs == nullptr) {
-        mDialogCastNumArgs = new DADialogDataframeColumnCastToNumeric(this);
-    }
-    if (QDialog::Accepted != mDialogCastNumArgs->exec()) {
-        return;
-    }
-    DAPyDType dt        = df.dtypes(colsIndex.first());
-    pybind11::dict args = mDialogCastNumArgs->getArgs();
-    std::unique_ptr< DACommandDataFrame_castNum > cmd(new DACommandDataFrame_castNum(df, colsIndex, args, mModel));
-    cmd->redo();  // 先执行
-    if (!cmd->isSetSuccess()) {
-        return;
-    }
-    mUndoStack.push(cmd.release());  // 推入后不会执行redo逻辑部分
-    // 如果类型改变了刷新类型
-    DAPyDType dt2 = df.dtypes(colsIndex.first());
-    if (dt != dt2) {
-        emit selectTypeChanged(colsIndex, dt2);
-    }
+	DAPyDataFrame df = getDataframe();
+	if (df.isNone()) {
+		return;
+	}
+	QList< int > colsIndex = getSelectedDataframeCoumns();
+	if (colsIndex.size() <= 0) {
+		qWarning() << tr("please select valid column");  // cn:请选择正确的列
+		return;
+	}
+	if (mDialogCastNumArgs == nullptr) {
+		mDialogCastNumArgs = new DADialogDataframeColumnCastToNumeric(this);
+	}
+	if (QDialog::Accepted != mDialogCastNumArgs->exec()) {
+		return;
+	}
+	DAPyDType dt        = df.dtypes(colsIndex.first());
+	pybind11::dict args = mDialogCastNumArgs->getArgs();
+	std::unique_ptr< DACommandDataFrame_castNum > cmd(new DACommandDataFrame_castNum(df, colsIndex, args, mModel));
+	if (!cmd->exec()) {
+		return;
+	}
+	getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
+	// 如果类型改变了刷新类型
+	DAPyDType dt2 = df.dtypes(colsIndex.first());
+	if (dt != dt2) {
+		emit selectTypeChanged(colsIndex, dt2);
+	}
 }
 
 /**
@@ -372,34 +363,33 @@ void DADataOperateOfDataFrameWidget::castSelectToNum()
  */
 void DADataOperateOfDataFrameWidget::castSelectToDatetime()
 {
-    DAPyDataFrame df = getDataframe();
-    if (df.isNone()) {
-        return;
-    }
-    QList< int > colsIndex = getSelectedDataframeCoumns();
-    if (colsIndex.size() <= 0) {
-        qWarning() << tr("please select valid column");  // cn:请选择正确的列
-        return;
-    }
-    if (mDialogCastDatetimeArgs == nullptr) {
-        mDialogCastDatetimeArgs = new DADialogDataframeColumnCastToDatetime(this);
-    }
-    if (QDialog::Accepted != mDialogCastDatetimeArgs->exec()) {
-        return;
-    }
-    DAPyDType dt        = df.dtypes(colsIndex.first());
-    pybind11::dict args = mDialogCastDatetimeArgs->getArgs();
-    std::unique_ptr< DACommandDataFrame_castDatetime > cmd(new DACommandDataFrame_castDatetime(df, colsIndex, args, mModel));
-    cmd->redo();  // 先执行
-    if (!cmd->isSetSuccess()) {
-        return;
-    }
-    mUndoStack.push(cmd.release());  // 推入后不会执行redo逻辑部分
-    // 如果类型改变了刷新类型
-    DAPyDType dt2 = df.dtypes(colsIndex.first());
-    if (dt != dt2) {
-        emit selectTypeChanged(colsIndex, dt2);
-    }
+	DAPyDataFrame df = getDataframe();
+	if (df.isNone()) {
+		return;
+	}
+	QList< int > colsIndex = getSelectedDataframeCoumns();
+	if (colsIndex.size() <= 0) {
+		qWarning() << tr("please select valid column");  // cn:请选择正确的列
+		return;
+	}
+	if (mDialogCastDatetimeArgs == nullptr) {
+		mDialogCastDatetimeArgs = new DADialogDataframeColumnCastToDatetime(this);
+	}
+	if (QDialog::Accepted != mDialogCastDatetimeArgs->exec()) {
+		return;
+	}
+	DAPyDType dt        = df.dtypes(colsIndex.first());
+	pybind11::dict args = mDialogCastDatetimeArgs->getArgs();
+	std::unique_ptr< DACommandDataFrame_castDatetime > cmd(new DACommandDataFrame_castDatetime(df, colsIndex, args, mModel));
+	if (!cmd->exec()) {
+		return;
+	}
+	getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
+	// 如果类型改变了刷新类型
+	DAPyDType dt2 = df.dtypes(colsIndex.first());
+	if (dt != dt2) {
+		emit selectTypeChanged(colsIndex, dt2);
+	}
 }
 
 /**
@@ -408,23 +398,351 @@ void DADataOperateOfDataFrameWidget::castSelectToDatetime()
  */
 bool DADataOperateOfDataFrameWidget::changeSelectColumnToIndex()
 {
-    DAPyDataFrame df = getDataframe();
-    if (df.isNone()) {
-        return false;
-    }
-    QList< int > colsIndex = getSelectedDataframeCoumns();
-    if (colsIndex.size() <= 0) {
-        qWarning() << tr("please select valid column");  // cn:请选择正确的列
-        return false;
-    }
-    std::unique_ptr< DACommandDataFrame_setIndex > cmd(
-        new DACommandDataFrame_setIndex(df, colsIndex, ui->tableView->verticalHeader(), mModel));
-    cmd->redo();  // 先执行
-    if (!cmd->isSetSuccess()) {
-        return false;
-    }
-    mUndoStack.push(cmd.release());  // 推入后不会执行redo逻辑部分
-    return true;
+	DAPyDataFrame df = getDataframe();
+	if (df.isNone()) {
+		return false;
+	}
+	QList< int > colsIndex = getSelectedDataframeCoumns();
+	if (colsIndex.size() <= 0) {
+		qWarning() << tr("please select valid column");  // cn:请选择正确的列
+		return false;
+	}
+    std::unique_ptr< DACommandDataFrame_setIndex >
+        cmd = std::make_unique< DACommandDataFrame_setIndex >(df, colsIndex, ui->tableView->verticalHeader(), mModel);
+	if (!cmd->exec()) {
+		return false;
+	}
+	getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
+	return true;
+}
+
+/**
+ * @brief 删除缺失值
+ * @param how 可选参数，表示删除的条件。默认值为’any’，表示只要存在一个缺失值就删除整行或整列；设置为’all’表示只有当整行或整列都是缺失值时才删除
+ * @param thresh 可选参数，表示在删除之前需要满足的非缺失值的最小数量。如果行或列中的非缺失值数量小于等于thresh，则会被删除，-1代表不生效
+ * @return 返回删除的数量，0代表没有删除任何内容
+ */
+int DADataOperateOfDataFrameWidget::dropna(const QString& how, int thresh)
+{
+	DAPyDataFrame df = getDataframe();
+	if (df.isNone()) {
+		return 0;
+	}
+	int axis = 0;
+	QList< int > index;
+	if (isDataframeTableHaveSelection()) {
+		// 先看看是否选中了列
+		index = getFullySelectedDataframeColumns();
+		if (!index.isEmpty()) {
+			// 说明单独选中了一列，这时只针对列进行dropna
+			axis = 0;
+		} else {
+			// 如果没有，就看看是否选中了行
+			index = getFullySelectedDataframeRows();
+			if (!index.isEmpty()) {
+				// 说明单独选中了一些行，这时就是删除这些选中行里包含空的列
+				axis = 1;
+			}
+		}
+	}
+	return dropna(df, axis, how, index, thresh);
+}
+
+/**
+ * @brief 删除缺失值
+ * @param axis 删除轴向0，代表删除行，1代表删除列
+ * @param how 可选参数，表示删除的条件。默认值为’any’，表示只要存在一个缺失值就删除整行或整列；设置为’all’表示只有当整行或整列都是缺失值时才删除
+ * @param index 可选参数，用于指定要检查缺失值的特定列名或行索引。
+ * @param thresh 可选参数，表示在删除之前需要满足的非缺失值的最小数量。如果行或列中的非缺失值数量小于等于thresh，则会被删除，-1代表不生效
+ * @return 返回删除的数量，0代表没有删除任何内容
+ */
+int DADataOperateOfDataFrameWidget::dropna(const DAPyDataFrame& df, int axis, const QString& how, const QList< int > index, int thresh)
+{
+    std::unique_ptr< DACommandDataFrame_dropna > cmd = std::make_unique< DACommandDataFrame_dropna >(df,
+                                                                                                     mModel,
+                                                                                                     axis,
+                                                                                                     how,
+                                                                                                     index,
+                                                                                                     thresh);
+	if (!cmd->exec()) {
+		return false;
+	}
+	int dropcnt = cmd->getDropedCount();
+	if (dropcnt == 0) {
+		// 说明没有删除任何内容，也返回0
+		return false;
+	}
+	getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
+	return dropcnt;
+}
+
+/**
+ * @brief 填充缺失值
+ * @return 成功返回true,反之返回false
+ */
+bool DADataOperateOfDataFrameWidget::fillna()
+{
+	DAPyDataFrame df = getDataframe();
+	if (df.isNone()) {
+		return false;
+	}
+	if (!mDialogDataFrameFillna) {
+		mDialogDataFrameFillna = new DADialogDataFrameFillna(this);
+	}
+	if (QDialog::Accepted != mDialogDataFrameFillna->exec()) {
+		// 说明用户取消
+		return false;
+	}
+	// 获取填充值
+	double value   = mDialogDataFrameFillna->getFillNanValue();
+	int limitCount = -1;  // 如果-1证明没有设置
+	if (mDialogDataFrameFillna->isEnableLimitCount()) {
+		limitCount = mDialogDataFrameFillna->getLimitCount();
+	}
+	return fillna(df, value, limitCount);
+}
+
+/**
+ * @brief 填充缺失值
+ * @param value 可选参数，将缺失值填充为某特定值
+ * @param limit 可选参数，表示填充行数/列数的限制。
+ * @return 成功返回true,反之返回false
+ */
+bool DADataOperateOfDataFrameWidget::fillna(const DAPyDataFrame& df, double value, int limit)
+{
+    std::unique_ptr< DACommandDataFrame_fillna > cmd = std::make_unique< DACommandDataFrame_fillna >(df, mModel, value, limit);
+	if (!cmd->exec()) {
+		return false;
+	}
+	getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
+	return true;
+}
+
+/**
+ * @brief 插值法填充缺失值
+ * @return 成功返回true,反之返回false
+ */
+bool DADataOperateOfDataFrameWidget::interpolate()
+{
+	DAPyDataFrame df = getDataframe();
+	if (df.isNone()) {
+		return false;
+	}
+	if (!mDialogDataFrameFillInterpolate) {
+		mDialogDataFrameFillInterpolate = new DADialogDataFrameFillInterpolate(this);
+	}
+	if (QDialog::Accepted != mDialogDataFrameFillInterpolate->exec()) {
+		// 说明用户取消
+		return false;
+	}
+	// 获取插值填充方法
+	QString method = mDialogDataFrameFillInterpolate->getInterpolateMethod();
+	// 获取插值方向
+	int axis = mDialogDataFrameFillInterpolate->getInterPolateAxis();
+	// 获取多项式插值次数
+	int order      = mDialogDataFrameFillInterpolate->getInterpolateOrder();
+	int limitCount = -1;  // 如果-1证明没有设置
+	if (mDialogDataFrameFillInterpolate->isEnableLimitCount()) {
+		limitCount = mDialogDataFrameFillInterpolate->getLimitCount();
+	}
+	return interpolate(df, method, order, limitCount);
+}
+
+bool DADataOperateOfDataFrameWidget::interpolate(const DAPyDataFrame& df, const QString& method, int order, int limit)
+{
+    std::unique_ptr< DACommandDataFrame_interpolate > cmd = std::make_unique< DACommandDataFrame_interpolate >(df,
+                                                                                                               mModel,
+                                                                                                               method,
+                                                                                                               order,
+                                                                                                               limit);
+	if (!cmd->exec()) {
+		return false;
+	}
+	getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
+	return true;
+}
+
+/**
+ * @brief 前向填充缺失值
+ * @return 返回删除的数量，0代表没有删除任何内容
+ */
+bool DADataOperateOfDataFrameWidget::ffillna()
+{
+	DAPyDataFrame df = getDataframe();
+	if (df.isNone()) {
+		return false;
+	}
+	int axis = 0;
+	return ffillna(df, axis, -1);
+}
+
+/**
+ * @brief 前向填充缺失值
+ * @param axis 填充轴向，0代表按行填充，1代表按列填充
+ * @return 返回填充的数量，0代表没有填充任何内容
+ */
+bool DADataOperateOfDataFrameWidget::ffillna(const DAPyDataFrame& df, int axis, int limit)
+{
+    std::unique_ptr< DACommandDataFrame_ffillna > cmd = std::make_unique< DACommandDataFrame_ffillna >(df, mModel, axis, limit);
+	if (!cmd->exec()) {
+		return false;
+	}
+	getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
+	return true;
+}
+
+/**
+ * @brief 后向填充缺失值
+ * @return 返回删除的数量，0代表没有删除任何内容
+ */
+bool DADataOperateOfDataFrameWidget::bfillna()
+{
+	DAPyDataFrame df = getDataframe();
+	if (df.isNone()) {
+		return false;
+	}
+	int axis = 0;
+	return bfillna(df, axis, -1);
+}
+
+/**
+ * @brief 后向填充缺失值
+ * @param axis 填充轴向，0代表按行填充，1代表按列填充
+ * @return 返回填充的数量，0代表没有填充任何内容
+ */
+bool DADataOperateOfDataFrameWidget::bfillna(const DAPyDataFrame& df, int axis, int limit)
+{
+    std::unique_ptr< DACommandDataFrame_bfillna > cmd = std::make_unique< DACommandDataFrame_bfillna >(df, mModel, axis, limit);
+
+	if (!cmd->exec()) {
+		return false;
+	}
+	getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
+	return true;
+}
+
+/**
+ * @brief 删除重复值
+ * @param keep 可选参数，表示指定保留哪个重复的行。默认值为'first'，表示保留第一次出现的重复行；设置为'last'表示保留最后一次出现的重复行,False表示删除所有重复的行。
+ * @return 返回删除的数量，0代表没有删除任何内容
+ */
+int DADataOperateOfDataFrameWidget::dropduplicates(const QString& keep)
+{
+	DAPyDataFrame df = getDataframe();
+	if (df.isNone()) {
+		return 0;
+	}
+	QList< int > index;
+	if (isDataframeTableHaveSelection()) {
+		// 获取选中的列
+		index = getFullySelectedDataframeColumns();
+	}
+	return dropduplicates(df, keep, index);
+}
+
+/**
+ * @brief 删除重复值
+ * @param keep 可选参数，表示指定保留哪个重复的行。默认值为'first'，表示保留第一次出现的重复行；设置为'last'表示保留最后一次出现的重复行,False表示删除所有重复的行。
+ * @param index 可选参数，用于指定用于判断重复的列或列列表。如果为 None，则使用所有列。
+ * @return 返回删除的数量，0代表没有删除任何内容
+ */
+int DADataOperateOfDataFrameWidget::dropduplicates(const DAPyDataFrame& df, const QString& keep, const QList< int > index)
+{
+    std::unique_ptr< DACommandDataFrame_dropduplicates > cmd = std::make_unique< DACommandDataFrame_dropduplicates >(df,
+                                                                                                                     mModel,
+                                                                                                                     keep,
+                                                                                                                     index);
+	if (!cmd->exec()) {
+		return 0;
+	}
+	int dropcnt = cmd->getDropedCount();
+	if (dropcnt == 0) {
+		// 说明没有删除任何内容，也返回0
+		return 0;
+	}
+	getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
+	return dropcnt;
+}
+
+/**
+ * @brief n倍标准差法删除异常值
+ * @return 返回删除的数量，0代表没有删除任何内容
+ */
+int DADataOperateOfDataFrameWidget::nstdfilteroutlier(double n)
+{
+	DAPyDataFrame df = getDataframe();
+	if (df.isNone()) {
+		return false;
+	}
+	int axis = 1;
+	QList< int > index;
+	if (isDataframeTableHaveSelection()) {
+		// 先看看是否选中了列
+		index = getFullySelectedDataframeColumns();
+	}
+	return nstdfilteroutlier(df, n, axis, index);
+}
+
+/**
+ * @brief n倍标准差法删除异常值
+ * @param axis 填充轴向，0代表按行填充，1代表按列填充
+ * @return 返回填充的数量，0代表没有填充任何内容
+ */
+int DADataOperateOfDataFrameWidget::nstdfilteroutlier(const DAPyDataFrame& df, double n, int axis, const QList< int > index)
+{
+    std::unique_ptr< DACommandDataFrame_nstdfilteroutlier >
+        cmd = std::make_unique< DACommandDataFrame_nstdfilteroutlier >(df, mModel, n, axis, index);
+	if (!cmd->exec()) {
+		return false;
+	}
+	getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
+	return true;
+}
+
+/**
+ * @brief 替换规定界限外的异常值
+ * @return 成功返回true,反之返回false
+ */
+bool DADataOperateOfDataFrameWidget::clipoutlier()
+{
+	DAPyDataFrame df = getDataframe();
+	if (df.isNone()) {
+		return false;
+	}
+	if (!mDialogDataFrameClipOutlier) {
+		mDialogDataFrameClipOutlier = new DADialogDataFrameClipOutlier(this);
+	}
+	if (QDialog::Accepted != mDialogDataFrameClipOutlier->exec()) {
+		// 说明用户取消
+		return false;
+	}
+	// 获取填充值
+	double lowervalue = mDialogDataFrameClipOutlier->getLowerValue();
+	double uppervalue = mDialogDataFrameClipOutlier->getUpperValue();
+
+	int axis = 0;
+
+	return clipoutlier(df, lowervalue, uppervalue, axis);
+}
+
+/**
+ * @brief 替换规定界限外的异常值
+ * @param lower 可选参数，下界值
+ * @param upper 可选参数，上界值。
+ * @return 成功返回true,反之返回false
+ */
+bool DADataOperateOfDataFrameWidget::clipoutlier(const DAPyDataFrame& df, double lower, double upper, int axis)
+{
+    std::unique_ptr< DACommandDataFrame_clipoutlier > cmd = std::make_unique< DACommandDataFrame_clipoutlier >(df,
+                                                                                                               mModel,
+                                                                                                               lower,
+                                                                                                               upper,
+                                                                                                               axis);
+	if (!cmd->exec()) {
+		return false;
+	}
+	getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
+	return true;
 }
 
 /**
@@ -433,127 +751,216 @@ bool DADataOperateOfDataFrameWidget::changeSelectColumnToIndex()
  */
 DAPyDataFrame DADataOperateOfDataFrameWidget::createDataDescribe()
 {
-    if (!mData.isDataFrame()) {
-        return DAPyDataFrame();
-    }
-    DAPyDataFrame df_describe = mData.toDataFrame().describe();
-    return df_describe;
+	if (!mData.isDataFrame()) {
+		return DAPyDataFrame();
+	}
+	DAPyDataFrame df_describe = mData.toDataFrame().describe();
+	return df_describe;
 }
 
+/**
+ * @brief dataframe表格是否有选中项
+ * @return
+ */
+bool DADataOperateOfDataFrameWidget::isDataframeTableHaveSelection() const
+{
+	const QItemSelectionModel* selectionModel = ui->tableView->selectionModel();
+	if (!selectionModel) {
+		return false;
+	}
+	return selectionModel->hasSelection();
+}
+
+/**
+ * @brief 返回当前选中单元格所包含的列数，列数不会重复
+ * @param ensureInDataframe 此参数代表确保返回的值在dataframe的列范围里面
+ * @return
+ */
 QList< int > DADataOperateOfDataFrameWidget::getSelectedDataframeCoumns(bool ensureInDataframe) const
 {
-    QItemSelectionModel* selModel = ui->tableView->selectionModel();
-    if (!selModel) {
-        return QList< int >();
-    }
-    QSet< int > columns;
-    QModelIndexList selindexs = selModel->selectedIndexes();
-    if (ensureInDataframe) {
-        // 确保返回的列数都在dataframe里
-        DAPyDataFrame df = getDataframe();
-        if (df.isNone()) {
-            return QList< int >();
-        }
-        auto shape = df.shape();
-        for (const QModelIndex& i : selindexs) {
-            if (i.column() < (int)shape.second) {
-                columns.insert(i.column());
-            }
-        }
-    } else {
-        // 不确保返回的列数都在dataframe里
-        for (const QModelIndex& i : selindexs) {
-            columns.insert(i.column());
-        }
-    }
-    return columns.values();
+	QItemSelectionModel* selModel = ui->tableView->selectionModel();
+	if (!selModel) {
+		return QList< int >();
+	}
+	QSet< int > res;
+	QModelIndexList selindexs = selModel->selectedIndexes();
+	if (ensureInDataframe) {
+		// 确保返回的列数都在dataframe里
+		DAPyDataFrame df = getDataframe();
+		if (df.isNone()) {
+			return QList< int >();
+		}
+		auto shape = df.shape();
+		for (const QModelIndex& i : selindexs) {
+			if (i.column() < (int)shape.second) {
+				res.insert(i.column());
+			}
+		}
+	} else {
+		// 不确保返回的列数都在dataframe里
+		for (const QModelIndex& i : selindexs) {
+			res.insert(i.column());
+		}
+	}
+	return res.values();
 }
 
+/**
+ * @brief 返回当前选中单元格所包含的行数，行数不会重复
+ * @param ensureInDataframe 此参数代表确保返回的值在dataframe的列范围里面
+ * @return
+ */
 QList< int > DADataOperateOfDataFrameWidget::getSelectedDataframeRows(bool ensureInDataframe) const
 {
-    QItemSelectionModel* selModel = ui->tableView->selectionModel();
-    if (!selModel) {
-        return QList< int >();
-    }
-    QSet< int > rows;
-    QModelIndexList selindexs = selModel->selectedIndexes();
-    if (ensureInDataframe) {
-        // 确保返回的列数都在dataframe里
-        DAPyDataFrame df = getDataframe();
-        if (df.isNone()) {
-            return QList< int >();
-        }
-        auto shape = df.shape();
-        for (const QModelIndex& i : selindexs) {
-            if (i.row() < (int)shape.first) {
-                rows.insert(i.row());
-            }
-        }
-    } else {
-        // 不确保返回的列数都在dataframe里
-        for (const QModelIndex& i : selindexs) {
-            rows.insert(i.row());
-        }
-    }
-    return rows.values();
+	QItemSelectionModel* selModel = ui->tableView->selectionModel();
+	if (!selModel) {
+		return QList< int >();
+	}
+	QSet< int > res;
+	QModelIndexList selindexs = selModel->selectedIndexes();
+	if (ensureInDataframe) {
+		// 确保返回的列数都在dataframe里
+		DAPyDataFrame df = getDataframe();
+		if (df.isNone()) {
+			return QList< int >();
+		}
+		auto shape = df.shape();
+		for (const QModelIndex& i : selindexs) {
+			if (i.row() < (int)shape.first) {
+				res.insert(i.row());
+			}
+		}
+	} else {
+		// 不确保返回的列数都在dataframe里
+		for (const QModelIndex& i : selindexs) {
+			res.insert(i.row());
+		}
+	}
+	return res.values();
+}
+
+/**
+ * @brief 返回表格中完全选中的一整列的列数
+ * @return
+ */
+QList< int > DADataOperateOfDataFrameWidget::getFullySelectedDataframeColumns(bool ensureInDataframe) const
+{
+	QItemSelectionModel* selModel = ui->tableView->selectionModel();
+	if (!selModel) {
+		return QList< int >();
+	}
+	QSet< int > res;
+	QModelIndexList selindexs = selModel->selectedColumns();
+	if (ensureInDataframe) {
+		// 确保返回的列数都在dataframe里
+		DAPyDataFrame df = getDataframe();
+		if (df.isNone()) {
+			return QList< int >();
+		}
+		auto shape = df.shape();
+		for (const QModelIndex& i : selindexs) {
+			if (i.column() < (int)shape.second) {
+				res.insert(i.column());
+			}
+		}
+	} else {
+		// 不确保返回的列数都在dataframe里
+		for (const QModelIndex& i : selindexs) {
+			res.insert(i.column());
+		}
+	}
+	return res.values();
+}
+
+/**
+ * @brief 返回表格中完全选中的一整行的行数
+ * @return
+ */
+QList< int > DADataOperateOfDataFrameWidget::getFullySelectedDataframeRows(bool ensureInDataframe) const
+{
+	QItemSelectionModel* selModel = ui->tableView->selectionModel();
+	if (!selModel) {
+		return QList< int >();
+	}
+	QSet< int > res;
+	QModelIndexList selindexs = selModel->selectedRows();
+	if (ensureInDataframe) {
+		// 确保返回的列数都在dataframe里
+		DAPyDataFrame df = getDataframe();
+		if (df.isNone()) {
+			return QList< int >();
+		}
+		auto shape = df.shape();
+		for (const QModelIndex& i : selindexs) {
+			if (i.row() < (int)shape.first) {
+				res.insert(i.row());
+			}
+		}
+	} else {
+		// 不确保返回的列数都在dataframe里
+		for (const QModelIndex& i : selindexs) {
+			res.insert(i.row());
+		}
+	}
+	return res.values();
 }
 
 int DADataOperateOfDataFrameWidget::getSelectedOneDataframeRow(bool ensureInDataframe) const
 {
-    QItemSelectionModel* selModel = ui->tableView->selectionModel();
-    if (!selModel) {
-        return -1;
-    }
-    QModelIndexList selindexs = selModel->selectedIndexes();
-    if (selindexs.isEmpty()) {
-        return -1;
-    }
-    if (ensureInDataframe) {
-        // 确保返回的列数都在dataframe里
-        DAPyDataFrame df = getDataframe();
-        if (df.isNone()) {
-            return -1;
-        }
-        auto shape = df.shape();
-        for (const QModelIndex& i : selindexs) {
-            if (i.row() < (int)shape.first) {
-                return i.row();
-            }
-        }
-    } else {
-        // 不确保返回的列数都在dataframe里
-        return selindexs.first().row();
-    }
-    return -1;
+	QItemSelectionModel* selModel = ui->tableView->selectionModel();
+	if (!selModel) {
+		return -1;
+	}
+	QModelIndexList selindexs = selModel->selectedIndexes();
+	if (selindexs.isEmpty()) {
+		return -1;
+	}
+	if (ensureInDataframe) {
+		// 确保返回的列数都在dataframe里
+		DAPyDataFrame df = getDataframe();
+		if (df.isNone()) {
+			return -1;
+		}
+		auto shape = df.shape();
+		for (const QModelIndex& i : selindexs) {
+			if (i.row() < (int)shape.first) {
+				return i.row();
+			}
+		}
+	} else {
+		// 不确保返回的列数都在dataframe里
+		return selindexs.first().row();
+	}
+	return -1;
 }
 
 int DADataOperateOfDataFrameWidget::getSelectedOneDataframeColumn(bool ensureInDataframe) const
 {
-    QItemSelectionModel* selModel = ui->tableView->selectionModel();
-    if (!selModel) {
-        return -1;
-    }
-    QModelIndexList selindexs = selModel->selectedIndexes();
-    if (selindexs.isEmpty()) {
-        return -1;
-    }
-    if (ensureInDataframe) {
-        // 确保返回的列数都在dataframe里
-        DAPyDataFrame df = getDataframe();
-        if (df.isNone()) {
-            return -1;
-        }
-        auto shape = df.shape();
-        for (const QModelIndex& i : selindexs) {
-            if (i.column() < (int)shape.second) {
-                return i.column();
-            }
-        }
-    } else {
-        // 不确保返回的列数都在dataframe里
-        return selindexs.first().column();
-    }
-    return -1;
+	QItemSelectionModel* selModel = ui->tableView->selectionModel();
+	if (!selModel) {
+		return -1;
+	}
+	QModelIndexList selindexs = selModel->selectedIndexes();
+	if (selindexs.isEmpty()) {
+		return -1;
+	}
+	if (ensureInDataframe) {
+		// 确保返回的列数都在dataframe里
+		DAPyDataFrame df = getDataframe();
+		if (df.isNone()) {
+			return -1;
+		}
+		auto shape = df.shape();
+		for (const QModelIndex& i : selindexs) {
+			if (i.column() < (int)shape.second) {
+				return i.column();
+			}
+		}
+	} else {
+		// 不确保返回的列数都在dataframe里
+		return selindexs.first().column();
+	}
+	return -1;
 }
 
 /**
@@ -570,52 +977,52 @@ int DADataOperateOfDataFrameWidget::getSelectedOneDataframeColumn(bool ensureInD
  */
 QList< DAData > DADataOperateOfDataFrameWidget::getSlectedSeries() const
 {
-    QList< DAData > res;
-    const QList< int > indexs = getSelectedDataframeCoumns(true);
-    if (indexs.isEmpty()) {
-        return res;
-    }
-    DAPyDataFrame df = mData.toDataFrame();
-    auto shape       = df.shape();
-    for (int i : indexs) {
-        if (i < shape.second) {
-            auto series = df[ i ];
-            DAData d(series);
-            res.append(d);
-        }
-    }
-    return res;
+	QList< DAData > res;
+	const QList< int > indexs = getSelectedDataframeCoumns(true);
+	if (indexs.isEmpty()) {
+		return res;
+	}
+	DAPyDataFrame df = mData.toDataFrame();
+	auto shape       = df.shape();
+	for (int i : indexs) {
+		if (i < shape.second) {
+			auto series = df[ i ];
+			DAData d(series);
+			res.append(d);
+		}
+	}
+	return res;
 }
 
 QList< QPoint > DADataOperateOfDataFrameWidget::getSelectedDataframeCells(bool ensureInDataframe) const
 {
-    QList< QPoint > res;
-    QItemSelectionModel* selModel = ui->tableView->selectionModel();
-    if (!selModel) {
-        return res;
-    }
-    QList< int > rows;
-    QList< int > cols;
-    QModelIndexList selindexs = selModel->selectedIndexes();
-    if (ensureInDataframe) {
-        // 确保返回的列数都在dataframe里
-        DAPyDataFrame df = getDataframe();
-        if (df.isNone()) {
-            return res;
-        }
-        auto shape = df.shape();
-        for (const QModelIndex& index : selindexs) {
-            if (index.row() < (int)shape.first && index.column() < (int)shape.second) {
-                res.append(QPoint(index.row(), index.column()));
-            }
-        }
-    } else {
-        // 不确保返回的列数都在dataframe里
-        for (const QModelIndex& index : selindexs) {
-            res.append(QPoint(index.row(), index.column()));
-        }
-    }
-    return res;
+	QList< QPoint > res;
+	QItemSelectionModel* selModel = ui->tableView->selectionModel();
+	if (!selModel) {
+		return res;
+	}
+	QList< int > rows;
+	QList< int > cols;
+	QModelIndexList selindexs = selModel->selectedIndexes();
+	if (ensureInDataframe) {
+		// 确保返回的列数都在dataframe里
+		DAPyDataFrame df = getDataframe();
+		if (df.isNone()) {
+			return res;
+		}
+		auto shape = df.shape();
+		for (const QModelIndex& index : selindexs) {
+			if (index.row() < (int)shape.first && index.column() < (int)shape.second) {
+				res.append(QPoint(index.row(), index.column()));
+			}
+		}
+	} else {
+		// 不确保返回的列数都在dataframe里
+		for (const QModelIndex& index : selindexs) {
+			res.append(QPoint(index.row(), index.column()));
+		}
+	}
+	return res;
 }
 
 /**
@@ -624,31 +1031,26 @@ QList< QPoint > DADataOperateOfDataFrameWidget::getSelectedDataframeCells(bool e
  */
 void DADataOperateOfDataFrameWidget::onTableViewClicked(const QModelIndex& index)
 {
-    if (!mData.isDataFrame()) {
-        emit selectTypeChanged({ index.column() }, DAPyDType());
-        return;
-    }
-    DAPyDataFrame df = mData.toDataFrame();
-    if (index.column() >= (int)df.shape().second) {
-        emit selectTypeChanged({ index.column() }, DAPyDType());
-        return;
-    }
-    emit selectTypeChanged({ index.column() }, df.dtypes(index.column()));
+	if (!mData.isDataFrame()) {
+		emit selectTypeChanged({ index.column() }, DAPyDType());
+		return;
+	}
+	DAPyDataFrame df = mData.toDataFrame();
+	if (index.column() >= (int)df.shape().second) {
+		emit selectTypeChanged({ index.column() }, DAPyDType());
+		return;
+	}
+	emit selectTypeChanged({ index.column() }, df.dtypes(index.column()));
 }
 
 void DADataOperateOfDataFrameWidget::changeEvent(QEvent* e)
 {
-    QWidget::changeEvent(e);
-    switch (e->type()) {
-    case QEvent::LanguageChange:
-        ui->retranslateUi(this);
-        break;
-    default:
-        break;
-    }
-}
-
-QUndoStack* DADataOperateOfDataFrameWidget::getUndoStack() const
-{
-    return const_cast< QUndoStack* >(&mUndoStack);
+	QWidget::changeEvent(e);
+	switch (e->type()) {
+	case QEvent::LanguageChange:
+		ui->retranslateUi(this);
+		break;
+	default:
+		break;
+	}
 }

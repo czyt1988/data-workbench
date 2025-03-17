@@ -1,9 +1,11 @@
 ﻿#include "DADataOperateWidget.h"
 #include "ui_DADataOperateWidget.h"
 #include <QDebug>
+#include <QPointer>
 // api
 #include "DADataManager.h"
 #include "DADataOperatePageWidget.h"
+#include <QUndoStack>
 #if DA_ENABLE_PYTHON
 // widget
 #include "DADataOperateOfDataFrameWidget.h"
@@ -14,19 +16,36 @@
 // using DA namespace -- 禁止在头文件using!!
 //===================================================
 
-using namespace DA;
+namespace DA
+{
+
+class DADataOperateWidget::PrivateData
+{
+public:
+	DA_DECLARE_PUBLIC(DADataOperateWidget)
+	PrivateData(DADataOperateWidget* p);
+
+public:
+	QMap< DA::DAData, QPointer< QWidget > > _dataToWidget;  ///< 记录数据对应的窗口
+	DADataManager* _dataManager;
+};
+
+DADataOperateWidget::PrivateData::PrivateData(DADataOperateWidget* p) : q_ptr(p)
+{
+}
 
 //===================================================
 // DADataOperateWidget
 //===================================================
 DADataOperateWidget::DADataOperateWidget(DADataManager* mgr, QWidget* parent)
-    : QWidget(parent), ui(new Ui::DADataOperateWidget)
+	: DAAbstractOperateWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DADataOperateWidget)
 {
 	init();
 	setDataManager(mgr);
 }
 
-DADataOperateWidget::DADataOperateWidget(QWidget* parent) : QWidget(parent), ui(new Ui::DADataOperateWidget)
+DADataOperateWidget::DADataOperateWidget(QWidget* parent)
+	: DAAbstractOperateWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DADataOperateWidget)
 {
 	init();
 }
@@ -45,7 +64,7 @@ DADataOperateWidget::~DADataOperateWidget()
 
 void DADataOperateWidget::setDataManager(DADataManager* mgr)
 {
-	_dataManager = mgr;
+	d_ptr->_dataManager = mgr;
 	connect(mgr, &DADataManager::dataRemoved, this, &DADataOperateWidget::onDataRemoved);
 	connect(mgr, &DADataManager::dataChanged, this, &DADataOperateWidget::onDataChanged);
 }
@@ -96,6 +115,18 @@ QList< DAData > DADataOperateWidget::getCurrentSelectDatas() const
 #endif
 	return res;
 }
+
+QUndoStack* DADataOperateWidget::getUndoStack()
+{
+#if DA_ENABLE_PYTHON
+	DADataOperateOfDataFrameWidget* w = getCurrentDataFrameWidget();
+	if (w) {
+		return w->getUndoStack();
+	}
+#endif
+	return nullptr;
+}
+
 #if DA_ENABLE_PYTHON
 /**
  * @brief 获取当前选中的Dataframe,如果用户在选中了列，返回选中的列索引
@@ -145,14 +176,14 @@ bool DADataOperateWidget::removeTabWidget(QWidget* w)
 	}
 	DADataOperatePageWidget* page = qobject_cast< DADataOperatePageWidget* >(w);
 	if (page) {
-		emit pageBeginRemove(page);
+		emit dataTableRemoving(page);
 	}
 	w->hide();
 	w->deleteLater();
 	// 移除_dataToWidget记录
-	for (auto i = _dataToWidget.begin(); i != _dataToWidget.end();) {
+	for (auto i = d_ptr->_dataToWidget.begin(); i != d_ptr->_dataToWidget.end();) {
 		if (i.value() == w) {
-			i = _dataToWidget.erase(i);
+			i = d_ptr->_dataToWidget.erase(i);
 		} else {
 			++i;
 		}
@@ -168,8 +199,8 @@ bool DADataOperateWidget::removeTabWidget(QWidget* w)
 void DADataOperateWidget::onDataRemoved(const DA::DAData& d, int index)
 {
 	Q_UNUSED(index);
-	auto ite = _dataToWidget.find(d);
-	if (ite == _dataToWidget.end()) {
+	auto ite = d_ptr->_dataToWidget.find(d);
+	if (ite == d_ptr->_dataToWidget.end()) {
 		return;
 	}
 	// 标记数据已经删除
@@ -187,8 +218,8 @@ void DADataOperateWidget::onDataRemoved(const DA::DAData& d, int index)
  */
 void DADataOperateWidget::onDataChanged(const DA::DAData& d, DADataManager::ChangeType t)
 {
-	auto ite = _dataToWidget.find(d);
-	if (ite == _dataToWidget.end()) {
+	auto ite = d_ptr->_dataToWidget.find(d);
+	if (ite == d_ptr->_dataToWidget.end()) {
 		return;
 	}
 	int ti = ui->tabWidget->indexOf(ite.value());
@@ -223,6 +254,7 @@ void DADataOperateWidget::onTabWidgetCurrentChanged(int index)
 		d->activeUndoStack();
 	}
 #endif
+	emit currentDataTableWidgetChanged(qobject_cast< DADataOperatePageWidget* >(w), index);
 }
 
 /**
@@ -242,13 +274,14 @@ void DADataOperateWidget::showDataframeData(const DA::DAData& d)
 {
 #if DA_ENABLE_PYTHON
 	// 先查找是否已经存在对于窗口
-	DADataOperateOfDataFrameWidget* w = qobject_cast< DADataOperateOfDataFrameWidget* >(_dataToWidget.value(d, nullptr));
+	DADataOperateOfDataFrameWidget* w =
+		qobject_cast< DADataOperateOfDataFrameWidget* >(d_ptr->_dataToWidget.value(d, nullptr).data());
 	if (nullptr == w) {
 		// 没有就创建
 		w = new DADataOperateOfDataFrameWidget(d, ui->tabWidget);
-		emit pageAdded(w);
+		emit dataTableCreated(w);
 		// 记录窗口
-		_dataToWidget[ d ] = w;
+		d_ptr->_dataToWidget[ d ] = w;
 	}
 	// 在判断窗口是否已经存在于tabwidget
 	int index = ui->tabWidget->indexOf(w);
@@ -262,4 +295,6 @@ void DADataOperateWidget::showDataframeData(const DA::DAData& d)
 	// 把当前的tabwidget唤起
 	ui->tabWidget->setCurrentIndex(index);
 #endif
+}
+
 }

@@ -130,6 +130,7 @@ find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
 set(DA_SRC_DIR ${CMAKE_CURRENT_LIST_DIR}/src)
 set(DA_CMAKE_DIR ${CMAKE_CURRENT_LIST_DIR}/cmake)
 set(DA_INSTALL_LIB_CMAKE_PATH ${CMAKE_INSTALL_PREFIX}/lib/cmake)
+set(DA_INSTALL_LIB_SHARE_PATH ${CMAKE_INSTALL_PREFIX}/share/cmake)
 list(APPEND CMAKE_MODULE_PATH ${DA_CMAKE_DIR} ${DA_INSTALL_LIB_CMAKE_PATH})
 
 ########################################################
@@ -137,14 +138,26 @@ list(APPEND CMAKE_MODULE_PATH ${DA_CMAKE_DIR} ${DA_INSTALL_LIB_CMAKE_PATH})
 ########################################################
 set(SARibbonBar_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/SARibbonBar)
 message(STATUS "SARibbonBar_DIR=${SARibbonBar_DIR}")
+
 set(DALiteCtk_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/DALiteCtk)
 message(STATUS "DALiteCtk_DIR=${DALiteCtk_DIR}")
+
 set(qwt_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/qwt)
 message(STATUS "qwt_DIR=${qwt_DIR}")
-set(DAWorkbench_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/${DA_PROJECT_NAME})
-message(STATUS "DAWorkbench_DIR=${DAWorkbench_DIR}")
+
+set(QtPropertyBrowser_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/QtPropertyBrowser)
+message(STATUS "QtPropertyBrowser_DIR=${QtPropertyBrowser_DIR}")
+
+set(spdlog_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/spdlog)
+message(STATUS "spdlog_DIR=${spdlog_DIR}")
+
+# 注意tsl-ordered-map的安装位置在share/cmake,而不是lib/cmake
+set(tsl-ordered-map_DIR ${DA_INSTALL_LIB_SHARE_PATH}/tsl-ordered-map)
+message(STATUS "tsl-ordered-map_DIR=${tsl-ordered-map_DIR}")
+
 set(qt${QT_VERSION_MAJOR}advanceddocking_DIR  ${DA_INSTALL_LIB_CMAKE_PATH}/qt${QT_VERSION_MAJOR}advanceddocking)
 message(STATUS "qt${QT_VERSION_MAJOR}advanceddocking_DIR=${qt${QT_VERSION_MAJOR}advanceddocking_DIR}")
+
 ##################################
 # 初步安装 install 通用内容
 ##################################
@@ -232,6 +245,7 @@ if(DA_ENABLE_PYTHON)
     )
     # 为了能调试的时候运行，需要把src/PyScripts文件夹复制到${CMAKE_CURRENT_BINARY_DIR}/bin
     file(COPY "${CMAKE_CURRENT_LIST_DIR}/src/PyScripts" DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/bin)
+    message(STATUS "COPY "${CMAKE_CURRENT_LIST_DIR}/src/PyScripts" DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/bin")
     if(DA_ENABLE_AUTO_INSTALL_PYTHON_ENV)
         # 如果使用的是非系统目录下的 Python 可以通过指定 Python3_ROOT_DIR 改变查找路径
         find_package(Python3 COMPONENTS Interpreter Development REQUIRED)

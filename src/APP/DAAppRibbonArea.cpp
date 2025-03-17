@@ -130,24 +130,24 @@ DAAppRibbonArea::~DAAppRibbonArea()
 void DAAppRibbonArea::buildMenu()
 {
 	m_menuInsertRow = new SARibbonMenu(m_app);
-	m_menuInsertRow->setObjectName("menuInsertRow");
+	m_menuInsertRow->setObjectName(QStringLiteral("menuInsertRow"));
 	m_menuInsertRow->addAction(m_actions->actionInsertRowAbove);
 
 	m_menuInsertColumn = new SARibbonMenu(m_app);
-	m_menuInsertColumn->setObjectName("menuInsertColumn");
+	m_menuInsertColumn->setObjectName(QStringLiteral("menuInsertColumn"));
 	m_menuInsertColumn->addAction(m_actions->actionInsertColumnLeft);
 	//
 	m_menuTheme = new SARibbonMenu(m_app);
-	m_menuTheme->setObjectName("menuTheme");
-	m_menuTheme->setIcon(QIcon(":/app/bright/Icon/theme.svg"));
+	m_menuTheme->setObjectName(QStringLiteral("menuTheme"));
+	m_menuTheme->setIcon(QIcon(QStringLiteral(":/app/bright/Icon/theme.svg")));
 	m_menuTheme->addAction(m_actions->actionRibbonThemeOffice2013);
 	m_menuTheme->addAction(m_actions->actionRibbonThemeOffice2016Blue);
 	m_menuTheme->addAction(m_actions->actionRibbonThemeOffice2021Blue);
 	m_menuTheme->addAction(m_actions->actionRibbonThemeDark);
 	//
 	mExportWorkflowSceneToImageMenu = new SARibbonMenu(m_app);
-	mExportWorkflowSceneToImageMenu->setObjectName("exportWorkflowSceneToImageMenu");
-	mExportWorkflowSceneToImageMenu->setIcon(QIcon(":/app/bright/Icon/exportToPic.svg"));
+	mExportWorkflowSceneToImageMenu->setObjectName(QStringLiteral("exportWorkflowSceneToImageMenu"));
+	mExportWorkflowSceneToImageMenu->setIcon(QIcon(QStringLiteral(":/app/bright/Icon/exportToPic.svg")));
 	mExportWorkflowSceneToImageMenu->setDefaultAction(m_actions->actionExportWorkflowSceneToImage);
 	mExportWorkflowSceneToImageMenu->addAction(m_actions->actionExportWorkflowSceneToPNG);
 	//
@@ -173,14 +173,15 @@ void DAAppRibbonArea::resetText()
 	m_categoryView->setCategoryName(tr("View"));         // cn:视图
 	m_pannelViewMainView->setPannelName(tr("Display"));  // cn:视图显示
 
-	m_contextDataFrame->setContextTitle(tr("DataFrame"));        ///< DataFrame
-	m_categoryDataframeOperate->setCategoryName(tr("Operate"));  ///< DataFrame -> Operate
-	m_pannelDataframeOperateAxes->setPannelName(tr("Axes"));     ///< DataFrame -> Operate -> Axes
-	m_pannelDataframeOperateDType->setPannelName(tr("Type"));    ///< DataFrame -> Type
+	m_contextDataFrame->setContextTitle(tr("DataFrame"));        // cn: DataFrame
+	m_categoryDataframeOperate->setCategoryName(tr("Operate"));  // cn: 操作
+	m_pannelDataframeOperateAxes->setPannelName(tr("Axes"));     // cn: 坐标
+	m_pannelDataframeOperateDType->setPannelName(tr("Type"));    // cn: 类型
 #if DA_ENABLE_PYTHON
-	m_comboxColumnTypesContainer->setPrefix(tr("Type"));  ///< DataFrame -> Type -> Type
+	m_comboxColumnTypesContainer->setPrefix(tr("Type"));  // cn:类型
 #endif
-	m_pannelDataframeOperateStatistic->setPannelName(tr("Statistic"));  ///< DataFrame -> Statistic
+	m_pannelDataframeOperateDataCleaning->setPannelName(tr("Data Cleaning"));  // cn:数据清洗
+	m_pannelDataframeOperateStatistic->setPannelName(tr("Statistic"));         // cn:统计
 
 	// 编辑标签
 	m_categoryEdit->setCategoryName(tr("Edit"));  // cn:编辑
@@ -385,8 +386,19 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
 	m_castActionsButtonGroup->addSeparator();
 	m_castActionsButtonGroup->addAction(m_actions->actionCastToDatetime);
 	m_pannelDataframeOperateDType->addWidget(m_castActionsButtonGroup, SARibbonPannelItem::Medium);
-	// Statistic Pannel
-	m_pannelDataframeOperateStatistic = m_categoryDataframeOperate->addPannel(tr("Statistic"));
+	// 数据清洗
+	m_pannelDataframeOperateDataCleaning = m_categoryDataframeOperate->addPannel(tr("Data Cleaning"));  // cn：数据清洗
+	m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDataFrameDropNone);
+	m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDropDuplicates);
+	m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDataFrameFillNone);
+	m_pannelDataframeOperateDataCleaning->addMediumAction(m_actions->actionDataFrameFFillNone);
+	m_pannelDataframeOperateDataCleaning->addMediumAction(m_actions->actionDataFrameBFillNone);
+	m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDataFrameFillInterpolate);
+	m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDataFrameClipOutlier);
+
+	m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionNstdFilterOutlier);
+	//  Statistic Pannel
+	m_pannelDataframeOperateStatistic = m_categoryDataframeOperate->addPannel(tr("Statistic"));  // cn：统计
 	m_pannelDataframeOperateStatistic->addLargeAction(m_actions->actionCreateDataDescribe);
 }
 
@@ -552,7 +564,7 @@ void DAAppRibbonArea::buildContextCategoryWorkflowView_()
 	m_menuViewLineMarkers->addAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionNoneMarker));
 
 	if (QActionGroup* ag = wfo->getLineMarkerActionGroup()) {
-		connect(ag, &QActionGroup::triggered, this, [ this, wfo ](QAction* act) {
+		connect(ag, &QActionGroup::triggered, this, [this, wfo](QAction* act) {
 			QAction* actMarker = m_actions->actionWorkflowViewMarker;
 			QAction* noneAct   = wfo->getInnerAction(DAWorkFlowOperateWidget::ActionNoneMarker);
 			if (act != noneAct && act->isChecked()) {

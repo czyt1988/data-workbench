@@ -1,8 +1,20 @@
 # -*- coding: utf-8 -*-
 import os
-from typing import List, Dict, Optional, Tuple
+import sys
+from typing import List, Dict, Optional, Union
+# 根据Python版本动态导入Literal
+if sys.version_info >= (3, 8):
+    from typing import Literal
+else:
+    from typing_extensions import Literal
+# 在Python 3.10及之后的版本中引入了|操作符用于类型联合，而在此之前的版本并不支持这种语法,为了支持win7（python3.7）,
+# 这里不应使用|操作符可以使用Union替换|，Literal是3.8之后才支持，这里也不应该引入
+# 如果确实是在Python 3.7环境下并且需要使用Literal，可以引入typing_extensions包，from typing_extensions import Literal
+
+from pandas._typing import Axis, Scalar
 import pandas as pd
 import numpy as np
+from DAWorkbench.logger import log_function_call  # type: ignore # 引入装饰器
 import copy
 
 '''
@@ -11,7 +23,7 @@ import copy
 此文件封装dataframe的操作
 '''
 
-
+@log_function_call
 def da_drop_irow(df: pd.DataFrame, index: List[int]):
     '''
     传入行索引，并把对应的行删除
@@ -22,7 +34,7 @@ def da_drop_irow(df: pd.DataFrame, index: List[int]):
     i = df.index[index]
     df.drop(index=i, axis=0, inplace=True)
 
-
+@log_function_call
 def da_drop_icolumn(df: pd.DataFrame, index: List[int]):
     '''
     传入列索引，并把对应的列删除
@@ -33,7 +45,160 @@ def da_drop_icolumn(df: pd.DataFrame, index: List[int]):
     cols = df.columns[index]
     df.drop(cols, axis=1, inplace=True)
 
+@log_function_call
+def da_drop_na(df: pd.DataFrame, axis:int = 0, how:Literal['any','all']='any', index:Optional[List[int]]=None, thresh:Optional[int]=None):
+    '''
+    删除dataframe中的nan值
+    :param df: pd.DataFrame
+    :param axis: 0为行，1为列
+    :param how: any为只要有nan就删除，all为全为nan才删除
+    :param index: 列索引
+    :param thresh: 可选参数，表示在删除之前需要满足的非缺失值的最小数量。如果行或列中的非缺失值数量小于等于thresh，则会被删除
+    :return: 此函数不返回值，直接改变df
+    '''
+    subset = None
+    if index is not None:
+        if axis == 0:
+            subset = df.columns[index]
+        else:
+            subset = df.index[index]
+    df.dropna(axis=axis,how=how ,subset=subset, thresh=thresh, inplace=True)
 
+@log_function_call
+def da_fill_na(df: pd.DataFrame, value:Union[Scalar,dict,None] = None,axis:Optional[Axis]=None, limit:Optional[int]=None, downcast:Optional[dict]= None):
+    '''
+    填充dataframe中的nan值
+    :param df: pd.DataFrame
+    :param value: 用于填充缺失值的值或字典。可以是一个标量值、字典、Series 或 DataFrame
+    :param axis: 填充的轴方向，0 或 'index' 表示按行填充，1 或 'columns' 表示按列填充。
+    :param limit: 限制向前或向后填充的最大数量
+    :param downcast:可选的字典，指定向下转型操作（例如将浮点数转换为整数等）。
+    :return: 此函数不返回值，直接改变df
+    :example:
+    df = pd.DataFrame([[np.nan, 2, np.nan, 0],
+                    [3, 4, np.nan, 1],
+                    [np.nan, np.nan, np.nan, np.nan],
+                    [np.nan, 3, np.nan, 4]],
+                    columns=list("ABCD"))
+    values = {"A": 0, "B": 1, "C": 2, "D": 3}
+    df.fillna(value=values)
+    '''
+    df.fillna(axis = axis, value = value,downcast=downcast,inplace = True)
+
+@log_function_call
+def da_ffill_na(df: pd.DataFrame, axis:Optional[Axis]=None, limit:Optional[int]=None, downcast: Optional[dict] = None):
+    '''
+    填充dataframe中的nan值
+    :param df: pd.DataFrame
+    :param axis: 填充的轴方向，0 或 'index' 表示按行向下填充，1 或 'columns' 表示按列向右填充。
+    :param limit: 限制向后填充的最大数量
+    :param downcast:可选的字典，指定向下转型操作（例如将浮点数转换为整数等）。
+    :return: 此函数不返回值，直接改变df
+    '''
+    df.ffill(axis = axis, inplace = True,limit = limit,downcast=downcast)
+    
+@log_function_call
+def da_bfill_na(df: pd.DataFrame, axis:Optional[Axis]=None, limit:Optional[int]=None, limit_area:Optional[Literal['inside','outside']]=None):
+    '''
+    填充dataframe中的nan值
+    :param df: pd.DataFrame
+    :param axis: 填充的轴方向,0表示按行向上填充,1表示按列向左填充。
+    :param limit: 限制向前填充的最大数量
+    :param limit_area: 字符串，默认为 None。可选值为 None、inside 或 outside。inside 表示只填充被有效值包围的缺失值，outside 表示只填充在有效值之前或之后的缺失值。
+    :return: 此函数不返回值，直接改变df
+    '''
+    df.bfill(axis = axis, inplace = True,limit = limit,limit_area=limit_area)
+
+@log_function_call
+def da_nstd_filter_outlier(df: pd.DataFrame, n=3, axis:Optional[Axis]=None, index: Optional[List[int]] = None):
+    """
+    使用n倍标准差法过滤DataFrame的行或列（直接在原数据上修改）
+    :param df: 输入的pd.DataFrame
+    :param n: 标准差的倍数，范围是0.1~10，默认为3
+    :param axis: 过滤方向，1表示基于选中列过滤行(默认)，0表示基于选中行过滤列
+    :param index: 需要过滤的行或列的索引列表，如果为None，则过滤所有行或列
+    :return: 过滤后的DataFrame
+    """
+    # 如果未指定索引，则默认过滤所有行或列
+    if index is None:
+        index = list(range(df.shape[1 if axis == 1 else 0]))
+
+    # 计算均值和标准差
+    if axis == 1:  # 计算选中列的值，过滤行
+        data = df.iloc[:, index]
+        mean = data.mean(axis=0)  # 沿着行的方向，计算每一列的平均值
+        std = data.std(axis=0)    # 沿着行的方向，计算每一列的标准差
+        
+        # 为每一列创建掩码，标识该列中哪些行在均值±n*标准差范围内
+        # 初始化一个全True的掩码数组
+        keep_rows = pd.Series([True] * df.shape[0], index=df.index)
+        
+        # 检查每一列，确定哪些行需要保留
+        for i, col_idx in enumerate(index):
+            col_data = df.iloc[:, col_idx]
+            col_mean = mean.iloc[i]
+            col_std = std.iloc[i]
+            col_lower = col_mean - n * col_std
+            col_upper = col_mean + n * col_std
+            
+            # 更新keep_rows，只保留在所有选中列都在范围内的行
+            keep_rows = keep_rows & (col_data >= col_lower) & (col_data <= col_upper)
+        
+        # 直接删除不符合条件的行
+        df.drop(df.index[~keep_rows], inplace=True)
+        
+    elif axis == 0:  # 计算选中的行的值，过滤列
+        data = df.iloc[index]
+        mean = data.mean(axis=1)  # 沿着列的方向，计算每一行的平均值
+        std = data.std(axis=1)    # 沿着列的方向，计算每一行的平均值
+        
+        # 为每一行创建掩码，标识该行中哪些列在均值±n*标准差范围内
+        keep_cols = pd.Series([True] * df.shape[1], index=df.columns)
+        
+        # 检查每一行，确定哪些列需要保留
+        for i, row_idx in enumerate(index):
+            row_data = df.iloc[row_idx]
+            row_mean = mean[i]
+            row_std = std[i]
+            row_lower = row_mean - n * row_std
+            row_upper = row_mean + n * row_std
+            
+            # 更新keep_cols，只保留在所有选中行都在范围内的列
+            keep_cols = keep_cols & (row_data >= row_lower) & (row_data <= row_upper)
+        
+        # 直接删除不符合条件的列
+        df.drop(columns=df.columns[~keep_cols], inplace=True)
+
+@log_function_call
+def da_fill_interpolate(df: pd.DataFrame, method:Literal['spline','polynomial']='spline',order:int=1, axis:int = 0, limit:Optional[int]=None, 
+                        limit_direction: Literal["forward", "backward", "both"]="forward",limit_area:Literal["inside", "outside",None]=None,downcast: Optional[dict] = None):
+    '''
+    插值法填充dataframe中的nan值
+    :param df: pd.DataFrame。
+    :param method: 用于插值法填充缺失值的方法。spline代表线程插值，polynomial代表多项式插值。
+    :param order: 插值多项式的次数。
+    :param axis: 填充的轴方向，0 或 'index' 表示按行填充，1 或 'columns' 表示按列填充。
+    :param limit: 限制向前或向后填充的最大数量
+    :param limit_direction: 限制插值的方向，默认为'forward'。
+    :param limit_area: 限制插值的区域，在有效值的内部或外部，默认为None,。
+    :param downcast:可选的字典，指定向下转型操作（例如将浮点数转换为整数等）。
+    :return: 此函数不返回值，直接改变df
+    '''
+    df.interpolate(method = method, order = order, axis = axis, downcast = downcast, inplace = True)
+
+@log_function_call
+def da_clip_outlier(df: pd.DataFrame, lower:Optional[float]=None,upper:Optional[float]=None,axis:int = 0):
+    '''
+    替换dataframe的异常值
+    :param df: pd.DataFrame。
+    :param lower: 所有小于 lower 的值会被替换为 lower。如果为 None，则不应用下界。
+    :param upper: 所有大于 upper 的值会被替换为 upper。如果为 None，则不应用上界。
+    :param axis: 填充的轴方向，0 或 'index' 表示按行填充，1 或 'columns' 表示按列填充。
+    :return: 此函数不返回值，直接改变df
+    '''
+    df.clip(lower=lower, upper=upper, axis=axis, inplace=True)
+
+@log_function_call
 def da_to_pickle(df: pd.DataFrame, path: str):
     '''
     把dataframe写到文件
@@ -43,7 +208,7 @@ def da_to_pickle(df: pd.DataFrame, path: str):
     '''
     df.to_pickle(path)
 
-
+@log_function_call
 def da_from_pickle(df: pd.DataFrame, path: str):
     '''
     从文件加载到dataframe
@@ -54,7 +219,7 @@ def da_from_pickle(df: pd.DataFrame, path: str):
     tmp = pd.read_pickle(path)
     df.__init__(tmp)
 
-
+@log_function_call
 def da_astype(df: pd.DataFrame, colsIndex: List[int], dtype: np.dtype):
     '''
     通过列索引改变dataframe的数据类型
@@ -66,7 +231,7 @@ def da_astype(df: pd.DataFrame, colsIndex: List[int], dtype: np.dtype):
     cols = [df.columns[v] for v in colsIndex]
     df[cols] = df[cols].astype(dtype)
 
-
+@log_function_call
 def da_setnan(df: pd.DataFrame, rowindex: List[int], colindex: List[int]):
     '''
     设置nan值
@@ -80,7 +245,7 @@ def da_setnan(df: pd.DataFrame, rowindex: List[int], colindex: List[int]):
     for r, c in zip(rowindex, colindex):
         df.iat[r, c] = np.nan
 
-
+@log_function_call
 def da_cast_to_num(df: pd.DataFrame,
                    colsIndex: List[int],
                    errors: str = 'coerce',
@@ -95,6 +260,7 @@ def da_cast_to_num(df: pd.DataFrame,
             df[col], errors=errors, downcast=downcast)
 
 
+@log_function_call
 def da_cast_to_datetime(df: pd.DataFrame,
                         colsIndex: List[int],
                         errors: str = 'coerce',
@@ -121,7 +287,7 @@ def da_cast_to_datetime(df: pd.DataFrame,
             unit=unit, infer_datetime_format=infer_datetime_format,
             origin=origin, cache=cache)
 
-
+@log_function_call
 def da_setindex(df: pd.DataFrame, colsIndex: List[int]):
     '''
     设置索引
@@ -151,7 +317,7 @@ def da_setindex(df: pd.DataFrame, colsIndex: List[int]):
     # 把列转换为index
     df.set_index(cols, inplace=True)
 
-
+@log_function_call
 def da_insert_nanrow(df: pd.DataFrame, row: int):
     '''
     插入一行，插入的行默认为nan
@@ -170,7 +336,7 @@ def da_insert_nanrow(df: pd.DataFrame, row: int):
     else:
         df.__init__(pd.concat([df1, dfnanrow, df2], ignore_index=False))
 
-
+@log_function_call
 def da_insert_column(df: pd.DataFrame, col: int, name: str,
                      dtype: Optional[np.dtype] = None,
                      defaultvalue=np.nan,
@@ -210,6 +376,7 @@ def da_insert_column(df: pd.DataFrame, col: int, name: str,
                 s = np.linspace(start,start+df.shape[0],df.shape[0])
         df.insert(col,name,s)
 
+@log_function_call
 def da_itake_column(df: pd.DataFrame, col: int) -> pd.Series:
     '''提取一列
 
@@ -221,8 +388,10 @@ def da_itake_column(df: pd.DataFrame, col: int) -> pd.Series:
     da_drop_icolumn(df=df,index=[col])
     return s
 
+@log_function_call
 def da_insert_at(df: pd.DataFrame, col: int,series:pd.Series):
     df.insert(col,series.name,series)
+
 
 def make_dataframe(size: int = 100) -> pd.DataFrame:
     '''构建一个数据类型较全面的dataframe
@@ -316,13 +485,18 @@ def __tst_insert_column():
     da_insert_column(df=df, col=3, name='insert-datetime2',dtype=np.datetime64,start='2020-01-01',stop='2021-01-01')
     print(df)
 
+def __tst_fill_na():
+    df = pd.DataFrame([[np.nan, 2, np.nan, 0],
+                    [3, 4, np.nan, 1],
+                    [np.nan, np.nan, np.nan, np.nan],
+                    [np.nan, 3, np.nan, 4]],
+                    columns=list("ABCD"))
+    print(df)
+    values = {"A": 0, "B": 1, "C": 2, "D": 3}
+    da_fill_na(df,value=values)
+    print(df)
+
 
 if __name__ == '__main__':
-    # __tst_insert_column()
-    df = make_dataframe();
-    print(df)
-    s = da_itake_column(df,1)
-    print(df)
-    print(s)
-    da_insert_at(df,1,s)
-    print(df)
+    __tst_fill_na()
+

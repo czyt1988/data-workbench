@@ -31,6 +31,7 @@ find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
 ########################################################
 set(DA_LIB_HEADER_FILES
     DAAbstractChartAddItemWidget.h
+    DAAbstractOperateWidget.h
     DAChartAddXYSeriesWidget.h
     DAChartAddCurveWidget.h
     DADataManagerComboBox.h
@@ -66,6 +67,7 @@ set(DA_LIB_HEADER_FILES
 )
 set(DA_LIB_SOURCE_FILES
     DAAbstractChartAddItemWidget.cpp
+    DAAbstractOperateWidget.cpp
     DAChartAddXYSeriesWidget.cpp
     DAChartAddCurveWidget.cpp
     DAChartListView.cpp
@@ -190,6 +192,9 @@ if(DA_ENABLE_PYTHON)
         ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogPythonArgs.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.h
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillna.h
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillInterpolate.h
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameClipOutlier.h
     )
     list(APPEND DA_LIB_SOURCE_FILES_Dialog
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToDatetime.cpp
@@ -197,12 +202,18 @@ if(DA_ENABLE_PYTHON)
         ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogPythonArgs.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.cpp
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillna.cpp
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillInterpolate.cpp
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameClipOutlier.cpp
     )
     list(APPEND DA_LIB_QT_UI_FILES_Dialog
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToDatetime.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToNumeric.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.ui
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillna.ui
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillInterpolate.ui
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameClipOutlier.ui
     )
 endif()
 #MimeData
@@ -260,7 +271,7 @@ add_library(${DA_LIB_NAME} SHARED
             ${DA_LIB_HEADER_FILES_ChartSetting}
             ${DA_LIB_SOURCE_FILES_ChartSetting}
             ${DA_LIB_UI_FILES_ChartSetting}
-)	
+)   
 
 # 构建库定义的宏
 target_compile_definitions(${DA_LIB_NAME} PRIVATE DAGUI_BUILDLIB)#!!!!** 注意变更 **!!!!
@@ -312,6 +323,14 @@ find_package(${DA_PROJECT_NAME} COMPONENTS
     DAWorkFlow
     DAFigure
 )
+if(${DA_PROJECT_NAME}_FOUND)
+    message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAUtils")
+    message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAMessageHandler")
+    message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAData")
+    message(STATUS "  |-linked ${DA_PROJECT_NAME}::DACommonWidgets")
+    message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAWorkFlow")
+    message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAFigure")
+endif()
 target_link_libraries(${DA_LIB_NAME} PUBLIC
     ${DA_PROJECT_NAME}::DAUtils
     ${DA_PROJECT_NAME}::DAMessageHandler
@@ -326,8 +345,7 @@ if(DA_ENABLE_PYTHON)
         DAPyCommonWidgets
     )
     if(${DA_PROJECT_NAME}_FOUND)
-        message(STATUS "  |-link ${DA_PROJECT_NAME}::DAPyCommonWidgets")
-        message(STATUS "  | |-include dir:${DAPyCommonWidgets_INCLUDE_DIR}")
+        message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAPyCommonWidgets")
     endif()
     target_link_libraries(${DA_LIB_NAME} PUBLIC
         ${DA_PROJECT_NAME}::DAPyCommonWidgets
@@ -351,20 +369,9 @@ damacro_import_DALiteCtk(${DA_LIB_NAME})
 
 
 ########################################################
-# Qt的moc
+# 设置通用库属性
 ########################################################
-set_target_properties(${DA_LIB_NAME} PROPERTIES
-    AUTOMOC ON
-    AUTOUIC ON
-    AUTORCC ON
-    CXX_EXTENSIONS OFF
-    DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
-    VERSION ${DA_LIB_VERSION}
-    EXPORT_NAME ${DA_LIB_NAME}
-    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-)
+damacro_set_lib_properties(${DA_LIB_NAME} ${DA_LIB_VERSION})
 
 # 添加这两个位置主要是为了ui文件进行窗口提升时能找到头文件
 target_include_directories(${DA_LIB_NAME} PUBLIC

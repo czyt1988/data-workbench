@@ -91,8 +91,7 @@ endif()
 # 指定DAWorkbench_DIR为工程的顶层BINARY_DIR，否则找不到DAWorkbench
 find_package(${DA_PROJECT_NAME} COMPONENTS DAUtils)
 if(${DA_PROJECT_NAME}_FOUND)
-    message(STATUS "  |-link ${DA_PROJECT_NAME}::DAUtils")
-    message(STATUS "  | |-include dir:${DAUtils_INCLUDE_DIR}")
+    message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAUtils")
 endif()
 target_link_libraries(${DA_LIB_NAME} PRIVATE
     ${DA_PROJECT_NAME}::DAUtils
@@ -101,7 +100,12 @@ target_link_libraries(${DA_LIB_NAME} PRIVATE
 if(DA_ENABLE_PYTHON)
     find_package(${DA_PROJECT_NAME} COMPONENTS
         DAPyBindQt
-        DAPyScripts)
+        DAPyScripts
+    )
+    if(${DA_PROJECT_NAME}_FOUND)
+        message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAPyBindQt")
+        message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAPyScripts")
+    endif()
     # DAData的头文件包含了DAPyBindQt库的内容，因此DAPyBindQt需要公开链接
     target_link_libraries(${DA_LIB_NAME} PUBLIC
         ${DA_PROJECT_NAME}::DAPyBindQt
@@ -115,20 +119,10 @@ if(DA_ENABLE_PYTHON)
 endif()
 
 ########################################################
-# Qt的moc
+# 设置通用库属性
 ########################################################
-set_target_properties(${DA_LIB_NAME} PROPERTIES
-    AUTOMOC ON
-    AUTOUIC ON
-    AUTORCC ON
-    CXX_EXTENSIONS OFF
-    DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
-    VERSION ${DA_LIB_VERSION}
-    EXPORT_NAME ${DA_LIB_NAME}
-    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-)
+damacro_set_lib_properties(${DA_LIB_NAME} ${DA_LIB_VERSION})
+
 
 ########################################################
 # 安装
