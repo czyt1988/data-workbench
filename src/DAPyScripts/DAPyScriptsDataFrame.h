@@ -53,20 +53,24 @@ public:
 	bool insert_at(DAPyDataFrame& df, int col, const DAPySeries& series) noexcept;
 	// dropna(axis=0,how="any")
 	bool dropna(DAPyDataFrame& df,
-				int axis                   = 0,
-				const QString& how         = QStringLiteral("any"),
-				const QList< int >& indexs = QList< int >(),
-				int thresh                 = -1);
-	//	dropduplicates(keep = "first")
-	bool dropduplicates(DAPyDataFrame& df, const QString& keep, const QList< int >& indexs);
+                int axis                   = 0,
+                const QString& how         = QStringLiteral("any"),
+                const QList< int >& indexs = QList< int >(),
+                int thresh                 = -1);
 	// fillna()
-	bool fillna(DAPyDataFrame& df, double value = 0.0, int limit = -1);
+	bool fillna(DAPyDataFrame& df, double value, int limit);
 	// interpolate()
-	bool interpolate(DAPyDataFrame& df, const QString& method = "spline", int order = 1, int limit = -1);
+    bool interpolate(DAPyDataFrame& df, const QString& method, int order, int limit);
 	// ffillna()
 	bool ffillna(DAPyDataFrame& df, int axis, int limit);
 	// bfillna()
 	bool bfillna(DAPyDataFrame& df, int axis, int limit);
+	//	dropduplicates(keep = "first")
+	bool dropduplicates(DAPyDataFrame& df, const QString& keep, const QList< int >& indexs);
+	// nstdfilteroutlier()
+	bool nstdfilteroutlier(DAPyDataFrame& df, double n, int axis, const QList< int >& indexs);
+	// clipoutlier()
+	bool clipoutlier(DAPyDataFrame& df, double lowervalue, double uppervalue, int axis);
 };
 }  // namespace DA
 #endif  // DAPYSCRIPTSDATAFRAME_H

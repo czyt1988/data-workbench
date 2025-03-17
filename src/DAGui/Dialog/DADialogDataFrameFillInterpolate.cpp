@@ -58,6 +58,13 @@ double DADialogDataFrameFillInterpolate::getInterpolateOrder() const
 	return v;
 }
 
+bool DADialogDataFrameFillInterpolate::getInterPolateAxis() const
+{
+	if (ui->radioButtonAxis0->isChecked())
+		return 0;
+	return 1;
+}
+
 bool DADialogDataFrameFillInterpolate::isEnableLimitCount() const
 {
 	return ui->checkBoxLimit->isChecked();
