@@ -1694,7 +1694,7 @@ void DAAppController::onActionCreatePivotTableTriggered()
 		}
 		DAData data = df;
 		data.setName(tr("%1_PviotTable").arg(dfopt->data().getName()));
-		data.setDescribe(tr("Generate pviot table").arg(dfopt->data().getName()));
+		data.setDescribe(tr("Generate pivot table").arg(dfopt->data().getName()));
 		mDatas->addData(data);
 		// showDataOperate要在m_dataManagerStack.push之后，因为m_dataManagerStack.push可能会导致data的名字改变
 		mDock->showDataOperateWidget(data);

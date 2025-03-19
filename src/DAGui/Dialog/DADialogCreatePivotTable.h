@@ -3,6 +3,8 @@
 
 #include <QDialog>
 #include "DAGuiAPI.h"
+#include "pandas/DAPyDataFrame.h"
+#include "DADataManager.h"
 
 namespace Ui
 {
@@ -11,14 +13,13 @@ class DADialogCreatePivotTable;
 
 namespace DA
 {
-class DADataOperateOfDataFrameWidget;
-class DAAppController;
 /**
  * @brief PivotTable参数设置
  */
 class DAGUI_API DADialogCreatePivotTable : public QDialog
 {
-    Q_OBJECT
+	Q_OBJECT
+	DA_DECLARE_PRIVATE(DADialogCreatePivotTable)
 
 public:
 	explicit DADialogCreatePivotTable(QWidget* parent = nullptr);
@@ -26,6 +27,9 @@ public:
 
 	// 初始化界面
 	void initCreatePivotTable();
+
+	// 获取选中的dataframe
+	DAPyDataFrame getCurrentDataFrame() const;
 
 	// value参数
 	QStringList getPivotTableValue() const;
@@ -52,7 +56,6 @@ public:
 
 private:
 	Ui::DADialogCreatePivotTable* ui;
-	DAAppController* mController { nullptr };
 };
 }
 #endif  // DADIALOGCREATEPIVOTTABLE_H
