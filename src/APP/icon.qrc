@@ -89,6 +89,7 @@
         <file>Icon/dataframe-ffill-none.svg</file>
         <file>Icon/nstd-filter.svg</file>
         <file>Icon/dataframe-clip-outlier.svg</file>
+        <file>Icon/pivot-table.svg</file>
     </qresource>
     <qresource prefix="/app/dataType">
         <file>Icon/typeDataframe.svg</file>
