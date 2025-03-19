@@ -132,7 +132,7 @@ bool DAPyScriptsDataFrame::insert_column(DAPyDataFrame& df,
 		args[ "start" ] = DA::PY::toPyObject(start);
 		args[ "stop" ]  = DA::PY::toPyObject(stop);
 		if (start.canConvert(QMetaType::QDateTime) || start.canConvert(QMetaType::QDate)
-			|| start.canConvert(QMetaType::QTime)) {
+            || start.canConvert(QMetaType::QTime)) {
 			args[ "dtype" ] = pybind11::dtype("datetime64");
 		}
 		da_insert_column(**args);
@@ -565,12 +565,12 @@ bool DAPyScriptsDataFrame::clipoutlier(DAPyDataFrame& df, double lowervalue, dou
 
 /**
  * @brief pivot_table方法的wrapper
- * @param value
- * @param index
- * @param columns
- * @param aggfunc
- * @param margins
- * @param sort
+ * @param values 要进行汇总的数据值
+ * @param index 确定行参数
+ * @param columns 确定列参数
+ * @param aggfunc 要计算的函数，mean求均值、sum求和、size计算个数
+ * @param margins 行列数据的统计
+ * @param sort 聚合后的结果排序
  * @return DAPyDataFrame
  */
 DAPyDataFrame DAPyScriptsDataFrame::pivotTable(const DAPyDataFrame& df,
@@ -588,21 +588,21 @@ DAPyDataFrame DAPyScriptsDataFrame::pivotTable(const DAPyDataFrame& df,
 		if (values.empty()) {
 			args[ "values" ] = pybind11::none();
 		} else {
-			args[ "values" ] = DA::PY::toList(values);
+            args[ "values" ] = DA::PY::toPyList(values);
 		}
 		if (index.empty()) {
 			args[ "index" ] = pybind11::none();
 		} else {
-			args[ "index" ] = DA::PY::toList(index);
+            args[ "index" ] = DA::PY::toPyList(index);
 		}
 		if (columns.empty()) {
 			args[ "columns" ] = pybind11::none();
 		} else {
-			args[ "columns" ] = DA::PY::toList(columns);
+            args[ "columns" ] = DA::PY::toPyList(columns);
 		}
-		args[ "aggfunc" ]      = DA::PY::toString(aggfunc);
+        args[ "aggfunc" ]      = DA::PY::toPyStr(aggfunc);
 		args[ "margins" ]      = margins;
-		args[ "margins_name" ] = DA::PY::toString(marginsName);
+        args[ "margins_name" ] = DA::PY::toPyStr(marginsName);
 		args[ "sort" ]         = sort;
 
 		return da_pivot_table(df.object(), **args);

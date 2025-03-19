@@ -62,22 +62,22 @@
     <message>
         <location filename="DataAnalysisActions.cpp" line="21"/>
         <source>Spectrum</source>
-        <translation type="unfinished"></translation>
+        <translation>频谱</translation>
     </message>
     <message>
         <location filename="DataAnalysisActions.cpp" line="22"/>
         <source>Filter</source>
-        <translation type="unfinished"></translation>
+        <translation>滤波</translation>
     </message>
     <message>
         <location filename="DataAnalysisActions.cpp" line="69"/>
         <source>DAAppActionsInterface::recordAction get null action</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="DataAnalysisActions.cpp" line="74"/>
         <source>DAAppActionsInterface::recordAction(QAction objname=%1) receive same object name, and the previous record will be overwritten</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -85,17 +85,17 @@
     <message>
         <location filename="DataAnalysisUI.cpp" line="28"/>
         <source>Data Analysis</source>
-        <translation type="unfinished"></translation>
+        <translation>数据处理</translation>
     </message>
     <message>
         <location filename="DataAnalysisUI.cpp" line="29"/>
         <source>Signal Process</source>
-        <translation type="unfinished"></translation>
+        <translation>信号处理</translation>
     </message>
     <message>
         <location filename="DataAnalysisUI.cpp" line="40"/>
         <source>loss &quot;da-ribbon-category-data&quot; category page</source>
-        <translation type="unfinished"></translation>
+        <translation>缺失 &quot;da-ribbon-category-data&quot; 标签页</translation>
     </message>
 </context>
 <context>
@@ -104,72 +104,72 @@
         <location filename="Dialogs/DialogFilterSetting.ui" line="14"/>
         <location filename="Dialogs/DialogFilterSetting.ui" line="48"/>
         <source>Filter Setting</source>
-        <translation type="unfinished"></translation>
+        <translation>滤波设置</translation>
     </message>
     <message>
         <location filename="Dialogs/DialogFilterSetting.ui" line="27"/>
         <source>select series</source>
-        <translation type="unfinished"></translation>
+        <translation>选择序列</translation>
     </message>
     <message>
         <location filename="Dialogs/DialogFilterSetting.ui" line="37"/>
         <source>data preview</source>
-        <translation type="unfinished"></translation>
+        <translation>数据预览</translation>
     </message>
     <message>
         <location filename="Dialogs/DialogFilterSetting.ui" line="54"/>
         <source>forward and backward filtering</source>
-        <translation type="unfinished"></translation>
+        <translation>向前向后滤波</translation>
     </message>
     <message>
         <location filename="Dialogs/DialogFilterSetting.ui" line="62"/>
         <source>lowpass</source>
-        <translation type="unfinished"></translation>
+        <translation>低通滤波</translation>
     </message>
     <message>
         <location filename="Dialogs/DialogFilterSetting.ui" line="67"/>
         <source>highpass</source>
-        <translation type="unfinished"></translation>
+        <translation>高通滤波</translation>
     </message>
     <message>
         <location filename="Dialogs/DialogFilterSetting.ui" line="72"/>
         <source>bandpass</source>
-        <translation type="unfinished"></translation>
+        <translation>带通滤波</translation>
     </message>
     <message>
         <location filename="Dialogs/DialogFilterSetting.ui" line="77"/>
         <source>bandstop</source>
-        <translation type="unfinished"></translation>
+        <translation>带阻滤波</translation>
     </message>
     <message>
         <location filename="Dialogs/DialogFilterSetting.ui" line="98"/>
         <source>Sampling Frequency</source>
-        <translation type="unfinished"></translation>
+        <translation>采样频率</translation>
     </message>
     <message>
         <location filename="Dialogs/DialogFilterSetting.ui" line="105"/>
         <source>Filter Order</source>
-        <translation type="unfinished"></translation>
+        <translation>滤波器阶数</translation>
     </message>
     <message>
         <location filename="Dialogs/DialogFilterSetting.ui" line="145"/>
         <source>Filter Type</source>
-        <translation type="unfinished"></translation>
+        <translation>滤波类型</translation>
     </message>
     <message>
         <location filename="Dialogs/DialogFilterSetting.ui" line="155"/>
         <source>Cut-off Frequency</source>
-        <translation type="unfinished"></translation>
+        <translation>截止频率</translation>
     </message>
     <message>
         <location filename="Dialogs/DialogFilterSetting.ui" line="162"/>
         <source>Lower Cut-off Frequency</source>
-        <translation type="unfinished"></translation>
+        <translation>截止频率下限</translation>
     </message>
     <message>
         <location filename="Dialogs/DialogFilterSetting.ui" line="169"/>
         <source>Upper Cut-off Frequency</source>
-        <translation type="unfinished"></translation>
+        <translation>截止频率上限</translation>
     </message>
     <message>
         <location filename="Dialogs/DialogFilterSetting.cpp" line="128"/>
@@ -178,32 +178,32 @@
         <location filename="Dialogs/DialogFilterSetting.cpp" line="158"/>
         <location filename="Dialogs/DialogFilterSetting.cpp" line="167"/>
         <source>warning</source>
-        <translation type="unfinished"></translation>
+        <translation>警告</translation>
     </message>
     <message>
         <location filename="Dialogs/DialogFilterSetting.cpp" line="129"/>
         <source>You need to select a waveform data for spectrum analysis</source>
-        <translation type="unfinished"></translation>
+        <translation>你需要选择一个波形数据进行滤波分析</translation>
     </message>
     <message>
         <location filename="Dialogs/DialogFilterSetting.cpp" line="138"/>
         <source>The sampling rate cannot be 0</source>
-        <translation type="unfinished"></translation>
+        <translation>采样率不能为0</translation>
     </message>
     <message>
         <location filename="Dialogs/DialogFilterSetting.cpp" line="151"/>
         <source>The cut-off frequency cannot be 0</source>
-        <translation type="unfinished"></translation>
+        <translation>截止频率不能为0</translation>
     </message>
     <message>
         <location filename="Dialogs/DialogFilterSetting.cpp" line="159"/>
         <source>The lower cut-off frequency or upper cut-off frequency cannot be 0</source>
-        <translation type="unfinished"></translation>
+        <translation>截止频率上限或下限不能为0</translation>
     </message>
     <message>
         <location filename="Dialogs/DialogFilterSetting.cpp" line="168"/>
         <source>The filter order cannot be 0</source>
-        <translation type="unfinished"></translation>
+        <translation>滤波器阶数不能为0</translation>
     </message>
 </context>
 <context>
@@ -212,42 +212,42 @@
         <location filename="Dialogs/DialogSpectrumSetting.ui" line="14"/>
         <location filename="Dialogs/DialogSpectrumSetting.ui" line="48"/>
         <source>Spectrum Setting</source>
-        <translation type="unfinished"></translation>
+        <translation>频谱设置</translation>
     </message>
     <message>
         <location filename="Dialogs/DialogSpectrumSetting.ui" line="27"/>
         <source>select series</source>
-        <translation type="unfinished"></translation>
+        <translation>选择序列</translation>
     </message>
     <message>
         <location filename="Dialogs/DialogSpectrumSetting.ui" line="37"/>
         <source>data preview</source>
-        <translation type="unfinished"></translation>
+        <translation>数据预览</translation>
     </message>
     <message>
         <location filename="Dialogs/DialogSpectrumSetting.ui" line="54"/>
         <source>The length of FFT is equal to the length of data</source>
-        <translation type="unfinished"></translation>
+        <translation>fft长度和数据长度一致</translation>
     </message>
     <message>
         <location filename="Dialogs/DialogSpectrumSetting.ui" line="67"/>
         <source>amplitude processing method</source>
-        <translation type="unfinished"></translation>
+        <translation>幅值处理方式</translation>
     </message>
     <message>
         <location filename="Dialogs/DialogSpectrumSetting.ui" line="74"/>
         <source>Amplitude</source>
-        <translation type="unfinished"></translation>
+        <translation>幅值</translation>
     </message>
     <message>
         <location filename="Dialogs/DialogSpectrumSetting.ui" line="100"/>
         <source>customize</source>
-        <translation type="unfinished"></translation>
+        <translation>自定义长度</translation>
     </message>
     <message>
         <location filename="Dialogs/DialogSpectrumSetting.ui" line="112"/>
         <source>fft size</source>
-        <translation type="unfinished"></translation>
+        <translation>fft长度</translation>
     </message>
     <message>
         <location filename="Dialogs/DialogSpectrumSetting.ui" line="119"/>
@@ -273,53 +273,53 @@ In some application scenarios, very high frequency resolution may not be require
     <message>
         <location filename="Dialogs/DialogSpectrumSetting.ui" line="183"/>
         <source>Decibel(dB)</source>
-        <translation type="unfinished"></translation>
+        <translation>分贝(dB)</translation>
     </message>
     <message>
         <location filename="Dialogs/DialogSpectrumSetting.ui" line="193"/>
         <source>The length of FFT is a next power of 2</source>
-        <translation type="unfinished"></translation>
+        <translation>fft长度为2的次幂，不足补0</translation>
     </message>
     <message>
         <location filename="Dialogs/DialogSpectrumSetting.ui" line="203"/>
         <source>sampling rate</source>
-        <translation type="unfinished"></translation>
+        <translation>采样率</translation>
     </message>
     <message>
         <location filename="Dialogs/DialogSpectrumSetting.ui" line="223"/>
         <source>Specifies how to detrend,detrending mainly affects the DC component (0 frequency) of the signal.</source>
-        <translation type="unfinished"></translation>
+        <translation>定义去趋势的方式，去趋势影响信号的直流分量（0频率）.</translation>
     </message>
     <message>
         <location filename="Dialogs/DialogSpectrumSetting.ui" line="226"/>
         <source>detrend</source>
-        <translation type="unfinished"></translation>
+        <translation>去趋势</translation>
     </message>
     <message>
         <location filename="Dialogs/DialogSpectrumSetting.ui" line="236"/>
         <source>constant</source>
-        <translation type="unfinished"></translation>
+        <translation>常数</translation>
     </message>
     <message>
         <location filename="Dialogs/DialogSpectrumSetting.ui" line="246"/>
         <source>linear</source>
-        <translation type="unfinished"></translation>
+        <translation>线性</translation>
     </message>
     <message>
         <location filename="Dialogs/DialogSpectrumSetting.cpp" line="101"/>
         <location filename="Dialogs/DialogSpectrumSetting.cpp" line="109"/>
         <source>warning</source>
-        <translation type="unfinished"></translation>
+        <translation>警告</translation>
     </message>
     <message>
         <location filename="Dialogs/DialogSpectrumSetting.cpp" line="102"/>
         <source>You need to select a waveform data for spectrum analysis</source>
-        <translation type="unfinished"></translation>
+        <translation>你需要选择一个波形数据进行频谱分析</translation>
     </message>
     <message>
         <location filename="Dialogs/DialogSpectrumSetting.cpp" line="110"/>
         <source>The sampling rate cannot be 0</source>
-        <translation type="unfinished"></translation>
+        <translation>采样率不能为0</translation>
     </message>
 </context>
 </TS>

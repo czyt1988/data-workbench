@@ -31,11 +31,13 @@ DAPYBINDQT_API QString toString(const pybind11::dtype& dtype);
 // QVariantHash转换为pybind11::dict
 DAPYBINDQT_API pybind11::dict toPyDict(const QVariantHash& qvhash);
 DAPYBINDQT_API pybind11::dict toPyDict(const QVariantMap& qvmap);
+
+// pybind11::object 转QList<QString>
+DAPYBINDQT_API QList< QString > toStringList(const pybind11::object& obj, QString* err = nullptr);
+
 // QVariantList转换为pybind11::list
 DAPYBINDQT_API pybind11::list toPyList(const QVariantList& list);
 DAPYBINDQT_API pybind11::list toPyList(const QStringList& list);
-// pybind11::object 转QList<QString>
-DAPYBINDQT_API QList< QString > toStringList(const pybind11::object& obj, QString* err = nullptr);
 
 /**
  * @brief 转换为列表
@@ -53,22 +55,6 @@ pybind11::list toPyList(const QList< T >& arr)
     return pylist;
 }
 
-/**
- * @brief  转换为列表的特化模板函数，T = QString
- * @param arr
- * @return
- */
-template<>
-pybind11::list toPyList< QString >(const QList< QString >& arr)
-{
-    pybind11::list pylist;
-    for (const QString& v : arr) {
-        pybind11::object o = toPyStr(v);
-        pylist.append(o);
-    }
-    return pylist;
-}
-
 template< typename T >
 pybind11::list toPyList(const QSet< T >& arr)
 {
@@ -80,16 +66,11 @@ pybind11::list toPyList(const QSet< T >& arr)
     return pylist;
 }
 
+// 前置声明特化版本
 template<>
-pybind11::list toPyList< QString >(const QSet< QString >& arr)
-{
-    pybind11::list pylist;
-    for (const QString& v : arr) {
-        pybind11::object o = toPyStr(v);
-        pylist.append(o);
-    }
-    return pylist;
-}
+pybind11::list DAPYBINDQT_API toPyList< QString >(const QList< QString >& arr);
+template<>
+pybind11::list DAPYBINDQT_API toPyList< QString >(const QSet< QString >& arr);
 
 }  // namespace PY
 }  // namespace DA

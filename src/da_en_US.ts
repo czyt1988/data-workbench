@@ -211,8 +211,7 @@
     </message>
     <message>
         <location filename="APP/AppMainWindow.cpp" line="98"/>
-        <source>Data WorkFlow [*]</source>
-        <oldsource>Data WorkFlow</oldsource>
+        <source>Data WorkFlow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -301,6 +300,14 @@
     </message>
 </context>
 <context>
+    <name>DA::DAAbstractSettingPage</name>
+    <message>
+        <location filename="DACommonWidgets/DAAbstractSettingPage.cpp" line="27"/>
+        <source>Unable to create application configuration path:%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DA::DAActionsInterface</name>
     <message>
         <location filename="DAInterface/DAActionsInterface.cpp" line="117"/>
@@ -316,465 +323,379 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="197"/>
+        <location filename="APP/DAAppActions.cpp" line="203"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="198"/>
-        <source>Open file or project</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="199"/>
+        <location filename="APP/DAAppActions.cpp" line="204"/>
         <source>Save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="200"/>
+        <location filename="APP/DAAppActions.cpp" line="205"/>
         <source>Save As</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="201"/>
+        <location filename="APP/DAAppActions.cpp" line="206"/>
         <source>Append To Project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="203"/>
+        <location filename="APP/DAAppActions.cpp" line="208"/>
         <source>Rename Columns</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="204"/>
+        <location filename="APP/DAAppActions.cpp" line="209"/>
         <source>Setting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="205"/>
+        <location filename="APP/DAAppActions.cpp" line="210"/>
         <source>About</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="207"/>
+        <location filename="APP/DAAppActions.cpp" line="212"/>
         <source>Add 
 Data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="208"/>
+        <location filename="APP/DAAppActions.cpp" line="213"/>
         <source>Remove 
 Data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="210"/>
+        <location filename="APP/DAAppActions.cpp" line="215"/>
         <source>Add 
 Figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="211"/>
+        <location filename="APP/DAAppActions.cpp" line="216"/>
         <source>Resize 
 Chart</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="212"/>
+        <location filename="APP/DAAppActions.cpp" line="217"/>
         <source>New 
 XY Axis</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="213"/>
+        <location filename="APP/DAAppActions.cpp" line="218"/>
         <source>Add 
 Curve</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="214"/>
+        <location filename="APP/DAAppActions.cpp" line="219"/>
         <source>Add 
 Scatter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="215"/>
+        <location filename="APP/DAAppActions.cpp" line="220"/>
         <source>Add 
 Error Bar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="216"/>
+        <location filename="APP/DAAppActions.cpp" line="221"/>
         <source>Add 
 Box Plot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="217"/>
+        <location filename="APP/DAAppActions.cpp" line="222"/>
         <source>Add 
 Bar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="218"/>
+        <location filename="APP/DAAppActions.cpp" line="223"/>
         <source>Add 
 MultiBar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="219"/>
+        <location filename="APP/DAAppActions.cpp" line="224"/>
         <source>Add 
 Histogram</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="220"/>
+        <location filename="APP/DAAppActions.cpp" line="225"/>
         <source>Add 
 Contour Map</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="221"/>
+        <location filename="APP/DAAppActions.cpp" line="226"/>
         <source>Add 
 Cloud Map</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="222"/>
+        <location filename="APP/DAAppActions.cpp" line="227"/>
         <source>Add 
 Vector Field</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="224"/>
+        <location filename="APP/DAAppActions.cpp" line="229"/>
         <source>Enable Grid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="225"/>
+        <location filename="APP/DAAppActions.cpp" line="230"/>
         <source>X Grid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="226"/>
+        <location filename="APP/DAAppActions.cpp" line="231"/>
         <source>Y Grid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="227"/>
+        <location filename="APP/DAAppActions.cpp" line="232"/>
         <source>Xmin Grid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="228"/>
+        <location filename="APP/DAAppActions.cpp" line="233"/>
         <source>Ymin Grid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="229"/>
+        <location filename="APP/DAAppActions.cpp" line="234"/>
         <source>Zoom</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="230"/>
+        <location filename="APP/DAAppActions.cpp" line="235"/>
         <source>Zoom In</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="231"/>
+        <location filename="APP/DAAppActions.cpp" line="236"/>
         <source>Zoom Out</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="232"/>
+        <location filename="APP/DAAppActions.cpp" line="237"/>
         <source>Show 
 All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="233"/>
+        <location filename="APP/DAAppActions.cpp" line="238"/>
         <source>Pan</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="234"/>
+        <location filename="APP/DAAppActions.cpp" line="239"/>
         <source>Cross</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="235"/>
+        <location filename="APP/DAAppActions.cpp" line="240"/>
         <source>Y Picker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="236"/>
+        <location filename="APP/DAAppActions.cpp" line="241"/>
         <source>XY Picker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="237"/>
+        <location filename="APP/DAAppActions.cpp" line="242"/>
         <source>legend</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="240"/>
+        <location filename="APP/DAAppActions.cpp" line="245"/>
         <source>Remove Row</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="241"/>
+        <location filename="APP/DAAppActions.cpp" line="246"/>
         <source>Remove Column</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="242"/>
+        <location filename="APP/DAAppActions.cpp" line="247"/>
         <source>Remove Cell</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="243"/>
+        <location filename="APP/DAAppActions.cpp" line="248"/>
         <source>Insert 
 Row</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="244"/>
+        <location filename="APP/DAAppActions.cpp" line="249"/>
         <source>Insert Row(Above)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="245"/>
+        <location filename="APP/DAAppActions.cpp" line="250"/>
         <source>Insert 
 Column</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="246"/>
+        <location filename="APP/DAAppActions.cpp" line="251"/>
         <source>Insert Column(Left)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="247"/>
+        <location filename="APP/DAAppActions.cpp" line="252"/>
         <source>to num</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="248"/>
+        <location filename="APP/DAAppActions.cpp" line="253"/>
         <source>cast to num type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="249"/>
+        <location filename="APP/DAAppActions.cpp" line="254"/>
         <source>to str</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="250"/>
+        <location filename="APP/DAAppActions.cpp" line="255"/>
         <source>cast to string type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="251"/>
+        <location filename="APP/DAAppActions.cpp" line="256"/>
         <source>to datetime</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="252"/>
+        <location filename="APP/DAAppActions.cpp" line="257"/>
         <source>cast to datetime type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="253"/>
+        <location filename="APP/DAAppActions.cpp" line="258"/>
         <source>Data Describe</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="254"/>
+        <location filename="APP/DAAppActions.cpp" line="259"/>
         <source>To Index</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="255"/>
-        <source>Drop None</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="256"/>
-        <source>Drop rows which contain missing values</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="257"/>
-        <source>Fill None</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="258"/>
-        <source>Fill rows which contain missing values</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="260"/>
-        <source>Fill Interpolate</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="262"/>
-        <source>Fill rows which contain missing values by interpolate</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="263"/>
-        <location filename="APP/DAAppActions.cpp" line="270"/>
-        <source>Drop Duplicates</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="264"/>
-        <source>Forward Fill</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="266"/>
-        <source>Fill NA/NaN values by propagating the last valid observation to next valid.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="267"/>
-        <source>Back Fill</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="269"/>
-        <source>Fill NA/NaN values by using the next valid observation to fill the gap.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="271"/>
-        <source>Drop duplicate datas</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="272"/>
-        <source>nstd filter outlier</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="273"/>
-        <source>Remove the outliers beyond n times the standard deviation</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="274"/>
-        <source>Clip Outlier</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="276"/>
-        <source>Replace the outlier values that exceed the specified lower and upper limits with the respective limits.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="279"/>
+        <location filename="APP/DAAppActions.cpp" line="261"/>
         <source>New 
 Workflow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="280"/>
+        <location filename="APP/DAAppActions.cpp" line="262"/>
         <source>Linkage 
 Move</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="282"/>
+        <location filename="APP/DAAppActions.cpp" line="264"/>
         <source>When moving elements, other elements linked to this element follow the movement</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="283"/>
+        <location filename="APP/DAAppActions.cpp" line="265"/>
         <source>grouping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="284"/>
+        <location filename="APP/DAAppActions.cpp" line="266"/>
         <source>ungroup</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="285"/>
+        <location filename="APP/DAAppActions.cpp" line="267"/>
         <source>Draw 
 Rect</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="286"/>
+        <location filename="APP/DAAppActions.cpp" line="268"/>
         <source>Draw 
 Text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="287"/>
+        <location filename="APP/DAAppActions.cpp" line="269"/>
         <source>Show 
 Grid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="288"/>
+        <location filename="APP/DAAppActions.cpp" line="270"/>
         <source>Lock 
 View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="289"/>
+        <location filename="APP/DAAppActions.cpp" line="271"/>
         <source>Run 
 Workflow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="290"/>
+        <location filename="APP/DAAppActions.cpp" line="272"/>
         <source>Terminate 
 Workflow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="291"/>
+        <location filename="APP/DAAppActions.cpp" line="273"/>
         <source>Link</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="292"/>
+        <location filename="APP/DAAppActions.cpp" line="274"/>
         <source>Add 
 Background</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="293"/>
+        <location filename="APP/DAAppActions.cpp" line="275"/>
         <source>Lock Background</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="294"/>
+        <location filename="APP/DAAppActions.cpp" line="276"/>
         <source>Move With Background</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="296"/>
+        <location filename="APP/DAAppActions.cpp" line="278"/>
         <source>Export To Image</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="297"/>
+        <location filename="APP/DAAppActions.cpp" line="279"/>
         <source>Export To PNG</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="298"/>
+        <location filename="APP/DAAppActions.cpp" line="280"/>
         <source>Show Marker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="300"/>
+        <location filename="APP/DAAppActions.cpp" line="282"/>
         <source>Show 
 Workflow Area</source>
         <oldsource>Show 
@@ -782,78 +703,78 @@ Work Flow Manager</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="301"/>
+        <location filename="APP/DAAppActions.cpp" line="283"/>
         <source>Show 
 Workflow Manager</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="302"/>
+        <location filename="APP/DAAppActions.cpp" line="284"/>
         <source>Show 
 Chart Area</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="303"/>
+        <location filename="APP/DAAppActions.cpp" line="285"/>
         <source>Show 
 Chart Manager</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="304"/>
+        <location filename="APP/DAAppActions.cpp" line="286"/>
         <source>Show 
 Table Area</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="305"/>
+        <location filename="APP/DAAppActions.cpp" line="287"/>
         <source>Show 
 Data Manager</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="306"/>
+        <location filename="APP/DAAppActions.cpp" line="288"/>
         <source>Show Infomation Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="307"/>
+        <location filename="APP/DAAppActions.cpp" line="289"/>
         <source>Show Setting Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="309"/>
+        <location filename="APP/DAAppActions.cpp" line="291"/>
         <source>Plugin 
 Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="311"/>
+        <location filename="APP/DAAppActions.cpp" line="293"/>
         <source>Office 2013 theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="312"/>
+        <location filename="APP/DAAppActions.cpp" line="294"/>
         <source>Office 2016 blue theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="313"/>
+        <location filename="APP/DAAppActions.cpp" line="295"/>
         <source>Office 2021 blue theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="314"/>
+        <location filename="APP/DAAppActions.cpp" line="296"/>
         <source>Dark theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="318"/>
+        <location filename="APP/DAAppActions.cpp" line="300"/>
         <source>Redo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="321"/>
+        <location filename="APP/DAAppActions.cpp" line="303"/>
         <source>Undo</source>
         <translation type="unfinished"></translation>
     </message>
@@ -861,127 +782,127 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="APP/DAAppController.cpp" line="690"/>
-        <location filename="APP/DAAppController.cpp" line="788"/>
+        <location filename="APP/DAAppController.cpp" line="667"/>
+        <location filename="APP/DAAppController.cpp" line="756"/>
         <source>project file(*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="705"/>
+        <location filename="APP/DAAppController.cpp" line="682"/>
         <source>Question</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="706"/>
+        <location filename="APP/DAAppController.cpp" line="683"/>
         <source>Another project already exists. Do you want to replace it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="732"/>
-        <location filename="APP/DAAppController.cpp" line="801"/>
+        <location filename="APP/DAAppController.cpp" line="709"/>
+        <location filename="APP/DAAppController.cpp" line="769"/>
         <source>failed to load project file:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="415"/>
-        <location filename="APP/DAAppController.cpp" line="755"/>
+        <location filename="APP/DAAppController.cpp" line="403"/>
+        <location filename="APP/DAAppController.cpp" line="724"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="757"/>
+        <location filename="APP/DAAppController.cpp" line="726"/>
         <source>project file (*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="767"/>
+        <location filename="APP/DAAppController.cpp" line="736"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="768"/>
+        <location filename="APP/DAAppController.cpp" line="736"/>
         <source>Whether to overwrite the file:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="426"/>
-        <location filename="APP/DAAppController.cpp" line="777"/>
+        <location filename="APP/DAAppController.cpp" line="414"/>
+        <location filename="APP/DAAppController.cpp" line="745"/>
         <source>Project saved failed!,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="781"/>
-        <location filename="APP/DAAppController.cpp" line="826"/>
+        <location filename="APP/DAAppController.cpp" line="749"/>
+        <location filename="APP/DAAppController.cpp" line="794"/>
         <source>Project saved successfully,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="417"/>
+        <location filename="APP/DAAppController.cpp" line="405"/>
         <source>Project Files (*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="843"/>
+        <location filename="APP/DAAppController.cpp" line="811"/>
         <source>Project load successfully,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="912"/>
+        <location filename="APP/DAAppController.cpp" line="877"/>
         <source>Image files (*.png *.jpg)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="913"/>
+        <location filename="APP/DAAppController.cpp" line="878"/>
         <source>Any files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="986"/>
+        <location filename="APP/DAAppController.cpp" line="951"/>
         <source>The image was successfully saved in path %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="988"/>
+        <location filename="APP/DAAppController.cpp" line="953"/>
         <source>Image save failed at path %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1027"/>
+        <location filename="APP/DAAppController.cpp" line="992"/>
         <source>get null project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1033"/>
+        <location filename="APP/DAAppController.cpp" line="998"/>
         <source>warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1034"/>
+        <location filename="APP/DAAppController.cpp" line="999"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1336"/>
+        <location filename="APP/DAAppController.cpp" line="1300"/>
         <source>Before creating a new coordinate,you need to create a figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1669"/>
+        <location filename="APP/DAAppController.cpp" line="1633"/>
         <source>%1_Describe</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1670"/>
+        <location filename="APP/DAAppController.cpp" line="1634"/>
         <source>Generate descriptive statistics that summarize the central tendency, dispersion and shape of a [%1]’s distribution, excluding NaN values</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1931"/>
+        <location filename="APP/DAAppController.cpp" line="1787"/>
         <source>new workflow name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1932"/>
+        <location filename="APP/DAAppController.cpp" line="1788"/>
         <source>new workflow name:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1116,9 +1037,9 @@ Config</source>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="168"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="189"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="276"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="473"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="188"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="275"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="461"/>
         <source>Workflow</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1135,8 +1056,8 @@ Config</source>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="173"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="196"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="549"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="195"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="537"/>
         <source>View</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1147,160 +1068,154 @@ Config</source>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="176"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="358"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="357"/>
         <source>DataFrame</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="177"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="360"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="359"/>
         <source>Operate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="178"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="362"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="361"/>
         <source>Axes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="179"/>
         <location filename="APP/DAAppRibbonArea.cpp" line="181"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="374"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="379"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="373"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="378"/>
         <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="183"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="390"/>
-        <source>Data Cleaning</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="184"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="401"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="389"/>
         <source>Statistic</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="187"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="186"/>
         <source>Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="191"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="487"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="190"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="475"/>
         <source>Workflow Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="192"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="492"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="191"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="480"/>
         <source>ClipBoard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="193"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="497"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="192"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="485"/>
         <source>Item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="194"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="506"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="193"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="494"/>
         <source>Text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="195"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="511"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="194"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="499"/>
         <source>Background</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="198"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="592"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="197"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="580"/>
         <source>Workflow Run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="199"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="595"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="198"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="583"/>
         <source>Run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="201"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="442"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="200"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="430"/>
         <source>Figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="202"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="201"/>
         <source>Figure Setting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="203"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="202"/>
         <source>Add Chart</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="205"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="204"/>
         <source>Chart</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="206"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="606"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="608"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="205"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="594"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="596"/>
         <source>Chart Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="208"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="207"/>
         <source>theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="209"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="208"/>
         <source>set ribbon theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="APP/DAAppRibbonArea.cpp" line="210"/>
         <location filename="APP/DAAppRibbonArea.cpp" line="211"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="212"/>
         <source>View Marker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="214"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="213"/>
         <source>Export Image</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="215"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="214"/>
         <source>Export Workflow Graphics Scene To Image</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="217"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="216"/>
         <source>Data Work Flow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="518"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="506"/>
         <source>Group</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="546"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="534"/>
         <source>Workflow View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="582"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="570"/>
         <source>Export</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1536,17 +1451,17 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartOperateWidget.cpp" line="200"/>
+        <location filename="DAGui/DAChartOperateWidget.cpp" line="191"/>
         <source>chart operate widget&apos;s tab changed,but can not find figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartOperateWidget.cpp" line="218"/>
+        <location filename="DAGui/DAChartOperateWidget.cpp" line="204"/>
         <source>question</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartOperateWidget.cpp" line="218"/>
+        <location filename="DAGui/DAChartOperateWidget.cpp" line="204"/>
         <source>Whether to close the figure widget</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1721,12 +1636,12 @@ Config</source>
 <context>
     <name>DA::DADataOperateOfDataFrameWidget</name>
     <message>
-        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="166"/>
+        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="165"/>
         <source>warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="167"/>
+        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="166"/>
         <source>The name of the new column to be inserted must be specified</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1736,21 +1651,21 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="219"/>
-        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="311"/>
-        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="338"/>
-        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="372"/>
-        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="407"/>
+        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="220"/>
+        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="318"/>
+        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="346"/>
+        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="381"/>
+        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="417"/>
         <source>please select valid column</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="243"/>
+        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="245"/>
         <source>please select valid cell</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="276"/>
+        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="286"/>
         <source>table have not column</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1758,12 +1673,12 @@ Config</source>
 <context>
     <name>DA::DADataOperateWidget</name>
     <message>
-        <location filename="DAGui/DADataOperateWidget.cpp" line="171"/>
+        <location filename="DAGui/DADataOperateWidget.cpp" line="140"/>
         <source>removing a widget that does not exist in tab</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DADataOperateWidget.cpp" line="210"/>
+        <location filename="DAGui/DADataOperateWidget.cpp" line="179"/>
         <source>[deleted]</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1796,31 +1711,6 @@ Config</source>
     <message>
         <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="39"/>
         <source>scatter</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DA::DADialogDataFrameClipOutlier</name>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameClipOutlier.cpp" line="28"/>
-        <location filename="DAGui/Dialog/DADialogDataFrameClipOutlier.cpp" line="44"/>
-        <source>The current input cannot be converted to a floating-point number.</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DA::DADialogDataFrameFillInterpolate</name>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.cpp" line="55"/>
-        <source>The current input cannot be converted to a integer number.</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DA::DADialogDataFrameFillna</name>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillna.cpp" line="27"/>
-        <source>The current input cannot be converted to a floating-point number.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2067,7 +1957,7 @@ Config</source>
 <context>
     <name>DA::DAProjectInterface</name>
     <message>
-        <location filename="DAInterface/DAProjectInterface.cpp" line="347"/>
+        <location filename="DAInterface/DAProjectInterface.cpp" line="346"/>
         <source>open failed,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2469,7 +2359,7 @@ Config</source>
         <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="579"/>
         <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="592"/>
         <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="605"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="1035"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="1028"/>
         <source>No active workflow detected</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2480,96 +2370,96 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="913"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="914"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="906"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="907"/>
         <source>Copy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="915"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="916"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="908"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="909"/>
         <source>Cut</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="917"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="918"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="910"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="911"/>
         <source>Paste</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="919"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="920"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="912"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="913"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="921"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="922"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="914"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="915"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="923"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="916"/>
         <source>Select All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="924"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="917"/>
         <source>Select all items</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="925"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="918"/>
         <source>Zoom In</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="926"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="919"/>
         <source>Zoom in graphics view</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="927"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="920"/>
         <source>Zoom Out</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="928"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="921"/>
         <source>Zoom Out graphics view</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="929"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="922"/>
         <source>Zoom to Fit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="930"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="923"/>
         <source>Zoom to fit screen size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="931"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="932"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="924"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="925"/>
         <source>Cross Line Marker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="933"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="934"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="926"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="927"/>
         <source>Horizontal Line Marker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="935"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="936"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="928"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="929"/>
         <source>Vertical Line Marker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="937"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="938"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="930"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="931"/>
         <source>None Marker</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2671,7 +2561,7 @@ Config</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="APP/DAAppController.cpp" line="69"/>
+        <location filename="APP/DAAppController.cpp" line="68"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2679,12 +2569,12 @@ Config</source>
 <context>
     <name>DAAppRibbonArea</name>
     <message>
-        <location filename="APP/DAAppController.cpp" line="76"/>
+        <location filename="APP/DAAppController.cpp" line="75"/>
         <source>warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="77"/>
+        <location filename="APP/DAAppController.cpp" line="76"/>
         <source>The current function is not implemented, only the UI is reserved, please pay attention: https://gitee.com/czyt1988/data-work-flow</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3292,160 +3182,6 @@ Config</source>
     </message>
     <message>
         <location filename="DAGui/Dialog/DADialogChartGuide.ui" line="91"/>
-        <source>Cancel</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DADialogDataFrameClipOutlier</name>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameClipOutlier.ui" line="14"/>
-        <source>Form</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameClipOutlier.ui" line="20"/>
-        <source>ClipOutlier</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameClipOutlier.ui" line="26"/>
-        <source>LowerValue</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameClipOutlier.ui" line="33"/>
-        <source>UpperValue</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameClipOutlier.ui" line="111"/>
-        <source>OK</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameClipOutlier.ui" line="125"/>
-        <source>Cancel</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DADialogDataFrameFillInterpolate</name>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="14"/>
-        <source>Dialog</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="20"/>
-        <source>Fill Interpolate</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="27"/>
-        <source>spline</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="32"/>
-        <source>polynomial</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="40"/>
-        <source>Interpolate order</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="47"/>
-        <source>This is the maximum number of consecutive NaN values to forward/backward fill. In other words, if there is a gap with more than this number of consecutive NaNs, it will only be partially filled</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="50"/>
-        <source>limit</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="57"/>
-        <source>Interpolate axis</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="70"/>
-        <source>1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="80"/>
-        <source>This is the maximum number of entries along the entire axis where NaNs will be filled. Must be greater than 0</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="93"/>
-        <source>Interpolate method</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="102"/>
-        <source>colume</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="121"/>
-        <source>row</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="161"/>
-        <source>OK</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="175"/>
-        <source>Cancel</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DADialogDataFrameFillna</name>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillna.ui" line="14"/>
-        <source>Dialog</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillna.ui" line="20"/>
-        <source>Fill NA/NaN values</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillna.ui" line="26"/>
-        <source>This is the maximum number of consecutive NaN values to forward/backward fill. In other words, if there is a gap with more than this number of consecutive NaNs, it will only be partially filled</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillna.ui" line="29"/>
-        <source>limit</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillna.ui" line="39"/>
-        <source>This is the maximum number of entries along the entire axis where NaNs will be filled. Must be greater than 0</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillna.ui" line="55"/>
-        <source>Value to use to fill holes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillna.ui" line="87"/>
-        <source>OK</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillna.ui" line="101"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5283,91 +5019,6 @@ Wrap</source>
         <source>add window</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="63"/>
-        <source>Example MainWindow</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="144"/>
-        <source>File(&amp;F)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="145"/>
-        <source>New(&amp;N)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="146"/>
-        <source>Open(&amp;O)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="149"/>
-        <source>Edit(&amp;E)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="150"/>
-        <source>Undo(&amp;U)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="151"/>
-        <source>Redo(&amp;R)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="154"/>
-        <source>Enable dark theme</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="164"/>
-        <source>None</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="169"/>
-        <source>Enable DWM blur</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="173"/>
-        <source>Enable acrylic material</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="177"/>
-        <source>Enable mica</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="181"/>
-        <source>Enable mica alt</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="211"/>
-        <source>Dark blur</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="223"/>
-        <source>Light blur</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="235"/>
-        <source>No blur</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="254"/>
-        <source>Settings(&amp;S)</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>MyController</name>
@@ -5430,66 +5081,66 @@ Wrap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13566"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13620"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="336"/>
         <source>SARibbon Warning !!! customize rename category,but get an empty category object name,if you want to customize SARibbon,please make sure every element has been set object name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13590"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13644"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="360"/>
         <source>SARibbon Warning !!! customize rename pannel,but get an empty category/pannel object name,if you want to customize SARibbon,please make sure every element has been set object name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13613"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13667"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="383"/>
         <source>SARibbon Warning !!! customize change category order,but get an empty category object name,if you want to customize SARibbon,please make sure every element has been set object name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13637"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13691"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="407"/>
         <source>SARibbon Warning !!! customize change pannel order,but get an empty category/pannel object name,if you want to customize SARibbon,please make sure every element has been set object name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13666"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13720"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="436"/>
         <source>SARibbon Warning !!! customize change action order,but get an empty category/pannel/action object name,if you want to customize SARibbon,please make sure every element has been set object name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13688"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13742"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="458"/>
         <source>SARibbon Warning !!! customize remove category,but get an empty category object name,if you want to customize SARibbon,please make sure every element has been set object name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13709"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13763"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="479"/>
         <source>SARibbon Warning !!! customize remove pannel,but get an empty category/pannel object name,if you want to customize SARibbon,please make sure every element has been set object name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13735"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13789"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="505"/>
         <source>SARibbon Warning !!! customize remove action,but get an empty category/pannel/action object name,if you want to customize SARibbon,please make sure every element has been set object name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13757"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13811"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="527"/>
         <source>SARibbon Warning !!! customize visible category,but get an empty category object name,if you want to customize SARibbon,please make sure every element has been set object name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/main.cpp" line="88"/>
+        <location filename="APP/main.cpp" line="91"/>
         <source>Kernel initialization failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/main.cpp" line="113"/>
+        <location filename="APP/main.cpp" line="116"/>
         <source>%1(%2) build %3
 params:
 --version : version information
@@ -5498,7 +5149,7 @@ params:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/main.cpp" line="206"/>
+        <location filename="APP/main.cpp" line="209"/>
         <source>Unable to create dump file path:%1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5904,88 +5555,42 @@ params:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="25"/>
+        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="24"/>
         <source>set dataframe data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="56"/>
+        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="58"/>
         <source>insert row</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="102"/>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="127"/>
-        <source>insert column &quot;%1&quot;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="183"/>
+        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="202"/>
         <source>drop dataframe rows</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="216"/>
+        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="240"/>
         <source>drop dataframe columns</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="289"/>
+        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="315"/>
         <source>change column type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="366"/>
-        <source>drop nan</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="413"/>
-        <source>fill nan</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="449"/>
-        <source>interpolate</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="484"/>
-        <source>ffill nan</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="519"/>
-        <source>bfill nan</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="563"/>
-        <source>drop duplicates</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="611"/>
-        <source>nstd filter</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="659"/>
-        <source>clip outlier</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="689"/>
+        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="401"/>
         <source>cast column to num</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="725"/>
+        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="442"/>
         <source>cast column to datetime</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="761"/>
+        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="483"/>
         <source>set column to index</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7000,50 +6605,6 @@ params:
     </message>
 </context>
 <context>
-    <name>QuaGzipFile</name>
-    <message>
-        <location filename="3rdparty/quazip/quazip/quagzipfile.cpp" line="60"/>
-        <source>QIODevice::Append is not supported for GZIP</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/quazip/quazip/quagzipfile.cpp" line="66"/>
-        <source>Opening gzip for both reading and writing is not supported</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/quazip/quazip/quagzipfile.cpp" line="75"/>
-        <source>You can open a gzip either for reading or for writing. Which is it?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/quazip/quazip/quagzipfile.cpp" line="81"/>
-        <source>Could not gzopen() file</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>QuaZIODevice</name>
-    <message>
-        <location filename="3rdparty/quazip/quazip/quaziodevice.cpp" line="178"/>
-        <source>QIODevice::Append is not supported for QuaZIODevice</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/quazip/quazip/quaziodevice.cpp" line="183"/>
-        <source>QIODevice::ReadWrite is not supported for QuaZIODevice</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>QuaZipFile</name>
-    <message>
-        <location filename="3rdparty/quazip/quazip/quazipfile.cpp" line="251"/>
-        <source>ZIP/UNZIP API error %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>QwtPlotRenderer</name>
     <message>
         <location filename="3rdparty/qwt/src/qwt_plot_renderer.cpp" line="1076"/>
@@ -7086,19 +6647,19 @@ params:
 <context>
     <name>SAColorMenu</name>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="202"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="203"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/SAColorMenu.cpp" line="178"/>
         <source>None</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="236"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="237"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/SAColorMenu.cpp" line="212"/>
         <source>Theme Colors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="243"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="244"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/SAColorMenu.cpp" line="219"/>
         <source>Custom Color</source>
         <translation type="unfinished"></translation>
@@ -7107,7 +6668,7 @@ params:
 <context>
     <name>SARibbonActionsManager</name>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="4548"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="4563"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonActionsManager.cpp" line="335"/>
         <source>not in ribbon</source>
         <translation type="unfinished"></translation>
@@ -7116,7 +6677,7 @@ params:
 <context>
     <name>SARibbonActionsManagerModel</name>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="4743"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="4758"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonActionsManager.cpp" line="530"/>
         <source>action name</source>
         <translation type="unfinished"></translation>
@@ -7125,7 +6686,7 @@ params:
 <context>
     <name>SARibbonCategoryLayout</name>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="8565"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="8612"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCategoryLayout.cpp" line="130"/>
         <source>in SARibbonCategoryLayout cannot addItem,use addPannel instead</source>
         <translation type="unfinished"></translation>
@@ -7134,7 +6695,7 @@ params:
 <context>
     <name>SARibbonContextCategory</name>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="9227"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="9276"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonContextCategory.cpp" line="67"/>
         <source>SARibbonContextCategory have category %1,will skip</source>
         <translation type="unfinished"></translation>
@@ -7143,19 +6704,19 @@ params:
 <context>
     <name>SARibbonCustomizeDialog</name>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15483"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15557"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeDialog.cpp" line="51"/>
         <source>Customize Dialog</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15484"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15558"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeDialog.cpp" line="52"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15485"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15559"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeDialog.cpp" line="53"/>
         <source>OK</source>
         <translation type="unfinished"></translation>
@@ -7164,137 +6725,137 @@ params:
 <context>
     <name>SARibbonCustomizeWidget</name>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14292"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14347"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="357"/>
         <source>Customize Widget</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14293"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14348"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="358"/>
         <source>Please Select</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14297"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14352"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="362"/>
         <source>Find Command</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14298"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14353"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="363"/>
         <source>Add &gt;&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14299"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14354"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="364"/>
         <source>&lt;&lt; Remove</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14301"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14356"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="366"/>
         <source>Customize the Ribbon</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14302"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14357"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="367"/>
         <source>Main Category</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14303"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14358"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="368"/>
         <source>All Category</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14304"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14359"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="369"/>
         <source>New Category</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14305"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14360"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="370"/>
         <source>New Group</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14306"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14361"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="371"/>
         <source>Rename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14307"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14362"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="372"/>
         <source>reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14308"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14363"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="373"/>
         <source>proportion:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14703"/>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14706"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14758"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14761"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="768"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="771"/>
         <source>large</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14704"/>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14708"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14759"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14763"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="769"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="773"/>
         <source>small</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14707"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14762"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="772"/>
         <source>medium</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15089"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15144"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="1154"/>
         <source>new category[customize]%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15114"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15171"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="1181"/>
         <source>new pannel[customize]%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15159"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15219"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="1229"/>
         <source>rename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15159"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15219"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="1229"/>
         <source>name:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15421"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15495"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="1505"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15422"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15496"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="1506"/>
         <source>Are you sure reset all customize setting?</source>
         <translation type="unfinished"></translation>
@@ -7303,13 +6864,13 @@ params:
 <context>
     <name>SARibbonSystemButtonBar</name>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="2567"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="2574"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonSystemButtonBar.cpp" line="315"/>
         <source>Restore</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="2567"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="2574"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonSystemButtonBar.cpp" line="315"/>
         <source>Maximize</source>
         <translation type="unfinished"></translation>
@@ -7681,59 +7242,6 @@ params:
     <message>
         <location filename="3rdparty/ctk/ctk/ctkPathLineEdit.cpp" line="585"/>
         <source>Select a file to save </source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>main</name>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="12"/>
-        <source>Hello, world!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="156"/>
-        <source>Theme</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="164"/>
-        <source>Light</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="170"/>
-        <source>Dark</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="179"/>
-        <source>Special effect</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="188"/>
-        <source>None</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="202"/>
-        <source>DWM blur</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="215"/>
-        <source>Acrylic material</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="228"/>
-        <source>Mica</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="241"/>
-        <source>Mica Alt</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

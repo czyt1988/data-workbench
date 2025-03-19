@@ -422,5 +422,36 @@ void registerMetaType()
 	qRegisterMetaType< DAPySeries >("DAPySeries");
 }
 
+/**
+ * @brief  转换为列表的特化模板函数，T = QString
+ * @param arr
+ * @return
+ */
+template<>
+inline pybind11::list toPyList< QString >(const QList< QString >& arr)
+{
+    pybind11::list pylist;
+    for (const QString& v : arr) {
+        pybind11::object o = toPyStr(v);
+        pylist.append(o);
+    }
+    return pylist;
+}
+
+/**
+ * @brief  转换为列表的特化模板函数，T = QString
+ * @param arr
+ * @return
+ */
+template<>
+inline pybind11::list toPyList< QString >(const QSet< QString >& arr)
+{
+    pybind11::list pylist;
+    for (const QString& v : arr) {
+        pybind11::object o = toPyStr(v);
+        pylist.append(o);
+    }
+    return pylist;
+}
 }  // namespace PY
 }  // namespace DA
