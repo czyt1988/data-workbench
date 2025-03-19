@@ -21,6 +21,7 @@ class DADialogDataframeColumnCastToDatetime;
 class DADialogDataFrameFillna;
 class DADialogDataFrameFillInterpolate;
 class DADialogDataFrameClipOutlier;
+class DADialogCreatePivotTable;
 
 /**
  * @brief 针对DataFrame的操作窗口
@@ -85,22 +86,22 @@ public Q_SLOTS:
 	// 删除缺失值,返回删除的数量
 	int dropna(const QString& how = QStringLiteral("any"), int thresh = -1);
 	int dropna(const DAPyDataFrame& df,
-               int axis,
-               const QString& how       = QStringLiteral("any"),
-               const QList< int > index = QList< int >(),
-               int thresh               = -1);
+			   int axis,
+			   const QString& how       = QStringLiteral("any"),
+			   const QList< int > index = QList< int >(),
+			   int thresh               = -1);
 	// 删除重复值
 	int dropduplicates(const QString& keep = QStringLiteral("first"));
 	int dropduplicates(const DAPyDataFrame& df,
-                       const QString& keep      = QStringLiteral("first"),
-                       const QList< int > index = QList< int >());
+					   const QString& keep      = QStringLiteral("first"),
+					   const QList< int > index = QList< int >());
 
 	// 填充缺失值，执行成功返回true
 	bool fillna();
 	bool fillna(const DAPyDataFrame& df, double value = 0.0, int limit = -1);
 	// 插值法填充缺失值，成功返回true
-    bool interpolate();
-    bool interpolate(const DAPyDataFrame& df, const QString& method, int order, int limit);
+	bool interpolate();
+	bool interpolate(const DAPyDataFrame& df, const QString& method, int order, int limit);
 	// 前向填充缺失值，执行成功返回true
 	bool ffillna();
 	bool ffillna(const DAPyDataFrame& df, int axis = 0, int limit = -1);
@@ -113,6 +114,17 @@ public Q_SLOTS:
 	// 替换规定界限外的异常值
 	bool clipoutlier();
 	bool clipoutlier(const DAPyDataFrame& df, double lower = 0.0, double upper = 0.0, int axis = 0);
+
+	//创建数据透视表
+	DAPyDataFrame createPivotTable();
+	DAPyDataFrame createPivotTable(const DAPyDataFrame& df,
+								   const QStringList value    = QStringList(),
+								   const QStringList index    = QStringList(),
+								   const QStringList columns  = QStringList(),
+								   const QString& aggfunc     = QStringLiteral("mean"),
+								   bool margins               = false,
+								   const QString& marginsName = QStringLiteral("All"),
+								   bool sort                  = false);
 Q_SIGNALS:
 	/**
 	 * @brief 选中的列或者类型发生了变化
@@ -131,13 +143,14 @@ protected:
 private:
 	Ui::DADataOperateOfDataFrameWidget* ui;
 	DAData mData;
-    DAPyDataFrameTableModule* mModel { nullptr };
+	DAPyDataFrameTableModule* mModel { nullptr };
 
-    DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs { nullptr };
-    DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs { nullptr };
-    DADialogDataFrameFillna* mDialogDataFrameFillna { nullptr };
-    DADialogDataFrameFillInterpolate* mDialogDataFrameFillInterpolate { nullptr };
-    DADialogDataFrameClipOutlier* mDialogDataFrameClipOutlier { nullptr };
+	DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs { nullptr };
+	DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs { nullptr };
+	DADialogDataFrameFillna* mDialogDataFrameFillna { nullptr };
+	DADialogDataFrameFillInterpolate* mDialogDataFrameFillInterpolate { nullptr };
+	DADialogDataFrameClipOutlier* mDialogDataFrameClipOutlier { nullptr };
+	DADialogCreatePivotTable* mDialogCreatePivotTable { nullptr };
 };
 }  // end of namespace DA
 #endif  // DADATAOPERATEOFDATAFRAMEWIDGET_H
