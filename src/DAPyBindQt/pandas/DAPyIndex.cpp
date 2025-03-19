@@ -75,7 +75,7 @@ QVariant DAPyIndex::operator[](std::size_t i) const
 pybind11::object DAPyIndex::operator[](const QSet< std::size_t >& slice) const
 {
     try {
-        return object()[ DA::PY::toList(slice) ];
+        return object()[ DA::PY::toPyList(slice) ];
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
     }

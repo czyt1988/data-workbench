@@ -50,7 +50,7 @@ DAPyDataFrame::~DAPyDataFrame()
 DAPySeries DAPyDataFrame::operator[](const QString& n) const
 {
     try {
-        pybind11::object obj = object()[ DA::PY::toString(n) ];
+        pybind11::object obj = object()[ DA::PY::toPyStr(n) ];
         return DAPySeries(obj);
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
@@ -131,7 +131,7 @@ bool DAPyDataFrame::columns(std::size_t i, const QString& name)
         if (i >= s) {
             return false;
         }
-        obj_columns[ i ]         = DA::PY::toString(name);
+        obj_columns[ i ]         = DA::PY::toPyStr(name);
         object().attr("columns") = obj_columns;
         return true;
     } catch (const std::exception& e) {
@@ -148,10 +148,8 @@ bool DAPyDataFrame::columns(std::size_t i, const QString& name)
 bool DAPyDataFrame::columns(const QList< QString >& cols)
 {
     try {
-        pybind11::list obj_columns;
-        for (const QString& n : cols) {
-            obj_columns.append(DA::PY::toString(n));
-        }
+        pybind11::list obj_columns = PY::toPyList(cols);
+
         object().attr("columns") = obj_columns;
         return true;
     } catch (const std::exception& e) {
@@ -289,7 +287,7 @@ DAPySeries DAPyDataFrame::iloc(std::size_t c) const
 DAPySeries DAPyDataFrame::loc(const QString& n) const
 {
     try {
-        pybind11::object obj = object().attr("iloc")[ DA::PY::toString(n) ];
+        pybind11::object obj = object().attr("iloc")[ DA::PY::toPyStr(n) ];
         return DAPySeries(obj);
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();

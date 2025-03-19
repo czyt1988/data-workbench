@@ -10,7 +10,7 @@ class DAPyModulePandas::PrivateData
 public:
     PrivateData(DAPyModulePandas* p);
 
-    //释放模块
+    // 释放模块
     void del();
 
 public:
@@ -111,12 +111,15 @@ bool DAPyModulePandas::isInstanceDataFrame_(const pybind11::object& obj)
 }
 /**
  * @brief 对pandas.read_csv的封装
- * pandas.read_csv(filepath_or_buffer, sep=NoDefault.no_default, delimiter=None, header='infer', names=NoDefault.no_default, index_col=None, usecols=None, squeeze=None,
- * prefix=NoDefault.no_default, mangle_dupe_cols=True, dtype=None, engine=None, converters=None, true_values=None, false_values=None, skipinitialspace=False, skiprows=None,
- * skipfooter=0, nrows=None, na_values=None, keep_default_na=True, na_filter=True, verbose=False, skip_blank_lines=True, parse_dates=None, infer_datetime_format=False,
- * keep_date_col=False, date_parser=None, dayfirst=False, cache_dates=True, iterator=False, chunksize=None, compression='infer', thousands=None, decimal='.', lineterminator=None,
- * quotechar='"', quoting=0, doublequote=True, escapechar=None, comment=None, encoding=None, encoding_errors='strict', dialect=None, error_bad_lines=None, warn_bad_lines=None,
- * on_bad_lines=None, delim_whitespace=False, low_memory=True, memory_map=False, float_precision=None, storage_options=None)
+ * pandas.read_csv(filepath_or_buffer, sep=NoDefault.no_default, delimiter=None, header='infer',
+ * names=NoDefault.no_default, index_col=None, usecols=None, squeeze=None, prefix=NoDefault.no_default,
+ * mangle_dupe_cols=True, dtype=None, engine=None, converters=None, true_values=None, false_values=None,
+ * skipinitialspace=False, skiprows=None, skipfooter=0, nrows=None, na_values=None, keep_default_na=True,
+ * na_filter=True, verbose=False, skip_blank_lines=True, parse_dates=None, infer_datetime_format=False, keep_date_col=False,
+ * date_parser=None, dayfirst=False, cache_dates=True, iterator=False, chunksize=None, compression='infer',
+ * thousands=None, decimal='.', lineterminator=None, quotechar='"', quoting=0, doublequote=True, escapechar=None,
+ * comment=None, encoding=None, encoding_errors='strict', dialect=None, error_bad_lines=None, warn_bad_lines=None, on_bad_lines=None,
+ * delim_whitespace=False, low_memory=True, memory_map=False, float_precision=None, storage_options=None)
  * @param path
  *
  * @code
@@ -138,29 +141,29 @@ DAPyDataFrame DAPyModulePandas::read_csv(const QString& path, const QVariantHash
     }
     try {
         pybind11::object obj_read_csv = attr("read_csv");
-        pybind11::str a0              = DA::PY::toString(path);
+        pybind11::str a0              = DA::PY::toPyStr(path);
         pybind11::object obj_df;
         if (args.contains("encoding")) {
-            //说明用户已经制定编码
-            pybind11::dict a1 = DA::PY::toDict(args);
+            // 说明用户已经制定编码
+            pybind11::dict a1 = DA::PY::toPyDict(args);
             obj_df            = obj_read_csv(a0, **a1);
             DAPyDataFrame df(obj_df);
             return df;
         } else {
-            //用户没有指定编码，这里做一个编码检测（主要针对中文windows系统的ansi编码）
+            // 用户没有指定编码，这里做一个编码检测（主要针对中文windows系统的ansi编码）
             try {
-                //先用默认utf-8编码打开
-                pybind11::dict a1 = DA::PY::toDict(args);
+                // 先用默认utf-8编码打开
+                pybind11::dict a1 = DA::PY::toPyDict(args);
                 obj_df            = obj_read_csv(a0, **a1);
                 DAPyDataFrame df(obj_df);
                 return df;
             } catch (const std::exception& e) {
-                //不行就用ansi编码打开
+                // 不行就用ansi编码打开
                 Q_UNUSED(e);
                 qWarning() << QObject::tr("use utf-8 open file %1 error,try to use ansi encoding").arg(path);
                 QVariantHash t    = args;
                 t[ "encoding" ]   = QString("ANSI");
-                pybind11::dict a1 = DA::PY::toDict(t);
+                pybind11::dict a1 = DA::PY::toPyDict(t);
                 obj_df            = obj_read_csv(a0, **a1);
                 DAPyDataFrame df(obj_df);
                 return df;

@@ -37,7 +37,7 @@ bool DAPyScriptsDataFrame::drop_irow(DAPyDataFrame& df, const QList< int >& inde
 {
 	try {
 		pybind11::object da_drop_irow = attr("da_drop_irow");
-		da_drop_irow(df.object(), DA::PY::toList(index));
+        da_drop_irow(df.object(), DA::PY::toPyList(index));
 		return true;
 	} catch (const std::exception& e) {
 		dealException(e);
@@ -55,7 +55,7 @@ bool DAPyScriptsDataFrame::drop_icolumn(DAPyDataFrame& df, const QList< int >& i
 {
 	try {
 		pybind11::object da_drop_icolumn = attr("da_drop_icolumn");
-		da_drop_icolumn(df.object(), DA::PY::toList(index));
+        da_drop_icolumn(df.object(), DA::PY::toPyList(index));
 		return true;
 	} catch (const std::exception& e) {
 		dealException(e);
@@ -96,7 +96,7 @@ bool DAPyScriptsDataFrame::insert_column(DAPyDataFrame& df, int c, const QString
 		pybind11::dict args;
 		args[ "df" ]   = df.object();
 		args[ "col" ]  = pybind11::int_(c);
-		args[ "name" ] = DA::PY::toString(name);
+        args[ "name" ] = DA::PY::toPyStr(name);
 		if (defaultvalue.isValid()) {
 			args[ "defaultvalue" ] = DA::PY::toPyObject(defaultvalue);
 		}
@@ -128,7 +128,7 @@ bool DAPyScriptsDataFrame::insert_column(DAPyDataFrame& df,
 		pybind11::dict args;
 		args[ "df" ]    = df.object();
 		args[ "col" ]   = pybind11::int_(c);
-		args[ "name" ]  = DA::PY::toString(name);
+        args[ "name" ]  = DA::PY::toPyStr(name);
 		args[ "start" ] = DA::PY::toPyObject(start);
 		args[ "stop" ]  = DA::PY::toPyObject(stop);
 		if (start.canConvert(QMetaType::QDateTime) || start.canConvert(QMetaType::QDate)
@@ -153,7 +153,7 @@ bool DAPyScriptsDataFrame::to_pickle(const DAPyDataFrame& df, const QString& pat
 {
 	try {
 		pybind11::object da_to_pickle = attr("da_to_pickle");
-		da_to_pickle(df.object(), DA::PY::toString(path));
+        da_to_pickle(df.object(), DA::PY::toPyStr(path));
 		return true;
 	} catch (const std::exception& e) {
 		dealException(e);
@@ -171,7 +171,7 @@ bool DAPyScriptsDataFrame::from_pickle(DAPyDataFrame& df, const QString& path) n
 {
 	try {
 		pybind11::object da_from_pickle = attr("da_from_pickle");
-		da_from_pickle(df.object(), DA::PY::toString(path));
+        da_from_pickle(df.object(), DA::PY::toPyStr(path));
 		return true;
 	} catch (const std::exception& e) {
 		dealException(e);
@@ -361,8 +361,8 @@ bool DAPyScriptsDataFrame::dropna(DAPyDataFrame& df, int axis, const QString& ho
 		}
 		pybind11::dict args;
 		args[ "axis" ]   = axis;
-		args[ "how" ]    = DA::PY::toString(how);
-		args[ "index" ]  = DA::PY::toList(indexs);
+        args[ "how" ]    = DA::PY::toPyStr(how);
+        args[ "index" ]  = DA::PY::toPyList(indexs);
 		args[ "thresh" ] = threshobj;
 		da_drop_na(df.object(), **args);
 		return true;
@@ -466,7 +466,7 @@ bool DAPyScriptsDataFrame::interpolate(DAPyDataFrame& df, const QString& method,
 			limitObj = pybind11::int_(limit);
 		}
 		pybind11::dict args;
-		args[ "method" ] = DA::PY::toString(method);
+        args[ "method" ] = DA::PY::toPyStr(method);
 		args[ "order" ]  = order;
 		args[ "limit" ]  = limitObj;
 		da_interpolate(df.object(), **args);
@@ -488,11 +488,11 @@ bool DAPyScriptsDataFrame::dropduplicates(DAPyDataFrame& df, const QString& keep
 	try {
 		pybind11::object da_drop_duplicates = attr("da_drop_duplicates");
 		pybind11::dict args;
-		args[ "keep" ] = DA::PY::toString(keep);
+        args[ "keep" ] = DA::PY::toPyStr(keep);
 		if (indexs.empty()) {
 			args[ "index" ] = pybind11::none();
 		} else {
-			args[ "index" ] = DA::PY::toList(indexs);
+            args[ "index" ] = DA::PY::toPyList(indexs);
 		}
 		da_drop_duplicates(df.object(), **args);
 		return true;
@@ -522,7 +522,7 @@ bool DAPyScriptsDataFrame::nstdfilteroutlier(DAPyDataFrame& df, double n, int ax
 		if (indexs.empty()) {
 			args[ "index" ] = pybind11::none();
 		} else {
-			args[ "index" ] = DA::PY::toList(indexs);
+            args[ "index" ] = DA::PY::toPyList(indexs);
 		}
 		da_nstd_filter_outlier(df.object(), **args);
 		return true;
