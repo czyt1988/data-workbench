@@ -1,4 +1,4 @@
-#include "DADialogCreatePivotTable.h"
+﻿#include "DADialogCreatePivotTable.h"
 #include "ui_DADialogCreatePivotTable.h"
 #include <QStandardItemModel>
 
@@ -13,6 +13,7 @@ public:
 
 public:
 	DAPyDataFrame mDataframe;
+	QStandardItemModel* mModel { nullptr };
 };
 
 DADialogCreatePivotTable::PrivateData::PrivateData(DADialogCreatePivotTable* p) : q_ptr(p)
@@ -27,41 +28,45 @@ DADialogCreatePivotTable::DADialogCreatePivotTable(QWidget* parent)
 	: QDialog(parent), ui(new Ui::DADialogCreatePivotTable), DA_PIMPL_CONSTRUCT
 {
 	ui->setupUi(this);
-	this->initCreatePivotTable();
 }
 
 DADialogCreatePivotTable::~DADialogCreatePivotTable()
 {
-    delete ui;
+	delete ui;
 }
 
-/**
- * @brief 初始化数据透视表界面
- */
-void DADialogCreatePivotTable::initCreatePivotTable()
+DAPyDataFrame DADialogCreatePivotTable::getDataFrame() const
 {
+	return d_ptr->mDataframe;
+}
+
+void DADialogCreatePivotTable::setDataframe(const DAPyDataFrame& df)
+{
+	d_ptr->mDataframe = df;
+
 	// 准备数据模型
-	QStandardItemModel* model = new QStandardItemModel();
-
-	DAPyDataFrame df = getCurrentDataFrame();
-	QStringList para = df.columns();
-
+	if (!d_ptr->mModel) {
+		d_ptr->mModel = new QStandardItemModel(this);
+	}
+	QStandardItemModel* m = d_ptr->mModel;
+	QStringList para      = df.columns();
+	m->clear();
 	// QStringList para;
-	para.append("age");
-	para.append("workclass");
-	para.append("fnlwgt");
-	para.append("education");
-	para.append("education-num");
-	para.append("marital-status");
-	para.append("occupation");
-	para.append("relationship");
-	para.append("race");
-	para.append("sex");
-	para.append("capital-gain");
-	para.append("capital-loss");
-	para.append("hours-per-week");
-	para.append("native-country");
-	para.append("salary");
+	// para.append("age");
+	// para.append("workclass");
+	// para.append("fnlwgt");
+	// para.append("education");
+	// para.append("education-num");
+	// para.append("marital-status");
+	// para.append("occupation");
+	// para.append("relationship");
+	// para.append("race");
+	// para.append("sex");
+	// para.append("capital-gain");
+	// para.append("capital-loss");
+	// para.append("hours-per-week");
+	// para.append("native-country");
+	// para.append("salary");
 
 	// 设置tableview表头内容
 	QStringList headers;
@@ -85,20 +90,20 @@ void DADialogCreatePivotTable::initCreatePivotTable()
 		citem->setCheckable(true);
 		citem->setCheckState(Qt::Unchecked);
 
-		model->setItem(row, 0, vitem);  // "Value" 列
-		model->setItem(row, 1, iitem);  // "Index" 列
-		model->setItem(row, 2, citem);  // "Columns" 列
+		m->setItem(row, 0, vitem);  // "Value" 列
+		m->setItem(row, 1, iitem);  // "Index" 列
+		m->setItem(row, 2, citem);  // "Columns" 列
 	}
 
 	// 添加tableview表头
-	model->setHorizontalHeaderLabels(headers);
+	m->setHorizontalHeaderLabels(headers);
 
 	// 利用 setModel() 方法将数据模型与 QTableView 绑定
-	ui->tableViewParameter->setModel(model);
+	ui->tableViewParameter->setModel(m);
 	ui->tableViewParameter->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
 	// 监听复选框状态变化，实现**一行互斥**
-	connect(model, &QStandardItemModel::itemChanged, [ model ](QStandardItem* item) {
+	connect(m, &QStandardItemModel::itemChanged, [ m ](QStandardItem* item) {
 		int row = item->row();
 		int col = item->column();
 
@@ -107,22 +112,17 @@ void DADialogCreatePivotTable::initCreatePivotTable()
 			for (int c = 0; c < 3; ++c) {
 				if (c == col)
 					continue;
-				QStandardItem* otherItem = model->item(row, c);
+				QStandardItem* otherItem = m->item(row, c);
 				otherItem->setCheckState(Qt::Unchecked);
 				otherItem->setFlags(otherItem->flags() & ~Qt::ItemIsEnabled);  // 禁用
 			}
 		} else {
 			// 如果当前列取消勾选，则恢复本行所有列的可选状态
 			for (int c = 0; c < 3; ++c) {
-				model->item(row, c)->setFlags(model->item(row, c)->flags() | Qt::ItemIsEnabled);
+				m->item(row, c)->setFlags(m->item(row, c)->flags() | Qt::ItemIsEnabled);
 			}
 		}
 	});
-}
-
-DAPyDataFrame DADialogCreatePivotTable::getCurrentDataFrame() const
-{
-	return d_ptr->mDataframe;
 }
 
 QStringList DADialogCreatePivotTable::getPivotTableValue() const

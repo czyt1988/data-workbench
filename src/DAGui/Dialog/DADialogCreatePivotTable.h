@@ -1,4 +1,4 @@
-#ifndef DADIALOGCREATEPIVOTTABLE_H
+﻿#ifndef DADIALOGCREATEPIVOTTABLE_H
 #define DADIALOGCREATEPIVOTTABLE_H
 
 #include <QDialog>
@@ -25,12 +25,9 @@ public:
 	explicit DADialogCreatePivotTable(QWidget* parent = nullptr);
 	~DADialogCreatePivotTable();
 
-	// 初始化界面
-	void initCreatePivotTable();
-
 	// 获取选中的dataframe
-	DAPyDataFrame getCurrentDataFrame() const;
-
+	DAPyDataFrame getDataFrame() const;
+	void setDataframe(const DAPyDataFrame& d);
 	// value参数
 	QStringList getPivotTableValue() const;
 

@@ -764,12 +764,12 @@ DAPyDataFrame DADataOperateOfDataFrameWidget::createPivotTable()
 	if (!mDialogCreatePivotTable) {
 		mDialogCreatePivotTable = new DADialogCreatePivotTable(this);
 	}
+	mDialogCreatePivotTable->setDataframe(df);
 	if (QDialog::Accepted != mDialogCreatePivotTable->exec()) {
 		// 说明用户取消
 		return DAPyDataFrame();
 	}
-
-	//获取创建透视表的参数
+	// 获取创建透视表的参数
 	QStringList value   = mDialogCreatePivotTable->getPivotTableValue();
 	QStringList index   = mDialogCreatePivotTable->getPivotTableIndex();
 	QStringList columns = mDialogCreatePivotTable->getPivotTableColumn();
@@ -778,7 +778,7 @@ DAPyDataFrame DADataOperateOfDataFrameWidget::createPivotTable()
 	QString marginsName = mDialogCreatePivotTable->getMarginsName();
 	bool sort           = mDialogCreatePivotTable->isEnableSort();
 
-	//如果用户没有选定分组，则返回空
+	// 如果用户没有选定分组，则返回空
 	if (index.empty())
 		return DAPyDataFrame();
 
