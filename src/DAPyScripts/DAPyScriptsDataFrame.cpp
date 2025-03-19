@@ -132,7 +132,7 @@ bool DAPyScriptsDataFrame::insert_column(DAPyDataFrame& df,
 		args[ "start" ] = DA::PY::toPyObject(start);
 		args[ "stop" ]  = DA::PY::toPyObject(stop);
 		if (start.canConvert(QMetaType::QDateTime) || start.canConvert(QMetaType::QDate)
-            || start.canConvert(QMetaType::QTime)) {
+			|| start.canConvert(QMetaType::QTime)) {
 			args[ "dtype" ] = pybind11::dtype("datetime64");
 		}
 		da_insert_column(**args);
@@ -561,6 +561,55 @@ bool DAPyScriptsDataFrame::clipoutlier(DAPyDataFrame& df, double lowervalue, dou
 		dealException(e);
 	}
 	return false;
+}
+
+/**
+ * @brief pivot_table方法的wrapper
+ * @param value
+ * @param index
+ * @param columns
+ * @param aggfunc
+ * @param margins
+ * @param sort
+ * @return DAPyDataFrame
+ */
+DAPyDataFrame DAPyScriptsDataFrame::pivotTable(const DAPyDataFrame& df,
+                                               const QStringList& values,
+                                               const QStringList& index,
+                                               const QStringList& columns,
+                                               const QString& aggfunc,
+                                               bool margins,
+                                               const QString& marginsName,
+                                               bool sort)
+{
+	try {
+		pybind11::object da_pivot_table = attr("da_create_pivot_table");
+		pybind11::dict args;
+		if (values.empty()) {
+			args[ "values" ] = pybind11::none();
+		} else {
+			args[ "values" ] = DA::PY::toList(values);
+		}
+		if (index.empty()) {
+			args[ "index" ] = pybind11::none();
+		} else {
+			args[ "index" ] = DA::PY::toList(index);
+		}
+		if (columns.empty()) {
+			args[ "columns" ] = pybind11::none();
+		} else {
+			args[ "columns" ] = DA::PY::toList(columns);
+		}
+		args[ "aggfunc" ]      = DA::PY::toString(aggfunc);
+		args[ "margins" ]      = margins;
+		args[ "margins_name" ] = DA::PY::toString(marginsName);
+		args[ "sort" ]         = sort;
+
+		return da_pivot_table(df.object(), **args);
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return DAPyDataFrame();
 }
 
 }  // end DA namespace

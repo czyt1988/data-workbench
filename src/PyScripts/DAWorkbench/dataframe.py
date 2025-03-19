@@ -199,6 +199,22 @@ def da_clip_outlier(df: pd.DataFrame, lower:Optional[float]=None,upper:Optional[
     df.clip(lower=lower, upper=upper, axis=axis, inplace=True)
 
 @log_function_call
+def da_create_pivot_table(df: pd.DataFrame, values = None, index = None, columns = None, aggfunc:Literal['mean','sum','size'] = 'mean',
+                        margins:bool = False, margins_name:str = "All", sort:bool = False):
+    '''
+    创建数据透视表
+    :param values: 要进行汇总的数据值
+    :param index: 确定行参数
+    :param columns: 确定列参数
+    :param aggfunc: 要计算的函数，mean求均值、sum求和、size计算个数
+    :param margins: 行列数据的统计
+    :param margins: 行列数据的统计表头名
+    :param sort: 聚合后的结果排序
+    :return: 数据聚合后的DataFrame
+    '''
+    return df.pivot_table(values = values, index=index, columns = columns, aggfunc = aggfunc, margins = margins, margins_name = margins_name, sort = sort)
+    
+@log_function_call
 def da_to_pickle(df: pd.DataFrame, path: str):
     '''
     把dataframe写到文件

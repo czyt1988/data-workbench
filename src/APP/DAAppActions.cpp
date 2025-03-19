@@ -79,6 +79,7 @@ void DAAppActions::buildDataAction()
 	actionDataFrameFFillNone = createAction("actionDataFrameFFillNone", ":/app/bright/Icon/dataframe-ffill-none.svg");
 	actionDataFrameBFillNone = createAction("actionDataFrameBFillNone", ":/app/bright/Icon/dataframe-bfill-none.svg");
 	actionDataFrameClipOutlier = createAction("actionDataFrameClipOutlier", ":/app/bright/Icon/dataframe-clip-outlier.svg");
+	actionCreatePivotTable     = createAction("actionDataFrameCreatePivotTable", ":/app/bright/Icon/pivot-table.svg");
 }
 
 void DAAppActions::buildChartAction()
@@ -274,6 +275,8 @@ void DAAppActions::retranslateUi()
 	actionDataFrameClipOutlier->setText(tr("Clip Outlier"));  // cn: 替换\n异常值
 	actionDataFrameClipOutlier->setToolTip(
 		tr("Replace the outlier values that exceed the specified lower and upper limits with the respective limits."));  // cn:将超出限定上下限的异常值替换为上下限
+	actionCreatePivotTable->setText(tr("Pivot Table"));            // cn: 数据\n透视表
+	actionCreatePivotTable->setToolTip(tr("Create Pivot Table"));  // cn: 创建数据透视表
 
 	// workflow 编辑
 	actionWorkflowNew->setText(tr("New \nWorkflow"));                    // cn:新建\n工作流
