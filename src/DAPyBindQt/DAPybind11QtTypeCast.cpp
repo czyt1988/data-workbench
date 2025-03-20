@@ -270,7 +270,7 @@ QString toString(const pybind11::str& obj)
 	return QString::fromStdString(std::string(obj));
 }
 
-pybind11::str toString(const QString& str)
+pybind11::str toPyStr(const QString& str)
 {
 	std::string s(str.toUtf8().constData());
 	return pybind11::str(s);
@@ -315,19 +315,19 @@ pybind11::object toPyObject(const QVariant& var)
 	case QMetaType::QUuid:
 		return pybind11::str(var.toUuid().toString().toStdString());
 	case QMetaType::QVariantHash:
-		return toDict(var.toHash());
+        return toPyDict(var.toHash());
 	case QMetaType::Int:
 		return pybind11::int_(var.toInt());
 	case QMetaType::QVariantList:
-		return toList(var.toList());
+        return toPyList(var.toList());
 	case QMetaType::LongLong:
 		return pybind11::int_(var.toLongLong());
 	case QMetaType::QVariantMap:
-		return toDict(var.toMap());
+        return toPyDict(var.toMap());
 	case QMetaType::QString:
-		return toString(var.toString());
+        return toPyStr(var.toString());
 	case QMetaType::QStringList:
-		return toList(var.toStringList());
+        return toPyList(var.toStringList());
 	case QMetaType::UInt:
 		return (pybind11::int_(var.toUInt()));
 	case QMetaType::ULongLong:
@@ -351,25 +351,25 @@ pybind11::object toPyObject(const QVariant& var, const pybind11::dtype& dt)
     return dt.attr("type")(toPyObject(var));
 }
 
-pybind11::dict toDict(const QVariantHash& qvhash)
+pybind11::dict toPyDict(const QVariantHash& qvhash)
 {
 	pybind11::dict d;
 	for (auto i = qvhash.begin(); i != qvhash.end(); ++i) {
-		d[ toString(i.key()) ] = toPyObject(i.value());
+        d[ toPyStr(i.key()) ] = toPyObject(i.value());
 	}
 	return d;
 }
 
-pybind11::dict toDict(const QVariantMap& qvmap)
+pybind11::dict toPyDict(const QVariantMap& qvmap)
 {
 	pybind11::dict d;
 	for (auto i = qvmap.begin(); i != qvmap.end(); ++i) {
-		d[ toString(i.key()) ] = toPyObject(i.value());
+        d[ toPyStr(i.key()) ] = toPyObject(i.value());
 	}
 	return d;
 }
 
-pybind11::list toList(const QVariantList& list)
+pybind11::list toPyList(const QVariantList& list)
 {
 	pybind11::list d;
 	for (const QVariant& v : list) {
@@ -378,11 +378,11 @@ pybind11::list toList(const QVariantList& list)
 	return d;
 }
 
-pybind11::list toList(const QStringList& list)
+pybind11::list toPyList(const QStringList& list)
 {
 	pybind11::list d;
 	for (const QString& v : list) {
-		d.append(toString(v));
+        d.append(toPyStr(v));
 	}
 	return d;
 }
@@ -422,5 +422,36 @@ void registerMetaType()
 	qRegisterMetaType< DAPySeries >("DAPySeries");
 }
 
+/**
+ * @brief  转换为列表的特化模板函数，T = QString
+ * @param arr
+ * @return
+ */
+template<>
+inline pybind11::list toPyList< QString >(const QList< QString >& arr)
+{
+    pybind11::list pylist;
+    for (const QString& v : arr) {
+        pybind11::object o = toPyStr(v);
+        pylist.append(o);
+    }
+    return pylist;
+}
+
+/**
+ * @brief  转换为列表的特化模板函数，T = QString
+ * @param arr
+ * @return
+ */
+template<>
+inline pybind11::list toPyList< QString >(const QSet< QString >& arr)
+{
+    pybind11::list pylist;
+    for (const QString& v : arr) {
+        pybind11::object o = toPyStr(v);
+        pylist.append(o);
+    }
+    return pylist;
+}
 }  // namespace PY
 }  // namespace DA

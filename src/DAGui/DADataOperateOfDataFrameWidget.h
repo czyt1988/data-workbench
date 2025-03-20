@@ -22,6 +22,7 @@ class DADialogDataFrameFillna;
 class DADialogDataFrameFillInterpolate;
 class DADialogDataFrameClipOutlier;
 class DADialogDataFrameQueryDatas;
+class DADialogCreatePivotTable;
 
 /**
  * @brief 针对DataFrame的操作窗口
@@ -98,8 +99,8 @@ public Q_SLOTS:
 	bool fillna();
 	bool fillna(const DAPyDataFrame& df, double value = 0.0, int limit = -1);
 	// 插值法填充缺失值，成功返回true
-	bool fillInterpolate();
-	bool fillInterpolate(const DAPyDataFrame& df, const QString& method, int order, int limit);
+	bool interpolate();
+	bool interpolate(const DAPyDataFrame& df, const QString& method, int order, int limit);
 	// 前向填充缺失值，执行成功返回true
 	bool ffillna();
 	bool ffillna(const DAPyDataFrame& df, int axis = 0, int limit = -1);
@@ -115,6 +116,17 @@ public Q_SLOTS:
 	// 过滤给定条件外的数据
 	bool querydatas();
 	bool querydatas(const DAPyDataFrame& df, QList< QString > contents = QList< QString >(), bool logic = true);
+
+	//创建数据透视表
+	DAPyDataFrame createPivotTable();
+	DAPyDataFrame createPivotTable(const DAPyDataFrame& df,
+								   const QStringList value    = QStringList(),
+								   const QStringList index    = QStringList(),
+								   const QStringList columns  = QStringList(),
+								   const QString& aggfunc     = QStringLiteral("mean"),
+								   bool margins               = false,
+								   const QString& marginsName = QStringLiteral("All"),
+								   bool sort                  = false);
 Q_SIGNALS:
 	/**
 	 * @brief 选中的列或者类型发生了变化
@@ -133,13 +145,14 @@ protected:
 private:
 	Ui::DADataOperateOfDataFrameWidget* ui;
 	DAData mData;
-	DAPyDataFrameTableModule* mModel{ nullptr };
+	DAPyDataFrameTableModule* mModel { nullptr };
 
-	DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs{ nullptr };
-	DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs{ nullptr };
-	DADialogDataFrameFillna* mDialogDataFrameFillna{ nullptr };
-	DADialogDataFrameFillInterpolate* mDialogDataFrameFillInterpolate{ nullptr };
-	DADialogDataFrameClipOutlier* mDialogDataFrameClipOutlier{ nullptr };
+	DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs { nullptr };
+	DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs { nullptr };
+	DADialogDataFrameFillna* mDialogDataFrameFillna { nullptr };
+	DADialogDataFrameFillInterpolate* mDialogDataFrameFillInterpolate { nullptr };
+	DADialogDataFrameClipOutlier* mDialogDataFrameClipOutlier { nullptr };
+	DADialogCreatePivotTable* mDialogCreatePivotTable { nullptr };
 	DADialogDataFrameQueryDatas* mDialogDataFrameQueryDatas{ nullptr };
 };
 }  // end of namespace DA

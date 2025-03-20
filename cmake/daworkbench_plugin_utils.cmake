@@ -185,7 +185,7 @@ macro(damacro_import_DALiteCtk __target_name __install_dir)
     endif()
     # 链接的第三方库
     target_link_libraries(${__target_name} PUBLIC
-        DALiteCtk
+        DALiteCtk::DALiteCtk
     )
 endmacro(damacro_import_DALiteCtk)
 
@@ -211,7 +211,7 @@ macro(damacro_import_qwt __target_name __install_dir)
     endif()
     # 链接的第三方库
     target_link_libraries(${__target_name} PUBLIC
-        qwt
+        qwt::qwt
     )
 endmacro(damacro_import_qwt)
 
@@ -224,7 +224,7 @@ macro(damacro_import_QtPropertyBrowser __target_name __install_dir)
     endif()
     # 链接的第三方库
     target_link_libraries(${__target_name} PUBLIC
-        QtPropertyBrowser
+        QtPropertyBrowser::QtPropertyBrowser
     )
 endmacro(damacro_import_QtPropertyBrowser)
 

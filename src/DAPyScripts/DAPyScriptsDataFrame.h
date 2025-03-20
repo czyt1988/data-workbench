@@ -58,9 +58,9 @@ public:
 				const QList< int >& indexs = QList< int >(),
 				int thresh                 = -1);
 	// fillna()
-	bool fillna(DAPyDataFrame& df, double value = 0.0, int limit = -1);
+	bool fillna(DAPyDataFrame& df, double value, int limit);
 	// interpolate()
-	bool interpolate(DAPyDataFrame& df, const QString& method = "spline", int order = 1, int limit = -1);
+	bool interpolate(DAPyDataFrame& df, const QString& method, int order, int limit);
 	// ffillna()
 	bool ffillna(DAPyDataFrame& df, int axis, int limit);
 	// bfillna()
@@ -73,6 +73,16 @@ public:
 	bool clipoutlier(DAPyDataFrame& df, double lowervalue, double uppervalue, int axis);
 	// querydatas()
 	bool querydatas(DAPyDataFrame& df, const QList< QString >& contents, bool logic);
+
+	//创建数据透视表
+	DAPyDataFrame pivotTable(const DAPyDataFrame& df,
+							 const QStringList& value,
+							 const QStringList& index,
+							 const QStringList& columns,
+							 const QString& aggfunc,
+							 bool margins,
+							 const QString& marginsName,
+							 bool sort);
 };
 }  // namespace DA
 #endif  // DAPYSCRIPTSDATAFRAME_H

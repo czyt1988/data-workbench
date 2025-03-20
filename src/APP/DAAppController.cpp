@@ -263,6 +263,7 @@ void DAAppController::initConnection()
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToDatetime, onActionCastToDatetimeTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameClipOutlier, onActionDataFrameClipOutlierTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameQueryDatas, onActionDataFrameQueryDatasTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCreatePivotTable, onActionCreatePivotTableTriggered);
 	// 不知为何使用函数指针无法关联信号和槽
 	//  connect(m_comboxColumnTypes, &DAPyDTypeComboBox::currentDTypeChanged, this,&DAAppRibbonArea::onComboxColumnTypesCurrentDTypeChanged);
 	//  QObject::connect: signal not found in DAPyDTypeComboBox
@@ -1681,6 +1682,29 @@ void DAAppController::onActionCreateDataDescribeTriggered()
 }
 
 /**
+ * @brief 创建数据透视表
+ */
+void DAAppController::onActionCreatePivotTableTriggered()
+{
+	// TODO 此函数应该移动到dataOperateWidget中
+#if DA_ENABLE_PYTHON
+	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+		DAPyDataFrame df = dfopt->createPivotTable();
+		if (df.isNone()) {
+			return;
+		}
+		DAData data = df;
+		data.setName(tr("%1_PviotTable").arg(dfopt->data().getName()));
+		data.setDescribe(tr("Generate pivot table").arg(dfopt->data().getName()));
+		mDatas->addData(data);
+		// showDataOperate要在m_dataManagerStack.push之后，因为m_dataManagerStack.push可能会导致data的名字改变
+		mDock->showDataOperateWidget(data);
+		setDirty();
+	}
+#endif
+}
+
+/**
  * @brief 删除缺失值
  */
 void DAAppController::onActionDataFrameDropNoneTriggered()
@@ -1714,7 +1738,7 @@ void DAAppController::onActionDataFrameFillInterpolateTriggered()
 {
 #if DA_ENABLE_PYTHON
 	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-		if (dfopt->fillInterpolate()) {
+		if (dfopt->interpolate()) {
 			setDirty();
 		}
 	}

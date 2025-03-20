@@ -41,7 +41,7 @@
 				qDebug() << "da_io.py have no attr " #pyFunctionName;                                                  \
 				return returnType();                                                                                   \
 			}                                                                                                          \
-			pybind11::object v = fn(DA::PY::toString(filepath), DA::PY::toDict(args));                                 \
+            pybind11::object v = fn(DA::PY::toPyStr(filepath), DA::PY::toPyDict(args));                                \
 			return returnType(std::move(v));                                                                           \
 		} catch (const std::exception& e) {                                                                            \
 			if (err) {                                                                                                 \

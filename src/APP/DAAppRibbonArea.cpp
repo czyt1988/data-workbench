@@ -402,6 +402,7 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
 	//  Statistic Pannel
 	m_pannelDataframeOperateStatistic = m_categoryDataframeOperate->addPannel(tr("Statistic"));  // cn：统计
 	m_pannelDataframeOperateStatistic->addLargeAction(m_actions->actionCreateDataDescribe);
+	m_pannelDataframeOperateStatistic->addLargeAction(m_actions->actionCreatePivotTable);
 }
 
 /**
@@ -566,7 +567,7 @@ void DAAppRibbonArea::buildContextCategoryWorkflowView_()
 	m_menuViewLineMarkers->addAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionNoneMarker));
 
 	if (QActionGroup* ag = wfo->getLineMarkerActionGroup()) {
-		connect(ag, &QActionGroup::triggered, this, [this, wfo](QAction* act) {
+		connect(ag, &QActionGroup::triggered, this, [ this, wfo ](QAction* act) {
 			QAction* actMarker = m_actions->actionWorkflowViewMarker;
 			QAction* noneAct   = wfo->getInnerAction(DAWorkFlowOperateWidget::ActionNoneMarker);
 			if (act != noneAct && act->isChecked()) {

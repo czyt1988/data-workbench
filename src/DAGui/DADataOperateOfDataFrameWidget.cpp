@@ -24,6 +24,7 @@
 #include "Dialog/DADialogDataFrameFillInterpolate.h"
 #include "Dialog/DADialogDataFrameClipOutlier.h"
 #include "Dialog/DADialogDataFrameQueryDatas.h"
+#include "Dialog/DADialogCreatePivotTable.h"
 
 //===================================================
 // using DA namespace -- 禁止在头文件using!!
@@ -520,7 +521,7 @@ bool DADataOperateOfDataFrameWidget::fillna(const DAPyDataFrame& df, double valu
  * @brief 插值法填充缺失值
  * @return 成功返回true,反之返回false
  */
-bool DADataOperateOfDataFrameWidget::fillInterpolate()
+bool DADataOperateOfDataFrameWidget::interpolate()
 {
 	DAPyDataFrame df = getDataframe();
 	if (df.isNone()) {
@@ -535,19 +536,21 @@ bool DADataOperateOfDataFrameWidget::fillInterpolate()
 	}
 	// 获取插值填充方法
 	QString method = mDialogDataFrameFillInterpolate->getInterpolateMethod();
+	// 获取插值方向
+	int axis = mDialogDataFrameFillInterpolate->getInterPolateAxis();
 	// 获取多项式插值次数
 	int order      = mDialogDataFrameFillInterpolate->getInterpolateOrder();
 	int limitCount = -1;  // 如果-1证明没有设置
 	if (mDialogDataFrameFillInterpolate->isEnableLimitCount()) {
 		limitCount = mDialogDataFrameFillInterpolate->getLimitCount();
 	}
-	return fillInterpolate(df, method, order, limitCount);
+	return interpolate(df, method, order, limitCount);
 }
 
-bool DADataOperateOfDataFrameWidget::fillInterpolate(const DAPyDataFrame& df, const QString& method, int order, int limit)
+bool DADataOperateOfDataFrameWidget::interpolate(const DAPyDataFrame& df, const QString& method, int order, int limit)
 {
-	std::unique_ptr< DACommandDataFrame_fillInterpolate > cmd =
-		std::make_unique< DACommandDataFrame_fillInterpolate >(df, mModel, method, order, limit);
+	std::unique_ptr< DACommandDataFrame_interpolate > cmd =
+		std::make_unique< DACommandDataFrame_interpolate >(df, mModel, method, order, limit);
 	if (!cmd->exec()) {
 		return false;
 	}
@@ -787,6 +790,68 @@ DAPyDataFrame DADataOperateOfDataFrameWidget::createDataDescribe()
 	}
 	DAPyDataFrame df_describe = mData.toDataFrame().describe();
 	return df_describe;
+}
+
+/**
+ * @brief 创建数据透视表。
+ * @return
+ */
+
+DAPyDataFrame DADataOperateOfDataFrameWidget::createPivotTable()
+{
+	DAPyDataFrame df = getDataframe();
+	if (df.isNone()) {
+		return DAPyDataFrame();
+	}
+	if (!mDialogCreatePivotTable) {
+		mDialogCreatePivotTable = new DADialogCreatePivotTable(this);
+	}
+	mDialogCreatePivotTable->setDataframe(df);
+	if (QDialog::Accepted != mDialogCreatePivotTable->exec()) {
+		// 说明用户取消
+		return DAPyDataFrame();
+	}
+	// 获取创建透视表的参数
+	QStringList value   = mDialogCreatePivotTable->getPivotTableValue();
+	QStringList index   = mDialogCreatePivotTable->getPivotTableIndex();
+	QStringList columns = mDialogCreatePivotTable->getPivotTableColumn();
+	QString aggfunc     = mDialogCreatePivotTable->getPivotTableAggfunc();
+	bool margins        = mDialogCreatePivotTable->isEnableMarginsName();
+	QString marginsName = mDialogCreatePivotTable->getMarginsName();
+	bool sort           = mDialogCreatePivotTable->isEnableSort();
+
+	// 如果用户没有选定分组，则返回空
+	if (index.empty())
+		return DAPyDataFrame();
+
+	return createPivotTable(df, value, index, columns, aggfunc, margins, marginsName, sort);
+}
+
+/**
+ * @brief 创建数据透视表。
+ * @param value 可选参数，要进行汇总的数据值
+ * @param index 可选参数，被分析的特征，列、数组、列表
+ * @param columns 可选参数，进行分组的特征，列、数组、列表
+ * @param aggfunc 可选参数，聚合函数，计算类型
+ * @param margins 可选参数，行列数据的统计
+ * @param marginsName 可选参数，行列数据的统计的名称
+ * @param sort 可选参数，聚合后的结果排序
+ * @return
+ */
+DAPyDataFrame DADataOperateOfDataFrameWidget::createPivotTable(const DAPyDataFrame& df,
+                                                               const QStringList value,
+                                                               const QStringList index,
+                                                               const QStringList columns,
+                                                               const QString& aggfunc,
+                                                               bool margins,
+                                                               const QString& marginsName,
+                                                               bool sort)
+{
+
+	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+
+	DAPyDataFrame df_pivottable = pydf.pivotTable(df, value, index, columns, aggfunc, margins, marginsName, sort);
+	return df_pivottable;
 }
 
 /**

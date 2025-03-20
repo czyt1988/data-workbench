@@ -438,18 +438,18 @@ bool DACommandDataFrame_fillna::exec()
 
 ///////////////////
 
-DACommandDataFrame_fillInterpolate::DACommandDataFrame_fillInterpolate(const DAPyDataFrame& df,
-                                                                       DAPyDataFrameTableModule* model,
-                                                                       const QString& method,
-                                                                       int order,
-                                                                       int limit,
-                                                                       QUndoCommand* par)
+DACommandDataFrame_interpolate::DACommandDataFrame_interpolate(const DAPyDataFrame& df,
+                                                               DAPyDataFrameTableModule* model,
+                                                               const QString& method,
+                                                               int order,
+                                                               int limit,
+                                                               QUndoCommand* par)
     : DACommandWithTemplateData(df, par), mModel(model), mMethod(method), mOrder(order), mLimit(limit)
 {
     setText(QObject::tr("interpolate"));  // cn:插值填充缺失值
 }
 
-void DACommandDataFrame_fillInterpolate::undo()
+void DACommandDataFrame_interpolate::undo()
 {
 	load();
 	if (mModel) {
@@ -457,11 +457,11 @@ void DACommandDataFrame_fillInterpolate::undo()
 	}
 }
 
-bool DACommandDataFrame_fillInterpolate::exec()
+bool DACommandDataFrame_interpolate::exec()
 {
 	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
 
-	if (!pydf.interpolate(dataframe(), mMethod, mOrder, mLimit)) {
+    if (!pydf.interpolate(dataframe(), mMethod, mOrder, mLimit)) {
 		return false;
 	}
 
@@ -471,6 +471,8 @@ bool DACommandDataFrame_fillInterpolate::exec()
 	}
 	return true;
 }
+
+///////////////////
 
 DACommandDataFrame_ffillna::DACommandDataFrame_ffillna(const DAPyDataFrame& df,
                                                        DAPyDataFrameTableModule* model,
