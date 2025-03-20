@@ -79,6 +79,7 @@ void DAAppActions::buildDataAction()
 	actionDataFrameFFillNone = createAction("actionDataFrameFFillNone", ":/app/bright/Icon/dataframe-ffill-none.svg");
 	actionDataFrameBFillNone = createAction("actionDataFrameBFillNone", ":/app/bright/Icon/dataframe-bfill-none.svg");
 	actionDataFrameClipOutlier = createAction("actionDataFrameClipOutlier", ":/app/bright/Icon/dataframe-clip-outlier.svg");
+	actionDataFrameQueryDatas = createAction("actionDataFrameQueryDatas");
 }
 
 void DAAppActions::buildChartAction()
@@ -256,8 +257,7 @@ void DAAppActions::retranslateUi()
 	actionDataFrameDropNone->setToolTip(tr("Drop rows which contain missing values"));  // cn:删除包含缺失值的行
 	actionDataFrameFillNone->setText(tr("Fill None"));                                  // cn:填充\n缺失值
 	actionDataFrameFillNone->setToolTip(tr("Fill rows which contain missing values"));  // cn:填充包含缺失值的行
-
-	actionDataFrameFillInterpolate->setText(tr("Fill Interpolate"));  // cn:插值填充
+	actionDataFrameFillInterpolate->setText(tr("Fill Interpolate"));                    // cn:插值填充
 	actionDataFrameFillInterpolate->setToolTip(
 		tr("Fill rows which contain missing values by interpolate"));  // cn:插值法填充包含缺失值的行
 	actionDropDuplicates->setText(tr("Drop Duplicates"));              // cn:删除\n重复值
@@ -274,6 +274,8 @@ void DAAppActions::retranslateUi()
 	actionDataFrameClipOutlier->setText(tr("Clip Outlier"));  // cn: 替换\n异常值
 	actionDataFrameClipOutlier->setToolTip(
 		tr("Replace the outlier values that exceed the specified lower and upper limits with the respective limits."));  // cn:将超出限定上下限的异常值替换为上下限
+	actionDataFrameQueryDatas->setText(tr("Query Datas"));
+	actionDataFrameQueryDatas->setToolTip(tr("Filter data outside of the given criteria"));  // cn:过滤给定条件外的数据
 
 	// workflow 编辑
 	actionWorkflowNew->setText(tr("New \nWorkflow"));                    // cn:新建\n工作流

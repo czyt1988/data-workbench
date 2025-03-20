@@ -71,6 +71,8 @@ public:
 	bool nstdfilteroutlier(DAPyDataFrame& df, double n, int axis, const QList< int >& indexs);
 	// clipoutlier()
 	bool clipoutlier(DAPyDataFrame& df, double lowervalue, double uppervalue, int axis);
+	// querydatas()
+	bool querydatas(DAPyDataFrame& df, const QList< QString >& contents, bool logic);
 };
 }  // namespace DA
 #endif  // DAPYSCRIPTSDATAFRAME_H

@@ -563,4 +563,42 @@ bool DAPyScriptsDataFrame::clipoutlier(DAPyDataFrame& df, double lowervalue, dou
 	return false;
 }
 
+/**
+ * @brief querydatas方法的wrapper
+ * @param df
+ * @param contents
+ * @return
+ */
+bool DAPyScriptsDataFrame::querydatas(DAPyDataFrame& df, const QList< QString >& contents, bool logic)
+{
+	try {
+		pybind11::object da_query_datas = attr("da_query_datas");
+		pybind11::dict args;
+		QString logic_op = "&";
+		if (logic) {
+			logic_op = "&";
+		} else {
+			logic_op = "|";
+		}
+
+		if (contents.empty()) {
+			args[ "expr" ] = "1 == 1";
+		} else {
+			// 将每个条件用括号包裹，避免优先级问题
+			QStringList wrapped_conditions;
+			for (const QString& cond : contents) {
+				wrapped_conditions.append("(" + cond + ")");
+			}
+			// 使用逻辑运算符连接所有条件
+			QString expr   = wrapped_conditions.join(" " + logic_op + " ");
+			args[ "expr" ] = DA::PY::toString(expr);
+		}
+		da_query_datas(df.object(), **args);
+		return true;
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return false;
+}
+
 }  // end DA namespace

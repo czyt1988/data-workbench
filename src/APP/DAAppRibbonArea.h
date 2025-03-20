@@ -335,9 +335,10 @@ public:
 	SARibbonLineWidgetContainer* m_comboxColumnTypesContainer;  ///< 列类型选择器的container
 	DAPyDTypeComboBox* m_comboxColumnTypes;                     ///< 列类型选择器
 #endif
-	SARibbonButtonGroupWidget* m_castActionsButtonGroup;   ///< 管理强制转换的action的工具栏
-	SARibbonPannel* m_pannelDataframeOperateStatistic;     ///< 统计相关操作
-	SARibbonPannel* m_pannelDataframeOperateDataCleaning;  ///< 数据清洗
+	SARibbonButtonGroupWidget* m_castActionsButtonGroup;    ///< 管理强制转换的action的工具栏
+	SARibbonPannel* m_pannelDataframeOperateStatistic;      ///< 统计相关操作
+	SARibbonPannel* m_pannelDataframeOperateDataCleaning;   ///< 数据清洗
+	SARibbonPannel* m_pannelDataframeOperateDataFiltering;  ///<数据过滤
 	//----------------------------------------------------
 	// Context - workflow
 	//----------------------------------------------------
@@ -380,11 +381,11 @@ public:
 	// ApplicationMenu
 	DAAppRibbonApplicationMenu* mApplicationMenu;  ///< ribbon-app menu
 	// 菜单相关
-	QMenu* mExportWorkflowSceneToImageMenu { nullptr };  ///< scene导出为图片菜单
-	QMenu* m_menuViewLineMarkers { nullptr };            ///< 视图标记线
-	QMenu* m_menuInsertRow { nullptr };                  ///< 针对insertrow的action menu
-	QMenu* m_menuInsertColumn { nullptr };               ///< 这对insertcol的action menu
-	QMenu* m_menuTheme { nullptr };                      ///< 主题菜单
+	QMenu* mExportWorkflowSceneToImageMenu{ nullptr };  ///< scene导出为图片菜单
+	QMenu* m_menuViewLineMarkers{ nullptr };            ///< 视图标记线
+	QMenu* m_menuInsertRow{ nullptr };                  ///< 针对insertrow的action menu
+	QMenu* m_menuInsertColumn{ nullptr };               ///< 这对insertcol的action menu
+	QMenu* m_menuTheme{ nullptr };                      ///< 主题菜单
 };
 }  // namespace DA
 #endif  // DAAPPRIBBONAREA_H

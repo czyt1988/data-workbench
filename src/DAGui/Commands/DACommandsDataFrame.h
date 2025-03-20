@@ -406,6 +406,26 @@ private:
 };
 
 /**
+ * @brief querydatas
+ */
+class DAGUI_API DACommandDataFrame_querydatas : public DACommandWithTemplateData
+{
+public:
+	DACommandDataFrame_querydatas(const DAPyDataFrame& df,
+								  DAPyDataFrameTableModule* model  = nullptr,
+								  const QList< QString >& contents = QList< QString >(),
+								  bool logic                       = true,
+								  QUndoCommand* par                = nullptr);
+	virtual void undo() override;
+	virtual bool exec() override;
+
+private:
+	DAPyDataFrameTableModule* mModel{ nullptr };
+	QList< QString > mContents;
+	bool mLogic;
+};
+
+/**
  * @brief 转换列的数据类型
  */
 class DAGUI_API DACommandDataFrame_castNum : public DACommandWithTemplateData

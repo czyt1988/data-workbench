@@ -677,6 +677,36 @@ bool DACommandDataFrame_clipoutlier::exec()
 
 ///////////////////
 
+DACommandDataFrame_querydatas::DACommandDataFrame_querydatas(const DAPyDataFrame& df,
+                                                             DAPyDataFrameTableModule* model,
+                                                             const QList< QString >& contents,
+                                                             bool logic,
+                                                             QUndoCommand* par)
+    : DACommandWithTemplateData(df, par), mModel(model), mContents(contents), mLogic(logic)
+{
+    setText(QObject::tr("query datas"));  // cn:查询相关数据
+}
+
+void DACommandDataFrame_querydatas::undo()
+{
+	load();
+	// 说明填充了空行
+	if (mModel) {
+		mModel->refresh();
+	}
+}
+
+bool DACommandDataFrame_querydatas::exec()
+{
+	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+	if (!pydf.querydatas(dataframe(), mContents, mLogic)) {
+		return false;
+	}
+	return true;
+}
+
+///////////////////
+
 DACommandDataFrame_castNum::DACommandDataFrame_castNum(const DAPyDataFrame& df,
                                                        const QList< int >& index,
                                                        const pybind11::dict& args,
