@@ -60,24 +60,6 @@
     </message>
 </context>
 <context>
-    <name>ApplicationWidget</name>
-    <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/ApplicationWidget.ui" line="14"/>
-        <source>Form</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/ApplicationWidget.ui" line="37"/>
-        <source>Cancel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/ApplicationWidget.ui" line="62"/>
-        <source>Press the Esc key to exit the window.</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>CImageViewer</name>
     <message>
         <location filename="3rdparty/ADS/demo/ImageViewer.cpp" line="83"/>
@@ -121,15 +103,6 @@
         <location filename="3rdparty/ADS/examples/autohide/mainwindow.ui" line="14"/>
         <location filename="3rdparty/ADS/examples/centralwidget/mainwindow.ui" line="14"/>
         <location filename="3rdparty/ADS/examples/emptydockarea/mainwindow.ui" line="14"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="58"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="58"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="58"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="58"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="58"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="58"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="58"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="58"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="58"/>
         <source>MainWindow</source>
         <translation type="unfinished"></translation>
     </message>
@@ -137,15 +110,6 @@
         <location filename="3rdparty/ADS/examples/autohide/mainwindow.ui" line="28"/>
         <location filename="3rdparty/ADS/examples/centralwidget/mainwindow.ui" line="28"/>
         <location filename="3rdparty/ADS/examples/emptydockarea/mainwindow.ui" line="28"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="59"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="59"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="59"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="59"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="59"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="59"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="59"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="59"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="59"/>
         <source>View</source>
         <translation type="unfinished"></translation>
     </message>
@@ -153,15 +117,6 @@
         <location filename="3rdparty/ADS/examples/autohide/mainwindow.ui" line="35"/>
         <location filename="3rdparty/ADS/examples/centralwidget/mainwindow.ui" line="35"/>
         <location filename="3rdparty/ADS/examples/emptydockarea/mainwindow.ui" line="35"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="60"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="60"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="60"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="60"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="60"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="60"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/autohide/AutoHideExample_autogen/include/ui_mainwindow.h" line="60"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/centralwidget/CentralWidgetExample_autogen/include/ui_mainwindow.h" line="60"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/emptydockarea/EmptyDockAreaExample_autogen/include/ui_mainwindow.h" line="60"/>
         <source>toolBar</source>
         <translation type="unfinished"></translation>
     </message>
@@ -170,105 +125,66 @@
     <name>CStatusDialogClass</name>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="20"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="146"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="146"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="146"/>
         <source>Dock Widget Status</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="35"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="147"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="147"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="147"/>
         <source>Dock Widget:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="58"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="148"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="148"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="148"/>
         <source>Status</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="64"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="149"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="149"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="149"/>
         <source>closed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="71"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="150"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="150"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="150"/>
         <source>floating</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="78"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="151"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="151"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="151"/>
         <source>tabbed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="85"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="152"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="152"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="152"/>
         <source>is current tab</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="101"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="153"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="153"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="153"/>
         <source>Feature Flags</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="107"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="154"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="154"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="154"/>
         <source>DockWidgetClosable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="114"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="155"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="155"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="155"/>
         <source>DockWidgetMovable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="121"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="156"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="156"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="156"/>
         <source>DockWidgetFloatable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="128"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="157"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="157"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="157"/>
         <source>DockWidgetDeleteOnClose</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/StatusDialog.ui" line="135"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="158"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="158"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_StatusDialog.h" line="158"/>
         <source>CustomCloseHandling</source>
         <translation type="unfinished"></translation>
     </message>
@@ -295,8 +211,7 @@
     </message>
     <message>
         <location filename="APP/AppMainWindow.cpp" line="98"/>
-        <source>Data WorkFlow [*]</source>
-        <oldsource>Data WorkFlow</oldsource>
+        <source>Data WorkFlow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -385,6 +300,14 @@
     </message>
 </context>
 <context>
+    <name>DA::DAAbstractSettingPage</name>
+    <message>
+        <location filename="DACommonWidgets/DAAbstractSettingPage.cpp" line="27"/>
+        <source>Unable to create application configuration path:%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DA::DAActionsInterface</name>
     <message>
         <location filename="DAInterface/DAActionsInterface.cpp" line="117"/>
@@ -400,475 +323,379 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="198"/>
+        <location filename="APP/DAAppActions.cpp" line="203"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="199"/>
-        <source>Open file or project</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="200"/>
+        <location filename="APP/DAAppActions.cpp" line="204"/>
         <source>Save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="201"/>
+        <location filename="APP/DAAppActions.cpp" line="205"/>
         <source>Save As</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="202"/>
+        <location filename="APP/DAAppActions.cpp" line="206"/>
         <source>Append To Project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="204"/>
+        <location filename="APP/DAAppActions.cpp" line="208"/>
         <source>Rename Columns</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="205"/>
+        <location filename="APP/DAAppActions.cpp" line="209"/>
         <source>Setting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="206"/>
+        <location filename="APP/DAAppActions.cpp" line="210"/>
         <source>About</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="208"/>
+        <location filename="APP/DAAppActions.cpp" line="212"/>
         <source>Add 
 Data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="209"/>
+        <location filename="APP/DAAppActions.cpp" line="213"/>
         <source>Remove 
 Data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="211"/>
+        <location filename="APP/DAAppActions.cpp" line="215"/>
         <source>Add 
 Figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="212"/>
+        <location filename="APP/DAAppActions.cpp" line="216"/>
         <source>Resize 
 Chart</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="213"/>
+        <location filename="APP/DAAppActions.cpp" line="217"/>
         <source>New 
 XY Axis</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="214"/>
+        <location filename="APP/DAAppActions.cpp" line="218"/>
         <source>Add 
 Curve</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="215"/>
+        <location filename="APP/DAAppActions.cpp" line="219"/>
         <source>Add 
 Scatter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="216"/>
+        <location filename="APP/DAAppActions.cpp" line="220"/>
         <source>Add 
 Error Bar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="217"/>
+        <location filename="APP/DAAppActions.cpp" line="221"/>
         <source>Add 
 Box Plot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="218"/>
+        <location filename="APP/DAAppActions.cpp" line="222"/>
         <source>Add 
 Bar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="219"/>
+        <location filename="APP/DAAppActions.cpp" line="223"/>
         <source>Add 
 MultiBar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="220"/>
+        <location filename="APP/DAAppActions.cpp" line="224"/>
         <source>Add 
 Histogram</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="221"/>
+        <location filename="APP/DAAppActions.cpp" line="225"/>
         <source>Add 
 Contour Map</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="222"/>
+        <location filename="APP/DAAppActions.cpp" line="226"/>
         <source>Add 
 Cloud Map</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="223"/>
+        <location filename="APP/DAAppActions.cpp" line="227"/>
         <source>Add 
 Vector Field</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="225"/>
+        <location filename="APP/DAAppActions.cpp" line="229"/>
         <source>Enable Grid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="226"/>
+        <location filename="APP/DAAppActions.cpp" line="230"/>
         <source>X Grid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="227"/>
+        <location filename="APP/DAAppActions.cpp" line="231"/>
         <source>Y Grid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="228"/>
+        <location filename="APP/DAAppActions.cpp" line="232"/>
         <source>Xmin Grid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="229"/>
+        <location filename="APP/DAAppActions.cpp" line="233"/>
         <source>Ymin Grid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="230"/>
+        <location filename="APP/DAAppActions.cpp" line="234"/>
         <source>Zoom</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="231"/>
+        <location filename="APP/DAAppActions.cpp" line="235"/>
         <source>Zoom In</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="232"/>
+        <location filename="APP/DAAppActions.cpp" line="236"/>
         <source>Zoom Out</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="233"/>
+        <location filename="APP/DAAppActions.cpp" line="237"/>
         <source>Show 
 All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="234"/>
+        <location filename="APP/DAAppActions.cpp" line="238"/>
         <source>Pan</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="235"/>
+        <location filename="APP/DAAppActions.cpp" line="239"/>
         <source>Cross</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="236"/>
+        <location filename="APP/DAAppActions.cpp" line="240"/>
         <source>Y Picker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="237"/>
+        <location filename="APP/DAAppActions.cpp" line="241"/>
         <source>XY Picker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="238"/>
+        <location filename="APP/DAAppActions.cpp" line="242"/>
         <source>legend</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="241"/>
+        <location filename="APP/DAAppActions.cpp" line="245"/>
         <source>Remove Row</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="242"/>
+        <location filename="APP/DAAppActions.cpp" line="246"/>
         <source>Remove Column</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="243"/>
+        <location filename="APP/DAAppActions.cpp" line="247"/>
         <source>Remove Cell</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="244"/>
+        <location filename="APP/DAAppActions.cpp" line="248"/>
         <source>Insert 
 Row</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="245"/>
+        <location filename="APP/DAAppActions.cpp" line="249"/>
         <source>Insert Row(Above)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="246"/>
+        <location filename="APP/DAAppActions.cpp" line="250"/>
         <source>Insert 
 Column</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="247"/>
+        <location filename="APP/DAAppActions.cpp" line="251"/>
         <source>Insert Column(Left)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="248"/>
+        <location filename="APP/DAAppActions.cpp" line="252"/>
         <source>to num</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="249"/>
+        <location filename="APP/DAAppActions.cpp" line="253"/>
         <source>cast to num type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="250"/>
+        <location filename="APP/DAAppActions.cpp" line="254"/>
         <source>to str</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="251"/>
+        <location filename="APP/DAAppActions.cpp" line="255"/>
         <source>cast to string type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="252"/>
+        <location filename="APP/DAAppActions.cpp" line="256"/>
         <source>to datetime</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="253"/>
+        <location filename="APP/DAAppActions.cpp" line="257"/>
         <source>cast to datetime type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="254"/>
+        <location filename="APP/DAAppActions.cpp" line="258"/>
         <source>Data Describe</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="255"/>
+        <location filename="APP/DAAppActions.cpp" line="259"/>
         <source>To Index</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="256"/>
-        <source>Drop None</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="257"/>
-        <source>Drop rows which contain missing values</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="258"/>
-        <source>Fill None</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="259"/>
-        <source>Fill rows which contain missing values</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="APP/DAAppActions.cpp" line="261"/>
-        <source>Fill Interpolate</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="263"/>
-        <source>Fill rows which contain missing values by interpolate</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="264"/>
-        <location filename="APP/DAAppActions.cpp" line="271"/>
-        <source>Drop Duplicates</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="265"/>
-        <source>Forward Fill</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="267"/>
-        <source>Fill NA/NaN values by propagating the last valid observation to next valid.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="268"/>
-        <source>Back Fill</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="270"/>
-        <source>Fill NA/NaN values by using the next valid observation to fill the gap.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="272"/>
-        <source>Drop duplicate datas</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="273"/>
-        <source>nstd filter outlier</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="274"/>
-        <source>Remove the outliers beyond n times the standard deviation</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="275"/>
-        <source>Clip Outlier</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="277"/>
-        <source>Replace the outlier values that exceed the specified lower and upper limits with the respective limits.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="278"/>
-        <source>Pivot Table</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="279"/>
-        <source>Create Pivot Table</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="282"/>
         <source>New 
 Workflow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="283"/>
+        <location filename="APP/DAAppActions.cpp" line="262"/>
         <source>Linkage 
 Move</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="285"/>
+        <location filename="APP/DAAppActions.cpp" line="264"/>
         <source>When moving elements, other elements linked to this element follow the movement</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="286"/>
+        <location filename="APP/DAAppActions.cpp" line="265"/>
         <source>grouping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="287"/>
+        <location filename="APP/DAAppActions.cpp" line="266"/>
         <source>ungroup</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="288"/>
+        <location filename="APP/DAAppActions.cpp" line="267"/>
         <source>Draw 
 Rect</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="289"/>
+        <location filename="APP/DAAppActions.cpp" line="268"/>
         <source>Draw 
 Text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="290"/>
+        <location filename="APP/DAAppActions.cpp" line="269"/>
         <source>Show 
 Grid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="291"/>
+        <location filename="APP/DAAppActions.cpp" line="270"/>
         <source>Lock 
 View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="292"/>
+        <location filename="APP/DAAppActions.cpp" line="271"/>
         <source>Run 
 Workflow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="293"/>
+        <location filename="APP/DAAppActions.cpp" line="272"/>
         <source>Terminate 
 Workflow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="294"/>
+        <location filename="APP/DAAppActions.cpp" line="273"/>
         <source>Link</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="295"/>
+        <location filename="APP/DAAppActions.cpp" line="274"/>
         <source>Add 
 Background</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="296"/>
+        <location filename="APP/DAAppActions.cpp" line="275"/>
         <source>Lock Background</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="297"/>
+        <location filename="APP/DAAppActions.cpp" line="276"/>
         <source>Move With Background</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="299"/>
+        <location filename="APP/DAAppActions.cpp" line="278"/>
         <source>Export To Image</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="300"/>
+        <location filename="APP/DAAppActions.cpp" line="279"/>
         <source>Export To PNG</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="301"/>
+        <location filename="APP/DAAppActions.cpp" line="280"/>
         <source>Show Marker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="303"/>
+        <location filename="APP/DAAppActions.cpp" line="282"/>
         <source>Show 
 Workflow Area</source>
         <oldsource>Show 
@@ -876,78 +703,78 @@ Work Flow Manager</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="304"/>
+        <location filename="APP/DAAppActions.cpp" line="283"/>
         <source>Show 
 Workflow Manager</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="305"/>
+        <location filename="APP/DAAppActions.cpp" line="284"/>
         <source>Show 
 Chart Area</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="306"/>
+        <location filename="APP/DAAppActions.cpp" line="285"/>
         <source>Show 
 Chart Manager</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="307"/>
+        <location filename="APP/DAAppActions.cpp" line="286"/>
         <source>Show 
 Table Area</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="308"/>
+        <location filename="APP/DAAppActions.cpp" line="287"/>
         <source>Show 
 Data Manager</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="309"/>
+        <location filename="APP/DAAppActions.cpp" line="288"/>
         <source>Show Infomation Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="310"/>
+        <location filename="APP/DAAppActions.cpp" line="289"/>
         <source>Show Setting Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="312"/>
+        <location filename="APP/DAAppActions.cpp" line="291"/>
         <source>Plugin 
 Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="314"/>
+        <location filename="APP/DAAppActions.cpp" line="293"/>
         <source>Office 2013 theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="315"/>
+        <location filename="APP/DAAppActions.cpp" line="294"/>
         <source>Office 2016 blue theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="316"/>
+        <location filename="APP/DAAppActions.cpp" line="295"/>
         <source>Office 2021 blue theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="317"/>
+        <location filename="APP/DAAppActions.cpp" line="296"/>
         <source>Dark theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="321"/>
+        <location filename="APP/DAAppActions.cpp" line="300"/>
         <source>Redo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="324"/>
+        <location filename="APP/DAAppActions.cpp" line="303"/>
         <source>Undo</source>
         <translation type="unfinished"></translation>
     </message>
@@ -955,137 +782,127 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="APP/DAAppController.cpp" line="692"/>
-        <location filename="APP/DAAppController.cpp" line="790"/>
+        <location filename="APP/DAAppController.cpp" line="667"/>
+        <location filename="APP/DAAppController.cpp" line="756"/>
         <source>project file(*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="707"/>
+        <location filename="APP/DAAppController.cpp" line="682"/>
         <source>Question</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="708"/>
+        <location filename="APP/DAAppController.cpp" line="683"/>
         <source>Another project already exists. Do you want to replace it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="734"/>
-        <location filename="APP/DAAppController.cpp" line="803"/>
+        <location filename="APP/DAAppController.cpp" line="709"/>
+        <location filename="APP/DAAppController.cpp" line="769"/>
         <source>failed to load project file:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="417"/>
-        <location filename="APP/DAAppController.cpp" line="758"/>
+        <location filename="APP/DAAppController.cpp" line="403"/>
+        <location filename="APP/DAAppController.cpp" line="724"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="760"/>
+        <location filename="APP/DAAppController.cpp" line="726"/>
         <source>project file (*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="770"/>
+        <location filename="APP/DAAppController.cpp" line="736"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="770"/>
+        <location filename="APP/DAAppController.cpp" line="736"/>
         <source>Whether to overwrite the file:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="428"/>
-        <location filename="APP/DAAppController.cpp" line="779"/>
+        <location filename="APP/DAAppController.cpp" line="414"/>
+        <location filename="APP/DAAppController.cpp" line="745"/>
         <source>Project saved failed!,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="783"/>
-        <location filename="APP/DAAppController.cpp" line="828"/>
+        <location filename="APP/DAAppController.cpp" line="749"/>
+        <location filename="APP/DAAppController.cpp" line="794"/>
         <source>Project saved successfully,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="419"/>
+        <location filename="APP/DAAppController.cpp" line="405"/>
         <source>Project Files (*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="845"/>
+        <location filename="APP/DAAppController.cpp" line="811"/>
         <source>Project load successfully,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="914"/>
+        <location filename="APP/DAAppController.cpp" line="877"/>
         <source>Image files (*.png *.jpg)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="915"/>
+        <location filename="APP/DAAppController.cpp" line="878"/>
         <source>Any files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="988"/>
+        <location filename="APP/DAAppController.cpp" line="951"/>
         <source>The image was successfully saved in path %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="990"/>
+        <location filename="APP/DAAppController.cpp" line="953"/>
         <source>Image save failed at path %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1029"/>
+        <location filename="APP/DAAppController.cpp" line="992"/>
         <source>get null project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1035"/>
+        <location filename="APP/DAAppController.cpp" line="998"/>
         <source>warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1036"/>
+        <location filename="APP/DAAppController.cpp" line="999"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1338"/>
+        <location filename="APP/DAAppController.cpp" line="1300"/>
         <source>Before creating a new coordinate,you need to create a figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1671"/>
+        <location filename="APP/DAAppController.cpp" line="1633"/>
         <source>%1_Describe</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1672"/>
+        <location filename="APP/DAAppController.cpp" line="1634"/>
         <source>Generate descriptive statistics that summarize the central tendency, dispersion and shape of a [%1]’s distribution, excluding NaN values</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1696"/>
-        <source>%1_PviotTable</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppController.cpp" line="1697"/>
-        <source>Generate pivot table</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppController.cpp" line="1956"/>
+        <location filename="APP/DAAppController.cpp" line="1787"/>
         <source>new workflow name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1957"/>
+        <location filename="APP/DAAppController.cpp" line="1788"/>
         <source>new workflow name:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1220,9 +1037,9 @@ Config</source>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="168"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="189"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="276"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="474"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="188"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="275"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="461"/>
         <source>Workflow</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1239,8 +1056,8 @@ Config</source>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="173"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="196"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="550"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="195"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="537"/>
         <source>View</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1251,160 +1068,154 @@ Config</source>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="176"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="358"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="357"/>
         <source>DataFrame</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="177"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="360"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="359"/>
         <source>Operate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="178"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="362"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="361"/>
         <source>Axes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="179"/>
         <location filename="APP/DAAppRibbonArea.cpp" line="181"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="374"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="379"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="373"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="378"/>
         <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppRibbonArea.cpp" line="183"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="390"/>
-        <source>Data Cleaning</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="184"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="401"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="389"/>
         <source>Statistic</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="187"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="186"/>
         <source>Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="191"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="488"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="190"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="475"/>
         <source>Workflow Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="192"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="493"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="191"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="480"/>
         <source>ClipBoard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="193"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="498"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="192"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="485"/>
         <source>Item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="194"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="507"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="193"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="494"/>
         <source>Text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="195"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="512"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="194"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="499"/>
         <source>Background</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="198"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="593"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="197"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="580"/>
         <source>Workflow Run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="199"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="596"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="198"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="583"/>
         <source>Run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="201"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="443"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="200"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="430"/>
         <source>Figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="202"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="201"/>
         <source>Figure Setting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="203"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="202"/>
         <source>Add Chart</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="205"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="204"/>
         <source>Chart</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="206"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="607"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="609"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="205"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="594"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="596"/>
         <source>Chart Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="208"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="207"/>
         <source>theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="209"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="208"/>
         <source>set ribbon theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="APP/DAAppRibbonArea.cpp" line="210"/>
         <location filename="APP/DAAppRibbonArea.cpp" line="211"/>
-        <location filename="APP/DAAppRibbonArea.cpp" line="212"/>
         <source>View Marker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="214"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="213"/>
         <source>Export Image</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="215"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="214"/>
         <source>Export Workflow Graphics Scene To Image</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="217"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="216"/>
         <source>Data Work Flow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="519"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="506"/>
         <source>Group</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="547"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="534"/>
         <source>Workflow View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="583"/>
+        <location filename="APP/DAAppRibbonArea.cpp" line="570"/>
         <source>Export</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1640,17 +1451,17 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartOperateWidget.cpp" line="200"/>
+        <location filename="DAGui/DAChartOperateWidget.cpp" line="191"/>
         <source>chart operate widget&apos;s tab changed,but can not find figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartOperateWidget.cpp" line="218"/>
+        <location filename="DAGui/DAChartOperateWidget.cpp" line="204"/>
         <source>question</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartOperateWidget.cpp" line="218"/>
+        <location filename="DAGui/DAChartOperateWidget.cpp" line="204"/>
         <source>Whether to close the figure widget</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1825,36 +1636,36 @@ Config</source>
 <context>
     <name>DA::DADataOperateOfDataFrameWidget</name>
     <message>
-        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="167"/>
+        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="165"/>
         <source>warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="168"/>
+        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="166"/>
         <source>The name of the new column to be inserted must be specified</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="197"/>
+        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="196"/>
         <source>please select valid data cells</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="220"/>
-        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="312"/>
-        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="339"/>
-        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="373"/>
-        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="408"/>
+        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="318"/>
+        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="346"/>
+        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="381"/>
+        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="417"/>
         <source>please select valid column</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="244"/>
+        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="245"/>
         <source>please select valid cell</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="277"/>
+        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="286"/>
         <source>table have not column</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1862,12 +1673,12 @@ Config</source>
 <context>
     <name>DA::DADataOperateWidget</name>
     <message>
-        <location filename="DAGui/DADataOperateWidget.cpp" line="171"/>
+        <location filename="DAGui/DADataOperateWidget.cpp" line="140"/>
         <source>removing a widget that does not exist in tab</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DADataOperateWidget.cpp" line="210"/>
+        <location filename="DAGui/DADataOperateWidget.cpp" line="179"/>
         <source>[deleted]</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1900,49 +1711,6 @@ Config</source>
     <message>
         <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="39"/>
         <source>scatter</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DA::DADialogCreatePivotTable</name>
-    <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="73"/>
-        <source>Value</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="73"/>
-        <source>Index</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="73"/>
-        <source>Columns</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DA::DADialogDataFrameClipOutlier</name>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameClipOutlier.cpp" line="28"/>
-        <location filename="DAGui/Dialog/DADialogDataFrameClipOutlier.cpp" line="44"/>
-        <source>The current input cannot be converted to a floating-point number.</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DA::DADialogDataFrameFillInterpolate</name>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.cpp" line="55"/>
-        <source>The current input cannot be converted to a integer number.</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DA::DADialogDataFrameFillna</name>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillna.cpp" line="27"/>
-        <source>The current input cannot be converted to a floating-point number.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2189,7 +1957,7 @@ Config</source>
 <context>
     <name>DA::DAProjectInterface</name>
     <message>
-        <location filename="DAInterface/DAProjectInterface.cpp" line="347"/>
+        <location filename="DAInterface/DAProjectInterface.cpp" line="346"/>
         <source>open failed,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2591,7 +2359,7 @@ Config</source>
         <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="579"/>
         <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="592"/>
         <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="605"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="1035"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="1028"/>
         <source>No active workflow detected</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2602,96 +2370,96 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="913"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="914"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="906"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="907"/>
         <source>Copy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="915"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="916"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="908"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="909"/>
         <source>Cut</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="917"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="918"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="910"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="911"/>
         <source>Paste</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="919"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="920"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="912"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="913"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="921"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="922"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="914"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="915"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="923"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="916"/>
         <source>Select All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="924"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="917"/>
         <source>Select all items</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="925"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="918"/>
         <source>Zoom In</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="926"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="919"/>
         <source>Zoom in graphics view</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="927"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="920"/>
         <source>Zoom Out</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="928"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="921"/>
         <source>Zoom Out graphics view</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="929"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="922"/>
         <source>Zoom to Fit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="930"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="923"/>
         <source>Zoom to fit screen size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="931"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="932"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="924"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="925"/>
         <source>Cross Line Marker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="933"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="934"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="926"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="927"/>
         <source>Horizontal Line Marker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="935"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="936"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="928"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="929"/>
         <source>Vertical Line Marker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="937"/>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="938"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="930"/>
+        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="931"/>
         <source>None Marker</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2793,7 +2561,7 @@ Config</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="APP/DAAppController.cpp" line="69"/>
+        <location filename="APP/DAAppController.cpp" line="68"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2801,12 +2569,12 @@ Config</source>
 <context>
     <name>DAAppRibbonArea</name>
     <message>
-        <location filename="APP/DAAppController.cpp" line="76"/>
+        <location filename="APP/DAAppController.cpp" line="75"/>
         <source>warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="77"/>
+        <location filename="APP/DAAppController.cpp" line="76"/>
         <source>The current function is not implemented, only the UI is reserved, please pay attention: https://gitee.com/czyt1988/data-work-flow</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3414,218 +3182,6 @@ Config</source>
     </message>
     <message>
         <location filename="DAGui/Dialog/DADialogChartGuide.ui" line="91"/>
-        <source>Cancel</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DADialogCreatePivotTable</name>
-    <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="14"/>
-        <source>Dialog</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="20"/>
-        <source>Pivot Table</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="26"/>
-        <source>Margins</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="33"/>
-        <source>Aggfunc</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="41"/>
-        <source>mean</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="46"/>
-        <source>sum</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="51"/>
-        <source>size</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="65"/>
-        <source>All</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="75"/>
-        <source>Sort</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="100"/>
-        <source>OK</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="114"/>
-        <source>Cancel</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DADialogDataFrameClipOutlier</name>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameClipOutlier.ui" line="14"/>
-        <source>Form</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameClipOutlier.ui" line="20"/>
-        <source>ClipOutlier</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameClipOutlier.ui" line="26"/>
-        <source>LowerValue</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameClipOutlier.ui" line="33"/>
-        <source>UpperValue</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameClipOutlier.ui" line="111"/>
-        <source>OK</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameClipOutlier.ui" line="125"/>
-        <source>Cancel</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DADialogDataFrameFillInterpolate</name>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="14"/>
-        <source>Dialog</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="20"/>
-        <source>Fill Interpolate</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="27"/>
-        <source>spline</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="32"/>
-        <source>polynomial</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="40"/>
-        <source>Interpolate order</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="47"/>
-        <source>This is the maximum number of consecutive NaN values to forward/backward fill. In other words, if there is a gap with more than this number of consecutive NaNs, it will only be partially filled</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="50"/>
-        <source>limit</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="57"/>
-        <source>Interpolate axis</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="70"/>
-        <source>1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="80"/>
-        <source>This is the maximum number of entries along the entire axis where NaNs will be filled. Must be greater than 0</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="93"/>
-        <source>Interpolate method</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="102"/>
-        <source>colume</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="121"/>
-        <source>row</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="161"/>
-        <source>OK</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="175"/>
-        <source>Cancel</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DADialogDataFrameFillna</name>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillna.ui" line="14"/>
-        <source>Dialog</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillna.ui" line="20"/>
-        <source>Fill NA/NaN values</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillna.ui" line="26"/>
-        <source>This is the maximum number of consecutive NaN values to forward/backward fill. In other words, if there is a gap with more than this number of consecutive NaNs, it will only be partially filled</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillna.ui" line="29"/>
-        <source>limit</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillna.ui" line="39"/>
-        <source>This is the maximum number of entries along the entire axis where NaNs will be filled. Must be greater than 0</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillna.ui" line="55"/>
-        <source>Value to use to fill holes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillna.ui" line="87"/>
-        <source>OK</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillna.ui" line="101"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4638,32 +4194,12 @@ Config</source>
         <location filename="3rdparty/SARibbon/example/MdiAreaWindowExample/MainWindow.ui" line="14"/>
         <location filename="3rdparty/SARibbon/example/NormalMenuBarExample/MainWindow.ui" line="14"/>
         <location filename="tst/FCD3Viewer/MainWindow.ui" line="14"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="87"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="70"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="121"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/examples/simple/SimpleExample_autogen/include/ui_MainWindow.h" line="58"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="87"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="70"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="121"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/simple/SimpleExample_autogen/include/ui_MainWindow.h" line="58"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="70"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="87"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="70"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="121"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/simple/SimpleExample_autogen/include/ui_MainWindow.h" line="58"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="70"/>
         <source>MainWindow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="32"/>
         <location filename="3rdparty/ADS/examples/hideshow/MainWindow.ui" line="33"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="91"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="74"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="91"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="74"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="91"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="74"/>
         <source>File</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4672,119 +4208,72 @@ Config</source>
         <location filename="3rdparty/ADS/examples/hideshow/MainWindow.ui" line="28"/>
         <location filename="3rdparty/ADS/examples/sidebar/MainWindow.ui" line="75"/>
         <location filename="3rdparty/ADS/examples/simple/MainWindow.ui" line="28"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="92"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="73"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="123"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/examples/simple/SimpleExample_autogen/include/ui_MainWindow.h" line="59"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="92"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="73"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="123"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/simple/SimpleExample_autogen/include/ui_MainWindow.h" line="59"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="92"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="73"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="123"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/simple/SimpleExample_autogen/include/ui_MainWindow.h" line="59"/>
         <source>View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="44"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="93"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="93"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="93"/>
         <source>About</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="49"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="94"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="94"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="94"/>
         <source>Tests</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="59"/>
         <location filename="3rdparty/SARibbon/example/MdiAreaWindowExample/MainWindow.ui" line="29"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="95"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="95"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="95"/>
         <source>toolBar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="70"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="88"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="88"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="88"/>
         <source>Exit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="75"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="89"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="89"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="89"/>
         <source>Save State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/demo/mainwindow.ui" line="80"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="90"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="90"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/demo/AdvancedDockingSystemDemo_autogen/include/ui_mainwindow.h" line="90"/>
         <source>Restore State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/examples/hideshow/MainWindow.ui" line="44"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="71"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="71"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="71"/>
         <source>Open project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/examples/hideshow/MainWindow.ui" line="49"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="72"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="72"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/hideshow/HideShowExample_autogen/include/ui_MainWindow.h" line="72"/>
         <source>Close project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/ADS/examples/sidebar/MainWindow.ui" line="26"/>
-        <location filename="3rdparty/build-ADS-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="122"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="122"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/ADS/examples/sidebar/SidebarExample_autogen/include/ui_MainWindow.h" line="122"/>
         <source>PushButton</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/SARibbon/example/NormalMenuBarExample/MainWindow.ui" line="28"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="73"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="73"/>
         <source>file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/SARibbon/example/NormalMenuBarExample/MainWindow.ui" line="35"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="74"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="74"/>
         <source>edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/SARibbon/example/NormalMenuBarExample/MainWindow.ui" line="44"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="71"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="71"/>
         <source>open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="3rdparty/SARibbon/example/NormalMenuBarExample/MainWindow.ui" line="49"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="72"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/SARibbon/src/example/NormalMenuBarExample/NormalMenuBarExample_autogen/include/ui_MainWindow.h" line="72"/>
         <source>save</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4953,99 +4442,86 @@ Config</source>
     <message>
         <location filename="3rdparty/QtPropertyBrowser/examples/canvas_typed/mainwindow.cpp" line="379"/>
         <location filename="3rdparty/QtPropertyBrowser/examples/canvas_variant/mainwindow.cpp" line="354"/>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1172"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1138"/>
         <source>Font</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="96"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="93"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="94"/>
         <source>&amp;Main</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="106"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="104"/>
         <location filename="3rdparty/SARibbon/example/StaticExample/MainWindow.cpp" line="18"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="102"/>
         <source>Other</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="250"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="203"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="238"/>
         <source>
 The text display of the &quot;LooseThreeRow&quot; style is word wrap and also displays the title bar. You can also control whether the button is line breaking through SARibbonBar::setEnableWordWrap,and whether the title bar is displayed through SARibbonBar::setEnableShowPannelTitle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="253"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="206"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="241"/>
         <source>ribbonBar()-&gt;setRibbonStyle(SARibbonBar::RibbonStyleLooseThreeRow);</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="259"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="212"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="247"/>
         <source>
 The text display of the &quot;LooseTwoRow&quot; style is not word wrap and also displays the title bar. You can also control whether the button is line breaking through SARibbonBar::setEnableWordWrap,and whether the title bar is displayed through SARibbonBar::setEnableShowPannelTitle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="262"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="215"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="250"/>
         <source>ribbonBar()-&gt;setRibbonStyle(SARibbonBar::RibbonStyleLooseTwoRow);</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="268"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="221"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="256"/>
         <source>
 The text display of the &quot;LooseThreeRow&quot; style is word wrap and not displays the title bar. You can also control whether the button is line breaking through SARibbonBar::setEnableWordWrap,and whether the title bar is displayed through SARibbonBar::setEnableShowPannelTitle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="271"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="224"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="259"/>
         <source>ribbonBar()-&gt;setRibbonStyle(SARibbonBar::RibbonStyleCompactThreeRow);</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="277"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="230"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="265"/>
         <source>
 The text display of the &quot;CompactTwoRow&quot; style is not word wrap and not displays the title bar. You can also control whether the button is line breaking through SARibbonBar::setEnableWordWrap,and whether the title bar is displayed through SARibbonBar::setEnableShowPannelTitle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="280"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="233"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="268"/>
         <source>ribbonBar()-&gt;setRibbonStyle(SARibbonBar::RibbonStyleCompactTwoRow);</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="319"/>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="381"/>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="720"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="304"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="305"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="366"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="687"/>
         <source>question</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="320"/>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="382"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="305"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="366"/>
         <source>Apply the last modification?
 If not, local data will be reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="465"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="243"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="449"/>
         <source>infomation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="466"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="244"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="450"/>
         <source>
  ===============
  SARibbonBar version:%1
@@ -5055,479 +4531,435 @@ If not, local data will be reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="484"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="468"/>
         <source>  &amp;File  </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="494"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="478"/>
         <source>select qss file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="564"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="255"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="548"/>
         <source>By using the SARibbonBar::setEnableWordWrap function, you can set whether text breaks or not.
 By default, the two line mode will not wrap, the three line mode will wrap.
 You can force the two line mode to wrap, or the three line mode to not wrap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="720"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="304"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="687"/>
         <source>Confirm whether to exit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="735"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="319"/>
-        <source>ribbon style</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="737"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="321"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="704"/>
         <source>Save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="750"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="333"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="717"/>
         <source>hide ribbon</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="758"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="341"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="726"/>
         <source>show 
 hide button</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="766"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="349"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="734"/>
         <source>word wrap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="774"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="357"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="742"/>
         <source>use office style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="783"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="366"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="751"/>
         <source>use wps style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="791"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="374"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="759"/>
         <source>use office 2 row style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="799"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="382"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="767"/>
         <source>use wps 2row style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="813"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="396"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="781"/>
         <source>RibbonTheme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="830"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="413"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="798"/>
         <source>Alignment Center</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="843"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="426"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="494"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="811"/>
         <source>item %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="848"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="431"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="816"/>
         <source>test 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="852"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="435"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="820"/>
         <source>use QToolButton::MenuButtonPopup mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="855"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="438"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="823"/>
         <source>test 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="857"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="440"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="825"/>
         <source>use QToolButton::InstantPopup mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="862"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="445"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="830"/>
         <source>Delayed
 Popup</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="868"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="451"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="836"/>
         <source>Menu Button Popup</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="873"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="456"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="841"/>
         <source>Instant Popup</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="878"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="461"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="846"/>
         <source>Delayed Popup checkable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="884"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="467"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="852"/>
         <source>Menu Button Popup checkable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="890"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="473"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="858"/>
         <source>disable action</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="899"/>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="989"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="482"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="584"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="867"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="957"/>
         <source>Option Action Triggered</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="907"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="503"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="875"/>
         <source>show Context</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="912"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="508"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="880"/>
         <source>delete Context</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="923"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="518"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="891"/>
         <source>Word
 Wrap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="927"/>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="936"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="522"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="531"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="895"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="904"/>
         <source>Text can be manually wrapped(use \n), and will appear as 1 line in the case of SARibbonBar::setEnableWordWrap (false)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="931"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="526"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="899"/>
         <source>Word 
 Wrap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="943"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="538"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="911"/>
         <source>widget test</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="949"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="544"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="917"/>
         <source>SARibbonComboBox test</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="999"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="967"/>
         <source>pannel one</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1007"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="975"/>
         <source>Decrease Margin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1008"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="976"/>
         <source>Decrease Indent</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1009"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="977"/>
         <source>Wrap Image Left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1010"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="978"/>
         <source>Wrap Image Right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1016"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="984"/>
         <source>Align Right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1019"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="987"/>
         <source>Align Left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1022"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="990"/>
         <source>Align Center</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1051"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1019"/>
         <source>Files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1062"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1030"/>
         <source>Apps</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1071"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1039"/>
         <source>pannel two</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1074"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1042"/>
         <source>remove application button</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1079"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1048"/>
         <source>show very long text in a button,balabalabala etc</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1084"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1051"/>
         <source>style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1088"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1055"/>
         <source>use qss</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1092"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1059"/>
         <source>load customize from xml file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1096"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1063"/>
         <source>window normal button</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1144"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1110"/>
         <source>remove pannel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1149"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1115"/>
         <source>remove this category</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1176"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1142"/>
         <source>select font</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1185"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1151"/>
         <source>Font ComboBox</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1204"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1170"/>
         <source>Font Tools</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1212"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1178"/>
         <source>Larger</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1215"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1181"/>
         <source>Smaller</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1224"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1190"/>
         <source>Font Size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1228"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1194"/>
         <source>Larger Font Text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1234"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1200"/>
         <source>Grid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1322"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1288"/>
         <source>color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1382"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1348"/>
         <source>context</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1384"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1350"/>
         <source>Page1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1387"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1353"/>
         <source>Page2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1401"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1367"/>
         <source>show and hide test</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1409"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1375"/>
         <source>Disable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1418"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1384"/>
         <source>unlock</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1427"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1393"/>
         <source>1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1428"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1394"/>
         <source>very short string</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1451"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1417"/>
         <source>show/hide</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1458"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1424"/>
         <source>hide beside pannel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1460"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1426"/>
         <source>show beside pannel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1484"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1450"/>
         <source>hide action2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1487"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1453"/>
         <source>show action2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1493"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1459"/>
         <source>hide action4</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1496"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1462"/>
         <source>show action4</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1504"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1470"/>
         <source>spinbox:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1512"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1478"/>
         <source>linedit:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1668"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="612"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1621"/>
         <source>help</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1669"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="613"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1622"/>
         <source>Visible</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1687"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="631"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1640"/>
         <source>Login</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1723"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1676"/>
         <source>in common use</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1724"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1677"/>
         <source>no icon action</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1725"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1678"/>
         <source>have icon action</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1774"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="676"/>
+        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="1727"/>
         <source>The SARibbonToolButton::setPopupMode(QToolButton::DelayedPopup) method can be used to set the menu pop-up method to delayed pop-up. This also demonstrates manually setting text wrapping</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5585,91 +5017,6 @@ Wrap</source>
     <message>
         <location filename="3rdparty/SARibbon/example/MdiAreaWindowExample/MainWindow.ui" line="57"/>
         <source>add window</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="63"/>
-        <source>Example MainWindow</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="144"/>
-        <source>File(&amp;F)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="145"/>
-        <source>New(&amp;N)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="146"/>
-        <source>Open(&amp;O)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="149"/>
-        <source>Edit(&amp;E)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="150"/>
-        <source>Undo(&amp;U)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="151"/>
-        <source>Redo(&amp;R)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="154"/>
-        <source>Enable dark theme</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="164"/>
-        <source>None</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="169"/>
-        <source>Enable DWM blur</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="173"/>
-        <source>Enable acrylic material</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="177"/>
-        <source>Enable mica</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="181"/>
-        <source>Enable mica alt</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="211"/>
-        <source>Dark blur</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="223"/>
-        <source>Light blur</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="235"/>
-        <source>No blur</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/mainwindow/mainwindow.cpp" line="254"/>
-        <source>Settings(&amp;S)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5734,66 +5081,66 @@ Wrap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15503"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13620"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="336"/>
         <source>SARibbon Warning !!! customize rename category,but get an empty category object name,if you want to customize SARibbon,please make sure every element has been set object name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15527"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13644"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="360"/>
         <source>SARibbon Warning !!! customize rename pannel,but get an empty category/pannel object name,if you want to customize SARibbon,please make sure every element has been set object name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15550"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13667"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="383"/>
         <source>SARibbon Warning !!! customize change category order,but get an empty category object name,if you want to customize SARibbon,please make sure every element has been set object name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15574"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13691"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="407"/>
         <source>SARibbon Warning !!! customize change pannel order,but get an empty category/pannel object name,if you want to customize SARibbon,please make sure every element has been set object name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15603"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13720"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="436"/>
         <source>SARibbon Warning !!! customize change action order,but get an empty category/pannel/action object name,if you want to customize SARibbon,please make sure every element has been set object name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15625"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13742"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="458"/>
         <source>SARibbon Warning !!! customize remove category,but get an empty category object name,if you want to customize SARibbon,please make sure every element has been set object name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15646"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13763"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="479"/>
         <source>SARibbon Warning !!! customize remove pannel,but get an empty category/pannel object name,if you want to customize SARibbon,please make sure every element has been set object name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15672"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13789"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="505"/>
         <source>SARibbon Warning !!! customize remove action,but get an empty category/pannel/action object name,if you want to customize SARibbon,please make sure every element has been set object name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15694"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="13811"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeData.cpp" line="527"/>
         <source>SARibbon Warning !!! customize visible category,but get an empty category object name,if you want to customize SARibbon,please make sure every element has been set object name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/main.cpp" line="88"/>
+        <location filename="APP/main.cpp" line="91"/>
         <source>Kernel initialization failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/main.cpp" line="113"/>
+        <location filename="APP/main.cpp" line="116"/>
         <source>%1(%2) build %3
 params:
 --version : version information
@@ -5802,7 +5149,7 @@ params:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/main.cpp" line="206"/>
+        <location filename="APP/main.cpp" line="209"/>
         <source>Unable to create dump file path:%1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6208,88 +5555,42 @@ params:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="25"/>
+        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="24"/>
         <source>set dataframe data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="56"/>
+        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="58"/>
         <source>insert row</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="102"/>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="127"/>
-        <source>insert column &quot;%1&quot;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="183"/>
+        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="202"/>
         <source>drop dataframe rows</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="216"/>
+        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="240"/>
         <source>drop dataframe columns</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="289"/>
+        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="315"/>
         <source>change column type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="366"/>
-        <source>drop nan</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="413"/>
-        <source>fill nan</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="449"/>
-        <source>interpolate</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="484"/>
-        <source>ffill nan</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="519"/>
-        <source>bfill nan</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="563"/>
-        <source>drop duplicates</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="611"/>
-        <source>nstd filter</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="659"/>
-        <source>clip outlier</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="689"/>
+        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="401"/>
         <source>cast column to num</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="725"/>
+        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="442"/>
         <source>cast column to datetime</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="761"/>
+        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="483"/>
         <source>set column to index</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6552,7 +5853,7 @@ params:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAPyBindQt/pandas/DAPyModulePandas.cpp" line="163"/>
+        <location filename="DAPyBindQt/pandas/DAPyModulePandas.cpp" line="160"/>
         <source>use utf-8 open file %1 error,try to use ansi encoding</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7304,50 +6605,6 @@ params:
     </message>
 </context>
 <context>
-    <name>QuaGzipFile</name>
-    <message>
-        <location filename="3rdparty/quazip/quazip/quagzipfile.cpp" line="60"/>
-        <source>QIODevice::Append is not supported for GZIP</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/quazip/quazip/quagzipfile.cpp" line="66"/>
-        <source>Opening gzip for both reading and writing is not supported</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/quazip/quazip/quagzipfile.cpp" line="75"/>
-        <source>You can open a gzip either for reading or for writing. Which is it?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/quazip/quazip/quagzipfile.cpp" line="81"/>
-        <source>Could not gzopen() file</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>QuaZIODevice</name>
-    <message>
-        <location filename="3rdparty/quazip/quazip/quaziodevice.cpp" line="178"/>
-        <source>QIODevice::Append is not supported for QuaZIODevice</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/quazip/quazip/quaziodevice.cpp" line="183"/>
-        <source>QIODevice::ReadWrite is not supported for QuaZIODevice</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>QuaZipFile</name>
-    <message>
-        <location filename="3rdparty/quazip/quazip/quazipfile.cpp" line="251"/>
-        <source>ZIP/UNZIP API error %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>QwtPlotRenderer</name>
     <message>
         <location filename="3rdparty/qwt/src/qwt_plot_renderer.cpp" line="1076"/>
@@ -7390,19 +6647,19 @@ params:
 <context>
     <name>SAColorMenu</name>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="1917"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="203"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/SAColorMenu.cpp" line="178"/>
         <source>None</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="1951"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="237"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/SAColorMenu.cpp" line="212"/>
         <source>Theme Colors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="1958"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="244"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/SAColorMenu.cpp" line="219"/>
         <source>Custom Color</source>
         <translation type="unfinished"></translation>
@@ -7411,7 +6668,7 @@ params:
 <context>
     <name>SARibbonActionsManager</name>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="6316"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="4563"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonActionsManager.cpp" line="335"/>
         <source>not in ribbon</source>
         <translation type="unfinished"></translation>
@@ -7420,7 +6677,7 @@ params:
 <context>
     <name>SARibbonActionsManagerModel</name>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="6511"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="4758"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonActionsManager.cpp" line="530"/>
         <source>action name</source>
         <translation type="unfinished"></translation>
@@ -7429,7 +6686,7 @@ params:
 <context>
     <name>SARibbonCategoryLayout</name>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="10351"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="8612"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCategoryLayout.cpp" line="130"/>
         <source>in SARibbonCategoryLayout cannot addItem,use addPannel instead</source>
         <translation type="unfinished"></translation>
@@ -7438,7 +6695,7 @@ params:
 <context>
     <name>SARibbonContextCategory</name>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="11014"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="9276"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonContextCategory.cpp" line="67"/>
         <source>SARibbonContextCategory have category %1,will skip</source>
         <translation type="unfinished"></translation>
@@ -7447,19 +6704,19 @@ params:
 <context>
     <name>SARibbonCustomizeDialog</name>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="17439"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15557"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeDialog.cpp" line="51"/>
         <source>Customize Dialog</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="17440"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15558"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeDialog.cpp" line="52"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="17441"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15559"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeDialog.cpp" line="53"/>
         <source>OK</source>
         <translation type="unfinished"></translation>
@@ -7468,137 +6725,137 @@ params:
 <context>
     <name>SARibbonCustomizeWidget</name>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="16229"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14347"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="357"/>
         <source>Customize Widget</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="16230"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14348"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="358"/>
         <source>Please Select</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="16234"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14352"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="362"/>
         <source>Find Command</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="16235"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14353"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="363"/>
         <source>Add &gt;&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="16236"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14354"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="364"/>
         <source>&lt;&lt; Remove</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="16238"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14356"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="366"/>
         <source>Customize the Ribbon</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="16239"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14357"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="367"/>
         <source>Main Category</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="16240"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14358"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="368"/>
         <source>All Category</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="16241"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14359"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="369"/>
         <source>New Category</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="16242"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14360"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="370"/>
         <source>New Group</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="16243"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14361"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="371"/>
         <source>Rename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="16244"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14362"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="372"/>
         <source>reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="16245"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14363"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="373"/>
         <source>proportion:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="16640"/>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="16643"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14758"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14761"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="768"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="771"/>
         <source>large</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="16641"/>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="16645"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14759"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14763"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="769"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="773"/>
         <source>small</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="16644"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="14762"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="772"/>
         <source>medium</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="17026"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15144"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="1154"/>
         <source>new category[customize]%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="17053"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15171"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="1181"/>
         <source>new pannel[customize]%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="17101"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15219"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="1229"/>
         <source>rename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="17101"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15219"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="1229"/>
         <source>name:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="17377"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15495"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="1505"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="17378"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="15496"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="1506"/>
         <source>Are you sure reset all customize setting?</source>
         <translation type="unfinished"></translation>
@@ -7607,24 +6864,15 @@ params:
 <context>
     <name>SARibbonSystemButtonBar</name>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="4281"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="2574"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonSystemButtonBar.cpp" line="315"/>
         <source>Restore</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="4281"/>
+        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="2574"/>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonSystemButtonBar.cpp" line="315"/>
         <source>Maximize</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>SARibbonToolButton</name>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="5667"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonToolButton.cpp" line="1231"/>
-        <source>The TextEllipsisAspectFactor parameter cannot be set to 0 or a negative number</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -7650,8 +6898,6 @@ params:
     <name>Widget</name>
     <message>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="14"/>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="63"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/SARibbon/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="63"/>
         <source>Widget</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7800,18 +7046,6 @@ params:
     <message>
         <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="1320"/>
         <source>colorPaletteGrid</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="64"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/SARibbon/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="64"/>
-        <source>Tab 1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="build-3rdparty-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/SARibbon/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="65"/>
-        <location filename="build-3rdparty-Replacement_for_Desktop_Qt_5_14_2_MSVC2017_64bit-Release/SARibbon/src/example/WidgetWithRibbon/WidgetWithRibbon_autogen/include/ui_Widget.h" line="65"/>
-        <source>Tab 2</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -8008,59 +7242,6 @@ params:
     <message>
         <location filename="3rdparty/ctk/ctk/ctkPathLineEdit.cpp" line="585"/>
         <source>Select a file to save </source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>main</name>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="12"/>
-        <source>Hello, world!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="156"/>
-        <source>Theme</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="164"/>
-        <source>Light</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="170"/>
-        <source>Dark</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="179"/>
-        <source>Special effect</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="188"/>
-        <source>None</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="202"/>
-        <source>DWM blur</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="215"/>
-        <source>Acrylic material</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="228"/>
-        <source>Mica</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/3rdparty/qwindowkit/examples/qml/main.qml" line="241"/>
-        <source>Mica Alt</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

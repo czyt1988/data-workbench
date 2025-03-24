@@ -82,12 +82,18 @@ public:
 	QVariant getSheetAllData(QAxObject* sheetObj);
 
 public:
-	const QString cAppComControlName { "Excel.Application" };  ///< excel的程序名
-	const QString cAppComControlName2 { "ket.Application" };   ///< excel的程序名kwps.Application
-	std::unique_ptr< QAxObject > mAxApp;                       ///< Excel.Application
-	QAxObject* mAxWorkbooks { nullptr };                       ///< Workbooks,父对象是mApp
-	QAxObject* mAxWorkbook { nullptr };                        ///< Workbook,父对象是mAxWorkbooks/mApp
-	QAxObject* mAxWorkSheets { nullptr };                      ///< WorkSheets,
+    /**
+     *@brief 几种类名
+     * - excel的程序名:Excel.Application
+     * - wps的程序名:ket.Application
+     * - wps表格的程序名:kwps.Application
+     * - wps表格的程序名2:ET.Application
+     */
+    const QStringList cappClassNames = { "Excel.Application", "ket.Application", "kwps.Application", "ET.Application" };
+    std::unique_ptr< QAxObject > mAxApp;   ///< Excel.Application
+    QAxObject* mAxWorkbooks { nullptr };   ///< Workbooks,父对象是mApp
+    QAxObject* mAxWorkbook { nullptr };    ///< Workbook,父对象是mAxWorkbooks/mApp
+    QAxObject* mAxWorkSheets { nullptr };  ///< WorkSheets,
 };
 
 DAAxObjectExcelWrapper::PrivateData::PrivateData(DAAxObjectExcelWrapper* p) : q_ptr(p)
@@ -158,10 +164,13 @@ bool DAAxObjectExcelWrapper::PrivateData::isHaveWorkSheets() const
 
 bool DAAxObjectExcelWrapper::PrivateData::tryCreateComControl(QAxObject* obj)
 {
-	bool res = obj->setControl(cAppComControlName);
-	if (!res) {
-		res = obj->setControl(cAppComControlName2);
-	}
+    bool res = false;
+    for (const QString& clasName : cappClassNames) {
+        res = obj->setControl(clasName);
+        if (res) {
+            break;
+        }
+    }
 	return res;
 }
 
@@ -184,7 +193,7 @@ void DAAxObjectExcelWrapper::PrivateData::setDisplayAlerts(bool on)
 bool DAAxObjectExcelWrapper::PrivateData::open(const QString& filename, bool visible, bool displayAlerts)
 {
 	if (!tryInitialize(visible, displayAlerts)) {
-		qWarning() << QObject::tr("unable initialize %1").arg(cAppComControlName);  // cn:无法初始化%1
+        qWarning() << QObject::tr("unable initialize %1").arg(cappClassNames.join(","));  // cn:无法初始化%1
 		return false;
 	}
 	QString nativeFileName = QDir::toNativeSeparators(filename);
@@ -213,7 +222,7 @@ bool DAAxObjectExcelWrapper::PrivateData::open(const QString& filename, bool vis
 bool DAAxObjectExcelWrapper::PrivateData::create(const QString& filename, bool visible, bool displayAlerts)
 {
 	if (!tryInitialize(visible, displayAlerts)) {
-		qWarning() << QObject::tr("unable initialize %1").arg(cAppComControlName);  // cn:无法初始化%1
+        qWarning() << QObject::tr("unable initialize %1").arg(cappClassNames.join(","));  // cn:无法初始化%1
 		return false;
 	}
 	// 文件不存在则创建
