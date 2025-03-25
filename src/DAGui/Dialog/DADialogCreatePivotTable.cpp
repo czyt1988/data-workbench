@@ -51,22 +51,6 @@ void DADialogCreatePivotTable::setDataframe(const DAPyDataFrame& df)
 	QStandardItemModel* m = d_ptr->mModel;
 	QStringList para      = df.columns();
 	m->clear();
-	// QStringList para;
-	// para.append("age");
-	// para.append("workclass");
-	// para.append("fnlwgt");
-	// para.append("education");
-	// para.append("education-num");
-	// para.append("marital-status");
-	// para.append("occupation");
-	// para.append("relationship");
-	// para.append("race");
-	// para.append("sex");
-	// para.append("capital-gain");
-	// para.append("capital-loss");
-	// para.append("hours-per-week");
-	// para.append("native-country");
-	// para.append("salary");
 
 	// 设置tableview表头内容
 	QStringList headers;
@@ -83,9 +67,6 @@ void DADialogCreatePivotTable::setDataframe(const DAPyDataFrame& df)
 
 		iitem->setCheckable(true);
 		iitem->setCheckState(Qt::Unchecked);
-
-		vitem->setCheckable(true);
-		vitem->setCheckState(Qt::Unchecked);
 
 		citem->setCheckable(true);
 		citem->setCheckState(Qt::Unchecked);
@@ -112,14 +93,17 @@ void DADialogCreatePivotTable::setDataframe(const DAPyDataFrame& df)
 			for (int c = 0; c < 3; ++c) {
 				if (c == col)
 					continue;
-				QStandardItem* otherItem = m->item(row, c);
-				otherItem->setCheckState(Qt::Unchecked);
-				otherItem->setFlags(otherItem->flags() & ~Qt::ItemIsEnabled);  // 禁用
+				if (QStandardItem* otherItem = m->item(row, c); otherItem) {
+					otherItem->setCheckState(Qt::Unchecked);
+					otherItem->setFlags(otherItem->flags() & ~Qt::ItemIsEnabled);
+				}
 			}
 		} else {
 			// 如果当前列取消勾选，则恢复本行所有列的可选状态
 			for (int c = 0; c < 3; ++c) {
-				m->item(row, c)->setFlags(m->item(row, c)->flags() | Qt::ItemIsEnabled);
+				if (QStandardItem* resetItem = m->item(row, c); resetItem) {
+					resetItem->setFlags(resetItem->flags() | Qt::ItemIsEnabled | Qt::ItemIsUserCheckable);
+				}
 			}
 		}
 	});
