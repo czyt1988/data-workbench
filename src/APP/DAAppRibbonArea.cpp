@@ -395,8 +395,10 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
 	m_pannelDataframeOperateDataCleaning->addMediumAction(m_actions->actionDataFrameBFillNone);
 	m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDataFrameFillInterpolate);
 	m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDataFrameClipOutlier);
-
 	m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionNstdFilterOutlier);
+	//数据过滤
+	m_pannelDataframeOperateDataFiltering = m_categoryDataframeOperate->addPannel(tr("Data Filtering"));  // cn :数据过滤
+	m_pannelDataframeOperateDataFiltering->addLargeAction(m_actions->actionDataFrameQueryDatas);
 	//  Statistic Pannel
 	m_pannelDataframeOperateStatistic = m_categoryDataframeOperate->addPannel(tr("Statistic"));  // cn：统计
 	m_pannelDataframeOperateStatistic->addLargeAction(m_actions->actionCreateDataDescribe);

@@ -21,6 +21,7 @@ class DADialogDataframeColumnCastToDatetime;
 class DADialogDataFrameFillna;
 class DADialogDataFrameFillInterpolate;
 class DADialogDataFrameClipOutlier;
+class DADialogDataFrameQueryDatas;
 class DADialogCreatePivotTable;
 
 /**
@@ -73,7 +74,6 @@ public Q_SLOTS:
 	int removeSelectColumn();
 	// 设置选中单元格为nan,返回设置成功的个数
 	int removeSelectCell();
-
 	// 列更名
 	void renameColumns();
 	// 设置选择列的数据类型，发射信号columnTypeChanged
@@ -95,7 +95,6 @@ public Q_SLOTS:
 	int dropduplicates(const DAPyDataFrame& df,
 					   const QString& keep      = QStringLiteral("first"),
 					   const QList< int > index = QList< int >());
-
 	// 填充缺失值，执行成功返回true
 	bool fillna();
 	bool fillna(const DAPyDataFrame& df, double value = 0.0, int limit = -1);
@@ -114,6 +113,9 @@ public Q_SLOTS:
 	// 替换规定界限外的异常值
 	bool clipoutlier();
 	bool clipoutlier(const DAPyDataFrame& df, double lower = 0.0, double upper = 0.0, int axis = 0);
+	// 过滤给定条件外的数据
+	bool querydatas();
+	bool querydatas(const DAPyDataFrame& df, QList< QString > contents = QList< QString >(), bool logic = true);
 
 	//创建数据透视表
 	DAPyDataFrame createPivotTable();
@@ -151,6 +153,7 @@ private:
 	DADialogDataFrameFillInterpolate* mDialogDataFrameFillInterpolate { nullptr };
 	DADialogDataFrameClipOutlier* mDialogDataFrameClipOutlier { nullptr };
 	DADialogCreatePivotTable* mDialogCreatePivotTable { nullptr };
+	DADialogDataFrameQueryDatas* mDialogDataFrameQueryDatas{ nullptr };
 };
 }  // end of namespace DA
 #endif  // DADATAOPERATEOFDATAFRAMEWIDGET_H

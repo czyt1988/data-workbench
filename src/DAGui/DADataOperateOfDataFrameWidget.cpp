@@ -23,6 +23,7 @@
 #include "Dialog/DADialogDataFrameFillna.h"
 #include "Dialog/DADialogDataFrameFillInterpolate.h"
 #include "Dialog/DADialogDataFrameClipOutlier.h"
+#include "Dialog/DADialogDataFrameQueryDatas.h"
 #include "Dialog/DADialogCreatePivotTable.h"
 
 //===================================================
@@ -704,8 +705,8 @@ bool DADataOperateOfDataFrameWidget::clipoutlier()
 	if (df.isNone()) {
 		return false;
 	}
-	if (!mDialogDataFrameClipOutlier) {
-		mDialogDataFrameClipOutlier = new DADialogDataFrameClipOutlier(this);
+	if (!mDialogDataFrameQueryDatas) {
+		mDialogDataFrameQueryDatas = new DADialogDataFrameQueryDatas(this);
 	}
 	if (QDialog::Accepted != mDialogDataFrameClipOutlier->exec()) {
 		// 说明用户取消
@@ -730,6 +731,47 @@ bool DADataOperateOfDataFrameWidget::clipoutlier(const DAPyDataFrame& df, double
 {
 	std::unique_ptr< DACommandDataFrame_clipoutlier > cmd =
 		std::make_unique< DACommandDataFrame_clipoutlier >(df, mModel, lower, upper, axis);
+	if (!cmd->exec()) {
+		return false;
+	}
+	getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
+	return true;
+}
+
+/**
+ * @brief 过滤给定条件外的数据
+ * @return 成功返回true,反之返回false
+ */
+bool DADataOperateOfDataFrameWidget::querydatas()
+{
+	DAPyDataFrame df = getDataframe();
+	if (df.isNone()) {
+		return false;
+	}
+	if (!mDialogDataFrameQueryDatas) {
+		mDialogDataFrameQueryDatas = new DADialogDataFrameQueryDatas(this);
+	}
+	if (QDialog::Accepted != mDialogDataFrameQueryDatas->exec()) {
+		// 说明用户取消
+		return false;
+	}
+	// 获取填充值
+	QList< QString > contents = mDialogDataFrameQueryDatas->getQueryConditions();
+	bool logic                = mDialogDataFrameQueryDatas->getLogicOperations();
+
+	return querydatas(df, contents, logic);
+}
+
+/**
+ * @brief 过滤给定条件外的数据
+ * @param lower 可选参数，下界值
+ * @param upper 可选参数，上界值。
+ * @return 成功返回true,反之返回false
+ */
+bool DADataOperateOfDataFrameWidget::querydatas(const DAPyDataFrame& df, QList< QString > contents, bool logic)
+{
+	std::unique_ptr< DACommandDataFrame_querydatas > cmd =
+		std::make_unique< DACommandDataFrame_querydatas >(df, mModel, contents, logic);
 	if (!cmd->exec()) {
 		return false;
 	}

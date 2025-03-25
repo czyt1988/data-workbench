@@ -75,6 +75,7 @@ public:
 	QAction* actionDataFrameFillInterpolate;  ///< 插值法填充缺失值
 	QAction* actionNstdFilterOutlier;         ///< n倍标准差过滤异常值
 	QAction* actionDataFrameClipOutlier;      ///< 替换界限外异常值
+	QAction* actionDataFrameQueryDatas;       ///< 过滤给定条件外的数据
 	QAction* actionCreatePivotTable;          ///< 创建数据透视表
 	//===================================================
 	// workflow的上下文标签

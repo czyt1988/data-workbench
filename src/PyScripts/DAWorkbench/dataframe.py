@@ -229,6 +229,17 @@ def da_create_pivot_table(df: pd.DataFrame, values=None, index=None, columns=Non
 
 
 @log_function_call
+def da_query_datas(df: pd.DataFrame, expr:str|None = None):
+    '''
+    替换dataframe的异常值
+    :param df: pd.DataFrame。
+    :param expr:字符串形式的筛选条件。
+    :return: 此函数不返回值，直接改变df
+    '''
+    safe_expr = "True" if expr is None else expr
+    df.query(expr=safe_expr ,inplace=True)
+
+@log_function_call
 def da_to_pickle(df: pd.DataFrame, path: str):
     '''
     把dataframe写到文件

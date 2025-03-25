@@ -227,6 +227,8 @@ private Q_SLOTS:
 	void onActionNstdFilterOutlierTriggered();
 	// 替换界限外异常值
 	void onActionDataFrameClipOutlierTriggered();
+	// 过滤给定条件外的数据
+	void onActionDataFrameQueryDatasTriggered();
 #if DA_ENABLE_PYTHON
 	// 列数据类型改变
 	void onComboxColumnTypesCurrentDTypeChanged(const DA::DAPyDType& dt);
