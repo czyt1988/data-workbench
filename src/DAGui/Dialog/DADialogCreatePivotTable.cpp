@@ -25,7 +25,7 @@ DADialogCreatePivotTable::PrivateData::PrivateData(DADialogCreatePivotTable* p) 
 //===============================================================
 
 DADialogCreatePivotTable::DADialogCreatePivotTable(QWidget* parent)
-	: QDialog(parent), ui(new Ui::DADialogCreatePivotTable), DA_PIMPL_CONSTRUCT
+	: QDialog(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DADialogCreatePivotTable)
 {
 	ui->setupUi(this);
 }
@@ -113,12 +113,13 @@ QStringList DADialogCreatePivotTable::getPivotTableValue() const
 {
 	QStandardItemModel* model = qobject_cast< QStandardItemModel* >(ui->tableViewParameter->model());
 
-	if (!model)
-		return QStringList();
-
-	int rows = model->rowCount();
 	// 存储选中的文本值
 	QStringList values;
+	if (!model) {
+		return values;
+	}
+
+	int rows = model->rowCount();
 
 	for (int i = 0; i < rows; ++i) {
 		QStandardItem* item = model->item(i, 0);
@@ -132,13 +133,14 @@ QStringList DADialogCreatePivotTable::getPivotTableValue() const
 QStringList DADialogCreatePivotTable::getPivotTableIndex() const
 {
 	QStandardItemModel* model = qobject_cast< QStandardItemModel* >(ui->tableViewParameter->model());
-
-	if (!model)
-		return QStringList();
-
-	int rows = model->rowCount();
 	// 存储选中的文本值
 	QStringList indexs;
+
+	if (!model) {
+		return indexs;
+	}
+
+	int rows = model->rowCount();
 
 	for (int i = 0; i < rows; ++i) {
 		QStandardItem* item = model->item(i, 1);
@@ -169,6 +171,17 @@ QStringList DADialogCreatePivotTable::getPivotTableColumn() const
 	return columns;
 }
 
+/**
+ * @brief 获取聚合函数
+ *
+ * @todo 这里不要使用combox的文本作为聚合函数的名字，应该使用combox的data，因为文本有可能进行翻译，翻译后就会导致错误，
+ * 应该如下操作:
+ * @code
+ * ui->comboBoxAggfunc->addItem(tr("menu"),QString("menu"));//第一个是可翻译的文本，第二个是设置到item的QVariant的data内容，
+ * @endcode
+ *
+ * @return
+ */
 QString DADialogCreatePivotTable::getPivotTableAggfunc() const
 {
 	return ui->comboBoxAggfunc->currentText();
@@ -184,6 +197,12 @@ void DADialogCreatePivotTable::setEnableMargins(bool on)
 	ui->checkBoxMargins->setChecked(on);
 }
 
+/**
+ * @brief
+ *
+ * @todo MarginsName不应该让用户输入，而是让用户选择，可以使用带checkbox的combox,这个去github上或者哪里搜索一下有没有现成的，这个combox把列名列举出来，再加上一个all，让用户自己勾选就行
+ * @return
+ */
 QString DADialogCreatePivotTable::getMarginsName() const
 {
 	return ui->lineEditMarginsName->text();

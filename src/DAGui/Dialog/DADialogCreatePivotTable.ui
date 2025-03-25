@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Pivot Table Guide</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -22,6 +22,9 @@
      <layout class="QGridLayout" name="gridLayout">
       <item row="3" column="0">
        <widget class="QCheckBox" name="checkBoxMargins">
+        <property name="toolTip">
+         <string>Special All columns and rows will be added with partial group aggregates across the categories on the rows and columns</string>
+        </property>
         <property name="text">
          <string>Margins</string>
         </property>
@@ -30,7 +33,7 @@
       <item row="1" column="0">
        <widget class="QLabel" name="labelAggfunc">
         <property name="text">
-         <string>Aggfunc</string>
+         <string>Aggregate function</string>
         </property>
        </widget>
       </item>
@@ -48,7 +51,52 @@
         </item>
         <item>
          <property name="text">
+          <string>count</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
           <string>size</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>min</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>max</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>median</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>std</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>var</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>first</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>last</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>prod</string>
          </property>
         </item>
        </widget>
@@ -57,6 +105,9 @@
        <widget class="QLineEdit" name="lineEditMarginsName">
         <property name="enabled">
          <bool>false</bool>
+        </property>
+        <property name="toolTip">
+         <string>Name of the row / column that will contain the totals</string>
         </property>
         <property name="autoFillBackground">
          <bool>false</bool>
@@ -71,6 +122,9 @@
       </item>
       <item row="4" column="0" colspan="2">
        <widget class="QCheckBox" name="checkBoxSort">
+        <property name="toolTip">
+         <string>Specifies if the result should be sorted.</string>
+        </property>
         <property name="text">
          <string>Sort</string>
         </property>
