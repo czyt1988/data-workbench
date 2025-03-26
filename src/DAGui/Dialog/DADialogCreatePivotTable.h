@@ -52,6 +52,13 @@ public:
 	void setEnableSort(bool on);
 
 private:
+	// Aggfunc参数
+	void initPivotTableAggfunc();
+
+private slots:
+	void onTableItemClicked(const QModelIndex& index);
+
+private:
 	Ui::DADialogCreatePivotTable* ui;
 };
 }
