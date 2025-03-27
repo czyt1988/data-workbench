@@ -28,6 +28,8 @@ DADialogCreatePivotTable::DADialogCreatePivotTable(QWidget* parent)
 	: QDialog(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DADialogCreatePivotTable)
 {
 	ui->setupUi(this);
+	this->initPivotTableAggfunc();
+	connect(ui->tableViewParameter, &QTableView::clicked, this, &DADialogCreatePivotTable::onTableItemClicked);
 }
 
 DADialogCreatePivotTable::~DADialogCreatePivotTable()
@@ -171,6 +173,22 @@ QStringList DADialogCreatePivotTable::getPivotTableColumn() const
 	return columns;
 }
 
+void DADialogCreatePivotTable::initPivotTableAggfunc()
+{
+	ui->comboBoxAggfunc->addItem(tr("mean"), QStringLiteral("mean"));
+	ui->comboBoxAggfunc->addItem(tr("sum"), QStringLiteral("sum"));
+	ui->comboBoxAggfunc->addItem(tr("count"), QStringLiteral("count"));
+	ui->comboBoxAggfunc->addItem(tr("size"), QStringLiteral("size"));
+	ui->comboBoxAggfunc->addItem(tr("min"), QStringLiteral("min"));
+	ui->comboBoxAggfunc->addItem(tr("max"), QStringLiteral("max"));
+	ui->comboBoxAggfunc->addItem(tr("median"), QStringLiteral("median"));
+	ui->comboBoxAggfunc->addItem(tr("std"), QStringLiteral("std"));
+	ui->comboBoxAggfunc->addItem(tr("var"), QStringLiteral("var"));
+	ui->comboBoxAggfunc->addItem(tr("first"), QStringLiteral("first"));
+	ui->comboBoxAggfunc->addItem(tr("last"), QStringLiteral("last"));
+	ui->comboBoxAggfunc->addItem(tr("prod"), QStringLiteral("prod"));
+}
+
 /**
  * @brief 获取聚合函数
  *
@@ -184,7 +202,8 @@ QStringList DADialogCreatePivotTable::getPivotTableColumn() const
  */
 QString DADialogCreatePivotTable::getPivotTableAggfunc() const
 {
-	return ui->comboBoxAggfunc->currentText();
+	QVariant data = ui->comboBoxAggfunc->itemData(ui->comboBoxAggfunc->currentIndex());
+	return data.toString();
 }
 
 bool DADialogCreatePivotTable::isEnableMarginsName() const
@@ -221,5 +240,18 @@ bool DADialogCreatePivotTable::isEnableSort() const
 void DADialogCreatePivotTable::setEnableSort(bool on)
 {
 	ui->checkBoxSort->setChecked(on);
+}
+
+void DADialogCreatePivotTable::onTableItemClicked(const QModelIndex& index)
+{
+	if (!index.isValid())
+		return;
+
+	QStandardItem* item = d_ptr->mModel->itemFromIndex(index);
+	if (item && item->isCheckable()) {
+		// 切换复选框状态
+		Qt::CheckState newState = (item->checkState() == Qt::Checked) ? Qt::Unchecked : Qt::Checked;
+		item->setCheckState(newState);
+	}
 }
 }
