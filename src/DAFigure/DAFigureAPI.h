@@ -16,11 +16,11 @@ namespace DA
  */
 enum class ChartTypes
 {
-    Curve,    ///< 曲线
-    Scatter,  ///< 散点
-    Unknow = 1000
+	Curve,    ///< 曲线
+	Scatter,  ///< 散点
+	Bar,      ///< 柱状
+	Unknow = 1000
 };
-
 }
 
 #endif  // DAFIGUREAPI_H

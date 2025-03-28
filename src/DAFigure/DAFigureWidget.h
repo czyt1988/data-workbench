@@ -70,13 +70,13 @@ public:
 	bool isEnableSubChartEditor() const;
 	// 获取图表的数量
 	int getChartCount() const;
-    // 获取默认的绘图颜色
-    virtual QColor getDefaultColor() const;
-    // 设置颜色主题
-    void setFigureColorTheme(const DAColorTheme& th);
-    DAColorTheme getFigureColorTheme() const;
-    const DAColorTheme& figureColorTheme() const;
-    DAColorTheme& figureColorTheme();
+	// 获取默认的绘图颜色
+	virtual QColor getDefaultColor() const;
+	// 设置颜色主题
+	void setFigureColorTheme(const DAColorTheme& th);
+	DAColorTheme getFigureColorTheme() const;
+	const DAColorTheme& figureColorTheme() const;
+	DAColorTheme& figureColorTheme();
 
 public:
 	// 绘图相关
@@ -87,6 +87,7 @@ public:
 	// 支持redo/undo的addCurve，等同于gca()->addCurve
 	QwtPlotCurve* addCurve_(const QVector< QPointF >& xyDatas);
 	QwtPlotCurve* addScatter_(const QVector< QPointF >& xyDatas);
+	QwtPlotBarChart* addBar_(const QVector< QPointF >& xyDatas, const QColor& color);
 
 public:
 	// 推送一个命令

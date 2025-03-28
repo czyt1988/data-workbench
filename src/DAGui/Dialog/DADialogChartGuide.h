@@ -35,7 +35,7 @@ public:
 	~DADialogChartGuide();
 	// 设置datamanager,会把combox填入所有的dataframe
 	void setDataManager(DADataManager* dmgr);
-	// 设置datafram
+	// 设置dataframe
 	void setCurrentData(const DAData& d);
 	// 获取当前的绘图类型
 	DA::ChartTypes getCurrentChartType() const;

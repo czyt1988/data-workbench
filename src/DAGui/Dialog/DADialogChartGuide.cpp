@@ -39,6 +39,10 @@ void DADialogChartGuide::init()
 	item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-scatter.svg"), tr("scatter"));
 	item->setData(Qt::UserRole, static_cast< int >(DA::ChartTypes::Scatter));
 	ui->listWidgetChartType->addItem(item);
+	// bar
+	item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-bar.svg"), tr("bar"));
+	item->setData(Qt::UserRole, static_cast< int >(DA::ChartTypes::Bar));
+	ui->listWidgetChartType->addItem(item);
 	// 初始化
 	ui->stackedWidget->setCurrentWidget(ui->pageCurve);
 	ui->listWidgetChartType->setCurrentRow(0);
@@ -222,6 +226,9 @@ void DADialogChartGuide::onListWidgetCurrentItemChanged(QListWidgetItem* current
 		ui->stackedWidget->setCurrentWidget(ui->pageCurve);
 		ui->pageCurve->setScatterMode(true);
 		break;
+	case DA::ChartTypes::Bar:
+		ui->stackedWidget->setCurrentWidget(ui->pageCurve);
+		ui->pageCurve->setScatterMode(false);
 	default:
 		break;
 	}
