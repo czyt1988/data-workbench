@@ -72,6 +72,7 @@ Q_SIGNALS:
 	 * @param path 工程的路径
 	 */
 	void projectLoaded(const QString& path);
+
 	/**
 	 * @brief 工程成功保存
 	 * @param path 保存的路径
@@ -82,6 +83,7 @@ Q_SIGNALS:
 	 * @param on 脏标识
 	 */
 	void dirtyStateChanged(bool on);
+
 	/**
 	 * @brief 工程被清空触发信号
 	 */

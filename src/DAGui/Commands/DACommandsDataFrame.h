@@ -53,12 +53,12 @@ class DAGUI_API DACommandDataFrame_iat : public DACommandWithRedoCount
 {
 public:
 	DACommandDataFrame_iat(const DAPyDataFrame& df,
-						   int row,
-						   int col,
-						   const QVariant& olddata,
-						   const QVariant& newdata,
-						   DAPyDataFrameTableModule* model = nullptr,
-						   QUndoCommand* par               = nullptr);
+                           int row,
+                           int col,
+                           const QVariant& olddata,
+                           const QVariant& newdata,
+                           DAPyDataFrameTableModule* model = nullptr,
+                           QUndoCommand* par               = nullptr);
 	virtual void undo() override;
 	virtual bool exec() override;
 
@@ -78,9 +78,9 @@ class DAGUI_API DACommandDataFrame_insertNanRow : public DACommandWithTemplateDa
 {
 public:
 	DACommandDataFrame_insertNanRow(const DAPyDataFrame& df,
-									int row,
-									DAPyDataFrameTableModule* model = nullptr,
-									QUndoCommand* par               = nullptr);
+                                    int row,
+                                    DAPyDataFrameTableModule* model = nullptr,
+                                    QUndoCommand* par               = nullptr);
 	virtual void undo() override;
 	virtual bool exec() override;
 
@@ -96,18 +96,18 @@ class DAGUI_API DACommandDataFrame_insertColumn : public DACommandWithTemplateDa
 {
 public:
 	DACommandDataFrame_insertColumn(const DAPyDataFrame& df,
-									int col,
-									const QString& name,
-									const QVariant& defaultvalue,
-									DAPyDataFrameTableModule* model = nullptr,
-									QUndoCommand* par               = nullptr);
+                                    int col,
+                                    const QString& name,
+                                    const QVariant& defaultvalue,
+                                    DAPyDataFrameTableModule* model = nullptr,
+                                    QUndoCommand* par               = nullptr);
 	DACommandDataFrame_insertColumn(const DAPyDataFrame& df,
-									int col,
-									const QString& name,
-									const QVariant& start,
-									const QVariant& stop,
-									DAPyDataFrameTableModule* model = nullptr,
-									QUndoCommand* par               = nullptr);
+                                    int col,
+                                    const QString& name,
+                                    const QVariant& start,
+                                    const QVariant& stop,
+                                    DAPyDataFrameTableModule* model = nullptr,
+                                    QUndoCommand* par               = nullptr);
 	virtual void undo() override;
 	virtual bool exec() override;
 
@@ -129,9 +129,9 @@ class DAGUI_API DACommandDataFrame_dropIRow : public DACommandWithTemplateData
 {
 public:
 	DACommandDataFrame_dropIRow(const DAPyDataFrame& df,
-								const QList< int >& index,
-								DAPyDataFrameTableModule* model = nullptr,
-								QUndoCommand* par               = nullptr);
+                                const QList< int >& index,
+                                DAPyDataFrameTableModule* model = nullptr,
+                                QUndoCommand* par               = nullptr);
 
 	virtual void undo() override;
 	virtual bool exec() override;
@@ -148,9 +148,9 @@ class DAGUI_API DACommandDataFrame_dropIColumn : public DACommandWithTemplateDat
 {
 public:
 	DACommandDataFrame_dropIColumn(const DAPyDataFrame& df,
-								   const QList< int >& index,
-								   DAPyDataFrameTableModule* model = nullptr,
-								   QUndoCommand* par               = nullptr);
+                                   const QList< int >& index,
+                                   DAPyDataFrameTableModule* model = nullptr,
+                                   QUndoCommand* par               = nullptr);
 	virtual void undo() override;
 	virtual bool exec() override;
 
@@ -166,14 +166,14 @@ class DAGUI_API DACommandDataFrame_renameColumns : public DACommandWithRedoCount
 {
 public:
 	DACommandDataFrame_renameColumns(const DAPyDataFrame& df,
-									 const QList< QString >& cols,
-									 QHeaderView* hv   = nullptr,
-									 QUndoCommand* par = nullptr);
+                                     const QList< QString >& cols,
+                                     QHeaderView* hv   = nullptr,
+                                     QUndoCommand* par = nullptr);
 	DACommandDataFrame_renameColumns(const DAPyDataFrame& df,
-									 const QList< QString >& cols,
-									 const QList< QString >& oldcols,
-									 QHeaderView* hv   = nullptr,
-									 QUndoCommand* par = nullptr);
+                                     const QList< QString >& cols,
+                                     const QList< QString >& oldcols,
+                                     QHeaderView* hv   = nullptr,
+                                     QUndoCommand* par = nullptr);
 	virtual void undo() override;
 	virtual bool exec() override;
 
@@ -191,10 +191,10 @@ class DAGUI_API DACommandDataFrame_astype : public DACommandWithTemplateData
 {
 public:
 	DACommandDataFrame_astype(const DAPyDataFrame& df,
-							  const QList< int >& index,
-							  const DAPyDType& dt,
-							  DAPyDataFrameTableModule* model = nullptr,
-							  QUndoCommand* par               = nullptr);
+                              const QList< int >& index,
+                              const DAPyDType& dt,
+                              DAPyDataFrameTableModule* model = nullptr,
+                              QUndoCommand* par               = nullptr);
 	virtual void undo() override;
 	virtual bool exec() override;
 
@@ -211,10 +211,10 @@ class DAGUI_API DACommandDataFrame_setnan : public DACommandWithRedoCount
 {
 public:
 	DACommandDataFrame_setnan(const DAPyDataFrame& df,
-							  const QList< int >& rows,
-							  const QList< int >& columns,
-							  DAPyDataFrameTableModule* model = nullptr,
-							  QUndoCommand* par               = nullptr);
+                              const QList< int >& rows,
+                              const QList< int >& columns,
+                              DAPyDataFrameTableModule* model = nullptr,
+                              QUndoCommand* par               = nullptr);
 	virtual void undo() override;
 	virtual bool exec() override;
 
@@ -233,47 +233,24 @@ class DAGUI_API DACommandDataFrame_dropna : public DACommandWithTemplateData
 {
 public:
 	DACommandDataFrame_dropna(const DAPyDataFrame& df,
-							  DAPyDataFrameTableModule* model = nullptr,
-							  int axis                        = 0,
-							  const QString& how              = QStringLiteral("any"),
-							  const QList< int >& index       = QList< int >(),
-							  int thresh                      = -1,
-							  QUndoCommand* par               = nullptr);
+                              DAPyDataFrameTableModule* model = nullptr,
+                              int axis                        = 0,
+                              const QString& how              = QStringLiteral("any"),
+                              const QList< int >& index       = QList< int >(),
+                              int thresh                      = -1,
+                              QUndoCommand* par               = nullptr);
 	virtual void undo() override;
 	virtual bool exec() override;
 
 	int getDropedCount() const;
 
 private:
-	DAPyDataFrameTableModule* mModel { nullptr };
-	int mAxis { 0 };
+    DAPyDataFrameTableModule* mModel { nullptr };
+    int mAxis { 0 };
 	QString mHow;
 	QList< int > mIndex;
-	int mThresh { -1 };
-	int mDropedCount { 0 };  ///< 记录删除了多少行或列
-};
-
-/**
- * @brief dropduplicates
- */
-class DAGUI_API DACommandDataFrame_dropduplicates : public DACommandWithTemplateData
-{
-public:
-	DACommandDataFrame_dropduplicates(const DAPyDataFrame& df,
-									  DAPyDataFrameTableModule* model = nullptr,
-									  const QString& keep             = QStringLiteral("first"),
-									  const QList< int >& index       = QList< int >(),
-									  QUndoCommand* par               = nullptr);
-	virtual void undo() override;
-	virtual bool exec() override;
-
-	int getDropedCount() const;
-
-private:
-	DAPyDataFrameTableModule* mModel { nullptr };
-	QString mKeep;
-	QList< int > mIndex;
-	int mDropedCount { 0 };  ///< 记录删除了多少行或列
+    int mThresh { -1 };
+    int mDropedCount { 0 };  ///< 记录删除了多少行或列
 };
 
 /**
@@ -283,17 +260,17 @@ class DAGUI_API DACommandDataFrame_fillna : public DACommandWithTemplateData
 {
 public:
 	DACommandDataFrame_fillna(const DAPyDataFrame& df,
-							  DAPyDataFrameTableModule* model = nullptr,
-							  double value                    = 0.0,
-							  int limit                       = -1,
-							  QUndoCommand* par               = nullptr);
+                              DAPyDataFrameTableModule* model = nullptr,
+                              double value                    = 0.0,
+                              int limit                       = -1,
+                              QUndoCommand* par               = nullptr);
 	virtual void undo() override;
 	virtual bool exec() override;
 
 private:
-	DAPyDataFrameTableModule* mModel { nullptr };
-	double mValue { 0.0 };
-	int mLimit { -1 };
+    DAPyDataFrameTableModule* mModel { nullptr };
+    double mValue { 0.0 };
+    int mLimit { -1 };
 };
 
 /**
@@ -303,19 +280,19 @@ class DAGUI_API DACommandDataFrame_interpolate : public DACommandWithTemplateDat
 {
 public:
 	DACommandDataFrame_interpolate(const DAPyDataFrame& df,
-								   DAPyDataFrameTableModule* model = nullptr,
-								   const QString& method           = QStringLiteral("spline"),
-								   int order                       = 1,
-								   int limit                       = -1,
-								   QUndoCommand* par               = nullptr);
+                                   DAPyDataFrameTableModule* model = nullptr,
+                                   const QString& method           = QStringLiteral("spline"),
+                                   int order                       = 1,
+                                   int limit                       = -1,
+                                   QUndoCommand* par               = nullptr);
 	virtual void undo() override;
 	virtual bool exec() override;
 
 private:
-	DAPyDataFrameTableModule* mModel { nullptr };
+    DAPyDataFrameTableModule* mModel { nullptr };
 	QString mMethod;
-	int mOrder { 1 };
-	int mLimit { -1 };
+    int mOrder { 1 };
+    int mLimit { -1 };
 };
 
 /**
@@ -325,17 +302,17 @@ class DAGUI_API DACommandDataFrame_ffillna : public DACommandWithTemplateData
 {
 public:
 	DACommandDataFrame_ffillna(const DAPyDataFrame& df,
-							   DAPyDataFrameTableModule* model = nullptr,
-							   int axis                        = 0,
-							   int limit                       = -1,
-							   QUndoCommand* par               = nullptr);
+                               DAPyDataFrameTableModule* model = nullptr,
+                               int axis                        = 0,
+                               int limit                       = -1,
+                               QUndoCommand* par               = nullptr);
 	virtual void undo() override;
 	virtual bool exec() override;
 
 private:
-	DAPyDataFrameTableModule* mModel{ nullptr };
-	int mAxis{ 0 };
-	int mLimit{ -1 };
+	DAPyDataFrameTableModule* mModel { nullptr };
+	int mAxis { 0 };
+	int mLimit { -1 };
 };
 
 /**
@@ -345,17 +322,107 @@ class DAGUI_API DACommandDataFrame_bfillna : public DACommandWithTemplateData
 {
 public:
 	DACommandDataFrame_bfillna(const DAPyDataFrame& df,
-							   DAPyDataFrameTableModule* model = nullptr,
-							   int axis                        = 0,
-							   int limit                       = -1,
-							   QUndoCommand* par               = nullptr);
+                               DAPyDataFrameTableModule* model = nullptr,
+                               int axis                        = 0,
+                               int limit                       = -1,
+                               QUndoCommand* par               = nullptr);
+	virtual void undo() override;
+	virtual bool exec() override;
+
+private:
+	DAPyDataFrameTableModule* mModel { nullptr };
+	int mAxis { 0 };
+	int mLimit { -1 };
+};
+
+/**
+ * @brief dropduplicates
+ */
+class DAGUI_API DACommandDataFrame_dropduplicates : public DACommandWithTemplateData
+{
+public:
+	DACommandDataFrame_dropduplicates(const DAPyDataFrame& df,
+                                      DAPyDataFrameTableModule* model = nullptr,
+                                      const QString& keep             = QStringLiteral("first"),
+                                      const QList< int >& index       = QList< int >(),
+                                      QUndoCommand* par               = nullptr);
+	virtual void undo() override;
+	virtual bool exec() override;
+
+	int getDropedCount() const;
+
+private:
+    DAPyDataFrameTableModule* mModel { nullptr };
+	QString mKeep;
+	QList< int > mIndex;
+    int mDropedCount { 0 };  ///< 记录删除了多少行或列
+};
+
+/**
+ * @brief nstdfilteroutlier
+ */
+class DAGUI_API DACommandDataFrame_nstdfilteroutlier : public DACommandWithTemplateData
+{
+public:
+	DACommandDataFrame_nstdfilteroutlier(const DAPyDataFrame& df,
+                                         DAPyDataFrameTableModule* model = nullptr,
+                                         double n                        = 3,
+                                         int axis                        = 1,
+                                         const QList< int >& index       = QList< int >(),
+                                         QUndoCommand* par               = nullptr);
+	virtual void undo() override;
+	virtual bool exec() override;
+	int getDropedCount() const;
+
+private:
+    DAPyDataFrameTableModule* mModel { nullptr };
+    double mN { 3.0 };
+    int mAxis { 0 };
+	QList< int > mIndex;
+    int mDropedCount { 0 };  ///< 记录删除了多少行或列
+};
+
+/**
+ * @brief clipoutlier
+ */
+class DAGUI_API DACommandDataFrame_clipoutlier : public DACommandWithTemplateData
+{
+public:
+	DACommandDataFrame_clipoutlier(const DAPyDataFrame& df,
+                                   DAPyDataFrameTableModule* model = nullptr,
+                                   double lowervalue               = 0.0,
+                                   double uppervalue               = 0.0,
+                                   int axis                        = 0,
+                                   QUndoCommand* par               = nullptr);
+	virtual void undo() override;
+	virtual bool exec() override;
+
+private:
+    DAPyDataFrameTableModule* mModel { nullptr };
+    double mlowervalue { 0.0 };
+    double mUppervalue { 0.0 };
+    int mAxis { 0 };
+	QList< int > mIndex;
+};
+
+/**
+ * @brief querydatas
+ */
+class DAGUI_API DACommandDataFrame_querydatas : public DACommandWithTemplateData
+{
+public:
+	DACommandDataFrame_querydatas(const DAPyDataFrame& df,
+								  DAPyDataFrameTableModule* model  = nullptr,
+								  const QList< QString >& contents = QList< QString >(),
+								  bool logic                       = true,
+								  QUndoCommand* par                = nullptr);
 	virtual void undo() override;
 	virtual bool exec() override;
 
 private:
 	DAPyDataFrameTableModule* mModel{ nullptr };
-	int mAxis{ 0 };
-	int mLimit{ -1 };
+	QList< QString > mContents;
+	bool mLogic;
 };
 
 /**
@@ -365,10 +432,10 @@ class DAGUI_API DACommandDataFrame_castNum : public DACommandWithTemplateData
 {
 public:
 	DACommandDataFrame_castNum(const DAPyDataFrame& df,
-							   const QList< int >& index,
-							   const pybind11::dict& args,
-							   DAPyDataFrameTableModule* model = nullptr,
-							   QUndoCommand* par               = nullptr);
+                               const QList< int >& index,
+                               const pybind11::dict& args,
+                               DAPyDataFrameTableModule* model = nullptr,
+                               QUndoCommand* par               = nullptr);
 	virtual void undo() override;
 	virtual bool exec() override;
 
@@ -385,10 +452,10 @@ class DAGUI_API DACommandDataFrame_castDatetime : public DACommandWithTemplateDa
 {
 public:
 	DACommandDataFrame_castDatetime(const DAPyDataFrame& df,
-									const QList< int >& index,
-									const pybind11::dict& args,
-									DAPyDataFrameTableModule* model = nullptr,
-									QUndoCommand* par               = nullptr);
+                                    const QList< int >& index,
+                                    const pybind11::dict& args,
+                                    DAPyDataFrameTableModule* model = nullptr,
+                                    QUndoCommand* par               = nullptr);
 	virtual void undo() override;
 	virtual bool exec() override;
 
@@ -405,10 +472,10 @@ class DAGUI_API DACommandDataFrame_setIndex : public DACommandWithTemplateData
 {
 public:
 	DACommandDataFrame_setIndex(const DAPyDataFrame& df,
-								const QList< int >& index,
-								QHeaderView* hv                 = nullptr,
-								DAPyDataFrameTableModule* model = nullptr,
-								QUndoCommand* par               = nullptr);
+                                const QList< int >& index,
+                                QHeaderView* hv                 = nullptr,
+                                DAPyDataFrameTableModule* model = nullptr,
+                                QUndoCommand* par               = nullptr);
 	virtual void undo() override;
 	virtual bool exec() override;
 

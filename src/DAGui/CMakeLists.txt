@@ -9,7 +9,7 @@ damacro_lib_setting(
     "DA GUI | https://github.com/czyt1988"
     0
     0
-    1
+    2
 )
 
 ########################################################
@@ -63,6 +63,7 @@ set(DA_LIB_HEADER_FILES
     DAWorkFlowNodeItemSettingWidget.h
     DAWorkFlowOperateWidget.h
     DASettingContainerWidget.h
+    DAZipArchive.h
     DAXmlHelper.h
 )
 set(DA_LIB_SOURCE_FILES
@@ -98,6 +99,7 @@ set(DA_LIB_SOURCE_FILES
     DAWorkFlowNodeItemSettingWidget.cpp
     DAWorkFlowOperateWidget.cpp
     DASettingContainerWidget.cpp
+    DAZipArchive.cpp
     DAXmlHelper.cpp
 )
 set(DA_LIB_QT_UI_FILES
@@ -194,6 +196,9 @@ if(DA_ENABLE_PYTHON)
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillna.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillInterpolate.h
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameClipOutlier.h
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameQueryDatas.h
+        ${DA_LIB_SUBDIR_Dialog}/DADialogCreatePivotTable.h
     )
     list(APPEND DA_LIB_SOURCE_FILES_Dialog
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToDatetime.cpp
@@ -203,6 +208,9 @@ if(DA_ENABLE_PYTHON)
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillna.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillInterpolate.cpp
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameClipOutlier.cpp
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameQueryDatas.cpp
+        ${DA_LIB_SUBDIR_Dialog}/DADialogCreatePivotTable.cpp
     )
     list(APPEND DA_LIB_QT_UI_FILES_Dialog
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToDatetime.ui
@@ -211,6 +219,9 @@ if(DA_ENABLE_PYTHON)
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillna.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillInterpolate.ui
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameClipOutlier.ui
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameQueryDatas.ui
+        ${DA_LIB_SUBDIR_Dialog}/DADialogCreatePivotTable.ui
     )
 endif()
 #MimeData
@@ -364,7 +375,8 @@ damacro_import_qwt(${DA_LIB_NAME})
 # -------------link ctk--------------------------
 damacro_import_DALiteCtk(${DA_LIB_NAME})
 
-
+# -------------link quazip--------------------------
+damacro_import_quazip(${DA_LIB_NAME})
 ########################################################
 # 设置通用库属性
 ########################################################

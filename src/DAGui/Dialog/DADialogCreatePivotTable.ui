@@ -1,58 +1,71 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>DADialogDataFrameFillna</class>
- <widget class="QDialog" name="DADialogDataFrameFillna">
+ <class>DADialogCreatePivotTable</class>
+ <widget class="QDialog" name="DADialogCreatePivotTable">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>383</width>
-    <height>183</height>
+    <width>717</width>
+    <height>520</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Pivot Table Guide</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QGroupBox" name="groupBoxFillna">
+    <widget class="QGroupBox" name="groupBoxDADialogDataFrameInterpolate">
      <property name="title">
-      <string>Fill NA/NaN values</string>
+      <string>Pivot Table</string>
      </property>
      <layout class="QGridLayout" name="gridLayout">
+      <item row="0" column="0" colspan="2">
+       <widget class="QTableView" name="tableViewParameter"/>
+      </item>
       <item row="1" column="0">
-       <widget class="QCheckBox" name="checkBoxLimit">
-        <property name="toolTip">
-         <string>This is the maximum number of consecutive NaN values to forward/backward fill. In other words, if there is a gap with more than this number of consecutive NaNs, it will only be partially filled</string>
-        </property>
+       <widget class="QLabel" name="labelAggfunc">
         <property name="text">
-         <string>limit</string>
+         <string>Aggregate function</string>
         </property>
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QSpinBox" name="spinBoxLimit">
+       <widget class="QComboBox" name="comboBoxAggfunc"/>
+      </item>
+      <item row="3" column="0">
+       <widget class="QCheckBox" name="checkBoxMargins">
+        <property name="toolTip">
+         <string>Special All columns and rows will be added with partial group aggregates across the categories on the rows and columns</string>
+        </property>
+        <property name="text">
+         <string>Margins</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0" colspan="2">
+       <widget class="QCheckBox" name="checkBoxSort">
+        <property name="toolTip">
+         <string>Specifies if the result should be sorted.</string>
+        </property>
+        <property name="text">
+         <string>Sort</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QLineEdit" name="lineEditMarginsName">
         <property name="enabled">
          <bool>false</bool>
         </property>
         <property name="toolTip">
-         <string>This is the maximum number of entries along the entire axis where NaNs will be filled. Must be greater than 0</string>
+         <string>Name of the row / column that will contain the totals</string>
         </property>
-        <property name="minimum">
-         <number>1</number>
+        <property name="autoFillBackground">
+         <bool>false</bool>
         </property>
-        <property name="maximum">
-         <number>999999999</number>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QLineEdit" name="lineEditValue"/>
-      </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="label">
         <property name="text">
-         <string>Value to use to fill holes</string>
+         <string>All</string>
         </property>
        </widget>
       </item>
@@ -60,19 +73,9 @@
     </widget>
    </item>
    <item>
-    <spacer name="verticalSpacer">
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <spacer name="horizontalSpacer">
+      <spacer name="horizontalSpacer_2">
        <property name="sizeHint" stdset="0">
         <size>
          <width>40</width>
@@ -117,12 +120,12 @@
   <connection>
    <sender>pushButtonOK</sender>
    <signal>clicked()</signal>
-   <receiver>DADialogDataFrameFillna</receiver>
+   <receiver>DADialogCreatePivotTable</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>261</x>
-     <y>172</y>
+     <x>620</x>
+     <y>509</y>
     </hint>
     <hint type="destinationlabel">
      <x>154</x>
@@ -133,12 +136,12 @@
   <connection>
    <sender>pushButtonCancel</sender>
    <signal>clicked()</signal>
-   <receiver>DADialogDataFrameFillna</receiver>
+   <receiver>DADialogCreatePivotTable</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>360</x>
-     <y>172</y>
+     <x>706</x>
+     <y>509</y>
     </hint>
     <hint type="destinationlabel">
      <x>311</x>
@@ -147,18 +150,18 @@
    </hints>
   </connection>
   <connection>
-   <sender>checkBoxLimit</sender>
+   <sender>checkBoxMargins</sender>
    <signal>toggled(bool)</signal>
-   <receiver>spinBoxLimit</receiver>
+   <receiver>lineEditMarginsName</receiver>
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>46</x>
-     <y>80</y>
+     <x>58</x>
+     <y>440</y>
     </hint>
     <hint type="destinationlabel">
-     <x>351</x>
-     <y>81</y>
+     <x>320</x>
+     <y>442</y>
     </hint>
    </hints>
   </connection>

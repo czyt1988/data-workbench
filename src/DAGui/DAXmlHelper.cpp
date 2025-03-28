@@ -1906,6 +1906,7 @@ QDomElement DAXmlHelper::makeElement(const DADataManager* dmgr, const QString& t
 
 bool DAXmlHelper::loadElement(DADataManager* dmgr, const QDomElement* tag, const QVersionNumber& v)
 {
+    return false;
 }
 
 /**

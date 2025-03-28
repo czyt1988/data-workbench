@@ -22,6 +22,9 @@
 #include "Dialog/DADialogInsertNewColumn.h"
 #include "Dialog/DADialogDataFrameFillna.h"
 #include "Dialog/DADialogDataFrameFillInterpolate.h"
+#include "Dialog/DADialogDataFrameClipOutlier.h"
+#include "Dialog/DADialogDataFrameQueryDatas.h"
+#include "Dialog/DADialogCreatePivotTable.h"
 
 //===================================================
 // using DA namespace -- 禁止在头文件using!!
@@ -472,47 +475,6 @@ int DADataOperateOfDataFrameWidget::dropna(const DAPyDataFrame& df, int axis, co
 }
 
 /**
- * @brief 删除重复值
- * @param keep 可选参数，表示指定保留哪个重复的行。默认值为'first'，表示保留第一次出现的重复行；设置为'last'表示保留最后一次出现的重复行,False表示删除所有重复的行。
- * @return 返回删除的数量，0代表没有删除任何内容
- */
-int DADataOperateOfDataFrameWidget::dropduplicates(const QString& keep)
-{
-	DAPyDataFrame df = getDataframe();
-	if (df.isNone()) {
-		return 0;
-	}
-	QList< int > index;
-	if (isDataframeTableHaveSelection()) {
-		// 获取选中的列
-		index = getFullySelectedDataframeColumns();
-	}
-	return dropduplicates(df, keep, index);
-}
-
-/**
- * @brief 删除重复值
- * @param keep 可选参数，表示指定保留哪个重复的行。默认值为'first'，表示保留第一次出现的重复行；设置为'last'表示保留最后一次出现的重复行,False表示删除所有重复的行。
- * @param index 可选参数，用于指定用于判断重复的列或列列表。如果为 None，则使用所有列。
- * @return 返回删除的数量，0代表没有删除任何内容
- */
-int DADataOperateOfDataFrameWidget::dropduplicates(const DAPyDataFrame& df, const QString& keep, const QList< int > index)
-{
-	std::unique_ptr< DACommandDataFrame_dropduplicates > cmd =
-		std::make_unique< DACommandDataFrame_dropduplicates >(df, mModel, keep, index);
-	if (!cmd->exec()) {
-		return 0;
-	}
-	int dropcnt = cmd->getDropedCount();
-	if (dropcnt == 0) {
-		// 说明没有删除任何内容，也返回0
-		return 0;
-	}
-	getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
-	return dropcnt;
-}
-
-/**
  * @brief 填充缺失值
  * @return 成功返回true,反之返回false
  */
@@ -574,6 +536,8 @@ bool DADataOperateOfDataFrameWidget::interpolate()
 	}
 	// 获取插值填充方法
 	QString method = mDialogDataFrameFillInterpolate->getInterpolateMethod();
+	// 获取插值方向
+	int axis = mDialogDataFrameFillInterpolate->getInterPolateAxis();
 	// 获取多项式插值次数
 	int order      = mDialogDataFrameFillInterpolate->getInterpolateOrder();
 	int limitCount = -1;  // 如果-1证明没有设置
@@ -605,15 +569,6 @@ bool DADataOperateOfDataFrameWidget::ffillna()
 		return false;
 	}
 	int axis = 0;
-	//	QList< int > index;
-	//	if (isDataframeTableHaveSelection()) {
-	//		// 先看看是否选中了列
-	//		index = getFullySelectedDataframeColumns();
-	//		if (!index.isEmpty()) {
-	//			// 说明单独选中了一列，这时只针对列进行ffillna
-	//			axis = 1;
-	//		}
-	//	}
 	return ffillna(df, axis, -1);
 }
 
@@ -644,15 +599,6 @@ bool DADataOperateOfDataFrameWidget::bfillna()
 		return false;
 	}
 	int axis = 0;
-	//	QList< int > index;
-	//	if (isDataframeTableHaveSelection()) {
-	//		// 先看看是否选中了列
-	//		index = getFullySelectedDataframeColumns();
-	//		if (!index.isEmpty()) {
-	//			// 说明单独选中了一列，这时只针对列进行bfillna
-	//			axis = 1;
-	//		}
-	//	}
 	return bfillna(df, axis, -1);
 }
 
@@ -674,6 +620,166 @@ bool DADataOperateOfDataFrameWidget::bfillna(const DAPyDataFrame& df, int axis, 
 }
 
 /**
+ * @brief 删除重复值
+ * @param keep 可选参数，表示指定保留哪个重复的行。默认值为'first'，表示保留第一次出现的重复行；设置为'last'表示保留最后一次出现的重复行,False表示删除所有重复的行。
+ * @return 返回删除的数量，0代表没有删除任何内容
+ */
+int DADataOperateOfDataFrameWidget::dropduplicates(const QString& keep)
+{
+	DAPyDataFrame df = getDataframe();
+	if (df.isNone()) {
+		return 0;
+	}
+	QList< int > index;
+	if (isDataframeTableHaveSelection()) {
+		// 获取选中的列
+		index = getFullySelectedDataframeColumns();
+	}
+	return dropduplicates(df, keep, index);
+}
+
+/**
+ * @brief 删除重复值
+ * @param keep 可选参数，表示指定保留哪个重复的行。默认值为'first'，表示保留第一次出现的重复行；设置为'last'表示保留最后一次出现的重复行,False表示删除所有重复的行。
+ * @param index 可选参数，用于指定用于判断重复的列或列列表。如果为 None，则使用所有列。
+ * @return 返回删除的数量，0代表没有删除任何内容
+ */
+int DADataOperateOfDataFrameWidget::dropduplicates(const DAPyDataFrame& df, const QString& keep, const QList< int > index)
+{
+	std::unique_ptr< DACommandDataFrame_dropduplicates > cmd =
+		std::make_unique< DACommandDataFrame_dropduplicates >(df, mModel, keep, index);
+	if (!cmd->exec()) {
+		return 0;
+	}
+	int dropcnt = cmd->getDropedCount();
+	if (dropcnt == 0) {
+		// 说明没有删除任何内容，也返回0
+		return 0;
+	}
+	getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
+	return dropcnt;
+}
+
+/**
+ * @brief n倍标准差法删除异常值
+ * @return 返回删除的数量，0代表没有删除任何内容
+ */
+int DADataOperateOfDataFrameWidget::nstdfilteroutlier(double n)
+{
+	DAPyDataFrame df = getDataframe();
+	if (df.isNone()) {
+		return false;
+	}
+	int axis = 1;
+	QList< int > index;
+	if (isDataframeTableHaveSelection()) {
+		// 先看看是否选中了列
+		index = getFullySelectedDataframeColumns();
+	}
+	return nstdfilteroutlier(df, n, axis, index);
+}
+
+/**
+ * @brief n倍标准差法删除异常值
+ * @param axis 填充轴向，0代表按行填充，1代表按列填充
+ * @return 返回填充的数量，0代表没有填充任何内容
+ */
+int DADataOperateOfDataFrameWidget::nstdfilteroutlier(const DAPyDataFrame& df, double n, int axis, const QList< int > index)
+{
+	std::unique_ptr< DACommandDataFrame_nstdfilteroutlier > cmd =
+		std::make_unique< DACommandDataFrame_nstdfilteroutlier >(df, mModel, n, axis, index);
+	if (!cmd->exec()) {
+		return false;
+	}
+	getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
+	return true;
+}
+
+/**
+ * @brief 替换规定界限外的异常值
+ * @return 成功返回true,反之返回false
+ */
+bool DADataOperateOfDataFrameWidget::clipoutlier()
+{
+	DAPyDataFrame df = getDataframe();
+	if (df.isNone()) {
+		return false;
+	}
+	if (!mDialogDataFrameQueryDatas) {
+		mDialogDataFrameQueryDatas = new DADialogDataFrameQueryDatas(this);
+	}
+	if (QDialog::Accepted != mDialogDataFrameClipOutlier->exec()) {
+		// 说明用户取消
+		return false;
+	}
+	// 获取填充值
+	double lowervalue = mDialogDataFrameClipOutlier->getLowerValue();
+	double uppervalue = mDialogDataFrameClipOutlier->getUpperValue();
+
+	int axis = 0;
+
+	return clipoutlier(df, lowervalue, uppervalue, axis);
+}
+
+/**
+ * @brief 替换规定界限外的异常值
+ * @param lower 可选参数，下界值
+ * @param upper 可选参数，上界值。
+ * @return 成功返回true,反之返回false
+ */
+bool DADataOperateOfDataFrameWidget::clipoutlier(const DAPyDataFrame& df, double lower, double upper, int axis)
+{
+	std::unique_ptr< DACommandDataFrame_clipoutlier > cmd =
+		std::make_unique< DACommandDataFrame_clipoutlier >(df, mModel, lower, upper, axis);
+	if (!cmd->exec()) {
+		return false;
+	}
+	getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
+	return true;
+}
+
+/**
+ * @brief 过滤给定条件外的数据
+ * @return 成功返回true,反之返回false
+ */
+bool DADataOperateOfDataFrameWidget::querydatas()
+{
+	DAPyDataFrame df = getDataframe();
+	if (df.isNone()) {
+		return false;
+	}
+	if (!mDialogDataFrameQueryDatas) {
+		mDialogDataFrameQueryDatas = new DADialogDataFrameQueryDatas(this);
+	}
+	if (QDialog::Accepted != mDialogDataFrameQueryDatas->exec()) {
+		// 说明用户取消
+		return false;
+	}
+	// 获取填充值
+	QList< QString > contents = mDialogDataFrameQueryDatas->getQueryConditions();
+	bool logic                = mDialogDataFrameQueryDatas->getLogicOperations();
+
+	return querydatas(df, contents, logic);
+}
+
+/**
+ * @brief 过滤给定条件外的数据
+ * @param lower 可选参数，下界值
+ * @param upper 可选参数，上界值。
+ * @return 成功返回true,反之返回false
+ */
+bool DADataOperateOfDataFrameWidget::querydatas(const DAPyDataFrame& df, QList< QString > contents, bool logic)
+{
+	std::unique_ptr< DACommandDataFrame_querydatas > cmd =
+		std::make_unique< DACommandDataFrame_querydatas >(df, mModel, contents, logic);
+	if (!cmd->exec()) {
+		return false;
+	}
+	getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
+	return true;
+}
+
+/**
  * @brief 创建一个数据描述
  * @return
  */
@@ -684,6 +790,68 @@ DAPyDataFrame DADataOperateOfDataFrameWidget::createDataDescribe()
 	}
 	DAPyDataFrame df_describe = mData.toDataFrame().describe();
 	return df_describe;
+}
+
+/**
+ * @brief 创建数据透视表。
+ * @return
+ */
+
+DAPyDataFrame DADataOperateOfDataFrameWidget::createPivotTable()
+{
+	DAPyDataFrame df = getDataframe();
+	if (df.isNone()) {
+		return DAPyDataFrame();
+	}
+	if (!mDialogCreatePivotTable) {
+		mDialogCreatePivotTable = new DADialogCreatePivotTable(this);
+	}
+	mDialogCreatePivotTable->setDataframe(df);
+	if (QDialog::Accepted != mDialogCreatePivotTable->exec()) {
+		// 说明用户取消
+		return DAPyDataFrame();
+	}
+	// 获取创建透视表的参数
+	QStringList value   = mDialogCreatePivotTable->getPivotTableValue();
+	QStringList index   = mDialogCreatePivotTable->getPivotTableIndex();
+	QStringList columns = mDialogCreatePivotTable->getPivotTableColumn();
+	QString aggfunc     = mDialogCreatePivotTable->getPivotTableAggfunc();
+	bool margins        = mDialogCreatePivotTable->isEnableMarginsName();
+	QString marginsName = mDialogCreatePivotTable->getMarginsName();
+	bool sort           = mDialogCreatePivotTable->isEnableSort();
+
+	// 如果用户没有选定分组，则返回空
+	if (index.empty())
+		return DAPyDataFrame();
+
+	return createPivotTable(df, value, index, columns, aggfunc, margins, marginsName, sort);
+}
+
+/**
+ * @brief 创建数据透视表。
+ * @param value 可选参数，要进行汇总的数据值
+ * @param index 可选参数，被分析的特征，列、数组、列表
+ * @param columns 可选参数，进行分组的特征，列、数组、列表
+ * @param aggfunc 可选参数，聚合函数，计算类型
+ * @param margins 可选参数，行列数据的统计
+ * @param marginsName 可选参数，行列数据的统计的名称
+ * @param sort 可选参数，聚合后的结果排序
+ * @return
+ */
+DAPyDataFrame DADataOperateOfDataFrameWidget::createPivotTable(const DAPyDataFrame& df,
+                                                               const QStringList value,
+                                                               const QStringList index,
+                                                               const QStringList columns,
+                                                               const QString& aggfunc,
+                                                               bool margins,
+                                                               const QString& marginsName,
+                                                               bool sort)
+{
+
+	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+
+	DAPyDataFrame df_pivottable = pydf.pivotTable(df, value, index, columns, aggfunc, margins, marginsName, sort);
+	return df_pivottable;
 }
 
 /**

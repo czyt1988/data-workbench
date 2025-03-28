@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>411</width>
-    <height>192</height>
+    <width>440</width>
+    <height>250</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Fill Interpolate</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -20,6 +20,20 @@
       <string>Fill Interpolate</string>
      </property>
      <layout class="QGridLayout" name="gridLayout">
+      <item row="0" column="1">
+       <widget class="QComboBox" name="comboBoxMethod">
+        <item>
+         <property name="text">
+          <string>spline</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>polynomial</string>
+         </property>
+        </item>
+       </widget>
+      </item>
       <item row="1" column="0">
        <widget class="QLabel" name="labelOrder">
         <property name="text">
@@ -27,7 +41,37 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
+      <item row="5" column="0">
+       <widget class="QCheckBox" name="checkBoxLimit">
+        <property name="toolTip">
+         <string>This is the maximum number of consecutive NaN values to forward/backward fill. In other words, if there is a gap with more than this number of consecutive NaNs, it will only be partially filled</string>
+        </property>
+        <property name="text">
+         <string>limit</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="labelAxis">
+        <property name="text">
+         <string>Interpolate axis</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="lineEditOrder">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="mouseTracking">
+         <bool>true</bool>
+        </property>
+        <property name="text">
+         <string>1</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
        <widget class="QSpinBox" name="spinBoxLimit">
         <property name="enabled">
          <bool>false</bool>
@@ -50,42 +94,41 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
-       <widget class="QCheckBox" name="checkBoxLimit">
-        <property name="toolTip">
-         <string>This is the maximum number of consecutive NaN values to forward/backward fill. In other words, if there is a gap with more than this number of consecutive NaNs, it will only be partially filled</string>
-        </property>
-        <property name="text">
-         <string>limit</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="lineEditOrder">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-        <property name="mouseTracking">
-         <bool>true</bool>
-        </property>
-        <property name="text">
-         <string>1</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QComboBox" name="comboBoxMethod">
+      <item row="3" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
         <item>
-         <property name="text">
-          <string>spline</string>
-         </property>
+         <widget class="QRadioButton" name="radioButtonAxis0">
+          <property name="text">
+           <string>colume</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
         </item>
         <item>
-         <property name="text">
-          <string>polynomial</string>
-         </property>
+         <widget class="QRadioButton" name="radioButtonAxis1">
+          <property name="tabletTracking">
+           <bool>false</bool>
+          </property>
+          <property name="acceptDrops">
+           <bool>false</bool>
+          </property>
+          <property name="autoFillBackground">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>row</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+         </widget>
         </item>
-       </widget>
+       </layout>
       </item>
      </layout>
     </widget>
@@ -107,19 +150,6 @@
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Orientation::Vertical</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer_2">
        <property name="orientation">
         <enum>Qt::Orientation::Horizontal</enum>
        </property>
@@ -171,8 +201,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>268</x>
-     <y>181</y>
+     <x>314</x>
+     <y>210</y>
     </hint>
     <hint type="destinationlabel">
      <x>154</x>
@@ -188,7 +218,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>400</x>
-     <y>181</y>
+     <y>210</y>
     </hint>
     <hint type="destinationlabel">
      <x>311</x>

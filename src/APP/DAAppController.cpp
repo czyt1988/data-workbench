@@ -255,13 +255,15 @@ void DAAppController::initConnection()
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameFillInterpolate, onActionDataFrameFillInterpolateTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameFFillNone, onActionDataFrameFFillNoneTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameBFillNone, onActionDataFrameBFillNoneTriggered);
-
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDropDuplicates, onActionDropDuplicatesTriggered);
-
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionNstdFilterOutlier, onActionNstdFilterOutlierTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCreateDataDescribe, onActionCreateDataDescribeTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToNum, onActionCastToNumTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToString, onActionCastToStringTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToDatetime, onActionCastToDatetimeTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameClipOutlier, onActionDataFrameClipOutlierTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameQueryDatas, onActionDataFrameQueryDatasTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCreatePivotTable, onActionCreatePivotTableTriggered);
 	// 不知为何使用函数指针无法关联信号和槽
 	//  connect(m_comboxColumnTypes, &DAPyDTypeComboBox::currentDTypeChanged, this,&DAAppRibbonArea::onComboxColumnTypesCurrentDTypeChanged);
 	//  QObject::connect: signal not found in DAPyDTypeComboBox
@@ -1687,6 +1689,29 @@ void DAAppController::onActionCreateDataDescribeTriggered()
 }
 
 /**
+ * @brief 创建数据透视表
+ */
+void DAAppController::onActionCreatePivotTableTriggered()
+{
+	// TODO 此函数应该移动到dataOperateWidget中
+#if DA_ENABLE_PYTHON
+	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+		DAPyDataFrame df = dfopt->createPivotTable();
+		if (df.isNone()) {
+			return;
+		}
+		DAData data = df;
+		data.setName(tr("%1_PviotTable").arg(dfopt->data().getName()));
+		data.setDescribe(tr("Generate pivot table").arg(dfopt->data().getName()));
+		mDatas->addData(data);
+		// showDataOperate要在m_dataManagerStack.push之后，因为m_dataManagerStack.push可能会导致data的名字改变
+		mDock->showDataOperateWidget(data);
+		setDirty();
+	}
+#endif
+}
+
+/**
  * @brief 删除缺失值
  */
 void DAAppController::onActionDataFrameDropNoneTriggered()
@@ -1721,9 +1746,9 @@ void DAAppController::onActionDataFrameFillInterpolateTriggered()
 #if DA_ENABLE_PYTHON
 	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
 		if (dfopt->interpolate()) {
-            setDirty();
-        }
-    }
+			setDirty();
+		}
+	}
 #endif
 }
 
@@ -1763,6 +1788,45 @@ void DAAppController::onActionDropDuplicatesTriggered()
 #if DA_ENABLE_PYTHON
 	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
 		dfopt->dropduplicates();
+		setDirty();
+	}
+#endif
+}
+
+/**
+ * @brief n倍标准差过滤异常值
+ */
+void DAAppController::onActionNstdFilterOutlierTriggered()
+{
+#if DA_ENABLE_PYTHON
+	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+		dfopt->nstdfilteroutlier();
+		setDirty();
+	}
+#endif
+}
+
+/**
+ * @brief 替换界限外异常值
+ */
+void DAAppController::onActionDataFrameClipOutlierTriggered()
+{
+#if DA_ENABLE_PYTHON
+	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+		dfopt->clipoutlier();
+		setDirty();
+	}
+#endif
+}
+
+/**
+ * @brief 过滤给定条件外的数据
+ */
+void DAAppController::onActionDataFrameQueryDatasTriggered()
+{
+#if DA_ENABLE_PYTHON
+	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+		dfopt->querydatas();
 		setDirty();
 	}
 #endif

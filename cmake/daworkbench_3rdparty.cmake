@@ -1,17 +1,22 @@
-﻿macro(damacro_import_x_x x_namespace x_libname __target_name)
-    find_package(${x_libname})
-    if(${x_libname}_FOUND)
-        message(STATUS "  |-finded ${x_libname}")
+﻿#
+# 这个宏是一个通用的模块引入
+# find_package(x_packagename)
+# target_link_libraries(__target_name x_namespace::x_libname)
+#
+macro(damacro_import_xxx x_packagename x_namespace x_libname __target_name)
+    find_package(${x_packagename})
+    if(${x_packagename}_FOUND)
+        message(STATUS "  |-finded ${x_packagename}")
     else()
-        message(STATUS "  |-can not find ${x_libname}")
+        message(STATUS "  |-can not find ${x_packagename}")
         if(DEFINED DA_INSTALL_LIB_CMAKE_PATH)
-            set(_lib_dir ${DA_INSTALL_LIB_CMAKE_PATH}/${x_libname})
+            set(_lib_dir ${DA_INSTALL_LIB_CMAKE_PATH}/${x_packagename})
             message(STATUS "  |-try to find in ${_lib_dir}")
-            find_package(${x_libname} PATHS ${_lib_dir})
+            find_package(${x_packagename} PATHS ${_lib_dir})
         endif()
     endif()
     # 链接的第三方库
-    if(${x_libname}_FOUND)
+    if(${x_packagename}_FOUND)
         target_link_libraries(${__target_name} PRIVATE
             ${x_namespace}::${x_libname}
         )
@@ -19,10 +24,20 @@
     else()
         message(FATAL_ERROR "  can not find ${x_libname}")
     endif()
-endmacro(damacro_import_x_x)
+endmacro(damacro_import_xxx)
+
+#
+# 这个宏针对libname和package一样的模块引入
+# 例如
+# find_package(x_libname)
+# target_link_libraries(__target_name x_namespace::x_libname)
+#
+macro(damacro_import_xx x_namespace x_libname __target_name)
+    damacro_import_xxx(${x_libname} ${x_namespace} ${x_libname} ${__target_name})
+endmacro(damacro_import_xx)
 
 # 这个宏是引入share/cmake目录的库，例如tsl-ordered-map
-macro(damacro_import_x_x_sharepath x_namespace x_libname __target_name)
+macro(damacro_import_xx_sharepath x_namespace x_libname __target_name)
     find_package(${x_libname})
     if(${x_libname}_FOUND)
         message(STATUS "  |-finded ${x_libname}")
@@ -43,10 +58,16 @@ macro(damacro_import_x_x_sharepath x_namespace x_libname __target_name)
     else()
         message(FATAL_ERROR "  can not find ${x_libname}")
     endif()
-endmacro(damacro_import_x_x_sharepath)
+endmacro(damacro_import_xx_sharepath)
 
+#
+# 这个宏针对libname和namespace一样的模块引入
+# 例如
+# find_package(x_libname)
+# target_link_libraries(__target_name x_libname::x_libname)
+#
 macro(damacro_import_x x_libname __target_name)
-    damacro_import_x_x(${x_libname} ${x_libname} ${__target_name})
+    damacro_import_xx(${x_libname} ${x_libname} ${__target_name})
 endmacro(damacro_import_x)
 
 # damacro_import_SARibbonBar(${DA_LIB_NAME})
@@ -84,7 +105,7 @@ endmacro(damacro_import_DALiteCtk)
 
 macro(damacro_import_QtAdvancedDocking __target_name)
     set(_lib_name qt${QT_VERSION_MAJOR}advanceddocking)
-    damacro_import_x_x(ads ${_lib_name} ${__target_name})
+    damacro_import_xx(ads ${_lib_name} ${__target_name})
 endmacro(damacro_import_QtAdvancedDocking)
 
 macro(damacro_import_qwt __target_name)
@@ -99,6 +120,10 @@ macro(damacro_import_spdlog __target_name)
     damacro_import_x(spdlog ${__target_name})
 endmacro(damacro_import_spdlog)
 
+macro(damacro_import_quazip __target_name)
+    set(_package_name QuaZip-Qt${QT_VERSION_MAJOR})
+    damacro_import_xxx(${_package_name} QuaZip QuaZip ${__target_name})
+endmacro(damacro_import_quazip)
 
 macro(damacro_import_Python __target_name)
     # Python
@@ -143,7 +168,7 @@ endmacro(damacro_import_pybind11)
 macro(damacro_import_orderedmap __target_name)
     # tsl-ordered-map的安装位置不是在lib/cmake
     # 而是在share/cmake下面
-    # tsl-ordered-map无法使用damacro_import_x_x_sharepath或者damacro_import_x_x这些宏
+    # tsl-ordered-map无法使用damacro_import_xx_sharepath或者damacro_import_xx这些宏
     # 因为他的package名称为tsl-ordered-map，他的库名称为ordered_map
     find_package(tsl-ordered-map)
     if(tsl-ordered-map_FOUND)

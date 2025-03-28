@@ -37,7 +37,7 @@ bool DAPyScriptsDataFrame::drop_irow(DAPyDataFrame& df, const QList< int >& inde
 {
 	try {
 		pybind11::object da_drop_irow = attr("da_drop_irow");
-		da_drop_irow(df.object(), DA::PY::toList(index));
+		da_drop_irow(df.object(), DA::PY::toPyList(index));
 		return true;
 	} catch (const std::exception& e) {
 		dealException(e);
@@ -55,7 +55,7 @@ bool DAPyScriptsDataFrame::drop_icolumn(DAPyDataFrame& df, const QList< int >& i
 {
 	try {
 		pybind11::object da_drop_icolumn = attr("da_drop_icolumn");
-		da_drop_icolumn(df.object(), DA::PY::toList(index));
+		da_drop_icolumn(df.object(), DA::PY::toPyList(index));
 		return true;
 	} catch (const std::exception& e) {
 		dealException(e);
@@ -96,7 +96,7 @@ bool DAPyScriptsDataFrame::insert_column(DAPyDataFrame& df, int c, const QString
 		pybind11::dict args;
 		args[ "df" ]   = df.object();
 		args[ "col" ]  = pybind11::int_(c);
-		args[ "name" ] = DA::PY::toString(name);
+		args[ "name" ] = DA::PY::toPyStr(name);
 		if (defaultvalue.isValid()) {
 			args[ "defaultvalue" ] = DA::PY::toPyObject(defaultvalue);
 		}
@@ -128,11 +128,11 @@ bool DAPyScriptsDataFrame::insert_column(DAPyDataFrame& df,
 		pybind11::dict args;
 		args[ "df" ]    = df.object();
 		args[ "col" ]   = pybind11::int_(c);
-		args[ "name" ]  = DA::PY::toString(name);
+		args[ "name" ]  = DA::PY::toPyStr(name);
 		args[ "start" ] = DA::PY::toPyObject(start);
 		args[ "stop" ]  = DA::PY::toPyObject(stop);
 		if (start.canConvert(QMetaType::QDateTime) || start.canConvert(QMetaType::QDate)
-            || start.canConvert(QMetaType::QTime)) {
+			|| start.canConvert(QMetaType::QTime)) {
 			args[ "dtype" ] = pybind11::dtype("datetime64");
 		}
 		da_insert_column(**args);
@@ -153,7 +153,7 @@ bool DAPyScriptsDataFrame::to_pickle(const DAPyDataFrame& df, const QString& pat
 {
 	try {
 		pybind11::object da_to_pickle = attr("da_to_pickle");
-		da_to_pickle(df.object(), DA::PY::toString(path));
+		da_to_pickle(df.object(), DA::PY::toPyStr(path));
 		return true;
 	} catch (const std::exception& e) {
 		dealException(e);
@@ -171,7 +171,7 @@ bool DAPyScriptsDataFrame::from_pickle(DAPyDataFrame& df, const QString& path) n
 {
 	try {
 		pybind11::object da_from_pickle = attr("da_from_pickle");
-		da_from_pickle(df.object(), DA::PY::toString(path));
+		da_from_pickle(df.object(), DA::PY::toPyStr(path));
 		return true;
 	} catch (const std::exception& e) {
 		dealException(e);
@@ -361,36 +361,10 @@ bool DAPyScriptsDataFrame::dropna(DAPyDataFrame& df, int axis, const QString& ho
 		}
 		pybind11::dict args;
 		args[ "axis" ]   = axis;
-		args[ "how" ]    = DA::PY::toString(how);
-		args[ "index" ]  = DA::PY::toList(indexs);
+		args[ "how" ]    = DA::PY::toPyStr(how);
+		args[ "index" ]  = DA::PY::toPyList(indexs);
 		args[ "thresh" ] = threshobj;
 		da_drop_na(df.object(), **args);
-		return true;
-	} catch (const std::exception& e) {
-		dealException(e);
-	}
-	return false;
-}
-
-/**
- * @brief dropduplicates方法的wrapper
- * @param df
- * @param keep
- * @param indexs
- * @return
- */
-bool DAPyScriptsDataFrame::dropduplicates(DAPyDataFrame& df, const QString& keep, const QList< int >& indexs)
-{
-	try {
-		pybind11::object da_drop_duplicates = attr("da_drop_duplicates");
-		pybind11::dict args;
-		args[ "keep" ] = DA::PY::toString(keep);
-		if (indexs.empty()) {
-			args[ "index" ] = pybind11::none();
-		} else {
-			args[ "index" ] = DA::PY::toList(indexs);
-		}
-		da_drop_duplicates(df.object(), **args);
 		return true;
 	} catch (const std::exception& e) {
 		dealException(e);
@@ -436,10 +410,10 @@ bool DAPyScriptsDataFrame::ffillna(DAPyDataFrame& df, int axis, int limit)
 	try {
 		pybind11::object da_ffill_na = attr("da_ffill_na");
 		pybind11::object limitObj    = pybind11::none();
-        if (limit > 0) {
+		if (limit > 0) {
 			limitObj = pybind11::int_(limit);
 		}
-        pybind11::dict args;
+		pybind11::dict args;
 		args[ "axis" ]  = axis;
 		args[ "limit" ] = limitObj;
 		da_ffill_na(df.object(), **args);
@@ -475,7 +449,6 @@ bool DAPyScriptsDataFrame::bfillna(DAPyDataFrame& df, int axis, int limit)
 	}
 	return false;
 }
-
 /**
  * @brief interpolate方法的wrapper
  * @param df
@@ -493,7 +466,7 @@ bool DAPyScriptsDataFrame::interpolate(DAPyDataFrame& df, const QString& method,
 			limitObj = pybind11::int_(limit);
 		}
 		pybind11::dict args;
-		args[ "method" ] = DA::PY::toString(method);
+		args[ "method" ] = DA::PY::toPyStr(method);
 		args[ "order" ]  = order;
 		args[ "limit" ]  = limitObj;
 		da_interpolate(df.object(), **args);
@@ -502,6 +475,179 @@ bool DAPyScriptsDataFrame::interpolate(DAPyDataFrame& df, const QString& method,
 		dealException(e);
 	}
 	return false;
+}
+/**
+ * @brief dropduplicates方法的wrapper
+ * @param df
+ * @param keep
+ * @param indexs
+ * @return
+ */
+bool DAPyScriptsDataFrame::dropduplicates(DAPyDataFrame& df, const QString& keep, const QList< int >& indexs)
+{
+	try {
+		pybind11::object da_drop_duplicates = attr("da_drop_duplicates");
+		pybind11::dict args;
+		args[ "keep" ] = DA::PY::toPyStr(keep);
+		if (indexs.empty()) {
+			args[ "index" ] = pybind11::none();
+		} else {
+			args[ "index" ] = DA::PY::toPyList(indexs);
+		}
+		da_drop_duplicates(df.object(), **args);
+		return true;
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return false;
+}
+
+/**
+ * @brief nstdfilter方法的wrapper
+ * @param df
+ * @param axis
+ * @param n 标准差的倍数，范围是0.1~10，默认为3
+ * @return
+ */
+bool DAPyScriptsDataFrame::nstdfilteroutlier(DAPyDataFrame& df, double n, int axis, const QList< int >& indexs)
+{
+	try {
+		pybind11::object da_nstd_filter_outlier = attr("da_nstd_filter_outlier");
+		if (n > 10 || n < 0.1) {
+			throw std::invalid_argument("n must be between 0.1 and 10.");
+		}
+		pybind11::dict args;
+		args[ "n" ]    = n;
+		args[ "axis" ] = pybind11::int_(axis);
+		if (indexs.empty()) {
+			args[ "index" ] = pybind11::none();
+		} else {
+			args[ "index" ] = DA::PY::toPyList(indexs);
+		}
+		da_nstd_filter_outlier(df.object(), **args);
+		return true;
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return false;
+}
+
+/**
+ * @brief clipoutlier方法的wrapper
+ * @param df
+ * @param keep
+ * @param indexs
+ * @return
+ */
+bool DAPyScriptsDataFrame::clipoutlier(DAPyDataFrame& df, double lowervalue, double uppervalue, int axis)
+{
+	try {
+		pybind11::object da_clip_outlier = attr("da_clip_outlier");
+		pybind11::dict args;
+		if (lowervalue == 0.0) {
+			args[ "lower" ] = pybind11::none();
+		} else {
+			args[ "lower" ] = lowervalue;
+		}
+		if (uppervalue == 0.0) {
+			args[ "upper" ] = pybind11::none();
+		} else {
+			args[ "upper" ] = uppervalue;
+		}
+		args[ "axis" ] = pybind11::int_(axis);
+		da_clip_outlier(df.object(), **args);
+		return true;
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return false;
+}
+
+/**
+ * @brief querydatas方法的wrapper
+ * @param df
+ * @param contents
+ * @return
+ */
+bool DAPyScriptsDataFrame::querydatas(DAPyDataFrame& df, const QList< QString >& contents, bool logic)
+{
+	try {
+		pybind11::object da_query_datas = attr("da_query_datas");
+		pybind11::dict args;
+		QString logic_op = "&";
+		if (logic) {
+			logic_op = "&";
+		} else {
+			logic_op = "|";
+		}
+
+		if (contents.empty()) {
+			args[ "expr" ] = "1 == 1";
+		} else {
+			// 将每个条件用括号包裹，避免优先级问题
+			QStringList wrapped_conditions;
+			for (const QString& cond : contents) {
+				wrapped_conditions.append("(" + cond + ")");
+			}
+			// 使用逻辑运算符连接所有条件
+			QString expr   = wrapped_conditions.join(" " + logic_op + " ");
+			args[ "expr" ] = DA::PY::toPyStr(expr);
+		}
+		da_query_datas(df.object(), **args);
+		return true;
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return false;
+}
+
+/**
+ * @brief pivot_table方法的wrapper
+ * @param values 要进行汇总的数据值
+ * @param index 确定行参数
+ * @param columns 确定列参数
+ * @param aggfunc 要计算的函数，mean求均值、sum求和、size计算个数
+ * @param margins 行列数据的统计
+ * @param sort 聚合后的结果排序
+ * @return DAPyDataFrame
+ */
+DAPyDataFrame DAPyScriptsDataFrame::pivotTable(const DAPyDataFrame& df,
+                                               const QStringList& values,
+                                               const QStringList& index,
+                                               const QStringList& columns,
+                                               const QString& aggfunc,
+                                               bool margins,
+                                               const QString& marginsName,
+                                               bool sort)
+{
+	try {
+		pybind11::object da_pivot_table = attr("da_create_pivot_table");
+		pybind11::dict args;
+		if (values.empty()) {
+			args[ "values" ] = pybind11::none();
+		} else {
+			args[ "values" ] = DA::PY::toPyList(values);
+		}
+		if (index.empty()) {
+			args[ "index" ] = pybind11::none();
+		} else {
+			args[ "index" ] = DA::PY::toPyList(index);
+		}
+		if (columns.empty()) {
+			args[ "columns" ] = pybind11::none();
+		} else {
+			args[ "columns" ] = DA::PY::toPyList(columns);
+		}
+		args[ "aggfunc" ]      = DA::PY::toPyStr(aggfunc);
+		args[ "margins" ]      = margins;
+		args[ "margins_name" ] = DA::PY::toPyStr(marginsName);
+		args[ "sort" ]         = sort;
+
+		return da_pivot_table(df.object(), **args);
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return DAPyDataFrame();
 }
 
 }  // end DA namespace

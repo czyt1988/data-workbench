@@ -92,3 +92,9 @@ message(STATUS "qt${QT_VERSION_MAJOR}advanceddocking_DIR=${qt${QT_VERSION_MAJOR}
 步骤和上述一致，这里不再赘述
 
 最后编译完成后，在bin_qt{version}_{MSVC/GNU}_x{64/32}目录下生成plugins文件夹，里面是编译好的插件dll
+
+# 常见错误
+
+- 完成编译后软件运行python报错
+
+`data-workbench`依赖python，启动过程会寻找python，如果python环境没有指定，会使用`where python`命令获取操作系统下的python环境，如果找不到，会报错，也有可能找到了别的python环境，导致启动加载库失败，`data-workbench`对应的python库需要指定安装相关的包，具体见：[readme文档](../readme.md)，你可以通过`python-config.json`让程序寻找指定的python环境，具体见：[readme文档](../readme.md)

@@ -116,6 +116,8 @@ DA项目编译好的二进制文件统一生成到`bin{Debug/Release}_qt{$$QT_VE
 
 如果第三方库的安装路径不是使用默认路径，需要指定各个第三方库的安装位置
 
+> 第三方库构建请见:[src/3rdparty/readme.md](./src/3rdparty/readme.md)
+
 > 详细构建教程见：[doc/how-to-build.md文档](./doc/how-to-build.md)
 
 

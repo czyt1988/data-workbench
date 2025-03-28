@@ -23,6 +23,7 @@ import copy
 此文件封装dataframe的操作
 '''
 
+
 @log_function_call
 def da_drop_irow(df: pd.DataFrame, index: List[int]):
     '''
@@ -33,6 +34,7 @@ def da_drop_irow(df: pd.DataFrame, index: List[int]):
     '''
     i = df.index[index]
     df.drop(index=i, axis=0, inplace=True)
+
 
 @log_function_call
 def da_drop_icolumn(df: pd.DataFrame, index: List[int]):
@@ -45,8 +47,9 @@ def da_drop_icolumn(df: pd.DataFrame, index: List[int]):
     cols = df.columns[index]
     df.drop(cols, axis=1, inplace=True)
 
+
 @log_function_call
-def da_drop_na(df: pd.DataFrame, axis:int = 0, how:Literal['any','all']='any', index:Optional[List[int]]=None, thresh:Optional[int]=None):
+def da_drop_na(df: pd.DataFrame, axis: int = 0, how: Literal['any', 'all'] = 'any', index: Optional[List[int]] = None, thresh: Optional[int] = None):
     '''
     删除dataframe中的nan值
     :param df: pd.DataFrame
@@ -62,10 +65,11 @@ def da_drop_na(df: pd.DataFrame, axis:int = 0, how:Literal['any','all']='any', i
             subset = df.columns[index]
         else:
             subset = df.index[index]
-    df.dropna(axis=axis,how=how ,subset=subset, thresh=thresh, inplace=True)
+    df.dropna(axis=axis, how=how, subset=subset, thresh=thresh, inplace=True)
+
 
 @log_function_call
-def da_fill_na(df: pd.DataFrame, value:Union[Scalar,dict,None] = None,axis:Optional[Axis]=None, limit:Optional[int]=None, downcast:Optional[dict]= None):
+def da_fill_na(df: pd.DataFrame, value: Union[Scalar, dict, None] = None, axis: Optional[Axis] = None, limit: Optional[int] = None, downcast: Optional[dict] = None):
     '''
     填充dataframe中的nan值
     :param df: pd.DataFrame
@@ -83,10 +87,11 @@ def da_fill_na(df: pd.DataFrame, value:Union[Scalar,dict,None] = None,axis:Optio
     values = {"A": 0, "B": 1, "C": 2, "D": 3}
     df.fillna(value=values)
     '''
-    df.fillna(axis = axis, value = value,downcast=downcast,inplace = True)
+    df.fillna(axis=axis, value=value, downcast=downcast, inplace=True)
+
 
 @log_function_call
-def da_ffill_na(df: pd.DataFrame, axis:Optional[Axis]=None, limit:Optional[int]=None, downcast: Optional[dict] = None):
+def da_ffill_na(df: pd.DataFrame, axis: Optional[Axis] = None, limit: Optional[int] = None, downcast: Optional[dict] = None):
     '''
     填充dataframe中的nan值
     :param df: pd.DataFrame
@@ -95,10 +100,11 @@ def da_ffill_na(df: pd.DataFrame, axis:Optional[Axis]=None, limit:Optional[int]=
     :param downcast:可选的字典，指定向下转型操作（例如将浮点数转换为整数等）。
     :return: 此函数不返回值，直接改变df
     '''
-    df.ffill(axis = axis, inplace = True,limit = limit,downcast=downcast)
-    
+    df.ffill(axis=axis, inplace=True, limit=limit, downcast=downcast)
+
+
 @log_function_call
-def da_bfill_na(df: pd.DataFrame, axis:Optional[Axis]=None, limit:Optional[int]=None, limit_area:Optional[Literal['inside','outside']]=None):
+def da_bfill_na(df: pd.DataFrame, axis: Optional[Axis] = None, limit: Optional[int] = None, limit_area: Optional[Literal['inside', 'outside']] = None):
     '''
     填充dataframe中的nan值
     :param df: pd.DataFrame
@@ -107,25 +113,75 @@ def da_bfill_na(df: pd.DataFrame, axis:Optional[Axis]=None, limit:Optional[int]=
     :param limit_area: 字符串，默认为 None。可选值为 None、inside 或 outside。inside 表示只填充被有效值包围的缺失值，outside 表示只填充在有效值之前或之后的缺失值。
     :return: 此函数不返回值，直接改变df
     '''
-    df.bfill(axis = axis, inplace = True,limit = limit,limit_area=limit_area)
+    df.bfill(axis=axis, inplace=True, limit=limit, limit_area=limit_area)
+
 
 @log_function_call
-def da_drop_duplicates(df: pd.DataFrame,keep:Literal['first','last',False]='first', index:Optional[List[int]]=None):
-    '''
-    删除dataframe中的nan值
-    :param df: pd.DataFrame
-    :param keep: 指定保留哪个重复的行,'first'：保留第一次出现的重复行（默认）,'last'：保留最后一次出现的重复行,False：删除所有重复的行。
-    :param index: 列索引
-    :return: 此函数不返回值,直接改变df
-    '''
-    subset = None
-    if index is not None:
-        subset = df.columns[index]
-    df.drop_duplicates(subset=subset, keep=keep, inplace=True)
+def da_nstd_filter_outlier(df: pd.DataFrame, n=3, axis: Optional[Axis] = None, index: Optional[List[int]] = None):
+    """
+    使用n倍标准差法过滤DataFrame的行或列（直接在原数据上修改）
+    :param df: 输入的pd.DataFrame
+    :param n: 标准差的倍数，范围是0.1~10，默认为3
+    :param axis: 过滤方向，1表示基于选中列过滤行(默认)，0表示基于选中行过滤列
+    :param index: 需要过滤的行或列的索引列表，如果为None，则过滤所有行或列
+    :return: 过滤后的DataFrame
+    """
+    # 如果未指定索引，则默认过滤所有行或列
+    if index is None:
+        index = list(range(df.shape[1 if axis == 1 else 0]))
+
+    # 计算均值和标准差
+    if axis == 1:  # 计算选中列的值，过滤行
+        data = df.iloc[:, index]
+        mean = data.mean(axis=0)  # 沿着行的方向，计算每一列的平均值
+        std = data.std(axis=0)    # 沿着行的方向，计算每一列的标准差
+
+        # 为每一列创建掩码，标识该列中哪些行在均值±n*标准差范围内
+        # 初始化一个全True的掩码数组
+        keep_rows = pd.Series([True] * df.shape[0], index=df.index)
+
+        # 检查每一列，确定哪些行需要保留
+        for i, col_idx in enumerate(index):
+            col_data = df.iloc[:, col_idx]
+            col_mean = mean.iloc[i]
+            col_std = std.iloc[i]
+            col_lower = col_mean - n * col_std
+            col_upper = col_mean + n * col_std
+
+            # 更新keep_rows，只保留在所有选中列都在范围内的行
+            keep_rows = keep_rows & (col_data >= col_lower) & (
+                col_data <= col_upper)
+
+        # 直接删除不符合条件的行
+        df.drop(df.index[~keep_rows], inplace=True)
+
+    elif axis == 0:  # 计算选中的行的值，过滤列
+        data = df.iloc[index]
+        mean = data.mean(axis=1)  # 沿着列的方向，计算每一行的平均值
+        std = data.std(axis=1)    # 沿着列的方向，计算每一行的平均值
+
+        # 为每一行创建掩码，标识该行中哪些列在均值±n*标准差范围内
+        keep_cols = pd.Series([True] * df.shape[1], index=df.columns)
+
+        # 检查每一行，确定哪些列需要保留
+        for i, row_idx in enumerate(index):
+            row_data = df.iloc[row_idx]
+            row_mean = mean[i]
+            row_std = std[i]
+            row_lower = row_mean - n * row_std
+            row_upper = row_mean + n * row_std
+
+            # 更新keep_cols，只保留在所有选中行都在范围内的列
+            keep_cols = keep_cols & (row_data >= row_lower) & (
+                row_data <= row_upper)
+
+        # 直接删除不符合条件的列
+        df.drop(columns=df.columns[~keep_cols], inplace=True)
+
 
 @log_function_call
-def da_fill_interpolate(df: pd.DataFrame, method:Literal['spline','polynomial']='spline',order:int=1, axis:int = 0, limit:Optional[int]=None, 
-                        limit_direction: Literal["forward", "backward", "both"]="forward",limit_area:Literal["inside", "outside",None]=None,downcast: Optional[dict] = None):
+def da_fill_interpolate(df: pd.DataFrame, method: Literal['spline', 'polynomial'] = 'spline', order: int = 1, axis: int = 0, limit: Optional[int] = None,
+                        limit_direction: Literal["forward", "backward", "both"] = "forward", limit_area: Literal["inside", "outside", None] = None, downcast: Optional[dict] = None):
     '''
     插值法填充dataframe中的nan值
     :param df: pd.DataFrame。
@@ -138,8 +194,51 @@ def da_fill_interpolate(df: pd.DataFrame, method:Literal['spline','polynomial']=
     :param downcast:可选的字典，指定向下转型操作（例如将浮点数转换为整数等）。
     :return: 此函数不返回值，直接改变df
     '''
-    df.interpolate(method = method, order = order, axis = axis, downcast = downcast, inplace = True)
-    
+    df.interpolate(method=method, order=order, axis=axis,
+                   downcast=downcast, inplace=True)
+
+
+@log_function_call
+def da_clip_outlier(df: pd.DataFrame, lower: Optional[float] = None, upper: Optional[float] = None, axis: int = 0):
+    '''
+    替换dataframe的异常值
+    :param df: pd.DataFrame。
+    :param lower: 所有小于 lower 的值会被替换为 lower。如果为 None，则不应用下界。
+    :param upper: 所有大于 upper 的值会被替换为 upper。如果为 None，则不应用上界。
+    :param axis: 填充的轴方向，0 或 'index' 表示按行填充，1 或 'columns' 表示按列填充。
+    :return: 此函数不返回值，直接改变df
+    '''
+    df.clip(lower=lower, upper=upper, axis=axis, inplace=True)
+
+
+@log_function_call
+def da_create_pivot_table(df: pd.DataFrame, values=None, index=None, columns=None, aggfunc: Literal['mean', 'sum', 'size'] = 'mean',
+                          margins: bool = False, margins_name: str = "All", sort: bool = False):
+    '''
+    创建数据透视表
+    :param values: 要进行汇总的数据值
+    :param index: 确定行参数
+    :param columns: 确定列参数
+    :param aggfunc: 要计算的函数，mean求均值、sum求和、size计算个数
+    :param margins: 行列数据的统计
+    :param margins_name: 行列数据的统计表头名
+    :param sort: 聚合后的结果排序
+    :return: 数据聚合后的DataFrame
+    '''
+    return df.pivot_table(values=values, index=index, columns=columns, aggfunc=aggfunc, margins=margins, margins_name=margins_name, sort=sort)
+
+
+@log_function_call
+def da_query_datas(df: pd.DataFrame, expr:Optional[str] = None):
+    '''
+    替换dataframe的异常值
+    :param df: pd.DataFrame。
+    :param expr:字符串形式的筛选条件。
+    :return: 此函数不返回值，直接改变df
+    '''
+    safe_expr = "True" if expr is None else expr
+    df.query(expr=safe_expr ,inplace=True)
+
 @log_function_call
 def da_to_pickle(df: pd.DataFrame, path: str):
     '''
@@ -149,6 +248,7 @@ def da_to_pickle(df: pd.DataFrame, path: str):
     :return: 此函数不返回值
     '''
     df.to_pickle(path)
+
 
 @log_function_call
 def da_from_pickle(df: pd.DataFrame, path: str):
@@ -161,6 +261,7 @@ def da_from_pickle(df: pd.DataFrame, path: str):
     tmp = pd.read_pickle(path)
     df.__init__(tmp)
 
+
 @log_function_call
 def da_astype(df: pd.DataFrame, colsIndex: List[int], dtype: np.dtype):
     '''
@@ -172,6 +273,7 @@ def da_astype(df: pd.DataFrame, colsIndex: List[int], dtype: np.dtype):
     '''
     cols = [df.columns[v] for v in colsIndex]
     df[cols] = df[cols].astype(dtype)
+
 
 @log_function_call
 def da_setnan(df: pd.DataFrame, rowindex: List[int], colindex: List[int]):
@@ -186,6 +288,7 @@ def da_setnan(df: pd.DataFrame, rowindex: List[int], colindex: List[int]):
         raise Exception('row length len not equal column index length')
     for r, c in zip(rowindex, colindex):
         df.iat[r, c] = np.nan
+
 
 @log_function_call
 def da_cast_to_num(df: pd.DataFrame,
@@ -229,6 +332,7 @@ def da_cast_to_datetime(df: pd.DataFrame,
             unit=unit, infer_datetime_format=infer_datetime_format,
             origin=origin, cache=cache)
 
+
 @log_function_call
 def da_setindex(df: pd.DataFrame, colsIndex: List[int]):
     '''
@@ -259,6 +363,7 @@ def da_setindex(df: pd.DataFrame, colsIndex: List[int]):
     # 把列转换为index
     df.set_index(cols, inplace=True)
 
+
 @log_function_call
 def da_insert_nanrow(df: pd.DataFrame, row: int):
     '''
@@ -278,6 +383,7 @@ def da_insert_nanrow(df: pd.DataFrame, row: int):
     else:
         df.__init__(pd.concat([df1, dfnanrow, df2], ignore_index=False))
 
+
 @log_function_call
 def da_insert_column(df: pd.DataFrame, col: int, name: str,
                      dtype: Optional[np.dtype] = None,
@@ -295,12 +401,12 @@ def da_insert_column(df: pd.DataFrame, col: int, name: str,
         stop ([type], optional): [description]. Defaults to None.
     '''
     if start is None:
-        df.insert(col,name,np.full(df.shape[0],defaultvalue,dtype=dtype))
+        df.insert(col, name, np.full(df.shape[0], defaultvalue, dtype=dtype))
     else:
         s = None
         # 对于数值，使用linspace，对于日期使用arange
         if dtype == np.datetime64:
-            #日期单独处理
+            # 日期单独处理
             if stop is not None:
                 # 指定了结束日期
                 s = pd.date_range(start, stop, periods=df.shape[0])
@@ -310,13 +416,14 @@ def da_insert_column(df: pd.DataFrame, col: int, name: str,
                 start = np.datetime64(start)
                 step = np.timedelta64(1, 's')
                 stop = start + step*df.shape[0]
-                s = np.arange(start,stop,step)
+                s = np.arange(start, stop, step)
         else:
             if stop is not None:
-                s = np.linspace(start,stop,df.shape[0])
+                s = np.linspace(start, stop, df.shape[0])
             else:
-                s = np.linspace(start,start+df.shape[0],df.shape[0])
-        df.insert(col,name,s)
+                s = np.linspace(start, start+df.shape[0], df.shape[0])
+        df.insert(col, name, s)
+
 
 @log_function_call
 def da_itake_column(df: pd.DataFrame, col: int) -> pd.Series:
@@ -327,12 +434,13 @@ def da_itake_column(df: pd.DataFrame, col: int) -> pd.Series:
         col (int): 列索引
     '''
     s = df[df.columns[col]]
-    da_drop_icolumn(df=df,index=[col])
+    da_drop_icolumn(df=df, index=[col])
     return s
 
+
 @log_function_call
-def da_insert_at(df: pd.DataFrame, col: int,series:pd.Series):
-    df.insert(col,series.name,series)
+def da_insert_at(df: pd.DataFrame, col: int, series: pd.Series):
+    df.insert(col, series.name, series)
 
 
 def make_dataframe(size: int = 100) -> pd.DataFrame:
@@ -422,23 +530,25 @@ def __tst_insert_column():
     df = make_dataframe(7)
     print(df)
     da_insert_column(df=df, col=1, name='insert-nan')
-    da_insert_column(df=df, col=2, name='insert-samevalue',defaultvalue=1.0)
-    da_insert_column(df=df, col=3, name='insert-datetime',dtype=np.datetime64,start='2020-01-01')
-    da_insert_column(df=df, col=3, name='insert-datetime2',dtype=np.datetime64,start='2020-01-01',stop='2021-01-01')
+    da_insert_column(df=df, col=2, name='insert-samevalue', defaultvalue=1.0)
+    da_insert_column(df=df, col=3, name='insert-datetime',
+                     dtype=np.datetime64, start='2020-01-01')
+    da_insert_column(df=df, col=3, name='insert-datetime2',
+                     dtype=np.datetime64, start='2020-01-01', stop='2021-01-01')
     print(df)
+
 
 def __tst_fill_na():
     df = pd.DataFrame([[np.nan, 2, np.nan, 0],
-                    [3, 4, np.nan, 1],
-                    [np.nan, np.nan, np.nan, np.nan],
-                    [np.nan, 3, np.nan, 4]],
-                    columns=list("ABCD"))
+                       [3, 4, np.nan, 1],
+                       [np.nan, np.nan, np.nan, np.nan],
+                       [np.nan, 3, np.nan, 4]],
+                      columns=list("ABCD"))
     print(df)
     values = {"A": 0, "B": 1, "C": 2, "D": 3}
-    da_fill_na(df,value=values)
+    da_fill_na(df, value=values)
     print(df)
 
 
 if __name__ == '__main__':
     __tst_fill_na()
-

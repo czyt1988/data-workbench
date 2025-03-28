@@ -403,53 +403,6 @@ int DACommandDataFrame_dropna::getDropedCount() const
 
 ///////////////////
 
-DACommandDataFrame_dropduplicates::DACommandDataFrame_dropduplicates(const DAPyDataFrame& df,
-                                                                     DAPyDataFrameTableModule* model,
-                                                                     const QString& keep,
-                                                                     const QList< int >& index,
-                                                                     QUndoCommand* par)
-    : DACommandWithTemplateData(df, par), mModel(model), mKeep(keep), mIndex(index)
-{
-    setText(QObject::tr("drop duplicates"));  // cn:删除重复值
-}
-
-void DACommandDataFrame_dropduplicates::undo()
-{
-	load();
-	// 说明删除了空行
-	if (mModel) {
-		if (mDropedCount != 0) {
-			mModel->refresh();
-		}
-	}
-}
-
-bool DACommandDataFrame_dropduplicates::exec()
-{
-	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
-	std::size_t lenBegin       = dataframe().size();
-	if (!pydf.dropduplicates(dataframe(), mKeep, mIndex)) {
-		return false;
-	}
-	std::size_t lenEnd = dataframe().size();
-	mDropedCount       = lenBegin - lenEnd;
-
-	// 说明删除了空行
-	if (mModel) {
-		if (mDropedCount != 0) {
-			mModel->refresh();
-		}
-	}
-	return true;
-}
-
-int DACommandDataFrame_dropduplicates::getDropedCount() const
-{
-	return mDropedCount;
-}
-
-///////////////////
-
 DACommandDataFrame_fillna::DACommandDataFrame_fillna(const DAPyDataFrame& df,
                                                      DAPyDataFrameTableModule* model,
                                                      double value,
@@ -508,7 +461,7 @@ bool DACommandDataFrame_interpolate::exec()
 {
 	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
 
-	if (!pydf.interpolate(dataframe(), mMethod, mOrder, mLimit)) {
+    if (!pydf.interpolate(dataframe(), mMethod, mOrder, mLimit)) {
 		return false;
 	}
 
@@ -518,6 +471,8 @@ bool DACommandDataFrame_interpolate::exec()
 	}
 	return true;
 }
+
+///////////////////
 
 DACommandDataFrame_ffillna::DACommandDataFrame_ffillna(const DAPyDataFrame& df,
                                                        DAPyDataFrameTableModule* model,
@@ -583,6 +538,171 @@ bool DACommandDataFrame_bfillna::exec()
 	// 说明填充了空行
 	if (mModel) {
 		mModel->refresh();
+	}
+	return true;
+}
+
+///////////////////
+/// \brief DACommandDataFrame_dropduplicates::DACommandDataFrame_dropduplicates
+/// \param df
+/// \param model
+/// \param axis
+/// \param how
+/// \param index
+/// \param thresh
+/// \param par
+///
+
+DACommandDataFrame_dropduplicates::DACommandDataFrame_dropduplicates(const DAPyDataFrame& df,
+                                                                     DAPyDataFrameTableModule* model,
+                                                                     const QString& keep,
+                                                                     const QList< int >& index,
+                                                                     QUndoCommand* par)
+    : DACommandWithTemplateData(df, par), mModel(model), mKeep(keep), mIndex(index)
+{
+    setText(QObject::tr("drop duplicates"));  // cn:删除重复值
+}
+
+void DACommandDataFrame_dropduplicates::undo()
+{
+	load();
+	// 说明删除了空行
+	if (mModel) {
+		if (mDropedCount != 0) {
+			mModel->refresh();
+		}
+	}
+}
+
+bool DACommandDataFrame_dropduplicates::exec()
+{
+	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+	std::size_t lenBegin       = dataframe().size();
+	if (!pydf.dropduplicates(dataframe(), mKeep, mIndex)) {
+		return false;
+	}
+	std::size_t lenEnd = dataframe().size();
+	mDropedCount       = lenBegin - lenEnd;
+
+	// 说明删除了空行
+	if (mModel) {
+		if (mDropedCount != 0) {
+			mModel->refresh();
+		}
+	}
+	return true;
+}
+
+int DACommandDataFrame_dropduplicates::getDropedCount() const
+{
+	return mDropedCount;
+}
+
+///////////////////
+
+DACommandDataFrame_nstdfilteroutlier::DACommandDataFrame_nstdfilteroutlier(const DAPyDataFrame& df,
+                                                                           DAPyDataFrameTableModule* model,
+                                                                           double n,
+                                                                           int axis,
+                                                                           const QList< int >& index,
+                                                                           QUndoCommand* par)
+    : DACommandWithTemplateData(df, par), mModel(model), mN(n), mAxis(axis), mIndex(index)
+{
+    setText(QObject::tr("nstd filter"));  // cn:填充缺失值
+}
+
+void DACommandDataFrame_nstdfilteroutlier::undo()
+{
+	load();
+	// 说明删除了空行
+	if (mModel) {
+		if (mDropedCount != 0) {
+			mModel->refresh();
+		}
+	}
+}
+
+bool DACommandDataFrame_nstdfilteroutlier::exec()
+{
+	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+	std::size_t lenBegin       = dataframe().size();
+	if (!pydf.nstdfilteroutlier(dataframe(), mN, mAxis, mIndex)) {
+		return false;
+	}
+	std::size_t lenEnd = dataframe().size();
+	mDropedCount       = lenBegin - lenEnd;
+
+	// 说明删除了空行
+	if (mModel) {
+		if (mDropedCount != 0) {
+			mModel->refresh();
+		}
+	}
+	return true;
+}
+
+int DACommandDataFrame_nstdfilteroutlier::getDropedCount() const
+{
+	return mDropedCount;
+}
+
+///////////////////
+
+DACommandDataFrame_clipoutlier::DACommandDataFrame_clipoutlier(const DAPyDataFrame& df,
+                                                               DAPyDataFrameTableModule* model,
+                                                               double lowervalue,
+                                                               double uppervalue,
+                                                               int axis,
+                                                               QUndoCommand* par)
+    : DACommandWithTemplateData(df, par), mModel(model), mlowervalue(lowervalue), mUppervalue(uppervalue), mAxis(axis)
+{
+    setText(QObject::tr("clip outlier"));  // cn:替换异常值
+}
+
+void DACommandDataFrame_clipoutlier::undo()
+{
+	load();
+	// 说明填充了空行
+	if (mModel) {
+		mModel->refresh();
+	}
+}
+
+bool DACommandDataFrame_clipoutlier::exec()
+{
+	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+	if (!pydf.clipoutlier(dataframe(), mlowervalue, mUppervalue, mAxis)) {
+		return false;
+	}
+	return true;
+}
+
+///////////////////
+
+DACommandDataFrame_querydatas::DACommandDataFrame_querydatas(const DAPyDataFrame& df,
+                                                             DAPyDataFrameTableModule* model,
+                                                             const QList< QString >& contents,
+                                                             bool logic,
+                                                             QUndoCommand* par)
+    : DACommandWithTemplateData(df, par), mModel(model), mContents(contents), mLogic(logic)
+{
+    setText(QObject::tr("query datas"));  // cn:查询相关数据
+}
+
+void DACommandDataFrame_querydatas::undo()
+{
+	load();
+	// 说明填充了空行
+	if (mModel) {
+		mModel->refresh();
+	}
+}
+
+bool DACommandDataFrame_querydatas::exec()
+{
+	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+	if (!pydf.querydatas(dataframe(), mContents, mLogic)) {
+		return false;
 	}
 	return true;
 }

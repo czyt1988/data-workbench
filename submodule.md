@@ -23,8 +23,6 @@ git submodule update src/3rdparty/ADS
 git submodule update src/3rdparty/pybind11
 git submodule update src/3rdparty/QtPropertyBrowser
 git submodule update src/3rdparty/ordered-map
-git submodule update src/3rdparty/zlib
-git submodule update src/3rdparty/quazip
 ```
 
 ## submodule的添加
