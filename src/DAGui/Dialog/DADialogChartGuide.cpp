@@ -3,12 +3,14 @@
 #include "DADataManager.h"
 #include "DAAbstractChartAddItemWidget.h"
 #include "DAChartAddCurveWidget.h"
+#include "DAChartAddBarWidget.h"
 #include <iterator>
 #include <vector>
 #define STR_DADIALOGCHARTGUIDE_FINISHE tr("Finish")
 #define STR_DADIALOGCHARTGUIDE_NEXT tr("Next")
 // qwt
 #include "qwt_plot_curve.h"
+#include "qwt_plot_barchart.h"
 namespace DA
 {
 
@@ -53,7 +55,8 @@ void DADialogChartGuide::init()
  */
 void DADialogChartGuide::setDataManager(DADataManager* dmgr)
 {
-    ui->pageCurve->setDataManager(dmgr);
+	ui->pageCurve->setDataManager(dmgr);
+	ui->pageBar->setDataManager(dmgr);
 }
 
 /**
@@ -67,6 +70,10 @@ void DADialogChartGuide::setCurrentData(const DAData& d)
 		c->setCurrentData(d);
 		// 重新设置数据的话，步骤回到第一步
 		c->toFirst();
+	} else if (DAChartAddBarWidget* b = qobject_cast< DAChartAddBarWidget* >(w)) {
+		b->setCurrentData(d);
+		// 重新设置数据的话，步骤回到第一步
+		b->toFirst();
 	}
 }
 
@@ -227,8 +234,8 @@ void DADialogChartGuide::onListWidgetCurrentItemChanged(QListWidgetItem* current
 		ui->pageCurve->setScatterMode(true);
 		break;
 	case DA::ChartTypes::Bar:
-		ui->stackedWidget->setCurrentWidget(ui->pageCurve);
-		ui->pageCurve->setScatterMode(false);
+		ui->stackedWidget->setCurrentWidget(ui->pageBar);
+		ui->pageBar->setBarMode(true);
 	default:
 		break;
 	}

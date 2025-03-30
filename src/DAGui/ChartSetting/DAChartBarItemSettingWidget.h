@@ -51,14 +51,9 @@ public:
 	// Bar LegendMode
 	void setBarLegendMode(QwtPlotBarChart::LegendMode v);
 	QwtPlotBarChart::LegendMode getBarLegendMode() const;
-	// maker编辑
-	void enableMarkerEdit(bool on = true);
-	bool isEnableMarkerEdit() const;
 	// fill编辑
 	void enableFillEdit(bool on = true);
 	bool isEnableFillEdit() const;
-	// 画笔
-	QPen getCurvePen() const;
 	// 填充
 	QBrush getFillBrush() const;
 	// 基线
@@ -68,9 +63,18 @@ public:
 	void resetUI();
 	// 获取itemplot widget
 	DAChartPlotItemSettingWidget* getItemSettingWidget() const;
+
+	// 布局策略相关接口
+	void setLayoutPolicy(QwtPlotAbstractBarChart::LayoutPolicy policy);
+	QwtPlotAbstractBarChart::LayoutPolicy getLayoutPolicy() const;
+	void setLayoutHint(double hint);
+	double getLayoutHint() const;
+	void setSpacing(int spacing);
+	int getSpacing() const;
+	void setMargin(int margin);
+	int getMargin() const;
+
 public slots:
-	// 画笔
-	void setCurvePen(const QPen& v);
 	// 填充
 	void setFillBrush(const QBrush& v);
 	// 基线
@@ -82,19 +86,13 @@ private slots:
 	void onBarStyleCurrentIndexChanged(int index);
 	void on_checkBoxChart_clicked(bool checked);
 	void on_checkBoxBar_clicked(bool checked);
-	void on_checkBoxLegendShowLine_clicked(bool checked);
-	void on_checkBoxLegendShowSymbol_clicked(bool checked);
-	void on_checkBoxLegendShowBrush_clicked(bool checked);
-	void on_checkBoxEnableMarker_clicked(bool checked);
 	void on_checkBoxEnableFill_clicked(bool checked);
-	void onSymbolStyleChanged(QwtSymbol::Style s);
-	void onSymbolSizeChanged(int s);
-	void onSymbolColorChanged(const QColor& s);
-	void onSymbolOutlinePenChanged(const QPen& s);
 	void onBrushChanged(const QBrush& b);
 	void on_lineEditBaseLine_editingFinished();
-	void onButtonGroupOrientationClicked(QAbstractButton* b);
-	void onCurvePenChanged(const QPen& p);
+	void onLayoutPolicyChanged(int index);
+	void onSpacingValueChanged(int value);
+	void onMarginValueChanged(int value);
+	void onLayoutHintValueChanged(double value);
 
 protected slots:
 	virtual void plotItemAttached(QwtPlotItem* plotItem, bool on);

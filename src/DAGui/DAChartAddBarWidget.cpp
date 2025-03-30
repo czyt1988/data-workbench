@@ -1,5 +1,5 @@
 #include "DAChartAddBarWidget.h"
-#include "ui_DAChartAddCurveWidget.h"
+#include "ui_DAChartAddBarWidget.h"
 #include "DAGlobalColorTheme.h"
 #include <QButtonGroup>
 #include "qwt_plot_curve.h"
@@ -28,7 +28,7 @@ DAChartAddBarWidget::PrivateData::PrivateData(DAChartAddBarWidget* p) : q_ptr(p)
 //----------------------------------------------------
 
 DAChartAddBarWidget::DAChartAddBarWidget(QWidget* parent)
-	: DAAbstractChartAddItemWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DAChartAddCurveWidget)
+	: DAAbstractChartAddItemWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DAChartAddBarWidget)
 {
 	ui->setupUi(this);
 	init();
@@ -49,8 +49,6 @@ void DAChartAddBarWidget::init()
 			this,
 			&DAChartAddBarWidget::onNavButtonClicked);
 	connect(ui->stackedWidget, &QStackedWidget::currentChanged, this, &DAChartAddBarWidget::onStackWidgetCurrentChanged);
-	QColor c = DAGlobalColorTheme::getInstance().color();
-	ui->pagePlot->setCurvePen(QPen(c, 1.0));
 }
 
 /**
@@ -65,7 +63,7 @@ QwtPlotItem* DAChartAddBarWidget::createPlotItem()
 	}
 	QwtPlotBarChart* item = new QwtPlotBarChart();
 	item->setSamples(xy);
-	ui->pagePlot->updatePlotItem(item);
+	ui->pageBar->updatePlotItem(item);
 	return item;
 }
 
@@ -79,17 +77,15 @@ void DAChartAddBarWidget::setDataManager(DADataManager* dmgr)
 	ui->pageData->setDataManager(dmgr);
 }
 
-// void DAChartAddBarWidget::setBarMode(bool on)
-//{
-//	// 设置柱子是否可见
-//	if (on) {
-//		ui->pagePlot->setCurveStyle(QwtPlotBarChart::Bars);  // 显示柱子
-//	} else {
-//		ui->pagePlot->setCurveStyle(QwtPlotBarChart::NoBars);  // 隐藏柱子
-//	}
-
-//	ui->pagePlot->enableMarkerEdit(on);
-//}
+void DAChartAddBarWidget::setBarMode(bool on)
+{
+	// 设置柱子是否可见
+	if (on) {
+		ui->pageBar->setBarStyle(QwtColumnSymbol::Style::Box);  // 显示柱子
+	} else {
+		ui->pageBar->setBarStyle(QwtColumnSymbol::Style::NoStyle);  // 隐藏柱子
+	}
+}
 
 void DAChartAddBarWidget::next()
 {
