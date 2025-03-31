@@ -881,137 +881,137 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="APP/DAAppController.cpp" line="693"/>
-        <location filename="APP/DAAppController.cpp" line="791"/>
+        <location filename="APP/DAAppController.cpp" line="695"/>
+        <location filename="APP/DAAppController.cpp" line="793"/>
         <source>project file(*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="708"/>
+        <location filename="APP/DAAppController.cpp" line="710"/>
         <source>Question</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="709"/>
+        <location filename="APP/DAAppController.cpp" line="711"/>
         <source>Another project already exists. Do you want to replace it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="735"/>
-        <location filename="APP/DAAppController.cpp" line="804"/>
+        <location filename="APP/DAAppController.cpp" line="737"/>
+        <location filename="APP/DAAppController.cpp" line="806"/>
         <source>failed to load project file:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="418"/>
-        <location filename="APP/DAAppController.cpp" line="759"/>
+        <location filename="APP/DAAppController.cpp" line="420"/>
+        <location filename="APP/DAAppController.cpp" line="761"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="761"/>
+        <location filename="APP/DAAppController.cpp" line="763"/>
         <source>project file (*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="771"/>
+        <location filename="APP/DAAppController.cpp" line="773"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="771"/>
+        <location filename="APP/DAAppController.cpp" line="773"/>
         <source>Whether to overwrite the file:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="429"/>
-        <location filename="APP/DAAppController.cpp" line="780"/>
+        <location filename="APP/DAAppController.cpp" line="431"/>
+        <location filename="APP/DAAppController.cpp" line="782"/>
         <source>Project saved failed!,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="784"/>
-        <location filename="APP/DAAppController.cpp" line="829"/>
+        <location filename="APP/DAAppController.cpp" line="786"/>
+        <location filename="APP/DAAppController.cpp" line="831"/>
         <source>Project saved successfully,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="420"/>
+        <location filename="APP/DAAppController.cpp" line="422"/>
         <source>Project Files (*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="846"/>
+        <location filename="APP/DAAppController.cpp" line="848"/>
         <source>Project load successfully,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="915"/>
+        <location filename="APP/DAAppController.cpp" line="917"/>
         <source>Image files (*.png *.jpg)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="916"/>
+        <location filename="APP/DAAppController.cpp" line="918"/>
         <source>Any files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="989"/>
+        <location filename="APP/DAAppController.cpp" line="991"/>
         <source>The image was successfully saved in path %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="991"/>
+        <location filename="APP/DAAppController.cpp" line="993"/>
         <source>Image save failed at path %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1030"/>
+        <location filename="APP/DAAppController.cpp" line="1032"/>
         <source>get null project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1036"/>
+        <location filename="APP/DAAppController.cpp" line="1038"/>
         <source>warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1037"/>
+        <location filename="APP/DAAppController.cpp" line="1039"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1339"/>
+        <location filename="APP/DAAppController.cpp" line="1341"/>
         <source>Before creating a new coordinate,you need to create a figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1672"/>
+        <location filename="APP/DAAppController.cpp" line="1684"/>
         <source>%1_Describe</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1673"/>
+        <location filename="APP/DAAppController.cpp" line="1685"/>
         <source>Generate descriptive statistics that summarize the central tendency, dispersion and shape of a [%1]’s distribution, excluding NaN values</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1697"/>
+        <location filename="APP/DAAppController.cpp" line="1709"/>
         <source>%1_PviotTable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1698"/>
+        <location filename="APP/DAAppController.cpp" line="1710"/>
         <source>Generate pivot table</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1970"/>
+        <location filename="APP/DAAppController.cpp" line="1982"/>
         <source>new workflow name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1971"/>
+        <location filename="APP/DAAppController.cpp" line="1983"/>
         <source>new workflow name:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1442,6 +1442,39 @@ Config</source>
     </message>
 </context>
 <context>
+    <name>DA::DAChartBarItemSettingWidget</name>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="177"/>
+        <source>NoStyle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="178"/>
+        <source>Box</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="355"/>
+        <source>Auto Adjust Samples</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="356"/>
+        <source>Scale Samples To Axes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="357"/>
+        <source>Scale Sample To Canvas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="358"/>
+        <source>Fixed Sample Size</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DA::DAChartCurveItemSettingWidget</name>
     <message>
         <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="138"/>
@@ -1824,31 +1857,96 @@ Config</source>
 <context>
     <name>DA::DADialogChartGuide</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="35"/>
+        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="37"/>
         <source>curve</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="39"/>
+        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="41"/>
         <source>scatter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="45"/>
+        <source>bar</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DA::DADialogCreatePivotTable</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="57"/>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="59"/>
         <source>Value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="57"/>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="59"/>
         <source>Index</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="57"/>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="59"/>
         <source>Columns</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="178"/>
+        <source>mean</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="179"/>
+        <source>sum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="180"/>
+        <source>count</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="181"/>
+        <source>size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="182"/>
+        <source>min</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="183"/>
+        <source>max</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="184"/>
+        <source>median</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="185"/>
+        <source>std</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="186"/>
+        <source>var</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="187"/>
+        <source>first</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="188"/>
+        <source>last</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="189"/>
+        <source>prod</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2751,23 +2849,50 @@ Config</source>
     </message>
 </context>
 <context>
+    <name>DAChartAddBarWidget</name>
+    <message>
+        <location filename="DAGui/DAChartAddBarWidget.ui" line="14"/>
+        <source>Add Curve</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAChartAddBarWidget.ui" line="37"/>
+        <source>1.Data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAChartAddBarWidget.ui" line="66"/>
+        <source>&gt;&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAChartAddBarWidget.ui" line="73"/>
+        <source>2.Plot</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DAChartAddCurveWidget</name>
     <message>
+        <location filename="DAGui/DAChartAddBarWidget_copy.ui" line="14"/>
         <location filename="DAGui/DAChartAddCurveWidget.ui" line="14"/>
         <source>Add Curve</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="DAGui/DAChartAddBarWidget_copy.ui" line="37"/>
         <location filename="DAGui/DAChartAddCurveWidget.ui" line="37"/>
         <source>1.Data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="DAGui/DAChartAddBarWidget_copy.ui" line="66"/>
         <location filename="DAGui/DAChartAddCurveWidget.ui" line="66"/>
         <source>&gt;&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="DAGui/DAChartAddBarWidget_copy.ui" line="73"/>
         <location filename="DAGui/DAChartAddCurveWidget.ui" line="73"/>
         <source>2.Plot</source>
         <translation type="unfinished"></translation>
@@ -2872,6 +2997,100 @@ Config</source>
     <message>
         <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="225"/>
         <source>Time Scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DAChartBarItemSettingWidget</name>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="14"/>
+        <source>Bar Chart Setting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="26"/>
+        <source>Base</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="71"/>
+        <source>Curve Setting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="83"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For Steps curve style only. Draws a step function from the right to the left.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="86"/>
+        <source>Bar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="93"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Only in combination with Lines Style, tries to interpolate/smooth the curve, before it is painted. &lt;/p&gt;&lt;p&gt;Note:Curve fitting requires temporary memory for calculating coefficients and additional points.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="96"/>
+        <source>Chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="103"/>
+        <source>Bar Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="113"/>
+        <source>Legend Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="140"/>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="165"/>
+        <source>Fill</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="158"/>
+        <source>fill brush</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="200"/>
+        <source>Other</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="212"/>
+        <source>Base line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="225"/>
+        <source>Layout Setting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="231"/>
+        <source>Layout Policy:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="241"/>
+        <source>Spacing:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="258"/>
+        <source>Margin:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="275"/>
+        <source>Layout Hint:</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3334,17 +3553,17 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogChartGuide.ui" line="77"/>
+        <location filename="DAGui/Dialog/DADialogChartGuide.ui" line="78"/>
         <source>Previous</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogChartGuide.ui" line="84"/>
+        <location filename="DAGui/Dialog/DADialogChartGuide.ui" line="85"/>
         <source>Next</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogChartGuide.ui" line="91"/>
+        <location filename="DAGui/Dialog/DADialogChartGuide.ui" line="92"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3352,57 +3571,57 @@ Config</source>
 <context>
     <name>DADialogCreatePivotTable</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="14"/>
-        <source>Dialog</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="20"/>
         <source>Pivot Table</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="26"/>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="42"/>
         <source>Margins</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="33"/>
-        <source>Aggfunc</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="41"/>
-        <source>mean</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="46"/>
-        <source>sum</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="51"/>
-        <source>size</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="65"/>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="68"/>
         <source>All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="75"/>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="52"/>
         <source>Sort</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="100"/>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="14"/>
+        <source>Pivot Table Guide</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="29"/>
+        <source>Aggregate function</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="39"/>
+        <source>Special All columns and rows will be added with partial group aggregates across the categories on the rows and columns</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="49"/>
+        <source>Specifies if the result should be sorted.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="62"/>
+        <source>Name of the row / column that will contain the totals</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="90"/>
         <source>OK</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="114"/>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="104"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3411,22 +3630,27 @@ Config</source>
     <name>DADialogDataFrameClipOutlier</name>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameClipOutlier.ui" line="14"/>
-        <source>Form</source>
+        <location filename="DAGui/Dialog/DADialogDataFrameClipOutlier.ui" line="20"/>
+        <source>Clip Outlier</source>
+        <oldsource>ClipOutlier</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="DAGui/Dialog/DADialogDataFrameClipOutlier.ui" line="14"/>
         <location filename="DAGui/Dialog/DADialogDataFrameClipOutlier.ui" line="20"/>
-        <source>ClipOutlier</source>
+        <source>Clip Outlier</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameClipOutlier.ui" line="26"/>
-        <source>LowerValue</source>
+        <source>Lower Value</source>
+        <oldsource>LowerValue</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameClipOutlier.ui" line="33"/>
-        <source>UpperValue</source>
+        <source>Upper Value</source>
+        <oldsource>UpperValue</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3444,10 +3668,6 @@ Config</source>
     <name>DADialogDataFrameFillInterpolate</name>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="14"/>
-        <source>Dialog</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="20"/>
         <source>Fill Interpolate</source>
         <translation type="unfinished"></translation>
@@ -3508,12 +3728,12 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="161"/>
+        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="167"/>
         <source>OK</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="175"/>
+        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="181"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5992,7 +6212,7 @@ params:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureWidget.cpp" line="780"/>
+        <location filename="DAFigure/DAFigureWidget.cpp" line="799"/>
         <source>DAFigureWidget get invalid magic strat code</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7155,6 +7375,50 @@ params:
         <location filename="3rdparty/QtPropertyBrowser/src/qt5/qttreepropertybrowser.cpp" line="453"/>
         <location filename="3rdparty/QtPropertyBrowser/src/qt6/qttreepropertybrowser.cpp" line="418"/>
         <source>Value</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QuaGzipFile</name>
+    <message>
+        <location filename="3rdparty/quazip/quazip/quagzipfile.cpp" line="60"/>
+        <source>QIODevice::Append is not supported for GZIP</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/quazip/quazip/quagzipfile.cpp" line="66"/>
+        <source>Opening gzip for both reading and writing is not supported</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/quazip/quazip/quagzipfile.cpp" line="75"/>
+        <source>You can open a gzip either for reading or for writing. Which is it?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/quazip/quazip/quagzipfile.cpp" line="81"/>
+        <source>Could not gzopen() file</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QuaZIODevice</name>
+    <message>
+        <location filename="3rdparty/quazip/quazip/quaziodevice.cpp" line="178"/>
+        <source>QIODevice::Append is not supported for QuaZIODevice</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/quazip/quazip/quaziodevice.cpp" line="183"/>
+        <source>QIODevice::ReadWrite is not supported for QuaZIODevice</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QuaZipFile</name>
+    <message>
+        <location filename="3rdparty/quazip/quazip/quazipfile.cpp" line="251"/>
+        <source>ZIP/UNZIP API error %1</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

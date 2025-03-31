@@ -920,137 +920,137 @@ Table Area</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="APP/DAAppController.cpp" line="693"/>
-        <location filename="APP/DAAppController.cpp" line="791"/>
+        <location filename="APP/DAAppController.cpp" line="695"/>
+        <location filename="APP/DAAppController.cpp" line="793"/>
         <source>project file(*.%1)</source>
         <translation>工程文件(*.%1)</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="708"/>
+        <location filename="APP/DAAppController.cpp" line="710"/>
         <source>Question</source>
         <translation>疑问</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="709"/>
+        <location filename="APP/DAAppController.cpp" line="711"/>
         <source>Another project already exists. Do you want to replace it?</source>
         <translation>已存在其他工程，是否要替换？</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="735"/>
-        <location filename="APP/DAAppController.cpp" line="804"/>
+        <location filename="APP/DAAppController.cpp" line="737"/>
+        <location filename="APP/DAAppController.cpp" line="806"/>
         <source>failed to load project file:%1</source>
         <translation>加载工程文件“%1”失败</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="418"/>
-        <location filename="APP/DAAppController.cpp" line="759"/>
+        <location filename="APP/DAAppController.cpp" line="420"/>
+        <location filename="APP/DAAppController.cpp" line="761"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="761"/>
+        <location filename="APP/DAAppController.cpp" line="763"/>
         <source>project file (*.%1)</source>
         <translation>工程文件(*.%1)</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="771"/>
+        <location filename="APP/DAAppController.cpp" line="773"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="771"/>
+        <location filename="APP/DAAppController.cpp" line="773"/>
         <source>Whether to overwrite the file:%1</source>
         <translation>是否覆盖文件“%1”</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="429"/>
-        <location filename="APP/DAAppController.cpp" line="780"/>
+        <location filename="APP/DAAppController.cpp" line="431"/>
+        <location filename="APP/DAAppController.cpp" line="782"/>
         <source>Project saved failed!,path is %1</source>
         <translation>工程“%1”保存失败</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="784"/>
-        <location filename="APP/DAAppController.cpp" line="829"/>
+        <location filename="APP/DAAppController.cpp" line="786"/>
+        <location filename="APP/DAAppController.cpp" line="831"/>
         <source>Project saved successfully,path is %1</source>
         <translation>工程保存成功，路径位于:%1</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="420"/>
+        <location filename="APP/DAAppController.cpp" line="422"/>
         <source>Project Files (*.%1)</source>
         <translation>工程文件(*.%1)</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="846"/>
+        <location filename="APP/DAAppController.cpp" line="848"/>
         <source>Project load successfully,path is %1</source>
         <translation>工程加载成功，路径为：%1</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="915"/>
+        <location filename="APP/DAAppController.cpp" line="917"/>
         <source>Image files (*.png *.jpg)</source>
         <translation>图片文件 (*.png *.jpg)</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="916"/>
+        <location filename="APP/DAAppController.cpp" line="918"/>
         <source>Any files (*)</source>
         <translation>任意文件 (*)</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="989"/>
+        <location filename="APP/DAAppController.cpp" line="991"/>
         <source>The image was successfully saved in path %1</source>
         <translation>图片保存成功：%1</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="991"/>
+        <location filename="APP/DAAppController.cpp" line="993"/>
         <source>Image save failed at path %1</source>
         <translation>图片保存失败：%1</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1030"/>
+        <location filename="APP/DAAppController.cpp" line="1032"/>
         <source>get null project</source>
         <translation>空工程，接口异常</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1036"/>
+        <location filename="APP/DAAppController.cpp" line="1038"/>
         <source>warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1037"/>
+        <location filename="APP/DAAppController.cpp" line="1039"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1339"/>
+        <location filename="APP/DAAppController.cpp" line="1341"/>
         <source>Before creating a new coordinate,you need to create a figure</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1672"/>
+        <location filename="APP/DAAppController.cpp" line="1684"/>
         <source>%1_Describe</source>
         <translation>%1_Describe</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1673"/>
+        <location filename="APP/DAAppController.cpp" line="1685"/>
         <source>Generate descriptive statistics that summarize the central tendency, dispersion and shape of a [%1]’s distribution, excluding NaN values</source>
         <translation>生成描述性统计数据，汇总[%1]分布的中心趋势、分散度和结构（不包括NaN值）</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1697"/>
+        <location filename="APP/DAAppController.cpp" line="1709"/>
         <source>%1_PviotTable</source>
         <translation>%1_透视表</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1698"/>
+        <location filename="APP/DAAppController.cpp" line="1710"/>
         <source>Generate pivot table</source>
         <translation>程序生成的数据透视表</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1970"/>
+        <location filename="APP/DAAppController.cpp" line="1982"/>
         <source>new workflow name</source>
         <translation>新工作流名称</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1971"/>
+        <location filename="APP/DAAppController.cpp" line="1983"/>
         <source>new workflow name:</source>
         <translation>工作流名称:</translation>
     </message>
@@ -1481,6 +1481,39 @@ Table Area</source>
     </message>
 </context>
 <context>
+    <name>DA::DAChartBarItemSettingWidget</name>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="177"/>
+        <source>NoStyle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="178"/>
+        <source>Box</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="355"/>
+        <source>Auto Adjust Samples</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="356"/>
+        <source>Scale Samples To Axes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="357"/>
+        <source>Scale Sample To Canvas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="358"/>
+        <source>Fixed Sample Size</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DA::DAChartCurveItemSettingWidget</name>
     <message>
         <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="138"/>
@@ -1863,32 +1896,97 @@ Table Area</source>
 <context>
     <name>DA::DADialogChartGuide</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="35"/>
+        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="37"/>
         <source>curve</source>
         <translation>曲线</translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="39"/>
+        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="41"/>
         <source>scatter</source>
         <translation>散点</translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="45"/>
+        <source>bar</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DA::DADialogCreatePivotTable</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="57"/>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="59"/>
         <source>Value</source>
         <translation>值</translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="57"/>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="59"/>
         <source>Index</source>
         <translation>索引</translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="57"/>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="59"/>
         <source>Columns</source>
         <translation>列</translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="178"/>
+        <source>mean</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="179"/>
+        <source>sum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="180"/>
+        <source>count</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="181"/>
+        <source>size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="182"/>
+        <source>min</source>
+        <translation type="unfinished">最小</translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="183"/>
+        <source>max</source>
+        <translation type="unfinished">最大</translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="184"/>
+        <source>median</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="185"/>
+        <source>std</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="186"/>
+        <source>var</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="187"/>
+        <source>first</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="188"/>
+        <source>last</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="189"/>
+        <source>prod</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2793,23 +2891,50 @@ Table Area</source>
     </message>
 </context>
 <context>
+    <name>DAChartAddBarWidget</name>
+    <message>
+        <location filename="DAGui/DAChartAddBarWidget.ui" line="14"/>
+        <source>Add Curve</source>
+        <translation type="unfinished">添加曲线</translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAChartAddBarWidget.ui" line="37"/>
+        <source>1.Data</source>
+        <translation type="unfinished">1.数据</translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAChartAddBarWidget.ui" line="66"/>
+        <source>&gt;&gt;</source>
+        <translation type="unfinished">&gt;&gt;</translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAChartAddBarWidget.ui" line="73"/>
+        <source>2.Plot</source>
+        <translation type="unfinished">2.绘图</translation>
+    </message>
+</context>
+<context>
     <name>DAChartAddCurveWidget</name>
     <message>
+        <location filename="DAGui/DAChartAddBarWidget_copy.ui" line="14"/>
         <location filename="DAGui/DAChartAddCurveWidget.ui" line="14"/>
         <source>Add Curve</source>
         <translation>添加曲线</translation>
     </message>
     <message>
+        <location filename="DAGui/DAChartAddBarWidget_copy.ui" line="37"/>
         <location filename="DAGui/DAChartAddCurveWidget.ui" line="37"/>
         <source>1.Data</source>
         <translation>1.数据</translation>
     </message>
     <message>
+        <location filename="DAGui/DAChartAddBarWidget_copy.ui" line="66"/>
         <location filename="DAGui/DAChartAddCurveWidget.ui" line="66"/>
         <source>&gt;&gt;</source>
         <translation>&gt;&gt;</translation>
     </message>
     <message>
+        <location filename="DAGui/DAChartAddBarWidget_copy.ui" line="73"/>
         <location filename="DAGui/DAChartAddCurveWidget.ui" line="73"/>
         <source>2.Plot</source>
         <translation>2.绘图</translation>
@@ -2915,6 +3040,100 @@ Table Area</source>
         <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="225"/>
         <source>Time Scale</source>
         <translation>时间坐标轴</translation>
+    </message>
+</context>
+<context>
+    <name>DAChartBarItemSettingWidget</name>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="14"/>
+        <source>Bar Chart Setting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="26"/>
+        <source>Base</source>
+        <translation type="unfinished">通用设置</translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="71"/>
+        <source>Curve Setting</source>
+        <translation type="unfinished">曲线设置</translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="83"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For Steps curve style only. Draws a step function from the right to the left.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;仅适用于阶梯曲线样式。从右向左绘制阶跃函数。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="86"/>
+        <source>Bar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="93"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Only in combination with Lines Style, tries to interpolate/smooth the curve, before it is painted. &lt;/p&gt;&lt;p&gt;Note:Curve fitting requires temporary memory for calculating coefficients and additional points.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;仅在曲线样式为折线时，才会尝试在绘制曲线之前对其进行插值/平滑处理。&lt;/p&gt;&lt;p&gt;注：曲线拟合需要临时内存来计算系数和附加点。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="96"/>
+        <source>Chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="103"/>
+        <source>Bar Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="113"/>
+        <source>Legend Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="140"/>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="165"/>
+        <source>Fill</source>
+        <translation type="unfinished">填充</translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="158"/>
+        <source>fill brush</source>
+        <translation type="unfinished">填充画笔</translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="200"/>
+        <source>Other</source>
+        <translation type="unfinished">其他</translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="212"/>
+        <source>Base line</source>
+        <translation type="unfinished">基准线</translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="225"/>
+        <source>Layout Setting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="231"/>
+        <source>Layout Policy:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="241"/>
+        <source>Spacing:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="258"/>
+        <source>Margin:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="275"/>
+        <source>Layout Hint:</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -3376,17 +3595,17 @@ Table Area</source>
         <translation>绘图引导</translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogChartGuide.ui" line="77"/>
+        <location filename="DAGui/Dialog/DADialogChartGuide.ui" line="78"/>
         <source>Previous</source>
         <translation>上一步</translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogChartGuide.ui" line="84"/>
+        <location filename="DAGui/Dialog/DADialogChartGuide.ui" line="85"/>
         <source>Next</source>
         <translation>下一步</translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogChartGuide.ui" line="91"/>
+        <location filename="DAGui/Dialog/DADialogChartGuide.ui" line="92"/>
         <source>Cancel</source>
         <translation>取消取消</translation>
     </message>
@@ -3394,57 +3613,57 @@ Table Area</source>
 <context>
     <name>DADialogCreatePivotTable</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="14"/>
-        <source>Dialog</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="20"/>
         <source>Pivot Table</source>
         <translation>透视表</translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="26"/>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="42"/>
         <source>Margins</source>
         <translation>汇总</translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="33"/>
-        <source>Aggfunc</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="41"/>
-        <source>mean</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="46"/>
-        <source>sum</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="51"/>
-        <source>size</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="65"/>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="68"/>
         <source>All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="75"/>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="52"/>
         <source>Sort</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="100"/>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="14"/>
+        <source>Pivot Table Guide</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="29"/>
+        <source>Aggregate function</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="39"/>
+        <source>Special All columns and rows will be added with partial group aggregates across the categories on the rows and columns</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="49"/>
+        <source>Specifies if the result should be sorted.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="62"/>
+        <source>Name of the row / column that will contain the totals</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="90"/>
         <source>OK</source>
         <translation type="unfinished">确认</translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="114"/>
+        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="104"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3453,22 +3672,27 @@ Table Area</source>
     <name>DADialogDataFrameClipOutlier</name>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameClipOutlier.ui" line="14"/>
-        <source>Form</source>
-        <translation type="unfinished"></translation>
+        <location filename="DAGui/Dialog/DADialogDataFrameClipOutlier.ui" line="20"/>
+        <source>Clip Outlier</source>
+        <oldsource>ClipOutlier</oldsource>
+        <translation type="unfinished">替换\n异常值</translation>
     </message>
     <message>
+        <location filename="DAGui/Dialog/DADialogDataFrameClipOutlier.ui" line="14"/>
         <location filename="DAGui/Dialog/DADialogDataFrameClipOutlier.ui" line="20"/>
-        <source>ClipOutlier</source>
-        <translation type="unfinished"></translation>
+        <source>Clip Outlier</source>
+        <translation type="unfinished">替换\n异常值</translation>
     </message>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameClipOutlier.ui" line="26"/>
-        <source>LowerValue</source>
+        <source>Lower Value</source>
+        <oldsource>LowerValue</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameClipOutlier.ui" line="33"/>
-        <source>UpperValue</source>
+        <source>Upper Value</source>
+        <oldsource>UpperValue</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3486,10 +3710,6 @@ Table Area</source>
     <name>DADialogDataFrameFillInterpolate</name>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="14"/>
-        <source>Dialog</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="20"/>
         <source>Fill Interpolate</source>
         <translation>插值填充</translation>
@@ -3512,12 +3732,12 @@ Table Area</source>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="47"/>
         <source>This is the maximum number of consecutive NaN values to forward/backward fill. In other words, if there is a gap with more than this number of consecutive NaNs, it will only be partially filled</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">这是在进行向前/向后填充时，允许填充的连续NaN值的最大数量。换句话说，如果存在连续NaN的数量超过此值的空缺，将仅部分填充</translation>
     </message>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="50"/>
         <source>limit</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">最大填充数</translation>
     </message>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="57"/>
@@ -3532,7 +3752,7 @@ Table Area</source>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="80"/>
         <source>This is the maximum number of entries along the entire axis where NaNs will be filled. Must be greater than 0</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">这是沿整个轴向上将被填充NaN的最大条目数，必须大于0</translation>
     </message>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="93"/>
@@ -3550,12 +3770,12 @@ Table Area</source>
         <translation>行</translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="161"/>
+        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="167"/>
         <source>OK</source>
         <translation>确认</translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="175"/>
+        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="181"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
@@ -3623,7 +3843,7 @@ Table Area</source>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameQueryDatas.ui" line="62"/>
         <source>Query Datas</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">条件过滤</translation>
     </message>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameQueryDatas.ui" line="70"/>
@@ -5952,7 +6172,7 @@ Wrap</source>
         <translation>添加绘图元素</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureWidget.cpp" line="780"/>
+        <location filename="DAFigure/DAFigureWidget.cpp" line="799"/>
         <source>DAFigureWidget get invalid magic strat code</source>
         <translation>DAFigureWidget的文件头异常</translation>
     </message>
@@ -7206,6 +7426,50 @@ params:
         <location filename="3rdparty/QtPropertyBrowser/src/qt5/qttreepropertybrowser.cpp" line="453"/>
         <location filename="3rdparty/QtPropertyBrowser/src/qt6/qttreepropertybrowser.cpp" line="418"/>
         <source>Value</source>
+        <translation type="unfinished">值</translation>
+    </message>
+</context>
+<context>
+    <name>QuaGzipFile</name>
+    <message>
+        <location filename="3rdparty/quazip/quazip/quagzipfile.cpp" line="60"/>
+        <source>QIODevice::Append is not supported for GZIP</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/quazip/quazip/quagzipfile.cpp" line="66"/>
+        <source>Opening gzip for both reading and writing is not supported</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/quazip/quazip/quagzipfile.cpp" line="75"/>
+        <source>You can open a gzip either for reading or for writing. Which is it?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/quazip/quazip/quagzipfile.cpp" line="81"/>
+        <source>Could not gzopen() file</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QuaZIODevice</name>
+    <message>
+        <location filename="3rdparty/quazip/quazip/quaziodevice.cpp" line="178"/>
+        <source>QIODevice::Append is not supported for QuaZIODevice</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="3rdparty/quazip/quazip/quaziodevice.cpp" line="183"/>
+        <source>QIODevice::ReadWrite is not supported for QuaZIODevice</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QuaZipFile</name>
+    <message>
+        <location filename="3rdparty/quazip/quazip/quazipfile.cpp" line="251"/>
+        <source>ZIP/UNZIP API error %1</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

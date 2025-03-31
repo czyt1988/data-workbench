@@ -1,4 +1,4 @@
-#include "DAChartBarItemSettingWidget.h"
+﻿#include "DAChartBarItemSettingWidget.h"
 #include "ui_DAChartBarItemSettingWidget.h"
 #include <QMessageBox>
 #include <QDebug>
@@ -50,8 +50,8 @@ void DAChartBarItemSettingWidget::plotItemSet(QwtPlotItem* item)
 		return;
 	}
 	ui->widgetItemSetting->setPlotItem(item);
-	QwtPlotBarChart* curItem = static_cast< QwtPlotBarChart* >(item);
-	updateUI(curItem);
+	QwtPlotBarChart* barItem = static_cast< QwtPlotBarChart* >(item);
+	updateUI(barItem);
 }
 
 /**
@@ -117,11 +117,7 @@ void DAChartBarItemSettingWidget::updatePlotItem(QwtPlotBarChart* item)
 	ui->widgetItemSetting->updatePlotItem(item);
 	// plot bar
 	item->setTitle(getTitle());
-	auto s = getBarStyle();
-	if (item->symbol()->style() != s) {
-		QwtColumnSymbol* newSymbol = new QwtColumnSymbol(s);  // 创建新对象
-		item->setSymbol(newSymbol);
-	}
+
 	if (ui->checkBoxChart->isChecked()) {
 		item->setLegendMode(QwtPlotBarChart::LegendChartTitle);
 	} else {
@@ -174,7 +170,7 @@ void DAChartBarItemSettingWidget::updatePlotItem(QwtPlotBarChart* item)
 void DAChartBarItemSettingWidget::resetBarStyleComboBox()
 {
 	ui->comboBoxBarStyle->clear();
-	ui->comboBoxBarStyle->addItem(tr("NoStyle"), static_cast< int >(QwtColumnSymbol::NoStyle));
+	ui->comboBoxBarStyle->addItem(tr("No Style"), static_cast< int >(QwtColumnSymbol::NoStyle));
 	ui->comboBoxBarStyle->addItem(tr("Box"), static_cast< int >(QwtColumnSymbol::Box));
 	ui->comboBoxBarStyle->setCurrentIndex(0);
 }

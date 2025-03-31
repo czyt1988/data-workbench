@@ -1,4 +1,4 @@
-#ifndef DACHARTBARITEMSETTINGWIDGET_H
+﻿#ifndef DACHARTBARITEMSETTINGWIDGET_H
 #define DACHARTBARITEMSETTINGWIDGET_H
 #include "DAGuiAPI.h"
 #include <QWidget>
@@ -95,7 +95,7 @@ private slots:
 	void onLayoutHintValueChanged(double value);
 
 protected slots:
-	virtual void plotItemAttached(QwtPlotItem* plotItem, bool on);
+	virtual void plotItemAttached(QwtPlotItem* plotItem, bool on) override;
 
 private:
 	Ui::DAChartBarItemSettingWidget* ui;
