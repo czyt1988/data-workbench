@@ -20,6 +20,19 @@
       <string>Pivot Table</string>
      </property>
      <layout class="QGridLayout" name="gridLayout">
+      <item row="0" column="0" colspan="2">
+       <widget class="QTableView" name="tableViewParameter"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="labelAggfunc">
+        <property name="text">
+         <string>Aggregate function</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="comboBoxAggfunc"/>
+      </item>
       <item row="3" column="0">
        <widget class="QCheckBox" name="checkBoxMargins">
         <property name="toolTip">
@@ -30,75 +43,14 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="labelAggfunc">
-        <property name="text">
-         <string>Aggregate function</string>
+      <item row="4" column="0" colspan="2">
+       <widget class="QCheckBox" name="checkBoxSort">
+        <property name="toolTip">
+         <string>Specifies if the result should be sorted.</string>
         </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QComboBox" name="comboBoxAggfunc">
-        <item>
-         <property name="text">
-          <string>mean</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>sum</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>count</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>size</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>min</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>max</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>median</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>std</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>var</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>first</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>last</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>prod</string>
-         </property>
-        </item>
+        <property name="text">
+         <string>Sort</string>
+        </property>
        </widget>
       </item>
       <item row="3" column="1">
@@ -117,19 +69,6 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="0" colspan="2">
-       <widget class="QTableView" name="tableViewParameter"/>
-      </item>
-      <item row="4" column="0" colspan="2">
-       <widget class="QCheckBox" name="checkBoxSort">
-        <property name="toolTip">
-         <string>Specifies if the result should be sorted.</string>
-        </property>
-        <property name="text">
-         <string>Sort</string>
-        </property>
-       </widget>
-      </item>
      </layout>
     </widget>
    </item>
@@ -137,9 +76,6 @@
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <spacer name="horizontalSpacer_2">
-       <property name="orientation">
-        <enum>Qt::Orientation::Horizontal</enum>
-       </property>
        <property name="sizeHint" stdset="0">
         <size>
          <width>40</width>
@@ -188,8 +124,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>343</x>
-     <y>231</y>
+     <x>620</x>
+     <y>509</y>
     </hint>
     <hint type="destinationlabel">
      <x>154</x>
@@ -204,8 +140,8 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>429</x>
-     <y>231</y>
+     <x>706</x>
+     <y>509</y>
     </hint>
     <hint type="destinationlabel">
      <x>311</x>
@@ -220,12 +156,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>37</x>
-     <y>172</y>
+     <x>58</x>
+     <y>440</y>
     </hint>
     <hint type="destinationlabel">
-     <x>185</x>
-     <y>174</y>
+     <x>320</x>
+     <y>442</y>
     </hint>
    </hints>
   </connection>

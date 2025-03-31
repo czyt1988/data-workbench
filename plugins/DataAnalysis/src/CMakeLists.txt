@@ -167,10 +167,10 @@ else()
     qt6_create_translation(DA_QM_FILES ${CMAKE_CURRENT_LIST_DIR} ${DA_TS_FILES} OPTIONS -source-language en_US -no-obsolete)
 endif()
 # 添加更新翻译的目标
-add_custom_target(daplugins_update_translations DEPENDS ${DA_TS_FILES})
+add_custom_target(DataAnalysisPlugin_update_translations DEPENDS ${DA_TS_FILES})
 
 # 添加发布翻译的目标
-add_custom_target(daplugins_release_translations DEPENDS ${DA_QM_FILES})
+add_custom_target(DataAnalysisPlugin_release_translations DEPENDS ${DA_QM_FILES})
 
 # 安装翻译 - 在install上使用
 set(CMAKE_INSTALL_PREFIX ${DAWorkbench_INSTALL_PATH})

@@ -229,7 +229,7 @@ def da_create_pivot_table(df: pd.DataFrame, values=None, index=None, columns=Non
 
 
 @log_function_call
-def da_query_datas(df: pd.DataFrame, expr:str|None = None):
+def da_query_datas(df: pd.DataFrame, expr:Optional[str] = None):
     '''
     替换dataframe的异常值
     :param df: pd.DataFrame。
