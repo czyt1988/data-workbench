@@ -10,9 +10,20 @@ macro(damacro_import_xxx x_packagename x_namespace x_libname __target_name)
     else()
         message(STATUS "  |-can not find ${x_packagename}")
         if(DEFINED DA_INSTALL_LIB_CMAKE_PATH)
-            set(_lib_dir ${DA_INSTALL_LIB_CMAKE_PATH}/${x_packagename})
-            message(STATUS "  |-try to find in ${_lib_dir}")
-            find_package(${x_packagename} PATHS ${_lib_dir})
+            file(GLOB _lib_candidate_dirs
+                LIST_DIRECTORIES true
+                ${DA_INSTALL_LIB_CMAKE_PATH}/${x_packagename}*
+            )
+            # 检查是否存在匹配项
+            if(NOT _lib_candidate_dirs)
+                message(FATAL_ERROR "No ${x_packagename} like directories found in: ${DA_INSTALL_LIB_CMAKE_PATH}")
+            endif()
+            #若存在多个版本，可以通过排序选择最新路径：
+            list(SORT _lib_candidate_dirs)
+            list(REVERSE _lib_candidate_dirs)  # 按字母逆序排列（假设版本号递增）
+            list(GET _lib_candidate_dirs 0 _lib_candidate_dirs)  # 取第一个（最新）
+            message(STATUS "  |-try to find in ${_lib_candidate_dirs}")
+            find_package(${x_packagename} PATHS ${_lib_candidate_dirs})
         endif()
     endif()
     # 链接的第三方库

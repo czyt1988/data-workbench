@@ -22,7 +22,7 @@ DAAbstractArchive::PrivateData::PrivateData(DAAbstractArchive* p) : q_ptr(p)
 //===============================================================
 // DAAbstractArchive
 //===============================================================
-DAAbstractArchive::DAAbstractArchive() : DA_PIMPL_CONSTRUCT
+DAAbstractArchive::DAAbstractArchive(QObject* par) : QObject(par), DA_PIMPL_CONSTRUCT
 {
 }
 

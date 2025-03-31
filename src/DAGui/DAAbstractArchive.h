@@ -3,16 +3,18 @@
 #include "DAGuiAPI.h"
 #include <QString>
 #include <QByteArray>
+#include <QObject>
 namespace DA
 {
 /**
  * @brief 持久化的基类
  */
-class DAGUI_API DAAbstractArchive
+class DAGUI_API DAAbstractArchive : public QObject
 {
+    Q_OBJECT
 	DA_DECLARE_PRIVATE(DAAbstractArchive)
 public:
-	DAAbstractArchive();
+    DAAbstractArchive(QObject* par = nullptr);
 	virtual ~DAAbstractArchive();
 	/**
 	 * @brief 设置基础路径
@@ -41,6 +43,13 @@ public:
 	 * @return 读取失败返回一个空QByteArray
 	 */
 	virtual QByteArray read(const QString& relatePath) = 0;
+
+    /**
+     * @brief 删除文件
+     * @param relatePath
+     * @return
+     */
+    virtual bool remove(const QString& relatePath) = 0;
 };
 }
 
