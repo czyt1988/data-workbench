@@ -63,6 +63,7 @@ set(DA_LIB_HEADER_FILES
     DAWorkFlowNodeItemSettingWidget.h
     DAWorkFlowOperateWidget.h
     DASettingContainerWidget.h
+    DAAbstractArchive.h
     DAZipArchive.h
     DAXmlHelper.h
 )
@@ -99,6 +100,7 @@ set(DA_LIB_SOURCE_FILES
     DAWorkFlowNodeItemSettingWidget.cpp
     DAWorkFlowOperateWidget.cpp
     DASettingContainerWidget.cpp
+    DAAbstractArchive.cpp
     DAZipArchive.cpp
     DAXmlHelper.cpp
 )
