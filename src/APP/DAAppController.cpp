@@ -225,6 +225,8 @@ void DAAppController::initConnection()
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionFigureResizeChart, onActionFigureResizeChartTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionFigureNewXYAxis, onActionFigureNewXYAxisTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddCurve, onActionChartAddCurveTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddScatter2D, onActionChartAddScatterTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddBar, onActionChartAddBarTriggered);
 
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGrid, onActionChartEnableGridTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGridX, onActionChartEnableGridXTriggered);
@@ -1367,6 +1369,16 @@ void DAAppController::onActionChartAddScatterTriggered()
 {
 	DAAppChartOperateWidget* chartopt = getChartOperateWidget();
 	chartopt->plotWithGuideDialog(DA::ChartTypes::Scatter);
+	mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
+}
+
+/**
+ * @brief 添加柱状图
+ */
+void DAAppController::onActionChartAddBarTriggered()
+{
+	DAAppChartOperateWidget* chartopt = getChartOperateWidget();
+	chartopt->plotWithGuideDialog(DA::ChartTypes::Bar);
 	mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
 }
 

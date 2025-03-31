@@ -195,11 +195,11 @@ class DAFigureWidget::PrivateData
 {
 	DA_DECLARE_PUBLIC(DAFigureWidget)
 public:
-	DAChartWidget* mCurrentChart { nullptr };
-	DAFigureWidgetOverlayChartEditor* mChartEditorOverlay { nullptr };  ///< 编辑模式
-	QBrush mBackgroundBrush;                                            ///< 背景
-	QUndoStack mUndoStack;                                              ///<
-	QScopedPointer< DAChartFactory > mFactory;                          ///< 绘图创建的工厂
+	DAChartWidget* mCurrentChart{ nullptr };
+	DAFigureWidgetOverlayChartEditor* mChartEditorOverlay{ nullptr };  ///< 编辑模式
+	QBrush mBackgroundBrush;                                           ///< 背景
+	QUndoStack mUndoStack;                                             ///<
+	QScopedPointer< DAChartFactory > mFactory;                         ///< 绘图创建的工厂
 	DAColorTheme mColorTheme;  ///< 主题，注意，这里不要用DAColorTheme mColorTheme { DAColorTheme::ColorTheme_Archambault }这样的初始化，会被当作std::initializer_list< QColor >捕获
 public:
 	PrivateData(DAFigureWidget* p) : q_ptr(p), mColorTheme(DAColorTheme::ColorTheme_Archambault)
@@ -261,7 +261,8 @@ void DAFigureWidget::setupChartFactory(DAChartFactory* fac)
  */
 DAChartWidget* DAFigureWidget::createChart()
 {
-    return (createChart(c_figurewidget_default_x, c_figurewidget_default_y, c_figurewidget_default_w, c_figurewidget_default_h));
+	return (createChart(
+		c_figurewidget_default_x, c_figurewidget_default_y, c_figurewidget_default_w, c_figurewidget_default_h));
 }
 
 /**
@@ -300,7 +301,8 @@ void DAFigureWidget::removeChart(DAChartWidget* chart)
  */
 DAChartWidget* DAFigureWidget::createChart_()
 {
-    return createChart_(c_figurewidget_default_x, c_figurewidget_default_y, c_figurewidget_default_w, c_figurewidget_default_h);
+	return createChart_(
+		c_figurewidget_default_x, c_figurewidget_default_y, c_figurewidget_default_w, c_figurewidget_default_h);
 }
 
 /**
@@ -313,7 +315,8 @@ DAChartWidget* DAFigureWidget::createChart_()
  */
 DAChartWidget* DAFigureWidget::createChart_(float xPresent, float yPresent, float wPresent, float hPresent)
 {
-	DAFigureWidgetCommandCreateChart* cmd = new DAFigureWidgetCommandCreateChart(this, xPresent, yPresent, wPresent, hPresent);
+	DAFigureWidgetCommandCreateChart* cmd =
+		new DAFigureWidgetCommandCreateChart(this, xPresent, yPresent, wPresent, hPresent);
 	d_ptr->mUndoStack.push(cmd);
 	// 必须先push再获取chart
 	return cmd->mChart;
@@ -657,6 +660,22 @@ QwtPlotCurve* DAFigureWidget::addScatter_(const QVector< QPointF >& xyDatas)
 {
 	if (DAChartWidget* chart = gca()) {
 		QwtPlotCurve* item = chart->addScatter(xyDatas);
+		DAChartUtil::setPlotItemColor(item, getDefaultColor());
+		addItem_(chart, item);
+		return item;
+	}
+	return nullptr;
+}
+
+/**
+ * @brief 支持redo/undo的addBar，等同于gca()->addBar
+ * @param xyDatas
+ * @return 如果添加失败，返回一个nullptr
+ */
+QwtPlotBarChart* DAFigureWidget::addBar_(const QVector< QPointF >& xyDatas, const QColor& color)
+{
+	if (DAChartWidget* chart = gca()) {
+		QwtPlotBarChart* item = chart->addBar(xyDatas, color);
 		DAChartUtil::setPlotItemColor(item, getDefaultColor());
 		addItem_(chart, item);
 		return item;

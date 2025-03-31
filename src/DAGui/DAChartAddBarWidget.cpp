@@ -1,5 +1,5 @@
-﻿#include "DAChartAddCurveWidget.h"
-#include "ui_DAChartAddCurveWidget.h"
+#include "DAChartAddBarWidget.h"
+#include "ui_DAChartAddBarWidget.h"
 #include "DAGlobalColorTheme.h"
 #include <QButtonGroup>
 #include "qwt_plot_curve.h"
@@ -8,38 +8,38 @@
 namespace DA
 {
 
-class DAChartAddCurveWidget::PrivateData
+class DAChartAddBarWidget::PrivateData
 {
-	DA_DECLARE_PUBLIC(DAChartAddCurveWidget)
+	DA_DECLARE_PUBLIC(DAChartAddBarWidget)
 public:
-	PrivateData(DAChartAddCurveWidget* p);
+	PrivateData(DAChartAddBarWidget* p);
 
 public:
 	QButtonGroup* mBtnGroup{ nullptr };
 };
 
-DAChartAddCurveWidget::PrivateData::PrivateData(DAChartAddCurveWidget* p) : q_ptr(p)
+DAChartAddBarWidget::PrivateData::PrivateData(DAChartAddBarWidget* p) : q_ptr(p)
 {
 	mBtnGroup = new QButtonGroup(p);
 }
 
 //----------------------------------------------------
-// DAChartAddCurveWidget
+// DAChartAddBarWidget
 //----------------------------------------------------
 
-DAChartAddCurveWidget::DAChartAddCurveWidget(QWidget* parent)
-    : DAAbstractChartAddItemWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DAChartAddCurveWidget)
+DAChartAddBarWidget::DAChartAddBarWidget(QWidget* parent)
+	: DAAbstractChartAddItemWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DAChartAddBarWidget)
 {
 	ui->setupUi(this);
 	init();
 }
 
-DAChartAddCurveWidget::~DAChartAddCurveWidget()
+DAChartAddBarWidget::~DAChartAddBarWidget()
 {
 	delete ui;
 }
 
-void DAChartAddCurveWidget::init()
+void DAChartAddBarWidget::init()
 {
 	d_ptr->mBtnGroup->addButton(ui->toolButtonStepData);
 	d_ptr->mBtnGroup->addButton(ui->toolButtonStepPlot);
@@ -47,49 +47,47 @@ void DAChartAddCurveWidget::init()
 	connect(d_ptr->mBtnGroup,
 			QOverload< QAbstractButton* >::of(&QButtonGroup::buttonClicked),
 			this,
-			&DAChartAddCurveWidget::onNavButtonClicked);
-	connect(ui->stackedWidget, &QStackedWidget::currentChanged, this, &DAChartAddCurveWidget::onStackWidgetCurrentChanged);
-	QColor c = DAGlobalColorTheme::getInstance().color();
-	ui->pagePlot->setCurvePen(QPen(c, 1.0));
+			&DAChartAddBarWidget::onNavButtonClicked);
+	connect(ui->stackedWidget, &QStackedWidget::currentChanged, this, &DAChartAddBarWidget::onStackWidgetCurrentChanged);
 }
 
 /**
  * @brief 按照设定创建曲线
  * @return
  */
-QwtPlotItem* DAChartAddCurveWidget::createPlotItem()
+QwtPlotItem* DAChartAddBarWidget::createPlotItem()
 {
 	QVector< QPointF > xy = ui->pageData->getSeries();
 	if (xy.empty()) {
 		return nullptr;
 	}
-	QwtPlotCurve* item = new QwtPlotCurve();
+	QwtPlotBarChart* item = new QwtPlotBarChart();
 	item->setSamples(xy);
-	ui->pagePlot->updatePlotItem(item);
+	ui->pageBar->updatePlotItem(item);
 	return item;
 }
 
-void DAChartAddCurveWidget::setCurrentData(const DAData& d)
+void DAChartAddBarWidget::setCurrentData(const DAData& d)
 {
 	ui->pageData->setCurrentData(d);
 }
 
-void DAChartAddCurveWidget::setDataManager(DADataManager* dmgr)
+void DAChartAddBarWidget::setDataManager(DADataManager* dmgr)
 {
 	ui->pageData->setDataManager(dmgr);
 }
 
-void DAChartAddCurveWidget::setScatterMode(bool on)
+void DAChartAddBarWidget::setBarMode(bool on)
 {
+	// 设置柱子是否可见
 	if (on) {
-		ui->pagePlot->setCurveStyle(QwtPlotCurve::NoCurve);
+		ui->pageBar->setBarStyle(QwtColumnSymbol::Style::Box);  // 显示柱子
 	} else {
-		ui->pagePlot->setCurveStyle(QwtPlotCurve::Lines);
+		ui->pageBar->setBarStyle(QwtColumnSymbol::Style::NoStyle);  // 隐藏柱子
 	}
-	ui->pagePlot->enableMarkerEdit(on);
 }
 
-void DAChartAddCurveWidget::next()
+void DAChartAddBarWidget::next()
 {
 	auto i = ui->stackedWidget->currentIndex();
 	auto c = ui->stackedWidget->count();
@@ -100,7 +98,7 @@ void DAChartAddCurveWidget::next()
 	updateNavButtonState();
 }
 
-void DAChartAddCurveWidget::previous()
+void DAChartAddBarWidget::previous()
 {
 	auto i = ui->stackedWidget->currentIndex();
 	--i;
@@ -114,17 +112,17 @@ void DAChartAddCurveWidget::previous()
  * @brief 获取步骤总数
  * @return 如果为0或者1，下一步按钮将没有直接就是完成
  */
-int DAChartAddCurveWidget::getStepCount() const
+int DAChartAddBarWidget::getStepCount() const
 {
     return ui->stackedWidget->count();
 }
 
-int DAChartAddCurveWidget::getCurrentStep() const
+int DAChartAddBarWidget::getCurrentStep() const
 {
     return ui->stackedWidget->currentIndex();
 }
 
-void DAChartAddCurveWidget::updateNavButtonState()
+void DAChartAddBarWidget::updateNavButtonState()
 {
 	auto i = ui->stackedWidget->currentIndex();
 	if (0 == i) {
@@ -134,7 +132,7 @@ void DAChartAddCurveWidget::updateNavButtonState()
 	}
 }
 
-void DAChartAddCurveWidget::onNavButtonClicked(QAbstractButton* button)
+void DAChartAddBarWidget::onNavButtonClicked(QAbstractButton* button)
 {
 	if (button == ui->toolButtonStepData) {
 		ui->stackedWidget->setCurrentWidget(ui->pageData);
@@ -143,7 +141,7 @@ void DAChartAddCurveWidget::onNavButtonClicked(QAbstractButton* button)
 	}
 }
 
-void DAChartAddCurveWidget::onStackWidgetCurrentChanged(int i)
+void DAChartAddBarWidget::onStackWidgetCurrentChanged(int i)
 {
 	if (0 == i) {
 		ui->toolButtonStepData->setChecked(true);
