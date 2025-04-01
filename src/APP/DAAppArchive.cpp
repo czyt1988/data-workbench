@@ -1,4 +1,4 @@
-#include "DAAppArchive.h"
+﻿#include "DAAppArchive.h"
 #include <QFileInfo>
 #include <QDir>
 #include <QFile>
@@ -13,18 +13,32 @@ DAAppArchive::Task::Task()
 {
 }
 
-DAAppArchive::Task::Task(const QString& path, const QByteArray& d, const QString& des)
-    : relatePath(path), data(d), describe(des)
+DAAppArchive::Task::Task(const QString& path, const QByteArray& d, const QString& des, Mode m)
+    : relatePath(path), data(d), describe(des), mode(m)
 {
 }
 
-DAAppArchive::Task::Task(const QString& path, const DAAppArchive::Task::FunPtr& fp, const QString& des)
-    : relatePath(path), function(fp), describe(des)
+DAAppArchive::Task::Task(const QString& path, const QString& des, Mode m) : relatePath(path), describe(des), mode(m)
+{
+}
+
+DAAppArchive::Task::Task(const QString& path, const DAAppArchive::Task::FunPtr& fp, Mode m, const QString& des)
+    : relatePath(path), describe(des), function(fp), mode(m)
 {
 }
 
 DAAppArchive::Task::~Task()
 {
+}
+
+bool DAAppArchive::Task::isRead() const
+{
+	return this->mode == ReadMode;
+}
+
+bool DAAppArchive::Task::isWrite() const
+{
+	return this->mode == WriteMode;
 }
 //----------------------------------------------------
 // DAAppArchive
@@ -43,19 +57,19 @@ DAAppArchive::~DAAppArchive()
 
 void DAAppArchive::appendTask(const DAAppArchive::Task& t)
 {
-    mTaskQueue.push_back(t);
+	mTaskQueue.push_back(t);
 }
 
 DAAppArchive::Task DAAppArchive::takeTask()
 {
-    DAAppArchive::Task t = mTaskQueue.front();
-    mTaskQueue.pop_front();
-    return t;
+	DAAppArchive::Task t = mTaskQueue.front();
+	mTaskQueue.pop_front();
+	return t;
 }
 
 bool DAAppArchive::isTaskEmpty() const
 {
-    return mTaskQueue.empty();
+	return mTaskQueue.empty();
 }
 
 int DAAppArchive::getTaskCount() const
@@ -69,18 +83,18 @@ int DAAppArchive::getTaskCount() const
  */
 QString DAAppArchive::toTemporaryPath(const QString& path)
 {
-    QFileInfo fileInfo(path);
+	QFileInfo fileInfo(path);
 
-    // 获取原始文件的目录和文件名
-    QDir dir = fileInfo.absoluteDir();
+	// 获取原始文件的目录和文件名
+	QDir dir = fileInfo.absoluteDir();
 
-    // 构造临时文件名：.~原文件名
-    QString tempFileName = QString(".~%1").arg(fileInfo.fileName());
+	// 构造临时文件名：.~原文件名
+	QString tempFileName = QString(".~%1").arg(fileInfo.fileName());
 
-    // 拼接完整临时路径
-    QString tempPath = dir.filePath(tempFileName);
+	// 拼接完整临时路径
+	QString tempPath = dir.filePath(tempFileName);
 
-    return tempPath;
+	return tempPath;
 }
 
 /**
@@ -91,97 +105,137 @@ QString DAAppArchive::toTemporaryPath(const QString& path)
  */
 bool DAAppArchive::replaceFile(const QString& file, const QString& beReplaceFile)
 {
-    // 检查文件是否存在
-    if (!QFile::exists(file)) {
-        qDebug() << "file does not exist:" << file;
-        return false;
-    }
+	// 检查文件是否存在
+	if (!QFile::exists(file)) {
+		qDebug() << "file does not exist:" << file;
+		return false;
+	}
 
-    // 确保两个文件不是同一个文件
-    if (QFileInfo(file).canonicalFilePath() == QFileInfo(beReplaceFile).canonicalFilePath()) {
-        qDebug() << "The two files are the same. No replacement needed.";
-        return true;  // 如果是同一个文件，直接返回成功
-    }
+	// 确保两个文件不是同一个文件
+	if (QFileInfo(file).canonicalFilePath() == QFileInfo(beReplaceFile).canonicalFilePath()) {
+		qDebug() << "The two files are the same. No replacement needed.";
+		return true;  // 如果是同一个文件，直接返回成功
+	}
 
-    // 将 beReplaceFile 重命名为 file
-    if (!QFile::copy(file, beReplaceFile)) {
-        qDebug() << "Failed to copy replacement file to target location:" << file << "->" << beReplaceFile;
-        return false;
-    }
-    // 删除目标文件（file）
-    if (!QFile::remove(file)) {
-        qDebug() << "Failed to remove the original file:" << file;
-        // 虽然删除临时文件失败，但也返回true
-        return true;
-    }
-    return true;
+	// 将 beReplaceFile 重命名为 file
+	if (!QFile::copy(file, beReplaceFile)) {
+		qDebug() << "Failed to copy replacement file to target location:" << file << "->" << beReplaceFile;
+		return false;
+	}
+	// 删除目标文件（file）
+	if (!QFile::remove(file)) {
+		qDebug() << "Failed to remove the original file:" << file;
+		// 虽然删除临时文件失败，但也返回true
+		return true;
+	}
+	return true;
 }
 
+/**
+ * @brief 保存所有，执行任务队列
+ * @param filePath
+ */
 void DAAppArchive::saveAll(const QString& filePath)
 {
-    const int cnt = getTaskCount();
-    int index     = 0;
-    if (!isOpened()) {
-        // 如果原来已经打开需要先关闭
-        close();
-    }
-    // toTemporaryPath获取临时文件路径
-    QString tempFilePath = toTemporaryPath(filePath);
-    setBaseFilePath(tempFilePath);
-    if (!create()) {
-        // 创建失败，设置回来
-        setBaseFilePath(filePath);
-        emit taskFinished(DAAppArchive::SaveFailed);
-        return;
-    }
-    while (!isTaskEmpty()) {
-        DAAppArchive::Task t = takeTask();
-        if (!execTask(t)) {
-            emit taskFinished(DAAppArchive::SaveFailed);
-            return;
-        }
-        ++index;
-        emit taskProgress(cnt, index, t.describe);
-    }
-    // 创建完成关闭文件
-    close();
-    // 把文件替换为正式文件
-    if (!replaceFile(tempFilePath, filePath)) {
-        // 删除临时文件
-        if (QFile::exists(tempFilePath)) {
-            if (!QFile::remove(tempFilePath)) {
-                qDebug() << "Failed to remove the temp file:" << tempFilePath;
-                // 虽然删除临时文件失败，但也返回true
-            }
-        }
-        emit taskFinished(DAAppArchive::SaveFailed);
-        return;
-    }
-    // 替换完成后，重新以读取方式打开
-    setBaseFilePath(filePath);
-    if (!isOpened()) {
-        open();
-    }
-    emit taskFinished(DAAppArchive::SaveSuccess);
+	const int cnt = getTaskCount();
+	int index     = 0;
+	if (!isOpened()) {
+		// 如果原来已经打开需要先关闭
+		close();
+	}
+	// toTemporaryPath获取临时文件路径
+	QString tempFilePath = toTemporaryPath(filePath);
+	setBaseFilePath(tempFilePath);
+	if (!create()) {
+		// 创建失败，设置回来
+		setBaseFilePath(filePath);
+		emit taskFinished(DAAppArchive::SaveFailed);
+		return;
+	}
+	while (!isTaskEmpty()) {
+		DAAppArchive::Task t = takeTask();
+		if (!execTask(t)) {
+			emit taskFinished(DAAppArchive::SaveFailed);
+			return;
+		}
+		++index;
+		emit taskProgress(cnt, index, t);
+	}
+	// 创建完成关闭文件
+	close();
+	// 把文件替换为正式文件
+	if (!replaceFile(tempFilePath, filePath)) {
+		// 删除临时文件
+		if (QFile::exists(tempFilePath)) {
+			if (!QFile::remove(tempFilePath)) {
+				qDebug() << "Failed to remove the temp file:" << tempFilePath;
+				// 虽然删除临时文件失败，但也返回true
+			}
+		}
+		emit taskFinished(DAAppArchive::SaveFailed);
+		return;
+	}
+	// 替换完成后，重新以读取方式打开
+	setBaseFilePath(filePath);
+	if (!isOpened()) {
+		open();
+	}
+	emit taskFinished(DAAppArchive::SaveSuccess);
+}
+
+/**
+ * @brief DAAppArchive::loadAll
+ * @param filePath
+ */
+void DAAppArchive::loadAll(const QString& filePath)
+{
+	const int cnt = getTaskCount();
+	int index     = 0;
+	if (!isOpened()) {
+		// 如果原来已经打开需要先关闭
+		close();
+	}
+	setBaseFilePath(filePath);
+	if (!open()) {
+		// 打开失败
+		emit taskFinished(DAAppArchive::LoadFailed);
+		return;
+	}
+	while (!isTaskEmpty()) {
+		DAAppArchive::Task t = takeTask();
+		if (!execTask(t)) {
+			emit taskFinished(DAAppArchive::LoadFailed);
+			return;
+		}
+		++index;
+		emit taskProgress(cnt, index, t);
+	}
+	emit taskFinished(DAAppArchive::LoadSuccess);
 }
 
 /**
  * @brief 执行任务
  * @param t
  */
-bool DAAppArchive::execTask(const DAAppArchive::Task& t)
+bool DAAppArchive::execTask(Task& t)
 {
-
-    if (!t.data.isEmpty()) {
-        // 如果data有内容，就直接写入的zip文件中
-        return write(t.relatePath, t.data);
-    } else {
-        //
-        if (t.function) {
-            t.function(this);
-        }
-    }
-    return true;
+	if (t.isWrite()) {
+		// 写任务
+		if (t.function) {
+			t.function(this, t);
+		} else {
+			// 如果data有内容，就直接写入的zip文件中
+			return write(t.relatePath, t.data);
+		}
+	} else {
+		// 读任务
+		if (t.function) {
+			t.function(this, t);
+		} else {
+			t.data = read(t.relatePath);
+		}
+	}
+	return true;
 }
 
-}
+}  // end DA
