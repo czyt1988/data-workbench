@@ -39,33 +39,28 @@ public:
 	QString getWorkingDirectory() const;
 	// 是否dirty
 	bool isDirty() const;
-	// 清空工程
-	virtual void clear();
-	// 追加一个工厂的工作流进入本工程中，注意这个操作不会清空当前的工作流
-	bool appendWorkflowInProject(const QByteArray& data, bool skipIndex = false);
 	// 工程文件的版本,版本组成有大版本.中间版本.小版本组成，例如0.1.1
 	static QVersionNumber getProjectVersion();
+    // 是否繁忙，正在保存文件过程中会为繁忙状态
+    bool isBusy() const;
 
 public:
 	// 工程文件的后缀
 	static QString getProjectFileSuffix();
 	static void setProjectFileSuffix(const QString& f);
 
-public:
+public Q_SLOTS:
 	// 加载工程，加载完成后需要发射projectLoaded信号
 	virtual bool load(const QString& path);
 	// 保存工程，保存成功后需要发射projectSaved信号
-	virtual bool save(const QString& path);
-	//
-protected:
-	// 保存workflow相关内容（以xml形式）
-	QByteArray saveWorkflow();
-	bool loadWorkflow(const QByteArray& data);
-	// 保存dataManager结构
-	QByteArray saveDataManager();
-public Q_SLOTS:
+    virtual bool save(const QString& path);
+    // 清空工程
+    virtual void clear();
 	// 设置为dirty,会发射becomeDirty
 	void setModified(bool on = true);
+protected Q_SLOTS:
+    // 设置繁忙
+    void setBusy(bool on);
 Q_SIGNALS:
 	/**
 	 * @brief 工程加载完成
@@ -73,8 +68,18 @@ Q_SIGNALS:
 	 */
 	void projectLoaded(const QString& path);
 
+    /**
+     * @brief 工程开始保存
+     *
+     * 此信号发射代表工程开始保存，但还没保存完
+     * @param path 保存的路径
+     */
+    void projectBeginSave(const QString& path);
+
 	/**
-	 * @brief 工程成功保存
+     * @brief 工程成功保存
+     *
+     * 此信号发射代表工程已经保存完成
 	 * @param path 保存的路径
 	 */
 	void projectSaved(const QString& path);

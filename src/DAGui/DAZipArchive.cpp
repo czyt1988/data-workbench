@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <optional>
 #include <QDateTime>
+#include <QDir>
 #include "quazip/quazipfile.h"
 namespace DA
 {
@@ -19,10 +20,6 @@ public:
     bool isOpened() const;
     // 获取所有文件
     QStringList getAllFiles() const;
-    // 重置zip的列表文件
-    void resetZipFileList();
-    // 把zip文件列表内容设置为无效
-    void invalidZipFileList();
 
 public:
     // 打开
@@ -33,7 +30,6 @@ public:
 public:
     std::unique_ptr< QuaZip > mZip;
     QString mLastErrorString;
-    std::optional< QStringList > mFileList;
     static const char* s_password;
     static int s_zip_compress_level;
 };
@@ -76,36 +72,7 @@ int DAZipArchive::PrivateData::compressLevel()
 
 QStringList DAZipArchive::PrivateData::getAllFiles() const
 {
-    if (!mFileList) {
-        DAZipArchive::PrivateData* that = const_cast< DAZipArchive::PrivateData* >(this);
-        that->resetZipFileList();
-    }
-    return mFileList.value();
-}
-
-void DAZipArchive::PrivateData::resetZipFileList()
-{
-    mFileList   = QStringList();
-    QuaZip* zip = const_cast< QuaZip* >(mZip.get());
-    // 先获取之前的文件
-    QString currentFile = zip->getCurrentFileName();
-    if (!zip->goToFirstFile()) {
-        return;  // 如果没有文件，返回空列表
-    }
-
-    do {
-        mFileList->append(zip->getCurrentFileName());
-    } while (zip->goToNextFile());
-    // 设置回之前的文件
-    zip->setCurrentFile(currentFile);
-    return;
-}
-
-void DAZipArchive::PrivateData::invalidZipFileList()
-{
-    if (mFileList) {
-        mFileList = std::nullopt;
-    }
+    return mZip->getFileNameList();
 }
 
 //===============================================================
@@ -117,7 +84,11 @@ DAZipArchive::DAZipArchive(QObject* par) : DAAbstractArchive(par), DA_PIMPL_CONS
 
 DAZipArchive::DAZipArchive(const QString& zipPath, QObject* par) : DAAbstractArchive(par), DA_PIMPL_CONSTRUCT
 {
-	setZipFileName(zipPath);
+    setZipFileName(zipPath);
+}
+
+DAZipArchive::~DAZipArchive()
+{
 }
 
 void DAZipArchive::setBaseFilePath(const QString& path)
@@ -138,7 +109,33 @@ bool DAZipArchive::setZipFileName(const QString& fileName)
     return true;
 }
 
+/**
+ * @brief 打开一个压缩包，主要为了读取
+ * @return
+ */
 bool DAZipArchive::open()
+{
+    DA_D(d);
+    QString filePath = getBaseFilePath();
+    if (isOpened()) {
+        qDebug() << tr("%1 is already opened").arg(filePath);  // cn:当前文件%1已经打开;
+        return true;
+    }
+    d->makeSureZipPtr();
+    if (!d->mZip->open(QuaZip::mdUnzip)) {
+        qDebug() << tr("failed to open archive file %1").arg(filePath);
+        d->mLastErrorString = d->mZip->getIoDevice()->errorString();
+        d->mZip.reset();  // 重置 QuaZip 指针
+        return false;
+    }
+    return true;
+}
+
+/**
+ * @brief 创建一个压缩包
+ * @return
+ */
+bool DAZipArchive::create()
 {
     DA_D(d);
     QString filePath = getBaseFilePath();
@@ -153,7 +150,6 @@ bool DAZipArchive::open()
         d->mZip.reset();  // 重置 QuaZip 指针
         return false;
     }
-    d->invalidZipFileList();
     return true;
 }
 
@@ -176,7 +172,6 @@ bool DAZipArchive::close()
 
     // 关闭 ZIP 文件
     d->mZip->close();
-    d->mZip.reset();  // 释放 QuaZip 对象
 
     return true;
 }
@@ -207,7 +202,6 @@ bool DAZipArchive::write(const QString& relatePath, const QByteArray& byte)
     // 写入数据
     zipFile.write(byte);
     zipFile.close();
-    d->invalidZipFileList();
     return true;
 }
 
@@ -272,7 +266,6 @@ bool DAZipArchive::remove(const QString& fileToRemove)
         qDebug() << tr("archive is not open");  // cn:文件还未打开
         return false;
     }
-    d->invalidZipFileList();
     if (!contains(fileToRemove)) {
         qDebug() << QString("remove %1,but archive not contain this file").arg(fileToRemove);
         return false;
@@ -328,7 +321,6 @@ bool DAZipArchive::remove(const QString& fileToRemove)
         return false;
     }
     // 把内存还原
-    d->invalidZipFileList();
     d->mZip = std::move(newZip);
     if (!oldCurrentFile.isEmpty()) {
         d->mZip->setCurrentFile(oldCurrentFile);
@@ -349,7 +341,7 @@ qint64 DAZipArchive::getFileSize() const
 }
 
 /**
- * @brief 获取文件数量，此函数会遍历zip的所有文件并缓存，第一次调用性能较低，如果有缓存（上次刷新文件后没有进行写操作），则不需要遍历
+ * @brief 获取文件数量，此函数会遍历zip的所有文件
  * @return
  */
 int DAZipArchive::getFileCount() const
@@ -382,6 +374,155 @@ void DAZipArchive::setComment(const QString& comment)
     }
 
     d->mZip->setComment(comment);
+}
+
+/**
+ * @brief 压缩包整体解压到目录下
+ * @param extractDir
+ * @return
+ */
+bool DAZipArchive::extractToDirectory(const QString& extractDir)
+{
+    DA_D(d);
+    if (!isOpened()) {
+        if (!open()) {
+            qDebug() << tr("can not open archive");  // cn:无法打开档案
+            return false;
+        }
+    }
+    return extractToDirectory(d->mZip.get(), extractDir);
+}
+
+bool DAZipArchive::compressDirectory(const QString& folderPath)
+{
+    DA_D(d);
+    if (!isOpened()) {
+        if (!create()) {
+            qDebug() << tr("can not open archive");  // cn:无法打开档案
+            return false;
+        }
+    }
+    return compressDirectory(folderPath, d->mZip.get());
+}
+
+bool DAZipArchive::extractToDirectory(const QString& zipFilePath, const QString& extractDir)
+{
+    QuaZip zip(zipFilePath);
+    zip.setAutoClose(true);
+    return extractToDirectory(&zip, extractDir);
+}
+
+bool DAZipArchive::extractToDirectory(QuaZip* zip, const QString& extractDir)
+{
+    if (!zip->isOpen()) {
+        if (!zip->open(QuaZip::mdUnzip)) {
+            qDebug() << "can not open archive:" << zip->getZipName();  // cn:无法打开档案
+            return false;
+        }
+    }
+
+    // 确保目标目录存在
+    QDir targetDir(extractDir);
+    if (!targetDir.exists()) {
+        if (!targetDir.mkpath(".")) {
+            qDebug() << tr("Failed to create target directory:%1").arg(extractDir);  // cn：无法创建目标文件夹%1
+            return false;
+        }
+    }
+
+    // 遍历 ZIP 文件中的所有条目
+    if (!zip->goToFirstFile()) {
+        qDebug() << "archive is empty or failed to read entries.";
+        return false;
+    }
+    do {
+        QString entryName = zip->getCurrentFileName();      // 获取当前条目的相对路径
+        QString fullPath  = targetDir.filePath(entryName);  // 目标文件的完整路径
+
+        if (entryName.endsWith('/')) {
+            // 如果是目录条目，创建对应的目录
+            QDir dir;
+            if (!dir.mkpath(fullPath)) {
+                qDebug() << "Failed to create directory:" << fullPath;
+                return false;
+            }
+        } else {
+            // 如果是文件条目，解压文件内容
+            QuaZipFile zipFile(zip);
+            if (DAZipArchive::PrivateData::open(zipFile, QIODevice::ReadOnly, entryName)) {
+                qDebug() << "Failed to open file in zip archive:" << entryName;
+                return false;
+            }
+
+            // 创建目标文件并写入内容
+            QFile outFile(fullPath);
+            if (!outFile.open(QIODevice::WriteOnly)) {
+                qDebug() << "Failed to create output file:" << fullPath;
+                zipFile.close();
+                return false;
+            }
+
+            outFile.write(zipFile.readAll());
+            outFile.close();
+            zipFile.close();
+        }
+    } while (zip->goToNextFile());
+    return true;
+}
+
+bool DAZipArchive::compressDirectory(const QString& folderPath, const QString& zipFilePath)
+{
+    // 打开 ZIP 文件
+    QuaZip zip(zipFilePath);
+    if (!zip.open(QuaZip::mdCreate)) {
+        qDebug() << "Failed to create ZIP file:" << zipFilePath;
+        return false;
+    }
+    return compressDirectory(folderPath, &zip);
+}
+
+bool DAZipArchive::compressDirectory(const QString& folderPath, QuaZip* zip, const QString& relativeBase)
+{
+    QDir folderDir(folderPath);
+    if (!folderDir.exists()) {
+        qDebug() << "Source folder does not exist:" << folderPath;
+        return false;
+    }
+    // 遍历文件夹中的所有文件和子目录
+    const QStringList allFiles = folderDir.entryList(QDir::AllEntries | QDir::NoDotAndDotDot, QDir::DirsFirst);
+    for (const QString& entry : allFiles) {
+        QString fullPath     = folderDir.filePath(entry);           // 当前条目的完整路径
+        QString relativePath = QDir(relativeBase).filePath(entry);  // 相对于顶层文件夹的路径
+
+        QFileInfo fileInfo(fullPath);
+        if (fileInfo.isDir()) {
+            // 如果是目录，递归处理子目录,同时传入relativePath，能组出完整路径
+            if (!compressDirectory(fullPath, zip, relativePath)) {
+                qDebug() << "Failed to compress subdirectory:" << fullPath;
+                return false;
+            }
+        } else {
+            // 如果是文件，将其写入 ZIP 文件
+            QFile inFile(fullPath);
+            if (!inFile.open(QIODevice::ReadOnly)) {
+                qDebug() << "Failed to open file for reading:" << fullPath;
+                return false;
+            }
+
+            QByteArray fileData = inFile.readAll();
+
+            QuaZipFile zipFile(zip);
+            if (!zipFile.open(QIODevice::WriteOnly, QuaZipNewInfo(relativePath))) {
+                qWarning() << "Failed to open file in ZIP archive:" << relativePath;
+                return false;
+            }
+
+            zipFile.write(fileData);
+            inFile.close();
+            zipFile.close();
+        }
+    }
+    return true;
 }
 
 }  // end DA

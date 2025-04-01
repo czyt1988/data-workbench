@@ -2,7 +2,7 @@
 #define DAZIPARCHIVE_H
 #include "DAGuiAPI.h"
 #include "DAAbstractArchive.h"
-
+class QuaZip;
 namespace DA
 {
 /**
@@ -14,12 +14,14 @@ class DAGUI_API DAZipArchive : public DAAbstractArchive
 public:
     DAZipArchive(QObject* par = nullptr);
     DAZipArchive(const QString& zipPath, QObject* par = nullptr);
+    ~DAZipArchive();
 	// 设置zip文件名
 	virtual void setBaseFilePath(const QString& path) override;
     // 设置zip文件名,包含完整路径的名字
     bool setZipFileName(const QString& fileName);
 	// 打开
 	bool open();
+    bool create();
     // 是否打开
     bool isOpened() const;
     // 关闭
@@ -51,6 +53,20 @@ public:
     QString getComment() const;
     // 设置注释
     void setComment(const QString& comment);
+
+    //==============
+    // 整体解压到目录下
+    //==============
+    // 把zip整体解压到目录下
+    bool extractToDirectory(const QString& extractDir);
+    // 把一个zip整体压缩到压缩包
+    bool compressDirectory(const QString& folderPath);
+
+public:
+    static bool extractToDirectory(const QString& zipFilePath, const QString& extractDir);
+    static bool extractToDirectory(QuaZip* zip, const QString& extractDir);
+    static bool compressDirectory(const QString& folderPath, const QString& zipFilePath);
+    static bool compressDirectory(const QString& folderPath, QuaZip* zip, const QString& relativeBase = QString("./"));
 };
 }
 
