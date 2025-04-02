@@ -13,10 +13,6 @@ DAChartBarItemSettingWidget::DAChartBarItemSettingWidget(QWidget* parent)
 {
 	ui->setupUi(this);
 	resetUI();
-	connect(ui->comboBoxBarStyle,
-			QOverload< int >::of(&QComboBox::currentIndexChanged),
-			this,
-			&DAChartBarItemSettingWidget::onBarStyleCurrentIndexChanged);
 	connect(ui->brushEditWidget, &DABrushEditWidget::brushChanged, this, &DAChartBarItemSettingWidget::onBrushChanged);
 	connect(ui->comboBoxLayoutPolicy,
 			QOverload< int >::of(&QComboBox::currentIndexChanged),
@@ -125,7 +121,7 @@ void DAChartBarItemSettingWidget::updatePlotItem(QwtPlotBarChart* item)
 	}
 
 	// 创建新的柱状图符号
-	QwtColumnSymbol* symbol = new QwtColumnSymbol(getBarStyle());
+	QwtColumnSymbol* symbol = new QwtColumnSymbol(QwtColumnSymbol::Style::Box);
 	// 设置符号的画笔和画刷
 	QPalette pal = symbol->palette();
 	if (isEnableFillEdit()) {
@@ -164,38 +160,6 @@ void DAChartBarItemSettingWidget::updatePlotItem(QwtPlotBarChart* item)
 	}
 }
 
-/**
- * @brief 重置BarStyle ComboBox
- */
-void DAChartBarItemSettingWidget::resetBarStyleComboBox()
-{
-	ui->comboBoxBarStyle->clear();
-	ui->comboBoxBarStyle->addItem(tr("No Style"), static_cast< int >(QwtColumnSymbol::NoStyle));
-	ui->comboBoxBarStyle->addItem(tr("Box"), static_cast< int >(QwtColumnSymbol::Box));
-	ui->comboBoxBarStyle->setCurrentIndex(0);
-}
-
-/**
- * @brief DAChartBarItemSettingWidget::onCurveStyleCurrentIndexChanged
- * @param index
- */
-void DAChartBarItemSettingWidget::onBarStyleCurrentIndexChanged(int index)
-{
-	QwtColumnSymbol::Style s = static_cast< QwtColumnSymbol::Style >(ui->comboBoxBarStyle->currentData().toInt());
-	switch (s) {
-	case QwtColumnSymbol::NoStyle:
-		ui->checkBoxEnableFill->setEnabled(true);
-		ui->checkBoxBar->setEnabled(true);
-	case QwtColumnSymbol::Box:
-		ui->checkBoxEnableFill->setEnabled(true);
-		ui->checkBoxBar->setEnabled(false);
-	case QwtColumnSymbol::UserStyle:
-		ui->checkBoxEnableFill->setEnabled(true);
-		ui->checkBoxChart->setEnabled(true);
-		break;
-	}
-}
-
 void DAChartBarItemSettingWidget::plotItemAttached(QwtPlotItem* plotItem, bool on)
 {
 	if (!on && plotItem == getPlotItem()) {
@@ -220,27 +184,6 @@ void DAChartBarItemSettingWidget::setTitle(const QString& t)
 QString DAChartBarItemSettingWidget::getTitle() const
 {
     return ui->widgetItemSetting->getItemTitle();
-}
-
-/**
- * @brief 设置BarStyle
- * @param v
- */
-void DAChartBarItemSettingWidget::setBarStyle(QwtColumnSymbol::Style v)
-{
-	int i = ui->comboBoxBarStyle->findData(static_cast< int >(v));
-	if (i >= 0) {
-		ui->comboBoxBarStyle->setCurrentIndex(i);
-	}
-}
-
-/**
- * @brief 获取BarStyle
- * @return
- */
-QwtColumnSymbol::Style DAChartBarItemSettingWidget::getBarStyle() const
-{
-    return static_cast< QwtColumnSymbol::Style >(ui->comboBoxBarStyle->currentData().toInt());
 }
 
 /**
@@ -344,7 +287,6 @@ bool DAChartBarItemSettingWidget::isHaveBaseLine() const
  */
 void DAChartBarItemSettingWidget::resetUI()
 {
-	resetBarStyleComboBox();
 	enableFillEdit(false);
 	setBaseLine(0.0);
 	ui->comboBoxLayoutPolicy->clear();

@@ -159,6 +159,8 @@ private Q_SLOTS:
 	void onActionChartAddScatterTriggered();
 	// 添加柱状图
 	void onActionChartAddBarTriggered();
+	// 添加误差棒图
+	void onActionactionChartAddErrorBarTriggered();
 	//===================================================
 	// 绘图标签 Chart Context Category
 	//===================================================

@@ -4,6 +4,7 @@
 #include "DAAbstractChartAddItemWidget.h"
 #include "DAChartAddCurveWidget.h"
 #include "DAChartAddBarWidget.h"
+#include "DAChartAddErrorBarWidget.h"
 #include <iterator>
 #include <vector>
 #define STR_DADIALOGCHARTGUIDE_FINISHE tr("Finish")
@@ -11,6 +12,7 @@
 // qwt
 #include "qwt_plot_curve.h"
 #include "qwt_plot_barchart.h"
+#include "qwt_plot_intervalcurve.h"
 namespace DA
 {
 
@@ -45,6 +47,10 @@ void DADialogChartGuide::init()
 	item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-bar.svg"), tr("bar"));
 	item->setData(Qt::UserRole, static_cast< int >(DA::ChartTypes::Bar));
 	ui->listWidgetChartType->addItem(item);
+	// errorbar
+	item = new QListWidgetItem(QIcon(":/app/chart-type/Icon/chart-type/chart-intervalcurve.svg"), tr("error bar"));
+	item->setData(Qt::UserRole, static_cast< int >(DA::ChartTypes::ErrorBar));
+	ui->listWidgetChartType->addItem(item);
 	// 初始化
 	ui->stackedWidget->setCurrentWidget(ui->pageCurve);
 	ui->listWidgetChartType->setCurrentRow(0);
@@ -57,6 +63,7 @@ void DADialogChartGuide::setDataManager(DADataManager* dmgr)
 {
 	ui->pageCurve->setDataManager(dmgr);
 	ui->pageBar->setDataManager(dmgr);
+	ui->pageErrorBar->setDataManager(dmgr);
 }
 
 /**
@@ -72,8 +79,10 @@ void DADialogChartGuide::setCurrentData(const DAData& d)
 		c->toFirst();
 	} else if (DAChartAddBarWidget* b = qobject_cast< DAChartAddBarWidget* >(w)) {
 		b->setCurrentData(d);
-		// 重新设置数据的话，步骤回到第一步
 		b->toFirst();
+	} else if (DAChartAddErrorBarWidget* e = qobject_cast< DAChartAddErrorBarWidget* >(w)) {
+		e->setCurrentData(d);
+		e->toFirst();
 	}
 }
 
@@ -235,7 +244,8 @@ void DADialogChartGuide::onListWidgetCurrentItemChanged(QListWidgetItem* current
 		break;
 	case DA::ChartTypes::Bar:
 		ui->stackedWidget->setCurrentWidget(ui->pageBar);
-		ui->pageBar->setBarMode(true);
+	case DA::ChartTypes::ErrorBar:
+		ui->stackedWidget->setCurrentWidget(ui->pageErrorBar);
 	default:
 		break;
 	}

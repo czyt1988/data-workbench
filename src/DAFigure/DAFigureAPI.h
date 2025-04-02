@@ -16,9 +16,10 @@ namespace DA
  */
 enum class ChartTypes
 {
-	Curve,    ///< 曲线
-	Scatter,  ///< 散点
-	Bar,      ///< 柱状
+	Curve,     ///< 曲线
+	Scatter,   ///< 散点
+	Bar,       ///< 柱状
+	ErrorBar,  ///< 误差棒
 	Unknow = 1000
 };
 }

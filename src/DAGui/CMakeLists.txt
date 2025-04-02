@@ -33,8 +33,10 @@ set(DA_LIB_HEADER_FILES
     DAAbstractChartAddItemWidget.h
     DAAbstractOperateWidget.h
     DAChartAddXYSeriesWidget.h
+    DAChartAddXYESeriesWidget.h
     DAChartAddCurveWidget.h
     DAChartAddBarWidget.h
+    DAChartAddErrorBarWidget.h
     DADataManagerComboBox.h
     DADataOperatePageWidget.h
     DAFigureFactory.h
@@ -70,8 +72,10 @@ set(DA_LIB_SOURCE_FILES
     DAAbstractChartAddItemWidget.cpp
     DAAbstractOperateWidget.cpp
     DAChartAddXYSeriesWidget.cpp
+    DAChartAddXYESeriesWidget.cpp
     DAChartAddCurveWidget.cpp
     DAChartAddBarWidget.cpp
+    DAChartAddErrorBarWidget.cpp
     DAChartListView.cpp
     DAChartManageWidget.cpp
     DAChartOperateWidget.cpp
@@ -104,8 +108,10 @@ set(DA_LIB_SOURCE_FILES
 )
 set(DA_LIB_QT_UI_FILES
     DAChartAddXYSeriesWidget.ui
+    DAChartAddXYESeriesWidget.ui
     DAChartAddCurveWidget.ui
     DAChartAddBarWidget.ui
+    DAChartAddErrorBarWidget.ui
     DAChartManageWidget.ui
     DAChartOperateWidget.ui
     DAChartSettingWidget.ui
