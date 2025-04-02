@@ -65,6 +65,8 @@ set(DA_LIB_HEADER_FILES
     DASettingContainerWidget.h
     DAAbstractArchive.h
     DAZipArchive.h
+    DAZipArchiveThreadWrapper.h
+    DAAbstractArchiveTask.h
     DAXmlHelper.h
 )
 set(DA_LIB_SOURCE_FILES
@@ -102,6 +104,8 @@ set(DA_LIB_SOURCE_FILES
     DASettingContainerWidget.cpp
     DAAbstractArchive.cpp
     DAZipArchive.cpp
+    DAZipArchiveThreadWrapper.cpp
+    DAAbstractArchiveTask.cpp
     DAXmlHelper.cpp
 )
 set(DA_LIB_QT_UI_FILES

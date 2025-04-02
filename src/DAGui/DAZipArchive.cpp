@@ -4,6 +4,7 @@
 #include <optional>
 #include <QDateTime>
 #include <QDir>
+#include "DAAbstractArchiveTask.h"
 #include "quazip/quazipfile.h"
 namespace DA
 {
@@ -403,6 +404,78 @@ bool DAZipArchive::compressDirectory(const QString& folderPath)
         }
     }
     return compressDirectory(folderPath, d->mZip.get());
+}
+
+void DAZipArchive::saveAll(const QString& filePath)
+{
+    const int cnt = getTaskCount();
+    int index     = 0;
+    if (!isOpened()) {
+        // 如果原来已经打开需要先关闭
+        close();
+    }
+    // toTemporaryPath获取临时文件路径
+    QString tempFilePath = toTemporaryPath(filePath);
+    setBaseFilePath(tempFilePath);
+    if (!create()) {
+        // 创建失败，设置回来
+        setBaseFilePath(filePath);
+        emit taskFinished(DAAbstractArchive::SaveFailed);
+        return;
+    }
+    while (!isTaskQueueEmpty()) {
+        std::shared_ptr< DAAbstractArchiveTask > task = takeTask();
+        if (!task->exec(this)) {
+            emit taskFinished(DAAbstractArchive::SaveFailed);
+            return;
+        }
+        ++index;
+        emit taskProgress(cnt, index, task);
+    }
+    // 创建完成关闭文件
+    close();
+    // 把文件替换为正式文件
+    if (!replaceFile(tempFilePath, filePath)) {
+        // 删除临时文件
+        if (QFile::exists(tempFilePath)) {
+            if (!QFile::remove(tempFilePath)) {
+                qDebug() << "Failed to remove the temp file:" << tempFilePath;
+                // 虽然删除临时文件失败，但也返回true
+            }
+        }
+        emit taskFinished(DAAbstractArchive::SaveFailed);
+        return;
+    }
+    // 替换完成后，重新以读取方式打开
+    setBaseFilePath(filePath);
+
+    emit taskFinished(DAAbstractArchive::SaveSuccess);
+}
+
+void DAZipArchive::loadAll(const QString& filePath)
+{
+    const int cnt = getTaskCount();
+    int index     = 0;
+    if (!isOpened()) {
+        // 如果原来已经打开需要先关闭
+        close();
+    }
+    setBaseFilePath(filePath);
+    if (!open()) {
+        // 打开失败
+        emit taskFinished(DAAbstractArchive::LoadFailed);
+        return;
+    }
+    while (!isTaskQueueEmpty()) {
+        std::shared_ptr< DAAbstractArchiveTask > task = takeTask();
+        if (!task->exec(this)) {
+            emit taskFinished(DAAbstractArchive::LoadFailed);
+            return;
+        }
+        ++index;
+        emit taskProgress(cnt, index, task);
+    }
+    emit taskFinished(DAAbstractArchive::LoadSuccess);
 }
 
 bool DAZipArchive::extractToDirectory(const QString& zipFilePath, const QString& extractDir)

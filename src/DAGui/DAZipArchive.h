@@ -32,6 +32,9 @@ public:
     // 读取数据
     QByteArray read(const QString& relatePath) override;
 
+    // 删除文件--注意，此函数非常耗时，轻易不要使用
+    bool remove(const QString& fileToRemove) override;
+
     //==============
     // 文件管理
     //==============
@@ -39,8 +42,6 @@ public:
     QStringList getAllFiles() const;
     // 检查文件是否存在
     bool contains(const QString& relatePath) const;
-    // 删除文件--注意，此函数非常耗时，轻易不要使用
-    bool remove(const QString& fileToRemove) override;
 
     //==============
     // 归档信息
@@ -61,6 +62,11 @@ public:
     bool extractToDirectory(const QString& extractDir);
     // 把一个zip整体压缩到压缩包
     bool compressDirectory(const QString& folderPath);
+public Q_SLOTS:
+    // 保存所有，执行任务队列
+    virtual void saveAll(const QString& filePath) override;
+    // 读取所有，执行任务队列，内个任务的读取结果通过taskProgress信号携带
+    virtual void loadAll(const QString& filePath) override;
 
 public:
     static bool extractToDirectory(const QString& zipFilePath, const QString& extractDir);
