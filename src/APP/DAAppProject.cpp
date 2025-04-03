@@ -15,6 +15,21 @@
 #include "DAQtContainerUtil.hpp"
 #include "DAStringUtil.h"
 #include "DADataManagerInterface.h"
+#include "DAAbstractArchiveTask.h"
+#include "DAZipArchiveThreadWrapper.h"
+#include "DADockingAreaInterface.h"
+#include "DAZipArchiveTask_ByteArray.h"
+#include "DAZipArchiveTask_Xml.h"
+
+#ifndef DAAPPPROJECT_TASK_LOAD_ID_BEGIN
+#define DAAPPPROJECT_TASK_LOAD_ID_BEGIN 0x234
+#endif
+/**
+ *@def 加载任务id - 工作流的ui
+ */
+#ifndef DAAPPPROJECT_TASK_LOAD_ID_WORKFLOW
+#define DAAPPPROJECT_TASK_LOAD_ID_WORKFLOW (DAAPPPROJECT_TASK_LOAD_ID_BEGIN + 1)
+#endif
 namespace DA
 {
 
@@ -22,56 +37,78 @@ namespace DA
 
 DAAppProject::DAAppProject(DACoreInterface* c, QObject* p) : DAProjectInterface(c, p)
 {
+    // 注册 std::shared_ptr<DAAbstractArchiveTask> 类型
+    qRegisterMetaType< std::shared_ptr< DAAbstractArchiveTask > >("std::shared_ptr<DAAbstractArchiveTask>");
+
     mXml.setLoadedVersionNumber(DAProjectInterface::getProjectVersion());
+    mArchive = new DAZipArchiveThreadWrapper(this);
+    connect(mArchive, &DAZipArchiveThreadWrapper::beginSave, this, &DAAppProject::onBeginSave);
+    connect(mArchive, &DAZipArchiveThreadWrapper::beginLoad, this, &DAAppProject::onBeginLoad);
+    connect(mArchive, &DAZipArchiveThreadWrapper::beginSave, this, &DAAppProject::projectBeginSave);
+    connect(mArchive, &DAZipArchiveThreadWrapper::beginLoad, this, &DAAppProject::projectBeginLoad);
+    connect(mArchive, &DAZipArchiveThreadWrapper::taskProgress, this, &DAAppProject::onTaskProgress);
+    connect(mArchive, &DAZipArchiveThreadWrapper::saved, this, &DAAppProject::onSaveFinish);
+    connect(mArchive, &DAZipArchiveThreadWrapper::loaded, this, &DAAppProject::onLoadFinish);
 }
 
 DAAppProject::~DAAppProject()
 {
 }
 
-/**
- * @brief 创建Archive
- * @note 注意此archive是在另外一个线程中运行，不能在里面操作界面
- * @return
- */
-DAAppArchive* DAAppProject::createSaveArchive()
+DAWorkFlowOperateWidget* DAAppProject::getWorkFlowOperateWidget() const
 {
-	// 创建线程
-	mThread  = new QThread();
-	mArchive = new DAAppArchive();
-	// 绑定
-	mArchive->moveToThread(mThread);
-	// 任务执行完结束线程
-	connect(mArchive, &DAAppArchive::taskFinished, this, &DAAppProject::onSaveTaskFinish);
-	connect(mArchive, &DAAppArchive::taskProgress, this, &DAAppProject::onTaskProgress);
-	connect(mArchive, &DAAppArchive::taskFinished, mThread, &QThread::quit);
-	// beginsave信号触发saveall
-	connect(this, &DAAppProject::projectBeginSave, mArchive, &DAAppArchive::saveAll);
-
-	connect(mThread, &QThread::finished, mThread, &QThread::deleteLater);
-	connect(mThread, &QThread::finished, mArchive, &DAAppArchive::deleteLater);
-	mThread->start();
-	return mArchive;
+    return getDockingAreaInterface()->getWorkFlowOperateWidget();
 }
 
-DAAppArchive* DAAppProject::createLoadArchive()
+bool DAAppProject::appendWorkflowInProject(const QDomDocument& doc, bool skipIndex)
 {
-	// 创建线程
-	mThread  = new QThread();
-	mArchive = new DAAppArchive();
-	// 绑定
-	mArchive->moveToThread(mThread);
-	// 任务执行完结束线程
-	connect(mArchive, &DAAppArchive::taskFinished, this, &DAAppProject::onSaveTaskFinish);
-	connect(mArchive, &DAAppArchive::taskProgress, this, &DAAppProject::onTaskProgress);
-	connect(mArchive, &DAAppArchive::taskFinished, mThread, &QThread::quit);
-	// beginsave信号触发saveall
-	connect(this, &DAAppProject::projectBeginSave, mArchive, &DAAppArchive::saveAll);
-
-	connect(mThread, &QThread::finished, mThread, &QThread::deleteLater);
-	connect(mThread, &QThread::finished, mArchive, &DAAppArchive::deleteLater);
-	mThread->start();
-	return mArchive;
+    // 加载之前先清空
+    DAWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
+    Q_CHECK_PTR(wfo);
+    int oldProjectHaveWorkflow = wfo->count();  // 已有的工作流数量
+    bool isok                  = true;
+    QDomElement docElem        = doc.documentElement();                 // root
+    QDomElement proEle         = docElem.firstChildElement("project");  // project
+    // 获取版本
+    QString verString = proEle.attribute("version");
+    if (!verString.isEmpty()) {
+        QVersionNumber version = QVersionNumber::fromString(verString);
+        if (!version.isNull()) {
+            // 针对工程版本的操作！！
+        }
+    }
+    QDomElement workflowsEle  = proEle.firstChildElement("workflows");  // workflows
+    QString workflowVerString = workflowsEle.attribute("ver");
+    if (!workflowVerString.isEmpty()) {
+        QVersionNumber workflowVersion = QVersionNumber::fromString(workflowVerString);
+        if (!workflowVersion.isNull()) {
+            mXml.setLoadedVersionNumber(workflowVersion);
+        }
+    } else {
+        // 说明是较低版本，设置为v1.1
+        mXml.setLoadedVersionNumber(QVersionNumber(1, 1, 0));
+    }
+    QDomNodeList wfListNodes = workflowsEle.childNodes();
+    QSet< QString > names    = qlist_to_qset(wfo->getAllWorkflowNames());
+    for (int i = 0; i < wfListNodes.size(); ++i) {
+        QDomElement workflowEle = wfListNodes.at(i).toElement();
+        if (workflowEle.tagName() != "workflow") {
+            continue;
+        }
+        QString name = workflowEle.attribute("name");
+        // 生成一个唯一名字
+        name = DA::makeUniqueString(names, name);
+        // 建立工作流窗口
+        DAWorkFlowEditWidget* wfe = wfo->appendWorkflow(name);
+        isok &= mXml.loadElement(wfe, &workflowEle);
+    }
+    if (skipIndex) {
+        int index = workflowsEle.attribute("currentIndex").toInt();
+        index += oldProjectHaveWorkflow;
+        wfo->setCurrentWorkflow(index);
+    }
+    setModified(isok);
+    return isok;
 }
 
 /**
@@ -81,59 +118,13 @@ DAAppArchive* DAAppProject::createLoadArchive()
  */
 bool DAAppProject::appendWorkflowInProject(const QByteArray& data, bool skipIndex)
 {
-	// 加载之前先清空
-	DAWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
-	Q_CHECK_PTR(wfo);
 	QDomDocument doc;
 	QString error;
 	if (!doc.setContent(data, &error)) {
 		qCritical() << "load setContent error:" << error;
 		return false;
 	}
-	int oldProjectHaveWorkflow = wfo->count();  // 已有的工作流数量
-	bool isok                  = true;
-	QDomElement docElem        = doc.documentElement();                 // root
-	QDomElement proEle         = docElem.firstChildElement("project");  // project
-	// 获取版本
-	QString verString = proEle.attribute("version");
-	if (!verString.isEmpty()) {
-		QVersionNumber version = QVersionNumber::fromString(verString);
-		if (!version.isNull()) {
-			// 针对工程版本的操作！！
-		}
-	}
-	QDomElement workflowsEle  = proEle.firstChildElement("workflows");  // workflows
-	QString workflowVerString = workflowsEle.attribute("ver");
-	if (!workflowVerString.isEmpty()) {
-		QVersionNumber workflowVersion = QVersionNumber::fromString(workflowVerString);
-		if (!workflowVersion.isNull()) {
-			mXml.setLoadedVersionNumber(workflowVersion);
-		}
-	} else {
-		// 说明是较低版本，设置为v1.1
-		mXml.setLoadedVersionNumber(QVersionNumber(1, 1, 0));
-	}
-	QDomNodeList wfListNodes = workflowsEle.childNodes();
-	QSet< QString > names    = qlist_to_qset(wfo->getAllWorkflowNames());
-	for (int i = 0; i < wfListNodes.size(); ++i) {
-		QDomElement workflowEle = wfListNodes.at(i).toElement();
-		if (workflowEle.tagName() != "workflow") {
-			continue;
-		}
-		QString name = workflowEle.attribute("name");
-		// 生成一个唯一名字
-		name = DA::makeUniqueString(names, name);
-		// 建立工作流窗口
-		DAWorkFlowEditWidget* wfe = wfo->appendWorkflow(name);
-		isok &= mXml.loadElement(wfe, &workflowEle);
-	}
-	if (skipIndex) {
-		int index = workflowsEle.attribute("currentIndex").toInt();
-		index += oldProjectHaveWorkflow;
-		wfo->setCurrentWorkflow(index);
-	}
-	setModified(isok);
-	return isok;
+    return appendWorkflowInProject(doc, skipIndex);
 }
 
 /**
@@ -154,7 +145,16 @@ void DAAppProject::appendElementWithText(QDomElement& parent, const QString& tag
 {
 	QDomElement ele = doc.createElement(tagName);
 	ele.appendChild(doc.createTextNode(text));
-	parent.appendChild(ele);
+    parent.appendChild(ele);
+}
+
+/**
+ * @brief 繁忙状态判断
+ * @return
+ */
+bool DAAppProject::isBusy() const
+{
+    return mArchive->isBusy();
 }
 
 /**
@@ -185,19 +185,21 @@ void DAAppProject::clear()
  */
 bool DAAppProject::save(const QString& path)
 {
-	if (isBusy()) {
+    if (isBusy()) {
 		qInfo() << tr("current project is busy");  // cn:当前工程正繁忙
 		return false;
 	}
-	setBusy(true);
-	DAProjectInterface::save(path);
+    setProjectPath(path);
+
 	//! 先把涉及ui的内容保存下来,ui是无法在其它线程操作，因此需要先保存下来
-	QByteArray workflowUI = saveWorkflowUI();
-	// 创建archive
-	DAAppArchive* archive = createSaveArchive();
+    QDomDocument workflowXml = createWorkflowUIDomDocument();
+    // 创建archive任务队列
+    mArchive->appendXmlSaveTask(QStringLiteral("workflow.xml"), workflowXml);
 	//! 组件任务队列
-	archive->appendTask(DAAppArchive::Task(".workflow.xml", workflowUI, tr("Save workflow information")));  // cn:保存工作流信息
-	Q_EMIT projectBeginSave(path);
+    if (!mArchive->save(path)) {
+        qCritical() << tr("failed to save archive to %1").arg(path);
+        return false;
+    }
 	return true;
 }
 
@@ -217,29 +219,21 @@ bool DAAppProject::save(const QString& path)
 bool DAAppProject::load(const QString& path)
 {
 	if (isBusy()) {
-		qInfo() << tr("current project is busy");  // cn:当前工程正繁忙
+        qWarning() << tr("current project is busy");  // cn:当前工程正繁忙
 		return false;
 	}
-	setBusy(true);
-	DAProjectInterface::load(path);
+    setProjectPath(path);
 	// 加载之前先清空
 	clear();
 
-	setProjectPath(path);
-	QFile file(path);
-	if (!file.open(QIODevice::ReadOnly)) {
-		return false;
-	}
-	QByteArray dataWorkflow = file.readAll();
-	bool isok               = loadWorkflowUI(dataWorkflow);
-
-	if (isok) {
-		emit projectLoaded(path);
-	} else {
-		setProjectPath(QString());
-	}
-	setModified(false);
-	return isok;
+    // 创建archive任务队列
+    mArchive->appendXmlLoadTask(QStringLiteral("workflow.xml"), DAAPPPROJECT_TASK_LOAD_ID_WORKFLOW);
+    //! 组件任务队列
+    if (!mArchive->load(path)) {
+        qCritical() << tr("failed to laod archive from %1").arg(path);
+        return false;
+    }
+    return true;
 }
 
 void DAAppProject::saveLocalInfo(QDomElement& root, QDomDocument& doc) const
@@ -255,7 +249,28 @@ void DAAppProject::saveLocalInfo(QDomElement& root, QDomDocument& doc) const
 	appendElementWithText(localInfo, "kernelVersion", QSysInfo::kernelVersion(), doc);
 	// 获得kernelType
 	appendElementWithText(localInfo, "prettyProductName", QSysInfo::prettyProductName(), doc);
-	root.appendChild(localInfo);
+    root.appendChild(localInfo);
+}
+
+QDomDocument DAAppProject::createWorkflowUIDomDocument()
+{
+    DAWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
+    Q_CHECK_PTR(wfo);
+    QDomDocument doc;
+    QDomProcessingInstruction processInstruction = doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\"");
+    doc.appendChild(processInstruction);
+    QDomElement root = doc.createElement("root");
+    root.setAttribute("type", "project");
+    doc.appendChild(root);
+    // 保存本机信息
+    saveLocalInfo(root, doc);
+    QDomElement project = doc.createElement("project");
+    project.setAttribute("version", getProjectVersion().toString());  // 版本
+    root.appendChild(project);
+    // 把所有的工作流保存
+    QDomElement workflowsElement = mXml.makeElement(wfo, "workflows", &doc);
+    project.appendChild(workflowsElement);
+    return doc;
 }
 
 QByteArray DAAppProject::saveWorkflowUI()
@@ -263,8 +278,7 @@ QByteArray DAAppProject::saveWorkflowUI()
 	DAWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
 	Q_CHECK_PTR(wfo);
 	QDomDocument doc;
-	QDomProcessingInstruction processInstruction =
-		doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\"");
+    QDomProcessingInstruction processInstruction = doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\"");
 	doc.appendChild(processInstruction);
 	QDomElement root = doc.createElement("root");
 	root.setAttribute("type", "project");
@@ -294,8 +308,7 @@ QByteArray DAAppProject::saveDataManager()
 	DADataManagerInterface* dataMgr = getDataManagerInterface();
 	int datacnt                     = dataMgr->getDataCount();
 	QDomDocument doc;
-	QDomProcessingInstruction processInstruction =
-		doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\"");
+    QDomProcessingInstruction processInstruction = doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\"");
 	doc.appendChild(processInstruction);
 	QDomElement root = doc.createElement("root");
 	root.setAttribute("type", "data manager");
@@ -303,7 +316,17 @@ QByteArray DAAppProject::saveDataManager()
 	// 保存DAData基本信息
 	QDomElement dataListEle = doc.createElement("datas");
 
-	return doc.toByteArray();
+    return doc.toByteArray();
+}
+
+void DAAppProject::onBeginSave(const QString& path)
+{
+    qInfo() << tr("begin save archive to %1").arg(path);  // cn:开始保存档案到%1
+}
+
+void DAAppProject::onBeginLoad(const QString& path)
+{
+    qInfo() << tr("begin load archive from %1").arg(path);  // cn:开始加载%1
 }
 
 /**
@@ -311,46 +334,53 @@ QByteArray DAAppProject::saveDataManager()
  * @param total 总共
  * @param pos 当前位置
  */
-void DAAppProject::onTaskProgress(int total, int pos, const DAAppArchive::Task& t)
+void DAAppProject::onTaskProgress(int total, int pos, const std::shared_ptr< DAAbstractArchiveTask >& t)
 {
-	if (t.isWrite()) {
-		// TODO:这里仅仅更新进度
-	} else {
-		// 说明是读操作，这里要处理读取的结果
-		if (0 == t.relatePath.compare(".workflow.xml", Qt::CaseInsensitive)) {
-			// 说明读取了workflow
-		}
-	}
+    Q_UNUSED(total);
+    Q_UNUSED(pos);
+    switch (t->getCode()) {
+    case DAAPPPROJECT_TASK_LOAD_ID_WORKFLOW: {
+        const std::shared_ptr< DAZipArchiveTask_Xml > xmlArchive = std::static_pointer_cast< DAZipArchiveTask_Xml >(t);
+
+        QDomDocument xmlDoc = xmlArchive->getDomDocument();
+        qDebug() << "onTaskProgress:(" << total << "," << pos << "),xml=\n" << xmlDoc.toString();
+        appendWorkflowInProject(xmlDoc);
+    } break;
+    default: {
+        qDebug() << tr("get unknown task code:%1").arg(t->getCode());
+    } break;
+    }
 }
 
 /**
  * @brief 保存任务结束
  * @param code
  */
-void DAAppProject::onSaveTaskFinish(int code)
+void DAAppProject::onSaveFinish(bool success)
 {
-	setBusy(false);
-	QString savePath = getProjectFilePath();
-	if (code == DAAppArchive::SaveSuccess) {
-		qInfo() << tr("Successfully save archive : %1").arg(savePath);  // cn:成功保存工程:%1
-	} else {
-		qWarning() << tr("Failed to save archive : %1").arg(savePath);  // cn:无法保存工程:%1
-	}
+    QString savePath = getProjectFilePath();
+    if (success) {
+        setModified(false);
+        qInfo() << tr("Successfully save archive : %1").arg(savePath);  // cn:成功保存工程:%1
+    } else {
+        qWarning() << tr("Failed to save archive : %1").arg(savePath);  // cn:无法保存工程:%1
+    }
 }
 
 /**
  * @brief 读取任务结束
  * @param code
  */
-void DAAppProject::onLoadTaskFinish(int code)
+void DAAppProject::onLoadFinish(bool success)
 {
-	setBusy(false);
-	QString loadPath = getProjectFilePath();
-	if (code == DAAppArchive::LoadSuccess) {
-		qInfo() << tr("Successfully load archive : %1").arg(loadPath);  // cn:成功加载工程:%1
-	} else {
-		qWarning() << tr("Failed to load archive : %1").arg(loadPath);  // cn:无法加载工程:%1
-	}
+    QString loadPath = getProjectFilePath();
+    if (success) {
+        setModified(false);
+        qInfo() << tr("Successfully load archive : %1").arg(loadPath);  // cn:成功加载工程:%1
+    } else {
+        setProjectPath(QString());
+        qWarning() << tr("Failed to load archive : %1").arg(loadPath);  // cn:无法加载工程:%1
+    }
 }
 
 }  // end DA

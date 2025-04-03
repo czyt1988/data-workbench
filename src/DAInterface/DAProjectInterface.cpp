@@ -6,6 +6,7 @@
 #include "DAXmlHelper.h"
 #include "DAQtContainerUtil.hpp"
 #include "DADataManagerInterface.h"
+#include "DADockingAreaInterface.h"
 namespace DA
 {
 
@@ -22,9 +23,9 @@ public:
 
 public:
 	bool mIsDirty { false };  ///< 脏标识
+    DADockingAreaInterface* mDockingArea { nullptr };
 	DAWorkFlowOperateWidget* mWorkFlowOperateWidget { nullptr };
 	DADataManagerInterface* mDataManagerInterface { nullptr };
-    bool mIsBusy { false };
 	QFileInfo mProjectFileInfo;  ///< 记录工程文件信息
 
 	static QString s_suffix;  ///< 工程文件后缀
@@ -55,21 +56,14 @@ DAProjectInterface::~DAProjectInterface()
 {
 }
 
-/**
- * @brief 设置工作流操作窗口
- * @param w
- */
-void DAProjectInterface::setWorkFlowOperateWidget(DAWorkFlowOperateWidget* w)
+DADockingAreaInterface* DAProjectInterface::getDockingAreaInterface() const
 {
-    d_ptr->mWorkFlowOperateWidget = w;
+    return d_ptr->mDockingArea;
 }
-/**
- * @brief 获取工作流操作窗口
- * @param w
- */
-DAWorkFlowOperateWidget* DAProjectInterface::getWorkFlowOperateWidget() const
+
+void DAProjectInterface::setDockingAreaInterface(DADockingAreaInterface* dock)
 {
-    return d_ptr->mWorkFlowOperateWidget;
+    d_ptr->mDockingArea = dock;
 }
 
 /**
@@ -188,7 +182,7 @@ QVersionNumber DAProjectInterface::getProjectVersion()
  */
 bool DAProjectInterface::isBusy() const
 {
-    return d_ptr->mIsBusy;
+    return false;
 }
 
 /**
@@ -211,49 +205,6 @@ void DAProjectInterface::setProjectFileSuffix(const QString& f)
 }
 
 /**
- * @brief 加载工程的基础实现，这个函数不会发射projectLoaded和projectBeginLoad信号，需要在具体实现中执行
- *
- * 这个函数会把加载的路径记录下来，因此，重写此函数也需要调用DAProjectInterface::load
- * @code
- * bool DAAppProject::load(const QString& path)
- * {
- *     DAProjectInterface::load(path);
- *     ...
- *     return true;
- * }
- * @endcode
- * @param path
- * @return
- */
-bool DAProjectInterface::load(const QString& path)
-{
-    d_ptr->mProjectFileInfo.setFile(path);
-    return true;
-}
-
-/**
- * @brief 保存工程的基础实现，这个函数不会发射projectSaved和projectBeginSave信号，需要在具体实现中执行
- *
- * 这个函数会把保存的路径记录下来，因此，重写此函数也需要调用DAProjectInterface::save
- * @code
- * bool DAAppProject::save(const QString& path)
- * {
- *     DAProjectInterface::save(path);
- *     ...
- *     Q_EMIT projectBeginSave(path);//启动线程
- *     return true;
- * }
- * @endcode
- * @param path
- * @return
- */
-bool DAProjectInterface::save(const QString& path)
-{
-    d_ptr->mProjectFileInfo.setFile(path);
-    return true;
-}
-
-/**
  * @brief 设置为dirty
  * @param on
  */
@@ -263,11 +214,6 @@ void DAProjectInterface::setModified(bool on)
 		d_ptr->mIsDirty = on;
 		emit dirtyStateChanged(on);
     }
-}
-
-void DAProjectInterface::setBusy(bool on)
-{
-    d_ptr->mIsBusy = on;
 }
 
 }

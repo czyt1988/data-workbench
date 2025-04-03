@@ -64,9 +64,11 @@ set(DA_LIB_HEADER_FILES
     DAWorkFlowOperateWidget.h
     DASettingContainerWidget.h
     DAAbstractArchive.h
+    DAAbstractArchiveTask.h
     DAZipArchive.h
     DAZipArchiveThreadWrapper.h
-    DAAbstractArchiveTask.h
+    DAZipArchiveTask_ByteArray.h
+    DAZipArchiveTask_Xml.h
     DAXmlHelper.h
 )
 set(DA_LIB_SOURCE_FILES
@@ -103,9 +105,11 @@ set(DA_LIB_SOURCE_FILES
     DAWorkFlowOperateWidget.cpp
     DASettingContainerWidget.cpp
     DAAbstractArchive.cpp
+    DAAbstractArchiveTask.cpp
     DAZipArchive.cpp
     DAZipArchiveThreadWrapper.cpp
-    DAAbstractArchiveTask.cpp
+    DAZipArchiveTask_ByteArray.cpp
+    DAZipArchiveTask_Xml.cpp
     DAXmlHelper.cpp
 )
 set(DA_LIB_QT_UI_FILES

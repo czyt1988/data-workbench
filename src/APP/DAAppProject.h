@@ -7,13 +7,15 @@
 #include "DAGlobals.h"
 #include "DAAbstractNodeLinkGraphicsItem.h"
 #include <QThread>
-#include "DAAppArchive.h"
 #include "DAXmlHelper.h"
+#include "DAZipArchiveThreadWrapper.h"
+
 namespace DA
 {
+class DAAbstractArchiveTask;
+class DAZipArchiveThreadWrapper;
 class DAWorkFlowOperateWidget;
 class DAWorkFlowGraphicsScene;
-
 /**
  * @brief 负责整个节点的工程管理
  *
@@ -26,14 +28,15 @@ class DAAppProject : public DAProjectInterface
 public:
 	DAAppProject(DACoreInterface* c, QObject* p = nullptr);
 	~DAAppProject();
-	// 创建一个档案，这个档案会在另外一个线程中
-	DAAppArchive* createSaveArchive();
-	DAAppArchive* createLoadArchive();
+    // 工作流操作窗口
+    DAWorkFlowOperateWidget* getWorkFlowOperateWidget() const;
 	// 追加一个工厂的工作流进入本工程中，注意这个操作不会清空当前的工作流
+    bool appendWorkflowInProject(const QDomDocument& doc, bool skipIndex = false);
 	bool appendWorkflowInProject(const QByteArray& data, bool skipIndex = false);
 	// 在parent下，插入一个tag，tag下包含文字text
 	static void appendElementWithText(QDomElement& parent, const QString& tagName, const QString& text, QDomDocument& doc);
-
+    // 繁忙状态判断
+    virtual bool isBusy() const override;
 public Q_SLOTS:
 	// 清除工程
 	virtual void clear() override;
@@ -46,21 +49,23 @@ protected:
 	// 保存本地信息包括时间日期等等
 	void saveLocalInfo(QDomElement& root, QDomDocument& doc) const;
 	// 保存workflow相关内容（以xml形式）
+    QDomDocument createWorkflowUIDomDocument();
 	QByteArray saveWorkflowUI();
 	bool loadWorkflowUI(const QByteArray& data);
 	// 保存dataManager结构
 	QByteArray saveDataManager();
 private Q_SLOTS:
+    void onBeginSave(const QString& path);
+    void onBeginLoad(const QString& path);
 	// 任务进度
-	void onTaskProgress(int total, int pos, const DAAppArchive::Task& t);
+    void onTaskProgress(int total, int pos, const std::shared_ptr< DAAbstractArchiveTask >& t);
 	// 保存任务结束
-	void onSaveTaskFinish(int code);
+    void onSaveFinish(bool success);
 	// 保存任务结束
-	void onLoadTaskFinish(int code);
+    void onLoadFinish(bool success);
 
 private:
-	DAAppArchive* mArchive { nullptr };
-	QThread* mThread { nullptr };
+    DAZipArchiveThreadWrapper* mArchive { nullptr };
 	DAXmlHelper mXml;
 };
 }  // namespace DA
