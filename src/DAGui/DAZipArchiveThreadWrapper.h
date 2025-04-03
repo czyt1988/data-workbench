@@ -5,6 +5,7 @@
 #include <QString>
 #include <QDomDocument>
 #include "DAAbstractArchiveTask.h"
+#include "DAData.h"
 namespace DA
 {
 
@@ -23,6 +24,7 @@ public:
     // 保存任务
     bool appendByteSaveTask(const QString& path, const QByteArray& data);
     bool appendXmlSaveTask(const QString& path, const QDomDocument& data);
+    bool appendDataSaveTask(const DAData& data);
     // 读取任务
     bool appendByteLoadTask(const QString& path, int code);
     bool appendXmlLoadTask(const QString& path, int code);

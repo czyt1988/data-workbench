@@ -69,6 +69,7 @@ set(DA_LIB_HEADER_FILES
     DAZipArchiveThreadWrapper.h
     DAZipArchiveTask_ByteArray.h
     DAZipArchiveTask_Xml.h
+    DAZipArchiveTask_DAData.h
     DAXmlHelper.h
 )
 set(DA_LIB_SOURCE_FILES
@@ -110,6 +111,7 @@ set(DA_LIB_SOURCE_FILES
     DAZipArchiveThreadWrapper.cpp
     DAZipArchiveTask_ByteArray.cpp
     DAZipArchiveTask_Xml.cpp
+    DAZipArchiveTask_DAData.cpp
     DAXmlHelper.cpp
 )
 set(DA_LIB_QT_UI_FILES
@@ -251,11 +253,11 @@ set(DA_LIB_SOURCE_FILES_Commands
 )
 if(DA_ENABLE_PYTHON)
     list(APPEND DA_LIB_HEADER_FILES_Commands
-        ${DA_LIB_SUBDIR_Commands}/DACommandWithTemplateData.h
+        ${DA_LIB_SUBDIR_Commands}/DACommandWithTemporaryData.h
         ${DA_LIB_SUBDIR_Commands}/DACommandsDataFrame.h
     )
     list(APPEND DA_LIB_SOURCE_FILES_Commands
-        ${DA_LIB_SUBDIR_Commands}/DACommandWithTemplateData.cpp
+        ${DA_LIB_SUBDIR_Commands}/DACommandWithTemporaryData.cpp
         ${DA_LIB_SUBDIR_Commands}/DACommandsDataFrame.cpp
     )
 endif()

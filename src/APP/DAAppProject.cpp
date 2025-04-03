@@ -20,6 +20,7 @@
 #include "DADockingAreaInterface.h"
 #include "DAZipArchiveTask_ByteArray.h"
 #include "DAZipArchiveTask_Xml.h"
+#include "DAZipArchiveTask_DAData.h"
 
 #ifndef DAAPPPROJECT_TASK_LOAD_ID_BEGIN
 #define DAAPPPROJECT_TASK_LOAD_ID_BEGIN 0x234
@@ -195,11 +196,20 @@ bool DAAppProject::save(const QString& path)
     QDomDocument workflowXml = createWorkflowUIDomDocument();
     // 创建archive任务队列
     mArchive->appendXmlSaveTask(QStringLiteral("workflow.xml"), workflowXml);
+
+    //! datamanager
+    DADataManagerInterface* dmgr = getDataManagerInterface();
+    int cnt                      = dmgr->getDataCount();
+    for (int i = 0; i < cnt; ++i) {
+        DAData data = dmgr->getData(i);
+        mArchive->appendDataSaveTask(data);
+    }
 	//! 组件任务队列
     if (!mArchive->save(path)) {
         qCritical() << tr("failed to save archive to %1").arg(path);
         return false;
     }
+
 	return true;
 }
 

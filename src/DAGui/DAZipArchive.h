@@ -28,7 +28,8 @@ public:
     bool close();
     // 写数据
     bool write(const QString& relatePath, const QByteArray& byte) override;
-
+    // 把localFilePath文件写入到zip的relatePath下，文件名保持一致
+    bool writeFileToZip(const QString& relatePath, const QString& localFilePath, std::size_t chunk_mb = 10);
     // 读取数据
     QByteArray read(const QString& relatePath) override;
 
@@ -73,6 +74,7 @@ public:
     static bool extractToDirectory(QuaZip* zip, const QString& extractDir);
     static bool compressDirectory(const QString& folderPath, const QString& zipFilePath);
     static bool compressDirectory(const QString& folderPath, QuaZip* zip, const QString& relativeBase = QString("./"));
+    static bool writeFileToZip(QuaZip* zip, const QString& relatePath, const QString& localFilePath, std::size_t chunk_mb = 10);
 };
 }
 

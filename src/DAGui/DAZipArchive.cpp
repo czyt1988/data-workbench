@@ -214,6 +214,22 @@ bool DAZipArchive::write(const QString& relatePath, const QByteArray& byte)
 }
 
 /**
+ * @brief DAZipArchive::writeFileToZip
+ * @param relatePath
+ * @param localFilePath
+ * @return
+ */
+bool DAZipArchive::writeFileToZip(const QString& relatePath, const QString& localFilePath, std::size_t chunk_mb)
+{
+    DA_D(d);
+    if (!isOpened()) {
+        qDebug() << tr("archive is not open");  // cn:文件还未打开
+        return false;
+    }
+    return writeFileToZip(d->mZip.get(), relatePath, localFilePath, chunk_mb);
+}
+
+/**
  * @brief 读数据
  * @param relatePath
  * @return
@@ -620,6 +636,115 @@ bool DAZipArchive::compressDirectory(const QString& folderPath, QuaZip* zip, con
         }
     }
     return true;
+}
+
+/**
+ * @brief 将本地文件写入ZIP压缩包中的指定路径
+ *
+ * 本函数将本地文件（localFilePath）的内容写入到已打开的ZIP对象（zip）中，
+ * 文件在ZIP内的路径由relatePath指定。函数会根据文件大小自动选择一次性写入或分块写入策略，
+ * 以避免内存占用过高，并确保大文件处理的稳定性。
+ *
+ * @param[in] zip 指向已打开的QuaZip对象的指针，函数不会接管该对象的所有权，
+ *                 调用者需确保zip对象在函数调用期间有效且处于打开状态。
+ * @param[in] relatePath 文件在ZIP内的相对路径（如："doc/report.txt"），
+ *                       路径格式不应以斜杠开头，目录层级使用正斜杠"/"分隔。
+ * @param[in] localFilePath 待写入的本地文件路径，必须为有效可读的常规文件，
+ *                          符号链接或其他特殊文件将被拒绝。
+ * @param[in] chunk_mb 分块大小，默认为10mb
+ *
+ * @return bool
+ *         - true  : 文件成功写入ZIP
+ *         - false : 失败（可能原因：文件不存在/不可读、ZIP写入错误、内存不足等）
+ * @note
+ * - **分块策略**: 文件大小超过chunk_mb MB时启用分块写入，每次读取chunk_mb MB数据以减少内存峰值
+ * - **元数据保留**: 使用原文件的修改时间和权限信息（通过QuaZipNewInfo实现）
+ *
+ * @example 基本用法示例
+ * @code
+ * QuaZip zip("archive.zip");
+ * zip.open(QuaZip::mdCreate); // 必须确保zip已打开
+ *
+ * bool ok = DAZipArchive::writeFileToZip(&zip,"data/sample.txt","/home/user/sample.txt");
+ *
+ * if (ok) {
+ *     qDebug() << "写入成功";
+ * } else {
+ *     qDebug() << "写入失败";
+ * }
+ * @endcode
+ *
+ * @warning 需确保:
+ * - ZIP对象已通过open()方法打开且未关闭
+ * - 写入过程中本地文件内容不被修改
+ * - 多线程场景需自行处理同步
+ *
+ */
+bool DAZipArchive::writeFileToZip(QuaZip* zip, const QString& relatePath, const QString& localFilePath, size_t chunk_mb)
+{
+    // 检查本地文件是否存在
+    QFileInfo fileInfo(localFilePath);
+    if (!fileInfo.exists() || !fileInfo.isFile()) {
+        return false;
+    }
+
+    // 打开本地文件
+    QFile localFile(localFilePath);
+    if (!localFile.open(QIODevice::ReadOnly)) {
+        return false;
+    }
+
+    // 创建并打开zip中的文件条目
+    QuaZipFile zipFile(zip);
+    QuaZipNewInfo zipInfo(relatePath, localFilePath);  // 使用本地文件信息设置zip条目属性
+
+    if (!zipFile.open(QIODevice::WriteOnly, zipInfo)) {
+        localFile.close();
+        return false;
+    }
+
+    // 获取文件大小并确定分块阈值
+    const qint64 fileSize  = fileInfo.size();
+    const qint64 chunkSize = chunk_mb * 1024 * 1024;  // 1MB
+    bool success           = true;
+
+    if (fileSize <= chunkSize) {
+        // 小文件一次性读取
+        QByteArray data = localFile.readAll();
+        if (data.size() != fileSize || zipFile.write(data) != data.size()) {
+            success = false;
+        }
+    } else {
+        // 大文件分块读取
+        QByteArray buffer(chunkSize, Qt::Uninitialized);
+        qint64 totalBytesWritten = 0;
+
+        while (!localFile.atEnd()) {
+            qint64 bytesRead = localFile.read(buffer.data(), chunkSize);
+            if (bytesRead < 0) {
+                success = false;
+                break;
+            }
+
+            qint64 bytesWritten = zipFile.write(buffer.constData(), bytesRead);
+            if (bytesWritten != bytesRead) {
+                success = false;
+                break;
+            }
+            totalBytesWritten += bytesWritten;
+        }
+
+        // 验证总写入字节数
+        if (totalBytesWritten != fileSize) {
+            success = false;
+        }
+    }
+
+    // 确保文件关闭
+    localFile.close();
+    zipFile.close();
+
+    return success;
 }
 
 }  // end DA

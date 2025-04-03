@@ -4,6 +4,7 @@
 #include "DAZipArchive.h"
 #include "DAZipArchiveTask_ByteArray.h"
 #include "DAZipArchiveTask_Xml.h"
+#include "DAZipArchiveTask_DAData.h"
 namespace DA
 {
 class DAZipArchiveThreadWrapper::PrivateData
@@ -82,6 +83,15 @@ bool DAZipArchiveThreadWrapper::appendXmlSaveTask(const QString& path, const QDo
         return false;
     }
     d_ptr->mArchive->appendTask(std::make_shared< DAZipArchiveTask_Xml >(path, data));
+    return true;
+}
+
+bool DAZipArchiveThreadWrapper::appendDataSaveTask(const DAData& data)
+{
+    if (isBusy()) {
+        return false;
+    }
+    d_ptr->mArchive->appendTask(std::make_shared< DAZipArchiveTask_DAData >(data));
     return true;
 }
 
