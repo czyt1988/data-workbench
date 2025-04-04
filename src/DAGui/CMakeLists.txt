@@ -69,7 +69,7 @@ set(DA_LIB_HEADER_FILES
     DAZipArchiveThreadWrapper.h
     DAZipArchiveTask_ByteArray.h
     DAZipArchiveTask_Xml.h
-    DAZipArchiveTask_DAData.h
+    DAZipArchiveTask_ArchiveFile.h
     DAXmlHelper.h
 )
 set(DA_LIB_SOURCE_FILES
@@ -111,7 +111,7 @@ set(DA_LIB_SOURCE_FILES
     DAZipArchiveThreadWrapper.cpp
     DAZipArchiveTask_ByteArray.cpp
     DAZipArchiveTask_Xml.cpp
-    DAZipArchiveTask_DAData.cpp
+    DAZipArchiveTask_ArchiveFile.cpp
     DAXmlHelper.cpp
 )
 set(DA_LIB_QT_UI_FILES

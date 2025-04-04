@@ -1,9 +1,11 @@
 ﻿#include "DAData.h"
 #include "DADataManager.h"
 #if DA_ENABLE_PYTHON
+#include "DAPyScripts.h"
 #include "DADataPyObject.h"
 #include "DADataPyDataFrame.h"
 #include "DADataPySeries.h"
+#include "DAPyScriptsDataFrame.h"
 #endif
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
@@ -20,30 +22,30 @@ DAData::DAData() : mDataMgr(nullptr)
 
 DAData::DAData(const DAAbstractData::Pointer& d) : mDataMgr(nullptr)
 {
-    mData = d;
+	mData = d;
 }
 
 DAData::DAData(const DAData& d)
 {
-    mData    = d.mData;
-    mDataMgr = d.mDataMgr;
+	mData    = d.mData;
+	mDataMgr = d.mDataMgr;
 }
 
 DAData::DAData(DAData&& d)
 {
-    mData    = std::move(d.mData);
-    mDataMgr = std::move(d.mDataMgr);
+	mData    = std::move(d.mData);
+	mDataMgr = std::move(d.mDataMgr);
 }
 
 #if DA_ENABLE_PYTHON
 DAData::DAData(const DAPyDataFrame& d) : mDataMgr(nullptr)
 {
-    mData = std::static_pointer_cast< DAAbstractData >(std::make_shared< DADataPyDataFrame >(d));
+	mData = std::static_pointer_cast< DAAbstractData >(std::make_shared< DADataPyDataFrame >(d));
 }
 
 DAData::DAData(const DAPySeries& d) : mDataMgr(nullptr)
 {
-    mData = std::static_pointer_cast< DAAbstractData >(std::make_shared< DADataPySeries >(d));
+	mData = std::static_pointer_cast< DAAbstractData >(std::make_shared< DADataPySeries >(d));
 }
 #endif
 
@@ -67,25 +69,25 @@ bool DAData::operator<(const DAData& d) const
 
 DAData& DAData::operator=(const DAData& d)
 {
-    mData    = d.mData;
-    mDataMgr = d.mDataMgr;
-    return *this;
+	mData    = d.mData;
+	mDataMgr = d.mDataMgr;
+	return *this;
 }
 
 #if DA_ENABLE_PYTHON
 DAData& DAData::operator=(const DAPyDataFrame& d)
 {
-    std::shared_ptr< DAAbstractData > p = std::static_pointer_cast< DAAbstractData >(
-        std::make_shared< DADataPyDataFrame >(d));
-    mData = p;
-    return *this;
+	std::shared_ptr< DAAbstractData > p =
+		std::static_pointer_cast< DAAbstractData >(std::make_shared< DADataPyDataFrame >(d));
+	mData = p;
+	return *this;
 }
 
 DAData& DAData::operator=(const DAPySeries& d)
 {
-    std::shared_ptr< DAAbstractData > p = std::static_pointer_cast< DAAbstractData >(std::make_shared< DADataPySeries >(d));
-    mData = p;
-    return *this;
+	std::shared_ptr< DAAbstractData > p = std::static_pointer_cast< DAAbstractData >(std::make_shared< DADataPySeries >(d));
+	mData = p;
+	return *this;
 }
 #endif
 
@@ -105,18 +107,18 @@ bool DAData::isNull() const
 
 DAAbstractData::DataType DAData::getDataType() const
 {
-    if (!mData) {
-        return DAAbstractData::TypeNone;
-    }
-    return mData->getDataType();
+	if (!mData) {
+		return DAAbstractData::TypeNone;
+	}
+	return mData->getDataType();
 }
 
 QVariant DAData::value() const
 {
-    if (!mData) {
-        return QVariant();
-    }
-    return mData->toVariant();
+	if (!mData) {
+		return QVariant();
+	}
+	return mData->toVariant();
 }
 /**
  * @brief 设置值
@@ -127,95 +129,95 @@ QVariant DAData::value() const
  */
 bool DAData::setValue(const QVariant& v) const
 {
-    if (!mData) {
-        return false;
-    }
-    bool r = mData->setValue(v);
-    if (r) {
-        if (mDataMgr) {
-            mDataMgr->callDataChangedSignal(*this, DADataManager::ChangeValue);
-        }
-    }
-    return r;
+	if (!mData) {
+		return false;
+	}
+	bool r = mData->setValue(v);
+	if (r) {
+		if (mDataMgr) {
+			mDataMgr->callDataChangedSignal(*this, DADataManager::ChangeValue);
+		}
+	}
+	return r;
 }
 
 QString DAData::getName() const
 {
-    if (!mData) {
-        return QString();
-    }
-    return mData->getName();
+	if (!mData) {
+		return QString();
+	}
+	return mData->getName();
 }
 
 void DAData::setName(const QString& n)
 {
-    if (!mData) {
-        return;
-    }
-    mData->setName(n);
-    if (mDataMgr) {
-        mDataMgr->callDataChangedSignal(*this, DADataManager::ChangeName);
-    }
+	if (!mData) {
+		return;
+	}
+	mData->setName(n);
+	if (mDataMgr) {
+		mDataMgr->callDataChangedSignal(*this, DADataManager::ChangeName);
+	}
 }
 
 QString DAData::getDescribe() const
 {
-    if (!mData) {
-        return QString();
-    }
-    return mData->getDescribe();
+	if (!mData) {
+		return QString();
+	}
+	return mData->getDescribe();
 }
 
 void DAData::setDescribe(const QString& d)
 {
-    if (!mData) {
-        return;
-    }
-    mData->setDescribe(d);
-    if (mDataMgr) {
-        mDataMgr->callDataChangedSignal(*this, DADataManager::ChangeDescribe);
-    }
+	if (!mData) {
+		return;
+	}
+	mData->setDescribe(d);
+	if (mDataMgr) {
+		mDataMgr->callDataChangedSignal(*this, DADataManager::ChangeDescribe);
+	}
 }
 
 DAAbstractData* DAData::rawPointer()
 {
-    return mData.get();
+	return mData.get();
 }
 
 const DAAbstractData* DAData::rawPointer() const
 {
-    return mData.get();
+	return mData.get();
 }
 
 DAData::Pointer DAData::getPointer()
 {
-    return mData;
+	return mData;
 }
 
 const DAData::Pointer DAData::getPointer() const
 {
-    return mData;
+	return mData;
 }
 
 DAData::IdType DAData::id() const
 {
-    return mData->id();
+	return mData->id();
 }
 
 bool DAData::isDataFrame() const
 {
-    if (!mData) {
-        return false;
-    }
-    return (mData->getDataType() == DAAbstractData::TypePythonDataFrame);
+	if (!mData) {
+		return false;
+	}
+	return (mData->getDataType() == DAAbstractData::TypePythonDataFrame);
 }
 
 bool DAData::isSeries() const
 {
-    if (!mData) {
-        return false;
-    }
-    return (mData->getDataType() == DAAbstractData::TypePythonSeries);
+	if (!mData) {
+		return false;
+	}
+	return (mData->getDataType() == DAAbstractData::TypePythonSeries);
 }
 
 /**
@@ -224,11 +226,12 @@ bool DAData::isSeries() const
  */
 bool DAData::isDataPackage() const
 {
-    if (!mData) {
-        return false;
-    }
-    return (mData->getDataType() == DAAbstractData::TypeDataPackage);
+	if (!mData) {
+		return false;
+	}
+	return (mData->getDataType() == DAAbstractData::TypeDataPackage);
 }
+
 #if DA_ENABLE_PYTHON
 /**
  * @brief 转换为DAPyDataFrame
@@ -236,11 +239,11 @@ bool DAData::isDataPackage() const
  */
 DAPyDataFrame DAData::toDataFrame() const
 {
-    if (isDataFrame()) {
-        DADataPyDataFrame* df = static_cast< DADataPyDataFrame* >(mData.get());
-        return df->dataframe();
-    }
-    return DAPyDataFrame();
+	if (isDataFrame()) {
+		DADataPyDataFrame* df = static_cast< DADataPyDataFrame* >(mData.get());
+		return df->dataframe();
+	}
+	return DAPyDataFrame();
 }
 
 /**
@@ -249,11 +252,11 @@ DAPyDataFrame DAData::toDataFrame() const
  */
 DAPySeries DAData::toSeries() const
 {
-    if (isSeries()) {
-        DADataPySeries* ser = static_cast< DADataPySeries* >(mData.get());
-        return ser->series();
-    }
-    return DAPySeries();
+	if (isSeries()) {
+		DADataPySeries* ser = static_cast< DADataPySeries* >(mData.get());
+		return ser->series();
+	}
+	return DAPySeries();
 }
 #endif
 
@@ -263,19 +266,19 @@ DAPySeries DAData::toSeries() const
  */
 DADataPackage::Pointer DAData::toDataPackage() const
 {
-    if (isDataPackage()) {
-        DADataPackage::Pointer d = std::static_pointer_cast< DADataPackage >(mData);
-        return d;
-    }
-    return nullptr;
+	if (isDataPackage()) {
+		DADataPackage::Pointer d = std::static_pointer_cast< DADataPackage >(mData);
+		return d;
+	}
+	return nullptr;
 }
 
 QString DAData::typeToString() const
 {
-    if (!mData) {
-        return DAAbstractData::typeToString(DAAbstractData::TypeNone);
-    }
-    return DAAbstractData::typeToString(mData->getDataType());
+	if (!mData) {
+		return DAAbstractData::typeToString(DAAbstractData::TypeNone);
+	}
+	return DAAbstractData::typeToString(mData->getDataType());
 }
 
 /**
@@ -285,6 +288,32 @@ QString DAData::typeToString() const
 DADataManager* DAData::getDataManager() const
 {
     return mDataMgr;
+}
+
+/**
+ * @brief 把数据写到文件
+ * @param data
+ * @param filePath
+ * @return
+ */
+bool DAData::writeToFile(const DAData& data, const QString& filePath)
+{
+	if (data.isNull()) {
+		return false;
+	}
+	switch (data.getDataType()) {
+#if DA_ENABLE_PYTHON
+	case DAAbstractData::TypePythonDataFrame: {
+		DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+		if (!pydf.to_pickle(data.toDataFrame(), filePath)) {
+			return false;
+		}
+	} break;
+#endif
+	default:
+		break;
+	}
+	return true;
 }
 
 /**

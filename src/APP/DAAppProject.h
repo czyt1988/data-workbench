@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QDomElement>
 #include <QDomDocument>
+#include <QTemporaryDir>
 #include "DAProjectInterface.h"
 #include "DAGlobals.h"
 #include "DAAbstractNodeLinkGraphicsItem.h"
@@ -28,15 +29,15 @@ class DAAppProject : public DAProjectInterface
 public:
 	DAAppProject(DACoreInterface* c, QObject* p = nullptr);
 	~DAAppProject();
-    // 工作流操作窗口
-    DAWorkFlowOperateWidget* getWorkFlowOperateWidget() const;
+	// 工作流操作窗口
+	DAWorkFlowOperateWidget* getWorkFlowOperateWidget() const;
 	// 追加一个工厂的工作流进入本工程中，注意这个操作不会清空当前的工作流
-    bool appendWorkflowInProject(const QDomDocument& doc, bool skipIndex = false);
+	bool appendWorkflowInProject(const QDomDocument& doc, bool skipIndex = false);
 	bool appendWorkflowInProject(const QByteArray& data, bool skipIndex = false);
 	// 在parent下，插入一个tag，tag下包含文字text
 	static void appendElementWithText(QDomElement& parent, const QString& tagName, const QString& text, QDomDocument& doc);
-    // 繁忙状态判断
-    virtual bool isBusy() const override;
+	// 繁忙状态判断
+	virtual bool isBusy() const override;
 public Q_SLOTS:
 	// 清除工程
 	virtual void clear() override;
@@ -46,27 +47,30 @@ public Q_SLOTS:
 	virtual bool load(const QString& path) override;
 
 protected:
+	// 保存工作流的任务
+	void makeSaveWorkFlowTask(DAZipArchiveThreadWrapper* archive);
+	// 保存数据的任务
+	void makeSaveDataManagerTask(DAZipArchiveThreadWrapper* archive);
 	// 保存本地信息包括时间日期等等
-	void saveLocalInfo(QDomElement& root, QDomDocument& doc) const;
+	QDomElement makeLocalInfoElement(QDomDocument& doc) const;
 	// 保存workflow相关内容（以xml形式）
-    QDomDocument createWorkflowUIDomDocument();
-	QByteArray saveWorkflowUI();
+	QDomDocument createWorkflowUIDomDocument();
 	bool loadWorkflowUI(const QByteArray& data);
-	// 保存dataManager结构
-	QByteArray saveDataManager();
+
 private Q_SLOTS:
-    void onBeginSave(const QString& path);
-    void onBeginLoad(const QString& path);
+	void onBeginSave(const QString& path);
+	void onBeginLoad(const QString& path);
 	// 任务进度
-    void onTaskProgress(int total, int pos, const std::shared_ptr< DAAbstractArchiveTask >& t);
+	void onTaskProgress(int total, int pos, const std::shared_ptr< DAAbstractArchiveTask >& t);
 	// 保存任务结束
-    void onSaveFinish(bool success);
+	void onSaveFinish(bool success);
 	// 保存任务结束
-    void onLoadFinish(bool success);
+	void onLoadFinish(bool success);
 
 private:
-    DAZipArchiveThreadWrapper* mArchive { nullptr };
+	DAZipArchiveThreadWrapper* mArchive { nullptr };
 	DAXmlHelper mXml;
+	std::unique_ptr< QTemporaryDir > mTempDir;
 };
 }  // namespace DA
 #endif  // FCPROJECT_H
