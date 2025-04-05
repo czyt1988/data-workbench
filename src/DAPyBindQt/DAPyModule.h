@@ -29,6 +29,9 @@ public:
 	void reload();
 	// 导入模块
 	bool import(const char* module_n) noexcept;
+
+public:
+	static DAPyModule importModule(const char* module_n);
 };
 }  // namespace DA
 #endif  // DAPYMODULE_H

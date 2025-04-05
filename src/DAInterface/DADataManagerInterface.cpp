@@ -3,17 +3,17 @@ namespace DA
 {
 class DADataManagerInterface::PrivateData
 {
-    DA_DECLARE_PUBLIC(DADataManagerInterface)
+	DA_DECLARE_PUBLIC(DADataManagerInterface)
 public:
-    PrivateData(DADataManagerInterface* p);
-    DADataManager* mDataMgr;
+	PrivateData(DADataManagerInterface* p);
+	DADataManager* mDataMgr;
 };
 //==============================================================
 // DADataManagerInterfacePrivate
 //==============================================================
 DADataManagerInterface::PrivateData::PrivateData(DADataManagerInterface* p) : q_ptr(p)
 {
-    mDataMgr = new DADataManager(p);
+	mDataMgr = new DADataManager(p);
 }
 
 //==============================================================
@@ -22,11 +22,11 @@ DADataManagerInterface::PrivateData::PrivateData(DADataManagerInterface* p) : q_
 DADataManagerInterface::DADataManagerInterface(DACoreInterface* c, QObject* par)
     : DABaseInterface(c, par), DA_PIMPL_CONSTRUCT
 {
-
-    connect(d_ptr->mDataMgr, &DADataManager::dataAdded, this, &DADataManagerInterface::dataAdded);
-    connect(d_ptr->mDataMgr, &DADataManager::dataBeginRemove, this, &DADataManagerInterface::dataBeginRemove);
-    connect(d_ptr->mDataMgr, &DADataManager::dataRemoved, this, &DADataManagerInterface::dataRemoved);
-    connect(d_ptr->mDataMgr, &DADataManager::dataChanged, this, &DADataManagerInterface::dataChanged);
+	qRegisterMetaType< DAData >("DAData");
+	connect(d_ptr->mDataMgr, &DADataManager::dataAdded, this, &DADataManagerInterface::dataAdded);
+	connect(d_ptr->mDataMgr, &DADataManager::dataBeginRemove, this, &DADataManagerInterface::dataBeginRemove);
+	connect(d_ptr->mDataMgr, &DADataManager::dataRemoved, this, &DADataManagerInterface::dataRemoved);
+	connect(d_ptr->mDataMgr, &DADataManager::dataChanged, this, &DADataManagerInterface::dataChanged);
 }
 
 DADataManagerInterface::~DADataManagerInterface()
@@ -50,6 +50,18 @@ void DADataManagerInterface::addData(DAData& d)
 {
     dataManager()->addData(d);
 }
+
+/**
+ * @brief 带redo/undo的添加数据
+ *
+ * @note 此函数会发生信号@sa dataBeginAdd 和 @sa dataEndAdded
+ * @param d
+ */
+void DADataManagerInterface::addData_(DAData& d)
+{
+    dataManager()->addData_(d);
+}
+
 /**
  * @brief 移除数据
  *
@@ -60,6 +72,17 @@ void DADataManagerInterface::removeData(DAData& d)
 {
     dataManager()->removeData(d);
 }
+
+/**
+ * @brief 带redo/undo的移除数据
+ * @note 此函数会发生信号@sa dataBeginRemove 和 @sa dataEndRemoved
+ * @param d
+ */
+void DADataManagerInterface::removeData_(DAData& d)
+{
+    dataManager()->removeData_(d);
+}
+
 /**
  * @brief 获取变量管理器管理的数据数量
  * @return
@@ -98,4 +121,12 @@ DAData DADataManagerInterface::getDataById(DAData::IdType id) const
     return dataManager()->getDataById(id);
 }
 
+/**
+ * @brief 获取undo stack
+ * @return
+ */
+QUndoStack* DADataManagerInterface::getUndoStack() const
+{
+    return dataManager()->getUndoStack();
+}
 }

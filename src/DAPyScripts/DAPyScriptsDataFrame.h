@@ -74,7 +74,7 @@ public:
 	// querydatas()
 	bool querydatas(DAPyDataFrame& df, const QList< QString >& contents, bool logic);
 
-	//创建数据透视表
+	// 创建数据透视表
 	DAPyDataFrame pivotTable(const DAPyDataFrame& df,
 							 const QStringList& value,
 							 const QStringList& index,

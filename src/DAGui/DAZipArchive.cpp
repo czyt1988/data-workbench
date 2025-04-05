@@ -39,6 +39,7 @@ int DAZipArchive::PrivateData::s_zip_compress_level = Z_NO_COMPRESSION;
 DAZipArchive::PrivateData::PrivateData(DAZipArchive* p) : q_ptr(p)
 {
 	makeSureZipPtr();
+	mZip->getFileInfoList();
 }
 
 void DAZipArchive::PrivateData::makeSureZipPtr()
@@ -507,6 +508,49 @@ bool DAZipArchive::compressDirectory(const QString& folderPath)
 		}
 	}
 	return compressDirectory(folderPath, d->mZip.get());
+}
+
+QStringList DAZipArchive::getFileNameList() const
+{
+    return d_ptr->mZip->getFileNameList();
+}
+
+/**
+ * @brief 获取zip中一个文件夹下的所有文件列表
+ *
+ * @note 注意不包括这个文件下的子目录及子目录下的文件
+ * @param zipFolderPath
+ * @return
+ */
+QStringList DAZipArchive::getFolderFileNameList(const QString& zipFolderPath) const
+{
+	DA_DC(d);
+	if (!isOpened()) {
+		return QStringList();
+	}
+	QStringList res;
+	const QList< QuaZipFileInfo64 > files64 = d->mZip->getFileInfoList64();
+	for (const QuaZipFileInfo64& fileInfo : files64) {
+		QString zipPath = fileInfo.name;
+
+		// 跳过目录和子文件夹中的文件
+		if (!zipPath.startsWith(zipFolderPath + "/")) {
+			continue;
+		}
+
+		// 检查是否在目标文件夹的直接子级
+		QString relativePath = zipPath.mid(zipFolderPath.length() + 1);
+		if (relativePath.contains('/')) {
+			continue;  // 排除子目录中的文件
+		}
+		res.push_back(zipPath);
+	}
+	return res;
+}
+
+QuaZip* DAZipArchive::quazip() const
+{
+	return d_ptr->mZip.get();
 }
 
 void DAZipArchive::saveAll(const QString& filePath)

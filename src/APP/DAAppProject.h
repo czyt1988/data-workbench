@@ -38,6 +38,10 @@ public:
 	static void appendElementWithText(QDomElement& parent, const QString& tagName, const QString& text, QDomDocument& doc);
 	// 繁忙状态判断
 	virtual bool isBusy() const override;
+	// 生成一个数据文件对应的临时文件位置
+	QString makeDataTemporaryFilePath(const QString& dataName);
+	// 把数据名称转换为zip文档中的相对路径位置
+	static QString makeDataArchiveFilePath(const QString& dataName);
 public Q_SLOTS:
 	// 清除工程
 	virtual void clear() override;
@@ -72,5 +76,6 @@ private:
 	DAXmlHelper mXml;
 	std::unique_ptr< QTemporaryDir > mTempDir;
 };
+
 }  // namespace DA
 #endif  // FCPROJECT_H

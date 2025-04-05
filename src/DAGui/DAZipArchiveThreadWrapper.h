@@ -29,6 +29,8 @@ public:
 	bool appendByteLoadTask(const QString& zipRelatePath, int code);
 	bool appendXmlLoadTask(const QString& zipRelatePath, int code);
 	bool appendFileLoadTask(const QString& zipRelatePath, int code);
+	// 添加任务
+	bool appendTask(const std::shared_ptr< DAAbstractArchiveTask >& task);
 public Q_SLOTS:
 	bool save(const QString& filePath);
 	bool load(const QString& filePath);

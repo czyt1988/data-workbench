@@ -64,6 +64,12 @@ public:
 	bool extractToDirectory(const QString& extractDir);
 	// 把一个zip整体压缩到压缩包
 	bool compressDirectory(const QString& folderPath);
+	// 获取文件列表
+	QStringList getFileNameList() const;
+	// 获取zip中一个文件夹下的所有文件列表，注意不包括这个文件下的子目录及子目录下的文件
+	QStringList getFolderFileNameList(const QString& zipFolderPath) const;
+	// 获取QuaZip指针
+	QuaZip* quazip() const;
 public Q_SLOTS:
 	// 保存所有，执行任务队列
 	virtual void saveAll(const QString& filePath) override;

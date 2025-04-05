@@ -128,6 +128,15 @@ bool DAZipArchiveThreadWrapper::appendFileLoadTask(const QString& zipRelatePath,
 	return true;
 }
 
+bool DAZipArchiveThreadWrapper::appendTask(const std::shared_ptr< DAAbstractArchiveTask >& task)
+{
+	if (isBusy()) {
+		return false;
+	}
+	d_ptr->mArchive->appendTask(task);
+	return true;
+}
+
 bool DAZipArchiveThreadWrapper::save(const QString& filePath)
 {
 	if (isBusy()) {
