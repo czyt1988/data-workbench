@@ -35,7 +35,7 @@ DAPyDataFrame::DAPyDataFrame(const DAPyObjectWrapper& df) : DAPyObjectWrapper(df
 	checkObjectValid();
 }
 
-DAPyDataFrame::DAPyDataFrame(DAPyDataFrame&& df) : DAPyObjectWrapper(df)
+DAPyDataFrame::DAPyDataFrame(DAPyDataFrame&& df) : DAPyObjectWrapper(std::move(df))
 {
 	checkObjectValid();
 }
@@ -45,7 +45,7 @@ DAPyDataFrame::DAPyDataFrame(const pybind11::object& obj) : DAPyObjectWrapper(ob
 	checkObjectValid();
 }
 
-DAPyDataFrame::DAPyDataFrame(pybind11::object&& obj) : DAPyObjectWrapper(obj)
+DAPyDataFrame::DAPyDataFrame(pybind11::object&& obj) : DAPyObjectWrapper(std::move(obj))
 {
 	checkObjectValid();
 }
