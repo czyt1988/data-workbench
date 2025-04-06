@@ -2,6 +2,7 @@
 #define DAPYSCRIPTSDATAFRAME_H
 #include "DAPyScriptsGlobal.h"
 #include "DAPyModule.h"
+#include <optional>
 #include <QString>
 #include <QList>
 #include "DAPyObjectWrapper.h"
@@ -53,10 +54,10 @@ public:
 	bool insert_at(DAPyDataFrame& df, int col, const DAPySeries& series) noexcept;
 	// dropna(axis=0,how="any")
 	bool dropna(DAPyDataFrame& df,
-				int axis                   = 0,
-				const QString& how         = QStringLiteral("any"),
-				const QList< int >& indexs = QList< int >(),
-				int thresh                 = -1);
+				int axis                    = 0,
+				const QString& how          = QStringLiteral("any"),
+				const QList< int >& indexs  = QList< int >(),
+				std::optional< int > thresh = std::nullopt);
 	// fillna()
 	bool fillna(DAPyDataFrame& df, double value, int limit);
 	// interpolate()

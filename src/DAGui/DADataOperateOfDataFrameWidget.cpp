@@ -424,7 +424,7 @@ bool DADataOperateOfDataFrameWidget::changeSelectColumnToIndex()
  * @param thresh 可选参数，表示在删除之前需要满足的非缺失值的最小数量。如果行或列中的非缺失值数量小于等于thresh，则会被删除，-1代表不生效
  * @return 返回删除的数量，0代表没有删除任何内容
  */
-int DADataOperateOfDataFrameWidget::dropna(const QString& how, int thresh)
+int DADataOperateOfDataFrameWidget::dropna(const QString& how, std::optional< int > thresh)
 {
 	DAPyDataFrame df = getDataframe();
 	if (df.isNone()) {
@@ -458,7 +458,11 @@ int DADataOperateOfDataFrameWidget::dropna(const QString& how, int thresh)
  * @param thresh 可选参数，表示在删除之前需要满足的非缺失值的最小数量。如果行或列中的非缺失值数量小于等于thresh，则会被删除，-1代表不生效
  * @return 返回删除的数量，0代表没有删除任何内容
  */
-int DADataOperateOfDataFrameWidget::dropna(const DAPyDataFrame& df, int axis, const QString& how, const QList< int > index, int thresh)
+int DADataOperateOfDataFrameWidget::dropna(const DAPyDataFrame& df,
+                                           int axis,
+                                           const QString& how,
+                                           const QList< int > index,
+                                           std::optional< int > thresh)
 {
 	std::unique_ptr< DACommandDataFrame_dropna > cmd =
 		std::make_unique< DACommandDataFrame_dropna >(df, mModel, axis, how, index, thresh);

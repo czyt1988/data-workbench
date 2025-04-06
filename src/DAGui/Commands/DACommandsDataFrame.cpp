@@ -359,7 +359,7 @@ DACommandDataFrame_dropna::DACommandDataFrame_dropna(const DAPyDataFrame& df,
                                                      int axis,
                                                      const QString& how,
                                                      const QList< int >& index,
-                                                     int thresh,
+                                                     std::optional< int > thresh,
                                                      QUndoCommand* par)
     : DACommandWithTemporaryData(df, par), mModel(model), mAxis(axis), mHow(how), mIndex(index), mThresh(thresh)
 {
@@ -461,7 +461,7 @@ bool DACommandDataFrame_interpolate::exec()
 {
 	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
 
-    if (!pydf.interpolate(dataframe(), mMethod, mOrder, mLimit)) {
+	if (!pydf.interpolate(dataframe(), mMethod, mOrder, mLimit)) {
 		return false;
 	}
 

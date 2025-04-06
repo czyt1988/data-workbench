@@ -2,6 +2,7 @@
 #define DADATAOPERATEOFDATAFRAMEWIDGET_H
 #include <QtWidgets/QWidget>
 #include <QUndoStack>
+#include <optional>
 #include "DAGuiAPI.h"
 #include "DAData.h"
 #include "DADataPyDataFrame.h"
@@ -84,12 +85,12 @@ public Q_SLOTS:
 	// 把选择的列转换为索引
 	bool changeSelectColumnToIndex();
 	// 删除缺失值,返回删除的数量
-	int dropna(const QString& how = QStringLiteral("any"), int thresh = -1);
+	int dropna(const QString& how = QStringLiteral("any"), std::optional< int > thresh = std::nullopt);
 	int dropna(const DAPyDataFrame& df,
 			   int axis,
-			   const QString& how       = QStringLiteral("any"),
-			   const QList< int > index = QList< int >(),
-			   int thresh               = -1);
+			   const QString& how          = QStringLiteral("any"),
+			   const QList< int > index    = QList< int >(),
+			   std::optional< int > thresh = std::nullopt);
 	// 删除重复值
 	int dropduplicates(const QString& keep = QStringLiteral("first"));
 	int dropduplicates(const DAPyDataFrame& df,
@@ -117,7 +118,7 @@ public Q_SLOTS:
 	bool querydatas();
 	bool querydatas(const DAPyDataFrame& df, QList< QString > contents = QList< QString >(), bool logic = true);
 
-	//创建数据透视表
+	// 创建数据透视表
 	DAPyDataFrame createPivotTable();
 	DAPyDataFrame createPivotTable(const DAPyDataFrame& df,
 								   const QStringList value    = QStringList(),
@@ -153,7 +154,7 @@ private:
 	DADialogDataFrameFillInterpolate* mDialogDataFrameFillInterpolate { nullptr };
 	DADialogDataFrameClipOutlier* mDialogDataFrameClipOutlier { nullptr };
 	DADialogCreatePivotTable* mDialogCreatePivotTable { nullptr };
-	DADialogDataFrameQueryDatas* mDialogDataFrameQueryDatas{ nullptr };
+	DADialogDataFrameQueryDatas* mDialogDataFrameQueryDatas { nullptr };
 };
 }  // end of namespace DA
 #endif  // DADATAOPERATEOFDATAFRAMEWIDGET_H
