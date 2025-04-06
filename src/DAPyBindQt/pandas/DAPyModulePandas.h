@@ -22,8 +22,6 @@ public:
 	void finalize();
 	// 获取最后的错误
 	QString getLastErrorString();
-	// 创建一个dataframe
-	DAPyDataFrame dataframe();
 
 public:
 	// 导入模块

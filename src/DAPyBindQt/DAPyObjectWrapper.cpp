@@ -11,70 +11,86 @@ using namespace DA;
 // DAPyObjectWrapper
 //===================================================
 DAPyObjectWrapper::DAPyObjectWrapper()
+	: _object(pybind11::none()), _errcallback([](const char* e) { qCritical() << e; })
 {
-    _object      = pybind11::none();
-    _errcallback = [](const char* e) { qCritical() << e; };
 }
 
 DAPyObjectWrapper::DAPyObjectWrapper(const DAPyObjectWrapper& obj)
 {
-    _object      = obj._object;
-    _errcallback = obj._errcallback;
+	_object      = obj._object;
+	_errcallback = obj._errcallback;
 }
 
 DAPyObjectWrapper::DAPyObjectWrapper(DAPyObjectWrapper&& obj)
 {
-    _object      = std::move(obj._object);
-    _errcallback = std::move(obj._errcallback);
+	_object      = std::move(obj._object);
+	_errcallback = std::move(obj._errcallback);
 }
 
 DAPyObjectWrapper::DAPyObjectWrapper(const pybind11::object& obj)
 {
-    _object      = obj;
-    _errcallback = [](const char* e) { qCritical() << e; };
+	_object      = obj;
+	_errcallback = [](const char* e) { qCritical() << e; };
 }
 
 DAPyObjectWrapper::DAPyObjectWrapper(pybind11::object&& obj)
 {
-    _object      = std::move(obj);
-    _errcallback = [](const char* e) { qCritical() << e; };
+	_object      = std::move(obj);
+	_errcallback = [](const char* e) { qCritical() << e; };
 }
 
 DAPyObjectWrapper::~DAPyObjectWrapper()
 {
-    //析构的时候打印一下引用情况，看看是否有内存泄漏
-    //    if (!isNone()) {
-    //        qDebug() << "python object ptr (" << object().ptr() << " ) ref count=" << object().ref_count() << ",will be "
-    //                 << object().ref_count() - 1;
-    //    }
+	// 析构的时候打印一下引用情况，看看是否有内存泄漏
+	//     if (!isNone()) {
+	//         qDebug() << "python object ptr (" << object().ptr() << " ) ref count=" << object().ref_count() << ",will be "
+	//                  << object().ref_count() - 1;
+	//     }
 }
 
 bool DAPyObjectWrapper::isNone() const
 {
-    return _object.is_none();
+	return _object.is_none();
 }
 
 DAPyObjectWrapper& DAPyObjectWrapper::operator=(const DAPyObjectWrapper& obj)
 {
-    _object      = obj._object;
-    _errcallback = obj._errcallback;
-    return *this;
+	if (this != &obj) {
+		_object      = obj._object;
+		_errcallback = obj._errcallback;
+	}
+	return *this;
+}
+
+DAPyObjectWrapper& DAPyObjectWrapper::operator=(DAPyObjectWrapper&& obj)
+{
+	if (this != &obj) {
+		_object      = std::move(obj._object);
+		_errcallback = std::move(obj._errcallback);
+	}
+	return *this;
 }
 
 DAPyObjectWrapper& DAPyObjectWrapper::operator=(const pybind11::object& obj)
 {
-    _object = obj;
-    return *this;
+	_object = obj;
+	return *this;
+}
+
+DAPyObjectWrapper& DAPyObjectWrapper::operator=(pybind11::object&& obj)
+{
+	_object = std::move(obj);
+	return *this;
 }
 
 bool DAPyObjectWrapper::operator==(void* ptr) const
 {
-    return (_object.ptr() == ptr);
+	return (_object.ptr() == ptr);
 }
 
 bool DAPyObjectWrapper::operator==(const pybind11::object& obj) const
 {
-    return _object.is(obj);
+	return _object.is(obj);
 }
 
 bool DAPyObjectWrapper::operator==(const DAPyObjectWrapper& obj) const
@@ -90,14 +106,19 @@ bool DAPyObjectWrapper::operator==(const DAPyObjectWrapper& obj) const
  */
 void DAPyObjectWrapper::dealException(const std::exception& e) const
 {
-    if (_errcallback) {
-        _errcallback(e.what());
-    }
+	if (_errcallback) {
+		_errcallback(e.what());
+	}
 }
 
 QVariant DAPyObjectWrapper::toVariant() const
 {
-    return DA::PY::toVariant(object());
+	return DA::PY::toVariant(object());
+}
+
+bool DAPyObjectWrapper::isinstance(const pybind11::handle& type) const
+{
+    return pybind11::isinstance(_object, type);
 }
 
 /**
@@ -106,7 +127,7 @@ QVariant DAPyObjectWrapper::toVariant() const
  */
 bool DAPyObjectWrapper::isInt() const
 {
-    return pybind11::isinstance< pybind11::int_ >(object());
+    return pybind11::isinstance< pybind11::int_ >(_object);
 }
 
 /**
@@ -115,7 +136,7 @@ bool DAPyObjectWrapper::isInt() const
  */
 bool DAPyObjectWrapper::isModule() const
 {
-    return pybind11::isinstance< pybind11::module_ >(object());
+    return pybind11::isinstance< pybind11::module_ >(_object);
 }
 /**
  * @brief 是否为float
@@ -123,7 +144,7 @@ bool DAPyObjectWrapper::isModule() const
  */
 bool DAPyObjectWrapper::isFloat() const
 {
-    return pybind11::isinstance< pybind11::float_ >(object());
+    return pybind11::isinstance< pybind11::float_ >(_object);
 }
 /**
  * @brief 是否为str
@@ -131,7 +152,7 @@ bool DAPyObjectWrapper::isFloat() const
  */
 bool DAPyObjectWrapper::isStr() const
 {
-    return pybind11::isinstance< pybind11::str >(object());
+    return pybind11::isinstance< pybind11::str >(_object);
 }
 
 /**
@@ -169,19 +190,19 @@ pybind11::object DAPyObjectWrapper::attr(const char* c_att) const
  */
 QString DAPyObjectWrapper::__name__() const
 {
-    if (isNone()) {
-        return QString();
-    }
-    try {
-        pybind11::str n = _object.attr("__name__");
-        return DA::PY::toString(n);
-    } catch (const std::exception& e) {
-        dealException(e);
-    }
-    return QString();
+	if (isNone()) {
+		return QString();
+	}
+	try {
+		pybind11::str n = _object.attr("__name__");
+		return DA::PY::toString(n);
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return QString();
 }
 
 DAPyObjectWrapper::operator bool() const
 {
-    return !isNone();
+	return !isNone();
 }

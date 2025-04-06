@@ -10,6 +10,16 @@ using namespace DA;
 //===================================================
 // DAPyIndex
 //===================================================
+DAPyIndex::DAPyIndex() : DAPyObjectWrapper()
+{
+	try {
+		auto pandas = DAPyModule("pandas");
+		_object     = pandas.attr("Index")();
+	} catch (const std::exception& e) {
+		qCritical() << "can not import pandas,or can not create pandas.Index(),because:" << e.what();
+	}
+}
+
 DAPyIndex::DAPyIndex(const DAPyIndex& s) : DAPyObjectWrapper(s)
 {
 	checkObjectValid();
@@ -41,23 +51,47 @@ bool DAPyIndex::isIndexObj(const pybind11::object& obj)
 
 DAPyIndex& DAPyIndex::operator=(const pybind11::object& obj)
 {
-	if (isIndexObj(obj)) {
-		object() = obj;
-	}
+	_object = obj;
+	checkObjectValid();
+	return *this;
+}
+
+DAPyIndex& DAPyIndex::operator=(pybind11::object&& obj)
+{
+	_object = std::move(obj);
+	checkObjectValid();
 	return *this;
 }
 
 DAPyIndex& DAPyIndex::operator=(const DAPyIndex& obj)
 {
-	object() = obj.object();
+	if (this != &obj) {
+		DAPyObjectWrapper::operator=(obj);  // 调用基类赋值
+		checkObjectValid();
+	}
+	return *this;
+}
+
+DAPyIndex& DAPyIndex::operator=(DAPyIndex&& obj)
+{
+	if (this != &obj) {
+		DAPyObjectWrapper::operator=(std::move(obj));  // 调用基类移动赋值
+		checkObjectValid();
+	}
 	return *this;
 }
 
 DAPyIndex& DAPyIndex::operator=(const DAPyObjectWrapper& obj)
 {
-	if (isIndexObj(obj.object())) {
-		object() = obj.object();
-	}
+	DAPyObjectWrapper::operator=(obj);
+	checkObjectValid();
+	return *this;
+}
+
+DAPyIndex& DAPyIndex::operator=(DAPyObjectWrapper&& obj)
+{
+	DAPyObjectWrapper::operator=(std::move(obj));
+	checkObjectValid();
 	return *this;
 }
 

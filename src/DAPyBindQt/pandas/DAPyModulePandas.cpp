@@ -73,12 +73,6 @@ QString DAPyModulePandas::getLastErrorString()
     return d_ptr->mLastErrorString;
 }
 
-DAPyDataFrame DAPyModulePandas::dataframe()
-{
-	DAPyDataFrame df(attr("DataFrame"));
-	return df;
-}
-
 /**
  * @brief 导入模块
  * @return

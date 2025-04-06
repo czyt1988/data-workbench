@@ -21,7 +21,7 @@ DAPyDataFrame::DAPyDataFrame() : DAPyObjectWrapper()
 		auto pandas = DAPyModule("pandas");
 		_object     = pandas.attr("DataFrame")();
 	} catch (const std::exception& e) {
-		qCritical() << "can not import pandas,or can not create Dataframe(),because:" << e.what();
+		qCritical() << "can not import pandas,or can not create pandas.Dataframe(),because:" << e.what();
 	}
 }
 
@@ -82,28 +82,49 @@ DAPySeries DAPyDataFrame::operator[](int n) const
 
 DAPyDataFrame& DAPyDataFrame::operator=(const pybind11::object& obj)
 {
-	if (isDataFrame(obj)) {
-		object() = obj;
-		checkObjectValid();
-	}
+	_object = obj;
+	checkObjectValid();
+	return *this;
+}
+
+DAPyDataFrame& DAPyDataFrame::operator=(pybind11::object&& obj)
+{
+	_object = std::move(obj);
+	checkObjectValid();
 	return *this;
 }
 
 DAPyDataFrame& DAPyDataFrame::operator=(const DAPyDataFrame& obj)
 {
-	object() = obj.object();
-	return *this;
-}
-
-DAPyDataFrame& DAPyDataFrame::operator=(const DAPyObjectWrapper& obj)
-{
-	if (isDataFrame(obj.object())) {
-		object() = obj.object();
+	if (this != &obj) {
+		DAPyObjectWrapper::operator=(obj);  // 调用基类赋值
 		checkObjectValid();
 	}
 	return *this;
 }
 
+DAPyDataFrame& DAPyDataFrame::operator=(DAPyDataFrame&& obj)
+{
+	if (this != &obj) {
+		DAPyObjectWrapper::operator=(std::move(obj));  // 调用基类赋值
+		checkObjectValid();
+	}
+	return *this;
+}
+
+DAPyDataFrame& DAPyDataFrame::operator=(const DAPyObjectWrapper& obj)
+{
+	DAPyObjectWrapper::operator=(obj);
+	checkObjectValid();
+	return *this;
+}
+
+DAPyDataFrame& DAPyDataFrame::operator=(DAPyObjectWrapper&& obj)
+{
+	DAPyObjectWrapper::operator=(std::move(obj));
+	checkObjectValid();
+	return *this;
+}
 /**
  * @brief DataFrame.columns
  * @return
