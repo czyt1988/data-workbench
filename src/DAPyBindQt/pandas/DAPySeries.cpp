@@ -19,7 +19,7 @@ DAPySeries::DAPySeries(const DAPySeries& s) : DAPyObjectWrapper(s)
 	}
 }
 
-DAPySeries::DAPySeries(DAPySeries&& s) : DAPyObjectWrapper(s)
+DAPySeries::DAPySeries(DAPySeries&& s) : DAPyObjectWrapper(std::move(s))
 {
 }
 
@@ -30,7 +30,7 @@ DAPySeries::DAPySeries(const pybind11::object& obj) : DAPyObjectWrapper(obj)
 	}
 }
 
-DAPySeries::DAPySeries(pybind11::object&& obj) : DAPyObjectWrapper(obj)
+DAPySeries::DAPySeries(pybind11::object&& obj) : DAPyObjectWrapper(std::move(obj))
 {
 	if (!obj.is_none()) {
 		checkObjectValid();

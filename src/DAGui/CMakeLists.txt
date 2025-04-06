@@ -9,7 +9,7 @@ damacro_lib_setting(
     "DA GUI | https://github.com/czyt1988"
     0
     0
-    1
+    2
 )
 
 ########################################################
@@ -64,6 +64,13 @@ set(DA_LIB_HEADER_FILES
     DAWorkFlowNodeItemSettingWidget.h
     DAWorkFlowOperateWidget.h
     DASettingContainerWidget.h
+    DAAbstractArchive.h
+    DAAbstractArchiveTask.h
+    DAZipArchive.h
+    DAZipArchiveThreadWrapper.h
+    DAZipArchiveTask_ByteArray.h
+    DAZipArchiveTask_Xml.h
+    DAZipArchiveTask_ArchiveFile.h
     DAXmlHelper.h
 )
 set(DA_LIB_SOURCE_FILES
@@ -100,6 +107,13 @@ set(DA_LIB_SOURCE_FILES
     DAWorkFlowNodeItemSettingWidget.cpp
     DAWorkFlowOperateWidget.cpp
     DASettingContainerWidget.cpp
+    DAAbstractArchive.cpp
+    DAAbstractArchiveTask.cpp
+    DAZipArchive.cpp
+    DAZipArchiveThreadWrapper.cpp
+    DAZipArchiveTask_ByteArray.cpp
+    DAZipArchiveTask_Xml.cpp
+    DAZipArchiveTask_ArchiveFile.cpp
     DAXmlHelper.cpp
 )
 set(DA_LIB_QT_UI_FILES
@@ -242,11 +256,11 @@ set(DA_LIB_SOURCE_FILES_Commands
 )
 if(DA_ENABLE_PYTHON)
     list(APPEND DA_LIB_HEADER_FILES_Commands
-        ${DA_LIB_SUBDIR_Commands}/DACommandWithTemplateData.h
+        ${DA_LIB_SUBDIR_Commands}/DACommandWithTemporaryData.h
         ${DA_LIB_SUBDIR_Commands}/DACommandsDataFrame.h
     )
     list(APPEND DA_LIB_SOURCE_FILES_Commands
-        ${DA_LIB_SUBDIR_Commands}/DACommandWithTemplateData.cpp
+        ${DA_LIB_SUBDIR_Commands}/DACommandWithTemporaryData.cpp
         ${DA_LIB_SUBDIR_Commands}/DACommandsDataFrame.cpp
     )
 endif()
@@ -376,7 +390,8 @@ damacro_import_qwt(${DA_LIB_NAME})
 # -------------link ctk--------------------------
 damacro_import_DALiteCtk(${DA_LIB_NAME})
 
-
+# -------------link quazip--------------------------
+damacro_import_quazip(${DA_LIB_NAME})
 ########################################################
 # 设置通用库属性
 ########################################################

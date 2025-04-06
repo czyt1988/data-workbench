@@ -81,6 +81,10 @@ public:  // DAAbstractData Wrapper
 	// 获取数据对应的datamanager
 	DADataManager* getDataManager() const;
 
+public:
+	// 把数据写到文件
+	static bool writeToFile(const DAData& data, const QString& filePath);
+
 protected:
 	// 设置变量管理器，在data添加如变量管理器后，data内部就会维护变量管理器的指针
 	void setDataManager(DADataManager* mgr);

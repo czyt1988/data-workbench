@@ -97,8 +97,9 @@ dataworkbench查找python的逻辑是：
 - 首先需要编译zlib库（如果你开发环境已经有zlib，可以跳过此步骤），用cmake打开`./src/3rdparty/zlib/CMakeLists.txt`,编译完成后需要执行安装命令`install`对zlib库进行安装
 - 然后加载`./src/3rdparty/CMakeLists.txt`完成所有第三方库的编译，编译完成后需要执行安装命令`install`，否则第三步无法找到第三方库
 - 最后是`./CMakeLists.txt`完成`DataWorkbench`编译，编译完成后需要执行安装命令`install`
+- 把zlib库的zd.dll手动复制到bin目录下
 
-> 第三方库中的quazip依赖zlib，因此需要先编译zlib库
+> 第三方库中的quazip依赖zlib，因此需要先编译zlib库，并把zd.dll复制到bin目录下
 
 第二部可以设置不构建plugin，如果不构建plugin，plugin板块可以单独构建，前提是前两步已经完成且安装好，单独构建插件需要运行`plugins/CMakeLists.txt`
 

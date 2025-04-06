@@ -16,7 +16,7 @@ namespace DA
  */
 class DAPYBINDQT_API DAPyInterpreter
 {
-    DA_DECLARE_PRIVATE(DAPyInterpreter)
+	DA_DECLARE_PRIVATE(DAPyInterpreter)
 	DAPyInterpreter();
 
 public:
@@ -33,6 +33,7 @@ public:
 	void initializePythonInterpreter();
 	// 注册环境关闭的回调
 	void registerFinalizeCallback(callback_finalize fp);
+
 	// 获取python配置文件
 	static QString getAppPythonConfigFile();
 	// 获取python Interpreter

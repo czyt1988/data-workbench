@@ -6,18 +6,18 @@ namespace DA
 {
 class DAPyModulePandas::PrivateData
 {
-    DA_DECLARE_PUBLIC(DAPyModulePandas)
+	DA_DECLARE_PUBLIC(DAPyModulePandas)
 public:
-    PrivateData(DAPyModulePandas* p);
+	PrivateData(DAPyModulePandas* p);
 
-    // 释放模块
-    void del();
+	// 释放模块
+	void del();
 
 public:
-    QString mLastErrorString;
-    pybind11::object mSeriesType;
-    pybind11::object mDataFrameType;
-    pybind11::object mIndexType;
+	QString mLastErrorString;
+	pybind11::object mSeriesType;
+	pybind11::object mDataFrameType;
+	pybind11::object mIndexType;
 };
 
 //===================================================
@@ -29,24 +29,24 @@ DAPyModulePandas::PrivateData::PrivateData(DAPyModulePandas* p) : q_ptr(p)
 
 void DAPyModulePandas::PrivateData::del()
 {
-    if (!q_ptr->isImport()) {
-        return;
-    }
-    q_ptr->object() = pybind11::none();
+	if (!q_ptr->isImport()) {
+		return;
+	}
+	q_ptr->object() = pybind11::none();
 }
 //===================================================
 // DAPyModulePandas
 //===================================================
 DAPyModulePandas::DAPyModulePandas() : DAPyModule(), DA_PIMPL_CONSTRUCT
 {
-    import();
-    try {
-        d_ptr->mSeriesType    = attr("Series");
-        d_ptr->mDataFrameType = attr("DataFrame");
-        d_ptr->mIndexType     = attr("Index");
-    } catch (const std::exception& e) {
-        d_ptr->mLastErrorString = e.what();
-    }
+	import();
+	try {
+		d_ptr->mSeriesType    = attr("Series");
+		d_ptr->mDataFrameType = attr("DataFrame");
+		d_ptr->mIndexType     = attr("Index");
+	} catch (const std::exception& e) {
+		d_ptr->mLastErrorString = e.what();
+	}
 }
 
 DAPyModulePandas::~DAPyModulePandas()
@@ -55,8 +55,8 @@ DAPyModulePandas::~DAPyModulePandas()
 
 DAPyModulePandas& DAPyModulePandas::getInstance()
 {
-    static DAPyModulePandas s_pandas;
-    return s_pandas;
+	static DAPyModulePandas s_pandas;
+	return s_pandas;
 }
 
 void DAPyModulePandas::finalize()
@@ -71,6 +71,12 @@ void DAPyModulePandas::finalize()
 QString DAPyModulePandas::getLastErrorString()
 {
     return d_ptr->mLastErrorString;
+}
+
+DAPyDataFrame DAPyModulePandas::dataframe()
+{
+	DAPyDataFrame df(attr("DataFrame"));
+	return df;
 }
 
 /**
@@ -99,15 +105,15 @@ bool DAPyModulePandas::isInstanceIndex(const pybind11::object& obj) const
 
 bool DAPyModulePandas::isInstanceDataFrame_(const pybind11::object& obj)
 {
-    try {
-        pybind11::module m         = pybind11::module::import("pandas");
-        pybind11::object dataframe = m.attr("DataFrame");
-        return pybind11::isinstance(obj, dataframe);
-    } catch (const std::exception& e) {
-        qCritical() << e.what();
-        return false;
-    }
-    return true;
+	try {
+		pybind11::module m         = pybind11::module::import("pandas");
+		pybind11::object dataframe = m.attr("DataFrame");
+		return pybind11::isinstance(obj, dataframe);
+	} catch (const std::exception& e) {
+		qCritical() << e.what();
+		return false;
+	}
+	return true;
 }
 /**
  * @brief 对pandas.read_csv的封装
@@ -134,45 +140,45 @@ bool DAPyModulePandas::isInstanceDataFrame_(const pybind11::object& obj)
  */
 DAPyDataFrame DAPyModulePandas::read_csv(const QString& path, const QVariantHash& args)
 {
-    if (!isImport()) {
-        if (!import()) {
-            return DAPyDataFrame();
-        }
-    }
-    try {
-        pybind11::object obj_read_csv = attr("read_csv");
-        pybind11::str a0              = DA::PY::toPyStr(path);
-        pybind11::object obj_df;
-        if (args.contains("encoding")) {
-            // 说明用户已经制定编码
-            pybind11::dict a1 = DA::PY::toPyDict(args);
-            obj_df            = obj_read_csv(a0, **a1);
-            DAPyDataFrame df(obj_df);
-            return df;
-        } else {
-            // 用户没有指定编码，这里做一个编码检测（主要针对中文windows系统的ansi编码）
-            try {
-                // 先用默认utf-8编码打开
-                pybind11::dict a1 = DA::PY::toPyDict(args);
-                obj_df            = obj_read_csv(a0, **a1);
-                DAPyDataFrame df(obj_df);
-                return df;
-            } catch (const std::exception& e) {
-                // 不行就用ansi编码打开
-                Q_UNUSED(e);
-                qWarning() << QObject::tr("use utf-8 open file %1 error,try to use ansi encoding").arg(path);
-                QVariantHash t    = args;
-                t[ "encoding" ]   = QString("ANSI");
-                pybind11::dict a1 = DA::PY::toPyDict(t);
-                obj_df            = obj_read_csv(a0, **a1);
-                DAPyDataFrame df(obj_df);
-                return df;
-            }
-        }
+	if (!isImport()) {
+		if (!import()) {
+			return DAPyDataFrame();
+		}
+	}
+	try {
+		pybind11::object obj_read_csv = attr("read_csv");
+		pybind11::str a0              = DA::PY::toPyStr(path);
+		pybind11::object obj_df;
+		if (args.contains("encoding")) {
+			// 说明用户已经制定编码
+			pybind11::dict a1 = DA::PY::toPyDict(args);
+			obj_df            = obj_read_csv(a0, **a1);
+			DAPyDataFrame df(obj_df);
+			return df;
+		} else {
+			// 用户没有指定编码，这里做一个编码检测（主要针对中文windows系统的ansi编码）
+			try {
+				// 先用默认utf-8编码打开
+				pybind11::dict a1 = DA::PY::toPyDict(args);
+				obj_df            = obj_read_csv(a0, **a1);
+				DAPyDataFrame df(obj_df);
+				return df;
+			} catch (const std::exception& e) {
+				// 不行就用ansi编码打开
+				Q_UNUSED(e);
+				qWarning() << QObject::tr("use utf-8 open file %1 error,try to use ansi encoding").arg(path);
+				QVariantHash t    = args;
+				t[ "encoding" ]   = QString("ANSI");
+				pybind11::dict a1 = DA::PY::toPyDict(t);
+				obj_df            = obj_read_csv(a0, **a1);
+				DAPyDataFrame df(obj_df);
+				return df;
+			}
+		}
 
-    } catch (const std::exception& e) {
-        d_ptr->mLastErrorString = e.what();
-    }
-    return DAPyDataFrame();
+	} catch (const std::exception& e) {
+		d_ptr->mLastErrorString = e.what();
+	}
+	return DAPyDataFrame();
 }
 }  // namespace DA

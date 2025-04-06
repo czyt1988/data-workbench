@@ -4,7 +4,7 @@
 #include <QPoint>
 #include "DAGuiAPI.h"
 #include "DACommandWithRedoCount.h"
-#include "DACommandWithTemplateData.h"
+#include "DACommandWithTemporaryData.h"
 #include "DAData.h"
 #include "numpy/DAPyDType.h"
 #include "pandas/DAPySeries.h"
@@ -74,7 +74,7 @@ private:
 /**
  * @brief 插入一个空行
  */
-class DAGUI_API DACommandDataFrame_insertNanRow : public DACommandWithTemplateData
+class DAGUI_API DACommandDataFrame_insertNanRow : public DACommandWithTemporaryData
 {
 public:
 	DACommandDataFrame_insertNanRow(const DAPyDataFrame& df,
@@ -92,7 +92,7 @@ private:
 /**
  * @brief 插入列
  */
-class DAGUI_API DACommandDataFrame_insertColumn : public DACommandWithTemplateData
+class DAGUI_API DACommandDataFrame_insertColumn : public DACommandWithTemporaryData
 {
 public:
 	DACommandDataFrame_insertColumn(const DAPyDataFrame& df,
@@ -125,7 +125,7 @@ private:
 /**
  * @brief 删除行
  */
-class DAGUI_API DACommandDataFrame_dropIRow : public DACommandWithTemplateData
+class DAGUI_API DACommandDataFrame_dropIRow : public DACommandWithTemporaryData
 {
 public:
 	DACommandDataFrame_dropIRow(const DAPyDataFrame& df,
@@ -144,7 +144,7 @@ private:
 /**
  * @brief 删除列
  */
-class DAGUI_API DACommandDataFrame_dropIColumn : public DACommandWithTemplateData
+class DAGUI_API DACommandDataFrame_dropIColumn : public DACommandWithTemporaryData
 {
 public:
 	DACommandDataFrame_dropIColumn(const DAPyDataFrame& df,
@@ -187,7 +187,7 @@ private:
 /**
  * @brief 转换列的数据类型
  */
-class DAGUI_API DACommandDataFrame_astype : public DACommandWithTemplateData
+class DAGUI_API DACommandDataFrame_astype : public DACommandWithTemporaryData
 {
 public:
 	DACommandDataFrame_astype(const DAPyDataFrame& df,
@@ -229,7 +229,7 @@ private:
 /**
  * @brief dropnan
  */
-class DAGUI_API DACommandDataFrame_dropna : public DACommandWithTemplateData
+class DAGUI_API DACommandDataFrame_dropna : public DACommandWithTemporaryData
 {
 public:
 	DACommandDataFrame_dropna(const DAPyDataFrame& df,
@@ -256,7 +256,7 @@ private:
 /**
  * @brief fillnan命令
  */
-class DAGUI_API DACommandDataFrame_fillna : public DACommandWithTemplateData
+class DAGUI_API DACommandDataFrame_fillna : public DACommandWithTemporaryData
 {
 public:
 	DACommandDataFrame_fillna(const DAPyDataFrame& df,
@@ -276,7 +276,7 @@ private:
 /**
  * @brief interpolate命令
  */
-class DAGUI_API DACommandDataFrame_interpolate : public DACommandWithTemplateData
+class DAGUI_API DACommandDataFrame_interpolate : public DACommandWithTemporaryData
 {
 public:
 	DACommandDataFrame_interpolate(const DAPyDataFrame& df,
@@ -298,7 +298,7 @@ private:
 /**
  * @brief ffillnan命令
  */
-class DAGUI_API DACommandDataFrame_ffillna : public DACommandWithTemplateData
+class DAGUI_API DACommandDataFrame_ffillna : public DACommandWithTemporaryData
 {
 public:
 	DACommandDataFrame_ffillna(const DAPyDataFrame& df,
@@ -318,7 +318,7 @@ private:
 /**
  * @brief bfillnan命令
  */
-class DAGUI_API DACommandDataFrame_bfillna : public DACommandWithTemplateData
+class DAGUI_API DACommandDataFrame_bfillna : public DACommandWithTemporaryData
 {
 public:
 	DACommandDataFrame_bfillna(const DAPyDataFrame& df,
@@ -338,7 +338,7 @@ private:
 /**
  * @brief dropduplicates
  */
-class DAGUI_API DACommandDataFrame_dropduplicates : public DACommandWithTemplateData
+class DAGUI_API DACommandDataFrame_dropduplicates : public DACommandWithTemporaryData
 {
 public:
 	DACommandDataFrame_dropduplicates(const DAPyDataFrame& df,
@@ -361,7 +361,7 @@ private:
 /**
  * @brief nstdfilteroutlier
  */
-class DAGUI_API DACommandDataFrame_nstdfilteroutlier : public DACommandWithTemplateData
+class DAGUI_API DACommandDataFrame_nstdfilteroutlier : public DACommandWithTemporaryData
 {
 public:
 	DACommandDataFrame_nstdfilteroutlier(const DAPyDataFrame& df,
@@ -385,7 +385,7 @@ private:
 /**
  * @brief clipoutlier
  */
-class DAGUI_API DACommandDataFrame_clipoutlier : public DACommandWithTemplateData
+class DAGUI_API DACommandDataFrame_clipoutlier : public DACommandWithTemporaryData
 {
 public:
 	DACommandDataFrame_clipoutlier(const DAPyDataFrame& df,
@@ -408,19 +408,19 @@ private:
 /**
  * @brief querydatas
  */
-class DAGUI_API DACommandDataFrame_querydatas : public DACommandWithTemplateData
+class DAGUI_API DACommandDataFrame_querydatas : public DACommandWithTemporaryData
 {
 public:
 	DACommandDataFrame_querydatas(const DAPyDataFrame& df,
-								  DAPyDataFrameTableModule* model  = nullptr,
-								  const QList< QString >& contents = QList< QString >(),
-								  bool logic                       = true,
-								  QUndoCommand* par                = nullptr);
+                                  DAPyDataFrameTableModule* model  = nullptr,
+                                  const QList< QString >& contents = QList< QString >(),
+                                  bool logic                       = true,
+                                  QUndoCommand* par                = nullptr);
 	virtual void undo() override;
 	virtual bool exec() override;
 
 private:
-	DAPyDataFrameTableModule* mModel{ nullptr };
+    DAPyDataFrameTableModule* mModel { nullptr };
 	QList< QString > mContents;
 	bool mLogic;
 };
@@ -428,7 +428,7 @@ private:
 /**
  * @brief 转换列的数据类型
  */
-class DAGUI_API DACommandDataFrame_castNum : public DACommandWithTemplateData
+class DAGUI_API DACommandDataFrame_castNum : public DACommandWithTemporaryData
 {
 public:
 	DACommandDataFrame_castNum(const DAPyDataFrame& df,
@@ -448,7 +448,7 @@ private:
 /**
  * @brief 转换列的数据类型
  */
-class DAGUI_API DACommandDataFrame_castDatetime : public DACommandWithTemplateData
+class DAGUI_API DACommandDataFrame_castDatetime : public DACommandWithTemporaryData
 {
 public:
 	DACommandDataFrame_castDatetime(const DAPyDataFrame& df,
@@ -468,7 +468,7 @@ private:
 /**
  * @brief 转换列为索引
  */
-class DAGUI_API DACommandDataFrame_setIndex : public DACommandWithTemplateData
+class DAGUI_API DACommandDataFrame_setIndex : public DACommandWithTemporaryData
 {
 public:
 	DACommandDataFrame_setIndex(const DAPyDataFrame& df,

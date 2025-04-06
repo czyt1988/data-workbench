@@ -15,27 +15,28 @@ namespace DA
 class DADATA_API DADataPyDataFrame : public DADataPyObject
 {
 public:
-    DADataPyDataFrame(const DAPyDataFrame& d);
-    ~DADataPyDataFrame();
-    //变量类型
-    DataType getDataType() const override;
-    //变量值
-    QVariant toVariant() const override;
-    bool setValue(const QVariant& v) override;
-    //获取dataframe
-    DAPyDataFrame& dataframe();
-    const DAPyDataFrame& dataframe() const;
-    //以下是一些wrapper
-    QList< QString > columns() const;
+	DADataPyDataFrame(const DAPyDataFrame& d);
+	~DADataPyDataFrame();
+	// 变量类型
+	DataType getDataType() const override;
+	// 变量值
+	QVariant toVariant() const override;
+	bool setValue(const QVariant& v) override;
+	// 获取dataframe
+	DAPyDataFrame& dataframe();
+	const DAPyDataFrame& dataframe() const;
+	// 以下是一些wrapper
+	QList< QString > columns() const;
+	//
 
 public:
-    //一些qt操作wrapper
+	// 一些qt操作wrapper
 
-    //获取为QVector< double >，如果无法转换，返回一个空的vector
-    QVector< double > getSeriesByVector(const QString& name) const;
+	// 获取为QVector< double >，如果无法转换，返回一个空的vector
+	QVector< double > getSeriesByVector(const QString& name) const;
 
 protected:
-    DAPyDataFrame mDataframe;
+	DAPyDataFrame mDataframe;
 };
 }  // namespace DA
 #endif  // DADATAPYDATAFRAME_H

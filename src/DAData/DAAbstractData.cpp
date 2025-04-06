@@ -1,17 +1,16 @@
 ﻿#include "DAAbstractData.h"
 #include <QObject>
-
-//===================================================
-// using DA namespace -- 禁止在头文件using！！
-//===================================================
-
-using namespace DA;
+#include <QDateTime>
+#include "DAUniqueIDGenerater.h"
+namespace DA
+{
 
 //===================================================
 // DAAbstractData
 //===================================================
 DAAbstractData::DAAbstractData() : mParent(nullptr)
 {
+    mID = generateID();
 }
 
 DAAbstractData::~DAAbstractData()
@@ -79,8 +78,8 @@ void DAAbstractData::write(QDataStream& out)
 
 bool DAAbstractData::read(QDataStream& in)
 {
-    Q_UNUSED(in);
-    return false;
+	Q_UNUSED(in);
+	return false;
 }
 /**
  * @brief 获取id
@@ -88,22 +87,76 @@ bool DAAbstractData::read(QDataStream& in)
  */
 DAAbstractData::IdType DAAbstractData::id() const
 {
-    return (IdType)this;
+    return mID;
+}
+
+void DAAbstractData::setID(DAAbstractData::IdType d)
+{
+    mID = d;
 }
 
 QString DAAbstractData::typeToString(DAAbstractData::DataType d)
 {
-    switch (d) {
-    case TypeNone:
-        return QObject::tr("none");
-    case TypePythonObject:
-        return QObject::tr("object");
-    case TypePythonDataFrame:
-        return QObject::tr("dataframe");
-    case TypeInnerData:
-        return QObject::tr("raw");
-    default:
-        break;
-    }
-    return QString();
+	switch (d) {
+	case TypeNone:
+		return QObject::tr("none");
+	case TypePythonObject:
+		return QObject::tr("object");
+	case TypePythonDataFrame:
+		return QObject::tr("dataframe");
+	case TypeInnerData:
+		return QObject::tr("raw");
+	default:
+		break;
+	}
+	return QString();
 }
+
+/**
+ * @brief 生成一个唯一id
+ * @return
+ */
+DAAbstractData::IdType DAAbstractData::generateID()
+{
+    return DAUniqueIDGenerater::id_uint64();
+}
+
+QString enumToString(DAAbstractData::DataType t)
+{
+	switch (t) {
+	case DAAbstractData::TypeNone:
+		return QStringLiteral("None");
+	case DAAbstractData::TypeDataPackage:
+		return QStringLiteral("Package");
+	case DAAbstractData::TypePythonObject:
+		return QStringLiteral("Object");
+	case DAAbstractData::TypePythonDataFrame:
+		return QStringLiteral("DataFrame");
+	case DAAbstractData::TypePythonSeries:
+		return QStringLiteral("Series");
+	case DAAbstractData::TypeInnerData:
+		return QStringLiteral("InnerData");
+	default:
+		break;
+	}
+	return QStringLiteral("None");
+}
+
+DAAbstractData::DataType stringToEnum(const QString& str, DAAbstractData::DataType defaultType)
+{
+	if (0 == str.compare(QStringLiteral("None"), Qt::CaseInsensitive)) {
+		return DAAbstractData::TypeNone;
+	} else if (0 == str.compare(QStringLiteral("Package"), Qt::CaseInsensitive)) {
+		return DAAbstractData::TypeDataPackage;
+	} else if (0 == str.compare(QStringLiteral("Object"), Qt::CaseInsensitive)) {
+		return DAAbstractData::TypePythonObject;
+	} else if (0 == str.compare(QStringLiteral("DataFrame"), Qt::CaseInsensitive)) {
+		return DAAbstractData::TypePythonDataFrame;
+	} else if (0 == str.compare(QStringLiteral("Series"), Qt::CaseInsensitive)) {
+		return DAAbstractData::TypePythonSeries;
+	} else if (0 == str.compare(QStringLiteral("InnerData"), Qt::CaseInsensitive)) {
+		return DAAbstractData::TypeInnerData;
+	}
+	return defaultType;
+}
+}  // end of DA
