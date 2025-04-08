@@ -120,7 +120,7 @@ void DADataOperateOfDataFrameWidget::insertRowBelowBySelect()
 void DADataOperateOfDataFrameWidget::insertRowAt(int row)
 {
 	std::unique_ptr< DACommandDataFrame_insertNanRow > cmd(
-		new DACommandDataFrame_insertNanRow(mData.toDataFrame(), row, mModel));
+        new DACommandDataFrame_insertNanRow(mData.toDataFrame(), row, mModel));
 	if (!cmd->exec()) {
 		return;
 	}
@@ -165,15 +165,15 @@ void DADataOperateOfDataFrameWidget::insertColumnAt(int col)
 	QString name = dlg.getName();
 	if (name.isEmpty()) {
 		QMessageBox::warning(this,
-							 tr("warning"),                                                     // cn: 警告
-							 tr("The name of the new column to be inserted must be specified")  // cn:必须指定列的名字
+                             tr("warning"),                                                     // cn: 警告
+                             tr("The name of the new column to be inserted must be specified")  // cn:必须指定列的名字
 		);
 		return;
 	}
 	DAPyDType dt = dlg.getDType();
 	if (dlg.isRangeMode()) {
-		cmd.reset(new DACommandDataFrame_insertColumn(
-			mData.toDataFrame(), col, name, dlg.getStartValue(), dlg.getStopValue(), mModel));
+        cmd.reset(
+            new DACommandDataFrame_insertColumn(mData.toDataFrame(), col, name, dlg.getStartValue(), dlg.getStopValue(), mModel));
 	} else {
 		cmd.reset(new DACommandDataFrame_insertColumn(mData.toDataFrame(), col, name, dlg.getDefaultValue(), mModel));
 	}
@@ -222,7 +222,7 @@ int DADataOperateOfDataFrameWidget::removeSelectColumn()
 		return 0;
 	}
 	std::unique_ptr< DACommandDataFrame_dropIColumn > cmd(
-		new DACommandDataFrame_dropIColumn(mData.toDataFrame(), columns, mModel));
+        new DACommandDataFrame_dropIColumn(mData.toDataFrame(), columns, mModel));
 	if (!cmd->exec()) {
 		return 0;
 	}
@@ -409,8 +409,8 @@ bool DADataOperateOfDataFrameWidget::changeSelectColumnToIndex()
 		qWarning() << tr("please select valid column");  // cn:请选择正确的列
 		return false;
 	}
-	std::unique_ptr< DACommandDataFrame_setIndex > cmd =
-		std::make_unique< DACommandDataFrame_setIndex >(df, colsIndex, ui->tableView->verticalHeader(), mModel);
+    std::unique_ptr< DACommandDataFrame_setIndex >
+        cmd = std::make_unique< DACommandDataFrame_setIndex >(df, colsIndex, ui->tableView->verticalHeader(), mModel);
 	if (!cmd->exec()) {
 		return false;
 	}
@@ -464,8 +464,12 @@ int DADataOperateOfDataFrameWidget::dropna(const DAPyDataFrame& df,
                                            const QList< int > index,
                                            std::optional< int > thresh)
 {
-	std::unique_ptr< DACommandDataFrame_dropna > cmd =
-		std::make_unique< DACommandDataFrame_dropna >(df, mModel, axis, how, index, thresh);
+    std::unique_ptr< DACommandDataFrame_dropna > cmd = std::make_unique< DACommandDataFrame_dropna >(df,
+                                                                                                     mModel,
+                                                                                                     axis,
+                                                                                                     how,
+                                                                                                     index,
+                                                                                                     thresh);
 	if (!cmd->exec()) {
 		return false;
 	}
@@ -512,8 +516,7 @@ bool DADataOperateOfDataFrameWidget::fillna()
  */
 bool DADataOperateOfDataFrameWidget::fillna(const DAPyDataFrame& df, double value, int limit)
 {
-	std::unique_ptr< DACommandDataFrame_fillna > cmd =
-		std::make_unique< DACommandDataFrame_fillna >(df, mModel, value, limit);
+    std::unique_ptr< DACommandDataFrame_fillna > cmd = std::make_unique< DACommandDataFrame_fillna >(df, mModel, value, limit);
 	if (!cmd->exec()) {
 		return false;
 	}
@@ -553,8 +556,11 @@ bool DADataOperateOfDataFrameWidget::interpolate()
 
 bool DADataOperateOfDataFrameWidget::interpolate(const DAPyDataFrame& df, const QString& method, int order, int limit)
 {
-	std::unique_ptr< DACommandDataFrame_interpolate > cmd =
-		std::make_unique< DACommandDataFrame_interpolate >(df, mModel, method, order, limit);
+    std::unique_ptr< DACommandDataFrame_interpolate > cmd = std::make_unique< DACommandDataFrame_interpolate >(df,
+                                                                                                               mModel,
+                                                                                                               method,
+                                                                                                               order,
+                                                                                                               limit);
 	if (!cmd->exec()) {
 		return false;
 	}
@@ -583,8 +589,7 @@ bool DADataOperateOfDataFrameWidget::ffillna()
  */
 bool DADataOperateOfDataFrameWidget::ffillna(const DAPyDataFrame& df, int axis, int limit)
 {
-	std::unique_ptr< DACommandDataFrame_ffillna > cmd =
-		std::make_unique< DACommandDataFrame_ffillna >(df, mModel, axis, limit);
+    std::unique_ptr< DACommandDataFrame_ffillna > cmd = std::make_unique< DACommandDataFrame_ffillna >(df, mModel, axis, limit);
 	if (!cmd->exec()) {
 		return false;
 	}
@@ -613,8 +618,7 @@ bool DADataOperateOfDataFrameWidget::bfillna()
  */
 bool DADataOperateOfDataFrameWidget::bfillna(const DAPyDataFrame& df, int axis, int limit)
 {
-	std::unique_ptr< DACommandDataFrame_bfillna > cmd =
-		std::make_unique< DACommandDataFrame_bfillna >(df, mModel, axis, limit);
+    std::unique_ptr< DACommandDataFrame_bfillna > cmd = std::make_unique< DACommandDataFrame_bfillna >(df, mModel, axis, limit);
 
 	if (!cmd->exec()) {
 		return false;
@@ -650,8 +654,10 @@ int DADataOperateOfDataFrameWidget::dropduplicates(const QString& keep)
  */
 int DADataOperateOfDataFrameWidget::dropduplicates(const DAPyDataFrame& df, const QString& keep, const QList< int > index)
 {
-	std::unique_ptr< DACommandDataFrame_dropduplicates > cmd =
-		std::make_unique< DACommandDataFrame_dropduplicates >(df, mModel, keep, index);
+    std::unique_ptr< DACommandDataFrame_dropduplicates > cmd = std::make_unique< DACommandDataFrame_dropduplicates >(df,
+                                                                                                                     mModel,
+                                                                                                                     keep,
+                                                                                                                     index);
 	if (!cmd->exec()) {
 		return 0;
 	}
@@ -690,8 +696,8 @@ int DADataOperateOfDataFrameWidget::nstdfilteroutlier(double n)
  */
 int DADataOperateOfDataFrameWidget::nstdfilteroutlier(const DAPyDataFrame& df, double n, int axis, const QList< int > index)
 {
-	std::unique_ptr< DACommandDataFrame_nstdfilteroutlier > cmd =
-		std::make_unique< DACommandDataFrame_nstdfilteroutlier >(df, mModel, n, axis, index);
+    std::unique_ptr< DACommandDataFrame_nstdfilteroutlier >
+        cmd = std::make_unique< DACommandDataFrame_nstdfilteroutlier >(df, mModel, n, axis, index);
 	if (!cmd->exec()) {
 		return false;
 	}
@@ -733,8 +739,11 @@ bool DADataOperateOfDataFrameWidget::clipoutlier()
  */
 bool DADataOperateOfDataFrameWidget::clipoutlier(const DAPyDataFrame& df, double lower, double upper, int axis)
 {
-	std::unique_ptr< DACommandDataFrame_clipoutlier > cmd =
-		std::make_unique< DACommandDataFrame_clipoutlier >(df, mModel, lower, upper, axis);
+    std::unique_ptr< DACommandDataFrame_clipoutlier > cmd = std::make_unique< DACommandDataFrame_clipoutlier >(df,
+                                                                                                               mModel,
+                                                                                                               lower,
+                                                                                                               upper,
+                                                                                                               axis);
 	if (!cmd->exec()) {
 		return false;
 	}
@@ -760,10 +769,8 @@ bool DADataOperateOfDataFrameWidget::querydatas()
 		return false;
 	}
 	// 获取填充值
-	QList< QString > contents = mDialogDataFrameQueryDatas->getQueryConditions();
-	bool logic                = mDialogDataFrameQueryDatas->getLogicOperations();
-
-	return querydatas(df, contents, logic);
+    QString exper = mDialogDataFrameQueryDatas->getExpr();
+    return querydatas(df, exper);
 }
 
 /**
@@ -772,10 +779,9 @@ bool DADataOperateOfDataFrameWidget::querydatas()
  * @param upper 可选参数，上界值。
  * @return 成功返回true,反之返回false
  */
-bool DADataOperateOfDataFrameWidget::querydatas(const DAPyDataFrame& df, QList< QString > contents, bool logic)
+bool DADataOperateOfDataFrameWidget::querydatas(const DAPyDataFrame& df, const QString& exper)
 {
-	std::unique_ptr< DACommandDataFrame_querydatas > cmd =
-		std::make_unique< DACommandDataFrame_querydatas >(df, mModel, contents, logic);
+    std::unique_ptr< DACommandDataFrame_querydatas > cmd = std::make_unique< DACommandDataFrame_querydatas >(df, exper, mModel);
 	if (!cmd->exec()) {
 		return false;
 	}

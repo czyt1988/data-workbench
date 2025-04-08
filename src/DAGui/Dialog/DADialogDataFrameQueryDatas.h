@@ -21,12 +21,7 @@ public:
 	explicit DADialogDataFrameQueryDatas(QWidget* parent = nullptr);
 	~DADialogDataFrameQueryDatas();
 	// 获取输入的条件
-	QList< QString > getQueryConditions();
-	// 获取逻辑符号
-	bool getLogicOperations();
-
-private slots:
-	void on_pushButton_clicked();
+    QString getExpr() const;
 
 private:
 	Ui::DADialogDataFrameQueryDatas* ui;

@@ -680,11 +680,10 @@ bool DACommandDataFrame_clipoutlier::exec()
 ///////////////////
 
 DACommandDataFrame_querydatas::DACommandDataFrame_querydatas(const DAPyDataFrame& df,
+                                                             const QString& exper,
                                                              DAPyDataFrameTableModule* model,
-                                                             const QList< QString >& contents,
-                                                             bool logic,
                                                              QUndoCommand* par)
-    : DACommandWithTemporaryData(df, par), mModel(model), mContents(contents), mLogic(logic)
+    : DACommandWithTemporaryData(df, par), mExper(exper), mModel(model)
 {
     setText(QObject::tr("query datas"));  // cn:查询相关数据
 }
@@ -701,7 +700,7 @@ void DACommandDataFrame_querydatas::undo()
 bool DACommandDataFrame_querydatas::exec()
 {
 	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
-	if (!pydf.querydatas(dataframe(), mContents, mLogic)) {
+    if (!pydf.queryDatas(dataframe(), mExper)) {
 		return false;
 	}
 	return true;
