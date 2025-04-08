@@ -65,7 +65,26 @@ def da_drop_na(df: pd.DataFrame, axis: int = 0, how: Literal['any', 'all'] = 'an
             subset = df.columns[index]
         else:
             subset = df.index[index]
-    df.dropna(axis=axis, how=how, subset=subset, thresh=thresh, inplace=True)
+    if thresh is not None:
+        df.dropna(axis=axis, subset=subset, thresh=thresh, inplace=True)
+    else:
+        df.dropna(axis=axis, how=how, subset=subset, inplace=True)
+
+@log_function_call
+def da_drop_duplicates(df: pd.DataFrame, keep: Literal['first', 'last'] = 'first', index: Optional[List[int]] = None, ignore_index = False):
+    '''
+    删除dataframe中的重复值
+    :param df: pd.DataFrame
+    :param axis: 0为行，1为列
+    :param keep: first表示保留第一个重复值，last表示保留最后一个重复值，默认为first
+    :param index: 列索引
+    :param ignore_index: 是否忽略索引，默认为False
+    :return: 此函数不返回值，直接改变df
+    '''
+    subset = None
+    if index is not None:
+        subset = df.columns[index].tolist()
+    df.drop_duplicates(subset=subset,keep=keep,ignore_index=ignore_index,inplace=True)
 
 
 @log_function_call

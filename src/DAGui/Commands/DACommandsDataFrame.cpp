@@ -51,7 +51,7 @@ DACommandDataFrame_insertNanRow::DACommandDataFrame_insertNanRow(const DAPyDataF
                                                                  int row,
                                                                  DAPyDataFrameTableModule* model,
                                                                  QUndoCommand* par)
-    : DACommandWithTemplateData(df, par), mRow(row), mModel(model)
+    : DACommandWithTemporaryData(df, par), mRow(row), mModel(model)
 {
 	setText(QObject::tr("insert row"));  // cn:插入一行
 }
@@ -97,7 +97,7 @@ DACommandDataFrame_insertColumn::DACommandDataFrame_insertColumn(const DAPyDataF
                                                                  const QVariant& defaultvalue,
                                                                  DAPyDataFrameTableModule* model,
                                                                  QUndoCommand* par)
-    : DACommandWithTemplateData(df, par), mIsRangeMode(false), mCol(col), mName(name), mDefaultvalue(defaultvalue), mModel(model)
+    : DACommandWithTemporaryData(df, par), mIsRangeMode(false), mCol(col), mName(name), mDefaultvalue(defaultvalue), mModel(model)
 {
 	setText(QObject::tr("insert column \"%1\"").arg(name));  // cn: 插入列“%1”
 }
@@ -122,7 +122,7 @@ DACommandDataFrame_insertColumn::DACommandDataFrame_insertColumn(const DAPyDataF
                                                                  const QVariant& stop,
                                                                  DAPyDataFrameTableModule* model,
                                                                  QUndoCommand* par)
-    : DACommandWithTemplateData(df, par), mIsRangeMode(true), mCol(col), mName(name), mStart(start), mStop(stop), mModel(model)
+    : DACommandWithTemporaryData(df, par), mIsRangeMode(true), mCol(col), mName(name), mStart(start), mStop(stop), mModel(model)
 {
 	setText(QObject::tr("insert column \"%1\"").arg(name));  // cn: 插入列“%1”
 }
@@ -178,7 +178,7 @@ DACommandDataFrame_dropIRow::DACommandDataFrame_dropIRow(const DAPyDataFrame& df
                                                          const QList< int >& index,
                                                          DAPyDataFrameTableModule* model,
                                                          QUndoCommand* par)
-    : DACommandWithTemplateData(df, par), mIndex(index), mModel(model)
+    : DACommandWithTemporaryData(df, par), mIndex(index), mModel(model)
 {
 	setText(QObject::tr("drop dataframe rows"));  // cn:移除dataframe行
 }
@@ -211,7 +211,7 @@ DACommandDataFrame_dropIColumn::DACommandDataFrame_dropIColumn(const DAPyDataFra
                                                                const QList< int >& index,
                                                                DAPyDataFrameTableModule* model,
                                                                QUndoCommand* par)
-    : DACommandWithTemplateData(df, par), mIndex(index), mModel(model)
+    : DACommandWithTemporaryData(df, par), mIndex(index), mModel(model)
 {
 	setText(QObject::tr("drop dataframe columns"));  // cn:移除dataframe列
 }
@@ -284,7 +284,7 @@ DACommandDataFrame_astype::DACommandDataFrame_astype(const DAPyDataFrame& df,
                                                      const DAPyDType& dt,
                                                      DAPyDataFrameTableModule* model,
                                                      QUndoCommand* par)
-    : DACommandWithTemplateData(df, par), mIndex(index), mDtype(dt), mModel(model)
+    : DACommandWithTemporaryData(df, par), mIndex(index), mDtype(dt), mModel(model)
 {
 	setText(QObject::tr("change column type"));  // cn:改变列数据类型
 }
@@ -359,9 +359,9 @@ DACommandDataFrame_dropna::DACommandDataFrame_dropna(const DAPyDataFrame& df,
                                                      int axis,
                                                      const QString& how,
                                                      const QList< int >& index,
-                                                     int thresh,
+                                                     std::optional< int > thresh,
                                                      QUndoCommand* par)
-    : DACommandWithTemplateData(df, par), mModel(model), mAxis(axis), mHow(how), mIndex(index), mThresh(thresh)
+    : DACommandWithTemporaryData(df, par), mModel(model), mAxis(axis), mHow(how), mIndex(index), mThresh(thresh)
 {
     setText(QObject::tr("drop nan"));  // cn:改变列数据为数值
 }
@@ -408,7 +408,7 @@ DACommandDataFrame_fillna::DACommandDataFrame_fillna(const DAPyDataFrame& df,
                                                      double value,
                                                      int limit,
                                                      QUndoCommand* par)
-    : DACommandWithTemplateData(df, par), mModel(model), mValue(value), mLimit(limit)
+    : DACommandWithTemporaryData(df, par), mModel(model), mValue(value), mLimit(limit)
 {
     setText(QObject::tr("fill nan"));  // cn:填充缺失值
 }
@@ -444,7 +444,7 @@ DACommandDataFrame_interpolate::DACommandDataFrame_interpolate(const DAPyDataFra
                                                                int order,
                                                                int limit,
                                                                QUndoCommand* par)
-    : DACommandWithTemplateData(df, par), mModel(model), mMethod(method), mOrder(order), mLimit(limit)
+    : DACommandWithTemporaryData(df, par), mModel(model), mMethod(method), mOrder(order), mLimit(limit)
 {
     setText(QObject::tr("interpolate"));  // cn:插值填充缺失值
 }
@@ -461,7 +461,7 @@ bool DACommandDataFrame_interpolate::exec()
 {
 	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
 
-    if (!pydf.interpolate(dataframe(), mMethod, mOrder, mLimit)) {
+	if (!pydf.interpolate(dataframe(), mMethod, mOrder, mLimit)) {
 		return false;
 	}
 
@@ -479,7 +479,7 @@ DACommandDataFrame_ffillna::DACommandDataFrame_ffillna(const DAPyDataFrame& df,
                                                        int axis,
                                                        int limit,
                                                        QUndoCommand* par)
-    : DACommandWithTemplateData(df, par), mModel(model), mAxis(axis), mLimit(limit)
+    : DACommandWithTemporaryData(df, par), mModel(model), mAxis(axis), mLimit(limit)
 {
     setText(QObject::tr("ffill nan"));  // cn:前向填充缺失值
 }
@@ -514,7 +514,7 @@ DACommandDataFrame_bfillna::DACommandDataFrame_bfillna(const DAPyDataFrame& df,
                                                        int axis,
                                                        int limit,
                                                        QUndoCommand* par)
-    : DACommandWithTemplateData(df, par), mModel(model), mAxis(axis), mLimit(limit)
+    : DACommandWithTemporaryData(df, par), mModel(model), mAxis(axis), mLimit(limit)
 {
     setText(QObject::tr("bfill nan"));  // cn:后向填充缺失值
 }
@@ -558,7 +558,7 @@ DACommandDataFrame_dropduplicates::DACommandDataFrame_dropduplicates(const DAPyD
                                                                      const QString& keep,
                                                                      const QList< int >& index,
                                                                      QUndoCommand* par)
-    : DACommandWithTemplateData(df, par), mModel(model), mKeep(keep), mIndex(index)
+    : DACommandWithTemporaryData(df, par), mModel(model), mKeep(keep), mIndex(index)
 {
     setText(QObject::tr("drop duplicates"));  // cn:删除重复值
 }
@@ -606,7 +606,7 @@ DACommandDataFrame_nstdfilteroutlier::DACommandDataFrame_nstdfilteroutlier(const
                                                                            int axis,
                                                                            const QList< int >& index,
                                                                            QUndoCommand* par)
-    : DACommandWithTemplateData(df, par), mModel(model), mN(n), mAxis(axis), mIndex(index)
+    : DACommandWithTemporaryData(df, par), mModel(model), mN(n), mAxis(axis), mIndex(index)
 {
     setText(QObject::tr("nstd filter"));  // cn:填充缺失值
 }
@@ -654,7 +654,7 @@ DACommandDataFrame_clipoutlier::DACommandDataFrame_clipoutlier(const DAPyDataFra
                                                                double uppervalue,
                                                                int axis,
                                                                QUndoCommand* par)
-    : DACommandWithTemplateData(df, par), mModel(model), mlowervalue(lowervalue), mUppervalue(uppervalue), mAxis(axis)
+    : DACommandWithTemporaryData(df, par), mModel(model), mlowervalue(lowervalue), mUppervalue(uppervalue), mAxis(axis)
 {
     setText(QObject::tr("clip outlier"));  // cn:替换异常值
 }
@@ -684,7 +684,7 @@ DACommandDataFrame_querydatas::DACommandDataFrame_querydatas(const DAPyDataFrame
                                                              const QList< QString >& contents,
                                                              bool logic,
                                                              QUndoCommand* par)
-    : DACommandWithTemplateData(df, par), mModel(model), mContents(contents), mLogic(logic)
+    : DACommandWithTemporaryData(df, par), mModel(model), mContents(contents), mLogic(logic)
 {
     setText(QObject::tr("query datas"));  // cn:查询相关数据
 }
@@ -714,7 +714,7 @@ DACommandDataFrame_castNum::DACommandDataFrame_castNum(const DAPyDataFrame& df,
                                                        const pybind11::dict& args,
                                                        DAPyDataFrameTableModule* model,
                                                        QUndoCommand* par)
-    : DACommandWithTemplateData(df, par), mIndex(index), mArgs(args), mModel(model)
+    : DACommandWithTemporaryData(df, par), mIndex(index), mArgs(args), mModel(model)
 {
 	setText(QObject::tr("cast column to num"));  // cn:改变列数据为数值
 }
@@ -750,7 +750,7 @@ DACommandDataFrame_castDatetime::DACommandDataFrame_castDatetime(const DAPyDataF
                                                                  const pybind11::dict& args,
                                                                  DAPyDataFrameTableModule* model,
                                                                  QUndoCommand* par)
-    : DACommandWithTemplateData(df, par), mIndex(index), mArgs(args), mModel(model)
+    : DACommandWithTemporaryData(df, par), mIndex(index), mArgs(args), mModel(model)
 {
 	setText(QObject::tr("cast column to datetime"));  // cn:改变列数据为日期
 }
@@ -786,7 +786,7 @@ DACommandDataFrame_setIndex::DACommandDataFrame_setIndex(const DAPyDataFrame& df
                                                          QHeaderView* hv,
                                                          DAPyDataFrameTableModule* model,
                                                          QUndoCommand* par)
-    : DACommandWithTemplateData(df, par), mIndex(index), mModel(model)
+    : DACommandWithTemporaryData(df, par), mIndex(index), mModel(model)
 {
 	setText(QObject::tr("set column to index"));  // cn:转换列为索引
 }

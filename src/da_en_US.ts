@@ -881,137 +881,137 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="APP/DAAppController.cpp" line="695"/>
-        <location filename="APP/DAAppController.cpp" line="793"/>
+        <location filename="APP/DAAppController.cpp" line="694"/>
+        <location filename="APP/DAAppController.cpp" line="796"/>
         <source>project file(*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="710"/>
+        <location filename="APP/DAAppController.cpp" line="709"/>
         <source>Question</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="711"/>
+        <location filename="APP/DAAppController.cpp" line="710"/>
         <source>Another project already exists. Do you want to replace it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="737"/>
-        <location filename="APP/DAAppController.cpp" line="806"/>
+        <location filename="APP/DAAppController.cpp" line="736"/>
+        <location filename="APP/DAAppController.cpp" line="813"/>
         <source>failed to load project file:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="420"/>
-        <location filename="APP/DAAppController.cpp" line="761"/>
+        <location filename="APP/DAAppController.cpp" line="419"/>
+        <location filename="APP/DAAppController.cpp" line="759"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="763"/>
+        <location filename="APP/DAAppController.cpp" line="761"/>
         <source>project file (*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="773"/>
+        <location filename="APP/DAAppController.cpp" line="771"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="773"/>
+        <location filename="APP/DAAppController.cpp" line="772"/>
         <source>Whether to overwrite the file:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="431"/>
-        <location filename="APP/DAAppController.cpp" line="782"/>
+        <location filename="APP/DAAppController.cpp" line="430"/>
+        <location filename="APP/DAAppController.cpp" line="781"/>
         <source>Project saved failed!,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="786"/>
-        <location filename="APP/DAAppController.cpp" line="831"/>
+        <location filename="APP/DAAppController.cpp" line="785"/>
+        <location filename="APP/DAAppController.cpp" line="838"/>
         <source>Project saved successfully,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="422"/>
+        <location filename="APP/DAAppController.cpp" line="421"/>
         <source>Project Files (*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="848"/>
+        <location filename="APP/DAAppController.cpp" line="855"/>
         <source>Project load successfully,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="917"/>
+        <location filename="APP/DAAppController.cpp" line="924"/>
         <source>Image files (*.png *.jpg)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="918"/>
+        <location filename="APP/DAAppController.cpp" line="925"/>
         <source>Any files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="991"/>
+        <location filename="APP/DAAppController.cpp" line="998"/>
         <source>The image was successfully saved in path %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="993"/>
+        <location filename="APP/DAAppController.cpp" line="1000"/>
         <source>Image save failed at path %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1032"/>
+        <location filename="APP/DAAppController.cpp" line="1039"/>
         <source>get null project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1038"/>
+        <location filename="APP/DAAppController.cpp" line="1045"/>
         <source>warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1039"/>
+        <location filename="APP/DAAppController.cpp" line="1046"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1341"/>
+        <location filename="APP/DAAppController.cpp" line="1348"/>
         <source>Before creating a new coordinate,you need to create a figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1684"/>
+        <location filename="APP/DAAppController.cpp" line="1691"/>
         <source>%1_Describe</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1685"/>
+        <location filename="APP/DAAppController.cpp" line="1692"/>
         <source>Generate descriptive statistics that summarize the central tendency, dispersion and shape of a [%1]’s distribution, excluding NaN values</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1709"/>
+        <location filename="APP/DAAppController.cpp" line="1716"/>
         <source>%1_PviotTable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1710"/>
+        <location filename="APP/DAAppController.cpp" line="1717"/>
         <source>Generate pivot table</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1982"/>
+        <location filename="APP/DAAppController.cpp" line="1989"/>
         <source>new workflow name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1983"/>
+        <location filename="APP/DAAppController.cpp" line="1990"/>
         <source>new workflow name:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1019,22 +1019,22 @@ Config</source>
 <context>
     <name>DA::DAAppCore</name>
     <message>
-        <location filename="APP/DAAppCore.cpp" line="109"/>
+        <location filename="APP/DAAppCore.cpp" line="110"/>
         <source>Python interpreter path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppCore.cpp" line="117"/>
+        <location filename="APP/DAAppCore.cpp" line="118"/>
         <source>Python scripts path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppCore.cpp" line="123"/>
+        <location filename="APP/DAAppCore.cpp" line="124"/>
         <source>Scripts initialize error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppCore.cpp" line="127"/>
+        <location filename="APP/DAAppCore.cpp" line="128"/>
         <source>Initialize python environment error:%1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1042,26 +1042,26 @@ Config</source>
 <context>
     <name>DA::DAAppDataManager</name>
     <message>
-        <location filename="APP/DAAppDataManager.cpp" line="56"/>
-        <location filename="APP/DAAppDataManager.cpp" line="94"/>
+        <location filename="APP/DAAppDataManager.cpp" line="31"/>
+        <location filename="APP/DAAppDataManager.cpp" line="69"/>
         <source>begin import file:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppDataManager.cpp" line="59"/>
-        <location filename="APP/DAAppDataManager.cpp" line="97"/>
+        <location filename="APP/DAAppDataManager.cpp" line="34"/>
+        <location filename="APP/DAAppDataManager.cpp" line="72"/>
         <source>file:%1,conver to dataframe</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppDataManager.cpp" line="63"/>
-        <location filename="APP/DAAppDataManager.cpp" line="101"/>
+        <location filename="APP/DAAppDataManager.cpp" line="38"/>
+        <location filename="APP/DAAppDataManager.cpp" line="76"/>
         <source>The file &apos;%1&apos; has been successfully imported, but no data can be read from the file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppDataManager.cpp" line="75"/>
-        <location filename="APP/DAAppDataManager.cpp" line="112"/>
+        <location filename="APP/DAAppDataManager.cpp" line="50"/>
+        <location filename="APP/DAAppDataManager.cpp" line="87"/>
         <source>can not import file:%1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1119,6 +1119,80 @@ Config</source>
     <message>
         <location filename="APP/DAAppPluginManager.cpp" line="69"/>
         <source>succeed load plugin %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAAppProject</name>
+    <message>
+        <location filename="APP/DAAppProject.cpp" line="327"/>
+        <location filename="APP/DAAppProject.cpp" line="363"/>
+        <source>current project is busy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppProject.cpp" line="340"/>
+        <source>failed to save archive to %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppProject.cpp" line="381"/>
+        <source>failed to laod archive from %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppProject.cpp" line="427"/>
+        <source>An exception occurred while serializing the dataframe named %1 to %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppProject.cpp" line="512"/>
+        <source>begin save archive to %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppProject.cpp" line="517"/>
+        <source>begin load archive from %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppProject.cpp" line="544"/>
+        <source>Missing data content</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppProject.cpp" line="565"/>
+        <source>Unable to find the temporary file corresponding to %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppProject.cpp" line="571"/>
+        <source>Unable to serialize the file %1 into a Dataframe</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppProject.cpp" line="591"/>
+        <source>get unknown task code:%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppProject.cpp" line="605"/>
+        <source>Successfully save archive : %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppProject.cpp" line="607"/>
+        <source>Failed to save archive : %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppProject.cpp" line="620"/>
+        <source>Successfully load archive : %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="APP/DAAppProject.cpp" line="623"/>
+        <source>Failed to load archive : %1</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1444,32 +1518,32 @@ Config</source>
 <context>
     <name>DA::DAChartBarItemSettingWidget</name>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="177"/>
-        <source>NoStyle</source>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="173"/>
+        <source>No Style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="178"/>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="174"/>
         <source>Box</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="355"/>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="351"/>
         <source>Auto Adjust Samples</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="356"/>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="352"/>
         <source>Scale Samples To Axes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="357"/>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="353"/>
         <source>Scale Sample To Canvas</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="358"/>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="354"/>
         <source>Fixed Sample Size</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2216,14 +2290,6 @@ Config</source>
     </message>
 </context>
 <context>
-    <name>DA::DAProjectInterface</name>
-    <message>
-        <location filename="DAInterface/DAProjectInterface.cpp" line="347"/>
-        <source>open failed,path is %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>DA::DAPyDTypeComboBox</name>
     <message>
         <location filename="DAPyCommonWidgets/DAPyDTypeComboBox.cpp" line="15"/>
@@ -2775,6 +2841,80 @@ Config</source>
     <message>
         <location filename="APP/Dialog/DAWorkbenchAboutDialog.cpp" line="43"/>
         <source>pybind11,BSD,Version:%1.%2</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAZipArchive</name>
+    <message>
+        <location filename="DAGui/DAZipArchive.cpp" line="101"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="121"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="146"/>
+        <source>%1 is already opened</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAZipArchive.cpp" line="126"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="151"/>
+        <source>failed to open archive file %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAZipArchive.cpp" line="172"/>
+        <source>archive is not open,can not close</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAZipArchive.cpp" line="192"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="261"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="276"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="331"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="366"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="466"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="477"/>
+        <source>archive is not open</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAZipArchive.cpp" line="206"/>
+        <source>The file %1 in the archive could not be opened. The reason for the error is %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAZipArchive.cpp" line="281"/>
+        <source>Unable to locate the %1 file in the current archive. The error code is %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAZipArchive.cpp" line="290"/>
+        <source>The file %1 in the archive could not be opened. The error code is %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAZipArchive.cpp" line="385"/>
+        <source>Failed to create temporary file:%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAZipArchive.cpp" line="403"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="404"/>
+        <source>open %1 to temp file error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAZipArchive.cpp" line="425"/>
+        <source>when rename temp %1 to archive %2 occure error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAZipArchive.cpp" line="494"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="506"/>
+        <source>can not open archive</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAZipArchive.cpp" line="648"/>
+        <source>Failed to create target directory:%1</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6051,22 +6191,22 @@ params:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAData/DAAbstractData.cpp" line="98"/>
+        <location filename="DAData/DAAbstractData.cpp" line="102"/>
         <source>none</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAData/DAAbstractData.cpp" line="100"/>
+        <location filename="DAData/DAAbstractData.cpp" line="104"/>
         <source>object</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAData/DAAbstractData.cpp" line="102"/>
+        <location filename="DAData/DAAbstractData.cpp" line="106"/>
         <source>dataframe</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAData/DAAbstractData.cpp" line="104"/>
+        <location filename="DAData/DAAbstractData.cpp" line="108"/>
         <source>raw</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6369,225 +6509,225 @@ params:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="131"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="132"/>
         <source>save workflow extern info cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="134"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="135"/>
         <source>save workflow nodes cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="137"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="138"/>
         <source>save workflow links cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="140"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="141"/>
         <source>save special item cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="143"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="144"/>
         <source>save workflow factory info cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="146"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="147"/>
         <source>save secen info cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="172"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="173"/>
         <source>load workflow extern info cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="176"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="293"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="177"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="296"/>
         <source>load nodes occurce error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="178"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="179"/>
         <source>load workflow nodes cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="181"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="296"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="182"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="299"/>
         <source>load nodes link occurce error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="183"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="184"/>
         <source>load workflow links cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="186"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="187"/>
         <source>load special item occurce error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="188"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="189"/>
         <source>load special item cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="193"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="194"/>
         <source>load factorys occurce error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="195"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="196"/>
         <source>load workflow factory info cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="198"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="199"/>
         <source>load scene info occurce error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="200"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="201"/>
         <source>load secen info cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="287"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="290"/>
         <source>Load Nodes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="301"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="304"/>
         <source>load items occurce error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="345"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="348"/>
         <source>find unknow tag &lt;%1&gt; under &lt;factorys&gt; element</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="351"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="354"/>
         <source>can not find factory prototypes = %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="506"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="555"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="632"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="511"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="560"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="637"/>
         <source>node&apos;s id=%1 can not conver to qulonglong type ,will skip this node</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="749"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="776"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="756"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="783"/>
         <source>node(prototype=%1,name=%2,group=%3) %4 tag loss child tag &lt;name&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="950"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="960"/>
         <source>node metadata(prototype=%1,name=%2,group=%3) can not create graphics item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1004"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1015"/>
         <source>linkitem save to xml return false</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1030"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1037"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1138"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1157"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1041"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1048"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1149"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1168"/>
         <source>link info can not find node in workflow,id = %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1043"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1164"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1054"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1175"/>
         <source>can not get item by node</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1049"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1170"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1060"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1181"/>
         <source>Unable to link to node %3&apos;s link point %4 through link point %2 of node %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1065"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1093"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1186"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1214"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1076"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1104"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1197"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1225"/>
         <source>linkitem load from xml return false</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1130"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1149"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1141"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1160"/>
         <source>During the pasting process, the mapping corresponding to ID(%1) cannot be found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1316"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1327"/>
         <source>Unable to generate graphics item element during the saveing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1586"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1597"/>
         <source>current workflow file version:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1631"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1642"/>
         <source>An exception occurred during the process of processing pasted content XML, with the root node missing the type attribute</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1638"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1649"/>
         <source>An exception occurred during the process of parsing and pasting content,miss workflow tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1680"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1691"/>
         <source>Cannot create item by class name:%1,maybe unregist to DAGraphicsItemFactory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1342"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1353"/>
         <source>Unable to load item information from &lt;%1&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="520"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="525"/>
         <source>Unable to create node by metadata(prototype=%1,name=%2,group=%3)-0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="592"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="642"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="597"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="647"/>
         <source>Unable to create node by metadata(prototype=%1,name=%2,group=%3)-1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="569"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="650"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="574"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="655"/>
         <source>Unable to create node by metadata(prototype=%1,name=%2,group=%3)-2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="601"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="674"/>
-        <location filename="DAGui/DAXmlHelper.cpp" line="945"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="606"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="679"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="955"/>
         <source>can not find &lt;item&gt; tag under &lt;node&gt; tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="1835"/>
+        <location filename="DAGui/DAXmlHelper.cpp" line="1943"/>
         <source>The attribute %1=%2 under the tag %3 cannot be converted to double </source>
         <translation type="unfinished"></translation>
     </message>
@@ -6627,7 +6767,7 @@ params:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAPyBindQt/pandas/DAPyModulePandas.cpp" line="163"/>
+        <location filename="DAPyBindQt/pandas/DAPyModulePandas.cpp" line="169"/>
         <source>use utf-8 open file %1 error,try to use ansi encoding</source>
         <translation type="unfinished"></translation>
     </message>

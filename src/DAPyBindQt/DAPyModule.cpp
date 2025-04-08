@@ -23,7 +23,7 @@ DAPyModule::DAPyModule(const pybind11::object& obj) : DAPyObjectWrapper(obj)
 {
 }
 
-DAPyModule::DAPyModule(pybind11::object&& obj) : DAPyObjectWrapper(obj)
+DAPyModule::DAPyModule(pybind11::object&& obj) : DAPyObjectWrapper(std::move(obj))
 {
 }
 
@@ -93,10 +93,23 @@ void DAPyModule::reload()
 bool DAPyModule::import(const char* module_n) noexcept
 {
 	try {
-		object() = pybind11::module::import(module_n);
+		pybind11::module m = pybind11::module::import(module_n);
+		object()           = m;
 		return true;
 	} catch (const std::exception& e) {
 		dealException(e);
 	}
 	return false;
+}
+
+/**
+ * @brief 导入模块
+ * @param module_n
+ * @return
+ */
+DAPyModule DAPyModule::importModule(const char* module_n)
+{
+	// 获取 pandas 模块
+	DAPyModule m(pybind11::module_::import("pandas"));
+	return m;
 }

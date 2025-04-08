@@ -787,6 +787,10 @@ void DAAppController::saveAs()
 	qInfo() << tr("Project saved successfully,path is %1").arg(projectPath);  // 工程保存成功，路径位于:%1
 }
 
+/**
+ * @brief 追加工作流
+ * TODO: 此处应该调整到DAAPPProjectInterface
+ */
 void DAAppController::onActionAppendProjectTriggered()
 {
 	QFileDialog dialog(app());
@@ -803,15 +807,19 @@ void DAAppController::onActionAppendProjectTriggered()
 	DAAppProject* project = DA_APP_CORE.getAppProject();
 	DA_WAIT_CURSOR_SCOPED();
 
-	if (!project->appendWorkflowInProject(fileNames.first(), true)) {
+	QFile file(fileNames.first());
+	if (!file.open(QIODevice::ReadOnly)) {
+		return;
+	}
+	if (!project->appendWorkflowInProject(file.readAll(), true)) {
 		qCritical() << tr("failed to load project file:%1").arg(fileNames.first());
 		return;
 	}
 	// 设置工程名称给标题
 	if (project->getProjectBaseName().isEmpty()) {
-		app()->setWindowTitle(QString("untitle"));
+		app()->setWindowTitle(QString("untitle [*]"));
 	} else {
-		app()->setWindowTitle(QString("%1").arg(project->getProjectBaseName()));
+		app()->setWindowTitle(QString("%1 [*]").arg(project->getProjectBaseName()));
 	}
 }
 
@@ -1696,7 +1704,7 @@ void DAAppController::onActionCreateDataDescribeTriggered()
 		data.setDescribe(tr("Generate descriptive statistics that summarize the central tendency, dispersion and "
 							"shape of a [%1]’s distribution, excluding NaN values")
 							 .arg(dfopt->data().getName()));
-		mDatas->addData(data);
+		mDatas->addData_(data);
 		// showDataOperate要在m_dataManagerStack.push之后，因为m_dataManagerStack.push可能会导致data的名字改变
 		mDock->showDataOperateWidget(data);
 		setDirty();
@@ -1716,10 +1724,11 @@ void DAAppController::onActionCreatePivotTableTriggered()
 		if (df.isNone()) {
 			return;
 		}
-		DAData data = df;
-		data.setName(tr("%1_PviotTable").arg(dfopt->data().getName()));
-		data.setDescribe(tr("Generate pivot table").arg(dfopt->data().getName()));
-		mDatas->addData(data);
+		DAData originData = dfopt->data();
+		DAData data       = df;
+		data.setName(tr("%1_PviotTable").arg(originData.getName()));
+		data.setDescribe(tr("Generate pivot table of %1").arg(originData.getName()));
+		mDatas->addData_(data);
 		// showDataOperate要在m_dataManagerStack.push之后，因为m_dataManagerStack.push可能会导致data的名字改变
 		mDock->showDataOperateWidget(data);
 		setDirty();

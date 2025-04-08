@@ -4,6 +4,9 @@
 #include <QDomDocument>
 #include <QVariant>
 #include <QVersionNumber>
+#include <QHash>
+#include "DAData.h"
+#include "DADataManager.h"
 #include "DAAbstractNode.h"
 #include "DAGraphicsItemGroup.h"
 /**
@@ -12,7 +15,6 @@
 
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DAXmlHelper)
 class DAWorkFlowEditWidget;
 class DAWorkFlow;
 class DAWorkFlowGraphicsScene;
@@ -34,7 +36,7 @@ class DAGraphicsResizeableItem;
  */
 class DAGUI_API DAXmlHelper
 {
-	DA_IMPL(DAXmlHelper)
+	DA_DECLARE_PRIVATE(DAXmlHelper)
 public:
 	DAXmlHelper();
 	~DAXmlHelper();
@@ -54,7 +56,7 @@ public:
                                      const QString& tagName,
                                      QDomDocument* doc,
                                      bool isCopyType = true);
-    bool loadClipBoardElement(const QDomElement* clipBoardElement, DAWorkFlowGraphicsScene* sc);
+	bool loadClipBoardElement(const QDomElement* clipBoardElement, DAWorkFlowGraphicsScene* sc);
 	// DAGraphicsItem的通用保存
 	static QDomElement makeElement(const DAGraphicsItem* item, const QString& tagName, QDomDocument* doc);
 	static bool loadElement(DAGraphicsItem* item, const QDomElement* tag, const QVersionNumber& v = QVersionNumber());
@@ -68,8 +70,17 @@ public:
 	// DA支持的所有QGraphicsItem的通用保存
 	static QDomElement makeElement(const QGraphicsItem* item, const QString& tagName, QDomDocument* doc);
 	static bool loadElement(QGraphicsItem* item, const QDomElement* tag, const QVersionNumber& v = QVersionNumber());
-    // 获取所有处理过的item
-    QList< QGraphicsItem* > getAllDealItems() const;
+	// 获取所有处理过的item
+	QList< QGraphicsItem* > getAllDealItems() const;
+	// DAData的序列化
+	static QDomElement makeElement(const DAData* data, const QString& tagName, QDomDocument* doc);
+    static bool loadElement(DAData* data,
+                            const QDomElement* tag,
+                            const QHash< DAAbstractData::IdType, DAData >& datas,
+                            const QVersionNumber& v = QVersionNumber());
+	// DADataManager的序列化
+	static QDomElement makeElement(const DADataManager* dmgr, const QString& tagName, QDomDocument* doc);
+	static bool loadElement(DADataManager* dmgr, const QDomElement* tag, const QVersionNumber& v = QVersionNumber());
 
 public:
 	// 生成一个qvariant element

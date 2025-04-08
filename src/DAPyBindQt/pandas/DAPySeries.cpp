@@ -19,7 +19,7 @@ DAPySeries::DAPySeries(const DAPySeries& s) : DAPyObjectWrapper(s)
 	}
 }
 
-DAPySeries::DAPySeries(DAPySeries&& s) : DAPyObjectWrapper(s)
+DAPySeries::DAPySeries(DAPySeries&& s) : DAPyObjectWrapper(std::move(s))
 {
 }
 
@@ -30,7 +30,7 @@ DAPySeries::DAPySeries(const pybind11::object& obj) : DAPyObjectWrapper(obj)
 	}
 }
 
-DAPySeries::DAPySeries(pybind11::object&& obj) : DAPyObjectWrapper(obj)
+DAPySeries::DAPySeries(pybind11::object&& obj) : DAPyObjectWrapper(std::move(obj))
 {
 	if (!obj.is_none()) {
 		checkObjectValid();
@@ -43,15 +43,47 @@ DAPySeries::~DAPySeries()
 
 DAPySeries& DAPySeries::operator=(const pybind11::object& obj)
 {
-	if (isSeries(obj)) {
-		object() = obj;
-	}
+	_object = obj;
+	checkObjectValid();
+	return *this;
+}
+
+DAPySeries& DAPySeries::operator=(pybind11::object&& obj)
+{
+	_object = std::move(obj);
+	checkObjectValid();
 	return *this;
 }
 
 DAPySeries& DAPySeries::operator=(const DAPySeries& s)
 {
-	object() = s.object();
+	if (this != &s) {
+		DAPyObjectWrapper::operator=(s);  // 调用基类赋值
+		checkObjectValid();
+	}
+	return *this;
+}
+
+DAPySeries& DAPySeries::operator=(DAPySeries&& s)
+{
+	if (this != &s) {
+		DAPyObjectWrapper::operator=(std::move(s));  // 调用基类移动赋值
+		checkObjectValid();
+	}
+	return *this;
+}
+
+DAPySeries& DAPySeries::operator=(const DAPyObjectWrapper& obj)
+{
+	DAPyObjectWrapper::operator=(obj);
+	checkObjectValid();
+	return *this;
+}
+
+DAPySeries& DAPySeries::operator=(DAPyObjectWrapper&& obj)
+{
+	DAPyObjectWrapper::operator=(std::move(obj));
+	checkObjectValid();
 	return *this;
 }
 

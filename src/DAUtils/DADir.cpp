@@ -20,7 +20,12 @@ DADir::DADir()
 
 QString DADir::getRootTempPath()
 {
-	return s_temp_dir.path();
+    return s_temp_dir.path();
+}
+
+QTemporaryDir& DADir::tempDir()
+{
+    return s_temp_dir;
 }
 
 QString DADir::createTempPath(const QString& folderName)
@@ -38,7 +43,17 @@ QString DADir::createTempPath(const QString& folderName)
 	}
 
 	// 返回目标文件夹路径
-	return targetPath;
+    return targetPath;
+}
+
+QDir DADir::createTempDir(const QString& folderName)
+{
+    return QDir(createTempPath(folderName));
+}
+
+QString DADir::getRootTempFile(const QString& fileName)
+{
+    return s_temp_dir.filePath(fileName);
 }
 
 QString DADir::getRootConfigPath()

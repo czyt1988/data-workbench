@@ -16,8 +16,9 @@ class DAPyInterpreter::PrivateData
 	DA_DECLARE_PUBLIC(DAPyInterpreter)
 public:
 	PrivateData(DAPyInterpreter* p);
+
 public:
-    std::unique_ptr<pybind11::scoped_interpreter> interpreter;
+	std::unique_ptr< pybind11::scoped_interpreter > interpreter;
 };
 
 DAPyInterpreter::PrivateData::PrivateData(DAPyInterpreter* p) : q_ptr(p)
@@ -26,7 +27,7 @@ DAPyInterpreter::PrivateData::PrivateData(DAPyInterpreter* p) : q_ptr(p)
 //===================================================
 // DAPyInterpreter
 //===================================================
-DAPyInterpreter::DAPyInterpreter():DA_PIMPL_CONSTRUCT
+DAPyInterpreter::DAPyInterpreter() : DA_PIMPL_CONSTRUCT
 {
 }
 
@@ -124,7 +125,7 @@ void DAPyInterpreter::setPythonHomePath(const QString& path)
 void DAPyInterpreter::initializePythonInterpreter()
 {
 	try {
-        d_ptr->interpreter = std::make_unique<pybind11::scoped_interpreter>();
+		d_ptr->interpreter = std::make_unique< pybind11::scoped_interpreter >();
 	} catch (const std::exception& e) {
 		qWarning() << e.what();
 	}

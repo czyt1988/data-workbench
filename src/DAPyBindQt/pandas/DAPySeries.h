@@ -23,6 +23,10 @@ public:
 	// 操作符
 	DAPySeries& operator=(const pybind11::object& obj);
 	DAPySeries& operator=(const DAPySeries& s);
+	DAPySeries& operator=(const DAPyObjectWrapper& obj);
+	DAPySeries& operator=(pybind11::object&& obj);
+	DAPySeries& operator=(DAPySeries&& s);
+	DAPySeries& operator=(DAPyObjectWrapper&& obj);
 	QVariant operator[](std::size_t i) const;
 
 public:

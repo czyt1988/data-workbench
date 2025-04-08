@@ -22,7 +22,13 @@ public:
 	 * @return 此函数返回的路径是临时路径的绝对路径
 	 * @note 注意此路径在程序结束时会自动删除
 	 */
-	static QString getRootTempPath();
+    static QString getRootTempPath();
+
+    /**
+     * @brief 获取当前程序临时路径的QTemporaryDir
+     * @return
+     */
+    static QTemporaryDir& tempDir();
 
 	/**
 	 * @brief 根据folderName，在临时路径下创建一个文件夹，返回{RootTempPath}/{folderName}路径
@@ -30,6 +36,22 @@ public:
 	 * @return 如果路径已经存在将直接返回路径，如果不存在则创建
 	 */
 	static QString createTempPath(const QString& folderName);
+
+    /**
+     * @brief 根据folderName，在临时路径下创建一个文件夹，返回{RootTempPath}/{folderName}的QDir
+     * @param folderName 临时路径下文件夹的名字
+     * @return 如果路径已经存在将直接返回路径，如果不存在则创建
+     */
+    static QDir createTempDir(const QString& folderName);
+
+    /**
+     * @brief 获取一个临时目录下的文件
+     *
+     * 此函数等效@a DADir::getRootTempDir.filePath(fileName)
+     * @param fileName
+     * @return
+     */
+    static QString getRootTempFile(const QString& fileName);
 
 	/**
 	 * @brief 获取本应用的配置文件路径
