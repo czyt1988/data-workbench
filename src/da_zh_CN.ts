@@ -990,7 +990,7 @@ Table Area</source>
     <message>
         <location filename="APP/DAAppController.cpp" line="451"/>
         <source>Please select the data operation window</source>
-        <translation type="unfinished"></translation>
+        <translation>请先选中数据操作窗口</translation>
     </message>
     <message>
         <location filename="APP/DAAppController.cpp" line="859"/>
@@ -2134,7 +2134,35 @@ Table Area</source>
 
 **Note**:  
 If a column name contains spaces or special characters, enclose it in backticks (`` ` ``), e.g., `` `Embarked On` ``.</source>
-        <translation type="unfinished"></translation>
+        <translation>通过*数据查询*功能，你可以通过表达式进行数据筛选：
+
+1 **支持比较运算符**：如 `==`、`&gt;`、`&lt;`、`&gt;=`、`&lt;=`、`!=`，可直接对列名和值进行比较。  
+   **例如**：  
+   `A &gt; 2 &amp; B &lt; 8`，可以筛选出列名 **A** 数值大于 **2** 且列名 **B** 数值小于 **8** 的行。
+
+2 **支持列间比较**：直接比较不同列的值。  
+   **例如**：  
+   `A &gt; B`，筛选出列名 **A** 数值大于列名 **B** 的行。
+
+3 **支持逻辑运算符**：如 `and`、`or`、`not`，以及 `in` 和 `not in` 简化多条件筛选。  
+   **例如**：  
+   - `A &gt; 2 and B &lt; 8`，筛选出列名 **A** 数值大于 **2** 且列名 **B** 数值小于 **8** 的行。  
+   - `A in (&quot;S&quot;, &quot;C&quot;)`，筛选出列名 **A** 数值为 **&quot;S&quot;** 或 **&quot;C&quot;** 的行。
+
+4 **支持算术运算和复杂逻辑**：  
+   **例如**：  
+   `(A * 3 &gt; 1) | ((B + 12.5) &lt; 5)`。
+
+5 **支持数值范围筛选**：结合 `between` 方法筛选数值范围。  
+   **例如**：  
+   `A.between(2, 8)`。
+
+6 **支持字符串操作**：使用 `str` 方法处理字符串列（如长度、前缀匹配等）。  
+   **例如**：  
+   `Ticket.str.startswith(&quot;A&quot;)`，筛选 **Ticket** 列以 **A** 开头的内容。
+
+**注**：  
+列名含空格或特殊字符时，需用反引号 `` ` `` 包裹，例如：`Embarked On`。</translation>
     </message>
 </context>
 <context>
@@ -4016,12 +4044,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameQueryDatas.ui" line="23"/>
         <source>You can refer to column names that are not valid Python variable names by surrounding them in backticks. Thus, column names containing spaces or punctuations (besides underscores) or starting with digits must be surrounded by backticks. (For example, a column named “Area (cm^2)” would be referenced as `Area (cm^2)`). Column names which are Python keywords (like “list”, “for”, “import”, etc) cannot be used. For example, if one of your columns is called a a and you want to sum it with b, your query should be `a a` + b.</source>
-        <translation type="unfinished"></translation>
+        <translation>你可以通过反引号 ` 包裹那些不是有效 Python 变量名的列名来引用它们。因此，包含空格或标点符号（下划线除外）或以数字开头的列名必须用反引号包围。例如，名为“Area (cm^2)”的列需要通过 `Area (cm^2)` 来引用。此外，Python 关键字（如“list”、“for”、“import”等）不能用作列名。例如，如果你的某个列名为“a a”，并且你希望将其与列“b”相加，那么你的查询语句应该是 `a a` + b。</translation>
     </message>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameQueryDatas.ui" line="30"/>
         <source>The query string to evaluate</source>
-        <translation type="unfinished"></translation>
+        <translation>查询语句</translation>
     </message>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameQueryDatas.ui" line="52"/>
@@ -4036,7 +4064,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameQueryDatas.ui" line="79"/>
         <source>Explanation：</source>
-        <translation type="unfinished"></translation>
+        <translation>说明：</translation>
     </message>
 </context>
 <context>

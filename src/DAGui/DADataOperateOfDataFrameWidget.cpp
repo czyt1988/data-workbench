@@ -1146,7 +1146,14 @@ void DADataOperateOfDataFrameWidget::onTableViewClicked(const QModelIndex& index
 		emit selectTypeChanged({ index.column() }, DAPyDType());
 		return;
 	}
-	emit selectTypeChanged({ index.column() }, df.dtypes(index.column()));
+    DAPyDType t;
+    try {
+        t = df.dtypes(index.column());
+    } catch (const std::exception& e) {
+        qCritical() << e.what();
+    }
+
+    emit selectTypeChanged({ index.column() }, t);
 }
 
 void DADataOperateOfDataFrameWidget::changeEvent(QEvent* e)

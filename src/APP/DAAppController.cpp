@@ -741,7 +741,7 @@ bool DAAppController::openProjectFile(const QString& projectFilePath)
 		return false;
 	}
 	// 设置工程名称给标题
-	app()->setWindowTitle(QString("%1").arg(project->getProjectBaseName()));
+    app()->setWindowTitle(QString("%1 [*]").arg(project->getProjectBaseName()));
 	return true;
 }
 
