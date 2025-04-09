@@ -161,6 +161,8 @@ private Q_SLOTS:
 	void onActionChartAddBarTriggered();
 	// 添加误差棒图
 	void onActionactionChartAddErrorBarTriggered();
+	// 添加箱型图
+	void onActionChartAddBoxPlotTriggered();
 	//===================================================
 	// 绘图标签 Chart Context Category
 	//===================================================

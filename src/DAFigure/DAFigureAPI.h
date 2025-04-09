@@ -20,6 +20,7 @@ enum class ChartTypes
 	Scatter,   ///< 散点
 	Bar,       ///< 柱状
 	ErrorBar,  ///< 误差棒
+	Box,       ///< 箱线图
 	Unknow = 1000
 };
 }

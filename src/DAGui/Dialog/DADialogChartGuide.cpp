@@ -51,6 +51,10 @@ void DADialogChartGuide::init()
 	item = new QListWidgetItem(QIcon(":/app/chart-type/Icon/chart-type/chart-intervalcurve.svg"), tr("error bar"));
 	item->setData(Qt::UserRole, static_cast< int >(DA::ChartTypes::ErrorBar));
 	ui->listWidgetChartType->addItem(item);
+	// boxplot
+	item = new QListWidgetItem(QIcon(":/app/chart-type/Icon/chart-type/chart-OHLC.svg"), tr("box"));
+	item->setData(Qt::UserRole, static_cast< int >(DA::ChartTypes::Box));
+	ui->listWidgetChartType->addItem(item);
 	// 初始化
 	ui->stackedWidget->setCurrentWidget(ui->pageCurve);
 	ui->listWidgetChartType->setCurrentRow(0);
@@ -64,6 +68,7 @@ void DADialogChartGuide::setDataManager(DADataManager* dmgr)
 	ui->pageCurve->setDataManager(dmgr);
 	ui->pageBar->setDataManager(dmgr);
 	ui->pageErrorBar->setDataManager(dmgr);
+	ui->pageBox->setDataManager(dmgr);
 }
 
 /**
@@ -83,6 +88,9 @@ void DADialogChartGuide::setCurrentData(const DAData& d)
 	} else if (DAChartAddErrorBarWidget* e = qobject_cast< DAChartAddErrorBarWidget* >(w)) {
 		e->setCurrentData(d);
 		e->toFirst();
+	} else if (DAChartAddBoxWidget* b = qobject_cast< DAChartAddBoxWidget* >(w)) {
+		b->setCurrentData(d);
+		b->toFirst();
 	}
 }
 
@@ -246,6 +254,8 @@ void DADialogChartGuide::onListWidgetCurrentItemChanged(QListWidgetItem* current
 		ui->stackedWidget->setCurrentWidget(ui->pageBar);
 	case DA::ChartTypes::ErrorBar:
 		ui->stackedWidget->setCurrentWidget(ui->pageErrorBar);
+	case DA::ChartTypes::Box:
+		ui->stackedWidget->setCurrentWidget(ui->pageBox);
 	default:
 		break;
 	}
