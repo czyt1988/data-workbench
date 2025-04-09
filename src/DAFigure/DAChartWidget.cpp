@@ -694,22 +694,26 @@ QwtPlotIntervalCurve* DAChartWidget::addIntervalCurve(const QVector< double >& v
  * @param xyDatas
  * @return
  */
-QwtPlotBarChart* DAChartWidget::addBar(const QVector< QPointF >& xyDatas, const QColor& color)
+QwtPlotBarChart* DAChartWidget::addBar(const QVector< QPointF >& xyDatas)
 {
-	QwtPlotBarChart* ser = new QwtPlotBarChart();
-	ser->setSamples(xyDatas);
-	ser->setLegendMode(QwtPlotBarChart::LegendBarTitles);
-	ser->setLegendIconSize(QSize(10, 14));
-	ser->setLayoutPolicy(QwtPlotBarChart::AutoAdjustSamples);
-	ser->setLayoutHint(4.0);  // minimum width for a single bar
-	ser->setSpacing(10);      // spacing between bars
+    QwtPlotBarChart* bar = new QwtPlotBarChart();
+    bar->setSamples(xyDatas);
+    //! LegendChartTitle:
+    //! 图例中只显示​​整个图表​​的标题（通过title()设置）和一个默认颜色块
+    //! 适用于所有柱状体使用同一种颜色或不需要区分单个柱子的场景
+    //!
+    //! LegendBarTitles:
+    //! 为​​每个柱子​​生成图例项，显示specialSymbol()返回的符号和barTitle()设置的标题
+    //!
+    // ser->setLegendMode(QwtPlotBarChart::LegendBarTitles);
+    // ser->setLegendIconSize(QSize(10, 14));
+    // ser->setLayoutPolicy(QwtPlotBarChart::AutoAdjustSamples);
+    // ser->setLayoutHint(4.0);  // minimum width for a single bar
+    // ser->setSpacing(10);      // spacing between bars
 	QwtColumnSymbol* symbol = new QwtColumnSymbol(QwtColumnSymbol::Box);
-	QPalette p              = symbol->palette();
-	p.setColor(QPalette::Window, color);
-	symbol->setPalette(p);
-	ser->setSymbol(symbol);
-	ser->attach(this);
-	return ser;
+    bar->setSymbol(symbol);
+    bar->attach(this);
+    return bar;
 }
 
 /**
@@ -719,22 +723,14 @@ QwtPlotBarChart* DAChartWidget::addBar(const QVector< QPointF >& xyDatas, const 
  * @param yDatas
  * @return
  */
-QwtPlotBarChart* DAChartWidget::addBar(const QVector< double >& yDatas, const QColor& color)
+QwtPlotBarChart* DAChartWidget::addBar(const QVector< double >& yDatas)
 {
-	QwtPlotBarChart* ser = new QwtPlotBarChart();
-	ser->setSamples(yDatas);
-	ser->setLegendMode(QwtPlotBarChart::LegendBarTitles);
-	ser->setLegendIconSize(QSize(10, 14));
-	ser->setLayoutPolicy(QwtPlotBarChart::AutoAdjustSamples);
-	ser->setLayoutHint(4.0);  // minimum width for a single bar
-	ser->setSpacing(10);      // spacing between bars
-	QwtColumnSymbol* symbol = new QwtColumnSymbol(QwtColumnSymbol::Box);
-	QPalette p              = symbol->palette();
-	p.setColor(QPalette::Window, color);
-	symbol->setPalette(p);
-	ser->setSymbol(symbol);
-	ser->attach(this);
-	return ser;
+    QwtPlotBarChart* bar = new QwtPlotBarChart();
+    bar->setSamples(yDatas);
+    QwtColumnSymbol* symbol = new QwtColumnSymbol(QwtColumnSymbol::Box);
+    bar->setSymbol(symbol);
+    bar->attach(this);
+    return bar;
 }
 
 /**
@@ -1048,7 +1044,7 @@ void DAChartWidget::zoomIn()
 		d_ptr->mZoomer->zoom(rect);
 	} else {
 		qDebug() << "zoom in get invalid zoom rect,current zoom rect is " << d_ptr->mZoomer->zoomRect()
-				 << ",will zoom rect is " << rect;
+                 << ",will zoom rect is " << rect;
 	}
 }
 
@@ -1077,7 +1073,7 @@ void DAChartWidget::zoomOut()
 		d_ptr->mZoomer->zoom(rect);
 	} else {
 		qDebug() << "zoom out get invalid zoom rect,current zoom rect is " << d_ptr->mZoomer->zoomRect()
-				 << ",will zoom rect is " << rect;
+                 << ",will zoom rect is " << rect;
 	}
 }
 

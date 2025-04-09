@@ -96,12 +96,12 @@ public:
 	// 绘制误差图
 	QwtPlotIntervalCurve* addIntervalCurve(const QVector< QwtIntervalSample >& invDatas);
 	QwtPlotIntervalCurve* addIntervalCurve(const QVector< double >& value,
-										   const QVector< double >& min,
-										   const QVector< double >& max);
+                                           const QVector< double >& min,
+                                           const QVector< double >& max);
 	// 添加bar
-	QwtPlotBarChart* addBar(const QVector< QPointF >& xyDatas, const QColor& color = QColor(0, 56, 143));
+    QwtPlotBarChart* addBar(const QVector< QPointF >& xyDatas);
 	// 此时x为0~n均匀分布
-	QwtPlotBarChart* addBar(const QVector< double >& yDatas, const QColor& color = QColor(0, 56, 143));
+    QwtPlotBarChart* addBar(const QVector< double >& yDatas);
 	// 设置所有坐标轴的Margin
 	void setAllAxisMargin(int m);
 	// 获取figure
@@ -218,9 +218,9 @@ public:
 public:
 	// 把min,max,value的数组转换为QwtIntervalSample数组
 	static void makeIntervalSample(const QVector< double >& value,
-								   const QVector< double >& min,
-								   const QVector< double >& max,
-								   QVector< QwtIntervalSample >& invDatas);
+                                   const QVector< double >& min,
+                                   const QVector< double >& max,
+                                   QVector< QwtIntervalSample >& invDatas);
 
 protected:
 	virtual void resizeEvent(QResizeEvent*);
