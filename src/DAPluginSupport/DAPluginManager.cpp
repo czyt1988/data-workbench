@@ -153,6 +153,13 @@ void DAPluginManager::load(DACoreInterface* c)
 			//".开头的文件，如.pluginignore"
 			continue;
 		}
+
+#ifdef Q_OS_WIN
+        // windows系统下，只扫描dll文件
+        if (0 != fi.suffix().compare(QStringLiteral("dll"), Qt::CaseInsensitive)) {
+            continue;
+        }
+#endif
 		if (d_ptr->mIgnorePluginBaseName.contains(fi.baseName().toLower())) {
 			qInfo().noquote() << tr("ignore plugin %1").arg(fi.baseName());
 			continue;

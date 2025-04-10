@@ -364,7 +364,8 @@ DAPyIndex DAPyDataFrame::index() const
  */
 pybind11::dtype DAPyDataFrame::dtypes(std::size_t c) const
 {
-    return object().attr("dtypes")[ pybind11::int_(c) ];
+    // dtypes返回的是series
+    return object().attr("dtypes").attr("iloc")[ pybind11::int_(c) ];
 }
 
 /**

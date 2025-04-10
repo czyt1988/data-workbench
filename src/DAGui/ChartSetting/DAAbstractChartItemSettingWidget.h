@@ -61,7 +61,7 @@ public:
 	{
 		return static_cast< T >(mPlotItem);
 	}
-	// setPlotItem之后调用的虚函数
+    // setPlotItem之后调用的虚函数,通过重写此函数可以执行一些设置item之后的操作例如一些界面的初始化
 	virtual void plotItemSet(QwtPlotItem* item);
 protected slots:
 	virtual void plotItemAttached(QwtPlotItem* plotItem, bool on);
