@@ -685,6 +685,22 @@ QwtPlotBarChart* DAFigureWidget::addBar_(const QVector< QPointF >& xyDatas)
 }
 
 /**
+ * @brief 支持redo/undo的addBar，等同于gca()->addBar
+ * @param xyDatas
+ * @return 如果添加失败，返回一个nullptr
+ */
+QwtPlotIntervalCurve* DAFigureWidget::addErrorBar_(const QVector< QwtIntervalSample >& xyDatas)
+{
+	if (DAChartWidget* chart = gca()) {
+		QwtPlotIntervalCurve* item = chart->addIntervalCurve(xyDatas);
+		DAChartUtil::setPlotItemColor(item, getDefaultColor());
+		addItem_(chart, item);
+		return item;
+	}
+	return nullptr;
+}
+
+/**
  * @brief 推入一个命令
  * @param cmd
  */

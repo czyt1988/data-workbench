@@ -101,6 +101,29 @@ QwtSymbol* DAChartSymbolEditWidget::createSymbol() const
 	return s;
 }
 
+QwtIntervalSymbol* DAChartSymbolEditWidget::createIntervalSymbol() const
+{
+	// 1. 创建基础 QwtIntervalSymbol 对象
+	QwtIntervalSymbol* intervalSymbol = new QwtIntervalSymbol();
+
+	// 2. 从原函数获取样式参数（复用逻辑）
+	QPen outlinePen  = getSymbolOutlinePen();  // 获取原符号边框笔
+	QBrush fillBrush = getSymbolColor();       // 获取原符号填充画刷
+	int size         = getSymbolSize();        // 获取原符号大小
+
+	// 3. 设置区间符号样式
+	intervalSymbol->setPen(outlinePen);   // 设置线条样式（颜色/宽度）
+	intervalSymbol->setBrush(fillBrush);  // 设置填充（仅对某些样式有效）
+
+	// 4. 选择区间符号类型（需根据需求调整）
+	intervalSymbol->setStyle(QwtIntervalSymbol::Bar);  // 可选：Bar, Box, NoSymbol等
+
+	// 5. 调整大小（QwtIntervalSymbol 的 size 影响标记的视觉宽度）
+	intervalSymbol->setWidth(size);  // 设置线条/标记的宽度
+
+	return intervalSymbol;
+}
+
 void DAChartSymbolEditWidget::init()
 {
 	ui->penEditWidget->setCurrentPen(Qt::NoPen);

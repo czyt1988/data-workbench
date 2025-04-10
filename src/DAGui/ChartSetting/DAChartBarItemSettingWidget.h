@@ -45,9 +45,6 @@ public:
 	// 标题
 	void setTitle(const QString& t);
 	QString getTitle() const;
-	// Bar Style
-	void setBarStyle(QwtColumnSymbol::Style v);
-	QwtColumnSymbol::Style getBarStyle() const;
 	// Bar LegendMode
 	void setBarLegendMode(QwtPlotBarChart::LegendMode v);
 	QwtPlotBarChart::LegendMode getBarLegendMode() const;
@@ -80,10 +77,7 @@ public slots:
 	// 基线
 	void setBaseLine(double v);
 
-protected:
-	void resetBarStyleComboBox();
 private slots:
-	void onBarStyleCurrentIndexChanged(int index);
 	void on_checkBoxChart_clicked(bool checked);
 	void on_checkBoxBar_clicked(bool checked);
 	void on_checkBoxEnableFill_clicked(bool checked);

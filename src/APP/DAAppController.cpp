@@ -227,6 +227,9 @@ void DAAppController::initConnection()
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddCurve, onActionChartAddCurveTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddScatter2D, onActionChartAddScatterTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddBar, onActionChartAddBarTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddErrorBar, onActionactionChartAddErrorBarTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddBoxPlot, onActionChartAddBoxPlotTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddCloudMap, onActionChartAddCloudMapTriggered);
 
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGrid, onActionChartEnableGridTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGridX, onActionChartEnableGridXTriggered);
@@ -1390,6 +1393,36 @@ void DAAppController::onActionChartAddBarTriggered()
 {
 	DAAppChartOperateWidget* chartopt = getChartOperateWidget();
 	chartopt->plotWithGuideDialog(DA::ChartTypes::Bar);
+	mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
+}
+
+/**
+ * @brief 添加误差棒图
+ */
+void DAAppController::onActionactionChartAddErrorBarTriggered()
+{
+	DAAppChartOperateWidget* chartopt = getChartOperateWidget();
+	chartopt->plotWithGuideDialog(DA::ChartTypes::ErrorBar);
+	mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
+}
+
+/**
+ * @brief 添加误差棒图
+ */
+void DAAppController::onActionChartAddBoxPlotTriggered()
+{
+	DAAppChartOperateWidget* chartopt = getChartOperateWidget();
+	chartopt->plotWithGuideDialog(DA::ChartTypes::Box);
+	mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
+}
+
+/**
+ * @brief 添加谱图
+ */
+void DAAppController::onActionChartAddCloudMapTriggered()
+{
+	DAAppChartOperateWidget* chartopt = getChartOperateWidget();
+	chartopt->plotWithGuideDialog(DA::ChartTypes::Spectrogram);
 	mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
 }
 

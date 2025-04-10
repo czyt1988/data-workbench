@@ -1,5 +1,5 @@
-#ifndef DACHARTADDBARWIDGET_H
-#define DACHARTADDBARWIDGET_H
+#ifndef DACHARTADDERRORBARWIDGET_H
+#define DACHARTADDERRORBARWIDGET_H
 #include <QWidget>
 #include "DAAbstractChartAddItemWidget.h"
 #include "DAData.h"
@@ -7,7 +7,7 @@
 class QAbstractButton;
 namespace Ui
 {
-class DAChartAddBarWidget;
+class DAChartAddErrorBarWidget;
 }
 
 namespace DA
@@ -15,15 +15,15 @@ namespace DA
 /**
  * @brief 添加曲线
  */
-class DAChartAddBarWidget : public DAAbstractChartAddItemWidget
+class DAChartAddErrorBarWidget : public DAAbstractChartAddItemWidget
 {
 	Q_OBJECT
-	DA_DECLARE_PRIVATE(DAChartAddBarWidget)
+	DA_DECLARE_PRIVATE(DAChartAddErrorBarWidget)
 	void init();
 
 public:
-	explicit DAChartAddBarWidget(QWidget* parent = nullptr);
-	~DAChartAddBarWidget();
+	explicit DAChartAddErrorBarWidget(QWidget* parent = nullptr);
+	~DAChartAddErrorBarWidget();
 	virtual QwtPlotItem* createPlotItem() override;
 	// 设置当前的datafram，这个仅仅会影响初始显示
 	void setCurrentData(const DAData& d);
@@ -46,8 +46,8 @@ private slots:
 	void onStackWidgetCurrentChanged(int i);
 
 private:
-	Ui::DAChartAddBarWidget* ui;
+	Ui::DAChartAddErrorBarWidget* ui;
 };
 }
 
-#endif  // DACHARTADDBARWIDGET_H
+#endif  // DACHARTADDERRORBARWIDGET_H
