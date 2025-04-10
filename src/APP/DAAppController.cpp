@@ -229,6 +229,7 @@ void DAAppController::initConnection()
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddBar, onActionChartAddBarTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddErrorBar, onActionactionChartAddErrorBarTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddBoxPlot, onActionChartAddBoxPlotTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddCloudMap, onActionChartAddCloudMapTriggered);
 
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGrid, onActionChartEnableGridTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGridX, onActionChartEnableGridXTriggered);
@@ -1409,6 +1410,16 @@ void DAAppController::onActionChartAddBoxPlotTriggered()
 {
 	DAAppChartOperateWidget* chartopt = getChartOperateWidget();
 	chartopt->plotWithGuideDialog(DA::ChartTypes::Box);
+	mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
+}
+
+/**
+ * @brief 添加谱图
+ */
+void DAAppController::onActionChartAddCloudMapTriggered()
+{
+	DAAppChartOperateWidget* chartopt = getChartOperateWidget();
+	chartopt->plotWithGuideDialog(DA::ChartTypes::Spectrogram);
 	mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
 }
 

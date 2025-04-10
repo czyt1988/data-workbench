@@ -163,6 +163,8 @@ private Q_SLOTS:
 	void onActionactionChartAddErrorBarTriggered();
 	// 添加箱型图
 	void onActionChartAddBoxPlotTriggered();
+	// 添加谱图
+	void onActionChartAddCloudMapTriggered();
 	//===================================================
 	// 绘图标签 Chart Context Category
 	//===================================================
