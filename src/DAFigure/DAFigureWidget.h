@@ -89,6 +89,7 @@ public:
 	QwtPlotCurve* addScatter_(const QVector< QPointF >& xyDatas);
     // 添加柱状图
     QwtPlotBarChart* addBar_(const QVector< QPointF >& xyDatas);
+	QwtPlotIntervalCurve* addErrorBar_(const QVector< QwtIntervalSample >& xyDatas);
 
 public:
 	// 推送一个命令

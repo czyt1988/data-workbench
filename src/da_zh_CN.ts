@@ -928,57 +928,57 @@ Table Area</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="APP/DAAppController.cpp" line="698"/>
-        <location filename="APP/DAAppController.cpp" line="800"/>
+        <location filename="APP/DAAppController.cpp" line="694"/>
+        <location filename="APP/DAAppController.cpp" line="796"/>
         <source>project file(*.%1)</source>
         <translation>工程文件(*.%1)</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="713"/>
+        <location filename="APP/DAAppController.cpp" line="709"/>
         <source>Question</source>
         <translation>疑问</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="714"/>
+        <location filename="APP/DAAppController.cpp" line="710"/>
         <source>Another project already exists. Do you want to replace it?</source>
         <translation>已存在其他工程，是否要替换？</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="740"/>
-        <location filename="APP/DAAppController.cpp" line="817"/>
+        <location filename="APP/DAAppController.cpp" line="736"/>
+        <location filename="APP/DAAppController.cpp" line="813"/>
         <source>failed to load project file:%1</source>
         <translation>加载工程文件“%1”失败</translation>
     </message>
     <message>
         <location filename="APP/DAAppController.cpp" line="419"/>
-        <location filename="APP/DAAppController.cpp" line="763"/>
+        <location filename="APP/DAAppController.cpp" line="759"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="765"/>
+        <location filename="APP/DAAppController.cpp" line="761"/>
         <source>project file (*.%1)</source>
         <translation>工程文件(*.%1)</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="775"/>
+        <location filename="APP/DAAppController.cpp" line="771"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="776"/>
+        <location filename="APP/DAAppController.cpp" line="772"/>
         <source>Whether to overwrite the file:%1</source>
         <translation>是否覆盖文件“%1”</translation>
     </message>
     <message>
         <location filename="APP/DAAppController.cpp" line="430"/>
-        <location filename="APP/DAAppController.cpp" line="785"/>
+        <location filename="APP/DAAppController.cpp" line="781"/>
         <source>Project saved failed!,path is %1</source>
         <translation>工程“%1”保存失败</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="789"/>
-        <location filename="APP/DAAppController.cpp" line="842"/>
+        <location filename="APP/DAAppController.cpp" line="785"/>
+        <location filename="APP/DAAppController.cpp" line="838"/>
         <source>Project saved successfully,path is %1</source>
         <translation>工程保存成功，路径位于:%1</translation>
     </message>
@@ -988,82 +988,77 @@ Table Area</source>
         <translation>工程文件(*.%1)</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="451"/>
-        <source>Please select the data operation window</source>
-        <translation>请先选中数据操作窗口</translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppController.cpp" line="859"/>
+        <location filename="APP/DAAppController.cpp" line="855"/>
         <source>Project load successfully,path is %1</source>
         <translation>工程加载成功，路径为：%1</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="928"/>
+        <location filename="APP/DAAppController.cpp" line="924"/>
         <source>Image files (*.png *.jpg)</source>
         <translation>图片文件 (*.png *.jpg)</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="929"/>
+        <location filename="APP/DAAppController.cpp" line="925"/>
         <source>Any files (*)</source>
         <translation>任意文件 (*)</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1002"/>
+        <location filename="APP/DAAppController.cpp" line="998"/>
         <source>The image was successfully saved in path %1</source>
         <translation>图片保存成功：%1</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1004"/>
+        <location filename="APP/DAAppController.cpp" line="1000"/>
         <source>Image save failed at path %1</source>
         <translation>图片保存失败：%1</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1043"/>
+        <location filename="APP/DAAppController.cpp" line="1039"/>
         <source>get null project</source>
         <translation>空工程，接口异常</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1049"/>
+        <location filename="APP/DAAppController.cpp" line="1045"/>
         <source>warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1050"/>
+        <location filename="APP/DAAppController.cpp" line="1046"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1352"/>
+        <location filename="APP/DAAppController.cpp" line="1348"/>
         <source>Before creating a new coordinate,you need to create a figure</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1695"/>
+        <location filename="APP/DAAppController.cpp" line="1691"/>
         <source>%1_Describe</source>
         <translation>%1_Describe</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1696"/>
+        <location filename="APP/DAAppController.cpp" line="1692"/>
         <source>Generate descriptive statistics that summarize the central tendency, dispersion and shape of a [%1]’s distribution, excluding NaN values</source>
         <translation>生成描述性统计数据，汇总[%1]分布的中心趋势、分散度和结构（不包括NaN值）</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1721"/>
+        <location filename="APP/DAAppController.cpp" line="1716"/>
         <source>%1_PviotTable</source>
         <translation>%1_透视表</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1722"/>
-        <source>Generate pivot table of %1</source>
-        <translation>生成%1的透视表</translation>
+        <location filename="APP/DAAppController.cpp" line="1717"/>
+        <source>Generate pivot table</source>
+        <translation>生成透视表</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1994"/>
+        <location filename="APP/DAAppController.cpp" line="1989"/>
         <source>new workflow name</source>
         <translation>新工作流名称</translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1995"/>
+        <location filename="APP/DAAppController.cpp" line="1990"/>
         <source>new workflow name:</source>
         <translation>工作流名称:</translation>
     </message>
@@ -1831,12 +1826,12 @@ Table Area</source>
 <context>
     <name>DA::DAChartWidget</name>
     <message>
-        <location filename="DAFigure/DAChartWidget.cpp" line="1028"/>
+        <location filename="DAFigure/DAChartWidget.cpp" line="1032"/>
         <source>Before zoom in, the chart must setup a zoomer</source>
         <translation>在放大图表之前需要先建立缩放器</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartWidget.cpp" line="1057"/>
+        <location filename="DAFigure/DAChartWidget.cpp" line="1061"/>
         <source>Before zoom out, the chart must setup a zoomer</source>
         <translation>在缩小图表之前需要先建立缩放器</translation>
     </message>
@@ -2099,70 +2094,6 @@ Table Area</source>
         <location filename="DAGui/Dialog/DADialogDataFrameFillna.cpp" line="27"/>
         <source>The current input cannot be converted to a floating-point number.</source>
         <translation>当前输入内容无法转换为浮点数。</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DADialogDataFrameQueryDatas</name>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameQueryDatas.cpp" line="12"/>
-        <source>Using the **Query Data** feature, you can filter data using expressions:
-
-1  **Comparison Operators**: Supports `==`, `&gt;`, `&lt;`, `&gt;=`, `&lt;=`, `!=` for direct comparison of column names and values.  
-   **Example**:  
-   `A &gt; 2 &amp; B &lt; 8` filters rows where the value in column **A** is greater than **2** and the value in column **B** is less than **8**.
-
-2  **Inter-Column Comparisons**: Directly compare values between columns.  
-   **Example**:  
-   `A &gt; B` filters rows where the value in column **A** is greater than the value in column **B**.
-
-3  **Logical Operators**: Supports `and`, `or`, `not`, `in`, and `not in` for simplified multi-condition filtering.
-   **Examples**:  
-   - `A &gt; 2 and B &lt; 8` filters rows where **A** &gt; 2 and **B** &lt; 8.  
-   - `A in (&quot; S &quot;, &quot; C &quot;)` filters rows where **A** is either &quot; S &quot; or &quot; C &quot;.
-
-4  **Arithmetic and Complex Logic**: Allows arithmetic operations and complex logical expressions.  
-   **Example**:  
-   `(A * 3 &gt; 1) | ((B + 12.5) &lt; 5)`.
-
-5  **Range Filtering with `between`**: Use `between` to filter numeric ranges.  
-   **Example**:  
-   `A.between(2, 8)` filters values in column **A** between **2** and **8**.
-
-6  **String Operations with `str` Methods**: Supports string column processing (e.g., length, prefix matching).  
-   **Example**:  
-   `Ticket.str.startswith(&quot; A &quot;)` filters rows where the **Ticket** column starts with &quot; A &quot;.
-
-**Note**:  
-If a column name contains spaces or special characters, enclose it in backticks (`` ` ``), e.g., `` `Embarked On` ``.</source>
-        <translation>通过*数据查询*功能，你可以通过表达式进行数据筛选：
-
-1 **支持比较运算符**：如 `==`、`&gt;`、`&lt;`、`&gt;=`、`&lt;=`、`!=`，可直接对列名和值进行比较。  
-   **例如**：  
-   `A &gt; 2 &amp; B &lt; 8`，可以筛选出列名 **A** 数值大于 **2** 且列名 **B** 数值小于 **8** 的行。
-
-2 **支持列间比较**：直接比较不同列的值。  
-   **例如**：  
-   `A &gt; B`，筛选出列名 **A** 数值大于列名 **B** 的行。
-
-3 **支持逻辑运算符**：如 `and`、`or`、`not`，以及 `in` 和 `not in` 简化多条件筛选。  
-   **例如**：  
-   - `A &gt; 2 and B &lt; 8`，筛选出列名 **A** 数值大于 **2** 且列名 **B** 数值小于 **8** 的行。  
-   - `A in (&quot;S&quot;, &quot;C&quot;)`，筛选出列名 **A** 数值为 **&quot;S&quot;** 或 **&quot;C&quot;** 的行。
-
-4 **支持算术运算和复杂逻辑**：  
-   **例如**：  
-   `(A * 3 &gt; 1) | ((B + 12.5) &lt; 5)`。
-
-5 **支持数值范围筛选**：结合 `between` 方法筛选数值范围。  
-   **例如**：  
-   `A.between(2, 8)`。
-
-6 **支持字符串操作**：使用 `str` 方法处理字符串列（如长度、前缀匹配等）。  
-   **例如**：  
-   `Ticket.str.startswith(&quot;A&quot;)`，筛选 **Ticket** 列以 **A** 开头的内容。
-
-**注**：  
-列名含空格或特殊字符时，需用反引号 `` ` `` 包裹，例如：`Embarked On`。</translation>
     </message>
 </context>
 <context>
@@ -3824,7 +3755,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location filename="DAGui/Dialog/DADialogChartGuide.ui" line="92"/>
         <source>Cancel</source>
-        <translation>取消</translation>
+        <translation>取消取消</translation>
     </message>
 </context>
 <context>
@@ -3927,12 +3858,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="27"/>
         <source>spline</source>
-        <translation>样条</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="32"/>
         <source>polynomial</source>
-        <translation>多项式</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="40"/>
@@ -3947,37 +3878,37 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="50"/>
         <source>limit</source>
-        <translation>限制数量</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="57"/>
         <source>Interpolate axis</source>
-        <translation>插值方向</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="70"/>
         <source>1</source>
-        <translation></translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="80"/>
         <source>This is the maximum number of entries along the entire axis where NaNs will be filled. Must be greater than 0</source>
-        <translation>这是沿整个轴的最大条目数，用于填充NaN的位置，必须大于0</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="93"/>
         <source>Interpolate method</source>
-        <translation>插值方法</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="102"/>
         <source>colume</source>
-        <translation>列</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="121"/>
         <source>row</source>
-        <translation>行</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="167"/>
@@ -3994,77 +3925,86 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <name>DADialogDataFrameFillna</name>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameFillna.ui" line="14"/>
-        <source>Fill Nan</source>
-        <translation>填充空值</translation>
+        <source>Dialog</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameFillna.ui" line="20"/>
-        <source>Fill NaN values</source>
-        <oldsource>Fill NA/NaN values</oldsource>
-        <translation>填充空值</translation>
+        <source>Fill NA/NaN values</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameFillna.ui" line="26"/>
         <source>This is the maximum number of consecutive NaN values to forward/backward fill. In other words, if there is a gap with more than this number of consecutive NaNs, it will only be partially filled</source>
-        <translation>这是最大连续向前/向后填充的 NaN 值的数量。换句话说，如果存在一个包含超过此数量的连续 NaN 值的空缺，它将只会被部分填充</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameFillna.ui" line="29"/>
         <source>limit</source>
-        <translation>限制数量</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameFillna.ui" line="39"/>
         <source>This is the maximum number of entries along the entire axis where NaNs will be filled. Must be greater than 0</source>
-        <translation>这是沿整个轴的最大条目数，用于填充NaN的位置，必须大于0</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameFillna.ui" line="55"/>
         <source>Value to use to fill holes</source>
-        <translation>填充值</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillna.ui" line="93"/>
+        <location filename="DAGui/Dialog/DADialogDataFrameFillna.ui" line="87"/>
         <source>OK</source>
-        <translation>确认</translation>
+        <translation type="unfinished">确认</translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillna.ui" line="107"/>
+        <location filename="DAGui/Dialog/DADialogDataFrameFillna.ui" line="101"/>
         <source>Cancel</source>
-        <translation>取消</translation>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DADialogDataFrameQueryDatas</name>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameQueryDatas.ui" line="14"/>
-        <source>Query Data</source>
-        <translation>查询数据</translation>
+        <source>Dialog</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameQueryDatas.ui" line="23"/>
-        <source>You can refer to column names that are not valid Python variable names by surrounding them in backticks. Thus, column names containing spaces or punctuations (besides underscores) or starting with digits must be surrounded by backticks. (For example, a column named “Area (cm^2)” would be referenced as `Area (cm^2)`). Column names which are Python keywords (like “list”, “for”, “import”, etc) cannot be used. For example, if one of your columns is called a a and you want to sum it with b, your query should be `a a` + b.</source>
-        <translation>你可以通过反引号 ` 包裹那些不是有效 Python 变量名的列名来引用它们。因此，包含空格或标点符号（下划线除外）或以数字开头的列名必须用反引号包围。例如，名为“Area (cm^2)”的列需要通过 `Area (cm^2)` 来引用。此外，Python 关键字（如“list”、“for”、“import”等）不能用作列名。例如，如果你的某个列名为“a a”，并且你希望将其与列“b”相加，那么你的查询语句应该是 `a a` + b。</translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameQueryDatas.ui" line="30"/>
-        <source>The query string to evaluate</source>
-        <translation>查询语句</translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameQueryDatas.ui" line="52"/>
+        <location filename="DAGui/Dialog/DADialogDataFrameQueryDatas.ui" line="35"/>
         <source>OK</source>
-        <translation>确认</translation>
+        <translation type="unfinished">确认</translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameQueryDatas.ui" line="66"/>
+        <location filename="DAGui/Dialog/DADialogDataFrameQueryDatas.ui" line="49"/>
         <source>Cancel</source>
-        <translation>取消</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameQueryDatas.ui" line="79"/>
-        <source>Explanation：</source>
-        <translation>说明：</translation>
+        <location filename="DAGui/Dialog/DADialogDataFrameQueryDatas.ui" line="62"/>
+        <source>Query Datas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogDataFrameQueryDatas.ui" line="70"/>
+        <source>logic:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogDataFrameQueryDatas.ui" line="78"/>
+        <source>AND</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogDataFrameQueryDatas.ui" line="83"/>
+        <source>OR</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogDataFrameQueryDatas.ui" line="104"/>
+        <source>add conditions</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -6006,17 +5946,17 @@ Wrap</source>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="DAPyBindQt/pandas/DAPyIndex.cpp" line="159"/>
+        <location filename="DAPyBindQt/pandas/DAPyIndex.cpp" line="125"/>
         <source>DAPyIndex get python object type is not pandas.Index</source>
         <translation>python object类型不是pandas.Index</translation>
     </message>
     <message>
-        <location filename="DAPyBindQt/pandas/DAPyModulePandas.cpp" line="163"/>
+        <location filename="DAPyBindQt/pandas/DAPyModulePandas.cpp" line="169"/>
         <source>use utf-8 open file %1 error,try to use ansi encoding</source>
         <translation>使用utf-8打开文件“%1”错误，尝试使用ansi编码</translation>
     </message>
     <message>
-        <location filename="DAPyBindQt/pandas/DAPySeries.cpp" line="186"/>
+        <location filename="DAPyBindQt/pandas/DAPySeries.cpp" line="154"/>
         <source>DAPySeries  get python object type is not pandas.Series</source>
         <translation>python object类型不是pandas.Series</translation>
     </message>
@@ -6373,7 +6313,7 @@ Wrap</source>
         <translation>添加绘图元素</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureWidget.cpp" line="800"/>
+        <location filename="DAFigure/DAFigureWidget.cpp" line="799"/>
         <source>DAFigureWidget get invalid magic strat code</source>
         <translation>DAFigureWidget的文件头异常</translation>
     </message>
@@ -6449,22 +6389,22 @@ Wrap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="688"/>
+        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="689"/>
         <source>query datas</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="718"/>
+        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="719"/>
         <source>cast column to num</source>
         <translation>改变列数据为数值</translation>
     </message>
     <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="754"/>
+        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="755"/>
         <source>cast column to datetime</source>
         <translation>改变列数据为日期</translation>
     </message>
     <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="790"/>
+        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="791"/>
         <source>set column to index</source>
         <translation>转换列为索引</translation>
     </message>
@@ -7627,7 +7567,7 @@ params:
         <location filename="3rdparty/QtPropertyBrowser/src/qt5/qttreepropertybrowser.cpp" line="453"/>
         <location filename="3rdparty/QtPropertyBrowser/src/qt6/qttreepropertybrowser.cpp" line="418"/>
         <source>Value</source>
-        <translation type="unfinished">值</translation>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

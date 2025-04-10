@@ -1,45 +1,45 @@
-#include "DAChartAddBarWidget.h"
-#include "ui_DAChartAddBarWidget.h"
+#include "DAChartAddErrorBarWidget.h"
+#include "ui_DAChartAddErrorBarWidget.h"
 #include "DAGlobalColorTheme.h"
 #include <QButtonGroup>
-#include "qwt_plot_barchart.h"
+#include "qwt_plot_curve.h"
 #include <QPen>
 #include "DAChartUtil.h"
 namespace DA
 {
 
-class DAChartAddBarWidget::PrivateData
+class DAChartAddErrorBarWidget::PrivateData
 {
-	DA_DECLARE_PUBLIC(DAChartAddBarWidget)
+	DA_DECLARE_PUBLIC(DAChartAddErrorBarWidget)
 public:
-	PrivateData(DAChartAddBarWidget* p);
+	PrivateData(DAChartAddErrorBarWidget* p);
 
 public:
 	QButtonGroup* mBtnGroup{ nullptr };
 };
 
-DAChartAddBarWidget::PrivateData::PrivateData(DAChartAddBarWidget* p) : q_ptr(p)
+DAChartAddErrorBarWidget::PrivateData::PrivateData(DAChartAddErrorBarWidget* p) : q_ptr(p)
 {
 	mBtnGroup = new QButtonGroup(p);
 }
 
 //----------------------------------------------------
-// DAChartAddBarWidget
+// DAChartAddErrorBarWidget
 //----------------------------------------------------
 
-DAChartAddBarWidget::DAChartAddBarWidget(QWidget* parent)
-	: DAAbstractChartAddItemWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DAChartAddBarWidget)
+DAChartAddErrorBarWidget::DAChartAddErrorBarWidget(QWidget* parent)
+	: DAAbstractChartAddItemWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DAChartAddErrorBarWidget)
 {
 	ui->setupUi(this);
 	init();
 }
 
-DAChartAddBarWidget::~DAChartAddBarWidget()
+DAChartAddErrorBarWidget::~DAChartAddErrorBarWidget()
 {
 	delete ui;
 }
 
-void DAChartAddBarWidget::init()
+void DAChartAddErrorBarWidget::init()
 {
 	d_ptr->mBtnGroup->addButton(ui->toolButtonStepData);
 	d_ptr->mBtnGroup->addButton(ui->toolButtonStepPlot);
@@ -47,37 +47,39 @@ void DAChartAddBarWidget::init()
 	connect(d_ptr->mBtnGroup,
 			QOverload< QAbstractButton* >::of(&QButtonGroup::buttonClicked),
 			this,
-			&DAChartAddBarWidget::onNavButtonClicked);
-	connect(ui->stackedWidget, &QStackedWidget::currentChanged, this, &DAChartAddBarWidget::onStackWidgetCurrentChanged);
+			&DAChartAddErrorBarWidget::onNavButtonClicked);
+	connect(ui->stackedWidget, &QStackedWidget::currentChanged, this, &DAChartAddErrorBarWidget::onStackWidgetCurrentChanged);
+	QColor c = DAGlobalColorTheme::getInstance().color();
+	ui->pageErrorBar->setCurvePen(QPen(c, 1.0));
 }
 
 /**
  * @brief 按照设定创建曲线
  * @return
  */
-QwtPlotItem* DAChartAddBarWidget::createPlotItem()
+QwtPlotItem* DAChartAddErrorBarWidget::createPlotItem()
 {
-	QVector< QPointF > xy = ui->pageData->getSeries();
-	if (xy.empty()) {
+	QVector< QwtIntervalSample > xye = ui->pageData->getSeries();
+	if (xye.empty()) {
 		return nullptr;
 	}
-	QwtPlotBarChart* item = new QwtPlotBarChart();
-	item->setSamples(xy);
-	ui->pageBar->updatePlotItem(item);
+	QwtPlotIntervalCurve* item = new QwtPlotIntervalCurve();
+	item->setSamples(xye);
+	ui->pageErrorBar->updatePlotItem(item);
 	return item;
 }
 
-void DAChartAddBarWidget::setCurrentData(const DAData& d)
+void DAChartAddErrorBarWidget::setCurrentData(const DAData& d)
 {
 	ui->pageData->setCurrentData(d);
 }
 
-void DAChartAddBarWidget::setDataManager(DADataManager* dmgr)
+void DAChartAddErrorBarWidget::setDataManager(DADataManager* dmgr)
 {
 	ui->pageData->setDataManager(dmgr);
 }
 
-void DAChartAddBarWidget::next()
+void DAChartAddErrorBarWidget::next()
 {
 	auto i = ui->stackedWidget->currentIndex();
 	auto c = ui->stackedWidget->count();
@@ -88,7 +90,7 @@ void DAChartAddBarWidget::next()
 	updateNavButtonState();
 }
 
-void DAChartAddBarWidget::previous()
+void DAChartAddErrorBarWidget::previous()
 {
 	auto i = ui->stackedWidget->currentIndex();
 	--i;
@@ -102,17 +104,17 @@ void DAChartAddBarWidget::previous()
  * @brief 获取步骤总数
  * @return 如果为0或者1，下一步按钮将没有直接就是完成
  */
-int DAChartAddBarWidget::getStepCount() const
+int DAChartAddErrorBarWidget::getStepCount() const
 {
     return ui->stackedWidget->count();
 }
 
-int DAChartAddBarWidget::getCurrentStep() const
+int DAChartAddErrorBarWidget::getCurrentStep() const
 {
     return ui->stackedWidget->currentIndex();
 }
 
-void DAChartAddBarWidget::updateNavButtonState()
+void DAChartAddErrorBarWidget::updateNavButtonState()
 {
 	auto i = ui->stackedWidget->currentIndex();
 	if (0 == i) {
@@ -122,7 +124,7 @@ void DAChartAddBarWidget::updateNavButtonState()
 	}
 }
 
-void DAChartAddBarWidget::onNavButtonClicked(QAbstractButton* button)
+void DAChartAddErrorBarWidget::onNavButtonClicked(QAbstractButton* button)
 {
 	if (button == ui->toolButtonStepData) {
 		ui->stackedWidget->setCurrentWidget(ui->pageData);
@@ -131,7 +133,7 @@ void DAChartAddBarWidget::onNavButtonClicked(QAbstractButton* button)
 	}
 }
 
-void DAChartAddBarWidget::onStackWidgetCurrentChanged(int i)
+void DAChartAddErrorBarWidget::onStackWidgetCurrentChanged(int i)
 {
 	if (0 == i) {
 		ui->toolButtonStepData->setChecked(true);

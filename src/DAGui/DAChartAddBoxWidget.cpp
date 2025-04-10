@@ -1,45 +1,45 @@
-#include "DAChartAddBarWidget.h"
-#include "ui_DAChartAddBarWidget.h"
+#include "DAChartAddBoxWidget.h"
+#include "ui_DAChartAddBoxWidget.h"
 #include "DAGlobalColorTheme.h"
 #include <QButtonGroup>
-#include "qwt_plot_barchart.h"
+#include "qwt_samples.h"
 #include <QPen>
 #include "DAChartUtil.h"
 namespace DA
 {
 
-class DAChartAddBarWidget::PrivateData
+class DAChartAddBoxWidget::PrivateData
 {
-	DA_DECLARE_PUBLIC(DAChartAddBarWidget)
+	DA_DECLARE_PUBLIC(DAChartAddBoxWidget)
 public:
-	PrivateData(DAChartAddBarWidget* p);
+	PrivateData(DAChartAddBoxWidget* p);
 
 public:
 	QButtonGroup* mBtnGroup{ nullptr };
 };
 
-DAChartAddBarWidget::PrivateData::PrivateData(DAChartAddBarWidget* p) : q_ptr(p)
+DAChartAddBoxWidget::PrivateData::PrivateData(DAChartAddBoxWidget* p) : q_ptr(p)
 {
 	mBtnGroup = new QButtonGroup(p);
 }
 
 //----------------------------------------------------
-// DAChartAddBarWidget
+// DAChartAddBoxWidget
 //----------------------------------------------------
 
-DAChartAddBarWidget::DAChartAddBarWidget(QWidget* parent)
-	: DAAbstractChartAddItemWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DAChartAddBarWidget)
+DAChartAddBoxWidget::DAChartAddBoxWidget(QWidget* parent)
+	: DAAbstractChartAddItemWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DAChartAddBoxWidget)
 {
 	ui->setupUi(this);
 	init();
 }
 
-DAChartAddBarWidget::~DAChartAddBarWidget()
+DAChartAddBoxWidget::~DAChartAddBoxWidget()
 {
 	delete ui;
 }
 
-void DAChartAddBarWidget::init()
+void DAChartAddBoxWidget::init()
 {
 	d_ptr->mBtnGroup->addButton(ui->toolButtonStepData);
 	d_ptr->mBtnGroup->addButton(ui->toolButtonStepPlot);
@@ -47,37 +47,37 @@ void DAChartAddBarWidget::init()
 	connect(d_ptr->mBtnGroup,
 			QOverload< QAbstractButton* >::of(&QButtonGroup::buttonClicked),
 			this,
-			&DAChartAddBarWidget::onNavButtonClicked);
-	connect(ui->stackedWidget, &QStackedWidget::currentChanged, this, &DAChartAddBarWidget::onStackWidgetCurrentChanged);
+			&DAChartAddBoxWidget::onNavButtonClicked);
+	connect(ui->stackedWidget, &QStackedWidget::currentChanged, this, &DAChartAddBoxWidget::onStackWidgetCurrentChanged);
 }
 
 /**
  * @brief 按照设定创建曲线
  * @return
  */
-QwtPlotItem* DAChartAddBarWidget::createPlotItem()
+QwtPlotItem* DAChartAddBoxWidget::createPlotItem()
 {
-	QVector< QPointF > xy = ui->pageData->getSeries();
-	if (xy.empty()) {
+	QVector< QwtOHLCSample > ohlc = ui->pageData->getSeries();
+	if (ohlc.empty()) {
 		return nullptr;
 	}
-	QwtPlotBarChart* item = new QwtPlotBarChart();
-	item->setSamples(xy);
-	ui->pageBar->updatePlotItem(item);
+	QwtPlotTradingCurve* item = new QwtPlotTradingCurve();
+	item->setSamples(ohlc);
+	ui->pageBox->updatePlotItem(item);
 	return item;
 }
 
-void DAChartAddBarWidget::setCurrentData(const DAData& d)
+void DAChartAddBoxWidget::setCurrentData(const DAData& d)
 {
 	ui->pageData->setCurrentData(d);
 }
 
-void DAChartAddBarWidget::setDataManager(DADataManager* dmgr)
+void DAChartAddBoxWidget::setDataManager(DADataManager* dmgr)
 {
 	ui->pageData->setDataManager(dmgr);
 }
 
-void DAChartAddBarWidget::next()
+void DAChartAddBoxWidget::next()
 {
 	auto i = ui->stackedWidget->currentIndex();
 	auto c = ui->stackedWidget->count();
@@ -88,7 +88,7 @@ void DAChartAddBarWidget::next()
 	updateNavButtonState();
 }
 
-void DAChartAddBarWidget::previous()
+void DAChartAddBoxWidget::previous()
 {
 	auto i = ui->stackedWidget->currentIndex();
 	--i;
@@ -102,17 +102,17 @@ void DAChartAddBarWidget::previous()
  * @brief 获取步骤总数
  * @return 如果为0或者1，下一步按钮将没有直接就是完成
  */
-int DAChartAddBarWidget::getStepCount() const
+int DAChartAddBoxWidget::getStepCount() const
 {
     return ui->stackedWidget->count();
 }
 
-int DAChartAddBarWidget::getCurrentStep() const
+int DAChartAddBoxWidget::getCurrentStep() const
 {
     return ui->stackedWidget->currentIndex();
 }
 
-void DAChartAddBarWidget::updateNavButtonState()
+void DAChartAddBoxWidget::updateNavButtonState()
 {
 	auto i = ui->stackedWidget->currentIndex();
 	if (0 == i) {
@@ -122,7 +122,7 @@ void DAChartAddBarWidget::updateNavButtonState()
 	}
 }
 
-void DAChartAddBarWidget::onNavButtonClicked(QAbstractButton* button)
+void DAChartAddBoxWidget::onNavButtonClicked(QAbstractButton* button)
 {
 	if (button == ui->toolButtonStepData) {
 		ui->stackedWidget->setCurrentWidget(ui->pageData);
@@ -131,7 +131,7 @@ void DAChartAddBarWidget::onNavButtonClicked(QAbstractButton* button)
 	}
 }
 
-void DAChartAddBarWidget::onStackWidgetCurrentChanged(int i)
+void DAChartAddBoxWidget::onStackWidgetCurrentChanged(int i)
 {
 	if (0 == i) {
 		ui->toolButtonStepData->setChecked(true);
