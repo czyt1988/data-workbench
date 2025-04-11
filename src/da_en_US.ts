@@ -2231,22 +2231,22 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAPluginSupport/DAPluginManager.cpp" line="157"/>
+        <location filename="DAPluginSupport/DAPluginManager.cpp" line="164"/>
         <source>ignore plugin %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAPluginSupport/DAPluginManager.cpp" line="162"/>
+        <location filename="DAPluginSupport/DAPluginManager.cpp" line="169"/>
         <source> ignore invalid file:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAPluginSupport/DAPluginManager.cpp" line="168"/>
+        <location filename="DAPluginSupport/DAPluginManager.cpp" line="175"/>
         <source>can not load plugin:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAPluginSupport/DAPluginManager.cpp" line="244"/>
+        <location filename="DAPluginSupport/DAPluginManager.cpp" line="251"/>
         <source>Plugin Manager Info:is loaded=%1,plugin counts=%2</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2847,73 +2847,73 @@ Config</source>
 <context>
     <name>DA::DAZipArchive</name>
     <message>
-        <location filename="DAGui/DAZipArchive.cpp" line="101"/>
-        <location filename="DAGui/DAZipArchive.cpp" line="121"/>
-        <location filename="DAGui/DAZipArchive.cpp" line="146"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="100"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="120"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="145"/>
         <source>%1 is already opened</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAZipArchive.cpp" line="126"/>
-        <location filename="DAGui/DAZipArchive.cpp" line="151"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="125"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="150"/>
         <source>failed to open archive file %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAZipArchive.cpp" line="172"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="171"/>
         <source>archive is not open,can not close</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAZipArchive.cpp" line="192"/>
-        <location filename="DAGui/DAZipArchive.cpp" line="261"/>
-        <location filename="DAGui/DAZipArchive.cpp" line="276"/>
-        <location filename="DAGui/DAZipArchive.cpp" line="331"/>
-        <location filename="DAGui/DAZipArchive.cpp" line="366"/>
-        <location filename="DAGui/DAZipArchive.cpp" line="466"/>
-        <location filename="DAGui/DAZipArchive.cpp" line="477"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="191"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="260"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="275"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="330"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="365"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="465"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="476"/>
         <source>archive is not open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAZipArchive.cpp" line="206"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="205"/>
         <source>The file %1 in the archive could not be opened. The reason for the error is %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAZipArchive.cpp" line="281"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="280"/>
         <source>Unable to locate the %1 file in the current archive. The error code is %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAZipArchive.cpp" line="290"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="289"/>
         <source>The file %1 in the archive could not be opened. The error code is %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAZipArchive.cpp" line="385"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="384"/>
         <source>Failed to create temporary file:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="DAGui/DAZipArchive.cpp" line="402"/>
         <location filename="DAGui/DAZipArchive.cpp" line="403"/>
-        <location filename="DAGui/DAZipArchive.cpp" line="404"/>
         <source>open %1 to temp file error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAZipArchive.cpp" line="425"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="424"/>
         <source>when rename temp %1 to archive %2 occure error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAZipArchive.cpp" line="494"/>
-        <location filename="DAGui/DAZipArchive.cpp" line="506"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="493"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="505"/>
         <source>can not open archive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAZipArchive.cpp" line="648"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="647"/>
         <source>Failed to create target directory:%1</source>
         <translation type="unfinished"></translation>
     </message>
