@@ -112,6 +112,66 @@ def butterworth_filter(waveform, sampling_freq, filter_order, filter_type = 'low
         filtered_data = scipy.signal.lfilter(b, a, waveform)
         
     return filtered_data
+    
+@log_function_call
+def peak_analysis(waveform, sampling_rate, height = None, direction = 0, threshold = None, distance = None, prominence = None,
+                  width = None, wlen = None, rel_height = 0.5, plateau_size = None):
+    '''
+    峰值分析
+    :param waveform : 输入波形数据
+    :param height : 基线高度
+    :param direction : 寻峰方向
+    :param threshold : 峰值与其相邻样本的最小垂直距离
+    :param distance : 相邻峰值之间的最小水平距离（以样本数为单位）
+    :param prominence : 指定峰值的最小突出度
+    :param width : 指定峰值的最小宽度（以样本数为单位）
+    :param wlen : 计算突出度和宽度时使用的窗口长度
+    :param rel_height : 用于宽度计算的相对高度（0-1之间）
+    :param plateau_size : 指定平顶峰值的最小尺寸
+    :return : 峰值索引，峰值高度，宽度边界位置，峰值突出度，峰值宽度
+    '''
+    peak_data = []
+    udata = waveform
+    # 计算峰值相关数据
+    if direction == 0 or direction == 2:
+        upeak,upeak_pro = scipy.signal.find_peaks(udata, height, threshold, distance, prominence, width, wlen, rel_height, plateau_size)
+        # 处理峰值数据
+        for i, idx in enumerate(upeak):
+            props = {}
+            for key, val in upeak_pro.items():
+                if isinstance(val, np.ndarray):
+                    props[key] = val[i]
+                else:
+                    props[key] = val
+            
+            peak_data.append({
+                'index': idx / sampling_rate,
+                'value': waveform[idx],
+                'properties': props
+            })
+            
+    if direction == 1 or direction == 2:
+        ddata = [2 * height - x for x in waveform]
+        dpeak,dpeak_pro = scipy.signal.find_peaks(ddata, -height, threshold, distance, prominence, width, wlen, rel_height, plateau_size)
+        # 处理谷值数据
+        for i, idx in enumerate(dpeak):
+            props = {}
+            for key, val in dpeak_pro.items():
+                if isinstance(val, np.ndarray):
+                        props[key] = val[i]
+                else:
+                    props[key] = val
+            
+            peak_data.append({
+                'index': idx / sampling_rate,
+                'value': waveform[idx],
+                'properties': props
+            })
+    # 按索引排序
+    if direction == 2:
+        peak_data.sort(key=lambda x: x['index'])
+
+    return peak_data
 
 @log_function_call
 def da_spectrum_analysis(waveform, sampling_rate, args:Optional[Dict] = None):
@@ -148,6 +208,34 @@ def da_butterworth_filter(waveform, sampling_freq, filter_order, args:Optional[D
     return pd.DataFrame({
         'filtered_wave': res
     })
+    
+@log_function_call
+def da_peak_analysis(waveform, sampling_rate, args:Optional[Dict] = None):
+    '''
+    峰值分析
+    :param waveform: 输入波形数据，可以是一维数组或列表
+    :param height : 基线高度
+    :param direction : 寻峰方向
+    :param threshold : 峰值与其相邻样本的最小垂直距离
+    :param distance : 相邻峰值之间的最小水平距离（以样本数为单位）
+    :param prominence : 指定峰值的最小突出度
+    :param width : 指定峰值的最小宽度（以样本数为单位）
+    :param wlen : 计算突出度和宽度时使用的窗口长度
+    :param rel_height : 用于宽度计算的相对高度（0-1之间）
+    :param plateau_size : 指定平顶峰值的最小尺寸
+    :return : 峰值索引，峰值高度，宽度边界位置，峰值突出度，峰值宽度
+    '''
+    res = peak_analysis(waveform,sampling_rate, **args)
+    peak_data = pd.DataFrame(
+        [{'index': item['index'],'value': item['value']}for item in res]
+        )
+    properties = set()
+    for item in res:
+        properties.update(item['properties'].keys())
+    # 为每个属性创建一个列
+    for key in properties:
+        peak_data[key] = [item['properties'].get(key, None) for item in res]
+    return peak_data
 
 if __name__ == '__main__':
     # 获取函数spectrum_analysis的注解

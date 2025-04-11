@@ -12,14 +12,16 @@ DataAnalysisActions::~DataAnalysisActions()
 
 void DataAnalysisActions::buildActions()
 {
-	actionSpectrum = createAction("actionSpectrum", ":/DataAnalysis/icons/icon/spectrum.svg");
-	actionFilter   = createAction("actionFilter", ":/DataAnalysis/icons/icon/filter.svg");
+	actionSpectrum     = createAction("actionSpectrum", ":/DataAnalysis/icons/icon/spectrum.svg");
+	actionFilter       = createAction("actionFilter", ":/DataAnalysis/icons/icon/filter.svg");
+	actionPeakAnalysis = createAction("actionPeakAnalysis", ":/DataAnalysis/icons/icon/peak-analysis.svg");
 }
 
 void DataAnalysisActions::retranslate()
 {
-	actionSpectrum->setText(tr("Spectrum"));  // cn: 频谱
-	actionFilter->setText(tr("Filter"));      // cn: 滤波
+	actionSpectrum->setText(tr("Spectrum"));        // cn: 频谱
+	actionFilter->setText(tr("Filter"));            // cn: 滤波
+	actionPeakAnalysis->setText(tr("SearchPeak"));  // cn: 寻峰
 }
 
 QAction* DataAnalysisActions::createAction(const char* objname)
@@ -48,11 +50,8 @@ QAction* DataAnalysisActions::createAction(const char* objname, const char* icon
 	return act;
 }
 
-QAction* DataAnalysisActions::createAction(const char* objname,
-                                           const char* iconpath,
-                                           bool checkable,
-                                           bool checked,
-                                           QActionGroup* actGroup)
+QAction*
+DataAnalysisActions::createAction(const char* objname, const char* iconpath, bool checkable, bool checked, QActionGroup* actGroup)
 {
 	QAction* act = createAction(objname, iconpath);
 	act->setCheckable(checkable);

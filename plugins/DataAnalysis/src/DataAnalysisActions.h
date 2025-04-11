@@ -25,8 +25,9 @@ public:
 	void recordAction(QAction* act);
 
 public:
-	QAction* actionSpectrum;  ///< 频谱
-	QAction* actionFilter;    ///< 滤波
+	QAction* actionSpectrum;      ///< 频谱
+	QAction* actionFilter;        ///< 滤波
+	QAction* actionPeakAnalysis;  ///< 峰值分析
 	QHash< QString, QAction* > mObjectToAction;
 
 private:

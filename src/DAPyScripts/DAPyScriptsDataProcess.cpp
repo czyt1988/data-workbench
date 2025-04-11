@@ -31,7 +31,8 @@ DAPyScriptsDataProcess::~DAPyScriptsDataProcess()
  * @param err
  * @return
  */
-DAPyDataFrame DAPyScriptsDataProcess::spectrum_analysis(const DAPySeries& wave, double fs, const QVariantMap& args, QString* err)
+DAPyDataFrame
+DAPyScriptsDataProcess::spectrum_analysis(const DAPySeries& wave, double fs, const QVariantMap& args, QString* err)
 {
 	try {
 		pybind11::object fn = attr("da_spectrum_analysis");
@@ -50,11 +51,8 @@ DAPyDataFrame DAPyScriptsDataProcess::spectrum_analysis(const DAPySeries& wave, 
 	return DAPyDataFrame();
 }
 
-DAPyDataFrame DAPyScriptsDataProcess::butterworth_filter(const DAPySeries& wave,
-                                                         double fs,
-                                                         int fo,
-                                                         const QVariantMap& args,
-                                                         QString* err)
+DAPyDataFrame
+DAPyScriptsDataProcess::butterworth_filter(const DAPySeries& wave, double fs, int fo, const QVariantMap& args, QString* err)
 {
 	try {
 		pybind11::object fn = attr("da_butterworth_filter");
@@ -63,6 +61,25 @@ DAPyDataFrame DAPyScriptsDataProcess::butterworth_filter(const DAPySeries& wave,
 			return DAPyDataFrame();
 		}
 		pybind11::object v = fn(wave.object(), fs, fo, DA::PY::toPyDict(args));
+		return DAPyDataFrame(std::move(v));
+	} catch (const std::exception& e) {
+		if (err) {
+			*err = e.what();
+		}
+		qDebug() << e.what();
+	}
+	return DAPyDataFrame();
+}
+
+DAPyDataFrame DAPyScriptsDataProcess::peak_analysis(const DAPySeries& wave, double fs, const QVariantMap& args, QString* err)
+{
+	try {
+		pybind11::object fn = attr("da_peak_analysis");
+		if (fn.is_none()) {
+			qDebug() << "DAWorkbench.data_processing.py have no attr da_peak_analysis";
+			return DAPyDataFrame();
+		}
+		pybind11::object v = fn(wave.object(), fs, DA::PY::toPyDict(args));
 		return DAPyDataFrame(std::move(v));
 	} catch (const std::exception& e) {
 		if (err) {
