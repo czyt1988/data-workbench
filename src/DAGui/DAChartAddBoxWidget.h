@@ -1,5 +1,5 @@
-#ifndef DACHARTADDBARWIDGET_H
-#define DACHARTADDBARWIDGET_H
+#ifndef DACHARTADDBOXWIDGET_H
+#define DACHARTADDBOXWIDGET_H
 #include <QWidget>
 #include "DAAbstractChartAddItemWidget.h"
 #include "DAData.h"
@@ -7,7 +7,7 @@
 class QAbstractButton;
 namespace Ui
 {
-class DAChartAddBarWidget;
+class DAChartAddBoxWidget;
 }
 
 namespace DA
@@ -15,17 +15,17 @@ namespace DA
 /**
  * @brief 添加曲线
  */
-class DAChartAddBarWidget : public DAAbstractChartAddItemWidget
+class DAChartAddBoxWidget : public DAAbstractChartAddItemWidget
 {
 	Q_OBJECT
-	DA_DECLARE_PRIVATE(DAChartAddBarWidget)
+	DA_DECLARE_PRIVATE(DAChartAddBoxWidget)
 	void init();
 
 public:
-	explicit DAChartAddBarWidget(QWidget* parent = nullptr);
-	~DAChartAddBarWidget();
+	explicit DAChartAddBoxWidget(QWidget* parent = nullptr);
+	~DAChartAddBoxWidget();
 	virtual QwtPlotItem* createPlotItem() override;
-	// 设置当前的datafram，这个仅仅会影响初始显示
+	// 设置当前的dataframe，这个仅仅会影响初始显示
 	void setCurrentData(const DAData& d);
 	// 设置datamanager,会把combox填入所有的dataframe
 	void setDataManager(DADataManager* dmgr);
@@ -46,8 +46,7 @@ private slots:
 	void onStackWidgetCurrentChanged(int i);
 
 private:
-	Ui::DAChartAddBarWidget* ui;
+	Ui::DAChartAddBoxWidget* ui;
 };
 }
-
-#endif  // DACHARTADDBARWIDGET_H
+#endif  // DACHARTADDBOXWIDGET_H

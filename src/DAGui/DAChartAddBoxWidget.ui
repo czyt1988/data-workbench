@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>DAChartAddBarWidget</class>
- <widget class="QWidget" name="DAChartAddBarWidget">
+ <class>DAChartAddBoxWidget</class>
+ <widget class="QWidget" name="DAChartAddBoxWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -121,9 +121,9 @@
    <item>
     <widget class="QStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
-     <widget class="DA::DAChartAddXYSeriesWidget" name="pageData"/>
+     <widget class="DA::DAChartAddOHLCSeriesWidget" name="pageData"/>
      <widget class="QWidget" name="pagePlotScrollWidget">
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <property name="spacing">
@@ -146,7 +146,7 @@
          <property name="widgetResizable">
           <bool>true</bool>
          </property>
-         <widget class="DA::DAChartBarItemSettingWidget" name="pageBar">
+         <widget class="DA::DAChartBoxItemSettingWidget" name="pageBox">
           <property name="geometry">
            <rect>
             <x>0</x>
@@ -166,15 +166,15 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>DA::DAChartAddXYSeriesWidget</class>
+   <class>DA::DAChartBoxItemSettingWidget</class>
    <extends>QWidget</extends>
-   <header>DAChartAddXYSeriesWidget.h</header>
+   <header>DAChartBoxItemSettingWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>DA::DAChartBarItemSettingWidget</class>
+   <class>DA::DAChartAddOHLCSeriesWidget</class>
    <extends>QWidget</extends>
-   <header>DAChartBarItemSettingWidget.h</header>
+   <header>DAChartAddOHLCSeriesWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

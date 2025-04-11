@@ -88,7 +88,8 @@ public:
 
 public:
 	// 获取当前dataframeOperateWidget,如果没有返回nullptr,此函数不返回nullptr的前提是
-	DADataOperateOfDataFrameWidget* getCurrentDataFrameOperateWidget(bool checkDataOperateAreaFocused = true);
+    DADataOperateOfDataFrameWidget* getCurrentDataFrameOperateWidget(bool checkDataOperateAreaFocused = true,
+                                                                     bool isShowMessage               = true);
 	// 获取工作流操作窗口
 	DAWorkFlowOperateWidget* getWorkFlowOperateWidget() const;
 	// 获取数据操作窗口
@@ -159,6 +160,12 @@ private Q_SLOTS:
 	void onActionChartAddScatterTriggered();
 	// 添加柱状图
 	void onActionChartAddBarTriggered();
+	// 添加误差棒图
+	void onActionactionChartAddErrorBarTriggered();
+	// 添加箱型图
+	void onActionChartAddBoxPlotTriggered();
+	// 添加谱图
+	void onActionChartAddCloudMapTriggered();
 	//===================================================
 	// 绘图标签 Chart Context Category
 	//===================================================
@@ -211,7 +218,7 @@ private Q_SLOTS:
 	void onActionRenameColumnsTriggered();
 	// 创建数据描述
 	void onActionCreateDataDescribeTriggered();
-	//创建数据透视表
+    // 创建数据透视表
 	void onActionCreatePivotTableTriggered();
 	// 删除缺失值
 	void onActionDataFrameDropNoneTriggered();
@@ -384,21 +391,21 @@ private:
 #endif
 
 private:
-	AppMainWindow* mMainWindow{ nullptr };
-	DAAppCore* mCore{ nullptr };
-	DAProjectInterface* mProject{ nullptr };
+    AppMainWindow* mMainWindow { nullptr };
+    DAAppCore* mCore { nullptr };
+    DAProjectInterface* mProject { nullptr };
 	;
-	DAAppRibbonArea* mRibbon{ nullptr };
-	DAAppDockingArea* mDock{ nullptr };
-	DAAppCommand* mCommand{ nullptr };
-	DAAppActions* mActions{ nullptr };
-	DAAppDataManager* mDatas{ nullptr };
+    DAAppRibbonArea* mRibbon { nullptr };
+    DAAppDockingArea* mDock { nullptr };
+    DAAppCommand* mCommand { nullptr };
+    DAAppActions* mActions { nullptr };
+    DAAppDataManager* mDatas { nullptr };
 
 	QStringList mFileReadFilters;  ///< 包含支持的文件[Images (*.png *.xpm *.jpg)] [Text files (*.txt)]
 	//
 	LastFocusedOpertateWidgets mLastFocusedOpertateWidget;  ///< 最后获取焦点的操作窗口
-															//
-	DAAppSettingDialog* mSettingDialog{ nullptr };          ///< 设置窗口
+                                                            //
+    DAAppSettingDialog* mSettingDialog { nullptr };         ///< 设置窗口
 	DAAppConfig* mConfig;                                   ///< 设置类
 };
 }

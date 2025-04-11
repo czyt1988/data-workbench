@@ -711,9 +711,9 @@ bool DAChartUtil::isMultiBarChartSampleInRange(const QPainterPath& selectRange, 
 bool DAChartUtil::isTradingCurveSampleInRange(const QPainterPath& selectRange, const QwtOHLCSample& val)
 {
 	if (DAChartUtil::isPointInRange(selectRange, QPointF(val.time, val.high))
-		&& DAChartUtil::isPointInRange(selectRange, QPointF(val.time, val.low))
-		&& DAChartUtil::isPointInRange(selectRange, QPointF(val.time, val.open))
-		&& DAChartUtil::isPointInRange(selectRange, QPointF(val.time, val.close))) {
+        && DAChartUtil::isPointInRange(selectRange, QPointF(val.time, val.low))
+        && DAChartUtil::isPointInRange(selectRange, QPointF(val.time, val.open))
+        && DAChartUtil::isPointInRange(selectRange, QPointF(val.time, val.close))) {
 		return true;
 	}
 	return false;
@@ -1092,7 +1092,7 @@ int DAChartUtil::dynamicGetPlotChartItemDataCount(const QwtPlotItem* item)
 	if (const QwtSeriesStore< QPointF >* p = dynamic_cast< const QwtSeriesStore< QPointF >* >(item)) {
 		return static_cast< int >(p->dataSize());
 	} else if (const QwtSeriesStore< QwtIntervalSample >* p = dynamic_cast< const QwtSeriesStore< QwtIntervalSample >* >(
-				   item)) {
+                   item)) {
 		return static_cast< int >(p->dataSize());
 	} else if (const QwtSeriesStore< QwtSetSample >* p = dynamic_cast< const QwtSeriesStore< QwtSetSample >* >(item)) {
 		return static_cast< int >(p->dataSize());
@@ -1137,6 +1137,7 @@ bool DAChartUtil::setPlotItemColor(QwtPlotItem* item, const QColor& color)
 	case QwtPlotItem::Rtti_PlotBarChart:
 		if (QwtPlotBarChart* bar = static_cast< QwtPlotBarChart* >(item)) {
 			const QwtColumnSymbol* sym = bar->symbol();
+            //! symbol是不可修改属性，必须重新设置
 			if (sym) {
 				QwtColumnSymbol* newSym = new QwtColumnSymbol();
 				newSym->setStyle(sym->style());
@@ -1146,7 +1147,7 @@ bool DAChartUtil::setPlotItemColor(QwtPlotItem* item, const QColor& color)
 				QPalette p = sym->palette();
 				p.setColor(QPalette::Button, color);
 				newSym->setPalette(p);
-				bar->setSymbol(newSym);
+                bar->setSymbol(newSym);
 			} else {
 				return false;
 			}

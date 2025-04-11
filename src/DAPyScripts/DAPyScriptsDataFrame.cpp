@@ -132,7 +132,7 @@ bool DAPyScriptsDataFrame::insert_column(DAPyDataFrame& df,
 		args[ "start" ] = DA::PY::toPyObject(start);
 		args[ "stop" ]  = DA::PY::toPyObject(stop);
 		if (start.canConvert(QMetaType::QDateTime) || start.canConvert(QMetaType::QDate)
-			|| start.canConvert(QMetaType::QTime)) {
+            || start.canConvert(QMetaType::QTime)) {
 			args[ "dtype" ] = pybind11::dtype("datetime64");
 		}
 		da_insert_column(**args);
@@ -568,35 +568,23 @@ bool DAPyScriptsDataFrame::clipoutlier(DAPyDataFrame& df, double lowervalue, dou
 }
 
 /**
- * @brief querydatas方法的wrapper
+ * @brief query方法的wrapper
  * @param df
  * @param contents
  * @return
  */
-bool DAPyScriptsDataFrame::querydatas(DAPyDataFrame& df, const QList< QString >& contents, bool logic)
+bool DAPyScriptsDataFrame::queryDatas(DAPyDataFrame& df, const QString& expr)
 {
 	try {
 		pybind11::object da_query_datas = attr("da_query_datas");
 		pybind11::dict args;
-		QString logic_op = "&";
-		if (logic) {
-			logic_op = "&";
-		} else {
-			logic_op = "|";
-		}
 
-		if (contents.empty()) {
-			args[ "expr" ] = "1 == 1";
-		} else {
-			// 将每个条件用括号包裹，避免优先级问题
-			QStringList wrapped_conditions;
-			for (const QString& cond : contents) {
-				wrapped_conditions.append("(" + cond + ")");
-			}
-			// 使用逻辑运算符连接所有条件
-			QString expr   = wrapped_conditions.join(" " + logic_op + " ");
-			args[ "expr" ] = DA::PY::toPyStr(expr);
-		}
+        if (expr.isEmpty()) {
+            return false;
+        }
+        // 将每个条件用括号包裹，避免优先级问题
+
+        args[ "expr" ] = DA::PY::toPyStr(expr);
 		da_query_datas(df.object(), **args);
 		return true;
 	} catch (const std::exception& e) {
