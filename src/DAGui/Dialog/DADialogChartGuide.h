@@ -29,7 +29,7 @@ class DAAbstractChartAddItemWidget;
 class DAGUI_API DADialogChartGuide : public QDialog
 {
     Q_OBJECT
-
+    DA_DECLARE_PRIVATE(DADialogChartGuide)
 public:
 	explicit DADialogChartGuide(QWidget* parent = nullptr);
 	~DADialogChartGuide();
@@ -45,35 +45,18 @@ public:
 	QwtPlotItem* createPlotItem();
 	// 更新数据
 	void updateData();
-	// 更新按钮的文字
-	void updateButtonTextAndState();
 	// 获取当前的绘图指引窗口
 	DAAbstractChartAddItemWidget* getCurrentChartAddItemWidget() const;
-	// 是否有下一页
-	bool hasNext(DAAbstractChartAddItemWidget* w);
-	// 是否有前一页
-	bool hasPrevious(DAAbstractChartAddItemWidget* w);
-	// 设置到第一步
-	void allToFirst();
-	// 设置到第最后一步
-	void allToLast();
 
-protected:
-	// 显示的时候，把窗口设置为第一步
-	virtual void showEvent(QShowEvent* event) override;
 private slots:
 	// 选择绘图类型改变
 	void onListWidgetCurrentItemChanged(QListWidgetItem* current, QListWidgetItem* previous);
-	//
-	void onPushButtonPreviousClicked();
-	void onPushButtonNextClicked();
-	void onPushButtonCancelClicked();
 
 private:
-	void init();
+    void initListWidget();
 
 private:
-	Ui::DADialogChartGuide* ui;
+    Ui::DADialogChartGuide* ui;
 };
 }  // end DA
 #endif  // DADIALOGDATAFRAMEPLOT_H

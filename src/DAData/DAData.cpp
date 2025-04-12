@@ -62,6 +62,16 @@ bool DAData::operator==(const DAData& d) const
     return mData == d.mData;
 }
 
+/**
+ * @brief 注意这里的等于不是指相等而是变量相等，类似is
+ * @param d
+ * @return
+ */
+bool DAData::operator!=(const DAData& d) const
+{
+    return mData != d.mData;
+}
+
 bool DAData::operator<(const DAData& d) const
 {
     return rawPointer() < d.rawPointer();
@@ -77,8 +87,8 @@ DAData& DAData::operator=(const DAData& d)
 #if DA_ENABLE_PYTHON
 DAData& DAData::operator=(const DAPyDataFrame& d)
 {
-	std::shared_ptr< DAAbstractData > p =
-		std::static_pointer_cast< DAAbstractData >(std::make_shared< DADataPyDataFrame >(d));
+    std::shared_ptr< DAAbstractData > p = std::static_pointer_cast< DAAbstractData >(
+        std::make_shared< DADataPyDataFrame >(d));
 	mData = p;
 	return *this;
 }

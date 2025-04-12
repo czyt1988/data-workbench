@@ -31,6 +31,7 @@ public:
 	DAData(const DAAbstractData::Pointer& d);
 	// 注意这个等于只是判断指针等于，不是对值进行操作
 	bool operator==(const DAData& d) const;
+    bool operator!=(const DAData& d) const;
 	bool operator<(const DAData& d) const;
 	DAData& operator=(const DAData& d);
 	operator bool() const;
