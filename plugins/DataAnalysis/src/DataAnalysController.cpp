@@ -8,6 +8,7 @@
 #include "Dialog/DADialogDataFrameSeriesSelector.h"
 #include "Dialogs/DialogSpectrumSetting.h"
 #include "Dialogs/DialogFilterSetting.h"
+#include "Dialogs/DialogPeakAnalysisSetting.h"
 #include "DataAnalysExecutor.h"
 #include "DADataManager.h"
 #include "DAChartOperateWidget.h"
@@ -42,6 +43,7 @@ void DataAnalysController::initConnect()
 {
 	connect(mActions->actionSpectrum, &QAction::triggered, this, &DataAnalysController::onActionSpectrumTriggered);
 	connect(mActions->actionFilter, &QAction::triggered, this, &DataAnalysController::onActionFilterTriggered);
+	connect(mActions->actionPeakAnalysis, &QAction::triggered, this, &DataAnalysController::onActionPeakAnalysisTriggered);
 }
 
 /**
@@ -70,6 +72,20 @@ DialogFilterSetting* DataAnalysController::getFilterSettingDialog()
 	mDialogFilterSetting = new DialogFilterSetting(mCore->getUiInterface()->getMainWindow());
 	mDialogFilterSetting->setDataManager(mCore->getDataManagerInterface()->dataManager());
 	return mDialogFilterSetting;
+}
+
+/**
+ * @brief 寻峰设置窗口
+ * @return
+ */
+DialogPeakAnalysisSetting* DataAnalysController::getPeakAnalysisSettingDialog()
+{
+	if (mDialogPeakAnalysisSetting) {
+		return mDialogPeakAnalysisSetting;
+	}
+	mDialogPeakAnalysisSetting = new DialogPeakAnalysisSetting(mCore->getUiInterface()->getMainWindow());
+	mDialogPeakAnalysisSetting->setDataManager(mCore->getDataManagerInterface()->dataManager());
+	return mDialogPeakAnalysisSetting;
 }
 
 DA::DAPySeries DataAnalysController::getCurrentSelectSeries()
@@ -128,7 +144,7 @@ void DataAnalysController::onActionSpectrumTriggered()
 		// currentChart函数不会返回null
 		auto waveChart = fig->currentChart();
 		fig->setWidgetPosPercent(waveChart, 0.05, 0.05, 0.9, 0.45);  // 对应的是x位置占比，y位置占比，宽度占比，高度占比，y位置是从上往下
-		auto xy    = toWave(wave, fs);
+		auto xy    = toWave(wave, 1 / fs);
 		auto curve = waveChart->addCurve(xy.first.data(), xy.second.data(), xy.first.size());
 		curve->setTitle(tr("Wave"));  // cn:波形
 		DA::DAChartUtil::setPlotItemColor(curve, fig->getDefaultColor());
@@ -199,7 +215,7 @@ void DataAnalysController::onActionFilterTriggered()
 	// origin wave chart
 	auto waveChart = fig->currentChart();
 	fig->setWidgetPosPercent(waveChart, 0.05, 0.05, 0.9, 0.9);  // 对应的是x位置占比，y位置占比，宽度占比，高度占比，y位置是从上往下
-	auto xy    = toWave(wave, fs);
+	auto xy    = toWave(wave, 1 / fs);
 	auto curve = waveChart->addCurve(xy.first.data(), xy.second.data(), xy.first.size());
 	curve->setTitle(tr("Origin Wave"));  // cn:原始波形
 	DA::DAChartUtil::setPlotItemColor(curve, fig->getDefaultColor());
@@ -214,6 +230,77 @@ void DataAnalysController::onActionFilterTriggered()
 	waveChart->setXLabel(tr("time(s)"));                        // cn:时间(s)
 	waveChart->setYLabel(tr("amplitudes"));                     // cn:幅值
 	waveChart->setTitle(tr("Origin and Filtered Wave Chart"));  // cn:原始波形和滤波波形
+
+	// 把绘图窗口抬起
+	mDockingArea->raiseDockByWidget(mDockingArea->getChartOperateWidget());
+}
+
+void DataAnalysController::onActionPeakAnalysisTriggered()
+{
+	DA::DAPySeries selSeries       = getCurrentSelectSeries();
+	DialogPeakAnalysisSetting* dlg = getPeakAnalysisSettingDialog();
+	if (!selSeries.isNone()) {
+		dlg->setCurrentSeries(selSeries);
+	}
+	// 执行
+	if (QDialog::Accepted != dlg->exec()) {
+		return;
+	}
+
+	// 寻峰的基本参数
+	DA::DAPySeries data = dlg->getCurrentSeries();
+	double fs           = dlg->getSamplingRate();
+	QVariantMap args    = dlg->getPeakAnalysisSetting();
+	if (data.isNone()) {
+		return;
+	}
+	qDebug() << "Peak Analysis args:" << args;
+
+	//执行
+	QString err;
+	DA::DAPyDataFrame df = mExecutor->peak_analysis(data, fs, args, &err);
+	if (df.isNone()) {
+		if (!err.isEmpty()) {
+			qCritical() << err;
+			return;
+		}
+	}
+	// 把数据装入datamanager
+	DA::DAData d(df);
+	d.setName(QString("%1-peak").arg(data.name()));
+	mDataMgr->addData(d);  // 不可撤销
+
+	//! 绘图
+	//! ---------------
+	//! | 波形图及峰值  |
+	//! ---------------
+	auto plt = mDockingArea->getChartOperateWidget();
+	auto fig = plt->createFigure();  // 注意，DAAppChartOperateWidget的createFigure会创建一个chart，因此，第一个chart是不需要创建的
+
+	// wave chart
+	// currentChart函数不会返回null
+	auto waveChart = fig->currentChart();
+	fig->setWidgetPosPercent(waveChart, 0.05, 0.05, 0.9, 0.9);  // 对应的是x位置占比，y位置占比，宽度占比，高度占比，y位置是从上往下
+	auto xy    = toWave(data, 1 / fs);
+	auto curve = waveChart->addCurve(xy.first.data(), xy.second.data(), xy.first.size());
+	curve->setTitle(tr("Wave"));  // cn:波形
+	DA::DAChartUtil::setPlotItemColor(curve, fig->getDefaultColor());
+	waveChart->setXLabel(tr("time(s)"));     // cn:时间(s)
+	waveChart->setYLabel(tr("amplitudes"));  // cn:幅值
+	waveChart->setTitle(tr("Wave Chart"));   // cn:波形图
+
+	//峰值
+	auto peak_index         = df[ "index" ];
+	auto peak_value         = df[ "value" ];
+	std::vector< double > x = DA::toVectorDouble(peak_index);
+	std::vector< double > y = DA::toVectorDouble(peak_value);
+	auto peak               = waveChart->addScatter(x.data(), y.data(), x.size());
+	peak->setTitle(tr("Peak"));  // cn:滤波波形
+	DA::DAChartUtil::setPlotItemColor(peak, fig->getDefaultColor());
+
+	waveChart->setXLabel(tr("time(s)"));                    // cn:时间(s)
+	waveChart->setYLabel(tr("amplitudes"));                 // cn:幅值
+	waveChart->setTitle(tr("Origin Wave and Peak Chart"));  // cn:原始波形和滤波波形
 
 	// 把绘图窗口抬起
 	mDockingArea->raiseDockByWidget(mDockingArea->getChartOperateWidget());

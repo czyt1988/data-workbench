@@ -2,7 +2,7 @@
 #define DACHARTADDOHLCSERIESWIDGET_H
 #include "DAGuiAPI.h"
 #include "qwt_samples.h"
-#include <QWidget>
+#include "DAAbstractChartAddItemWidget.h"
 // DAData
 #include "DAData.h"
 // DAUtil
@@ -21,22 +21,19 @@ class DADataManager;
 /**
  * @brief 添加OHLC series，适用二维数据绘图的系列获取
  */
-class DAGUI_API DAChartAddOHLCSeriesWidget : public QWidget
+class DAGUI_API DAChartAddOHLCSeriesWidget : public DAAbstractChartAddItemWidget
 {
 	Q_OBJECT
 	DA_DECLARE_PRIVATE(DAChartAddOHLCSeriesWidget)
 public:
 	explicit DAChartAddOHLCSeriesWidget(QWidget* parent = nullptr);
 	~DAChartAddOHLCSeriesWidget();
-	//
-	void setDataManager(DADataManager* dmgr);
-	DADataManager* getDataManager() const;
 	// 判断t是否是自增
 	bool isTAutoincrement() const;
 	// 根据配置获取数据
 	QVector< QwtOHLCSample > getSeries() const;
-	// 设置dataframe
-	void setCurrentData(const DAData& d);
+    // 创建item
+    virtual QwtPlotItem* createPlotItem() override;
 private slots:
 	void onComboBoxTCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
 	void onComboBoxOCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
@@ -44,7 +41,8 @@ private slots:
 	void onComboBoxLCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
 	void onComboBoxCCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
 	void onGroupBoxTAutoincrementClicked(bool on);
-	//	void onGroupBoxOAutoincrementClicked(bool on);
+    void onDataManagerChanged(DADataManager* dmgr);
+    void onCurrentDataChanged(const DAData& d);
 
 protected:
 	// 获取x自增

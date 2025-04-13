@@ -13,6 +13,7 @@ class DataAnalysisActions;
 class DataAnalysExecutor;
 class DialogSpectrumSetting;
 class DialogFilterSetting;
+class DialogPeakAnalysisSetting;
 class DataAnalysController : public QObject
 {
 	Q_OBJECT
@@ -26,6 +27,7 @@ private:
 	void initConnect();
 	DialogSpectrumSetting* getSpectrumSettingDialog();
 	DialogFilterSetting* getFilterSettingDialog();
+	DialogPeakAnalysisSetting* getPeakAnalysisSettingDialog();
 	// 获取当前界面选择的序列，如果没有，返回none
 	DA::DAPySeries getCurrentSelectSeries();
 private slots:
@@ -33,8 +35,10 @@ private slots:
 	//  |-信号分析
 	//     -频谱
 	//     -滤波
+	//     -寻峰
 	void onActionSpectrumTriggered();
 	void onActionFilterTriggered();
+	void onActionPeakAnalysisTriggered();
 
 private:
 	// 转换为波形
@@ -48,6 +52,7 @@ private:
 	DA::DADataManageWidget* mDataManagerWidget { nullptr };
 	DialogSpectrumSetting* mDialogSpectrumSetting { nullptr };
 	DialogFilterSetting* mDialogFilterSetting { nullptr };
+	DialogPeakAnalysisSetting* mDialogPeakAnalysisSetting { nullptr };
 	std::unique_ptr< DataAnalysExecutor > mExecutor;
 };
 
