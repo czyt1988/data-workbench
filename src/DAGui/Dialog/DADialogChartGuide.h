@@ -28,8 +28,8 @@ class DAAbstractChartAddItemWidget;
  */
 class DAGUI_API DADialogChartGuide : public QDialog
 {
-    Q_OBJECT
-    DA_DECLARE_PRIVATE(DADialogChartGuide)
+	Q_OBJECT
+	DA_DECLARE_PRIVATE(DADialogChartGuide)
 public:
 	explicit DADialogChartGuide(QWidget* parent = nullptr);
 	~DADialogChartGuide();
@@ -47,16 +47,17 @@ public:
 	void updateData();
 	// 获取当前的绘图指引窗口
 	DAAbstractChartAddItemWidget* getCurrentChartAddItemWidget() const;
-
+	// 根据当前绘图类型设置item属性
+	void initSetPlotItem(QwtPlotItem* item);
 private slots:
 	// 选择绘图类型改变
 	void onListWidgetCurrentItemChanged(QListWidgetItem* current, QListWidgetItem* previous);
 
 private:
-    void initListWidget();
+	void initListWidget();
 
 private:
-    Ui::DADialogChartGuide* ui;
+	Ui::DADialogChartGuide* ui;
 };
 }  // end DA
 #endif  // DADIALOGDATAFRAMEPLOT_H

@@ -1,28 +1,29 @@
 ﻿#include "DADialogChartGuide.h"
 #include "ui_DADialogChartGuide.h"
+#include <QPen>
+// DA
+#include "DAGlobalColorTheme.h"
 #include "DADataManager.h"
 #include "DAAbstractChartAddItemWidget.h"
 #include "DAChartAddXYSeriesWidget.h"
 #include "DAChartAddXYESeriesWidget.h"
 #include "DAChartAddOHLCSeriesWidget.h"
-#include <iterator>
-#include <vector>
-#define STR_DADIALOGCHARTGUIDE_FINISHE tr("Finish")
-#define STR_DADIALOGCHARTGUIDE_NEXT tr("Next")
+#include "DAChartUtil.h"
 // qwt
 #include "qwt_plot_curve.h"
 #include "qwt_plot_barchart.h"
 #include "qwt_plot_intervalcurve.h"
+
 namespace DA
 {
 class DADialogChartGuide::PrivateData
 {
-    DA_DECLARE_PUBLIC(DADialogChartGuide)
+	DA_DECLARE_PUBLIC(DADialogChartGuide)
 public:
-    PrivateData(DADialogChartGuide* p);
-    DAChartAddXYSeriesWidget* mXySeries { nullptr };
-    DAChartAddXYESeriesWidget* mXyeSeries { nullptr };
-    DAChartAddOHLCSeriesWidget* mOHLCSeries { nullptr };
+	PrivateData(DADialogChartGuide* p);
+	DAChartAddXYSeriesWidget* mXySeries { nullptr };
+	DAChartAddXYESeriesWidget* mXyeSeries { nullptr };
+	DAChartAddOHLCSeriesWidget* mOHLCSeries { nullptr };
 };
 
 DADialogChartGuide::PrivateData::PrivateData(DADialogChartGuide* p) : q_ptr(p)
@@ -36,14 +37,14 @@ DADialogChartGuide::DADialogChartGuide(QWidget* parent)
     : QDialog(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DADialogChartGuide)
 {
 	ui->setupUi(this);
-    DA_D(d);
-    initListWidget();
-    d->mXySeries   = new DAChartAddXYSeriesWidget();
-    d->mXyeSeries  = new DAChartAddXYESeriesWidget();
-    d->mOHLCSeries = new DAChartAddOHLCSeriesWidget();
-    ui->stackedWidget->addWidget(d->mXySeries);
-    ui->stackedWidget->addWidget(d->mXySeries);
-    ui->stackedWidget->addWidget(d->mXySeries);
+	DA_D(d);
+	initListWidget();
+	d->mXySeries   = new DAChartAddXYSeriesWidget();
+	d->mXyeSeries  = new DAChartAddXYESeriesWidget();
+	d->mOHLCSeries = new DAChartAddOHLCSeriesWidget();
+	ui->stackedWidget->addWidget(d->mXySeries);
+	ui->stackedWidget->addWidget(d->mXyeSeries);
+	ui->stackedWidget->addWidget(d->mOHLCSeries);
 	connect(ui->listWidgetChartType, &QListWidget::currentItemChanged, this, &DADialogChartGuide::onListWidgetCurrentItemChanged);
 }
 
@@ -84,12 +85,12 @@ void DADialogChartGuide::initListWidget()
  */
 void DADialogChartGuide::setDataManager(DADataManager* dmgr)
 {
-    int c = ui->stackedWidget->count();
-    for (int i = 0; i < c; ++i) {
-        if (DAAbstractChartAddItemWidget* w = qobject_cast< DAAbstractChartAddItemWidget* >(ui->stackedWidget->widget(i))) {
-            w->setDataManager(dmgr);
-        }
-    }
+	int c = ui->stackedWidget->count();
+	for (int i = 0; i < c; ++i) {
+		if (DAAbstractChartAddItemWidget* w = qobject_cast< DAAbstractChartAddItemWidget* >(ui->stackedWidget->widget(i))) {
+			w->setDataManager(dmgr);
+		}
+	}
 }
 
 /**
@@ -98,12 +99,12 @@ void DADialogChartGuide::setDataManager(DADataManager* dmgr)
  */
 void DADialogChartGuide::setCurrentData(const DAData& d)
 {
-    int c = ui->stackedWidget->count();
-    for (int i = 0; i < c; ++i) {
-        if (DAAbstractChartAddItemWidget* w = qobject_cast< DAAbstractChartAddItemWidget* >(ui->stackedWidget->widget(i))) {
-            w->setCurrentData(d);
-        }
-    }
+	int c = ui->stackedWidget->count();
+	for (int i = 0; i < c; ++i) {
+		if (DAAbstractChartAddItemWidget* w = qobject_cast< DAAbstractChartAddItemWidget* >(ui->stackedWidget->widget(i))) {
+			w->setCurrentData(d);
+		}
+	}
 }
 
 /**
@@ -133,6 +134,8 @@ QwtPlotItem* DADialogChartGuide::createPlotItem()
 	if (nullptr == item) {
 		return nullptr;
 	}
+	// 针对不同的类型设置item属性
+	initSetPlotItem(item);
 	return item;
 }
 
@@ -141,17 +144,39 @@ QwtPlotItem* DADialogChartGuide::createPlotItem()
  */
 void DADialogChartGuide::updateData()
 {
-    int c = ui->stackedWidget->count();
-    for (int i = 0; i < c; ++i) {
-        if (DAAbstractChartAddItemWidget* w = qobject_cast< DAAbstractChartAddItemWidget* >(ui->stackedWidget->widget(i))) {
-            w->updateData();
-        }
-    }
+	int c = ui->stackedWidget->count();
+	for (int i = 0; i < c; ++i) {
+		if (DAAbstractChartAddItemWidget* w = qobject_cast< DAAbstractChartAddItemWidget* >(ui->stackedWidget->widget(i))) {
+			w->updateData();
+		}
+	}
 }
 
 DAAbstractChartAddItemWidget* DADialogChartGuide::getCurrentChartAddItemWidget() const
 {
 	return qobject_cast< DAAbstractChartAddItemWidget* >(ui->stackedWidget->currentWidget());
+}
+
+/**
+ * @brief 根据当前绘图类型设置item属性
+ * @param item
+ */
+void DADialogChartGuide::initSetPlotItem(QwtPlotItem* item)
+{
+	DA::ChartTypes ct = getCurrentChartType();
+	switch (ct) {
+	case DA::ChartTypes::Scatter: {
+		if (item->rtti() == QwtPlotItem::Rtti_PlotCurve) {
+			QwtPlotCurve* cur = static_cast< QwtPlotCurve* >(item);
+			cur->setStyle(QwtPlotCurve::Dots);
+		}
+	} break;
+	default:
+		break;
+	}
+	// 设置颜色
+	QColor c = DAGlobalColorTheme::getInstance().color();
+	DAChartUtil::setPlotItemColor(item, c);
 }
 
 /**
@@ -173,24 +198,24 @@ void DADialogChartGuide::setCurrentChartType(DA::ChartTypes t)
 void DADialogChartGuide::onListWidgetCurrentItemChanged(QListWidgetItem* current, QListWidgetItem* previous)
 {
 	Q_UNUSED(previous);
-    DA_D(d);
+	DA_D(d);
 	DA::ChartTypes ct = static_cast< DA::ChartTypes >(current->data(Qt::UserRole).toInt());
 	switch (ct) {
 	case DA::ChartTypes::Curve:
-        ui->stackedWidget->setCurrentWidget(d->mXySeries);
+		ui->stackedWidget->setCurrentWidget(d->mXySeries);
 		break;
 	case DA::ChartTypes::Scatter:
-        ui->stackedWidget->setCurrentWidget(d->mXySeries);
+		ui->stackedWidget->setCurrentWidget(d->mXySeries);
 		break;
 	case DA::ChartTypes::Bar:
-        ui->stackedWidget->setCurrentWidget(d->mXySeries);
-        break;
+		ui->stackedWidget->setCurrentWidget(d->mXySeries);
+		break;
 	case DA::ChartTypes::ErrorBar:
-        ui->stackedWidget->setCurrentWidget(d->mXyeSeries);
-        break;
+		ui->stackedWidget->setCurrentWidget(d->mXyeSeries);
+		break;
 	case DA::ChartTypes::Box:
-        ui->stackedWidget->setCurrentWidget(d->mOHLCSeries);
-        break;
+		ui->stackedWidget->setCurrentWidget(d->mOHLCSeries);
+		break;
 	default:
 		break;
 	}
