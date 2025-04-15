@@ -32,6 +32,8 @@
    <item>
     <widget class="QStackedWidget" name="stackedWidget">
      <widget class="DA::DAChartCurveItemSettingWidget" name="widgetCurveItem"/>
+     <widget class="DA::DAChartBarItemSettingWidget" name="widgetBarItem"/>
+     <widget class="DA::DAChartErrorBarItemSettingWidget" name="widgetErrorBarItem"/>
      <widget class="DA::DAChartLegendItemSettingWidget" name="widgetLegendItem"/>
      <widget class="DA::DAChartGridSettingWidget" name="widgetGridItem"/>
     </widget>
@@ -55,6 +57,18 @@
    <class>DA::DAChartLegendItemSettingWidget</class>
    <extends>QWidget</extends>
    <header>DAChartLegendItemSettingWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DA::DAChartErrorBarItemSettingWidget</class>
+   <extends>QWidget</extends>
+   <header>DAChartErrorBarItemSettingWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DA::DAChartBarItemSettingWidget</class>
+   <extends>QWidget</extends>
+   <header>DAChartBarItemSettingWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

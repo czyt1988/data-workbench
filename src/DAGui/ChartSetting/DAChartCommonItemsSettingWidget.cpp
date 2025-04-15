@@ -29,6 +29,8 @@ void DAChartCommonItemsSettingWidget::plotItemSet(QwtPlotItem* item)
 
 	//! For QwtPlotScaleItem
 	case QwtPlotItem::Rtti_PlotScale: {
+		ui->stackedWidget->setCurrentWidget(ui->widgetCurveItem);
+		ui->widgetCurveItem->setPlotItem(item);
 		break;
 	}
 
@@ -58,6 +60,8 @@ void DAChartCommonItemsSettingWidget::plotItemSet(QwtPlotItem* item)
 
 	//! For QwtPlotIntervalCurve
 	case QwtPlotItem::Rtti_PlotIntervalCurve: {
+		ui->stackedWidget->setCurrentWidget(ui->widgetErrorBarItem);
+		ui->widgetErrorBarItem->setPlotItem(item);
 		break;
 	}
 
@@ -78,6 +82,7 @@ void DAChartCommonItemsSettingWidget::plotItemSet(QwtPlotItem* item)
 
 	//! For QwtPlotTradingCurve
 	case QwtPlotItem::Rtti_PlotTradingCurve: {
+
 		break;
 	}
 
