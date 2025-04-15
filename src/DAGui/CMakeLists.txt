@@ -39,6 +39,7 @@ set(DA_LIB_HEADER_FILES
     DAChartAddBarWidget.h
     DAChartAddErrorBarWidget.h
     DAChartAddBoxWidget.h
+    DAChartAddSpectrogramWidget.h
     DADataManagerComboBox.h
     DADataOperatePageWidget.h
     DAFigureFactory.h
@@ -87,6 +88,7 @@ set(DA_LIB_SOURCE_FILES
     DAChartAddBarWidget.cpp
     DAChartAddErrorBarWidget.cpp
     DAChartAddBoxWidget.cpp
+    DAChartAddSpectrogramWidget.cpp
     DAChartListView.cpp
     DAChartManageWidget.cpp
     DAChartOperateWidget.cpp
@@ -132,6 +134,7 @@ set(DA_LIB_QT_UI_FILES
     DAChartAddBarWidget.ui
     DAChartAddErrorBarWidget.ui
     DAChartAddBoxWidget.ui
+    DAChartAddSpectrogramWidget.ui
     DAChartManageWidget.ui
     DAChartOperateWidget.ui
     DAChartSettingWidget.ui

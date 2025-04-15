@@ -50,10 +50,11 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
       <widget class="DA::DAChartAddCurveWidget" name="pageCurve"/>
       <widget class="DA::DAChartAddBarWidget" name="pageBar"/>
+      <widget class="DA::DAChartAddSpectrogramWidget" name="pageSpectrogram"/>
       <widget class="DA::DAChartAddErrorBarWidget" name="pageErrorBar"/>
       <widget class="DA::DAChartAddBoxWidget" name="pageBox"/>
      </widget>
@@ -122,6 +123,12 @@
    <class>DA::DAChartAddBoxWidget</class>
    <extends>QWidget</extends>
    <header>DAChartAddBoxWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DA::DAChartAddSpectrogramWidget</class>
+   <extends>QWidget</extends>
+   <header>DAChartAddSpectrogramWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -5,6 +5,8 @@
 #include "DAChartAddCurveWidget.h"
 #include "DAChartAddBarWidget.h"
 #include "DAChartAddErrorBarWidget.h"
+#include "DAChartAddBoxWidget.h"
+#include "DAChartAddSpectrogramWidget.h"
 #include <iterator>
 #include <vector>
 #define STR_DADIALOGCHARTGUIDE_FINISHE tr("Finish")
@@ -13,6 +15,8 @@
 #include "qwt_plot_curve.h"
 #include "qwt_plot_barchart.h"
 #include "qwt_plot_intervalcurve.h"
+#include "qwt_plot_tradingcurve.h"
+#include "qwt_plot_spectrogram.h"
 namespace DA
 {
 
@@ -55,6 +59,10 @@ void DADialogChartGuide::init()
 	item = new QListWidgetItem(QIcon(":/app/chart-type/Icon/chart-type/chart-OHLC.svg"), tr("box"));
 	item->setData(Qt::UserRole, static_cast< int >(DA::ChartTypes::Box));
 	ui->listWidgetChartType->addItem(item);
+	// spectrogram
+	item = new QListWidgetItem(QIcon(":/app/chart-type/Icon/chart-type/chart-spectrogram.svg"), tr("cloud map"));
+	item->setData(Qt::UserRole, static_cast< int >(DA::ChartTypes::Spectrogram));
+	ui->listWidgetChartType->addItem(item);
 	// 初始化
 	ui->stackedWidget->setCurrentWidget(ui->pageCurve);
 	ui->listWidgetChartType->setCurrentRow(0);
@@ -69,6 +77,7 @@ void DADialogChartGuide::setDataManager(DADataManager* dmgr)
 	ui->pageBar->setDataManager(dmgr);
 	ui->pageErrorBar->setDataManager(dmgr);
 	ui->pageBox->setDataManager(dmgr);
+	ui->pageSpectrogram->setDataManager(dmgr);
 }
 
 /**
@@ -89,6 +98,9 @@ void DADialogChartGuide::setCurrentData(const DAData& d)
 		e->setCurrentData(d);
 		e->toFirst();
 	} else if (DAChartAddBoxWidget* b = qobject_cast< DAChartAddBoxWidget* >(w)) {
+		b->setCurrentData(d);
+		b->toFirst();
+	} else if (DAChartAddSpectrogramWidget* b = qobject_cast< DAChartAddSpectrogramWidget* >(w)) {
 		b->setCurrentData(d);
 		b->toFirst();
 	}
@@ -252,10 +264,16 @@ void DADialogChartGuide::onListWidgetCurrentItemChanged(QListWidgetItem* current
 		break;
 	case DA::ChartTypes::Bar:
 		ui->stackedWidget->setCurrentWidget(ui->pageBar);
+		break;
 	case DA::ChartTypes::ErrorBar:
 		ui->stackedWidget->setCurrentWidget(ui->pageErrorBar);
+		break;
 	case DA::ChartTypes::Box:
 		ui->stackedWidget->setCurrentWidget(ui->pageBox);
+		break;
+	case DA::ChartTypes::Spectrogram:
+		ui->stackedWidget->setCurrentWidget(ui->pageSpectrogram);
+		break;
 	default:
 		break;
 	}
