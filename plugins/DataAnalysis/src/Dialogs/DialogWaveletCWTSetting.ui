@@ -66,6 +66,46 @@
         <widget class="QComboBox" name="comboBoxWavelet">
          <item>
           <property name="text">
+           <string>gaus1</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>gaus2</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>gaus3</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>gaus4</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>gaus5</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>gaus6</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>gaus7</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>gaus8</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
            <string>cgau1</string>
           </property>
          </item>
@@ -112,46 +152,6 @@
          <item>
           <property name="text">
            <string>fbsp</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>gaus1</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>gaus2</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>gaus3</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>gaus4</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>gaus5</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>gaus6</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>gaus7</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>gaus8</string>
           </property>
          </item>
          <item>

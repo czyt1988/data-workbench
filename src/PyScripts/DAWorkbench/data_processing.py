@@ -283,9 +283,8 @@ def da_wavelet_cwt(waveform, sampling_rate, scales, args:Optional[Dict] = None):
     scales = [1.0,2.0,3.0,2.0,1.0]
     
     coef,freqs = wavelet_cwt(waveform, sampling_rate, scales, **args)
-    cwt_data = pd.DataFrame({'pseudo_freqs': freqs})
-    for i in range(len(t)):
-        cwt_data[i] = coef[:, i]
+    cwt_data = pd.DataFrame(coef, columns=range(len(t)))
+    cwt_data.insert(0, 'pseudo_freqs', freqs)
         
     return cwt_data
 
