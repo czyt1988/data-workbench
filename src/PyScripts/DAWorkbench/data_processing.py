@@ -276,14 +276,12 @@ def da_wavelet_cwt(waveform, sampling_rate, scales, args:Optional[Dict] = None):
     :param method: 计算方法，conv时域卷积，fft频域卷积，auto自动
     :param axis: 要变换的轴，默认为最后一个轴
     :return: 连续小波变换结果
-    '''
-    t = np.arange(0, len(waveform)/sampling_rate, 1.0/sampling_rate)
-    
+    '''   
     # 尺度系数
     scales = [1.0,2.0,3.0,2.0,1.0]
     
     coef,freqs = wavelet_cwt(waveform, sampling_rate, scales, **args)
-    cwt_data = pd.DataFrame(coef, columns=range(len(t)))
+    cwt_data = pd.DataFrame(coef, columns=range(len(waveform)))
     cwt_data.insert(0, 'pseudo_freqs', freqs)
         
     return cwt_data
