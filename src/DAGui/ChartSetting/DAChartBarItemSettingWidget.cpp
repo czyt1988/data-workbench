@@ -328,8 +328,26 @@ void DAChartBarItemSettingWidget::on_checkBoxBar_clicked(bool checked)
 
 void DAChartBarItemSettingWidget::onBrushChanged(const QBrush& b)
 {
+	DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
 	Q_UNUSED(b);
-	on_checkBoxEnableFill_clicked(ui->checkBoxEnableFill->isChecked());
+	QwtPlotBarChart* bar = s_cast< QwtPlotBarChart* >();
+	// 获取当前符号（const指针）
+	const QwtColumnSymbol* currentSymbol = bar->symbol();
+	std::unique_ptr< QwtColumnSymbol > newSymbol;
+	if (currentSymbol) {
+		newSymbol = std::make_unique< QwtColumnSymbol >(currentSymbol->style());
+		newSymbol->setPalette(currentSymbol->palette());
+		newSymbol->setLineWidth(currentSymbol->lineWidth());
+	} else {
+		// 创建默认符号
+		newSymbol = std::make_unique< QwtColumnSymbol >(QwtColumnSymbol::Box);
+	}
+	// 更新填充状态
+	QPalette palette = newSymbol->palette();
+	palette.setColor(QPalette::Window, b.color());
+	newSymbol->setPalette(palette);
+
+	bar->setSymbol(newSymbol.release());
 }
 
 void DAChartBarItemSettingWidget::on_checkBoxEnableFill_clicked(bool checked)

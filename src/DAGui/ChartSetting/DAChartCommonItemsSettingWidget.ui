@@ -30,48 +30,10 @@
     <number>1</number>
    </property>
    <item>
-    <widget class="QStackedWidget" name="stackedWidget">
-     <widget class="DA::DAChartCurveItemSettingWidget" name="widgetCurveItem"/>
-     <widget class="DA::DAChartBarItemSettingWidget" name="widgetBarItem"/>
-     <widget class="DA::DAChartErrorBarItemSettingWidget" name="widgetErrorBarItem"/>
-     <widget class="DA::DAChartLegendItemSettingWidget" name="widgetLegendItem"/>
-     <widget class="DA::DAChartGridSettingWidget" name="widgetGridItem"/>
-    </widget>
+    <widget class="QStackedWidget" name="stackedWidget"/>
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>DA::DAChartCurveItemSettingWidget</class>
-   <extends>QWidget</extends>
-   <header>DAChartCurveItemSettingWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>DA::DAChartGridSettingWidget</class>
-   <extends>QWidget</extends>
-   <header>DAChartGridSettingWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>DA::DAChartLegendItemSettingWidget</class>
-   <extends>QWidget</extends>
-   <header>DAChartLegendItemSettingWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>DA::DAChartErrorBarItemSettingWidget</class>
-   <extends>QWidget</extends>
-   <header>DAChartErrorBarItemSettingWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>DA::DAChartBarItemSettingWidget</class>
-   <extends>QWidget</extends>
-   <header>DAChartBarItemSettingWidget.h</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

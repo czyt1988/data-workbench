@@ -22,6 +22,7 @@ class DADataManager;
 
 /**
  * @brief 添加xy series，适用二维数据绘图的系列获取
+ * 这个是一个abstract类，需要重写@sa createPlotItem
  */
 class DAGUI_API DAChartAddXYSeriesWidget : public DAAbstractChartAddItemWidget
 {
@@ -35,16 +36,14 @@ public:
 	bool isYAutoincrement() const;
 	// 根据配置获取数据
 	QVector< QPointF > getSeries() const;
-    // 创建item
-    virtual QwtPlotItem* createPlotItem() override;
 
 private slots:
 	void onComboBoxXCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
 	void onComboBoxYCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
 	void onGroupBoxXAutoincrementClicked(bool on);
 	void onGroupBoxYAutoincrementClicked(bool on);
-    void onDataManagerChanged(DADataManager* dmgr);
-    void onCurrentDataChanged(const DAData& d);
+	void onDataManagerChanged(DADataManager* dmgr);
+	void onCurrentDataChanged(const DAData& d);
 
 protected:
 	// 获取x自增
@@ -58,8 +57,8 @@ protected:
 	bool tryGetYSelfInc(double& base, double& step);
 
 private:
-    Ui::DAChartAddXYSeriesWidget* ui;
-    DAPySeriesTableModule* mModel { nullptr };
+	Ui::DAChartAddXYSeriesWidget* ui;
+	DAPySeriesTableModule* mModel { nullptr };
 };
 }
 #endif  // DACHARTADDXYSERIESWIDGET_H
