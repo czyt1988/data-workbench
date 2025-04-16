@@ -15,13 +15,15 @@ void DataAnalysisActions::buildActions()
 	actionSpectrum     = createAction("actionSpectrum", ":/DataAnalysis/icons/icon/spectrum.svg");
 	actionFilter       = createAction("actionFilter", ":/DataAnalysis/icons/icon/filter.svg");
 	actionPeakAnalysis = createAction("actionPeakAnalysis", ":/DataAnalysis/icons/icon/peak-analysis.svg");
+	actionWaveletCWT   = createAction("actionWaveletAnalysis", ":/DataAnalysis/icons/icon/wavelet.svg");
 }
 
 void DataAnalysisActions::retranslate()
 {
-	actionSpectrum->setText(tr("Spectrum"));        // cn: 频谱
-	actionFilter->setText(tr("Filter"));            // cn: 滤波
-	actionPeakAnalysis->setText(tr("SearchPeak"));  // cn: 寻峰
+	actionSpectrum->setText(tr("Spectrum"));           // cn: 频谱
+	actionFilter->setText(tr("Filter"));               // cn: 滤波
+	actionPeakAnalysis->setText(tr("Peak Analysis"));  // cn: 峰值分析
+	actionWaveletCWT->setText(tr("Wavelet CWT"));      // cn: 连续小波变换
 }
 
 QAction* DataAnalysisActions::createAction(const char* objname)

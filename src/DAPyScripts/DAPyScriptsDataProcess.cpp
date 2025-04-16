@@ -90,6 +90,29 @@ DAPyDataFrame DAPyScriptsDataProcess::peak_analysis(const DAPySeries& wave, doub
 	return DAPyDataFrame();
 }
 
+DAPyDataFrame DAPyScriptsDataProcess::wavelet_cwt(const DAPySeries& wave,
+                                                  double fs,
+                                                  const DA::DAPySeries& scales,
+                                                  const QVariantMap& args,
+                                                  QString* err)
+{
+	try {
+		pybind11::object fn = attr("da_wavelet_cwt");
+		if (fn.is_none()) {
+			qDebug() << "DAWorkbench.data_processing.py have no attr da_wavelet_cwt";
+			return DAPyDataFrame();
+		}
+		pybind11::object v = fn(wave.object(), fs, scales.object(), DA::PY::toPyDict(args));
+		return DAPyDataFrame(std::move(v));
+	} catch (const std::exception& e) {
+		if (err) {
+			*err = e.what();
+		}
+		qDebug() << e.what();
+	}
+	return DAPyDataFrame();
+}
+
 bool DAPyScriptsDataProcess::import()
 {
 	try {

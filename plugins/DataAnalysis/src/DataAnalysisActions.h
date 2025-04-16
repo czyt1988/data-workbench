@@ -28,6 +28,8 @@ public:
 	QAction* actionSpectrum;      ///< 频谱
 	QAction* actionFilter;        ///< 滤波
 	QAction* actionPeakAnalysis;  ///< 峰值分析
+	QAction* actionWaveletCWT;    ///< 小波分析
+
 	QHash< QString, QAction* > mObjectToAction;
 
 private:

@@ -9,6 +9,7 @@
 #include "Dialogs/DialogSpectrumSetting.h"
 #include "Dialogs/DialogFilterSetting.h"
 #include "Dialogs/DialogPeakAnalysisSetting.h"
+#include "Dialogs/DialogWaveletCWTSetting.h"
 #include "DataAnalysExecutor.h"
 #include "DADataManager.h"
 #include "DAChartOperateWidget.h"
@@ -44,6 +45,7 @@ void DataAnalysController::initConnect()
 	connect(mActions->actionSpectrum, &QAction::triggered, this, &DataAnalysController::onActionSpectrumTriggered);
 	connect(mActions->actionFilter, &QAction::triggered, this, &DataAnalysController::onActionFilterTriggered);
 	connect(mActions->actionPeakAnalysis, &QAction::triggered, this, &DataAnalysController::onActionPeakAnalysisTriggered);
+	connect(mActions->actionWaveletCWT, &QAction::triggered, this, &DataAnalysController::onActionWaveletCWTTriggered);
 }
 
 /**
@@ -86,6 +88,20 @@ DialogPeakAnalysisSetting* DataAnalysController::getPeakAnalysisSettingDialog()
 	mDialogPeakAnalysisSetting = new DialogPeakAnalysisSetting(mCore->getUiInterface()->getMainWindow());
 	mDialogPeakAnalysisSetting->setDataManager(mCore->getDataManagerInterface()->dataManager());
 	return mDialogPeakAnalysisSetting;
+}
+
+/**
+ * @brief 连续小波变换设置窗口
+ * @return
+ */
+DialogWaveletCWTSetting* DataAnalysController::getWaveletCWTSettingDialog()
+{
+	if (mDialogWaveletCWTSetting) {
+		return mDialogWaveletCWTSetting;
+	}
+	mDialogWaveletCWTSetting = new DialogWaveletCWTSetting(mCore->getUiInterface()->getMainWindow());
+	mDialogWaveletCWTSetting->setDataManager(mCore->getDataManagerInterface()->dataManager());
+	return mDialogWaveletCWTSetting;
 }
 
 DA::DAPySeries DataAnalysController::getCurrentSelectSeries()
@@ -235,6 +251,9 @@ void DataAnalysController::onActionFilterTriggered()
 	mDockingArea->raiseDockByWidget(mDockingArea->getChartOperateWidget());
 }
 
+/**
+ * @brief 峰值分析
+ */
 void DataAnalysController::onActionPeakAnalysisTriggered()
 {
 	DA::DAPySeries selSeries       = getCurrentSelectSeries();
@@ -304,6 +323,46 @@ void DataAnalysController::onActionPeakAnalysisTriggered()
 
 	// 把绘图窗口抬起
 	mDockingArea->raiseDockByWidget(mDockingArea->getChartOperateWidget());
+}
+
+void DataAnalysController::onActionWaveletCWTTriggered()
+{
+	DA::DAPySeries selSeries     = getCurrentSelectSeries();
+	DialogWaveletCWTSetting* dlg = getWaveletCWTSettingDialog();
+	if (!selSeries.isNone()) {
+		dlg->setCurrentSeries(selSeries);
+	}
+	// 执行
+	if (QDialog::Accepted != dlg->exec()) {
+		return;
+	}
+
+	// cwt的基本参数
+	DA::DAPySeries data   = dlg->getCurrentSeries();
+	double fs             = dlg->getSamplingRate();
+	DA::DAPySeries scales = dlg->getScalesSeries();
+	QVariantMap args      = dlg->getWaveletCWTSetting();
+	if (data.isNone()) {
+		return;
+	}
+	qDebug() << "Wavelet CWT args:" << args;
+
+	//执行
+	QString err;
+	DA::DAPyDataFrame df = mExecutor->wavelet_cwt(data, fs, scales, args, &err);
+	if (df.isNone()) {
+		if (!err.isEmpty()) {
+			qCritical() << err;
+			return;
+		}
+	}
+
+	//提取第一列伪频率
+	DA::DAPySeries pseudo_freqs = df[ 0 ];
+	// 把数据装入datamanager，系数矩阵
+	DA::DAData d(df);
+	d.setName(QString("%1-cwt_coef").arg(data.name()));
+	mDataMgr->addData(d);  // 不可撤销
 }
 
 /**

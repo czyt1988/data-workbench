@@ -5,6 +5,7 @@ from typing import List,Dict,Optional
 import pandas as pd
 import numpy as np
 import scipy
+import pywt
 from DAWorkbench.logger import log_function_call  # type: ignore # 引入装饰器
 from loguru import logger
 
@@ -170,8 +171,33 @@ def peak_analysis(waveform, sampling_rate, height = None, direction = 0, thresho
     # 按索引排序
     if direction == 2:
         peak_data.sort(key=lambda x: x['index'])
-
     return peak_data
+    
+@log_function_call
+def wavelet_cwt(waveform, sampling_rate, scales, wavelet, sampling_period, method = 'conv', axis = -1):
+    '''
+    连续小波变换
+    :param waveform: 输入波形数据，可以是一维数组或列表
+    :param sampling_rate: 采样率
+    :param scales: 尺度系数
+    :param wavelet: 使用的小波，包括cgau1,cgau2,cgau3,cgau4,cgau5,cgau6,cgau7,cgau8,cmor,fbsp,
+                                gaus1,gaus2,gaus3,gaus4,gaus5,gaus6,gaus7,gaus8,mexh,morl,shan
+    :param sampling_period: 频率输出的采样周期
+    :param method: 计算方法，conv时域卷积，fft频域卷积，auto自动
+    :param axis: 要变换的轴，默认为最后一个轴
+    :return: 连续小波变换结果
+    '''
+    #根据中心频率定义尺度
+    # if sampling_period is None:
+    #     sampling_period = 1.0/sampling_rate
+    # fc = pywt.central_frequency(wavelet)
+    # cparam = 2 * fc * scale
+    # scales = cparam / np.arange(scale, 0, -1)
+    
+    #连续小波变换
+    coef, freqs = pywt.cwt(waveform, scales, wavelet, sampling_period, method, axis)
+    return coef,freqs
+    
 
 @log_function_call
 def da_spectrum_analysis(waveform, sampling_rate, args:Optional[Dict] = None):
@@ -236,6 +262,32 @@ def da_peak_analysis(waveform, sampling_rate, args:Optional[Dict] = None):
     for key in properties:
         peak_data[key] = [item['properties'].get(key, None) for item in res]
     return peak_data
+
+@log_function_call
+def da_wavelet_cwt(waveform, sampling_rate, scales, args:Optional[Dict] = None):
+    '''
+    连续小波变换
+    :param waveform: 输入波形数据，可以是一维数组或列表
+    :param sampling_rate: 采样率
+    :param scales: 尺度系数
+    :param wavelet: 使用的小波名称，包括cgau1,cgau2,cgau3,cgau4,cgau5,cgau6,cgau7,cgau8,cmor,fbsp,
+                                    gaus1,gaus2,gaus3,gaus4,gaus5,gaus6,gaus7,gaus8,mexh,morl,shan
+    :param sampling_period: 频率输出的采样周期
+    :param method: 计算方法，conv时域卷积，fft频域卷积，auto自动
+    :param axis: 要变换的轴，默认为最后一个轴
+    :return: 连续小波变换结果
+    '''
+    t = np.arange(0, len(waveform)/sampling_rate, 1.0/sampling_rate)
+    
+    # 尺度系数
+    scales = [1.0,2.0,3.0,2.0,1.0]
+    
+    coef,freqs = wavelet_cwt(waveform, sampling_rate, scales, **args)
+    cwt_data = pd.DataFrame({'pseudo_freqs': freqs})
+    for i in range(len(t)):
+        cwt_data[i] = coef[:, i]
+        
+    return cwt_data
 
 if __name__ == '__main__':
     # 获取函数spectrum_analysis的注解
