@@ -2,6 +2,7 @@
 #include "ui_DAChartBarItemSettingWidget.h"
 #include <QMessageBox>
 #include <QDebug>
+#include "DASignalBlockers.hpp"
 #include "qwt_plot_barchart.h"
 #include "qwt_column_symbol.h"
 #include "qwt_text.h"
@@ -9,27 +10,30 @@
 namespace DA
 {
 DAChartBarItemSettingWidget::DAChartBarItemSettingWidget(QWidget* parent)
-	: DAAbstractChartItemSettingWidget(parent), ui(new Ui::DAChartBarItemSettingWidget)
+    : DAAbstractChartItemSettingWidget(parent), ui(new Ui::DAChartBarItemSettingWidget)
 {
 	ui->setupUi(this);
 	resetUI();
-	connect(ui->brushEditWidget, &DABrushEditWidget::brushChanged, this, &DAChartBarItemSettingWidget::onBrushChanged);
+    connect(ui->brushEditWidget, &DABrushEditWidget::brushChanged, this, &DAChartBarItemSettingWidget::onFillBrushChanged);
 	connect(ui->comboBoxLayoutPolicy,
-			QOverload< int >::of(&QComboBox::currentIndexChanged),
-			this,
-			&DAChartBarItemSettingWidget::onLayoutPolicyChanged);
+            QOverload< int >::of(&QComboBox::currentIndexChanged),
+            this,
+            &DAChartBarItemSettingWidget::onLayoutPolicyChanged);
 	connect(ui->spinBoxSpacing,
-			QOverload< int >::of(&QSpinBox::valueChanged),
-			this,
-			&DAChartBarItemSettingWidget::onSpacingValueChanged);
+            QOverload< int >::of(&QSpinBox::valueChanged),
+            this,
+            &DAChartBarItemSettingWidget::onSpacingValueChanged);
 	connect(ui->spinBoxMargin,
-			QOverload< int >::of(&QSpinBox::valueChanged),
-			this,
-			&DAChartBarItemSettingWidget::onMarginValueChanged);
+            QOverload< int >::of(&QSpinBox::valueChanged),
+            this,
+            &DAChartBarItemSettingWidget::onMarginValueChanged);
 	connect(ui->doubleSpinBoxLayoutHint,
-			QOverload< double >::of(&QDoubleSpinBox::valueChanged),
-			this,
-			&DAChartBarItemSettingWidget::onLayoutHintValueChanged);
+            QOverload< double >::of(&QDoubleSpinBox::valueChanged),
+            this,
+            &DAChartBarItemSettingWidget::onLayoutHintValueChanged);
+    connect(ui->groupBoxFill, &QGroupBox::clicked, this, &DAChartBarItemSettingWidget::onGroupBoxFillClicked);
+    connect(ui->groupBoxEdge, &QGroupBox::clicked, this, &DAChartBarItemSettingWidget::onGroupBoxEdgeClicked);
+    connect(ui->penEditWidget, &DAPenEditWidget::penChanged, this, &DAChartBarItemSettingWidget::onEdgePenChanged);
 }
 
 DAChartBarItemSettingWidget::~DAChartBarItemSettingWidget()
@@ -60,21 +64,23 @@ void DAChartBarItemSettingWidget::updateUI(const QwtPlotBarChart* item)
 	QwtPlotBarChart::LegendMode currentMode = item->legendMode();
 	ui->checkBoxChart->setChecked(currentMode & QwtPlotBarChart::LegendChartTitle);
 	ui->checkBoxBar->setChecked(currentMode & QwtPlotBarChart::LegendBarTitles);
-
+    DASignalBlockers b1ocker(ui->brushEditWidget, ui->penEditWidget);
 	if (const QwtColumnSymbol* symbol = item->symbol()) {
 		// 设置边框笔（从符号的palette和lineWidth构造）
 		QPen pen;
-		pen.setColor(symbol->palette().color(QPalette::WindowText));  // 边框颜色
-		pen.setWidth(symbol->lineWidth());                            // 边框宽度
+        pen.setColor(symbol->palette().color(QPalette::WindowText));  // 边框颜色
+        pen.setWidth(symbol->lineWidth());                            // 边框宽度
+        setEnableEdgeEdit(true);
+        setEdgePen(pen);
 
 		// 设置填充画刷（从符号palette获取）
 		QBrush fillBrush(symbol->palette().color(QPalette::Window));
-		enableFillEdit(fillBrush != Qt::NoBrush);
+        setEnableFillEdit(true);
 		setFillBrush(fillBrush);
 	} else {
 		// 默认无符号时的样式
-		enableFillEdit(false);
-		setFillBrush(Qt::NoBrush);
+        setEnableEdgeEdit(false);
+        setEnableFillEdit(false);
 	}
 	setBaseLine(item->baseline());
 
@@ -142,8 +148,8 @@ void DAChartBarItemSettingWidget::updatePlotItem(QwtPlotBarChart* item)
 	}
 
 	// 更新布局策略
-	QwtPlotAbstractBarChart::LayoutPolicy policy =
-		static_cast< QwtPlotAbstractBarChart::LayoutPolicy >(ui->comboBoxLayoutPolicy->currentData().toInt());
+    QwtPlotAbstractBarChart::LayoutPolicy policy = static_cast< QwtPlotAbstractBarChart::LayoutPolicy >(
+        ui->comboBoxLayoutPolicy->currentData().toInt());
 	item->setLayoutPolicy(policy);
 
 	// 更新布局参数
@@ -218,9 +224,9 @@ QwtPlotBarChart::LegendMode DAChartBarItemSettingWidget::getBarLegendMode() cons
  * @brief 开启填充编辑
  * @param on
  */
-void DAChartBarItemSettingWidget::enableFillEdit(bool on)
+void DAChartBarItemSettingWidget::setEnableFillEdit(bool on)
 {
-    ui->checkBoxEnableFill->setChecked(on);
+    ui->groupBoxFill->setChecked(on);
 }
 
 /**
@@ -229,7 +235,25 @@ void DAChartBarItemSettingWidget::enableFillEdit(bool on)
  */
 bool DAChartBarItemSettingWidget::isEnableFillEdit() const
 {
-    return ui->checkBoxEnableFill->isChecked();
+    return ui->groupBoxFill->isChecked();
+}
+
+/**
+ * @brief 是否允许边框设置
+ * @param on
+ */
+void DAChartBarItemSettingWidget::setEnableEdgeEdit(bool on)
+{
+    ui->groupBoxEdge->setChecked(on);
+}
+
+/**
+ * @brief 是否允许边框设置
+ * @return
+ */
+bool DAChartBarItemSettingWidget::isEnableEdgeEdit() const
+{
+    return ui->groupBoxEdge->isChecked();
 }
 
 /**
@@ -242,12 +266,30 @@ void DAChartBarItemSettingWidget::setFillBrush(const QBrush& v)
 }
 
 /**
+ * @brief 设置边线
+ * @param pen
+ */
+void DAChartBarItemSettingWidget::setEdgePen(const QPen& pen)
+{
+    ui->penEditWidget->setCurrentPen(pen);
+}
+
+/**
  * @brief 填充
  * @return
  */
 QBrush DAChartBarItemSettingWidget::getFillBrush() const
 {
     return ui->brushEditWidget->getCurrentBrush();
+}
+
+/**
+ * @brief 获取设置的画笔
+ * @return
+ */
+QPen DAChartBarItemSettingWidget::getEdgePen() const
+{
+    return ui->penEditWidget->getCurrentPen();
 }
 
 /**
@@ -287,7 +329,7 @@ bool DAChartBarItemSettingWidget::isHaveBaseLine() const
  */
 void DAChartBarItemSettingWidget::resetUI()
 {
-	enableFillEdit(false);
+    setEnableFillEdit(false);
 	setBaseLine(0.0);
 	ui->comboBoxLayoutPolicy->clear();
 	ui->comboBoxLayoutPolicy->addItem(tr("Auto Adjust Samples"), QwtPlotAbstractBarChart::AutoAdjustSamples);
@@ -326,53 +368,28 @@ void DAChartBarItemSettingWidget::on_checkBoxBar_clicked(bool checked)
 	}
 }
 
-void DAChartBarItemSettingWidget::onBrushChanged(const QBrush& b)
+void DAChartBarItemSettingWidget::onFillBrushChanged(const QBrush& b)
 {
-	DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
-	Q_UNUSED(b);
-	QwtPlotBarChart* bar = s_cast< QwtPlotBarChart* >();
-	// 获取当前符号（const指针）
-	const QwtColumnSymbol* currentSymbol = bar->symbol();
-	std::unique_ptr< QwtColumnSymbol > newSymbol;
-	if (currentSymbol) {
-		newSymbol = std::make_unique< QwtColumnSymbol >(currentSymbol->style());
-		newSymbol->setPalette(currentSymbol->palette());
-		newSymbol->setLineWidth(currentSymbol->lineWidth());
-	} else {
-		// 创建默认符号
-		newSymbol = std::make_unique< QwtColumnSymbol >(QwtColumnSymbol::Box);
-	}
-	// 更新填充状态
-	QPalette palette = newSymbol->palette();
-	palette.setColor(QPalette::Window, b.color());
-	newSymbol->setPalette(palette);
-
-	bar->setSymbol(newSymbol.release());
+    Q_UNUSED(b);
+    updateSymbolToItem();
 }
 
-void DAChartBarItemSettingWidget::on_checkBoxEnableFill_clicked(bool checked)
+void DAChartBarItemSettingWidget::onEdgePenChanged(const QPen& p)
 {
-	DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
-	QwtPlotBarChart* chart = s_cast< QwtPlotBarChart* >();
-	// 获取当前符号（const指针）
-	const QwtColumnSymbol* currentSymbol = chart->symbol();
-	QwtColumnSymbol* newSymbol           = nullptr;
+    Q_UNUSED(p);
+    updateSymbolToItem();
+}
 
-	if (currentSymbol) {
-		newSymbol = new QwtColumnSymbol(currentSymbol->style());
-		newSymbol->setPalette(currentSymbol->palette());
-		newSymbol->setLineWidth(currentSymbol->lineWidth());
-	} else {
-		// 创建默认符号
-		newSymbol = new QwtColumnSymbol(QwtColumnSymbol::Box);
-	}
+void DAChartBarItemSettingWidget::onGroupBoxFillClicked(bool on)
+{
+    Q_UNUSED(on);
+    updateSymbolToItem();
+}
 
-	// 更新填充状态
-	QPalette palette = newSymbol->palette();
-	palette.setColor(QPalette::Window, checked ? getFillBrush().color() : Qt::transparent);
-	newSymbol->setPalette(palette);
-
-	chart->setSymbol(newSymbol);
+void DAChartBarItemSettingWidget::onGroupBoxEdgeClicked(bool on)
+{
+    Q_UNUSED(on);
+    updateSymbolToItem();
 }
 
 void DAChartBarItemSettingWidget::on_lineEditBaseLine_editingFinished()
@@ -423,7 +440,51 @@ void DAChartBarItemSettingWidget::setMargin(int margin)
 
 int DAChartBarItemSettingWidget::getMargin() const
 {
-	return ui->spinBoxMargin->value();
+    return ui->spinBoxMargin->value();
+}
+
+/**
+ * @brief 获取当前界面选中的QwtColumnSymbol::FrameStyle
+ * @return
+ */
+int DAChartBarItemSettingWidget::getCurrentSelectFrameStyle() const
+{
+    return QwtColumnSymbol::Plain;
+}
+
+/**
+ * @brief QWT中QPalette::Dark决定了QwtColumnSymbol的边框颜色，QPalette::Window决定了填充颜色
+ */
+void DAChartBarItemSettingWidget::updateSymbolToItem()
+{
+    DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
+    bool isEnabelFill                      = ui->groupBoxFill->isChecked();
+    bool isEnableEdge                      = ui->groupBoxEdge->isChecked();
+    QwtPlotBarChart* bar                   = s_cast< QwtPlotBarChart* >();
+    QwtColumnSymbol::FrameStyle framestyle = static_cast< QwtColumnSymbol::FrameStyle >(getCurrentSelectFrameStyle());
+    // 获取当前符号（const指针）
+    const QwtColumnSymbol* currentSymbol = bar->symbol();
+    std::unique_ptr< QwtColumnSymbol > newSymbol;
+
+    if (currentSymbol) {
+        newSymbol = std::make_unique< QwtColumnSymbol >(currentSymbol->style());
+        newSymbol->setPalette(currentSymbol->palette());
+        newSymbol->setLineWidth(currentSymbol->lineWidth());
+    } else {
+        // 创建默认符号
+        newSymbol = std::make_unique< QwtColumnSymbol >(QwtColumnSymbol::Box);
+    }
+    newSymbol->setFrameStyle(framestyle);
+    // 更新填充状态
+    QPalette palette = newSymbol->palette();
+    palette.setColor(QPalette::Window, isEnabelFill ? getFillBrush().color() : Qt::transparent);
+    if (isEnableEdge) {
+        QPen pen = getEdgePen();
+        newSymbol->setLineWidth(pen.width());
+        palette.setColor(QPalette::Dark, pen.color());
+    }
+    newSymbol->setPalette(palette);
+    bar->setSymbol(newSymbol.release());
 }
 
 void DAChartBarItemSettingWidget::onLayoutPolicyChanged(int index)
@@ -431,7 +492,7 @@ void DAChartBarItemSettingWidget::onLayoutPolicyChanged(int index)
 	DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
 	QwtPlotBarChart* c = s_cast< QwtPlotBarChart* >();
 	c->setLayoutPolicy(
-		static_cast< QwtPlotAbstractBarChart::LayoutPolicy >(ui->comboBoxLayoutPolicy->currentData().toInt()));
+        static_cast< QwtPlotAbstractBarChart::LayoutPolicy >(ui->comboBoxLayoutPolicy->currentData().toInt()));
 }
 
 void DAChartBarItemSettingWidget::onSpacingValueChanged(int value)

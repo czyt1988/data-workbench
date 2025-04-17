@@ -49,10 +49,15 @@ public:
 	void setBarLegendMode(QwtPlotBarChart::LegendMode v);
 	QwtPlotBarChart::LegendMode getBarLegendMode() const;
 	// fill编辑
-	void enableFillEdit(bool on = true);
+    void setEnableFillEdit(bool on = true);
 	bool isEnableFillEdit() const;
+    // 是否允许边框设置
+    void setEnableEdgeEdit(bool on = true);
+    bool isEnableEdgeEdit() const;
 	// 填充
 	QBrush getFillBrush() const;
+    // 边线
+    QPen getEdgePen() const;
 	// 基线
 	double getBaseLine() const;
 	bool isHaveBaseLine() const;
@@ -66,22 +71,31 @@ public:
 	QwtPlotAbstractBarChart::LayoutPolicy getLayoutPolicy() const;
 	void setLayoutHint(double hint);
 	double getLayoutHint() const;
+
 	void setSpacing(int spacing);
 	int getSpacing() const;
+
 	void setMargin(int margin);
 	int getMargin() const;
-
+    // 获取当前界面选中的QwtColumnSymbol::FrameStyle
+    int getCurrentSelectFrameStyle() const;
+    // 把ui的symbol设置更新到item中
+    void updateSymbolToItem();
 public slots:
 	// 填充
 	void setFillBrush(const QBrush& v);
+    // 边线
+    void setEdgePen(const QPen& pen);
 	// 基线
 	void setBaseLine(double v);
 
 private slots:
 	void on_checkBoxChart_clicked(bool checked);
 	void on_checkBoxBar_clicked(bool checked);
-	void on_checkBoxEnableFill_clicked(bool checked);
-	void onBrushChanged(const QBrush& b);
+    void onGroupBoxFillClicked(bool on);
+    void onGroupBoxEdgeClicked(bool on);
+    void onFillBrushChanged(const QBrush& b);
+    void onEdgePenChanged(const QPen& p);
 	void on_lineEditBaseLine_editingFinished();
 	void onLayoutPolicyChanged(int index);
 	void onSpacingValueChanged(int value);
