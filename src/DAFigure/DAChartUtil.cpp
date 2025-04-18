@@ -1040,11 +1040,8 @@ QColor DAChartUtil::dynamicGetItemColor(const QwtPlotItem* item, const QColor& d
 		return p->pen().color();
 	} else if (const QwtPlotHistogram* p = dynamic_cast< const QwtPlotHistogram* >(item)) {
 		return p->brush().color();
-	} else if (const QwtPlotBarChart* bar = dynamic_cast< const QwtPlotBarChart* >(item)) {
-		const QwtColumnSymbol* symbol = bar->symbol();
-		if (symbol) {
-			return symbol->palette().color(QPalette::Button);
-		}
+    } else if (const QwtPlotBarChart* p = dynamic_cast< const QwtPlotBarChart* >(item)) {
+        return p->brush().color();
 	} else if (const QwtPlotGrid* grid = dynamic_cast< const QwtPlotGrid* >(item)) {
 		return grid->majorPen().color();
 	} else if (const QwtPlotMarker* marker = dynamic_cast< const QwtPlotMarker* >(item)) {
@@ -1136,21 +1133,9 @@ bool DAChartUtil::setPlotItemColor(QwtPlotItem* item, const QColor& color)
 		break;
 	case QwtPlotItem::Rtti_PlotBarChart:
 		if (QwtPlotBarChart* bar = static_cast< QwtPlotBarChart* >(item)) {
-			const QwtColumnSymbol* sym = bar->symbol();
-            //! symbol是不可修改属性，必须重新设置
-			if (sym) {
-				QwtColumnSymbol* newSym = new QwtColumnSymbol();
-				newSym->setStyle(sym->style());
-				newSym->setFrameStyle(sym->frameStyle());
-				newSym->setLineWidth(sym->lineWidth());
-				newSym->setPalette(sym->palette());
-				QPalette p = sym->palette();
-				p.setColor(QPalette::Button, color);
-				newSym->setPalette(p);
-                bar->setSymbol(newSym);
-			} else {
-				return false;
-			}
+            QBrush brush = bar->brush();
+            brush.setColor(color);
+            bar->setBrush(brush);
 			return true;
 		}
 		break;
@@ -1235,11 +1220,8 @@ QColor DAChartUtil::getPlotItemColor(const QwtPlotItem* item)
 	} break;
 	//! For QwtPlotBarChart
 	case QwtPlotItem::Rtti_PlotBarChart: {  // QwtPlotBarChart 为symbol()->palette().background().color()颜色
-		const QwtPlotBarChart* li     = static_cast< const QwtPlotBarChart* >(item);
-		const QwtColumnSymbol* symbol = li->symbol();
-		if (symbol) {
-			color = symbol->palette().window().color();
-		}
+        const QwtPlotBarChart* bar = static_cast< const QwtPlotBarChart* >(item);
+        color                      = bar->brush().color();
 	} break;
 	//! For QwtPlotMultiBarChart
 	case QwtPlotItem::Rtti_PlotMultiBarChart: {
@@ -1331,11 +1313,8 @@ QBrush DAChartUtil::getPlotItemBrush(const QwtPlotItem* item)
 	} break;
 	//! For QwtPlotBarChart
 	case QwtPlotItem::Rtti_PlotBarChart: {  // QwtPlotBarChart 为symbol()->palette().background().color()颜色
-		const QwtPlotBarChart* li     = static_cast< const QwtPlotBarChart* >(item);
-		const QwtColumnSymbol* symbol = li->symbol();
-		if (symbol) {
-			brush = symbol->palette().window();
-		}
+        const QwtPlotBarChart* bar = static_cast< const QwtPlotBarChart* >(item);
+        brush                      = bar->brush();
 	} break;
 	//! For QwtPlotMultiBarChart
 	case QwtPlotItem::Rtti_PlotMultiBarChart: {

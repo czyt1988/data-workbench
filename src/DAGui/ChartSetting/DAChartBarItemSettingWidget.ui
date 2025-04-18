@@ -51,60 +51,6 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="groupBoxCurve">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="title">
-      <string>Curve Setting</string>
-     </property>
-     <property name="flat">
-      <bool>true</bool>
-     </property>
-     <layout class="QGridLayout" name="gridLayout_5">
-      <item row="0" column="2">
-       <widget class="QCheckBox" name="checkBoxBar">
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For Steps curve style only. Draws a step function from the right to the left.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-        <property name="text">
-         <string>Bar</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QCheckBox" name="checkBoxChart">
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Only in combination with Lines Style, tries to interpolate/smooth the curve, before it is painted. &lt;/p&gt;&lt;p&gt;Note:Curve fitting requires temporary memory for calculating coefficients and additional points.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-        <property name="text">
-         <string>Chart</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>Legend Mode</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-     <zorder>checkBoxChart</zorder>
-     <zorder>label_2</zorder>
-     <zorder>checkBoxBar</zorder>
-    </widget>
-   </item>
-   <item>
     <widget class="QGroupBox" name="groupBoxFill">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
@@ -146,6 +92,9 @@
         <property name="checked">
          <bool>true</bool>
         </property>
+        <attribute name="buttonGroup">
+         <string notr="true">buttonGroupFrameStyle</string>
+        </attribute>
        </widget>
       </item>
       <item row="1" column="2">
@@ -153,19 +102,15 @@
         <property name="text">
          <string>Raised</string>
         </property>
+        <attribute name="buttonGroup">
+         <string notr="true">buttonGroupFrameStyle</string>
+        </attribute>
        </widget>
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="label">
         <property name="text">
          <string>Frame Style</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="3">
-       <widget class="QRadioButton" name="radioButtonFrameStyleNoframe">
-        <property name="text">
-         <string>No Frame</string>
         </property>
        </widget>
       </item>
@@ -248,73 +193,14 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="groupBox">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="title">
-      <string>Other</string>
-     </property>
-     <property name="flat">
-      <bool>true</bool>
-     </property>
-     <layout class="QGridLayout" name="gridLayout">
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_4">
-        <property name="text">
-         <string>Base line</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QLineEdit" name="lineEditBaseLine"/>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
     <widget class="QGroupBox" name="groupBoxLayout">
      <property name="title">
       <string>Layout Setting</string>
      </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
      <layout class="QGridLayout" name="gridLayout_6">
-      <item row="0" column="0">
-       <widget class="QLabel" name="labelLayoutPolicy">
-        <property name="text">
-         <string>Layout Policy:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QComboBox" name="comboBoxLayoutPolicy"/>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="labelSpacing">
-        <property name="text">
-         <string>Spacing:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QSpinBox" name="spinBoxSpacing">
-        <property name="minimum">
-         <number>0</number>
-        </property>
-        <property name="maximum">
-         <number>100</number>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="labelMargin">
-        <property name="text">
-         <string>Margin:</string>
-        </property>
-       </widget>
-      </item>
       <item row="2" column="1">
        <widget class="QSpinBox" name="spinBoxMargin">
         <property name="minimum">
@@ -332,6 +218,40 @@
         </property>
        </widget>
       </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="labelSpacing">
+        <property name="text">
+         <string>Spacing:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="labelMargin">
+        <property name="text">
+         <string>Margin:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="comboBoxLayoutPolicy"/>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="labelLayoutPolicy">
+        <property name="text">
+         <string>Layout Policy:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QSpinBox" name="spinBoxSpacing">
+        <property name="minimum">
+         <number>0</number>
+        </property>
+        <property name="maximum">
+         <number>100</number>
+        </property>
+       </widget>
+      </item>
       <item row="3" column="1">
        <widget class="QDoubleSpinBox" name="doubleSpinBoxLayoutHint">
         <property name="minimum">
@@ -344,6 +264,64 @@
          <double>0.100000000000000</double>
         </property>
        </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="title">
+      <string>Other</string>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Legend Mode</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QCheckBox" name="checkBoxChart">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Only in combination with Lines Style, tries to interpolate/smooth the curve, before it is painted. &lt;/p&gt;&lt;p&gt;Note:Curve fitting requires temporary memory for calculating coefficients and additional points.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Chart</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>Base line</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <widget class="QCheckBox" name="checkBoxBar">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For Steps curve style only. Draws a step function from the right to the left.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Bar</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2" colspan="2">
+       <widget class="QLineEdit" name="lineEditBaseLine"/>
       </item>
      </layout>
     </widget>
@@ -385,4 +363,7 @@
  </customwidgets>
  <resources/>
  <connections/>
+ <buttongroups>
+  <buttongroup name="buttonGroupFrameStyle"/>
+ </buttongroups>
 </ui>

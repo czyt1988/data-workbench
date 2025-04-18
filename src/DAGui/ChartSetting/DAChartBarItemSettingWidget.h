@@ -79,8 +79,7 @@ public:
 	int getMargin() const;
     // 获取当前界面选中的QwtColumnSymbol::FrameStyle
     int getCurrentSelectFrameStyle() const;
-    // 把ui的symbol设置更新到item中
-    void updateSymbolToItem();
+
 public slots:
 	// 填充
 	void setFillBrush(const QBrush& v);
@@ -101,7 +100,7 @@ private slots:
 	void onSpacingValueChanged(int value);
 	void onMarginValueChanged(int value);
 	void onLayoutHintValueChanged(double value);
-
+    void onButtonGroupFrameStyleClicked(QAbstractButton* button);
 protected slots:
 	virtual void plotItemAttached(QwtPlotItem* plotItem, bool on) override;
 

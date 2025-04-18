@@ -95,6 +95,12 @@ message(STATUS "qt${QT_VERSION_MAJOR}advanceddocking_DIR=${qt${QT_VERSION_MAJOR}
 
 # 常见错误
 
+- 构建过程中出现moc错误
+
+> 在编译输出中看到moc相关的错误时，只需要再多几次构建即可，这个问题尤其发生在第一次构建的时候，大批量的moc操作有时会出现异常，只要保留build目录，继续构建即可
+
 - 完成编译后软件运行python报错
 
-`data-workbench`依赖python，启动过程会寻找python，如果python环境没有指定，会使用`where python`命令获取操作系统下的python环境，如果找不到，会报错，也有可能找到了别的python环境，导致启动加载库失败，`data-workbench`对应的python库需要指定安装相关的包，具体见：[readme文档](../readme.md)，你可以通过`python-config.json`让程序寻找指定的python环境，具体见：[readme文档](../readme.md)
+> `data-workbench`依赖python，启动过程会寻找python，如果python环境没有指定，会使用`where python`命令获取操作系统下的python环境，如果找不到，会报错，也有可能找到了别的python环境，导致启动加载库失败，`data-workbench`对应的python库需要指定安装相关的包，具体见：[readme文档](../readme.md)，你可以通过`python-config.json`让程序寻找指定的python环境，具体见：[readme文档](../readme.md)
+>
+> 你需要把`python-config.json`放到build对应的bin目录下，以及安装目录下

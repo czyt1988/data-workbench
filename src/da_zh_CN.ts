@@ -1765,22 +1765,22 @@ Table Area</source>
 <context>
     <name>DA::DAChartBarItemSettingWidget</name>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="298"/>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="340"/>
         <source>Auto Adjust Samples</source>
         <translation>自动调整样本</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="299"/>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="341"/>
         <source>Scale Samples To Axes</source>
         <translation>样本适应坐标轴</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="300"/>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="342"/>
         <source>Scale Sample To Canvas</source>
         <translation>样本适应画布</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="301"/>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="343"/>
         <source>Fixed Sample Size</source>
         <translation>样本尺寸固定</translation>
     </message>
@@ -3567,8 +3567,6 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
     <message>
         <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="122"/>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="144"/>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="185"/>
         <source>Fill</source>
         <translation>填充</translation>
     </message>
@@ -3578,42 +3576,67 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>填充画笔</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="219"/>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="144"/>
+        <source>Plain</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="154"/>
+        <source>Raised</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="161"/>
+        <source>Frame Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="168"/>
+        <source>No Frame</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="209"/>
+        <source>Edge</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="243"/>
         <source>Edge Pen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="235"/>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="259"/>
         <source>Other</source>
         <translation>其他</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="244"/>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="268"/>
         <source>Base line</source>
         <translation>基准线</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="257"/>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="281"/>
         <source>Layout Setting</source>
         <translation>布局设置</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="263"/>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="287"/>
         <source>Layout Policy:</source>
         <translation>布局策略：</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="273"/>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="297"/>
         <source>Spacing:</source>
         <translation>间距：</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="290"/>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="314"/>
         <source>Margin:</source>
         <translation>外边距：</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="307"/>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="331"/>
         <source>Layout Hint:</source>
         <translation>布局提示：</translation>
     </message>

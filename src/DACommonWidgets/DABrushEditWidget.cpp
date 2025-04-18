@@ -65,6 +65,7 @@ void DABrushEditWidget::setCurrentBrush(const QBrush& b)
  */
 void DABrushEditWidget::setCurrentBrushStyle(Qt::BrushStyle s)
 {
+
     ui->comboBox->setCurrentBrushStyle(s);
 }
 

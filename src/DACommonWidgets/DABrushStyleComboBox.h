@@ -43,7 +43,7 @@ public:
     // 获取画刷样式
     Qt::BrushStyle getBrushStyle(int index) const;
 public slots:
-    // 设置当前的样式
+    // 设置当前的样式 此函数会发射currentBrushStyleChanged信号
     void setCurrentBrushStyle(Qt::BrushStyle s);
 signals:
     /**
