@@ -1,6 +1,7 @@
 ﻿#include "DANodeLinkPoint.h"
 namespace DA
 {
+
 DANodeLinkPoint::DANodeLinkPoint() : way(Output), direction(AspectDirection::East)
 {
 }
@@ -327,4 +328,6 @@ uint qHash(const DANodeLinkPoint& key, uint seed)
 {
 	return (qHash(key.name, seed));
 }
-}
+
+DA_AUTO_REGISTER_META_TYPE(DA::DANodeLinkPoint)
+}  // end DA

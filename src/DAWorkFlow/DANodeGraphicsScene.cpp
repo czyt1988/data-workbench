@@ -371,8 +371,8 @@ DAAbstractNodeGraphicsItem* DANodeGraphicsScene::nodeItemAt(const QPointF& scene
 
 void DANodeGraphicsScene::initConnect()
 {
-	qRegisterMetaType< DANodeLinkPoint >("DANodeLinkPoint");
-	//    connect(this, &QGraphicsScene::selectionChanged, this, &DANodeGraphicsScene::onItemSelectionChanged);
+	// qRegisterMetaType< DANodeLinkPoint >("DANodeLinkPoint");
+	//     connect(this, &QGraphicsScene::selectionChanged, this, &DANodeGraphicsScene::onItemSelectionChanged);
 	connect(this, &DAGraphicsScene::selectItemChanged, this, &DANodeGraphicsScene::onSelectItemChanged);
 	connect(this, &DAGraphicsScene::selectLinkChanged, this, &DANodeGraphicsScene::onSelectLinkChanged);
 }

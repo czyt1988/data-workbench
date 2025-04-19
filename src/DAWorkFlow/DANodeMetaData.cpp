@@ -4,10 +4,6 @@ namespace DA
 {
 
 //===================================================
-// using DA namespace -- 禁止在头文件using！！
-//===================================================
-
-//===================================================
 // DANodeMetaData
 //===================================================
 
@@ -175,4 +171,5 @@ QDebug operator<<(QDebug debug, const DANodeMetaData& c)
 	return debug;
 }
 
+DA_AUTO_REGISTER_META_TYPE(DA::DANodeMetaData)
 }  // end of namespace DA

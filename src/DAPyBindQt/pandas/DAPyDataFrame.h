@@ -26,6 +26,8 @@ public:
 	DAPyDataFrame(pybind11::object&& obj);
 	~DAPyDataFrame();
 	// 获取列
+	// 注意pandas.dataframe的列名是可以任意类型，如果列名是数字，那么熟通过数字来获取而不是用字符串，
+	// 这里重写的operator[](int n)是针对iloc，并不是基于数字列名的获取
 	DAPySeries operator[](const QString& n) const;
 	DAPySeries operator[](int n) const;
 	DAPyDataFrame& operator=(const pybind11::object& obj);

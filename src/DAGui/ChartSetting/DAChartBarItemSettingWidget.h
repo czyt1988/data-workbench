@@ -89,8 +89,8 @@ public slots:
 	void setBaseLine(double v);
 
 private slots:
-	void on_checkBoxChart_clicked(bool checked);
-	void on_checkBoxBar_clicked(bool checked);
+	void onCheckBoxLegendModeChartClicked(bool checked);
+	void onCheckBoxLegendModeBarClicked(bool checked);
     void onGroupBoxFillClicked(bool on);
     void onGroupBoxEdgeClicked(bool on);
     void onFillBrushChanged(const QBrush& b);
