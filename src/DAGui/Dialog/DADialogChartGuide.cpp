@@ -5,7 +5,8 @@
 #include "DAGlobalColorTheme.h"
 #include "DADataManager.h"
 #include "DAAbstractChartAddItemWidget.h"
-#include "DAChartAddXYSeriesWidget.h"
+#include "DAChartAddCurveWidget.h"
+#include "DAChartAddBarWidget.h"
 #include "DAChartAddXYESeriesWidget.h"
 #include "DAChartAddOHLCSeriesWidget.h"
 #include "DAChartUtil.h"
@@ -21,7 +22,8 @@ class DADialogChartGuide::PrivateData
 	DA_DECLARE_PUBLIC(DADialogChartGuide)
 public:
 	PrivateData(DADialogChartGuide* p);
-	DAChartAddXYSeriesWidget* mXySeries { nullptr };
+	DAChartAddCurveWidget* mAddCurve { nullptr };
+	DAChartAddBarWidget* mAddBar { nullptr };
 	DAChartAddXYESeriesWidget* mXyeSeries { nullptr };
 	DAChartAddOHLCSeriesWidget* mOHLCSeries { nullptr };
 };
@@ -39,10 +41,12 @@ DADialogChartGuide::DADialogChartGuide(QWidget* parent)
 	ui->setupUi(this);
 	DA_D(d);
 	initListWidget();
-	d->mXySeries   = new DAChartAddXYSeriesWidget();
+	d->mAddCurve   = new DAChartAddCurveWidget();
+	d->mAddBar     = new DAChartAddBarWidget();
 	d->mXyeSeries  = new DAChartAddXYESeriesWidget();
 	d->mOHLCSeries = new DAChartAddOHLCSeriesWidget();
-	ui->stackedWidget->addWidget(d->mXySeries);
+	ui->stackedWidget->addWidget(d->mAddCurve);
+	ui->stackedWidget->addWidget(d->mAddBar);
 	ui->stackedWidget->addWidget(d->mXyeSeries);
 	ui->stackedWidget->addWidget(d->mOHLCSeries);
 	connect(ui->listWidgetChartType, &QListWidget::currentItemChanged, this, &DADialogChartGuide::onListWidgetCurrentItemChanged);
@@ -202,13 +206,13 @@ void DADialogChartGuide::onListWidgetCurrentItemChanged(QListWidgetItem* current
 	DA::ChartTypes ct = static_cast< DA::ChartTypes >(current->data(Qt::UserRole).toInt());
 	switch (ct) {
 	case DA::ChartTypes::Curve:
-		ui->stackedWidget->setCurrentWidget(d->mXySeries);
+		ui->stackedWidget->setCurrentWidget(d->mAddCurve);
 		break;
 	case DA::ChartTypes::Scatter:
-		ui->stackedWidget->setCurrentWidget(d->mXySeries);
+		ui->stackedWidget->setCurrentWidget(d->mAddCurve);
 		break;
 	case DA::ChartTypes::Bar:
-		ui->stackedWidget->setCurrentWidget(d->mXySeries);
+		ui->stackedWidget->setCurrentWidget(d->mAddBar);
 		break;
 	case DA::ChartTypes::ErrorBar:
 		ui->stackedWidget->setCurrentWidget(d->mXyeSeries);

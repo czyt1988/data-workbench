@@ -1677,87 +1677,87 @@ Table Area</source>
 <context>
     <name>DA::DAChartAddXYSeriesWidget</name>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="23"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="22"/>
         <source>x</source>
         <translation>x</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="23"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="22"/>
         <source>y</source>
         <translation>y</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="207"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="215"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="238"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="247"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="270"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="284"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="291"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="310"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="324"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="332"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="351"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="362"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="369"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="377"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="191"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="199"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="222"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="231"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="254"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="268"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="275"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="294"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="308"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="316"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="335"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="346"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="353"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="361"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="208"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="192"/>
         <source>The initial value of x auto increment series must be a floating-point arithmetic number</source>
         <translation>x自增序列的初始值必须为浮点数</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="216"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="200"/>
         <source>The step value of x auto increment series must be a floating-point arithmetic number</source>
         <translation>x自增序列的步长必须为浮点数</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="239"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="223"/>
         <source>The initial value of y auto increment series must be a floating-point arithmetic number</source>
         <translation>y自增序列的初始值必须为浮点数</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="248"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="232"/>
         <source>The step value of y auto increment series must be a floating-point arithmetic number</source>
         <translation>y自增序列的步长必须为浮点数</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="271"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="255"/>
         <source>x and y cannot be set to autoincrement at the same time</source>
         <translation>x和y无法同时设置为自增</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="292"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="333"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="378"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="276"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="317"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="362"/>
         <source>The None value cannot be converted to a series</source>
         <translation>None值无法转换为序列</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="311"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="352"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="295"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="336"/>
         <source>Exception occurred during extracting from pandas.Series to double vector</source>
         <translation>从pandas.Series提取为double vector过程中出现异常</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="325"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="363"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="309"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="347"/>
         <source>x must be a series</source>
         <translation>x必须是序列</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="285"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="370"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="269"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="354"/>
         <source>y must be a series</source>
         <translation>y必须是序列</translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="306"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="347"/>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="397"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="290"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="331"/>
+        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="381"/>
         <source>Exception occurred during extracting from pandas.Series to double vector:%1</source>
         <translation>从pandas.Series提取为double vector过程中出现异常:%1</translation>
     </message>
@@ -1765,22 +1765,22 @@ Table Area</source>
 <context>
     <name>DA::DAChartBarItemSettingWidget</name>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="293"/>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="18"/>
         <source>Auto Adjust Samples</source>
         <translation>自动调整样本</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="294"/>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="19"/>
         <source>Scale Samples To Axes</source>
         <translation>样本适应坐标轴</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="295"/>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="20"/>
         <source>Scale Sample To Canvas</source>
         <translation>样本适应画布</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="296"/>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="21"/>
         <source>Fixed Sample Size</source>
         <translation>样本尺寸固定</translation>
     </message>
@@ -2081,18 +2081,19 @@ Table Area</source>
 <context>
     <name>DA::DADataManagerTreeModel</name>
     <message>
-        <location filename="DAGui/Models/DADataManagerTreeModel.cpp" line="399"/>
+        <location filename="DAGui/Models/DADataManagerTreeModel.cpp" line="409"/>
+        <location filename="DAGui/Models/DADataManagerTreeModel.cpp" line="411"/>
         <source>name</source>
         <translation>名称</translation>
     </message>
     <message>
-        <location filename="DAGui/Models/DADataManagerTreeModel.cpp" line="399"/>
+        <location filename="DAGui/Models/DADataManagerTreeModel.cpp" line="411"/>
         <source>property</source>
         <translation>原型</translation>
     </message>
     <message>
-        <location filename="DAGui/Models/DADataManagerTreeModel.cpp" line="531"/>
-        <location filename="DAGui/Models/DADataManagerTreeModel.cpp" line="543"/>
+        <location filename="DAGui/Models/DADataManagerTreeModel.cpp" line="564"/>
+        <location filename="DAGui/Models/DADataManagerTreeModel.cpp" line="576"/>
         <source>The data(%1) cannot find its corresponding item in the data management tree during the removal process</source>
         <translation>数据(%1)在移除过程中无法找到其对应的数据管理树中的条目</translation>
     </message>
@@ -2116,10 +2117,10 @@ Table Area</source>
     </message>
     <message>
         <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="221"/>
-        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="313"/>
-        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="340"/>
-        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="374"/>
-        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="409"/>
+        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="318"/>
+        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="345"/>
+        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="379"/>
+        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="414"/>
         <source>please select valid column</source>
         <translation>请选择正确的列</translation>
     </message>
@@ -2168,27 +2169,27 @@ Table Area</source>
 <context>
     <name>DA::DADialogChartGuide</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="59"/>
+        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="64"/>
         <source>curve</source>
         <translation>曲线图</translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="63"/>
+        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="68"/>
         <source>scatter</source>
         <translation>散点图</translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="67"/>
+        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="72"/>
         <source>bar</source>
         <translation>柱状图</translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="71"/>
+        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="76"/>
         <source>error bar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="75"/>
+        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="80"/>
         <source>box</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3275,6 +3276,50 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
 </context>
 <context>
+    <name>DAChartAddCurveWidget</name>
+    <message>
+        <location filename="DAGui/DAChartAddCurveWidget.ui" line="14"/>
+        <source>Add XY Series</source>
+        <translation type="unfinished">添加序列</translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAChartAddCurveWidget.ui" line="36"/>
+        <source>X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAChartAddCurveWidget.ui" line="48"/>
+        <location filename="DAGui/DAChartAddCurveWidget.ui" line="109"/>
+        <source>Autoincrement series</source>
+        <translation type="unfinished">自增序列</translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAChartAddCurveWidget.ui" line="63"/>
+        <location filename="DAGui/DAChartAddCurveWidget.ui" line="124"/>
+        <source>Initial value</source>
+        <translation type="unfinished">初始值</translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAChartAddCurveWidget.ui" line="70"/>
+        <location filename="DAGui/DAChartAddCurveWidget.ui" line="84"/>
+        <location filename="DAGui/DAChartAddCurveWidget.ui" line="131"/>
+        <location filename="DAGui/DAChartAddCurveWidget.ui" line="145"/>
+        <source>1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAChartAddCurveWidget.ui" line="77"/>
+        <location filename="DAGui/DAChartAddCurveWidget.ui" line="138"/>
+        <source>Self increasing step size</source>
+        <translation type="unfinished">步长</translation>
+    </message>
+    <message>
+        <location filename="DAGui/DAChartAddCurveWidget.ui" line="97"/>
+        <source>Y</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DAChartAddOHLCSeriesWidget</name>
     <message>
         <location filename="DAGui/DAChartAddOHLCSeriesWidget.ui" line="14"/>
@@ -3492,78 +3537,97 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>通用设置</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="71"/>
-        <source>Curve Setting</source>
-        <translation>曲线设置</translation>
-    </message>
-    <message>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="83"/>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="316"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For Steps curve style only. Draws a step function from the right to the left.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;仅适用于阶梯曲线样式。从右向左绘制阶跃函数。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="86"/>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="319"/>
         <source>Bar</source>
         <translation>柱状图</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="93"/>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="296"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Only in combination with Lines Style, tries to interpolate/smooth the curve, before it is painted. &lt;/p&gt;&lt;p&gt;Note:Curve fitting requires temporary memory for calculating coefficients and additional points.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;仅在曲线样式为折线时，才会尝试在绘制曲线之前对其进行插值/平滑处理。&lt;/p&gt;&lt;p&gt;注：曲线拟合需要临时内存来计算系数和附加点。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="96"/>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="299"/>
         <source>Chart</source>
         <translation>图</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="103"/>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="289"/>
         <source>Legend Mode</source>
         <translation>图例模式</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="128"/>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="153"/>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="68"/>
         <source>Fill</source>
         <translation>填充</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="146"/>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="83"/>
         <source>fill brush</source>
         <translation>填充画笔</translation>
     </message>
     <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="90"/>
+        <source>Plain</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="103"/>
+        <source>Raised</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="113"/>
+        <source>Frame Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="154"/>
+        <source>Edge</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="188"/>
+        <source>Edge Pen</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="280"/>
         <source>Other</source>
         <translation>其他</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="200"/>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="309"/>
         <source>Base line</source>
         <translation>基准线</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="213"/>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="198"/>
         <source>Layout Setting</source>
         <translation>布局设置</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="219"/>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="241"/>
         <source>Layout Policy:</source>
         <translation>布局策略：</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="229"/>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="224"/>
         <source>Spacing:</source>
         <translation>间距：</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="246"/>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="231"/>
         <source>Margin:</source>
         <translation>外边距：</translation>
     </message>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="263"/>
+        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="217"/>
         <source>Layout Hint:</source>
         <translation>布局提示：</translation>
     </message>
@@ -7021,12 +7085,12 @@ Wrap</source>
         <translation>%3标签属性%1=%2无法转换为double类型 </translation>
     </message>
     <message>
-        <location filename="APP/main.cpp" line="88"/>
+        <location filename="APP/main.cpp" line="84"/>
         <source>Kernel initialization failed</source>
         <translation>内核初始化失败</translation>
     </message>
     <message>
-        <location filename="APP/main.cpp" line="113"/>
+        <location filename="APP/main.cpp" line="109"/>
         <source>%1(%2) build %3
 params:
 --version : version information
@@ -7039,7 +7103,7 @@ params:
 </translation>
     </message>
     <message>
-        <location filename="APP/main.cpp" line="206"/>
+        <location filename="APP/main.cpp" line="202"/>
         <source>Unable to create dump file path:%1</source>
         <translation>无法创建dump文件路径：%1</translation>
     </message>

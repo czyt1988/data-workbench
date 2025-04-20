@@ -1,20 +1,67 @@
 ﻿#include "DAChartCommonItemsSettingWidget.h"
 #include "ui_DAChartCommonItemsSettingWidget.h"
+#include "DAChartBarItemSettingWidget.h"
+#include "DAChartCurveItemSettingWidget.h"
+#include "DAChartErrorBarItemSettingWidget.h"
+#include "DAChartGridSettingWidget.h"
+#include "DAChartLegendItemSettingWidget.h"
+
 namespace DA
 {
-DAChartCommonItemsSettingWidget::DAChartCommonItemsSettingWidget(QWidget* parent)
-    : DAAbstractChartItemSettingWidget(parent), ui(new Ui::DAChartCommonItemsSettingWidget)
+
+class DAChartCommonItemsSettingWidget::PrivateData
 {
-    ui->setupUi(this);
+	DA_DECLARE_PUBLIC(DAChartCommonItemsSettingWidget)
+public:
+	PrivateData(DAChartCommonItemsSettingWidget* p);
+
+public:
+	DA::DAChartCurveItemSettingWidget* widgetCurveItem { nullptr };
+	DA::DAChartBarItemSettingWidget* widgetBarItem { nullptr };
+	DA::DAChartErrorBarItemSettingWidget* widgetErrorBarItem { nullptr };
+	DA::DAChartLegendItemSettingWidget* widgetLegendItem { nullptr };
+	DA::DAChartGridSettingWidget* widgetGridItem { nullptr };
+};
+
+DAChartCommonItemsSettingWidget::PrivateData::PrivateData(DAChartCommonItemsSettingWidget* p)
+{
+}
+
+//===============================================================
+// DAChartCommonItemsSettingWidget
+//===============================================================
+
+DAChartCommonItemsSettingWidget::DAChartCommonItemsSettingWidget(QWidget* parent)
+	: DAAbstractChartItemSettingWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DAChartCommonItemsSettingWidget)
+{
+	ui->setupUi(this);
+	DA_D(d);
+	d->widgetCurveItem = new DA::DAChartCurveItemSettingWidget();
+	d->widgetCurveItem->setObjectName(QString::fromUtf8("widgetCurveItem"));
+	d->widgetBarItem = new DA::DAChartBarItemSettingWidget();
+	d->widgetBarItem->setObjectName(QString::fromUtf8("widgetBarItem"));
+	d->widgetErrorBarItem = new DA::DAChartErrorBarItemSettingWidget();
+	d->widgetErrorBarItem->setObjectName(QString::fromUtf8("widgetErrorBarItem"));
+	d->widgetLegendItem = new DA::DAChartLegendItemSettingWidget();
+	d->widgetLegendItem->setObjectName(QString::fromUtf8("widgetLegendItem"));
+	d->widgetGridItem = new DA::DAChartGridSettingWidget();
+	d->widgetGridItem->setObjectName(QString::fromUtf8("widgetGridItem"));
+
+	ui->stackedWidget->addWidget(d->widgetCurveItem);
+	ui->stackedWidget->addWidget(d->widgetBarItem);
+	ui->stackedWidget->addWidget(d->widgetErrorBarItem);
+	ui->stackedWidget->addWidget(d->widgetLegendItem);
+	ui->stackedWidget->addWidget(d->widgetGridItem);
 }
 
 DAChartCommonItemsSettingWidget::~DAChartCommonItemsSettingWidget()
 {
-    delete ui;
+	delete ui;
 }
 
 void DAChartCommonItemsSettingWidget::plotItemSet(QwtPlotItem* item)
 {
+	DA_D(d);
 	if (nullptr == item) {
 		return;
 	}
@@ -22,20 +69,22 @@ void DAChartCommonItemsSettingWidget::plotItemSet(QwtPlotItem* item)
 
 	//! For QwtPlotGrid
 	case QwtPlotItem::Rtti_PlotGrid: {
-		ui->stackedWidget->setCurrentWidget(ui->widgetGridItem);
-		ui->widgetGridItem->setPlotItem(item);
+		ui->stackedWidget->setCurrentWidget(d->widgetGridItem);
+		d->widgetGridItem->setPlotItem(item);
 		break;
 	}
 
 	//! For QwtPlotScaleItem
 	case QwtPlotItem::Rtti_PlotScale: {
+		ui->stackedWidget->setCurrentWidget(d->widgetCurveItem);
+		d->widgetCurveItem->setPlotItem(item);
 		break;
 	}
 
 	//! For QwtPlotLegendItem
 	case QwtPlotItem::Rtti_PlotLegend: {
-		ui->stackedWidget->setCurrentWidget(ui->widgetLegendItem);
-		ui->widgetLegendItem->setPlotItem(item);
+		ui->stackedWidget->setCurrentWidget(d->widgetLegendItem);
+		d->widgetLegendItem->setPlotItem(item);
 		break;
 	}
 
@@ -46,8 +95,8 @@ void DAChartCommonItemsSettingWidget::plotItemSet(QwtPlotItem* item)
 
 	//! For QwtPlotCurve
 	case QwtPlotItem::Rtti_PlotCurve: {
-		ui->stackedWidget->setCurrentWidget(ui->widgetCurveItem);
-		ui->widgetCurveItem->setPlotItem(item);
+		ui->stackedWidget->setCurrentWidget(d->widgetCurveItem);
+		d->widgetCurveItem->setPlotItem(item);
 		break;
 	}
 
@@ -58,6 +107,8 @@ void DAChartCommonItemsSettingWidget::plotItemSet(QwtPlotItem* item)
 
 	//! For QwtPlotIntervalCurve
 	case QwtPlotItem::Rtti_PlotIntervalCurve: {
+		ui->stackedWidget->setCurrentWidget(d->widgetErrorBarItem);
+		d->widgetErrorBarItem->setPlotItem(item);
 		break;
 	}
 
@@ -78,11 +129,15 @@ void DAChartCommonItemsSettingWidget::plotItemSet(QwtPlotItem* item)
 
 	//! For QwtPlotTradingCurve
 	case QwtPlotItem::Rtti_PlotTradingCurve: {
+
 		break;
 	}
 
 	//! For QwtPlotBarChart
 	case QwtPlotItem::Rtti_PlotBarChart: {
+		ui->stackedWidget->setCurrentWidget(d->widgetBarItem);
+		d->widgetBarItem->setPlotItem(item);
+
 		break;
 	}
 
@@ -114,4 +169,5 @@ void DAChartCommonItemsSettingWidget::plotItemSet(QwtPlotItem* item)
 		break;
 	}
 }
+
 }  // end DA

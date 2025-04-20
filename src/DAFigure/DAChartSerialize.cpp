@@ -138,7 +138,7 @@ QDataStream& operator>>(QDataStream& in, QwtText& t)
     bool isPaintUsingTextFont, isPaintUsingTextColor, isPaintBackground;
     bool isMinimumLayout;
     in >> str >> font >> renderFlags >> clr >> borderRadius >> borderPen >> backgroundBrush >> isPaintUsingTextFont
-    >> isPaintUsingTextColor >> isPaintBackground >> isMinimumLayout;
+        >> isPaintUsingTextColor >> isPaintBackground >> isMinimumLayout;
     t.setText(str);
     t.setFont(font);
     t.setRenderFlags(renderFlags);
@@ -263,7 +263,7 @@ QDataStream& operator<<(QDataStream& out, const QwtColumnSymbol* t)
     out << gc_dachart_version << gc_dachart_magic_mark;
     unsigned int c0 = 0x42fa34;
     out << c0;
-    out << static_cast< int >(t->frameStyle()) << t->lineWidth() << t->palette() << static_cast< int >(t->style());
+    out << static_cast< int >(t->frameStyle()) << t->pen() << t->brush() << static_cast< int >(t->style());
     return out;
 }
 ///
@@ -289,13 +289,13 @@ QDataStream& operator>>(QDataStream& in, QwtColumnSymbol* t)
         return in;
     }
     int frameStyle;
-    int lineWidth;
-    QPalette palette;
+    QPen pen;
+    QBrush brush;
     int style;
-    in >> frameStyle >> lineWidth >> palette >> style;
+    in >> frameStyle >> pen >> brush >> style;
     t->setFrameStyle(static_cast< QwtColumnSymbol::FrameStyle >(frameStyle));
-    t->setLineWidth(lineWidth);
-    t->setPalette(palette);
+    t->setPen(pen);
+    t->setBrush(brush);
     t->setStyle(static_cast< QwtColumnSymbol::Style >(style));
     return in;
 }
@@ -349,7 +349,7 @@ QDataStream& operator>>(QDataStream& in, QwtPlotItem* item)
     bool isRenderAntialiased;
     uint renderThreadCount;
     in >> title >> z >> isVisible >> xaxis >> yaxis >> legendIconSize >> isLegend >> isAutoScale >> isMargins
-    >> isScaleInterest >> isLegendInterest >> isRenderAntialiased >> renderThreadCount;
+        >> isScaleInterest >> isLegendInterest >> isRenderAntialiased >> renderThreadCount;
     item->setTitle(title);
     item->setZ(z);
     item->setVisible(isVisible);
@@ -379,7 +379,8 @@ QDataStream& operator<<(QDataStream& out, const QwtPlotCurve* item)
         << item->testPaintAttribute(QwtPlotCurve::ClipPolygons) << item->testPaintAttribute(QwtPlotCurve::FilterPoints)
         << item->testPaintAttribute(QwtPlotCurve::MinimizeMemory) << item->testPaintAttribute(QwtPlotCurve::ImageBuffer)
         << item->testLegendAttribute(QwtPlotCurve::LegendNoAttribute)
-        << item->testLegendAttribute(QwtPlotCurve::LegendShowLine) << item->testLegendAttribute(QwtPlotCurve::LegendShowSymbol)
+        << item->testLegendAttribute(QwtPlotCurve::LegendShowLine)
+        << item->testLegendAttribute(QwtPlotCurve::LegendShowSymbol)
         << item->testLegendAttribute(QwtPlotCurve::LegendShowBrush) << item->testCurveAttribute(QwtPlotCurve::Inverted)
         << item->testCurveAttribute(QwtPlotCurve::Fitted) << (int)(item->orientation());
     // save sample
@@ -428,8 +429,9 @@ QDataStream& operator>>(QDataStream& in, QwtPlotCurve* item)
     bool isFitted;
     int orientation;
     in >> (QwtPlotItem*)item;
-    in >> baseline >> brush >> pen >> style >> isClipPolygons >> isFilterPoints >> isMinimizeMemory >> isImageBuffer >> isLegendNoAttribute
-    >> isLegendShowLine >> isLegendShowSymbol >> isLegendShowBrush >> isInverted >> isFitted >> orientation;
+    in >> baseline >> brush >> pen >> style >> isClipPolygons >> isFilterPoints >> isMinimizeMemory >> isImageBuffer
+        >> isLegendNoAttribute >> isLegendShowLine >> isLegendShowSymbol >> isLegendShowBrush >> isInverted >> isFitted
+        >> orientation;
     item->setBaseline(baseline);
     item->setBrush(brush);
     item->setPen(pen);
@@ -686,7 +688,7 @@ QDataStream& operator>>(QDataStream& in, QwtScaleWidget* w)
     int alignment;
     QwtInterval colorBarInterval;
     in >> title >> isTitleInverted >> startBorderDist >> endBorderDist >> minBorderDistStart >> minBorderDistEnd
-    >> margin >> spacing >> isColorBarEnabled >> colorBarWidth >> alignment >> colorBarInterval;
+        >> margin >> spacing >> isColorBarEnabled >> colorBarWidth >> alignment >> colorBarInterval;
     w->setTitle(title);
     w->setLayoutFlag(QwtScaleWidget::TitleInverted, isTitleInverted);
     w->setBorderDist(startBorderDist, endBorderDist);
@@ -720,7 +722,8 @@ QDataStream& operator<<(QDataStream& out, const QwtScaleDraw* w)
     out << gc_dachart_version << gc_dachart_magic_mark;
     unsigned int c0 = 0x92fa34;
     out << c0;
-    out << static_cast< int >(w->alignment()) << w->length() << static_cast< int >(w->labelAlignment()) << w->labelRotation();
+    out << static_cast< int >(w->alignment()) << w->length() << static_cast< int >(w->labelAlignment())
+        << w->labelRotation();
     return out;
 }
 ///
@@ -824,8 +827,9 @@ QDataStream& operator<<(QDataStream& out, const QwtPlotCanvas* c)
 {
     out << gc_dachart_version << gc_dachart_magic_mark;
     out << (const QFrame*)c;
-    out << static_cast< int >(c->focusIndicator()) << c->borderRadius() << c->testPaintAttribute(QwtPlotCanvas::BackingStore)
-        << c->testPaintAttribute(QwtPlotCanvas::Opaque) << c->testPaintAttribute(QwtPlotCanvas::HackStyledBackground)
+    out << static_cast< int >(c->focusIndicator()) << c->borderRadius()
+        << c->testPaintAttribute(QwtPlotCanvas::BackingStore) << c->testPaintAttribute(QwtPlotCanvas::Opaque)
+        << c->testPaintAttribute(QwtPlotCanvas::HackStyledBackground)
         << c->testPaintAttribute(QwtPlotCanvas::ImmediatePaint);
     return out;
 }

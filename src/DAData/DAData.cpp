@@ -11,7 +11,8 @@
 // using DA namespace -- 禁止在头文件using！！
 //===================================================
 
-using namespace DA;
+namespace DA
+{
 
 //===================================================
 // DAData
@@ -87,8 +88,8 @@ DAData& DAData::operator=(const DAData& d)
 #if DA_ENABLE_PYTHON
 DAData& DAData::operator=(const DAPyDataFrame& d)
 {
-    std::shared_ptr< DAAbstractData > p = std::static_pointer_cast< DAAbstractData >(
-        std::make_shared< DADataPyDataFrame >(d));
+	std::shared_ptr< DAAbstractData > p =
+		std::static_pointer_cast< DAAbstractData >(std::make_shared< DADataPyDataFrame >(d));
 	mData = p;
 	return *this;
 }
@@ -336,10 +337,10 @@ void DAData::setDataManager(DADataManager* mgr)
     mDataMgr = mgr;
 }
 
-namespace DA
-{
 uint qHash(const DAData& key, uint seed)
 {
     return ::qHash(key.rawPointer(), seed);
 }
+
+DA_AUTO_REGISTER_META_TYPE(DA::DAData)
 }  // namespace DA

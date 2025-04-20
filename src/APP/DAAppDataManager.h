@@ -9,7 +9,7 @@ namespace DA
 {
 DA_IMPL_FORWARD_DECL(DAAppDataManager)
 class DACoreInterface;
-class DADataManagerTreeModel;
+
 /**
  * @brief DA的变量管理类，da的变量统一由此类管理
  *

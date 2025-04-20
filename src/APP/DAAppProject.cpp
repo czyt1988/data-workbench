@@ -363,10 +363,10 @@ bool DAAppProject::load(const QString& path)
 		qWarning() << tr("current project is busy");  // cn:当前工程正繁忙
 		return false;
 	}
-	setProjectPath(path);
 	// 加载之前先清空
 	clear();
 
+	setProjectPath(path);
 	// 创建archive任务队列
 	mArchive->appendXmlLoadTask(QStringLiteral("workflow.xml"), DAAPPPROJECT_TASK_LOAD_ID_WORKFLOW);
 
