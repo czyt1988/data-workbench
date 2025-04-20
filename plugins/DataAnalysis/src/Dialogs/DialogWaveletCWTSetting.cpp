@@ -48,7 +48,7 @@ DA::DAPySeries DialogWaveletCWTSetting::getCurrentSeries() const
 
 DA::DAPySeries DialogWaveletCWTSetting::getScalesSeries() const
 {
-	return DA::DAPySeries();
+	return ui->comboBoxScales->getCurrentDAData().toSeries();
 }
 
 QVariantMap DialogWaveletCWTSetting::getWaveletCWTSetting()

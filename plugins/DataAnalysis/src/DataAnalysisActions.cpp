@@ -15,7 +15,8 @@ void DataAnalysisActions::buildActions()
 	actionSpectrum     = createAction("actionSpectrum", ":/DataAnalysis/icons/icon/spectrum.svg");
 	actionFilter       = createAction("actionFilter", ":/DataAnalysis/icons/icon/filter.svg");
 	actionPeakAnalysis = createAction("actionPeakAnalysis", ":/DataAnalysis/icons/icon/peak-analysis.svg");
-	actionWaveletCWT   = createAction("actionWaveletAnalysis", ":/DataAnalysis/icons/icon/wavelet.svg");
+	actionWaveletCWT   = createAction("actionWaveletAnalysis", ":/DataAnalysis/icons/icon/wavelet-cwt.svg");
+	actionWaveletDWT   = createAction("actionWaveletAnalysis", ":/DataAnalysis/icons/icon/wavelet-dwt.svg");
 }
 
 void DataAnalysisActions::retranslate()
@@ -24,6 +25,7 @@ void DataAnalysisActions::retranslate()
 	actionFilter->setText(tr("Filter"));               // cn: 滤波
 	actionPeakAnalysis->setText(tr("Peak Analysis"));  // cn: 峰值分析
 	actionWaveletCWT->setText(tr("Wavelet CWT"));      // cn: 连续小波变换
+	actionWaveletDWT->setText(tr("Wavelet DWT"));      // cn: 离散小波变换
 }
 
 QAction* DataAnalysisActions::createAction(const char* objname)
