@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>570</width>
-    <height>438</height>
+    <width>580</width>
+    <height>510</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,13 +17,10 @@
    <item>
     <widget class="QSplitter" name="splitter">
      <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
      <widget class="QWidget" name="layoutWidget">
       <layout class="QVBoxLayout" name="verticalLayout_3">
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout"/>
-       </item>
        <item>
         <widget class="DA::DACollapsibleGroupBox" name="groupBoxX">
          <property name="title">
@@ -149,7 +146,7 @@
        <item>
         <widget class="DA::DACollapsibleGroupBox" name="groupBoxE">
          <property name="title">
-          <string>E</string>
+          <string>Error</string>
          </property>
          <property name="flat">
           <bool>true</bool>
@@ -164,7 +161,7 @@
        <item>
         <spacer name="verticalSpacer">
          <property name="orientation">
-          <enum>Qt::Vertical</enum>
+          <enum>Qt::Orientation::Vertical</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>

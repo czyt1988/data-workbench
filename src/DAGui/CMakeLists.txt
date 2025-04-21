@@ -37,6 +37,7 @@ set(DA_LIB_HEADER_FILES
     DAChartAddOHLCSeriesWidget.h
     DAChartAddCurveWidget.h
     DAChartAddBarWidget.h
+    DAChartAddIntervalCurveWidget.h
     DADataManagerComboBox.h
     DADataOperatePageWidget.h
     DAFigureFactory.h
@@ -83,6 +84,7 @@ set(DA_LIB_SOURCE_FILES
     DAChartAddOHLCSeriesWidget.cpp
     DAChartAddCurveWidget.cpp
     DAChartAddBarWidget.cpp
+    DAChartAddIntervalCurveWidget.cpp
     DAChartListView.cpp
     DAChartManageWidget.cpp
     DAChartOperateWidget.cpp

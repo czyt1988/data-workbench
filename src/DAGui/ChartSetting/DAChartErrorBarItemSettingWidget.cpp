@@ -1,9 +1,11 @@
-#include "DAChartErrorBarItemSettingWidget.h"
+﻿#include "DAChartErrorBarItemSettingWidget.h"
 #include "ui_DAChartErrorBarItemSettingWidget.h"
 #include <QMessageBox>
 #include <QDebug>
+#include "DASignalBlockers.hpp"
 #include "qwt_text.h"
-#include "qwt_plot.h"
+#include "qwt_plot_intervalcurve.h"
+#include "qwt_interval_symbol.h"
 namespace DA
 {
 DAChartErrorBarItemSettingWidget::DAChartErrorBarItemSettingWidget(QWidget* parent)
@@ -11,22 +13,10 @@ DAChartErrorBarItemSettingWidget::DAChartErrorBarItemSettingWidget(QWidget* pare
 {
 	ui->setupUi(this);
 	resetUI();
-	connect(ui->symbolEditWidget,
-			&DAChartSymbolEditWidget::symbolStyleChanged,
-			this,
-			&DAChartErrorBarItemSettingWidget::onSymbolStyleChanged);
-	connect(ui->symbolEditWidget,
-			&DAChartSymbolEditWidget::symbolSizeChanged,
-			this,
-			&DAChartErrorBarItemSettingWidget::onSymbolSizeChanged);
-	connect(ui->symbolEditWidget,
-			&DAChartSymbolEditWidget::symbolColorChanged,
-			this,
-			&DAChartErrorBarItemSettingWidget::onSymbolColorChanged);
-	connect(ui->symbolEditWidget,
-			&DAChartSymbolEditWidget::symbolOutlinePenChanged,
-			this,
-			&DAChartErrorBarItemSettingWidget::onSymbolOutlinePenChanged);
+	connect(ui->groupBoxErrorBar, &QGroupBox::clicked, this, &DAChartErrorBarItemSettingWidget::onGroupBoxErrorBarEnable);
+	connect(ui->groupBoxFill, &QGroupBox::clicked, this, &DAChartErrorBarItemSettingWidget::onGroupBoxFillEnable);
+	connect(ui->groupBoxPen, &QGroupBox::clicked, this, &DAChartErrorBarItemSettingWidget::onGroupBoxPenEnable);
+
 	connect(ui->brushEditWidget, &DABrushEditWidget::brushChanged, this, &DAChartErrorBarItemSettingWidget::onBrushChanged);
 	connect(ui->buttonGroupOrientation,
 			QOverload< QAbstractButton* >::of(&QButtonGroup::buttonClicked),
@@ -59,6 +49,7 @@ void DAChartErrorBarItemSettingWidget::plotItemSet(QwtPlotItem* item)
  */
 void DAChartErrorBarItemSettingWidget::updateUI(const QwtPlotIntervalCurve* item)
 {
+	DASignalBlockers blocker(ui->brushEditWidget, ui->penEditWidget);
 	ui->widgetItemSetting->updateUI(item);
 	setCurvePen(item->pen());
 	QBrush b = item->brush();
@@ -86,8 +77,8 @@ void DAChartErrorBarItemSettingWidget::updatePlotItem(QwtPlotIntervalCurve* item
 	// pen
 	item->setPen(getCurvePen());
 	// symbol
-	if (isEnableMarkerEdit()) {
-		QwtIntervalSymbol* symbol = ui->symbolEditWidget->createIntervalSymbol();
+	if (isEnableErrorBarEdit()) {
+		QwtIntervalSymbol* symbol = createIntervalSymbolFromUI();
 		item->setSymbol(symbol);
 	} else {
 		item->setSymbol(nullptr);
@@ -135,18 +126,18 @@ QString DAChartErrorBarItemSettingWidget::getTitle() const
  * @brief 开启marker编辑
  * @param on
  */
-void DAChartErrorBarItemSettingWidget::enableMarkerEdit(bool on)
+void DAChartErrorBarItemSettingWidget::enableErrorBarEdit(bool on)
 {
-    ui->checkBoxEnableMarker->setChecked(on);
+    ui->groupBoxErrorBar->setChecked(on);
 }
 
 /**
  * @brief 是否由marker
  * @return
  */
-bool DAChartErrorBarItemSettingWidget::isEnableMarkerEdit() const
+bool DAChartErrorBarItemSettingWidget::isEnableErrorBarEdit() const
 {
-    return ui->checkBoxEnableMarker->isChecked();
+    return ui->groupBoxErrorBar->isChecked();
 }
 
 /**
@@ -155,7 +146,7 @@ bool DAChartErrorBarItemSettingWidget::isEnableMarkerEdit() const
  */
 void DAChartErrorBarItemSettingWidget::enableFillEdit(bool on)
 {
-    ui->checkBoxEnableFill->setChecked(on);
+    ui->groupBoxFill->setChecked(on);
 }
 
 /**
@@ -164,7 +155,7 @@ void DAChartErrorBarItemSettingWidget::enableFillEdit(bool on)
  */
 bool DAChartErrorBarItemSettingWidget::isEnableFillEdit() const
 {
-    return ui->checkBoxEnableFill->isChecked();
+    return ui->groupBoxFill->isChecked();
 }
 
 /**
@@ -218,11 +209,7 @@ Qt::Orientation DAChartErrorBarItemSettingWidget::getOrientation() const
  */
 void DAChartErrorBarItemSettingWidget::resetUI()
 {
-	ui->symbolEditWidget->setSymbolStyle(QwtSymbol::Rect);
-	ui->symbolEditWidget->setSymbolSize(4);
-	ui->symbolEditWidget->setSymbolOutlinePen(Qt::NoPen);
-	ui->symbolEditWidget->setSymbolColor(Qt::black);
-	enableMarkerEdit(false);
+	enableErrorBarEdit(false);
 	enableFillEdit(false);
 	setOrientation(Qt::Horizontal);
 }
@@ -236,49 +223,49 @@ DAChartPlotItemSettingWidget* DAChartErrorBarItemSettingWidget::getItemSettingWi
     return ui->widgetItemSetting;
 }
 
-void DAChartErrorBarItemSettingWidget::on_checkBoxEnableMarker_clicked(bool checked)
+/**
+ * @brief 重ui设置创建QwtIntervalSymbol
+ * @return
+ */
+QwtIntervalSymbol* DAChartErrorBarItemSettingWidget::createIntervalSymbolFromUI()
+{
+	std::unique_ptr< QwtIntervalSymbol > sym = std::make_unique< QwtIntervalSymbol >();
+	if (ui->radioButtonBarStyle->isChecked()) {
+		sym->setStyle(QwtIntervalSymbol::Bar);
+		sym->setWidth(ui->spinBoxErrorBarPenWidth->value());
+		sym->setPen(ui->penEditWidgetToErrorBar->getCurrentPen());
+	} else if (ui->radioButtonBoxStyle->isChecked()) {
+		sym->setStyle(QwtIntervalSymbol::Box);
+		sym->setPen(ui->penEditWidgetToErrorBar->getCurrentPen());
+		sym->setBrush(ui->brushEditWidgetToErrorBar->getCurrentBrush());
+	}
+	return sym.release();
+}
+
+/**
+ * @brief 显示error bar
+ * @param checked
+ */
+void DAChartErrorBarItemSettingWidget::onGroupBoxErrorBarEnable(bool checked)
 {
 	DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
 	QwtPlotIntervalCurve* c = s_cast< QwtPlotIntervalCurve* >();
 	if (checked) {
-		QwtIntervalSymbol* symbol = ui->symbolEditWidget->createIntervalSymbol();
+		QwtIntervalSymbol* symbol = createIntervalSymbolFromUI();
 		c->setSymbol(symbol);
 	} else {
 		c->setSymbol(nullptr);
 	}
 }
 
-void DAChartErrorBarItemSettingWidget::onSymbolStyleChanged(QwtSymbol::Style s)
-{
-	Q_UNUSED(s);
-	on_checkBoxEnableMarker_clicked(ui->checkBoxEnableMarker->isChecked());
-}
-
-void DAChartErrorBarItemSettingWidget::onSymbolSizeChanged(int s)
-{
-	Q_UNUSED(s);
-	on_checkBoxEnableMarker_clicked(ui->checkBoxEnableMarker->isChecked());
-}
-
-void DAChartErrorBarItemSettingWidget::onSymbolColorChanged(const QColor& s)
-{
-	Q_UNUSED(s);
-	on_checkBoxEnableMarker_clicked(ui->checkBoxEnableMarker->isChecked());
-}
-
-void DAChartErrorBarItemSettingWidget::onSymbolOutlinePenChanged(const QPen& s)
-{
-	Q_UNUSED(s);
-	on_checkBoxEnableMarker_clicked(ui->checkBoxEnableMarker->isChecked());
-}
-
 void DAChartErrorBarItemSettingWidget::onBrushChanged(const QBrush& b)
 {
-	Q_UNUSED(b);
-	on_checkBoxEnableFill_clicked(ui->checkBoxEnableFill->isChecked());
+	DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
+	QwtPlotIntervalCurve* c = s_cast< QwtPlotIntervalCurve* >();
+	c->setBrush(b);
 }
 
-void DAChartErrorBarItemSettingWidget::on_checkBoxEnableFill_clicked(bool checked)
+void DAChartErrorBarItemSettingWidget::onGroupBoxFillEnable(bool checked)
 {
 	DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
 	QwtPlotIntervalCurve* c = s_cast< QwtPlotIntervalCurve* >();
@@ -287,6 +274,24 @@ void DAChartErrorBarItemSettingWidget::on_checkBoxEnableFill_clicked(bool checke
 	} else {
 		c->setBrush(Qt::NoBrush);
 	}
+}
+
+void DAChartErrorBarItemSettingWidget::onGroupBoxPenEnable(bool checked)
+{
+	DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
+	QwtPlotIntervalCurve* c = s_cast< QwtPlotIntervalCurve* >();
+	if (checked) {
+		c->setPen(getCurvePen());
+	} else {
+		c->setPen(QPen(Qt::NoPen));
+	}
+}
+
+void DAChartErrorBarItemSettingWidget::onCurvePenChanged(const QPen& p)
+{
+	DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
+	QwtPlotIntervalCurve* c = s_cast< QwtPlotIntervalCurve* >();
+	c->setPen(p);
 }
 
 void DAChartErrorBarItemSettingWidget::onButtonGroupOrientationClicked(QAbstractButton* b)
@@ -299,10 +304,4 @@ void DAChartErrorBarItemSettingWidget::onButtonGroupOrientationClicked(QAbstract
 	}
 }
 
-void DAChartErrorBarItemSettingWidget::onCurvePenChanged(const QPen& p)
-{
-	DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
-	QwtPlotIntervalCurve* c = s_cast< QwtPlotIntervalCurve* >();
-	c->setPen(p);
-}
 }

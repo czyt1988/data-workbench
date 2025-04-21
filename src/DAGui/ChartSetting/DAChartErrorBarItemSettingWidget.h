@@ -1,16 +1,16 @@
-#ifndef DACHARTERRORBARITEMSETTINGWIDGET_H
+﻿#ifndef DACHARTERRORBARITEMSETTINGWIDGET_H
 #define DACHARTERRORBARITEMSETTINGWIDGET_H
 #include "DAGuiAPI.h"
 #include <QWidget>
 #include <QPointer>
 #include "DAAbstractChartItemSettingWidget.h"
-#include "qwt_plot_intervalcurve.h"
-#include "qwt_symbol.h"
 
 // Qt
 class QAbstractButton;
 // qwt
-class QwtPlot;
+class QwtPlotItem;
+class QwtPlotIntervalCurve;
+class QwtIntervalSymbol;
 
 namespace Ui
 {
@@ -42,8 +42,8 @@ public:
 	void setTitle(const QString& t);
 	QString getTitle() const;
 	// maker编辑
-	void enableMarkerEdit(bool on = true);
-	bool isEnableMarkerEdit() const;
+	void enableErrorBarEdit(bool on = true);
+	bool isEnableErrorBarEdit() const;
 	// fill编辑
 	void enableFillEdit(bool on = true);
 	bool isEnableFillEdit() const;
@@ -58,6 +58,8 @@ public:
 	void resetUI();
 	// 获取itemplot widget
 	DAChartPlotItemSettingWidget* getItemSettingWidget() const;
+	// 重ui设置创建QwtIntervalSymbol
+	QwtIntervalSymbol* createIntervalSymbolFromUI();
 public slots:
 	// 画笔
 	void setCurvePen(const QPen& v);
@@ -65,12 +67,10 @@ public slots:
 	void setFillBrush(const QBrush& v);
 
 private slots:
-	void on_checkBoxEnableMarker_clicked(bool checked);
-	void on_checkBoxEnableFill_clicked(bool checked);
-	void onSymbolStyleChanged(QwtSymbol::Style s);
-	void onSymbolSizeChanged(int s);
-	void onSymbolColorChanged(const QColor& s);
-	void onSymbolOutlinePenChanged(const QPen& s);
+	void onGroupBoxErrorBarEnable(bool checked);
+	void onGroupBoxFillEnable(bool checked);
+	void onGroupBoxPenEnable(bool checked);
+
 	void onBrushChanged(const QBrush& b);
 	void onButtonGroupOrientationClicked(QAbstractButton* b);
 	void onCurvePenChanged(const QPen& p);
