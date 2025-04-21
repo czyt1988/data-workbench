@@ -15,6 +15,7 @@ void DataAnalysisActions::buildActions()
 	actionSpectrum     = createAction("actionSpectrum", ":/DataAnalysis/icons/icon/spectrum.svg");
 	actionFilter       = createAction("actionFilter", ":/DataAnalysis/icons/icon/filter.svg");
 	actionPeakAnalysis = createAction("actionPeakAnalysis", ":/DataAnalysis/icons/icon/peak-analysis.svg");
+	actionSTFT         = createAction("actionSTFT", "");
 }
 
 void DataAnalysisActions::retranslate()
@@ -22,6 +23,7 @@ void DataAnalysisActions::retranslate()
 	actionSpectrum->setText(tr("Spectrum"));        // cn: 频谱
 	actionFilter->setText(tr("Filter"));            // cn: 滤波
 	actionPeakAnalysis->setText(tr("SearchPeak"));  // cn: 寻峰
+	actionSTFT->setText(tr("STFT"));                // cn: 短时傅里叶变换
 }
 
 QAction* DataAnalysisActions::createAction(const char* objname)

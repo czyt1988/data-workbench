@@ -53,4 +53,5 @@ void DataAnalysisUI::buildDataAnalysisCategory(SARibbonCategory* dataAnalysisCat
 	mRibbonPannelSignalProcess->addLargeAction(mActions->actionSpectrum);
 	mRibbonPannelSignalProcess->addLargeAction(mActions->actionFilter);
 	mRibbonPannelSignalProcess->addLargeAction(mActions->actionPeakAnalysis);
+	mRibbonPannelSignalProcess->addLargeAction(mActions->actionSTFT);
 }

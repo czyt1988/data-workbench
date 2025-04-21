@@ -1,0 +1,360 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DialogSTFTSetting</class>
+ <widget class="QDialog" name="DialogSTFTSetting">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>681</width>
+    <height>541</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Spectrum Setting</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <item>
+    <widget class="QSplitter" name="splitter">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <widget class="QWidget" name="layoutWidget">
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>select series</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="DA::DADataManagerComboBox" name="comboBoxDataMgr"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>data preview</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTableView" name="tableViewPreview"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QGroupBox" name="groupBox">
+      <property name="title">
+       <string>STFT Setting</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="2" column="1">
+        <widget class="QSpinBox" name="spinBoxNperseg">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="maximum">
+          <number>99999</number>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="1">
+        <widget class="QRadioButton" name="radioButtonDB">
+         <property name="text">
+          <string>Decibel(dB)</string>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroupAmplitudeWay</string>
+         </attribute>
+        </widget>
+       </item>
+       <item row="6" column="0" colspan="2">
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>amplitude processing method</string>
+         </property>
+        </widget>
+       </item>
+       <item row="10" column="0" colspan="2">
+        <widget class="QCheckBox" name="checkBoxDetrend">
+         <property name="toolTip">
+          <string>Specifies how to detrend,detrending mainly affects the DC component (0 frequency) of the signal.</string>
+         </property>
+         <property name="text">
+          <string>detrend</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="14" column="1">
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>sampling rate</string>
+         </property>
+        </widget>
+       </item>
+       <item row="13" column="1">
+        <widget class="QRadioButton" name="radioButtonLinear">
+         <property name="text">
+          <string>linear</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QDoubleSpinBox" name="doubleSpinBoxFs">
+         <property name="decimals">
+          <number>0</number>
+         </property>
+         <property name="maximum">
+          <double>100000000000000003502199685943161173046080317798311825604870144.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>32.000000000000000</double>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>nperseg</string>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="1">
+        <widget class="QRadioButton" name="radioButtonAmplitude">
+         <property name="text">
+          <string>Amplitude</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroupAmplitudeWay</string>
+         </attribute>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QDoubleSpinBox" name="doubleSpinBoxNoverlap">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QComboBox" name="comboBoxWindow">
+         <item>
+          <property name="text">
+           <string>hann</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>hamming</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>blackman</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>flattop</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>kaiser</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>boxcar</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>window</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QSpinBox" name="spinBoxNfft">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="12" column="1">
+        <widget class="QRadioButton" name="radioButtonConstant">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="text">
+          <string>constant</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QCheckBox" name="checkBox">
+         <property name="text">
+          <string>noverlap</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QCheckBox" name="checkBox_2">
+         <property name="text">
+          <string>nfft</string>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="0">
+        <widget class="QLabel" name="label_7">
+         <property name="text">
+          <string>scaling</string>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="1">
+        <widget class="QComboBox" name="comboBoxScaling">
+         <item>
+          <property name="text">
+           <string>spectrum</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>psd</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>DA::DADataManagerComboBox</class>
+   <extends>QComboBox</extends>
+   <header>DADataManagerComboBox.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>checkBoxDetrend</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>radioButtonConstant</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>632</x>
+     <y>285</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>661</x>
+     <y>310</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBoxDetrend</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>radioButtonLinear</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>620</x>
+     <y>285</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>661</x>
+     <y>335</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>doubleSpinBoxNoverlap</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>389</x>
+     <y>126</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>517</x>
+     <y>121</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_2</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>spinBoxNfft</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>427</x>
+     <y>153</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>508</x>
+     <y>156</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>DialogSTFTSetting</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>629</x>
+     <y>522</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>674</x>
+     <y>498</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <buttongroups>
+  <buttongroup name="buttonGroupAmplitudeWay"/>
+ </buttongroups>
+</ui>
