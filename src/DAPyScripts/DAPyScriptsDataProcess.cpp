@@ -113,6 +113,25 @@ DAPyDataFrame DAPyScriptsDataProcess::wavelet_cwt(const DAPySeries& wave,
 	return DAPyDataFrame();
 }
 
+DAPyDataFrame DAPyScriptsDataProcess::wavelet_dwt(const DAPySeries& wave, double fs, const QVariantMap& args, QString* err)
+{
+	try {
+		pybind11::object fn = attr("da_wavelet_dwt");
+		if (fn.is_none()) {
+			qDebug() << "DAWorkbench.data_processing.py have no attr da_wavelet_dwt";
+			return DAPyDataFrame();
+		}
+		pybind11::object v = fn(wave.object(), fs, DA::PY::toPyDict(args));
+		return DAPyDataFrame(std::move(v));
+	} catch (const std::exception& e) {
+		if (err) {
+			*err = e.what();
+		}
+		qDebug() << e.what();
+	}
+	return DAPyDataFrame();
+}
+
 bool DAPyScriptsDataProcess::import()
 {
 	try {

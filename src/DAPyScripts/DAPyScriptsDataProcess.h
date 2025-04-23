@@ -31,6 +31,8 @@ public:
 							  const DA::DAPySeries& scale,
 							  const QVariantMap& args,
 							  QString* err = nullptr);
+	//离散小波变换
+	DAPyDataFrame wavelet_dwt(const DAPySeries& wave, double fs, const QVariantMap& args, QString* err = nullptr);
 	// 引入
 	bool import();
 };

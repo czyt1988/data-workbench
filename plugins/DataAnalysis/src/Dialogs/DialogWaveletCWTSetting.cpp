@@ -83,6 +83,31 @@ void DialogWaveletCWTSetting::onCurrentDataframeSeriesChanged(const DA::DAData& 
 void DialogWaveletCWTSetting::onAccepted()
 {
 	auto seriess = mModuel->getSeries();
+	if (seriess.size() != 1) {
+		QMessageBox::warning(this,
+							 tr("warning"),
+							 tr("You need to select a waveform data for cwt")  // cn:你需要选择一个波形数据进行连续小波变换
+		);
+		return;
+	}
+
+	auto fs = ui->doubleSpinBoxSamplingRate->value();
+	if (qFuzzyIsNull(fs)) {
+		QMessageBox::warning(this,
+							 tr("warning"),
+							 tr("The sampling rate cannot be 0")  // cn:采样率不能为0
+		);
+		return;
+	}
+
+	auto sp = ui->doubleSpinBoxSamplingPeriod->value();
+	if (qFuzzyIsNull(sp)) {
+		QMessageBox::warning(this,
+							 tr("warning"),
+							 tr("The sampling period cannot be 0")  // cn:采样周期不能为0
+		);
+		return;
+	}
 
 	accept();
 }

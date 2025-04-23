@@ -26,6 +26,8 @@ public:
 								  const DA::DAPySeries& scales,
 								  const QVariantMap& args,
 								  QString* err = nullptr);
+	//离散小波变换da_wavelet_dwt
+	DA::DAPyDataFrame wavelet_dwt(const DA::DAPySeries& wave, double fs, const QVariantMap& args, QString* err = nullptr);
 
 	//
 	DA::DAPyScriptsDataProcess& dataProcessModule();

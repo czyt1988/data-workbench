@@ -198,6 +198,20 @@ def wavelet_cwt(waveform, sampling_rate, scales, wavelet, sampling_period, metho
     coef, freqs = pywt.cwt(waveform, scales, wavelet, sampling_period, method, axis)
     return coef,freqs
     
+@log_function_call
+def wavelet_dwt(waveform, sampling_rate, wavelet, mode = 'symmetric', level = None, axis = -1):
+    '''
+    离散小波变换
+    :param waveform: 输入波形数据，可以是一维数组或列表
+    :param sampling_rate: 采样率
+    :param wavelet: 使用的小波，包括haar,db2,db3,db4,db5,db6,db7,db8,db9,db10,
+                                bior1.1,bior1.3,bior1.5,bior2.2,bior2.4,bior2.6,bior2.8,bior3.3,bior3.5,bior3.7
+    :param mode: 信号扩展模式，zero,constant,symmetric,periodic
+    :param axis: 计算DWT的轴，默认为最后一个轴
+    :return: 离散小波变换结果
+    '''
+    return pywt.wavedec(waveform, wavelet = wavelet, mode = mode, level = level, axis = axis)
+    
 
 @log_function_call
 def da_spectrum_analysis(waveform, sampling_rate, args:Optional[Dict] = None):
@@ -284,6 +298,31 @@ def da_wavelet_cwt(waveform, sampling_rate, scales, args:Optional[Dict] = None):
     cwt_data.insert(0, 'pseudo_freqs', freqs)
         
     return cwt_data
+    
+
+@log_function_call
+def da_wavelet_dwt(waveform, sampling_rate, args:Optional[Dict] = None):
+    '''
+    离散小波变换
+    :param waveform: 输入波形数据，可以是一维数组或列表
+    :param sampling_rate: 采样率
+    :param wavelet: 使用的小波，包括haar,db2,db3,db4,db5,db6,db7,db8,db9,db10,
+                                bior1.1,bior1.3,bior1.5,bior2.2,bior2.4,bior2.6,bior2.8,bior3.3,bior3.5,bior3.7
+    :param mode: 信号扩展模式，zero,constant,symmetric,periodic
+    :param axis: 计算DWT的轴，默认为最后一个轴
+    :return: 离散小波变换结果
+    ''' 
+    dwt_res = wavelet_dwt(waveform, sampling_rate,**args)
+    level = args['level']
+    # 存储dwt结果
+    dwt_dic = {}
+    # 存储近似系数
+    dwt_dic[f'cA_{level}'] = dwt_res[0]
+    # 存储细节系数
+    for i in range(level):
+        dwt_dic[f'cD_{level-i}'] = dwt_res[i+1]
+    dwt_data = pd.DataFrame({k: pd.Series(v) for k, v in dwt_dic.items()})
+    return dwt_data
 
 if __name__ == '__main__':
     # 获取函数spectrum_analysis的注解
