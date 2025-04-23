@@ -37,7 +37,8 @@ public:
 	// 根据QwtPlotCurve更新ui
 	void updateUI(const QwtPlotIntervalCurve* item);
 	// 根据ui更新plotitem
-	void updatePlotItem(QwtPlotIntervalCurve* item);
+    void updateItemFromUI(QwtPlotIntervalCurve* item);
+    void updateSymbolFromUI(QwtPlotIntervalCurve* item);
 	// 标题
 	void setTitle(const QString& t);
 	QString getTitle() const;
@@ -70,10 +71,13 @@ private slots:
 	void onGroupBoxErrorBarEnable(bool checked);
 	void onGroupBoxFillEnable(bool checked);
 	void onGroupBoxPenEnable(bool checked);
-
+    void onErrorBarPenWidthChanged(int v);
 	void onBrushChanged(const QBrush& b);
 	void onButtonGroupOrientationClicked(QAbstractButton* b);
 	void onCurvePenChanged(const QPen& p);
+    void onPenEditWidgetToErrorBarChanged(const QPen& p);
+    void onBrushEditWidgetToErrorBarChanged(const QBrush& b);
+    void onBarStyleButtonClicked(QAbstractButton* btn);
 protected slots:
 	virtual void plotItemAttached(QwtPlotItem* plotItem, bool on);
 
