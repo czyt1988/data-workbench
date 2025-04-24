@@ -375,7 +375,6 @@ void DataAnalysController::onActionWaveletCWTTriggered()
 	DA::DAData d(df);
 	d.setName(QString("%1-cwt_coef").arg(data.name()));
 	mDataMgr->addData(d);  // 不可撤销
-
 	//! 绘图
 	//! -------------
 	//! |   波形图   |
@@ -399,7 +398,7 @@ void DataAnalysController::onActionWaveletCWTTriggered()
 	{  // cwt chart
 	}
 	// 把绘图窗口抬起
-	mDockingArea->raiseDockByWidget(mDockingArea->getChartOperateWidget());
+	// mDockingArea->raiseDockByWidget(mDockingArea->getChartOperateWidget());
 }
 
 void DataAnalysController::onActionWaveletDWTTriggered()

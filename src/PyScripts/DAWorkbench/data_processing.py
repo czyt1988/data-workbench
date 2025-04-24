@@ -292,11 +292,10 @@ def da_wavelet_cwt(waveform, sampling_rate, scales, args:Optional[Dict] = None):
     :return: 连续小波变换结果
     '''   
     # 尺度系数
-    # scales = [1.0,2.0,3.0,2.0,1.0]
+    scales.dropna(inplace=True)
     coef,freqs = wavelet_cwt(waveform, sampling_rate, scales, **args)
     cwt_data = pd.DataFrame(coef, columns=range(len(waveform)))
-    cwt_data.insert(0, 'pseudo_freqs', freqs)
-        
+    cwt_data.insert(0, 'pseudo_freqs', freqs)        
     return cwt_data
     
 
