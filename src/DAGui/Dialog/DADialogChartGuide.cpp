@@ -7,7 +7,7 @@
 #include "DAAbstractChartAddItemWidget.h"
 #include "DAChartAddCurveWidget.h"
 #include "DAChartAddBarWidget.h"
-#include "DAChartAddXYESeriesWidget.h"
+#include "DAChartAddIntervalCurveWidget.h"
 #include "DAChartAddOHLCSeriesWidget.h"
 #include "DAChartUtil.h"
 // qwt
@@ -24,7 +24,7 @@ public:
 	PrivateData(DADialogChartGuide* p);
 	DAChartAddCurveWidget* mAddCurve { nullptr };
 	DAChartAddBarWidget* mAddBar { nullptr };
-	DAChartAddXYESeriesWidget* mXyeSeries { nullptr };
+	DAChartAddIntervalCurveWidget* mAddIntervalCurve { nullptr };
 	DAChartAddOHLCSeriesWidget* mOHLCSeries { nullptr };
 };
 
@@ -41,13 +41,13 @@ DADialogChartGuide::DADialogChartGuide(QWidget* parent)
 	ui->setupUi(this);
 	DA_D(d);
 	initListWidget();
-	d->mAddCurve   = new DAChartAddCurveWidget();
-	d->mAddBar     = new DAChartAddBarWidget();
-	d->mXyeSeries  = new DAChartAddXYESeriesWidget();
-	d->mOHLCSeries = new DAChartAddOHLCSeriesWidget();
+	d->mAddCurve         = new DAChartAddCurveWidget();
+	d->mAddBar           = new DAChartAddBarWidget();
+	d->mAddIntervalCurve = new DAChartAddIntervalCurveWidget();
+	d->mOHLCSeries       = new DAChartAddOHLCSeriesWidget();
 	ui->stackedWidget->addWidget(d->mAddCurve);
 	ui->stackedWidget->addWidget(d->mAddBar);
-	ui->stackedWidget->addWidget(d->mXyeSeries);
+	ui->stackedWidget->addWidget(d->mAddIntervalCurve);
 	ui->stackedWidget->addWidget(d->mOHLCSeries);
 	connect(ui->listWidgetChartType, &QListWidget::currentItemChanged, this, &DADialogChartGuide::onListWidgetCurrentItemChanged);
 }
@@ -215,7 +215,7 @@ void DADialogChartGuide::onListWidgetCurrentItemChanged(QListWidgetItem* current
 		ui->stackedWidget->setCurrentWidget(d->mAddBar);
 		break;
 	case DA::ChartTypes::ErrorBar:
-		ui->stackedWidget->setCurrentWidget(d->mXyeSeries);
+		ui->stackedWidget->setCurrentWidget(d->mAddIntervalCurve);
 		break;
 	case DA::ChartTypes::Box:
 		ui->stackedWidget->setCurrentWidget(d->mOHLCSeries);

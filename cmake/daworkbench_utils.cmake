@@ -110,10 +110,14 @@ macro(damacro_set_lib_properties _target_name _version_str)
 endmacro(damacro_set_lib_properties)
 
 macro(damacro_set_app_properties _target_name _version_str)
+    if(${QT_VERSION} VERSION_LESS 6.1.0)
+      set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.${_target_name})
+    endif()
     set_target_properties(${_target_name} PROPERTIES
         AUTOMOC ON
         AUTOUIC ON
         AUTORCC ON
+        WIN32_EXECUTABLE TRUE
         CXX_EXTENSIONS OFF
         DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
         VERSION ${_version_str}
