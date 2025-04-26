@@ -9,20 +9,37 @@
 namespace DA
 {
 DAChartErrorBarItemSettingWidget::DAChartErrorBarItemSettingWidget(QWidget* parent)
-	: DAAbstractChartItemSettingWidget(parent), ui(new Ui::DAChartErrorBarItemSettingWidget)
+    : DAAbstractChartItemSettingWidget(parent), ui(new Ui::DAChartErrorBarItemSettingWidget)
 {
 	ui->setupUi(this);
 	resetUI();
 	connect(ui->groupBoxErrorBar, &QGroupBox::clicked, this, &DAChartErrorBarItemSettingWidget::onGroupBoxErrorBarEnable);
+
 	connect(ui->groupBoxFill, &QGroupBox::clicked, this, &DAChartErrorBarItemSettingWidget::onGroupBoxFillEnable);
 	connect(ui->groupBoxPen, &QGroupBox::clicked, this, &DAChartErrorBarItemSettingWidget::onGroupBoxPenEnable);
 
 	connect(ui->brushEditWidget, &DABrushEditWidget::brushChanged, this, &DAChartErrorBarItemSettingWidget::onBrushChanged);
 	connect(ui->buttonGroupOrientation,
-			QOverload< QAbstractButton* >::of(&QButtonGroup::buttonClicked),
-			this,
-			&DAChartErrorBarItemSettingWidget::onButtonGroupOrientationClicked);
+            QOverload< QAbstractButton* >::of(&QButtonGroup::buttonClicked),
+            this,
+            &DAChartErrorBarItemSettingWidget::onButtonGroupOrientationClicked);
 	connect(ui->penEditWidget, &DAPenEditWidget::penChanged, this, &DAChartErrorBarItemSettingWidget::onCurvePenChanged);
+    connect(ui->penEditWidgetToErrorBar,
+            &DAPenEditWidget::penChanged,
+            this,
+            &DAChartErrorBarItemSettingWidget::onPenEditWidgetToErrorBarChanged);
+    connect(ui->brushEditWidgetToErrorBar,
+            &DABrushEditWidget::brushChanged,
+            this,
+            &DAChartErrorBarItemSettingWidget::onBrushEditWidgetToErrorBarChanged);
+    connect(ui->buttonGroupBarStyle,
+            QOverload< QAbstractButton* >::of(&QButtonGroup::buttonClicked),
+            this,
+            &DAChartErrorBarItemSettingWidget::onBarStyleButtonClicked);
+    connect(ui->spinBoxErrorBarPenWidth,
+            QOverload< int >::of(&QSpinBox::valueChanged),
+            this,
+            &DAChartErrorBarItemSettingWidget::onErrorBarPenWidthChanged);
 }
 
 DAChartErrorBarItemSettingWidget::~DAChartErrorBarItemSettingWidget()
@@ -67,7 +84,7 @@ void DAChartErrorBarItemSettingWidget::updateUI(const QwtPlotIntervalCurve* item
  * @brief 根据ui更新QwtPlotCurve
  * @param item
  */
-void DAChartErrorBarItemSettingWidget::updatePlotItem(QwtPlotIntervalCurve* item)
+void DAChartErrorBarItemSettingWidget::updateItemFromUI(QwtPlotIntervalCurve* item)
 {
 	// errorbar item
 	ui->widgetItemSetting->updatePlotItem(item);
@@ -77,12 +94,7 @@ void DAChartErrorBarItemSettingWidget::updatePlotItem(QwtPlotIntervalCurve* item
 	// pen
 	item->setPen(getCurvePen());
 	// symbol
-	if (isEnableErrorBarEdit()) {
-		QwtIntervalSymbol* symbol = createIntervalSymbolFromUI();
-		item->setSymbol(symbol);
-	} else {
-		item->setSymbol(nullptr);
-	}
+    updateSymbolFromUI(item);
 	// fill
 	if (isEnableFillEdit()) {
 		item->setBrush(getFillBrush());
@@ -93,7 +105,21 @@ void DAChartErrorBarItemSettingWidget::updatePlotItem(QwtPlotIntervalCurve* item
 	auto ori = getOrientation();
 	if (item->orientation() != ori) {
 		item->setOrientation(ori);
-	}
+    }
+}
+
+/**
+ * @brief 从界面更新到QwtPlotIntervalCurve
+ * @param item
+ */
+void DAChartErrorBarItemSettingWidget::updateSymbolFromUI(QwtPlotIntervalCurve* item)
+{
+    if (isEnableErrorBarEdit()) {
+        QwtIntervalSymbol* symbol = createIntervalSymbolFromUI();
+        item->setSymbol(symbol);
+    } else {
+        item->setSymbol(nullptr);
+    }
 }
 
 void DAChartErrorBarItemSettingWidget::plotItemAttached(QwtPlotItem* plotItem, bool on)
@@ -284,14 +310,46 @@ void DAChartErrorBarItemSettingWidget::onGroupBoxPenEnable(bool checked)
 		c->setPen(getCurvePen());
 	} else {
 		c->setPen(QPen(Qt::NoPen));
-	}
+    }
 }
 
 void DAChartErrorBarItemSettingWidget::onCurvePenChanged(const QPen& p)
 {
 	DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
 	QwtPlotIntervalCurve* c = s_cast< QwtPlotIntervalCurve* >();
-	c->setPen(p);
+    c->setPen(p);
+}
+
+void DAChartErrorBarItemSettingWidget::onErrorBarPenWidthChanged(int v)
+{
+    Q_UNUSED(v);
+    DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
+    QwtPlotIntervalCurve* c = s_cast< QwtPlotIntervalCurve* >();
+    updateSymbolFromUI(c);
+}
+
+void DAChartErrorBarItemSettingWidget::onPenEditWidgetToErrorBarChanged(const QPen& p)
+{
+    Q_UNUSED(p);
+    DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
+    QwtPlotIntervalCurve* c = s_cast< QwtPlotIntervalCurve* >();
+    updateSymbolFromUI(c);
+}
+
+void DAChartErrorBarItemSettingWidget::onBrushEditWidgetToErrorBarChanged(const QBrush& b)
+{
+    Q_UNUSED(b);
+    DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
+    QwtPlotIntervalCurve* c = s_cast< QwtPlotIntervalCurve* >();
+    updateSymbolFromUI(c);
+}
+
+void DAChartErrorBarItemSettingWidget::onBarStyleButtonClicked(QAbstractButton* btn)
+{
+    Q_UNUSED(btn);
+    DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
+    QwtPlotIntervalCurve* c = s_cast< QwtPlotIntervalCurve* >();
+    updateSymbolFromUI(c);
 }
 
 void DAChartErrorBarItemSettingWidget::onButtonGroupOrientationClicked(QAbstractButton* b)
