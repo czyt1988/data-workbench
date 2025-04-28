@@ -32,8 +32,7 @@ public:
 	bool isTAutoincrement() const;
 	// 根据配置获取数据
 	QVector< QwtOHLCSample > getSeries() const;
-    // 创建item
-    virtual QwtPlotItem* createPlotItem() override;
+
 private slots:
 	void onComboBoxTCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
 	void onComboBoxOCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);

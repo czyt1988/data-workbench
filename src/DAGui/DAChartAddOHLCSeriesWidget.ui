@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>570</width>
-    <height>438</height>
+    <width>598</width>
+    <height>498</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -88,7 +88,7 @@
        <item>
         <widget class="DA::DACollapsibleGroupBox" name="groupBoxO">
          <property name="title">
-          <string>O</string>
+          <string>Open</string>
          </property>
          <property name="flat">
           <bool>true</bool>
@@ -103,7 +103,7 @@
        <item>
         <widget class="DA::DACollapsibleGroupBox" name="groupBoxH">
          <property name="title">
-          <string>H</string>
+          <string>Hight</string>
          </property>
          <property name="flat">
           <bool>true</bool>
@@ -118,7 +118,7 @@
        <item>
         <widget class="DA::DACollapsibleGroupBox" name="groupBoxL">
          <property name="title">
-          <string>L</string>
+          <string>Low</string>
          </property>
          <property name="flat">
           <bool>true</bool>
@@ -133,7 +133,7 @@
        <item>
         <widget class="DA::DACollapsibleGroupBox" name="groupBoxC">
          <property name="title">
-          <string>C</string>
+          <string>Close</string>
          </property>
          <property name="flat">
           <bool>true</bool>

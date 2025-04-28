@@ -4,6 +4,7 @@
 #include "DAChartCurveItemSettingWidget.h"
 #include "DAChartErrorBarItemSettingWidget.h"
 #include "DAChartGridSettingWidget.h"
+#include "DAChartTradingCurveItemSettingWidget.h"
 #include "DAChartLegendItemSettingWidget.h"
 
 namespace DA
@@ -16,14 +17,15 @@ public:
 	PrivateData(DAChartCommonItemsSettingWidget* p);
 
 public:
-	DA::DAChartCurveItemSettingWidget* widgetCurveItem { nullptr };
-	DA::DAChartBarItemSettingWidget* widgetBarItem { nullptr };
-	DA::DAChartErrorBarItemSettingWidget* widgetErrorBarItem { nullptr };
-	DA::DAChartLegendItemSettingWidget* widgetLegendItem { nullptr };
-	DA::DAChartGridSettingWidget* widgetGridItem { nullptr };
+    DAChartCurveItemSettingWidget* widgetCurveItem { nullptr };
+    DAChartBarItemSettingWidget* widgetBarItem { nullptr };
+    DAChartErrorBarItemSettingWidget* widgetErrorBarItem { nullptr };
+    DAChartLegendItemSettingWidget* widgetLegendItem { nullptr };
+    DAChartGridSettingWidget* widgetGridItem { nullptr };
+    DAChartTradingCurveItemSettingWidget* widgetTradingCurveItem { nullptr };
 };
 
-DAChartCommonItemsSettingWidget::PrivateData::PrivateData(DAChartCommonItemsSettingWidget* p)
+DAChartCommonItemsSettingWidget::PrivateData::PrivateData(DAChartCommonItemsSettingWidget* p) : q_ptr(p)
 {
 }
 
@@ -32,26 +34,29 @@ DAChartCommonItemsSettingWidget::PrivateData::PrivateData(DAChartCommonItemsSett
 //===============================================================
 
 DAChartCommonItemsSettingWidget::DAChartCommonItemsSettingWidget(QWidget* parent)
-	: DAAbstractChartItemSettingWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DAChartCommonItemsSettingWidget)
+    : DAAbstractChartItemSettingWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DAChartCommonItemsSettingWidget)
 {
 	ui->setupUi(this);
 	DA_D(d);
-	d->widgetCurveItem = new DA::DAChartCurveItemSettingWidget();
-	d->widgetCurveItem->setObjectName(QString::fromUtf8("widgetCurveItem"));
-	d->widgetBarItem = new DA::DAChartBarItemSettingWidget();
-	d->widgetBarItem->setObjectName(QString::fromUtf8("widgetBarItem"));
-	d->widgetErrorBarItem = new DA::DAChartErrorBarItemSettingWidget();
-	d->widgetErrorBarItem->setObjectName(QString::fromUtf8("widgetErrorBarItem"));
-	d->widgetLegendItem = new DA::DAChartLegendItemSettingWidget();
-	d->widgetLegendItem->setObjectName(QString::fromUtf8("widgetLegendItem"));
-	d->widgetGridItem = new DA::DAChartGridSettingWidget();
-	d->widgetGridItem->setObjectName(QString::fromUtf8("widgetGridItem"));
+    d->widgetCurveItem = new DAChartCurveItemSettingWidget();
+    d->widgetCurveItem->setObjectName(QStringLiteral("widgetCurveItem"));
+    d->widgetBarItem = new DAChartBarItemSettingWidget();
+    d->widgetBarItem->setObjectName(QStringLiteral("widgetBarItem"));
+    d->widgetErrorBarItem = new DAChartErrorBarItemSettingWidget();
+    d->widgetErrorBarItem->setObjectName(QStringLiteral("widgetErrorBarItem"));
+    d->widgetLegendItem = new DAChartLegendItemSettingWidget();
+    d->widgetLegendItem->setObjectName(QStringLiteral("widgetLegendItem"));
+    d->widgetGridItem = new DAChartGridSettingWidget();
+    d->widgetGridItem->setObjectName(QStringLiteral("widgetGridItem"));
+    d->widgetTradingCurveItem = new DAChartTradingCurveItemSettingWidget();
+    d->widgetTradingCurveItem->setObjectName(QStringLiteral("widgetTradingCurveItem"));
 
 	ui->stackedWidget->addWidget(d->widgetCurveItem);
 	ui->stackedWidget->addWidget(d->widgetBarItem);
 	ui->stackedWidget->addWidget(d->widgetErrorBarItem);
 	ui->stackedWidget->addWidget(d->widgetLegendItem);
 	ui->stackedWidget->addWidget(d->widgetGridItem);
+    ui->stackedWidget->addWidget(d->widgetTradingCurveItem);
 }
 
 DAChartCommonItemsSettingWidget::~DAChartCommonItemsSettingWidget()
@@ -129,7 +134,8 @@ void DAChartCommonItemsSettingWidget::plotItemSet(QwtPlotItem* item)
 
 	//! For QwtPlotTradingCurve
 	case QwtPlotItem::Rtti_PlotTradingCurve: {
-
+        ui->stackedWidget->setCurrentWidget(d->widgetTradingCurveItem);
+        d->widgetTradingCurveItem->setPlotItem(item);
 		break;
 	}
 
