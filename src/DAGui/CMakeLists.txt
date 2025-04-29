@@ -373,17 +373,23 @@ target_link_libraries(${DA_LIB_NAME} PUBLIC
 
 if(DA_ENABLE_PYTHON)
     find_package(${DA_PROJECT_NAME} COMPONENTS
+        DAPyBindQt
+        DAPyScripts
         DAPyCommonWidgets
     )
     if(${DA_PROJECT_NAME}_FOUND)
         message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAPyCommonWidgets")
     endif()
     target_link_libraries(${DA_LIB_NAME} PUBLIC
+        ${DA_PROJECT_NAME}::DAPyBindQt
+        ${DA_PROJECT_NAME}::DAPyScripts
         ${DA_PROJECT_NAME}::DAPyCommonWidgets
     )
 
     # -------------link python--------------------------
     damacro_import_Python(${DA_LIB_NAME})
+    # -------------link 3rdparty pybind11--------------------------
+    damacro_import_pybind11(${DA_LIB_NAME})
 endif()
 
 # -------------link SARibbon--------------------------

@@ -93,7 +93,7 @@ find_package(${DA_PROJECT_NAME} COMPONENTS DAUtils)
 if(${DA_PROJECT_NAME}_FOUND)
     message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAUtils")
 endif()
-target_link_libraries(${DA_LIB_NAME} PRIVATE
+target_link_libraries(${DA_LIB_NAME} PUBLIC
     ${DA_PROJECT_NAME}::DAUtils
 )
 
