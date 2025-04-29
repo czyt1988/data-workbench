@@ -94,21 +94,6 @@ QVector< QwtOHLCSample > DAChartAddOHLCSeriesWidget::getSeries() const
 }
 
 /**
- * @brief DAChartAddOHLCSeriesWidget::createPlotItem
- * @return
- */
-QwtPlotItem* DAChartAddOHLCSeriesWidget::createPlotItem()
-{
-    QVector< QwtOHLCSample > ohlc = getSeries();
-    if (ohlc.empty()) {
-        return nullptr;
-    }
-    QwtPlotTradingCurve* item = new QwtPlotTradingCurve();
-    item->setSamples(ohlc);
-    return item;
-}
-
-/**
  * @brief DAChartAddOHLCSeriesWidget::onComboBoxXCurrentDataframeSeriesChanged
  * @param data
  * @param seriesName

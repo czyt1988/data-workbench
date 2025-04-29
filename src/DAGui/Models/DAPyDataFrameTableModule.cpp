@@ -13,6 +13,10 @@ public:
 public:
 	DAPyDataFrame _dataframe;
 	QUndoStack* _undoStack;
+	int extraColumn { 1 };  ///< 扩展的列数，也就是会多显示出externColumn个空白的列，一般多显示出来的是为了用户添加数据用的
+	int extraRow { 1 };  ///< 扩展的行数，也就是会多显示出externRow个空白的行，一般多显示出来的是为了用户添加数据用的
+	int minShowRow { 20 };    ///< 最小显示的行数
+	int minShowColumn { 4 };  ///< 最小显示的列数
 };
 }  // end of namespace DA
 
@@ -82,20 +86,26 @@ int DAPyDataFrameTableModule::columnCount(const QModelIndex& parent) const
 {
 	Q_UNUSED(parent);
 	if (d_ptr->_dataframe.isNone()) {
-		return 10;
+		return d_ptr->minShowColumn;
 	}
 	std::pair< std::size_t, std::size_t > shape = d_ptr->_dataframe.shape();
-	return (shape.second > 10) ? (int)shape.second : 10;
+	if ((static_cast< int >(shape.second) + d_ptr->extraColumn) < d_ptr->minShowColumn) {
+		return d_ptr->minShowColumn;
+	}
+	return (static_cast< int >(shape.second) + d_ptr->extraColumn);
 }
 
 int DAPyDataFrameTableModule::rowCount(const QModelIndex& parent) const
 {
 	Q_UNUSED(parent);
 	if (d_ptr->_dataframe.isNone()) {
-		return 10;
+		return d_ptr->minShowRow;
 	}
 	std::pair< std::size_t, std::size_t > shape = d_ptr->_dataframe.shape();
-	return (shape.first > 10) ? (int)shape.first : 10;
+	if ((static_cast< int >(shape.first) + d_ptr->extraRow) < d_ptr->minShowRow) {
+		return d_ptr->minShowRow;
+	}
+	return (static_cast< int >(shape.first) + d_ptr->extraRow);
 }
 
 QVariant DAPyDataFrameTableModule::data(const QModelIndex& index, int role) const
@@ -129,7 +139,12 @@ bool DAPyDataFrameTableModule::setData(const QModelIndex& index, const QVariant&
 		return false;
 	}
 	std::pair< std::size_t, std::size_t > shape = d_ptr->_dataframe.shape();
-	if (index.row() >= (int)shape.first || index.column() >= (int)shape.second) {
+	if (index.row() >= static_cast< int >(shape.first)) {
+		// todo:这里实现一个dataframe追加行
+		return false;
+	}
+	if (index.column() >= static_cast< int >(shape.second)) {
+		// todo:这里实现一个dataframe追加列
 		return false;
 	}
 	QVariant olddata = d_ptr->_dataframe.iat(index.row(), index.column());
@@ -286,6 +301,100 @@ void DAPyDataFrameTableModule::columnBeginInsert(const QList< int >& r)
 void DAPyDataFrameTableModule::columnEndInsert()
 {
     endInsertColumns();
+}
+
+/**
+ * @brief 设置超出模型实际数据行数的额外空行数量。
+ *
+ * 该函数用于指定在模型中显示的额外空行数量（n），这些行不包含实际数据，
+ * 主要用于提供空间给新的插入操作。例如，如果模型有100行实际数据，并调用
+ * setExtraRowCount(5)，则视图将显示105行，其中最后5行为预留的空行。
+ *
+ * @param n 要添加到现有行数上的额外空行数量。n 应为非负整数。
+ *
+ * @note
+ * - 如果 n 设为0，则仅显示模型中的实际数据行。
+ * - 该函数不会影响模型的实际数据内容，只影响视图中显示的行数。
+ * - 这些额外的行可以用来方便用户直接在表格末尾进行插入操作。
+ *
+ * 示例:
+ * @code
+ * // 假设模型中有100行实际数据
+ * model->setExtraRowCount(5); // 视图现在会显示105行，其中最后5行为空行
+ * @endcode
+ *
+ * @see getExtraRowCount
+ */
+void DAPyDataFrameTableModule::setExtraRowCount(int v)
+{
+    d_ptr->extraRow = v;
+}
+
+/**
+ * @brief 超出模型实际数据行数的额外空行数量
+ * @return 超出模型实际数据行数的额外空行数量
+ * @see setExtraRowCount
+ */
+int DAPyDataFrameTableModule::getExtraRowCount() const
+{
+    return d_ptr->extraRow;
+}
+
+/**
+ * @brief 设置超出模型实际数据列数的额外空列数量。
+ *
+ * 该函数用于指定在模型中显示的额外空列数量（n），这些列不包含实际数据，
+ * 主要用于提供空间给新的插入操作。例如，如果模型有10列实际数据，并调用
+ * setExtraColumnCount(5)，则视图将显示15列，其中最后5列为预留的空列。
+ *
+ * @param n 要添加到现有列数上的额外空列数量。n 应为非负整数。
+ *
+ * @note
+ * - 如果 n 设为0，则仅显示模型中的实际数据列。
+ * - 该函数不会影响模型的实际数据内容，只影响视图中显示的列数。
+ * - 这些额外的列可以用来方便用户直接在表格末尾进列插入操作。
+ *
+ * 示例:
+ * @code
+ * // 假设模型中有10列实际数据
+ * model->setExtraRowCount(5); // 视图现在会显示15列，其中最后5列为空列
+ * @endcode
+ *
+ * @see getExtraRowCount()
+ */
+void DAPyDataFrameTableModule::setExtraColumnCount(int v)
+{
+    d_ptr->extraColumn = v;
+}
+
+/**
+ * @brief 超出模型实际数据列数的额外空列数量
+ * @return 超出模型实际数据列数的额外空列数量
+ * @see setExtraColumnCount
+ */
+int DAPyDataFrameTableModule::getExtraColumnCount() const
+{
+    return d_ptr->extraColumn;
+}
+
+void DAPyDataFrameTableModule::setMinShowRowCount(int v)
+{
+    d_ptr->minShowRow = v;
+}
+
+int DAPyDataFrameTableModule::getMinShowRowCount() const
+{
+    return d_ptr->minShowRow;
+}
+
+void DAPyDataFrameTableModule::setMinShowColumnCount(int v)
+{
+    d_ptr->minShowColumn = v;
+}
+
+int DAPyDataFrameTableModule::getMinShowColumnCount() const
+{
+    return d_ptr->minShowColumn;
 }
 
 void DAPyDataFrameTableModule::beginFunCall(const QList< int >& listlike, DAPyDataFrameTableModule::beginFun fun)

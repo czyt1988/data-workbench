@@ -52,7 +52,8 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
 	ui->tableView->setModel(mModel);
 	QFontMetrics fm = fontMetrics();
 	ui->tableView->verticalHeader()->setDefaultSectionSize(fm.lineSpacing() * 1.2);
-
+	// 关闭不必要的绘制特性
+	ui->tableView->setAlternatingRowColors(false);
 	setDAData(d);
 	connect(ui->tableView, &QTableView::clicked, this, &DADataOperateOfDataFrameWidget::onTableViewClicked);
 }

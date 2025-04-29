@@ -56,6 +56,18 @@ public:
 	// 行将插入
 	void columnBeginInsert(const QList< int >& r);
 	void columnEndInsert();
+	// 超出模型实际数据行数的额外空行数量
+	void setExtraRowCount(int v);
+	int getExtraRowCount() const;
+	// 超出模型实际数据列数的额外空列数量
+	void setExtraColumnCount(int v);
+	int getExtraColumnCount() const;
+	// 最小显示的行数量
+	void setMinShowRowCount(int v);
+	int getMinShowRowCount() const;
+	// 最小显示的列数量
+	void setMinShowColumnCount(int v);
+	int getMinShowColumnCount() const;
 
 protected:
 	void beginFunCall(const QList< int >& listlike, beginFun fun);
