@@ -7,9 +7,10 @@ DAColorTheme::DAColorTheme()
 {
 }
 
-DAColorTheme::DAColorTheme(ColorTheme th)
+DAColorTheme::DAColorTheme(ColorThemeStyle th)
 {
-	*this = DAColorTheme::create(th);
+	mColorList         = createColorList(th);
+	mCurrentColorTheme = th;
 }
 
 DAColorTheme::DAColorTheme(const std::initializer_list< QColor >& v) : mColorList(v)
@@ -20,179 +21,12 @@ DAColorTheme::~DAColorTheme()
 {
 }
 
-DAColorTheme DAColorTheme::create(DAColorTheme::ColorTheme t)
+DAColorTheme DAColorTheme::create(DAColorTheme::ColorThemeStyle t)
 {
-	switch (t) {
-	case DAColorTheme::ColorTheme_Archambault:
-		return DAColorTheme({ QColor("#ed968c"),
-							  QColor("#88a0dc"),
-							  QColor("#f9d14a"),
-							  QColor("#e78429"),
-							  QColor("#7c4b73"),
-							  QColor("#ab3329"),
-							  QColor("#381a61") });
-	case DAColorTheme::ColorTheme_Cassatt1:
-		return DAColorTheme({ QColor("#e3aba7"),
-							  QColor("#8282aa"),
-							  QColor("#b1615c"),
-							  QColor("#c9c9dd"),
-							  QColor("#9d9dc7"),
-							  QColor("#d88782"),
-							  QColor("#5a5a83"),
-							  QColor("#edd7d9") });
-	case DAColorTheme::ColorTheme_Cassatt2:
-		return DAColorTheme({ QColor("#b695bc"),
-							  QColor("#7fa074"),
-							  QColor("#574571"),
-							  QColor("#2c4b27"),
-							  QColor("#dec5da"),
-							  QColor("#c1d1aa"),
-							  QColor("#2d223c"),
-							  QColor("#0e2810"),
-							  QColor("#90719f"),
-							  QColor("#466c4b") });
-	case DAColorTheme::ColorTheme_Demuth:
-		return DAColorTheme({ QColor("#b64f32"),
-							  QColor("#5d6174"),
-							  QColor("#f7c267"),
-							  QColor("#b9b9b8"),
-							  QColor("#9b332b"),
-							  QColor("#41485f"),
-							  QColor("#d39a2d"),
-							  QColor("#8b8b99"),
-							  QColor("#591c19"),
-							  QColor("#262d42") });
-	case DAColorTheme::ColorTheme_Derain:
-		return DAColorTheme({ QColor("#808fe1"),
-							  QColor("#97c684"),
-							  QColor("#5c66a8"),
-							  QColor("#efc86e"),
-							  QColor("#6f9969"),
-							  QColor("#454a74"),
-							  QColor("#aab5d5") });
-	case DAColorTheme::ColorTheme_Egypt:
-		return DAColorTheme({ QColor("#dd5129"), QColor("#0f7ba2"), QColor("#43b284"), QColor("#fab255") });
-	case DAColorTheme::ColorTheme_Greek:
-		return DAColorTheme(
-			{ QColor("#ed9b49"), QColor("#3c0d03"), QColor("#8d1c06"), QColor("#f5c34d"), QColor("#e67424") });
-	case DAColorTheme::ColorTheme_Hiroshige:
-		return DAColorTheme({ QColor("#72bcd5"),
-							  QColor("#ef8a47"),
-							  QColor("#ffd06f"),
-							  QColor("#376795"),
-							  QColor("#aadce0"),
-							  QColor("#e76254"),
-							  QColor("#ffe6b7"),
-							  QColor("#1e466e"),
-							  QColor("#f7aa58"),
-							  QColor("#528fad") });
-	case DAColorTheme::ColorTheme_Hokusai2:
-		return DAColorTheme(
-			{ QColor("#2f70a1"), QColor("#72aeb6"), QColor("#0a3351"), QColor("#4692b0"), QColor("#abc9c8"), QColor("#134b73") });
-	case DAColorTheme::ColorTheme_Hokusai3:
-		return DAColorTheme(
-			{ QColor("#295384"), QColor("#95c36e"), QColor("#5a97c1"), QColor("#d8d97a"), QColor("#74c8c3"), QColor("#0a2e57") });
-	case DAColorTheme::ColorTheme_Ingres:
-		return DAColorTheme({ QColor("#7e5522"),
-							  QColor("#d1b252"),
-							  QColor("#18527e"),
-							  QColor("#041d2c"),
-							  QColor("#06314e"),
-							  QColor("#2e77ab"),
-							  QColor("#a97f2f"),
-							  QColor("#472c0b") });
-	case DAColorTheme::ColorTheme_Isfahan1:
-		return DAColorTheme({ QColor("#178f92"),
-							  QColor("#845d29"),
-							  QColor("#1d1f54"),
-							  QColor("#d8c29d"),
-							  QColor("#4e3910"),
-							  QColor("#4fb6ca"),
-							  QColor("#175f5d") });
-	case DAColorTheme::ColorTheme_Isfahan2:
-		return DAColorTheme(
-			{ QColor("#4063a3"), QColor("#ddc000"), QColor("#79ad41"), QColor("#d7aca1"), QColor("#34b6c6") });
-	case DAColorTheme::ColorTheme_Java:
-		return DAColorTheme(
-			{ QColor("#663171"), QColor("#ea7428"), QColor("#0c7156"), QColor("#cf3a36"), QColor("#e2998a") });
-	case DAColorTheme::ColorTheme_Johnson:
-		return DAColorTheme(
-			{ QColor("#d04e00"), QColor("#0086a8"), QColor("#a00e00"), QColor("#f6c200"), QColor("#132b69") });
-	case DAColorTheme::ColorTheme_Kandinsky:
-		return DAColorTheme({ QColor("#3b7c70"), QColor("#ce9642"), QColor("#898e9f"), QColor("#3b3a3e") });
-	case DAColorTheme::ColorTheme_Morgenstern:
-		return DAColorTheme({ QColor("#a56457"),
-							  QColor("#db8872"),
-							  QColor("#ffb178"),
-							  QColor("#dfbbc8"),
-							  QColor("#b08ba5"),
-							  QColor("#ffc680"),
-							  QColor("#7c668c") });
-	case DAColorTheme::ColorTheme_OKeeffe1:
-		return DAColorTheme({ QColor("#da6c42"),
-							  QColor("#447fdd"),
-							  QColor("#f6f2ee"),
-							  QColor("#ee956a"),
-							  QColor("#7db0ea"),
-							  QColor("#973d21"),
-							  QColor("#225bb2"),
-							  QColor("#6b200c"),
-							  QColor("#133e7e"),
-							  QColor("#fbc2a9"),
-							  QColor("#bad6f9") });
-	case DAColorTheme::ColorTheme_OKeeffe2:
-		return DAColorTheme({ QColor("#f2c88f"),
-							  QColor("#d37750"),
-							  QColor("#92351e"),
-							  QColor("#e69c6b"),
-							  QColor("#b9563f"),
-							  QColor("#ecb27d"),
-							  QColor("#fbe3c2") });
-	case DAColorTheme::ColorTheme_Pillement:
-		return DAColorTheme(
-			{ QColor("#2b4655"), QColor("#738e8e"), QColor("#697852"), QColor("#a9845b"), QColor("#44636f"), QColor("#0f252f") });
-	case DAColorTheme::ColorTheme_Tam:
-		return DAColorTheme({ QColor("#ef8737"),
-							  QColor("#bb292c"),
-							  QColor("#ffd353"),
-							  QColor("#62205f"),
-							  QColor("#341648"),
-							  QColor("#de4f33"),
-							  QColor("#9f2d55"),
-							  QColor("#ffb242") });
-	case DAColorTheme::ColorTheme_Troy:
-		return DAColorTheme({ QColor("#7ba0b4"),
-							  QColor("#421401"),
-							  QColor("#235070"),
-							  QColor("#8b3a2b"),
-							  QColor("#c27668"),
-							  QColor("#0a2d46"),
-							  QColor("#6c1d0e"),
-							  QColor("#44728c") });
-	case DAColorTheme::ColorTheme_VanGogh3:
-		return DAColorTheme({ QColor("#9cc184"),
-							  QColor("#1f5b25"),
-							  QColor("#1e3d14"),
-							  QColor("#669d62"),
-							  QColor("#c2d6a4"),
-							  QColor("#192813"),
-							  QColor("#e7e5cc"),
-							  QColor("#447243") });
-	case DAColorTheme::ColorTheme_Veronese:
-		return DAColorTheme({ QColor("#99610a"),
-							  QColor("#6e948c"),
-							  QColor("#2c6b67"),
-							  QColor("#122c43"),
-							  QColor("#67322e"),
-							  QColor("#175449"),
-							  QColor("#c38f16") });
-	default:
-		break;
-	}
-	return DAColorTheme();
+	return DAColorTheme(t);
 }
 
-DAColorTheme& DAColorTheme::operator=(const ColorTheme& th)
+DAColorTheme& DAColorTheme::operator=(const ColorThemeStyle& th)
 {
 	*this = DAColorTheme::create(th);
 	return *this;
@@ -283,22 +117,12 @@ bool DAColorTheme::isValidIndex() const
 
 int DAColorTheme::getCurrentIndex() const
 {
-	return mColorList.getCurrentIndex();
+	return mColorList.currentIndex();
 }
 
 void DAColorTheme::setCurrentIndex(int v)
 {
 	mColorList.setCurrentIndex(v);
-}
-
-QColor DAColorTheme::get() const
-{
-	return mColorList.get();
-}
-
-void DAColorTheme::set(const QColor& v)
-{
-	mColorList.set(v);
 }
 
 DAColorTheme::iterator DAColorTheme::begin()
@@ -378,6 +202,201 @@ QColor DAColorTheme::interpolateColor(const QColor& color1, const QColor& color2
 	return QColor(r, g, b);
 }
 
+DAColorTheme::ColorThemeStyle DAColorTheme::getColorThemeStyle() const
+{
+	return mCurrentColorTheme;
+}
+
+void DAColorTheme::setColorThemeStyle(ColorThemeStyle style)
+{
+	if (mCurrentColorTheme == style) {
+		return;
+	}
+	mCurrentColorTheme = style;
+	if (style != ColorThemeStyle::Style_UserDefine) {
+		mColorList = createColorList(style);
+	}
+}
+
+void DAColorTheme::setUserDefineColorList(const ColorList& cls, ColorThemeStyle style)
+{
+	setColorThemeStyle(style);
+	mColorList = cls;
+	mColorList.setCurrentIndex(0);
+}
+
+DAColorTheme::container DAColorTheme::createColorList(const ColorThemeStyle& th)
+{
+	switch (th) {
+	case DAColorTheme::Style_Archambault:
+		return DAColorTheme::container({ QColor("#ed968c"),
+										 QColor("#88a0dc"),
+										 QColor("#f9d14a"),
+										 QColor("#e78429"),
+										 QColor("#7c4b73"),
+										 QColor("#ab3329"),
+										 QColor("#381a61") });
+	case DAColorTheme::Style_Cassatt1:
+		return DAColorTheme::container({ QColor("#e3aba7"),
+										 QColor("#8282aa"),
+										 QColor("#b1615c"),
+										 QColor("#c9c9dd"),
+										 QColor("#9d9dc7"),
+										 QColor("#d88782"),
+										 QColor("#5a5a83"),
+										 QColor("#edd7d9") });
+	case DAColorTheme::Style_Cassatt2:
+		return DAColorTheme::container({ QColor("#b695bc"),
+										 QColor("#7fa074"),
+										 QColor("#574571"),
+										 QColor("#2c4b27"),
+										 QColor("#dec5da"),
+										 QColor("#c1d1aa"),
+										 QColor("#2d223c"),
+										 QColor("#0e2810"),
+										 QColor("#90719f"),
+										 QColor("#466c4b") });
+	case DAColorTheme::Style_Demuth:
+		return DAColorTheme::container({ QColor("#b64f32"),
+										 QColor("#5d6174"),
+										 QColor("#f7c267"),
+										 QColor("#b9b9b8"),
+										 QColor("#9b332b"),
+										 QColor("#41485f"),
+										 QColor("#d39a2d"),
+										 QColor("#8b8b99"),
+										 QColor("#591c19"),
+										 QColor("#262d42") });
+	case DAColorTheme::Style_Derain:
+		return DAColorTheme::container({ QColor("#808fe1"),
+										 QColor("#97c684"),
+										 QColor("#5c66a8"),
+										 QColor("#efc86e"),
+										 QColor("#6f9969"),
+										 QColor("#454a74"),
+										 QColor("#aab5d5") });
+	case DAColorTheme::Style_Egypt:
+		return DAColorTheme::container({ QColor("#dd5129"), QColor("#0f7ba2"), QColor("#43b284"), QColor("#fab255") });
+	case DAColorTheme::Style_Greek:
+		return DAColorTheme::container(
+			{ QColor("#ed9b49"), QColor("#3c0d03"), QColor("#8d1c06"), QColor("#f5c34d"), QColor("#e67424") });
+	case DAColorTheme::Style_Hiroshige:
+		return DAColorTheme::container({ QColor("#72bcd5"),
+										 QColor("#ef8a47"),
+										 QColor("#ffd06f"),
+										 QColor("#376795"),
+										 QColor("#aadce0"),
+										 QColor("#e76254"),
+										 QColor("#ffe6b7"),
+										 QColor("#1e466e"),
+										 QColor("#f7aa58"),
+										 QColor("#528fad") });
+	case DAColorTheme::Style_Hokusai2:
+		return DAColorTheme::container(
+			{ QColor("#2f70a1"), QColor("#72aeb6"), QColor("#0a3351"), QColor("#4692b0"), QColor("#abc9c8"), QColor("#134b73") });
+	case DAColorTheme::Style_Hokusai3:
+		return DAColorTheme::container(
+			{ QColor("#295384"), QColor("#95c36e"), QColor("#5a97c1"), QColor("#d8d97a"), QColor("#74c8c3"), QColor("#0a2e57") });
+	case DAColorTheme::Style_Ingres:
+		return DAColorTheme::container({ QColor("#7e5522"),
+										 QColor("#d1b252"),
+										 QColor("#18527e"),
+										 QColor("#041d2c"),
+										 QColor("#06314e"),
+										 QColor("#2e77ab"),
+										 QColor("#a97f2f"),
+										 QColor("#472c0b") });
+	case DAColorTheme::Style_Isfahan1:
+		return DAColorTheme::container({ QColor("#178f92"),
+										 QColor("#845d29"),
+										 QColor("#1d1f54"),
+										 QColor("#d8c29d"),
+										 QColor("#4e3910"),
+										 QColor("#4fb6ca"),
+										 QColor("#175f5d") });
+	case DAColorTheme::Style_Isfahan2:
+		return DAColorTheme::container(
+			{ QColor("#4063a3"), QColor("#ddc000"), QColor("#79ad41"), QColor("#d7aca1"), QColor("#34b6c6") });
+	case DAColorTheme::Style_Java:
+		return DAColorTheme::container(
+			{ QColor("#663171"), QColor("#ea7428"), QColor("#0c7156"), QColor("#cf3a36"), QColor("#e2998a") });
+	case DAColorTheme::Style_Johnson:
+		return DAColorTheme::container(
+			{ QColor("#d04e00"), QColor("#0086a8"), QColor("#a00e00"), QColor("#f6c200"), QColor("#132b69") });
+	case DAColorTheme::Style_Kandinsky:
+		return DAColorTheme::container({ QColor("#3b7c70"), QColor("#ce9642"), QColor("#898e9f"), QColor("#3b3a3e") });
+	case DAColorTheme::Style_Morgenstern:
+		return DAColorTheme::container({ QColor("#a56457"),
+										 QColor("#db8872"),
+										 QColor("#ffb178"),
+										 QColor("#dfbbc8"),
+										 QColor("#b08ba5"),
+										 QColor("#ffc680"),
+										 QColor("#7c668c") });
+	case DAColorTheme::Style_OKeeffe1:
+		return DAColorTheme::container({ QColor("#da6c42"),
+										 QColor("#447fdd"),
+										 QColor("#f6f2ee"),
+										 QColor("#ee956a"),
+										 QColor("#7db0ea"),
+										 QColor("#973d21"),
+										 QColor("#225bb2"),
+										 QColor("#6b200c"),
+										 QColor("#133e7e"),
+										 QColor("#fbc2a9"),
+										 QColor("#bad6f9") });
+	case DAColorTheme::Style_OKeeffe2:
+		return DAColorTheme::container({ QColor("#f2c88f"),
+										 QColor("#d37750"),
+										 QColor("#92351e"),
+										 QColor("#e69c6b"),
+										 QColor("#b9563f"),
+										 QColor("#ecb27d"),
+										 QColor("#fbe3c2") });
+	case DAColorTheme::Style_Pillement:
+		return DAColorTheme::container(
+			{ QColor("#2b4655"), QColor("#738e8e"), QColor("#697852"), QColor("#a9845b"), QColor("#44636f"), QColor("#0f252f") });
+	case DAColorTheme::Style_Tam:
+		return DAColorTheme::container({ QColor("#ef8737"),
+										 QColor("#bb292c"),
+										 QColor("#ffd353"),
+										 QColor("#62205f"),
+										 QColor("#341648"),
+										 QColor("#de4f33"),
+										 QColor("#9f2d55"),
+										 QColor("#ffb242") });
+	case DAColorTheme::Style_Troy:
+		return DAColorTheme::container({ QColor("#7ba0b4"),
+										 QColor("#421401"),
+										 QColor("#235070"),
+										 QColor("#8b3a2b"),
+										 QColor("#c27668"),
+										 QColor("#0a2d46"),
+										 QColor("#6c1d0e"),
+										 QColor("#44728c") });
+	case DAColorTheme::Style_VanGogh3:
+		return DAColorTheme::container({ QColor("#9cc184"),
+										 QColor("#1f5b25"),
+										 QColor("#1e3d14"),
+										 QColor("#669d62"),
+										 QColor("#c2d6a4"),
+										 QColor("#192813"),
+										 QColor("#e7e5cc"),
+										 QColor("#447243") });
+	case DAColorTheme::Style_Veronese:
+		return DAColorTheme::container({ QColor("#99610a"),
+										 QColor("#6e948c"),
+										 QColor("#2c6b67"),
+										 QColor("#122c43"),
+										 QColor("#67322e"),
+										 QColor("#175449"),
+										 QColor("#c38f16") });
+	default:
+		break;
+	}
+	return DAColorTheme::container();
+}
+
 // QDebug的打印支持
 QDebug operator<<(QDebug debug, const DAColorTheme& th)
 {
@@ -389,4 +408,118 @@ QDebug operator<<(QDebug debug, const DAColorTheme& th)
 	}
 	return debug;
 }
+
+QString enumToString(DAColorTheme::ColorThemeStyle th)
+{
+	switch (th) {
+	case DAColorTheme::Style_Archambault:
+		return "Archambault";
+	case DAColorTheme::Style_Cassatt1:
+		return "Cassatt1";
+	case DAColorTheme::Style_Cassatt2:
+		return "Cassatt2";
+	case DAColorTheme::Style_Demuth:
+		return "Demuth";
+	case DAColorTheme::Style_Derain:
+		return "Derain";
+	case DAColorTheme::Style_Egypt:
+		return "Egypt";
+	case DAColorTheme::Style_Greek:
+		return "Greek";
+	case DAColorTheme::Style_Hiroshige:
+		return "Hiroshige";
+	case DAColorTheme::Style_Hokusai2:
+		return "Hokusai2";
+	case DAColorTheme::Style_Hokusai3:
+		return "Hokusai3";
+	case DAColorTheme::Style_Ingres:
+		return "Ingres";
+	case DAColorTheme::Style_Isfahan1:
+		return "Isfahan1";
+	case DAColorTheme::Style_Isfahan2:
+		return "Isfahan2";
+	case DAColorTheme::Style_Java:
+		return "Java";
+	case DAColorTheme::Style_Johnson:
+		return "Johnson";
+	case DAColorTheme::Style_Kandinsky:
+		return "Kandinsky";
+	case DAColorTheme::Style_Morgenstern:
+		return "Morgenstern";
+	case DAColorTheme::Style_OKeeffe1:
+		return "OKeeffe1";
+	case DAColorTheme::Style_OKeeffe2:
+		return "OKeeffe2";
+	case DAColorTheme::Style_Pillement:
+		return "Pillement";
+	case DAColorTheme::Style_Tam:
+		return "Tam";
+	case DAColorTheme::Style_Troy:
+		return "Troy";
+	case DAColorTheme::Style_VanGogh3:
+		return "VanGogh3";
+	case DAColorTheme::Style_Veronese:
+		return "Veronese";
+	default:
+		break;
+	}
+	return "UserDefine";
+}
+
+DAColorTheme::ColorThemeStyle stringToEnum(const QString& s, DAColorTheme::ColorThemeStyle defaultEnum)
+{
+	if (0 == s.compare("UserDefine", Qt::CaseInsensitive)) {
+		return DAColorTheme::Style_UserDefine;
+	} else if (0 == s.compare("Archambault", Qt::CaseInsensitive)) {
+		return DAColorTheme::Style_Archambault;
+	} else if (0 == s.compare("Cassatt1", Qt::CaseInsensitive)) {
+		return DAColorTheme::Style_Cassatt1;
+	} else if (0 == s.compare("Cassatt2", Qt::CaseInsensitive)) {
+		return DAColorTheme::Style_Cassatt2;
+	} else if (0 == s.compare("Demuth", Qt::CaseInsensitive)) {
+		return DAColorTheme::Style_Demuth;
+	} else if (0 == s.compare("Derain", Qt::CaseInsensitive)) {
+		return DAColorTheme::Style_Derain;
+	} else if (0 == s.compare("Egypt", Qt::CaseInsensitive)) {
+		return DAColorTheme::Style_Egypt;
+	} else if (0 == s.compare("Greek", Qt::CaseInsensitive)) {
+		return DAColorTheme::Style_Greek;
+	} else if (0 == s.compare("Hiroshige", Qt::CaseInsensitive)) {
+		return DAColorTheme::Style_Hiroshige;
+	} else if (0 == s.compare("Hokusai2", Qt::CaseInsensitive)) {
+		return DAColorTheme::Style_Hokusai2;
+	} else if (0 == s.compare("Hokusai3", Qt::CaseInsensitive)) {
+		return DAColorTheme::Style_Hokusai3;
+	} else if (0 == s.compare("Ingres", Qt::CaseInsensitive)) {
+		return DAColorTheme::Style_Ingres;
+	} else if (0 == s.compare("Isfahan1", Qt::CaseInsensitive)) {
+		return DAColorTheme::Style_Isfahan1;
+	} else if (0 == s.compare("Isfahan2", Qt::CaseInsensitive)) {
+		return DAColorTheme::Style_Isfahan2;
+	} else if (0 == s.compare("Java", Qt::CaseInsensitive)) {
+		return DAColorTheme::Style_Java;
+	} else if (0 == s.compare("Johnson", Qt::CaseInsensitive)) {
+		return DAColorTheme::Style_Johnson;
+	} else if (0 == s.compare("Kandinsky", Qt::CaseInsensitive)) {
+		return DAColorTheme::Style_Kandinsky;
+	} else if (0 == s.compare("Morgenstern", Qt::CaseInsensitive)) {
+		return DAColorTheme::Style_Morgenstern;
+	} else if (0 == s.compare("OKeeffe1", Qt::CaseInsensitive)) {
+		return DAColorTheme::Style_OKeeffe1;
+	} else if (0 == s.compare("OKeeffe2", Qt::CaseInsensitive)) {
+		return DAColorTheme::Style_OKeeffe2;
+	} else if (0 == s.compare("Pillement", Qt::CaseInsensitive)) {
+		return DAColorTheme::Style_Pillement;
+	} else if (0 == s.compare("Tam", Qt::CaseInsensitive)) {
+		return DAColorTheme::Style_Tam;
+	} else if (0 == s.compare("Troy", Qt::CaseInsensitive)) {
+		return DAColorTheme::Style_Troy;
+	} else if (0 == s.compare("VanGogh3", Qt::CaseInsensitive)) {
+		return DAColorTheme::Style_VanGogh3;
+	} else if (0 == s.compare("Veronese", Qt::CaseInsensitive)) {
+		return DAColorTheme::Style_Veronese;
+	}
+	return defaultEnum;
+}
+
 }  // end DA

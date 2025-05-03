@@ -23,6 +23,9 @@ class DAWorkFlowOperateWidget;
 class DAGraphicsItem;
 class DAGraphicsScene;
 class DAGraphicsResizeableItem;
+class DAColorTheme;
+class DAFigureWidget;
+class DAChartWidget;
 
 /**
  * @brief DAProjectInterface::getProjectVersion的版本号会通过setVersionNumber设置进DAXmlHelper
@@ -53,9 +56,9 @@ public:
 	bool loadElement(DAWorkFlowOperateWidget* wfo, const QDomElement* workflowsEle);
 	// 创建剪切板描述xml
 	QDomElement makeClipBoardElement(const QList< DAGraphicsItem* > its,
-                                     const QString& tagName,
-                                     QDomDocument* doc,
-                                     bool isCopyType = true);
+									 const QString& tagName,
+									 QDomDocument* doc,
+									 bool isCopyType = true);
 	bool loadClipBoardElement(const QDomElement* clipBoardElement, DAWorkFlowGraphicsScene* sc);
 	// DAGraphicsItem的通用保存
 	static QDomElement makeElement(const DAGraphicsItem* item, const QString& tagName, QDomDocument* doc);
@@ -64,23 +67,23 @@ public:
 	// DAGraphicsItemGroup的通用保存,注意！！！此函数并不会把子item的信息保存，仅仅记录子item的id
 	static QDomElement makeElement(const DAGraphicsItemGroup* itemGroup, const QString& tagName, QDomDocument* doc);
 	static bool loadElement(DAGraphicsScene* scene,
-                            DAGraphicsItemGroup* group,
-                            const QDomElement* groupElement,
-                            const QVersionNumber& v = QVersionNumber());
+							DAGraphicsItemGroup* group,
+							const QDomElement* groupElement,
+							const QVersionNumber& v = QVersionNumber());
 	// DA支持的所有QGraphicsItem的通用保存
 	static QDomElement makeElement(const QGraphicsItem* item, const QString& tagName, QDomDocument* doc);
 	static bool loadElement(QGraphicsItem* item, const QDomElement* tag, const QVersionNumber& v = QVersionNumber());
 	// 获取所有处理过的item
 	QList< QGraphicsItem* > getAllDealItems() const;
-	// DAData的序列化
-	static QDomElement makeElement(const DAData* data, const QString& tagName, QDomDocument* doc);
-    static bool loadElement(DAData* data,
-                            const QDomElement* tag,
-                            const QHash< DAAbstractData::IdType, DAData >& datas,
-                            const QVersionNumber& v = QVersionNumber());
-	// DADataManager的序列化
-	static QDomElement makeElement(const DADataManager* dmgr, const QString& tagName, QDomDocument* doc);
-	static bool loadElement(DADataManager* dmgr, const QDomElement* tag, const QVersionNumber& v = QVersionNumber());
+	// DAColorTheme
+	static QDomElement makeElement(const DAColorTheme* ct, const QString& tagName, QDomDocument* doc);
+	static bool loadElement(DAColorTheme* ct, const QDomElement* tag, const QVersionNumber& v = QVersionNumber());
+	// DAFigureWidget
+	static QDomElement makeElement(const DAFigureWidget* fig, const QString& tagName, QDomDocument* doc);
+	static bool loadElement(DAFigureWidget* fig, const QDomElement* tag, const QVersionNumber& v = QVersionNumber());
+	// DAChartWidget
+	static QDomElement makeElement(const DAChartWidget* chart, const QString& tagName, QDomDocument* doc);
+	static bool loadElement(DAChartWidget* chart, const QDomElement* tag, const QVersionNumber& v = QVersionNumber());
 
 public:
 	// 生成一个qvariant element

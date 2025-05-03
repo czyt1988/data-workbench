@@ -334,8 +334,10 @@ bool DAAppProject::save(const QString& path)
 
 	//! datamanager
 	makeSaveDataManagerTask(mArchive);
-	//! 组件任务队列
 
+	//! 绘图
+
+	//! 组件任务队列
 	if (!mArchive->save(path)) {
 		qCritical() << tr("failed to save archive to %1").arg(path);
 		return false;
@@ -452,6 +454,16 @@ void DAAppProject::makeSaveDataManagerTask(DAZipArchiveThreadWrapper* archive)
 	root.appendChild(dataListEle);
 	// 创建archive任务队列
 	mArchive->appendXmlSaveTask(QStringLiteral("data-manager.xml"), doc);
+}
+
+/**
+ * @brief 添加保存绘图任务
+ *
+ * 绘图包含了数据和界面，
+ * @param archive
+ */
+void DAAppProject::makeSaveFiguresTask(DAZipArchiveThreadWrapper* archive)
+{
 }
 
 /**
