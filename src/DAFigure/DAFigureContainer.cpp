@@ -197,6 +197,17 @@ bool DAFigureContainer::isWidgetInContainer(const QWidget* w) const
 }
 
 /**
+ * @brief 判断是否是相对位置，相对位置尺寸是比例
+ * @param w
+ * @return
+ */
+bool DAFigureContainer::isWidgetRelativePos(QWidget* w) const
+{
+	WidgetSizeData sd = d_ptr->managedWidgets.value(w, WidgetSizeData());
+	return sd.isRelativePos
+}
+
+/**
  * @brief 通过percent计算在continerRect下的子窗体的Geometry
  * @param percent
  * @param continerRect

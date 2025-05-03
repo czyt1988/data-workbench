@@ -1879,6 +1879,22 @@ QDomElement DAXmlHelper::makeElement(const DAFigureWidget* fig, const QString& t
 	const QList< DAChartWidget* > charts = fig->getChartsOrdered();
 	for (DAChartWidget* chart : charts) {
 		QDomElement chartEle = makeElement(chart, QStringLiteral("chart"), doc);
+		// 获取chart在figure的位置
+		bool isRelativePos = fig->isWidgetRelativePos(chart);
+		chartEle.setAttribute("isRelativePos", isRelativePos);
+		if (isRelativePos) {
+			QRectF pos = fig->getWidgetPosPercent(chart);
+			chartEle.setAttribute("x", pos.x());
+			chartEle.setAttribute("y", pos.y());
+			chartEle.setAttribute("w", pos.width());
+			chartEle.setAttribute("h", pos.height());
+		} else {
+			QRect geo = chart->geometry();
+			chartEle.setAttribute("x", geo.x());
+			chartEle.setAttribute("y", geo.y());
+			chartEle.setAttribute("w", geo.width());
+			chartEle.setAttribute("h", geo.height());
+		}
 		chartsEle.appendChild(chartEle);
 	}
 	eleFig.appendChild(chartsEle);
@@ -1892,7 +1908,9 @@ bool DAXmlHelper::loadElement(DAFigureWidget* fig, const QDomElement* tag, const
 
 QDomElement DAXmlHelper::makeElement(const DAChartWidget* chart, const QString& tagName, QDomDocument* doc)
 {
-	return QDomElement();
+	QDomElement eleChart = doc->createElement(tagName);
+	//
+	return eleChart;
 }
 
 bool DAXmlHelper::loadElement(DAChartWidget* chart, const QDomElement* tag, const QVersionNumber& v)

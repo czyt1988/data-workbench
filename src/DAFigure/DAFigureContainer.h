@@ -41,6 +41,8 @@ public:
 
 	// 判断是否存在这个widget
 	bool isWidgetInContainer(const QWidget* w) const;
+	// 判断是否是相对位置
+	bool isWidgetRelativePos(QWidget* w) const;
 
 	// 根据baserect，计算目标rect相对baserect的占比
 	static QRect calcGeometryByPercent(const QRectF& percent, const QRect& continerRect);
