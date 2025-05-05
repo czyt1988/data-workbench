@@ -34,6 +34,7 @@
 #include <QVector3D>
 #include <QVector4D>
 #include <QPointer>
+#include "DAQtEnumTypeStringUtils.h"
 #ifndef DAXMLFileInterfaceCheckEleClass
 #define DAXMLFileInterfaceCheckEleClass(ele, className)                                                                \
 	do {                                                                                                               \
@@ -709,45 +710,6 @@ bool getStringBoolValue(const QString& valuestring)
 	return valuestring.toInt();
 }
 
-QString enumToString(Qt::PenStyle e)
-{
-	switch (e) {
-	case Qt::NoPen:
-		return "NoPen";
-	case Qt::SolidLine:
-		return "SolidLine";
-	case Qt::DashLine:
-		return "DashLine";
-	case Qt::DotLine:
-		return "DotLine";
-	case Qt::DashDotLine:
-		return "DashDotLine";
-	case Qt::DashDotDotLine:
-		return "DashDotDotLine";
-	default:
-		break;
-	}
-	return "SolidLine";
-}
-
-Qt::PenStyle stringToEnum(const QString& s, Qt::PenStyle defaultEnum)
-{
-	if (0 == s.compare("NoPen", Qt::CaseInsensitive)) {
-		return Qt::NoPen;
-	} else if (0 == s.compare("SolidLine", Qt::CaseInsensitive)) {
-		return Qt::SolidLine;
-	} else if (0 == s.compare("DashLine", Qt::CaseInsensitive)) {
-		return Qt::DashLine;
-	} else if (0 == s.compare("DotLine", Qt::CaseInsensitive)) {
-		return Qt::DotLine;
-	} else if (0 == s.compare("DashDotLine", Qt::CaseInsensitive)) {
-		return Qt::DashDotLine;
-	} else if (0 == s.compare("DashDotDotLine", Qt::CaseInsensitive)) {
-		return Qt::DashDotDotLine;
-	}
-	return defaultEnum;
-}
-
 QString enumToString(Qt::AspectRatioMode e)
 {
 	switch (e) {
@@ -797,68 +759,107 @@ Qt::TransformationMode stringToEnum(const QString& s, Qt::TransformationMode def
 	}
 	return defaultEnum;
 }
-
+/*
 QString enumToString(Qt::Alignment e)
 {
-	switch (e) {
-	case Qt::AlignLeft:
-		return "AlignLeft";
-	case Qt::AlignRight:
-		return "AlignRight";
-	case Qt::AlignHCenter:
-		return "AlignHCenter";
-	case Qt::AlignJustify:
-		return "AlignJustify";
-	case Qt::AlignAbsolute:
-		return "AlignAbsolute";
-	case Qt::AlignHorizontal_Mask:
-		return "AlignHorizontal_Mask";
-	case Qt::AlignTop:
-		return "AlignTop";
-	case Qt::AlignBottom:
-		return "AlignBottom";
-	case Qt::AlignVCenter:
-		return "AlignVCenter";
-	case Qt::AlignBaseline:
-		return "AlignBaseline";
-	case Qt::AlignVertical_Mask:
-		return "AlignVertical_Mask";
-	case Qt::AlignCenter:
-		return "AlignCenter";
-	default:
-		break;
-	}
-	return "AlignCenter";
+    switch (e) {
+    case Qt::AlignLeft:
+        return "AlignLeft";
+    case Qt::AlignRight:
+        return "AlignRight";
+    case Qt::AlignHCenter:
+        return "AlignHCenter";
+    case Qt::AlignJustify:
+        return "AlignJustify";
+    case Qt::AlignAbsolute:
+        return "AlignAbsolute";
+    case Qt::AlignHorizontal_Mask:
+        return "AlignHorizontal_Mask";
+    case Qt::AlignTop:
+        return "AlignTop";
+    case Qt::AlignBottom:
+        return "AlignBottom";
+    case Qt::AlignVCenter:
+        return "AlignVCenter";
+    case Qt::AlignBaseline:
+        return "AlignBaseline";
+    case Qt::AlignVertical_Mask:
+        return "AlignVertical_Mask";
+    case Qt::AlignCenter:
+        return "AlignCenter";
+    default:
+        break;
+    }
+    return "AlignCenter";
 }
 
 Qt::Alignment stringToEnum(const QString& s, Qt::Alignment defaultEnum)
 {
-	if (0 == s.compare("AlignCenter", Qt::CaseInsensitive)) {
-		return Qt::AlignCenter;
-	} else if (0 == s.compare("AlignHCenter", Qt::CaseInsensitive)) {
-		return Qt::AlignHCenter;
-	} else if (0 == s.compare("AlignLeft", Qt::CaseInsensitive)) {
-		return Qt::AlignLeft;
-	} else if (0 == s.compare("AlignRight", Qt::CaseInsensitive)) {
-		return Qt::AlignRight;
-	} else if (0 == s.compare("AlignVCenter", Qt::CaseInsensitive)) {
-		return Qt::AlignVCenter;
-	} else if (0 == s.compare("AlignTop", Qt::CaseInsensitive)) {
-		return Qt::AlignTop;
-	} else if (0 == s.compare("AlignBottom", Qt::CaseInsensitive)) {
-		return Qt::AlignBottom;
-	} else if (0 == s.compare("AlignAbsolute", Qt::CaseInsensitive)) {
-		return Qt::AlignAbsolute;
-	} else if (0 == s.compare("AlignHorizontal_Mask", Qt::CaseInsensitive)) {
-		return Qt::AlignHorizontal_Mask;
-	} else if (0 == s.compare("AlignBaseline", Qt::CaseInsensitive)) {
-		return Qt::AlignBaseline;
-	} else if (0 == s.compare("AlignVertical_Mask", Qt::CaseInsensitive)) {
-		return Qt::AlignVertical_Mask;
-	}
-	return defaultEnum;
+    if (0 == s.compare("AlignCenter", Qt::CaseInsensitive)) {
+        return Qt::AlignCenter;
+    } else if (0 == s.compare("AlignHCenter", Qt::CaseInsensitive)) {
+        return Qt::AlignHCenter;
+    } else if (0 == s.compare("AlignLeft", Qt::CaseInsensitive)) {
+        return Qt::AlignLeft;
+    } else if (0 == s.compare("AlignRight", Qt::CaseInsensitive)) {
+        return Qt::AlignRight;
+    } else if (0 == s.compare("AlignVCenter", Qt::CaseInsensitive)) {
+        return Qt::AlignVCenter;
+    } else if (0 == s.compare("AlignTop", Qt::CaseInsensitive)) {
+        return Qt::AlignTop;
+    } else if (0 == s.compare("AlignBottom", Qt::CaseInsensitive)) {
+        return Qt::AlignBottom;
+    } else if (0 == s.compare("AlignAbsolute", Qt::CaseInsensitive)) {
+        return Qt::AlignAbsolute;
+    } else if (0 == s.compare("AlignHorizontal_Mask", Qt::CaseInsensitive)) {
+        return Qt::AlignHorizontal_Mask;
+    } else if (0 == s.compare("AlignBaseline", Qt::CaseInsensitive)) {
+        return Qt::AlignBaseline;
+    } else if (0 == s.compare("AlignVertical_Mask", Qt::CaseInsensitive)) {
+        return Qt::AlignVertical_Mask;
+    }
+    return defaultEnum;
 }
 
+QString enumToString(Qt::PenStyle e)
+{
+ switch (e) {
+ case Qt::NoPen:
+     return "NoPen";
+ case Qt::SolidLine:
+     return "SolidLine";
+ case Qt::DashLine:
+     return "DashLine";
+ case Qt::DotLine:
+     return "DotLine";
+ case Qt::DashDotLine:
+     return "DashDotLine";
+ case Qt::DashDotDotLine:
+     return "DashDotDotLine";
+ default:
+     break;
+ }
+ return "SolidLine";
+}
+
+Qt::PenStyle stringToEnum(const QString& s, Qt::PenStyle defaultEnum)
+{
+ if (0 == s.compare("NoPen", Qt::CaseInsensitive)) {
+     return Qt::NoPen;
+ } else if (0 == s.compare("SolidLine", Qt::CaseInsensitive)) {
+     return Qt::SolidLine;
+ } else if (0 == s.compare("DashLine", Qt::CaseInsensitive)) {
+     return Qt::DashLine;
+ } else if (0 == s.compare("DotLine", Qt::CaseInsensitive)) {
+     return Qt::DotLine;
+ } else if (0 == s.compare("DashDotLine", Qt::CaseInsensitive)) {
+     return Qt::DashDotLine;
+ } else if (0 == s.compare("DashDotDotLine", Qt::CaseInsensitive)) {
+     return Qt::DashDotDotLine;
+ }
+ return defaultEnum;
+}
+*/
 QString enumToString(Qt::BrushStyle e)
 {
 	switch (e) {

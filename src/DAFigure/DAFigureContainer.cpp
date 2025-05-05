@@ -204,7 +204,7 @@ bool DAFigureContainer::isWidgetInContainer(const QWidget* w) const
 bool DAFigureContainer::isWidgetRelativePos(QWidget* w) const
 {
 	WidgetSizeData sd = d_ptr->managedWidgets.value(w, WidgetSizeData());
-	return sd.isRelativePos
+	return sd.isRelativePos;
 }
 
 /**

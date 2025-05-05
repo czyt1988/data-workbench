@@ -12,6 +12,8 @@
 /**
  *@file xml文件的帮助类
  */
+// qwt
+class QwtPlotLayout;
 
 namespace DA
 {
@@ -84,6 +86,9 @@ public:
 	// DAChartWidget
 	static QDomElement makeElement(const DAChartWidget* chart, const QString& tagName, QDomDocument* doc);
 	static bool loadElement(DAChartWidget* chart, const QDomElement* tag, const QVersionNumber& v = QVersionNumber());
+	// Qwt 相关
+	static QDomElement makeElement(const QwtPlotLayout* value, const QString& tagName, QDomDocument* doc);
+	static bool loadElement(QwtPlotLayout* value, const QDomElement* tag, const QVersionNumber& version = QVersionNumber());
 
 public:
 	// 生成一个qvariant element

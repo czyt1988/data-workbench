@@ -339,6 +339,11 @@ void DAFigureWidget::addChart(DAChartWidget* chart, float xPresent, float yPrese
 	setFocusProxy(chart);
 }
 
+void DAFigureWidget::addChart(DAChartWidget* chart, const QRectF& present)
+{
+    addChart(chart, present.x(), present.y(), present.width(), present.height());
+}
+
 /**
  * @brief 获取所有的绘图
  * @return
@@ -589,22 +594,22 @@ QColor DAFigureWidget::getDefaultColor() const
     return (d_ptr->mColorTheme)++;
 }
 
-void DAFigureWidget::setFigureColorTheme(const DAColorTheme& th)
+void DAFigureWidget::setColorTheme(const DAColorTheme& th)
 {
     d_ptr->mColorTheme = th;
 }
 
-DAColorTheme DAFigureWidget::getFigureColorTheme() const
+DAColorTheme DAFigureWidget::getColorTheme() const
 {
     return d_ptr->mColorTheme;
 }
 
-const DAColorTheme& DAFigureWidget::figureColorTheme() const
+const DAColorTheme& DAFigureWidget::colorTheme() const
 {
     return d_ptr->mColorTheme;
 }
 
-DAColorTheme& DAFigureWidget::figureColorTheme()
+DAColorTheme& DAFigureWidget::colorTheme()
 {
     return d_ptr->mColorTheme;
 }

@@ -9,6 +9,7 @@
 #include <QLineF>
 #include <math.h>
 #include "DAGraphicsScene.h"
+#include "DAQtEnumTypeStringUtils.h"
 namespace DA
 {
 //===============================================================
@@ -717,19 +718,15 @@ QPainterPath DAGraphicsLinkItem::generateLinePainterPath(const QPointF& fromPoin
 	QPainterPath res;
 	switch (linestyle) {
 	case LinkLineBezier:
-		res = generateLinkLineBezierPainterPath(fromPoint,
-												relativeDirectionOfPoint(toPoint, fromPoint),
-												toPoint,
-												relativeDirectionOfPoint(fromPoint, toPoint));
+		res = generateLinkLineBezierPainterPath(
+			fromPoint, relativeDirectionOfPoint(toPoint, fromPoint), toPoint, relativeDirectionOfPoint(fromPoint, toPoint));
 		break;
 	case LinkLineStraight:
 		res = generateLinkLineStraightPainterPath(fromPoint, toPoint);
 		break;
 	case LinkLineKnuckle:
-		res = generateLinkLineKnucklePainterPath(fromPoint,
-												 relativeDirectionOfPoint(toPoint, fromPoint),
-												 toPoint,
-												 relativeDirectionOfPoint(fromPoint, toPoint));
+		res = generateLinkLineKnucklePainterPath(
+			fromPoint, relativeDirectionOfPoint(toPoint, fromPoint), toPoint, relativeDirectionOfPoint(fromPoint, toPoint));
 		break;
 	default:
 		break;
@@ -836,8 +833,8 @@ bool DAGraphicsLinkItem::loadFromXml(const QDomElement* parentElement, const QVe
 	}
 	QDomElement lineEle = parentElement->firstChildElement("linkLine");
 	if (!lineEle.isNull()) {
-		DAGraphicsLinkItem::LinkLineStyle s = DA::stringToEnum(lineEle.attribute("style"),
-															   DAGraphicsLinkItem::LinkLineKnuckle);
+		DAGraphicsLinkItem::LinkLineStyle s =
+			DA::stringToEnum(lineEle.attribute("style"), DAGraphicsLinkItem::LinkLineKnuckle);
 		setLinkLineStyle(s);
 	}
 	QDomElement linePenEle = parentElement->firstChildElement("linePen");
@@ -852,23 +849,23 @@ bool DAGraphicsLinkItem::loadFromXml(const QDomElement* parentElement, const QVe
 	}
 	QDomElement endPointEle = parentElement->firstChildElement("endPoint");
 	if (!endPointEle.isNull()) {
-		DAGraphicsLinkItem::EndPointType etTo   = DA::stringToEnum(endPointEle.attribute("toType"),
-                                                                 DAGraphicsLinkItem::EndPointNone);
-        DAGraphicsLinkItem::EndPointType etFrom = DA::stringToEnum(endPointEle.attribute("fromType"),
-                                                                   DAGraphicsLinkItem::EndPointNone);
-        int size                                = endPointEle.attribute("size").toInt();
-        setEndPointType(DAGraphicsLinkItem::OrientationStart, etFrom);
-        setEndPointType(DAGraphicsLinkItem::OrientationEnd, etTo);
-        if (size > 0) {
-            setEndPointSize(size);
-        }
-    }
-    return true;
+		DAGraphicsLinkItem::EndPointType etTo =
+			DA::stringToEnum(endPointEle.attribute("toType"), DAGraphicsLinkItem::EndPointNone);
+		DAGraphicsLinkItem::EndPointType etFrom =
+			DA::stringToEnum(endPointEle.attribute("fromType"), DAGraphicsLinkItem::EndPointNone);
+		int size = endPointEle.attribute("size").toInt();
+		setEndPointType(DAGraphicsLinkItem::OrientationStart, etFrom);
+		setEndPointType(DAGraphicsLinkItem::OrientationEnd, etTo);
+		if (size > 0) {
+			setEndPointSize(size);
+		}
+	}
+	return true;
 }
 
 void DAGraphicsLinkItem::setScenePos(const QPointF& p)
 {
-    setPos(mapToParent(mapFromScene(p)));
+	setPos(mapToParent(mapFromScene(p)));
 }
 
 void DAGraphicsLinkItem::setScenePos(qreal x, qreal y)

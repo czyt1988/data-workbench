@@ -242,6 +242,7 @@ bool DAUTILS_API getStringULongLongValue(const QString& valuestring, unsigned lo
 bool DAUTILS_API getStringRealValue(const QString& valuestring, qreal& v);
 bool DAUTILS_API getStringBoolValue(const QString& valuestring);
 
+/*
 // Qt::Alignment的枚举转换
 DAUTILS_API QString enumToString(Qt::Alignment e);
 // Qt::Alignment的枚举转换
@@ -251,6 +252,7 @@ DAUTILS_API Qt::Alignment stringToEnum(const QString& s, Qt::Alignment defaultEn
 DAUTILS_API QString enumToString(Qt::PenStyle e);
 // Qt::PenStyle的枚举转换
 DAUTILS_API Qt::PenStyle stringToEnum(const QString& s, Qt::PenStyle defaultEnum = Qt::SolidLine);
+*/
 
 // Qt::BrushStyle 的枚举转换
 DAUTILS_API QString enumToString(Qt::BrushStyle e);

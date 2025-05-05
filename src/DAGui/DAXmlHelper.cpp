@@ -11,6 +11,7 @@
 #include <QPen>
 #include <QSet>
 // DA
+#include "DAQtEnumTypeStringUtils.h"
 #include "DACommandsForWorkFlowNodeGraphics.h"
 #include "DAWorkFlowGraphicsScene.h"
 #include "DAGraphicsPixmapItem.h"
@@ -24,6 +25,9 @@
 #include "DAQtContainerUtil.hpp"
 #include "DAFigureWidget.h"
 #include "DAChartWidget.h"
+// qwt
+#include "qwt_plot.h"
+#include "qwt_plot_canvas.h"
 namespace DA
 {
 //==============================================================
@@ -1871,7 +1875,7 @@ QDomElement DAXmlHelper::makeElement(const DAFigureWidget* fig, const QString& t
 	QDomElement eleBKBrush = DAXMLFileInterface::makeElement(fig->getBackgroundColor(), QStringLiteral("background"), doc);
 	eleFig.appendChild(eleBKBrush);
 	// colortheme
-	const DAColorTheme cth  = fig->getFigureColorTheme();
+	const DAColorTheme cth  = fig->getColorTheme();
 	QDomElement eleClrTheme = makeElement(&cth, QStringLiteral("colortheme"), doc);
 	eleFig.appendChild(eleClrTheme);
 	// 记录chart
@@ -1881,19 +1885,19 @@ QDomElement DAXmlHelper::makeElement(const DAFigureWidget* fig, const QString& t
 		QDomElement chartEle = makeElement(chart, QStringLiteral("chart"), doc);
 		// 获取chart在figure的位置
 		bool isRelativePos = fig->isWidgetRelativePos(chart);
-		chartEle.setAttribute("isRelativePos", isRelativePos);
+		chartEle.setAttribute(QStringLiteral("isRelativePos"), isRelativePos);
 		if (isRelativePos) {
 			QRectF pos = fig->getWidgetPosPercent(chart);
-			chartEle.setAttribute("x", pos.x());
-			chartEle.setAttribute("y", pos.y());
-			chartEle.setAttribute("w", pos.width());
-			chartEle.setAttribute("h", pos.height());
+			chartEle.setAttribute(QStringLiteral("x"), pos.x());
+			chartEle.setAttribute(QStringLiteral("y"), pos.y());
+			chartEle.setAttribute(QStringLiteral("w"), pos.width());
+			chartEle.setAttribute(QStringLiteral("h"), pos.height());
 		} else {
 			QRect geo = chart->geometry();
-			chartEle.setAttribute("x", geo.x());
-			chartEle.setAttribute("y", geo.y());
-			chartEle.setAttribute("w", geo.width());
-			chartEle.setAttribute("h", geo.height());
+			chartEle.setAttribute(QStringLiteral("x"), geo.x());
+			chartEle.setAttribute(QStringLiteral("y"), geo.y());
+			chartEle.setAttribute(QStringLiteral("w"), geo.width());
+			chartEle.setAttribute(QStringLiteral("h"), geo.height());
 		}
 		chartsEle.appendChild(chartEle);
 	}
@@ -1903,9 +1907,62 @@ QDomElement DAXmlHelper::makeElement(const DAFigureWidget* fig, const QString& t
 
 bool DAXmlHelper::loadElement(DAFigureWidget* fig, const QDomElement* tag, const QVersionNumber& v)
 {
-	return false;
+	auto eleBKBrush = tag->firstChildElement(QStringLiteral("background"));
+	// background
+	QBrush brush;
+	if (DAXMLFileInterface::loadElement(brush, &eleBKBrush)) {
+		fig->setBackgroundColor(brush);
+	}
+	// colortheme
+	auto eleClrTheme = tag->firstChildElement(QStringLiteral("colortheme"));
+	DAColorTheme cth;
+	if (loadElement(&cth, &eleClrTheme)) {
+		fig->setColorTheme(cth);
+	}
+	// chart
+	QDomElement chartsEle = tag->firstChildElement(QStringLiteral("charts"));
+	auto chartListEle     = chartsEle.childNodes();
+	for (int i = 0; i < chartListEle.size(); ++i) {
+		QDomElement chartEle = chartListEle.at(i).toElement();
+		if (chartEle.isNull()) {
+			continue;
+		}
+		if (chartEle.tagName() != QStringLiteral("chart")) {
+			continue;
+		}
+		std::unique_ptr< DAChartWidget > chart = std::make_unique< DAChartWidget >();
+		if (!loadElement(chart.get(), &chartEle)) {
+			continue;
+		}
+		// 获取位置
+		bool isRelativePos = chartEle.attribute(QStringLiteral("isRelativePos")).toInt();
+		if (isRelativePos) {
+			QRectF pos;
+			pos.setX(chartEle.attribute(QStringLiteral("x")).toDouble());
+			pos.setY(chartEle.attribute(QStringLiteral("y")).toDouble());
+			pos.setWidth(chartEle.attribute(QStringLiteral("w")).toDouble());
+			pos.setHeight(chartEle.attribute(QStringLiteral("h")).toDouble());
+			fig->addChart(chart.get(), pos);
+		} else {
+			QRect geo;
+			geo.setX(chartEle.attribute(QStringLiteral("x")).toInt());
+			geo.setY(chartEle.attribute(QStringLiteral("y")).toInt());
+			geo.setWidth(chartEle.attribute(QStringLiteral("w")).toInt());
+			geo.setHeight(chartEle.attribute(QStringLiteral("h")).toInt());
+			chart->setParent(fig);
+		}
+		chart.release();
+	}
+	return true;
 }
 
+/**
+ * @brief DAChartWidget
+ * @param chart
+ * @param tagName
+ * @param doc
+ * @return
+ */
 QDomElement DAXmlHelper::makeElement(const DAChartWidget* chart, const QString& tagName, QDomDocument* doc)
 {
 	QDomElement eleChart = doc->createElement(tagName);
@@ -1914,6 +1971,43 @@ QDomElement DAXmlHelper::makeElement(const DAChartWidget* chart, const QString& 
 }
 
 bool DAXmlHelper::loadElement(DAChartWidget* chart, const QDomElement* tag, const QVersionNumber& v)
+{
+    return false;
+}
+
+/**
+ * @brief QwtPlotLayout
+ * @param value
+ * @param tagName
+ * @param doc
+ * @return
+ */
+QDomElement DAXmlHelper::makeElement(const QwtPlotLayout* value, const QString& tagName, QDomDocument* doc)
+{
+	QDomElement rootEle = doc->createElement(tagName);
+	// setCanvasMargin
+	QDomElement canvasMarginEle = doc->createElement(QStringLiteral("margin"));
+	canvasMarginEle.setAttribute(QStringLiteral("YLeft"), value->canvasMargin(QwtAxis::YLeft));
+	canvasMarginEle.setAttribute(QStringLiteral("YRight"), value->canvasMargin(QwtAxis::YRight));
+	canvasMarginEle.setAttribute(QStringLiteral("XBottom"), value->canvasMargin(QwtAxis::XBottom));
+	canvasMarginEle.setAttribute(QStringLiteral("XTop"), value->canvasMargin(QwtAxis::XTop));
+	rootEle.appendChild(canvasMarginEle);
+
+	// alignCanvasToScale
+	QDomElement alignCanvasToScaleEle = doc->createElement(QStringLiteral("alignToScale"));
+	alignCanvasToScaleEle.setAttribute(QStringLiteral("YLeft"), value->alignCanvasToScale(QwtAxis::YLeft));
+	alignCanvasToScaleEle.setAttribute(QStringLiteral("YRight"), value->alignCanvasToScale(QwtAxis::YRight));
+	alignCanvasToScaleEle.setAttribute(QStringLiteral("XBottom"), value->alignCanvasToScale(QwtAxis::XBottom));
+	alignCanvasToScaleEle.setAttribute(QStringLiteral("XTop"), value->alignCanvasToScale(QwtAxis::XTop));
+	rootEle.appendChild(alignCanvasToScaleEle);
+
+	// 其它属性
+	rootEle.setAttribute(QStringLiteral("spacing"), value->spacing());
+	rootEle.setAttribute(QStringLiteral("spacing"), value->spacing());
+	return rootEle;
+}
+
+bool DAXmlHelper::loadElement(QwtPlotLayout* value, const QDomElement* tag, const QVersionNumber& version)
 {
     return false;
 }
