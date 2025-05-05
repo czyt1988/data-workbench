@@ -34,6 +34,7 @@ set(DA_LIB_HEADER_FILES
     DADataManager.h
     DADataPackage.h
     DACommandsDataManager.h
+    DADataEnumStringUtils.h
 )
 set(DA_LIB_SOURCE_FILES
     DAAbstractData.cpp
@@ -41,6 +42,7 @@ set(DA_LIB_SOURCE_FILES
     DADataManager.cpp
     DADataPackage.cpp
     DACommandsDataManager.cpp
+    DADataEnumStringUtils.cpp
 )
 if(DA_ENABLE_PYTHON)
     list(APPEND DA_LIB_HEADER_FILES

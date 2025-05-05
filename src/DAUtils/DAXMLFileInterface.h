@@ -51,9 +51,12 @@ public:
 	/// @}
 
 	/// @defgroup qt类型 这是qt类型的xml保存
+	/// static QDomElement makeElement(const pod_type& v, const QString& tagName, QDomDocument* doc);
+	/// static bool loadElement(pod_type& p, const QDomElement* ele);
 	/// @{
 	// 标准保存—— QString
 	DAXMLFILEINTERFACE_TYPE_MAKE_H(QString)
+	DAXMLFILEINTERFACE_TYPE_MAKE_H(QColor)
 	DAXMLFILEINTERFACE_TYPE_MAKE_H(QRect)
 	DAXMLFILEINTERFACE_TYPE_MAKE_H(QRectF)
 	DAXMLFILEINTERFACE_TYPE_MAKE_H(QPoint)
@@ -117,7 +120,8 @@ public:
     DAXMLELEMENTSERIALIZATION_INOUT_H(double)
     DAXMLELEMENTSERIALIZATION_INOUT_H(float) 
     DAXMLELEMENTSERIALIZATION_INOUT_H(std::string)
-    DAXMLELEMENTSERIALIZATION_INOUT_H(QString) 
+    DAXMLELEMENTSERIALIZATION_INOUT_H(QString)
+    DAXMLELEMENTSERIALIZATION_INOUT_H(QColor)
     DAXMLELEMENTSERIALIZATION_INOUT_H(QRect)
     DAXMLELEMENTSERIALIZATION_INOUT_H(QRectF) 
     DAXMLELEMENTSERIALIZATION_INOUT_H(QPoint)
@@ -242,38 +246,6 @@ bool DAUTILS_API getStringULongLongValue(const QString& valuestring, unsigned lo
 bool DAUTILS_API getStringRealValue(const QString& valuestring, qreal& v);
 bool DAUTILS_API getStringBoolValue(const QString& valuestring);
 
-/*
-// Qt::Alignment的枚举转换
-DAUTILS_API QString enumToString(Qt::Alignment e);
-// Qt::Alignment的枚举转换
-DAUTILS_API Qt::Alignment stringToEnum(const QString& s, Qt::Alignment defaultEnum = Qt::AlignCenter);
-
-// Qt::PenStyle的枚举转换
-DAUTILS_API QString enumToString(Qt::PenStyle e);
-// Qt::PenStyle的枚举转换
-DAUTILS_API Qt::PenStyle stringToEnum(const QString& s, Qt::PenStyle defaultEnum = Qt::SolidLine);
-*/
-
-// Qt::BrushStyle 的枚举转换
-DAUTILS_API QString enumToString(Qt::BrushStyle e);
-// Qt::BrushStyle 的枚举转换
-DAUTILS_API Qt::BrushStyle stringToEnum(const QString& s, Qt::BrushStyle defaultEnum = Qt::SolidPattern);
-
-// Qt::AspectRatioMode的枚举转换
-DAUTILS_API QString enumToString(Qt::AspectRatioMode e);
-// Qt::AspectRatioMode的枚举转换
-DAUTILS_API Qt::AspectRatioMode stringToEnum(const QString& s, Qt::AspectRatioMode defaultEnum = Qt::KeepAspectRatio);
-
-// Qt::TransformationMode的枚举转换
-DAUTILS_API QString enumToString(Qt::TransformationMode e);
-// Qt::TransformationMode的枚举转换
-DAUTILS_API Qt::TransformationMode stringToEnum(const QString& s,
-                                                Qt::TransformationMode defaultEnum = Qt::FastTransformation);
-
-// Qt::TransformationMode的枚举转换
-DAUTILS_API QString enumToString(QFont::Weight e);
-// Qt::TransformationMode的枚举转换
-DAUTILS_API QFont::Weight stringToEnum(const QString& s, QFont::Weight defaultEnum = QFont::Normal);
 }
 
 #endif  // DAXMLFILEINTERFACE_H

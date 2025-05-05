@@ -41,8 +41,8 @@
  *  qDebug() << enumToString(flag); // 输出 "hcenter"
  *
  *  // 测试 Qt::Alignment (QFlags)
- *  Qt::Alignment align = DA::stringToEnum<Qt::Alignment>("left|top");
- *  qDebug() << enumToString(align); // 输出 "left|top"
+ *  Qt::Alignment align = DA::stringToEnum<Qt::Alignment>("left");
+ *  qDebug() << enumToString(align); // 输出 "left"
  * }
  * @endcode
  */

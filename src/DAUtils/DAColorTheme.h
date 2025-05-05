@@ -142,11 +142,6 @@ private:
 
 QDebug DAUTILS_API operator<<(QDebug debug, const DAColorTheme& th);
 
-// DANodeLinkPoint::Way 的枚举转换
-DAUTILS_API QString enumToString(DAColorTheme::ColorThemeStyle th);
-// DANodeLinkPoint::Way 的枚举转换
-DAUTILS_API DAColorTheme::ColorThemeStyle
-stringToEnum(const QString& s, DAColorTheme::ColorThemeStyle defaultEnum = DAColorTheme::Style_Archambault);
 }  // end namespace DA
 Q_DECLARE_METATYPE(DA::DAColorTheme)
 

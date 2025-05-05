@@ -22,6 +22,7 @@
 #include "DAZipArchiveTask_ByteArray.h"
 #include "DAZipArchiveTask_Xml.h"
 #include "DAZipArchiveTask_ArchiveFile.h"
+#include "DADataEnumStringUtils.h"
 // python
 #if DA_ENABLE_PYTHON
 #include "DAPyScripts.h"

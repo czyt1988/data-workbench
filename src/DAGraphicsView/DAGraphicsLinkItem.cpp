@@ -10,6 +10,7 @@
 #include <math.h>
 #include "DAGraphicsScene.h"
 #include "DAQtEnumTypeStringUtils.h"
+#include "DAGraphicsViewEnumStringUtils.h"
 namespace DA
 {
 //===============================================================
@@ -797,8 +798,8 @@ bool DAGraphicsLinkItem::saveToXml(QDomDocument* doc, QDomElement* parentElement
 	linePenEle.setAttribute("width", getLinePen().width());
 
 	QDomElement endPointEle = doc->createElement("endPoint");
-	endPointEle.setAttribute("toType", DA::enumToString(getEndPointType(DAGraphicsLinkItem::OrientationEnd)));
-	endPointEle.setAttribute("fromType", DA::enumToString(getEndPointType(DAGraphicsLinkItem::OrientationStart)));
+	endPointEle.setAttribute("toType", enumToString(getEndPointType(DAGraphicsLinkItem::OrientationEnd)));
+	endPointEle.setAttribute("fromType", enumToString(getEndPointType(DAGraphicsLinkItem::OrientationStart)));
 	endPointEle.setAttribute("size", getEndPointSize());
 
 	parentElement->appendChild(posEle);
@@ -1024,75 +1025,6 @@ QPainterPath DAGraphicsLinkItem::generateLinkLineKnucklePainterPath(const QPoint
 	path.lineTo(extendTo);
 	path.lineTo(toPos);
 	return path;
-}
-
-/**
- * @brief DAAbstractNodeLinkGraphicsItem::EndPointType的枚举转换
- * @param e
- * @return
- */
-QString enumToString(DAGraphicsLinkItem::EndPointType e)
-{
-
-	switch (e) {
-	case DAGraphicsLinkItem::EndPointNone:
-		return "none";
-	case DAGraphicsLinkItem::EndPointTriangType:
-		return "triang";
-	default:
-		break;
-	}
-	return "none";
-}
-
-/**
- * @brief DAAbstractNodeLinkGraphicsItem::EndPointType的枚举转换
- * @param s
- * @return
- */
-DAGraphicsLinkItem::EndPointType stringToEnum(const QString& s, DAGraphicsLinkItem::EndPointType defaultEnum)
-{
-	if (0 == s.compare("none", Qt::CaseInsensitive)) {
-		return DAGraphicsLinkItem::EndPointNone;
-	} else if (0 == s.compare("triang", Qt::CaseInsensitive)) {
-		return DAGraphicsLinkItem::EndPointTriangType;
-	}
-	return defaultEnum;
-}
-/**
- * @brief DAAbstractNodeLinkGraphicsItem::LinkLineStyle的枚举转换
- * @param e
- * @return
- */
-QString enumToString(DAGraphicsLinkItem::LinkLineStyle e)
-{
-	switch (e) {
-	case DAGraphicsLinkItem::LinkLineBezier:
-		return "bezier";
-	case DAGraphicsLinkItem::LinkLineStraight:
-		return "straight";
-	case DAGraphicsLinkItem::LinkLineKnuckle:
-		return "knuckle";
-	default:
-		break;
-	}
-	return "knuckle";
-}
-/**
- * @brief DAAbstractNodeLinkGraphicsItem::LinkLineStyle的枚举转换
- * @param s
- * @return
- */
-DAGraphicsLinkItem::LinkLineStyle stringToEnum(const QString& s, DAGraphicsLinkItem::LinkLineStyle defaultEnum)
-{
-	if (0 == s.compare("knuckle", Qt::CaseInsensitive)) {
-		return DAGraphicsLinkItem::LinkLineKnuckle;
-	} else if (0 == s.compare("bezier", Qt::CaseInsensitive)) {
-		return DAGraphicsLinkItem::LinkLineBezier;
-	} else if (0 == s.compare("straight", Qt::CaseInsensitive)) {
-		return DAGraphicsLinkItem::LinkLineStraight;
-	}
-	return defaultEnum;
 }
 
 }  // end DA

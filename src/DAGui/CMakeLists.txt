@@ -53,6 +53,7 @@ set(DA_LIB_HEADER_FILES
     DADataManageTableView.h
     DADataManageWidget.h
     DADataOperateWidget.h
+    DAGuiEnumStringUtils.h
     DAMessageLogViewWidget.h
     DANodeItemSettingWidget.h
     DANodeLinkItemSettingWidget.h
@@ -100,6 +101,7 @@ set(DA_LIB_SOURCE_FILES
     DAFigureFactory.cpp
     DAGraphicsPixmapItemSettingWidget.cpp
     DAGlobalColorTheme.cpp
+    DAGuiEnumStringUtils.cpp
     DAMessageLogViewWidget.cpp
     DANodeItemSettingWidget.cpp
     DANodeLinkItemSettingWidget.cpp

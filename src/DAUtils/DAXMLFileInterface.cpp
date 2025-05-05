@@ -131,6 +131,35 @@ bool DAXMLFileInterface::loadElement(QString& p, const QDomElement* ele)
 	p = ele->text();
 	return true;
 }
+
+/**
+ * @brief 生成一个颜色
+ * @param v
+ * @param tagName
+ * @param doc
+ * @return
+ */
+QDomElement DAXMLFileInterface::makeElement(const QColor& v, const QString& tagName, QDomDocument* doc)
+{
+	QDomElement ele = doc->createElement(tagName);
+	// class属性是用于识别类型
+	ele.setAttribute(QStringLiteral("class"), QStringLiteral("QColor"));
+	ele.setAttribute(QStringLiteral("name"), v.name());
+	return ele;
+}
+
+/**
+ * @brief 加载颜色
+ * @param p
+ * @param ele
+ * @return
+ */
+bool DAXMLFileInterface::loadElement(QColor& p, const QDomElement* ele)
+{
+	p.setNamedColor(ele->attribute(QStringLiteral("name")));
+	return true;
+}
+
 /**
  * @brief 生成一个QRect标签
  * @param p
@@ -156,7 +185,6 @@ QDomElement DAXMLFileInterface::makeElement(const QRect& v, const QString& tagNa
  */
 bool DAXMLFileInterface::loadElement(QRect& p, const QDomElement* ele)
 {
-	DAXMLFileInterfaceCheckEleClass(ele, "QRect");
 	int v;
 	if (getStringIntValue(ele->attribute("x"), v)) {
 		p.setX(v);
@@ -197,7 +225,6 @@ QDomElement DAXMLFileInterface::makeElement(const QRectF& v, const QString& tagN
  */
 bool DAXMLFileInterface::loadElement(QRectF& p, const QDomElement* ele)
 {
-	DAXMLFileInterfaceCheckEleClass(ele, "QRectF");
 	qreal v;
 	if (getStringRealValue(ele->attribute("x"), v)) {
 		p.setX(v);
@@ -238,7 +265,6 @@ QDomElement DAXMLFileInterface::makeElement(const QPoint& v, const QString& tagN
  */
 bool DAXMLFileInterface::loadElement(QPoint& p, const QDomElement* ele)
 {
-	DAXMLFileInterfaceCheckEleClass(ele, "QPoint");
 	int v;
 	if (getStringIntValue(ele->attribute("x"), v)) {
 		p.setX(v);
@@ -272,7 +298,6 @@ QDomElement DAXMLFileInterface::makeElement(const QPointF& v, const QString& tag
  */
 bool DAXMLFileInterface::loadElement(QPointF& p, const QDomElement* ele)
 {
-	DAXMLFileInterfaceCheckEleClass(ele, "QPointF");
 	qreal v;
 	if (getStringRealValue(ele->attribute("x"), v)) {
 		p.setX(v);
@@ -307,7 +332,6 @@ QDomElement DAXMLFileInterface::makeElement(const QPen& v, const QString& tagNam
  */
 bool DAXMLFileInterface::loadElement(QPen& p, const QDomElement* ele)
 {
-	DAXMLFileInterfaceCheckEleClass(ele, "QPen");
 	QColor c;
 	c.setNamedColor(ele->attribute("color"));
 	if (c.isValid()) {
@@ -369,7 +393,7 @@ bool DAXMLFileInterface::loadElement(QBrush& p, const QDomElement* ele)
 	if (!ele->hasAttribute("style")) {
 		return false;
 	}
-	Qt::BrushStyle s = stringToEnum(ele->attribute("style"), Qt::SolidPattern);
+	Qt::BrushStyle s = stringToEnum< Qt::BrushStyle >(ele->attribute("style"), Qt::SolidPattern);
 	p.setStyle(s);
 	switch (s) {
 	case Qt::NoBrush:
@@ -441,11 +465,10 @@ QDomElement DAXMLFileInterface::makeElement(const QFont& v, const QString& tagNa
  */
 bool DAXMLFileInterface::loadElement(QFont& p, const QDomElement* ele)
 {
-	DAXMLFileInterfaceCheckEleClass(ele, "QFont");
 	p.setBold(ele->attribute("bold").toInt());
 	p.setItalic(ele->attribute("italic").toInt());
 	p.setPointSizeF(ele->attribute("pointSizeF").toDouble());
-	p.setWeight(stringToEnum(ele->attribute("weight"), QFont::Normal));
+	p.setWeight(stringToEnum< QFont::Weight >(ele->attribute("weight"), QFont::Normal));
 	p.setFamily(ele->attribute("family"));
 	return true;
 }
@@ -469,7 +492,6 @@ QDomElement DAXMLFileInterface::makeElement(const QVector3D& v, const QString& t
 
 bool DAXMLFileInterface::loadElement(QVector3D& p, const QDomElement* ele)
 {
-	DAXMLFileInterfaceCheckEleClass(ele, "QVector3D");
 	p.setX(ele->attribute("x").toDouble());
 	p.setY(ele->attribute("y").toDouble());
 	p.setZ(ele->attribute("z").toDouble());
@@ -708,298 +730,6 @@ bool getStringRealValue(const QString& valuestring, qreal& v)
 bool getStringBoolValue(const QString& valuestring)
 {
 	return valuestring.toInt();
-}
-
-QString enumToString(Qt::AspectRatioMode e)
-{
-	switch (e) {
-	case Qt::IgnoreAspectRatio:
-		return "IgnoreAspectRatio";
-	case Qt::KeepAspectRatio:
-		return "KeepAspectRatio";
-	case Qt::KeepAspectRatioByExpanding:
-		return "KeepAspectRatioByExpanding";
-	default:
-		break;
-	}
-	return "IgnoreAspectRatio";
-}
-
-Qt::AspectRatioMode stringToEnum(const QString& s, Qt::AspectRatioMode defaultEnum)
-{
-	if (0 == s.compare("IgnoreAspectRatio", Qt::CaseInsensitive)) {
-		return Qt::IgnoreAspectRatio;
-	} else if (0 == s.compare("KeepAspectRatio", Qt::CaseInsensitive)) {
-		return Qt::KeepAspectRatio;
-	} else if (0 == s.compare("KeepAspectRatioByExpanding", Qt::CaseInsensitive)) {
-		return Qt::KeepAspectRatioByExpanding;
-	}
-	return defaultEnum;
-}
-
-QString enumToString(Qt::TransformationMode e)
-{
-	switch (e) {
-	case Qt::FastTransformation:
-		return "FastTransformation";
-	case Qt::SmoothTransformation:
-		return "SmoothTransformation";
-	default:
-		break;
-	}
-	return "FastTransformation";
-}
-
-Qt::TransformationMode stringToEnum(const QString& s, Qt::TransformationMode defaultEnum)
-{
-	if (0 == s.compare("FastTransformation", Qt::CaseInsensitive)) {
-		return Qt::FastTransformation;
-	} else if (0 == s.compare("SmoothTransformation", Qt::CaseInsensitive)) {
-		return Qt::SmoothTransformation;
-	}
-	return defaultEnum;
-}
-/*
-QString enumToString(Qt::Alignment e)
-{
-    switch (e) {
-    case Qt::AlignLeft:
-        return "AlignLeft";
-    case Qt::AlignRight:
-        return "AlignRight";
-    case Qt::AlignHCenter:
-        return "AlignHCenter";
-    case Qt::AlignJustify:
-        return "AlignJustify";
-    case Qt::AlignAbsolute:
-        return "AlignAbsolute";
-    case Qt::AlignHorizontal_Mask:
-        return "AlignHorizontal_Mask";
-    case Qt::AlignTop:
-        return "AlignTop";
-    case Qt::AlignBottom:
-        return "AlignBottom";
-    case Qt::AlignVCenter:
-        return "AlignVCenter";
-    case Qt::AlignBaseline:
-        return "AlignBaseline";
-    case Qt::AlignVertical_Mask:
-        return "AlignVertical_Mask";
-    case Qt::AlignCenter:
-        return "AlignCenter";
-    default:
-        break;
-    }
-    return "AlignCenter";
-}
-
-Qt::Alignment stringToEnum(const QString& s, Qt::Alignment defaultEnum)
-{
-    if (0 == s.compare("AlignCenter", Qt::CaseInsensitive)) {
-        return Qt::AlignCenter;
-    } else if (0 == s.compare("AlignHCenter", Qt::CaseInsensitive)) {
-        return Qt::AlignHCenter;
-    } else if (0 == s.compare("AlignLeft", Qt::CaseInsensitive)) {
-        return Qt::AlignLeft;
-    } else if (0 == s.compare("AlignRight", Qt::CaseInsensitive)) {
-        return Qt::AlignRight;
-    } else if (0 == s.compare("AlignVCenter", Qt::CaseInsensitive)) {
-        return Qt::AlignVCenter;
-    } else if (0 == s.compare("AlignTop", Qt::CaseInsensitive)) {
-        return Qt::AlignTop;
-    } else if (0 == s.compare("AlignBottom", Qt::CaseInsensitive)) {
-        return Qt::AlignBottom;
-    } else if (0 == s.compare("AlignAbsolute", Qt::CaseInsensitive)) {
-        return Qt::AlignAbsolute;
-    } else if (0 == s.compare("AlignHorizontal_Mask", Qt::CaseInsensitive)) {
-        return Qt::AlignHorizontal_Mask;
-    } else if (0 == s.compare("AlignBaseline", Qt::CaseInsensitive)) {
-        return Qt::AlignBaseline;
-    } else if (0 == s.compare("AlignVertical_Mask", Qt::CaseInsensitive)) {
-        return Qt::AlignVertical_Mask;
-    }
-    return defaultEnum;
-}
-
-QString enumToString(Qt::PenStyle e)
-{
- switch (e) {
- case Qt::NoPen:
-     return "NoPen";
- case Qt::SolidLine:
-     return "SolidLine";
- case Qt::DashLine:
-     return "DashLine";
- case Qt::DotLine:
-     return "DotLine";
- case Qt::DashDotLine:
-     return "DashDotLine";
- case Qt::DashDotDotLine:
-     return "DashDotDotLine";
- default:
-     break;
- }
- return "SolidLine";
-}
-
-Qt::PenStyle stringToEnum(const QString& s, Qt::PenStyle defaultEnum)
-{
- if (0 == s.compare("NoPen", Qt::CaseInsensitive)) {
-     return Qt::NoPen;
- } else if (0 == s.compare("SolidLine", Qt::CaseInsensitive)) {
-     return Qt::SolidLine;
- } else if (0 == s.compare("DashLine", Qt::CaseInsensitive)) {
-     return Qt::DashLine;
- } else if (0 == s.compare("DotLine", Qt::CaseInsensitive)) {
-     return Qt::DotLine;
- } else if (0 == s.compare("DashDotLine", Qt::CaseInsensitive)) {
-     return Qt::DashDotLine;
- } else if (0 == s.compare("DashDotDotLine", Qt::CaseInsensitive)) {
-     return Qt::DashDotDotLine;
- }
- return defaultEnum;
-}
-*/
-QString enumToString(Qt::BrushStyle e)
-{
-	switch (e) {
-	case Qt::NoBrush:
-		return "NoBrush";
-	case Qt::SolidPattern:
-		return "SolidPattern";
-	case Qt::Dense1Pattern:
-		return "Dense1Pattern";
-	case Qt::Dense2Pattern:
-		return "Dense2Pattern";
-	case Qt::Dense3Pattern:
-		return "Dense3Pattern";
-	case Qt::Dense4Pattern:
-		return "Dense4Pattern";
-	case Qt::Dense5Pattern:
-		return "Dense5Pattern";
-	case Qt::Dense6Pattern:
-		return "Dense6Pattern";
-	case Qt::Dense7Pattern:
-		return "Dense7Pattern";
-	case Qt::HorPattern:
-		return "HorPattern";
-	case Qt::VerPattern:
-		return "VerPattern";
-	case Qt::CrossPattern:
-		return "CrossPattern";
-	case Qt::BDiagPattern:
-		return "BDiagPattern";
-	case Qt::FDiagPattern:
-		return "FDiagPattern";
-	case Qt::DiagCrossPattern:
-		return "DiagCrossPattern";
-	case Qt::LinearGradientPattern:
-		return "LinearGradientPattern";
-	case Qt::RadialGradientPattern:
-		return "RadialGradientPattern";
-	case Qt::ConicalGradientPattern:
-		return "ConicalGradientPattern";
-	case Qt::TexturePattern:
-		return "TexturePattern";
-	default:
-		break;
-	}
-	return "SolidPattern";
-}
-
-Qt::BrushStyle stringToEnum(const QString& s, Qt::BrushStyle defaultEnum)
-{
-	if (0 == s.compare("NoBrush", Qt::CaseInsensitive)) {
-		return Qt::NoBrush;
-	} else if (0 == s.compare("SolidPattern", Qt::CaseInsensitive)) {
-		return Qt::SolidPattern;
-	} else if (0 == s.compare("Dense1Pattern", Qt::CaseInsensitive)) {
-		return Qt::Dense1Pattern;
-	} else if (0 == s.compare("Dense2Pattern", Qt::CaseInsensitive)) {
-		return Qt::Dense2Pattern;
-	} else if (0 == s.compare("Dense3Pattern", Qt::CaseInsensitive)) {
-		return Qt::Dense3Pattern;
-	} else if (0 == s.compare("Dense4Pattern", Qt::CaseInsensitive)) {
-		return Qt::Dense4Pattern;
-	} else if (0 == s.compare("Dense5Pattern", Qt::CaseInsensitive)) {
-		return Qt::Dense5Pattern;
-	} else if (0 == s.compare("Dense6Pattern", Qt::CaseInsensitive)) {
-		return Qt::Dense6Pattern;
-	} else if (0 == s.compare("Dense7Pattern", Qt::CaseInsensitive)) {
-		return Qt::Dense7Pattern;
-	} else if (0 == s.compare("HorPattern", Qt::CaseInsensitive)) {
-		return Qt::HorPattern;
-	} else if (0 == s.compare("VerPattern", Qt::CaseInsensitive)) {
-		return Qt::VerPattern;
-	} else if (0 == s.compare("CrossPattern", Qt::CaseInsensitive)) {
-		return Qt::CrossPattern;
-	} else if (0 == s.compare("BDiagPattern", Qt::CaseInsensitive)) {
-		return Qt::BDiagPattern;
-	} else if (0 == s.compare("FDiagPattern", Qt::CaseInsensitive)) {
-		return Qt::FDiagPattern;
-	} else if (0 == s.compare("DiagCrossPattern", Qt::CaseInsensitive)) {
-		return Qt::DiagCrossPattern;
-	} else if (0 == s.compare("LinearGradientPattern", Qt::CaseInsensitive)) {
-		return Qt::LinearGradientPattern;
-	} else if (0 == s.compare("RadialGradientPattern", Qt::CaseInsensitive)) {
-		return Qt::RadialGradientPattern;
-	} else if (0 == s.compare("ConicalGradientPattern", Qt::CaseInsensitive)) {
-		return Qt::ConicalGradientPattern;
-	} else if (0 == s.compare("TexturePattern", Qt::CaseInsensitive)) {
-		return Qt::TexturePattern;
-	}
-	return defaultEnum;
-}
-
-QString enumToString(QFont::Weight e)
-{
-	switch (e) {
-	case QFont::Thin:
-		return "Thin";
-	case QFont::ExtraLight:
-		return "ExtraLight";
-	case QFont::Light:
-		return "Light";
-	case QFont::Normal:
-		return "Normal";
-	case QFont::Medium:
-		return "Medium";
-	case QFont::DemiBold:
-		return "DemiBold";
-	case QFont::Bold:
-		return "Bold";
-	case QFont::ExtraBold:
-		return "ExtraBold";
-	case QFont::Black:
-		return "Black";
-	default:
-		break;
-	}
-	return "Normal";
-}
-
-QFont::Weight stringToEnum(const QString& s, QFont::Weight defaultEnum)
-{
-	if (0 == s.compare("Thin", Qt::CaseInsensitive)) {
-		return QFont::Thin;
-	} else if (0 == s.compare("ExtraLight", Qt::CaseInsensitive)) {
-		return QFont::ExtraLight;
-	} else if (0 == s.compare("Light", Qt::CaseInsensitive)) {
-		return QFont::Light;
-	} else if (0 == s.compare("Normal", Qt::CaseInsensitive)) {
-		return QFont::Normal;
-	} else if (0 == s.compare("Medium", Qt::CaseInsensitive)) {
-		return QFont::Medium;
-	} else if (0 == s.compare("DemiBold", Qt::CaseInsensitive)) {
-		return QFont::DemiBold;
-	} else if (0 == s.compare("Bold", Qt::CaseInsensitive)) {
-		return QFont::Bold;
-	} else if (0 == s.compare("ExtraBold", Qt::CaseInsensitive)) {
-		return QFont::ExtraBold;
-	} else if (0 == s.compare("Black", Qt::CaseInsensitive)) {
-		return QFont::Black;
-	}
-	return QFont::Normal;
 }
 
 }  // end of DA

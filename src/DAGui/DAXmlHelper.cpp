@@ -12,6 +12,9 @@
 #include <QSet>
 // DA
 #include "DAQtEnumTypeStringUtils.h"
+#include "DAGraphicsViewEnumStringUtils.h"
+#include "DAWorkFlowEnumStringUtils.h"
+#include "DAGuiEnumStringUtils.h"
 #include "DACommandsForWorkFlowNodeGraphics.h"
 #include "DAWorkFlowGraphicsScene.h"
 #include "DAGraphicsPixmapItem.h"
@@ -1965,14 +1968,108 @@ bool DAXmlHelper::loadElement(DAFigureWidget* fig, const QDomElement* tag, const
  */
 QDomElement DAXmlHelper::makeElement(const DAChartWidget* chart, const QString& tagName, QDomDocument* doc)
 {
-	QDomElement eleChart = doc->createElement(tagName);
-	//
-	return eleChart;
+	QDomElement chartEle = doc->createElement(tagName);
+
+	// plotLayout
+	const QwtPlotLayout* layout = chart->plotLayout();
+	if (layout) {
+		QDomElement layoutEle = makeElement(layout, QStringLiteral("layout"), doc);
+		chartEle.appendChild(layoutEle);
+	}
+	// title
+	QwtText title = chart->title();
+	if (!title.isNull() && !title.isEmpty()) {
+		QDomElement titleEle = makeElement(&title, QStringLiteral("title"), doc);
+		chartEle.appendChild(titleEle);
+	}
+	//  Footer
+	QwtText footer = chart->footer();
+	if (!footer.isNull() && !footer.isEmpty()) {
+		QDomElement footerEle = makeElement(&footer, QStringLiteral("footer"), doc);
+		chartEle.appendChild(footerEle);
+	}
+	// canvasBackground
+	QDomElement canvasBackgroundEle =
+		DAXMLFileInterface::makeElement(chart->canvasBackground(), QStringLiteral("canvasBackground"), doc);
+	chartEle.appendChild(canvasBackgroundEle);
+	// QwtAxis::YLeft
+	QDomElement yleftAxisEle = makeQwtPlotAxisElement(chart, QwtAxis::YLeft, QStringLiteral("axis"), doc);
+
+	return chartEle;
 }
 
 bool DAXmlHelper::loadElement(DAChartWidget* chart, const QDomElement* tag, const QVersionNumber& v)
 {
-    return false;
+	// plotLayout
+	QDomElement layoutEle = tag->firstChildElement(QStringLiteral("layout"));
+	if (!layoutEle.isNull()) {
+		QwtPlotLayout* layout = chart->plotLayout();
+		if (!layout) {
+			layout = new QwtPlotLayout();
+			chart->setPlotLayout(layout);
+		}
+		loadElement(layout, &layoutEle);
+	}
+	// title
+	QDomElement titleEle = tag->firstChildElement(QStringLiteral("title"));
+	if (!titleEle.isNull()) {
+		QwtText title;
+		loadElement(&title, &titleEle);
+		if (!title.isNull() && !title.isEmpty()) {
+			chart->setTitle(title);
+		}
+	}
+	// footer
+	QDomElement footerEle = tag->firstChildElement(QStringLiteral("footer"));
+	if (!footerEle.isNull()) {
+		QwtText footer;
+		loadElement(&footer, &footerEle);
+		if (!footer.isNull() && !footer.isEmpty()) {
+			chart->setFooter(footer);
+		}
+	}
+	// canvasBackground
+	QDomElement canvasBackgroundEle = tag->firstChildElement(QStringLiteral("canvasBackground"));
+	if (!canvasBackgroundEle.isNull()) {
+		QBrush brush;
+		if (DAXMLFileInterface::loadElement(brush, &canvasBackgroundEle)) {
+			chart->setCanvasBackground(brush);
+		}
+	}
+	return false;
+}
+
+QDomElement
+DAXmlHelper::makeQwtPlotAxisElement(const DAChartWidget* chart, int axisID, const QString& tagName, QDomDocument* doc)
+{
+	QDomElement axisEle = doc->createElement(tagName);
+	axisEle.setAttribute(QStringLiteral("axisID"), axisID);
+	axisEle.setAttribute(QStringLiteral("axisType"), enumToString(static_cast< QwtAxis::Position >(axisID)));
+	axisEle.setAttribute(QStringLiteral("visible"), chart->isAxisVisible(axisID));
+	axisEle.setAttribute(QStringLiteral("autoScale"), chart->axisAutoScale(axisID));
+
+	// font
+	QFont f             = chart->axisFont(axisID);
+	QDomElement fontEle = DAXMLFileInterface::makeElement(f, QStringLiteral("font"), doc);
+	axisEle.appendChild(fontEle);
+	//
+	return axisEle;
+}
+
+bool DAXmlHelper::loadQwtPlotAxisElement(DAChartWidget* chart, const QDomElement* qwtplotTag, const QVersionNumber& v)
+{
+	QwtAxisId axisID = qwtplotTag->attribute(QStringLiteral("axisID")).toInt();
+
+	chart->setAxisVisible(axisID, qwtplotTag->attribute(QStringLiteral("visible")).toInt());
+	chart->setAxisAutoScale(axisID, qwtplotTag->attribute(QStringLiteral("autoScale")).toInt());
+	QFont f             = chart->axisFont(axisID);
+	QDomElement fontEle = qwtplotTag->firstChildElement(QStringLiteral("font"));
+	if (!fontEle.isNull()) {
+		if (DAXMLFileInterface::loadElement(f, &fontEle)) {
+			chart->setAxisFont(axisID, f);
+		}
+	}
+	return true;
 }
 
 /**
@@ -2003,13 +2100,109 @@ QDomElement DAXmlHelper::makeElement(const QwtPlotLayout* value, const QString& 
 
 	// 其它属性
 	rootEle.setAttribute(QStringLiteral("spacing"), value->spacing());
-	rootEle.setAttribute(QStringLiteral("spacing"), value->spacing());
+	rootEle.setAttribute(QStringLiteral("legendRatio"), value->legendRatio());
+	rootEle.setAttribute(QStringLiteral("legendPosition"), enumToString(value->legendPosition()));
 	return rootEle;
 }
 
 bool DAXmlHelper::loadElement(QwtPlotLayout* value, const QDomElement* tag, const QVersionNumber& version)
 {
-    return false;
+	QDomElement canvasMarginEle = tag->firstChildElement(QStringLiteral("margin"));
+	if (!canvasMarginEle.isNull()) {
+		value->setCanvasMargin(canvasMarginEle.attribute("YLeft").toInt(), QwtAxis::YLeft);
+		value->setCanvasMargin(canvasMarginEle.attribute("YRight").toInt(), QwtAxis::YRight);
+		value->setCanvasMargin(canvasMarginEle.attribute("XBottom").toInt(), QwtAxis::XBottom);
+		value->setCanvasMargin(canvasMarginEle.attribute("XTop").toInt(), QwtAxis::XTop);
+	}
+
+	QDomElement alignCanvasToScaleEle = tag->firstChildElement(QStringLiteral("alignToScale"));
+	if (!alignCanvasToScaleEle.isNull()) {
+		value->setAlignCanvasToScale(QwtAxis::YLeft, alignCanvasToScaleEle.attribute("YLeft").toInt());
+		value->setAlignCanvasToScale(QwtAxis::YRight, alignCanvasToScaleEle.attribute("YRight").toInt());
+		value->setAlignCanvasToScale(QwtAxis::XBottom, alignCanvasToScaleEle.attribute("XBottom").toInt());
+		value->setAlignCanvasToScale(QwtAxis::XTop, alignCanvasToScaleEle.attribute("XTop").toInt());
+	}
+
+	// 其它属性
+	value->setSpacing(tag->attribute("spacing").toInt());
+	value->setLegendRatio(tag->attribute("legendRatio").toDouble());
+	value->setLegendPosition(stringToEnum(tag->attribute("legendPosition"), QwtPlot::RightLegend));
+	return true;
+}
+
+/**
+ * @brief QwtText
+ * @param value
+ * @param tagName
+ * @param doc
+ * @return
+ */
+QDomElement DAXmlHelper::makeElement(const QwtText* value, const QString& tagName, QDomDocument* doc)
+{
+	QDomElement rootEle = doc->createElement(tagName);
+	// text
+	QDomElement textEle = doc->createElement(QStringLiteral("text"));
+	textEle.setAttribute(QStringLiteral("format"), enumToString(value->format()));
+	textEle.appendChild(doc->createTextNode(value->text()));
+	// font
+	QDomElement fontEle = DAXMLFileInterface::makeElement(value->font(), QStringLiteral("font"), doc);
+	rootEle.appendChild(fontEle);
+	// color
+	QDomElement colorEle = DAXMLFileInterface::makeElement(value->color(), QStringLiteral("color"), doc);
+	rootEle.appendChild(colorEle);
+	// borderPen
+	QDomElement borderPenEle = DAXMLFileInterface::makeElement(value->borderPen(), QStringLiteral("borderPen"), doc);
+	rootEle.appendChild(borderPenEle);
+	// backgroundBrush
+	QDomElement backgroundBrushEle =
+		DAXMLFileInterface::makeElement(value->backgroundBrush(), QStringLiteral("backgroundBrush"), doc);
+	rootEle.appendChild(backgroundBrushEle);
+	// backgroundBrush
+
+	return rootEle;
+}
+
+bool DAXmlHelper::loadElement(QwtText* value, const QDomElement* tag, const QVersionNumber& version)
+{
+	// text
+	QDomElement textEle = tag->firstChildElement(QStringLiteral("text"));
+	if (!textEle.isNull()) {
+		QwtText::TextFormat fm = stringToEnum(textEle.attribute(QStringLiteral("format")), QwtText::AutoText);
+		value->setText(textEle.text(), fm);
+	}
+	// font
+	QDomElement fontEle = tag->firstChildElement(QStringLiteral("font"));
+	if (!fontEle.isNull()) {
+		QFont v;
+		if (DAXMLFileInterface::loadElement(v, &fontEle)) {
+			value->setFont(v);
+		}
+	}
+	// color
+	QDomElement colorEle = tag->firstChildElement(QStringLiteral("color"));
+	if (!colorEle.isNull()) {
+		QColor v;
+		if (DAXMLFileInterface::loadElement(v, &colorEle)) {
+			value->setColor(v);
+		}
+	}
+	// borderPen
+	QDomElement borderPenEle = tag->firstChildElement(QStringLiteral("borderPen"));
+	if (!borderPenEle.isNull()) {
+		QPen v;
+		if (DAXMLFileInterface::loadElement(v, &borderPenEle)) {
+			value->setBorderPen(v);
+		}
+	}
+	// backgroundBrush
+	QDomElement backgroundBrushEle = tag->firstChildElement(QStringLiteral("backgroundBrush"));
+	if (!backgroundBrushEle.isNull()) {
+		QBrush v;
+		if (DAXMLFileInterface::loadElement(v, &backgroundBrushEle)) {
+			value->setBackgroundBrush(v);
+		}
+	}
+	return true;
 }
 
 /**

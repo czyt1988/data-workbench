@@ -14,7 +14,7 @@
  */
 // qwt
 class QwtPlotLayout;
-
+class QwtText;
 namespace DA
 {
 class DAWorkFlowEditWidget;
@@ -86,9 +86,18 @@ public:
 	// DAChartWidget
 	static QDomElement makeElement(const DAChartWidget* chart, const QString& tagName, QDomDocument* doc);
 	static bool loadElement(DAChartWidget* chart, const QDomElement* tag, const QVersionNumber& v = QVersionNumber());
+	//
+	static QDomElement
+	makeQwtPlotAxisElement(const DAChartWidget* chart, int axisID, const QString& tagName, QDomDocument* doc);
+	static bool loadQwtPlotAxisElement(DAChartWidget* chart,
+									   const QDomElement* qwtplotTag,
+									   const QVersionNumber& v = QVersionNumber());
 	// Qwt 相关
 	static QDomElement makeElement(const QwtPlotLayout* value, const QString& tagName, QDomDocument* doc);
 	static bool loadElement(QwtPlotLayout* value, const QDomElement* tag, const QVersionNumber& version = QVersionNumber());
+	// QwtText
+	static QDomElement makeElement(const QwtText* value, const QString& tagName, QDomDocument* doc);
+	static bool loadElement(QwtText* value, const QDomElement* tag, const QVersionNumber& version = QVersionNumber());
 
 public:
 	// 生成一个qvariant element
