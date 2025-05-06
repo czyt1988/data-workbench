@@ -13,7 +13,7 @@
  * DA_ENUM_STRING_DECLARE(Qt::AlignmentFlag)
  * DA_ENUM_STRING_DECLARE(Qt::Alignment)
  *
- * DA_ENUM_STRING_INSENSITIVE(Qt::AlignmentFlag,
+ * DA_ENUM_STRING_INSENSITIVE_DEFINE(Qt::AlignmentFlag,
  *                  Qt::AlignLeft,
  *                  { Qt::AlignLeft, "left" },
  *                  { Qt::AlignHCenter, "hcenter" },
@@ -22,7 +22,7 @@
  *                  { Qt::AlignBottom, "bottom" },
  *                  { Qt::AlignVCenter, "vcenter" });
  * // 为 Qt::Alignment 定义映射（而非 Qt::AlignmentFlag）
- * DA_ENUM_STRING_INSENSITIVE(Qt::Alignment,
+ * DA_ENUM_STRING_INSENSITIVE_DEFINE(Qt::Alignment,
  *                  Qt::AlignLeft,
  *                  { Qt::AlignLeft, "left" },
  *                  { Qt::AlignHCenter, "hcenter" },
@@ -32,13 +32,12 @@
  *                  { Qt::AlignVCenter, "vcenter" });
  *
  * void test() {
- *  // 测试 Qt::AlignmentFlag
- *  Qt::AlignmentFlag flag = DA::stringToEnum<Qt::AlignmentFlag>("hcenter");
+
+ *  Qt::AlignmentFlag flag = DA::stringToEnum<Qt::AlignmentFlag>("hcenter");//如果带第二个参数，能告诉编译器具体枚举类型，可以不用告知编译器具体类型
  *  qDebug() << enumToString(flag); // 输出 "hcenter"
  *
- *  // 测试 Qt::Alignment (QFlags)
- *  Qt::Alignment align = DA::stringToEnum<Qt::Alignment>("left|top");
- *  qDebug() << enumToString(align); // 输出 "left|top"
+ *  Qt::Alignment align = DA::stringToEnum<Qt::Alignment>("left");
+ *  qDebug() << enumToString(align); // 输出 "left"
  * }
  * @endcode
  *
@@ -75,11 +74,12 @@ namespace DA
 /**
  * @brief 枚举类型特性模板，用于定义枚举与字符串的映射关系
  * @tparam T 枚举类型
- * @details 用户需通过 DA_ENUM_SENSITIVE 或 DA_ENUM_INSENSITIVE 宏特化此模板
+ * @details 用户需通过 DA_ENUM_STRING_DECLARE以及DA_ENUM_STRING_SENSITIVE_DEFINE/DA_ENUM_STRING_INSENSITIVE_DEFINE宏特化此模板
  *
  * @par 示例：
  * @code
  * enum class Color { Red, Green };
+ * DA_ENUM_STRING_DECLARE(Color)
  * DA_ENUM_SENSITIVE(Color, Color::Red, {Color::Red, "Red"}, {Color::Green, "Green"});
  * @endcode
  */
@@ -222,10 +222,10 @@ using DAEnumEntry = std::pair< EnumType, const char* >;
 		}                                                                                                              \
 		return tmp;                                                                                                    \
 	}();                                                                                                               \
-	const bool DA::DAEnumTraits< EnumType >::caseSensitive    = false;                                                 \
-	const EnumType DA::DAEnumTraits< EnumType >::defaultValue = DefaultValue;                                          \
-	const QString DA::DAEnumTraits< EnumType >::defaultValueStr =                                                      \
-		DA::DAEnumTraits< EnumType >::enumToStringMap.value(DefaultValue)
+    const bool DA::DAEnumTraits< EnumType >::caseSensitive      = false;                                               \
+    const EnumType DA::DAEnumTraits< EnumType >::defaultValue   = DefaultValue;                                        \
+    const QString DA::DAEnumTraits< EnumType >::defaultValueStr = DA::DAEnumTraits< EnumType >::enumToStringMap.value( \
+        DefaultValue)
 #endif
 
 // ---------------------------------------------------------------------------------
@@ -279,10 +279,10 @@ using DAEnumEntry = std::pair< EnumType, const char* >;
 		}                                                                                                              \
 		return tmp;                                                                                                    \
 	}();                                                                                                               \
-	const bool DA::DAEnumTraits< EnumType >::caseSensitive    = false;                                                 \
-	const EnumType DA::DAEnumTraits< EnumType >::defaultValue = DefaultValue;                                          \
-	const QString DA::DAEnumTraits< EnumType >::defaultValueStr =                                                      \
-		DA::DAEnumTraits< EnumType >::enumToStringMap.value(DefaultValue)
+    const bool DA::DAEnumTraits< EnumType >::caseSensitive      = false;                                               \
+    const EnumType DA::DAEnumTraits< EnumType >::defaultValue   = DefaultValue;                                        \
+    const QString DA::DAEnumTraits< EnumType >::defaultValueStr = DA::DAEnumTraits< EnumType >::enumToStringMap.value( \
+        DefaultValue)
 #endif
 
 #endif  // DAENUMSTRINGUTILS_H

@@ -86,6 +86,15 @@ DA_ENUM_STRING_INSENSITIVE_DEFINE(Qt::TransformationMode,
                                   { Qt::SmoothTransformation, "SmoothTransformation" });
 
 // ------------------------------------------
+//           Qt::TimeSpec
+// ------------------------------------------
+DA_ENUM_STRING_INSENSITIVE_DEFINE(Qt::TimeSpec,
+                                  Qt::LocalTime,
+                                  { Qt::LocalTime, "LocalTime" },
+                                  { Qt::UTC, "UTC" },
+                                  { Qt::OffsetFromUTC, "OffsetFromUTC" },
+                                  { Qt::TimeZone, "TimeZone" });
+// ------------------------------------------
 //           QFont::Weight
 // ------------------------------------------
 DA_ENUM_STRING_INSENSITIVE_DEFINE(QFont::Weight,

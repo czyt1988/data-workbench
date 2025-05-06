@@ -45,10 +45,21 @@ DA_ENUM_STRING_DECLARE_EXPORT(DAGUI_API, DA::DAColorTheme::ColorThemeStyle)
 #include "qwt_plot.h"
 #include "qwt_text.h"
 #include "qwt_axis.h"
+#include "qwt_scale_div.h"
+#include "qwt_scale_draw.h"
+#include "qwt_date.h"
 // QWT.QwtPlot::LegendPosition
 DA_ENUM_STRING_DECLARE_EXPORT(DAGUI_API, QwtPlot::LegendPosition)
 // QWT.QwtText::TextFormat
 DA_ENUM_STRING_DECLARE_EXPORT(DAGUI_API, QwtText::TextFormat)
 // QWT.QwtAxis::Position
 DA_ENUM_STRING_DECLARE_EXPORT(DAGUI_API, QwtAxis::Position)
+// QWT.QwtScaleDiv::TickType
+DA_ENUM_STRING_DECLARE_EXPORT(DAGUI_API, QwtScaleDiv::TickType)
+// QWT.QwtScaleDraw::Alignment
+DA_ENUM_STRING_DECLARE_EXPORT(DAGUI_API, QwtScaleDraw::Alignment)
+// QWT.QwtDate::Week0Type
+DA_ENUM_STRING_DECLARE_EXPORT(DAGUI_API, QwtDate::Week0Type)
+// QWT.QwtDate::Week0Type
+DA_ENUM_STRING_DECLARE_EXPORT(DAGUI_API, QwtDate::IntervalType)
 #endif  // DAGUIENUMSTRINGUTILS_H

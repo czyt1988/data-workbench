@@ -59,3 +59,33 @@ DA_ENUM_STRING_INSENSITIVE_DEFINE(QwtAxis::Position,
                                   { QwtAxis::YRight, "yright" },
                                   { QwtAxis::XBottom, "xbottom" },
                                   { QwtAxis::XTop, "xtop" });
+// ================================== QWT.QwtAxis::Position ==================================
+DA_ENUM_STRING_INSENSITIVE_DEFINE(QwtScaleDiv::TickType,
+                                  QwtScaleDiv::MinorTick,
+                                  { QwtScaleDiv::NoTick, "no" },
+                                  { QwtScaleDiv::MinorTick, "minor" },
+                                  { QwtScaleDiv::MediumTick, "medium" },
+                                  { QwtScaleDiv::MajorTick, "major" });
+// ================================== QWT.QwtAxis::Position ==================================
+DA_ENUM_STRING_INSENSITIVE_DEFINE(QwtScaleDraw::Alignment,
+                                  QwtScaleDraw::BottomScale,
+                                  { QwtScaleDraw::BottomScale, "bottom" },
+                                  { QwtScaleDraw::TopScale, "top" },
+                                  { QwtScaleDraw::LeftScale, "left" },
+                                  { QwtScaleDraw::RightScale, "right" });
+// ================================== QWT.QwtDate::Week0Type ==================================
+DA_ENUM_STRING_INSENSITIVE_DEFINE(QwtDate::Week0Type,
+                                  QwtDate::FirstThursday,
+                                  { QwtDate::FirstThursday, "firstThursday" },
+                                  { QwtDate::FirstDay, "firstDay" });
+// ================================== QWT.QwtDate::IntervalType ==================================
+DA_ENUM_STRING_INSENSITIVE_DEFINE(QwtDate::IntervalType,
+                                  QwtDate::Millisecond,
+                                  { QwtDate::Millisecond, "msec" },
+                                  { QwtDate::Second, "sec" },
+                                  { QwtDate::Minute, "min" },
+                                  { QwtDate::Hour, "hour" },
+                                  { QwtDate::Day, "day" },
+                                  { QwtDate::Week, "week" },
+                                  { QwtDate::Month, "mon" },
+                                  { QwtDate::Year, "year" });
