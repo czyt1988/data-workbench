@@ -13,7 +13,7 @@
 #include <QDebug>
 #include <QApplication>
 #include <QScreen>
-
+#include "DAGraphicsCommandsFactory.h"
 namespace DA
 {
 
@@ -68,6 +68,7 @@ public:
 	QList< DAGraphicsLayout* > mLayout;  ///< 保存所有的图层
 	std::unique_ptr< DAAbstractGraphicsSceneAction > mSceneAction;
 	bool mIsReadOnlyMode { false };  ///< 是否为只读状态
+    std::unique_ptr< DAGraphicsCommandsFactory > commandsFactory;
 };
 
 ////////////////////////////////////////////////
@@ -120,6 +121,7 @@ void _DAGraphicsSceneItemMoveingInfos::clear()
 
 DAGraphicsScene::PrivateData::PrivateData(DAGraphicsScene* p) : q_ptr(p)
 {
+    commandsFactory = std::make_unique< DAGraphicsCommandsFactory >();
 	mGridLinePen.setStyle(Qt::SolidLine);
 	mGridLinePen.setColor(QColor(219, 219, 219));
 	mGridLinePen.setCapStyle(Qt::RoundCap);
@@ -559,13 +561,13 @@ int DAGraphicsScene::selectAll()
  * @return 返回取消选中的条目
  */
 int DA::DAGraphicsScene::unselectAll()
- {
-     int selectCnt = changeAllSelection(false);
-     if (selectCnt > 0) {
-         emit selectionChanged();
-     }
-     return selectCnt;
- }
+{
+    int selectCnt = changeAllSelection(false);
+    if (selectCnt > 0) {
+        emit selectionChanged();
+    }
+    return selectCnt;
+}
 
 /**
  * @brief 取消选中item
@@ -871,7 +873,6 @@ bool DAGraphicsScene::isHaveSceneAction() const
     return (d_ptr->mSceneAction != nullptr);
 }
 
-
 /**
  * @brief 获取所有图层
  * @return
@@ -1114,7 +1115,7 @@ void DAGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 			DAGraphicsResizeableItem* ri = dynamic_cast< DAGraphicsResizeableItem* >(its);
 			if (ri) {
 				if (DAGraphicsResizeableItem::NotUnderAnyControlType
-					!= ri->getControlPointByPos(ri->mapFromScene(mouseEvent->scenePos()))) {
+                    != ri->getControlPointByPos(ri->mapFromScene(mouseEvent->scenePos()))) {
 					// 说明点击在了控制点上，需要跳过
 					d_ptr->mIsMovingItems = false;
 					return;
@@ -1170,14 +1171,16 @@ void DAGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		d_ptr->mIsMovingItems = false;
 		QPointF releasePos    = mouseEvent->scenePos();
 		if (qFuzzyCompare(releasePos.x(), d_ptr->mLastMousePressScenePos.x())
-			&& qFuzzyCompare(releasePos.y(), d_ptr->mLastMousePressScenePos.y())) {
+            && qFuzzyCompare(releasePos.y(), d_ptr->mLastMousePressScenePos.y())) {
 			// 位置相等，不做处理
 			return;
 		}
 		// 位置不等，属于正常移动
 		d_ptr->mMovingInfos.updateEndPos();
-		DACommandsForGraphicsItemsMoved* cmd = new DACommandsForGraphicsItemsMoved(
-			d_ptr->mMovingInfos.items, d_ptr->mMovingInfos.startsPos, d_ptr->mMovingInfos.endsPos, true);
+        DACommandsForGraphicsItemsMoved* cmd = new DACommandsForGraphicsItemsMoved(d_ptr->mMovingInfos.items,
+                                                                                   d_ptr->mMovingInfos.startsPos,
+                                                                                   d_ptr->mMovingInfos.endsPos,
+                                                                                   true);
 		push(cmd);
 		// 位置改变信号
 		//         qDebug() << "emit itemsPositionChanged";
