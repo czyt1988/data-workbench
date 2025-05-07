@@ -216,7 +216,8 @@ int DACommandsForGraphicsItemsMoved_Merge::id() const
 
 bool DACommandsForGraphicsItemsMoved_Merge::mergeWith(const QUndoCommand* command)
 {
-	const DACommandsForGraphicsItemsMoved_Merge* other = dynamic_cast< const DACommandsForGraphicsItemsMoved_Merge* >(command);
+	const DACommandsForGraphicsItemsMoved_Merge* other =
+		dynamic_cast< const DACommandsForGraphicsItemsMoved_Merge* >(command);
 	if (nullptr == other) {
 		return false;
 	}
@@ -311,7 +312,7 @@ DACommandsForGraphicsItemResized::DACommandsForGraphicsItemResized(DAGraphicsRes
                                                                    const QSizeF& oldSize,
                                                                    const QPointF& newpos,
                                                                    const QSizeF& newSize,
-                                                                   bool skipFirst,
+                                                                   bool skipfirst,
                                                                    QUndoCommand* parent)
     : QUndoCommand(parent)
     , mItem(item)
@@ -319,7 +320,7 @@ DACommandsForGraphicsItemResized::DACommandsForGraphicsItemResized(DAGraphicsRes
     , mOldSize(oldSize)
     , mNewPosition(newpos)
     , mNewSize(newSize)
-    , mSkipFirst(skipFirst)
+    , mSkipfirst(skipfirst)
 {
     setText(QObject::tr("Item Resize"));
 }
@@ -327,9 +328,8 @@ DACommandsForGraphicsItemResized::DACommandsForGraphicsItemResized(DAGraphicsRes
 DACommandsForGraphicsItemResized::DACommandsForGraphicsItemResized(DAGraphicsResizeableItem* item,
                                                                    const QSizeF& oldSize,
                                                                    const QSizeF& newSize,
-                                                                   bool skipFirst,
                                                                    QUndoCommand* parent)
-    : QUndoCommand(parent), mItem(item), mOldSize(oldSize), mNewSize(newSize), mSkipFirst(skipFirst)
+    : QUndoCommand(parent), mItem(item), mOldSize(oldSize), mNewSize(newSize)
 {
 	setText(QObject::tr("Item Resize"));
 	mOldpos = mNewPosition = item->pos();
@@ -338,8 +338,8 @@ DACommandsForGraphicsItemResized::DACommandsForGraphicsItemResized(DAGraphicsRes
 void DACommandsForGraphicsItemResized::redo()
 {
 	QUndoCommand::redo();
-	if (mSkipFirst) {
-		mSkipFirst = false;
+	if (mSkipfirst) {
+		mSkipfirst = false;
 		return;
 	}
 	if (mItem) {
@@ -398,9 +398,8 @@ bool DACommandsForGraphicsItemResized::mergeWith(const QUndoCommand* command)
 DACommandsForGraphicsItemResizeWidth::DACommandsForGraphicsItemResizeWidth(DAGraphicsResizeableItem* item,
                                                                            const qreal& oldWidth,
                                                                            const qreal& newWidth,
-                                                                           bool skipfirst,
                                                                            QUndoCommand* parent)
-    : QUndoCommand(parent), mItem(item), mOldWidth(oldWidth), mNewWidth(newWidth), mSkipfirst(skipfirst)
+    : QUndoCommand(parent), mItem(item), mOldWidth(oldWidth), mNewWidth(newWidth)
 {
 	setText(QObject::tr("Item Resize Width"));
 	mHeight = item->getBodySize().height();
@@ -408,10 +407,6 @@ DACommandsForGraphicsItemResizeWidth::DACommandsForGraphicsItemResizeWidth(DAGra
 
 void DACommandsForGraphicsItemResizeWidth::redo()
 {
-	if (mSkipfirst) {
-		mSkipfirst = false;
-		return;
-	}
 	mItem->setBodySize(QSizeF(mNewWidth, mHeight));
 }
 
@@ -443,9 +438,8 @@ bool DACommandsForGraphicsItemResizeWidth::mergeWith(const QUndoCommand* command
 DACommandsForGraphicsItemResizeHeight::DACommandsForGraphicsItemResizeHeight(DAGraphicsResizeableItem* item,
                                                                              const qreal& oldHeight,
                                                                              const qreal& newHeight,
-                                                                             bool skipfirst,
                                                                              QUndoCommand* parent)
-    : QUndoCommand(parent), mItem(item), mOldHeight(oldHeight), mNewHeight(newHeight), mSkipfirst(skipfirst)
+    : QUndoCommand(parent), mItem(item), mOldHeight(oldHeight), mNewHeight(newHeight)
 {
 	setText(QObject::tr("Item Resize Height"));
 	mWidth = item->getBodySize().width();
@@ -453,10 +447,6 @@ DACommandsForGraphicsItemResizeHeight::DACommandsForGraphicsItemResizeHeight(DAG
 
 void DACommandsForGraphicsItemResizeHeight::redo()
 {
-	if (mSkipfirst) {
-		mSkipfirst = false;
-		return;
-	}
 	mItem->setBodySize(QSizeF(mWidth, mNewHeight));
 }
 
@@ -472,7 +462,8 @@ int DACommandsForGraphicsItemResizeHeight::id() const
 
 bool DACommandsForGraphicsItemResizeHeight::mergeWith(const QUndoCommand* command)
 {
-	const DACommandsForGraphicsItemResizeHeight* other = dynamic_cast< const DACommandsForGraphicsItemResizeHeight* >(command);
+	const DACommandsForGraphicsItemResizeHeight* other =
+		dynamic_cast< const DACommandsForGraphicsItemResizeHeight* >(command);
 	if (nullptr == other) {
 		return false;
 	}
@@ -488,25 +479,19 @@ bool DACommandsForGraphicsItemResizeHeight::mergeWith(const QUndoCommand* comman
 DACommandsForGraphicsItemRotation::DACommandsForGraphicsItemRotation(DAGraphicsResizeableItem* item,
                                                                      const qreal& oldRotation,
                                                                      const qreal& newRotation,
-                                                                     bool skipfirst,
                                                                      QUndoCommand* parent)
-    : QUndoCommand(parent), mItem(item), mOldRotation(oldRotation), mNewRotation(newRotation), mSkipfirst(skipfirst)
+    : QUndoCommand(parent), mItem(item), mOldRotation(oldRotation), mNewRotation(newRotation)
 {
     setText(QObject::tr("Item Rotation"));
 }
 
 void DACommandsForGraphicsItemRotation::redo()
 {
-	if (mSkipfirst) {
-		mSkipfirst = false;
-		return;
-	}
 	mItem->setRotation(mNewRotation);
 }
 
 void DACommandsForGraphicsItemRotation::undo()
 {
-	// qDebug() << "Item Reset Rotation " << _oldRotation;
 	mItem->setRotation(mOldRotation);
 }
 

@@ -15,6 +15,7 @@ class DAGraphicsLinkItem;
 class DAGraphicsItemGroup;
 class DAAbstractGraphicsSceneAction;
 class DAGraphicsLayout;
+class DAGraphicsCommandsFactory;
 /**
  * @brief 这是带着undostack的GraphicsScene
  * 此QGraphicsScene支持：
@@ -131,6 +132,9 @@ public:
 	DAGraphicsTextItem* createText_(const QString& str = QString());
 	// 创建矩形
 	DAGraphicsRectItem* createRect_(const QPointF& p = QPointF());
+	// 注册命令工厂
+	void registCommandsFactory(DAGraphicsCommandsFactory* fac);
+	DAGraphicsCommandsFactory* commandsFactory();
 
 public:
 	// 获取默认的dpi
@@ -145,9 +149,9 @@ public slots:
 	// 显示网格
 	void showGridLine(bool on);
 	// 选中所有item
-    int selectAll();
-    // 取消选择
-    int unselectAll();
+	int selectAll();
+	// 取消选择
+	int unselectAll();
 	// 取消选中
 	void clearSelection();
 	// 设置item的选中状态

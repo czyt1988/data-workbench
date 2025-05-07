@@ -68,7 +68,7 @@ public:
 	QList< DAGraphicsLayout* > mLayout;  ///< 保存所有的图层
 	std::unique_ptr< DAAbstractGraphicsSceneAction > mSceneAction;
 	bool mIsReadOnlyMode { false };  ///< 是否为只读状态
-    std::unique_ptr< DAGraphicsCommandsFactory > commandsFactory;
+	std::unique_ptr< DAGraphicsCommandsFactory > commandsFactory;
 };
 
 ////////////////////////////////////////////////
@@ -121,7 +121,7 @@ void _DAGraphicsSceneItemMoveingInfos::clear()
 
 DAGraphicsScene::PrivateData::PrivateData(DAGraphicsScene* p) : q_ptr(p)
 {
-    commandsFactory = std::make_unique< DAGraphicsCommandsFactory >();
+	q_ptr->registCommandsFactory(new DAGraphicsCommandsFactory());
 	mGridLinePen.setStyle(Qt::SolidLine);
 	mGridLinePen.setColor(QColor(219, 219, 219));
 	mGridLinePen.setCapStyle(Qt::RoundCap);
@@ -246,7 +246,7 @@ QList< QGraphicsItem* > DAGraphicsScene::getSelectedMovableItems()
  */
 QUndoCommand* DAGraphicsScene::addItem_(QGraphicsItem* item)
 {
-	DA::DACommandsForGraphicsItemAdd* cmd = new DA::DACommandsForGraphicsItemAdd(item, this);
+	DACommandsForGraphicsItemAdd* cmd = commandsFactory()->createItemAdd(item);
 	push(cmd);
 	emit itemsAdded({ item });
 	return cmd;
@@ -259,7 +259,7 @@ QUndoCommand* DAGraphicsScene::addItem_(QGraphicsItem* item)
  */
 QUndoCommand* DAGraphicsScene::addItems_(const QList< QGraphicsItem* >& its)
 {
-	DA::DACommandsForGraphicsItemsAdd* cmd = new DA::DACommandsForGraphicsItemsAdd(its, this);
+	DACommandsForGraphicsItemsAdd* cmd = commandsFactory()->createItemsAdd(its);
 	push(cmd);
 	emit itemsAdded(its);
 	return cmd;
@@ -273,7 +273,7 @@ QUndoCommand* DAGraphicsScene::addItems_(const QList< QGraphicsItem* >& its)
  */
 QUndoCommand* DAGraphicsScene::removeItem_(QGraphicsItem* item)
 {
-	DA::DACommandsForGraphicsItemRemove* cmd = new DA::DACommandsForGraphicsItemRemove(item, this);
+	DACommandsForGraphicsItemRemove* cmd = commandsFactory()->createItemRemove(item);
 	push(cmd);
 	emit itemsRemoved({ item });
 	return cmd;
@@ -281,7 +281,7 @@ QUndoCommand* DAGraphicsScene::removeItem_(QGraphicsItem* item)
 
 QUndoCommand* DAGraphicsScene::removeItems_(const QList< QGraphicsItem* >& its)
 {
-	DA::DACommandsForGraphicsItemsRemove* cmd = new DA::DACommandsForGraphicsItemsRemove(its, this);
+	DACommandsForGraphicsItemsRemove* cmd = commandsFactory()->createItemsRemove(its);
 	push(cmd);
 	emit itemsRemoved(its);
 	return cmd;
@@ -551,7 +551,7 @@ int DAGraphicsScene::selectAll()
 	if (selectCnt > 0) {
 		emit selectionChanged();
 	}
-    return selectCnt;
+	return selectCnt;
 }
 
 /**
@@ -562,11 +562,11 @@ int DAGraphicsScene::selectAll()
  */
 int DA::DAGraphicsScene::unselectAll()
 {
-    int selectCnt = changeAllSelection(false);
-    if (selectCnt > 0) {
-        emit selectionChanged();
-    }
-    return selectCnt;
+	int selectCnt = changeAllSelection(false);
+	if (selectCnt > 0) {
+		emit selectionChanged();
+	}
+	return selectCnt;
 }
 
 /**
@@ -921,6 +921,28 @@ DAGraphicsRectItem* DAGraphicsScene::createRect_(const QPointF& p)
 }
 
 /**
+ * @brief 注册命令工厂
+ *
+ * 命令工厂可以生成自己需要的命令，以便对redo/undo定制化
+ * @param fac
+ * @note 命令工厂的内存由DAGraphicsScene管理，用户无需进行delete
+ */
+void DAGraphicsScene::registCommandsFactory(DAGraphicsCommandsFactory* fac)
+{
+	d_ptr->commandsFactory.reset(fac);
+	fac->setScene(this);
+}
+
+/**
+ * @brief 命令工厂
+ * @return
+ */
+DAGraphicsCommandsFactory* DAGraphicsScene::commandsFactory()
+{
+    return d_ptr->commandsFactory.get();
+}
+
+/**
    @brief 通用的item分组，此操作和QGraphicsScene::createItemGroup逻辑一致
    @param group
    @param willGroupItems
@@ -1115,7 +1137,7 @@ void DAGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 			DAGraphicsResizeableItem* ri = dynamic_cast< DAGraphicsResizeableItem* >(its);
 			if (ri) {
 				if (DAGraphicsResizeableItem::NotUnderAnyControlType
-                    != ri->getControlPointByPos(ri->mapFromScene(mouseEvent->scenePos()))) {
+					!= ri->getControlPointByPos(ri->mapFromScene(mouseEvent->scenePos()))) {
 					// 说明点击在了控制点上，需要跳过
 					d_ptr->mIsMovingItems = false;
 					return;
@@ -1159,33 +1181,32 @@ void DAGraphicsScene::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
 
 void DAGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
-	if (d_ptr->mSceneAction) {
+	DA_D(d);
+	if (d->mSceneAction) {
 		// 存在场景动作
-		if (d_ptr->mSceneAction->mouseReleaseEvent(mouseEvent)) {
+		if (d->mSceneAction->mouseReleaseEvent(mouseEvent)) {
 			// 场景动作返回true，直接返回此动作，代表场景动作劫持了此事件
 			return;
 		}
 	}
 	QGraphicsScene::mouseReleaseEvent(mouseEvent);
-	if (d_ptr->mIsMovingItems) {
-		d_ptr->mIsMovingItems = false;
-		QPointF releasePos    = mouseEvent->scenePos();
-		if (qFuzzyCompare(releasePos.x(), d_ptr->mLastMousePressScenePos.x())
-            && qFuzzyCompare(releasePos.y(), d_ptr->mLastMousePressScenePos.y())) {
+	if (d->mIsMovingItems) {
+		d->mIsMovingItems  = false;
+		QPointF releasePos = mouseEvent->scenePos();
+		if (qFuzzyCompare(releasePos.x(), d->mLastMousePressScenePos.x())
+			&& qFuzzyCompare(releasePos.y(), d->mLastMousePressScenePos.y())) {
 			// 位置相等，不做处理
 			return;
 		}
 		// 位置不等，属于正常移动
-		d_ptr->mMovingInfos.updateEndPos();
-        DACommandsForGraphicsItemsMoved* cmd = new DACommandsForGraphicsItemsMoved(d_ptr->mMovingInfos.items,
-                                                                                   d_ptr->mMovingInfos.startsPos,
-                                                                                   d_ptr->mMovingInfos.endsPos,
-                                                                                   true);
+		d->mMovingInfos.updateEndPos();
+		DACommandsForGraphicsItemsMoved* cmd = commandsFactory()->createItemsMoved(
+			d->mMovingInfos.items, d->mMovingInfos.startsPos, d->mMovingInfos.endsPos, true);
 		push(cmd);
 		// 位置改变信号
 		//         qDebug() << "emit itemsPositionChanged";
 		// 如果 移动 过程 鼠标移出scene在释放，可能无法捕获
-		emit itemsPositionChanged(d_ptr->mMovingInfos.items, d_ptr->mMovingInfos.startsPos, d_ptr->mMovingInfos.endsPos);
+		emit itemsPositionChanged(d->mMovingInfos.items, d->mMovingInfos.startsPos, d->mMovingInfos.endsPos);
 	}
 }
 

@@ -1,10 +1,11 @@
-#ifndef DAGRAPHICSCOMMANDSFACTORY_H
+﻿#ifndef DAGRAPHICSCOMMANDSFACTORY_H
 #define DAGRAPHICSCOMMANDSFACTORY_H
 #include "DAGraphicsViewGlobal.h"
 #include "DACommandsForGraphics.h"
 namespace DA
 {
-
+class DAGraphicsScene;
+class DAGraphicsResizeableItem;
 /**
  * @brief 命令工厂
  *
@@ -15,15 +16,66 @@ namespace DA
  */
 class DAGRAPHICSVIEW_API DAGraphicsCommandsFactory
 {
+    friend class DAGraphicsScene;
+
 public:
-    DAGraphicsCommandsFactory();
-    virtual ~DAGraphicsCommandsFactory();
-    virtual DACommandsForGraphicsItemAdd* createItemAdd(QGraphicsItem* item,
-                                                        QGraphicsScene* scene,
-                                                        QUndoCommand* parent = nullptr);
-    virtual DACommandsForGraphicsItemsAdd* createItemsAdd(const QList< QGraphicsItem* > its,
-                                                          QGraphicsScene* scene,
-                                                          QUndoCommand* parent = nullptr);
+	DAGraphicsCommandsFactory();
+	virtual ~DAGraphicsCommandsFactory();
+	virtual DACommandsForGraphicsItemAdd* createItemAdd(QGraphicsItem* item, QUndoCommand* parent = nullptr);
+	virtual DACommandsForGraphicsItemsAdd* createItemsAdd(const QList< QGraphicsItem* > its, QUndoCommand* parent = nullptr);
+	virtual DACommandsForGraphicsItemRemove* createItemRemove(QGraphicsItem* item, QUndoCommand* parent = nullptr);
+	virtual DACommandsForGraphicsItemsRemove* createItemsRemove(const QList< QGraphicsItem* > its,
+																QUndoCommand* parent = nullptr);
+	virtual DACommandsForGraphicsItemMoved* createItemMoved(QGraphicsItem* item,
+															const QPointF& start,
+															const QPointF& end,
+															bool skipfirst,
+															QUndoCommand* parent = nullptr);
+	virtual DACommandsForGraphicsItemMoved_Merge* createItemMoved_Merge(QGraphicsItem* item,
+																		const QPointF& start,
+																		const QPointF& end,
+																		bool skipfirst,
+																		QUndoCommand* parent = nullptr);
+	virtual DACommandsForGraphicsItemsMoved* createItemsMoved(const QList< QGraphicsItem* >& items,
+															  const QList< QPointF >& starts,
+															  const QList< QPointF >& ends,
+															  bool skipfirst,
+															  QUndoCommand* parent = nullptr);
+	virtual DACommandsForGraphicsItemsMoved_Merge* createItemsMoved_Merge(const QList< QGraphicsItem* >& items,
+																		  const QList< QPointF >& starts,
+																		  const QList< QPointF >& ends,
+																		  bool skipfirst,
+																		  QUndoCommand* parent = nullptr);
+	virtual DACommandsForGraphicsItemResized* createItemResized(DAGraphicsResizeableItem* item,
+																const QPointF& oldpos,
+																const QSizeF& oldSize,
+																const QPointF& newpos,
+																const QSizeF& newSize,
+																bool skipfirst       = true,
+																QUndoCommand* parent = nullptr);
+	virtual DACommandsForGraphicsItemResized* createItemResized(DAGraphicsResizeableItem* item,
+																const QSizeF& oldSize,
+																const QSizeF& newSize,
+																QUndoCommand* parent = nullptr);
+	virtual DACommandsForGraphicsItemResizeWidth* createItemResizeWidth(DAGraphicsResizeableItem* item,
+																		const qreal& oldWidth,
+																		const qreal& newWidth,
+																		QUndoCommand* parent = nullptr);
+	virtual DACommandsForGraphicsItemResizeHeight* createItemResizeHeight(DAGraphicsResizeableItem* item,
+																		  const qreal& oldHeight,
+																		  const qreal& newHeight,
+																		  QUndoCommand* parent = nullptr);
+	virtual DACommandsForGraphicsItemRotation* createItemRotation(DAGraphicsResizeableItem* item,
+																  const qreal& oldRotation,
+																  const qreal& newRotation,
+																  QUndoCommand* parent = nullptr);
+
+protected:
+	void setScene(DAGraphicsScene* s);
+	DAGraphicsScene* scene() const;
+
+private:
+	DAGraphicsScene* mScene { nullptr };
 };
 }  // end DA
 #endif  // DAGRAPHICSVIEWCOMMANDSFACTORY_H
