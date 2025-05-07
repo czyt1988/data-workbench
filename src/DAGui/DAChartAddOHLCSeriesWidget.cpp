@@ -4,6 +4,7 @@
 #include "DADataManager.h"
 #include "Models/DADataManagerTreeModel.h"
 #include "qwt_samples.h"
+#include "qwt_plot_tradingcurve.h"
 #if DA_ENABLE_PYTHON
 #include "Models/DAPySeriesTableModule.h"
 #endif
@@ -17,9 +18,9 @@ public:
 	PrivateData(DAChartAddOHLCSeriesWidget* p);
 
 public:
-	DADataManager* _dataMgr{ nullptr };
+    DADataManager* _dataMgr { nullptr };
 #if DA_ENABLE_PYTHON
-	DAPySeriesTableModule* _model{ nullptr };
+    DAPySeriesTableModule* _model { nullptr };
 #endif
 };
 
@@ -31,7 +32,7 @@ DAChartAddOHLCSeriesWidget::PrivateData::PrivateData(DAChartAddOHLCSeriesWidget*
 //===================================================
 
 DAChartAddOHLCSeriesWidget::DAChartAddOHLCSeriesWidget(QWidget* parent)
-	: QWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DAChartAddOHLCSeriesWidget)
+    : DAAbstractChartAddItemWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DAChartAddOHLCSeriesWidget)
 {
 	ui->setupUi(this);
 #if DA_ENABLE_PYTHON
@@ -41,47 +42,34 @@ DAChartAddOHLCSeriesWidget::DAChartAddOHLCSeriesWidget(QWidget* parent)
 #endif
 	QFontMetrics fm = fontMetrics();
 	ui->tableViewOHLC->verticalHeader()->setDefaultSectionSize(fm.lineSpacing() * 1.1);
+    connect(this, &DAChartAddOHLCSeriesWidget::dataManagerChanged, this, &DAChartAddOHLCSeriesWidget::onDataManagerChanged);
+    connect(this, &DAChartAddOHLCSeriesWidget::currentDataChanged, this, &DAChartAddOHLCSeriesWidget::onCurrentDataChanged);
 	connect(ui->comboBoxT,
-			&DADataManagerComboBox::currentDataframeSeriesChanged,
-			this,
-			&DAChartAddOHLCSeriesWidget::onComboBoxTCurrentDataframeSeriesChanged);
+            &DADataManagerComboBox::currentDataframeSeriesChanged,
+            this,
+            &DAChartAddOHLCSeriesWidget::onComboBoxTCurrentDataframeSeriesChanged);
 	connect(ui->comboBoxO,
-			&DADataManagerComboBox::currentDataframeSeriesChanged,
-			this,
-			&DAChartAddOHLCSeriesWidget::onComboBoxOCurrentDataframeSeriesChanged);
+            &DADataManagerComboBox::currentDataframeSeriesChanged,
+            this,
+            &DAChartAddOHLCSeriesWidget::onComboBoxOCurrentDataframeSeriesChanged);
 	connect(ui->comboBoxH,
-			&DADataManagerComboBox::currentDataframeSeriesChanged,
-			this,
-			&DAChartAddOHLCSeriesWidget::onComboBoxHCurrentDataframeSeriesChanged);
+            &DADataManagerComboBox::currentDataframeSeriesChanged,
+            this,
+            &DAChartAddOHLCSeriesWidget::onComboBoxHCurrentDataframeSeriesChanged);
 	connect(ui->comboBoxL,
-			&DADataManagerComboBox::currentDataframeSeriesChanged,
-			this,
-			&DAChartAddOHLCSeriesWidget::onComboBoxLCurrentDataframeSeriesChanged);
+            &DADataManagerComboBox::currentDataframeSeriesChanged,
+            this,
+            &DAChartAddOHLCSeriesWidget::onComboBoxLCurrentDataframeSeriesChanged);
 	connect(ui->comboBoxC,
-			&DADataManagerComboBox::currentDataframeSeriesChanged,
-			this,
-			&DAChartAddOHLCSeriesWidget::onComboBoxCCurrentDataframeSeriesChanged);
+            &DADataManagerComboBox::currentDataframeSeriesChanged,
+            this,
+            &DAChartAddOHLCSeriesWidget::onComboBoxCCurrentDataframeSeriesChanged);
 	connect(ui->groupBoxTAutoincrement, &QGroupBox::clicked, this, &DAChartAddOHLCSeriesWidget::onGroupBoxTAutoincrementClicked);
 }
 
 DAChartAddOHLCSeriesWidget::~DAChartAddOHLCSeriesWidget()
 {
 	delete ui;
-}
-
-void DAChartAddOHLCSeriesWidget::setDataManager(DADataManager* dmgr)
-{
-	d_ptr->_dataMgr = dmgr;
-	ui->comboBoxT->setDataManager(dmgr);
-	ui->comboBoxO->setDataManager(dmgr);
-	ui->comboBoxH->setDataManager(dmgr);
-	ui->comboBoxL->setDataManager(dmgr);
-	ui->comboBoxC->setDataManager(dmgr);
-}
-
-DADataManager* DAChartAddOHLCSeriesWidget::getDataManager() const
-{
-    return ui->comboBoxT->getDataManager();
 }
 
 /**
@@ -102,21 +90,22 @@ QVector< QwtOHLCSample > DAChartAddOHLCSeriesWidget::getSeries() const
 	DAChartAddOHLCSeriesWidget* that = const_cast< DAChartAddOHLCSeriesWidget* >(this);
 	QVector< QwtOHLCSample > ohlc;
 	that->getToVectorPointFFromUI(ohlc);
-	return ohlc;
+    return ohlc;
 }
 
 /**
- * @brief 设置当前的数据
- * @param d
+ * @brief DAChartAddOHLCSeriesWidget::createPlotItem
+ * @return
  */
-void DAChartAddOHLCSeriesWidget::setCurrentData(const DAData& d)
+QwtPlotItem* DAChartAddOHLCSeriesWidget::createPlotItem()
 {
-	// 这里看看这个数据给它一个，默认的选择
-	ui->comboBoxT->setCurrentDAData(d);
-	ui->comboBoxO->setCurrentDAData(d);
-	ui->comboBoxH->setCurrentDAData(d);
-	ui->comboBoxL->setCurrentDAData(d);
-	ui->comboBoxC->setCurrentDAData(d);
+    QVector< QwtOHLCSample > ohlc = getSeries();
+    if (ohlc.empty()) {
+        return nullptr;
+    }
+    QwtPlotTradingCurve* item = new QwtPlotTradingCurve();
+    item->setSamples(ohlc);
+    return item;
 }
 
 /**
@@ -244,6 +233,24 @@ void DAChartAddOHLCSeriesWidget::onGroupBoxTAutoincrementClicked(bool on)
 #endif
 }
 
+void DAChartAddOHLCSeriesWidget::onDataManagerChanged(DADataManager* dmgr)
+{
+    ui->comboBoxT->setDataManager(dmgr);
+    ui->comboBoxO->setDataManager(dmgr);
+    ui->comboBoxH->setDataManager(dmgr);
+    ui->comboBoxL->setDataManager(dmgr);
+    ui->comboBoxC->setDataManager(dmgr);
+}
+
+void DAChartAddOHLCSeriesWidget::onCurrentDataChanged(const DAData& d)
+{
+    ui->comboBoxT->setCurrentDAData(d);
+    ui->comboBoxO->setCurrentDAData(d);
+    ui->comboBoxH->setCurrentDAData(d);
+    ui->comboBoxL->setCurrentDAData(d);
+    ui->comboBoxC->setCurrentDAData(d);
+}
+
 /**
  * @brief 获取x自增
  * @param v
@@ -255,19 +262,19 @@ bool DAChartAddOHLCSeriesWidget::getTAutoIncFromUI(DAAutoincrementSeries< double
 	bool isOK   = false;
 	double base = ui->lineEditTInitValue->text().toDouble(&isOK);
 	if (!isOK) {
-		QMessageBox::warning(
-			this,
-			tr("Warning"),                                                                                 // cn:警告
-			tr("The initial value of x auto increment series must be a floating-point arithmetic number")  // cn:x自增序列的初始值必须为浮点数
-		);
+        QMessageBox::
+            warning(this,
+                    tr("Warning"),  // cn:警告
+                    tr("The initial value of x auto increment series must be a floating-point arithmetic number")  // cn:x自增序列的初始值必须为浮点数
+            );
 		return false;
 	}
 	double step = ui->lineEditTStepValue->text().toDouble(&isOK);
 	if (!isOK) {
 		QMessageBox::warning(this,
-							 tr("Warning"),  // cn:警告
-							 tr("The step value of x auto increment series "
-								"must be a floating-point arithmetic number")  // cn:x自增序列的步长必须为浮点数
+                             tr("Warning"),  // cn:警告
+                             tr("The step value of x auto increment series "
+                                "must be a floating-point arithmetic number")  // cn:x自增序列的步长必须为浮点数
 		);
 		return false;
 	}
@@ -297,26 +304,26 @@ bool DAChartAddOHLCSeriesWidget::getToVectorPointFFromUI(QVector< QwtOHLCSample 
 		DAData cd = ui->comboBoxC->getCurrentDAData();
 		if (!od.isSeries()) {
 			QMessageBox::warning(this,
-								 tr("Warning"),              // cn:警告
-								 tr("o must be a series"));  // cn:o必须是序列
+                                 tr("Warning"),              // cn:警告
+                                 tr("o must be a series"));  // cn:o必须是序列
 			return false;
 		}
 		if (!hd.isSeries()) {
 			QMessageBox::warning(this,
-								 tr("Warning"),              // cn:警告
-								 tr("h must be a series"));  // cn:h必须是序列
+                                 tr("Warning"),              // cn:警告
+                                 tr("h must be a series"));  // cn:h必须是序列
 			return false;
 		}
 		if (!ld.isSeries()) {
 			QMessageBox::warning(this,
-								 tr("Warning"),              // cn:警告
-								 tr("l must be a series"));  // cn:l必须是序列
+                                 tr("Warning"),              // cn:警告
+                                 tr("l must be a series"));  // cn:l必须是序列
 			return false;
 		}
 		if (!cd.isSeries()) {
 			QMessageBox::warning(this,
-								 tr("Warning"),              // cn:警告
-								 tr("c must be a series"));  // cn:c必须是序列
+                                 tr("Warning"),              // cn:警告
+                                 tr("c must be a series"));  // cn:c必须是序列
 			return false;
 		}
 		DAPySeries o = od.toSeries();
@@ -325,8 +332,8 @@ bool DAChartAddOHLCSeriesWidget::getToVectorPointFFromUI(QVector< QwtOHLCSample 
 		DAPySeries c = cd.toSeries();
 		if (o.isNone() || h.isNone() || l.isNone() || c.isNone()) {
 			QMessageBox::warning(this,
-								 tr("Warning"),                                          // cn:警告
-								 tr("The None value cannot be converted to a series"));  // cn:None值无法转换为序列
+                                 tr("Warning"),                                          // cn:警告
+                                 tr("The None value cannot be converted to a series"));  // cn:None值无法转换为序列
 			return false;
 		}
 		std::size_t s = o.size();
@@ -349,12 +356,12 @@ bool DAChartAddOHLCSeriesWidget::getToVectorPointFFromUI(QVector< QwtOHLCSample 
 			}
 		} catch (const std::exception& e) {
 			qCritical() << tr("Exception occurred during extracting from "
-							  "pandas.Series to double vector:%1")
-							   .arg(e.what());  // cn:从pandas.Series提取为double vector过程中出现异常:%1
+                              "pandas.Series to double vector:%1")
+                               .arg(e.what());  // cn:从pandas.Series提取为double vector过程中出现异常:%1
 			QMessageBox::warning(this,
-								 tr("Warning"),  // cn:警告
-								 tr("Exception occurred during extracting from "
-									"pandas.Series to double vector"));  // cn:从pandas.Series提取为double vector过程中出现异常
+                                 tr("Warning"),  // cn:警告
+                                 tr("Exception occurred during extracting from "
+                                    "pandas.Series to double vector"));  // cn:从pandas.Series提取为double vector过程中出现异常
 
 			return false;
 		}
@@ -366,33 +373,33 @@ bool DAChartAddOHLCSeriesWidget::getToVectorPointFFromUI(QVector< QwtOHLCSample 
 		DAData cd = ui->comboBoxC->getCurrentDAData();
 		if (!td.isSeries()) {
 			QMessageBox::warning(this,
-								 tr("Warning"),            // cn:警告
-								 tr("t must be a series")  // cn:t必须是序列
+                                 tr("Warning"),            // cn:警告
+                                 tr("t must be a series")  // cn:t必须是序列
 			);
 			return false;
 		}
 		if (!od.isSeries()) {
 			QMessageBox::warning(this,
-								 tr("Warning"),              // cn:警告
-								 tr("o must be a series"));  // cn:o必须是序列
+                                 tr("Warning"),              // cn:警告
+                                 tr("o must be a series"));  // cn:o必须是序列
 			return false;
 		}
 		if (!hd.isSeries()) {
 			QMessageBox::warning(this,
-								 tr("Warning"),              // cn:警告
-								 tr("h must be a series"));  // cn:h必须是序列
+                                 tr("Warning"),              // cn:警告
+                                 tr("h must be a series"));  // cn:h必须是序列
 			return false;
 		}
 		if (!ld.isSeries()) {
 			QMessageBox::warning(this,
-								 tr("Warning"),              // cn:警告
-								 tr("l must be a series"));  // cn:l必须是序列
+                                 tr("Warning"),              // cn:警告
+                                 tr("l must be a series"));  // cn:l必须是序列
 			return false;
 		}
 		if (!cd.isSeries()) {
 			QMessageBox::warning(this,
-								 tr("Warning"),              // cn:警告
-								 tr("c must be a series"));  // cn:c必须是序列
+                                 tr("Warning"),              // cn:警告
+                                 tr("c must be a series"));  // cn:c必须是序列
 			return false;
 		}
 		DAPySeries t = td.toSeries();
@@ -402,8 +409,8 @@ bool DAChartAddOHLCSeriesWidget::getToVectorPointFFromUI(QVector< QwtOHLCSample 
 		DAPySeries c = cd.toSeries();
 		if (o.isNone() || h.isNone() || l.isNone() || c.isNone()) {
 			QMessageBox::warning(this,
-								 tr("Warning"),                                          // cn:警告
-								 tr("The None value cannot be converted to a series"));  // cn:None值无法转换为序列
+                                 tr("Warning"),                                          // cn:警告
+                                 tr("The None value cannot be converted to a series"));  // cn:None值无法转换为序列
 			return false;
 		}
 
@@ -433,7 +440,7 @@ bool DAChartAddOHLCSeriesWidget::getToVectorPointFFromUI(QVector< QwtOHLCSample 
 			}
 		} catch (const std::exception& e) {
 			qCritical() << tr("Exception occurred during extracting from pandas.Series to double vector:%1")
-							   .arg(e.what());  // cn:从pandas.Series提取为double vector过程中出现异常:%1
+                               .arg(e.what());  // cn:从pandas.Series提取为double vector过程中出现异常:%1
 			return false;
 		}
 	}

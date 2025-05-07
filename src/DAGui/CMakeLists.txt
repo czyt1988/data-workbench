@@ -35,10 +35,10 @@ set(DA_LIB_HEADER_FILES
     DAChartAddXYSeriesWidget.h
     DAChartAddXYESeriesWidget.h
     DAChartAddOHLCSeriesWidget.h
+    DAChartAddtGridRasterDataWidget.h
     DAChartAddCurveWidget.h
     DAChartAddBarWidget.h
-    DAChartAddErrorBarWidget.h
-    DAChartAddBoxWidget.h
+    DAChartAddIntervalCurveWidget.h
     DAChartAddSpectrogramWidget.h
     DADataManagerComboBox.h
     DADataOperatePageWidget.h
@@ -84,10 +84,10 @@ set(DA_LIB_SOURCE_FILES
     DAChartAddXYSeriesWidget.cpp
     DAChartAddXYESeriesWidget.cpp
     DAChartAddOHLCSeriesWidget.cpp
+    DAChartAddtGridRasterDataWidget.cpp
     DAChartAddCurveWidget.cpp
     DAChartAddBarWidget.cpp
-    DAChartAddErrorBarWidget.cpp
-    DAChartAddBoxWidget.cpp
+    DAChartAddIntervalCurveWidget.cpp
     DAChartAddSpectrogramWidget.cpp
     DAChartListView.cpp
     DAChartManageWidget.cpp
@@ -130,11 +130,7 @@ set(DA_LIB_QT_UI_FILES
     DAChartAddXYSeriesWidget.ui
     DAChartAddXYESeriesWidget.ui
     DAChartAddOHLCSeriesWidget.ui
-    DAChartAddCurveWidget.ui
-    DAChartAddBarWidget.ui
-    DAChartAddErrorBarWidget.ui
-    DAChartAddBoxWidget.ui
-    DAChartAddSpectrogramWidget.ui
+    DAChartAddtGridRasterDataWidget.ui
     DAChartManageWidget.ui
     DAChartOperateWidget.ui
     DAChartSettingWidget.ui

@@ -85,7 +85,7 @@ void DAWorkFlow::PrivateData::recordNode(DAAbstractNode::SharedPointer& node)
 
 DAWorkFlow::DAWorkFlow(QObject* p) : QObject(p), DA_PIMPL_CONSTRUCT
 {
-    qRegisterMetaType< DAAbstractNode::SharedPointer >("DAAbstractNode::SharedPointer");
+    // qRegisterMetaType< DAAbstractNode::SharedPointer >("DAAbstractNode::SharedPointer");
 }
 
 DAWorkFlow::~DAWorkFlow()

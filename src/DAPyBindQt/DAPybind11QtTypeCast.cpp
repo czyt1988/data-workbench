@@ -13,6 +13,7 @@ namespace DA
 {
 namespace PY
 {
+
 /**
  * @brief toVariant
  *
@@ -315,19 +316,19 @@ pybind11::object toPyObject(const QVariant& var)
 	case QMetaType::QUuid:
 		return pybind11::str(var.toUuid().toString().toStdString());
 	case QMetaType::QVariantHash:
-        return toPyDict(var.toHash());
+		return toPyDict(var.toHash());
 	case QMetaType::Int:
 		return pybind11::int_(var.toInt());
 	case QMetaType::QVariantList:
-        return toPyList(var.toList());
+		return toPyList(var.toList());
 	case QMetaType::LongLong:
 		return pybind11::int_(var.toLongLong());
 	case QMetaType::QVariantMap:
-        return toPyDict(var.toMap());
+		return toPyDict(var.toMap());
 	case QMetaType::QString:
-        return toPyStr(var.toString());
+		return toPyStr(var.toString());
 	case QMetaType::QStringList:
-        return toPyList(var.toStringList());
+		return toPyList(var.toStringList());
 	case QMetaType::UInt:
 		return (pybind11::int_(var.toUInt()));
 	case QMetaType::ULongLong:
@@ -355,7 +356,7 @@ pybind11::dict toPyDict(const QVariantHash& qvhash)
 {
 	pybind11::dict d;
 	for (auto i = qvhash.begin(); i != qvhash.end(); ++i) {
-        d[ toPyStr(i.key()) ] = toPyObject(i.value());
+		d[ toPyStr(i.key()) ] = toPyObject(i.value());
 	}
 	return d;
 }
@@ -364,7 +365,7 @@ pybind11::dict toPyDict(const QVariantMap& qvmap)
 {
 	pybind11::dict d;
 	for (auto i = qvmap.begin(); i != qvmap.end(); ++i) {
-        d[ toPyStr(i.key()) ] = toPyObject(i.value());
+		d[ toPyStr(i.key()) ] = toPyObject(i.value());
 	}
 	return d;
 }
@@ -382,7 +383,7 @@ pybind11::list toPyList(const QStringList& list)
 {
 	pybind11::list d;
 	for (const QString& v : list) {
-        d.append(toPyStr(v));
+		d.append(toPyStr(v));
 	}
 	return d;
 }
@@ -430,12 +431,12 @@ void registerMetaType()
 template<>
 inline pybind11::list toPyList< QString >(const QList< QString >& arr)
 {
-    pybind11::list pylist;
-    for (const QString& v : arr) {
-        pybind11::object o = toPyStr(v);
-        pylist.append(o);
-    }
-    return pylist;
+	pybind11::list pylist;
+	for (const QString& v : arr) {
+		pybind11::object o = toPyStr(v);
+		pylist.append(o);
+	}
+	return pylist;
 }
 
 /**
@@ -446,12 +447,31 @@ inline pybind11::list toPyList< QString >(const QList< QString >& arr)
 template<>
 inline pybind11::list toPyList< QString >(const QSet< QString >& arr)
 {
-    pybind11::list pylist;
-    for (const QString& v : arr) {
-        pybind11::object o = toPyStr(v);
-        pylist.append(o);
-    }
-    return pylist;
+	pybind11::list pylist;
+	for (const QString& v : arr) {
+		pybind11::object o = toPyStr(v);
+		pylist.append(o);
+	}
+	return pylist;
 }
+
 }  // namespace PY
+
+namespace
+{
+// 静态注册辅助类
+struct MetaTypeRegistrar_DAPy
+{
+	MetaTypeRegistrar_DAPy()
+	{
+		qRegisterMetaType< DA::DAPyObjectWrapper >("DA::DAPyObjectWrapper");
+		qRegisterMetaType< DA::DAPyDType >("DA::DAPyDType");
+		qRegisterMetaType< DA::DAPyDataFrame >("DA::DAPyDataFrame");
+		qRegisterMetaType< DA::DAPyIndex >("DA::DAPyIndex");
+		qRegisterMetaType< DA::DAPySeries >("DA::DAPySeries");
+	}
+};
+// 静态实例触发注册
+static MetaTypeRegistrar_DAPy _registrar;
+}
 }  // namespace DA

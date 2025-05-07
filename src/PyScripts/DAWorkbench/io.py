@@ -66,7 +66,10 @@ def read_csv(path:str,args:Optional[Dict] = None) -> pd.DataFrame:
     if args is None:
         args = {}
     encoding = detect_encoding(path)
-    return pd.read_csv(path,encoding=encoding,**args)
+    df = pd.read_csv(path,encoding=encoding,**args)
+    # 所有列名转为字符串,（header=None时自动生成的表头是int64或者表头是数字时,索引的时候使用字符串会报错）
+    df.columns = df.columns.astype(str)  
+    return df
 
 @log_function_call
 def read_pkl(path:str,args:Optional[Dict] = None) -> pd.DataFrame:
@@ -79,8 +82,7 @@ def read_pkl(path:str,args:Optional[Dict] = None) -> pd.DataFrame:
 #    df[0] = pd.to_datetime(df[0], unit='ns')
     
     #判断df的表头是否为str以外的类型，如果不是str类型，转换为str类型（header=None时自动生成的表头是int64,索引的时候使用字符串会报错）
-    if df.columns.dtype != np.dtype('<U1'):
-        df.columns = df.columns.astype(str)
+    df.columns = df.columns.astype(str)  
     return df
 
 @log_function_call
@@ -100,8 +102,7 @@ def read_txt(path:str,args:Optional[Dict] = None) -> pd.DataFrame:
         args = {}
     df = pd.read_table(path,**args)
     #判断df的表头是否为str以外的类型，如果不是str类型，转换为str类型（header=None时自动生成的表头是int64,索引的时候使用字符串会报错）
-    if df.columns.dtype != np.dtype('<U1'):
-        df.columns = df.columns.astype(str)
+    df.columns = df.columns.astype(str)  
     return df
 
 @log_function_call
@@ -111,7 +112,9 @@ def read_excel(path:str,args:Optional[Dict] = None)-> pd.DataFrame:
     '''
     if args is None:
         args = {}
-    return pd.read_excel(path,**args)
+    df = pd.read_excel(path,**args)
+    df.columns = df.columns.astype(str)  
+    return df
 
 @log_function_call
 def da_read(path:str,args:Optional[Dict] = None):

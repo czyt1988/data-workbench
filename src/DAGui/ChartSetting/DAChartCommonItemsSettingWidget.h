@@ -15,8 +15,8 @@ namespace DA
  */
 class DAGUI_API DAChartCommonItemsSettingWidget : public DAAbstractChartItemSettingWidget
 {
-    Q_OBJECT
-
+	Q_OBJECT
+	DA_DECLARE_PRIVATE(DAChartCommonItemsSettingWidget)
 public:
 	explicit DAChartCommonItemsSettingWidget(QWidget* parent = nullptr);
 	~DAChartCommonItemsSettingWidget();

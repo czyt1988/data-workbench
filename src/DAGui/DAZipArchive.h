@@ -16,7 +16,7 @@ public:
 	DAZipArchive(const QString& zipPath, QObject* par = nullptr);
 	~DAZipArchive();
 	// 设置zip文件名
-	virtual void setBaseFilePath(const QString& path) override;
+	virtual bool setBaseFilePath(const QString& path) override;
 	// 设置zip文件名,包含完整路径的名字
 	bool setZipFileName(const QString& fileName);
 	// 打开

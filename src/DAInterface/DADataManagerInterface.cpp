@@ -22,7 +22,6 @@ DADataManagerInterface::PrivateData::PrivateData(DADataManagerInterface* p) : q_
 DADataManagerInterface::DADataManagerInterface(DACoreInterface* c, QObject* par)
     : DABaseInterface(c, par), DA_PIMPL_CONSTRUCT
 {
-	qRegisterMetaType< DAData >("DAData");
 	connect(d_ptr->mDataMgr, &DADataManager::dataAdded, this, &DADataManagerInterface::dataAdded);
 	connect(d_ptr->mDataMgr, &DADataManager::dataBeginRemove, this, &DADataManagerInterface::dataBeginRemove);
 	connect(d_ptr->mDataMgr, &DADataManager::dataRemoved, this, &DADataManagerInterface::dataRemoved);

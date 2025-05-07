@@ -50,88 +50,53 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>-1</number>
       </property>
-      <widget class="DA::DAChartAddCurveWidget" name="pageCurve"/>
-      <widget class="DA::DAChartAddBarWidget" name="pageBar"/>
-      <widget class="DA::DAChartAddSpectrogramWidget" name="pageSpectrogram"/>
-      <widget class="DA::DAChartAddErrorBarWidget" name="pageErrorBar"/>
-      <widget class="DA::DAChartAddBoxWidget" name="pageBox"/>
      </widget>
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QPushButton" name="pushButtonPrevious">
-       <property name="text">
-        <string>Previous</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="pushButtonNext">
-       <property name="text">
-        <string>Next</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="pushButtonCancel">
-       <property name="text">
-        <string>Cancel</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>DA::DAChartAddCurveWidget</class>
-   <extends>QWidget</extends>
-   <header>DAChartAddCurveWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>DA::DAChartAddBarWidget</class>
-   <extends>QWidget</extends>
-   <header>DAChartAddBarWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>DA::DAChartAddErrorBarWidget</class>
-   <extends>QWidget</extends>
-   <header>DAChartAddErrorBarWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>DA::DAChartAddBoxWidget</class>
-   <extends>QWidget</extends>
-   <header>DAChartAddBoxWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>DA::DAChartAddSpectrogramWidget</class>
-   <extends>QWidget</extends>
-   <header>DAChartAddSpectrogramWidget.h</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>DADialogChartGuide</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>675</x>
+     <y>678</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>801</x>
+     <y>627</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>DADialogChartGuide</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>713</x>
+     <y>683</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>806</x>
+     <y>663</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
