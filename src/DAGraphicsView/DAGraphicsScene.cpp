@@ -44,6 +44,8 @@ public:
 	// 绘制背景缓存
 	void renderBackgroundCache();
 	void renderBackgroundCache(QPainter* painter, const QRect& rect);
+    //
+    void registCommandsFactory(DAGraphicsCommandsFactory* fac);
 
 public:
 	QUndoStack mUndoStack;
@@ -109,7 +111,7 @@ void _DAGraphicsSceneItemMoveingInfos::clear()
 {
 	items.clear();
 	startsPos.clear();
-	endsPos.clear();
+    endsPos.clear();
 }
 
 ////////////////////////////////////////////////
@@ -121,7 +123,7 @@ void _DAGraphicsSceneItemMoveingInfos::clear()
 
 DAGraphicsScene::PrivateData::PrivateData(DAGraphicsScene* p) : q_ptr(p)
 {
-	q_ptr->registCommandsFactory(new DAGraphicsCommandsFactory());
+    registCommandsFactory(new DAGraphicsCommandsFactory());
 	mGridLinePen.setStyle(Qt::SolidLine);
 	mGridLinePen.setColor(QColor(219, 219, 219));
 	mGridLinePen.setCapStyle(Qt::RoundCap);
@@ -162,7 +164,13 @@ void DAGraphicsScene::PrivateData::renderBackgroundCache(QPainter* painter, cons
 	// 绘制横线
 	for (qreal y = top; y < rect.bottom(); y += mGridSize.height()) {
 		painter->drawLine(QPointF(rect.left(), y), QPointF(rect.right(), y));
-	}
+    }
+}
+
+void DAGraphicsScene::PrivateData::registCommandsFactory(DAGraphicsCommandsFactory* fac)
+{
+    this->commandsFactory.reset(fac);
+    this->commandsFactory->setScene(q_ptr);
 }
 
 //===============================================================
@@ -477,7 +485,7 @@ void DAGraphicsScene::groupingSelectItems_()
 			return;
 		}
 	}
-	auto cmd = new DACommandsForGraphicsItemGrouping(this, selItems);
+    auto cmd = commandsFactory()->createItemGrouping(selItems);
 	push(cmd);
 }
 
@@ -490,7 +498,7 @@ void DAGraphicsScene::removeSelectItemGroup_()
 	for (QGraphicsItem* i : qAsConst(si)) {
 		QGraphicsItemGroup* g = dynamic_cast< QGraphicsItemGroup* >(i);
 		if (g) {
-			auto cmd = new DACommandsForGraphicsItemUngrouping(this, g);
+            auto cmd = commandsFactory()->createItemUngrouping(g);
 			push(cmd);
 		}
 	}
@@ -929,8 +937,7 @@ DAGraphicsRectItem* DAGraphicsScene::createRect_(const QPointF& p)
  */
 void DAGraphicsScene::registCommandsFactory(DAGraphicsCommandsFactory* fac)
 {
-	d_ptr->commandsFactory.reset(fac);
-	fac->setScene(this);
+    d_ptr->registCommandsFactory(fac);
 }
 
 /**
@@ -1137,7 +1144,7 @@ void DAGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 			DAGraphicsResizeableItem* ri = dynamic_cast< DAGraphicsResizeableItem* >(its);
 			if (ri) {
 				if (DAGraphicsResizeableItem::NotUnderAnyControlType
-					!= ri->getControlPointByPos(ri->mapFromScene(mouseEvent->scenePos()))) {
+                    != ri->getControlPointByPos(ri->mapFromScene(mouseEvent->scenePos()))) {
 					// 说明点击在了控制点上，需要跳过
 					d_ptr->mIsMovingItems = false;
 					return;
@@ -1194,14 +1201,16 @@ void DAGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		d->mIsMovingItems  = false;
 		QPointF releasePos = mouseEvent->scenePos();
 		if (qFuzzyCompare(releasePos.x(), d->mLastMousePressScenePos.x())
-			&& qFuzzyCompare(releasePos.y(), d->mLastMousePressScenePos.y())) {
+            && qFuzzyCompare(releasePos.y(), d->mLastMousePressScenePos.y())) {
 			// 位置相等，不做处理
 			return;
 		}
 		// 位置不等，属于正常移动
 		d->mMovingInfos.updateEndPos();
-		DACommandsForGraphicsItemsMoved* cmd = commandsFactory()->createItemsMoved(
-			d->mMovingInfos.items, d->mMovingInfos.startsPos, d->mMovingInfos.endsPos, true);
+        DACommandsForGraphicsItemsMoved* cmd = commandsFactory()->createItemsMoved(d->mMovingInfos.items,
+                                                                                   d->mMovingInfos.startsPos,
+                                                                                   d->mMovingInfos.endsPos,
+                                                                                   true);
 		push(cmd);
 		// 位置改变信号
 		//         qDebug() << "emit itemsPositionChanged";

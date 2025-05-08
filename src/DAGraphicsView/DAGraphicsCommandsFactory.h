@@ -21,54 +21,46 @@ class DAGRAPHICSVIEW_API DAGraphicsCommandsFactory
 public:
 	DAGraphicsCommandsFactory();
 	virtual ~DAGraphicsCommandsFactory();
-	virtual DACommandsForGraphicsItemAdd* createItemAdd(QGraphicsItem* item, QUndoCommand* parent = nullptr);
-	virtual DACommandsForGraphicsItemsAdd* createItemsAdd(const QList< QGraphicsItem* > its, QUndoCommand* parent = nullptr);
+    virtual DACommandsForGraphicsItemAdd* createItemAdd(QGraphicsItem* item);
+    virtual DACommandsForGraphicsItemsAdd* createItemsAdd(const QList< QGraphicsItem* > its);
 	virtual DACommandsForGraphicsItemRemove* createItemRemove(QGraphicsItem* item, QUndoCommand* parent = nullptr);
-	virtual DACommandsForGraphicsItemsRemove* createItemsRemove(const QList< QGraphicsItem* > its,
-																QUndoCommand* parent = nullptr);
+    virtual DACommandsForGraphicsItemsRemove* createItemsRemove(const QList< QGraphicsItem* > its);
 	virtual DACommandsForGraphicsItemMoved* createItemMoved(QGraphicsItem* item,
-															const QPointF& start,
-															const QPointF& end,
-															bool skipfirst,
-															QUndoCommand* parent = nullptr);
+                                                            const QPointF& start,
+                                                            const QPointF& end,
+                                                            bool skipfirst);
 	virtual DACommandsForGraphicsItemMoved_Merge* createItemMoved_Merge(QGraphicsItem* item,
-																		const QPointF& start,
-																		const QPointF& end,
-																		bool skipfirst,
-																		QUndoCommand* parent = nullptr);
+                                                                        const QPointF& start,
+                                                                        const QPointF& end,
+                                                                        bool skipfirst);
 	virtual DACommandsForGraphicsItemsMoved* createItemsMoved(const QList< QGraphicsItem* >& items,
-															  const QList< QPointF >& starts,
-															  const QList< QPointF >& ends,
-															  bool skipfirst,
-															  QUndoCommand* parent = nullptr);
+                                                              const QList< QPointF >& starts,
+                                                              const QList< QPointF >& ends,
+                                                              bool skipfirst);
 	virtual DACommandsForGraphicsItemsMoved_Merge* createItemsMoved_Merge(const QList< QGraphicsItem* >& items,
-																		  const QList< QPointF >& starts,
-																		  const QList< QPointF >& ends,
-																		  bool skipfirst,
-																		  QUndoCommand* parent = nullptr);
+                                                                          const QList< QPointF >& starts,
+                                                                          const QList< QPointF >& ends,
+                                                                          bool skipfirst);
 	virtual DACommandsForGraphicsItemResized* createItemResized(DAGraphicsResizeableItem* item,
-																const QPointF& oldpos,
-																const QSizeF& oldSize,
-																const QPointF& newpos,
-																const QSizeF& newSize,
-																bool skipfirst       = true,
-																QUndoCommand* parent = nullptr);
+                                                                const QPointF& oldpos,
+                                                                const QSizeF& oldSize,
+                                                                const QPointF& newpos,
+                                                                const QSizeF& newSize,
+                                                                bool skipfirst = true);
 	virtual DACommandsForGraphicsItemResized* createItemResized(DAGraphicsResizeableItem* item,
-																const QSizeF& oldSize,
-																const QSizeF& newSize,
-																QUndoCommand* parent = nullptr);
+                                                                const QSizeF& oldSize,
+                                                                const QSizeF& newSize);
 	virtual DACommandsForGraphicsItemResizeWidth* createItemResizeWidth(DAGraphicsResizeableItem* item,
-																		const qreal& oldWidth,
-																		const qreal& newWidth,
-																		QUndoCommand* parent = nullptr);
+                                                                        const qreal& oldWidth,
+                                                                        const qreal& newWidth);
 	virtual DACommandsForGraphicsItemResizeHeight* createItemResizeHeight(DAGraphicsResizeableItem* item,
-																		  const qreal& oldHeight,
-																		  const qreal& newHeight,
-																		  QUndoCommand* parent = nullptr);
+                                                                          const qreal& oldHeight,
+                                                                          const qreal& newHeight);
 	virtual DACommandsForGraphicsItemRotation* createItemRotation(DAGraphicsResizeableItem* item,
-																  const qreal& oldRotation,
-																  const qreal& newRotation,
-																  QUndoCommand* parent = nullptr);
+                                                                  const qreal& oldRotation,
+                                                                  const qreal& newRotation);
+    virtual DACommandsForGraphicsItemGrouping* createItemGrouping(const QList< QGraphicsItem* >& groupingitems);
+    virtual DACommandsForGraphicsItemUngrouping* createItemUngrouping(QGraphicsItemGroup* group);
 
 protected:
 	void setScene(DAGraphicsScene* s);
