@@ -1,8 +1,31 @@
 ﻿#include "DAGraphicsCommandsFactory.h"
 #include "DAGraphicsScene.h"
+#include <QGraphicsSceneMouseEvent>
 namespace DA
 {
-DAGraphicsCommandsFactory::DAGraphicsCommandsFactory()
+
+class DAGraphicsCommandsFactory::PrivateData
+{
+public:
+    DA_DECLARE_PUBLIC(DAGraphicsCommandsFactory)
+public:
+    PrivateData(DAGraphicsCommandsFactory* p);
+    DAGraphicsScene* scene { nullptr };
+    QPointF sceneMousePressPos;    ///< 鼠标按下的场景位置
+    QPointF sceneMouseReleasePos;  ///< 鼠标释放的场景位置
+    QList< QGraphicsItem* > movingItems;
+    QList< QPointF > startsPos;
+    QList< QPointF > endsPos;
+};
+
+DAGraphicsCommandsFactory::PrivateData::PrivateData(DAGraphicsCommandsFactory* p) : q_ptr(p)
+{
+}
+
+//----------------------------------------------------
+// DAGraphicsCommandsFactory
+//----------------------------------------------------
+DAGraphicsCommandsFactory::DAGraphicsCommandsFactory() : DA_PIMPL_CONSTRUCT
 {
 }
 
@@ -52,6 +75,32 @@ DACommandsForGraphicsItemsMoved* DAGraphicsCommandsFactory::createItemsMoved(con
                                                                              bool skipfirst)
 {
     return new DACommandsForGraphicsItemsMoved(items, starts, ends, skipfirst);
+}
+
+/**
+ * @brief 针对鼠标移动的移动命令
+ * @param mouseReleaseEEvent
+ * @return
+ * @note 注意，此函数会返回nullptr，代表没有需要推入的命令
+ */
+DACommandsForGraphicsItemsMoved* DAGraphicsCommandsFactory::createItemsMoved(QGraphicsSceneMouseEvent* mouseReleaseEEvent)
+{
+    // 这里先获取释放时的位置
+    if (!mouseReleaseEEvent) {
+        return nullptr;
+    }
+    DA_D(d);
+    QPointF releasePos = mouseReleaseEEvent->scenePos();
+    if (qFuzzyCompare(releasePos.x(), d->sceneMousePressPos.x())
+        && qFuzzyCompare(releasePos.y(), d->sceneMousePressPos.y())) {
+        // 位置相等，不做处理
+        return nullptr;
+    }
+    QList< QPointF > endsPos;
+    for (QGraphicsItem* i : qAsConst(d->movingItems)) {
+        endsPos.append(i->pos());
+    }
+    return createItemsMoved(d->movingItems, d->startsPos, d->endsPos, true);
 }
 
 DACommandsForGraphicsItemsMoved_Merge* DAGraphicsCommandsFactory::createItemsMoved_Merge(const QList< QGraphicsItem* >& items,
@@ -110,13 +159,46 @@ DACommandsForGraphicsItemUngrouping* DAGraphicsCommandsFactory::createItemUngrou
     return new DACommandsForGraphicsItemUngrouping(scene(), group);
 }
 
+void DAGraphicsCommandsFactory::sceneMousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
+{
+    if (!mouseEvent) {
+        return;
+    }
+    if (mouseEvent->buttons().testFlag(Qt::LeftButton)) {
+        DA_D(d);
+        d->movingItems.clear();
+        d->startsPos.clear();
+        d->endsPos.clear();
+
+        d->sceneMousePressPos        = mouseEvent->scenePos();
+        QList< QGraphicsItem* > mits = d->scene->getSelectedMovableItems();
+        for (QGraphicsItem* its : qAsConst(mits)) {
+            d->movingItems.append(its);
+            d->startsPos.append(its->pos());
+        }
+    }
+}
+
+void DAGraphicsCommandsFactory::sceneMouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
+{
+    Q_UNUSED(mouseEvent);
+}
+
+void DAGraphicsCommandsFactory::sceneMouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
+{
+    if (mouseEvent) {
+        d_ptr->sceneMouseReleasePos = mouseEvent->scenePos();
+    }
+}
+
 void DAGraphicsCommandsFactory::setScene(DAGraphicsScene* s)
 {
-    mScene = s;
+    d_ptr->scene = s;
 }
 
 DAGraphicsScene* DAGraphicsCommandsFactory::scene() const
 {
-    return mScene;
+    return d_ptr->scene;
 }
+
 }  // end DA

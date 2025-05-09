@@ -197,6 +197,21 @@ int DACommandsForGraphicsItemsMoved::id() const
 	return CmdID_ItemsMove;
 }
 
+const QList< QGraphicsItem* >& DACommandsForGraphicsItemsMoved::getItems() const
+{
+    return mItems;
+}
+
+const QList< QPointF >& DACommandsForGraphicsItemsMoved::getStartsPos() const
+{
+    return mStartsPos;
+}
+
+const QList< QPointF >& DACommandsForGraphicsItemsMoved::getEndsPos() const
+{
+    return mEndsPos;
+}
+
 //==============================================================
 // DACommandsForGraphicsItemsMoved_Merge
 //==============================================================
@@ -216,8 +231,7 @@ int DACommandsForGraphicsItemsMoved_Merge::id() const
 
 bool DACommandsForGraphicsItemsMoved_Merge::mergeWith(const QUndoCommand* command)
 {
-	const DACommandsForGraphicsItemsMoved_Merge* other =
-		dynamic_cast< const DACommandsForGraphicsItemsMoved_Merge* >(command);
+    const DACommandsForGraphicsItemsMoved_Merge* other = dynamic_cast< const DACommandsForGraphicsItemsMoved_Merge* >(command);
 	if (nullptr == other) {
 		return false;
 	}
@@ -462,8 +476,7 @@ int DACommandsForGraphicsItemResizeHeight::id() const
 
 bool DACommandsForGraphicsItemResizeHeight::mergeWith(const QUndoCommand* command)
 {
-	const DACommandsForGraphicsItemResizeHeight* other =
-		dynamic_cast< const DACommandsForGraphicsItemResizeHeight* >(command);
+    const DACommandsForGraphicsItemResizeHeight* other = dynamic_cast< const DACommandsForGraphicsItemResizeHeight* >(command);
 	if (nullptr == other) {
 		return false;
 	}

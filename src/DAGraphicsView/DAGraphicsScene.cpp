@@ -49,7 +49,6 @@ public:
 
 public:
 	QUndoStack mUndoStack;
-	bool mIsMovingItems { false };  /// 正在进行item的移动
 	QPointF mLastMouseScenePos;
 	QPointF mLastMousePressScenePos;                  ///< 记录点击时的位置
 	_DAGraphicsSceneItemMoveingInfos mMovingInfos;    ///< 记录移动的信息
@@ -200,15 +199,6 @@ void DAGraphicsScene::init()
 
 DAGraphicsScene::~DAGraphicsScene()
 {
-}
-
-/**
- * @brief 判断是否正在移动item
- * @return
- */
-bool DAGraphicsScene::isMovingItems() const
-{
-    return d_ptr->mIsMovingItems;
 }
 
 /**
@@ -1129,14 +1119,12 @@ void DAGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		//!  1.记录选中的所有图元，如果点击的是改变尺寸的点，这个就不执行记录
 		QGraphicsItem* positem = itemAt(d_ptr->mLastMousePressScenePos, QTransform());
 		if (!isItemCanMove(positem, d_ptr->mLastMousePressScenePos)) {
-			d_ptr->mIsMovingItems = false;
 			return;
 		}
 		// 说明这个是移动
 		// 获取选中的可移动单元
 		QList< QGraphicsItem* > mits = getSelectedMovableItems();
 		if (mits.isEmpty()) {
-			d_ptr->mIsMovingItems = false;
 			return;
 		}
 		// todo.如果点击的是链接和control point，不属于移动
@@ -1146,18 +1134,13 @@ void DAGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 				if (DAGraphicsResizeableItem::NotUnderAnyControlType
                     != ri->getControlPointByPos(ri->mapFromScene(mouseEvent->scenePos()))) {
 					// 说明点击在了控制点上，需要跳过
-					d_ptr->mIsMovingItems = false;
 					return;
 				}
 			}
 		}
-		d_ptr->mIsMovingItems = true;
 		//
-		d_ptr->mMovingInfos.clear();
-		for (QGraphicsItem* its : qAsConst(mits)) {
-			d_ptr->mMovingInfos.appendStartPos(its);
-		}
 	}
+    commandsFactory()->sceneMousePressEvent(mouseEvent);
 }
 
 void DAGraphicsScene::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
@@ -1183,6 +1166,7 @@ void DAGraphicsScene::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
 			}
 		}
 	}
+    commandsFactory()->sceneMouseMoveEvent(mouseEvent);
 	QGraphicsScene::mouseMoveEvent(mouseEvent);
 }
 
@@ -1197,25 +1181,12 @@ void DAGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		}
 	}
 	QGraphicsScene::mouseReleaseEvent(mouseEvent);
-	if (d->mIsMovingItems) {
-		d->mIsMovingItems  = false;
-		QPointF releasePos = mouseEvent->scenePos();
-		if (qFuzzyCompare(releasePos.x(), d->mLastMousePressScenePos.x())
-            && qFuzzyCompare(releasePos.y(), d->mLastMousePressScenePos.y())) {
-			// 位置相等，不做处理
-			return;
-		}
-		// 位置不等，属于正常移动
-		d->mMovingInfos.updateEndPos();
-        DACommandsForGraphicsItemsMoved* cmd = commandsFactory()->createItemsMoved(d->mMovingInfos.items,
-                                                                                   d->mMovingInfos.startsPos,
-                                                                                   d->mMovingInfos.endsPos,
-                                                                                   true);
+    commandsFactory()->sceneMouseReleaseEvent(mouseEvent);
+    if (auto cmd = commandsFactory()->createItemsMoved(mouseEvent)) {
 		push(cmd);
 		// 位置改变信号
-		//         qDebug() << "emit itemsPositionChanged";
 		// 如果 移动 过程 鼠标移出scene在释放，可能无法捕获
-		emit itemsPositionChanged(d->mMovingInfos.items, d->mMovingInfos.startsPos, d->mMovingInfos.endsPos);
+        emit itemsPositionChanged(cmd->getItems(), cmd->getStartsPos(), cmd->getEndsPos());
 	}
 }
 
