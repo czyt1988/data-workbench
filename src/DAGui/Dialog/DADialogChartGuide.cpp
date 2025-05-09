@@ -8,7 +8,8 @@
 #include "DAChartAddCurveWidget.h"
 #include "DAChartAddBarWidget.h"
 #include "DAChartAddIntervalCurveWidget.h"
-#include "DAChartAddOHLCSeriesWidget.h"
+#include "DAChartAddTradingCurveWidget.h"
+
 #include "DAChartAddSpectrogramWidget.h"
 #include "DAChartUtil.h"
 // qwt
@@ -24,10 +25,10 @@ class DADialogChartGuide::PrivateData
 	DA_DECLARE_PUBLIC(DADialogChartGuide)
 public:
 	PrivateData(DADialogChartGuide* p);
-	DAChartAddCurveWidget* mAddCurve{ nullptr };
-	DAChartAddBarWidget* mAddBar{ nullptr };
-	DAChartAddIntervalCurveWidget* mAddIntervalCurve{ nullptr };
-	DAChartAddOHLCSeriesWidget* mOHLCSeries{ nullptr };
+	DAChartAddCurveWidget* mAddCurve { nullptr };
+	DAChartAddBarWidget* mAddBar { nullptr };
+	DAChartAddIntervalCurveWidget* mAddIntervalCurve { nullptr };
+    DAChartAddTradingCurveWidget* mAddTradingCurve { nullptr };
 	DAChartAddSpectrogramWidget* mAddSpectroGram{ nullptr };
 };
 
@@ -47,12 +48,12 @@ DADialogChartGuide::DADialogChartGuide(QWidget* parent)
 	d->mAddCurve         = new DAChartAddCurveWidget();
 	d->mAddBar           = new DAChartAddBarWidget();
 	d->mAddIntervalCurve = new DAChartAddIntervalCurveWidget();
-	d->mOHLCSeries       = new DAChartAddOHLCSeriesWidget();
+    d->mAddTradingCurve  = new DAChartAddTradingCurveWidget();
 	d->mAddSpectroGram   = new DAChartAddSpectrogramWidget();
 	ui->stackedWidget->addWidget(d->mAddCurve);
 	ui->stackedWidget->addWidget(d->mAddBar);
 	ui->stackedWidget->addWidget(d->mAddIntervalCurve);
-	ui->stackedWidget->addWidget(d->mOHLCSeries);
+    ui->stackedWidget->addWidget(d->mAddTradingCurve);
 	ui->stackedWidget->addWidget(d->mAddSpectroGram);
 	connect(ui->listWidgetChartType, &QListWidget::currentItemChanged, this, &DADialogChartGuide::onListWidgetCurrentItemChanged);
 }
@@ -229,7 +230,7 @@ void DADialogChartGuide::onListWidgetCurrentItemChanged(QListWidgetItem* current
 		break;
 		break;
 	case DA::ChartTypes::Box:
-		ui->stackedWidget->setCurrentWidget(d->mOHLCSeries);
+        ui->stackedWidget->setCurrentWidget(d->mAddTradingCurve);
 		break;
 		break;
 	case DA::ChartTypes::Spectrogram:

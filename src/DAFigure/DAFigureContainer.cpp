@@ -12,7 +12,9 @@
 
 namespace DA
 {
-
+//===============================================================
+// DAFigureContainer::WidgetSizeData
+//===============================================================
 /**
  * @brief 用来保存尺寸数据
  */
@@ -39,18 +41,26 @@ bool DAFigureContainer::WidgetSizeData::isValid() const
 	return sizeData.isValid();
 }
 
+//===============================================================
+// DAFigureContainer::PrivateData
+//===============================================================
+
 class DAFigureContainer::PrivateData
 {
 	DA_DECLARE_PUBLIC(DAFigureContainer)
 public:
+	// 使用using替代部分冗长类型
+	using WidgetMap = QMap< QWidget*, DAFigureContainer::WidgetSizeData >;
 	// TODO ,这里需要定义一个类，这个类包含QRectF，和是否是相对位置或绝对位置
-	QMap< QWidget*, DAFigureContainer::WidgetSizeData > mWidgetSizeData;
-	bool mIsResetWidgetPos { false };
-	PrivateData(DAFigureContainer* p) : q_ptr(p)
+	WidgetMap managedWidgets;
+	bool isUpdatingLayout { false };
+	explicit PrivateData(DAFigureContainer* p) : q_ptr(p)
 	{
 	}
 };
-
+//===============================================================
+// DAFigureContainer
+//===============================================================
 DAFigureContainer::DAFigureContainer(QWidget* parent) : QWidget(parent), DA_PIMPL_CONSTRUCT
 {
 }
@@ -73,7 +83,7 @@ void DAFigureContainer::addWidget(QWidget* widget, const QRectF& posPercent)
 	QRect widgetSize = calcWidgetSize(posPercent);
 	widget->setGeometry(widgetSize);
 	DAFigureContainer::WidgetSizeData sd(posPercent, true);
-	d_ptr->mWidgetSizeData.insert(widget, sd);
+	d_ptr->managedWidgets.insert(widget, sd);
 	widget->installEventFilter(this);
 	// qDebug() << "DAFigureContainer::addWidget,Widget setGeometry=" << widgetSize << ",DAFigureContainer rect=" << rect();
 }
@@ -93,7 +103,7 @@ void DAFigureContainer::addWidget(QWidget* widget, float xPercent, float yPercen
  */
 void DAFigureContainer::removeWidget(QWidget* widget)
 {
-	d_ptr->mWidgetSizeData.remove(widget);
+	d_ptr->managedWidgets.remove(widget);
 	if (widget->parent() == this) {
 		widget->setParent(nullptr);
 	}
@@ -105,7 +115,7 @@ void DAFigureContainer::removeWidget(QWidget* widget)
  */
 QList< QWidget* > DAFigureContainer::getWidgetList() const
 {
-    return d_ptr->mWidgetSizeData.keys();
+    return d_ptr->managedWidgets.keys();
 }
 
 /**
@@ -133,7 +143,7 @@ QList< QWidget* > DAFigureContainer::getOrderedWidgetList() const
  */
 QRectF DAFigureContainer::getWidgetPosPercent(QWidget* w) const
 {
-	WidgetSizeData sd = d_ptr->mWidgetSizeData.value(w, WidgetSizeData());
+	WidgetSizeData sd = d_ptr->managedWidgets.value(w, WidgetSizeData());
 	if (!sd.isValid()) {
 		return QRectF();
 	}
@@ -156,7 +166,7 @@ void DAFigureContainer::setWidgetPosPercent(QWidget* w, const QRectF& posPercent
 	}
 	QRect g = calcWidgetRectByPercent(posPercent);
 	w->setGeometry(g);
-	d_ptr->mWidgetSizeData[ w ] = WidgetSizeData(posPercent, true);
+	d_ptr->managedWidgets[ w ] = WidgetSizeData(posPercent, true);
 }
 
 /**
@@ -184,6 +194,17 @@ void DAFigureContainer::setWidgetPosPercent(QWidget* w, float xPercent, float yP
 bool DAFigureContainer::isWidgetInContainer(const QWidget* w) const
 {
     return (w->parentWidget() == this);
+}
+
+/**
+ * @brief 判断是否是相对位置，相对位置尺寸是比例
+ * @param w
+ * @return
+ */
+bool DAFigureContainer::isWidgetRelativePos(QWidget* w) const
+{
+	WidgetSizeData sd = d_ptr->managedWidgets.value(w, WidgetSizeData());
+	return sd.isRelativePos;
 }
 
 /**
@@ -287,7 +308,7 @@ qreal DAFigureContainer::castRealByPrecision(qreal v, int precision)
  */
 void DAFigureContainer::beginResetSubWidget()
 {
-    d_ptr->mIsResetWidgetPos = true;
+    d_ptr->isUpdatingLayout = true;
 }
 
 /**
@@ -295,7 +316,7 @@ void DAFigureContainer::beginResetSubWidget()
  */
 void DAFigureContainer::endResetSubWidget()
 {
-    d_ptr->mIsResetWidgetPos = false;
+    d_ptr->isUpdatingLayout = false;
 }
 
 /**
@@ -314,7 +335,7 @@ QWidget* DAFigureContainer::getWidgetUnderPos(const QPoint& p, bool zorder)
 			}
 		}
 	} else {
-		for (auto i = d_ptr->mWidgetSizeData.begin(); i != d_ptr->mWidgetSizeData.end(); ++i) {
+		for (auto i = d_ptr->managedWidgets.begin(); i != d_ptr->managedWidgets.end(); ++i) {
 			if (i.key()->geometry().contains(p)) {
 				return i.key();
 			}
@@ -337,7 +358,7 @@ bool DAFigureContainer::event(QEvent* e)
 			QObject* obj    = ce->child();
 			if (obj && obj->isWidgetType()) {
 				QWidget* w = qobject_cast< QWidget* >(obj);
-				d_ptr->mWidgetSizeData.remove(w);
+				d_ptr->managedWidgets.remove(w);
 			}
 		}
 	}
@@ -362,13 +383,13 @@ bool DAFigureContainer::eventFilter(QObject* watched, QEvent* e)
 	if (nullptr == e) {
 		return (QWidget::eventFilter(watched, e));
 	}
-	if (d_ptr->mIsResetWidgetPos) {
+	if (d_ptr->isUpdatingLayout) {
 		if (QEvent::Resize == e->type()) {
 			if (watched && watched->isWidgetType()) {
 				QWidget* w = qobject_cast< QWidget* >(watched);
 				if (w && isWidgetInContainer(w)) {
 					QResizeEvent* re = static_cast< QResizeEvent* >(e);
-					auto& data       = d_ptr->mWidgetSizeData[ w ];
+					auto& data       = d_ptr->managedWidgets[ w ];
 					if (data.isRelativePos) {
 						data.sizeData.setWidth(
 							castRealByPrecision(re->size().width() / (double)width(), DAFIGURECONTAINER_PRECISION));
@@ -386,7 +407,7 @@ bool DAFigureContainer::eventFilter(QObject* watched, QEvent* e)
 				QWidget* w = qobject_cast< QWidget* >(watched);
 				if (w && isWidgetInContainer(w)) {
 					QMoveEvent* me = static_cast< QMoveEvent* >(e);
-					auto& data     = d_ptr->mWidgetSizeData[ w ];
+					auto& data     = d_ptr->managedWidgets[ w ];
 					if (data.isRelativePos) {
 						data.sizeData.setX(castRealByPrecision(me->pos().x() / (double)width(), DAFIGURECONTAINER_PRECISION));
 						data.sizeData.setY(
@@ -407,11 +428,15 @@ bool DAFigureContainer::eventFilter(QObject* watched, QEvent* e)
 void DAFigureContainer::resetSubWidgetGeometry()
 {
 	QRect subWidgetSize;
-	for (auto i = d_ptr->mWidgetSizeData.begin(); i != (d_ptr->mWidgetSizeData.end()); ++i) {
+	for (auto i = d_ptr->managedWidgets.begin(); i != (d_ptr->managedWidgets.end()); ++i) {
 		if (i.value().isRelativePos) {
 			subWidgetSize = calcWidgetRectByPercent(i.value().sizeData);
 			QWidget* w    = i.key();
 			w->setGeometry(subWidgetSize);
+		} else {
+			// 不是相对位置，是绝对位置
+			QWidget* w = i.key();
+			w->setGeometry(i.value().sizeData.toRect());
 		}
 	}
 }

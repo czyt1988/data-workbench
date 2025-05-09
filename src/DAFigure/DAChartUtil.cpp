@@ -1139,6 +1139,13 @@ bool DAChartUtil::setPlotItemColor(QwtPlotItem* item, const QColor& color)
 			return true;
 		}
 		break;
+    case QwtPlotItem::Rtti_PlotTradingCurve:
+        if (QwtPlotTradingCurve* p = static_cast< QwtPlotTradingCurve* >(item)) {
+            p->setSymbolPen(QPen(color));
+            p->setSymbolBrush(QwtPlotTradingCurve::Increasing, QBrush(color));
+            p->setSymbolBrush(QwtPlotTradingCurve::Decreasing, QBrush(color));
+            return true;
+        }
 	case QwtPlotItem::Rtti_PlotGrid:
 		if (QwtPlotGrid* grid = static_cast< QwtPlotGrid* >(item)) {
 			QPen pen = grid->majorPen();

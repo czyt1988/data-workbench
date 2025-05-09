@@ -65,6 +65,8 @@ damacro_import_QtAdvancedDocking(${DA_LIB_NAME})
 if(DA_ENABLE_PYTHON)
     # -------------link python--------------------------
     damacro_import_Python(${DA_LIB_NAME})
+    # -------------link 3rdparty pybind11--------------------------
+    damacro_import_pybind11(${DA_LIB_NAME})
 endif()
 
 ########################################################

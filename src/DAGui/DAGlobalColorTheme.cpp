@@ -1,13 +1,13 @@
 ﻿#include "DAGlobalColorTheme.h"
 namespace DA
 {
-DAGlobalColorTheme::DAGlobalColorTheme(DAColorTheme::ColorTheme t) : QObject(nullptr), mTheme(t)
+DAGlobalColorTheme::DAGlobalColorTheme(DAColorTheme::ColorThemeStyle t) : QObject(nullptr), mTheme(t)
 {
 }
 
 DAGlobalColorTheme& DAGlobalColorTheme::getInstance()
 {
-	static DAGlobalColorTheme s_value(DAColorTheme::ColorTheme_Archambault);
+	static DAGlobalColorTheme s_value(DAColorTheme::Style_Archambault);
 	return s_value;
 }
 

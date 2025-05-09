@@ -40,6 +40,7 @@ public:
 	void removeChart(DAChartWidget* chart);
 	// 添加一个已有的chart
 	void addChart(DAChartWidget* chart, float xPresent, float yPresent, float wPresent, float hPresent);
+	void addChart(DAChartWidget* chart, const QRectF& present);
 	// 获取所有的图表(注意次获取没有顺序)
 	QList< DAChartWidget* > getCharts() const;
 	// 获取所有的图表安装显示顺序,这个顺序是在窗口显示最顶层的排位最前
@@ -73,10 +74,10 @@ public:
 	// 获取默认的绘图颜色
 	virtual QColor getDefaultColor() const;
 	// 设置颜色主题
-	void setFigureColorTheme(const DAColorTheme& th);
-	DAColorTheme getFigureColorTheme() const;
-	const DAColorTheme& figureColorTheme() const;
-	DAColorTheme& figureColorTheme();
+	void setColorTheme(const DAColorTheme& th);
+	DAColorTheme getColorTheme() const;
+	const DAColorTheme& colorTheme() const;
+	DAColorTheme& colorTheme();
 
 public:
 	// 绘图相关
@@ -87,8 +88,8 @@ public:
 	// 支持redo/undo的addCurve，等同于gca()->addCurve
 	QwtPlotCurve* addCurve_(const QVector< QPointF >& xyDatas);
 	QwtPlotCurve* addScatter_(const QVector< QPointF >& xyDatas);
-    // 添加柱状图
-    QwtPlotBarChart* addBar_(const QVector< QPointF >& xyDatas);
+	// 添加柱状图
+	QwtPlotBarChart* addBar_(const QVector< QPointF >& xyDatas);
 	QwtPlotIntervalCurve* addErrorBar_(const QVector< QwtIntervalSample >& xyDatas);
 
 public:
