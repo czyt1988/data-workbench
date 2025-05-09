@@ -37,7 +37,7 @@ private slots:
 	void onCurrentDataChanged(const DAData& d);
 
 protected:
-	bool getToVectorPointFFromUI(QwtGridRasterData* res);
+	bool getToVectorPointFFromUI(QwtGridRasterData& res);
 
 private:
 	Ui::DAChartAddtGridRasterDataWidget* ui;

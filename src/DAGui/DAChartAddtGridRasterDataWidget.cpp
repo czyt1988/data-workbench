@@ -1,6 +1,8 @@
 #include "DAChartAddtGridRasterDataWidget.h"
 #include "ui_DAChartAddtGridRasterDataWidget.h"
 #include <QMessageBox>
+#include <qwt_interval.h>
+#include <qwt_matrix_raster_data.h>
 #include "DADataManager.h"
 #if DA_ENABLE_PYTHON
 #include "Models/DAPySeriesTableModule.h"
@@ -59,11 +61,8 @@ DAChartAddtGridRasterDataWidget::~DAChartAddtGridRasterDataWidget()
 QwtGridRasterData* DAChartAddtGridRasterDataWidget::getSeries() const
 {
 	DAChartAddtGridRasterDataWidget* that = const_cast< DAChartAddtGridRasterDataWidget* >(this);
-	QwtGridRasterData* raster = new QwtGridRasterData(); // 创建新实例
-	if (!that->getToVectorPointFFromUI(raster)) {
-		delete raster; // 如果获取数据失败，释放资源
-		return nullptr;
-	}
+	QwtGridRasterData* raster             = new QwtGridRasterData();
+	that->getToVectorPointFFromUI(*raster);
 	return raster;
 }
 
@@ -150,33 +149,64 @@ void DAChartAddtGridRasterDataWidget::onCurrentDataChanged(const DAData& d)
  * @return
  * @note 注意此函数失败会有警告对话框
  */
-bool DAChartAddtGridRasterDataWidget::getToVectorPointFFromUI(QwtGridRasterData* res)
+bool DAChartAddtGridRasterDataWidget::getToVectorPointFFromUI(QwtGridRasterData& res)
 {
 #if DA_ENABLE_PYTHON
-	// 验证参数
-	if (res == nullptr) {
-		qCritical() << tr("QwtGridRasterData pointer is nullptr"); // cn:QwtGridRasterData指针为空
-		return false;
-	}
-
 	try {
-		// 硬编码数据作为测试 - 确保格式和维度匹配
-		QVector< double > xAxis = { 0, 12.8, 25.6 };
-		QVector< double > yAxis = { 0, 0.0390625, 0.078125 };
-		QVector< QVector< double > > matrix = { 
-			{ 92.3322, 90.3358, 93.1646 },
-			{ 95.8303, 97.5136, 108.795 },
-			{ 70.7386, 97.5136, 109.925 }  
-		};
-		
-		// 设置数据到栅格对象
-		res->setValue(xAxis, yAxis, matrix);
+		// 确保数据维度匹配
+		QVector< double > data1            = { 0, 12.8, 25.6 };
+		QVector< double > data2            = { 0, 0.0390625, 0.078125 };
+		QVector< QVector< double > > data3 = { { 92.3322, 90.3358, 93.1646 },
+											   { 95.8303, 97.5136, 108.795 },
+											   { 70.7386, 97.5136, 109.925 } };
+
+		// 验证数据维度
+		if (data1.size() != data3.size() || data2.size() != data3[ 0 ].size()) {
+			QMessageBox::warning(this, tr("Warning"), tr("Data dimensions do not match"));
+			return false;
+		}
+
+		// 将二维数据转换为一维数组
+		QVector< double > values;
+		values.reserve(data3.size() * data3[ 0 ].size());
+		for (const auto& row : data3) {
+			values.append(row);
+		}
+
+		// 创建 QwtMatrixRasterData 对象
+		QwtMatrixRasterData* matrixData = new QwtMatrixRasterData();
+		matrixData->setValueMatrix(values, data2.size());
+		matrixData->setResampleMode(QwtMatrixRasterData::BilinearInterpolation);
+
+		// 设置区间
+		QwtInterval xInterval(data1.first(), data1.last());
+		QwtInterval yInterval(data2.first(), data2.last());
+
+		// 计算Z轴区间
+		double minZ = std::numeric_limits< double >::max();
+		double maxZ = std::numeric_limits< double >::lowest();
+		for (const auto& row : data3) {
+			for (double val : row) {
+				minZ = std::min(minZ, val);
+				maxZ = std::max(maxZ, val);
+			}
+		}
+		QwtInterval zInterval(minZ, maxZ);
+
+		matrixData->setInterval(Qt::XAxis, xInterval);
+		matrixData->setInterval(Qt::YAxis, yInterval);
+		matrixData->setInterval(Qt::ZAxis, zInterval);
+
+		// 设置数据
+		res.setValue(data1, data2, data3);
+
 		return true;
 	} catch (const std::exception& e) {
-		qCritical() << tr("Exception occurred: %1").arg(e.what());
+		QMessageBox::critical(this, tr("Error"), tr("Failed to set data: %1").arg(e.what()));
 		return false;
 	}
+#else
+	return false;
 #endif
-	return true;
 }
 }
