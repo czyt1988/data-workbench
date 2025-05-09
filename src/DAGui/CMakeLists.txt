@@ -33,8 +33,14 @@ set(DA_LIB_HEADER_FILES
     DAAbstractChartAddItemWidget.h
     DAAbstractOperateWidget.h
     DAChartAddXYSeriesWidget.h
+    DAChartAddXYESeriesWidget.h
+    DAChartAddOHLCSeriesWidget.h
+    DAChartAddtGridRasterDataWidget.h
     DAChartAddCurveWidget.h
     DAChartAddBarWidget.h
+    DAChartAddIntervalCurveWidget.h
+    DAChartAddTradingCurveWidget.h
+    DAChartAddSpectrogramWidget.h
     DADataManagerComboBox.h
     DADataOperatePageWidget.h
     DAFigureFactory.h
@@ -49,6 +55,7 @@ set(DA_LIB_HEADER_FILES
     DADataManageTableView.h
     DADataManageWidget.h
     DADataOperateWidget.h
+    DAGuiEnumStringUtils.h
     DAMessageLogViewWidget.h
     DANodeItemSettingWidget.h
     DANodeLinkItemSettingWidget.h
@@ -77,8 +84,14 @@ set(DA_LIB_SOURCE_FILES
     DAAbstractChartAddItemWidget.cpp
     DAAbstractOperateWidget.cpp
     DAChartAddXYSeriesWidget.cpp
+    DAChartAddXYESeriesWidget.cpp
+    DAChartAddOHLCSeriesWidget.cpp
+    DAChartAddtGridRasterDataWidget.cpp
     DAChartAddCurveWidget.cpp
     DAChartAddBarWidget.cpp
+    DAChartAddIntervalCurveWidget.cpp
+    DAChartAddSpectrogramWidget.cpp
+    DAChartAddTradingCurveWidget.cpp
     DAChartListView.cpp
     DAChartManageWidget.cpp
     DAChartOperateWidget.cpp
@@ -92,6 +105,7 @@ set(DA_LIB_SOURCE_FILES
     DAFigureFactory.cpp
     DAGraphicsPixmapItemSettingWidget.cpp
     DAGlobalColorTheme.cpp
+    DAGuiEnumStringUtils.cpp
     DAMessageLogViewWidget.cpp
     DANodeItemSettingWidget.cpp
     DANodeLinkItemSettingWidget.cpp
@@ -118,8 +132,9 @@ set(DA_LIB_SOURCE_FILES
 )
 set(DA_LIB_QT_UI_FILES
     DAChartAddXYSeriesWidget.ui
-    DAChartAddCurveWidget.ui
-    DAChartAddBarWidget.ui
+    DAChartAddXYESeriesWidget.ui
+    DAChartAddOHLCSeriesWidget.ui
+    DAChartAddtGridRasterDataWidget.ui
     DAChartManageWidget.ui
     DAChartOperateWidget.ui
     DAChartSettingWidget.ui
@@ -365,17 +380,23 @@ target_link_libraries(${DA_LIB_NAME} PUBLIC
 
 if(DA_ENABLE_PYTHON)
     find_package(${DA_PROJECT_NAME} COMPONENTS
+        DAPyBindQt
+        DAPyScripts
         DAPyCommonWidgets
     )
     if(${DA_PROJECT_NAME}_FOUND)
         message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAPyCommonWidgets")
     endif()
     target_link_libraries(${DA_LIB_NAME} PUBLIC
+        ${DA_PROJECT_NAME}::DAPyBindQt
+        ${DA_PROJECT_NAME}::DAPyScripts
         ${DA_PROJECT_NAME}::DAPyCommonWidgets
     )
 
     # -------------link python--------------------------
     damacro_import_Python(${DA_LIB_NAME})
+    # -------------link 3rdparty pybind11--------------------------
+    damacro_import_pybind11(${DA_LIB_NAME})
 endif()
 
 # -------------link SARibbon--------------------------

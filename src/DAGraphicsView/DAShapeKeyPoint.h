@@ -18,6 +18,17 @@ namespace DA
 class DAGRAPHICSVIEW_API DAShapeKeyPoint
 {
 public:
+	/**
+	 * @brief 定义一个形状的9个关键位置点
+	 * 	 * @details
+	 * 	 * ```
+	 * 1---2---3
+	 * |       |
+	 * 4---5---6
+	 * |       |
+	 * 7---8---9
+	 * ```
+	 */
 	enum KeyPoint
 	{
 		TopLeft = 0,
@@ -49,9 +60,5 @@ public:
 private:
 	KeyPoint mKeyPoint { KeyPoint::None };
 };
-// ShapeKeyPoint 的枚举转换
-DAGRAPHICSVIEW_API QString enumToString(DAShapeKeyPoint e);
-// ShapeKeyPoint 的枚举转换
-DAGRAPHICSVIEW_API DAShapeKeyPoint stringToEnum(const QString& s, DAShapeKeyPoint defaultEnum = DAShapeKeyPoint::Center);
 }  // end DA
 #endif  // DASHAPEKEYPOINT_H

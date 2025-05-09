@@ -12,12 +12,17 @@ public:
 	//
 	// 频谱分析da_spectrum_analysis
 	DA::DAPyDataFrame spectrum_analysis(const DA::DAPySeries& wave, double fs, const QVariantMap& args, QString* err = nullptr);
+
 	// 滤波da_butterworth_filter
-	DA::DAPyDataFrame butterworth_filter(const DA::DAPySeries& wave,
-										 double fs,
-										 int fo,
-										 const QVariantMap& args,
-										 QString* err = nullptr);
+	DA::DAPyDataFrame
+	butterworth_filter(const DA::DAPySeries& wave, double fs, int fo, const QVariantMap& args, QString* err = nullptr);
+
+	//峰值分析da_peak_analysis
+	DA::DAPyDataFrame peak_analysis(const DA::DAPySeries& wave, double fs, const QVariantMap& args, QString* err = nullptr);
+
+	// 短时傅里叶变换da_stft_analysis
+	DA::DAPyDataFrame stft_analysis(const DA::DAPySeries& wave, double fs, const QVariantMap& args, QString* err = nullptr);
+
 	//
 	DA::DAPyScriptsDataProcess& dataProcessModule();
 };

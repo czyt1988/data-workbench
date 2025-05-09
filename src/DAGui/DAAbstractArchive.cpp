@@ -16,11 +16,11 @@ class DAAbstractArchive::PrivateData
 	DA_DECLARE_PUBLIC(DAAbstractArchive)
 public:
 	PrivateData(DAAbstractArchive* p);
-    std::shared_ptr< DAAbstractArchiveTask > takeTask();
+	std::shared_ptr< DAAbstractArchiveTask > takeTask();
 
 public:
 	QString mBaseFilePath;
-    std::deque< std::shared_ptr< DAAbstractArchiveTask > > mTaskQueue;
+	std::deque< std::shared_ptr< DAAbstractArchiveTask > > mTaskQueue;
 };
 
 DAAbstractArchive::PrivateData::PrivateData(DAAbstractArchive* p) : q_ptr(p)
@@ -29,9 +29,9 @@ DAAbstractArchive::PrivateData::PrivateData(DAAbstractArchive* p) : q_ptr(p)
 
 std::shared_ptr< DAAbstractArchiveTask > DAAbstractArchive::PrivateData::takeTask()
 {
-    std::shared_ptr< DAAbstractArchiveTask > t = mTaskQueue.front();
-    mTaskQueue.pop_front();
-    return t;
+	std::shared_ptr< DAAbstractArchiveTask > t = mTaskQueue.front();
+	mTaskQueue.pop_front();
+	return t;
 }
 
 //===============================================================
@@ -45,24 +45,25 @@ DAAbstractArchive::~DAAbstractArchive()
 {
 }
 
-void DAAbstractArchive::setBaseFilePath(const QString& path)
+bool DAAbstractArchive::setBaseFilePath(const QString& path)
 {
 	d_ptr->mBaseFilePath = path;
+	return true;
 }
 
 QString DAAbstractArchive::getBaseFilePath() const
 {
-    return d_ptr->mBaseFilePath;
+	return d_ptr->mBaseFilePath;
 }
 
 void DAAbstractArchive::appendTask(const std::shared_ptr< DAAbstractArchiveTask >& task)
 {
-    d_ptr->mTaskQueue.emplace_back(task);
+	d_ptr->mTaskQueue.emplace_back(task);
 }
 
 int DAAbstractArchive::getTaskCount() const
 {
-    return static_cast< int >(d_ptr->mTaskQueue.size());
+	return static_cast< int >(d_ptr->mTaskQueue.size());
 }
 
 bool DAAbstractArchive::isTaskQueueEmpty() const
@@ -85,18 +86,18 @@ std::shared_ptr< DAAbstractArchiveTask > DAAbstractArchive::takeTask()
  */
 QString DAAbstractArchive::toTemporaryPath(const QString& path)
 {
-    QFileInfo fileInfo(path);
+	QFileInfo fileInfo(path);
 
-    // 获取原始文件的目录和文件名
-    QDir dir = fileInfo.absoluteDir();
+	// 获取原始文件的目录和文件名
+	QDir dir = fileInfo.absoluteDir();
 
-    // 构造临时文件名：.~原文件名
-    QString tempFileName = QString(".~%1").arg(fileInfo.fileName());
+	// 构造临时文件名：.~原文件名
+	QString tempFileName = QString(".~%1").arg(fileInfo.fileName());
 
-    // 拼接完整临时路径
-    QString tempPath = dir.filePath(tempFileName);
+	// 拼接完整临时路径
+	QString tempPath = dir.filePath(tempFileName);
 
-    return tempPath;
+	return tempPath;
 }
 
 /**
@@ -107,30 +108,37 @@ QString DAAbstractArchive::toTemporaryPath(const QString& path)
  */
 bool DAAbstractArchive::replaceFile(const QString& file, const QString& beReplaceFile)
 {
-    // 检查文件是否存在
-    if (!QFile::exists(file)) {
-        qDebug() << "file does not exist:" << file;
-        return false;
-    }
+	// 检查文件是否存在
+	if (!QFile::exists(file)) {
+		qDebug() << "file does not exist:" << file;
+		return false;
+	}
 
-    // 确保两个文件不是同一个文件
-    if (QFileInfo(file).canonicalFilePath() == QFileInfo(beReplaceFile).canonicalFilePath()) {
-        qDebug() << "The two files are the same. No replacement needed.";
-        return true;  // 如果是同一个文件，直接返回成功
-    }
+	// 确保两个文件不是同一个文件
+	if (QFileInfo(file).canonicalFilePath() == QFileInfo(beReplaceFile).canonicalFilePath()) {
+		qDebug() << "The two files are the same. No replacement needed.";
+		return true;  // 如果是同一个文件，直接返回成功
+	}
 
-    // 将 beReplaceFile 重命名为 file
-    if (!QFile::copy(file, beReplaceFile)) {
-        qDebug() << "Failed to copy replacement file to target location:" << file << "->" << beReplaceFile;
-        return false;
-    }
-    // 删除目标文件（file）
-    if (!QFile::remove(file)) {
-        qDebug() << "Failed to remove the original file:" << file;
-        // 虽然删除临时文件失败，但也返回true
-        return true;
-    }
-    return true;
+	//! 将 beReplaceFile 重命名为 file,如果beReplaceFile已经存在，QFile::copy(file, beReplaceFile)这个函数会返回false，
+	//! 因此，beReplaceFile如果存在，先要删除beReplaceFile
+	if (QFile::exists(beReplaceFile)) {
+		if (!QFile::remove(beReplaceFile)) {
+			qDebug() << QString("Failed to remove %1 file").arg(beReplaceFile);
+			return false;
+		}
+	}
+	if (!QFile::copy(file, beReplaceFile)) {
+		qDebug() << "Failed to copy replacement file to target location:" << file << "->" << beReplaceFile;
+		return false;
+	}
+	// 删除目标文件（file）
+	if (!QFile::remove(file)) {
+		qDebug() << "Failed to remove the original file:" << file;
+		// 虽然删除临时文件失败，但也返回true
+		return true;
+	}
+	return true;
 }
 
 }

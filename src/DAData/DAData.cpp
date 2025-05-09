@@ -11,7 +11,8 @@
 // using DA namespace -- 禁止在头文件using！！
 //===================================================
 
-using namespace DA;
+namespace DA
+{
 
 //===================================================
 // DAData
@@ -60,6 +61,16 @@ DAData::~DAData()
 bool DAData::operator==(const DAData& d) const
 {
     return mData == d.mData;
+}
+
+/**
+ * @brief 注意这里的等于不是指相等而是变量相等，类似is
+ * @param d
+ * @return
+ */
+bool DAData::operator!=(const DAData& d) const
+{
+    return mData != d.mData;
 }
 
 bool DAData::operator<(const DAData& d) const
@@ -326,10 +337,10 @@ void DAData::setDataManager(DADataManager* mgr)
     mDataMgr = mgr;
 }
 
-namespace DA
-{
 uint qHash(const DAData& key, uint seed)
 {
     return ::qHash(key.rawPointer(), seed);
 }
+
+DA_AUTO_REGISTER_META_TYPE(DA::DAData)
 }  // namespace DA

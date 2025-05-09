@@ -1,6 +1,7 @@
 ﻿#include "DANodeLinkPoint.h"
 namespace DA
 {
+
 DANodeLinkPoint::DANodeLinkPoint() : way(Output), direction(AspectDirection::East)
 {
 }
@@ -287,39 +288,6 @@ QDebug operator<<(QDebug dbg, const DANodeLinkPoint& a)
 	return (dbg.space());
 }
 
-/**
- * @brief DANodeLinkPoint::Way 的枚举转换
- * @param e
- * @return
- */
-QString enumToString(DANodeLinkPoint::Way e)
-{
-	switch (e) {
-	case DANodeLinkPoint::Input:
-		return "input";
-	case DANodeLinkPoint::Output:
-		return "output";
-	default:
-		break;
-	}
-	return "input";
-}
-
-/**
- * @brief DANodeLinkPoint::Way 的枚举转换
- * @param s
- * @return
- */
-DANodeLinkPoint::Way stringToEnum(const QString& s, DANodeLinkPoint::Way defaultEnum)
-{
-	if (0 == s.compare("input", Qt::CaseInsensitive)) {
-		return DANodeLinkPoint::Input;
-	} else if (0 == s.compare("output", Qt::CaseInsensitive)) {
-		return DANodeLinkPoint::Output;
-	}
-	return defaultEnum;
-}
-
 // 把qHash放入DA命名空间为了ADL查找
 //  DANodeLinkPoint是DA命名空间，根据ADL原则，会去DA命名空间查找qHash
 
@@ -327,4 +295,6 @@ uint qHash(const DANodeLinkPoint& key, uint seed)
 {
 	return (qHash(key.name, seed));
 }
-}
+
+DA_AUTO_REGISTER_META_TYPE(DA::DANodeLinkPoint)
+}  // end DA

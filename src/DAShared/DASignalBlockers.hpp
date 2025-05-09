@@ -2,7 +2,9 @@
 #define DASIGNALBLOCKERS_H
 #include <vector>
 #include <QObject>
-namespace DA{
+#include <QSignalBlocker>
+namespace DA
+{
 /**
  * @brief 支持多个变量执行类似QSingalBlocker的操作
  *
@@ -18,38 +20,37 @@ namespace DA{
 class DASignalBlockers
 {
 public:
-	// 构造函数，接受多个QObject*参数
-	template< typename... Args >
-	explicit DASignalBlockers(Args... args)
-	{
-		// 使用初始化列表和完美转发来存储QObject指针
-		objects.reserve(sizeof...(args));
-		((void)std::initializer_list<int>{0, ((void)objects.emplace_back(std::forward<Args>(args)), 0)...});
+    // 使用可变参数模板构造函数
+    template< typename... Args >
+    explicit DASignalBlockers(Args*... objects)
+    {
+        addObjects(objects...);
+    }
 
+    // 禁止拷贝和赋值
+    DASignalBlockers(const DASignalBlockers&)            = delete;
+    DASignalBlockers& operator=(const DASignalBlockers&) = delete;
 
-				// 阻塞所有对象的信号
-		blockSignals(true);
-	}
+    // 移动构造函数
+    DASignalBlockers(DASignalBlockers&&) = default;
 
-			// 析构函数，解锁所有对象的信号
-	~DASignalBlockers()
-	{
-		blockSignals(false);
-	}
-
-			// 手动控制信号阻塞的函数
-	void blockSignals(bool on)
-	{
-		for (QObject* obj : objects) {
-			if (obj) {  // 确保obj不是nullptr
-				obj->blockSignals(on);
-			}
-		}
-	}
+    // 移动赋值运算符
+    DASignalBlockers& operator=(DASignalBlockers&&) = default;
 
 private:
-	// 存储需要阻塞信号的QObject指针
-	std::vector< QObject* > objects;
+    std::vector< QSignalBlocker > blockers;  // 直接在栈上存储 QSignalBlocker
+
+    // 辅助函数：递归添加 QObject 到 blockers
+    template< typename First, typename... Rest >
+    void addObjects(First* first, Rest*... rest)
+    {
+        if (first) {
+            blockers.emplace_back(*first);  // 在栈上创建 QSignalBlocker
+        }
+        if constexpr (sizeof...(rest) > 0) {  // 如果还有剩余参数
+            addObjects(rest...);
+        }
+    }
 };
 }
 #endif  // DASIGNALBLOCKERS_H

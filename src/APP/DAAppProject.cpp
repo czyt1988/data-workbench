@@ -22,6 +22,7 @@
 #include "DAZipArchiveTask_ByteArray.h"
 #include "DAZipArchiveTask_Xml.h"
 #include "DAZipArchiveTask_ArchiveFile.h"
+#include "DADataEnumStringUtils.h"
 // python
 #if DA_ENABLE_PYTHON
 #include "DAPyScripts.h"
@@ -334,8 +335,10 @@ bool DAAppProject::save(const QString& path)
 
 	//! datamanager
 	makeSaveDataManagerTask(mArchive);
-	//! 组件任务队列
 
+	//! 绘图
+
+	//! 组件任务队列
 	if (!mArchive->save(path)) {
 		qCritical() << tr("failed to save archive to %1").arg(path);
 		return false;
@@ -363,10 +366,10 @@ bool DAAppProject::load(const QString& path)
 		qWarning() << tr("current project is busy");  // cn:当前工程正繁忙
 		return false;
 	}
-	setProjectPath(path);
 	// 加载之前先清空
 	clear();
 
+	setProjectPath(path);
 	// 创建archive任务队列
 	mArchive->appendXmlLoadTask(QStringLiteral("workflow.xml"), DAAPPPROJECT_TASK_LOAD_ID_WORKFLOW);
 
@@ -452,6 +455,16 @@ void DAAppProject::makeSaveDataManagerTask(DAZipArchiveThreadWrapper* archive)
 	root.appendChild(dataListEle);
 	// 创建archive任务队列
 	mArchive->appendXmlSaveTask(QStringLiteral("data-manager.xml"), doc);
+}
+
+/**
+ * @brief 添加保存绘图任务
+ *
+ * 绘图包含了数据和界面，
+ * @param archive
+ */
+void DAAppProject::makeSaveFiguresTask(DAZipArchiveThreadWrapper* archive)
+{
 }
 
 /**

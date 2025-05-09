@@ -18,22 +18,23 @@
 
 namespace DA
 {
-class DADataManagerTreeModelPrivate
+class DADataManagerTreeModel::PrivateData
 {
-	DA_IMPL_PUBLIC(DADataManagerTreeModel)
+	DA_DECLARE_PUBLIC(DADataManagerTreeModel)
 public:
-	DADataManagerTreeModelPrivate(DADataManagerTreeModel* p);
+	PrivateData(DADataManagerTreeModel* p);
 
 public:
 	DADataManager* _dataMgr { nullptr };
 	bool _expandDataframeToSeries { false };
+	DADataManagerTreeModel::ColumnStyle columnStyle { DADataManagerTreeModel::ColumnWithNameOnly };
 };
 
 //===================================================
 // DAAppDataManagerTreePrivate
 //===================================================
 
-DADataManagerTreeModelPrivate::DADataManagerTreeModelPrivate(DADataManagerTreeModel* p) : q_ptr(p)
+DADataManagerTreeModel::PrivateData::PrivateData(DADataManagerTreeModel* p) : q_ptr(p)
 {
 }
 
@@ -169,15 +170,22 @@ DADataManagerTreeItem& DADataManagerTreeItem::operator=(const DADataManagerTreeI
 //===================================================
 // DAAppDataManagerTree
 //===================================================
-DADataManagerTreeModel::DADataManagerTreeModel(QObject* parent)
-    : QStandardItemModel(parent), d_ptr(new DADataManagerTreeModelPrivate(this))
+DADataManagerTreeModel::DADataManagerTreeModel(QObject* parent) : QStandardItemModel(parent), DA_PIMPL_CONSTRUCT
 {
     init();
 }
 
 DADataManagerTreeModel::DADataManagerTreeModel(DADataManager* p, QObject* parent)
-    : QStandardItemModel(parent), d_ptr(new DADataManagerTreeModelPrivate(this))
+	: QStandardItemModel(parent), DA_PIMPL_CONSTRUCT
 {
+	init();
+	setDataManager(p);
+}
+
+DADataManagerTreeModel::DADataManagerTreeModel(DADataManager* p, ColumnStyle style, QObject* parent)
+	: QStandardItemModel(parent), DA_PIMPL_CONSTRUCT
+{
+	d_ptr->columnStyle = style;
 	init();
 	setDataManager(p);
 }
@@ -187,7 +195,7 @@ DADataManagerTreeModel::~DADataManagerTreeModel()
 
 void DADataManagerTreeModel::init()
 {
-	qRegisterMetaType< DA::DAData >("DA::DAData");
+	// qRegisterMetaType< DA::DAData >("DA::DAData");
 	setItemPrototype(new DADataManagerTreeItem());
 	resetHeaderLabel();
 }
@@ -249,6 +257,7 @@ void DADataManagerTreeModel::doExpandOneDataframeToSeries(DADataManagerTreeItem*
 			QStandardItem* sitem = new QStandardItem(name);
 			sitem->setData((int)SeriesInnerDataframe, DADATAMANAGERTREEMODEL_ROLE_DETAIL_DATA_TYPE);
 			sitem->setData(d.id(), DADATAMANAGERTREEMODEL_ROLE_DATA_ID);  // 把data id也记录
+			sitem->setToolTip(name);
 			dfItem->appendRow(sitem);
 		}
 #endif
@@ -396,8 +405,32 @@ bool DADataManagerTreeModel::isExpandDataframeToSeries() const
  */
 void DADataManagerTreeModel::resetHeaderLabel()
 {
-    setHorizontalHeaderLabels({ tr("name"), tr("property") });
+	if (d_ptr->columnStyle == ColumnWithNameOnly) {
+		setHorizontalHeaderLabels({ tr("name") });
+	} else {
+		setHorizontalHeaderLabels({ tr("name"), tr("property") });
+	}
 }
+
+/**
+ * @brief 设置列类型
+ * @param s
+ */
+void DADataManagerTreeModel::setColumnStyle(ColumnStyle s)
+{
+	d_ptr->columnStyle = s;
+	resetHeaderLabel();
+}
+
+/**
+ * @brief 列类型
+ * @return
+ */
+DADataManagerTreeModel::ColumnStyle DADataManagerTreeModel::getColumnStyle() const
+{
+    return d_ptr->columnStyle;
+}
+
 /**
  * @brief 把index转换为tree item
  * @param i
@@ -546,10 +579,15 @@ void DADataManagerTreeModel::onDataChanged(const DAData& d, DADataManager::Chang
 		return;
 	}
 	switch (t) {
-	case DADataManager::ChangeName:
+	case DADataManager::ChangeName: {
 		item->setText(d.getName());
-		break;
+	} break;
 	case DADataManager::ChangeValue: {
+		if (d.isDataFrame()) {
+			doExpandOneDataframeToSeries(item, d_ptr->_expandDataframeToSeries);
+		}
+	} break;
+	case DADataManager::ChangeDataframeColumnName: {
 		if (d.isDataFrame()) {
 			doExpandOneDataframeToSeries(item, d_ptr->_expandDataframeToSeries);
 		}

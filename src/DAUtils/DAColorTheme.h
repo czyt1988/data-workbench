@@ -1,6 +1,6 @@
 ﻿#ifndef DACOLORTHEME_H
 #define DACOLORTHEME_H
-#include "DAIndexedVector.hpp"
+#include "DAGenericIndexedContainer.hpp"
 #include <initializer_list>
 #include <QColor>
 #include <QDebug>
@@ -14,8 +14,10 @@ namespace DA
 class DAUTILS_API DAColorTheme
 {
 public:
-	using iterator       = DAIndexedVector< QColor >::iterator;
-	using const_iterator = DAIndexedVector< QColor >::const_iterator;
+	using ColorList      = QVector< QColor >;
+	using container      = DAGenericIndexedContainer< ColorList >;
+	using iterator       = container::iterator;
+	using const_iterator = container::const_iterator;
 
 public:
 	/**
@@ -25,34 +27,34 @@ public:
 	 *
 	 * 自动化生成代码见：src/PyScripts/create_color_theme.py
 	 */
-	enum ColorTheme
+	enum ColorThemeStyle
 	{
-		ColorTheme_Archambault,
-		ColorTheme_Cassatt1,
-		ColorTheme_Cassatt2,
-		ColorTheme_Demuth,
-		ColorTheme_Derain,
-		ColorTheme_Egypt,
-		ColorTheme_Greek,
-		ColorTheme_Hiroshige,
-		ColorTheme_Hokusai2,
-		ColorTheme_Hokusai3,
-		ColorTheme_Ingres,
-		ColorTheme_Isfahan1,
-		ColorTheme_Isfahan2,
-		ColorTheme_Java,
-		ColorTheme_Johnson,
-		ColorTheme_Kandinsky,
-		ColorTheme_Morgenstern,
-		ColorTheme_OKeeffe1,
-		ColorTheme_OKeeffe2,
-		ColorTheme_Pillement,
-		ColorTheme_Tam,
-		ColorTheme_Troy,
-		ColorTheme_VanGogh3,
-		ColorTheme_Veronese,
-		ColorTheme_End,               ///< 结束
-		ColorTheme_UserDefine = 2000  ///< 用户自定义
+		Style_Archambault,
+		Style_Cassatt1,
+		Style_Cassatt2,
+		Style_Demuth,
+		Style_Derain,
+		Style_Egypt,
+		Style_Greek,
+		Style_Hiroshige,
+		Style_Hokusai2,
+		Style_Hokusai3,
+		Style_Ingres,
+		Style_Isfahan1,
+		Style_Isfahan2,
+		Style_Java,
+		Style_Johnson,
+		Style_Kandinsky,
+		Style_Morgenstern,
+		Style_OKeeffe1,
+		Style_OKeeffe2,
+		Style_Pillement,
+		Style_Tam,
+		Style_Troy,
+		Style_VanGogh3,
+		Style_Veronese,
+		Style_End,               ///< 结束
+		Style_UserDefine = 2000  ///< 用户自定义
 	};
 
 public:
@@ -61,7 +63,7 @@ public:
 	 * @brief 不要用DAColorTheme mColorTheme { DAColorTheme::ColorTheme_Archambault }这样的初始化，会被当作std::initializer_list< QColor >捕获
 	 * @param th
 	 */
-	DAColorTheme(ColorTheme th);
+	DAColorTheme(ColorThemeStyle th);
 	DAColorTheme(const std::initializer_list< QColor >& v);
 	~DAColorTheme();
 	/**
@@ -69,13 +71,13 @@ public:
 	 * @param t
 	 * @return
 	 */
-	static DAColorTheme create(ColorTheme t);
+	static DAColorTheme create(ColorThemeStyle t);
 	/**
 	 * @brief 重载等于操作符，可以直接通过主题赋值
 	 * @param th
 	 * @return
 	 */
-	DAColorTheme& operator=(const ColorTheme& th);
+	DAColorTheme& operator=(const ColorThemeStyle& th);
 	// 获取下一个元素(索引后移)
 	QColor next();
 	// 把索引移动到下一个,如果超过范围，会回到头
@@ -113,10 +115,6 @@ public:
 	int getCurrentIndex() const;
 	// 设置当前的索引
 	void setCurrentIndex(int v);
-	// 获取当前索引下的元素
-	QColor get() const;
-	// 设置当前索引下的元素
-	void set(const QColor& v);
 	//
 	iterator begin();
 	const_iterator begin() const;
@@ -128,13 +126,22 @@ public:
 	QColor getColorAtPosition(float proportion) const;
 	// 颜色插值，在颜色1和2之间的比例取值,t必须为0~1之间的数
 	static QColor interpolateColor(const QColor& color1, const QColor& color2, float t);
+	// 主题样式
+	ColorThemeStyle getColorThemeStyle() const;
+	void setColorThemeStyle(ColorThemeStyle style);
+	// 设置用户自定义的颜色列表
+	void setUserDefineColorList(const ColorList& cls, ColorThemeStyle style = Style_UserDefine);
+
+protected:
+	container createColorList(const ColorThemeStyle& th);
 
 private:
-	DAIndexedVector< QColor > mColorList;  ///< 原来DAColorTheme是继承DAIndexedVector< QColor >，但会导致符号重复导出的编译错误
-	ColorTheme mCurrentColorTheme { ColorTheme_UserDefine };  ///< 当前的主题
+	container mColorList;
+	ColorThemeStyle mCurrentColorTheme { Style_Archambault };  ///< 当前的主题
 };
 
 QDebug DAUTILS_API operator<<(QDebug debug, const DAColorTheme& th);
+
 }  // end namespace DA
 Q_DECLARE_METATYPE(DA::DAColorTheme)
 

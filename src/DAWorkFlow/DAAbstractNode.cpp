@@ -54,9 +54,7 @@ public:
 	DAAbstractNodeGraphicsItem* mItem { nullptr };  ///< node 对应的item
 	DAAbstractNodeFactory::WeakPointer mFactory;  ///< 保存节点的工厂，工厂的设置在DAWorkFlow::createNode中
 };
-}
 
-using namespace DA;
 //================================================
 // DAAbstractNodePrivate::LinkData
 //================================================
@@ -1008,3 +1006,6 @@ void DAAbstractNode::registFactory(const std::shared_ptr< DAAbstractNodeFactory 
 {
     d_ptr->mFactory = fc;
 }
+
+DA_AUTO_REGISTER_META_TYPE(DAAbstractNode::SharedPointer)
+}  // end DA

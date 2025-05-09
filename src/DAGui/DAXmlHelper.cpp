@@ -11,6 +11,10 @@
 #include <QPen>
 #include <QSet>
 // DA
+#include "DAQtEnumTypeStringUtils.h"
+#include "DAGraphicsViewEnumStringUtils.h"
+#include "DAWorkFlowEnumStringUtils.h"
+#include "DAGuiEnumStringUtils.h"
 #include "DACommandsForWorkFlowNodeGraphics.h"
 #include "DAWorkFlowGraphicsScene.h"
 #include "DAGraphicsPixmapItem.h"
@@ -22,6 +26,13 @@
 #include "DAWorkFlowOperateWidget.h"
 #include "DAWorkFlowEditWidget.h"
 #include "DAQtContainerUtil.hpp"
+#include "DAFigureWidget.h"
+#include "DAChartWidget.h"
+// qwt
+#include "qwt_plot.h"
+#include "qwt_plot_canvas.h"
+#include "qwt_date_scale_draw.h"
+#include "qwt_date_scale_engine.h"
 namespace DA
 {
 //==============================================================
@@ -45,22 +56,21 @@ public:
 	bool loadFactoryInfo(DAWorkFlow* workflow, const QDomElement& workflowEle);
 	// 保存工作流的节点
 	void saveNodes(const DAWorkFlowEditWidget* wfe, QDomDocument& doc, QDomElement& workflowEle);
-    QDomElement makeNodesElement(const QList< DAAbstractNode::SharedPointer >& nodes,
-                                 const QString& tagName,
-                                 QDomDocument& doc);
+	QDomElement
+	makeNodesElement(const QList< DAAbstractNode::SharedPointer >& nodes, const QString& tagName, QDomDocument& doc);
 	QDomElement makeNodeElement(const DAAbstractNode::SharedPointer& node, const QString& tagName, QDomDocument& doc);
 	bool loadNodes(DAWorkFlow* workflow, DAWorkFlowGraphicsScene* workFlowScene, const QDomElement& workflowEle);
 	bool loadNodesClipBoard(DAWorkFlowGraphicsScene* scene,
-                            const QDomElement& workflowEle,
-                            QMap< qulonglong, qulonglong >* idMap);
+							const QDomElement& workflowEle,
+							QMap< qulonglong, qulonglong >* idMap);
 
 	[[deprecated("This function is deprecated. Use loadNodeAndItem() instead.")]]
 	DAAbstractNode::SharedPointer loadNode(const QDomElement& nodeEle, DAWorkFlow* workflow, bool isLoadID = true);
 	DAAbstractNodeGraphicsItem* loadNodeAndItem(const QDomElement& nodeEle, DAWorkFlowGraphicsScene* workFlowScene);
 	// 这种是针对需要redo/undo的加载节点
 	DAAbstractNodeGraphicsItem* loadNodeAndItemWithUndo(const QDomElement& nodeEle,
-                                                        DAWorkFlowGraphicsScene* workFlowScene,
-                                                        QMap< qulonglong, qulonglong >* idMap);
+														DAWorkFlowGraphicsScene* workFlowScene,
+														QMap< qulonglong, qulonglong >* idMap);
 	// 保存输入输出
 	void saveNodeInputOutput(const DAAbstractNode::SharedPointer& node, QDomDocument& doc, QDomElement& nodeEle);
 	bool loadNodeInPutOutputKey(DAAbstractNode::SharedPointer& node, const QDomElement& eleNode);
@@ -79,8 +89,8 @@ public:
 	QDomElement makeNodeLinkElement(DAAbstractNodeLinkGraphicsItem* link, const QString& tagName, QDomDocument& doc);
 	bool loadNodeLinks(DAWorkFlowGraphicsScene* scene, DAWorkFlow* wf, const QDomElement& workflowEle);
 	bool loadNodeLinksClipBoardCopy(DAWorkFlowGraphicsScene* scene,
-                                    const QDomElement& workflowEle,
-                                    const QMap< qulonglong, qulonglong >* idMap);
+									const QDomElement& workflowEle,
+									const QMap< qulonglong, qulonglong >* idMap);
 	// 保存特殊的item，主要为文本
 	void saveCommonItems(const DAWorkFlowGraphicsScene* scene, QDomDocument& doc, QDomElement& workflowEle);
 	QDomElement makeCommonItemsElement(const QList< QGraphicsItem* >& items, const QString& tagName, QDomDocument& doc);
@@ -246,7 +256,7 @@ void DAXmlHelper::PrivateData::saveWorkflowFromClipBoard(const QList< DAGraphics
 	}
 	//! 4.先把记忆清空
 	clearDealItemSet();  // 清空保存过的item的记录
-                         //! 把工作流的总体范围保存
+						 //! 把工作流的总体范围保存
 	QRectF sceneRange = DAWorkFlowEditWidget::calcAllItemsSceneRange(DAWorkFlowEditWidget::cast(its));
 	workflowEle.setAttribute("sc-x", sceneRange.x());
 	workflowEle.setAttribute("sc-y", sceneRange.y());
@@ -509,7 +519,7 @@ DAAbstractNode::SharedPointer DAXmlHelper::PrivateData::loadNode(const QDomEleme
 	qulonglong id = nodeEle.attribute("id").toULongLong(&isok);
 	if (!isok) {
 		qWarning() << QObject::tr("node's id=%1 can not conver to qulonglong type ,will skip this node")
-                          .arg(nodeEle.attribute("id"));
+						  .arg(nodeEle.attribute("id"));
 		return nullptr;
 	}
 	if (workflow->hasNodeID(id)) {
@@ -523,9 +533,9 @@ DAAbstractNode::SharedPointer DAXmlHelper::PrivateData::loadNode(const QDomEleme
 	DAAbstractNode::SharedPointer node = workflow->createNode(metadata);
 	if (nullptr == node) {
 		qWarning() << QObject::tr("Unable to create node by metadata(prototype=%1,name=%2,group=%3)-0")
-                          .arg(metadata.getNodePrototype(),
-                               metadata.getNodeName(),
-                               metadata.getGroup());  // cn:无法通过元数据创建节点(类型=%1,名称=%2,分组=%3)创建节点-0
+						  .arg(metadata.getNodePrototype(),
+							   metadata.getNodeName(),
+							   metadata.getGroup());  // cn:无法通过元数据创建节点(类型=%1,名称=%2,分组=%3)创建节点-0
 		return nullptr;
 	}
 	// 这里是要把保存的id加载，有些情况是不要设置id的，如复制粘贴
@@ -558,7 +568,7 @@ DAAbstractNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItem(const QDom
 	qulonglong id = nodeEle.attribute("id").toULongLong(&isok);
 	if (!isok) {
 		qWarning() << QObject::tr("node's id=%1 can not conver to qulonglong type ,will skip this node")
-                          .arg(nodeEle.attribute("id"));
+						  .arg(nodeEle.attribute("id"));
 		return nullptr;
 	}
 	if (workflow->hasNodeID(id)) {
@@ -572,9 +582,9 @@ DAAbstractNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItem(const QDom
 	DAAbstractNode::SharedPointer node = workflow->createNode(metadata);
 	if (!node) {
 		qWarning() << QObject::tr("Unable to create node by metadata(prototype=%1,name=%2,group=%3)-2")
-                          .arg(metadata.getNodePrototype(),
-                               metadata.getNodeName(),
-                               metadata.getGroup());  // cn:无法通过元数据创建节点(类型=%1,名称=%2,分组=%3)创建节点-2
+						  .arg(metadata.getNodePrototype(),
+							   metadata.getNodeName(),
+							   metadata.getGroup());  // cn:无法通过元数据创建节点(类型=%1,名称=%2,分组=%3)创建节点-2
 		return nullptr;
 	}
 	node->setID(id);
@@ -595,9 +605,9 @@ DAAbstractNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItem(const QDom
 	std::unique_ptr< DAAbstractNodeGraphicsItem > item(node->createGraphicsItem());
 	if (!item) {
 		qWarning() << QObject::tr("Unable to create node by metadata(prototype=%1,name=%2,group=%3)-1")
-                          .arg(metadata.getNodePrototype(),
-                               metadata.getNodeName(),
-                               metadata.getGroup());  // cn:无法通过元数据创建节点(类型=%1,名称=%2,分组=%3)创建节点-1
+						  .arg(metadata.getNodePrototype(),
+							   metadata.getNodeName(),
+							   metadata.getGroup());  // cn:无法通过元数据创建节点(类型=%1,名称=%2,分组=%3)创建节点-1
 		return nullptr;
 	}
 
@@ -635,7 +645,7 @@ DAAbstractNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItemWithUndo(co
 	qulonglong id = nodeEle.attribute("id").toULongLong(&isok);
 	if (!isok) {
 		qWarning() << QObject::tr("node's id=%1 can not conver to qulonglong type ,will skip this node")
-                          .arg(nodeEle.attribute("id"));
+						  .arg(nodeEle.attribute("id"));
 		return nullptr;
 	}
 	QString name      = nodeEle.attribute("name");
@@ -645,17 +655,17 @@ DAAbstractNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItemWithUndo(co
 	DAAbstractNodeGraphicsItem* item = workFlowScene->createNode_(metadata, QPoint(0, 0));
 	if (!item) {
 		qWarning() << QObject::tr("Unable to create node by metadata(prototype=%1,name=%2,group=%3)-1")
-                          .arg(metadata.getNodePrototype(),
-                               metadata.getNodeName(),
-                               metadata.getGroup());  // cn:无法通过元数据创建节点(类型=%1,名称=%2,分组=%3)创建节点-1
+						  .arg(metadata.getNodePrototype(),
+							   metadata.getNodeName(),
+							   metadata.getGroup());  // cn:无法通过元数据创建节点(类型=%1,名称=%2,分组=%3)创建节点-1
 		return nullptr;
 	}
 	DAAbstractNode::SharedPointer node = item->node();
 	if (nullptr == node) {
 		qWarning() << QObject::tr("Unable to create node by metadata(prototype=%1,name=%2,group=%3)-2")
-                          .arg(metadata.getNodePrototype(),
-                               metadata.getNodeName(),
-                               metadata.getGroup());  // cn:无法通过元数据创建节点(类型=%1,名称=%2,分组=%3)创建节点-2
+						  .arg(metadata.getNodePrototype(),
+							   metadata.getNodeName(),
+							   metadata.getGroup());  // cn:无法通过元数据创建节点(类型=%1,名称=%2,分组=%3)创建节点-2
 		return nullptr;
 	}
 	if (!idMap) {
@@ -754,10 +764,10 @@ bool DAXmlHelper::PrivateData::loadNodeInPutOutputKey_v110(DAAbstractNode::Share
 			QDomElement nameEle = inputEle.firstChildElement("name");
 			if (nameEle.isNull()) {
 				qWarning() << QObject::tr("node(prototype=%1,name=%2,group=%3) %4 tag loss child tag <name>")
-                                  .arg(node->getNodePrototype(),
-                                       node->getNodeName(),
-                                       node->getNodeGroup(),
-                                       ks.at(i).nodeName());
+								  .arg(node->getNodePrototype(),
+									   node->getNodeName(),
+									   node->getNodeGroup(),
+									   ks.at(i).nodeName());
 				continue;
 			}
 			QString key = nameEle.text();
@@ -781,10 +791,10 @@ bool DAXmlHelper::PrivateData::loadNodeInPutOutputKey_v110(DAAbstractNode::Share
 			QDomElement nameEle = outputEle.firstChildElement("name");
 			if (nameEle.isNull()) {
 				qWarning() << QObject::tr("node(prototype=%1,name=%2,group=%3) %4 tag loss child tag <name>")
-                                  .arg(node->getNodePrototype(),
-                                       node->getNodeName(),
-                                       node->getNodeGroup(),
-                                       ks.at(i).nodeName());
+								  .arg(node->getNodePrototype(),
+									   node->getNodeName(),
+									   node->getNodeGroup(),
+									   ks.at(i).nodeName());
 				continue;
 			}
 			QString key = nameEle.text();
@@ -958,7 +968,7 @@ DAAbstractNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeItem(DAAbstractNod
 	DAAbstractNodeGraphicsItem* item = node->createGraphicsItem();
 	if (nullptr == item) {
 		qWarning() << QObject::tr("node metadata(prototype=%1,name=%2,group=%3) can not create graphics item")
-                          .arg(node->getNodePrototype(), node->getNodeName(), node->getNodeGroup());
+						  .arg(node->getNodePrototype(), node->getNodeName(), node->getNodeGroup());
 		return nullptr;
 	}
 	loadItem(item, itemEle);
@@ -1058,7 +1068,7 @@ bool DAXmlHelper::PrivateData::loadNodeLinks(DAWorkFlowGraphicsScene* scene, DAW
 		DAAbstractNodeLinkGraphicsItem* linkitem = fromItem->linkToByName(fromKey, toItem, toKey);
 		if (nullptr == linkitem) {
 			qWarning() << QObject::tr("Unable to link to node %3's link point %4 through link point %2 of node %1")  // cn:节点%1无法通过连接点%2链接到节点%3的连接点%4
-                              .arg(fromItem->getNodeName(), fromKey, toItem->getNodeName(), toKey);
+							  .arg(fromItem->getNodeName(), fromKey, toItem->getNodeName(), toKey);
 			continue;
 		}
 		if (mLoadedVersion.majorVersion() == 1 && mLoadedVersion.minorVersion() <= 3) {
@@ -1074,7 +1084,7 @@ bool DAXmlHelper::PrivateData::loadNodeLinks(DAWorkFlowGraphicsScene* scene, DAW
 			//! </link>
 			if (!loadItem(linkitem, linkEle)) {
 				qWarning() << QObject::tr("linkitem load from xml return false")  // cn:链接线从xml加载信息返回了false
-                    ;
+					;
 			}
 		} else {
 			//!
@@ -1102,7 +1112,7 @@ bool DAXmlHelper::PrivateData::loadNodeLinks(DAWorkFlowGraphicsScene* scene, DAW
 			QDomElement itemEle = findItemElement(linkEle);
 			if (!loadItem(linkitem, itemEle)) {
 				qWarning() << QObject::tr("linkitem load from xml return false")  // cn:链接线从xml加载信息返回了false
-                    ;
+					;
 			}
 		}
 		scene->addItem(linkitem);
@@ -1138,7 +1148,7 @@ bool DAXmlHelper::PrivateData::loadNodeLinksClipBoardCopy(DAWorkFlowGraphicsScen
 			qulonglong realId = idMap->value(id, 0);
 			if (0 == realId) {
 				qWarning()
-                    << QObject::tr("During the pasting process, the mapping corresponding to ID(%1) cannot be found").arg(id);
+					<< QObject::tr("During the pasting process, the mapping corresponding to ID(%1) cannot be found").arg(id);
 				continue;
 			}
 			fromNode = wf->getNode(realId);
@@ -1157,7 +1167,7 @@ bool DAXmlHelper::PrivateData::loadNodeLinksClipBoardCopy(DAWorkFlowGraphicsScen
 			qulonglong realId = idMap->value(id, 0);
 			if (0 == realId) {
 				qWarning()
-                    << QObject::tr("During the pasting process, the mapping corresponding to ID(%1) cannot be found").arg(id);
+					<< QObject::tr("During the pasting process, the mapping corresponding to ID(%1) cannot be found").arg(id);
 				continue;
 			}
 			toNode = wf->getNode(realId);
@@ -1179,7 +1189,7 @@ bool DAXmlHelper::PrivateData::loadNodeLinksClipBoardCopy(DAWorkFlowGraphicsScen
 		DAAbstractNodeLinkGraphicsItem* linkitem = fromItem->linkToByName(fromKey, toItem, toKey);
 		if (nullptr == linkitem) {
 			qWarning() << QObject::tr("Unable to link to node %3's link point %4 through link point %2 of node %1")  // cn:节点%1无法通过连接点%2链接到节点%3的连接点%4
-                              .arg(fromItem->getNodeName(), fromKey, toItem->getNodeName(), toKey);
+							  .arg(fromItem->getNodeName(), fromKey, toItem->getNodeName(), toKey);
 			continue;
 		}
 		if (mLoadedVersion.majorVersion() == 1 && mLoadedVersion.minorVersion() <= 3) {
@@ -1195,7 +1205,7 @@ bool DAXmlHelper::PrivateData::loadNodeLinksClipBoardCopy(DAWorkFlowGraphicsScen
 			//! </link>
 			if (!loadItem(linkitem, linkEle)) {
 				qWarning() << QObject::tr("linkitem load from xml return false")  // cn:链接线从xml加载信息返回了false
-                    ;
+					;
 			}
 		} else {
 			//!
@@ -1223,7 +1233,7 @@ bool DAXmlHelper::PrivateData::loadNodeLinksClipBoardCopy(DAWorkFlowGraphicsScen
 			QDomElement itemEle = findItemElement(linkEle);
 			if (!loadItem(linkitem, itemEle)) {
 				qWarning() << QObject::tr("linkitem load from xml return false")  // cn:链接线从xml加载信息返回了false
-                    ;
+					;
 			}
 		}
 		scene->addNodeLink_(linkitem);
@@ -1640,14 +1650,14 @@ bool DAXmlHelper::loadClipBoardElement(const QDomElement* clipBoardElement, DAWo
 	QString typestr = clipBoardElement->attribute("type");
 	if (typestr.isEmpty()) {
 		qDebug() << QObject::tr("An exception occurred during the process of processing pasted content XML, with the "
-                                "root node missing the type attribute");  // cn:在处理粘贴内容xml过程出现异常，根节点缺失type属性
+								"root node missing the type attribute");  // cn:在处理粘贴内容xml过程出现异常，根节点缺失type属性
 		return false;
 	}
 	QDomElement workflowEle = clipBoardElement->firstChildElement("workflow");
 	//! 首先找到workflow节点
 	if (workflowEle.isNull()) {
 		qWarning() << QObject::tr(
-            "An exception occurred during the process of parsing and pasting content,miss workflow tag");  // cn:解析粘贴内容过程出现异常,缺失workflow标签
+			"An exception occurred during the process of parsing and pasting content,miss workflow tag");  // cn:解析粘贴内容过程出现异常,缺失workflow标签
 		return false;
 	}
 	if (typestr == "copy") {
@@ -1689,7 +1699,7 @@ QGraphicsItem* DAXmlHelper::loadItemElement(const QDomElement* itemEle, const QV
 	std::unique_ptr< QGraphicsItem > item(DAGraphicsItemFactory::createItem(className));
 	if (nullptr == item) {
 		qWarning() << QObject::tr("Cannot create item by class name:%1,maybe unregist to DAGraphicsItemFactory")
-                          .arg(className);  // 无法通过类名:%1创建元件,类名没有注册到DAGraphicsItemFactory
+						  .arg(className);  // 无法通过类名:%1创建元件,类名没有注册到DAGraphicsItemFactory
 		return nullptr;
 	}
 	if (!loadElement(item.get(), itemEle, v)) {
@@ -1814,99 +1824,582 @@ QList< QGraphicsItem* > DAXmlHelper::getAllDealItems() const
 }
 
 /**
- * @brief 创建DAData对应的xml元素
- * @param data
+ * @brief DAColorTheme
+ * @param ct
  * @param tagName
  * @param doc
  * @return
  */
-QDomElement DAXmlHelper::makeElement(const DAData* data, const QString& tagName, QDomDocument* doc)
+QDomElement DAXmlHelper::makeElement(const DAColorTheme* ct, const QString& tagName, QDomDocument* doc)
 {
-	auto ele = doc->createElement(tagName);
-	ele.setAttribute(QStringLiteral("type"), enumToString(data->getDataType()));
-	ele.setAttribute(QStringLiteral("id"), QString::number(data->id()));
-
-	auto nameEle = doc->createElement(QStringLiteral("name"));
-	nameEle.appendChild(doc->createTextNode(data->getName()));
-	ele.appendChild(nameEle);
-
-	auto describeEle = doc->createElement(QStringLiteral("describe"));
-	describeEle.appendChild(doc->createTextNode(data->getDescribe()));
-	ele.appendChild(describeEle);
-
-    //! 保存数据，针对dataframe，只保存相对路径
-    switch (data->getDataType()) {
-    case DAAbstractData::TypeNone:
-        break;
-    case DAAbstractData::TypeDataPackage:
-        break;
-    case DAAbstractData::TypePythonObject:
-    case DAAbstractData::TypePythonSeries:
-    case DAAbstractData::TypePythonDataFrame: {
-        // 存放相对路径
-        auto valueEle    = doc->createElement(QStringLiteral("value"));
-        QString refValue = QString("datas/res/%1.pkl").arg(data->id());
-        valueEle.appendChild(doc->createTextNode(refValue));
-        ele.appendChild(valueEle);
-    } break;
-    default:
-        break;
-    }
-
+	QDomElement ele = doc->createElement(tagName);
+	ele.setAttribute("style", enumToString(ct->getColorThemeStyle()));
+	if (ct->getColorThemeStyle() == DAColorTheme::Style_UserDefine) {
+		const int size = ct->size();
+		for (int i = 0; i < size; ++i) {
+			QDomElement eleColor = doc->createElement("li");
+			eleColor.appendChild(doc->createTextNode(ct->at(i).name()));
+			ele.appendChild(eleColor);
+		}
+	}
 	return ele;
 }
 
-/**
- * @brief 加载元素
- *
- * @note 数据的加载要在多线程中进行，因此先把数据加载到一个QHash< DAAbstractData::IdType, DAData >中，再形成数据，这里不对数据进行加载
- * @param data
- * @param tag
- * @param v
- * @return
- */
-bool DAXmlHelper::loadElement(DAData* data,
-                              const QDomElement* tag,
-                              const QHash< DAAbstractData::IdType, DAData >& datas,
-                              const QVersionNumber& v)
+bool DAXmlHelper::loadElement(DAColorTheme* ct, const QDomElement* tag, const QVersionNumber& v)
 {
-    QString typeStr             = tag->attribute("type");
-    DAAbstractData::DataType dt = stringToEnum(typeStr, DAAbstractData::TypeNone);
-    if (dt == DAAbstractData::TypeNone) {
-        return false;
-    }
-    bool isok                 = false;
-    DAAbstractData::IdType id = tag->attribute(QStringLiteral("id")).toULongLong(&isok);
-    if (!isok) {
-        return false;
-    }
-
-    return false;
+	Q_UNUSED(v);
+	QString styleStr                    = tag->attribute("style");
+	DAColorTheme::ColorThemeStyle style = stringToEnum(styleStr, DAColorTheme::Style_Archambault);
+	ct->setColorThemeStyle(style);
+	DAColorTheme::ColorList clrVec;
+	if (style == DAColorTheme::Style_UserDefine) {
+		auto childNodes = tag->childNodes();
+		for (int i = 0; i < childNodes.size(); ++i) {
+			QDomElement eleColor = childNodes.at(i).toElement();
+			QColor c(eleColor.text());
+			if (c.isValid()) {
+				clrVec.push_back(c);
+			}
+		}
+		ct->setUserDefineColorList(clrVec, DAColorTheme::Style_UserDefine);
+	}
+	return true;
 }
 
 /**
- * @brief  DADataManager的序列化
- * @param dmgr
+ * @brief DAFigureWidget的序列化
+ * @param fig
  * @param tagName
  * @param doc
  * @return
  */
-QDomElement DAXmlHelper::makeElement(const DADataManager* dmgr, const QString& tagName, QDomDocument* doc)
+QDomElement DAXmlHelper::makeElement(const DAFigureWidget* fig, const QString& tagName, QDomDocument* doc)
 {
-    auto root = doc->createElement(tagName);
-    int cnt   = dmgr->getDataCount();
-    root.setAttribute("count", QString::number(cnt));
-    for (int i = 0; i < cnt; ++i) {
-        const DAData d = dmgr->getData(i);
-        auto dataEle   = makeElement(&d, QStringLiteral("data"), doc);
-        root.appendChild(dataEle);
-    }
-    return root;
+	QDomElement eleFig = doc->createElement(tagName);
+	// background
+	QDomElement eleBKBrush = DAXMLFileInterface::makeElement(fig->getBackgroundColor(), QStringLiteral("background"), doc);
+	eleFig.appendChild(eleBKBrush);
+	// colortheme
+	const DAColorTheme cth  = fig->getColorTheme();
+	QDomElement eleClrTheme = makeElement(&cth, QStringLiteral("colortheme"), doc);
+	eleFig.appendChild(eleClrTheme);
+	// 记录chart
+	QDomElement chartsEle                = doc->createElement(QStringLiteral("charts"));
+	const QList< DAChartWidget* > charts = fig->getChartsOrdered();
+	for (DAChartWidget* chart : charts) {
+		QDomElement chartEle = makeElement(chart, QStringLiteral("chart"), doc);
+		// 获取chart在figure的位置
+		bool isRelativePos = fig->isWidgetRelativePos(chart);
+		chartEle.setAttribute(QStringLiteral("isRelativePos"), isRelativePos);
+		if (isRelativePos) {
+			QRectF pos = fig->getWidgetPosPercent(chart);
+			chartEle.setAttribute(QStringLiteral("x"), pos.x());
+			chartEle.setAttribute(QStringLiteral("y"), pos.y());
+			chartEle.setAttribute(QStringLiteral("w"), pos.width());
+			chartEle.setAttribute(QStringLiteral("h"), pos.height());
+		} else {
+			QRect geo = chart->geometry();
+			chartEle.setAttribute(QStringLiteral("x"), geo.x());
+			chartEle.setAttribute(QStringLiteral("y"), geo.y());
+			chartEle.setAttribute(QStringLiteral("w"), geo.width());
+			chartEle.setAttribute(QStringLiteral("h"), geo.height());
+		}
+		chartsEle.appendChild(chartEle);
+	}
+	eleFig.appendChild(chartsEle);
+	return eleFig;
 }
 
-bool DAXmlHelper::loadElement(DADataManager* dmgr, const QDomElement* tag, const QVersionNumber& v)
+bool DAXmlHelper::loadElement(DAFigureWidget* fig, const QDomElement* tag, const QVersionNumber& v)
 {
-    return false;
+	auto eleBKBrush = tag->firstChildElement(QStringLiteral("background"));
+	// background
+	QBrush brush;
+	if (DAXMLFileInterface::loadElement(brush, &eleBKBrush)) {
+		fig->setBackgroundColor(brush);
+	}
+	// colortheme
+	auto eleClrTheme = tag->firstChildElement(QStringLiteral("colortheme"));
+	DAColorTheme cth;
+	if (loadElement(&cth, &eleClrTheme)) {
+		fig->setColorTheme(cth);
+	}
+	// chart
+	QDomElement chartsEle = tag->firstChildElement(QStringLiteral("charts"));
+	auto chartListEle     = chartsEle.childNodes();
+	for (int i = 0; i < chartListEle.size(); ++i) {
+		QDomElement chartEle = chartListEle.at(i).toElement();
+		if (chartEle.isNull()) {
+			continue;
+		}
+		if (chartEle.tagName() != QStringLiteral("chart")) {
+			continue;
+		}
+		std::unique_ptr< DAChartWidget > chart = std::make_unique< DAChartWidget >();
+		if (!loadElement(chart.get(), &chartEle)) {
+			continue;
+		}
+		// 获取位置
+		bool isRelativePos = chartEle.attribute(QStringLiteral("isRelativePos")).toInt();
+		if (isRelativePos) {
+			QRectF pos;
+			pos.setX(chartEle.attribute(QStringLiteral("x")).toDouble());
+			pos.setY(chartEle.attribute(QStringLiteral("y")).toDouble());
+			pos.setWidth(chartEle.attribute(QStringLiteral("w")).toDouble());
+			pos.setHeight(chartEle.attribute(QStringLiteral("h")).toDouble());
+			fig->addChart(chart.get(), pos);
+		} else {
+			QRect geo;
+			geo.setX(chartEle.attribute(QStringLiteral("x")).toInt());
+			geo.setY(chartEle.attribute(QStringLiteral("y")).toInt());
+			geo.setWidth(chartEle.attribute(QStringLiteral("w")).toInt());
+			geo.setHeight(chartEle.attribute(QStringLiteral("h")).toInt());
+			chart->setParent(fig);
+		}
+		chart.release();
+	}
+	return true;
+}
+
+/**
+ * @brief DAChartWidget
+ * @param chart
+ * @param tagName
+ * @param doc
+ * @return
+ */
+QDomElement DAXmlHelper::makeElement(const DAChartWidget* chart, const QString& tagName, QDomDocument* doc)
+{
+	QDomElement chartEle = doc->createElement(tagName);
+
+	// plotLayout
+	const QwtPlotLayout* layout = chart->plotLayout();
+	if (layout) {
+		QDomElement layoutEle = makeElement(layout, QStringLiteral("layout"), doc);
+		chartEle.appendChild(layoutEle);
+	}
+	// title
+	QwtText title = chart->title();
+	if (!title.isNull() && !title.isEmpty()) {
+		QDomElement titleEle = makeElement(&title, QStringLiteral("title"), doc);
+		chartEle.appendChild(titleEle);
+	}
+	//  Footer
+	QwtText footer = chart->footer();
+	if (!footer.isNull() && !footer.isEmpty()) {
+		QDomElement footerEle = makeElement(&footer, QStringLiteral("footer"), doc);
+		chartEle.appendChild(footerEle);
+	}
+	// canvasBackground
+	QDomElement canvasBackgroundEle =
+		DAXMLFileInterface::makeElement(chart->canvasBackground(), QStringLiteral("canvasBackground"), doc);
+	chartEle.appendChild(canvasBackgroundEle);
+	// QwtAxis::YLeft
+	QDomElement axisEle = makeQwtPlotAxisElement(chart, QwtAxis::YLeft, QStringLiteral("axis"), doc);
+	chartEle.appendChild(axisEle);
+	// QwtAxis::YRight
+	axisEle = makeQwtPlotAxisElement(chart, QwtAxis::YRight, QStringLiteral("axis"), doc);
+	chartEle.appendChild(axisEle);
+	// QwtAxis::XBottom
+	axisEle = makeQwtPlotAxisElement(chart, QwtAxis::XBottom, QStringLiteral("axis"), doc);
+	chartEle.appendChild(axisEle);
+	// QwtAxis::XTop
+	axisEle = makeQwtPlotAxisElement(chart, QwtAxis::XTop, QStringLiteral("axis"), doc);
+	chartEle.appendChild(axisEle);
+	return chartEle;
+}
+
+bool DAXmlHelper::loadElement(DAChartWidget* chart, const QDomElement* tag, const QVersionNumber& v)
+{
+	// plotLayout
+	QDomElement layoutEle = tag->firstChildElement(QStringLiteral("layout"));
+	if (!layoutEle.isNull()) {
+		QwtPlotLayout* layout = chart->plotLayout();
+		if (!layout) {
+			layout = new QwtPlotLayout();
+			chart->setPlotLayout(layout);
+		}
+		loadElement(layout, &layoutEle);
+	}
+	// title
+	QDomElement titleEle = tag->firstChildElement(QStringLiteral("title"));
+	if (!titleEle.isNull()) {
+		QwtText title;
+		loadElement(&title, &titleEle);
+		if (!title.isNull() && !title.isEmpty()) {
+			chart->setTitle(title);
+		}
+	}
+	// footer
+	QDomElement footerEle = tag->firstChildElement(QStringLiteral("footer"));
+	if (!footerEle.isNull()) {
+		QwtText footer;
+		loadElement(&footer, &footerEle);
+		if (!footer.isNull() && !footer.isEmpty()) {
+			chart->setFooter(footer);
+		}
+	}
+	// canvasBackground
+	QDomElement canvasBackgroundEle = tag->firstChildElement(QStringLiteral("canvasBackground"));
+	if (!canvasBackgroundEle.isNull()) {
+		QBrush brush;
+		if (DAXMLFileInterface::loadElement(brush, &canvasBackgroundEle)) {
+			chart->setCanvasBackground(brush);
+		}
+	}
+	// axis
+	QDomElement axisEle = tag->firstChildElement(QStringLiteral("axis"));
+	while (!axisEle.isNull()) {
+		loadQwtPlotAxisElement(chart, &axisEle);
+		axisEle = axisEle.nextSiblingElement(QStringLiteral("axis"));
+	}
+
+	return false;
+}
+
+QDomElement
+DAXmlHelper::makeQwtPlotAxisElement(const DAChartWidget* chart, int axisID, const QString& tagName, QDomDocument* doc)
+{
+	QDomElement axisEle = doc->createElement(tagName);
+	axisEle.setAttribute(QStringLiteral("axisID"), axisID);
+	axisEle.setAttribute(QStringLiteral("axisType"), enumToString(static_cast< QwtAxis::Position >(axisID)));
+	axisEle.setAttribute(QStringLiteral("visible"), chart->isAxisVisible(axisID));
+	axisEle.setAttribute(QStringLiteral("autoScale"), chart->axisAutoScale(axisID));
+	axisEle.setAttribute(QStringLiteral("maxMinor"), chart->axisMaxMajor(axisID));
+	axisEle.setAttribute(QStringLiteral("maxMajor"), chart->axisMaxMajor(axisID));
+	axisEle.setAttribute(QStringLiteral("stepSize"), chart->axisStepSize(axisID));
+	QwtInterval axisInterval = chart->axisInterval(axisID);
+	axisEle.setAttribute(QStringLiteral("min"), axisInterval.minValue());
+	axisEle.setAttribute(QStringLiteral("max"), axisInterval.maxValue());
+	// font
+	QFont f             = chart->axisFont(axisID);
+	QDomElement fontEle = DAXMLFileInterface::makeElement(f, QStringLiteral("font"), doc);
+	axisEle.appendChild(fontEle);
+	// title
+	QwtText title = chart->axisTitle(axisID);
+	if (!title.isNull() && !title.isEmpty()) {
+		QDomElement titleEle = makeElement(&title, QStringLiteral("title"), doc);
+		axisEle.appendChild(titleEle);
+	}
+	//!====================
+	//! scaleDraw 这里主要处理日期时间轴和对数时间轴
+	//!====================
+	QDomElement scaleDrawEle      = doc->createElement(QStringLiteral("scaleDraw"));
+	const QwtScaleDraw* scaleDraw = chart->axisScaleDraw(axisID);
+	// 判断是否是时间坐标轴
+	// QwtDateScaleEngine	生成刻度的位置和间隔 决定“刻度在哪里显示”
+	// QwtDateScaleDraw	格式化刻度标签	决定“刻度如何显示为日期文本”
+	if (const QwtDateScaleDraw* dateScaleDraw = dynamic_cast< const QwtDateScaleDraw* >(scaleDraw)) {
+		// 时间坐标轴
+		scaleDrawEle.setAttribute(QStringLiteral("type"), QStringLiteral("datetime"));
+		QDomElement datescaleDrawEle = doc->createElement("datescale");
+		datescaleDrawEle.setAttribute(QStringLiteral("timeSpec"), enumToString(dateScaleDraw->timeSpec()));
+		datescaleDrawEle.setAttribute(QStringLiteral("utcOffset"), dateScaleDraw->utcOffset());
+		datescaleDrawEle.setAttribute(QStringLiteral("week0Type"), enumToString(dateScaleDraw->week0Type()));
+		// 保存时间坐标轴的其它设置
+		QDomElement dateformatEle = doc->createElement(QStringLiteral("dateformat"));
+		dateformatEle.appendChild(DAXMLFileInterface::makeElement(
+			dateScaleDraw->dateFormat(QwtDate::Millisecond), QStringLiteral("msec"), doc));
+		dateformatEle.appendChild(
+			DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Second), QStringLiteral("sec"), doc));
+		dateformatEle.appendChild(
+			DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Minute), QStringLiteral("min"), doc));
+		dateformatEle.appendChild(
+			DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Hour), QStringLiteral("hour"), doc));
+		dateformatEle.appendChild(
+			DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Day), QStringLiteral("day"), doc));
+		dateformatEle.appendChild(
+			DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Week), QStringLiteral("week"), doc));
+		dateformatEle.appendChild(
+			DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Month), QStringLiteral("month"), doc));
+		dateformatEle.appendChild(
+			DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Year), QStringLiteral("year"), doc));
+		datescaleDrawEle.appendChild(dateformatEle);
+		// 把date独有的添加
+		scaleDrawEle.appendChild(datescaleDrawEle);
+	} else {
+		scaleDrawEle.setAttribute(QStringLiteral("type"), QStringLiteral("normal"));
+	}
+	// 普通坐标轴的属性
+	scaleDrawEle.setAttribute(QStringLiteral("alignment"), enumToString(scaleDraw->alignment()));
+	scaleDrawEle.setAttribute(QStringLiteral("labelAlignment"),
+							  static_cast< int >(scaleDraw->labelAlignment()));  // 这里的对其是复合对其，无法转换为字符串
+	scaleDrawEle.setAttribute(QStringLiteral("labelRotation"), scaleDraw->labelRotation());
+	axisEle.appendChild(scaleDrawEle);
+	//!====================
+	//! QwtScaleEngine 这里主要处理日期时间刻度和对数刻度
+	//!====================
+	QDomElement scaleEngineEle        = doc->createElement(QStringLiteral("scaleEngine"));
+	const QwtScaleEngine* scaleEngine = chart->axisScaleEngine(axisID);
+	if (const QwtLinearScaleEngine* lineEngine = dynamic_cast< const QwtLinearScaleEngine* >(scaleEngine)) {
+		// 说明是普通坐标
+		scaleEngineEle.setAttribute(QStringLiteral("type"), QStringLiteral("line"));
+	} else if (const QwtLogScaleEngine* logEngine = dynamic_cast< const QwtLogScaleEngine* >(scaleEngine)) {
+		// 说明是对数坐标
+		scaleEngineEle.setAttribute(QStringLiteral("type"), QStringLiteral("log"));
+	} else if (const QwtDateScaleEngine* dateEngine = dynamic_cast< const QwtDateScaleEngine* >(scaleEngine)) {
+		// 说明是对数坐标
+		scaleEngineEle.setAttribute(QStringLiteral("type"), QStringLiteral("date"));
+	}
+	axisEle.appendChild(scaleEngineEle);
+	return axisEle;
+}
+
+bool DAXmlHelper::loadQwtPlotAxisElement(DAChartWidget* chart, const QDomElement* qwtplotTag, const QVersionNumber& v)
+{
+	Q_UNUSED(v);
+	QwtAxisId axisID = qwtplotTag->attribute(QStringLiteral("axisID")).toInt();
+
+	chart->setAxisVisible(axisID, qwtplotTag->attribute(QStringLiteral("visible")).toInt());
+	chart->setAxisAutoScale(axisID, qwtplotTag->attribute(QStringLiteral("autoScale")).toInt());
+	chart->setAxisMaxMinor(axisID, qwtplotTag->attribute(QStringLiteral("maxMinor")).toInt());
+	chart->setAxisMaxMajor(axisID, qwtplotTag->attribute(QStringLiteral("maxMajor")).toInt());
+	bool isok0 = false, isok1 = false, isok2 = false;
+	double stepSize = qwtplotTag->attribute(QStringLiteral("stepSize")).toDouble(&isok0);
+	double minValue = qwtplotTag->attribute(QStringLiteral("min")).toDouble(&isok1);
+	double maxValue = qwtplotTag->attribute(QStringLiteral("max")).toDouble(&isok2);
+	if (isok0 && isok1 && isok2) {
+		chart->setAxisScale(axisID, minValue, maxValue, stepSize);
+	}
+	// font
+	QDomElement fontEle = qwtplotTag->firstChildElement(QStringLiteral("font"));
+	if (!fontEle.isNull()) {
+		QFont f = chart->axisFont(axisID);
+		if (DAXMLFileInterface::loadElement(f, &fontEle)) {
+			chart->setAxisFont(axisID, f);
+		}
+	}
+	// title
+	QDomElement titleEle = qwtplotTag->firstChildElement(QStringLiteral("title"));
+	if (!titleEle.isNull()) {
+		QwtText title = chart->axisTitle(axisID);
+		if (loadElement(&title, &titleEle)) {
+			chart->setAxisTitle(axisID, title);
+		}
+	}
+	//!====================
+	//! scaleDraw 这里主要处理日期时间轴和对数时间轴
+	//!====================
+	// 判断是否是时间坐标轴
+	// QwtDateScaleEngine	生成刻度的位置和间隔 决定“刻度在哪里显示”
+	// QwtDateScaleDraw	格式化刻度标签	决定“刻度如何显示为日期文本”
+	QDomElement scaleDrawEle = qwtplotTag->firstChildElement(QStringLiteral("scaleDraw"));
+	if (!scaleDrawEle.isNull()) {
+		QwtScaleDraw* scaleDraw         = chart->axisScaleDraw(axisID);
+		QwtDateScaleDraw* dateScaleDraw = dynamic_cast< QwtDateScaleDraw* >(scaleDraw);
+		if (scaleDrawEle.attribute(QStringLiteral("type")).toLower() == QStringLiteral("datetime")) {
+			// 说明是时间坐标系
+			if (!dateScaleDraw) {
+				// 说明需要新建一个datescaleDraw
+				dateScaleDraw = new QwtDateScaleDraw();
+				chart->setAxisScaleDraw(axisID, dateScaleDraw);
+			}
+			QDomElement datescaleDrawEle = scaleDrawEle.firstChildElement(QStringLiteral("datescale"));
+			if (!datescaleDrawEle.isNull()) {
+				dateScaleDraw->setTimeSpec(
+					stringToEnum(datescaleDrawEle.attribute(QStringLiteral("timeSpec")), Qt::LocalTime));
+				dateScaleDraw->setUtcOffset(datescaleDrawEle.attribute(QStringLiteral("utcOffset")).toInt());
+				dateScaleDraw->setWeek0Type(
+					stringToEnum(datescaleDrawEle.attribute(QStringLiteral("week0Type")), QwtDate::FirstThursday));
+				// 设置dateformat
+				QDomElement dateformatEle = datescaleDrawEle.firstChildElement(QStringLiteral("dateformat"));
+				if (!dateformatEle.isNull()) {
+					auto safeSetDateformat = [ &dateformatEle, dateScaleDraw ](const QString& tagName) {
+						QString fm = dateformatEle.firstChildElement(tagName).text();
+						if (!fm.isEmpty()) {
+							dateScaleDraw->setDateFormat(QwtDate::Millisecond, fm);
+						}
+					};
+					safeSetDateformat(QStringLiteral("msec"));
+					safeSetDateformat(QStringLiteral("sec"));
+					safeSetDateformat(QStringLiteral("min"));
+					safeSetDateformat(QStringLiteral("hour"));
+					safeSetDateformat(QStringLiteral("day"));
+					safeSetDateformat(QStringLiteral("week"));
+					safeSetDateformat(QStringLiteral("month"));
+					safeSetDateformat(QStringLiteral("year"));
+				}
+			}
+		} else {
+			// 说明没有scaleDraw
+			if (!scaleDraw) {
+				scaleDraw = new QwtScaleDraw();
+				chart->setAxisScaleDraw(axisID, scaleDraw);
+			}
+			// 说明是普通坐标，但原来是时间坐标
+			if (dateScaleDraw) {
+				// 说明需要新建一个QwtScaleDraw,还原为普通坐标
+				scaleDraw = new QwtScaleDraw();
+				chart->setAxisScaleDraw(axisID, scaleDraw);
+			}
+		}
+		// QwtScaleDraw的属性设置
+		scaleDraw->setAlignment(stringToEnum(scaleDrawEle.attribute(QStringLiteral("alignment")), QwtScaleDraw::BottomScale));
+		scaleDraw->setLabelAlignment(
+			static_cast< Qt::Alignment >(scaleDrawEle.attribute(QStringLiteral("labelAlignment")).toInt()));
+		scaleDraw->setLabelRotation(scaleDrawEle.attribute(QStringLiteral("labelRotation")).toDouble());
+	}
+	//!====================
+	//! QwtScaleEngine 这里主要处理日期时间刻度和对数刻度
+	//!====================
+	QDomElement scaleEngineEle = qwtplotTag->firstChildElement(QStringLiteral("scaleEngine"));
+	if (!scaleEngineEle.isNull()) {
+		QwtScaleEngine* scaleEngine = chart->axisScaleEngine(axisID);
+		QString scaleEngineType     = scaleEngineEle.attribute(QStringLiteral("type")).toLower();
+
+		if (scaleEngineType == QStringLiteral("line")) {
+			if (!scaleEngine || dynamic_cast< QwtLinearScaleEngine* >(scaleEngine) == nullptr
+				// || dynamic_cast< QwtDateScaleEngine* >(scaleEngine)
+			) {  // QwtDateScaleEngine是为了确保如果原来如果是QwtDateScaleEngine，把它变回QwtLinearScaleEngine，但实际不会出现这种情况，省略
+				scaleEngine = new QwtLinearScaleEngine();
+				chart->setAxisScaleEngine(axisID, scaleEngine);
+			}
+		} else if (scaleEngineType == QStringLiteral("date")) {
+			if (!scaleEngine || dynamic_cast< QwtDateScaleEngine* >(scaleEngine) == nullptr) {
+				scaleEngine = new QwtDateScaleEngine();
+				chart->setAxisScaleEngine(axisID, scaleEngine);
+			}
+		} else if (scaleEngineType == QStringLiteral("log")) {
+			if (!scaleEngine || dynamic_cast< QwtLogScaleEngine* >(scaleEngine) == nullptr) {
+				scaleEngine = new QwtLogScaleEngine();
+				chart->setAxisScaleEngine(axisID, scaleEngine);
+			}
+		}
+	}
+	return true;
+}
+
+/**
+ * @brief QwtPlotLayout
+ * @param value
+ * @param tagName
+ * @param doc
+ * @return
+ */
+QDomElement DAXmlHelper::makeElement(const QwtPlotLayout* value, const QString& tagName, QDomDocument* doc)
+{
+	QDomElement rootEle = doc->createElement(tagName);
+	// setCanvasMargin
+	QDomElement canvasMarginEle = doc->createElement(QStringLiteral("margin"));
+	canvasMarginEle.setAttribute(QStringLiteral("YLeft"), value->canvasMargin(QwtAxis::YLeft));
+	canvasMarginEle.setAttribute(QStringLiteral("YRight"), value->canvasMargin(QwtAxis::YRight));
+	canvasMarginEle.setAttribute(QStringLiteral("XBottom"), value->canvasMargin(QwtAxis::XBottom));
+	canvasMarginEle.setAttribute(QStringLiteral("XTop"), value->canvasMargin(QwtAxis::XTop));
+	rootEle.appendChild(canvasMarginEle);
+
+	// alignCanvasToScale
+	QDomElement alignCanvasToScaleEle = doc->createElement(QStringLiteral("alignToScale"));
+	alignCanvasToScaleEle.setAttribute(QStringLiteral("YLeft"), value->alignCanvasToScale(QwtAxis::YLeft));
+	alignCanvasToScaleEle.setAttribute(QStringLiteral("YRight"), value->alignCanvasToScale(QwtAxis::YRight));
+	alignCanvasToScaleEle.setAttribute(QStringLiteral("XBottom"), value->alignCanvasToScale(QwtAxis::XBottom));
+	alignCanvasToScaleEle.setAttribute(QStringLiteral("XTop"), value->alignCanvasToScale(QwtAxis::XTop));
+	rootEle.appendChild(alignCanvasToScaleEle);
+
+	// 其它属性
+	rootEle.setAttribute(QStringLiteral("spacing"), value->spacing());
+	rootEle.setAttribute(QStringLiteral("legendRatio"), value->legendRatio());
+	rootEle.setAttribute(QStringLiteral("legendPosition"), enumToString(value->legendPosition()));
+	return rootEle;
+}
+
+bool DAXmlHelper::loadElement(QwtPlotLayout* value, const QDomElement* tag, const QVersionNumber& version)
+{
+	QDomElement canvasMarginEle = tag->firstChildElement(QStringLiteral("margin"));
+	if (!canvasMarginEle.isNull()) {
+		value->setCanvasMargin(canvasMarginEle.attribute("YLeft").toInt(), QwtAxis::YLeft);
+		value->setCanvasMargin(canvasMarginEle.attribute("YRight").toInt(), QwtAxis::YRight);
+		value->setCanvasMargin(canvasMarginEle.attribute("XBottom").toInt(), QwtAxis::XBottom);
+		value->setCanvasMargin(canvasMarginEle.attribute("XTop").toInt(), QwtAxis::XTop);
+	}
+
+	QDomElement alignCanvasToScaleEle = tag->firstChildElement(QStringLiteral("alignToScale"));
+	if (!alignCanvasToScaleEle.isNull()) {
+		value->setAlignCanvasToScale(QwtAxis::YLeft, alignCanvasToScaleEle.attribute("YLeft").toInt());
+		value->setAlignCanvasToScale(QwtAxis::YRight, alignCanvasToScaleEle.attribute("YRight").toInt());
+		value->setAlignCanvasToScale(QwtAxis::XBottom, alignCanvasToScaleEle.attribute("XBottom").toInt());
+		value->setAlignCanvasToScale(QwtAxis::XTop, alignCanvasToScaleEle.attribute("XTop").toInt());
+	}
+
+	// 其它属性
+	value->setSpacing(tag->attribute("spacing").toInt());
+	value->setLegendRatio(tag->attribute("legendRatio").toDouble());
+	value->setLegendPosition(stringToEnum(tag->attribute("legendPosition"), QwtPlot::RightLegend));
+	return true;
+}
+
+/**
+ * @brief QwtText
+ * @param value
+ * @param tagName
+ * @param doc
+ * @return
+ */
+QDomElement DAXmlHelper::makeElement(const QwtText* value, const QString& tagName, QDomDocument* doc)
+{
+	QDomElement rootEle = doc->createElement(tagName);
+	// text
+	QDomElement textEle = doc->createElement(QStringLiteral("text"));
+	textEle.setAttribute(QStringLiteral("format"), enumToString(value->format()));
+	textEle.appendChild(doc->createTextNode(value->text()));
+	// font
+	QDomElement fontEle = DAXMLFileInterface::makeElement(value->font(), QStringLiteral("font"), doc);
+	rootEle.appendChild(fontEle);
+	// color
+	QDomElement colorEle = DAXMLFileInterface::makeElement(value->color(), QStringLiteral("color"), doc);
+	rootEle.appendChild(colorEle);
+	// borderPen
+	QDomElement borderPenEle = DAXMLFileInterface::makeElement(value->borderPen(), QStringLiteral("borderPen"), doc);
+	rootEle.appendChild(borderPenEle);
+	// backgroundBrush
+	QDomElement backgroundBrushEle =
+		DAXMLFileInterface::makeElement(value->backgroundBrush(), QStringLiteral("backgroundBrush"), doc);
+	rootEle.appendChild(backgroundBrushEle);
+	// backgroundBrush
+
+	return rootEle;
+}
+
+bool DAXmlHelper::loadElement(QwtText* value, const QDomElement* tag, const QVersionNumber& version)
+{
+	// text
+	QDomElement textEle = tag->firstChildElement(QStringLiteral("text"));
+	if (!textEle.isNull()) {
+		QwtText::TextFormat fm = stringToEnum(textEle.attribute(QStringLiteral("format")), QwtText::AutoText);
+		value->setText(textEle.text(), fm);
+	}
+	// font
+	QDomElement fontEle = tag->firstChildElement(QStringLiteral("font"));
+	if (!fontEle.isNull()) {
+		QFont v;
+		if (DAXMLFileInterface::loadElement(v, &fontEle)) {
+			value->setFont(v);
+		}
+	}
+	// color
+	QDomElement colorEle = tag->firstChildElement(QStringLiteral("color"));
+	if (!colorEle.isNull()) {
+		QColor v;
+		if (DAXMLFileInterface::loadElement(v, &colorEle)) {
+			value->setColor(v);
+		}
+	}
+	// borderPen
+	QDomElement borderPenEle = tag->firstChildElement(QStringLiteral("borderPen"));
+	if (!borderPenEle.isNull()) {
+		QPen v;
+		if (DAXMLFileInterface::loadElement(v, &borderPenEle)) {
+			value->setBorderPen(v);
+		}
+	}
+	// backgroundBrush
+	QDomElement backgroundBrushEle = tag->firstChildElement(QStringLiteral("backgroundBrush"));
+	if (!backgroundBrushEle.isNull()) {
+		QBrush v;
+		if (DAXMLFileInterface::loadElement(v, &backgroundBrushEle)) {
+			value->setBackgroundBrush(v);
+		}
+	}
+	return true;
 }
 
 /**
@@ -1941,7 +2434,7 @@ qreal DAXmlHelper::attributeToDouble(const QDomElement& item, const QString& att
 	qreal r   = item.attribute(att).toDouble(&isok);
 	if (!isok) {
 		qWarning() << QObject::tr("The attribute %1=%2 under the tag %3 cannot be converted to double ")
-                          .arg(att, item.attribute(att), item.tagName());
+						  .arg(att, item.attribute(att), item.tagName());
 	}
 	return r;
 }

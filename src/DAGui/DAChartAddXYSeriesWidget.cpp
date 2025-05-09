@@ -3,44 +3,29 @@
 #include "ui_DAChartAddXYSeriesWidget.h"
 #include "DADataManager.h"
 #include "Models/DADataManagerTreeModel.h"
-#include "qwt_plot_curve.h"
 #if DA_ENABLE_PYTHON
 #include "Models/DAPySeriesTableModule.h"
 #endif
 namespace DA
 {
 
-class DAChartAddXYSeriesWidget::PrivateData
-{
-	DA_DECLARE_PUBLIC(DAChartAddXYSeriesWidget)
-public:
-	PrivateData(DAChartAddXYSeriesWidget* p);
-
-public:
-	DADataManager* _dataMgr { nullptr };
-#if DA_ENABLE_PYTHON
-	DAPySeriesTableModule* _model { nullptr };
-#endif
-};
-
-DAChartAddXYSeriesWidget::PrivateData::PrivateData(DAChartAddXYSeriesWidget* p) : q_ptr(p)
-{
-}
 //===================================================
 // DAChartAddXYSeriesWidget
 //===================================================
 
 DAChartAddXYSeriesWidget::DAChartAddXYSeriesWidget(QWidget* parent)
-	: QWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DAChartAddXYSeriesWidget)
+    : DAAbstractChartAddItemWidget(parent), ui(new Ui::DAChartAddXYSeriesWidget)
 {
 	ui->setupUi(this);
 #if DA_ENABLE_PYTHON
-	d_ptr->_model = new DAPySeriesTableModule(this);
-	d_ptr->_model->setHeaderLabel({ tr("x"), tr("y") });
-	ui->tableViewXY->setModel(d_ptr->_model);
+	mModel = new DAPySeriesTableModule(this);
+	mModel->setHeaderLabel({ tr("x"), tr("y") });
+	ui->tableViewXY->setModel(mModel);
 #endif
 	QFontMetrics fm = fontMetrics();
 	ui->tableViewXY->verticalHeader()->setDefaultSectionSize(fm.lineSpacing() * 1.1);
+	connect(this, &DAChartAddXYSeriesWidget::dataManagerChanged, this, &DAChartAddXYSeriesWidget::onDataManagerChanged);
+	connect(this, &DAChartAddXYSeriesWidget::currentDataChanged, this, &DAChartAddXYSeriesWidget::onCurrentDataChanged);
 	connect(ui->comboBoxX,
 			&DADataManagerComboBox::currentDataframeSeriesChanged,
 			this,
@@ -56,18 +41,6 @@ DAChartAddXYSeriesWidget::DAChartAddXYSeriesWidget(QWidget* parent)
 DAChartAddXYSeriesWidget::~DAChartAddXYSeriesWidget()
 {
 	delete ui;
-}
-
-void DAChartAddXYSeriesWidget::setDataManager(DADataManager* dmgr)
-{
-	d_ptr->_dataMgr = dmgr;
-	ui->comboBoxX->setDataManager(dmgr);
-	ui->comboBoxY->setDataManager(dmgr);
-}
-
-DADataManager* DAChartAddXYSeriesWidget::getDataManager() const
-{
-    return ui->comboBoxX->getDataManager();
 }
 
 /**
@@ -101,17 +74,6 @@ QVector< QPointF > DAChartAddXYSeriesWidget::getSeries() const
 }
 
 /**
- * @brief 设置当前的数据
- * @param d
- */
-void DAChartAddXYSeriesWidget::setCurrentData(const DAData& d)
-{
-	// 这里看看这个数据给它一个，默认的选择
-	ui->comboBoxX->setCurrentDAData(d);
-	ui->comboBoxY->setCurrentDAData(d);
-}
-
-/**
  * @brief DAChartAddXYSeriesWidget::onComboBoxXCurrentDataframeSeriesChanged
  * @param data
  * @param seriesName
@@ -127,7 +89,7 @@ void DAChartAddXYSeriesWidget::onComboBoxXCurrentDataframeSeriesChanged(const DA
 	if (!df.isNone()) {
 		series = df[ seriesName ];
 	}
-	d_ptr->_model->setSeriesAt(0, series);
+	mModel->setSeriesAt(0, series);
 #endif
 }
 
@@ -147,7 +109,7 @@ void DAChartAddXYSeriesWidget::onComboBoxYCurrentDataframeSeriesChanged(const DA
 	if (!df.isNone()) {
 		series = df[ seriesName ];
 	}
-	d_ptr->_model->setSeriesAt(1, series);
+	mModel->setSeriesAt(1, series);
 #endif
 }
 
@@ -161,7 +123,7 @@ void DAChartAddXYSeriesWidget::onGroupBoxXAutoincrementClicked(bool on)
 	if (on) {
 		double base, step;
 		if (tryGetXSelfInc(base, step)) {
-			d_ptr->_model->setSeriesAt(0, DAAutoincrementSeries< double >(base, step));
+			mModel->setSeriesAt(0, DAAutoincrementSeries< double >(base, step));
 		}
 	} else {
 		// 取消要读取回原来的设置
@@ -170,7 +132,7 @@ void DAChartAddXYSeriesWidget::onGroupBoxXAutoincrementClicked(bool on)
 		if (data) {
 			series = data.toSeries();
 		}
-		d_ptr->_model->setSeriesAt(0, series);
+		mModel->setSeriesAt(0, series);
 	}
 	ui->comboBoxX->setEnabled(!on);
 #endif
@@ -186,7 +148,7 @@ void DAChartAddXYSeriesWidget::onGroupBoxYAutoincrementClicked(bool on)
 	if (on) {
 		double base, step;
 		if (tryGetYSelfInc(base, step)) {
-			d_ptr->_model->setSeriesAt(1, DAAutoincrementSeries< double >(base, step));
+			mModel->setSeriesAt(1, DAAutoincrementSeries< double >(base, step));
 		}
 	} else {
 		// 取消要读取回原来的设置
@@ -195,10 +157,22 @@ void DAChartAddXYSeriesWidget::onGroupBoxYAutoincrementClicked(bool on)
 		if (data) {
 			series = data.toSeries();
 		}
-		d_ptr->_model->setSeriesAt(1, series);
+		mModel->setSeriesAt(1, series);
 	}
 	ui->comboBoxY->setEnabled(!on);
 #endif
+}
+
+void DAChartAddXYSeriesWidget::onDataManagerChanged(DADataManager* dmgr)
+{
+	ui->comboBoxX->setDataManager(dmgr);
+	ui->comboBoxY->setDataManager(dmgr);
+}
+
+void DAChartAddXYSeriesWidget::onCurrentDataChanged(const DAData& d)
+{
+	ui->comboBoxX->setCurrentDAData(d);
+	ui->comboBoxY->setCurrentDAData(d);
 }
 
 /**
@@ -212,11 +186,11 @@ bool DAChartAddXYSeriesWidget::getXAutoIncFromUI(DAAutoincrementSeries< double >
 	bool isOK   = false;
 	double base = ui->lineEditXInitValue->text().toDouble(&isOK);
 	if (!isOK) {
-		QMessageBox::
-			warning(this,
-					tr("Warning"),  // cn:警告
-					tr("The initial value of x auto increment series must be a floating-point arithmetic number")  // cn:x自增序列的初始值必须为浮点数
-			);
+		QMessageBox::warning(
+			this,
+			tr("Warning"),                                                                                 // cn:警告
+			tr("The initial value of x auto increment series must be a floating-point arithmetic number")  // cn:x自增序列的初始值必须为浮点数
+		);
 		return false;
 	}
 	double step = ui->lineEditXStepValue->text().toDouble(&isOK);

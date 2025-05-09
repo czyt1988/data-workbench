@@ -46,9 +46,9 @@ DAMessageLogsModelPrivate::DAMessageLogsModelPrivate(DAMessageLogsModel* p)
 DAMessageLogsModel::DAMessageLogsModel(QObject* p) : QAbstractTableModel(p), d_ptr(new DAMessageLogsModelPrivate(this))
 {
 	connect(&(d_ptr->_messageQueueProxy),
-			&DAMessageQueueProxy::messageQueueSizeChanged,
-			this,
-			&DAMessageLogsModel::onMessageQueueSizeChanged);
+            &DAMessageQueueProxy::messageQueueSizeChanged,
+            this,
+            &DAMessageLogsModel::onMessageQueueSizeChanged);
 	connect(&(d_ptr->_messageQueueProxy), &DAMessageQueueProxy::messageQueueAppended, this, &DAMessageLogsModel::onMessageAppended);
 	d_ptr->_rowCount = d_ptr->_messageQueueProxy.size();
 }
@@ -245,7 +245,7 @@ void DAMessageLogsModel::onMessageQueueSizeChanged(int newSize)
 	Q_UNUSED(newSize);
 	int r = rowCount() - 1;
 	int s = d_ptr->_messageQueueProxy.size() - 1;
-	qDebug() << "onMessageQueueSizeChanged:" << newSize;
+    // qDebug() << "onMessageQueueSizeChanged:" << newSize;
 	// 防止清空队列后出现负索引
 	s = (s > 0) ? s : 0;
 	r = (r > 0) ? r : 0;

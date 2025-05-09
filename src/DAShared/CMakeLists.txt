@@ -31,6 +31,12 @@ endif()
 file(GLOB DA_LIB_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 file(GLOB DA_LIB_HPP_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.hpp")
 
+add_library(${DA_LIB_NAME} INTERFACE ${DA_LIB_HEADER_FILES} ${DA_LIB_HPP_FILES})
+# 添加头文件目录
+target_include_directories(${DA_LIB_NAME} INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${DA_PROJECT_NAME}/${DA_LIB_NAME}>
+)
 ########################################################
 # 安装
 ########################################################

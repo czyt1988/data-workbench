@@ -18,8 +18,8 @@ public:
 	DA_DECLARE_PUBLIC(DAChartManageWidget)
 	PrivateData(DAChartManageWidget* p);
 	QPointer< DAChartOperateWidget > mChartOptWidget;
-	bool mSetCurrentChartOnClicked { true };
-	bool mSetCurrentChartOnDbClicked { true };
+	bool mSetCurrentChartOnClicked{ true };
+	bool mSetCurrentChartOnDbClicked{ true };
 };
 DAChartManageWidget::PrivateData::PrivateData(DAChartManageWidget* p) : q_ptr(p)
 {
@@ -214,5 +214,4 @@ void DAChartManageWidget::onTreeViewDoubleClicked(const QModelIndex& index)
 		treeviewChartItemClicked(ii);
 	}
 }
-
 }

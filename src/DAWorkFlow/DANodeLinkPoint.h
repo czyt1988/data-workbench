@@ -37,7 +37,8 @@ public:
 	// 点是否会相遇
 	static bool isPointCanMeet(const QPointF& p1, AspectDirection d1, const QPointF& p2, AspectDirection d2);
 	// 针对平行点线，沿着方向移动可以接近，此函数只对平行点线有用
-	static bool isParallelPointApproachInDirection(const QPointF& p1, AspectDirection d1, const QPointF& p2, AspectDirection d2);
+	static bool
+	isParallelPointApproachInDirection(const QPointF& p1, AspectDirection d1, const QPointF& p2, AspectDirection d2);
 	// 翻转方向
 	static AspectDirection oppositeDirection(AspectDirection d);
 	// 返回点1相对点2的位置
@@ -53,12 +54,6 @@ public:
 	Way way;                    ///< 连接点的属性，是输入还是输出
 	AspectDirection direction;  ///< 连接点引线的伸出方向（用于绘制连线的时候指定方向）
 };
-
-// DANodeLinkPoint::Way 的枚举转换
-DAWORKFLOW_API QString enumToString(DANodeLinkPoint::Way e);
-// DANodeLinkPoint::Way 的枚举转换
-DAWORKFLOW_API DANodeLinkPoint::Way stringToEnum(const QString& s,
-												 DANodeLinkPoint::Way defaultEnum = DANodeLinkPoint::Input);
 
 DAWORKFLOW_API uint qHash(const DANodeLinkPoint& key, uint seed);
 

@@ -881,57 +881,57 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="APP/DAAppController.cpp" line="698"/>
-        <location filename="APP/DAAppController.cpp" line="800"/>
+        <location filename="APP/DAAppController.cpp" line="694"/>
+        <location filename="APP/DAAppController.cpp" line="796"/>
         <source>project file(*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="713"/>
+        <location filename="APP/DAAppController.cpp" line="709"/>
         <source>Question</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="714"/>
+        <location filename="APP/DAAppController.cpp" line="710"/>
         <source>Another project already exists. Do you want to replace it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="740"/>
-        <location filename="APP/DAAppController.cpp" line="817"/>
+        <location filename="APP/DAAppController.cpp" line="736"/>
+        <location filename="APP/DAAppController.cpp" line="813"/>
         <source>failed to load project file:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppController.cpp" line="419"/>
-        <location filename="APP/DAAppController.cpp" line="763"/>
+        <location filename="APP/DAAppController.cpp" line="759"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="765"/>
+        <location filename="APP/DAAppController.cpp" line="761"/>
         <source>project file (*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="775"/>
+        <location filename="APP/DAAppController.cpp" line="771"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="776"/>
+        <location filename="APP/DAAppController.cpp" line="772"/>
         <source>Whether to overwrite the file:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="APP/DAAppController.cpp" line="430"/>
-        <location filename="APP/DAAppController.cpp" line="785"/>
+        <location filename="APP/DAAppController.cpp" line="781"/>
         <source>Project saved failed!,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="789"/>
-        <location filename="APP/DAAppController.cpp" line="842"/>
+        <location filename="APP/DAAppController.cpp" line="785"/>
+        <location filename="APP/DAAppController.cpp" line="838"/>
         <source>Project saved successfully,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -941,82 +941,77 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="451"/>
-        <source>Please select the data operation window</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppController.cpp" line="859"/>
+        <location filename="APP/DAAppController.cpp" line="855"/>
         <source>Project load successfully,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="928"/>
+        <location filename="APP/DAAppController.cpp" line="924"/>
         <source>Image files (*.png *.jpg)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="929"/>
+        <location filename="APP/DAAppController.cpp" line="925"/>
         <source>Any files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1002"/>
+        <location filename="APP/DAAppController.cpp" line="998"/>
         <source>The image was successfully saved in path %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1004"/>
+        <location filename="APP/DAAppController.cpp" line="1000"/>
         <source>Image save failed at path %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1043"/>
+        <location filename="APP/DAAppController.cpp" line="1039"/>
         <source>get null project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1049"/>
+        <location filename="APP/DAAppController.cpp" line="1045"/>
         <source>warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1050"/>
+        <location filename="APP/DAAppController.cpp" line="1046"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1352"/>
+        <location filename="APP/DAAppController.cpp" line="1348"/>
         <source>Before creating a new coordinate,you need to create a figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1695"/>
+        <location filename="APP/DAAppController.cpp" line="1691"/>
         <source>%1_Describe</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1696"/>
+        <location filename="APP/DAAppController.cpp" line="1692"/>
         <source>Generate descriptive statistics that summarize the central tendency, dispersion and shape of a [%1]’s distribution, excluding NaN values</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1721"/>
+        <location filename="APP/DAAppController.cpp" line="1716"/>
         <source>%1_PviotTable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1722"/>
-        <source>Generate pivot table of %1</source>
+        <location filename="APP/DAAppController.cpp" line="1717"/>
+        <source>Generate pivot table</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1994"/>
+        <location filename="APP/DAAppController.cpp" line="1989"/>
         <source>new workflow name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="1995"/>
+        <location filename="APP/DAAppController.cpp" line="1990"/>
         <source>new workflow name:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1784,12 +1779,12 @@ Config</source>
 <context>
     <name>DA::DAChartWidget</name>
     <message>
-        <location filename="DAFigure/DAChartWidget.cpp" line="1028"/>
+        <location filename="DAFigure/DAChartWidget.cpp" line="1032"/>
         <source>Before zoom in, the chart must setup a zoomer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartWidget.cpp" line="1057"/>
+        <location filename="DAFigure/DAChartWidget.cpp" line="1061"/>
         <source>Before zoom out, the chart must setup a zoomer</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2051,42 +2046,6 @@ Config</source>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameFillna.cpp" line="27"/>
         <source>The current input cannot be converted to a floating-point number.</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DA::DADialogDataFrameQueryDatas</name>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameQueryDatas.cpp" line="12"/>
-        <source>Using the **Query Data** feature, you can filter data using expressions:
-
-1  **Comparison Operators**: Supports `==`, `&gt;`, `&lt;`, `&gt;=`, `&lt;=`, `!=` for direct comparison of column names and values.  
-   **Example**:  
-   `A &gt; 2 &amp; B &lt; 8` filters rows where the value in column **A** is greater than **2** and the value in column **B** is less than **8**.
-
-2  **Inter-Column Comparisons**: Directly compare values between columns.  
-   **Example**:  
-   `A &gt; B` filters rows where the value in column **A** is greater than the value in column **B**.
-
-3  **Logical Operators**: Supports `and`, `or`, `not`, `in`, and `not in` for simplified multi-condition filtering.
-   **Examples**:  
-   - `A &gt; 2 and B &lt; 8` filters rows where **A** &gt; 2 and **B** &lt; 8.  
-   - `A in (&quot; S &quot;, &quot; C &quot;)` filters rows where **A** is either &quot; S &quot; or &quot; C &quot;.
-
-4  **Arithmetic and Complex Logic**: Allows arithmetic operations and complex logical expressions.  
-   **Example**:  
-   `(A * 3 &gt; 1) | ((B + 12.5) &lt; 5)`.
-
-5  **Range Filtering with `between`**: Use `between` to filter numeric ranges.  
-   **Example**:  
-   `A.between(2, 8)` filters values in column **A** between **2** and **8**.
-
-6  **String Operations with `str` Methods**: Supports string column processing (e.g., length, prefix matching).  
-   **Example**:  
-   `Ticket.str.startswith(&quot; A &quot;)` filters rows where the **Ticket** column starts with &quot; A &quot;.
-
-**Note**:  
-If a column name contains spaces or special characters, enclose it in backticks (`` ` ``), e.g., `` `Embarked On` ``.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3817,6 +3776,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="DAGui/Dialog/DADialogDataFrameClipOutlier.ui" line="14"/>
+        <location filename="DAGui/Dialog/DADialogDataFrameClipOutlier.ui" line="20"/>
+        <source>Clip Outlier</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="DAGui/Dialog/DADialogDataFrameClipOutlier.ui" line="26"/>
         <source>Lower Value</source>
         <oldsource>LowerValue</oldsource>
@@ -3917,13 +3882,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <name>DADialogDataFrameFillna</name>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameFillna.ui" line="14"/>
-        <source>Fill Nan</source>
+        <source>Dialog</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameFillna.ui" line="20"/>
-        <source>Fill NaN values</source>
-        <oldsource>Fill NA/NaN values</oldsource>
+        <source>Fill NA/NaN values</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3947,12 +3911,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillna.ui" line="93"/>
+        <location filename="DAGui/Dialog/DADialogDataFrameFillna.ui" line="87"/>
         <source>OK</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillna.ui" line="107"/>
+        <location filename="DAGui/Dialog/DADialogDataFrameFillna.ui" line="101"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3961,32 +3925,42 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <name>DADialogDataFrameQueryDatas</name>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameQueryDatas.ui" line="14"/>
-        <source>Query Data</source>
+        <source>Dialog</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameQueryDatas.ui" line="23"/>
-        <source>You can refer to column names that are not valid Python variable names by surrounding them in backticks. Thus, column names containing spaces or punctuations (besides underscores) or starting with digits must be surrounded by backticks. (For example, a column named “Area (cm^2)” would be referenced as `Area (cm^2)`). Column names which are Python keywords (like “list”, “for”, “import”, etc) cannot be used. For example, if one of your columns is called a a and you want to sum it with b, your query should be `a a` + b.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameQueryDatas.ui" line="30"/>
-        <source>The query string to evaluate</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameQueryDatas.ui" line="52"/>
+        <location filename="DAGui/Dialog/DADialogDataFrameQueryDatas.ui" line="35"/>
         <source>OK</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameQueryDatas.ui" line="66"/>
+        <location filename="DAGui/Dialog/DADialogDataFrameQueryDatas.ui" line="49"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameQueryDatas.ui" line="79"/>
-        <source>Explanation：</source>
+        <location filename="DAGui/Dialog/DADialogDataFrameQueryDatas.ui" line="62"/>
+        <source>Query Datas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogDataFrameQueryDatas.ui" line="70"/>
+        <source>logic:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogDataFrameQueryDatas.ui" line="78"/>
+        <source>AND</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogDataFrameQueryDatas.ui" line="83"/>
+        <source>OR</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="DAGui/Dialog/DADialogDataFrameQueryDatas.ui" line="104"/>
+        <source>add conditions</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6378,7 +6352,7 @@ params:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureWidget.cpp" line="800"/>
+        <location filename="DAFigure/DAFigureWidget.cpp" line="799"/>
         <source>DAFigureWidget get invalid magic strat code</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6515,22 +6489,22 @@ params:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="688"/>
+        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="689"/>
         <source>query datas</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="718"/>
+        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="719"/>
         <source>cast column to num</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="754"/>
+        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="755"/>
         <source>cast column to datetime</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="790"/>
+        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="791"/>
         <source>set column to index</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6788,17 +6762,17 @@ params:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAPyBindQt/pandas/DAPyIndex.cpp" line="159"/>
+        <location filename="DAPyBindQt/pandas/DAPyIndex.cpp" line="125"/>
         <source>DAPyIndex get python object type is not pandas.Index</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAPyBindQt/pandas/DAPyModulePandas.cpp" line="163"/>
+        <location filename="DAPyBindQt/pandas/DAPyModulePandas.cpp" line="169"/>
         <source>use utf-8 open file %1 error,try to use ansi encoding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAPyBindQt/pandas/DAPySeries.cpp" line="186"/>
+        <location filename="DAPyBindQt/pandas/DAPySeries.cpp" line="154"/>
         <source>DAPySeries  get python object type is not pandas.Series</source>
         <translation type="unfinished"></translation>
     </message>

@@ -35,50 +35,6 @@ enum class AspectDirection
 };
 
 /**
- * @brief 定义一个形状的9个关键位置点
- *
- * @details
- *
- * ```
- * 1---2---3
- * |       |
- * 4---5---6
- * |       |
- * 7---8---9
- * ```
- *
- */
-enum class ShapeKeyPoint
-{
-	TopLeft = 0,
-	TopCenter,
-	TopRight,
-	CenterLeft,
-	Center,
-	CenterRight,
-	BottomLeft,
-	BottomCenter,
-	BottomRight,
-	None = 128
-};
-
-/**
- * @brief QRect对应ShapeKeyPoint的点
- * @param r
- * @param kp 关键点
- * @return
- */
-QPoint rectShapeKeyPoint(const QRect& r, ShapeKeyPoint kp);
-
-/**
- * @brief QRectF对应ShapeKeyPoint的点
- * @param r
- * @param kp 关键点
- * @return
- */
-QPointF rectShapeKeyPoint(const QRectF& r, ShapeKeyPoint kp);
-
-/**
  * @brief 定义了Graphics相关的command id，用于标记相同的redo/undo
  */
 enum DAGraphicsCommandIDType
@@ -115,10 +71,10 @@ enum DAGraphicsItemType
 	ItemType_GraphicsItem_Begin   = QGraphicsItem::UserType + 10,     ///< 针对DAGraphicsResizeableItem的类型开始
 	ItemType_DAGraphicsItem_Begin = ItemType_GraphicsItem_Begin + 1,  ///< DAGraphicsItem Type的开始范围
 	ItemType_DAGraphicsItem       = ItemType_DAGraphicsItem_Begin + 1,  ///< 针对DAGraphicsResizeableItem的类型
-    ItemType_DAGraphicsStandardTextItem = ItemType_DAGraphicsItem_Begin + 1,  ///< 标准文本
+	ItemType_DAGraphicsStandardTextItem = ItemType_DAGraphicsItem_Begin + 1,  ///< 标准文本
 	ItemType_DAGraphicsLabelItem        = ItemType_DAGraphicsItem_Begin + 2,  ///< 标准label
-	ItemType_DAGraphicsItemGroup     = ItemType_DAGraphicsItem_Begin + 3,  ///< 针对DAGraphicsItemGroup的类型
-    ItemType_DAGraphicsMarkItem     = ItemType_DAGraphicsItem_Begin + 4,  ///< 针对DAGraphicsMarkItem的类型
+	ItemType_DAGraphicsItemGroup        = ItemType_DAGraphicsItem_Begin + 3,  ///< 针对DAGraphicsItemGroup的类型
+	ItemType_DAGraphicsMarkItem         = ItemType_DAGraphicsItem_Begin + 4,  ///< 针对DAGraphicsMarkItem的类型
 	//====ResizeableItem======
 	ItemType_DAGraphicsResizeableItem_Begin = ItemType_DAGraphicsItem_Begin + 900,
 	ItemType_DAGraphicsResizeableItem = ItemType_DAGraphicsResizeableItem_Begin + 1,  ///< 针对DAGraphicsResizeableItem的类型
@@ -129,21 +85,12 @@ enum DAGraphicsItemType
 
 	//====LinkItem======
 	ItemType_DAGraphicsLinkItem_Begin = ItemType_DAGraphicsResizeableItem_End + 1,  ///<  针对DAGraphicsLinkItem的开始
-	ItemType_DAGraphicsLinkItem       = ItemType_DAGraphicsLinkItem_Begin + 1,  ///< 针对DAGraphicsLinkItem的类型
+	ItemType_DAGraphicsLinkItem     = ItemType_DAGraphicsLinkItem_Begin + 1,    ///< 针对DAGraphicsLinkItem的类型
 	ItemType_DAGraphicsLinkItem_End = ItemType_DAGraphicsLinkItem_Begin + 500,  ///< DAGraphicsLinkItem的结束范围
 
 	ItemType_DAGraphicsItem_End = ItemType_DAGraphicsLinkItem_End + 1
 };
 
-// DANodeLinkPoint::Direction 的枚举转换
-DAGRAPHICSVIEW_API QString enumToString(AspectDirection e);
-// DANodeLinkPoint::Direction 的枚举转换
-DAGRAPHICSVIEW_API AspectDirection stringToEnum(const QString& s, AspectDirection defaultEnum = AspectDirection::East);
-
-// ShapeKeyPoint 的枚举转换
-DAGRAPHICSVIEW_API QString enumToString(ShapeKeyPoint e);
-// ShapeKeyPoint 的枚举转换
-DAGRAPHICSVIEW_API ShapeKeyPoint stringToEnum(const QString& s, ShapeKeyPoint defaultEnum = ShapeKeyPoint::Center);
 }
 
 #endif  // FCMETHODNODEGLOBAL_H

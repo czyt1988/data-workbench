@@ -71,9 +71,5 @@ private:
 	IdType mID;         ///< id
 };
 
-QString DADATA_API enumToString(DAAbstractData::DataType t);
-DAAbstractData::DataType DADATA_API stringToEnum(const QString& str,
-                                                 DAAbstractData::DataType defaultType = DAAbstractData::TypeNone);
-
 }  // namespace DA
 #endif  // DAABSTRACTDATA_H

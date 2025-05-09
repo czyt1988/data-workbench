@@ -13,7 +13,7 @@ class DAGUI_API DAGlobalColorTheme : public QObject
 {
 	Q_OBJECT
 private:
-	DAGlobalColorTheme(DAColorTheme::ColorTheme t);
+	DAGlobalColorTheme(DAColorTheme::ColorThemeStyle t);
 
 public:
 	static DAGlobalColorTheme& getInstance();

@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DialogPeakAnalysisSetting</class>
+ <widget class="QDialog" name="DialogPeakAnalysisSetting">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>682</width>
+    <height>541</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Peak Analysis Setting</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <item>
+    <widget class="QSplitter" name="splitter">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <widget class="QWidget" name="layoutWidget">
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>select series</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="DA::DADataManagerComboBox" name="comboBoxDataMgr"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>data preview</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTableView" name="tableViewPreview"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QGroupBox" name="groupBoxPeakAnalysis">
+      <property name="title">
+       <string>Peak Analysis</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="0" column="1" colspan="2">
+        <widget class="QDoubleSpinBox" name="doubleSpinBoxSamplingRate"/>
+       </item>
+       <item row="5" column="1">
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="labelSamplingRate">
+         <property name="text">
+          <string>Sampling Rate</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0" colspan="3">
+        <widget class="QGroupBox" name="groupBoxSeekSetting">
+         <property name="title">
+          <string>Peak seeking setting</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_2">
+          <item row="2" column="3" colspan="2">
+           <widget class="QSpinBox" name="spinBoxSeekDistance">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="value">
+             <number>1</number>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="QLabel" name="labelSeekThreshold">
+            <property name="text">
+             <string>Threshold</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="2">
+           <widget class="QLabel" name="labelSeekWlen">
+            <property name="text">
+             <string>Wlen</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="2">
+           <widget class="QLabel" name="labelSeekRelHeight">
+            <property name="text">
+             <string>Rel_height</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="3" colspan="2">
+           <widget class="QDoubleSpinBox" name="doubleSpinBoxSeekThreshold">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="2">
+           <widget class="QLabel" name="labelSeekWidth">
+            <property name="text">
+             <string>Width</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="3" colspan="2">
+           <widget class="QDoubleSpinBox" name="doubleSpinBoxSeekWidth">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="3" colspan="2">
+           <widget class="QDoubleSpinBox" name="doubleSpinBoxSeekProminence">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="3" colspan="2">
+           <widget class="QSpinBox" name="spinBoxSeekWlen">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="2">
+           <widget class="QLabel" name="labelSeekProminence">
+            <property name="text">
+             <string>Prominence</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="3" colspan="2">
+           <widget class="QDoubleSpinBox" name="doubleSpinBoxSeekRelHeight">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="value">
+             <double>0.500000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="2">
+           <widget class="QLabel" name="labelSeekDistance">
+            <property name="text">
+             <string>Distance</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="1" column="0" colspan="3">
+        <widget class="QGroupBox" name="groupBoxHeightSetting">
+         <property name="title">
+          <string>Height Setting</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_3">
+          <item row="3" column="1" colspan="2">
+           <widget class="QDoubleSpinBox" name="doubleSpinBoxHeight">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="readOnly">
+             <bool>false</bool>
+            </property>
+            <property name="minimum">
+             <double>-99999999.989999994635582</double>
+            </property>
+            <property name="maximum">
+             <double>99999999.989999994635582</double>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1" colspan="2">
+           <widget class="QComboBox" name="comboBoxBaseLineDirection">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <item>
+             <property name="text">
+              <string>Positive</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Negative</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Both</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="labelBaseLine">
+            <property name="text">
+             <string>Height</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="labelBaseLineDirection">
+            <property name="text">
+             <string>Direction</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1" colspan="2">
+           <widget class="QComboBox" name="comboBoxHeight">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <item>
+             <property name="text">
+              <string>Min</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Max</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Mean</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Median</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Customize</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QCheckBox" name="checkBoxAuto">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="text">
+          <string>Auto Seek Peak</string>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>DA::DADataManagerComboBox</class>
+   <extends>QComboBox</extends>
+   <header>DADataManagerComboBox.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>DialogPeakAnalysisSetting</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>585</x>
+     <y>523</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>632</x>
+     <y>521</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

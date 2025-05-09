@@ -10,6 +10,7 @@
 #include <QDomElement>
 #include <QBuffer>
 #include <QByteArray>
+#include "DAQtEnumTypeStringUtils.h"
 namespace DA
 {
 class DAStandardNodePixmapGraphicsItem::PrivateData
@@ -90,9 +91,8 @@ void DAStandardNodePixmapGraphicsItem::setBodySize(const QSizeF& s)
 									 d_ptr->mMargins.top(),
 									 ss.width() - d_ptr->mMargins.left() - d_ptr->mMargins.right(),
 									 ss.height() - d_ptr->mMargins.top() - d_ptr->mMargins.bottom());
-	d_ptr->mPixmap          = d_ptr->mPixmapOrigin.scaled(d_ptr->mPixmapPaintRect.size().toSize(),
-												 d_ptr->mAspectRatioMode,
-												 d_ptr->mTransformationMode);
+	d_ptr->mPixmap          = d_ptr->mPixmapOrigin.scaled(
+		d_ptr->mPixmapPaintRect.size().toSize(), d_ptr->mAspectRatioMode, d_ptr->mTransformationMode);
 	// 真正的bodysize是变换后的图片大小
 	DAAbstractNodeGraphicsItem::setBodySize(
 		QSizeF(d_ptr->mPixmap.width() + d_ptr->mMargins.left() + d_ptr->mMargins.right(),
@@ -259,7 +259,7 @@ Qt::TransformationMode DAStandardNodePixmapGraphicsItem::getTransformationMode()
 
 bool DAStandardNodePixmapGraphicsItem::saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const
 {
-    DAAbstractNodeGraphicsItem::saveToXml(doc, parentElement,ver);
+	DAAbstractNodeGraphicsItem::saveToXml(doc, parentElement, ver);
 	QDomElement pixmapEle = doc->createElement("pixmap-info");
 	QSize sz              = getPixmapSize();
 
@@ -285,9 +285,9 @@ bool DAStandardNodePixmapGraphicsItem::saveToXml(QDomDocument* doc, QDomElement*
 	return true;
 }
 
-bool DAStandardNodePixmapGraphicsItem::loadFromXml(const QDomElement* itemElement,const QVersionNumber& ver)
+bool DAStandardNodePixmapGraphicsItem::loadFromXml(const QDomElement* itemElement, const QVersionNumber& ver)
 {
-    if (!DAAbstractNodeGraphicsItem::loadFromXml(itemElement,ver)) {
+	if (!DAAbstractNodeGraphicsItem::loadFromXml(itemElement, ver)) {
 		return false;
 	}
 	QDomElement pixmapEle = itemElement->firstChildElement("pixmap-info");
@@ -299,7 +299,7 @@ bool DAStandardNodePixmapGraphicsItem::loadFromXml(const QDomElement* itemElemen
 		&& getStringIntValue(pixmapEle.attribute("height"), s.rheight())) {
 		setPixmapSize(s);
 	}
-	setAspectRatioMode(stringToEnum(pixmapEle.attribute("aspectRatioMode"), Qt::KeepAspectRatio));
+	setAspectRatioMode(stringToEnum< Qt::AspectRatioMode >(pixmapEle.attribute("aspectRatioMode"), Qt::KeepAspectRatio));
 	setTransformationMode(stringToEnum(pixmapEle.attribute("transformationMode"), Qt::FastTransformation));
 
 	QDomElement rawEle = pixmapEle.firstChildElement("raw");

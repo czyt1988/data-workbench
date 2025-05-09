@@ -74,6 +74,54 @@ def spectrum_analysis(waveform, sampling_rate, fftsize=None,phases=False,
     return freq,amplitudes
 
 @log_function_call
+def short_time_fourier_transform(waveform, sampling_rate, window='hann', nperseg=256, 
+                               noverlap=None, nfft=None, detrend=False, 
+                               return_onesided=True, boundary='zeros', padded=True, 
+                               axis=-1, scaling='spectrum', db=False):
+    '''
+    短时傅里叶变换(STFT)分析
+
+    :param waveform: 输入波形数据，可以是一维数组或列表
+    :param sampling_rate: 采样率
+    :param window: 窗函数类型，可以是字符串或元组/列表，默认为'hann'
+    :param nperseg: 每个段的长度，默认为256
+    :param noverlap: 相邻段之间的重叠样本数，默认为nperseg//2
+    :param nfft: FFT的长度，默认为nperseg
+    :param detrend: 去趋势方式，可以是'constant'、'linear'或False，默认为False
+    :param return_onesided: 是否只返回单边频谱，默认为True
+    :param boundary: 边界处理方式，可以是'zeros'、'constant'、'pad'等，默认为'zeros'
+    :param padded: 是否对信号进行填充，默认为True
+    :param axis: 进行STFT的轴，默认为-1
+    :param scaling: 缩放类型，可以是'spectrum'或'psd'，默认为'spectrum'
+    :param db: 是否将幅值转换为分贝值，默认为False
+    :return: 时间轴数组、频率轴数组和STFT结果矩阵
+    :rtype: tuple(times:np.ndarray, frequencies:np.ndarray, Zxx:np.ndarray)
+    '''
+    # 使用scipy的stft函数计算短时傅里叶变换
+    frequencies, times, Zxx = scipy.signal.stft(waveform, fs=sampling_rate, 
+                                              window=window, nperseg=nperseg,
+                                              noverlap=noverlap, nfft=nfft,
+                                              detrend=detrend, 
+                                              return_onesided=return_onesided,
+                                              boundary=boundary, padded=padded,
+                                              axis=axis)
+    
+    # 计算幅值谱
+    if scaling == 'spectrum':
+        Zxx = np.abs(Zxx)
+    else:  # scaling == 'psd'
+        Zxx = np.abs(Zxx) ** 2
+        
+    # 转换为分贝值
+    if db:
+        # 避免对0取对数
+        mask = Zxx == 0
+        Zxx[mask] = np.finfo(float).eps
+        Zxx = 20 * np.log10(Zxx)
+        
+    return times, frequencies, Zxx
+
+@log_function_call
 def butterworth_filter(waveform, sampling_freq, filter_order, filter_type = 'lowpass', cutoff_freq = 0, 
                         upper_freq = 0, lower_freq = 0,  phases = False):
     '''
@@ -112,6 +160,66 @@ def butterworth_filter(waveform, sampling_freq, filter_order, filter_type = 'low
         filtered_data = scipy.signal.lfilter(b, a, waveform)
         
     return filtered_data
+    
+@log_function_call
+def peak_analysis(waveform, sampling_rate, height = None, direction = 0, threshold = None, distance = None, prominence = None,
+                  width = None, wlen = None, rel_height = 0.5, plateau_size = None):
+    '''
+    峰值分析
+    :param waveform : 输入波形数据
+    :param height : 基线高度
+    :param direction : 寻峰方向
+    :param threshold : 峰值与其相邻样本的最小垂直距离
+    :param distance : 相邻峰值之间的最小水平距离（以样本数为单位）
+    :param prominence : 指定峰值的最小突出度
+    :param width : 指定峰值的最小宽度（以样本数为单位）
+    :param wlen : 计算突出度和宽度时使用的窗口长度
+    :param rel_height : 用于宽度计算的相对高度（0-1之间）
+    :param plateau_size : 指定平顶峰值的最小尺寸
+    :return : 峰值索引，峰值高度，宽度边界位置，峰值突出度，峰值宽度
+    '''
+    peak_data = []
+    udata = waveform
+    # 计算峰值相关数据
+    if direction == 0 or direction == 2:
+        upeak,upeak_pro = scipy.signal.find_peaks(udata, height, threshold, distance, prominence, width, wlen, rel_height, plateau_size)
+        # 处理峰值数据
+        for i, idx in enumerate(upeak):
+            props = {}
+            for key, val in upeak_pro.items():
+                if isinstance(val, np.ndarray):
+                    props[key] = val[i]
+                else:
+                    props[key] = val
+            
+            peak_data.append({
+                'index': idx / sampling_rate,
+                'value': waveform[idx],
+                'properties': props
+            })
+            
+    if direction == 1 or direction == 2:
+        ddata = [2 * height - x for x in waveform]
+        dpeak,dpeak_pro = scipy.signal.find_peaks(ddata, -height, threshold, distance, prominence, width, wlen, rel_height, plateau_size)
+        # 处理谷值数据
+        for i, idx in enumerate(dpeak):
+            props = {}
+            for key, val in dpeak_pro.items():
+                if isinstance(val, np.ndarray):
+                        props[key] = val[i]
+                else:
+                    props[key] = val
+            
+            peak_data.append({
+                'index': idx / sampling_rate,
+                'value': waveform[idx],
+                'properties': props
+            })
+    # 按索引排序
+    if direction == 2:
+        peak_data.sort(key=lambda x: x['index'])
+
+    return peak_data
 
 @log_function_call
 def da_spectrum_analysis(waveform, sampling_rate, args:Optional[Dict] = None):
@@ -148,6 +256,59 @@ def da_butterworth_filter(waveform, sampling_freq, filter_order, args:Optional[D
     return pd.DataFrame({
         'filtered_wave': res
     })
+    
+@log_function_call
+def da_peak_analysis(waveform, sampling_rate, args:Optional[Dict] = None):
+    '''
+    峰值分析
+    :param waveform: 输入波形数据，可以是一维数组或列表
+    :param height : 基线高度
+    :param direction : 寻峰方向
+    :param threshold : 峰值与其相邻样本的最小垂直距离
+    :param distance : 相邻峰值之间的最小水平距离（以样本数为单位）
+    :param prominence : 指定峰值的最小突出度
+    :param width : 指定峰值的最小宽度（以样本数为单位）
+    :param wlen : 计算突出度和宽度时使用的窗口长度
+    :param rel_height : 用于宽度计算的相对高度（0-1之间）
+    :param plateau_size : 指定平顶峰值的最小尺寸
+    :return : 峰值索引，峰值高度，宽度边界位置，峰值突出度，峰值宽度
+    '''
+    res = peak_analysis(waveform,sampling_rate, **args)
+    peak_data = pd.DataFrame(
+        [{'index': item['index'],'value': item['value']}for item in res]
+        )
+    properties = set()
+    for item in res:
+        properties.update(item['properties'].keys())
+    # 为每个属性创建一个列
+    for key in properties:
+        peak_data[key] = [item['properties'].get(key, None) for item in res]
+    return peak_data
+
+@log_function_call
+def da_stft_analysis(waveform, sampling_rate, args:Optional[Dict] = None):
+    '''
+    短时傅里叶变换分析的DataFrame封装版本
+
+    :param waveform: 输入波形数据
+    :param sampling_rate: 采样率
+    :param args: 其他STFT参数
+    :return: 包含时间、频率和STFT结果的DataFrame
+    '''
+    if args is None:
+        args = {}
+        
+    times, frequencies, Zxx = short_time_fourier_transform(waveform, sampling_rate, **args)
+    
+    # 创建多重索引的DataFrame
+    time_mesh, freq_mesh = np.meshgrid(times, frequencies)
+    df = pd.DataFrame({
+        'time': time_mesh.flatten(),
+        'frequency': freq_mesh.flatten(),
+        'magnitude': Zxx.flatten()
+    })
+    
+    return df
 
 if __name__ == '__main__':
     # 获取函数spectrum_analysis的注解

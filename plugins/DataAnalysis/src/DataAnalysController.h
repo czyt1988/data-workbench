@@ -13,6 +13,9 @@ class DataAnalysisActions;
 class DataAnalysExecutor;
 class DialogSpectrumSetting;
 class DialogFilterSetting;
+class DialogPeakAnalysisSetting;
+class DialogSTFTSetting;
+
 class DataAnalysController : public QObject
 {
 	Q_OBJECT
@@ -26,6 +29,8 @@ private:
 	void initConnect();
 	DialogSpectrumSetting* getSpectrumSettingDialog();
 	DialogFilterSetting* getFilterSettingDialog();
+	DialogPeakAnalysisSetting* getPeakAnalysisSettingDialog();
+	DialogSTFTSetting* getSTFTSettingDialog();
 	// 获取当前界面选择的序列，如果没有，返回none
 	DA::DAPySeries getCurrentSelectSeries();
 private slots:
@@ -33,21 +38,27 @@ private slots:
 	//  |-信号分析
 	//     -频谱
 	//     -滤波
+	//     -寻峰
+	//     -短时傅里叶变换
 	void onActionSpectrumTriggered();
 	void onActionFilterTriggered();
+	void onActionPeakAnalysisTriggered();
+	void onActionSTFTriggered();
 
 private:
 	// 转换为波形
 	std::pair< std::vector< double >, std::vector< double > > toWave(const DA::DAPySeries& wave, double fs);
 
 private:
-	DA::DACoreInterface* mCore { nullptr };
-	DataAnalysisActions* mActions { nullptr };
-	DA::DADataManager* mDataMgr { nullptr };
-	DA::DADockingAreaInterface* mDockingArea { nullptr };
-	DA::DADataManageWidget* mDataManagerWidget { nullptr };
-	DialogSpectrumSetting* mDialogSpectrumSetting { nullptr };
-	DialogFilterSetting* mDialogFilterSetting { nullptr };
+	DA::DACoreInterface* mCore{ nullptr };
+	DataAnalysisActions* mActions{ nullptr };
+	DA::DADataManager* mDataMgr{ nullptr };
+	DA::DADockingAreaInterface* mDockingArea{ nullptr };
+	DA::DADataManageWidget* mDataManagerWidget{ nullptr };
+	DialogSpectrumSetting* mDialogSpectrumSetting{ nullptr };
+	DialogFilterSetting* mDialogFilterSetting{ nullptr };
+	DialogPeakAnalysisSetting* mDialogPeakAnalysisSetting{ nullptr };
+	DialogSTFTSetting* mDialogSTFTSetting{ nullptr };
 	std::unique_ptr< DataAnalysExecutor > mExecutor;
 };
 

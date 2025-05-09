@@ -77,10 +77,6 @@ int main(int argc, char* argv[])
 	if (!parsingArguments(appArguments)) {
 		return 0;
 	}
-#if DA_ENABLE_PYTHON
-	// 注册元对象
-	DA::PY::registerMetaType();
-#endif
 	setAppFont();
 	DA::DAAppCore& core = DA::DAAppCore::getInstance();
 	// 初始化python环境

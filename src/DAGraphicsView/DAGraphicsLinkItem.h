@@ -94,10 +94,8 @@ public:
 	// 绘图
 	virtual void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget = nullptr) override;
 	// 绘制连接线
-	virtual void paintLinkLine(QPainter* painter,
-							   const QStyleOptionGraphicsItem* option,
-							   QWidget* widget,
-							   const QPainterPath& linkPath);
+	virtual void
+	paintLinkLine(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget, const QPainterPath& linkPath);
 	// 绘制箭头
 	virtual void paintEndPoint(QPainter* painter,
 							   const QStyleOptionGraphicsItem* option,
@@ -146,7 +144,8 @@ public:
 	// 点是否会相遇
 	static bool isPointCanMeet(const QPointF& p1, AspectDirection d1, const QPointF& p2, AspectDirection d2);
 	// 针对平行点线，沿着方向移动可以接近，此函数只对平行点线有用
-	static bool isParallelPointApproachInDirection(const QPointF& p1, AspectDirection d1, const QPointF& p2, AspectDirection d2);
+	static bool
+	isParallelPointApproachInDirection(const QPointF& p1, AspectDirection d1, const QPointF& p2, AspectDirection d2);
 	// 翻转方向
 	static AspectDirection oppositeDirection(AspectDirection d);
 	// 返回点1相对点2的方位
@@ -182,19 +181,6 @@ protected:
 															const QPointF& toPos,
 															AspectDirection toDirect);
 };
-
-// DAAbstractNodeLinkGraphicsItem::EndPointType的枚举转换
-DAGRAPHICSVIEW_API QString enumToString(DA::DAGraphicsLinkItem::EndPointType e);
-// DAAbstractNodeLinkGraphicsItem::EndPointType的枚举转换
-DAGRAPHICSVIEW_API DA::DAGraphicsLinkItem::EndPointType stringToEnum(
-    const QString& s,
-    DA::DAGraphicsLinkItem::EndPointType defaultEnum = DA::DAGraphicsLinkItem::EndPointNone);
-// DAAbstractNodeLinkGraphicsItem::LinkLineStyle的枚举转换
-DAGRAPHICSVIEW_API QString enumToString(DA::DAGraphicsLinkItem::LinkLineStyle e);
-// DAAbstractNodeLinkGraphicsItem::LinkLineStyle的枚举转换
-DAGRAPHICSVIEW_API DA::DAGraphicsLinkItem::LinkLineStyle stringToEnum(
-    const QString& s,
-    DA::DAGraphicsLinkItem::LinkLineStyle defaultEnum = DA::DAGraphicsLinkItem::LinkLineKnuckle);
 
 }  // end DA
 
