@@ -1,12 +1,11 @@
-#include "DAChartAddtGridRasterDataWidget.h"
+﻿#include "DAChartAddtGridRasterDataWidget.h"
 #include "ui_DAChartAddtGridRasterDataWidget.h"
 #include <QMessageBox>
 #include <qwt_interval.h>
 #include <qwt_matrix_raster_data.h>
 #include "DADataManager.h"
 #if DA_ENABLE_PYTHON
-#include "Models/DAPySeriesTableModule.h"
-#include "Models/DAPyDataFrameTableModule.h"
+#include "Models/DAPyGridDataTableModule.h"
 #endif
 namespace DA
 {
@@ -20,9 +19,7 @@ DAChartAddtGridRasterDataWidget::DAChartAddtGridRasterDataWidget(QWidget* parent
 {
 	ui->setupUi(this);
 #if DA_ENABLE_PYTHON
-	//	mModel = new DAPySeriesTableModule(this);
-	mModel = new DAPyDataFrameTableModule(nullptr, this);
-	//	mModel->setHeaderLabel({ tr("x"), tr("y"), tr("matrics") });
+	mModel = new DAPyGridDataTableModule(nullptr, this);
 	ui->tableViewRaster->setModel(mModel);
 #endif
 	QFontMetrics fm = fontMetrics();
@@ -58,12 +55,52 @@ DAChartAddtGridRasterDataWidget::~DAChartAddtGridRasterDataWidget()
  * @brief 根据配置获取数据
  * @return 如果没有符合条件，返回一个empty的vector
  */
-QwtGridRasterData* DAChartAddtGridRasterDataWidget::getSeries() const
+QwtGridRasterData* DAChartAddtGridRasterDataWidget::makeSeries() const
 {
 	DAChartAddtGridRasterDataWidget* that = const_cast< DAChartAddtGridRasterDataWidget* >(this);
-	QwtGridRasterData* raster             = new QwtGridRasterData();
-	that->getToVectorPointFFromUI(*raster);
-	return raster;
+	return that->makeGridDataFromUI();
+}
+
+/**
+ * @brief 判断当前维度是否正确
+ * @return
+ */
+bool DAChartAddtGridRasterDataWidget::isCorrectDim() const
+{
+	const DAPySeries& x        = mModel->xSeries();
+	const DAPySeries& y        = mModel->ySeries();
+	const DAPyDataFrame& value = mModel->dataFrame();
+	if (x.isNone() || y.isNone() || value.isNone()) {
+		return false;
+	}
+	auto shape = value.shape();
+	if (shape.first != y.size() || shape.second != x.size()) {
+		return false;
+	}
+	return true;
+}
+
+/**
+ * @brief 转换为矩阵
+ * @param df
+ * @return
+ */
+QVector< QVector< double > > DAChartAddtGridRasterDataWidget::dataframeToMatrix(const DAPyDataFrame& df)
+{
+	QVector< QVector< double > > res;
+	try {
+		auto shape = df.shape();
+		res.reserve(shape.second);
+		for (std::size_t i = 0; i < shape.second; ++i) {
+			QVector< double > col;
+			col.reserve(shape.first);
+			df[ i ].castTo< double >(std::back_inserter(col));
+			res.push_back(col);
+		}
+	} catch (const std::exception& e) {
+		qWarning() << e.what();
+	}
+	return res;
 }
 
 /**
@@ -81,9 +118,8 @@ void DAChartAddtGridRasterDataWidget::onComboBoxXCurrentDataframeSeriesChanged(c
 	DAPyDataFrame df = data.toDataFrame();
 	if (!df.isNone()) {
 		series = df[ seriesName ];
+		mModel->setGridX(series);
 	}
-	//		mModel->setSeriesAt(0, series);
-	mModel->setDataFrame(df);
 #endif
 }
 
@@ -103,8 +139,7 @@ void DAChartAddtGridRasterDataWidget::onComboBoxYCurrentDataframeSeriesChanged(c
 	if (!df.isNone()) {
 		series = df[ seriesName ];
 	}
-	//	mModel->setSeriesAt(1, series);
-	mModel->setDataFrame(df);
+	mModel->setGridY(series);
 #endif
 }
 
@@ -122,10 +157,9 @@ void DAChartAddtGridRasterDataWidget::onComboBoxMatricsCurrentDataframeSeriesCha
 #if DA_ENABLE_PYTHON
 	DAPySeries series;
 	DAPyDataFrame df = data.toDataFrame();
-	//	if (!df.isNone()) {
-	//		series = df[ seriesName ];
-	//	}
-	mModel->setDataFrame(df);
+	if (!df.isNone()) {
+		mModel->setDataFrame(df);
+	}
 #endif
 }
 
@@ -149,64 +183,44 @@ void DAChartAddtGridRasterDataWidget::onCurrentDataChanged(const DAData& d)
  * @return
  * @note 注意此函数失败会有警告对话框
  */
-bool DAChartAddtGridRasterDataWidget::getToVectorPointFFromUI(QwtGridRasterData& res)
+QwtGridRasterData* DAChartAddtGridRasterDataWidget::makeGridDataFromUI()
 {
 #if DA_ENABLE_PYTHON
 	try {
-		// 确保数据维度匹配
-		QVector< double > data1            = { 0, 12.8, 25.6 };
-		QVector< double > data2            = { 0, 0.0390625, 0.078125 };
-		QVector< QVector< double > > data3 = { { 92.3322, 90.3358, 93.1646 },
-											   { 95.8303, 97.5136, 108.795 },
-											   { 70.7386, 97.5136, 109.925 } };
-
 		// 验证数据维度
-		if (data1.size() != data3.size() || data2.size() != data3[ 0 ].size()) {
-			QMessageBox::warning(this, tr("Warning"), tr("Data dimensions do not match"));
-			return false;
+		if (!isCorrectDim()) {
+			QMessageBox::warning(
+				this,
+				tr("Warning"),
+				tr("The data dimensions are incorrect. The length of x should be equal to the number of columns in "
+				   "value, and the length of y should be equal to the number of rows in value."));  // cn:数据维度不正确，要求x长度和value的列数相等，y的长度和value的行数相等
+			return nullptr;
 		}
+
+		const DAPySeries& xSeries    = mModel->xSeries();
+		const DAPySeries& ySeries    = mModel->ySeries();
+		const DAPyDataFrame& valueDf = mModel->dataFrame();
 
 		// 将二维数据转换为一维数组
-		QVector< double > values;
-		values.reserve(data3.size() * data3[ 0 ].size());
-		for (const auto& row : data3) {
-			values.append(row);
-		}
+		QVector< double > x;
+		QVector< double > y;
+		x.reserve(xSeries.size());
+		y.reserve(ySeries.size());
+		xSeries.castTo< double >(std::back_inserter(x));
+		ySeries.castTo< double >(std::back_inserter(y));
+
+		QVector< QVector< double > > value = dataframeToMatrix(valueDf);
 
 		// 创建 QwtMatrixRasterData 对象
-		QwtMatrixRasterData* matrixData = new QwtMatrixRasterData();
-		matrixData->setValueMatrix(values, data2.size());
-		matrixData->setResampleMode(QwtMatrixRasterData::BilinearInterpolation);
+		std::unique_ptr< QwtGridRasterData > gridData = std::make_unique< QwtGridRasterData >();
+		gridData->setValue(x, y, value);
 
-		// 设置区间
-		QwtInterval xInterval(data1.first(), data1.last());
-		QwtInterval yInterval(data2.first(), data2.last());
-
-		// 计算Z轴区间
-		double minZ = std::numeric_limits< double >::max();
-		double maxZ = std::numeric_limits< double >::lowest();
-		for (const auto& row : data3) {
-			for (double val : row) {
-				minZ = std::min(minZ, val);
-				maxZ = std::max(maxZ, val);
-			}
-		}
-		QwtInterval zInterval(minZ, maxZ);
-
-		matrixData->setInterval(Qt::XAxis, xInterval);
-		matrixData->setInterval(Qt::YAxis, yInterval);
-		matrixData->setInterval(Qt::ZAxis, zInterval);
-
-		// 设置数据
-		res.setValue(data1, data2, data3);
-
-		return true;
+		return gridData.release();
 	} catch (const std::exception& e) {
 		QMessageBox::critical(this, tr("Error"), tr("Failed to set data: %1").arg(e.what()));
-		return false;
+		return nullptr;
 	}
-#else
-	return false;
 #endif
+	return nullptr;
 }
 }

@@ -9,7 +9,6 @@
 class QUndoStack;
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DAPyDataFrameTableModule)
 
 /**
  * @brief 针对DAPyDataFrame的table model
@@ -18,8 +17,7 @@ DA_IMPL_FORWARD_DECL(DAPyDataFrameTableModule)
 class DAGUI_API DAPyDataFrameTableModule : public QAbstractTableModel
 {
 	Q_OBJECT
-	DA_IMPL(DAPyDataFrameTableModule)
-
+	DA_DECLARE_PRIVATE(DAPyDataFrameTableModule)
 public:
 	DAPyDataFrameTableModule(QUndoStack* stack, QObject* parent = nullptr);
 	~DAPyDataFrameTableModule();

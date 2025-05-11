@@ -4,43 +4,35 @@
 #include <algorithm>
 namespace DA
 {
-class DAPyDataFrameTableModulePrivate
+class DAPyDataFrameTableModule::PrivateData
 {
-	DA_IMPL_PUBLIC(DAPyDataFrameTableModule)
+	DA_DECLARE_PUBLIC(DAPyDataFrameTableModule)
 public:
-	DAPyDataFrameTableModulePrivate(DAPyDataFrameTableModule* p);
+	PrivateData(DAPyDataFrameTableModule* p);
 
 public:
-	DAPyDataFrame _dataframe;
-	QUndoStack* _undoStack;
+	DAPyDataFrame dataframe;
+	QUndoStack* undoStack { nullptr };
 	int extraColumn { 1 };  ///< 扩展的列数，也就是会多显示出externColumn个空白的列，一般多显示出来的是为了用户添加数据用的
 	int extraRow { 1 };  ///< 扩展的行数，也就是会多显示出externRow个空白的行，一般多显示出来的是为了用户添加数据用的
 	int minShowRow { 20 };    ///< 最小显示的行数
 	int minShowColumn { 4 };  ///< 最小显示的列数
 };
-}  // end of namespace DA
-
-//===================================================
-// using DA namespace -- 禁止在头文件using!!
-//===================================================
-
-using namespace DA;
 
 //===================================================
 // DAPyDataFrameTableModulePrivate
 //===================================================
 
-DAPyDataFrameTableModulePrivate::DAPyDataFrameTableModulePrivate(DAPyDataFrameTableModule* p)
-    : q_ptr(p), _undoStack(nullptr)
+DAPyDataFrameTableModule::PrivateData::PrivateData(DAPyDataFrameTableModule* p) : q_ptr(p), undoStack(nullptr)
 {
 }
 //===================================================
 // DAPyDataFrameTableModule
 //===================================================
 DAPyDataFrameTableModule::DAPyDataFrameTableModule(QUndoStack* stack, QObject* parent)
-    : QAbstractTableModel(parent), d_ptr(new DAPyDataFrameTableModulePrivate(this))
+	: QAbstractTableModel(parent), DA_PIMPL_CONSTRUCT
 {
-    d_ptr->_undoStack = stack;
+	d_ptr->undoStack = stack;
 }
 
 DAPyDataFrameTableModule::~DAPyDataFrameTableModule()
@@ -49,20 +41,21 @@ DAPyDataFrameTableModule::~DAPyDataFrameTableModule()
 
 QVariant DAPyDataFrameTableModule::headerData(int section, Qt::Orientation orientation, int role) const
 {
-	if (role != Qt::DisplayRole || d_ptr->_dataframe.isNone()) {
+	DA_DC(d);
+	if (role != Qt::DisplayRole || d->dataframe.isNone()) {
 		return QVariant();
 	}
-	std::pair< std::size_t, std::size_t > shape = d_ptr->_dataframe.shape();
+	std::pair< std::size_t, std::size_t > shape = d->dataframe.shape();
 	if (Qt::Horizontal == orientation) {  // 说明是水平表头
 		if (section >= (int)shape.second) {
 			return QVariant();
 		}
-		return d_ptr->_dataframe.columns()[ section ];
+		return d->dataframe.columns()[ section ];
 	} else {
 		if (section >= (int)shape.first) {
 			return QVariant();
 		}
-		QVariant h = d_ptr->_dataframe.index()[ section ];
+		QVariant h = d->dataframe.index()[ section ];
 		// 查看是否是符合index
 		if (h.canConvert(QMetaType::QVariantList)) {
 			// 说明是复合表头
@@ -85,35 +78,38 @@ QVariant DAPyDataFrameTableModule::headerData(int section, Qt::Orientation orien
 int DAPyDataFrameTableModule::columnCount(const QModelIndex& parent) const
 {
 	Q_UNUSED(parent);
-	if (d_ptr->_dataframe.isNone()) {
-		return d_ptr->minShowColumn;
+	DA_DC(d);
+	if (d->dataframe.isNone()) {
+		return d->minShowColumn;
 	}
-	std::pair< std::size_t, std::size_t > shape = d_ptr->_dataframe.shape();
-	if ((static_cast< int >(shape.second) + d_ptr->extraColumn) < d_ptr->minShowColumn) {
-		return d_ptr->minShowColumn;
+	std::pair< std::size_t, std::size_t > shape = d->dataframe.shape();
+	if ((static_cast< int >(shape.second) + d->extraColumn) < d->minShowColumn) {
+		return d->minShowColumn;
 	}
-	return (static_cast< int >(shape.second) + d_ptr->extraColumn);
+	return (static_cast< int >(shape.second) + d->extraColumn);
 }
 
 int DAPyDataFrameTableModule::rowCount(const QModelIndex& parent) const
 {
 	Q_UNUSED(parent);
-	if (d_ptr->_dataframe.isNone()) {
-		return d_ptr->minShowRow;
+	DA_DC(d);
+	if (d->dataframe.isNone()) {
+		return d->minShowRow;
 	}
-	std::pair< std::size_t, std::size_t > shape = d_ptr->_dataframe.shape();
-	if ((static_cast< int >(shape.first) + d_ptr->extraRow) < d_ptr->minShowRow) {
-		return d_ptr->minShowRow;
+	std::pair< std::size_t, std::size_t > shape = d->dataframe.shape();
+	if ((static_cast< int >(shape.first) + d->extraRow) < d->minShowRow) {
+		return d->minShowRow;
 	}
-	return (static_cast< int >(shape.first) + d_ptr->extraRow);
+	return (static_cast< int >(shape.first) + d->extraRow);
 }
 
 QVariant DAPyDataFrameTableModule::data(const QModelIndex& index, int role) const
 {
-	if (!index.isValid() || d_ptr->_dataframe.isNone()) {
+	DA_DC(d);
+	if (!index.isValid() || d->dataframe.isNone()) {
 		return QVariant();
 	}
-	std::pair< std::size_t, std::size_t > shape = d_ptr->_dataframe.shape();
+	std::pair< std::size_t, std::size_t > shape = d->dataframe.shape();
 	if (index.row() >= (int)shape.first || index.column() >= (int)shape.second) {
 		return QVariant();
 	}
@@ -122,7 +118,7 @@ QVariant DAPyDataFrameTableModule::data(const QModelIndex& index, int role) cons
 		return int(Qt::AlignLeft | Qt::AlignVCenter);
 	} else if (role == Qt::DisplayRole) {
 		// 返回的是内容
-		return d_ptr->_dataframe.iat(index.row(), index.column());
+		return d->dataframe.iat(index.row(), index.column());
 	} else if (role == Qt::BackgroundRole) {
 		// 背景颜色
 		return QVariant();
@@ -135,10 +131,11 @@ bool DAPyDataFrameTableModule::setData(const QModelIndex& index, const QVariant&
 	if (Qt::EditRole != role) {
 		return false;
 	}
-	if (!index.isValid() || d_ptr->_dataframe.isNone()) {
+	DA_D(d);
+	if (!index.isValid() || d->dataframe.isNone()) {
 		return false;
 	}
-	std::pair< std::size_t, std::size_t > shape = d_ptr->_dataframe.shape();
+	std::pair< std::size_t, std::size_t > shape = d->dataframe.shape();
 	if (index.row() >= static_cast< int >(shape.first)) {
 		// todo:这里实现一个dataframe追加行
 		return false;
@@ -147,23 +144,23 @@ bool DAPyDataFrameTableModule::setData(const QModelIndex& index, const QVariant&
 		// todo:这里实现一个dataframe追加列
 		return false;
 	}
-	QVariant olddata = d_ptr->_dataframe.iat(index.row(), index.column());
+	QVariant olddata = d->dataframe.iat(index.row(), index.column());
 	if (value.isNull() == olddata.isNull()) {
 		// 两次都为空就跳过
 		return false;
 	}
-	if (!(d_ptr->_undoStack)) {
-		// 如果d_ptr->_undoStack设置为nullptr，将不使用redo/undo
-		return d_ptr->_dataframe.iat(index.row(), index.column(), value);
+	if (!(d->undoStack)) {
+		// 如果d->_undoStack设置为nullptr，将不使用redo/undo
+		return d->dataframe.iat(index.row(), index.column(), value);
 	}
 	std::unique_ptr< DACommandDataFrame_iat > cmd_iat(
-		new DACommandDataFrame_iat(d_ptr->_dataframe, index.row(), index.column(), olddata, value, this));
+		new DACommandDataFrame_iat(d->dataframe, index.row(), index.column(), olddata, value, this));
 	if (!cmd_iat->exec()) {
 		// 没设置成功，退出
 		return false;
 	}
-	d_ptr->_undoStack->push(cmd_iat.release());  // push后会自动调用redo，第二次调用redo会被忽略
-	d_ptr->_undoStack->setActive(true);
+	d->undoStack->push(cmd_iat.release());  // push后会自动调用redo，第二次调用redo会被忽略
+	d->undoStack->setActive(true);
 	// 这里说明设置成功了
 	return true;
 }
@@ -177,29 +174,29 @@ Qt::ItemFlags DAPyDataFrameTableModule::flags(const QModelIndex& index) const
 
 DAPyDataFrame& DAPyDataFrameTableModule::dataFrame()
 {
-	return d_ptr->_dataframe;
+	return d_ptr->dataframe;
 }
 
 const DAPyDataFrame& DAPyDataFrameTableModule::dataFrame() const
 {
-	return d_ptr->_dataframe;
+	return d_ptr->dataframe;
 }
 
 void DAPyDataFrameTableModule::setDAData(const DAData& d)
 {
 	if (!d.isDataFrame()) {
-		d_ptr->_dataframe = DAPyDataFrame();
+		d_ptr->dataframe = DAPyDataFrame();
 		return;
 	}
 	beginResetModel();
-	d_ptr->_dataframe = d.toDataFrame();
+	d_ptr->dataframe = d.toDataFrame();
 	endResetModel();
 }
 
 void DAPyDataFrameTableModule::setDataFrame(const DAPyDataFrame& d)
 {
 	beginResetModel();
-	d_ptr->_dataframe = d;
+	d_ptr->dataframe = d;
 	endResetModel();
 }
 
@@ -421,3 +418,4 @@ void DAPyDataFrameTableModule::beginFunCall(const QList< int >& listlike, DAPyDa
 		fun(QModelIndex(), first, orderindex.back());
 	}
 }
+}  // end of namespace DA

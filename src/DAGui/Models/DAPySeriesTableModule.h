@@ -6,7 +6,6 @@
 #include "DAAutoincrementSeries.hpp"
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DAPySeriesTableModule)
 
 /**
  * @brief 用于显示一系列series
@@ -14,7 +13,7 @@ DA_IMPL_FORWARD_DECL(DAPySeriesTableModule)
 class DAGUI_API DAPySeriesTableModule : public QAbstractTableModel
 {
 	Q_OBJECT
-	DA_IMPL(DAPySeriesTableModule)
+	DA_DECLARE_PRIVATE(DAPySeriesTableModule)
 public:
 	DAPySeriesTableModule(QObject* parent = nullptr);
 	~DAPySeriesTableModule();
