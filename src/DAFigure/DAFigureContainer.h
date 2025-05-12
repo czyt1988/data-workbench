@@ -6,12 +6,15 @@
 #include <QRectF>
 class QResizeEvent;
 class QShowEvent;
+class QMoveEvent;
 namespace DA
 {
 /**
- * @brief 一个窗口容器，由于根据比例布局窗口位置
+ * @class DAFigureContainer
+ * @brief 基于比例布局的窗口容器
  *
- * 被管理的窗口可以直接设置位置移动，此窗口会监听事件调整对应的比例
+ * 该容器管理子窗口的相对位置，当容器尺寸改变时自动调整子窗口布局。
+ * 支持通过百分比设置子窗口位置，并实时跟踪子窗口的位置变化。
  */
 class DAFIGURE_API DAFigureContainer : public QWidget
 {
@@ -38,6 +41,8 @@ public:
 
 	// 判断是否存在这个widget
 	bool isWidgetInContainer(const QWidget* w) const;
+	// 判断是否是相对位置
+	bool isWidgetRelativePos(QWidget* w) const;
 
 	// 根据baserect，计算目标rect相对baserect的占比
 	static QRect calcGeometryByPercent(const QRectF& percent, const QRect& continerRect);

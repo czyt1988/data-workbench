@@ -12,7 +12,11 @@
 /**
  *@file xml文件的帮助类
  */
-
+// qwt
+class QwtPlotLayout;
+class QwtText;
+class QwtScaleDraw;
+class QwtDateScaleDraw;
 namespace DA
 {
 class DAWorkFlowEditWidget;
@@ -23,6 +27,9 @@ class DAWorkFlowOperateWidget;
 class DAGraphicsItem;
 class DAGraphicsScene;
 class DAGraphicsResizeableItem;
+class DAColorTheme;
+class DAFigureWidget;
+class DAChartWidget;
 
 /**
  * @brief DAProjectInterface::getProjectVersion的版本号会通过setVersionNumber设置进DAXmlHelper
@@ -72,15 +79,26 @@ public:
 	static bool loadElement(QGraphicsItem* item, const QDomElement* tag, const QVersionNumber& v = QVersionNumber());
 	// 获取所有处理过的item
 	QList< QGraphicsItem* > getAllDealItems() const;
-	// DAData的序列化
-	static QDomElement makeElement(const DAData* data, const QString& tagName, QDomDocument* doc);
-    static bool loadElement(DAData* data,
-                            const QDomElement* tag,
-                            const QHash< DAAbstractData::IdType, DAData >& datas,
-                            const QVersionNumber& v = QVersionNumber());
-	// DADataManager的序列化
-	static QDomElement makeElement(const DADataManager* dmgr, const QString& tagName, QDomDocument* doc);
-	static bool loadElement(DADataManager* dmgr, const QDomElement* tag, const QVersionNumber& v = QVersionNumber());
+	// DAColorTheme
+	static QDomElement makeElement(const DAColorTheme* ct, const QString& tagName, QDomDocument* doc);
+	static bool loadElement(DAColorTheme* ct, const QDomElement* tag, const QVersionNumber& v = QVersionNumber());
+	// DAFigureWidget
+	static QDomElement makeElement(const DAFigureWidget* fig, const QString& tagName, QDomDocument* doc);
+	static bool loadElement(DAFigureWidget* fig, const QDomElement* tag, const QVersionNumber& v = QVersionNumber());
+	// DAChartWidget
+	static QDomElement makeElement(const DAChartWidget* chart, const QString& tagName, QDomDocument* doc);
+	static bool loadElement(DAChartWidget* chart, const QDomElement* tag, const QVersionNumber& v = QVersionNumber());
+	//
+    static QDomElement makeQwtPlotAxisElement(const DAChartWidget* chart, int axisID, const QString& tagName, QDomDocument* doc);
+	static bool loadQwtPlotAxisElement(DAChartWidget* chart,
+                                       const QDomElement* qwtplotTag,
+                                       const QVersionNumber& v = QVersionNumber());
+	// Qwt 相关
+	static QDomElement makeElement(const QwtPlotLayout* value, const QString& tagName, QDomDocument* doc);
+	static bool loadElement(QwtPlotLayout* value, const QDomElement* tag, const QVersionNumber& version = QVersionNumber());
+	// QwtText
+	static QDomElement makeElement(const QwtText* value, const QString& tagName, QDomDocument* doc);
+	static bool loadElement(QwtText* value, const QDomElement* tag, const QVersionNumber& version = QVersionNumber());
 
 public:
 	// 生成一个qvariant element

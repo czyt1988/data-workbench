@@ -15,8 +15,9 @@ void DataAnalysisActions::buildActions()
 	actionSpectrum     = createAction("actionSpectrum", ":/DataAnalysis/icons/icon/spectrum.svg");
 	actionFilter       = createAction("actionFilter", ":/DataAnalysis/icons/icon/filter.svg");
 	actionPeakAnalysis = createAction("actionPeakAnalysis", ":/DataAnalysis/icons/icon/peak-analysis.svg");
+    actionSTFT         = createAction("actionSTFT", ":/DataAnalysis/icons/icon/spectrum-stft.svg");
 	actionWaveletCWT   = createAction("actionWaveletAnalysis", ":/DataAnalysis/icons/icon/wavelet-cwt.svg");
-	actionWaveletDWT   = createAction("actionWaveletAnalysis", ":/DataAnalysis/icons/icon/wavelet-dwt.svg");
+    actionWaveletDWT   = createAction("actionWaveletAnalysis", ":/DataAnalysis/icons/icon/wavelet-dwt.svg");
 }
 
 void DataAnalysisActions::retranslate()
@@ -25,7 +26,8 @@ void DataAnalysisActions::retranslate()
 	actionFilter->setText(tr("Filter"));               // cn: 滤波
 	actionPeakAnalysis->setText(tr("Peak Analysis"));  // cn: 峰值分析
 	actionWaveletCWT->setText(tr("Wavelet CWT"));      // cn: 连续小波变换
-	actionWaveletDWT->setText(tr("Wavelet DWT"));      // cn: 离散小波变换
+    actionWaveletDWT->setText(tr("Wavelet DWT"));      // cn: 离散小波变换
+    actionSTFT->setText(tr("STFT"));                   // cn: 短时傅里叶变换
 }
 
 QAction* DataAnalysisActions::createAction(const char* objname)
@@ -75,8 +77,8 @@ void DataAnalysisActions::recordAction(QAction* act)
 #ifdef QT_DEBUG
 	if (mObjectToAction.contains(act->objectName())) {
 		qWarning() << tr("DAAppActionsInterface::recordAction(QAction objname=%1) receive same object name, and the "
-						 "previous record will be overwritten")
-						  .arg(act->objectName());
+                         "previous record will be overwritten")
+                          .arg(act->objectName());
 	}
 #endif
 	mObjectToAction[ act->objectName() ] = act;

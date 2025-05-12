@@ -36,6 +36,12 @@ DA::DAPyDataFrame DataAnalysExecutor::wavelet_dwt(const DA::DAPySeries& wave, do
     return dataProcessModule().wavelet_dwt(wave, fs, args, err);
 }
 
+DA::DAPyDataFrame
+DataAnalysExecutor::stft_analysis(const DA::DAPySeries& wave, double fs, const QVariantMap& args, QString* err)
+{
+	return dataProcessModule().stft_analysis(wave, fs, args, err);
+}
+
 DA::DAPyScriptsDataProcess& DataAnalysExecutor::dataProcessModule()
 {
 	return DA::DAPyScripts::getInstance().getDataProcess();

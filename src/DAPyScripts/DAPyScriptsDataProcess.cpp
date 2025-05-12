@@ -90,6 +90,25 @@ DAPyDataFrame DAPyScriptsDataProcess::peak_analysis(const DAPySeries& wave, doub
 	return DAPyDataFrame();
 }
 
+DAPyDataFrame DAPyScriptsDataProcess::stft_analysis(const DAPySeries& wave, double fs, const QVariantMap& args, QString* err)
+{
+	try {
+		pybind11::object fn = attr("da_stft_analysis");
+		if (fn.is_none()) {
+			qDebug() << "DAWorkbench.data_processing.py have no attr da_stft_analysis";
+			return DAPyDataFrame();
+		}
+		pybind11::object v = fn(wave.object(), fs, DA::PY::toPyDict(args));
+		return DAPyDataFrame(std::move(v));
+	} catch (const std::exception& e) {
+		if (err) {
+			*err = e.what();
+		}
+		qDebug() << e.what();
+	}
+	return DAPyDataFrame();
+}
+
 DAPyDataFrame DAPyScriptsDataProcess::wavelet_cwt(const DAPySeries& wave,
                                                   double fs,
                                                   const DA::DAPySeries& scales,
@@ -131,7 +150,6 @@ DAPyDataFrame DAPyScriptsDataProcess::wavelet_dwt(const DAPySeries& wave, double
 	}
 	return DAPyDataFrame();
 }
-
 bool DAPyScriptsDataProcess::import()
 {
 	try {

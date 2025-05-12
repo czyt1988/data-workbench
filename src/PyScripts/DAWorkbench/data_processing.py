@@ -75,6 +75,54 @@ def spectrum_analysis(waveform, sampling_rate, fftsize=None,phases=False,
     return freq,amplitudes
 
 @log_function_call
+def short_time_fourier_transform(waveform, sampling_rate, window='hann', nperseg=256, 
+                               noverlap=None, nfft=None, detrend=False, 
+                               return_onesided=True, boundary='zeros', padded=True, 
+                               axis=-1, scaling='spectrum', db=False):
+    '''
+    短时傅里叶变换(STFT)分析
+
+    :param waveform: 输入波形数据，可以是一维数组或列表
+    :param sampling_rate: 采样率
+    :param window: 窗函数类型，可以是字符串或元组/列表，默认为'hann'
+    :param nperseg: 每个段的长度，默认为256
+    :param noverlap: 相邻段之间的重叠样本数，默认为nperseg//2
+    :param nfft: FFT的长度，默认为nperseg
+    :param detrend: 去趋势方式，可以是'constant'、'linear'或False，默认为False
+    :param return_onesided: 是否只返回单边频谱，默认为True
+    :param boundary: 边界处理方式，可以是'zeros'、'constant'、'pad'等，默认为'zeros'
+    :param padded: 是否对信号进行填充，默认为True
+    :param axis: 进行STFT的轴，默认为-1
+    :param scaling: 缩放类型，可以是'spectrum'或'psd'，默认为'spectrum'
+    :param db: 是否将幅值转换为分贝值，默认为False
+    :return: 时间轴数组、频率轴数组和STFT结果矩阵
+    :rtype: tuple(times:np.ndarray, frequencies:np.ndarray, Zxx:np.ndarray)
+    '''
+    # 使用scipy的stft函数计算短时傅里叶变换
+    frequencies, times, Zxx = scipy.signal.stft(waveform, fs=sampling_rate, 
+                                              window=window, nperseg=nperseg,
+                                              noverlap=noverlap, nfft=nfft,
+                                              detrend=detrend, 
+                                              return_onesided=return_onesided,
+                                              boundary=boundary, padded=padded,
+                                              axis=axis)
+    
+    # 计算幅值谱
+    if scaling == 'spectrum':
+        Zxx = np.abs(Zxx)
+    else:  # scaling == 'psd'
+        Zxx = np.abs(Zxx) ** 2
+        
+    # 转换为分贝值
+    if db:
+        # 避免对0取对数
+        mask = Zxx == 0
+        Zxx[mask] = np.finfo(float).eps
+        Zxx = 20 * np.log10(Zxx)
+        
+    return times, frequencies, Zxx
+
+@log_function_call
 def butterworth_filter(waveform, sampling_freq, filter_order, filter_type = 'lowpass', cutoff_freq = 0, 
                         upper_freq = 0, lower_freq = 0,  phases = False):
     '''
@@ -276,6 +324,31 @@ def da_peak_analysis(waveform, sampling_rate, args:Optional[Dict] = None):
     for key in properties:
         peak_data[key] = [item['properties'].get(key, None) for item in res]
     return peak_data
+
+@log_function_call
+def da_stft_analysis(waveform, sampling_rate, args:Optional[Dict] = None):
+    '''
+    短时傅里叶变换分析的DataFrame封装版本
+
+    :param waveform: 输入波形数据
+    :param sampling_rate: 采样率
+    :param args: 其他STFT参数
+    :return: 包含时间、频率和STFT结果的DataFrame
+    '''
+    if args is None:
+        args = {}
+        
+    times, frequencies, Zxx = short_time_fourier_transform(waveform, sampling_rate, **args)
+    
+    # 创建多重索引的DataFrame
+    time_mesh, freq_mesh = np.meshgrid(times, frequencies)
+    df = pd.DataFrame({
+        'time': time_mesh.flatten(),
+        'frequency': freq_mesh.flatten(),
+        'magnitude': Zxx.flatten()
+    })
+    
+    return df
 
 @log_function_call
 def da_wavelet_cwt(waveform, sampling_rate, scales, args:Optional[Dict] = None):

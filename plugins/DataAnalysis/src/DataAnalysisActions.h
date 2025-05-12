@@ -28,11 +28,10 @@ public:
 	QAction* actionSpectrum;      ///< 频谱
 	QAction* actionFilter;        ///< 滤波
 	QAction* actionPeakAnalysis;  ///< 峰值分析
+	QAction* actionSTFT;          ///< 短时傅里叶变换
 	QAction* actionWaveletCWT;    ///< 连续小波变换
-	QAction* actionWaveletDWT;    ///< 离散小波变换
-
-	QHash< QString, QAction* > mObjectToAction;
-
+    QAction* actionWaveletDWT;    ///< 离散小波变换
+    QHash< QString, QAction* > mObjectToAction;
 private:
 	// 创建actions
 	void buildActions();

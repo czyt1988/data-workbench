@@ -76,13 +76,19 @@ endif()
 find_package(${DA_PROJECT_NAME} COMPONENTS
     DAGui
 )
+
 if(${DA_PROJECT_NAME}_FOUND)
     message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAGui")
 endif()
 target_link_libraries(${DA_LIB_NAME} PUBLIC
     ${DA_PROJECT_NAME}::DAGui
 )
-
+if(DA_ENABLE_PYTHON)
+    # -------------link python--------------------------
+    damacro_import_Python(${DA_LIB_NAME})
+    # -------------link 3rdparty pybind11--------------------------
+    damacro_import_pybind11(${DA_LIB_NAME})
+endif()
 ########################################################
 # 设置通用库属性
 ########################################################

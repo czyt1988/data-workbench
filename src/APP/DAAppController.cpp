@@ -1746,7 +1746,7 @@ void DAAppController::onActionCreatePivotTableTriggered()
 #if DA_ENABLE_PYTHON
 	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
 		DAPyDataFrame df = dfopt->createPivotTable();
-		if (df.isNone()) {
+        if (df.empty()) {
 			return;
 		}
 		DAData originData = dfopt->data();
