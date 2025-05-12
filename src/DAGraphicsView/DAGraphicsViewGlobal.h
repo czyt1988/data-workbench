@@ -87,9 +87,7 @@ enum DAGraphicsCommandIDType
 	CmdID_ItemAdd          = CmdID_GraphicsBegin + 1,   ///< item移动
 	CmdID_ItemRemove       = CmdID_GraphicsBegin + 2,   ///< item移动
 	CmdID_ItemMove         = CmdID_GraphicsBegin + 3,   ///< item移动
-	CmdID_ItemMoveMerge    = CmdID_GraphicsBegin + 4,   ///< item移动
 	CmdID_ItemsMove        = CmdID_GraphicsBegin + 5,   ///< 多个item移动
-	CmdID_ItemsMoveMerge   = CmdID_GraphicsBegin + 6,   ///< 多个item移动
 	CmdID_ItemResize       = CmdID_GraphicsBegin + 7,   ///< item resize
 	CmdID_ItemResizeWidth  = CmdID_GraphicsBegin + 8,   ///< item resize width
 	CmdID_ItemResizeHeight = CmdID_GraphicsBegin + 9,   ///< item resize height
@@ -115,10 +113,10 @@ enum DAGraphicsItemType
 	ItemType_GraphicsItem_Begin   = QGraphicsItem::UserType + 10,     ///< 针对DAGraphicsResizeableItem的类型开始
 	ItemType_DAGraphicsItem_Begin = ItemType_GraphicsItem_Begin + 1,  ///< DAGraphicsItem Type的开始范围
 	ItemType_DAGraphicsItem       = ItemType_DAGraphicsItem_Begin + 1,  ///< 针对DAGraphicsResizeableItem的类型
-    ItemType_DAGraphicsStandardTextItem = ItemType_DAGraphicsItem_Begin + 1,  ///< 标准文本
+	ItemType_DAGraphicsStandardTextItem = ItemType_DAGraphicsItem_Begin + 1,  ///< 标准文本
 	ItemType_DAGraphicsLabelItem        = ItemType_DAGraphicsItem_Begin + 2,  ///< 标准label
-	ItemType_DAGraphicsItemGroup     = ItemType_DAGraphicsItem_Begin + 3,  ///< 针对DAGraphicsItemGroup的类型
-    ItemType_DAGraphicsMarkItem     = ItemType_DAGraphicsItem_Begin + 4,  ///< 针对DAGraphicsMarkItem的类型
+	ItemType_DAGraphicsItemGroup        = ItemType_DAGraphicsItem_Begin + 3,  ///< 针对DAGraphicsItemGroup的类型
+	ItemType_DAGraphicsMarkItem         = ItemType_DAGraphicsItem_Begin + 4,  ///< 针对DAGraphicsMarkItem的类型
 	//====ResizeableItem======
 	ItemType_DAGraphicsResizeableItem_Begin = ItemType_DAGraphicsItem_Begin + 900,
 	ItemType_DAGraphicsResizeableItem = ItemType_DAGraphicsResizeableItem_Begin + 1,  ///< 针对DAGraphicsResizeableItem的类型
@@ -129,7 +127,7 @@ enum DAGraphicsItemType
 
 	//====LinkItem======
 	ItemType_DAGraphicsLinkItem_Begin = ItemType_DAGraphicsResizeableItem_End + 1,  ///<  针对DAGraphicsLinkItem的开始
-	ItemType_DAGraphicsLinkItem       = ItemType_DAGraphicsLinkItem_Begin + 1,  ///< 针对DAGraphicsLinkItem的类型
+	ItemType_DAGraphicsLinkItem     = ItemType_DAGraphicsLinkItem_Begin + 1,    ///< 针对DAGraphicsLinkItem的类型
 	ItemType_DAGraphicsLinkItem_End = ItemType_DAGraphicsLinkItem_Begin + 500,  ///< DAGraphicsLinkItem的结束范围
 
 	ItemType_DAGraphicsItem_End = ItemType_DAGraphicsLinkItem_End + 1

@@ -204,77 +204,47 @@ void DACommandsForGraphicsItemsMoved::undo()
 
 int DACommandsForGraphicsItemsMoved::id() const
 {
-    return CmdID_ItemsMove;
+	return CmdID_ItemsMove;
 }
 
 bool DACommandsForGraphicsItemsMoved::mergeWith(const QUndoCommand* command)
 {
-    if (command->id() != id()) {
-        return false;
-    }
-    // 说明都是移动，看看是否能合并
-    const DACommandsForGraphicsItemsMoved* cmdMove = static_cast< const DACommandsForGraphicsItemsMoved* >(command);
-    if (qAbs(mCmdDatetime.secsTo(cmdMove->mCmdDatetime)) > 10) {
-        // 如果两个命令间隔大于10s，则认为是一个新命令，这两个命令就不合并，在移动中这种较
-        return false;
-    }
-    // 判断item是否都一样
-    if (cmdMove->mItems != mItems) {
-        return false;
-    }
-    // 到这里，基本符合合并条件，只要把mEndsPos赋值给当前命令即可
-    mEndsPos = cmdMove->mEndsPos;
+	// 说明都是移动，看看是否能合并
+	const DACommandsForGraphicsItemsMoved* other = dynamic_cast< const DACommandsForGraphicsItemsMoved* >(command);
+	if (nullptr == other) {
+		return false;
+	}
+	if (qAbs(mCmdDatetime.secsTo(other->mCmdDatetime)) > 10) {
+		// 如果两个命令间隔大于10s，则认为是一个新命令，这两个命令就不合并，在移动中这种较
+		return false;
+	}
+	// 判断item是否都一样
+	if (other->mItems != mItems) {
+		return false;
+	}
+	// 到这里，基本符合合并条件，只要把mEndsPos赋值给当前命令即可
+	mEndsPos = other->mEndsPos;
 #if DACOMMANDSFORGRAPHICS_DEBUG_PRINT
-    qDebug() << "ItemsMoved was merge";
+	qDebug() << "ItemsMoved was merge";
 #endif
-    return true;
+	return true;
 }
 
 const QList< QGraphicsItem* >& DACommandsForGraphicsItemsMoved::getItems() const
 {
-    return mItems;
+	return mItems;
 }
 
 const QList< QPointF >& DACommandsForGraphicsItemsMoved::getStartsPos() const
 {
-    return mStartsPos;
+	return mStartsPos;
 }
 
 const QList< QPointF >& DACommandsForGraphicsItemsMoved::getEndsPos() const
 {
-    return mEndsPos;
+	return mEndsPos;
 }
 
-//==============================================================
-// DACommandsForGraphicsItemsMoved_Merge
-//==============================================================
-DACommandsForGraphicsItemsMoved_Merge::DACommandsForGraphicsItemsMoved_Merge(const QList< QGraphicsItem* >& items,
-                                                                             const QList< QPointF >& starts,
-                                                                             const QList< QPointF >& ends,
-                                                                             bool skipfirst,
-                                                                             QUndoCommand* parent)
-    : DACommandsForGraphicsItemsMoved(items, starts, ends, skipfirst, parent)
-{
-}
-
-int DACommandsForGraphicsItemsMoved_Merge::id() const
-{
-	return CmdID_ItemsMoveMerge;
-}
-
-bool DACommandsForGraphicsItemsMoved_Merge::mergeWith(const QUndoCommand* command)
-{
-    const DACommandsForGraphicsItemsMoved_Merge* other = dynamic_cast< const DACommandsForGraphicsItemsMoved_Merge* >(command);
-	if (nullptr == other) {
-		return false;
-	}
-	if (other->mItems != mItems) {
-		// items不一样不能合并
-		return false;
-	}
-	mEndsPos = other->mEndsPos;
-	return true;
-}
 //==============================================================
 // DACommandsForGraphicsItemMoved
 //==============================================================
@@ -284,7 +254,12 @@ DACommandsForGraphicsItemMoved::DACommandsForGraphicsItemMoved(QGraphicsItem* it
                                                                const QPointF& end,
                                                                bool skipfirst,
                                                                QUndoCommand* parent)
-    : QUndoCommand(parent), mItem(item), mStartPos(start), mEndPos(end), mSkipFirst(skipfirst)
+    : QUndoCommand(parent)
+    , mItem(item)
+    , mStartPos(start)
+    , mEndPos(end)
+    , mSkipFirst(skipfirst)
+    , mDatetime(QDateTime::currentDateTime())
 {
     setText(QObject::tr("Item Move"));
 }
@@ -309,28 +284,13 @@ int DACommandsForGraphicsItemMoved::id() const
 	return CmdID_ItemMove;
 }
 
-//==============================================================
-// DACommandsForGraphicsItemMoved_Merge
-//==============================================================
-
-DACommandsForGraphicsItemMoved_Merge::DACommandsForGraphicsItemMoved_Merge(QGraphicsItem* item,
-                                                                           const QPointF& start,
-                                                                           const QPointF& end,
-                                                                           bool skipfirst,
-                                                                           QUndoCommand* parent)
-    : DACommandsForGraphicsItemMoved(item, start, end, skipfirst, parent)
+bool DACommandsForGraphicsItemMoved::mergeWith(const QUndoCommand* command)
 {
-}
-
-int DACommandsForGraphicsItemMoved_Merge::id() const
-{
-	return CmdID_ItemMoveMerge;
-}
-
-bool DACommandsForGraphicsItemMoved_Merge::mergeWith(const QUndoCommand* command)
-{
-	const DACommandsForGraphicsItemMoved_Merge* other = dynamic_cast< const DACommandsForGraphicsItemMoved_Merge* >(command);
+	const DACommandsForGraphicsItemMoved* other = dynamic_cast< const DACommandsForGraphicsItemMoved* >(command);
 	if (nullptr == other) {
+		return false;
+	}
+	if (qAbs(mDatetime.secsTo(other->mDatetime)) > 10) {
 		return false;
 	}
 	if (mItem != other->mItem) {
@@ -376,7 +336,7 @@ DACommandsForGraphicsItemResized::DACommandsForGraphicsItemResized(DAGraphicsRes
                                                                    const QSizeF& oldSize,
                                                                    const QSizeF& newSize,
                                                                    QUndoCommand* parent)
-    : QUndoCommand(parent), mItem(item), mOldSize(oldSize), mNewSize(newSize)
+    : QUndoCommand(parent), mItem(item), mOldSize(oldSize), mNewSize(newSize), mDatetime(QDateTime::currentDateTime())
 {
 	setText(QObject::tr("Item Resize"));
 	mOldpos = mNewPosition = item->pos();
@@ -423,6 +383,9 @@ bool DACommandsForGraphicsItemResized::mergeWith(const QUndoCommand* command)
 	if (nullptr == other) {
 		return false;
 	}
+	if (qAbs(mDatetime.secsTo(other->mDatetime)) > 10) {
+		return false;
+	}
 	if (mItem != other->mItem) {
 		return false;
 	}
@@ -446,7 +409,7 @@ DACommandsForGraphicsItemResizeWidth::DACommandsForGraphicsItemResizeWidth(DAGra
                                                                            const qreal& oldWidth,
                                                                            const qreal& newWidth,
                                                                            QUndoCommand* parent)
-    : QUndoCommand(parent), mItem(item), mOldWidth(oldWidth), mNewWidth(newWidth)
+    : QUndoCommand(parent), mItem(item), mOldWidth(oldWidth), mNewWidth(newWidth), mDatetime(QDateTime::currentDateTime())
 {
 	setText(QObject::tr("Item Resize Width"));
 	mHeight = item->getBodySize().height();
@@ -473,6 +436,9 @@ bool DACommandsForGraphicsItemResizeWidth::mergeWith(const QUndoCommand* command
 	if (nullptr == other) {
 		return false;
 	}
+	if (qAbs(mDatetime.secsTo(other->mDatetime)) > 10) {
+		return false;
+	}
 	if (mItem != other->mItem) {
 		return false;
 	}
@@ -486,7 +452,7 @@ DACommandsForGraphicsItemResizeHeight::DACommandsForGraphicsItemResizeHeight(DAG
                                                                              const qreal& oldHeight,
                                                                              const qreal& newHeight,
                                                                              QUndoCommand* parent)
-    : QUndoCommand(parent), mItem(item), mOldHeight(oldHeight), mNewHeight(newHeight)
+    : QUndoCommand(parent), mItem(item), mOldHeight(oldHeight), mNewHeight(newHeight), mDatetime(QDateTime::currentDateTime())
 {
 	setText(QObject::tr("Item Resize Height"));
 	mWidth = item->getBodySize().width();
@@ -509,8 +475,12 @@ int DACommandsForGraphicsItemResizeHeight::id() const
 
 bool DACommandsForGraphicsItemResizeHeight::mergeWith(const QUndoCommand* command)
 {
-    const DACommandsForGraphicsItemResizeHeight* other = dynamic_cast< const DACommandsForGraphicsItemResizeHeight* >(command);
+	const DACommandsForGraphicsItemResizeHeight* other =
+		dynamic_cast< const DACommandsForGraphicsItemResizeHeight* >(command);
 	if (nullptr == other) {
+		return false;
+	}
+	if (qAbs(mDatetime.secsTo(other->mDatetime)) > 10) {
 		return false;
 	}
 	if (mItem != other->mItem) {
@@ -526,7 +496,11 @@ DACommandsForGraphicsItemRotation::DACommandsForGraphicsItemRotation(DAGraphicsR
                                                                      const qreal& oldRotation,
                                                                      const qreal& newRotation,
                                                                      QUndoCommand* parent)
-    : QUndoCommand(parent), mItem(item), mOldRotation(oldRotation), mNewRotation(newRotation)
+    : QUndoCommand(parent)
+    , mItem(item)
+    , mOldRotation(oldRotation)
+    , mNewRotation(newRotation)
+    , mDatetime(QDateTime::currentDateTime())
 {
     setText(QObject::tr("Item Rotation"));
 }
@@ -553,6 +527,9 @@ bool DACommandsForGraphicsItemRotation::mergeWith(const QUndoCommand* command)
 		return false;
 	}
 	if (mItem != other->mItem) {
+		return false;
+	}
+	if (qAbs(mDatetime.secsTo(other->mDatetime)) > 10) {
 		return false;
 	}
 	mNewRotation = other->mNewRotation;
