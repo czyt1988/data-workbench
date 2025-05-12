@@ -13,9 +13,7 @@ public:
     DAGraphicsScene* scene { nullptr };
     QPointF sceneMousePressPos;    ///< 鼠标按下的场景位置
     QPointF sceneMouseReleasePos;  ///< 鼠标释放的场景位置
-    QList< QGraphicsItem* > movingItems;
-    QList< QPointF > startsPos;
-    QList< QPointF > endsPos;
+    QList< std::pair< QGraphicsItem*, QPointF > > movingItemsStartPos;
 };
 
 DAGraphicsCommandsFactory::PrivateData::PrivateData(DAGraphicsCommandsFactory* p) : q_ptr(p)
@@ -96,11 +94,16 @@ DACommandsForGraphicsItemsMoved* DAGraphicsCommandsFactory::createItemsMoved(QGr
         // 位置相等，不做处理
         return nullptr;
     }
+    QList< QGraphicsItem* > items;
+    QList< QPointF > startPos;
     QList< QPointF > endsPos;
-    for (QGraphicsItem* i : qAsConst(d->movingItems)) {
-        endsPos.append(i->pos());
+
+    for (const auto& pair : qAsConst(d->movingItemsStartPos)) {
+        items.push_back(pair.first);
+        startPos.push_back(pair.second);
+        endsPos.push_back(pair.first->pos());
     }
-    return createItemsMoved(d->movingItems, d->startsPos, d->endsPos, true);
+    return createItemsMoved(items, startPos, endsPos, true);
 }
 
 DACommandsForGraphicsItemsMoved_Merge* DAGraphicsCommandsFactory::createItemsMoved_Merge(const QList< QGraphicsItem* >& items,
@@ -166,15 +169,12 @@ void DAGraphicsCommandsFactory::sceneMousePressEvent(QGraphicsSceneMouseEvent* m
     }
     if (mouseEvent->buttons().testFlag(Qt::LeftButton)) {
         DA_D(d);
-        d->movingItems.clear();
-        d->startsPos.clear();
-        d->endsPos.clear();
+        d->movingItemsStartPos.clear();
 
         d->sceneMousePressPos        = mouseEvent->scenePos();
         QList< QGraphicsItem* > mits = d->scene->getSelectedMovableItems();
         for (QGraphicsItem* its : qAsConst(mits)) {
-            d->movingItems.append(its);
-            d->startsPos.append(its->pos());
+            d->movingItemsStartPos.append(std::make_pair(its, its->pos()));
         }
     }
 }
@@ -189,6 +189,28 @@ void DAGraphicsCommandsFactory::sceneMouseReleaseEvent(QGraphicsSceneMouseEvent*
     if (mouseEvent) {
         d_ptr->sceneMouseReleasePos = mouseEvent->scenePos();
     }
+}
+
+/**
+ * @brief 记录场景鼠标左键按下的位置
+ * @return
+ */
+QPointF DAGraphicsCommandsFactory::sceneMousePressPos() const
+{
+    return d_ptr->sceneMousePressPos;
+}
+
+/**
+ * @brief 这是记录scene移动鼠标时记录的移动的item
+ *
+ * 这个函数仅仅在DACommandsForGraphicsItemsMoved* createItemsMoved(QGraphicsSceneMouseEvent* mouseReleaseEEvent)使用
+ *
+ * 用来对鼠标移动的item进行回退
+ * @return
+ */
+const QList< std::pair< QGraphicsItem*, QPointF > >& DAGraphicsCommandsFactory::movingItemsStartPos() const
+{
+    return d_ptr->movingItemsStartPos;
 }
 
 void DAGraphicsCommandsFactory::setScene(DAGraphicsScene* s)

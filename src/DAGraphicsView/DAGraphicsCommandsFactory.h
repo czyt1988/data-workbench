@@ -87,6 +87,11 @@ protected:
     // 鼠标释放
     virtual void sceneMouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent);
 
+    // 记录场景鼠标左键按下的位置
+    QPointF sceneMousePressPos() const;
+    // 这是记录scene移动鼠标时记录的移动的item，这个函数仅仅在DACommandsForGraphicsItemsMoved* createItemsMoved(QGraphicsSceneMouseEvent* mouseReleaseEEvent);使用
+    const QList< std::pair< QGraphicsItem*, QPointF > >& movingItemsStartPos() const;
+
 protected:
 	void setScene(DAGraphicsScene* s);
 };

@@ -692,6 +692,7 @@ void DAGraphicsScene::setUndoStackActive()
  */
 void DAGraphicsScene::push(QUndoCommand* cmd)
 {
+    qDebug() << "scene push:" << cmd->text();
     d_ptr->mUndoStack.push(cmd);
 }
 
