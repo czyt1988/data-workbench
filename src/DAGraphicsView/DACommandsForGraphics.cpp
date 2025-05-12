@@ -8,6 +8,11 @@
 #include "DAQtContainerUtil.hpp"
 #include <QObject>
 #include <QTextDocument>
+
+#ifndef DACOMMANDSFORGRAPHICS_DEBUG_PRINT
+#define DACOMMANDSFORGRAPHICS_DEBUG_PRINT 1
+#endif
+
 namespace DA
 {
 //----------------------------------------------------
@@ -167,7 +172,12 @@ DACommandsForGraphicsItemsMoved::DACommandsForGraphicsItemsMoved(const QList< QG
                                                                  const QList< QPointF >& ends,
                                                                  bool skipfirst,
                                                                  QUndoCommand* parent)
-    : QUndoCommand(parent), mItems(items), mStartsPos(starts), mEndsPos(ends), mSkipFirst(skipfirst)
+    : QUndoCommand(parent)
+    , mItems(items)
+    , mStartsPos(starts)
+    , mEndsPos(ends)
+    , mCmdDatetime(QDateTime::currentDateTime())
+    , mSkipFirst(skipfirst)
 {
     setText(QObject::tr("Items Move"));
 }
@@ -194,7 +204,30 @@ void DACommandsForGraphicsItemsMoved::undo()
 
 int DACommandsForGraphicsItemsMoved::id() const
 {
-	return CmdID_ItemsMove;
+    return CmdID_ItemsMove;
+}
+
+bool DACommandsForGraphicsItemsMoved::mergeWith(const QUndoCommand* command)
+{
+    if (command->id() != id()) {
+        return false;
+    }
+    // 说明都是移动，看看是否能合并
+    const DACommandsForGraphicsItemsMoved* cmdMove = static_cast< const DACommandsForGraphicsItemsMoved* >(command);
+    if (qAbs(mCmdDatetime.secsTo(cmdMove->mCmdDatetime)) > 10) {
+        // 如果两个命令间隔大于10s，则认为是一个新命令，这两个命令就不合并，在移动中这种较
+        return false;
+    }
+    // 判断item是否都一样
+    if (cmdMove->mItems != mItems) {
+        return false;
+    }
+    // 到这里，基本符合合并条件，只要把mEndsPos赋值给当前命令即可
+    mEndsPos = cmdMove->mEndsPos;
+#if DACOMMANDSFORGRAPHICS_DEBUG_PRINT
+    qDebug() << "ItemsMoved was merge";
+#endif
+    return true;
 }
 
 const QList< QGraphicsItem* >& DACommandsForGraphicsItemsMoved::getItems() const

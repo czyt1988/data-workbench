@@ -120,6 +120,7 @@ public:
 	void redo() override;
 	void undo() override;
 	int id() const override;
+    bool mergeWith(const QUndoCommand* command) override;
 
     const QList< QGraphicsItem* >& getItems() const;
 
@@ -131,6 +132,7 @@ protected:
     QList< QGraphicsItem* > mItems;
 	QList< QPointF > mStartsPos;
 	QList< QPointF > mEndsPos;
+    QDateTime mCmdDatetime;
 	bool mSkipFirst;
 };
 
