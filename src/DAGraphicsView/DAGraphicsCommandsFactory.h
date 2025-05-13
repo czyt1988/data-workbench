@@ -28,39 +28,35 @@ public:
 	virtual DACommandsForGraphicsItemsAdd* createItemsAdd(const QList< QGraphicsItem* > its);
 	virtual DACommandsForGraphicsItemRemove* createItemRemove(QGraphicsItem* item, QUndoCommand* parent = nullptr);
 	virtual DACommandsForGraphicsItemsRemove* createItemsRemove(const QList< QGraphicsItem* > its);
-    virtual DACommandsForGraphicsItemMoved* createItemMoved(QGraphicsItem* item,
-                                                            const QPointF& start,
-                                                            const QPointF& end,
-                                                            bool skipfirst);
+	virtual DACommandsForGraphicsItemMoved*
+	createItemMoved(QGraphicsItem* item, const QPointF& start, const QPointF& end, bool skipfirst);
 	virtual DACommandsForGraphicsItemsMoved* createItemsMoved(const QList< QGraphicsItem* >& items,
-                                                              const QList< QPointF >& starts,
-                                                              const QList< QPointF >& ends,
-                                                              bool skipfirst);
+															  const QList< QPointF >& starts,
+															  const QList< QPointF >& ends,
+															  bool skipfirst);
 	// 这个命令主要针对场景鼠标移动item进行设置
-    virtual DACommandsForGraphicsItemsMoved* createItemsMoved();
+	virtual DACommandsForGraphicsItemsMoved* createItemsMoved();
 	virtual DACommandsForGraphicsItemResized* createItemResized(DAGraphicsResizeableItem* item,
-                                                                const QPointF& oldpos,
-                                                                const QSizeF& oldSize,
-                                                                const QPointF& newpos,
-                                                                const QSizeF& newSize,
-                                                                bool skipfirst = true);
-    virtual DACommandsForGraphicsItemResized* createItemResized(DAGraphicsResizeableItem* item,
-                                                                const QSizeF& oldSize,
-                                                                const QSizeF& newSize);
-    virtual DACommandsForGraphicsItemResizeWidth* createItemResizeWidth(DAGraphicsResizeableItem* item,
-                                                                        const qreal& oldWidth,
-                                                                        const qreal& newWidth);
-    virtual DACommandsForGraphicsItemResizeHeight* createItemResizeHeight(DAGraphicsResizeableItem* item,
-                                                                          const qreal& oldHeight,
-                                                                          const qreal& newHeight);
-    virtual DACommandsForGraphicsItemRotation* createItemRotation(DAGraphicsResizeableItem* item,
-                                                                  const qreal& oldRotation,
-                                                                  const qreal& newRotation);
+																const QPointF& oldpos,
+																const QSizeF& oldSize,
+																const QPointF& newpos,
+																const QSizeF& newSize,
+																bool skipfirst = true);
+	virtual DACommandsForGraphicsItemResized*
+	createItemResized(DAGraphicsResizeableItem* item, const QSizeF& oldSize, const QSizeF& newSize);
+	virtual DACommandsForGraphicsItemResizeWidth*
+	createItemResizeWidth(DAGraphicsResizeableItem* item, const qreal& oldWidth, const qreal& newWidth);
+	virtual DACommandsForGraphicsItemResizeHeight*
+	createItemResizeHeight(DAGraphicsResizeableItem* item, const qreal& oldHeight, const qreal& newHeight);
+	virtual DACommandsForGraphicsItemRotation*
+	createItemRotation(DAGraphicsResizeableItem* item, const qreal& oldRotation, const qreal& newRotation);
 	virtual DACommandsForGraphicsItemGrouping* createItemGrouping(const QList< QGraphicsItem* >& groupingitems);
 	virtual DACommandsForGraphicsItemUngrouping* createItemUngrouping(QGraphicsItemGroup* group);
 	DAGraphicsScene* scene() const;
 
 protected:
+	/// @group 针对@sa createItemsMoved 的函数
+	/// @{
 	//=========================
 	//! 工厂为何会存在如下函数：
 	//! 原因是createItemMoved命令是针对鼠标移动元件产生的，
@@ -83,12 +79,14 @@ protected:
 	QPointF sceneMousePressPos() const;
 	// 这是记录scene移动鼠标时记录的移动的item，这个函数仅仅在DACommandsForGraphicsItemsMoved* createItemsMoved(QGraphicsSceneMouseEvent* mouseReleaseEEvent);使用
 	const QList< std::pair< QGraphicsItem*, QPointF > >& movingItemsStartPos() const;
-    const QList< std::pair< QGraphicsItem*, QPointF > >& movingItemsEndPos() const;
-    // 标记是否完成了一个完整的鼠标移动元件周期，所谓完整的鼠标移动元件周期，是指鼠标按下并选择了元件，同时鼠标拖动让元件形成位移，最后再松开鼠标
-    bool isMouseMovementCycleComplete() const;
-    //
-    bool isBeginMovingItems() const;
-
+	const QList< std::pair< QGraphicsItem*, QPointF > >& movingItemsEndPos() const;
+	// 标记是否完成了一个完整的鼠标移动元件周期，所谓完整的鼠标移动元件周期，是指鼠标按下并选择了元件，同时鼠标拖动让元件形成位移，最后再松开鼠标
+	bool isMouseMovementCycleComplete() const;
+	// 是否开始进入了移动状态
+	bool isBeginMovingItems() const;
+	// 重置鼠标移动的循环状态，这个函数是重写sceneMouseReleaseEvent等函数时要重置状态用
+	void resetMouseMovementCycleState();
+	/// @}
 protected:
 	void setScene(DAGraphicsScene* s);
 };
