@@ -12,6 +12,9 @@ class QTextDocument;
 /**
   @note command一定要注意创建移动陷阱，所谓创建移动陷阱，是指一个创建命令，会new出一个item，移动命令，会把new出的item的位置记录，
   这时，创建命令在析构时，如果做了delete创建item的处理，那么就会造成野指针
+
+  @note command要注意合并命令陷阱，所谓合并命令陷阱是值命令如果有合并功能时，不能在push如栈后再对命令有任何操作，因为如果命令已经合并，
+  此命令会被QUndoStack销毁，命令指针是野指针，任何push之后的操作都可能出现异常
  */
 
 namespace DA
@@ -113,19 +116,19 @@ class DAGRAPHICSVIEW_API DACommandsForGraphicsItemsMoved : public QUndoCommand
 {
 public:
 	DACommandsForGraphicsItemsMoved(const QList< QGraphicsItem* >& items,
-									const QList< QPointF >& starts,
-									const QList< QPointF >& ends,
-									bool skipfirst,
-									QUndoCommand* parent = nullptr);
+                                    const QList< QPointF >& starts,
+                                    const QList< QPointF >& ends,
+                                    bool skipfirst,
+                                    QUndoCommand* parent = nullptr);
 	void redo() override;
 	void undo() override;
 	int id() const override;
 	bool mergeWith(const QUndoCommand* command) override;
-
+    // 注意，此命令可能会合并，不应该在推入栈后再对此命令有任何操作，会出现空指针
 	const QList< QGraphicsItem* >& getItems() const;
-
+    // 注意，此命令可能会合并，不应该在推入栈后再对此命令有任何操作，会出现空指针
 	const QList< QPointF >& getStartsPos() const;
-
+    // 注意，此命令可能会合并，不应该在推入栈后再对此命令有任何操作，会出现空指针
 	const QList< QPointF >& getEndsPos() const;
 
 protected:
@@ -143,10 +146,10 @@ class DAGRAPHICSVIEW_API DACommandsForGraphicsItemMoved : public QUndoCommand
 {
 public:
 	DACommandsForGraphicsItemMoved(QGraphicsItem* item,
-								   const QPointF& start,
-								   const QPointF& end,
-								   bool skipfirst,
-								   QUndoCommand* parent = nullptr);
+                                   const QPointF& start,
+                                   const QPointF& end,
+                                   bool skipfirst,
+                                   QUndoCommand* parent = nullptr);
 	void redo() override;
 	void undo() override;
 	int id() const override;
@@ -167,16 +170,16 @@ class DAGRAPHICSVIEW_API DACommandsForGraphicsItemResized : public QUndoCommand
 {
 public:
 	DACommandsForGraphicsItemResized(DAGraphicsResizeableItem* item,
-									 const QPointF& oldpos,
-									 const QSizeF& oldSize,
-									 const QPointF& newpos,
-									 const QSizeF& newSize,
-									 bool skipfirst       = true,
-									 QUndoCommand* parent = nullptr);
+                                     const QPointF& oldpos,
+                                     const QSizeF& oldSize,
+                                     const QPointF& newpos,
+                                     const QSizeF& newSize,
+                                     bool skipfirst       = true,
+                                     QUndoCommand* parent = nullptr);
 	DACommandsForGraphicsItemResized(DAGraphicsResizeableItem* item,
-									 const QSizeF& oldSize,
-									 const QSizeF& newSize,
-									 QUndoCommand* parent = nullptr);
+                                     const QSizeF& oldSize,
+                                     const QSizeF& newSize,
+                                     QUndoCommand* parent = nullptr);
 	void redo() override;
 	void undo() override;
 	int id() const override;
@@ -199,9 +202,9 @@ class DAGRAPHICSVIEW_API DACommandsForGraphicsItemResizeWidth : public QUndoComm
 {
 public:
 	DACommandsForGraphicsItemResizeWidth(DAGraphicsResizeableItem* item,
-										 const qreal& oldWidth,
-										 const qreal& newWidth,
-										 QUndoCommand* parent = nullptr);
+                                         const qreal& oldWidth,
+                                         const qreal& newWidth,
+                                         QUndoCommand* parent = nullptr);
 	void redo() override;
 	void undo() override;
 	int id() const override;
@@ -222,9 +225,9 @@ class DAGRAPHICSVIEW_API DACommandsForGraphicsItemResizeHeight : public QUndoCom
 {
 public:
 	DACommandsForGraphicsItemResizeHeight(DAGraphicsResizeableItem* item,
-										  const qreal& oldHeight,
-										  const qreal& newHeight,
-										  QUndoCommand* parent = nullptr);
+                                          const qreal& oldHeight,
+                                          const qreal& newHeight,
+                                          QUndoCommand* parent = nullptr);
 	void redo() override;
 	void undo() override;
 	int id() const override;
@@ -247,9 +250,9 @@ class DAGRAPHICSVIEW_API DACommandsForGraphicsItemRotation : public QUndoCommand
 {
 public:
 	DACommandsForGraphicsItemRotation(DAGraphicsResizeableItem* item,
-									  const qreal& oldRotation,
-									  const qreal& newRotation,
-									  QUndoCommand* parent = nullptr);
+                                      const qreal& oldRotation,
+                                      const qreal& newRotation,
+                                      QUndoCommand* parent = nullptr);
 	void redo() override;
 	void undo() override;
 	int id() const override;
@@ -269,8 +272,8 @@ class DAGRAPHICSVIEW_API DACommandsForGraphicsItemGrouping : public QUndoCommand
 {
 public:
 	DACommandsForGraphicsItemGrouping(DAGraphicsScene* sc,
-									  const QList< QGraphicsItem* >& groupingitems,
-									  QUndoCommand* parent = nullptr);
+                                      const QList< QGraphicsItem* >& groupingitems,
+                                      QUndoCommand* parent = nullptr);
 	~DACommandsForGraphicsItemGrouping();
 	void redo() override;
 	void undo() override;
@@ -341,9 +344,9 @@ class DAGRAPHICSVIEW_API DACommandTextItemHtmlContentChanged : public QUndoComma
 {
 public:
 	DACommandTextItemHtmlContentChanged(QGraphicsTextItem* item,
-										const QString& oldHtml,
-										const QString& newHtml,
-										QUndoCommand* parent = nullptr);
+                                        const QString& oldHtml,
+                                        const QString& newHtml,
+                                        QUndoCommand* parent = nullptr);
 	~DACommandTextItemHtmlContentChanged();
 	virtual void redo() override;
 	virtual void undo() override;

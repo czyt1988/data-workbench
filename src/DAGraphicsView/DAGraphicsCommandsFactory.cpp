@@ -1,6 +1,7 @@
 ﻿#include "DAGraphicsCommandsFactory.h"
 #include "DAGraphicsScene.h"
 #include <QGraphicsSceneMouseEvent>
+#include <QDebug>
 namespace DA
 {
 
@@ -10,14 +11,33 @@ public:
 	DA_DECLARE_PUBLIC(DAGraphicsCommandsFactory)
 public:
 	PrivateData(DAGraphicsCommandsFactory* p);
+    // 清空鼠标移动状态特征的标记信息
+    void clearMouseMovementCycleState();
 	DAGraphicsScene* scene { nullptr };
-	QPointF sceneMousePressPos;    ///< 鼠标按下的场景位置
-	QPointF sceneMouseReleasePos;  ///< 鼠标释放的场景位置
+    QPointF sceneMousePressPos;         ///< 鼠标按下的场景位置
+    QPointF sceneMouseReleasePos;       ///< 鼠标释放的场景位置
+    bool isBeginMovingItems { false };  ///< 标记是否在移动
+    bool isMouseMovementCycleComplete {
+        false
+    };  ///< 标记是否完成了一个完整的鼠标移动元件周期，所谓完整的鼠标移动元件周期，是指鼠标按下并选择了元件，同时鼠标拖动让元件形成位移，最后再松开鼠标
 	QList< std::pair< QGraphicsItem*, QPointF > > movingItemsStartPos;
+    QList< std::pair< QGraphicsItem*, QPointF > > movingItemsEndPos;  ///< 记录移动结束的位置
 };
 
 DAGraphicsCommandsFactory::PrivateData::PrivateData(DAGraphicsCommandsFactory* p) : q_ptr(p)
 {
+}
+
+void DAGraphicsCommandsFactory::PrivateData::clearMouseMovementCycleState()
+{
+    if (!movingItemsStartPos.empty()) {
+        movingItemsStartPos.clear();
+    }
+    if (!movingItemsEndPos.empty()) {
+        movingItemsEndPos.clear();
+    }
+    isBeginMovingItems           = false;
+    isMouseMovementCycleComplete = false;
 }
 
 //----------------------------------------------------
@@ -51,8 +71,10 @@ DACommandsForGraphicsItemsRemove* DAGraphicsCommandsFactory::createItemsRemove(c
 	return new DACommandsForGraphicsItemsRemove(its, scene());
 }
 
-DACommandsForGraphicsItemMoved*
-DAGraphicsCommandsFactory::createItemMoved(QGraphicsItem* item, const QPointF& start, const QPointF& end, bool skipfirst)
+DACommandsForGraphicsItemMoved* DAGraphicsCommandsFactory::createItemMoved(QGraphicsItem* item,
+                                                                           const QPointF& start,
+                                                                           const QPointF& end,
+                                                                           bool skipfirst)
 {
     return new DACommandsForGraphicsItemMoved(item, start, end, skipfirst);
 }
@@ -71,31 +93,41 @@ DACommandsForGraphicsItemsMoved* DAGraphicsCommandsFactory::createItemsMoved(con
  * @return
  * @note 注意，此函数会返回nullptr，代表没有需要推入的命令
  */
-DACommandsForGraphicsItemsMoved* DAGraphicsCommandsFactory::createItemsMoved(QGraphicsSceneMouseEvent* mouseReleaseEEvent)
+DACommandsForGraphicsItemsMoved* DAGraphicsCommandsFactory::createItemsMoved()
 {
-	// 这里先获取释放时的位置
-	if (!mouseReleaseEEvent) {
-		return nullptr;
-	}
 	DA_D(d);
-	if (d->movingItemsStartPos.isEmpty()) {
-		// 没有选中任何item，返回空
+    if (!d->isMouseMovementCycleComplete) {
+        // 没有完成一个完整的鼠标移动生命周期
+        return nullptr;
+    }
+    // 说明完成了一个完整的鼠标移动生命周期，创建命令
+    if (d->movingItemsStartPos.empty()) {
+        // 异常情况，记录
+        qDebug() << "Mouse Movement Cycle Complete,but not record any items";
+        d->clearMouseMovementCycleState();
 		return nullptr;
 	}
-	QPointF releasePos = mouseReleaseEEvent->scenePos();
-	if (qFuzzyCompare(releasePos.x(), d->sceneMousePressPos.x())
-		&& qFuzzyCompare(releasePos.y(), d->sceneMousePressPos.y())) {
-		// 位置相等，不做处理
-		return nullptr;
-	}
+    if (d->movingItemsEndPos.empty()) {
+        // 特殊情况，说明触发了鼠标点击和移动，但没有触发鼠标释放，一般是鼠标点击item，然后鼠标移出scene范围再释放导致的，这时补全末端位置
+        for (const auto& pair : qAsConst(d->movingItemsStartPos)) {
+            d->movingItemsEndPos.append(std::make_pair(pair.first, pair.first->pos()));
+        }
+    }
+
+    if (d->movingItemsEndPos.size() != d->movingItemsStartPos.size()) {
+        // 异常，不对其
+        qDebug() << "Mouse Movement Cycle Complete,but record pressed items and release items is not same";
+        d->clearMouseMovementCycleState();
+        return nullptr;
+    }
 	QList< QGraphicsItem* > items;
 	QList< QPointF > startPos;
 	QList< QPointF > endsPos;
 
-	for (const auto& pair : qAsConst(d->movingItemsStartPos)) {
-		items.push_back(pair.first);
-		startPos.push_back(pair.second);
-		endsPos.push_back(pair.first->pos());
+    for (int i = 0; i < d->movingItemsStartPos.size(); ++i) {
+        items.push_back(d->movingItemsStartPos[ i ].first);
+        startPos.push_back(d->movingItemsStartPos[ i ].second);
+        endsPos.push_back(d->movingItemsEndPos[ i ].second);
 	}
 	return createItemsMoved(items, startPos, endsPos, true);
 }
@@ -153,28 +185,66 @@ void DAGraphicsCommandsFactory::sceneMousePressEvent(QGraphicsSceneMouseEvent* m
 	if (!mouseEvent) {
 		return;
 	}
+    DA_D(d);
+    // 鼠标点击后清空
+    d->clearMouseMovementCycleState();
+    d->sceneMousePressPos = mouseEvent->scenePos();
 	if (mouseEvent->buttons().testFlag(Qt::LeftButton)) {
-		DA_D(d);
-		d->movingItemsStartPos.clear();
-
-		d->sceneMousePressPos        = mouseEvent->scenePos();
+        // 要判断当前点击下去之后是否是移动状态，有些情况，虽然选中了item，但鼠标点击下去并不是移动状态，例如拉一个选择框的过程
+        //!  1.记录选中的所有图元，如果点击的是改变尺寸的点，这个就不执行记录
+        DAGraphicsScene* sc    = scene();
+        QGraphicsItem* positem = sc->itemAt(d->sceneMousePressPos, QTransform());
+        if (!sc->isItemCanMove(positem, d_ptr->sceneMousePressPos)) {
+            d_ptr->isBeginMovingItems = false;
+            return;
+        }
 		QList< QGraphicsItem* > mits = d->scene->getSelectedMovableItems();
 		for (QGraphicsItem* its : qAsConst(mits)) {
 			d->movingItemsStartPos.append(std::make_pair(its, its->pos()));
-		}
+        }
+        // 只要mits不为空，说明开始移动
+        d->isBeginMovingItems = !mits.empty();
 	}
 }
 
 void DAGraphicsCommandsFactory::sceneMouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
-	Q_UNUSED(mouseEvent);
+    Q_UNUSED(mouseEvent);
+    if (d_ptr->isBeginMovingItems) {
+        d_ptr->isMouseMovementCycleComplete = true;
+    } else {
+        d_ptr->isMouseMovementCycleComplete = false;
+    }
 }
 
 void DAGraphicsCommandsFactory::sceneMouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
-	if (mouseEvent) {
-		d_ptr->sceneMouseReleasePos = mouseEvent->scenePos();
-	}
+    if (!mouseEvent) {
+        return;
+    }
+    DA_D(d);
+    d->sceneMouseReleasePos = mouseEvent->scenePos();
+    if (d->isBeginMovingItems) {
+        // 此时形成了一个完整的鼠标移动命令周期,但还得看看是否是点击下去后又抬起这种没有任何位移的情况
+        d->isBeginMovingItems = false;
+        if (d->movingItemsStartPos.isEmpty()) {
+            // 正常不会进入
+            d->clearMouseMovementCycleState();
+            return;
+        }
+        if (qFuzzyCompare(d->sceneMouseReleasePos.x(), d->sceneMousePressPos.x())
+            && qFuzzyCompare(d->sceneMouseReleasePos.y(), d->sceneMousePressPos.y())) {
+            // 位置相等，说明是点击了元件后又松开鼠标
+            d->clearMouseMovementCycleState();
+            return;
+        }
+        // 说明有位移，开始记录结束的位置信息
+        d->movingItemsEndPos.clear();
+        for (const auto& pair : qAsConst(d->movingItemsStartPos)) {
+            d->movingItemsEndPos.push_back(std::make_pair(pair.first, pair.first->pos()));
+        }
+        d->isMouseMovementCycleComplete = true;
+    }
 }
 
 /**
@@ -197,6 +267,31 @@ QPointF DAGraphicsCommandsFactory::sceneMousePressPos() const
 const QList< std::pair< QGraphicsItem*, QPointF > >& DAGraphicsCommandsFactory::movingItemsStartPos() const
 {
     return d_ptr->movingItemsStartPos;
+}
+
+/**
+ * @brief 这是记录scene移动item时鼠标释放时记录的item信息
+ * @return
+ */
+const QList< std::pair< QGraphicsItem*, QPointF > >& DAGraphicsCommandsFactory::movingItemsEndPos() const
+{
+    return d_ptr->movingItemsEndPos;
+}
+
+/**
+ * @brief 标记是否完成了一个完整的鼠标移动元件周期，所谓完整的鼠标移动元件周期，是指鼠标按下并选择了元件，同时鼠标拖动让元件形成位移，最后再松开鼠标
+ *
+ * 只有完整的鼠标移动元件周期，才应该产生元件移动命令
+ * @return
+ */
+bool DAGraphicsCommandsFactory::isMouseMovementCycleComplete() const
+{
+    return d_ptr->isMouseMovementCycleComplete;
+}
+
+bool DAGraphicsCommandsFactory::isBeginMovingItems() const
+{
+    return d_ptr->isBeginMovingItems;
 }
 
 void DAGraphicsCommandsFactory::setScene(DAGraphicsScene* s)

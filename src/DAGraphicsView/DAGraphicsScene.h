@@ -134,6 +134,9 @@ public:
 	void registCommandsFactory(DAGraphicsCommandsFactory* fac);
 	DAGraphicsCommandsFactory* commandsFactory();
 
+    // 判断点击的item是否可以移动
+    virtual bool isItemCanMove(QGraphicsItem* positem, const QPointF& scenePos);
+
 public:
 	// 获取默认的dpi
 	static int getDefaultDPI();
@@ -240,8 +243,6 @@ signals:
 	void sceneActionDeactived(DA::DAAbstractGraphicsSceneAction* act);
 
 protected:
-	// 判断点击的item是否可以移动
-	virtual bool isItemCanMove(QGraphicsItem* positem, const QPointF& scenePos);
 	// 调用此函数 主动触发itemsPositionChanged信号，这个函数用于 继承此类例如实现了键盘移动item，主动触发此信号
 	void emitItemsPositionChanged(const QList< QGraphicsItem* >& items,
                                   const QList< QPointF >& oldPos,

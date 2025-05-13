@@ -1141,6 +1141,7 @@ void DAGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		}
 		//
 	}
+    // 处理鼠标移动的命令，让通过鼠标移动item也能执行redo/undo
     commandsFactory()->sceneMousePressEvent(mouseEvent);
 }
 
@@ -1183,11 +1184,17 @@ void DAGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 	}
 	QGraphicsScene::mouseReleaseEvent(mouseEvent);
     commandsFactory()->sceneMouseReleaseEvent(mouseEvent);
-    if (auto cmd = commandsFactory()->createItemsMoved(mouseEvent)) {
+    auto cmd = commandsFactory()->createItemsMoved();
+    if (cmd) {
+        QList< QGraphicsItem* > moveItems = cmd->getItems();
+        QList< QPointF > startsPos        = cmd->getStartsPos();
+        QList< QPointF > endsPos          = cmd->getEndsPos();
 		push(cmd);
 		// 位置改变信号
 		// 如果 移动 过程 鼠标移出scene在释放，可能无法捕获
-        emit itemsPositionChanged(cmd->getItems(), cmd->getStartsPos(), cmd->getEndsPos());
+        // 注意，这里不能这样使用：emit itemsPositionChanged(cmd->getItems(), cmd->getStartsPos(), cmd->getEndsPos());
+        // 因为命令会合并，合并后的cmd是一个悬空指针
+        emit itemsPositionChanged(moveItems, startsPos, endsPos);
 	}
 }
 
