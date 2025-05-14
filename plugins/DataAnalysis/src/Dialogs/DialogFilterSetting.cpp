@@ -126,7 +126,7 @@ void DialogFilterSetting::onAccepted()
 	if (seriess.size() != 1) {
 		QMessageBox::warning(this,
 							 tr("warning"),
-							 tr("You need to select a waveform data for spectrum analysis")  // cn:你需要选择一个波形数据进行滤波分析
+							 tr("You need to select a waveform data for filter")  // cn:你需要选择一个波形数据进行滤波
 		);
 		return;
 	}
@@ -154,9 +154,10 @@ void DialogFilterSetting::onAccepted()
 		}
 	} else if (ui->Filter_type_Box->currentText() == "bandpass" | ui->Filter_type_Box->currentText() == "bandstop") {
 		if (qFuzzyIsNull(lf) | qFuzzyIsNull(uf)) {
-			QMessageBox::warning(this,
-								 tr("warning"),
-								 tr("The lower cut-off frequency or upper cut-off frequency cannot be 0")  // cn:截止频率上限或下限不能为0
+			QMessageBox::warning(
+				this,
+				tr("warning"),
+				tr("The lower cut-off frequency or upper cut-off frequency cannot be 0")  // cn:截止频率上限或下限不能为0
 			);
 			return;
 		}

@@ -10,6 +10,8 @@
 #include "Dialogs/DialogFilterSetting.h"
 #include "Dialogs/DialogPeakAnalysisSetting.h"
 #include "Dialogs/DialogSTFTSetting.h"
+#include "Dialogs/DialogWaveletCWTSetting.h"
+#include "Dialogs/DialogWaveletDWTSetting.h"
 #include "DataAnalysExecutor.h"
 #include "DADataManager.h"
 #include "DAChartOperateWidget.h"
@@ -46,7 +48,8 @@ void DataAnalysController::initConnect()
 	connect(mActions->actionFilter, &QAction::triggered, this, &DataAnalysController::onActionFilterTriggered);
 	connect(mActions->actionPeakAnalysis, &QAction::triggered, this, &DataAnalysController::onActionPeakAnalysisTriggered);
 	connect(mActions->actionSTFT, &QAction::triggered, this, &DataAnalysController::onActionSTFTriggered);
-}
+	connect(mActions->actionWaveletCWT, &QAction::triggered, this, &DataAnalysController::onActionWaveletCWTTriggered);
+	connect(mActions->actionWaveletDWT, &QAction::triggered, this, &DataAnalysController::onActionWaveletDWTTriggered);}
 
 /**
  * @brief 频谱设置窗口
@@ -103,7 +106,33 @@ DialogSTFTSetting* DataAnalysController::getSTFTSettingDialog()
 	mDialogSTFTSetting->setDataManager(mCore->getDataManagerInterface()->dataManager());
 	return mDialogSTFTSetting;
 }
+/**
+ * @brief 连续小波变换设置窗口
+ * @return
+ */
+DialogWaveletCWTSetting* DataAnalysController::getWaveletCWTSettingDialog()
+{
+	if (mDialogWaveletCWTSetting) {
+		return mDialogWaveletCWTSetting;
+	}
+	mDialogWaveletCWTSetting = new DialogWaveletCWTSetting(mCore->getUiInterface()->getMainWindow());
+	mDialogWaveletCWTSetting->setDataManager(mCore->getDataManagerInterface()->dataManager());
+	return mDialogWaveletCWTSetting;
+}
 
+/**
+ * @brief 离散小波变换设置窗口
+ * @return
+ */
+DialogWaveletDWTSetting* DataAnalysController::getWaveletDWTSettingDialog()
+{
+	if (mDialogWaveletDWTSetting) {
+		return mDialogWaveletDWTSetting;
+	}
+	mDialogWaveletDWTSetting = new DialogWaveletDWTSetting(mCore->getUiInterface()->getMainWindow());
+	mDialogWaveletDWTSetting->setDataManager(mCore->getDataManagerInterface()->dataManager());
+	return mDialogWaveletDWTSetting;
+}
 DA::DAPySeries DataAnalysController::getCurrentSelectSeries()
 {
 	std::pair< DA::DAPyDataFrame, QList< int > > selDatas = mDockingArea->getCurrentSelectDataFrame();
@@ -251,6 +280,9 @@ void DataAnalysController::onActionFilterTriggered()
 	mDockingArea->raiseDockByWidget(mDockingArea->getChartOperateWidget());
 }
 
+/**
+ * @brief 峰值分析
+ */
 void DataAnalysController::onActionPeakAnalysisTriggered()
 {
 	DA::DAPySeries selSeries       = getCurrentSelectSeries();
@@ -303,7 +335,7 @@ void DataAnalysController::onActionPeakAnalysisTriggered()
 	DA::DAChartUtil::setPlotItemColor(curve, fig->getDefaultColor());
 	waveChart->setXLabel(tr("time(s)"));     // cn:时间(s)
 	waveChart->setYLabel(tr("amplitudes"));  // cn:幅值
-	waveChart->setTitle(tr("Wave Chart"));   // cn:波形图
+	curve->setTitle(tr("Wave Chart"));       // cn:波形图
 
 	//峰值
 	auto peak_index         = df[ "index" ];
@@ -318,6 +350,157 @@ void DataAnalysController::onActionPeakAnalysisTriggered()
 	waveChart->setYLabel(tr("amplitudes"));                 // cn:幅值
 	waveChart->setTitle(tr("Origin Wave and Peak Chart"));  // cn:原始波形和滤波波形
 
+	// 把绘图窗口抬起
+	mDockingArea->raiseDockByWidget(mDockingArea->getChartOperateWidget());
+}
+
+void DataAnalysController::onActionWaveletCWTTriggered()
+{
+	DA::DAPySeries selSeries     = getCurrentSelectSeries();
+	DialogWaveletCWTSetting* dlg = getWaveletCWTSettingDialog();
+	if (!selSeries.isNone()) {
+		dlg->setCurrentSeries(selSeries);
+	}
+	// 执行
+	if (QDialog::Accepted != dlg->exec()) {
+		return;
+	}
+
+	// cwt的基本参数
+	DA::DAPySeries data   = dlg->getCurrentSeries();
+	double fs             = dlg->getSamplingRate();
+	DA::DAPySeries scales = dlg->getScalesSeries();
+	QVariantMap args      = dlg->getWaveletCWTSetting();
+	if (data.isNone()) {
+		return;
+	}
+	qDebug() << "Wavelet CWT args:" << args;
+
+	//执行
+	QString err;
+	DA::DAPyDataFrame df = mExecutor->wavelet_cwt(data, fs, scales, args, &err);
+	if (df.isNone()) {
+		if (!err.isEmpty()) {
+			qCritical() << err;
+			return;
+		}
+	}
+
+	//提取第一列伪频率
+	DA::DAPySeries pseudo_freqs = df[ 0 ];
+	// 把数据装入datamanager，系数矩阵
+	DA::DAData d(df);
+	d.setName(QString("%1-cwt_coef").arg(data.name()));
+	mDataMgr->addData(d);  // 不可撤销
+	//! 绘图
+	//! -------------
+	//! |   波形图   |
+	//! -------------
+	//! |  cwt谱图   |
+	//! -------------
+	auto plt = mDockingArea->getChartOperateWidget();
+	auto fig = plt->createFigure();  // 注意，DAAppChartOperateWidget的createFigure会创建一个chart，因此，第一个chart是不需要创建的
+	{  // wave chart
+		// currentChart函数不会返回null
+		auto waveChart = fig->currentChart();
+		fig->setWidgetPosPercent(waveChart, 0.05, 0.05, 0.9, 0.45);  // 对应的是x位置占比，y位置占比，宽度占比，高度占比，y位置是从上往下
+		auto xy    = toWave(data, 1 / fs);
+		auto curve = waveChart->addCurve(xy.first.data(), xy.second.data(), xy.first.size());
+		curve->setTitle(tr("Wave"));  // cn:波形
+		DA::DAChartUtil::setPlotItemColor(curve, fig->getDefaultColor());
+		waveChart->setXLabel(tr("time(s)"));     // cn:时间(s)
+		waveChart->setYLabel(tr("amplitudes"));  // cn:幅值
+		waveChart->setTitle(tr("Wave Chart"));   // cn:波形图
+	}
+	{  // cwt chart
+	}
+	// 把绘图窗口抬起
+	// mDockingArea->raiseDockByWidget(mDockingArea->getChartOperateWidget());
+}
+
+void DataAnalysController::onActionWaveletDWTTriggered()
+{
+	DA::DAPySeries selSeries     = getCurrentSelectSeries();
+	DialogWaveletDWTSetting* dlg = getWaveletDWTSettingDialog();
+	if (!selSeries.isNone()) {
+		dlg->setCurrentSeries(selSeries);
+	}
+	// 执行
+	if (QDialog::Accepted != dlg->exec()) {
+		return;
+	}
+
+	// cwt的基本参数
+	DA::DAPySeries data = dlg->getCurrentSeries();
+	double fs           = dlg->getSamplingRate();
+	QVariantMap args    = dlg->getWaveletDWTSetting();
+	int level           = args[ "level" ].toInt();
+	if (data.isNone()) {
+		return;
+	}
+	qDebug() << "Wavelet DWT args:" << args;
+
+	//执行
+	QString err;
+	DA::DAPyDataFrame df = mExecutor->wavelet_dwt(data, fs, args, &err);
+	if (df.isNone()) {
+		if (!err.isEmpty()) {
+			qCritical() << err;
+			return;
+		}
+	}
+	// 把数据装入datamanager，系数矩阵
+	DA::DAData d(df);
+	d.setName(QString("%1-dwt").arg(data.name()));
+	mDataMgr->addData(d);  // 不可撤销
+
+	//! 绘图
+	//! ----------
+	//! | 波形图  |
+	//! ----------
+	auto plt = mDockingArea->getChartOperateWidget();
+	auto fig = plt->createFigure();  // 注意，DAAppChartOperateWidget的createFigure会创建一个chart，因此，第一个chart是不需要创建的
+	{  // wave chart
+		// currentChart函数不会返回null
+		auto waveChart = fig->currentChart();
+		fig->setWidgetPosPercent(
+			waveChart, 0.05, 0.05, 0.9, 0.9 / (level + 1));  // 对应的是x位置占比，y位置占比，宽度占比，高度占比，y位置是从上往下
+		auto xy    = toWave(data, 1 / fs);
+		auto curve = waveChart->addCurve(xy.first.data(), xy.second.data(), xy.first.size());
+		curve->setTitle(tr("Wave"));  // cn:波形
+		DA::DAChartUtil::setPlotItemColor(curve, fig->getDefaultColor());
+		waveChart->setXLabel(tr("time(s)"));     // cn:时间(s)
+		waveChart->setYLabel(tr("amplitudes"));  // cn:幅值
+		waveChart->setTitle(tr("Wave Chart"));   // cn:波形图
+	}
+	{  // dwt chart
+		for (int i = 0; i < level; ++i) {
+			auto dwtChart = fig->createChart(0.05, 0.05 + (i + 1) * 0.9 / (level + 1), 0.9, 0.9 / (level + 1));
+			auto dwt_res  = df[ level - i ];
+			int dwt_len   = 0;
+			std::vector< double > cD_i;
+			for (size_t j = 0; j < dwt_res.size(); ++j) {
+				auto a = dwt_res[ j ];
+				if (std::isnan(a.toDouble()))
+					continue;
+				dwt_len++;
+				cD_i.push_back(a.toDouble());
+			}
+			// x坐标自增序列
+			std::vector< double > x;
+			DA::DAAutoincrementSeries< double > xgenrator(0.0, 1);
+			x.resize(dwt_len);
+			xgenrator.generate(x.begin(), x.end());
+
+			auto dwt_curve = dwtChart->addCurve(x.data(), cD_i.data(), x.size());
+			dwt_curve->setTitle(tr("cD_%1").arg(i + 1));  // cn:离散小波变换
+			DA::DAChartUtil::setPlotItemColor(dwt_curve, fig->getDefaultColor());
+			// dwtChart->setXLabel(tr("frequency(Hz)"));     // cn:频率(Hz)
+			dwtChart->setYLabel(tr("cD_%1").arg(i + 1));  // cn:详细系数
+			dwtChart->setTitle(tr("cD_%1").arg(i + 1));   // cn:离散小波变换图
+			dwtChart->notifyChartPropertyHasChanged();
+		}
+	}
 	// 把绘图窗口抬起
 	mDockingArea->raiseDockByWidget(mDockingArea->getChartOperateWidget());
 }
