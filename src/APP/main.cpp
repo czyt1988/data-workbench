@@ -1,7 +1,12 @@
 ﻿#include "AppMainWindow.h"
 // stl
 #include <iostream>
+// windows system only
+#ifdef Q_OS_WIN
+#include <windows.h>
+#endif
 // Qt
+#include <QCommandLineParser>
 #include <QProcess>
 #include <QObject>
 #include <QApplication>
@@ -31,14 +36,15 @@ void setAppFont();
 QString appPreposeDump();
 void enableHDPIScaling();
 //--version的返回内容，返回版本信息
-QString daVersionInfo();
+static QString daVersionInfo();
 //--describe的返回内容，返回详细信息
-QString daDescribe();
+static QString daDescribe();
 //--help的返回内容，返回帮助
-QString daHelp();
+static QString daHelp();
 // 解析参数，如果返回false，则直接return 0,不会进入gui
-bool parsingArguments(const QStringList& args);
-
+bool parsingConsoleArguments(const QStringList& args);
+// 初始化所有命令
+void initCommandLine(QCommandLineParser* cmd);
 /**
  * @brief main
  * @param argc
@@ -67,6 +73,10 @@ int main(int argc, char* argv[])
 	qDebug() << DA::DADir();
 	// 启动app
 	QApplication app(argc, argv);
+	QApplication::setApplicationVersion(daVersionInfo());
+	QApplication::setApplicationName("DAWorkbench");
+	QCommandLineParser parser;
+	parser.setApplicationDescription(daDescribe());
 
 	// 安装翻译
 	DA::DATranslatorManeger datr;
@@ -74,7 +84,9 @@ int main(int argc, char* argv[])
 
 	// 解析命令行参数
 	QStringList appArguments = app.arguments();
-	if (!parsingArguments(appArguments)) {
+	if (!parsingConsoleArguments(appArguments)) {
+		// 刷新再退出
+		std::cout.flush();
 		return 0;
 	}
 	setAppFont();
@@ -100,6 +112,13 @@ int main(int argc, char* argv[])
 	return r;
 }
 
+/**
+ * @brief 初始化所有的命令
+ * @param cmd
+ */
+void initCommandLine(QCommandLineParser* cmd)
+{
+}
 /**
  * @brief 帮助，--help的返回内容
  * @return
@@ -143,20 +162,48 @@ QString daDescribe()
  * @param args
  * @return
  */
-bool parsingArguments(const QStringList& args)
+bool parsingConsoleArguments(const QStringList& args)
 {
-	// 信息输出
-	if (args.contains("--help")) {
+	if (args.contains("--help") || args.contains("--version") || args.contains("--describe")) {
+#ifdef Q_OS_WIN
+		bool hasConsole = AttachConsole(ATTACH_PARENT_PROCESS);
+		if (hasConsole) {
+			// 重定向标准输出
+			FILE* newStdout = nullptr;
+			if (freopen_s(&newStdout, "CONOUT$", "w", stdout) == 0) {
+				// 使用文件描述符重定向
+				int fd = _fileno(newStdout);
+				if (fd != -1) {
+					_dup2(fd, _fileno(stdout));           // 将新流的描述符复制到标准输出
+					setvbuf(stdout, nullptr, _IONBF, 0);  // 禁用缓冲
+				}
+			}
+			// 重定向标准错误输出
+			FILE* newStderr = nullptr;
+			if (freopen_s(&newStderr, "CONOUT$", "w", stderr) == 0) {
+				int fdErr = _fileno(newStderr);
+				if (fdErr != -1) {
+					_dup2(fdErr, _fileno(stderr));
+					setvbuf(stderr, nullptr, _IONBF, 0);
+				}
+			}
+		}
+#endif
 		QTextStream st(stdout);
-		st << daHelp() << Qt::endl;
-		return false;
-	} else if (args.contains("--version")) {
-		QTextStream st(stdout);
-		st << daVersionInfo() << Qt::endl;
-		return false;
-	} else if (args.contains("--describe")) {
-		QTextStream st(stdout);
-		st << daDescribe() << Qt::endl;
+		if (args.contains("--help")) {
+			st << daHelp() << Qt::endl;
+		} else if (args.contains("--version")) {
+			st << daVersionInfo() << Qt::endl;
+		} else if (args.contains("--describe")) {
+			st << daDescribe() << Qt::endl;
+		}
+		st.flush();
+
+#ifdef Q_OS_WIN
+		if (hasConsole) {
+			FreeConsole();
+		}
+#endif
 		return false;
 	}
 	return true;
