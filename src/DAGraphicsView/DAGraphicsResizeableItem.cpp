@@ -9,25 +9,19 @@
 #include <QDomElement>
 #include "DAGraphicsScene.h"
 #include "DACommandsForGraphics.h"
-
+#include "DAGraphicsCommandsFactory.h"
 #define Enable_DAGraphicsResizeableItemPrivateDebugPrint 0
 #if Enable_DAGraphicsResizeableItemPrivateDebugPrint
-#define DAGraphicsResizeableItemPrivateDoResizePrint(mousePressItemPos,                                                \
-                                                     mousescenePos,                                                    \
-                                                     currentControlPointTypeUnderMouse,                                \
-                                                     newPos,                                                           \
-                                                     newSize)                                                          \
-    do {                                                                                                               \
-        qDebug() << "mousePressItemPos=" << mousePressItemPos << ",mousescenePos=" << mousescenePos                    \
-                 << ",currentControlPointTypeUnderMouse=" << currentControlPointTypeUnderMouse << ",newPos=" << newPos \
-                 << ",newSize=" << newSize << ",current pos=" << q_ptr->pos();                                         \
-    } while (0)
+#define DAGraphicsResizeableItemPrivateDoResizePrint(                                                                  \
+	mousePressItemPos, mousescenePos, currentControlPointTypeUnderMouse, newPos, newSize)                              \
+	do {                                                                                                               \
+		qDebug() << "mousePressItemPos=" << mousePressItemPos << ",mousescenePos=" << mousescenePos                    \
+				 << ",currentControlPointTypeUnderMouse=" << currentControlPointTypeUnderMouse << ",newPos=" << newPos \
+				 << ",newSize=" << newSize << ",current pos=" << q_ptr->pos();                                         \
+	} while (0)
 #else
-#define DAGraphicsResizeableItemPrivateDoResizePrint(mousePressItemPos,                                                \
-                                                     mousescenePos,                                                    \
-                                                     currentControlPointTypeUnderMouse,                                \
-                                                     newPos,                                                           \
-                                                     newSize)
+#define DAGraphicsResizeableItemPrivateDoResizePrint(                                                                  \
+	mousePressItemPos, mousescenePos, currentControlPointTypeUnderMouse, newPos, newSize)
 #endif
 
 #if Enable_DAGraphicsResizeableItemPrivateDebugPrint
@@ -182,14 +176,14 @@ void DAGraphicsResizeableItem::PrivateData::resetResizeableItemControlPointInfo(
 
 void DAGraphicsResizeableItem::PrivateData::appendControlPointInfo(DAGraphicsResizeableItem::ControlType t, const QRectF& body)
 {
-    mControlPointInfos.append(DAGraphicsResizeableItemControlPointInfo(q_ptr->controlPointRect(t, body), t));
+	mControlPointInfos.append(DAGraphicsResizeableItemControlPointInfo(q_ptr->controlPointRect(t, body), t));
 }
 
-QPair< DAGraphicsResizeableItem::ControlType, QRectF > DAGraphicsResizeableItem::PrivateData::getControlPointAndUpdateByPos(
-    const QPointF& pos)
+QPair< DAGraphicsResizeableItem::ControlType, QRectF >
+DAGraphicsResizeableItem::PrivateData::getControlPointAndUpdateByPos(const QPointF& pos)
 {
-	QPair< DAGraphicsResizeableItem::ControlType, QRectF > res = qMakePair(DAGraphicsResizeableItem::NotUnderAnyControlType,
-																		   QRectF());
+	QPair< DAGraphicsResizeableItem::ControlType, QRectF > res =
+		qMakePair(DAGraphicsResizeableItem::NotUnderAnyControlType, QRectF());
 	//    qDebug() << "getControlPointAndUpdateByPos(" << pos << ")";
 	for (int i = 0; i < mControlPointInfos.size(); ++i) {
 		DAGraphicsResizeableItemControlPointInfo& r = mControlPointInfos[ i ];
@@ -766,18 +760,19 @@ QVariant DAGraphicsResizeableItem::itemChange(GraphicsItemChange change, const Q
 
 void DAGraphicsResizeableItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
 {
-	if (d_ptr->mCurrentControlTypeUnderMouse != NotUnderAnyControlType) {
+	DA_D(d);
+	if (d->mCurrentControlTypeUnderMouse != NotUnderAnyControlType) {
 		// 说明在改变大小状态
 		QPair< QPointF, QSizeF > res = doItemResize(event->scenePos());
-		if (d_ptr->mSceneUndo) {
-			DA::DACommandsForGraphicsItemResized* cmd = new DA::DACommandsForGraphicsItemResized(this,
-																								 d_ptr->mMousePressItemPos,
-																								 d_ptr->mMousePressItemSize,
-																								 res.first,
-																								 res.second,
-																								 true  // 已经执行了移动，第一次跳过执行
+		if (d->mSceneUndo) {
+			auto cmd = d->mSceneUndo->commandsFactory()->createItemResized(this,
+																		   d->mMousePressItemPos,
+																		   d->mMousePressItemSize,
+																		   res.first,
+																		   res.second,
+																		   true  // 已经执行了缩放，第一次跳过执行
 			);
-			d_ptr->mSceneUndo->push(cmd);
+			d->mSceneUndo->push(cmd);
 		}
 		// 接受鼠标移动事件，避免产生移动效果
 		event->accept();

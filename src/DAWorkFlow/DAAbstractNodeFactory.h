@@ -135,9 +135,9 @@ public:
 	 * @param inkey
 	 */
 	virtual void nodeLinkSucceed(DAAbstractNode::SharedPointer outNode,
-								 const QString& outKey,
-								 DAAbstractNode::SharedPointer inNode,
-								 const QString& inkey);
+                                 const QString& outKey,
+                                 DAAbstractNode::SharedPointer inNode,
+                                 const QString& inkey);
 	/**
 	 * @brief 节点连线删除的回调
 	 * @param outNode 输出节点
@@ -146,9 +146,9 @@ public:
 	 * @param inkey 输入key
 	 */
 	virtual void nodeLinkDetached(DAAbstractNode::SharedPointer outNode,
-								  const QString& outKey,
-								  DAAbstractNode::SharedPointer inNode,
-								  const QString& inkey);
+                                  const QString& outKey,
+                                  DAAbstractNode::SharedPointer inNode,
+                                  const QString& inkey);
 	/**
 	 * @brief 把扩展信息保存到xml上
 	 * 	 * 此函数在工作流保存的过程中会调用，把工厂的附加信息保存到xml文件上
@@ -183,7 +183,7 @@ public:
 	 */
 	virtual void uiInitialization(DANodeGraphicsScene* scene);
 	/**
-	 * @brief 工作流准备完成回调
+     * @brief 工作流文件加载准备完成回调
 	 * 文件加载过程中不会触发nodeAdded信号，在整个文件加载完成后会触发workflowReady用来通知其他告知工作流加载完成
 	 */
 	virtual void workflowReady();

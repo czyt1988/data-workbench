@@ -2278,24 +2278,24 @@ Table Area</source>
         <translation>插件路径:%1</translation>
     </message>
     <message>
-        <location filename="DAPluginSupport/DAPluginManager.cpp" line="164"/>
+        <location filename="DAPluginSupport/DAPluginManager.cpp" line="157"/>
         <source>ignore plugin %1</source>
         <translation>忽略插件%1</translation>
     </message>
     <message>
-        <location filename="DAPluginSupport/DAPluginManager.cpp" line="169"/>
+        <location filename="DAPluginSupport/DAPluginManager.cpp" line="162"/>
         <source> ignore invalid file:%1</source>
         <oldsource> ignore invalid file:%2</oldsource>
         <translation> 忽略异常文件:%1</translation>
     </message>
     <message>
-        <location filename="DAPluginSupport/DAPluginManager.cpp" line="175"/>
+        <location filename="DAPluginSupport/DAPluginManager.cpp" line="168"/>
         <source>can not load plugin:%1</source>
         <oldsource>start load plugin:%1</oldsource>
         <translation>无法加载插件:%1</translation>
     </message>
     <message>
-        <location filename="DAPluginSupport/DAPluginManager.cpp" line="251"/>
+        <location filename="DAPluginSupport/DAPluginManager.cpp" line="244"/>
         <source>Plugin Manager Info:is loaded=%1,plugin counts=%2</source>
         <translation>Plugin Manager Info:加载情况=%1,插件数量=%2</translation>
     </message>
@@ -2897,73 +2897,73 @@ Table Area</source>
 <context>
     <name>DA::DAZipArchive</name>
     <message>
-        <location filename="DAGui/DAZipArchive.cpp" line="100"/>
-        <location filename="DAGui/DAZipArchive.cpp" line="120"/>
-        <location filename="DAGui/DAZipArchive.cpp" line="145"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="101"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="121"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="146"/>
         <source>%1 is already opened</source>
         <translation>当前文件%1已经打开</translation>
     </message>
     <message>
-        <location filename="DAGui/DAZipArchive.cpp" line="125"/>
-        <location filename="DAGui/DAZipArchive.cpp" line="150"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="126"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="151"/>
         <source>failed to open archive file %1</source>
         <translation>无法打开存档文件%1</translation>
     </message>
     <message>
-        <location filename="DAGui/DAZipArchive.cpp" line="171"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="172"/>
         <source>archive is not open,can not close</source>
         <translation>存档没有打开，无法关闭</translation>
     </message>
     <message>
-        <location filename="DAGui/DAZipArchive.cpp" line="191"/>
-        <location filename="DAGui/DAZipArchive.cpp" line="260"/>
-        <location filename="DAGui/DAZipArchive.cpp" line="275"/>
-        <location filename="DAGui/DAZipArchive.cpp" line="330"/>
-        <location filename="DAGui/DAZipArchive.cpp" line="365"/>
-        <location filename="DAGui/DAZipArchive.cpp" line="465"/>
-        <location filename="DAGui/DAZipArchive.cpp" line="476"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="192"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="261"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="276"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="331"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="366"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="466"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="477"/>
         <source>archive is not open</source>
         <translation>存档没有打开</translation>
     </message>
     <message>
-        <location filename="DAGui/DAZipArchive.cpp" line="205"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="206"/>
         <source>The file %1 in the archive could not be opened. The reason for the error is %2</source>
         <translation>无法打开文件中的%1,错误原因为%2</translation>
     </message>
     <message>
-        <location filename="DAGui/DAZipArchive.cpp" line="280"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="281"/>
         <source>Unable to locate the %1 file in the current archive. The error code is %2</source>
         <translation>无法找到当前存档下的%1文件。错误码为%2</translation>
     </message>
     <message>
-        <location filename="DAGui/DAZipArchive.cpp" line="289"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="290"/>
         <source>The file %1 in the archive could not be opened. The error code is %2</source>
         <translation>无法打开存档中的%1文件，错误码为%2</translation>
     </message>
     <message>
-        <location filename="DAGui/DAZipArchive.cpp" line="384"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="385"/>
         <source>Failed to create temporary file:%1</source>
         <translation>无法创建临时文件：%1</translation>
     </message>
     <message>
-        <location filename="DAGui/DAZipArchive.cpp" line="402"/>
         <location filename="DAGui/DAZipArchive.cpp" line="403"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="404"/>
         <source>open %1 to temp file error</source>
         <translation>打开临时文件%1失败</translation>
     </message>
     <message>
-        <location filename="DAGui/DAZipArchive.cpp" line="424"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="425"/>
         <source>when rename temp %1 to archive %2 occure error</source>
         <translation>当把临时文件%1改名为%2存档文件时发生异常</translation>
     </message>
     <message>
-        <location filename="DAGui/DAZipArchive.cpp" line="493"/>
-        <location filename="DAGui/DAZipArchive.cpp" line="505"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="494"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="506"/>
         <source>can not open archive</source>
         <translation>无法打开存档</translation>
     </message>
     <message>
-        <location filename="DAGui/DAZipArchive.cpp" line="647"/>
+        <location filename="DAGui/DAZipArchive.cpp" line="648"/>
         <source>Failed to create target directory:%1</source>
         <translation>无法创建目标文件夹%1</translation>
     </message>
