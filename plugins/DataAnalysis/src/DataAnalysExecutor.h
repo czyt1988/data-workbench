@@ -21,7 +21,7 @@ public:
 	DA::DAPyDataFrame peak_analysis(const DA::DAPySeries& wave, double fs, const QVariantMap& args, QString* err = nullptr);
 
 	// 短时傅里叶变换da_stft_analysis
-	DA::DAPyDataFrame stft_analysis(const DA::DAPySeries& wave, double fs, const QVariantMap& args, QString* err = nullptr);
+	pybind11::dict stft_analysis(const DA::DAPySeries& wave, double fs, const QVariantMap& args, QString* err = nullptr);
 
 	//连续小波变换da_wavelet_cwt
 	DA::DAPyDataFrame wavelet_cwt(const DA::DAPySeries& wave,
