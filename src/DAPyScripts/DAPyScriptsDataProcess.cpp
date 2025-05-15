@@ -90,23 +90,23 @@ DAPyDataFrame DAPyScriptsDataProcess::peak_analysis(const DAPySeries& wave, doub
 	return DAPyDataFrame();
 }
 
-DAPyDataFrame DAPyScriptsDataProcess::stft_analysis(const DAPySeries& wave, double fs, const QVariantMap& args, QString* err)
+pybind11::dict DAPyScriptsDataProcess::stft_analysis(const DAPySeries& wave, double fs, const QVariantMap& args, QString* err)
 {
 	try {
 		pybind11::object fn = attr("da_stft_analysis");
 		if (fn.is_none()) {
 			qDebug() << "DAWorkbench.data_processing.py have no attr da_stft_analysis";
-			return DAPyDataFrame();
+			return pybind11::dict();
 		}
 		pybind11::object v = fn(wave.object(), fs, DA::PY::toPyDict(args));
-		return DAPyDataFrame(std::move(v));
+		return v.cast< pybind11::dict >();
 	} catch (const std::exception& e) {
 		if (err) {
 			*err = e.what();
 		}
 		qDebug() << e.what();
 	}
-	return DAPyDataFrame();
+	return pybind11::dict();
 }
 
 DAPyDataFrame DAPyScriptsDataProcess::wavelet_cwt(const DAPySeries& wave,

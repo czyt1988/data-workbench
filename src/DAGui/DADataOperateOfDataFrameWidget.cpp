@@ -716,8 +716,11 @@ bool DADataOperateOfDataFrameWidget::clipoutlier()
 	if (df.isNone()) {
 		return false;
 	}
-	if (!mDialogDataFrameQueryDatas) {
-		mDialogDataFrameQueryDatas = new DADialogDataFrameQueryDatas(this);
+	//	if (!mDialogDataFrameQueryDatas) {
+	//		mDialogDataFrameQueryDatas = new DADialogDataFrameQueryDatas(this);
+	//	}
+	if (!mDialogDataFrameClipOutlier) {
+		mDialogDataFrameClipOutlier = new DADialogDataFrameClipOutlier(this);
 	}
 	if (QDialog::Accepted != mDialogDataFrameClipOutlier->exec()) {
 		// 说明用户取消
