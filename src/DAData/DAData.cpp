@@ -311,7 +311,33 @@ DADataManager* DAData::getDataManager() const
  * @param filePath
  * @return
  */
-bool DAData::writeToFile(const DAData& data, const QString& filePath, const QString& sep)
+bool DAData::writeToFile(const DAData& data, const QString& filePath)
+{
+    if (data.isNull()) {
+        return false;
+    }
+    switch (data.getDataType()) {
+#if DA_ENABLE_PYTHON
+    case DAAbstractData::TypePythonDataFrame: {
+        DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+        if (!pydf.to_pickle(data.toDataFrame(), filePath)) {
+            return false;
+        }
+    } break;
+#endif
+    default:
+        break;
+    }
+    return true;
+}
+
+/**
+ * @brief 导出数据
+ * @param data
+ * @param filePath
+ * @return
+ */
+bool DAData::exportToFile(const DAData& data, const QString& filePath, const QString& sep)
 {
 	if (data.isNull()) {
 		return false;
@@ -332,7 +358,7 @@ bool DAData::writeToFile(const DAData& data, const QString& filePath, const QStr
             if (!pydf.to_excel(data.toDataFrame(), filePath))
                 return false;
         }
-        if (dataSuffix == "pikle") {
+        if (dataSuffix == "pkl") {
             if (!pydf.to_pickle(data.toDataFrame(), filePath))
                 return false;
         }

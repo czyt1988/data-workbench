@@ -463,28 +463,28 @@ void DAAppController::saveAs()
                                      QString(),
                                      tr("project file (*.%1)").arg(DAAppProject::getProjectFileSuffix())  // 工程文件
         );
-	if (projectPath.isEmpty()) {
-		// 取消退出
-		return;
-	}
-	QFileInfo fi(projectPath);
-	if (fi.exists()) {
-		// 说明是目录
+    if (projectPath.isEmpty()) {
+        // 取消退出
+        return;
+    }
+    QFileInfo fi(projectPath);
+    if (fi.exists()) {
+        // 说明是目录
         QMessageBox::StandardButton btn = QMessageBox::question(
             nullptr, tr("Warning"), tr("Whether to overwrite the file:%1").arg(fi.absoluteFilePath()));
-		if (btn != QMessageBox::Yes) {
-			return;
-		}
-	}
-	// 另存为
-	DA_WAIT_CURSOR_SCOPED();
-	DAAppProject* project = DA_APP_CORE.getAppProject();
-	if (!project->save(projectPath)) {
-		qCritical() << tr("Project saved failed!,path is %1").arg(projectPath);  // 工程保存失败！路径位于:%1
-		return;
-	}
-	app()->setWindowTitle(QString("%1").arg(project->getProjectBaseName()));
-	qInfo() << tr("Project saved successfully,path is %1").arg(projectPath);  // 工程保存成功，路径位于:%1
+        if (btn != QMessageBox::Yes) {
+            return;
+        }
+    }
+    // 另存为
+    DA_WAIT_CURSOR_SCOPED();
+    DAAppProject* project = DA_APP_CORE.getAppProject();
+    if (!project->save(projectPath)) {
+        qCritical() << tr("Project saved failed!,path is %1").arg(projectPath);  // 工程保存失败！路径位于:%1
+        return;
+    }
+    app()->setWindowTitle(QString("%1").arg(project->getProjectBaseName()));
+    qInfo() << tr("Project saved successfully,path is %1").arg(projectPath);  // 工程保存成功，路径位于:%1
 }
 /**
  * @brief 获取当前dataframeOperateWidget,如果没有返回nullptr
@@ -1338,7 +1338,7 @@ void DAAppController::onActionExportDataTriggered()
         app(),
         tr("Export Data"),  // 导出数据
         QString(),
-        tr("Text Files (*.txt *.csv);;Excel Files (*.xlsx);;Python Files (*.pkl)")  // 数据文件
+        tr("Text Files (*.txt *.csv);;Excel Files (*.xlsx);;Python Files (*.pkl);;All Files(*.*)")  // 数据文件
     );
     if (dataPath.isEmpty()) {
         // 取消退出
@@ -1362,7 +1362,7 @@ void DAAppController::onActionExportDataTriggered()
         switch (type) {
         case DAAbstractData::TypePythonDataFrame: {
             // 写文件，对于大文件，这里可能比较耗时，但python的gli机制，无法在线程里面写
-            if (!DAData::writeToFile(data, dataFilePath)) {
+            if (!DAData::exportToFile(data, dataFilePath)) {
                 qCritical() << tr("An exception occurred while serializing the dataframe named %1 to %2")
                                    .arg(name, dataFilePath);  // cn:把名称为%1的dataframe序列化到%2时出现异常
                 continue;

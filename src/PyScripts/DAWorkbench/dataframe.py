@@ -266,7 +266,7 @@ def da_to_csv(df: pd.DataFrame, path: str, sep: str):
     :param path: 文件路径
     :return: 此函数不返回值
     '''
-    df.to_csv(path, sep = sep, header=False, index = False)
+    df.to_csv(path, sep = sep, index = False)
 
 @log_function_call
 def da_to_excel(df: pd.DataFrame, path: str):
@@ -276,7 +276,7 @@ def da_to_excel(df: pd.DataFrame, path: str):
     :param path: 文件路径
     :return: 此函数不返回值
     '''
-    df.to_excel(path, header=False, index = False)
+    df.to_excel(path, index = False)
 
 @log_function_call
 def da_to_pickle(df: pd.DataFrame, path: str):
@@ -286,7 +286,7 @@ def da_to_pickle(df: pd.DataFrame, path: str):
     :param path: 文件路径
     :return: 此函数不返回值
     '''
-    df.to_pickle(path, header=False, index = False)
+    df.to_pickle(path)
 
 
 @log_function_call
