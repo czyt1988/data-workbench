@@ -14,6 +14,7 @@
 #include "DAGraphicsStandardTextItem.h"
 // workflow
 #include "DAAbstractNode.h"
+#include "DAGraphicsCommandsFactory.h"
 #include "DANodeMimeData.h"
 #include "DANodeMetaData.h"
 #include "DAGraphicsPixmapItem.h"
@@ -340,8 +341,8 @@ void DAWorkFlowGraphicsScene::onItemsPositionChanged(const QList< QGraphicsItem*
 	}
 	qDebug() << "will move " << willMoveItems.size();
 
-	// 进行同步移动
-	DACommandsForGraphicsItemsMoved* cmd = new DACommandsForGraphicsItemsMoved(willMoveItems, startPos, endPos, false);
+	// 进行同步移动,这里是处理关联移动的item
+	DACommandsForGraphicsItemsMoved* cmd = commandsFactory()->createItemsMoved(willMoveItems, startPos, endPos, false);
 	getUndoStack()->push(cmd);
 }
 

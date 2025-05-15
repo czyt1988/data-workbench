@@ -71,7 +71,7 @@
 
 // 未实现的功能标记
 #define DAAPPCONTROLLER_PASS()                                                                                         \
-	QMessageBox::warning(                                                                                              \
+    QMessageBox::warning(                                                                                              \
         app(),                                                                                                         \
         QCoreApplication::translate("DAAppRibbonArea", "warning", nullptr),                                            \
         QCoreApplication::translate("DAAppRibbonArea",                                                                 \
@@ -81,7 +81,7 @@
 
 // 快速链接信号槽
 #define DAAPPCONTROLLER_ACTION_BIND(actionname, functionname)                                                          \
-	connect(actionname, &QAction::triggered, this, &DAAppController::functionname)
+    connect(actionname, &QAction::triggered, this, &DAAppController::functionname)
 
 namespace DA
 {
@@ -409,7 +409,23 @@ bool DAAppController::isDirty() const
 	if (mProject) {
 		return mProject->isDirty();
 	}
-	return false;
+    return false;
+}
+
+/**
+ * @brief 导入数据
+ * @param filePath
+ * @param args
+ * @return
+ */
+bool DAAppController::importData(const QString& filePath, const QVariantMap& args, QString* err)
+{
+    bool r = mDatas->importFromFile(filePath, args, err);
+    if (r) {
+        mDock->raiseDockByWidget((QWidget*)(mDock->getDataManageWidget()));
+        setDirty();
+    }
+    return r;
 }
 
 void DAAppController::save()
@@ -419,7 +435,7 @@ void DAAppController::save()
 	qDebug() << "Save Project,Path=" << projectFilePath;
 	if (projectFilePath.isEmpty()) {
 		QString desktop = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
-		projectFilePath = QFileDialog::getSaveFileName(
+        projectFilePath = QFileDialog::getSaveFileName(
             nullptr,
             tr("Save Project"),  // 保存工程
             desktop,
@@ -441,7 +457,7 @@ void DAAppController::save()
  */
 void DAAppController::saveAs()
 {
-	QString projectPath =
+    QString projectPath =
         QFileDialog::getSaveFileName(app(),
                                      tr("Save Project"),  // 保存工程
                                      QString(),
@@ -454,7 +470,7 @@ void DAAppController::saveAs()
 	QFileInfo fi(projectPath);
 	if (fi.exists()) {
 		// 说明是目录
-		QMessageBox::StandardButton btn = QMessageBox::question(
+        QMessageBox::StandardButton btn = QMessageBox::question(
             nullptr, tr("Warning"), tr("Whether to overwrite the file:%1").arg(fi.absoluteFilePath()));
 		if (btn != QMessageBox::Yes) {
 			return;
@@ -747,11 +763,11 @@ void DAAppController::open()
 	if (!project->getProjectDir().isEmpty()) {
 		if (project->isDirty()) {
 			// TODO 没有保存。先询问是否保存
-			QMessageBox::StandardButton btn = QMessageBox::question(
+            QMessageBox::StandardButton btn = QMessageBox::question(
                 nullptr,
                 tr("Question"),                                                   // 提示
                 tr("Another project already exists. Do you want to replace it?")  // 已存在其他工程，是否要替换？
-			);
+            );
 			if (btn == QMessageBox::Yes) {
 				project->clear();
 			} else {
@@ -1300,11 +1316,7 @@ void DAAppController::onActionAddDataTriggered()
 	}
 
 	DA_WAIT_CURSOR_SCOPED();
-	bool r = mDatas->importFromFile(fileName, args, &err);
-	if (r) {
-		mDock->raiseDockByWidget((QWidget*)(mDock->getDataManageWidget()));
-	}
-	setDirty();
+    importData(fileName, args, &err);
 }
 
 /**

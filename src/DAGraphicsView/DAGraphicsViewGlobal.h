@@ -43,9 +43,7 @@ enum DAGraphicsCommandIDType
 	CmdID_ItemAdd          = CmdID_GraphicsBegin + 1,   ///< item移动
 	CmdID_ItemRemove       = CmdID_GraphicsBegin + 2,   ///< item移动
 	CmdID_ItemMove         = CmdID_GraphicsBegin + 3,   ///< item移动
-	CmdID_ItemMoveMerge    = CmdID_GraphicsBegin + 4,   ///< item移动
 	CmdID_ItemsMove        = CmdID_GraphicsBegin + 5,   ///< 多个item移动
-	CmdID_ItemsMoveMerge   = CmdID_GraphicsBegin + 6,   ///< 多个item移动
 	CmdID_ItemResize       = CmdID_GraphicsBegin + 7,   ///< item resize
 	CmdID_ItemResizeWidth  = CmdID_GraphicsBegin + 8,   ///< item resize width
 	CmdID_ItemResizeHeight = CmdID_GraphicsBegin + 9,   ///< item resize height
