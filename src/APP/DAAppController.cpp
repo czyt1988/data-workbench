@@ -269,6 +269,7 @@ void DAAppController::initConnection()
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToDatetime, onActionCastToDatetimeTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameClipOutlier, onActionDataFrameClipOutlierTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameQueryDatas, onActionDataFrameQueryDatasTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameSort, onActionDataFrameSortTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCreatePivotTable, onActionCreatePivotTableTriggered);
 #if DA_ENABLE_PYTHON
 	// 不知为何使用函数指针无法关联信号和槽
@@ -1937,6 +1938,19 @@ void DAAppController::onActionDataFrameQueryDatasTriggered()
 		dfopt->querydatas();
 		setDirty();
 	}
+#endif
+}
+
+/**
+ * @brief 数据排序
+ */
+void DAAppController::onActionDataFrameSortTriggered()
+{
+#if DA_ENABLE_PYTHON
+    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+        dfopt->sortdatas();
+        setDirty();
+    }
 #endif
 }
 

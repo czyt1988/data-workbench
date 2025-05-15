@@ -242,6 +242,8 @@ private Q_SLOTS:
 	void onActionDataFrameClipOutlierTriggered();
 	// 过滤给定条件外的数据
 	void onActionDataFrameQueryDatasTriggered();
+    // 数据排序
+    void onActionDataFrameSortTriggered();
 #if DA_ENABLE_PYTHON
 	// 列数据类型改变
 	void onComboxColumnTypesCurrentDTypeChanged(const DA::DAPyDType& dt);

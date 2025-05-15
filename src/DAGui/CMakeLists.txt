@@ -230,7 +230,9 @@ if(DA_ENABLE_PYTHON)
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillInterpolate.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameClipOutlier.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameQueryDatas.h
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSort.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogCreatePivotTable.h
+		
     )
     list(APPEND DA_LIB_SOURCE_FILES_Dialog
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToDatetime.cpp
@@ -242,6 +244,7 @@ if(DA_ENABLE_PYTHON)
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillInterpolate.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameClipOutlier.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameQueryDatas.cpp
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSort.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogCreatePivotTable.cpp
     )
     list(APPEND DA_LIB_QT_UI_FILES_Dialog
@@ -253,6 +256,7 @@ if(DA_ENABLE_PYTHON)
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillInterpolate.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameClipOutlier.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameQueryDatas.ui
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSort.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogCreatePivotTable.ui
     )
 endif()

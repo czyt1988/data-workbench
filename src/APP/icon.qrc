@@ -92,6 +92,7 @@
         <file>Icon/pivot-table.svg</file>
         <file>Icon/dataframe-query-datas.svg</file>
         <file>Icon/exportData.svg</file>
+        <file>Icon/dataframe-sort.svg</file>
     </qresource>
     <qresource prefix="/app/dataType">
         <file>Icon/typeDataframe.svg</file>

@@ -23,6 +23,7 @@ class DADialogDataFrameFillna;
 class DADialogDataFrameFillInterpolate;
 class DADialogDataFrameClipOutlier;
 class DADialogDataFrameQueryDatas;
+class DADialogDataFrameSort;
 class DADialogCreatePivotTable;
 
 /**
@@ -117,7 +118,9 @@ public Q_SLOTS:
 	// 过滤给定条件外的数据
 	bool querydatas();
     bool querydatas(const DAPyDataFrame& df, const QString& exper);
-
+    //数据排序
+    bool sortdatas();
+    bool sortdatas(const DAPyDataFrame& df, const bool ascending);
 	// 创建数据透视表
 	DAPyDataFrame createPivotTable();
 	DAPyDataFrame createPivotTable(const DAPyDataFrame& df,
@@ -146,15 +149,16 @@ protected:
 private:
 	Ui::DADataOperateOfDataFrameWidget* ui;
 	DAData mData;
-	DAPyDataFrameTableModule* mModel { nullptr };
+    DAPyDataFrameTableModule* mModel{ nullptr };
 
-	DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs { nullptr };
-	DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs { nullptr };
-	DADialogDataFrameFillna* mDialogDataFrameFillna { nullptr };
-	DADialogDataFrameFillInterpolate* mDialogDataFrameFillInterpolate { nullptr };
-	DADialogDataFrameClipOutlier* mDialogDataFrameClipOutlier { nullptr };
-	DADialogCreatePivotTable* mDialogCreatePivotTable { nullptr };
-	DADialogDataFrameQueryDatas* mDialogDataFrameQueryDatas { nullptr };
+    DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs{ nullptr };
+    DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs{ nullptr };
+    DADialogDataFrameFillna* mDialogDataFrameFillna{ nullptr };
+    DADialogDataFrameFillInterpolate* mDialogDataFrameFillInterpolate{ nullptr };
+    DADialogDataFrameClipOutlier* mDialogDataFrameClipOutlier{ nullptr };
+    DADialogCreatePivotTable* mDialogCreatePivotTable{ nullptr };
+    DADialogDataFrameQueryDatas* mDialogDataFrameQueryDatas{ nullptr };
+    DADialogDataFrameSort* mDADialogDataFrameSort{ nullptr };
 };
 }  // end of namespace DA
 #endif  // DADATAOPERATEOFDATAFRAMEWIDGET_H
