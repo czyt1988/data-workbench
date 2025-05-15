@@ -115,6 +115,8 @@ public:
 	// 设置工程为dirty
 	void setDirty(bool on = true);
 	bool isDirty() const;
+    // 导入数据
+    bool importData(const QString& filePath, const QVariantMap& args, QString* err = nullptr);
 public Q_SLOTS:
 	// 保存
 	void save();
