@@ -342,13 +342,21 @@ def da_stft_analysis(waveform, sampling_rate, args:Optional[Dict] = None):
     
     # 创建多重索引的DataFrame
     time_mesh, freq_mesh = np.meshgrid(times, frequencies)
-    df = pd.DataFrame({
-        'time': time_mesh.flatten(),
-        'frequency': freq_mesh.flatten(),
-        'magnitude': Zxx.flatten()
-    })
-    
-    return df
+    # 创建一维时间DataFrame
+    time_df = pd.DataFrame({'time': times})
+
+    # 创建一维频率DataFrame
+    freq_df = pd.DataFrame({'frequency': frequencies})
+
+    # 创建二维STFT结果DataFrame，行是频率，列是时间
+    stft_df = pd.DataFrame(Zxx, columns=times)
+    stft_df.columns.name = 'time'
+
+    return {
+        "time": time_df,
+        "freq": freq_df,
+        "stft": stft_df
+    }
 
 @log_function_call
 def da_wavelet_cwt(waveform, sampling_rate, scales, args:Optional[Dict] = None):

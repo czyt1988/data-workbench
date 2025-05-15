@@ -49,7 +49,8 @@ void DataAnalysController::initConnect()
 	connect(mActions->actionPeakAnalysis, &QAction::triggered, this, &DataAnalysController::onActionPeakAnalysisTriggered);
 	connect(mActions->actionSTFT, &QAction::triggered, this, &DataAnalysController::onActionSTFTriggered);
 	connect(mActions->actionWaveletCWT, &QAction::triggered, this, &DataAnalysController::onActionWaveletCWTTriggered);
-	connect(mActions->actionWaveletDWT, &QAction::triggered, this, &DataAnalysController::onActionWaveletDWTTriggered);}
+	connect(mActions->actionWaveletDWT, &QAction::triggered, this, &DataAnalysController::onActionWaveletDWTTriggered);
+}
 
 /**
  * @brief 频谱设置窗口
@@ -529,25 +530,40 @@ void DataAnalysController::onActionSTFTriggered()
 	qDebug() << "STFT args:" << args;
 	// 执行
 	QString err;
-	DA::DAPyDataFrame df = mExecutor->stft_analysis(wave, fs, args, &err);
-	if (df.isNone()) {
+	pybind11::dict raw = mExecutor->stft_analysis(wave, fs, args, &err);
+	if (raw.is_none()) {
 		if (!err.isEmpty()) {
 			qCritical() << err;
 			return;
 		}
 	}
+	DA::DAPyDataFrame timeDf(raw[ "time" ]);
+	DA::DAPyDataFrame freqDf(raw[ "freq" ]);
+	DA::DAPyDataFrame stftDf(raw[ "stft" ]);
 	// 把数据装入datamanager
-	DA::DAData d(df);
-	d.setName(QString("%1-stft").arg(wave.name()));
-	mDataMgr->addData(d);  // 不可撤销
-						   //! 绘图
-						   //! ----------
-						   //! | 波形图  |
-						   //! ----------
-						   //! |  频谱   |
-						   //! ----------
-						   //	auto plt = mDockingArea->getChartOperateWidget();
-						   //	auto fig = plt->createFigure();  //
+	{
+		DA::DAData d(timeDf);
+		d.setName(QString("%1-STFT-Time").arg(wave.name()));
+		mDataMgr->addData(d);
+	}
+	{
+		DA::DAData d(freqDf);
+		d.setName(QString("%1-STFT-Freq").arg(wave.name()));
+		mDataMgr->addData(d);
+	}
+	{
+		DA::DAData d(stftDf);
+		d.setName(QString("%1-STFT-Matrix").arg(wave.name()));
+		mDataMgr->addData(d);
+	}  // 不可撤销
+	   //! 绘图
+	   //! ----------
+	   //! | 波形图  |
+	   //! ----------
+	   //! |  频谱   |
+	   //! ----------
+	   //	auto plt = mDockingArea->getChartOperateWidget();
+	   //	auto fig = plt->createFigure();  //
 	//注意，DAAppChartOperateWidget的createFigure会创建一个chart，因此，第一个chart是不需要创建的 	{  // wave chart
 	//		// currentChart函数不会返回null
 	//		auto waveChart = fig->currentChart();
