@@ -35,7 +35,12 @@ public:
 	// 插入列-全为nan
 	bool insert_column(DAPyDataFrame& df, int c, const QString& name, const QVariant& defaultvalue = QVariant()) noexcept;
 	bool insert_column(DAPyDataFrame& df, int c, const QString& name, const QVariant& start, const QVariant& stop) noexcept;
-	// 保存为pickle
+    //
+    // 保存为txt/csv
+    bool to_csv(const DAPyDataFrame& df, const QString& path, const QString& sep) noexcept;
+    // 保存为xlsx
+    bool to_excel(const DAPyDataFrame& df, const QString& path) noexcept;
+    // 保存为pickle
 	bool to_pickle(const DAPyDataFrame& df, const QString& path) noexcept;
 	// 从pickle加载
 	bool from_pickle(DAPyDataFrame& df, const QString& path) noexcept;

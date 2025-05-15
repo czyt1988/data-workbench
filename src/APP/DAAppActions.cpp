@@ -56,6 +56,7 @@ void DAAppActions::buildDataAction()
 	// Data Category
 	actionAddData    = createAction("actionAddData", ":/app/bright/Icon/addData.svg");
 	actionRemoveData = createAction("actionRemoveData", ":/app/bright/Icon/removeData.svg");
+    actionExportData = createAction("actionExportData", ":/app/bright/Icon/exportData.svg");
 	// 数据操作的上下文标签 Data Operate Context Category
 	actionRemoveRow          = createAction("actionRemoveRow", ":/app/bright/Icon/removeRow.svg");
 	actionRemoveColumn       = createAction("actionRemoveColumn", ":/app/bright/Icon/removeColumn.svg");
@@ -75,7 +76,7 @@ void DAAppActions::buildDataAction()
 	actionNstdFilterOutlier  = createAction("actionNstdFilterOutlier", ":/app/bright/Icon/nstd-filter.svg");
 	actionDataFrameFillNone  = createAction("actionDataFrameFillNone", ":/app/bright/Icon/dataframe-fill-none.svg");
 	actionDataFrameFillInterpolate =
-		createAction("actionDataFrameInterpolate", ":/app/bright/Icon/dataframe-interpolate.svg");
+        createAction("actionDataFrameInterpolate", ":/app/bright/Icon/dataframe-interpolate.svg");
 	actionDataFrameFFillNone = createAction("actionDataFrameFFillNone", ":/app/bright/Icon/dataframe-ffill-none.svg");
 	actionDataFrameBFillNone = createAction("actionDataFrameBFillNone", ":/app/bright/Icon/dataframe-bfill-none.svg");
 	actionDataFrameClipOutlier = createAction("actionDataFrameClipOutlier", ":/app/bright/Icon/dataframe-clip-outlier.svg");
@@ -88,32 +89,32 @@ void DAAppActions::buildChartAction()
 	// 绘图标签 Chart Category
 	actionAddFigure = createAction("actionAddFigure", ":/app/bright/Icon/addFigure.svg");
 	actionFigureResizeChart =
-		createAction("actionFigureResizeChart", ":/app/bright/Icon/figureResizeChart.svg", true, false);
+        createAction("actionFigureResizeChart", ":/app/bright/Icon/figureResizeChart.svg", true, false);
 	actionFigureNewXYAxis = createAction("actionFigureNewXYAxis", ":/app/bright/Icon/newAxis.svg");
 	actionChartAddCurve   = createAction("actionChartAddCurve", ":/app/chart-type/Icon/chart-type/chart-curve.svg");
 	actionChartAddScatter2D =
-		createAction("actionChartAddScatter2D", ":/app/chart-type/Icon/chart-type/chart-scatter-2d.svg");
+        createAction("actionChartAddScatter2D", ":/app/chart-type/Icon/chart-type/chart-scatter-2d.svg");
 	actionChartAddErrorBar =
-		createAction("actionChartAddErrorBar", ":/app/chart-type/Icon/chart-type/chart-intervalcurve.svg");
+        createAction("actionChartAddErrorBar", ":/app/chart-type/Icon/chart-type/chart-intervalcurve.svg");
 	actionChartAddBoxPlot = createAction("actionChartAddBoxPlot", ":/app/chart-type/Icon/chart-type/chart-OHLC.svg");
 	actionChartAddBar     = createAction("actionChartAddBar", ":/app/chart-type/Icon/chart-type/chart-bar.svg");
 	actionChartAddMultiBar = createAction("actionChartAddMultiBar", ":/app/chart-type/Icon/chart-type/chart-multibar.svg");
 	actionChartAddHistogramBar =
-		createAction("actionChartAddHistogramBar", ":/app/chart-type/Icon/chart-type/chart-histogram.svg");
+        createAction("actionChartAddHistogramBar", ":/app/chart-type/Icon/chart-type/chart-histogram.svg");
 	actionChartAddContourMap =
-		createAction("actionChartAddContourMap", ":/app/chart-type/Icon/chart-type/chart-spectrocurve.svg");
+        createAction("actionChartAddContourMap", ":/app/chart-type/Icon/chart-type/chart-spectrocurve.svg");
 	actionChartAddCloudMap =
-		createAction("actionChartAddCloudMap", ":/app/chart-type/Icon/chart-type/chart-spectrogram.svg");
+        createAction("actionChartAddCloudMap", ":/app/chart-type/Icon/chart-type/chart-spectrogram.svg");
 	actionChartAddVectorfield =
-		createAction("actionChartAddVectorfield", ":/app/chart-type/Icon/chart-type/chart-vectorfield.svg");
+        createAction("actionChartAddVectorfield", ":/app/chart-type/Icon/chart-type/chart-vectorfield.svg");
 
 	actionChartEnableGrid  = createAction("actionChartEnableGrid", ":/app/bright/Icon/chart-grid.svg", true, false);
 	actionChartEnableGridX = createAction("actionChartEnableGridX", ":/app/bright/Icon/chart-grid-x.svg", true, false);
 	actionChartEnableGridY = createAction("actionChartEnableGridY", ":/app/bright/Icon/chart-grid-y.svg", true, false);
 	actionChartEnableGridXMin =
-		createAction("actionChartEnableGridXMin", ":/app/bright/Icon/chart-grid-xmin.svg", true, false);
+        createAction("actionChartEnableGridXMin", ":/app/bright/Icon/chart-grid-xmin.svg", true, false);
 	actionChartEnableGridYMin =
-		createAction("actionChartEnableGridYMin", ":/app/bright/Icon/chart-grid-ymin.svg", true, false);
+        createAction("actionChartEnableGridYMin", ":/app/bright/Icon/chart-grid-ymin.svg", true, false);
 	actionChartEnableZoom = createAction("actionChartEnableZoom", ":/app/bright/Icon/chart-zoomer.svg", true, false);
 	actionChartZoomIn     = createAction("actionChartZoomIn", ":/app/bright/Icon/zoomIn.svg");
 	actionChartZoomOut    = createAction("actionChartZoomOut", ":/app/bright/Icon/zoomOut.svg");
@@ -124,11 +125,11 @@ void DAAppActions::buildChartAction()
 	actionGroupChartPickers->setObjectName(QStringLiteral("actionGroupChartPickers"));
 	actionGroupChartPickers->setExclusionPolicy(QActionGroup::ExclusionPolicy::ExclusiveOptional);  // 允许都不选中
 	actionChartEnablePickerCross = createAction(
-		"actionChartEnablePickerCross", ":/app/bright/Icon/chart-picker.svg", true, false, actionGroupChartPickers);
+        "actionChartEnablePickerCross", ":/app/bright/Icon/chart-picker.svg", true, false, actionGroupChartPickers);
 	actionChartEnablePickerY = createAction(
-		"actionChartEnablePickerY", ":/app/bright/Icon/chart-picker-y.svg", true, false, actionGroupChartPickers);
+        "actionChartEnablePickerY", ":/app/bright/Icon/chart-picker-y.svg", true, false, actionGroupChartPickers);
 	actionChartEnablePickerXY = createAction(
-		"actionChartEnablePickerXY", ":/app/bright/Icon/chart-picker-xy.svg", true, false, actionGroupChartPickers);
+        "actionChartEnablePickerXY", ":/app/bright/Icon/chart-picker-xy.svg", true, false, actionGroupChartPickers);
 
 	actionChartEnableLegend = createAction("actionChartEnableLegend", ":/app/bright/Icon/chart-legend.svg", true, false);
 }
@@ -138,7 +139,7 @@ void DAAppActions::buildViewAction()
 	// View Category
 	actionShowWorkFlowArea = createAction("actionShowWorkFlowArea", ":/app/bright/Icon/showWorkFlow.svg");
 	actionShowWorkFlowManagerArea =
-		createAction("actionShowWorkFlowManagerArea", ":/app/bright/Icon/workflow-manager-view.svg");
+        createAction("actionShowWorkFlowManagerArea", ":/app/bright/Icon/workflow-manager-view.svg");
 	actionShowChartArea        = createAction("actionShowChartArea", ":/app/bright/Icon/showChart.svg");
 	actionShowChartManagerArea = createAction("actionShowChartManagerArea", ":/app/bright/Icon/chart-manager-view.svg");
 	actionShowDataArea         = createAction("actionShowDataArea", ":/app/bright/Icon/showTable.svg");
@@ -152,7 +153,7 @@ void DAAppActions::buildWorkflowAction()
 	// workflow 编辑
 	actionWorkflowNew = createAction("actionWorkflowNew", ":/app/bright/Icon/newWorkflow.svg");
 	actionWorkflowEnableItemLinkageMove =
-		createAction("actionWorkflowEnableItemLinkageMove", ":/app/bright/Icon/itemLinkageMove.svg", true, false);
+        createAction("actionWorkflowEnableItemLinkageMove", ":/app/bright/Icon/itemLinkageMove.svg", true, false);
 	actionItemGrouping       = createAction("actionItemSetGroup", ":/app/bright/Icon/item-set-group.svg");
 	actionItemUngroup        = createAction("actionItemCancelGroup", ":/app/bright/Icon/item-cancel-group.svg");
 	actionWorkflowLinkEnable = createAction("actionWorkflowLinkEnable", ":/app/bright/Icon/link.svg", true, true);
@@ -161,15 +162,15 @@ void DAAppActions::buildWorkflowAction()
 	actionGroupWorkflowStartEdit->setObjectName(QStringLiteral("actionGroupWorkflowStartEdit"));
 	actionGroupWorkflowStartEdit->setExclusionPolicy(QActionGroup::ExclusionPolicy::ExclusiveOptional);  // 允许都不选中
 	actionWorkflowStartDrawRect =
-		createAction("actionStartDrawRect", ":/app/bright/Icon/drawRect.svg", true, false, actionGroupWorkflowStartEdit);
+        createAction("actionStartDrawRect", ":/app/bright/Icon/drawRect.svg", true, false, actionGroupWorkflowStartEdit);
 	actionWorkflowStartDrawText =
-		createAction("actionStartDrawText", ":/app/bright/Icon/drawText.svg", true, false, actionGroupWorkflowStartEdit);
+        createAction("actionStartDrawText", ":/app/bright/Icon/drawText.svg", true, false, actionGroupWorkflowStartEdit);
 	// workflow-背景图相关
 	actionWorkflowAddBackgroundPixmap = createAction("actionAddBackgroundPixmap", ":/app/bright/Icon/backgroundPixmap.svg");
 	actionWorkflowLockBackgroundPixmap =
-		createAction("actionLockBackgroundPixmap", ":/app/bright/Icon/lock-bk.svg", true, false);
+        createAction("actionLockBackgroundPixmap", ":/app/bright/Icon/lock-bk.svg", true, false);
 	actionWorkflowEnableItemMoveWithBackground =
-		createAction("actionEnableItemMoveWithBackground", ":/app/bright/Icon/itemMoveWithBackground.svg", true, false);
+        createAction("actionEnableItemMoveWithBackground", ":/app/bright/Icon/itemMoveWithBackground.svg", true, false);
 	// workflow-视图操作
 	actionWorkflowShowGrid     = createAction("actionWorkflowShowGrid", ":/app/bright/Icon/showGrid.svg", true, true);
 	actionWorkflowViewReadOnly = createAction("actionWorkflowViewLock", ":/app/bright/Icon/lock-view.svg", true, false);
@@ -208,6 +209,7 @@ void DAAppActions::retranslateUi()
 	// Data Category
 	actionAddData->setText(tr("Add \nData"));        // cn:添加\n数据
 	actionRemoveData->setText(tr("Remove \nData"));  // cn:移除\n数据
+    actionExportData->setText(tr("Export \nData"));  // cn:导出\n数据
 	// Chart Category
 	actionAddFigure->setText(tr("Add \nFigure"));                  // cn:添加\n绘图
 	actionFigureResizeChart->setText(tr("Resize \nChart"));        // cn:绘图\n尺寸
@@ -260,21 +262,21 @@ void DAAppActions::retranslateUi()
 	actionDataFrameFillNone->setToolTip(tr("Fill rows which contain missing values"));  // cn:填充包含缺失值的行
 	actionDataFrameFillInterpolate->setText(tr("Fill Interpolate"));                    // cn:插值填充
 	actionDataFrameFillInterpolate->setToolTip(
-		tr("Fill rows which contain missing values by interpolate"));  // cn:插值法填充包含缺失值的行
+        tr("Fill rows which contain missing values by interpolate"));  // cn:插值法填充包含缺失值的行
 	actionDropDuplicates->setText(tr("Drop Duplicates"));              // cn:删除\n重复值
 	actionDataFrameFFillNone->setText(tr("Forward Fill"));             // cn:前向填充\n缺失值
 	actionDataFrameFFillNone->setToolTip(
-		tr("Fill NA/NaN values by propagating the last valid observation to next valid."));  // cn:将第一个有效值填充到缺失值。
+        tr("Fill NA/NaN values by propagating the last valid observation to next valid."));  // cn:将第一个有效值填充到缺失值。
 	actionDataFrameBFillNone->setText(tr("Back Fill"));  // cn:反向填充\n缺失值
 	actionDataFrameBFillNone->setToolTip(
-		tr("Fill NA/NaN values by using the next valid observation to fill the gap."));  // cn:将最后一个有效值反向填充缺失值。
+        tr("Fill NA/NaN values by using the next valid observation to fill the gap."));  // cn:将最后一个有效值反向填充缺失值。
 	actionDropDuplicates->setText(tr("Drop Duplicates"));                                // cn:删除\n重复值
 	actionDropDuplicates->setToolTip(tr("Drop duplicate datas"));  // cn:删除数据中的重复记录
 	actionNstdFilterOutlier->setText(tr("nstd filter outlier"));   // cn: 过滤\n异常值
 	actionNstdFilterOutlier->setToolTip(tr("Remove the outliers beyond n times the standard deviation"));  // cn:删除n倍标准差外的异常值
 	actionDataFrameClipOutlier->setText(tr("Clip Outlier"));  // cn: 替换\n异常值
 	actionDataFrameClipOutlier->setToolTip(
-		tr("Replace the outlier values that exceed the specified lower and upper limits with the respective limits."));  // cn:将超出限定上下限的异常值替换为上下限
+        tr("Replace the outlier values that exceed the specified lower and upper limits with the respective limits."));  // cn:将超出限定上下限的异常值替换为上下限
 	actionDataFrameQueryDatas->setText(tr("Query Datas"));
 	actionDataFrameQueryDatas->setToolTip(tr("Filter data outside of the given criteria"));  // cn:过滤给定条件外的数据
 	actionCreatePivotTable->setText(tr("Pivot Table"));                                      // cn: 数据\n透视表

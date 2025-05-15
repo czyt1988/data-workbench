@@ -1,4 +1,8 @@
-﻿#include "DAData.h"
+﻿// qt
+#include <QFileDialog>
+#include <QFileInfo>
+
+#include "DAData.h"
 #include "DADataManager.h"
 #if DA_ENABLE_PYTHON
 #include "DAPyScripts.h"
@@ -89,7 +93,7 @@ DAData& DAData::operator=(const DAData& d)
 DAData& DAData::operator=(const DAPyDataFrame& d)
 {
 	std::shared_ptr< DAAbstractData > p =
-		std::static_pointer_cast< DAAbstractData >(std::make_shared< DADataPyDataFrame >(d));
+        std::static_pointer_cast< DAAbstractData >(std::make_shared< DADataPyDataFrame >(d));
 	mData = p;
 	return *this;
 }
@@ -97,7 +101,7 @@ DAData& DAData::operator=(const DAPyDataFrame& d)
 DAData& DAData::operator=(const DAPySeries& d)
 {
 	std::shared_ptr< DAAbstractData > p = std::static_pointer_cast< DAAbstractData >(std::make_shared< DADataPySeries >(d));
-	mData = p;
+    mData                               = p;
 	return *this;
 }
 #endif
@@ -307,18 +311,31 @@ DADataManager* DAData::getDataManager() const
  * @param filePath
  * @return
  */
-bool DAData::writeToFile(const DAData& data, const QString& filePath)
+bool DAData::writeToFile(const DAData& data, const QString& filePath, const QString& sep)
 {
 	if (data.isNull()) {
 		return false;
 	}
+
+    QFileInfo dataFilePath(filePath);
+    QString dataSuffix = dataFilePath.suffix();
+
 	switch (data.getDataType()) {
 #if DA_ENABLE_PYTHON
 	case DAAbstractData::TypePythonDataFrame: {
 		DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
-		if (!pydf.to_pickle(data.toDataFrame(), filePath)) {
-			return false;
-		}
+        if (dataSuffix == "txt" || dataSuffix == "csv") {
+            if (!pydf.to_csv(data.toDataFrame(), filePath, sep))
+                return false;
+        }
+        if (dataSuffix == "xlsx") {
+            if (!pydf.to_excel(data.toDataFrame(), filePath))
+                return false;
+        }
+        if (dataSuffix == "pikle") {
+            if (!pydf.to_pickle(data.toDataFrame(), filePath))
+                return false;
+        }
 	} break;
 #endif
 	default:

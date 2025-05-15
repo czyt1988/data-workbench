@@ -140,7 +140,43 @@ bool DAPyScriptsDataFrame::insert_column(DAPyDataFrame& df,
 	} catch (const std::exception& e) {
 		dealException(e);
 	}
-	return false;
+    return false;
+}
+
+/**
+ * @brief 保存为txt/csv 对应da_dataframe.da_to_csv
+ * @param df
+ * @param path
+ * @return
+ */
+bool DAPyScriptsDataFrame::to_csv(const DAPyDataFrame& df, const QString& path, const QString& sep) noexcept
+{
+    try {
+        pybind11::object da_to_csv = attr("da_to_csv");
+        da_to_csv(df.object(), DA::PY::toPyStr(path), DA::PY::toPyStr(sep));
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
+}
+
+/**
+ * @brief 保存为xlsx 对应da_dataframe.da_to_xlsx
+ * @param df
+ * @param path
+ * @return
+ */
+bool DAPyScriptsDataFrame::to_excel(const DAPyDataFrame& df, const QString& path) noexcept
+{
+    try {
+        pybind11::object da_to_excel = attr("da_to_excel");
+        da_to_excel(df.object(), DA::PY::toPyStr(path));
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
 }
 
 /**
