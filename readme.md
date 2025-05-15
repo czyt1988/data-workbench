@@ -61,6 +61,7 @@ pip install scipy
 pip install Loguru
 pip install openpyxl
 pip install chardet
+pip install PyWavelets
 ```
 
 如果你的python版本小于3.8，还需额外导入
