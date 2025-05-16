@@ -71,17 +71,17 @@
 
 // 未实现的功能标记
 #define DAAPPCONTROLLER_PASS()                                                                                         \
-    QMessageBox::                                                                                                      \
-        warning(app(),                                                                                                 \
-                QCoreApplication::translate("DAAppRibbonArea", "warning", nullptr),                                    \
-                QCoreApplication::translate("DAAppRibbonArea",                                                         \
-                                            "The current function is not implemented, only the UI is reserved, "       \
-                                            "please pay attention: https://gitee.com/czyt1988/data-work-flow",         \
-                                            nullptr))
+    QMessageBox::warning(                                                                                              \
+        app(),                                                                                                         \
+        QCoreApplication::translate("DAAppRibbonArea", "warning", nullptr),                                            \
+        QCoreApplication::translate("DAAppRibbonArea",                                                                 \
+                                    "The current function is not implemented, only the UI is reserved, "               \
+                                    "please pay attention: https://gitee.com/czyt1988/data-work-flow",                 \
+                                    nullptr))
 
 // 快速链接信号槽
 #define DAAPPCONTROLLER_ACTION_BIND(actionname, functionname)                                                          \
-	connect(actionname, &QAction::triggered, this, &DAAppController::functionname)
+    connect(actionname, &QAction::triggered, this, &DAAppController::functionname)
 
 namespace DA
 {
@@ -220,6 +220,7 @@ void DAAppController::initConnection()
 	// Data Category
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionAddData, onActionAddDataTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionRemoveData, onActionRemoveDataTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionExportData, onActionExportDataTriggered);
 	// Chart Category
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionAddFigure, onActionAddFigureTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionFigureResizeChart, onActionFigureResizeChartTriggered);
@@ -268,6 +269,7 @@ void DAAppController::initConnection()
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToDatetime, onActionCastToDatetimeTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameClipOutlier, onActionDataFrameClipOutlierTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameQueryDatas, onActionDataFrameQueryDatasTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameSort, onActionDataFrameSortTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCreatePivotTable, onActionCreatePivotTableTriggered);
 #if DA_ENABLE_PYTHON
 	// 不知为何使用函数指针无法关联信号和槽
@@ -434,10 +436,11 @@ void DAAppController::save()
 	qDebug() << "Save Project,Path=" << projectFilePath;
 	if (projectFilePath.isEmpty()) {
 		QString desktop = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
-        projectFilePath = QFileDialog::getSaveFileName(nullptr,
-                                                       tr("Save Project"),  // 保存工程
-                                                       desktop,
-                                                       tr("Project Files (*.%1)").arg(DAAppProject::getProjectFileSuffix())  // 工程文件 (*.%1)
+        projectFilePath = QFileDialog::getSaveFileName(
+            nullptr,
+            tr("Save Project"),  // 保存工程
+            desktop,
+            tr("Project Files (*.%1)").arg(DAAppProject::getProjectFileSuffix())  // 工程文件 (*.%1)
 		);
 		if (projectFilePath.isEmpty()) {
 			// 取消退出
@@ -455,34 +458,34 @@ void DAAppController::save()
  */
 void DAAppController::saveAs()
 {
-    QString projectPath = QFileDialog::getSaveFileName(app(),
-                                                       tr("Save Project"),  // 保存工程
-                                                       QString(),
-                                                       tr("project file (*.%1)").arg(DAAppProject::getProjectFileSuffix())  // 工程文件
-    );
-	if (projectPath.isEmpty()) {
-		// 取消退出
-		return;
-	}
-	QFileInfo fi(projectPath);
-	if (fi.exists()) {
-		// 说明是目录
-        QMessageBox::StandardButton btn = QMessageBox::question(nullptr,
-                                                                tr("Warning"),
-                                                                tr("Whether to overwrite the file:%1").arg(fi.absoluteFilePath()));
-		if (btn != QMessageBox::Yes) {
-			return;
-		}
-	}
-	// 另存为
-	DA_WAIT_CURSOR_SCOPED();
-	DAAppProject* project = DA_APP_CORE.getAppProject();
-	if (!project->save(projectPath)) {
-		qCritical() << tr("Project saved failed!,path is %1").arg(projectPath);  // 工程保存失败！路径位于:%1
-		return;
-	}
-	app()->setWindowTitle(QString("%1").arg(project->getProjectBaseName()));
-	qInfo() << tr("Project saved successfully,path is %1").arg(projectPath);  // 工程保存成功，路径位于:%1
+    QString projectPath =
+        QFileDialog::getSaveFileName(app(),
+                                     tr("Save Project"),  // 保存工程
+                                     QString(),
+                                     tr("project file (*.%1)").arg(DAAppProject::getProjectFileSuffix())  // 工程文件
+        );
+    if (projectPath.isEmpty()) {
+        // 取消退出
+        return;
+    }
+    QFileInfo fi(projectPath);
+    if (fi.exists()) {
+        // 说明是目录
+        QMessageBox::StandardButton btn = QMessageBox::question(
+            nullptr, tr("Warning"), tr("Whether to overwrite the file:%1").arg(fi.absoluteFilePath()));
+        if (btn != QMessageBox::Yes) {
+            return;
+        }
+    }
+    // 另存为
+    DA_WAIT_CURSOR_SCOPED();
+    DAAppProject* project = DA_APP_CORE.getAppProject();
+    if (!project->save(projectPath)) {
+        qCritical() << tr("Project saved failed!,path is %1").arg(projectPath);  // 工程保存失败！路径位于:%1
+        return;
+    }
+    app()->setWindowTitle(QString("%1").arg(project->getProjectBaseName()));
+    qInfo() << tr("Project saved successfully,path is %1").arg(projectPath);  // 工程保存成功，路径位于:%1
 }
 /**
  * @brief 获取当前dataframeOperateWidget,如果没有返回nullptr
@@ -761,11 +764,11 @@ void DAAppController::open()
 	if (!project->getProjectDir().isEmpty()) {
 		if (project->isDirty()) {
 			// TODO 没有保存。先询问是否保存
-            QMessageBox::StandardButton
-                btn = QMessageBox::question(nullptr,
-                                            tr("Question"),                                                   // 提示
-                                            tr("Another project already exists. Do you want to replace it?")  // 已存在其他工程，是否要替换？
-                );
+            QMessageBox::StandardButton btn = QMessageBox::question(
+                nullptr,
+                tr("Question"),                                                   // 提示
+                tr("Another project already exists. Do you want to replace it?")  // 已存在其他工程，是否要替换？
+            );
 			if (btn == QMessageBox::Yes) {
 				project->clear();
 			} else {
@@ -1324,7 +1327,52 @@ void DAAppController::onActionRemoveDataTriggered()
 {
 	DADataManageWidget* dmw = mDock->getDataManageWidget();
 	dmw->removeSelectData();
-	setDirty();
+    setDirty();
+}
+
+/**
+ * @brief 导出数据
+ */
+void DAAppController::onActionExportDataTriggered()
+{
+    QString dataPath = QFileDialog::getSaveFileName(
+        app(),
+        tr("Export Data"),  // 导出数据
+        QString(),
+        tr("Text Files (*.txt *.csv);;Excel Files (*.xlsx);;Python Files (*.pkl);;All Files(*.*)")  // 数据文件
+    );
+    if (dataPath.isEmpty()) {
+        // 取消退出
+        return;
+    }
+
+    QFileInfo fi(dataPath);
+    QString dataName   = fi.completeBaseName();
+    QString dataSuffix = fi.suffix();
+    QString baseDir    = fi.absolutePath();
+
+    const int datacnt = mDatas->getDataCount();
+    for (int i = 0; i < datacnt; ++i) {
+        // 逐个遍历DAData，把数据文件进行持久化
+        DAData data                   = mDatas->getData(i);
+        DAAbstractData::DataType type = data.getDataType();
+        QString name                  = data.getName();
+
+        QString dataFilePath = QString("%1/%2_%3.%4").arg(baseDir, dataName, name, dataSuffix);
+
+        switch (type) {
+        case DAAbstractData::TypePythonDataFrame: {
+            // 写文件，对于大文件，这里可能比较耗时，但python的gli机制，无法在线程里面写
+            if (!DAData::exportToFile(data, dataFilePath)) {
+                qCritical() << tr("An exception occurred while serializing the dataframe named %1 to %2")
+                                   .arg(name, dataFilePath);  // cn:把名称为%1的dataframe序列化到%2时出现异常
+                continue;
+            }
+        } break;
+        default:
+            break;
+        }
+    }
 }
 
 /**
@@ -1890,6 +1938,19 @@ void DAAppController::onActionDataFrameQueryDatasTriggered()
 		dfopt->querydatas();
 		setDirty();
 	}
+#endif
+}
+
+/**
+ * @brief 数据排序
+ */
+void DAAppController::onActionDataFrameSortTriggered()
+{
+#if DA_ENABLE_PYTHON
+    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+        dfopt->sortdatas();
+        setDirty();
+    }
 #endif
 }
 

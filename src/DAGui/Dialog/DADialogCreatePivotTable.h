@@ -30,23 +30,18 @@ public:
 	void setDataframe(const DAPyDataFrame& d);
 	// value参数
 	QStringList getPivotTableValue() const;
-
 	// index参数
 	QStringList getPivotTableIndex() const;
-
 	// column参数
 	QStringList getPivotTableColumn() const;
-
 	// Aggfunc参数
 	QString getPivotTableAggfunc() const;
-
 	// Margins参数
 	bool isEnableMarginsName() const;
 	void setEnableMargins(bool on);
 
 	QString getMarginsName() const;
 	void setMarginsName(QString& s);
-
 	// Sort参数
 	bool isEnableSort() const;
 	void setEnableSort(bool on);

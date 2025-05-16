@@ -259,6 +259,26 @@ def da_query_datas(df: pd.DataFrame, expr:Optional[str] = None):
     df.query(expr=safe_expr ,inplace=True)
 
 @log_function_call
+def da_to_csv(df: pd.DataFrame, path: str, sep: str):
+    '''
+    把dataframe写到文件
+    :param df: pd.DataFrame
+    :param path: 文件路径
+    :return: 此函数不返回值
+    '''
+    df.to_csv(path, sep = sep, index = False)
+
+@log_function_call
+def da_to_excel(df: pd.DataFrame, path: str):
+    '''
+    把dataframe写到文件
+    :param df: pd.DataFrame
+    :param path: 文件路径
+    :return: 此函数不返回值
+    '''
+    df.to_excel(path, index = False)
+
+@log_function_call
 def da_to_pickle(df: pd.DataFrame, path: str):
     '''
     把dataframe写到文件

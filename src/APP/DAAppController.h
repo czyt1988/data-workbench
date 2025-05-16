@@ -146,7 +146,9 @@ private Q_SLOTS:
 	// 添加数据
 	void onActionAddDataTriggered();
 	// 移除数据
-	void onActionRemoveDataTriggered();
+    void onActionRemoveDataTriggered();
+    // 导出数据
+    void onActionExportDataTriggered();
 	//===================================================
 	// 绘图标签 Chart Category
 	//===================================================
@@ -240,6 +242,8 @@ private Q_SLOTS:
 	void onActionDataFrameClipOutlierTriggered();
 	// 过滤给定条件外的数据
 	void onActionDataFrameQueryDatasTriggered();
+    // 数据排序
+    void onActionDataFrameSortTriggered();
 #if DA_ENABLE_PYTHON
 	// 列数据类型改变
 	void onComboxColumnTypesCurrentDTypeChanged(const DA::DAPyDType& dt);
@@ -393,21 +397,21 @@ private:
 #endif
 
 private:
-    AppMainWindow* mMainWindow { nullptr };
-    DAAppCore* mCore { nullptr };
-    DAProjectInterface* mProject { nullptr };
+    AppMainWindow* mMainWindow{ nullptr };
+    DAAppCore* mCore{ nullptr };
+    DAProjectInterface* mProject{ nullptr };
 	;
-    DAAppRibbonArea* mRibbon { nullptr };
-    DAAppDockingArea* mDock { nullptr };
-    DAAppCommand* mCommand { nullptr };
-    DAAppActions* mActions { nullptr };
-    DAAppDataManager* mDatas { nullptr };
+    DAAppRibbonArea* mRibbon{ nullptr };
+    DAAppDockingArea* mDock{ nullptr };
+    DAAppCommand* mCommand{ nullptr };
+    DAAppActions* mActions{ nullptr };
+    DAAppDataManager* mDatas{ nullptr };
 
-	QStringList mFileReadFilters;  ///< 包含支持的文件[Images (*.png *.xpm *.jpg)] [Text files (*.txt)]
+    QStringList mFileReadFilters;  ///< 包含支持的文件[Images (*.png *.xpm *.jpg)] [Text files (*.txt)]
 	//
 	LastFocusedOpertateWidgets mLastFocusedOpertateWidget;  ///< 最后获取焦点的操作窗口
                                                             //
-    DAAppSettingDialog* mSettingDialog { nullptr };         ///< 设置窗口
+    DAAppSettingDialog* mSettingDialog{ nullptr };          ///< 设置窗口
 	DAAppConfig* mConfig;                                   ///< 设置类
 };
 }
