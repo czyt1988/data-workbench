@@ -299,6 +299,15 @@ def da_to_pickle(df: pd.DataFrame, path: str):
     '''
     df.to_pickle(path)
 
+@log_function_call
+def da_to_parquet(df: pd.DataFrame, path: str):
+    '''
+    把dataframe写到文件
+    :param df: pd.DataFrame
+    :param path: 文件路径
+    :return: 此函数不返回值
+    '''
+    df.to_parquet(path)
 
 @log_function_call
 def da_from_pickle(df: pd.DataFrame, path: str):
@@ -311,6 +320,16 @@ def da_from_pickle(df: pd.DataFrame, path: str):
     tmp = pd.read_pickle(path)
     df.__init__(tmp)
 
+@log_function_call
+def da_from_parquet(df: pd.DataFrame, path: str):
+    '''
+    从文件加载到dataframe
+    :param df: pd.DataFrame
+    :param path: 文件路径
+    :return: 此函数不返回值，直接改变df
+    '''
+    tmp = pd.read_parquet(path)
+    df.__init__(tmp)
 
 @log_function_call
 def da_astype(df: pd.DataFrame, colsIndex: List[int], dtype: np.dtype):

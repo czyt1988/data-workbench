@@ -62,6 +62,7 @@ pip install Loguru
 pip install openpyxl
 pip install chardet
 pip install PyWavelets
+pip install pyarrow
 ```
 
 如果你的python版本小于3.8，还需额外导入
@@ -75,6 +76,10 @@ pip install typing_extensions
 > openpyxl是pandas导入excel文件的依赖，如果没有安装，则无法导入excel文件
 >
 > chardet主要用于检测字符编码
+>
+> PyWavelets是进行小波分析的库
+>
+> pyarrow是dataframe进行扩展数据导入的库，支持parquet（Partitioning Parquet files）和Feather
 
 在需要python时将引入`pybind11`库
 

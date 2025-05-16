@@ -56,7 +56,7 @@ QString DACommandWithTemporaryData::getTemplateFilePath() const
 bool DACommandWithTemporaryData::save()
 {
 	DAPyScriptsDataFrame& py = DAPyScripts::getInstance().getDataFrame();
-	return py.to_pickle(mDataframe, getTemplateFilePath());
+    return py.to_pickle(mDataframe, getTemplateFilePath());
 }
 
 /**

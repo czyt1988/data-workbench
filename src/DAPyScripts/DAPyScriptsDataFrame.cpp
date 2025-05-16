@@ -194,7 +194,25 @@ bool DAPyScriptsDataFrame::to_pickle(const DAPyDataFrame& df, const QString& pat
 	} catch (const std::exception& e) {
 		dealException(e);
 	}
-	return false;
+    return false;
+}
+
+/**
+ * @brief 保存为parquet对应da_dataframe.da_to_parquet
+ * @param df
+ * @param path
+ * @return
+ */
+bool DAPyScriptsDataFrame::to_parquet(const DAPyDataFrame& df, const QString& path) noexcept
+{
+    try {
+        pybind11::object da_to_parquet = attr("da_to_parquet");
+        da_to_parquet(df.object(), DA::PY::toPyStr(path));
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
 }
 
 /**
@@ -212,7 +230,25 @@ bool DAPyScriptsDataFrame::from_pickle(DAPyDataFrame& df, const QString& path) n
 	} catch (const std::exception& e) {
 		dealException(e);
 	}
-	return false;
+    return false;
+}
+
+/**
+ * @brief 从parquet加载
+ * @param df
+ * @param path
+ * @return
+ */
+bool DAPyScriptsDataFrame::from_parquet(DAPyDataFrame& df, const QString& path) noexcept
+{
+    try {
+        pybind11::object da_from_parquet = attr("da_from_parquet");
+        da_from_parquet(df.object(), DA::PY::toPyStr(path));
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
 }
 
 /**
