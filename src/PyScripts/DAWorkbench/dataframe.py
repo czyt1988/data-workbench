@@ -259,6 +259,17 @@ def da_query_datas(df: pd.DataFrame, expr:Optional[str] = None):
     df.query(expr=safe_expr ,inplace=True)
 
 @log_function_call
+def da_sort(df: pd.DataFrame, by: str, ascending: bool):
+    '''
+    替换dataframe的异常值
+    :param df: pd.DataFrame。
+    :param by:数据排序依据。
+    :param ascending:数据排序方式。
+    :return: 此函数不返回值，直接改变df
+    '''
+    df.sort_values(by = by ,ascending = ascending, inplace = True)
+
+@log_function_call
 def da_to_csv(df: pd.DataFrame, path: str, sep: str):
     '''
     把dataframe写到文件

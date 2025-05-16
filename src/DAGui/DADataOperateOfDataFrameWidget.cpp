@@ -805,21 +805,29 @@ bool DADataOperateOfDataFrameWidget::sortdatas()
     if (!mDADialogDataFrameSort) {
         mDADialogDataFrameSort = new DADialogDataFrameSort(this);
     }
+    mDADialogDataFrameSort->setDataframe(df);
     if (QDialog::Accepted != mDADialogDataFrameSort->exec()) {
         // 说明用户取消
         return false;
     }
-    // 获取填充值
+    //获取排序依据，某一列
+    QString by = mDADialogDataFrameSort->getSortBy();
+    // 获取排序方式，升序or降序
     bool ascending = mDADialogDataFrameSort->getSortType();
-    return sortdatas(df, ascending);
+    return sortdatas(df, by, ascending);
 }
 
 /**
  * @brief 数据排序
  * @return
  */
-bool DADataOperateOfDataFrameWidget::sortdatas(const DAPyDataFrame& df, const bool ascending)
+bool DADataOperateOfDataFrameWidget::sortdatas(const DAPyDataFrame& df, const QString& by, const bool ascending)
 {
+    std::unique_ptr< DACommandDataFrame_sort > cmd = std::make_unique< DACommandDataFrame_sort >(df, by, ascending, mModel);
+    if (!cmd->exec()) {
+        return false;
+    }
+    getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
     return true;
 }
 

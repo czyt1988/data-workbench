@@ -27,7 +27,7 @@ public:
 
 	// 获取选中的dataframe
 	DAPyDataFrame getDataFrame() const;
-	void setDataframe(const DAPyDataFrame& d);
+    void setDataframe(const DAPyDataFrame& df);
 	// value参数
 	QStringList getPivotTableValue() const;
 	// index参数

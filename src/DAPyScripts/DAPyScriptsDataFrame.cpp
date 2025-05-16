@@ -575,8 +575,8 @@ bool DAPyScriptsDataFrame::nstdfilteroutlier(DAPyDataFrame& df, double n, int ax
 /**
  * @brief clipoutlier方法的wrapper
  * @param df
- * @param keep
- * @param indexs
+ * @param lowervalue
+ * @param uppervalue
  * @return
  */
 bool DAPyScriptsDataFrame::clipoutlier(DAPyDataFrame& df, double lowervalue, double uppervalue, int axis)
@@ -606,7 +606,7 @@ bool DAPyScriptsDataFrame::clipoutlier(DAPyDataFrame& df, double lowervalue, dou
 /**
  * @brief query方法的wrapper
  * @param df
- * @param contents
+ * @param expr
  * @return
  */
 bool DAPyScriptsDataFrame::queryDatas(DAPyDataFrame& df, const QString& expr)
@@ -626,7 +626,34 @@ bool DAPyScriptsDataFrame::queryDatas(DAPyDataFrame& df, const QString& expr)
 	} catch (const std::exception& e) {
 		dealException(e);
 	}
-	return false;
+    return false;
+}
+
+/**
+ * @brief sort方法的wrapper
+ * @param df
+ * @param by
+ * @param ascending
+ * @return
+ */
+bool DAPyScriptsDataFrame::sort(DAPyDataFrame& df, const QString& by, bool ascending)
+{
+    try {
+        pybind11::object da_sort = attr("da_sort");
+        pybind11::dict args;
+
+        if (by.isEmpty()) {
+            return false;
+        }
+
+        args[ "by" ]        = DA::PY::toPyStr(by);
+        args[ "ascending" ] = ascending;
+        da_sort(df.object(), **args);
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
 }
 
 /**
