@@ -117,6 +117,17 @@ def read_excel(path:str,args:Optional[Dict] = None)-> pd.DataFrame:
     return df
 
 @log_function_call
+def read_parquet(path:str,args:Optional[Dict] = None)-> pd.DataFrame:
+    '''
+    读取parquet文件
+    '''
+    if args is None:
+        args = {}
+    df = pd.read_parquet(path,**args)
+    df.columns = df.columns.astype(str)  
+    return df
+
+@log_function_call
 def da_read(path:str,args:Optional[Dict] = None):
     '''
     读取文件
@@ -133,10 +144,11 @@ def da_get_file_read_filters() -> List[str]:
     获取支持的文件列表
         return list[str]
     '''
-    return ['all support(*.txt *.csv *.xls *.xlsx *.pkl)',
+    return ['all support(*.txt *.csv *.xls *.xlsx *.parquet *.pkl)',
             'text (*.txt)',
             'csv (*.csv)',
             'xls (*.xls),xlsx (*.xlsx)',
+            'parquet (*.parquet)',
             'pickle (*.pkl)',
             'all(*.*)'
             ]
@@ -151,8 +163,46 @@ da_global_reader_dict = {
     'pkl':read_pkl,
     'xls':read_excel,
     'xlsx':read_excel,
+    'parquet':read_parquet
 }
 
+##################################################
+
+@log_function_call
+def da_to_csv(df, path:str,args:Optional[Dict] = None):
+    '''
+    保存csv文件
+    '''
+    if args is None:
+        args = {}
+    df.to_csv(path_or_buf=path,**args)
+
+@log_function_call
+def da_to_excel(df, path:str ,args:Optional[Dict] = None):
+    '''
+    保存csv文件
+    '''
+    if args is None:
+        args = {}
+    df.to_excel(path,**args)
+
+@log_function_call
+def da_to_pickle(df, path:str ,args:Optional[Dict] = None):
+    '''
+    保存pickle文件
+    '''
+    if args is None:
+        args = {}
+    df.to_pickle(path,**args)
+
+@log_function_call
+def da_to_parquet(df, path:str ,args:Optional[Dict] = None):
+    '''
+    保存parquet文件
+    '''
+    if args is None:
+        args = {}
+    df.to_parquet(path,**args)
 
 if __name__ == '__main__':
     print(da_get_file_read_filters())
