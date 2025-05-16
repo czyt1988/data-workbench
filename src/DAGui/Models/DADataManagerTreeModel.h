@@ -132,6 +132,12 @@ public:
 	// 设置列样式
 	void setColumnStyle(ColumnStyle s);
 	ColumnStyle getColumnStyle() const;
+    // 判断这个item是否为dataframe
+    bool isDataframeItem(QStandardItem* item) const;
+    // 判断这个item是否为dataframe下面的series
+    bool isDataframeSeriesItem(QStandardItem* item) const;
+    // 转换为data
+    DAData toData(QStandardItem* item) const;
 
 public:
 	virtual Qt::ItemFlags flags(const QModelIndex& index) const override;

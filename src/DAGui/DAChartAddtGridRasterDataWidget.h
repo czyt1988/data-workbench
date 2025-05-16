@@ -38,7 +38,7 @@ public:
 private slots:
 	void onComboBoxXCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
 	void onComboBoxYCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
-	void onComboBoxMatricsCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
+    void onComboBoxMatricsCurrentDataChanged(const DA::DAData& data);
 	void onDataManagerChanged(DADataManager* dmgr);
 	void onCurrentDataChanged(const DAData& d);
 

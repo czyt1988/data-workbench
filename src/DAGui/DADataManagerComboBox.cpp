@@ -13,6 +13,7 @@ public:
 public:
 	DADataManagerTreeModel* _treeDataModel { nullptr };
 	bool mShowSeriesUnderDataframe { true };
+    DAData lastData;  ///< 记录最后的data
 };
 
 DADataManagerComboBox::PrivateData::PrivateData(DADataManagerComboBox* p) : q_ptr(p)
@@ -32,9 +33,9 @@ DADataManagerComboBox::DADataManagerComboBox(QWidget* par) : ctkTreeComboBox(par
 	connect(this, &QComboBox::currentTextChanged, this, &DADataManagerComboBox::onCurrentIndexChanged);
 #else
 	connect(this,
-			QOverload< const QString& >::of(&QComboBox::currentIndexChanged),
-			this,
-			&DADataManagerComboBox::onCurrentIndexChanged);
+            QOverload< const QString& >::of(&QComboBox::currentIndexChanged),
+            this,
+            &DADataManagerComboBox::onCurrentIndexChanged);
 #endif
 }
 
@@ -61,15 +62,26 @@ void DADataManagerComboBox::onCurrentIndexChanged(const QString& text)
 		return;
 	}
 	DAData d = dmgr->getDataById(did);
-	if (!d.isDataFrame()) {
-		return;
-	}
-	QString seriesName;
-	QVariant dtype = currentData(DADATAMANAGERTREEMODEL_ROLE_DETAIL_DATA_TYPE);
-	if (!dtype.isNull()) {
-		seriesName = text;
-	}
-	emit currentDataframeSeriesChanged(d, seriesName);
+    if (d_ptr->lastData != d) {
+        // 值不相等
+        d_ptr->lastData = d;
+        Q_EMIT currentDataChanged(d);
+    }
+
+    // 判断完值后，判断series，
+    // 看看series
+    if (!d.isDataFrame()) {
+        return;
+    }
+    QString seriesName;
+    QVariant dtype = currentData(DADATAMANAGERTREEMODEL_ROLE_DETAIL_DATA_TYPE);
+    if (!dtype.isValid()) {
+        return;
+    }
+    if (dtype.toInt() == DADataManagerTreeModel::SeriesInnerDataframe) {
+        seriesName = text;
+        Q_EMIT currentDataframeSeriesChanged(d, seriesName);
+    }
 }
 
 /**
@@ -117,8 +129,8 @@ DAData DADataManagerComboBox::getCurrentDAData() const
 	} else {
 #if DA_ENABLE_PYTHON
 		// 说明是Dataframe下的Series
-		DADataManagerTreeModel::DetailDataTypeMark m =
-			static_cast< DADataManagerTreeModel::DetailDataTypeMark >(dtype.toInt());
+        DADataManagerTreeModel::DetailDataTypeMark m = static_cast< DADataManagerTreeModel::DetailDataTypeMark >(
+            dtype.toInt());
 		if (DADataManagerTreeModel::SeriesInnerDataframe == m) {
 			QString serName  = currentText();
 			DAPyDataFrame df = d.toDataFrame();

@@ -54,7 +54,7 @@ DADataManagerTreeItem::DADataManagerTreeItem() : QStandardItem()
 DADataManagerTreeItem::DADataManagerTreeItem(const DAData& d) : QStandardItem(d.getName())
 {
 	setIcon(DADataManagerTableModel::dataToIcon(d));
-	setData((int)ItemData, DADATAMANAGERTREEMODEL_ROLE_ITEM_TYPE);
+    setData(static_cast< int >(ItemData), DADATAMANAGERTREEMODEL_ROLE_ITEM_TYPE);
 	setData(d.id(), DADATAMANAGERTREEMODEL_ROLE_DATA_ID);
 	setEditable(false);
 	setDropEnabled(false);
@@ -176,14 +176,14 @@ DADataManagerTreeModel::DADataManagerTreeModel(QObject* parent) : QStandardItemM
 }
 
 DADataManagerTreeModel::DADataManagerTreeModel(DADataManager* p, QObject* parent)
-	: QStandardItemModel(parent), DA_PIMPL_CONSTRUCT
+    : QStandardItemModel(parent), DA_PIMPL_CONSTRUCT
 {
 	init();
 	setDataManager(p);
 }
 
 DADataManagerTreeModel::DADataManagerTreeModel(DADataManager* p, ColumnStyle style, QObject* parent)
-	: QStandardItemModel(parent), DA_PIMPL_CONSTRUCT
+    : QStandardItemModel(parent), DA_PIMPL_CONSTRUCT
 {
 	d_ptr->columnStyle = style;
 	init();
@@ -209,18 +209,18 @@ void DADataManagerTreeModel::doExpandDataframeToSeries(bool on)
 	QList< DADataManagerTreeItem* > dataframeItems;
 	// 找到所有的dataframe item
 	daAppDataManagerTreeItemIterator(
-		invisibleRootItem(),
-		[ &dataframeItems ](QStandardItem* par, DADataManagerTreeItem* curIte) -> bool {
-			Q_UNUSED(par);
-			if (curIte) {
-				DAData d = curIte->toData();
-				if (d.isDataFrame()) {
-					dataframeItems.append(curIte);
-				}
-			}
-			return true;
-		},
-		DADataManagerTreeItem::ItemData);
+        invisibleRootItem(),
+        [ &dataframeItems ](QStandardItem* par, DADataManagerTreeItem* curIte) -> bool {
+            Q_UNUSED(par);
+            if (curIte) {
+                DAData d = curIte->toData();
+                if (d.isDataFrame()) {
+                    dataframeItems.append(curIte);
+                }
+            }
+            return true;
+        },
+        DADataManagerTreeItem::ItemData);
 	// 如果添加，则把dataframe下面添加series
 	for (DADataManagerTreeItem* i : qAsConst(dataframeItems)) {
 		doExpandOneDataframeToSeries(i, on);
@@ -247,7 +247,10 @@ void DADataManagerTreeModel::doExpandOneDataframeToSeries(DADataManagerTreeItem*
 	if (on) {
 #if DA_ENABLE_PYTHON
 		// 需要添加
-		DAData d         = dfItem->toData();
+        DAData d = dfItem->toData();
+        if (!d.isDataFrame()) {
+            return;
+        }
 		DAPyDataFrame df = d.toDataFrame();
 		if (df.isNone()) {
 			return;
@@ -255,7 +258,7 @@ void DADataManagerTreeModel::doExpandOneDataframeToSeries(DADataManagerTreeItem*
 		QList< QString > sers = df.columns();
 		for (const QString& name : qAsConst(sers)) {
 			QStandardItem* sitem = new QStandardItem(name);
-			sitem->setData((int)SeriesInnerDataframe, DADATAMANAGERTREEMODEL_ROLE_DETAIL_DATA_TYPE);
+            sitem->setData(static_cast< int >(SeriesInnerDataframe), DADATAMANAGERTREEMODEL_ROLE_DETAIL_DATA_TYPE);
 			sitem->setData(d.id(), DADATAMANAGERTREEMODEL_ROLE_DATA_ID);  // 把data id也记录
 			sitem->setToolTip(name);
 			dfItem->appendRow(sitem);
@@ -274,18 +277,18 @@ DADataManagerTreeItem* DADataManagerTreeModel::dataToItem(const DAData& d) const
 {
 	DADataManagerTreeItem* res = nullptr;
 	DA::daAppDataManagerTreeItemIterator(
-		invisibleRootItem(),
-		[ &res, &d ](QStandardItem* par, DADataManagerTreeItem* i) -> bool {
-			qDebug() << "daAppDataManagerTreeItemIterator";
-			Q_UNUSED(par);
-			DAData innerd = i->toData();
-			if (innerd == d) {
-				res = i;
-				return false;  // 结束迭代
-			}
-			return true;  // 继续迭代
-		},
-		DADataManagerTreeItem::ItemData);
+        invisibleRootItem(),
+        [ &res, &d ](QStandardItem* par, DADataManagerTreeItem* i) -> bool {
+            qDebug() << "daAppDataManagerTreeItemIterator";
+            Q_UNUSED(par);
+            DAData innerd = i->toData();
+            if (innerd == d) {
+                res = i;
+                return false;  // 结束迭代
+            }
+            return true;  // 继续迭代
+        },
+        DADataManagerTreeItem::ItemData);
 	return res;
 }
 
@@ -332,12 +335,12 @@ void DADataManagerTreeModel::removeFolder(DADataManagerTreeItem* f)
 		parfolder = invisibleRootItem();
 	} else {
 		if ((parfolder->type() != DAAPPDATAMANAGERTREEITEM_USERTYPE)
-			|| !(static_cast< DADataManagerTreeItem* >(parfolder))->isFolder()) {
+            || !(static_cast< DADataManagerTreeItem* >(parfolder))->isFolder()) {
 			parfolder = invisibleRootItem();
 		}
 	}
 	// 节点的抽取,抽取完成后willTakeItem的second都脱离model管理
-	for (const auto& p : willTakeItem) {
+    for (const auto& p : qAsConst(willTakeItem)) {
 		if (p.first && p.second) {
 			p.first->takeChild(p.second->row(), p.second->column());
 			parfolder->appendRow(p.second);
@@ -429,6 +432,52 @@ void DADataManagerTreeModel::setColumnStyle(ColumnStyle s)
 DADataManagerTreeModel::ColumnStyle DADataManagerTreeModel::getColumnStyle() const
 {
     return d_ptr->columnStyle;
+}
+
+/**
+ * @brief 判断这个item是否为dataframe
+ * @param item
+ * @return
+ */
+bool DADataManagerTreeModel::isDataframeItem(QStandardItem* item) const
+{
+    if (!item || (item->type() != DAAPPDATAMANAGERTREEITEM_USERTYPE)) {
+        return false;
+    }
+    DADataManagerTreeItem* daitem = static_cast< DADataManagerTreeItem* >(item);
+    if (!daitem->isData()) {
+        return false;
+    }
+    DAData d = daitem->toData();
+    return d.isDataFrame();
+}
+
+/**
+ * @brief 判断这个item是否为dataframe下面的series
+ * @param item
+ * @return
+ */
+bool DADataManagerTreeModel::isDataframeSeriesItem(QStandardItem* item) const
+{
+    QVariant dtype = item->data(DADATAMANAGERTREEMODEL_ROLE_DETAIL_DATA_TYPE);
+    if (!dtype.isValid()) {
+        return false;
+    }
+    return SeriesInnerDataframe == dtype.toInt();
+}
+
+/**
+ * @brief 把item转换为data，如果不是data，返回一个无效的data
+ * @param item
+ * @return
+ */
+DAData DADataManagerTreeModel::toData(QStandardItem* item) const
+{
+    if (!item || (item->type() != DAAPPDATAMANAGERTREEITEM_USERTYPE)) {
+        return DAData();
+    }
+    DADataManagerTreeItem* daitem = static_cast< DADataManagerTreeItem* >(item);
+    return daitem->toData();
 }
 
 /**
@@ -562,8 +611,8 @@ void DADataManagerTreeModel::onDataBeginRemoved(const DA::DAData& d, int dataInd
 	DADataManagerTreeItem* item = dataToItem(d);
 	if (nullptr == item) {
 		qWarning() << tr("The data(%1) cannot find its corresponding item "
-						 "in the data management tree during the removal process")
-						  .arg(d.getName());  // cn:数据在移除过程中无法找到其对应的数据管理树中的条目
+                         "in the data management tree during the removal process")
+                          .arg(d.getName());  // cn:数据在移除过程中无法找到其对应的数据管理树中的条目
 		return;
 	}
 	removeRow(item->row(), indexFromItem(item->parent()));
@@ -574,8 +623,8 @@ void DADataManagerTreeModel::onDataChanged(const DAData& d, DADataManager::Chang
 	DADataManagerTreeItem* item = dataToItem(d);
 	if (nullptr == item) {
 		qWarning() << tr("The data(%1) cannot find its corresponding item "
-						 "in the data management tree during the removal process")
-						  .arg(d.getName());  // cn:数据在移除过程中无法找到其对应的数据管理树中的条目
+                         "in the data management tree during the removal process")
+                          .arg(d.getName());  // cn:数据在移除过程中无法找到其对应的数据管理树中的条目
 		return;
 	}
 	switch (t) {
@@ -643,26 +692,26 @@ bool daAppDataManagerTreeItemIterator(QStandardItem* startItem,
                                       DADataManagerTreeItem::TreeItemType type)
 {
 	return standardItemIterator(
-		startItem,
-		[ &fun, type ](QStandardItem* par, QStandardItem* item) -> bool {
-			if (item && item->type() == DAAPPDATAMANAGERTREEITEM_USERTYPE) {
-				DADataManagerTreeItem* ti = static_cast< DADataManagerTreeItem* >(item);
-				if (type == DADataManagerTreeItem::ItemUnknow) {
-					// 不做限制
-					return fun(par, ti);
-				} else if (type == DADataManagerTreeItem::ItemData) {
-					if (ti->isData()) {
-						return fun(par, ti);
-					}
-				} else if (type == DADataManagerTreeItem::ItemFolder) {
-					if (ti->isFolder()) {
-						return fun(par, ti);
-					}
-				}
-			}
-			return true;
-		},
-		true);
+        startItem,
+        [ &fun, type ](QStandardItem* par, QStandardItem* item) -> bool {
+            if (item && item->type() == DAAPPDATAMANAGERTREEITEM_USERTYPE) {
+                DADataManagerTreeItem* ti = static_cast< DADataManagerTreeItem* >(item);
+                if (type == DADataManagerTreeItem::ItemUnknow) {
+                    // 不做限制
+                    return fun(par, ti);
+                } else if (type == DADataManagerTreeItem::ItemData) {
+                    if (ti->isData()) {
+                        return fun(par, ti);
+                    }
+                } else if (type == DADataManagerTreeItem::ItemFolder) {
+                    if (ti->isFolder()) {
+                        return fun(par, ti);
+                    }
+                }
+            }
+            return true;
+        },
+        true);
 }
 
 }  // end da

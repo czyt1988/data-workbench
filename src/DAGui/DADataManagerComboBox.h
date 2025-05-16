@@ -40,6 +40,12 @@ Q_SIGNALS:
 	 * @param seriesName 系列名 如果选中了dataframe，此参数为QString()
 	 */
 	void currentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
+
+    /**
+     * @brief dataframe的选择改变，注意，这个只会在选择不同的dataframe的时候发出，选中series的话，发出的是@sa currentDataframeSeriesChanged 信号
+     * @param data
+     */
+    void currentDataChanged(const DA::DAData& data);
 };
 }
 
