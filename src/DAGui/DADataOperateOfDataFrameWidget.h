@@ -120,7 +120,7 @@ public Q_SLOTS:
     bool querydatas(const DAPyDataFrame& df, const QString& exper);
     //数据排序
     bool sortdatas();
-    bool sortdatas(const DAPyDataFrame& df, const bool ascending);
+    bool sortdatas(const DAPyDataFrame& df, const QString& by, const bool ascending);
 	// 创建数据透视表
 	DAPyDataFrame createPivotTable();
 	DAPyDataFrame createPivotTable(const DAPyDataFrame& df,

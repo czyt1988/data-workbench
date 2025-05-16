@@ -1,8 +1,5 @@
 #include "DADialogDataFrameSort.h"
 #include "ui_DADialogDataFrameSort.h"
-#include <QMessageBox>
-#include "DADataManager.h"
-#include "Models/DAPySeriesTableModule.h"
 
 namespace DA
 {
@@ -15,6 +12,21 @@ DADialogDataFrameSort::DADialogDataFrameSort(QWidget* parent) : QDialog(parent),
 DADialogDataFrameSort::~DADialogDataFrameSort()
 {
     delete ui;
+}
+
+void DADialogDataFrameSort::setDataframe(const DAPyDataFrame& df)
+{
+    QStringList para = df.columns();
+
+    ui->comboBoxColumns->clear();
+    for (int row = 0; row < para.size(); ++row) {
+        ui->comboBoxColumns->addItem(para[ row ]);
+    }
+}
+
+QString DADialogDataFrameSort::getSortBy() const
+{
+    return ui->comboBoxColumns->currentText();
 }
 
 bool DADialogDataFrameSort::getSortType() const

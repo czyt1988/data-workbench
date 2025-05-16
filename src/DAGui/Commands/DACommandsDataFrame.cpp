@@ -708,6 +708,36 @@ bool DACommandDataFrame_querydatas::exec()
 
 ///////////////////
 
+DACommandDataFrame_sort::DACommandDataFrame_sort(const DAPyDataFrame& df,
+                                                 const QString& by,
+                                                 const bool ascending,
+                                                 DAPyDataFrameTableModule* model,
+                                                 QUndoCommand* par)
+    : DACommandWithTemporaryData(df, par), mBy(by), mAscending(ascending), mModel(model)
+{
+    setText(QObject::tr("sort datas"));  // cn:对相关数据进行排序
+}
+
+void DACommandDataFrame_sort::undo()
+{
+    load();
+    // 说明排序完成
+    if (mModel) {
+        mModel->refresh();
+    }
+}
+
+bool DACommandDataFrame_sort::exec()
+{
+    DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+    if (!pydf.sort(dataframe(), mBy, mAscending)) {
+        return false;
+    }
+    return true;
+}
+
+///////////////////
+
 DACommandDataFrame_castNum::DACommandDataFrame_castNum(const DAPyDataFrame& df,
                                                        const QList< int >& index,
                                                        const pybind11::dict& args,

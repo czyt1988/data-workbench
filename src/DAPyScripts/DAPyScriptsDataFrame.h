@@ -79,7 +79,8 @@ public:
 	bool clipoutlier(DAPyDataFrame& df, double lowervalue, double uppervalue, int axis);
 	// querydatas()
     bool queryDatas(DAPyDataFrame& df, const QString& expr);
-
+    // 排序sort()
+    bool sort(DAPyDataFrame& df, const QString& by, bool ascending);
 	// 创建数据透视表
 	DAPyDataFrame pivotTable(const DAPyDataFrame& df,
                              const QStringList& value,
