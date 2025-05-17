@@ -16,7 +16,7 @@ class DAChartAddtGridRasterDataWidget;
 namespace DA
 {
 #if DA_ENABLE_PYTHON
-class DAPyGridDataTableModule;
+class DAPyGridDataTableModel;
 #endif
 class DADataManager;
 
@@ -47,7 +47,7 @@ protected:
 
 private:
 	Ui::DAChartAddtGridRasterDataWidget* ui;
-	DAPyGridDataTableModule* mModel { nullptr };
+	DAPyGridDataTableModel* mModel { nullptr };
 };
 }
 

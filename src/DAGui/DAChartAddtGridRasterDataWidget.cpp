@@ -5,7 +5,7 @@
 #include <qwt_matrix_raster_data.h>
 #include "DADataManager.h"
 #if DA_ENABLE_PYTHON
-#include "Models/DAPyGridDataTableModule.h"
+#include "Models/DAPyGridDataTableModel.h"
 #endif
 namespace DA
 {
@@ -19,31 +19,31 @@ DAChartAddtGridRasterDataWidget::DAChartAddtGridRasterDataWidget(QWidget* parent
 {
 	ui->setupUi(this);
 #if DA_ENABLE_PYTHON
-	mModel = new DAPyGridDataTableModule(nullptr, this);
+	mModel = new DAPyGridDataTableModel(nullptr, this);
 	ui->tableViewRaster->setModel(mModel);
 #endif
 	QFontMetrics fm = fontMetrics();
 	ui->tableViewRaster->verticalHeader()->setDefaultSectionSize(fm.lineSpacing() * 1.1);
 	connect(this,
-            &DAChartAddtGridRasterDataWidget::dataManagerChanged,
-            this,
-            &DAChartAddtGridRasterDataWidget::onDataManagerChanged);
+			&DAChartAddtGridRasterDataWidget::dataManagerChanged,
+			this,
+			&DAChartAddtGridRasterDataWidget::onDataManagerChanged);
 	connect(this,
-            &DAChartAddtGridRasterDataWidget::currentDataChanged,
-            this,
-            &DAChartAddtGridRasterDataWidget::onCurrentDataChanged);
+			&DAChartAddtGridRasterDataWidget::currentDataChanged,
+			this,
+			&DAChartAddtGridRasterDataWidget::onCurrentDataChanged);
 	connect(ui->comboBoxX,
-            &DADataManagerComboBox::currentDataframeSeriesChanged,
-            this,
-            &DAChartAddtGridRasterDataWidget::onComboBoxXCurrentDataframeSeriesChanged);
+			&DADataManagerComboBox::currentDataframeSeriesChanged,
+			this,
+			&DAChartAddtGridRasterDataWidget::onComboBoxXCurrentDataframeSeriesChanged);
 	connect(ui->comboBoxY,
-            &DADataManagerComboBox::currentDataframeSeriesChanged,
-            this,
-            &DAChartAddtGridRasterDataWidget::onComboBoxYCurrentDataframeSeriesChanged);
+			&DADataManagerComboBox::currentDataframeSeriesChanged,
+			this,
+			&DAChartAddtGridRasterDataWidget::onComboBoxYCurrentDataframeSeriesChanged);
 	connect(ui->comboBoxMatrics,
-            &DADataManagerComboBox::currentDataChanged,
-            this,
-            &DAChartAddtGridRasterDataWidget::onComboBoxMatricsCurrentDataChanged);
+			&DADataManagerComboBox::currentDataChanged,
+			this,
+			&DAChartAddtGridRasterDataWidget::onComboBoxMatricsCurrentDataChanged);
 }
 
 DAChartAddtGridRasterDataWidget::~DAChartAddtGridRasterDataWidget()
@@ -185,11 +185,11 @@ QwtGridRasterData* DAChartAddtGridRasterDataWidget::makeGridDataFromUI()
 	try {
 		// 验证数据维度
 		if (!isCorrectDim()) {
-            QMessageBox::warning(this,
-                                 tr("Warning"),
-                                 tr("The data dimensions are incorrect. The length of x should be equal to the number "
-                                    "of columns in "
-                                    "value, and the length of y should be equal to the number of rows in value."));  // cn:数据维度不正确，要求x长度和value的列数相等，y的长度和value的行数相等
+			QMessageBox::warning(this,
+								 tr("Warning"),
+								 tr("The data dimensions are incorrect. The length of x should be equal to the number "
+									"of columns in "
+									"value, and the length of y should be equal to the number of rows in value."));  // cn:数据维度不正确，要求x长度和value的列数相等，y的长度和value的行数相等
 			return nullptr;
 		}
 

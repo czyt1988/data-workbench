@@ -1,14 +1,17 @@
-﻿#include "DAPyDataFrameTableModule.h"
+﻿#include "DAPyDataFrameTableModel.h"
 #include "Commands/DACommandsDataFrame.h"
 #include <QUndoStack>
 #include <algorithm>
+#ifndef DAPYDATAFRAMETABLEMODULE_PROFILE_PRINT
+#define DAPYDATAFRAMETABLEMODULE_PROFILE_PRINT 1
+#endif
 namespace DA
 {
-class DAPyDataFrameTableModule::PrivateData
+class DAPyDataFrameTableModel::PrivateData
 {
-	DA_DECLARE_PUBLIC(DAPyDataFrameTableModule)
+	DA_DECLARE_PUBLIC(DAPyDataFrameTableModel)
 public:
-	PrivateData(DAPyDataFrameTableModule* p);
+	PrivateData(DAPyDataFrameTableModel* p);
 
 public:
 	DAPyDataFrame dataframe;
@@ -23,23 +26,23 @@ public:
 // DAPyDataFrameTableModulePrivate
 //===================================================
 
-DAPyDataFrameTableModule::PrivateData::PrivateData(DAPyDataFrameTableModule* p) : q_ptr(p), undoStack(nullptr)
+DAPyDataFrameTableModel::PrivateData::PrivateData(DAPyDataFrameTableModel* p) : q_ptr(p), undoStack(nullptr)
 {
 }
 //===================================================
 // DAPyDataFrameTableModule
 //===================================================
-DAPyDataFrameTableModule::DAPyDataFrameTableModule(QUndoStack* stack, QObject* parent)
+DAPyDataFrameTableModel::DAPyDataFrameTableModel(QUndoStack* stack, QObject* parent)
 	: QAbstractTableModel(parent), DA_PIMPL_CONSTRUCT
 {
 	d_ptr->undoStack = stack;
 }
 
-DAPyDataFrameTableModule::~DAPyDataFrameTableModule()
+DAPyDataFrameTableModel::~DAPyDataFrameTableModel()
 {
 }
 
-QVariant DAPyDataFrameTableModule::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant DAPyDataFrameTableModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
 	DA_DC(d);
 	if (role != Qt::DisplayRole || d->dataframe.isNone()) {
@@ -75,7 +78,7 @@ QVariant DAPyDataFrameTableModule::headerData(int section, Qt::Orientation orien
 	return QVariant();
 }
 
-int DAPyDataFrameTableModule::columnCount(const QModelIndex& parent) const
+int DAPyDataFrameTableModel::columnCount(const QModelIndex& parent) const
 {
 	Q_UNUSED(parent);
 	DA_DC(d);
@@ -83,13 +86,10 @@ int DAPyDataFrameTableModule::columnCount(const QModelIndex& parent) const
 		return d->minShowColumn;
 	}
 	std::pair< std::size_t, std::size_t > shape = d->dataframe.shape();
-	if ((static_cast< int >(shape.second) + d->extraColumn) < d->minShowColumn) {
-		return d->minShowColumn;
-	}
-	return (static_cast< int >(shape.second) + d->extraColumn);
+	return std::max(static_cast< int >(shape.second) + d->extraColumn, d->minShowColumn);
 }
 
-int DAPyDataFrameTableModule::rowCount(const QModelIndex& parent) const
+int DAPyDataFrameTableModel::rowCount(const QModelIndex& parent) const
 {
 	Q_UNUSED(parent);
 	DA_DC(d);
@@ -97,13 +97,10 @@ int DAPyDataFrameTableModule::rowCount(const QModelIndex& parent) const
 		return d->minShowRow;
 	}
 	std::pair< std::size_t, std::size_t > shape = d->dataframe.shape();
-	if ((static_cast< int >(shape.first) + d->extraRow) < d->minShowRow) {
-		return d->minShowRow;
-	}
-	return (static_cast< int >(shape.first) + d->extraRow);
+	return std::max(static_cast< int >(shape.first) + d->extraRow, d->minShowRow);
 }
 
-QVariant DAPyDataFrameTableModule::data(const QModelIndex& index, int role) const
+QVariant DAPyDataFrameTableModel::data(const QModelIndex& index, int role) const
 {
 	DA_DC(d);
 	if (!index.isValid() || d->dataframe.isNone()) {
@@ -126,7 +123,7 @@ QVariant DAPyDataFrameTableModule::data(const QModelIndex& index, int role) cons
 	return QVariant();
 }
 
-bool DAPyDataFrameTableModule::setData(const QModelIndex& index, const QVariant& value, int role)
+bool DAPyDataFrameTableModel::setData(const QModelIndex& index, const QVariant& value, int role)
 {
 	if (Qt::EditRole != role) {
 		return false;
@@ -165,24 +162,24 @@ bool DAPyDataFrameTableModule::setData(const QModelIndex& index, const QVariant&
 	return true;
 }
 
-Qt::ItemFlags DAPyDataFrameTableModule::flags(const QModelIndex& index) const
+Qt::ItemFlags DAPyDataFrameTableModel::flags(const QModelIndex& index) const
 {
 	if (!index.isValid())
 		return Qt::NoItemFlags;
 	return Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable;
 }
 
-DAPyDataFrame& DAPyDataFrameTableModule::dataFrame()
+DAPyDataFrame& DAPyDataFrameTableModel::dataFrame()
 {
 	return d_ptr->dataframe;
 }
 
-const DAPyDataFrame& DAPyDataFrameTableModule::dataFrame() const
+const DAPyDataFrame& DAPyDataFrameTableModel::dataFrame() const
 {
 	return d_ptr->dataframe;
 }
 
-void DAPyDataFrameTableModule::setDAData(const DAData& d)
+void DAPyDataFrameTableModel::setDAData(const DAData& d)
 {
 	if (!d.isDataFrame()) {
 		d_ptr->dataframe = DAPyDataFrame();
@@ -193,14 +190,14 @@ void DAPyDataFrameTableModule::setDAData(const DAData& d)
 	endResetModel();
 }
 
-void DAPyDataFrameTableModule::setDataFrame(const DAPyDataFrame& d)
+void DAPyDataFrameTableModel::setDataFrame(const DAPyDataFrame& d)
 {
 	beginResetModel();
 	d_ptr->dataframe = d;
 	endResetModel();
 }
 
-void DAPyDataFrameTableModule::refreshRow(int row)
+void DAPyDataFrameTableModel::refreshRow(int row)
 {
 	if (row >= rowCount()) {
 		return;
@@ -212,7 +209,7 @@ void DAPyDataFrameTableModule::refreshRow(int row)
 	emit dataChanged(createIndex(row, 0), createIndex(row, c));
 }
 
-void DAPyDataFrameTableModule::refreshColumn(int col)
+void DAPyDataFrameTableModel::refreshColumn(int col)
 {
 	if (col >= columnCount()) {
 		return;
@@ -229,7 +226,7 @@ void DAPyDataFrameTableModule::refreshColumn(int col)
  * @param row
  * @param col
  */
-void DAPyDataFrameTableModule::refresh(int row, int col)
+void DAPyDataFrameTableModel::refresh(int row, int col)
 {
 	if (row >= rowCount() || col >= columnCount()) {
 		return;
@@ -237,7 +234,7 @@ void DAPyDataFrameTableModule::refresh(int row, int col)
 	emit dataChanged(createIndex(row, col), createIndex(row, col));
 }
 
-void DAPyDataFrameTableModule::refresh(int rowStart, int colStart, int rowEnd, int colEnd)
+void DAPyDataFrameTableModel::refresh(int rowStart, int colStart, int rowEnd, int colEnd)
 {
 	if (rowEnd >= rowCount() || colEnd >= columnCount()) {
 		return;
@@ -248,10 +245,50 @@ void DAPyDataFrameTableModule::refresh(int rowStart, int colStart, int rowEnd, i
 /**
  * @brief 全部刷新
  */
-void DAPyDataFrameTableModule::refresh()
+void DAPyDataFrameTableModel::refresh()
 {
 	beginResetModel();
 	endResetModel();
+}
+
+/**
+ * @brief 通知模型，行被移除了
+ * @param r
+ */
+void DAPyDataFrameTableModel::notifyRowsRemoved(const QList< int >& r)
+{
+	beginFunCall(r, [ this ](const QModelIndex& p, int f, int l) { this->beginRemoveRows(p, f, l); });
+	endRemoveRows();
+}
+
+/**
+ * @brief 通知模型，行被插入了
+ * @param r
+ */
+void DAPyDataFrameTableModel::notifyRowsInserted(const QList< int >& r)
+{
+	beginFunCall(r, [ this ](const QModelIndex& p, int f, int l) { this->beginInsertRows(p, f, l); });
+	endInsertRows();
+}
+
+/**
+ * @brief 通知模型，列被移除了
+ * @param c
+ */
+void DAPyDataFrameTableModel::notifyColumnsRemoved(const QList< int >& c)
+{
+	beginFunCall(c, [ this ](const QModelIndex& p, int f, int l) { this->beginRemoveColumns(p, f, l); });
+	endRemoveColumns();
+}
+
+/**
+ * @brief 通知模型，列被插入了
+ * @param r
+ */
+void DAPyDataFrameTableModel::notifyColumnsInserted(const QList< int >& c)
+{
+	beginFunCall(c, [ this ](const QModelIndex& p, int f, int l) { this->beginInsertColumns(p, f, l); });
+	endInsertColumns();
 }
 
 #define DAPyDataFrameTableModule_beginXX(funname, list)
@@ -260,44 +297,24 @@ void DAPyDataFrameTableModule::refresh()
  * @brief 通知model行被移除了
  * @param r
  */
-void DAPyDataFrameTableModule::rowBeginRemove(const QList< int >& r)
+void DAPyDataFrameTableModel::rowsBeginRemove(const QList< int >& r)
 {
     beginFunCall(r, [ this ](const QModelIndex& p, int f, int l) { this->beginRemoveRows(p, f, l); });
 }
 
-void DAPyDataFrameTableModule::rowEndRemove()
-{
-    endRemoveRows();
-}
-
-void DAPyDataFrameTableModule::rowBeginInsert(const QList< int >& r)
+void DAPyDataFrameTableModel::rowsBeginInsert(const QList< int >& r)
 {
     beginFunCall(r, [ this ](const QModelIndex& p, int f, int l) { this->beginInsertRows(p, f, l); });
 }
 
-void DAPyDataFrameTableModule::rowEndInsert()
-{
-    endInsertRows();
-}
-
-void DAPyDataFrameTableModule::columnBeginRemove(const QList< int >& r)
+void DAPyDataFrameTableModel::columnBeginRemove(const QList< int >& r)
 {
     beginFunCall(r, [ this ](const QModelIndex& p, int f, int l) { this->beginRemoveColumns(p, f, l); });
 }
 
-void DAPyDataFrameTableModule::columnEndRemove()
-{
-    endRemoveColumns();
-}
-
-void DAPyDataFrameTableModule::columnBeginInsert(const QList< int >& r)
+void DAPyDataFrameTableModel::columnsBeginInsert(const QList< int >& r)
 {
     beginFunCall(r, [ this ](const QModelIndex& p, int f, int l) { this->beginInsertColumns(p, f, l); });
-}
-
-void DAPyDataFrameTableModule::columnEndInsert()
-{
-    endInsertColumns();
 }
 
 /**
@@ -322,7 +339,7 @@ void DAPyDataFrameTableModule::columnEndInsert()
  *
  * @see getExtraRowCount
  */
-void DAPyDataFrameTableModule::setExtraRowCount(int v)
+void DAPyDataFrameTableModel::setExtraRowCount(int v)
 {
     d_ptr->extraRow = v;
 }
@@ -332,7 +349,7 @@ void DAPyDataFrameTableModule::setExtraRowCount(int v)
  * @return 超出模型实际数据行数的额外空行数量
  * @see setExtraRowCount
  */
-int DAPyDataFrameTableModule::getExtraRowCount() const
+int DAPyDataFrameTableModel::getExtraRowCount() const
 {
     return d_ptr->extraRow;
 }
@@ -359,7 +376,7 @@ int DAPyDataFrameTableModule::getExtraRowCount() const
  *
  * @see getExtraRowCount()
  */
-void DAPyDataFrameTableModule::setExtraColumnCount(int v)
+void DAPyDataFrameTableModel::setExtraColumnCount(int v)
 {
     d_ptr->extraColumn = v;
 }
@@ -369,33 +386,65 @@ void DAPyDataFrameTableModule::setExtraColumnCount(int v)
  * @return 超出模型实际数据列数的额外空列数量
  * @see setExtraColumnCount
  */
-int DAPyDataFrameTableModule::getExtraColumnCount() const
+int DAPyDataFrameTableModel::getExtraColumnCount() const
 {
     return d_ptr->extraColumn;
 }
 
-void DAPyDataFrameTableModule::setMinShowRowCount(int v)
+void DAPyDataFrameTableModel::setMinShowRowCount(int v)
 {
     d_ptr->minShowRow = v;
 }
 
-int DAPyDataFrameTableModule::getMinShowRowCount() const
+int DAPyDataFrameTableModel::getMinShowRowCount() const
 {
     return d_ptr->minShowRow;
 }
 
-void DAPyDataFrameTableModule::setMinShowColumnCount(int v)
+void DAPyDataFrameTableModel::setMinShowColumnCount(int v)
 {
     d_ptr->minShowColumn = v;
 }
 
-int DAPyDataFrameTableModule::getMinShowColumnCount() const
+int DAPyDataFrameTableModel::getMinShowColumnCount() const
 {
     return d_ptr->minShowColumn;
 }
 
-void DAPyDataFrameTableModule::beginFunCall(const QList< int >& listlike, DAPyDataFrameTableModule::beginFun fun)
+void DAPyDataFrameTableModel::beginFunCall(const QList< int >& listlike, DAPyDataFrameTableModel::beginFun fun)
 {
+	// 如果输入列表为空，直接返回，无需进行后续处理
+	if (listlike.isEmpty()) {
+		return;
+	}
+#if 1  // deepseek 优化
+	// 将输入列表复制到一个新列表中，以便进行排序和去重操作
+	QList< int > sorted = listlike;
+	// 对列表进行升序排序
+	std::sort(sorted.begin(), sorted.end());
+	// 使用 std::unique 去除相邻的重复元素，返回指向去重后最后一个元素的下一个位置的迭代
+	auto last = std::unique(sorted.begin(), sorted.end());
+	// 将列表末尾的多余元素（即重复元素）擦除
+	sorted.erase(last, sorted.end());
+	// 获取排序后第一个元素的值，作为初始的起始索引
+	int first = sorted.first();
+	// 遍历排序后的列表，处理连续和非连续的索引范围
+	for (int i = 1; i < sorted.size(); ++i) {
+		// 检查当前元素是否与前一个元素连续（即是否相差 1）
+		if (sorted[ i ] != sorted[ i - 1 ] + 1) {
+			// 如果不连续，调用传入的函数，处理从 first 到 sorted[i-1] 的连续索引范围
+			fun(QModelIndex(), first, sorted[ i - 1 ]);
+			// 更新 first 为当前元素的值，作为下一个区间的起始索引
+			first = sorted[ i ];
+		}
+	}
+	// 循环结束后，处理最后一个连续的索引范围（从 first 到 sorted.last()）
+	fun(QModelIndex(), first, sorted.last());
+
+#else
+	if (listlike.empty()) {
+		return;
+	}
 	if (listlike.size() == 1) {
 		fun(QModelIndex(), listlike[ 0 ], listlike[ 0 ]);
 	} else {
@@ -417,5 +466,6 @@ void DAPyDataFrameTableModule::beginFunCall(const QList< int >& listlike, DAPyDa
 		// 对于一直连续，这个直接一次连续，对于不连续，最后一段跨度也是此
 		fun(QModelIndex(), first, orderindex.back());
 	}
+#endif
 }
 }  // end of namespace DA

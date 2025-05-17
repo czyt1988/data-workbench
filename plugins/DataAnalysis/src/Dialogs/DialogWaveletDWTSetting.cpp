@@ -1,14 +1,14 @@
-#include "DialogWaveletDWTSetting.h"
+﻿#include "DialogWaveletDWTSetting.h"
 #include "ui_DialogWaveletDWTSetting.h"
 #include <QMessageBox>
 #include <QtMath>
 #include "DADataManager.h"
-#include "Models/DAPySeriesTableModule.h"
+#include "Models/DAPySeriesTableModel.h"
 
 DialogWaveletDWTSetting::DialogWaveletDWTSetting(QWidget* parent) : QDialog(parent), ui(new Ui::DialogWaveletDWTSetting)
 {
 	ui->setupUi(this);
-	mModuel = new DA::DAPySeriesTableModule(this);
+	mModuel = new DA::DAPySeriesTableModel(this);
 	ui->tableViewPreview->setModel(mModuel);
 	connect(ui->comboBoxDataMgr,
 			&DA::DADataManagerComboBox::currentDataframeSeriesChanged,

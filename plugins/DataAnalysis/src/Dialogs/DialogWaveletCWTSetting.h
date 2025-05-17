@@ -13,7 +13,7 @@ class DialogWaveletCWTSetting;
 namespace DA
 {
 class DADataManager;
-class DAPySeriesTableModule;
+class DAPySeriesTableModel;
 }
 
 class DialogWaveletCWTSetting : public QDialog
@@ -42,7 +42,7 @@ private slots:
 
 private:
 	Ui::DialogWaveletCWTSetting* ui;
-	DA::DAPySeriesTableModule* mModuel { nullptr };
+	DA::DAPySeriesTableModel* mModuel { nullptr };
 };
 
 #endif  // DIALOGWAVELETCWTSETTING_H

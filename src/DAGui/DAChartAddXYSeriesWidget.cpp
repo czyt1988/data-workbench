@@ -4,7 +4,7 @@
 #include "DADataManager.h"
 #include "Models/DADataManagerTreeModel.h"
 #if DA_ENABLE_PYTHON
-#include "Models/DAPySeriesTableModule.h"
+#include "Models/DAPySeriesTableModel.h"
 #endif
 namespace DA
 {
@@ -18,7 +18,7 @@ DAChartAddXYSeriesWidget::DAChartAddXYSeriesWidget(QWidget* parent)
 {
 	ui->setupUi(this);
 #if DA_ENABLE_PYTHON
-	mModel = new DAPySeriesTableModule(this);
+	mModel = new DAPySeriesTableModel(this);
 	mModel->setHeaderLabel({ tr("x"), tr("y") });
 	ui->tableViewXY->setModel(mModel);
 #endif

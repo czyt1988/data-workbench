@@ -3,7 +3,7 @@
 #include <QMessageBox>
 #include "DADataManager.h"
 #if DA_ENABLE_PYTHON
-#include "Models/DAPySeriesTableModule.h"
+#include "Models/DAPySeriesTableModel.h"
 #endif
 namespace DA
 {
@@ -17,7 +17,7 @@ DAChartAddXYESeriesWidget::DAChartAddXYESeriesWidget(QWidget* parent)
 {
 	ui->setupUi(this);
 #if DA_ENABLE_PYTHON
-	mModel = new DAPySeriesTableModule(this);
+	mModel = new DAPySeriesTableModel(this);
 	mModel->setHeaderLabel({ tr("x"), tr("y"), tr("error") });
 	ui->tableViewXYE->setModel(mModel);
 #endif

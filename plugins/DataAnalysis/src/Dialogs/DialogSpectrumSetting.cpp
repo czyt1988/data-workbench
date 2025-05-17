@@ -3,17 +3,17 @@
 #include <QtMath>
 #include "ui_DialogSpectrumSetting.h"
 #include "DADataManager.h"
-#include "Models/DAPySeriesTableModule.h"
+#include "Models/DAPySeriesTableModel.h"
 
 DialogSpectrumSetting::DialogSpectrumSetting(QWidget* parent) : QDialog(parent), ui(new Ui::DialogSpectrumSetting)
 {
 	ui->setupUi(this);
-	mModuel = new DA::DAPySeriesTableModule(this);
+	mModuel = new DA::DAPySeriesTableModel(this);
 	ui->tableViewPreview->setModel(mModuel);
 	connect(ui->comboBoxDataMgr,
-            &DA::DADataManagerComboBox::currentDataframeSeriesChanged,
-            this,
-            &DialogSpectrumSetting::onCurrentDataframeSeriesChanged);
+			&DA::DADataManagerComboBox::currentDataframeSeriesChanged,
+			this,
+			&DialogSpectrumSetting::onCurrentDataframeSeriesChanged);
 	connect(ui->buttonBox, &QDialogButtonBox::accepted, this, &DialogSpectrumSetting::onAccepted);
 }
 
@@ -64,13 +64,13 @@ QVariantMap DialogSpectrumSetting::getSpectrumSetting()
 	if (ui->radioButtonDB->isChecked()) {
 		res[ "db" ] = true;
 	}
-    if (ui->checkBoxDetrend->isChecked()) {
-        if (ui->radioButtonConstant->isChecked()) {
-            res[ "detrend" ] = "constant";
-        } else if (ui->radioButtonLinear->isChecked()) {
-            res[ "detrend" ] = "linear";
-        }
-    }
+	if (ui->checkBoxDetrend->isChecked()) {
+		if (ui->radioButtonConstant->isChecked()) {
+			res[ "detrend" ] = "constant";
+		} else if (ui->radioButtonLinear->isChecked()) {
+			res[ "detrend" ] = "linear";
+		}
+	}
 	return res;
 }
 
@@ -98,16 +98,16 @@ void DialogSpectrumSetting::onAccepted()
 	auto seriess = mModuel->getSeries();
 	if (seriess.size() != 1) {
 		QMessageBox::warning(this,
-                             tr("warning"),
-                             tr("You need to select a waveform data for spectrum analysis")  // cn:你需要选择一个波形数据进行频谱分析
+							 tr("warning"),
+							 tr("You need to select a waveform data for spectrum analysis")  // cn:你需要选择一个波形数据进行频谱分析
 		);
 		return;
 	}
 	auto fs = ui->doubleSpinBoxFs->value();
 	if (qFuzzyIsNull(fs)) {
 		QMessageBox::warning(this,
-                             tr("warning"),
-                             tr("The sampling rate cannot be 0")  // cn:采样率不能为0
+							 tr("warning"),
+							 tr("The sampling rate cannot be 0")  // cn:采样率不能为0
 		);
 		return;
 	}

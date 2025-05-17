@@ -103,6 +103,16 @@ if(MSVC)
     add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
     # make sure __cplusplus is defined when using msvc and enable parallel build
     string(APPEND CMAKE_CXX_FLAGS " /Zc:__cplusplus /MP")
+
+    set(CMAKE_CXX_USE_RESPONSE_FILE_FOR_OBJECTS 1)
+    set(CMAKE_CXX_USE_RESPONSE_FILE_FOR_INCLUDES 1)
+    set(CMAKE_CXX_RESPONSE_FILE_PREFIX "@")
+    set(CMAKE_CXX_RESPONSE_FILE_EXTENSION ".rsp")
+endif()
+
+if(CMAKE_GENERATOR STREQUAL "Ninja")
+    # 针对Ninja生成器
+    set(CMAKE_NINJA_FORCE_RESPONSE_FILE "1")
 endif()
 ########################################################
 # MSVC设置
