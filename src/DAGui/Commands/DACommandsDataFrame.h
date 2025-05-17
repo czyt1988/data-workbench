@@ -246,12 +246,12 @@ public:
 	int getDropedCount() const;
 
 private:
-	DAPyDataFrameTableModule* mModel{ nullptr };
-	int mAxis{ 0 };
+    DAPyDataFrameTableModule* mModel{ nullptr };
+    int mAxis{ 0 };
 	QString mHow;
 	QList< int > mIndex;
 	std::optional< int > mThresh;
-	int mDropedCount{ 0 };  ///< 记录删除了多少行或列
+    int mDropedCount{ 0 };  ///< 记录删除了多少行或列
 };
 
 /**
@@ -269,9 +269,9 @@ public:
 	virtual bool exec() override;
 
 private:
-	DAPyDataFrameTableModule* mModel{ nullptr };
-	double mValue{ 0.0 };
-	int mLimit{ -1 };
+    DAPyDataFrameTableModule* mModel{ nullptr };
+    double mValue{ 0.0 };
+    int mLimit{ -1 };
 };
 
 /**
@@ -290,10 +290,10 @@ public:
 	virtual bool exec() override;
 
 private:
-	DAPyDataFrameTableModule* mModel{ nullptr };
+    DAPyDataFrameTableModule* mModel{ nullptr };
 	QString mMethod;
-	int mOrder{ 1 };
-	int mLimit{ -1 };
+    int mOrder{ 1 };
+    int mLimit{ -1 };
 };
 
 /**
@@ -311,9 +311,9 @@ public:
 	virtual bool exec() override;
 
 private:
-	DAPyDataFrameTableModule* mModel{ nullptr };
-	int mAxis{ 0 };
-	int mLimit{ -1 };
+    DAPyDataFrameTableModule* mModel{ nullptr };
+    int mAxis{ 0 };
+    int mLimit{ -1 };
 };
 
 /**
@@ -331,9 +331,9 @@ public:
 	virtual bool exec() override;
 
 private:
-	DAPyDataFrameTableModule* mModel{ nullptr };
-	int mAxis{ 0 };
-	int mLimit{ -1 };
+    DAPyDataFrameTableModule* mModel{ nullptr };
+    int mAxis{ 0 };
+    int mLimit{ -1 };
 };
 
 /**
@@ -353,10 +353,10 @@ public:
 	int getDropedCount() const;
 
 private:
-	DAPyDataFrameTableModule* mModel{ nullptr };
+    DAPyDataFrameTableModule* mModel{ nullptr };
 	QString mKeep;
 	QList< int > mIndex;
-	int mDropedCount{ 0 };  ///< 记录删除了多少行或列
+    int mDropedCount{ 0 };  ///< 记录删除了多少行或列
 };
 
 /**
@@ -376,11 +376,11 @@ public:
 	int getDropedCount() const;
 
 private:
-	DAPyDataFrameTableModule* mModel{ nullptr };
-	double mN{ 3.0 };
-	int mAxis{ 0 };
+    DAPyDataFrameTableModule* mModel{ nullptr };
+    double mN{ 3.0 };
+    int mAxis{ 0 };
 	QList< int > mIndex;
-	int mDropedCount{ 0 };  ///< 记录删除了多少行或列
+    int mDropedCount{ 0 };  ///< 记录删除了多少行或列
 };
 
 /**
@@ -399,10 +399,10 @@ public:
 	virtual bool exec() override;
 
 private:
-	DAPyDataFrameTableModule* mModel{ nullptr };
-	double mlowervalue{ 0.0 };
-	double mUppervalue{ 0.0 };
-	int mAxis{ 0 };
+    DAPyDataFrameTableModule* mModel{ nullptr };
+    double mlowervalue{ 0.0 };
+    double mUppervalue{ 0.0 };
+    int mAxis{ 0 };
 	QList< int > mIndex;
 };
 
@@ -420,8 +420,8 @@ public:
 	virtual bool exec() override;
 
 private:
-	QString mExper;
-	DAPyDataFrameTableModule* mModel{ nullptr };
+    QString mExper;
+    DAPyDataFrameTableModule* mModel{ nullptr };
 };
 
 /**
@@ -446,6 +446,26 @@ private:
 	double mUppervalue{ 0.0 };
 	int mAxis{ 0 };
 	QList< int > mIndex;
+};
+
+/**
+ * @brief sort
+ */
+class DAGUI_API DACommandDataFrame_sort : public DACommandWithTemporaryData
+{
+public:
+    DACommandDataFrame_sort(const DAPyDataFrame& df,
+                            const QString& by,
+                            const bool ascending,
+                            DAPyDataFrameTableModule* model = nullptr,
+                            QUndoCommand* par               = nullptr);
+    virtual void undo() override;
+    virtual bool exec() override;
+
+private:
+    QString mBy;
+    bool mAscending;
+    DAPyDataFrameTableModule* mModel{ nullptr };
 };
 
 /**

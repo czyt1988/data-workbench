@@ -22,10 +22,10 @@ public:
 	bool isHaveProjectFilePath() const;
 
 public:
-	bool mIsDirty { false };  ///< 脏标识
-    DADockingAreaInterface* mDockingArea { nullptr };
-	DAWorkFlowOperateWidget* mWorkFlowOperateWidget { nullptr };
-	DADataManagerInterface* mDataManagerInterface { nullptr };
+    bool mIsDirty{ false };  ///< 脏标识
+    DADockingAreaInterface* mDockingArea{ nullptr };
+    DAWorkFlowOperateWidget* mWorkFlowOperateWidget{ nullptr };
+    DADataManagerInterface* mDataManagerInterface{ nullptr };
 	QFileInfo mProjectFileInfo;  ///< 记录工程文件信息
 
 	static QString s_suffix;  ///< 工程文件后缀
@@ -215,5 +215,4 @@ void DAProjectInterface::setModified(bool on)
 		emit dirtyStateChanged(on);
     }
 }
-
 }

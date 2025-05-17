@@ -23,6 +23,7 @@ class DADialogDataFrameFillna;
 class DADialogDataFrameFillInterpolate;
 class DADialogDataFrameClipOutlier;
 class DADialogDataFrameQueryDatas;
+class DADialogDataFrameSort;
 class DADialogCreatePivotTable;
 
 /**
@@ -121,7 +122,9 @@ public Q_SLOTS:
 	bool dataselect();
 	bool
 	dataselect(const DAPyDataFrame& df, double lower = 0.0, double upper = 0.0, const QList< int > index = QList< int >());
-
+	//数据排序
+	bool sortdatas();
+	bool sortdatas(const DAPyDataFrame& df, const QString& by, const bool ascending);
 	// 创建数据透视表
 	DAPyDataFrame createPivotTable();
 	DAPyDataFrame createPivotTable(const DAPyDataFrame& df,
@@ -151,7 +154,6 @@ private:
 	Ui::DADataOperateOfDataFrameWidget* ui;
 	DAData mData;
 	DAPyDataFrameTableModule* mModel{ nullptr };
-
 	DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs{ nullptr };
 	DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs{ nullptr };
 	DADialogDataFrameFillna* mDialogDataFrameFillna{ nullptr };
@@ -159,6 +161,7 @@ private:
 	DADialogDataFrameClipOutlier* mDialogDataFrameClipOutlier{ nullptr };
 	DADialogCreatePivotTable* mDialogCreatePivotTable{ nullptr };
 	DADialogDataFrameQueryDatas* mDialogDataFrameQueryDatas{ nullptr };
+	DADialogDataFrameSort* mDADialogDataFrameSort{ nullptr };
 };
 }  // end of namespace DA
 #endif  // DADATAOPERATEOFDATAFRAMEWIDGET_H

@@ -62,7 +62,7 @@ AppMainWindow::AppMainWindow(QWidget* parent) : SARibbonMainWindow(parent)
 	// 创建controller
 	mController = new DAAppController(this);
 	(*mController)
-		.setAppMainWindow(this)                       // app
+        .setAppMainWindow(this)                       // app
 	    .setAppCore(&core)                            // core
 	    .setAppActions(mUI->getAppActions())          // action
 	    .setAppCommand(mUI->getAppCmd())              // cmd
@@ -265,6 +265,17 @@ bool AppMainWindow::removeStateSettingFile()
 bool AppMainWindow::openProject(const QString& projectFilePath)
 {
     return mController->openProjectFile(projectFilePath);
+}
+
+/**
+ * @brief 针对import-data命令
+ * @param filePath
+ * @param args
+ * @return
+ */
+bool AppMainWindow::importData(const QString& filePath, const QVariantMap& args)
+{
+    return mController->importData(filePath, args);
 }
 
 DAAppConfig* AppMainWindow::getAppConfig() const

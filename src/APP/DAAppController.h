@@ -115,6 +115,8 @@ public:
 	// 设置工程为dirty
 	void setDirty(bool on = true);
 	bool isDirty() const;
+	// 导入数据
+	bool importData(const QString& filePath, const QVariantMap& args, QString* err = nullptr);
 public Q_SLOTS:
 	// 保存
 	void save();
@@ -145,6 +147,8 @@ private Q_SLOTS:
 	void onActionAddDataTriggered();
 	// 移除数据
 	void onActionRemoveDataTriggered();
+	// 导出数据
+	void onActionExportDataTriggered();
 	//===================================================
 	// 绘图标签 Chart Category
 	//===================================================
@@ -239,7 +243,8 @@ private Q_SLOTS:
 	// 过滤给定条件外的数据
 	void onActionDataFrameQueryDatasTriggered();
 	// 过滤
-	void onActionDataFrameDataSelectTriggered();
+	void onActionDataFrameDataSelectTriggered();  // 数据排序
+	void onActionDataFrameSortTriggered();
 #if DA_ENABLE_PYTHON
 	// 列数据类型改变
 	void onComboxColumnTypesCurrentDTypeChanged(const DA::DAPyDType& dt);

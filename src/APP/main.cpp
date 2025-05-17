@@ -35,14 +35,9 @@
 void setAppFont();
 QString appPreposeDump();
 void enableHDPIScaling();
-//--version的返回内容，返回版本信息
-static QString daVersionInfo();
-//--describe的返回内容，返回详细信息
-static QString daDescribe();
-//--help的返回内容，返回帮助
-static QString daHelp();
-// 解析参数，如果返回false，则直接return 0,不会进入gui
-bool parsingConsoleArguments(const QStringList& args);
+
+const static QString CS_CMD_IMPORTDATA = QStringLiteral("import-data");
+
 // 初始化所有命令
 void initCommandLine(QCommandLineParser* cmd);
 /**
@@ -73,40 +68,50 @@ int main(int argc, char* argv[])
 	qDebug() << DA::DADir();
 	// 启动app
 	QApplication app(argc, argv);
-	QApplication::setApplicationVersion(daVersionInfo());
-	QApplication::setApplicationName("DAWorkbench");
-	QCommandLineParser parser;
-	parser.setApplicationDescription(daDescribe());
+    QApplication::setApplicationVersion(DA_VERSION);
+    QApplication::setApplicationName(DA_PROJECT_NAME);
 
-	// 安装翻译
-	DA::DATranslatorManeger datr;
-	datr.installAllTranslator();
+    // 安装翻译
+    DA::DATranslatorManeger datr;
+    datr.installAllTranslator();
 
-	// 解析命令行参数
-	QStringList appArguments = app.arguments();
-	if (!parsingConsoleArguments(appArguments)) {
-		// 刷新再退出
-		std::cout.flush();
-		return 0;
-	}
-	setAppFont();
-	DA::DAAppCore& core = DA::DAAppCore::getInstance();
-	// 初始化python环境
-	if (!core.initialized()) {
-		qCritical() << QObject::tr("Kernel initialization failed");  // cn:内核初始化失败
-		return -1;
-	}
+    // 命令初始化
+    QCommandLineParser cmdParser;
+    initCommandLine(&cmdParser);
+    // 解析命令行参数
+    cmdParser.process(app);
 
-	// TODO 此处进行一些核心的初始化操作
+    // 字体设置
+    setAppFont();
+
+    // 接口初始化
+    DA::DAAppCore& core = DA::DAAppCore::getInstance();
+    // 初始化python环境
+    if (!core.initialized()) {
+        qCritical() << QObject::tr("Kernel initialization failed");  // cn:内核初始化失败
+        return -1;
+    }
+
+    // gui初始化
 	DA::AppMainWindow w;
-	if (appArguments.size() > 1) {
-		// 说明有可能是双击文件打开，这时候要看参数2是否为一个工程文件
-		QFileInfo openfi(appArguments[ 1 ]);
+    QStringList positionalArgs = cmdParser.positionalArguments();
+    qDebug() << "positionalArgs:" << positionalArgs;
+    if (positionalArgs.size() == 1) {
+        // 说明有可能是双击文件打开，这时候要看参数是否为一个工程文件
+        QFileInfo openfi(positionalArgs[ 0 ]);
 		if (openfi.exists()) {
 			w.openProject(openfi.absoluteFilePath());
 		}
 	}
-	w.show();
+    // 处理其它命令
+    if (cmdParser.isSet(CS_CMD_IMPORTDATA)) {
+        // impot-data 命令
+        const QStringList filePaths = cmdParser.values(CS_CMD_IMPORTDATA);
+        for (const QString& path : filePaths) {
+            w.importData(path, QVariantMap());
+        }
+    }
+    w.show();
 	int r = app.exec();
 	DA::daUnregisterMessageHandler();
 	return r;
@@ -118,95 +123,25 @@ int main(int argc, char* argv[])
  */
 void initCommandLine(QCommandLineParser* cmd)
 {
-}
-/**
- * @brief 帮助，--help的返回内容
- * @return
- */
-QString daHelp()
-{
-	QString str = QObject::tr(""
-	                          "%1(%2) build %3\n"  // DAWorkbench(0.0.2) build 240215
-	                          "params:\n"
-	                          "--version : version information\n"    //--version :版本信息
-	                          "--describe : detailed information\n"  //--describe :详细信息
-	                          )
-	                  .arg(DA_PROJECT_NAME)
-	                  .arg(DA_VERSION)
-	                  .arg(DA_COMPILE_DATETIME);
-	return str;
-}
-
-/**
- * @brief 版本信息，--version的返回内容
- * @return
- */
-QString daVersionInfo()
-{
-	return DA_VERSION;
-}
-
-/**
- * @brief 描述信息，--describe的返回内容
- * @return
- */
-QString daDescribe()
-{
-	QString descibe =
-		QString("version:%1,compile datetime:%2,enable python:%3").arg(DA_VERSION).arg(DA_COMPILE_DATETIME).arg(DA_ENABLE_PYTHON);
-	return descibe;
-}
-
-/**
- * @brief 解析参数，如果返回false，则直接return 0,不会进入gui
- * @param args
- * @return
- */
-bool parsingConsoleArguments(const QStringList& args)
-{
-	if (args.contains("--help") || args.contains("--version") || args.contains("--describe")) {
-#ifdef Q_OS_WIN
-		bool hasConsole = AttachConsole(ATTACH_PARENT_PROCESS);
-		if (hasConsole) {
-			// 重定向标准输出
-			FILE* newStdout = nullptr;
-			if (freopen_s(&newStdout, "CONOUT$", "w", stdout) == 0) {
-				// 使用文件描述符重定向
-				int fd = _fileno(newStdout);
-				if (fd != -1) {
-					_dup2(fd, _fileno(stdout));           // 将新流的描述符复制到标准输出
-					setvbuf(stdout, nullptr, _IONBF, 0);  // 禁用缓冲
-				}
-			}
-			// 重定向标准错误输出
-			FILE* newStderr = nullptr;
-			if (freopen_s(&newStderr, "CONOUT$", "w", stderr) == 0) {
-				int fdErr = _fileno(newStderr);
-				if (fdErr != -1) {
-					_dup2(fdErr, _fileno(stderr));
-					setvbuf(stderr, nullptr, _IONBF, 0);
-				}
-			}
-		}
-#endif
-		QTextStream st(stdout);
-		if (args.contains("--help")) {
-			st << daHelp() << Qt::endl;
-		} else if (args.contains("--version")) {
-			st << daVersionInfo() << Qt::endl;
-		} else if (args.contains("--describe")) {
-			st << daDescribe() << Qt::endl;
-		}
-		st.flush();
-
-#ifdef Q_OS_WIN
-		if (hasConsole) {
-			FreeConsole();
-		}
-#endif
-		return false;
-	}
-	return true;
+    cmd->setApplicationDescription(QCoreApplication::translate("main", "version:%1,compile datetime:%2,enable python:%3")
+                                       .arg(DA_VERSION)
+                                       .arg(DA_COMPILE_DATETIME)
+                                       .arg(DA_ENABLE_PYTHON));
+    cmd->addHelpOption();
+    cmd->addVersionOption();
+    cmd->addPositionalArgument("file",
+                               QCoreApplication::translate("main", "The project file to open"),  // cn:要打开的工程文件
+                               "[project]"  // 语法表示（可选）
+    );
+    QCommandLineOption
+        importDataOption(CS_CMD_IMPORTDATA,
+                         QCoreApplication::
+                             translate("main",
+                                       "Import data into the application, supporting formats such as CSV, XLSX, TXT, "
+                                       "PKL, etc.If you want to import multiple datasets, you can use the command "
+                                       "multiple times; the program will execute them one by one"),  // cn：导入数据到应用程序中，支持csv/xlsx/txt/pkl等格式，如果要导入多个数据，你可以使用多次命令，程序会逐一执行
+                         "path");
+    cmd->addOption(importDataOption);
 }
 
 /**
@@ -257,7 +192,7 @@ QString appPreposeDump()
 		QTextStream st(&sysfi);
 		QSysInfo s;
 		// 先写入da的信息
-		st << daDescribe() << "\r\n" << s << Qt::endl;
+        st << DA_PROJECT_NAME << DA_VERSION << "\r\n" << s << Qt::endl;
 	}
 	sysfi.close();
 	return QDir::toNativeSeparators(dumpFileDir + "/" + dumpfileName);

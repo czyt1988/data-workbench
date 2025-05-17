@@ -35,10 +35,19 @@ public:
 	// 插入列-全为nan
 	bool insert_column(DAPyDataFrame& df, int c, const QString& name, const QVariant& defaultvalue = QVariant()) noexcept;
 	bool insert_column(DAPyDataFrame& df, int c, const QString& name, const QVariant& start, const QVariant& stop) noexcept;
-	// 保存为pickle
+    //
+    // 保存为txt/csv
+    bool to_csv(const DAPyDataFrame& df, const QString& path, const QString& sep) noexcept;
+    // 保存为xlsx
+    bool to_excel(const DAPyDataFrame& df, const QString& path) noexcept;
+    // 保存为pickle
 	bool to_pickle(const DAPyDataFrame& df, const QString& path) noexcept;
+    // 保存为parquet
+    bool to_parquet(const DAPyDataFrame& df, const QString& path) noexcept;
 	// 从pickle加载
 	bool from_pickle(DAPyDataFrame& df, const QString& path) noexcept;
+    // 从parquet加载
+    bool from_parquet(DAPyDataFrame& df, const QString& path) noexcept;
 	// 类型转换
 	bool astype(DAPyDataFrame& df, const QList< int >& colsIndex, const DAPyDType& dt) noexcept;
 	// 设置nan值
@@ -74,7 +83,8 @@ public:
 	bool clipoutlier(DAPyDataFrame& df, double lowervalue, double uppervalue, int axis);
 	// querydatas()
 	bool queryDatas(DAPyDataFrame& df, const QString& expr);
-
+    // 排序sort()
+    bool sort(DAPyDataFrame& df, const QString& by, bool ascending);
 	// dataselect()
 	bool dataselect(DAPyDataFrame& df, double lowervalue, double uppervalue, const QList< int >& index);
 

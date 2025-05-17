@@ -296,6 +296,37 @@ def da_data_select(df: pd.DataFrame,lower: Optional[float] = None,upper: Optiona
     df.drop(index=df[~mask].index, inplace=True)
 
 @log_function_call
+def da_sort(df: pd.DataFrame, by: str, ascending: bool):
+    '''
+    替换dataframe的异常值
+    :param df: pd.DataFrame。
+    :param by:数据排序依据。
+    :param ascending:数据排序方式。
+    :return: 此函数不返回值，直接改变df
+    '''
+    df.sort_values(by = by ,ascending = ascending, inplace = True)
+
+@log_function_call
+def da_to_csv(df: pd.DataFrame, path: str, sep: str):
+    '''
+    把dataframe写到文件
+    :param df: pd.DataFrame
+    :param path: 文件路径
+    :return: 此函数不返回值
+    '''
+    df.to_csv(path, sep = sep, index = False)
+
+@log_function_call
+def da_to_excel(df: pd.DataFrame, path: str):
+    '''
+    把dataframe写到文件
+    :param df: pd.DataFrame
+    :param path: 文件路径
+    :return: 此函数不返回值
+    '''
+    df.to_excel(path, index = False)
+
+@log_function_call
 def da_to_pickle(df: pd.DataFrame, path: str):
     '''
     把dataframe写到文件
@@ -305,6 +336,15 @@ def da_to_pickle(df: pd.DataFrame, path: str):
     '''
     df.to_pickle(path)
 
+@log_function_call
+def da_to_parquet(df: pd.DataFrame, path: str):
+    '''
+    把dataframe写到文件
+    :param df: pd.DataFrame
+    :param path: 文件路径
+    :return: 此函数不返回值
+    '''
+    df.to_parquet(path)
 
 @log_function_call
 def da_from_pickle(df: pd.DataFrame, path: str):
@@ -317,6 +357,16 @@ def da_from_pickle(df: pd.DataFrame, path: str):
     tmp = pd.read_pickle(path)
     df.__init__(tmp)
 
+@log_function_call
+def da_from_parquet(df: pd.DataFrame, path: str):
+    '''
+    从文件加载到dataframe
+    :param df: pd.DataFrame
+    :param path: 文件路径
+    :return: 此函数不返回值，直接改变df
+    '''
+    tmp = pd.read_parquet(path)
+    df.__init__(tmp)
 
 @log_function_call
 def da_astype(df: pd.DataFrame, colsIndex: List[int], dtype: np.dtype):

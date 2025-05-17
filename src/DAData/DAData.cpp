@@ -1,4 +1,8 @@
-﻿#include "DAData.h"
+﻿// qt
+#include <QFileDialog>
+#include <QFileInfo>
+
+#include "DAData.h"
 #include "DADataManager.h"
 #if DA_ENABLE_PYTHON
 #include "DAPyScripts.h"
@@ -88,8 +92,8 @@ DAData& DAData::operator=(const DAData& d)
 #if DA_ENABLE_PYTHON
 DAData& DAData::operator=(const DAPyDataFrame& d)
 {
-	std::shared_ptr< DAAbstractData > p =
-		std::static_pointer_cast< DAAbstractData >(std::make_shared< DADataPyDataFrame >(d));
+    std::shared_ptr< DAAbstractData > p = std::static_pointer_cast< DAAbstractData >(
+        std::make_shared< DADataPyDataFrame >(d));
 	mData = p;
 	return *this;
 }
@@ -97,7 +101,7 @@ DAData& DAData::operator=(const DAPyDataFrame& d)
 DAData& DAData::operator=(const DAPySeries& d)
 {
 	std::shared_ptr< DAAbstractData > p = std::static_pointer_cast< DAAbstractData >(std::make_shared< DADataPySeries >(d));
-	mData = p;
+    mData = p;
 	return *this;
 }
 #endif
@@ -309,16 +313,52 @@ DADataManager* DAData::getDataManager() const
  */
 bool DAData::writeToFile(const DAData& data, const QString& filePath)
 {
+    if (data.isNull()) {
+        return false;
+    }
+    switch (data.getDataType()) {
+#if DA_ENABLE_PYTHON
+    case DAAbstractData::TypePythonDataFrame: {
+        return data.toDataFrame().to_parquet(filePath);
+    } break;
+#endif
+    default:
+        break;
+    }
+    return true;
+}
+
+/**
+ * @brief 导出数据
+ * @param data
+ * @param filePath
+ * @return
+ */
+bool DAData::exportToFile(const DAData& data, const QString& filePath, const QString& sep)
+{
 	if (data.isNull()) {
 		return false;
 	}
+
+    QFileInfo dataFilePath(filePath);
+    QString dataSuffix = dataFilePath.suffix();
+
 	switch (data.getDataType()) {
 #if DA_ENABLE_PYTHON
 	case DAAbstractData::TypePythonDataFrame: {
 		DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
-		if (!pydf.to_pickle(data.toDataFrame(), filePath)) {
-			return false;
-		}
+        if (dataSuffix == "txt" || dataSuffix == "csv") {
+            return pydf.to_csv(data.toDataFrame(), filePath, sep);
+        } else if (dataSuffix == "xlsx") {
+            return pydf.to_excel(data.toDataFrame(), filePath);
+        } else if (dataSuffix == "parquet") {
+            return pydf.to_parquet(data.toDataFrame(), filePath);
+        } else if (dataSuffix == "pkl") {
+            return pydf.to_pickle(data.toDataFrame(), filePath);
+        } else {
+            // 没有后缀统一使用parquet
+            return pydf.to_parquet(data.toDataFrame(), filePath);
+        }
 	} break;
 #endif
 	default:
