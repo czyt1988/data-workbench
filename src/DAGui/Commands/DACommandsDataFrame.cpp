@@ -700,7 +700,38 @@ void DACommandDataFrame_querydatas::undo()
 bool DACommandDataFrame_querydatas::exec()
 {
 	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
-    if (!pydf.queryDatas(dataframe(), mExper)) {
+	if (!pydf.queryDatas(dataframe(), mExper)) {
+		return false;
+	}
+	return true;
+}
+
+///////////////////
+
+DACommandDataFrame_dataselect::DACommandDataFrame_dataselect(const DAPyDataFrame& df,
+                                                             DAPyDataFrameTableModule* model,
+                                                             double lowervalue,
+                                                             double uppervalue,
+                                                             const QList< int >& index,
+                                                             QUndoCommand* par)
+    : DACommandWithTemporaryData(df, par), mModel(model), mlowervalue(lowervalue), mUppervalue(uppervalue), mIndex(index)
+{
+    setText(QObject::tr("data select"));  // cn:数据过滤
+}
+
+void DACommandDataFrame_dataselect::undo()
+{
+	load();
+	// 说明填充了空行
+	if (mModel) {
+		mModel->refresh();
+	}
+}
+
+bool DACommandDataFrame_dataselect::exec()
+{
+	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+	if (!pydf.dataselect(dataframe(), mlowervalue, mUppervalue, mIndex)) {
 		return false;
 	}
 	return true;

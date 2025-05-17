@@ -132,7 +132,7 @@ bool DAPyScriptsDataFrame::insert_column(DAPyDataFrame& df,
 		args[ "start" ] = DA::PY::toPyObject(start);
 		args[ "stop" ]  = DA::PY::toPyObject(stop);
 		if (start.canConvert(QMetaType::QDateTime) || start.canConvert(QMetaType::QDate)
-            || start.canConvert(QMetaType::QTime)) {
+			|| start.canConvert(QMetaType::QTime)) {
 			args[ "dtype" ] = pybind11::dtype("datetime64");
 		}
 		da_insert_column(**args);
@@ -579,13 +579,47 @@ bool DAPyScriptsDataFrame::queryDatas(DAPyDataFrame& df, const QString& expr)
 		pybind11::object da_query_datas = attr("da_query_datas");
 		pybind11::dict args;
 
-        if (expr.isEmpty()) {
-            return false;
-        }
-        // 将每个条件用括号包裹，避免优先级问题
+		if (expr.isEmpty()) {
+			return false;
+		}
+		// 将每个条件用括号包裹，避免优先级问题
 
-        args[ "expr" ] = DA::PY::toPyStr(expr);
+		args[ "expr" ] = DA::PY::toPyStr(expr);
 		da_query_datas(df.object(), **args);
+		return true;
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return false;
+}
+
+/**
+ * @brief select方法的wrapper
+ * @param df
+ * @param contents
+ * @return
+ */
+bool DAPyScriptsDataFrame::dataselect(DAPyDataFrame& df, double lowervalue, double uppervalue, const QList< int >& index)
+{
+	try {
+		pybind11::object da_data_select = attr("da_data_select");
+		pybind11::dict args;
+		if (lowervalue == 0.0) {
+			args[ "lower" ] = pybind11::none();
+		} else {
+			args[ "lower" ] = lowervalue;
+		}
+		if (uppervalue == 0.0) {
+			args[ "upper" ] = pybind11::none();
+		} else {
+			args[ "upper" ] = uppervalue;
+		}
+		if (index.empty()) {
+			args[ "index" ] = pybind11::none();
+		} else {
+			args[ "index" ] = DA::PY::toPyList(index);
+		}
+		da_data_select(df.object(), **args);
 		return true;
 	} catch (const std::exception& e) {
 		dealException(e);
