@@ -674,6 +674,9 @@ bool DACommandDataFrame_clipoutlier::exec()
 	if (!pydf.clipoutlier(dataframe(), mlowervalue, mUppervalue, mAxis)) {
 		return false;
 	}
+	if (mModel) {
+		mModel->refresh();
+	}
 	return true;
 }
 
@@ -700,8 +703,11 @@ void DACommandDataFrame_querydatas::undo()
 bool DACommandDataFrame_querydatas::exec()
 {
 	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
-    if (!pydf.queryDatas(dataframe(), mExper)) {
+	if (!pydf.queryDatas(dataframe(), mExper)) {
 		return false;
+	}
+	if (mModel) {
+		mModel->refresh();
 	}
 	return true;
 }
@@ -720,20 +726,20 @@ DACommandDataFrame_sort::DACommandDataFrame_sort(const DAPyDataFrame& df,
 
 void DACommandDataFrame_sort::undo()
 {
-    load();
-    // 说明排序完成
-    if (mModel) {
-        mModel->refresh();
-    }
+	load();
+	// 说明排序完成
+	if (mModel) {
+		mModel->refresh();
+	}
 }
 
 bool DACommandDataFrame_sort::exec()
 {
-    DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
-    if (!pydf.sort(dataframe(), mBy, mAscending)) {
-        return false;
-    }
-    return true;
+	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+	if (!pydf.sort(dataframe(), mBy, mAscending)) {
+		return false;
+	}
+	return true;
 }
 
 ///////////////////

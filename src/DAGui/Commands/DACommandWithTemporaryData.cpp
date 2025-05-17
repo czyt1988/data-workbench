@@ -1,6 +1,7 @@
 ﻿#include "DACommandWithTemporaryData.h"
 #include <QApplication>
 #include <QDir>
+#include <QFile>
 #include "DADir.h"
 #include "DAPyScripts.h"
 namespace DA
@@ -19,6 +20,7 @@ DACommandWithTemporaryData::DACommandWithTemporaryData(const DAPyDataFrame& df, 
 
 DACommandWithTemporaryData::~DACommandWithTemporaryData()
 {
+    QFile::remove(getTemplateFilePath());
 }
 
 /**
@@ -56,7 +58,7 @@ QString DACommandWithTemporaryData::getTemplateFilePath() const
 bool DACommandWithTemporaryData::save()
 {
 	DAPyScriptsDataFrame& py = DAPyScripts::getInstance().getDataFrame();
-    return py.to_pickle(mDataframe, getTemplateFilePath());
+	return py.to_pickle(mDataframe, getTemplateFilePath());
 }
 
 /**

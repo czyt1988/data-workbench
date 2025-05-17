@@ -280,7 +280,7 @@ install(FILES
 if(DA_ENABLE_AUTO_TRANSLATE)
     find_package(Qt${QT_VERSION_MAJOR} COMPONENTS LinguistTools REQUIRED)
     # 设置输出目录
-    set(DA_QM_OUTPUT_DIR ${CMAKE_BINARY_DIR}/translations)
+    set(DA_QM_OUTPUT_DIR ${CMAKE_BINARY_DIR}/bin/translations)
     file(MAKE_DIRECTORY ${DA_QM_OUTPUT_DIR})
     # 定义翻译文件
     set(DA_TS_FILES
@@ -305,24 +305,31 @@ if(DA_ENABLE_AUTO_TRANSLATE)
 
     # 自动生成 qm 文件
     if(QT_VERSION_MAJOR EQUAL 5)
-        qt5_add_translation(DA_QM_FILES ${DA_TS_FILES})
+        # Qt5需要手动处理输出路径
+        foreach(TS_FILE IN LISTS DA_TS_FILES)
+            get_filename_component(TS_NAME ${TS_FILE} NAME_WE)
+            set(QM_FILE ${DA_QM_OUTPUT_DIR}/${TS_NAME}.qm)
+            add_custom_command(
+                OUTPUT ${QM_FILE}
+                COMMAND ${Qt5_LRELEASE_EXECUTABLE} ${TS_FILE} -qm ${QM_FILE}
+                DEPENDS ${TS_FILE}
+                COMMENT "Generating ${QM_FILE}"
+            )
+            list(APPEND DA_QM_FILES ${QM_FILE})
+        endforeach()
+        # qt5_add_translation(DA_QM_FILES ${DA_TS_FILES})
     else()
-        qt6_add_translation(DA_QM_FILES ${DA_TS_FILES})
+        qt6_add_translation(DA_QM_FILES ${DA_TS_FILES} OUTPUT_DIRECTORY ${DA_QM_OUTPUT_DIR})
     endif()
 
-    # 设置qm文件输出路径
-    # 让qm文件直接生成到DA_BUILD_TRANSLATIONS_DIR下
-    set_source_files_properties(${DA_TS_FILES} PROPERTIES OUTPUT_LOCATION ${DA_QM_OUTPUT_DIR})
-
     # 创建翻译目标
-    add_custom_target(translations ALL DEPENDS ${DA_QM_FILES})
+    add_custom_target(da_translations ALL DEPENDS ${DA_QM_FILES})
 
     # 安装翻译文件
     install(FILES ${DA_QM_FILES}
         DESTINATION bin/translations  # 明确目标路径
         COMPONENT translations
     )
-
 
     # 更新翻译目标
     if(DA_ENABLE_UPDATE_TRANSLATE)
@@ -333,6 +340,7 @@ if(DA_ENABLE_AUTO_TRANSLATE)
                 ${CMAKE_CURRENT_SOURCE_DIR}/src
                 -ts ${DA_TS_FILES}
             COMMENT "Updating translations"
+            VERBATIM
         )
     endif()
 
