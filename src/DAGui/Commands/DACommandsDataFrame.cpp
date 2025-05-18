@@ -30,7 +30,7 @@ void DACommandDataFrame_iat::undo()
 
 	mDataframe.iat(mRow, mCol, mOldData);
 	if (mModel) {
-		mModel->refresh(mRow, mCol);
+		mModel->notifyDataChanged(mRow, mCol);
 	}
 }
 
@@ -40,7 +40,7 @@ bool DACommandDataFrame_iat::exec()
 		return false;
 	}
 	if (mModel) {
-		mModel->refresh(mRow, mCol);
+		mModel->notifyDataChanged(mRow, mCol);
 	}
 	return true;
 }
@@ -286,7 +286,7 @@ void DACommandDataFrame_astype::undo()
 	load();
 	if (mModel) {
 		for (int c : qAsConst(mIndex)) {
-			mModel->refreshColumn(c);
+			mModel->notifyColumnChanged(c);
 		}
 	}
 }
@@ -302,7 +302,7 @@ bool DACommandDataFrame_astype::exec()
 	}
 	if (mModel) {
 		for (int c : qAsConst(mIndex)) {
-			mModel->refreshColumn(c);
+			mModel->notifyColumnChanged(c);
 		}
 	}
 	return true;
@@ -327,7 +327,7 @@ void DACommandDataFrame_setnan::undo()
 {
 	for (int i = 0; i < mRows.size(); ++i) {
 		mDataframe.iat(mRows[ i ], mColumns[ i ], mOlddatas[ i ]);
-		mModel->refresh(mRows[ i ], mColumns[ i ]);
+		mModel->notifyDataChanged(mRows[ i ], mColumns[ i ]);
 	}
 }
 
@@ -339,7 +339,7 @@ bool DACommandDataFrame_setnan::exec()
 	}
 	if (mModel) {
 		for (int i = 0; i < mRows.size(); ++i) {
-			mModel->refresh(mRows[ i ], mColumns[ i ]);
+			mModel->notifyDataChanged(mRows[ i ], mColumns[ i ]);
 		}
 	}
 	return true;
@@ -751,7 +751,7 @@ void DACommandDataFrame_castNum::undo()
 	load();
 	if (mModel) {
 		for (int c : qAsConst(mIndex)) {
-			mModel->refreshColumn(c);
+			mModel->notifyColumnChanged(c);
 		}
 	}
 }
@@ -764,7 +764,7 @@ bool DACommandDataFrame_castNum::exec()
 	}
 	if (mModel) {
 		for (int c : mIndex) {
-			mModel->refreshColumn(c);
+			mModel->notifyColumnChanged(c);
 		}
 	}
 	return true;
@@ -787,7 +787,7 @@ void DACommandDataFrame_castDatetime::undo()
 	load();
 	if (mModel) {
 		for (int c : qAsConst(mIndex)) {
-			mModel->refreshColumn(c);
+			mModel->notifyColumnChanged(c);
 		}
 	}
 }
@@ -800,7 +800,7 @@ bool DACommandDataFrame_castDatetime::exec()
 	}
 	if (mModel) {
 		for (int c : qAsConst(mIndex)) {
-			mModel->refreshColumn(c);
+			mModel->notifyColumnChanged(c);
 		}
 	}
 	return true;

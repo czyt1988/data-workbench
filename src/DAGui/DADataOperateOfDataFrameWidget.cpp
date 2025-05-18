@@ -49,9 +49,17 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
 {
     ui->setupUi(this);
 
-	mModel          = new DAPyDataFrameTableModel(getUndoStack(), this);
-	QFontMetrics fm = fontMetrics();
-	ui->tableView->verticalHeader()->setDefaultSectionSize(fm.lineSpacing() * 1.2);
+	mModel = new DAPyDataFrameTableModel(getUndoStack(), this);
+	ui->tableView->setSizeAdjustPolicy(QAbstractScrollArea::AdjustIgnored);
+	QFontMetrics fm      = fontMetrics();
+	QHeaderView* vheader = ui->tableView->verticalHeader();
+	vheader->setDefaultSectionSize(fm.lineSpacing() * 1.2);
+	vheader->setSectionsClickable(false);
+	vheader->setSectionResizeMode(QHeaderView::Interactive);
+
+	QHeaderView* hheader = ui->tableView->horizontalHeader();
+	hheader->setSectionResizeMode(QHeaderView::Interactive);
+
 	ui->tableView->setModel(mModel);
 	// 关闭不必要的绘制特性
 	ui->tableView->setAlternatingRowColors(false);

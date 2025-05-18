@@ -1,4 +1,4 @@
-#ifndef DAPYDATAFRAMETABLEMODEL_H
+﻿#ifndef DAPYDATAFRAMETABLEMODEL_H
 #define DAPYDATAFRAMETABLEMODEL_H
 #include "DAGuiAPI.h"
 #include <QtCore/qglobal.h>
@@ -12,7 +12,10 @@ namespace DA
 
 /**
  * @brief 针对DAPyDataFrame的table model
- * TODO:Bug 这个类如果删除最后一列或行会出现问题ASSERT: "last < columnCount(parent)" in file itemmodels\qabstractitemmodel.cpp, line 3092
+ *
+ * @note QTableView有个bug，在面对超大规模的数据时，会出现遍历所有行的headerData情况，导致非常耗时，同时QHeaderView也有这个问题，在选中一列时，
+ * 要遍历这一列所有行的headerData，调试发现会大量调用columnCount，并不能实现真正的虚拟显示，因此，TableModel的实现，将数据进行缓存，
+ * 让数据在一个固定的区间里面刷新，从而解决这个问题。
  */
 class DAGUI_API DAPyDataFrameTableModel : public QAbstractTableModel
 {
@@ -36,12 +39,21 @@ public:
 	const DAPyDataFrame& dataFrame() const;
 	void setDAData(const DAData& d);
 	void setDataFrame(const DAPyDataFrame& d);
+	// 分页设置
+	void setPageSize(int size);
+	int getPageSize() const;
+	void setCurrentPage(int page);
+	int getCurrentPage() const;
+	int totalRows() const;
+
+	// 获取真实的dataframe行数
+	int getActualDataframeRowCount() const;
 	// 刷新
-	void refreshRow(int row);
-	void refreshColumn(int col);
-	void refresh(int row, int col);
-	void refresh(int rowStart, int colStart, int rowEnd, int colEnd);
 	void refresh();
+	void notifyRowChanged(int row);
+	void notifyColumnChanged(int col);
+	void notifyDataChanged(int row, int col);
+	void notifyDataChanged(int rowStart, int colStart, int rowEnd, int colEnd);
 	// 行将移除
 	void notifyRowsRemoved(const QList< int >& r);
 
@@ -68,11 +80,20 @@ public:
 	int getMinShowColumnCount() const;
 
 protected:
+	// 缓存
+	void cacheShape();
+	void cacheRowShape();
+	void cacheColumnShape();
 	void rowsBeginRemove(const QList< int >& r);
 	void rowsBeginInsert(const QList< int >& r);
 	void columnBeginRemove(const QList< int >& r);
 	void columnsBeginInsert(const QList< int >& r);
 	void beginFunCall(const QList< int >& listlike, beginFun fun);
+
+private:
+	// 分页数据
+	int calculateStartRow() const;
+	int calculateEndRow() const;
 };
 }  // end of namespace DA
 #endif  // DAPYDATAFRAMETABLEMODEL_H
