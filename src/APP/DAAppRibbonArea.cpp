@@ -306,8 +306,9 @@ void DAAppRibbonArea::buildRibbonDataCategory()
 	m_pannelDataOperate->setObjectName(QStringLiteral("da-pannel-data.data-opt"));
 	m_pannelDataOperate->addLargeAction(m_actions->actionAddData);
 	m_pannelDataOperate->addLargeAction(m_actions->actionRemoveData);
-    m_pannelDataOperate->addLargeAction(m_actions->actionExportData);
-	m_categoryData->addPannel(m_pannelDataOperate);
+    m_pannelDataOperate->addLargeAction(m_actions->actionExportIndividualData);
+    m_pannelDataOperate->addLargeAction(m_actions->actionExportMultipleData);
+    m_categoryData->addPannel(m_pannelDataOperate);
 
 	//----------------------------------------------------------
 
