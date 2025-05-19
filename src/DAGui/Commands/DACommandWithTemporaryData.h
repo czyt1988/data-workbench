@@ -19,8 +19,8 @@ public:
 	 * @param par
 	 * @param saveOnConstruct 是否构造时就保存副本
 	 */
-    DACommandWithTemporaryData(const DAPyDataFrame& df, QUndoCommand* par = nullptr, bool saveOnConstruct = true);
-    ~DACommandWithTemporaryData();
+	DACommandWithTemporaryData(const DAPyDataFrame& df, QUndoCommand* par = nullptr, bool saveOnConstruct = true);
+	~DACommandWithTemporaryData();
 
 	// 获取临时文件的名字
 	QString getTemplateFileName() const;

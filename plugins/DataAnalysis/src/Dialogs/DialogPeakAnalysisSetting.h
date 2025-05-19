@@ -14,7 +14,7 @@ class DialogPeakAnalysisSetting;
 namespace DA
 {
 class DADataManager;
-class DAPySeriesTableModule;
+class DAPySeriesTableModel;
 }
 
 class DialogPeakAnalysisSetting : public QDialog
@@ -42,7 +42,7 @@ private slots:
 
 private:
 	Ui::DialogPeakAnalysisSetting* ui;
-	DA::DAPySeriesTableModule* mModuel { nullptr };
+	DA::DAPySeriesTableModel* mModuel { nullptr };
 	QList< double > mCount {};
 };
 

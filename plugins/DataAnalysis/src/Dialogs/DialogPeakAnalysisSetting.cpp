@@ -1,7 +1,7 @@
-#include "DialogPeakAnalysisSetting.h"
+﻿#include "DialogPeakAnalysisSetting.h"
 #include "ui_DialogPeakAnalysisSetting.h"
 #include "DADataManager.h"
-#include "Models/DAPySeriesTableModule.h"
+#include "Models/DAPySeriesTableModel.h"
 #include <QMessageBox>
 #include <QtMath>
 
@@ -10,7 +10,7 @@ DialogPeakAnalysisSetting::DialogPeakAnalysisSetting(QWidget* parent)
 {
 	ui->setupUi(this);
 
-	mModuel = new DA::DAPySeriesTableModule(this);
+	mModuel = new DA::DAPySeriesTableModel(this);
 	ui->tableViewPreview->setModel(mModuel);
 	connect(ui->comboBoxDataMgr,
 			&DA::DADataManagerComboBox::currentDataframeSeriesChanged,
@@ -18,7 +18,7 @@ DialogPeakAnalysisSetting::DialogPeakAnalysisSetting(QWidget* parent)
 			&DialogPeakAnalysisSetting::onCurrentDataframeSeriesChanged);
 	connect(ui->buttonBox, &QDialogButtonBox::accepted, this, &DialogPeakAnalysisSetting::onAccepted);
 
-	//自定义基线，获取当前数据的最大值、最小值、均值、中位数
+	// 自定义基线，获取当前数据的最大值、最小值、均值、中位数
 	connect(ui->comboBoxHeight,
 			static_cast< void (QComboBox::*)(const QString&) >(&QComboBox::activated),
 			[ = ](const QString& text) {
@@ -29,13 +29,13 @@ DialogPeakAnalysisSetting::DialogPeakAnalysisSetting(QWidget* parent)
 					ui->doubleSpinBoxHeight->setEnabled(false);
 					if (mCount.empty())
 						return;
-					if (text == "Min")  //最小值
+					if (text == "Min")  // 最小值
 						ui->doubleSpinBoxHeight->setValue(mCount[ 0 ]);
-					if (text == "Max")  //最大值
+					if (text == "Max")  // 最大值
 						ui->doubleSpinBoxHeight->setValue(mCount[ 1 ]);
-					if (text == "Mean")  //平均值
+					if (text == "Mean")  // 平均值
 						ui->doubleSpinBoxHeight->setValue(mCount[ 2 ]);
-					if (text == "Median")  //中位数
+					if (text == "Median")  // 中位数
 						ui->doubleSpinBoxHeight->setValue(mCount[ 3 ]);
 				}
 			});
@@ -80,7 +80,7 @@ QVariantMap DialogPeakAnalysisSetting::getPeakAnalysisSetting()
 		return QVariantMap();
 	QVariantMap res;
 	res[ "height" ] = ui->doubleSpinBoxHeight->value();
-	//方向，0为正，1为负，2为两者
+	// 方向，0为正，1为负，2为两者
 	int direction = 0;
 	if (ui->comboBoxBaseLineDirection->currentText() == "Positive")
 		direction = 0;
@@ -114,22 +114,22 @@ void DialogPeakAnalysisSetting::onCurrentDataframeSeriesChanged(const DA::DAData
 
 	if (series.size() < 1)
 		return;
-	//把series转换为一个容器数组
+	// 把series转换为一个容器数组
 	QList< double > seriesList;
 	for (size_t i = 0; i < series.size(); ++i)
 		seriesList.append(series[ i ].toDouble());
 	// series.castTo< double >(seriesList.begin());
 
-	//排序
+	// 排序
 	std::sort(seriesList.begin(), seriesList.end());
 	mCount.clear();
-	//最小值
+	// 最小值
 	mCount.append(seriesList.first());
-	//最大值
+	// 最大值
 	mCount.append(seriesList.last());
-	//平均值
+	// 平均值
 	mCount.append(std::accumulate(seriesList.begin(), seriesList.end(), 0.0) / seriesList.size());
-	//中位数
+	// 中位数
 	int n = seriesList.size();
 	if (n % 2 == 1)
 		mCount.append(seriesList[ std::floor(n / 2) ]);

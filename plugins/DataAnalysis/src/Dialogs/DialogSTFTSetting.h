@@ -11,7 +11,7 @@ class DialogSTFTSetting;
 namespace DA
 {
 class DADataManager;
-class DAPySeriesTableModule;
+class DAPySeriesTableModel;
 }
 class DialogSTFTSetting : public QDialog
 {
@@ -35,7 +35,7 @@ private slots:
 
 private:
 	Ui::DialogSTFTSetting* ui;
-	DA::DAPySeriesTableModule* mModuel{ nullptr };
+	DA::DAPySeriesTableModel* mModuel{ nullptr };
 };
 
 #endif  // DIALOGSTFTSETTING_H

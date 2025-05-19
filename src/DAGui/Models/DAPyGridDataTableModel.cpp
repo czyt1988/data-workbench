@@ -1,23 +1,23 @@
-﻿#include "DAPyGridDataTableModule.h"
+﻿#include "DAPyGridDataTableModel.h"
 namespace DA
 {
-DAPyGridDataTableModule::DAPyGridDataTableModule(QUndoStack* stack, QObject* parent)
-    : DAPyDataFrameTableModule(stack, parent)
+DAPyGridDataTableModel::DAPyGridDataTableModel(QUndoStack* stack, QObject* parent)
+    : DAPyDataFrameTableModel(stack, parent)
 {
 }
 
-DAPyGridDataTableModule::~DAPyGridDataTableModule()
+DAPyGridDataTableModel::~DAPyGridDataTableModel()
 {
 }
 
 /**
- * @brief DAPyGridDataTableModule::headerData
+ * @brief DAPyGridDataTableModel::headerData
  * @param section
  * @param orientation
  * @param role
  * @return
  */
-QVariant DAPyGridDataTableModule::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant DAPyGridDataTableModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
 	if (role != Qt::DisplayRole) {
 		return QVariant();
@@ -45,22 +45,22 @@ QVariant DAPyGridDataTableModule::headerData(int section, Qt::Orientation orient
 	return QVariant();
 }
 
-void DAPyGridDataTableModule::setGridX(const DAPySeries& x)
+void DAPyGridDataTableModel::setGridX(const DAPySeries& x)
 {
 	mXSeries = x;
 }
 
-void DAPyGridDataTableModule::setGridY(const DAPySeries& y)
+void DAPyGridDataTableModel::setGridY(const DAPySeries& y)
 {
 	mYSeries = y;
 }
 
-const DAPySeries& DAPyGridDataTableModule::xSeries() const
+const DAPySeries& DAPyGridDataTableModel::xSeries() const
 {
 	return mXSeries;
 }
 
-const DAPySeries& DAPyGridDataTableModule::ySeries() const
+const DAPySeries& DAPyGridDataTableModel::ySeries() const
 {
 	return mYSeries;
 }

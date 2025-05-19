@@ -5,7 +5,7 @@
 #include <qwt_matrix_raster_data.h>
 #include "DADataManager.h"
 #if DA_ENABLE_PYTHON
-#include "Models/DAPyGridDataTableModule.h"
+#include "Models/DAPyGridDataTableModel.h"
 #endif
 namespace DA
 {
@@ -15,11 +15,11 @@ namespace DA
 //===================================================
 
 DAChartAddtGridRasterDataWidget::DAChartAddtGridRasterDataWidget(QWidget* parent)
-	: DAAbstractChartAddItemWidget(parent), ui(new Ui::DAChartAddtGridRasterDataWidget)
+    : DAAbstractChartAddItemWidget(parent), ui(new Ui::DAChartAddtGridRasterDataWidget)
 {
 	ui->setupUi(this);
 #if DA_ENABLE_PYTHON
-	mModel = new DAPyGridDataTableModule(nullptr, this);
+	mModel = new DAPyGridDataTableModel(nullptr, this);
 	ui->tableViewRaster->setModel(mModel);
 #endif
 	QFontMetrics fm = fontMetrics();
@@ -41,9 +41,9 @@ DAChartAddtGridRasterDataWidget::DAChartAddtGridRasterDataWidget(QWidget* parent
 			this,
 			&DAChartAddtGridRasterDataWidget::onComboBoxYCurrentDataframeSeriesChanged);
 	connect(ui->comboBoxMatrics,
-			&DADataManagerComboBox::currentDataframeSeriesChanged,
+			&DADataManagerComboBox::currentDataChanged,
 			this,
-			&DAChartAddtGridRasterDataWidget::onComboBoxMatricsCurrentDataframeSeriesChanged);
+			&DAChartAddtGridRasterDataWidget::onComboBoxMatricsCurrentDataChanged);
 }
 
 DAChartAddtGridRasterDataWidget::~DAChartAddtGridRasterDataWidget()
@@ -148,12 +148,8 @@ void DAChartAddtGridRasterDataWidget::onComboBoxYCurrentDataframeSeriesChanged(c
  * @param data
  * @param seriesName
  */
-void DAChartAddtGridRasterDataWidget::onComboBoxMatricsCurrentDataframeSeriesChanged(const DAData& data,
-                                                                                     const QString& seriesName)
+void DAChartAddtGridRasterDataWidget::onComboBoxMatricsCurrentDataChanged(const DAData& data)
 {
-	if (seriesName.isEmpty()) {
-		return;
-	}
 #if DA_ENABLE_PYTHON
 	DAPySeries series;
 	DAPyDataFrame df = data.toDataFrame();
@@ -189,11 +185,11 @@ QwtGridRasterData* DAChartAddtGridRasterDataWidget::makeGridDataFromUI()
 	try {
 		// 验证数据维度
 		if (!isCorrectDim()) {
-			QMessageBox::warning(
-				this,
-				tr("Warning"),
-				tr("The data dimensions are incorrect. The length of x should be equal to the number of columns in "
-				   "value, and the length of y should be equal to the number of rows in value."));  // cn:数据维度不正确，要求x长度和value的列数相等，y的长度和value的行数相等
+			QMessageBox::warning(this,
+								 tr("Warning"),
+								 tr("The data dimensions are incorrect. The length of x should be equal to the number "
+									"of columns in "
+									"value, and the length of y should be equal to the number of rows in value."));  // cn:数据维度不正确，要求x长度和value的列数相等，y的长度和value的行数相等
 			return nullptr;
 		}
 

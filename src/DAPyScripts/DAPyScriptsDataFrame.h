@@ -42,8 +42,12 @@ public:
     bool to_excel(const DAPyDataFrame& df, const QString& path) noexcept;
     // 保存为pickle
 	bool to_pickle(const DAPyDataFrame& df, const QString& path) noexcept;
+    // 保存为parquet
+    bool to_parquet(const DAPyDataFrame& df, const QString& path) noexcept;
 	// 从pickle加载
 	bool from_pickle(DAPyDataFrame& df, const QString& path) noexcept;
+    // 从parquet加载
+    bool from_parquet(DAPyDataFrame& df, const QString& path) noexcept;
 	// 类型转换
 	bool astype(DAPyDataFrame& df, const QList< int >& colsIndex, const DAPyDType& dt) noexcept;
 	// 设置nan值

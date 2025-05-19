@@ -15,7 +15,7 @@ class DADataOperateOfDataFrameWidget;
 
 namespace DA
 {
-class DAPyDataFrameTableModule;
+class DAPyDataFrameTableModel;
 class DAAppRibbonArea;
 class DADialogDataframeColumnCastToNumeric;
 class DADialogDataframeColumnCastToDatetime;
@@ -149,7 +149,7 @@ protected:
 private:
 	Ui::DADataOperateOfDataFrameWidget* ui;
 	DAData mData;
-    DAPyDataFrameTableModule* mModel{ nullptr };
+    DAPyDataFrameTableModel* mModel{ nullptr };
 
     DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs{ nullptr };
     DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs{ nullptr };

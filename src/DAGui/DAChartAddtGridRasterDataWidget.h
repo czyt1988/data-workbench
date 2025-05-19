@@ -16,7 +16,7 @@ class DAChartAddtGridRasterDataWidget;
 namespace DA
 {
 #if DA_ENABLE_PYTHON
-class DAPyGridDataTableModule;
+class DAPyGridDataTableModel;
 #endif
 class DADataManager;
 
@@ -38,7 +38,7 @@ public:
 private slots:
 	void onComboBoxXCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
 	void onComboBoxYCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
-	void onComboBoxMatricsCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
+    void onComboBoxMatricsCurrentDataChanged(const DA::DAData& data);
 	void onDataManagerChanged(DADataManager* dmgr);
 	void onCurrentDataChanged(const DAData& d);
 
@@ -47,7 +47,7 @@ protected:
 
 private:
 	Ui::DAChartAddtGridRasterDataWidget* ui;
-	DAPyGridDataTableModule* mModel { nullptr };
+	DAPyGridDataTableModel* mModel { nullptr };
 };
 }
 

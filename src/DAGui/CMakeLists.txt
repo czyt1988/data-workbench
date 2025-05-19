@@ -192,14 +192,14 @@ set(DA_LIB_SOURCE_FILES_Models
 )
 if(DA_ENABLE_PYTHON)
     list(APPEND DA_LIB_HEADER_FILES_Models
-        ${DA_LIB_SUBDIR_Models}/DAPySeriesTableModule.h
-        ${DA_LIB_SUBDIR_Models}/DAPyDataFrameTableModule.h
-        ${DA_LIB_SUBDIR_Models}/DAPyGridDataTableModule.h
+        ${DA_LIB_SUBDIR_Models}/DAPySeriesTableModel.h
+        ${DA_LIB_SUBDIR_Models}/DAPyDataFrameTableModel.h
+        ${DA_LIB_SUBDIR_Models}/DAPyGridDataTableModel.h
     )
     list(APPEND DA_LIB_SOURCE_FILES_Models
-        ${DA_LIB_SUBDIR_Models}/DAPySeriesTableModule.cpp
-        ${DA_LIB_SUBDIR_Models}/DAPyDataFrameTableModule.cpp
-        ${DA_LIB_SUBDIR_Models}/DAPyGridDataTableModule.cpp
+        ${DA_LIB_SUBDIR_Models}/DAPySeriesTableModel.cpp
+        ${DA_LIB_SUBDIR_Models}/DAPyDataFrameTableModel.cpp
+        ${DA_LIB_SUBDIR_Models}/DAPyGridDataTableModel.cpp
     )
 endif()
 

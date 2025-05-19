@@ -92,8 +92,8 @@ DAData& DAData::operator=(const DAData& d)
 #if DA_ENABLE_PYTHON
 DAData& DAData::operator=(const DAPyDataFrame& d)
 {
-	std::shared_ptr< DAAbstractData > p =
-        std::static_pointer_cast< DAAbstractData >(std::make_shared< DADataPyDataFrame >(d));
+    std::shared_ptr< DAAbstractData > p = std::static_pointer_cast< DAAbstractData >(
+        std::make_shared< DADataPyDataFrame >(d));
 	mData = p;
 	return *this;
 }
@@ -101,7 +101,7 @@ DAData& DAData::operator=(const DAPyDataFrame& d)
 DAData& DAData::operator=(const DAPySeries& d)
 {
 	std::shared_ptr< DAAbstractData > p = std::static_pointer_cast< DAAbstractData >(std::make_shared< DADataPySeries >(d));
-    mData                               = p;
+    mData = p;
 	return *this;
 }
 #endif
@@ -319,10 +319,7 @@ bool DAData::writeToFile(const DAData& data, const QString& filePath)
     switch (data.getDataType()) {
 #if DA_ENABLE_PYTHON
     case DAAbstractData::TypePythonDataFrame: {
-        DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
-        if (!pydf.to_pickle(data.toDataFrame(), filePath)) {
-            return false;
-        }
+        return data.toDataFrame().to_parquet(filePath);
     } break;
 #endif
     default:
@@ -351,16 +348,16 @@ bool DAData::exportToFile(const DAData& data, const QString& filePath, const QSt
 	case DAAbstractData::TypePythonDataFrame: {
 		DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
         if (dataSuffix == "txt" || dataSuffix == "csv") {
-            if (!pydf.to_csv(data.toDataFrame(), filePath, sep))
-                return false;
-        }
-        if (dataSuffix == "xlsx") {
-            if (!pydf.to_excel(data.toDataFrame(), filePath))
-                return false;
-        }
-        if (dataSuffix == "pkl") {
-            if (!pydf.to_pickle(data.toDataFrame(), filePath))
-                return false;
+            return pydf.to_csv(data.toDataFrame(), filePath, sep);
+        } else if (dataSuffix == "xlsx") {
+            return pydf.to_excel(data.toDataFrame(), filePath);
+        } else if (dataSuffix == "parquet") {
+            return pydf.to_parquet(data.toDataFrame(), filePath);
+        } else if (dataSuffix == "pkl") {
+            return pydf.to_pickle(data.toDataFrame(), filePath);
+        } else {
+            // 没有后缀统一使用parquet
+            return pydf.to_parquet(data.toDataFrame(), filePath);
         }
 	} break;
 #endif
