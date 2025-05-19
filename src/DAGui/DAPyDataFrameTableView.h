@@ -23,22 +23,14 @@ public:
 	// 设置datafarme
 	void setDataFrame(const DAPyDataFrame& d);
 	DAPyDataFrame getDataframe() const;
-    //
-    void updateScrollbarParameters();
 
-protected:
-    void resizeEvent(QResizeEvent* event) override;
 private Q_SLOTS:
 	void onVerticalScrollBarValueChanged(int v);
-    void onPageChanged(int page);
-
-private:
-    // 计算可见的行数
-    int calcVisibleRowCount() const;
+	void onPageChanged(int page);
 
 private:
 	DAPyDataFrameTableModel* mDataframeModel { nullptr };
-    int mLastPage { -1 };
+	int mLastPage { -1 };
 };
 }  // end DA
 #endif  // DAPYDATAFRAMETABLEVIEW_H
