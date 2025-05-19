@@ -1,5 +1,6 @@
 ﻿#include "DataAnalysController.h"
 #include <QMainWindow>
+#include <qwt_grid_raster_data.h>
 #include "DataAnalysisActions.h"
 #include "DAUIInterface.h"
 #include "DADataManagerInterface.h"
@@ -562,9 +563,9 @@ void DataAnalysController::onActionSTFTriggered()
 	   //! ----------
 	   //! |  频谱   |
 	   //! ----------
-	   //	auto plt = mDockingArea->getChartOperateWidget();
-	   //	auto fig = plt->createFigure();  //
-	//注意，DAAppChartOperateWidget的createFigure会创建一个chart，因此，第一个chart是不需要创建的 	{  // wave chart
+	auto plt = mDockingArea->getChartOperateWidget();
+	auto fig = plt->createFigure();  // 注意，DAAppChartOperateWidget的createFigure会创建一个chart，因此，第一个chart是不需要创建的
+	//	{  // wave chart
 	//		// currentChart函数不会返回null
 	//		auto waveChart = fig->currentChart();
 	//		fig->setWidgetPosPercent(waveChart, 0.05, 0.05, 0.9, 0.45);  //
@@ -574,21 +575,39 @@ void DataAnalysController::onActionSTFTriggered()
 	//		waveChart->setXLabel(tr("time(s)"));     // cn:时间(s)
 	//		waveChart->setYLabel(tr("amplitudes"));  // cn:幅值
 	//		waveChart->setTitle(tr("Wave Chart"));   // cn:波形图
-	//}
-	//	{  // fft chart
-	//		auto spectrumChart      = fig->createChart(0.05, 0.5, 0.9, 0.45);
-	//		auto freq               = df[ "freq" ];
-	//		auto amplitudes         = df[ "amplitudes" ];
-	//		std::vector< double > x = DA::toVectorDouble(freq);
-	//		std::vector< double > y = DA::toVectorDouble(amplitudes);
-	//		auto spectrum           = spectrumChart->addCurve(x.data(), y.data(), x.size());
-	//		spectrum->setTitle(tr("stft"));  // cn:频谱
-	//		DA::DAChartUtil::setPlotItemColor(spectrum, fig->getDefaultColor());
-	//		spectrumChart->setXLabel(tr("frequency(Hz)"));  // cn:频率(Hz)
-	//		spectrumChart->setYLabel(tr("amplitudes"));     // cn:幅值
-	//		spectrumChart->setTitle(tr("STFT Chart"));      // cn:频谱图
-	//		spectrumChart->notifyChartPropertyHasChanged();
 	//	}
+	{  // sftf chart
+		auto spectrumChart = fig->currentChart();
+		auto freq          = freqDf[ "frequency" ];
+		auto time          = timeDf[ "time" ];
+		QVector< double > x;
+		QVector< double > y;
+		time.castTo< double >(std::back_inserter(x));
+		freq.castTo< double >(std::back_inserter(y));
+		QVector< QVector< double > > value;
+		try {
+			auto shape = stftDf.shape();
+			value.reserve(shape.second);
+			for (std::size_t i = 0; i < shape.second; ++i) {
+				QVector< double > col;
+				col.reserve(shape.first);
+				stftDf[ i ].castTo< double >(std::back_inserter(col));
+				value.push_back(col);
+			}
+		} catch (const std::exception& e) {
+			qWarning() << e.what();
+		}
+		std::unique_ptr< QwtGridRasterData > gridData = std::make_unique< QwtGridRasterData >();
+		gridData->setValue(x, y, value);
+		auto spectrum = spectrumChart->addSpectroGram(gridData.release());
+		spectrum->setTitle(tr("stft"));  // cn:短时傅里叶变换
+		DA::DAChartUtil::setPlotItemColor(spectrum, fig->getDefaultColor());
+		spectrumChart->setXLabel(tr("time"));       // cn:时间
+		spectrumChart->setYLabel(tr("frequency"));  // cn:频率
+		spectrumChart->setTitle(tr("SFTF Chart"));  // cn:频谱图
+		spectrumChart->notifyChartPropertyHasChanged();
+		fig->addItem_(spectrumChart, spectrum);
+	}
 	// 把绘图窗口抬起
 	mDockingArea->raiseDockByWidget(mDockingArea->getChartOperateWidget());
 }

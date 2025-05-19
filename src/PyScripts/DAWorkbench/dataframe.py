@@ -136,19 +136,24 @@ def da_bfill_na(df: pd.DataFrame, axis: Optional[Axis] = None, limit: Optional[i
 
 
 @log_function_call
-def da_nstd_filter_outlier(df: pd.DataFrame, n=3, axis: Optional[Axis] = None, index: Optional[List[int]] = None):
+def da_nstd_filter_outlier(df: pd.DataFrame, n=3, axis: Optional[int] = None, index: Optional[List[int]] = None):
     """
     使用n倍标准差法过滤DataFrame的行或列（直接在原数据上修改）
     :param df: 输入的pd.DataFrame
     :param n: 标准差的倍数，范围是0.1~10，默认为3
     :param axis: 过滤方向，1表示基于选中列过滤行(默认)，0表示基于选中行过滤列
-    :param index: 需要过滤的行或列的索引列表，如果为None，则过滤所有行或列
+    :param index: 需要过滤的行或列的索引列表，如果为None，则不进行过滤
     :return: 过滤后的DataFrame
     """
-    # 如果未指定索引，则默认过滤所有行或列
-    if index is None:
-        index = list(range(df.shape[1 if axis == 1 else 0]))
-
+    # 如果没有指定要过滤的列/行，直接返回原DataFrame
+    if index is None or len(index) == 0:
+        return df
+        
+    # 检查所选列是否全是字符串类型，如果是则跳过计算
+    selected_columns = df.iloc[:, index]
+    if all(selected_columns.dtypes == "object"):  # Pandas 中字符串列的类型通常是 'object'
+        return df
+    
     # 计算均值和标准差
     if axis == 1:  # 计算选中列的值，过滤行
         data = df.iloc[:, index]
@@ -173,29 +178,6 @@ def da_nstd_filter_outlier(df: pd.DataFrame, n=3, axis: Optional[Axis] = None, i
 
         # 直接删除不符合条件的行
         df.drop(df.index[~keep_rows], inplace=True)
-
-    elif axis == 0:  # 计算选中的行的值，过滤列
-        data = df.iloc[index]
-        mean = data.mean(axis=1)  # 沿着列的方向，计算每一行的平均值
-        std = data.std(axis=1)    # 沿着列的方向，计算每一行的平均值
-
-        # 为每一行创建掩码，标识该行中哪些列在均值±n*标准差范围内
-        keep_cols = pd.Series([True] * df.shape[1], index=df.columns)
-
-        # 检查每一行，确定哪些列需要保留
-        for i, row_idx in enumerate(index):
-            row_data = df.iloc[row_idx]
-            row_mean = mean[i]
-            row_std = std[i]
-            row_lower = row_mean - n * row_std
-            row_upper = row_mean + n * row_std
-
-            # 更新keep_cols，只保留在所有选中行都在范围内的列
-            keep_cols = keep_cols & (row_data >= row_lower) & (
-                row_data <= row_upper)
-
-        # 直接删除不符合条件的列
-        df.drop(columns=df.columns[~keep_cols], inplace=True)
 
 
 @log_function_call

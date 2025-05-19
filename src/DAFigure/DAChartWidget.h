@@ -8,6 +8,7 @@
 #include <QtGlobal>
 #include <QRectF>
 #include <QList>
+#include <qwt_grid_raster_data.h>
 // qwt
 #include "qwt_plot.h"
 // qwt-items
@@ -15,6 +16,7 @@
 #include "qwt_plot_intervalcurve.h"
 #include "qwt_plot_marker.h"
 #include "qwt_plot_barchart.h"
+#include "qwt_plot_spectrogram.h"
 
 #include "qwt_legend.h"
 #include "qwt_point_data.h"
@@ -101,6 +103,8 @@ public:
 	QwtPlotBarChart* addBar(const QVector< QPointF >& xyDatas);
 	// 此时x为0~n均匀分布
 	QwtPlotBarChart* addBar(const QVector< double >& yDatas);
+	// 绘制谱图
+	QwtPlotSpectrogram* addSpectroGram(QwtGridRasterData* gridData);
 	// 设置所有坐标轴的Margin
 	void setAllAxisMargin(int m);
 	// 获取figure

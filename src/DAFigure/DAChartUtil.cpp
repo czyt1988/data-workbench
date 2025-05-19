@@ -108,7 +108,8 @@ QPointF DAChartUtil::transformValue(QwtPlot* chart, const QPointF& p, int orgXAx
 /// \param otherYAxis
 /// \return
 ///
-QPainterPath DAChartUtil::transformPath(QwtPlot* chart, const QPainterPath& p, int orgXAxis, int orgYAxis, int otherXAxis, int otherYAxis)
+QPainterPath
+DAChartUtil::transformPath(QwtPlot* chart, const QPainterPath& p, int orgXAxis, int orgYAxis, int otherXAxis, int otherYAxis)
 {
 	QPainterPath shape = p;
 	const int eleCount = p.elementCount();
@@ -472,14 +473,14 @@ void DAChartUtil::getXYDatas(const QVector< QPointF >& xys, QVector< double >* x
 {
 	if (nullptr != xs && nullptr == ys) {
 		xs->reserve(xys.size());
-		std::for_each(xys.begin(), xys.end(), [ xs ](const QPointF& p) { xs->append(p.x()); });
+		std::for_each(xys.begin(), xys.end(), [xs](const QPointF& p) { xs->append(p.x()); });
 	} else if (nullptr == xs && nullptr != ys) {
 		ys->reserve(xys.size());
-		std::for_each(xys.begin(), xys.end(), [ ys ](const QPointF& p) { ys->append(p.y()); });
+		std::for_each(xys.begin(), xys.end(), [ys](const QPointF& p) { ys->append(p.y()); });
 	} else {
 		xs->reserve(xys.size());
 		ys->reserve(xys.size());
-		std::for_each(xys.begin(), xys.end(), [ xs, ys ](const QPointF& p) {
+		std::for_each(xys.begin(), xys.end(), [xs, ys](const QPointF& p) {
 			xs->append(p.x());
 			ys->append(p.y());
 		});
@@ -711,9 +712,9 @@ bool DAChartUtil::isMultiBarChartSampleInRange(const QPainterPath& selectRange, 
 bool DAChartUtil::isTradingCurveSampleInRange(const QPainterPath& selectRange, const QwtOHLCSample& val)
 {
 	if (DAChartUtil::isPointInRange(selectRange, QPointF(val.time, val.high))
-        && DAChartUtil::isPointInRange(selectRange, QPointF(val.time, val.low))
-        && DAChartUtil::isPointInRange(selectRange, QPointF(val.time, val.open))
-        && DAChartUtil::isPointInRange(selectRange, QPointF(val.time, val.close))) {
+		&& DAChartUtil::isPointInRange(selectRange, QPointF(val.time, val.low))
+		&& DAChartUtil::isPointInRange(selectRange, QPointF(val.time, val.open))
+		&& DAChartUtil::isPointInRange(selectRange, QPointF(val.time, val.close))) {
 		return true;
 	}
 	return false;
@@ -1040,8 +1041,8 @@ QColor DAChartUtil::dynamicGetItemColor(const QwtPlotItem* item, const QColor& d
 		return p->pen().color();
 	} else if (const QwtPlotHistogram* p = dynamic_cast< const QwtPlotHistogram* >(item)) {
 		return p->brush().color();
-    } else if (const QwtPlotBarChart* p = dynamic_cast< const QwtPlotBarChart* >(item)) {
-        return p->brush().color();
+	} else if (const QwtPlotBarChart* p = dynamic_cast< const QwtPlotBarChart* >(item)) {
+		return p->brush().color();
 	} else if (const QwtPlotGrid* grid = dynamic_cast< const QwtPlotGrid* >(item)) {
 		return grid->majorPen().color();
 	} else if (const QwtPlotMarker* marker = dynamic_cast< const QwtPlotMarker* >(item)) {
@@ -1088,8 +1089,8 @@ int DAChartUtil::dynamicGetPlotChartItemDataCount(const QwtPlotItem* item)
 {
 	if (const QwtSeriesStore< QPointF >* p = dynamic_cast< const QwtSeriesStore< QPointF >* >(item)) {
 		return static_cast< int >(p->dataSize());
-	} else if (const QwtSeriesStore< QwtIntervalSample >* p = dynamic_cast< const QwtSeriesStore< QwtIntervalSample >* >(
-                   item)) {
+	} else if (const QwtSeriesStore< QwtIntervalSample >* p =
+				   dynamic_cast< const QwtSeriesStore< QwtIntervalSample >* >(item)) {
 		return static_cast< int >(p->dataSize());
 	} else if (const QwtSeriesStore< QwtSetSample >* p = dynamic_cast< const QwtSeriesStore< QwtSetSample >* >(item)) {
 		return static_cast< int >(p->dataSize());
@@ -1133,19 +1134,19 @@ bool DAChartUtil::setPlotItemColor(QwtPlotItem* item, const QColor& color)
 		break;
 	case QwtPlotItem::Rtti_PlotBarChart:
 		if (QwtPlotBarChart* bar = static_cast< QwtPlotBarChart* >(item)) {
-            QBrush brush = bar->brush();
-            brush.setColor(color);
-            bar->setBrush(brush);
+			QBrush brush = bar->brush();
+			brush.setColor(color);
+			bar->setBrush(brush);
 			return true;
 		}
 		break;
-    case QwtPlotItem::Rtti_PlotTradingCurve:
-        if (QwtPlotTradingCurve* p = static_cast< QwtPlotTradingCurve* >(item)) {
-            p->setSymbolPen(QPen(color));
-            p->setSymbolBrush(QwtPlotTradingCurve::Increasing, QBrush(color));
-            p->setSymbolBrush(QwtPlotTradingCurve::Decreasing, QBrush(color));
-            return true;
-        }
+	case QwtPlotItem::Rtti_PlotTradingCurve:
+		if (QwtPlotTradingCurve* p = static_cast< QwtPlotTradingCurve* >(item)) {
+			p->setSymbolPen(QPen(color));
+			p->setSymbolBrush(QwtPlotTradingCurve::Increasing, QBrush(color));
+			p->setSymbolBrush(QwtPlotTradingCurve::Decreasing, QBrush(color));
+			return true;
+		}
 	case QwtPlotItem::Rtti_PlotGrid:
 		if (QwtPlotGrid* grid = static_cast< QwtPlotGrid* >(item)) {
 			QPen pen = grid->majorPen();
@@ -1162,6 +1163,14 @@ bool DAChartUtil::setPlotItemColor(QwtPlotItem* item, const QColor& color)
 			return true;
 		}
 		break;
+		//	case QwtPlotItem::Rtti_PlotSpectrogram:
+		//		if (QwtPlotSpectrogram* spectrogram = static_cast< QwtPlotSpectrogram* >(item)) {
+		//			QPen pen = spectrogram->contourPen();
+		//			pen.setColor(color);
+		//			marker->setLinePen(pen);
+		//			return true;
+		//		}
+		//		break;
 	default:
 		break;
 	}
@@ -1227,8 +1236,8 @@ QColor DAChartUtil::getPlotItemColor(const QwtPlotItem* item)
 	} break;
 	//! For QwtPlotBarChart
 	case QwtPlotItem::Rtti_PlotBarChart: {  // QwtPlotBarChart 为symbol()->palette().background().color()颜色
-        const QwtPlotBarChart* bar = static_cast< const QwtPlotBarChart* >(item);
-        color                      = bar->brush().color();
+		const QwtPlotBarChart* bar = static_cast< const QwtPlotBarChart* >(item);
+		color                      = bar->brush().color();
 	} break;
 	//! For QwtPlotMultiBarChart
 	case QwtPlotItem::Rtti_PlotMultiBarChart: {
@@ -1320,8 +1329,8 @@ QBrush DAChartUtil::getPlotItemBrush(const QwtPlotItem* item)
 	} break;
 	//! For QwtPlotBarChart
 	case QwtPlotItem::Rtti_PlotBarChart: {  // QwtPlotBarChart 为symbol()->palette().background().color()颜色
-        const QwtPlotBarChart* bar = static_cast< const QwtPlotBarChart* >(item);
-        brush                      = bar->brush();
+		const QwtPlotBarChart* bar = static_cast< const QwtPlotBarChart* >(item);
+		brush                      = bar->brush();
 	} break;
 	//! For QwtPlotMultiBarChart
 	case QwtPlotItem::Rtti_PlotMultiBarChart: {
