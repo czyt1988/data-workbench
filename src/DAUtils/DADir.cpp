@@ -12,7 +12,6 @@
 
 namespace DA
 {
-QTemporaryDir DADir::s_temp_dir;
 
 DADir::DADir()
 {
@@ -20,12 +19,13 @@ DADir::DADir()
 
 QString DADir::getRootTempPath()
 {
-    return s_temp_dir.path();
+	return tempDir().path();
 }
 
 QTemporaryDir& DADir::tempDir()
 {
-    return s_temp_dir;
+	static QTemporaryDir s_temp_dir;  ///< 本应用的临时目录，程序销毁时会自动删除
+	return s_temp_dir;
 }
 
 QString DADir::createTempPath(const QString& folderName)
@@ -43,17 +43,17 @@ QString DADir::createTempPath(const QString& folderName)
 	}
 
 	// 返回目标文件夹路径
-    return targetPath;
+	return targetPath;
 }
 
 QDir DADir::createTempDir(const QString& folderName)
 {
-    return QDir(createTempPath(folderName));
+	return QDir(createTempPath(folderName));
 }
 
 QString DADir::getRootTempFile(const QString& fileName)
 {
-    return s_temp_dir.filePath(fileName);
+	return tempDir().filePath(fileName);
 }
 
 QString DADir::getRootConfigPath()

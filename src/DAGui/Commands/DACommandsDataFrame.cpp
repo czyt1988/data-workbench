@@ -1,5 +1,5 @@
 ﻿#include "DACommandsDataFrame.h"
-#include "Models/DAPyDataFrameTableModule.h"
+#include "Models/DAPyDataFrameTableModel.h"
 #include "DAPyScripts.h"
 #include <QHeaderView>
 
@@ -18,7 +18,7 @@ DACommandDataFrame_iat::DACommandDataFrame_iat(const DAPyDataFrame& df,
                                                int col,
                                                const QVariant& olddata,
                                                const QVariant& newdata,
-                                               DAPyDataFrameTableModule* model,
+                                               DAPyDataFrameTableModel* model,
                                                QUndoCommand* par)
     : DACommandWithRedoCount(par), mDataframe(df), mRow(row), mCol(col), mOldData(olddata), mNewData(newdata), mModel(model)
 {
@@ -49,7 +49,7 @@ bool DACommandDataFrame_iat::exec()
 
 DACommandDataFrame_insertNanRow::DACommandDataFrame_insertNanRow(const DAPyDataFrame& df,
                                                                  int row,
-                                                                 DAPyDataFrameTableModule* model,
+                                                                 DAPyDataFrameTableModel* model,
                                                                  QUndoCommand* par)
     : DACommandWithTemporaryData(df, par), mRow(row), mModel(model)
 {
@@ -60,8 +60,7 @@ void DACommandDataFrame_insertNanRow::undo()
 {
 	load();
 	if (mModel) {
-		mModel->rowBeginRemove({ mRow });
-		mModel->rowEndRemove();
+		mModel->notifyRowsRemoved({ mRow });
 	}
 }
 
@@ -72,8 +71,7 @@ bool DACommandDataFrame_insertNanRow::exec()
 		return false;
 	}
 	if (mModel) {
-		mModel->rowBeginInsert({ mRow });
-		mModel->rowEndInsert();
+		mModel->notifyRowsInserted({ mRow });
 	}
 	return true;
 }
@@ -95,7 +93,7 @@ DACommandDataFrame_insertColumn::DACommandDataFrame_insertColumn(const DAPyDataF
                                                                  int col,
                                                                  const QString& name,
                                                                  const QVariant& defaultvalue,
-                                                                 DAPyDataFrameTableModule* model,
+                                                                 DAPyDataFrameTableModel* model,
                                                                  QUndoCommand* par)
     : DACommandWithTemporaryData(df, par), mIsRangeMode(false), mCol(col), mName(name), mDefaultvalue(defaultvalue), mModel(model)
 {
@@ -120,7 +118,7 @@ DACommandDataFrame_insertColumn::DACommandDataFrame_insertColumn(const DAPyDataF
                                                                  const QString& name,
                                                                  const QVariant& start,
                                                                  const QVariant& stop,
-                                                                 DAPyDataFrameTableModule* model,
+                                                                 DAPyDataFrameTableModel* model,
                                                                  QUndoCommand* par)
     : DACommandWithTemporaryData(df, par), mIsRangeMode(true), mCol(col), mName(name), mStart(start), mStop(stop), mModel(model)
 {
@@ -133,8 +131,7 @@ void DACommandDataFrame_insertColumn::undo()
 	mInsertedSeries            = pydf.itake_column(dataframe(), mCol);
 	if (mModel) {
 		// 此操作会删除一列，添加一列，整个modelreflash
-		mModel->columnBeginRemove({ mCol });
-		mModel->columnEndRemove();
+		mModel->notifyColumnsRemoved({ mCol });
 	}
 }
 
@@ -160,8 +157,7 @@ bool DACommandDataFrame_insertColumn::exec()
 
 	if (mModel) {
 		// 此操作会删除一列，添加一列，整个modelreflash
-		mModel->columnBeginInsert({ mCol });
-		mModel->columnEndInsert();
+		mModel->notifyColumnsInserted({ mCol });
 	}
 	return true;
 }
@@ -176,7 +172,7 @@ bool DACommandDataFrame_insertColumn::exec()
  */
 DACommandDataFrame_dropIRow::DACommandDataFrame_dropIRow(const DAPyDataFrame& df,
                                                          const QList< int >& index,
-                                                         DAPyDataFrameTableModule* model,
+                                                         DAPyDataFrameTableModel* model,
                                                          QUndoCommand* par)
     : DACommandWithTemporaryData(df, par), mIndex(index), mModel(model)
 {
@@ -187,8 +183,7 @@ void DACommandDataFrame_dropIRow::undo()
 {
 	load();
 	if (mModel) {
-		mModel->rowBeginInsert(mIndex);
-		mModel->rowEndInsert();
+		mModel->notifyRowsInserted(mIndex);
 	}
 }
 
@@ -199,8 +194,7 @@ bool DACommandDataFrame_dropIRow::exec()
 		return false;
 	}
 	if (mModel) {
-		mModel->rowBeginRemove(mIndex);
-		mModel->rowEndRemove();
+		mModel->notifyRowsRemoved(mIndex);
 	}
 	return true;
 }
@@ -209,7 +203,7 @@ bool DACommandDataFrame_dropIRow::exec()
 
 DACommandDataFrame_dropIColumn::DACommandDataFrame_dropIColumn(const DAPyDataFrame& df,
                                                                const QList< int >& index,
-                                                               DAPyDataFrameTableModule* model,
+                                                               DAPyDataFrameTableModel* model,
                                                                QUndoCommand* par)
     : DACommandWithTemporaryData(df, par), mIndex(index), mModel(model)
 {
@@ -220,8 +214,7 @@ void DACommandDataFrame_dropIColumn::undo()
 {
 	load();
 	if (mModel) {
-		mModel->columnBeginInsert(mIndex);
-		mModel->columnEndInsert();
+		mModel->notifyColumnsInserted(mIndex);
 	}
 }
 
@@ -232,8 +225,7 @@ bool DACommandDataFrame_dropIColumn::exec()
 		return false;
 	}
 	if (mModel) {
-		mModel->columnBeginRemove(mIndex);
-		mModel->columnEndRemove();
+		mModel->notifyColumnsRemoved(mIndex);
 	}
 	return true;
 }
@@ -282,7 +274,7 @@ bool DACommandDataFrame_renameColumns::exec()
 DACommandDataFrame_astype::DACommandDataFrame_astype(const DAPyDataFrame& df,
                                                      const QList< int >& index,
                                                      const DAPyDType& dt,
-                                                     DAPyDataFrameTableModule* model,
+                                                     DAPyDataFrameTableModel* model,
                                                      QUndoCommand* par)
     : DACommandWithTemporaryData(df, par), mIndex(index), mDtype(dt), mModel(model)
 {
@@ -321,7 +313,7 @@ bool DACommandDataFrame_astype::exec()
 DACommandDataFrame_setnan::DACommandDataFrame_setnan(const DAPyDataFrame& df,
                                                      const QList< int >& rows,
                                                      const QList< int >& columns,
-                                                     DAPyDataFrameTableModule* model,
+                                                     DAPyDataFrameTableModel* model,
                                                      QUndoCommand* par)
     : DACommandWithRedoCount(par), mDataframe(df), mRows(rows), mColumns(columns), mModel(model)
 {
@@ -355,7 +347,7 @@ bool DACommandDataFrame_setnan::exec()
 ////////////////////////////
 
 DACommandDataFrame_dropna::DACommandDataFrame_dropna(const DAPyDataFrame& df,
-                                                     DAPyDataFrameTableModule* model,
+                                                     DAPyDataFrameTableModel* model,
                                                      int axis,
                                                      const QString& how,
                                                      const QList< int >& index,
@@ -404,7 +396,7 @@ int DACommandDataFrame_dropna::getDropedCount() const
 ///////////////////
 
 DACommandDataFrame_fillna::DACommandDataFrame_fillna(const DAPyDataFrame& df,
-                                                     DAPyDataFrameTableModule* model,
+                                                     DAPyDataFrameTableModel* model,
                                                      double value,
                                                      int limit,
                                                      QUndoCommand* par)
@@ -439,7 +431,7 @@ bool DACommandDataFrame_fillna::exec()
 ///////////////////
 
 DACommandDataFrame_interpolate::DACommandDataFrame_interpolate(const DAPyDataFrame& df,
-                                                               DAPyDataFrameTableModule* model,
+                                                               DAPyDataFrameTableModel* model,
                                                                const QString& method,
                                                                int order,
                                                                int limit,
@@ -475,7 +467,7 @@ bool DACommandDataFrame_interpolate::exec()
 ///////////////////
 
 DACommandDataFrame_ffillna::DACommandDataFrame_ffillna(const DAPyDataFrame& df,
-                                                       DAPyDataFrameTableModule* model,
+                                                       DAPyDataFrameTableModel* model,
                                                        int axis,
                                                        int limit,
                                                        QUndoCommand* par)
@@ -510,7 +502,7 @@ bool DACommandDataFrame_ffillna::exec()
 ///////////////////
 
 DACommandDataFrame_bfillna::DACommandDataFrame_bfillna(const DAPyDataFrame& df,
-                                                       DAPyDataFrameTableModule* model,
+                                                       DAPyDataFrameTableModel* model,
                                                        int axis,
                                                        int limit,
                                                        QUndoCommand* par)
@@ -554,7 +546,7 @@ bool DACommandDataFrame_bfillna::exec()
 ///
 
 DACommandDataFrame_dropduplicates::DACommandDataFrame_dropduplicates(const DAPyDataFrame& df,
-                                                                     DAPyDataFrameTableModule* model,
+                                                                     DAPyDataFrameTableModel* model,
                                                                      const QString& keep,
                                                                      const QList< int >& index,
                                                                      QUndoCommand* par)
@@ -601,7 +593,7 @@ int DACommandDataFrame_dropduplicates::getDropedCount() const
 ///////////////////
 
 DACommandDataFrame_nstdfilteroutlier::DACommandDataFrame_nstdfilteroutlier(const DAPyDataFrame& df,
-                                                                           DAPyDataFrameTableModule* model,
+                                                                           DAPyDataFrameTableModel* model,
                                                                            double n,
                                                                            int axis,
                                                                            const QList< int >& index,
@@ -649,7 +641,7 @@ int DACommandDataFrame_nstdfilteroutlier::getDropedCount() const
 ///////////////////
 
 DACommandDataFrame_clipoutlier::DACommandDataFrame_clipoutlier(const DAPyDataFrame& df,
-                                                               DAPyDataFrameTableModule* model,
+                                                               DAPyDataFrameTableModel* model,
                                                                double lowervalue,
                                                                double uppervalue,
                                                                int axis,
@@ -674,6 +666,9 @@ bool DACommandDataFrame_clipoutlier::exec()
 	if (!pydf.clipoutlier(dataframe(), mlowervalue, mUppervalue, mAxis)) {
 		return false;
 	}
+	if (mModel) {
+		mModel->refresh();
+	}
 	return true;
 }
 
@@ -681,7 +676,7 @@ bool DACommandDataFrame_clipoutlier::exec()
 
 DACommandDataFrame_querydatas::DACommandDataFrame_querydatas(const DAPyDataFrame& df,
                                                              const QString& exper,
-                                                             DAPyDataFrameTableModule* model,
+                                                             DAPyDataFrameTableModel* model,
                                                              QUndoCommand* par)
     : DACommandWithTemporaryData(df, par), mExper(exper), mModel(model)
 {
@@ -703,13 +698,16 @@ bool DACommandDataFrame_querydatas::exec()
 	if (!pydf.queryDatas(dataframe(), mExper)) {
 		return false;
 	}
+	if (mModel) {
+		mModel->refresh();
+	}
 	return true;
 }
 
 ///////////////////
 
 DACommandDataFrame_dataselect::DACommandDataFrame_dataselect(const DAPyDataFrame& df,
-                                                             DAPyDataFrameTableModule* model,
+                                                             DAPyDataFrameTableModel* model,
                                                              double lowervalue,
                                                              double uppervalue,
                                                              const QList< int >& index,
@@ -742,7 +740,7 @@ bool DACommandDataFrame_dataselect::exec()
 DACommandDataFrame_sort::DACommandDataFrame_sort(const DAPyDataFrame& df,
                                                  const QString& by,
                                                  const bool ascending,
-                                                 DAPyDataFrameTableModule* model,
+                                                 DAPyDataFrameTableModel* model,
                                                  QUndoCommand* par)
     : DACommandWithTemporaryData(df, par), mBy(by), mAscending(ascending), mModel(model)
 {
@@ -751,20 +749,20 @@ DACommandDataFrame_sort::DACommandDataFrame_sort(const DAPyDataFrame& df,
 
 void DACommandDataFrame_sort::undo()
 {
-    load();
-    // 说明排序完成
-    if (mModel) {
-        mModel->refresh();
-    }
+	load();
+	// 说明排序完成
+	if (mModel) {
+		mModel->refresh();
+	}
 }
 
 bool DACommandDataFrame_sort::exec()
 {
-    DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
-    if (!pydf.sort(dataframe(), mBy, mAscending)) {
-        return false;
-    }
-    return true;
+	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+	if (!pydf.sort(dataframe(), mBy, mAscending)) {
+		return false;
+	}
+	return true;
 }
 
 ///////////////////
@@ -772,7 +770,7 @@ bool DACommandDataFrame_sort::exec()
 DACommandDataFrame_castNum::DACommandDataFrame_castNum(const DAPyDataFrame& df,
                                                        const QList< int >& index,
                                                        const pybind11::dict& args,
-                                                       DAPyDataFrameTableModule* model,
+                                                       DAPyDataFrameTableModel* model,
                                                        QUndoCommand* par)
     : DACommandWithTemporaryData(df, par), mIndex(index), mArgs(args), mModel(model)
 {
@@ -808,7 +806,7 @@ bool DACommandDataFrame_castNum::exec()
 DACommandDataFrame_castDatetime::DACommandDataFrame_castDatetime(const DAPyDataFrame& df,
                                                                  const QList< int >& index,
                                                                  const pybind11::dict& args,
-                                                                 DAPyDataFrameTableModule* model,
+                                                                 DAPyDataFrameTableModel* model,
                                                                  QUndoCommand* par)
     : DACommandWithTemporaryData(df, par), mIndex(index), mArgs(args), mModel(model)
 {
@@ -844,7 +842,7 @@ bool DACommandDataFrame_castDatetime::exec()
 DACommandDataFrame_setIndex::DACommandDataFrame_setIndex(const DAPyDataFrame& df,
                                                          const QList< int >& index,
                                                          QHeaderView* hv,
-                                                         DAPyDataFrameTableModule* model,
+                                                         DAPyDataFrameTableModel* model,
                                                          QUndoCommand* par)
     : DACommandWithTemporaryData(df, par), mIndex(index), mModel(model)
 {

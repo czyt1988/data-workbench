@@ -1,6 +1,6 @@
 ﻿#include "DADataOperateOfDataFrameWidget.h"
 #include "ui_DADataOperateOfDataFrameWidget.h"
-#include "Models/DAPyDataFrameTableModule.h"
+#include "Models/DAPyDataFrameTableModel.h"
 #include "DADataPyObject.h"
 #include "DADataPyDataFrame.h"
 // stl
@@ -49,10 +49,10 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
 {
     ui->setupUi(this);
 
-	mModel = new DAPyDataFrameTableModule(getUndoStack(), this);
-	ui->tableView->setModel(mModel);
+	mModel          = new DAPyDataFrameTableModel(getUndoStack(), this);
 	QFontMetrics fm = fontMetrics();
 	ui->tableView->verticalHeader()->setDefaultSectionSize(fm.lineSpacing() * 1.2);
+	ui->tableView->setModel(mModel);
 	// 关闭不必要的绘制特性
 	ui->tableView->setAlternatingRowColors(false);
 	setDAData(d);
@@ -788,7 +788,7 @@ bool DADataOperateOfDataFrameWidget::querydatas(const DAPyDataFrame& df, const Q
 		return false;
 	}
 	getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
-    return true;
+	return true;
 }
 
 /**
@@ -797,24 +797,27 @@ bool DADataOperateOfDataFrameWidget::querydatas(const DAPyDataFrame& df, const Q
  */
 bool DADataOperateOfDataFrameWidget::sortdatas()
 {
-    DAPyDataFrame df = getDataframe();
-    if (df.isNone()) {
-        return false;
-    }
+	DAPyDataFrame df = getDataframe();
+	if (df.isNone()) {
+		return false;
+	}
 
-    if (!mDADialogDataFrameSort) {
-        mDADialogDataFrameSort = new DADialogDataFrameSort(this);
-    }
-    mDADialogDataFrameSort->setDataframe(df);
-    if (QDialog::Accepted != mDADialogDataFrameSort->exec()) {
-        // 说明用户取消
+    if (!mDADialogDataFrameSort)
+		mDADialogDataFrameSort = new DADialogDataFrameSort(this);
+
+	mDADialogDataFrameSort->setDataframe(df);
+
+    // 获取选中的列
+    if (isDataframeTableHaveSelection())
+        mDADialogDataFrameSort->setSortBy(getSelectedOneDataframeColumn());
+
+    if (QDialog::Accepted != mDADialogDataFrameSort->exec())
         return false;
-    }
-    //获取排序依据，某一列
-    QString by = mDADialogDataFrameSort->getSortBy();
-    // 获取排序方式，升序or降序
-    bool ascending = mDADialogDataFrameSort->getSortType();
-    return sortdatas(df, by, ascending);
+
+    // 获取排序参数
+    QString by     = mDADialogDataFrameSort->getSortBy();
+	bool ascending = mDADialogDataFrameSort->getSortType();
+	return sortdatas(df, by, ascending);
 }
 
 /**
@@ -823,12 +826,12 @@ bool DADataOperateOfDataFrameWidget::sortdatas()
  */
 bool DADataOperateOfDataFrameWidget::sortdatas(const DAPyDataFrame& df, const QString& by, const bool ascending)
 {
-    std::unique_ptr< DACommandDataFrame_sort > cmd = std::make_unique< DACommandDataFrame_sort >(df, by, ascending, mModel);
-    if (!cmd->exec()) {
-        return false;
-    }
-    getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
-    return true;
+	std::unique_ptr< DACommandDataFrame_sort > cmd = std::make_unique< DACommandDataFrame_sort >(df, by, ascending, mModel);
+	if (!cmd->exec()) {
+		return false;
+	}
+	getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
+	return true;
 }
 
 /**
@@ -1096,7 +1099,7 @@ QList< int > DADataOperateOfDataFrameWidget::getFullySelectedDataframeRows(bool 
 			res.insert(i.row());
 		}
 	}
-	return res.values();
+    return res.values();
 }
 
 int DADataOperateOfDataFrameWidget::getSelectedOneDataframeRow(bool ensureInDataframe) const

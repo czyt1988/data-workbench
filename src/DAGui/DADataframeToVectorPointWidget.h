@@ -10,7 +10,7 @@ class DADataframeToVectorPointWidget;
 
 namespace DA
 {
-class DAPySeriesTableModule;
+class DAPySeriesTableModel;
 /**
  * @brief Dataframe To VectorPoint
  */
@@ -36,7 +36,7 @@ private slots:
 private:
     Ui::DADataframeToVectorPointWidget* ui;
     DAData _currentData;
-    DAPySeriesTableModule* _model;
+    DAPySeriesTableModel* _model;
 };
 }
 

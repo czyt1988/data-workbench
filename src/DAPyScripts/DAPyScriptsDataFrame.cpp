@@ -140,7 +140,7 @@ bool DAPyScriptsDataFrame::insert_column(DAPyDataFrame& df,
 	} catch (const std::exception& e) {
 		dealException(e);
 	}
-    return false;
+	return false;
 }
 
 /**
@@ -151,14 +151,14 @@ bool DAPyScriptsDataFrame::insert_column(DAPyDataFrame& df,
  */
 bool DAPyScriptsDataFrame::to_csv(const DAPyDataFrame& df, const QString& path, const QString& sep) noexcept
 {
-    try {
-        pybind11::object da_to_csv = attr("da_to_csv");
-        da_to_csv(df.object(), DA::PY::toPyStr(path), DA::PY::toPyStr(sep));
-        return true;
-    } catch (const std::exception& e) {
-        dealException(e);
-    }
-    return false;
+	try {
+		pybind11::object da_to_csv = attr("da_to_csv");
+		da_to_csv(df.object(), DA::PY::toPyStr(path), DA::PY::toPyStr(sep));
+		return true;
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return false;
 }
 
 /**
@@ -169,14 +169,14 @@ bool DAPyScriptsDataFrame::to_csv(const DAPyDataFrame& df, const QString& path, 
  */
 bool DAPyScriptsDataFrame::to_excel(const DAPyDataFrame& df, const QString& path) noexcept
 {
-    try {
-        pybind11::object da_to_excel = attr("da_to_excel");
-        da_to_excel(df.object(), DA::PY::toPyStr(path));
-        return true;
-    } catch (const std::exception& e) {
-        dealException(e);
-    }
-    return false;
+	try {
+		pybind11::object da_to_excel = attr("da_to_excel");
+		da_to_excel(df.object(), DA::PY::toPyStr(path));
+		return true;
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return false;
 }
 
 /**
@@ -194,7 +194,7 @@ bool DAPyScriptsDataFrame::to_pickle(const DAPyDataFrame& df, const QString& pat
 	} catch (const std::exception& e) {
 		dealException(e);
 	}
-    return false;
+	return false;
 }
 
 /**
@@ -205,14 +205,14 @@ bool DAPyScriptsDataFrame::to_pickle(const DAPyDataFrame& df, const QString& pat
  */
 bool DAPyScriptsDataFrame::to_parquet(const DAPyDataFrame& df, const QString& path) noexcept
 {
-    try {
-        pybind11::object da_to_parquet = attr("da_to_parquet");
-        da_to_parquet(df.object(), DA::PY::toPyStr(path));
-        return true;
-    } catch (const std::exception& e) {
-        dealException(e);
-    }
-    return false;
+	try {
+		pybind11::object da_to_parquet = attr("da_to_parquet");
+		da_to_parquet(df.object(), DA::PY::toPyStr(path));
+		return true;
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return false;
 }
 
 /**
@@ -230,7 +230,7 @@ bool DAPyScriptsDataFrame::from_pickle(DAPyDataFrame& df, const QString& path) n
 	} catch (const std::exception& e) {
 		dealException(e);
 	}
-    return false;
+	return false;
 }
 
 /**
@@ -241,14 +241,14 @@ bool DAPyScriptsDataFrame::from_pickle(DAPyDataFrame& df, const QString& path) n
  */
 bool DAPyScriptsDataFrame::from_parquet(DAPyDataFrame& df, const QString& path) noexcept
 {
-    try {
-        pybind11::object da_from_parquet = attr("da_from_parquet");
-        da_from_parquet(df.object(), DA::PY::toPyStr(path));
-        return true;
-    } catch (const std::exception& e) {
-        dealException(e);
-    }
-    return false;
+	try {
+		pybind11::object da_from_parquet = attr("da_from_parquet");
+		da_from_parquet(df.object(), DA::PY::toPyStr(path));
+		return true;
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return false;
 }
 
 /**
@@ -648,21 +648,16 @@ bool DAPyScriptsDataFrame::clipoutlier(DAPyDataFrame& df, double lowervalue, dou
 bool DAPyScriptsDataFrame::queryDatas(DAPyDataFrame& df, const QString& expr)
 {
 	try {
-		pybind11::object da_query_datas = attr("da_query_datas");
-		pybind11::dict args;
-
 		if (expr.isEmpty()) {
 			return false;
 		}
-		// 将每个条件用括号包裹，避免优先级问题
-
-		args[ "expr" ] = DA::PY::toPyStr(expr);
-		da_query_datas(df.object(), **args);
+		pybind11::object da_query_datas = attr("da_query_datas");
+		da_query_datas(df.object(), DA::PY::toPyStr(expr));
 		return true;
 	} catch (const std::exception& e) {
 		dealException(e);
 	}
-    return false;
+	return false;
 }
 
 /**
@@ -674,22 +669,22 @@ bool DAPyScriptsDataFrame::queryDatas(DAPyDataFrame& df, const QString& expr)
  */
 bool DAPyScriptsDataFrame::sort(DAPyDataFrame& df, const QString& by, bool ascending)
 {
-    try {
-        pybind11::object da_sort = attr("da_sort");
-        pybind11::dict args;
+	try {
+		pybind11::object da_sort = attr("da_sort");
+		pybind11::dict args;
 
-        if (by.isEmpty()) {
-            return false;
-        }
+		if (by.isEmpty()) {
+			return false;
+		}
 
-        args[ "by" ]        = DA::PY::toPyStr(by);
-        args[ "ascending" ] = ascending;
-        da_sort(df.object(), **args);
-        return true;
-    } catch (const std::exception& e) {
-        dealException(e);
-    }
-    return false;
+		args[ "by" ]        = DA::PY::toPyStr(by);
+		args[ "ascending" ] = ascending;
+		da_sort(df.object(), **args);
+		return true;
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return false;
 }
 
 /**

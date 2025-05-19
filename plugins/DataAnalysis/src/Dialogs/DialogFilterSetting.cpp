@@ -3,16 +3,16 @@
 #include "DialogFilterSetting.h"
 #include "ui_DialogFilterSetting.h"
 #include "DADataManager.h"
-#include "Models/DAPySeriesTableModule.h"
+#include "Models/DAPySeriesTableModel.h"
 
 DialogFilterSetting::DialogFilterSetting(QWidget* parent) : QDialog(parent), ui(new Ui::DialogFilterSetting)
 {
 	ui->setupUi(this);
 
-	//滤波器类型相关ui
+	// 滤波器类型相关ui
 	initFilterTypeSetting();
 
-	mModuel = new DA::DAPySeriesTableModule(this);
+	mModuel = new DA::DAPySeriesTableModel(this);
 	ui->tableViewPreview->setModel(mModuel);
 	connect(ui->comboBoxDataMgr,
 			&DA::DADataManagerComboBox::currentDataframeSeriesChanged,
@@ -39,7 +39,7 @@ void DialogFilterSetting::initFilterTypeSetting()
 	connect(ui->Filter_type_Box,
 			static_cast< void (QComboBox::*)(const QString&) >(&QComboBox::activated),
 			[ = ](const QString& text) {
-				if (text == "bandpass" | text == "bandstop") {
+				if (text == "bandpass" || text == "bandstop") {
 					ui->Cutoff_freq_Box->setVisible(false);
 					ui->Cutoff_freq_Label->setVisible(false);
 					ui->L_Cutoff_freq_Box->setVisible(true);

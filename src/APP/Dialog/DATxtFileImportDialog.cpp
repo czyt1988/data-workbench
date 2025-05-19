@@ -15,7 +15,7 @@
 #if DA_ENABLE_PYTHON
 #include "pandas/DAPyDataFrame.h"
 #include "DAPyScripts.h"
-#include "Models/DAPyDataFrameTableModule.h"
+#include "Models/DAPyDataFrameTableModel.h"
 #endif
 namespace DA
 {
@@ -24,7 +24,7 @@ DATxtFileImportDialog::DATxtFileImportDialog(QWidget* parent) : QDialog(parent),
 	ui->setupUi(this);
 #if DA_ENABLE_PYTHON
 	// 第一个参数为nullptr，说明不用redo/undo
-	mModule = new DAPyDataFrameTableModule(nullptr, ui->tableView);
+	mModule = new DAPyDataFrameTableModel(nullptr, ui->tableView);
 	ui->tableView->setModel(mModule);
 #endif
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -192,11 +192,12 @@ void DATxtFileImportDialog::onTextReadComplete(const QString& txt, bool isReadAl
 void DATxtFileImportDialog::onTextReadFinished(int code)
 {
 	if (code != DATextReadWriter::NoError) {
-		QMessageBox::critical(this,
-							  tr("error"),
-							  tr("read txt file(%1) occure error,reason:%2")
-								  .arg(getTextFilePath())
-								  .arg(DATextReadWriter::errorCodeToString(static_cast< DATextReadWriter::ErrorCode >(code))));
+		QMessageBox::critical(
+			this,
+			tr("error"),
+			tr("read txt file(%1) occure error,reason:%2")
+				.arg(getTextFilePath())
+				.arg(DATextReadWriter::errorCodeToString(static_cast< DATextReadWriter::ErrorCode >(code))));
 		return;
 	}
 }

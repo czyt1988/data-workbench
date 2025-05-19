@@ -24,6 +24,11 @@ void DADialogDataFrameSort::setDataframe(const DAPyDataFrame& df)
     }
 }
 
+void DADialogDataFrameSort::setSortBy(const int index)
+{
+    ui->comboBoxColumns->setCurrentIndex(index);
+}
+
 QString DADialogDataFrameSort::getSortBy() const
 {
     return ui->comboBoxColumns->currentText();

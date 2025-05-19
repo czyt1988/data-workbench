@@ -54,10 +54,11 @@ void DAAppActions::buildMainAction()
 void DAAppActions::buildDataAction()
 {
 	// Data Category
-	actionAddData    = createAction("actionAddData", ":/app/bright/Icon/addData.svg");
-	actionRemoveData = createAction("actionRemoveData", ":/app/bright/Icon/removeData.svg");
-	actionExportData = createAction("actionExportData", ":/app/bright/Icon/exportData.svg");
-	// 数据操作的上下文标签 Data Operate Context Category
+    actionAddData              = createAction("actionAddData", ":/app/bright/Icon/addData.svg");
+    actionRemoveData           = createAction("actionRemoveData", ":/app/bright/Icon/removeData.svg");
+    actionExportIndividualData = createAction("actionExportIndividualData", ":/app/bright/Icon/exportIndividualData.svg");
+    actionExportMultipleData   = createAction("actionExportMultipleData", ":/app/bright/Icon/exportMultipleData.svg");
+    // 数据操作的上下文标签 Data Operate Context Category
 	actionRemoveRow          = createAction("actionRemoveRow", ":/app/bright/Icon/removeRow.svg");
 	actionRemoveColumn       = createAction("actionRemoveColumn", ":/app/bright/Icon/removeColumn.svg");
 	actionInsertRow          = createAction("actionInsertRow", ":/app/bright/Icon/insertRow.svg");
@@ -206,12 +207,13 @@ void DAAppActions::retranslateUi()
 	actionAppendProject->setText(tr("Append To Project"));
 
 	actionRenameColumns->setText(tr("Rename Columns"));
-	actionSetting->setText(tr("Setting"));  // cn:设置
-	actionAbout->setText(tr("About"));      // cn:关于
-	// Data Category
-	actionAddData->setText(tr("Add \nData"));        // cn:添加\n数据
-	actionRemoveData->setText(tr("Remove \nData"));  // cn:移除\n数据
-	actionExportData->setText(tr("Export \nData"));  // cn:导出\n数据
+    actionSetting->setText(tr("Setting"));                                // cn:设置
+    actionAbout->setText(tr("About"));                                    // cn:关于
+                                                                          // Data Category
+    actionAddData->setText(tr("Add \nData"));                             // cn:添加\n数据
+    actionRemoveData->setText(tr("Remove \nData"));                       // cn:移除\n数据
+    actionExportIndividualData->setText(tr("Export \nIndividual Data"));  // cn:导出\n单个数据
+    actionExportMultipleData->setText(tr("Export \nMultiple Data"));      // cn:导出\n多个数据
 	// Chart Category
 	actionAddFigure->setText(tr("Add \nFigure"));                  // cn:添加\n绘图
 	actionFigureResizeChart->setText(tr("Resize \nChart"));        // cn:绘图\n尺寸

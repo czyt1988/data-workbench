@@ -1,5 +1,5 @@
-﻿#ifndef DAPYSERIESTABLEMODULE_H
-#define DAPYSERIESTABLEMODULE_H
+#ifndef DAPYSERIESTABLEMODEL_H
+#define DAPYSERIESTABLEMODEL_H
 #include "DAGuiAPI.h"
 #include <QAbstractTableModel>
 #include "DAData.h"
@@ -10,13 +10,13 @@ namespace DA
 /**
  * @brief 用于显示一系列series
  */
-class DAGUI_API DAPySeriesTableModule : public QAbstractTableModel
+class DAGUI_API DAPySeriesTableModel : public QAbstractTableModel
 {
 	Q_OBJECT
-	DA_DECLARE_PRIVATE(DAPySeriesTableModule)
+	DA_DECLARE_PRIVATE(DAPySeriesTableModel)
 public:
-	DAPySeriesTableModule(QObject* parent = nullptr);
-	~DAPySeriesTableModule();
+	DAPySeriesTableModel(QObject* parent = nullptr);
+	~DAPySeriesTableModel();
 
 public:
 	virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
@@ -53,4 +53,4 @@ public:
 };
 }
 
-#endif  // DAPYSERIESTABLEMODULE_H
+#endif  // DAPYSERIESTABLEMODEL_H

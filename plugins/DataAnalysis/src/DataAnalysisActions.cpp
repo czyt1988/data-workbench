@@ -16,8 +16,8 @@ void DataAnalysisActions::buildActions()
 	actionFilter       = createAction("actionFilter", ":/DataAnalysis/icons/icon/filter.svg");
 	actionPeakAnalysis = createAction("actionPeakAnalysis", ":/DataAnalysis/icons/icon/peak-analysis.svg");
     actionSTFT         = createAction("actionSTFT", ":/DataAnalysis/icons/icon/spectrum-stft.svg");
-	actionWaveletCWT   = createAction("actionWaveletAnalysis", ":/DataAnalysis/icons/icon/wavelet-cwt.svg");
-    actionWaveletDWT   = createAction("actionWaveletAnalysis", ":/DataAnalysis/icons/icon/wavelet-dwt.svg");
+    actionWaveletCWT   = createAction("actionWaveletCWT", ":/DataAnalysis/icons/icon/wavelet-cwt.svg");
+    actionWaveletDWT   = createAction("actionWaveletDWT", ":/DataAnalysis/icons/icon/wavelet-dwt.svg");
 }
 
 void DataAnalysisActions::retranslate()

@@ -1,14 +1,14 @@
-#include "DialogSTFTSetting.h"
+﻿#include "DialogSTFTSetting.h"
 #include "ui_DialogSTFTSetting.h"
 #include <QMessageBox>
 #include <QtMath>
 #include "DADataManager.h"
-#include "Models/DAPySeriesTableModule.h"
+#include "Models/DAPySeriesTableModel.h"
 
 DialogSTFTSetting::DialogSTFTSetting(QWidget* parent) : QDialog(parent), ui(new Ui::DialogSTFTSetting)
 {
 	ui->setupUi(this);
-	mModuel = new DA::DAPySeriesTableModule(this);
+	mModuel = new DA::DAPySeriesTableModel(this);
 	ui->tableViewPreview->setModel(mModuel);
 	connect(ui->comboBoxDataMgr,
 			&DA::DADataManagerComboBox::currentDataframeSeriesChanged,
