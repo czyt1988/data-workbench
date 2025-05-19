@@ -24,6 +24,7 @@ public:
     void setDataframe(const DAPyDataFrame& df);
 
     //获取排序依据，列名
+    void setSortBy(const int index);
     QString getSortBy() const;
     // 获取排序方式，升序or降序
     bool getSortType() const;
