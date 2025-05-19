@@ -5,6 +5,7 @@
 #include "pandas/DAPyDataFrame.h"
 class QUndoStack;
 class QTimer;
+class QResizeEvent;
 namespace DA
 {
 class DAPyDataFrameTableModel;
@@ -15,23 +16,29 @@ class DAGUI_API DAPyDataFrameTableView : public QTableView
 public:
 	explicit DAPyDataFrameTableView(QWidget* parent = nullptr);
 	~DAPyDataFrameTableView();
-	// undo
-	void setUndoStack(QUndoStack* stack);
-	QUndoStack* getUndoStack() const;
+
 	//
 	void setDataframeModel(DAPyDataFrameTableModel* dataframeModle);
 	DAPyDataFrameTableModel* getDataframeModel() const;
 	// 设置datafarme
 	void setDataFrame(const DAPyDataFrame& d);
 	DAPyDataFrame getDataframe() const;
+    //
+    void updateScrollbarParameters();
+
+protected:
+    void resizeEvent(QResizeEvent* event) override;
 private Q_SLOTS:
 	void onVerticalScrollBarValueChanged(int v);
-	void onHandleVerticalScrollBarValueChanged();
+    void onPageChanged(int page);
 
 private:
-	QUndoStack* mUndoStack { nullptr };
-	QTimer* mScrollSignalTimer { nullptr };  ///< 防止快速拉动滚动条导致频繁刷新用的一个延迟信号发送器
+    // 计算可见的行数
+    int calcVisibleRowCount() const;
+
+private:
 	DAPyDataFrameTableModel* mDataframeModel { nullptr };
+    int mLastPage { -1 };
 };
 }  // end DA
 #endif  // DAPYDATAFRAMETABLEVIEW_H

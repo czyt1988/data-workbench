@@ -2,6 +2,7 @@
 #include "Commands/DACommandsDataFrame.h"
 #include <QUndoStack>
 #include <algorithm>
+#include <QCache>
 #ifndef DAPYDATAFRAMETABLEMODULE_PROFILE_PRINT
 #define DAPYDATAFRAMETABLEMODULE_PROFILE_PRINT 1
 #endif
@@ -32,6 +33,7 @@ class DAPyDataFrameTableModel::PrivateData
 	DA_DECLARE_PUBLIC(DAPyDataFrameTableModel)
 public:
 	PrivateData(DAPyDataFrameTableModel* p);
+    void setCacheMode(DAPyDataFrameTableModel::CacheMode m);
 
 public:
 	DAPyDataFrame dataframe;
@@ -51,9 +53,15 @@ public:
 	DAPyIndex index;               ///< 保存index
 	bool isNone { true };          ///< 标记是否为none
 	bool isIndexNone { true };     ///< index是否为空
-	// 虚拟视图
+    DAPyDataFrameTableModel::CacheMode cacheMode { DAPyDataFrameTableModel::DynamicSlidingCacheMode };
+    // 虚拟视图 -- 分页需要的参数
 	int pageSize { 10000 };  // 每页行数
 	int currentPage { 0 };   // 当前页码
+    // 滑动窗需要的参数
+    int cacheWindowSize = 2000;                            // 默认窗口大小
+    int prefetchMargin  = 500;                             // 预取边界
+    int windowStartRow  = 0;                               // 当前窗口起始行
+    mutable QCache< int, QVector< QVariant > > dataCache;  // 行数据缓存
 };
 
 //===================================================
@@ -63,11 +71,26 @@ public:
 DAPyDataFrameTableModel::PrivateData::PrivateData(DAPyDataFrameTableModel* p) : q_ptr(p), undoStack(nullptr)
 {
 }
+
+void DAPyDataFrameTableModel::PrivateData::setCacheMode(DAPyDataFrameTableModel::CacheMode m)
+{
+    if (cacheMode == m) {
+        return;
+    }
+    cacheMode = m;
+    // 清理
+    if (m == DAPyDataFrameTableModel::DynamicSlidingCacheMode) {
+        currentPage = 0;
+    } else {
+        dataCache.clear();
+        windowStartRow = 0;
+    }
+}
 //===================================================
 // DAPyDataFrameTableModule
 //===================================================
 DAPyDataFrameTableModel::DAPyDataFrameTableModel(QUndoStack* stack, QObject* parent)
-	: QAbstractTableModel(parent), DA_PIMPL_CONSTRUCT
+    : QAbstractTableModel(parent), DA_PIMPL_CONSTRUCT
 {
 	d_ptr->undoStack = stack;
 }
@@ -201,7 +224,7 @@ bool DAPyDataFrameTableModel::setData(const QModelIndex& index, const QVariant& 
 		return d->dataframe.iat(actualRow, index.column(), value);
 	}
 	std::unique_ptr< DACommandDataFrame_iat > cmd_iat(
-		new DACommandDataFrame_iat(d->dataframe, actualRow, index.column(), olddata, value, this));
+        new DACommandDataFrame_iat(d->dataframe, actualRow, index.column(), olddata, value, this));
 	if (!cmd_iat->exec()) {
 		// 没设置成功，退出
 		return false;
@@ -226,7 +249,17 @@ DAPyDataFrame& DAPyDataFrameTableModel::dataFrame()
 
 const DAPyDataFrame& DAPyDataFrameTableModel::dataFrame() const
 {
-	return d_ptr->dataframe;
+    return d_ptr->dataframe;
+}
+
+void DAPyDataFrameTableModel::setCacheMode(CacheMode mode)
+{
+    d_ptr->setCacheMode(mode);
+}
+
+DAPyDataFrameTableModel::CacheMode DAPyDataFrameTableModel::getCacheMode() const
+{
+    return d_ptr->cacheMode;
 }
 
 void DAPyDataFrameTableModel::setDAData(const DAData& d)
@@ -279,12 +312,49 @@ void DAPyDataFrameTableModel::setCurrentPage(int page)
 	}
 
 	d->currentPage = page;
+    emit currentPageChanged(page);
 	emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1));  // 刷新当前页数据
 }
 
 int DAPyDataFrameTableModel::getCurrentPage() const
 {
     return d_ptr->currentPage;
+}
+
+/**
+ * @brief 设置滑动窗模式的起始行
+ * @param startRow
+ */
+void DAPyDataFrameTableModel::setCacheWindowStartRow(int startRow)
+{
+    DA_D(d);
+    // startRow限制在指定的最小值和最大值之间。它能够确保startRow不会超出给定的范围
+    startRow = qBound(0, startRow, d->dataframeRow - d->cacheWindowSize);
+    if (startRow != d->windowStartRow) {
+        const int oldStart = d->windowStartRow;
+        d->windowStartRow  = startRow;
+
+        // 计算需要刷新的区域
+        const int overlapStart = qMax(oldStart, startRow);
+        const int overlapEnd   = qMin(oldStart + d->cacheWindowSize, startRow + d->cacheWindowSize);
+
+        if (overlapStart >= overlapEnd) {
+            // 完全无重叠，全量刷新
+            Q_EMIT dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1));
+        } else {
+            // 部分刷新
+            if (oldStart < startRow) {
+                Q_EMIT dataChanged(index(0, 0), index(startRow - oldStart - 1, columnCount() - 1));
+            }
+            if (oldStart + d->cacheWindowSize > startRow + d->cacheWindowSize) {
+                const int diff = oldStart + d->cacheWindowSize - (startRow + d->cacheWindowSize);
+                Q_EMIT dataChanged(index(rowCount() - diff, 0), index(rowCount() - 1, columnCount() - 1));
+            }
+        }
+
+        // 预取数据
+        prefetchData(startRow - d->prefetchMargin, startRow + d->cacheWindowSize + d->prefetchMargin);
+    }
 }
 
 /**
@@ -609,11 +679,8 @@ void DAPyDataFrameTableModel::beginFunCall(const QList< int >& listlike, DAPyDat
 #endif
 }
 
-int DAPyDataFrameTableModel::calculateStartRow() const
+void DAPyDataFrameTableModel::prefetchData(int start, int end) const
 {
 }
 
-int DAPyDataFrameTableModel::calculateEndRow() const
-{
-}
 }  // end of namespace DA

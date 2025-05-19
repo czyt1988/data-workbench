@@ -22,6 +22,27 @@ class DAGUI_API DAPyDataFrameTableModel : public QAbstractTableModel
 	Q_OBJECT
 	DA_DECLARE_PRIVATE(DAPyDataFrameTableModel)
 public:
+    enum CacheMode
+    {
+        /**
+         * @brief 滑动窗缓存模式
+         *
+         * 滑动窗模式下，会有一个固定尺寸的窗，数据缓存到这个窗里面进行显示，滑动窗适合一个view展示所有超大规模的数据
+         *
+         * 默认为滑动窗模式
+         */
+        DynamicSlidingCacheMode,
+        /**
+         * @brief 分页缓存模式
+         *
+         * 分页模式下，可以给model设置分页，定位到不同页下进行偏移输出，这个模式适合有分页按钮的显示
+         *
+         * @sa setPageSize getPageSize setCurrentPage getCurrentPage
+         * @sa currentPageChanged
+         */
+        PageCacheMode
+
+    };
 	DAPyDataFrameTableModel(QUndoStack* stack, QObject* parent = nullptr);
 	~DAPyDataFrameTableModel();
 	using beginFun = std::function< void(const QModelIndex&, int, int) >;
@@ -37,14 +58,26 @@ public:
 public:
 	DAPyDataFrame& dataFrame();
 	const DAPyDataFrame& dataFrame() const;
+    // 缓存模式
+    void setCacheMode(CacheMode mode);
+    CacheMode getCacheMode() const;
+    // 设置数据
 	void setDAData(const DAData& d);
 	void setDataFrame(const DAPyDataFrame& d);
-	// 分页设置
+
+    /// @group 分页模式
+    /// @{
 	void setPageSize(int size);
 	int getPageSize() const;
 	void setCurrentPage(int page);
 	int getCurrentPage() const;
-	int totalRows() const;
+    /// @}
+
+    /// @group 滑动窗模式
+    /// @{
+    // 设置滑动窗模式的起始行
+    void setCacheWindowStartRow(int startRow);
+    /// @}
 
 	// 获取真实的dataframe行数
 	int getActualDataframeRowCount() const;
@@ -89,11 +122,10 @@ protected:
 	void columnBeginRemove(const QList< int >& r);
 	void columnsBeginInsert(const QList< int >& r);
 	void beginFunCall(const QList< int >& listlike, beginFun fun);
-
-private:
-	// 分页数据
-	int calculateStartRow() const;
-	int calculateEndRow() const;
+    // 滑动窗模式有用
+    void prefetchData(int start, int end) const;
+Q_SIGNALS:
+    void currentPageChanged(int newPage);
 };
 }  // end of namespace DA
 #endif  // DAPYDATAFRAMETABLEMODEL_H
