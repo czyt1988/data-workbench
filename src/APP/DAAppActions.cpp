@@ -56,8 +56,8 @@ void DAAppActions::buildDataAction()
 	// Data Category
     actionAddData              = createAction("actionAddData", ":/app/bright/Icon/addData.svg");
     actionRemoveData           = createAction("actionRemoveData", ":/app/bright/Icon/removeData.svg");
-    actionExportIndividualData = createAction("actionExportData", ":/app/bright/Icon/exportIndividualData.svg");
-    actionExportMultipleData   = createAction("actionExportData", ":/app/bright/Icon/exportMultipleData.svg");
+    actionExportIndividualData = createAction("actionExportIndividualData", ":/app/bright/Icon/exportIndividualData.svg");
+    actionExportMultipleData   = createAction("actionExportMultipleData", ":/app/bright/Icon/exportMultipleData.svg");
     // 数据操作的上下文标签 Data Operate Context Category
 	actionRemoveRow          = createAction("actionRemoveRow", ":/app/bright/Icon/removeRow.svg");
 	actionRemoveColumn       = createAction("actionRemoveColumn", ":/app/bright/Icon/removeColumn.svg");
