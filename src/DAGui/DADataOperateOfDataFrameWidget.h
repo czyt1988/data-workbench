@@ -28,6 +28,7 @@ class DADialogCreatePivotTable;
 
 /**
  * @brief 针对DataFrame的操作窗口
+ *
  */
 class DAGUI_API DADataOperateOfDataFrameWidget : public DADataOperatePageWidget
 {
@@ -61,6 +62,7 @@ public:
 
 	// 获取选中的序列，如果用户打开一个表格，选中了其中一列，那么将返回那一列pd.Series作为数据，如果用户选中了多列，那么每列作为一个DAData并组成list返回
 	QList< DAData > getSlectedSeries() const;
+
 public Q_SLOTS:
 	void setDAData(const DA::DAData& d);
 	// 在选中行后面插入行
@@ -88,15 +90,15 @@ public Q_SLOTS:
 	// 删除缺失值,返回删除的数量
 	int dropna(const QString& how = QStringLiteral("any"), std::optional< int > thresh = std::nullopt);
 	int dropna(const DAPyDataFrame& df,
-               int axis,
-               const QString& how          = QStringLiteral("any"),
-               const QList< int > index    = QList< int >(),
-               std::optional< int > thresh = std::nullopt);
+			   int axis,
+			   const QString& how          = QStringLiteral("any"),
+			   const QList< int > index    = QList< int >(),
+			   std::optional< int > thresh = std::nullopt);
 	// 删除重复值
 	int dropduplicates(const QString& keep = QStringLiteral("first"));
 	int dropduplicates(const DAPyDataFrame& df,
-                       const QString& keep      = QStringLiteral("first"),
-                       const QList< int > index = QList< int >());
+					   const QString& keep      = QStringLiteral("first"),
+					   const QList< int > index = QList< int >());
 	// 填充缺失值，执行成功返回true
 	bool fillna();
 	bool fillna(const DAPyDataFrame& df, double value = 0.0, int limit = -1);
@@ -117,20 +119,20 @@ public Q_SLOTS:
 	bool clipoutlier(const DAPyDataFrame& df, double lower = 0.0, double upper = 0.0, int axis = 0);
 	// 过滤给定条件外的数据
 	bool querydatas();
-    bool querydatas(const DAPyDataFrame& df, const QString& exper);
-    //数据排序
-    bool sortdatas();
-    bool sortdatas(const DAPyDataFrame& df, const QString& by, const bool ascending);
+	bool querydatas(const DAPyDataFrame& df, const QString& exper);
+	// 数据排序
+	bool sortdatas();
+	bool sortdatas(const DAPyDataFrame& df, const QString& by, const bool ascending);
 	// 创建数据透视表
 	DAPyDataFrame createPivotTable();
 	DAPyDataFrame createPivotTable(const DAPyDataFrame& df,
-                                   const QStringList value    = QStringList(),
-                                   const QStringList index    = QStringList(),
-                                   const QStringList columns  = QStringList(),
-                                   const QString& aggfunc     = QStringLiteral("mean"),
-                                   bool margins               = false,
-                                   const QString& marginsName = QStringLiteral("All"),
-                                   bool sort                  = false);
+								   const QStringList value    = QStringList(),
+								   const QStringList index    = QStringList(),
+								   const QStringList columns  = QStringList(),
+								   const QString& aggfunc     = QStringLiteral("mean"),
+								   bool margins               = false,
+								   const QString& marginsName = QStringLiteral("All"),
+								   bool sort                  = false);
 Q_SIGNALS:
 	/**
 	 * @brief 选中的列或者类型发生了变化
@@ -149,16 +151,16 @@ protected:
 private:
 	Ui::DADataOperateOfDataFrameWidget* ui;
 	DAData mData;
-    DAPyDataFrameTableModel* mModel{ nullptr };
+	DAPyDataFrameTableModel* mModel { nullptr };
 
-    DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs{ nullptr };
-    DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs{ nullptr };
-    DADialogDataFrameFillna* mDialogDataFrameFillna{ nullptr };
-    DADialogDataFrameFillInterpolate* mDialogDataFrameFillInterpolate{ nullptr };
-    DADialogDataFrameClipOutlier* mDialogDataFrameClipOutlier{ nullptr };
-    DADialogCreatePivotTable* mDialogCreatePivotTable{ nullptr };
-    DADialogDataFrameQueryDatas* mDialogDataFrameQueryDatas{ nullptr };
-    DADialogDataFrameSort* mDADialogDataFrameSort{ nullptr };
+	DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs { nullptr };
+	DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs { nullptr };
+	DADialogDataFrameFillna* mDialogDataFrameFillna { nullptr };
+	DADialogDataFrameFillInterpolate* mDialogDataFrameFillInterpolate { nullptr };
+	DADialogDataFrameClipOutlier* mDialogDataFrameClipOutlier { nullptr };
+	DADialogCreatePivotTable* mDialogCreatePivotTable { nullptr };
+	DADialogDataFrameQueryDatas* mDialogDataFrameQueryDatas { nullptr };
+	DADialogDataFrameSort* mDADialogDataFrameSort { nullptr };
 };
 }  // end of namespace DA
 #endif  // DADATAOPERATEOFDATAFRAMEWIDGET_H

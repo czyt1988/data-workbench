@@ -14,7 +14,7 @@ DAPyIndex::DAPyIndex() : DAPyObjectWrapper()
 {
 	try {
 		auto pandas = DAPyModule("pandas");
-		_object     = pandas.attr("Index")();
+		_object     = pandas.attr("Index");
 	} catch (const std::exception& e) {
 		qCritical() << "can not import pandas,or can not create pandas.Index(),because:" << e.what();
 	}

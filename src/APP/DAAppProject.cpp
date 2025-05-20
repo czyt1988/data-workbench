@@ -23,6 +23,7 @@
 #include "DAZipArchiveTask_Xml.h"
 #include "DAZipArchiveTask_ArchiveFile.h"
 #include "DADataEnumStringUtils.h"
+#include "DAWaitCursorScoped.h"
 // python
 #if DA_ENABLE_PYTHON
 #include "DAPyScripts.h"
@@ -328,8 +329,9 @@ bool DAAppProject::save(const QString& path)
 		qInfo() << tr("current project is busy");  // cn:当前工程正繁忙
 		return false;
 	}
-	setProjectPath(path);
 
+	setProjectPath(path);
+	DA_WAIT_CURSOR_SCOPED();
 	//! 先把涉及ui的内容保存下来,ui是无法在其它线程操作，因此需要先保存下来
 	makeSaveWorkFlowTask(mArchive);
 
@@ -374,7 +376,8 @@ bool DAAppProject::load(const QString& path)
 	mArchive->appendXmlLoadTask(QStringLiteral("workflow.xml"), DAAPPPROJECT_TASK_LOAD_ID_WORKFLOW);
 
 	// 创建datamanager任务
-    std::shared_ptr< DAZipArchiveTask_LoadDataManager > loadDataTask = std::make_shared< DAZipArchiveTask_LoadDataManager >();
+	std::shared_ptr< DAZipArchiveTask_LoadDataManager > loadDataTask =
+		std::make_shared< DAZipArchiveTask_LoadDataManager >();
 	loadDataTask->setCode(DAAPPPROJECT_TASK_LOAD_ID_DATAMANAGER);
 	mArchive->appendTask(loadDataTask);
 
@@ -406,7 +409,8 @@ void DAAppProject::makeSaveDataManagerTask(DAZipArchiveThreadWrapper* archive)
 {
 	DADataManagerInterface* dataMgr = getDataManagerInterface();
 	QDomDocument doc;
-    QDomProcessingInstruction processInstruction = doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\"");
+	QDomProcessingInstruction processInstruction =
+		doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\"");
 	doc.appendChild(processInstruction);
 	QDomElement root = doc.createElement(QStringLiteral("root"));
 	root.setAttribute("type", "data manager");
@@ -426,7 +430,7 @@ void DAAppProject::makeSaveDataManagerTask(DAZipArchiveThreadWrapper* archive)
 			// 写文件，对于大文件，这里可能比较耗时，但python的gli机制，无法在线程里面写
 			if (!DAData::writeToFile(data, tempFilePath)) {
 				qCritical() << tr("An exception occurred while serializing the dataframe named %1 to %2")
-                                   .arg(name, tempFilePath);  // cn:把名称为%1的dataframe序列化到%2时出现异常
+								   .arg(name, tempFilePath);  // cn:把名称为%1的dataframe序列化到%2时出现异常
 				continue;
 			}
 			// 创建archive任务队列
@@ -491,7 +495,8 @@ QDomDocument DAAppProject::createWorkflowUIDomDocument()
 	DAWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
 	Q_CHECK_PTR(wfo);
 	QDomDocument doc;
-    QDomProcessingInstruction processInstruction = doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\"");
+	QDomProcessingInstruction processInstruction =
+		doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\"");
 	doc.appendChild(processInstruction);
 	QDomElement root = doc.createElement("root");
 	root.setAttribute("type", "project");
@@ -546,8 +551,8 @@ void DAAppProject::onTaskProgress(int total, int pos, const std::shared_ptr< DAA
 	} break;
 	case DAAPPPROJECT_TASK_LOAD_ID_DATAMANAGER: {
 		//! 读取datamanager
-        const std::shared_ptr< DAZipArchiveTask_LoadDataManager >
-            datamgrTask                 = std::static_pointer_cast< DAZipArchiveTask_LoadDataManager >(t);
+		const std::shared_ptr< DAZipArchiveTask_LoadDataManager > datamgrTask =
+			std::static_pointer_cast< DAZipArchiveTask_LoadDataManager >(t);
 		DADataManagerInterface* dataMgr = getDataManagerInterface();
 		QDomDocument xmlDoc             = datamgrTask->getDataManagerDomDocument();
 		if (xmlDoc.isNull()) {
@@ -577,7 +582,7 @@ void DAAppProject::onTaskProgress(int total, int pos, const std::shared_ptr< DAA
 				}
 				DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
 				DAPyDataFrame df;
-                if (!pydf.from_parquet(df, tempLocalFilePath)) {
+				if (!pydf.from_parquet(df, tempLocalFilePath)) {
 					qCritical() << tr("Unable to serialize the file %1 into a Dataframe").arg(tempLocalFilePath);  // cn:无法把文件%1序列化为Dataframe
 					return;
 				}

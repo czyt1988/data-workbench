@@ -333,3 +333,21 @@ void xxx::paintBody(QPainter* painter,
     ...
 }
 ```
+
+## 永远不要在线程中直接操作GUI控件
+
+如果要在线程中操作GUI控件，那么必须使用`QMetaObject::invokeMethod()`或者通过信号槽机制来完成。
+
+例如一个窗口，用QtConcurrent来执行一个耗时操作，操作结束后要进行界面刷新，那么可以如下执行（QtConcurrent::run就在当前界面的函数中）
+
+```cpp
+QtConcurrent::run([this] {//this是当前窗口的指正，为了最后进行刷新
+        // 执行耗时数据加载
+
+        // 回到主线程更新模型
+        QMetaObject::invokeMethod(this, [=] {
+            // 更新数据
+            widgetUpdate();
+        });
+    });
+```
