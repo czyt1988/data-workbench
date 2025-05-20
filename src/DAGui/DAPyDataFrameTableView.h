@@ -28,9 +28,12 @@ private Q_SLOTS:
 	void onVerticalScrollBarValueChanged(int v);
 	void onPageChanged(int page);
 
+protected:
+    void resizeEvent(QResizeEvent* event);
+
 private:
 	DAPyDataFrameTableModel* mDataframeModel { nullptr };
-	int mLastPage { -1 };
+    int mCurrentShowRows { 20 };  ///< 记录视图当前显示多少行
 };
 }  // end DA
 #endif  // DAPYDATAFRAMETABLEVIEW_H

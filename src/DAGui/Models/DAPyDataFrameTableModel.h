@@ -78,6 +78,7 @@ public:
 	// 设置滑动窗模式的起始行
 	void setCacheWindowStartRow(int startRow);
 	int getCacheWindowStartRow() const;
+    // windows size决定了显示的行数
 	void setCacheWindowSize(int s);
 	int getCacheWindowSize() const;
 	/// @}
@@ -125,8 +126,6 @@ protected:
 	void columnBeginRemove(const QList< int >& r);
 	void columnsBeginInsert(const QList< int >& r);
 	void beginFunCall(const QList< int >& listlike, beginFun fun);
-	// 滑动窗模式有用
-	void prefetchData(int start, int end) const;
 Q_SIGNALS:
 	void currentPageChanged(int newPage);
 };

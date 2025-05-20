@@ -34,8 +34,6 @@ class DAPyDataFrameTableModel::PrivateData
 public:
 	PrivateData(DAPyDataFrameTableModel* p);
 	void setCacheMode(DAPyDataFrameTableModel::CacheMode m);
-	// 返回dataframe的一行
-	std::unique_ptr< QVector< QVariant > > iloc(int row) const;
 
 public:
 	DAPyDataFrame dataframe;
@@ -57,14 +55,12 @@ public:
 	bool isIndexNone { true };     ///< index是否为空
 	DAPyDataFrameTableModel::CacheMode cacheMode { DAPyDataFrameTableModel::DynamicSlidingCacheMode };
 	// 虚拟视图 -- 分页需要的参数
-	int pageSize { 10000 };  // 每页行数
-	int currentPage { 0 };   // 当前页码
-	// 滑动窗需要的参数
-	int cacheWindowSize = 2000;                             // 默认窗口大小
-	int prefetchMargin  = 500;                              // 预取边界
-	int windowStartRow  = 0;                                // 当前窗口起始行
-	mutable QCache< int, QVector< QVariant > > cacheDatas;  // 行数据缓存
-	bool isPageMode { false };                              ///< 是否分页
+    int pageSize { 10000 };        // 每页行数
+    int currentPage { 0 };         // 当前页码
+                                   // 滑动窗需要的参数
+    int cacheWindowSize { 2000 };  // 默认窗口大小
+    int windowStartRow { 0 };      // 当前窗口起始行
+    bool isPageMode { false };     ///< 是否分页
 };
 
 //===================================================
@@ -73,7 +69,6 @@ public:
 
 DAPyDataFrameTableModel::PrivateData::PrivateData(DAPyDataFrameTableModel* p) : q_ptr(p), undoStack(nullptr)
 {
-	cacheDatas.setMaxCost(cacheWindowSize);
 }
 
 void DAPyDataFrameTableModel::PrivateData::setCacheMode(DAPyDataFrameTableModel::CacheMode m)
@@ -87,35 +82,11 @@ void DAPyDataFrameTableModel::PrivateData::setCacheMode(DAPyDataFrameTableModel:
 		currentPage = 0;
 		isPageMode  = false;
 	} else {
-		cacheDatas.clear();
 		windowStartRow = 0;
 		isPageMode     = true;
 	}
 }
 
-std::unique_ptr< QVector< QVariant > > DAPyDataFrameTableModel::PrivateData::iloc(int row) const
-{
-	std::unique_ptr< QVector< QVariant > > rowData = std::make_unique< QVector< QVariant > >();
-	try {
-		DAPySeries rowSeries = dataframe.iloc(row);
-		int oneRowCnt        = static_cast< int >(rowSeries.size());
-		if (oneRowCnt != dataframeColumn) {
-			qWarning() << DAPyDataFrameTableModel::tr(
-							  "The length of the data obtained by iloc for row %1 of the DataFrame is not equal to the "
-							  "number of columns in the DataFrame")
-							  .arg(row);  // cn:Dataframe的%1行通过iloc获取的数据长度和Dataframe的列数不相等
-			return std::unique_ptr< QVector< QVariant > >();
-		}
-		rowData->reserve(oneRowCnt);
-		for (int i = 0; i < oneRowCnt; ++i) {
-			rowData->push_back(rowSeries[ i ]);
-		}
-	} catch (const std::exception& e) {
-		qWarning() << "Data access error:" << e.what();
-		return std::unique_ptr< QVector< QVariant > >();
-	}
-	return rowData;
-}
 //===================================================
 // DAPyDataFrameTableModule
 //===================================================
@@ -138,9 +109,11 @@ QVariant DAPyDataFrameTableModel::headerData(int section, Qt::Orientation orient
 {
 	DA_DC(d);
 	DAPYDATAFRAMETABLEMODEL_CALL_ADD(cntheaderData);
-	if (role != Qt::DisplayRole || d->isNone) {
-		return QVariant();
+
+    if ((role != Qt::DisplayRole && role != Qt::ToolTipRole) || d->isNone) {
+        return QAbstractTableModel::headerData(section, orientation, role);
 	}
+    // tooltips 和 display
 	if (Qt::Horizontal == orientation) {  // 说明是水平表头
 		if (section >= d->columnsName.size()) {
 			return QVariant();
@@ -225,7 +198,7 @@ QVariant DAPyDataFrameTableModel::data(const QModelIndex& index, int role) const
 	} else {
 		actualRow = d->windowStartRow + index.row();
 	}
-	if (actualRow >= d->dataframeRow || index.column() >= d->dataframeColumn) {
+    if (actualRow >= d->dataframeRow || index.column() >= d->dataframeColumn) {
 		return QVariant();
 	}
 	switch (role) {
@@ -233,25 +206,8 @@ QVariant DAPyDataFrameTableModel::data(const QModelIndex& index, int role) const
 		return int(Qt::AlignLeft | Qt::AlignVCenter);
 	case Qt::BackgroundRole:
 		return QVariant();
-	case Qt::DisplayRole: {
-		if (d->isPageMode) {
-			// 分页模式
-			return d->dataframe.iat(actualRow, index.column());
-		} else {
-			// 缓存检查
-			if (QVector< QVariant >* cachedRow = d->cacheDatas.object(actualRow)) {
-				return cachedRow->at(index.column());
-			}
-			// 从DataFrame获取数据
-			std::unique_ptr< QVector< QVariant > > rowData = d->iloc(actualRow);
-			if (!rowData) {
-				return QVariant();
-			}
-			// 更新缓存
-			QVariant var = rowData->value(index.column());
-			d->cacheDatas.insert(actualRow, rowData.release());
-			return var;
-		}
+    case Qt::DisplayRole: {
+        return d->dataframe.iat(actualRow, index.column());
 	}
 	default:
 		break;
@@ -294,7 +250,7 @@ bool DAPyDataFrameTableModel::setData(const QModelIndex& index, const QVariant& 
 		return d->dataframe.iat(actualRow, index.column(), value);
 	}
 	std::unique_ptr< DACommandDataFrame_iat > cmd_iat(
-		new DACommandDataFrame_iat(d->dataframe, actualRow, index.column(), olddata, value, this));
+        new DACommandDataFrame_iat(d->dataframe, actualRow, index.column(), olddata, value, this));
 	if (!cmd_iat->exec()) {
 		// 没设置成功，退出
 		return false;
@@ -302,12 +258,6 @@ bool DAPyDataFrameTableModel::setData(const QModelIndex& index, const QVariant& 
 	d->undoStack->push(cmd_iat.release());  // push后会自动调用redo，第二次调用redo会被忽略
 	d->undoStack->setActive(true);
 	// 这里说明设置成功了
-	// 更新缓存
-	if (!d->isPageMode) {
-		if (QVector< QVariant >* cachedRow = d->cacheDatas.object(actualRow)) {
-			(*cachedRow)[ index.column() ] = value;
-		}
-	}
 	return true;
 }
 
@@ -414,7 +364,10 @@ void DAPyDataFrameTableModel::setCacheWindowStartRow(int startRow)
 		return;
 	}
 	// startRow限制在指定的最小值和最大值之间。它能够确保startRow不会超出给定的范围
-	startRow = qBound(0, startRow, d->dataframeRow - d->cacheWindowSize);
+    startRow = qBound(0, startRow, d->dataframeRow - d->cacheWindowSize + d->extraRow);
+    if (startRow >= d->dataframeRow) {
+        startRow = d->dataframeRow - 1;
+    }
 	if (startRow != d->windowStartRow) {
 		const int oldStart = d->windowStartRow;
 		d->windowStartRow  = startRow;
@@ -436,9 +389,6 @@ void DAPyDataFrameTableModel::setCacheWindowStartRow(int startRow)
 				Q_EMIT dataChanged(index(rowCount() - diff, 0), index(rowCount() - 1, columnCount() - 1));
 			}
 		}
-
-		// 预取数据
-		prefetchData(startRow - d->prefetchMargin, startRow + d->cacheWindowSize + d->prefetchMargin);
 	}
 }
 
@@ -451,7 +401,6 @@ void DAPyDataFrameTableModel::setCacheWindowSize(int s)
 {
 	DA_D(d);
 	d->cacheWindowSize = s;
-	d->cacheDatas.setMaxCost(s);
 	setCacheWindowStartRow(d->windowStartRow);
 }
 
@@ -524,13 +473,12 @@ void DAPyDataFrameTableModel::refresh()
 	DA_D(d);
 	beginResetModel();
 	d->isNone = d->dataframe.isNone();
-	if (d->isPageMode) {
-		setCurrentPage(0);  // 重置到第一页
-	} else {
-		d->cacheDatas.clear();
-		setCacheWindowStartRow(0);  // 滑动窗口到第一行
-	}
 	cacheShape();
+    if (d->isPageMode) {
+        setCurrentPage(0);  // 重置到第一页
+    } else {
+        setCacheWindowStartRow(0);  // 滑动窗口到第一行
+    }
 	endResetModel();
 }
 
@@ -573,9 +521,14 @@ void DAPyDataFrameTableModel::cacheColumnShape()
  */
 void DAPyDataFrameTableModel::notifyRowsRemoved(const QList< int >& r)
 {
-	beginFunCall(r, [ this ](const QModelIndex& p, int f, int l) { this->beginRemoveRows(p, f, l); });
-	cacheRowShape();
-	endRemoveRows();
+    if (r.isEmpty()) {
+        return;
+    }
+    // 由于使用了缓存表，删除只需要刷新数据即可
+    cacheRowShape();
+    // 获取最小和最大行号
+    int minRow = *std::min_element(r.begin(), r.end());
+    emit dataChanged(createIndex(minRow, 0), createIndex(rowCount() - 1, columnCount() - 1));
 }
 
 /**
@@ -584,9 +537,14 @@ void DAPyDataFrameTableModel::notifyRowsRemoved(const QList< int >& r)
  */
 void DAPyDataFrameTableModel::notifyRowsInserted(const QList< int >& r)
 {
-	beginFunCall(r, [ this ](const QModelIndex& p, int f, int l) { this->beginInsertRows(p, f, l); });
-	cacheRowShape();
-	endInsertRows();
+    if (r.isEmpty()) {
+        return;
+    }
+    // 由于使用了缓存表，删除只需要刷新数据即可
+    cacheRowShape();
+    // 获取最小和最大行号
+    int minRow = *std::min_element(r.begin(), r.end());
+    emit dataChanged(createIndex(minRow, 0), createIndex(rowCount() - 1, columnCount() - 1));
 }
 
 /**
@@ -595,9 +553,13 @@ void DAPyDataFrameTableModel::notifyRowsInserted(const QList< int >& r)
  */
 void DAPyDataFrameTableModel::notifyColumnsRemoved(const QList< int >& c)
 {
-	beginFunCall(c, [ this ](const QModelIndex& p, int f, int l) { this->beginRemoveColumns(p, f, l); });
-	cacheColumnShape();
-	endRemoveColumns();
+    if (c.isEmpty()) {
+        return;
+    }
+    // 由于使用了缓存表，删除只需要刷新数据即可
+    cacheColumnShape();
+    int minCol = *std::min_element(c.begin(), c.end());
+    emit dataChanged(createIndex(0, minCol), createIndex(rowCount() - 1, columnCount() - 1));
 }
 
 /**
@@ -606,9 +568,13 @@ void DAPyDataFrameTableModel::notifyColumnsRemoved(const QList< int >& c)
  */
 void DAPyDataFrameTableModel::notifyColumnsInserted(const QList< int >& c)
 {
-	beginFunCall(c, [ this ](const QModelIndex& p, int f, int l) { this->beginInsertColumns(p, f, l); });
-	cacheColumnShape();
-	endInsertColumns();
+    if (c.isEmpty()) {
+        return;
+    }
+    // 由于使用了缓存表，删除只需要刷新数据即可
+    cacheColumnShape();
+    int minCol = *std::min_element(c.begin(), c.end());
+    emit dataChanged(createIndex(0, minCol), createIndex(rowCount() - 1, columnCount() - 1));
 }
 
 /**
@@ -735,7 +701,6 @@ void DAPyDataFrameTableModel::beginFunCall(const QList< int >& listlike, DAPyDat
 	if (listlike.isEmpty()) {
 		return;
 	}
-#if 1  // deepseek 优化
 	// 将输入列表复制到一个新列表中，以便进行排序和去重操作
 	QList< int > sorted = listlike;
 	// 对列表进行升序排序
@@ -758,52 +723,6 @@ void DAPyDataFrameTableModel::beginFunCall(const QList< int >& listlike, DAPyDat
 	}
 	// 循环结束后，处理最后一个连续的索引范围（从 first 到 sorted.last()）
 	fun(QModelIndex(), first, sorted.last());
-
-#else
-	if (listlike.empty()) {
-		return;
-	}
-	if (listlike.size() == 1) {
-		fun(QModelIndex(), listlike[ 0 ], listlike[ 0 ]);
-	} else {
-		// 排序加去重
-		QList< int > orderindex = listlike;
-		std::sort(orderindex.begin(), orderindex.end());
-		auto last = std::unique(orderindex.begin(), orderindex.end());
-		orderindex.erase(last, orderindex.end());
-		int first = orderindex[ 0 ];
-		for (auto i = orderindex.begin() + 1; i != orderindex.end(); ++i) {
-			auto pre = i - 1;
-			if ((*i) - (*pre) != 1) {
-				// 后一个减去前一个不为1，说明跨越
-				// 这时候就要执行beginRemoveRows，同时记录删除的数量
-				fun(QModelIndex(), first, *pre);
-				first = *i;
-			}
-		}
-		// 对于一直连续，这个直接一次连续，对于不连续，最后一段跨度也是此
-		fun(QModelIndex(), first, orderindex.back());
-	}
-#endif
-}
-
-/**
- * @brief DAPyDataFrameTableModel::prefetchData
- * @param start
- * @param end
- */
-void DAPyDataFrameTableModel::prefetchData(int start, int end) const
-{
-	DA_DC(d);
-	start = qMax(0, start);
-	end   = qMin(d->dataframeRow, end);
-
-	for (int row = start; row < end; ++row) {
-		if (!d->cacheDatas.contains(row)) {
-			std::unique_ptr< QVector< QVariant > > rowData = d->iloc(row);
-			d->cacheDatas.insert(row, rowData.release());
-		}
-	}
 }
 
 }  // end of namespace DA

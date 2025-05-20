@@ -17,8 +17,7 @@ DAPyDataFrameTableView::DAPyDataFrameTableView(QWidget* parent) : QTableView(par
 	QFontMetrics fm = fontMetrics();
 	if (QHeaderView* vheader = verticalHeader()) {
 		vheader->setDefaultSectionSize(fm.lineSpacing() * 1.2);
-		vheader->setSectionsClickable(false);
-		vheader->setSectionResizeMode(QHeaderView::Fixed);
+        vheader->setSectionResizeMode(QHeaderView::Interactive);
 	}
 	if (QHeaderView* hheader = horizontalHeader()) {
 		hheader->setSectionResizeMode(QHeaderView::Interactive);
@@ -36,8 +35,7 @@ void DAPyDataFrameTableView::setDataframeModel(DAPyDataFrameTableModel* datafram
 {
 	// 断开旧模型连接
 	if (mDataframeModel) {
-		disconnect(
-			mDataframeModel, &DAPyDataFrameTableModel::currentPageChanged, this, &DAPyDataFrameTableView::onPageChanged);
+        disconnect(mDataframeModel, &DAPyDataFrameTableModel::currentPageChanged, this, &DAPyDataFrameTableView::onPageChanged);
 	}
 	setModel(dataframeModle);
 	mDataframeModel = dataframeModle;
@@ -59,6 +57,15 @@ void DAPyDataFrameTableView::setDataFrame(const DAPyDataFrame& d)
 		return;
 	}
 	mDataframeModel->setDataFrame(d);
+    // 设置数据时，按照行数设置垂直表头的宽度
+    if (auto vh = verticalHeader()) {
+        auto shape      = d.shape();
+        QFontMetrics fm = vh->fontMetrics();
+        int w           = fm.horizontalAdvance(QString(" %1 ").arg(shape.first));
+        w               = w > 15 ? w : 15;
+        vh->setFixedWidth(w);
+        // qDebug() << "setFixWidth by" << QString("%1").arg(shape.first) << ",w=" << w;
+    }
 }
 
 DAPyDataFrame DAPyDataFrameTableView::getDataframe() const
@@ -81,22 +88,20 @@ void DAPyDataFrameTableView::onVerticalScrollBarValueChanged(int v)
 	s_elasped.start();
 
 	// 计算滚动比例
-	QScrollBar* vsc      = verticalScrollBar();
-	const int totalRows  = mDataframeModel->getActualDataframeRowCount();
-	const int windowSize = mDataframeModel->getCacheWindowSize();
-	const int maxScroll  = qMax(0, totalRows - windowSize);
+    QScrollBar* vsc     = verticalScrollBar();
+    const int totalRows = mDataframeModel->getActualDataframeRowCount();
+    const int maxScroll = qMax(0, totalRows);
 
 	const double ratio    = static_cast< double >(v) / (vsc->maximum() - vsc->minimum());
 	const int targetStart = qMin(static_cast< int >(ratio * maxScroll), maxScroll);
-	qDebug()
-		<< QString(
-			   "onVerticalScrollBarValueChanged(%1):totalRows=%2,windowSize=%3,maxScroll=%4,ratio=%5,targetStart=%6")
-			   .arg(v)
-			   .arg(totalRows)
-			   .arg(windowSize)
-			   .arg(maxScroll)
-			   .arg(ratio)
-			   .arg(targetStart);
+    qDebug() << QString("onVerticalScrollBarValueChanged(%1):totalRows=%2,mCurrentShowRows=%3,maxScroll=%4,ratio=%5,"
+                        "targetStart=%6")
+                    .arg(v)
+                    .arg(totalRows)
+                    .arg(mCurrentShowRows)
+                    .arg(maxScroll)
+                    .arg(ratio)
+                    .arg(targetStart);
 	mDataframeModel->setCacheWindowStartRow(targetStart);
 }
 
@@ -107,7 +112,13 @@ void DAPyDataFrameTableView::onPageChanged(int page)
 	if (!vsc) {
 		return;
 	}
-	vsc->setValue(page * mDataframeModel->getPageSize());
+    vsc->setValue(page * mDataframeModel->getPageSize());
+}
+
+void DAPyDataFrameTableView::resizeEvent(QResizeEvent* event)
+{
+    // 刷新当前能显示多少行
+    return QTableView::resizeEvent(event);
 }
 
 }
