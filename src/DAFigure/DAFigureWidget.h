@@ -107,6 +107,12 @@ signals:
 	 */
 	void chartAdded(DA::DAChartWidget* c);
 
+    /**
+     * @brief 绘图移除信号
+     * @param c
+     */
+    void chartRemoved(DA::DAChartWidget* c);
+
 	/**
 	 * @brief 绘图即将移除
 	 * @param plot 即将移除的绘图，此时指针还有效
