@@ -33,14 +33,23 @@ public:
 	void setupChartFactory(DAChartFactory* fac);
 	// 添加一个2D chart
 	DAChartWidget* createChart();
-	DAChartWidget* createChart(float xPresent, float yPresent, float wPresent, float hPresent);
+	DAChartWidget* createChart(const QRectF& versatileSize, bool relativePos = true);
+	DAChartWidget* createChart(float xVersatile, float yVersatile, float wVersatile, float hVersatile, bool relativePos = true);
 	DAChartWidget* createChart_();
-	DAChartWidget* createChart_(float xPresent, float yPresent, float wPresent, float hPresent);
+	DAChartWidget* createChart_(const QRectF& versatileSize, bool relativePos = true);
 	// 移除chart，但不会delete
 	void removeChart(DAChartWidget* chart);
+	void removeChart_(DAChartWidget* chart);
+	//
+
 	// 添加一个已有的chart
-	void addChart(DAChartWidget* chart, float xPresent, float yPresent, float wPresent, float hPresent);
-	void addChart(DAChartWidget* chart, const QRectF& present);
+	void addChart(DAChartWidget* chart,
+				  float xVersatile,
+				  float yVersatile,
+				  float wVersatile,
+				  float hVersatile,
+				  bool relativePos = true);
+	void addChart(DAChartWidget* chart, const QRectF& versatileSize, bool relativePos);
 	// 获取所有的图表(注意次获取没有顺序)
 	QList< DAChartWidget* > getCharts() const;
 	// 获取所有的图表安装显示顺序,这个顺序是在窗口显示最顶层的排位最前
@@ -107,11 +116,11 @@ signals:
 	 */
 	void chartAdded(DA::DAChartWidget* c);
 
-    /**
-     * @brief 绘图移除信号
-     * @param c
-     */
-    void chartRemoved(DA::DAChartWidget* c);
+	/**
+	 * @brief 绘图移除信号
+	 * @param c
+	 */
+	void chartRemoved(DA::DAChartWidget* c);
 
 	/**
 	 * @brief 绘图即将移除

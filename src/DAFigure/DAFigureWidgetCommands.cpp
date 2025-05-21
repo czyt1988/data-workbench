@@ -1,4 +1,4 @@
-#include "DAFigureWidgetCommands.h"
+﻿#include "DAFigureWidgetCommands.h"
 #include "DAFigureWidget.h"
 #include "DAChartWidget.h"
 namespace DA
@@ -8,12 +8,12 @@ namespace DA
 // DAFigureWidgetCommand_base
 //----------------------------------------------------
 
-DAFigureWidgetCommand_base::DAFigureWidgetCommand_base(DAFigureWidget* fig, QUndoCommand* par)
+DAFigureWidgetCommandBase::DAFigureWidgetCommandBase(DAFigureWidget* fig, QUndoCommand* par)
     : QUndoCommand(par), figureWidget(fig)
 {
 }
 
-DAFigureWidget* DAFigureWidgetCommand_base::figure()
+DAFigureWidget* DAFigureWidgetCommandBase::figure()
 {
     return figureWidget;
 }
@@ -26,13 +26,25 @@ DAFigureWidgetCommandCreateChart::DAFigureWidgetCommandCreateChart(DAFigureWidge
                                                                    float yPresent,
                                                                    float wPresent,
                                                                    float hPresent,
+                                                                   bool isRelative,
                                                                    QUndoCommand* par)
-    : DAFigureWidgetCommand_base(fig, par)
+    : DAFigureWidgetCommandBase(fig, par)
     , mChart(nullptr)
-    , mXPresent(xPresent)
-    , mYPresent(yPresent)
-    , mWPresent(wPresent)
-    , mHPresent(hPresent)
+    , mChartSize(xPresent, yPresent, wPresent, hPresent)
+    , mIsRelative(isRelative)
+    , mNeedDelete(false)
+{
+    setText(QObject::tr("create chart"));  // cn:创建绘图
+}
+
+DAFigureWidgetCommandCreateChart::DAFigureWidgetCommandCreateChart(DAFigureWidget* fig,
+                                                                   const QRectF& versatileSize,
+                                                                   bool isRelative,
+                                                                   QUndoCommand* par)
+    : DAFigureWidgetCommandBase(fig, par)
+    , mChart(nullptr)
+    , mChartSize(versatileSize)
+    , mIsRelative(isRelative)
     , mNeedDelete(false)
 {
     setText(QObject::tr("create chart"));  // cn:创建绘图
@@ -40,29 +52,71 @@ DAFigureWidgetCommandCreateChart::DAFigureWidgetCommandCreateChart(DAFigureWidge
 
 DAFigureWidgetCommandCreateChart::~DAFigureWidgetCommandCreateChart()
 {
-    if (mNeedDelete) {
-        if (mChart) {
-            mChart->deleteLater();
-        }
-    }
+	if (mNeedDelete) {
+		if (mChart) {
+			mChart->deleteLater();
+		}
+	}
 }
 
 void DAFigureWidgetCommandCreateChart::redo()
 {
-    mNeedDelete = false;
-    if (mChart) {
-        figure()->addChart(mChart, mXPresent, mYPresent, mWPresent, mHPresent);
-    } else {
-        mChart = figure()->createChart(mXPresent, mYPresent, mWPresent, mHPresent);
-        mChart->setXLabel("x");
-        mChart->setYLabel("y");
-    }
+	mNeedDelete = false;
+	if (mChart) {
+		figure()->addChart(mChart, mChartSize, mIsRelative);
+	} else {
+		mChart = figure()->createChart(mChartSize, mIsRelative);
+		mChart->setXLabel("x");
+		mChart->setYLabel("y");
+	}
 }
 
 void DAFigureWidgetCommandCreateChart::undo()
 {
-    mNeedDelete = true;
-    figure()->removeChart(mChart);
+	mNeedDelete = true;
+	figure()->removeChart(mChart);
+}
+
+DAChartWidget* DAFigureWidgetCommandCreateChart::getChartWidget()
+{
+	return mChart;
+}
+
+//===============================================================
+// DAFigureWidgetCommandRemoveChart
+//===============================================================
+DAFigureWidgetCommandRemoveChart::DAFigureWidgetCommandRemoveChart(DAFigureWidget* fig, DAChartWidget* chart, QUndoCommand* par)
+	: DAFigureWidgetCommandBase(fig, par), mChart(chart)
+{
+	setText(QObject::tr("remove chart"));  // cn:创建绘图
+	// 先要获取尺寸
+	mIsRelative = fig->isWidgetRelativePos(chart);
+	mChartSize  = fig->getWidgetVersatileSize(chart);
+}
+
+DAFigureWidgetCommandRemoveChart::~DAFigureWidgetCommandRemoveChart()
+{
+	if (mNeedDelete) {
+		if (mChart) {
+			mChart->deleteLater();
+		}
+	}
+}
+
+void DAFigureWidgetCommandRemoveChart::redo()
+{
+	mNeedDelete = true;
+	if (mChart) {
+		figure()->removeChart(mChart);
+	}
+}
+
+void DAFigureWidgetCommandRemoveChart::undo()
+{
+	mNeedDelete = false;
+	if (mChart) {
+		figure()->addChart(mChart, mChartSize);
+	}
 }
 
 //----------------------------------------------------
@@ -73,7 +127,7 @@ DAFigureWidgetCommandResizeWidget::DAFigureWidgetCommandResizeWidget(DAFigureWid
                                                                      const QRectF& oldPresent,
                                                                      const QRectF& newPresent,
                                                                      QUndoCommand* par)
-    : DAFigureWidgetCommand_base(fig, par), mWidget(w), mOldPresent(oldPresent), mNewPresent(newPresent)
+    : DAFigureWidgetCommandBase(fig, par), mWidget(w), mOldPresent(oldPresent), mNewPresent(newPresent)
 {
     setText(QObject::tr("set figure widget size"));  // cn:设置绘图中窗体的尺寸
 }
@@ -96,34 +150,34 @@ DAFigureWidgetCommandAttachItem::DAFigureWidgetCommandAttachItem(DAFigureWidget*
                                                                  QwtPlotItem* item,
                                                                  bool skipFirst,
                                                                  QUndoCommand* par)
-    : DAFigureWidgetCommand_base(fig, par), mChart(chart), mItem(item), mSkipFirst(skipFirst), mNeedDelete(false)
+    : DAFigureWidgetCommandBase(fig, par), mChart(chart), mItem(item), mSkipFirst(skipFirst), mNeedDelete(false)
 {
     setText(QObject::tr("add item in chart"));  // cn:设置绘图中窗体的尺寸
 }
 
 DAFigureWidgetCommandAttachItem::~DAFigureWidgetCommandAttachItem()
 {
-    if (mNeedDelete) {
-        if (mItem) {
-            delete mItem;
-        }
-    }
+	if (mNeedDelete) {
+		if (mItem) {
+			delete mItem;
+		}
+	}
 }
 
 void DAFigureWidgetCommandAttachItem::redo()
 {
-    if (mSkipFirst) {
-        mSkipFirst = false;
-    } else {
-        mItem->attach(mChart);
-        mNeedDelete = false;
-    }
+	if (mSkipFirst) {
+		mSkipFirst = false;
+	} else {
+		mItem->attach(mChart);
+		mNeedDelete = false;
+	}
 }
 
 void DAFigureWidgetCommandAttachItem::undo()
 {
-    mItem->detach();
-    mNeedDelete = true;
+	mItem->detach();
+	mNeedDelete = true;
 }
 
 }

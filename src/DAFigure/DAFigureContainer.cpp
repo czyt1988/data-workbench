@@ -73,28 +73,32 @@ DAFigureContainer::~DAFigureContainer()
 /**
  * @brief 添加窗体
  * @param widget
- * @param posPercent
+ * @param versatileSize 多功能尺寸，可以是比例，也可以是绝对尺寸
  */
-void DAFigureContainer::addWidget(QWidget* widget, const QRectF& posPercent)
+void DAFigureContainer::addWidget(QWidget* widget, const QRectF& versatileSize, bool relativePos)
 {
 	if (widget->parentWidget() != this) {
 		widget->setParent(this);
 	}
-	QRect widgetSize = calcWidgetSize(posPercent);
-	widget->setGeometry(widgetSize);
-	DAFigureContainer::WidgetSizeData sd(posPercent, true);
+	if (relativePos) {
+		QRect widgetSize = calcWidgetSize(versatileSize);
+		widget->setGeometry(widgetSize);
+	} else {
+		widget->setGeometry(versatileSize.toRect());
+	}
+	DAFigureContainer::WidgetSizeData sd(versatileSize, relativePos);
 	d_ptr->managedWidgets.insert(widget, sd);
 	widget->installEventFilter(this);
-	// qDebug() << "DAFigureContainer::addWidget,Widget setGeometry=" << widgetSize << ",DAFigureContainer rect=" << rect();
 }
 
-void DAFigureContainer::addWidget(QWidget* widget, float xPercent, float yPercent, float wPercent, float hPercent)
+void DAFigureContainer::addWidget(QWidget* widget, float xVersatile, float yVersatile, float wVersatile, float hVersatile, bool relativePos)
 {
 	addWidget(widget,
-			  QRectF(castRealByPrecision(xPercent, DAFIGURECONTAINER_PRECISION),
-					 castRealByPrecision(yPercent, DAFIGURECONTAINER_PRECISION),
-					 castRealByPrecision(wPercent, DAFIGURECONTAINER_PRECISION),
-					 castRealByPrecision(hPercent, DAFIGURECONTAINER_PRECISION)));
+			  QRectF(castRealByPrecision(xVersatile, DAFIGURECONTAINER_PRECISION),
+					 castRealByPrecision(yVersatile, DAFIGURECONTAINER_PRECISION),
+					 castRealByPrecision(wVersatile, DAFIGURECONTAINER_PRECISION),
+					 castRealByPrecision(hVersatile, DAFIGURECONTAINER_PRECISION)),
+			  relativePos);
 }
 
 /**
@@ -134,6 +138,20 @@ QList< QWidget* > DAFigureContainer::getOrderedWidgetList() const
 		}
 	}
 	return res;
+}
+
+/**
+ * @brief 获取窗口的多功能尺寸，这个尺寸可能是相对尺寸，也可能是绝对尺寸，要通过isWidgetRelativePos确定
+ * @param w
+ * @return
+ */
+QRectF DAFigureContainer::getWidgetVersatileSize(QWidget* w) const
+{
+	WidgetSizeData sd = d_ptr->managedWidgets.value(w, WidgetSizeData());
+	if (!sd.isValid()) {
+		return QRectF();
+	}
+	return sd.sizeData;
 }
 
 /**

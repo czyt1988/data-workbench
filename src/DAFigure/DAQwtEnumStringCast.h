@@ -1,8 +1,0 @@
-﻿#ifndef DAQWTENUMSTRINGCAST_H
-#define DAQWTENUMSTRINGCAST_H
-namespace DA {
-
-}
-
-
-#endif  // DAQWTENUMSTRINGCAST_H

@@ -25,8 +25,9 @@ public:
 	~DAFigureContainer();
 
 	// 添加窗体
-	void addWidget(QWidget* widget, const QRectF& posPercent);
-	void addWidget(QWidget* widget, float xPercent, float yPercent, float wPercent, float hPercent);
+	void addWidget(QWidget* widget, const QRectF& versatileSize, bool relativePos = true);
+	void
+	addWidget(QWidget* widget, float xVersatile, float yVersatile, float wVersatile, float hVersatile, bool relativePos = true);
 	// 移除widget，但不会删除
 	void removeWidget(QWidget* widget);
 
@@ -34,7 +35,9 @@ public:
 	QList< QWidget* > getWidgetList() const;
 	// 获取一个有序的窗口列表，这个顺序是在窗口显示最顶层的排位最前
 	QList< QWidget* > getOrderedWidgetList() const;
-	// 获取窗口的位置信息
+	// 获取窗口的多功能尺寸，这个尺寸可能是相对尺寸，也可能是绝对尺寸，要通过isWidgetRelativePos确定
+	QRectF getWidgetVersatileSize(QWidget* w) const;
+	// 获取相对尺寸
 	QRectF getWidgetPosPercent(QWidget* w) const;
 	void setWidgetPosPercent(QWidget* w, const QRectF& posPercent);
 	void setWidgetPosPercent(QWidget* w, float xPercent, float yPercent, float wPercent, float hPercent);

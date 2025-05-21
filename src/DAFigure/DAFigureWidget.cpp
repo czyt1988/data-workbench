@@ -24,11 +24,11 @@
 #include "DAFigureWidgetCommands.h"
 namespace DA
 {
-const float c_figurewidget_default_x = 0.05f;
-const float c_figurewidget_default_y = 0.05f;
-const float c_figurewidget_default_w = 0.9f;
-const float c_figurewidget_default_h = 0.9f;
-
+const float c_figurewidget_default_x     = 0.05f;
+const float c_figurewidget_default_y     = 0.05f;
+const float c_figurewidget_default_w     = 0.9f;
+const float c_figurewidget_default_h     = 0.9f;
+const QRectF c_figurewidget_default_size = QRectF(0.05, 0.05, 0.9, 0.9);
 //===================================================
 // DAFigureWidgetPrivate
 //===================================================
@@ -103,21 +103,19 @@ void DAFigureWidget::setupChartFactory(DAChartFactory* fac)
  */
 DAChartWidget* DAFigureWidget::createChart()
 {
-    return (createChart(c_figurewidget_default_x, c_figurewidget_default_y, c_figurewidget_default_w, c_figurewidget_default_h));
+    return (createChart(c_figurewidget_default_size));
 }
 
 /**
- * @brief 添加一个chart，指定位置占比
- * @param xPresent
- * @param yPresent
- * @param wPresent
- * @param hPresent
+ * @brief 创建绘图
+ * @param versatileSize
+ * @param relativePos
  * @return
  */
-DAChartWidget* DAFigureWidget::createChart(float xPresent, float yPresent, float wPresent, float hPresent)
+DAChartWidget* DAFigureWidget::createChart(const QRectF& versatileSize, bool relativePos)
 {
 	DAChartWidget* chart = d_ptr->mFactory->createChart(this);
-	addChart(chart, xPresent, yPresent, wPresent, hPresent);
+	addChart(chart, versatileSize, relativePos);
 	// 不加这句话，有时候不显示出来
 	chart->show();
 	// 对于有Overlay，需要把Overlay提升到最前面，否则会被覆盖
@@ -128,13 +126,31 @@ DAChartWidget* DAFigureWidget::createChart(float xPresent, float yPresent, float
 }
 
 /**
+ * @brief 添加一个chart，指定位置占比
+ * @param xVersatile
+ * @param yPresent
+ * @param wPresent
+ * @param hPresent
+ * @return
+ */
+DAChartWidget* DAFigureWidget::createChart(float xVersatile, float yVersatile, float wVersatile, float hVersatile, bool relativePos)
+{
+    return createChart(QRectF(xVersatile, yVersatile, wVersatile, hVersatile), relativePos);
+}
+
+/**
  * @brief 移除chart，但不会delete
  * @param chart
  */
 void DAFigureWidget::removeChart(DAChartWidget* chart)
 {
-    removeWidget(chart);
-    Q_EMIT chartRemoved(chart);
+	removeWidget(chart);
+	Q_EMIT chartRemoved(chart);
+}
+
+void DAFigureWidget::removeChart_(DAChartWidget* chart)
+{
+    d_ptr->mUndoStack.push(new DAFigureWidgetCommandRemoveChart(this, chart));
 }
 
 /**
@@ -143,23 +159,23 @@ void DAFigureWidget::removeChart(DAChartWidget* chart)
  */
 DAChartWidget* DAFigureWidget::createChart_()
 {
-    return createChart_(c_figurewidget_default_x, c_figurewidget_default_y, c_figurewidget_default_w, c_figurewidget_default_h);
+    return createChart_(c_figurewidget_default_size);
 }
 
 /**
  * @brief 支持redo/undo的createchart
- * @param xPresent
+ * @param versatileSize
  * @param yPresent
- * @param wPresent
+ * @param wVersatile
  * @param hPresent
  * @return
  */
-DAChartWidget* DAFigureWidget::createChart_(float xPresent, float yPresent, float wPresent, float hPresent)
+DAChartWidget* DAFigureWidget::createChart_(const QRectF& versatileSize, bool relativePos)
 {
-    DAFigureWidgetCommandCreateChart* cmd = new DAFigureWidgetCommandCreateChart(this, xPresent, yPresent, wPresent, hPresent);
+	DAFigureWidgetCommandCreateChart* cmd = new DAFigureWidgetCommandCreateChart(this, versatileSize, relativePos);
 	d_ptr->mUndoStack.push(cmd);
 	// 必须先push再获取chart
-	return cmd->mChart;
+	return cmd->getChartWidget();
 }
 
 /**
@@ -167,21 +183,21 @@ DAChartWidget* DAFigureWidget::createChart_(float xPresent, float yPresent, floa
  * @param chart 绘图
  * @param xPresent
  * @param yPresent
- * @param wPresent
+ * @param wVersatile
  * @param hPresent
  * @return
  */
-void DAFigureWidget::addChart(DAChartWidget* chart, float xPresent, float yPresent, float wPresent, float hPresent)
+void DAFigureWidget::addChart(DAChartWidget* chart, float xVersatile, float yVersatile, float wVersatile, float hVersatile, bool relativePos)
 {
-	addWidget(chart, xPresent, yPresent, wPresent, hPresent);
+    addChart(chart, QRectF(xVersatile, yVersatile, wVersatile, hVersatile), relativePos);
+}
+
+void DAFigureWidget::addChart(DAChartWidget* chart, const QRectF& versatileSize, bool relativePos)
+{
+	addWidget(chart, versatileSize, relativePos);
 	d_ptr->mCurrentChart = chart;
 	emit chartAdded(chart);
 	setFocusProxy(chart);
-}
-
-void DAFigureWidget::addChart(DAChartWidget* chart, const QRectF& present)
-{
-    addChart(chart, present.x(), present.y(), present.width(), present.height());
 }
 
 /**
@@ -359,13 +375,13 @@ void DAFigureWidget::enableSubChartEditor(bool enable)
 		if (nullptr == d_ptr->mChartEditorOverlay) {
 			d_ptr->mChartEditorOverlay = new DAFigureWidgetOverlayChartEditor(this);
 			connect(d_ptr->mChartEditorOverlay,
-                    &DAFigureWidgetOverlayChartEditor::widgetGeometryChanged,
-                    this,
-                    &DAFigureWidget::onWidgetGeometryChanged);
+					&DAFigureWidgetOverlayChartEditor::widgetGeometryChanged,
+					this,
+					&DAFigureWidget::onWidgetGeometryChanged);
 			connect(d_ptr->mChartEditorOverlay,
-                    &DAFigureWidgetOverlayChartEditor::activeWidgetChanged,
-                    this,
-                    &DAFigureWidget::onOverlayActiveWidgetChanged);
+					&DAFigureWidgetOverlayChartEditor::activeWidgetChanged,
+					this,
+					&DAFigureWidget::onOverlayActiveWidgetChanged);
 			d_ptr->mChartEditorOverlay->show();
 			d_ptr->mChartEditorOverlay->raise();  // 同时提升最前
 		} else {
@@ -661,7 +677,7 @@ QDataStream& operator>>(QDataStream& in, DAFigureWidget* p)
 	in >> tmp;
 	if (tmp != magicStart) {
 		throw DABadSerializeExpection(
-            QObject::tr("DAFigureWidget get invalid magic strat code"));  // cn: DAFigureWidget的文件头异常
+			QObject::tr("DAFigureWidget get invalid magic strat code"));  // cn: DAFigureWidget的文件头异常
 		return (in);
 	}
 	QByteArray geometryData, stateData;
@@ -683,7 +699,7 @@ QDataStream& operator>>(QDataStream& in, DAFigureWidget* p)
 	} catch (const DABadSerializeExpection& exp) {
 		throw exp;
 	}
-    return (in);
+	return (in);
 }
 
 }
