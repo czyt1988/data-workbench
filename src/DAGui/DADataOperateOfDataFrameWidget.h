@@ -28,6 +28,7 @@ class DADialogCreatePivotTable;
 
 /**
  * @brief 针对DataFrame的操作窗口
+ *
  */
 class DAGUI_API DADataOperateOfDataFrameWidget : public DADataOperatePageWidget
 {
@@ -61,6 +62,7 @@ public:
 
 	// 获取选中的序列，如果用户打开一个表格，选中了其中一列，那么将返回那一列pd.Series作为数据，如果用户选中了多列，那么每列作为一个DAData并组成list返回
 	QList< DAData > getSlectedSeries() const;
+
 public Q_SLOTS:
 	void setDAData(const DA::DAData& d);
 	// 在选中行后面插入行
@@ -153,16 +155,16 @@ protected:
 private:
 	Ui::DADataOperateOfDataFrameWidget* ui;
 	DAData mData;
-    DAPyDataFrameTableModel* mModel{ nullptr };
+	DAPyDataFrameTableModel* mModel { nullptr };
 
-    DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs{ nullptr };
-    DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs{ nullptr };
-    DADialogDataFrameFillna* mDialogDataFrameFillna{ nullptr };
-    DADialogDataFrameFillInterpolate* mDialogDataFrameFillInterpolate{ nullptr };
-    DADialogDataFrameClipOutlier* mDialogDataFrameClipOutlier{ nullptr };
-    DADialogCreatePivotTable* mDialogCreatePivotTable{ nullptr };
-    DADialogDataFrameQueryDatas* mDialogDataFrameQueryDatas{ nullptr };
-    DADialogDataFrameSort* mDADialogDataFrameSort{ nullptr };
+	DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs { nullptr };
+	DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs { nullptr };
+	DADialogDataFrameFillna* mDialogDataFrameFillna { nullptr };
+	DADialogDataFrameFillInterpolate* mDialogDataFrameFillInterpolate { nullptr };
+	DADialogDataFrameClipOutlier* mDialogDataFrameClipOutlier { nullptr };
+	DADialogCreatePivotTable* mDialogCreatePivotTable { nullptr };
+	DADialogDataFrameQueryDatas* mDialogDataFrameQueryDatas { nullptr };
+	DADialogDataFrameSort* mDADialogDataFrameSort { nullptr };
 };
 }  // end of namespace DA
 #endif  // DADATAOPERATEOFDATAFRAMEWIDGET_H

@@ -95,7 +95,7 @@ message(STATUS "qt${QT_VERSION_MAJOR}advanceddocking_DIR=${qt${QT_VERSION_MAJOR}
 
 # 常见错误
 
-- vs编译器构建出错
+- vs2017译器构建出错
 
 > error D8050: 无法执行 xxx/c1xx.dll  未能将命令行放入调试记录中
 
@@ -135,6 +135,7 @@ message(STATUS "qt${QT_VERSION_MAJOR}advanceddocking_DIR=${qt${QT_VERSION_MAJOR}
 
 重启系统。
 ```
+如果还是不行，把项目移动到其他目录下，比如D盘，或者C盘，这样路径长度就变短了，这样问题就解决啦
 
 - 构建过程中出现moc错误
 
