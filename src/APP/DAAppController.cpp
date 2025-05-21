@@ -270,6 +270,7 @@ void DAAppController::initConnection()
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToDatetime, onActionCastToDatetimeTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameClipOutlier, onActionDataFrameClipOutlierTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameQueryDatas, onActionDataFrameQueryDatasTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameDataSelect, onActionDataFrameDataSelectTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameSort, onActionDataFrameSortTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCreatePivotTable, onActionCreatePivotTableTriggered);
 #if DA_ENABLE_PYTHON
@@ -1842,7 +1843,7 @@ void DAAppController::onActionCreatePivotTableTriggered()
 #if DA_ENABLE_PYTHON
 	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
 		DAPyDataFrame df = dfopt->createPivotTable();
-        if (df.empty()) {
+		if (df.empty()) {
 			return;
 		}
 		DAData originData = dfopt->data();
@@ -1979,6 +1980,20 @@ void DAAppController::onActionDataFrameQueryDatasTriggered()
 }
 
 /**
+ * @brief 过滤给定条件外的数据
+ */
+void DAAppController::onActionDataFrameDataSelectTriggered()
+{
+#if DA_ENABLE_PYTHON
+	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+		dfopt->dataselect();
+		setDirty();
+	}
+#endif
+}
+
+/**
+
  * @brief 数据排序
  */
 void DAAppController::onActionDataFrameSortTriggered()

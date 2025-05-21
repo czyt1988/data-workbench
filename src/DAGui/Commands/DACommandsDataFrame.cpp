@@ -706,6 +706,37 @@ bool DACommandDataFrame_querydatas::exec()
 
 ///////////////////
 
+DACommandDataFrame_dataselect::DACommandDataFrame_dataselect(const DAPyDataFrame& df,
+                                                             DAPyDataFrameTableModel* model,
+                                                             double lowervalue,
+                                                             double uppervalue,
+                                                             const QList< int >& index,
+                                                             QUndoCommand* par)
+    : DACommandWithTemporaryData(df, par), mModel(model), mlowervalue(lowervalue), mUppervalue(uppervalue), mIndex(index)
+{
+    setText(QObject::tr("data select"));  // cn:数据过滤
+}
+
+void DACommandDataFrame_dataselect::undo()
+{
+	load();
+	// 说明填充了空行
+	if (mModel) {
+		mModel->refresh();
+	}
+}
+
+bool DACommandDataFrame_dataselect::exec()
+{
+	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+	if (!pydf.dataselect(dataframe(), mlowervalue, mUppervalue, mIndex)) {
+		return false;
+	}
+	return true;
+}
+
+///////////////////
+
 DACommandDataFrame_sort::DACommandDataFrame_sort(const DAPyDataFrame& df,
                                                  const QString& by,
                                                  const bool ascending,

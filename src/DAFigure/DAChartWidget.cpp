@@ -4,6 +4,7 @@
 #include <QStyle>
 #include <QStyleOption>
 #include <QPainter>
+#include <qwt_grid_raster_data.h>
 
 #include "qwt_interval.h"
 #include "qwt_picker_machine.h"
@@ -35,13 +36,13 @@ class DAChartWidget::PrivateData
 public:
 	QScopedPointer< QwtPlotZoomer > mZoomer;
 	QScopedPointer< QwtPlotZoomer > mZoomerSecond;
-	QwtPlotGrid* mGrid { nullptr };
-	QwtPlotPicker* mPicker { nullptr };
-	QwtPlotPanner* mPanner { nullptr };
-	QwtPlotLegendItem* mLegend { nullptr };
-	QwtLegend* mLegendPanel { nullptr };
-	DAChartYDataPicker* mYDataPicker { nullptr };
-	DAChartXYDataPicker* mXYDataPicker { nullptr };
+	QwtPlotGrid* mGrid{ nullptr };
+	QwtPlotPicker* mPicker{ nullptr };
+	QwtPlotPanner* mPanner{ nullptr };
+	QwtPlotLegendItem* mLegend{ nullptr };
+	QwtLegend* mLegendPanel{ nullptr };
+	DAChartYDataPicker* mYDataPicker{ nullptr };
+	DAChartXYDataPicker* mXYDataPicker{ nullptr };
 	QColor mBorderColor;
 	PrivateData(DAChartWidget* p) : q_ptr(p)
 	{
@@ -696,24 +697,24 @@ QwtPlotIntervalCurve* DAChartWidget::addIntervalCurve(const QVector< double >& v
  */
 QwtPlotBarChart* DAChartWidget::addBar(const QVector< QPointF >& xyDatas)
 {
-    QwtPlotBarChart* bar = new QwtPlotBarChart();
-    bar->setSamples(xyDatas);
-    //! LegendChartTitle:
-    //! 图例中只显示​​整个图表​​的标题（通过title()设置）和一个默认颜色块
-    //! 适用于所有柱状体使用同一种颜色或不需要区分单个柱子的场景
-    //!
-    //! LegendBarTitles:
-    //! 为​​每个柱子​​生成图例项，显示specialSymbol()返回的符号和barTitle()设置的标题
-    //!
-    // ser->setLegendMode(QwtPlotBarChart::LegendBarTitles);
-    // ser->setLegendIconSize(QSize(10, 14));
-    // ser->setLayoutPolicy(QwtPlotBarChart::AutoAdjustSamples);
-    // ser->setLayoutHint(4.0);  // minimum width for a single bar
-    // ser->setSpacing(10);      // spacing between bars
+	QwtPlotBarChart* bar = new QwtPlotBarChart();
+	bar->setSamples(xyDatas);
+	//! LegendChartTitle:
+	//! 图例中只显示​​整个图表​​的标题（通过title()设置）和一个默认颜色块
+	//! 适用于所有柱状体使用同一种颜色或不需要区分单个柱子的场景
+	//!
+	//! LegendBarTitles:
+	//! 为​​每个柱子​​生成图例项，显示specialSymbol()返回的符号和barTitle()设置的标题
+	//!
+	// ser->setLegendMode(QwtPlotBarChart::LegendBarTitles);
+	// ser->setLegendIconSize(QSize(10, 14));
+	// ser->setLayoutPolicy(QwtPlotBarChart::AutoAdjustSamples);
+	// ser->setLayoutHint(4.0);  // minimum width for a single bar
+	// ser->setSpacing(10);      // spacing between bars
 	QwtColumnSymbol* symbol = new QwtColumnSymbol(QwtColumnSymbol::Box);
-    bar->setSymbol(symbol);
-    bar->attach(this);
-    return bar;
+	bar->setSymbol(symbol);
+	bar->attach(this);
+	return bar;
 }
 
 /**
@@ -725,12 +726,19 @@ QwtPlotBarChart* DAChartWidget::addBar(const QVector< QPointF >& xyDatas)
  */
 QwtPlotBarChart* DAChartWidget::addBar(const QVector< double >& yDatas)
 {
-    QwtPlotBarChart* bar = new QwtPlotBarChart();
-    bar->setSamples(yDatas);
-    QwtColumnSymbol* symbol = new QwtColumnSymbol(QwtColumnSymbol::Box);
-    bar->setSymbol(symbol);
-    bar->attach(this);
-    return bar;
+	QwtPlotBarChart* bar = new QwtPlotBarChart();
+	bar->setSamples(yDatas);
+	QwtColumnSymbol* symbol = new QwtColumnSymbol(QwtColumnSymbol::Box);
+	bar->setSymbol(symbol);
+	bar->attach(this);
+	return bar;
+}
+
+QwtPlotSpectrogram* DAChartWidget::addSpectroGram(QwtGridRasterData* gridData)
+{
+	QwtPlotSpectrogram* spectrogram = new QwtPlotSpectrogram();
+	spectrogram->setData(gridData);
+	return spectrogram;
 }
 
 /**
@@ -1044,7 +1052,7 @@ void DAChartWidget::zoomIn()
 		d_ptr->mZoomer->zoom(rect);
 	} else {
 		qDebug() << "zoom in get invalid zoom rect,current zoom rect is " << d_ptr->mZoomer->zoomRect()
-                 << ",will zoom rect is " << rect;
+				 << ",will zoom rect is " << rect;
 	}
 }
 
@@ -1073,7 +1081,7 @@ void DAChartWidget::zoomOut()
 		d_ptr->mZoomer->zoom(rect);
 	} else {
 		qDebug() << "zoom out get invalid zoom rect,current zoom rect is " << d_ptr->mZoomer->zoomRect()
-                 << ",will zoom rect is " << rect;
+				 << ",will zoom rect is " << rect;
 	}
 }
 

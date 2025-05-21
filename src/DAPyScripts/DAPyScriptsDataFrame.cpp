@@ -688,6 +688,40 @@ bool DAPyScriptsDataFrame::sort(DAPyDataFrame& df, const QString& by, bool ascen
 }
 
 /**
+ * @brief select方法的wrapper
+ * @param df
+ * @param contents
+ * @return
+ */
+bool DAPyScriptsDataFrame::dataselect(DAPyDataFrame& df, double lowervalue, double uppervalue, const QList< int >& index)
+{
+	try {
+		pybind11::object da_data_select = attr("da_data_select");
+		pybind11::dict args;
+		if (lowervalue == 0.0) {
+			args[ "lower" ] = pybind11::none();
+		} else {
+			args[ "lower" ] = lowervalue;
+		}
+		if (uppervalue == 0.0) {
+			args[ "upper" ] = pybind11::none();
+		} else {
+			args[ "upper" ] = uppervalue;
+		}
+		if (index.empty()) {
+			args[ "index" ] = pybind11::none();
+		} else {
+			args[ "index" ] = DA::PY::toPyList(index);
+		}
+		da_data_select(df.object(), **args);
+		return true;
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return false;
+}
+
+/**
  * @brief pivot_table方法的wrapper
  * @param values 要进行汇总的数据值
  * @param index 确定行参数

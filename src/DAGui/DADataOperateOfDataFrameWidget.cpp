@@ -837,6 +837,52 @@ bool DADataOperateOfDataFrameWidget::sortdatas(const DAPyDataFrame& df, const QS
 }
 
 /**
+ * @brief 过滤给定条件外的数据
+ * @return 成功返回true,反之返回false
+ */
+bool DADataOperateOfDataFrameWidget::dataselect()
+{
+	DAPyDataFrame df = getDataframe();
+	if (df.isNone()) {
+		return false;
+	}
+	if (!mDialogDataFrameClipOutlier) {
+		mDialogDataFrameClipOutlier = new DADialogDataFrameClipOutlier(this);
+	}
+	if (QDialog::Accepted != mDialogDataFrameClipOutlier->exec()) {
+		// 说明用户取消
+		return false;
+	}
+	QList< int > index;
+	if (isDataframeTableHaveSelection()) {
+		// 获取选中的列
+		index = getFullySelectedDataframeColumns();
+	}
+	// 获取填充值
+	double lowervalue = mDialogDataFrameClipOutlier->getLowerValue();
+	double uppervalue = mDialogDataFrameClipOutlier->getUpperValue();
+
+	return dataselect(df, lowervalue, uppervalue, index);
+}
+
+/**
+ * @brief 过滤给定条件外的数据
+ * @param lower 可选参数，下界值
+ * @param upper 可选参数，上界值。
+ * @return 成功返回true,反之返回false
+ */
+bool DADataOperateOfDataFrameWidget::dataselect(const DAPyDataFrame& df, double lower, double upper, const QList< int > index)
+{
+	std::unique_ptr< DACommandDataFrame_dataselect > cmd =
+		std::make_unique< DACommandDataFrame_dataselect >(df, mModel, lower, upper, index);
+	if (!cmd->exec()) {
+		return false;
+	}
+	getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
+	return true;
+}
+
+/**
  * @brief 创建一个数据描述
  * @return
  */

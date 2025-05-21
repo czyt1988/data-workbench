@@ -63,10 +63,10 @@ public:
 	bool insert_at(DAPyDataFrame& df, int col, const DAPySeries& series) noexcept;
 	// dropna(axis=0,how="any")
 	bool dropna(DAPyDataFrame& df,
-                int axis                    = 0,
-                const QString& how          = QStringLiteral("any"),
-                const QList< int >& indexs  = QList< int >(),
-                std::optional< int > thresh = std::nullopt);
+				int axis                    = 0,
+				const QString& how          = QStringLiteral("any"),
+				const QList< int >& indexs  = QList< int >(),
+				std::optional< int > thresh = std::nullopt);
 	// fillna()
 	bool fillna(DAPyDataFrame& df, double value, int limit);
 	// interpolate()
@@ -82,18 +82,21 @@ public:
 	// clipoutlier()
 	bool clipoutlier(DAPyDataFrame& df, double lowervalue, double uppervalue, int axis);
 	// querydatas()
-    bool queryDatas(DAPyDataFrame& df, const QString& expr);
+	bool queryDatas(DAPyDataFrame& df, const QString& expr);
     // 排序sort()
     bool sort(DAPyDataFrame& df, const QString& by, bool ascending);
+	// dataselect()
+	bool dataselect(DAPyDataFrame& df, double lowervalue, double uppervalue, const QList< int >& index);
+
 	// 创建数据透视表
 	DAPyDataFrame pivotTable(const DAPyDataFrame& df,
-                             const QStringList& value,
-                             const QStringList& index,
-                             const QStringList& columns,
-                             const QString& aggfunc,
-                             bool margins,
-                             const QString& marginsName,
-                             bool sort);
+							 const QStringList& value,
+							 const QStringList& index,
+							 const QStringList& columns,
+							 const QString& aggfunc,
+							 bool margins,
+							 const QString& marginsName,
+							 bool sort);
 };
 }  // namespace DA
 #endif  // DAPYSCRIPTSDATAFRAME_H

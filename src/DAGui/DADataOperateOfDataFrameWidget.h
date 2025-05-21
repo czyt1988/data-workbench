@@ -120,7 +120,11 @@ public Q_SLOTS:
 	// 过滤给定条件外的数据
 	bool querydatas();
 	bool querydatas(const DAPyDataFrame& df, const QString& exper);
-	// 数据排序
+	// 过滤给定条件外的数据
+	bool dataselect();
+	bool
+	dataselect(const DAPyDataFrame& df, double lower = 0.0, double upper = 0.0, const QList< int > index = QList< int >());
+	//数据排序
 	bool sortdatas();
 	bool sortdatas(const DAPyDataFrame& df, const QString& by, const bool ascending);
 	// 创建数据透视表
