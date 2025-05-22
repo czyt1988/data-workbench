@@ -1309,11 +1309,12 @@ void DAAppController::onActionAddDataTriggered()
 	if (fi.suffix().toLower() == "txt") {
 		DATxtFileImportDialog dlg(mMainWindow);
 		dlg.setTextFilePath(fileName);
-		if (QDialog::Accepted == dlg.exec()) {
-			// 获取导入txt的配置
-			args = dlg.getSetting();
-			qDebug() << "da_read:args->" << args;
+        if (QDialog::Accepted != dlg.exec()) {
+            return;
 		}
+        // 获取导入txt的配置
+        args = dlg.getSetting();
+        qDebug() << "da_read:args->" << args;
 	} else {
 	}
 	DA_WAIT_CURSOR_SCOPED();

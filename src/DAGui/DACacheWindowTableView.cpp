@@ -34,7 +34,7 @@ void DACacheWindowTableView::showActualRow(int actualRow)
     if (!cacheModel) {
         return;
     }
-    const int totalRows = cacheModel->getActualRowCount();
+    const int totalRows = cacheModel->actualRowCount();
     if (actualRow >= totalRows) {
         actualRow = totalRows - 1;
     }
@@ -65,7 +65,7 @@ void DACacheWindowTableView::verticalScrollBarValueChanged(int v)
     }
     // 计算滚动比例
     QScrollBar* vsc       = verticalScrollBar();
-    const int totalRows   = cacheModel->getActualRowCount();
+    const int totalRows   = cacheModel->actualRowCount();
     const int maxScroll   = qMax(0, totalRows);
     const double ratio    = static_cast< double >(v) / (vsc->maximum() - vsc->minimum());
     const int targetStart = qMin(static_cast< int >(ratio * maxScroll), maxScroll);

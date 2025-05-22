@@ -27,12 +27,13 @@ public:
 	~DAPyDataFrameTableModel();
 
 public:
-	virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
-	virtual int columnCount(const QModelIndex& parent = QModelIndex()) const override;
-	virtual int rowCount(const QModelIndex& parent = QModelIndex()) const override;
-	virtual Qt::ItemFlags flags(const QModelIndex& index) const override;
-	virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-	virtual bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
+    virtual int columnCount(const QModelIndex& parent = QModelIndex()) const override;
+
+    virtual QVariant actualHeaderData(int actualSection, Qt::Orientation orientation, int role) const override;
+    virtual int actualRowCount() const override;
+    virtual QVariant actualData(int actualRow, int actualColumn, int role) const override;
+    // 设置数据
+    virtual bool setActualData(int actualRow, int actualColumn, const QVariant& value, int role = Qt::EditRole) override;
 
 public:
 	DAPyDataFrame& dataFrame();
@@ -47,7 +48,6 @@ public:
 	/// @{
 	// 设置滑动窗模式的起始行
     virtual void setCacheWindowStartRow(int startRow) override;
-    virtual int getActualRowCount() const override;
 	/// @}
 
 	// 刷新

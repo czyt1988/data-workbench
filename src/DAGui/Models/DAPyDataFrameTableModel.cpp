@@ -155,25 +155,20 @@ DAPyDataFrameTableModel::~DAPyDataFrameTableModel()
 #endif
 }
 
-QVariant DAPyDataFrameTableModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant DAPyDataFrameTableModel::actualHeaderData(int actualSection, Qt::Orientation orientation, int role) const
 {
 	DA_DC(d);
-	DAPYDATAFRAMETABLEMODEL_CALL_ADD(cntheaderData);
-
     if ((role != Qt::DisplayRole && role != Qt::ToolTipRole) || d->isNoneDataframe()) {
-        return QAbstractTableModel::headerData(section, orientation, role);
+        return QAbstractTableModel::headerData(actualSection, orientation, role);
 	}
     // tooltips 和 display
 
 	if (Qt::Horizontal == orientation) {  // 说明是水平表头
-        if (section >= d->getDataframeColumnCount()) {
+        if (actualSection >= d->getDataframeColumnCount()) {
             return QVariant();
         }
-        return d->getDataframeColumnName(section);
+        return d->getDataframeColumnName(actualSection);
 	} else {
-		// 行头处理：转换为实际数据行索引
-        int actualSection = getCacheWindowStartRow() + section;
-
         if (actualSection >= d->getDataframeRowCount()) {
 			return QVariant();
 		}
@@ -186,95 +181,83 @@ int DAPyDataFrameTableModel::columnCount(const QModelIndex& parent) const
 {
 	Q_UNUSED(parent);
 	DA_DC(d);
-	DAPYDATAFRAMETABLEMODEL_CALL_ADD(cntcolumnCount);
     if (d->isNoneDataframe()) {
 		return d->minShowColumn;
 	}
     return std::max(d->getDataframeColumnCount() + d->extraColumn, d->minShowColumn);
 }
 
-int DAPyDataFrameTableModel::rowCount(const QModelIndex& parent) const
+int DAPyDataFrameTableModel::actualRowCount() const
 {
-	Q_UNUSED(parent);
 	DA_DC(d);
     if (d->isNoneDataframe()) {
 		return d->minShowRow;
 	}
-    return qMin(getCacheWindowSize(), d->getDataframeRowCount() + d->extraRow);
+    return d->getDataframeRowCount();
 }
 
-QVariant DAPyDataFrameTableModel::data(const QModelIndex& index, int role) const
+QVariant DAPyDataFrameTableModel::actualData(int actualRow, int actualColumn, int role) const
 {
-	DA_DC(d);
-	DAPYDATAFRAMETABLEMODEL_CALL_ADD(cntdata);
-    if (!index.isValid() || d->isNoneDataframe()) {
-		return QVariant();
-	}
-    int actualRow = getCacheWindowStartRow() + index.row();
-    if (actualRow >= d->getDataframeRowCount() || index.column() >= d->getDataframeColumnCount()) {
-		return QVariant();
-	}
-	switch (role) {
-	case Qt::TextAlignmentRole:
-		return int(Qt::AlignLeft | Qt::AlignVCenter);
-	case Qt::BackgroundRole:
-		return QVariant();
+    DA_DC(d);
+    if (d->isNoneDataframe()) {
+        return QVariant();
+    }
+    if (actualRow >= d->getDataframeRowCount() || actualColumn >= d->getDataframeColumnCount()) {
+        return QVariant();
+    }
+    switch (role) {
+    case Qt::TextAlignmentRole:
+        return int(Qt::AlignLeft | Qt::AlignVCenter);
+    case Qt::BackgroundRole:
+        return QVariant();
     case Qt::DisplayRole: {
-        return d->dataframe.iat(actualRow, index.column());
-	}
-	default:
-		break;
-	}
+        return d->dataframe.iat(actualRow, actualColumn);
+    }
+    default:
+        break;
+    }
 
-	return QVariant();
+    return QVariant();
 }
 
-bool DAPyDataFrameTableModel::setData(const QModelIndex& index, const QVariant& value, int role)
+bool DAPyDataFrameTableModel::setActualData(int actualRow, int actualColumn, const QVariant& value, int role)
 {
-	if (Qt::EditRole != role) {
-		return false;
-	}
-	DA_D(d);
-    if (!index.isValid() || d->isNoneDataframe()) {
-		return false;
-	}
-	// 如果启用虚拟化，要计算实际的行号
-    int actualRow = getCacheWindowStartRow() + index.row();
+    if (Qt::EditRole != role) {
+        return false;
+    }
+    DA_D(d);
+    if (d->isNoneDataframe()) {
+        return false;
+    }
+    // 如果启用虚拟化，要计算实际的行号
     if (actualRow >= d->getDataframeRowCount()) {
         // todo:这里实现一个dataframe追加行
         return false;
     }
-    if (index.column() >= d->getDataframeColumnCount()) {
+    if (actualColumn >= d->getDataframeColumnCount()) {
         // todo:这里实现一个dataframe追加列
         return false;
     }
 
-	QVariant olddata = d->dataframe.iat(actualRow, index.column());
-	if (value.isNull() == olddata.isNull()) {
-		// 两次都为空就跳过
-		return false;
-	}
-	if (!(d->undoStack)) {
-		// 如果d->_undoStack设置为nullptr，将不使用redo/undo
-		return d->dataframe.iat(actualRow, index.column(), value);
-	}
-	std::unique_ptr< DACommandDataFrame_iat > cmd_iat(
-        new DACommandDataFrame_iat(d->dataframe, actualRow, index.column(), olddata, value, this));
-	if (!cmd_iat->exec()) {
-		// 没设置成功，退出
-		return false;
-	}
-	d->undoStack->push(cmd_iat.release());  // push后会自动调用redo，第二次调用redo会被忽略
-	d->undoStack->setActive(true);
-	// 这里说明设置成功了
-	return true;
-}
-
-Qt::ItemFlags DAPyDataFrameTableModel::flags(const QModelIndex& index) const
-{
-	if (!index.isValid())
-		return Qt::NoItemFlags;
-	return Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable;
+    QVariant olddata = d->dataframe.iat(actualRow, actualColumn);
+    if (value.isNull() == olddata.isNull()) {
+        // 两次都为空就跳过
+        return false;
+    }
+    if (!(d->undoStack)) {
+        // 如果d->_undoStack设置为nullptr，将不使用redo/undo
+        return d->dataframe.iat(actualRow, actualColumn, value);
+    }
+    std::unique_ptr< DACommandDataFrame_iat > cmd_iat(
+        new DACommandDataFrame_iat(d->dataframe, actualRow, actualColumn, olddata, value, this));
+    if (!cmd_iat->exec()) {
+        // 没设置成功，退出
+        return false;
+    }
+    d->undoStack->push(cmd_iat.release());  // push后会自动调用redo，第二次调用redo会被忽略
+    d->undoStack->setActive(true);
+    // 这里说明设置成功了
+    return true;
 }
 
 DAPyDataFrame& DAPyDataFrameTableModel::dataFrame()
@@ -341,11 +324,6 @@ void DAPyDataFrameTableModel::setCacheWindowStartRow(int startRow)
         startRow = dr - 1;
     }
     DAAbstractCacheWindowTableModel::setCacheWindowStartRow(startRow);
-}
-
-int DAPyDataFrameTableModel::getActualRowCount() const
-{
-    return d_ptr->getDataframeRowCount();
 }
 
 void DAPyDataFrameTableModel::notifyRowChanged(int row)

@@ -3,6 +3,7 @@
 #include "ui_DAChartAddXYSeriesWidget.h"
 #include "DADataManager.h"
 #include "Models/DADataManagerTreeModel.h"
+#include <QHeaderView>
 #if DA_ENABLE_PYTHON
 #include "Models/DAPySeriesTableModel.h"
 #endif
@@ -90,7 +91,7 @@ void DAChartAddXYSeriesWidget::onComboBoxXCurrentDataframeSeriesChanged(const DA
 		series = df[ seriesName ];
 	}
     mModel->setSeriesAt(0, series);
-    ui->tableViewXY->showActualRow(0);
+    resetTableView();
 #endif
 }
 
@@ -111,7 +112,8 @@ void DAChartAddXYSeriesWidget::onComboBoxYCurrentDataframeSeriesChanged(const DA
 		series = df[ seriesName ];
 	}
 	mModel->setSeriesAt(1, series);
-    ui->tableViewXY->showActualRow(0);
+    resetTableView();
+
 #endif
 }
 
@@ -126,7 +128,6 @@ void DAChartAddXYSeriesWidget::onGroupBoxXAutoincrementClicked(bool on)
 		double base, step;
 		if (tryGetXSelfInc(base, step)) {
 			mModel->setSeriesAt(0, DAAutoincrementSeries< double >(base, step));
-            ui->tableViewXY->showActualRow(0);
 		}
 	} else {
 		// 取消要读取回原来的设置
@@ -136,8 +137,8 @@ void DAChartAddXYSeriesWidget::onGroupBoxXAutoincrementClicked(bool on)
 			series = data.toSeries();
 		}
 		mModel->setSeriesAt(0, series);
-        ui->tableViewXY->showActualRow(0);
 	}
+    resetTableView();
 	ui->comboBoxX->setEnabled(!on);
 #endif
 }
@@ -153,7 +154,6 @@ void DAChartAddXYSeriesWidget::onGroupBoxYAutoincrementClicked(bool on)
 		double base, step;
 		if (tryGetYSelfInc(base, step)) {
 			mModel->setSeriesAt(1, DAAutoincrementSeries< double >(base, step));
-            ui->tableViewXY->showActualRow(0);
 		}
 	} else {
 		// 取消要读取回原来的设置
@@ -163,8 +163,8 @@ void DAChartAddXYSeriesWidget::onGroupBoxYAutoincrementClicked(bool on)
 			series = data.toSeries();
 		}
 		mModel->setSeriesAt(1, series);
-        ui->tableViewXY->showActualRow(0);
 	}
+    resetTableView();
 	ui->comboBoxY->setEnabled(!on);
 #endif
 }
@@ -434,6 +434,19 @@ bool DAChartAddXYSeriesWidget::tryGetYSelfInc(double& base, double& step)
 	}
 	base = a;
 	step = b;
-	return true;
+    return true;
+}
+
+void DAChartAddXYSeriesWidget::resetTableView()
+{
+    if (!mModel) {
+        return;
+    }
+    int r = mModel->actualRowCount();
+    if (QHeaderView* vh = ui->tableViewXY->verticalHeader()) {
+        int w = vh->fontMetrics().horizontalAdvance(QString(" %1 ").arg(r));
+        vh->setFixedWidth(w);
+    }
+    ui->tableViewXY->showActualRow(0);
 }
 }

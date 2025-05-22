@@ -93,102 +93,17 @@ DAPySeriesTableModel::~DAPySeriesTableModel()
 {
 }
 
-QVariant DAPySeriesTableModel::headerData(int section, Qt::Orientation orientation, int role) const
-{
-	DA_DC(d);
-    if ((role != Qt::DisplayRole && role != Qt::ToolTipRole) || d->seriesMap.empty()) {
-		return QVariant();
-	}
-	// 剩下都是DisplayRole
-
-	if (Qt::Horizontal == orientation) {  // 说明是水平表头
-		auto ite = d->headerLabelMap.find(section);
-		if (ite != d->headerLabelMap.end()) {
-			return ite.value();
-		}
-		// 如果没有，查看是否是series，series有名称，显示名称
-		auto iteSer = d->seriesMap.find(section);
-		if (iteSer != d->seriesMap.end()) {
-			return iteSer.value().name();
-		}
-		return QVariant();
-	} else {
-        // 垂直表头
-        int actualSection = getCacheWindowStartRow() + section;
-        return (actualSection + 1);
-	}
-	return QVariant();
-}
-
 int DAPySeriesTableModel::columnCount(const QModelIndex& parent) const
 {
 	Q_UNUSED(parent);
 	return d_ptr->columnCount();
 }
 
-int DAPySeriesTableModel::rowCount(const QModelIndex& parent) const
+Qt::ItemFlags DAPySeriesTableModel::actualFlags(int actualRow, int actualColumn) const
 {
-	Q_UNUSED(parent);
-    return qMin(getCacheWindowSize(), d_ptr->rowCount());
-}
-
-Qt::ItemFlags DAPySeriesTableModel::flags(const QModelIndex& index) const
-{
-	if (!index.isValid())
-		return Qt::NoItemFlags;
-	return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
-}
-
-QVariant DAPySeriesTableModel::data(const QModelIndex& index, int role) const
-{
-	DA_DC(d);
-	if (!index.isValid() || d->seriesMap.empty()) {
-		return QVariant();
-	}
-	if (role == Qt::TextAlignmentRole) {
-		// 返回的是对其方式
-		return int(Qt::AlignLeft | Qt::AlignVCenter);
-    } else if (role == Qt::DisplayRole || role == Qt::ToolTipRole) {
-		const int col = index.column();
-        int actualRow = getCacheWindowStartRow() + index.row();
-		auto ite      = d->seriesMap.find(col);
-		if (ite != d->seriesMap.end()) {
-			// 说明是序列列
-			try {
-				const DAPySeries& ser = ite.value();
-				if (ser.isNone()) {
-					return QVariant();
-				}
-				int ss = static_cast< int >(ser.size());
-                if (actualRow < ss) {
-                    return ser[ actualRow ];
-				}
-				return QVariant();
-			} catch (const std::exception& e) {
-				qCritical() << e.what();
-				return QVariant();
-			}
-		}
-		// 没有在序列找到，找自增
-		auto iteInc = d->autoincrementSeriesMap.find(col);
-		if (iteInc != d->autoincrementSeriesMap.end()) {
-			// 说明是序列列
-			const DAAutoincrementSeries< double >& serInc = iteInc.value();
-            return serInc[ actualRow ];
-		}
-	} else if (role == Qt::BackgroundRole) {
-		// 背景颜色
-		return QVariant();
-	}
-	return QVariant();
-}
-
-bool DAPySeriesTableModel::setData(const QModelIndex& index, const QVariant& value, int role)
-{
-	Q_UNUSED(index);
-	Q_UNUSED(value);
-	Q_UNUSED(role);
-	return false;
+    Q_UNUSED(actualRow);
+    Q_UNUSED(actualColumn);
+    return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
 }
 
 /**
@@ -230,9 +145,77 @@ void DAPySeriesTableModel::setCacheWindowStartRow(int startRow)
     DAAbstractCacheWindowTableModel::setCacheWindowStartRow(startRow);
 }
 
-int DAPySeriesTableModel::getActualRowCount() const
+QVariant DAPySeriesTableModel::actualHeaderData(int actualSection, Qt::Orientation orientation, int role) const
+{
+    DA_DC(d);
+    if ((role != Qt::DisplayRole && role != Qt::ToolTipRole) || d->seriesMap.empty()) {
+        return QVariant();
+    }
+    // 剩下都是DisplayRole
+
+    if (Qt::Horizontal == orientation) {  // 说明是水平表头
+        auto ite = d->headerLabelMap.find(actualSection);
+        if (ite != d->headerLabelMap.end()) {
+            return ite.value();
+        }
+        // 如果没有，查看是否是series，series有名称，显示名称
+        auto iteSer = d->seriesMap.find(actualSection);
+        if (iteSer != d->seriesMap.end()) {
+            return iteSer.value().name();
+        }
+        return QVariant();
+    } else {
+        // 垂直表头
+        return (actualSection + 1);
+    }
+    return QVariant();
+}
+
+int DAPySeriesTableModel::actualRowCount() const
 {
     return d_ptr->rowCount();
+}
+
+QVariant DAPySeriesTableModel::actualData(int actualRow, int actualColumn, int role) const
+{
+    DA_DC(d);
+    if (d->seriesMap.empty()) {
+        return QVariant();
+    }
+    if (role == Qt::TextAlignmentRole) {
+        // 返回的是对其方式
+        return int(Qt::AlignLeft | Qt::AlignVCenter);
+    } else if (role == Qt::DisplayRole || role == Qt::ToolTipRole) {
+        auto ite = d->seriesMap.find(actualColumn);
+        if (ite != d->seriesMap.end()) {
+            // 说明是序列列
+            try {
+                const DAPySeries& ser = ite.value();
+                if (ser.isNone()) {
+                    return QVariant();
+                }
+                int ss = static_cast< int >(ser.size());
+                if (actualRow < ss) {
+                    return ser[ actualRow ];
+                }
+                return QVariant();
+            } catch (const std::exception& e) {
+                qCritical() << e.what();
+                return QVariant();
+            }
+        }
+        // 没有在序列找到，找自增
+        auto iteInc = d->autoincrementSeriesMap.find(actualColumn);
+        if (iteInc != d->autoincrementSeriesMap.end()) {
+            // 说明是序列列
+            const DAAutoincrementSeries< double >& serInc = iteInc.value();
+            return serInc[ actualRow ];
+        }
+    } else if (role == Qt::BackgroundRole) {
+        // 背景颜色
+        return QVariant();
+    }
+    return QVariant();
 }
 
 /**
