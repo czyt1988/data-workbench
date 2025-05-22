@@ -44,12 +44,12 @@ public:
 
 	// 添加一个已有的chart
 	void addChart(DAChartWidget* chart,
-				  float xVersatile,
-				  float yVersatile,
-				  float wVersatile,
-				  float hVersatile,
-				  bool relativePos = true);
-	void addChart(DAChartWidget* chart, const QRectF& versatileSize, bool relativePos);
+                  float xVersatile,
+                  float yVersatile,
+                  float wVersatile,
+                  float hVersatile,
+                  bool relativePos = true);
+    void addChart(DAChartWidget* chart, const QRectF& versatileSize, bool relativePos = true);
 	// 获取所有的图表(注意次获取没有顺序)
 	QList< DAChartWidget* > getCharts() const;
 	// 获取所有的图表安装显示顺序,这个顺序是在窗口显示最顶层的排位最前

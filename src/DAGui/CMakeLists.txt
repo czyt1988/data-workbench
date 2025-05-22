@@ -32,6 +32,7 @@ find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
 set(DA_LIB_HEADER_FILES
     DAAbstractChartAddItemWidget.h
     DAAbstractOperateWidget.h
+    DACacheWindowTableView.h
     DAChartAddXYSeriesWidget.h
     DAChartAddXYESeriesWidget.h
     DAChartAddOHLCSeriesWidget.h
@@ -83,6 +84,7 @@ set(DA_LIB_HEADER_FILES
 set(DA_LIB_SOURCE_FILES
     DAAbstractChartAddItemWidget.cpp
     DAAbstractOperateWidget.cpp
+    DACacheWindowTableView.cpp
     DAChartAddXYSeriesWidget.cpp
     DAChartAddXYESeriesWidget.cpp
     DAChartAddOHLCSeriesWidget.cpp
@@ -179,6 +181,7 @@ set(DA_LIB_SUBDIR_ChartSetting ${CMAKE_CURRENT_SOURCE_DIR}/ChartSetting)
 
 # Models
 set(DA_LIB_HEADER_FILES_Models
+    ${DA_LIB_SUBDIR_Models}/DAAbstractCacheWindowTableModel.h
     ${DA_LIB_SUBDIR_Models}/DADataManagerTreeModel.h
     ${DA_LIB_SUBDIR_Models}/DATreeModel.h
     ${DA_LIB_SUBDIR_Models}/DADataManagerTableModel.h
@@ -186,6 +189,7 @@ set(DA_LIB_HEADER_FILES_Models
     ${DA_LIB_SUBDIR_Models}/DAVariantTableModel.h
 )
 set(DA_LIB_SOURCE_FILES_Models
+    ${DA_LIB_SUBDIR_Models}/DAAbstractCacheWindowTableModel.cpp
     ${DA_LIB_SUBDIR_Models}/DADataManagerTreeModel.cpp
     ${DA_LIB_SUBDIR_Models}/DATreeModel.cpp
     ${DA_LIB_SUBDIR_Models}/DADataManagerTableModel.cpp

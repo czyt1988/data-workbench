@@ -1,6 +1,7 @@
 #ifndef DAPYSERIESTABLEMODEL_H
 #define DAPYSERIESTABLEMODEL_H
 #include "DAGuiAPI.h"
+#include "DAAbstractCacheWindowTableModel.h"
 #include <QAbstractTableModel>
 #include "DAData.h"
 #include "DAAutoincrementSeries.hpp"
@@ -10,7 +11,7 @@ namespace DA
 /**
  * @brief 用于显示一系列series
  */
-class DAGUI_API DAPySeriesTableModel : public QAbstractTableModel
+class DAGUI_API DAPySeriesTableModel : public DAAbstractCacheWindowTableModel
 {
 	Q_OBJECT
 	DA_DECLARE_PRIVATE(DAPySeriesTableModel)
@@ -29,6 +30,9 @@ public:
 public:
 	void setSeries(const QList< DAPySeries >& series);
 	QList< DAPySeries > getSeries() const;
+    // 设置滑动窗模式的起始行
+    virtual void setCacheWindowStartRow(int startRow) override;
+    virtual int getActualRowCount() const override;
 	// 追加series
 	void appendSeries(const DAPySeries& s);
 	void appendSeries(const DAAutoincrementSeries< double >& s);
