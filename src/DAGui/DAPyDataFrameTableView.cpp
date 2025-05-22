@@ -22,24 +22,19 @@ DAPyDataFrameTableView::~DAPyDataFrameTableView()
 {
 }
 
-void DAPyDataFrameTableView::setDataframeModel(DAPyDataFrameTableModel* dataframeModle)
-{
-	setModel(dataframeModle);
-	mDataframeModel = dataframeModle;
-}
-
 DAPyDataFrameTableModel* DAPyDataFrameTableView::getDataframeModel() const
 {
-	return mDataframeModel;
+    return qobject_cast< DAPyDataFrameTableModel* >(model());
 }
 
 void DAPyDataFrameTableView::setDataFrame(const DAPyDataFrame& d)
 {
-	if (!mDataframeModel) {
+    DAPyDataFrameTableModel* m = getDataframeModel();
+    if (!m) {
 		qWarning() << tr("DataFrameTableView must set model first");  // cn:你需要先设置模型
 		return;
 	}
-	mDataframeModel->setDataFrame(d);
+    m->setDataFrame(d);
     // 设置数据时，按照行数设置垂直表头的宽度
     if (auto vh = verticalHeader()) {
         auto shape      = d.shape();
@@ -53,8 +48,9 @@ void DAPyDataFrameTableView::setDataFrame(const DAPyDataFrame& d)
 
 DAPyDataFrame DAPyDataFrameTableView::getDataframe() const
 {
-	if (mDataframeModel) {
-		return mDataframeModel->dataFrame();
+    DAPyDataFrameTableModel* m = getDataframeModel();
+    if (m) {
+        return m->dataFrame();
 	}
 	return DAPyDataFrame();
 }

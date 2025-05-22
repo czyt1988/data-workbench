@@ -55,12 +55,9 @@ protected:
 	// 尝试获取x值得自增内容
 	bool tryGetXSelfInc(double& base, double& step);
 	bool tryGetYSelfInc(double& base, double& step);
-    // 重置一下垂直列宽
-    void resetTableView();
 
 private:
 	Ui::DAChartAddXYSeriesWidget* ui;
-	DAPySeriesTableModel* mModel { nullptr };
 };
 }
 #endif  // DACHARTADDXYSERIESWIDGET_H

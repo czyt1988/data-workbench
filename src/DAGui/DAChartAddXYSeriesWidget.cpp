@@ -19,9 +19,9 @@ DAChartAddXYSeriesWidget::DAChartAddXYSeriesWidget(QWidget* parent)
 {
 	ui->setupUi(this);
 #if DA_ENABLE_PYTHON
-	mModel = new DAPySeriesTableModel(this);
-	mModel->setHeaderLabel({ tr("x"), tr("y") });
-	ui->tableViewXY->setModel(mModel);
+    DAPySeriesTableModel* model = new DAPySeriesTableModel(this);
+    model->setHeaderLabel({ tr("x"), tr("y") });
+    ui->tableViewXY->setModel(model);
 #endif
 	QFontMetrics fm = fontMetrics();
 	ui->tableViewXY->verticalHeader()->setDefaultSectionSize(fm.lineSpacing() * 1.1);
@@ -90,8 +90,7 @@ void DAChartAddXYSeriesWidget::onComboBoxXCurrentDataframeSeriesChanged(const DA
 	if (!df.isNone()) {
 		series = df[ seriesName ];
 	}
-    mModel->setSeriesAt(0, series);
-    resetTableView();
+    ui->tableViewXY->setSeriesAt(0, series);
 #endif
 }
 
@@ -111,9 +110,7 @@ void DAChartAddXYSeriesWidget::onComboBoxYCurrentDataframeSeriesChanged(const DA
 	if (!df.isNone()) {
 		series = df[ seriesName ];
 	}
-	mModel->setSeriesAt(1, series);
-    resetTableView();
-
+    ui->tableViewXY->setSeriesAt(1, series);
 #endif
 }
 
@@ -127,7 +124,7 @@ void DAChartAddXYSeriesWidget::onGroupBoxXAutoincrementClicked(bool on)
 	if (on) {
 		double base, step;
 		if (tryGetXSelfInc(base, step)) {
-			mModel->setSeriesAt(0, DAAutoincrementSeries< double >(base, step));
+            ui->tableViewXY->setSeriesAt(0, DAAutoincrementSeries< double >(base, step));
 		}
 	} else {
 		// 取消要读取回原来的设置
@@ -136,9 +133,8 @@ void DAChartAddXYSeriesWidget::onGroupBoxXAutoincrementClicked(bool on)
 		if (data) {
 			series = data.toSeries();
 		}
-		mModel->setSeriesAt(0, series);
+        ui->tableViewXY->setSeriesAt(0, series);
 	}
-    resetTableView();
 	ui->comboBoxX->setEnabled(!on);
 #endif
 }
@@ -153,7 +149,7 @@ void DAChartAddXYSeriesWidget::onGroupBoxYAutoincrementClicked(bool on)
 	if (on) {
 		double base, step;
 		if (tryGetYSelfInc(base, step)) {
-			mModel->setSeriesAt(1, DAAutoincrementSeries< double >(base, step));
+            ui->tableViewXY->setSeriesAt(1, DAAutoincrementSeries< double >(base, step));
 		}
 	} else {
 		// 取消要读取回原来的设置
@@ -162,9 +158,8 @@ void DAChartAddXYSeriesWidget::onGroupBoxYAutoincrementClicked(bool on)
 		if (data) {
 			series = data.toSeries();
 		}
-		mModel->setSeriesAt(1, series);
+        ui->tableViewXY->setSeriesAt(1, series);
 	}
-    resetTableView();
 	ui->comboBoxY->setEnabled(!on);
 #endif
 }
@@ -437,16 +432,4 @@ bool DAChartAddXYSeriesWidget::tryGetYSelfInc(double& base, double& step)
     return true;
 }
 
-void DAChartAddXYSeriesWidget::resetTableView()
-{
-    if (!mModel) {
-        return;
-    }
-    int r = mModel->actualRowCount();
-    if (QHeaderView* vh = ui->tableViewXY->verticalHeader()) {
-        int w = vh->fontMetrics().horizontalAdvance(QString(" %1 ").arg(r));
-        vh->setFixedWidth(w);
-    }
-    ui->tableViewXY->showActualRow(0);
-}
 }

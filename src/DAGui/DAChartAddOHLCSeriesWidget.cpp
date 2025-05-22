@@ -19,9 +19,6 @@ public:
 
 public:
 	DADataManager* _dataMgr { nullptr };
-#if DA_ENABLE_PYTHON
-	DAPySeriesTableModel* _model { nullptr };
-#endif
 };
 
 DAChartAddOHLCSeriesWidget::PrivateData::PrivateData(DAChartAddOHLCSeriesWidget* p) : q_ptr(p)
@@ -36,9 +33,9 @@ DAChartAddOHLCSeriesWidget::DAChartAddOHLCSeriesWidget(QWidget* parent)
 {
 	ui->setupUi(this);
 #if DA_ENABLE_PYTHON
-	d_ptr->_model = new DAPySeriesTableModel(this);
-	d_ptr->_model->setHeaderLabel({ tr("t"), tr("o"), tr("h"), tr("l"), tr("c") });
-	ui->tableViewOHLC->setModel(d_ptr->_model);
+    DAPySeriesTableModel* m = new DAPySeriesTableModel(this);
+    m->setHeaderLabel({ tr("t"), tr("o"), tr("h"), tr("l"), tr("c") });
+    ui->tableViewOHLC->setModel(m);
 #endif
 	QFontMetrics fm = fontMetrics();
 	ui->tableViewOHLC->verticalHeader()->setDefaultSectionSize(fm.lineSpacing() * 1.1);
@@ -109,8 +106,7 @@ void DAChartAddOHLCSeriesWidget::onComboBoxTCurrentDataframeSeriesChanged(const 
 	if (!df.isNone()) {
 		series = df[ seriesName ];
 	}
-	d_ptr->_model->setSeriesAt(0, series);
-    ui->tableViewOHLC->showActualRow(0);
+    ui->tableViewOHLC->setSeriesAt(0, series);
 #endif
 }
 
@@ -130,8 +126,7 @@ void DAChartAddOHLCSeriesWidget::onComboBoxOCurrentDataframeSeriesChanged(const 
 	if (!df.isNone()) {
 		series = df[ seriesName ];
 	}
-	d_ptr->_model->setSeriesAt(1, series);
-    ui->tableViewOHLC->showActualRow(0);
+    ui->tableViewOHLC->setSeriesAt(1, series);
 #endif
 }
 
@@ -151,8 +146,7 @@ void DAChartAddOHLCSeriesWidget::onComboBoxHCurrentDataframeSeriesChanged(const 
 	if (!df.isNone()) {
 		series = df[ seriesName ];
 	}
-	d_ptr->_model->setSeriesAt(2, series);
-    ui->tableViewOHLC->showActualRow(0);
+    ui->tableViewOHLC->setSeriesAt(2, series);
 #endif
 }
 
@@ -172,8 +166,7 @@ void DAChartAddOHLCSeriesWidget::onComboBoxLCurrentDataframeSeriesChanged(const 
 	if (!df.isNone()) {
 		series = df[ seriesName ];
 	}
-	d_ptr->_model->setSeriesAt(3, series);
-    ui->tableViewOHLC->showActualRow(0);
+    ui->tableViewOHLC->setSeriesAt(3, series);
 #endif
 }
 
@@ -193,8 +186,7 @@ void DAChartAddOHLCSeriesWidget::onComboBoxCCurrentDataframeSeriesChanged(const 
 	if (!df.isNone()) {
 		series = df[ seriesName ];
 	}
-	d_ptr->_model->setSeriesAt(4, series);
-    ui->tableViewOHLC->showActualRow(0);
+    ui->tableViewOHLC->setSeriesAt(4, series);
 #endif
 }
 
@@ -208,7 +200,7 @@ void DAChartAddOHLCSeriesWidget::onGroupBoxTAutoincrementClicked(bool on)
 	if (on) {
 		double base, step;
 		if (tryGetTSelfInc(base, step)) {
-			d_ptr->_model->setSeriesAt(0, DAAutoincrementSeries< double >(base, step));
+            ui->tableViewOHLC->setSeriesAt(0, DAAutoincrementSeries< double >(base, step));
 		}
 	} else {
 		// 取消要读取回原来的设置
@@ -217,9 +209,8 @@ void DAChartAddOHLCSeriesWidget::onGroupBoxTAutoincrementClicked(bool on)
 		if (data) {
 			series = data.toSeries();
 		}
-		d_ptr->_model->setSeriesAt(0, series);
+        ui->tableViewOHLC->setSeriesAt(0, series);
 	}
-    ui->tableViewOHLC->showActualRow(0);
 	ui->comboBoxT->setEnabled(!on);
 #endif
 }

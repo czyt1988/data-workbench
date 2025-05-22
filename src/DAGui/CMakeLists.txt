@@ -161,11 +161,13 @@ if(DA_ENABLE_PYTHON)
         DADataframeToVectorPointWidget.h
         DADataOperateOfDataFrameWidget.h
         DAPyDataFrameTableView.h
+        DAPySeriesTableView.h
     )
     list(APPEND DA_LIB_HEADER_FILES
         DADataframeToVectorPointWidget.cpp
         DADataOperateOfDataFrameWidget.cpp
         DAPyDataFrameTableView.cpp
+        DAPySeriesTableView.cpp
     )
     list(APPEND DA_LIB_QT_UI_FILES
         DADataframeToVectorPointWidget.ui

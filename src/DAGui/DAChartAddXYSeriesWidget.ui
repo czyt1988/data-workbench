@@ -167,7 +167,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="DA::DACacheWindowTableView" name="tableViewXY"/>
+     <widget class="DA::DAPySeriesTableView" name="tableViewXY"/>
     </widget>
    </item>
   </layout>
@@ -185,9 +185,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>DA::DACacheWindowTableView</class>
+   <class>DA::DAPySeriesTableView</class>
    <extends>QTableView</extends>
-   <header>DACacheWindowTableView.h</header>
+   <header>DAPySeriesTableView.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

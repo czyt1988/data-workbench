@@ -53,7 +53,7 @@
         </widget>
        </item>
        <item>
-        <widget class="DA::DACacheWindowTableView" name="tableView"/>
+        <widget class="DA::DAPySeriesTableView" name="tableView"/>
        </item>
       </layout>
      </widget>
@@ -75,14 +75,14 @@
    <header>DADataManagerComboBox.h</header>
   </customwidget>
   <customwidget>
-   <class>DA::DACacheWindowTableView</class>
-   <extends>QTableView</extends>
-   <header>DACacheWindowTableView.h</header>
-  </customwidget>
-  <customwidget>
    <class>DA::DAPyDataframeColumnsListWidget</class>
    <extends>QListWidget</extends>
    <header>DAPyDataframeColumnsListWidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>DA::DAPySeriesTableView</class>
+   <extends>QTableView</extends>
+   <header>DAPySeriesTableView.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

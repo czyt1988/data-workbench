@@ -92,8 +92,7 @@ void DAChartAddXYESeriesWidget::onComboBoxXCurrentDataframeSeriesChanged(const D
 	if (!df.isNone()) {
 		series = df[ seriesName ];
 	}
-	mModel->setSeriesAt(0, series);
-    ui->tableViewXYE->showActualRow(0);
+    ui->tableViewXYE->setSeriesAt(0, series);
 #endif
 }
 
@@ -113,8 +112,7 @@ void DAChartAddXYESeriesWidget::onComboBoxYCurrentDataframeSeriesChanged(const D
 	if (!df.isNone()) {
 		series = df[ seriesName ];
 	}
-	mModel->setSeriesAt(1, series);
-    ui->tableViewXYE->showActualRow(0);
+    ui->tableViewXYE->setSeriesAt(1, series);
 #endif
 }
 
@@ -134,8 +132,7 @@ void DAChartAddXYESeriesWidget::onComboBoxYECurrentDataframeSeriesChanged(const 
 	if (!df.isNone()) {
 		series = df[ seriesName ];
 	}
-	mModel->setSeriesAt(2, series);
-    ui->tableViewXYE->showActualRow(0);
+    ui->tableViewXYE->setSeriesAt(2, series);
 #endif
 }
 
@@ -149,7 +146,7 @@ void DAChartAddXYESeriesWidget::onGroupBoxXAutoincrementClicked(bool on)
 	if (on) {
 		double base, step;
 		if (tryGetXSelfInc(base, step)) {
-			mModel->setSeriesAt(0, DAAutoincrementSeries< double >(base, step));
+            ui->tableViewXYE->setSeriesAt(0, DAAutoincrementSeries< double >(base, step));
 		}
 	} else {
 		// 取消要读取回原来的设置
@@ -158,9 +155,8 @@ void DAChartAddXYESeriesWidget::onGroupBoxXAutoincrementClicked(bool on)
 		if (data) {
 			series = data.toSeries();
 		}
-		mModel->setSeriesAt(0, series);
+        ui->tableViewXYE->setSeriesAt(0, series);
 	}
-    ui->tableViewXYE->showActualRow(0);
 	ui->comboBoxX->setEnabled(!on);
 #endif
 }
