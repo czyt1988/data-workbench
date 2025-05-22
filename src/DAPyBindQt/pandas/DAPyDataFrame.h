@@ -40,6 +40,7 @@ public:
 public:
 	// DataFrame.columns
 	QList< QString > columns() const;
+    QString columnName(std::size_t i) const;
 	bool columns(std::size_t i, const QString& name);
 	bool columns(const QList< QString >& cols);
 	// DataFrame.empty

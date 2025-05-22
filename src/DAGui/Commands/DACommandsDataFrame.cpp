@@ -364,7 +364,7 @@ void DACommandDataFrame_dropna::undo()
 	// 说明删除了空行
 	if (mModel) {
 		if (mDropedCount != 0) {
-			mModel->refresh();
+			mModel->refreshCacheData();
 		}
 	}
 }
@@ -382,7 +382,7 @@ bool DACommandDataFrame_dropna::exec()
 	// 说明删除了空行
 	if (mModel) {
 		if (mDropedCount != 0) {
-			mModel->refresh();
+			mModel->refreshCacheData();
 		}
 	}
 	return true;
@@ -409,7 +409,7 @@ void DACommandDataFrame_fillna::undo()
 {
 	load();
 	if (mModel) {
-		mModel->refresh();
+		mModel->refreshCacheData();
 	}
 }
 
@@ -423,7 +423,7 @@ bool DACommandDataFrame_fillna::exec()
 
 	// 说明填充了空行
 	if (mModel) {
-		mModel->refresh();
+		mModel->refreshCacheData();
 	}
 	return true;
 }
@@ -445,7 +445,7 @@ void DACommandDataFrame_interpolate::undo()
 {
 	load();
 	if (mModel) {
-		mModel->refresh();
+		mModel->refreshCacheData();
 	}
 }
 
@@ -459,7 +459,7 @@ bool DACommandDataFrame_interpolate::exec()
 
 	// 说明填充了空行
 	if (mModel) {
-		mModel->refresh();
+		mModel->refreshCacheData();
 	}
 	return true;
 }
@@ -480,7 +480,7 @@ void DACommandDataFrame_ffillna::undo()
 {
 	load();
 	if (mModel) {
-		mModel->refresh();
+		mModel->refreshCacheData();
 	}
 }
 
@@ -494,7 +494,7 @@ bool DACommandDataFrame_ffillna::exec()
 
 	// 说明填充了空行
 	if (mModel) {
-		mModel->refresh();
+		mModel->refreshCacheData();
 	}
 	return true;
 }
@@ -515,7 +515,7 @@ void DACommandDataFrame_bfillna::undo()
 {
 	load();
 	if (mModel) {
-		mModel->refresh();
+		mModel->refreshCacheData();
 	}
 }
 
@@ -529,7 +529,7 @@ bool DACommandDataFrame_bfillna::exec()
 
 	// 说明填充了空行
 	if (mModel) {
-		mModel->refresh();
+		mModel->refreshCacheData();
 	}
 	return true;
 }
@@ -561,7 +561,7 @@ void DACommandDataFrame_dropduplicates::undo()
 	// 说明删除了空行
 	if (mModel) {
 		if (mDropedCount != 0) {
-			mModel->refresh();
+			mModel->refreshCacheData();
 		}
 	}
 }
@@ -579,7 +579,7 @@ bool DACommandDataFrame_dropduplicates::exec()
 	// 说明删除了空行
 	if (mModel) {
 		if (mDropedCount != 0) {
-			mModel->refresh();
+			mModel->refreshCacheData();
 		}
 	}
 	return true;
@@ -609,7 +609,7 @@ void DACommandDataFrame_nstdfilteroutlier::undo()
 	// 说明删除了空行
 	if (mModel) {
 		if (mDropedCount != 0) {
-			mModel->refresh();
+			mModel->refreshCacheData();
 		}
 	}
 }
@@ -627,7 +627,7 @@ bool DACommandDataFrame_nstdfilteroutlier::exec()
 	// 说明删除了空行
 	if (mModel) {
 		if (mDropedCount != 0) {
-			mModel->refresh();
+			mModel->refreshCacheData();
 		}
 	}
 	return true;
@@ -656,7 +656,7 @@ void DACommandDataFrame_clipoutlier::undo()
 	load();
 	// 说明填充了空行
 	if (mModel) {
-		mModel->refresh();
+		mModel->refreshCacheData();
 	}
 }
 
@@ -667,7 +667,7 @@ bool DACommandDataFrame_clipoutlier::exec()
 		return false;
 	}
 	if (mModel) {
-		mModel->refresh();
+		mModel->refreshCacheData();
 	}
 	return true;
 }
@@ -688,7 +688,7 @@ void DACommandDataFrame_querydatas::undo()
 	load();
 	// 说明填充了空行
 	if (mModel) {
-		mModel->refresh();
+		mModel->refreshCacheData();
 	}
 }
 
@@ -699,7 +699,7 @@ bool DACommandDataFrame_querydatas::exec()
 		return false;
 	}
 	if (mModel) {
-		mModel->refresh();
+		mModel->refreshCacheData();
 	}
 	return true;
 }
@@ -722,7 +722,7 @@ void DACommandDataFrame_dataselect::undo()
 	load();
 	// 说明填充了空行
 	if (mModel) {
-		mModel->refresh();
+		mModel->refreshCacheData();
 	}
 }
 
@@ -752,7 +752,7 @@ void DACommandDataFrame_sort::undo()
 	load();
 	// 说明排序完成
 	if (mModel) {
-		mModel->refresh();
+		mModel->refreshCacheData();
 	}
 }
 
@@ -853,7 +853,7 @@ void DACommandDataFrame_setIndex::undo()
 {
 	load();
 	if (mModel) {
-		mModel->refresh();
+		mModel->refreshCacheData();
 	}
 }
 
@@ -865,7 +865,7 @@ bool DACommandDataFrame_setIndex::exec()
 	}
 	if (mModel) {
 		// 此操作会删除一列，添加一列，整个modelreflash
-		mModel->refresh();
+		mModel->refreshCacheData();
 	}
 	return true;
 }

@@ -14,6 +14,9 @@ public:
 
 	int rowCount() const;
 
+    // 检查startrow，以防止startrow大于总行数
+    void checkStartRow();
+
 public:
 	//! 这里都用map来管理，因为不同列有可能是不同属性，目前还没有做一个抽象能囊括所有序列，因此还是需要每种类型添加一个索引
 	//! 注意，这里要用qmap，不能用qhash，因为取最大索引是通过qmap的自动排序实现的
@@ -66,12 +69,23 @@ int DAPySeriesTableModel::PrivateData::rowCount() const
 	if (r < 15) {
 		return 15;
 	}
-	return r;
+    return r;
+}
+
+void DAPySeriesTableModel::PrivateData::checkStartRow()
+{
+    int r = rowCount();
+    if (r > 0 && r > q_ptr->getCacheWindowStartRow()) {
+        q_ptr->setCacheWindowStartRow(r - 1);
+    } else {
+        q_ptr->setCacheWindowStartRow(0);
+    }
 }
 //===================================================
 // DAPySeriesTableModule
 //===================================================
-DAPySeriesTableModel::DAPySeriesTableModel(QObject* parent) : QAbstractTableModel(parent), DA_PIMPL_CONSTRUCT
+DAPySeriesTableModel::DAPySeriesTableModel(QObject* parent)
+    : DAAbstractCacheWindowTableModel(parent), DA_PIMPL_CONSTRUCT
 {
 }
 
@@ -82,10 +96,11 @@ DAPySeriesTableModel::~DAPySeriesTableModel()
 QVariant DAPySeriesTableModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
 	DA_DC(d);
-	if (role != Qt::DisplayRole || d->seriesMap.empty()) {
+    if ((role != Qt::DisplayRole && role != Qt::ToolTipRole) || d->seriesMap.empty()) {
 		return QVariant();
 	}
 	// 剩下都是DisplayRole
+
 	if (Qt::Horizontal == orientation) {  // 说明是水平表头
 		auto ite = d->headerLabelMap.find(section);
 		if (ite != d->headerLabelMap.end()) {
@@ -98,7 +113,9 @@ QVariant DAPySeriesTableModel::headerData(int section, Qt::Orientation orientati
 		}
 		return QVariant();
 	} else {
-		return (section + 1);
+        // 垂直表头
+        int actualSection = getCacheWindowStartRow() + section;
+        return (actualSection + 1);
 	}
 	return QVariant();
 }
@@ -112,7 +129,7 @@ int DAPySeriesTableModel::columnCount(const QModelIndex& parent) const
 int DAPySeriesTableModel::rowCount(const QModelIndex& parent) const
 {
 	Q_UNUSED(parent);
-	return d_ptr->rowCount();
+    return qMin(getCacheWindowSize(), d_ptr->rowCount());
 }
 
 Qt::ItemFlags DAPySeriesTableModel::flags(const QModelIndex& index) const
@@ -131,9 +148,9 @@ QVariant DAPySeriesTableModel::data(const QModelIndex& index, int role) const
 	if (role == Qt::TextAlignmentRole) {
 		// 返回的是对其方式
 		return int(Qt::AlignLeft | Qt::AlignVCenter);
-	} else if (role == Qt::DisplayRole) {
+    } else if (role == Qt::DisplayRole || role == Qt::ToolTipRole) {
 		const int col = index.column();
-		const int row = index.row();
+        int actualRow = getCacheWindowStartRow() + index.row();
 		auto ite      = d->seriesMap.find(col);
 		if (ite != d->seriesMap.end()) {
 			// 说明是序列列
@@ -143,8 +160,8 @@ QVariant DAPySeriesTableModel::data(const QModelIndex& index, int role) const
 					return QVariant();
 				}
 				int ss = static_cast< int >(ser.size());
-				if (row < ss) {
-					return ser[ row ];
+                if (actualRow < ss) {
+                    return ser[ actualRow ];
 				}
 				return QVariant();
 			} catch (const std::exception& e) {
@@ -157,7 +174,7 @@ QVariant DAPySeriesTableModel::data(const QModelIndex& index, int role) const
 		if (iteInc != d->autoincrementSeriesMap.end()) {
 			// 说明是序列列
 			const DAAutoincrementSeries< double >& serInc = iteInc.value();
-			return serInc[ row ];
+            return serInc[ actualRow ];
 		}
 	} else if (role == Qt::BackgroundRole) {
 		// 背景颜色
@@ -180,13 +197,15 @@ bool DAPySeriesTableModel::setData(const QModelIndex& index, const QVariant& val
  */
 void DAPySeriesTableModel::setSeries(const QList< DAPySeries >& series)
 {
+    DA_D(d);
 	beginResetModel();
-	d_ptr->seriesMap.clear();
+    d->seriesMap.clear();
 	int c = 0;
 	for (const DAPySeries& s : series) {
-		d_ptr->seriesMap[ c ] = s;
+        d->seriesMap[ c ] = s;
 		++c;
 	}
+    d->checkStartRow();
 	endResetModel();
 }
 
@@ -199,6 +218,23 @@ QList< DAPySeries > DAPySeriesTableModel::getSeries() const
     return d_ptr->seriesMap.values();
 }
 
+void DAPySeriesTableModel::setCacheWindowStartRow(int startRow)
+{
+    DA_D(d);
+    const int rc        = d->rowCount();
+    const int cacheSize = getCacheWindowSize();
+    startRow            = qBound(0, startRow, rc - cacheSize);
+    if (startRow >= rc) {
+        startRow = rc - 1;
+    }
+    DAAbstractCacheWindowTableModel::setCacheWindowStartRow(startRow);
+}
+
+int DAPySeriesTableModel::getActualRowCount() const
+{
+    return d_ptr->rowCount();
+}
+
 /**
  * @brief 插入series
  * @param s
@@ -208,6 +244,7 @@ void DAPySeriesTableModel::appendSeries(const DAPySeries& s)
 	beginResetModel();
 	int c                 = d_ptr->columnCount();
 	d_ptr->seriesMap[ c ] = s;
+    d_ptr->checkStartRow();
 	endResetModel();
 }
 
@@ -234,12 +271,15 @@ void DAPySeriesTableModel::appendSeries(const DAAutoincrementSeries< double >& s
 void DAPySeriesTableModel::insertSeries(int c, const DAPySeries& s)
 {
 	// 先看看要刷新哪里
+    DA_D(d);
 	beginResetModel();
-	d_ptr->seriesMap[ c ] = s;
+    d->seriesMap[ c ] = s;
 	// 看看这个位置是否有自增序列
-	if (d_ptr->autoincrementSeriesMap.contains(c)) {
-		d_ptr->autoincrementSeriesMap.remove(c);
+    if (d->autoincrementSeriesMap.contains(c)) {
+        d->autoincrementSeriesMap.remove(c);
 	}
+    // 需要刷新CacheWindowStartRow
+    d->checkStartRow();
 	endResetModel();
 }
 
@@ -253,12 +293,14 @@ void DAPySeriesTableModel::insertSeries(int c, const DAPySeries& s)
  */
 void DAPySeriesTableModel::insertSeries(int c, const DAAutoincrementSeries< double >& s)
 {
+    DA_D(d);
 	beginResetModel();
-	d_ptr->autoincrementSeriesMap[ c ] = s;
+    d->autoincrementSeriesMap[ c ] = s;
 	// 看看这个位置是否有series
-	if (d_ptr->seriesMap.contains(c)) {
-		d_ptr->seriesMap.remove(c);
+    if (d->seriesMap.contains(c)) {
+        d->seriesMap.remove(c);
 	}
+    d->checkStartRow();
 	endResetModel();
 }
 
@@ -311,6 +353,7 @@ void DAPySeriesTableModel::clearData()
 	beginResetModel();
 	d_ptr->seriesMap.clear();
 	d_ptr->autoincrementSeriesMap.clear();
+    setCacheWindowStartRow(0);
 	endResetModel();
 }
 

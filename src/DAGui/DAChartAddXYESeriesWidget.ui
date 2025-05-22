@@ -179,7 +179,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QTableView" name="tableViewXYE"/>
+     <widget class="DA::DACacheWindowTableView" name="tableViewXYE"/>
     </widget>
    </item>
   </layout>
@@ -195,6 +195,11 @@
    <extends>QGroupBox</extends>
    <header location="global">DACollapsibleGroupBox.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DA::DACacheWindowTableView</class>
+   <extends>QTableView</extends>
+   <header>DACacheWindowTableView.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

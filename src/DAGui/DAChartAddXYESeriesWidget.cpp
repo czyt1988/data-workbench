@@ -26,17 +26,17 @@ DAChartAddXYESeriesWidget::DAChartAddXYESeriesWidget(QWidget* parent)
 	connect(this, &DAChartAddXYESeriesWidget::dataManagerChanged, this, &DAChartAddXYESeriesWidget::onDataManagerChanged);
 	connect(this, &DAChartAddXYESeriesWidget::currentDataChanged, this, &DAChartAddXYESeriesWidget::onCurrentDataChanged);
 	connect(ui->comboBoxX,
-			&DADataManagerComboBox::currentDataframeSeriesChanged,
-			this,
-			&DAChartAddXYESeriesWidget::onComboBoxXCurrentDataframeSeriesChanged);
+            &DADataManagerComboBox::currentDataframeSeriesChanged,
+            this,
+            &DAChartAddXYESeriesWidget::onComboBoxXCurrentDataframeSeriesChanged);
 	connect(ui->comboBoxY,
-			&DADataManagerComboBox::currentDataframeSeriesChanged,
-			this,
-			&DAChartAddXYESeriesWidget::onComboBoxYCurrentDataframeSeriesChanged);
+            &DADataManagerComboBox::currentDataframeSeriesChanged,
+            this,
+            &DAChartAddXYESeriesWidget::onComboBoxYCurrentDataframeSeriesChanged);
 	connect(ui->comboBoxYE,
-			&DADataManagerComboBox::currentDataframeSeriesChanged,
-			this,
-			&DAChartAddXYESeriesWidget::onComboBoxYECurrentDataframeSeriesChanged);
+            &DADataManagerComboBox::currentDataframeSeriesChanged,
+            this,
+            &DAChartAddXYESeriesWidget::onComboBoxYECurrentDataframeSeriesChanged);
 	connect(ui->groupBoxXAutoincrement, &QGroupBox::clicked, this, &DAChartAddXYESeriesWidget::onGroupBoxXAutoincrementClicked);
 	connect(ui->groupBoxYAutoincrement, &QGroupBox::clicked, this, &DAChartAddXYESeriesWidget::onGroupBoxYAutoincrementClicked);
 }
@@ -93,6 +93,7 @@ void DAChartAddXYESeriesWidget::onComboBoxXCurrentDataframeSeriesChanged(const D
 		series = df[ seriesName ];
 	}
 	mModel->setSeriesAt(0, series);
+    ui->tableViewXYE->showActualRow(0);
 #endif
 }
 
@@ -113,6 +114,7 @@ void DAChartAddXYESeriesWidget::onComboBoxYCurrentDataframeSeriesChanged(const D
 		series = df[ seriesName ];
 	}
 	mModel->setSeriesAt(1, series);
+    ui->tableViewXYE->showActualRow(0);
 #endif
 }
 
@@ -133,6 +135,7 @@ void DAChartAddXYESeriesWidget::onComboBoxYECurrentDataframeSeriesChanged(const 
 		series = df[ seriesName ];
 	}
 	mModel->setSeriesAt(2, series);
+    ui->tableViewXYE->showActualRow(0);
 #endif
 }
 
@@ -157,6 +160,7 @@ void DAChartAddXYESeriesWidget::onGroupBoxXAutoincrementClicked(bool on)
 		}
 		mModel->setSeriesAt(0, series);
 	}
+    ui->tableViewXYE->showActualRow(0);
 	ui->comboBoxX->setEnabled(!on);
 #endif
 }
@@ -182,6 +186,7 @@ void DAChartAddXYESeriesWidget::onGroupBoxYAutoincrementClicked(bool on)
 		}
 		mModel->setSeriesAt(1, series);
 	}
+    ui->tableViewXYE->showActualRow(0);
 	ui->comboBoxY->setEnabled(!on);
 #endif
 }
@@ -211,19 +216,19 @@ bool DAChartAddXYESeriesWidget::getXAutoIncFromUI(DAAutoincrementSeries< double 
 	bool isOK   = false;
 	double base = ui->lineEditXInitValue->text().toDouble(&isOK);
 	if (!isOK) {
-		QMessageBox::warning(
-			this,
-			tr("Warning"),                                                                                 // cn:警告
-			tr("The initial value of x auto increment series must be a floating-point arithmetic number")  // cn:x自增序列的初始值必须为浮点数
-		);
+        QMessageBox::
+            warning(this,
+                    tr("Warning"),  // cn:警告
+                    tr("The initial value of x auto increment series must be a floating-point arithmetic number")  // cn:x自增序列的初始值必须为浮点数
+            );
 		return false;
 	}
 	double step = ui->lineEditXStepValue->text().toDouble(&isOK);
 	if (!isOK) {
 		QMessageBox::warning(this,
-							 tr("Warning"),  // cn:警告
-							 tr("The step value of x auto increment series "
-								"must be a floating-point arithmetic number")  // cn:x自增序列的步长必须为浮点数
+                             tr("Warning"),  // cn:警告
+                             tr("The step value of x auto increment series "
+                                "must be a floating-point arithmetic number")  // cn:x自增序列的步长必须为浮点数
 		);
 		return false;
 	}
@@ -244,18 +249,18 @@ bool DAChartAddXYESeriesWidget::getYAutoIncFromUI(DAAutoincrementSeries< double 
 	double base = ui->lineEditYInitValue->text().toDouble(&isOK);
 	if (!isOK) {
 		QMessageBox::warning(this,
-							 tr("Warning"),  // cn:警告
-							 tr("The initial value of y auto increment series "
-								"must be a floating-point arithmetic number")  // cn:x自增序列的初始值必须为浮点数
+                             tr("Warning"),  // cn:警告
+                             tr("The initial value of y auto increment series "
+                                "must be a floating-point arithmetic number")  // cn:x自增序列的初始值必须为浮点数
 		);
 		return false;
 	}
 	double step = ui->lineEditYStepValue->text().toDouble(&isOK);
 	if (!isOK) {
 		QMessageBox::warning(this,
-							 tr("Warning"),  // cn:警告
-							 tr("The step value of y auto increment series "
-								"must be a floating-point arithmetic number")  // cn:x自增序列的步长必须为浮点数
+                             tr("Warning"),  // cn:警告
+                             tr("The step value of y auto increment series "
+                                "must be a floating-point arithmetic number")  // cn:x自增序列的步长必须为浮点数
 		);
 		return false;
 	}
@@ -276,8 +281,8 @@ bool DAChartAddXYESeriesWidget::getToVectorPointFFromUI(QVector< QwtIntervalSamp
 	bool isYAuto = ui->groupBoxYAutoincrement->isChecked();
 	if (isXAuto && isYAuto) {
 		QMessageBox::warning(this,
-							 tr("Warning"),                                                 // cn:警告
-							 tr("x and y cannot be set to autoincrement at the same time")  // cn:x和y无法同时设置为自增
+                             tr("Warning"),                                                 // cn:警告
+                             tr("x and y cannot be set to autoincrement at the same time")  // cn:x和y无法同时设置为自增
 		);
 		return false;
 	}
@@ -291,16 +296,16 @@ bool DAChartAddXYESeriesWidget::getToVectorPointFFromUI(QVector< QwtIntervalSamp
 		DAData yError  = ui->comboBoxYE->getCurrentDAData();
 		if (!yCenter.isSeries() || !yError.isSeries()) {
 			QMessageBox::warning(this,
-								 tr("Warning"),                                  // cn:警告
-								 tr("y - value/error value must be a series"));  // cn:y必须是序列
+                                 tr("Warning"),                                  // cn:警告
+                                 tr("y - value/error value must be a series"));  // cn:y必须是序列
 			return false;
 		}
 		DAPySeries y = yCenter.toSeries();
 		DAPySeries e = yError.toSeries();
 		if (y.isNone() || e.isNone()) {
 			QMessageBox::warning(this,
-								 tr("Warning"),  // cn:警告
-								 tr("The selected y - value/error value cannot be converted to a series"));  // cn:所选的y值/error值无法转换为序列
+                                 tr("Warning"),  // cn:警告
+                                 tr("The selected y - value/error value cannot be converted to a series"));  // cn:所选的y值/error值无法转换为序列
 			return false;
 		}
 		std::size_t s = y.size();
@@ -319,12 +324,12 @@ bool DAChartAddXYESeriesWidget::getToVectorPointFFromUI(QVector< QwtIntervalSamp
 			}
 		} catch (const std::exception& e) {
 			qCritical() << tr("Exception occurred during extracting from "
-							  "pandas.Series to double vector:%1")
-							   .arg(e.what());  // cn:从pandas.Series提取为double vector过程中出现异常:%1
+                              "pandas.Series to double vector:%1")
+                               .arg(e.what());  // cn:从pandas.Series提取为double vector过程中出现异常:%1
 			QMessageBox::warning(this,
-								 tr("Warning"),  // cn:警告
-								 tr("Exception occurred during extracting from "
-									"pandas.Series to double vector"));  // cn:从pandas.Series提取为double vector过程中出现异常
+                                 tr("Warning"),  // cn:警告
+                                 tr("Exception occurred during extracting from "
+                                    "pandas.Series to double vector"));  // cn:从pandas.Series提取为double vector过程中出现异常
 
 			return false;
 		}
@@ -337,8 +342,8 @@ bool DAChartAddXYESeriesWidget::getToVectorPointFFromUI(QVector< QwtIntervalSamp
 		DAData yError = ui->comboBoxYE->getCurrentDAData();
 		if (!xd.isSeries() || !yError.isSeries()) {
 			QMessageBox::warning(this,
-								 tr("Warning"),            // cn:警告
-								 tr("x must be a series")  // cn:x必须是序列
+                                 tr("Warning"),            // cn:警告
+                                 tr("x must be a series")  // cn:x必须是序列
 			);
 			return false;
 		}
@@ -346,8 +351,8 @@ bool DAChartAddXYESeriesWidget::getToVectorPointFFromUI(QVector< QwtIntervalSamp
 		DAPySeries e = yError.toSeries();
 		if (x.isNone()) {
 			QMessageBox::warning(this,
-								 tr("Warning"),                                          // cn:警告
-								 tr("The None value cannot be converted to a series"));  // cn:None值无法转换为序列
+                                 tr("Warning"),                                          // cn:警告
+                                 tr("The None value cannot be converted to a series"));  // cn:None值无法转换为序列
 			return false;
 		}
 		std::size_t s = x.size();
@@ -366,12 +371,12 @@ bool DAChartAddXYESeriesWidget::getToVectorPointFFromUI(QVector< QwtIntervalSamp
 			}
 		} catch (const std::exception& e) {
 			qCritical() << tr("Exception occurred during extracting from "
-							  "pandas.Series to double vector:%1")
-							   .arg(e.what());  // cn:从pandas.Series提取为double vector过程中出现异常:%1
+                              "pandas.Series to double vector:%1")
+                               .arg(e.what());  // cn:从pandas.Series提取为double vector过程中出现异常:%1
 			QMessageBox::warning(this,
-								 tr("Warning"),  // cn:警告
-								 tr("Exception occurred during extracting from "
-									"pandas.Series to double vector"));  // cn:从pandas.Series提取为double vector过程中出现异常
+                                 tr("Warning"),  // cn:警告
+                                 tr("Exception occurred during extracting from "
+                                    "pandas.Series to double vector"));  // cn:从pandas.Series提取为double vector过程中出现异常
 
 			return false;
 		}
@@ -381,21 +386,21 @@ bool DAChartAddXYESeriesWidget::getToVectorPointFFromUI(QVector< QwtIntervalSamp
 		DAData yError  = ui->comboBoxYE->getCurrentDAData();
 		if (!xd.isSeries()) {
 			QMessageBox::warning(this,
-								 tr("Warning"),            // cn:警告
-								 tr("x must be a series")  // cn:x必须是序列
+                                 tr("Warning"),            // cn:警告
+                                 tr("x must be a series")  // cn:x必须是序列
 			);
 			return false;
 		}
 		if (!yCenter.isSeries()) {
 			QMessageBox::warning(this,
-								 tr("Warning"),              // cn:警告
-								 tr("y must be a series"));  // cn:y必须是序列
+                                 tr("Warning"),              // cn:警告
+                                 tr("y must be a series"));  // cn:y必须是序列
 			return false;
 		}
 		if (!yError.isSeries()) {
 			QMessageBox::warning(this,
-								 tr("Warning"),                  // cn:警告
-								 tr("error must be a series"));  // cn:y必须是序列
+                                 tr("Warning"),                  // cn:警告
+                                 tr("error must be a series"));  // cn:y必须是序列
 			return false;
 		}
 		DAPySeries x = xd.toSeries();
@@ -403,8 +408,8 @@ bool DAChartAddXYESeriesWidget::getToVectorPointFFromUI(QVector< QwtIntervalSamp
 		DAPySeries e = yError.toSeries();
 		if (x.isNone() || y.isNone()) {
 			QMessageBox::warning(this,
-								 tr("Warning"),                                          // cn:警告
-								 tr("The None value cannot be converted to a series"));  // cn:None值无法转换为序列
+                                 tr("Warning"),                                          // cn:警告
+                                 tr("The None value cannot be converted to a series"));  // cn:None值无法转换为序列
 			return false;
 		}
 		std::size_t s = std::min(x.size(), y.size());
@@ -429,7 +434,7 @@ bool DAChartAddXYESeriesWidget::getToVectorPointFFromUI(QVector< QwtIntervalSamp
 			}
 		} catch (const std::exception& e) {
 			qCritical() << tr("Exception occurred during extracting from pandas.Series to double vector:%1")
-							   .arg(e.what());  // cn:从pandas.Series提取为double vector过程中出现异常:%1
+                               .arg(e.what());  // cn:从pandas.Series提取为double vector过程中出现异常:%1
 			return false;
 		}
 	}

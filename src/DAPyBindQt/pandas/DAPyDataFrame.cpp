@@ -142,7 +142,25 @@ QList< QString > DAPyDataFrame::columns() const
 	} catch (const std::exception& e) {
 		qCritical().noquote() << e.what();
 	}
-	return res;
+    return res;
+}
+
+/**
+ * @brief 获取第n个列名
+ * @param i
+ * @return
+ */
+QString DAPyDataFrame::columnName(size_t i) const
+{
+    QString res;
+    try {
+        pybind11::list obj_columns = object().attr("columns");
+        pybind11::object obj       = obj_columns[ i ];
+        res                        = DA::PY::toString(obj);
+    } catch (const std::exception& e) {
+        qCritical().noquote() << e.what();
+    }
+    return res;
 }
 
 /**

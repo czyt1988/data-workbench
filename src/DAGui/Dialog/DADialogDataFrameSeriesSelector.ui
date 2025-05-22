@@ -53,7 +53,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QTableView" name="tableView"/>
+        <widget class="DA::DACacheWindowTableView" name="tableView"/>
        </item>
       </layout>
      </widget>
@@ -70,14 +70,19 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>DA::DAPyDataframeColumnsListWidget</class>
-   <extends>QListWidget</extends>
-   <header>DAPyDataframeColumnsListWidget.h</header>
-  </customwidget>
-  <customwidget>
    <class>DA::DADataManagerComboBox</class>
    <extends>QComboBox</extends>
    <header>DADataManagerComboBox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>DA::DACacheWindowTableView</class>
+   <extends>QTableView</extends>
+   <header>DACacheWindowTableView.h</header>
+  </customwidget>
+  <customwidget>
+   <class>DA::DAPyDataframeColumnsListWidget</class>
+   <extends>QListWidget</extends>
+   <header>DAPyDataframeColumnsListWidget.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

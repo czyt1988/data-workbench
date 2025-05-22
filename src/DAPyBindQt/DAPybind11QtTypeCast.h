@@ -21,6 +21,7 @@ DAPYBINDQT_API pybind11::object toPyObject(const QVariant& var);
 DAPYBINDQT_API pybind11::object toPyObject(const QVariant& var, const pybind11::dtype& dt);
 // pybind11::object 转换为 QVariant
 DAPYBINDQT_API QVariant toVariant(const pybind11::object& obj);
+DAPYBINDQT_API QString toString(const pybind11::object& obj);
 // 把字符串按照dtype转换为qvariant
 DAPYBINDQT_API QVariant toVariant(const QString& str, const DAPyDType& dt);
 // pybind11::str 转换为QString
