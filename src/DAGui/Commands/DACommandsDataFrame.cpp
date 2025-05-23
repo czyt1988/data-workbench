@@ -707,10 +707,10 @@ bool DACommandDataFrame_querydatas::exec()
 ///////////////////
 
 DACommandDataFrame_dataselect::DACommandDataFrame_dataselect(const DAPyDataFrame& df,
-                                                             DAPyDataFrameTableModel* model,
                                                              double lowervalue,
                                                              double uppervalue,
-                                                             const QList< int >& index,
+                                                             const QString& index,
+                                                             DAPyDataFrameTableModel* model,
                                                              QUndoCommand* par)
     : DACommandWithTemporaryData(df, par), mModel(model), mlowervalue(lowervalue), mUppervalue(uppervalue), mIndex(index)
 {
