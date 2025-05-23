@@ -387,6 +387,7 @@ void DataAnalysController::onActionWaveletCWTTriggered()
 			return;
 		}
 	}
+    DA::DAPyDataFrame timeDf(raw[ "time" ]);
     DA::DAPyDataFrame freqDf(raw[ "pseudo_freqs" ]);
     DA::DAPyDataFrame coefDf(raw[ "coefficient" ]);
     DA::DAPyDataFrame coef_mDf(raw[ "coef_matrix" ]);
@@ -417,9 +418,39 @@ void DataAnalysController::onActionWaveletCWTTriggered()
 	auto fig = plt->createFigure();  // 注意，DAAppChartOperateWidget的createFigure会创建一个chart，因此，第一个chart是不需要创建的
 
     // cwt chart
+    auto spectrumChart = fig->currentChart();
+    auto freq          = freqDf[ "pseudo_freqs" ];
+    auto time          = timeDf[ "time" ];
+    QVector< double > x;
+    QVector< double > y;
+    time.castTo< double >(std::back_inserter(x));
+    freq.castTo< double >(std::back_inserter(y));
+    QVector< QVector< double > > value;
+    try {
+        auto shape = coef_mDf.shape();
+        value.reserve(shape.second);
+        for (std::size_t i = 0; i < shape.second; ++i) {
+            QVector< double > col;
+            col.reserve(shape.first);
+            coef_mDf[ i ].castTo< double >(std::back_inserter(col));
+            value.push_back(col);
+        }
+    } catch (const std::exception& e) {
+        qWarning() << e.what();
+    }
+    std::unique_ptr< QwtGridRasterData > gridData = std::make_unique< QwtGridRasterData >();
+    gridData->setValue(x, y, value);
+    auto spectrum = spectrumChart->addSpectroGram(gridData.release());
+    spectrum->setTitle(tr("cwt"));  // cn:连续小波变换
+    DA::DAChartUtil::setPlotItemColor(spectrum, fig->getDefaultColor());
+    spectrumChart->setXLabel(tr("time"));       // cn:时间
+    spectrumChart->setYLabel(tr("frequency"));  // cn:频率
+    spectrumChart->setTitle(tr("CWT Chart"));   // cn:频谱图
+    spectrumChart->notifyChartPropertyHasChanged();
+    fig->addItem_(spectrumChart, spectrum);
 
-	// 把绘图窗口抬起
-    // mDockingArea->raiseDockByWidget(mDockingArea->getChartOperateWidget());
+    // 把绘图窗口抬起
+    mDockingArea->raiseDockByWidget(mDockingArea->getChartOperateWidget());
 }
 
 void DataAnalysController::onActionWaveletDWTTriggered()
