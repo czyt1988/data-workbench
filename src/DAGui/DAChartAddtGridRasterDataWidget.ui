@@ -87,12 +87,17 @@
        </item>
       </layout>
      </widget>
-     <widget class="QTableView" name="tableViewRaster"/>
+     <widget class="DA::DAPyDataFrameTableView" name="tableViewRaster"/>
     </widget>
    </item>
   </layout>
  </widget>
  <customwidgets>
+  <customwidget>
+   <class>DA::DAPyDataFrameTableView</class>
+   <extends>QTableView</extends>
+   <header>DAPyDataFrameTableView.h</header>
+  </customwidget>
   <customwidget>
    <class>DA::DADataManagerComboBox</class>
    <extends>QComboBox</extends>

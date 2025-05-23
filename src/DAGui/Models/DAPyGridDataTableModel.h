@@ -11,7 +11,7 @@ class DAGUI_API DAPyGridDataTableModel : public DAPyDataFrameTableModel
 public:
 	DAPyGridDataTableModel(QUndoStack* stack, QObject* parent = nullptr);
 	~DAPyGridDataTableModel();
-	virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
+    virtual QVariant actualHeaderData(int actualSection, Qt::Orientation orientation, int role) const override;
 
 public:
 	void setGridX(const DAPySeries& x);

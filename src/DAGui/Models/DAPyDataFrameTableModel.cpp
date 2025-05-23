@@ -290,10 +290,12 @@ void DAPyDataFrameTableModel::setDataFrame(const DAPyDataFrame& d)
 	__elasper.start();
 	qDebug() << "setDAData begin";
 #endif
+    beginResetModel();
 	d_ptr->dataframe = d;
     if (d_ptr->useCacheMode) {
         refreshCacheData();
     }
+    endResetModel();
 #if DAPYDATAFRAMETABLEMODULE_PROFILE_PRINT
 	qDebug() << "setDAData after refresh,cost:" << __elasper.elapsed() << " ms";
 #endif
@@ -378,10 +380,8 @@ void DAPyDataFrameTableModel::notifyDataChanged(int rowStart, int colStart, int 
  */
 void DAPyDataFrameTableModel::refreshCacheData()
 {
-	beginResetModel();
 	cacheShape();
     setCacheWindowStartRow(0);  // 滑动窗口到第一行
-	endResetModel();
 }
 
 /**

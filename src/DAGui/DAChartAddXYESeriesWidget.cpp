@@ -17,9 +17,9 @@ DAChartAddXYESeriesWidget::DAChartAddXYESeriesWidget(QWidget* parent)
 {
 	ui->setupUi(this);
 #if DA_ENABLE_PYTHON
-	mModel = new DAPySeriesTableModel(this);
-	mModel->setHeaderLabel({ tr("x"), tr("y"), tr("error") });
-	ui->tableViewXYE->setModel(mModel);
+    DAPySeriesTableModel* m = new DAPySeriesTableModel(this);
+    m->setHeaderLabel({ tr("x"), tr("y"), tr("error") });
+    ui->tableViewXYE->setModel(m);
 #endif
 	QFontMetrics fm = fontMetrics();
 	ui->tableViewXYE->verticalHeader()->setDefaultSectionSize(fm.lineSpacing() * 1.1);
@@ -171,7 +171,7 @@ void DAChartAddXYESeriesWidget::onGroupBoxYAutoincrementClicked(bool on)
 	if (on) {
 		double base, step;
 		if (tryGetYSelfInc(base, step)) {
-			mModel->setSeriesAt(1, DAAutoincrementSeries< double >(base, step));
+            ui->tableViewXYE->setSeriesAt(1, DAAutoincrementSeries< double >(base, step));
 		}
 	} else {
 		// 取消要读取回原来的设置
@@ -180,9 +180,8 @@ void DAChartAddXYESeriesWidget::onGroupBoxYAutoincrementClicked(bool on)
 		if (data) {
 			series = data.toSeries();
 		}
-		mModel->setSeriesAt(1, series);
+        ui->tableViewXYE->setSeriesAt(1, series);
 	}
-    ui->tableViewXYE->showActualRow(0);
 	ui->comboBoxY->setEnabled(!on);
 #endif
 }

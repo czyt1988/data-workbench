@@ -57,7 +57,6 @@ protected:
 
 private:
 	Ui::DAChartAddXYESeriesWidget* ui;
-	DAPySeriesTableModel* mModel { nullptr };
 };
 }
 

@@ -17,7 +17,7 @@ DAPyGridDataTableModel::~DAPyGridDataTableModel()
  * @param role
  * @return
  */
-QVariant DAPyGridDataTableModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant DAPyGridDataTableModel::actualHeaderData(int actualSection, Qt::Orientation orientation, int role) const
 {
 	if (role != Qt::DisplayRole) {
 		return QVariant();
@@ -27,19 +27,19 @@ QVariant DAPyGridDataTableModel::headerData(int section, Qt::Orientation orienta
 		if (mXSeries.isNone()) {
 			return QVariant();
 		}
-		if (section >= (int)mXSeries.size()) {
+        if (actualSection >= (int)mXSeries.size()) {
 			return QVariant();
 		}
-		QVariant v = mXSeries[ section ];
+        QVariant v = mXSeries[ actualSection ];
 		return v;
 	} else {  // 垂直表头
 		if (mYSeries.isNone()) {
 			return QVariant();
 		}
-		if (section >= (int)mYSeries.size()) {
+        if (actualSection >= (int)mYSeries.size()) {
 			return QVariant();
 		}
-		QVariant v = mYSeries[ section ];
+        QVariant v = mYSeries[ actualSection ];
 		return v;
 	}
 	return QVariant();
