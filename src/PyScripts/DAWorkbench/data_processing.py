@@ -382,12 +382,16 @@ def da_wavelet_cwt(waveform, sampling_rate, scales, args:Optional[Dict] = None):
     :param axis: 要变换的轴，默认为最后一个轴
     :return: 连续小波变换结果
     '''   
+    time = np.arange(len(waveform)) / sampling_rate
     # 尺度系数
     scales.dropna(inplace=True)
-    coef,freqs = wavelet_cwt(waveform, sampling_rate, scales, **args)
-    cwt_data = pd.DataFrame(coef, columns=range(len(waveform)))
-    cwt_data.insert(0, 'pseudo_freqs', freqs)        
-    return cwt_data
+    coef,freqs = wavelet_cwt(waveform, sampling_rate, scales, **args) 
+    return {
+        "time": pd.DataFrame({'time': time}),
+        "pseudo_freqs" : pd.DataFrame({'pseudo_freqs': freqs}),
+        "coefficient" : pd.DataFrame(coef.T,columns=[f"{i}" for i in range(len(freqs))]),
+        "coef_matrix" : pd.DataFrame(coef, columns=[f"{i}" for i in range(len(waveform))])
+    }
     
 
 @log_function_call

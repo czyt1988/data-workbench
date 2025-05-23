@@ -240,38 +240,28 @@ def da_query_datas(df: pd.DataFrame, expr:Optional[str]):
     df.query(expr ,inplace=True)
 
 @log_function_call
-def da_data_select(df: pd.DataFrame,lower: Optional[float] = None,upper: Optional[float] = None,index: Optional[List[int]] = None,):
+def da_data_select(df: pd.DataFrame, index: str, lower: Optional[float] = None,upper: Optional[float] = None):
     '''
-    :param df: 要修改的DataFrame (会直接修改此对象)
+    :param df: pd.DataFrame
     :param lower: 范围下界，None表示无下限
     :param upper: 范围上界，None表示无上限
-    :param index: 选中的列索引列表（如[0, 2]表示第1列和第3列）
+    :param index: 选中的列索引
     '''
     # 参数校验
     if lower is None and upper is None:
         raise ValueError("必须指定lower或upper至少一个条件")
     
-    # 获取要检查的列
-    if index is None:
-        columns = df.columns
-    else:
-        # 处理列索引越界
-        if max(index) >= len(df.columns) or min(index) < 0:
-            raise IndexError(f"列索引越界，DataFrame只有{len(df.columns)}列")
-        columns = [df.columns[i] for i in index]
-    
     # 创建条件掩码（初始为全True）
     mask = pd.Series(True, index=df.index)
     
     # 在选中的列上应用范围条件
-    for col in columns:
-        col_series = df[col]
-        if lower is not None and upper is not None:
-            mask &= col_series.between(lower, upper)
-        elif lower is not None:
-            mask &= (col_series >= lower)
-        elif upper is not None:
-            mask &= (col_series <= upper)
+    col_series = df[index]
+    if lower is not None and upper is not None:
+        mask &= col_series.between(lower, upper)
+    elif lower is not None:
+        mask &= (col_series >= lower)
+    elif upper is not None:
+        mask &= (col_series <= upper)
     
     # 直接删除不符合条件的行
     df.drop(index=df[~mask].index, inplace=True)

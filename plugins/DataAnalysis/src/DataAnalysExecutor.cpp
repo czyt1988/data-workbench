@@ -22,11 +22,11 @@ DataAnalysExecutor::peak_analysis(const DA::DAPySeries& wave, double fs, const Q
     return dataProcessModule().peak_analysis(wave, fs, args, err);
 }
 
-DA::DAPyDataFrame DataAnalysExecutor::wavelet_cwt(const DA::DAPySeries& wave,
-                                                  double fs,
-                                                  const DA::DAPySeries& scales,
-                                                  const QVariantMap& args,
-                                                  QString* err)
+pybind11::dict DataAnalysExecutor::wavelet_cwt(const DA::DAPySeries& wave,
+                                               double fs,
+                                               const DA::DAPySeries& scales,
+                                               const QVariantMap& args,
+                                               QString* err)
 {
     return dataProcessModule().wavelet_cwt(wave, fs, scales, args, err);
 }

@@ -132,7 +132,7 @@ bool DAPyScriptsDataFrame::insert_column(DAPyDataFrame& df,
 		args[ "start" ] = DA::PY::toPyObject(start);
 		args[ "stop" ]  = DA::PY::toPyObject(stop);
 		if (start.canConvert(QMetaType::QDateTime) || start.canConvert(QMetaType::QDate)
-			|| start.canConvert(QMetaType::QTime)) {
+            || start.canConvert(QMetaType::QTime)) {
 			args[ "dtype" ] = pybind11::dtype("datetime64");
 		}
 		da_insert_column(**args);
@@ -693,7 +693,7 @@ bool DAPyScriptsDataFrame::sort(DAPyDataFrame& df, const QString& by, bool ascen
  * @param contents
  * @return
  */
-bool DAPyScriptsDataFrame::dataselect(DAPyDataFrame& df, double lowervalue, double uppervalue, const QList< int >& index)
+bool DAPyScriptsDataFrame::dataselect(DAPyDataFrame& df, double lowervalue, double uppervalue, const QString& index)
 {
 	try {
 		pybind11::object da_data_select = attr("da_data_select");
@@ -708,11 +708,7 @@ bool DAPyScriptsDataFrame::dataselect(DAPyDataFrame& df, double lowervalue, doub
 		} else {
 			args[ "upper" ] = uppervalue;
 		}
-		if (index.empty()) {
-			args[ "index" ] = pybind11::none();
-		} else {
-			args[ "index" ] = DA::PY::toPyList(index);
-		}
+        args[ "index" ] = DA::PY::toPyStr(index);
 		da_data_select(df.object(), **args);
 		return true;
 	} catch (const std::exception& e) {
