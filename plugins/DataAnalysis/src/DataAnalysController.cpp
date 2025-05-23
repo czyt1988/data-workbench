@@ -380,20 +380,33 @@ void DataAnalysController::onActionWaveletCWTTriggered()
 
 	//执行
 	QString err;
-	DA::DAPyDataFrame df = mExecutor->wavelet_cwt(data, fs, scales, args, &err);
-	if (df.isNone()) {
+    pybind11::dict raw = mExecutor->wavelet_cwt(data, fs, scales, args, &err);
+    if (raw.is_none()) {
 		if (!err.isEmpty()) {
 			qCritical() << err;
 			return;
 		}
 	}
+    DA::DAPyDataFrame freqDf(raw[ "pseudo_freqs" ]);
+    DA::DAPyDataFrame coefDf(raw[ "coefficient" ]);
+    DA::DAPyDataFrame coef_mDf(raw[ "coef_matrix" ]);
+    // 把数据装入datamanager
+    {
+        DA::DAData d(freqDf);
+        d.setName(QString("%1-CWT-Pseudo-Freqs").arg(data.name()));
+        mDataMgr->addData(d);
+    }
+    {
+        DA::DAData d(coefDf);
+        d.setName(QString("%1-CWT-Coef").arg(data.name()));
+        mDataMgr->addData(d);
+    }
+    {
+        DA::DAData d(coef_mDf);
+        d.setName(QString("%1-CWT-Coef_Matrix").arg(data.name()));
+        mDataMgr->addData(d);
+    }  // 不可撤销
 
-	//提取第一列伪频率
-	DA::DAPySeries pseudo_freqs = df[ 0 ];
-	// 把数据装入datamanager，系数矩阵
-	DA::DAData d(df);
-	d.setName(QString("%1-cwt_coef").arg(data.name()));
-	mDataMgr->addData(d);  // 不可撤销
 	//! 绘图
 	//! -------------
 	//! |   波形图   |
@@ -402,22 +415,11 @@ void DataAnalysController::onActionWaveletCWTTriggered()
 	//! -------------
 	auto plt = mDockingArea->getChartOperateWidget();
 	auto fig = plt->createFigure();  // 注意，DAAppChartOperateWidget的createFigure会创建一个chart，因此，第一个chart是不需要创建的
-	{  // wave chart
-		// currentChart函数不会返回null
-		auto waveChart = fig->currentChart();
-		fig->setWidgetPosPercent(waveChart, 0.05, 0.05, 0.9, 0.45);  // 对应的是x位置占比，y位置占比，宽度占比，高度占比，y位置是从上往下
-		auto xy    = toWave(data, 1 / fs);
-		auto curve = waveChart->addCurve(xy.first.data(), xy.second.data(), xy.first.size());
-		curve->setTitle(tr("Wave"));  // cn:波形
-		DA::DAChartUtil::setPlotItemColor(curve, fig->getDefaultColor());
-		waveChart->setXLabel(tr("time(s)"));     // cn:时间(s)
-		waveChart->setYLabel(tr("amplitudes"));  // cn:幅值
-		waveChart->setTitle(tr("Wave Chart"));   // cn:波形图
-	}
-	{  // cwt chart
-	}
+
+    // cwt chart
+
 	// 把绘图窗口抬起
-	// mDockingArea->raiseDockByWidget(mDockingArea->getChartOperateWidget());
+    // mDockingArea->raiseDockByWidget(mDockingArea->getChartOperateWidget());
 }
 
 void DataAnalysController::onActionWaveletDWTTriggered()
@@ -466,7 +468,7 @@ void DataAnalysController::onActionWaveletDWTTriggered()
 		// currentChart函数不会返回null
 		auto waveChart = fig->currentChart();
 		fig->setWidgetPosPercent(
-			waveChart, 0.05, 0.05, 0.9, 0.9 / (level + 1));  // 对应的是x位置占比，y位置占比，宽度占比，高度占比，y位置是从上往下
+            waveChart, 0.05, 0.05, 0.9, 0.9 / (level + 1));  // 对应的是x位置占比，y位置占比，宽度占比，高度占比，y位置是从上往下
 		auto xy    = toWave(data, 1 / fs);
 		auto curve = waveChart->addCurve(xy.first.data(), xy.second.data(), xy.first.size());
 		curve->setTitle(tr("Wave"));  // cn:波形
@@ -556,26 +558,17 @@ void DataAnalysController::onActionSTFTriggered()
 		DA::DAData d(stftDf);
 		d.setName(QString("%1-STFT-Matrix").arg(wave.name()));
 		mDataMgr->addData(d);
-	}  // 不可撤销
-	   //! 绘图
-	   //! ----------
-	   //! | 波形图  |
-	   //! ----------
-	   //! |  频谱   |
-	   //! ----------
+    }  // 不可撤销
+
+    //! 绘图
+    //! ----------
+    //! | 波形图  |
+    //! ----------
+    //! |  频谱   |
+    //! ----------
 	auto plt = mDockingArea->getChartOperateWidget();
 	auto fig = plt->createFigure();  // 注意，DAAppChartOperateWidget的createFigure会创建一个chart，因此，第一个chart是不需要创建的
-	//	{  // wave chart
-	//		// currentChart函数不会返回null
-	//		auto waveChart = fig->currentChart();
-	//		fig->setWidgetPosPercent(waveChart, 0.05, 0.05, 0.9, 0.45);  //
-	//对应的是x位置占比，y位置占比，宽度占比，高度占比，y位置是从上往下 		auto xy    = toWave(wave, 1 / fs); 		auto curve =
-	// waveChart->addCurve(xy.first.data(), xy.second.data(), xy.first.size()); 		curve->setTitle(tr("Wave"));  // cn:波形
-	//		DA::DAChartUtil::setPlotItemColor(curve, fig->getDefaultColor());
-	//		waveChart->setXLabel(tr("time(s)"));     // cn:时间(s)
-	//		waveChart->setYLabel(tr("amplitudes"));  // cn:幅值
-	//		waveChart->setTitle(tr("Wave Chart"));   // cn:波形图
-	//	}
+
 	{  // sftf chart
 		auto spectrumChart = fig->currentChart();
 		auto freq          = freqDf[ "frequency" ];
