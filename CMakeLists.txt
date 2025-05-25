@@ -333,7 +333,7 @@ if(DA_ENABLE_AUTO_TRANSLATE)
     endif()
 
     # 创建翻译目标
-    add_custom_target(da_translations ALL DEPENDS ${DA_QM_FILES})
+    add_custom_target(da_release_translations ALL DEPENDS ${DA_QM_FILES})
 
     # 安装翻译文件
     install(FILES ${DA_QM_FILES}
@@ -343,7 +343,8 @@ if(DA_ENABLE_AUTO_TRANSLATE)
 
     # 更新翻译目标
     if(DA_ENABLE_UPDATE_TRANSLATE)
-        add_custom_target(update_translations
+        message(STATUS "update translate")
+        add_custom_target(da_update_translations
             COMMAND ${Qt${QT_VERSION_MAJOR}_LUPDATE_EXECUTABLE}
                 -locations relative
                 -no-obsolete
