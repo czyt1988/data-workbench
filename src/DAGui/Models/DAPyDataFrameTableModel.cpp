@@ -274,9 +274,7 @@ void DAPyDataFrameTableModel::setDAData(const DAData& d)
 {
 	if (!d.isDataFrame()) {
 		d_ptr->dataframe = DAPyDataFrame();
-        if (d_ptr->useCacheMode) {
-            refreshCacheData();
-        }
+        refreshData();
 		return;
 	}
 	setDataFrame(d.toDataFrame());
@@ -290,12 +288,8 @@ void DAPyDataFrameTableModel::setDataFrame(const DAPyDataFrame& d)
 	__elasper.start();
 	qDebug() << "setDAData begin";
 #endif
-    beginResetModel();
 	d_ptr->dataframe = d;
-    if (d_ptr->useCacheMode) {
-        refreshCacheData();
-    }
-    endResetModel();
+    refreshData();
 #if DAPYDATAFRAMETABLEMODULE_PROFILE_PRINT
 	qDebug() << "setDAData after refresh,cost:" << __elasper.elapsed() << " ms";
 #endif
@@ -304,10 +298,7 @@ void DAPyDataFrameTableModel::setDataFrame(const DAPyDataFrame& d)
 void DAPyDataFrameTableModel::setUseCacheMode(bool on)
 {
     d_ptr->useCacheMode = on;
-    if (on) {
-        refreshCacheData();
-    } else {
-    }
+    refreshData();
 }
 
 /**
@@ -378,10 +369,15 @@ void DAPyDataFrameTableModel::notifyDataChanged(int rowStart, int colStart, int 
 /**
  * @brief 全部刷新
  */
-void DAPyDataFrameTableModel::refreshCacheData()
+void DAPyDataFrameTableModel::refreshData()
 {
-	cacheShape();
-    setCacheWindowStartRow(0);  // 滑动窗口到第一行
+    beginResetModel();
+    if (d_ptr->useCacheMode) {
+        cacheShape();
+    } else {
+        setCacheWindowStartRow(0);  // 滑动窗口到第一行
+    }
+    endResetModel();
 }
 
 /**

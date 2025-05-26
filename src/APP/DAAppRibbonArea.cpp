@@ -398,11 +398,12 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
 	m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDataFrameFillInterpolate);
 	m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDataFrameClipOutlier);
 	m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionNstdFilterOutlier);
-	//数据
+    // 数据
 	m_pannelDataframeOperateDataFiltering = m_categoryDataframeOperate->addPannel(tr("Data Filtering"));  // cn :数据过滤
-	m_pannelDataframeOperateDataFiltering->addLargeAction(m_actions->actionDataFrameQueryDatas);
-	//数据过滤
-	m_pannelDataframeOperateDataFiltering->addLargeAction(m_actions->actionDataFrameDataSelect);
+    m_pannelDataframeOperateDataFiltering->addLargeAction(m_actions->actionDataFrameEvalDatas);
+    m_pannelDataframeOperateDataFiltering->addLargeAction(m_actions->actionDataFrameQueryDatas);
+    // 数据过滤
+    m_pannelDataframeOperateDataFiltering->addLargeAction(m_actions->actionDataFrameDataFilterColumn);
     m_pannelDataframeOperateDataFiltering->addLargeAction(m_actions->actionDataFrameSort);
 	//  Statistic Pannel
 	m_pannelDataframeOperateStatistic = m_categoryDataframeOperate->addPannel(tr("Statistic"));  // cn：统计
@@ -572,7 +573,7 @@ void DAAppRibbonArea::buildContextCategoryWorkflowView_()
 	m_menuViewLineMarkers->addAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionNoneMarker));
 
 	if (QActionGroup* ag = wfo->getLineMarkerActionGroup()) {
-        connect(ag, &QActionGroup::triggered, this, [this, wfo](QAction* act) {
+        connect(ag, &QActionGroup::triggered, this, [ this, wfo ](QAction* act) {
 			QAction* actMarker = m_actions->actionWorkflowViewMarker;
 			QAction* noneAct   = wfo->getInnerAction(DAWorkFlowOperateWidget::ActionNoneMarker);
 			if (act != noneAct && act->isChecked()) {

@@ -242,10 +242,12 @@ private Q_SLOTS:
 	void onActionNstdFilterOutlierTriggered();
 	// 替换界限外异常值
 	void onActionDataFrameClipOutlierTriggered();
+    // 列运算
+    void onActionDataFrameEvalDatasTriggered();
 	// 过滤给定条件外的数据
 	void onActionDataFrameQueryDatasTriggered();
-	// 过滤
-    void onActionDataFrameDataSelectTriggered();
+    // 列数据过滤
+    void onActionDataFrameFilterByColumnTriggered();
     // 数据排序
 	void onActionDataFrameSortTriggered();
 #if DA_ENABLE_PYTHON
@@ -401,21 +403,21 @@ private:
 #endif
 
 private:
-	AppMainWindow* mMainWindow{ nullptr };
-	DAAppCore* mCore{ nullptr };
-	DAProjectInterface* mProject{ nullptr };
+    AppMainWindow* mMainWindow { nullptr };
+    DAAppCore* mCore { nullptr };
+    DAProjectInterface* mProject { nullptr };
 	;
-	DAAppRibbonArea* mRibbon{ nullptr };
-	DAAppDockingArea* mDock{ nullptr };
-	DAAppCommand* mCommand{ nullptr };
-	DAAppActions* mActions{ nullptr };
-	DAAppDataManager* mDatas{ nullptr };
+    DAAppRibbonArea* mRibbon { nullptr };
+    DAAppDockingArea* mDock { nullptr };
+    DAAppCommand* mCommand { nullptr };
+    DAAppActions* mActions { nullptr };
+    DAAppDataManager* mDatas { nullptr };
 
 	QStringList mFileReadFilters;  ///< 包含支持的文件[Images (*.png *.xpm *.jpg)] [Text files (*.txt)]
 	//
 	LastFocusedOpertateWidgets mLastFocusedOpertateWidget;  ///< 最后获取焦点的操作窗口
                                                             //
-	DAAppSettingDialog* mSettingDialog{ nullptr };          ///< 设置窗口
+    DAAppSettingDialog* mSettingDialog { nullptr };         ///< 设置窗口
 	DAAppConfig* mConfig;                                   ///< 设置类
 };
 }
