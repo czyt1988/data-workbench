@@ -132,7 +132,7 @@ bool DAPyScriptsDataFrame::insert_column(DAPyDataFrame& df,
 		args[ "start" ] = DA::PY::toPyObject(start);
 		args[ "stop" ]  = DA::PY::toPyObject(stop);
 		if (start.canConvert(QMetaType::QDateTime) || start.canConvert(QMetaType::QDate)
-            || start.canConvert(QMetaType::QTime)) {
+			|| start.canConvert(QMetaType::QTime)) {
 			args[ "dtype" ] = pybind11::dtype("datetime64");
 		}
 		da_insert_column(**args);
@@ -661,6 +661,27 @@ bool DAPyScriptsDataFrame::queryDatas(DAPyDataFrame& df, const QString& expr)
 }
 
 /**
+ * @brief eval方法的wrapper
+ * @param df
+ * @param expr
+ * @return
+ */
+bool DAPyScriptsDataFrame::evalDatas(DAPyDataFrame& df, const QString& expr)
+{
+	try {
+		if (expr.isEmpty()) {
+			return false;
+		}
+		pybind11::object da_eval_datas = attr("da_eval_datas");
+		da_eval_datas(df.object(), DA::PY::toPyStr(expr));
+		return true;
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return false;
+}
+
+/**
  * @brief sort方法的wrapper
  * @param df
  * @param by
@@ -708,7 +729,7 @@ bool DAPyScriptsDataFrame::dataselect(DAPyDataFrame& df, double lowervalue, doub
 		} else {
 			args[ "upper" ] = uppervalue;
 		}
-        args[ "index" ] = DA::PY::toPyStr(index);
+		args[ "index" ] = DA::PY::toPyStr(index);
 		da_data_select(df.object(), **args);
 		return true;
 	} catch (const std::exception& e) {

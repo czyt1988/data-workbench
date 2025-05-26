@@ -91,15 +91,15 @@ public Q_SLOTS:
 	// 删除缺失值,返回删除的数量
 	int dropna(const QString& how = QStringLiteral("any"), std::optional< int > thresh = std::nullopt);
 	int dropna(const DAPyDataFrame& df,
-               int axis,
-               const QString& how          = QStringLiteral("any"),
-               const QList< int > index    = QList< int >(),
-               std::optional< int > thresh = std::nullopt);
+			   int axis,
+			   const QString& how          = QStringLiteral("any"),
+			   const QList< int > index    = QList< int >(),
+			   std::optional< int > thresh = std::nullopt);
 	// 删除重复值
 	int dropduplicates(const QString& keep = QStringLiteral("first"));
 	int dropduplicates(const DAPyDataFrame& df,
-                       const QString& keep      = QStringLiteral("first"),
-                       const QList< int > index = QList< int >());
+					   const QString& keep      = QStringLiteral("first"),
+					   const QList< int > index = QList< int >());
 	// 填充缺失值，执行成功返回true
 	bool fillna();
 	bool fillna(const DAPyDataFrame& df, double value = 0.0, int limit = -1);
@@ -119,26 +119,27 @@ public Q_SLOTS:
 	bool clipoutlier();
 	bool clipoutlier(const DAPyDataFrame& df, double lower = 0.0, double upper = 0.0, int axis = 0);
 	// 过滤给定条件外的数据
-    bool queryDatas();
-    bool queryDatas(const DAPyDataFrame& df, const QString& exper);
-    // 列运算
-    bool evalDatas();
+	bool queryDatas();
+	bool queryDatas(const DAPyDataFrame& df, const QString& exper);
+	// 列运算
+	bool evalDatas();
+	bool evalDatas(const DAPyDataFrame& df, const QString& exper);
 	// 过滤给定条件外的数据
-    bool filterByColumn();
-    bool filterByColumn(const DAPyDataFrame& df, double lower = 0.0, double upper = 0.0, const QString& index = QString());
-    // 数据排序
-    bool sortDatas();
-    bool sortDatas(const DAPyDataFrame& df, const QString& by, const bool ascending);
+	bool filterByColumn();
+	bool filterByColumn(const DAPyDataFrame& df, double lower = 0.0, double upper = 0.0, const QString& index = QString());
+	// 数据排序
+	bool sortDatas();
+	bool sortDatas(const DAPyDataFrame& df, const QString& by, const bool ascending);
 	// 创建数据透视表
 	DAPyDataFrame createPivotTable();
 	DAPyDataFrame createPivotTable(const DAPyDataFrame& df,
-                                   const QStringList value    = QStringList(),
-                                   const QStringList index    = QStringList(),
-                                   const QStringList columns  = QStringList(),
-                                   const QString& aggfunc     = QStringLiteral("mean"),
-                                   bool margins               = false,
-                                   const QString& marginsName = QStringLiteral("All"),
-                                   bool sort                  = false);
+								   const QStringList value    = QStringList(),
+								   const QStringList index    = QStringList(),
+								   const QStringList columns  = QStringList(),
+								   const QString& aggfunc     = QStringLiteral("mean"),
+								   bool margins               = false,
+								   const QString& marginsName = QStringLiteral("All"),
+								   bool sort                  = false);
 Q_SIGNALS:
 	/**
 	 * @brief 选中的列或者类型发生了变化
@@ -157,17 +158,17 @@ protected:
 private:
 	Ui::DADataOperateOfDataFrameWidget* ui;
 	DAData mData;
-    DAPyDataFrameTableModel* mModel { nullptr };
+	DAPyDataFrameTableModel* mModel { nullptr };
 
-    DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs { nullptr };
-    DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs { nullptr };
-    DADialogDataFrameFillna* mDialogDataFrameFillna { nullptr };
-    DADialogDataFrameFillInterpolate* mDialogDataFrameFillInterpolate { nullptr };
-    DADialogDataFrameClipOutlier* mDialogDataFrameClipOutlier { nullptr };
-    DADialogCreatePivotTable* mDialogCreatePivotTable { nullptr };
-    DADialogDataFrameEvalDatas* mDialogDataFrameEvalDatas { nullptr };
-    DADialogDataFrameQueryDatas* mDialogDataFrameQueryDatas { nullptr };
-    DADialogDataFrameSort* mDADialogDataFrameSort { nullptr };
+	DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs { nullptr };
+	DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs { nullptr };
+	DADialogDataFrameFillna* mDialogDataFrameFillna { nullptr };
+	DADialogDataFrameFillInterpolate* mDialogDataFrameFillInterpolate { nullptr };
+	DADialogDataFrameClipOutlier* mDialogDataFrameClipOutlier { nullptr };
+	DADialogCreatePivotTable* mDialogCreatePivotTable { nullptr };
+	DADialogDataFrameEvalDatas* mDialogDataFrameEvalDatas { nullptr };
+	DADialogDataFrameQueryDatas* mDialogDataFrameQueryDatas { nullptr };
+	DADialogDataFrameSort* mDADialogDataFrameSort { nullptr };
 };
 }  // end of namespace DA
 #endif  // DADATAOPERATEOFDATAFRAMEWIDGET_H

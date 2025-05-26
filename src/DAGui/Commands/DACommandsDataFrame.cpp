@@ -364,7 +364,7 @@ void DACommandDataFrame_dropna::undo()
 	// 说明删除了空行
 	if (mModel) {
 		if (mDropedCount != 0) {
-            mModel->refreshData();
+			mModel->refreshData();
 		}
 	}
 }
@@ -382,7 +382,7 @@ bool DACommandDataFrame_dropna::exec()
 	// 说明删除了空行
 	if (mModel) {
 		if (mDropedCount != 0) {
-            mModel->refreshData();
+			mModel->refreshData();
 		}
 	}
 	return true;
@@ -409,7 +409,7 @@ void DACommandDataFrame_fillna::undo()
 {
 	load();
 	if (mModel) {
-        mModel->refreshData();
+		mModel->refreshData();
 	}
 }
 
@@ -423,7 +423,7 @@ bool DACommandDataFrame_fillna::exec()
 
 	// 说明填充了空行
 	if (mModel) {
-        mModel->refreshData();
+		mModel->refreshData();
 	}
 	return true;
 }
@@ -445,7 +445,7 @@ void DACommandDataFrame_interpolate::undo()
 {
 	load();
 	if (mModel) {
-        mModel->refreshData();
+		mModel->refreshData();
 	}
 }
 
@@ -459,7 +459,7 @@ bool DACommandDataFrame_interpolate::exec()
 
 	// 说明填充了空行
 	if (mModel) {
-        mModel->refreshData();
+		mModel->refreshData();
 	}
 	return true;
 }
@@ -480,7 +480,7 @@ void DACommandDataFrame_ffillna::undo()
 {
 	load();
 	if (mModel) {
-        mModel->refreshData();
+		mModel->refreshData();
 	}
 }
 
@@ -494,7 +494,7 @@ bool DACommandDataFrame_ffillna::exec()
 
 	// 说明填充了空行
 	if (mModel) {
-        mModel->refreshData();
+		mModel->refreshData();
 	}
 	return true;
 }
@@ -515,7 +515,7 @@ void DACommandDataFrame_bfillna::undo()
 {
 	load();
 	if (mModel) {
-        mModel->refreshData();
+		mModel->refreshData();
 	}
 }
 
@@ -529,7 +529,7 @@ bool DACommandDataFrame_bfillna::exec()
 
 	// 说明填充了空行
 	if (mModel) {
-        mModel->refreshData();
+		mModel->refreshData();
 	}
 	return true;
 }
@@ -561,7 +561,7 @@ void DACommandDataFrame_dropduplicates::undo()
 	// 说明删除了空行
 	if (mModel) {
 		if (mDropedCount != 0) {
-            mModel->refreshData();
+			mModel->refreshData();
 		}
 	}
 }
@@ -579,7 +579,7 @@ bool DACommandDataFrame_dropduplicates::exec()
 	// 说明删除了空行
 	if (mModel) {
 		if (mDropedCount != 0) {
-            mModel->refreshData();
+			mModel->refreshData();
 		}
 	}
 	return true;
@@ -609,7 +609,7 @@ void DACommandDataFrame_nstdfilteroutlier::undo()
 	// 说明删除了空行
 	if (mModel) {
 		if (mDropedCount != 0) {
-            mModel->refreshData();
+			mModel->refreshData();
 		}
 	}
 }
@@ -627,7 +627,7 @@ bool DACommandDataFrame_nstdfilteroutlier::exec()
 	// 说明删除了空行
 	if (mModel) {
 		if (mDropedCount != 0) {
-            mModel->refreshData();
+			mModel->refreshData();
 		}
 	}
 	return true;
@@ -656,7 +656,7 @@ void DACommandDataFrame_clipoutlier::undo()
 	load();
 	// 说明填充了空行
 	if (mModel) {
-        mModel->refreshData();
+		mModel->refreshData();
 	}
 }
 
@@ -667,7 +667,7 @@ bool DACommandDataFrame_clipoutlier::exec()
 		return false;
 	}
 	if (mModel) {
-        mModel->refreshData();
+		mModel->refreshData();
 	}
 	return true;
 }
@@ -686,15 +686,23 @@ DACommandDataFrame_evalDatas::DACommandDataFrame_evalDatas(const DAPyDataFrame& 
 
 void DACommandDataFrame_evalDatas::undo()
 {
-    load();
-    // 说明还原
-    if (mModel) {
-        mModel->refreshData();
-    }
+	load();
+	// 说明还原
+	if (mModel) {
+		mModel->refreshData();
+	}
 }
 
 bool DACommandDataFrame_evalDatas::exec()
 {
+	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+	if (!pydf.evalDatas(dataframe(), mExper)) {
+		return false;
+	}
+	if (mModel) {
+		mModel->refreshData();
+	}
+	return true;
 }
 //----------------------------------------------------
 //
@@ -713,9 +721,9 @@ DACommandDataFrame_querydatas::DACommandDataFrame_querydatas(const DAPyDataFrame
 void DACommandDataFrame_querydatas::undo()
 {
 	load();
-    // 说明还原
+	// 说明还原
 	if (mModel) {
-        mModel->refreshData();
+		mModel->refreshData();
 	}
 }
 
@@ -726,7 +734,7 @@ bool DACommandDataFrame_querydatas::exec()
 		return false;
 	}
 	if (mModel) {
-        mModel->refreshData();
+		mModel->refreshData();
 	}
 	return true;
 }
@@ -749,7 +757,7 @@ void DACommandDataFrame_filterByColumn::undo()
 	load();
 	// 说明填充了空行
 	if (mModel) {
-        mModel->refreshData();
+		mModel->refreshData();
 	}
 }
 
@@ -779,7 +787,7 @@ void DACommandDataFrame_sort::undo()
 	load();
 	// 说明排序完成
 	if (mModel) {
-        mModel->refreshData();
+		mModel->refreshData();
 	}
 }
 
@@ -880,7 +888,7 @@ void DACommandDataFrame_setIndex::undo()
 {
 	load();
 	if (mModel) {
-        mModel->refreshData();
+		mModel->refreshData();
 	}
 }
 
@@ -892,9 +900,9 @@ bool DACommandDataFrame_setIndex::exec()
 	}
 	if (mModel) {
 		// 此操作会删除一列，添加一列，整个modelreflash
-        mModel->refreshData();
+		mModel->refreshData();
 	}
-    return true;
+	return true;
 }
 
 }  // end DA

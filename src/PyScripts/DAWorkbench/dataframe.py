@@ -230,9 +230,16 @@ def da_create_pivot_table(df: pd.DataFrame, values=None, index=None, columns=Non
 
 
 @log_function_call
+def da_eval_datas(df: pd.DataFrame, expr:str,parser: str = "pandas", engine: Optional[str] = None,local_dict=None,global_dict=None,resolvers=(),level: int = 0,target=None):
+    '''
+    pandas.DataFrame.eval的wrapper
+    '''
+    df.eval(expr ,inplace=True)
+
+@log_function_call
 def da_query_datas(df: pd.DataFrame, expr:Optional[str]):
     '''
-    替换dataframe的异常值
+    pandas.DataFrame.query的wrapper
     :param df: pd.DataFrame。
     :param expr:字符串形式的筛选条件。
     :return: 此函数不返回值，直接改变df
