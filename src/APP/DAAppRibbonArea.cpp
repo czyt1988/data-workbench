@@ -306,9 +306,9 @@ void DAAppRibbonArea::buildRibbonDataCategory()
 	m_pannelDataOperate->setObjectName(QStringLiteral("da-pannel-data.data-opt"));
 	m_pannelDataOperate->addLargeAction(m_actions->actionAddData);
 	m_pannelDataOperate->addLargeAction(m_actions->actionRemoveData);
-    m_pannelDataOperate->addLargeAction(m_actions->actionExportIndividualData);
-    m_pannelDataOperate->addLargeAction(m_actions->actionExportMultipleData);
-    m_categoryData->addPannel(m_pannelDataOperate);
+	m_pannelDataOperate->addLargeAction(m_actions->actionExportIndividualData);
+	m_pannelDataOperate->addLargeAction(m_actions->actionExportMultipleData);
+	m_categoryData->addPannel(m_pannelDataOperate);
 
 	//----------------------------------------------------------
 
@@ -401,9 +401,10 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
 	//数据
 	m_pannelDataframeOperateDataFiltering = m_categoryDataframeOperate->addPannel(tr("Data Filtering"));  // cn :数据过滤
 	m_pannelDataframeOperateDataFiltering->addLargeAction(m_actions->actionDataFrameQueryDatas);
+	m_pannelDataframeOperateDataFiltering->addLargeAction(m_actions->actionDataFrameDataSearch);
 	//数据过滤
 	m_pannelDataframeOperateDataFiltering->addLargeAction(m_actions->actionDataFrameDataSelect);
-    m_pannelDataframeOperateDataFiltering->addLargeAction(m_actions->actionDataFrameSort);
+	m_pannelDataframeOperateDataFiltering->addLargeAction(m_actions->actionDataFrameSort);
 	//  Statistic Pannel
 	m_pannelDataframeOperateStatistic = m_categoryDataframeOperate->addPannel(tr("Statistic"));  // cn：统计
 	m_pannelDataframeOperateStatistic->addLargeAction(m_actions->actionCreateDataDescribe);
@@ -572,7 +573,7 @@ void DAAppRibbonArea::buildContextCategoryWorkflowView_()
 	m_menuViewLineMarkers->addAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionNoneMarker));
 
 	if (QActionGroup* ag = wfo->getLineMarkerActionGroup()) {
-        connect(ag, &QActionGroup::triggered, this, [this, wfo](QAction* act) {
+		connect(ag, &QActionGroup::triggered, this, [this, wfo](QAction* act) {
 			QAction* actMarker = m_actions->actionWorkflowViewMarker;
 			QAction* noneAct   = wfo->getInnerAction(DAWorkFlowOperateWidget::ActionNoneMarker);
 			if (act != noneAct && act->isChecked()) {

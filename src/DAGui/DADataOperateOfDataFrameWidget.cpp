@@ -24,6 +24,7 @@
 #include "Dialog/DADialogDataFrameFillInterpolate.h"
 #include "Dialog/DADialogDataFrameClipOutlier.h"
 #include "Dialog/DADialogDataFrameQueryDatas.h"
+#include "Dialog/DADialogDataFrameDataSearch.h"
 #include "Dialog/DADialogCreatePivotTable.h"
 #include "Dialog/DADialogDataFrameSort.h"
 
@@ -51,7 +52,7 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
 
 	mModel = new DAPyDataFrameTableModel(getUndoStack(), this);
 
-    ui->tableView->setModel(mModel);
+	ui->tableView->setModel(mModel);
 	// 关闭不必要的绘制特性
 	setDAData(d);
 	connect(ui->tableView, &QTableView::clicked, this, &DADataOperateOfDataFrameWidget::onTableViewClicked);
@@ -122,7 +123,7 @@ void DADataOperateOfDataFrameWidget::insertRowBelowBySelect()
 void DADataOperateOfDataFrameWidget::insertRowAt(int row)
 {
 	std::unique_ptr< DACommandDataFrame_insertNanRow > cmd(
-        new DACommandDataFrame_insertNanRow(mData.toDataFrame(), row, mModel));
+		new DACommandDataFrame_insertNanRow(mData.toDataFrame(), row, mModel));
 	if (!cmd->exec()) {
 		return;
 	}
@@ -167,15 +168,15 @@ void DADataOperateOfDataFrameWidget::insertColumnAt(int col)
 	QString name = dlg.getName();
 	if (name.isEmpty()) {
 		QMessageBox::warning(this,
-                             tr("warning"),                                                     // cn: 警告
-                             tr("The name of the new column to be inserted must be specified")  // cn:必须指定列的名字
+							 tr("warning"),                                                     // cn: 警告
+							 tr("The name of the new column to be inserted must be specified")  // cn:必须指定列的名字
 		);
 		return;
 	}
 	DAPyDType dt = dlg.getDType();
 	if (dlg.isRangeMode()) {
-        cmd.reset(new DACommandDataFrame_insertColumn(
-            mData.toDataFrame(), col, name, dlg.getStartValue(), dlg.getStopValue(), mModel));
+		cmd.reset(new DACommandDataFrame_insertColumn(
+			mData.toDataFrame(), col, name, dlg.getStartValue(), dlg.getStopValue(), mModel));
 
 	} else {
 		cmd.reset(new DACommandDataFrame_insertColumn(mData.toDataFrame(), col, name, dlg.getDefaultValue(), mModel));
@@ -225,7 +226,7 @@ int DADataOperateOfDataFrameWidget::removeSelectColumn()
 		return 0;
 	}
 	std::unique_ptr< DACommandDataFrame_dropIColumn > cmd(
-        new DACommandDataFrame_dropIColumn(mData.toDataFrame(), columns, mModel));
+		new DACommandDataFrame_dropIColumn(mData.toDataFrame(), columns, mModel));
 	if (!cmd->exec()) {
 		return 0;
 	}
@@ -417,8 +418,8 @@ bool DADataOperateOfDataFrameWidget::changeSelectColumnToIndex()
 		qWarning() << tr("please select valid column");  // cn:请选择正确的列
 		return false;
 	}
-    std::unique_ptr< DACommandDataFrame_setIndex > cmd =
-        std::make_unique< DACommandDataFrame_setIndex >(df, colsIndex, ui->tableView->verticalHeader(), mModel);
+	std::unique_ptr< DACommandDataFrame_setIndex > cmd =
+		std::make_unique< DACommandDataFrame_setIndex >(df, colsIndex, ui->tableView->verticalHeader(), mModel);
 	if (!cmd->exec()) {
 		return false;
 	}
@@ -473,8 +474,8 @@ int DADataOperateOfDataFrameWidget::dropna(const DAPyDataFrame& df,
                                            std::optional< int > thresh)
 {
 
-    std::unique_ptr< DACommandDataFrame_dropna > cmd =
-        std::make_unique< DACommandDataFrame_dropna >(df, mModel, axis, how, index, thresh);
+	std::unique_ptr< DACommandDataFrame_dropna > cmd =
+		std::make_unique< DACommandDataFrame_dropna >(df, mModel, axis, how, index, thresh);
 	if (!cmd->exec()) {
 		return false;
 	}
@@ -521,8 +522,8 @@ bool DADataOperateOfDataFrameWidget::fillna()
  */
 bool DADataOperateOfDataFrameWidget::fillna(const DAPyDataFrame& df, double value, int limit)
 {
-    std::unique_ptr< DACommandDataFrame_fillna > cmd =
-        std::make_unique< DACommandDataFrame_fillna >(df, mModel, value, limit);
+	std::unique_ptr< DACommandDataFrame_fillna > cmd =
+		std::make_unique< DACommandDataFrame_fillna >(df, mModel, value, limit);
 	if (!cmd->exec()) {
 		return false;
 	}
@@ -562,8 +563,8 @@ bool DADataOperateOfDataFrameWidget::interpolate()
 
 bool DADataOperateOfDataFrameWidget::interpolate(const DAPyDataFrame& df, const QString& method, int order, int limit)
 {
-    std::unique_ptr< DACommandDataFrame_interpolate > cmd =
-        std::make_unique< DACommandDataFrame_interpolate >(df, mModel, method, order, limit);
+	std::unique_ptr< DACommandDataFrame_interpolate > cmd =
+		std::make_unique< DACommandDataFrame_interpolate >(df, mModel, method, order, limit);
 	if (!cmd->exec()) {
 		return false;
 	}
@@ -592,8 +593,8 @@ bool DADataOperateOfDataFrameWidget::ffillna()
  */
 bool DADataOperateOfDataFrameWidget::ffillna(const DAPyDataFrame& df, int axis, int limit)
 {
-    std::unique_ptr< DACommandDataFrame_ffillna > cmd =
-        std::make_unique< DACommandDataFrame_ffillna >(df, mModel, axis, limit);
+	std::unique_ptr< DACommandDataFrame_ffillna > cmd =
+		std::make_unique< DACommandDataFrame_ffillna >(df, mModel, axis, limit);
 	if (!cmd->exec()) {
 		return false;
 	}
@@ -622,8 +623,8 @@ bool DADataOperateOfDataFrameWidget::bfillna()
  */
 bool DADataOperateOfDataFrameWidget::bfillna(const DAPyDataFrame& df, int axis, int limit)
 {
-    std::unique_ptr< DACommandDataFrame_bfillna > cmd =
-        std::make_unique< DACommandDataFrame_bfillna >(df, mModel, axis, limit);
+	std::unique_ptr< DACommandDataFrame_bfillna > cmd =
+		std::make_unique< DACommandDataFrame_bfillna >(df, mModel, axis, limit);
 
 	if (!cmd->exec()) {
 		return false;
@@ -659,8 +660,8 @@ int DADataOperateOfDataFrameWidget::dropduplicates(const QString& keep)
  */
 int DADataOperateOfDataFrameWidget::dropduplicates(const DAPyDataFrame& df, const QString& keep, const QList< int > index)
 {
-    std::unique_ptr< DACommandDataFrame_dropduplicates > cmd =
-        std::make_unique< DACommandDataFrame_dropduplicates >(df, mModel, keep, index);
+	std::unique_ptr< DACommandDataFrame_dropduplicates > cmd =
+		std::make_unique< DACommandDataFrame_dropduplicates >(df, mModel, keep, index);
 	if (!cmd->exec()) {
 		return 0;
 	}
@@ -699,8 +700,8 @@ int DADataOperateOfDataFrameWidget::nstdfilteroutlier(double n)
  */
 int DADataOperateOfDataFrameWidget::nstdfilteroutlier(const DAPyDataFrame& df, double n, int axis, const QList< int > index)
 {
-    std::unique_ptr< DACommandDataFrame_nstdfilteroutlier > cmd =
-        std::make_unique< DACommandDataFrame_nstdfilteroutlier >(df, mModel, n, axis, index);
+	std::unique_ptr< DACommandDataFrame_nstdfilteroutlier > cmd =
+		std::make_unique< DACommandDataFrame_nstdfilteroutlier >(df, mModel, n, axis, index);
 	if (!cmd->exec()) {
 		return false;
 	}
@@ -728,7 +729,7 @@ bool DADataOperateOfDataFrameWidget::clipoutlier()
 		// 说明用户取消
 		return false;
 	}
-    // 获取过滤数据上下限
+	// 获取过滤数据上下限
 	double lowervalue = mDialogDataFrameClipOutlier->getLowerValue();
 	double uppervalue = mDialogDataFrameClipOutlier->getUpperValue();
 
@@ -745,8 +746,8 @@ bool DADataOperateOfDataFrameWidget::clipoutlier()
  */
 bool DADataOperateOfDataFrameWidget::clipoutlier(const DAPyDataFrame& df, double lower, double upper, int axis)
 {
-    std::unique_ptr< DACommandDataFrame_clipoutlier > cmd =
-        std::make_unique< DACommandDataFrame_clipoutlier >(df, mModel, lower, upper, axis);
+	std::unique_ptr< DACommandDataFrame_clipoutlier > cmd =
+		std::make_unique< DACommandDataFrame_clipoutlier >(df, mModel, lower, upper, axis);
 	if (!cmd->exec()) {
 		return false;
 	}
@@ -773,19 +774,55 @@ bool DADataOperateOfDataFrameWidget::queryDatas()
 	}
 	// 获取填充值
 	QString exper = mDialogDataFrameQueryDatas->getExpr();
-    return queryDatas(df, exper);
+	return queryDatas(df, exper);
 }
 
 /**
- * @brief 过滤给定条件外的数据
- * @param lower 可选参数，下界值
- * @param upper 可选参数，上界值。
+ * @brief 过滤给定条件外的数据。
  * @return 成功返回true,反之返回false
  */
 bool DADataOperateOfDataFrameWidget::queryDatas(const DAPyDataFrame& df, const QString& exper)
 {
-    std::unique_ptr< DACommandDataFrame_querydatas > cmd =
-        std::make_unique< DACommandDataFrame_querydatas >(df, exper, mModel);
+	std::unique_ptr< DACommandDataFrame_querydatas > cmd =
+		std::make_unique< DACommandDataFrame_querydatas >(df, exper, mModel);
+	if (!cmd->exec()) {
+		return false;
+	}
+	getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
+	return true;
+}
+
+/**
+ * @brief 检索给定的数据
+ * @return 成功返回true,反之返回false
+ */
+bool DADataOperateOfDataFrameWidget::searchData()
+{
+	DAPyDataFrame df = getDataframe();
+	if (df.isNone()) {
+		return false;
+	}
+	if (!mDialogDataFrameDataSearch) {
+		mDialogDataFrameDataSearch = new DADialogDataFrameDataSearch(this);
+	}
+	if (QDialog::Accepted != mDialogDataFrameDataSearch->exec()) {
+		// 说明用户取消
+		return false;
+	}
+	// 获取填充值
+	QString exper = mDialogDataFrameDataSearch->getExpr();
+	return queryDatas(df, exper);
+}
+
+/**
+ * @brief 检索给定的数据
+ * @param exper 可选参数
+ * @return 成功返回true,反之返回false
+ */
+bool DADataOperateOfDataFrameWidget::searchData(const DAPyDataFrame& df, const QString& exper)
+{
+	std::unique_ptr< DACommandDataFrame_searchdata > cmd =
+		std::make_unique< DACommandDataFrame_searchdata >(df, exper, mModel);
 	if (!cmd->exec()) {
 		return false;
 	}
@@ -817,9 +854,9 @@ bool DADataOperateOfDataFrameWidget::sortDatas()
 		return false;
 
 	// 获取排序参数
-    QString by     = mDADialogDataFrameSort->getSortBy();
+	QString by     = mDADialogDataFrameSort->getSortBy();
 	bool ascending = mDADialogDataFrameSort->getSortType();
-    return sortDatas(df, by, ascending);
+	return sortDatas(df, by, ascending);
 }
 
 /**
@@ -846,24 +883,24 @@ bool DADataOperateOfDataFrameWidget::dataSelect()
 	if (df.isNone()) {
 		return false;
 	}
-    if (!mDialogDataFrameClipOutlier)
+	if (!mDialogDataFrameClipOutlier)
 		mDialogDataFrameClipOutlier = new DADialogDataFrameClipOutlier(this);
 
-    mDialogDataFrameClipOutlier->setDataframe(df);
+	mDialogDataFrameClipOutlier->setDataframe(df);
 
-    // 获取选中的列
-    if (isDataframeTableHaveSelection())
-        mDialogDataFrameClipOutlier->setFilterData(getSelectedOneDataframeColumn());
+	// 获取选中的列
+	if (isDataframeTableHaveSelection())
+		mDialogDataFrameClipOutlier->setFilterData(getSelectedOneDataframeColumn());
 
-    if (QDialog::Accepted != mDialogDataFrameClipOutlier->exec())
-        return false;
+	if (QDialog::Accepted != mDialogDataFrameClipOutlier->exec())
+		return false;
 
-    // 获取过滤参数
-    QString index     = mDialogDataFrameClipOutlier->getFilterData();
+	// 获取过滤参数
+	QString index     = mDialogDataFrameClipOutlier->getFilterData();
 	double lowervalue = mDialogDataFrameClipOutlier->getLowerValue();
 	double uppervalue = mDialogDataFrameClipOutlier->getUpperValue();
 
-    return dataSelect(df, lowervalue, uppervalue, index);
+	return dataSelect(df, lowervalue, uppervalue, index);
 }
 
 /**
@@ -874,8 +911,8 @@ bool DADataOperateOfDataFrameWidget::dataSelect()
  */
 bool DADataOperateOfDataFrameWidget::dataSelect(const DAPyDataFrame& df, double lower, double upper, const QString& index)
 {
-    std::unique_ptr< DACommandDataFrame_dataselect > cmd =
-        std::make_unique< DACommandDataFrame_dataselect >(df, lower, upper, index, mModel);
+	std::unique_ptr< DACommandDataFrame_dataselect > cmd =
+		std::make_unique< DACommandDataFrame_dataselect >(df, lower, upper, index, mModel);
 	if (!cmd->exec()) {
 		return false;
 	}

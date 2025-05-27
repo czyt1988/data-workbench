@@ -42,16 +42,16 @@ public:
 
 	QAction* actionRedo;
 	QAction* actionUndo;
-	QAction* actionSetting;        ///< 设置
-	QAction* actionPluginManager;  ///< 插件管理
-	QAction* actionAbout;          ///< about
-	//===================================================
-	// 数据标签 Data Category
-	//===================================================
-    QAction* actionAddData;               ///< 添加数据
-    QAction* actionRemoveData;            ///< 移除数据
-    QAction* actionExportIndividualData;  ///< 导出单个数据
-    QAction* actionExportMultipleData;    ///< 导出多个数据
+	QAction* actionSetting;               ///< 设置
+	QAction* actionPluginManager;         ///< 插件管理
+	QAction* actionAbout;                 ///< about
+										  //===================================================
+										  // 数据标签 Data Category
+										  //===================================================
+	QAction* actionAddData;               ///< 添加数据
+	QAction* actionRemoveData;            ///< 移除数据
+	QAction* actionExportIndividualData;  ///< 导出单个数据
+	QAction* actionExportMultipleData;    ///< 导出多个数据
 
 	//===================================================
 	// 数据操作的上下文标签 Data Operate Context Category
@@ -78,8 +78,9 @@ public:
 	QAction* actionNstdFilterOutlier;         ///< n倍标准差过滤异常值
 	QAction* actionDataFrameClipOutlier;      ///< 替换界限外异常值
 	QAction* actionDataFrameQueryDatas;       ///< 过滤给定条件外的数据
+	QAction* actionDataFrameDataSearch;       ///< 检索指定数据
 	QAction* actionDataFrameDataSelect;       ///< 过滤范围外的数据
-    QAction* actionDataFrameSort;             ///< 数据排序
+	QAction* actionDataFrameSort;             ///< 数据排序
 	QAction* actionCreatePivotTable;          ///< 创建数据透视表
 	//===================================================
 	// workflow的上下文标签

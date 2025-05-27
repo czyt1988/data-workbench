@@ -706,6 +706,38 @@ bool DACommandDataFrame_querydatas::exec()
 
 ///////////////////
 
+DACommandDataFrame_searchdata::DACommandDataFrame_searchdata(const DAPyDataFrame& df,
+                                                             const QString& exper,
+                                                             DAPyDataFrameTableModel* model,
+                                                             QUndoCommand* par)
+    : DACommandWithTemporaryData(df, par), mExper(exper), mModel(model)
+{
+    setText(QObject::tr("search data"));  // cn:检索相关数据
+}
+
+void DACommandDataFrame_searchdata::undo()
+{
+	load();
+	// 说明填充了空行
+	if (mModel) {
+		mModel->refreshCacheData();
+	}
+}
+
+bool DACommandDataFrame_searchdata::exec()
+{
+	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+	if (!pydf.searchData(dataframe(), mExper)) {
+		return false;
+	}
+	if (mModel) {
+		mModel->refreshCacheData();
+	}
+	return true;
+}
+
+///////////////////
+
 DACommandDataFrame_dataselect::DACommandDataFrame_dataselect(const DAPyDataFrame& df,
                                                              double lowervalue,
                                                              double uppervalue,

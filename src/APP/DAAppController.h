@@ -89,7 +89,7 @@ public:
 public:
 	// 获取当前dataframeOperateWidget,如果没有返回nullptr,此函数不返回nullptr的前提是
 	DADataOperateOfDataFrameWidget* getCurrentDataFrameOperateWidget(bool checkDataOperateAreaFocused = true,
-                                                                     bool isShowMessage               = true);
+																	 bool isShowMessage               = true);
 	// 获取工作流操作窗口
 	DAWorkFlowOperateWidget* getWorkFlowOperateWidget() const;
 	// 获取数据操作窗口
@@ -146,11 +146,11 @@ private Q_SLOTS:
 	// 添加数据
 	void onActionAddDataTriggered();
 	// 移除数据
-    void onActionRemoveDataTriggered();
-    // 导出单个数据
-    void onActionExportIndividualDataTriggered();
-    // 导出多个数据
-    void onActionExportMultipleDataTriggered();
+	void onActionRemoveDataTriggered();
+	// 导出单个数据
+	void onActionExportIndividualDataTriggered();
+	// 导出多个数据
+	void onActionExportMultipleDataTriggered();
 	//===================================================
 	// 绘图标签 Chart Category
 	//===================================================
@@ -243,10 +243,11 @@ private Q_SLOTS:
 	// 替换界限外异常值
 	void onActionDataFrameClipOutlierTriggered();
 	// 过滤给定条件外的数据
-	void onActionDataFrameQueryDatasTriggered();
+	void onActionDataFrameQueryDatasTriggered();  // 检索给定的数据
+	void onActionDataFrameDataSearchTriggered();
 	// 过滤
-    void onActionDataFrameDataSelectTriggered();
-    // 数据排序
+	void onActionDataFrameDataSelectTriggered();
+	// 数据排序
 	void onActionDataFrameSortTriggered();
 #if DA_ENABLE_PYTHON
 	// 列数据类型改变
@@ -414,7 +415,7 @@ private:
 	QStringList mFileReadFilters;  ///< 包含支持的文件[Images (*.png *.xpm *.jpg)] [Text files (*.txt)]
 	//
 	LastFocusedOpertateWidgets mLastFocusedOpertateWidget;  ///< 最后获取焦点的操作窗口
-                                                            //
+															//
 	DAAppSettingDialog* mSettingDialog{ nullptr };          ///< 设置窗口
 	DAAppConfig* mConfig;                                   ///< 设置类
 };
