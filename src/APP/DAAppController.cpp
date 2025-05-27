@@ -269,10 +269,11 @@ void DAAppController::initConnection()
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToString, onActionCastToStringTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToDatetime, onActionCastToDatetimeTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameClipOutlier, onActionDataFrameClipOutlierTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameEvalDatas, onActionDataFrameEvalDatasTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameQueryDatas, onActionDataFrameQueryDatasTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameDataSearch, onActionDataFrameDataSearchTriggered);
-	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameDataSelect, onActionDataFrameDataSelectTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameDataFilterColumn, onActionDataFrameFilterByColumnTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameSort, onActionDataFrameSortTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameDataSearch, onActionDataFrameDataSearchTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCreatePivotTable, onActionCreatePivotTableTriggered);
 #if DA_ENABLE_PYTHON
 	// 不知为何使用函数指针无法关联信号和槽
@@ -1949,8 +1950,9 @@ void DAAppController::onActionNstdFilterOutlierTriggered()
 {
 #if DA_ENABLE_PYTHON
 	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-		dfopt->nstdfilteroutlier();
-		setDirty();
+		if (dfopt->nstdfilteroutlier() > 0) {
+			setDirty();
+		}
 	}
 #endif
 }
@@ -1962,8 +1964,23 @@ void DAAppController::onActionDataFrameClipOutlierTriggered()
 {
 #if DA_ENABLE_PYTHON
 	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-		dfopt->clipoutlier();
-		setDirty();
+		if (dfopt->clipoutlier()) {
+			setDirty();
+		}
+	}
+#endif
+}
+
+/**
+ * @brief 执行列运算
+ */
+void DAAppController::onActionDataFrameEvalDatasTriggered()
+{
+#if DA_ENABLE_PYTHON
+	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+		if (dfopt->evalDatas()) {
+			setDirty();
+		}
 	}
 #endif
 }
@@ -1975,8 +1992,9 @@ void DAAppController::onActionDataFrameQueryDatasTriggered()
 {
 #if DA_ENABLE_PYTHON
 	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-		dfopt->queryDatas();
-		setDirty();
+		if (dfopt->queryDatas()) {
+			setDirty();
+		}
 	}
 #endif
 }
@@ -1997,12 +2015,13 @@ void DAAppController::onActionDataFrameDataSearchTriggered()
 /**
  * @brief 过滤给定条件外的数据
  */
-void DAAppController::onActionDataFrameDataSelectTriggered()
+void DAAppController::onActionDataFrameFilterByColumnTriggered()
 {
 #if DA_ENABLE_PYTHON
 	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-		dfopt->dataSelect();
-		setDirty();
+		if (dfopt->filterByColumn()) {
+			setDirty();
+		}
 	}
 #endif
 }
@@ -2015,8 +2034,9 @@ void DAAppController::onActionDataFrameSortTriggered()
 {
 #if DA_ENABLE_PYTHON
 	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-		dfopt->sortDatas();
-		setDirty();
+		if (dfopt->sortDatas()) {
+			setDirty();
+		}
 	}
 #endif
 }

@@ -23,6 +23,7 @@
 #include "Dialog/DADialogDataFrameFillna.h"
 #include "Dialog/DADialogDataFrameFillInterpolate.h"
 #include "Dialog/DADialogDataFrameClipOutlier.h"
+#include "Dialog/DADialogDataFrameEvalDatas.h"
 #include "Dialog/DADialogDataFrameQueryDatas.h"
 #include "Dialog/DADialogDataFrameDataSearch.h"
 #include "Dialog/DADialogCreatePivotTable.h"
@@ -831,6 +832,45 @@ bool DADataOperateOfDataFrameWidget::searchData(const DAPyDataFrame& df, const Q
 }
 
 /**
+ * @brief 列运算
+ * @return 成功返回true,反之返回false
+ */
+bool DADataOperateOfDataFrameWidget::evalDatas()
+{
+	DAPyDataFrame df = getDataframe();
+	if (df.isNone()) {
+		return false;
+	}
+	if (!mDialogDataFrameEvalDatas) {
+		mDialogDataFrameEvalDatas = new DADialogDataFrameEvalDatas(this);
+	}
+	if (QDialog::Accepted != mDialogDataFrameEvalDatas->exec()) {
+		// 说明用户取消
+		return false;
+	}
+	// 获取填充值
+	QString exper = mDialogDataFrameEvalDatas->getExpr();
+	return evalDatas(df, exper);
+}
+
+/**
+ * @brief 列运算
+ * @param df
+ * @param exper
+ * @return
+ */
+bool DADataOperateOfDataFrameWidget::evalDatas(const DAPyDataFrame& df, const QString& exper)
+{
+	std::unique_ptr< DACommandDataFrame_evalDatas > cmd =
+		std::make_unique< DACommandDataFrame_evalDatas >(df, exper, mModel);
+	if (!cmd->exec()) {
+		return false;
+	}
+	getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
+	return true;
+}
+
+/**
  * @brief 数据排序
  * @return
  */
@@ -841,8 +881,9 @@ bool DADataOperateOfDataFrameWidget::sortDatas()
 		return false;
 	}
 
-	if (!mDADialogDataFrameSort)
+	if (!mDADialogDataFrameSort) {
 		mDADialogDataFrameSort = new DADialogDataFrameSort(this);
+	}
 
 	mDADialogDataFrameSort->setDataframe(df);
 
@@ -877,7 +918,7 @@ bool DADataOperateOfDataFrameWidget::sortDatas(const DAPyDataFrame& df, const QS
  * @brief 过滤给定条件外的数据
  * @return 成功返回true,反之返回false
  */
-bool DADataOperateOfDataFrameWidget::dataSelect()
+bool DADataOperateOfDataFrameWidget::filterByColumn()
 {
 	DAPyDataFrame df = getDataframe();
 	if (df.isNone()) {
@@ -900,7 +941,7 @@ bool DADataOperateOfDataFrameWidget::dataSelect()
 	double lowervalue = mDialogDataFrameClipOutlier->getLowerValue();
 	double uppervalue = mDialogDataFrameClipOutlier->getUpperValue();
 
-	return dataSelect(df, lowervalue, uppervalue, index);
+	return filterByColumn(df, lowervalue, uppervalue, index);
 }
 
 /**
@@ -909,10 +950,10 @@ bool DADataOperateOfDataFrameWidget::dataSelect()
  * @param upper 可选参数，上界值。
  * @return 成功返回true,反之返回false
  */
-bool DADataOperateOfDataFrameWidget::dataSelect(const DAPyDataFrame& df, double lower, double upper, const QString& index)
+bool DADataOperateOfDataFrameWidget::filterByColumn(const DAPyDataFrame& df, double lower, double upper, const QString& index)
 {
-	std::unique_ptr< DACommandDataFrame_dataselect > cmd =
-		std::make_unique< DACommandDataFrame_dataselect >(df, lower, upper, index, mModel);
+	std::unique_ptr< DACommandDataFrame_filterByColumn > cmd =
+		std::make_unique< DACommandDataFrame_filterByColumn >(df, lower, upper, index, mModel);
 	if (!cmd->exec()) {
 		return false;
 	}

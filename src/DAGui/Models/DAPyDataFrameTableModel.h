@@ -51,7 +51,7 @@ public:
 	/// @}
 
 	// 刷新
-    void refreshCacheData();
+    void refreshData();
 	void notifyRowChanged(int row);
 	void notifyColumnChanged(int col);
 	void notifyDataChanged(int row, int col);

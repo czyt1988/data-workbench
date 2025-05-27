@@ -95,6 +95,7 @@
         <file>Icon/exportIndividualData.svg</file>
         <file>Icon/exportMultipleData.svg</file>
         <file>Icon/dataframe-data-select.svg</file>
+        <file>Icon/dataframe-eval-datas.svg</file>
     </qresource>
     <qresource prefix="/app/dataType">
         <file>Icon/typeDataframe.svg</file>

@@ -364,7 +364,7 @@ void DACommandDataFrame_dropna::undo()
 	// 说明删除了空行
 	if (mModel) {
 		if (mDropedCount != 0) {
-			mModel->refreshCacheData();
+			mModel->refreshData();
 		}
 	}
 }
@@ -382,7 +382,7 @@ bool DACommandDataFrame_dropna::exec()
 	// 说明删除了空行
 	if (mModel) {
 		if (mDropedCount != 0) {
-			mModel->refreshCacheData();
+			mModel->refreshData();
 		}
 	}
 	return true;
@@ -409,7 +409,7 @@ void DACommandDataFrame_fillna::undo()
 {
 	load();
 	if (mModel) {
-		mModel->refreshCacheData();
+		mModel->refreshData();
 	}
 }
 
@@ -423,7 +423,7 @@ bool DACommandDataFrame_fillna::exec()
 
 	// 说明填充了空行
 	if (mModel) {
-		mModel->refreshCacheData();
+		mModel->refreshData();
 	}
 	return true;
 }
@@ -445,7 +445,7 @@ void DACommandDataFrame_interpolate::undo()
 {
 	load();
 	if (mModel) {
-		mModel->refreshCacheData();
+		mModel->refreshData();
 	}
 }
 
@@ -459,7 +459,7 @@ bool DACommandDataFrame_interpolate::exec()
 
 	// 说明填充了空行
 	if (mModel) {
-		mModel->refreshCacheData();
+		mModel->refreshData();
 	}
 	return true;
 }
@@ -480,7 +480,7 @@ void DACommandDataFrame_ffillna::undo()
 {
 	load();
 	if (mModel) {
-		mModel->refreshCacheData();
+		mModel->refreshData();
 	}
 }
 
@@ -494,7 +494,7 @@ bool DACommandDataFrame_ffillna::exec()
 
 	// 说明填充了空行
 	if (mModel) {
-		mModel->refreshCacheData();
+		mModel->refreshData();
 	}
 	return true;
 }
@@ -515,7 +515,7 @@ void DACommandDataFrame_bfillna::undo()
 {
 	load();
 	if (mModel) {
-		mModel->refreshCacheData();
+		mModel->refreshData();
 	}
 }
 
@@ -529,7 +529,7 @@ bool DACommandDataFrame_bfillna::exec()
 
 	// 说明填充了空行
 	if (mModel) {
-		mModel->refreshCacheData();
+		mModel->refreshData();
 	}
 	return true;
 }
@@ -561,7 +561,7 @@ void DACommandDataFrame_dropduplicates::undo()
 	// 说明删除了空行
 	if (mModel) {
 		if (mDropedCount != 0) {
-			mModel->refreshCacheData();
+			mModel->refreshData();
 		}
 	}
 }
@@ -579,7 +579,7 @@ bool DACommandDataFrame_dropduplicates::exec()
 	// 说明删除了空行
 	if (mModel) {
 		if (mDropedCount != 0) {
-			mModel->refreshCacheData();
+			mModel->refreshData();
 		}
 	}
 	return true;
@@ -609,7 +609,7 @@ void DACommandDataFrame_nstdfilteroutlier::undo()
 	// 说明删除了空行
 	if (mModel) {
 		if (mDropedCount != 0) {
-			mModel->refreshCacheData();
+			mModel->refreshData();
 		}
 	}
 }
@@ -627,7 +627,7 @@ bool DACommandDataFrame_nstdfilteroutlier::exec()
 	// 说明删除了空行
 	if (mModel) {
 		if (mDropedCount != 0) {
-			mModel->refreshCacheData();
+			mModel->refreshData();
 		}
 	}
 	return true;
@@ -656,7 +656,7 @@ void DACommandDataFrame_clipoutlier::undo()
 	load();
 	// 说明填充了空行
 	if (mModel) {
-		mModel->refreshCacheData();
+		mModel->refreshData();
 	}
 }
 
@@ -667,11 +667,46 @@ bool DACommandDataFrame_clipoutlier::exec()
 		return false;
 	}
 	if (mModel) {
-		mModel->refreshCacheData();
+		mModel->refreshData();
 	}
 	return true;
 }
 
+//----------------------------------------------------
+//
+//----------------------------------------------------
+DACommandDataFrame_evalDatas::DACommandDataFrame_evalDatas(const DAPyDataFrame& df,
+                                                           const QString& exper,
+                                                           DAPyDataFrameTableModel* model,
+                                                           QUndoCommand* par)
+    : DACommandWithTemporaryData(df, par), mExper(exper), mModel(model)
+{
+    setText(QObject::tr("eval datas"));  // cn:列运算
+}
+
+void DACommandDataFrame_evalDatas::undo()
+{
+	load();
+	// 说明还原
+	if (mModel) {
+		mModel->refreshData();
+	}
+}
+
+bool DACommandDataFrame_evalDatas::exec()
+{
+	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+	if (!pydf.evalDatas(dataframe(), mExper)) {
+		return false;
+	}
+	if (mModel) {
+		mModel->refreshData();
+	}
+	return true;
+}
+//----------------------------------------------------
+//
+//----------------------------------------------------
 ///////////////////
 
 DACommandDataFrame_querydatas::DACommandDataFrame_querydatas(const DAPyDataFrame& df,
@@ -680,15 +715,15 @@ DACommandDataFrame_querydatas::DACommandDataFrame_querydatas(const DAPyDataFrame
                                                              QUndoCommand* par)
     : DACommandWithTemporaryData(df, par), mExper(exper), mModel(model)
 {
-    setText(QObject::tr("query datas"));  // cn:查询相关数据
+    setText(QObject::tr("query datas"));  // cn:条件查询
 }
 
 void DACommandDataFrame_querydatas::undo()
 {
 	load();
-	// 说明填充了空行
+	// 说明还原
 	if (mModel) {
-		mModel->refreshCacheData();
+		mModel->refreshData();
 	}
 }
 
@@ -699,7 +734,7 @@ bool DACommandDataFrame_querydatas::exec()
 		return false;
 	}
 	if (mModel) {
-		mModel->refreshCacheData();
+		mModel->refreshData();
 	}
 	return true;
 }
@@ -720,7 +755,7 @@ void DACommandDataFrame_searchdata::undo()
 	load();
 	// 说明填充了空行
 	if (mModel) {
-		mModel->refreshCacheData();
+		mModel->refreshData();
 	}
 }
 
@@ -731,34 +766,34 @@ bool DACommandDataFrame_searchdata::exec()
 		return false;
 	}
 	if (mModel) {
-		mModel->refreshCacheData();
+		mModel->refreshData();
 	}
 	return true;
 }
 
 ///////////////////
 
-DACommandDataFrame_dataselect::DACommandDataFrame_dataselect(const DAPyDataFrame& df,
-                                                             double lowervalue,
-                                                             double uppervalue,
-                                                             const QString& index,
-                                                             DAPyDataFrameTableModel* model,
-                                                             QUndoCommand* par)
+DACommandDataFrame_filterByColumn::DACommandDataFrame_filterByColumn(const DAPyDataFrame& df,
+                                                                     double lowervalue,
+                                                                     double uppervalue,
+                                                                     const QString& index,
+                                                                     DAPyDataFrameTableModel* model,
+                                                                     QUndoCommand* par)
     : DACommandWithTemporaryData(df, par), mModel(model), mlowervalue(lowervalue), mUppervalue(uppervalue), mIndex(index)
 {
     setText(QObject::tr("data select"));  // cn:数据过滤
 }
 
-void DACommandDataFrame_dataselect::undo()
+void DACommandDataFrame_filterByColumn::undo()
 {
 	load();
 	// 说明填充了空行
 	if (mModel) {
-		mModel->refreshCacheData();
+		mModel->refreshData();
 	}
 }
 
-bool DACommandDataFrame_dataselect::exec()
+bool DACommandDataFrame_filterByColumn::exec()
 {
 	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
 	if (!pydf.dataselect(dataframe(), mlowervalue, mUppervalue, mIndex)) {
@@ -784,7 +819,7 @@ void DACommandDataFrame_sort::undo()
 	load();
 	// 说明排序完成
 	if (mModel) {
-		mModel->refreshCacheData();
+		mModel->refreshData();
 	}
 }
 
@@ -885,7 +920,7 @@ void DACommandDataFrame_setIndex::undo()
 {
 	load();
 	if (mModel) {
-		mModel->refreshCacheData();
+		mModel->refreshData();
 	}
 }
 
@@ -897,7 +932,7 @@ bool DACommandDataFrame_setIndex::exec()
 	}
 	if (mModel) {
 		// 此操作会删除一列，添加一列，整个modelreflash
-		mModel->refreshCacheData();
+		mModel->refreshData();
 	}
 	return true;
 }

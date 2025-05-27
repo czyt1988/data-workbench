@@ -81,11 +81,13 @@ void DAAppActions::buildDataAction()
 	actionDataFrameFFillNone = createAction("actionDataFrameFFillNone", ":/app/bright/Icon/dataframe-ffill-none.svg");
 	actionDataFrameBFillNone = createAction("actionDataFrameBFillNone", ":/app/bright/Icon/dataframe-bfill-none.svg");
 	actionDataFrameClipOutlier = createAction("actionDataFrameClipOutlier", ":/app/bright/Icon/dataframe-clip-outlier.svg");
+	actionDataFrameEvalDatas  = createAction("actionDataFrameQueryDatas", ":/app/bright/Icon/dataframe-eval-datas.svg");
 	actionDataFrameQueryDatas = createAction("actionDataFrameQueryDatas", ":/app/bright/Icon/dataframe-query-datas.svg");
 	actionDataFrameDataSearch = createAction("actionDataFrameDataSearch");
-	actionDataFrameDataSelect = createAction("actionDataFrameDataSelect", ":/app/bright/Icon/dataframe-data-select.svg");
-	actionDataFrameSort       = createAction("actionDataFrameSort", ":/app/bright/Icon/dataframe-sort.svg");
-	actionCreatePivotTable    = createAction("actionDataFrameCreatePivotTable", ":/app/bright/Icon/pivot-table.svg");
+	actionDataFrameDataFilterColumn =
+		createAction("actionDataFrameDataSelect", ":/app/bright/Icon/dataframe-data-select.svg");
+	actionDataFrameSort    = createAction("actionDataFrameSort", ":/app/bright/Icon/dataframe-sort.svg");
+	actionCreatePivotTable = createAction("actionDataFrameCreatePivotTable", ":/app/bright/Icon/pivot-table.svg");
 }
 
 void DAAppActions::buildChartAction()
@@ -282,15 +284,17 @@ void DAAppActions::retranslateUi()
 	actionDataFrameClipOutlier->setText(tr("Clip Outlier"));  // cn: 替换\n异常值
 	actionDataFrameClipOutlier->setToolTip(
 		tr("Replace the outlier values that exceed the specified lower and upper limits with the respective limits."));  // cn:将超出限定上下限的异常值替换为上下限
-	actionDataFrameQueryDatas->setText(tr("Query Datas"));
-	actionDataFrameDataSearch->setText(tr("Search Data"));                  // cn: 数据检索
-	actionDataFrameDataSearch->setToolTip(tr("Search the selected data"));  // cn:搜索选中的数据
-	actionDataFrameDataSelect->setText(tr("Select"));                       // cn:数据过滤
-	actionDataFrameDataSelect->setToolTip(tr("Data Select"));               // cn:获取给定范围内的数据
-	actionDataFrameSort->setText(tr("Sort"));                               // cn:数据排序
-	actionDataFrameSort->setToolTip(tr("Sort Data"));                       // cn:对数据进行排序
+	actionDataFrameEvalDatas->setText(tr("Eval Datas"));  // cn:数值计算
+	actionDataFrameEvalDatas->setToolTip(
+		tr("Evaluate a string describing operations on DataFrame columns"));  // cn:输入关于列操作的表达式字符串并执行计算
+	actionDataFrameQueryDatas->setText(tr("Query Datas"));                                   // cn:条件筛选
 	actionDataFrameQueryDatas->setToolTip(tr("Filter data outside of the given criteria"));  // cn:过滤给定条件外的数据
-	actionCreatePivotTable->setText(tr("Pivot Table"));                                      // cn: 数据\n透视表
+	actionDataFrameDataSearch->setText(tr("Search Data"));                                   // cn: 数据检索
+	actionDataFrameDataSearch->setToolTip(tr("Search the selected data"));                   // cn:搜索选中的数据
+	actionDataFrameDataFilterColumn->setText(tr("Filter by Column"));                        // cn:列数据过滤
+	actionDataFrameSort->setText(tr("Sort"));
+	actionDataFrameSort->setToolTip(tr("Sort Data"));              // cn:对数据进行排序
+	actionCreatePivotTable->setText(tr("Pivot Table"));            // cn: 数据\n透视表
 	actionCreatePivotTable->setToolTip(tr("Create Pivot Table"));  // cn: 创建数据透视表
 
 	// workflow 编辑
