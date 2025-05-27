@@ -236,6 +236,7 @@ if(DA_ENABLE_PYTHON)
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillna.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillInterpolate.h
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameDataSelect.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameClipOutlier.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameQueryDatas.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameDataSearch.h
@@ -252,6 +253,7 @@ if(DA_ENABLE_PYTHON)
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillna.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillInterpolate.cpp
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameDataSelect.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameClipOutlier.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameQueryDatas.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameDataSearch.cpp
@@ -266,6 +268,7 @@ if(DA_ENABLE_PYTHON)
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillna.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillInterpolate.ui
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameDataSelect.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameClipOutlier.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameQueryDatas.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameDataSearch.ui

@@ -1,5 +1,5 @@
-#ifndef DADIALOGDATAFRAMECLIPOUTLIER_H
-#define DADIALOGDATAFRAMECLIPOUTLIER_H
+#ifndef DADialogDataFrameClipOutlier_H
+#define DADialogDataFrameClipOutlier_H
 
 #include <QDialog>
 #include "DAGuiAPI.h"
@@ -24,26 +24,19 @@ public:
 	~DADialogDataFrameClipOutlier();
 
 	// 初始化界面
-	void initDADialogDataFrameClipOutlier();
-
-    // 获取选中的dataframe
-    void setDataframe(const DAPyDataFrame& df);
-
-    // Data设置
-    void setFilterData(const int index);
-    QString getFilterData() const;
+	void initDADialogDataFrameDataSelect();
 
 	// lower参数
-    void setLowerValue(const double d);
+	void setLowerValue(const double d);
 	double getLowerValue() const;
 
 	// upper参数
-    void setUpperValue(const double d);
-    double getUpperValue() const;
+	void setUpperValue(const double d);
+	double getUpperValue() const;
 
 private:
 	Ui::DADialogDataFrameClipOutlier* ui;
 };
 }
 
-#endif  // DADIALOGDATAFRAMECLIPOUTLIER_H
+#endif  // DADialogDataFrameClipOutlier_H

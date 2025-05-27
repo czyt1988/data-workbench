@@ -21,6 +21,7 @@ class DADialogDataframeColumnCastToNumeric;
 class DADialogDataframeColumnCastToDatetime;
 class DADialogDataFrameFillna;
 class DADialogDataFrameFillInterpolate;
+class DADialogDataFrameDataSelect;
 class DADialogDataFrameClipOutlier;
 class DADialogDataFrameEvalDatas;
 class DADialogDataFrameQueryDatas;
@@ -162,18 +163,19 @@ protected:
 private:
 	Ui::DADataOperateOfDataFrameWidget* ui;
 	DAData mData;
-	DAPyDataFrameTableModel* mModel { nullptr };
+	DAPyDataFrameTableModel* mModel{ nullptr };
 
-	DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs { nullptr };
-	DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs { nullptr };
-	DADialogDataFrameFillna* mDialogDataFrameFillna { nullptr };
-	DADialogDataFrameFillInterpolate* mDialogDataFrameFillInterpolate { nullptr };
-	DADialogDataFrameClipOutlier* mDialogDataFrameClipOutlier { nullptr };
-	DADialogCreatePivotTable* mDialogCreatePivotTable { nullptr };
-	DADialogDataFrameEvalDatas* mDialogDataFrameEvalDatas { nullptr };
-	DADialogDataFrameQueryDatas* mDialogDataFrameQueryDatas { nullptr };
+	DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs{ nullptr };
+	DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs{ nullptr };
+	DADialogDataFrameFillna* mDialogDataFrameFillna{ nullptr };
+	DADialogDataFrameFillInterpolate* mDialogDataFrameFillInterpolate{ nullptr };
+	DADialogDataFrameDataSelect* mDialogDataFrameDataSelect{ nullptr };
+	DADialogDataFrameClipOutlier* mDialogDataFrameClipOutlier{ nullptr };
+	DADialogCreatePivotTable* mDialogCreatePivotTable{ nullptr };
+	DADialogDataFrameEvalDatas* mDialogDataFrameEvalDatas{ nullptr };
+	DADialogDataFrameQueryDatas* mDialogDataFrameQueryDatas{ nullptr };
 	DADialogDataFrameDataSearch* mDialogDataFrameDataSearch{ nullptr };
-	DADialogDataFrameSort* mDADialogDataFrameSort { nullptr };
+	DADialogDataFrameSort* mDADialogDataFrameSort{ nullptr };
 };
 }  // end of namespace DA
 #endif  // DADATAOPERATEOFDATAFRAMEWIDGET_H

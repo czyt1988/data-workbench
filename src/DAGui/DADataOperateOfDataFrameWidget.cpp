@@ -22,6 +22,7 @@
 #include "Dialog/DADialogInsertNewColumn.h"
 #include "Dialog/DADialogDataFrameFillna.h"
 #include "Dialog/DADialogDataFrameFillInterpolate.h"
+#include "Dialog/DADialogDataFrameDataSelect.h"
 #include "Dialog/DADialogDataFrameClipOutlier.h"
 #include "Dialog/DADialogDataFrameEvalDatas.h"
 #include "Dialog/DADialogDataFrameQueryDatas.h"
@@ -720,9 +721,6 @@ bool DADataOperateOfDataFrameWidget::clipoutlier()
 	if (df.isNone()) {
 		return false;
 	}
-	//	if (!mDialogDataFrameQueryDatas) {
-	//		mDialogDataFrameQueryDatas = new DADialogDataFrameQueryDatas(this);
-	//	}
 	if (!mDialogDataFrameClipOutlier) {
 		mDialogDataFrameClipOutlier = new DADialogDataFrameClipOutlier(this);
 	}
@@ -924,22 +922,22 @@ bool DADataOperateOfDataFrameWidget::filterByColumn()
 	if (df.isNone()) {
 		return false;
 	}
-	if (!mDialogDataFrameClipOutlier)
-		mDialogDataFrameClipOutlier = new DADialogDataFrameClipOutlier(this);
+	if (!mDialogDataFrameDataSelect)
+		mDialogDataFrameDataSelect = new DADialogDataFrameDataSelect(this);
 
-	mDialogDataFrameClipOutlier->setDataframe(df);
+	mDialogDataFrameDataSelect->setDataframe(df);
 
 	// 获取选中的列
 	if (isDataframeTableHaveSelection())
-		mDialogDataFrameClipOutlier->setFilterData(getSelectedOneDataframeColumn());
+		mDialogDataFrameDataSelect->setFilterData(getSelectedOneDataframeColumn());
 
-	if (QDialog::Accepted != mDialogDataFrameClipOutlier->exec())
+	if (QDialog::Accepted != mDialogDataFrameDataSelect->exec())
 		return false;
 
 	// 获取过滤参数
-	QString index     = mDialogDataFrameClipOutlier->getFilterData();
-	double lowervalue = mDialogDataFrameClipOutlier->getLowerValue();
-	double uppervalue = mDialogDataFrameClipOutlier->getUpperValue();
+	QString index     = mDialogDataFrameDataSelect->getFilterData();
+	double lowervalue = mDialogDataFrameDataSelect->getLowerValue();
+	double uppervalue = mDialogDataFrameDataSelect->getUpperValue();
 
 	return filterByColumn(df, lowervalue, uppervalue, index);
 }
