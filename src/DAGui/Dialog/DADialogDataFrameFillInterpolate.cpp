@@ -5,7 +5,7 @@
 namespace DA
 {
 DADialogDataFrameFillInterpolate::DADialogDataFrameFillInterpolate(QWidget* parent)
-	: QDialog(parent), ui(new Ui::DADialogDataFrameFillInterpolate)
+    : QDialog(parent), ui(new Ui::DADialogDataFrameFillInterpolate)
 {
 	ui->setupUi(this);
 	this->initDialogDataFrameInterpolate();
@@ -24,17 +24,20 @@ void DADialogDataFrameFillInterpolate::initDialogDataFrameInterpolate()
 	ui->labelOrder->setVisible(false);
 	ui->lineEditOrder->setVisible(false);
 
+    ui->comboBoxMethod->addItem(tr("spline"), QStringLiteral("spline"));          // cn:线性插值
+    ui->comboBoxMethod->addItem(tr("polynomial"), QStringLiteral("polynomial"));  // cn:多项式插值
+
 	connect(ui->comboBoxMethod,
-			static_cast< void (QComboBox::*)(const QString&) >(&QComboBox::activated),
-			[ = ](const QString& text) {
-				if (text == "spline") {
-					ui->labelOrder->setVisible(false);
-					ui->lineEditOrder->setVisible(false);
-				} else {
-					ui->labelOrder->setVisible(true);
-					ui->lineEditOrder->setVisible(true);
-				}
-			});
+            static_cast< void (QComboBox::*)(const QString&) >(&QComboBox::activated),
+            [=](const QString& text) {
+                if (text == "spline") {
+                    ui->labelOrder->setVisible(false);
+                    ui->lineEditOrder->setVisible(false);
+                } else {
+                    ui->labelOrder->setVisible(true);
+                    ui->lineEditOrder->setVisible(true);
+                }
+            });
 }
 
 QString DADialogDataFrameFillInterpolate::getInterpolateMethod() const
