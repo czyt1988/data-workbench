@@ -130,7 +130,7 @@ QVariant toVariant(const pybind11::object& obj)
 	} else if (pybind11::isinstance< pybind11::list >(obj)) {
 		pybind11::list l = obj;
 		QVariantList vl;
-		std::size_t s = l.size();
+        int s = static_cast< int >(l.size());
 		for (int i = 0; i < s; ++i) {
 			vl.append(toVariant(l[ i ]));
 		}
@@ -138,7 +138,7 @@ QVariant toVariant(const pybind11::object& obj)
 	} else if (pybind11::isinstance< pybind11::tuple >(obj)) {
 		pybind11::tuple l = obj;
 		QVariantList vl;
-		std::size_t s = l.size();
+        int s = static_cast< int >(l.size());
 		for (int i = 0; i < s; ++i) {
 			vl.append(toVariant(l[ i ]));
 		}
