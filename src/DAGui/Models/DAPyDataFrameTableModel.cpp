@@ -55,7 +55,7 @@ public:
 #endif
     int dataframeRow { 0 };        ///< dataframe的行
 	int dataframeColumn { 0 };     ///< dataframe的列
-	QList< QString > columnsName;  ///< 列名
+    QList< QString > columnsName;  ///< 列名
                                    // 虚拟视图 -- 分页需要的参数
     int pageSize { 10000 };        // 每页行数
     int currentPage { 0 };         // 当前页码

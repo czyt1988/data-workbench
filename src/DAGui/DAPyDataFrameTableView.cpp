@@ -13,9 +13,6 @@ DAPyDataFrameTableView::DAPyDataFrameTableView(QWidget* parent) : DACacheWindowT
 {
 	setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::SelectedClicked);
 	setAlternatingRowColors(false);
-	if (QHeaderView* hheader = horizontalHeader()) {
-		hheader->setSectionResizeMode(QHeaderView::Interactive);
-	}
 }
 
 DAPyDataFrameTableView::~DAPyDataFrameTableView()
@@ -35,15 +32,6 @@ void DAPyDataFrameTableView::setDataFrame(const DAPyDataFrame& d)
 		return;
 	}
     m->setDataFrame(d);
-    // 设置数据时，按照行数设置垂直表头的宽度
-    if (auto vh = verticalHeader()) {
-        auto shape      = d.shape();
-        QFontMetrics fm = vh->fontMetrics();
-        int w           = fm.horizontalAdvance(QString(" %1 ").arg(shape.first));
-        w               = w > 15 ? w : 15;
-        vh->setFixedWidth(w);
-        // qDebug() << "setFixWidth by" << QString("%1").arg(shape.first) << ",w=" << w;
-    }
 }
 
 DAPyDataFrame DAPyDataFrameTableView::getDataframe() const

@@ -7,6 +7,9 @@ namespace DA
 DADialogDataFrameSort::DADialogDataFrameSort(QWidget* parent) : QDialog(parent), ui(new Ui::DADialogDataFrameSort)
 {
     ui->setupUi(this);
+
+    ui->comboBoxSortType->addItem(tr("Ascending"), QStringLiteral("Ascending"));    // cn:升序
+    ui->comboBoxSortType->addItem(tr("Descending"), QStringLiteral("Descending"));  // cn:降序
 }
 
 DADialogDataFrameSort::~DADialogDataFrameSort()
