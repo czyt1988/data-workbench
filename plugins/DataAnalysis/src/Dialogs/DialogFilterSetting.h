@@ -13,7 +13,7 @@ class DialogFilterSetting;
 namespace DA
 {
 class DADataManager;
-class DAPySeriesTableModule;
+class DAPySeriesTableModel;
 }
 
 class DialogFilterSetting : public QDialog
@@ -43,7 +43,7 @@ private slots:
 
 private:
     Ui::DialogFilterSetting* ui;
-    DA::DAPySeriesTableModule* mModuel { nullptr };
+    DA::DAPySeriesTableModel* mModuel { nullptr };
 };
 
 #endif  // DIALOGFILTERSETTING_H

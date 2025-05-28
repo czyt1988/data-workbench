@@ -1,35 +1,36 @@
-﻿#ifndef DAPYSERIESTABLEMODULE_H
-#define DAPYSERIESTABLEMODULE_H
+#ifndef DAPYSERIESTABLEMODEL_H
+#define DAPYSERIESTABLEMODEL_H
 #include "DAGuiAPI.h"
+#include "DAAbstractCacheWindowTableModel.h"
 #include <QAbstractTableModel>
 #include "DAData.h"
 #include "DAAutoincrementSeries.hpp"
 namespace DA
 {
-DA_IMPL_FORWARD_DECL(DAPySeriesTableModule)
 
 /**
  * @brief 用于显示一系列series
  */
-class DAGUI_API DAPySeriesTableModule : public QAbstractTableModel
+class DAGUI_API DAPySeriesTableModel : public DAAbstractCacheWindowTableModel
 {
 	Q_OBJECT
-	DA_IMPL(DAPySeriesTableModule)
+	DA_DECLARE_PRIVATE(DAPySeriesTableModel)
 public:
-	DAPySeriesTableModule(QObject* parent = nullptr);
-	~DAPySeriesTableModule();
+	DAPySeriesTableModel(QObject* parent = nullptr);
+	~DAPySeriesTableModel();
 
 public:
-	virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
 	virtual int columnCount(const QModelIndex& parent = QModelIndex()) const override;
-	virtual int rowCount(const QModelIndex& parent = QModelIndex()) const override;
-	virtual Qt::ItemFlags flags(const QModelIndex& index) const override;
-	virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-	virtual bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
+    virtual Qt::ItemFlags actualFlags(int actualRow, int actualColumn) const;
+    virtual QVariant actualHeaderData(int actualSection, Qt::Orientation orientation, int role) const override;
+    virtual int actualRowCount() const override;
+    virtual QVariant actualData(int actualRow, int actualColumn, int role) const override;
 
 public:
 	void setSeries(const QList< DAPySeries >& series);
 	QList< DAPySeries > getSeries() const;
+    // 设置滑动窗模式的起始行
+    virtual void setCacheWindowStartRow(int startRow) override;
 	// 追加series
 	void appendSeries(const DAPySeries& s);
 	void appendSeries(const DAAutoincrementSeries< double >& s);
@@ -54,4 +55,4 @@ public:
 };
 }
 
-#endif  // DAPYSERIESTABLEMODULE_H
+#endif  // DAPYSERIESTABLEMODEL_H

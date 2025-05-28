@@ -19,11 +19,24 @@ DataAnalysExecutor::butterworth_filter(const DA::DAPySeries& wave, double fs, in
 DA::DAPyDataFrame
 DataAnalysExecutor::peak_analysis(const DA::DAPySeries& wave, double fs, const QVariantMap& args, QString* err)
 {
-	return dataProcessModule().peak_analysis(wave, fs, args, err);
+    return dataProcessModule().peak_analysis(wave, fs, args, err);
 }
 
-DA::DAPyDataFrame
-DataAnalysExecutor::stft_analysis(const DA::DAPySeries& wave, double fs, const QVariantMap& args, QString* err)
+pybind11::dict DataAnalysExecutor::wavelet_cwt(const DA::DAPySeries& wave,
+                                               double fs,
+                                               const DA::DAPySeries& scales,
+                                               const QVariantMap& args,
+                                               QString* err)
+{
+    return dataProcessModule().wavelet_cwt(wave, fs, scales, args, err);
+}
+
+DA::DAPyDataFrame DataAnalysExecutor::wavelet_dwt(const DA::DAPySeries& wave, double fs, const QVariantMap& args, QString* err)
+{
+    return dataProcessModule().wavelet_dwt(wave, fs, args, err);
+}
+
+pybind11::dict DataAnalysExecutor::stft_analysis(const DA::DAPySeries& wave, double fs, const QVariantMap& args, QString* err)
 {
 	return dataProcessModule().stft_analysis(wave, fs, args, err);
 }

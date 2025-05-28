@@ -1,6 +1,7 @@
 #include "DADialogDataFrameClipOutlier.h"
 #include "ui_DADialogDataFrameClipOutlier.h"
 #include <QDebug>
+#include <QMessageBox>
 namespace DA
 {
 
@@ -15,7 +16,7 @@ DADialogDataFrameClipOutlier::~DADialogDataFrameClipOutlier()
 	delete ui;
 }
 
-void DADialogDataFrameClipOutlier::setLowerValue(double d)
+void DADialogDataFrameClipOutlier::setLowerValue(const double d)
 {
 	ui->LowerValue->setText(QString::number(d));
 }
@@ -31,7 +32,7 @@ double DADialogDataFrameClipOutlier::getLowerValue() const
 	return v;
 }
 
-void DADialogDataFrameClipOutlier::setUpperValue(double d)
+void DADialogDataFrameClipOutlier::setUpperValue(const double d)
 {
 	ui->UpperValue->setText(QString::number(d));
 }

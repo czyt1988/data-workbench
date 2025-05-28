@@ -309,21 +309,15 @@ macro(damacro_app_install _icon_path)
     ########################################################
     include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/create_win32_resource_version.cmake)
     if(WIN32)
-        set(__rc_path "${CMAKE_CURRENT_BINARY_DIR}/${DA_APP_NAME}.rc")
-        if(NOT EXISTS "${__rc_path}")
-            generate_win32_rc_file(
-                PATH "${__rc_path}"
-                VERSION "${DA_APP_VERSION}"
-                COMPANY "czy"
-                DESCRIPTION ${DA_APP_FULL_DESCRIPTION}
-                COPYRIGHT "LGPL License"
-                PRODUCT ${DA_APP_NAME}
-                ICONS ${_icon_path}
-            )
-        endif()
-        if(EXISTS "${__rc_path}")
-            target_sources(${DA_APP_NAME} PRIVATE "${__rc_path}")
-        endif()
+        create_win32_resource_version(
+            TARGET ${DA_APP_NAME}
+            VERSION ${DA_APP_VERSION}
+            COMPANY_NAME "czyt"
+            COPYRIGHT "Copyright - 2025 czyt. All rights reserved."
+            DESCRIPTION ${DA_APP_FULL_DESCRIPTION}
+            ICONS "${_icon_path}"
+            FILE_EXTENSION exe
+        )
     endif()
     ########################################################
     # 目标依赖目录

@@ -1,6 +1,7 @@
 ﻿#include "DACommandWithTemporaryData.h"
 #include <QApplication>
 #include <QDir>
+#include <QFile>
 #include "DADir.h"
 #include "DAPyScripts.h"
 namespace DA
@@ -19,6 +20,7 @@ DACommandWithTemporaryData::DACommandWithTemporaryData(const DAPyDataFrame& df, 
 
 DACommandWithTemporaryData::~DACommandWithTemporaryData()
 {
+    QFile::remove(getTemplateFilePath());
 }
 
 /**

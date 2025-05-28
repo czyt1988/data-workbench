@@ -220,6 +220,8 @@ void DAAppController::initConnection()
 	// Data Category
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionAddData, onActionAddDataTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionRemoveData, onActionRemoveDataTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionExportIndividualData, onActionExportIndividualDataTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionExportMultipleData, onActionExportMultipleDataTriggered);
 	// Chart Category
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionAddFigure, onActionAddFigureTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionFigureResizeChart, onActionFigureResizeChartTriggered);
@@ -267,7 +269,11 @@ void DAAppController::initConnection()
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToString, onActionCastToStringTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToDatetime, onActionCastToDatetimeTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameClipOutlier, onActionDataFrameClipOutlierTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameEvalDatas, onActionDataFrameEvalDatasTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameQueryDatas, onActionDataFrameQueryDatasTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameDataFilterColumn, onActionDataFrameFilterByColumnTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameSort, onActionDataFrameSortTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameDataSearch, onActionDataFrameDataSearchTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCreatePivotTable, onActionCreatePivotTableTriggered);
 #if DA_ENABLE_PYTHON
 	// 不知为何使用函数指针无法关联信号和槽
@@ -409,6 +415,22 @@ bool DAAppController::isDirty() const
 		return mProject->isDirty();
 	}
 	return false;
+}
+
+/**
+ * @brief 导入数据
+ * @param filePath
+ * @param args
+ * @return
+ */
+bool DAAppController::importData(const QString& filePath, const QVariantMap& args, QString* err)
+{
+	bool r = mDatas->importFromFile(filePath, args, err);
+	if (r) {
+		mDock->raiseDockByWidget((QWidget*)(mDock->getDataManageWidget()));
+		setDirty();
+	}
+	return r;
 }
 
 void DAAppController::save()
@@ -1290,20 +1312,16 @@ void DAAppController::onActionAddDataTriggered()
 	if (fi.suffix().toLower() == "txt") {
 		DATxtFileImportDialog dlg(mMainWindow);
 		dlg.setTextFilePath(fileName);
-		if (QDialog::Accepted == dlg.exec()) {
-			// 获取导入txt的配置
-			args = dlg.getSetting();
-			qDebug() << "da_read:args->" << args;
+		if (QDialog::Accepted != dlg.exec()) {
+			return;
 		}
+		// 获取导入txt的配置
+		args = dlg.getSetting();
+		qDebug() << "da_read:args->" << args;
 	} else {
 	}
-
 	DA_WAIT_CURSOR_SCOPED();
-	bool r = mDatas->importFromFile(fileName, args, &err);
-	if (r) {
-		mDock->raiseDockByWidget((QWidget*)(mDock->getDataManageWidget()));
-	}
-	setDirty();
+	importData(fileName, args, &err);
 }
 
 /**
@@ -1314,6 +1332,88 @@ void DAAppController::onActionRemoveDataTriggered()
 	DADataManageWidget* dmw = mDock->getDataManageWidget();
 	dmw->removeSelectData();
 	setDirty();
+}
+
+/**
+ * @brief 导出单个数据
+ */
+void DAAppController::onActionExportIndividualDataTriggered()
+{
+	QString dataPath = QFileDialog::getSaveFileName(
+		app(),
+		tr("Export Data"),  // 导出数据
+		QString(),
+		tr("Text Files (*.txt *.csv);;Excel Files (*.xlsx);;Python Files (*.pkl);;All Files(*.*)")  // 数据文件
+	);
+	if (dataPath.isEmpty()) {
+		// 取消退出
+		return;
+	}
+	DA_WAIT_CURSOR_SCOPED();
+	QFileInfo fi(dataPath);
+	QString dataName   = fi.completeBaseName();
+	QString dataSuffix = fi.suffix();
+	QString baseDir    = fi.absolutePath();
+
+	// 获取当前Data
+	DADataManageWidget* dmw       = mDock->getDataManageWidget();
+	DAData data                   = dmw->getOneSelectData();
+	DAAbstractData::DataType type = data.getDataType();
+
+	QString dataFilePath = QString("%1/%2.%3").arg(baseDir, dataName, dataSuffix);
+
+	switch (type) {
+	case DAAbstractData::TypePythonDataFrame: {
+		// 写文件，对于大文件，这里可能比较耗时，但python的gli机制，无法在线程里面写
+		if (!DAData::exportToFile(data, dataFilePath)) {
+			qCritical() << tr("An exception occurred while serializing the dataframe named %1").arg(dataFilePath);  // cn:把名称为%1的dataframe序列化时出现异常
+		}
+	} break;
+	default:
+		break;
+	}
+}
+
+void DAAppController::onActionExportMultipleDataTriggered()
+{
+	QString dataPath = QFileDialog::getSaveFileName(
+		app(),
+		tr("Export Data"),  // 导出数据
+		QString(),
+		tr("Text Files (*.txt *.csv);;Excel Files (*.xlsx);;Python Files (*.pkl);;All Files(*.*)")  // 数据文件
+	);
+	if (dataPath.isEmpty()) {
+		// 取消退出
+		return;
+	}
+	DA_WAIT_CURSOR_SCOPED();
+	QFileInfo fi(dataPath);
+	QString dataName   = fi.completeBaseName();
+	QString dataSuffix = fi.suffix();
+	QString baseDir    = fi.absolutePath();
+
+	const int datacnt = mDatas->getDataCount();
+	for (int i = 0; i < datacnt; ++i) {
+		// 逐个遍历DAData，把数据文件进行持久化
+		DAData data                   = mDatas->getData(i);
+		DAAbstractData::DataType type = data.getDataType();
+		QString name                  = data.getName();
+
+		QString dataFilePath = QString("%1/%2_%3.%4").arg(baseDir, dataName, name, dataSuffix);
+
+		switch (type) {
+		case DAAbstractData::TypePythonDataFrame: {
+			// 写文件，对于大文件，这里可能比较耗时，但python的gli机制，无法在线程里面写
+			if (!DAData::exportToFile(data, dataFilePath)) {
+				qCritical() << tr("An exception occurred while serializing the dataframe named %1 to %2")
+								   .arg(name, dataFilePath);  // cn:把名称为%1的dataframe序列化到%2时出现异常
+				continue;
+			}
+		} break;
+		default:
+			break;
+		}
+	}
 }
 
 /**
@@ -1355,7 +1455,7 @@ void DAAppController::onActionFigureNewXYAxisTriggered()
 		qWarning() << tr("Before creating a new coordinate,you need to create a figure");  // cn:在创建一个坐标系之前，需要先创建一个绘图窗口
 		return;
 	}
-	DAChartWidget* w = fig->createChart_(0.1f, 0.1f, 0.4f, 0.4f);
+	DAChartWidget* w = fig->createChart_(QRectF(0.1, 0.1, 0.4, 0.4));
 	w->enableGrid();
 	w->enablePan();
 	w->enableXYDataPicker();
@@ -1746,7 +1846,7 @@ void DAAppController::onActionCreatePivotTableTriggered()
 #if DA_ENABLE_PYTHON
 	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
 		DAPyDataFrame df = dfopt->createPivotTable();
-		if (df.isNone()) {
+		if (df.empty()) {
 			return;
 		}
 		DAData originData = dfopt->data();
@@ -1850,8 +1950,9 @@ void DAAppController::onActionNstdFilterOutlierTriggered()
 {
 #if DA_ENABLE_PYTHON
 	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-		dfopt->nstdfilteroutlier();
-		setDirty();
+		if (dfopt->nstdfilteroutlier() > 0) {
+			setDirty();
+		}
 	}
 #endif
 }
@@ -1863,8 +1964,23 @@ void DAAppController::onActionDataFrameClipOutlierTriggered()
 {
 #if DA_ENABLE_PYTHON
 	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-		dfopt->clipoutlier();
-		setDirty();
+		if (dfopt->clipoutlier()) {
+			setDirty();
+		}
+	}
+#endif
+}
+
+/**
+ * @brief 执行列运算
+ */
+void DAAppController::onActionDataFrameEvalDatasTriggered()
+{
+#if DA_ENABLE_PYTHON
+	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+		if (dfopt->evalDatas()) {
+			setDirty();
+		}
 	}
 #endif
 }
@@ -1876,8 +1992,51 @@ void DAAppController::onActionDataFrameQueryDatasTriggered()
 {
 #if DA_ENABLE_PYTHON
 	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-		dfopt->querydatas();
+		if (dfopt->queryDatas()) {
+			setDirty();
+		}
+	}
+#endif
+}
+
+/**
+ * @brief 检索给定的数据
+ */
+void DAAppController::onActionDataFrameDataSearchTriggered()
+{
+#if DA_ENABLE_PYTHON
+	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+		dfopt->searchData();
 		setDirty();
+	}
+#endif
+}
+
+/**
+ * @brief 过滤给定条件外的数据
+ */
+void DAAppController::onActionDataFrameFilterByColumnTriggered()
+{
+#if DA_ENABLE_PYTHON
+	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+		if (dfopt->filterByColumn()) {
+			setDirty();
+		}
+	}
+#endif
+}
+
+/**
+
+ * @brief 数据排序
+ */
+void DAAppController::onActionDataFrameSortTriggered()
+{
+#if DA_ENABLE_PYTHON
+	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+		if (dfopt->sortDatas()) {
+			setDirty();
+		}
 	}
 #endif
 }

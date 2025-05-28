@@ -46,6 +46,14 @@ public:
 public:
 	/**
 	 * @brief 把series转换为一个容器数组
+	 *
+	 * @code
+	 * DAPySeries x;
+	 * ...
+	 * std::vector< qreal > vx;
+	 * vx.reserve(x.size());
+	 * x.castTo< qreal >(std::back_inserter(vx));
+	 * @endcode
 	 * @param begin
 	 */
 	template< typename T, typename VectLikeIte >

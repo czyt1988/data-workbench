@@ -91,6 +91,11 @@
         <file>Icon/dataframe-clip-outlier.svg</file>
         <file>Icon/pivot-table.svg</file>
         <file>Icon/dataframe-query-datas.svg</file>
+        <file>Icon/dataframe-sort.svg</file>
+        <file>Icon/exportIndividualData.svg</file>
+        <file>Icon/exportMultipleData.svg</file>
+        <file>Icon/dataframe-data-select.svg</file>
+        <file>Icon/dataframe-eval-datas.svg</file>
     </qresource>
     <qresource prefix="/app/dataType">
         <file>Icon/typeDataframe.svg</file>

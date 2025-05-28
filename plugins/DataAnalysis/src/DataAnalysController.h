@@ -15,7 +15,8 @@ class DialogSpectrumSetting;
 class DialogFilterSetting;
 class DialogPeakAnalysisSetting;
 class DialogSTFTSetting;
-
+class DialogWaveletCWTSetting;
+class DialogWaveletDWTSetting;
 class DataAnalysController : public QObject
 {
 	Q_OBJECT
@@ -31,6 +32,8 @@ private:
 	DialogFilterSetting* getFilterSettingDialog();
 	DialogPeakAnalysisSetting* getPeakAnalysisSettingDialog();
 	DialogSTFTSetting* getSTFTSettingDialog();
+	DialogWaveletCWTSetting* getWaveletCWTSettingDialog();
+	DialogWaveletDWTSetting* getWaveletDWTSettingDialog();
 	// 获取当前界面选择的序列，如果没有，返回none
 	DA::DAPySeries getCurrentSelectSeries();
 private slots:
@@ -38,13 +41,16 @@ private slots:
 	//  |-信号分析
 	//     -频谱
 	//     -滤波
-	//     -寻峰
+	//     -峰值分析
 	//     -短时傅里叶变换
+	//     -连续小波变换
+	//     -离散小波变换
 	void onActionSpectrumTriggered();
 	void onActionFilterTriggered();
 	void onActionPeakAnalysisTriggered();
 	void onActionSTFTriggered();
-
+	void onActionWaveletCWTTriggered();
+	void onActionWaveletDWTTriggered();
 private:
 	// 转换为波形
 	std::pair< std::vector< double >, std::vector< double > > toWave(const DA::DAPySeries& wave, double fs);
@@ -59,6 +65,8 @@ private:
 	DialogFilterSetting* mDialogFilterSetting{ nullptr };
 	DialogPeakAnalysisSetting* mDialogPeakAnalysisSetting{ nullptr };
 	DialogSTFTSetting* mDialogSTFTSetting{ nullptr };
+	DialogWaveletCWTSetting* mDialogWaveletCWTSetting { nullptr };
+	DialogWaveletDWTSetting* mDialogWaveletDWTSetting { nullptr };
 	std::unique_ptr< DataAnalysExecutor > mExecutor;
 };
 

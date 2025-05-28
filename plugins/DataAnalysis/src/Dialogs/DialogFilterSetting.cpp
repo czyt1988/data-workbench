@@ -3,16 +3,16 @@
 #include "DialogFilterSetting.h"
 #include "ui_DialogFilterSetting.h"
 #include "DADataManager.h"
-#include "Models/DAPySeriesTableModule.h"
+#include "Models/DAPySeriesTableModel.h"
 
 DialogFilterSetting::DialogFilterSetting(QWidget* parent) : QDialog(parent), ui(new Ui::DialogFilterSetting)
 {
 	ui->setupUi(this);
 
-	//滤波器类型相关ui
+	// 滤波器类型相关ui
 	initFilterTypeSetting();
 
-	mModuel = new DA::DAPySeriesTableModule(this);
+	mModuel = new DA::DAPySeriesTableModel(this);
 	ui->tableViewPreview->setModel(mModuel);
 	connect(ui->comboBoxDataMgr,
 			&DA::DADataManagerComboBox::currentDataframeSeriesChanged,
@@ -39,7 +39,7 @@ void DialogFilterSetting::initFilterTypeSetting()
 	connect(ui->Filter_type_Box,
 			static_cast< void (QComboBox::*)(const QString&) >(&QComboBox::activated),
 			[ = ](const QString& text) {
-				if (text == "bandpass" | text == "bandstop") {
+				if (text == "bandpass" || text == "bandstop") {
 					ui->Cutoff_freq_Box->setVisible(false);
 					ui->Cutoff_freq_Label->setVisible(false);
 					ui->L_Cutoff_freq_Box->setVisible(true);
@@ -126,7 +126,7 @@ void DialogFilterSetting::onAccepted()
 	if (seriess.size() != 1) {
 		QMessageBox::warning(this,
 							 tr("warning"),
-							 tr("You need to select a waveform data for spectrum analysis")  // cn:你需要选择一个波形数据进行滤波分析
+							 tr("You need to select a waveform data for filter")  // cn:你需要选择一个波形数据进行滤波
 		);
 		return;
 	}
@@ -154,9 +154,10 @@ void DialogFilterSetting::onAccepted()
 		}
 	} else if (ui->Filter_type_Box->currentText() == "bandpass" | ui->Filter_type_Box->currentText() == "bandstop") {
 		if (qFuzzyIsNull(lf) | qFuzzyIsNull(uf)) {
-			QMessageBox::warning(this,
-								 tr("warning"),
-								 tr("The lower cut-off frequency or upper cut-off frequency cannot be 0")  // cn:截止频率上限或下限不能为0
+			QMessageBox::warning(
+				this,
+				tr("warning"),
+				tr("The lower cut-off frequency or upper cut-off frequency cannot be 0")  // cn:截止频率上限或下限不能为0
 			);
 			return;
 		}

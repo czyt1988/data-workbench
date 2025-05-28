@@ -35,10 +35,19 @@ public:
 	// 插入列-全为nan
 	bool insert_column(DAPyDataFrame& df, int c, const QString& name, const QVariant& defaultvalue = QVariant()) noexcept;
 	bool insert_column(DAPyDataFrame& df, int c, const QString& name, const QVariant& start, const QVariant& stop) noexcept;
+	//
+	// 保存为txt/csv
+	bool to_csv(const DAPyDataFrame& df, const QString& path, const QString& sep) noexcept;
+	// 保存为xlsx
+	bool to_excel(const DAPyDataFrame& df, const QString& path) noexcept;
 	// 保存为pickle
 	bool to_pickle(const DAPyDataFrame& df, const QString& path) noexcept;
+	// 保存为parquet
+	bool to_parquet(const DAPyDataFrame& df, const QString& path) noexcept;
 	// 从pickle加载
 	bool from_pickle(DAPyDataFrame& df, const QString& path) noexcept;
+	// 从parquet加载
+	bool from_parquet(DAPyDataFrame& df, const QString& path) noexcept;
 	// 类型转换
 	bool astype(DAPyDataFrame& df, const QList< int >& colsIndex, const DAPyDType& dt) noexcept;
 	// 设置nan值
@@ -54,10 +63,10 @@ public:
 	bool insert_at(DAPyDataFrame& df, int col, const DAPySeries& series) noexcept;
 	// dropna(axis=0,how="any")
 	bool dropna(DAPyDataFrame& df,
-                int axis                    = 0,
-                const QString& how          = QStringLiteral("any"),
-                const QList< int >& indexs  = QList< int >(),
-                std::optional< int > thresh = std::nullopt);
+				int axis                    = 0,
+				const QString& how          = QStringLiteral("any"),
+				const QList< int >& indexs  = QList< int >(),
+				std::optional< int > thresh = std::nullopt);
 	// fillna()
 	bool fillna(DAPyDataFrame& df, double value, int limit);
 	// interpolate()
@@ -73,17 +82,25 @@ public:
 	// clipoutlier()
 	bool clipoutlier(DAPyDataFrame& df, double lowervalue, double uppervalue, int axis);
 	// querydatas()
-    bool queryDatas(DAPyDataFrame& df, const QString& expr);
+	bool queryDatas(DAPyDataFrame& df, const QString& expr);
+	// searchdata()
+	bool searchData(DAPyDataFrame& df, const QString& expr);
+	// eval
+	bool evalDatas(DAPyDataFrame& df, const QString& expr);
+	// 排序sort()
+	bool sort(DAPyDataFrame& df, const QString& by, bool ascending);
+	// dataselect()
+	bool dataselect(DAPyDataFrame& df, double lowervalue, double uppervalue, const QString& index);
 
 	// 创建数据透视表
 	DAPyDataFrame pivotTable(const DAPyDataFrame& df,
-                             const QStringList& value,
-                             const QStringList& index,
-                             const QStringList& columns,
-                             const QString& aggfunc,
-                             bool margins,
-                             const QString& marginsName,
-                             bool sort);
+							 const QStringList& value,
+							 const QStringList& index,
+							 const QStringList& columns,
+							 const QString& aggfunc,
+							 bool margins,
+							 const QString& marginsName,
+							 bool sort);
 };
 }  // namespace DA
 #endif  // DAPYSCRIPTSDATAFRAME_H

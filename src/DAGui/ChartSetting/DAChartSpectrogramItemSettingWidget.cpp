@@ -1,4 +1,4 @@
-#include "DAChartSpectrogramItemSettingWidget.h"
+﻿#include "DAChartSpectrogramItemSettingWidget.h"
 #include "ui_DAChartSpectrogramItemSettingWidget.h"
 #include <QMessageBox>
 #include <QDebug>
@@ -90,8 +90,8 @@ void DAChartSpectrogramItemSettingWidget::updatePlotItem(QwtPlotSpectrogram* ite
 void DAChartSpectrogramItemSettingWidget::resetDisplayModeComboBox()
 {
 	ui->comboBoxDisplayMode->clear();
-	ui->comboBoxDisplayMode->addItem(tr("ImageMode"), static_cast< int >(QwtPlotSpectrogram::ImageMode));
-	ui->comboBoxDisplayMode->addItem(tr("ContourMode"), static_cast< int >(QwtPlotSpectrogram::ContourMode));
+	ui->comboBoxDisplayMode->addItem(tr("Image Mode"), static_cast< int >(QwtPlotSpectrogram::ImageMode));
+	ui->comboBoxDisplayMode->addItem(tr("Contour Mode"), static_cast< int >(QwtPlotSpectrogram::ContourMode));
 	ui->comboBoxDisplayMode->setCurrentIndex(0);
 }
 

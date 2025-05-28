@@ -167,7 +167,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QTableView" name="tableViewXY"/>
+     <widget class="DA::DAPySeriesTableView" name="tableViewXY"/>
     </widget>
    </item>
   </layout>
@@ -183,6 +183,11 @@
    <extends>QGroupBox</extends>
    <header location="global">DACollapsibleGroupBox.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DA::DAPySeriesTableView</class>
+   <extends>QTableView</extends>
+   <header>DAPySeriesTableView.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

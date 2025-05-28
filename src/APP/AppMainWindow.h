@@ -57,6 +57,9 @@ public:
     static bool removeStateSettingFile();
     // 打开已有工程
     bool openProject(const QString& projectFilePath);
+    // 针对import-data命令
+    bool importData(const QString& filePath, const QVariantMap& args);
+
 protected:
     void changeEvent(QEvent* e);
     void closeEvent(QCloseEvent* e);

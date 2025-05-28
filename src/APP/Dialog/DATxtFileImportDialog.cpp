@@ -15,7 +15,7 @@
 #if DA_ENABLE_PYTHON
 #include "pandas/DAPyDataFrame.h"
 #include "DAPyScripts.h"
-#include "Models/DAPyDataFrameTableModule.h"
+#include "Models/DAPyDataFrameTableModel.h"
 #endif
 namespace DA
 {
@@ -24,7 +24,7 @@ DATxtFileImportDialog::DATxtFileImportDialog(QWidget* parent) : QDialog(parent),
 	ui->setupUi(this);
 #if DA_ENABLE_PYTHON
 	// 第一个参数为nullptr，说明不用redo/undo
-	mModule = new DAPyDataFrameTableModule(nullptr, ui->tableView);
+    mModule = new DAPyDataFrameTableModel(nullptr, this);
 	ui->tableView->setModel(mModule);
 #endif
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -60,9 +60,9 @@ DATxtFileImportDialog::DATxtFileImportDialog(QWidget* parent) : QDialog(parent),
 	connect(ui->pushButtonRefresh, &QPushButton::clicked, this, &DATxtFileImportDialog::refresh);
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	connect(ui->spinBoxSkipFooter,
-			QOverload< int >::of(&QSpinBox::valueChanged),
-			this,
-			&DATxtFileImportDialog::onSpinBoxSkipFooterValueChanged);
+            QOverload< int >::of(&QSpinBox::valueChanged),
+            this,
+            &DATxtFileImportDialog::onSpinBoxSkipFooterValueChanged);
 #else
 	connect(ui->spinBoxSkipFooter, &QSpinBox::valueChanged, this, &DATxtFileImportDialog::onSpinBoxSkipFooterValueChanged);
 #endif
@@ -175,7 +175,8 @@ void DATxtFileImportDialog::refresh()
 	} else {
 		ui->labelError->setText(err);
 	}
-	mModule->setDataFrame(df);
+    qDebug() << df.shape();
+    ui->tableView->setDataFrame(df);
 #endif
 }
 
@@ -192,11 +193,11 @@ void DATxtFileImportDialog::onTextReadComplete(const QString& txt, bool isReadAl
 void DATxtFileImportDialog::onTextReadFinished(int code)
 {
 	if (code != DATextReadWriter::NoError) {
-		QMessageBox::critical(this,
-							  tr("error"),
-							  tr("read txt file(%1) occure error,reason:%2")
-								  .arg(getTextFilePath())
-								  .arg(DATextReadWriter::errorCodeToString(static_cast< DATextReadWriter::ErrorCode >(code))));
+        QMessageBox::critical(this,
+                              tr("error"),
+                              tr("read txt file(%1) occure error,reason:%2")
+                                  .arg(getTextFilePath())
+                                  .arg(DATextReadWriter::errorCodeToString(static_cast< DATextReadWriter::ErrorCode >(code))));
 		return;
 	}
 }

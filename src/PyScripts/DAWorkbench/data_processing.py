@@ -5,6 +5,7 @@ from typing import List,Dict,Optional
 import pandas as pd
 import numpy as np
 import scipy
+import pywt
 from DAWorkbench.logger import log_function_call  # type: ignore # 引入装饰器
 from loguru import logger
 
@@ -73,53 +74,6 @@ def spectrum_analysis(waveform, sampling_rate, fftsize=None,phases=False,
         return freq,amplitudes,phases
     return freq,amplitudes
 
-@log_function_call
-def short_time_fourier_transform(waveform, sampling_rate, window='hann', nperseg=256, 
-                               noverlap=None, nfft=None, detrend=False, 
-                               return_onesided=True, boundary='zeros', padded=True, 
-                               axis=-1, scaling='spectrum', db=False):
-    '''
-    短时傅里叶变换(STFT)分析
-
-    :param waveform: 输入波形数据，可以是一维数组或列表
-    :param sampling_rate: 采样率
-    :param window: 窗函数类型，可以是字符串或元组/列表，默认为'hann'
-    :param nperseg: 每个段的长度，默认为256
-    :param noverlap: 相邻段之间的重叠样本数，默认为nperseg//2
-    :param nfft: FFT的长度，默认为nperseg
-    :param detrend: 去趋势方式，可以是'constant'、'linear'或False，默认为False
-    :param return_onesided: 是否只返回单边频谱，默认为True
-    :param boundary: 边界处理方式，可以是'zeros'、'constant'、'pad'等，默认为'zeros'
-    :param padded: 是否对信号进行填充，默认为True
-    :param axis: 进行STFT的轴，默认为-1
-    :param scaling: 缩放类型，可以是'spectrum'或'psd'，默认为'spectrum'
-    :param db: 是否将幅值转换为分贝值，默认为False
-    :return: 时间轴数组、频率轴数组和STFT结果矩阵
-    :rtype: tuple(times:np.ndarray, frequencies:np.ndarray, Zxx:np.ndarray)
-    '''
-    # 使用scipy的stft函数计算短时傅里叶变换
-    frequencies, times, Zxx = scipy.signal.stft(waveform, fs=sampling_rate, 
-                                              window=window, nperseg=nperseg,
-                                              noverlap=noverlap, nfft=nfft,
-                                              detrend=detrend, 
-                                              return_onesided=return_onesided,
-                                              boundary=boundary, padded=padded,
-                                              axis=axis)
-    
-    # 计算幅值谱
-    if scaling == 'spectrum':
-        Zxx = np.abs(Zxx)
-    else:  # scaling == 'psd'
-        Zxx = np.abs(Zxx) ** 2
-        
-    # 转换为分贝值
-    if db:
-        # 避免对0取对数
-        mask = Zxx == 0
-        Zxx[mask] = np.finfo(float).eps
-        Zxx = 20 * np.log10(Zxx)
-        
-    return times, frequencies, Zxx
 
 @log_function_call
 def butterworth_filter(waveform, sampling_freq, filter_order, filter_type = 'lowpass', cutoff_freq = 0, 
@@ -218,8 +172,47 @@ def peak_analysis(waveform, sampling_rate, height = None, direction = 0, thresho
     # 按索引排序
     if direction == 2:
         peak_data.sort(key=lambda x: x['index'])
-
     return peak_data
+    
+@log_function_call
+def wavelet_cwt(waveform, sampling_rate, scales, wavelet, sampling_period, method = 'conv', axis = -1):
+    '''
+    连续小波变换
+    :param waveform: 输入波形数据，可以是一维数组或列表
+    :param sampling_rate: 采样率
+    :param scales: 尺度系数
+    :param wavelet: 使用的小波，包括cgau1,cgau2,cgau3,cgau4,cgau5,cgau6,cgau7,cgau8,cmor,fbsp,
+                                gaus1,gaus2,gaus3,gaus4,gaus5,gaus6,gaus7,gaus8,mexh,morl,shan
+    :param sampling_period: 频率输出的采样周期
+    :param method: 计算方法，conv时域卷积，fft频域卷积，auto自动
+    :param axis: 要变换的轴，默认为最后一个轴
+    :return: 连续小波变换结果
+    '''
+    #根据中心频率定义尺度
+    # if sampling_period is None:
+    #     sampling_period = 1.0/sampling_rate
+    # fc = pywt.central_frequency(wavelet)
+    # cparam = 2 * fc * scale
+    # scales = cparam / np.arange(scale, 0, -1)
+    
+    #连续小波变换
+    coef, freqs = pywt.cwt(waveform, scales, wavelet, sampling_period, method, axis)
+    return coef,freqs
+    
+@log_function_call
+def wavelet_dwt(waveform, sampling_rate, wavelet, mode = 'symmetric', level = None, axis = -1):
+    '''
+    离散小波变换
+    :param waveform: 输入波形数据，可以是一维数组或列表
+    :param sampling_rate: 采样率
+    :param wavelet: 使用的小波，包括haar,db2,db3,db4,db5,db6,db7,db8,db9,db10,
+                                bior1.1,bior1.3,bior1.5,bior2.2,bior2.4,bior2.6,bior2.8,bior3.3,bior3.5,bior3.7
+    :param mode: 信号扩展模式，zero,constant,symmetric,periodic
+    :param axis: 计算DWT的轴，默认为最后一个轴
+    :return: 离散小波变换结果
+    '''
+    return pywt.wavedec(waveform, wavelet = wavelet, mode = mode, level = level, axis = axis)
+    
 
 @log_function_call
 def da_spectrum_analysis(waveform, sampling_rate, args:Optional[Dict] = None):
@@ -286,6 +279,64 @@ def da_peak_analysis(waveform, sampling_rate, args:Optional[Dict] = None):
     return peak_data
 
 @log_function_call
+def short_time_fourier_transform(waveform, sampling_rate, window='hann', nperseg=256, 
+                               noverlap=None, nfft=None, detrend=False, 
+                               return_onesided=True, boundary='zeros', padded=True, 
+                               axis=-1, scaling='spectrum', db=False):
+    '''
+    短时傅里叶变换(STFT)分析
+
+    :param waveform: 输入波形数据，可以是一维数组或列表
+    :param sampling_rate: 采样率
+    :param window: 窗函数类型，可以是字符串或元组/列表，默认为'hann'
+    :param nperseg: 每个段的长度，默认为256
+    :param noverlap: 相邻段之间的重叠样本数，默认为nperseg//2
+    :param nfft: FFT的长度，默认为nperseg
+    :param detrend: 去趋势方式，可以是'constant'、'linear'或False，默认为False
+    :param return_onesided: 是否只返回单边频谱，默认为True
+    :param boundary: 边界处理方式，可以是'zeros'、'constant'、'pad'等，默认为'zeros'
+    :param padded: 是否对信号进行填充，默认为True
+    :param axis: 进行STFT的轴，默认为-1
+    :param scaling: 缩放类型，可以是'spectrum'或'psd'，默认为'spectrum'
+    :param db: 是否将幅值转换为分贝值，默认为False
+    :return: 时间轴数组、频率轴数组和STFT结果矩阵
+    :rtype: tuple(times:np.ndarray, frequencies:np.ndarray, Zxx:np.ndarray)
+    '''
+
+
+    # 使用scipy的stft函数计算短时傅里叶变换
+    frequencies, times, Zxx = scipy.signal.stft(waveform, fs=sampling_rate, 
+                                              window=window, 
+                                              nperseg=nperseg,
+                                              noverlap=noverlap, 
+                                              nfft=nfft,
+                                              detrend=detrend, 
+                                              return_onesided=return_onesided,
+                                              boundary=boundary, 
+                                              padded=padded,
+                                              axis=axis,
+                                              scaling=scaling)
+    
+    # 计算幅值谱
+    if scaling == 'spectrum':
+        Zxx = np.abs(Zxx)
+    else:  # scaling == 'psd'
+        Zxx = np.abs(Zxx) ** 2
+        
+    # 转换为分贝值
+    if db:
+        # 避免对0取对数
+        Zxx = Zxx.copy()  # 避免修改原始数据
+        mask = Zxx == 0
+        Zxx[mask] = np.finfo(float).eps
+        if scaling == 'spectrum':
+            Zxx = 20 * np.log10(Zxx)  # 幅值谱用20dB
+        else:
+            Zxx = 10 * np.log10(Zxx)  # PSD用10dB
+        
+    return times, frequencies, Zxx
+
+@log_function_call
 def da_stft_analysis(waveform, sampling_rate, args:Optional[Dict] = None):
     '''
     短时傅里叶变换分析的DataFrame封装版本
@@ -300,15 +351,72 @@ def da_stft_analysis(waveform, sampling_rate, args:Optional[Dict] = None):
         
     times, frequencies, Zxx = short_time_fourier_transform(waveform, sampling_rate, **args)
     
-    # 创建多重索引的DataFrame
-    time_mesh, freq_mesh = np.meshgrid(times, frequencies)
-    df = pd.DataFrame({
-        'time': time_mesh.flatten(),
-        'frequency': freq_mesh.flatten(),
-        'magnitude': Zxx.flatten()
-    })
+    # 创建一维时间DataFrame
+    time_df = pd.DataFrame({'time': times})
+
+    # 创建一维频率DataFrame
+    freq_df = pd.DataFrame({'frequency': frequencies})
+
+    # 创建二维STFT结果DataFrame，行是频率
+    # 注意。列名为字符串，否则da处理会异常
+    stft_df = pd.DataFrame(Zxx, columns=times.astype(str))
+    stft_df.columns.name = 'time'
+
+    return {
+        "time": time_df,
+        "freq": freq_df,
+        "stft": stft_df
+    }
+
+@log_function_call
+def da_wavelet_cwt(waveform, sampling_rate, scales, args:Optional[Dict] = None):
+    '''
+    连续小波变换
+    :param waveform: 输入波形数据，可以是一维数组或列表
+    :param sampling_rate: 采样率
+    :param scales: 尺度系数
+    :param wavelet: 使用的小波名称，包括cgau1,cgau2,cgau3,cgau4,cgau5,cgau6,cgau7,cgau8,cmor,fbsp,
+                                    gaus1,gaus2,gaus3,gaus4,gaus5,gaus6,gaus7,gaus8,mexh,morl,shan
+    :param sampling_period: 频率输出的采样周期
+    :param method: 计算方法，conv时域卷积，fft频域卷积，auto自动
+    :param axis: 要变换的轴，默认为最后一个轴
+    :return: 连续小波变换结果
+    '''   
+    time = np.arange(len(waveform)) / sampling_rate
+    # 尺度系数
+    scales.dropna(inplace=True)
+    coef,freqs = wavelet_cwt(waveform, sampling_rate, scales, **args) 
+    return {
+        "time": pd.DataFrame({'time': time}),
+        "pseudo_freqs" : pd.DataFrame({'pseudo_freqs': freqs}),
+        "coefficient" : pd.DataFrame(coef.T,columns=[f"{i}" for i in range(len(freqs))]),
+        "coef_matrix" : pd.DataFrame(coef, columns=[f"{i}" for i in range(len(waveform))])
+    }
     
-    return df
+
+@log_function_call
+def da_wavelet_dwt(waveform, sampling_rate, args:Optional[Dict] = None):
+    '''
+    离散小波变换
+    :param waveform: 输入波形数据，可以是一维数组或列表
+    :param sampling_rate: 采样率
+    :param wavelet: 使用的小波，包括haar,db2,db3,db4,db5,db6,db7,db8,db9,db10,
+                                bior1.1,bior1.3,bior1.5,bior2.2,bior2.4,bior2.6,bior2.8,bior3.3,bior3.5,bior3.7
+    :param mode: 信号扩展模式，zero,constant,symmetric,periodic
+    :param axis: 计算DWT的轴，默认为最后一个轴
+    :return: 离散小波变换结果
+    ''' 
+    dwt_res = wavelet_dwt(waveform, sampling_rate,**args)
+    level = args['level']
+    # 存储dwt结果
+    dwt_dic = {}
+    # 存储近似系数
+    dwt_dic[f'cA_{level}'] = dwt_res[0]
+    # 存储细节系数
+    for i in range(level):
+        dwt_dic[f'cD_{level-i}'] = dwt_res[i+1]
+    dwt_data = pd.DataFrame({k: pd.Series(v) for k, v in dwt_dic.items()})
+    return dwt_data
 
 if __name__ == '__main__':
     # 获取函数spectrum_analysis的注解

@@ -1,8 +1,9 @@
-#ifndef DADIALOGDATAFRAMECLIPOUTLIER_H
-#define DADIALOGDATAFRAMECLIPOUTLIER_H
+#ifndef DADialogDataFrameClipOutlier_H
+#define DADialogDataFrameClipOutlier_H
 
 #include <QDialog>
 #include "DAGuiAPI.h"
+#include "pandas/DAPyDataFrame.h"
 
 namespace Ui
 {
@@ -23,14 +24,14 @@ public:
 	~DADialogDataFrameClipOutlier();
 
 	// 初始化界面
-	void initDADialogDataFrameClipOutlier();
+	void initDADialogDataFrameDataSelect();
 
 	// lower参数
-	void setLowerValue(double d);
+	void setLowerValue(const double d);
 	double getLowerValue() const;
 
 	// upper参数
-	void setUpperValue(double d);
+	void setUpperValue(const double d);
 	double getUpperValue() const;
 
 private:
@@ -38,4 +39,4 @@ private:
 };
 }
 
-#endif  // DADIALOGDATAFRAMECLIPOUTLIER_H
+#endif  // DADialogDataFrameClipOutlier_H

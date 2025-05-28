@@ -142,7 +142,25 @@ QList< QString > DAPyDataFrame::columns() const
 	} catch (const std::exception& e) {
 		qCritical().noquote() << e.what();
 	}
-	return res;
+    return res;
+}
+
+/**
+ * @brief 获取第n个列名
+ * @param i
+ * @return
+ */
+QString DAPyDataFrame::columnName(size_t i) const
+{
+    QString res;
+    try {
+        pybind11::list obj_columns = object().attr("columns");
+        pybind11::object obj       = obj_columns[ i ];
+        res                        = DA::PY::toString(obj);
+    } catch (const std::exception& e) {
+        qCritical().noquote() << e.what();
+    }
+    return res;
 }
 
 /**
@@ -379,17 +397,68 @@ DAPyDataFrame DAPyDataFrame::describe() const
 	} catch (const std::exception& e) {
 		qCritical().noquote() << e.what();
 	}
-	return DAPyDataFrame();
+    return DAPyDataFrame();
+}
+
+/**
+ * @brief 转换为csv
+ * @param path
+ * @param args
+ */
+bool DAPyDataFrame::to_csv(const QString& path, const QVariantHash& args) const noexcept
+{
+    try {
+        pybind11::object obj_to_csv = object().attr("to_csv");
+        pybind11::dict dictargs     = DA::PY::toPyDict(args);
+        obj_to_csv(DA::PY::toPyStr(path), **dictargs);
+    } catch (const std::exception& e) {
+        qCritical().noquote() << e.what();
+        return false;
+    }
+    return true;
+}
+
+/**
+ * @brief 转换为pickle
+ * @param path
+ * @param args
+ */
+bool DAPyDataFrame::to_pickle(const QString& path, const QVariantHash& args) const noexcept
+{
+    try {
+        pybind11::object obj_to_pickle = object().attr("to_pickle");
+        pybind11::dict dictargs        = DA::PY::toPyDict(args);
+        obj_to_pickle(DA::PY::toPyStr(path), **dictargs);
+    } catch (const std::exception& e) {
+        qCritical().noquote() << e.what();
+        return false;
+    }
+    return true;
+}
+
+/**
+ * @brief 转换为parquet
+ * @param path
+ * @param args
+ */
+bool DAPyDataFrame::to_parquet(const QString& path, const QVariantHash& args) const noexcept
+{
+    try {
+        pybind11::object obj_to_parquet = object().attr("to_parquet");
+        pybind11::dict dictargs         = DA::PY::toPyDict(args);
+        obj_to_parquet(DA::PY::toPyStr(path), **dictargs);
+    } catch (const std::exception& e) {
+        qCritical().noquote() << e.what();
+        return false;
+    }
+    return true;
 }
 
 void DAPyDataFrame::checkObjectValid()
 {
 	if (!isDataFrame(object())) {
 		object() = pybind11::none();
-		//        qCritical() << QObject::tr(
-		//                "DADataFrame(const pybind11::object& obj) get python object type is not pandas.DataFrame");
-	} else {
-	}
+    }
 }
 
 /**

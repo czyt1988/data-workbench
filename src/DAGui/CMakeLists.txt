@@ -32,6 +32,7 @@ find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
 set(DA_LIB_HEADER_FILES
     DAAbstractChartAddItemWidget.h
     DAAbstractOperateWidget.h
+    DACacheWindowTableView.h
     DAChartAddXYSeriesWidget.h
     DAChartAddXYESeriesWidget.h
     DAChartAddOHLCSeriesWidget.h
@@ -83,6 +84,7 @@ set(DA_LIB_HEADER_FILES
 set(DA_LIB_SOURCE_FILES
     DAAbstractChartAddItemWidget.cpp
     DAAbstractOperateWidget.cpp
+    DACacheWindowTableView.cpp
     DAChartAddXYSeriesWidget.cpp
     DAChartAddXYESeriesWidget.cpp
     DAChartAddOHLCSeriesWidget.cpp
@@ -158,10 +160,14 @@ if(DA_ENABLE_PYTHON)
     list(APPEND DA_LIB_HEADER_FILES
         DADataframeToVectorPointWidget.h
         DADataOperateOfDataFrameWidget.h
+        DAPyDataFrameTableView.h
+        DAPySeriesTableView.h
     )
     list(APPEND DA_LIB_HEADER_FILES
         DADataframeToVectorPointWidget.cpp
         DADataOperateOfDataFrameWidget.cpp
+        DAPyDataFrameTableView.cpp
+        DAPySeriesTableView.cpp
     )
     list(APPEND DA_LIB_QT_UI_FILES
         DADataframeToVectorPointWidget.ui
@@ -177,6 +183,7 @@ set(DA_LIB_SUBDIR_ChartSetting ${CMAKE_CURRENT_SOURCE_DIR}/ChartSetting)
 
 # Models
 set(DA_LIB_HEADER_FILES_Models
+    ${DA_LIB_SUBDIR_Models}/DAAbstractCacheWindowTableModel.h
     ${DA_LIB_SUBDIR_Models}/DADataManagerTreeModel.h
     ${DA_LIB_SUBDIR_Models}/DATreeModel.h
     ${DA_LIB_SUBDIR_Models}/DADataManagerTableModel.h
@@ -184,6 +191,7 @@ set(DA_LIB_HEADER_FILES_Models
     ${DA_LIB_SUBDIR_Models}/DAVariantTableModel.h
 )
 set(DA_LIB_SOURCE_FILES_Models
+    ${DA_LIB_SUBDIR_Models}/DAAbstractCacheWindowTableModel.cpp
     ${DA_LIB_SUBDIR_Models}/DADataManagerTreeModel.cpp
     ${DA_LIB_SUBDIR_Models}/DATreeModel.cpp
     ${DA_LIB_SUBDIR_Models}/DADataManagerTableModel.cpp
@@ -192,12 +200,14 @@ set(DA_LIB_SOURCE_FILES_Models
 )
 if(DA_ENABLE_PYTHON)
     list(APPEND DA_LIB_HEADER_FILES_Models
-        ${DA_LIB_SUBDIR_Models}/DAPySeriesTableModule.h
-        ${DA_LIB_SUBDIR_Models}/DAPyDataFrameTableModule.h
+        ${DA_LIB_SUBDIR_Models}/DAPySeriesTableModel.h
+        ${DA_LIB_SUBDIR_Models}/DAPyDataFrameTableModel.h
+        ${DA_LIB_SUBDIR_Models}/DAPyGridDataTableModel.h
     )
     list(APPEND DA_LIB_SOURCE_FILES_Models
-        ${DA_LIB_SUBDIR_Models}/DAPySeriesTableModule.cpp
-        ${DA_LIB_SUBDIR_Models}/DAPyDataFrameTableModule.cpp
+        ${DA_LIB_SUBDIR_Models}/DAPySeriesTableModel.cpp
+        ${DA_LIB_SUBDIR_Models}/DAPyDataFrameTableModel.cpp
+        ${DA_LIB_SUBDIR_Models}/DAPyGridDataTableModel.cpp
     )
 endif()
 
@@ -226,9 +236,14 @@ if(DA_ENABLE_PYTHON)
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillna.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillInterpolate.h
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameDataSelect.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameClipOutlier.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameQueryDatas.h
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameDataSearch.h
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameEvalDatas.h
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSort.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogCreatePivotTable.h
+		
     )
     list(APPEND DA_LIB_SOURCE_FILES_Dialog
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToDatetime.cpp
@@ -238,8 +253,12 @@ if(DA_ENABLE_PYTHON)
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillna.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillInterpolate.cpp
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameDataSelect.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameClipOutlier.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameQueryDatas.cpp
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameDataSearch.cpp
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameEvalDatas.cpp
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSort.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogCreatePivotTable.cpp
     )
     list(APPEND DA_LIB_QT_UI_FILES_Dialog
@@ -249,8 +268,12 @@ if(DA_ENABLE_PYTHON)
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillna.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillInterpolate.ui
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameDataSelect.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameClipOutlier.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameQueryDatas.ui
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameDataSearch.ui
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameEvalDatas.ui
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSort.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogCreatePivotTable.ui
     )
 endif()

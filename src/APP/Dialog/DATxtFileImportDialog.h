@@ -11,7 +11,7 @@ class DATxtFileImportDialog;
 namespace DA
 {
 
-class DAPyDataFrameTableModule;
+class DAPyDataFrameTableModel;
 
 class DATxtFileImportDialog : public QDialog
 {
@@ -46,7 +46,7 @@ protected:
 private:
     Ui::DATxtFileImportDialog* ui;
 #if DA_ENABLE_PYTHON
-    DAPyDataFrameTableModule* mModule { nullptr };
+    DAPyDataFrameTableModel* mModule { nullptr };
 #endif
 };
 }

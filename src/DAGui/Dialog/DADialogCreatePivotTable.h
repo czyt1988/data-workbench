@@ -27,26 +27,21 @@ public:
 
 	// 获取选中的dataframe
 	DAPyDataFrame getDataFrame() const;
-	void setDataframe(const DAPyDataFrame& d);
+    void setDataframe(const DAPyDataFrame& df);
 	// value参数
 	QStringList getPivotTableValue() const;
-
 	// index参数
 	QStringList getPivotTableIndex() const;
-
 	// column参数
 	QStringList getPivotTableColumn() const;
-
 	// Aggfunc参数
 	QString getPivotTableAggfunc() const;
-
 	// Margins参数
 	bool isEnableMarginsName() const;
 	void setEnableMargins(bool on);
 
 	QString getMarginsName() const;
 	void setMarginsName(QString& s);
-
 	// Sort参数
 	bool isEnableSort() const;
 	void setEnableSort(bool on);

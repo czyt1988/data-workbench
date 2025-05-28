@@ -23,6 +23,7 @@
 #include "DAZipArchiveTask_Xml.h"
 #include "DAZipArchiveTask_ArchiveFile.h"
 #include "DADataEnumStringUtils.h"
+#include "DAWaitCursorScoped.h"
 // python
 #if DA_ENABLE_PYTHON
 #include "DAPyScripts.h"
@@ -328,8 +329,9 @@ bool DAAppProject::save(const QString& path)
 		qInfo() << tr("current project is busy");  // cn:当前工程正繁忙
 		return false;
 	}
-	setProjectPath(path);
 
+	setProjectPath(path);
+	DA_WAIT_CURSOR_SCOPED();
 	//! 先把涉及ui的内容保存下来,ui是无法在其它线程操作，因此需要先保存下来
 	makeSaveWorkFlowTask(mArchive);
 
@@ -580,7 +582,7 @@ void DAAppProject::onTaskProgress(int total, int pos, const std::shared_ptr< DAA
 				}
 				DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
 				DAPyDataFrame df;
-				if (!pydf.from_pickle(df, tempLocalFilePath)) {
+				if (!pydf.from_parquet(df, tempLocalFilePath)) {
 					qCritical() << tr("Unable to serialize the file %1 into a Dataframe").arg(tempLocalFilePath);  // cn:无法把文件%1序列化为Dataframe
 					return;
 				}

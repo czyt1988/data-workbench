@@ -16,7 +16,7 @@ class DAChartAddXYESeriesWidget;
 namespace DA
 {
 #if DA_ENABLE_PYTHON
-class DAPySeriesTableModule;
+class DAPySeriesTableModel;
 #endif
 class DADataManager;
 
@@ -57,7 +57,6 @@ protected:
 
 private:
 	Ui::DAChartAddXYESeriesWidget* ui;
-	DAPySeriesTableModule* mModel { nullptr };
 };
 }
 

@@ -12,6 +12,9 @@ class QTextDocument;
 /**
   @note command一定要注意创建移动陷阱，所谓创建移动陷阱，是指一个创建命令，会new出一个item，移动命令，会把new出的item的位置记录，
   这时，创建命令在析构时，如果做了delete创建item的处理，那么就会造成野指针
+
+  @note command要注意合并命令陷阱，所谓合并命令陷阱是值命令如果有合并功能时，不能在push如栈后再对命令有任何操作，因为如果命令已经合并，
+  此命令会被QUndoStack销毁，命令指针是野指针，任何push之后的操作都可能出现异常
  */
 
 namespace DA
@@ -49,19 +52,19 @@ private:
 class DAGRAPHICSVIEW_API DACommandsForGraphicsItemsAdd : public QUndoCommand
 {
 public:
-    DACommandsForGraphicsItemsAdd(const QList< QGraphicsItem* > its, QGraphicsScene* scene, QUndoCommand* parent = nullptr);
-    ~DACommandsForGraphicsItemsAdd();
-    void redo() override;
-    void undo() override;
-    virtual int id() const override
-    {
-        return CmdID_ItemsAdd;
-    }
+	DACommandsForGraphicsItemsAdd(const QList< QGraphicsItem* > its, QGraphicsScene* scene, QUndoCommand* parent = nullptr);
+	~DACommandsForGraphicsItemsAdd();
+	void redo() override;
+	void undo() override;
+	virtual int id() const override
+	{
+		return CmdID_ItemsAdd;
+	}
 
 private:
-    QList< QGraphicsItem* > mItems;
-    QGraphicsScene* mScene;
-    bool mNeedDelete;
+	QList< QGraphicsItem* > mItems;
+	QGraphicsScene* mScene;
+	bool mNeedDelete;
 };
 
 /**
@@ -91,19 +94,19 @@ private:
 class DAGRAPHICSVIEW_API DACommandsForGraphicsItemsRemove : public QUndoCommand
 {
 public:
-    DACommandsForGraphicsItemsRemove(const QList< QGraphicsItem* > its, QGraphicsScene* scene, QUndoCommand* parent = nullptr);
-    ~DACommandsForGraphicsItemsRemove();
-    void redo() override;
-    void undo() override;
-    virtual int id() const override
-    {
-        return CmdID_ItemsRemove;
-    }
+	DACommandsForGraphicsItemsRemove(const QList< QGraphicsItem* > its, QGraphicsScene* scene, QUndoCommand* parent = nullptr);
+	~DACommandsForGraphicsItemsRemove();
+	void redo() override;
+	void undo() override;
+	virtual int id() const override
+	{
+		return CmdID_ItemsRemove;
+	}
 
 private:
-    QList< QGraphicsItem* > mItems;
-    QGraphicsScene* mScene;
-    bool mNeedDelete;
+	QList< QGraphicsItem* > mItems;
+	QGraphicsScene* mScene;
+	bool mNeedDelete;
 };
 
 /**
@@ -120,24 +123,20 @@ public:
 	void redo() override;
 	void undo() override;
 	int id() const override;
+	bool mergeWith(const QUndoCommand* command) override;
+    // 注意，此命令可能会合并，不应该在推入栈后再对此命令有任何操作，会出现空指针
+	const QList< QGraphicsItem* >& getItems() const;
+    // 注意，此命令可能会合并，不应该在推入栈后再对此命令有任何操作，会出现空指针
+	const QList< QPointF >& getStartsPos() const;
+    // 注意，此命令可能会合并，不应该在推入栈后再对此命令有任何操作，会出现空指针
+	const QList< QPointF >& getEndsPos() const;
 
 protected:
 	QList< QGraphicsItem* > mItems;
 	QList< QPointF > mStartsPos;
 	QList< QPointF > mEndsPos;
+	QDateTime mCmdDatetime;
 	bool mSkipFirst;
-};
-
-class DAGRAPHICSVIEW_API DACommandsForGraphicsItemsMoved_Merge : public DACommandsForGraphicsItemsMoved
-{
-public:
-	DACommandsForGraphicsItemsMoved_Merge(const QList< QGraphicsItem* >& items,
-                                          const QList< QPointF >& starts,
-                                          const QList< QPointF >& ends,
-                                          bool skipfirst,
-                                          QUndoCommand* parent = nullptr);
-	int id() const override;
-	bool mergeWith(const QUndoCommand* command) override;
 };
 
 /**
@@ -154,28 +153,16 @@ public:
 	void redo() override;
 	void undo() override;
 	int id() const override;
+	bool mergeWith(const QUndoCommand* command) override;
 
 protected:
 	QGraphicsItem* mItem;
 	QPointF mStartPos;
 	QPointF mEndPos;
 	bool mSkipFirst;
+	QDateTime mDatetime;
 };
 
-/**
- * @brief 带合并的移动item命令
- */
-class DAGRAPHICSVIEW_API DACommandsForGraphicsItemMoved_Merge : public DACommandsForGraphicsItemMoved
-{
-public:
-	DACommandsForGraphicsItemMoved_Merge(QGraphicsItem* item,
-                                         const QPointF& start,
-                                         const QPointF& end,
-                                         bool skipfirst,
-                                         QUndoCommand* parent = nullptr);
-	int id() const override;
-	bool mergeWith(const QUndoCommand* command) override;
-};
 /**
  * @brief item改变尺寸
  */
@@ -187,12 +174,11 @@ public:
                                      const QSizeF& oldSize,
                                      const QPointF& newpos,
                                      const QSizeF& newSize,
-                                     bool skipFirst       = false,
+                                     bool skipfirst       = true,
                                      QUndoCommand* parent = nullptr);
 	DACommandsForGraphicsItemResized(DAGraphicsResizeableItem* item,
                                      const QSizeF& oldSize,
                                      const QSizeF& newSize,
-                                     bool skipFirst       = false,
                                      QUndoCommand* parent = nullptr);
 	void redo() override;
 	void undo() override;
@@ -205,7 +191,8 @@ private:
 	QSizeF mOldSize;
 	QPointF mNewPosition;
 	QSizeF mNewSize;
-	bool mSkipFirst;
+	bool mSkipfirst { false };
+	QDateTime mDatetime;
 };
 
 /**
@@ -217,7 +204,6 @@ public:
 	DACommandsForGraphicsItemResizeWidth(DAGraphicsResizeableItem* item,
                                          const qreal& oldWidth,
                                          const qreal& newWidth,
-                                         bool skipfirst,
                                          QUndoCommand* parent = nullptr);
 	void redo() override;
 	void undo() override;
@@ -229,7 +215,7 @@ private:
 	qreal mOldWidth;
 	qreal mNewWidth;
 	qreal mHeight;
-	bool mSkipfirst;
+	QDateTime mDatetime;
 };
 
 /**
@@ -241,7 +227,6 @@ public:
 	DACommandsForGraphicsItemResizeHeight(DAGraphicsResizeableItem* item,
                                           const qreal& oldHeight,
                                           const qreal& newHeight,
-                                          bool skipfirst,
                                           QUndoCommand* parent = nullptr);
 	void redo() override;
 	void undo() override;
@@ -253,7 +238,7 @@ private:
 	qreal mOldHeight;
 	qreal mNewHeight;
 	qreal mWidth;
-	bool mSkipfirst;
+	QDateTime mDatetime;
 };
 
 /**
@@ -267,7 +252,6 @@ public:
 	DACommandsForGraphicsItemRotation(DAGraphicsResizeableItem* item,
                                       const qreal& oldRotation,
                                       const qreal& newRotation,
-                                      bool skipfirst,
                                       QUndoCommand* parent = nullptr);
 	void redo() override;
 	void undo() override;
@@ -278,7 +262,7 @@ private:
 	DAGraphicsResizeableItem* mItem;
 	qreal mOldRotation;
 	qreal mNewRotation;
-	bool mSkipfirst;
+	QDateTime mDatetime;
 };
 
 /**

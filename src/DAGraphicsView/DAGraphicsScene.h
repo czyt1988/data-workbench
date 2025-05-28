@@ -15,6 +15,7 @@ class DAGraphicsLinkItem;
 class DAGraphicsItemGroup;
 class DAAbstractGraphicsSceneAction;
 class DAGraphicsLayout;
+class DAGraphicsCommandsFactory;
 /**
  * @brief 这是带着undostack的GraphicsScene
  * 此QGraphicsScene支持：
@@ -48,8 +49,6 @@ public:
 	DAGraphicsScene(const QRectF& sceneRect, QObject* p = nullptr);
 	DAGraphicsScene(qreal x, qreal y, qreal width, qreal height, QObject* p = nullptr);
 	~DAGraphicsScene();
-	// 判断是否正在移动item
-	bool isMovingItems() const;
 	// 获取当前鼠标在scene的位置
 	QPointF getCurrentMouseScenePos() const;
 	// 获取最后鼠标在scene点击的位置
@@ -131,6 +130,12 @@ public:
 	DAGraphicsTextItem* createText_(const QString& str = QString());
 	// 创建矩形
 	DAGraphicsRectItem* createRect_(const QPointF& p = QPointF());
+	// 注册命令工厂
+	void registCommandsFactory(DAGraphicsCommandsFactory* fac);
+	DAGraphicsCommandsFactory* commandsFactory();
+
+    // 判断点击的item是否可以移动
+    virtual bool isItemCanMove(QGraphicsItem* positem, const QPointF& scenePos);
 
 public:
 	// 获取默认的dpi
@@ -145,9 +150,9 @@ public slots:
 	// 显示网格
 	void showGridLine(bool on);
 	// 选中所有item
-    int selectAll();
-    // 取消选择
-    int unselectAll();
+	int selectAll();
+	// 取消选择
+	int unselectAll();
 	// 取消选中
 	void clearSelection();
 	// 设置item的选中状态
@@ -170,8 +175,8 @@ signals:
 	 * @param newPos
 	 */
 	void itemsPositionChanged(const QList< QGraphicsItem* >& items,
-							  const QList< QPointF >& oldPos,
-							  const QList< QPointF >& newPos);
+                              const QList< QPointF >& oldPos,
+                              const QList< QPointF >& newPos);
 
 	/**
 	 * @brief 条目bodysize改变触发的信号
@@ -238,12 +243,10 @@ signals:
 	void sceneActionDeactived(DA::DAAbstractGraphicsSceneAction* act);
 
 protected:
-	// 判断点击的item是否可以移动
-	virtual bool isItemCanMove(QGraphicsItem* positem, const QPointF& scenePos);
 	// 调用此函数 主动触发itemsPositionChanged信号，这个函数用于 继承此类例如实现了键盘移动item，主动触发此信号
 	void emitItemsPositionChanged(const QList< QGraphicsItem* >& items,
-								  const QList< QPointF >& oldPos,
-								  const QList< QPointF >& newPos);
+                                  const QList< QPointF >& oldPos,
+                                  const QList< QPointF >& newPos);
 	// 调用此函数 主动触发itemBodySizeChanged信号
 	void emitItemBodySizeChanged(DAGraphicsResizeableItem* item, const QSizeF& oldSize, const QSizeF& newSize);
 	// 调用此函数 主动触发itemRotationed信号

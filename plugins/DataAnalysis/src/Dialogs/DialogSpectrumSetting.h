@@ -12,7 +12,7 @@ class DialogSpectrumSetting;
 namespace DA
 {
 class DADataManager;
-class DAPySeriesTableModule;
+class DAPySeriesTableModel;
 }
 class DialogSpectrumSetting : public QDialog
 {
@@ -36,7 +36,7 @@ private slots:
 
 private:
     Ui::DialogSpectrumSetting* ui;
-    DA::DAPySeriesTableModule* mModuel { nullptr };
+    DA::DAPySeriesTableModel* mModuel { nullptr };
 };
 
 #endif  // DIALOGSPECTRUMSETTING_H

@@ -132,10 +132,46 @@ bool DAPyScriptsDataFrame::insert_column(DAPyDataFrame& df,
 		args[ "start" ] = DA::PY::toPyObject(start);
 		args[ "stop" ]  = DA::PY::toPyObject(stop);
 		if (start.canConvert(QMetaType::QDateTime) || start.canConvert(QMetaType::QDate)
-            || start.canConvert(QMetaType::QTime)) {
+			|| start.canConvert(QMetaType::QTime)) {
 			args[ "dtype" ] = pybind11::dtype("datetime64");
 		}
 		da_insert_column(**args);
+		return true;
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return false;
+}
+
+/**
+ * @brief 保存为txt/csv 对应da_dataframe.da_to_csv
+ * @param df
+ * @param path
+ * @return
+ */
+bool DAPyScriptsDataFrame::to_csv(const DAPyDataFrame& df, const QString& path, const QString& sep) noexcept
+{
+	try {
+		pybind11::object da_to_csv = attr("da_to_csv");
+		da_to_csv(df.object(), DA::PY::toPyStr(path), DA::PY::toPyStr(sep));
+		return true;
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return false;
+}
+
+/**
+ * @brief 保存为xlsx 对应da_dataframe.da_to_xlsx
+ * @param df
+ * @param path
+ * @return
+ */
+bool DAPyScriptsDataFrame::to_excel(const DAPyDataFrame& df, const QString& path) noexcept
+{
+	try {
+		pybind11::object da_to_excel = attr("da_to_excel");
+		da_to_excel(df.object(), DA::PY::toPyStr(path));
 		return true;
 	} catch (const std::exception& e) {
 		dealException(e);
@@ -162,6 +198,24 @@ bool DAPyScriptsDataFrame::to_pickle(const DAPyDataFrame& df, const QString& pat
 }
 
 /**
+ * @brief 保存为parquet对应da_dataframe.da_to_parquet
+ * @param df
+ * @param path
+ * @return
+ */
+bool DAPyScriptsDataFrame::to_parquet(const DAPyDataFrame& df, const QString& path) noexcept
+{
+	try {
+		pybind11::object da_to_parquet = attr("da_to_parquet");
+		da_to_parquet(df.object(), DA::PY::toPyStr(path));
+		return true;
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return false;
+}
+
+/**
  * @brief 从pickle加载
  * @param df
  * @param path
@@ -172,6 +226,24 @@ bool DAPyScriptsDataFrame::from_pickle(DAPyDataFrame& df, const QString& path) n
 	try {
 		pybind11::object da_from_pickle = attr("da_from_pickle");
 		da_from_pickle(df.object(), DA::PY::toPyStr(path));
+		return true;
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return false;
+}
+
+/**
+ * @brief 从parquet加载
+ * @param df
+ * @param path
+ * @return
+ */
+bool DAPyScriptsDataFrame::from_parquet(DAPyDataFrame& df, const QString& path) noexcept
+{
+	try {
+		pybind11::object da_from_parquet = attr("da_from_parquet");
+		da_from_parquet(df.object(), DA::PY::toPyStr(path));
 		return true;
 	} catch (const std::exception& e) {
 		dealException(e);
@@ -539,8 +611,8 @@ bool DAPyScriptsDataFrame::nstdfilteroutlier(DAPyDataFrame& df, double n, int ax
 /**
  * @brief clipoutlier方法的wrapper
  * @param df
- * @param keep
- * @param indexs
+ * @param lowervalue
+ * @param uppervalue
  * @return
  */
 bool DAPyScriptsDataFrame::clipoutlier(DAPyDataFrame& df, double lowervalue, double uppervalue, int axis)
@@ -570,22 +642,116 @@ bool DAPyScriptsDataFrame::clipoutlier(DAPyDataFrame& df, double lowervalue, dou
 /**
  * @brief query方法的wrapper
  * @param df
- * @param contents
+ * @param expr
  * @return
  */
 bool DAPyScriptsDataFrame::queryDatas(DAPyDataFrame& df, const QString& expr)
 {
 	try {
+		if (expr.isEmpty()) {
+			return false;
+		}
 		pybind11::object da_query_datas = attr("da_query_datas");
+		da_query_datas(df.object(), DA::PY::toPyStr(expr));
+		return true;
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return false;
+}
+
+/**
+ * @brief search方法的wrapper
+ * @param df
+ * @param expr
+ * @return
+ */
+bool DAPyScriptsDataFrame::searchData(DAPyDataFrame& df, const QString& expr)
+{
+	try {
+		if (expr.isEmpty()) {
+			return false;
+		}
+		pybind11::object da_search_data = attr("da_search_data");
+		da_search_data(df.object(), DA::PY::toPyStr(expr));
+		return true;
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return false;
+}
+
+/**
+
+ * @param df
+ * @param expr
+ * @return
+ */
+bool DAPyScriptsDataFrame::evalDatas(DAPyDataFrame& df, const QString& expr)
+{
+	try {
+		if (expr.isEmpty()) {
+			return false;
+		}
+		pybind11::object da_eval_datas = attr("da_eval_datas");
+		da_eval_datas(df.object(), DA::PY::toPyStr(expr));
+		return true;
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return false;
+}
+
+/**
+ * @brief sort方法的wrapper
+ * @param df
+ * @param by
+ * @param ascending
+ * @return
+ */
+bool DAPyScriptsDataFrame::sort(DAPyDataFrame& df, const QString& by, bool ascending)
+{
+	try {
+		pybind11::object da_sort = attr("da_sort");
 		pybind11::dict args;
 
-        if (expr.isEmpty()) {
-            return false;
-        }
-        // 将每个条件用括号包裹，避免优先级问题
+		if (by.isEmpty()) {
+			return false;
+		}
 
-        args[ "expr" ] = DA::PY::toPyStr(expr);
-		da_query_datas(df.object(), **args);
+		args[ "by" ]        = DA::PY::toPyStr(by);
+		args[ "ascending" ] = ascending;
+		da_sort(df.object(), **args);
+		return true;
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return false;
+}
+
+/**
+ * @brief select方法的wrapper
+ * @param df
+ * @param contents
+ * @return
+ */
+bool DAPyScriptsDataFrame::dataselect(DAPyDataFrame& df, double lowervalue, double uppervalue, const QString& index)
+{
+	try {
+		pybind11::object da_data_select = attr("da_data_select");
+		pybind11::dict args;
+		if (lowervalue == 0.0) {
+			args[ "lower" ] = pybind11::none();
+		} else {
+			args[ "lower" ] = lowervalue;
+		}
+		if (uppervalue == 0.0) {
+			args[ "upper" ] = pybind11::none();
+		} else {
+			args[ "upper" ] = uppervalue;
+		}
+		args[ "index" ] = DA::PY::toPyStr(index);
+		da_data_select(df.object(), **args);
 		return true;
 	} catch (const std::exception& e) {
 		dealException(e);

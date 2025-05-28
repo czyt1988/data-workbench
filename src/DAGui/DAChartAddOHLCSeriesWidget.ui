@@ -160,7 +160,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QTableView" name="tableViewOHLC"/>
+     <widget class="DA::DAPySeriesTableView" name="tableViewOHLC"/>
     </widget>
    </item>
   </layout>
@@ -176,6 +176,11 @@
    <extends>QGroupBox</extends>
    <header location="global">DACollapsibleGroupBox.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DA::DAPySeriesTableView</class>
+   <extends>QTableView</extends>
+   <header>DAPySeriesTableView.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

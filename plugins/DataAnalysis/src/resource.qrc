@@ -6,5 +6,8 @@
         <file>icon/signal-filter.svg</file>
         <file>icon/filter.svg</file>
         <file>icon/peak-analysis.svg</file>
+        <file>icon/wavelet-cwt.svg</file>
+        <file>icon/wavelet-dwt.svg</file>
+        <file>icon/spectrum-stft.svg</file>
     </qresource>
 </RCC>

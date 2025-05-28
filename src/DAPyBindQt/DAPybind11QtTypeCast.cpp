@@ -452,7 +452,17 @@ inline pybind11::list toPyList< QString >(const QSet< QString >& arr)
 		pybind11::object o = toPyStr(v);
 		pylist.append(o);
 	}
-	return pylist;
+    return pylist;
+}
+
+/**
+ * @brief object转换为string
+ * @param obj
+ * @return
+ */
+QString toString(const pybind11::object& obj)
+{
+    return QString::fromStdString(obj.cast< std::string >());
 }
 
 }  // namespace PY
