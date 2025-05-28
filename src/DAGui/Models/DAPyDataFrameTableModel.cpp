@@ -37,7 +37,7 @@ public:
     bool isNoneDataframe() const;
     int getDataframeRowCount() const;
     int getDataframeColumnCount() const;
-    QString getDataframeColumnName(int i) const;
+    QVariant getDataframeColumnName(int i) const;
     QVariant getDataframeIndexName(int i) const;
     void clearCacheData();
 
@@ -92,7 +92,7 @@ int DAPyDataFrameTableModel::PrivateData::getDataframeColumnCount() const
     return static_cast< int >(dataframe.shape().second);
 }
 
-QString DAPyDataFrameTableModel::PrivateData::getDataframeColumnName(int i) const
+QVariant DAPyDataFrameTableModel::PrivateData::getDataframeColumnName(int i) const
 {
     if (useCacheMode) {
         return columnsName[ i ];

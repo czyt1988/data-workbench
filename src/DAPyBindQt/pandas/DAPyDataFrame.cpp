@@ -150,13 +150,13 @@ QList< QString > DAPyDataFrame::columns() const
  * @param i
  * @return
  */
-QString DAPyDataFrame::columnName(size_t i) const
+QVariant DAPyDataFrame::columnName(size_t i) const
 {
-    QString res;
+    QVariant res;
     try {
         pybind11::list obj_columns = object().attr("columns");
         pybind11::object obj       = obj_columns[ i ];
-        res                        = DA::PY::toString(obj);
+        res                        = DA::PY::toVariant(obj);
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
     }
