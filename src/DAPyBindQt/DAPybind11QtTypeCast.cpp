@@ -157,6 +157,133 @@ QVariant toVariant(const pybind11::object& obj)
 }
 
 /**
+ * @brief object转换为string
+ * @param obj
+ * @return
+ */
+QString toString(const pybind11::object& obj)
+{
+    if (obj.is_none()) {
+        return QString();
+    }
+    DAPyModuleNumpy& np = DAPyModuleNumpy::getInstance();
+    // 对numpy的转换
+    if (np.isInstanceGeneric(obj)) {
+        // 说明是numpy的类型,获取dtype
+        pybind11::dtype dt = obj.attr("dtype");
+        // 根据dtype进行转换
+        switch (dt.char_()) {
+        case '?':
+            return QString::number(obj.cast< bool >());
+        case 'b':
+            return QString(QChar(obj.cast< char >()));
+        case 'h':
+        case 'l':
+            return QString::number(obj.cast< int >());
+        case 'q':
+            return QString::number(obj.cast< long long >());
+        case 'B':
+            return QString(QChar(obj.cast< unsigned char >()));
+        case 'H':
+        case 'L':
+            return QString::number(obj.cast< unsigned int >());
+        case 'Q':
+            return QString::number(obj.cast< unsigned long long >());
+        case 'e':
+        case 'f':
+            return QString::number(obj.cast< float >());
+        case 'd':
+            return QString::number(obj.cast< double >());
+        case 'U':
+        case 'S':
+            return QString::fromStdString(obj.cast< std::string >());
+        case 'M': {
+            std::chrono::system_clock::time_point dt = obj.cast< std::chrono::system_clock::time_point >();
+            auto ms = std::chrono::duration_cast< std::chrono::milliseconds >(dt.time_since_epoch());
+            return QDateTime::fromMSecsSinceEpoch(ms.count()).toString();
+        }
+        default:
+            break;
+        }
+        return QString();
+    }
+    //    obj.ptr()
+
+    if (pybind11::isinstance< pybind11::str >(obj)) {
+        return QString::fromStdString(obj.cast< std::string >());
+    } else if (pybind11::isinstance< pybind11::int_ >(obj)) {
+        return QString::number(obj.cast< long long >());
+    } else if (pybind11::isinstance< pybind11::float_ >(obj)) {
+        return QString::number(obj.cast< double >());
+    } else if (DAPyModuleDatetime::getInstance().isInstanceDateTime(obj)) {
+        try {
+            pybind11::int_ y  = obj.attr("year");
+            pybind11::int_ m  = obj.attr("month");
+            pybind11::int_ d  = obj.attr("day");
+            pybind11::int_ h  = obj.attr("hour");
+            pybind11::int_ mm = obj.attr("minute");
+            pybind11::int_ ss = obj.attr("second");
+            return QDateTime(QDate(int(y), int(m), int(d)), QTime(int(h), int(mm), int(ss))).toString();
+        } catch (...) {
+            return QString();
+        }
+    } else if (DAPyModuleDatetime::getInstance().isInstanceTime(obj)) {
+        try {
+            pybind11::int_ h  = obj.attr("hour");
+            pybind11::int_ mm = obj.attr("minute");
+            pybind11::int_ ss = obj.attr("second");
+            pybind11::int_ ms = obj.attr("microsecond");
+            return QTime(int(h), int(mm), int(ss), int(ms)).toString();
+        } catch (...) {
+            return QString();
+        }
+    } else if (DAPyModuleDatetime::getInstance().isInstanceDate(obj)) {
+        try {
+            pybind11::int_ y = obj.attr("year");
+            pybind11::int_ m = obj.attr("month");
+            pybind11::int_ d = obj.attr("day");
+            return QDate(int(y), int(m), int(d)).toString();
+        } catch (...) {
+            return QString();
+        }
+    } else if (pybind11::isinstance< pybind11::list >(obj)) {
+        pybind11::list l = obj;
+        QStringList vl;
+        int s = static_cast< int >(l.size());
+        for (int i = 0; i < s; ++i) {
+            vl.append(toString(pybind11::object(l[ i ])));
+        }
+        return vl.join(",");
+    } else if (pybind11::isinstance< pybind11::tuple >(obj)) {
+        pybind11::tuple l = obj;
+        QStringList vl;
+        int s = static_cast< int >(l.size());
+        for (int i = 0; i < s; ++i) {
+            vl.append(toString(pybind11::object(l[ i ])));
+        }
+        return vl.join(",");
+    } else if (pybind11::isinstance< pybind11::dict >(obj)) {
+        pybind11::dict d = obj;
+        if (d.size() == 0) {
+            return QStringLiteral("{}");
+        }
+        QString vh = "{";
+        for (auto i : d) {
+            pybind11::str k      = pybind11::str(i.first);
+            pybind11::object obj = pybind11::reinterpret_borrow< pybind11::object >(i.second);
+            vh += toString(k);
+            vh += ":";
+            vh += toString(obj);
+            vh += ",";
+        }
+        // 把最后替换为}
+        vh[ vh.size() - 1 ] = QChar('}');
+        return vh;
+    }
+    return QString();
+}
+
+/**
  * @brief 把字符串按照dtype转换为qvariant
  *
  * 此函数主要用户获取用户输入的文本转换为对应的变量
@@ -453,16 +580,6 @@ inline pybind11::list toPyList< QString >(const QSet< QString >& arr)
 		pylist.append(o);
 	}
     return pylist;
-}
-
-/**
- * @brief object转换为string
- * @param obj
- * @return
- */
-QString toString(const pybind11::object& obj)
-{
-    return QString::fromStdString(obj.cast< std::string >());
 }
 
 }  // namespace PY
