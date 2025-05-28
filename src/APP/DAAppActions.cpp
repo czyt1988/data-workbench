@@ -292,8 +292,8 @@ void DAAppActions::retranslateUi()
 	actionDataFrameBFillNone->setToolTip(
         tr("Fill NA/NaN values by using the next valid observation to fill the gap."));  // cn:将最后一个有效值反向填充缺失值。
 	actionDropDuplicates->setText(tr("Drop Duplicates"));                                // cn:删除\n重复值
-	actionDropDuplicates->setToolTip(tr("Drop duplicate datas"));  // cn:删除数据中的重复记录
-	actionNstdFilterOutlier->setText(tr("nstd filter outlier"));   // cn: 过滤\n异常值
+    actionDropDuplicates->setToolTip(tr("Drop duplicate datas"));    // cn:删除数据中的重复记录
+    actionNstdFilterOutlier->setText(tr("n std \nfilter outlier"));  // cn: 过滤\n异常值
 	actionNstdFilterOutlier->setToolTip(tr("Remove the outliers beyond n times the standard deviation"));  // cn:删除n倍标准差外的异常值
 	actionDataFrameClipOutlier->setText(tr("Clip Outlier"));  // cn: 替换\n异常值
 	actionDataFrameClipOutlier->setToolTip(
@@ -303,11 +303,11 @@ void DAAppActions::retranslateUi()
         tr("Evaluate a string describing operations on DataFrame columns"));  // cn:输入关于列操作的表达式字符串并执行计算
     actionDataFrameQueryDatas->setText(tr("Query Datas"));                                   // cn:条件筛选
     actionDataFrameQueryDatas->setToolTip(tr("Filter data outside of the given criteria"));  // cn:过滤给定条件外的数据
-    actionDataFrameDataFilterColumn->setText(tr("Filter by Column"));                        // cn:列数据过滤
+    actionDataFrameDataFilterColumn->setText(tr("Filter \nby Column"));                      // cn:列数据过滤
 	actionDataFrameSort->setText(tr("Sort"));
     actionDataFrameSort->setToolTip(tr("Sort Data"));              // cn:对数据进行排序
     actionCreatePivotTable->setText(tr("Pivot Table"));            // cn: 数据\n透视表
-	actionCreatePivotTable->setToolTip(tr("Create Pivot Table"));  // cn: 创建数据透视表
+    actionCreatePivotTable->setToolTip(tr("Create Pivot Table"));  // cn: 创建数据透视表
 
 	// workflow 编辑
 	actionWorkflowNew->setText(tr("New \nWorkflow"));                    // cn:新建\n工作流
@@ -337,8 +337,8 @@ void DAAppActions::retranslateUi()
 	actionShowChartManagerArea->setText(tr("Show \nChart Manager"));        // cn:绘图\n管理
 	actionShowDataArea->setText(tr("Show \nTable Area"));                   // cn:表格\n区域
 	actionShowDataManagerArea->setText(tr("Show \nData Manager"));          // cn:数据\n管理
-	actionShowMessageLogView->setText(tr("Show Infomation Window"));        // cn:信息窗口
-	actionShowSettingWidget->setText(tr("Show Setting Window"));            // cn:设置窗口
+    actionShowMessageLogView->setText(tr("Show \nInfomation Window"));      // cn:信息窗口
+    actionShowSettingWidget->setText(tr("Show \nSetting Window"));          // cn:设置窗口
 	// Config Category
 	actionPluginManager->setText(tr("Plugin \nConfig"));  // cn:插件\n设置
 	// Other
