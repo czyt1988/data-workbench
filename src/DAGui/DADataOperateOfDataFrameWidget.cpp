@@ -810,7 +810,7 @@ bool DADataOperateOfDataFrameWidget::searchData()
 	}
 	// 获取填充值
 	QString exper = mDialogDataFrameDataSearch->getExpr();
-	return queryDatas(df, exper);
+	return searchData(df, exper);
 }
 
 /**
