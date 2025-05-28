@@ -24,14 +24,17 @@ void DAAbstractCacheWindowTableModel::setCacheWindowStartRow(int startRow)
         if (overlapStart >= overlapEnd) {
             // 完全无重叠，全量刷新
             Q_EMIT dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1));
+            Q_EMIT headerDataChanged(Qt::Vertical, 0, rowCount() - 1);
         } else {
             // 部分刷新
             if (oldStart < startRow) {
                 Q_EMIT dataChanged(index(0, 0), index(startRow - oldStart - 1, columnCount() - 1));
+                Q_EMIT headerDataChanged(Qt::Vertical, startRow - oldStart - 1, rowCount() - 1);
             }
             if (oldStart + cacheSize > startRow + cacheSize) {
                 const int diff = oldStart + cacheSize - (startRow + cacheSize);
                 Q_EMIT dataChanged(index(rowCount() - diff, 0), index(rowCount() - 1, columnCount() - 1));
+                Q_EMIT headerDataChanged(Qt::Vertical, rowCount() - diff, rowCount() - 1);
             }
         }
     }
