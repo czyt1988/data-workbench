@@ -306,9 +306,9 @@ void DAAppRibbonArea::buildRibbonDataCategory()
 	m_pannelDataOperate->setObjectName(QStringLiteral("da-pannel-data.data-opt"));
 	m_pannelDataOperate->addLargeAction(m_actions->actionAddData);
 	m_pannelDataOperate->addLargeAction(m_actions->actionRemoveData);
-    m_pannelDataOperate->addLargeAction(m_actions->actionExportIndividualData);
-    m_pannelDataOperate->addLargeAction(m_actions->actionExportMultipleData);
-    m_categoryData->addPannel(m_pannelDataOperate);
+	m_pannelDataOperate->addLargeAction(m_actions->actionExportIndividualData);
+	m_pannelDataOperate->addLargeAction(m_actions->actionExportMultipleData);
+	m_categoryData->addPannel(m_pannelDataOperate);
 
 	//----------------------------------------------------------
 
@@ -402,9 +402,10 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
 	m_pannelDataframeOperateDataFiltering = m_categoryDataframeOperate->addPannel(tr("Data Filtering"));  // cn :数据过滤
     m_pannelDataframeOperateDataFiltering->addLargeAction(m_actions->actionDataFrameEvalDatas);
     m_pannelDataframeOperateDataFiltering->addLargeAction(m_actions->actionDataFrameQueryDatas);
+	m_pannelDataframeOperateDataFiltering->addLargeAction(m_actions->actionDataFrameDataSearch);
     // 数据过滤
     m_pannelDataframeOperateDataFiltering->addLargeAction(m_actions->actionDataFrameDataFilterColumn);
-    m_pannelDataframeOperateDataFiltering->addLargeAction(m_actions->actionDataFrameSort);
+	m_pannelDataframeOperateDataFiltering->addLargeAction(m_actions->actionDataFrameSort);
 	//  Statistic Pannel
 	m_pannelDataframeOperateStatistic = m_categoryDataframeOperate->addPannel(tr("Statistic"));  // cn：统计
 	m_pannelDataframeOperateStatistic->addLargeAction(m_actions->actionCreateDataDescribe);

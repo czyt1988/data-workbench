@@ -273,6 +273,7 @@ void DAAppController::initConnection()
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameQueryDatas, onActionDataFrameQueryDatasTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameDataFilterColumn, onActionDataFrameFilterByColumnTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameSort, onActionDataFrameSortTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameDataSearch, onActionDataFrameDataSearchTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCreatePivotTable, onActionCreatePivotTableTriggered);
 #if DA_ENABLE_PYTHON
 	// 不知为何使用函数指针无法关联信号和槽
@@ -1994,6 +1995,19 @@ void DAAppController::onActionDataFrameQueryDatasTriggered()
 		if (dfopt->queryDatas()) {
 			setDirty();
 		}
+	}
+#endif
+}
+
+/**
+ * @brief 检索给定的数据
+ */
+void DAAppController::onActionDataFrameDataSearchTriggered()
+{
+#if DA_ENABLE_PYTHON
+	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+		dfopt->searchData();
+		setDirty();
 	}
 #endif
 }

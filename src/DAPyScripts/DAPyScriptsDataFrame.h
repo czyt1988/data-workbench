@@ -83,6 +83,8 @@ public:
 	bool clipoutlier(DAPyDataFrame& df, double lowervalue, double uppervalue, int axis);
 	// querydatas()
 	bool queryDatas(DAPyDataFrame& df, const QString& expr);
+	// searchdata()
+	bool searchData(DAPyDataFrame& df, const QString& expr);
 	// eval
 	bool evalDatas(DAPyDataFrame& df, const QString& expr);
 	// 排序sort()

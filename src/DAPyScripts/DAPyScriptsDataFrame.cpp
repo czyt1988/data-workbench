@@ -661,7 +661,28 @@ bool DAPyScriptsDataFrame::queryDatas(DAPyDataFrame& df, const QString& expr)
 }
 
 /**
- * @brief eval方法的wrapper
+ * @brief search方法的wrapper
+ * @param df
+ * @param expr
+ * @return
+ */
+bool DAPyScriptsDataFrame::searchData(DAPyDataFrame& df, const QString& expr)
+{
+	try {
+		if (expr.isEmpty()) {
+			return false;
+		}
+		pybind11::object da_search_data = attr("da_search_data");
+		da_search_data(df.object(), DA::PY::toPyStr(expr));
+		return true;
+	} catch (const std::exception& e) {
+		dealException(e);
+	}
+	return false;
+}
+
+/**
+
  * @param df
  * @param expr
  * @return

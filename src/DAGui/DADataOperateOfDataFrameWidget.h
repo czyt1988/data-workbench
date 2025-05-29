@@ -21,9 +21,11 @@ class DADialogDataframeColumnCastToNumeric;
 class DADialogDataframeColumnCastToDatetime;
 class DADialogDataFrameFillna;
 class DADialogDataFrameFillInterpolate;
+class DADialogDataFrameDataSelect;
 class DADialogDataFrameClipOutlier;
 class DADialogDataFrameEvalDatas;
 class DADialogDataFrameQueryDatas;
+class DADialogDataFrameDataSearch;
 class DADialogDataFrameSort;
 class DADialogCreatePivotTable;
 
@@ -121,6 +123,9 @@ public Q_SLOTS:
 	// 过滤给定条件外的数据
 	bool queryDatas();
 	bool queryDatas(const DAPyDataFrame& df, const QString& exper);
+	// 检索给定的数据
+	bool searchData();
+	bool searchData(const DAPyDataFrame& df, const QString& exper);
 	// 列运算
 	bool evalDatas();
 	bool evalDatas(const DAPyDataFrame& df, const QString& exper);
@@ -158,17 +163,19 @@ protected:
 private:
 	Ui::DADataOperateOfDataFrameWidget* ui;
 	DAData mData;
-	DAPyDataFrameTableModel* mModel { nullptr };
+	DAPyDataFrameTableModel* mModel{ nullptr };
 
-	DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs { nullptr };
-	DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs { nullptr };
-	DADialogDataFrameFillna* mDialogDataFrameFillna { nullptr };
-	DADialogDataFrameFillInterpolate* mDialogDataFrameFillInterpolate { nullptr };
-	DADialogDataFrameClipOutlier* mDialogDataFrameClipOutlier { nullptr };
-	DADialogCreatePivotTable* mDialogCreatePivotTable { nullptr };
-	DADialogDataFrameEvalDatas* mDialogDataFrameEvalDatas { nullptr };
-	DADialogDataFrameQueryDatas* mDialogDataFrameQueryDatas { nullptr };
-	DADialogDataFrameSort* mDADialogDataFrameSort { nullptr };
+	DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs{ nullptr };
+	DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs{ nullptr };
+	DADialogDataFrameFillna* mDialogDataFrameFillna{ nullptr };
+	DADialogDataFrameFillInterpolate* mDialogDataFrameFillInterpolate{ nullptr };
+	DADialogDataFrameDataSelect* mDialogDataFrameDataSelect{ nullptr };
+	DADialogDataFrameClipOutlier* mDialogDataFrameClipOutlier{ nullptr };
+	DADialogCreatePivotTable* mDialogCreatePivotTable{ nullptr };
+	DADialogDataFrameEvalDatas* mDialogDataFrameEvalDatas{ nullptr };
+	DADialogDataFrameQueryDatas* mDialogDataFrameQueryDatas{ nullptr };
+	DADialogDataFrameDataSearch* mDialogDataFrameDataSearch{ nullptr };
+	DADialogDataFrameSort* mDADialogDataFrameSort{ nullptr };
 };
 }  // end of namespace DA
 #endif  // DADATAOPERATEOFDATAFRAMEWIDGET_H

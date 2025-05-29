@@ -22,9 +22,11 @@
 #include "Dialog/DADialogInsertNewColumn.h"
 #include "Dialog/DADialogDataFrameFillna.h"
 #include "Dialog/DADialogDataFrameFillInterpolate.h"
+#include "Dialog/DADialogDataFrameDataSelect.h"
 #include "Dialog/DADialogDataFrameClipOutlier.h"
 #include "Dialog/DADialogDataFrameEvalDatas.h"
 #include "Dialog/DADialogDataFrameQueryDatas.h"
+#include "Dialog/DADialogDataFrameDataSearch.h"
 #include "Dialog/DADialogCreatePivotTable.h"
 #include "Dialog/DADialogDataFrameSort.h"
 
@@ -719,9 +721,6 @@ bool DADataOperateOfDataFrameWidget::clipoutlier()
 	if (df.isNone()) {
 		return false;
 	}
-	//	if (!mDialogDataFrameQueryDatas) {
-	//		mDialogDataFrameQueryDatas = new DADialogDataFrameQueryDatas(this);
-	//	}
 	if (!mDialogDataFrameClipOutlier) {
 		mDialogDataFrameClipOutlier = new DADialogDataFrameClipOutlier(this);
 	}
@@ -778,15 +777,51 @@ bool DADataOperateOfDataFrameWidget::queryDatas()
 }
 
 /**
- * @brief 过滤给定条件外的数据
- * @param lower 可选参数，下界值
- * @param upper 可选参数，上界值。
+ * @brief 过滤给定条件外的数据。
  * @return 成功返回true,反之返回false
  */
 bool DADataOperateOfDataFrameWidget::queryDatas(const DAPyDataFrame& df, const QString& exper)
 {
 	std::unique_ptr< DACommandDataFrame_querydatas > cmd =
 		std::make_unique< DACommandDataFrame_querydatas >(df, exper, mModel);
+	if (!cmd->exec()) {
+		return false;
+	}
+	getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
+	return true;
+}
+
+/**
+ * @brief 检索给定的数据
+ * @return 成功返回true,反之返回false
+ */
+bool DADataOperateOfDataFrameWidget::searchData()
+{
+	DAPyDataFrame df = getDataframe();
+	if (df.isNone()) {
+		return false;
+	}
+	if (!mDialogDataFrameDataSearch) {
+		mDialogDataFrameDataSearch = new DADialogDataFrameDataSearch(this);
+	}
+	if (QDialog::Accepted != mDialogDataFrameDataSearch->exec()) {
+		// 说明用户取消
+		return false;
+	}
+	// 获取填充值
+	QString exper = mDialogDataFrameDataSearch->getExpr();
+	return queryDatas(df, exper);
+}
+
+/**
+ * @brief 检索给定的数据
+ * @param exper 可选参数
+ * @return 成功返回true,反之返回false
+ */
+bool DADataOperateOfDataFrameWidget::searchData(const DAPyDataFrame& df, const QString& exper)
+{
+	std::unique_ptr< DACommandDataFrame_searchdata > cmd =
+		std::make_unique< DACommandDataFrame_searchdata >(df, exper, mModel);
 	if (!cmd->exec()) {
 		return false;
 	}
@@ -887,22 +922,22 @@ bool DADataOperateOfDataFrameWidget::filterByColumn()
 	if (df.isNone()) {
 		return false;
 	}
-	if (!mDialogDataFrameClipOutlier)
-		mDialogDataFrameClipOutlier = new DADialogDataFrameClipOutlier(this);
+	if (!mDialogDataFrameDataSelect)
+		mDialogDataFrameDataSelect = new DADialogDataFrameDataSelect(this);
 
-	mDialogDataFrameClipOutlier->setDataframe(df);
+	mDialogDataFrameDataSelect->setDataframe(df);
 
 	// 获取选中的列
 	if (isDataframeTableHaveSelection())
-		mDialogDataFrameClipOutlier->setFilterData(getSelectedOneDataframeColumn());
+		mDialogDataFrameDataSelect->setFilterData(getSelectedOneDataframeColumn());
 
-	if (QDialog::Accepted != mDialogDataFrameClipOutlier->exec())
+	if (QDialog::Accepted != mDialogDataFrameDataSelect->exec())
 		return false;
 
 	// 获取过滤参数
-	QString index     = mDialogDataFrameClipOutlier->getFilterData();
-	double lowervalue = mDialogDataFrameClipOutlier->getLowerValue();
-	double uppervalue = mDialogDataFrameClipOutlier->getUpperValue();
+	QString index     = mDialogDataFrameDataSelect->getFilterData();
+	double lowervalue = mDialogDataFrameDataSelect->getLowerValue();
+	double uppervalue = mDialogDataFrameDataSelect->getUpperValue();
 
 	return filterByColumn(df, lowervalue, uppervalue, index);
 }

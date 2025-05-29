@@ -236,8 +236,10 @@ if(DA_ENABLE_PYTHON)
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillna.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillInterpolate.h
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameDataSelect.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameClipOutlier.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameQueryDatas.h
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameDataSearch.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameEvalDatas.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSort.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogCreatePivotTable.h
@@ -251,8 +253,10 @@ if(DA_ENABLE_PYTHON)
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillna.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillInterpolate.cpp
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameDataSelect.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameClipOutlier.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameQueryDatas.cpp
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameDataSearch.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameEvalDatas.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSort.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogCreatePivotTable.cpp
@@ -264,8 +268,10 @@ if(DA_ENABLE_PYTHON)
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillna.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillInterpolate.ui
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameDataSelect.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameClipOutlier.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameQueryDatas.ui
+        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameDataSearch.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameEvalDatas.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSort.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogCreatePivotTable.ui

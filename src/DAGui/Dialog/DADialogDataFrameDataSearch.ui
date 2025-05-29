@@ -1,75 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>DADialogDataFrameClipOutlier</class>
- <widget class="QDialog" name="DADialogDataFrameClipOutlier">
+ <class>DADialogDataFrameDataSearch</class>
+ <widget class="QDialog" name="DADialogDataFrameDataSearch">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>354</width>
-    <height>183</height>
+    <width>400</width>
+    <height>176</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Clip Outlier</string>
+   <string>Dialog</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
-    <widget class="QGroupBox" name="ClipOutlier">
+    <widget class="QGroupBox" name="groupBox">
      <property name="title">
-      <string>Clip Outlier</string>
+      <string>Seacrch</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout_3">
-      <item row="0" column="3">
-       <widget class="QLineEdit" name="UpperValue">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QLineEdit" name="LowerValue">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2">
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>-</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="labelRange">
-        <property name="text">
-         <string>Range</string>
-        </property>
-       </widget>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <widget class="QTextEdit" name="textEdit"/>
       </item>
      </layout>
     </widget>
    </item>
    <item>
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
-      <spacer name="horizontalSpacer">
+      <spacer name="horizontalSpacer_2">
        <property name="orientation">
-        <enum>Qt::Vertical</enum>
+        <enum>Qt::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -115,32 +77,32 @@
   <connection>
    <sender>pushButtonOK</sender>
    <signal>clicked()</signal>
-   <receiver>DADialogDataFrameClipOutlier</receiver>
+   <receiver>DADialogDataFrameDataSearch</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>244</x>
-     <y>172</y>
+     <x>215</x>
+     <y>260</y>
     </hint>
     <hint type="destinationlabel">
-     <x>55</x>
-     <y>130</y>
+     <x>147</x>
+     <y>219</y>
     </hint>
    </hints>
   </connection>
   <connection>
    <sender>pushButtonCancel</sender>
    <signal>clicked()</signal>
-   <receiver>DADialogDataFrameClipOutlier</receiver>
+   <receiver>DADialogDataFrameDataSearch</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>343</x>
-     <y>172</y>
+     <x>312</x>
+     <y>255</y>
     </hint>
     <hint type="destinationlabel">
-     <x>50</x>
-     <y>98</y>
+     <x>363</x>
+     <y>217</y>
     </hint>
    </hints>
   </connection>

@@ -316,7 +316,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="+220"/>
+        <location filename="APP/DAAppActions.cpp" line="+203"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
@@ -704,21 +704,16 @@ Column</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Eval Datas</source>
-        <translation>数值计算</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Evaluate a string describing operations on DataFrame columns</source>
-        <translation>输入关于列操作的表达式字符串并执行计算</translation>
+        <source>Query Datas</source>
+        <translation>查询数据</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Query Datas</source>
-        <translation>条件筛选</translation>
+        <source>Select</source>
+        <translation>选择</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+1"/>
         <source>Sort</source>
         <translation>排序</translation>
     </message>
@@ -728,17 +723,12 @@ Column</source>
         <translation>数据排序</translation>
     </message>
     <message>
-        <location line="-3"/>
+        <location line="+1"/>
         <source>Filter data outside of the given criteria</source>
         <translation>过滤给定条件外的数据</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Filter by Column</source>
-        <translation>列数据过滤</translation>
-    </message>
-    <message>
-        <location line="+3"/>
         <source>Pivot Table</source>
         <translation>数据
 透视表</translation>
@@ -892,7 +882,7 @@ Config</source>
         <translation>暗色主题</translation>
     </message>
     <message>
-        <location line="-92"/>
+        <location line="-89"/>
         <source>Zoom Out</source>
         <translation>缩小</translation>
     </message>
@@ -902,7 +892,7 @@ Config</source>
         <translation>放大</translation>
     </message>
     <message>
-        <location line="+68"/>
+        <location line="+65"/>
         <source>Run 
 Workflow</source>
         <oldsource>Run Workflow</oldsource>
@@ -967,7 +957,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="APP/DAAppController.cpp" line="+757"/>
+        <location filename="APP/DAAppController.cpp" line="+756"/>
         <location line="+67"/>
         <source>project file(*.%1)</source>
         <translation>工程文件(*.%1)</translation>
@@ -1119,7 +1109,7 @@ Table Area</source>
         <translation>生成“%1”的透视表</translation>
     </message>
     <message>
-        <location line="+318"/>
+        <location line="+299"/>
         <source>new workflow name</source>
         <translation>新工作流名称</translation>
     </message>
@@ -1335,12 +1325,12 @@ Table Area</source>
         <location line="+1"/>
         <location line="+21"/>
         <location line="+87"/>
-        <location line="+206"/>
+        <location line="+205"/>
         <source>Workflow</source>
         <translation>工作流</translation>
     </message>
     <message>
-        <location line="-313"/>
+        <location line="-312"/>
         <location line="+2"/>
         <source>Data Operation</source>
         <translation>数据操作</translation>
@@ -1353,12 +1343,12 @@ Table Area</source>
     <message>
         <location line="+3"/>
         <location line="+23"/>
-        <location line="+362"/>
+        <location line="+361"/>
         <source>View</source>
         <translation>视图</translation>
     </message>
     <message>
-        <location line="-384"/>
+        <location line="-383"/>
         <source>Display</source>
         <translation>视图显示</translation>
     </message>
@@ -1396,65 +1386,65 @@ Table Area</source>
     </message>
     <message>
         <location line="-208"/>
-        <location line="+225"/>
+        <location line="+224"/>
         <source>Statistic</source>
         <translation>统计</translation>
     </message>
     <message>
-        <location line="-222"/>
+        <location line="-221"/>
         <source>Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+305"/>
+        <location line="+304"/>
         <source>Workflow Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
-        <location line="-304"/>
-        <location line="+309"/>
+        <location line="-303"/>
+        <location line="+308"/>
         <source>ClipBoard</source>
         <translation>剪切板</translation>
     </message>
     <message>
-        <location line="-308"/>
-        <location line="+313"/>
+        <location line="-307"/>
+        <location line="+312"/>
         <source>Item</source>
         <translation>图元</translation>
     </message>
     <message>
-        <location line="-312"/>
-        <location line="+321"/>
+        <location line="-311"/>
+        <location line="+320"/>
         <source>Text</source>
         <translation>文本</translation>
     </message>
     <message>
-        <location line="-320"/>
-        <location line="+325"/>
+        <location line="-319"/>
+        <location line="+324"/>
         <source>Background</source>
         <translation>背景</translation>
     </message>
     <message>
-        <location line="-322"/>
-        <location line="+403"/>
+        <location line="-321"/>
+        <location line="+402"/>
         <source>Workflow Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location line="-402"/>
-        <location line="+405"/>
+        <location line="-401"/>
+        <location line="+404"/>
         <source>Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location line="-403"/>
-        <location line="+250"/>
+        <location line="-402"/>
+        <location line="+249"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
     <message>
-        <location line="-249"/>
+        <location line="-248"/>
         <source>Figure Setting</source>
         <translation>绘图设置</translation>
     </message>
@@ -1470,13 +1460,13 @@ Table Area</source>
     </message>
     <message>
         <location line="+1"/>
-        <location line="+409"/>
+        <location line="+408"/>
         <location line="+2"/>
         <source>Chart Edit</source>
         <translation>绘图编辑</translation>
     </message>
     <message>
-        <location line="-409"/>
+        <location line="-408"/>
         <source>theme</source>
         <translation>主题</translation>
     </message>
@@ -1512,7 +1502,7 @@ Table Area</source>
         <translation>数据过滤</translation>
     </message>
     <message>
-        <location line="+125"/>
+        <location line="+124"/>
         <source>Group</source>
         <translation>分组</translation>
     </message>
@@ -2219,7 +2209,7 @@ Table Area</source>
 <context>
     <name>DA::DADataOperateOfDataFrameWidget</name>
     <message>
-        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="+171"/>
+        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="+170"/>
         <source>warning</source>
         <translation>警告</translation>
     </message>
@@ -2402,134 +2392,6 @@ Table Area</source>
         <location line="+16"/>
         <source>The current input cannot be converted to a floating-point number.</source>
         <translation>当前输入内容无法转换为浮点数。</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DADialogDataFrameEvalDatas</name>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameEvalDatas.cpp" line="+12"/>
-        <source># I. Basic Syntax
-
-You can write expressions using the following elements:
-
-- **Column names**: Use column names directly in calculations (e.g., `age`, `salary`)
-- **Constants**: Numbers, strings, and boolean values (e.g., `10`, `&quot; male &quot;`, `True`)
-- **Operators**:
-  - Mathematical operations: `+`, `-`, `*`, `/`, `**` (power), `%` (modulus)
-  - Comparison operations: `==`, `!=`, `&gt;`, `&lt;`, `&gt;=`, `&lt;=`
-  - Logical operations: `and`, `or`, `not`
-- **Function calls** (partially supported):
-  - Common math functions: `abs()`, `sin()`, `cos()`, `log()`, `exp()`, etc.
-  - Conditional logic: `where(condition, x, y)`
-  - String operations: `str.contains()`, `str.startswith()`, etc. (to be used with columns)
-
-| Goal | Example Expression |
-|------|--------------------|
-| Add a new column | `new_col = col1 + col2` |
-| Modify an existing column | `col = col * 2` |
-| Conditional assignment | `col = where(col &gt; 10, 1, 0)` |
-| Filter rows (returns boolean) | `col1 &gt; 5 and col2 &lt; 10` |
-
----
-
-## Example 1: Add or Modify a Column
-
-```python
-age + 10
-```
-
-This adds 10 to each value in the `age` column and either updates the original column or writes to a new column.
-
----
-
-## Example 2: Create a New Column and Assign Values
-
-```python
-new_column = salary * 1.1
-```
-
-This creates a new column named `new_column`, whose values are 1.1 times those of the `salary` column.
-
----
-
-## Example 3: Conditional Filtering and Assignment
-
-```python
-bonus = where(age &gt; 30, salary * 0.2, salary * 0.1)
-```
-
-This means: if age is greater than 30, the bonus is 20% of the salary; otherwise, it&apos;s 10%.
-
----
-
-## Example 4: String Matching (for filtering)
-
-```python
-name.str.contains(&quot;John&quot;)
-```
-
-This can be used to filter rows where the name contains &quot; John &quot;.</source>
-        <translation># 一、基本语法
-
- 您可以使用以下内容编写表达式：
-
- - **列名**：直接使用数据表中的列名参与运算（如 `age`, `salary`）
- - **常量**：数字、字符串、布尔值（如 `10`, `&quot;male&quot;`, `True`）
- - **运算符**：
-   - 数学运算：`+`, `-`, `*`, `/`, `**`（幂）、`%`（取余）
-   - 比较运算：`==`, `!=`, `&gt;`, `&lt;`, `&gt;=`, `&lt;=`
-   - 逻辑运算：`and`, `or`, `not`
- - **函数调用**（部分支持）：
-   - 常见数学函数：`abs()`, `sin()`, `cos()`, `log()`, `exp()` 等
-   - 条件判断：`where(condition, x, y)`
-   - 字符串操作：`str.contains()`, `str.startswith()` 等（需配合列使用）
-
- | 目标 | 示例表达式 |
- |------|------------|
- | 新增一列 | `new_col = col1 + col2` |
- | 修改已有列 | `col = col * 2` |
- | 条件赋值 | `col = where(col &gt; 10, 1, 0)` |
- | 过滤行（返回布尔值） | `col1 &gt; 5 and col2 &lt; 10` |
-
- ---
-
- ## 示例 1：新增一列或修改现有列的值
-
- ```python
- age + 10
- ```
-
- 表示将 `age` 列的每个值加 10，并更新回原列或写入新列。
-
- ---
-
- ## 示例 2：创建新列并赋值
-
- ```python
- new_column = salary * 1.1
- ```
-
- 表示新建一列 `new_column`，其值为 `salary` 列的 1.1 倍。
-
- ---
-
- ## 示例 3：条件筛选与赋值
-
- ```python
- bonus = where(age &gt; 30, salary * 0.2, salary * 0.1)
- ```
-
- 表示如果年龄大于 30，则奖金为工资的 20%，否则为 10%。
-
- ---
-
- ## 示例 4：字符串匹配（用于过滤）
-
- ```python
- name.str.contains(&quot;John&quot;)
- ```
-
- 可用于筛选名字中包含 &quot;John&quot; 的行。</translation>
     </message>
 </context>
 <context>
@@ -3536,7 +3398,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="APP/DAAppController.cpp" line="-2104"/>
+        <location filename="APP/DAAppController.cpp" line="-2084"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -4734,42 +4596,6 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
 </context>
 <context>
-    <name>DADialogDataFrameEvalDatas</name>
-    <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameEvalDatas.ui" line="+14"/>
-        <source>Eval Data</source>
-        <oldsource>Query Data</oldsource>
-        <translation>数据运算</translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Enter an expression, for example: new_col = age * 2. Column names containing spaces or punctuations (besides underscores) or starting with digits must be surrounded by backticks. (For example, a column named “Area (cm^2)” would be referenced as `Area (cm^2)`). Column names which are Python keywords (like “list”, “for”, “import”, etc) cannot be used. For example, if one of your columns is called a a and you want to sum it with b, your eval should be `a a` + b.</source>
-        <oldsource>Enter an expression, for example: new_col = age * 2 or salary &gt; 50000. Thus, column names containing spaces or punctuations (besides underscores) or starting with digits must be surrounded by backticks. (For example, a column named “Area (cm^2)” would be referenced as `Area (cm^2)`). Column names which are Python keywords (like “list”, “for”, “import”, etc) cannot be used. For example, if one of your columns is called a a and you want to sum it with b, your eval should be `a a` + b.</oldsource>
-        <translation>请输入一个表达式，例如：new_col = age * 2。若包含空格、标点符号（下划线以外）或以数字开头的列名，必须用反引号（`）包裹。（例如，列名 Area (cm^2)应写为 `Area (cm^2)`。同时，不能使用Python关键字作为列名（如 list、for、import 等）。如果你有一个列名为a a，你想将其与 b 相加，则应写为：`a a` + b。</translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>The string to evaluate</source>
-        <oldsource>The query string to evaluate</oldsource>
-        <translation>用于求值的表达式</translation>
-    </message>
-    <message>
-        <location line="+22"/>
-        <source>OK</source>
-        <translation>确认</translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <source>Cancel</source>
-        <translation>取消</translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>Explanation：</source>
-        <translation>说明：</translation>
-    </message>
-</context>
-<context>
     <name>DADialogDataFrameFillInterpolate</name>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="+14"/>
@@ -4895,14 +4721,14 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>数据查询</translation>
     </message>
     <message>
-        <location line="+22"/>
-        <source>You can refer to column names that are not valid Python variable names by surrounding them in backticks. Column names containing spaces or punctuations (besides underscores) or starting with digits must be surrounded by backticks. (For example, a column named “Area (cm^2)” would be referenced as `Area (cm^2)`). Column names which are Python keywords (like “list”, “for”, “import”, etc) cannot be used. For example, if one of your columns is called a a and you want to compare it with b, your query should be `a a` &gt; b.</source>
-        <translation>您可以通过使用反引号（`）将不符合 Python 变量命名规则的列名括起来，从而引用这些列名。包含空格或标点符号（下划线除外）或以数字开头的列名必须用反引号括起来。（例如，名为Area (cm^2)的列应引用为 `Area (cm^2)`）。不能使用 Python 的关键字（如list、for、import等）作为列名。例如，如果您有一列名为a a，并且想将其与b比较，那么您的查询应为 `a a`&gt;b。</translation>
+        <location line="+9"/>
+        <source>You can refer to column names that are not valid Python variable names by surrounding them in backticks. Thus, column names containing spaces or punctuations (besides underscores) or starting with digits must be surrounded by backticks. (For example, a column named “Area (cm^2)” would be referenced as `Area (cm^2)`). Column names which are Python keywords (like “list”, “for”, “import”, etc) cannot be used. For example, if one of your columns is called a a and you want to sum it with b, your query should be `a a` + b.</source>
+        <translation>您可以通过使用反引号（`）将不符合 Python 变量命名规则的列名括起来，从而引用这些列名。因此，包含空格或标点符号（下划线除外）或以数字开头的列名必须用反引号括起来。（例如，名为“Area (cm^2)”的列应引用为 `Area (cm^2)`）。不能使用 Python 的关键字（如“list”、“for”、“import”等）作为列名。例如，如果您有一列名为“a a”，并且想将其与“b”相加，那么您的查询应为 `a a` + b。</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>The query string to evaluate</source>
-        <translation>用于查询的表达式</translation>
+        <translation>用于求值的查询字符串</translation>
     </message>
     <message>
         <location line="+22"/>
@@ -7363,12 +7189,7 @@ Wrap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+33"/>
-        <source>eval datas</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+34"/>
+        <location line="+32"/>
         <source>query datas</source>
         <translation type="unfinished"></translation>
     </message>
