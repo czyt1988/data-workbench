@@ -79,7 +79,7 @@ public:
     QAction* actionDataFrameClipOutlier;       ///< 替换界限外异常值
     QAction* actionDataFrameEvalDatas;         ///< 数值计算
     QAction* actionDataFrameQueryDatas;        ///< 列数据过滤
-	QAction* actionDataFrameDataSearch;       ///< 检索指定数据
+    QAction* actionDataFrameDataRetrieval;     ///< 检索指定数据
     QAction* actionDataFrameDataFilterColumn;  ///< 过滤范围外的数据
     QAction* actionDataFrameSort;              ///< 数据排序
     QAction* actionCreatePivotTable;           ///< 创建数据透视表

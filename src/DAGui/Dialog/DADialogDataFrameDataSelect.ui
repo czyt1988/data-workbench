@@ -11,11 +11,11 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Clip Outlier</string>
+   <string>Data Filter</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QGroupBox" name="ClipOutlier">
+    <widget class="QGroupBox" name="DataFilter">
      <property name="title">
       <string>Data Filter</string>
      </property>
