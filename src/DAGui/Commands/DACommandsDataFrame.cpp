@@ -745,9 +745,20 @@ DACommandDataFrame_searchdata::DACommandDataFrame_searchdata(const DAPyDataFrame
                                                              const QString& exper,
                                                              DAPyDataFrameTableModel* model,
                                                              QUndoCommand* par)
-    : DACommandWithTemporaryData(df, par), mExper(exper), mModel(model)
+    : DACommandWithTemporaryData(df, par), mExper(exper), mModel(model), mMatches()
 {
     setText(QObject::tr("search data"));  // cn:检索相关数据
+}
+
+const QList< QPair< int, int > >& DACommandDataFrame_searchdata::getMatches() const
+{
+	//	int startRow = mModel->cacheWindowStartRow();
+	//	QList<QPair<int, int>> adjustedMatches;
+	//	for (const auto& match : mMatches) {
+	//		adjustedMatches.append(qMakePair(match.first - startRow, match.second));
+	//	}
+	//	return adjustedMatches;
+	return mMatches;
 }
 
 void DACommandDataFrame_searchdata::undo()
@@ -762,9 +773,11 @@ void DACommandDataFrame_searchdata::undo()
 bool DACommandDataFrame_searchdata::exec()
 {
 	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
-	if (!pydf.searchData(dataframe(), mExper)) {
+	mMatches                   = pydf.searchData(dataframe(), mExper);
+	if (mMatches.isEmpty()) {
 		return false;
 	}
+
 	if (mModel) {
 		mModel->refreshData();
 	}

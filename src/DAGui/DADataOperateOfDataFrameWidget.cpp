@@ -798,6 +798,7 @@ bool DADataOperateOfDataFrameWidget::queryDatas(const DAPyDataFrame& df, const Q
 bool DADataOperateOfDataFrameWidget::searchData()
 {
 	DAPyDataFrame df = getDataframe();
+	//	ui->tableView->showActualRow(20);
 	if (df.isNone()) {
 		return false;
 	}
@@ -825,6 +826,11 @@ bool DADataOperateOfDataFrameWidget::searchData(const DAPyDataFrame& df, const Q
 	if (!cmd->exec()) {
 		return false;
 	}
+
+	const QList< QPair< int, int > >& matches = cmd->getMatches();
+	//	ui->tableView->highlightMatches(matches);
+	ui->tableView->showActualRow(20);
+
 	getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
 	return true;
 }

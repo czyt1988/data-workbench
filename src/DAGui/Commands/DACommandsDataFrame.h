@@ -246,12 +246,12 @@ public:
 	int getDropedCount() const;
 
 private:
-    DAPyDataFrameTableModel* mModel { nullptr };
-    int mAxis { 0 };
+	DAPyDataFrameTableModel* mModel{ nullptr };
+	int mAxis{ 0 };
 	QString mHow;
 	QList< int > mIndex;
 	std::optional< int > mThresh;
-    int mDropedCount { 0 };  ///< 记录删除了多少行或列
+	int mDropedCount{ 0 };  ///< 记录删除了多少行或列
 };
 
 /**
@@ -269,9 +269,9 @@ public:
 	virtual bool exec() override;
 
 private:
-    DAPyDataFrameTableModel* mModel { nullptr };
-    double mValue { 0.0 };
-    int mLimit { -1 };
+	DAPyDataFrameTableModel* mModel{ nullptr };
+	double mValue{ 0.0 };
+	int mLimit{ -1 };
 };
 
 /**
@@ -290,10 +290,10 @@ public:
 	virtual bool exec() override;
 
 private:
-    DAPyDataFrameTableModel* mModel { nullptr };
+	DAPyDataFrameTableModel* mModel{ nullptr };
 	QString mMethod;
-    int mOrder { 1 };
-    int mLimit { -1 };
+	int mOrder{ 1 };
+	int mLimit{ -1 };
 };
 
 /**
@@ -311,9 +311,9 @@ public:
 	virtual bool exec() override;
 
 private:
-    DAPyDataFrameTableModel* mModel { nullptr };
-    int mAxis { 0 };
-    int mLimit { -1 };
+	DAPyDataFrameTableModel* mModel{ nullptr };
+	int mAxis{ 0 };
+	int mLimit{ -1 };
 };
 
 /**
@@ -331,9 +331,9 @@ public:
 	virtual bool exec() override;
 
 private:
-    DAPyDataFrameTableModel* mModel { nullptr };
-    int mAxis { 0 };
-    int mLimit { -1 };
+	DAPyDataFrameTableModel* mModel{ nullptr };
+	int mAxis{ 0 };
+	int mLimit{ -1 };
 };
 
 /**
@@ -353,10 +353,10 @@ public:
 	int getDropedCount() const;
 
 private:
-    DAPyDataFrameTableModel* mModel { nullptr };
+	DAPyDataFrameTableModel* mModel{ nullptr };
 	QString mKeep;
 	QList< int > mIndex;
-    int mDropedCount { 0 };  ///< 记录删除了多少行或列
+	int mDropedCount{ 0 };  ///< 记录删除了多少行或列
 };
 
 /**
@@ -376,11 +376,11 @@ public:
 	int getDropedCount() const;
 
 private:
-    DAPyDataFrameTableModel* mModel { nullptr };
-    double mN { 3.0 };
-    int mAxis { 0 };
+	DAPyDataFrameTableModel* mModel{ nullptr };
+	double mN{ 3.0 };
+	int mAxis{ 0 };
 	QList< int > mIndex;
-    int mDropedCount { 0 };  ///< 记录删除了多少行或列
+	int mDropedCount{ 0 };  ///< 记录删除了多少行或列
 };
 
 /**
@@ -399,10 +399,10 @@ public:
 	virtual bool exec() override;
 
 private:
-    DAPyDataFrameTableModel* mModel { nullptr };
-    double mlowervalue { 0.0 };
-    double mUppervalue { 0.0 };
-    int mAxis { 0 };
+	DAPyDataFrameTableModel* mModel{ nullptr };
+	double mlowervalue{ 0.0 };
+	double mUppervalue{ 0.0 };
+	int mAxis{ 0 };
 	QList< int > mIndex;
 };
 
@@ -412,16 +412,16 @@ private:
 class DAGUI_API DACommandDataFrame_evalDatas : public DACommandWithTemporaryData
 {
 public:
-    DACommandDataFrame_evalDatas(const DAPyDataFrame& df,
-                                 const QString& exper,
-                                 DAPyDataFrameTableModel* model = nullptr,
-                                 QUndoCommand* par              = nullptr);
-    virtual void undo() override;
-    virtual bool exec() override;
+	DACommandDataFrame_evalDatas(const DAPyDataFrame& df,
+								 const QString& exper,
+								 DAPyDataFrameTableModel* model = nullptr,
+								 QUndoCommand* par              = nullptr);
+	virtual void undo() override;
+	virtual bool exec() override;
 
 private:
-    QString mExper;
-    DAPyDataFrameTableModel* mModel { nullptr };
+	QString mExper;
+	DAPyDataFrameTableModel* mModel{ nullptr };
 };
 
 /**
@@ -439,7 +439,7 @@ public:
 
 private:
 	QString mExper;
-    DAPyDataFrameTableModel* mModel { nullptr };
+	DAPyDataFrameTableModel* mModel{ nullptr };
 };
 
 /**
@@ -454,10 +454,12 @@ public:
 								  QUndoCommand* par              = nullptr);
 	virtual void undo() override;
 	virtual bool exec() override;
+	const QList< QPair< int, int > >& getMatches() const;
 
 private:
 	QString mExper;
 	DAPyDataFrameTableModel* mModel{ nullptr };
+	QList< QPair< int, int > > mMatches;
 };
 
 /**
@@ -467,19 +469,19 @@ private:
 class DAGUI_API DACommandDataFrame_filterByColumn : public DACommandWithTemporaryData
 {
 public:
-    DACommandDataFrame_filterByColumn(const DAPyDataFrame& df,
-                                      double lowervalue,
-                                      double uppervalue,
-                                      const QString& index,
-                                      DAPyDataFrameTableModel* model = nullptr,
-                                      QUndoCommand* par              = nullptr);
+	DACommandDataFrame_filterByColumn(const DAPyDataFrame& df,
+									  double lowervalue,
+									  double uppervalue,
+									  const QString& index,
+									  DAPyDataFrameTableModel* model = nullptr,
+									  QUndoCommand* par              = nullptr);
 	virtual void undo() override;
 	virtual bool exec() override;
 
 private:
-    DAPyDataFrameTableModel* mModel { nullptr };
-    double mlowervalue { 0.0 };
-    double mUppervalue { 0.0 };
+	DAPyDataFrameTableModel* mModel{ nullptr };
+	double mlowervalue{ 0.0 };
+	double mUppervalue{ 0.0 };
 	QString mIndex;
 };
 
@@ -500,7 +502,7 @@ public:
 private:
 	QString mBy;
 	bool mAscending;
-    DAPyDataFrameTableModel* mModel { nullptr };
+	DAPyDataFrameTableModel* mModel{ nullptr };
 };
 
 /**
