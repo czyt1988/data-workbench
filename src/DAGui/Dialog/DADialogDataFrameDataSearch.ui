@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>176</height>
+    <height>110</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,9 +19,16 @@
      <property name="title">
       <string>Seacrch</string>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout">
-      <item>
-       <widget class="QTextEdit" name="textEdit"/>
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="lineEditFindItem"/>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="labelFindItem">
+        <property name="text">
+         <string>Find item:</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -42,13 +49,9 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButtonOK">
+      <widget class="QPushButton" name="pushButtonNext">
        <property name="text">
-        <string>OK</string>
-       </property>
-       <property name="icon">
-        <iconset resource="../icon.qrc">
-         <normaloff>:/DAGui/icon/accept.svg</normaloff>:/DAGui/icon/accept.svg</iconset>
+        <string>Next</string>
        </property>
        <property name="default">
         <bool>true</bool>
@@ -56,13 +59,9 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButtonCancel">
+      <widget class="QPushButton" name="pushButtonClose">
        <property name="text">
-        <string>Cancel</string>
-       </property>
-       <property name="icon">
-        <iconset resource="../icon.qrc">
-         <normaloff>:/DAGui/icon/cancel.svg</normaloff>:/DAGui/icon/cancel.svg</iconset>
+        <string>Close</string>
        </property>
       </widget>
      </item>
@@ -70,35 +69,17 @@
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="../icon.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
-   <sender>pushButtonOK</sender>
-   <signal>clicked()</signal>
-   <receiver>DADialogDataFrameDataSearch</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>215</x>
-     <y>260</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>147</x>
-     <y>219</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>pushButtonCancel</sender>
+   <sender>pushButtonClose</sender>
    <signal>clicked()</signal>
    <receiver>DADialogDataFrameDataSearch</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>312</x>
-     <y>255</y>
+     <x>389</x>
+     <y>99</y>
     </hint>
     <hint type="destinationlabel">
      <x>363</x>

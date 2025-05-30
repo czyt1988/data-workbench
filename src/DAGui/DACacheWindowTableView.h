@@ -20,6 +20,7 @@ public:
 	// 显示行
 	void showActualRow(int actualRow);
 	// 高亮目标文本框
+    void highlightMatch(const QPair< int, int >& matches);
 	void highlightMatches(const QList< QPair< int, int > >& matches);
 private Q_SLOTS:
 	virtual void verticalScrollBarValueChanged(int v);

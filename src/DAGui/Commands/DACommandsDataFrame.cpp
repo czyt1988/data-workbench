@@ -745,35 +745,26 @@ DACommandDataFrame_searchdata::DACommandDataFrame_searchdata(const DAPyDataFrame
                                                              const QString& exper,
                                                              DAPyDataFrameTableModel* model,
                                                              QUndoCommand* par)
-    : DACommandWithTemporaryData(df, par), mExper(exper), mModel(model), mMatches()
+    : DACommandWithTemporaryData(df, par), mExper(exper), mModel(model)
 {
     setText(QObject::tr("search data"));  // cn:检索相关数据
-}
-
-const QList< QPair< int, int > >& DACommandDataFrame_searchdata::getMatches() const
-{
-	//	int startRow = mModel->cacheWindowStartRow();
-	//	QList<QPair<int, int>> adjustedMatches;
-	//	for (const auto& match : mMatches) {
-	//		adjustedMatches.append(qMakePair(match.first - startRow, match.second));
-	//	}
-	//	return adjustedMatches;
-	return mMatches;
 }
 
 void DACommandDataFrame_searchdata::undo()
 {
 	load();
-	// 说明填充了空行
-	if (mModel) {
+    if (mModel) {
 		mModel->refreshData();
-	}
+    }
 }
 
 bool DACommandDataFrame_searchdata::exec()
 {
-	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
-	mMatches                   = pydf.searchData(dataframe(), mExper);
+    DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+
+    auto matches = pydf.searchData(dataframe(), mExper);
+    this->setMatches(matches);
+
 	if (mMatches.isEmpty()) {
 		return false;
 	}
@@ -781,7 +772,17 @@ bool DACommandDataFrame_searchdata::exec()
 	if (mModel) {
 		mModel->refreshData();
 	}
-	return true;
+    return true;
+}
+
+void DACommandDataFrame_searchdata::setMatches(const QList< QPair< int, int > > matches)
+{
+    mMatches = matches;
+}
+
+QList< QPair< int, int > > DACommandDataFrame_searchdata::getMatches() const
+{
+    return mMatches;
 }
 
 ///////////////////

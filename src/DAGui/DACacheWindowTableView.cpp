@@ -49,7 +49,34 @@ void DACacheWindowTableView::showActualRow(int actualRow)
 		vsc->setValue(targetScrollValue);
 	}
 	// 设置startRow
-	cacheModel->setCacheWindowStartRow(actualRow);
+    cacheModel->setCacheWindowStartRow(actualRow);
+}
+
+void DACacheWindowTableView::highlightMatch(const QPair< int, int >& match)
+{
+    QAbstractItemModel* model = this->model();
+    if (!model) {
+        return;
+    }
+
+    QItemSelection selection;
+    int row = match.first;
+    int col = match.second;
+    if (row < 0 || row >= model->rowCount() || col < 0 || col >= model->columnCount()) {
+        return;
+    }
+    QModelIndex index = model->index(row, col);
+    selection.select(index, index);
+
+    // 高亮选中项
+    QItemSelectionModel* selModel = selectionModel();
+    if (selModel) {
+        selModel->clearSelection();
+        selModel->select(selection, QItemSelectionModel::Select);
+    }
+
+    // 滚动到第一个匹配项
+    scrollTo(model->index(match.first, match.second));
 }
 
 // DACacheWindowTableView.cpp
