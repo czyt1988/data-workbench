@@ -741,52 +741,6 @@ bool DACommandDataFrame_querydatas::exec()
 
 ///////////////////
 
-DACommandDataFrame_searchdata::DACommandDataFrame_searchdata(const DAPyDataFrame& df,
-                                                             const QString& exper,
-                                                             DAPyDataFrameTableModel* model,
-                                                             QUndoCommand* par)
-    : DACommandWithTemporaryData(df, par), mExper(exper), mModel(model)
-{
-    setText(QObject::tr("search data"));  // cn:检索相关数据
-}
-
-void DACommandDataFrame_searchdata::undo()
-{
-	load();
-    if (mModel) {
-		mModel->refreshData();
-    }
-}
-
-bool DACommandDataFrame_searchdata::exec()
-{
-    DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
-
-    auto matches = pydf.searchData(dataframe(), mExper);
-    this->setMatches(matches);
-
-	if (mMatches.isEmpty()) {
-		return false;
-	}
-
-	if (mModel) {
-		mModel->refreshData();
-	}
-    return true;
-}
-
-void DACommandDataFrame_searchdata::setMatches(const QList< QPair< int, int > > matches)
-{
-    mMatches = matches;
-}
-
-QList< QPair< int, int > > DACommandDataFrame_searchdata::getMatches() const
-{
-    return mMatches;
-}
-
-///////////////////
-
 DACommandDataFrame_filterByColumn::DACommandDataFrame_filterByColumn(const DAPyDataFrame& df,
                                                                      double lowervalue,
                                                                      double uppervalue,

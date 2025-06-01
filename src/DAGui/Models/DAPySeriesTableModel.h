@@ -1,4 +1,4 @@
-#ifndef DAPYSERIESTABLEMODEL_H
+﻿#ifndef DAPYSERIESTABLEMODEL_H
 #define DAPYSERIESTABLEMODEL_H
 #include "DAGuiAPI.h"
 #include "DAAbstractCacheWindowTableModel.h"
@@ -21,16 +21,16 @@ public:
 
 public:
 	virtual int columnCount(const QModelIndex& parent = QModelIndex()) const override;
-    virtual Qt::ItemFlags actualFlags(int actualRow, int actualColumn) const;
-    virtual QVariant actualHeaderData(int actualSection, Qt::Orientation orientation, int role) const override;
-    virtual int actualRowCount() const override;
-    virtual QVariant actualData(int actualRow, int actualColumn, int role) const override;
+	virtual Qt::ItemFlags actualFlags(int actualRow, int actualColumn) const override;
+	virtual QVariant actualHeaderData(int actualSection, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+	virtual int actualRowCount() const override;
+	virtual QVariant actualData(int actualRow, int actualColumn, int role = Qt::DisplayRole) const override;
 
 public:
 	void setSeries(const QList< DAPySeries >& series);
 	QList< DAPySeries > getSeries() const;
-    // 设置滑动窗模式的起始行
-    virtual void setCacheWindowStartRow(int startRow) override;
+	// 设置滑动窗模式的起始行
+	virtual void setCacheWindowStartRow(int startRow) override;
 	// 追加series
 	void appendSeries(const DAPySeries& s);
 	void appendSeries(const DAAutoincrementSeries< double >& s);

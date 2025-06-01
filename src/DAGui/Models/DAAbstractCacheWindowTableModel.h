@@ -1,4 +1,4 @@
-#ifndef DAABSTRACTCACHEWINDOWTABLEMODEL_H
+﻿#ifndef DAABSTRACTCACHEWINDOWTABLEMODEL_H
 #define DAABSTRACTCACHEWINDOWTABLEMODEL_H
 #include "DAGuiAPI.h"
 #include <QAbstractTableModel>
@@ -29,7 +29,7 @@ public:
 	/// @}
 	virtual Qt::ItemFlags flags(const QModelIndex& index) const override;
 	virtual int rowCount(const QModelIndex& parent = QModelIndex()) const override;
-	virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
+	virtual QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 	virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 	virtual bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
 
@@ -39,15 +39,15 @@ public:
 	// 获取真实的行数,相当于普通模型的rowCount
 	virtual int actualRowCount() const = 0;
 	//  获取真实的HeaderData,相当于普通模型的headerData
-	virtual QVariant actualHeaderData(int actualSection, Qt::Orientation orientation, int role) const = 0;
+	virtual QVariant actualHeaderData(int actualSection, Qt::Orientation orientation, int role = Qt::DisplayRole) const = 0;
 	//  获取真实的HeaderData,相当于普通模型的headerData
-	virtual QVariant actualData(int actualRow, int actualColumn, int role) const = 0;
+	virtual QVariant actualData(int actualRow, int actualColumn, int role = Qt::DisplayRole) const = 0;
 	// 设置数据
 	virtual bool setActualData(int actualRow, int actualColumn, const QVariant& value, int role = Qt::EditRole);
 	/// @}
 protected:
-	int mCacheWindowSize{ 2000 };  // 默认窗口大小
-	int mWindowStartRow{ 0 };      // 当前窗口起始行
+	int mCacheWindowSize { 2000 };  // 默认窗口大小
+	int mWindowStartRow { 0 };      // 当前窗口起始行
 };
 }
 

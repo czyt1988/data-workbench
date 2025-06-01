@@ -29,9 +29,9 @@ public:
 public:
 	virtual int columnCount(const QModelIndex& parent = QModelIndex()) const override;
 
-	virtual QVariant actualHeaderData(int actualSection, Qt::Orientation orientation, int role) const override;
+	virtual QVariant actualHeaderData(int actualSection, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 	virtual int actualRowCount() const override;
-	virtual QVariant actualData(int actualRow, int actualColumn, int role) const override;
+	virtual QVariant actualData(int actualRow, int actualColumn, int role = Qt::DisplayRole) const override;
 	// 设置数据
 	virtual bool setActualData(int actualRow, int actualColumn, const QVariant& value, int role = Qt::EditRole) override;
 

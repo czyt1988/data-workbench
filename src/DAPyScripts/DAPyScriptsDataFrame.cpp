@@ -132,7 +132,7 @@ bool DAPyScriptsDataFrame::insert_column(DAPyDataFrame& df,
 		args[ "start" ] = DA::PY::toPyObject(start);
 		args[ "stop" ]  = DA::PY::toPyObject(stop);
 		if (start.canConvert(QMetaType::QDateTime) || start.canConvert(QMetaType::QDate)
-            || start.canConvert(QMetaType::QTime)) {
+			|| start.canConvert(QMetaType::QTime)) {
 			args[ "dtype" ] = pybind11::dtype("datetime64");
 		}
 		da_insert_column(**args);
@@ -427,7 +427,7 @@ bool DAPyScriptsDataFrame::dropna(DAPyDataFrame& df,
                                   int axis,
                                   const QString& how,
                                   const QList< int >& indexs,
-                                  std::optional< int > thresh)
+                                  std::optional< int > thresh) noexcept
 {
 	try {
 		pybind11::object da_drop_na = attr("da_drop_na");
@@ -455,7 +455,7 @@ bool DAPyScriptsDataFrame::dropna(DAPyDataFrame& df,
  * @param limit 填充限制，-1代表不限制，大于0生效
  * @return
  */
-bool DAPyScriptsDataFrame::fillna(DAPyDataFrame& df, double value, int limit)
+bool DAPyScriptsDataFrame::fillna(DAPyDataFrame& df, double value, int limit) noexcept
 {
 	try {
 		pybind11::object da_fill_na = attr("da_fill_na");
@@ -481,7 +481,7 @@ bool DAPyScriptsDataFrame::fillna(DAPyDataFrame& df, double value, int limit)
  * @param limit 填充限制，-1代表不限制，大于0生效
  * @return
  */
-bool DAPyScriptsDataFrame::ffillna(DAPyDataFrame& df, int axis, int limit)
+bool DAPyScriptsDataFrame::ffillna(DAPyDataFrame& df, int axis, int limit) noexcept
 {
 	try {
 		pybind11::object da_ffill_na = attr("da_ffill_na");
@@ -507,7 +507,7 @@ bool DAPyScriptsDataFrame::ffillna(DAPyDataFrame& df, int axis, int limit)
  * @param limit 填充限制，-1代表不限制，大于0生效
  * @return
  */
-bool DAPyScriptsDataFrame::bfillna(DAPyDataFrame& df, int axis, int limit)
+bool DAPyScriptsDataFrame::bfillna(DAPyDataFrame& df, int axis, int limit) noexcept
 {
 	try {
 		pybind11::object da_bfill_na = attr("da_bfill_na");
@@ -533,7 +533,7 @@ bool DAPyScriptsDataFrame::bfillna(DAPyDataFrame& df, int axis, int limit)
  * @param limit 填充限制，-1代表不限制，大于0生效
  * @return
  */
-bool DAPyScriptsDataFrame::interpolate(DAPyDataFrame& df, const QString& method, int order, int limit)
+bool DAPyScriptsDataFrame::interpolate(DAPyDataFrame& df, const QString& method, int order, int limit) noexcept
 {
 	try {
 		pybind11::object da_interpolate = attr("da_fill_interpolate");
@@ -559,7 +559,7 @@ bool DAPyScriptsDataFrame::interpolate(DAPyDataFrame& df, const QString& method,
  * @param indexs
  * @return
  */
-bool DAPyScriptsDataFrame::dropduplicates(DAPyDataFrame& df, const QString& keep, const QList< int >& indexs)
+bool DAPyScriptsDataFrame::dropduplicates(DAPyDataFrame& df, const QString& keep, const QList< int >& indexs) noexcept
 {
 	try {
 		pybind11::object da_drop_duplicates = attr("da_drop_duplicates");
@@ -585,7 +585,7 @@ bool DAPyScriptsDataFrame::dropduplicates(DAPyDataFrame& df, const QString& keep
  * @param n 标准差的倍数，范围是0.1~10，默认为3
  * @return
  */
-bool DAPyScriptsDataFrame::nstdfilteroutlier(DAPyDataFrame& df, double n, int axis, const QList< int >& indexs)
+bool DAPyScriptsDataFrame::nstdfilteroutlier(DAPyDataFrame& df, double n, int axis, const QList< int >& indexs) noexcept
 {
 	try {
 		pybind11::object da_nstd_filter_outlier = attr("da_nstd_filter_outlier");
@@ -615,7 +615,7 @@ bool DAPyScriptsDataFrame::nstdfilteroutlier(DAPyDataFrame& df, double n, int ax
  * @param uppervalue
  * @return
  */
-bool DAPyScriptsDataFrame::clipoutlier(DAPyDataFrame& df, double lowervalue, double uppervalue, int axis)
+bool DAPyScriptsDataFrame::clipoutlier(DAPyDataFrame& df, double lowervalue, double uppervalue, int axis) noexcept
 {
 	try {
 		pybind11::object da_clip_outlier = attr("da_clip_outlier");
@@ -645,7 +645,7 @@ bool DAPyScriptsDataFrame::clipoutlier(DAPyDataFrame& df, double lowervalue, dou
  * @param expr
  * @return
  */
-bool DAPyScriptsDataFrame::queryDatas(DAPyDataFrame& df, const QString& expr)
+bool DAPyScriptsDataFrame::queryDatas(DAPyDataFrame& df, const QString& expr) noexcept
 {
 	try {
 		if (expr.isEmpty()) {
@@ -666,7 +666,7 @@ bool DAPyScriptsDataFrame::queryDatas(DAPyDataFrame& df, const QString& expr)
  * @param expr
  * @return
  */
-QList< QPair< int, int > > DAPyScriptsDataFrame::searchData(DAPyDataFrame& df, const QString& expr)
+QList< QPair< int, int > > DAPyScriptsDataFrame::searchData(const DAPyDataFrame& df, const QString& expr) noexcept
 {
 	QList< QPair< int, int > > matches;
 	try {
@@ -674,14 +674,14 @@ QList< QPair< int, int > > DAPyScriptsDataFrame::searchData(DAPyDataFrame& df, c
 			return matches;
 		}
 		pybind11::object da_search_data = attr("da_search_data");
-        pybind11::object result         = da_search_data(df.object(), expr.toDouble());
+		pybind11::object result         = da_search_data(df.object(), expr.toDouble());
 
-        for (auto item : result) {
-            pybind11::tuple pos = item.cast< pybind11::tuple >();
-            matches.append(qMakePair(pos[ 0 ].cast< int >(),  // 行
-                                     pos[ 1 ].cast< int >()   // 列
-                                     ));
-        }
+		for (auto item : result) {
+			pybind11::tuple pos = item.cast< pybind11::tuple >();
+			matches.append(qMakePair(pos[ 0 ].cast< int >(),  // 行
+									 pos[ 1 ].cast< int >()   // 列
+									 ));
+		}
 		return matches;
 	} catch (const std::exception& e) {
 		dealException(e);
@@ -695,7 +695,7 @@ QList< QPair< int, int > > DAPyScriptsDataFrame::searchData(DAPyDataFrame& df, c
  * @param expr
  * @return
  */
-bool DAPyScriptsDataFrame::evalDatas(DAPyDataFrame& df, const QString& expr)
+bool DAPyScriptsDataFrame::evalDatas(DAPyDataFrame& df, const QString& expr) noexcept
 {
 	try {
 		if (expr.isEmpty()) {
@@ -717,7 +717,7 @@ bool DAPyScriptsDataFrame::evalDatas(DAPyDataFrame& df, const QString& expr)
  * @param ascending
  * @return
  */
-bool DAPyScriptsDataFrame::sort(DAPyDataFrame& df, const QString& by, bool ascending)
+bool DAPyScriptsDataFrame::sort(DAPyDataFrame& df, const QString& by, bool ascending) noexcept
 {
 	try {
 		pybind11::object da_sort = attr("da_sort");
@@ -743,7 +743,7 @@ bool DAPyScriptsDataFrame::sort(DAPyDataFrame& df, const QString& by, bool ascen
  * @param contents
  * @return
  */
-bool DAPyScriptsDataFrame::dataselect(DAPyDataFrame& df, double lowervalue, double uppervalue, const QString& index)
+bool DAPyScriptsDataFrame::dataselect(DAPyDataFrame& df, double lowervalue, double uppervalue, const QString& index) noexcept
 {
 	try {
 		pybind11::object da_data_select = attr("da_data_select");
@@ -784,7 +784,7 @@ DAPyDataFrame DAPyScriptsDataFrame::pivotTable(const DAPyDataFrame& df,
                                                const QString& aggfunc,
                                                bool margins,
                                                const QString& marginsName,
-                                               bool sort)
+                                               bool sort) noexcept
 {
 	try {
 		pybind11::object da_pivot_table = attr("da_create_pivot_table");

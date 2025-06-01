@@ -36,11 +36,13 @@ public:
 	DAPyDataFrame& operator=(pybind11::object&& obj);
 	DAPyDataFrame& operator=(DAPyDataFrame&& obj);
 	DAPyDataFrame& operator=(DAPyObjectWrapper&& obj);
+	// 重写小于操作，用于std::map容器，注意，这个小于仅仅比较指针的大小，没有任何意义
+	bool operator<(const DAPyDataFrame& other) const;
 
 public:
 	// DataFrame.columns
 	QList< QString > columns() const;
-    QString columnName(std::size_t i) const;
+	QString columnName(std::size_t i) const;
 	bool columns(std::size_t i, const QString& name);
 	bool columns(const QList< QString >& cols);
 	// DataFrame.empty
@@ -62,12 +64,12 @@ public:
 	// 获取某一列对应的dtype
 	pybind11::dtype dtypes(std::size_t c) const;
 	DAPyDataFrame describe() const;
-    // 转换为csv
-    bool to_csv(const QString& path, const QVariantHash& args = QVariantHash()) const noexcept;
-    // 转换为pickle
-    bool to_pickle(const QString& path, const QVariantHash& args = QVariantHash()) const noexcept;
-    // 转换为parquet
-    bool to_parquet(const QString& path, const QVariantHash& args = QVariantHash()) const noexcept;
+	// 转换为csv
+	bool to_csv(const QString& path, const QVariantHash& args = QVariantHash()) const noexcept;
+	// 转换为pickle
+	bool to_pickle(const QString& path, const QVariantHash& args = QVariantHash()) const noexcept;
+	// 转换为parquet
+	bool to_parquet(const QString& path, const QVariantHash& args = QVariantHash()) const noexcept;
 
 protected:
 	// 检测是否为dataframe，如果不是将会设置为none

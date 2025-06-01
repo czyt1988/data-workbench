@@ -1,8 +1,8 @@
-#ifndef DADIALOGDATAFRAMEDATASEARCH_H
+﻿#ifndef DADIALOGDATAFRAMEDATASEARCH_H
 #define DADIALOGDATAFRAMEDATASEARCH_H
 
 #include <QDialog>
-
+#include "pandas/DAPyDataFrame.h"
 namespace Ui
 {
 class DADialogDataFrameDataSearch;
@@ -10,6 +10,8 @@ class DADialogDataFrameDataSearch;
 
 namespace DA
 {
+class DAPyDataFrameTableView;
+
 class DADialogDataFrameDataSearch : public QDialog
 {
 	Q_OBJECT
@@ -17,23 +19,25 @@ class DADialogDataFrameDataSearch : public QDialog
 public:
 	explicit DADialogDataFrameDataSearch(QWidget* parent = nullptr);
 	~DADialogDataFrameDataSearch();
-    // 获取查找内容
-    QString getFindItem() const;
+	// 获取查找内容
+	QString getSearchText() const;
+	// 获取内容坐标
+	QList< QPair< int, int > > getItemCoor() const;
 
-    //获取内容坐标
-    void setItemCoor(const QList< QPair< int, int > >& matches);
-    QList< QPair< int, int > > getItemCoor() const;
-
-    void setCoorIndex(const int idx);
-    int getCoorIndex() const;
-
+	DAPyDataFrameTableView* getDataframeTableView() const;
+	void setDataframeTableView(DAPyDataFrameTableView* v);
+	// 搜索
+	void searchData();
 private slots:
-    void on_pushButtonNext_clicked();
+	void onPushButtonNextClicked();
+	void onLineEditTextChanged(const QString& t);
 
 private:
 	Ui::DADialogDataFrameDataSearch* ui;
-    QList< QPair< int, int > > mMatches{};
-    int mIndex{ 0 };
+	DAPyDataFrameTableView* mDataframeTableView { nullptr };
+	QList< QPair< int, int > > mMatches {};
+	bool mIsNeedResearch { true };  ///< 需要重新搜索，这个在重新设置了dataframe后触发
+	int mIndex { -1 };              ///< -1代表全新的搜索，需要重新匹配一下mMatches
 };
 }
 

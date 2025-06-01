@@ -1,4 +1,4 @@
-#include "DACacheWindowTableView.h"
+﻿#include "DACacheWindowTableView.h"
 #include <QHeaderView>
 #include <QScrollBar>
 #include <QElapsedTimer>
@@ -49,54 +49,27 @@ void DACacheWindowTableView::showActualRow(int actualRow)
 		vsc->setValue(targetScrollValue);
 	}
 	// 设置startRow
-    cacheModel->setCacheWindowStartRow(actualRow);
+	cacheModel->setCacheWindowStartRow(actualRow);
 }
 
-void DACacheWindowTableView::highlightMatch(const QPair< int, int >& match)
+void DACacheWindowTableView::selectActualCell(int actualRow, int col)
 {
-    QAbstractItemModel* model = this->model();
-    if (!model) {
-        return;
-    }
-
-    QItemSelection selection;
-    int row = match.first;
-    int col = match.second;
-    if (row < 0 || row >= model->rowCount() || col < 0 || col >= model->columnCount()) {
-        return;
-    }
-    QModelIndex index = model->index(row, col);
-    selection.select(index, index);
-
-    // 高亮选中项
-    QItemSelectionModel* selModel = selectionModel();
-    if (selModel) {
-        selModel->clearSelection();
-        selModel->select(selection, QItemSelectionModel::Select);
-    }
-
-    // 滚动到第一个匹配项
-    scrollTo(model->index(match.first, match.second));
-}
-
-// DACacheWindowTableView.cpp
-void DACacheWindowTableView::highlightMatches(const QList< QPair< int, int > >& matches)
-{
-	QAbstractItemModel* model = this->model();
-	if (!model || matches.isEmpty()) {
+	DAAbstractCacheWindowTableModel* cacheModel = getCacheModel();
+	if (!cacheModel) {
 		return;
 	}
+	// 先把真实行显示出来再进行高亮
+	showActualRow(actualRow);
+	showColumn(col);
 
 	QItemSelection selection;
-	for (const auto& match : matches) {
-		int row = match.first;
-		int col = match.second;
-		if (row < 0 || row >= model->rowCount() || col < 0 || col >= model->columnCount()) {
-			continue;
-		}
-		QModelIndex index = model->index(row, col);
-		selection.select(index, index);
+	int logicalRow = toLogicalRow(actualRow);
+	if (logicalRow < 0 || logicalRow >= cacheModel->rowCount()) {
+		// 超出范围
+		return;
 	}
+	QModelIndex index = cacheModel->index(logicalRow, col);
+	selection.select(index, index);
 
 	// 高亮选中项
 	QItemSelectionModel* selModel = selectionModel();
@@ -104,11 +77,70 @@ void DACacheWindowTableView::highlightMatches(const QList< QPair< int, int > >& 
 		selModel->clearSelection();
 		selModel->select(selection, QItemSelectionModel::Select);
 	}
+}
 
-	// 滚动到第一个匹配项
-	if (!matches.isEmpty()) {
-		scrollTo(model->index(matches.first().first, matches.first().second));
+/**
+ * @brief 转换为逻辑行
+ * @param actualRow
+ * @return
+ */
+int DACacheWindowTableView::toLogicalRow(int actualRow) const
+{
+	DAAbstractCacheWindowTableModel* cacheModel = getCacheModel();
+	if (!cacheModel) {
+		return actualRow;
 	}
+	actualRow -= cacheModel->getCacheWindowStartRow();
+	return actualRow;
+}
+
+/**
+ * @brief 判断当前的真实行是否再视图的可见范围内
+ * @param actualRow
+ * @return
+ */
+bool DACacheWindowTableView::isActualRowInViewRange(int actualRow) const
+{
+	DAAbstractCacheWindowTableModel* cacheModel = getCacheModel();
+	if (!cacheModel) {
+		return false;
+	}
+	int row = toLogicalRow(actualRow);
+	if (row < 0) {
+		return false;
+	}
+	if (row >= cacheModel->rowCount()) {
+		return false;
+	}
+	return true;
+}
+
+/**
+ * @brief 返回真实行对应的表头名
+ * @param actualRow
+ * @return
+ */
+QString DACacheWindowTableView::actualRowName(int actualRow) const
+{
+	DAAbstractCacheWindowTableModel* cacheModel = getCacheModel();
+	if (!cacheModel) {
+		return model()->headerData(actualRow, Qt::Vertical).toString();
+	}
+	return cacheModel->actualHeaderData(actualRow, Qt::Vertical).toString();
+}
+
+/**
+ * @brief 返回真实列对应的表头名
+ * @param actualCol
+ * @return
+ */
+QString DACacheWindowTableView::actualColumnName(int actualCol) const
+{
+	DAAbstractCacheWindowTableModel* cacheModel = getCacheModel();
+	if (!cacheModel) {
+		return model()->headerData(actualCol, Qt::Horizontal).toString();
+	}
+	return cacheModel->headerData(actualCol, Qt::Horizontal).toString();
 }
 
 void DACacheWindowTableView::verticalScrollBarValueChanged(int v)

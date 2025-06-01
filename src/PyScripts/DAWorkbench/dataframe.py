@@ -269,10 +269,10 @@ def da_search_data(df: pd.DataFrame, data, start_row=None, start_col=None):
     start_col = max(0, min(start_col, len(df.columns)-1))
     
     matches = []
-    
+    (rowcnt,colcnt) = df.shape
     # 遍历行和列
-    for i in range(start_row, len(df)):
-        for j in range(start_col, len(df.columns)):
+    for i in range(start_row, rowcnt):
+        for j in range(start_col, colcnt):
             cell_value = df.iat[i, j]
             
             # 处理NaN/None的特殊比较
