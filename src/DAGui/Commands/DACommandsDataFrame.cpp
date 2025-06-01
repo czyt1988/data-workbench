@@ -753,22 +753,36 @@ DACommandDataFrame_searchdata::DACommandDataFrame_searchdata(const DAPyDataFrame
 void DACommandDataFrame_searchdata::undo()
 {
 	load();
-	// 说明填充了空行
-	if (mModel) {
+    if (mModel) {
 		mModel->refreshData();
-	}
+    }
 }
 
 bool DACommandDataFrame_searchdata::exec()
 {
-	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
-	if (!pydf.searchData(dataframe(), mExper)) {
+    DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+
+    auto matches = pydf.searchData(dataframe(), mExper);
+    this->setMatches(matches);
+
+	if (mMatches.isEmpty()) {
 		return false;
 	}
+
 	if (mModel) {
 		mModel->refreshData();
 	}
-	return true;
+    return true;
+}
+
+void DACommandDataFrame_searchdata::setMatches(const QList< QPair< int, int > > matches)
+{
+    mMatches = matches;
+}
+
+QList< QPair< int, int > > DACommandDataFrame_searchdata::getMatches() const
+{
+    return mMatches;
 }
 
 ///////////////////

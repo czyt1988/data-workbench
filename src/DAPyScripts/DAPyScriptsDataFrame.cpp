@@ -132,7 +132,7 @@ bool DAPyScriptsDataFrame::insert_column(DAPyDataFrame& df,
 		args[ "start" ] = DA::PY::toPyObject(start);
 		args[ "stop" ]  = DA::PY::toPyObject(stop);
 		if (start.canConvert(QMetaType::QDateTime) || start.canConvert(QMetaType::QDate)
-			|| start.canConvert(QMetaType::QTime)) {
+            || start.canConvert(QMetaType::QTime)) {
 			args[ "dtype" ] = pybind11::dtype("datetime64");
 		}
 		da_insert_column(**args);
@@ -666,19 +666,27 @@ bool DAPyScriptsDataFrame::queryDatas(DAPyDataFrame& df, const QString& expr)
  * @param expr
  * @return
  */
-bool DAPyScriptsDataFrame::searchData(DAPyDataFrame& df, const QString& expr)
+QList< QPair< int, int > > DAPyScriptsDataFrame::searchData(DAPyDataFrame& df, const QString& expr)
 {
+	QList< QPair< int, int > > matches;
 	try {
 		if (expr.isEmpty()) {
-			return false;
+			return matches;
 		}
 		pybind11::object da_search_data = attr("da_search_data");
-		da_search_data(df.object(), DA::PY::toPyStr(expr));
-		return true;
+        pybind11::object result         = da_search_data(df.object(), expr.toDouble());
+
+        for (auto item : result) {
+            pybind11::tuple pos = item.cast< pybind11::tuple >();
+            matches.append(qMakePair(pos[ 0 ].cast< int >(),  // 行
+                                     pos[ 1 ].cast< int >()   // 列
+                                     ));
+        }
+		return matches;
 	} catch (const std::exception& e) {
 		dealException(e);
 	}
-	return false;
+	return matches;
 }
 
 /**

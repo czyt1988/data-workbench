@@ -17,11 +17,23 @@ class DADialogDataFrameDataSearch : public QDialog
 public:
 	explicit DADialogDataFrameDataSearch(QWidget* parent = nullptr);
 	~DADialogDataFrameDataSearch();
-	// 获取输入的条件
-	QString getExpr() const;
+    // 获取查找内容
+    QString getFindItem() const;
+
+    //获取内容坐标
+    void setItemCoor(const QList< QPair< int, int > >& matches);
+    QList< QPair< int, int > > getItemCoor() const;
+
+    void setCoorIndex(const int idx);
+    int getCoorIndex() const;
+
+private slots:
+    void on_pushButtonNext_clicked();
 
 private:
 	Ui::DADialogDataFrameDataSearch* ui;
+    QList< QPair< int, int > > mMatches{};
+    int mIndex{ 0 };
 };
 }
 
