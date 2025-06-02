@@ -43,6 +43,7 @@ git submodule update --init --recursive
 - QtPropertyBrowser
 - spdlog
 - pybind11
+- ordered-map
 
 ## python环境配置
 
