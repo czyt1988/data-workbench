@@ -22,6 +22,7 @@
 #include "DAZipArchiveTask_ByteArray.h"
 #include "DAZipArchiveTask_Xml.h"
 #include "DAZipArchiveTask_ArchiveFile.h"
+#include "DADataOperateWidget.h"
 #include "DADataEnumStringUtils.h"
 #include "DAWaitCursorScoped.h"
 // python
@@ -177,6 +178,15 @@ DAWorkFlowOperateWidget* DAAppProject::getWorkFlowOperateWidget() const
 	return getDockingAreaInterface()->getWorkFlowOperateWidget();
 }
 
+/**
+ * @brief 数据操作窗口
+ * @return
+ */
+DADataOperateWidget* DAAppProject::getDataOperateWidget() const
+{
+    return getDockingAreaInterface()->getDataOperateWidget();
+}
+
 bool DAAppProject::appendWorkflowInProject(const QDomDocument& doc, bool skipIndex)
 {
 	// 加载之前先清空
@@ -302,9 +312,13 @@ QString DAAppProject::makeDataArchiveFilePath(const QString& dataName)
  */
 void DAAppProject::clear()
 {
+	// 清除工作流
 	DAWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
 	Q_CHECK_PTR(wfo);
 	wfo->clear();
+	//! 清除数据
+	DADataOperateWidget* dow = getDataOperateWidget();
+	Q_CHECK_PTR(wfo);
 	DAProjectInterface::clear();
 }
 
@@ -617,6 +631,7 @@ void DAAppProject::onSaveFinish(bool success)
 	QString savePath = getProjectFilePath();
 	if (success) {
 		setModified(false);
+		Q_EMIT projectSaved(savePath);
 		qInfo() << tr("Successfully save archive : %1").arg(savePath);  // cn:成功保存工程:%1
 	} else {
 		qWarning() << tr("Failed to save archive : %1").arg(savePath);  // cn:无法保存工程:%1
@@ -633,6 +648,7 @@ void DAAppProject::onLoadFinish(bool success)
 	if (success) {
 		setModified(false);
 		qInfo() << tr("Successfully load archive : %1").arg(loadPath);  // cn:成功加载工程:%1
+		Q_EMIT projectLoaded(loadPath);
 	} else {
 		setProjectPath(QString());
 		qWarning() << tr("Failed to load archive : %1").arg(loadPath);  // cn:无法加载工程:%1

@@ -123,7 +123,7 @@ QString DADir::getLogFileName()
 
 QString DADir::getLogPath()
 {
-	return QDir::toNativeSeparators(getExecutablePath() + QDir::separator() + "log");
+	return QDir::toNativeSeparators(getAppDataPath() + QDir::separator() + "log");
 }
 
 QString DADir::getFullLogFilePath()

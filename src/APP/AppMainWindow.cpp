@@ -62,7 +62,7 @@ AppMainWindow::AppMainWindow(QWidget* parent) : SARibbonMainWindow(parent)
 	// 创建controller
 	mController = new DAAppController(this);
 	(*mController)
-        .setAppMainWindow(this)                       // app
+		.setAppMainWindow(this)                       // app
 	    .setAppCore(&core)                            // core
 	    .setAppActions(mUI->getAppActions())          // action
 	    .setAppCommand(mUI->getAppCmd())              // cmd
@@ -95,7 +95,7 @@ AppMainWindow::~AppMainWindow()
 void AppMainWindow::retranslateUi()
 {
 	// [*]为改变标记占位符
-	setWindowTitle(tr("Data WorkFlow [*]"));
+	mController->updateWindowTitle();
 	mUI->retranslateUi();
 }
 
