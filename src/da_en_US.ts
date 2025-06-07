@@ -3438,9 +3438,17 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
 </context>
 <context>
+    <name>DAAppController</name>
+    <message>
+        <location filename="APP/DAAppController.cpp" line="-2145"/>
+        <source>DA</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DAAppRibbonArea</name>
     <message>
-        <location filename="APP/DAAppController.cpp" line="-2134"/>
+        <location line="+11"/>
         <source>warning</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7943,7 +7951,7 @@ Wrap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAPyScripts/DAPyWorkBench.cpp" line="+35"/>
+        <location filename="DAPyScripts/DAPyWorkBench.cpp" line="+36"/>
         <source>can not import DAWorkbench module</source>
         <translation type="unfinished"></translation>
     </message>

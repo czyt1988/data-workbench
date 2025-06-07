@@ -21,5 +21,5 @@ public:
 	DAPyScriptsDataFrame& getDataFrame();
 	DAPyScriptsDataProcess& getDataProcess();
 };
-}
+}  // end DA
 #endif  // DAPYWORKBENCH_H

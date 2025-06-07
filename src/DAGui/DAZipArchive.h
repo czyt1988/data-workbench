@@ -10,6 +10,7 @@ namespace DA
  */
 class DAGUI_API DAZipArchive : public DAAbstractArchive
 {
+	Q_OBJECT
 	DA_DECLARE_PRIVATE(DAZipArchive)
 public:
 	DAZipArchive(QObject* par = nullptr);
