@@ -1,4 +1,4 @@
-﻿此程序还在开发中，只有基本的一些功能实现
+此程序还在开发中，只有基本的一些功能实现
 
 # 简介
 
@@ -95,6 +95,8 @@ dataworkbench查找python的逻辑是：
     }
 }
 ```
+
+> 程序安装目录可以使用`${current-app-dir}`变量替代，例如python安装在程序安装目录下，那么`${current-app-dir}`的值就是程序安装目录，如：${current-app-dir}/python311/python.exe
 
 2. 如果没有`python-config.json`文件，将使用`where python`来查找系统的python环境
 
