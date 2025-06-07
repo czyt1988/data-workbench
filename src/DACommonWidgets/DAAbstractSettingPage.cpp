@@ -20,7 +20,7 @@ DAAbstractSettingPage::~DAAbstractSettingPage()
 
 QString DAAbstractSettingPage::getConfigFileSavePath()
 {
-    return DADir::getRootConfigPath();
+    return DADir::getConfigPath();
 }
 
 }

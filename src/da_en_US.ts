@@ -1180,12 +1180,7 @@ Config</source>
 <context>
     <name>DA::DAAppPluginManager</name>
     <message>
-        <location filename="APP/DAAppPluginManager.cpp" line="+63"/>
-        <source>%1 plugin create a null node factory</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
+        <location filename="APP/DAAppPluginManager.cpp" line="+68"/>
         <source>succeed load plugin %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6958,11 +6953,6 @@ Wrap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+93"/>
-        <source>Unable to create dump file path:%1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="APP/SettingPages/DAAppConfig.cpp" line="+49"/>
         <location line="+37"/>
         <source>can not open config file &quot;%1&quot;,because %2</source>
@@ -9227,7 +9217,7 @@ Wrap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/main.cpp" line="-58"/>
+        <location filename="APP/main.cpp" line="+35"/>
         <source>version:%1,compile datetime:%2,enable python:%3</source>
         <translation type="unfinished"></translation>
     </message>
@@ -9237,7 +9227,7 @@ Wrap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+5"/>
         <source>Import data into the application, supporting formats such as CSV, XLSX, TXT, PKL, etc.If you want to import multiple datasets, you can use the command multiple times; the program will execute them one by one</source>
         <translation type="unfinished"></translation>
     </message>

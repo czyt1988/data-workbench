@@ -1229,12 +1229,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppPluginManager</name>
     <message>
-        <location filename="APP/DAAppPluginManager.cpp" line="+63"/>
-        <source>%1 plugin create a null node factory</source>
-        <translation>插件“%1”创建了一个空的节点工厂</translation>
-    </message>
-    <message>
-        <location line="+6"/>
+        <location filename="APP/DAAppPluginManager.cpp" line="+68"/>
         <source>succeed load plugin %1</source>
         <translation>成功加载插件“%1”</translation>
     </message>
@@ -7733,11 +7728,6 @@ Wrap</source>
         <translation>内核初始化失败</translation>
     </message>
     <message>
-        <location line="+93"/>
-        <source>Unable to create dump file path:%1</source>
-        <translation>无法创建dump文件路径：%1</translation>
-    </message>
-    <message>
         <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="-347"/>
         <source>untitle</source>
         <translation>未命名</translation>
@@ -9379,7 +9369,7 @@ Wrap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/main.cpp" line="-58"/>
+        <location filename="APP/main.cpp" line="+35"/>
         <source>version:%1,compile datetime:%2,enable python:%3</source>
         <translation type="unfinished"></translation>
     </message>
@@ -9389,7 +9379,7 @@ Wrap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+5"/>
         <source>Import data into the application, supporting formats such as CSV, XLSX, TXT, PKL, etc.If you want to import multiple datasets, you can use the command multiple times; the program will execute them one by one</source>
         <translation type="unfinished"></translation>
     </message>

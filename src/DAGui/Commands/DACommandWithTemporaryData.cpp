@@ -6,7 +6,7 @@
 #include "DAPyScripts.h"
 namespace DA
 {
-QString DACommandWithTemporaryData::s_temp_dataframe = DADir::createTempPath("dataframe");
+
 //===================================================
 // DACommandWithTemplateData
 //===================================================
@@ -83,6 +83,7 @@ const DAPyDataFrame& DACommandWithTemporaryData::dataframe() const
 
 QString DACommandWithTemporaryData::getDataframeTempPath()
 {
+	static QString s_temp_dataframe = DADir::getTempPath("dataframe");
 	return s_temp_dataframe;
 }
 
