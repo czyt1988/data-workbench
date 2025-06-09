@@ -18,9 +18,18 @@ jobs:
         qt_version: [5.15.2]
 
     steps:
-    - name: Checkout code
+    # ----------------------
+    # 1. 检出代码（包含 Submodule）
+    # ----------------------
+    - name: Checkout code (including submodules)
       uses: actions/checkout@v3
+      with:
+        submodules: recursive  # 关键修改：拉取 Submodule
+        fetch-depth: 0        # 确保 Submodule 能正确获取历史版本
 
+    # ----------------------
+    # 2. 安装 Python 及依赖
+    # ----------------------
     - name: Cache Python
       uses: actions/cache@v3
       with:
@@ -36,6 +45,9 @@ jobs:
       run: |
         pip install -r requirements.txt
 
+    # ----------------------
+    # 3. 安装 zlib（以 vcpkg）
+    # ----------------------
     - name: Install vcpkg
       run: |
         git clone https://github.com/Microsoft/vcpkg.git
@@ -47,6 +59,9 @@ jobs:
         cd vcpkg
         .\vcpkg install zlib:x64-windows
 
+    # ----------------------
+    # 4. 安装 Qt
+    # ----------------------
     - name: Cache Qt
       uses: actions/cache@v3
       with:
@@ -59,18 +74,24 @@ jobs:
           version: ${{ matrix.qt_version }}
           dir: C:\Qt
 
+    # ----------------------
+    # 5. 编译第三方库
+    # ----------------------
     - name: build 3rdparty
       working-directory: src/3rdparty
       run: |
         mkdir build
         cd build
-        cmake ..
+        cmake .. -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake
         cmake --build . --config Release
         cmake --install .
 
+    # ----------------------
+    # 6. 编译主项目
+    # ----------------------
     - name: build the project
       run: |
         mkdir build
         cd build
-        cmake ..
+        cmake .. -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake
         cmake --build . --config Release
