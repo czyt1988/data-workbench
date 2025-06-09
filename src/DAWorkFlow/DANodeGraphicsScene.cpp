@@ -557,6 +557,7 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 				linkItem->updatePos();
 				addNodeLink_(linkItem);
 				// 跳出if 到DAGraphicsSceneWithUndoStack::mousePressEvent(mouseEvent);
+				// DAGraphicsSceneWithUndoStack::mousePressEvent(mouseEvent);里会调用endLink函数
 			} else {
 				// 非开始链接状态，此时点击的是output
 				nodeItem->tryLinkOnItemPos(itempos, nullptr, DANodeLinkPoint::Output);
@@ -577,6 +578,7 @@ void DANodeGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 			}
 		}
 	}
+	// 此函数在这里会调用endLink函数
 	DAGraphicsScene::mousePressEvent(mouseEvent);
 }
 

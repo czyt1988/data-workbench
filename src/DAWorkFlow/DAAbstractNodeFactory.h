@@ -126,19 +126,6 @@ public:
 	virtual void nodeStartRemove(DAAbstractNode::SharedPointer node);
 
 	/**
-	 * @brief 节点连接成功的回调
-	 *
-	 * 注意仅仅是节点的链接完成，这里不要操作graphicsItem,要处理连接线完全连接两个节点后的情况，使用DAAbstractNodeLinkGraphicsItem::finishedLink来处理
-	 * @param outNode
-	 * @param outKey
-	 * @param inNode
-	 * @param inkey
-	 */
-	virtual void nodeLinkSucceed(DAAbstractNode::SharedPointer outNode,
-								 const QString& outKey,
-								 DAAbstractNode::SharedPointer inNode,
-								 const QString& inkey);
-	/**
 	 * @brief 节点连线删除的回调
 	 * @param outNode 输出节点
 	 * @param outKey 输出key

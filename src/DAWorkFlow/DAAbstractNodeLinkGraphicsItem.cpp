@@ -432,7 +432,7 @@ bool DAAbstractNodeLinkGraphicsItem::attachFrom(DAAbstractNodeGraphicsItem* item
 		// 终点已经链接
 		item->finishLink(pl, this, DANodeLinkPoint::Output, true);
 		ti->finishLink(toNodeLinkPoint(), this, DANodeLinkPoint::Input, true);
-		finishedLink();
+		finishedNodeLink();
 	}
 	return (true);
 }
@@ -514,7 +514,7 @@ bool DAAbstractNodeLinkGraphicsItem::attachTo(DAAbstractNodeGraphicsItem* item, 
 		// 起点已经链接
 		fi->finishLink(fromNodeLinkPoint(), this, DANodeLinkPoint::Output, true);
 		item->finishLink(pl, this, DANodeLinkPoint::Input, true);
-		finishedLink();
+		finishedNodeLink();
 	}
 	return (true);
 }
@@ -709,7 +709,7 @@ DAAbstractNode::SharedPointer DAAbstractNodeLinkGraphicsItem::toNode() const
 /**
  * @brief 完成连接
  */
-void DAAbstractNodeLinkGraphicsItem::finishedLink()
+void DAAbstractNodeLinkGraphicsItem::finishedNodeLink()
 {
     // 默认不做任何处理
 }

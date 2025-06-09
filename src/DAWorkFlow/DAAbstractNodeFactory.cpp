@@ -69,17 +69,6 @@ void DAAbstractNodeFactory::nodeStartRemove(DAAbstractNode::SharedPointer node)
     Q_UNUSED(node);
 }
 
-void DAAbstractNodeFactory::nodeLinkSucceed(DAAbstractNode::SharedPointer outNode,
-                                            const QString& outKey,
-                                            DAAbstractNode::SharedPointer inNode,
-                                            const QString& inkey)
-{
-	Q_UNUSED(outNode);
-	Q_UNUSED(outKey);
-	Q_UNUSED(inNode);
-	Q_UNUSED(inkey);
-}
-
 void DAAbstractNodeFactory::nodeLinkDetached(DAAbstractNode::SharedPointer outNode,
                                              const QString& outKey,
                                              DAAbstractNode::SharedPointer inNode,
