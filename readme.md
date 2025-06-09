@@ -56,14 +56,7 @@ git submodule update --init --recursive
 python环境需要安装的库：
 
 ```
-pip install numpy
-pip install pandas
-pip install scipy
-pip install Loguru
-pip install openpyxl
-pip install chardet
-pip install PyWavelets
-pip install pyarrow
+pip install Loguru numpy==1.26.4 pandas scipy openpyxl chardet PyWavelets pyarrow
 ```
 
 如果你的python版本小于3.8，还需额外导入
@@ -72,6 +65,8 @@ pip install pyarrow
 pip install typing_extensions
 ```
 
+> 为了兼容性，numpy建议2.0以下，这里推荐使用1.26.4
+>
 > Loguru主要用于进行python脚本的日志记录
 > 
 > openpyxl是pandas导入excel文件的依赖，如果没有安装，则无法导入excel文件
@@ -81,6 +76,14 @@ pip install typing_extensions
 > PyWavelets是进行小波分析的库
 >
 > pyarrow是dataframe进行扩展数据导入的库，支持parquet（Partitioning Parquet files）和Feather
+
+python在win11操作系统下，安装package会把包安装到`用户名\AppData\Roaming\Python\Pythonxx\site-packages`下，这对于把整个python打包是不利的，因此需要在执行pip install时加上参数`--target`指定安装路径，例如：
+
+```shell
+pip install --target="../Lib/site-packages" loguru numpy==1.26.4 pandas scipy openpyxl chardet PyWavelets pyarrow
+```
+
+项目目录下已经把所有依赖放到了`requirements.txt`文件里，可以直接使用`pip install -r requirements.txt`进行安装
 
 在需要python时将引入`pybind11`库
 

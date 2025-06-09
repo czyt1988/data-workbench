@@ -1,0 +1,8 @@
+numpy==1.26.4
+loguru
+pandas
+scipy
+openpyxl
+chardet
+PyWavelets
+pyarrow
