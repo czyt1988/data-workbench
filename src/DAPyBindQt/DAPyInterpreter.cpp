@@ -8,6 +8,16 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 
+// static QString getExecutablePath()函数依赖
+#if defined(_WIN32) || defined(_WIN64)
+#include <windows.h>
+#include <filesystem>
+#else
+#include <unistd.h>
+#include <limits.h>
+#include <filesystem>
+#endif
+
 namespace DA
 {
 
@@ -92,14 +102,48 @@ QList< QFileInfo > DA::DAPyInterpreter::wherePythonFromConfig()
 	if (!root.contains("config")) {
 		return validFis;
 	}
+
+	// json可替换变量
+	const static QString cs_jsonkeywork_current_app_dir = QStringLiteral("${current-app-dir}");
+
 	QJsonObject config  = root[ "config" ].toObject();
 	QString interpreter = config[ "interpreter" ].toString();
+	if (interpreter.contains(cs_jsonkeywork_current_app_dir, Qt::CaseInsensitive)) {
+		// 如果存在${current-app-dir}，则替换为程序安装目录
+		interpreter.replace(cs_jsonkeywork_current_app_dir, getExecutablePath(), Qt::CaseInsensitive);
+	}
 	QFileInfo fi(interpreter);
 	if (!fi.exists()) {
 		return validFis;
 	}
 	validFis.append(fi);
 	return validFis;
+}
+
+/**
+ * @brief 此函数来自DAUtil.DADir::getExecutablePath，由于仅仅使用了此函数，为了不引入过多依赖，这里重复实现
+ * @return
+ */
+QString DAPyInterpreter::getExecutablePath()
+{
+	std::string executablePath;
+#if defined(_WIN32) || defined(_WIN64)
+	char buffer[ MAX_PATH ];
+	GetModuleFileName(NULL, buffer, MAX_PATH);
+	std::string fullPath(buffer);
+	std::filesystem::path path(fullPath);
+	executablePath = path.parent_path().string();
+#else
+	char buffer[ PATH_MAX ];
+	ssize_t count = readlink("/proc/self/exe", buffer, PATH_MAX);
+	if (count == -1) {
+		return "";  // Error occurred
+	}
+	std::string fullPath(buffer, count);
+	std::filesystem::path path(fullPath);
+	executablePath = path.parent_path().string();
+#endif
+	return QString::fromLocal8Bit(executablePath.c_str());
 }
 
 /**

@@ -125,7 +125,7 @@ std::wstring stringToSystemWString(const std::string& str)
 	}
 
 	// 将std::string转换为QString，使用系统编码
-	QString qstr = codec->toUnicode(QByteArray(str.c_str(), str.size()));
+    QString qstr = codec->toUnicode(QByteArray(str.c_str(), static_cast< int >(str.size())));
 
 	// 将QString转换为std::wstring
 	return qstr.toStdWString();

@@ -17,6 +17,7 @@ class DAAbstractArchiveTask;
 class DAZipArchiveThreadWrapper;
 class DAWorkFlowOperateWidget;
 class DAWorkFlowGraphicsScene;
+class DADataOperateWidget;
 /**
  * @brief 负责整个节点的工程管理
  *
@@ -31,6 +32,8 @@ public:
 	~DAAppProject();
 	// 工作流操作窗口
 	DAWorkFlowOperateWidget* getWorkFlowOperateWidget() const;
+	// 数据操作窗口
+	DADataOperateWidget* getDataOperateWidget() const;
 	// 追加一个工厂的工作流进入本工程中，注意这个操作不会清空当前的工作流
 	bool appendWorkflowInProject(const QDomDocument& doc, bool skipIndex = false);
 	bool appendWorkflowInProject(const QByteArray& data, bool skipIndex = false);

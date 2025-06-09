@@ -57,7 +57,7 @@ int main(int argc, char* argv[])
 	//
 
 	// 注册旋转文件消息捕获
-	DA::daRegisterRotatingMessageHandler(DA::DADir::getFullLogFilePath());
+	DA::daRegisterRotatingMessageHandler(DA::DADir::getLogFilePath());
 	// DA::daRegisterConsolMessageHandler();
 	for (int i = 0; i < argc; ++i) {
 		qDebug() << "argv[" << i << "]" << argv[ i ] << endl;
@@ -68,50 +68,50 @@ int main(int argc, char* argv[])
 	qDebug() << DA::DADir();
 	// 启动app
 	QApplication app(argc, argv);
-    QApplication::setApplicationVersion(DA_VERSION);
-    QApplication::setApplicationName(DA_PROJECT_NAME);
+	QApplication::setApplicationVersion(DA_VERSION);
+	QApplication::setApplicationName(DA_PROJECT_NAME);
 
-    // 安装翻译
-    DA::DATranslatorManeger datr;
-    datr.installAllTranslator();
+	// 安装翻译
+	DA::DATranslatorManeger datr;
+	datr.installAllTranslator();
 
-    // 命令初始化
-    QCommandLineParser cmdParser;
-    initCommandLine(&cmdParser);
-    // 解析命令行参数
-    cmdParser.process(app);
+	// 命令初始化
+	QCommandLineParser cmdParser;
+	initCommandLine(&cmdParser);
+	// 解析命令行参数
+	cmdParser.process(app);
 
-    // 字体设置
-    setAppFont();
+	// 字体设置
+	setAppFont();
 
-    // 接口初始化
-    DA::DAAppCore& core = DA::DAAppCore::getInstance();
-    // 初始化python环境
-    if (!core.initialized()) {
-        qCritical() << QObject::tr("Kernel initialization failed");  // cn:内核初始化失败
-        return -1;
-    }
+	// 接口初始化
+	DA::DAAppCore& core = DA::DAAppCore::getInstance();
+	// 初始化python环境
+	if (!core.initialized()) {
+		qCritical() << QObject::tr("Kernel initialization failed");  // cn:内核初始化失败
+		return -1;
+	}
 
-    // gui初始化
+	// gui初始化
 	DA::AppMainWindow w;
-    QStringList positionalArgs = cmdParser.positionalArguments();
-    qDebug() << "positionalArgs:" << positionalArgs;
-    if (positionalArgs.size() == 1) {
-        // 说明有可能是双击文件打开，这时候要看参数是否为一个工程文件
-        QFileInfo openfi(positionalArgs[ 0 ]);
+	QStringList positionalArgs = cmdParser.positionalArguments();
+	qDebug() << "positionalArgs:" << positionalArgs;
+	if (positionalArgs.size() == 1) {
+		// 说明有可能是双击文件打开，这时候要看参数是否为一个工程文件
+		QFileInfo openfi(positionalArgs[ 0 ]);
 		if (openfi.exists()) {
 			w.openProject(openfi.absoluteFilePath());
 		}
 	}
-    // 处理其它命令
-    if (cmdParser.isSet(CS_CMD_IMPORTDATA)) {
-        // impot-data 命令
-        const QStringList filePaths = cmdParser.values(CS_CMD_IMPORTDATA);
-        for (const QString& path : filePaths) {
-            w.importData(path, QVariantMap());
-        }
-    }
-    w.show();
+	// 处理其它命令
+	if (cmdParser.isSet(CS_CMD_IMPORTDATA)) {
+		// impot-data 命令
+		const QStringList filePaths = cmdParser.values(CS_CMD_IMPORTDATA);
+		for (const QString& path : filePaths) {
+			w.importData(path, QVariantMap());
+		}
+	}
+	w.show();
 	int r = app.exec();
 	DA::daUnregisterMessageHandler();
 	return r;
@@ -123,25 +123,25 @@ int main(int argc, char* argv[])
  */
 void initCommandLine(QCommandLineParser* cmd)
 {
-    cmd->setApplicationDescription(QCoreApplication::translate("main", "version:%1,compile datetime:%2,enable python:%3")
-                                       .arg(DA_VERSION)
-                                       .arg(DA_COMPILE_DATETIME)
-                                       .arg(DA_ENABLE_PYTHON));
-    cmd->addHelpOption();
-    cmd->addVersionOption();
-    cmd->addPositionalArgument("file",
-                               QCoreApplication::translate("main", "The project file to open"),  // cn:要打开的工程文件
-                               "[project]"  // 语法表示（可选）
-    );
-    QCommandLineOption
-        importDataOption(CS_CMD_IMPORTDATA,
-                         QCoreApplication::
-                             translate("main",
-                                       "Import data into the application, supporting formats such as CSV, XLSX, TXT, "
-                                       "PKL, etc.If you want to import multiple datasets, you can use the command "
-                                       "multiple times; the program will execute them one by one"),  // cn：导入数据到应用程序中，支持csv/xlsx/txt/pkl等格式，如果要导入多个数据，你可以使用多次命令，程序会逐一执行
-                         "path");
-    cmd->addOption(importDataOption);
+	cmd->setApplicationDescription(QCoreApplication::translate("main", "version:%1,compile datetime:%2,enable python:%3")
+									   .arg(DA_VERSION)
+									   .arg(DA_COMPILE_DATETIME)
+									   .arg(DA_ENABLE_PYTHON));
+	cmd->addHelpOption();
+	cmd->addVersionOption();
+	cmd->addPositionalArgument("file",
+							   QCoreApplication::translate("main", "The project file to open"),  // cn:要打开的工程文件
+							   "[project]"  // 语法表示（可选）
+	);
+	QCommandLineOption importDataOption(
+		CS_CMD_IMPORTDATA,
+		QCoreApplication::translate(
+			"main",
+			"Import data into the application, supporting formats such as CSV, XLSX, TXT, "
+			"PKL, etc.If you want to import multiple datasets, you can use the command "
+			"multiple times; the program will execute them one by one"),  // cn：导入数据到应用程序中，支持csv/xlsx/txt/pkl等格式，如果要导入多个数据，你可以使用多次命令，程序会逐一执行
+		"path");
+	cmd->addOption(importDataOption);
 }
 
 /**
@@ -172,17 +172,12 @@ void setAppFont()
  */
 QString appPreposeDump()
 {
-	QString dumpFileDir = DA::DADir::getAppDataPath();
+	QString dumpFileDir = DA::DADir::getDumpFilePath();
 	if (dumpFileDir.isEmpty()) {
-		dumpFileDir = QApplication::applicationDirPath();
+		dumpFileDir = QDir::toNativeSeparators(QApplication::applicationDirPath() + "/dumps");
+		QDir().mkpath(dumpFileDir);
 	}
-	dumpFileDir = QDir::toNativeSeparators(dumpFileDir + "/dumps");
-	QDir dir;
-	// 如果无法创建路径，将qcritual
-	// mkpath回保证能有此路径，否则会返回false
-	if (!dir.mkpath(dumpFileDir)) {
-		qCritical() << QObject::tr("Unable to create dump file path:%1");  // cn:无法创建音乐配置路径：%1
-	}
+
 	QString baseName           = QDateTime::currentDateTime().toString("yyyyMMddhhmmss.zzz");
 	QString dumpfileName       = QString("dump%1.dmp").arg(baseName);
 	QString systemInfofileName = QString("dump%1.sysinfo").arg(baseName);
@@ -192,7 +187,7 @@ QString appPreposeDump()
 		QTextStream st(&sysfi);
 		QSysInfo s;
 		// 先写入da的信息
-        st << DA_PROJECT_NAME << DA_VERSION << "\r\n" << s << Qt::endl;
+		st << DA_PROJECT_NAME << DA_VERSION << "\r\n" << s << Qt::endl;
 	}
 	sysfi.close();
 	return QDir::toNativeSeparators(dumpFileDir + "/" + dumpfileName);

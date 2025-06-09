@@ -210,13 +210,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+19"/>
-        <source>Data WorkFlow [*]</source>
-        <oldsource>Data WorkFlow</oldsource>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
+        <location line="+28"/>
         <source>LanguageChange</source>
         <translation type="unfinished"></translation>
     </message>
@@ -316,7 +310,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="+220"/>
+        <location filename="APP/DAAppActions.cpp" line="+207"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
@@ -702,7 +696,7 @@ Column</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+5"/>
         <source>Sort</source>
         <translation type="unfinished"></translation>
     </message>
@@ -712,8 +706,18 @@ Column</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-3"/>
+        <location line="-5"/>
         <source>Filter data outside of the given criteria</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Data Retrieval</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Retrieve data for a certain condition</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -918,13 +922,13 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="APP/DAAppController.cpp" line="+757"/>
-        <location line="+67"/>
+        <location filename="APP/DAAppController.cpp" line="+792"/>
+        <location line="+65"/>
         <source>project file(*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-52"/>
+        <location line="-50"/>
         <source>Question</source>
         <translation type="unfinished"></translation>
     </message>
@@ -935,12 +939,12 @@ Config</source>
     </message>
     <message>
         <location line="+26"/>
-        <location line="+42"/>
+        <location line="+40"/>
         <source>failed to load project file:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-397"/>
+        <location line="-394"/>
         <location line="+22"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
@@ -967,23 +971,23 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
-        <location line="+375"/>
+        <location line="+3"/>
+        <location line="+368"/>
         <source>Project saved successfully,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-420"/>
+        <location line="-412"/>
         <source>Project Files (*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+64"/>
+        <location line="+63"/>
         <source>Please select the data operation window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+373"/>
+        <location line="+366"/>
         <source>Project load successfully,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1070,7 +1074,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+318"/>
+        <location line="+331"/>
         <source>new workflow name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1176,12 +1180,7 @@ Config</source>
 <context>
     <name>DA::DAAppPluginManager</name>
     <message>
-        <location filename="APP/DAAppPluginManager.cpp" line="+63"/>
-        <source>%1 plugin create a null node factory</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
+        <location filename="APP/DAAppPluginManager.cpp" line="+68"/>
         <source>succeed load plugin %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1189,7 +1188,7 @@ Config</source>
 <context>
     <name>DA::DAAppProject</name>
     <message>
-        <location filename="APP/DAAppProject.cpp" line="+329"/>
+        <location filename="APP/DAAppProject.cpp" line="+343"/>
         <location line="+39"/>
         <source>current project is busy</source>
         <translation type="unfinished"></translation>
@@ -1240,7 +1239,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+15"/>
         <source>Successfully save archive : %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1255,7 +1254,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+4"/>
         <source>Failed to load archive : %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1285,13 +1284,13 @@ Config</source>
     <message>
         <location line="+1"/>
         <location line="+21"/>
-        <location line="+87"/>
-        <location line="+206"/>
+        <location line="+85"/>
+        <location line="+207"/>
         <source>Workflow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-313"/>
+        <location line="-312"/>
         <location line="+2"/>
         <source>Data Operation</source>
         <translation type="unfinished"></translation>
@@ -1304,108 +1303,108 @@ Config</source>
     <message>
         <location line="+3"/>
         <location line="+23"/>
-        <location line="+362"/>
+        <location line="+361"/>
         <source>View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-384"/>
+        <location line="-383"/>
         <source>Display</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+184"/>
+        <location line="+182"/>
         <source>DataFrame</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-183"/>
-        <location line="+185"/>
+        <location line="-181"/>
+        <location line="+183"/>
         <source>Operate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-184"/>
-        <location line="+186"/>
+        <location line="-182"/>
+        <location line="+184"/>
         <source>Axes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-185"/>
+        <location line="-183"/>
         <location line="+2"/>
-        <location line="+195"/>
+        <location line="+193"/>
         <location line="+5"/>
         <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-198"/>
-        <location line="+209"/>
+        <location line="-196"/>
+        <location line="+207"/>
         <source>Data Cleaning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-208"/>
-        <location line="+225"/>
+        <location line="-206"/>
+        <location line="+224"/>
         <source>Statistic</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-222"/>
+        <location line="-221"/>
         <source>Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+305"/>
+        <location line="+304"/>
         <source>Workflow Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-304"/>
-        <location line="+309"/>
+        <location line="-303"/>
+        <location line="+308"/>
         <source>ClipBoard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-308"/>
-        <location line="+313"/>
+        <location line="-307"/>
+        <location line="+312"/>
         <source>Item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-312"/>
-        <location line="+321"/>
+        <location line="-311"/>
+        <location line="+320"/>
         <source>Text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-320"/>
-        <location line="+325"/>
+        <location line="-319"/>
+        <location line="+324"/>
         <source>Background</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-322"/>
-        <location line="+403"/>
+        <location line="-321"/>
+        <location line="+402"/>
         <source>Workflow Run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-402"/>
-        <location line="+405"/>
+        <location line="-401"/>
+        <location line="+404"/>
         <source>Run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-403"/>
-        <location line="+250"/>
+        <location line="-402"/>
+        <location line="+249"/>
         <source>Figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-249"/>
+        <location line="-248"/>
         <source>Figure Setting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1421,13 +1420,13 @@ Config</source>
     </message>
     <message>
         <location line="+1"/>
-        <location line="+409"/>
+        <location line="+408"/>
         <location line="+2"/>
         <source>Chart Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-409"/>
+        <location line="-408"/>
         <source>theme</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1453,17 +1452,12 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Data Work Flow</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location line="+185"/>
         <source>Data Filtering</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+125"/>
+        <location line="+126"/>
         <source>Group</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2170,7 +2164,7 @@ Config</source>
 <context>
     <name>DA::DADataOperateOfDataFrameWidget</name>
     <message>
-        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="+171"/>
+        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="+174"/>
         <source>warning</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2349,7 +2343,29 @@ Config</source>
 <context>
     <name>DA::DADialogDataFrameClipOutlier</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameClipOutlier.cpp" line="+49"/>
+        <location filename="DAGui/Dialog/DADialogDataFrameClipOutlier.cpp" line="+29"/>
+        <location line="+16"/>
+        <source>The current input cannot be converted to a floating-point number.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogDataFrameDataSearch</name>
+    <message>
+        <location filename="DAGui/Dialog/DADialogDataFrameDataSearch.cpp" line="+40"/>
+        <source>can not find item</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Found at column %1,line %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogDataFrameDataSelect</name>
+    <message>
+        <location filename="DAGui/Dialog/DADialogDataFrameDataSelect.cpp" line="+49"/>
         <location line="+16"/>
         <source>The current input cannot be converted to a floating-point number.</source>
         <translation type="unfinished"></translation>
@@ -2426,7 +2442,17 @@ This can be used to filter rows where the name contains &quot; John &quot;.</sou
 <context>
     <name>DA::DADialogDataFrameFillInterpolate</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.cpp" line="+55"/>
+        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.cpp" line="+27"/>
+        <source>spline</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>polynomial</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+30"/>
         <source>The current input cannot be converted to a integer number.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2472,6 +2498,19 @@ This can be used to filter rows where the name contains &quot; John &quot;.</sou
 
 **Note**:  
 If a column name contains spaces or special characters, enclose it in backticks (`` ` ``), e.g., `` `Embarked On` ``.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogDataFrameSort</name>
+    <message>
+        <location filename="DAGui/Dialog/DADialogDataFrameSort.cpp" line="+11"/>
+        <source>Ascending</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Descending</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2816,7 +2855,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAPyDataFrameTableView</name>
     <message>
-        <location filename="DAGui/DAPyDataFrameTableView.cpp" line="+34"/>
+        <location filename="DAGui/DAPyDataFrameTableView.cpp" line="+31"/>
         <source>DataFrameTableView must set model first</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3396,7 +3435,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="APP/DAAppController.cpp" line="-2104"/>
+        <location filename="APP/DAAppController.cpp" line="-2145"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3404,7 +3443,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppRibbonArea</name>
     <message>
-        <location line="+7"/>
+        <location line="+11"/>
         <source>warning</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4569,6 +4608,68 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+27"/>
+        <source>Range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-7"/>
+        <source>-</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+45"/>
+        <source>OK</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DADialogDataFrameDataSearch</name>
+    <message>
+        <location filename="DAGui/Dialog/DADialogDataFrameDataSearch.ui" line="+14"/>
+        <source>Dataframe Search</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Seacrch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>From Begin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Find item:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+45"/>
+        <source>Next</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DADialogDataFrameDataSelect</name>
+    <message>
+        <location filename="DAGui/Dialog/DADialogDataFrameDataSelect.ui" line="+14"/>
+        <location line="+6"/>
+        <source>Data Filter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location line="+20"/>
         <source>Data</source>
         <translation type="unfinished"></translation>
@@ -4584,7 +4685,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+35"/>
+        <location line="+41"/>
         <source>OK</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4599,19 +4700,16 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameEvalDatas.ui" line="+14"/>
         <source>Eval Data</source>
-        <oldsource>Query Data</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Enter an expression, for example: new_col = age * 2. Column names containing spaces or punctuations (besides underscores) or starting with digits must be surrounded by backticks. (For example, a column named “Area (cm^2)” would be referenced as `Area (cm^2)`). Column names which are Python keywords (like “list”, “for”, “import”, etc) cannot be used. For example, if one of your columns is called a a and you want to sum it with b, your eval should be `a a` + b.</source>
-        <oldsource>Enter an expression, for example: new_col = age * 2 or salary &gt; 50000. Thus, column names containing spaces or punctuations (besides underscores) or starting with digits must be surrounded by backticks. (For example, a column named “Area (cm^2)” would be referenced as `Area (cm^2)`). Column names which are Python keywords (like “list”, “for”, “import”, etc) cannot be used. For example, if one of your columns is called a a and you want to sum it with b, your eval should be `a a` + b.</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+7"/>
         <source>The string to evaluate</source>
-        <oldsource>The query string to evaluate</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4639,17 +4737,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+7"/>
-        <source>spline</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>polynomial</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
+        <location line="+9"/>
         <source>Interpolate order</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4694,7 +4782,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+46"/>
+        <location line="+40"/>
         <source>OK</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4804,16 +4892,6 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameSort.ui" line="+14"/>
         <source>Sort</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+20"/>
-        <source>Ascending</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Descending</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6875,11 +6953,6 @@ Wrap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+93"/>
-        <source>Unable to create dump file path:%1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="APP/SettingPages/DAAppConfig.cpp" line="+49"/>
         <location line="+37"/>
         <source>can not open config file &quot;%1&quot;,because %2</source>
@@ -7868,7 +7941,7 @@ Wrap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAPyScripts/DAPyWorkBench.cpp" line="+35"/>
+        <location filename="DAPyScripts/DAPyWorkBench.cpp" line="+36"/>
         <source>can not import DAWorkbench module</source>
         <translation type="unfinished"></translation>
     </message>
@@ -9144,7 +9217,7 @@ Wrap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/main.cpp" line="-58"/>
+        <location filename="APP/main.cpp" line="+35"/>
         <source>version:%1,compile datetime:%2,enable python:%3</source>
         <translation type="unfinished"></translation>
     </message>
@@ -9154,7 +9227,7 @@ Wrap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+5"/>
         <source>Import data into the application, supporting formats such as CSV, XLSX, TXT, PKL, etc.If you want to import multiple datasets, you can use the command multiple times; the program will execute them one by one</source>
         <translation type="unfinished"></translation>
     </message>

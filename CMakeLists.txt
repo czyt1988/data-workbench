@@ -354,40 +354,4 @@ if(DA_ENABLE_AUTO_TRANSLATE)
             VERBATIM
         )
     endif()
-
-
-    # if(NOT EXISTS ${CMAKE_CURRENT_LIST_DIR}/src/da_zh_CN.ts)
-    #     # 如果翻译文件不在src目录，说明有可能被clean的时候删除了，把备份ts文件拷贝到src目录下
-    #     file(COPY ${CMAKE_CURRENT_LIST_DIR}/src/ts/da_zh_CN.ts DESTINATION ${CMAKE_CURRENT_LIST_DIR}/src)
-    #     file(COPY ${CMAKE_CURRENT_LIST_DIR}/src/ts/da_en_US.ts DESTINATION ${CMAKE_CURRENT_LIST_DIR}/src)
-    #     message(STATUS "can not find ts file on dir ./src,will copy backup ts file to dir ./src")
-    # endif()
-    # set(DA_TS_FILES
-    #     ${CMAKE_CURRENT_LIST_DIR}/src/da_zh_CN.ts
-    #     ${CMAKE_CURRENT_LIST_DIR}/src/da_en_US.ts
-    # )
-    # set(DA_BUILD_TRANSLATIONS_DIR ${CMAKE_CURRENT_BINARY_DIR}/bin/translations)
-    # # 让qm文件直接生成到DA_BUILD_TRANSLATIONS_DIR下
-    # set_source_files_properties(${DA_TS_FILES} PROPERTIES OUTPUT_LOCATION ${DA_BUILD_TRANSLATIONS_DIR})
-    # if(COMMAND qt${QT_VERSION_MAJOR}_create_translation)
-    #     # 更新翻译
-    #     if(DA_ENABLE_UPDATE_TRANSLATE)
-    #         # 添加更新翻译的目标
-    #         add_custom_target(da_update_translations DEPENDS ${DA_TS_FILES})
-    #     endif()
-    #
-    #     # 安装翻译
-    #     if(DA_ENABLE_RELEASE_TRANSLATE)
-    #
-    #         if("${QT_VERSION_MAJOR}" STREQUAL "5")
-    #             qt5_create_translation(DA_QM_FILES "${CMAKE_CURRENT_LIST_DIR}/src" ${DA_TS_FILES} OPTIONS -source-language en_US -no-obsolete)
-    #         else()
-    #             qt6_create_translation(DA_QM_FILES "${CMAKE_CURRENT_LIST_DIR}/src" ${DA_TS_FILES} OPTIONS -source-language en_US -no-obsolete)
-    #         endif()
-    #         # 添加发布翻译的目标
-    #         add_custom_target(da_release_translations DEPENDS ${DA_QM_FILES})
-    #         # 安装翻译 - 在install上使用
-    #         install(DIRECTORY ${DA_BUILD_TRANSLATIONS_DIR} DESTINATION bin)
-    #     endif()
-    # endif()
 endif()

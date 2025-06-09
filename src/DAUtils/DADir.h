@@ -18,11 +18,17 @@ public:
 	DADir();
 
 	/**
+	 * @brief app名，%APPDATA%路径下的文件夹以app名创建
+	 * @return
+	 */
+	static QString getAPPName();
+
+	/**
 	 * @brief 获取当前程序临时路径的根目录
 	 * @return 此函数返回的路径是临时路径的绝对路径
 	 * @note 注意此路径在程序结束时会自动删除
 	 */
-	static QString getRootTempPath();
+	static QString getTempPath();
 
 	/**
 	 * @brief 获取当前程序临时路径的QTemporaryDir
@@ -35,14 +41,14 @@ public:
 	 * @param 临时路径下文件夹的名字
 	 * @return 如果路径已经存在将直接返回路径，如果不存在则创建
 	 */
-	static QString createTempPath(const QString& folderName);
+	static QString getTempPath(const QString& folderName);
 
 	/**
 	 * @brief 根据folderName，在临时路径下创建一个文件夹，返回{RootTempPath}/{folderName}的QDir
 	 * @param folderName 临时路径下文件夹的名字
 	 * @return 如果路径已经存在将直接返回路径，如果不存在则创建
 	 */
-	static QDir createTempDir(const QString& folderName);
+	static QDir tempDir(const QString& folderName);
 
 	/**
 	 * @brief 获取一个临时目录下的文件
@@ -51,27 +57,27 @@ public:
 	 * @param fileName
 	 * @return
 	 */
-	static QString getRootTempFile(const QString& fileName);
+	static QString getTempFilePath(const QString& fileName);
 
 	/**
 	 * @brief 获取本应用的配置文件路径
 	 *
 	 * 如果配置文件路径不存在，将创建此路径，并返回
-	 * 配置文件路径位于：
+	 * 配置文件路径等同于：
 	 * @code
-	 * QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
+	 * getAppDataPath(QStringLiteral("config"));
 	 * @endcode
 	 *
 	 * @return
 	 */
-	static QString getRootConfigPath();
+	static QString getConfigPath();
 
 	/**
-	 * @brief 根据folderName，在配置文件路径下创建一个文件夹，返回{RootConfigPath}/{folderName}路径
+	 * @brief 根据folderName，在配置文件路径下创建一个文件夹，返回{getConfigPath}/{folderName}路径
 	 * @param 配置文件路径下文件夹的名字
 	 * @return 如果路径已经存在将直接返回路径，如果不存在则创建
 	 */
-	static QString createConfigPath(const QString& folderName);
+	static QString getConfigPath(const QString& folderName);
 
 	/**
 	 * @brief 获取程序运行路径
@@ -87,6 +93,27 @@ public:
 	static std::string get_executable_path();
 
 	/**
+	 * @brief 获取程序数据路径
+	 *
+	 * 此函数等价于：
+	 * @code
+	 * return QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+	 * @endcode
+	 * @return
+	 */
+	static QString getAppDataPath();
+
+	/**
+	 * @brief 返回应用目录下的文件夹，如果文件没有，此函数会保证创建好文件夹
+	 * @param folderName
+	 * @return
+	 */
+	static QString getAppDataPath(const QString& folderName);
+
+	/// @group 一些常用的路径
+	/// @{
+
+	/**
 	 * @brief 获取日志文件名字
 	 * @return 默认返回"da_log.log"
 	 */
@@ -100,20 +127,17 @@ public:
 
 	/**
 	 * @brief 获取日志文件的完整路径
-	 * @return 默认返回"{ExecutablePath}/log/da_log.log"
+	 * @return 默认返回"{getLogPath()}/log/da_log.log"
 	 */
-	static QString getFullLogFilePath();
+	static QString getLogFilePath();
 
 	/**
-	 * @brief 获取程序数据路径
-	 *
-	 * 此函数等价于：
-	 * @code
-	 * return QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-	 * @endcode
+	 * @brief 获取dump文件夹
 	 * @return
 	 */
-	static QString getAppDataPath();
+	static QString getDumpFilePath();
+
+	/// @}
 };
 
 /**

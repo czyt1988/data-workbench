@@ -56,9 +56,9 @@ void DAAppActions::buildDataAction()
 	// Data Category
     actionAddData    = createAction("actionAddData", ":/app/bright/Icon/addData.svg");
     actionRemoveData = createAction("actionRemoveData", ":/app/bright/Icon/removeData.svg");
-    actionExportIndividualData = createAction("actionExportIndividualData", ":/app/bright/Icon/exportIndividualData.svg");
+	actionExportIndividualData = createAction("actionExportIndividualData", ":/app/bright/Icon/exportIndividualData.svg");
     actionExportMultipleData = createAction("actionExportMultipleData", ":/app/bright/Icon/exportMultipleData.svg");
-    // 数据操作的上下文标签 Data Operate Context Category
+	// 数据操作的上下文标签 Data Operate Context Category
 	actionRemoveRow          = createAction("actionRemoveRow", ":/app/bright/Icon/removeRow.svg");
 	actionRemoveColumn       = createAction("actionRemoveColumn", ":/app/bright/Icon/removeColumn.svg");
 	actionInsertRow          = createAction("actionInsertRow", ":/app/bright/Icon/insertRow.svg");
@@ -81,12 +81,14 @@ void DAAppActions::buildDataAction()
 	actionDataFrameFFillNone = createAction("actionDataFrameFFillNone", ":/app/bright/Icon/dataframe-ffill-none.svg");
 	actionDataFrameBFillNone = createAction("actionDataFrameBFillNone", ":/app/bright/Icon/dataframe-bfill-none.svg");
 	actionDataFrameClipOutlier = createAction("actionDataFrameClipOutlier", ":/app/bright/Icon/dataframe-clip-outlier.svg");
-    actionDataFrameEvalDatas = createAction("actionDataFrameQueryDatas", ":/app/bright/Icon/dataframe-eval-datas.svg");
+    actionDataFrameEvalDatas = createAction("actionDataFrameEvalDatas", ":/app/bright/Icon/dataframe-eval-datas.svg");
 	actionDataFrameQueryDatas = createAction("actionDataFrameQueryDatas", ":/app/bright/Icon/dataframe-query-datas.svg");
+    actionDataFrameDataRetrieval    = createAction("actionDataFrameDataRetrieval",
+                                                ":/app/bright/Icon/dataframe-data-retrieval.svg");
     actionDataFrameDataFilterColumn = createAction("actionDataFrameDataSelect",
                                                    ":/app/bright/Icon/dataframe-data-select.svg");
     actionDataFrameSort             = createAction("actionDataFrameSort", ":/app/bright/Icon/dataframe-sort.svg");
-    actionCreatePivotTable = createAction("actionDataFrameCreatePivotTable", ":/app/bright/Icon/pivot-table.svg");
+	actionCreatePivotTable = createAction("actionDataFrameCreatePivotTable", ":/app/bright/Icon/pivot-table.svg");
 }
 
 void DAAppActions::buildChartAction()
@@ -224,13 +226,13 @@ void DAAppActions::retranslateUi()
 	actionAppendProject->setText(tr("Append To Project"));
 
 	actionRenameColumns->setText(tr("Rename Columns"));
-    actionSetting->setText(tr("Setting"));                                // cn:设置
-    actionAbout->setText(tr("About"));                                    // cn:关于
+	actionSetting->setText(tr("Setting"));                                // cn:设置
+	actionAbout->setText(tr("About"));                                    // cn:关于
                                                                           // Data Category
-    actionAddData->setText(tr("Add \nData"));                             // cn:添加\n数据
-    actionRemoveData->setText(tr("Remove \nData"));                       // cn:移除\n数据
-    actionExportIndividualData->setText(tr("Export \nIndividual Data"));  // cn:导出\n单个数据
-    actionExportMultipleData->setText(tr("Export \nMultiple Data"));      // cn:导出\n多个数据
+	actionAddData->setText(tr("Add \nData"));                             // cn:添加\n数据
+	actionRemoveData->setText(tr("Remove \nData"));                       // cn:移除\n数据
+	actionExportIndividualData->setText(tr("Export \nIndividual Data"));  // cn:导出\n单个数据
+	actionExportMultipleData->setText(tr("Export \nMultiple Data"));      // cn:导出\n多个数据
 	// Chart Category
 	actionAddFigure->setText(tr("Add \nFigure"));                  // cn:添加\n绘图
 	actionFigureResizeChart->setText(tr("Resize \nChart"));        // cn:绘图\n尺寸
@@ -296,62 +298,64 @@ void DAAppActions::retranslateUi()
     actionNstdFilterOutlier->setText(tr("n std \nfilter outlier"));  // cn: 过滤\n异常值
 	actionNstdFilterOutlier->setToolTip(tr("Remove the outliers beyond n times the standard deviation"));  // cn:删除n倍标准差外的异常值
 	actionDataFrameClipOutlier->setText(tr("Clip Outlier"));  // cn: 替换\n异常值
-	actionDataFrameClipOutlier->setToolTip(
+    actionDataFrameClipOutlier->setToolTip(
         tr("Replace the outlier values that exceed the specified lower and upper limits with the respective limits."));  // cn:将超出限定上下限的异常值替换为上下限
     actionDataFrameEvalDatas->setText(tr("Eval Datas"));  // cn:数值计算
     actionDataFrameEvalDatas->setToolTip(
         tr("Evaluate a string describing operations on DataFrame columns"));  // cn:输入关于列操作的表达式字符串并执行计算
     actionDataFrameQueryDatas->setText(tr("Query Datas"));                                   // cn:条件筛选
     actionDataFrameQueryDatas->setToolTip(tr("Filter data outside of the given criteria"));  // cn:过滤给定条件外的数据
-    actionDataFrameDataFilterColumn->setText(tr("Filter \nby Column"));                      // cn:列数据过滤
-	actionDataFrameSort->setText(tr("Sort"));
-    actionDataFrameSort->setToolTip(tr("Sort Data"));              // cn:对数据进行排序
-    actionCreatePivotTable->setText(tr("Pivot Table"));            // cn: 数据\n透视表
-    actionCreatePivotTable->setToolTip(tr("Create Pivot Table"));  // cn: 创建数据透视表
+    actionDataFrameDataRetrieval->setText(tr("Data Retrieval"));                             // cn:数据检索
+    actionDataFrameDataRetrieval->setToolTip(tr("Retrieve data for a certain condition"));  // cn:检索某条件的数据
+    actionDataFrameDataFilterColumn->setText(tr("Filter by Column"));                       // cn:列数据过滤
+    actionDataFrameSort->setText(tr("Sort"));                                               // cn:数据排序
+    actionDataFrameSort->setToolTip(tr("Sort Data"));                                       // cn:对数据进行排序
+    actionCreatePivotTable->setText(tr("Pivot Table"));                                     // cn: 数据\n透视表
+    actionCreatePivotTable->setToolTip(tr("Create Pivot Table"));                           // cn: 创建数据透视表
 
-	// workflow 编辑
-	actionWorkflowNew->setText(tr("New \nWorkflow"));                    // cn:新建\n工作流
-	actionWorkflowEnableItemLinkageMove->setText(tr("Linkage \nMove"));  // cn:联动
-	actionWorkflowEnableItemLinkageMove->setToolTip(
-	    tr("When moving elements, other elements linked to this element follow the movement"));  // cn:允许移动图元时，其它和此图元链接起来的图元跟随移动
-	actionItemGrouping->setText(tr("grouping"));                                      // cn:分组
-	actionItemUngroup->setText(tr("ungroup"));                                        // cn:取消分组
-	actionWorkflowStartDrawRect->setText(tr("Draw \nRect"));                          // cn:绘制\n矩形
-	actionWorkflowStartDrawText->setText(tr("Draw \nText"));                          // cn:绘制\n文本
-	actionWorkflowShowGrid->setText(tr("Show \nGrid"));                               // cn:显示\n网格
-	actionWorkflowViewReadOnly->setText(tr("Lock \nView"));                           // cn:锁定\n视图
-	actionWorkflowRun->setText(tr("Run \nWorkflow"));                                 // cn:运行\n工作流
-	actionWorkflowTerminate->setText(tr("Terminate \nWorkflow"));                     // cn:停止\n工作流
-	actionWorkflowLinkEnable->setText(tr("Link"));                                    // cn:连线
-	actionWorkflowAddBackgroundPixmap->setText(tr("Add \nBackground"));               // cn:添加\n背景
-	actionWorkflowLockBackgroundPixmap->setText(tr("Lock Background"));               // cn:锁定背景
-	actionWorkflowEnableItemMoveWithBackground->setText(tr("Move With Background"));  // cn:元件随背景移动
-	                                                                                  // workflow 视图
-	actionExportWorkflowSceneToImage->setText(tr("Export To Image"));                 // cn:导出为图片
-	actionExportWorkflowSceneToPNG->setText(tr("Export To PNG"));                     // cn:导出为PNG
-	actionWorkflowViewMarker->setText(tr("Show Marker"));                             // cn:显示标记
-	// View Category
-	actionShowWorkFlowArea->setText(tr("Show \nWorkflow Area"));            // cn:工作流\n区域
-	actionShowWorkFlowManagerArea->setText(tr("Show \nWorkflow Manager"));  // cn:工作流\n管理
-	actionShowChartArea->setText(tr("Show \nChart Area"));                  // cn:绘图\n区域
-	actionShowChartManagerArea->setText(tr("Show \nChart Manager"));        // cn:绘图\n管理
-	actionShowDataArea->setText(tr("Show \nTable Area"));                   // cn:表格\n区域
-	actionShowDataManagerArea->setText(tr("Show \nData Manager"));          // cn:数据\n管理
-    actionShowMessageLogView->setText(tr("Show \nInfomation Window"));      // cn:信息窗口
-    actionShowSettingWidget->setText(tr("Show \nSetting Window"));          // cn:设置窗口
-	// Config Category
-	actionPluginManager->setText(tr("Plugin \nConfig"));  // cn:插件\n设置
-	// Other
-	actionRibbonThemeOffice2013->setText(tr("Office 2013 theme"));
-	actionRibbonThemeOffice2016Blue->setText(tr("Office 2016 blue theme"));
-	actionRibbonThemeOffice2021Blue->setText(tr("Office 2021 blue theme"));
-	actionRibbonThemeDark->setText(tr("Dark theme"));
+    // workflow 编辑
+    actionWorkflowNew->setText(tr("New \nWorkflow"));                    // cn:新建\n工作流
+    actionWorkflowEnableItemLinkageMove->setText(tr("Linkage \nMove"));  // cn:联动
+    actionWorkflowEnableItemLinkageMove->setToolTip(
+        tr("When moving elements, other elements linked to this element follow the movement"));  // cn:允许移动图元时，其它和此图元链接起来的图元跟随移动
+    actionItemGrouping->setText(tr("grouping"));                                      // cn:分组
+    actionItemUngroup->setText(tr("ungroup"));                                        // cn:取消分组
+    actionWorkflowStartDrawRect->setText(tr("Draw \nRect"));                          // cn:绘制\n矩形
+    actionWorkflowStartDrawText->setText(tr("Draw \nText"));                          // cn:绘制\n文本
+    actionWorkflowShowGrid->setText(tr("Show \nGrid"));                               // cn:显示\n网格
+    actionWorkflowViewReadOnly->setText(tr("Lock \nView"));                           // cn:锁定\n视图
+    actionWorkflowRun->setText(tr("Run \nWorkflow"));                                 // cn:运行\n工作流
+    actionWorkflowTerminate->setText(tr("Terminate \nWorkflow"));                     // cn:停止\n工作流
+    actionWorkflowLinkEnable->setText(tr("Link"));                                    // cn:连线
+    actionWorkflowAddBackgroundPixmap->setText(tr("Add \nBackground"));               // cn:添加\n背景
+    actionWorkflowLockBackgroundPixmap->setText(tr("Lock Background"));               // cn:锁定背景
+    actionWorkflowEnableItemMoveWithBackground->setText(tr("Move With Background"));  // cn:元件随背景移动
+                                                                                      // workflow 视图
+    actionExportWorkflowSceneToImage->setText(tr("Export To Image"));                 // cn:导出为图片
+    actionExportWorkflowSceneToPNG->setText(tr("Export To PNG"));                     // cn:导出为PNG
+    actionWorkflowViewMarker->setText(tr("Show Marker"));                             // cn:显示标记
+    // View Category
+    actionShowWorkFlowArea->setText(tr("Show \nWorkflow Area"));            // cn:工作流\n区域
+    actionShowWorkFlowManagerArea->setText(tr("Show \nWorkflow Manager"));  // cn:工作流\n管理
+    actionShowChartArea->setText(tr("Show \nChart Area"));                  // cn:绘图\n区域
+    actionShowChartManagerArea->setText(tr("Show \nChart Manager"));        // cn:绘图\n管理
+    actionShowDataArea->setText(tr("Show \nTable Area"));                   // cn:表格\n区域
+    actionShowDataManagerArea->setText(tr("Show \nData Manager"));          // cn:数据\n管理
+    actionShowMessageLogView->setText(tr("Show Infomation Window"));        // cn:信息窗口
+    actionShowSettingWidget->setText(tr("Show Setting Window"));            // cn:设置窗口
+    // Config Category
+    actionPluginManager->setText(tr("Plugin \nConfig"));  // cn:插件\n设置
+    // Other
+    actionRibbonThemeOffice2013->setText(tr("Office 2013 theme"));
+    actionRibbonThemeOffice2016Blue->setText(tr("Office 2016 blue theme"));
+    actionRibbonThemeOffice2021Blue->setText(tr("Office 2021 blue theme"));
+    actionRibbonThemeDark->setText(tr("Dark theme"));
 
-	//
-	if (actionRedo) {
-		actionRedo->setText(tr("Redo"));
-	}
-	if (actionUndo) {
-		actionUndo->setText(tr("Undo"));
-	}
+    //
+    if (actionRedo) {
+        actionRedo->setText(tr("Redo"));
+    }
+    if (actionUndo) {
+        actionUndo->setText(tr("Undo"));
+    }
 }

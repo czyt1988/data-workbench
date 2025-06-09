@@ -17,7 +17,13 @@ DADir::DADir()
 {
 }
 
-QString DADir::getRootTempPath()
+QString DADir::getAPPName()
+{
+	const static QString cs_app_name = QStringLiteral("DAWorkBench");
+	return cs_app_name;
+}
+
+QString DADir::getTempPath()
 {
 	return tempDir().path();
 }
@@ -25,75 +31,70 @@ QString DADir::getRootTempPath()
 QTemporaryDir& DADir::tempDir()
 {
 	static QTemporaryDir s_temp_dir;  ///< 本应用的临时目录，程序销毁时会自动删除
+	// 确保临时目录有效
+	if (!s_temp_dir.isValid()) {
+		qCritical() << "Failed to create temporary directory:" << s_temp_dir.errorString();
+	}
 	return s_temp_dir;
 }
 
-QString DADir::createTempPath(const QString& folderName)
+QString DADir::getTempPath(const QString& folderName)
 {
-	// 获取临时目录的根路径
-	QString rootTempPath = getRootTempPath();
-	// 拼接目标文件夹路径
-	QString targetPath = QDir::toNativeSeparators(rootTempPath + QDir::separator() + folderName);
-
-	// 创建一个 QDir 对象
-	QDir targetDir(targetPath);
-	// 如果目标文件夹不存在，则创建它
-	if (!targetDir.exists()) {
-		targetDir.mkpath(".");
+	if (folderName.isEmpty()) {
+		return getTempPath();  // 处理空文件夹名的情况
 	}
-
+	// 构建完整路径
+	const static QString cs_fullPath = QDir::cleanPath(getTempPath() + QDir::separator() + folderName);
+	// 创建一个 QDir 对象
+	if (QDir().mkpath(cs_fullPath)) {
+		qWarning() << "Failed to create directory:" << cs_fullPath;
+	}
 	// 返回目标文件夹路径
-	return targetPath;
+	return cs_fullPath;
 }
 
-QDir DADir::createTempDir(const QString& folderName)
+QDir DADir::tempDir(const QString& folderName)
 {
-	return QDir(createTempPath(folderName));
+	return QDir(getTempPath(folderName));
 }
 
-QString DADir::getRootTempFile(const QString& fileName)
+QString DADir::getTempFilePath(const QString& fileName)
 {
 	return tempDir().filePath(fileName);
 }
 
-QString DADir::getRootConfigPath()
+QString DADir::getConfigPath()
 {
 	// 获取配置文件路径
-	QString configPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
+	const static QString cs_configPath = getAppDataPath(QStringLiteral("config"));
 
 	// 如果路径不存在，则创建它
-	QDir configDir(configPath);
-	if (!configDir.exists()) {
-		configDir.mkpath(".");
+	if (!QDir().mkpath(cs_configPath)) {
+		qCritical() << "Failed to create application config directory:" << cs_configPath;
 	}
-
-	return configPath;
+	return cs_configPath;
 }
 
-QString DADir::createConfigPath(const QString& folderName)
+QString DADir::getConfigPath(const QString& folderName)
 {
-	// 获取配置文件路径的根路径
-	QString rootConfigPath = getRootConfigPath();
-	// 拼接目标文件夹路径
-	QString targetPath = QDir::toNativeSeparators(rootConfigPath + QDir::separator() + folderName);
-
-	// 创建一个 QDir 对象
-	QDir targetDir(targetPath);
-
-	// 如果目标文件夹不存在，则创建它
-	if (!targetDir.exists()) {
-		targetDir.mkpath(".");
+	if (folderName.isEmpty()) {
+		return getConfigPath();  // 处理空文件夹名的情况
+	}
+	// 构建完整路径
+	QString fullPath = QDir::cleanPath(getConfigPath() + QDir::separator() + folderName);
+	// 创建目录（如果不存在）
+	if (!QDir().mkpath(fullPath)) {
+		qWarning() << "Failed to create directory:" << fullPath;
 	}
 
-	// 返回目标文件夹路径
-	return targetPath;
+	return fullPath;
 }
 
 QString DADir::getExecutablePath()
 {
-	std::string executablePath = get_executable_path();
+	const static std::string cs_executablePath = get_executable_path();
 	// 这时文本是系统编码的，要转换为utf-8
-	return QString::fromLocal8Bit(executablePath.c_str());
+	return QString::fromLocal8Bit(cs_executablePath.c_str());
 }
 
 std::string DADir::get_executable_path()
@@ -118,39 +119,64 @@ std::string DADir::get_executable_path()
 
 QString DADir::getLogFileName()
 {
-	return QString("da_log.log");
+	const static QString cs_da_log_file = QStringLiteral("da_log.log");
+	return cs_da_log_file;
 }
 
 QString DADir::getLogPath()
 {
-	return QDir::toNativeSeparators(getExecutablePath() + QDir::separator() + "log");
+	const static QString cs_logPath = getAppDataPath(QStringLiteral("log"));
+	return cs_logPath;
 }
 
-QString DADir::getFullLogFilePath()
+QString DADir::getDumpFilePath()
 {
-	return QDir::toNativeSeparators(getLogPath() + QDir::separator() + getLogFileName());
+	const static QString cs_dumpPath = getAppDataPath(QStringLiteral("dumps"));
+	return cs_dumpPath;
+}
+
+QString DADir::getLogFilePath()
+{
+	const static QString cs_logFilePath = QDir::toNativeSeparators(getLogPath() + QDir::separator() + getLogFileName());
+	return cs_logFilePath;
 }
 
 QString DADir::getAppDataPath()
 {
 	// 获取应用数据文件夹
-	QString appDataPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-	// 如果路径不存在，则创建它
-	QDir appDataDir(appDataPath);
-	if (!appDataDir.exists()) {
-		appDataDir.mkpath(".");
+	const static QString cs_appDataPath = QDir::toNativeSeparators(
+		QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + QDir::separator() + getAPPName());
+	// 使用单次操作创建路径（如果不存在）
+	if (!QDir().mkpath(cs_appDataPath)) {
+		qCritical() << "Failed to create application data directory:" << cs_appDataPath;
 	}
-	return appDataPath;
+	return cs_appDataPath;
+}
+
+QString DADir::getAppDataPath(const QString& folderName)
+{
+	if (folderName.isEmpty()) {
+		return getAppDataPath();  // 处理空文件夹名的情况
+	}
+	// 构建完整路径
+	QString fullPath = QDir::cleanPath(getAppDataPath() + QDir::separator() + folderName);
+	// 创建目录（如果不存在）
+	if (!QDir().mkpath(fullPath)) {
+		qWarning() << "Failed to create directory:" << fullPath;
+	}
+
+	return fullPath;
 }
 
 QDebug operator<<(QDebug debug, const DADir& c)
 {
 	QDebugStateSaver saver(debug);
 	debug.noquote() << "Executable Dir:" << DADir::getExecutablePath();
-	debug.noquote() << "\nLog File Path:" << DADir::getFullLogFilePath();
-	debug.noquote() << "\nTemporary Dir:" << DADir::getRootTempPath();
-	debug.noquote() << "\nConfig Dir:" << DADir::getRootConfigPath();
 	debug.noquote() << "\nApp Data Dir:" << DADir::getAppDataPath();
+	debug.noquote() << "\nTemporary Dir:" << DADir::getTempPath();
+	debug.noquote() << "\nLog File Path:" << DADir::getLogFilePath();
+	debug.noquote() << "\nConfig Dir:" << DADir::getConfigPath();
+	debug.noquote() << "\nApp Data Dir:" << DADir::getDumpFilePath();
 	return debug;
 }
 

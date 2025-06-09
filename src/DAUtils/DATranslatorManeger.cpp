@@ -4,6 +4,7 @@
 #include <QLocale>
 #include <QDebug>
 #include <memory>
+#include "DADir.h"
 namespace DA
 {
 
@@ -17,14 +18,12 @@ public:
 public:
 	QLocale mLocal;
 	QList< QString > mTranslatorFilePaths;
-	QList< QString > mTranslatorNames;
 	QList< QTranslator* > mTranslatorLists;
 	//    QList< QString > mLoadedFiles;  ///< 记录加载的翻译文件
 };
 
 DATranslatorManeger::PrivateData::PrivateData(DATranslatorManeger* p) : q_ptr(p)
 {
-	mTranslatorNames << "qt" << "da";
 }
 
 void DATranslatorManeger::PrivateData::clearAllTranslator()
@@ -42,27 +41,16 @@ DATranslatorManeger::DATranslatorManeger() : d_ptr(new DATranslatorManeger::Priv
 {
 	const QLocale& locale = d_ptr->mLocal;
 	qDebug() << "Setting up translator:" << "\nLanguage:" << QLocale::languageToString(locale.language())
-			 << "\nCountry:" << QLocale::countryToString(locale.country())
-			 << "\nScript:" << QLocale::scriptToString(locale.script()) << "\nName:" << locale.name()
-			 << "\nbcp47 Name:" << locale.bcp47Name() << "\n ui language:" << locale.uiLanguages()
-			 << "\nAm Text:" << locale.amText() << "\nPm Text:" << locale.pmText()
-			 << "\nCurrency Symbol:" << locale.currencySymbol() << "\nDate Format:" << locale.dateFormat()
-			 << "\nDate Time Format:" << locale.dateTimeFormat() << "\nDecimal point:" << locale.decimalPoint()
-			 << "\nGroup separator:" << locale.groupSeparator() << "\nExponential:" << locale.exponential()
-			 << "\nZero digit:" << locale.zeroDigit() << "\nPercent:" << locale.percent()
-			 << "\nPositive sign:" << locale.positiveSign() << "\nNegative sign:" << locale.negativeSign();
+             << "\nCountry:" << QLocale::countryToString(locale.country())
+             << "\nScript:" << QLocale::scriptToString(locale.script()) << "\nName:" << locale.name()
+             << "\nbcp47 Name:" << locale.bcp47Name() << "\n ui language:" << locale.uiLanguages()
+             << "\nAm Text:" << locale.amText() << "\nPm Text:" << locale.pmText()
+             << "\nCurrency Symbol:" << locale.currencySymbol() << "\nDate Format:" << locale.dateFormat()
+             << "\nDate Time Format:" << locale.dateTimeFormat() << "\nDecimal point:" << locale.decimalPoint()
+             << "\nGroup separator:" << locale.groupSeparator() << "\nExponential:" << locale.exponential()
+             << "\nZero digit:" << locale.zeroDigit() << "\nPercent:" << locale.percent()
+             << "\nPositive sign:" << locale.positiveSign() << "\nNegative sign:" << locale.negativeSign();
 	setTranslatorFilePaths(getDefaultTranslatorFilePath());
-}
-
-/**
- * @brief 指定前缀文件构造
- * @param fileNames
- */
-DATranslatorManeger::DATranslatorManeger(const QList< QString >& fileNames)
-    : d_ptr(new DATranslatorManeger::PrivateData(this))
-{
-	setTranslatorFilePaths(getDefaultTranslatorFilePath());
-	setTranslatorFileNames(fileNames);
 }
 
 DATranslatorManeger::~DATranslatorManeger()
@@ -125,27 +113,6 @@ QList< QString > DATranslatorManeger::getTranslatorFilePath() const
 {
     return d_ptr->mTranslatorFilePaths;
 }
-/**
- * @brief 设置翻译文件的前缀名
- * @param ps
- */
-void DATranslatorManeger::setTranslatorFileNames(const QList< QString >& ps)
-{
-    d_ptr->mTranslatorNames = ps;
-}
-/**
- * @brief 获取翻译文件的前缀名
- * @param ps
- */
-QList< QString > DATranslatorManeger::getTranslatorFileNames() const
-{
-    return d_ptr->mTranslatorNames;
-}
-
-void DATranslatorManeger::addTranslatorFileNames(const QString& ps)
-{
-    d_ptr->mTranslatorNames.append(ps);
-}
 
 /**
  * @brief 设置local
@@ -159,23 +126,30 @@ void DATranslatorManeger::setLocale(const QLocale& l)
 QList< QTranslator* > DATranslatorManeger::getAvailableTranslators(const QString& langCode)
 {
 	QList< QString > trPaths = getTranslatorFilePath();
-	QList< QString > trName  = getTranslatorFileNames();
 	QList< QTranslator* > translators;
 	for (const QString& p : qAsConst(trPaths)) {
+        qDebug() << "search qm file in dir:" << p;
 		QDir dir(p);
 		if (!dir.exists()) {
 			continue;
 		}
-		for (const QString& name : qAsConst(trName)) {
-			std::unique_ptr< QTranslator > translator = std::make_unique< QTranslator >();
-			QString fullName                          = name + "_" + langCode;
-			QString trDir                             = dir.absolutePath();
-			if (translator->load(fullName, trDir)) {
-				translators.append(translator.release());
-				qDebug() << "success load language file:" << fullName << " in dir " << trDir;
-			} else {
-				qDebug() << "can not load translator:" << fullName << " in dir " << trDir;
-			}
+        // 获取当前目录下所有条目（包括文件和子目录）
+        const QFileInfoList entries = dir.entryInfoList(QDir::Files | QDir::NoDotAndDotDot);
+
+        for (const QFileInfo& fi : entries) {
+            if (fi.fileName().endsWith(QString("%1.qm").arg(langCode))) {
+                qDebug() << "find translate file:" << fi.fileName();
+                // 找到qm文件
+                std::unique_ptr< QTranslator > translator = std::make_unique< QTranslator >();
+                if (translator->load(fi.fileName(), dir.absolutePath())) {
+                    translators.append(translator.release());
+                    qDebug() << "success load language file:" << fi.fileName() << " in dir " << dir.absolutePath();
+                } else {
+                    qDebug() << "can not load translator:" << fi.fileName() << " in dir " << dir.absolutePath();
+                }
+            } else {
+                qDebug() << "skip translate file:" << fi.fileName();
+            }
 		}
 	}
 	return translators;
@@ -212,7 +186,7 @@ QLocale DATranslatorManeger::getLocale() const
  */
 QList< QString > DATranslatorManeger::getDefaultTranslatorFilePath()
 {
-	QString basePath   = QCoreApplication::applicationDirPath();
+    QString basePath   = DADir::getExecutablePath();
 	QString pathQtTr   = QDir::toNativeSeparators(basePath + "/translations");
 	QString pathUserTr = QDir::toNativeSeparators(basePath + "/translations_user");
 	return { pathQtTr, pathUserTr };

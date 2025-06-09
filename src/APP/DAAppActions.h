@@ -78,8 +78,9 @@ public:
     QAction* actionNstdFilterOutlier;          ///< n倍标准差过滤异常值
     QAction* actionDataFrameClipOutlier;       ///< 替换界限外异常值
     QAction* actionDataFrameEvalDatas;         ///< 数值计算
-    QAction* actionDataFrameQueryDatas;        ///< 条件筛选
-    QAction* actionDataFrameDataFilterColumn;  ///< 列数据过滤
+    QAction* actionDataFrameQueryDatas;        ///< 列数据过滤
+    QAction* actionDataFrameDataRetrieval;     ///< 检索指定数据
+    QAction* actionDataFrameDataFilterColumn;  ///< 过滤范围外的数据
     QAction* actionDataFrameSort;              ///< 数据排序
     QAction* actionCreatePivotTable;           ///< 创建数据透视表
 	//===================================================

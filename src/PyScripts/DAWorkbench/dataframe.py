@@ -247,6 +247,45 @@ def da_query_datas(df: pd.DataFrame, expr:Optional[str]):
     df.query(expr ,inplace=True)
 
 @log_function_call
+def da_search_data(df: pd.DataFrame, data, start_row=None, start_col=None):
+    """
+    在DataFrame中查找匹配数据的单元格位置，返回整数索引
+    
+    参数:
+        df: 目标DataFrame
+        data: 要匹配的数据（任意类型）
+        start_row: 起始行号(整数索引，None表示从0开始)
+        start_col: 起始列号(整数索引，None表示从0开始)
+    
+    返回:
+        list: 匹配位置的列表，每个元素为元组 (行索引, 列索引)
+    """
+    # 处理起始位置
+    start_row = start_row or 0
+    start_col = start_col or 0
+    
+    # 确保起始位置在有效范围内
+    start_row = max(0, min(start_row, len(df)-1))
+    start_col = max(0, min(start_col, len(df.columns)-1))
+    
+    matches = []
+    (rowcnt,colcnt) = df.shape
+    # 遍历行和列
+    for i in range(start_row, rowcnt):
+        for j in range(start_col, colcnt):
+            cell_value = df.iat[i, j]
+            
+            # 处理NaN/None的特殊比较
+            if pd.isna(data):
+                if pd.isna(cell_value):
+                    matches.append((i, j))
+            # 处理其他数据类型的比较
+            elif cell_value == data:
+                matches.append((i, j))
+    
+    return matches
+
+@log_function_call
 def da_data_select(df: pd.DataFrame, index: str, lower: Optional[float] = None,upper: Optional[float] = None):
     '''
     :param df: pd.DataFrame

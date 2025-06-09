@@ -69,6 +69,10 @@
 #define DAAPPRIBBONAREA_WINDOW_NAME QCoreApplication::translate("DAAppController", "DA", nullptr)
 #endif
 
+// #ifndef DAAPPRIBBONAREA_WINDOW_NAME
+// #define DAAPPRIBBONAREA_WINDOW_NAME QCoreApplication::translate("DAAppController", u8"试验数据分析系统", nullptr)
+// #endif
+
 // 未实现的功能标记
 #define DAAPPCONTROLLER_PASS()                                                                                         \
 	QMessageBox::warning(                                                                                              \
@@ -273,6 +277,7 @@ void DAAppController::initConnection()
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameQueryDatas, onActionDataFrameQueryDatasTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameDataFilterColumn, onActionDataFrameFilterByColumnTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameSort, onActionDataFrameSortTriggered);
+	DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameDataRetrieval, onActionDataFrameDataRetrievalTriggered);
 	DAAPPCONTROLLER_ACTION_BIND(mActions->actionCreatePivotTable, onActionCreatePivotTableTriggered);
 #if DA_ENABLE_PYTHON
 	// 不知为何使用函数指针无法关联信号和槽
@@ -432,6 +437,37 @@ bool DAAppController::importData(const QString& filePath, const QVariantMap& arg
 	return r;
 }
 
+/**
+ * @brief 更新窗口标题
+ */
+void DAAppController::updateWindowTitle()
+{
+	DAAppProject* project = DA_APP_CORE.getAppProject();
+	if (!project || project->isEmpty()) {
+		app()->setWindowTitle(makeWindowTitle());
+		return;
+	}
+	app()->setWindowTitle(makeWindowTitle(project));
+}
+
+/**
+ * @brief 生成窗口标题
+ * @return
+ */
+QString DAAppController::makeWindowTitle()
+{
+    return QString("%1 [*]").arg(DAAPPRIBBONAREA_WINDOW_NAME);
+}
+
+/**
+ * @brief 生成当前项目下的窗口标题
+ * @return
+ */
+QString DAAppController::makeWindowTitle(DAProjectInterface* proj)
+{
+    return QString("%1[*]-%2").arg(DAAPPRIBBONAREA_WINDOW_NAME, proj->getProjectBaseName());
+}
+
 void DAAppController::save()
 {
 	DAAppProject* project   = DA_APP_CORE.getAppProject();
@@ -487,7 +523,6 @@ void DAAppController::saveAs()
 		qCritical() << tr("Project saved failed!,path is %1").arg(projectPath);  // 工程保存失败！路径位于:%1
 		return;
 	}
-	app()->setWindowTitle(QString("%1").arg(project->getProjectBaseName()));
 	qInfo() << tr("Project saved successfully,path is %1").arg(projectPath);  // 工程保存成功，路径位于:%1
 }
 /**
@@ -799,8 +834,6 @@ bool DAAppController::openProjectFile(const QString& projectFilePath)
 		qCritical() << tr("failed to load project file:%1").arg(projectFilePath);
 		return false;
 	}
-	// 设置工程名称给标题
-	app()->setWindowTitle(QString("%1 [*]").arg(project->getProjectBaseName()));
 	return true;
 }
 
@@ -841,12 +874,7 @@ void DAAppController::onActionAppendProjectTriggered()
 		qCritical() << tr("failed to load project file:%1").arg(fileNames.first());
 		return;
 	}
-	// 设置工程名称给标题
-	if (project->getProjectBaseName().isEmpty()) {
-		app()->setWindowTitle(QString("untitle [*]"));
-	} else {
-		app()->setWindowTitle(QString("%1 [*]").arg(project->getProjectBaseName()));
-	}
+	updateWindowTitle();
 }
 
 /**
@@ -856,7 +884,7 @@ void DAAppController::onActionAppendProjectTriggered()
 void DAAppController::onProjectSaved(const QString& path)
 {
 	DAAppProject* project = DA_APP_CORE.getAppProject();
-	app()->setWindowTitle(QString("%1-%2").arg(DAAPPRIBBONAREA_WINDOW_NAME, project->getProjectBaseName()));
+	updateWindowTitle();
 	if (mDock) {
 		DAWorkFlowOperateWidget* wf = mDock->getWorkFlowOperateWidget();
 		if (wf) {
@@ -873,7 +901,7 @@ void DAAppController::onProjectSaved(const QString& path)
 void DAAppController::onProjectLoaded(const QString& path)
 {
 	DAAppProject* project = DA_APP_CORE.getAppProject();
-	app()->setWindowTitle(QString("%1-%2").arg(DAAPPRIBBONAREA_WINDOW_NAME, project->getProjectBaseName()));
+	updateWindowTitle();
 	if (mDock) {
 		DAWorkFlowOperateWidget* wf = mDock->getWorkFlowOperateWidget();
 		if (wf) {
@@ -1994,6 +2022,19 @@ void DAAppController::onActionDataFrameQueryDatasTriggered()
 		if (dfopt->queryDatas()) {
 			setDirty();
 		}
+	}
+#endif
+}
+
+/**
+ * @brief 检索给定的数据
+ */
+void DAAppController::onActionDataFrameDataRetrievalTriggered()
+{
+#if DA_ENABLE_PYTHON
+	if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+		dfopt->searchData();
+		setDirty();
 	}
 #endif
 }

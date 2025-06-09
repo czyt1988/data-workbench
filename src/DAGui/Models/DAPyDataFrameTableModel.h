@@ -27,13 +27,13 @@ public:
 	~DAPyDataFrameTableModel();
 
 public:
-    virtual int columnCount(const QModelIndex& parent = QModelIndex()) const override;
+	virtual int columnCount(const QModelIndex& parent = QModelIndex()) const override;
 
-    virtual QVariant actualHeaderData(int actualSection, Qt::Orientation orientation, int role) const override;
-    virtual int actualRowCount() const override;
-    virtual QVariant actualData(int actualRow, int actualColumn, int role) const override;
-    // 设置数据
-    virtual bool setActualData(int actualRow, int actualColumn, const QVariant& value, int role = Qt::EditRole) override;
+	virtual QVariant actualHeaderData(int actualSection, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+	virtual int actualRowCount() const override;
+	virtual QVariant actualData(int actualRow, int actualColumn, int role = Qt::DisplayRole) const override;
+	// 设置数据
+	virtual bool setActualData(int actualRow, int actualColumn, const QVariant& value, int role = Qt::EditRole) override;
 
 public:
 	DAPyDataFrame& dataFrame();
@@ -42,16 +42,16 @@ public:
 	// 设置数据
 	void setDAData(const DAData& d);
 	void setDataFrame(const DAPyDataFrame& d);
-    // 设置使用缓存模式，缓存模式不会频繁调用dataframe，在setdataframe时把常用的参数缓存
-    void setUseCacheMode(bool on = true);
+	// 设置使用缓存模式，缓存模式不会频繁调用dataframe，在setdataframe时把常用的参数缓存
+	void setUseCacheMode(bool on = true);
 	/// @group 滑动窗模式
 	/// @{
 	// 设置滑动窗模式的起始行
-    virtual void setCacheWindowStartRow(int startRow) override;
+	virtual void setCacheWindowStartRow(int startRow) override;
 	/// @}
 
 	// 刷新
-    void refreshData();
+	void refreshData();
 	void notifyRowChanged(int row);
 	void notifyColumnChanged(int col);
 	void notifyDataChanged(int row, int col);

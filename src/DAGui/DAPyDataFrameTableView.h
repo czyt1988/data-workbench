@@ -11,8 +11,8 @@ class DAGUI_API DAPyDataFrameTableView : public DACacheWindowTableView
 {
 	Q_OBJECT
 public:
-    explicit DAPyDataFrameTableView(QWidget* parent = nullptr);
-    ~DAPyDataFrameTableView();
+	explicit DAPyDataFrameTableView(QWidget* parent = nullptr);
+	~DAPyDataFrameTableView();
 	DAPyDataFrameTableModel* getDataframeModel() const;
 	// 设置datafarme
 	void setDataFrame(const DAPyDataFrame& d);

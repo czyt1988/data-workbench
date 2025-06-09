@@ -22,10 +22,10 @@ public:
 	bool isHaveProjectFilePath() const;
 
 public:
-    bool mIsDirty{ false };  ///< 脏标识
-    DADockingAreaInterface* mDockingArea{ nullptr };
-    DAWorkFlowOperateWidget* mWorkFlowOperateWidget{ nullptr };
-    DADataManagerInterface* mDataManagerInterface{ nullptr };
+	bool mIsDirty { false };  ///< 脏标识
+	DADockingAreaInterface* mDockingArea { nullptr };
+	DAWorkFlowOperateWidget* mWorkFlowOperateWidget { nullptr };
+	DADataManagerInterface* mDataManagerInterface { nullptr };
 	QFileInfo mProjectFileInfo;  ///< 记录工程文件信息
 
 	static QString s_suffix;  ///< 工程文件后缀
@@ -56,9 +56,14 @@ DAProjectInterface::~DAProjectInterface()
 {
 }
 
+bool DAProjectInterface::isEmpty() const
+{
+	return !(d_ptr->isHaveProjectFilePath());
+}
+
 DADockingAreaInterface* DAProjectInterface::getDockingAreaInterface() const
 {
-    return d_ptr->mDockingArea;
+	return d_ptr->mDockingArea;
 }
 
 void DAProjectInterface::setDockingAreaInterface(DADockingAreaInterface* dock)
@@ -163,7 +168,7 @@ void DAProjectInterface::clear()
 {
 	setModified(false);
 	d_ptr->mProjectFileInfo = QFileInfo();
-	emit projectIsCleaned();
+	Q_EMIT projectIsCleaned();
 }
 
 /**
@@ -173,7 +178,7 @@ void DAProjectInterface::clear()
 QVersionNumber DAProjectInterface::getProjectVersion()
 {
 	static QVersionNumber s_version = QVersionNumber(1, 3, 0);
-    return s_version;
+	return s_version;
 }
 
 /**
@@ -212,7 +217,7 @@ void DAProjectInterface::setModified(bool on)
 {
 	if (on != d_ptr->mIsDirty) {
 		d_ptr->mIsDirty = on;
-		emit dirtyStateChanged(on);
-    }
+		Q_EMIT dirtyStateChanged(on);
+	}
 }
 }

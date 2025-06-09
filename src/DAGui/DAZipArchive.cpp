@@ -928,7 +928,7 @@ bool DAZipArchive::readToFile(QuaZip* zip, const QString& zipRelatePath, const Q
 
 	// 初始化缓冲区（添加分配失败检查）-------------------------------------
 	QByteArray buffer;
-	buffer.resize(chunkSize);  // 比构造函数方式更安全
+	buffer.resize(static_cast< int >(chunkSize));  // 比构造函数方式更安全
 	if (buffer.size() != chunkSize) {
 		zipFile.close();
 		localFile.close();

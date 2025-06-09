@@ -66,29 +66,31 @@ public:
 				int axis                    = 0,
 				const QString& how          = QStringLiteral("any"),
 				const QList< int >& indexs  = QList< int >(),
-				std::optional< int > thresh = std::nullopt);
+				std::optional< int > thresh = std::nullopt) noexcept;
 	// fillna()
-	bool fillna(DAPyDataFrame& df, double value, int limit);
+	bool fillna(DAPyDataFrame& df, double value, int limit) noexcept;
 	// interpolate()
-	bool interpolate(DAPyDataFrame& df, const QString& method, int order, int limit);
+	bool interpolate(DAPyDataFrame& df, const QString& method, int order, int limit) noexcept;
 	// ffillna()
-	bool ffillna(DAPyDataFrame& df, int axis, int limit);
+	bool ffillna(DAPyDataFrame& df, int axis, int limit) noexcept;
 	// bfillna()
-	bool bfillna(DAPyDataFrame& df, int axis, int limit);
+	bool bfillna(DAPyDataFrame& df, int axis, int limit) noexcept;
 	//	dropduplicates(keep = "first","last")
-	bool dropduplicates(DAPyDataFrame& df, const QString& keep, const QList< int >& indexs);
+	bool dropduplicates(DAPyDataFrame& df, const QString& keep, const QList< int >& indexs) noexcept;
 	// nstdfilteroutlier()
-	bool nstdfilteroutlier(DAPyDataFrame& df, double n, int axis, const QList< int >& indexs);
+	bool nstdfilteroutlier(DAPyDataFrame& df, double n, int axis, const QList< int >& indexs) noexcept;
 	// clipoutlier()
-	bool clipoutlier(DAPyDataFrame& df, double lowervalue, double uppervalue, int axis);
+	bool clipoutlier(DAPyDataFrame& df, double lowervalue, double uppervalue, int axis) noexcept;
 	// querydatas()
-	bool queryDatas(DAPyDataFrame& df, const QString& expr);
+	bool queryDatas(DAPyDataFrame& df, const QString& expr) noexcept;
+	// searchdata()
+	QList< QPair< int, int > > searchData(const DAPyDataFrame& df, const QString& expr) noexcept;
 	// eval
-	bool evalDatas(DAPyDataFrame& df, const QString& expr);
+	bool evalDatas(DAPyDataFrame& df, const QString& expr) noexcept;
 	// 排序sort()
-	bool sort(DAPyDataFrame& df, const QString& by, bool ascending);
+	bool sort(DAPyDataFrame& df, const QString& by, bool ascending) noexcept;
 	// dataselect()
-	bool dataselect(DAPyDataFrame& df, double lowervalue, double uppervalue, const QString& index);
+	bool dataselect(DAPyDataFrame& df, double lowervalue, double uppervalue, const QString& index) noexcept;
 
 	// 创建数据透视表
 	DAPyDataFrame pivotTable(const DAPyDataFrame& df,
@@ -98,7 +100,7 @@ public:
 							 const QString& aggfunc,
 							 bool margins,
 							 const QString& marginsName,
-							 bool sort);
+							 bool sort) noexcept;
 };
 }  // namespace DA
 #endif  // DAPYSCRIPTSDATAFRAME_H

@@ -21,9 +21,11 @@ class DADialogDataframeColumnCastToNumeric;
 class DADialogDataframeColumnCastToDatetime;
 class DADialogDataFrameFillna;
 class DADialogDataFrameFillInterpolate;
+class DADialogDataFrameDataSelect;
 class DADialogDataFrameClipOutlier;
 class DADialogDataFrameEvalDatas;
 class DADialogDataFrameQueryDatas;
+class DADialogDataFrameDataSearch;
 class DADialogDataFrameSort;
 class DADialogCreatePivotTable;
 
@@ -121,6 +123,9 @@ public Q_SLOTS:
 	// 过滤给定条件外的数据
 	bool queryDatas();
 	bool queryDatas(const DAPyDataFrame& df, const QString& exper);
+	// 检索给定的数据
+	bool searchData();
+	QList< QPair< int, int > > searchData(const DAPyDataFrame& df, const QString& exper) const;
 	// 列运算
 	bool evalDatas();
 	bool evalDatas(const DAPyDataFrame& df, const QString& exper);
@@ -164,10 +169,12 @@ private:
 	DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs { nullptr };
 	DADialogDataFrameFillna* mDialogDataFrameFillna { nullptr };
 	DADialogDataFrameFillInterpolate* mDialogDataFrameFillInterpolate { nullptr };
+	DADialogDataFrameDataSelect* mDialogDataFrameDataSelect { nullptr };
 	DADialogDataFrameClipOutlier* mDialogDataFrameClipOutlier { nullptr };
 	DADialogCreatePivotTable* mDialogCreatePivotTable { nullptr };
 	DADialogDataFrameEvalDatas* mDialogDataFrameEvalDatas { nullptr };
 	DADialogDataFrameQueryDatas* mDialogDataFrameQueryDatas { nullptr };
+	DADialogDataFrameDataSearch* mDialogDataFrameDataSearch { nullptr };
 	DADialogDataFrameSort* mDADialogDataFrameSort { nullptr };
 };
 }  // end of namespace DA

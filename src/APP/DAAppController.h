@@ -89,7 +89,7 @@ public:
 public:
 	// 获取当前dataframeOperateWidget,如果没有返回nullptr,此函数不返回nullptr的前提是
 	DADataOperateOfDataFrameWidget* getCurrentDataFrameOperateWidget(bool checkDataOperateAreaFocused = true,
-                                                                     bool isShowMessage               = true);
+																	 bool isShowMessage               = true);
 	// 获取工作流操作窗口
 	DAWorkFlowOperateWidget* getWorkFlowOperateWidget() const;
 	// 获取数据操作窗口
@@ -117,6 +117,11 @@ public:
 	bool isDirty() const;
 	// 导入数据
 	bool importData(const QString& filePath, const QVariantMap& args, QString* err = nullptr);
+	// 更新窗口标题
+	void updateWindowTitle();
+	// 生成窗口标题
+	static QString makeWindowTitle();
+	static QString makeWindowTitle(DAProjectInterface* proj);
 public Q_SLOTS:
 	// 保存
 	void save();
@@ -146,11 +151,11 @@ private Q_SLOTS:
 	// 添加数据
 	void onActionAddDataTriggered();
 	// 移除数据
-    void onActionRemoveDataTriggered();
-    // 导出单个数据
-    void onActionExportIndividualDataTriggered();
-    // 导出多个数据
-    void onActionExportMultipleDataTriggered();
+	void onActionRemoveDataTriggered();
+	// 导出单个数据
+	void onActionExportIndividualDataTriggered();
+	// 导出多个数据
+	void onActionExportMultipleDataTriggered();
 	//===================================================
 	// 绘图标签 Chart Category
 	//===================================================
@@ -242,13 +247,15 @@ private Q_SLOTS:
 	void onActionNstdFilterOutlierTriggered();
 	// 替换界限外异常值
 	void onActionDataFrameClipOutlierTriggered();
-    // 列运算
-    void onActionDataFrameEvalDatasTriggered();
+	// 列运算
+	void onActionDataFrameEvalDatasTriggered();
 	// 过滤给定条件外的数据
 	void onActionDataFrameQueryDatasTriggered();
-    // 列数据过滤
-    void onActionDataFrameFilterByColumnTriggered();
-    // 数据排序
+	// 检索给定的数据
+	void onActionDataFrameDataRetrievalTriggered();
+	// 列数据过滤
+	void onActionDataFrameFilterByColumnTriggered();
+	// 数据排序
 	void onActionDataFrameSortTriggered();
 #if DA_ENABLE_PYTHON
 	// 列数据类型改变
@@ -403,21 +410,21 @@ private:
 #endif
 
 private:
-    AppMainWindow* mMainWindow { nullptr };
-    DAAppCore* mCore { nullptr };
-    DAProjectInterface* mProject { nullptr };
+	AppMainWindow* mMainWindow { nullptr };
+	DAAppCore* mCore { nullptr };
+	DAProjectInterface* mProject { nullptr };
 	;
-    DAAppRibbonArea* mRibbon { nullptr };
-    DAAppDockingArea* mDock { nullptr };
-    DAAppCommand* mCommand { nullptr };
-    DAAppActions* mActions { nullptr };
-    DAAppDataManager* mDatas { nullptr };
+	DAAppRibbonArea* mRibbon { nullptr };
+	DAAppDockingArea* mDock { nullptr };
+	DAAppCommand* mCommand { nullptr };
+	DAAppActions* mActions { nullptr };
+	DAAppDataManager* mDatas { nullptr };
 
 	QStringList mFileReadFilters;  ///< 包含支持的文件[Images (*.png *.xpm *.jpg)] [Text files (*.txt)]
 	//
 	LastFocusedOpertateWidgets mLastFocusedOpertateWidget;  ///< 最后获取焦点的操作窗口
-                                                            //
-    DAAppSettingDialog* mSettingDialog { nullptr };         ///< 设置窗口
+															//
+	DAAppSettingDialog* mSettingDialog { nullptr };         ///< 设置窗口
 	DAAppConfig* mConfig;                                   ///< 设置类
 };
 }

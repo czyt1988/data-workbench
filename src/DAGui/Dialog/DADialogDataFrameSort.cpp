@@ -39,7 +39,7 @@ QString DADialogDataFrameSort::getSortBy() const
 
 bool DADialogDataFrameSort::getSortType() const
 {
-    QString type = ui->comboBoxSortType->currentText();
+    QString type = ui->comboBoxSortType->itemData(ui->comboBoxSortType->currentIndex()).toString();
     if (type == "Ascending")
         return true;
     else

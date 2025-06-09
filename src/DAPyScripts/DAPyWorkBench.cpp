@@ -12,6 +12,7 @@ public:
 	DAPyScriptsDataFrame mDataframe;
 	DAPyScriptsDataProcess mDataProcess;
 };
+
 DAPyWorkBench::PrivateData::PrivateData(DAPyWorkBench* p) : q_ptr(p), mIO(false), mDataframe(false), mDataProcess(false)
 {
 }
@@ -28,7 +29,7 @@ DAPyWorkBench::~DAPyWorkBench()
 {
 }
 
-bool DA::DAPyWorkBench::import()
+bool DAPyWorkBench::import()
 {
 	bool res = DAPyModule::import("DAWorkbench");
 	if (!res) {

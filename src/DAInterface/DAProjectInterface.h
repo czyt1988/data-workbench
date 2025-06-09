@@ -22,9 +22,11 @@ class DAINTERFACE_API DAProjectInterface : public DABaseInterface
 public:
 	DAProjectInterface(DACoreInterface* c, QObject* par = nullptr);
 	~DAProjectInterface();
-    // 设置dock接口
-    DADockingAreaInterface* getDockingAreaInterface() const;
-    void setDockingAreaInterface(DADockingAreaInterface* dock);
+	// 是否为空
+	bool isEmpty() const;
+	// 设置dock接口
+	DADockingAreaInterface* getDockingAreaInterface() const;
+	void setDockingAreaInterface(DADockingAreaInterface* dock);
 	// 设置数据管理接口
 	void setDataManagerInterface(DADataManagerInterface* d);
 	DADataManagerInterface* getDataManagerInterface();
@@ -42,8 +44,8 @@ public:
 	bool isDirty() const;
 	// 工程文件的版本,版本组成有大版本.中间版本.小版本组成，例如0.1.1
 	static QVersionNumber getProjectVersion();
-    // 是否繁忙，正在保存文件过程中会为繁忙状态
-    virtual bool isBusy() const;
+	// 是否繁忙，正在保存文件过程中会为繁忙状态
+	virtual bool isBusy() const;
 
 public:
 	// 工程文件的后缀
@@ -52,44 +54,44 @@ public:
 
 public Q_SLOTS:
 
-    /**
-     * @brief 加载工程
-     *
-     * 实际实现时，应该调用@sa setProjectPath 记录工程路径
-     *
-     * 开始保存时应该发射@sa projectBeginSave 信号
-     *
-     * 保存成功后需要发射@sa projectLoaded 信号
-     * @param path
-     * @return
-     */
-    virtual bool load(const QString& path) = 0;
+	/**
+	 * @brief 加载工程
+	 *
+	 * 实际实现时，应该调用@sa setProjectPath 记录工程路径
+	 *
+	 * 开始保存时应该发射@sa projectBeginSave 信号
+	 *
+	 * 保存成功后需要发射@sa projectLoaded 信号
+	 * @param path
+	 * @return
+	 */
+	virtual bool load(const QString& path) = 0;
 
-    /**
-     * @brief 保存工程
-     *
-     * 实际实现时，应该调用@sa setProjectPath 记录工程路径
-     *
-     * 开始保存时应该发射@sa projectBeginLoad 信号
-     *
-     * 加载成功后需要发射@sa projectLoaded 信号
-     * @param path
-     * @return
-     */
-    virtual bool save(const QString& path) = 0;
-    // 清空工程
-    virtual void clear();
+	/**
+	 * @brief 保存工程
+	 *
+	 * 实际实现时，应该调用@sa setProjectPath 记录工程路径
+	 *
+	 * 开始保存时应该发射@sa projectBeginLoad 信号
+	 *
+	 * 加载成功后需要发射@sa projectLoaded 信号
+	 * @param path
+	 * @return
+	 */
+	virtual bool save(const QString& path) = 0;
+	// 清空工程
+	virtual void clear();
 	// 设置为dirty,会发射becomeDirty
 	void setModified(bool on = true);
 
 Q_SIGNALS:
-    /**
-     * @brief 工程开始保存
-     *
-     * 此信号发射代表工程开始保存，但还没保存完
-     * @param path 保存的路径
-     */
-    void projectBeginLoad(const QString& path);
+	/**
+	 * @brief 工程开始保存
+	 *
+	 * 此信号发射代表工程开始保存，但还没保存完
+	 * @param path 保存的路径
+	 */
+	void projectBeginLoad(const QString& path);
 
 	/**
 	 * @brief 工程加载完成
@@ -97,18 +99,18 @@ Q_SIGNALS:
 	 */
 	void projectLoaded(const QString& path);
 
-    /**
-     * @brief 工程开始保存
-     *
-     * 此信号发射代表工程开始保存，但还没保存完
-     * @param path 保存的路径
-     */
-    void projectBeginSave(const QString& path);
+	/**
+	 * @brief 工程开始保存
+	 *
+	 * 此信号发射代表工程开始保存，但还没保存完
+	 * @param path 保存的路径
+	 */
+	void projectBeginSave(const QString& path);
 
 	/**
-     * @brief 工程成功保存
-     *
-     * 此信号发射代表工程已经保存完成
+	 * @brief 工程成功保存
+	 *
+	 * 此信号发射代表工程已经保存完成
 	 * @param path 保存的路径
 	 */
 	void projectSaved(const QString& path);

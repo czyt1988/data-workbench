@@ -210,13 +210,7 @@
         <translation>加载界面状态信息</translation>
     </message>
     <message>
-        <location line="+19"/>
-        <source>Data WorkFlow [*]</source>
-        <oldsource>Data WorkFlow</oldsource>
-        <translation>Data WorkFlow [*]</translation>
-    </message>
-    <message>
-        <location line="+9"/>
+        <location line="+28"/>
         <source>LanguageChange</source>
         <translation></translation>
     </message>
@@ -316,7 +310,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="+220"/>
+        <location filename="APP/DAAppActions.cpp" line="+207"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
@@ -715,10 +709,10 @@ Column</source>
     <message>
         <location line="+1"/>
         <source>Query Datas</source>
-        <translation>条件筛选</translation>
+        <translation>查询数据</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+5"/>
         <source>Sort</source>
         <translation>排序</translation>
     </message>
@@ -728,9 +722,19 @@ Column</source>
         <translation>数据排序</translation>
     </message>
     <message>
-        <location line="-3"/>
+        <location line="-5"/>
         <source>Filter data outside of the given criteria</source>
         <translation>过滤给定条件外的数据</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Data Retrieval</source>
+        <translation>数据检索</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Retrieve data for a certain condition</source>
+        <translation>检索某条件的数据</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -892,7 +896,7 @@ Config</source>
         <translation>暗色主题</translation>
     </message>
     <message>
-        <location line="-92"/>
+        <location line="-94"/>
         <source>Zoom Out</source>
         <translation>缩小</translation>
     </message>
@@ -902,7 +906,7 @@ Config</source>
         <translation>放大</translation>
     </message>
     <message>
-        <location line="+68"/>
+        <location line="+70"/>
         <source>Run 
 Workflow</source>
         <oldsource>Run Workflow</oldsource>
@@ -967,13 +971,13 @@ Table Area</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="APP/DAAppController.cpp" line="+757"/>
-        <location line="+67"/>
+        <location filename="APP/DAAppController.cpp" line="+792"/>
+        <location line="+65"/>
         <source>project file(*.%1)</source>
         <translation>工程文件(*.%1)</translation>
     </message>
     <message>
-        <location line="-52"/>
+        <location line="-50"/>
         <source>Question</source>
         <translation>疑问</translation>
     </message>
@@ -984,12 +988,12 @@ Table Area</source>
     </message>
     <message>
         <location line="+26"/>
-        <location line="+42"/>
+        <location line="+40"/>
         <source>failed to load project file:%1</source>
         <translation>加载工程文件“%1”失败</translation>
     </message>
     <message>
-        <location line="-397"/>
+        <location line="-394"/>
         <location line="+22"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
@@ -1016,23 +1020,23 @@ Table Area</source>
         <translation>工程“%1”保存失败</translation>
     </message>
     <message>
-        <location line="+4"/>
-        <location line="+375"/>
+        <location line="+3"/>
+        <location line="+368"/>
         <source>Project saved successfully,path is %1</source>
         <translation>工程保存成功，路径位于:%1</translation>
     </message>
     <message>
-        <location line="-420"/>
+        <location line="-412"/>
         <source>Project Files (*.%1)</source>
         <translation>工程文件(*.%1)</translation>
     </message>
     <message>
-        <location line="+64"/>
+        <location line="+63"/>
         <source>Please select the data operation window</source>
         <translation>请选中数据操作窗口</translation>
     </message>
     <message>
-        <location line="+373"/>
+        <location line="+366"/>
         <source>Project load successfully,path is %1</source>
         <translation>工程加载成功，路径为：%1</translation>
     </message>
@@ -1119,7 +1123,7 @@ Table Area</source>
         <translation>生成“%1”的透视表</translation>
     </message>
     <message>
-        <location line="+318"/>
+        <location line="+331"/>
         <source>new workflow name</source>
         <translation>新工作流名称</translation>
     </message>
@@ -1225,12 +1229,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppPluginManager</name>
     <message>
-        <location filename="APP/DAAppPluginManager.cpp" line="+63"/>
-        <source>%1 plugin create a null node factory</source>
-        <translation>插件“%1”创建了一个空的节点工厂</translation>
-    </message>
-    <message>
-        <location line="+6"/>
+        <location filename="APP/DAAppPluginManager.cpp" line="+68"/>
         <source>succeed load plugin %1</source>
         <translation>成功加载插件“%1”</translation>
     </message>
@@ -1238,7 +1237,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppProject</name>
     <message>
-        <location filename="APP/DAAppProject.cpp" line="+329"/>
+        <location filename="APP/DAAppProject.cpp" line="+343"/>
         <location line="+39"/>
         <source>current project is busy</source>
         <translation>当前工程正繁忙</translation>
@@ -1289,7 +1288,7 @@ Table Area</source>
         <translation>接收到未知的任务编码:%1</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+15"/>
         <source>Successfully save archive : %1</source>
         <translation>成功存档到:%1</translation>
     </message>
@@ -1304,7 +1303,7 @@ Table Area</source>
         <translation>成功从%1加载存档</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+4"/>
         <source>Failed to load archive : %1</source>
         <translation>无法从%1加载存档</translation>
     </message>
@@ -1334,13 +1333,13 @@ Table Area</source>
     <message>
         <location line="+1"/>
         <location line="+21"/>
-        <location line="+87"/>
-        <location line="+206"/>
+        <location line="+85"/>
+        <location line="+207"/>
         <source>Workflow</source>
         <translation>工作流</translation>
     </message>
     <message>
-        <location line="-313"/>
+        <location line="-312"/>
         <location line="+2"/>
         <source>Data Operation</source>
         <translation>数据操作</translation>
@@ -1353,108 +1352,108 @@ Table Area</source>
     <message>
         <location line="+3"/>
         <location line="+23"/>
-        <location line="+362"/>
+        <location line="+361"/>
         <source>View</source>
         <translation>视图</translation>
     </message>
     <message>
-        <location line="-384"/>
+        <location line="-383"/>
         <source>Display</source>
         <translation>视图显示</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+184"/>
+        <location line="+182"/>
         <source>DataFrame</source>
         <translation>DataFrame</translation>
     </message>
     <message>
-        <location line="-183"/>
-        <location line="+185"/>
+        <location line="-181"/>
+        <location line="+183"/>
         <source>Operate</source>
         <translation>操作</translation>
     </message>
     <message>
-        <location line="-184"/>
-        <location line="+186"/>
+        <location line="-182"/>
+        <location line="+184"/>
         <source>Axes</source>
         <translation>Axes</translation>
     </message>
     <message>
-        <location line="-185"/>
+        <location line="-183"/>
         <location line="+2"/>
-        <location line="+195"/>
+        <location line="+193"/>
         <location line="+5"/>
         <source>Type</source>
         <translation>类型</translation>
     </message>
     <message>
-        <location line="-198"/>
-        <location line="+209"/>
+        <location line="-196"/>
+        <location line="+207"/>
         <source>Data Cleaning</source>
         <translation>数据清洗</translation>
     </message>
     <message>
-        <location line="-208"/>
-        <location line="+225"/>
+        <location line="-206"/>
+        <location line="+224"/>
         <source>Statistic</source>
         <translation>统计</translation>
     </message>
     <message>
-        <location line="-222"/>
+        <location line="-221"/>
         <source>Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+305"/>
+        <location line="+304"/>
         <source>Workflow Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
-        <location line="-304"/>
-        <location line="+309"/>
+        <location line="-303"/>
+        <location line="+308"/>
         <source>ClipBoard</source>
         <translation>剪切板</translation>
     </message>
     <message>
-        <location line="-308"/>
-        <location line="+313"/>
+        <location line="-307"/>
+        <location line="+312"/>
         <source>Item</source>
         <translation>图元</translation>
     </message>
     <message>
-        <location line="-312"/>
-        <location line="+321"/>
+        <location line="-311"/>
+        <location line="+320"/>
         <source>Text</source>
         <translation>文本</translation>
     </message>
     <message>
-        <location line="-320"/>
-        <location line="+325"/>
+        <location line="-319"/>
+        <location line="+324"/>
         <source>Background</source>
         <translation>背景</translation>
     </message>
     <message>
-        <location line="-322"/>
-        <location line="+403"/>
+        <location line="-321"/>
+        <location line="+402"/>
         <source>Workflow Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location line="-402"/>
-        <location line="+405"/>
+        <location line="-401"/>
+        <location line="+404"/>
         <source>Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location line="-403"/>
-        <location line="+250"/>
+        <location line="-402"/>
+        <location line="+249"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
     <message>
-        <location line="-249"/>
+        <location line="-248"/>
         <source>Figure Setting</source>
         <translation>绘图设置</translation>
     </message>
@@ -1470,13 +1469,13 @@ Table Area</source>
     </message>
     <message>
         <location line="+1"/>
-        <location line="+409"/>
+        <location line="+408"/>
         <location line="+2"/>
         <source>Chart Edit</source>
         <translation>绘图编辑</translation>
     </message>
     <message>
-        <location line="-409"/>
+        <location line="-408"/>
         <source>theme</source>
         <translation>主题</translation>
     </message>
@@ -1502,17 +1501,12 @@ Table Area</source>
         <translation>把工作流的场景导出为图片</translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Data Work Flow</source>
-        <translation>DA</translation>
-    </message>
-    <message>
         <location line="+185"/>
         <source>Data Filtering</source>
         <translation>数据过滤</translation>
     </message>
     <message>
-        <location line="+125"/>
+        <location line="+126"/>
         <source>Group</source>
         <translation>分组</translation>
     </message>
@@ -2219,7 +2213,7 @@ Table Area</source>
 <context>
     <name>DA::DADataOperateOfDataFrameWidget</name>
     <message>
-        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="+171"/>
+        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="+174"/>
         <source>warning</source>
         <translation>警告</translation>
     </message>
@@ -2398,7 +2392,29 @@ Table Area</source>
 <context>
     <name>DA::DADialogDataFrameClipOutlier</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameClipOutlier.cpp" line="+49"/>
+        <location filename="DAGui/Dialog/DADialogDataFrameClipOutlier.cpp" line="+29"/>
+        <location line="+16"/>
+        <source>The current input cannot be converted to a floating-point number.</source>
+        <translation>当前输入内容无法转换为浮点数。</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogDataFrameDataSearch</name>
+    <message>
+        <location filename="DAGui/Dialog/DADialogDataFrameDataSearch.cpp" line="+40"/>
+        <source>can not find item</source>
+        <translation>无法找到条目</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Found at column %1,line %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogDataFrameDataSelect</name>
+    <message>
+        <location filename="DAGui/Dialog/DADialogDataFrameDataSelect.cpp" line="+49"/>
         <location line="+16"/>
         <source>The current input cannot be converted to a floating-point number.</source>
         <translation>当前输入内容无法转换为浮点数。</translation>
@@ -2471,71 +2487,81 @@ name.str.contains(&quot;John&quot;)
 This can be used to filter rows where the name contains &quot; John &quot;.</source>
         <translation># 一、基本语法
 
- 您可以使用以下内容编写表达式：
+您可以使用以下内容编写表达式：
 
- - **列名**：直接使用数据表中的列名参与运算（如 `age`, `salary`）
- - **常量**：数字、字符串、布尔值（如 `10`, `&quot;male&quot;`, `True`）
- - **运算符**：
-   - 数学运算：`+`, `-`, `*`, `/`, `**`（幂）、`%`（取余）
-   - 比较运算：`==`, `!=`, `&gt;`, `&lt;`, `&gt;=`, `&lt;=`
-   - 逻辑运算：`and`, `or`, `not`
- - **函数调用**（部分支持）：
-   - 常见数学函数：`abs()`, `sin()`, `cos()`, `log()`, `exp()` 等
-   - 条件判断：`where(condition, x, y)`
-   - 字符串操作：`str.contains()`, `str.startswith()` 等（需配合列使用）
+- **列名**：直接使用数据表中的列名参与运算（如 `age`, `salary`）
+- **常量**：数字、字符串、布尔值（如 `10`, `&quot;male&quot;`, `True`）
+- **运算符**：
+- 数学运算：`+`, `-`, `*`, `/`, `**`（幂）、`%`（取余）
+- 比较运算：`==`, `!=`, `&gt;`, `&lt;`, `&gt;=`, `&lt;=`
+- 逻辑运算：`and`, `or`, `not`
+- **函数调用**（部分支持）：
+- 常见数学函数：`abs()`, `sin()`, `cos()`, `log()`, `exp()` 等
+- 条件判断：`where(condition, x, y)`
+- 字符串操作：`str.contains()`, `str.startswith()` 等（需配合列使用）
 
- | 目标 | 示例表达式 |
- |------|------------|
- | 新增一列 | `new_col = col1 + col2` |
- | 修改已有列 | `col = col * 2` |
- | 条件赋值 | `col = where(col &gt; 10, 1, 0)` |
- | 过滤行（返回布尔值） | `col1 &gt; 5 and col2 &lt; 10` |
+| 目标 | 示例表达式 |
+|------|------------|
+| 新增一列 | `new_col = col1 + col2` |
+| 修改已有列 | `col = col * 2` |
+| 条件赋值 | `col = where(col &gt; 10, 1, 0)` |
+| 过滤行（返回布尔值） | `col1 &gt; 5 and col2 &lt; 10` |
 
- ---
+---
 
- ## 示例 1：新增一列或修改现有列的值
+## 示例 1：新增一列或修改现有列的值
 
- ```python
- age + 10
- ```
+```python
+age + 10
+```
 
- 表示将 `age` 列的每个值加 10，并更新回原列或写入新列。
+表示将 `age` 列的每个值加 10，并更新回原列或写入新列。
 
- ---
+---
 
- ## 示例 2：创建新列并赋值
+## 示例 2：创建新列并赋值
 
- ```python
- new_column = salary * 1.1
- ```
+```python
+new_column = salary * 1.1
+```
 
- 表示新建一列 `new_column`，其值为 `salary` 列的 1.1 倍。
+表示新建一列 `new_column`，其值为 `salary` 列的 1.1 倍。
 
- ---
+---
 
- ## 示例 3：条件筛选与赋值
+## 示例 3：条件筛选与赋值
 
- ```python
- bonus = where(age &gt; 30, salary * 0.2, salary * 0.1)
- ```
+```python
+bonus = where(age &gt; 30, salary * 0.2, salary * 0.1)
+```
 
- 表示如果年龄大于 30，则奖金为工资的 20%，否则为 10%。
+表示如果年龄大于 30，则奖金为工资的 20%，否则为 10%。
 
- ---
+---
 
- ## 示例 4：字符串匹配（用于过滤）
+## 示例 4：字符串匹配（用于过滤）
 
- ```python
- name.str.contains(&quot;John&quot;)
- ```
+```python
+name.str.contains(&quot;John&quot;)
+```
 
- 可用于筛选名字中包含 &quot;John&quot; 的行。</translation>
+可用于筛选名字中包含 &quot;John&quot; 的行。</translation>
     </message>
 </context>
 <context>
     <name>DA::DADialogDataFrameFillInterpolate</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.cpp" line="+55"/>
+        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.cpp" line="+27"/>
+        <source>spline</source>
+        <translation>样条线</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>polynomial</source>
+        <translation>多项式</translation>
+    </message>
+    <message>
+        <location line="+30"/>
         <source>The current input cannot be converted to a integer number.</source>
         <translation>当前输入内容无法转换为整型数。</translation>
     </message>
@@ -2610,6 +2636,19 @@ If a column name contains spaces or special characters, enclose it in backticks 
 
 **注意**：  
 如果列名包含空格或特殊字符，请使用反引号（`` ` ``）将其括起来，例如：`` `Embarked On` ``。</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogDataFrameSort</name>
+    <message>
+        <location filename="DAGui/Dialog/DADialogDataFrameSort.cpp" line="+11"/>
+        <source>Ascending</source>
+        <translation>升序</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Descending</source>
+        <translation>降序</translation>
     </message>
 </context>
 <context>
@@ -2955,7 +2994,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAPyDataFrameTableView</name>
     <message>
-        <location filename="DAGui/DAPyDataFrameTableView.cpp" line="+34"/>
+        <location filename="DAGui/DAPyDataFrameTableView.cpp" line="+31"/>
         <source>DataFrameTableView must set model first</source>
         <translation>你需要先设置模型</translation>
     </message>
@@ -3536,15 +3575,15 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="APP/DAAppController.cpp" line="-2104"/>
+        <location filename="APP/DAAppController.cpp" line="-2145"/>
         <source>DA</source>
-        <translation>DA</translation>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DAAppRibbonArea</name>
     <message>
-        <location line="+7"/>
+        <location line="+11"/>
         <source>warning</source>
         <translation>警告</translation>
     </message>
@@ -4708,6 +4747,68 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>裁剪异常值</translation>
     </message>
     <message>
+        <location line="+27"/>
+        <source>Range</source>
+        <translation>范围</translation>
+    </message>
+    <message>
+        <location line="-7"/>
+        <source>-</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+45"/>
+        <source>OK</source>
+        <translation>确认</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+</context>
+<context>
+    <name>DADialogDataFrameDataSearch</name>
+    <message>
+        <location filename="DAGui/Dialog/DADialogDataFrameDataSearch.ui" line="+14"/>
+        <source>Dataframe Search</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Seacrch</source>
+        <translation>搜索</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>From Begin</source>
+        <translation>从头开始</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Find item:</source>
+        <translation>查找内容：</translation>
+    </message>
+    <message>
+        <location line="+45"/>
+        <source>Next</source>
+        <translation>下一个</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Close</source>
+        <translation>关闭</translation>
+    </message>
+</context>
+<context>
+    <name>DADialogDataFrameDataSelect</name>
+    <message>
+        <location filename="DAGui/Dialog/DADialogDataFrameDataSelect.ui" line="+14"/>
+        <location line="+6"/>
+        <source>Data Filter</source>
+        <translation>数据过滤</translation>
+    </message>
+    <message>
         <location line="+20"/>
         <source>Data</source>
         <translation>数据</translation>
@@ -4723,7 +4824,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation></translation>
     </message>
     <message>
-        <location line="+35"/>
+        <location line="+41"/>
         <source>OK</source>
         <translation>确认</translation>
     </message>
@@ -4738,20 +4839,21 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameEvalDatas.ui" line="+14"/>
         <source>Eval Data</source>
-        <oldsource>Query Data</oldsource>
-        <translation>数据运算</translation>
+        <translation>数值计算</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Enter an expression, for example: new_col = age * 2. Column names containing spaces or punctuations (besides underscores) or starting with digits must be surrounded by backticks. (For example, a column named “Area (cm^2)” would be referenced as `Area (cm^2)`). Column names which are Python keywords (like “list”, “for”, “import”, etc) cannot be used. For example, if one of your columns is called a a and you want to sum it with b, your eval should be `a a` + b.</source>
-        <oldsource>Enter an expression, for example: new_col = age * 2 or salary &gt; 50000. Thus, column names containing spaces or punctuations (besides underscores) or starting with digits must be surrounded by backticks. (For example, a column named “Area (cm^2)” would be referenced as `Area (cm^2)`). Column names which are Python keywords (like “list”, “for”, “import”, etc) cannot be used. For example, if one of your columns is called a a and you want to sum it with b, your eval should be `a a` + b.</oldsource>
-        <translation>请输入一个表达式，例如：new_col = age * 2。若包含空格、标点符号（下划线以外）或以数字开头的列名，必须用反引号（`）包裹。（例如，列名 Area (cm^2)应写为 `Area (cm^2)`。同时，不能使用Python关键字作为列名（如 list、for、import 等）。如果你有一个列名为a a，你想将其与 b 相加，则应写为：`a a` + b。</translation>
+        <translation>请输入一个表达式，例如：new_col = age * 2。  
+包含空格、标点符号（下划线以外）的列名，或以数字开头的列名，必须用反引号（backtick）括起来。  
+（例如，列名 “Area (cm^2)” 应该写成：`Area (cm^2)`）  
+不能使用是 Python 关键字的列名（如 “list”, “for”, “import” 等）。  
+例如，如果你有一个列名为 a a，你想将它与 b相加，那么你的表达式应写为：`a a` + b。</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>The string to evaluate</source>
-        <oldsource>The query string to evaluate</oldsource>
-        <translation>用于求值的表达式</translation>
+        <translation>运算表达式</translation>
     </message>
     <message>
         <location line="+22"/>
@@ -4778,17 +4880,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>插值填充</translation>
     </message>
     <message>
-        <location line="+7"/>
-        <source>spline</source>
-        <translation>样条线</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>polynomial</source>
-        <translation>多项式</translation>
-    </message>
-    <message>
-        <location line="+8"/>
+        <location line="+9"/>
         <source>Interpolate order</source>
         <translation>阶数</translation>
     </message>
@@ -4833,7 +4925,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>行方向</translation>
     </message>
     <message>
-        <location line="+46"/>
+        <location line="+40"/>
         <source>OK</source>
         <translation>确认</translation>
     </message>
@@ -4897,12 +4989,16 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+22"/>
         <source>You can refer to column names that are not valid Python variable names by surrounding them in backticks. Column names containing spaces or punctuations (besides underscores) or starting with digits must be surrounded by backticks. (For example, a column named “Area (cm^2)” would be referenced as `Area (cm^2)`). Column names which are Python keywords (like “list”, “for”, “import”, etc) cannot be used. For example, if one of your columns is called a a and you want to compare it with b, your query should be `a a` &gt; b.</source>
-        <translation>您可以通过使用反引号（`）将不符合 Python 变量命名规则的列名括起来，从而引用这些列名。包含空格或标点符号（下划线除外）或以数字开头的列名必须用反引号括起来。（例如，名为Area (cm^2)的列应引用为 `Area (cm^2)`）。不能使用 Python 的关键字（如list、for、import等）作为列名。例如，如果您有一列名为a a，并且想将其与b比较，那么您的查询应为 `a a`&gt;b。</translation>
+        <translation>你可以通过使用反引号（backtick）将那些不能作为合法 Python 变量名的列名括起来以引用它们。  
+包含空格、标点符号（下划线除外）或以数字开头的列名，必须用反引号括起来。  
+（例如，列名 “Area (cm^2)” 应该引用为 `Area (cm^2)`）  
+那些是 Python 关键字的列名（如 “list”、“for”、“import” 等）则不能使用。  
+例如，如果你有一个列名为 a a，并希望将其与 b进行比较，查询表达式应写为：`a a` &gt; b 。</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>The query string to evaluate</source>
-        <translation>用于查询的表达式</translation>
+        <translation>用于求值的查询字符串</translation>
     </message>
     <message>
         <location line="+22"/>
@@ -4944,16 +5040,6 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <location filename="DAGui/Dialog/DADialogDataFrameSort.ui" line="+14"/>
         <source>Sort</source>
         <translation>排序</translation>
-    </message>
-    <message>
-        <location line="+20"/>
-        <source>Ascending</source>
-        <translation>升序</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Descending</source>
-        <translation>降序</translation>
     </message>
 </context>
 <context>
@@ -7642,11 +7728,6 @@ Wrap</source>
         <translation>内核初始化失败</translation>
     </message>
     <message>
-        <location line="+93"/>
-        <source>Unable to create dump file path:%1</source>
-        <translation>无法创建dump文件路径：%1</translation>
-    </message>
-    <message>
         <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="-347"/>
         <source>untitle</source>
         <translation>未命名</translation>
@@ -8012,7 +8093,7 @@ Wrap</source>
         <translation>无法导入DAWorkBench.data_processing模块</translation>
     </message>
     <message>
-        <location filename="DAPyScripts/DAPyWorkBench.cpp" line="+35"/>
+        <location filename="DAPyScripts/DAPyWorkBench.cpp" line="+36"/>
         <source>can not import DAWorkbench module</source>
         <translation>无法导入DAWorkbench模块</translation>
     </message>
@@ -9288,7 +9369,7 @@ Wrap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/main.cpp" line="-58"/>
+        <location filename="APP/main.cpp" line="+35"/>
         <source>version:%1,compile datetime:%2,enable python:%3</source>
         <translation type="unfinished"></translation>
     </message>
@@ -9298,7 +9379,7 @@ Wrap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+5"/>
         <source>Import data into the application, supporting formats such as CSV, XLSX, TXT, PKL, etc.If you want to import multiple datasets, you can use the command multiple times; the program will execute them one by one</source>
         <translation type="unfinished"></translation>
     </message>

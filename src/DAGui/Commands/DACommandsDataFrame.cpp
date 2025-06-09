@@ -377,7 +377,7 @@ bool DACommandDataFrame_dropna::exec()
 		return false;
 	}
 	std::size_t lenEnd = dataframe().size();
-	mDropedCount       = lenBegin - lenEnd;
+	mDropedCount       = static_cast< int >(lenBegin - lenEnd);
 
 	// 说明删除了空行
 	if (mModel) {
@@ -574,7 +574,7 @@ bool DACommandDataFrame_dropduplicates::exec()
 		return false;
 	}
 	std::size_t lenEnd = dataframe().size();
-	mDropedCount       = lenBegin - lenEnd;
+	mDropedCount       = static_cast< int >(lenBegin - lenEnd);
 
 	// 说明删除了空行
 	if (mModel) {
@@ -622,7 +622,7 @@ bool DACommandDataFrame_nstdfilteroutlier::exec()
 		return false;
 	}
 	std::size_t lenEnd = dataframe().size();
-	mDropedCount       = lenBegin - lenEnd;
+	mDropedCount       = static_cast< int >(lenBegin - lenEnd);
 
 	// 说明删除了空行
 	if (mModel) {
