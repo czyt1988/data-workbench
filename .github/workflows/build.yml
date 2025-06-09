@@ -1,23 +1,69 @@
-name: C/C++ CI
+name: CMake-build
 
 on:
   push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+    branches:
+      - master
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Release
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest
-
+    runs-on: windows-latest  # 最新版 Windows
+    strategy:
+      matrix:
+        qt_version: [5.15.2]
+        shared: [ON, OFF]
     steps:
-    - uses: actions/checkout@v4
-    - name: configure
-      run: ./configure
-    - name: make
-      run: make
-    - name: make check
-      run: make check
-    - name: make distcheck
-      run: make distcheck
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Install Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.7'  # 至少 Python 3.7
+        
+    - name: Install Python dependencies
+      run: |
+        pip install numpy
+        pip install pandas
+        pip install scipy
+        pip install Loguru
+        pip install openpyxl
+        pip install chardet
+        pip install PyWavelets
+        pip install pyarrow
+        python_version=$(python -c "import sys; print('.'.join(map(str, sys.version_info[:2])))")
+        if [[ $(echo "$python_version < 3.8" | bc -l) -eq 1 ]]; then
+          pip install typing_extensions
+        fi
+
+    - name: Install zlib
+      run: |
+        choco install zlib -y
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+          version: ${{ matrix.qt_version }}
+          cache: 'true'
+          cache-key-prefix: Qt-Cache-${{ matrix.qt_version }}
+          dir: ${{ github.workspace }}/Qt
+
+    - name: build 3rdparty
+      working-directory: src/3rdparty
+      run: |
+        mkdir build
+        cd build
+        cmake ..
+        cmake --build . --config Release
+        cmake --install .
+
+    - name: build the project
+      run: |
+        mkdir build
+        cd build
+        cmake ..
+        cmake --build . --config Release
