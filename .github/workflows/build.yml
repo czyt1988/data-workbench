@@ -84,7 +84,7 @@ jobs:
         cd build
         cmake .. -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake
         cmake --build . --config Release
-        cmake --install .
+        cmake --install . --config Release
 
     # ----------------------
     # 6. 编译主项目
