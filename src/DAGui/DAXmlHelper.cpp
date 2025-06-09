@@ -28,6 +28,7 @@
 #include "DAQtContainerUtil.hpp"
 #include "DAFigureWidget.h"
 #include "DAChartWidget.h"
+#include "DAChartItemsManager.h"
 // qwt
 #include "qwt_plot.h"
 #include "qwt_plot_canvas.h"
@@ -1524,7 +1525,7 @@ bool DAXmlHelper::PrivateData::isItemHaveDeal(QGraphicsItem* i) const
 
 bool DAXmlHelper::PrivateData::isItemHaveDeal(const QGraphicsItem* i) const
 {
-	return mHaveBeenDealNodeItem.contains(const_cast< QGraphicsItem* >(i));
+    return mHaveBeenDealNodeItem.contains(const_cast< QGraphicsItem* >(i));
 }
 
 //==============================================================
@@ -1970,33 +1971,46 @@ bool DAXmlHelper::loadElement(DAFigureWidget* fig, const QDomElement* tag, const
  * @param doc
  * @return
  */
-QDomElement DAXmlHelper::makeElement(const DAChartWidget* chart, const QString& tagName, QDomDocument* doc)
+QDomElement DAXmlHelper::makeElement(const DAChartWidget* chart,
+                                     const QString& tagName,
+                                     QDomDocument* doc,
+                                     DAChartItemsManager* itemsMgr)
 {
 	QDomElement chartEle = doc->createElement(tagName);
-
-	// plotLayout
+    //!====================
+    //! plotLayout
+    //!====================
 	const QwtPlotLayout* layout = chart->plotLayout();
 	if (layout) {
 		QDomElement layoutEle = makeElement(layout, QStringLiteral("layout"), doc);
 		chartEle.appendChild(layoutEle);
 	}
-	// title
+    //!====================
+    //! title
+    //!====================
 	QwtText title = chart->title();
 	if (!title.isNull() && !title.isEmpty()) {
 		QDomElement titleEle = makeElement(&title, QStringLiteral("title"), doc);
 		chartEle.appendChild(titleEle);
 	}
-	//  Footer
+    //!====================
+    //!  Footer
+    //!====================
 	QwtText footer = chart->footer();
 	if (!footer.isNull() && !footer.isEmpty()) {
 		QDomElement footerEle = makeElement(&footer, QStringLiteral("footer"), doc);
 		chartEle.appendChild(footerEle);
 	}
-	// canvasBackground
+    //!====================
+    //! canvasBackground
+    //!====================
     QDomElement canvasBackgroundEle = DAXMLFileInterface::makeElement(chart->canvasBackground(),
                                                                       QStringLiteral("canvasBackground"),
                                                                       doc);
 	chartEle.appendChild(canvasBackgroundEle);
+    //!====================
+    //! axis
+    //!====================
 	// QwtAxis::YLeft
 	QDomElement axisEle = makeQwtPlotAxisElement(chart, QwtAxis::YLeft, QStringLiteral("axis"), doc);
 	chartEle.appendChild(axisEle);
@@ -2009,10 +2023,27 @@ QDomElement DAXmlHelper::makeElement(const DAChartWidget* chart, const QString& 
 	// QwtAxis::XTop
 	axisEle = makeQwtPlotAxisElement(chart, QwtAxis::XTop, QStringLiteral("axis"), doc);
 	chartEle.appendChild(axisEle);
+
+    //!====================
+    //! plot item
+    //! 注意，这里仅仅保存plotitem的指针和映射关系，真实的保存将在线程中
+    //!====================
+    QDomElement itemsEle        = doc->createElement(QStringLiteral("items"));
+    const QwtPlotItemList items = chart->itemList();
+    for (QwtPlotItem* item : items) {
+        QString key         = itemsMgr->recordItem(item);
+        QDomElement itemEle = doc->createElement(QStringLiteral("item"));
+        itemEle.setAttribute("key", key);
+        itemsEle.appendChild(itemEle);
+    }
+    chartEle.appendChild(itemsEle);
 	return chartEle;
 }
 
-bool DAXmlHelper::loadElement(DAChartWidget* chart, const QDomElement* tag, const QVersionNumber& v)
+bool DAXmlHelper::loadElement(DAChartWidget* chart,
+                              const QDomElement* tag,
+                              DAChartItemsManager* itemsMgr,
+                              const QVersionNumber& v)
 {
 	// plotLayout
 	QDomElement layoutEle = tag->firstChildElement(QStringLiteral("layout"));
@@ -2056,7 +2087,24 @@ bool DAXmlHelper::loadElement(DAChartWidget* chart, const QDomElement* tag, cons
 		loadQwtPlotAxisElement(chart, &axisEle);
 		axisEle = axisEle.nextSiblingElement(QStringLiteral("axis"));
 	}
-
+    // item
+    QDomElement itemsEle         = tag->firstChildElement(QStringLiteral("items"));
+    QDomNodeList itemsChildNodes = itemsEle.childNodes();
+    for (int i = 0; i < itemsChildNodes.size(); ++i) {
+        QDomElement itemEle = itemsChildNodes.at(i).toElement();
+        if (itemEle.isNull()) {
+            continue;
+        }
+        QString key = itemEle.attribute(QStringLiteral("key"));
+        if (key.isEmpty()) {
+            continue;
+        }
+        QwtPlotItem* item = itemsMgr->keyToItem(key);
+        if (!item) {
+            continue;
+        }
+        item->attach(chart);
+    }
 	return false;
 }
 
@@ -2073,11 +2121,15 @@ QDomElement DAXmlHelper::makeQwtPlotAxisElement(const DAChartWidget* chart, int 
 	QwtInterval axisInterval = chart->axisInterval(axisID);
 	axisEle.setAttribute(QStringLiteral("min"), axisInterval.minValue());
 	axisEle.setAttribute(QStringLiteral("max"), axisInterval.maxValue());
-	// font
+    //!====================
+    //! font
+    //!====================
 	QFont f             = chart->axisFont(axisID);
 	QDomElement fontEle = DAXMLFileInterface::makeElement(f, QStringLiteral("font"), doc);
 	axisEle.appendChild(fontEle);
-	// title
+    //!====================
+    //! title
+    //!====================
 	QwtText title = chart->axisTitle(axisID);
 	if (!title.isNull() && !title.isEmpty()) {
 		QDomElement titleEle = makeElement(&title, QStringLiteral("title"), doc);
@@ -2106,11 +2158,11 @@ QDomElement DAXmlHelper::makeQwtPlotAxisElement(const DAChartWidget* chart, int 
             DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Second), QStringLiteral("sec"), doc));
 		dateformatEle.appendChild(
             DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Minute), QStringLiteral("min"), doc));
-		dateformatEle.appendChild(
+        dateformatEle.appendChild(
             DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Hour), QStringLiteral("hour"), doc));
 		dateformatEle.appendChild(
             DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Day), QStringLiteral("day"), doc));
-        dateformatEle.appendChild(
+		dateformatEle.appendChild(
             DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Week), QStringLiteral("week"), doc));
 		dateformatEle.appendChild(
             DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Month), QStringLiteral("month"), doc));
@@ -2412,7 +2464,7 @@ bool DAXmlHelper::loadElement(QwtText* value, const QDomElement* tag, const QVer
  * @param doc
  * @return
  */
-QDomElement DAXmlHelper::makeElement(const QwtPlotItem* value, const QString& tagName, QDomDocument* doc)
+QDomElement DAXmlHelper::makeElement(unsigned int plotitemID, const QwtPlotItem* value, const QString& tagName, QDomDocument* doc)
 {
     QDomElement rootEle = doc->createElement(tagName);
     rootEle.setAttribute(QStringLiteral("rtti"), value->rtti());
@@ -2437,14 +2489,7 @@ QDomElement DAXmlHelper::makeElement(const QwtPlotItem* value, const QString& ta
     // title
     QDomElement titleEle = makeElement(&(value->title()), QStringLiteral("title"), doc);
     rootEle.appendChild(titleEle);
-    // 下面将存储qwt的实例内容
-    switch (value->rtti()) {
-    case QwtPlotItem::Rtti_PlotCurve: {
-        const QwtPlotCurve* cur = static_cast< const QwtPlotCurve* >(value);
-    } break;
-    default:
-        break;
-    }
+    // qwt的实例内容在线程中存储
 
     return rootEle;
 }
@@ -2483,6 +2528,17 @@ qreal DAXmlHelper::attributeToDouble(const QDomElement& item, const QString& att
 		qWarning() << QObject::tr("The attribute %1=%2 under the tag %3 cannot be converted to double ")
                           .arg(att, item.attribute(att), item.tagName());
 	}
-	return r;
+    return r;
+}
+
+/**
+ * @brief 设置绘图id的基准
+ *
+ * 这个函数正常用户用不到，是在特殊情况下改变绘图id的顺序使用，例如进行局部更新
+ * @param v
+ */
+void DAXmlHelper::setPlotItemIDBase(unsigned int v)
+{
+    DAXmlHelper::PrivateData::setPlotItemIDBase(v);
 }
 }

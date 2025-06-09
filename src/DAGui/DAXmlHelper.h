@@ -31,6 +31,7 @@ class DAGraphicsResizeableItem;
 class DAColorTheme;
 class DAFigureWidget;
 class DAChartWidget;
+class DAChartItemsManager;
 
 /**
  * @brief DAProjectInterface::getProjectVersion的版本号会通过setVersionNumber设置进DAXmlHelper
@@ -87,8 +88,14 @@ public:
 	static QDomElement makeElement(const DAFigureWidget* fig, const QString& tagName, QDomDocument* doc);
 	static bool loadElement(DAFigureWidget* fig, const QDomElement* tag, const QVersionNumber& v = QVersionNumber());
 	// DAChartWidget
-	static QDomElement makeElement(const DAChartWidget* chart, const QString& tagName, QDomDocument* doc);
-	static bool loadElement(DAChartWidget* chart, const QDomElement* tag, const QVersionNumber& v = QVersionNumber());
+    static QDomElement makeElement(const DAChartWidget* chart,
+                                   const QString& tagName,
+                                   QDomDocument* doc,
+                                   DAChartItemsManager* itemsMgr);
+    static bool loadElement(DAChartWidget* chart,
+                            const QDomElement* tag,
+                            DAChartItemsManager* itemsMgr,
+                            const QVersionNumber& v = QVersionNumber());
     //
     static QDomElement makeQwtPlotAxisElement(const DAChartWidget* chart, int axisID, const QString& tagName, QDomDocument* doc);
 	static bool loadQwtPlotAxisElement(DAChartWidget* chart,
@@ -101,7 +108,7 @@ public:
 	static QDomElement makeElement(const QwtText* value, const QString& tagName, QDomDocument* doc);
 	static bool loadElement(QwtText* value, const QDomElement* tag, const QVersionNumber& version = QVersionNumber());
     // QwtPlotItems
-    static QDomElement makeElement(const QwtPlotItem* value, const QString& tagName, QDomDocument* doc);
+    static QDomElement makeElement(unsigned int plotitemID, const QwtPlotItem* value, const QString& tagName, QDomDocument* doc);
 
 public:
 	// 生成一个qvariant element
@@ -109,6 +116,8 @@ public:
 	static QVariant loadVariantValueElement(const QDomElement& item, const QVariant& defaultVal);
 	// 带提示的属性转double
 	static qreal attributeToDouble(const QDomElement& item, const QString& att);
+    // 设置绘图id的基准
+    static void setPlotItemIDBase(unsigned int v);
 };
 }
 
