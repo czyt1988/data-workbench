@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - dev
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
@@ -15,42 +16,47 @@ jobs:
     strategy:
       matrix:
         qt_version: [5.15.2]
-        shared: [ON, OFF]
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
+
+    - name: Cache Python
+      uses: actions/cache@v3
+      with:
+        path: ~\AppData\Local\Programs\Python
+        key: ${{ runner.os }}-python-${{ hashFiles('requirements.txt') }}
 
     - name: Install Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.7'  # 至少 Python 3.7
-        
+
     - name: Install Python dependencies
       run: |
-        pip install numpy
-        pip install pandas
-        pip install scipy
-        pip install Loguru
-        pip install openpyxl
-        pip install chardet
-        pip install PyWavelets
-        pip install pyarrow
-        python_version=$(python -c "import sys; print('.'.join(map(str, sys.version_info[:2])))")
-        if [[ $(echo "$python_version < 3.8" | bc -l) -eq 1 ]]; then
-          pip install typing_extensions
-        fi
+        pip install -r requirements.txt
+
+    - name: Cache zlib
+      uses: actions/cache@v3
+      with:
+        path: C:\ProgramData\chocolatey\lib\zlib
+        key: ${{ runner.os }}-zlib-${{ hashFiles('.github/workflow-cache-version-file.txt') }}
 
     - name: Install zlib
       run: |
         choco install zlib -y
 
+    - name: Cache Qt
+      uses: actions/cache@v3
+      with:
+        path: C:\Qt
+        key: ${{ runner.os }}-qt-${{ hashFiles('.github/workflow-cache-version-file.txt') }}
+
     - name: Install Qt
       uses: jurplel/install-qt-action@v3
       with:
           version: ${{ matrix.qt_version }}
-          cache: 'true'
-          cache-key-prefix: Qt-Cache-${{ matrix.qt_version }}
-          dir: ${{ github.workspace }}/Qt
+          dir: C:\Qt
 
     - name: build 3rdparty
       working-directory: src/3rdparty

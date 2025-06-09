@@ -6,3 +6,4 @@ openpyxl
 chardet
 PyWavelets
 pyarrow
+typing_extensions

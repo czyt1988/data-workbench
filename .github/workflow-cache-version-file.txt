@@ -1,0 +1,2 @@
+zlib_version=1.2.11
+qt_version=5.15.2
