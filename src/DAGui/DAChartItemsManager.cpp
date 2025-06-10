@@ -1,5 +1,6 @@
 #include "DAChartItemsManager.h"
 #include "DAGuiEnumStringUtils.h"
+
 namespace DA
 {
 DAChartItemsManager::DAChartItemsManager()
@@ -38,6 +39,21 @@ QString DAChartItemsManager::makeItemKey(QwtPlotItem* item)
     ++mKeyID;
     QString key = enumToString(static_cast< QwtPlotItem::RttiValues >(item->rtti()));
     return QString("%1-%2").arg(key).arg(mKeyID);
+}
+
+bool DAChartItemsManager::isEmpty() const
+{
+    return mItemToKey.isEmpty();
+}
+
+QList< QString > DAChartItemsManager::keys() const
+{
+    return mKeyToItem.keys();
+}
+
+QList< QwtPlotItem* > DAChartItemsManager::items() const
+{
+    return mItemToKey.keys();
 }
 
 }

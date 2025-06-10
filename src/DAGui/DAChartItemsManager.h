@@ -25,6 +25,12 @@ public:
     QwtPlotItem* keyToItem(const QString& key) const;
     // 生成一个唯一的key
     QString makeItemKey(QwtPlotItem* item);
+    // 是否为空
+    bool isEmpty() const;
+    // 获取所有key
+    QList< QString > keys() const;
+    // 获取所有item
+    QList< QwtPlotItem* > items() const;
 
 private:
     QHash< QwtPlotItem*, QString > mItemToKey;
