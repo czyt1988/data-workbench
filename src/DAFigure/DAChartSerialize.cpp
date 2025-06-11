@@ -1,5 +1,6 @@
 ﻿#include "DAChartSerialize.h"
 #include "DAChartUtil.h"
+#include <cstring>
 #include "qwt_plot_item.h"
 #include "qwt_plot_curve.h"
 #include "qwt_plot.h"
@@ -16,6 +17,7 @@ const int gc_dachart_version               = 1;
 const std::uint32_t gc_dachart_magic_mark  = 0x5A6B4CF1;
 const std::uint32_t gc_dachart_magic_mark2 = 0xAA123456;
 const std::uint32_t gc_dachart_magic_mark3 = 0x12345678;
+const std::uint32_t gc_dachart_magic_mark4 = 0xAAB23498;
 namespace DA
 {
 void serialize_out_scale_widge(QDataStream& out, const QwtPlot* chart, int axis);
@@ -888,8 +890,6 @@ QDataStream& operator>>(QDataStream& in, QwtPlot* chart)
     return in;
 }
 
-}  // end DA
-
 ///
 /// \brief QwtIntervalSample序列化支持
 /// \param out
@@ -939,3 +939,42 @@ QDataStream& operator>>(QDataStream& in, QwtInterval& item)
     item.setBorderFlags(static_cast< QwtInterval::BorderFlags >(flag));
     return in;
 }
+//----------------------------------------------------
+// Header
+//----------------------------------------------------
+
+DAChartItemSerialize::Header::Header() : magic(gc_dachart_magic_mark4), version(1), rtti(QwtPlotItem::Rtti_PlotItem)
+{
+    memset(byte, 0, sizeof(byte));
+}
+
+bool DAChartItemSerialize::Header::isValid() const
+{
+    return gc_dachart_magic_mark4 == magic;
+}
+
+DAChartItemSerialize::DAChartItemSerialize()
+{
+}
+
+DAChartItemSerialize::~DAChartItemSerialize()
+{
+}
+
+QByteArray DAChartItemSerialize::serializeOut(const QwtPlotItem* item)
+{
+    int rtti          = item->rtti();
+    FpSerializeOut fp = mSerializeOut.value(rtti, nullptr);
+    if (!fp) {
+        return QByteArray();
+    }
+    DAChartItemSerialize::Header h;
+    h.rtti = item->rtti();
+    QByteArray byte;
+    QDataStream st(&byte, QIODevice::WriteOnly);
+    st << h;
+    st << fp(item);
+    return byte;
+}
+
+}  // end DA

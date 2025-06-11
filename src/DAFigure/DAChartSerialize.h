@@ -3,6 +3,7 @@
 #include "DAFigureAPI.h"
 #include <string>
 #include <QDataStream>
+#include <functional>
 #include "qwt_text.h"
 #include "qwt_samples.h"
 
@@ -36,6 +37,55 @@ public:
 private:
     QString mWhy;
 };
+
+/**
+ * @brief 针对QwtPlotItem的二进制序列化
+ */
+class DAFIGURE_API DAChartItemSerialize
+{
+public:
+    class Header
+    {
+    public:
+        Header();
+        ~Header();
+        std::uint32_t magic;
+        int version;  ///< 版本
+        int rtti;
+        unsigned char byte[ 5 ];  ///< 预留5字节
+        // 是否正确的header
+        bool isValid() const;
+    };
+
+public:
+    /**
+     * @brief 序列化为QByteArray函数
+     */
+    using FpSerializeOut = std::function< QByteArray(const QwtPlotItem*) >;  // QByteArray serializeOut(QwtPlotItem* item)
+    using FpSerializeIn = std::function< QwtPlotItem*(int rtti, const QByteArray&) >;  // QwtPlotItem* serializeIn(int rtti,const QByteArray& d)
+public:
+    DAChartItemSerialize();
+    ~DAChartItemSerialize();
+    /**
+     * @brief 注册序列化函数
+     * @param rtti item的rtti
+     * @param fp 函数指针
+     */
+    void registSerialize(int rtti, FpSerializeOut fp);
+
+    /**
+     * @brief 序列化输出
+     * @param item
+     * @return
+     */
+    QByteArray serializeOut(const QwtPlotItem* item);
+
+private:
+    QHash< int, FpSerializeOut > mSerializeOut;
+};
+
+DAFIGURE_API QDataStream& operator<<(QDataStream& out, const DAChartItemSerialize::Header& f);
+DAFIGURE_API QDataStream& operator>>(QDataStream& in, DAChartItemSerialize::Header& f);
 
 // QFrame的序列化
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QFrame* f);
@@ -84,14 +134,13 @@ DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotCanvas* c);
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlot* chart);
 DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlot* chart);
 
-}
-//下面这两个要放到DA命名空间外，因为使用了QVector<T>的<<
-
 // QwtIntervalSample的序列化
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtIntervalSample& item);
 DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtIntervalSample& item);
 // QwtInterval的序列化
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtInterval& item);
 DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtInterval& item);
+}
+// 下面这两个要放到DA命名空间外，因为使用了QVector<T>的<<
 
 #endif  // SAQWTSERIALIZE_H
