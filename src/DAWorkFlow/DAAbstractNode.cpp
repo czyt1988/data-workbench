@@ -5,6 +5,7 @@
 #include "DAAbstractNodeFactory.h"
 #include "DAQtContainerUtil.hpp"
 #include "DAUniqueIDGenerater.h"
+
 // Qxml
 #include <QPointer>
 #include <QDomComment>
@@ -513,11 +514,6 @@ bool DAAbstractNode::linkTo(const QString& outKey, DAAbstractNode::SharedPointer
 {
 	if (!linkTo_(outKey, inNode, inKey)) {
 		return false;
-	}
-	if (auto f = factory()) {
-		if (DAAbstractNode::PrivateData::isEnableCallback(f)) {
-			f->nodeLinkSucceed(pointer(), outKey, inNode, inKey);
-		}
 	}
 #if DA_DAABSTRACTNODE_DEBUG_PRINT
 	qDebug() << getNodeName() << "->linkTo(outKey=" << outKey << ",inNode=" << inNode->getNodeName()

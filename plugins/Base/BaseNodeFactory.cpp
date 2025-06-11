@@ -1,4 +1,4 @@
-#include "BaseNodeFactory.h"
+﻿#include "BaseNodeFactory.h"
 //
 #include <QMainWindow>
 #include "DACoreInterface.h"
@@ -88,14 +88,6 @@ void BaseNodeFactory::nodeAddedToWorkflow(DA::DAAbstractNode::SharedPointer node
 void BaseNodeFactory::nodeStartRemove(DA::DAAbstractNode::SharedPointer node)
 {
     DA::DAAbstractNodeFactory::nodeStartRemove(node);
-}
-
-void BaseNodeFactory::nodeLinkSucceed(DA::DAAbstractNode::SharedPointer outNode,
-                                      const QString& outKey,
-                                      DA::DAAbstractNode::SharedPointer inNode,
-                                      const QString& inkey)
-{
-    DA::DAAbstractNodeFactory::nodeLinkSucceed(outNode, outKey, inNode, inkey);
 }
 
 void BaseNodeFactory::nodeLinkDetached(DA::DAAbstractNode::SharedPointer outNode,

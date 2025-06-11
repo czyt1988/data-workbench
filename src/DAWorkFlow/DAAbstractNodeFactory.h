@@ -126,19 +126,6 @@ public:
 	virtual void nodeStartRemove(DAAbstractNode::SharedPointer node);
 
 	/**
-	 * @brief 节点连接成功的回调
-	 *
-	 * 注意仅仅是节点的链接完成，这里不要操作graphicsItem,要处理连接线完全连接两个节点后的情况，使用DAAbstractNodeLinkGraphicsItem::finishedLink来处理
-	 * @param outNode
-	 * @param outKey
-	 * @param inNode
-	 * @param inkey
-	 */
-	virtual void nodeLinkSucceed(DAAbstractNode::SharedPointer outNode,
-                                 const QString& outKey,
-                                 DAAbstractNode::SharedPointer inNode,
-                                 const QString& inkey);
-	/**
 	 * @brief 节点连线删除的回调
 	 * @param outNode 输出节点
 	 * @param outKey 输出key
@@ -146,9 +133,9 @@ public:
 	 * @param inkey 输入key
 	 */
 	virtual void nodeLinkDetached(DAAbstractNode::SharedPointer outNode,
-                                  const QString& outKey,
-                                  DAAbstractNode::SharedPointer inNode,
-                                  const QString& inkey);
+								  const QString& outKey,
+								  DAAbstractNode::SharedPointer inNode,
+								  const QString& inkey);
 	/**
 	 * @brief 把扩展信息保存到xml上
 	 * 	 * 此函数在工作流保存的过程中会调用，把工厂的附加信息保存到xml文件上
@@ -183,7 +170,7 @@ public:
 	 */
 	virtual void uiInitialization(DANodeGraphicsScene* scene);
 	/**
-     * @brief 工作流文件加载准备完成回调
+	 * @brief 工作流准备完成回调
 	 * 文件加载过程中不会触发nodeAdded信号，在整个文件加载完成后会触发workflowReady用来通知其他告知工作流加载完成
 	 */
 	virtual void workflowReady();
@@ -191,4 +178,4 @@ public:
 
 }  // end DA
 
-#endif  // FCABSTRACTNODEFACTORY_H
+#endif  // DAABSTRACTNODEFACTORY_H

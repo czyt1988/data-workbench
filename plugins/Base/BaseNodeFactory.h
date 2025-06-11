@@ -1,4 +1,4 @@
-#ifndef BASENODEFACTORY_H
+﻿#ifndef BASENODEFACTORY_H
 #define BASENODEFACTORY_H
 #include "BaseGlobal.h"
 #include "DAAbstractNodeFactory.h"
@@ -77,11 +77,6 @@ public:
 	// 节点删除的工厂回调
 	virtual void nodeStartRemove(DA::DAAbstractNode::SharedPointer node) override;
 
-	// 节点连接成功的回调
-	virtual void nodeLinkSucceed(DA::DAAbstractNode::SharedPointer outNode,
-								 const QString& outKey,
-								 DA::DAAbstractNode::SharedPointer inNode,
-								 const QString& inkey) override;
 	// 节点连线删除的回调
 	virtual void nodeLinkDetached(DA::DAAbstractNode::SharedPointer outNode,
 								  const QString& outKey,
