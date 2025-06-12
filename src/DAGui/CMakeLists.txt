@@ -43,7 +43,6 @@ set(DA_LIB_HEADER_FILES
     DAChartAddTradingCurveWidget.h
     DAChartAddSpectrogramWidget.h
     DAChartItemsManager.h
-    DAChartPlotItemFactory.h
     DADataManagerComboBox.h
     DADataOperatePageWidget.h
     DAFigureFactory.h
@@ -102,7 +101,6 @@ set(DA_LIB_SOURCE_FILES
     DAChartOperateWidget.cpp
     DAChartSettingWidget.cpp
     DAChartItemsManager.cpp
-    DAChartPlotItemFactory.cpp
     DADataListView.cpp
     DADataManageTableView.cpp
     DADataManageWidget.cpp

@@ -14,9 +14,16 @@
 #include "qwt_plot_tradingcurve.h"
 #include "qwt_plot_barchart.h"
 #include "qwt_plot_multi_barchart.h"
+#include "qwt_plot_shapeitem.h"
+#include "qwt_plot_textlabel.h"
+#include "qwt_plot_zoneitem.h"
+#include "qwt_plot_vectorfield.h"
 namespace DA
 {
-
+/**
+ * @brief qwt的默认plotitem注册到工厂
+ * @return
+ */
 static QHash< int, DAChartPlotItemFactory::FpItemCreate > initDAChartPlotItemFactory()
 {
     QHash< int, DAChartPlotItemFactory::FpItemCreate > res;
@@ -33,6 +40,10 @@ static QHash< int, DAChartPlotItemFactory::FpItemCreate > initDAChartPlotItemFac
     res[ QwtPlotItem::Rtti_PlotTradingCurve ]  = []() -> QwtPlotItem* { return new QwtPlotTradingCurve(); };
     res[ QwtPlotItem::Rtti_PlotBarChart ]      = []() -> QwtPlotItem* { return new QwtPlotBarChart(); };
     res[ QwtPlotItem::Rtti_PlotMultiBarChart ] = []() -> QwtPlotItem* { return new QwtPlotMultiBarChart(); };
+    res[ QwtPlotItem::Rtti_PlotShape ]         = []() -> QwtPlotItem* { return new QwtPlotShapeItem(); };
+    res[ QwtPlotItem::Rtti_PlotTextLabel ]     = []() -> QwtPlotItem* { return new QwtPlotTextLabel(); };
+    res[ QwtPlotItem::Rtti_PlotZone ]          = []() -> QwtPlotItem* { return new QwtPlotZoneItem(); };
+    res[ QwtPlotItem::Rtti_PlotVectorField ]   = []() -> QwtPlotItem* { return new QwtPlotVectorField(); };
     return res;
 }
 
@@ -65,9 +76,6 @@ bool DAChartPlotItemFactory::isHaveCreateItemFucntion(int rtti)
  */
 QHash< int, DAChartPlotItemFactory::FpItemCreate >& DAChartPlotItemFactory::factoryFunctionMap()
 {
-    /**
-     * @brief QwtPlotItem的工厂函数记录
-     */
     static QHash< int, DAChartPlotItemFactory::FpItemCreate > s_ItemCreateFp = initDAChartPlotItemFactory();
     return s_ItemCreateFp;
 }

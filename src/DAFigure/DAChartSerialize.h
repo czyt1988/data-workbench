@@ -49,10 +49,11 @@ public:
     public:
         Header();
         ~Header();
-        std::uint32_t magic;
-        int version;  ///< 版本
-        int rtti;
-        unsigned char byte[ 5 ];  ///< 预留5字节
+        std::uint32_t magic;       ///< 魔数，--4
+        int version;               ///< 版本 -- 8
+        int rtti;                  ///< rtti --12
+        std::uint64_t size;        ///< 数据区大小 --20
+        unsigned char byte[ 12 ];  ///< 预留12字节，凑齐32字节
         // 是否正确的header
         bool isValid() const;
     };
@@ -71,17 +72,38 @@ public:
      * @param rtti item的rtti
      * @param fp 函数指针
      */
-    void registSerialize(int rtti, FpSerializeOut fp);
+    static void registSerializeFun(int rtti, FpSerializeIn fpIn, FpSerializeOut fpOut);
 
+    /**
+     * @brief 判断这个rtti是否支持序列化
+     * @param rtti
+     * @return
+     */
+    static bool isSupportSerialize(int rtti);
+
+    /**
+     * @brief 获取Serialize In方法
+     * @param rtti
+     * @return
+     */
+    static FpSerializeIn getSerializeInFun(int rtti);
+
+    /**
+     * @brief 获取Serialize Out方法
+     * @param rtti
+     * @return
+     */
+    static FpSerializeOut getSerializeOutFun(int rtti);
     /**
      * @brief 序列化输出
      * @param item
      * @return
      */
     QByteArray serializeOut(const QwtPlotItem* item);
+    QwtPlotItem* serializeIn(const QByteArray& byte);
 
-private:
-    QHash< int, FpSerializeOut > mSerializeOut;
+protected:
+    static QHash< int, std::pair< FpSerializeIn, FpSerializeOut > >& serializeFun();
 };
 
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const DAChartItemSerialize::Header& f);
@@ -103,9 +125,7 @@ DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtIntervalSymbol* t);
 // QwtColumnSymbol的序列化
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtColumnSymbol* t);
 DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtColumnSymbol* t);
-// QwtPlotItem指针的序列化
-DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlotItem* item);
-DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotItem* item);
+
 // QwtScaleWidget指针的序列化
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtScaleWidget* w);
 DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtScaleWidget* w);
@@ -113,7 +133,11 @@ DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtScaleWidget* w);
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtScaleDraw* w);
 DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtScaleDraw* w);
 
-// item 的序列化
+/// @group QwtPlotItem相关
+/// @{
+// QwtPlotItem指针的序列化
+DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlotItem* item);
+DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotItem* item);
 // QwtPlotCurve指针的序列化
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlotCurve* item);
 DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotCurve* item);
@@ -123,6 +147,8 @@ DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotBarChart* item);
 // QwtPlotIntervalCurve指针的序列化
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlotIntervalCurve* item);
 DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotIntervalCurve* item);
+
+/// @}
 
 // QwtPlotCanvas的序列化
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlotCanvas* c);

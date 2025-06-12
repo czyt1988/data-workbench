@@ -1,23 +1,43 @@
 ﻿#include "DAChartSerialize.h"
 #include "DAChartUtil.h"
 #include <cstring>
-#include "qwt_plot_item.h"
-#include "qwt_plot_curve.h"
+#include <QBuffer>
+// qwt
 #include "qwt_plot.h"
 #include "qwt_symbol.h"
 #include "qwt_plot_canvas.h"
 #include "qwt_scale_widget.h"
 #include "qwt_color_map.h"
-#include "qwt_plot_barchart.h"
 #include "qwt_column_symbol.h"
 #include "qwt_plot_intervalcurve.h"
 #include "qwt_interval_symbol.h"
+#include "qwt_plot_item.h"
+#include "qwt_plot_curve.h"
+#include "qwt_plot_grid.h"
+#include "qwt_plot_scaleitem.h"
+#include "qwt_plot_legenditem.h"
+#include "qwt_plot_marker.h"
+#include "qwt_plot_spectrocurve.h"
+#include "qwt_plot_intervalcurve.h"
+#include "qwt_plot_histogram.h"
+#include "qwt_plot_spectrogram.h"
+#include "qwt_plot_graphicitem.h"
+#include "qwt_plot_tradingcurve.h"
+#include "qwt_plot_barchart.h"
+#include "qwt_plot_multi_barchart.h"
+#include "qwt_plot_shapeitem.h"
+#include "qwt_plot_textlabel.h"
+#include "qwt_plot_zoneitem.h"
+#include "qwt_plot_vectorfield.h"
+// DAChart
+#include "DAChartPlotItemFactory.h"
 ///< 版本标示，每个序列化都应该带有版本信息，用于对下兼容
-const int gc_dachart_version               = 1;
-const std::uint32_t gc_dachart_magic_mark  = 0x5A6B4CF1;
-const std::uint32_t gc_dachart_magic_mark2 = 0xAA123456;
-const std::uint32_t gc_dachart_magic_mark3 = 0x12345678;
-const std::uint32_t gc_dachart_magic_mark4 = 0xAAB23498;
+const int gc_dachart_version                     = 1;
+const std::uint32_t gc_dachart_magic_mark        = 0x5A6B4CF1;
+const std::uint32_t gc_dachart_magic_mark2       = 0xAA123456;
+const std::uint32_t gc_dachart_magic_mark3       = 0x12345678;
+const std::uint32_t gc_dachart_magic_mark4       = 0xAAB23498;
+const QDataStream::Version gc_datastream_version = QDataStream::Qt_5_12;
 namespace DA
 {
 void serialize_out_scale_widge(QDataStream& out, const QwtPlot* chart, int axis);
@@ -99,6 +119,19 @@ void serialize_in_scale_widge(QDataStream& in, QwtPlot* chart, int axis)
         }
         chart->enableAxis(axis, enable);
     }
+}
+
+QDataStream& operator<<(QDataStream& out, const DAChartItemSerialize::Header& f)
+{
+    out << f.magic << f.version << f.rtti << f.size;
+    out.writeRawData(reinterpret_cast< const char* >(f.byte), sizeof(f.byte));
+}
+
+QDataStream& operator>>(QDataStream& in, DAChartItemSerialize::Header& f)
+{
+    in >> f.magic >> f.version;
+    in >> f.rtti >> f.size;
+    in.readRawData(reinterpret_cast< char* >(f.byte), sizeof(f.byte));
 }
 
 QDataStream& operator<<(QDataStream& out, const QwtText& t)
@@ -961,10 +994,34 @@ DAChartItemSerialize::~DAChartItemSerialize()
 {
 }
 
+void DAChartItemSerialize::registSerializeFun(int rtti,
+                                              DAChartItemSerialize::FpSerializeIn fpIn,
+                                              DAChartItemSerialize::FpSerializeOut fpOut)
+{
+    serializeFun()[ rtti ] = std::make_pair(fpIn, fpOut);
+}
+
+bool DAChartItemSerialize::isSupportSerialize(int rtti)
+{
+    return serializeFun().contains(rtti);
+}
+
+DAChartItemSerialize::FpSerializeIn DAChartItemSerialize::getSerializeInFun(int rtti)
+{
+    auto pair = serializeFun().value(rtti, std::make_pair< FpSerializeIn, FpSerializeOut >(nullptr, nullptr));
+    return pair.first;
+}
+
+DAChartItemSerialize::FpSerializeOut DAChartItemSerialize::getSerializeOutFun(int rtti)
+{
+    auto pair = serializeFun().value(rtti, std::make_pair< FpSerializeIn, FpSerializeOut >(nullptr, nullptr));
+    return pair.second;
+}
+
 QByteArray DAChartItemSerialize::serializeOut(const QwtPlotItem* item)
 {
     int rtti          = item->rtti();
-    FpSerializeOut fp = mSerializeOut.value(rtti, nullptr);
+    FpSerializeOut fp = getSerializeOutFun(rtti);
     if (!fp) {
         return QByteArray();
     }
@@ -972,9 +1029,123 @@ QByteArray DAChartItemSerialize::serializeOut(const QwtPlotItem* item)
     h.rtti = item->rtti();
     QByteArray byte;
     QDataStream st(&byte, QIODevice::WriteOnly);
+    st.setVersion(gc_datastream_version);  // 以5.12为准，因为最低编译要求为qt5.12
     st << h;
     st << fp(item);
     return byte;
+}
+
+QwtPlotItem* DAChartItemSerialize::serializeIn(const QByteArray& byte)
+{
+    // 使用QBuffer避免额外内存分配
+    QBuffer buffer;
+    buffer.setData(byte);
+    buffer.open(QIODevice::ReadOnly);
+
+    QDataStream st(&buffer);
+    DAChartItemSerialize::Header h;
+    st.setVersion(gc_datastream_version);
+    st >> h;
+
+    if (!h.isValid()) {
+        return nullptr;
+    }
+
+    FpSerializeIn fp = getSerializeInFun(h.rtti);
+    if (!fp) {
+        return nullptr;
+    }
+
+    // 直接获取剩余数据的引用（零拷贝）
+    qint64 remainingSize = buffer.bytesAvailable();
+    const char* rawData  = buffer.data().constData() + buffer.pos();
+
+    // 创建视图（不复制数据）
+    QByteArray remainingData = QByteArray::fromRawData(rawData, remainingSize);
+
+    return fp(h.rtti, remainingData);
+}
+
+QHash< int, std::pair< DAChartItemSerialize::FpSerializeIn, DAChartItemSerialize::FpSerializeOut > > initChartItemSerialize()
+{
+    QHash< int, std::pair< DAChartItemSerialize::FpSerializeIn, DAChartItemSerialize::FpSerializeOut > > res;
+    DAChartItemSerialize::FpSerializeOut out = [](const QwtPlotItem* item) -> QByteArray {
+        QByteArray byte;
+        QDataStream st(&byte, QIODevice::WriteOnly);
+        st << item;
+        st << static_cast< const QwtPlotCurve* >(item);
+        return byte;
+    };
+
+    DAChartItemSerialize::FpSerializeIn in = [](int rtti, const QByteArray& byte) -> QwtPlotItem* {
+        QwtPlotItem* item = DAChartPlotItemFactory::createItem(rtti);
+        QDataStream st(byte);
+        st >> item;
+        switch (rtti) {
+        case QwtPlotItem::Rtti_PlotCurve: {
+            QwtPlotCurve* plotItem = static_cast< QwtPlotCurve* >(item);
+        } break;
+        case QwtPlotItem::Rtti_PlotGrid: {
+            QwtPlotGrid* plotItem = static_cast< QwtPlotGrid* >(item);
+        } break;
+        case QwtPlotItem::Rtti_PlotScale: {
+            QwtPlotScaleItem* plotItem = static_cast< QwtPlotScaleItem* >(item);
+        } break;
+        case QwtPlotItem::Rtti_PlotLegend: {
+            QwtPlotLegendItem* plotItem = static_cast< QwtPlotLegendItem* >(item);
+        } break;
+        case QwtPlotItem::Rtti_PlotMarker: {
+            QwtPlotMarker* plotItem = static_cast< QwtPlotMarker* >(item);
+        } break;
+        case QwtPlotItem::Rtti_PlotSpectroCurve: {
+            QwtPlotSpectroCurve* plotItem = static_cast< QwtPlotSpectroCurve* >(item);
+        } break;
+        case QwtPlotItem::Rtti_PlotIntervalCurve: {
+            QwtPlotIntervalCurve* plotItem = static_cast< QwtPlotIntervalCurve* >(item);
+        } break;
+        case QwtPlotItem::Rtti_PlotHistogram: {
+            QwtPlotHistogram* plotItem = static_cast< QwtPlotHistogram* >(item);
+        } break;
+        case QwtPlotItem::Rtti_PlotSpectrogram: {
+            QwtPlotSpectrogram* plotItem = static_cast< QwtPlotSpectrogram* >(item);
+        } break;
+        case QwtPlotItem::Rtti_PlotGraphic: {
+            QwtPlotGraphicItem* plotItem = static_cast< QwtPlotGraphicItem* >(item);
+        } break;
+        case QwtPlotItem::Rtti_PlotTradingCurve: {
+            QwtPlotTradingCurve* plotItem = static_cast< QwtPlotTradingCurve* >(item);
+        } break;
+        case QwtPlotItem::Rtti_PlotBarChart: {
+            QwtPlotBarChart* plotItem = static_cast< QwtPlotBarChart* >(item);
+        } break;
+        case QwtPlotItem::Rtti_PlotMultiBarChart: {
+            QwtPlotMultiBarChart* plotItem = static_cast< QwtPlotMultiBarChart* >(item);
+        } break;
+        case QwtPlotItem::Rtti_PlotShape: {
+            QwtPlotShapeItem* plotItem = static_cast< QwtPlotShapeItem* >(item);
+        } break;
+        case QwtPlotItem::Rtti_PlotTextLabel: {
+            QwtPlotTextLabel* plotItem = static_cast< QwtPlotTextLabel* >(item);
+        } break;
+        case QwtPlotItem::Rtti_PlotZone: {
+            QwtPlotZoneItem* plotItem = static_cast< QwtPlotZoneItem* >(item);
+        } break;
+        case QwtPlotItem::Rtti_PlotVectorField: {
+            QwtPlotVectorField* plotItem = static_cast< QwtPlotVectorField* >(item);
+        } break;
+        default:
+            break;
+        }
+
+        return item;
+    };
+    return res;
+}
+
+QHash< int, std::pair< DAChartItemSerialize::FpSerializeIn, DAChartItemSerialize::FpSerializeOut > >& DAChartItemSerialize::serializeFun()
+{
+    static QHash< int, std::pair< FpSerializeIn, FpSerializeOut > > s_serializeMap;
+    return s_serializeMap;
 }
 
 }  // end DA
