@@ -303,12 +303,15 @@ QDataStream& operator>>(QDataStream& in, QwtColumnSymbol* t)
     t->setStyle(static_cast< QwtColumnSymbol::Style >(style));
     return in;
 }
-///
-/// \brief QwtPlotItem序列化
-/// \param out
-/// \param item
-/// \return
-///
+
+/**
+ * @brief QwtPlotItem序列化
+ *
+ * 这是一个接口类的序列化，正常用户不应该使用到此函数
+ * @param out
+ * @param item
+ * @return
+ */
 QDataStream& operator<<(QDataStream& out, const QwtPlotItem* item)
 {
     out << gc_dachart_version << gc_dachart_magic_mark;
@@ -320,12 +323,15 @@ QDataStream& operator<<(QDataStream& out, const QwtPlotItem* item)
         << item->renderThreadCount();
     return out;
 }
-///
-/// \brief QwtPlotItem序列化
-/// \param in
-/// \param item
-/// \return
-///
+
+/**
+ * @brief QwtPlotItem序列化
+ *
+ *  这是一个接口类的序列化，正常用户不应该使用到此函数
+ * @param in
+ * @param item
+ * @return
+ */
 QDataStream& operator>>(QDataStream& in, QwtPlotItem* item)
 {
     int version;
@@ -468,6 +474,216 @@ QDataStream& operator>>(QDataStream& in, QwtPlotCurve* item)
     return in;
 }
 
+/**
+ * @brief QwtPlotGrid指针的序列化
+ * @param out
+ * @param item
+ * @return
+ */
+QDataStream& operator<<(QDataStream& out, const QwtPlotGrid* item)
+{
+    out << gc_dachart_version << gc_dachart_magic_mark;
+    out << static_cast< const QwtPlotItem* >(item);
+    out << item->majorPen() << item->minorPen() << item->xEnabled() << item->yEnabled() << item->xMinEnabled()
+        << item->yMinEnabled();
+    return out;
+}
+
+QDataStream& operator>>(QDataStream& in, QwtPlotGrid* item)
+{
+    int version;
+    std::uint32_t magic;
+    in >> version >> magic;
+    if (gc_dachart_magic_mark != magic) {
+        throw DABadSerializeExpection();
+        return in;
+    }
+    QPen majorPen, minorPen;
+    bool xEnabled, yEnabled, xMinEnabled, yMinEnabled;
+    in >> majorPen >> minorPen >> xEnabled >> yEnabled >> xMinEnabled >> yMinEnabled;
+    item->setMajorPen(majorPen);
+    item->setMinorPen(minorPen);
+    item->enableX(xEnabled);
+    item->enableY(yEnabled);
+    item->enableXMin(xMinEnabled);
+    item->enableYMin(yMinEnabled);
+    return in;
+}
+
+/**
+ * @brief  QwtPlotScaleItem(Rtti_PlotScale)指针的序列化
+ * @param out
+ * @param item
+ * @return
+ */
+QDataStream& operator<<(QDataStream& out, const QwtPlotScaleItem* item)
+{
+    out << gc_dachart_version << gc_dachart_magic_mark;
+    out << static_cast< const QwtPlotItem* >(item);
+    out << item->borderDistance() << item->font() << item->isScaleDivFromAxis() << item->palette() << item->position();
+    return out;
+}
+QDataStream& operator>>(QDataStream& in, QwtPlotScaleItem* item)
+{
+    int version;
+    std::uint32_t magic;
+    in >> version >> magic;
+    if (gc_dachart_magic_mark != magic) {
+        throw DABadSerializeExpection();
+        return in;
+    }
+    int borderDistance;
+    QFont font;
+    bool isScaleDivFromAxis;
+    QPalette palette;
+    double position;
+    in >> borderDistance >> font >> isScaleDivFromAxis >> palette >> position;
+    item->setBorderDistance(borderDistance);
+    item->setFont(font);
+    item->setScaleDivFromAxis(isScaleDivFromAxis);
+    item->setPalette(palette);
+    item->setPosition(position);
+    return in;
+}
+
+/**
+ * @brief QwtPlotLegendItem(Rtti_PlotLegend)指针的序列化
+ * @param out
+ * @param item
+ * @return
+ */
+QDataStream& operator<<(QDataStream& out, const QwtPlotLegendItem* item)
+{
+    out << gc_dachart_version << gc_dachart_magic_mark;
+    out << static_cast< const QwtPlotItem* >(item);
+    out << item->alignmentInCanvas() << item->backgroundBrush() << static_cast< int >(item->backgroundMode())
+        << item->borderPen() << item->borderRadius() << item->font() << item->offsetInCanvas(Qt::Horizontal)
+        << item->offsetInCanvas(Qt::Vertical) << item->maxColumns() << item->margin() << item->spacing()
+        << item->itemMargin() << item->itemSpacing() << item->textPen();
+    return out;
+}
+QDataStream& operator>>(QDataStream& in, QwtPlotLegendItem* item)
+{
+    int version;
+    std::uint32_t magic;
+    in >> version >> magic;
+    if (gc_dachart_magic_mark != magic) {
+        throw DABadSerializeExpection();
+        return in;
+    }
+    Qt::Alignment alignmentInCanvas;
+    QBrush backgroundBrush;
+    int backgroundMode;
+    QPen borderPen, textPen;
+    double borderRadius;
+    QFont font;
+    uint maxColumns;
+    int offsetInCanvasHorizontal, offsetInCanvasVertical, margin, spacing, itemMargin, itemSpacing;
+    in >> alignmentInCanvas >> backgroundBrush >> backgroundMode >> borderPen >> borderRadius >> font
+        >> offsetInCanvasHorizontal >> offsetInCanvasVertical >> maxColumns >> margin >> spacing >> itemMargin
+        >> itemSpacing >> textPen;
+    item->setAlignmentInCanvas(alignmentInCanvas);
+    item->setBackgroundBrush(backgroundBrush);
+    item->setBackgroundMode(static_cast< QwtPlotLegendItem::BackgroundMode >(backgroundMode));
+    item->setBorderPen(borderPen);
+    item->setBorderRadius(borderRadius);
+    item->setFont(font);
+    item->setOffsetInCanvas(Qt::Horizontal, offsetInCanvasHorizontal);
+    item->setOffsetInCanvas(Qt::Vertical, offsetInCanvasVertical);
+    item->setMaxColumns(maxColumns);
+    item->setMargin(margin);
+    item->setSpacing(spacing);
+    item->setItemMargin(itemMargin);
+    item->setItemSpacing(itemSpacing);
+    item->setTextPen(textPen);
+    return in;
+}
+
+/**
+ * @brief QwtPlotMarker(Rtti_PlotMarker)指针的序列化
+ * @param out
+ * @param item
+ * @return
+ */
+QDataStream& operator<<(QDataStream& out, const QwtPlotMarker* item)
+{
+    out << gc_dachart_version << gc_dachart_magic_mark;
+    out << static_cast< const QwtPlotItem* >(item);
+    out << item->xValue() << item->yValue() << static_cast< int >(item->lineStyle()) << item->linePen() << item->label()
+        << static_cast< int >(item->labelAlignment()) << static_cast< int >(item->labelOrientation()) << item->spacing();
+    const QwtSymbol* symbol = item->symbol();
+    bool isHaveSymbol       = (symbol != nullptr);
+    out << isHaveSymbol;
+    if (isHaveSymbol) {
+        out << symbol;
+    }
+    return out;
+}
+QDataStream& operator>>(QDataStream& in, QwtPlotMarker* item)
+{
+    int version;
+    std::uint32_t magic;
+    in >> version >> magic;
+    if (gc_dachart_magic_mark != magic) {
+        throw DABadSerializeExpection();
+        return in;
+    }
+    double xValue, yValue;
+    int lineStyle, labelAlignment, labelOrientation, spacing;
+    QPen linePen;
+    QwtText label;
+    in >> xValue >> yValue >> lineStyle >> linePen >> label >> labelAlignment >> labelOrientation >> spacing;
+    item->setXValue(xValue);
+    item->setYValue(yValue);
+    item->setLineStyle(static_cast< QwtPlotMarker::LineStyle >(lineStyle));
+    item->setLinePen(linePen);
+    item->setLabel(label);
+    item->setLabelAlignment(static_cast< Qt::Alignment >(labelAlignment));
+    item->setLabelOrientation(static_cast< Qt::Orientation >(labelOrientation));
+    item->setSpacing(spacing);
+    // QwtSymbol的序列化
+    bool isHaveSymbol;
+    in >> isHaveSymbol;
+    if (isHaveSymbol) {
+        QwtSymbol* symbol = new QwtSymbol();
+        in >> symbol;
+        item->setSymbol(symbol);
+    }
+    return in;
+}
+
+/**
+ * @brief QwtPlotSpectroCurve(Rtti_PlotSpectroCurve)指针的序列化
+ * @param out
+ * @param item
+ * @return
+ */
+QDataStream& operator<<(QDataStream& out, const QwtPlotSpectroCurve* item)
+{
+    out << gc_dachart_version << gc_dachart_magic_mark;
+    out << static_cast< const QwtPlotItem* >(item);
+    out << item->penWidth() << static_cast< int >(item->orientation())
+        << item->testPaintAttribute(QwtPlotSpectroCurve::ClipPoints);
+    return out;
+}
+QDataStream& operator>>(QDataStream& in, QwtPlotSpectroCurve* item)
+{
+    int version;
+    std::uint32_t magic;
+    in >> version >> magic;
+    if (gc_dachart_magic_mark != magic) {
+        throw DABadSerializeExpection();
+        return in;
+    }
+    int orientation;
+    double penWidth;
+    bool attClipPoints;
+    in >> penWidth >> orientation >> attClipPoints;
+    item->setPenWidth(penWidth);
+    item->setOrientation(static_cast< Qt::Orientation >(orientation));
+    item->setPaintAttribute(QwtPlotSpectroCurve::ClipPoints, attClipPoints);
+    return in;
+}
 ///
 /// \brief QwtPlotBarChart指针的序列化
 /// \param out
@@ -923,6 +1139,86 @@ QDataStream& operator>>(QDataStream& in, QwtPlot* chart)
     return in;
 }
 
+/**
+ * @brief QwtColorMap的序列化
+ *
+ * 这是一个接口类的序列化，正常用户不应该使用到此函数
+ * @param out
+ * @param c
+ * @return
+ */
+QDataStream& operator<<(QDataStream& out, const QwtColorMap* c)
+{
+    out << gc_dachart_version << gc_dachart_magic_mark;
+    out << static_cast< int >(c->format());
+    return out;
+}
+
+/**
+ * @brief QwtColorMap的序列化
+ *
+ * 这是一个接口类的序列化，正常用户不应该使用到此函数
+ * @param in
+ * @param c
+ * @return
+ */
+QDataStream& operator>>(QDataStream& in, QwtColorMap* c)
+{
+    int version;
+    std::uint32_t magic;
+    in >> version >> magic;
+    if (gc_dachart_magic_mark != magic) {
+        throw DABadSerializeExpection();
+        return in;
+    }
+    int format;
+    in >> format;
+    c->setFormat(static_cast< QwtColorMap::Format >(format));
+    return in;
+}
+
+/**
+ * @brief QwtLinearColorMap的序列化
+ * @param out
+ * @param c
+ * @return
+ */
+QDataStream& operator<<(QDataStream& out, const QwtLinearColorMap* c)
+{
+    out << gc_dachart_version << gc_dachart_magic_mark2;
+    out << static_cast< const QwtColorMap* >(c);
+    out << static_cast< int >(c->mode());
+    // color1 对应colorstop:0.0,color2 对应colorstop:1.0
+    // 写入颜色停止点的数量
+    const QVector< double > colorStops = c->colorStops();
+    out << colorStops;
+    // 写入停止点对应的颜色
+    for (const double& v : colorStops) { }
+    return out;
+}
+/**
+ * @brief QwtLinearColorMap的序列化
+ * @param in
+ * @param c
+ * @return
+ */
+QDataStream& operator>>(QDataStream& in, QwtLinearColorMap* c)
+{
+    int version;
+    std::uint32_t magic;
+    in >> version >> magic;
+    if (gc_dachart_magic_mark2 != magic) {
+        throw DABadSerializeExpection();
+        return in;
+    }
+    int mode;
+    QColor color1, color2;
+    in >> static_cast< QwtColorMap* >(c) >> mode >> color1 >> color2;
+    c->setMode(static_cast< QwtLinearColorMap::Mode >(mode));
+    c->setColorInterval(color1, color2);
+    return in;
+}
+
 ///
 /// \brief QwtIntervalSample序列化支持
 /// \param out
@@ -1063,82 +1359,94 @@ QwtPlotItem* DAChartItemSerialize::serializeIn(const QByteArray& byte)
     // 创建视图（不复制数据）
     QByteArray remainingData = QByteArray::fromRawData(rawData, remainingSize);
 
-    return fp(h.rtti, remainingData);
+    return fp(remainingData);
 }
-
+#define DACHARTITEMSERIALIZE_MAKE_SERIALIZE_PAIR(RTTI_Value, PLotItemClass)                                            \
+    { [](const QByteArray& byte) -> QwtPlotItem* {                                                                     \
+         QDataStream st(byte);                                                                                         \
+         QwtPlotItem* item = DAChartPlotItemFactory::createItem(RTTI_Value);                                           \
+         st >> static_cast< PLotItemClass* >(item);                                                                    \
+         return item;                                                                                                  \
+     },                                                                                                                \
+      [](const QwtPlotItem* item) -> QByteArray {                                                                      \
+          QByteArray byte;                                                                                             \
+          QDataStream st(&byte, QIODevice::WriteOnly);                                                                 \
+          st << static_cast< const PLotItemClass* >(item);                                                             \
+          return byte;                                                                                                 \
+      } }
 QHash< int, std::pair< DAChartItemSerialize::FpSerializeIn, DAChartItemSerialize::FpSerializeOut > > initChartItemSerialize()
 {
     QHash< int, std::pair< DAChartItemSerialize::FpSerializeIn, DAChartItemSerialize::FpSerializeOut > > res;
-    DAChartItemSerialize::FpSerializeOut out = [](const QwtPlotItem* item) -> QByteArray {
-        QByteArray byte;
-        QDataStream st(&byte, QIODevice::WriteOnly);
-        st << item;
-        st << static_cast< const QwtPlotCurve* >(item);
-        return byte;
-    };
+    res[ QwtPlotItem::Rtti_PlotCurve ] = DACHARTITEMSERIALIZE_MAKE_SERIALIZE_PAIR(QwtPlotItem::Rtti_PlotCurve, QwtPlotCurve);
+    res[ QwtPlotItem::Rtti_PlotBarChart ] = DACHARTITEMSERIALIZE_MAKE_SERIALIZE_PAIR(QwtPlotItem::Rtti_PlotBarChart,
+                                                                                     QwtPlotBarChart);
+    res[ QwtPlotItem::Rtti_PlotIntervalCurve ] = DACHARTITEMSERIALIZE_MAKE_SERIALIZE_PAIR(QwtPlotItem::Rtti_PlotIntervalCurve,
+                                                                                          QwtPlotIntervalCurve);
 
-    DAChartItemSerialize::FpSerializeIn in = [](int rtti, const QByteArray& byte) -> QwtPlotItem* {
-        QwtPlotItem* item = DAChartPlotItemFactory::createItem(rtti);
-        QDataStream st(byte);
-        st >> item;
-        switch (rtti) {
-        case QwtPlotItem::Rtti_PlotCurve: {
-            QwtPlotCurve* plotItem = static_cast< QwtPlotCurve* >(item);
-        } break;
-        case QwtPlotItem::Rtti_PlotGrid: {
-            QwtPlotGrid* plotItem = static_cast< QwtPlotGrid* >(item);
-        } break;
-        case QwtPlotItem::Rtti_PlotScale: {
-            QwtPlotScaleItem* plotItem = static_cast< QwtPlotScaleItem* >(item);
-        } break;
-        case QwtPlotItem::Rtti_PlotLegend: {
-            QwtPlotLegendItem* plotItem = static_cast< QwtPlotLegendItem* >(item);
-        } break;
-        case QwtPlotItem::Rtti_PlotMarker: {
-            QwtPlotMarker* plotItem = static_cast< QwtPlotMarker* >(item);
-        } break;
-        case QwtPlotItem::Rtti_PlotSpectroCurve: {
-            QwtPlotSpectroCurve* plotItem = static_cast< QwtPlotSpectroCurve* >(item);
-        } break;
-        case QwtPlotItem::Rtti_PlotIntervalCurve: {
-            QwtPlotIntervalCurve* plotItem = static_cast< QwtPlotIntervalCurve* >(item);
-        } break;
-        case QwtPlotItem::Rtti_PlotHistogram: {
-            QwtPlotHistogram* plotItem = static_cast< QwtPlotHistogram* >(item);
-        } break;
-        case QwtPlotItem::Rtti_PlotSpectrogram: {
-            QwtPlotSpectrogram* plotItem = static_cast< QwtPlotSpectrogram* >(item);
-        } break;
-        case QwtPlotItem::Rtti_PlotGraphic: {
-            QwtPlotGraphicItem* plotItem = static_cast< QwtPlotGraphicItem* >(item);
-        } break;
-        case QwtPlotItem::Rtti_PlotTradingCurve: {
-            QwtPlotTradingCurve* plotItem = static_cast< QwtPlotTradingCurve* >(item);
-        } break;
-        case QwtPlotItem::Rtti_PlotBarChart: {
-            QwtPlotBarChart* plotItem = static_cast< QwtPlotBarChart* >(item);
-        } break;
-        case QwtPlotItem::Rtti_PlotMultiBarChart: {
-            QwtPlotMultiBarChart* plotItem = static_cast< QwtPlotMultiBarChart* >(item);
-        } break;
-        case QwtPlotItem::Rtti_PlotShape: {
-            QwtPlotShapeItem* plotItem = static_cast< QwtPlotShapeItem* >(item);
-        } break;
-        case QwtPlotItem::Rtti_PlotTextLabel: {
-            QwtPlotTextLabel* plotItem = static_cast< QwtPlotTextLabel* >(item);
-        } break;
-        case QwtPlotItem::Rtti_PlotZone: {
-            QwtPlotZoneItem* plotItem = static_cast< QwtPlotZoneItem* >(item);
-        } break;
-        case QwtPlotItem::Rtti_PlotVectorField: {
-            QwtPlotVectorField* plotItem = static_cast< QwtPlotVectorField* >(item);
-        } break;
-        default:
-            break;
-        }
+    /**
+        DAChartItemSerialize::FpSerializeIn in = [](int rtti, const QByteArray& byte) -> QwtPlotItem* {
+            QwtPlotItem* item = DAChartPlotItemFactory::createItem(rtti);
+            QDataStream st(byte);
+            st >> item;
+            switch (rtti) {
+            case QwtPlotItem::Rtti_PlotCurve: {
+                QwtPlotCurve* plotItem = static_cast< QwtPlotCurve* >(item);
+            } break;
+            case QwtPlotItem::Rtti_PlotGrid: {
+                QwtPlotGrid* plotItem = static_cast< QwtPlotGrid* >(item);
+            } break;
+            case QwtPlotItem::Rtti_PlotScale: {
+                QwtPlotScaleItem* plotItem = static_cast< QwtPlotScaleItem* >(item);
+            } break;
+            case QwtPlotItem::Rtti_PlotLegend: {
+                QwtPlotLegendItem* plotItem = static_cast< QwtPlotLegendItem* >(item);
+            } break;
+            case QwtPlotItem::Rtti_PlotMarker: {
+                QwtPlotMarker* plotItem = static_cast< QwtPlotMarker* >(item);
+            } break;
+            case QwtPlotItem::Rtti_PlotSpectroCurve: {
+                QwtPlotSpectroCurve* plotItem = static_cast< QwtPlotSpectroCurve* >(item);
+            } break;
+            case QwtPlotItem::Rtti_PlotIntervalCurve: {
+                QwtPlotIntervalCurve* plotItem = static_cast< QwtPlotIntervalCurve* >(item);
+            } break;
+            case QwtPlotItem::Rtti_PlotHistogram: {
+                QwtPlotHistogram* plotItem = static_cast< QwtPlotHistogram* >(item);
+            } break;
+            case QwtPlotItem::Rtti_PlotSpectrogram: {
+                QwtPlotSpectrogram* plotItem = static_cast< QwtPlotSpectrogram* >(item);
+            } break;
+            case QwtPlotItem::Rtti_PlotGraphic: {
+                QwtPlotGraphicItem* plotItem = static_cast< QwtPlotGraphicItem* >(item);
+            } break;
+            case QwtPlotItem::Rtti_PlotTradingCurve: {
+                QwtPlotTradingCurve* plotItem = static_cast< QwtPlotTradingCurve* >(item);
+            } break;
+            case QwtPlotItem::Rtti_PlotBarChart: {
+                QwtPlotBarChart* plotItem = static_cast< QwtPlotBarChart* >(item);
+            } break;
+            case QwtPlotItem::Rtti_PlotMultiBarChart: {
+                QwtPlotMultiBarChart* plotItem = static_cast< QwtPlotMultiBarChart* >(item);
+            } break;
+            case QwtPlotItem::Rtti_PlotShape: {
+                QwtPlotShapeItem* plotItem = static_cast< QwtPlotShapeItem* >(item);
+            } break;
+            case QwtPlotItem::Rtti_PlotTextLabel: {
+                QwtPlotTextLabel* plotItem = static_cast< QwtPlotTextLabel* >(item);
+            } break;
+            case QwtPlotItem::Rtti_PlotZone: {
+                QwtPlotZoneItem* plotItem = static_cast< QwtPlotZoneItem* >(item);
+            } break;
+            case QwtPlotItem::Rtti_PlotVectorField: {
+                QwtPlotVectorField* plotItem = static_cast< QwtPlotVectorField* >(item);
+            } break;
+            default:
+                break;
+            }
 
-        return item;
-    };
+            return item;
+        };
+        **/
     return res;
 }
 

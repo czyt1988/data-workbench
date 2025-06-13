@@ -9,17 +9,37 @@
 
 class QwtPlotItem;
 class QwtSymbol;
-class QwtPlotCurve;
 class QwtPlotCanvas;
 class QFrame;
 class QwtScaleWidget;
 class QwtPlot;
 class QwtColorMap;
+class QwtLinearColorMap;
+class QwtAlphaColorMap;
+class QwtHueColorMap;
+class QwtSaturationValueColorMap;
 class QwtScaleDraw;
-class QwtPlotBarChart;
 class QwtColumnSymbol;
-class QwtPlotIntervalCurve;
 class QwtIntervalSymbol;
+// QwtPlotItem
+class QwtPlotCurve;
+class QwtPlotGrid;
+class QwtPlotScaleItem;
+class QwtPlotLegendItem;
+class QwtPlotMarker;
+class QwtPlotSpectroCurve;
+class QwtPlotIntervalCurve;
+class QwtPlotHistogram;
+class QwtPlotSpectrogram;
+class QwtPlotGraphicItem;
+class QwtPlotTradingCurve;
+class QwtPlotBarChart;
+class QwtPlotMultiBarChart;
+class QwtPlotShapeItem;
+class QwtPlotTextLabel;
+class QwtPlotZoneItem;
+class QwtPlotVectorField;
+
 ///
 /// \brief 序列化类都是带异常的，使用中需要处理异常
 ///
@@ -63,7 +83,7 @@ public:
      * @brief 序列化为QByteArray函数
      */
     using FpSerializeOut = std::function< QByteArray(const QwtPlotItem*) >;  // QByteArray serializeOut(QwtPlotItem* item)
-    using FpSerializeIn = std::function< QwtPlotItem*(int rtti, const QByteArray&) >;  // QwtPlotItem* serializeIn(int rtti,const QByteArray& d)
+    using FpSerializeIn = std::function< QwtPlotItem*(const QByteArray&) >;  // QwtPlotItem* serializeIn(int rtti,const QByteArray& d)
 public:
     DAChartItemSerialize();
     ~DAChartItemSerialize();
@@ -141,6 +161,21 @@ DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotItem* item);
 // QwtPlotCurve指针的序列化
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlotCurve* item);
 DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotCurve* item);
+// QwtPlotGrid(Rtti_PlotGrid)指针的序列化
+DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlotGrid* item);
+DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotGrid* item);
+// QwtPlotScaleItem(Rtti_PlotScale)指针的序列化
+DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlotScaleItem* item);
+DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotScaleItem* item);
+// QwtPlotLegendItem(Rtti_PlotLegend)指针的序列化
+DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlotLegendItem* item);
+DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotLegendItem* item);
+// QwtPlotMarker(Rtti_PlotMarker)指针的序列化
+DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlotMarker* item);
+DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotMarker* item);
+// QwtPlotSpectroCurve(Rtti_PlotSpectroCurve)指针的序列化
+DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlotSpectroCurve* item);
+DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotSpectroCurve* item);
 // QwtPlotBarChart指针的序列化
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlotBarChart* item);
 DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotBarChart* item);
@@ -154,8 +189,11 @@ DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotIntervalCurve* item
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlotCanvas* c);
 DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotCanvas* c);
 // QwtColorMap的序列化
-//    DAFIGURE_API QDataStream& operator <<(QDataStream & out,const QwtColorMap* c);
-//    DAFIGURE_API QDataStream& operator >>(QDataStream & in,QwtColorMap* c);
+DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtColorMap* c);
+DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtColorMap* c);
+// QwtLinearColorMap的序列化
+DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtLinearColorMap* c);
+DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtLinearColorMap* c);
 // QwtPlot的序列化
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlot* chart);
 DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlot* chart);
