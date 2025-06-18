@@ -116,8 +116,6 @@ public:
 	static QVariant loadVariantValueElement(const QDomElement& item, const QVariant& defaultVal);
 	// 带提示的属性转double
 	static qreal attributeToDouble(const QDomElement& item, const QString& att);
-    // 设置绘图id的基准
-    static void setPlotItemIDBase(unsigned int v);
 };
 }
 

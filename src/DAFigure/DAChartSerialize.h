@@ -50,12 +50,12 @@ class DAFIGURE_API DABadSerializeExpection : public std::exception
 public:
     DABadSerializeExpection();
     DABadSerializeExpection(const char* why);
-    DABadSerializeExpection(const QString& why);
+    DABadSerializeExpection(const std::string& why);
     ~DABadSerializeExpection();
     const char* what() const noexcept;
 
 private:
-    QString mWhy;
+    std::string mWhy;
 };
 
 /**
@@ -126,8 +126,12 @@ protected:
     static QHash< int, std::pair< FpSerializeIn, FpSerializeOut > >& serializeFun();
 };
 
-DAFIGURE_API QDataStream& operator<<(QDataStream& out, const DAChartItemSerialize::Header& f);
-DAFIGURE_API QDataStream& operator>>(QDataStream& in, DAChartItemSerialize::Header& f);
+}  // end namespace DA
+
+// 由于Qwt都在全局命名空间，按照ADL原则，编译器会在全局命名空间找对应的序列化函数
+
+DAFIGURE_API QDataStream& operator<<(QDataStream& out, const DA::DAChartItemSerialize::Header& f);
+DAFIGURE_API QDataStream& operator>>(QDataStream& in, DA::DAChartItemSerialize::Header& f);
 
 // QFrame的序列化
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QFrame* f);
@@ -194,6 +198,15 @@ DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtColorMap* c);
 // QwtLinearColorMap的序列化
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtLinearColorMap* c);
 DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtLinearColorMap* c);
+// QwtAlphaColorMap的序列化
+DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtAlphaColorMap* c);
+DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtAlphaColorMap* c);
+// QwtHueColorMap的序列化
+DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtHueColorMap* c);
+DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtHueColorMap* c);
+// QwtSaturationValueColorMap的序列化
+DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtSaturationValueColorMap* c);
+DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtSaturationValueColorMap* c);
 // QwtPlot的序列化
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlot* chart);
 DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlot* chart);
@@ -204,7 +217,7 @@ DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtIntervalSample& item);
 // QwtInterval的序列化
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtInterval& item);
 DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtInterval& item);
-}
+
 // 下面这两个要放到DA命名空间外，因为使用了QVector<T>的<<
 
 #endif  // SAQWTSERIALIZE_H

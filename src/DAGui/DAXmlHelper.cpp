@@ -2531,14 +2531,4 @@ qreal DAXmlHelper::attributeToDouble(const QDomElement& item, const QString& att
     return r;
 }
 
-/**
- * @brief 设置绘图id的基准
- *
- * 这个函数正常用户用不到，是在特殊情况下改变绘图id的顺序使用，例如进行局部更新
- * @param v
- */
-void DAXmlHelper::setPlotItemIDBase(unsigned int v)
-{
-    DAXmlHelper::PrivateData::setPlotItemIDBase(v);
-}
 }

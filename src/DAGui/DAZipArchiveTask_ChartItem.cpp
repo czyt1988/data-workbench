@@ -147,5 +147,6 @@ bool DAZipArchiveTask_ChartItem::writeChartItems(DAZipArchive* zip, const DAChar
 
 bool DAZipArchiveTask_ChartItem::readChartItems(DAZipArchive* zip, DAChartItemsManager* itemsData)
 {
+    return false;
 }
 }  // end namespace DA
