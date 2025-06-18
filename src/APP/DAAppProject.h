@@ -58,10 +58,9 @@ protected:
 	void makeSaveWorkFlowTask(DAZipArchiveThreadWrapper* archive);
 	// 保存数据的任务
 	void makeSaveDataManagerTask(DAZipArchiveThreadWrapper* archive);
-    // 创建保存绘图的任务
-    void makeSaveChartTask(DAZipArchiveThreadWrapper* archive);
-	// 保存绘图任务
-	void makeSaveFiguresTask(DAZipArchiveThreadWrapper* archive);
+	// 创建保存绘图的任务
+	void makeSaveChartTask(DAZipArchiveThreadWrapper* archive);
+
 	// 保存本地信息包括时间日期等等
 	QDomElement makeLocalInfoElement(QDomDocument& doc) const;
 	// 保存workflow相关内容（以xml形式）

@@ -318,7 +318,8 @@ void DAAppProject::clear()
 	wfo->clear();
 	//! 清除数据
 	DADataOperateWidget* dow = getDataOperateWidget();
-	Q_CHECK_PTR(wfo);
+	Q_CHECK_PTR(dow);
+	dow->clear();
 	DAProjectInterface::clear();
 }
 
@@ -390,7 +391,8 @@ bool DAAppProject::load(const QString& path)
 	mArchive->appendXmlLoadTask(QStringLiteral("workflow.xml"), DAAPPPROJECT_TASK_LOAD_ID_WORKFLOW);
 
 	// 创建datamanager任务
-    std::shared_ptr< DAZipArchiveTask_LoadDataManager > loadDataTask = std::make_shared< DAZipArchiveTask_LoadDataManager >();
+	std::shared_ptr< DAZipArchiveTask_LoadDataManager > loadDataTask =
+		std::make_shared< DAZipArchiveTask_LoadDataManager >();
 	loadDataTask->setCode(DAAPPPROJECT_TASK_LOAD_ID_DATAMANAGER);
 	mArchive->appendTask(loadDataTask);
 
@@ -411,7 +413,7 @@ void DAAppProject::makeSaveWorkFlowTask(DAZipArchiveThreadWrapper* archive)
 	//! 先把涉及ui的内容保存下来,ui是无法在其它线程操作，因此需要先保存下来
 	QDomDocument workflowXml = createWorkflowUIDomDocument();
 	// 创建archive任务队列
-    archive->appendXmlSaveTask(QStringLiteral("workflow.xml"), workflowXml);
+	archive->appendXmlSaveTask(QStringLiteral("workflow.xml"), workflowXml);
 }
 
 /**
@@ -422,7 +424,8 @@ void DAAppProject::makeSaveDataManagerTask(DAZipArchiveThreadWrapper* archive)
 {
 	DADataManagerInterface* dataMgr = getDataManagerInterface();
 	QDomDocument doc;
-    QDomProcessingInstruction processInstruction = doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\"");
+	QDomProcessingInstruction processInstruction =
+		doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\"");
 	doc.appendChild(processInstruction);
 	QDomElement root = doc.createElement(QStringLiteral("root"));
 	root.setAttribute("type", "data manager");
@@ -442,7 +445,7 @@ void DAAppProject::makeSaveDataManagerTask(DAZipArchiveThreadWrapper* archive)
 			// 写文件，对于大文件，这里可能比较耗时，但python的gli机制，无法在线程里面写
 			if (!DAData::writeToFile(data, tempFilePath)) {
 				qCritical() << tr("An exception occurred while serializing the dataframe named %1 to %2")
-                                   .arg(name, tempFilePath);  // cn:把名称为%1的dataframe序列化到%2时出现异常
+								   .arg(name, tempFilePath);  // cn:把名称为%1的dataframe序列化到%2时出现异常
 				continue;
 			}
 			// 创建archive任务队列
@@ -468,15 +471,7 @@ void DAAppProject::makeSaveDataManagerTask(DAZipArchiveThreadWrapper* archive)
 	}
 	root.appendChild(dataListEle);
 	// 创建archive任务队列
-    archive->appendXmlSaveTask(QStringLiteral("data-manager.xml"), doc);
-}
-
-/**
- * @brief 创建保存绘图的任务
- * @param archive
- */
-void DAAppProject::makeSaveChartTask(DAZipArchiveThreadWrapper* archive)
-{
+	archive->appendXmlSaveTask(QStringLiteral("data-manager.xml"), doc);
 }
 
 /**
@@ -485,8 +480,9 @@ void DAAppProject::makeSaveChartTask(DAZipArchiveThreadWrapper* archive)
  * 绘图包含了数据和界面，
  * @param archive
  */
-void DAAppProject::makeSaveFiguresTask(DAZipArchiveThreadWrapper* archive)
+void DAAppProject::makeSaveChartTask(DAZipArchiveThreadWrapper* archive)
 {
+    // 先保存窗口
 }
 
 /**
@@ -515,7 +511,8 @@ QDomDocument DAAppProject::createWorkflowUIDomDocument()
 	DAWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
 	Q_CHECK_PTR(wfo);
 	QDomDocument doc;
-    QDomProcessingInstruction processInstruction = doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\"");
+	QDomProcessingInstruction processInstruction =
+		doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\"");
 	doc.appendChild(processInstruction);
 	QDomElement root = doc.createElement("root");
 	root.setAttribute("type", "project");
@@ -570,8 +567,8 @@ void DAAppProject::onTaskProgress(int total, int pos, const std::shared_ptr< DAA
 	} break;
 	case DAAPPPROJECT_TASK_LOAD_ID_DATAMANAGER: {
 		//! 读取datamanager
-        const std::shared_ptr< DAZipArchiveTask_LoadDataManager >
-            datamgrTask                 = std::static_pointer_cast< DAZipArchiveTask_LoadDataManager >(t);
+		const std::shared_ptr< DAZipArchiveTask_LoadDataManager > datamgrTask =
+			std::static_pointer_cast< DAZipArchiveTask_LoadDataManager >(t);
 		DADataManagerInterface* dataMgr = getDataManagerInterface();
 		QDomDocument xmlDoc             = datamgrTask->getDataManagerDomDocument();
 		if (xmlDoc.isNull()) {

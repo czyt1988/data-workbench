@@ -62,9 +62,9 @@ public:
 	bool loadElement(DAWorkFlowOperateWidget* wfo, const QDomElement* workflowsEle);
 	// 创建剪切板描述xml
 	QDomElement makeClipBoardElement(const QList< DAGraphicsItem* > its,
-                                     const QString& tagName,
-                                     QDomDocument* doc,
-                                     bool isCopyType = true);
+									 const QString& tagName,
+									 QDomDocument* doc,
+									 bool isCopyType = true);
 	bool loadClipBoardElement(const QDomElement* clipBoardElement, DAWorkFlowGraphicsScene* sc);
 	// DAGraphicsItem的通用保存
 	static QDomElement makeElement(const DAGraphicsItem* item, const QString& tagName, QDomDocument* doc);
@@ -73,9 +73,9 @@ public:
 	// DAGraphicsItemGroup的通用保存,注意！！！此函数并不会把子item的信息保存，仅仅记录子item的id
 	static QDomElement makeElement(const DAGraphicsItemGroup* itemGroup, const QString& tagName, QDomDocument* doc);
 	static bool loadElement(DAGraphicsScene* scene,
-                            DAGraphicsItemGroup* group,
-                            const QDomElement* groupElement,
-                            const QVersionNumber& v = QVersionNumber());
+							DAGraphicsItemGroup* group,
+							const QDomElement* groupElement,
+							const QVersionNumber& v = QVersionNumber());
 	// DA支持的所有QGraphicsItem的通用保存
 	static QDomElement makeElement(const QGraphicsItem* item, const QString& tagName, QDomDocument* doc);
 	static bool loadElement(QGraphicsItem* item, const QDomElement* tag, const QVersionNumber& v = QVersionNumber());
@@ -84,31 +84,38 @@ public:
 	// DAColorTheme
 	static QDomElement makeElement(const DAColorTheme* ct, const QString& tagName, QDomDocument* doc);
 	static bool loadElement(DAColorTheme* ct, const QDomElement* tag, const QVersionNumber& v = QVersionNumber());
+	//===============================================================
+	// DAChartOperate相关
+	//===============================================================
 	// DAFigureWidget
-	static QDomElement makeElement(const DAFigureWidget* fig, const QString& tagName, QDomDocument* doc);
-	static bool loadElement(DAFigureWidget* fig, const QDomElement* tag, const QVersionNumber& v = QVersionNumber());
+	static QDomElement
+	makeElement(const DAFigureWidget* fig, const QString& tagName, QDomDocument* doc, DAChartItemsManager* itemsMgr);
+	static bool loadElement(DAFigureWidget* fig,
+							const QDomElement* tag,
+							const DAChartItemsManager* itemsMgr,
+							const QVersionNumber& v = QVersionNumber());
 	// DAChartWidget
-    static QDomElement makeElement(const DAChartWidget* chart,
-                                   const QString& tagName,
-                                   QDomDocument* doc,
-                                   DAChartItemsManager* itemsMgr);
-    static bool loadElement(DAChartWidget* chart,
-                            const QDomElement* tag,
-                            DAChartItemsManager* itemsMgr,
-                            const QVersionNumber& v = QVersionNumber());
-    //
-    static QDomElement makeQwtPlotAxisElement(const DAChartWidget* chart, int axisID, const QString& tagName, QDomDocument* doc);
+	static QDomElement
+	makeElement(const DAChartWidget* chart, const QString& tagName, QDomDocument* doc, DAChartItemsManager* itemsMgr);
+	static bool loadElement(DAChartWidget* chart,
+							const QDomElement* tag,
+							const DAChartItemsManager* itemsMgr,
+							const QVersionNumber& v = QVersionNumber());
+	// DAChartWidget
+	static QDomElement
+	makeQwtPlotAxisElement(const DAChartWidget* chart, int axisID, const QString& tagName, QDomDocument* doc);
 	static bool loadQwtPlotAxisElement(DAChartWidget* chart,
-                                       const QDomElement* qwtplotTag,
-                                       const QVersionNumber& v = QVersionNumber());
-    // QwtPlotLayout 相关
+									   const QDomElement* qwtplotTag,
+									   const QVersionNumber& v = QVersionNumber());
+	// QwtPlotLayout 相关
 	static QDomElement makeElement(const QwtPlotLayout* value, const QString& tagName, QDomDocument* doc);
 	static bool loadElement(QwtPlotLayout* value, const QDomElement* tag, const QVersionNumber& version = QVersionNumber());
 	// QwtText
 	static QDomElement makeElement(const QwtText* value, const QString& tagName, QDomDocument* doc);
 	static bool loadElement(QwtText* value, const QDomElement* tag, const QVersionNumber& version = QVersionNumber());
-    // QwtPlotItems
-    static QDomElement makeElement(unsigned int plotitemID, const QwtPlotItem* value, const QString& tagName, QDomDocument* doc);
+	// QwtPlotItems
+	static QDomElement
+	makeElement(unsigned int plotitemID, const QwtPlotItem* value, const QString& tagName, QDomDocument* doc);
 
 public:
 	// 生成一个qvariant element

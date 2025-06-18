@@ -69,6 +69,11 @@ void DADataOperateWidget::setDataManager(DADataManager* mgr)
 	connect(mgr, &DADataManager::dataChanged, this, &DADataOperateWidget::onDataChanged);
 }
 
+DADataManager* DADataOperateWidget::getDataManger() const
+{
+    return d_ptr->_dataManager;
+}
+
 /**
  * @brief 当前显示的窗口
  * @return
@@ -189,6 +194,24 @@ bool DADataOperateWidget::removeTabWidget(QWidget* w)
 		}
 	}
 	return true;
+}
+
+/**
+ * @brief 清除操作
+ */
+void DADataOperateWidget::clear()
+{
+	// 清空栈
+	getUndoStack()->clear();
+	// 窗口删除
+	while (ui->tabWidget->count() != 0) {
+		QWidget* tabWidget = ui->tabWidget->widget(0);
+		ui->tabWidget->removeTab(0);
+		// 删除窗口
+		tabWidget->deleteLater();
+	}
+	// 数据清除
+	getDataManger()->clear();
 }
 
 /**
