@@ -39,8 +39,16 @@ public:
 	DAFigureWidget* gcf() const;
 	// 获取figure
 	DAFigureWidget* getFigure(int index) const;
+    // 获取figure的命名
+    QString getFigureName(int index) const;
+    QString getFigureName(DAFigureWidget* f) const;
+    // 设置绘图名称
+    void setFigureName(int index, const QString& name);
+    void setFigureName(DAFigureWidget* f, const QString& name);
 	// 获取fig在DAChartOperateWidget的索引
-	int getFigureIndex(DAFigureWidget* f);
+    int getFigureIndex(DAFigureWidget* f) const;
+    // 删除窗口
+    void removeFigure(DAFigureWidget* f, bool deleteFigure = true);
 	// 获取当前的chart，如果没有返回nullptr
 	DAChartWidget* getCurrentChart() const;
 	DAChartWidget* gca() const;

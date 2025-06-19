@@ -8,8 +8,8 @@
 #include "qwt_plot_curve.h"
 namespace DA
 {
-DAZipArchiveTask_ChartItem::DAZipArchiveTask_ChartItem(const QString& zipRelateFolderPath, const DAChartItemsManager& items)
-    : DAAbstractArchiveTask(), mZipRelateFolderPath(zipRelateFolderPath), mItems(items)
+DAZipArchiveTask_ChartItem::DAZipArchiveTask_ChartItem(const QString& zipRelateFolderPath, const DAChartItemsManager& itemsMgr)
+    : DAAbstractArchiveTask(), mZipRelateFolderPath(zipRelateFolderPath), mItemsManager(itemsMgr)
 {
 }
 
@@ -22,9 +22,9 @@ DAZipArchiveTask_ChartItem::~DAZipArchiveTask_ChartItem()
 {
 }
 
-const DAChartItemsManager& DAZipArchiveTask_ChartItem::getItems() const
+const DAChartItemsManager& DAZipArchiveTask_ChartItem::getChartItemsManager() const
 {
-	return mItems;
+    return mItemsManager;
 }
 
 bool DAZipArchiveTask_ChartItem::exec(DAAbstractArchive* archive, DAAbstractArchiveTask::Mode mode)
@@ -35,10 +35,10 @@ bool DAZipArchiveTask_ChartItem::exec(DAAbstractArchive* archive, DAAbstractArch
 	DAZipArchive* zip = static_cast< DAZipArchive* >(archive);
 	if (mode == DAAbstractArchiveTask::WriteMode) {
 		// 写模式
-		return writeChartItems(zip, &mItems);
+        return writeChartItems(zip, &mItemsManager);
 	} else {
 		// 读取数据模式
-		return readChartItems(zip, &mItems);
+        return readChartItems(zip, &mItemsManager);
 	}
 	return true;
 }
@@ -107,9 +107,9 @@ QByteArray DAZipArchiveTask_ChartItem::toXml() const
 	QDomDocument doc("chart-items");
 	QDomElement root = doc.createElement("items");
 	doc.appendChild(root);
-	const QList< QwtPlotItem* > items = mItems.items();
+    const QList< QwtPlotItem* > items = mItemsManager.items();
 	for (QwtPlotItem* item : items) {
-		QString key = mItems.itemToKey(item);
+        QString key = mItemsManager.itemToKey(item);
 		if (key.isEmpty()) {
 			qWarning() << "plot item cannot find id";
 			continue;

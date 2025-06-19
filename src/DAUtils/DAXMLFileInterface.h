@@ -75,6 +75,13 @@ public:
 	template< typename std_container_like >
 	static bool loadElement(std_container_like& v, const QDomElement* ele);
 	///@}
+
+    /// @defgroup 系统信息保存到xml
+    static QDomElement makeSysInfoElement(const QString& tagName, QDomDocument* doc);
+    ///@}
+
+    // 在parent下，插入一个tag，tag下包含文字text
+    static void appendElementWithText(QDomElement& parent, const QString& tagName, const QString& text, QDomDocument* doc);
 };
 
 #ifndef DAXMLELEMENTSERIALIZATION_INOUT_H

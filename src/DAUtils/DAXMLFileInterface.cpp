@@ -91,6 +91,43 @@ DAXMLFileInterface::~DAXMLFileInterface()
 {
 }
 
+QDomElement DAXMLFileInterface::makeSysInfoElement(const QString& tagName, QDomDocument* doc)
+{
+    QDomElement localInfo = doc->createElement(tagName);
+    // 获得计算机的名称
+    appendElementWithText(localInfo, "machineHostName", QSysInfo::machineHostName(), doc);
+    // 获得计算机的位数
+    appendElementWithText(localInfo, "cpuArch", QSysInfo::currentCpuArchitecture(), doc);
+    // 获得kernelType
+    appendElementWithText(localInfo, "kernelType", QSysInfo::kernelType(), doc);
+    // 获得kernelType
+    appendElementWithText(localInfo, "kernelVersion", QSysInfo::kernelVersion(), doc);
+    // 获得kernelType
+    appendElementWithText(localInfo, "prettyProductName", QSysInfo::prettyProductName(), doc);
+    return localInfo;
+}
+
+/**
+ * @brief 在parent下，插入一个tag，tag下包含文字text
+ *
+ * 达到如下效果：
+ * @code
+ * <parent>
+ *   <tagName>text</tagName>
+ * </parent>
+ * @endcode
+ * @param parent
+ * @param tagName
+ * @param text
+ * @param doc
+ */
+void DAXMLFileInterface::appendElementWithText(QDomElement& parent, const QString& tagName, const QString& text, QDomDocument* doc)
+{
+    QDomElement ele = doc->createElement(tagName);
+    ele.appendChild(doc->createTextNode(text));
+    parent.appendChild(ele);
+}
+
 DAXMLFILEINTERFACE_SIMPLE_QSTRING_CAST1_CPP(short, QString::number, toShort)
 DAXMLFILEINTERFACE_SIMPLE_QSTRING_CAST1_CPP(unsigned short, QString::number, toUShort)
 DAXMLFILEINTERFACE_SIMPLE_QSTRING_CAST1_CPP(int, QString::number, toInt)

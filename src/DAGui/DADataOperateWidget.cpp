@@ -38,14 +38,14 @@ DADataOperateWidget::PrivateData::PrivateData(DADataOperateWidget* p) : q_ptr(p)
 // DADataOperateWidget
 //===================================================
 DADataOperateWidget::DADataOperateWidget(DADataManager* mgr, QWidget* parent)
-	: DAAbstractOperateWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DADataOperateWidget)
+    : DAAbstractOperateWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DADataOperateWidget)
 {
 	init();
 	setDataManager(mgr);
 }
 
 DADataOperateWidget::DADataOperateWidget(QWidget* parent)
-	: DAAbstractOperateWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DADataOperateWidget)
+    : DAAbstractOperateWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DADataOperateWidget)
 {
 	init();
 }
@@ -202,7 +202,9 @@ bool DADataOperateWidget::removeTabWidget(QWidget* w)
 void DADataOperateWidget::clear()
 {
 	// 清空栈
-	getUndoStack()->clear();
+    if (auto undostack = getUndoStack()) {
+        undostack->clear();
+    }
 	// 窗口删除
 	while (ui->tabWidget->count() != 0) {
 		QWidget* tabWidget = ui->tabWidget->widget(0);
@@ -297,8 +299,8 @@ void DADataOperateWidget::showDataframeData(const DA::DAData& d)
 {
 #if DA_ENABLE_PYTHON
 	// 先查找是否已经存在对于窗口
-	DADataOperateOfDataFrameWidget* w =
-		qobject_cast< DADataOperateOfDataFrameWidget* >(d_ptr->_dataToWidget.value(d, nullptr).data());
+    DADataOperateOfDataFrameWidget* w = qobject_cast< DADataOperateOfDataFrameWidget* >(
+        d_ptr->_dataToWidget.value(d, nullptr).data());
 	if (nullptr == w) {
 		// 没有就创建
 		w = new DADataOperateOfDataFrameWidget(d, ui->tabWidget);

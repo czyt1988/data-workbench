@@ -22,14 +22,20 @@
 #include "DAZipArchiveTask_ByteArray.h"
 #include "DAZipArchiveTask_Xml.h"
 #include "DAZipArchiveTask_ArchiveFile.h"
+#include "DAZipArchiveTask_ChartItem.h"
 #include "DADataOperateWidget.h"
 #include "DADataEnumStringUtils.h"
 #include "DAWaitCursorScoped.h"
+#include "DAChartItemsManager.h"
+#include "DAChartOperateWidget.h"
 // python
 #if DA_ENABLE_PYTHON
 #include "DAPyScripts.h"
 #include "DAPyScriptsDataFrame.h"
 #endif
+const QString c_workflowxml_save_filename = QStringLiteral("workflow.xml");
+const QString c_chartsxml_save_filename   = QStringLiteral("charts.xml");
+const QString c_chartitem_save_folder     = QStringLiteral("chart-data");
 
 #ifndef DAAPPPROJECT_TASK_LOAD_ID_BEGIN
 #define DAAPPPROJECT_TASK_LOAD_ID_BEGIN 0x234
@@ -46,6 +52,20 @@
  */
 #ifndef DAAPPPROJECT_TASK_LOAD_ID_DATAMANAGER
 #define DAAPPPROJECT_TASK_LOAD_ID_DATAMANAGER (DAAPPPROJECT_TASK_LOAD_ID_BEGIN + 2)
+#endif
+
+/**
+ *@def 加载任务id - chartItemManager
+ */
+#ifndef DAAPPPROJECT_TASK_LOAD_ID_CHARTITEMMANAGER
+#define DAAPPPROJECT_TASK_LOAD_ID_CHARTITEMMANAGER (DAAPPPROJECT_TASK_LOAD_ID_BEGIN + 3)
+#endif
+
+/**
+ *@def 加载任务id - charts_xml
+ */
+#ifndef DAAPPPROJECT_TASK_LOAD_ID_CHARTS_INFO
+#define DAAPPPROJECT_TASK_LOAD_ID_CHARTS_INFO (DAAPPPROJECT_TASK_LOAD_ID_BEGIN + 4)
 #endif
 namespace DA
 {
@@ -187,6 +207,15 @@ DADataOperateWidget* DAAppProject::getDataOperateWidget() const
     return getDockingAreaInterface()->getDataOperateWidget();
 }
 
+/**
+ * @brief 绘图窗口
+ * @return
+ */
+DAChartOperateWidget* DAAppProject::getChartOperateWidget() const
+{
+    return getDockingAreaInterface()->getChartOperateWidget();
+}
+
 bool DAAppProject::appendWorkflowInProject(const QDomDocument& doc, bool skipIndex)
 {
 	// 加载之前先清空
@@ -251,28 +280,26 @@ bool DAAppProject::appendWorkflowInProject(const QByteArray& data, bool skipInde
 		qCritical() << "load setContent error:" << error;
 		return false;
 	}
-	return appendWorkflowInProject(doc, skipIndex);
+    return appendWorkflowInProject(doc, skipIndex);
 }
 
 /**
- * @brief 在parent下，插入一个tag，tag下包含文字text
- *
- * 达到如下效果：
- * @code
- * <parent>
- *   <tagName>text</tagName>
- * </parent>
- * @endcode
- * @param parent
- * @param tagName
- * @param text
+ * @brief 把绘图信息添加到工程
  * @param doc
+ * @param chartmanager
+ * @return
  */
-void DAAppProject::appendElementWithText(QDomElement& parent, const QString& tagName, const QString& text, QDomDocument& doc)
+bool DAAppProject::appendChartsInProject(const QDomDocument& doc, DAChartItemsManager* chartmanager)
 {
-	QDomElement ele = doc.createElement(tagName);
-	ele.appendChild(doc.createTextNode(text));
-	parent.appendChild(ele);
+    DAChartOperateWidget* chartOpt = getChartOperateWidget();
+    Q_CHECK_PTR(chartOpt);
+    QDomElement docElem  = doc.documentElement();                 // root
+    QDomElement proEle   = docElem.firstChildElement("project");  // project
+    QDomElement chartEle = proEle.firstChildElement("charts");
+    if (chartEle.isNull()) {
+        return false;
+    }
+    return mXml.loadElement(chartOpt, &chartEle, chartmanager);
 }
 
 /**
@@ -347,6 +374,9 @@ bool DAAppProject::save(const QString& path)
 
 	setProjectPath(path);
 	DA_WAIT_CURSOR_SCOPED();
+    //! 保存系统信息，仅仅保存不读取
+    makeSaveSystemInfoTask(mArchive);
+
 	//! 先把涉及ui的内容保存下来,ui是无法在其它线程操作，因此需要先保存下来
 	makeSaveWorkFlowTask(mArchive);
 
@@ -354,6 +384,7 @@ bool DAAppProject::save(const QString& path)
 	makeSaveDataManagerTask(mArchive);
 
 	//! 绘图
+    makeSaveChartTask(mArchive);
 
 	//! 组件任务队列
 	if (!mArchive->save(path)) {
@@ -383,25 +414,52 @@ bool DAAppProject::load(const QString& path)
 		qWarning() << tr("current project is busy");  // cn:当前工程正繁忙
 		return false;
 	}
+    // 先确认是否是符合要求的工程
+    if (!DAZipArchive::isCorrectFile(path)) {
+        qCritical() << tr("The file %1 is not a valid project file").arg(path);  // cn:文件%1不是正确的工程文件
+        return false;
+    }
 	// 加载之前先清空
 	clear();
 
 	setProjectPath(path);
 	// 创建archive任务队列
-	mArchive->appendXmlLoadTask(QStringLiteral("workflow.xml"), DAAPPPROJECT_TASK_LOAD_ID_WORKFLOW);
+    mArchive->appendXmlLoadTask(c_workflowxml_save_filename, DAAPPPROJECT_TASK_LOAD_ID_WORKFLOW);
 
 	// 创建datamanager任务
-	std::shared_ptr< DAZipArchiveTask_LoadDataManager > loadDataTask =
-		std::make_shared< DAZipArchiveTask_LoadDataManager >();
+    std::shared_ptr< DAZipArchiveTask_LoadDataManager > loadDataTask = std::make_shared< DAZipArchiveTask_LoadDataManager >();
 	loadDataTask->setCode(DAAPPPROJECT_TASK_LOAD_ID_DATAMANAGER);
 	mArchive->appendTask(loadDataTask);
 
+    // 加载chartItemManager
+
+    //! ChartItemLoadTask必须在chart info 的XmlLoadTask之前
+    mArchive->appendChartItemLoadTask(c_chartitem_save_folder, DAAPPPROJECT_TASK_LOAD_ID_CHARTITEMMANAGER);
+    mArchive->appendXmlLoadTask(c_chartsxml_save_filename, DAAPPPROJECT_TASK_LOAD_ID_CHARTS_INFO);
 	//! 组件任务队列
 	if (!mArchive->load(path)) {
 		qCritical() << tr("failed to laod archive from %1").arg(path);
 		return false;
 	}
-	return true;
+    return true;
+}
+
+/**
+ * @brief 保存系统信息
+ * @param archive
+ */
+void DAAppProject::makeSaveSystemInfoTask(DAZipArchiveThreadWrapper* archive)
+{
+    QDomDocument doc;
+    QDomProcessingInstruction processInstruction = doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\"");
+    doc.appendChild(processInstruction);
+    QDomElement root = doc.createElement("root");
+    root.setAttribute("type", "system-info");
+    doc.appendChild(root);
+    QDomElement sysEle = DAXMLFileInterface::makeSysInfoElement(QStringLiteral("system"), &doc);
+    root.appendChild(sysEle);
+    // 创建archive任务队列
+    archive->appendXmlSaveTask(QStringLiteral("system.xml"), doc);
 }
 
 /**
@@ -413,7 +471,7 @@ void DAAppProject::makeSaveWorkFlowTask(DAZipArchiveThreadWrapper* archive)
 	//! 先把涉及ui的内容保存下来,ui是无法在其它线程操作，因此需要先保存下来
 	QDomDocument workflowXml = createWorkflowUIDomDocument();
 	// 创建archive任务队列
-	archive->appendXmlSaveTask(QStringLiteral("workflow.xml"), workflowXml);
+    archive->appendXmlSaveTask(c_workflowxml_save_filename, workflowXml);
 }
 
 /**
@@ -424,8 +482,7 @@ void DAAppProject::makeSaveDataManagerTask(DAZipArchiveThreadWrapper* archive)
 {
 	DADataManagerInterface* dataMgr = getDataManagerInterface();
 	QDomDocument doc;
-	QDomProcessingInstruction processInstruction =
-		doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\"");
+    QDomProcessingInstruction processInstruction = doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\"");
 	doc.appendChild(processInstruction);
 	QDomElement root = doc.createElement(QStringLiteral("root"));
 	root.setAttribute("type", "data manager");
@@ -445,7 +502,7 @@ void DAAppProject::makeSaveDataManagerTask(DAZipArchiveThreadWrapper* archive)
 			// 写文件，对于大文件，这里可能比较耗时，但python的gli机制，无法在线程里面写
 			if (!DAData::writeToFile(data, tempFilePath)) {
 				qCritical() << tr("An exception occurred while serializing the dataframe named %1 to %2")
-								   .arg(name, tempFilePath);  // cn:把名称为%1的dataframe序列化到%2时出现异常
+                                   .arg(name, tempFilePath);  // cn:把名称为%1的dataframe序列化到%2时出现异常
 				continue;
 			}
 			// 创建archive任务队列
@@ -482,28 +539,13 @@ void DAAppProject::makeSaveDataManagerTask(DAZipArchiveThreadWrapper* archive)
  */
 void DAAppProject::makeSaveChartTask(DAZipArchiveThreadWrapper* archive)
 {
-    // 先保存窗口
-}
-
-/**
- * @brief 本机信息
- * @param doc
- * @return
- */
-QDomElement DAAppProject::makeLocalInfoElement(QDomDocument& doc) const
-{
-	QDomElement localInfo = doc.createElement("local-info");
-	// 获得计算机的名称
-	appendElementWithText(localInfo, "machineHostName", QSysInfo::machineHostName(), doc);
-	// 获得计算机的位数
-	appendElementWithText(localInfo, "cpuArch", QSysInfo::currentCpuArchitecture(), doc);
-	// 获得kernelType
-	appendElementWithText(localInfo, "kernelType", QSysInfo::kernelType(), doc);
-	// 获得kernelType
-	appendElementWithText(localInfo, "kernelVersion", QSysInfo::kernelVersion(), doc);
-	// 获得kernelType
-	appendElementWithText(localInfo, "prettyProductName", QSysInfo::prettyProductName(), doc);
-	return localInfo;
+    //! 先把涉及ui的内容保存下来,ui是无法在其它线程操作，因此需要先保存下来
+    DAChartItemsManager chartItemMgr;
+    QDomDocument chartXml = createChartsUIDomDocument(chartItemMgr);
+    // 创建archive任务队列,先保存xml
+    archive->appendXmlSaveTask(c_chartsxml_save_filename, chartXml);
+    // 创建chartitem保存任务
+    archive->appendChartItemSaveTask(c_chartitem_save_folder, chartItemMgr);
 }
 
 QDomDocument DAAppProject::createWorkflowUIDomDocument()
@@ -511,22 +553,42 @@ QDomDocument DAAppProject::createWorkflowUIDomDocument()
 	DAWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
 	Q_CHECK_PTR(wfo);
 	QDomDocument doc;
-	QDomProcessingInstruction processInstruction =
-		doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\"");
+    QDomProcessingInstruction processInstruction = doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\"");
 	doc.appendChild(processInstruction);
 	QDomElement root = doc.createElement("root");
-	root.setAttribute("type", "project");
+    root.setAttribute("type", "workflow");
 	doc.appendChild(root);
-	// 保存本机信息
-	QDomElement localInfoEle = makeLocalInfoElement(doc);
-	root.appendChild(localInfoEle);
 	QDomElement project = doc.createElement("project");
 	project.setAttribute("version", getProjectVersion().toString());  // 版本
 	root.appendChild(project);
 	// 把所有的工作流保存
 	QDomElement workflowsElement = mXml.makeElement(wfo, "workflows", &doc);
 	project.appendChild(workflowsElement);
-	return doc;
+    return doc;
+}
+
+/**
+ * @brief 创建绘图xml
+ * @param chartItems
+ * @return
+ */
+QDomDocument DAAppProject::createChartsUIDomDocument(DAChartItemsManager& chartItems)
+{
+    DAChartOperateWidget* chartOpt = getChartOperateWidget();
+    Q_CHECK_PTR(chartOpt);
+    QDomDocument doc;
+    QDomProcessingInstruction processInstruction = doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\"");
+    doc.appendChild(processInstruction);
+    QDomElement root = doc.createElement("root");
+    root.setAttribute("type", "chart");
+    doc.appendChild(root);
+    QDomElement project = doc.createElement("project");
+    project.setAttribute("version", getProjectVersion().toString());  // 版本
+    root.appendChild(project);
+    // 把所有的chart保存
+    QDomElement chartsElement = mXml.makeElement(chartOpt, "charts", &doc, &chartItems);
+    project.appendChild(chartsElement);
+    return doc;
 }
 
 bool DAAppProject::loadWorkflowUI(const QByteArray& data)
@@ -560,15 +622,15 @@ void DAAppProject::onTaskProgress(int total, int pos, const std::shared_ptr< DAA
 	switch (t->getCode()) {
 	case DAAPPPROJECT_TASK_LOAD_ID_WORKFLOW: {
 		const std::shared_ptr< DAZipArchiveTask_Xml > xmlArchive = std::static_pointer_cast< DAZipArchiveTask_Xml >(t);
-
-		QDomDocument xmlDoc = xmlArchive->getDomDocument();
+        // 读取xml
+        QDomDocument xmlDoc = xmlArchive->getDomDocument();
 		qDebug() << "onTaskProgress:(" << total << "," << pos << "),xml=\n" << xmlDoc.toString();
 		appendWorkflowInProject(xmlDoc);
 	} break;
 	case DAAPPPROJECT_TASK_LOAD_ID_DATAMANAGER: {
 		//! 读取datamanager
-		const std::shared_ptr< DAZipArchiveTask_LoadDataManager > datamgrTask =
-			std::static_pointer_cast< DAZipArchiveTask_LoadDataManager >(t);
+        const std::shared_ptr< DAZipArchiveTask_LoadDataManager >
+            datamgrTask                 = std::static_pointer_cast< DAZipArchiveTask_LoadDataManager >(t);
 		DADataManagerInterface* dataMgr = getDataManagerInterface();
 		QDomDocument xmlDoc             = datamgrTask->getDataManagerDomDocument();
 		if (xmlDoc.isNull()) {
@@ -616,8 +678,20 @@ void DAAppProject::onTaskProgress(int total, int pos, const std::shared_ptr< DAA
 			}
 		}
 	} break;
-	case 0:
-		break;
+    case DAAPPPROJECT_TASK_LOAD_ID_CHARTITEMMANAGER: {
+        const std::shared_ptr< DAZipArchiveTask_ChartItem > chartMgrArchive = std::static_pointer_cast< DAZipArchiveTask_ChartItem >(
+            t);
+        // 获取chartmanager
+        mChartItemManager = chartMgrArchive->getChartItemsManager();
+    } break;
+    case DAAPPPROJECT_TASK_LOAD_ID_CHARTS_INFO: {
+        // 加载绘图
+        const std::shared_ptr< DAZipArchiveTask_Xml > xmlArchive = std::static_pointer_cast< DAZipArchiveTask_Xml >(t);
+        // 读取xml
+        QDomDocument xmlDoc = xmlArchive->getDomDocument();
+        //
+        appendChartsInProject(xmlDoc, &mChartItemManager);
+    } break;
 	default: {
 		qDebug() << tr("get unknown task code:%1").arg(t->getCode());
 	} break;

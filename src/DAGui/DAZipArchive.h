@@ -16,6 +16,7 @@ public:
 	DAZipArchive(QObject* par = nullptr);
 	DAZipArchive(const QString& zipPath, QObject* par = nullptr);
 	~DAZipArchive();
+
 	// 设置zip文件名
 	virtual bool setBaseFilePath(const QString& path) override;
 	// 设置zip文件名,包含完整路径的名字
@@ -71,6 +72,8 @@ public:
 	QStringList getFolderFileNameList(const QString& zipFolderPath) const;
 	// 获取QuaZip指针
 	QuaZip* quazip() const;
+    // 获取最后的错误内容
+    QString getLastErrorString() const;
 public Q_SLOTS:
 	// 保存所有，执行任务队列
 	virtual void saveAll(const QString& filePath) override;
@@ -78,6 +81,8 @@ public Q_SLOTS:
 	virtual void loadAll(const QString& filePath) override;
 
 public:
+    // 判断是否是正确的工程
+    static bool isCorrectFile(const QString& filePath);
 	static bool extractToDirectory(const QString& zipFilePath, const QString& extractDir);
 	static bool extractToDirectory(QuaZip* zip, const QString& extractDir);
 	static bool compressDirectory(const QString& folderPath, const QString& zipFilePath);

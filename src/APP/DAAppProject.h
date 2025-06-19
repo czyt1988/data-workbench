@@ -10,6 +10,7 @@
 #include <QThread>
 #include "DAXmlHelper.h"
 #include "DAZipArchiveThreadWrapper.h"
+#include "DAChartItemsManager.h"
 
 namespace DA
 {
@@ -18,6 +19,7 @@ class DAZipArchiveThreadWrapper;
 class DAWorkFlowOperateWidget;
 class DAWorkFlowGraphicsScene;
 class DADataOperateWidget;
+class DAChartOperateWidget;
 /**
  * @brief 负责整个节点的工程管理
  *
@@ -34,11 +36,13 @@ public:
 	DAWorkFlowOperateWidget* getWorkFlowOperateWidget() const;
 	// 数据操作窗口
 	DADataOperateWidget* getDataOperateWidget() const;
+    // 绘图窗口
+    DAChartOperateWidget* getChartOperateWidget() const;
 	// 追加一个工厂的工作流进入本工程中，注意这个操作不会清空当前的工作流
 	bool appendWorkflowInProject(const QDomDocument& doc, bool skipIndex = false);
 	bool appendWorkflowInProject(const QByteArray& data, bool skipIndex = false);
-	// 在parent下，插入一个tag，tag下包含文字text
-	static void appendElementWithText(QDomElement& parent, const QString& tagName, const QString& text, QDomDocument& doc);
+    // 把绘图信息添加到工程
+    bool appendChartsInProject(const QDomDocument& doc, DAChartItemsManager* chartmanager);
 	// 繁忙状态判断
 	virtual bool isBusy() const override;
 	// 生成一个数据文件对应的临时文件位置
@@ -54,17 +58,18 @@ public Q_SLOTS:
 	virtual bool load(const QString& path) override;
 
 protected:
-	// 保存工作流的任务
-	void makeSaveWorkFlowTask(DAZipArchiveThreadWrapper* archive);
+    // 保存系统信息
+    void makeSaveSystemInfoTask(DAZipArchiveThreadWrapper* archive);
+    // 保存工作流的任务
+    void makeSaveWorkFlowTask(DAZipArchiveThreadWrapper* archive);
 	// 保存数据的任务
 	void makeSaveDataManagerTask(DAZipArchiveThreadWrapper* archive);
 	// 创建保存绘图的任务
 	void makeSaveChartTask(DAZipArchiveThreadWrapper* archive);
-
-	// 保存本地信息包括时间日期等等
-	QDomElement makeLocalInfoElement(QDomDocument& doc) const;
 	// 保存workflow相关内容（以xml形式）
 	QDomDocument createWorkflowUIDomDocument();
+    // 保存charts相关内容（以xml形式）
+    QDomDocument createChartsUIDomDocument(DAChartItemsManager& chartItems);
 	bool loadWorkflowUI(const QByteArray& data);
 
 private Q_SLOTS:
@@ -81,6 +86,7 @@ private:
 	DAZipArchiveThreadWrapper* mArchive { nullptr };
 	DAXmlHelper mXml;
 	std::unique_ptr< QTemporaryDir > mTempDir;
+    DAChartItemsManager mChartItemManager;
 };
 
 }  // namespace DA

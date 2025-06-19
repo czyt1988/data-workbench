@@ -14,12 +14,12 @@ class DAGUI_API DAZipArchiveTask_ChartItem : public DAAbstractArchiveTask
 {
 public:
 	// 保存构造
-	DAZipArchiveTask_ChartItem(const QString& zipRelateFolderPath, const DAChartItemsManager& items);
+    DAZipArchiveTask_ChartItem(const QString& zipRelateFolderPath, const DAChartItemsManager& itemsMgr);
 	// 加载构造
 	DAZipArchiveTask_ChartItem(const QString& zipRelateFolderPath);
 	~DAZipArchiveTask_ChartItem();
 	// 获取item
-	const DAChartItemsManager& getItems() const;
+    const DAChartItemsManager& getChartItemsManager() const;
 	//
 	virtual bool exec(DAAbstractArchive* archive, DAAbstractArchiveTask::Mode mode) override;
 	// 序列化
@@ -33,7 +33,7 @@ private:
 
 private:
 	QString mZipRelateFolderPath;
-	DAChartItemsManager mItems;
+    DAChartItemsManager mItemsManager;
 };
 }
 #endif  // DAZIPARCHIVETASK_CHARTITEM_H
