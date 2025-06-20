@@ -48,14 +48,14 @@ namespace DA
 class DAFIGURE_API DABadSerializeExpection : public std::exception
 {
 public:
-    DABadSerializeExpection();
-    DABadSerializeExpection(const char* why);
-    DABadSerializeExpection(const std::string& why);
-    ~DABadSerializeExpection();
-    const char* what() const noexcept;
+	DABadSerializeExpection();
+	DABadSerializeExpection(const char* why);
+	DABadSerializeExpection(const std::string& why);
+	~DABadSerializeExpection();
+	const char* what() const noexcept;
 
 private:
-    std::string mWhy;
+	std::string mWhy;
 };
 
 /**
@@ -64,75 +64,79 @@ private:
 class DAFIGURE_API DAChartItemSerialize
 {
 public:
-    class Header
-    {
-    public:
-        Header();
-        ~Header();
-        std::uint32_t magic;       ///< 魔数，--4
-        int version;               ///< 版本 -- 8
-        int rtti;                  ///< rtti --12
-        std::uint64_t size;        ///< 数据区大小 --20
-        unsigned char byte[ 12 ];  ///< 预留12字节，凑齐32字节
-        // 是否正确的header
-        bool isValid() const;
-    };
+	class Header
+	{
+	public:
+		Header();
+		~Header();
+		std::uint32_t magic;       ///< 魔数，--4
+		int version;               ///< 版本 -- 8
+		int rtti;                  ///< rtti --12
+		unsigned char byte[ 20 ];  ///< 预留20字节，凑齐32字节
+		// 是否正确的header
+		bool isValid() const;
+	};
 
 public:
-    /**
-     * @brief 序列化为QByteArray函数
-     */
-    using FpSerializeOut = std::function< QByteArray(const QwtPlotItem*) >;  // QByteArray serializeOut(QwtPlotItem* item)
-    using FpSerializeIn = std::function< QwtPlotItem*(const QByteArray&) >;  // QwtPlotItem* serializeIn(int rtti,const QByteArray& d)
+	/**
+	 * @brief 序列化为QByteArray函数
+	 */
+	using FpSerializeOut = std::function< QByteArray(const QwtPlotItem*) >;  // QByteArray serializeOut(QwtPlotItem* item)
+	using FpSerializeIn =
+		std::function< QwtPlotItem*(const QByteArray&) >;  // QwtPlotItem* serializeIn(int rtti,const QByteArray& d)
 public:
-    DAChartItemSerialize();
-    ~DAChartItemSerialize();
-    /**
-     * @brief 注册序列化函数
-     * @param rtti item的rtti
-     * @param fp 函数指针
-     */
-    static void registSerializeFun(int rtti, FpSerializeIn fpIn, FpSerializeOut fpOut);
+	DAChartItemSerialize();
+	~DAChartItemSerialize();
+	/**
+	 * @brief 注册序列化函数
+	 * @param rtti item的rtti
+	 * @param fp 函数指针
+	 */
+	static void registSerializeFun(int rtti, FpSerializeIn fpIn, FpSerializeOut fpOut);
 
-    /**
-     * @brief 判断这个rtti是否支持序列化
-     * @param rtti
-     * @return
-     */
-    static bool isSupportSerialize(int rtti);
+	/**
+	 * @brief 判断这个rtti是否支持序列化
+	 * @param rtti
+	 * @return
+	 */
+	static bool isSupportSerialize(int rtti);
 
-    /**
-     * @brief 获取Serialize In方法
-     * @param rtti
-     * @return
-     */
-    static FpSerializeIn getSerializeInFun(int rtti) noexcept;
+	/**
+	 * @brief 获取Serialize In方法
+	 * @param rtti
+	 * @return
+	 */
+	static FpSerializeIn getSerializeInFun(int rtti) noexcept;
 
-    /**
-     * @brief 获取Serialize Out方法
-     * @param rtti
-     * @return
-     */
-    static FpSerializeOut getSerializeOutFun(int rtti);
-    /**
-     * @brief 序列化输出
-     * @param item
-     * @return
-     */
-    QByteArray serializeOut(const QwtPlotItem* item) const;
-    QwtPlotItem* serializeIn(const QByteArray& byte) const noexcept;
+	/**
+	 * @brief 获取Serialize Out方法
+	 * @param rtti
+	 * @return
+	 */
+	static FpSerializeOut getSerializeOutFun(int rtti);
+	/**
+	 * @brief 序列化输出
+	 * @param item
+	 * @return
+	 */
+	QByteArray serializeOut(const QwtPlotItem* item) const;
+	QwtPlotItem* serializeIn(const QByteArray& byte) const noexcept;
 
-    /**
-     * @brief 在文件中获取rtti
-     *
-     * 文件的rtti保存在文件头中
-     * @param byte 文件内存
-     * @return
-     */
-    int getRtti(const QByteArray& byte) const noexcept;
+	/**
+	 * @brief 在文件中获取rtti
+	 *
+	 * 文件的rtti保存在文件头中
+	 * @param byte 文件内存
+	 * @return
+	 */
+	int getRtti(const QByteArray& byte) const noexcept;
+
+public:
+	static QwtPlotItem* serializeIn_QwtPlotCurve(const QByteArray& byte);
+	static QByteArray serializeOut_QwtPlotCurve(const QwtPlotItem* item);
 
 protected:
-    static QHash< int, std::pair< FpSerializeIn, FpSerializeOut > >& serializeFun();
+	static QHash< int, std::pair< FpSerializeIn, FpSerializeOut > >& serializeFun();
 };
 
 }  // end namespace DA

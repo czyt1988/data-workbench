@@ -1451,6 +1451,10 @@ void DAAppController::onActionAddFigureTriggered()
 	DAAppChartOperateWidget* chartopt = getChartOperateWidget();
 	// 添加绘图
 	DAFigureWidget* fig = chartopt->createFigure();
+	// 这里不需要回退
+	DAChartWidget* chart = fig->createChart();
+	chart->setXLabel("x");
+	chart->setYLabel("y");
 	// 把fig的undostack添加
 	mCommand->addStack(fig->getUndoStack());
 	mRibbon->updateFigureAboutRibbon(fig);

@@ -9,8 +9,8 @@ namespace DA
 
 DAAppChartOperateWidget::DAAppChartOperateWidget(QWidget* parent) : DAChartOperateWidget(parent)
 {
-    mFigEventFilter = new DAEvenFilterDragPlotWithGuide(this);
-    mFigEventFilter->setChartOptWidget(this);
+	mFigEventFilter = new DAEvenFilterDragPlotWithGuide(this);
+	mFigEventFilter->setChartOptWidget(this);
 }
 
 DAAppChartOperateWidget::~DAAppChartOperateWidget()
@@ -32,15 +32,11 @@ void DAAppChartOperateWidget::setDataManager(DADataManager* mgr)
  */
 DAFigureWidget* DAAppChartOperateWidget::createFigure()
 {
-    DAFigureWidget* fig = DAChartOperateWidget::createFigure();
-    if (DAAppFigureWidget* appFig = qobject_cast< DAAppFigureWidget* >(fig)) {
-        appFig->installEventFilter(mFigEventFilter);
-    }
-    // 这里不需要回退
-    DAChartWidget* chart = fig->createChart();
-    chart->setXLabel("x");
-    chart->setYLabel("y");
-    return fig;
+	DAFigureWidget* fig = DAChartOperateWidget::createFigure();
+	if (DAAppFigureWidget* appFig = qobject_cast< DAAppFigureWidget* >(fig)) {
+		appFig->installEventFilter(mFigEventFilter);
+	}
+	return fig;
 }
 
 /**
@@ -50,26 +46,26 @@ DAFigureWidget* DAAppChartOperateWidget::createFigure()
  */
 QwtPlotItem* DAAppChartOperateWidget::createPlotItemWithGuideDialog(const DAData& data, ChartTypes t)
 {
-    if (nullptr == mChartGuideDlg) {
-        mChartGuideDlg = new DADialogChartGuide(this);
-        mChartGuideDlg->setDataManager(mDataMgr);
-    }
-    if (data) {
-        mChartGuideDlg->setCurrentData(data);
-    } else {
-        mChartGuideDlg->updateData();
-    }
-    mChartGuideDlg->setCurrentChartType(t);
-    if (QDialog::Accepted != mChartGuideDlg->exec()) {
-        return nullptr;
-    }
-    DAWaitCursorScoped wait;
-    Q_UNUSED(wait);
-    QwtPlotItem* item = mChartGuideDlg->createPlotItem();
-    if (nullptr == item) {
-        return nullptr;
-    }
-    return item;
+	if (nullptr == mChartGuideDlg) {
+		mChartGuideDlg = new DADialogChartGuide(this);
+		mChartGuideDlg->setDataManager(mDataMgr);
+	}
+	if (data) {
+		mChartGuideDlg->setCurrentData(data);
+	} else {
+		mChartGuideDlg->updateData();
+	}
+	mChartGuideDlg->setCurrentChartType(t);
+	if (QDialog::Accepted != mChartGuideDlg->exec()) {
+		return nullptr;
+	}
+	DAWaitCursorScoped wait;
+	Q_UNUSED(wait);
+	QwtPlotItem* item = mChartGuideDlg->createPlotItem();
+	if (nullptr == item) {
+		return nullptr;
+	}
+	return item;
 }
 
 /**
@@ -77,19 +73,19 @@ QwtPlotItem* DAAppChartOperateWidget::createPlotItemWithGuideDialog(const DAData
  */
 void DAAppChartOperateWidget::plotWithGuideDialog(DA::ChartTypes t)
 {
-    QwtPlotItem* item = createPlotItemWithGuideDialog(DAData(), t);
-    if (!item) {
-        return;
-    }
-    DAFigureWidget* fig = getCurrentFigure();
-    if (!fig) {
-        fig = createFigure();
-    }
-    DAChartWidget* chart = fig->getCurrentChart();
-    if (!chart) {
-        chart = fig->createChart();
-    }
-    fig->addItem_(chart, item);
+	QwtPlotItem* item = createPlotItemWithGuideDialog(DAData(), t);
+	if (!item) {
+		return;
+	}
+	DAFigureWidget* fig = getCurrentFigure();
+	if (!fig) {
+		fig = createFigure();
+	}
+	DAChartWidget* chart = fig->getCurrentChart();
+	if (!chart) {
+		chart = fig->createChart();
+	}
+	fig->addItem_(chart, item);
 }
 
 }  // end DA
