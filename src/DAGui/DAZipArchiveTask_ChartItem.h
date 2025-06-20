@@ -24,16 +24,21 @@ public:
 	virtual bool exec(DAAbstractArchive* archive, DAAbstractArchiveTask::Mode mode) override;
 	// 序列化
 	static QByteArray qwtitemSerialization(const QwtPlotItem* item);
+    static QwtPlotItem* qwtitemSerialization(const QByteArray& byte);
+    QString getLastError() const;
+    void setLastError(const QString& lastError);
 
 private:
-	QByteArray toXml() const;
-	bool writeChartItems(DAZipArchive* zip, const DAChartItemsManager* itemsData);
+    QByteArray toXml() const;
+    bool fromXml(DAZipArchive* zip, QList< QPair< QString, int > >& res);
+    bool writeChartItems(DAZipArchive* zip, const DAChartItemsManager* itemsData);
 	bool readChartItems(DAZipArchive* zip, DAChartItemsManager* itemsData);
 	static QString chartItemsMgrXmlFileName();
 
 private:
 	QString mZipRelateFolderPath;
     DAChartItemsManager mItemsManager;
+    QString mLastError;
 };
 }
 #endif  // DAZIPARCHIVETASK_CHARTITEM_H

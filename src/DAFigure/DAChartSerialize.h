@@ -106,7 +106,7 @@ public:
      * @param rtti
      * @return
      */
-    static FpSerializeIn getSerializeInFun(int rtti);
+    static FpSerializeIn getSerializeInFun(int rtti) noexcept;
 
     /**
      * @brief 获取Serialize Out方法
@@ -119,8 +119,17 @@ public:
      * @param item
      * @return
      */
-    QByteArray serializeOut(const QwtPlotItem* item);
-    QwtPlotItem* serializeIn(const QByteArray& byte);
+    QByteArray serializeOut(const QwtPlotItem* item) const;
+    QwtPlotItem* serializeIn(const QByteArray& byte) const noexcept;
+
+    /**
+     * @brief 在文件中获取rtti
+     *
+     * 文件的rtti保存在文件头中
+     * @param byte 文件内存
+     * @return
+     */
+    int getRtti(const QByteArray& byte) const noexcept;
 
 protected:
     static QHash< int, std::pair< FpSerializeIn, FpSerializeOut > >& serializeFun();

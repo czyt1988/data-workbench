@@ -2,6 +2,7 @@
 #include "DAChartUtil.h"
 #include <cstring>
 #include <QBuffer>
+#include <QDebug>
 // qwt
 #include "qwt_plot.h"
 #include "qwt_symbol.h"
@@ -42,13 +43,22 @@ const QDataStream::Version gc_datastream_version = QDataStream::Qt_5_12;
 #define DACHARTITEMSERIALIZE_MAKE_SERIALIZE_PAIR(RTTI_Value, PLotItemClass)                                            \
     { [](const QByteArray& byte) -> QwtPlotItem* {                                                                     \
          QDataStream st(byte);                                                                                         \
-         QwtPlotItem* item = DAChartPlotItemFactory::createItem(RTTI_Value);                                           \
+         DAChartItemSerialize::Header h;                                                                               \
+         st >> h;                                                                                                      \
+         if (!h.isValid()) {                                                                                           \
+             return nullptr;                                                                                           \
+         }                                                                                                             \
+         QwtPlotItem* item = DAChartPlotItemFactory::createItem(h.rtti);                                               \
          st >> static_cast< PLotItemClass* >(item);                                                                    \
          return item;                                                                                                  \
      },                                                                                                                \
       [](const QwtPlotItem* item) -> QByteArray {                                                                      \
           QByteArray byte;                                                                                             \
           QDataStream st(&byte, QIODevice::WriteOnly);                                                                 \
+          DAChartItemSerialize::Header h;                                                                              \
+          h.rtti = item->rtti();                                                                                       \
+          st.setVersion(gc_datastream_version);                                                                        \
+          st << h;                                                                                                     \
           st << static_cast< const PLotItemClass* >(item);                                                             \
           return byte;                                                                                                 \
       } }
@@ -174,7 +184,7 @@ bool DAChartItemSerialize::isSupportSerialize(int rtti)
     return serializeFun().contains(rtti);
 }
 
-DAChartItemSerialize::FpSerializeIn DAChartItemSerialize::getSerializeInFun(int rtti)
+DAChartItemSerialize::FpSerializeIn DAChartItemSerialize::getSerializeInFun(int rtti) noexcept
 {
     auto pair = serializeFun().value(rtti, std::make_pair< FpSerializeIn, FpSerializeOut >(nullptr, nullptr));
     return pair.first;
@@ -186,52 +196,58 @@ DAChartItemSerialize::FpSerializeOut DAChartItemSerialize::getSerializeOutFun(in
     return pair.second;
 }
 
-QByteArray DAChartItemSerialize::serializeOut(const QwtPlotItem* item)
+QByteArray DAChartItemSerialize::serializeOut(const QwtPlotItem* item) const
 {
     int rtti          = item->rtti();
     FpSerializeOut fp = getSerializeOutFun(rtti);
     if (!fp) {
+        qDebug() << QString("While serializing the plot item, an unregistered RTTI value was encountered.");
         return QByteArray();
     }
-    DAChartItemSerialize::Header h;
-    h.rtti = item->rtti();
-    QByteArray byte;
-    QDataStream st(&byte, QIODevice::WriteOnly);
-    st.setVersion(gc_datastream_version);  // 以5.12为准，因为最低编译要求为qt5.12
-    st << h;
-    st << fp(item);
-    return byte;
+    return fp(item);
 }
 
-QwtPlotItem* DAChartItemSerialize::serializeIn(const QByteArray& byte)
+QwtPlotItem* DAChartItemSerialize::serializeIn(const QByteArray& byte) const noexcept
 {
     // 使用QBuffer避免额外内存分配
-    QBuffer buffer;
-    buffer.setData(byte);
-    buffer.open(QIODevice::ReadOnly);
-
-    QDataStream st(&buffer);
-    DAChartItemSerialize::Header h;
-    st.setVersion(gc_datastream_version);
-    st >> h;
-
-    if (!h.isValid()) {
+    int rtti = getRtti(byte);
+    if (rtti < 0) {
         return nullptr;
     }
-
-    FpSerializeIn fp = getSerializeInFun(h.rtti);
+    FpSerializeIn fp = getSerializeInFun(rtti);
     if (!fp) {
         return nullptr;
     }
+    QwtPlotItem* item = nullptr;
+    try {
+        item = fp(byte);
+    } catch (const std::exception& e) {
+        qDebug() << e.what();
+    }
+    return item;
+}
 
-    // 直接获取剩余数据的引用（零拷贝）
-    qint64 remainingSize = buffer.bytesAvailable();
-    const char* rawData  = buffer.data().constData() + buffer.pos();
+int DAChartItemSerialize::getRtti(const QByteArray& byte) const noexcept
+{
+    // 使用QBuffer避免额外内存分配
+    int rtti = -1;
+    try {
+        QBuffer buffer;
+        buffer.setData(byte);
+        buffer.open(QIODevice::ReadOnly);
 
-    // 创建视图（不复制数据）
-    QByteArray remainingData = QByteArray::fromRawData(rawData, remainingSize);
-
-    return fp(remainingData);
+        QDataStream st(&buffer);
+        DAChartItemSerialize::Header h;
+        st.setVersion(gc_datastream_version);
+        st >> h;
+        if (h.isValid()) {
+            rtti = h.rtti;
+        }
+    } catch (const std::exception& e) {
+        qDebug() << e.what();
+        return -1;
+    }
+    return rtti;
 }
 
 QHash< int, std::pair< DAChartItemSerialize::FpSerializeIn, DAChartItemSerialize::FpSerializeOut > > initChartItemSerialize()
@@ -312,7 +328,7 @@ QHash< int, std::pair< DAChartItemSerialize::FpSerializeIn, DAChartItemSerialize
 
 QHash< int, std::pair< DAChartItemSerialize::FpSerializeIn, DAChartItemSerialize::FpSerializeOut > >& DAChartItemSerialize::serializeFun()
 {
-    static QHash< int, std::pair< FpSerializeIn, FpSerializeOut > > s_serializeMap;
+    static QHash< int, std::pair< FpSerializeIn, FpSerializeOut > > s_serializeMap = initChartItemSerialize();
     return s_serializeMap;
 }
 
