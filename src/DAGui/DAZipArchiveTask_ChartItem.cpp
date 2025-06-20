@@ -155,7 +155,7 @@ bool DAZipArchiveTask_ChartItem::writeChartItems(DAZipArchive* zip, const DAChar
 
 bool DAZipArchiveTask_ChartItem::readChartItems(DAZipArchive* zip, DAChartItemsManager* itemsData)
 {
-	return false;
+    return true;
 }
 
 QString DAZipArchiveTask_ChartItem::chartItemsMgrXmlFileName()

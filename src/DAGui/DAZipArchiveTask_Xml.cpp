@@ -77,6 +77,11 @@ bool DAZipArchiveTask_Xml::exec(DAAbstractArchive* archive, DAAbstractArchiveTas
                 return false;
             }
         }
+        if (!zip->contains(mPath)) {
+            // 没有这个文件也返回true
+            qDebug() << QString("%1 not in archive").arg(mPath);
+            return true;
+        }
         QByteArray data = zip->read(mPath);
         if (data.isEmpty()) {
             qDebug() << QString("can not read %1 from %2").arg(mPath, zip->getBaseFilePath());

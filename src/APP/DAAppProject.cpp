@@ -624,6 +624,9 @@ void DAAppProject::onTaskProgress(int total, int pos, const std::shared_ptr< DAA
 		const std::shared_ptr< DAZipArchiveTask_Xml > xmlArchive = std::static_pointer_cast< DAZipArchiveTask_Xml >(t);
         // 读取xml
         QDomDocument xmlDoc = xmlArchive->getDomDocument();
+        if (xmlDoc.isNull()) {
+            return;
+        }
 		qDebug() << "onTaskProgress:(" << total << "," << pos << "),xml=\n" << xmlDoc.toString();
 		appendWorkflowInProject(xmlDoc);
 	} break;
@@ -689,6 +692,9 @@ void DAAppProject::onTaskProgress(int total, int pos, const std::shared_ptr< DAA
         const std::shared_ptr< DAZipArchiveTask_Xml > xmlArchive = std::static_pointer_cast< DAZipArchiveTask_Xml >(t);
         // 读取xml
         QDomDocument xmlDoc = xmlArchive->getDomDocument();
+        if (xmlDoc.isNull()) {
+            return;
+        }
         //
         appendChartsInProject(xmlDoc, &mChartItemManager);
     } break;
