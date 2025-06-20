@@ -42,7 +42,7 @@ void DADialogDataFrameFillInterpolate::initDialogDataFrameInterpolate()
 
 QString DADialogDataFrameFillInterpolate::getInterpolateMethod() const
 {
-	return ui->comboBoxMethod->currentText();
+    return ui->comboBoxMethod->itemData(ui->comboBoxMethod->currentIndex()).toString();
 }
 
 void DADialogDataFrameFillInterpolate::setInterpolateOrder(double d)
