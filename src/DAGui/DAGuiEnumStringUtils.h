@@ -48,6 +48,8 @@ DA_ENUM_STRING_DECLARE_EXPORT(DAGUI_API, DA::DAColorTheme::ColorThemeStyle)
 #include "qwt_scale_div.h"
 #include "qwt_scale_draw.h"
 #include "qwt_date.h"
+// QWT.QwtDate::Week0Type
+DA_ENUM_STRING_DECLARE_EXPORT(DAGUI_API, QwtPlotItem::RttiValues)
 // QWT.QwtPlot::LegendPosition
 DA_ENUM_STRING_DECLARE_EXPORT(DAGUI_API, QwtPlot::LegendPosition)
 // QWT.QwtText::TextFormat

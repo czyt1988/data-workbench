@@ -53,7 +53,9 @@ bool DAZipArchiveTask_Xml::exec(DAAbstractArchive* archive, DAAbstractArchiveTas
         // 写模式
         if (!zip->isOpened()) {
             if (!zip->create()) {
-                qDebug() << QString("create archive error:%1").arg(zip->getBaseFilePath());
+                qCritical() << QObject::tr("can not create archive at \"%1\",because %2")
+                                   .arg(zip->getBaseFilePath())
+                                   .arg(zip->getLastErrorString());
                 return false;
             }
         }
@@ -74,6 +76,11 @@ bool DAZipArchiveTask_Xml::exec(DAAbstractArchive* archive, DAAbstractArchiveTas
                 qDebug() << QString("open archive error:%1").arg(zip->getBaseFilePath());
                 return false;
             }
+        }
+        if (!zip->contains(mPath)) {
+            // 没有这个文件也返回true
+            qDebug() << QString("%1 not in archive").arg(mPath);
+            return true;
         }
         QByteArray data = zip->read(mPath);
         if (data.isEmpty()) {

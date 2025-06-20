@@ -375,13 +375,13 @@ void DAFigureWidget::enableSubChartEditor(bool enable)
 		if (nullptr == d_ptr->mChartEditorOverlay) {
 			d_ptr->mChartEditorOverlay = new DAFigureWidgetOverlayChartEditor(this);
 			connect(d_ptr->mChartEditorOverlay,
-					&DAFigureWidgetOverlayChartEditor::widgetGeometryChanged,
-					this,
-					&DAFigureWidget::onWidgetGeometryChanged);
+                    &DAFigureWidgetOverlayChartEditor::widgetGeometryChanged,
+                    this,
+                    &DAFigureWidget::onWidgetGeometryChanged);
 			connect(d_ptr->mChartEditorOverlay,
-					&DAFigureWidgetOverlayChartEditor::activeWidgetChanged,
-					this,
-					&DAFigureWidget::onOverlayActiveWidgetChanged);
+                    &DAFigureWidgetOverlayChartEditor::activeWidgetChanged,
+                    this,
+                    &DAFigureWidget::onOverlayActiveWidgetChanged);
 			d_ptr->mChartEditorOverlay->show();
 			d_ptr->mChartEditorOverlay->raise();  // 同时提升最前
 		} else {
@@ -676,8 +676,7 @@ QDataStream& operator>>(QDataStream& in, DAFigureWidget* p)
 
 	in >> tmp;
 	if (tmp != magicStart) {
-		throw DABadSerializeExpection(
-			QObject::tr("DAFigureWidget get invalid magic strat code"));  // cn: DAFigureWidget的文件头异常
+        throw DABadSerializeExpection("DAFigureWidget get invalid magic strat code");  // cn: DAFigureWidget的文件头异常
 		return (in);
 	}
 	QByteArray geometryData, stateData;

@@ -31,6 +31,7 @@ public:
 
 	//
 	void setDataManager(DADataManager* mgr);
+	DADataManager* getDataManger() const;
 	// 当前显示的窗口
 	QWidget* currentWidget() const;
 
@@ -50,6 +51,8 @@ public Q_SLOTS:
 	void showData(const DA::DAData& d);
 	// 删除tab窗口，同时删除tab标签和上次tab对应的widget
 	bool removeTabWidget(QWidget* w);
+	// 清除操作
+	void clear();
 Q_SIGNALS:
 	/**
 	 * @brief 数据操作页面添加信号

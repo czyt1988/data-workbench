@@ -68,30 +68,43 @@ protected:
 	virtual void setUniqueDataName(DAData& d) const;
 	// 把所有管理的变量的名字按照set返回
 	QSet< QString > getDatasNameSet() const;
-signals:
+	// 移除数据
+	void doRemoveData(DAData& d);
+public Q_SLOTS:
+	// 清除数据
+	void clear();
+Q_SIGNALS:
 	/**
 	 * @brief 有数据添加发射的信号
 	 * @param d
 	 */
 	void dataAdded(const DA::DAData& d);
+
 	/**
 	 * @brief 数据准备删除
 	 * @param d
 	 * @param dataIndex
 	 */
 	void dataBeginRemove(const DA::DAData& d, int dataIndex);
+
 	/**
 	 * @brief 数据删除发射的信号
 	 * @param d
 	 * @param dataOldIndex 数据原来的索引
 	 */
 	void dataRemoved(const DA::DAData& d, int dataOldIndex);
+
 	/**
 	 * @brief 数据信息改变
 	 * @param d 数据
 	 * @param oldname
 	 */
 	void dataChanged(const DA::DAData& d, DA::DADataManager::ChangeType t);
+
+	/**
+	 * @brief 数据被清除信号
+	 */
+	void datasCleared();
 };
 }  // namespace DA
 

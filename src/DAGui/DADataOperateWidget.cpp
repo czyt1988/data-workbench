@@ -38,14 +38,14 @@ DADataOperateWidget::PrivateData::PrivateData(DADataOperateWidget* p) : q_ptr(p)
 // DADataOperateWidget
 //===================================================
 DADataOperateWidget::DADataOperateWidget(DADataManager* mgr, QWidget* parent)
-	: DAAbstractOperateWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DADataOperateWidget)
+    : DAAbstractOperateWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DADataOperateWidget)
 {
 	init();
 	setDataManager(mgr);
 }
 
 DADataOperateWidget::DADataOperateWidget(QWidget* parent)
-	: DAAbstractOperateWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DADataOperateWidget)
+    : DAAbstractOperateWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DADataOperateWidget)
 {
 	init();
 }
@@ -67,6 +67,11 @@ void DADataOperateWidget::setDataManager(DADataManager* mgr)
 	d_ptr->_dataManager = mgr;
 	connect(mgr, &DADataManager::dataRemoved, this, &DADataOperateWidget::onDataRemoved);
 	connect(mgr, &DADataManager::dataChanged, this, &DADataOperateWidget::onDataChanged);
+}
+
+DADataManager* DADataOperateWidget::getDataManger() const
+{
+    return d_ptr->_dataManager;
 }
 
 /**
@@ -192,6 +197,26 @@ bool DADataOperateWidget::removeTabWidget(QWidget* w)
 }
 
 /**
+ * @brief 清除操作
+ */
+void DADataOperateWidget::clear()
+{
+	// 清空栈
+    if (auto undostack = getUndoStack()) {
+        undostack->clear();
+    }
+	// 窗口删除
+	while (ui->tabWidget->count() != 0) {
+		QWidget* tabWidget = ui->tabWidget->widget(0);
+		ui->tabWidget->removeTab(0);
+		// 删除窗口
+		tabWidget->deleteLater();
+	}
+	// 数据清除
+	getDataManger()->clear();
+}
+
+/**
  * @brief 数据删除过程触发的槽
  * @param d
  * @param index
@@ -274,8 +299,8 @@ void DADataOperateWidget::showDataframeData(const DA::DAData& d)
 {
 #if DA_ENABLE_PYTHON
 	// 先查找是否已经存在对于窗口
-	DADataOperateOfDataFrameWidget* w =
-		qobject_cast< DADataOperateOfDataFrameWidget* >(d_ptr->_dataToWidget.value(d, nullptr).data());
+    DADataOperateOfDataFrameWidget* w = qobject_cast< DADataOperateOfDataFrameWidget* >(
+        d_ptr->_dataToWidget.value(d, nullptr).data());
 	if (nullptr == w) {
 		// 没有就创建
 		w = new DADataOperateOfDataFrameWidget(d, ui->tabWidget);

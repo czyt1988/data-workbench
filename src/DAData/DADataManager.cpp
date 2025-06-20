@@ -12,13 +12,13 @@ namespace DA
 
 class DADataManager::PrivateData
 {
-    DA_DECLARE_PUBLIC(DADataManager)
+	DA_DECLARE_PUBLIC(DADataManager)
 public:
-    PrivateData(DADataManager* p);
-    QList< DAData > _dataList;
-    QMap< DAData::IdType, DAData > _dataMap;
-    bool _dirtyFlag;               ///< 标记是否dirty
-    QUndoStack _dataManagerStack;  ///< 数据管理的stack
+	PrivateData(DADataManager* p);
+	QList< DAData > _dataList;
+	QMap< DAData::IdType, DAData > _dataMap;
+	bool _dirtyFlag;               ///< 标记是否dirty
+	QUndoStack _dataManagerStack;  ///< 数据管理的stack
 };
 
 //===================================================
@@ -48,21 +48,21 @@ DADataManager::~DADataManager()
  */
 void DADataManager::addData(DAData& d)
 {
-    if (d_ptr->_dataMap.contains(d.id())) {
-        // 说明已经添加过
-        qWarning() << tr("data:%1 have been added").arg(d.getName());
-        if (d.getDataManager() != this) {
-            // 说明这个data引用没有获取到datamanager
-            d.setDataManager(this);
-        }
-        return;
-    }
-    setUniqueDataName(d);
-    d.setDataManager(this);
-    d_ptr->_dataList.push_back(d);
-    d_ptr->_dataMap[ d.id() ] = d;
-    setDirtyFlag(true);
-    emit dataAdded(d);
+	if (d_ptr->_dataMap.contains(d.id())) {
+		// 说明已经添加过
+		qWarning() << tr("data:%1 have been added").arg(d.getName());
+		if (d.getDataManager() != this) {
+			// 说明这个data引用没有获取到datamanager
+			d.setDataManager(this);
+		}
+		return;
+	}
+	setUniqueDataName(d);
+	d.setDataManager(this);
+	d_ptr->_dataList.push_back(d);
+	d_ptr->_dataMap[ d.id() ] = d;
+	setDirtyFlag(true);
+	Q_EMIT dataAdded(d);
 }
 /**
  * @brief 带redo/undo的添加数据
@@ -72,8 +72,8 @@ void DADataManager::addData(DAData& d)
  */
 void DADataManager::addData_(DAData& d)
 {
-    DACommandDataManagerAdd* cmd = new DACommandDataManagerAdd(d, this);
-    d_ptr->_dataManagerStack.push(cmd);
+	DACommandDataManagerAdd* cmd = new DACommandDataManagerAdd(d, this);
+	d_ptr->_dataManagerStack.push(cmd);
 }
 
 /**
@@ -83,9 +83,9 @@ void DADataManager::addData_(DAData& d)
  */
 DAData DADataManager::addData(const DAAbstractData::Pointer& d)
 {
-    DAData res(d);
-    addData(res);
-    return res;
+	DAData res(d);
+	addData(res);
+	return res;
 }
 /**
  * @brief 带redo/undo的添加数据
@@ -94,9 +94,9 @@ DAData DADataManager::addData(const DAAbstractData::Pointer& d)
  */
 DAData DADataManager::addData_(const DAAbstractData::Pointer& d)
 {
-    DAData res(d);
-    addData_(res);
-    return res;
+	DAData res(d);
+	addData_(res);
+	return res;
 }
 /**
  * @brief 批量添加数据
@@ -106,13 +106,13 @@ DAData DADataManager::addData_(const DAAbstractData::Pointer& d)
  */
 void DADataManager::addDatas_(const QList< DAData >& datas)
 {
-    std::unique_ptr< QUndoCommand > cmdGroup(new QUndoCommand(tr("add datas")));
-    for (const DAData& d : datas) {
-        new DACommandDataManagerAdd(d, this, cmdGroup.get());
-    }
-    if (cmdGroup->childCount() > 0) {
-        d_ptr->_dataManagerStack.push(cmdGroup.release());
-    }
+	std::unique_ptr< QUndoCommand > cmdGroup(new QUndoCommand(tr("add datas")));
+	for (const DAData& d : datas) {
+		new DACommandDataManagerAdd(d, this, cmdGroup.get());
+	}
+	if (cmdGroup->childCount() > 0) {
+		d_ptr->_dataManagerStack.push(cmdGroup.release());
+	}
 }
 
 /**
@@ -123,13 +123,10 @@ void DADataManager::addDatas_(const QList< DAData >& datas)
  */
 void DADataManager::removeData(DAData& d)
 {
-    int index = d_ptr->_dataList.indexOf(d);
-    emit dataBeginRemove(d, index);
-    d_ptr->_dataList.removeAt(index);
-    d_ptr->_dataMap.remove(d.id());
-    d.setDataManager(nullptr);
-    setDirtyFlag(true);
-    emit dataRemoved(d, index);
+	int index = d_ptr->_dataList.indexOf(d);
+	Q_EMIT dataBeginRemove(d, index);
+	doRemoveData(d);
+	Q_EMIT dataRemoved(d, index);
 }
 
 /**
@@ -139,8 +136,8 @@ void DADataManager::removeData(DAData& d)
  */
 void DADataManager::removeData_(DAData& d)
 {
-    DACommandDataManagerRemove* cmd = new DACommandDataManagerRemove(d, this);
-    d_ptr->_dataManagerStack.push(cmd);
+	DACommandDataManagerRemove* cmd = new DACommandDataManagerRemove(d, this);
+	d_ptr->_dataManagerStack.push(cmd);
 }
 
 /**
@@ -149,13 +146,13 @@ void DADataManager::removeData_(DAData& d)
  */
 void DADataManager::removeDatas_(const QList< DAData >& datas)
 {
-    std::unique_ptr< QUndoCommand > cmdGroup(new QUndoCommand(tr("remove datas")));
-    for (const DAData& d : datas) {
-        new DACommandDataManagerRemove(d, this, cmdGroup.get());
-    }
-    if (cmdGroup->childCount() > 0) {
-        d_ptr->_dataManagerStack.push(cmdGroup.release());
-    }
+	std::unique_ptr< QUndoCommand > cmdGroup(new QUndoCommand(tr("remove datas")));
+	for (const DAData& d : datas) {
+		new DACommandDataManagerRemove(d, this, cmdGroup.get());
+	}
+	if (cmdGroup->childCount() > 0) {
+		d_ptr->_dataManagerStack.push(cmdGroup.release());
+	}
 }
 
 /**
@@ -235,21 +232,21 @@ QUndoStack* DADataManager::getUndoStack() const
  */
 void DADataManager::callDataChangedSignal(const DAData& d, DADataManager::ChangeType t)
 {
-    setDirtyFlag(true);
-    emit dataChanged(d, t);
+	setDirtyFlag(true);
+	Q_EMIT dataChanged(d, t);
 }
 
 void DADataManager::setUniqueDataName(DAData& d) const
 {
-    QString n = d.getName();
-    if (n.isEmpty()) {
-        n = d.typeToString();
-        d.setName(n);
-    }
-    QSet< QString > names = getDatasNameSet();
-    // 构造一个唯一的名字
-    n = DA::makeUniqueString(names, n);
-    d.setName(n);
+	QString n = d.getName();
+	if (n.isEmpty()) {
+		n = d.typeToString();
+		d.setName(n);
+	}
+	QSet< QString > names = getDatasNameSet();
+	// 构造一个唯一的名字
+	n = DA::makeUniqueString(names, n);
+	d.setName(n);
 }
 /**
  * @brief 把所有管理的变量的名字按照set返回
@@ -257,11 +254,38 @@ void DADataManager::setUniqueDataName(DAData& d) const
  */
 QSet< QString > DADataManager::getDatasNameSet() const
 {
-    QSet< QString > names;
-    for (const DAData& d : qAsConst(d_ptr->_dataList)) {
-        names.insert(d.getName());
-    }
-    return names;
+	QSet< QString > names;
+	for (const DAData& d : qAsConst(d_ptr->_dataList)) {
+		names.insert(d.getName());
+	}
+	return names;
+}
+
+/**
+ * @brief 移除数据
+ * @param d
+ */
+void DADataManager::doRemoveData(DAData& d)
+{
+	int index = d_ptr->_dataList.indexOf(d);
+	d_ptr->_dataList.removeAt(index);
+	d_ptr->_dataMap.remove(d.id());
+	d.setDataManager(nullptr);
+	setDirtyFlag(true);
+}
+
+/**
+ * @brief 清除数据
+ */
+void DADataManager::clear()
+{
+	// 栈清空
+	d_ptr->_dataManagerStack.clear();
+	// 数据清空
+	d_ptr->_dataList.clear();
+	d_ptr->_dataMap.clear();
+	setDirtyFlag(false);
+	Q_EMIT datasCleared();
 }
 
 }

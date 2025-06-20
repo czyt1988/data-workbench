@@ -42,6 +42,7 @@ set(DA_LIB_HEADER_FILES
     DAChartAddIntervalCurveWidget.h
     DAChartAddTradingCurveWidget.h
     DAChartAddSpectrogramWidget.h
+    DAChartItemsManager.h
     DADataManagerComboBox.h
     DADataOperatePageWidget.h
     DAFigureFactory.h
@@ -79,6 +80,7 @@ set(DA_LIB_HEADER_FILES
     DAZipArchiveTask_ByteArray.h
     DAZipArchiveTask_Xml.h
     DAZipArchiveTask_ArchiveFile.h
+    DAZipArchiveTask_ChartItem.h
     DAXmlHelper.h
 )
 set(DA_LIB_SOURCE_FILES
@@ -98,6 +100,7 @@ set(DA_LIB_SOURCE_FILES
     DAChartManageWidget.cpp
     DAChartOperateWidget.cpp
     DAChartSettingWidget.cpp
+    DAChartItemsManager.cpp
     DADataListView.cpp
     DADataManageTableView.cpp
     DADataManageWidget.cpp
@@ -130,6 +133,7 @@ set(DA_LIB_SOURCE_FILES
     DAZipArchiveTask_ByteArray.cpp
     DAZipArchiveTask_Xml.cpp
     DAZipArchiveTask_ArchiveFile.cpp
+    DAZipArchiveTask_ChartItem.cpp
     DAXmlHelper.cpp
 )
 set(DA_LIB_QT_UI_FILES

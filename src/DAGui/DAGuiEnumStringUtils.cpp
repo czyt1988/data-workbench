@@ -36,6 +36,28 @@ DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::DAColorTheme::ColorThemeStyle,
 // QWT
 //===============================================================
 // ================================== QWT.QwtPlot::LegendPosition ==================================
+DA_ENUM_STRING_INSENSITIVE_DEFINE(QwtPlotItem::RttiValues,
+                                  QwtPlotItem::Rtti_PlotUserItem,
+                                  { QwtPlotItem::Rtti_PlotItem, "PlotItem" },
+                                  { QwtPlotItem::Rtti_PlotGrid, "PlotGrid" },
+                                  { QwtPlotItem::Rtti_PlotScale, "PlotScale" },
+                                  { QwtPlotItem::Rtti_PlotLegend, "PlotLegend" },
+                                  { QwtPlotItem::Rtti_PlotMarker, "PlotMarker" },
+                                  { QwtPlotItem::Rtti_PlotCurve, "PlotCurve" },
+                                  { QwtPlotItem::Rtti_PlotSpectroCurve, "PlotSpectroCurve" },
+                                  { QwtPlotItem::Rtti_PlotIntervalCurve, "PlotIntervalCurve" },
+                                  { QwtPlotItem::Rtti_PlotHistogram, "PlotHistogram" },
+                                  { QwtPlotItem::Rtti_PlotSpectrogram, "PlotSpectrogram" },
+                                  { QwtPlotItem::Rtti_PlotGraphic, "PlotGraphic" },
+                                  { QwtPlotItem::Rtti_PlotTradingCurve, "PlotTradingCurve" },
+                                  { QwtPlotItem::Rtti_PlotBarChart, "PlotBarChart" },
+                                  { QwtPlotItem::Rtti_PlotMultiBarChart, "PlotMultiBarChart" },
+                                  { QwtPlotItem::Rtti_PlotShape, "PlotShape" },
+                                  { QwtPlotItem::Rtti_PlotTextLabel, "PlotTextLabel" },
+                                  { QwtPlotItem::Rtti_PlotZone, "PlotZone" },
+                                  { QwtPlotItem::Rtti_PlotVectorField, "PlotVectorField" },
+                                  { QwtPlotItem::Rtti_PlotUserItem, "PlotUserItem" });
+// ================================== QWT.QwtPlot::LegendPosition ==================================
 DA_ENUM_STRING_INSENSITIVE_DEFINE(QwtPlot::LegendPosition,
                                   QwtPlot::RightLegend,
                                   { QwtPlot::LeftLegend, "left" },

@@ -32,7 +32,7 @@ DAChartOperateWidgetPrivate::DAChartOperateWidgetPrivate(DAChartOperateWidget* p
 // DAChartOperateWidget
 //===================================================
 DAChartOperateWidget::DAChartOperateWidget(QWidget* parent)
-	: DAAbstractOperateWidget(parent), d_ptr(new DAChartOperateWidgetPrivate(this)), ui(new Ui::DAChartOperateWidget)
+    : DAAbstractOperateWidget(parent), d_ptr(new DAChartOperateWidgetPrivate(this)), ui(new Ui::DAChartOperateWidget)
 {
 	ui->setupUi(this);
 	connect(ui->tabWidget, &QTabWidget::currentChanged, this, &DAChartOperateWidget::onTabWidgetCurrentChanged);
@@ -42,6 +42,12 @@ DAChartOperateWidget::DAChartOperateWidget(QWidget* parent)
 DAChartOperateWidget::~DAChartOperateWidget()
 {
     delete ui;
+}
+
+// 获取窗口数量
+int DAChartOperateWidget::getFigureCount() const
+{
+    return ui->tabWidget->count();
 }
 
 /**
@@ -125,13 +131,72 @@ DAFigureWidget* DAChartOperateWidget::getFigure(int index) const
 }
 
 /**
+ * @brief 获取fig的命名
+ * @param index
+ * @return
+ */
+QString DAChartOperateWidget::getFigureName(int index) const
+{
+    return ui->tabWidget->tabText(index);
+}
+
+QString DAChartOperateWidget::getFigureName(DAFigureWidget* f) const
+{
+    int index = getFigureIndex(f);
+    if (index < 0) {
+        return QString();
+    }
+    return getFigureName(index);
+}
+
+/**
+ * @brief 设置绘图名称
+ * @param index
+ * @param name
+ */
+void DAChartOperateWidget::setFigureName(int index, const QString& name)
+{
+    ui->tabWidget->setTabText(index, name);
+}
+
+void DAChartOperateWidget::setFigureName(DAFigureWidget* f, const QString& name)
+{
+    int index = getFigureIndex(f);
+    if (index < 0) {
+        return;
+    }
+    setFigureName(index, name);
+}
+
+/**
  * @brief 获取fig在DAChartOperateWidget的索引
  * @param f
  * @return
  */
-int DAChartOperateWidget::getFigureIndex(DAFigureWidget* f)
+int DAChartOperateWidget::getFigureIndex(DAFigureWidget* f) const
 {
     return ui->tabWidget->indexOf(f);
+}
+
+/**
+ * @brief  删除窗口
+ * @param f
+ * @param deleteFigure 如果为true，将会把窗口也删除，默认为true
+ */
+void DAChartOperateWidget::removeFigure(DAFigureWidget* f, bool deleteFigure)
+{
+    if (!f) {
+        return;
+    }
+    int index = getFigureIndex(f);
+    if (index < 0) {
+        return;
+    }
+    emit figureRemoving(f);
+    ui->tabWidget->removeTab(index);
+    if (deleteFigure) {
+        f->deleteLater();
+    }
 }
 
 /**
@@ -154,15 +219,6 @@ DAChartWidget* DAChartOperateWidget::getCurrentChart() const
 DAChartWidget* DAChartOperateWidget::gca() const
 {
     return getCurrentChart();
-}
-
-/**
- * @brief  绘图数量
- * @return
- */
-int DAChartOperateWidget::getFigureCount() const
-{
-    return ui->tabWidget->count();
 }
 
 QUndoStack* DAChartOperateWidget::getUndoStack()
@@ -215,17 +271,15 @@ void DAChartOperateWidget::onTabWidgetCurrentChanged(int index)
  */
 void DAChartOperateWidget::onTabCloseRequested(int index)
 {
+    DAFigureWidget* fig = getFigure(index);
+    if (!fig) {
+        return;
+    }
 	QMessageBox::StandardButton btn = QMessageBox::question(this, tr("question"), tr("Whether to close the figure widget"));
 	if (QMessageBox::Yes != btn) {
 		return;
 	}
-	QWidget* w          = ui->tabWidget->widget(index);
-	DAFigureWidget* fig = qobject_cast< DAFigureWidget* >(w);
-	if (fig) {
-		emit figureRemoving(fig);
-	}
-	ui->tabWidget->removeTab(index);
-	w->deleteLater();
+    removeFigure(fig, true);
 }
 
 /**
