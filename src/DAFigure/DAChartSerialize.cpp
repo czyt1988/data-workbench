@@ -30,41 +30,18 @@
 #include "qwt_plot_textlabel.h"
 #include "qwt_plot_zoneitem.h"
 #include "qwt_plot_vectorfield.h"
-// DAChart
-#include "DAChartPlotItemFactory.h"
-///< 版本标示，每个序列化都应该带有版本信息，用于对下兼容
-const int gc_dachart_version                     = 1;
-const std::uint32_t gc_dachart_magic_mark        = 0x5A6B4CF1;
-const std::uint32_t gc_dachart_magic_mark2       = 0xAA123456;
-const std::uint32_t gc_dachart_magic_mark3       = 0x12345678;
-const std::uint32_t gc_dachart_magic_mark4       = 0xAAB23498;
-const QDataStream::Version gc_datastream_version = QDataStream::Qt_5_12;
 
-#define DACHARTITEMSERIALIZE_MAKE_SERIALIZE_PAIR(RTTI_Value, PLotItemClass)                                            \
-	{                                                                                                                  \
-		[](const QByteArray& byte) -> QwtPlotItem* {                                                                   \
-			QDataStream st(byte);                                                                                      \
-			DAChartItemSerialize::Header h;                                                                            \
-			st >> h;                                                                                                   \
-			if (!h.isValid()) {                                                                                        \
-				return nullptr;                                                                                        \
-			}                                                                                                          \
-			QwtPlotItem* item = DAChartPlotItemFactory::createItem(h.rtti);                                            \
-			st >> static_cast< PLotItemClass* >(item);                                                                 \
-			return item;                                                                                               \
-		},                                                                                                             \
-			[](const QwtPlotItem* item) -> QByteArray {                                                                \
-				QByteArray byte;                                                                                       \
-				QDataStream st(&byte, QIODevice::WriteOnly);                                                           \
-				DAChartItemSerialize::Header h;                                                                        \
-				h.rtti = item->rtti();                                                                                 \
-				st.setVersion(gc_datastream_version);                                                                  \
-				st << h;                                                                                               \
-				st << static_cast< const PLotItemClass* >(item);                                                       \
-				return byte;                                                                                           \
-			}                                                                                                          \
-	}
+#ifndef INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR
+#define INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR(RttiValue, ClassName)                                                  \
+	std::make_pair(&DAChartItemSerialize::serializeIn_T< ClassName, RttiValue >,                                       \
+				   &DAChartItemSerialize::serializeOut_T< ClassName >)
+#endif
 
+#ifndef DECLARE_INITCHARTITEMSERIALIZE_FUN
+#define DECLARE_INITCHARTITEMSERIALIZE_FUN(RttiValue, ClassName)                                                       \
+	template QwtPlotItem* DAChartItemSerialize::serializeIn_T< ClassName, RttiValue >(const QByteArray&);              \
+	template QByteArray DAChartItemSerialize::serializeOut_T< ClassName >(const QwtPlotItem*);
+#endif
 namespace DA
 {
 void serialize_out_scale_widge(QDataStream& out, const QwtPlot* chart, int axis);
@@ -98,12 +75,12 @@ void serialize_out_scale_widge(QDataStream& out, const QwtPlot* chart, int axis)
 {
 	const QwtScaleWidget* axisWid = chart->axisWidget(axis);
 	bool isaxis                   = (nullptr != axisWid);
-	out << gc_dachart_version << gc_dachart_magic_mark;
+	out << DA::gc_dachart_version << DA::gc_dachart_magic_mark;
 	out << isaxis;
-	out << gc_dachart_magic_mark2;
+	out << DA::gc_dachart_magic_mark2;
 	if (isaxis) {
 		bool enable = chart->axisEnabled(axis);
-		out << axisWid << enable << gc_dachart_magic_mark3;
+		out << axisWid << enable << DA::gc_dachart_magic_mark3;
 	}
 }
 
@@ -115,13 +92,13 @@ void serialize_in_scale_widge(QDataStream& in, QwtPlot* chart, int axis)
 	int version;
 	std::uint32_t magic;
 	in >> version >> magic;
-	if (gc_dachart_magic_mark != magic) {
+	if (DA::gc_dachart_magic_mark != magic) {
 		throw DABadSerializeExpection();
 		return;
 	}
 	in >> isaxis;
 	in >> H;
-	if (gc_dachart_magic_mark2 != H) {
+	if (DA::gc_dachart_magic_mark2 != H) {
 		throw DABadSerializeExpection();
 		return;
 	}
@@ -140,7 +117,7 @@ void serialize_in_scale_widge(QDataStream& in, QwtPlot* chart, int axis)
 		bool enable;
 		in >> axisWid >> enable;
 		in >> B;
-		if (gc_dachart_magic_mark3 != B) {
+		if (DA::gc_dachart_magic_mark3 != B) {
 			throw DABadSerializeExpection();
 			return;
 		}
@@ -152,7 +129,7 @@ void serialize_in_scale_widge(QDataStream& in, QwtPlot* chart, int axis)
 // Header
 //----------------------------------------------------
 
-DAChartItemSerialize::Header::Header() : magic(gc_dachart_magic_mark4), version(1), rtti(QwtPlotItem::Rtti_PlotItem)
+DAChartItemSerialize::Header::Header() : magic(DA::gc_dachart_magic_mark4), version(1), rtti(QwtPlotItem::Rtti_PlotItem)
 {
 	memset(byte, 0, sizeof(byte));
 }
@@ -163,9 +140,28 @@ DAChartItemSerialize::Header::~Header()
 
 bool DAChartItemSerialize::Header::isValid() const
 {
-	return gc_dachart_magic_mark4 == magic;
+	return DA::gc_dachart_magic_mark4 == magic;
 }
 
+// ADL原则，这个应放在DA命名空间下
+QDataStream& operator<<(QDataStream& out, const DA::DAChartItemSerialize::Header& f)
+{
+	out << f.magic << f.version << f.rtti;
+	out.writeRawData(reinterpret_cast< const char* >(f.byte), sizeof(f.byte));
+	return out;
+}
+
+QDataStream& operator>>(QDataStream& in, DA::DAChartItemSerialize::Header& f)
+{
+	in >> f.magic >> f.version;
+	in >> f.rtti;
+	in.readRawData(reinterpret_cast< char* >(f.byte), sizeof(f.byte));
+	return in;
+}
+
+//===============================================================
+// name
+//===============================================================
 DAChartItemSerialize::DAChartItemSerialize()
 {
 }
@@ -252,107 +248,31 @@ int DAChartItemSerialize::getRtti(const QByteArray& byte) const noexcept
 	return rtti;
 }
 
-QwtPlotItem* DAChartItemSerialize::serializeIn_QwtPlotCurve(const QByteArray& byte)
-{
-	QDataStream st(byte);
-	st.setVersion(gc_datastream_version);
-
-	DAChartItemSerialize::Header h;
-	st >> h;
-	if (!h.isValid()) {
-		return nullptr;
-	}
-	QwtPlotItem* item = DAChartPlotItemFactory::createItem(h.rtti);
-	st >> static_cast< QwtPlotCurve* >(item);
-	return item;
-}
-
-QByteArray DAChartItemSerialize::serializeOut_QwtPlotCurve(const QwtPlotItem* item)
-{
-	QByteArray byte;
-	QDataStream st(&byte, QIODevice::WriteOnly);
-	st.setVersion(gc_datastream_version);
-
-	DAChartItemSerialize::Header h;
-	h.rtti = item->rtti();
-	st << h << static_cast< const QwtPlotCurve* >(item);
-	return byte;
-}
+// === 显式实例化定义 ===
+// QwtPlotCurve ---------------------------------------------------------
+DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotCurve, QwtPlotCurve)
+DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotGrid, QwtPlotGrid)
+DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotLegend, QwtPlotLegendItem)
+DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotMarker, QwtPlotMarker)
+DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotSpectroCurve, QwtPlotSpectroCurve)
+DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotBarChart, QwtPlotBarChart)
+DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotIntervalCurve, QwtPlotIntervalCurve)
 
 QHash< int, std::pair< DAChartItemSerialize::FpSerializeIn, DAChartItemSerialize::FpSerializeOut > > initChartItemSerialize()
 {
 	QHash< int, std::pair< DAChartItemSerialize::FpSerializeIn, DAChartItemSerialize::FpSerializeOut > > res;
-	res[ QwtPlotItem::Rtti_PlotCurve ] = std::make_pair(&DAChartItemSerialize::serializeIn_QwtPlotCurve,
-														&DAChartItemSerialize::serializeOut_QwtPlotCurve);
+	res[ QwtPlotItem::Rtti_PlotCurve ] = INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR(QwtPlotItem::Rtti_PlotCurve, QwtPlotCurve);
+	res[ QwtPlotItem::Rtti_PlotGrid ] = INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR(QwtPlotItem::Rtti_PlotGrid, QwtPlotGrid);
+	res[ QwtPlotItem::Rtti_PlotLegend ] =
+		INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR(QwtPlotItem::Rtti_PlotLegend, QwtPlotLegendItem);
+	res[ QwtPlotItem::Rtti_PlotMarker ] =
+		INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR(QwtPlotItem::Rtti_PlotMarker, QwtPlotMarker);
+	res[ QwtPlotItem::Rtti_PlotSpectroCurve ] =
+		INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR(QwtPlotItem::Rtti_PlotSpectroCurve, QwtPlotSpectroCurve);
 	res[ QwtPlotItem::Rtti_PlotBarChart ] =
-		DACHARTITEMSERIALIZE_MAKE_SERIALIZE_PAIR(QwtPlotItem::Rtti_PlotBarChart, QwtPlotBarChart);
+		INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR(QwtPlotItem::Rtti_PlotBarChart, QwtPlotBarChart);
 	res[ QwtPlotItem::Rtti_PlotIntervalCurve ] =
-		DACHARTITEMSERIALIZE_MAKE_SERIALIZE_PAIR(QwtPlotItem::Rtti_PlotIntervalCurve, QwtPlotIntervalCurve);
-
-	/**
-		DAChartItemSerialize::FpSerializeIn in = [](int rtti, const QByteArray& byte) -> QwtPlotItem* {
-			QwtPlotItem* item = DAChartPlotItemFactory::createItem(rtti);
-			QDataStream st(byte);
-			st >> item;
-			switch (rtti) {
-			case QwtPlotItem::Rtti_PlotCurve: {
-				QwtPlotCurve* plotItem = static_cast< QwtPlotCurve* >(item);
-			} break;
-			case QwtPlotItem::Rtti_PlotGrid: {
-				QwtPlotGrid* plotItem = static_cast< QwtPlotGrid* >(item);
-			} break;
-			case QwtPlotItem::Rtti_PlotScale: {
-				QwtPlotScaleItem* plotItem = static_cast< QwtPlotScaleItem* >(item);
-			} break;
-			case QwtPlotItem::Rtti_PlotLegend: {
-				QwtPlotLegendItem* plotItem = static_cast< QwtPlotLegendItem* >(item);
-			} break;
-			case QwtPlotItem::Rtti_PlotMarker: {
-				QwtPlotMarker* plotItem = static_cast< QwtPlotMarker* >(item);
-			} break;
-			case QwtPlotItem::Rtti_PlotSpectroCurve: {
-				QwtPlotSpectroCurve* plotItem = static_cast< QwtPlotSpectroCurve* >(item);
-			} break;
-			case QwtPlotItem::Rtti_PlotIntervalCurve: {
-				QwtPlotIntervalCurve* plotItem = static_cast< QwtPlotIntervalCurve* >(item);
-			} break;
-			case QwtPlotItem::Rtti_PlotHistogram: {
-				QwtPlotHistogram* plotItem = static_cast< QwtPlotHistogram* >(item);
-			} break;
-			case QwtPlotItem::Rtti_PlotSpectrogram: {
-				QwtPlotSpectrogram* plotItem = static_cast< QwtPlotSpectrogram* >(item);
-			} break;
-			case QwtPlotItem::Rtti_PlotGraphic: {
-				QwtPlotGraphicItem* plotItem = static_cast< QwtPlotGraphicItem* >(item);
-			} break;
-			case QwtPlotItem::Rtti_PlotTradingCurve: {
-				QwtPlotTradingCurve* plotItem = static_cast< QwtPlotTradingCurve* >(item);
-			} break;
-			case QwtPlotItem::Rtti_PlotBarChart: {
-				QwtPlotBarChart* plotItem = static_cast< QwtPlotBarChart* >(item);
-			} break;
-			case QwtPlotItem::Rtti_PlotMultiBarChart: {
-				QwtPlotMultiBarChart* plotItem = static_cast< QwtPlotMultiBarChart* >(item);
-			} break;
-			case QwtPlotItem::Rtti_PlotShape: {
-				QwtPlotShapeItem* plotItem = static_cast< QwtPlotShapeItem* >(item);
-			} break;
-			case QwtPlotItem::Rtti_PlotTextLabel: {
-				QwtPlotTextLabel* plotItem = static_cast< QwtPlotTextLabel* >(item);
-			} break;
-			case QwtPlotItem::Rtti_PlotZone: {
-				QwtPlotZoneItem* plotItem = static_cast< QwtPlotZoneItem* >(item);
-			} break;
-			case QwtPlotItem::Rtti_PlotVectorField: {
-				QwtPlotVectorField* plotItem = static_cast< QwtPlotVectorField* >(item);
-			} break;
-			default:
-				break;
-			}
-
-			return item;
-		};
-		**/
+		INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR(QwtPlotItem::Rtti_PlotIntervalCurve, QwtPlotIntervalCurve);
 	return res;
 }
 
@@ -365,25 +285,10 @@ DAChartItemSerialize::serializeFun()
 
 }  // end DA
 
-QDataStream& operator<<(QDataStream& out, const DA::DAChartItemSerialize::Header& f)
-{
-	out << f.magic << f.version << f.rtti;
-	out.writeRawData(reinterpret_cast< const char* >(f.byte), sizeof(f.byte));
-	return out;
-}
-
-QDataStream& operator>>(QDataStream& in, DA::DAChartItemSerialize::Header& f)
-{
-	in >> f.magic >> f.version;
-	in >> f.rtti;
-	in.readRawData(reinterpret_cast< char* >(f.byte), sizeof(f.byte));
-	return in;
-}
-
 QDataStream& operator<<(QDataStream& out, const QwtText& t)
 {
-	out << gc_dachart_version << gc_dachart_magic_mark;
-	out << gc_dachart_magic_mark2 << t.text() << t.font() << t.renderFlags() << t.color() << t.borderRadius()
+	out << DA::gc_dachart_version << DA::gc_dachart_magic_mark;
+	out << DA::gc_dachart_magic_mark2 << t.text() << t.font() << t.renderFlags() << t.color() << t.borderRadius()
 		<< t.borderPen() << t.backgroundBrush() << t.testPaintAttribute(QwtText::PaintUsingTextFont)
 		<< t.testPaintAttribute(QwtText::PaintUsingTextColor) << t.testPaintAttribute(QwtText::PaintBackground)
 		<< t.testLayoutAttribute(QwtText::MinimumLayout);
@@ -395,13 +300,13 @@ QDataStream& operator>>(QDataStream& in, QwtText& t)
 	int version;
 	std::uint32_t magic;
 	in >> version >> magic;
-	if (gc_dachart_magic_mark != magic) {
+	if (DA::gc_dachart_magic_mark != magic) {
 		throw DA::DABadSerializeExpection();
 		return in;
 	}
 	std::uint32_t tmp;
 	in >> tmp;
-	if (gc_dachart_magic_mark2 != tmp) {
+	if (DA::gc_dachart_magic_mark2 != tmp) {
 		throw DA::DABadSerializeExpection();
 		return in;
 	}
@@ -437,7 +342,7 @@ QDataStream& operator>>(QDataStream& in, QwtText& t)
 ///
 QDataStream& operator<<(QDataStream& out, const QwtSymbol* t)
 {
-	out << gc_dachart_version << gc_dachart_magic_mark;
+	out << DA::gc_dachart_version << DA::gc_dachart_magic_mark;
 	out << static_cast< int >(t->cachePolicy()) << t->size() << t->pinPoint() << t->isPinPointEnabled() << t->brush()
 		<< t->pen() << static_cast< int >(t->style()) << t->path() << t->pixmap();
 	return out;
@@ -453,7 +358,7 @@ QDataStream& operator>>(QDataStream& in, QwtSymbol* t)
 	int version;
 	std::uint32_t magic;
 	in >> version >> magic;
-	if (gc_dachart_magic_mark != magic) {
+	if (DA::gc_dachart_magic_mark != magic) {
 		throw DA::DABadSerializeExpection();
 		return in;
 	}
@@ -485,7 +390,7 @@ QDataStream& operator>>(QDataStream& in, QwtSymbol* t)
 
 QDataStream& operator<<(QDataStream& out, const QwtIntervalSymbol* t)
 {
-	out << gc_dachart_version << gc_dachart_magic_mark;
+	out << DA::gc_dachart_version << DA::gc_dachart_magic_mark;
 	out << static_cast< int >(t->width()) << t->brush() << t->pen() << static_cast< int >(t->style());
 	return out;
 }
@@ -495,7 +400,7 @@ QDataStream& operator>>(QDataStream& in, QwtIntervalSymbol* t)
 	int version;
 	std::uint32_t magic;
 	in >> version >> magic;
-	if (gc_dachart_magic_mark != magic) {
+	if (DA::gc_dachart_magic_mark != magic) {
 		throw DA::DABadSerializeExpection();
 		return in;
 	}
@@ -519,7 +424,7 @@ QDataStream& operator>>(QDataStream& in, QwtIntervalSymbol* t)
 ///
 QDataStream& operator<<(QDataStream& out, const QwtColumnSymbol* t)
 {
-	out << gc_dachart_version << gc_dachart_magic_mark;
+	out << DA::gc_dachart_version << DA::gc_dachart_magic_mark;
 	out << static_cast< int >(t->frameStyle()) << t->pen() << t->brush() << static_cast< int >(t->style());
 	return out;
 }
@@ -534,7 +439,7 @@ QDataStream& operator>>(QDataStream& in, QwtColumnSymbol* t)
 	int version;
 	std::uint32_t magic;
 	in >> version >> magic;
-	if (gc_dachart_magic_mark != magic) {
+	if (DA::gc_dachart_magic_mark != magic) {
 		throw DA::DABadSerializeExpection();
 		return in;
 	}
@@ -560,7 +465,7 @@ QDataStream& operator>>(QDataStream& in, QwtColumnSymbol* t)
  */
 QDataStream& operator<<(QDataStream& out, const QwtPlotItem* item)
 {
-	out << gc_dachart_version << gc_dachart_magic_mark;
+	out << DA::gc_dachart_version << DA::gc_dachart_magic_mark;
 	out << item->rtti();  // 写入rtti是为了可以识别是什么类型的item
 	out << item->title() << item->z() << item->isVisible() << item->xAxis() << item->yAxis() << item->legendIconSize()
 		<< item->testItemAttribute(QwtPlotItem::Legend) << item->testItemAttribute(QwtPlotItem::AutoScale)
@@ -583,7 +488,7 @@ QDataStream& operator>>(QDataStream& in, QwtPlotItem* item)
 	int version;
 	std::uint32_t magic;
 	in >> version >> magic;
-	if (gc_dachart_magic_mark != magic) {
+	if (DA::gc_dachart_magic_mark != magic) {
 		throw DA::DABadSerializeExpection();
 		return in;
 	}
@@ -623,7 +528,7 @@ QDataStream& operator>>(QDataStream& in, QwtPlotItem* item)
 ///
 QDataStream& operator<<(QDataStream& out, const QwtPlotCurve* item)
 {
-	out << gc_dachart_version << gc_dachart_magic_mark;
+	out << DA::gc_dachart_version << DA::gc_dachart_magic_mark;
 	out << (const QwtPlotItem*)item;
 	out << item->baseline() << item->brush() << item->pen() << static_cast< int >(item->style())
 		<< item->testPaintAttribute(QwtPlotCurve::ClipPolygons) << item->testPaintAttribute(QwtPlotCurve::FilterPoints)
@@ -636,7 +541,7 @@ QDataStream& operator<<(QDataStream& out, const QwtPlotCurve* item)
 	// save sample
 	QVector< QPointF > sample;
 	DA::DAChartUtil::getXYDatas(sample, item);
-	out << gc_dachart_magic_mark2 << sample << gc_dachart_magic_mark3;
+	out << DA::gc_dachart_magic_mark2 << sample << DA::gc_dachart_magic_mark3;
 	// QwtSymbol的序列化
 	const QwtSymbol* symbol = item->symbol();
 	bool isHaveSymbol       = (symbol != nullptr);
@@ -657,7 +562,7 @@ QDataStream& operator>>(QDataStream& in, QwtPlotCurve* item)
 	int version;
 	std::uint32_t magic;
 	in >> version >> magic;
-	if (gc_dachart_magic_mark != magic) {
+	if (DA::gc_dachart_magic_mark != magic) {
 		throw DA::DABadSerializeExpection();
 		return in;
 	}
@@ -699,12 +604,12 @@ QDataStream& operator>>(QDataStream& in, QwtPlotCurve* item)
 	std::uint32_t tmp0, tmp1;
 	QVector< QPointF > sample;
 	in >> tmp0;
-	if (gc_dachart_magic_mark2 != tmp0) {
+	if (DA::gc_dachart_magic_mark2 != tmp0) {
 		throw DA::DABadSerializeExpection();
 		return in;
 	}
 	in >> sample >> tmp1;
-	if (gc_dachart_magic_mark3 != tmp1) {
+	if (DA::gc_dachart_magic_mark3 != tmp1) {
 		throw DA::DABadSerializeExpection();
 		return in;
 	}
@@ -728,7 +633,7 @@ QDataStream& operator>>(QDataStream& in, QwtPlotCurve* item)
  */
 QDataStream& operator<<(QDataStream& out, const QwtPlotGrid* item)
 {
-	out << gc_dachart_version << gc_dachart_magic_mark;
+	out << DA::gc_dachart_version << DA::gc_dachart_magic_mark;
 	out << static_cast< const QwtPlotItem* >(item);
 	out << item->majorPen() << item->minorPen() << item->xEnabled() << item->yEnabled() << item->xMinEnabled()
 		<< item->yMinEnabled();
@@ -740,7 +645,7 @@ QDataStream& operator>>(QDataStream& in, QwtPlotGrid* item)
 	int version;
 	std::uint32_t magic;
 	in >> version >> magic;
-	if (gc_dachart_magic_mark != magic) {
+	if (DA::gc_dachart_magic_mark != magic) {
 		throw DA::DABadSerializeExpection();
 		return in;
 	}
@@ -764,7 +669,7 @@ QDataStream& operator>>(QDataStream& in, QwtPlotGrid* item)
  */
 QDataStream& operator<<(QDataStream& out, const QwtPlotScaleItem* item)
 {
-	out << gc_dachart_version << gc_dachart_magic_mark;
+	out << DA::gc_dachart_version << DA::gc_dachart_magic_mark;
 	out << static_cast< const QwtPlotItem* >(item);
 	out << item->borderDistance() << item->font() << item->isScaleDivFromAxis() << item->palette() << item->position();
 	return out;
@@ -774,7 +679,7 @@ QDataStream& operator>>(QDataStream& in, QwtPlotScaleItem* item)
 	int version;
 	std::uint32_t magic;
 	in >> version >> magic;
-	if (gc_dachart_magic_mark != magic) {
+	if (DA::gc_dachart_magic_mark != magic) {
 		throw DA::DABadSerializeExpection();
 		return in;
 	}
@@ -800,7 +705,7 @@ QDataStream& operator>>(QDataStream& in, QwtPlotScaleItem* item)
  */
 QDataStream& operator<<(QDataStream& out, const QwtPlotLegendItem* item)
 {
-	out << gc_dachart_version << gc_dachart_magic_mark;
+	out << DA::gc_dachart_version << DA::gc_dachart_magic_mark;
 	out << static_cast< const QwtPlotItem* >(item);
 	out << item->alignmentInCanvas() << item->backgroundBrush() << static_cast< int >(item->backgroundMode())
 		<< item->borderPen() << item->borderRadius() << item->font() << item->offsetInCanvas(Qt::Horizontal)
@@ -813,7 +718,7 @@ QDataStream& operator>>(QDataStream& in, QwtPlotLegendItem* item)
 	int version;
 	std::uint32_t magic;
 	in >> version >> magic;
-	if (gc_dachart_magic_mark != magic) {
+	if (DA::gc_dachart_magic_mark != magic) {
 		throw DA::DABadSerializeExpection();
 		return in;
 	}
@@ -853,7 +758,7 @@ QDataStream& operator>>(QDataStream& in, QwtPlotLegendItem* item)
  */
 QDataStream& operator<<(QDataStream& out, const QwtPlotMarker* item)
 {
-	out << gc_dachart_version << gc_dachart_magic_mark;
+	out << DA::gc_dachart_version << DA::gc_dachart_magic_mark;
 	out << static_cast< const QwtPlotItem* >(item);
 	out << item->xValue() << item->yValue() << static_cast< int >(item->lineStyle()) << item->linePen() << item->label()
 		<< static_cast< int >(item->labelAlignment()) << static_cast< int >(item->labelOrientation()) << item->spacing();
@@ -870,7 +775,7 @@ QDataStream& operator>>(QDataStream& in, QwtPlotMarker* item)
 	int version;
 	std::uint32_t magic;
 	in >> version >> magic;
-	if (gc_dachart_magic_mark != magic) {
+	if (DA::gc_dachart_magic_mark != magic) {
 		throw DA::DABadSerializeExpection();
 		return in;
 	}
@@ -906,7 +811,7 @@ QDataStream& operator>>(QDataStream& in, QwtPlotMarker* item)
  */
 QDataStream& operator<<(QDataStream& out, const QwtPlotSpectroCurve* item)
 {
-	out << gc_dachart_version << gc_dachart_magic_mark;
+	out << DA::gc_dachart_version << DA::gc_dachart_magic_mark;
 	out << static_cast< const QwtPlotItem* >(item);
 	out << item->penWidth() << static_cast< int >(item->orientation())
 		<< item->testPaintAttribute(QwtPlotSpectroCurve::ClipPoints);
@@ -917,7 +822,7 @@ QDataStream& operator>>(QDataStream& in, QwtPlotSpectroCurve* item)
 	int version;
 	std::uint32_t magic;
 	in >> version >> magic;
-	if (gc_dachart_magic_mark != magic) {
+	if (DA::gc_dachart_magic_mark != magic) {
 		throw DA::DABadSerializeExpection();
 		return in;
 	}
@@ -938,14 +843,14 @@ QDataStream& operator>>(QDataStream& in, QwtPlotSpectroCurve* item)
 ///
 QDataStream& operator<<(QDataStream& out, const QwtPlotBarChart* item)
 {
-	out << gc_dachart_version << gc_dachart_magic_mark;
+	out << DA::gc_dachart_version << DA::gc_dachart_magic_mark;
 	out << (const QwtPlotItem*)item;
 	out << static_cast< int >(item->layoutPolicy()) << item->layoutHint() << item->spacing() << item->margin()
 		<< item->baseline() << static_cast< int >(item->legendMode()) << (int)(item->orientation());
 	// save sample
 	QVector< QPointF > sample;
 	DA::DAChartUtil::getXYDatas(sample, item);
-	out << gc_dachart_magic_mark2 << sample << gc_dachart_magic_mark3;
+	out << DA::gc_dachart_magic_mark2 << sample << DA::gc_dachart_magic_mark3;
 	// Symbol
 	const QwtColumnSymbol* cs = item->symbol();
 	bool isColumnSymbol       = (cs != nullptr);
@@ -966,7 +871,7 @@ QDataStream& operator>>(QDataStream& in, QwtPlotBarChart* item)
 	int version;
 	std::uint32_t magic;
 	in >> version >> magic;
-	if (gc_dachart_magic_mark != magic) {
+	if (DA::gc_dachart_magic_mark != magic) {
 		throw DA::DABadSerializeExpection();
 		return in;
 	}
@@ -989,13 +894,13 @@ QDataStream& operator>>(QDataStream& in, QwtPlotBarChart* item)
 	// load sample
 	std::uint32_t tmp0, tmp1;
 	in >> tmp0;
-	if (gc_dachart_magic_mark2 != tmp0) {
+	if (DA::gc_dachart_magic_mark2 != tmp0) {
 		throw DA::DABadSerializeExpection();
 		return in;
 	}
 	QVector< QPointF > sample;
 	in >> sample >> tmp1;
-	if (gc_dachart_magic_mark3 != tmp1) {
+	if (DA::gc_dachart_magic_mark3 != tmp1) {
 		throw DA::DABadSerializeExpection();
 		return in;
 	}
@@ -1013,7 +918,7 @@ QDataStream& operator>>(QDataStream& in, QwtPlotBarChart* item)
 
 QDataStream& operator<<(QDataStream& out, const QwtPlotIntervalCurve* item)
 {
-	out << gc_dachart_version << gc_dachart_magic_mark;
+	out << DA::gc_dachart_version << DA::gc_dachart_magic_mark;
 	out << (const QwtPlotItem*)item;
 	out << (int)item->orientation() << item->pen() << item->brush() << (int)item->style()
 		<< item->testPaintAttribute(QwtPlotIntervalCurve::ClipPolygons)
@@ -1039,7 +944,7 @@ QDataStream& operator>>(QDataStream& in, QwtPlotIntervalCurve* item)
 	int version;
 	std::uint32_t magic;
 	in >> version >> magic;
-	if (gc_dachart_magic_mark != magic) {
+	if (DA::gc_dachart_magic_mark != magic) {
 		throw DA::DABadSerializeExpection();
 		return in;
 	}
@@ -1091,7 +996,7 @@ QDataStream& operator>>(QDataStream& in, QwtPlotIntervalCurve* item)
 ///
 QDataStream& operator<<(QDataStream& out, const QwtScaleWidget* w)
 {
-	out << gc_dachart_version << gc_dachart_magic_mark;
+	out << DA::gc_dachart_version << DA::gc_dachart_magic_mark;
 	unsigned int c0 = 0x82fa34;
 	out << c0;
 	int minBorderDistStart, minBorderDistEnd;
@@ -1119,7 +1024,7 @@ QDataStream& operator>>(QDataStream& in, QwtScaleWidget* w)
 	int version;
 	std::uint32_t magic;
 	in >> version >> magic;
-	if (gc_dachart_magic_mark != magic) {
+	if (DA::gc_dachart_magic_mark != magic) {
 		throw DA::DABadSerializeExpection();
 		return in;
 	}
@@ -1171,7 +1076,7 @@ QDataStream& operator>>(QDataStream& in, QwtScaleWidget* w)
 ///
 QDataStream& operator<<(QDataStream& out, const QwtScaleDraw* w)
 {
-	out << gc_dachart_version << gc_dachart_magic_mark;
+	out << DA::gc_dachart_version << DA::gc_dachart_magic_mark;
 	unsigned int c0 = 0x92fa34;
 	out << c0;
 	out << static_cast< int >(w->alignment()) << w->length() << static_cast< int >(w->labelAlignment())
@@ -1189,7 +1094,7 @@ QDataStream& operator>>(QDataStream& in, QwtScaleDraw* w)
 	int version;
 	std::uint32_t magic;
 	in >> version >> magic;
-	if (gc_dachart_magic_mark != magic) {
+	if (DA::gc_dachart_magic_mark != magic) {
 		throw DA::DABadSerializeExpection();
 		return in;
 	}
@@ -1220,7 +1125,7 @@ QDataStream& operator>>(QDataStream& in, QwtScaleDraw* w)
 ///
 QDataStream& operator<<(QDataStream& out, const QFrame* f)
 {
-	out << gc_dachart_version << gc_dachart_magic_mark;
+	out << DA::gc_dachart_version << DA::gc_dachart_magic_mark;
 	unsigned int c0 = 0x13fa34;
 	out << c0;
 	out << static_cast< int >(f->frameShadow()) << static_cast< int >(f->frameShape()) << f->frameStyle()
@@ -1238,7 +1143,7 @@ QDataStream& operator>>(QDataStream& in, QFrame* f)
 	int version;
 	std::uint32_t magic;
 	in >> version >> magic;
-	if (gc_dachart_magic_mark != magic) {
+	if (DA::gc_dachart_magic_mark != magic) {
 		throw DA::DABadSerializeExpection();
 		return in;
 	}
@@ -1280,7 +1185,7 @@ QDataStream& operator>>(QDataStream& in, QFrame* f)
  */
 QDataStream& operator<<(QDataStream& out, const QwtPlotCanvas* c)
 {
-	out << gc_dachart_version << gc_dachart_magic_mark;
+	out << DA::gc_dachart_version << DA::gc_dachart_magic_mark;
 	out << (const QFrame*)c;
 	out << static_cast< int >(c->focusIndicator()) << c->borderRadius()
 		<< c->testPaintAttribute(QwtPlotCanvas::BackingStore) << c->testPaintAttribute(QwtPlotCanvas::Opaque)
@@ -1300,7 +1205,7 @@ QDataStream& operator>>(QDataStream& in, QwtPlotCanvas* c)
 	int version;
 	std::uint32_t magic;
 	in >> version >> magic;
-	if (gc_dachart_magic_mark != magic) {
+	if (DA::gc_dachart_magic_mark != magic) {
 		throw DA::DABadSerializeExpection();
 		return in;
 	}
@@ -1329,7 +1234,7 @@ QDataStream& operator>>(QDataStream& in, QwtPlotCanvas* c)
  */
 QDataStream& operator<<(QDataStream& out, const QwtPlot* chart)
 {
-	out << gc_dachart_version << gc_dachart_magic_mark;
+	out << DA::gc_dachart_version << DA::gc_dachart_magic_mark;
 	// QFrame save
 	out << (const QFrame*)chart;
 	// QwtPlot save
@@ -1360,7 +1265,7 @@ QDataStream& operator>>(QDataStream& in, QwtPlot* chart)
 	int version;
 	std::uint32_t magic;
 	in >> version >> magic;
-	if (gc_dachart_magic_mark != magic) {
+	if (DA::gc_dachart_magic_mark != magic) {
 		throw DA::DABadSerializeExpection();
 		return in;
 	}
@@ -1406,7 +1311,7 @@ QDataStream& operator>>(QDataStream& in, QwtPlot* chart)
  */
 QDataStream& operator<<(QDataStream& out, const QwtColorMap* c)
 {
-	out << gc_dachart_version << gc_dachart_magic_mark;
+	out << DA::gc_dachart_version << DA::gc_dachart_magic_mark;
 	out << static_cast< int >(c->format());
 	return out;
 }
@@ -1424,7 +1329,7 @@ QDataStream& operator>>(QDataStream& in, QwtColorMap* c)
 	int version;
 	std::uint32_t magic;
 	in >> version >> magic;
-	if (gc_dachart_magic_mark != magic) {
+	if (DA::gc_dachart_magic_mark != magic) {
 		throw DA::DABadSerializeExpection();
 		return in;
 	}
@@ -1445,7 +1350,7 @@ QDataStream& operator>>(QDataStream& in, QwtColorMap* c)
  */
 QDataStream& operator<<(QDataStream& out, const QwtLinearColorMap* c)
 {
-	out << gc_dachart_version << gc_dachart_magic_mark2;
+	out << DA::gc_dachart_version << DA::gc_dachart_magic_mark2;
 	out << static_cast< const QwtColorMap* >(c);
 	out << static_cast< int >(c->mode());
 	// color1 对应colorstop:0.0,color2 对应colorstop:1.0
@@ -1469,7 +1374,7 @@ QDataStream& operator>>(QDataStream& in, QwtLinearColorMap* c)
 	int version;
 	std::uint32_t magic;
 	in >> version >> magic;
-	if (gc_dachart_magic_mark2 != magic) {
+	if (DA::gc_dachart_magic_mark2 != magic) {
 		throw DA::DABadSerializeExpection();
 		return in;
 	}
@@ -1508,7 +1413,7 @@ QDataStream& operator>>(QDataStream& in, QwtLinearColorMap* c)
  */
 QDataStream& operator<<(QDataStream& out, const QwtAlphaColorMap* c)
 {
-	out << gc_dachart_version << gc_dachart_magic_mark2;
+	out << DA::gc_dachart_version << DA::gc_dachart_magic_mark2;
 	out << static_cast< const QwtColorMap* >(c);
 	out << c->alpha1() << c->alpha2() << c->color();
 	return out;
@@ -1525,7 +1430,7 @@ QDataStream& operator>>(QDataStream& in, QwtAlphaColorMap* c)
 	int version;
 	std::uint32_t magic;
 	in >> version >> magic;
-	if (gc_dachart_magic_mark2 != magic) {
+	if (DA::gc_dachart_magic_mark2 != magic) {
 		throw DA::DABadSerializeExpection();
 		return in;
 	}
@@ -1543,7 +1448,7 @@ QDataStream& operator>>(QDataStream& in, QwtAlphaColorMap* c)
 //----------------------------------------------------
 QDataStream& operator<<(QDataStream& out, const QwtHueColorMap* c)
 {
-	out << gc_dachart_version << gc_dachart_magic_mark2;
+	out << DA::gc_dachart_version << DA::gc_dachart_magic_mark2;
 	out << static_cast< const QwtColorMap* >(c);
 	out << c->hue1() << c->hue2() << c->saturation() << c->value() << c->alpha();
 	return out;
@@ -1553,7 +1458,7 @@ QDataStream& operator>>(QDataStream& in, QwtHueColorMap* c)
 	int version;
 	std::uint32_t magic;
 	in >> version >> magic;
-	if (gc_dachart_magic_mark2 != magic) {
+	if (DA::gc_dachart_magic_mark2 != magic) {
 		throw DA::DABadSerializeExpection();
 		return in;
 	}
@@ -1577,7 +1482,7 @@ QDataStream& operator>>(QDataStream& in, QwtHueColorMap* c)
 
 QDataStream& operator<<(QDataStream& out, const QwtSaturationValueColorMap* c)
 {
-	out << gc_dachart_version << gc_dachart_magic_mark2;
+	out << DA::gc_dachart_version << DA::gc_dachart_magic_mark2;
 	out << static_cast< const QwtColorMap* >(c);
 	out << c->hue() << c->saturation1() << c->saturation2() << c->value1() << c->value2() << c->alpha();
 	return out;
@@ -1587,7 +1492,7 @@ QDataStream& operator>>(QDataStream& in, QwtSaturationValueColorMap* c)
 	int version;
 	std::uint32_t magic;
 	in >> version >> magic;
-	if (gc_dachart_magic_mark2 != magic) {
+	if (DA::gc_dachart_magic_mark2 != magic) {
 		throw DA::DABadSerializeExpection();
 		return in;
 	}

@@ -2136,6 +2136,8 @@ bool DAXmlHelper::loadElement(DAChartWidget* chart,
 		axisEle = axisEle.nextSiblingElement(QStringLiteral("axis"));
 	}
 	// item
+	bool oldreplot = chart->autoReplot();
+	chart->setAutoReplot(false);
 	QDomElement itemsEle         = tag->firstChildElement(QStringLiteral("items"));
 	QDomNodeList itemsChildNodes = itemsEle.childNodes();
 	for (int i = 0; i < itemsChildNodes.size(); ++i) {
@@ -2158,6 +2160,8 @@ bool DAXmlHelper::loadElement(DAChartWidget* chart,
 			qDebug() << "plotitem isVisible=" << plotitem->isVisible() << ",cur size=" << cur->dataSize();
 		}
 	}
+	chart->autoRefresh();
+	chart->setAutoReplot(oldreplot);
 	return true;
 }
 

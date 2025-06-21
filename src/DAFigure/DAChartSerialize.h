@@ -6,6 +6,8 @@
 #include <functional>
 #include "qwt_text.h"
 #include "qwt_samples.h"
+// DAChart
+#include "DAChartPlotItemFactory.h"
 
 class QwtPlotItem;
 class QwtSymbol;
@@ -45,6 +47,14 @@ class QwtPlotVectorField;
 ///
 namespace DA
 {
+///< 版本标示，每个序列化都应该带有版本信息，用于对下兼容
+const int gc_dachart_version                     = 1;
+const std::uint32_t gc_dachart_magic_mark        = 0x5A6B4CF1;
+const std::uint32_t gc_dachart_magic_mark2       = 0xAA123456;
+const std::uint32_t gc_dachart_magic_mark3       = 0x12345678;
+const std::uint32_t gc_dachart_magic_mark4       = 0xAAB23498;
+const QDataStream::Version gc_datastream_version = QDataStream::Qt_5_12;
+
 class DAFIGURE_API DABadSerializeExpection : public std::exception
 {
 public:
@@ -75,6 +85,9 @@ public:
 		unsigned char byte[ 20 ];  ///< 预留20字节，凑齐32字节
 		// 是否正确的header
 		bool isValid() const;
+
+		friend QDataStream& operator<<(QDataStream& out, const DA::DAChartItemSerialize::Header& f);
+		friend QDataStream& operator>>(QDataStream& in, DA::DAChartItemSerialize::Header& f);
 	};
 
 public:
@@ -132,8 +145,80 @@ public:
 	int getRtti(const QByteArray& byte) const noexcept;
 
 public:
-	static QwtPlotItem* serializeIn_QwtPlotCurve(const QByteArray& byte);
-	static QByteArray serializeOut_QwtPlotCurve(const QwtPlotItem* item);
+	//
+	/**
+	 * @brief 模板化的序列化实现
+	 *
+	 * 对于QwtPlotItem实例化类的序列号，你只需要实现
+	 * @code
+	 * QDataStream& operator<<(QDataStream& out, const QwtPlotXXXItem* item);
+	 * QDataStream& operator>>(QDataStream& in, QwtPlotXXXItem* item);
+	 * @endcode
+	 *
+	 * 这两个函数即可，然后在cpp文件中显示实例化serializeIn_T和serializeOut_T
+	 * @code
+	 * template QwtPlotItem* DAChartItemSerialize::serializeIn_T< QwtPlotXXXItem, QwtPlotItem::Rtti_XXX >(const
+	 *QByteArray&); template QByteArray DAChartItemSerialize::serializeOut_T< QwtPlotXXXItem >(const QwtPlotItem*);
+	 * @endcode
+	 *
+	 * 再通过DAChartItemSerialize::registSerializeFun注册
+	 *
+	 * @code
+	 * DAChartItemSerialize::registSerializeFun(QwtPlotItem::Rtti_XXX
+	 *	   ,&DAChartItemSerialize::serializeIn_T< QwtPlotXXXItem, QwtPlotItem::Rtti_XXX >
+	 *     ,&DAChartItemSerialize::serializeOut_T< QwtPlotXXXItem >);
+	 * @endcode
+	 *
+	 * 这样，调用DAChartItemSerialize::serializeIn/serializeOut函数就能对item进行序列化
+	 *
+	 * @param byte
+	 * @return
+	 */
+	template< typename T, int RTTI >
+	static QwtPlotItem* serializeIn_T(const QByteArray& byte)
+	{
+		return deserializeImpl< T >(byte, RTTI);
+	}
+
+	template< typename T >
+	static QByteArray serializeOut_T(const QwtPlotItem* item)
+	{
+		return serializeImpl< T >(item);
+	}
+
+private:
+	// 序列化/反序列化的通用实现
+	template< typename T >
+	static QwtPlotItem* deserializeImpl(const QByteArray& byte, int expectedRtti)
+	{
+		QDataStream st(byte);
+		st.setVersion(gc_datastream_version);
+
+		Header h;
+		st >> h;
+		if (!h.isValid() || expectedRtti != h.rtti) {
+			return nullptr;
+		}
+
+		QwtPlotItem* item = DAChartPlotItemFactory::createItem(expectedRtti);
+		if (item) {
+			st >> static_cast< T* >(item);
+		}
+		return item;
+	}
+
+	template< typename T >
+	static QByteArray serializeImpl(const QwtPlotItem* item)
+	{
+		QByteArray byte;
+		QDataStream st(&byte, QIODevice::WriteOnly);
+		st.setVersion(gc_datastream_version);
+
+		Header h;
+		h.rtti = item->rtti();
+		st << h << static_cast< const T* >(item);
+		return byte;
+	}
 
 protected:
 	static QHash< int, std::pair< FpSerializeIn, FpSerializeOut > >& serializeFun();
@@ -142,9 +227,6 @@ protected:
 }  // end namespace DA
 
 // 由于Qwt都在全局命名空间，按照ADL原则，编译器会在全局命名空间找对应的序列化函数
-
-DAFIGURE_API QDataStream& operator<<(QDataStream& out, const DA::DAChartItemSerialize::Header& f);
-DAFIGURE_API QDataStream& operator>>(QDataStream& in, DA::DAChartItemSerialize::Header& f);
 
 // QFrame的序列化
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QFrame* f);
