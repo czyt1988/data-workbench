@@ -1,4 +1,21 @@
-此程序还在开发中，只有基本的一些功能实现
+
+<div align="center">
+<p>
+<img src="https://img.shields.io/badge/C++-17-blue"/>
+<img src="https://img.shields.io/badge/Qt-5.14+-green"/>
+<img src="https://img.shields.io/badge/Qt-6-green"/>
+<img src="https://img.shields.io/badge/license-LGPL3.0-yellow"/>
+</p>
+</div>
+
+CI
+
+<div align="center">
+<p>
+<img src="https://github.com/czyt1988/data-workbench/actions/workflows/build.yml/badge.svg"/>
+</p>
+</div>
+
 
 # 简介
 
@@ -47,7 +64,7 @@ git submodule update --init --recursive
 
 ## python环境配置
 
-> 用户可以不依赖Python，通过`./CMakeLists.txt`的`DA_ENABLE_PYTHON`选项禁用，此时将不会编译python相关模块
+> 用户可以不依赖Python，通过`./CMakeLists.txt`的`DA_ENABLE_PYTHON`选项禁用，此时将不会编译python相关模块（如果你仅仅只是为了使用绘图模块，可以把python环境禁用）
 
 如果开启将自动查找系统的python环境并进行依赖，python环境有如下要求：
 
@@ -115,6 +132,8 @@ dataworkbench查找python的逻辑是：
 
 第二部可以设置不构建plugin，如果不构建plugin，plugin板块可以单独构建，前提是前两步已经完成且安装好，单独构建插件需要运行`plugins/CMakeLists.txt`
 
+**第三方库构建请见**:[src/3rdparty/readme.md](./src/3rdparty/readme.md)
+
 **详细构建教程见**：[doc/how-to-build.md文档](./doc/how-to-build.md)
 
 ## bin目录
@@ -123,15 +142,6 @@ DA项目编译好的二进制文件统一生成到`bin{Debug/Release}_qt{$$QT_VE
 
 用户也可以自定义安装路径，需要手动调整`CMakeLists.txt`
 
-## 编译程序
-
-在确保完成了`./src/3rdparty/CMakeLists.txt`的编译，以及完成Python路径的配置（如果需要依赖python），直接用Qt Creator （或vs）打开`./CMakeLists.txt`进行编译，编译完成后安装，默认的安装路径会自动把文件安装到工程目录的`bin_xx`目录下
-
-如果第三方库的安装路径不是使用默认路径，需要指定各个第三方库的安装位置
-
-> 第三方库构建请见:[src/3rdparty/readme.md](./src/3rdparty/readme.md)
-
-> 详细构建教程见：[doc/how-to-build.md文档](./doc/how-to-build.md)
 
 
 # 教程
