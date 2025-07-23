@@ -33,6 +33,7 @@
 #include "DAWorkFlowOperateWidget.h"
 #include "DAWorkFlowOperateWidget.h"
 #include "DAWorkFlowOperateWidget.h"
+
 //
 #include "DAAppSettingDialog.h"
 #include "SettingPages/DAAppConfig.h"
@@ -62,7 +63,7 @@ AppMainWindow::AppMainWindow(QWidget* parent) : SARibbonMainWindow(parent)
 	// 创建controller
 	mController = new DAAppController(this);
 	(*mController)
-		.setAppMainWindow(this)                       // app
+        .setAppMainWindow(this)                       // app
 	    .setAppCore(&core)                            // core
 	    .setAppActions(mUI->getAppActions())          // action
 	    .setAppCommand(mUI->getAppCmd())              // cmd
@@ -81,6 +82,7 @@ AppMainWindow::AppMainWindow(QWidget* parent) : SARibbonMainWindow(parent)
 	// 首次调用此函数会加载插件，可放置在main函数中调用
 	init();
 	retranslateUi();  // 非必要可以验证调用是否正常
+
 	if (!hasUIStateFile) {
 		ribbonBar()->setRibbonStyle(SARibbonBar::RibbonStyleCompactTwoRow);
 		showMaximized();
@@ -169,6 +171,7 @@ void AppMainWindow::init()
 	initPlugins();
 	// 初始化工作流的节点
 	initWorkflowNodes();
+
 	// 应用所有配置
 	mConfig->loadConfig();
 	mConfig->apply();

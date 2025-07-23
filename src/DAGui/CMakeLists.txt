@@ -55,6 +55,7 @@ set(DA_LIB_HEADER_FILES
     DANodeMimeData.h
     DANodeSettingWidget.h
     DANodeTreeWidget.h
+    DARecentFilesManager.h
     DAToolBox.h
     DAWorkFlowEditWidget.h
     DAWorkFlowGraphicsScene.h
@@ -90,6 +91,7 @@ set(DA_LIB_SOURCE_FILES
     DANodeMimeData.cpp
     DANodeSettingWidget.cpp
     DANodeTreeWidget.cpp
+    DARecentFilesManager.cpp
     DAToolBox.cpp
     DAWorkFlowEditWidget.cpp
     DAWorkFlowGraphicsScene.cpp

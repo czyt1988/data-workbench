@@ -119,6 +119,8 @@ public Q_SLOTS:
 	void save();
 	// 另存为
 	void saveAs();
+    //   打开 文件前的检查，  返回true说明可以打开
+    bool openCheck();
 	// 打开文件
 	void open();
 	// 打开工程文件
@@ -369,6 +371,11 @@ private slots:
 	void onFigureItemClicked(DA::DAFigureWidget* fig, DA::DAChartWidget* chart, QwtPlotItem* item);
 	void onFigureItemDoubleClicked(DA::DAFigureWidget* fig, DA::DAChartWidget* chart, QwtPlotItem* item);
 
+    //===================================================
+    //   其它
+    //===================================================
+    void onRecentFileSelected(const QString& filePath);
+
 private:
 	// 初始化信号槽
 	void initConnection();
@@ -378,21 +385,21 @@ private:
 #endif
 
 private:
-	AppMainWindow* mMainWindow{ nullptr };
-	DAAppCore* mCore{ nullptr };
-	DAProjectInterface* mProject{ nullptr };
+    AppMainWindow* mMainWindow { nullptr };
+    DAAppCore* mCore { nullptr };
+    DAProjectInterface* mProject { nullptr };
 	;
-	DAAppRibbonArea* mRibbon{ nullptr };
-	DAAppDockingArea* mDock{ nullptr };
-	DAAppCommand* mCommand{ nullptr };
-	DAAppActions* mActions{ nullptr };
-	DAAppDataManager* mDatas{ nullptr };
+    DAAppRibbonArea* mRibbon { nullptr };
+    DAAppDockingArea* mDock { nullptr };
+    DAAppCommand* mCommand { nullptr };
+    DAAppActions* mActions { nullptr };
+    DAAppDataManager* mDatas { nullptr };
 
 	QStringList mFileReadFilters;  ///< 包含支持的文件[Images (*.png *.xpm *.jpg)] [Text files (*.txt)]
 	//
 	LastFocusedOpertateWidgets mLastFocusedOpertateWidget;  ///< 最后获取焦点的操作窗口
-															//
-	DAAppSettingDialog* mSettingDialog{ nullptr };          ///< 设置窗口
+                                                            //
+    DAAppSettingDialog* mSettingDialog { nullptr };         ///< 设置窗口
 	DAAppConfig* mConfig;                                   ///< 设置类
 };
 }

@@ -36,6 +36,7 @@
 #include "DAAppChartManageWidget.h"
 #include "SettingPages/DASettingPageCommon.h"
 #include "DASettingContainerWidget.h"
+#include "DARecentFilesManager.h"
 // Dialog
 #include "DAPluginManagerDialog.h"
 #include "DAAppSettingDialog.h"
@@ -377,6 +378,8 @@ void DAAppController::initConnection()
             workflowOpt,
             &DAWorkFlowOperateWidget::setCurrentWorkflowShowGrid);
 	connect(workflowOpt, &DAWorkFlowOperateWidget::workflowCreated, this, &DAAppController::onWorkflowCreated);
+
+    connect(mActions->recentFilesManager, &DARecentFilesManager::fileSelected, this, &DAAppController::onRecentFileSelected);
 }
 
 /**
@@ -606,7 +609,20 @@ void DAAppController::onFigureItemDoubleClicked(DAFigureWidget* fig, DAChartWidg
 		// 说明点击的是chart
 	} else {
 		// 说明点击的是figure
-	}
+    }
+}
+
+/**
+ * @brief 最近打开文件有选择
+ * @param filePath
+ */
+void DAAppController::onRecentFileSelected(const QString& filePath)
+{
+    if (!openCheck()) {
+        return;
+    }
+    DA_WAIT_CURSOR_SCOPED();
+    openProjectFile(filePath);
 }
 
 /**
@@ -679,11 +695,39 @@ void DAAppController::onFocusedDockWidgetChanged(ads::CDockWidget* old, ads::CDo
 		}
 	}
 }
+
+bool DAAppController::openCheck()
+{
+    DAAppProject* project = DA_APP_CORE.getAppProject();
+    if (!project->getProjectDir().isEmpty()) {
+        if (project->isDirty()) {
+            // TODO 没有保存。先询问是否保存
+            QMessageBox::StandardButton
+                btn = QMessageBox::question(nullptr,
+                                            tr("Question"),                                                   // 提示
+                                            tr("Another project already exists. Do you want to replace it?")  // 已存在其他工程，是否要替换？
+                );
+            if (btn == QMessageBox::Yes) {
+                project->clear();
+            } else {
+                return false;
+            }
+        } else {
+            project->clear();
+        }
+    }
+    return true;
+}
+
 /**
  * @brief 打开文件
  */
 void DAAppController::open()
 {
+    if (!openCheck()) {
+        return;
+    }
+
 	// TODO : 这里要加上工程文件的打开支持
 	QFileDialog dialog(app());
 	QStringList filters;
@@ -696,25 +740,7 @@ void DAAppController::open()
 	if (fileNames.empty()) {
 		return;
 	}
-	DAAppProject* project = DA_APP_CORE.getAppProject();
-	if (!project->getProjectDir().isEmpty()) {
-		if (project->isDirty()) {
-			// TODO 没有保存。先询问是否保存
-            QMessageBox::StandardButton
-                btn = QMessageBox::question(nullptr,
-                                            tr("Question"),                                                   // 提示
-                                            tr("Another project already exists. Do you want to replace it?")  // 已存在其他工程，是否要替换？
-                );
-			if (btn == QMessageBox::Yes) {
-				project->clear();
-			} else {
-				return;
-			}
-		} else {
-			project->clear();
-		}
-	}
-	DA_WAIT_CURSOR_SCOPED();
+    DA_WAIT_CURSOR_SCOPED();
 	openProjectFile(fileNames.first());
 }
 
@@ -734,6 +760,8 @@ bool DAAppController::openProjectFile(const QString& projectFilePath)
 	}
 	// 设置工程名称给标题
 	app()->setWindowTitle(QString("%1").arg(project->getProjectBaseName()));
+    // 加入最近打开的文件中
+    mActions->recentFilesManager->addFile(projectFilePath);
 	return true;
 }
 

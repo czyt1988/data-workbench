@@ -57,6 +57,7 @@ public:
     static bool removeStateSettingFile();
     // 打开已有工程
     bool openProject(const QString& projectFilePath);
+
 protected:
     void changeEvent(QEvent* e);
     void closeEvent(QCloseEvent* e);
