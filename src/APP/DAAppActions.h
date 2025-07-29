@@ -4,6 +4,7 @@
 class QActionGroup;
 namespace DA
 {
+class DARecentFilesManager;
 /**
  * @brief action管理
  */
@@ -159,6 +160,10 @@ public:
 	QAction* actionRibbonThemeOffice2021Blue;  ///< office2021主题
 	QAction* actionRibbonThemeDark;            ///< dark主题
 	QActionGroup* actionGroupRibbonTheme;      ///< actionRibbonTheme* 的actionGroup
+    //===================================================
+    // 其他
+    //===================================================
+    DARecentFilesManager* recentFilesManager { nullptr };
 };
 }  // namespace DA
 

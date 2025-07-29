@@ -9,7 +9,7 @@ damacro_lib_setting(
     "DA GUI | https://github.com/czyt1988"
     0
     0
-    2
+    3
 )
 
 ########################################################

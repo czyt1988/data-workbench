@@ -3,7 +3,7 @@
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
 //===================================================
-
+#include "DARecentFilesManager.h"
 using namespace DA;
 
 //===================================================
@@ -12,6 +12,7 @@ using namespace DA;
 DAAppActions::DAAppActions(DAUIInterface* u) : DAActionsInterface(u)
 {
 	buildActions();
+	recentFilesManager = new DARecentFilesManager(this, 10, QStringLiteral("DA"), QStringLiteral("DAWorkBench"));
 }
 
 DAAppActions::~DAAppActions()

@@ -127,6 +127,8 @@ public Q_SLOTS:
 	void save();
 	// 另存为
 	void saveAs();
+    //   打开 文件前的检查，  返回true说明可以打开
+    bool openCheck();
 	// 打开文件
 	void open();
 	// 打开工程文件
@@ -400,6 +402,11 @@ private slots:
 	//===================================================
 	void onFigureItemClicked(DA::DAFigureWidget* fig, DA::DAChartWidget* chart, QwtPlotItem* item);
 	void onFigureItemDoubleClicked(DA::DAFigureWidget* fig, DA::DAChartWidget* chart, QwtPlotItem* item);
+
+    //===================================================
+    //   其它
+    //===================================================
+    void onRecentFileSelected(const QString& filePath);
 
 private:
 	// 初始化信号槽

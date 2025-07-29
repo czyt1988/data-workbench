@@ -35,6 +35,7 @@ project(${DA_PROJECT_NAME}
 ########################################################
 
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/daworkbench_utils.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/daworkbench_3rdparty.cmake)
 ########################################################
 # 可选的变量
 ########################################################
@@ -195,11 +196,6 @@ install(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
     DESTINATION lib/cmake/${DA_PROJECT_NAME}
 )
-########################################################
-# 引入用到的通用函数和宏
-########################################################
-include(${CMAKE_CURRENT_LIST_DIR}/cmake/daworkbench_utils.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/cmake/daworkbench_3rdparty.cmake)
 
 
 ########################################################
@@ -302,10 +298,10 @@ if(DA_ENABLE_AUTO_TRANSLATE)
         add_custom_command(
             OUTPUT ${CMAKE_CURRENT_LIST_DIR}/src/da_zh_CN.ts
                    ${CMAKE_CURRENT_LIST_DIR}/src/da_en_US.ts
-            COMMAND ${CMAKE_COMMAND} -E copy
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 ${CMAKE_CURRENT_LIST_DIR}/src/ts/da_zh_CN.ts
                 ${CMAKE_CURRENT_LIST_DIR}/src/
-            COMMAND ${CMAKE_COMMAND} -E copy
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 ${CMAKE_CURRENT_LIST_DIR}/src/ts/da_en_US.ts
                 ${CMAKE_CURRENT_LIST_DIR}/src/
             COMMENT "Copying translation files from backup"

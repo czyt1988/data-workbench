@@ -83,6 +83,11 @@ add_executable(${DA_APP_NAME} WIN32
 # 构建APP定义的宏
 target_compile_definitions(${DA_APP_NAME} PRIVATE QT_DEPRECATED_WARNINGS)#!!!!** 注意变更 **!!!!
 
+# 公共宏
+target_compile_definitions(${DA_APP_NAME} PUBLIC
+    DA_APP_ORGANIZATION="DA"
+    DA_APP_APPLICATION_NAME="WorkBench"
+)
 ########################################################
 # 依赖链接 #!!!!** 注意变更 **!!!!
 ########################################################

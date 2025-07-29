@@ -44,6 +44,7 @@
 #include "DAAppCore.h"
 #include "DAAppDockingArea.h"
 #include "DAAppActions.h"
+#include "DARecentFilesManager.h"
 // Qt-Advanced-Docking-System
 #include "DockManager.h"
 #include "DockAreaWidget.h"
@@ -658,10 +659,12 @@ void DAAppRibbonArea::buildApplicationMenu()
 	mApplicationMenu->addAction(m_actions->actionOpen);
 	mApplicationMenu->addAction(m_actions->actionSave);
 	mApplicationMenu->addAction(m_actions->actionSaveAs);
+    m_actions->recentFilesManager->attachToMenu(mApplicationMenu, tr("Recent Files"));  // cn:最近打开的文件
 	SARibbonApplicationButton* appBtn = qobject_cast< SARibbonApplicationButton* >(ribbonBar()->applicationButton());
 	if (nullptr == appBtn) {
 		return;
 	}
+    mApplicationMenu->update();
 	appBtn->setMenu(mApplicationMenu);
 }
 
