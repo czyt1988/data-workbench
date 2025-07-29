@@ -707,13 +707,9 @@ bool DAAppController::openCheck()
                                             tr("Question"),                                                   // 提示
                                             tr("Another project already exists. Do you want to replace it?")  // 已存在其他工程，是否要替换？
                 );
-            if (btn == QMessageBox::Yes) {
-                project->clear();
-            } else {
+            if (btn != QMessageBox::Yes) {
                 return false;
             }
-        } else {
-            project->clear();
         }
     }
     return true;
@@ -753,7 +749,7 @@ void DAAppController::open()
 bool DAAppController::openProjectFile(const QString& projectFilePath)
 {
 	DAAppProject* project = DA_APP_CORE.getAppProject();
-
+    project->clear();
 	if (!project->load(projectFilePath)) {
 		qCritical() << tr("failed to load project file:%1").arg(projectFilePath);
 		return false;
