@@ -124,23 +124,23 @@ int main(int argc, char* argv[])
 void initCommandLine(QCommandLineParser* cmd)
 {
 	cmd->setApplicationDescription(QCoreApplication::translate("main", "version:%1,compile datetime:%2,enable python:%3")
-									   .arg(DA_VERSION)
-									   .arg(DA_COMPILE_DATETIME)
-									   .arg(DA_ENABLE_PYTHON));
+                                       .arg(DA_VERSION)
+                                       .arg(DA_COMPILE_DATETIME)
+                                       .arg(DA_ENABLE_PYTHON));
 	cmd->addHelpOption();
 	cmd->addVersionOption();
 	cmd->addPositionalArgument("file",
-							   QCoreApplication::translate("main", "The project file to open"),  // cn:要打开的工程文件
-							   "[project]"  // 语法表示（可选）
+                               QCoreApplication::translate("main", "The project file to open"),  // cn:要打开的工程文件
+                               "[project]"  // 语法表示（可选）
 	);
-	QCommandLineOption importDataOption(
-		CS_CMD_IMPORTDATA,
-		QCoreApplication::translate(
-			"main",
-			"Import data into the application, supporting formats such as CSV, XLSX, TXT, "
-			"PKL, etc.If you want to import multiple datasets, you can use the command "
-			"multiple times; the program will execute them one by one"),  // cn：导入数据到应用程序中，支持csv/xlsx/txt/pkl等格式，如果要导入多个数据，你可以使用多次命令，程序会逐一执行
-		"path");
+    QCommandLineOption
+        importDataOption(CS_CMD_IMPORTDATA,
+                         QCoreApplication::
+                             translate("main",
+                                       "Import data into the application, supporting formats such as CSV, XLSX, TXT, "
+                                       "PKL, etc.If you want to import multiple datasets, you can use the command "
+                                       "multiple times; the program will execute them one by one"),  // cn：导入数据到应用程序中，支持csv/xlsx/txt/pkl等格式，如果要导入多个数据，你可以使用多次命令，程序会逐一执行
+                         "path");
 	cmd->addOption(importDataOption);
 }
 
@@ -178,17 +178,7 @@ QString appPreposeDump()
 		QDir().mkpath(dumpFileDir);
 	}
 
-	QString baseName           = QDateTime::currentDateTime().toString("yyyyMMddhhmmss.zzz");
-	QString dumpfileName       = QString("dump%1.dmp").arg(baseName);
-	QString systemInfofileName = QString("dump%1.sysinfo").arg(baseName);
-	// 生成sysinfo
-	QFile sysfi(QDir::toNativeSeparators(dumpFileDir + "/" + systemInfofileName));
-	if (sysfi.open(QIODevice::ReadWrite | QIODevice::Text | QIODevice::Truncate)) {
-		QTextStream st(&sysfi);
-		QSysInfo s;
-		// 先写入da的信息
-		st << DA_PROJECT_NAME << DA_VERSION << "\r\n" << s << Qt::endl;
-	}
-	sysfi.close();
+    QString baseName     = QDateTime::currentDateTime().toString("yyyyMMddhhmmss.zzz");
+    QString dumpfileName = QString("dump%1.dmp").arg(baseName);
 	return QDir::toNativeSeparators(dumpFileDir + "/" + dumpfileName);
 }
