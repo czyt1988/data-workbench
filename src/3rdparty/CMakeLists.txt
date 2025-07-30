@@ -61,6 +61,26 @@ else()
     message(STATUS "finded zlib,ZLIB_LIBRARIES=${ZLIB_LIBRARIES}")
     message(STATUS "finded zlib,ZLIB_BIN_DIR=${ZLIB_BIN_DIR}")
 endif()
+
+# 设置生成调试信息
+if(MSVC)
+    # 对于MSVC编译器
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
+    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /Zi")
+
+    # 链接器选项 - 生成调试信息
+    set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /DEBUG")
+    set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /DEBUG")
+
+    # 可选：生成完整的调试信息（而不是最小的）
+    # set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /DEBUG:FULL")
+
+elseif(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    # 对于GCC/Clang
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -g")
+    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -g")
+endif()
+
 ########################################################
 # 安装第三方库
 ########################################################
