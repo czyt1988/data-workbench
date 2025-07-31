@@ -303,22 +303,7 @@ macro(damacro_app_setting _app_name _app_description _app_ver_major _app_ver_min
 endmacro(damacro_app_setting)
 
 # 通用的安装
-macro(damacro_app_install _icon_path)
-    ########################################################
-    # dll资源信息添加到 target_sources中
-    ########################################################
-    include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/create_win32_resource_version.cmake)
-    if(WIN32)
-        create_win32_resource_version(
-            TARGET ${DA_APP_NAME}
-            VERSION ${DA_APP_VERSION}
-            COMPANY_NAME "czyt"
-            COPYRIGHT "Copyright - 2025 czyt. All rights reserved."
-            DESCRIPTION ${DA_APP_FULL_DESCRIPTION}
-            ICONS "${_icon_path}"
-            FILE_EXTENSION exe
-        )
-    endif()
+macro(damacro_app_install)
     ########################################################
     # 目标依赖目录
     ########################################################

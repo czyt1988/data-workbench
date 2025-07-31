@@ -168,7 +168,21 @@ endif()
 damacro_set_app_properties(${DA_APP_NAME} ${DA_APP_VERSION})
 
 ########################################################
+# 写入rc信息
+########################################################
+if(WIN32)
+    create_win32_resource_version(
+        TARGET ${DA_APP_NAME}
+        VERSION ${DA_APP_VERSION}
+        COMPANY_NAME "DA"
+        COPYRIGHT "Copyright @ 2025 DA All rights reserved."
+        DESCRIPTION ${DA_APP_FULL_DESCRIPTION}
+        ICONS "${CMAKE_CURRENT_SOURCE_DIR}/icon.ico"
+        FILE_EXTENSION exe
+    )
+endif()
+########################################################
 # 安装
 ########################################################
-damacro_app_install(${CMAKE_CURRENT_SOURCE_DIR}/icon.ico)
+damacro_app_install()
 
