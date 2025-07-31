@@ -161,7 +161,7 @@ void DAAppRibbonArea::retranslateUi()
 
 void DAAppRibbonArea::resetText()
 {
-	ribbonBar()->applicationButton()->setText(tr(" File "));  // 文件
+	ribbonBar()->applicationButton()->setText(tr("File"));  // 文件
 
 	m_categoryMain->setCategoryName(tr("Main"));               // cn:主页
 	m_pannelMainFileOpt->setPannelName(tr("File Operation"));  // cn:文件操作
@@ -659,12 +659,12 @@ void DAAppRibbonArea::buildApplicationMenu()
 	mApplicationMenu->addAction(m_actions->actionOpen);
 	mApplicationMenu->addAction(m_actions->actionSave);
 	mApplicationMenu->addAction(m_actions->actionSaveAs);
-    m_actions->recentFilesManager->attachToMenu(mApplicationMenu, tr("Recent Files"));  // cn:最近打开的文件
+	m_actions->recentFilesManager->attachToMenu(mApplicationMenu, tr("Recent Files"));  // cn:最近打开的文件
 	SARibbonApplicationButton* appBtn = qobject_cast< SARibbonApplicationButton* >(ribbonBar()->applicationButton());
 	if (nullptr == appBtn) {
 		return;
 	}
-    mApplicationMenu->update();
+	mApplicationMenu->update();
 	appBtn->setMenu(mApplicationMenu);
 }
 
