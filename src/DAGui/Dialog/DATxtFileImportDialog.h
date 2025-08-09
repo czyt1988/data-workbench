@@ -1,6 +1,6 @@
 ﻿#ifndef DATXTFILEIMPORTDIALOG_H
 #define DATXTFILEIMPORTDIALOG_H
-
+#include "DAGuiAPI.h"
 #include <QDialog>
 #include "DATextReadWriter.h"
 namespace Ui
@@ -13,7 +13,7 @@ namespace DA
 
 class DAPyDataFrameTableModel;
 
-class DATxtFileImportDialog : public QDialog
+class DAGUI_API DATxtFileImportDialog : public QDialog
 {
     Q_OBJECT
 

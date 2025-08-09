@@ -44,8 +44,8 @@ public:
 	// 绘制背景缓存
 	void renderBackgroundCache();
 	void renderBackgroundCache(QPainter* painter, const QRect& rect);
-    //
-    void registCommandsFactory(DAGraphicsCommandsFactory* fac);
+	//
+	void registCommandsFactory(DAGraphicsCommandsFactory* fac);
 
 public:
 	QUndoStack mUndoStack;
@@ -110,7 +110,7 @@ void _DAGraphicsSceneItemMoveingInfos::clear()
 {
 	items.clear();
 	startsPos.clear();
-    endsPos.clear();
+	endsPos.clear();
 }
 
 ////////////////////////////////////////////////
@@ -122,7 +122,7 @@ void _DAGraphicsSceneItemMoveingInfos::clear()
 
 DAGraphicsScene::PrivateData::PrivateData(DAGraphicsScene* p) : q_ptr(p)
 {
-    registCommandsFactory(new DAGraphicsCommandsFactory());
+	registCommandsFactory(new DAGraphicsCommandsFactory());
 	mGridLinePen.setStyle(Qt::SolidLine);
 	mGridLinePen.setColor(QColor(219, 219, 219));
 	mGridLinePen.setCapStyle(Qt::RoundCap);
@@ -163,13 +163,13 @@ void DAGraphicsScene::PrivateData::renderBackgroundCache(QPainter* painter, cons
 	// 绘制横线
 	for (qreal y = top; y < rect.bottom(); y += mGridSize.height()) {
 		painter->drawLine(QPointF(rect.left(), y), QPointF(rect.right(), y));
-    }
+	}
 }
 
 void DAGraphicsScene::PrivateData::registCommandsFactory(DAGraphicsCommandsFactory* fac)
 {
-    this->commandsFactory.reset(fac);
-    this->commandsFactory->setScene(q_ptr);
+	this->commandsFactory.reset(fac);
+	this->commandsFactory->setScene(q_ptr);
 }
 
 //===============================================================
@@ -387,6 +387,8 @@ bool DAGraphicsScene::isStartLink() const
  *
  * 如果是要取消当前的连接线，使用@sa cancelLink
  *
+ * 此函数结束时会发出@sa linkCompleted 信号
+ *
  * @note 这里有个问题，endLink如果带有redo/undo动作的，但有些情况下，需要处理链接撤销前和后的动作，例如工作流，
  * 链接和不链接的逻辑是不一样的，因此，redo/undo的动作并不提供，而是由用户自己处理
  *
@@ -475,7 +477,7 @@ void DAGraphicsScene::groupingSelectItems_()
 			return;
 		}
 	}
-    auto cmd = commandsFactory()->createItemGrouping(selItems);
+	auto cmd = commandsFactory()->createItemGrouping(selItems);
 	push(cmd);
 }
 
@@ -488,7 +490,7 @@ void DAGraphicsScene::removeSelectItemGroup_()
 	for (QGraphicsItem* i : qAsConst(si)) {
 		QGraphicsItemGroup* g = dynamic_cast< QGraphicsItemGroup* >(i);
 		if (g) {
-            auto cmd = commandsFactory()->createItemUngrouping(g);
+			auto cmd = commandsFactory()->createItemUngrouping(g);
 			push(cmd);
 		}
 	}
@@ -692,8 +694,8 @@ void DAGraphicsScene::setUndoStackActive()
  */
 void DAGraphicsScene::push(QUndoCommand* cmd)
 {
-    qDebug() << "scene push:" << cmd->text();
-    d_ptr->mUndoStack.push(cmd);
+	qDebug() << "scene push:" << cmd->text();
+	d_ptr->mUndoStack.push(cmd);
 }
 
 /**
@@ -1133,7 +1135,7 @@ void DAGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 			DAGraphicsResizeableItem* ri = dynamic_cast< DAGraphicsResizeableItem* >(its);
 			if (ri) {
 				if (DAGraphicsResizeableItem::NotUnderAnyControlType
-                    != ri->getControlPointByPos(ri->mapFromScene(mouseEvent->scenePos()))) {
+					!= ri->getControlPointByPos(ri->mapFromScene(mouseEvent->scenePos()))) {
 					// 说明点击在了控制点上，需要跳过
 					return;
 				}
@@ -1141,8 +1143,8 @@ void DAGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		}
 		//
 	}
-    // 处理鼠标移动的命令，让通过鼠标移动item也能执行redo/undo
-    commandsFactory()->sceneMousePressEvent(mouseEvent);
+	// 处理鼠标移动的命令，让通过鼠标移动item也能执行redo/undo
+	commandsFactory()->sceneMousePressEvent(mouseEvent);
 }
 
 void DAGraphicsScene::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
@@ -1168,7 +1170,7 @@ void DAGraphicsScene::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
 			}
 		}
 	}
-    commandsFactory()->sceneMouseMoveEvent(mouseEvent);
+	commandsFactory()->sceneMouseMoveEvent(mouseEvent);
 	QGraphicsScene::mouseMoveEvent(mouseEvent);
 }
 
@@ -1183,18 +1185,18 @@ void DAGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		}
 	}
 	QGraphicsScene::mouseReleaseEvent(mouseEvent);
-    commandsFactory()->sceneMouseReleaseEvent(mouseEvent);
-    auto cmd = commandsFactory()->createItemsMoved();
-    if (cmd) {
-        QList< QGraphicsItem* > moveItems = cmd->getItems();
-        QList< QPointF > startsPos        = cmd->getStartsPos();
-        QList< QPointF > endsPos          = cmd->getEndsPos();
+	commandsFactory()->sceneMouseReleaseEvent(mouseEvent);
+	auto cmd = commandsFactory()->createItemsMoved();
+	if (cmd) {
+		QList< QGraphicsItem* > moveItems = cmd->getItems();
+		QList< QPointF > startsPos        = cmd->getStartsPos();
+		QList< QPointF > endsPos          = cmd->getEndsPos();
 		push(cmd);
 		// 位置改变信号
 		// 如果 移动 过程 鼠标移出scene在释放，可能无法捕获
-        // 注意，这里不能这样使用：emit itemsPositionChanged(cmd->getItems(), cmd->getStartsPos(), cmd->getEndsPos());
-        // 因为命令会合并，合并后的cmd是一个悬空指针
-        emit itemsPositionChanged(moveItems, startsPos, endsPos);
+		// 注意，这里不能这样使用：emit itemsPositionChanged(cmd->getItems(), cmd->getStartsPos(), cmd->getEndsPos());
+		// 因为命令会合并，合并后的cmd是一个悬空指针
+		emit itemsPositionChanged(moveItems, startsPos, endsPos);
 	}
 }
 

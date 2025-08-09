@@ -33,15 +33,6 @@ set(DA_LIB_HEADER_FILES
     DAAbstractChartAddItemWidget.h
     DAAbstractOperateWidget.h
     DACacheWindowTableView.h
-    DAChartAddXYSeriesWidget.h
-    DAChartAddXYESeriesWidget.h
-    DAChartAddOHLCSeriesWidget.h
-    DAChartAddtGridRasterDataWidget.h
-    DAChartAddCurveWidget.h
-    DAChartAddBarWidget.h
-    DAChartAddIntervalCurveWidget.h
-    DAChartAddTradingCurveWidget.h
-    DAChartAddSpectrogramWidget.h
     DAChartItemsManager.h
     DADataManagerComboBox.h
     DADataOperatePageWidget.h
@@ -88,15 +79,6 @@ set(DA_LIB_SOURCE_FILES
     DAAbstractChartAddItemWidget.cpp
     DAAbstractOperateWidget.cpp
     DACacheWindowTableView.cpp
-    DAChartAddXYSeriesWidget.cpp
-    DAChartAddXYESeriesWidget.cpp
-    DAChartAddOHLCSeriesWidget.cpp
-    DAChartAddtGridRasterDataWidget.cpp
-    DAChartAddCurveWidget.cpp
-    DAChartAddBarWidget.cpp
-    DAChartAddIntervalCurveWidget.cpp
-    DAChartAddSpectrogramWidget.cpp
-    DAChartAddTradingCurveWidget.cpp
     DAChartListView.cpp
     DAChartManageWidget.cpp
     DAChartOperateWidget.cpp
@@ -139,10 +121,6 @@ set(DA_LIB_SOURCE_FILES
     DAXmlHelper.cpp
 )
 set(DA_LIB_QT_UI_FILES
-    DAChartAddXYSeriesWidget.ui
-    DAChartAddXYESeriesWidget.ui
-    DAChartAddOHLCSeriesWidget.ui
-    DAChartAddtGridRasterDataWidget.ui
     DAChartManageWidget.ui
     DAChartOperateWidget.ui
     DAChartSettingWidget.ui
@@ -168,16 +146,38 @@ if(DA_ENABLE_PYTHON)
         DADataOperateOfDataFrameWidget.h
         DAPyDataFrameTableView.h
         DAPySeriesTableView.h
+        DAChartAddXYSeriesWidget.h
+        DAChartAddXYESeriesWidget.h
+        DAChartAddOHLCSeriesWidget.h
+        DAChartAddtGridRasterDataWidget.h
+        DAChartAddCurveWidget.h
+        DAChartAddBarWidget.h
+        DAChartAddIntervalCurveWidget.h
+        DAChartAddTradingCurveWidget.h
+        DAChartAddSpectrogramWidget.h
     )
     list(APPEND DA_LIB_HEADER_FILES
         DADataframeToVectorPointWidget.cpp
         DADataOperateOfDataFrameWidget.cpp
         DAPyDataFrameTableView.cpp
         DAPySeriesTableView.cpp
+        DAChartAddXYSeriesWidget.cpp
+        DAChartAddXYESeriesWidget.cpp
+        DAChartAddOHLCSeriesWidget.cpp
+        DAChartAddtGridRasterDataWidget.cpp
+        DAChartAddCurveWidget.cpp
+        DAChartAddBarWidget.cpp
+        DAChartAddIntervalCurveWidget.cpp
+        DAChartAddSpectrogramWidget.cpp
+        DAChartAddTradingCurveWidget.cpp
     )
     list(APPEND DA_LIB_QT_UI_FILES
         DADataframeToVectorPointWidget.ui
         DADataOperateOfDataFrameWidget.ui
+        DAChartAddXYSeriesWidget.ui
+        DAChartAddXYESeriesWidget.ui
+        DAChartAddOHLCSeriesWidget.ui
+        DAChartAddtGridRasterDataWidget.ui
     )
 endif()
 # 子目录
@@ -219,22 +219,20 @@ endif()
 
 #Dialog
 set(DA_LIB_HEADER_FILES_Dialog
-    ${DA_LIB_SUBDIR_Dialog}/DADialogChartGuide.h
     ${DA_LIB_SUBDIR_Dialog}/DARenameColumnsNameDialog.h
 )
 
-set(DA_LIB_SOURCE_FILES_Dialog
-    ${DA_LIB_SUBDIR_Dialog}/DADialogChartGuide.cpp
-    
+set(DA_LIB_SOURCE_FILES_Dialog 
     ${DA_LIB_SUBDIR_Dialog}/DARenameColumnsNameDialog.cpp
 )
 
 set(DA_LIB_QT_UI_FILES_Dialog
-    ${DA_LIB_SUBDIR_Dialog}/DADialogChartGuide.ui
     ${DA_LIB_SUBDIR_Dialog}/DARenameColumnsNameDialog.ui
 )
 if(DA_ENABLE_PYTHON)
     list(APPEND DA_LIB_HEADER_FILES_Dialog
+        ${DA_LIB_SUBDIR_Dialog}/DATxtFileImportDialog.h
+        ${DA_LIB_SUBDIR_Dialog}/DADialogChartGuide.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToDatetime.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToNumeric.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.h
@@ -252,6 +250,8 @@ if(DA_ENABLE_PYTHON)
 		
     )
     list(APPEND DA_LIB_SOURCE_FILES_Dialog
+        ${DA_LIB_SUBDIR_Dialog}/DATxtFileImportDialog.cpp
+         ${DA_LIB_SUBDIR_Dialog}/DADialogChartGuide.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToDatetime.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToNumeric.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.cpp
@@ -268,6 +268,8 @@ if(DA_ENABLE_PYTHON)
         ${DA_LIB_SUBDIR_Dialog}/DADialogCreatePivotTable.cpp
     )
     list(APPEND DA_LIB_QT_UI_FILES_Dialog
+        ${DA_LIB_SUBDIR_Dialog}/DATxtFileImportDialog.ui
+        ${DA_LIB_SUBDIR_Dialog}/DADialogChartGuide.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToDatetime.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToNumeric.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.ui

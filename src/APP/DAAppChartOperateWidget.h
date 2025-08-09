@@ -7,7 +7,9 @@
 #include "qwt_plot_item.h"
 namespace DA
 {
+#if DA_ENABLE_PYTHON
 class DADialogChartGuide;
+#endif
 class DAEvenFilterDragPlotWithGuide;
 /**
  * @brief DAChartOperateWidget的app特化
@@ -31,7 +33,9 @@ public:
 
 private:
 	DADataManager* mDataMgr { nullptr };
+#if DA_ENABLE_PYTHON
 	DADialogChartGuide* mChartGuideDlg { nullptr };
+#endif
 	DAEvenFilterDragPlotWithGuide* mFigEventFilter;  ///< 给DAFigureWidget的eventfilter
 };
 }

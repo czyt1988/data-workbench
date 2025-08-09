@@ -1,9 +1,11 @@
 ﻿#include "DAAppChartOperateWidget.h"
-#include "Dialog/DADialogChartGuide.h"
 #include "DAAppFigureWidget.h"
 #include "DAWaitCursorScoped.h"
 #include "DAChartUtil.h"
 #include "DAEvenFilterDragPlotWithGuide.h"
+#if DA_ENABLE_PYTHON
+#include "Dialog/DADialogChartGuide.h"
+#endif
 namespace DA
 {
 
@@ -46,6 +48,8 @@ DAFigureWidget* DAAppChartOperateWidget::createFigure()
  */
 QwtPlotItem* DAAppChartOperateWidget::createPlotItemWithGuideDialog(const DAData& data, ChartTypes t)
 {
+	QwtPlotItem* item { nullptr };
+#if DA_ENABLE_PYTHON
 	if (nullptr == mChartGuideDlg) {
 		mChartGuideDlg = new DADialogChartGuide(this);
 		mChartGuideDlg->setDataManager(mDataMgr);
@@ -61,10 +65,8 @@ QwtPlotItem* DAAppChartOperateWidget::createPlotItemWithGuideDialog(const DAData
 	}
 	DAWaitCursorScoped wait;
 	Q_UNUSED(wait);
-	QwtPlotItem* item = mChartGuideDlg->createPlotItem();
-	if (nullptr == item) {
-		return nullptr;
-	}
+	item = mChartGuideDlg->createPlotItem();
+#endif
 	return item;
 }
 

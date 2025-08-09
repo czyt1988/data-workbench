@@ -38,7 +38,7 @@ public:
 private slots:
 	void onComboBoxXCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
 	void onComboBoxYCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
-    void onComboBoxMatricsCurrentDataChanged(const DA::DAData& data);
+	void onComboBoxMatricsCurrentDataChanged(const DA::DAData& data);
 	void onDataManagerChanged(DADataManager* dmgr);
 	void onCurrentDataChanged(const DAData& d);
 
@@ -47,7 +47,10 @@ protected:
 
 private:
 	Ui::DAChartAddtGridRasterDataWidget* ui;
+#if DA_ENABLE_PYTHON
 	DAPyGridDataTableModel* mModel { nullptr };
+#else
+#endif
 };
 }
 

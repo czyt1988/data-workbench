@@ -69,7 +69,7 @@ public:
 	void beginLink(DAGraphicsLinkItem* linkItem, LinkMode lm = LinkModeAutoStartEndFollowMouseClick);
 	// 判断当前是否是链接模式
 	bool isStartLink() const;
-	// 结束链接模式
+	// 结束链接模式，结束后会发出linkCompleted信号
 	void endLink();
 	// 取消链接模式
 	virtual void cancelLink();
@@ -134,8 +134,8 @@ public:
 	void registCommandsFactory(DAGraphicsCommandsFactory* fac);
 	DAGraphicsCommandsFactory* commandsFactory();
 
-    // 判断点击的item是否可以移动
-    virtual bool isItemCanMove(QGraphicsItem* positem, const QPointF& scenePos);
+	// 判断点击的item是否可以移动
+	virtual bool isItemCanMove(QGraphicsItem* positem, const QPointF& scenePos);
 
 public:
 	// 获取默认的dpi
@@ -175,8 +175,8 @@ signals:
 	 * @param newPos
 	 */
 	void itemsPositionChanged(const QList< QGraphicsItem* >& items,
-                              const QList< QPointF >& oldPos,
-                              const QList< QPointF >& newPos);
+							  const QList< QPointF >& oldPos,
+							  const QList< QPointF >& newPos);
 
 	/**
 	 * @brief 条目bodysize改变触发的信号
@@ -194,6 +194,9 @@ signals:
 
 	/**
 	 * @brief 完成了一次链接
+	 *
+	 * 这个是最后连接完成的信号，会在endLink回调之后发出
+
 	 * @param linkItem 通过此指针可以获取两个连接点
 	 */
 	void linkCompleted(DAGraphicsLinkItem* linkItem);
@@ -245,8 +248,8 @@ signals:
 protected:
 	// 调用此函数 主动触发itemsPositionChanged信号，这个函数用于 继承此类例如实现了键盘移动item，主动触发此信号
 	void emitItemsPositionChanged(const QList< QGraphicsItem* >& items,
-                                  const QList< QPointF >& oldPos,
-                                  const QList< QPointF >& newPos);
+								  const QList< QPointF >& oldPos,
+								  const QList< QPointF >& newPos);
 	// 调用此函数 主动触发itemBodySizeChanged信号
 	void emitItemBodySizeChanged(DAGraphicsResizeableItem* item, const QSizeF& oldSize, const QSizeF& newSize);
 	// 调用此函数 主动触发itemRotationed信号
