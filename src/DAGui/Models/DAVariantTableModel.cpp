@@ -30,10 +30,10 @@ class DAVariantTableModelSetDataCommand : public QUndoCommand
 {
 public:
 	DAVariantTableModelSetDataCommand(DAVariantTableModel* model,
-									  int row,
-									  int col,
-									  const QVariant& value,
-									  QUndoCommand* par = nullptr);
+	                                  int row,
+	                                  int col,
+	                                  const QVariant& value,
+	                                  QUndoCommand* par = nullptr);
 	void redo() override;
 	void undo() override;
 
@@ -52,7 +52,7 @@ DAVariantTableModelSetDataCommand::DAVariantTableModelSetDataCommand(DAVariantTa
                                                                      QUndoCommand* par)
     : QUndoCommand(par), mModel(model), mRow(row), mCol(col), mValue(value)
 {
-    mOldValue = mModel->getTableData(row, col);
+	mOldValue = mModel->getTableData(row, col);
 }
 
 void DAVariantTableModelSetDataCommand::redo()
@@ -85,7 +85,7 @@ DAVariantTableModel::DAVariantTableModel(QObject* p) : QAbstractTableModel(p), D
 DAVariantTableModel::DAVariantTableModel(DATable< QVariant >* d, QObject* p)
     : QAbstractTableModel(p), DA_PIMPL_CONSTRUCT
 {
-    d_ptr->mData = d;
+	d_ptr->mData = d;
 }
 
 DAVariantTableModel::~DAVariantTableModel()
@@ -183,12 +183,12 @@ void DAVariantTableModel::update()
  */
 void DAVariantTableModel::setEnableEdit(bool on)
 {
-    d_ptr->mItemFlags.setFlag(Qt::ItemIsEditable, on);
+	d_ptr->mItemFlags.setFlag(Qt::ItemIsEditable, on);
 }
 
 QUndoStack* DAVariantTableModel::getUndoStack() const
 {
-    return &(d_ptr->mStack);
+	return &(d_ptr->mStack);
 }
 
 /**
@@ -215,7 +215,7 @@ void DAVariantTableModel::setTable(DATable< QVariant >* t)
  */
 DATable< QVariant >* DAVariantTableModel::getTable() const
 {
-    return d_ptr->mData;
+	return d_ptr->mData;
 }
 
 /**
@@ -223,11 +223,12 @@ DATable< QVariant >* DAVariantTableModel::getTable() const
  */
 void DAVariantTableModel::clearTable()
 {
-	if (d_ptr->mData) {
-		beginResetModel();
-		d_ptr->mData->clear();
-		endResetModel();
+	if (!d_ptr->mData) {
+		return;
 	}
+	beginResetModel();
+	d_ptr->mData->clear();
+	endResetModel();
 }
 
 /**
@@ -242,26 +243,29 @@ void DAVariantTableModel::clearTable()
  */
 void DAVariantTableModel::registDisplayFun(DAVariantTableModel::FpToDisplayString fp)
 {
-    d_ptr->mToDisplayString = fp;
+	d_ptr->mToDisplayString = fp;
 }
 
 void DAVariantTableModel::setHeader(const QStringList& h)
 {
-    d_ptr->mHeader = h;
+	d_ptr->mHeader = h;
 }
 
 void DAVariantTableModel::redo()
 {
-    d_ptr->mStack.redo();
+	d_ptr->mStack.redo();
 }
 
 void DAVariantTableModel::undo()
 {
-    d_ptr->mStack.undo();
+	d_ptr->mStack.undo();
 }
 
 void DAVariantTableModel::setTableData(int row, int col, const QVariant& v)
 {
+	if (!d_ptr->mData) {
+		return;
+	}
 	d_ptr->mData->set(row, col, v);
 	qDebug() << "setTableData(" << row << "," << col << "," << v << ")";
 	qDebug() << "after set :" << getTableData(row, col);
@@ -276,6 +280,9 @@ void DAVariantTableModel::setTableData(int row, int col, const QVariant& v)
  */
 QVariant DAVariantTableModel::getTableData(int row, int col) const
 {
+	if (!(d_ptr->mData)) {
+		return QVariant();
+	}
 	auto i = d_ptr->mData->find(row, col);
 	if (i == d_ptr->mData->end()) {
 		return QVariant();
@@ -294,7 +301,10 @@ QVariant DAVariantTableModel::getTableData(int row, int col) const
  */
 void DAVariantTableModel::removeTableCell(int row, int col)
 {
-    d_ptr->mData->removeCell(row, col);
+	if (!d_ptr->mData) {
+		return;
+	}
+	d_ptr->mData->removeCell(row, col);
 }
 
 }
