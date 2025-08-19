@@ -18,4 +18,24 @@ void DAAbstractArchiveTask::setCode(int code)
 {
     mCode = code;
 }
+
+QString DAAbstractArchiveTask::getName() const
+{
+    return mName;
+}
+
+void DAAbstractArchiveTask::setName(const QString& name)
+{
+    mName = name;
+}
+
+QString DAAbstractArchiveTask::getDescribe() const
+{
+    return mDescribe;
+}
+
+void DAAbstractArchiveTask::setDescribe(const QString& describe)
+{
+    mDescribe = describe;
+}
 }

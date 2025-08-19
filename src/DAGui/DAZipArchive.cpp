@@ -26,6 +26,7 @@ public:
     bool ensureOpenForWrite();
     QString errorStringFromZipError(int errorCode) const;
     bool copyZipEntry(QuaZip* sourceZip, QuaZip* destZip, const QString& fileName);
+    static QString getSystemErrorString(int errnum);
 
 public:
 	// 打开
@@ -121,7 +122,7 @@ QString DAZipArchive::PrivateData::errorStringFromZipError(int errorCode) const
     case UNZ_END_OF_LIST_OF_FILE:
         return QObject::tr("End of list of file");
     case UNZ_ERRNO:
-        return QObject::tr("File I/O error: %1").arg(strerror(errno));
+        return QObject::tr("File I/O error: %1").arg(getSystemErrorString(errno));
     case UNZ_PARAMERROR:
         return QObject::tr("Invalid parameter");
     case UNZ_BADZIPFILE:
@@ -176,6 +177,20 @@ bool DAZipArchive::PrivateData::copyZipEntry(QuaZip* sourceZip, QuaZip* destZip,
     outFile.close();
     return success;
 }
+
+QString DAZipArchive::PrivateData::getSystemErrorString(int errnum)
+{
+#ifdef _MSC_VER
+    char buffer[ 256 ] = { 0 };
+    errno_t result     = strerror_s(buffer, sizeof(buffer), errnum);
+    if (result == 0) {
+        return QString(buffer);
+    }
+    return "Unknown error";
+#else
+    return QString(strerror(errnum));
+#endif
+}
 //===============================================================
 // DAZipArchive
 //===============================================================
@@ -185,7 +200,7 @@ DAZipArchive::DAZipArchive(QObject* par) : DAAbstractArchive(par), DA_PIMPL_CONS
 
 DAZipArchive::DAZipArchive(const QString& zipPath, QObject* par) : DAAbstractArchive(par), DA_PIMPL_CONSTRUCT
 {
-	setZipFileName(zipPath);
+    setZipFileName(zipPath);
 }
 
 DAZipArchive::~DAZipArchive()
@@ -674,7 +689,7 @@ void DAZipArchive::saveAll(const QString& filePath)
 			return;
 		}
 		++index;
-		emit taskProgress(cnt, index, task);
+        emit taskProgress(task, DAAbstractArchiveTask::WriteMode);
 	}
 	// 创建完成关闭文件
 	close();
@@ -718,7 +733,7 @@ void DAZipArchive::loadAll(const QString& filePath)
 			return;
 		}
 		++index;
-		emit taskProgress(cnt, index, task);
+        emit taskProgress(task, DAAbstractArchiveTask::ReadMode);
 	}
 	// 加载完成后关闭
 	close();

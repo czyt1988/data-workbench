@@ -89,8 +89,18 @@ public:
      */
     void setCode(int code);
 
+    // 任务名称
+    QString getName() const;
+    void setName(const QString& name);
+
+    // 任务描述
+    QString getDescribe() const;
+    void setDescribe(const QString& describe);
+
 private:
-    int mCode;
+    int mCode { 0 };
+    QString mName;
+    QString mDescribe;
 };
 }  // end DA
 #endif  // DAABSTRACTARCHIVETASK_H

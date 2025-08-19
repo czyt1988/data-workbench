@@ -69,84 +69,93 @@ bool DAZipArchiveThreadWrapper::isBusy() const
 	return d_ptr->mIsBusy;
 }
 
-bool DAZipArchiveThreadWrapper::appendByteSaveTask(const QString& zipRelatePath, const QByteArray& data)
+std::shared_ptr< DAAbstractArchiveTask > DAZipArchiveThreadWrapper::appendByteSaveTask(const QString& zipRelatePath,
+                                                                                       const QByteArray& data)
 {
 	if (isBusy()) {
-		return false;
+        return std::shared_ptr< DAAbstractArchiveTask >();
 	}
-	d_ptr->mArchive->appendTask(std::make_shared< DAZipArchiveTask_ByteArray >(zipRelatePath, data));
-	return true;
+    auto t = std::make_shared< DAZipArchiveTask_ByteArray >(zipRelatePath, data);
+    d_ptr->mArchive->appendTask(t);
+    return t;
 }
 
-bool DAZipArchiveThreadWrapper::appendXmlSaveTask(const QString& zipRelatePath, const QDomDocument& data)
+std::shared_ptr< DAAbstractArchiveTask > DAZipArchiveThreadWrapper::appendXmlSaveTask(const QString& zipRelatePath,
+                                                                                      const QDomDocument& data)
 {
 	if (isBusy()) {
-		return false;
+        return std::shared_ptr< DAAbstractArchiveTask >();
 	}
-	d_ptr->mArchive->appendTask(std::make_shared< DAZipArchiveTask_Xml >(zipRelatePath, data));
-	return true;
+    auto t = std::make_shared< DAZipArchiveTask_Xml >(zipRelatePath, data);
+    d_ptr->mArchive->appendTask(t);
+    return t;
 }
 
-bool DAZipArchiveThreadWrapper::appendFileSaveTask(const QString& zipRelatePath, const QString& localFilePath)
+std::shared_ptr< DAAbstractArchiveTask > DAZipArchiveThreadWrapper::appendFileSaveTask(const QString& zipRelatePath,
+                                                                                       const QString& localFilePath)
 {
 	if (isBusy()) {
-		return false;
+        return std::shared_ptr< DAAbstractArchiveTask >();
 	}
-	d_ptr->mArchive->appendTask(std::make_shared< DAZipArchiveTask_ArchiveFile >(zipRelatePath, localFilePath));
-	return true;
+    auto t = std::make_shared< DAZipArchiveTask_ArchiveFile >(zipRelatePath, localFilePath);
+    d_ptr->mArchive->appendTask(t);
+    return t;
 }
 
-bool DAZipArchiveThreadWrapper::appendChartItemSaveTask(const QString& zipRelateFolderPath, DAChartItemsManager chartItemMgr)
+std::shared_ptr< DAAbstractArchiveTask > DAZipArchiveThreadWrapper::appendChartItemSaveTask(const QString& zipRelateFolderPath,
+                                                                                            DAChartItemsManager chartItemMgr)
 {
 	if (isBusy()) {
-		return false;
+        return std::shared_ptr< DAAbstractArchiveTask >();
 	}
-	d_ptr->mArchive->appendTask(std::make_shared< DAZipArchiveTask_ChartItem >(zipRelateFolderPath, chartItemMgr));
-	return true;
+    auto t = std::make_shared< DAZipArchiveTask_ChartItem >(zipRelateFolderPath, chartItemMgr);
+    d_ptr->mArchive->appendTask(t);
+    return t;
 }
 
-bool DAZipArchiveThreadWrapper::appendByteLoadTask(const QString& zipRelatePath, int code)
+std::shared_ptr< DAAbstractArchiveTask > DAZipArchiveThreadWrapper::appendByteLoadTask(const QString& zipRelatePath, int code)
 {
 	if (isBusy()) {
-		return false;
+        return std::shared_ptr< DAAbstractArchiveTask >();
 	}
 	std::shared_ptr< DAZipArchiveTask_ByteArray > task = std::make_shared< DAZipArchiveTask_ByteArray >(zipRelatePath);
 	task->setCode(code);
 	d_ptr->mArchive->appendTask(task);
-	return true;
+    return task;
 }
 
-bool DAZipArchiveThreadWrapper::appendXmlLoadTask(const QString& zipRelatePath, int code)
+std::shared_ptr< DAAbstractArchiveTask > DAZipArchiveThreadWrapper::appendXmlLoadTask(const QString& zipRelatePath, int code)
 {
 	if (isBusy()) {
-		return false;
+        return std::shared_ptr< DAAbstractArchiveTask >();
 	}
 	std::shared_ptr< DAZipArchiveTask_Xml > task = std::make_shared< DAZipArchiveTask_Xml >(zipRelatePath);
 	task->setCode(code);
 	d_ptr->mArchive->appendTask(task);
-	return true;
+    return task;
 }
 
-bool DAZipArchiveThreadWrapper::appendFileLoadTask(const QString& zipRelatePath, int code)
+std::shared_ptr< DAAbstractArchiveTask > DAZipArchiveThreadWrapper::appendFileLoadTask(const QString& zipRelatePath, int code)
 {
 	if (isBusy()) {
-		return false;
+        return std::shared_ptr< DAAbstractArchiveTask >();
 	}
 	std::shared_ptr< DAZipArchiveTask_ArchiveFile > task = std::make_shared< DAZipArchiveTask_ArchiveFile >(zipRelatePath);
 	task->setCode(code);
 	d_ptr->mArchive->appendTask(task);
-	return true;
+    return task;
 }
 
-bool DAZipArchiveThreadWrapper::appendChartItemLoadTask(const QString& zipRelateFolderPath, int code)
+std::shared_ptr< DAAbstractArchiveTask > DAZipArchiveThreadWrapper::appendChartItemLoadTask(const QString& zipRelateFolderPath,
+                                                                                            int code)
 {
 	if (isBusy()) {
-		return false;
+        return std::shared_ptr< DAAbstractArchiveTask >();
 	}
 	std::shared_ptr< DAZipArchiveTask_ChartItem > task = std::make_shared< DAZipArchiveTask_ChartItem >(zipRelateFolderPath);
 	task->setCode(code);
 	d_ptr->mArchive->appendTask(task);
-	return true;
+    return task;
 }
 
 bool DAZipArchiveThreadWrapper::appendTask(const std::shared_ptr< DAAbstractArchiveTask >& task)

@@ -182,8 +182,9 @@ DAAppProject::DAAppProject(DACoreInterface* c, QObject* p) : DAProjectInterface(
 	mArchive = new DAZipArchiveThreadWrapper(this);
 	connect(mArchive, &DAZipArchiveThreadWrapper::beginSave, this, &DAAppProject::onBeginSave);
 	connect(mArchive, &DAZipArchiveThreadWrapper::beginLoad, this, &DAAppProject::onBeginLoad);
-	connect(mArchive, &DAZipArchiveThreadWrapper::beginSave, this, &DAAppProject::projectBeginSave);
-	connect(mArchive, &DAZipArchiveThreadWrapper::beginLoad, this, &DAAppProject::projectBeginLoad);
+    // 信号转发
+    connect(mArchive, &DAZipArchiveThreadWrapper::beginSave, this, &DAProjectInterface::projectBeginSave);
+    connect(mArchive, &DAZipArchiveThreadWrapper::beginLoad, this, &DAProjectInterface::projectBeginLoad);
 	connect(mArchive, &DAZipArchiveThreadWrapper::taskProgress, this, &DAAppProject::onTaskProgress);
 	connect(mArchive, &DAZipArchiveThreadWrapper::saved, this, &DAAppProject::onSaveFinish);
 	connect(mArchive, &DAZipArchiveThreadWrapper::loaded, this, &DAAppProject::onLoadFinish);
@@ -459,7 +460,9 @@ void DAAppProject::makeSaveSystemInfoTask(DAZipArchiveThreadWrapper* archive)
     QDomElement sysEle = DAXMLFileInterface::makeSysInfoElement(QStringLiteral("system"), &doc);
     root.appendChild(sysEle);
     // 创建archive任务队列
-    archive->appendXmlSaveTask(QStringLiteral("system.xml"), doc);
+    auto t = archive->appendXmlSaveTask(QStringLiteral("system.xml"), doc);
+    t->setName(tr("Save System Info"));  // cn:保存系统信息
+    t->setDescribe(tr("Save system information"));
 }
 
 /**
@@ -471,7 +474,10 @@ void DAAppProject::makeSaveWorkFlowTask(DAZipArchiveThreadWrapper* archive)
 	//! 先把涉及ui的内容保存下来,ui是无法在其它线程操作，因此需要先保存下来
 	QDomDocument workflowXml = createWorkflowUIDomDocument();
 	// 创建archive任务队列
-    archive->appendXmlSaveTask(c_workflowxml_save_filename, workflowXml);
+    auto t = archive->appendXmlSaveTask(c_workflowxml_save_filename, workflowXml);
+    t->setName(tr("Save workflow information"));  // cn:保存工作流信息
+    t->setDescribe(tr("Save workflow information, including the hierarchical relationships and rendering effects of "
+                      "workflow graphics elements"));  // cn:保存工作流信息，包括工作流图元的层级关系渲染效果
 }
 
 /**
@@ -528,7 +534,9 @@ void DAAppProject::makeSaveDataManagerTask(DAZipArchiveThreadWrapper* archive)
 	}
 	root.appendChild(dataListEle);
 	// 创建archive任务队列
-	archive->appendXmlSaveTask(QStringLiteral("data-manager.xml"), doc);
+    auto t = archive->appendXmlSaveTask(QStringLiteral("data-manager.xml"), doc);
+    t->setName(tr("Save datas information"));  // cn:保存数据信息
+    t->setDescribe(tr("Save data information, including data names and data organization formats"));  // cn:保存数据信息，包括数据的名称数据的组织形式
 }
 
 /**
@@ -543,9 +551,13 @@ void DAAppProject::makeSaveChartTask(DAZipArchiveThreadWrapper* archive)
     DAChartItemsManager chartItemMgr;
     QDomDocument chartXml = createChartsUIDomDocument(chartItemMgr);
     // 创建archive任务队列,先保存xml
-    archive->appendXmlSaveTask(c_chartsxml_save_filename, chartXml);
+    auto t1 = archive->appendXmlSaveTask(c_chartsxml_save_filename, chartXml);
+    t1->setName(tr("Save charts information"));  // cn:保存绘图的基本信息
+    t1->setDescribe(tr("Save charts information, including chart name and chart organization formats"));  // cn:保存绘图信息，包括绘图的名称绘图的组织形式
     // 创建chartitem保存任务
-    archive->appendChartItemSaveTask(c_chartitem_save_folder, chartItemMgr);
+    auto t2 = archive->appendChartItemSaveTask(c_chartitem_save_folder, chartItemMgr);
+    t2->setName(tr("Save chart items information"));      // cn:保存绘图元素的基本信息
+    t2->setDescribe(tr("Save chart items information"));  // cn:保存绘图元素的基本信息
 }
 
 QDomDocument DAAppProject::createWorkflowUIDomDocument()
@@ -615,10 +627,13 @@ void DAAppProject::onBeginLoad(const QString& path)
  * @param total 总共
  * @param pos 当前位置
  */
-void DAAppProject::onTaskProgress(int total, int pos, const std::shared_ptr< DAAbstractArchiveTask >& t)
+void DAAppProject::onTaskProgress(const std::shared_ptr< DAAbstractArchiveTask >& t, DAAbstractArchiveTask::Mode mode)
 {
-	Q_UNUSED(total);
-	Q_UNUSED(pos);
+    if (DAAbstractArchiveTask::WriteMode == mode) {
+        // 写任务不处理
+        return;
+    }
+    // 读任务
 	switch (t->getCode()) {
 	case DAAPPPROJECT_TASK_LOAD_ID_WORKFLOW: {
 		const std::shared_ptr< DAZipArchiveTask_Xml > xmlArchive = std::static_pointer_cast< DAZipArchiveTask_Xml >(t);
@@ -627,7 +642,6 @@ void DAAppProject::onTaskProgress(int total, int pos, const std::shared_ptr< DAA
         if (xmlDoc.isNull()) {
             return;
         }
-		qDebug() << "onTaskProgress:(" << total << "," << pos << "),xml=\n" << xmlDoc.toString();
 		appendWorkflowInProject(xmlDoc);
 	} break;
 	case DAAPPPROJECT_TASK_LOAD_ID_DATAMANAGER: {
@@ -699,7 +713,7 @@ void DAAppProject::onTaskProgress(int total, int pos, const std::shared_ptr< DAA
         appendChartsInProject(xmlDoc, &mChartItemManager);
     } break;
 	default: {
-		qDebug() << tr("get unknown task code:%1").arg(t->getCode());
+        qDebug() << tr("get unknown task code:%1 ,name=%2").arg(t->getCode()).arg(t->getName());
 	} break;
 	}
 }

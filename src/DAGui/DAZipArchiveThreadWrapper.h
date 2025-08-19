@@ -22,15 +22,16 @@ public:
 	// 是否繁忙
 	bool isBusy() const;
 	// 保存任务
-	bool appendByteSaveTask(const QString& zipRelatePath, const QByteArray& data);
-	bool appendXmlSaveTask(const QString& zipRelatePath, const QDomDocument& data);
-	bool appendFileSaveTask(const QString& zipRelatePath, const QString& localFilePath);
-	bool appendChartItemSaveTask(const QString& zipRelateFolderPath, DAChartItemsManager chartItemMgr);
+    std::shared_ptr< DAAbstractArchiveTask > appendByteSaveTask(const QString& zipRelatePath, const QByteArray& data);
+    std::shared_ptr< DAAbstractArchiveTask > appendXmlSaveTask(const QString& zipRelatePath, const QDomDocument& data);
+    std::shared_ptr< DAAbstractArchiveTask > appendFileSaveTask(const QString& zipRelatePath, const QString& localFilePath);
+    std::shared_ptr< DAAbstractArchiveTask > appendChartItemSaveTask(const QString& zipRelateFolderPath,
+                                                                     DAChartItemsManager chartItemMgr);
 	// 读取任务
-	bool appendByteLoadTask(const QString& zipRelatePath, int code);
-	bool appendXmlLoadTask(const QString& zipRelatePath, int code);
-	bool appendFileLoadTask(const QString& zipRelatePath, int code);
-	bool appendChartItemLoadTask(const QString& zipRelateFolderPath, int code);
+    std::shared_ptr< DAAbstractArchiveTask > appendByteLoadTask(const QString& zipRelatePath, int code);
+    std::shared_ptr< DAAbstractArchiveTask > appendXmlLoadTask(const QString& zipRelatePath, int code);
+    std::shared_ptr< DAAbstractArchiveTask > appendFileLoadTask(const QString& zipRelatePath, int code);
+    std::shared_ptr< DAAbstractArchiveTask > appendChartItemLoadTask(const QString& zipRelateFolderPath, int code);
 	// 添加任务
 	bool appendTask(const std::shared_ptr< DAAbstractArchiveTask >& task);
 public Q_SLOTS:
@@ -69,7 +70,7 @@ Q_SIGNALS:
 	 * @param total 总任务
 	 * @param pos 当前任务的位置
 	 */
-	void taskProgress(int total, int pos, std::shared_ptr< DAAbstractArchiveTask > task);
+    void taskProgress(std::shared_ptr< DAAbstractArchiveTask > task, DAAbstractArchiveTask::Mode mode);
 
 private:
 	void init();

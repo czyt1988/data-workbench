@@ -4,9 +4,9 @@
 #include <QString>
 #include <QByteArray>
 #include <QObject>
+#include "DAAbstractArchiveTask.h"
 namespace DA
 {
-class DAAbstractArchiveTask;
 /**
  * @brief 持久化的基类
  *
@@ -92,7 +92,7 @@ Q_SIGNALS:
 	 * @param total 总任务
 	 * @param pos 当前任务的位置
 	 */
-	void taskProgress(int total, int pos, std::shared_ptr< DAAbstractArchiveTask > task);
+    void taskProgress(std::shared_ptr< DAAbstractArchiveTask > task, DAAbstractArchiveTask::Mode mode);
 
 	/**
 	 * @brief 任务完成
