@@ -1,5 +1,6 @@
 #include "DAVariantTableModel.h"
 #include <QUndoStack>
+#include <QDebug>
 namespace DA
 {
 class DAVariantTableModel::PrivateData
@@ -30,10 +31,10 @@ class DAVariantTableModelSetDataCommand : public QUndoCommand
 {
 public:
 	DAVariantTableModelSetDataCommand(DAVariantTableModel* model,
-									  int row,
-									  int col,
-									  const QVariant& value,
-									  QUndoCommand* par = nullptr);
+                                      int row,
+                                      int col,
+                                      const QVariant& value,
+                                      QUndoCommand* par = nullptr);
 	void redo() override;
 	void undo() override;
 

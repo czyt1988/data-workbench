@@ -62,7 +62,7 @@ file(GLOB DA_APP_SOURCE_FILES_Dialog "${CMAKE_CURRENT_SOURCE_DIR}/Dialog/*.cpp")
 file(GLOB DA_APP_QT_UI_FILES_Dialog ${CMAKE_CURRENT_SOURCE_DIR}/Dialog/*.ui)
 file(GLOB DA_APP_QT_RC_FILES_Dialog ${CMAKE_CURRENT_SOURCE_DIR}/Dialog/*.qrc)
 
-add_executable(${DA_APP_NAME} WIN32
+add_executable(${DA_APP_NAME}
             ${DA_APP_HEADER_FILES}
             ${DA_APP_SOURCE_FILES}
             ${DA_APP_QT_UI_FILES}
@@ -80,6 +80,14 @@ add_executable(${DA_APP_NAME} WIN32
             # Global
             ${DA_GLOBAL_HEADER}
 )	
+
+# Windows 平台下设置为窗口应用程序
+if(WIN32)
+    set_target_properties(${DA_APP_NAME} PROPERTIES
+        WIN32_EXECUTABLE TRUE
+    )
+endif()
+
 # 构建APP定义的宏
 target_compile_definitions(${DA_APP_NAME} PRIVATE QT_DEPRECATED_WARNINGS)#!!!!** 注意变更 **!!!!
 
