@@ -4,6 +4,10 @@
 #include <memory>
 #include <QPluginLoader>
 #include <QTextStream>
+#ifdef Q_OS_WIN
+#include <windows.h>
+#endif
+
 namespace DA
 {
 class DAPluginOption::PrivateData
@@ -82,6 +86,14 @@ bool DAPluginOption::load(const QString& pluginPath, DACoreInterface* c)
 	}
 	d_ptr->mLib->setFileName(pluginPath);
 	if (!(d_ptr->mLib->load())) {
+#ifdef Q_OS_WIN
+		DWORD error          = GetLastError();
+		LPWSTR messageBuffer = nullptr;
+		FormatMessageW(
+			FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, nullptr, error, 0, (LPWSTR)&messageBuffer, 0, nullptr);
+		qDebug() << "System Error:" << QString::fromWCharArray(messageBuffer);
+		LocalFree(messageBuffer);
+#endif
 		qWarning() << QObject::tr("Failed to load %1 (Reason: %2)").arg(getFileName(), getErrorString());
 		return (false);
 	}

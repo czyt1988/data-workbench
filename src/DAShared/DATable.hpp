@@ -224,7 +224,7 @@ DATable< T >& DATable< T >::operator=(DATable&& other) noexcept
 template< typename T >
 bool DATable< T >::contain(int r, int c) const
 {
-    return (mData.cend() != mData.find({ r, c }));
+    return (mData.cend() != mData.find( r, c ));
 }
 
 /**
@@ -986,7 +986,7 @@ DATable< T >& DATable< T >::operator=(const da_vector_table< OtherType >& other)
     auto cc = other.column_count();
     for (auto r = 0; r < rc; ++r) {
         for (auto c = 0; c < cc; ++c) {
-            set(r, c, other[ r ][ c ]);
+            set(r, c, other(r,c));
         }
     }
     return *this;
@@ -1035,6 +1035,72 @@ std::size_t DATable< T >::erase_if__(PredFun pred)
     }
     return old_size - size();
 }
+
+////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////
+
+/**
+ * @brief 实现DATable向da_vector_table的转换
+ * @param table
+ * @param tr_fun 转换函数指针，如果不指定，默认为nullptr，直接进行赋值转换
+ * @example 下面演示把一个DATable< QVariant >转换为da_vector_table< qreal >：
+ * @code
+ * DA::DATable< QVariant > table;
+ * ...
+ * DA::da_vector_table< qreal > res =
+ *          DA::table_transfered< qreal, QVariant >(table,[](const QVariant& v) -> qreal { return v.toDouble(); });
+ * @return 转换后的结果
+ */
+template< typename T1, typename T2 >
+da_vector_table< T1 > table_transfered(const DATable< T2 >& table, std::function< T1(const T2&) > tr_fun)
+{
+    da_vector_table< T1 > res;
+    const typename DATable< T2 >::IndexPair sh = table.shape();
+    res.resize(sh.first, sh.second);
+    for (auto c = table.begin(); c != table.end(); ++c) {
+        res( c->first.first, c->first.second ) = tr_fun(c->second);
+    }
+    return res;
+}
+template< typename T1, typename T2 >
+da_vector_table< T1 > table_transfered(const DATable< T2 >& table)
+{
+    da_vector_table< T1 > res;
+    const typename DATable< T2 >::IndexPair sh = table.shape();
+    res.resize(sh.first, sh.second);
+    for (auto c = table.begin(); c != table.end(); ++c) {
+        res( c->first.first, c->first.second ) = c->second;
+    }
+    return res;
+}
+
+/**
+ * @brief 实现da_vector_table向DATable的转换
+ * @param table
+ * @param tr_fun 转换函数指针，如果不指定，默认为nullptr，直接进行赋值转换
+ * @example 下面演示把一个da_vector_table< qreal >转换为DATable< QVariant >：
+ * @code
+ * DA::da_vector_table< qreal > table;
+ * ...
+ * DA::DATable< QVariant > res = DA::table_transfered< QVariant, qreal >(table);
+ * @endcode
+ * @return
+ */
+template< typename T1, typename T2 >
+DATable< T1 > table_transfered(const da_vector_table< T2 >& table, std::function< T1(const T2&) > tr_fun)
+{
+    DATable< T1 > res;
+    auto rc = table.row_count();
+    auto cc = table.column_count();
+    for (std::size_t r = 0; r < rc; ++r) {
+        for (std::size_t c = 0; c < cc; ++c) {
+            res.set(r,c,tr_fun(table(r,c)));
+        }
+    }
+    return res;
+}
+
 
 }  // end DA
 

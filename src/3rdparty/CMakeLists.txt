@@ -7,6 +7,11 @@ project(DAWorkBench-3rdparty-build
         DESCRIPTION "DataWorkBench : 3rdparty build"
 )
 message(STATUS "CMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}")
+# 编译选项
+set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows")
+set(CMAKE_RELEASE_POSTFIX "" CACHE STRING "add a postfix, usually empty on windows")
+set(CMAKE_RELWITHDEBINFO_POSTFIX "" CACHE STRING "add a postfix, usually empty on windows")
+set(CMAKE_MINSIZEREL_POSTFIX "" CACHE STRING "add a postfix, usually empty on windows")
 ########################################################
 # 安装路径设置
 ########################################################
