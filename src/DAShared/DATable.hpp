@@ -52,8 +52,8 @@ public:
     T cell(int r, int c) const;             // 安全的元素访问，返回默认值如果不存在
     T cell(const IndexPair& i) const;   // 安全的元素访问，返回默认值如果不存在（使用索引对）
     T& operator[](const IndexPair& i);  // 下标运算符访问元素
-    const T& operator[](const IndexPair& i) const;  // 下标运算符访问元素（常量版本）
-
+    T& operator()(IndexType r, IndexType c);             // 函数调用运算符访问元素
+    const T operator()(IndexType r, IndexType c) const;  // 函数调用运算符访问元素（常量版本）
     // 修改器
     void set(const IndexPair& k, const T& v);            // 设置单元格值
     void set(IndexType row, IndexType col, const T& v);  // 设置单元格值
@@ -224,7 +224,7 @@ DATable< T >& DATable< T >::operator=(DATable&& other) noexcept
 template< typename T >
 bool DATable< T >::contain(int r, int c) const
 {
-    return (mData.cend() != mData.find( r, c ));
+    return (mData.cend() != mData.find(r, c));
 }
 
 /**
@@ -424,21 +424,37 @@ T& DATable< T >::operator[](const IndexPair& i)
 }
 
 /**
- * @brief 下标运算符访问元素（常量版本）
+ * @brief 函数调用运算符访问元素
  * @tparam T 存储的值类型
- * @param i 索引对
- * @return 元素的常量引用
+ * @param r 行索引
+ * @param c 列索引
+ * @return 元素的引用
  *
  * @code{.cpp}
- * const DA::DATable<int> table;
- * // 假设表格已有数据
- * int value = table[{0, 0}]; // 获取元素值
+ * DA::DATable<int> table;
+ * table(0, 0) = 42; // 插入或修改元素
+ * int value = table(0, 0); // 获取元素值
+ * int missing = table(1, 1); // 返回默认构造的值（0）
  * @endcode
  */
 template< typename T >
-const T& DATable< T >::operator[](const IndexPair& i) const
+T& DATable< T >::operator()(IndexType r, IndexType c)
 {
-    return mData[ i ];
+    reflashShape(std::make_pair(r, c));
+    return mData(r, c);
+}
+
+/**
+ * @brief 函数调用运算符访问元素(常量版本)
+ * @tparam T 存储的值类型
+ * @param r 行索引
+ * @param c 列索引
+ * @return 元素的常引用
+ */
+template< typename T >
+const T DATable< T >::operator()(IndexType r, IndexType c) const
+{
+    return mData(r, c);
 }
 
 /**
@@ -986,7 +1002,7 @@ DATable< T >& DATable< T >::operator=(const da_vector_table< OtherType >& other)
     auto cc = other.column_count();
     for (auto r = 0; r < rc; ++r) {
         for (auto c = 0; c < cc; ++c) {
-            set(r, c, other(r,c));
+            set(r, c, other(r, c));
         }
     }
     return *this;
@@ -1059,7 +1075,7 @@ da_vector_table< T1 > table_transfered(const DATable< T2 >& table, std::function
     const typename DATable< T2 >::IndexPair sh = table.shape();
     res.resize(sh.first, sh.second);
     for (auto c = table.begin(); c != table.end(); ++c) {
-        res( c->first.first, c->first.second ) = tr_fun(c->second);
+        res(c->first.first, c->first.second) = tr_fun(c->second);
     }
     return res;
 }
@@ -1070,7 +1086,7 @@ da_vector_table< T1 > table_transfered(const DATable< T2 >& table)
     const typename DATable< T2 >::IndexPair sh = table.shape();
     res.resize(sh.first, sh.second);
     for (auto c = table.begin(); c != table.end(); ++c) {
-        res( c->first.first, c->first.second ) = c->second;
+        res(c->first.first, c->first.second) = c->second;
     }
     return res;
 }
@@ -1095,12 +1111,11 @@ DATable< T1 > table_transfered(const da_vector_table< T2 >& table, std::function
     auto cc = table.column_count();
     for (std::size_t r = 0; r < rc; ++r) {
         for (std::size_t c = 0; c < cc; ++c) {
-            res.set(r,c,tr_fun(table(r,c)));
+            res.set(r, c, tr_fun(table(r, c)));
         }
     }
     return res;
 }
-
 
 }  // end DA
 

@@ -58,8 +58,12 @@ public:
     // 元素访问
     T& at(row_index_type r, col_index_type c);                     // 带边界检查的元素访问
     const T& at(row_index_type r, col_index_type c) const;         // 带边界检查的常量元素访问
+    T& at(key_type k);                                             // 带边界检查的元素访问
+    const T& at(key_type k) const;                                 // 带边界检查的常量元素访问
     T& operator()(row_index_type r, col_index_type c);             // 函数调用运算符访问元素
     const T operator()(row_index_type r, col_index_type c) const;  // 函数调用运算符访问元素（常量版本）
+    T& operator()(key_type k);                                     // 函数调用运算符访问元素
+    const T operator()(key_type k) const;               // 函数调用运算符访问元素（常量版本）
     T value(row_index_type r, col_index_type c) const;  // 安全的元素访问，返回默认值如果不存在
     T value(row_index_type r, col_index_type c, const T& defaultValue) const;  // 安全的元素访问，返回指定默认值如果不存在
     T& operator[](key_type k);                                                 // 函数调用运算符访问元素
@@ -83,6 +87,8 @@ public:
     size_type erase(row_index_type r, col_index_type c);        // 删除指定行列元素
 
     // 查找操作
+    iterator find(key_type k);                                      // 查找元素
+    const_iterator find(key_type k) const;                          // 查找元素（常量版本）
     iterator find(row_index_type r, col_index_type c);              // 查找元素
     const_iterator find(row_index_type r, col_index_type c) const;  // 查找元素（常量版本）
     size_type count(row_index_type r, col_index_type c) const;      // 统计元素出现次数
@@ -194,6 +200,12 @@ T& da_hash_table< T, row_index_type, col_index_type, hasher >::at(row_index_type
     return data_.at({ r, c });
 }
 
+template< typename T, typename row_index_type, typename col_index_type, typename hasher >
+T& da_hash_table< T, row_index_type, col_index_type, hasher >::at(key_type k)
+{
+    return data_.at(k);
+}
+
 /**
  * @brief 带边界检查的常量元素访问
  * @tparam T 存储的值类型
@@ -221,6 +233,12 @@ const T& da_hash_table< T, row_index_type, col_index_type, hasher >::at(row_inde
     return data_.at({ r, c });
 }
 
+template< typename T, typename row_index_type, typename col_index_type, typename hasher >
+const T& da_hash_table< T, row_index_type, col_index_type, hasher >::at(key_type k) const
+{
+    return data_.at(k);
+}
+
 /**
  * @brief 函数调用运算符访问元素
  * @tparam T 存储的值类型
@@ -243,7 +261,11 @@ T& da_hash_table< T, row_index_type, col_index_type, hasher >::operator()(row_in
 {
     return data_[ { r, c } ];
 }
-
+template< typename T, typename row_index_type, typename col_index_type, typename hasher >
+T& da_hash_table< T, row_index_type, col_index_type, hasher >::operator()(key_type k)
+{
+    return data_[ k ];
+}
 /**
  * @brief 函数调用运算符访问元素（常量版本）
  * @tparam T 存储的值类型
@@ -264,6 +286,12 @@ template< typename T, typename row_index_type, typename col_index_type, typename
 const T da_hash_table< T, row_index_type, col_index_type, hasher >::operator()(row_index_type r, col_index_type c) const
 {
     auto it = data_.find({ r, c });
+    return it != data_.end() ? it->second : T();
+}
+template< typename T, typename row_index_type, typename col_index_type, typename hasher >
+const T da_hash_table< T, row_index_type, col_index_type, hasher >::operator()(key_type k) const
+{
+    auto it = data_.find(k);
     return it != data_.end() ? it->second : T();
 }
 
@@ -612,6 +640,30 @@ typename da_hash_table< T, row_index_type, col_index_type, hasher >::size_type d
     col_index_type c)
 {
     return data_.erase({ r, c });
+}
+
+/**
+ * @brief 查找元素
+ * @param k 键值
+ * @return 指向元素的迭代器，如果未找到则返回end()
+ */
+template< typename T, typename row_index_type, typename col_index_type, typename hasher >
+typename da_hash_table< T, row_index_type, col_index_type, hasher >::iterator da_hash_table< T, row_index_type, col_index_type, hasher >::find(
+    key_type k)
+{
+    return data_.find(k);
+}
+
+/**
+ * @brief 查找元素
+ * @param k 键值
+ * @return 指向元素的迭代器，如果未找到则返回end()
+ */
+template< typename T, typename row_index_type, typename col_index_type, typename hasher >
+typename da_hash_table< T, row_index_type, col_index_type, hasher >::const_iterator da_hash_table< T, row_index_type, col_index_type, hasher >::find(
+    key_type k) const
+{
+    return data_.find(k);
 }
 
 /**
