@@ -3,7 +3,7 @@
 #include "SARibbonCategory.h"
 #include "SARibbonBar.h"
 #include "SARibbonMainWindow.h"
-#include "SARibbonPannel.h"
+#include "SARibbonPanel.h"
 namespace DA
 {
 class DARibbonAreaInterface::PrivateData
@@ -13,7 +13,7 @@ public:
     PrivateData(DARibbonAreaInterface* p);
 
 public:
-    DAUIInterface* mUiInterface { nullptr };  //不调用父类的parent，这样是为了不进行qobject_cast，加快效率
+    DAUIInterface* mUiInterface { nullptr };  // 不调用父类的parent，这样是为了不进行qobject_cast，加快效率
 };
 
 //===================================================
@@ -80,12 +80,12 @@ SARibbonCategory* DARibbonAreaInterface::getCategoryByObjectName(const QString& 
  * @param objname
  * @return 如果没找到，会返回nullptr
  */
-SARibbonPannel* DARibbonAreaInterface::getPannelByObjectName(const QString& objname) const
+SARibbonPanel* DARibbonAreaInterface::getPannelByObjectName(const QString& objname) const
 {
     QList< SARibbonCategory* > categorys = getCategorys();
     for (SARibbonCategory* category : qAsConst(categorys)) {
-        QList< SARibbonPannel* > pannels = category->pannelList();
-        for (SARibbonPannel* pannel : qAsConst(pannels)) {
+        QList< SARibbonPanel* > pannels = category->panelList();
+        for (SARibbonPanel* pannel : qAsConst(pannels)) {
             if (pannel) {
                 if (pannel->objectName() == objname) {
                     return pannel;

@@ -6,7 +6,7 @@
 #include "SARibbonBar.h"
 #include "SARibbonButtonGroupWidget.h"
 #include "SARibbonCategory.h"
-#include "SARibbonPannel.h"
+#include "SARibbonPanel.h"
 #include "SARibbonContextCategory.h"
 #include "SARibbonQuickAccessBar.h"
 #include "SARibbonButtonGroupWidget.h"
@@ -163,26 +163,26 @@ void DAAppRibbonArea::resetText()
 {
 	ribbonBar()->applicationButton()->setText(tr("File"));  // 文件
 
-	m_categoryMain->setCategoryName(tr("Main"));               // cn:主页
-	m_pannelMainFileOpt->setPannelName(tr("File Operation"));  // cn:文件操作
-	m_pannelSetting->setPannelName(tr("Config"));              // cn:配置
-	m_pannelMainWorkflowOpt->setPannelName(tr("Workflow"));    // cn:工作流
-	m_pannelMainDataOpt->setPannelName(tr("Data Operation"));  // cn:数据操作
-	m_categoryData->setCategoryName(tr("Data"));               // cn:数据
-	m_pannelDataOperate->setPannelName(tr("Data Operation"));  // cn:数据操作
+    m_categoryMain->setCategoryName(tr("Main"));              // cn:主页
+    m_pannelMainFileOpt->setPanelName(tr("File Operation"));  // cn:文件操作
+    m_pannelSetting->setPanelName(tr("Config"));              // cn:配置
+    m_pannelMainWorkflowOpt->setPanelName(tr("Workflow"));    // cn:工作流
+    m_pannelMainDataOpt->setPanelName(tr("Data Operation"));  // cn:数据操作
+    m_categoryData->setCategoryName(tr("Data"));              // cn:数据
+    m_pannelDataOperate->setPanelName(tr("Data Operation"));  // cn:数据操作
 
-	m_categoryView->setCategoryName(tr("View"));         // cn:视图
-	m_pannelViewMainView->setPannelName(tr("Display"));  // cn:视图显示
+    m_categoryView->setCategoryName(tr("View"));        // cn:视图
+    m_pannelViewMainView->setPanelName(tr("Display"));  // cn:视图显示
 
 	m_contextDataFrame->setContextTitle(tr("DataFrame"));        // cn: DataFrame
 	m_categoryDataframeOperate->setCategoryName(tr("Operate"));  // cn: 操作
-	m_pannelDataframeOperateAxes->setPannelName(tr("Axes"));     // cn: 坐标
-	m_pannelDataframeOperateDType->setPannelName(tr("Type"));    // cn: 类型
+    m_pannelDataframeOperateAxes->setPanelName(tr("Axes"));      // cn: 坐标
+    m_pannelDataframeOperateDType->setPanelName(tr("Type"));     // cn: 类型
 #if DA_ENABLE_PYTHON
 	m_comboxColumnTypesContainer->setPrefix(tr("Type"));  // cn:类型
 #endif
-	m_pannelDataframeOperateDataCleaning->setPannelName(tr("Data Cleaning"));  // cn:数据清洗
-	m_pannelDataframeOperateStatistic->setPannelName(tr("Statistic"));         // cn:统计
+    m_pannelDataframeOperateDataCleaning->setPanelName(tr("Data Cleaning"));  // cn:数据清洗
+    m_pannelDataframeOperateStatistic->setPanelName(tr("Statistic"));         // cn:统计
 
 	// 编辑标签
 	m_categoryEdit->setCategoryName(tr("Edit"));  // cn:编辑
@@ -190,18 +190,18 @@ void DAAppRibbonArea::resetText()
 	m_contextWorkflow->setContextTitle(tr("Workflow"));  // cn:工作流
 
 	m_categoryWorkflowGraphicsEdit->setCategoryName(tr("Workflow Edit"));  // cn:工作流编辑
-	m_pannelClipBoard->setPannelName(tr("ClipBoard"));                     // cn:剪切板
-	m_pannelWorkflowItem->setPannelName(tr("Item"));                       // cn:图元
-	m_pannelWorkflowText->setPannelName(tr("Text"));                       // cn:文本
-	m_pannelWorkflowBackground->setPannelName(tr("Background"));           // cn:背景
-	m_pannelWorkflowView->setPannelName(tr("View"));                       // cn:视图
+    m_pannelClipBoard->setPanelName(tr("ClipBoard"));                      // cn:剪切板
+    m_pannelWorkflowItem->setPanelName(tr("Item"));                        // cn:图元
+    m_pannelWorkflowText->setPanelName(tr("Text"));                        // cn:文本
+    m_pannelWorkflowBackground->setPanelName(tr("Background"));            // cn:背景
+    m_pannelWorkflowView->setPanelName(tr("View"));                        // cn:视图
 
 	m_categoryWorkflowRun->setCategoryName(tr("Workflow Run"));  // cn:工作流运行
-	m_pannelWorkflowRun->setPannelName(tr("Run"));               // cn:运行
-	//
-	m_categoryFigure->setCategoryName(tr("Figure"));             // cn:绘图
-	m_pannelFigureSetting->setPannelName(tr("Figure Setting"));  // cn:绘图设置
-	m_pannelChartAdd->setPannelName(tr("Add Chart"));            // cn:添加绘图
+    m_pannelWorkflowRun->setPanelName(tr("Run"));                // cn:运行
+                                                                 //
+    m_categoryFigure->setCategoryName(tr("Figure"));             // cn:绘图
+    m_pannelFigureSetting->setPanelName(tr("Figure Setting"));   // cn:绘图设置
+    m_pannelChartAdd->setPanelName(tr("Add Chart"));             // cn:添加绘图
 	// 绘图上下文标签
 	m_contextChart->setContextTitle(tr("Chart"));            // cn:绘图
 	m_categoryChartEdit->setCategoryName(tr("Chart Edit"));  // cn:绘图编辑
@@ -249,7 +249,7 @@ void DAAppRibbonArea::buildRibbonMainCategory()
 
 	//--------Common--------------------------------------------------
 
-	m_pannelMainFileOpt = new SARibbonPannel(m_categoryMain);
+    m_pannelMainFileOpt = new SARibbonPanel(m_categoryMain);
 	m_pannelMainFileOpt->setObjectName(QStringLiteral("da-ribbon-pannel-main.common"));
 	m_pannelMainFileOpt->addLargeAction(m_actions->actionOpen);
 	m_pannelMainFileOpt->addSmallAction(m_actions->actionSave);
@@ -257,34 +257,34 @@ void DAAppRibbonArea::buildRibbonMainCategory()
 	// todo:暂时屏蔽掉插入工程功能
 	//    m_pannelMainFileOpt->addSeparator();
 	//    m_pannelMainFileOpt->addSmallAction(m_actions->actionAppendProject);
-	m_categoryMain->addPannel(m_pannelMainFileOpt);
+    m_categoryMain->addPanel(m_pannelMainFileOpt);
 
 	//--------Data Opt--------------------------------------------------
-	// 这里演示通过addPannel的重载函数来创建pannel
-	m_pannelMainDataOpt = m_categoryMain->addPannel("Data Opt");
+    // 这里演示通过addPanel的重载函数来创建pannel
+    m_pannelMainDataOpt = m_categoryMain->addPanel("Data Opt");
 	;
 	m_pannelMainDataOpt->setObjectName(QStringLiteral("da-pannel-main.data-opt"));
 	m_pannelMainDataOpt->addLargeAction(m_actions->actionAddData);
 
 	// Chart Opt
-	m_pannelMainChartOpt = new SARibbonPannel(m_categoryMain);
+    m_pannelMainChartOpt = new SARibbonPanel(m_categoryMain);
 	m_pannelMainChartOpt->setObjectName(QStringLiteral("da-pannel-main.chart-opt"));
 	m_pannelMainChartOpt->addLargeAction(m_actions->actionAddFigure);
-	m_categoryMain->addPannel(m_pannelMainChartOpt);
+    m_categoryMain->addPanel(m_pannelMainChartOpt);
 	//--------Workflow Opt----------------------------------------------
-	m_pannelMainWorkflowOpt = m_categoryMain->addPannel(tr("Workflow"));
+    m_pannelMainWorkflowOpt = m_categoryMain->addPanel(tr("Workflow"));
 	m_pannelMainWorkflowOpt->setObjectName(QStringLiteral("da-pannel-main.workflow"));
 	m_pannelMainWorkflowOpt->addLargeAction(m_actions->actionWorkflowNew);
 	m_pannelMainWorkflowOpt->addLargeAction(m_actions->actionWorkflowRun);
 	m_pannelMainWorkflowOpt->addLargeAction(m_actions->actionWorkflowTerminate);
 	//--------Setting--------------------------------------------------
 
-	m_pannelSetting = new SARibbonPannel(m_categoryMain);
+    m_pannelSetting = new SARibbonPanel(m_categoryMain);
 	m_pannelSetting->setObjectName(QStringLiteral("da-pannel-main.setting"));
 	m_pannelSetting->addLargeAction(m_actions->actionSetting);
 	m_pannelSetting->addLargeAction(m_actions->actionPluginManager);
 	m_pannelSetting->addLargeAction(m_actions->actionAbout);
-	m_categoryMain->addPannel(m_pannelSetting);
+    m_categoryMain->addPanel(m_pannelSetting);
 	//----------------------------------------------------------
 
 	ribbonBar()->addCategoryPage(m_categoryMain);  // 主页
@@ -301,13 +301,13 @@ void DAAppRibbonArea::buildRibbonDataCategory()
 
 	//--------DataOperate--------------------------------------------------
 
-	m_pannelDataOperate = new SARibbonPannel(m_categoryData);
+    m_pannelDataOperate = new SARibbonPanel(m_categoryData);
 	m_pannelDataOperate->setObjectName(QStringLiteral("da-pannel-data.data-opt"));
 	m_pannelDataOperate->addLargeAction(m_actions->actionAddData);
 	m_pannelDataOperate->addLargeAction(m_actions->actionRemoveData);
 	m_pannelDataOperate->addLargeAction(m_actions->actionExportIndividualData);
 	m_pannelDataOperate->addLargeAction(m_actions->actionExportMultipleData);
-	m_categoryData->addPannel(m_pannelDataOperate);
+    m_categoryData->addPanel(m_pannelDataOperate);
 
 	//----------------------------------------------------------
 
@@ -325,7 +325,7 @@ void DAAppRibbonArea::buildRibbonViewCategory()
 
 	//--------MainView--------------------------------------------------
 
-	m_pannelViewMainView = new SARibbonPannel(m_categoryView);
+    m_pannelViewMainView = new SARibbonPanel(m_categoryView);
 	m_pannelViewMainView->setObjectName(QStringLiteral("da-pannel-view.main"));
 	m_pannelViewMainView->addLargeAction(m_actions->actionShowWorkFlowArea);
 	m_pannelViewMainView->addMediumAction(m_actions->actionShowWorkFlowManagerArea);
@@ -336,7 +336,7 @@ void DAAppRibbonArea::buildRibbonViewCategory()
 	m_pannelViewMainView->addSeparator();
 	m_pannelViewMainView->addSmallAction(m_actions->actionShowMessageLogView);
 	m_pannelViewMainView->addSmallAction(m_actions->actionShowSettingWidget);
-	m_categoryView->addPannel(m_pannelViewMainView);
+    m_categoryView->addPanel(m_pannelViewMainView);
 
 	//----------------------------------------------------------
 
@@ -360,7 +360,7 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
 	m_contextDataFrame->setObjectName(QStringLiteral("da-ribbon-contextcategory-dataframe"));
 	m_categoryDataframeOperate = m_contextDataFrame->addCategoryPage(tr("Operate"));
 	// Axes pannel
-	m_pannelDataframeOperateAxes = m_categoryDataframeOperate->addPannel(tr("Axes"));
+    m_pannelDataframeOperateAxes = m_categoryDataframeOperate->addPanel(tr("Axes"));
 	m_actions->actionInsertRow->setMenu(m_menuInsertRow);
 	m_pannelDataframeOperateAxes->addLargeAction(m_actions->actionInsertRow, QToolButton::MenuButtonPopup);
 	m_actions->actionInsertColumnRight->setMenu(m_menuInsertColumn);
@@ -372,23 +372,23 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
 	m_pannelDataframeOperateAxes->addLargeAction(m_actions->actionRenameColumns);
 	m_pannelDataframeOperateAxes->addLargeAction(m_actions->actionChangeToIndex);
 	// Type pannel
-	m_pannelDataframeOperateDType = m_categoryDataframeOperate->addPannel(tr("Type"));
+    m_pannelDataframeOperateDType = m_categoryDataframeOperate->addPanel(tr("Type"));
 #if DA_ENABLE_PYTHON
 	m_comboxColumnTypesContainer = new SARibbonLineWidgetContainer(m_pannelDataframeOperateDType);
 	m_comboxColumnTypes          = new DAPyDTypeComboBox(m_comboxColumnTypesContainer);
 	m_comboxColumnTypes->setMinimumWidth(Qt5Qt6Compat_fontMetrics_width(m_app->fontMetrics(), "timedelta64(scoll)"));  // 设置最小宽度
 	m_comboxColumnTypesContainer->setPrefix(tr("Type"));
 	m_comboxColumnTypesContainer->setWidget(m_comboxColumnTypes);
-	m_pannelDataframeOperateDType->addWidget(m_comboxColumnTypesContainer, SARibbonPannelItem::Medium);
+    m_pannelDataframeOperateDType->addWidget(m_comboxColumnTypesContainer, SARibbonPanelItem::Medium);
 #endif
 	m_castActionsButtonGroup = new SARibbonButtonGroupWidget();
 	m_castActionsButtonGroup->addAction(m_actions->actionCastToNum);
 	m_castActionsButtonGroup->addAction(m_actions->actionCastToString);
 	m_castActionsButtonGroup->addSeparator();
 	m_castActionsButtonGroup->addAction(m_actions->actionCastToDatetime);
-	m_pannelDataframeOperateDType->addWidget(m_castActionsButtonGroup, SARibbonPannelItem::Medium);
+    m_pannelDataframeOperateDType->addWidget(m_castActionsButtonGroup, SARibbonPanelItem::Medium);
 	// 数据清洗
-	m_pannelDataframeOperateDataCleaning = m_categoryDataframeOperate->addPannel(tr("Data Cleaning"));  // cn：数据清洗
+    m_pannelDataframeOperateDataCleaning = m_categoryDataframeOperate->addPanel(tr("Data Cleaning"));  // cn：数据清洗
 	m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDataFrameDropNone);
 	m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDropDuplicates);
 	m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDataFrameFillNone);
@@ -398,7 +398,7 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
 	m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDataFrameClipOutlier);
 	m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionNstdFilterOutlier);
 	// 数据
-	m_pannelDataframeOperateDataFiltering = m_categoryDataframeOperate->addPannel(tr("Data Filtering"));  // cn :数据过滤
+    m_pannelDataframeOperateDataFiltering = m_categoryDataframeOperate->addPanel(tr("Data Filtering"));  // cn :数据过滤
 	m_pannelDataframeOperateDataFiltering->addLargeAction(m_actions->actionDataFrameEvalDatas);
 	m_pannelDataframeOperateDataFiltering->addLargeAction(m_actions->actionDataFrameQueryDatas);
 	m_pannelDataframeOperateDataFiltering->addLargeAction(m_actions->actionDataFrameDataRetrieval);
@@ -406,7 +406,7 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
 	m_pannelDataframeOperateDataFiltering->addLargeAction(m_actions->actionDataFrameDataFilterColumn);
 	m_pannelDataframeOperateDataFiltering->addLargeAction(m_actions->actionDataFrameSort);
 	//  Statistic Pannel
-	m_pannelDataframeOperateStatistic = m_categoryDataframeOperate->addPannel(tr("Statistic"));  // cn：统计
+    m_pannelDataframeOperateStatistic = m_categoryDataframeOperate->addPanel(tr("Statistic"));  // cn：统计
 	m_pannelDataframeOperateStatistic->addLargeAction(m_actions->actionCreateDataDescribe);
 	m_pannelDataframeOperateStatistic->addLargeAction(m_actions->actionCreatePivotTable);
 }
@@ -422,7 +422,7 @@ void DAAppRibbonArea::buildRibbonEditCategory()
 	m_categoryEdit->setObjectName(QStringLiteral("da-ribbon-category-edit"));
 	//--------MainView--------------------------------------------------
 
-	m_pannelEditWorkflow = new SARibbonPannel(m_categoryEdit);
+    m_pannelEditWorkflow = new SARibbonPanel(m_categoryEdit);
 	m_pannelEditWorkflow->setObjectName(QStringLiteral("da-pannel-edit.workflow"));
 	m_pannelEditWorkflow->addLargeAction(m_actions->actionWorkflowNew);
 	m_pannelEditWorkflow->addSeparator();
@@ -430,11 +430,11 @@ void DAAppRibbonArea::buildRibbonEditCategory()
 	m_pannelEditWorkflow->addLargeAction(m_actions->actionWorkflowStartDrawText);
 
 	m_editShapeEditPannelWidget = new DAShapeEditPannelWidget(m_pannelEditWorkflow);
-	m_pannelEditWorkflow->addWidget(m_editShapeEditPannelWidget, SARibbonPannelItem::Large);
+    m_pannelEditWorkflow->addWidget(m_editShapeEditPannelWidget, SARibbonPanelItem::Large);
 	m_pannelEditWorkflow->addSeparator();
 	m_editFontEditPannel = new DAFontEditPannelWidget(m_pannelEditWorkflow);
-	m_pannelEditWorkflow->addWidget(m_editFontEditPannel, SARibbonPannelItem::Large);
-	m_categoryEdit->addPannel(m_pannelEditWorkflow);
+    m_pannelEditWorkflow->addWidget(m_editFontEditPannel, SARibbonPanelItem::Large);
+    m_categoryEdit->addPanel(m_pannelEditWorkflow);
 	//----------------------------------------------------------
 
 	ribbonBar()->addCategoryPage(m_categoryEdit);  // 编辑
@@ -450,14 +450,14 @@ void DAAppRibbonArea::buildRibbonFigureCategory()
 {
 	m_categoryFigure = ribbonBar()->addCategoryPage(tr("Figure"));  // cn:绘图
 	m_categoryFigure->setObjectName(QStringLiteral("da-ribbon-category-figure"));
-	m_pannelFigureSetting = new SARibbonPannel(m_categoryFigure);
+    m_pannelFigureSetting = new SARibbonPanel(m_categoryFigure);
 	m_pannelFigureSetting->setObjectName(QStringLiteral("da-pannel-figure.fig_setting"));
 	m_pannelFigureSetting->addLargeAction(m_actions->actionAddFigure);
 	m_pannelFigureSetting->addLargeAction(m_actions->actionFigureResizeChart);
 	m_pannelFigureSetting->addLargeAction(m_actions->actionFigureNewXYAxis);  // 新建坐标系
-	m_categoryFigure->addPannel(m_pannelFigureSetting);
+    m_categoryFigure->addPanel(m_pannelFigureSetting);
 
-	m_pannelChartAdd = new SARibbonPannel(m_categoryFigure);
+    m_pannelChartAdd = new SARibbonPanel(m_categoryFigure);
 	m_pannelChartAdd->setObjectName(QStringLiteral("da-pannel-figure.chart-add"));
 	m_pannelChartAdd->addLargeAction(m_actions->actionChartAddCurve);
 	m_pannelChartAdd->addLargeAction(m_actions->actionChartAddScatter2D);
@@ -470,7 +470,7 @@ void DAAppRibbonArea::buildRibbonFigureCategory()
 	m_pannelChartAdd->addLargeAction(m_actions->actionChartAddCloudMap);
 	m_pannelChartAdd->addLargeAction(m_actions->actionChartAddVectorfield);
 
-	m_categoryFigure->addPannel(m_pannelChartAdd);
+    m_categoryFigure->addPanel(m_pannelChartAdd);
 }
 
 /**
@@ -498,33 +498,33 @@ void DAAppRibbonArea::buildContextCategoryWorkflowEdit_()
 	// 条目pannel
 
 	// 剪切板
-	m_pannelClipBoard = m_categoryWorkflowGraphicsEdit->addPannel(tr("ClipBoard"));  // cn:剪切板
+    m_pannelClipBoard = m_categoryWorkflowGraphicsEdit->addPanel(tr("ClipBoard"));  // cn:剪切板
 	m_pannelClipBoard->addLargeAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionPaste));
 	m_pannelClipBoard->addSmallAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionCut));
 	m_pannelClipBoard->addSmallAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionCopy));
 	//  Item
-	m_pannelWorkflowItem = m_categoryWorkflowGraphicsEdit->addPannel(tr("Item"));
+    m_pannelWorkflowItem = m_categoryWorkflowGraphicsEdit->addPanel(tr("Item"));
 	m_pannelWorkflowItem->setObjectName(QStringLiteral("da-pannel-context.workflow.item"));
 	m_pannelWorkflowItem->addLargeAction(m_actions->actionWorkflowLinkEnable);  // 连线
 	m_workflowShapeEditPannelWidget = new DAShapeEditPannelWidget(m_pannelWorkflowItem);
-	m_pannelWorkflowItem->addWidget(m_workflowShapeEditPannelWidget, SARibbonPannelItem::Large);
+    m_pannelWorkflowItem->addWidget(m_workflowShapeEditPannelWidget, SARibbonPanelItem::Large);
 	m_pannelWorkflowItem->addSeparator();
 	m_workflowFontEditPannel = new DAFontEditPannelWidget(m_pannelWorkflowItem);
-	m_pannelWorkflowItem->addWidget(m_workflowFontEditPannel, SARibbonPannelItem::Large);
+    m_pannelWorkflowItem->addWidget(m_workflowFontEditPannel, SARibbonPanelItem::Large);
 	// Text
-	m_pannelWorkflowText = m_categoryWorkflowGraphicsEdit->addPannel(tr("Text"));
+    m_pannelWorkflowText = m_categoryWorkflowGraphicsEdit->addPanel(tr("Text"));
 	m_pannelWorkflowText->setObjectName(QStringLiteral("da-pannel-context.workflow.text"));
 	m_pannelWorkflowText->addLargeAction(m_actions->actionWorkflowStartDrawRect);
 	m_pannelWorkflowText->addLargeAction(m_actions->actionWorkflowStartDrawText);
 	// Background
-	m_pannelWorkflowBackground = m_categoryWorkflowGraphicsEdit->addPannel(tr("Background"));
+    m_pannelWorkflowBackground = m_categoryWorkflowGraphicsEdit->addPanel(tr("Background"));
 	m_pannelWorkflowBackground->setObjectName(QStringLiteral("da-pannel-context.workflow.background"));
 	m_pannelWorkflowBackground->addLargeAction(m_actions->actionWorkflowAddBackgroundPixmap);
 	m_pannelWorkflowBackground->addMediumAction(m_actions->actionWorkflowLockBackgroundPixmap);
 	m_pannelWorkflowBackground->addMediumAction(m_actions->actionWorkflowEnableItemMoveWithBackground);
 
 	// group
-	m_pannelWorkflowGroup = m_categoryWorkflowGraphicsEdit->addPannel(tr("Group"));
+    m_pannelWorkflowGroup = m_categoryWorkflowGraphicsEdit->addPanel(tr("Group"));
 	m_pannelWorkflowGroup->setObjectName(QStringLiteral("da-pannel-context.workflow.group"));
 	m_pannelWorkflowGroup->addMediumAction(m_actions->actionItemGrouping);
 	m_pannelWorkflowGroup->addMediumAction(m_actions->actionItemUngroup);
@@ -555,7 +555,7 @@ void DAAppRibbonArea::buildContextCategoryWorkflowView_()
 	m_categoryWorkflowGraphicsView = m_contextWorkflow->addCategoryPage(tr("Workflow View"));  // cn:工作流视图
 	m_categoryWorkflowGraphicsView->setObjectName(QStringLiteral("da-ribbon-category-workflow.view"));
 	// View
-	m_pannelWorkflowView = m_categoryWorkflowGraphicsView->addPannel(tr("View"));  // cn:视图
+    m_pannelWorkflowView = m_categoryWorkflowGraphicsView->addPanel(tr("View"));  // cn:视图
 	m_pannelWorkflowView->setObjectName(QStringLiteral("da-pannel-context.workflow.view"));
 	m_pannelWorkflowView->addLargeAction(m_actions->actionWorkflowViewReadOnly);
 	m_pannelWorkflowView->addLargeAction(m_actions->actionWorkflowShowGrid);
@@ -588,9 +588,9 @@ void DAAppRibbonArea::buildContextCategoryWorkflowView_()
 	m_actions->actionWorkflowViewMarker->setMenu(m_menuViewLineMarkers);
 	m_pannelWorkflowView->addLargeAction(m_actions->actionWorkflowViewMarker, QToolButton::MenuButtonPopup);
 
-	m_pannelWorkflowExport = m_categoryWorkflowGraphicsView->addPannel(tr("Export"));  // cn:导出
+    m_pannelWorkflowExport = m_categoryWorkflowGraphicsView->addPanel(tr("Export"));  // cn:导出
 	m_pannelWorkflowExport->setObjectName(QStringLiteral("da-pannel-context.workflow.export"));
-	m_pannelWorkflowExport->addMenu(mExportWorkflowSceneToImageMenu, SARibbonPannelItem::Large, QToolButton::MenuButtonPopup);
+    m_pannelWorkflowExport->addMenu(mExportWorkflowSceneToImageMenu, SARibbonPanelItem::Large, QToolButton::MenuButtonPopup);
 }
 
 /**
@@ -601,7 +601,7 @@ void DAAppRibbonArea::buildContextCategoryWorkflowRun_()
 	m_categoryWorkflowRun = m_contextWorkflow->addCategoryPage(tr("Workflow Run"));
 	m_categoryWorkflowRun->setObjectName(QStringLiteral("da-ribbon-category-workflow.run"));
 	// Run
-	m_pannelWorkflowRun = m_categoryWorkflowRun->addPannel(tr("Run"));
+    m_pannelWorkflowRun = m_categoryWorkflowRun->addPanel(tr("Run"));
 	m_pannelWorkflowRun->setObjectName(QStringLiteral("da-pannel-context.workflow.run"));
 	m_pannelWorkflowRun->addLargeAction(m_actions->actionWorkflowRun);
 	m_pannelWorkflowRun->addLargeAction(m_actions->actionWorkflowTerminate);
@@ -617,14 +617,14 @@ void DAAppRibbonArea::buildContextCategoryChart()
 	m_categoryChartEdit = m_contextChart->addCategoryPage(tr("Chart Edit"));
 	m_categoryChartEdit->setObjectName(QStringLiteral("da-ribbon-category-chart.edit"));
 	// fig edit
-	m_pannelFigureSettingForContext = new SARibbonPannel(m_categoryChartEdit);
+    m_pannelFigureSettingForContext = new SARibbonPanel(m_categoryChartEdit);
 	m_pannelFigureSettingForContext->setObjectName(QStringLiteral("da-pannel-context-chartedit.fig_setting"));
 	m_pannelFigureSettingForContext->addLargeAction(m_actions->actionAddFigure);
 	m_pannelFigureSettingForContext->addLargeAction(m_actions->actionFigureResizeChart);
 	m_pannelFigureSettingForContext->addLargeAction(m_actions->actionFigureNewXYAxis);  // 新建坐标系
-	m_categoryChartEdit->addPannel(m_pannelFigureSettingForContext);
+    m_categoryChartEdit->addPanel(m_pannelFigureSettingForContext);
 	// chart edit
-	m_pannelChartSetting = new SARibbonPannel(m_categoryChartEdit);
+    m_pannelChartSetting = new SARibbonPanel(m_categoryChartEdit);
 	m_pannelChartSetting->setObjectName(QStringLiteral("da-pannel-context-chartedit.chart_setting"));
 	// grid
 	m_pannelChartSetting->addLargeAction(m_actions->actionChartEnableGrid);
@@ -650,7 +650,7 @@ void DAAppRibbonArea::buildContextCategoryChart()
 	// legend
 	m_pannelChartSetting->addLargeAction(m_actions->actionChartEnableLegend);
 
-	m_categoryChartEdit->addPannel(m_pannelChartSetting);
+    m_categoryChartEdit->addPanel(m_pannelChartSetting);
 }
 
 void DAAppRibbonArea::buildApplicationMenu()
@@ -672,7 +672,7 @@ void DAAppRibbonArea::buildRightButtonBar()
 {
 	ribbonBar()->activeRightButtonGroup();
 	SARibbonButtonGroupWidget* rbar = ribbonBar()->rightButtonGroup();
-	rbar->addMenu(m_menuTheme);
+    rbar->addMenuAction(m_menuTheme);
 }
 
 void DAAppRibbonArea::setDockingArea(DAAppDockingArea* dock)

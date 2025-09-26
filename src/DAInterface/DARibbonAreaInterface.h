@@ -7,7 +7,7 @@
 class SARibbonMainWindow;
 class SARibbonBar;
 class SARibbonCategory;
-class SARibbonPannel;
+class SARibbonPanel;
 namespace DA
 {
 class DACoreInterface;
@@ -29,17 +29,17 @@ public:
     ~DARibbonAreaInterface();
 
 public:
-    //针对ribbon的操作
+    // 针对ribbon的操作
     SARibbonBar* ribbonBar() const;
 
-    //获取所有的标签
+    // 获取所有的标签
     QList< SARibbonCategory* > getCategorys() const;
 
-    //通过obj-name获取Category(O(n))
+    // 通过obj-name获取Category(O(n))
     SARibbonCategory* getCategoryByObjectName(const QString& objname) const;
 
-    //通过obj-name获取pannel(O(n))
-    SARibbonPannel* getPannelByObjectName(const QString& objname) const;
+    // 通过obj-name获取pannel(O(n))
+    SARibbonPanel* getPannelByObjectName(const QString& objname) const;
 };
 }  // namespace DA
 #endif  // DARIBBONAREAINTERFACE_H

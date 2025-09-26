@@ -39,7 +39,7 @@ class CDockWidget;
 // SA Ribbon
 class SARibbonBar;
 class SARibbonCategory;
-class SARibbonPannel;
+class SARibbonPanel;
 class SARibbonContextCategory;
 class SARibbonLineWidgetContainer;
 class SARibbonButtonGroupWidget;
@@ -225,7 +225,7 @@ Q_SIGNALS:
 	   @fn selectedBrush
 	   @brief 画刷选中了
 
-		这是一个通用的画刷选中信号
+        这是一个通用的画刷选中信号
 	   @param b
 	 */
 	void selectedBrush(const QBrush& b);
@@ -259,7 +259,7 @@ Q_SIGNALS:
 	/**
 	   @brief 画刷选中了
 
-		这是一个通用的画刷选中信号
+        这是一个通用的画刷选中信号
 	   @param b
 	 */
 	void selectedWorkflowItemBrush(const QBrush& b);
@@ -294,22 +294,22 @@ public:
 	//----------------------------------------------------
 	// main
 	//----------------------------------------------------
-	SARibbonCategory* m_categoryMain;         ///< 主页标签
-	SARibbonPannel* m_pannelMainFileOpt;      ///< 文件操作
-	SARibbonPannel* m_pannelMainDataOpt;      ///< 数据操作
-	SARibbonPannel* m_pannelMainChartOpt;     ///< 数据操作
-	SARibbonPannel* m_pannelMainWorkflowOpt;  ///< 工作流在main的pannel
-	SARibbonPannel* m_pannelSetting;          ///< 设定
+    SARibbonCategory* m_categoryMain;        ///< 主页标签
+    SARibbonPanel* m_pannelMainFileOpt;      ///< 文件操作
+    SARibbonPanel* m_pannelMainDataOpt;      ///< 数据操作
+    SARibbonPanel* m_pannelMainChartOpt;     ///< 数据操作
+    SARibbonPanel* m_pannelMainWorkflowOpt;  ///< 工作流在main的pannel
+    SARibbonPanel* m_pannelSetting;          ///< 设定
 	//----------------------------------------------------
 	// data
 	//----------------------------------------------------
-	SARibbonCategory* m_categoryData;     ///< 数据标签
-	SARibbonPannel* m_pannelDataOperate;  ///< 数据操作
+    SARibbonCategory* m_categoryData;    ///< 数据标签
+    SARibbonPanel* m_pannelDataOperate;  ///< 数据操作
 	//----------------------------------------------------
 	// view
 	//----------------------------------------------------
-	SARibbonCategory* m_categoryView;      ///< 视图标签
-	SARibbonPannel* m_pannelViewMainView;  ///< 主要视图操作
+    SARibbonCategory* m_categoryView;     ///< 视图标签
+    SARibbonPanel* m_pannelViewMainView;  ///< 主要视图操作
 	//----------------------------------------------------
 	// edit
 	//----------------------------------------------------
@@ -317,28 +317,28 @@ public:
 	DAFontEditPannelWidget* m_editFontEditPannel;          ///< 工作流的字体编辑器
 	DAShapeEditPannelWidget* m_editShapeEditPannelWidget;  ///< 图框编辑
 	SARibbonCategory* m_categoryEdit;                      ///< 编辑标签
-	SARibbonPannel* m_pannelEditWorkflow;                  ///< 主要编辑操作
+    SARibbonPanel* m_pannelEditWorkflow;                   ///< 主要编辑操作
 	//----------------------------------------------------
 	// figure
 	//----------------------------------------------------
-	SARibbonCategory* m_categoryFigure;     ///< 绘图标签
-	SARibbonPannel* m_pannelFigureSetting;  ///< 绘图的设置
-	SARibbonPannel* m_pannelChartAdd;       ///< 添加绘图
+    SARibbonCategory* m_categoryFigure;    ///< 绘图标签
+    SARibbonPanel* m_pannelFigureSetting;  ///< 绘图的设置
+    SARibbonPanel* m_pannelChartAdd;       ///< 添加绘图
 	//----------------------------------------------------
 	// Context - dataframe
 	//----------------------------------------------------
-	SARibbonContextCategory* m_contextDataFrame;    ///< 对应dataframe的上下文
-	SARibbonCategory* m_categoryDataframeOperate;   ///< dataframe对应的category
-	SARibbonPannel* m_pannelDataframeOperateAxes;   ///< 数据信息的编辑
-	SARibbonPannel* m_pannelDataframeOperateDType;  ///< 数据类型的编辑
+    SARibbonContextCategory* m_contextDataFrame;   ///< 对应dataframe的上下文
+    SARibbonCategory* m_categoryDataframeOperate;  ///< dataframe对应的category
+    SARibbonPanel* m_pannelDataframeOperateAxes;   ///< 数据信息的编辑
+    SARibbonPanel* m_pannelDataframeOperateDType;  ///< 数据类型的编辑
 #if DA_ENABLE_PYTHON
 	SARibbonLineWidgetContainer* m_comboxColumnTypesContainer;  ///< 列类型选择器的container
 	DAPyDTypeComboBox* m_comboxColumnTypes;                     ///< 列类型选择器
 #endif
-	SARibbonButtonGroupWidget* m_castActionsButtonGroup;    ///< 管理强制转换的action的工具栏
-	SARibbonPannel* m_pannelDataframeOperateStatistic;      ///< 统计相关操作
-	SARibbonPannel* m_pannelDataframeOperateDataCleaning;   ///< 数据清洗
-	SARibbonPannel* m_pannelDataframeOperateDataFiltering;  ///<数据过滤
+    SARibbonButtonGroupWidget* m_castActionsButtonGroup;   ///< 管理强制转换的action的工具栏
+    SARibbonPanel* m_pannelDataframeOperateStatistic;      ///< 统计相关操作
+    SARibbonPanel* m_pannelDataframeOperateDataCleaning;   ///< 数据清洗
+    SARibbonPanel* m_pannelDataframeOperateDataFiltering;  ///< 数据过滤
 	//----------------------------------------------------
 	// Context - workflow
 	//----------------------------------------------------
@@ -347,9 +347,9 @@ public:
 	// Context - workflow-view
 	//----------------------------------------------------
 	SARibbonCategory* m_categoryWorkflowGraphicsView;  ///< 工作流视图
-	SARibbonPannel* m_pannelWorkflowView;              ///< 图元视图pannel
+    SARibbonPanel* m_pannelWorkflowView;               ///< 图元视图pannel
 
-	SARibbonPannel* m_pannelWorkflowExport;  ///< 视图导出
+    SARibbonPanel* m_pannelWorkflowExport;  ///< 视图导出
 	//----------------------------------------------------
 	// Context - workflow-edit
 	//----------------------------------------------------
@@ -357,35 +357,35 @@ public:
 	DAShapeEditPannelWidget* m_workflowShapeEditPannelWidget;  ///< 图框编辑
 
 	SARibbonCategory* m_categoryWorkflowGraphicsEdit;  ///< 工作流绘图编辑
-	SARibbonPannel* m_pannelClipBoard;                 ///< 剪切板
-	SARibbonPannel* m_pannelWorkflowItem;              ///< 图元编辑
-	SARibbonPannel* m_pannelWorkflowBackground;        ///< 背景编辑
-	SARibbonPannel* m_pannelWorkflowText;              ///< 文本编辑
-	SARibbonPannel* m_pannelWorkflowGroup;             ///< 图元分组相关pannel
+    SARibbonPanel* m_pannelClipBoard;                  ///< 剪切板
+    SARibbonPanel* m_pannelWorkflowItem;               ///< 图元编辑
+    SARibbonPanel* m_pannelWorkflowBackground;         ///< 背景编辑
+    SARibbonPanel* m_pannelWorkflowText;               ///< 文本编辑
+    SARibbonPanel* m_pannelWorkflowGroup;              ///< 图元分组相关pannel
 
 	//----------------------------------------------------
 	// Context - workflow-run
 	//----------------------------------------------------
 	SARibbonCategory* m_categoryWorkflowRun;  ///< 工作流运行
-	SARibbonPannel* m_pannelWorkflowRun;      ///< 运行视图pannel
+    SARibbonPanel* m_pannelWorkflowRun;       ///< 运行视图pannel
 	//----------------------------------------------------
 	// Context - chart
 	//----------------------------------------------------
 	SARibbonContextCategory* m_contextChart;                      ///< 对应Chart的上下文
 	SARibbonCategory* m_categoryChartEdit;                        ///< Chart编辑
-	SARibbonPannel* m_pannelFigureSettingForContext;              ///< 绘图的设置
-	SARibbonPannel* m_pannelChartSetting;                         ///< 图表的设置
+    SARibbonPanel* m_pannelFigureSettingForContext;               ///< 绘图的设置
+    SARibbonPanel* m_pannelChartSetting;                          ///< 图表的设置
 	SARibbonButtonGroupWidget* m_chartGridDirActionsButtonGroup;  ///< grid的方向
 	SARibbonButtonGroupWidget* m_chartGridMinActionsButtonGroup;  ///< grid的min设置
 	QStringList m_fileReadFilters;
 	// ApplicationMenu
 	DAAppRibbonApplicationMenu* mApplicationMenu;  ///< ribbon-app menu
 	// 菜单相关
-	QMenu* mExportWorkflowSceneToImageMenu{ nullptr };  ///< scene导出为图片菜单
-	QMenu* m_menuViewLineMarkers{ nullptr };            ///< 视图标记线
-	QMenu* m_menuInsertRow{ nullptr };                  ///< 针对insertrow的action menu
-	QMenu* m_menuInsertColumn{ nullptr };               ///< 这对insertcol的action menu
-	QMenu* m_menuTheme{ nullptr };                      ///< 主题菜单
+    QMenu* mExportWorkflowSceneToImageMenu { nullptr };  ///< scene导出为图片菜单
+    QMenu* m_menuViewLineMarkers { nullptr };            ///< 视图标记线
+    QMenu* m_menuInsertRow { nullptr };                  ///< 针对insertrow的action menu
+    QMenu* m_menuInsertColumn { nullptr };               ///< 这对insertcol的action menu
+    QMenu* m_menuTheme { nullptr };                      ///< 主题菜单
 };
 }  // namespace DA
 #endif  // DAAPPRIBBONAREA_H
