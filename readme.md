@@ -21,7 +21,7 @@ CI
 
 数据工作流设计器，这个软件的设计目标是实现工作流驱动数据的ETL，集成`pandas`的数据处理能力，实现高效的交互式数据可视化以及能固定输出论文级别的图片，软件主要分三大块：`work flow`、`data`、`chart`，三大板块的关系如下图所示：
 
-![about-data-work-flow](./doc/PIC/about-data-work-flow.png)
+![about-data-work-flow](./docs/PIC/about-data-work-flow.png)
 
 软件的设计初衷：
 
