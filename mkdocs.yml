@@ -44,45 +44,47 @@ plugins:
         # - locale: en
         #   name: English
   - search
+  # 需要版本切换再打开下面
   # - git-revision-date
-  # - mike:                       # 版本切换
+  # - mike:                       
   #    version_selector: true
-  - with-pdf:
-        # 启用整站 PDF 导出
-        output_path: pdf/DAWorkBench.pdf
-        cover: true
-        cover_title: DAWorkBench 用户手册
-        cover_subtitle: 基于工作流数据的分析工具
-        cover_logo: assets/icon.png 
-        verbose: true
+  # 需要导出pdf再打开下面
+  # - with-pdf:
+  #      # 启用整站 PDF 导出
+  #      output_path: pdf/DAWorkBench.pdf
+  #      cover: true
+  #      cover_title: DAWorkBench 用户手册
+  #      cover_subtitle: 基于工作流数据的分析工具
+  #      cover_logo: assets/icon.png 
+  #      verbose: true
 
 # 导航
 nav:
     - 概述: 
         - 项目说明: zh/index.md
     - 构建指南:
-        - 构建说明: zh/build/构建说明.md
-        - 第三方库构建: zh/build/构建第三方库.md
-        - 主程序构建: zh/build/构建主程序.md
-        - 插件构建: zh/build/构建插件.md
-        - Python环境说明 : zh/build/python环境.md
-        - 构建常见错误 : zh/build/构建常见错误.md
+        - 构建说明: zh/build/build-instructions.md
+        - 第三方库构建: zh/build/third-party-build.md
+        - 主程序构建: zh/build/main-program-build.md
+        - 插件构建: zh/build/plugin-build.md
+        - Python环境说明 : zh/build/python-environment.md
+        - 构建常见错误 : zh/build/common-build-errors.md
     - 开发指南:
         - 开发规范: zh/dev-guide/coding-standard.md
-        - 可缩放图元模块: zh/dev-guide/可缩放图元模块.md
+        - 可缩放图元模块: zh/dev-guide/scalable-graphic-module.md
         - 工作流:
-            - 工作流说明: zh/dev-guide/工作流.md
-            - 工作流生命周期: zh/dev-guide/工作流生命周期.md
+            - 工作流说明: zh/dev-guide/workflow.md
+            - 工作流生命周期: zh/dev-guide/workflow-lifecycle.md
         - 插件与接口: 
-            - 插件与接口说明: zh/dev-guide/插件与接口.md
-            - 插件模块: zh/dev-guide/插件模块.md
-            - 接口模块: zh/dev-guide/接口模块.md
+            - 插件与接口说明: zh/dev-guide/plugins-interfaces.md
+            - 插件模块: zh/dev-guide/plugin-module.md
+            - 接口模块: zh/dev-guide/interface-module.md
         - 主程序开发:
-            - action添加方法 : zh/dev-guide/action添加方法.md
+            - action添加方法 : zh/dev-guide/adding-action-methods.md
     - 使用指南:
-        - 程序命令参数 : zh/use-guide/程序命令参数.md
+        - 程序命令参数 : zh/use-guide/command-line-arguments.md
     - 其它: 
-        - 基于cmake的大型工程组织和构建: zh/基于cmake的大型工程组织和构建.md
+        - 基于cmake的大型工程组织和构建: zh/large-cmake-project-guide.md
 
 markdown_extensions:
   # ===== 基础官方扩展 =====
