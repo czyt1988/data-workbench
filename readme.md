@@ -8,7 +8,7 @@
 </p>
 </div>
 
-CI
+本项目通过CI进行构建
 
 <div align="center">
 <p>
@@ -16,12 +16,13 @@ CI
 </p>
 </div>
 
+项目文档见：[https://czyt1988.github.io/data-workbench](https://czyt1988.github.io/data-workbench)
 
 # 简介
 
 数据工作流设计器，这个软件的设计目标是实现工作流驱动数据的ETL，集成`pandas`的数据处理能力，实现高效的交互式数据可视化以及能固定输出论文级别的图片，软件主要分三大块：`work flow`、`data`、`chart`，三大板块的关系如下图所示：
 
-![about-data-work-flow](./docs/PIC/about-data-work-flow.png)
+![about-data-work-flow](./docs/zh/assets/PIC/about-data-work-flow.png)
 
 软件的设计初衷：
 
@@ -36,8 +37,6 @@ python的`pandas`、`numpy`、`scipy`是数据处理的三大利器，通过pyth
 本软件的设计就是为了解决上面遇到的这三个问题，因此软件会分为三大板块：工作流解决固定流程问题，数据处理板块会把pandas的功能进行集成，chart板块能实现交互式的数据可视化，且能生成论文级别的图片
 
 随着软件的开发，工作流板块逐渐形成体系，使用了有向图作为工作流的数据描述，发现不仅仅用于接近上述数据分析的问题，针对一维仿真也能非常方便的构建出模型，为此此软件也相当于提供了一个一维仿真集成框架，可以实现类似Amesim的一维仿真
-
-# 编译
 
 ## 第三方库
 
@@ -62,122 +61,16 @@ git submodule update --init --recursive
 - pybind11
 - ordered-map
 
-## python环境配置
+## 项目文档
 
-> 用户可以不依赖Python，通过`./CMakeLists.txt`的`DA_ENABLE_PYTHON`选项禁用，此时将不会编译python相关模块（如果你仅仅只是为了使用绘图模块，可以把python环境禁用）
+项目文档见：[https://czyt1988.github.io/data-workbench](https://czyt1988.github.io/data-workbench)
 
-如果开启将自动查找系统的python环境并进行依赖，python环境有如下要求：
+## 程序截图
 
-- 至少是python3.7
-
-python环境需要安装的库：
-
-```
-pip install Loguru numpy==1.26.4 pandas scipy openpyxl chardet PyWavelets pyarrow
-```
-
-如果你的python版本小于3.8，还需额外导入
-
-```
-pip install typing_extensions
-```
-
-> 为了兼容性，numpy建议2.0以下，这里推荐使用1.26.4
->
-> Loguru主要用于进行python脚本的日志记录
-> 
-> openpyxl是pandas导入excel文件的依赖，如果没有安装，则无法导入excel文件
->
-> chardet主要用于检测字符编码
->
-> PyWavelets是进行小波分析的库
->
-> pyarrow是dataframe进行扩展数据导入的库，支持parquet（Partitioning Parquet files）和Feather
-
-python在win11操作系统下，安装package会把包安装到`用户名\AppData\Roaming\Python\Pythonxx\site-packages`下，这对于把整个python打包是不利的，因此需要在执行pip install时加上参数`--target`指定安装路径，例如：
-
-```shell
-pip install --target="../Lib/site-packages" loguru numpy==1.26.4 pandas scipy openpyxl chardet PyWavelets pyarrow
-```
-
-项目目录下已经把所有依赖放到了`requirements.txt`文件里，可以直接使用`pip install -r requirements.txt`进行安装
-
-在需要python时将引入`pybind11`库
-
-dataworkbench查找python的逻辑是：
-
-1. 先查看程序运行目录下是否存在`python-config.json`，如果有，讲读取python-config.json里的`config/interpreter`下的值，以此作为python解析器的路径,python-config.json的模板如下：
-
-```json
-{
-  "config": {
-      "interpreter": "path to python interpreter"
-    }
-}
-```
-
-> 程序安装目录可以使用`${current-app-dir}`变量替代，例如python安装在程序安装目录下，那么`${current-app-dir}`的值就是程序安装目录，如：${current-app-dir}/python311/python.exe
-
-2. 如果没有`python-config.json`文件，将使用`where python`来查找系统的python环境
-
-## 构建
-
-整个构建过程需要加载3次cmake文件
-- 首先需要编译zlib库（如果你开发环境已经有zlib，可以跳过此步骤），用cmake打开`./src/3rdparty/zlib/CMakeLists.txt`,编译完成后需要执行安装命令`install`对zlib库进行安装
-- 然后加载`./src/3rdparty/CMakeLists.txt`完成所有第三方库的编译，编译完成后需要执行安装命令`install`，否则第三步无法找到第三方库
-- 最后是`./CMakeLists.txt`完成`DataWorkbench`编译，编译完成后需要执行安装命令`install`
-- 把zlib库的zd.dll手动复制到bin目录下
-
-> 第三方库中的quazip依赖zlib，因此需要先编译zlib库，并把zd.dll复制到bin目录下
-
-第二部可以设置不构建plugin，如果不构建plugin，plugin板块可以单独构建，前提是前两步已经完成且安装好，单独构建插件需要运行`plugins/CMakeLists.txt`
-
-**第三方库构建请见**:[src/3rdparty/readme.md](./src/3rdparty/readme.md)
-
-**详细构建教程见**：[doc/how-to-build.md文档](./doc/how-to-build.md)
-
-## bin目录
-
-DA项目编译好的二进制文件统一生成到`bin{Debug/Release}_qt{$$QT_VERSION}_{MSVC/GNU}_{x64/x86}`目录下，如：使用qt5.14.2, msvc版本debug模式64位编译，将生成`bin_Debug_qt5.14.2_MSVC_x64`文件夹
-
-用户也可以自定义安装路径，需要手动调整`CMakeLists.txt`
-
-
-
-# 教程
-
-## 1.开发说明
-
-[1.开发规范](./coding-standard.md)
-
-[2.基于cmake的大型工程组织和构建](./doc/基于cmake的大型工程组织和构建.md)
-
-## 1.程序架构
-
-[1.插件与接口](./doc/zh/插件与接口.md)
-
-## 2.工作流模块
-
-[1.可缩放图元模块](./doc/zh/可缩放图元.md)
-
-[2.工作流模块](./doc/zh/工作流.md)
-
-[3.工作流生命周期](./doc/zh/工作流生命周期.md)
-
-## 3.持久化
-
-[1.工程文件结构说明](./doc/zh/工程文件结构说明.md)
-
-## 4.开发指南
-
-[1.如何添加一个action](./doc/zh/如何添加一个action.md)
-
-# 程序截图
-
-![动态演示](./doc/screenshot/screenshot1.gif)
+![动态演示](./docs/assets/screenshot/screenshot1.gif)
 
 主体界面演示
 
-![01](./doc/screenshot/01.png)
+![01](./docs/assets/screenshot/01.png)
 
-![02](./doc/screenshot/02.png)
+![02](./docs/assets/screenshot/02.png)

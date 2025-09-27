@@ -1,0 +1,19 @@
+/* 加粗并加深一级导航标题 */
+.md-nav__title,
+.md-nav__item--nested > .md-nav__link {
+  font-weight: bold !important;
+  color: var(--md-default-fg-color) !important;
+  font-size: 0.95em !important; /* 可选：稍微放大 */
+}
+
+/* 可选：鼠标悬停时更明显 */
+.md-nav__item--nested > .md-nav__link:hover {
+  color: var(--md-primary-fg-color) !important;
+}
+
+/* 如果你想让一级项和二级项有更明显的层级区分 */
+.md-nav--primary .md-nav__list > .md-nav__item--nested > .md-nav__link {
+  font-size: 1.05em !important;
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+}

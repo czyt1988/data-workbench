@@ -1,4 +1,6 @@
-﻿一个大型工程，并不会单单只包括应用自身，还有此程序抽象出来的库，这些库除了自身模块化意外，还有可能是提供给第三方用户进行插件化的开发使用的，同时工程还包含了很多第三方库
+﻿# 基于cmake的大型工程组织和构建
+
+一个大型工程，并不会单单只包括应用自身，还有此程序抽象出来的库，这些库除了自身模块化意外，还有可能是提供给第三方用户进行插件化的开发使用的，同时工程还包含了很多第三方库
 
 一个大型工程通常由如内容组成:
 
@@ -23,7 +25,7 @@
 
 下面根据我的经验，介绍一下如何通过`cmake`组织和构建一个大型的工程，适合大型工业软件的构建，构建出来的软件能给第三方用户方便的进行二次开发，同时，结合 `git` 的 `submodule` 管理第三方库，让整个工程变得更为简洁明了
 
-# 工程的目录结构
+## 工程的目录结构
 
 工程的顶层文件夹应该包含如下几个文件夹：
 
@@ -39,9 +41,9 @@
 
 因此一个相对标准的源码目录如下图所示
 
-![标准的源码目录](./PIC/standard-source-dir.png)
+![标准的源码目录](../assets/PIC/standard-source-dir.png)
 
-# 第三方库的管理
+## 第三方库的管理
 
 3rdparty 文件夹用来放置所有的第三方库的源代码，通常来讲，第三方库源代码不应该下载下来，放进 3rdparty 文件夹，而是通过 git 的 `submodule` 添加进去，通过 `submodule` 方式添加进去的源代码，可以随时更新到 github 上的最新版本，也可以指定这个第三方库是某个固定分支或者是某个 tag
 
@@ -69,16 +71,17 @@ git submodule add https://github.com/czyt1988/SARibbon.git ./src/3rdparty/SARibb
 
 
 连同第三方库一起发布的开发环境bin目录
-![完整开发环境](./PIC/cmake-after-install.png)
+
+![完整开发环境](../assets/PIC/cmake-after-install.png)
 
 连同第三方库一起发布的开发环境lib目录
-![完整开发环境2](./PIC/cmake-after-install2.png)
+![完整开发环境2](../assets/PIC/cmake-after-install2.png)
 
 作为第三方开发者，这个完整开发环境里面包含了所有的库，第三方开发者只需知道安装目录，就可以加载所有的依赖
 
 下面就介绍一下，如何通过cmake实现这种大型工程的组织
 
-# 大型工程的cmake写法
+## 大型工程的cmake写法
 
 这里不会教你如何写cmake，而是着重讲讲大型工程的cmake要注意事项，工程顶层会有个`CMakeLists.txt`文件，这个文件定义了整个工程的信息、可选项、总体的安装步骤等，实现整个工程的构建，顶层的`CMakeLists.txt`通过`add_subdirectory`添加子目录，一般会添加src目录，以我自己的一个[仿真集成平台data-workbench举例](https://github.com/czyt1988/data-workbench)，介绍如何通过cmake组织一个大型的工程
 
@@ -108,7 +111,7 @@ data-workbench
 
 `cmake`的`install`用法是比较固定的，按照一个例子或者模板非常简单的就能实现自己的安装和部署，针对大型系统一个多组件的安装是必须的，类似于QT的包引入，能进行模块的划分，不需要整个QT所有库都一起引进工程里面，针对自己的大型系统也应该实现类似的引入，因此，下面将着重介绍如何进行模块化的`install`
 
-## 规范的安装路径
+### 规范的安装路径
 
 使用规范的安装路径，能让你工程的库以及第三方库安装在同一个目录下，这样你的工程就很容易被第三方使用者集成起来进行二次开发，因此，安装路径尽量使用规范化的安装路径，而不是过于自由的进行定制，一般规范化的安装路径如下：
 
@@ -119,7 +122,7 @@ data-workbench
 
 常见的cmake安装路径下的文件夹如图所示
 
-![](./PIC/cmake-standard-install-dir.png)
+![](../assets/PIC/cmake-standard-install-dir.png)
 
 cmake中提供了GNUInstallDirs来获取这些规范的路径命名，你可以通过`include(GNUInstallDirs)`导入，就可以使用：
 
@@ -161,11 +164,11 @@ lib
        |-SARibbonBarTargets-debug.cmake
 ```
 
-## install命令
+### install命令
 
 cmake的install是一组命令，有多个功能
 
-### 复制文件`install(FILES)`&`install(DIRECTORY)`
+#### 复制文件`install(FILES)`&`install(DIRECTORY)`
 
 最简单的就是拷贝，包括`install(FILES)`,`install(DIRECTORY)`这两个都是拷贝用的，一个拷贝文件，一个拷贝目录
 
@@ -179,7 +182,7 @@ install(FILES
 )
 ```
 
-### 生成cmake目标文件`install(TARGETS)`&`install(EXPORT)`
+#### 生成cmake目标文件`install(TARGETS)`&`install(EXPORT)`
 
 `install(TARGETS)`&`install(EXPORT)`这两个命令是要配合一起用，用来生成cmake目标文件，cmake目标文件描述了整个工程所有的依赖内容，最终生成`{LibName}Targets.cmake`和`{LibName}Targets-debug.cmake`文件
 
@@ -211,7 +214,7 @@ target_include_directories(${SARIBBON_LIB_NAME} PUBLIC
 )
 ```
 
-### 生成config文件`configure_package_config_file`
+#### 生成config文件`configure_package_config_file`
 
 cmake的find_package函数不是加载`${LIB_NAME}Targets.cmake`，而是加载`{LibName}Config.cmake`文件，`{LibName}Config.cmake`文件的生成，需要用到`configure_package_config_file`函数，一般还会配合`write_basic_package_version_file`,这两个函数在`CMakePackageConfigHelpers`里面，需要先引入
 
@@ -270,7 +273,7 @@ endmacro()
 
 `@PACKAGE_INIT@`相当于提供了一个宏函数和一个变量，宏函数为`set_and_check`，用于检测文件是否存在，变量为`PACKAGE_PREFIX_DIR`，用于指定工程的绝对安装路径，用过这个变量可以直接指到安装路径的顶层目录
 
-## 单一模块的install写法
+### 单一模块的install写法
 
 如果你作为一个库开发者，这个库只有一个模块，那么写法相对固定，根据上面的介绍，单一模块的install写法基本就是如下步骤：
 
@@ -360,7 +363,7 @@ set(${YOUR_LIB_NAME}_DIR "your-lib-install-dir/lib/cmake")
 find_package(${YOUR_LIB_NAME})
 ```
 
-## 多模块的install写法
+### 多模块的install写法
 
 上面介绍了单一模块的写法，多模块有一点区别
 
@@ -540,7 +543,7 @@ install(FILES
 
 最终子模块的Config.cmake和包的Config.cmake都在lib/cmake/${PROJECT_NAME}
 
-# 工程的组织
+## 工程的组织
 
 至此，单模块和多模块的安装都已介绍完成，大型工程的组织和安装就是这两者的组合
 
@@ -606,11 +609,11 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/${my_install_dir_name}")
 - 定义工程名称
 - 做全局的编译设置，如c++版本要求，编译环境的POSTFIX设置
 - 通过`add_subdirectory`完成整个工程的组织
-- 工程模块化的安装（见[多模块的install写法](#多模块的install写法)）
+- 工程模块化的安装（见多模块的install写法）
 - 工程的完整安装
 
-# 第三方用户引入的方式
+## 第三方用户引入的方式
 
 对于第三方插件开发者来说，首先需要clone你的工程，并进行编译，先编译第三方库，并进行安装（install），再编译工程，并进行安装（install）,这时候，第三方开发者就可以有一个完整的开发环境了
 
-![完整开发环境2](./PIC/cmake-after-install2.png)
+![完整开发环境2](../assets/PIC/cmake-after-install2.png)

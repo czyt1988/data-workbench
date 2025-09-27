@@ -1,4 +1,6 @@
-# 命名规则
+# 开发规范
+
+## 命名规则
 
 原则上，全局属性变量以下划线命名，其他都以驼峰命名
 
@@ -110,7 +112,7 @@ public:
 };
 ```
 
-# 注释规范
+## 注释规范
 
 注释遵循`doxygen`注释规则
 
@@ -225,18 +227,18 @@ int DAAbstractNode::getInputNodesCount() const
 
 包括功能的调整，禁止使用注释而应该使用宏
 
-# 编码禁止列表
+## 编码禁止列表
 
 - 禁止头文件中使用`using namespace`
 - 基类如果用于继承，析构函数必须使用`virtual`修饰符
 - 库导出类禁止继承于库的模板类，例如`dllexport class xx : public QList<QColor>`，这种情况在一些编译器会导致符号冲突，且如果出现虚函数，基类析构函数没有虚函数会导致内存泄漏，如果要继承模板类，此类也应该为模板类
 
 
-# 语法规范性条例
+## 语法规范性条例
 
 下面这些内容是涉及一些语法相关的规范和条例，通用规范条例常见effective cpp和effective modern cpp
 
-## 用异常而不是用std::optional
+### 用异常而不是用std::optional
 
 早期c++规范都不推荐使用异常，例如谷歌的条款，而是推荐使用错误码，现代C++中，更为推荐使用异常，主要有如下原因：
 
@@ -246,7 +248,7 @@ int DAAbstractNode::getInputNodesCount() const
 - 如果使用了异常，开发过程要注意处理，尤其和一些不使用异常的库混用的时候，例如Qt
 - 一些科学计算类、io操作类的库建议使用异常
 
-## 在命名空间中的类进行操作符重载时，重载函数也应该定义在该命名空间中
+### 在命名空间中的类进行操作符重载时，重载函数也应该定义在该命名空间中
 
 提供使用ADL发现操作符的能力,编译器首先在当前作用域以及包含该函数或操作符的作用域中查找
 
@@ -276,9 +278,9 @@ class DANodeLinkPoint
 bool operator==(const DA::DANodeLinkPoint& a, const DA::DANodeLinkPoint& b);
 ```
 
-# Qt编程注意事项
+## Qt编程注意事项
 
-## 不同屏幕缩放比例下QPixmap绘制问题
+### 不同屏幕缩放比例下QPixmap绘制问题
 
 在不同屏幕缩放比例下，QPixmap的长宽高尺寸是不一样的
 
@@ -334,7 +336,7 @@ void xxx::paintBody(QPainter* painter,
 }
 ```
 
-## 永远不要在线程中直接操作GUI控件
+### 永远不要在线程中直接操作GUI控件
 
 如果要在线程中操作GUI控件，那么必须使用`QMetaObject::invokeMethod()`或者通过信号槽机制来完成。
 
@@ -352,7 +354,7 @@ QtConcurrent::run([this] {//this是当前窗口的指正，为了最后进行刷
     });
 ```
 
-## 继承QObject的类，不要忘记加上Q_OBJECT宏
+### 继承QObject的类，不要忘记加上Q_OBJECT宏
 
 如果你的类继承了QObject，不要忘记加上Q_OBJECT宏，即使你没有使用信号和槽，你也要加上这个宏，否则你会遇到一些奇怪的问题
 

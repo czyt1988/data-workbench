@@ -17,6 +17,9 @@ tmp
 #翻译文件暂时不追踪
 *.qm
 
+# 忽略MkDocs生成的文件
+site
+
 # vscode 的隐藏文件
 /.vscode
 
