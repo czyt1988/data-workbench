@@ -1,7 +1,6 @@
 mkdocs
 mkdocs-material
 mkdocs-static-i18n
-mkdocs-git-revision-date-localized
 mkdocs-with-pdf
 # 如果以后上多版本再放开
 # mike==2.1.0
