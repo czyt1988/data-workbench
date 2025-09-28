@@ -1060,7 +1060,8 @@ std::size_t DATable< T >::erase_if__(PredFun pred)
  * @brief 实现DATable向da_vector_table的转换
  * @param table
  * @param tr_fun 转换函数指针，如果不指定，默认为nullptr，直接进行赋值转换
- * @example 下面演示把一个DATable< QVariant >转换为da_vector_table< qreal >：
+ * 
+ * 下面演示把一个DATable< QVariant >转换为da_vector_table< qreal >：
  * @code
  * DA::DATable< QVariant > table;
  * ...
@@ -1095,7 +1096,8 @@ da_vector_table< T1 > table_transfered(const DATable< T2 >& table)
  * @brief 实现da_vector_table向DATable的转换
  * @param table
  * @param tr_fun 转换函数指针，如果不指定，默认为nullptr，直接进行赋值转换
- * @example 下面演示把一个da_vector_table< qreal >转换为DATable< QVariant >：
+ * 
+ * 下面演示把一个da_vector_table< qreal >转换为DATable< QVariant >：
  * @code
  * DA::da_vector_table< qreal > table;
  * ...

@@ -340,7 +340,7 @@ bool DAZipArchive::write(const QString& relatePath, const QByteArray& byte)
  * - **分块策略**: 文件大小超过chunk_mb MB时启用分块写入，每次读取chunk_mb MB数据以减少内存峰值
  * - **元数据保留**: 使用原文件的修改时间和权限信息（通过QuaZipNewInfo实现）
  *
- * @example 基本用法示例
+ * 基本用法示例
  * @code
  * QuaZip zip("archive.zip");
  * zip.open(QuaZip::mdCreate); // 必须确保zip已打开
@@ -881,7 +881,7 @@ bool DAZipArchive::compressDirectory(const QString& folderPath, QuaZip* zip, con
  * - **分块策略**: 文件大小超过chunk_mb MB时启用分块写入，每次读取chunk_mb MB数据以减少内存峰值
  * - **元数据保留**: 使用原文件的修改时间和权限信息（通过QuaZipNewInfo实现）
  *
- * @example 基本用法示例
+ * 基本用法示例
  * @code
  * QuaZip zip("archive.zip");
  * zip.open(QuaZip::mdCreate); // 必须确保zip已打开

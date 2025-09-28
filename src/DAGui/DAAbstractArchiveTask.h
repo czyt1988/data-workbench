@@ -33,7 +33,8 @@ public:
      * @param mode 写或读模式
      * @return 任务执行成功失败的返回
      * @note 注意任务的执行是在别的线程中，不要在任务中操作ui
-     * @example 示例
+     * 
+     * 示例
      * @code
      *bool DAZipArchiveTask_ByteArray::exec(DAAbstractArchive* archive, DAAbstractArchiveTask::Mode mode)
      *{

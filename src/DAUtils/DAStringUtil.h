@@ -61,9 +61,7 @@ DA_STRING_CAST_H(std::wstring)
  * end 迭代器范围的结束。
  * @param split 用于连接元素的分隔符，默认为";"。
  * @return 返回一个QString，包含所有元素，元素之间用分隔符连接。
-
- * *
- * @example
+ * 
  * @code
  * std::vector<int> vec = {1, 2, 3, 4, 5};
  * QString str = vectorToString(vec.begin(),
@@ -103,9 +101,6 @@ QString vectorToString(Ite begin, Ite end, const QString& split = ";")
  * @param split 用于分割字符串的分隔符，默认为";"。
  * @return 返回一个std::vector<T>，包含所有转换后的元素。
  *
-
- * *
- * @example
  * @code
  * int stringToInt(const QString& str) { return str.toInt(); }
  *

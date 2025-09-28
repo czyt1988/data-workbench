@@ -21,6 +21,7 @@ tmp
 
 # 忽略MkDocs生成的文件
 site
+site-doxygen
 
 # vscode 的隐藏文件
 /.vscode

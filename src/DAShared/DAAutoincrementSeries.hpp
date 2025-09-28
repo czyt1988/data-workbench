@@ -8,7 +8,7 @@ namespace DA
  * @brief 这是描述等步长自增序列的类，包含了基础值和步长，可以把它当做一个数组调用
  *
  * 如：
- * @example
+ * 
  * @code
  * DAAutoincrementSeries<double> x(0,1);//等价于DAAutoincrementSeries<double> x;
  * double v = x[1000];//等价于x.at(1000)
@@ -132,7 +132,7 @@ T DAAutoincrementSeries< T >::operator[](size_t index) const
 /**
  * @brief 生成序列
  *
- * @example 例如：
+ * 例如：
  *
  * @code
  *

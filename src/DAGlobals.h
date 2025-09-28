@@ -275,7 +275,6 @@ uint qHash(const std::shared_ptr< T >& ptr, uint seed = 0)
 /**
  * @def 自动注册元类型，在cpp文件中使用，避免在头文件中使用
  * 
- * @example
  * MyClass.cpp
  * @code
  * DA_AUTO_REGISTER_META_TYPE(MyClass)

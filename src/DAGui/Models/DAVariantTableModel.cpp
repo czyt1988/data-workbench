@@ -233,7 +233,8 @@ void DAVariantTableModel::clearTable()
 
 /**
    @brief 注册显示函数，把QVariant转换为文本显示出来
-   @example 示例：
+   
+   示例：
    @code
    model->registDisplayFun([](const QVariant& v) -> QString {
         return QString::number(v.toDouble(), 'f');

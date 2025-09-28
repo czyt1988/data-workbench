@@ -35,8 +35,7 @@ public:
 	virtual bool loadFromXml(const QDomElement* parentElement, const QVersionNumber& ver)                  = 0;
 
 public:
-	/// @defgroup POD类型 这是POD类型的xml保存
-	/// @{
+
 	DAXMLFILEINTERFACE_TYPE_MAKE_H(short)
 	DAXMLFILEINTERFACE_TYPE_MAKE_H(unsigned short)
 	DAXMLFILEINTERFACE_TYPE_MAKE_H(int)
@@ -48,12 +47,7 @@ public:
 	DAXMLFILEINTERFACE_TYPE_MAKE_H(double)
 	DAXMLFILEINTERFACE_TYPE_MAKE_H(float)
 	DAXMLFILEINTERFACE_TYPE_MAKE_H(std::string)
-	/// @}
 
-	/// @defgroup qt类型 这是qt类型的xml保存
-	/// static QDomElement makeElement(const pod_type& v, const QString& tagName, QDomDocument* doc);
-	/// static bool loadElement(pod_type& p, const QDomElement* ele);
-	/// @{
 	// 标准保存—— QString
 	DAXMLFILEINTERFACE_TYPE_MAKE_H(QString)
 	DAXMLFILEINTERFACE_TYPE_MAKE_H(QColor)
@@ -66,19 +60,17 @@ public:
 	DAXMLFILEINTERFACE_TYPE_MAKE_H(QFont)
 	DAXMLFILEINTERFACE_TYPE_MAKE_H(QVector3D)
 	DAXMLFILEINTERFACE_TYPE_MAKE_H(QVariant)
-	/// @}
 
-	/// @defgroup stl类型 这是针对stl类型的xml保存
-	/// @{
+
+	// stl类型 这是针对stl类型的xml保存
 	template< typename std_container_like >
 	static QDomElement makeElement(const std_container_like& v, const QString& tagName, QDomDocument* doc);
 	template< typename std_container_like >
 	static bool loadElement(std_container_like& v, const QDomElement* ele);
-	///@}
 
-    /// @defgroup 系统信息保存到xml
+
+    // 系统信息保存到xml
     static QDomElement makeSysInfoElement(const QString& tagName, QDomDocument* doc);
-    ///@}
 
     // 在parent下，插入一个tag，tag下包含文字text
     static void appendElementWithText(QDomElement& parent, const QString& tagName, const QString& text, QDomDocument* doc);
