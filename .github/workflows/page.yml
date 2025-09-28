@@ -37,7 +37,7 @@ jobs:
           pip install -r requirements-docs.txt   # 只装文档依赖，见下方
 
       - name: Build site
-        run: mkdocs build
+        run: mkdocs build --clean
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
