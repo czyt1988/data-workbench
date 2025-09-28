@@ -2,10 +2,10 @@ site_name: DAWorkBench
 site_author: 'Chen ZongYan'
 site_description: '基于工作流数据的分析工具'
 use_directory_urls: true #显示定义use_directory_urls=true发现在github pages自动生成的文档的超链接会带有.md后缀
+
 # 主题
 theme:
   name: material
-  # custom_dir: docs/overrides
   logo: assets/icon.png
   favicon: assets/icon.ico
   language: zh
@@ -19,7 +19,6 @@ theme:
         icon: material/brightness-7
         name: 切换深色
   features:
-    # - navigation.tabs  # 顶部横向标签式一级导航
     - navigation.sections # 侧边栏章节可折叠
     - navigation.top # 右下角“回到顶部”按钮
     - navigation.path # 顶部面包屑导航条
@@ -32,8 +31,6 @@ theme:
     - search.highlight # 点击结果后正文高亮匹配关键词
     - search.share # 支持复制带关键词的搜索链接
     - toc.follow # 滚动时自动跟随当前章节
-  #extra_css:
-  #  - stylesheets/extra.css
 
 plugins:
   - i18n:
@@ -101,10 +98,14 @@ markdown_extensions:
   - nl2br                # 换行直接转 <br>，不用末尾再空两格
   - admonition          # 开启 !!! 语法
   - pymdownx.highlight:
-      anchor_linenums: true   # 行号可点击跳转
-      linenums: true          # 默认带行号（可单块覆盖）
+      linenums: true
+      linenums_style: table
   - pymdownx.superfences:
-      custom_fences:          # 让代码块也能嵌套 admonition
+      custom_fences:
         - name: mermaid
           class: mermaid
           format: !!python/name:pymdownx.superfences.fence_code_format
+
+# 添加额外的 CSS 文件
+extra_css:
+  - stylesheets/extra.css
