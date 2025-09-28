@@ -1,7 +1,7 @@
 site_name: DAWorkBench
 site_author: 'Chen ZongYan'
 site_description: '基于工作流数据的分析工具'
-use_directory_urls: false #显示定义use_directory_urls=true发现在github pages自动生成的文档的超链接会带有.md后缀
+use_directory_urls: true #显示定义use_directory_urls=true发现在github pages自动生成的文档的超链接会带有.md后缀
 # 主题
 theme:
   name: material

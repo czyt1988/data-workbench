@@ -1,5 +1,7 @@
 ﻿bin_*
 build*
+# 针对文档添加否定规则
+!docs/zh/build
 *.user
 *.autosave
 *.dll
