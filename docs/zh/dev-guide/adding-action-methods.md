@@ -23,77 +23,77 @@ DAWorkBench的所有内置action位于`APP/DAAppActions`类中，`DAAppActions`�
 
 1. `APP/DAAppActions`类的头文件中定义action
 
-```cpp
-QAction* actionOpen; ///< 打开
-```
+    ```cpp
+    QAction* actionOpen; ///< 打开
+    ```
 
 2. `APP/DAAppActions`类的源文件中初始化action
 
-```cpp
-void DAAppActions::buildMainAction()
-{
-    ...
-    actionOpen  = createAction("actionOpen", ":/app/bright/Icon/file.svg");
-    ...
-}
+    ```cpp
+    void DAAppActions::buildMainAction()
+    {
+        ...
+        actionOpen  = createAction("actionOpen", ":/app/bright/Icon/file.svg");
+        ...
+    }
 
-void DAAppActions::retranslateUi()
-{
-    ...
-	actionOpen->setText(tr("Open"));                     // cn:打开
-	actionOpen->setToolTip(tr("Open file or project"));  // cn:打开文件或项目
-    ...
-}
-```
+    void DAAppActions::retranslateUi()
+    {
+        ...
+        actionOpen->setText(tr("Open"));                     // cn:打开
+        actionOpen->setToolTip(tr("Open file or project"));  // cn:打开文件或项目
+        ...
+    }
+    ```
 
-!!! note "注意"
-    action所有文字相关的操作都放到retranslateUi()函数中，这样可以根据语言进行翻译
+    !!! note "注意"
+        action所有文字相关的操作都放到retranslateUi()函数中，这样可以根据语言进行翻译
 
 3. 在`APP/DAAppRibbonArea`类的源文件中构建action对应的界面
 
-```cpp
-/**
- * @brief 构建主页标签
- * 主页的category objname = da-ribbon-category-main
- */
-void DAAppRibbonArea::buildRibbonMainCategory(){
-    ...
-    m_pannelMainFileOpt = new SARibbonPannel(m_categoryMain);
-	m_pannelMainFileOpt->setObjectName(QStringLiteral("da-ribbon-pannel-main.common"));
-	m_pannelMainFileOpt->addLargeAction(m_actions->actionOpen);
-    ...
-}
-```
+    ```cpp
+    /**
+    * @brief 构建主页标签
+    * 主页的category objname = da-ribbon-category-main
+    */
+    void DAAppRibbonArea::buildRibbonMainCategory(){
+        ...
+        m_pannelMainFileOpt = new SARibbonPannel(m_categoryMain);
+        m_pannelMainFileOpt->setObjectName(QStringLiteral("da-ribbon-pannel-main.common"));
+        m_pannelMainFileOpt->addLargeAction(m_actions->actionOpen);
+        ...
+    }
+    ```
 
 4. 在`APP/DAAppController`类中绑定action的槽函数
 
-APP/DAAppController.h:
+    APP/DAAppController.h:
 
-```cpp
-/**
- * @brief 控制层负责逻辑的对接
- */
-class DAAppController : public QObject
-{
-	Q_OBJECT
-    ...
-public Q_SLOTS:
-	// 打开文件
-	void open();
-};
-```
+    ```cpp
+    /**
+    * @brief 控制层负责逻辑的对接
+    */
+    class DAAppController : public QObject
+    {
+        Q_OBJECT
+        ...
+    public Q_SLOTS:
+        // 打开文件
+        void open();
+    };
+    ```
 
-APP/DAAppController.cpp:
+    APP/DAAppController.cpp:
 
-```cpp
-/**
- * @brief 基本绑定
- * @note 在setDockAreaInterface函数中还有很多绑定操作
- */
-void DAAppController::initConnection()
-{
-	...
-    connect(mActions->actionOpen, &QAction::triggered, this, &DAAppController::open)
-    ...
-}
-```
+    ```cpp
+    /**
+    * @brief 基本绑定
+    * @note 在setDockAreaInterface函数中还有很多绑定操作
+    */
+    void DAAppController::initConnection()
+    {
+        ...
+        connect(mActions->actionOpen, &QAction::triggered, this, &DAAppController::open)
+        ...
+    }
+    ```

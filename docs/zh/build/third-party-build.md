@@ -14,15 +14,15 @@ src\3rdparty\CMakeLists.txt
 
 1. 打开Qt Creator，文件->打开文件或项目（`Ctrl+O`），选择`src/3rdparty/CMakeLists.txt`文件
 
-![](../../assets/PIC/build-3rdparty-cmake-qtc-01.png)
+    ![build-3rdparty-cmake-qtc](../../assets/PIC/build-3rdparty-cmake-qtc-01.png)
 
 2. 切换到项目模式（`Ctrl+5`）,Build步骤选择all和install
 
-![](../../assets/PIC/build-3rdparty-cmake-qtc-02.png)
+    ![build-3rdparty-cmake-qtc](../../assets/PIC/build-3rdparty-cmake-qtc-02.png)
 
 3. 点击运行（`Ctrl+R`）进行编译和安装
 
-![](../../assets/PIC/build-3rdparty-cmake-qtc-03.png)
+    ![build-3rdparty-cmake-qtc](../../assets/PIC/build-3rdparty-cmake-qtc-03.png)
 
 编译完成后你能看到`bin_qt{version}_{MSVC/GNU}_x{64/32}`的安装目录，假如是用qt6.4+msvc,将生成`bin_qt6.4.0_MSVC_x64`这样的目录
 

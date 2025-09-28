@@ -6,15 +6,22 @@
 
 这里介绍如何使用Qt Creator使用cmake构建主程序
 
-1. 打开Qt Creator，文件->打开文件或项目（`Ctrl+O`），选择`CMakeLists.txt`(dataworkbench顶层目录下的cmake)文件
+### 1. 打开项目
 
-![](../../assets/PIC/build-daworkbench-cmake-qtc-01.png)
+打开Qt Creator，文件->打开文件或项目（`Ctrl+O`），选择`CMakeLists.txt`(dataworkbench顶层目录下的cmake)文件
 
-2. 切换到项目模式（`Ctrl+5`）,Build步骤选择all，如果不安装，可不勾选install
+    ![build-daworkbench-cmake-qtc](../../assets/PIC/build-daworkbench-cmake-qtc-01.png)
 
-![](../../assets/PIC/build-daworkbench-cmake-qtc-02.png)
+### 2. 选择构建模式
 
-3. 设置第三方库的安装路径
+切换到项目模式（`Ctrl+5`）,Build步骤选择all，如果不安装，可不勾选install
+
+    ![build-daworkbench-cmake-qtc](../../assets/PIC/build-daworkbench-cmake-qtc-02.png)
+
+### 3. 设置第三方库的安装路径
+
+!!! info "提示"
+    如果你没有改动安装路径，那么这一步可省略
 
 `data-workbench`的`./CMakeLists.txt`文件已经设置了第三方库路径，如果你在编译过程中没有调整第三方库的安装路径，那么在编译过程中你无需设置，如果调整了第三方库的安装路径，那么在编译过程中需要设置到你第三库的位置
 
@@ -45,4 +52,6 @@ set(qt${QT_VERSION_MAJOR}advanceddocking_DIR  ${DA_INSTALL_LIB_CMAKE_PATH}/qt${Q
 message(STATUS "qt${QT_VERSION_MAJOR}advanceddocking_DIR=${qt${QT_VERSION_MAJOR}advanceddocking_DIR}")
 ```
 
-3. 点击运行（`Ctrl+R`）进行编译和安装
+### 4. 编译和安装
+
+点击运行（`Ctrl+R`）进行编译和安装

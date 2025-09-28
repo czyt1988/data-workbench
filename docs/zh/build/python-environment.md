@@ -48,14 +48,14 @@ dataworkbench查找python的逻辑是：
 
 1. 先查看程序运行目录下是否存在`python-config.json`，如果有，讲读取python-config.json里的`config/interpreter`下的值，以此作为python解析器的路径,python-config.json的模板如下：
 
-```json
-{
-  "config": {
-      "interpreter": "path to python interpreter"
-    }
-}
-```
+  ```json
+  {
+    "config": {
+        "interpreter": "path to python interpreter"
+      }
+  }
+  ```
 
-> 程序安装目录可以使用`${current-app-dir}`变量替代，例如python安装在程序安装目录下，那么`${current-app-dir}`的值就是程序安装目录，如：${current-app-dir}/python311/python.exe
+  > 程序安装目录可以使用`${current-app-dir}`变量替代，例如python安装在程序安装目录下，那么`${current-app-dir}`的值就是程序安装目录，如：${current-app-dir}/python311/python.exe
 
 2. 如果没有`python-config.json`文件，将使用`where python`来查找系统的python环境
