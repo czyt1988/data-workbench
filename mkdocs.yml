@@ -82,7 +82,10 @@ nav:
         - 程序命令参数 : zh/use-guide/command-line-arguments.md
     - 其它: 
         - 基于cmake的大型工程组织和构建: zh/large-cmake-project-guide.md
-    - API文档: doxygen/index.html   # 
+    - API文档: 
+        - 文档首页: doxygen/index.html
+        - 类索引: doxygen/classes.html
+        - 文件列表: doxygen/files.html
 
 markdown_extensions:
   # ===== 基础官方扩展 =====
