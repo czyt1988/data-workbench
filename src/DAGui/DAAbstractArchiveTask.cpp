@@ -1,4 +1,6 @@
 #include "DAAbstractArchiveTask.h"
+#include <QMetaType>
+
 namespace DA
 {
 DAAbstractArchiveTask::DAAbstractArchiveTask()
@@ -38,4 +40,7 @@ void DAAbstractArchiveTask::setDescribe(const QString& describe)
 {
     mDescribe = describe;
 }
+
+// DA_AUTO_REGISTER_META_TYPE(DA::DAAbstractArchiveTask)
+DA_AUTO_REGISTER_META_TYPE(DA::DAAbstractArchiveTask::Mode)
 }

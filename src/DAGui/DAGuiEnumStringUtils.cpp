@@ -1,5 +1,13 @@
 ﻿#include "DAGuiEnumStringUtils.h"
 
+#include "DAAbstractArchiveTask.h"
+namespace DA
+{
+void daGuiInitializeTypes()
+{
+    qRegisterMetaType< DA::DAAbstractArchiveTask::Mode >("DA::DAAbstractArchiveTask::Mode");
+}
+}
 //===============================================================
 // DAUtils
 //===============================================================

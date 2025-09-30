@@ -274,23 +274,28 @@ uint qHash(const std::shared_ptr< T >& ptr, uint seed = 0)
 
 /**
  * @def 自动注册元类型，在cpp文件中使用，避免在头文件中使用
- * 
+ *
  * MyClass.cpp
  * @code
  * DA_AUTO_REGISTER_META_TYPE(MyClass)
  * @endcode
- * 
+ *
  */
 #ifndef DA_AUTO_REGISTER_META_TYPE
-#define DA_AUTO_REGISTER_META_TYPE(Type) \
-    namespace { \
-        struct MetaTypeRegistrar##__COUNTER__ { \
-            MetaTypeRegistrar##__COUNTER__() { \
-                qRegisterMetaType<Type>(#Type); \
-            } \
-        }; \
-        static MetaTypeRegistrar##__COUNTER__ _registrar##__COUNTER__; \
+#define DA_CONCAT_IMPL(x, y) x##y
+#define DA_CONCAT(x, y) DA_CONCAT_IMPL(x, y)
+#define DA_AUTO_REGISTER_META_TYPE(Type)                                                                               \
+    namespace                                                                                                          \
+    {                                                                                                                  \
+    struct DA_CONCAT(DA_MetaTypeRegistrar_, __LINE__)                                                                  \
+    {                                                                                                                  \
+        DA_CONCAT(DA_MetaTypeRegistrar_, __LINE__)()                                                                   \
+        {                                                                                                              \
+            qRegisterMetaType< Type >(#Type);                                                                          \
+        }                                                                                                              \
+    };                                                                                                                 \
+    static DA_CONCAT(DA_MetaTypeRegistrar_, __LINE__) DA_CONCAT(DA_registrar_, __LINE__);                              \
     }
-#endif // AUTO_REGISTER_META_TYPE
+#endif
 
 #endif  // GLOBALS_H

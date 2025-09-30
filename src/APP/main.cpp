@@ -17,12 +17,15 @@
 #include <QDir>
 #include <QStandardPaths>
 // DA
+#include "DAAppUtils.h"
 #include "DAConfigs.h"
 #include "DAAppCore.h"
 #include "DAMessageHandler.h"
 #include "DATranslatorManeger.h"
 #include "DADumpCapture.h"
 #include "DADir.h"
+
+#include "DAAbstractArchiveTask.h"
 #if DA_ENABLE_PYTHON
 #include "DAPybind11InQt.h"
 #include "DAPyScripts.h"
@@ -70,6 +73,10 @@ int main(int argc, char* argv[])
 	QApplication app(argc, argv);
 	QApplication::setApplicationVersion(DA_VERSION);
 	QApplication::setApplicationName(DA_PROJECT_NAME);
+
+    // 注册所有元对象
+
+    DA::appInitializeTypes();
 
 	// 安装翻译
 	DA::DATranslatorManeger datr;

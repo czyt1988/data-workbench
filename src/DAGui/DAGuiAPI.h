@@ -13,4 +13,13 @@
 #endif
 #endif
 
+namespace DA
+{
+/**
+ * @brief DAGui 模块进行meta类型初始化
+ *
+ * 此函数的实现在DAGuiEnumStringUtils.cpp
+ */
+void DAGUI_API daGuiInitializeTypes();
+}
 #endif  // DAGUIAPI_H

@@ -94,26 +94,28 @@ public:
 	// 绘图
 	virtual void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget = nullptr) override;
 	// 绘制连接线
-	virtual void
-	paintLinkLine(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget, const QPainterPath& linkPath);
+    virtual void paintLinkLine(QPainter* painter,
+                               const QStyleOptionGraphicsItem* option,
+                               QWidget* widget,
+                               const QPainterPath& linkPath);
 	// 绘制箭头
 	virtual void paintEndPoint(QPainter* painter,
-							   const QStyleOptionGraphicsItem* option,
-							   const QPointF& pStart,
-							   EndPointType etStart,
-							   const QPainterPath& startPainterPath,
-							   const QPointF& pEnd,
-							   EndPointType etEnd,
-							   const QPainterPath& endPainterPath,
-							   const QPainterPath& linkPath);
+                               const QStyleOptionGraphicsItem* option,
+                               const QPointF& pStart,
+                               EndPointType etStart,
+                               const QPainterPath& startPainterPath,
+                               const QPointF& pEnd,
+                               EndPointType etEnd,
+                               const QPainterPath& endPainterPath,
+                               const QPainterPath& linkPath);
 
 	virtual QRectF boundingRect() const override;
 	virtual QPainterPath shape() const override;
 
 	// 生成painterpath
 	virtual QPainterPath generateLinePainterPath(const QPointF& fromPoint,
-												 const QPointF& toPoint,
-												 LinkLineStyle linestyle = LinkLineStraight);
+                                                 const QPointF& toPoint,
+                                                 LinkLineStyle linestyle = LinkLineStraight);
 	// 生成箭头，绘制的时候需要根据情况进行旋转
 	virtual QPainterPath generateEndPointPainterPath(EndPointType epType, int size);
 	// 在将要结束链接的回调，通过此回调可以执行完成链接后的相关操作，例如判断末端链接的图元，从而实现路径调整
@@ -144,17 +146,16 @@ public:
 	// 点是否会相遇
 	static bool isPointCanMeet(const QPointF& p1, AspectDirection d1, const QPointF& p2, AspectDirection d2);
 	// 针对平行点线，沿着方向移动可以接近，此函数只对平行点线有用
-	static bool
-	isParallelPointApproachInDirection(const QPointF& p1, AspectDirection d1, const QPointF& p2, AspectDirection d2);
+    static bool isParallelPointApproachInDirection(const QPointF& p1, AspectDirection d1, const QPointF& p2, AspectDirection d2);
 	// 翻转方向
 	static AspectDirection oppositeDirection(AspectDirection d);
 	// 返回点1相对点2的方位
 	static AspectDirection relativeDirectionOfPoint(const QPointF& p1, const QPointF& p2);
 	// 获取线段的末端，这个函数可以返回末端但有不是终端的点，这个点离终端的距离不会超过distanceMaxPx
 	static QPointF calcPainterPathEndPoint(const QPainterPath& path,
-										   bool fromStart      = true,
-										   qreal distanceMaxPx = 18.0,
-										   int maxTryCnt       = 10);
+                                           bool fromStart      = true,
+                                           qreal distanceMaxPx = 18.0,
+                                           int maxTryCnt       = 10);
 
 protected:
 	// 获取DAGraphicsScene
@@ -170,16 +171,16 @@ protected:
 	virtual QPen getPainterPen(const QStyleOptionGraphicsItem* option) const;
 	// 生成painterpath
 	virtual QPainterPath generateLinkLineBezierPainterPath(const QPointF& fromPos,
-														   AspectDirection fromDirect,
-														   const QPointF& toPos,
-														   AspectDirection toDirect);
+                                                           AspectDirection fromDirect,
+                                                           const QPointF& toPos,
+                                                           AspectDirection toDirect);
 	// 生成直线
 	virtual QPainterPath generateLinkLineStraightPainterPath(const QPointF& fromPos, const QPointF& toPos);
 	// 生成直角线
 	virtual QPainterPath generateLinkLineKnucklePainterPath(const QPointF& fromPos,
-															AspectDirection fromDirect,
-															const QPointF& toPos,
-															AspectDirection toDirect);
+                                                            AspectDirection fromDirect,
+                                                            const QPointF& toPos,
+                                                            AspectDirection toDirect);
 };
 
 }  // end DA
