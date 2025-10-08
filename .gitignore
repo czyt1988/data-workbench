@@ -1,7 +1,8 @@
 ﻿bin_*
 build*
-# 针对文档添加否定规则
-!docs/zh/build
+# 但是，不要忽略 docs 目录下任何以 build 开头的内容
+!docs/**/build*/
+!docs/**/build*
 *.user
 *.autosave
 *.dll

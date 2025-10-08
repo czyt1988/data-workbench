@@ -10,13 +10,13 @@
 
 打开Qt Creator，文件->打开文件或项目（`Ctrl+O`），选择`CMakeLists.txt`(dataworkbench顶层目录下的cmake)文件
 
-    ![build-daworkbench-cmake-qtc](../../assets/PIC/build-daworkbench-cmake-qtc-01.png)
+![build-daworkbench-cmake-qtc](../../assets/PIC/build-daworkbench-cmake-qtc-01.png)
 
 ### 2. 选择构建模式
 
 切换到项目模式（`Ctrl+5`）,Build步骤选择all，如果不安装，可不勾选install
 
-    ![build-daworkbench-cmake-qtc](../../assets/PIC/build-daworkbench-cmake-qtc-02.png)
+![build-daworkbench-cmake-qtc](../../assets/PIC/build-daworkbench-cmake-qtc-02.png)
 
 ### 3. 设置第三方库的安装路径
 
