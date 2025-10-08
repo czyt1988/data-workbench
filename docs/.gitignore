@@ -3,3 +3,4 @@ PPT
 *.drawio.bkp
 .$*
 ~$*
+doxygen/

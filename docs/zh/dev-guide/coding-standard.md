@@ -2,32 +2,33 @@
 
 ## 命名规则
 
-原则上，全局属性变量以下划线命名，其他都以驼峰命名
+### 总体原则
 
-- 命名以IDE最优搜索原则，方便开发过程让编译器快速找到对应变量、枚举、函数等
-- 统一以驼峰命名（除全局函数全局变量以外）
-- 局部变量和成员函数**首字母小写**
-- 类命名**首字母大写**
-- 类私有成员变量以`m`为开头(不加下横线,如`mValue`)，类公有成员变量不做前缀，驼峰命名，小写字母开头
-- 全局变量以下划线分隔，以g_作为开头，如`g_gloabl_value`
-- 静态变量以下划线分隔，以s_作为开头，如`s_static_value`
-- 全局函数使用下划线小写的命名规则
-- 命名空间不宜过长，所有都大写，例如DataAnalysis应写为DA
-- 宏都大写，以下划线进行分隔
+- **全局变量、全局函数、宏、静态变量**：使用下划线分隔的命名风格。
+- **其余所有标识符**（类、函数、局部变量、成员变量、参数等）：统一采用**驼峰命名法**（CamelCase）。
+- 命名应遵循 **IDE 最优搜索原则**，便于开发者在输入时快速联想并定位目标符号（如类、函数、枚举等）。
 
-> 谷歌规范里私有变量用结尾_来标记，如`value_`，这样虽然能避免和局部变量混淆，但不利于IDE的搜索，而下斜杠前置又和C++的保留关键字冲突（C++有很多下横杠开头的全局函数，以及保留下横杠开头作为关键字的可能），而传统的`m_`开头法实际上是对IDE最优的，但使用Pimpl模式时的“颜值”不好看，因此，这里使用m开头，不要下横杠的模式，这个模式IDE的搜索并不是最优，一般IDE要输入2~3个才开始展示推荐列表，单独输入m很有可能并不会触发推荐列表，当然可以使用this->m来进行触发，或者输入m后后面随便输入几个字母再删除来获取推荐列表，使用m不要下横杠的好处是更为简洁，尤其在Pimpl模式下，`d_ptr->m_value`就没有`d_ptr->mValue`好看，Pimpl模式下通过pimpl指针是能触发IDE的提示列表的，输入d_ptr->m，这时IDE的提示就会弹出来了
+### 具体规范
+
+| 类型 | 命名格式 | 示例 |
+|------|--------|------|
+| 全局变量 | `g_` + 下划线命名 | `g_total_count` |
+| 静态变量（函数内或类内） | `s_` + 下划线命名 | `s_exec_count` |
+| 全局函数 | 全小写 + 下划线分隔 | `this_is_global_function()` |
+| 宏 | 全大写 + 下划线分隔 | `MAX_BUFFER_SIZE` |
+| 类名 | 首字母大写的驼峰命名 | `ExampleClass` |
+| 枚举 | 首字母大写的驼峰命名，枚举应以统一前缀开头 | `DockingAreaWorkFlowOperate` |
+| 公有成员变量 | 小写开头的驼峰命名，**无前缀** | `publicMemberValue` |
+| 私有成员变量 | `m` + 小写开头的驼峰命名（**不加下划线**） | `mResultValue` |
+| 成员函数 / 局部变量 / 参数 | 小写开头的驼峰命名 | `functionOne`, `argOne`, `loopCount` |
+| 命名空间 | 简洁、全大写缩写（避免过长） | `DA`（而非 `DataAnalysis`） |
+
+!!! tips "说明"
+    谷歌规范推荐私有成员变量使用后缀下划线（如 `value_`），虽可避免与局部变量混淆，但不利于 IDE 搜索。而传统 `m_` 前缀在 Pimpl 模式下显得冗余（如 `d_ptr->m_value`）
+    本规范采用 **`m` 前缀 + 驼峰**（如 `mValue`），兼顾简洁性与 IDE 提示体验：在 Pimpl 中写作 `d_ptr->mValue` 更美观，且输入 `d_ptr->m` 即可触发 IDE 自动补全
 
 
->下面展示了几种成员变量的表示方法
->
-> ```cpp
-> d_ptr->m_value = 1;
-> d_ptr->mValue = 1;
-> d_ptr->_value = 1;
-> d_ptr->value_ = 1;
->```
-
-以下为命名示例：
+示例代码：
 
 ```cpp
 int g_total_count;//全局变量以g开头，下划线命名
@@ -72,18 +73,22 @@ enum DockingArea
 };
 ```
 
-> `QStyleOption*`系列就是比较好的例子，所有相似功能的类都是以`QStyleOption`打头，例如`QStyleOptionToolButton`，而不是命名为`QToolButtonStyleOption`
+!!! tips "说明"
+    `QStyleOption*`系列就是比较好的例子，所有相似功能的类都是以`QStyleOption`打头，例如`QStyleOptionToolButton`，而不是命名为`QToolButtonStyleOption`
 
-另外在函数命名上因遵守如下原则：
+## 函数命名规范
 
-- 属性前面都带get/set（布尔变量除外），不省略get以便查IDE能方便联想
-- get函数应返回值而不是引用
-- 若返回引用，不带get以和返回值的属性做区分
-- 布尔变量的属性命名为 set(enable)/is为主，布尔变量的动作可以以set开头，但所有布尔变量的读函数都以is开头
-- 如果布尔属性有形容词xxxxble，可使用set替代enable，如setVisible,setCheckable,但为了统一，更推荐用setXXable的形式，也可以用setEnableXX形式
-- 布尔变量的动作应该以set开头，如setSelect和enableSelect是表达不一样的概念，具体可通过下列例子的selectable和selected来区分
+### 属性命名规
 
-总之尽量使用set，让编译器能通过set联想出所有可设置属性，用get和is能联想出所有可读属性
+- **普通属性**：使用 `setXxx()` / `getXxx()` 配对。**不要省略 `get`**，以利于 IDE 搜索。
+- **返回引用的属性**：**不加 `get`**，直接命名为 `xxx()`。
+- **布尔属性**：
+  - 可设置性（capability）：`setXxxable(bool)`，如 `setSelectable(bool)`；
+  - 当前状态（state）：`isSelected()` / `setSelected(bool)`；
+  - 读取函数统一以 `is` 开头。
+- **统一使用 `set` 前缀**，使 IDE 能通过输入 `set` 联想所有可配置项。
+
+总之尽量使用`set`，让编译器能通过`set`联想出所有可设置属性，用`get`和`is`能联想出所有可读属性
 
 ```cpp
 class ExampleClass{
@@ -103,7 +108,10 @@ public:
 }
 ```
 
-针对虚函数的重写，按照C++11写法，后面必须接`override`,但为了更直观发现虚函数，重写的虚函数前面也加上`virtual`关键字
+### 虚函数重写
+
+- 重写虚函数时，**必须**使用 `override`；
+- **建议保留 `virtual` 关键字**，以增强可读性，明确其为虚函数。
 
 ```cpp
 class ChildClass : public ExampleClass{
@@ -115,16 +123,22 @@ public:
 
 ## 注释规范
 
-注释遵循`doxygen`注释规则
+遵循 **Doxygen** 注释风格
 
-- 头文件的类成员函数不使用`doxygen`注释，这样是为了避免大型项目构建时，因为更改了文档而导致长时间的构建
-- 头文件的类成员函数虽然不使用`doxygen`注释，但要求有简短的普通注释，其内容和`doxygen`的`brief`标签内容一致
-- 头文件中，get/set配对的函数注释可以写一个
-- 类成员函数的`doxygen`注释写在cpp文件中，除非此函数不在cpp中实现，如qt的信号函数
-- 函数的`doxygen`注释前空一行
-- 函数以`/**`开启`doxygen`注释，变量以`///<` 进行`doxygen`注释
+- **头文件中**：
+  - 类成员函数**不写完整 Doxygen 注释**（避免因文档变更触发全量构建）；
+  - 但需保留**简短普通注释**，内容等同于 `@brief`；
+  - `get`/`set` 配对函数可共用一条注释；
+  - 针对Qt的**信号（signals）** 没有 `.cpp` 实现，可以在头文件中写详细的 Doxygen 注释。
+- **源文件（.cpp）中**：
+  - 所有函数实现前写完整 Doxygen 注释；
+  - 注释前**空一行**；
+  - 使用 `/** ... */` 格式；
+  - 成员变量注释使用 `///<`。
 
 示例：（`//!`为示例的说明）
+
+h文件注释示范
 
 ```cpp
 class DAAbstractNode{
@@ -195,7 +209,12 @@ void DAAbstractNode::setNodeTooltip(const QString& tp)
 }
 ```
 
-对应内容的屏蔽不应该使用注释而应该使用宏，如下示例，在屏蔽打印不允许使用注释，而是定义一个宏来进行开关
+## 调试与功能开关
+
+- 对于大段功能的开关，**禁止使用注释屏蔽代码**
+- 应使用 **宏开关** 控制调试输出或功能启用。
+
+示例：
 
 ```cpp
 /**
@@ -230,9 +249,9 @@ int DAAbstractNode::getInputNodesCount() const
 
 ## 编码禁止列表
 
-- 禁止头文件中使用`using namespace`
-- 基类如果用于继承，析构函数必须使用`virtual`修饰符
-- 库导出类禁止继承于库的模板类，例如`dllexport class xx : public QList<QColor>`，这种情况在一些编译器会导致符号冲突，且如果出现虚函数，基类析构函数没有虚函数会导致内存泄漏，如果要继承模板类，此类也应该为模板类
+- ❌ 禁止头文件中使用`using namespace`
+- ❌ 基类若用于继承，**析构函数必须为 `virtual`**
+- ❌ **库导出类禁止继承非模板的 STL 或 Qt 模板类**（如 `class DLLEXPORT X : public QList<QColor>`），因可能导致符号冲突或析构不完整。若需继承模板类，自身也应为模板类。
 
 
 ## 语法规范性条例
@@ -249,11 +268,11 @@ int DAAbstractNode::getInputNodesCount() const
 - 如果使用了异常，开发过程要注意处理，尤其和一些不使用异常的库混用的时候，例如Qt
 - 一些科学计算类、io操作类的库建议使用异常
 
-### 在命名空间中的类进行操作符重载时，重载函数也应该定义在该命名空间中
+### 操作符重载
 
-提供使用ADL发现操作符的能力,编译器首先在当前作用域以及包含该函数或操作符的作用域中查找
+操作符重载函数**必须定义在所属类的命名空间内**，以支持 ADL（Argument-Dependent Lookup）。
 
-如下是**正确**的做法：
+✅ 如下是**正确**的做法：
 
 ```cpp
 namespace DA
@@ -266,7 +285,7 @@ bool operator==(const DANodeLinkPoint& a, const DANodeLinkPoint& b);
 }// end namespace DA
 ```
 
-如下是**错误**的做法：
+❌ 如下是**错误**的做法：
 
 ```cpp
 namespace DA
@@ -283,9 +302,8 @@ bool operator==(const DA::DANodeLinkPoint& a, const DA::DANodeLinkPoint& b);
 
 ### 不同屏幕缩放比例下QPixmap绘制问题
 
-在不同屏幕缩放比例下，QPixmap的长宽高尺寸是不一样的
-
-有如下程序，先从QIcon获取QPixmap
+在高 DPI 或缩放比例 ≠ 100% 的环境下，`QPixmap` 的物理尺寸与逻辑尺寸不一致。  
+**必须除以 `devicePixelRatio()` 获取逻辑尺寸**，否则绘制位置会偏移。
 
 ```cpp
 QPixmap mPixmap;
@@ -297,6 +315,8 @@ mPixmap = mIcon.pixmap(getBodySize().toSize());
 ```
 
 在paintEvent里绘制,这里演示是要把pixmap绘制到bodyRect的中心，下面是错误的绘制方法
+
+❌ 如下是**错误**的做法：
 
 ```cpp
 void xxx::paintBody(QPainter* painter,
@@ -316,7 +336,9 @@ void xxx::paintBody(QPainter* painter,
 }
 ```
 
-上面方法之所以错误，是因为没有考虑devicePixelRatio，在缩放比例为100%时，上面代码绘制的图片没有问题，但缩放比例不是100%，上面的代码绘制出来是不正确的位置，主要异常在xoffset和yoffset，因为pixmapRect.width()/height()并非QPixmap在当前绘图坐标系下的宽高，这时两个坐标系是不一致的，你要获取当前绘图坐标系下的宽高，需要除以devicePixelRatio，正确的操作如下
+上面方法之所以错误，是因为没有考虑devicePixelRatio，在缩放比例为100%时，上面代码绘制的图片没有问题，但缩放比例不是100%，上面的代码绘制出来是不正确的位置，主要异常在xoffset和yoffset，因为pixmapRect.width()/height()并非QPixmap在当前绘图坐标系下的宽高，这时两个坐标系是不一致的，你要获取当前绘图坐标系下的宽高，需要除以devicePixelRatio
+
+✅ 如下是**正确**的做法：
 
 ```cpp
 void xxx::paintBody(QPainter* painter,
@@ -339,7 +361,8 @@ void xxx::paintBody(QPainter* painter,
 
 ### 永远不要在线程中直接操作GUI控件
 
-如果要在线程中操作GUI控件，那么必须使用`QMetaObject::invokeMethod()`或者通过信号槽机制来完成。
+- **严禁在线程中直接操作 GUI 控件**；
+- 必须通过 **信号槽** 或 `QMetaObject::invokeMethod()` 切回主线程执行。
 
 例如一个窗口，用QtConcurrent来执行一个耗时操作，操作结束后要进行界面刷新，那么可以如下执行（QtConcurrent::run就在当前界面的函数中）
 
@@ -359,4 +382,4 @@ QtConcurrent::run([this] {//this是当前窗口的指正，为了最后进行刷
 
 如果你的类继承了QObject，不要忘记加上Q_OBJECT宏，即使你没有使用信号和槽，你也要加上这个宏，否则你会遇到一些奇怪的问题
 
-例如你需要进行多语言翻译，如果你的类继承了QObject，在需要翻译的文字使用了tr，但如果你没加上Q_OBJECT宏，你的翻译会不生效
+例如你需要进行多语言翻译，在需要翻译的文字使用了tr，但如果你所在的类没加上Q_OBJECT宏，你的翻译是不会生效的
