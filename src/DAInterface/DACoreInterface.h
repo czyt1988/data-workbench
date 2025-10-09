@@ -35,20 +35,13 @@ public:
 	virtual DADataManagerInterface* getDataManagerInterface() const = 0;
 
 public:
-	/**
-	 *  @group 以下为快捷功能的封装
-	 *  {
-	 */
-
 	// 工程是否dirty的操作
 	bool isProjectDirty() const;
 	void setProjectDirty(bool on);
 
 	// 工程的临时目录
 	QDir getTempDir() const;
-	/**
-	 * }
-	 */
+
 public:
 	// 调用此函数，创建DAAppRibbonAreaInterface，此函数的调用应该发生在SARibbonMainWindow的构造过程
 	virtual void createUi(SARibbonMainWindow* mainwindow) = 0;

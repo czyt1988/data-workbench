@@ -95,8 +95,7 @@ public:
 	 * @brief 序列化为QByteArray函数
 	 */
 	using FpSerializeOut = std::function< QByteArray(const QwtPlotItem*) >;  // QByteArray serializeOut(QwtPlotItem* item)
-	using FpSerializeIn =
-		std::function< QwtPlotItem*(const QByteArray&) >;  // QwtPlotItem* serializeIn(int rtti,const QByteArray& d)
+    using FpSerializeIn = std::function< QwtPlotItem*(const QByteArray&) >;  // QwtPlotItem* serializeIn(int rtti,const QByteArray& d)
 public:
 	DAChartItemSerialize();
 	~DAChartItemSerialize();
@@ -252,8 +251,6 @@ DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtScaleWidget* w);
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtScaleDraw* w);
 DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtScaleDraw* w);
 
-/// @group QwtPlotItem相关
-/// @{
 // QwtPlotItem指针的序列化
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlotItem* item);
 DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotItem* item);
@@ -281,8 +278,6 @@ DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotBarChart* item);
 // QwtPlotIntervalCurve指针的序列化
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlotIntervalCurve* item);
 DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotIntervalCurve* item);
-
-/// @}
 
 // QwtPlotCanvas的序列化
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlotCanvas* c);

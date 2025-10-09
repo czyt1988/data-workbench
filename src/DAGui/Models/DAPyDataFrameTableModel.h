@@ -44,11 +44,10 @@ public:
 	void setDataFrame(const DAPyDataFrame& d);
 	// 设置使用缓存模式，缓存模式不会频繁调用dataframe，在setdataframe时把常用的参数缓存
 	void setUseCacheMode(bool on = true);
-	/// @group 滑动窗模式
-	/// @{
+    // 滑动窗模式
+
 	// 设置滑动窗模式的起始行
 	virtual void setCacheWindowStartRow(int startRow) override;
-	/// @}
 
 	// 刷新
 	void refreshData();

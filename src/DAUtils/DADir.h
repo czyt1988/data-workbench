@@ -110,9 +110,7 @@ public:
 	 */
 	static QString getAppDataPath(const QString& folderName);
 
-	/// @group 一些常用的路径
-	/// @{
-
+    // 一些常用的路径
 	/**
 	 * @brief 获取日志文件名字
 	 * @return 默认返回"da_log.log"
@@ -136,8 +134,6 @@ public:
 	 * @return
 	 */
 	static QString getDumpFilePath();
-
-	/// @}
 };
 
 /**
