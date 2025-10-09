@@ -177,6 +177,7 @@ DAAppProject::DAAppProject(DACoreInterface* c, QObject* p) : DAProjectInterface(
 {
 	// 注册 std::shared_ptr<DAAbstractArchiveTask> 类型
 	qRegisterMetaType< std::shared_ptr< DAAbstractArchiveTask > >("std::shared_ptr<DAAbstractArchiveTask>");
+    qRegisterMetaType< DA::DAAbstractArchiveTask::Mode >("DA::DAAbstractArchiveTask::Mode");
 
 	mXml.setLoadedVersionNumber(DAProjectInterface::getProjectVersion());
 	mArchive = new DAZipArchiveThreadWrapper(this);
@@ -627,7 +628,7 @@ void DAAppProject::onBeginLoad(const QString& path)
  * @param total 总共
  * @param pos 当前位置
  */
-void DAAppProject::onTaskProgress(const std::shared_ptr< DAAbstractArchiveTask >& t, DAAbstractArchiveTask::Mode mode)
+void DAAppProject::onTaskProgress(const std::shared_ptr< DAAbstractArchiveTask >& t, int mode)
 {
     if (DAAbstractArchiveTask::WriteMode == mode) {
         // 写任务不处理

@@ -70,7 +70,7 @@ Q_SIGNALS:
 	 * @param total 总任务
 	 * @param pos 当前任务的位置
 	 */
-    void taskProgress(std::shared_ptr< DAAbstractArchiveTask > task, DAAbstractArchiveTask::Mode mode);
+    void taskProgress(std::shared_ptr< DAAbstractArchiveTask > task, int mode);
 
 private:
 	void init();

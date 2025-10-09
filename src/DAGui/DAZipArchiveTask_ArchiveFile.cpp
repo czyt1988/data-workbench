@@ -9,7 +9,7 @@ DAZipArchiveTask_ArchiveFile::DAZipArchiveTask_ArchiveFile() : DAAbstractArchive
 }
 
 DAZipArchiveTask_ArchiveFile::DAZipArchiveTask_ArchiveFile(const QString& archivePath, const QString& tempFilePath)
-	: DAAbstractArchiveTask()
+    : DAAbstractArchiveTask()
 {
 	setTempFilePath(tempFilePath);
 	setArchivePath(archivePath);
@@ -17,6 +17,7 @@ DAZipArchiveTask_ArchiveFile::DAZipArchiveTask_ArchiveFile(const QString& archiv
 
 DAZipArchiveTask_ArchiveFile::DAZipArchiveTask_ArchiveFile(const QString& archivePath) : DAAbstractArchiveTask()
 {
+    setArchivePath(archivePath);
 }
 
 DAZipArchiveTask_ArchiveFile::~DAZipArchiveTask_ArchiveFile()

@@ -1,6 +1,7 @@
 #ifndef DAABSTRACTARCHIVETASK_H
 #define DAABSTRACTARCHIVETASK_H
 #include "DAGuiAPI.h"
+#include <QObject>
 namespace DA
 {
 class DAAbstractArchive;
@@ -103,4 +104,5 @@ private:
     QString mDescribe;
 };
 }  // end DA
+Q_DECLARE_METATYPE(DA::DAAbstractArchiveTask::Mode)
 #endif  // DAABSTRACTARCHIVETASK_H

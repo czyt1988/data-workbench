@@ -76,7 +76,7 @@ private Q_SLOTS:
 	void onBeginSave(const QString& path);
 	void onBeginLoad(const QString& path);
 	// 任务进度
-    void onTaskProgress(const std::shared_ptr< DAAbstractArchiveTask >& t, DAAbstractArchiveTask::Mode mode);
+    void onTaskProgress(const std::shared_ptr< DAAbstractArchiveTask >& t, int mode);
 	// 保存任务结束
 	void onSaveFinish(bool success);
 	// 保存任务结束
