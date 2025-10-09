@@ -3,7 +3,7 @@
 #include <QtCore/qglobal.h>
 #include <QImage>
 #include "DANodeMetaData.h"
-#include "DAWorkFlowGlobal.h"
+#include "DAWorkFlowAPI.h"
 #include "DAGraphicsScene.h"
 #include "DAAbstractNodeGraphicsItem.h"
 #include "DAAbstractNodeLinkGraphicsItem.h"
@@ -90,8 +90,8 @@ signals:
 	 * @param lp 连接点
 	 */
 	void nodeItemLinkPointSelected(DA::DAAbstractNodeGraphicsItem* item,
-								   const DA::DANodeLinkPoint& lp,
-								   QGraphicsSceneMouseEvent* event);
+                                   const DA::DANodeLinkPoint& lp,
+                                   QGraphicsSceneMouseEvent* event);
 
 	/**
 	 * @brief 说明link已经为空，这时会自动remove
@@ -146,9 +146,9 @@ protected:
 
 	// 对item进行分类
 	static void classifyItems(const QList< QGraphicsItem* >& sourceItems,
-							  QList< DAAbstractNodeGraphicsItem* >& nodeItems,
-							  QList< DAAbstractNodeLinkGraphicsItem* >& linkItems,
-							  QList< QGraphicsItem* >& normalItem);
+                              QList< DAAbstractNodeGraphicsItem* >& nodeItems,
+                              QList< DAAbstractNodeLinkGraphicsItem* >& linkItems,
+                              QList< QGraphicsItem* >& normalItem);
 	// 获取node item的所有连接线
 	static QList< DAAbstractNodeLinkGraphicsItem* > getNodesAllLinkItems(const QList< DAAbstractNodeGraphicsItem* >& nodeItems);
 	// 所有节点item对应的node

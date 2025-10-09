@@ -1,6 +1,6 @@
 ﻿#ifndef DASTANDARDNODESVGGRAPHICSITEM_H
 #define DASTANDARDNODESVGGRAPHICSITEM_H
-#include "DAWorkFlowGlobal.h"
+#include "DAWorkFlowAPI.h"
 #include "DAAbstractNodeGraphicsItem.h"
 class QSvgRenderer;
 class QGraphicsSimpleTextItem;
@@ -33,35 +33,35 @@ public:
 
 public:
     void setBodySize(const QSizeF& s) override;
-    //绘制body
+    // 绘制body
     void paintBody(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget, const QRectF& bodyRect) override;
 
 public:
-    //文本可以移动
+    // 文本可以移动
     void setEnableMoveText(bool on = true);
     bool isEnableMoveText() const;
-    //获取svg渲染器
+    // 获取svg渲染器
     QSvgRenderer* renderer() const;
     void setSharedRenderer(QSvgRenderer* renderer);
-    //设置ElementId
+    // 设置ElementId
     void setElementId(const QString& id);
     QString elementId() const;
     //
     void setCachingEnabled(bool caching);
     bool isCachingEnabled() const;
-    //获取字体的尺寸
+    // 获取字体的尺寸
     QSizeF getTextSize() const;
     void setText(const QString& t);
-    //设置svg
+    // 设置svg
     bool setSvg(const QString& svgfile);
-    //把bodysize设置为svg的default size
+    // 把bodysize设置为svg的default size
     void resetBodySize();
-    //设置图片变换时的比例
+    // 设置图片变换时的比例
     void setAspectRatioMode(Qt::AspectRatioMode m);
     Qt::AspectRatioMode getAspectRatioMode() const;
-    //获取文本图元
+    // 获取文本图元
     QGraphicsSimpleTextItem* getTextItem() const;
-    //更新text item的位置，使得文本的位置一直处于中间
+    // 更新text item的位置，使得文本的位置一直处于中间
     void updateTextItemPos();
 
 protected:
@@ -70,7 +70,7 @@ public slots:
     void repaintItem();
 
 protected:
-    //添加事件处理
+    // 添加事件处理
     virtual QVariant itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant& value);
 };
 }  // end of namespace DA

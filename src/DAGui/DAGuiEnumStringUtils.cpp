@@ -3,9 +3,9 @@
 #include "DAAbstractArchiveTask.h"
 namespace DA
 {
-void daGuiInitializeTypes()
+void da_gui_register_metatypes()
 {
-    qRegisterMetaType< DA::DAAbstractArchiveTask::Mode >("DA::DAAbstractArchiveTask::Mode");
+    qRegisterMetaType< DAAbstractArchiveTask::Mode >("DA::DAAbstractArchiveTask::Mode");
 }
 }
 //===============================================================

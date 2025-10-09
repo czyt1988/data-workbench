@@ -1,7 +1,7 @@
 ﻿#ifndef DAWORKFLOWEXECUTER_H
 #define DAWORKFLOWEXECUTER_H
 #include <QObject>
-#include "DAWorkFlowGlobal.h"
+#include "DAWorkFlowAPI.h"
 #include "DAAbstractNode.h"
 
 namespace DA
@@ -16,25 +16,25 @@ class DAWORKFLOW_API DAWorkFlowExecuter : public QObject
 public:
     DAWorkFlowExecuter(QObject* p = nullptr);
     ~DAWorkFlowExecuter();
-    //设置查询的开始点
+    // 设置查询的开始点
     void setStartNode(DAAbstractNode::SharedPointer n);
-    //设置workflow
+    // 设置workflow
     void setWorkFlow(DAWorkFlow* wf);
-    //获取全局节点
+    // 获取全局节点
     QList< DAAbstractNode::SharedPointer > getGlobalNodes() const;
-    //获取孤立节点
+    // 获取孤立节点
     QList< DAAbstractNode::SharedPointer > getIsolatedNodesNodes() const;
-    //判断是否在请求结束
+    // 判断是否在请求结束
     bool isTerminateRequest() const;
 public slots:
-    //开始执行
+    // 开始执行
     void startExecute();
-    //请求终止
+    // 请求终止
     void terminateRequest();
-    //单独执行某个节点
+    // 单独执行某个节点
     void executeNode(DAAbstractNode::SharedPointer n);
 private slots:
-    //执行节点但不会执行它的输出对应的节点，这个函数用于执行全局节点
+    // 执行节点但不会执行它的输出对应的节点，这个函数用于执行全局节点
     void executeNodeNotTransmit(DAAbstractNode::SharedPointer n);
 signals:
     /**

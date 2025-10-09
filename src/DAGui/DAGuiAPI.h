@@ -20,6 +20,6 @@ namespace DA
  *
  * 此函数的实现在DAGuiEnumStringUtils.cpp
  */
-void DAGUI_API daGuiInitializeTypes();
+void DAGUI_API da_gui_register_metatypes();
 }
 #endif  // DAGUIAPI_H

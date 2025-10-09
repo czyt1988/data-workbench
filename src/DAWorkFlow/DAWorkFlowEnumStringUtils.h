@@ -1,7 +1,7 @@
 ﻿#ifndef DAWORKFLOWENUMSTRINGUTILS_H
 #define DAWORKFLOWENUMSTRINGUTILS_H
 #include "DAEnumStringUtils.hpp"
-#include "DAWorkFlowGlobal.h"
+#include "DAWorkFlowAPI.h"
 #include "DAAbstractNodeGraphicsItem.h"
 #include "DANodeLinkPoint.h"
 /**

@@ -382,5 +382,9 @@ uint qHash(const DAData& key, uint seed)
     return ::qHash(key.rawPointer(), seed);
 }
 
-DA_AUTO_REGISTER_META_TYPE(DA::DAData)
+void da_data_register_metatypes()
+{
+    qRegisterMetaType< DAData >("DA::DAData");
+}
+
 }  // namespace DA

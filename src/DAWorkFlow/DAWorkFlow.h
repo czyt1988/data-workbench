@@ -4,7 +4,7 @@
 #include <memory>
 #include <QObject>
 #include <QVersionNumber>
-#include "DAWorkFlowGlobal.h"
+#include "DAWorkFlowAPI.h"
 #include "DAAbstractNode.h"
 class QDomDocument;
 class QDomElement;

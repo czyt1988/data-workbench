@@ -1,6 +1,6 @@
 ﻿#ifndef DASTANDARDNODETEXTGRAPHICSITEM_H
 #define DASTANDARDNODETEXTGRAPHICSITEM_H
-#include "DAWorkFlowGlobal.h"
+#include "DAWorkFlowAPI.h"
 #include "DAAbstractNodeGraphicsItem.h"
 namespace DA
 {

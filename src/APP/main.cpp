@@ -76,16 +76,7 @@ int main(int argc, char* argv[])
 
     // 注册所有元对象
 
-    DA::appInitializeTypes();
-
-    // 在注册后验证
-    int id = QMetaType::type("DA::DAAbstractArchiveTask::Mode");
-    if (id == QMetaType::UnknownType) {
-        qDebug() << "Type registration failed!";
-    } else {
-        qDebug() << "Type registered with ID:" << id;
-    }
-
+    DA::app_register_all_metatypes();
 	// 安装翻译
 	DA::DATranslatorManeger datr;
 	datr.installAllTranslator();

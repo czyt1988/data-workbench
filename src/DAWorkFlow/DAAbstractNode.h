@@ -3,7 +3,7 @@
 #include <memory>
 #include <QMetaEnum>
 #include <QVersionNumber>
-#include "DAWorkFlowGlobal.h"
+#include "DAWorkFlowAPI.h"
 #include "DANodeMetaData.h"
 class QDomElement;
 class QDomDocument;

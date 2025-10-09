@@ -1,6 +1,6 @@
 ﻿#ifndef DANODEMETADATA_H
 #define DANODEMETADATA_H
-#include "DAWorkFlowGlobal.h"
+#include "DAWorkFlowAPI.h"
 #include <QtCore/qglobal.h>
 #include <QIcon>
 #include <QDataStream>

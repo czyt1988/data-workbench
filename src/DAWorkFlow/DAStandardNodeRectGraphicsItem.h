@@ -1,6 +1,6 @@
 ﻿#ifndef DASTANDARDNODERECTGRAPHICSITEM_H
 #define DASTANDARDNODERECTGRAPHICSITEM_H
-#include "DAWorkFlowGlobal.h"
+#include "DAWorkFlowAPI.h"
 #include "DAAbstractNodeGraphicsItem.h"
 namespace DA
 {
@@ -26,12 +26,12 @@ public:
     ~DAStandardNodeRectGraphicsItem();
 
 public:
-    //绘制body
+    // 绘制body
     void paintBody(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget, const QRectF& bodyRect) override;
-    //设置文本
+    // 设置文本
     void setText(const QString& t);
     QString getText() const;
-    //设置文本对齐方式
+    // 设置文本对齐方式
     void setTextAlignment(Qt::Alignment al);
     Qt::Alignment getTextAlignment() const;
 };

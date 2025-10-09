@@ -3,7 +3,7 @@
 #include <QtCore/qglobal.h>
 #include <QColor>
 #include <QBrush>
-#include "DAWorkFlowGlobal.h"
+#include "DAWorkFlowAPI.h"
 
 #ifndef DANODEPALETTE_PROPERTY_COLOR
 #define DANODEPALETTE_PROPERTY_COLOR(RoleName, Role)                                                                   \
@@ -60,11 +60,11 @@ public:
     };
     DANodePalette();
     static DANodePalette& getGlobalPalette();
-    //颜色相关操作
+    // 颜色相关操作
     QColor& color(ColorRole r);
     const QColor& getColor(ColorRole r) const;
     static const QColor& getGlobalColor(ColorRole r);
-    //画刷相关操作
+    // 画刷相关操作
     QBrush& brush(BrushRole r);
     const QBrush& getBrush(BrushRole r) const;
     static const QBrush& getGlobalBrush(BrushRole r);

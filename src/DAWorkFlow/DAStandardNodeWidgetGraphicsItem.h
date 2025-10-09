@@ -1,7 +1,7 @@
 ﻿#ifndef DASTANDARDNODEWIDGETGRAPHICSITEM_H
 #define DASTANDARDNODEWIDGETGRAPHICSITEM_H
 #include "DAAbstractNodeGraphicsItem.h"
-#include "DAWorkFlowGlobal.h"
+#include "DAWorkFlowAPI.h"
 #include <QGraphicsProxyWidget>
 namespace DA
 {
@@ -25,15 +25,15 @@ public:
 public:
     DAStandardNodeWidgetGraphicsItem(DAAbstractNode* n, QGraphicsItem* p = nullptr);
     ~DAStandardNodeWidgetGraphicsItem();
-    //内部维护窗口，paintbody不做任何动作
+    // 内部维护窗口，paintbody不做任何动作
     void paintBody(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget, const QRectF& bodyRect);
-    //设置尺寸
+    // 设置尺寸
     void setBodySize(const QSizeF& s);
-    //获取widget代理item
+    // 获取widget代理item
     QGraphicsProxyWidget* proxyWidgetItem();
-    //代理QGraphicsProxyWidget::setWidget
+    // 代理QGraphicsProxyWidget::setWidget
     void setWidget(QWidget* w);
-    //代理QGraphicsProxyWidget::widget
+    // 代理QGraphicsProxyWidget::widget
     QWidget* widget() const;
 };
 }  // end of namespace DA

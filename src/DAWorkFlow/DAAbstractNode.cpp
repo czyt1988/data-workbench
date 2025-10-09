@@ -1003,5 +1003,5 @@ void DAAbstractNode::registFactory(const std::shared_ptr< DAAbstractNodeFactory 
     d_ptr->mFactory = fc;
 }
 
-DA_AUTO_REGISTER_META_TYPE(DAAbstractNode::SharedPointer)
+
 }  // end DA

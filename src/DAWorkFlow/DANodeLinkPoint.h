@@ -1,6 +1,6 @@
 ﻿#ifndef DANODELINKPOINT_H
 #define DANODELINKPOINT_H
-#include "DAWorkFlowGlobal.h"
+#include "DAWorkFlowAPI.h"
 #include <QtCore/qglobal.h>
 #include <QDebug>
 #include "DAGraphicsViewGlobal.h"
@@ -37,8 +37,7 @@ public:
 	// 点是否会相遇
 	static bool isPointCanMeet(const QPointF& p1, AspectDirection d1, const QPointF& p2, AspectDirection d2);
 	// 针对平行点线，沿着方向移动可以接近，此函数只对平行点线有用
-	static bool
-	isParallelPointApproachInDirection(const QPointF& p1, AspectDirection d1, const QPointF& p2, AspectDirection d2);
+    static bool isParallelPointApproachInDirection(const QPointF& p1, AspectDirection d1, const QPointF& p2, AspectDirection d2);
 	// 翻转方向
 	static AspectDirection oppositeDirection(AspectDirection d);
 	// 返回点1相对点2的位置

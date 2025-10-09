@@ -584,4 +584,20 @@ void DAWorkFlow::recordScene(DANodeGraphicsScene* sc)
 {
     d_ptr->mScene = sc;
 }
+
+}  // end of namespace DA
+
+#include "DANodeLinkPoint.h"
+namespace DA
+{
+
+/**
+ * @brief 元对象注册
+ */
+void da_workflow_register_metatypes()
+{
+    qRegisterMetaType< std::shared_ptr< DAAbstractNode > >("std::shared_ptr< DA::DAAbstractNode >");
+    qRegisterMetaType< DANodeLinkPoint >("DA::DANodeLinkPoint");
+    qRegisterMetaType< DANodeMetaData >("DA::DANodeMetaData");
+}
 }  // end of namespace DA

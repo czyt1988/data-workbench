@@ -175,10 +175,6 @@ private:
 
 DAAppProject::DAAppProject(DACoreInterface* c, QObject* p) : DAProjectInterface(c, p)
 {
-	// 注册 std::shared_ptr<DAAbstractArchiveTask> 类型
-	qRegisterMetaType< std::shared_ptr< DAAbstractArchiveTask > >("std::shared_ptr<DAAbstractArchiveTask>");
-    qRegisterMetaType< DA::DAAbstractArchiveTask::Mode >("DA::DAAbstractArchiveTask::Mode");
-
 	mXml.setLoadedVersionNumber(DAProjectInterface::getProjectVersion());
 	mArchive = new DAZipArchiveThreadWrapper(this);
 	connect(mArchive, &DAZipArchiveThreadWrapper::beginSave, this, &DAAppProject::onBeginSave);

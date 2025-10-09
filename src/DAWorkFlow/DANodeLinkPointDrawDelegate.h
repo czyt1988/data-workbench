@@ -1,6 +1,6 @@
 ﻿#ifndef DANODELINKPOINTDRAWDELEGATE_H
 #define DANODELINKPOINTDRAWDELEGATE_H
-#include "DAWorkFlowGlobal.h"
+#include "DAWorkFlowAPI.h"
 #include "DANodeLinkPoint.h"
 #include <QPainterPath>
 namespace DA

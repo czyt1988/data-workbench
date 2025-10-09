@@ -1,7 +1,7 @@
 ﻿#ifndef DAABSTRACTNODEWIDGET_H
 #define DAABSTRACTNODEWIDGET_H
 #include <QWidget>
-#include "DAWorkFlowGlobal.h"
+#include "DAWorkFlowAPI.h"
 #include "DAAbstractNode.h"
 namespace DA
 {
@@ -23,10 +23,10 @@ public:
                                   Qt::WindowFlags f = Qt::WindowFlags());
     ~DAAbstractNodeWidget();
 
-    //设置节点，会触发nodeChanged信号
+    // 设置节点，会触发nodeChanged信号
     void setNode(const DAAbstractNode::SharedPointer& n);
 
-    //获取节点
+    // 获取节点
     DAAbstractNode::SharedPointer getNode() const;
 signals:
     /**

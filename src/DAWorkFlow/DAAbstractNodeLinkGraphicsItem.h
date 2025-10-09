@@ -1,6 +1,6 @@
 ﻿#ifndef DAABSTRACTNODELINKGRAPHICSITEM_H
 #define DAABSTRACTNODELINKGRAPHICSITEM_H
-#include "DAWorkFlowGlobal.h"
+#include "DAWorkFlowAPI.h"
 #include <QGraphicsItem>
 #include <QtCore/qglobal.h>
 #include "DANodeLinkPoint.h"
@@ -82,8 +82,8 @@ public:
 	virtual bool willCompleteLink() override;
 	// 生成painterpath
 	virtual QPainterPath generateLinePainterPath(const QPointF& fromPoint,
-												 const QPointF& toPoint,
-												 LinkLineStyle linestyle = LinkLineStraight) override;
+                                                 const QPointF& toPoint,
+                                                 LinkLineStyle linestyle = LinkLineStraight) override;
 
 	// 开始节点连接
 	bool attachFrom(DAAbstractNodeGraphicsItem* item, const QString& name);

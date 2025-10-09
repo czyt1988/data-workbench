@@ -1,6 +1,6 @@
 ﻿#ifndef DAABSTRACTNODEFACTORY_H
 #define DAABSTRACTNODEFACTORY_H
-#include "DAWorkFlowGlobal.h"
+#include "DAWorkFlowAPI.h"
 #include <QtCore/qglobal.h>
 #include <QObject>
 #include "DAAbstractNode.h"
@@ -133,9 +133,9 @@ public:
 	 * @param inkey 输入key
 	 */
 	virtual void nodeLinkDetached(DAAbstractNode::SharedPointer outNode,
-								  const QString& outKey,
-								  DAAbstractNode::SharedPointer inNode,
-								  const QString& inkey);
+                                  const QString& outKey,
+                                  DAAbstractNode::SharedPointer inNode,
+                                  const QString& inkey);
 	/**
 	 * @brief 把扩展信息保存到xml上
 	 * 	 * 此函数在工作流保存的过程中会调用，把工厂的附加信息保存到xml文件上

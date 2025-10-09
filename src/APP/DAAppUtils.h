@@ -7,7 +7,7 @@ namespace DA
 /**
  * @brief 初始化所有元对象，此函数一次性注册所有模块的元对象
  */
-void appInitializeTypes();
+void app_register_all_metatypes();
 }
 
 #endif  // DAAPPUTILS_H

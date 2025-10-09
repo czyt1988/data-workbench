@@ -1,6 +1,6 @@
 ﻿#ifndef DAABSTRACTNODEGRAPHICSITEM_H
 #define DAABSTRACTNODEGRAPHICSITEM_H
-#include "DAWorkFlowGlobal.h"
+#include "DAWorkFlowAPI.h"
 #include <QAbstractGraphicsShapeItem>
 #include <QIcon>
 #include "DANodeMetaData.h"
@@ -175,10 +175,11 @@ public:
 	virtual DAAbstractNodeLinkGraphicsItem* createLinkItem(const DA::DANodeLinkPoint& lp);
 	// 从fromPoint链接到toItem的toPoint点，如果链接失败返回nullptr
 	virtual DAAbstractNodeLinkGraphicsItem* linkTo(const DA::DANodeLinkPoint& fromPoint,
-												   DAAbstractNodeGraphicsItem* toItem,
-												   const DA::DANodeLinkPoint& toPoint);
-	DAAbstractNodeLinkGraphicsItem*
-	linkToByName(const QString& fromPointName, DAAbstractNodeGraphicsItem* toItem, const QString& toPointName);
+                                                   DAAbstractNodeGraphicsItem* toItem,
+                                                   const DA::DANodeLinkPoint& toPoint);
+    DAAbstractNodeLinkGraphicsItem* linkToByName(const QString& fromPointName,
+                                                 DAAbstractNodeGraphicsItem* toItem,
+                                                 const QString& toPointName);
 	virtual void setBodySize(const QSizeF& s) override;
 	// 重置连接点，此函数会自动调用generateLinkPoint，如果想自定义，重载此函数
 	// 如果重载了generateLinkPoint或changeLinkPointPos，在构造函数中调用此函数
@@ -189,6 +190,7 @@ public:
 	virtual bool acceptDragOn(DANodeMetaData mime, const QPointF& scenePos);
 	// 释放DANodeMetaData操作
 	virtual bool drop(DANodeMetaData mime, const QPointF& scenePos);
+
 public:
 	// prepare系列函数，用于在改变前的回调
 	// 此函数是在准备调用getLinkPointByPos之前调用的函数，用来准备输入节点
@@ -196,9 +198,9 @@ public:
 	virtual void tryLinkOnItemPos(const QPointF& p, DAAbstractNodeLinkGraphicsItem* linkItem, DANodeLinkPoint::Way way);
 	// 链接结束回调，对应旧版的prepareLinkInputFailed,prepareLinkInputSucceed,prepareLinkOutputFailed,prepareLinkOutputSucceed四个回调
 	virtual void finishLink(const DANodeLinkPoint& p,
-							DAAbstractNodeLinkGraphicsItem* linkItem,
-							DANodeLinkPoint::Way way,
-							bool isSuccess);
+                            DAAbstractNodeLinkGraphicsItem* linkItem,
+                            DANodeLinkPoint::Way way,
+                            bool isSuccess);
 	// 断开连接的回调，detach是针对已经连接上的断开
 	virtual void detachLink(const DANodeLinkPoint& p, DAAbstractNodeLinkGraphicsItem* linkItem, DANodeLinkPoint::Way way);
 	// 节点名字改变准备函数，通过此函数，让节点对名字进行重新绘制
