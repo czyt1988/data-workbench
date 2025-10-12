@@ -30,6 +30,28 @@
 git submodule update --init --recursive
 ```
 
+!!! tips "提示"
+    第三方库`SARibbon`里面也是用`submodule`组织了第三方库`QWindowKit`,本项目的第三方库都在gitee托管，方便国内网络下载，但`QWindowKit`托管在github上，如果你的网络无法拉取，你可以在拉取第三方库的时候把`--recursive`参数取消，也就是执行下面语句即可：
+    ```shell
+    git submodule update --init
+    ```
+
+    关于SARibbon的说明，你可以参阅文档[https://czyt1988.github.io/SARibbon/zh/](https://czyt1988.github.io/SARibbon/zh/)
+
+也可以逐个拉取第三方库：
+
+```shell
+git submodule update src/3rdparty/zlib
+git submodule update src/3rdparty/quazip
+git submodule update src/3rdparty/spdlog
+git submodule update src/3rdparty/SARibbon
+git submodule update src/3rdparty/ADS
+git submodule update src/3rdparty/pybind11
+git submodule update src/3rdparty/QtPropertyBrowser
+git submodule update src/3rdparty/ordered-map
+```
+
+
 ## bin目录
 
 DA项目编译好的二进制文件统一生成到`bin{Debug/Release}_qt{$$QT_VERSION}_{MSVC/GNU}_{x64/x86}`目录下，如：使用qt5.14.2, msvc版本debug模式64位编译，将生成`bin_Debug_qt5.14.2_MSVC_x64`文件夹

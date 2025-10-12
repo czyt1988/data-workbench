@@ -41,10 +41,6 @@ plugins:
         # - locale: en
         #   name: English
   - search
-  # 需要版本切换再打开下面
-  # - git-revision-date
-  # - mike:                       
-  #    version_selector: true
   # 需要导出pdf再打开下面
   # - with-pdf:
   #      # 启用整站 PDF 导出
@@ -67,8 +63,12 @@ nav:
         - Python环境说明 : zh/build/python-environment.md
         - 构建常见错误 : zh/build/common-build-errors.md
     - 开发指南:
-        - 开发规范: zh/dev-guide/coding-standard.md
-        - 可缩放图元模块: zh/dev-guide/scalable-graphic-module.md
+        - 开发规范: 
+            - 编码规范: zh/dev-guide/coding-standard.md
+            - 第三方库管理: zh/dev-guide/third-party-manage.md
+            - 工程组织: zh/large-cmake-project-guide.md
+        - 图元:
+            - 可缩放图元模块: zh/dev-guide/scalable-graphic-module.md
         - 工作流:
             - 工作流说明: zh/dev-guide/workflow.md
             - 工作流生命周期: zh/dev-guide/workflow-lifecycle.md
@@ -80,8 +80,6 @@ nav:
             - action添加方法 : zh/dev-guide/adding-action-methods.md
     - 使用指南:
         - 程序命令参数 : zh/use-guide/command-line-arguments.md
-    - 其它: 
-        - 基于cmake的大型工程组织和构建: zh/large-cmake-project-guide.md
     - API文档: 
         - 文档首页: doxygen/index.html
         - 类索引: doxygen/classes.html

@@ -30,16 +30,12 @@ class DAFIGURE_API DAFigureWidgetCommandCreateChart : public DAFigureWidgetComma
 {
 public:
 	DAFigureWidgetCommandCreateChart(DAFigureWidget* fig,
-									 float xPresent,
-									 float yPresent,
-									 float wPresent,
-									 float hPresent,
-									 bool isRelative,
+									 qreal xPresent,
+									 qreal yPresent,
+									 qreal wPresent,
+									 qreal hPresent,
 									 QUndoCommand* par = nullptr);
-	DAFigureWidgetCommandCreateChart(DAFigureWidget* fig,
-									 const QRectF& versatileSize,
-									 bool isRelative,
-									 QUndoCommand* par = nullptr);
+	DAFigureWidgetCommandCreateChart(DAFigureWidget* fig, const QRectF& versatileSize, QUndoCommand* par = nullptr);
 
 	~DAFigureWidgetCommandCreateChart();
 
@@ -52,7 +48,6 @@ public:
 public:
 	DAChartWidget* mChart { nullptr };
 	QRectF mChartSize;
-	bool mIsRelative { true };
 	bool mNeedDelete { false };
 };
 

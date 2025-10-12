@@ -22,16 +22,14 @@ DAFigureWidget* DAFigureWidgetCommandBase::figure()
 // DAFigureWidgetCommandCreateChart
 //----------------------------------------------------
 DAFigureWidgetCommandCreateChart::DAFigureWidgetCommandCreateChart(DAFigureWidget* fig,
-                                                                   float xPresent,
-                                                                   float yPresent,
-                                                                   float wPresent,
-                                                                   float hPresent,
-                                                                   bool isRelative,
+                                                                   qreal xPresent,
+                                                                   qreal yPresent,
+                                                                   qreal wPresent,
+                                                                   qreal hPresent,
                                                                    QUndoCommand* par)
     : DAFigureWidgetCommandBase(fig, par)
     , mChart(nullptr)
     , mChartSize(xPresent, yPresent, wPresent, hPresent)
-    , mIsRelative(isRelative)
     , mNeedDelete(false)
 {
     setText(QObject::tr("create chart"));  // cn:创建绘图
@@ -39,13 +37,8 @@ DAFigureWidgetCommandCreateChart::DAFigureWidgetCommandCreateChart(DAFigureWidge
 
 DAFigureWidgetCommandCreateChart::DAFigureWidgetCommandCreateChart(DAFigureWidget* fig,
                                                                    const QRectF& versatileSize,
-                                                                   bool isRelative,
                                                                    QUndoCommand* par)
-    : DAFigureWidgetCommandBase(fig, par)
-    , mChart(nullptr)
-    , mChartSize(versatileSize)
-    , mIsRelative(isRelative)
-    , mNeedDelete(false)
+    : DAFigureWidgetCommandBase(fig, par), mChart(nullptr), mChartSize(versatileSize), mNeedDelete(false)
 {
     setText(QObject::tr("create chart"));  // cn:创建绘图
 }
@@ -63,9 +56,9 @@ void DAFigureWidgetCommandCreateChart::redo()
 {
 	mNeedDelete = false;
 	if (mChart) {
-		figure()->addChart(mChart, mChartSize, mIsRelative);
+		figure()->addChart(mChart, mChartSize);
 	} else {
-		mChart = figure()->createChart(mChartSize, mIsRelative);
+		mChart = figure()->createChart(mChartSize);
 		mChart->setXLabel("x");
 		mChart->setYLabel("y");
 	}
