@@ -26,7 +26,7 @@ else()
 endif()
 
 set(DA_BIN_DIR_NAME bin_${CMAKE_BUILD_TYPE}_qt${QT_VERSION}_${CMAKE_CXX_COMPILER_ID}_${DA_PLATFORM_NAME})
-set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/../../${DA_BIN_DIR_NAME}")
+set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/../../${DA_BIN_DIR_NAME}" CACHE PATH "Install all third-party libraries into the default installation directory of the current build." FORCE)
 ########################################################
 # 第三方库参数设置
 ########################################################
@@ -42,8 +42,11 @@ set(BUILD_EXAMPLES OFF CACHE BOOL "force set BUILD_EXAMPLES OFF" FORCE)
 #QWT
 set(QWT_CONFIG_BUILD_EXAMPLE OFF CACHE BOOL "force set QWT_CONFIG_BUILD_EXAMPLE OFF" FORCE)
 set(QWT_CONFIG_BUILD_PLAYGROUND OFF CACHE BOOL "force set QWT_CONFIG_BUILD_PLAYGROUND OFF" FORCE)
+#QtPropertyBrowser
+set(QtPropertyBrowser_BUILD_EXAMPLES OFF CACHE BOOL "force set QtPropertyBrowser_BUILD_EXAMPLES OFF" FORCE)
 #SARibbon
 set(SARIBBON_BUILD_EXAMPLES OFF CACHE BOOL "force set SARIBBON_BUILD_EXAMPLES off" FORCE)
+set(SARIBBON_INSTALL_IN_CURRENT_DIR OFF CACHE BOOL "force set SARIBBON_INSTALL_IN_CURRENT_DIR off" FORCE)
 #zlib
 set(ZLIB_BUILD_EXAMPLES OFF CACHE BOOL "force set ZLIB_BUILD_EXAMPLES off" FORCE)
 #quazip

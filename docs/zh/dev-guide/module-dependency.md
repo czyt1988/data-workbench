@@ -30,8 +30,8 @@ data-workbench主要有以下模块：
 DA各个模块的依赖关系图如下：
 
 ``` mermaid
-graph TD
-    subgraph "DA Modules Dependency Graph"
+graph BT
+    subgraph "DA Modules Dependency"
         DAUtils
         DAShared
         DAMessageHandler
