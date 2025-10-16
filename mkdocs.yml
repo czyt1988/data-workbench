@@ -67,16 +67,18 @@ nav:
             - 编码规范: zh/dev-guide/coding-standard.md
             - 第三方库管理: zh/dev-guide/third-party-manage.md
             - 工程组织: zh/large-cmake-project-guide.md
-        - 图元:
+        - 架构说明:
+            - 模块关系: zh/dev-guide/module-dependency.md
+        - 图元模块:
             - 可缩放图元模块: zh/dev-guide/scalable-graphic-module.md
-        - 工作流:
+        - 工作流模块:
             - 工作流说明: zh/dev-guide/workflow.md
             - 工作流生命周期: zh/dev-guide/workflow-lifecycle.md
-        - 插件与接口: 
+        - 插件与接口模块: 
             - 插件与接口说明: zh/dev-guide/plugins-interfaces.md
             - 插件模块: zh/dev-guide/plugin-module.md
             - 接口模块: zh/dev-guide/interface-module.md
-        - 主程序开发:
+        - 主程序:
             - action添加方法 : zh/dev-guide/adding-action-methods.md
     - 使用指南:
         - 程序命令参数 : zh/use-guide/command-line-arguments.md
