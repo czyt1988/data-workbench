@@ -285,66 +285,68 @@ install(FILES
 ##################################
 if(DA_ENABLE_AUTO_TRANSLATE)
     find_package(Qt${QT_VERSION_MAJOR} COMPONENTS LinguistTools REQUIRED)
-    # 设置输出目录
+
     set(DA_QM_OUTPUT_DIR ${CMAKE_BINARY_DIR}/bin/translations)
     file(MAKE_DIRECTORY ${DA_QM_OUTPUT_DIR})
-    # 定义翻译文件
+
     set(DA_TS_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/src/da_zh_CN.ts
         ${CMAKE_CURRENT_SOURCE_DIR}/src/da_en_US.ts
     )
-    if(NOT EXISTS ${CMAKE_CURRENT_LIST_DIR}/src/da_zh_CN.ts)
-        # 如果翻译文件不在src目录，说明有可能被clean的时候删除了，把备份ts文件拷贝到src目录下
-        add_custom_command(
-            OUTPUT ${CMAKE_CURRENT_LIST_DIR}/src/da_zh_CN.ts
-                   ${CMAKE_CURRENT_LIST_DIR}/src/da_en_US.ts
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                ${CMAKE_CURRENT_LIST_DIR}/src/ts/da_zh_CN.ts
-                ${CMAKE_CURRENT_LIST_DIR}/src/
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                ${CMAKE_CURRENT_LIST_DIR}/src/ts/da_en_US.ts
-                ${CMAKE_CURRENT_LIST_DIR}/src/
-            COMMENT "Copying translation files from backup"
-            VERBATIM
-        )
-    endif()
 
-    # 自动生成 qm 文件
+    #--------------------------------------
+    # 1. 保证 ts 文件存在（拷贝备份）
+    #--------------------------------------
+    set(DA_TS_BACKUP_DIR ${CMAKE_CURRENT_LIST_DIR}/src/ts)
+    add_custom_target(da_copy_ts_backups ALL
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${DA_TS_BACKUP_DIR}/da_zh_CN.ts
+            ${CMAKE_CURRENT_LIST_DIR}/src/
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${DA_TS_BACKUP_DIR}/da_en_US.ts
+            ${CMAKE_CURRENT_LIST_DIR}/src/
+        COMMENT "Copy translation backups if needed"
+        VERBATIM
+    )
 
-    # Qt5需要手动处理输出路径
+    #--------------------------------------
+    # 2. 生成 qm 文件
+    #--------------------------------------
+    set(DA_QM_FILES "")
     foreach(TS_FILE IN LISTS DA_TS_FILES)
         get_filename_component(TS_NAME ${TS_FILE} NAME_WE)
         set(QM_FILE ${DA_QM_OUTPUT_DIR}/${TS_NAME}.qm)
         add_custom_command(
             OUTPUT ${QM_FILE}
-            COMMAND ${Qt5_LRELEASE_EXECUTABLE} ${TS_FILE} -qm ${QM_FILE}
+            COMMAND Qt${QT_VERSION_MAJOR}::lrelease
+                ${TS_FILE} -qm ${QM_FILE}
             DEPENDS ${TS_FILE}
             COMMENT "Generating ${QM_FILE}"
         )
         list(APPEND DA_QM_FILES ${QM_FILE})
     endforeach()
 
+    add_custom_target(da_release_translations ALL DEPENDS
+        da_copy_ts_backups ${DA_QM_FILES})   # 依赖拷贝目标
 
-    # 创建翻译目标
-    add_custom_target(da_release_translations ALL DEPENDS ${DA_QM_FILES})
-
-    # 安装翻译文件
+    #--------------------------------------
+    # 3. 安装
+    #--------------------------------------
     install(FILES ${DA_QM_FILES}
-        DESTINATION bin/translations  # 明确目标路径
+        DESTINATION bin/translations
         COMPONENT translations
     )
 
-    # 更新翻译目标
+    #--------------------------------------
+    # 4. 更新翻译
+    #--------------------------------------
     if(DA_ENABLE_UPDATE_TRANSLATE)
-        message(STATUS "update translate")
         add_custom_target(da_update_translations
-            COMMAND ${Qt${QT_VERSION_MAJOR}_LUPDATE_EXECUTABLE}
-                -locations relative
-                -no-obsolete
+            COMMAND Qt${QT_VERSION_MAJOR}::lupdate
+                -locations relative -no-obsolete
                 ${CMAKE_CURRENT_SOURCE_DIR}/src
                 -ts ${DA_TS_FILES}
-            COMMENT "Updating translations"
-            VERBATIM
+            COMMENT "Updating .ts files"
         )
     endif()
 endif()

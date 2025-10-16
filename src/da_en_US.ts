@@ -210,7 +210,13 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+28"/>
+        <location line="+19"/>
+        <source>Data WorkFlow [*]</source>
+        <oldsource>Data WorkFlow</oldsource>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
         <source>LanguageChange</source>
         <translation type="unfinished"></translation>
     </message>
@@ -922,13 +928,13 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="APP/DAAppController.cpp" line="+792"/>
-        <location line="+65"/>
+        <location filename="APP/DAAppController.cpp" line="+758"/>
+        <location line="+67"/>
         <source>project file(*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-50"/>
+        <location line="-52"/>
         <source>Question</source>
         <translation type="unfinished"></translation>
     </message>
@@ -939,12 +945,12 @@ Config</source>
     </message>
     <message>
         <location line="+26"/>
-        <location line="+40"/>
+        <location line="+42"/>
         <source>failed to load project file:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-394"/>
+        <location line="-397"/>
         <location line="+22"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
@@ -971,23 +977,23 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
-        <location line="+368"/>
+        <location line="+4"/>
+        <location line="+375"/>
         <source>Project saved successfully,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-412"/>
+        <location line="-420"/>
         <source>Project Files (*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+63"/>
+        <location line="+64"/>
         <source>Please select the data operation window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+366"/>
+        <location line="+373"/>
         <source>Project load successfully,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1180,7 +1186,12 @@ Config</source>
 <context>
     <name>DA::DAAppPluginManager</name>
     <message>
-        <location filename="APP/DAAppPluginManager.cpp" line="+68"/>
+        <location filename="APP/DAAppPluginManager.cpp" line="+63"/>
+        <source>%1 plugin create a null node factory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
         <source>succeed load plugin %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1188,7 +1199,7 @@ Config</source>
 <context>
     <name>DA::DAAppProject</name>
     <message>
-        <location filename="APP/DAAppProject.cpp" line="+343"/>
+        <location filename="APP/DAAppProject.cpp" line="+329"/>
         <location line="+39"/>
         <source>current project is busy</source>
         <translation type="unfinished"></translation>
@@ -1239,7 +1250,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location line="+14"/>
         <source>Successfully save archive : %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1254,7 +1265,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+3"/>
         <source>Failed to load archive : %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1284,13 +1295,13 @@ Config</source>
     <message>
         <location line="+1"/>
         <location line="+21"/>
-        <location line="+85"/>
+        <location line="+87"/>
         <location line="+207"/>
         <source>Workflow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-312"/>
+        <location line="-314"/>
         <location line="+2"/>
         <source>Data Operation</source>
         <translation type="unfinished"></translation>
@@ -1303,108 +1314,108 @@ Config</source>
     <message>
         <location line="+3"/>
         <location line="+23"/>
-        <location line="+361"/>
+        <location line="+363"/>
         <source>View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-383"/>
+        <location line="-385"/>
         <source>Display</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+182"/>
+        <location line="+184"/>
         <source>DataFrame</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-181"/>
-        <location line="+183"/>
+        <location line="-183"/>
+        <location line="+185"/>
         <source>Operate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-182"/>
-        <location line="+184"/>
+        <location line="-184"/>
+        <location line="+186"/>
         <source>Axes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-183"/>
+        <location line="-185"/>
         <location line="+2"/>
-        <location line="+193"/>
+        <location line="+195"/>
         <location line="+5"/>
         <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-196"/>
-        <location line="+207"/>
+        <location line="-198"/>
+        <location line="+209"/>
         <source>Data Cleaning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-206"/>
-        <location line="+224"/>
+        <location line="-208"/>
+        <location line="+226"/>
         <source>Statistic</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-221"/>
+        <location line="-223"/>
         <source>Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+304"/>
+        <location line="+306"/>
         <source>Workflow Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-303"/>
-        <location line="+308"/>
+        <location line="-305"/>
+        <location line="+310"/>
         <source>ClipBoard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-307"/>
-        <location line="+312"/>
+        <location line="-309"/>
+        <location line="+314"/>
         <source>Item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-311"/>
-        <location line="+320"/>
+        <location line="-313"/>
+        <location line="+322"/>
         <source>Text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-319"/>
-        <location line="+324"/>
+        <location line="-321"/>
+        <location line="+326"/>
         <source>Background</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-321"/>
-        <location line="+402"/>
+        <location line="-323"/>
+        <location line="+404"/>
         <source>Workflow Run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-401"/>
-        <location line="+404"/>
+        <location line="-403"/>
+        <location line="+406"/>
         <source>Run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-402"/>
-        <location line="+249"/>
+        <location line="-404"/>
+        <location line="+251"/>
         <source>Figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-248"/>
+        <location line="-250"/>
         <source>Figure Setting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1420,13 +1431,13 @@ Config</source>
     </message>
     <message>
         <location line="+1"/>
-        <location line="+408"/>
+        <location line="+410"/>
         <location line="+2"/>
         <source>Chart Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-408"/>
+        <location line="-410"/>
         <source>theme</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1449,6 +1460,11 @@ Config</source>
     <message>
         <location line="+1"/>
         <source>Export Workflow Graphics Scene To Image</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Data Work Flow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2354,11 +2370,6 @@ Config</source>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameDataSearch.cpp" line="+40"/>
         <source>can not find item</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Found at column %1,line %2</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3435,7 +3446,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="APP/DAAppController.cpp" line="-2145"/>
+        <location filename="APP/DAAppController.cpp" line="-2118"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3443,7 +3454,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppRibbonArea</name>
     <message>
-        <location line="+11"/>
+        <location line="+7"/>
         <source>warning</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4632,7 +4643,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <name>DADialogDataFrameDataSearch</name>
     <message>
         <location filename="DAGui/Dialog/DADialogDataFrameDataSearch.ui" line="+14"/>
-        <source>Dataframe Search</source>
+        <source>Dialog</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6953,6 +6964,11 @@ Wrap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+93"/>
+        <source>Unable to create dump file path:%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="APP/SettingPages/DAAppConfig.cpp" line="+49"/>
         <location line="+37"/>
         <source>can not open config file &quot;%1&quot;,because %2</source>
@@ -7941,7 +7957,7 @@ Wrap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAPyScripts/DAPyWorkBench.cpp" line="+36"/>
+        <location filename="DAPyScripts/DAPyWorkBench.cpp" line="+35"/>
         <source>can not import DAWorkbench module</source>
         <translation type="unfinished"></translation>
     </message>
@@ -9217,7 +9233,7 @@ Wrap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/main.cpp" line="+35"/>
+        <location filename="APP/main.cpp" line="-58"/>
         <source>version:%1,compile datetime:%2,enable python:%3</source>
         <translation type="unfinished"></translation>
     </message>
@@ -9227,7 +9243,7 @@ Wrap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>Import data into the application, supporting formats such as CSV, XLSX, TXT, PKL, etc.If you want to import multiple datasets, you can use the command multiple times; the program will execute them one by one</source>
         <translation type="unfinished"></translation>
     </message>
