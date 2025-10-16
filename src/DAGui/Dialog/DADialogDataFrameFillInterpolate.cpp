@@ -26,18 +26,17 @@ void DADialogDataFrameFillInterpolate::initDialogDataFrameInterpolate()
 
     ui->comboBoxMethod->addItem(tr("spline"), QStringLiteral("spline"));          // cn:线性插值
     ui->comboBoxMethod->addItem(tr("polynomial"), QStringLiteral("polynomial"));  // cn:多项式插值
-
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 	connect(ui->comboBoxMethod,
-            static_cast< void (QComboBox::*)(const QString&) >(&QComboBox::activated),
-            [=](const QString& text) {
-                if (text == "spline") {
-                    ui->labelOrder->setVisible(false);
-                    ui->lineEditOrder->setVisible(false);
-                } else {
-                    ui->labelOrder->setVisible(true);
-                    ui->lineEditOrder->setVisible(true);
-                }
-            });
+            &QComboBox::currentIndexChanged,
+            this,
+            &DADialogDataFrameFillInterpolate::onComboboxCurrentIndexChanged);
+#else
+    connect(ui->comboBoxMethod,
+            QOverload< int >::of(&QComboBox::currentIndexChanged),
+            this,
+            &DADialogDataFrameFillInterpolate::onComboboxCurrentIndexChanged);
+#endif
 }
 
 QString DADialogDataFrameFillInterpolate::getInterpolateMethod() const
@@ -85,7 +84,19 @@ int DADialogDataFrameFillInterpolate::getLimitCount() const
 
 void DADialogDataFrameFillInterpolate::setLimitCount(int d)
 {
-	ui->spinBoxLimit->setValue(d);
+    ui->spinBoxLimit->setValue(d);
+}
+
+void DADialogDataFrameFillInterpolate::onComboboxCurrentIndexChanged(int index)
+{
+    QString methodText = ui->comboBoxMethod->itemData(index).toString();
+    if (methodText == "spline") {
+        ui->labelOrder->setVisible(false);
+        ui->lineEditOrder->setVisible(false);
+    } else {
+        ui->labelOrder->setVisible(true);
+        ui->lineEditOrder->setVisible(true);
+    }
 }
 
 }  // end of DA

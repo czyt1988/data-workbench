@@ -106,7 +106,7 @@ public:
 	// 绘制谱图
 	QwtPlotSpectrogram* addSpectroGram(QwtGridRasterData* gridData);
 	// 设置所有坐标轴的Margin
-	void setAllAxisMargin(int m);
+    void setAllAxisWidgetMargin(int m);
 	// 获取figure
 	DAFigureWidget* getFigure() const;
 	// title的另外一种方式

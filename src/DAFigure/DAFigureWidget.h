@@ -36,7 +36,7 @@ public:
 	DAChartWidget* createChart(const QRectF& versatileSize, bool relativePos = true);
 	DAChartWidget* createChart(float xVersatile, float yVersatile, float wVersatile, float hVersatile, bool relativePos = true);
 	DAChartWidget* createChart_();
-	DAChartWidget* createChart_(const QRectF& versatileSize, bool relativePos = true);
+    DAChartWidget* createChart_(const QRectF& versatileSize);
 	// 移除chart，但不会delete
 	void removeChart(DAChartWidget* chart);
 	void removeChart_(DAChartWidget* chart);

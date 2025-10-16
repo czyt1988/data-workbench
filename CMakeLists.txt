@@ -310,23 +310,20 @@ if(DA_ENABLE_AUTO_TRANSLATE)
     endif()
 
     # 自动生成 qm 文件
-    if(QT_VERSION_MAJOR EQUAL 5)
-        # Qt5需要手动处理输出路径
-        foreach(TS_FILE IN LISTS DA_TS_FILES)
-            get_filename_component(TS_NAME ${TS_FILE} NAME_WE)
-            set(QM_FILE ${DA_QM_OUTPUT_DIR}/${TS_NAME}.qm)
-            add_custom_command(
-                OUTPUT ${QM_FILE}
-                COMMAND ${Qt5_LRELEASE_EXECUTABLE} ${TS_FILE} -qm ${QM_FILE}
-                DEPENDS ${TS_FILE}
-                COMMENT "Generating ${QM_FILE}"
-            )
-            list(APPEND DA_QM_FILES ${QM_FILE})
-        endforeach()
-        # qt5_add_translation(DA_QM_FILES ${DA_TS_FILES})
-    else()
-        qt6_add_translation(DA_QM_FILES ${DA_TS_FILES} OUTPUT_DIRECTORY ${DA_QM_OUTPUT_DIR})
-    endif()
+
+    # Qt5需要手动处理输出路径
+    foreach(TS_FILE IN LISTS DA_TS_FILES)
+        get_filename_component(TS_NAME ${TS_FILE} NAME_WE)
+        set(QM_FILE ${DA_QM_OUTPUT_DIR}/${TS_NAME}.qm)
+        add_custom_command(
+            OUTPUT ${QM_FILE}
+            COMMAND ${Qt5_LRELEASE_EXECUTABLE} ${TS_FILE} -qm ${QM_FILE}
+            DEPENDS ${TS_FILE}
+            COMMENT "Generating ${QM_FILE}"
+        )
+        list(APPEND DA_QM_FILES ${QM_FILE})
+    endforeach()
+
 
     # 创建翻译目标
     add_custom_target(da_release_translations ALL DEPENDS ${DA_QM_FILES})

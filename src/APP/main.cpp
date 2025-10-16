@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
 	DA::daRegisterRotatingMessageHandler(DA::DADir::getLogFilePath());
 	// DA::daRegisterConsolMessageHandler();
 	for (int i = 0; i < argc; ++i) {
-		qDebug() << "argv[" << i << "]" << argv[ i ] << endl;
+        qDebug() << "argv[" << i << "]" << argv[ i ];
 	}
 	// 高清屏的适配
 	enableHDPIScaling();

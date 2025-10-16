@@ -1,6 +1,7 @@
 ﻿#include "DADir.h"
 #include <QStandardPaths>
 #include <QDir>
+#include <QApplication>
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 #include <filesystem>
@@ -92,16 +93,20 @@ QString DADir::getConfigPath(const QString& folderName)
 
 QString DADir::getExecutablePath()
 {
-	const static std::string cs_executablePath = get_executable_path();
-	// 这时文本是系统编码的，要转换为utf-8
-	return QString::fromLocal8Bit(cs_executablePath.c_str());
+#if 0
+    return QApplication::applicationDirPath();
+#else
+    const static std::string cs_executablePath = get_executable_path();
+    // 这时文本是系统编码的，要转换为utf-8
+    return QString::fromLocal8Bit(cs_executablePath.c_str());
+#endif
 }
 
 std::string DADir::get_executable_path()
 {
 #if defined(_WIN32) || defined(_WIN64)
 	char buffer[ MAX_PATH ];
-	GetModuleFileName(NULL, buffer, MAX_PATH);
+    GetModuleFileNameA(NULL, buffer, MAX_PATH);  // 显式 A 版
 	std::string fullPath(buffer);
 	std::filesystem::path path(fullPath);
 	return path.parent_path().string();
@@ -145,7 +150,7 @@ QString DADir::getAppDataPath()
 {
 	// 获取应用数据文件夹
 	const static QString cs_appDataPath = QDir::toNativeSeparators(
-		QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + QDir::separator() + getAPPName());
+        QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + QDir::separator() + getAPPName());
 	// 使用单次操作创建路径（如果不存在）
 	if (!QDir().mkpath(cs_appDataPath)) {
 		qCritical() << "Failed to create application data directory:" << cs_appDataPath;

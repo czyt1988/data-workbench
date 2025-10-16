@@ -56,6 +56,18 @@ target_link_libraries(${DA_LIB_NAME} PRIVATE
 )
 message(STATUS "${DA_LIB_NAME} Qt${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
 
+# DA相关
+find_package(${DA_PROJECT_NAME} COMPONENTS
+    DAUtils
+)
+if(${DA_PROJECT_NAME}_FOUND)
+    message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAUtils")
+endif()
+target_link_libraries(${DA_LIB_NAME} PUBLIC
+    ${DA_PROJECT_NAME}::DAUtils
+)
+
+
 # -------------link 3rdparty python--------------------------
 damacro_import_Python(${DA_LIB_NAME})
 

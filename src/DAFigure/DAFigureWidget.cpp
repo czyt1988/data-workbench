@@ -170,9 +170,9 @@ DAChartWidget* DAFigureWidget::createChart_()
  * @param hPresent
  * @return
  */
-DAChartWidget* DAFigureWidget::createChart_(const QRectF& versatileSize, bool relativePos)
+DAChartWidget* DAFigureWidget::createChart_(const QRectF& versatileSize)
 {
-	DAFigureWidgetCommandCreateChart* cmd = new DAFigureWidgetCommandCreateChart(this, versatileSize, relativePos);
+    DAFigureWidgetCommandCreateChart* cmd = new DAFigureWidgetCommandCreateChart(this, versatileSize);
 	d_ptr->mUndoStack.push(cmd);
 	// 必须先push再获取chart
 	return cmd->getChartWidget();

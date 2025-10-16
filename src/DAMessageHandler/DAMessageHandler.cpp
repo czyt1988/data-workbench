@@ -16,7 +16,6 @@
 #include "spdlog/sinks/rotating_file_sink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/sinks/rotating_file_sink.h"
-#include <QTextCodec>
 #include <QByteArray>
 #include "DAStringUtil.h"
 #ifndef globalMessageHandleValues
@@ -217,8 +216,11 @@ void _initializeConsolSpdlog(int flush_every_sec, bool async_logger)
 	if (async_logger) {
 		// 初始化异步线程的参数
 		spdlog::init_thread_pool(10240, 1);
-		logger = std::make_shared< spdlog::async_logger >(
-			"da_global", sinks.begin(), sinks.end(), spdlog::thread_pool(), spdlog::async_overflow_policy::block);
+        logger = std::make_shared< spdlog::async_logger >("da_global",
+                                                          sinks.begin(),
+                                                          sinks.end(),
+                                                          spdlog::thread_pool(),
+                                                          spdlog::async_overflow_policy::block);
 	} else {
 		logger = std::make_shared< spdlog::logger >("da_global", sinks.begin(), sinks.end());
 	}
@@ -255,15 +257,17 @@ void _initializeRotatingSpdlog(const spdlog::filename_t& filename,
 		sinks.emplace_back(stdout_sink);
 	}
 
-	auto rotating_normal_sink =
-		std::make_shared< spdlog::sinks::rotating_file_sink_mt >(filename, maxfile_size, maxfile_counts);
+    auto rotating_normal_sink = std::make_shared< spdlog::sinks::rotating_file_sink_mt >(filename, maxfile_size, maxfile_counts);
 	sinks.emplace_back(rotating_normal_sink);
 	std::shared_ptr< spdlog::logger > logger;
 	if (async_logger) {
 		// 初始化异步线程的参数
 		spdlog::init_thread_pool(10240, 1);
-		logger = std::make_shared< spdlog::async_logger >(
-			"da_global", sinks.begin(), sinks.end(), spdlog::thread_pool(), spdlog::async_overflow_policy::block);
+        logger = std::make_shared< spdlog::async_logger >("da_global",
+                                                          sinks.begin(),
+                                                          sinks.end(),
+                                                          spdlog::thread_pool(),
+                                                          spdlog::async_overflow_policy::block);
 	} else {
 		logger = std::make_shared< spdlog::logger >("da_global", sinks.begin(), sinks.end());
 	}

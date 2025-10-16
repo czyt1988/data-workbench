@@ -43,6 +43,8 @@ public:
 
 	int getLimitCount() const;
 	void setLimitCount(int d);
+private Q_SLOTS:
+    void onComboboxCurrentIndexChanged(int index);
 
 private:
 	Ui::DADialogDataFrameFillInterpolate* ui;

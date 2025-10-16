@@ -42,8 +42,6 @@ public:
 	static QList< QFileInfo > wherePython();
 	// 从配置文件获取python
 	static QList< QFileInfo > wherePythonFromConfig();
-	// 获取程序运行目录
-	static QString getExecutablePath();
 
 protected:
 	// 结束python环境

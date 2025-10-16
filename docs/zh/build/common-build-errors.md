@@ -44,7 +44,49 @@
 
 ## 构建过程中出现moc错误
 
-在编译输出中看到moc相关的错误时，只需要再多几次构建即可，这个问题尤其发生在第一次构建的时候，大批量的moc操作有时会出现异常，只要保留build目录，继续构建即可
+在编译过程中可能会看到类似如下错误信息：
+
+```txt
+14:44:10: 为项目DAWorkbench执行步骤 ...
+14:44:10: 正在启动 "D:\Qt\Tools\CMake_64\bin\cmake.exe" --build . --target all
+...
+[3/173 2.1/sec] Automatic MOC and UIC for target DAGui
+FAILED: src/DAGui/DAGui_autogen/timestamp src/DAGui/DAGui_autogen/mocs_compilation.cpp F:/src/build-data-workbench-Desktop_Qt_6_4_0_MSVC2019_64bit-Debug/src/DAGui/DAGui_autogen/timestamp F:/src/build-data-workbench-Desktop_Qt_6_4_0_MSVC2019_64bit-Debug/src/DAGui/DAGui_autogen/mocs_compilation.cpp 
+cmd.exe /C "cd .../CMakeFiles/d/8c503ea7614ae801d4e0edb644195bdd09d9cc85f654d6f7f478d372d1ca2271.d"
+ninja: build stopped: subcommand failed.
+14:44:12: 进程"D:\Qt\Tools\CMake_64\bin\cmake.exe"退出，退出代码 1 。
+Error while building/deploying project DAWorkbench (kit: Desktop Qt 6.4.0 MSVC2019 64bit)
+When executing step "Build"
+14:44:12: Elapsed time: 00:02.
+```
+
+这种moc相关的错误，只需要再多几次构建即可，这个问题尤其容易发生在第一次构建的时候，大批量的moc操作有时会出现异常，只要保留build目录，继续构建即可
+
+## 编译完成运行报错
+
+编译完成运行立即报错主要是你的构建目录下没有第三方库，编译完成后运行程序是在build目录下运行的，第一次构建的build目录下没有第三方的dll，因此一运行就会报错，你需要把第三方库dll都复制到build目录下
+
+主要涉及的dll如下：
+
+```
+DALiteCtk.dll
+qt6advanceddocking.dll
+QtPropertyBrowser.dll
+quazip1-qt6.dll
+qwt.dll
+SARibbonBar.dll
+spdlog.dll
+zlib.dll
+```
+
+!!! tips "提示"
+    有些dll名字是和qt版本有关，例如`qt6advanceddocking.dll`和`quazip1-qt6.dll`是在Qt6编译的名字，如果在Qt5下编译，名字会变成`qt5advanceddocking.dll`和`quazip1-qt5.dll`
+
+!!! warning "注意"
+    zlib.dll是zlib库，它是quazip1-qt6.dll的依赖，这个库也需要手动复制到build目录下，否则无法运行
+
+!!! warning "注意"
+    如果你是debug模式构建，那么上诉所有库名字最后都会加上`d`，例如`SARibbonBar.dll`将变为`SARibbonBard.dll`
 
 ## 软件运行python报错
 

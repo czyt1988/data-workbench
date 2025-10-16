@@ -57,7 +57,6 @@ DAChartWidget::DAChartWidget(QWidget* parent) : QwtPlot(parent), DA_PIMPL_CONSTR
 	QwtPlotLayout* pLayout = plotLayout();
 
 	pLayout->setCanvasMargin(0);
-	pLayout->setAlignCanvasToScales(true);
 
 	DAChartCanvas* pCanvas = new DAChartCanvas();
 
@@ -74,7 +73,7 @@ DAChartWidget::DAChartWidget(QWidget* parent) : QwtPlot(parent), DA_PIMPL_CONSTR
 	setLineWidth(0);
 
 	setAutoReplot(true);
-	setAllAxisMargin(0);
+    setAllAxisWidgetMargin(0);
 
 	// 这个例子来着qwt-example-refreshtest
 	for (int axisPos = 0; axisPos < QwtAxis::AxisPositions; axisPos++) {
@@ -744,7 +743,7 @@ QwtPlotSpectrogram* DAChartWidget::addSpectroGram(QwtGridRasterData* gridData)
 /**
  * @brief 设置所有坐标轴的Margin
  */
-void DAChartWidget::setAllAxisMargin(int m)
+void DAChartWidget::setAllAxisWidgetMargin(int m)
 {
 	for (int axisPos = 0; axisPos < QwtAxis::AxisPositions; axisPos++) {
 		QwtScaleWidget* scaleWidget = axisWidget(axisPos);
