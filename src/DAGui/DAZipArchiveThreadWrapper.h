@@ -75,6 +75,6 @@ Q_SIGNALS:
 private:
 	void init();
 };
-
 }  // end DA
+
 #endif  // DAZIPARCHIVETHREADWRAPPER_H

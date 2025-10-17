@@ -5,7 +5,8 @@ namespace DA
 {
 void da_gui_register_metatypes()
 {
-    qRegisterMetaType< DAAbstractArchiveTask::Mode >("DA::DAAbstractArchiveTask::Mode");
+    qRegisterMetaType< std::shared_ptr< DAAbstractArchiveTask > >();
+    qRegisterMetaType< DAAbstractArchiveTask::Mode >();
 }
 }
 //===============================================================

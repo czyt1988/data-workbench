@@ -1,4 +1,5 @@
 ﻿#include "DAAppProject.h"
+#include <memory>
 // Qt
 #include <QBuffer>
 #include <QDomDocument>
@@ -175,6 +176,7 @@ private:
 
 DAAppProject::DAAppProject(DACoreInterface* c, QObject* p) : DAProjectInterface(c, p)
 {
+    // qRegisterMetaType< std::shared_ptr< DA::DAAbstractArchiveTask > >();
 	mXml.setLoadedVersionNumber(DAProjectInterface::getProjectVersion());
 	mArchive = new DAZipArchiveThreadWrapper(this);
 	connect(mArchive, &DAZipArchiveThreadWrapper::beginSave, this, &DAAppProject::onBeginSave);

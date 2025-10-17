@@ -43,7 +43,8 @@ DAZipArchiveThreadWrapper::~DAZipArchiveThreadWrapper()
 
 void DAZipArchiveThreadWrapper::init()
 {
-	// 创建线程
+    // qRegisterMetaType< std::shared_ptr< DA::DAAbstractArchiveTask > >("std::shared_ptr<DA::DAAbstractArchiveTask>");
+    //   创建线程
 	QThread* thread       = new QThread();
 	DAZipArchive* archive = new DAZipArchive();
 	// 绑定

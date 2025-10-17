@@ -105,4 +105,5 @@ private:
 };
 }  // end DA
 Q_DECLARE_METATYPE(DA::DAAbstractArchiveTask::Mode)
+Q_DECLARE_METATYPE(std::shared_ptr< DA::DAAbstractArchiveTask >)
 #endif  // DAABSTRACTARCHIVETASK_H
