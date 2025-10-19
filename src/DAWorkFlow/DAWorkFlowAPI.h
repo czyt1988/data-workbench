@@ -34,13 +34,6 @@ enum DANodeGraphicsItemType
 	ItemType_GraphicsNodeUserType = ItemType_GraphicsNodeItemTypeEnd + 1000  ///< 用户自定义的类型需要在此基础上加
 };
 
-/**
- * @brief DAGui 模块进行meta类型初始化
- *
- * 此函数的实现在DAWorkFlow.cpp
- */
-void DAWORKFLOW_API da_workflow_register_metatypes();
-
 }  // namespace DA
 
 #endif  // DAWORKFLOWGLOBAL_H

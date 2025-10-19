@@ -280,22 +280,38 @@ uint qHash(const std::shared_ptr< T >& ptr, uint seed = 0)
  * DA_AUTO_REGISTER_META_TYPE(MyClass)
  * @endcode
  *
+ * @note 注意，此宏应该写在命名空间之外，注册的参数如果在命名空间需带上完整的命名空间，例如
+ * @code
+ * //MyClass.h
+ * namespace DA{
+ * class MyClass{
+ * };
+ * }
+ * Q_DECLARE_METATYPE(DA::MyClass)
+ *
+ * // MyClass.cpp
+ * namespace DA{
+ * ....
+ * }
+ *
+ * DA_AUTO_REGISTER_META_TYPE(DA::MyClass)
+ * @endcode
  */
 #ifndef DA_AUTO_REGISTER_META_TYPE
-#define DA_CONCAT_IMPL(x, y) x##y
-#define DA_CONCAT(x, y) DA_CONCAT_IMPL(x, y)
+#define DA_CONCAT_(a, b) a##b
+#define DA_CONCAT(a, b) DA_CONCAT_(a, b)
+#define DA_MAKE_UNIQUE_NAME(base) DA_CONCAT(base, __LINE__)
 #define DA_AUTO_REGISTER_META_TYPE(Type)                                                                               \
-    namespace                                                                                                          \
-    {                                                                                                                  \
-    struct DA_CONCAT(DA_MetaTypeRegistrar_, __LINE__)                                                                  \
-    {                                                                                                                  \
-        DA_CONCAT(DA_MetaTypeRegistrar_, __LINE__)()                                                                   \
-        {                                                                                                              \
-            qRegisterMetaType< Type >(#Type);                                                                          \
-        }                                                                                                              \
-    };                                                                                                                 \
-    static DA_CONCAT(DA_MetaTypeRegistrar_, __LINE__) DA_CONCAT(DA_registrar_, __LINE__);                              \
-    }
+	namespace                                                                                                          \
+	{                                                                                                                  \
+	static const struct DA_MAKE_UNIQUE_NAME(DA_MetaTypeRegistrar_)                                                     \
+	{                                                                                                                  \
+		inline DA_MAKE_UNIQUE_NAME(DA_MetaTypeRegistrar_)()                                                            \
+		{                                                                                                              \
+			qRegisterMetaType< Type >();                                                                               \
+		}                                                                                                              \
+	} DA_MAKE_UNIQUE_NAME(DA_MetaTypeRegistrar_instance_);                                                             \
+	}
 #endif
 
 #endif  // GLOBALS_H

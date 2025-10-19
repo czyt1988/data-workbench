@@ -297,3 +297,5 @@ uint qHash(const DANodeLinkPoint& key, uint seed)
 }
 
 }  // end DA
+
+DA_AUTO_REGISTER_META_TYPE(DA::DANodeLinkPoint)

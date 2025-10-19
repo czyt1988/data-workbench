@@ -40,7 +40,6 @@ void DANodeTreeWidgetItem::setNodeMetaData(const DANodeMetaData& md)
 
 DANodeTreeWidget::DANodeTreeWidget(QWidget* par) : QTreeWidget(par), _favoriteItem(nullptr)
 {
-	// qRegisterMetaType< DA::DANodeMetaData >("DA::DANodeMetaData");
 	setDragEnabled(true);  // 启用拖放
 	setHeaderHidden(true);
 }

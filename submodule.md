@@ -2,6 +2,10 @@
 
 本项目的第三方库使用submodule进行管理
 
+关于第三方库的构建你可参阅：[https://czyt1988.github.io/data-workbench/zh/build/third-party-build](https://czyt1988.github.io/data-workbench/zh/build/third-party-build)
+
+关于第三方库的管理和介绍你可参阅：[https://czyt1988.github.io/data-workbench/zh/dev-guide/third-party-manage](https://czyt1988.github.io/data-workbench/zh/dev-guide/third-party-manage)
+
 ## submdule的拉取
 
 首次拉取项目之后，需要执行：
@@ -79,78 +83,76 @@ git submodule update --remote src/3rdparty/SARibbon
 
 如 git submodule foreach 'git checkout main'
 
-# 替换为github源
+## 替换为github源
 
-由于github访问域限制，目前项目默认的subbmodule'的url都是gitee的，如果要切换为github的，可以按照如下步骤执行：
+由于github访问域限制，目前项目默认的`subbmodule`的url都是gitee的，如果要切换为github的，可以按照如下步骤执行：
 
-```
-.git/config
-```
+1. `.gitmodules`文件的调整
 
-把config的github地址替换为gitee的地址
+	打开`.gitmodules`文件，此文件包含了第三方库的地址，你可以对此地址进行调整，例如下面为当前第三方库的github地址配置
 
-github地址
+	```ini
+	[submodule "src/3rdparty/spdlog"]
+		url = https://github.com/gabime/spdlog.git
+		active = true
+	[submodule "src/3rdparty/ADS"]
+		url = https://github.com/githubuser0xFFFF/Qt-Advanced-Docking-System.git
+		active = true
+	[submodule "src/3rdparty/SARibbon"]
+		url = https://github.com/czyt1988/SARibbon.git
+		active = true
+	[submodule "src/3rdparty/pybind11"]
+		url = https://github.com/pybind/pybind11.git
+		active = true
+	[submodule "src/3rdparty/QtPropertyBrowser"]
+		url = https://github.com/czyt1988/QtPropertyBrowser.git
+		active = true
+	[submodule "src/3rdparty/qwt"]
+		url = https://github.com/czyt1988/QWT.git
+		active = true
+	[submodule "src/3rdparty/ordered-map"]
+		url = https://github.com/Tessil/ordered-map.git
+		active = true
+	[submodule "src/3rdparty/quazip"]
+		url = https://github.com/stachenov/quazip.git
+		active = true
+	[submodule "src/3rdparty/zlib"]
+		url = https://github.com/madler/zlib.git
+		active = true
+	```
 
-```ini
-[submodule "src/3rdparty/spdlog"]
-	url = https://github.com/gabime/spdlog.git
-	active = true
-[submodule "src/3rdparty/ADS"]
-	url = https://github.com/githubuser0xFFFF/Qt-Advanced-Docking-System.git
-	active = true
-[submodule "src/3rdparty/SARibbon"]
-	url = https://github.com/czyt1988/SARibbon.git
-	active = true
-[submodule "src/3rdparty/pybind11"]
-	url = https://github.com/pybind/pybind11.git
-	active = true
-[submodule "src/3rdparty/QtPropertyBrowser"]
-	url = https://github.com/czyt1988/QtPropertyBrowser.git
-	active = true
-[submodule "src/3rdparty/qwt"]
-	url = https://github.com/czyt1988/QWT.git
-	active = true
-[submodule "src/3rdparty/ordered-map"]
-	url = https://github.com/Tessil/ordered-map.git
-	active = true
-[submodule "src/3rdparty/quazip"]
-	url = https://github.com/stachenov/quazip.git
-	active = true
-[submodule "src/3rdparty/zlib"]
-	url = https://github.com/madler/zlib.git
-	active = true
-```
+	你也可以调整为其它地址，例如
 
-gitee地址
+	```ini
+	[submodule "src/3rdparty/spdlog"]
+		url = https://gitee.com/czyt1988/spdlog.git
+		active = true
+	[submodule "src/3rdparty/ADS"]
+		url = https://gitee.com/czyt1988/Qt-Advanced-Docking-System.git
+		active = true
+	[submodule "src/3rdparty/SARibbon"]
+		url = https://gitee.com/czyt1988/SARibbon.git
+		active = true
+	[submodule "src/3rdparty/pybind11"]
+		url = https://gitee.com/czyt1988/pybind11.git
+		active = true
+	[submodule "src/3rdparty/QtPropertyBrowser"]
+		url = https://gitee.com/czyt1988/QtPropertyBrowser.git
+		active = true
+	[submodule "src/3rdparty/qwt"]
+		url = https://gitee.com/czyt1988/QWT.git
+		active = true
+	[submodule "src/3rdparty/ordered-map"]
+		url = https://gitee.com/czyt1988/ordered-map.git
+		active = true
+	[submodule "src/3rdparty/quazip"]
+		url = https://gitee.com/czyt1988/quazip.git
+		active = true
+	[submodule "src/3rdparty/zlib"]
+		url = https://gitee.com/czyt1988/zlib
+		active = true
+	```
 
-```ini
-[submodule "src/3rdparty/spdlog"]
-	url = https://gitee.com/czyt1988/spdlog.git
-	active = true
-[submodule "src/3rdparty/ADS"]
-	url = https://gitee.com/czyt1988/Qt-Advanced-Docking-System.git
-	active = true
-[submodule "src/3rdparty/SARibbon"]
-	url = https://gitee.com/czyt1988/SARibbon.git
-	active = true
-[submodule "src/3rdparty/pybind11"]
-	url = https://gitee.com/czyt1988/pybind11.git
-	active = true
-[submodule "src/3rdparty/QtPropertyBrowser"]
-	url = https://gitee.com/czyt1988/QtPropertyBrowser.git
-	active = true
-[submodule "src/3rdparty/qwt"]
-	url = https://gitee.com/czyt1988/QWT.git
-	active = true
-[submodule "src/3rdparty/ordered-map"]
-	url = https://gitee.com/czyt1988/ordered-map.git
-	active = true
-[submodule "src/3rdparty/quazip"]
-	url = https://gitee.com/czyt1988/quazip.git
-	active = true
-[submodule "src/3rdparty/zlib"]
-	url = https://gitee.com/czyt1988/zlib
-	active = true
-```
+2. 同步调整`./.git/config`文件里对应的url
 
-2. 打开`./.git/config`文件，把url替换为github的url
+	`.gitmodules`文件调整后需要同步调整`.git/config`文件里对应的url才能生效

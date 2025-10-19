@@ -16,20 +16,20 @@ class DAAbstractArchive::PrivateData
 	DA_DECLARE_PUBLIC(DAAbstractArchive)
 public:
 	PrivateData(DAAbstractArchive* p);
-	std::shared_ptr< DAAbstractArchiveTask > takeTask();
+	std::shared_ptr< DA::DAAbstractArchiveTask > takeTask();
 
 public:
 	QString mBaseFilePath;
-	std::deque< std::shared_ptr< DAAbstractArchiveTask > > mTaskQueue;
+	std::deque< std::shared_ptr< DA::DAAbstractArchiveTask > > mTaskQueue;
 };
 
 DAAbstractArchive::PrivateData::PrivateData(DAAbstractArchive* p) : q_ptr(p)
 {
 }
 
-std::shared_ptr< DAAbstractArchiveTask > DAAbstractArchive::PrivateData::takeTask()
+std::shared_ptr< DA::DAAbstractArchiveTask > DAAbstractArchive::PrivateData::takeTask()
 {
-	std::shared_ptr< DAAbstractArchiveTask > t = mTaskQueue.front();
+	std::shared_ptr< DA::DAAbstractArchiveTask > t = mTaskQueue.front();
 	mTaskQueue.pop_front();
 	return t;
 }
@@ -56,7 +56,7 @@ QString DAAbstractArchive::getBaseFilePath() const
 	return d_ptr->mBaseFilePath;
 }
 
-void DAAbstractArchive::appendTask(const std::shared_ptr< DAAbstractArchiveTask >& task)
+void DAAbstractArchive::appendTask(const std::shared_ptr< DA::DAAbstractArchiveTask >& task)
 {
 	d_ptr->mTaskQueue.emplace_back(task);
 }
@@ -75,7 +75,7 @@ bool DAAbstractArchive::isTaskQueueEmpty() const
  * @brief 从顶部提取一个任务
  * @return
  */
-std::shared_ptr< DAAbstractArchiveTask > DAAbstractArchive::takeTask()
+std::shared_ptr< DA::DAAbstractArchiveTask > DAAbstractArchive::takeTask()
 {
     return d_ptr->takeTask();
 }

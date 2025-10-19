@@ -172,3 +172,5 @@ QDebug operator<<(QDebug debug, const DANodeMetaData& c)
 }
 
 }  // end of namespace DA
+
+DA_AUTO_REGISTER_META_TYPE(DA::DANodeMetaData)

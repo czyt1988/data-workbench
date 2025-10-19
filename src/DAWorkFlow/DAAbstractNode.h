@@ -229,5 +229,5 @@ protected:
 };
 
 }  // end DA
-
+Q_DECLARE_METATYPE(std::shared_ptr< DA::DAAbstractNode >)
 #endif  // DAABSTRACTNODE_H

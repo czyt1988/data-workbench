@@ -383,3 +383,66 @@ QtConcurrent::run([this] {//this是当前窗口的指正，为了最后进行刷
 如果你的类继承了QObject，不要忘记加上Q_OBJECT宏，即使你没有使用信号和槽，你也要加上这个宏，否则你会遇到一些奇怪的问题
 
 例如你需要进行多语言翻译，在需要翻译的文字使用了tr，但如果你所在的类没加上Q_OBJECT宏，你的翻译是不会生效的
+
+### 自定义数据类型的信号和槽要写全命名空间
+
+自定义数据类型，例如`MyClass`要作为参数在信号和槽中使用，那么必须写全命名空间，否则信号和槽无法识别
+
+例如：
+
+```cpp hl_lines="5 14"
+namespace DA{
+    class MyClass{
+    };
+}
+Q_DECLARE_METATYPE(std::shared_ptr< DA::MyClass >)
+
+//在cpp中注册：
+qRegisterMetaType< std::shared_ptr< DA::MyClass > >();
+
+//应用此类型作为信号参数
+namespace DA{
+    class OtherClass{
+    Q_SIGNALS:
+        void mySignal(std::shared_ptr< DA::MyClass > val);
+    }
+}
+```
+
+上面代码中，由于`Q_DECLARE_METATYPE`必须在命名空间外定义，所以`std::shared_ptr< DA::MyClass >`必须写全命名空间
+
+而作为使用这个参数的类，信号定义时，虽然在命名空间内，但信号/槽的参数**必须写全命名空间**，否则Qt会识别不了
+
+!!! tips "注意"
+    qRegisterMetaType建议不要传入参数，让qt自动识别
+    建议使用自动注册机制，参考`DAGlobals.h`的`DA_AUTO_REGISTER_META_TYPE`宏
+
+### 信号和槽的参数要匹配
+
+所谓匹配是不要信号定义值传递，槽定义了一个常引用来接收，例如
+
+```cpp hl_lines="11 19"
+namespace DA{
+    class MyClass{
+    };
+}
+Q_DECLARE_METATYPE(std::shared_ptr< DA::MyClass >)
+
+//信号定义
+namespace DA{
+    class OtherClass{
+    Q_SIGNALS:
+        void mySignal(std::shared_ptr< DA::MyClass > val);
+    }
+}
+
+//槽函数
+namespace DA{
+    class OtherClass2{
+    Q_SLOTS:
+        void mySlot(const std::shared_ptr< DA::MyClass >& val);
+    }
+}
+```
+
+上面代码中，信号和槽的参数就没有匹配，一个值传递，一个常引接收，这是**不匹配**的，Qt在某些情况会识别不了，这个调试起来非常困难

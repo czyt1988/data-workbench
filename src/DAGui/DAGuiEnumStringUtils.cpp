@@ -1,14 +1,7 @@
 ﻿#include "DAGuiEnumStringUtils.h"
 
 #include "DAAbstractArchiveTask.h"
-namespace DA
-{
-void da_gui_register_metatypes()
-{
-    qRegisterMetaType< std::shared_ptr< DAAbstractArchiveTask > >();
-    qRegisterMetaType< DAAbstractArchiveTask::Mode >();
-}
-}
+
 //===============================================================
 // DAUtils
 //===============================================================

@@ -89,10 +89,10 @@ Q_SIGNALS:
 	/**
 	 * @brief 当前进度信号
 	 * 对于读取操作，这个函数会携带读取的结果
-     * @param task 任务
-     * @param mode 模式，具体为DAAbstractArchiveTask::Mode
+	 * @param task 任务
+	 * @param mode 模式，具体为DAAbstractArchiveTask::Mode
 	 */
-    void taskProgress(std::shared_ptr< DAAbstractArchiveTask > task, int mode);
+	void taskProgress(std::shared_ptr< DA::DAAbstractArchiveTask > task, int mode);
 
 	/**
 	 * @brief 任务完成
