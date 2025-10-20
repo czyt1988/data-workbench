@@ -69,7 +69,7 @@
     <message>
         <location line="+16"/>
         <source>Exception in get selected series:%1</source>
-        <translation type="unfinished"></translation>
+        <translation>获取选中的系列发生异常：%1</translation>
     </message>
 </context>
 <context>
@@ -536,7 +536,7 @@ Column</source>
         <translation>删除数据中的重复记录</translation>
     </message>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+299"/>
+        <location line="+299"/>
         <source>n std 
 filter outlier</source>
         <translation>过滤
@@ -952,7 +952,7 @@ Table Area</source>
     <message>
         <location line="+51"/>
         <source>Before creating a new coordinate,you need to create a figure</source>
-        <translation type="unfinished"></translation>
+        <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
     <message>
         <location line="+373"/>
@@ -1102,7 +1102,7 @@ Table Area</source>
     <message>
         <location line="+28"/>
         <source>The file %1 is not a valid project file</source>
-        <translation type="unfinished"></translation>
+        <translation>文件%1不是正确的工程文件</translation>
     </message>
     <message>
         <location line="+23"/>
@@ -1112,22 +1112,22 @@ Table Area</source>
     <message>
         <location line="+23"/>
         <source>Save System Info</source>
-        <translation type="unfinished"></translation>
+        <translation>保存系统信息</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Save system information</source>
-        <translation type="unfinished"></translation>
+        <translation>保存系统信息</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Save workflow information</source>
-        <translation type="unfinished"></translation>
+        <translation>保存工作流信息</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Save workflow information, including the hierarchical relationships and rendering effects of workflow graphics elements</source>
-        <translation type="unfinished"></translation>
+        <translation>保存工作流信息，包括工作流图元的层级关系渲染效果</translation>
     </message>
     <message>
         <location line="+32"/>
@@ -1137,28 +1137,28 @@ Table Area</source>
     <message>
         <location line="+28"/>
         <source>Save datas information</source>
-        <translation type="unfinished"></translation>
+        <translation>保存数据信息</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Save data information, including data names and data organization formats</source>
-        <translation type="unfinished"></translation>
+        <translation>保存数据信息，包括数据的名称数据的组织形式</translation>
     </message>
     <message>
         <location line="+16"/>
         <source>Save charts information</source>
-        <translation type="unfinished"></translation>
+        <translation>保存绘图的基本信息</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Save charts information, including chart name and chart organization formats</source>
-        <translation type="unfinished"></translation>
+        <translation>保存绘图信息，包括绘图的名称绘图的组织形式</translation>
     </message>
     <message>
         <location line="+3"/>
         <location line="+1"/>
         <source>Save chart items information</source>
-        <translation type="unfinished"></translation>
+        <translation>保存绘图元素的基本信息</translation>
     </message>
     <message>
         <location line="+59"/>
@@ -1188,7 +1188,7 @@ Table Area</source>
     <message>
         <location line="+35"/>
         <source>get unknown task code:%1 ,name=%2</source>
-        <translation>接收到未知的任务编码:%1</translation>
+        <translation>接收到未知的任务编码:%1,名称为:%2</translation>
     </message>
     <message>
         <location line="+15"/>
@@ -1401,7 +1401,7 @@ Table Area</source>
     <message>
         <location line="+446"/>
         <source>Recent Files</source>
-        <translation type="unfinished"></translation>
+        <translation>最近打开的文件</translation>
     </message>
     <message>
         <location line="-261"/>
@@ -1883,7 +1883,7 @@ Table Area</source>
         <location line="+30"/>
         <location line="+11"/>
         <source>x</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="-68"/>
@@ -1891,7 +1891,7 @@ Table Area</source>
         <location line="+30"/>
         <location line="+11"/>
         <source>y</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -2309,7 +2309,7 @@ Table Area</source>
     <message>
         <location line="+8"/>
         <source>Found at column %1,line %2</source>
-        <translation type="unfinished"></translation>
+        <translation>查询到第 %1 列，%2 行</translation>
     </message>
 </context>
 <context>
@@ -2911,17 +2911,17 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location filename="../DAGui/DARecentFilesManager.cpp" line="+119"/>
         <source>(empty)</source>
-        <translation type="unfinished"></translation>
+        <translation>（空）</translation>
     </message>
     <message>
         <location line="+18"/>
         <source>Clear menu</source>
-        <translation type="unfinished"></translation>
+        <translation>清空</translation>
     </message>
     <message>
         <location filename="../DAGui/DARecentFilesManager.h" line="+24"/>
         <source>Recent files</source>
-        <translation type="unfinished"></translation>
+        <translation>最近打开文件</translation>
     </message>
 </context>
 <context>
@@ -3329,7 +3329,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+1"/>
         <source>github:https://github.com/czyt1988/data-workbench</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+2"/>
@@ -3339,22 +3339,22 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+1"/>
         <source>SARibbon, MIT, Version:%1.%2.%3</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+5"/>
         <source>spdlog, MIT, Version:%1.%2.%3</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Qt-Advanced-Docking-System, LGPL v2.1, Version:</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>qwt, LGPL, Version:%1</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+3"/>
@@ -3364,12 +3364,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+1"/>
         <source>pybind11,BSD,Version:%1.%2</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="-16"/>
         <source>DAWorkBench,LGPL, Version:%1.%2.%3</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -3386,7 +3386,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="-187"/>
         <source>Unable to locate the %1 file in the current archive. The error code is %2,err str:%3</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="-80"/>
@@ -3534,7 +3534,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+16"/>
         <source>X</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+12"/>
@@ -3660,7 +3660,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+22"/>
         <source>X</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+12"/>
@@ -3691,7 +3691,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="-41"/>
         <source>Y</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -4626,7 +4626,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+20"/>
         <source>-</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+7"/>
@@ -4674,7 +4674,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="-77"/>
         <source>Dataframe Search</source>
-        <translation type="unfinished"></translation>
+        <translation>Dataframe查找</translation>
     </message>
 </context>
 <context>
@@ -4698,7 +4698,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+7"/>
         <source>-</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+41"/>
@@ -4809,7 +4809,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+14"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>取消</translation>
     </message>
 </context>
 <context>
@@ -5403,12 +5403,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+6"/>
         <source>x</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+23"/>
         <source>y</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+26"/>
@@ -5602,7 +5602,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+6"/>
         <source>UI</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+8"/>
@@ -5968,7 +5968,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+34"/>
         <source>Items Add</source>
-        <translation type="unfinished"></translation>
+        <translation>添加图元(多个)</translation>
     </message>
     <message>
         <location line="+40"/>
@@ -5978,7 +5978,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+32"/>
         <source>Items Remove</source>
-        <translation type="unfinished"></translation>
+        <translation>删除图元(多个)</translation>
     </message>
     <message>
         <location line="+52"/>
@@ -6039,12 +6039,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+69"/>
         <source>Remove Nodes</source>
-        <translation type="unfinished"></translation>
+        <translation>移除节点</translation>
     </message>
     <message>
         <location line="+34"/>
         <source>Add node Item</source>
-        <translation type="unfinished"></translation>
+        <translation>添加节点</translation>
     </message>
     <message>
         <location filename="../DAWorkFlow/DANodeGraphicsScene.cpp" line="+299"/>
@@ -6240,7 +6240,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+41"/>
         <source>remove chart</source>
-        <translation type="unfinished"></translation>
+        <translation>移除绘图</translation>
     </message>
     <message>
         <location line="+41"/>
@@ -6266,7 +6266,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <location line="+44"/>
         <location line="+25"/>
         <source>insert column &quot;%1&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation>插入列“%1”</translation>
     </message>
     <message>
         <location line="+54"/>
@@ -6286,62 +6286,62 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+77"/>
         <source>drop nan</source>
-        <translation type="unfinished"></translation>
+        <translation>删除nan值</translation>
     </message>
     <message>
         <location line="+47"/>
         <source>fill nan</source>
-        <translation type="unfinished"></translation>
+        <translation>填充缺失值</translation>
     </message>
     <message>
         <location line="+36"/>
         <source>interpolate</source>
-        <translation type="unfinished"></translation>
+        <translation>插值填充缺失值</translation>
     </message>
     <message>
         <location line="+35"/>
         <source>ffill nan</source>
-        <translation type="unfinished"></translation>
+        <translation>前向填充缺失值</translation>
     </message>
     <message>
         <location line="+35"/>
         <source>bfill nan</source>
-        <translation type="unfinished"></translation>
+        <translation>后向填充缺失值</translation>
     </message>
     <message>
         <location line="+44"/>
         <source>drop duplicates</source>
-        <translation type="unfinished"></translation>
+        <translation>删除重复值</translation>
     </message>
     <message>
         <location line="+48"/>
         <source>nstd filter</source>
-        <translation type="unfinished"></translation>
+        <translation>n倍标准差滤波</translation>
     </message>
     <message>
         <location line="+48"/>
         <source>clip outlier</source>
-        <translation type="unfinished"></translation>
+        <translation>剔除异常值</translation>
     </message>
     <message>
         <location line="+33"/>
         <source>eval datas</source>
-        <translation type="unfinished"></translation>
+        <translation>列运算</translation>
     </message>
     <message>
         <location line="+34"/>
         <source>query datas</source>
-        <translation type="unfinished"></translation>
+        <translation>条件查询</translation>
     </message>
     <message>
         <location line="+34"/>
         <source>data select</source>
-        <translation type="unfinished"></translation>
+        <translation>数据过滤</translation>
     </message>
     <message>
         <location line="+30"/>
         <source>sort datas</source>
-        <translation type="unfinished"></translation>
+        <translation>对相关数据进行排序</translation>
     </message>
     <message>
         <location line="+30"/>
@@ -6514,7 +6514,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+185"/>
         <source>unknow except:get null figure widget at %1</source>
-        <translation type="unfinished"></translation>
+        <translation>未知的异常:获取了一个空的绘图窗口，序号为%1</translation>
     </message>
     <message>
         <location line="-523"/>
@@ -6821,62 +6821,62 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location filename="../DAGui/DAXmlHelper.cpp" line="-2443"/>
         <source>save workflow extern info cost: %1 ms</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+3"/>
         <source>save workflow nodes cost: %1 ms</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+3"/>
         <source>save workflow links cost: %1 ms</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+3"/>
         <source>save special item cost: %1 ms</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+3"/>
         <source>save workflow factory info cost: %1 ms</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+3"/>
         <source>save secen info cost: %1 ms</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+26"/>
         <source>load workflow extern info cost: %1 ms</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+6"/>
         <source>load workflow nodes cost: %1 ms</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+5"/>
         <source>load workflow links cost: %1 ms</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+5"/>
         <source>load special item cost: %1 ms</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+7"/>
         <source>load workflow factory info cost: %1 ms</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+5"/>
         <source>load secen info cost: %1 ms</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../DAGui/DAZipArchive.cpp" line="-659"/>
@@ -6944,17 +6944,17 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location filename="../APP/main.cpp" line="+35"/>
         <source>version:%1,compile datetime:%2,enable python:%3</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+7"/>
         <source>The project file to open</source>
-        <translation type="unfinished"></translation>
+        <translation>要打开的工程文件</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Import data into the application, supporting formats such as CSV, XLSX, TXT, PKL, etc.If you want to import multiple datasets, you can use the command multiple times; the program will execute them one by one</source>
-        <translation type="unfinished"></translation>
+        <translation>导入数据到应用程序中，支持csv/xlsx/txt/pkl等格式，如果要导入多个数据，你可以使用多次命令，程序会逐一执行</translation>
     </message>
 </context>
 </TS>
