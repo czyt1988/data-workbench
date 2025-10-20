@@ -4,7 +4,7 @@
 <context>
     <name>AppMainWindow</name>
     <message>
-        <location filename="APP/AppMainWindow.ui" line="+14"/>
+        <location filename="../APP/AppMainWindow.ui" line="+14"/>
         <source>DA-Workflow</source>
         <translation>DA-Workflow</translation>
     </message>
@@ -60,48 +60,32 @@
     </message>
 </context>
 <context>
-    <name>CMainWindow</name>
-    <message>
-        <location filename="3rdparty/ADS/examples/autohide/mainwindow.ui" line="+28"/>
-        <location filename="3rdparty/ADS/examples/centralwidget/mainwindow.ui" line="+28"/>
-        <location filename="3rdparty/ADS/examples/emptydockarea/mainwindow.ui" line="+28"/>
-        <source>View</source>
-        <translation type="unfinished">视图</translation>
-    </message>
-</context>
-<context>
     <name>DA</name>
     <message>
-        <location filename="DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="+37"/>
+        <location filename="../DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="+37"/>
         <source>Exception in get selected column:%1</source>
         <translation>获取选中的列发生异常：%1</translation>
     </message>
     <message>
         <location line="+16"/>
         <source>Exception in get selected series:%1</source>
-        <translation>获取选中的序列发生异常：%1</translation>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DA::AppMainWindow</name>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="+79"/>
+        <location filename="../APP/AppMainWindow.cpp" line="+79"/>
         <source>Restore UI State</source>
         <translation>加载界面状态信息</translation>
     </message>
     <message>
-        <location filename="../APP/AppMainWindow.cpp" line="+107"/>
+        <location line="+28"/>
         <source>LanguageChange</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/AppMainWindow.cpp" line="+19"/>
-        <source>Data WorkFlow [*]</source>
-        <oldsource>Data WorkFlow</oldsource>
-        <translation>Data WorkFlow [*]</translation>
-    </message>
-    <message>
-        <location line="+28"/>
+        <location line="+19"/>
         <source>Question</source>
         <translation>疑问</translation>
     </message>
@@ -160,7 +144,7 @@
 <context>
     <name>DA::DAAbstractNodeLinkGraphicsItem</name>
     <message>
-        <location filename="DAWorkFlow/DAAbstractNodeLinkGraphicsItem.cpp" line="+453"/>
+        <location filename="../DAWorkFlow/DAAbstractNodeLinkGraphicsItem.cpp" line="+453"/>
         <source>error:link item can not get from node</source>
         <translation>错误:无法通过图元获取到对应的节点</translation>
     </message>
@@ -183,7 +167,7 @@
 <context>
     <name>DA::DAActionsInterface</name>
     <message>
-        <location filename="DAInterface/DAActionsInterface.cpp" line="+117"/>
+        <location filename="../DAInterface/DAActionsInterface.cpp" line="+117"/>
         <source>DAAppActionsInterface::recordAction get null action</source>
         <translation>在记录Action过程中得到了一个空的action，此问题不会影响程序运行</translation>
     </message>
@@ -196,7 +180,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="APP/DAAppActions.cpp" line="+207"/>
+        <location filename="../APP/DAAppActions.cpp" line="+223"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
@@ -239,7 +223,6 @@
         <location line="+2"/>
         <source>Add 
 Data</source>
-        <oldsource>Add Data</oldsource>
         <translation>添加
 数据</translation>
     </message>
@@ -247,7 +230,6 @@ Data</source>
         <location line="+1"/>
         <source>Remove 
 Data</source>
-        <oldsource>Remove Data</oldsource>
         <translation>移除
 数据</translation>
     </message>
@@ -269,8 +251,6 @@ Multiple Data</source>
         <location line="+2"/>
         <source>Add 
 Figure</source>
-        <oldsource>Add 
-Folder</oldsource>
         <translation>添加
 绘图</translation>
     </message>
@@ -278,7 +258,6 @@ Folder</oldsource>
         <location line="+1"/>
         <source>Resize 
 Chart</source>
-        <oldsource>Resize Chart</oldsource>
         <translation>绘图
 尺寸</translation>
     </message>
@@ -286,7 +265,6 @@ Chart</source>
         <location line="+1"/>
         <source>New 
 XY Axis</source>
-        <oldsource>New XY Axis</oldsource>
         <translation>新建
 坐标系</translation>
     </message>
@@ -384,7 +362,6 @@ Vector Field</source>
         <location line="+3"/>
         <source>Show 
 All</source>
-        <oldsource>Show All</oldsource>
         <translation>显示
 全部</translation>
     </message>
@@ -432,7 +409,6 @@ All</source>
         <location line="+1"/>
         <source>Insert 
 Row</source>
-        <oldsource>Insert Row</oldsource>
         <translation>插入
 行</translation>
     </message>
@@ -445,7 +421,6 @@ Row</source>
         <location line="+1"/>
         <source>Insert 
 Column</source>
-        <oldsource>Insert Column</oldsource>
         <translation>插入
 列(右)</translation>
     </message>
@@ -564,11 +539,6 @@ Column</source>
         <location filename="../APP/DAAppActions.cpp" line="+299"/>
         <source>n std 
 filter outlier</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppActions.cpp" line="+1"/>
-        <source>nstd filter outlier</source>
         <translation>过滤
 异常值</translation>
     </message>
@@ -648,7 +618,6 @@ filter outlier</source>
         <location line="+3"/>
         <source>New 
 Workflow</source>
-        <oldsource>New Workflow</oldsource>
         <translation>新建
 工作流</translation>
     </message>
@@ -677,7 +646,6 @@ Move</source>
         <location line="+1"/>
         <source>Draw 
 Rect</source>
-        <oldsource>Draw Rect</oldsource>
         <translation>绘制
 矩形</translation>
     </message>
@@ -685,7 +653,6 @@ Rect</source>
         <location line="+1"/>
         <source>Draw 
 Text</source>
-        <oldsource>Draw Text</oldsource>
         <translation>绘制
 文本</translation>
     </message>
@@ -693,7 +660,6 @@ Text</source>
         <location line="+1"/>
         <source>Show 
 Grid</source>
-        <oldsource>Show Grid</oldsource>
         <translation>显示
 网格</translation>
     </message>
@@ -734,8 +700,6 @@ Workflow</source>
         <location line="+2"/>
         <source>Show 
 Workflow Area</source>
-        <oldsource>Show 
-Work Flow Manager</oldsource>
         <translation>工作流
 操作视图</translation>
     </message>
@@ -801,7 +765,6 @@ Config</source>
         <location line="+70"/>
         <source>Run 
 Workflow</source>
-        <oldsource>Run Workflow</oldsource>
         <translation>运行
 工作流</translation>
     </message>
@@ -809,7 +772,6 @@ Workflow</source>
         <location line="+3"/>
         <source>Add 
 Background</source>
-        <oldsource>Add Background</oldsource>
         <translation>添加
 背景</translation>
     </message>
@@ -827,7 +789,6 @@ Background</source>
         <location line="+8"/>
         <source>Show 
 Chart Area</source>
-        <oldsource>Show Chart Area</oldsource>
         <translation>绘图
 操作视图</translation>
     </message>
@@ -835,7 +796,6 @@ Chart Area</source>
         <location line="+2"/>
         <source>Show 
 Table Area</source>
-        <oldsource>Show Table Area</oldsource>
         <translation>数据
 操作区域</translation>
     </message>
@@ -863,13 +823,13 @@ Table Area</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="APP/DAAppController.cpp" line="+758"/>
-        <location line="+67"/>
+        <location filename="../APP/DAAppController.cpp" line="+832"/>
+        <location line="+49"/>
         <source>project file(*.%1)</source>
         <translation>工程文件(*.%1)</translation>
     </message>
     <message>
-        <location line="-52"/>
+        <location line="-72"/>
         <source>Question</source>
         <translation>疑问</translation>
     </message>
@@ -879,13 +839,13 @@ Table Area</source>
         <translation>已存在其他工程，是否要替换？</translation>
     </message>
     <message>
-        <location line="+26"/>
+        <location line="+46"/>
         <location line="+42"/>
         <source>failed to load project file:%1</source>
         <translation>加载工程文件“%1”失败</translation>
     </message>
     <message>
-        <location line="-397"/>
+        <location line="-415"/>
         <location line="+22"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
@@ -912,23 +872,23 @@ Table Area</source>
         <translation>工程“%1”保存失败</translation>
     </message>
     <message>
-        <location line="+4"/>
-        <location line="+375"/>
+        <location line="+3"/>
+        <location line="+389"/>
         <source>Project saved successfully,path is %1</source>
         <translation>工程保存成功，路径位于:%1</translation>
     </message>
     <message>
-        <location line="-420"/>
+        <location line="-433"/>
         <source>Project Files (*.%1)</source>
         <translation>工程文件(*.%1)</translation>
     </message>
     <message>
-        <location line="+64"/>
+        <location line="+63"/>
         <source>Please select the data operation window</source>
         <translation>请选中数据操作窗口</translation>
     </message>
     <message>
-        <location line="+373"/>
+        <location line="+387"/>
         <source>Project load successfully,path is %1</source>
         <translation>工程加载成功，路径为：%1</translation>
     </message>
@@ -968,7 +928,7 @@ Table Area</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
     <message>
-        <location line="+269"/>
+        <location line="+271"/>
         <location line="+37"/>
         <source>Export Data</source>
         <translation>导出数据</translation>
@@ -990,12 +950,12 @@ Table Area</source>
         <translation>把名称为“%1”的dataframe序列化到“%2”时出现异常</translation>
     </message>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+1512"/>
+        <location line="+51"/>
         <source>Before creating a new coordinate,you need to create a figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppController.cpp" line="+420"/>
+        <location line="+373"/>
         <source>%1_Describe</source>
         <translation>%1_Describe</translation>
     </message>
@@ -1028,7 +988,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppCore</name>
     <message>
-        <location filename="APP/DAAppCore.cpp" line="+110"/>
+        <location filename="../APP/DAAppCore.cpp" line="+110"/>
         <source>Python interpreter path is %1</source>
         <translation>Python环境路径为%1</translation>
     </message>
@@ -1051,7 +1011,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppDataManager</name>
     <message>
-        <location filename="APP/DAAppDataManager.cpp" line="+31"/>
+        <location filename="../APP/DAAppDataManager.cpp" line="+31"/>
         <location line="+38"/>
         <source>begin import file:%1</source>
         <translation>开始导入文件“%1”</translation>
@@ -1078,7 +1038,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppDockingArea</name>
     <message>
-        <location filename="APP/DAAppDockingArea.cpp" line="+63"/>
+        <location filename="../APP/DAAppDockingArea.cpp" line="+63"/>
         <source>workflow node</source>
         <translation>节点</translation>
     </message>
@@ -1121,12 +1081,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppPluginManager</name>
     <message>
-        <location filename="APP/DAAppPluginManager.cpp" line="+63"/>
-        <source>%1 plugin create a null node factory</source>
-        <translation>插件“%1”创建了一个空的节点工厂</translation>
-    </message>
-    <message>
-        <location line="+6"/>
+        <location filename="../APP/DAAppPluginManager.cpp" line="+68"/>
         <source>succeed load plugin %1</source>
         <translation>成功加载插件“%1”</translation>
     </message>
@@ -1134,8 +1089,8 @@ Table Area</source>
 <context>
     <name>DA::DAAppProject</name>
     <message>
-        <location filename="APP/DAAppProject.cpp" line="+329"/>
-        <location line="+39"/>
+        <location filename="../APP/DAAppProject.cpp" line="+371"/>
+        <location line="+43"/>
         <source>current project is busy</source>
         <translation>当前工程正繁忙</translation>
     </message>
@@ -1145,17 +1100,17 @@ Table Area</source>
         <translation>无法将存档保存到 %1</translation>
     </message>
     <message>
-        <location filename="../APP/DAAppProject.cpp" line="+419"/>
+        <location line="+28"/>
         <source>The file %1 is not a valid project file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppProject.cpp" line="+41"/>
+        <location line="+23"/>
         <source>failed to laod archive from %1</source>
         <translation>无法从%1加载存档</translation>
     </message>
     <message>
-        <location filename="../APP/DAAppProject.cpp" line="+46"/>
+        <location line="+23"/>
         <source>Save System Info</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1175,12 +1130,12 @@ Table Area</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppProject.cpp" line="+46"/>
+        <location line="+32"/>
         <source>An exception occurred while serializing the dataframe named %1 to %2</source>
         <translation>把名称为%1的dataframe序列化到%2时出现异常</translation>
     </message>
     <message>
-        <location filename="../APP/DAAppProject.cpp" line="+60"/>
+        <location line="+28"/>
         <source>Save datas information</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1206,7 +1161,7 @@ Table Area</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppProject.cpp" line="+95"/>
+        <location line="+59"/>
         <source>begin save archive to %1</source>
         <translation>开始保存存档到%1</translation>
     </message>
@@ -1216,7 +1171,7 @@ Table Area</source>
         <translation>开始从%1加载存档</translation>
     </message>
     <message>
-        <location line="+27"/>
+        <location line="+32"/>
         <source>Missing data content</source>
         <translation>保存</translation>
     </message>
@@ -1231,17 +1186,12 @@ Table Area</source>
         <translation>无法把文件%1序列化为Dataframe</translation>
     </message>
     <message>
-        <location filename="../APP/DAAppProject.cpp" line="+158"/>
+        <location line="+35"/>
         <source>get unknown task code:%1 ,name=%2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="APP/DAAppProject.cpp" line="+20"/>
-        <source>get unknown task code:%1</source>
         <translation>接收到未知的任务编码:%1</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+15"/>
         <source>Successfully save archive : %1</source>
         <translation>成功存档到:%1</translation>
     </message>
@@ -1256,7 +1206,7 @@ Table Area</source>
         <translation>成功从%1加载存档</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+4"/>
         <source>Failed to load archive : %1</source>
         <translation>无法从%1加载存档</translation>
     </message>
@@ -1264,12 +1214,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppRibbonArea</name>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="+163"/>
-        <source> File </source>
-        <translation> 文件 </translation>
-    </message>
-    <message>
-        <location line="+2"/>
+        <location filename="../APP/DAAppRibbonArea.cpp" line="+166"/>
         <source>Main</source>
         <translation>主页</translation>
     </message>
@@ -1286,13 +1231,13 @@ Table Area</source>
     <message>
         <location line="+1"/>
         <location line="+21"/>
-        <location line="+87"/>
+        <location line="+85"/>
         <location line="+207"/>
         <source>Workflow</source>
         <translation>工作流</translation>
     </message>
     <message>
-        <location line="-314"/>
+        <location line="-312"/>
         <location line="+2"/>
         <source>Data Operation</source>
         <translation>数据操作</translation>
@@ -1305,108 +1250,108 @@ Table Area</source>
     <message>
         <location line="+3"/>
         <location line="+23"/>
-        <location line="+363"/>
+        <location line="+361"/>
         <source>View</source>
         <translation>视图</translation>
     </message>
     <message>
-        <location line="-385"/>
+        <location line="-383"/>
         <source>Display</source>
         <translation>视图显示</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+184"/>
+        <location line="+182"/>
         <source>DataFrame</source>
         <translation>DataFrame</translation>
     </message>
     <message>
-        <location line="-183"/>
-        <location line="+185"/>
+        <location line="-181"/>
+        <location line="+183"/>
         <source>Operate</source>
         <translation>操作</translation>
     </message>
     <message>
-        <location line="-184"/>
-        <location line="+186"/>
+        <location line="-182"/>
+        <location line="+184"/>
         <source>Axes</source>
         <translation>Axes</translation>
     </message>
     <message>
-        <location line="-185"/>
+        <location line="-183"/>
         <location line="+2"/>
-        <location line="+195"/>
+        <location line="+193"/>
         <location line="+5"/>
         <source>Type</source>
         <translation>类型</translation>
     </message>
     <message>
-        <location line="-198"/>
-        <location line="+209"/>
+        <location line="-196"/>
+        <location line="+207"/>
         <source>Data Cleaning</source>
         <translation>数据清洗</translation>
     </message>
     <message>
-        <location line="-208"/>
-        <location line="+226"/>
+        <location line="-206"/>
+        <location line="+224"/>
         <source>Statistic</source>
         <translation>统计</translation>
     </message>
     <message>
-        <location line="-223"/>
+        <location line="-221"/>
         <source>Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+306"/>
+        <location line="+304"/>
         <source>Workflow Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
-        <location line="-305"/>
-        <location line="+310"/>
+        <location line="-303"/>
+        <location line="+308"/>
         <source>ClipBoard</source>
         <translation>剪切板</translation>
     </message>
     <message>
-        <location line="-309"/>
-        <location line="+314"/>
+        <location line="-307"/>
+        <location line="+312"/>
         <source>Item</source>
         <translation>图元</translation>
     </message>
     <message>
-        <location line="-313"/>
-        <location line="+322"/>
+        <location line="-311"/>
+        <location line="+320"/>
         <source>Text</source>
         <translation>文本</translation>
     </message>
     <message>
-        <location line="-321"/>
-        <location line="+326"/>
+        <location line="-319"/>
+        <location line="+324"/>
         <source>Background</source>
         <translation>背景</translation>
     </message>
     <message>
-        <location line="-323"/>
-        <location line="+404"/>
+        <location line="-321"/>
+        <location line="+402"/>
         <source>Workflow Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location line="-403"/>
-        <location line="+406"/>
+        <location line="-401"/>
+        <location line="+404"/>
         <source>Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location line="-404"/>
-        <location line="+251"/>
+        <location line="-402"/>
+        <location line="+249"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
     <message>
-        <location line="-250"/>
+        <location line="-248"/>
         <source>Figure Setting</source>
         <translation>绘图设置</translation>
     </message>
@@ -1422,13 +1367,13 @@ Table Area</source>
     </message>
     <message>
         <location line="+1"/>
-        <location line="+410"/>
+        <location line="+408"/>
         <location line="+2"/>
         <source>Chart Edit</source>
         <translation>绘图编辑</translation>
     </message>
     <message>
-        <location line="-410"/>
+        <location line="-408"/>
         <source>theme</source>
         <translation>主题</translation>
     </message>
@@ -1454,17 +1399,12 @@ Table Area</source>
         <translation>把工作流的场景导出为图片</translation>
     </message>
     <message>
-        <location filename="../APP/DAAppRibbonArea.cpp" line="+662"/>
+        <location line="+446"/>
         <source>Recent Files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/DAAppRibbonArea.cpp" line="+2"/>
-        <source>Data Work Flow</source>
-        <translation>DA</translation>
-    </message>
-    <message>
-        <location line="+185"/>
+        <location line="-261"/>
         <source>Data Filtering</source>
         <translation>数据过滤</translation>
     </message>
@@ -1484,15 +1424,15 @@ Table Area</source>
         <translation>导出</translation>
     </message>
     <message>
-        <location filename="../APP/DAAppRibbonArea.cpp" line="-498"/>
+        <location line="-427"/>
         <source>File</source>
-        <translation type="unfinished"></translation>
+        <translation>文件</translation>
     </message>
 </context>
 <context>
     <name>DA::DAAxObjectExcelWrapper</name>
     <message>
-        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="+113"/>
+        <location filename="../DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="+113"/>
         <source>can not initialize OLE,error code:</source>
         <translation>无法初始化OLE,错误代码为：</translation>
     </message>
@@ -1505,7 +1445,7 @@ Table Area</source>
 <context>
     <name>DA::DAChartAddOHLCSeriesWidget</name>
     <message>
-        <location filename="DAGui/DAChartAddOHLCSeriesWidget.cpp" line="+37"/>
+        <location filename="../DAGui/DAChartAddOHLCSeriesWidget.cpp" line="+37"/>
         <source>Time</source>
         <translation>时间</translation>
     </message>
@@ -1561,28 +1501,24 @@ Table Area</source>
         <location line="+32"/>
         <location line="+76"/>
         <source>open value must be a series</source>
-        <oldsource>o must be a series</oldsource>
         <translation>开盘值必须是序列</translation>
     </message>
     <message>
         <location line="-70"/>
         <location line="+76"/>
         <source>high value must be a series</source>
-        <oldsource>h must be a series</oldsource>
         <translation>最高值必须是序列</translation>
     </message>
     <message>
         <location line="-70"/>
         <location line="+76"/>
         <source>low value must be a series</source>
-        <oldsource>l must be a series</oldsource>
         <translation>最低值必须是序列</translation>
     </message>
     <message>
         <location line="-70"/>
         <location line="+76"/>
         <source>close value must be a series</source>
-        <oldsource>c must be a series</oldsource>
         <translation>收盘值必须是序列</translation>
     </message>
     <message>
@@ -1605,14 +1541,13 @@ Table Area</source>
     <message>
         <location line="+14"/>
         <source>time value must be a series</source>
-        <oldsource>t must be a series</oldsource>
         <translation>时间必须是序列</translation>
     </message>
 </context>
 <context>
     <name>DA::DAChartAddXYESeriesWidget</name>
     <message>
-        <location filename="DAGui/DAChartAddXYESeriesWidget.cpp" line="+21"/>
+        <location filename="../DAGui/DAChartAddXYESeriesWidget.cpp" line="+21"/>
         <source>x</source>
         <translation>x</translation>
     </message>
@@ -1719,7 +1654,7 @@ Table Area</source>
 <context>
     <name>DA::DAChartAddXYSeriesWidget</name>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.cpp" line="+23"/>
+        <location filename="../DAGui/DAChartAddXYSeriesWidget.cpp" line="+23"/>
         <source>x</source>
         <translation>x</translation>
     </message>
@@ -1807,7 +1742,7 @@ Table Area</source>
 <context>
     <name>DA::DAChartAddtGridRasterDataWidget</name>
     <message>
-        <location filename="DAGui/DAChartAddtGridRasterDataWidget.cpp" line="+189"/>
+        <location filename="../DAGui/DAChartAddtGridRasterDataWidget.cpp" line="+195"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
@@ -1830,7 +1765,7 @@ Table Area</source>
 <context>
     <name>DA::DAChartBarItemSettingWidget</name>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="+18"/>
+        <location filename="../DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="+18"/>
         <source>Auto Adjust Samples</source>
         <translation>自动调整样本</translation>
     </message>
@@ -1853,7 +1788,7 @@ Table Area</source>
 <context>
     <name>DA::DAChartCurveItemSettingWidget</name>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="+138"/>
+        <location filename="../DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="+138"/>
         <source>Lines</source>
         <translation>折线</translation>
     </message>
@@ -1881,7 +1816,7 @@ Table Area</source>
 <context>
     <name>DA::DAChartItemTableModel</name>
     <message>
-        <location filename="DAFigure/Models/DAChartItemTableModel.cpp" line="+507"/>
+        <location filename="../DAFigure/Models/DAChartItemTableModel.cpp" line="+507"/>
         <location line="+11"/>
         <location line="+63"/>
         <location line="+27"/>
@@ -1943,7 +1878,7 @@ Table Area</source>
         <translation>收盘</translation>
     </message>
     <message>
-        <location filename="../DAFigure/Models/DAChartItemTableModel.cpp" line="+497"/>
+        <location line="-105"/>
         <location line="+29"/>
         <location line="+30"/>
         <location line="+11"/>
@@ -1962,7 +1897,7 @@ Table Area</source>
 <context>
     <name>DA::DAChartManageWidget</name>
     <message>
-        <location filename="DAGui/DAChartManageWidget.cpp" line="+144"/>
+        <location filename="../DAGui/DAChartManageWidget.cpp" line="+144"/>
         <source>get figure create signal,but can not find figure index</source>
         <translation>获取了绘图创建的信号，但无法找到绘图的索引</translation>
     </message>
@@ -1975,17 +1910,17 @@ Table Area</source>
 <context>
     <name>DA::DAChartOperateWidget</name>
     <message>
-        <location filename="DAGui/DAChartOperateWidget.cpp" line="+87"/>
+        <location filename="../DAGui/DAChartOperateWidget.cpp" line="+93"/>
         <source>figure-%1</source>
         <translation>图-%1</translation>
     </message>
     <message>
-        <location line="+113"/>
+        <location line="+163"/>
         <source>chart operate widget&apos;s tab changed,but can not find figure</source>
         <translation>绘图操作窗口的标签改变信号中，无法通过标签索引找到对应的绘图</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+22"/>
         <source>question</source>
         <translation>疑问</translation>
     </message>
@@ -1998,22 +1933,20 @@ Table Area</source>
 <context>
     <name>DA::DAChartSpectrogramItemSettingWidget</name>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartSpectrogramItemSettingWidget.cpp" line="+93"/>
+        <location filename="../DAGui/ChartSetting/DAChartSpectrogramItemSettingWidget.cpp" line="+93"/>
         <source>Image Mode</source>
-        <oldsource>ImageMode</oldsource>
         <translation>云图模式</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Contour Mode</source>
-        <oldsource>ContourMode</oldsource>
         <translation>等高线模式</translation>
     </message>
 </context>
 <context>
     <name>DA::DAChartSymbolComboBox</name>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartSymbolComboBox.cpp" line="+38"/>
+        <location filename="../DAGui/ChartSetting/DAChartSymbolComboBox.cpp" line="+38"/>
         <source>No Symbol</source>
         <translation>无标签</translation>
     </message>
@@ -2096,7 +2029,7 @@ Table Area</source>
 <context>
     <name>DA::DAChartWidget</name>
     <message>
-        <location filename="DAFigure/DAChartWidget.cpp" line="+1036"/>
+        <location filename="../DAFigure/DAChartWidget.cpp" line="+1035"/>
         <source>Before zoom in, the chart must setup a zoomer</source>
         <translation>在放大图表之前需要先建立缩放器</translation>
     </message>
@@ -2109,7 +2042,7 @@ Table Area</source>
 <context>
     <name>DA::DADataManageTableView</name>
     <message>
-        <location filename="DAGui/DADataManageTableView.cpp" line="+88"/>
+        <location filename="../DAGui/DADataManageTableView.cpp" line="+88"/>
         <source>The item is selected in the data management table, but the corresponding data cannot be obtained</source>
         <translation>在数据管理表中选中了条目，但无法获取对应数据</translation>
     </message>
@@ -2117,7 +2050,7 @@ Table Area</source>
 <context>
     <name>DA::DADataManageWidget</name>
     <message>
-        <location filename="DAGui/DADataManageWidget.cpp" line="+114"/>
+        <location filename="../DAGui/DADataManageWidget.cpp" line="+114"/>
         <source>Please select the data item to remove</source>
         <translation>请选择需要删除的数据条目</translation>
     </message>
@@ -2130,7 +2063,7 @@ Table Area</source>
 <context>
     <name>DA::DADataManager</name>
     <message>
-        <location filename="DAData/DADataManager.cpp" line="+53"/>
+        <location filename="../DAData/DADataManager.cpp" line="+53"/>
         <source>data:%1 have been added</source>
         <translation>数据%1已经添加</translation>
     </message>
@@ -2140,7 +2073,7 @@ Table Area</source>
         <translation>添加数据</translation>
     </message>
     <message>
-        <location line="+43"/>
+        <location line="+40"/>
         <source>remove datas</source>
         <translation>移除数据</translation>
     </message>
@@ -2148,7 +2081,7 @@ Table Area</source>
 <context>
     <name>DA::DADataManagerTableModel</name>
     <message>
-        <location filename="DAGui/Models/DADataManagerTableModel.cpp" line="+33"/>
+        <location filename="../DAGui/Models/DADataManagerTableModel.cpp" line="+33"/>
         <source>name</source>
         <translation>名称</translation>
     </message>
@@ -2161,7 +2094,7 @@ Table Area</source>
 <context>
     <name>DA::DADataManagerTreeModel</name>
     <message>
-        <location filename="DAGui/Models/DADataManagerTreeModel.cpp" line="+412"/>
+        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="+411"/>
         <location line="+2"/>
         <source>name</source>
         <translation>名称</translation>
@@ -2181,7 +2114,7 @@ Table Area</source>
 <context>
     <name>DA::DADataOperateOfDataFrameWidget</name>
     <message>
-        <location filename="DAGui/DADataOperateOfDataFrameWidget.cpp" line="+174"/>
+        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+174"/>
         <source>warning</source>
         <translation>警告</translation>
     </message>
@@ -2218,12 +2151,12 @@ Table Area</source>
 <context>
     <name>DA::DADataOperateWidget</name>
     <message>
-        <location filename="DAGui/DADataOperateWidget.cpp" line="+171"/>
+        <location filename="../DAGui/DADataOperateWidget.cpp" line="+176"/>
         <source>removing a widget that does not exist in tab</source>
         <translation>正在移除一个不存在的窗口</translation>
     </message>
     <message>
-        <location line="+39"/>
+        <location line="+59"/>
         <source>[deleted]</source>
         <translation>[已删除]</translation>
     </message>
@@ -2231,7 +2164,7 @@ Table Area</source>
 <context>
     <name>DA::DADataframeToVectorPointWidget</name>
     <message>
-        <location filename="DAGui/DADataframeToVectorPointWidget.cpp" line="+14"/>
+        <location filename="../DAGui/DADataframeToVectorPointWidget.cpp" line="+14"/>
         <source>x</source>
         <translation>x</translation>
     </message>
@@ -2249,7 +2182,7 @@ Table Area</source>
 <context>
     <name>DA::DADialogChartGuide</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogChartGuide.cpp" line="+70"/>
+        <location filename="../DAGui/Dialog/DADialogChartGuide.cpp" line="+70"/>
         <source>curve</source>
         <translation>曲线图</translation>
     </message>
@@ -2282,7 +2215,7 @@ Table Area</source>
 <context>
     <name>DA::DADialogCreatePivotTable</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.cpp" line="+59"/>
+        <location filename="../DAGui/Dialog/DADialogCreatePivotTable.cpp" line="+59"/>
         <source>Value</source>
         <translation>值</translation>
     </message>
@@ -2360,7 +2293,7 @@ Table Area</source>
 <context>
     <name>DA::DADialogDataFrameClipOutlier</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameClipOutlier.cpp" line="+29"/>
+        <location filename="../DAGui/Dialog/DADialogDataFrameClipOutlier.cpp" line="+29"/>
         <location line="+16"/>
         <source>The current input cannot be converted to a floating-point number.</source>
         <translation>当前输入内容无法转换为浮点数。</translation>
@@ -2369,12 +2302,12 @@ Table Area</source>
 <context>
     <name>DA::DADialogDataFrameDataSearch</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameDataSearch.cpp" line="+40"/>
+        <location filename="../DAGui/Dialog/DADialogDataFrameDataSearch.cpp" line="+40"/>
         <source>can not find item</source>
         <translation>无法找到条目</translation>
     </message>
     <message>
-        <location filename="../DAGui/Dialog/DADialogDataFrameDataSearch.cpp" line="+48"/>
+        <location line="+8"/>
         <source>Found at column %1,line %2</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2382,7 +2315,7 @@ Table Area</source>
 <context>
     <name>DA::DADialogDataFrameDataSelect</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameDataSelect.cpp" line="+49"/>
+        <location filename="../DAGui/Dialog/DADialogDataFrameDataSelect.cpp" line="+49"/>
         <location line="+16"/>
         <source>The current input cannot be converted to a floating-point number.</source>
         <translation>当前输入内容无法转换为浮点数。</translation>
@@ -2391,7 +2324,7 @@ Table Area</source>
 <context>
     <name>DA::DADialogDataFrameEvalDatas</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameEvalDatas.cpp" line="+12"/>
+        <location filename="../DAGui/Dialog/DADialogDataFrameEvalDatas.cpp" line="+12"/>
         <source># I. Basic Syntax
 
 You can write expressions using the following elements:
@@ -2519,7 +2452,7 @@ name.str.contains(&quot;John&quot;)
 <context>
     <name>DA::DADialogDataFrameFillInterpolate</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.cpp" line="+27"/>
+        <location filename="../DAGui/Dialog/DADialogDataFrameFillInterpolate.cpp" line="+27"/>
         <source>spline</source>
         <translation>样条线</translation>
     </message>
@@ -2529,7 +2462,7 @@ name.str.contains(&quot;John&quot;)
         <translation>多项式</translation>
     </message>
     <message>
-        <location line="+30"/>
+        <location line="+29"/>
         <source>The current input cannot be converted to a integer number.</source>
         <translation>当前输入内容无法转换为整型数。</translation>
     </message>
@@ -2537,7 +2470,7 @@ name.str.contains(&quot;John&quot;)
 <context>
     <name>DA::DADialogDataFrameFillna</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillna.cpp" line="+27"/>
+        <location filename="../DAGui/Dialog/DADialogDataFrameFillna.cpp" line="+27"/>
         <source>The current input cannot be converted to a floating-point number.</source>
         <translation>当前输入内容无法转换为浮点数。</translation>
     </message>
@@ -2545,7 +2478,7 @@ name.str.contains(&quot;John&quot;)
 <context>
     <name>DA::DADialogDataFrameQueryDatas</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameQueryDatas.cpp" line="+12"/>
+        <location filename="../DAGui/Dialog/DADialogDataFrameQueryDatas.cpp" line="+12"/>
         <source>Using the **Query Data** feature, you can filter data using expressions:
 
 1  **Comparison Operators**: Supports `==`, `&gt;`, `&lt;`, `&gt;=`, `&lt;=`, `!=` for direct comparison of column names and values.  
@@ -2609,7 +2542,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DADialogDataFrameSort</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameSort.cpp" line="+11"/>
+        <location filename="../DAGui/Dialog/DADialogDataFrameSort.cpp" line="+11"/>
         <source>Ascending</source>
         <translation>升序</translation>
     </message>
@@ -2622,7 +2555,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DADockingAreaInterface</name>
     <message>
-        <location filename="DAInterface/DADockingAreaInterface.cpp" line="+90"/>
+        <location filename="../DAInterface/DADockingAreaInterface.cpp" line="+90"/>
         <source>dock widget &quot;%1&quot; was closed and hide</source>
         <translation>停靠窗口“%1”隐藏并关闭</translation>
     </message>
@@ -2635,7 +2568,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAExportToPngSettingDialog</name>
     <message>
-        <location filename="APP/Dialog/DAExportToPngSettingDialog.cpp" line="+56"/>
+        <location filename="../APP/Dialog/DAExportToPngSettingDialog.cpp" line="+56"/>
         <source>Images (*.png)</source>
         <translation>图片 (*.png)</translation>
     </message>
@@ -2643,7 +2576,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAFigureTreeModel</name>
     <message>
-        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="+437"/>
+        <location filename="../DAFigure/Models/DAFigureTreeModel.cpp" line="+437"/>
         <source>receive legend data changed signal,but can not cast sender to qwt plot</source>
         <translation>接收到legend data changed信号，但无法把发送方转换为qwt plot</translation>
     </message>
@@ -2679,7 +2612,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAGraphicsTextItem</name>
     <message>
-        <location filename="DAGraphicsView/DAGraphicsTextItem.cpp" line="+40"/>
+        <location filename="../DAGraphicsView/DAGraphicsTextItem.cpp" line="+40"/>
         <location line="+6"/>
         <source>Text</source>
         <translation>文本</translation>
@@ -2688,7 +2621,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAMessageLogViewWidget</name>
     <message>
-        <location filename="DAGui/DAMessageLogViewWidget.cpp" line="+295"/>
+        <location filename="../DAGui/DAMessageLogViewWidget.cpp" line="+295"/>
         <source>Info</source>
         <translation>通知</translation>
     </message>
@@ -2741,7 +2674,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAMessageLogsModel</name>
     <message>
-        <location filename="DAGui/Models/DAMessageLogsModel.cpp" line="+68"/>
+        <location filename="../DAGui/Models/DAMessageLogsModel.cpp" line="+68"/>
         <source>date time</source>
         <translation>日期</translation>
     </message>
@@ -2755,7 +2688,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DANodeLinkItemSettingWidget</name>
     <message>
-        <location filename="DAGui/DANodeLinkItemSettingWidget.cpp" line="+21"/>
+        <location filename="../DAGui/DANodeLinkItemSettingWidget.cpp" line="+21"/>
         <source>Knuckle</source>
         <translation>折线</translation>
     </message>
@@ -2778,7 +2711,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DANodeTreeWidget</name>
     <message>
-        <location filename="DAGui/DANodeTreeWidget.cpp" line="+165"/>
+        <location filename="../DAGui/DANodeTreeWidget.cpp" line="+164"/>
         <source>Favorite</source>
         <translation>收藏</translation>
     </message>
@@ -2786,7 +2719,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAPluginManager</name>
     <message>
-        <location filename="DAPluginSupport/DAPluginManager.cpp" line="+54"/>
+        <location filename="../DAPluginSupport/DAPluginManager.cpp" line="+54"/>
         <source>The file .pluginignore exists, but it failed to read due to the following reason:%1</source>
         <translation>存在.pluginignore文件，不是无法读取，原因是：%1</translation>
     </message>
@@ -2808,13 +2741,11 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+5"/>
         <source> ignore invalid file:%1</source>
-        <oldsource> ignore invalid file:%2</oldsource>
         <translation> 忽略异常文件:%1</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>can not load plugin:%1</source>
-        <oldsource>start load plugin:%1</oldsource>
         <translation>无法加载插件:%1</translation>
     </message>
     <message>
@@ -2826,7 +2757,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAPluginManagerDialog</name>
     <message>
-        <location filename="APP/DAPluginManagerDialog.cpp" line="+43"/>
+        <location filename="../APP/DAPluginManagerDialog.cpp" line="+43"/>
         <source>name</source>
         <translation>名称</translation>
     </message>
@@ -2864,7 +2795,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAPyDTypeComboBox</name>
     <message>
-        <location filename="DAPyCommonWidgets/DAPyDTypeComboBox.cpp" line="+15"/>
+        <location filename="../DAPyCommonWidgets/DAPyDTypeComboBox.cpp" line="+15"/>
         <source>float64</source>
         <translation>float64</translation>
     </message>
@@ -2962,7 +2893,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAPyDataFrameTableView</name>
     <message>
-        <location filename="DAGui/DAPyDataFrameTableView.cpp" line="+31"/>
+        <location filename="../DAGui/DAPyDataFrameTableView.cpp" line="+31"/>
         <source>DataFrameTableView must set model first</source>
         <translation>你需要先设置模型</translation>
     </message>
@@ -2970,15 +2901,33 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAPyDataframeColumnsListWidget</name>
     <message>
-        <location filename="DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="+20"/>
+        <location filename="../DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="+20"/>
         <source>Exception in get selected series:%1</source>
         <translation>获取选中的序列发生异常：%1</translation>
     </message>
 </context>
 <context>
+    <name>DA::DARecentFilesManager</name>
+    <message>
+        <location filename="../DAGui/DARecentFilesManager.cpp" line="+119"/>
+        <source>(empty)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>Clear menu</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DAGui/DARecentFilesManager.h" line="+24"/>
+        <source>Recent files</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DA::DARenameColumnsNameDialog</name>
     <message>
-        <location filename="DAGui/Dialog/DARenameColumnsNameDialog.cpp" line="+47"/>
+        <location filename="../DAGui/Dialog/DARenameColumnsNameDialog.cpp" line="+47"/>
         <source>name</source>
         <translation>名称</translation>
     </message>
@@ -2996,7 +2945,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DASettingPageCommon</name>
     <message>
-        <location filename="APP/SettingPages/DASettingPageCommon.cpp" line="+67"/>
+        <location filename="../APP/SettingPages/DASettingPageCommon.cpp" line="+67"/>
         <source>common</source>
         <translation>通用</translation>
     </message>
@@ -3019,7 +2968,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DASettingWidget</name>
     <message>
-        <location filename="DACommonWidgets/DASettingWidget.cpp" line="+96"/>
+        <location filename="../DACommonWidgets/DASettingWidget.cpp" line="+96"/>
         <source>page changed,but can not catch the sender widget</source>
         <translation>检测到配置页的改变，但无法捕获改变的配置页</translation>
     </message>
@@ -3027,7 +2976,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DATextReadWriter</name>
     <message>
-        <location filename="DAUtils/DATextReadWriter.cpp" line="+179"/>
+        <location filename="../DAUtils/DATextReadWriter.cpp" line="+179"/>
         <source>can not open %1,because %2</source>
         <translation>无法打开%1，原因是 %2</translation>
     </message>
@@ -3035,7 +2984,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DATimeFormatEditWidget</name>
     <message>
-        <location filename="DACommonWidgets/DATimeFormatEditWidget.cpp" line="+40"/>
+        <location filename="../DACommonWidgets/DATimeFormatEditWidget.cpp" line="+40"/>
         <source>example: 8:5</source>
         <translation>示例: 8:5</translation>
     </message>
@@ -3088,7 +3037,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAToolBox</name>
     <message>
-        <location filename="DAGui/DAToolBox.cpp" line="+88"/>
+        <location filename="../DAGui/DAToolBox.cpp" line="+88"/>
         <source>Favorite</source>
         <translation>收藏</translation>
     </message>
@@ -3096,7 +3045,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DATreeModel</name>
     <message>
-        <location filename="DAGui/Models/DATreeModel.cpp" line="+113"/>
+        <location filename="../DAGui/Models/DATreeModel.cpp" line="+113"/>
         <source>DATreeModel get invalid item</source>
         <translation>DATreeModel获取了异常的item</translation>
     </message>
@@ -3104,7 +3053,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DATxtFileImportDialog</name>
     <message>
-        <location filename="APP/Dialog/DATxtFileImportDialog.cpp" line="+53"/>
+        <location filename="../DAGui/Dialog/DATxtFileImportDialog.cpp" line="+53"/>
         <source>,(comma)</source>
         <translation>,逗号</translation>
     </message>
@@ -3141,14 +3090,13 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+1"/>
         <source>read txt file(%1) occure error,reason:%2</source>
-        <oldsource>read txt file(%1) occure error,reason:%3</oldsource>
         <translation>读取txt文件%1发生了错误，原因是：%2</translation>
     </message>
 </context>
 <context>
     <name>DA::DAWorkFlow</name>
     <message>
-        <location filename="DAWorkFlow/DAWorkFlow.cpp" line="+407"/>
+        <location filename="../DAWorkFlow/DAWorkFlow.cpp" line="+406"/>
         <source>begin exec workflow</source>
         <translation>开始执行工作流</translation>
     </message>
@@ -3166,7 +3114,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAWorkFlowEditWidget</name>
     <message>
-        <location filename="DAGui/DAWorkFlowEditWidget.cpp" line="+103"/>
+        <location filename="../DAGui/DAWorkFlowEditWidget.cpp" line="+103"/>
         <source>no workflow set</source>
         <translation>没有设置工作流</translation>
     </message>
@@ -3174,21 +3122,20 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAWorkFlowExecuter</name>
     <message>
-        <location filename="DAWorkFlow/DAWorkFlowExecuter.cpp" line="+321"/>
+        <location filename="../DAWorkFlow/DAWorkFlowExecuter.cpp" line="+321"/>
         <source>execute node, name=%1,type=%2</source>
         <translation>执行节点，节点名称=%1,节点原型信息=%2</translation>
     </message>
     <message>
         <location line="+24"/>
         <source>execute node(not transmit), name=%1,type=%2</source>
-        <oldsource>execute node, name=</oldsource>
         <translation>执行节点（not transmit模式），节点名称=%1,节点原型信息=%2</translation>
     </message>
 </context>
 <context>
     <name>DA::DAWorkFlowGraphicsView</name>
     <message>
-        <location filename="DAGui/DAWorkFlowGraphicsView.cpp" line="+221"/>
+        <location filename="../DAGui/DAWorkFlowGraphicsView.cpp" line="+221"/>
         <source>cut</source>
         <translation>剪切</translation>
     </message>
@@ -3211,7 +3158,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAWorkFlowNodeItemSettingWidget</name>
     <message>
-        <location filename="DAGui/DAWorkFlowNodeItemSettingWidget.cpp" line="+293"/>
+        <location filename="../DAGui/DAWorkFlowNodeItemSettingWidget.cpp" line="+293"/>
         <source>property</source>
         <translation>属性</translation>
     </message>
@@ -3219,7 +3166,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAWorkFlowNodeListWidget</name>
     <message>
-        <location filename="DAGui/DAWorkFlowNodeListWidget.cpp" line="+123"/>
+        <location filename="../DAGui/DAWorkFlowNodeListWidget.cpp" line="+123"/>
         <source>Favorite</source>
         <translation>收藏</translation>
     </message>
@@ -3232,7 +3179,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAWorkFlowOperateWidget</name>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.cpp" line="+318"/>
+        <location filename="../DAGui/DAWorkFlowOperateWidget.cpp" line="+318"/>
         <source>question</source>
         <translation>疑问</translation>
     </message>
@@ -3375,22 +3322,22 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAWorkbenchAboutDialog</name>
     <message>
-        <location filename="APP/Dialog/DAWorkbenchAboutDialog.cpp" line="+28"/>
+        <location filename="../APP/Dialog/DAWorkbenchAboutDialog.cpp" line="+28"/>
         <source>email:czy.t@163.com</source>
         <translation>邮件:czy.t@163.com</translation>
     </message>
     <message>
-        <location filename="../APP/Dialog/DAWorkbenchAboutDialog.cpp" line="+29"/>
+        <location line="+1"/>
         <source>github:https://github.com/czyt1988/data-workbench</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/Dialog/DAWorkbenchAboutDialog.cpp" line="+3"/>
+        <location line="+2"/>
         <source>third party list:</source>
         <translation>第三方库列表:</translation>
     </message>
     <message>
-        <location filename="../APP/Dialog/DAWorkbenchAboutDialog.cpp" line="+3"/>
+        <location line="+1"/>
         <source>SARibbon, MIT, Version:%1.%2.%3</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3410,12 +3357,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/Dialog/DAWorkbenchAboutDialog.cpp" line="+11"/>
+        <location line="+3"/>
         <source>This is a Python dependent version</source>
         <translation>此版本依赖python环境</translation>
     </message>
     <message>
-        <location filename="../APP/Dialog/DAWorkbenchAboutDialog.cpp" line="+4"/>
+        <location line="+1"/>
         <source>pybind11,BSD,Version:%1.%2</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3428,78 +3375,37 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAZipArchive</name>
     <message>
-        <location filename="DAGui/DAZipArchive.cpp" line="+102"/>
-        <location line="+20"/>
-        <location line="+25"/>
-        <source>%1 is already opened</source>
-        <translation>当前文件%1已经打开</translation>
-    </message>
-    <message>
-        <location line="-20"/>
-        <location line="+25"/>
-        <source>failed to open archive file %1</source>
-        <translation>无法打开存档文件%1</translation>
-    </message>
-    <message>
-        <location line="+21"/>
-        <source>archive is not open,can not close</source>
-        <translation>存档没有打开，无法关闭</translation>
-    </message>
-    <message>
-        <location line="+20"/>
-        <location line="+69"/>
+        <location filename="../DAGui/DAZipArchive.cpp" line="+367"/>
         <location line="+15"/>
         <location line="+55"/>
-        <location line="+35"/>
-        <location line="+100"/>
+        <location line="+127"/>
         <location line="+11"/>
         <source>archive is not open</source>
         <translation>存档没有打开</translation>
     </message>
     <message>
-        <location filename="../DAGui/DAZipArchive.cpp" line="+388"/>
+        <location line="-187"/>
         <source>Unable to locate the %1 file in the current archive. The error code is %2,err str:%3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAZipArchive.cpp" line="-271"/>
+        <location line="-80"/>
         <source>The file %1 in the archive could not be opened. The reason for the error is %2</source>
         <translation>无法打开文件中的%1,错误原因为%2</translation>
     </message>
     <message>
-        <location line="+75"/>
-        <source>Unable to locate the %1 file in the current archive. The error code is %2</source>
-        <translation>无法找到当前存档下的%1文件。错误码为%2</translation>
-    </message>
-    <message>
-        <location line="+9"/>
+        <location line="+90"/>
         <source>The file %1 in the archive could not be opened. The error code is %2</source>
         <translation>无法打开存档中的%1文件，错误码为%2</translation>
     </message>
     <message>
-        <location line="+95"/>
-        <source>Failed to create temporary file:%1</source>
-        <translation>无法创建临时文件：%1</translation>
-    </message>
-    <message>
-        <location line="+18"/>
-        <location line="+1"/>
-        <source>open %1 to temp file error</source>
-        <translation>打开临时文件%1失败</translation>
-    </message>
-    <message>
-        <location line="+21"/>
-        <source>when rename temp %1 to archive %2 occure error</source>
-        <translation>当把临时文件%1改名为%2存档文件时发生异常</translation>
-    </message>
-    <message>
-        <location line="+69"/>
-        <location line="+12"/>
+        <location line="+193"/>
+        <location line="+10"/>
         <source>can not open archive</source>
         <translation>无法打开存档</translation>
     </message>
     <message>
-        <location line="+148"/>
+        <location line="+179"/>
         <source>Failed to create target directory:%1</source>
         <translation>无法创建目标文件夹%1</translation>
     </message>
@@ -3507,7 +3413,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAligmentEditWidget</name>
     <message>
-        <location filename="DACommonWidgets/DAAligmentEditWidget.ui" line="+20"/>
+        <location filename="../DACommonWidgets/DAAligmentEditWidget.ui" line="+20"/>
         <source>Aligment Edit Widget</source>
         <translation>对齐编辑窗口</translation>
     </message>
@@ -3540,7 +3446,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAligmentPositionEditWidget</name>
     <message>
-        <location filename="DACommonWidgets/DAAligmentPositionEditWidget.ui" line="+20"/>
+        <location filename="../DACommonWidgets/DAAligmentPositionEditWidget.ui" line="+20"/>
         <source>Aligment Position</source>
         <translation>对齐位置</translation>
     </message>
@@ -3548,7 +3454,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="APP/DAAppController.cpp" line="-2118"/>
+        <location filename="../APP/DAAppController.cpp" line="-2174"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -3556,7 +3462,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppRibbonArea</name>
     <message>
-        <location line="+7"/>
+        <location line="+11"/>
         <source>warning</source>
         <translation>警告</translation>
     </message>
@@ -3569,7 +3475,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DABrushEditWidget</name>
     <message>
-        <location filename="DACommonWidgets/DABrushEditWidget.ui" line="+20"/>
+        <location filename="../DACommonWidgets/DABrushEditWidget.ui" line="+20"/>
         <source>Brush Edit</source>
         <translation>画刷编辑</translation>
     </message>
@@ -3577,7 +3483,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartAddCurveWidget</name>
     <message>
-        <location filename="DAGui/DAChartAddCurveWidget.ui" line="+14"/>
+        <location filename="../DAGui/DAChartAddCurveWidget.ui" line="+14"/>
         <source>Add XY Series</source>
         <translation>添加序列</translation>
     </message>
@@ -3599,7 +3505,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>初始值</translation>
     </message>
     <message>
-        <location filename="../DAGui/DAChartAddCurveWidget.ui" line="+70"/>
+        <location line="-54"/>
         <location line="+14"/>
         <location line="+47"/>
         <location line="+14"/>
@@ -3607,7 +3513,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddCurveWidget.ui" line="-47"/>
+        <location line="-68"/>
         <location line="+61"/>
         <source>Self increasing step size</source>
         <translation>步长</translation>
@@ -3621,17 +3527,17 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartAddOHLCSeriesWidget</name>
     <message>
-        <location filename="DAGui/DAChartAddOHLCSeriesWidget.ui" line="+14"/>
+        <location filename="../DAGui/DAChartAddOHLCSeriesWidget.ui" line="+14"/>
         <source>Add XY Series</source>
         <translation>添加序列</translation>
     </message>
     <message>
-        <location filename="../DAGui/DAChartAddOHLCSeriesWidget.ui" line="+30"/>
+        <location line="+16"/>
         <source>X</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddOHLCSeriesWidget.ui" line="+28"/>
+        <location line="+12"/>
         <source>Autoincrement series</source>
         <translation>自增序列</translation>
     </message>
@@ -3641,13 +3547,13 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>初始值</translation>
     </message>
     <message>
-        <location filename="../DAGui/DAChartAddOHLCSeriesWidget.ui" line="+34"/>
+        <location line="+7"/>
         <location line="+14"/>
         <source>1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddOHLCSeriesWidget.ui" line="+14"/>
+        <location line="-7"/>
         <source>Self increasing step size</source>
         <translation>步长</translation>
     </message>
@@ -3675,7 +3581,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartAddSpectrogramWidget</name>
     <message>
-        <location filename="DAGui/DAChartAddSpectrogramWidget.ui" line="+14"/>
+        <location filename="../DAGui/DAChartAddSpectrogramWidget.ui" line="+14"/>
         <source>Add Curve</source>
         <translation>添加曲线</translation>
     </message>
@@ -3698,7 +3604,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartAddXYESeriesWidget</name>
     <message>
-        <location filename="DAGui/DAChartAddXYESeriesWidget.ui" line="+14"/>
+        <location filename="../DAGui/DAChartAddXYESeriesWidget.ui" line="+14"/>
         <source>Add XY Series</source>
         <translation>添加序列</translation>
     </message>
@@ -3720,7 +3626,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>初始值</translation>
     </message>
     <message>
-        <location filename="../DAGui/DAChartAddXYESeriesWidget.ui" line="+61"/>
+        <location line="-68"/>
         <location line="+14"/>
         <location line="+40"/>
         <location line="+7"/>
@@ -3728,7 +3634,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYESeriesWidget.ui" line="-61"/>
+        <location line="-54"/>
         <location line="+68"/>
         <source>Self increasing step size</source>
         <translation>步长</translation>
@@ -3747,17 +3653,17 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartAddXYSeriesWidget</name>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="+14"/>
+        <location filename="../DAGui/DAChartAddXYSeriesWidget.ui" line="+14"/>
         <source>Add XY Series</source>
         <translation>添加序列</translation>
     </message>
     <message>
-        <location filename="../DAGui/DAChartAddXYSeriesWidget.ui" line="+36"/>
+        <location line="+22"/>
         <source>X</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="+34"/>
+        <location line="+12"/>
         <location line="+61"/>
         <source>Autoincrement series</source>
         <translation>自增序列</translation>
@@ -3769,7 +3675,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>初始值</translation>
     </message>
     <message>
-        <location filename="../DAGui/DAChartAddXYSeriesWidget.ui" line="+34"/>
+        <location line="-54"/>
         <location line="+14"/>
         <location line="+47"/>
         <location line="+14"/>
@@ -3777,13 +3683,13 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAChartAddXYSeriesWidget.ui" line="-47"/>
+        <location line="-68"/>
         <location line="+61"/>
         <source>Self increasing step size</source>
         <translation>步长</translation>
     </message>
     <message>
-        <location filename="../DAGui/DAChartAddXYSeriesWidget.ui" line="-48"/>
+        <location line="-41"/>
         <source>Y</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3791,7 +3697,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartAddtGridRasterDataWidget</name>
     <message>
-        <location filename="DAGui/DAChartAddtGridRasterDataWidget.ui" line="+14"/>
+        <location filename="../DAGui/DAChartAddtGridRasterDataWidget.ui" line="+14"/>
         <source>Add XY Series</source>
         <translation>添加序列</translation>
     </message>
@@ -3814,7 +3720,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartAxisSetWidget</name>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="+14"/>
+        <location filename="../DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="+14"/>
         <source>Axis Set</source>
         <translation>坐标轴设置</translation>
     </message>
@@ -3872,7 +3778,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartBarItemSettingWidget</name>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="+14"/>
         <source>Bar Chart Setting</source>
         <translation>柱状图设置</translation>
     </message>
@@ -3980,7 +3886,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartCommonItemsSettingWidget</name>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCommonItemsSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/ChartSetting/DAChartCommonItemsSettingWidget.ui" line="+14"/>
         <source>Common Item Setting</source>
         <translation>通用绘图图元设置窗口</translation>
     </message>
@@ -3988,7 +3894,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartCurveItemSettingWidget</name>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="+145"/>
+        <location filename="../DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="+145"/>
         <source>Curve Style</source>
         <translation>曲线样式</translation>
     </message>
@@ -4103,7 +4009,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartErrorBarItemSettingWidget</name>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartErrorBarItemSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/ChartSetting/DAChartErrorBarItemSettingWidget.ui" line="+14"/>
         <source>Curve Setting</source>
         <translation>曲线设置</translation>
     </message>
@@ -4182,7 +4088,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartGridSettingWidget</name>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartGridSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/ChartSetting/DAChartGridSettingWidget.ui" line="+14"/>
         <source>Chart Guide Setting</source>
         <translation>绘图向导设定</translation>
     </message>
@@ -4194,7 +4100,6 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+15"/>
         <source>Major Line Pen:</source>
-        <oldsource>Line Pen:</oldsource>
         <translation>主网格线:</translation>
     </message>
     <message>
@@ -4211,14 +4116,13 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartLegendItemSettingWidget</name>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartLegendItemSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/ChartSetting/DAChartLegendItemSettingWidget.ui" line="+14"/>
         <source>Chart Legend Item Setting</source>
         <translation>绘图图例设定</translation>
     </message>
     <message>
         <location line="+12"/>
         <source>Position</source>
-        <oldsource>position</oldsource>
         <translation>位置</translation>
     </message>
     <message>
@@ -4285,7 +4189,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartManageWidget</name>
     <message>
-        <location filename="DAGui/DAChartManageWidget.ui" line="+14"/>
+        <location filename="../DAGui/DAChartManageWidget.ui" line="+14"/>
         <source>Chart Manage</source>
         <translation>绘图管理</translation>
     </message>
@@ -4293,7 +4197,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartOperateWidget</name>
     <message>
-        <location filename="DAGui/DAChartOperateWidget.ui" line="+14"/>
+        <location filename="../DAGui/DAChartOperateWidget.ui" line="+14"/>
         <source>Chart Operate</source>
         <translation>绘图操作</translation>
     </message>
@@ -4301,7 +4205,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartPlotItemSettingWidget</name>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="+20"/>
+        <location filename="../DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="+20"/>
         <source>Plot Setting</source>
         <translation>绘图设置</translation>
     </message>
@@ -4364,7 +4268,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartPlotSettingWidget</name>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="+14"/>
         <source>Plot Setting</source>
         <translation>绘图设置</translation>
     </message>
@@ -4407,7 +4311,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartSettingWidget</name>
     <message>
-        <location filename="DAGui/DAChartSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/DAChartSettingWidget.ui" line="+14"/>
         <source>Chart Setting</source>
         <translation>绘图设置</translation>
     </message>
@@ -4430,7 +4334,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartSpectrogramItemSettingWidget</name>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartSpectrogramItemSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/ChartSetting/DAChartSpectrogramItemSettingWidget.ui" line="+14"/>
         <location line="+57"/>
         <source>Curve Setting</source>
         <translation>曲线设置</translation>
@@ -4475,7 +4379,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartSymbolEditWidget</name>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartSymbolEditWidget.ui" line="+20"/>
+        <location filename="../DAGui/ChartSetting/DAChartSymbolEditWidget.ui" line="+20"/>
         <source>Chart Symbol Edit</source>
         <translation>符号编辑</translation>
     </message>
@@ -4503,7 +4407,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartTradingCurveItemSettingWidget</name>
     <message>
-        <location filename="DAGui/ChartSetting/DAChartTradingCurveItemSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/ChartSetting/DAChartTradingCurveItemSettingWidget.ui" line="+14"/>
         <source>Curve Setting</source>
         <translation>曲线设置</translation>
     </message>
@@ -4596,7 +4500,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DADataManageWidget</name>
     <message>
-        <location filename="DAGui/DADataManageWidget.ui" line="+14"/>
+        <location filename="../DAGui/DADataManageWidget.ui" line="+14"/>
         <source>Data Manage</source>
         <translation>数据管理</translation>
     </message>
@@ -4604,7 +4508,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DADataOperateOfDataFrameWidget</name>
     <message>
-        <location filename="DAGui/DADataOperateOfDataFrameWidget.ui" line="+14"/>
+        <location filename="../DAGui/DADataOperateOfDataFrameWidget.ui" line="+14"/>
         <source>DataFrame Operate</source>
         <translation>DataFrame操作</translation>
     </message>
@@ -4612,7 +4516,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DADataOperateWidget</name>
     <message>
-        <location filename="DAGui/DADataOperateWidget.ui" line="+20"/>
+        <location filename="../DAGui/DADataOperateWidget.ui" line="+20"/>
         <source>Data Operator</source>
         <translation>数据操作</translation>
     </message>
@@ -4625,7 +4529,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DADataframeToVectorPointWidget</name>
     <message>
-        <location filename="DAGui/DADataframeToVectorPointWidget.ui" line="+14"/>
+        <location filename="../DAGui/DADataframeToVectorPointWidget.ui" line="+14"/>
         <source>Dataframe To Vector Point</source>
         <translation>Dataframe转化</translation>
     </message>
@@ -4648,7 +4552,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DADialogChartGuide</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogChartGuide.ui" line="+14"/>
+        <location filename="../DAGui/Dialog/DADialogChartGuide.ui" line="+14"/>
         <source>Chart Guide</source>
         <translation>绘图引导</translation>
     </message>
@@ -4656,7 +4560,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DADialogCreatePivotTable</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogCreatePivotTable.ui" line="+20"/>
+        <location filename="../DAGui/Dialog/DADialogCreatePivotTable.ui" line="+20"/>
         <source>Pivot Table</source>
         <translation>透视表</translation>
     </message>
@@ -4714,18 +4618,18 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DADialogDataFrameClipOutlier</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameClipOutlier.ui" line="+14"/>
+        <location filename="../DAGui/Dialog/DADialogDataFrameClipOutlier.ui" line="+14"/>
         <location line="+6"/>
         <source>Clip Outlier</source>
         <translation>裁剪异常值</translation>
     </message>
     <message>
-        <location filename="../DAGui/Dialog/DADialogDataFrameClipOutlier.ui" line="+40"/>
+        <location line="+20"/>
         <source>-</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameClipOutlier.ui" line="+27"/>
+        <location line="+7"/>
         <source>Range</source>
         <translation>范围</translation>
     </message>
@@ -4743,7 +4647,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DADialogDataFrameDataSearch</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameDataSearch.ui" line="+20"/>
+        <location filename="../DAGui/Dialog/DADialogDataFrameDataSearch.ui" line="+20"/>
         <source>Seacrch</source>
         <translation>搜索</translation>
     </message>
@@ -4768,7 +4672,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>关闭</translation>
     </message>
     <message>
-        <location filename="../DAGui/Dialog/DADialogDataFrameDataSearch.ui" line="+14"/>
+        <location line="-77"/>
         <source>Dataframe Search</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4776,7 +4680,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DADialogDataFrameDataSelect</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameDataSelect.ui" line="+14"/>
+        <location filename="../DAGui/Dialog/DADialogDataFrameDataSelect.ui" line="+14"/>
         <location line="+6"/>
         <source>Data Filter</source>
         <translation>数据过滤</translation>
@@ -4792,12 +4696,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>范围</translation>
     </message>
     <message>
-        <location filename="../DAGui/Dialog/DADialogDataFrameDataSelect.ui" line="+54"/>
+        <location line="+7"/>
         <source>-</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameDataSelect.ui" line="+48"/>
+        <location line="+41"/>
         <source>OK</source>
         <translation>确认</translation>
     </message>
@@ -4810,7 +4714,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DADialogDataFrameEvalDatas</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameEvalDatas.ui" line="+14"/>
+        <location filename="../DAGui/Dialog/DADialogDataFrameEvalDatas.ui" line="+14"/>
         <source>Eval Data</source>
         <translation>数值计算</translation>
     </message>
@@ -4847,7 +4751,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DADialogDataFrameFillInterpolate</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="+14"/>
+        <location filename="../DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="+14"/>
         <location line="+6"/>
         <source>Fill Interpolate</source>
         <translation>插值填充</translation>
@@ -4873,12 +4777,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>插值维度</translation>
     </message>
     <message>
-        <location filename="../DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="+59"/>
+        <location line="+13"/>
         <source>1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="+23"/>
+        <location line="+10"/>
         <source>This is the maximum number of entries along the entire axis where NaNs will be filled. Must be greater than 0</source>
         <translation>这是沿整个轴方向填充 NaN 的最大条目数。必须大于 0</translation>
     </message>
@@ -4903,7 +4807,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>确认</translation>
     </message>
     <message>
-        <location filename="../DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="+105"/>
+        <location line="+14"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4911,14 +4815,13 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DADialogDataFrameFillna</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameFillna.ui" line="+14"/>
+        <location filename="../DAGui/Dialog/DADialogDataFrameFillna.ui" line="+14"/>
         <source>Fill Nan</source>
         <translation>填充Nan</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Fill NaN values</source>
-        <oldsource>Fill NA/NaN values</oldsource>
         <translation>填充NA/NaN值</translation>
     </message>
     <message>
@@ -4955,7 +4858,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DADialogDataFrameQueryDatas</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameQueryDatas.ui" line="+14"/>
+        <location filename="../DAGui/Dialog/DADialogDataFrameQueryDatas.ui" line="+14"/>
         <source>Query Data</source>
         <translation>数据查询</translation>
     </message>
@@ -4992,7 +4895,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DADialogDataFrameSeriesSelector</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameSeriesSelector.ui" line="+27"/>
+        <location filename="../DAGui/Dialog/DADialogDataFrameSeriesSelector.ui" line="+27"/>
         <source>Data</source>
         <translation>数据</translation>
     </message>
@@ -5002,7 +4905,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>数据预览</translation>
     </message>
     <message>
-        <location filename="../DAGui/Dialog/DADialogDataFrameSeriesSelector.ui" line="+14"/>
+        <location line="-37"/>
         <source>Dialog</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5010,7 +4913,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DADialogDataFrameSort</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataFrameSort.ui" line="+14"/>
+        <location filename="../DAGui/Dialog/DADialogDataFrameSort.ui" line="+14"/>
         <source>Sort</source>
         <translation>排序</translation>
     </message>
@@ -5018,7 +4921,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DADialogDataframeColumnCastToDatetime</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataframeColumnCastToDatetime.ui" line="+14"/>
+        <location filename="../DAGui/Dialog/DADialogDataframeColumnCastToDatetime.ui" line="+14"/>
         <source>Cast To Datetime</source>
         <translation>转换为日期数据</translation>
     </message>
@@ -5204,7 +5107,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DADialogDataframeColumnCastToNumeric</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogDataframeColumnCastToNumeric.ui" line="+14"/>
+        <location filename="../DAGui/Dialog/DADialogDataframeColumnCastToNumeric.ui" line="+14"/>
         <source>Cast To Numeric</source>
         <translation>转换为数值</translation>
     </message>
@@ -5221,7 +5124,6 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+7"/>
         <source>invalid parsing will be set as NaN</source>
-        <oldsource> invalid parsing will be set as NaN</oldsource>
         <translation>错误的解析将把值设置为NaN</translation>
     </message>
     <message>
@@ -5289,7 +5191,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DADialogInsertNewColumn</name>
     <message>
-        <location filename="DAGui/Dialog/DADialogInsertNewColumn.ui" line="+14"/>
+        <location filename="../DAGui/Dialog/DADialogInsertNewColumn.ui" line="+14"/>
         <source>Insert New Column</source>
         <translation>插入新列</translation>
     </message>
@@ -5357,7 +5259,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAExportToPngSettingDialog</name>
     <message>
-        <location filename="APP/Dialog/DAExportToPngSettingDialog.ui" line="+122"/>
+        <location filename="../APP/Dialog/DAExportToPngSettingDialog.ui" line="+122"/>
         <source>Export</source>
         <translation>导出</translation>
     </message>
@@ -5395,15 +5297,23 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="DAFigure/DAFigureWidget.cpp" line="+60"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+60"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
 </context>
 <context>
+    <name>DAFigureWidgetSettingWidget</name>
+    <message>
+        <location filename="../DAGui/ChartSetting/DAFigureWidgetSettingWidget.ui" line="+16"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DAFilePathEditWidget</name>
     <message>
-        <location filename="DACommonWidgets/DAFilePathEditWidget.ui" line="+14"/>
+        <location filename="../DACommonWidgets/DAFilePathEditWidget.ui" line="+14"/>
         <source>File Path Edit</source>
         <translation>路径编辑</translation>
     </message>
@@ -5421,7 +5331,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAFontEditPannelWidget</name>
     <message>
-        <location filename="DACommonWidgets/DAFontEditPannelWidget.ui" line="+26"/>
+        <location filename="../DACommonWidgets/DAFontEditPannelWidget.ui" line="+26"/>
         <source>Font Edit</source>
         <translation>字体编辑</translation>
     </message>
@@ -5429,7 +5339,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAGraphicsPixmapItemSettingWidget</name>
     <message>
-        <location filename="DAGui/DAGraphicsPixmapItemSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/DAGraphicsPixmapItemSettingWidget.ui" line="+14"/>
         <source>Pixmap Item Setting</source>
         <translation>图片编辑</translation>
     </message>
@@ -5442,9 +5352,8 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAMessageLogViewWidget</name>
     <message>
-        <location filename="DAGui/DAMessageLogViewWidget.ui" line="+17"/>
+        <location filename="../DAGui/DAMessageLogViewWidget.ui" line="+17"/>
         <source>Message View</source>
-        <oldsource>Log View</oldsource>
         <translation>信息视图</translation>
     </message>
     <message>
@@ -5457,7 +5366,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DANodeItemSettingWidget</name>
     <message>
-        <location filename="DAGui/DANodeItemSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/DANodeItemSettingWidget.ui" line="+14"/>
         <source>Node Item Setting</source>
         <translation>节点设置</translation>
     </message>
@@ -5492,7 +5401,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>位置</translation>
     </message>
     <message>
-        <location filename="../DAGui/DANodeItemSettingWidget.ui" line="+109"/>
+        <location line="+6"/>
         <source>x</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5502,7 +5411,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DANodeItemSettingWidget.ui" line="+55"/>
+        <location line="+26"/>
         <source>Link Point Location</source>
         <translation>链接点位置</translation>
     </message>
@@ -5540,7 +5449,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DANodeLinkItemSettingWidget</name>
     <message>
-        <location filename="DAGui/DANodeLinkItemSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/DANodeLinkItemSettingWidget.ui" line="+14"/>
         <source>Node Link Item Setting</source>
         <translation>节点属性设置</translation>
     </message>
@@ -5573,7 +5482,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DANodeSettingWidget</name>
     <message>
-        <location filename="DAGui/DANodeSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/DANodeSettingWidget.ui" line="+14"/>
         <source>Node Setting</source>
         <translation>节点设置</translation>
     </message>
@@ -5601,7 +5510,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAPenEditWidget</name>
     <message>
-        <location filename="DACommonWidgets/DAPenEditWidget.cpp" line="+120"/>
+        <location filename="../DACommonWidgets/DAPenEditWidget.cpp" line="+120"/>
         <source>Pen Editor</source>
         <translation>画笔编辑</translation>
     </message>
@@ -5614,7 +5523,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAPluginManagerDialog</name>
     <message>
-        <location filename="APP/DAPluginManagerDialog.ui" line="+14"/>
+        <location filename="../APP/DAPluginManagerDialog.ui" line="+14"/>
         <source>Plugin Manager</source>
         <translation>插件管理</translation>
     </message>
@@ -5632,7 +5541,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DARenameColumnsNameDialog</name>
     <message>
-        <location filename="DAGui/Dialog/DARenameColumnsNameDialog.ui" line="+14"/>
+        <location filename="../DAGui/Dialog/DARenameColumnsNameDialog.ui" line="+14"/>
         <source>Rename Table</source>
         <translation>重命名表格</translation>
     </message>
@@ -5655,7 +5564,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DASettingContainerWidget</name>
     <message>
-        <location filename="DAGui/DASettingContainerWidget.ui" line="+20"/>
+        <location filename="../DAGui/DASettingContainerWidget.ui" line="+20"/>
         <source>Setting</source>
         <translation>设置</translation>
     </message>
@@ -5663,7 +5572,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DASettingDialog</name>
     <message>
-        <location filename="DACommonWidgets/DASettingDialog.ui" line="+14"/>
+        <location filename="../DACommonWidgets/DASettingDialog.ui" line="+14"/>
         <source>Setting</source>
         <translation>设置</translation>
     </message>
@@ -5686,17 +5595,17 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DASettingPageCommon</name>
     <message>
-        <location filename="APP/SettingPages/DASettingPageCommon.ui" line="+14"/>
+        <location filename="../APP/SettingPages/DASettingPageCommon.ui" line="+14"/>
         <source>Common Setting</source>
         <translation>通用设置</translation>
     </message>
     <message>
-        <location filename="../APP/SettingPages/DASettingPageCommon.ui" line="+20"/>
+        <location line="+6"/>
         <source>UI</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="APP/SettingPages/DASettingPageCommon.ui" line="+14"/>
+        <location line="+8"/>
         <source>Standard Mode</source>
         <translation>标准模式</translation>
     </message>
@@ -5744,7 +5653,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DASettingWidget</name>
     <message>
-        <location filename="DACommonWidgets/DASettingWidget.ui" line="+14"/>
+        <location filename="../DACommonWidgets/DASettingWidget.ui" line="+14"/>
         <source>Setting</source>
         <translation>设置</translation>
     </message>
@@ -5752,7 +5661,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAShapeEditPannelWidget</name>
     <message>
-        <location filename="DACommonWidgets/DAShapeEditPannelWidget.ui" line="+14"/>
+        <location filename="../DACommonWidgets/DAShapeEditPannelWidget.ui" line="+14"/>
         <source>Shape Edit</source>
         <translation>形状编辑</translation>
     </message>
@@ -5770,7 +5679,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DATimeFormatEditWidget</name>
     <message>
-        <location filename="DACommonWidgets/DATimeFormatEditWidget.ui" line="+26"/>
+        <location filename="../DACommonWidgets/DATimeFormatEditWidget.ui" line="+26"/>
         <source>Time Format Set</source>
         <translation>时间格式设置窗口</translation>
     </message>
@@ -5793,7 +5702,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DATxtFileImportDialog</name>
     <message>
-        <location filename="APP/Dialog/DATxtFileImportDialog.ui" line="+14"/>
+        <location filename="../DAGui/Dialog/DATxtFileImportDialog.ui" line="+14"/>
         <source>Txt Import</source>
         <translation>Txt导入</translation>
     </message>
@@ -5912,7 +5821,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAWorkFlowEditWidget</name>
     <message>
-        <location filename="DAGui/DAWorkFlowEditWidget.ui" line="+20"/>
+        <location filename="../DAGui/DAWorkFlowEditWidget.ui" line="+20"/>
         <source>Workflow Edit</source>
         <translation>工作流编辑</translation>
     </message>
@@ -5920,7 +5829,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAWorkFlowNodeItemSettingWidget</name>
     <message>
-        <location filename="DAGui/DAWorkFlowNodeItemSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/DAWorkFlowNodeItemSettingWidget.ui" line="+14"/>
         <source>Node Setting</source>
         <translation>节点设置</translation>
     </message>
@@ -5948,7 +5857,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAWorkFlowNodeListWidget</name>
     <message>
-        <location filename="DAGui/DAWorkFlowNodeListWidget.ui" line="+23"/>
+        <location filename="../DAGui/DAWorkFlowNodeListWidget.ui" line="+23"/>
         <source>Node List</source>
         <translation>节点列表</translation>
     </message>
@@ -5956,16 +5865,15 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAWorkFlowOperateWidget</name>
     <message>
-        <location filename="DAGui/DAWorkFlowOperateWidget.ui" line="+26"/>
+        <location filename="../DAGui/DAWorkFlowOperateWidget.ui" line="+26"/>
         <source>Workflow Operate</source>
-        <oldsource>Work Flow Operate</oldsource>
         <translation>工作流操作</translation>
     </message>
 </context>
 <context>
     <name>DAWorkbenchAboutDialog</name>
     <message>
-        <location filename="APP/Dialog/DAWorkbenchAboutDialog.ui" line="+14"/>
+        <location filename="../APP/Dialog/DAWorkbenchAboutDialog.ui" line="+14"/>
         <source>About</source>
         <translation>关于</translation>
     </message>
@@ -5976,136 +5884,29 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
 </context>
 <context>
-    <name>MainWindow</name>
-    <message>
-        <location filename="3rdparty/ADS/demo/mainwindow.ui" line="+32"/>
-        <location filename="3rdparty/ADS/examples/hideshow/MainWindow.ui" line="+33"/>
-        <source>File</source>
-        <translation type="unfinished">文件</translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <location filename="3rdparty/ADS/examples/hideshow/MainWindow.ui" line="-5"/>
-        <location filename="3rdparty/ADS/examples/sidebar/MainWindow.ui" line="+75"/>
-        <location filename="3rdparty/ADS/examples/simple/MainWindow.ui" line="+28"/>
-        <source>View</source>
-        <translation type="unfinished">视图</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>About</source>
-        <translation type="unfinished">关于</translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/example/NormalMenuBarExample/MainWindow.ui" line="+44"/>
-        <source>open</source>
-        <translation type="unfinished">开盘</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>save</source>
-        <translation type="unfinished">保存</translation>
-    </message>
-    <message>
-        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_typed/mainwindow.cpp" line="+87"/>
-        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_variant/mainwindow.cpp" line="+86"/>
-        <source>Edit</source>
-        <translation type="unfinished">编辑</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_variant/mainwindow.cpp" line="+3"/>
-        <source>Rectangle</source>
-        <translation type="unfinished">矩形</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_variant/mainwindow.cpp" line="+8"/>
-        <source>Ellipse</source>
-        <translation type="unfinished">椭圆</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <location line="+165"/>
-        <location line="+108"/>
-        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_variant/mainwindow.cpp" line="+4"/>
-        <location line="+139"/>
-        <location line="+110"/>
-        <source>Text</source>
-        <translation type="unfinished">文本</translation>
-    </message>
-    <message>
-        <location line="-31"/>
-        <location line="+20"/>
-        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_variant/mainwindow.cpp" line="-30"/>
-        <location line="+20"/>
-        <source>Size</source>
-        <translation type="unfinished">大小</translation>
-    </message>
-    <message>
-        <location line="+15"/>
-        <location filename="3rdparty/QtPropertyBrowser/examples/canvas_variant/mainwindow.cpp" line="+14"/>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="+1151"/>
-        <source>Font</source>
-        <translation type="unfinished">字体</translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/example/MainWindowExample/mainwindow.cpp" line="-1046"/>
-        <location filename="3rdparty/SARibbon/example/StaticExample/MainWindow.cpp" line="+18"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="+102"/>
-        <source>Other</source>
-        <translation type="unfinished">其他</translation>
-    </message>
-    <message>
-        <location line="+193"/>
-        <location line="+62"/>
-        <location line="+339"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="+191"/>
-        <source>question</source>
-        <translation type="unfinished">疑问</translation>
-    </message>
-    <message>
-        <location line="-255"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="-61"/>
-        <source>infomation</source>
-        <translation type="unfinished">信息</translation>
-    </message>
-    <message>
-        <location line="+272"/>
-        <location filename="3rdparty/SARibbon/example/UseNativeFrameExample/mainwindow.cpp" line="+78"/>
-        <source>Save</source>
-        <translation type="unfinished">保存</translation>
-    </message>
-    <message>
-        <location filename="3rdparty/SARibbon/example/StaticExample/MainWindow.cpp" line="-8"/>
-        <source>Main</source>
-        <translation type="unfinished">主页</translation>
-    </message>
-</context>
-<context>
     <name>QObject</name>
     <message>
-        <location filename="DAPyBindQt/pandas/DAPyIndex.cpp" line="+159"/>
+        <location filename="../DAPyBindQt/pandas/DAPyIndex.cpp" line="+159"/>
         <source>DAPyIndex get python object type is not pandas.Index</source>
         <translation>python object类型不是pandas.Index</translation>
     </message>
     <message>
-        <location filename="DAPyBindQt/pandas/DAPyModulePandas.cpp" line="+163"/>
+        <location filename="../DAPyBindQt/pandas/DAPyModulePandas.cpp" line="+163"/>
         <source>use utf-8 open file %1 error,try to use ansi encoding</source>
         <translation>使用utf-8打开文件“%1”错误，尝试使用ansi编码</translation>
     </message>
     <message>
-        <location filename="DAPyBindQt/pandas/DAPySeries.cpp" line="+186"/>
+        <location filename="../DAPyBindQt/pandas/DAPySeries.cpp" line="+186"/>
         <source>DAPySeries  get python object type is not pandas.Series</source>
         <translation>python object类型不是pandas.Series</translation>
     </message>
     <message>
-        <location filename="DAPyScripts/DAPyScripts.cpp" line="+55"/>
+        <location filename="../DAPyScripts/DAPyScripts.cpp" line="+55"/>
         <source>Initialized import sys module error:%1</source>
         <translation>初始化过程导入sys模块错误:%1</translation>
     </message>
     <message>
-        <location filename="DAData/DAAbstractData.cpp" line="+102"/>
+        <location filename="../DAData/DAAbstractData.cpp" line="+102"/>
         <source>none</source>
         <translation>none</translation>
     </message>
@@ -6125,7 +5926,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>raw</translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DAPenStyleComboBox.cpp" line="+54"/>
+        <location filename="../DACommonWidgets/DAPenStyleComboBox.cpp" line="+54"/>
         <source>No Pen</source>
         <translation>无</translation>
     </message>
@@ -6160,27 +5961,27 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>自定义虚线</translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="+24"/>
+        <location filename="../DAGraphicsView/DACommandsForGraphics.cpp" line="+24"/>
         <source>Item Add</source>
         <translation>添加图元</translation>
     </message>
     <message>
-        <location filename="../DAGraphicsView/DACommandsForGraphics.cpp" line="+58"/>
+        <location line="+34"/>
         <source>Items Add</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="+74"/>
+        <location line="+40"/>
         <source>Item Remove</source>
         <translation>删除图元</translation>
     </message>
     <message>
-        <location filename="../DAGraphicsView/DACommandsForGraphics.cpp" line="+72"/>
+        <location line="+32"/>
         <source>Items Remove</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DACommandsForGraphics.cpp" line="+84"/>
+        <location line="+52"/>
         <source>Items Move</source>
         <translation>移动（多个）图元</translation>
     </message>
@@ -6211,7 +6012,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>旋转图元</translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAAbstractNodeLinkGraphicsItem.cpp" line="-119"/>
+        <location filename="../DAWorkFlow/DAAbstractNodeLinkGraphicsItem.cpp" line="-119"/>
         <source>Item have not out put link point:</source>
         <translation>图元没有输出连接点:</translation>
     </message>
@@ -6231,12 +6032,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>连接线的输入必须连接输入连接点</translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DACommandsForWorkFlowNodeGraphics.cpp" line="+26"/>
+        <location filename="../DAWorkFlow/DACommandsForWorkFlowNodeGraphics.cpp" line="+26"/>
         <source>Create Node</source>
         <translation>创建节点</translation>
     </message>
     <message>
-        <location filename="../DAWorkFlow/DACommandsForWorkFlowNodeGraphics.cpp" line="+95"/>
+        <location line="+69"/>
         <source>Remove Nodes</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6246,12 +6047,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DANodeGraphicsScene.cpp" line="+299"/>
+        <location filename="../DAWorkFlow/DANodeGraphicsScene.cpp" line="+299"/>
         <source>can not create node,metadata name=%1(%2)</source>
         <translation>无法创建节点，元信息：%1(%2)</translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DACommandsForWorkFlowNodeGraphics.cpp" line="+152"/>
+        <location filename="../DAWorkFlow/DACommandsForWorkFlowNodeGraphics.cpp" line="+49"/>
         <source>Remove Node Item</source>
         <translation>移除节点</translation>
     </message>
@@ -6271,7 +6072,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>移除连接</translation>
     </message>
     <message>
-        <location filename="DAPluginSupport/DAPluginOption.cpp" line="+85"/>
+        <location filename="../DAPluginSupport/DAPluginOption.cpp" line="+97"/>
         <source>Failed to load %1 (Reason: %2)</source>
         <translation>加载插件“%1”失败，原因为:%2</translation>
     </message>
@@ -6301,7 +6102,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>插件文件:%1,iid:%2,名称:%3,描述:%4,版本:%5,错误信息:%6</translation>
     </message>
     <message>
-        <location filename="DAGraphicsView/DAGraphicsItemFactory.cpp" line="+68"/>
+        <location filename="../DAGraphicsView/DAGraphicsItemFactory.cpp" line="+68"/>
         <source>Class name %1 not registered to item factory</source>
         <translation>类名 %1 没有向元件工厂注册</translation>
     </message>
@@ -6311,7 +6112,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>类型 %1 没有注册到元件工厂中</translation>
     </message>
     <message>
-        <location filename="DAUtils/DAXMLProtocol.cpp" line="+91"/>
+        <location filename="../DAUtils/DAXMLProtocol.cpp" line="+91"/>
         <source>DA xml protocol&apos;s root element error</source>
         <translation>DA xml协议的根节点异常</translation>
     </message>
@@ -6326,18 +6127,17 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>DA xml协议缺失&lt;props&gt;标签</translation>
     </message>
     <message>
-        <location filename="DAData/DACommandsDataManager.cpp" line="+15"/>
+        <location filename="../DAData/DACommandsDataManager.cpp" line="+15"/>
         <source>add data</source>
         <translation>添加数据</translation>
     </message>
     <message>
         <location line="+19"/>
         <source>remove data</source>
-        <oldsource>add remove</oldsource>
         <translation>移除数据</translation>
     </message>
     <message>
-        <location filename="DACommonWidgets/DABrushStyleComboBox.cpp" line="+43"/>
+        <location filename="../DACommonWidgets/DABrushStyleComboBox.cpp" line="+43"/>
         <source>No Brush</source>
         <translation>无</translation>
     </message>
@@ -6432,23 +6232,18 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>纹理填充</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAChartSerialize.cpp" line="+24"/>
-        <source>serialize error</source>
-        <translation>序列化错误</translation>
-    </message>
-    <message>
-        <location filename="DAFigure/DAFigureWidgetCommands.cpp" line="+37"/>
-        <location line="+13"/>
+        <location filename="../DAFigure/DAFigureWidgetCommands.cpp" line="+35"/>
+        <location line="+8"/>
         <source>create chart</source>
         <translation>创建绘图</translation>
     </message>
     <message>
-        <location filename="../DAFigure/DAFigureWidgetCommands.cpp" line="+84"/>
+        <location line="+41"/>
         <source>remove chart</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureWidgetCommands.cpp" line="+82"/>
+        <location line="+41"/>
         <source>set figure widget size</source>
         <translation>设置绘图中窗体的尺寸</translation>
     </message>
@@ -6458,12 +6253,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>添加绘图元素</translation>
     </message>
     <message>
-        <location filename="DAFigure/DAFigureWidget.cpp" line="+620"/>
-        <source>DAFigureWidget get invalid magic strat code</source>
-        <translation>DAFigureWidget的文件头异常</translation>
-    </message>
-    <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="+25"/>
+        <location filename="../DAGui/Commands/DACommandsDataFrame.cpp" line="+25"/>
         <source>set dataframe data</source>
         <translation>改变单元格数据</translation>
     </message>
@@ -6473,13 +6263,13 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>插入一行</translation>
     </message>
     <message>
-        <location filename="../DAGui/Commands/DACommandsDataFrame.cpp" line="+100"/>
+        <location line="+44"/>
         <location line="+25"/>
         <source>insert column &quot;%1&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="+123"/>
+        <location line="+54"/>
         <source>drop dataframe rows</source>
         <translation>移除dataframe行</translation>
     </message>
@@ -6494,7 +6284,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>改变列数据类型</translation>
     </message>
     <message>
-        <location filename="../DAGui/Commands/DACommandsDataFrame.cpp" line="+233"/>
+        <location line="+77"/>
         <source>drop nan</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6554,7 +6344,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/Commands/DACommandsDataFrame.cpp" line="+531"/>
+        <location line="+30"/>
         <source>cast column to num</source>
         <translation>改变列数据为数值</translation>
     </message>
@@ -6569,7 +6359,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>转换列为索引</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="+187"/>
+        <location filename="../DAGui/DAXmlHelper.cpp" line="+191"/>
         <location line="+119"/>
         <source>load nodes occurce error</source>
         <translation>加载节点发生错误</translation>
@@ -6722,17 +6512,17 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>无法通过类名:%1创建元件,类名没有注册到DAGraphicsItemFactory</translation>
     </message>
     <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="+1890"/>
+        <location line="+185"/>
         <source>unknow except:get null figure widget at %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="-338"/>
+        <location line="-523"/>
         <source>Unable to load item information from &lt;%1&gt;</source>
         <translation>无法通过&lt;%1&gt;加载元件信息</translation>
     </message>
     <message>
-        <location filename="DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="+929"/>
+        <location filename="../DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="+929"/>
         <source>link item can not attach from node item(%1) with key=%2</source>
         <translation>无法通过节点%1的输出点%2进行连接</translation>
     </message>
@@ -6748,22 +6538,17 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>节点%1无法找到名字为%2的连接点</translation>
     </message>
     <message>
-        <location filename="DAGui/DAXmlHelper.cpp" line="+1073"/>
+        <location filename="../DAGui/DAXmlHelper.cpp" line="+1222"/>
         <source>The attribute %1=%2 under the tag %3 cannot be converted to double </source>
         <translation>%3标签属性%1=%2无法转换为double类型 </translation>
     </message>
     <message>
-        <location filename="APP/main.cpp" line="+91"/>
+        <location filename="../APP/main.cpp" line="+94"/>
         <source>Kernel initialization failed</source>
         <translation>内核初始化失败</translation>
     </message>
     <message>
-        <location line="+93"/>
-        <source>Unable to create dump file path:%1</source>
-        <translation>无法创建dump文件路径：%1</translation>
-    </message>
-    <message>
-        <location filename="DAFigure/Models/DAFigureTreeModel.cpp" line="-347"/>
+        <location filename="../DAFigure/Models/DAFigureTreeModel.cpp" line="-347"/>
         <source>untitle</source>
         <translation>未命名</translation>
     </message>
@@ -6874,7 +6659,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>图-未命名</translation>
     </message>
     <message>
-        <location filename="APP/SettingPages/DAAppConfig.cpp" line="+49"/>
+        <location filename="../APP/SettingPages/DAAppConfig.cpp" line="+49"/>
         <location line="+37"/>
         <source>can not open config file &quot;%1&quot;,because %2</source>
         <translation>无法打开配置文件“%1”，原因：%2</translation>
@@ -6890,7 +6675,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>配置文件（%1）缺失&lt;configs&gt;标签</translation>
     </message>
     <message>
-        <location filename="DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="+72"/>
+        <location filename="../DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="+72"/>
         <location line="+29"/>
         <source>unable initialize %1</source>
         <translation>无法初始化%1</translation>
@@ -6918,68 +6703,23 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>无法打开excel</translation>
     </message>
     <message>
-        <location filename="3rdparty/ADS/demo/MainWindow.cpp" line="+152"/>
-        <source>Help</source>
-        <translation>帮助</translation>
-    </message>
-    <message>
-        <location line="+179"/>
-        <source>Options</source>
-        <translation>选项</translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Clear Editor</source>
-        <translation>清除编辑器</translation>
-    </message>
-    <message>
-        <location line="+167"/>
-        <source>Create Editor</source>
-        <translation>创建编辑器</translation>
-    </message>
-    <message>
-        <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="+193"/>
-        <source>List All Tabs</source>
-        <translation>列出所有标签</translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>Detach Group</source>
-        <translation>脱离分组</translation>
-    </message>
-    <message>
-        <location line="+25"/>
-        <source>Minimize</source>
-        <translation>最小化</translation>
-    </message>
-    <message>
-        <location filename="3rdparty/ADS/src/DockWidgetTab.cpp" line="+268"/>
-        <source>Close Tab</source>
-        <translation>关闭标签</translation>
-    </message>
-    <message>
-        <location filename="3rdparty/ctk/ctk/ctkColorDialog.cpp" line="+70"/>
-        <source>Basic</source>
-        <translation>继承</translation>
-    </message>
-    <message>
-        <location filename="DAPyScripts/DAPyScriptsDataFrame.cpp" line="+14"/>
+        <location filename="../DAPyScripts/DAPyScriptsDataFrame.cpp" line="+14"/>
         <source>can not import da_dataframe module</source>
         <translation>无法导入da_dataframe模块</translation>
     </message>
     <message>
-        <location filename="DAPyScripts/DAPyScriptsIO.cpp" line="+77"/>
+        <location filename="../DAPyScripts/DAPyScriptsIO.cpp" line="+77"/>
         <source>can not import da_io module</source>
         <translation>无法导入da_io模块</translation>
     </message>
     <message>
-        <location filename="DAPyScripts/DAPyScriptsDataFrame.cpp" line="+8"/>
-        <location filename="DAPyScripts/DAPyScriptsIO.cpp" line="+8"/>
+        <location filename="../DAPyScripts/DAPyScriptsDataFrame.cpp" line="+8"/>
+        <location filename="../DAPyScripts/DAPyScriptsIO.cpp" line="+8"/>
         <source>can not import DAWorkBench.io</source>
         <translation>无法导入DAWorkBench.io模块</translation>
     </message>
     <message>
-        <location filename="DAUtils/DATextReadWriter.cpp" line="+254"/>
+        <location filename="../DAUtils/DATextReadWriter.cpp" line="+254"/>
         <source>User Terminate</source>
         <translation>用户终止</translation>
     </message>
@@ -6989,7 +6729,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>未知错误</translation>
     </message>
     <message>
-        <location filename="DAPyScripts/DAPyScriptsDataProcess.cpp" line="+10"/>
+        <location filename="../DAPyScripts/DAPyScriptsDataProcess.cpp" line="+10"/>
         <source>can not import da_data_processing module</source>
         <translation>python无法导入da_data_processing模块</translation>
     </message>
@@ -6999,12 +6739,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>无法导入DAWorkBench.data_processing模块</translation>
     </message>
     <message>
-        <location filename="DAPyScripts/DAPyWorkBench.cpp" line="+35"/>
+        <location filename="../DAPyScripts/DAPyWorkBench.cpp" line="+36"/>
         <source>can not import DAWorkbench module</source>
         <translation>无法导入DAWorkbench模块</translation>
     </message>
     <message>
-        <location filename="../DAUtils/DATextReadWriter.cpp" line="+403"/>
+        <location filename="../DAUtils/DATextReadWriter.cpp" line="-34"/>
         <source>No error occurred</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7079,7 +6819,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="-1744"/>
+        <location filename="../DAGui/DAXmlHelper.cpp" line="-2443"/>
         <source>save workflow extern info cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7139,7 +6879,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAGui/DAZipArchive.cpp" line="-267"/>
+        <location filename="../DAGui/DAZipArchive.cpp" line="-659"/>
         <source>No error</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7200,646 +6940,9 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
 </context>
 <context>
-    <name>QtColorEditWidget</name>
-    <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qteditorfactory.cpp" line="+2044"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qteditorfactory.cpp" line="+2053"/>
-        <source>...</source>
-        <translation type="unfinished">...</translation>
-    </message>
-</context>
-<context>
-    <name>QtColorPropertyManager</name>
-    <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="+6343"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="+6330"/>
-        <source>Alpha</source>
-        <translation type="unfinished">透明度</translation>
-    </message>
-</context>
-<context>
-    <name>QtCursorDatabase</name>
-    <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertybrowserutils.cpp" line="+58"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertybrowserutils.cpp" line="+36"/>
-        <location line="+59"/>
-        <source>Cross</source>
-        <translation type="unfinished">十字标记</translation>
-    </message>
-</context>
-<context>
-    <name>QtFontEditWidget</name>
-    <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qteditorfactory.cpp" line="+189"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qteditorfactory.cpp" line="+190"/>
-        <source>...</source>
-        <translation type="unfinished">...</translation>
-    </message>
-</context>
-<context>
-    <name>QtLocalePropertyManager</name>
-    <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qtpropertymanager.cpp" line="-3795"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="-3828"/>
-        <source>Language</source>
-        <translation type="unfinished">语言</translation>
-    </message>
-</context>
-<context>
-    <name>QtPointFPropertyManager</name>
-    <message>
-        <location line="+481"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="+487"/>
-        <source>X</source>
-        <translation type="unfinished">X</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="+8"/>
-        <source>Y</source>
-        <translation type="unfinished">Y</translation>
-    </message>
-</context>
-<context>
-    <name>QtPointPropertyManager</name>
-    <message>
-        <location line="-278"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="-281"/>
-        <source>X</source>
-        <translation type="unfinished">X</translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="+7"/>
-        <source>Y</source>
-        <translation type="unfinished">Y</translation>
-    </message>
-</context>
-<context>
-    <name>QtRectFPropertyManager</name>
-    <message>
-        <location line="+1897"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="+1908"/>
-        <source>X</source>
-        <translation type="unfinished">X</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="+8"/>
-        <source>Y</source>
-        <translation type="unfinished">Y</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="+8"/>
-        <source>Width</source>
-        <translation type="unfinished">宽</translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="+9"/>
-        <source>Height</source>
-        <translation type="unfinished">高</translation>
-    </message>
-</context>
-<context>
-    <name>QtRectPropertyManager</name>
-    <message>
-        <location line="-488"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="-491"/>
-        <source>X</source>
-        <translation type="unfinished">X</translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="+7"/>
-        <source>Y</source>
-        <translation type="unfinished">Y</translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="+7"/>
-        <source>Width</source>
-        <translation type="unfinished">宽</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="+8"/>
-        <source>Height</source>
-        <translation type="unfinished">高</translation>
-    </message>
-</context>
-<context>
-    <name>QtSizeFPropertyManager</name>
-    <message>
-        <location line="-401"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="-400"/>
-        <source>Width</source>
-        <translation type="unfinished">宽</translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="+9"/>
-        <source>Height</source>
-        <translation type="unfinished">高</translation>
-    </message>
-</context>
-<context>
-    <name>QtSizePropertyManager</name>
-    <message>
-        <location line="-432"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="-435"/>
-        <source>Width</source>
-        <translation type="unfinished">宽</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qtpropertymanager.cpp" line="+8"/>
-        <source>Height</source>
-        <translation type="unfinished">高</translation>
-    </message>
-</context>
-<context>
-    <name>QtTreePropertyBrowser</name>
-    <message>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt5/qttreepropertybrowser.cpp" line="+452"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qttreepropertybrowser.cpp" line="+417"/>
-        <source>Property</source>
-        <translation type="unfinished">属性</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <location filename="3rdparty/QtPropertyBrowser/src/qt6/qttreepropertybrowser.cpp" line="+1"/>
-        <source>Value</source>
-        <translation type="unfinished">值</translation>
-    </message>
-</context>
-<context>
-    <name>SAColorMenu</name>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbon.cpp" line="+201"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/SAColorMenu.cpp" line="+178"/>
-        <source>None</source>
-        <translation>无</translation>
-    </message>
-    <message>
-        <location line="+34"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/SAColorMenu.cpp" line="+34"/>
-        <source>Theme Colors</source>
-        <translation>主题颜色</translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/SAColorMenu.cpp" line="+7"/>
-        <source>Custom Color</source>
-        <translation>自定义颜色</translation>
-    </message>
-</context>
-<context>
-    <name>SARibbonActionsManagerModel</name>
-    <message>
-        <location line="+4553"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonActionsManager.cpp" line="+530"/>
-        <source>action name</source>
-        <translation>功能名称</translation>
-    </message>
-</context>
-<context>
-    <name>SARibbonCustomizeDialog</name>
-    <message>
-        <location line="+10928"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeDialog.cpp" line="+51"/>
-        <source>Customize Dialog</source>
-        <translation>自定义</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeDialog.cpp" line="+1"/>
-        <source>Cancel</source>
-        <translation>取消</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeDialog.cpp" line="+1"/>
-        <source>OK</source>
-        <translation>确认</translation>
-    </message>
-</context>
-<context>
-    <name>SARibbonCustomizeWidget</name>
-    <message>
-        <location line="-1212"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="+357"/>
-        <source>Customize Widget</source>
-        <translation>自定义</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="+1"/>
-        <source>Please Select</source>
-        <translation>请选择</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="+4"/>
-        <source>Find Command</source>
-        <translation>查找命令</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="+1"/>
-        <source>Add &gt;&gt;</source>
-        <translation>添加 &gt;&gt;</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="+1"/>
-        <source>&lt;&lt; Remove</source>
-        <translation>&lt;&lt; 移除</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="+2"/>
-        <source>Customize the Ribbon</source>
-        <translation>自定义Ribbon</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="+1"/>
-        <source>Main Category</source>
-        <translation>主页</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="+1"/>
-        <source>All Category</source>
-        <translation>所有标签页</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="+1"/>
-        <source>New Category</source>
-        <translation>新标签页</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="+1"/>
-        <source>New Group</source>
-        <translation>新分组</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="+1"/>
-        <source>Rename</source>
-        <translation>重命名</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="+1"/>
-        <source>reset</source>
-        <translation>重置</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="+1"/>
-        <source>proportion:</source>
-        <translation>比例:</translation>
-    </message>
-    <message>
-        <location line="+395"/>
-        <location line="+3"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="+395"/>
-        <location line="+3"/>
-        <source>large</source>
-        <translation>大</translation>
-    </message>
-    <message>
-        <location line="-2"/>
-        <location line="+4"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="-2"/>
-        <location line="+4"/>
-        <source>small</source>
-        <translation>小</translation>
-    </message>
-    <message>
-        <location line="-1"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="-1"/>
-        <source>medium</source>
-        <translation>中</translation>
-    </message>
-    <message>
-        <location line="+382"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="+382"/>
-        <source>new category[customize]%1</source>
-        <translation>新标签[自定义]%1</translation>
-    </message>
-    <message>
-        <location line="+27"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="+27"/>
-        <source>new pannel[customize]%1</source>
-        <translation>新分组[自定义]%1</translation>
-    </message>
-    <message>
-        <location line="+48"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="+48"/>
-        <source>rename</source>
-        <translation>重命名</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="+0"/>
-        <source>name:</source>
-        <translation>名称:</translation>
-    </message>
-    <message>
-        <location line="+276"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="+276"/>
-        <source>Warning</source>
-        <translation>警告</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonCustomizeWidget.cpp" line="+1"/>
-        <source>Are you sure reset all customize setting?</source>
-        <translation>是否重置所有自定义设置？</translation>
-    </message>
-</context>
-<context>
-    <name>SARibbonSystemButtonBar</name>
-    <message>
-        <location line="-13097"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonSystemButtonBar.cpp" line="+315"/>
-        <source>Restore</source>
-        <translation>恢复</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/SARibbonSystemButtonBar.cpp" line="+0"/>
-        <source>Maximize</source>
-        <translation>最大化</translation>
-    </message>
-</context>
-<context>
-    <name>Widget</name>
-    <message>
-        <location filename="3rdparty/SARibbon/src/SARibbonBar/colorWidgets/tst/Widget.ui" line="+648"/>
-        <location line="+10"/>
-        <location line="+20"/>
-        <location line="+17"/>
-        <location line="+30"/>
-        <location line="+23"/>
-        <location line="+30"/>
-        <location line="+23"/>
-        <location line="+24"/>
-        <location line="+20"/>
-        <location line="+27"/>
-        <location line="+20"/>
-        <location line="+27"/>
-        <location line="+20"/>
-        <location line="+34"/>
-        <location line="+10"/>
-        <location line="+20"/>
-        <location line="+17"/>
-        <location line="+30"/>
-        <location line="+23"/>
-        <location line="+30"/>
-        <location line="+23"/>
-        <location line="+24"/>
-        <location line="+20"/>
-        <location line="+27"/>
-        <location line="+20"/>
-        <location line="+27"/>
-        <location line="+20"/>
-        <source>Text</source>
-        <translation type="unfinished">文本</translation>
-    </message>
-</context>
-<context>
-    <name>ads::CAutoHideTab</name>
-    <message>
-        <location filename="3rdparty/ADS/src/AutoHideTab.cpp" line="+384"/>
-        <source>Detach</source>
-        <translation>分离</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Pin To...</source>
-        <translation>固定到...</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Top</source>
-        <translation>顶</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Left</source>
-        <translation>左</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Right</source>
-        <translation>右</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Bottom</source>
-        <translation>下</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Unpin (Dock)</source>
-        <translation>取消固定</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Close</source>
-        <translation>关闭</translation>
-    </message>
-</context>
-<context>
-    <name>ads::CDockAreaTitleBar</name>
-    <message>
-        <location filename="3rdparty/ADS/src/DockAreaTitleBar.cpp" line="+521"/>
-        <source>Detach</source>
-        <translation>分离</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Detach Group</source>
-        <translation>脱离分组</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <location line="+57"/>
-        <source>Unpin (Dock)</source>
-        <translation>取消固定</translation>
-    </message>
-    <message>
-        <location line="-57"/>
-        <location line="+62"/>
-        <source>Pin Group</source>
-        <translation>固定分组</translation>
-    </message>
-    <message>
-        <location line="-56"/>
-        <source>Pin Group To...</source>
-        <translation>固定分组到...</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Top</source>
-        <translation>顶</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Left</source>
-        <translation>左</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Right</source>
-        <translation>右</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Bottom</source>
-        <translation>下</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <location line="+55"/>
-        <source>Minimize</source>
-        <translation>最小化</translation>
-    </message>
-    <message>
-        <location line="-54"/>
-        <location line="+4"/>
-        <location line="+50"/>
-        <source>Close</source>
-        <translation>关闭</translation>
-    </message>
-    <message>
-        <location line="-50"/>
-        <location line="+59"/>
-        <source>Close Group</source>
-        <translation>关闭分组</translation>
-    </message>
-    <message>
-        <location line="-53"/>
-        <source>Close Other Groups</source>
-        <translation>关闭其它分组</translation>
-    </message>
-    <message>
-        <location line="+36"/>
-        <source>Pin Active Tab (Press Ctrl to Pin Group)</source>
-        <translation>固定激活的标签</translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>Close Active Tab</source>
-        <translation>关闭激活的标签</translation>
-    </message>
-</context>
-<context>
-    <name>ads::CDockManager</name>
-    <message>
-        <location filename="3rdparty/ADS/src/DockManager.cpp" line="+508"/>
-        <source>Show View</source>
-        <translation>显示视图</translation>
-    </message>
-</context>
-<context>
-    <name>ads::CDockWidgetTab</name>
-    <message>
-        <location filename="3rdparty/ADS/src/DockWidgetTab.cpp" line="+276"/>
-        <source>Detach</source>
-        <translation>分离</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Pin</source>
-        <translation>固定</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Pin To...</source>
-        <translation>固定到...</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Top</source>
-        <translation>顶</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Left</source>
-        <translation>左</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Right</source>
-        <translation>右</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Bottom</source>
-        <translation>下</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Close</source>
-        <translation>关闭</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Close Others</source>
-        <translation>关闭其它</translation>
-    </message>
-</context>
-<context>
-    <name>ctkPathLineEdit</name>
-    <message>
-        <location filename="3rdparty/ctk/ctk/ctkPathLineEdit.cpp" line="+315"/>
-        <source>Open a dialog</source>
-        <translation>打开对话框</translation>
-    </message>
-    <message>
-        <location line="+270"/>
-        <source>Select a file to save </source>
-        <translation>选择文件保存 </translation>
-    </message>
-</context>
-<context>
-    <name>DA::DARecentFilesManager</name>
-    <message>
-        <location filename="../DAGui/DARecentFilesManager.cpp" line="+119"/>
-        <source>(empty)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+18"/>
-        <source>Clear menu</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../DAGui/DARecentFilesManager.h" line="+24"/>
-        <source>Recent files</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DAFigureWidgetSettingWidget</name>
-    <message>
-        <location filename="../DAGui/ChartSetting/DAFigureWidgetSettingWidget.ui" line="+16"/>
-        <source>Form</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>main</name>
     <message>
-        <location filename="../APP/main.cpp" line="+129"/>
+        <location filename="../APP/main.cpp" line="+35"/>
         <source>version:%1,compile datetime:%2,enable python:%3</source>
         <translation type="unfinished"></translation>
     </message>
