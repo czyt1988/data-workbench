@@ -1,3 +1,0 @@
-# 翻译文件备份
-
-Qt Creator的CMake通过qt_create_translation添加翻译文件，在执行清除时会把ts文件删除，这里备份最新的ts文件，以备删除后恢复

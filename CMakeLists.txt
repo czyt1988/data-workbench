@@ -281,90 +281,20 @@ install(FILES
     DESTINATION lib/cmake/${DA_PROJECT_NAME}
 )
 
+
 ##################################
 # 翻译
 ##################################
-# if(DA_ENABLE_AUTO_TRANSLATE)
-#     find_package(Qt${QT_VERSION_MAJOR} COMPONENTS LinguistTools REQUIRED)
-
-#     set(DA_QM_OUTPUT_DIR ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/translations)
-#     file(MAKE_DIRECTORY ${DA_QM_OUTPUT_DIR})
-
-#     set(DA_TS_FILES
-#         ${CMAKE_CURRENT_SOURCE_DIR}/src/da_zh_CN.ts
-#         ${CMAKE_CURRENT_SOURCE_DIR}/src/da_en_US.ts
-#     )
-
-#     #--------------------------------------
-#     # 1. 保证 ts 文件存在（拷贝备份）
-#     #--------------------------------------
-#     set(DA_TS_BACKUP_DIR ${CMAKE_CURRENT_LIST_DIR}/src/ts)
-#     add_custom_target(da_copy_ts_backups ALL
-#         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-#             ${DA_TS_BACKUP_DIR}/da_zh_CN.ts
-#             ${CMAKE_CURRENT_LIST_DIR}/src/
-#         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-#             ${DA_TS_BACKUP_DIR}/da_en_US.ts
-#             ${CMAKE_CURRENT_LIST_DIR}/src/
-#         COMMENT "Copy translation backups if needed"
-#         VERBATIM
-#     )
-
-#     #--------------------------------------
-#     # 2. 生成 qm 文件
-#     #--------------------------------------
-#     set(DA_QM_FILES "")
-#     foreach(TS_FILE IN LISTS DA_TS_FILES)
-#         get_filename_component(TS_NAME ${TS_FILE} NAME_WE)
-#         set(QM_FILE ${DA_QM_OUTPUT_DIR}/${TS_NAME}.qm)
-#         add_custom_command(
-#             OUTPUT ${QM_FILE}
-#             COMMAND Qt${QT_VERSION_MAJOR}::lrelease
-#                 ${TS_FILE} -qm ${QM_FILE}
-#             DEPENDS ${TS_FILE}
-#             COMMENT "Generating ${QM_FILE}"
-#         )
-#         list(APPEND DA_QM_FILES ${QM_FILE})
-#     endforeach()
-
-#     add_custom_target(da_release_translations ALL DEPENDS
-#         da_copy_ts_backups ${DA_QM_FILES})   # 依赖拷贝目标
-
-#     #--------------------------------------
-#     # 3. 安装
-#     #--------------------------------------
-#     install(FILES ${DA_QM_FILES}
-#         DESTINATION ${CMAKE_INSTALL_BINDIR}/translations
-#         COMPONENT translations
-#     )
-
-#     #--------------------------------------
-#     # 4. 更新翻译
-#     #--------------------------------------
-#     if(DA_ENABLE_UPDATE_TRANSLATE)
-#         add_custom_target(da_update_translations
-#             COMMAND Qt${QT_VERSION_MAJOR}::lupdate
-#                 -locations relative -no-obsolete
-#                 ${CMAKE_CURRENT_SOURCE_DIR}/src
-#                 -ts ${DA_TS_FILES}
-#             COMMENT "Updating .ts files"
-#         )
-#     endif()
-# endif()
-##################################
-# 翻译（极简版）
-##################################
 if(DA_ENABLE_AUTO_TRANSLATE)
-    # 1. 找到工具链（找不到就报错，提示用户关选项）
     find_package(Qt${QT_VERSION_MAJOR} COMPONENTS LinguistTools REQUIRED)
 
-    # 2. 列出所有 .ts 文件（放一起好管理）
+    # 如果你有新的翻译需求，你需要在此添加新的ts文件，qt会自动生成新的翻译文件
     set(DA_TS_FILES
         ${CMAKE_CURRENT_LIST_DIR}/src/i18n/da_zh_CN.ts
         ${CMAKE_CURRENT_LIST_DIR}/src/i18n/da_en_US.ts
     )
 
-    # 3. 需要扫描的源码目录（按需增删）
+    # 扫描的源码目录（按需增删）
     set(DA_LUPDATE_SOURCE_DIRS
         ${CMAKE_CURRENT_SOURCE_DIR}/src/APP
         ${CMAKE_CURRENT_SOURCE_DIR}/src/DAAxOfficeWrapper
