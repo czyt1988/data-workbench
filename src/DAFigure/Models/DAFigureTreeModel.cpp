@@ -271,7 +271,7 @@ QString DAChartWidgetStandardItem::getChartTitle(DAFigureWidget* fig, DAChartWid
     if (!fig) {
         return QObject::tr("untitle-chart");  // cn:图-未命名
     }
-    auto charts = fig->getChartsOrdered();
+    auto charts = fig->getCharts();
     return QObject::tr("chart-%1").arg(charts.indexOf(c));
 }
 
@@ -384,7 +384,7 @@ DAFigureTreeModel::~DAFigureTreeModel()
 {
 }
 
-void DAFigureTreeModel::onChartWillRemove(DAChartWidget* c)
+void DAFigureTreeModel::onChartRemoved(DAChartWidget* c)
 {
     int index = d_ptr->mCharts.indexOf(c);
     if (index < 0) {
@@ -398,7 +398,7 @@ void DAFigureTreeModel::onChartWillRemove(DAChartWidget* c)
 
 void DAFigureTreeModel::onChartAdded(DAChartWidget* c)
 {
-    QList< DAChartWidget* > charts = d_ptr->mFig->getChartsOrdered();
+    QList< DAChartWidget* > charts = d_ptr->mFig->getCharts();
 
     int index = charts.indexOf(c);
     if (index < 0) {
@@ -502,7 +502,7 @@ void DAFigureTreeModel::setFigure(DAFigureWidget* fig)
     });
     if (d_ptr->mFig) {
         disconnect(d_ptr->mFig, &DAFigureWidget::chartAdded, this, &DAFigureTreeModel::onChartAdded);
-        disconnect(d_ptr->mFig, &DAFigureWidget::chartWillRemove, this, &DAFigureTreeModel::onChartWillRemove);
+        disconnect(d_ptr->mFig, &DAFigureWidget::chartRemoved, this, &DAFigureTreeModel::onChartRemoved);
         disconnect(d_ptr->mFig, &DAFigureWidget::destroyed, this, &DAFigureTreeModel::onFigureDestroyed);
         for (DAChartWidget* w : qAsConst(d_ptr->mCharts)) {
             if (w) {
@@ -512,9 +512,9 @@ void DAFigureTreeModel::setFigure(DAFigureWidget* fig)
         }
     }
     d_ptr->mFig    = fig;
-    d_ptr->mCharts = fig->getChartsOrdered();
+    d_ptr->mCharts = fig->getCharts();
     connect(fig, &DAFigureWidget::chartAdded, this, &DAFigureTreeModel::onChartAdded);
-    connect(fig, &DAFigureWidget::chartWillRemove, this, &DAFigureTreeModel::onChartWillRemove);
+    connect(fig, &DAFigureWidget::chartRemoved, this, &DAFigureTreeModel::onChartRemoved);
     connect(fig, &DAFigureWidget::destroyed, this, &DAFigureTreeModel::onFigureDestroyed);
     for (DAChartWidget* w : qAsConst(d_ptr->mCharts)) {
         if (w) {

@@ -75,7 +75,7 @@ protected slots:
 	// 添加了chart
 	void onChartAdded(DA::DAChartWidget* c);
 	// 绘图即将移除
-	void onChartWillRemove(DA::DAChartWidget* c);
+	void onChartRemoved(DA::DAChartWidget* c);
 	// 当前的绘图发生了变更
 	void onCurrentChartChanged(DA::DAChartWidget* c);
 	// chart的item发生了变换信号

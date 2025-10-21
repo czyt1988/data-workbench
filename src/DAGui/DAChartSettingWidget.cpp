@@ -38,13 +38,13 @@ DAChartSettingWidget::DAChartSettingWidget(QWidget* parent)
 	ui->buttonGroupType->setId(ui->toolButtonChart, static_cast< int >(SettingChart));
 	ui->buttonGroupType->setId(ui->toolButtonItem, static_cast< int >(SettingItem));
 	connect(ui->comboBoxSelectChart,
-			QOverload< int >::of(&QComboBox::activated),
-			this,
-			&DAChartSettingWidget::onComboBoxChartActivated);
+            QOverload< int >::of(&QComboBox::activated),
+            this,
+            &DAChartSettingWidget::onComboBoxChartActivated);
 	connect(ui->comboBoxSelectItem,
-			QOverload< int >::of(&QComboBox::activated),
-			this,
-			&DAChartSettingWidget::onComboBoxItemActived);
+            QOverload< int >::of(&QComboBox::activated),
+            this,
+            &DAChartSettingWidget::onComboBoxItemActived);
 	Qt5Qt6Compat_Connect_ButtonGroupClicked_int(ui->buttonGroupType, DAChartSettingWidget::onButtonGroupTypeButtonClicked);
 }
 
@@ -66,9 +66,9 @@ void DAChartSettingWidget::setChartOprateWidget(DAChartOperateWidget* opt)
 		disconnect(d_ptr->mChartOpt, &DAChartOperateWidget::figureRemoving, this, &DAChartSettingWidget::onFigureCloseing);
 		disconnect(d_ptr->mChartOpt, &DAChartOperateWidget::figureCreated, this, &DAChartSettingWidget::onFigureCreated);
 		disconnect(d_ptr->mChartOpt,
-				   &DAChartOperateWidget::currentFigureChanged,
-				   this,
-				   &DAChartSettingWidget::onCurrentFigureChanged);
+                   &DAChartOperateWidget::currentFigureChanged,
+                   this,
+                   &DAChartSettingWidget::onCurrentFigureChanged);
 	}
 	d_ptr->mChartOpt = opt;
 	if (opt) {
@@ -133,7 +133,7 @@ void DAChartSettingWidget::bindFigure(DAFigureWidget* fig)
 	d_ptr->mFigure = fig;
 	if (fig) {
 		connect(fig, &DAFigureWidget::chartAdded, this, &DAChartSettingWidget::onChartAdded);
-		connect(fig, &DAFigureWidget::chartWillRemove, this, &DAChartSettingWidget::onChartWillRemove);
+        connect(fig, &DAFigureWidget::chartRemoved, this, &DAChartSettingWidget::onChartRemoved);
 		connect(fig, &DAFigureWidget::currentChartChanged, this, &DAChartSettingWidget::onCurrentChartChanged);
 		// 更新chart信息
 		const auto charts = fig->getCharts();
@@ -150,7 +150,7 @@ void DAChartSettingWidget::unbindFigure(DAFigureWidget* fig)
 	qDebug() << "unbindFigure ptr=" << qintptr(fig);
 	if (fig) {
 		disconnect(fig, &DAFigureWidget::chartAdded, this, &DAChartSettingWidget::onChartAdded);
-		disconnect(fig, &DAFigureWidget::chartWillRemove, this, &DAChartSettingWidget::onChartWillRemove);
+        disconnect(fig, &DAFigureWidget::chartRemoved, this, &DAChartSettingWidget::onChartRemoved);
 		disconnect(fig, &DAFigureWidget::currentChartChanged, this, &DAChartSettingWidget::onCurrentChartChanged);
 		// 更新chart信息
 		const auto charts = fig->getCharts();
@@ -348,7 +348,7 @@ void DAChartSettingWidget::resetChartsComboBox(DAFigureWidget* fig)
 		for (int i = ui->comboBoxSelectChart->count(); i < cs.size(); ++i) {
 			DAChartWidget* chart = cs[ i ];
 			ui->comboBoxSelectChart->addItem(DAChartWidgetStandardItem::getChartTitle(fig, chart),
-											 QVariant::fromValue(chart));
+                                             QVariant::fromValue(chart));
 		}
 	} else if (ui->comboBoxSelectChart->count() > cs.size()) {
 		// 删除
@@ -438,9 +438,9 @@ void DAChartSettingWidget::onChartAdded(DAChartWidget* c)
 	}
 }
 
-void DAChartSettingWidget::onChartWillRemove(DAChartWidget* c)
+void DAChartSettingWidget::onChartRemoved(DAChartWidget* c)
 {
-	qDebug() << "onChartWillRemove ptr=" << qintptr(c);
+    qDebug() << "onChartRemoved ptr=" << qintptr(c);
 	if (d_ptr->mFigure) {
 		// 刷新chart
 		unbindChart(c);

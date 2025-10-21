@@ -92,10 +92,10 @@ Q_SIGNALS:
 	void chartAdded(DA::DAChartWidget* c);
 
 	/**
-	 * @brief 绘图即将移除
-	 * @param plot 即将移除的绘图，此时指针还有效
+     * @brief 绘图移除
+     * @param plot 移除的绘图，此时指针还有效
 	 */
-	void chartWillRemove(DA::DAChartWidget* c);
+    void chartRemoved(DA::DAChartWidget* c);
 
 	// 当前选中的发生改变
 	/**

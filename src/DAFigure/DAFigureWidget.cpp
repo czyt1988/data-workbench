@@ -22,6 +22,8 @@
 #include "DAFigureContainer.h"
 #include "DAFigureWidgetOverlayChartEditor.h"
 #include "DAFigureWidgetCommands.h"
+// qwt
+#include "qwt_figure.h"
 namespace DA
 {
 const float c_figurewidget_default_x     = 0.05f;
@@ -49,12 +51,6 @@ public:
 		mFactory.reset(new DAChartFactory());
 	}
 
-	void setupUI()
-	{
-		q_ptr->setBackgroundColor(QColor(255, 255, 255));
-		q_ptr->setWindowIcon(QIcon(":/DAFigure/icon/figure.svg"));
-	}
-
 	void retranslateUi()
 	{
 		q_ptr->setWindowTitle(QApplication::translate("DAFigureWidget", "Figure", 0));
@@ -64,21 +60,44 @@ public:
 //===================================================
 // DAFigureWidget
 //===================================================
-DAFigureWidget::DAFigureWidget(QWidget* parent) : DAFigureContainer(parent), DA_PIMPL_CONSTRUCT
+DAFigureWidget::DAFigureWidget(QWidget* parent) : QScrollArea(parent), DA_PIMPL_CONSTRUCT
 {
-	d_ptr->setupUI();
-	setFocusPolicy(Qt::ClickFocus);
-	static int s_figure_count = 0;
-
-	++s_figure_count;
-	setWindowTitle(QString("figure-%1").arg(s_figure_count));
-	setMinimumWidth(100);
-	setMinimumHeight(50);
+    init();
 }
 
 DAFigureWidget::~DAFigureWidget()
 {
-	// qDebug() << "SAFigureWindow destroy";
+}
+
+/**
+ * @brief 获取绘图窗口
+ * @return
+ */
+QwtFigure* DAFigureWidget::figure() const
+{
+    return qobject_cast< QwtFigure* >(widget());
+}
+
+void DAFigureWidget::init()
+{
+    setWindowIcon(QIcon(":/DAFigure/icon/figure.svg"));
+    setFocusPolicy(Qt::ClickFocus);
+    setBackgroundColor(QColor(255, 255, 255));
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    setWidgetResizable(true);
+    setAlignment(Qt::AlignCenter);  // 居中显示
+    setMinimumWidth(100);
+    setMinimumHeight(50);
+    QwtFigure* figure = new QwtFigure();
+    setWidget(figure);
+    static int s_figure_count = 0;
+    ++s_figure_count;
+    setWindowTitle(QString("figure-%1").arg(s_figure_count));
+
+    connect(figure, &QwtFigure::axesAdded, this, &DAFigureWidget::onAxesAdded);
+    connect(figure, &QwtFigure::axesRemoved, this, &DAFigureWidget::onAxesRemoved);
+    connect(figure, &QwtFigure::currentAxesChanged, this, &DAFigureWidget::onCurrentAxesChanged);
 }
 
 DAChartFactory* DAFigureWidget::getChartFactory() const
@@ -112,12 +131,14 @@ DAChartWidget* DAFigureWidget::createChart()
  * @param relativePos
  * @return
  */
-DAChartWidget* DAFigureWidget::createChart(const QRectF& versatileSize, bool relativePos)
+DAChartWidget* DAFigureWidget::createChart(const QRectF& versatileSize)
 {
+    QwtFigure* fig = figure();
+    Q_ASSERT(fig);
+
 	DAChartWidget* chart = d_ptr->mFactory->createChart(this);
-	addChart(chart, versatileSize, relativePos);
-	// 不加这句话，有时候不显示出来
-	chart->show();
+    addChart(chart, versatileSize);
+
 	// 对于有Overlay，需要把Overlay提升到最前面，否则会被覆盖
 	if (d_ptr->mChartEditorOverlay) {
 		d_ptr->mChartEditorOverlay->raise();  // 同时提升最前
@@ -133,9 +154,10 @@ DAChartWidget* DAFigureWidget::createChart(const QRectF& versatileSize, bool rel
  * @param hPresent
  * @return
  */
-DAChartWidget* DAFigureWidget::createChart(float xVersatile, float yVersatile, float wVersatile, float hVersatile, bool relativePos)
+DAChartWidget* DAFigureWidget::createChart(float xVersatile, float yVersatile, float wVersatile, float hVersatile)
 {
-    return createChart(QRectF(xVersatile, yVersatile, wVersatile, hVersatile), relativePos);
+
+    return createChart(QRectF(xVersatile, yVersatile, wVersatile, hVersatile));
 }
 
 /**
@@ -144,7 +166,9 @@ DAChartWidget* DAFigureWidget::createChart(float xVersatile, float yVersatile, f
  */
 void DAFigureWidget::removeChart(DAChartWidget* chart)
 {
-	removeWidget(chart);
+    QwtFigure* fig = figure();
+    Q_ASSERT(fig);
+    fig->removeAxes(chart);
 	Q_EMIT chartRemoved(chart);
 }
 
@@ -187,17 +211,18 @@ DAChartWidget* DAFigureWidget::createChart_(const QRectF& versatileSize)
  * @param hPresent
  * @return
  */
-void DAFigureWidget::addChart(DAChartWidget* chart, float xVersatile, float yVersatile, float wVersatile, float hVersatile, bool relativePos)
+void DAFigureWidget::addChart(DAChartWidget* chart, qreal xVersatile, qreal yVersatile, qreal wVersatile, qreal hVersatile)
 {
-    addChart(chart, QRectF(xVersatile, yVersatile, wVersatile, hVersatile), relativePos);
+    QwtFigure* fig = figure();
+    Q_ASSERT(fig);
+    // 将会发射QwtFigure::axesAdded信号
+    fig->addAxes(chart, xVersatile, yVersatile, wVersatile, hVersatile);
+    d_ptr->mCurrentChart = chart;
 }
 
-void DAFigureWidget::addChart(DAChartWidget* chart, const QRectF& versatileSize, bool relativePos)
+void DAFigureWidget::addChart(DAChartWidget* chart, const QRectF& versatileSize)
 {
-	addWidget(chart, versatileSize, relativePos);
-	d_ptr->mCurrentChart = chart;
-	emit chartAdded(chart);
-	setFocusProxy(chart);
+    addChart(chart, versatileSize.x(), versatileSize.y(), versatileSize.width(), versatileSize.height());
 }
 
 /**
@@ -206,29 +231,13 @@ void DAFigureWidget::addChart(DAChartWidget* chart, const QRectF& versatileSize,
  */
 QList< DAChartWidget* > DAFigureWidget::getCharts() const
 {
+    QwtFigure* fig = figure();
+    Q_ASSERT(fig);
 	QList< DAChartWidget* > res;
-	QList< QWidget* > widgets = getWidgetList();
+    const QList< QwtPlot* > plots = fig->allAxes();
 
-	for (QWidget* w : qAsConst(widgets)) {
-		DAChartWidget* chart = qobject_cast< DAChartWidget* >(w);
-		if (chart) {
-			res.append(chart);
-		}
-	}
-	return (res);
-}
-
-/**
- * @brief 获取所有的绘图,绘图有序
- * @return
- */
-QList< DAChartWidget* > DAFigureWidget::getChartsOrdered() const
-{
-	QList< DAChartWidget* > res;
-	QList< QWidget* > widgets = getOrderedWidgetList();
-
-	for (QWidget* w : qAsConst(widgets)) {
-		DAChartWidget* chart = qobject_cast< DAChartWidget* >(w);
+    for (QwtPlot* p : plots) {
+        DAChartWidget* chart = qobject_cast< DAChartWidget* >(p);
 		if (chart) {
 			res.append(chart);
 		}
@@ -257,16 +266,11 @@ DAChartWidget* DAFigureWidget::gca() const
 /**
  * @brief 清空同时删除
  */
-void DAFigureWidget::clearAllCharts()
+void DAFigureWidget::clear()
 {
-	QList< DAChartWidget* > charts = getCharts();
-
-	while (!charts.isEmpty()) {
-		DAChartWidget* p = charts.takeLast();
-		emit chartWillRemove(p);
-		p->hide();
-		p->deleteLater();
-	}
+    QwtFigure* fig = figure();
+    Q_ASSERT(fig);
+    fig->clear();
 }
 
 /**
@@ -276,7 +280,7 @@ void DAFigureWidget::clearAllCharts()
 void DAFigureWidget::setBackgroundColor(const QBrush& brush)
 {
 	d_ptr->mBackgroundBrush = brush;
-	repaint();
+    update();
 }
 
 /**
@@ -287,7 +291,7 @@ void DAFigureWidget::setBackgroundColor(const QColor& clr)
 {
 	d_ptr->mBackgroundBrush.setStyle(Qt::SolidPattern);
 	d_ptr->mBackgroundBrush.setColor(clr);
-	repaint();
+    update();
 }
 
 /**
@@ -305,26 +309,11 @@ const QBrush& DAFigureWidget::getBackgroundColor() const
  * @return 如果成功设置返回true，如果当前窗口已经是p，则返回true，但不会发射currentWidgetChanged信号
  * @sa currentWidgetChanged
  */
-bool DAFigureWidget::setCurrentChart(DAChartWidget* p)
+void DAFigureWidget::setCurrentChart(DAChartWidget* p)
 {
-	if (p == d_ptr->mCurrentChart) {
-		return (true);
-	}
-	if (!isWidgetInContainer(p)) {
-		return (false);
-	}
-	d_ptr->mCurrentChart = p;
-	// setFocusProxy(p);
-	// 如果在进行子窗口编辑模式，此时需要重新设置编辑
-	if (isEnableSubChartEditor()) {
-		// 避免信号重复触发，虽然不影响
-		QSignalBlocker bl(d_ptr->mChartEditorOverlay);
-		Q_UNUSED(bl);
-		d_ptr->mChartEditorOverlay->setActiveWidget(p);
-	}
-	emit currentChartChanged(p);
-
-	return (true);
+    QwtFigure* fig = figure();
+    Q_ASSERT(fig);
+    fig->setCurrentAxes(p);
 }
 
 /**
@@ -648,7 +637,27 @@ void DAFigureWidget::onOverlayActiveWidgetChanged(QWidget* oldActive, QWidget* n
 	DAChartWidget* c = qobject_cast< DAChartWidget* >(newActive);
 	if (c) {
 		setCurrentChart(c);
-	}
+    }
+}
+
+void DAFigureWidget::onAxesAdded(QwtPlot* newAxes)
+{
+    if (DAChartWidget* c = qobject_cast< DAChartWidget* >(newAxes)) {
+        Q_EMIT chartAdded(c);
+    }
+}
+
+void DAFigureWidget::onAxesRemoved(QwtPlot* removedAxes)
+{
+    if (DAChartWidget* c = qobject_cast< DAChartWidget* >(removedAxes)) {
+        Q_EMIT chartRemoved(c);
+    }
+}
+
+void DAFigureWidget::onCurrentAxesChanged(QwtPlot* plot)
+{
+    DAChartWidget* chartWidget = plot ? qobject_cast< DAChartWidget* >(plot) : nullptr;
+    Q_EMIT currentChartChanged(chartWidget);
 }
 
 QDataStream& operator<<(QDataStream& out, const DAFigureWidget* p)

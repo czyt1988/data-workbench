@@ -1943,7 +1943,7 @@ QDomElement DAXmlHelper::makeElement(const DAFigureWidget* fig,
 	eleFig.appendChild(eleClrTheme);
 	// 记录chart
 	QDomElement chartsEle                = doc->createElement(QStringLiteral("charts"));
-	const QList< DAChartWidget* > charts = fig->getChartsOrdered();
+    const QList< DAChartWidget* > charts = fig->getCharts();
 	for (DAChartWidget* chart : charts) {
 		QDomElement chartEle = makeElement(chart, QStringLiteral("chart"), doc, itemsMgr);
 		// 获取chart在figure的位置
@@ -2215,11 +2215,11 @@ QDomElement DAXmlHelper::makeQwtPlotAxisElement(const DAChartWidget* chart, int 
 		QDomElement dateformatEle = doc->createElement(QStringLiteral("dateformat"));
 		dateformatEle.appendChild(
             DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Millisecond), QStringLiteral("msec"), doc));
-		dateformatEle.appendChild(
+        dateformatEle.appendChild(
             DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Second), QStringLiteral("sec"), doc));
 		dateformatEle.appendChild(
             DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Minute), QStringLiteral("min"), doc));
-        dateformatEle.appendChild(
+		dateformatEle.appendChild(
             DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Hour), QStringLiteral("hour"), doc));
 		dateformatEle.appendChild(
             DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Day), QStringLiteral("day"), doc));

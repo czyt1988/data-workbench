@@ -111,7 +111,7 @@ public:
     static QIcon brushIcon(const QBrush& b, bool drawBorder = true);
 private slots:
     // 图表移除触发的槽
-    void onChartWillRemove(DA::DAChartWidget* c);
+    void onChartRemoved(DA::DAChartWidget* c);
     // 图表增加触发的槽
     void onChartAdded(DA::DAChartWidget* c);
     // 有chartitem加入或移除触发的槽
