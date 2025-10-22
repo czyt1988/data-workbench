@@ -2,7 +2,6 @@
 #define DAENUMSTRINGUTILS_H
 #include <QString>
 #include <QHash>
-
 /**
  * @file 枚举字符串转换类
  *

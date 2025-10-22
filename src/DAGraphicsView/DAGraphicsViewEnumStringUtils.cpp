@@ -1,4 +1,14 @@
 ﻿#include "DAGraphicsViewEnumStringUtils.h"
+// std
+#include <type_traits>
+namespace DA
+{
+uint qHash(const DA::AspectDirection& key, uint seed) noexcept
+{
+    using underlying_type = std::underlying_type_t< DA::AspectDirection >;
+    return ::qHash(static_cast< underlying_type >(key), seed);
+}
+}
 
 // ================================== DA::DAGraphicsLinkItem::EndPointType ==================================
 DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::DAGraphicsLinkItem::EndPointType,
@@ -28,11 +38,7 @@ DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::DAShapeKeyPoint::KeyPoint,
                                   { DA::DAShapeKeyPoint::None, "none" });
 
 // ================================== DA::AspectDirection ==================================
-// 定义 qHash 函数
-uint qHash(DA::AspectDirection key, uint seed)
-{
-    return ::qHash(static_cast< int >(key), seed);
-}
+
 DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::AspectDirection,
                                   DA::AspectDirection::East,
                                   { DA::AspectDirection::East, "east" },

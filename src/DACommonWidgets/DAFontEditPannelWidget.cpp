@@ -1,6 +1,6 @@
 ﻿#include "DAFontEditPannelWidget.h"
 #include "ui_DAFontEditPannelWidget.h"
-#include <QDebug>
+
 namespace DA
 {
 DAFontEditPannelWidget::DAFontEditPannelWidget(QWidget* parent)
@@ -8,7 +8,7 @@ DAFontEditPannelWidget::DAFontEditPannelWidget(QWidget* parent)
 {
 	ui->setupUi(this);
 	ui->comboBoxFontSize->addItems(
-		{ "6", "8", "9", "10", "11", "12", "14", "16", "18", "20", "22", "24", "26", "28", "36", "48", "72" });
+        { "6", "8", "9", "10", "11", "12", "14", "16", "18", "20", "22", "24", "26", "28", "36", "48", "72" });
 	ui->comboBoxFontSize->setCurrentText("10");
 	ui->colorButton->setColor(Qt::black);
 	connect(ui->fontComboBox, &QFontComboBox::currentFontChanged, this, &DAFontEditPannelWidget::signalEmitFontChanged);
@@ -145,7 +145,6 @@ void DAFontEditPannelWidget::onFontSizeSub()
 
 void DAFontEditPannelWidget::signalEmitFontChanged()
 {
-	qDebug() << "signalEmitFontChanged";
 	QFont f = getCurrentFont();
 	emit currentFontChanged(f);
 }

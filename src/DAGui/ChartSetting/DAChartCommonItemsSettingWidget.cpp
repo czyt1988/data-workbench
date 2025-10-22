@@ -21,7 +21,7 @@ public:
     DAChartCurveItemSettingWidget* widgetCurveItem { nullptr };
     DAChartBarItemSettingWidget* widgetBarItem { nullptr };
     DAChartErrorBarItemSettingWidget* widgetErrorBarItem { nullptr };
-    DAChartSpectrogramItemSettingWidget* widgetSpectrogramItem{ nullptr };
+    DAChartSpectrogramItemSettingWidget* widgetSpectrogramItem { nullptr };
     DAChartLegendItemSettingWidget* widgetLegendItem { nullptr };
     DAChartGridSettingWidget* widgetGridItem { nullptr };
     DAChartTradingCurveItemSettingWidget* widgetTradingCurveItem { nullptr };
@@ -69,7 +69,7 @@ DAChartCommonItemsSettingWidget::~DAChartCommonItemsSettingWidget()
 	delete ui;
 }
 
-void DAChartCommonItemsSettingWidget::plotItemSet(QwtPlotItem* item)
+void DAChartCommonItemsSettingWidget::updateUI(QwtPlotItem* item)
 {
 	DA_D(d);
 	if (nullptr == item) {

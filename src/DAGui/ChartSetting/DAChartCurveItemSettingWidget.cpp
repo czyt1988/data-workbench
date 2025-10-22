@@ -4,6 +4,11 @@
 #include <QDebug>
 #include "qwt_text.h"
 #include "qwt_plot.h"
+
+#ifndef DAChartCurveItemSettingWidget_DEBUG_PRINT
+#define DAChartCurveItemSettingWidget_DEBUG_PRINT 1
+#endif
+
 namespace DA
 {
 DAChartCurveItemSettingWidget::DAChartCurveItemSettingWidget(QWidget* parent)
@@ -12,31 +17,32 @@ DAChartCurveItemSettingWidget::DAChartCurveItemSettingWidget(QWidget* parent)
 	ui->setupUi(this);
 	resetUI();
 	connect(ui->comboBoxCurveStyle,
-			QOverload< int >::of(&QComboBox::currentIndexChanged),
-			this,
-			&DAChartCurveItemSettingWidget::onCurveStyleCurrentIndexChanged);
+            QOverload< int >::of(&QComboBox::currentIndexChanged),
+            this,
+            &DAChartCurveItemSettingWidget::onCurveStyleCurrentIndexChanged);
 	connect(ui->symbolEditWidget,
-			&DAChartSymbolEditWidget::symbolStyleChanged,
-			this,
-			&DAChartCurveItemSettingWidget::onSymbolStyleChanged);
+            &DAChartSymbolEditWidget::symbolStyleChanged,
+            this,
+            &DAChartCurveItemSettingWidget::onSymbolStyleChanged);
 	connect(ui->symbolEditWidget,
-			&DAChartSymbolEditWidget::symbolSizeChanged,
-			this,
-			&DAChartCurveItemSettingWidget::onSymbolSizeChanged);
+            &DAChartSymbolEditWidget::symbolSizeChanged,
+            this,
+            &DAChartCurveItemSettingWidget::onSymbolSizeChanged);
 	connect(ui->symbolEditWidget,
-			&DAChartSymbolEditWidget::symbolColorChanged,
-			this,
-			&DAChartCurveItemSettingWidget::onSymbolColorChanged);
+            &DAChartSymbolEditWidget::symbolColorChanged,
+            this,
+            &DAChartCurveItemSettingWidget::onSymbolColorChanged);
 	connect(ui->symbolEditWidget,
-			&DAChartSymbolEditWidget::symbolOutlinePenChanged,
-			this,
-			&DAChartCurveItemSettingWidget::onSymbolOutlinePenChanged);
+            &DAChartSymbolEditWidget::symbolOutlinePenChanged,
+            this,
+            &DAChartCurveItemSettingWidget::onSymbolOutlinePenChanged);
 	connect(ui->brushEditWidget, &DABrushEditWidget::brushChanged, this, &DAChartCurveItemSettingWidget::onBrushChanged);
 	connect(ui->buttonGroupOrientation,
-			QOverload< QAbstractButton* >::of(&QButtonGroup::buttonClicked),
-			this,
-			&DAChartCurveItemSettingWidget::onButtonGroupOrientationClicked);
+            QOverload< QAbstractButton* >::of(&QButtonGroup::buttonClicked),
+            this,
+            &DAChartCurveItemSettingWidget::onButtonGroupOrientationClicked);
 	connect(ui->penEditWidget, &DAPenEditWidget::penChanged, this, &DAChartCurveItemSettingWidget::onCurvePenChanged);
+    connect(ui->checkBoxFitted, &QCheckBox::clicked, this, &DAChartCurveItemSettingWidget::onCheckBoxFittedClicked);
 }
 
 DAChartCurveItemSettingWidget::~DAChartCurveItemSettingWidget()
@@ -44,50 +50,46 @@ DAChartCurveItemSettingWidget::~DAChartCurveItemSettingWidget()
 	delete ui;
 }
 
-void DAChartCurveItemSettingWidget::plotItemSet(QwtPlotItem* item)
-{
-	if (nullptr == item) {
-		return;
-	}
-	if (item->rtti() != QwtPlotItem::Rtti_PlotCurve) {
-		return;
-	}
-	ui->widgetItemSetting->setPlotItem(item);
-	QwtPlotCurve* curItem = static_cast< QwtPlotCurve* >(item);
-	updateUI(curItem);
-}
-
 /**
  * @brief 根据QwtPlotCurve更新ui
  * @param item
  */
-void DAChartCurveItemSettingWidget::updateUI(const QwtPlotCurve* item)
+void DAChartCurveItemSettingWidget::updateUI(QwtPlotItem* item)
 {
-	ui->widgetItemSetting->updateUI(item);
-	ui->checkBoxFitted->setChecked(item->testCurveAttribute(QwtPlotCurve::Fitted));
-	ui->checkBoxInverted->setChecked(item->testCurveAttribute(QwtPlotCurve::Inverted));
-	setLegendAttribute(item->legendAttributes());
-	setCurvePen(item->pen());
-	QBrush b = item->brush();
+#if DAChartCurveItemSettingWidget_DEBUG_PRINT
+    qDebug() << "DAChartCurveItemSettingWidget::updateUI=" << quintptr(item);
+#endif
+    if (nullptr == item) {
+        return;
+    }
+    if (item->rtti() != QwtPlotItem::Rtti_PlotCurve) {
+        return;
+    }
+    QwtPlotCurve* curItem = static_cast< QwtPlotCurve* >(item);
+    ui->checkBoxFitted->setChecked(curItem->testCurveAttribute(QwtPlotCurve::Fitted));
+    ui->checkBoxInverted->setChecked(curItem->testCurveAttribute(QwtPlotCurve::Inverted));
+    setLegendAttribute(curItem->legendAttributes());
+    setCurvePen(curItem->pen());
+    QBrush b = curItem->brush();
 	if (b != Qt::NoBrush) {
 		enableFillEdit(true);
-		setFillBrush(item->brush());
+        setFillBrush(curItem->brush());
 	} else {
 		enableFillEdit(false);
-		setFillBrush(item->brush());
+        setFillBrush(curItem->brush());
 	}
-	setBaseLine(item->baseline());
-	setOrientation(item->orientation());
+    setBaseLine(curItem->baseline());
+    setOrientation(curItem->orientation());
 }
 
 /**
  * @brief 根据ui更新QwtPlotCurve
  * @param item
  */
-void DAChartCurveItemSettingWidget::updatePlotItem(QwtPlotCurve* item)
+void DAChartCurveItemSettingWidget::applySetting(QwtPlotCurve* item)
 {
 	// plot item
-	ui->widgetItemSetting->updatePlotItem(item);
+    ui->widgetItemSetting->applySetting(item);
 	// plot curve
 	item->setTitle(getTitle());
 	auto s = getCurveStyle();
@@ -149,6 +151,9 @@ void DAChartCurveItemSettingWidget::resetCurveStyleComboBox()
  */
 void DAChartCurveItemSettingWidget::onCurveStyleCurrentIndexChanged(int index)
 {
+#if DAChartCurveItemSettingWidget_DEBUG_PRINT
+    qDebug() << "DAChartCurveItemSettingWidget::onCurveStyleCurrentIndexChanged=" << index;
+#endif
 	QwtPlotCurve::CurveStyle s = static_cast< QwtPlotCurve::CurveStyle >(ui->comboBoxCurveStyle->currentData().toInt());
 	switch (s) {
 	case QwtPlotCurve::Lines:
@@ -402,8 +407,11 @@ DAChartPlotItemSettingWidget* DAChartCurveItemSettingWidget::getItemSettingWidge
     return ui->widgetItemSetting;
 }
 
-void DAChartCurveItemSettingWidget::on_checkBoxFitted_clicked(bool checked)
+void DAChartCurveItemSettingWidget::onCheckBoxFittedClicked(bool checked)
 {
+#if DAChartCurveItemSettingWidget_DEBUG_PRINT
+    qDebug() << "DAChartCurveItemSettingWidget::on_checkBoxFitted_clicked=" << checked;
+#endif
 	DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
 	QwtPlotCurve* c = s_cast< QwtPlotCurve* >();
 	c->setCurveAttribute(QwtPlotCurve::Fitted, checked);
@@ -411,6 +419,9 @@ void DAChartCurveItemSettingWidget::on_checkBoxFitted_clicked(bool checked)
 
 void DAChartCurveItemSettingWidget::on_checkBoxInverted_clicked(bool checked)
 {
+#if DAChartCurveItemSettingWidget_DEBUG_PRINT
+    qDebug() << "DAChartCurveItemSettingWidget::on_checkBoxInverted_clicked=" << checked;
+#endif
 	DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
 	QwtPlotCurve* c = s_cast< QwtPlotCurve* >();
 	c->setCurveAttribute(QwtPlotCurve::Inverted, checked);
@@ -418,6 +429,9 @@ void DAChartCurveItemSettingWidget::on_checkBoxInverted_clicked(bool checked)
 
 void DAChartCurveItemSettingWidget::on_checkBoxLegendShowLine_clicked(bool checked)
 {
+#if DAChartCurveItemSettingWidget_DEBUG_PRINT
+    qDebug() << "DAChartCurveItemSettingWidget::on_checkBoxLegendShowLine_clicked=" << checked;
+#endif
 	DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
 	QwtPlotCurve* c = s_cast< QwtPlotCurve* >();
 	c->setLegendAttribute(QwtPlotCurve::LegendShowLine, checked);
@@ -425,6 +439,9 @@ void DAChartCurveItemSettingWidget::on_checkBoxLegendShowLine_clicked(bool check
 
 void DAChartCurveItemSettingWidget::on_checkBoxLegendShowSymbol_clicked(bool checked)
 {
+#if DAChartCurveItemSettingWidget_DEBUG_PRINT
+    qDebug() << "DAChartCurveItemSettingWidget::on_checkBoxLegendShowSymbol_clicked=" << checked;
+#endif
 	DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
 	QwtPlotCurve* c = s_cast< QwtPlotCurve* >();
 	c->setLegendAttribute(QwtPlotCurve::LegendShowSymbol, checked);
@@ -432,6 +449,9 @@ void DAChartCurveItemSettingWidget::on_checkBoxLegendShowSymbol_clicked(bool che
 
 void DAChartCurveItemSettingWidget::on_checkBoxLegendShowBrush_clicked(bool checked)
 {
+#if DAChartCurveItemSettingWidget_DEBUG_PRINT
+    qDebug() << "DAChartCurveItemSettingWidget::on_checkBoxLegendShowBrush_clicked=" << checked;
+#endif
 	DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
 	QwtPlotCurve* c = s_cast< QwtPlotCurve* >();
 	c->setLegendAttribute(QwtPlotCurve::LegendShowBrush, checked);
@@ -439,6 +459,9 @@ void DAChartCurveItemSettingWidget::on_checkBoxLegendShowBrush_clicked(bool chec
 
 void DAChartCurveItemSettingWidget::on_checkBoxEnableMarker_clicked(bool checked)
 {
+#if DAChartCurveItemSettingWidget_DEBUG_PRINT
+    qDebug() << "DAChartCurveItemSettingWidget::on_checkBoxEnableMarker_clicked=" << checked;
+#endif
 	DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
 	QwtPlotCurve* c = s_cast< QwtPlotCurve* >();
 	if (checked) {

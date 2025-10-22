@@ -32,13 +32,11 @@ class DAGUI_API DAChartErrorBarItemSettingWidget : public DAAbstractChartItemSet
 public:
 	explicit DAChartErrorBarItemSettingWidget(QWidget* parent = nullptr);
 	~DAChartErrorBarItemSettingWidget();
-	// item设置了
-	virtual void plotItemSet(QwtPlotItem* item) override;
 	// 根据QwtPlotCurve更新ui
-	void updateUI(const QwtPlotIntervalCurve* item);
+    void updateUI(QwtPlotItem* item) override;
 	// 根据ui更新plotitem
-    void updateItemFromUI(QwtPlotIntervalCurve* item);
-    void updateSymbolFromUI(QwtPlotIntervalCurve* item);
+    void applySetting(QwtPlotIntervalCurve* item);
+    void applySymbolSetting(QwtPlotIntervalCurve* item);
 	// 标题
 	void setTitle(const QString& t);
 	QString getTitle() const;

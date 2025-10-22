@@ -32,12 +32,10 @@ class DAGUI_API DAChartCurveItemSettingWidget : public DAAbstractChartItemSettin
 public:
 	explicit DAChartCurveItemSettingWidget(QWidget* parent = nullptr);
 	~DAChartCurveItemSettingWidget();
-	// item设置了
-	virtual void plotItemSet(QwtPlotItem* item) override;
 	// 根据QwtPlotCurve更新ui
-	void updateUI(const QwtPlotCurve* item);
+    void updateUI(QwtPlotItem* item) override;
 	// 根据ui更新plotitem
-	void updatePlotItem(QwtPlotCurve* item);
+    void applySetting(QwtPlotCurve* item);
 	// 标题
 	void setTitle(const QString& t);
 	QString getTitle() const;
@@ -82,7 +80,7 @@ protected:
 	void resetCurveStyleComboBox();
 private slots:
 	void onCurveStyleCurrentIndexChanged(int index);
-	void on_checkBoxFitted_clicked(bool checked);
+    void onCheckBoxFittedClicked(bool checked);
 	void on_checkBoxInverted_clicked(bool checked);
 	void on_checkBoxLegendShowLine_clicked(bool checked);
 	void on_checkBoxLegendShowSymbol_clicked(bool checked);

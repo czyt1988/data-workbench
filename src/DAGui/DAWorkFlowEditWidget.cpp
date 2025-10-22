@@ -424,7 +424,7 @@ QRectF DAWorkFlowEditWidget::calcAllItemsSceneRange(const QList< QGraphicsItem* 
 	}
 	QRectF range = its.first()->sceneBoundingRect();
 	for (int i = 1; i < its.size(); ++i) {
-		range.united(its[ i ]->sceneBoundingRect());
+        range = range.united(its[ i ]->sceneBoundingRect());
 	}
 	return range;
 }

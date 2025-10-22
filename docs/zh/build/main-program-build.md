@@ -55,3 +55,7 @@ message(STATUS "qt${QT_VERSION_MAJOR}advanceddocking_DIR=${qt${QT_VERSION_MAJOR}
 ### 4. 编译和安装
 
 点击运行（`Ctrl+R`）进行编译和安装
+
+!!! tips "提示"
+    编译完的首次运行会报错，因为第三方库的dll没有复制到`build`目录下，你需要手动把第三方库的dll复制构建目录下的bin文件夹中
+    还有`zlib.dll`(有些会编译为`z.dll`)是zlib库，它是`quazip`的依赖，这个库也需要手动复制到build目录下，否则无法运行

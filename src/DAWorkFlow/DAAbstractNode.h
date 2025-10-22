@@ -228,6 +228,10 @@ protected:
 	void registFactory(const std::shared_ptr< DAAbstractNodeFactory >& fc);
 };
 
+DAWORKFLOW_API uint qHash(const std::shared_ptr< DAAbstractNode >& ptr, uint seed = 0) noexcept;
+
 }  // end DA
+// 为std::shared_ptr<DA::DAAbstractNode>定义qHash
+
 Q_DECLARE_METATYPE(std::shared_ptr< DA::DAAbstractNode >)
 #endif  // DAABSTRACTNODE_H

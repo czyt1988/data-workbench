@@ -58,7 +58,7 @@
 	{                                                                                                                  \
 		QString text = ele->text();                                                                                    \
 		bool res     = false;                                                                                          \
-		p            = text.##from_qstring_fun(&res);                                                                  \
+        p            = text.from_qstring_fun(&res);                                                                    \
 		return res;                                                                                                    \
 	}
 #endif
@@ -76,7 +76,7 @@
 	bool DAXMLFileInterface::loadElement(value_type& p, const QDomElement* ele)                                        \
 	{                                                                                                                  \
 		QString text = ele->text();                                                                                    \
-		p            = text.##from_qstring_fun();                                                                      \
+        p            = text.from_qstring_fun();                                                                        \
 		return true;                                                                                                   \
 	}
 #endif

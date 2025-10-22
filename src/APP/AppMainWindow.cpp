@@ -62,7 +62,7 @@ AppMainWindow::AppMainWindow(QWidget* parent) : SARibbonMainWindow(parent)
 	// 创建controller
 	mController = new DAAppController(this);
 	(*mController)
-		.setAppMainWindow(this)                       // app
+        .setAppMainWindow(this)                       // app
 	    .setAppCore(&core)                            // core
 	    .setAppActions(mUI->getAppActions())          // action
 	    .setAppCommand(mUI->getAppCmd())              // cmd
@@ -80,7 +80,8 @@ AppMainWindow::AppMainWindow(QWidget* parent) : SARibbonMainWindow(parent)
 	}
 	// 首次调用此函数会加载插件，可放置在main函数中调用
 	init();
-	retranslateUi();  // 非必要可以验证调用是否正常
+    retranslateUi();
+    setContentsMargins(3, 0, 3, 1);
 	if (!hasUIStateFile) {
 		ribbonBar()->setRibbonStyle(SARibbonBar::RibbonStyleCompactTwoRow);
 		showMaximized();

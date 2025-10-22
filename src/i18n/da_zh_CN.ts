@@ -80,7 +80,7 @@
         <translation>加载界面状态信息</translation>
     </message>
     <message>
-        <location line="+28"/>
+        <location line="+29"/>
         <source>LanguageChange</source>
         <translation type="unfinished"></translation>
     </message>
@@ -823,7 +823,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+832"/>
+        <location filename="../APP/DAAppController.cpp" line="+831"/>
         <location line="+49"/>
         <source>project file(*.%1)</source>
         <translation>工程文件(*.%1)</translation>
@@ -846,7 +846,7 @@ Table Area</source>
     </message>
     <message>
         <location line="-415"/>
-        <location line="+22"/>
+        <location line="+21"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
@@ -861,7 +861,7 @@ Table Area</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location line="+0"/>
+        <location line="+1"/>
         <source>Whether to overwrite the file:%1</source>
         <translation>是否覆盖文件“%1”</translation>
     </message>
@@ -1788,7 +1788,7 @@ Table Area</source>
 <context>
     <name>DA::DAChartCurveItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="+138"/>
+        <location filename="../DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="+140"/>
         <source>Lines</source>
         <translation>折线</translation>
     </message>
@@ -1915,12 +1915,7 @@ Table Area</source>
         <translation>图-%1</translation>
     </message>
     <message>
-        <location line="+163"/>
-        <source>chart operate widget&apos;s tab changed,but can not find figure</source>
-        <translation>绘图操作窗口的标签改变信号中，无法通过标签索引找到对应的绘图</translation>
-    </message>
-    <message>
-        <location line="+22"/>
+        <location line="+186"/>
         <source>question</source>
         <translation>疑问</translation>
     </message>
@@ -1933,7 +1928,7 @@ Table Area</source>
 <context>
     <name>DA::DAChartSpectrogramItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartSpectrogramItemSettingWidget.cpp" line="+93"/>
+        <location filename="../DAGui/ChartSetting/DAChartSpectrogramItemSettingWidget.cpp" line="+84"/>
         <source>Image Mode</source>
         <translation>云图模式</translation>
     </message>
@@ -2029,7 +2024,7 @@ Table Area</source>
 <context>
     <name>DA::DAChartWidget</name>
     <message>
-        <location filename="../DAFigure/DAChartWidget.cpp" line="+1035"/>
+        <location filename="../DAFigure/DAChartWidget.cpp" line="+1083"/>
         <source>Before zoom in, the chart must setup a zoomer</source>
         <translation>在放大图表之前需要先建立缩放器</translation>
     </message>
@@ -3454,7 +3449,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-2174"/>
+        <location filename="../APP/DAAppController.cpp" line="-2173"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -5305,8 +5300,43 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAFigureWidgetSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAFigureWidgetSettingWidget.ui" line="+16"/>
+        <location filename="../DAGui/ChartSetting/DAFigureWidgetSettingWidget.ui" line="+14"/>
         <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source>Size</source>
+        <translation type="unfinished">大小</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>max width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>min width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>min height</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>max height</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>background color</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6238,7 +6268,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>创建绘图</translation>
     </message>
     <message>
-        <location line="+41"/>
+        <location line="+43"/>
         <source>remove chart</source>
         <translation>移除绘图</translation>
     </message>

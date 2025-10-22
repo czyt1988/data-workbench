@@ -32,11 +32,10 @@ public:
     explicit DAChartTradingCurveItemSettingWidget(QWidget* parent = nullptr);
     ~DAChartTradingCurveItemSettingWidget();
 	// item设置了
-	virtual void plotItemSet(QwtPlotItem* item) override;
-	// 根据QwtPlotCurve更新ui
-	void updateUI(const QwtPlotTradingCurve* item);
+    virtual void updateUI(QwtPlotItem* item) override;
+
 	// 根据ui更新plotitem
-	void updatePlotItem(QwtPlotTradingCurve* item);
+    void applySetting(QwtPlotTradingCurve* item);
 
 	// 方向
     Qt::Orientation getOrientationFromUI() const;

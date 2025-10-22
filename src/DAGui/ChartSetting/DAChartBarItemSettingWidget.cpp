@@ -24,28 +24,28 @@ DAChartBarItemSettingWidget::DAChartBarItemSettingWidget(QWidget* parent)
 	connect(ui->checkBoxBar, &QAbstractButton::clicked, this, &DAChartBarItemSettingWidget::onCheckBoxLegendModeBarClicked);
 	connect(ui->brushEditWidget, &DABrushEditWidget::brushChanged, this, &DAChartBarItemSettingWidget::onFillBrushChanged);
 	connect(ui->comboBoxLayoutPolicy,
-			QOverload< int >::of(&QComboBox::currentIndexChanged),
-			this,
-			&DAChartBarItemSettingWidget::onLayoutPolicyChanged);
+            QOverload< int >::of(&QComboBox::currentIndexChanged),
+            this,
+            &DAChartBarItemSettingWidget::onLayoutPolicyChanged);
 	connect(ui->spinBoxSpacing,
-			QOverload< int >::of(&QSpinBox::valueChanged),
-			this,
-			&DAChartBarItemSettingWidget::onSpacingValueChanged);
+            QOverload< int >::of(&QSpinBox::valueChanged),
+            this,
+            &DAChartBarItemSettingWidget::onSpacingValueChanged);
 	connect(ui->spinBoxMargin,
-			QOverload< int >::of(&QSpinBox::valueChanged),
-			this,
-			&DAChartBarItemSettingWidget::onMarginValueChanged);
+            QOverload< int >::of(&QSpinBox::valueChanged),
+            this,
+            &DAChartBarItemSettingWidget::onMarginValueChanged);
 	connect(ui->doubleSpinBoxLayoutHint,
-			QOverload< double >::of(&QDoubleSpinBox::valueChanged),
-			this,
-			&DAChartBarItemSettingWidget::onLayoutHintValueChanged);
+            QOverload< double >::of(&QDoubleSpinBox::valueChanged),
+            this,
+            &DAChartBarItemSettingWidget::onLayoutHintValueChanged);
 	connect(ui->groupBoxFill, &QGroupBox::clicked, this, &DAChartBarItemSettingWidget::onGroupBoxFillClicked);
 	connect(ui->groupBoxEdge, &QGroupBox::clicked, this, &DAChartBarItemSettingWidget::onGroupBoxEdgeClicked);
 	connect(ui->penEditWidget, &DAPenEditWidget::penChanged, this, &DAChartBarItemSettingWidget::onEdgePenChanged);
 	connect(ui->buttonGroupFrameStyle,
-			QOverload< QAbstractButton* >::of(&QButtonGroup::buttonClicked),
-			this,
-			&DAChartBarItemSettingWidget::onButtonGroupFrameStyleClicked);
+            QOverload< QAbstractButton* >::of(&QButtonGroup::buttonClicked),
+            this,
+            &DAChartBarItemSettingWidget::onButtonGroupFrameStyleClicked);
 	resetUI();
 }
 
@@ -54,33 +54,26 @@ DAChartBarItemSettingWidget::~DAChartBarItemSettingWidget()
 	delete ui;
 }
 
-void DAChartBarItemSettingWidget::plotItemSet(QwtPlotItem* item)
-{
-	if (nullptr == item) {
-		return;
-	}
-	if (item->rtti() != QwtPlotItem::Rtti_PlotBarChart) {
-		return;
-	}
-	ui->widgetItemSetting->setPlotItem(item);
-	QwtPlotBarChart* barItem = static_cast< QwtPlotBarChart* >(item);
-	updateUI(barItem);
-}
-
 /**
  * @brief 根据QwtPlotBarChart更新ui
  * @param item
  */
-void DAChartBarItemSettingWidget::updateUI(const QwtPlotBarChart* item)
+void DAChartBarItemSettingWidget::updateUI(QwtPlotItem* item)
 {
-	ui->widgetItemSetting->updateUI(item);
-	QwtPlotBarChart::LegendMode currentMode = item->legendMode();
+    if (nullptr == item) {
+        return;
+    }
+    if (item->rtti() != QwtPlotItem::Rtti_PlotBarChart) {
+        return;
+    }
+    QwtPlotBarChart* barItem                = static_cast< QwtPlotBarChart* >(item);
+    QwtPlotBarChart::LegendMode currentMode = barItem->legendMode();
 	ui->checkBoxChart->setChecked(currentMode & QwtPlotBarChart::LegendChartTitle);
 	ui->checkBoxBar->setChecked(currentMode & QwtPlotBarChart::LegendBarTitles);
 	DASignalBlockers b1ocker(ui->brushEditWidget, ui->penEditWidget);
-	if (const QwtColumnSymbol* symbol = item->symbol()) {
+    if (const QwtColumnSymbol* symbol = barItem->symbol()) {
 		// 设置边框笔（从符号的palette和lineWidth构造）
-		QPen pen = item->pen();
+        QPen pen = barItem->pen();
 		if (pen.style() != Qt::NoPen) {
 			setEnableEdgeEdit(true);
 			setEdgePen(pen);
@@ -88,7 +81,7 @@ void DAChartBarItemSettingWidget::updateUI(const QwtPlotBarChart* item)
 			setEnableEdgeEdit(false);
 		}
 
-		QBrush brush = item->brush();
+        QBrush brush = barItem->brush();
 		if (brush.style() != Qt::NoBrush) {
 			setEnableFillEdit(true);
 			setFillBrush(brush);
@@ -101,10 +94,10 @@ void DAChartBarItemSettingWidget::updateUI(const QwtPlotBarChart* item)
 		setEnableEdgeEdit(false);
 		setEnableFillEdit(false);
 	}
-	setBaseLine(item->baseline());
+    setBaseLine(barItem->baseline());
 
 	// 设置布局策略相关参数
-	QwtPlotAbstractBarChart::LayoutPolicy policy = item->layoutPolicy();
+    QwtPlotAbstractBarChart::LayoutPolicy policy = barItem->layoutPolicy();
 	switch (policy) {
 	case QwtPlotAbstractBarChart::AutoAdjustSamples:
 		ui->comboBoxLayoutPolicy->setCurrentIndex(0);
@@ -121,21 +114,21 @@ void DAChartBarItemSettingWidget::updateUI(const QwtPlotBarChart* item)
 	}
 
 	// 设置布局相关参数
-	ui->spinBoxSpacing->setValue(item->spacing());
-	ui->spinBoxMargin->setValue(item->margin());
-	ui->doubleSpinBoxLayoutHint->setValue(item->layoutHint());
+    ui->spinBoxSpacing->setValue(barItem->spacing());
+    ui->spinBoxMargin->setValue(barItem->margin());
+    ui->doubleSpinBoxLayoutHint->setValue(barItem->layoutHint());
 
-	setBaseLine(item->baseline());
+    setBaseLine(barItem->baseline());
 }
 
 /**
  * @brief 根据ui更新QwtPlotBarChart
  * @param item
  */
-void DAChartBarItemSettingWidget::updatePlotItem(QwtPlotBarChart* item)
+void DAChartBarItemSettingWidget::applySetting(QwtPlotBarChart* item)
 {
 	// plot item
-	ui->widgetItemSetting->updatePlotItem(item);
+    ui->widgetItemSetting->applySetting(item);
 	// plot bar
 	item->setTitle(getTitle());
 
@@ -166,8 +159,8 @@ void DAChartBarItemSettingWidget::updatePlotItem(QwtPlotBarChart* item)
 	}
 
 	// 更新布局策略
-	QwtPlotAbstractBarChart::LayoutPolicy policy =
-		static_cast< QwtPlotAbstractBarChart::LayoutPolicy >(ui->comboBoxLayoutPolicy->currentData().toInt());
+    QwtPlotAbstractBarChart::LayoutPolicy policy = static_cast< QwtPlotAbstractBarChart::LayoutPolicy >(
+        ui->comboBoxLayoutPolicy->currentData().toInt());
 	item->setLayoutPolicy(policy);
 
 	// 更新布局参数
@@ -487,7 +480,7 @@ void DAChartBarItemSettingWidget::onLayoutPolicyChanged(int index)
 	DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
 	QwtPlotBarChart* bar = s_cast< QwtPlotBarChart* >();
 	bar->setLayoutPolicy(
-		static_cast< QwtPlotAbstractBarChart::LayoutPolicy >(ui->comboBoxLayoutPolicy->currentData().toInt()));
+        static_cast< QwtPlotAbstractBarChart::LayoutPolicy >(ui->comboBoxLayoutPolicy->currentData().toInt()));
 }
 
 void DAChartBarItemSettingWidget::onSpacingValueChanged(int value)

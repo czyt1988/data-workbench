@@ -18,28 +18,28 @@ class DAAppUI : public DAUIInterface
 public:
     DAAppUI(SARibbonMainWindow* m, DACoreInterface* c);
 
-    //获取主程序
+    // 获取主程序
     virtual QMainWindow* getMainWindow() const override;
 
-    //获取界面的docking区域
+    // 获取界面的docking区域
     virtual DADockingAreaInterface* getDockingArea() override;
 
-    //获取界面的ribbon区域
+    // 获取界面的ribbon区域
     virtual DARibbonAreaInterface* getRibbonArea() override;
 
-    //创建ui
+    // 创建ui
     void createUi();
 
 public:
-    //获取core
+    // 获取core
     DAAppCore* getAppCore();
-    //减少一次dynamic_cast
+    // 减少一次dynamic_cast
     DAAppActions* getAppActions();
-    //减少一次dynamic_cast
+    // 减少一次dynamic_cast
     DAAppCommand* getAppCmd();
-    //获取dock
+    // 获取dock
     DAAppDockingArea* getAppDockingArea();
-    //获取ribbon
+    // 获取ribbon
     DAAppRibbonArea* getAppRibbonArea();
 
 protected:

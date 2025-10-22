@@ -10,50 +10,50 @@ DAChartLegendItemSettingWidget::DAChartLegendItemSettingWidget(QWidget* parent)
 {
 	ui->setupUi(this);
 	connect(ui->widgetPosition,
-			&DAAligmentPositionEditWidget::aligmentPositionChanged,
-			this,
-			&DAChartLegendItemSettingWidget::onAligmentPositionChanged);
+            &DAAligmentPositionEditWidget::aligmentPositionChanged,
+            this,
+            &DAChartLegendItemSettingWidget::onAligmentPositionChanged);
 	connect(ui->spinBoxHorizontalOffset,
-			QOverload< int >::of(&QSpinBox::valueChanged),
-			this,
-			&DAChartLegendItemSettingWidget::onSpinBoxHorizontalOffsetValueChanged);
+            QOverload< int >::of(&QSpinBox::valueChanged),
+            this,
+            &DAChartLegendItemSettingWidget::onSpinBoxHorizontalOffsetValueChanged);
 	connect(ui->spinBoxVerticalOffset,
-			QOverload< int >::of(&QSpinBox::valueChanged),
-			this,
-			&DAChartLegendItemSettingWidget::onSpinBoxVerticalOffsetValueChanged);
+            QOverload< int >::of(&QSpinBox::valueChanged),
+            this,
+            &DAChartLegendItemSettingWidget::onSpinBoxVerticalOffsetValueChanged);
 	connect(ui->spinBoxMargin,
-			QOverload< int >::of(&QSpinBox::valueChanged),
-			this,
-			&DAChartLegendItemSettingWidget::onSpinBoxMarginValueChanged);
+            QOverload< int >::of(&QSpinBox::valueChanged),
+            this,
+            &DAChartLegendItemSettingWidget::onSpinBoxMarginValueChanged);
 	connect(ui->spinBoxSpacing,
-			QOverload< int >::of(&QSpinBox::valueChanged),
-			this,
-			&DAChartLegendItemSettingWidget::onSpinBoxSpacingValueChanged);
+            QOverload< int >::of(&QSpinBox::valueChanged),
+            this,
+            &DAChartLegendItemSettingWidget::onSpinBoxSpacingValueChanged);
 	connect(ui->spinBoxItemMargin,
-			QOverload< int >::of(&QSpinBox::valueChanged),
-			this,
-			&DAChartLegendItemSettingWidget::onSpinBoxItemMarginValueChanged);
+            QOverload< int >::of(&QSpinBox::valueChanged),
+            this,
+            &DAChartLegendItemSettingWidget::onSpinBoxItemMarginValueChanged);
 	connect(ui->spinBoxItemSpacing,
-			QOverload< int >::of(&QSpinBox::valueChanged),
-			this,
-			&DAChartLegendItemSettingWidget::onSpinBoxItemSpacingValueChanged);
+            QOverload< int >::of(&QSpinBox::valueChanged),
+            this,
+            &DAChartLegendItemSettingWidget::onSpinBoxItemSpacingValueChanged);
 	connect(ui->spinBoxMaxColumns,
-			QOverload< int >::of(&QSpinBox::valueChanged),
-			this,
-			&DAChartLegendItemSettingWidget::onSpinBoxMaxColumnsValueChanged);
+            QOverload< int >::of(&QSpinBox::valueChanged),
+            this,
+            &DAChartLegendItemSettingWidget::onSpinBoxMaxColumnsValueChanged);
 	connect(ui->doubleSpinBoxRadius,
-			QOverload< double >::of(&QDoubleSpinBox::valueChanged),
-			this,
-			&DAChartLegendItemSettingWidget::onDoubleSpinBoxRadiusValueChanged);
+            QOverload< double >::of(&QDoubleSpinBox::valueChanged),
+            this,
+            &DAChartLegendItemSettingWidget::onDoubleSpinBoxRadiusValueChanged);
 	connect(ui->widgetBorderPen, &DAPenEditWidget::penChanged, this, &DAChartLegendItemSettingWidget::onBorderPenChanged);
 	connect(ui->widgetFont,
-			&DAFontEditPannelWidget::currentFontChanged,
-			this,
-			&DAChartLegendItemSettingWidget::onLegendFontChanged);
+            &DAFontEditPannelWidget::currentFontChanged,
+            this,
+            &DAChartLegendItemSettingWidget::onLegendFontChanged);
 	connect(ui->widgetFont,
-			&DAFontEditPannelWidget::currentFontColorChanged,
-			this,
-			&DAChartLegendItemSettingWidget::onLegendFontColorChanged);
+            &DAFontEditPannelWidget::currentFontColorChanged,
+            this,
+            &DAChartLegendItemSettingWidget::onLegendFontColorChanged);
 	connect(ui->widgetBKBrush, &DABrushEditWidget::brushChanged, this, &DAChartLegendItemSettingWidget::onLegendBKBrushChanged);
 }
 
@@ -62,47 +62,39 @@ DAChartLegendItemSettingWidget::~DAChartLegendItemSettingWidget()
 	delete ui;
 }
 
-void DAChartLegendItemSettingWidget::plotItemSet(QwtPlotItem* item)
+void DAChartLegendItemSettingWidget::updateUI(QwtPlotItem* item)
 {
 	if (item == nullptr) {
 		return;
 	}
 	if (item->rtti() == QwtPlotItem::Rtti_PlotLegend) {
 		QwtPlotLegendItem* legend = static_cast< QwtPlotLegendItem* >(item);
-		updateUI(legend);
+        DASignalBlockers b1(ui->widgetPosition,
+                            ui->spinBoxHorizontalOffset,
+                            ui->spinBoxVerticalOffset,
+                            ui->spinBoxMargin,
+                            ui->spinBoxSpacing,
+                            ui->spinBoxItemMargin,
+                            ui->spinBoxItemSpacing,
+                            ui->spinBoxMaxColumns,
+                            ui->doubleSpinBoxRadius,
+                            ui->widgetBorderPen,
+                            ui->widgetFont,
+                            ui->widgetBKBrush);
+        ui->widgetPosition->setAligmentPosition(legend->alignmentInCanvas());
+        ui->spinBoxHorizontalOffset->setValue(legend->offsetInCanvas(Qt::Horizontal));
+        ui->spinBoxVerticalOffset->setValue(legend->offsetInCanvas(Qt::Vertical));
+        ui->spinBoxMargin->setValue(legend->margin());
+        ui->spinBoxSpacing->setValue(legend->spacing());
+        ui->spinBoxItemMargin->setValue(legend->itemMargin());
+        ui->spinBoxItemSpacing->setValue(legend->itemSpacing());
+        ui->spinBoxMaxColumns->setValue(legend->maxColumns());
+        ui->doubleSpinBoxRadius->setValue(legend->borderRadius());
+        ui->widgetBorderPen->setCurrentPen(legend->borderPen());
+        ui->widgetFont->setCurrentFont(legend->font());
+        ui->widgetFont->setCurrentFontColor(legend->textPen().color());
+        ui->widgetBKBrush->setCurrentBrush(legend->backgroundBrush());
 	}
-}
-
-void DAChartLegendItemSettingWidget::updateUI(const QwtPlotLegendItem* item)
-{
-	if (!item) {
-		return;
-	}
-	DASignalBlockers b1(ui->widgetPosition,
-						ui->spinBoxHorizontalOffset,
-						ui->spinBoxVerticalOffset,
-						ui->spinBoxMargin,
-						ui->spinBoxSpacing,
-						ui->spinBoxItemMargin,
-						ui->spinBoxItemSpacing,
-						ui->spinBoxMaxColumns,
-						ui->doubleSpinBoxRadius,
-						ui->widgetBorderPen,
-						ui->widgetFont,
-						ui->widgetBKBrush);
-	ui->widgetPosition->setAligmentPosition(item->alignmentInCanvas());
-	ui->spinBoxHorizontalOffset->setValue(item->offsetInCanvas(Qt::Horizontal));
-	ui->spinBoxVerticalOffset->setValue(item->offsetInCanvas(Qt::Vertical));
-	ui->spinBoxMargin->setValue(item->margin());
-	ui->spinBoxSpacing->setValue(item->spacing());
-	ui->spinBoxItemMargin->setValue(item->itemMargin());
-	ui->spinBoxItemSpacing->setValue(item->itemSpacing());
-	ui->spinBoxMaxColumns->setValue(item->maxColumns());
-	ui->doubleSpinBoxRadius->setValue(item->borderRadius());
-	ui->widgetBorderPen->setCurrentPen(item->borderPen());
-	ui->widgetFont->setCurrentFont(item->font());
-	ui->widgetFont->setCurrentFontColor(item->textPen().color());
-	ui->widgetBKBrush->setCurrentBrush(item->backgroundBrush());
 }
 
 void DAChartLegendItemSettingWidget::changeEvent(QEvent* e)

@@ -237,7 +237,11 @@ void DACsvStream::newLine()
 {
 	d_ptr->setStartLine(true);
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-	d_ptr->stream() << endl;
+#ifdef Q_CC_GNU
+    d_ptr->stream() << Qt::endl;
+#else
+    d_ptr->stream() << endl;
+#endif
 #else
 	d_ptr->stream() << Qt::endl;
 #endif

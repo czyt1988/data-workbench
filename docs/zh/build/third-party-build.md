@@ -1,14 +1,27 @@
 # 第三方库构建
 
+!!! tips "提示"
+    第三方库构建需要加载2次cmake文件，第一次为zlib库构建安装，第二部为所有第三方c++库的构建和安装
+
 第三方库的cmake文件位于:
 
 ```txt
-src\3rdparty\CMakeLists.txt
+src/3rdparty/CMakeLists.txt
 ```
 
 此文件不属于上级工程，构建第三方库直接用cmake打开此文件构建即可，这里面已经把第三方库的基本设置配置好
 
 构建后需要进行安装（`install`），安装完成后会在工程目录下生成`bin_qt{version}_{MSVC/GNU}_x{64/32}`的安装目录，`data-workbench`的主体构建需要依赖此目录
+
+## 构建zlib
+
+由于第三方库`quazip`依赖`zlib`，因此需要先构建`zlib`
+
+zlib位于：`src/3rdparty/zlib`
+
+你需要先构建安装`zlib`,由于`zlib`是一个纯c库，因此你直接构建完安装到系统安装目录即可，可以通过cmake gui工具构建，也可以直接通过`Qt Creator`或`visual sstudio`构建
+
+构建完成后需要进行安装，使用默认安装路径即可，安装后下一步构建才能正确找到`zlib`库
 
 ## CMake构建所有第三方库
 

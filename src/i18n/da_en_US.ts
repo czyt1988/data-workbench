@@ -80,7 +80,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+28"/>
+        <location line="+29"/>
         <source>LanguageChange</source>
         <translation type="unfinished"></translation>
     </message>
@@ -791,13 +791,13 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+483"/>
-        <location line="+22"/>
+        <location filename="../APP/DAAppController.cpp" line="+482"/>
+        <location line="+21"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-20"/>
+        <location line="-19"/>
         <source>Project Files (*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -808,7 +808,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-19"/>
+        <location line="-20"/>
         <source>project file (*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -818,7 +818,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+0"/>
+        <location line="+1"/>
         <source>Whether to overwrite the file:%1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1756,7 +1756,7 @@ Config</source>
 <context>
     <name>DA::DAChartCurveItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="+138"/>
+        <location filename="../DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="+140"/>
         <source>Lines</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1883,12 +1883,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+163"/>
-        <source>chart operate widget&apos;s tab changed,but can not find figure</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+22"/>
+        <location line="+186"/>
         <source>question</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1901,7 +1896,7 @@ Config</source>
 <context>
     <name>DA::DAChartSpectrogramItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartSpectrogramItemSettingWidget.cpp" line="+93"/>
+        <location filename="../DAGui/ChartSetting/DAChartSpectrogramItemSettingWidget.cpp" line="+84"/>
         <source>Image Mode</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1997,7 +1992,7 @@ Config</source>
 <context>
     <name>DA::DAChartWidget</name>
     <message>
-        <location filename="../DAFigure/DAChartWidget.cpp" line="+1035"/>
+        <location filename="../DAFigure/DAChartWidget.cpp" line="+1083"/>
         <source>Before zoom in, the chart must setup a zoomer</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3334,7 +3329,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-2174"/>
+        <location filename="../APP/DAAppController.cpp" line="-2173"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5176,8 +5171,43 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAFigureWidgetSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAFigureWidgetSettingWidget.ui" line="+16"/>
+        <location filename="../DAGui/ChartSetting/DAFigureWidgetSettingWidget.ui" line="+14"/>
         <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source>Size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>max width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>min width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>min height</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>max height</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>background color</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6475,7 +6505,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+41"/>
+        <location line="+43"/>
         <source>remove chart</source>
         <translation type="unfinished"></translation>
     </message>

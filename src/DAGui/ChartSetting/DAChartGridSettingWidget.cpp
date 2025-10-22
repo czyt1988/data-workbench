@@ -5,7 +5,7 @@ namespace DA
 {
 
 DAChartGridSettingWidget::DAChartGridSettingWidget(QWidget* parent)
-	: DAAbstractChartItemSettingWidget(parent), ui(new Ui::DAChartGridSettingWidget)
+    : DAAbstractChartItemSettingWidget(parent), ui(new Ui::DAChartGridSettingWidget)
 {
 	ui->setupUi(this);
 	connect(ui->widgetMajorPen, &DAPenEditWidget::penChanged, this, &DAChartGridSettingWidget::onMajorLinePenChanged);
@@ -35,7 +35,7 @@ void DAChartGridSettingWidget::onMinorLinePenChanged(const QPen& p)
 	grid->setMinorPen(p);
 }
 
-void DAChartGridSettingWidget::plotItemSet(QwtPlotItem* item)
+void DAChartGridSettingWidget::updateUI(QwtPlotItem* item)
 {
 	if (nullptr == item) {
 		clearUI();

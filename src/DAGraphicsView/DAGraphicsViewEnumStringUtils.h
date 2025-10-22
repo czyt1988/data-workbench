@@ -1,7 +1,7 @@
 ﻿#ifndef DAGRAPHICSVIEWENUMSTRINGUTILS_H
 #define DAGRAPHICSVIEWENUMSTRINGUTILS_H
-#include "DAEnumStringUtils.hpp"
 #include "DAGraphicsViewGlobal.h"
+#include "DAEnumStringUtils.hpp"
 #include "DAGraphicsLinkItem.h"
 #include "DAShapeKeyPoint.h"
 #include "DAShapeKeyPoint.h"
@@ -56,7 +56,6 @@ DA_ENUM_STRING_DECLARE_EXPORT(DAGRAPHICSVIEW_API, DA::DAGraphicsLinkItem::LinkLi
 // ------------------------------------------
 // DA::AspectDirection
 // ------------------------------------------
-uint DAGRAPHICSVIEW_API qHash(DA::AspectDirection key, uint seed = 0);
 DA_ENUM_STRING_DECLARE_EXPORT(DAGRAPHICSVIEW_API, DA::AspectDirection)
 
 #endif  // DAGRAPHICSVIEWENUMSTRINGUTILS_H

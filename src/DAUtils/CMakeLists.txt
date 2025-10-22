@@ -59,6 +59,11 @@ if(${QT_VERSION_MAJOR} EQUAL 6)
     target_link_libraries(${DA_LIB_NAME} PRIVATE Qt6::Core5Compat)
 endif()
 
+# MinGW 7 需要手动链接 filesystem 库
+if(MINGW AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0)
+    target_link_libraries(DAUtils PRIVATE stdc++fs)
+endif()
+
 ########################################################
 # 设置通用库属性
 ########################################################

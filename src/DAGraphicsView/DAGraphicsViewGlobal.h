@@ -3,6 +3,9 @@
 #include <QtCore/QtGlobal>
 #include "DAGlobals.h"
 #include <QGraphicsItem>
+#include <QHash>
+// std
+#include <type_traits>
 #if defined(DAGRAPHICSVIEW_BUILDLIB)
 #define DAGRAPHICSVIEW_API Q_DECL_EXPORT
 #else
@@ -33,6 +36,7 @@ enum class AspectDirection
 	West,
 	North
 };
+DAGRAPHICSVIEW_API uint qHash(const DA::AspectDirection& key, uint seed = 0) noexcept;
 
 /**
  * @brief 定义了Graphics相关的command id，用于标记相同的redo/undo

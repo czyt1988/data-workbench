@@ -60,7 +60,27 @@ When executing step "Build"
 14:44:12: Elapsed time: 00:02.
 ```
 
-这种moc相关的错误，只需要再多几次构建即可，这个问题尤其容易发生在第一次构建的时候，大批量的moc操作有时会出现异常，只要保留build目录，继续构建即可
+这种moc相关的错误，只需要再**多几次构建**即可，这个问题尤其容易发生在第一次构建的时候，大批量的moc操作有时会出现异常，只要保留build目录，继续构建即可
+
+## mingw编译错误
+
+mingw编译有时候会出现`not enough space for thread data`错误
+
+
+```txt
+[1/219 2.0/sec] Automatic MOC and UIC for target qwt
+[2/219 1.4/sec] Automatic MOC and UIC for target SARibbonBar
+[3/219 1.8/sec] Automatic MOC for target qt5advanceddocking
+[4/219 2.2/sec] Automatic MOC and UIC for target DALiteCtk
+[5/219 2.6/sec] Automatic MOC for target QuaZip
+[6/218 2.8/sec] Automatic MOC and UIC for target QtPropertyBrowser
+
+runtime error R6016
+- not enough space for thread data
+[7/218 1.2/sec] Building CXX object 
+```
+
+此错误处理方式和`构建过程中出现moc错误`处理方式一致，就是**再次或多次构建**就能解决，这一般是编译器自身的一些问题
 
 ## 编译完成运行报错
 
@@ -90,7 +110,7 @@ zlib.dll
 
 ## 软件运行python报错
 
-`data-workbench`依赖python，启动过程会寻找python，如果python环境没有指定，会使用`where python`命令获取操作系统下的python环境，如果找不到，会报错，也有可能找到了别的python环境，导致启动加载库失败，`data-workbench`对应的python库需要指定安装相关的包，具体见：[python环境说明](./python环境.md)，你可以通过`python-config.json`让程序寻找指定的python环境
+`data-workbench`依赖python，启动过程会寻找python，如果python环境没有指定，会使用`where python`命令获取操作系统下的python环境，如果找不到，会报错，也有可能找到了别的python环境，导致启动加载库失败，`data-workbench`对应的python库需要指定安装相关的包，具体见：[python环境配置](./python-environment.md)，你可以通过`python-config.json`让程序寻找指定的python环境
 
 
 

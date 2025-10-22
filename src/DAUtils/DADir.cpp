@@ -3,8 +3,20 @@
 #include <QDir>
 #include <QApplication>
 #if defined(_WIN32) || defined(_WIN64)
+
 #include <windows.h>
+
+// qt5.14.2的默认带的mingw是mingw730_64，这里的写法是为了兼容mingw730_64没有#include <filesystem>，
+#if __has_include(<filesystem>)
 #include <filesystem>
+namespace std_fs = std::filesystem;
+#elif __has_include(<experimental/filesystem>)
+#include <experimental/filesystem>
+namespace std_fs = std::experimental::filesystem;
+#else
+#error "No filesystem support"
+#endif
+
 #else
 #include <unistd.h>
 #include <limits.h>
@@ -108,7 +120,7 @@ std::string DADir::get_executable_path()
 	char buffer[ MAX_PATH ];
     GetModuleFileNameA(NULL, buffer, MAX_PATH);  // 显式 A 版
 	std::string fullPath(buffer);
-	std::filesystem::path path(fullPath);
+    std_fs::path path(fullPath);
 	return path.parent_path().string();
 #else
 	char buffer[ PATH_MAX ];

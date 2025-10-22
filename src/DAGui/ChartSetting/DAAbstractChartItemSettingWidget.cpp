@@ -36,7 +36,7 @@ void DAAbstractChartItemSettingWidget::setPlotItem(QwtPlotItem* item)
 			connect(newPlot, &QwtPlot::itemAttached, this, &DAAbstractChartItemSettingWidget::plotItemAttached);
 		}
 	}
-	plotItemSet(item);
+    updateUI(item);
 }
 
 /**
@@ -80,7 +80,7 @@ QwtPlot* DAAbstractChartItemSettingWidget::getPlot() const
     return mPlot;
 }
 
-void DAAbstractChartItemSettingWidget::plotItemSet(QwtPlotItem* item)
+void DAAbstractChartItemSettingWidget::updateUI(QwtPlotItem* item)
 {
 	Q_UNUSED(item);
 }

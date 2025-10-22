@@ -18,9 +18,7 @@ public:
 	explicit DAChartLegendItemSettingWidget(QWidget* parent = nullptr);
 	~DAChartLegendItemSettingWidget();
 	// setPlotItem之后调用的虚函数
-	virtual void plotItemSet(QwtPlotItem* item);
-	// 更新界面
-	void updateUI(const QwtPlotLegendItem* item);
+    virtual void updateUI(QwtPlotItem* item) override;
 
 protected:
 	void changeEvent(QEvent* e);
