@@ -536,7 +536,7 @@ Column</source>
         <translation>删除数据中的重复记录</translation>
     </message>
     <message>
-        <location line="+299"/>
+        <location line="+1"/>
         <source>n std 
 filter outlier</source>
         <translation>过滤
@@ -5297,7 +5297,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+60"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+57"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
@@ -6243,7 +6243,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>移除绘图</translation>
     </message>
     <message>
-        <location line="+41"/>
+        <location line="+40"/>
         <source>set figure widget size</source>
         <translation>设置绘图中窗体的尺寸</translation>
     </message>

@@ -20,7 +20,7 @@ class QwtFigure;
 namespace DA
 {
 
-class DAFigureWidgetOverlayChartEditor;
+class DAFigureWidgetOverlay;
 /**
  * @brief 绘图窗口
  *
@@ -80,7 +80,7 @@ public:
 	DAChartWidget* findChartFromItem(QwtPlotItem* item) const;
 	// 开启子窗口编辑模式
 	void enableSubChartEditor(bool enable = true);
-	DAFigureWidgetOverlayChartEditor* getSubChartEditor() const;
+    DAFigureWidgetOverlay* getSubChartEditor() const;
 	// 判断是否在进行子窗口编辑
 	bool isEnableSubChartEditor() const;
 	// 获取图表的数量
@@ -92,6 +92,13 @@ public:
 	DAColorTheme getColorTheme() const;
 	const DAColorTheme& colorTheme() const;
 	DAColorTheme& colorTheme();
+
+public:
+    // figure的接口转接
+    //  Get the normalized rectangle for a axes/获取绘图的归一化矩形
+    QRectF axesNormRect(QwtPlot* plot) const;
+    // Get the normalized rectangle for a child widget/获取子窗口的的归一化矩形
+    QRectF widgetNormRect(QWidget* w) const;
 
 public:
 	// 绘图相关
@@ -112,8 +119,6 @@ public:
 	// 获取Undo Stack
 	QUndoStack* getUndoStack();
 
-protected:
-	virtual void paintEvent(QPaintEvent* e) override;
 Q_SIGNALS:
 	/**
 	 * @brief 添加了chart

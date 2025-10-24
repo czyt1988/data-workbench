@@ -2,12 +2,12 @@
 #include <QDebug>
 namespace DA
 {
-DAFigureWidgetOverlay::DAFigureWidgetOverlay(DAFigureWidget* fig) : QwtWidgetOverlay(fig), mFigure(fig)
+DAFigureWidgetOverlay::DAFigureWidgetOverlay(QwtFigure* fig) : QwtFigureWidgetOverlay(fig)
 {
 }
 
-DAFigureWidget* DAFigureWidgetOverlay::figure() const
+DAFigureWidgetOverlay::~DAFigureWidgetOverlay()
 {
-    return mFigure;
 }
+
 }

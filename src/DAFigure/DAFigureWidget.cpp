@@ -20,10 +20,11 @@
 #include "DAChartWidget.h"
 #include "DAChartSerialize.h"
 #include "DAFigureContainer.h"
-#include "DAFigureWidgetOverlayChartEditor.h"
+#include "DAFigureWidgetOverlay.h"
 #include "DAFigureWidgetCommands.h"
 // qwt
 #include "qwt_figure.h"
+#include "qwt_figure_layout.h"
 namespace DA
 {
 const float c_figurewidget_default_x     = 0.05f;
@@ -40,10 +41,10 @@ class DAFigureWidget::PrivateData
 	DA_DECLARE_PUBLIC(DAFigureWidget)
 public:
 	DAChartWidget* mCurrentChart { nullptr };
-	DAFigureWidgetOverlayChartEditor* mChartEditorOverlay { nullptr };  ///< 编辑模式
-	QBrush mBackgroundBrush;                                            ///< 背景
-	QUndoStack mUndoStack;                                              ///<
-	QScopedPointer< DAChartFactory > mFactory;                          ///< 绘图创建的工厂
+    DAFigureWidgetOverlay* mChartEditorOverlay { nullptr };  ///< 编辑模式
+    QBrush mBackgroundBrush;                                 ///< 背景
+    QUndoStack mUndoStack;                                   ///<
+    QScopedPointer< DAChartFactory > mFactory;               ///< 绘图创建的工厂
 	DAColorTheme mColorTheme;  ///< 主题，注意，这里不要用DAColorTheme mColorTheme { DAColorTheme::ColorTheme_Archambault }这样的初始化，会被当作std::initializer_list< QColor >捕获
 public:
 	PrivateData(DAFigureWidget* p) : q_ptr(p), mColorTheme(DAColorTheme::Style_Archambault)
@@ -362,13 +363,13 @@ void DAFigureWidget::enableSubChartEditor(bool enable)
 {
 	if (enable) {
 		if (nullptr == d_ptr->mChartEditorOverlay) {
-			d_ptr->mChartEditorOverlay = new DAFigureWidgetOverlayChartEditor(this);
+            d_ptr->mChartEditorOverlay = new DAFigureWidgetOverlay(figure());
 			connect(d_ptr->mChartEditorOverlay,
-                    &DAFigureWidgetOverlayChartEditor::widgetGeometryChanged,
+                    &DAFigureWidgetOverlay::widgetGeometryChanged,
                     this,
                     &DAFigureWidget::onWidgetGeometryChanged);
 			connect(d_ptr->mChartEditorOverlay,
-                    &DAFigureWidgetOverlayChartEditor::activeWidgetChanged,
+                    &DAFigureWidgetOverlay::activeWidgetChanged,
                     this,
                     &DAFigureWidget::onOverlayActiveWidgetChanged);
 			d_ptr->mChartEditorOverlay->show();
@@ -393,7 +394,7 @@ void DAFigureWidget::enableSubChartEditor(bool enable)
 /// 此指针的管理权在SAFigureWindow上，不要在外部对此指针进行释放
 /// \return
 ///
-DAFigureWidgetOverlayChartEditor* DAFigureWidget::getSubChartEditor() const
+DAFigureWidgetOverlay* DAFigureWidget::getSubChartEditor() const
 {
     return (d_ptr->mChartEditorOverlay);
 }
@@ -416,15 +417,10 @@ bool DAFigureWidget::isEnableSubChartEditor() const
  */
 int DAFigureWidget::getChartCount() const
 {
-	int c = 0;
-
-	const QList< QWidget* > widgets = getWidgetList();
-	for (QWidget* w : widgets) {
-		if (DAChartWidget* chart = qobject_cast< DAChartWidget* >(w)) {
-			++c;
-		}
-	}
-	return (c);
+    QwtFigure* fig = figure();
+    Q_ASSERT(fig);
+    const QList< QwtPlot* > plots = fig->allAxes();
+    return (plots.size());
 }
 
 /**
@@ -457,6 +453,16 @@ const DAColorTheme& DAFigureWidget::colorTheme() const
 DAColorTheme& DAFigureWidget::colorTheme()
 {
     return d_ptr->mColorTheme;
+}
+
+QRectF DAFigureWidget::axesNormRect(QwtPlot* plot) const
+{
+    return figure()->axesNormRect(plot);
+}
+
+QRectF DAFigureWidget::widgetNormRect(QWidget* w) const
+{
+    return figure()->widgetNormRect(w);
 }
 
 /**
@@ -592,29 +598,19 @@ DAChartWidget* DAFigureWidget::getUnderCursorChart() const
 }
 
 /**
- * @brief SAFigureWindow::paintEvent
- * @param e
- */
-void DAFigureWidget::paintEvent(QPaintEvent* e)
-{
-	QPainter p(this);
-
-	p.setBrush(d_ptr->mBackgroundBrush);
-	p.fillRect(0, 0, width(), height(), d_ptr->mBackgroundBrush);
-	DAFigureContainer::paintEvent(e);
-}
-
-/**
  * @brief DAFigureWidgetChartRubberbandEditOverlay导致的尺寸变化
  * @param w 子窗体
  * @param oldGeometry 旧尺寸
  * @param newGeometry 新尺寸
+ * @note QwtFigureWidgetOverlay并不会直接改变尺寸，因此尺寸的改变主要在管理窗口中执行，这是为了能让它有更大的自由度，例如需要做回退功能
  */
 void DAFigureWidget::onWidgetGeometryChanged(QWidget* w, const QRect& oldGeometry, const QRect& newGeometry)
 {
 	Q_UNUSED(oldGeometry);
-	QRectF oldPresent = getWidgetPosPercent(w);
-	QRectF newPresent = calcPercentByGeometryRect(newGeometry);
+    // 先记录旧的归一化坐标，这时窗口还没有调整
+    QRectF oldPresent = figure()->widgetNormRect(w);
+    // 计算新的归一化坐标
+    QRectF newPresent = QwtFigureLayout::calcNormRect(QRect(0, 0, width(), height()), newGeometry);
 
 	DAFigureWidgetCommandResizeWidget* cmd = new DAFigureWidgetCommandResizeWidget(this, w, oldPresent, newPresent);
 	push(cmd);
@@ -667,14 +663,17 @@ QDataStream& operator<<(QDataStream& out, const DAFigureWidget* p)
 	out << magicStart << p->saveGeometry();
 	QList< DAChartWidget* > charts = p->getCharts();
 	QList< QRectF > pos;
+    QwtFigure* fig = p->figure();
+    if (fig) {
+        for (int i = 0; i < charts.size(); ++i) {
+            pos.append(fig->axesNormRect(charts[ i ]));
+        }
+        out << pos;
+        for (int i = 0; i < charts.size(); ++i) {
+            out << charts[ i ];
+        }
+    }
 
-	for (int i = 0; i < charts.size(); ++i) {
-		pos.append(p->getWidgetPosPercent(charts[ i ]));
-	}
-	out << pos;
-	for (int i = 0; i < charts.size(); ++i) {
-		out << charts[ i ];
-	}
 	return (out);
 }
 

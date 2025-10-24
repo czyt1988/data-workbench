@@ -13,7 +13,7 @@ class DAFIGURE_API DAFigureWidgetOverlayChartEditor : public DAFigureWidgetOverl
     Q_OBJECT
     DA_DECLARE_PRIVATE(DAFigureWidgetOverlayChartEditor)
 public:
-    DAFigureWidgetOverlayChartEditor(DAFigureWidget* fig);
+    DAFigureWidgetOverlayChartEditor(QwtFigure* fig);
     ~DAFigureWidgetOverlayChartEditor();
 
     ///
@@ -34,38 +34,38 @@ public:
     };
     Q_ENUM(ControlType)
 public:
-    //根据点和矩形的关系，返回图标的样式
+    // 根据点和矩形的关系，返回图标的样式
     static Qt::CursorShape controlTypeToCursor(ControlType rr);
     static ControlType getPositionControlType(const QPoint& pos, const QRect& region, int err = 1);
     static bool isPointInRectEdget(const QPoint& pos, const QRect& region, int err = 1);
 
-    //设置边框的画笔
+    // 设置边框的画笔
     void setBorderPen(const QPen& p);
     QPen getBorderPen() const;
-    //控制点的填充
+    // 控制点的填充
     void setControlPointBrush(const QBrush& b);
     QBrush getControlPointBrush() const;
-    //控制点尺寸
+    // 控制点尺寸
     QSize getControlPointSize() const;
     void setControlPointSize(const QSize& c);
-    //选择下一个窗口作为激活窗体
+    // 选择下一个窗口作为激活窗体
     void selectNextWidget(bool forward = true);
-    //选择下一个绘图作为激活窗体
+    // 选择下一个绘图作为激活窗体
     void selectNextChart(bool forward = true);
-    //获取当前激活的窗口
+    // 获取当前激活的窗口
     QWidget* getCurrentActiveWidget() const;
-    //显示占比数值
+    // 显示占比数值
     void showPercentText(bool on = true);
 public slots:
-    //改变激活窗口
+    // 改变激活窗口
     void setActiveWidget(QWidget* w);
 
 protected:
     virtual void drawOverlay(QPainter* p) const;
     virtual QRegion maskHint() const;
     virtual bool eventFilter(QObject* obj, QEvent* event);
-    //绘制
-    virtual void drawChartEditMode(QPainter* painter, const QRect& chartRect) const;
+    // 绘制
+    virtual void drawChartEditMode(QPainter* painter, QwtPlot* activePlot) const;
 signals:
 
     /**

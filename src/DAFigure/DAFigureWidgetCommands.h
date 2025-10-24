@@ -30,11 +30,11 @@ class DAFIGURE_API DAFigureWidgetCommandCreateChart : public DAFigureWidgetComma
 {
 public:
 	DAFigureWidgetCommandCreateChart(DAFigureWidget* fig,
-									 qreal xPresent,
-									 qreal yPresent,
-									 qreal wPresent,
-									 qreal hPresent,
-									 QUndoCommand* par = nullptr);
+                                     qreal xPresent,
+                                     qreal yPresent,
+                                     qreal wPresent,
+                                     qreal hPresent,
+                                     QUndoCommand* par = nullptr);
 	DAFigureWidgetCommandCreateChart(DAFigureWidget* fig, const QRectF& versatileSize, QUndoCommand* par = nullptr);
 
 	~DAFigureWidgetCommandCreateChart();
@@ -65,7 +65,7 @@ public:
 
 public:
 	DAChartWidget* mChart { nullptr };
-	QRectF mChartSize;
+    QRectF mChartNormRect;
 	bool mIsRelative { true };
 	bool mNeedDelete { false };
 };
@@ -76,18 +76,18 @@ public:
 class DAFIGURE_API DAFigureWidgetCommandResizeWidget : public DAFigureWidgetCommandBase
 {
 public:
-	DAFigureWidgetCommandResizeWidget(DAFigureWidget* fig,
-									  QWidget* w,
-									  const QRectF& oldPresent,
-									  const QRectF& newPresent,
-									  QUndoCommand* par = nullptr);
+    DAFigureWidgetCommandResizeWidget(DAFigureWidget* fig,
+                                      QWidget* w,
+                                      const QRectF& oldNormRect,
+                                      const QRectF& newNormRect,
+                                      QUndoCommand* par = nullptr);
 	void redo() override;
 	void undo() override;
 
 public:
 	QWidget* mWidget;
-	QRectF mOldPresent;
-	QRectF mNewPresent;
+    QRectF mOldNormRect;
+    QRectF mNewNormRect;
 };
 
 /**
@@ -105,10 +105,10 @@ public:
 	 * @param par
 	 */
 	DAFigureWidgetCommandAttachItem(DAFigureWidget* fig,
-									DAChartWidget* chart,
-									QwtPlotItem* item,
-									bool skipFirst    = true,
-									QUndoCommand* par = nullptr);
+                                    DAChartWidget* chart,
+                                    QwtPlotItem* item,
+                                    bool skipFirst    = true,
+                                    QUndoCommand* par = nullptr);
 	~DAFigureWidgetCommandAttachItem();
 	void redo() override;
 	void undo() override;

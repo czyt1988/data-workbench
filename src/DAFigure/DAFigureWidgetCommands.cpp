@@ -79,12 +79,11 @@ DAChartWidget* DAFigureWidgetCommandCreateChart::getChartWidget()
 // DAFigureWidgetCommandRemoveChart
 //===============================================================
 DAFigureWidgetCommandRemoveChart::DAFigureWidgetCommandRemoveChart(DAFigureWidget* fig, DAChartWidget* chart, QUndoCommand* par)
-	: DAFigureWidgetCommandBase(fig, par), mChart(chart)
+    : DAFigureWidgetCommandBase(fig, par), mChart(chart)
 {
 	setText(QObject::tr("remove chart"));  // cn:创建绘图
-	// 先要获取尺寸
-	mIsRelative = fig->isWidgetRelativePos(chart);
-	mChartSize  = fig->getWidgetVersatileSize(chart);
+                                           // 先要获取尺寸
+    mChartNormRect = fig->axesNormRect(chart);
 }
 
 DAFigureWidgetCommandRemoveChart::~DAFigureWidgetCommandRemoveChart()
@@ -108,7 +107,7 @@ void DAFigureWidgetCommandRemoveChart::undo()
 {
 	mNeedDelete = false;
 	if (mChart) {
-		figure()->addChart(mChart, mChartSize);
+        figure()->addChart(mChart, mChartNormRect);
 	}
 }
 
@@ -117,22 +116,23 @@ void DAFigureWidgetCommandRemoveChart::undo()
 //----------------------------------------------------
 DAFigureWidgetCommandResizeWidget::DAFigureWidgetCommandResizeWidget(DAFigureWidget* fig,
                                                                      QWidget* w,
-                                                                     const QRectF& oldPresent,
-                                                                     const QRectF& newPresent,
+                                                                     const QRectF& oldNormRect,
+                                                                     const QRectF& newNormRect,
                                                                      QUndoCommand* par)
-    : DAFigureWidgetCommandBase(fig, par), mWidget(w), mOldPresent(oldPresent), mNewPresent(newPresent)
+    : DAFigureWidgetCommandBase(fig, par), mWidget(w), mOldNormRect(oldNormRect), mNewNormRect(newNormRect)
 {
     setText(QObject::tr("set figure widget size"));  // cn:设置绘图中窗体的尺寸
 }
 
 void DAFigureWidgetCommandResizeWidget::redo()
 {
-    figure()->setWidgetPosPercent(mWidget, mNewPresent);
+    //= 给qwt_figure增加可以添加任意窗口的方法
+    figure()->setWidgetPosPercent(mWidget, mNewNormRect);
 }
 
 void DAFigureWidgetCommandResizeWidget::undo()
 {
-    figure()->setWidgetPosPercent(mWidget, mOldPresent);
+    figure()->setWidgetPosPercent(mWidget, mOldNormRect);
 }
 
 //----------------------------------------------------
