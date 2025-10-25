@@ -465,6 +465,33 @@ QRectF DAFigureWidget::widgetNormRect(QWidget* w) const
     return figure()->widgetNormRect(w);
 }
 
+void DAFigureWidget::addWidget(QWidget* widget, qreal left, qreal top, qreal width, qreal height)
+{
+    figure()->addWidget(widget, left, top, width, height);
+}
+
+void DAFigureWidget::addWidget(QWidget* widget, int rowCnt, int colCnt, int row, int col, int rowSpan, int colSpan, qreal wspace, qreal hspace)
+{
+    figure()->addWidget(widget, rowCnt, colCnt, row, col, rowSpan, colSpan, wspace, hspace);
+}
+
+void DAFigureWidget::setWidgetNormPos(QWidget* widget, const QRectF& rect)
+{
+    figure()->setWidgetNormPos(widget, rect);
+}
+/**
+ * @brief 获取在此坐标下的绘图，如果此坐标下没有，则返回nullptr，存在寄生轴情况只返回宿主轴
+ * @param pos 相对于DAFigureWidget的位置
+ * @return
+ */
+QwtPlot* DAFigureWidget::plotUnderPos(const QPoint& pos) const
+{
+    // 先要把pos映射到figure
+    QwtFigure* fig  = figure();
+    QPoint posOfFig = fig->mapFromParent(pos);
+    return figure()->plotUnderPos(posOfFig);
+}
+
 /**
  * @brief 支持redo/undo的添加item
  *
@@ -556,7 +583,7 @@ QwtPlotIntervalCurve* DAFigureWidget::addErrorBar_(const QVector< QwtIntervalSam
 		addItem_(chart, item);
 		return item;
 	}
-	return nullptr;
+    return nullptr;
 }
 
 /**

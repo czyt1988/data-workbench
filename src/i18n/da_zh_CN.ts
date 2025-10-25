@@ -6248,7 +6248,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>设置绘图中窗体的尺寸</translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+24"/>
         <source>add item in chart</source>
         <translation>添加绘图元素</translation>
     </message>
@@ -6538,7 +6538,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>节点%1无法找到名字为%2的连接点</translation>
     </message>
     <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="+1222"/>
+        <location filename="../DAGui/DAXmlHelper.cpp" line="+1212"/>
         <source>The attribute %1=%2 under the tag %3 cannot be converted to double </source>
         <translation>%3标签属性%1=%2无法转换为double类型 </translation>
     </message>
@@ -6819,7 +6819,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="-2443"/>
+        <location filename="../DAGui/DAXmlHelper.cpp" line="-2433"/>
         <source>save workflow extern info cost: %1 ms</source>
         <translation></translation>
     </message>

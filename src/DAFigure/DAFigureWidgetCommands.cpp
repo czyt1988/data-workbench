@@ -127,12 +127,12 @@ DAFigureWidgetCommandResizeWidget::DAFigureWidgetCommandResizeWidget(DAFigureWid
 void DAFigureWidgetCommandResizeWidget::redo()
 {
     //= 给qwt_figure增加可以添加任意窗口的方法
-    figure()->setWidgetPosPercent(mWidget, mNewNormRect);
+    figure()->setWidgetNormPos(mWidget, mNewNormRect);
 }
 
 void DAFigureWidgetCommandResizeWidget::undo()
 {
-    figure()->setWidgetPosPercent(mWidget, mOldNormRect);
+    figure()->setWidgetNormPos(mWidget, mOldNormRect);
 }
 
 //----------------------------------------------------

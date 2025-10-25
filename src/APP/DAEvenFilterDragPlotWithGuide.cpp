@@ -8,7 +8,7 @@
 #include "MimeData/DAMimeDataForData.h"
 #include "MimeData/DAMimeDataFormats.h"
 #include "DAChartWidget.h"
-
+#include "da_qt5qt6_compat.hpp"
 namespace DA
 {
 DAEvenFilterDragPlotWithGuide::DAEvenFilterDragPlotWithGuide(QObject* par) : QObject(par)
@@ -85,7 +85,7 @@ bool DAEvenFilterDragPlotWithGuide::dragMoveEvent(QDragMoveEvent* e, DAFigureWid
 	const QMimeData* mimeData = e->mimeData();
 	if (mimeData->hasFormat(DAMIMEDATA_FORMAT_DADATA)) {
 		// 数据
-		QWidget* w = fig->getWidgetUnderPos(Qt5Qt6Compat_QXXEvent_Pos(e));
+        QWidget* w = fig->plotUnderPos(DA::compat::eventPos(e));
 		if (nullptr == w) {
 			e->setDropAction(Qt::IgnoreAction);
 			return true;
@@ -126,7 +126,7 @@ bool DAEvenFilterDragPlotWithGuide::dropEvent(QDropEvent* e, DAFigureWidget* fig
 		if (nullptr == datamime) {
 			return false;
 		}
-		QWidget* w = fig->getWidgetUnderPos(Qt5Qt6Compat_QXXEvent_Pos(e));
+        QwtPlot* w = fig->plotUnderPos(DA::compat::eventPos(e));
 		if (nullptr == w) {
 			return false;
 		}

@@ -1946,22 +1946,13 @@ QDomElement DAXmlHelper::makeElement(const DAFigureWidget* fig,
     const QList< DAChartWidget* > charts = fig->getCharts();
 	for (DAChartWidget* chart : charts) {
 		QDomElement chartEle = makeElement(chart, QStringLiteral("chart"), doc, itemsMgr);
-		// 获取chart在figure的位置
-		bool isRelativePos = fig->isWidgetRelativePos(chart);
-		chartEle.setAttribute(QStringLiteral("isRelativePos"), isRelativePos);
-		if (isRelativePos) {
-			QRectF pos = fig->getWidgetPosPercent(chart);
-			chartEle.setAttribute(QStringLiteral("x"), pos.x());
-			chartEle.setAttribute(QStringLiteral("y"), pos.y());
-			chartEle.setAttribute(QStringLiteral("w"), pos.width());
-			chartEle.setAttribute(QStringLiteral("h"), pos.height());
-		} else {
-			QRect geo = chart->geometry();
-			chartEle.setAttribute(QStringLiteral("x"), geo.x());
-			chartEle.setAttribute(QStringLiteral("y"), geo.y());
-			chartEle.setAttribute(QStringLiteral("w"), geo.width());
-			chartEle.setAttribute(QStringLiteral("h"), geo.height());
-		}
+
+        QRectF pos = fig->axesNormRect(chart);
+        chartEle.setAttribute(QStringLiteral("x"), pos.x());
+        chartEle.setAttribute(QStringLiteral("y"), pos.y());
+        chartEle.setAttribute(QStringLiteral("w"), pos.width());
+        chartEle.setAttribute(QStringLiteral("h"), pos.height());
+
 		chartsEle.appendChild(chartEle);
 	}
 	eleFig.appendChild(chartsEle);
@@ -2000,7 +1991,6 @@ bool DAXmlHelper::loadElement(DAFigureWidget* fig,
 		std::unique_ptr< DAChartWidget > chart(fig->getChartFactory()->createChart());
 
 		// 获取位置
-		bool isRelativePos = chartEle.attribute(QStringLiteral("isRelativePos")).toInt();
 		QRectF pos;
 		pos.setX(chartEle.attribute(QStringLiteral("x")).toDouble());
 		pos.setY(chartEle.attribute(QStringLiteral("y")).toDouble());
@@ -2009,7 +1999,7 @@ bool DAXmlHelper::loadElement(DAFigureWidget* fig,
 		if (!loadElement(chart.get(), &chartEle, itemsMgr)) {
 			continue;
 		}
-		fig->addChart(chart.get(), pos, isRelativePos);
+        fig->addChart(chart.get(), pos);
 		chart.release();
 	}
 	return true;
@@ -2215,7 +2205,7 @@ QDomElement DAXmlHelper::makeQwtPlotAxisElement(const DAChartWidget* chart, int 
 		QDomElement dateformatEle = doc->createElement(QStringLiteral("dateformat"));
 		dateformatEle.appendChild(
             DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Millisecond), QStringLiteral("msec"), doc));
-        dateformatEle.appendChild(
+		dateformatEle.appendChild(
             DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Second), QStringLiteral("sec"), doc));
 		dateformatEle.appendChild(
             DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Minute), QStringLiteral("min"), doc));
@@ -2227,7 +2217,7 @@ QDomElement DAXmlHelper::makeQwtPlotAxisElement(const DAChartWidget* chart, int 
             DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Week), QStringLiteral("week"), doc));
 		dateformatEle.appendChild(
             DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Month), QStringLiteral("month"), doc));
-		dateformatEle.appendChild(
+        dateformatEle.appendChild(
             DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Year), QStringLiteral("year"), doc));
 		datescaleDrawEle.appendChild(dateformatEle);
 		// 把date独有的添加
