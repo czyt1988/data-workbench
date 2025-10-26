@@ -5168,7 +5168,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+57"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+58"/>
         <source>Figure</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6475,7 +6475,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+41"/>
+        <location line="+43"/>
         <source>remove chart</source>
         <translation type="unfinished"></translation>
     </message>

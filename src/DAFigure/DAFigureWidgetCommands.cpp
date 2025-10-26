@@ -56,8 +56,10 @@ void DAFigureWidgetCommandCreateChart::redo()
 {
 	mNeedDelete = false;
 	if (mChart) {
+		// 这是执行undo后执行redo会进入这个分支
 		figure()->addChart(mChart, mChartSize);
 	} else {
+		// 第一次执行redo会进入这里
 		mChart = figure()->createChart(mChartSize);
 		mChart->setXLabel("x");
 		mChart->setYLabel("y");
@@ -82,8 +84,8 @@ DAFigureWidgetCommandRemoveChart::DAFigureWidgetCommandRemoveChart(DAFigureWidge
     : DAFigureWidgetCommandBase(fig, par), mChart(chart)
 {
 	setText(QObject::tr("remove chart"));  // cn:创建绘图
-                                           // 先要获取尺寸
-    mChartNormRect = fig->axesNormRect(chart);
+										   // 先要获取尺寸
+	mChartNormRect = fig->axesNormRect(chart);
 }
 
 DAFigureWidgetCommandRemoveChart::~DAFigureWidgetCommandRemoveChart()
@@ -107,7 +109,7 @@ void DAFigureWidgetCommandRemoveChart::undo()
 {
 	mNeedDelete = false;
 	if (mChart) {
-        figure()->addChart(mChart, mChartNormRect);
+		figure()->addChart(mChart, mChartNormRect);
 	}
 }
 
@@ -126,13 +128,13 @@ DAFigureWidgetCommandResizeWidget::DAFigureWidgetCommandResizeWidget(DAFigureWid
 
 void DAFigureWidgetCommandResizeWidget::redo()
 {
-    //= 给qwt_figure增加可以添加任意窗口的方法
-    figure()->setWidgetNormPos(mWidget, mNewNormRect);
+	//= 给qwt_figure增加可以添加任意窗口的方法
+	figure()->setWidgetNormPos(mWidget, mNewNormRect);
 }
 
 void DAFigureWidgetCommandResizeWidget::undo()
 {
-    figure()->setWidgetNormPos(mWidget, mOldNormRect);
+	figure()->setWidgetNormPos(mWidget, mOldNormRect);
 }
 
 //----------------------------------------------------

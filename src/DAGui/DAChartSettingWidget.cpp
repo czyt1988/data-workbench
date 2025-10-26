@@ -2,21 +2,25 @@
 #include "ui_DAChartSettingWidget.h"
 #include <QPointer>
 #include <QScrollArea>
-#include <QDebug>
 #include "Models/DAFigureTreeModel.h"
 #include "DAChartOperateWidget.h"
 #include "DAChartPlotSettingWidget.h"
+#include "DADebug.hpp"
+#include "DASignalBlockers.hpp"
+
+DA_DEBUG_PRINT(DAChartSettingWidget, true)
+
 namespace DA
 {
 class DAChartSettingWidget::PrivateData
 {
-	DA_DECLARE_PUBLIC(DAChartSettingWidget)
+    DA_DECLARE_PUBLIC(DAChartSettingWidget)
 public:
-	PrivateData(DAChartSettingWidget* p);
+    PrivateData(DAChartSettingWidget* p);
 
 public:
-	QPointer< DAFigureWidget > mFigure;
-	QPointer< DAChartOperateWidget > mChartOpt;
+    QPointer< DAFigureWidget > mFigure;
+    QPointer< DAChartOperateWidget > mChartOpt;
 };
 
 DAChartSettingWidget::PrivateData::PrivateData(DAChartSettingWidget* p) : q_ptr(p)
@@ -30,22 +34,22 @@ DAChartSettingWidget::PrivateData::PrivateData(DAChartSettingWidget* p) : q_ptr(
 DAChartSettingWidget::DAChartSettingWidget(QWidget* parent)
     : QWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DAChartSettingWidget)
 {
-	ui->setupUi(this);                           // ui中有信号绑定槽
-	ui->comboBoxSelectChart->setVisible(false);  // 初始状态不显示
-	ui->comboBoxSelectItem->setVisible(false);   // 初始状态不显示
-	showFigureSettingWidget();
-	ui->buttonGroupType->setId(ui->toolButtonFigure, static_cast< int >(SettingFigure));
-	ui->buttonGroupType->setId(ui->toolButtonChart, static_cast< int >(SettingChart));
-	ui->buttonGroupType->setId(ui->toolButtonItem, static_cast< int >(SettingItem));
-	connect(ui->comboBoxSelectChart,
+    ui->setupUi(this);                           // ui中有信号绑定槽
+    ui->comboBoxSelectChart->setVisible(false);  // 初始状态不显示
+    ui->comboBoxSelectItem->setVisible(false);   // 初始状态不显示
+    showFigureSettingWidget();
+    ui->buttonGroupType->setId(ui->toolButtonFigure, static_cast< int >(SettingFigure));
+    ui->buttonGroupType->setId(ui->toolButtonChart, static_cast< int >(SettingChart));
+    ui->buttonGroupType->setId(ui->toolButtonItem, static_cast< int >(SettingItem));
+    connect(ui->comboBoxSelectChart,
             QOverload< int >::of(&QComboBox::activated),
             this,
             &DAChartSettingWidget::onComboBoxChartActivated);
-	connect(ui->comboBoxSelectItem,
+    connect(ui->comboBoxSelectItem,
             QOverload< int >::of(&QComboBox::activated),
             this,
             &DAChartSettingWidget::onComboBoxItemActived);
-	Qt5Qt6Compat_Connect_ButtonGroupClicked_int(ui->buttonGroupType, DAChartSettingWidget::onButtonGroupTypeButtonClicked);
+    Qt5Qt6Compat_Connect_ButtonGroupClicked_int(ui->buttonGroupType, DAChartSettingWidget::onButtonGroupTypeButtonClicked);
 }
 
 DAChartSettingWidget::~DAChartSettingWidget()
@@ -59,124 +63,132 @@ DAChartSettingWidget::~DAChartSettingWidget()
  */
 void DAChartSettingWidget::setChartOprateWidget(DAChartOperateWidget* opt)
 {
-	if (d_ptr->mChartOpt == opt) {
-		return;
-	}
-	if (d_ptr->mChartOpt) {
-		disconnect(d_ptr->mChartOpt, &DAChartOperateWidget::figureRemoving, this, &DAChartSettingWidget::onFigureCloseing);
-		disconnect(d_ptr->mChartOpt, &DAChartOperateWidget::figureCreated, this, &DAChartSettingWidget::onFigureCreated);
-		disconnect(d_ptr->mChartOpt,
+    if (d_ptr->mChartOpt == opt) {
+        return;
+    }
+    if (d_ptr->mChartOpt) {
+        disconnect(d_ptr->mChartOpt, &DAChartOperateWidget::figureRemoving, this, &DAChartSettingWidget::onFigureCloseing);
+        disconnect(d_ptr->mChartOpt, &DAChartOperateWidget::figureCreated, this, &DAChartSettingWidget::onFigureCreated);
+        disconnect(d_ptr->mChartOpt,
                    &DAChartOperateWidget::currentFigureChanged,
                    this,
                    &DAChartSettingWidget::onCurrentFigureChanged);
-	}
-	d_ptr->mChartOpt = opt;
-	if (opt) {
-		connect(opt, &DAChartOperateWidget::figureRemoving, this, &DAChartSettingWidget::onFigureCloseing);
-		connect(opt, &DAChartOperateWidget::figureCreated, this, &DAChartSettingWidget::onFigureCreated);
-		connect(opt, &DAChartOperateWidget::currentFigureChanged, this, &DAChartSettingWidget::onCurrentFigureChanged);
-	}
+    }
+    d_ptr->mChartOpt = opt;
+    if (opt) {
+        connect(opt, &DAChartOperateWidget::figureRemoving, this, &DAChartSettingWidget::onFigureCloseing);
+        connect(opt, &DAChartOperateWidget::figureCreated, this, &DAChartSettingWidget::onFigureCreated);
+        connect(opt, &DAChartOperateWidget::currentFigureChanged, this, &DAChartSettingWidget::onCurrentFigureChanged);
+    }
+    // 设置当前的figure
+    if (opt) {
+        setFigure(opt->getCurrentFigure());
+    }
 }
 
+/**
+ * @brief 设置绘图窗口
+ * @param fig
+ */
 void DAChartSettingWidget::setFigure(DAFigureWidget* fig)
 {
-	qDebug() << "setFigure1";
-	if (fig == d_ptr->mFigure) {
-		return;
-	}
-	DAFigureWidget* oldfig = d_ptr->mFigure.data();
-	if (oldfig) {
-		unbindFigure(oldfig);
-	}
-	bindFigure(fig);
-	if (nullptr == fig) {
-		// 清空
-		showFigureSettingWidget();
-	}
+    DADebug() << "setFigure1";
+    DAFigureWidget* oldfig = ui->widgetFigureSetting->getFigure();
+    if (oldfig) {
+        unbindFigure(oldfig);
+    }
+    bindFigure(fig);
+    // 更新chart
+    if (fig) {
+        setChart(fig->getCurrentChart());
+    }
 }
 
-void DAChartSettingWidget::setFigure(DAFigureWidget* fig, DAChartWidget* chart)
+void DAChartSettingWidget::setChart(DAChartWidget* chart)
 {
-	qDebug() << "setFigure2";
-	setFigure(fig);
-	setCurrentChart(chart);
-}
-
-void DAChartSettingWidget::setFigure(DAFigureWidget* fig, DAChartWidget* chart, QwtPlotItem* item)
-{
-	qDebug() << "setFigure3";
-	setFigure(fig, chart);
-	setCurrentItem(item);
+    DADebug() << "setChart";
+    DASignalBlockers b(ui->comboBoxSelectChart, ui->comboBoxSelectItem);
+    if (chart == nullptr) {
+        ui->widgetChartSetting->setChartWidget(nullptr);
+        ui->comboBoxSelectChart->clear();
+        ui->comboBoxSelectItem->clear();
+    } else {
+        // 这里会触发indexChanged信号
+        int index = indexOfChart(chart);
+        if (index == -1) {
+            ui->widgetChartSetting->setChartWidget(nullptr);
+            ui->comboBoxSelectChart->clear();
+            ui->comboBoxSelectItem->clear();
+            return;
+        }
+        ui->comboBoxSelectChart->setCurrentIndex(index);
+        // 重置itemcombobox
+        resetItemsComboBox(chart);
+        ui->widgetChartSetting->setChartWidget(chart);
+    }
 }
 
 DAFigureWidget* DAChartSettingWidget::getFigure() const
 {
-	return d_ptr->mFigure.data();
+    return ui->widgetFigureSetting->getFigure();
 }
 
 DAChartWidget* DAChartSettingWidget::getChart() const
 {
-	return ui->widgetChartSetting->getChartWidget();
+    return ui->widgetChartSetting->getChartWidget();
 }
 
 QwtPlotItem* DAChartSettingWidget::getItem() const
 {
-	return ui->widgetItemSetting->getPlotItem();
+    return ui->widgetItemSetting->getPlotItem();
 }
 
 void DAChartSettingWidget::bindFigure(DAFigureWidget* fig)
 {
-	qDebug() << "bindFigure" << qintptr(fig);
-	if (d_ptr->mFigure == fig) {
-		return;
-	}
-	d_ptr->mFigure = fig;
-	if (fig) {
-		connect(fig, &DAFigureWidget::chartAdded, this, &DAChartSettingWidget::onChartAdded);
+    DADebug() << "bindFigure";
+    DAFigureWidget* oldfig = ui->widgetFigureSetting->getFigure();
+    if (oldfig == fig) {
+        return;
+    }
+    if (fig) {
+        connect(fig, &DAFigureWidget::chartAdded, this, &DAChartSettingWidget::onChartAdded);
         connect(fig, &DAFigureWidget::chartRemoved, this, &DAChartSettingWidget::onChartRemoved);
-		connect(fig, &DAFigureWidget::currentChartChanged, this, &DAChartSettingWidget::onCurrentChartChanged);
-		// 更新chart信息
-		const auto charts = fig->getCharts();
-		for (auto chart : charts) {
-			// 绑定chart的信号槽
-			bindChart(chart);
-		}
-		resetChartsComboBox(fig);
-	}
+        connect(fig, &DAFigureWidget::currentChartChanged, this, &DAChartSettingWidget::onCurrentChartChanged);
+    }
 }
 
 void DAChartSettingWidget::unbindFigure(DAFigureWidget* fig)
 {
-	qDebug() << "unbindFigure ptr=" << qintptr(fig);
-	if (fig) {
-		disconnect(fig, &DAFigureWidget::chartAdded, this, &DAChartSettingWidget::onChartAdded);
+    DADebug() << "unbindFigure ptr=" << qintptr(fig);
+    if (fig) {
+        disconnect(fig, &DAFigureWidget::chartAdded, this, &DAChartSettingWidget::onChartAdded);
         disconnect(fig, &DAFigureWidget::chartRemoved, this, &DAChartSettingWidget::onChartRemoved);
-		disconnect(fig, &DAFigureWidget::currentChartChanged, this, &DAChartSettingWidget::onCurrentChartChanged);
-		// 更新chart信息
-		const auto charts = fig->getCharts();
-		for (auto chart : charts) {
-			// 解除绑定chart的信号槽
-			unbindChart(chart);
-		}
-	}
+        disconnect(fig, &DAFigureWidget::currentChartChanged, this, &DAChartSettingWidget::onCurrentChartChanged);
+        // 更新chart信息
+        const auto charts = fig->getCharts();
+        for (auto chart : charts) {
+            // 解除绑定chart的信号槽
+            unbindChart(chart);
+        }
+    }
 }
 
 void DAChartSettingWidget::bindChart(DAChartWidget* chart)
 {
-	qDebug() << "bindChart ptr=" << qintptr(chart);
-	if (chart) {
-		connect(chart, &DAChartWidget::itemAttached, this, &DAChartSettingWidget::onItemAttached);
-		connect(chart, &DAChartWidget::chartPropertyHasChanged, this, &DAChartSettingWidget::onChartPropertyHasChanged);
-	}
+    DADebug() << "bindChart ptr=" << qintptr(chart);
+    if (chart) {
+        connect(chart, &DAChartWidget::itemAttached, this, &DAChartSettingWidget::onItemAttached);
+        connect(chart, &DAChartWidget::chartPropertyHasChanged, this, &DAChartSettingWidget::onChartPropertyHasChanged);
+    }
 }
 
 void DAChartSettingWidget::unbindChart(DAChartWidget* chart)
 {
-	qDebug() << "unbindChart ptr=" << qintptr(chart);
-	if (chart) {
-		disconnect(chart, &DAChartWidget::itemAttached, this, &DAChartSettingWidget::onItemAttached);
-		disconnect(chart, &DAChartWidget::chartPropertyHasChanged, this, &DAChartSettingWidget::onChartPropertyHasChanged);
-	}
+    DADebug() << "unbindChart ptr=" << qintptr(chart);
+    if (chart) {
+        disconnect(chart, &DAChartWidget::itemAttached, this, &DAChartSettingWidget::onItemAttached);
+        disconnect(chart, &DAChartWidget::chartPropertyHasChanged, this, &DAChartSettingWidget::onChartPropertyHasChanged);
+    }
 }
 
 /**
@@ -186,58 +198,46 @@ void DAChartSettingWidget::unbindChart(DAChartWidget* chart)
  */
 int DAChartSettingWidget::indexOfChart(const DAChartWidget* chart)
 {
-	int c = ui->comboBoxSelectChart->count();
-	for (int i = 0; i < c; ++i) {
-		DAChartWidget* savePtr = ui->comboBoxSelectChart->itemData(i).value< DAChartWidget* >();
-		if (chart == savePtr) {
-			return i;
-		}
-	}
-	return -1;
+    int c = ui->comboBoxSelectChart->count();
+    for (int i = 0; i < c; ++i) {
+        DAChartWidget* savePtr = ui->comboBoxSelectChart->itemData(i).value< DAChartWidget* >();
+        if (chart == savePtr) {
+            return i;
+        }
+    }
+    return -1;
 }
 
 int DAChartSettingWidget::indexOfItem(const QwtPlotItem* item)
 {
-	int c = ui->comboBoxSelectItem->count();
-	for (int i = 0; i < c; ++i) {
-		QwtPlotItem* savePtr = ui->comboBoxSelectItem->itemData(i).value< QwtPlotItem* >();
-		if (item == savePtr) {
-			return i;
-		}
-	}
-	return -1;
+    int c = ui->comboBoxSelectItem->count();
+    for (int i = 0; i < c; ++i) {
+        QwtPlotItem* savePtr = ui->comboBoxSelectItem->itemData(i).value< QwtPlotItem* >();
+        if (item == savePtr) {
+            return i;
+        }
+    }
+    return -1;
 }
 
 /**
- * @brief 设置当前的chart
+ * @brief 通过设置窗口，设置当前的chart
  * @param chart
  */
 void DAChartSettingWidget::setCurrentChart(DAChartWidget* chart)
 {
-	qDebug() << "setCurrentChart ptr=" << qintptr(chart);
-	// 这里不会触发combobox的 任何信号
-	if (nullptr == chart) {
-		setChartUI(nullptr);
-		return;
-	}
-	// 找到索引
-	auto fig = chart->getFigure();
-	if (fig == nullptr) {
-		setChartUI(nullptr);
-		return;
-	}
-	if (fig != d_ptr->mFigure) {
-		qDebug() << "|-odd:chart figure inconsistent";
-		d_ptr->mFigure = fig;
-		setFigure(fig);
-	}
-	setChartUI(chart);
-	// 如果当前chart不是选定的chart，则把当前chart设置为选定的chart
-	auto cc = fig->getCurrentChart();
-	if (cc != chart) {
-		QSignalBlocker b(d_ptr->mFigure);
-		d_ptr->mFigure->setCurrentChart(chart);
-	}
+    if (!chart) {
+        return;
+    }
+    // 找到索引
+    auto fig      = getFigure();
+    auto chartfig = chart->getFigure();
+    if (fig && fig != chartfig) {
+        qWarning() << tr("The assigned plot does not belong to the figure managed by the current figure window.");  // cn:设置的绘图不属于当前绘图窗口管理的图表。
+        return;
+    }
+
+    fig->setCurrentChart(chart);
 }
 
 /**
@@ -246,11 +246,11 @@ void DAChartSettingWidget::setCurrentChart(DAChartWidget* chart)
  */
 DAChartWidget* DAChartSettingWidget::getCurrentChart() const
 {
-	if (ui->comboBoxSelectChart->currentIndex() < 0) {
-		return nullptr;
-	}
+    if (ui->comboBoxSelectChart->currentIndex() < 0) {
+        return nullptr;
+    }
 
-	return ui->comboBoxSelectChart->currentData().value< DAChartWidget* >();
+    return ui->comboBoxSelectChart->currentData().value< DAChartWidget* >();
 }
 
 /**
@@ -259,44 +259,44 @@ DAChartWidget* DAChartSettingWidget::getCurrentChart() const
  */
 void DAChartSettingWidget::setCurrentItem(QwtPlotItem* item)
 {
-	qDebug() << "setCurrentItem ptr=" << qintptr(item);
-	// 这里不会触发combobox的 任何信号
-	setItemUI(item);
+    DADebug() << "setCurrentItem ptr=" << qintptr(item);
+    // 这里不会触发combobox的 任何信号
+    setItemUI(item);
 }
 
 QwtPlotItem* DAChartSettingWidget::getCurrentItem() const
 {
-	if (ui->comboBoxSelectItem->currentIndex() < 0) {
-		return nullptr;
-	}
-	return ui->comboBoxSelectItem->currentData().value< QwtPlotItem* >();
+    if (ui->comboBoxSelectItem->currentIndex() < 0) {
+        return nullptr;
+    }
+    return ui->comboBoxSelectItem->currentData().value< QwtPlotItem* >();
 }
 
 void DAChartSettingWidget::showFigureSettingWidget()
 {
-	qDebug() << "showFigureSettingWidget";
-	ui->toolButtonFigure->setChecked(true);
-	ui->comboBoxSelectChart->setVisible(false);
-	ui->comboBoxSelectItem->setVisible(false);
-	ui->stackedWidget->setCurrentWidget(ui->pageFigureSet);
+    DADebug() << "showFigureSettingWidget";
+    ui->toolButtonFigure->setChecked(true);
+    ui->comboBoxSelectChart->setVisible(false);
+    ui->comboBoxSelectItem->setVisible(false);
+    ui->stackedWidget->setCurrentWidget(ui->widgetFigureSetting);
 }
 
 void DAChartSettingWidget::showPlotSettingWidget()
 {
-	qDebug() << "showPlotSettingWidget";
-	ui->toolButtonChart->setChecked(true);
-	ui->comboBoxSelectChart->setVisible(true);
-	ui->comboBoxSelectItem->setVisible(false);
-	ui->stackedWidget->setCurrentWidget(ui->widgetChartSetting);
+    DADebug() << "showPlotSettingWidget";
+    ui->toolButtonChart->setChecked(true);
+    ui->comboBoxSelectChart->setVisible(true);
+    ui->comboBoxSelectItem->setVisible(false);
+    ui->stackedWidget->setCurrentWidget(ui->widgetChartSetting);
 }
 
 void DAChartSettingWidget::showItemSettingWidget()
 {
-	qDebug() << "showItemSettingWidget";
-	ui->toolButtonItem->setChecked(true);
-	ui->comboBoxSelectChart->setVisible(true);
-	ui->comboBoxSelectItem->setVisible(true);
-	ui->stackedWidget->setCurrentWidget(ui->widgetItemSetting);
+    DADebug() << "showItemSettingWidget";
+    ui->toolButtonItem->setChecked(true);
+    ui->comboBoxSelectChart->setVisible(true);
+    ui->comboBoxSelectItem->setVisible(true);
+    ui->stackedWidget->setCurrentWidget(ui->widgetItemSetting);
 }
 
 /**
@@ -305,179 +305,155 @@ void DAChartSettingWidget::showItemSettingWidget()
  */
 void DAChartSettingWidget::removeChartFromComboBox(DAChartWidget* chart)
 {
-	qDebug() << "removeChartFromComboBox";
-	auto c = ui->comboBoxSelectChart->count();
-	for (int i = 0; i < c; ++i) {
-		DAChartWidget* saveChartPtr = ui->comboBoxSelectChart->itemData(i).value< DAChartWidget* >();
-		if (saveChartPtr == chart) {
-			ui->comboBoxSelectChart->removeItem(i);
-			return;
-		}
-	}
+    DADebug() << "removeChartFromComboBox";
+    auto c = ui->comboBoxSelectChart->count();
+    for (int i = 0; i < c; ++i) {
+        DAChartWidget* saveChartPtr = ui->comboBoxSelectChart->itemData(i).value< DAChartWidget* >();
+        if (saveChartPtr == chart) {
+            ui->comboBoxSelectChart->removeItem(i);
+            return;
+        }
+    }
 }
 
 void DAChartSettingWidget::changeEvent(QEvent* e)
 {
-	QWidget::changeEvent(e);
-	switch (e->type()) {
-	case QEvent::LanguageChange:
-		ui->retranslateUi(this);
-		break;
-	default:
-		break;
-	}
+    QWidget::changeEvent(e);
+    switch (e->type()) {
+    case QEvent::LanguageChange:
+        ui->retranslateUi(this);
+        break;
+    default:
+        break;
+    }
 }
 
-void DAChartSettingWidget::resetChartsComboBox(DAFigureWidget* fig)
+void DAChartSettingWidget::resetChartsComboBox()
 {
-	qDebug() << "resetChartsComboBox ptr=" << qintptr(fig);
-	const auto cs = fig->getCharts();
-	if (cs.empty()) {
-		qDebug() << "|-comboBoxSelectChart clear";
-		ui->comboBoxSelectChart->clear();
-		return;
-	}
-	for (int i = 0; (i < ui->comboBoxSelectChart->count()) && (i < cs.size()); ++i) {
-		DAChartWidget* chart = cs[ i ];
-		// 更新
-		ui->comboBoxSelectChart->setItemText(i, DAChartWidgetStandardItem::getChartTitle(fig, chart));
-		ui->comboBoxSelectChart->setItemData(i, QVariant::fromValue(chart));
-	}
-	if (ui->comboBoxSelectChart->count() < cs.size()) {
-		// 追加
-		for (int i = ui->comboBoxSelectChart->count(); i < cs.size(); ++i) {
-			DAChartWidget* chart = cs[ i ];
-			ui->comboBoxSelectChart->addItem(DAChartWidgetStandardItem::getChartTitle(fig, chart),
-                                             QVariant::fromValue(chart));
-		}
-	} else if (ui->comboBoxSelectChart->count() > cs.size()) {
-		// 删除
-		for (int i = cs.size(); i < ui->comboBoxSelectChart->count(); ++i) {
-			ui->comboBoxSelectChart->removeItem(i);
-		}
-	}
-	updateChartUI();
+    DAFigureWidget* fig = getFigure();
+    ui->comboBoxSelectChart->clear();
+    if (!fig) {
+        // null指针直接返回
+        return;
+    }
+    const auto chartsList = fig->getCharts();
+    const int cnt         = chartsList.size();
+    for (int i = 0; i < cnt; ++i) {
+        DAChartWidget* chart = chartsList[ i ];
+        ui->comboBoxSelectChart->addItem(DAChartWidgetStandardItem::getChartTitle(fig, chart), QVariant::fromValue(chart));
+    }
+
+    updateChartUI();
 }
 
 void DAChartSettingWidget::setItemsComboBox(const QList< QwtPlotItem* >& its)
 {
-	qDebug() << "setItemsComboBox";
-	if (ui->comboBoxSelectItem->count() > 0) {
-		ui->comboBoxSelectItem->clear();
-	}
-	if (its.empty()) {
-		return;
-	}
-	QVariant curData     = ui->comboBoxSelectItem->currentData();
-	QwtPlotItem* oldItem = nullptr;
-	if (curData.isValid()) {
-		oldItem = curData.value< QwtPlotItem* >();
-	}
-	for (QwtPlotItem* item : its) {
-		ui->comboBoxSelectItem->addItem(DAChartItemStandardItem::getItemName(item), QVariant::fromValue(item));
-	}
-	if (ui->comboBoxSelectItem->count() > 0) {
-		ui->comboBoxSelectItem->setCurrentIndex(0);
-	}
-	// 默认选中
-	if (oldItem) {
-		setCurrentItem(oldItem);
-	} else if (its.size() > 0) {
-		setCurrentItem(its.first());
-	}
+    DADebug() << "setItemsComboBox";
+    if (ui->comboBoxSelectItem->count() > 0) {
+        ui->comboBoxSelectItem->clear();
+    }
+    if (its.empty()) {
+        return;
+    }
+    QVariant curData     = ui->comboBoxSelectItem->currentData();
+    QwtPlotItem* oldItem = nullptr;
+    if (curData.isValid()) {
+        oldItem = curData.value< QwtPlotItem* >();
+    }
+    for (QwtPlotItem* item : its) {
+        ui->comboBoxSelectItem->addItem(DAChartItemStandardItem::getItemName(item), QVariant::fromValue(item));
+    }
+    if (ui->comboBoxSelectItem->count() > 0) {
+        ui->comboBoxSelectItem->setCurrentIndex(0);
+    }
+    // 默认选中
+    if (oldItem) {
+        setCurrentItem(oldItem);
+    } else if (its.size() > 0) {
+        setCurrentItem(its.first());
+    }
 }
 
 void DAChartSettingWidget::resetItemsComboBox(DAChartWidget* chart)
 {
-	qDebug() << "resetItemsComboBox";
-	const auto items = chart->itemList();
-	setItemsComboBox(items);
+    DADebug() << "resetItemsComboBox";
+    const auto items = chart->itemList();
+    setItemsComboBox(items);
 }
 
 void DAChartSettingWidget::onFigureCloseing(DAFigureWidget* f)
 {
-	Q_UNUSED(f);
-	if (!d_ptr->mChartOpt) {
-		return;
-	}
-	int c = d_ptr->mChartOpt->getFigureCount();
-	if (c == 1) {
-		setFigure(nullptr);
-	}
+    Q_UNUSED(f);
+    if (!d_ptr->mChartOpt) {
+        return;
+    }
+    int c = d_ptr->mChartOpt->getFigureCount();
+    if (c == 1) {
+        setFigure(nullptr);
+    }
 }
 
 void DAChartSettingWidget::onFigureCreated(DAFigureWidget* f)
 {
-	qDebug() << "onFigureCreated ptr=" << qintptr(f);
-	if (f) {
-		DAChartWidget* c = f->getCurrentChart();
-		setFigure(f, c);
-		showFigureSettingWidget();
-	}
+    DADebug() << "onFigureCreated ptr=" << qintptr(f);
+    if (f) {
+        setFigure(f);
+        showFigureSettingWidget();
+    }
 }
 
 void DAChartSettingWidget::onCurrentFigureChanged(DAFigureWidget* f, int index)
 {
-	qDebug() << "onCurrentFigureChanged ptr=" << qintptr(f) << ",index=" << index;
-	Q_UNUSED(index);
-	if (f) {
-		DAChartWidget* c = f->getCurrentChart();
-		setFigure(f, c);
-	}
+    DADebug() << "onCurrentFigureChanged ptr=" << qintptr(f) << ",index=" << index;
+    Q_UNUSED(index);
+    if (f) {
+        setFigure(f);
+    }
 }
 
 void DAChartSettingWidget::onChartAdded(DAChartWidget* c)
 {
-	if (d_ptr->mFigure) {
-		// 刷新chart
-		qDebug() << "onChartAdded";
-		bindChart(c);
-		resetChartsComboBox(d_ptr->mFigure);
-		// setCurrentChart(c);//这个函数无必要，addchart会默认把current设置为add的那个chart
-		showPlotSettingWidget();
-	}
+    bindChart(c);
+
+    resetChartsComboBox();
+    // setCurrentChart(c);//这个函数无必要，addchart会默认把current设置为add的那个chart
+    showPlotSettingWidget();
 }
 
 void DAChartSettingWidget::onChartRemoved(DAChartWidget* c)
 {
-    qDebug() << "onChartRemoved ptr=" << qintptr(c);
-	if (d_ptr->mFigure) {
-		// 刷新chart
-		unbindChart(c);
-		removeChartFromComboBox(c);
-	}
+    // 刷新chart
+    unbindChart(c);
+    removeChartFromComboBox(c);
 }
 
 void DAChartSettingWidget::onCurrentChartChanged(DAChartWidget* c)
 {
-	qDebug() << "onCurrentChartChanged ptr=" << qintptr(c);
-	if (d_ptr->mFigure) {
-		// 刷新chart
-		setCurrentChart(c);
-	}
+    DADebug() << "onCurrentChartChanged";
+    setChart(c);
 }
 
 void DAChartSettingWidget::onItemAttached(QwtPlotItem* plotItem, bool on)
 {
-	qDebug() << "onItemAttached ptr=" << qintptr(plotItem) << ",on=" << on;
-	DAChartWidget* c = qobject_cast< DAChartWidget* >(sender());
-	if (c) {
-		onChartItemAttached(c, plotItem, on);
-	}
+    DADebug() << "onItemAttached ptr=" << qintptr(plotItem) << ",on=" << on;
+    DAChartWidget* c = qobject_cast< DAChartWidget* >(sender());
+    if (c) {
+        onChartItemAttached(c, plotItem, on);
+    }
 }
 
 void DAChartSettingWidget::onChartItemAttached(DAChartWidget* c, QwtPlotItem* plotItem, bool on)
 {
-	if (c) {
-		resetItemsComboBox(c);
-		if (on) {
-			// 有新增的item，把设置显示出来
-			//  按照item类型显示
-			showItemSettingWidget();
-			setCurrentChart(c);
-			setCurrentItem(plotItem);
-		}
-	}
+    if (c) {
+        resetItemsComboBox(c);
+        if (on) {
+            // 有新增的item，把设置显示出来
+            //  按照item类型显示
+            showItemSettingWidget();
+            setCurrentChart(c);
+            setCurrentItem(plotItem);
+        }
+    }
 }
 
 /**
@@ -488,10 +464,10 @@ void DAChartSettingWidget::onChartItemAttached(DAChartWidget* c, QwtPlotItem* pl
  */
 void DAChartSettingWidget::onComboBoxChartActivated(int i)
 {
-	qDebug() << "onComboBoxChartActivated(" << i << ")";
-	DAChartWidget* chart = getChartByIndex(i);
-	setCurrentChart(chart);
-	// 这里不显示chart对应的stacked widget
+    DADebug() << "onComboBoxChartActivated(" << i << ")";
+    DAChartWidget* chart = getChartByIndex(i);
+    setCurrentChart(chart);
+    // 这里不显示chart对应的stacked widget
 }
 
 /**
@@ -502,14 +478,14 @@ void DAChartSettingWidget::onComboBoxChartActivated(int i)
  */
 void DAChartSettingWidget::onComboBoxItemActived(int i)
 {
-	qDebug() << "onComboBoxItemActived(" << i << ")";
-	if (i < 0) {
-		setCurrentItem(nullptr);
-	} else {
-		QwtPlotItem* item = ui->comboBoxSelectItem->itemData(i).value< QwtPlotItem* >();
-		setCurrentItem(item);
-		showItemSettingWidget();
-	}
+    DADebug() << "onComboBoxItemActived(" << i << ")";
+    if (i < 0) {
+        setCurrentItem(nullptr);
+    } else {
+        QwtPlotItem* item = ui->comboBoxSelectItem->itemData(i).value< QwtPlotItem* >();
+        setCurrentItem(item);
+        showItemSettingWidget();
+    }
 }
 
 /**
@@ -518,17 +494,17 @@ void DAChartSettingWidget::onComboBoxItemActived(int i)
  */
 void DAChartSettingWidget::onButtonGroupTypeButtonClicked(int id)
 {
-	switch (id) {
-	case SettingFigure:
-		showFigureSettingWidget();
-		break;
-	case SettingChart:
-		showPlotSettingWidget();
-		break;
-	case SettingItem:
-		showItemSettingWidget();
-		break;
-	}
+    switch (id) {
+    case SettingFigure:
+        showFigureSettingWidget();
+        break;
+    case SettingChart:
+        showPlotSettingWidget();
+        break;
+    case SettingItem:
+        showItemSettingWidget();
+        break;
+    }
 }
 
 /**
@@ -537,71 +513,47 @@ void DAChartSettingWidget::onButtonGroupTypeButtonClicked(int id)
  */
 void DAChartSettingWidget::onChartPropertyHasChanged(DAChartWidget* chart)
 {
-	if (d_ptr->mFigure) {
-		// 刷新chart
-		resetChartsComboBox(d_ptr->mFigure);
-		if (getCurrentChart() == chart) {
-			updateChartUI();
-		}
-	}
+    if (getCurrentChart() == chart) {
+        updateChartUI();
+    }
 }
 
 void DAChartSettingWidget::setChartUI(DAChartWidget* chart)
 {
-	qDebug() << "setChartUI ptr=" << qintptr(chart);
-	QSignalBlocker b(ui->comboBoxSelectChart);
-	if (chart == nullptr) {
-		ui->widgetChartSetting->setChartWidget(nullptr);
-		ui->comboBoxSelectChart->clear();
-		ui->comboBoxSelectItem->clear();
-	} else {
-		// 这里会触发indexChanged信号
-		int index = indexOfChart(chart);
-		if (index == -1) {
-			ui->widgetChartSetting->setChartWidget(nullptr);
-			ui->comboBoxSelectChart->clear();
-			ui->comboBoxSelectItem->clear();
-			return;
-		}
-		ui->comboBoxSelectChart->setCurrentIndex(index);
-		// 重置itemcombobox
-		resetItemsComboBox(chart);
-		ui->widgetChartSetting->setChartWidget(chart);
-	}
 }
 
 void DAChartSettingWidget::updateChartUI()
 {
-	qDebug() << "updateChartUI";
-	setChartUI(getCurrentChart());
+    DADebug() << "updateChartUI";
+    setChartUI(getCurrentChart());
 }
 
 void DAChartSettingWidget::setItemUI(QwtPlotItem* item)
 {
-	qDebug() << "setItemUI ptr=" << qintptr(item);
-	QSignalBlocker b(ui->comboBoxSelectItem);
-	if (item == nullptr) {
-		ui->widgetItemSetting->setPlotItem(nullptr);
-		ui->comboBoxSelectItem->setCurrentIndex(-1);
-	} else {
-		auto index = indexOfItem(item);
-		ui->comboBoxSelectItem->setCurrentIndex(index);
-		ui->widgetItemSetting->setPlotItem(item);
-	}
+    DADebug() << "setItemUI ptr=" << qintptr(item);
+    QSignalBlocker b(ui->comboBoxSelectItem);
+    if (item == nullptr) {
+        ui->widgetItemSetting->setPlotItem(nullptr);
+        ui->comboBoxSelectItem->setCurrentIndex(-1);
+    } else {
+        auto index = indexOfItem(item);
+        ui->comboBoxSelectItem->setCurrentIndex(index);
+        ui->widgetItemSetting->setPlotItem(item);
+    }
 }
 
 void DAChartSettingWidget::updateItemUI()
 {
-	qDebug() << "updateItemUI";
-	setItemUI(getCurrentItem());
+    DADebug() << "updateItemUI";
+    setItemUI(getCurrentItem());
 }
 
 DAChartWidget* DAChartSettingWidget::getChartByIndex(int i) const
 {
-	if (i < ui->comboBoxSelectChart->count() && i >= 0) {
-		return ui->comboBoxSelectChart->itemData(i).value< DAChartWidget* >();
-	}
-	return nullptr;
+    if (i < ui->comboBoxSelectChart->count() && i >= 0) {
+        return ui->comboBoxSelectChart->itemData(i).value< DAChartWidget* >();
+    }
+    return nullptr;
 }
 
 }  // end da

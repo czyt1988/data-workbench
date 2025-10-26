@@ -38,7 +38,7 @@
         <bool>true</bool>
        </property>
        <property name="toolButtonStyle">
-        <enum>Qt::ToolButtonTextUnderIcon</enum>
+        <enum>Qt::ToolButtonStyle::ToolButtonTextUnderIcon</enum>
        </property>
        <property name="autoRaise">
         <bool>true</bool>
@@ -67,7 +67,7 @@
         <bool>true</bool>
        </property>
        <property name="toolButtonStyle">
-        <enum>Qt::ToolButtonTextUnderIcon</enum>
+        <enum>Qt::ToolButtonStyle::ToolButtonTextUnderIcon</enum>
        </property>
        <property name="autoRaise">
         <bool>true</bool>
@@ -96,7 +96,7 @@
         <bool>true</bool>
        </property>
        <property name="toolButtonStyle">
-        <enum>Qt::ToolButtonTextUnderIcon</enum>
+        <enum>Qt::ToolButtonStyle::ToolButtonTextUnderIcon</enum>
        </property>
        <property name="autoRaise">
         <bool>true</bool>
@@ -109,7 +109,7 @@
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -130,9 +130,9 @@
    <item>
     <widget class="QStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
-     <widget class="QWidget" name="pageFigureSet"/>
+     <widget class="DA::DAFigureWidgetSettingWidget" name="widgetFigureSetting"/>
      <widget class="DA::DAChartPlotSettingWidget" name="widgetChartSetting"/>
      <widget class="DA::DAChartCommonItemsSettingWidget" name="widgetItemSetting"/>
     </widget>
@@ -150,6 +150,12 @@
    <class>DA::DAChartPlotSettingWidget</class>
    <extends>QWidget</extends>
    <header>DAChartPlotSettingWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DA::DAFigureWidgetSettingWidget</class>
+   <extends>QWidget</extends>
+   <header>DAFigureWidgetSettingWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

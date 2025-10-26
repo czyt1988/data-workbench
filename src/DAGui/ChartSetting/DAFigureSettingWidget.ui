@@ -1,19 +1,21 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>DAFigureWidgetSettingWidget</class>
- <widget class="QWidget" name="DAFigureWidgetSettingWidget">
+ <author/>
+ <comment/>
+ <exportmacro/>
+ <class>DAFigureSettingWidget</class>
+ <widget class="QWidget" name="DAFigureSettingWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>306</width>
-    <height>632</height>
+    <width>400</width>
+    <height>300</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
  </widget>
- <resources/>
+ <pixmapfunction/>
  <connections/>
 </ui>
