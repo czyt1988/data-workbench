@@ -12,30 +12,30 @@ DAChartCurveItemSettingWidget::DAChartCurveItemSettingWidget(QWidget* parent)
 	ui->setupUi(this);
 	resetUI();
 	connect(ui->comboBoxCurveStyle,
-			QOverload< int >::of(&QComboBox::currentIndexChanged),
-			this,
-			&DAChartCurveItemSettingWidget::onCurveStyleCurrentIndexChanged);
+            QOverload< int >::of(&QComboBox::currentIndexChanged),
+            this,
+            &DAChartCurveItemSettingWidget::onCurveStyleCurrentIndexChanged);
 	connect(ui->symbolEditWidget,
-			&DAChartSymbolEditWidget::symbolStyleChanged,
-			this,
-			&DAChartCurveItemSettingWidget::onSymbolStyleChanged);
+            &DAChartSymbolEditWidget::symbolStyleChanged,
+            this,
+            &DAChartCurveItemSettingWidget::onSymbolStyleChanged);
 	connect(ui->symbolEditWidget,
-			&DAChartSymbolEditWidget::symbolSizeChanged,
-			this,
-			&DAChartCurveItemSettingWidget::onSymbolSizeChanged);
+            &DAChartSymbolEditWidget::symbolSizeChanged,
+            this,
+            &DAChartCurveItemSettingWidget::onSymbolSizeChanged);
 	connect(ui->symbolEditWidget,
-			&DAChartSymbolEditWidget::symbolColorChanged,
-			this,
-			&DAChartCurveItemSettingWidget::onSymbolColorChanged);
+            &DAChartSymbolEditWidget::symbolColorChanged,
+            this,
+            &DAChartCurveItemSettingWidget::onSymbolColorChanged);
 	connect(ui->symbolEditWidget,
-			&DAChartSymbolEditWidget::symbolOutlinePenChanged,
-			this,
-			&DAChartCurveItemSettingWidget::onSymbolOutlinePenChanged);
+            &DAChartSymbolEditWidget::symbolOutlinePenChanged,
+            this,
+            &DAChartCurveItemSettingWidget::onSymbolOutlinePenChanged);
 	connect(ui->brushEditWidget, &DABrushEditWidget::brushChanged, this, &DAChartCurveItemSettingWidget::onBrushChanged);
 	connect(ui->buttonGroupOrientation,
-			QOverload< QAbstractButton* >::of(&QButtonGroup::buttonClicked),
-			this,
-			&DAChartCurveItemSettingWidget::onButtonGroupOrientationClicked);
+            QOverload< QAbstractButton* >::of(&QButtonGroup::buttonClicked),
+            this,
+            &DAChartCurveItemSettingWidget::onButtonGroupOrientationClicked);
 	connect(ui->penEditWidget, &DAPenEditWidget::penChanged, this, &DAChartCurveItemSettingWidget::onCurvePenChanged);
 }
 
@@ -44,50 +44,43 @@ DAChartCurveItemSettingWidget::~DAChartCurveItemSettingWidget()
 	delete ui;
 }
 
-void DAChartCurveItemSettingWidget::plotItemSet(QwtPlotItem* item)
-{
-	if (nullptr == item) {
-		return;
-	}
-	if (item->rtti() != QwtPlotItem::Rtti_PlotCurve) {
-		return;
-	}
-	ui->widgetItemSetting->setPlotItem(item);
-	QwtPlotCurve* curItem = static_cast< QwtPlotCurve* >(item);
-	updateUI(curItem);
-}
-
 /**
  * @brief 根据QwtPlotCurve更新ui
  * @param item
  */
-void DAChartCurveItemSettingWidget::updateUI(const QwtPlotCurve* item)
+void DAChartCurveItemSettingWidget::updateUI(QwtPlotItem* item)
 {
-	ui->widgetItemSetting->updateUI(item);
-	ui->checkBoxFitted->setChecked(item->testCurveAttribute(QwtPlotCurve::Fitted));
-	ui->checkBoxInverted->setChecked(item->testCurveAttribute(QwtPlotCurve::Inverted));
-	setLegendAttribute(item->legendAttributes());
-	setCurvePen(item->pen());
-	QBrush b = item->brush();
+    if (nullptr == item) {
+        return;
+    }
+    if (item->rtti() != QwtPlotItem::Rtti_PlotCurve) {
+        return;
+    }
+    QwtPlotCurve* curItem = static_cast< QwtPlotCurve* >(item);
+    ui->checkBoxFitted->setChecked(curItem->testCurveAttribute(QwtPlotCurve::Fitted));
+    ui->checkBoxInverted->setChecked(curItem->testCurveAttribute(QwtPlotCurve::Inverted));
+    setLegendAttribute(curItem->legendAttributes());
+    setCurvePen(curItem->pen());
+    QBrush b = curItem->brush();
 	if (b != Qt::NoBrush) {
 		enableFillEdit(true);
-		setFillBrush(item->brush());
+        setFillBrush(curItem->brush());
 	} else {
 		enableFillEdit(false);
-		setFillBrush(item->brush());
+        setFillBrush(curItem->brush());
 	}
-	setBaseLine(item->baseline());
-	setOrientation(item->orientation());
+    setBaseLine(curItem->baseline());
+    setOrientation(curItem->orientation());
 }
 
 /**
  * @brief 根据ui更新QwtPlotCurve
  * @param item
  */
-void DAChartCurveItemSettingWidget::updatePlotItem(QwtPlotCurve* item)
+void DAChartCurveItemSettingWidget::applySetting(QwtPlotCurve* item)
 {
 	// plot item
-	ui->widgetItemSetting->updatePlotItem(item);
+    ui->widgetItemSetting->applySetting(item);
 	// plot curve
 	item->setTitle(getTitle());
 	auto s = getCurveStyle();

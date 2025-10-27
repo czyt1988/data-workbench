@@ -41,7 +41,6 @@ class DAFigureWidget::PrivateData
 {
 	DA_DECLARE_PUBLIC(DAFigureWidget)
 public:
-	DAChartWidget* mCurrentChart { nullptr };
 	DAFigureWidgetOverlay* mChartEditorOverlay { nullptr };  ///< 编辑模式
 	QBrush mBackgroundBrush;                                 ///< 背景
 	QUndoStack mUndoStack;                                   ///<
@@ -219,8 +218,7 @@ void DAFigureWidget::addChart(DAChartWidget* chart, qreal xVersatile, qreal yVer
 	// 将会发射QwtFigure::axesAdded信号
 	fig->addAxes(chart, xVersatile, yVersatile, wVersatile, hVersatile);
 	//! 不清楚为何如果不加这句话，坐标轴的轴线不绘制出来
-	// chart->axisWidget(QwtAxis::XBottom)->setScaleDraw(new QwtScaleDraw());
-	d_ptr->mCurrentChart = chart;
+    chart->axisWidget(QwtAxis::XBottom)->setScaleDraw(new QwtScaleDraw());
 }
 
 void DAFigureWidget::addChart(DAChartWidget* chart, const QRectF& versatileSize)
@@ -254,7 +252,7 @@ QList< DAChartWidget* > DAFigureWidget::getCharts() const
  */
 DAChartWidget* DAFigureWidget::getCurrentChart() const
 {
-    return (d_ptr->mCurrentChart);
+    return qobject_cast< DAChartWidget* >(figure()->currentAxes());
 }
 
 /**
@@ -367,13 +365,13 @@ void DAFigureWidget::enableSubChartEditor(bool enable)
 		if (nullptr == d_ptr->mChartEditorOverlay) {
 			d_ptr->mChartEditorOverlay = new DAFigureWidgetOverlay(figure());
 			connect(d_ptr->mChartEditorOverlay,
-					&DAFigureWidgetOverlay::widgetGeometryChanged,
-					this,
-					&DAFigureWidget::onWidgetGeometryChanged);
+                    &DAFigureWidgetOverlay::widgetGeometryChanged,
+                    this,
+                    &DAFigureWidget::onWidgetGeometryChanged);
 			connect(d_ptr->mChartEditorOverlay,
-					&DAFigureWidgetOverlay::activeWidgetChanged,
-					this,
-					&DAFigureWidget::onOverlayActiveWidgetChanged);
+                    &DAFigureWidgetOverlay::activeWidgetChanged,
+                    this,
+                    &DAFigureWidget::onOverlayActiveWidgetChanged);
 			d_ptr->mChartEditorOverlay->show();
 			d_ptr->mChartEditorOverlay->raise();  // 同时提升最前
 		} else {

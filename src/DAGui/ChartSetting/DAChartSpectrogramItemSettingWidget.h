@@ -32,12 +32,9 @@ class DAGUI_API DAChartSpectrogramItemSettingWidget : public DAAbstractChartItem
 public:
 	explicit DAChartSpectrogramItemSettingWidget(QWidget* parent = nullptr);
 	~DAChartSpectrogramItemSettingWidget();
-	// item设置了
-	virtual void plotItemSet(QwtPlotItem* item) override;
-	// 根据QwtPlotCurve更新ui
-	void updateUI(const QwtPlotSpectrogram* item);
-	// 根据ui更新plotitem
-	void updatePlotItem(QwtPlotSpectrogram* item);
+    // 更新界面
+    virtual void updateUI(QwtPlotItem* item) override;
+    void applySetting(QwtPlotSpectrogram* item);
 	// 标题
 	void setTitle(const QString& t);
 	QString getTitle() const;

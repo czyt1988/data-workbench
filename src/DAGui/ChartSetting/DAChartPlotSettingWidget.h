@@ -24,16 +24,18 @@ public:
 	// 设置chart
 	void setChartWidget(DAChartWidget* w);
     DAChartWidget* getChartWidget() const;
-public slots:
-    // 标题内容设置
-    void setTitleText(const QString& t);
-    void setTitleFont(const QFont& f);
-    void setTitleColor(const QColor& c);
-    // footer内容设置
-    void setFooterText(const QString& t);
-    void setFooterFont(const QFont& f);
-    void setFooterColor(const QColor& c);
+    // 更新ui
+    void updateUI();
+
 private slots:
+    // 标题内容设置
+    void onTitleTextChanged(const QString& t);
+    void onTitleFontChanged(const QFont& f);
+    void onTitleColorChanged(const QColor& c);
+    // footer内容设置
+    void onFooterTextChanged(const QString& t);
+    void onFooterFontChanged(const QFont& f);
+    void onFooterColorChanged(const QColor& c);
 
 private:
 	Ui::DAChartPlotSettingWidget* ui;

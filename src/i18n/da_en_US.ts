@@ -1756,7 +1756,7 @@ Config</source>
 <context>
     <name>DA::DAChartCurveItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="+138"/>
+        <location filename="../DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="+131"/>
         <source>Lines</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1899,9 +1899,17 @@ Config</source>
     </message>
 </context>
 <context>
+    <name>DA::DAChartSettingWidget</name>
+    <message>
+        <location filename="../DAGui/DAChartSettingWidget.cpp" line="+143"/>
+        <source>The currently set chart window was not found in the chart list.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DA::DAChartSpectrogramItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartSpectrogramItemSettingWidget.cpp" line="+93"/>
+        <location filename="../DAGui/ChartSetting/DAChartSpectrogramItemSettingWidget.cpp" line="+84"/>
         <source>Image Mode</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5166,9 +5174,17 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
 </context>
 <context>
+    <name>DAFigureSettingWidget</name>
+    <message>
+        <location filename="../DAGui/ChartSetting/DAFigureSettingWidget.ui" line="+16"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+58"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+57"/>
         <source>Figure</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5176,7 +5192,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAFigureWidgetSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAFigureWidgetSettingWidget.ui" line="+16"/>
+        <location filename="../DAGui/ChartSetting/DAFigureWidgetSettingWidget.ui" line="+14"/>
         <source>Form</source>
         <translation type="unfinished"></translation>
     </message>

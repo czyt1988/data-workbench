@@ -46,7 +46,7 @@ void DAFigureWidgetSettingWidget::setFigure(DAFigureWidget* fig)
     }
     d_ptr->figure = fig;
     bindFigure(fig);
-    updateUI(fig);
+    updateUI();
 }
 
 DAFigureWidget* DAFigureWidgetSettingWidget::getFigure() const
@@ -77,6 +77,10 @@ void DAFigureWidgetSettingWidget::unbindFigure(DAFigureWidget* fig)
 }
 
 void DAFigureWidgetSettingWidget::updateUI()
+{
+}
+
+void DAFigureWidgetSettingWidget::applySetting(DAFigureWidget* fig)
 {
 }
 

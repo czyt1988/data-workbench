@@ -27,8 +27,8 @@ protected slots:
 	void onMajorLinePenChanged(const QPen& p);
 	// minor画笔
 	void onMinorLinePenChanged(const QPen& p);
-	// item设置了
-	virtual void plotItemSet(QwtPlotItem* item) override;
+    // 更新界面
+    virtual void updateUI(QwtPlotItem* item) override;
 
 protected:
 	void changeEvent(QEvent* e) override;

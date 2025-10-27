@@ -35,21 +35,19 @@ public:
     explicit DAChartSettingWidget(QWidget* parent = nullptr);
     ~DAChartSettingWidget();
     void setChartOprateWidget(DAChartOperateWidget* opt);
+    DAChartOperateWidget* getChartOprateWidget() const;
 
     DAFigureWidget* getFigure() const;
     DAChartWidget* getChart() const;
     QwtPlotItem* getItem() const;
 
-    void bindChart(DAChartWidget* chart);
-    void unbindChart(DAChartWidget* chart);
     // 获取chart在combobox的索引
     int indexOfChart(const DAChartWidget* chart);
     int indexOfItem(const QwtPlotItem* item);
     // 设置当前的chart
-    void setCurrentChart(DAChartWidget* chart);
-    DAChartWidget* getCurrentChart() const;
-    // 设置当前的item
-    void setCurrentItem(QwtPlotItem* item);
+    void setCurrentSelectChart(DAChartWidget* chart);
+    DAChartWidget* getCurrentSelectChart() const;
+
     QwtPlotItem* getCurrentItem() const;
     // 显示设置
     void showFigureSettingWidget();
@@ -62,14 +60,16 @@ protected:
     void changeEvent(QEvent* e);
     void setFigure(DAFigureWidget* fig);
     void setChart(DAChartWidget* chart);
-    // 绑定figure相关信号
-    void bindFigure(DAFigureWidget* fig);
-    void unbindFigure(DAFigureWidget* fig);
-    // 设置charts
+    // 设置当前的item
+    void setCurrentSelectItem(QwtPlotItem* item);
+    // 重置Charts复选框
     void resetChartsComboBox();
-    // 设置items
-    void setItemsComboBox(const QList< QwtPlotItem* >& its);
+    // 重置item复选框
     void resetItemsComboBox(DAChartWidget* chart);
+    // 删除当前item复选框的一个QwtPlotItem,成功删除返回true
+    bool removeItemFromItemComboBox(QwtPlotItem* item);
+    // 更新chartui
+    void updateChartUI();
 protected slots:
     void onFigureCloseing(DA::DAFigureWidget* f);
     void onFigureCreated(DA::DAFigureWidget* f);
@@ -85,23 +85,31 @@ protected slots:
     // onItemAttached的特化，把chart传入
     void onChartItemAttached(DA::DAChartWidget* c, QwtPlotItem* plotItem, bool on);
     // current chart触发的改变
-    void onComboBoxChartActivated(int i);
+    void onComboBoxChartIndexChanged(int i);
     // current item触发的改变
-    void onComboBoxItemActived(int i);
+    void onComboBoxItemIndexChanged(int i);
     // 按钮组点击
     void onButtonGroupTypeButtonClicked(int id);
     // 绘图的属性发生变化，刷新设置界面
     void onChartPropertyHasChanged(DAChartWidget* chart);
 
 private:
-    // chart的ui显示设置
-    void setChartUI(DAChartWidget* chart);
-    void updateChartUI();
+    // ChartOperateWidget相关的绑定
+    void bindChartOprateWidget(DAChartOperateWidget* opt);
+    void unbindChartOprateWidget(DAChartOperateWidget* opt);
+    // figure相关的绑定
+    void bindFigure(DAFigureWidget* fig);
+    void unbindFigure(DAFigureWidget* fig);
+    // chart相关的绑定
+    void bindChart(DAChartWidget* chart);
+    void unbindChart(DAChartWidget* chart);
+
     // item的ui显示设置
-    void setItemUI(QwtPlotItem* item);
+    void setPlotItem(QwtPlotItem* item);
     void updateItemUI();
     // 通过索引获取chart
     DAChartWidget* getChartByIndex(int i) const;
+    QwtPlotItem* getPlotItemByIndex(int i) const;
 
 private:
     Ui::DAChartSettingWidget* ui;

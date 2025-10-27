@@ -21,7 +21,7 @@ public:
 	explicit DAChartCommonItemsSettingWidget(QWidget* parent = nullptr);
 	~DAChartCommonItemsSettingWidget();
 	//
-	virtual void plotItemSet(QwtPlotItem* item) override;
+    virtual void updateUI(QwtPlotItem* item) override;
 
 private:
 	Ui::DAChartCommonItemsSettingWidget* ui;

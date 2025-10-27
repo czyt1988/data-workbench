@@ -8,6 +8,9 @@
 #include <QButtonGroup>
 #include "DAChartUtil.h"
 #include <QDebug>
+#include "DADebug.hpp"
+#include "DASignalBlockers.hpp"
+DA_DEBUG_PRINT(DAChartAxisSetWidget, false)
 namespace DA
 {
 
@@ -24,25 +27,25 @@ DAChartAxisSetWidget::DAChartAxisSetWidget(QWidget* parent)
 	connect(ui->lineEditTitle, &QLineEdit::textChanged, this, &DAChartAxisSetWidget::onLineEditTextChanged);
 	connect(ui->fontSetWidget, &DAFontEditPannelWidget::currentFontChanged, this, &DAChartAxisSetWidget::onAxisFontChanged);
 	connect(ui->aligmentSetWidget,
-			&DAAligmentEditWidget::alignmentChanged,
-			this,
-			&DAChartAxisSetWidget::onAxisLabelAligmentChanged);
+            &DAAligmentEditWidget::alignmentChanged,
+            this,
+            &DAChartAxisSetWidget::onAxisLabelAligmentChanged);
 	connect(ui->doubleSpinBoxRotation,
-			static_cast< void (QDoubleSpinBox::*)(double v) >(&QDoubleSpinBox::valueChanged),
-			this,
-			&DAChartAxisSetWidget::onAxisLabelRotationChanged);
+            static_cast< void (QDoubleSpinBox::*)(double v) >(&QDoubleSpinBox::valueChanged),
+            this,
+            &DAChartAxisSetWidget::onAxisLabelRotationChanged);
 	connect(ui->spinBoxMargin,
-			static_cast< void (QSpinBox::*)(int v) >(&QSpinBox::valueChanged),
-			this,
-			&DAChartAxisSetWidget::onAxisMarginValueChanged);
+            static_cast< void (QSpinBox::*)(int v) >(&QSpinBox::valueChanged),
+            this,
+            &DAChartAxisSetWidget::onAxisMarginValueChanged);
 	connect(ui->doubleSpinBoxMax,
-			static_cast< void (QDoubleSpinBox::*)(double v) >(&QDoubleSpinBox::valueChanged),
-			this,
-			&DAChartAxisSetWidget::onAxisMaxScaleChanged);
+            static_cast< void (QDoubleSpinBox::*)(double v) >(&QDoubleSpinBox::valueChanged),
+            this,
+            &DAChartAxisSetWidget::onAxisMaxScaleChanged);
 	connect(ui->doubleSpinBoxMin,
-			static_cast< void (QDoubleSpinBox::*)(double v) >(&QDoubleSpinBox::valueChanged),
-			this,
-			&DAChartAxisSetWidget::onAxisMinScaleChanged);
+            static_cast< void (QDoubleSpinBox::*)(double v) >(&QDoubleSpinBox::valueChanged),
+            this,
+            &DAChartAxisSetWidget::onAxisMinScaleChanged);
 	Qt5Qt6Compat_Connect_ButtonGroupClicked_int(m_buttonGroup, DAChartAxisSetWidget::onScaleStyleChanged);
 	connect(ui->checkBoxEnable, &QAbstractButton::clicked, this, &DAChartAxisSetWidget::onCheckBoxEnableCliecked);
 }
@@ -144,11 +147,16 @@ void DAChartAxisSetWidget::updateUI(QwtPlot* chart, int axisID)
 		resetAxisValue();
 		return;
 	}
-	QSignalBlocker b1(ui->checkBoxEnable), b2(ui->lineEditTitle), b3(ui->fontSetWidget), b4(ui->doubleSpinBoxMin),
-		b5(ui->doubleSpinBoxMax), b6(ui->radioButtonNormal), b7(ui->doubleSpinBoxRotation), b8(ui->aligmentSetWidget),
-		b9(ui->spinBoxMargin), b10(ui->radioButtonTimeScale), b11(ui->dateTimeScaleSetWidget);
+    DASignalBlockers block(ui->checkBoxEnable,
+                           ui->lineEditTitle,
+                           ui->fontSetWidget,
+                           ui->doubleSpinBoxMin,
+                           ui->doubleSpinBoxMax,
+                           ui->spinBoxMargin,
+                           ui->radioButtonTimeScale,
+                           ui->dateTimeScaleSetWidget);
 	ui->checkBoxEnable->setChecked(chart->axisEnabled(axisID));
-	qDebug() << "chart->axisTitle(axisID).text()=" << chart->axisTitle(axisID).text();
+    DADebug() << "chart->axisTitle(axisID).text()=" << chart->axisTitle(axisID).text();
 	ui->lineEditTitle->setText(chart->axisTitle(axisID).text());
 	ui->fontSetWidget->setCurrentFont(chart->axisFont(axisID));
 

@@ -50,7 +50,7 @@ DAChartTradingCurveItemSettingWidget::~DAChartTradingCurveItemSettingWidget()
 	delete ui;
 }
 
-void DAChartTradingCurveItemSettingWidget::plotItemSet(QwtPlotItem* item)
+void DAChartTradingCurveItemSettingWidget::updateUI(QwtPlotItem* item)
 {
 	if (nullptr == item) {
 		return;
@@ -58,17 +58,7 @@ void DAChartTradingCurveItemSettingWidget::plotItemSet(QwtPlotItem* item)
 	if (item->rtti() != QwtPlotItem::Rtti_PlotTradingCurve) {
 		return;
 	}
-	ui->widgetItemSetting->setPlotItem(item);
 	QwtPlotTradingCurve* curItem = static_cast< QwtPlotTradingCurve* >(item);
-	updateUI(curItem);
-}
-
-/**
- * @brief 根据QwtPlotCurve更新ui
- * @param item
- */
-void DAChartTradingCurveItemSettingWidget::updateUI(const QwtPlotTradingCurve* item)
-{
     DASignalBlockers blockers(ui->penEditWidget,
                               ui->brushEditWidgetDecreasing,
                               ui->brushEditWidgetIncreasing,
@@ -81,31 +71,31 @@ void DAChartTradingCurveItemSettingWidget::updateUI(const QwtPlotTradingCurve* i
                               ui->radioButtonVertical);
     ui->widgetItemSetting->updateUI(item);
     // style
-    QwtPlotTradingCurve::SymbolStyle s = item->symbolStyle();
+    QwtPlotTradingCurve::SymbolStyle s = curItem->symbolStyle();
     ui->radioButtonBar->setChecked(s == QwtPlotTradingCurve::Bar);
     ui->radioButtonStick->setChecked(s == QwtPlotTradingCurve::CandleStick);
     // pen
-    ui->penEditWidget->setCurrentPen(item->symbolPen());
+    ui->penEditWidget->setCurrentPen(curItem->symbolPen());
     // fill
-    ui->brushEditWidgetIncreasing->setCurrentBrush(item->symbolBrush(QwtPlotTradingCurve::Increasing));
-    ui->brushEditWidgetDecreasing->setCurrentBrush(item->symbolBrush(QwtPlotTradingCurve::Decreasing));
+    ui->brushEditWidgetIncreasing->setCurrentBrush(curItem->symbolBrush(QwtPlotTradingCurve::Increasing));
+    ui->brushEditWidgetDecreasing->setCurrentBrush(curItem->symbolBrush(QwtPlotTradingCurve::Decreasing));
     // size
-    ui->doubleSpinBoxExtern->setValue(item->symbolExtent());
-    ui->doubleSpinBoxMin->setValue(item->minSymbolWidth());
-    ui->doubleSpinBoxMax->setValue(item->maxSymbolWidth());
+    ui->doubleSpinBoxExtern->setValue(curItem->symbolExtent());
+    ui->doubleSpinBoxMin->setValue(curItem->minSymbolWidth());
+    ui->doubleSpinBoxMax->setValue(curItem->maxSymbolWidth());
     //
-    ui->radioButtonHorizontal->setChecked(item->orientation() == Qt::Horizontal);
-    ui->radioButtonVertical->setChecked(item->orientation() == Qt::Vertical);
+    ui->radioButtonHorizontal->setChecked(curItem->orientation() == Qt::Horizontal);
+    ui->radioButtonVertical->setChecked(curItem->orientation() == Qt::Vertical);
 }
 
 /**
  * @brief 根据ui更新QwtPlotCurve
  * @param item
  */
-void DAChartTradingCurveItemSettingWidget::updatePlotItem(QwtPlotTradingCurve* item)
+void DAChartTradingCurveItemSettingWidget::applySetting(QwtPlotTradingCurve* item)
 {
 	// box item
-	ui->widgetItemSetting->updatePlotItem(item);
+    ui->widgetItemSetting->applySetting(item);
     // style
     if (ui->radioButtonBar->isChecked()) {
         if (item->symbolStyle() != QwtPlotTradingCurve::Bar) {

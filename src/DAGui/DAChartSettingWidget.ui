@@ -38,7 +38,7 @@
         <bool>true</bool>
        </property>
        <property name="toolButtonStyle">
-        <enum>Qt::ToolButtonStyle::ToolButtonTextUnderIcon</enum>
+        <enum>Qt::ToolButtonIconOnly</enum>
        </property>
        <property name="autoRaise">
         <bool>true</bool>
@@ -67,7 +67,7 @@
         <bool>true</bool>
        </property>
        <property name="toolButtonStyle">
-        <enum>Qt::ToolButtonStyle::ToolButtonTextUnderIcon</enum>
+        <enum>Qt::ToolButtonIconOnly</enum>
        </property>
        <property name="autoRaise">
         <bool>true</bool>
@@ -96,7 +96,7 @@
         <bool>true</bool>
        </property>
        <property name="toolButtonStyle">
-        <enum>Qt::ToolButtonStyle::ToolButtonTextUnderIcon</enum>
+        <enum>Qt::ToolButtonIconOnly</enum>
        </property>
        <property name="autoRaise">
         <bool>true</bool>
@@ -109,7 +109,7 @@
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
-        <enum>Qt::Orientation::Horizontal</enum>
+        <enum>Qt::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>

@@ -13,29 +13,19 @@ DAChartPlotItemSettingWidget::DAChartPlotItemSettingWidget(QWidget* parent)
 {
 	ui->setupUi(this);
 	connect(ui->buttonGroupAxis,
-			QOverload< QAbstractButton* >::of(&QButtonGroup::buttonClicked),
-			this,
-			&DAChartPlotItemSettingWidget::onButtonGroupAxisClicked);
+            QOverload< QAbstractButton* >::of(&QButtonGroup::buttonClicked),
+            this,
+            &DAChartPlotItemSettingWidget::onButtonGroupAxisClicked);
 	connect(ui->lineEditTitle, &QLineEdit::editingFinished, this, &DAChartPlotItemSettingWidget::onItemTitleEditingFinished);
 	connect(ui->doubleSpinBoxZ,
-			QOverload< double >::of(&QDoubleSpinBox::valueChanged),
-			this,
-			&DAChartPlotItemSettingWidget::onItemZValueChanged);
+            QOverload< double >::of(&QDoubleSpinBox::valueChanged),
+            this,
+            &DAChartPlotItemSettingWidget::onItemZValueChanged);
 }
 
 DAChartPlotItemSettingWidget::~DAChartPlotItemSettingWidget()
 {
     delete ui;
-}
-
-/**
- * @brief 设置item
- * @param item
- */
-void DAChartPlotItemSettingWidget::setPlotItem(QwtPlotItem* item)
-{
-	DAAbstractChartItemSettingWidget::setPlotItem(item);
-	updateUI(item);
 }
 
 /**
@@ -54,7 +44,7 @@ void DAChartPlotItemSettingWidget::clear()
  * @brief 刷新ui
  * 此函数不会触发信号
  */
-void DAChartPlotItemSettingWidget::updateUI(const QwtPlotItem* item)
+void DAChartPlotItemSettingWidget::updateUI(QwtPlotItem* item)
 {
 	if (nullptr == item) {
 		return;
@@ -65,7 +55,7 @@ void DAChartPlotItemSettingWidget::updateUI(const QwtPlotItem* item)
 	updateAxis(item);
 }
 
-void DAChartPlotItemSettingWidget::updatePlotItem(QwtPlotItem* item)
+void DAChartPlotItemSettingWidget::applySetting(QwtPlotItem* item)
 {
 	QPair< int, int > axisids = getAxisIDs();
 	item->setAxes(static_cast< QwtAxisId >(axisids.first), static_cast< QwtAxisId >(axisids.second));

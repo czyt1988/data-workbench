@@ -35,7 +35,7 @@ public:
     // 更新界面
     void updateUI();
     // 把设置界面的内容应用到目标窗口
-    void applySetting();
+    void applySetting(DAFigureWidget* fig);
 
 protected:
     void changeEvent(QEvent* e);

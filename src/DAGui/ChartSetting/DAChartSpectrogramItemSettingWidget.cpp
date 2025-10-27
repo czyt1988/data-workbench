@@ -8,18 +8,18 @@
 namespace DA
 {
 DAChartSpectrogramItemSettingWidget::DAChartSpectrogramItemSettingWidget(QWidget* parent)
-	: DAAbstractChartItemSettingWidget(parent), ui(new Ui::DAChartSpectrogramItemSettingWidget)
+    : DAAbstractChartItemSettingWidget(parent), ui(new Ui::DAChartSpectrogramItemSettingWidget)
 {
 	ui->setupUi(this);
 	resetUI();
 	connect(ui->comboBoxDisplayMode,
-			QOverload< int >::of(&QComboBox::currentIndexChanged),
-			this,
-			&DAChartSpectrogramItemSettingWidget::onDisplayModeCurrentIndexChanged);
+            QOverload< int >::of(&QComboBox::currentIndexChanged),
+            this,
+            &DAChartSpectrogramItemSettingWidget::onDisplayModeCurrentIndexChanged);
 	connect(ui->FromColorButton,
-			&DAColorPickerButton::colorChanged,
-			this,
-			&DAChartSpectrogramItemSettingWidget::onFromColorChanged);
+            &DAColorPickerButton::colorChanged,
+            this,
+            &DAChartSpectrogramItemSettingWidget::onFromColorChanged);
 	connect(ui->FromColorButton, &DAColorPickerButton::colorChanged, this, &DAChartSpectrogramItemSettingWidget::onToColorChanged);
 	connect(ui->Penwidget, &DAPenEditWidget::penChanged, this, &DAChartSpectrogramItemSettingWidget::onCurvePenChanged);
 }
@@ -29,7 +29,7 @@ DAChartSpectrogramItemSettingWidget::~DAChartSpectrogramItemSettingWidget()
 	delete ui;
 }
 
-void DAChartSpectrogramItemSettingWidget::plotItemSet(QwtPlotItem* item)
+void DAChartSpectrogramItemSettingWidget::updateUI(QwtPlotItem* item)
 {
 	if (nullptr == item) {
 		return;
@@ -39,39 +39,30 @@ void DAChartSpectrogramItemSettingWidget::plotItemSet(QwtPlotItem* item)
 	}
 	ui->widgetItemSetting->setPlotItem(item);
 	QwtPlotSpectrogram* curItem = static_cast< QwtPlotSpectrogram* >(item);
-	updateUI(curItem);
-}
 
-/**
- * @brief 根据QwtPlotCurve更新ui
- * @param item
- */
-void DAChartSpectrogramItemSettingWidget::updateUI(const QwtPlotSpectrogram* item)
-{
-	ui->widgetItemSetting->updateUI(item);
-	setCurvePen(item->defaultContourPen());
+    setCurvePen(curItem->defaultContourPen());
 
-	const QwtColorMap* currentMap      = item->colorMap();
-	const QwtLinearColorMap* linearMap = dynamic_cast< const QwtLinearColorMap* >(currentMap);
-	if (linearMap) {
-		QColor color1 = linearMap->color1();
-		QColor color2 = linearMap->color2();
-		setFromColor(color1);
-		setToColor(color2);
-	} else {
-		setFromColor(Qt::blue);
-		setToColor(Qt::red);
-	}
+    const QwtColorMap* currentMap      = curItem->colorMap();
+    const QwtLinearColorMap* linearMap = dynamic_cast< const QwtLinearColorMap* >(currentMap);
+    if (linearMap) {
+        QColor color1 = linearMap->color1();
+        QColor color2 = linearMap->color2();
+        setFromColor(color1);
+        setToColor(color2);
+    } else {
+        setFromColor(Qt::blue);
+        setToColor(Qt::red);
+    }
 }
 
 /**
  * @brief 根据ui更新QwtPlotCurve
  * @param item
  */
-void DAChartSpectrogramItemSettingWidget::updatePlotItem(QwtPlotSpectrogram* item)
+void DAChartSpectrogramItemSettingWidget::applySetting(QwtPlotSpectrogram* item)
 {
 	// plot item
-	ui->widgetItemSetting->updatePlotItem(item);
+    ui->widgetItemSetting->applySetting(item);
 	// plot displaymode
 	item->setTitle(getTitle());
 	auto s = getDisplayMode();
@@ -101,8 +92,9 @@ void DAChartSpectrogramItemSettingWidget::resetDisplayModeComboBox()
  */
 void DAChartSpectrogramItemSettingWidget::onDisplayModeCurrentIndexChanged(int index)
 {
-	QwtPlotSpectrogram::DisplayMode s =
-		static_cast< QwtPlotSpectrogram::DisplayMode >(ui->comboBoxDisplayMode->currentData().toInt());
+
+    QwtPlotSpectrogram::DisplayMode s = static_cast< QwtPlotSpectrogram::DisplayMode >(
+        ui->comboBoxDisplayMode->currentData().toInt());
 	switch (s) {
 	case QwtPlotSpectrogram::ImageMode:
 		ui->Penwidget->setEnabled(false);
