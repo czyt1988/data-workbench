@@ -15,6 +15,7 @@
 #include <QUndoStack>
 #include <QDebug>
 #include <QScopedPointer>
+#include <QPointer>
 // chart
 #include "DAChartUtil.h"
 #include "DAChartWidget.h"
@@ -26,6 +27,10 @@
 #include "qwt_figure.h"
 #include "qwt_figure_layout.h"
 #include "qwt_scale_draw.h"
+
+#ifndef DAFigureWidget_DEBUG_PRINT
+#define DAFigureWidget_DEBUG_PRINT 1
+#endif
 namespace DA
 {
 const float c_figurewidget_default_x     = 0.05f;
@@ -41,10 +46,10 @@ class DAFigureWidget::PrivateData
 {
 	DA_DECLARE_PUBLIC(DAFigureWidget)
 public:
-	DAFigureWidgetOverlay* mChartEditorOverlay { nullptr };  ///< 编辑模式
-	QBrush mBackgroundBrush;                                 ///< 背景
-	QUndoStack mUndoStack;                                   ///<
-	QScopedPointer< DAChartFactory > mFactory;               ///< 绘图创建的工厂
+    QPointer< DAFigureWidgetOverlay > mChartEditorOverlay;  ///< 编辑模式
+    QBrush mBackgroundBrush;                                ///< 背景
+    QUndoStack mUndoStack;                                  ///<
+    QScopedPointer< DAChartFactory > mFactory;              ///< 绘图创建的工厂
 	DAColorTheme mColorTheme;  ///< 主题，注意，这里不要用DAColorTheme mColorTheme { DAColorTheme::ColorTheme_Archambault }这样的初始化，会被当作std::initializer_list< QColor >捕获
 public:
 	PrivateData(DAFigureWidget* p) : q_ptr(p), mColorTheme(DAColorTheme::Style_Archambault)
@@ -218,7 +223,11 @@ void DAFigureWidget::addChart(DAChartWidget* chart, qreal xVersatile, qreal yVer
 	// 将会发射QwtFigure::axesAdded信号
 	fig->addAxes(chart, xVersatile, yVersatile, wVersatile, hVersatile);
 	//! 不清楚为何如果不加这句话，坐标轴的轴线不绘制出来
+    //! TODO:未来需要确认是什么原因导致的
     chart->axisWidget(QwtAxis::XBottom)->setScaleDraw(new QwtScaleDraw());
+    chart->axisWidget(QwtAxis::XTop)->setScaleDraw(new QwtScaleDraw());
+    chart->axisWidget(QwtAxis::YRight)->setScaleDraw(new QwtScaleDraw());
+    chart->axisWidget(QwtAxis::YLeft)->setScaleDraw(new QwtScaleDraw());
 }
 
 void DAFigureWidget::addChart(DAChartWidget* chart, const QRectF& versatileSize)
@@ -359,8 +368,11 @@ DAChartWidget* DAFigureWidget::findChartFromItem(QwtPlotItem* item) const
 /// \param enable
 /// \param ptr 通过此参数可以指定自定义的编辑器，若为nullptr，将使用默认的编辑器，此指针的管理权将移交SAFigureWindow
 ///
-void DAFigureWidget::enableSubChartEditor(bool enable)
+void DAFigureWidget::setSubChartEditorEnable(bool enable)
 {
+#if DAFigureWidget_DEBUG_PRINT
+    qDebug() << "DAFigureWidget::setSubChartEditorEnable=" << enable;
+#endif
 	if (enable) {
 		if (nullptr == d_ptr->mChartEditorOverlay) {
 			d_ptr->mChartEditorOverlay = new DAFigureWidgetOverlay(figure());
@@ -680,6 +692,10 @@ void DAFigureWidget::onAxesRemoved(QwtPlot* removedAxes)
 void DAFigureWidget::onCurrentAxesChanged(QwtPlot* plot)
 {
 	DAChartWidget* chartWidget = plot ? qobject_cast< DAChartWidget* >(plot) : nullptr;
+    // 如果有子窗口编辑器，把编辑器的激活窗口改变
+    if (d_ptr->mChartEditorOverlay) {
+        d_ptr->mChartEditorOverlay->setActiveWidget(plot);
+    }
 	Q_EMIT currentChartChanged(chartWidget);
 }
 

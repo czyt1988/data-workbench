@@ -2,6 +2,7 @@
 #include "ui_DAChartPlotSettingWidget.h"
 #include "qwt_text_label.h"
 #include <QIcon>
+#include <QDebug>
 #include "DASignalBlockers.hpp"
 namespace DA
 {
@@ -58,6 +59,7 @@ DAChartWidget* DAChartPlotSettingWidget::getChartWidget() const
  */
 void DAChartPlotSettingWidget::updateUI()
 {
+
     DAChartWidget* w = getChartWidget();
     ui->widgetXBottomAxisSetting->setChart(w, QwtPlot::xBottom);
     ui->widgetXTopAxisSetting->setChart(w, QwtPlot::xTop);

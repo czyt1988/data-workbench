@@ -79,7 +79,7 @@ public:
 	// 通过item查找对应的SAChart2D，如果没有返回nullptr
 	DAChartWidget* findChartFromItem(QwtPlotItem* item) const;
 	// 开启子窗口编辑模式
-	void enableSubChartEditor(bool enable = true);
+    void setSubChartEditorEnable(bool enable = true);
     DAFigureWidgetOverlay* getSubChartEditor() const;
 	// 判断是否在进行子窗口编辑
 	bool isEnableSubChartEditor() const;
@@ -114,6 +114,7 @@ public:
     void setWidgetNormPos(QWidget* widget, const QRectF& rect);
     // 获取在此坐标下的绘图，如果此坐标下没有，则返回nullptr，存在寄生轴情况只返回宿主轴
     QwtPlot* plotUnderPos(const QPoint& pos) const;
+
 public:
 	// 绘图相关
 

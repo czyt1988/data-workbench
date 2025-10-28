@@ -60,8 +60,8 @@ private:
 		DateTimeScale
 	};
 
-	void connectChartAxis();
-	void disconnectChartAxis();
+    void bindTarget();
+    void unbindTarget();
 	void connectChart();
 	void disconnectChart();
 

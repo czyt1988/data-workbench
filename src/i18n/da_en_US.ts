@@ -791,13 +791,13 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+483"/>
-        <location line="+22"/>
+        <location filename="../APP/DAAppController.cpp" line="+482"/>
+        <location line="+21"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-20"/>
+        <location line="-19"/>
         <source>Project Files (*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -808,7 +808,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-19"/>
+        <location line="-20"/>
         <source>project file (*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -818,7 +818,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+0"/>
+        <location line="+1"/>
         <source>Whether to overwrite the file:%1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1756,7 +1756,7 @@ Config</source>
 <context>
     <name>DA::DAChartCurveItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="+131"/>
+        <location filename="../DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="+139"/>
         <source>Lines</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1883,26 +1883,13 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+163"/>
-        <source>chart operate widget&apos;s tab changed,but can not find figure</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+22"/>
+        <location line="+186"/>
         <source>question</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+0"/>
         <source>Whether to close the figure widget</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DA::DAChartSettingWidget</name>
-    <message>
-        <location filename="../DAGui/DAChartSettingWidget.cpp" line="+143"/>
-        <source>The currently set chart window was not found in the chart list.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3342,7 +3329,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-2174"/>
+        <location filename="../APP/DAAppController.cpp" line="-2173"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5184,7 +5171,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+57"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+62"/>
         <source>Figure</source>
         <translation type="unfinished"></translation>
     </message>

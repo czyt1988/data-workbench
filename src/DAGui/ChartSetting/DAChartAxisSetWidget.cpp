@@ -1,4 +1,5 @@
 ﻿#include "DAChartAxisSetWidget.h"
+#include <QtMath>
 #include "ui_DAChartAxisSetWidget.h"
 #include "qwt_plot.h"
 #include "qwt_scale_div.h"
@@ -8,9 +9,11 @@
 #include <QButtonGroup>
 #include "DAChartUtil.h"
 #include <QDebug>
-#include "DADebug.hpp"
 #include "DASignalBlockers.hpp"
-DA_DEBUG_PRINT(DAChartAxisSetWidget, false)
+
+#ifndef DAChartAxisSetWidget_DEBUG_PRINT
+#define DAChartAxisSetWidget_DEBUG_PRINT 1
+#endif
 namespace DA
 {
 
@@ -100,30 +103,54 @@ void DAChartAxisSetWidget::onAxisMarginValueChanged(int v)
 
 void DAChartAxisSetWidget::onAxisMaxScaleChanged(double v)
 {
+#if DAChartAxisSetWidget_DEBUG_PRINT
+    qDebug() << "DAChartAxisSetWidget::onAxisMaxScaleChanged";
+#endif
 	if (m_chart) {
-		DAChartUtil::setAxisScaleMax(m_chart, m_axisID, v);
+        QwtInterval inv = m_chart->axisInterval(m_axisID);
+        if (qFuzzyCompare(inv.maxValue(), v)) {
+            // 数值相等，没必要设置
+            return;
+        }
+        m_chart->setAxisScale(m_axisID, inv.minValue(), v);
 	}
 }
 
 void DAChartAxisSetWidget::onAxisMinScaleChanged(double v)
 {
+#if DAChartAxisSetWidget_DEBUG_PRINT
+    qDebug() << "DAChartAxisSetWidget::onAxisMinScaleChanged";
+#endif
 	if (m_chart) {
-		DAChartUtil::setAxisScaleMin(m_chart, m_axisID, v);
+        QwtInterval inv = m_chart->axisInterval(m_axisID);
+        if (qFuzzyCompare(inv.minValue(), v)) {
+            // 数值相等，没必要设置
+            return;
+        }
+        m_chart->setAxisScale(m_axisID, v, inv.maxValue());
 	}
 }
 
 void DAChartAxisSetWidget::onScaleDivChanged()
 {
+#if DAChartAxisSetWidget_DEBUG_PRINT
+    qDebug() << "DAChartAxisSetWidget::onScaleDivChanged";
+#endif
 	if (nullptr == m_chart) {
 		return;
 	}
 	QwtInterval inv = m_chart->axisInterval(m_axisID);
+    // onScaleDivChanged是QwtScaleWidget::scaleDivChanged触发的，这里避免重复设置，把doubleSpinBoxMin，doubleSpinBoxMax的信号触发取消
+    DASignalBlockers blocks(ui->doubleSpinBoxMin, ui->doubleSpinBoxMax);
 	ui->doubleSpinBoxMin->setValue(inv.minValue());
 	ui->doubleSpinBoxMax->setValue(inv.maxValue());
 }
 
 void DAChartAxisSetWidget::onScaleStyleChanged(int id)
 {
+#if DAChartAxisSetWidget_DEBUG_PRINT
+    qDebug() << "DAChartAxisSetWidget::onScaleStyleChanged=" << id;
+#endif
 	if (NormalScale == id) {
 		ui->dateTimeScaleSetWidget->hide();
 		if (m_chart) {
@@ -142,6 +169,9 @@ void DAChartAxisSetWidget::onScaleStyleChanged(int id)
 
 void DAChartAxisSetWidget::updateUI(QwtPlot* chart, int axisID)
 {
+#if DAChartAxisSetWidget_DEBUG_PRINT
+    qDebug() << "DAChartAxisSetWidget::updateUI,axisID=" << axisID;
+#endif
 	enableWidget(nullptr != chart);
 	if (nullptr == chart) {
 		resetAxisValue();
@@ -156,7 +186,6 @@ void DAChartAxisSetWidget::updateUI(QwtPlot* chart, int axisID)
                            ui->radioButtonTimeScale,
                            ui->dateTimeScaleSetWidget);
 	ui->checkBoxEnable->setChecked(chart->axisEnabled(axisID));
-    DADebug() << "chart->axisTitle(axisID).text()=" << chart->axisTitle(axisID).text();
 	ui->lineEditTitle->setText(chart->axisTitle(axisID).text());
 	ui->fontSetWidget->setCurrentFont(chart->axisFont(axisID));
 
@@ -244,7 +273,7 @@ QIcon DAChartAxisSetWidget::getEnableCheckBoxIcon() const
     return ui->checkBoxEnable->icon();
 }
 
-void DAChartAxisSetWidget::connectChartAxis()
+void DAChartAxisSetWidget::bindTarget()
 {
 	if (nullptr == m_chart) {
 		return;
@@ -255,7 +284,7 @@ void DAChartAxisSetWidget::connectChartAxis()
 	}
 }
 
-void DAChartAxisSetWidget::disconnectChartAxis()
+void DAChartAxisSetWidget::unbindTarget()
 {
 	if (nullptr == m_chart) {
 		return;
@@ -274,14 +303,14 @@ QwtPlot* DAChartAxisSetWidget::getChart() const
 void DAChartAxisSetWidget::setChart(QwtPlot* chart, int axisID)
 {
 	if (m_chart && m_chart != chart) {
-		disconnectChartAxis();
+        unbindTarget();
 	}
 
 	m_chart = nullptr;  // 先设置为null，使得槽函数不动作
 	updateUI(chart, axisID);
 	m_chart  = chart;
 	m_axisID = axisID;
-	connectChartAxis();
+    bindTarget();
 }
 
 void DAChartAxisSetWidget::updateUI()

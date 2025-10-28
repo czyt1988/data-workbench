@@ -192,7 +192,7 @@ void DAChartOperateWidget::removeFigure(DAFigureWidget* f, bool deleteFigure)
 	if (index < 0) {
 		return;
 	}
-	emit figureRemoving(f);
+    Q_EMIT figureRemoving(f);
 	ui->tabWidget->removeTab(index);
 	if (deleteFigure) {
 		f->deleteLater();
@@ -253,7 +253,8 @@ void DAChartOperateWidget::onTabWidgetCurrentChanged(int index)
 {
 	DAFigureWidget* fig = getFigure(index);
 	if (nullptr == fig) {
-		qCritical() << tr("chart operate widget's tab changed,but can not find figure");  // cn:绘图操作窗口的标签改变信号中，无法通过标签索引找到对应的绘图
+        // 这个是删除最后一个绘图
+        // qCritical() << tr("chart operate widget's tab changed,but can not find figure");  // cn:绘图操作窗口的标签改变信号中，无法通过标签索引找到对应的绘图
 		return;
 	}
 	auto un = fig->getUndoStack();
@@ -262,7 +263,7 @@ void DAChartOperateWidget::onTabWidgetCurrentChanged(int index)
 			un->setActive(true);
 		}
 	}
-	emit currentFigureChanged(fig, index);
+    Q_EMIT currentFigureChanged(fig, index);
 }
 
 /**
@@ -279,6 +280,7 @@ void DAChartOperateWidget::onTabCloseRequested(int index)
 	if (QMessageBox::Yes != btn) {
 		return;
 	}
+    // 这里不能直接调用removeFigure，removeFigure里面会判断tab
 	removeFigure(fig, true);
 }
 

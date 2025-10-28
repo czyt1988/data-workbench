@@ -39,13 +39,12 @@ public:
 
     DAFigureWidget* getFigure() const;
     DAChartWidget* getChart() const;
-    QwtPlotItem* getItem() const;
+    QwtPlotItem* getPlotItem() const;
 
     // 获取chart在combobox的索引
     int indexOfChart(const DAChartWidget* chart);
     int indexOfItem(const QwtPlotItem* item);
-    // 设置当前的chart
-    void setCurrentSelectChart(DAChartWidget* chart);
+
     DAChartWidget* getCurrentSelectChart() const;
 
     QwtPlotItem* getCurrentItem() const;
@@ -60,8 +59,8 @@ protected:
     void changeEvent(QEvent* e);
     void setFigure(DAFigureWidget* fig);
     void setChart(DAChartWidget* chart);
-    // 设置当前的item
-    void setCurrentSelectItem(QwtPlotItem* item);
+    void setPlotItem(QwtPlotItem* item);
+
     // 重置Charts复选框
     void resetChartsComboBox();
     // 重置item复选框
@@ -83,7 +82,7 @@ protected slots:
     // chart的item发生了变换信号
     void onItemAttached(QwtPlotItem* plotItem, bool on);
     // onItemAttached的特化，把chart传入
-    void onChartItemAttached(DA::DAChartWidget* c, QwtPlotItem* plotItem, bool on);
+    void setChartItemAttached(DA::DAChartWidget* c, QwtPlotItem* plotItem, bool on);
     // current chart触发的改变
     void onComboBoxChartIndexChanged(int i);
     // current item触发的改变
@@ -104,8 +103,6 @@ private:
     void bindChart(DAChartWidget* chart);
     void unbindChart(DAChartWidget* chart);
 
-    // item的ui显示设置
-    void setPlotItem(QwtPlotItem* item);
     void updateItemUI();
     // 通过索引获取chart
     DAChartWidget* getChartByIndex(int i) const;

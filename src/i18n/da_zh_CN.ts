@@ -823,7 +823,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+832"/>
+        <location filename="../APP/DAAppController.cpp" line="+831"/>
         <location line="+49"/>
         <source>project file(*.%1)</source>
         <translation>工程文件(*.%1)</translation>
@@ -846,7 +846,7 @@ Table Area</source>
     </message>
     <message>
         <location line="-415"/>
-        <location line="+22"/>
+        <location line="+21"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
@@ -861,7 +861,7 @@ Table Area</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location line="+0"/>
+        <location line="+1"/>
         <source>Whether to overwrite the file:%1</source>
         <translation>是否覆盖文件“%1”</translation>
     </message>
@@ -1788,7 +1788,7 @@ Table Area</source>
 <context>
     <name>DA::DAChartCurveItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="+131"/>
+        <location filename="../DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="+139"/>
         <source>Lines</source>
         <translation>折线</translation>
     </message>
@@ -1915,12 +1915,7 @@ Table Area</source>
         <translation>图-%1</translation>
     </message>
     <message>
-        <location line="+163"/>
-        <source>chart operate widget&apos;s tab changed,but can not find figure</source>
-        <translation>绘图操作窗口的标签改变信号中，无法通过标签索引找到对应的绘图</translation>
-    </message>
-    <message>
-        <location line="+22"/>
+        <location line="+186"/>
         <source>question</source>
         <translation>疑问</translation>
     </message>
@@ -1928,14 +1923,6 @@ Table Area</source>
         <location line="+0"/>
         <source>Whether to close the figure widget</source>
         <translation>确认关闭绘图窗口</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DAChartSettingWidget</name>
-    <message>
-        <location filename="../DAGui/DAChartSettingWidget.cpp" line="+143"/>
-        <source>The currently set chart window was not found in the chart list.</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -3462,7 +3449,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-2174"/>
+        <location filename="../APP/DAAppController.cpp" line="-2173"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -5313,7 +5300,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+57"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+62"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
