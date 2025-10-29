@@ -228,6 +228,8 @@ void DAFigureWidget::addChart(DAChartWidget* chart, qreal xVersatile, qreal yVer
     chart->axisWidget(QwtAxis::XTop)->setScaleDraw(new QwtScaleDraw());
     chart->axisWidget(QwtAxis::YRight)->setScaleDraw(new QwtScaleDraw());
     chart->axisWidget(QwtAxis::YLeft)->setScaleDraw(new QwtScaleDraw());
+    // 由于使用了layout管理，因此要显示调用show
+    chart->show();
 }
 
 void DAFigureWidget::addChart(DAChartWidget* chart, const QRectF& versatileSize)
@@ -501,7 +503,19 @@ QwtPlot* DAFigureWidget::plotUnderPos(const QPoint& pos) const
 	// 先要把pos映射到figure
 	QwtFigure* fig  = figure();
 	QPoint posOfFig = fig->mapFromParent(pos);
-	return figure()->plotUnderPos(posOfFig);
+    return figure()->plotUnderPos(posOfFig);
+}
+
+void DAFigureWidget::setFaceBrush(const QBrush& brush)
+{
+    QwtFigure* fig = figure();
+    fig->setFaceBrush(brush);
+    fig->update();
+}
+
+QBrush DAFigureWidget::getFaceBrush() const
+{
+    return figure()->faceBrush();
 }
 
 /**

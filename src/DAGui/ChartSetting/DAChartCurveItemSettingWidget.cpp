@@ -42,6 +42,7 @@ DAChartCurveItemSettingWidget::DAChartCurveItemSettingWidget(QWidget* parent)
             this,
             &DAChartCurveItemSettingWidget::onButtonGroupOrientationClicked);
 	connect(ui->penEditWidget, &DAPenEditWidget::penChanged, this, &DAChartCurveItemSettingWidget::onCurvePenChanged);
+    connect(ui->checkBoxFitted, &QCheckBox::clicked, this, &DAChartCurveItemSettingWidget::onCheckBoxFittedClicked);
 }
 
 DAChartCurveItemSettingWidget::~DAChartCurveItemSettingWidget()
@@ -406,7 +407,7 @@ DAChartPlotItemSettingWidget* DAChartCurveItemSettingWidget::getItemSettingWidge
     return ui->widgetItemSetting;
 }
 
-void DAChartCurveItemSettingWidget::on_checkBoxFitted_clicked(bool checked)
+void DAChartCurveItemSettingWidget::onCheckBoxFittedClicked(bool checked)
 {
 #if DAChartCurveItemSettingWidget_DEBUG_PRINT
     qDebug() << "DAChartCurveItemSettingWidget::on_checkBoxFitted_clicked=" << checked;

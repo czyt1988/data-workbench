@@ -114,6 +114,8 @@ public:
     void setWidgetNormPos(QWidget* widget, const QRectF& rect);
     // 获取在此坐标下的绘图，如果此坐标下没有，则返回nullptr，存在寄生轴情况只返回宿主轴
     QwtPlot* plotUnderPos(const QPoint& pos) const;
+    void setFaceBrush(const QBrush& brush);
+    QBrush getFaceBrush() const;
 
 public:
 	// 绘图相关

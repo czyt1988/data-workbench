@@ -142,6 +142,7 @@ void DAChartSettingWidget::setChart(DAChartWidget* chart)
     DASignalBlockers b(ui->comboBoxSelectChart);
     if (!chart) {
         ui->comboBoxSelectChart->setCurrentIndex(-1);
+        ui->comboBoxSelectItem->setCurrentIndex(-1);
         return;
     }
     // 找到索引
@@ -150,6 +151,10 @@ void DAChartSettingWidget::setChart(DAChartWidget* chart)
     // 因此一定要把ui->comboBoxSelectChart的信号锁起，否则会递归调用
     if (ui->comboBoxSelectChart->currentIndex() != index) {
         ui->comboBoxSelectChart->setCurrentIndex(index);
+    }
+    // 把item也改变，否则会停留在之前的item
+    if (ui->comboBoxSelectItem->count() > 0) {
+        ui->comboBoxSelectItem->setCurrentIndex(0);  // 选中第一个
     }
 }
 

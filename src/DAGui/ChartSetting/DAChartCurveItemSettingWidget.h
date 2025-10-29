@@ -80,7 +80,7 @@ protected:
 	void resetCurveStyleComboBox();
 private slots:
 	void onCurveStyleCurrentIndexChanged(int index);
-	void on_checkBoxFitted_clicked(bool checked);
+    void onCheckBoxFittedClicked(bool checked);
 	void on_checkBoxInverted_clicked(bool checked);
 	void on_checkBoxLegendShowLine_clicked(bool checked);
 	void on_checkBoxLegendShowSymbol_clicked(bool checked);

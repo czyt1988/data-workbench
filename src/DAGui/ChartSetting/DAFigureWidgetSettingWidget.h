@@ -42,6 +42,12 @@ protected:
     // 相关信号和槽的绑定
     void bindFigure(DAFigureWidget* fig);
     void unbindFigure(DAFigureWidget* fig);
+private Q_SLOTS:
+    void onSpinBoxMinWidthValueChanged(int v);
+    void onSpinBoxMinHeightValueChanged(int v);
+    void onSpinBoxMaxWidthValueChanged(int v);
+    void onSpinBoxMaxHeightValueChanged(int v);
+    void onWidgetBrushEditorBrushChanged(const QBrush& brush);
 
 private:
     Ui::DAFigureWidgetSettingWidget* ui;
