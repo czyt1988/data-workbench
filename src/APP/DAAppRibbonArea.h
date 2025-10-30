@@ -112,8 +112,11 @@ class DAWorkFlowOperateWidget;
  */
 class DAAppRibbonArea : public DARibbonAreaInterface
 {
+    Q_OBJECT
 	friend class AppMainWindow;
-	Q_OBJECT
+    friend class DAAppUI;
+    friend class DAAppController;
+
 public:
 	/**
 	 * @brief 上下文类型
@@ -206,11 +209,6 @@ private:
 	DAAPPRIBBONAREA_COMMON_SETTING_H(Edit)
 	DAAPPRIBBONAREA_COMMON_SETTING_H(WorkFlowEdit)
 
-	/**
-	 * @brief 设置dock区，有些pannel的action是依赖dock界面的，统一在这里设置
-	 * @param dock
-	 */
-	void setDockingArea(DAAppDockingArea* dock);
 Q_SIGNALS:
 	/**
 	   @fn selectedPen
@@ -279,9 +277,15 @@ Q_SIGNALS:
 	   @param f
 	 */
 	void selectedWorkflowItemFontColor(const QColor& c);
-private Q_SLOTS:
 
-public:
+protected:
+    /**
+     * @brief 设置dock区，有些pannel的action是依赖dock界面的，统一在这里设置
+     * @param dock
+     */
+    void setDockingArea(DAAppDockingArea* dock);
+
+private:
 	///////////////////////////////////////////
 	/// ribbon
 	///////////////////////////////////////////
@@ -290,26 +294,26 @@ public:
 	DAAppActions* m_actions;       ///< 所有的action管理
 	DAAppDockingArea* m_dockArea;  ///< 注意这个变量不能在构造函数中调用
 	AppMainWindow* m_app;
-	DAAppCommand* m_appCmd;  ///< cmd
-	//----------------------------------------------------
-	// main
-	//----------------------------------------------------
+    DAAppCommand* m_appCmd;                  ///< cmd
+                                             //----------------------------------------------------
+                                             // main
+                                             //----------------------------------------------------
     SARibbonCategory* m_categoryMain;        ///< 主页标签
     SARibbonPanel* m_pannelMainFileOpt;      ///< 文件操作
     SARibbonPanel* m_pannelMainDataOpt;      ///< 数据操作
     SARibbonPanel* m_pannelMainChartOpt;     ///< 数据操作
     SARibbonPanel* m_pannelMainWorkflowOpt;  ///< 工作流在main的pannel
     SARibbonPanel* m_pannelSetting;          ///< 设定
-	//----------------------------------------------------
-	// data
-	//----------------------------------------------------
-    SARibbonCategory* m_categoryData;    ///< 数据标签
-    SARibbonPanel* m_pannelDataOperate;  ///< 数据操作
-	//----------------------------------------------------
-	// view
-	//----------------------------------------------------
-    SARibbonCategory* m_categoryView;     ///< 视图标签
-    SARibbonPanel* m_pannelViewMainView;  ///< 主要视图操作
+                                             //----------------------------------------------------
+                                             // data
+                                             //----------------------------------------------------
+    SARibbonCategory* m_categoryData;        ///< 数据标签
+    SARibbonPanel* m_pannelDataOperate;      ///< 数据操作
+                                             //----------------------------------------------------
+                                             // view
+                                             //----------------------------------------------------
+    SARibbonCategory* m_categoryView;        ///< 视图标签
+    SARibbonPanel* m_pannelViewMainView;     ///< 主要视图操作
 	//----------------------------------------------------
 	// edit
 	//----------------------------------------------------
@@ -318,19 +322,19 @@ public:
 	DAShapeEditPannelWidget* m_editShapeEditPannelWidget;  ///< 图框编辑
 	SARibbonCategory* m_categoryEdit;                      ///< 编辑标签
     SARibbonPanel* m_pannelEditWorkflow;                   ///< 主要编辑操作
-	//----------------------------------------------------
-	// figure
-	//----------------------------------------------------
-    SARibbonCategory* m_categoryFigure;    ///< 绘图标签
-    SARibbonPanel* m_pannelFigureSetting;  ///< 绘图的设置
-    SARibbonPanel* m_pannelChartAdd;       ///< 添加绘图
-	//----------------------------------------------------
-	// Context - dataframe
-	//----------------------------------------------------
-    SARibbonContextCategory* m_contextDataFrame;   ///< 对应dataframe的上下文
-    SARibbonCategory* m_categoryDataframeOperate;  ///< dataframe对应的category
-    SARibbonPanel* m_pannelDataframeOperateAxes;   ///< 数据信息的编辑
-    SARibbonPanel* m_pannelDataframeOperateDType;  ///< 数据类型的编辑
+                                                           //----------------------------------------------------
+                                                           // figure
+                                                           //----------------------------------------------------
+    SARibbonCategory* m_categoryFigure;                    ///< 绘图标签
+    SARibbonPanel* m_pannelFigureSetting;                  ///< 绘图的设置
+    SARibbonPanel* m_pannelChartAdd;                       ///< 添加绘图
+                                                           //----------------------------------------------------
+                                                           // Context - dataframe
+                                                           //----------------------------------------------------
+    SARibbonContextCategory* m_contextDataFrame;           ///< 对应dataframe的上下文
+    SARibbonCategory* m_categoryDataframeOperate;          ///< dataframe对应的category
+    SARibbonPanel* m_pannelDataframeOperateAxes;           ///< 数据信息的编辑
+    SARibbonPanel* m_pannelDataframeOperateDType;          ///< 数据类型的编辑
 #if DA_ENABLE_PYTHON
 	SARibbonLineWidgetContainer* m_comboxColumnTypesContainer;  ///< 列类型选择器的container
 	DAPyDTypeComboBox* m_comboxColumnTypes;                     ///< 列类型选择器
@@ -379,8 +383,8 @@ public:
 	SARibbonButtonGroupWidget* m_chartGridMinActionsButtonGroup;  ///< grid的min设置
 	QStringList m_fileReadFilters;
 	// ApplicationMenu
-	DAAppRibbonApplicationMenu* mApplicationMenu;  ///< ribbon-app menu
-	// 菜单相关
+    DAAppRibbonApplicationMenu* mApplicationMenu;        ///< ribbon-app menu
+                                                         // 菜单相关
     QMenu* mExportWorkflowSceneToImageMenu { nullptr };  ///< scene导出为图片菜单
     QMenu* m_menuViewLineMarkers { nullptr };            ///< 视图标记线
     QMenu* m_menuInsertRow { nullptr };                  ///< 针对insertrow的action menu
