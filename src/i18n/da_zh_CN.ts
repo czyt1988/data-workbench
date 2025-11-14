@@ -80,7 +80,7 @@
         <translation>加载界面状态信息</translation>
     </message>
     <message>
-        <location line="+28"/>
+        <location line="+29"/>
         <source>LanguageChange</source>
         <translation type="unfinished"></translation>
     </message>
