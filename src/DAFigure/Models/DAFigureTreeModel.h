@@ -13,6 +13,7 @@
 #define DAChartItemStandardItem_Type QStandardItem::UserType + 2
 #endif
 class QwtPlot;
+class QwtFigure;
 namespace DA
 {
 class DAFigureWidget;
@@ -92,11 +93,51 @@ class DAFIGURE_API DAFigureTreeModel : public QStandardItemModel
     Q_OBJECT
     DA_DECLARE_PRIVATE(DAFigureTreeModel)
 public:
-    DAFigureTreeModel(QObject* parent = 0);
+    enum TreeItemType
+    {
+        FigureItem = 1001,
+        PlotItem,
+        LayerItem,
+        AxesFolderItem,
+        AxisItem,
+        ItemsFolderItem,
+        PlotItemItem
+    };
+
+    enum CustomRoles
+    {
+        ObjectRole = Qt::UserRole + 1,
+        ItemTypeRole,
+        VisibilityRole,
+        ColorRole,
+        IsPlotItemRole  // 标识是否为QwtPlotItem
+    };
+
+public:
+    explicit DAFigureTreeModel(QObject* parent = 0);
     ~DAFigureTreeModel();
     // 设置fig
-    void setFigure(DAFigureWidget* fig);
-    DAFigureWidget* getFigure() const;
+    void setFigure(QwtFigure* fig);
+    QwtFigure* getFigure() const;
+
+    Qt::ItemFlags flags(const QModelIndex& index) const override;
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+    bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
+
+private:
+    void rebuild();
+    void clearAllConnections();
+    void addPlotToModel(QwtPlot* plot, QStandardItem* parentItem);
+    void addLayerToModel(QwtPlot* plot, QStandardItem* parentItem);
+    void addAxesToLayer(QwtPlot* plot, QStandardItem* layerItem);
+    void addPlotItemsToLayer(QwtPlot* plot, QStandardItem* layerItem);
+    void removePlotFromModel(QwtPlot* plot);
+    // 创建可见性列的项目
+    QStandardItem* createVisibilityItem(QwtPlotItem* item = nullptr) const;
+    // 创建颜色列的项目
+    QStandardItem* createColorItem(QwtPlotItem* item = nullptr) const;
+    // old code
+public:
     // chart的索引
     int indexOfChart(DAChartWidget* c) const;
     // 查找和QwtPlotItem相关的QStandardItem,O(n)
@@ -120,6 +161,16 @@ private slots:
     void onLegendDataChanged(const QVariant& itemInfo, const QList< QwtLegendData >& data);
     // 绘图删除触发的槽
     void onFigureDestroyed(QObject* c);
+
+    void onAxesAdded(QwtPlot* plot);
+    void onAxesRemoved(QwtPlot* plot);
+    void onFigureCleared();
+    void onCurrentAxesChanged(QwtPlot* plot);
+    void onItemAttached(QwtPlotItem* item, bool on);
+
+protected:
+    // 返回绘图的名字
+    virtual QString plotTitleText(QwtPlot* plot);
 
 private:
     void addChartItem(QwtPlotItem* i);

@@ -5,6 +5,7 @@
 #include "DAChartUtil.h"
 #include "DAFigureWidget.h"
 #include "DAChartWidget.h"
+#include "qwt_figure.h"
 #include "qwt_plot.h"
 #include "qwt_plot_curve.h"
 #include "qwt_plot_marker.h"
@@ -342,7 +343,9 @@ public:
     DAChartWidgetStandardItem* chartWidgetToChartItem(const DAChartWidget* chart);
 
 public:
-    DAFigureWidget* mFig { nullptr };
+    QwtFigure* mFig { nullptr };
+    QMap< QwtPlot*, QStandardItem* > m_plotItems;
+    QMap< QwtPlotItem*, QStandardItem* > m_plotItemItems;
     QList< DAChartWidget* > mCharts;
 };
 
@@ -465,6 +468,56 @@ void DAFigureTreeModel::onFigureDestroyed(QObject* c)
     d_ptr->mCharts.clear();
 }
 
+void DAFigureTreeModel::onAxesAdded(QwtPlot* plot)
+{
+}
+
+void DAFigureTreeModel::onAxesRemoved(QwtPlot* plot)
+{
+}
+
+void DAFigureTreeModel::onFigureCleared()
+{
+}
+
+void DAFigureTreeModel::onCurrentAxesChanged(QwtPlot* plot)
+{
+}
+
+void DAFigureTreeModel::onItemAttached(QwtPlotItem* item, bool on)
+{
+}
+
+/**
+ * @brief 用于生成绘图对应的文字
+ *
+ * 如果想改变文字内容，可重写此函数
+ * @param plot 绘图指针
+ * @param fig figure指针
+ * @return
+ */
+QString DAFigureTreeModel::plotTitleText(QwtPlot* plot)
+{
+    if (!plot) {
+        return tr("unknow chart");  // cn:未知绘图
+    }
+    QString str = plot->title().text();
+    if (!str.isEmpty()) {
+        return str;
+    }
+    // 如果没有名字，则以第几个绘图命名
+    QwtFigure* fig = getFigure();
+    if (!fig) {
+        return tr("untitle-chart");  // cn:绘图-未命名
+    }
+    auto charts = fig->allAxes(true);
+    int index   = charts.indexOf(plot);
+    if (index >= 0) {
+        return QObject::tr("chart-%1").arg(index + 1);
+    }
+    return tr("untitle-chart");  // cn：绘图-未命名
+}
+
 void DAFigureTreeModel::addChartItem(QwtPlotItem* i)
 {
     DAChartWidget* chart                       = static_cast< DAChartWidget* >(i->plot());
@@ -492,14 +545,19 @@ void DAFigureTreeModel::removeChartItem(QwtPlotItem* i)
  * @brief 设置fig
  * @param fig
  */
-void DAFigureTreeModel::setFigure(DAFigureWidget* fig)
+void DAFigureTreeModel::setFigure(QwtFigure* fig)
 {
-    clear();
-    setHorizontalHeaderLabels({
-        tr("name"),      // cn:名称
-        tr("property"),  // cn:属性
-        tr("visible")    // cn:可见性
-    });
+    DA_D(d);
+    if (d->mFig == fig) {
+        return;
+    }
+
+    d->mFig = fig;
+    // 清除所有现有连接
+    clearAllConnections();
+
+    rebuild();
+
     if (d_ptr->mFig) {
         disconnect(d_ptr->mFig, &DAFigureWidget::chartAdded, this, &DAFigureTreeModel::onChartAdded);
         disconnect(d_ptr->mFig, &DAFigureWidget::chartRemoved, this, &DAFigureTreeModel::onChartRemoved);
@@ -530,9 +588,163 @@ void DAFigureTreeModel::setFigure(DAFigureWidget* fig)
  * @brief 获取管理的窗口
  * @return
  */
-DAFigureWidget* DAFigureTreeModel::getFigure() const
+QwtFigure* DAFigureTreeModel::getFigure() const
 {
     return d_ptr->mFig;
+}
+
+Qt::ItemFlags DAFigureTreeModel::flags(const QModelIndex& index) const
+{
+}
+
+QVariant DAFigureTreeModel::data(const QModelIndex& index, int role) const
+{
+}
+
+bool DAFigureTreeModel::setData(const QModelIndex& index, const QVariant& value, int role)
+{
+}
+
+/**
+ * @brief 重构整个树
+ */
+void DAFigureTreeModel::rebuild()
+{
+    clear();
+    setHorizontalHeaderLabels({
+        tr("name"),      // cn:名称
+        tr("property"),  // cn:属性
+        tr("visible")    // cn:可见性
+    });
+    DA_D(d);
+    if (!d->mFig) {
+        return;
+    }
+    d->m_plotItemItems.clear();
+    d->m_plotItems.clear();
+    const auto plots        = d->mFig->allAxes(true);
+    QStandardItem* rootItem = invisibleRootItem();
+    for (QwtPlot* plot : plots) {
+        addPlotToModel(plot, rootItem);
+    }
+}
+
+void DAFigureTreeModel::clearAllConnections()
+{
+}
+
+void DAFigureTreeModel::addPlotToModel(QwtPlot* plot, QStandardItem* parentItem)
+{
+    DA_D(d);
+    if (!plot || d->m_plotItems.contains(plot)) {
+        // 避免重复添加和空指针
+        return;
+    }
+
+    // 创建绘图节点 - 四列
+    QStandardItem* plotItem = new QStandardItem(plotTitleText(plot));
+    plotItem->setData(QVariant::fromValue(plot), ObjectRole);
+    plotItem->setData(PlotItem, ItemTypeRole);
+    // plotItem->setIcon(QIcon(":/icons/plot.png"));
+
+    // 可见性列 - 绘图节点不需要可见性控制
+    QStandardItem* visibilityItem = createVisibilityItem();
+
+    // 颜色列 - 绘图节点不需要颜色显示
+    QStandardItem* colorItem = createColorItem();
+
+    parentItem->appendRow(QList< QStandardItem* >() << plotItem << visibilityItem << colorItem);
+    d->m_plotItems[ plot ] = plotItem;
+
+    // 添加宿主图层
+    addLayerToModel(plot, plotItem);
+
+    // 添加寄生图层
+    QList< QwtPlot* > parasites = plot->parasitePlots();
+    for (QwtPlot* parasite : parasites) {
+        addLayerToModel(parasite, plotItem);
+    }
+
+    connect(plot, &QwtPlot::itemAttached, this, &DAFigureTreeModel::onItemAttached);
+}
+
+void DAFigureTreeModel::addLayerToModel(QwtPlot* plot, QStandardItem* parentItem)
+{
+    if (!plot)
+        return;
+    bool isHost       = plot->isHostPlot();
+    QString layerName = isHost ? tr("Layer-1") :                             // cn: 图层-1
+                            tr("Layer-%1").arg(parentItem->rowCount() + 1);  // cn:图层-%1
+
+    QStandardItem* layerItem = new QStandardItem(layerName);
+    layerItem->setData(QVariant::fromValue(static_cast< QObject* >(plot)), ObjectRole);
+    layerItem->setData(LayerItem, ItemTypeRole);
+    layerItem->setIcon(QIcon(":/icons/layer.png"));
+
+    QStandardItem* layerTypeItem = new QStandardItem(tr("图层"));
+    layerTypeItem->setData(LayerItem, ItemTypeRole);
+
+    // 可见性列 - 图层节点不需要可见性控制
+    QStandardItem* visibilityItem = createVisibilityItem();
+
+    // 颜色列 - 图层节点不需要颜色显示
+    QStandardItem* colorItem = createColorItem();
+
+    parentItem->appendRow(QList< QStandardItem* >() << layerItem << layerTypeItem << visibilityItem << colorItem);
+
+    addAxesToLayer(plot, layerItem);
+    addPlotItemsToLayer(plot, layerItem);
+}
+
+QStandardItem* DAFigureTreeModel::createVisibilityItem(QwtPlotItem* item) const
+{
+    static QIcon s_icon_not_visible(":/DAFigure/icon/chartitem-invisible.svg");
+    static QIcon s_icon_visible(":/DAFigure/icon/chartitem-visible.svg");
+    QStandardItem* visibilityItem = new QStandardItem();
+    if (item) {
+        // 图元节点：显示复选框
+        visibilityItem->setCheckable(true);
+        visibilityItem->setEditable(false);
+        visibilityItem->setData(item->isVisible() ? Qt::Checked : Qt::Unchecked, Qt::CheckStateRole);
+        visibilityItem->setData(QVariant::fromValue(item), ObjectRole);
+
+        // 设置图标表示可见性
+        if (item->isVisible()) {
+            visibilityItem->setIcon(s_icon_visible);
+        } else {
+            visibilityItem->setIcon(s_icon_not_visible);
+        }
+    } else {
+        // 非图元节点：显示横线或空白
+        visibilityItem->setText("");
+        visibilityItem->setEditable(false);
+    }
+
+    return visibilityItem;
+}
+
+QStandardItem* DAFigureTreeModel::createColorItem(QwtPlotItem* item) const
+{
+    QStandardItem* colorItem = new QStandardItem();
+
+    if (item) {
+        QBrush brush = DAChartUtil::getPlotItemBrush(item);
+        if (Qt::NoBrush != brush.style()) {
+            // 创建颜色块
+            QPixmap pixmap(22, 22);
+            QPainter p(&pixmap);
+            p.fillRect(pixmap.rect(), b);
+            colorItem->setIcon(QIcon(pixmap));
+            colorItem->setData(brush, ColorRole);
+        }
+        colorItem->setData(QVariant::fromValue(item), ObjectRole);
+    } else {
+        // 非图元节点：显示横线或空白
+        colorItem->setText("");
+    }
+
+    colorItem->setEditable(false);
+    return colorItem;
 }
 
 int DAFigureTreeModel::indexOfChart(DAChartWidget* c) const
