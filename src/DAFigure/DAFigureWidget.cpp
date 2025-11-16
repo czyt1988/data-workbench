@@ -20,7 +20,6 @@
 #include "DAChartUtil.h"
 #include "DAChartWidget.h"
 #include "DAChartSerialize.h"
-#include "DAFigureContainer.h"
 #include "DAFigureWidgetOverlay.h"
 #include "DAFigureWidgetCommands.h"
 // qwt
@@ -33,10 +32,6 @@
 #endif
 namespace DA
 {
-const float c_figurewidget_default_x     = 0.05f;
-const float c_figurewidget_default_y     = 0.05f;
-const float c_figurewidget_default_w     = 0.9f;
-const float c_figurewidget_default_h     = 0.9f;
 const QRectF c_figurewidget_default_size = QRectF(0.05, 0.05, 0.9, 0.9);
 //===================================================
 // DAFigureWidgetPrivate

@@ -4,7 +4,6 @@
 #include <QScrollArea>
 #include <QPainter>
 #include "DAChartWidget.h"
-#include "DAFigureContainer.h"
 #include "DAChartFactory.h"
 #include "DAColorTheme.h"
 // qt

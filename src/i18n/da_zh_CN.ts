@@ -2024,7 +2024,7 @@ Table Area</source>
 <context>
     <name>DA::DAChartWidget</name>
     <message>
-        <location filename="../DAFigure/DAChartWidget.cpp" line="+1035"/>
+        <location filename="../DAFigure/DAChartWidget.cpp" line="+1083"/>
         <source>Before zoom in, the chart must setup a zoomer</source>
         <translation>在放大图表之前需要先建立缩放器</translation>
     </message>
@@ -5292,7 +5292,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+62"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+57"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
