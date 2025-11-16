@@ -19,6 +19,7 @@ class DAChartSettingWidget::PrivateData
     DA_DECLARE_PUBLIC(DAChartSettingWidget)
 public:
     PrivateData(DAChartSettingWidget* p);
+    DAChartWidget* plotToChart(QwtPlot* plot) const;
 
 public:
     QPointer< DAFigureWidget > mFigure;
@@ -27,6 +28,20 @@ public:
 
 DAChartSettingWidget::PrivateData::PrivateData(DAChartSettingWidget* p) : q_ptr(p)
 {
+}
+
+DAChartWidget* DAChartSettingWidget::PrivateData::plotToChart(QwtPlot* plot) const
+{
+    if (!plot) {
+        return nullptr;
+    }
+    DAChartWidget* chart = nullptr;
+    if (plot->isHostPlot()) {
+        chart = qobject_cast< DAChartWidget* >(plot);
+    } else {
+        chart = qobject_cast< DAChartWidget* >(plot->hostPlot());
+    }
+    return chart;
 }
 
 //----------------------------------------------------
@@ -341,6 +356,41 @@ void DAChartSettingWidget::removeChartFromComboBox(DAChartWidget* chart)
     }
 }
 
+/**
+ * @brief 设置选中内容
+ *
+ * DAFigureElementSelection一般有绘图结构树传递过来
+ * @param sel
+ */
+void DAChartSettingWidget::setSelection(const DAFigureElementSelection& sel)
+{
+    switch (sel.selectionType) {
+    case DAFigureElementSelection::SelectScaleWidget:
+    case DAFigureElementSelection::SelectPlot: {
+        // 选中绘图
+        setFigure(sel.figureWidget);
+        DAChartWidget* chart = d_ptr->plotToChart(sel.plot);
+        if (chart) {
+            setChart(chart);
+            showPlotSettingWidget();
+        }
+        return;
+    } break;
+    case DAFigureElementSelection::SelectPlotItem: {
+        setFigure(sel.figureWidget);
+        DAChartWidget* chart = d_ptr->plotToChart(sel.plot);
+        if (chart) {
+            setChart(chart);
+        }
+        setPlotItem(sel.plotItem);
+        showItemSettingWidget();
+        return;
+    } break;
+    default:
+        break;
+    }
+}
+
 void DAChartSettingWidget::changeEvent(QEvent* e)
 {
     QWidget::changeEvent(e);
@@ -370,7 +420,7 @@ void DAChartSettingWidget::resetChartsComboBox()
     const int cnt         = chartsList.size();
     for (int i = 0; i < cnt; ++i) {
         DAChartWidget* chart = chartsList[ i ];
-        ui->comboBoxSelectChart->addItem(DAChartWidgetStandardItem::getChartTitle(fig, chart), QVariant::fromValue(chart));
+        ui->comboBoxSelectChart->addItem(DAFigureTreeModel::chartTitle(chart, fig->figure()), QVariant::fromValue(chart));
     }
 }
 
@@ -396,7 +446,7 @@ void DAChartSettingWidget::resetItemsComboBox(DAChartWidget* chart)
         return;
     }
     for (QwtPlotItem* item : items) {
-        ui->comboBoxSelectItem->addItem(DAChartItemStandardItem::getItemName(item), QVariant::fromValue(item));
+        ui->comboBoxSelectItem->addItem(DAFigureTreeModel::chartItemName(item), QVariant::fromValue(item));
     }
 }
 

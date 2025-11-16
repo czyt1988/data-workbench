@@ -15,7 +15,7 @@ python环境有如下要求：
 python环境需要安装的库：
 
 ```
-pip install Loguru numpy==1.26.4 pandas scipy openpyxl chardet PyWavelets pyarrow
+pip install Loguru "numpy<=1.26.4" pandas scipy openpyxl chardet PyWavelets pyarrow
 ```
 
 如果你的python版本小于3.8，还需额外导入`typing_extensions`库
@@ -24,7 +24,7 @@ pip install Loguru numpy==1.26.4 pandas scipy openpyxl chardet PyWavelets pyarro
 pip install typing_extensions
 ```
 
-为了兼容性，numpy建议2.0以下，这里推荐使用1.26.4
+为了兼容性，numpy建议2.0以下，这里推荐使用1.26.4（python3.7等低版本python不用考虑此问题）
 
 下面是`data-workbench`依赖的python库说明
 

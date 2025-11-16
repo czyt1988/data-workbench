@@ -11,8 +11,8 @@ namespace DA
 DAChartTradingCurveItemSettingWidget::DAChartTradingCurveItemSettingWidget(QWidget* parent)
     : DAAbstractChartItemSettingWidget(parent), ui(new Ui::DAChartTradingCurveItemSettingWidget)
 {
-	ui->setupUi(this);
-	resetUI();
+    ui->setupUi(this);
+    resetUI();
     connect(ui->brushEditWidgetIncreasing,
             &DABrushEditWidget::brushChanged,
             this,
@@ -21,7 +21,7 @@ DAChartTradingCurveItemSettingWidget::DAChartTradingCurveItemSettingWidget(QWidg
             &DABrushEditWidget::brushChanged,
             this,
             &DAChartTradingCurveItemSettingWidget::onDecreasingBrushChanged);
-	connect(ui->buttonGroupOrientation,
+    connect(ui->buttonGroupOrientation,
             QOverload< QAbstractButton* >::of(&QButtonGroup::buttonClicked),
             this,
             &DAChartTradingCurveItemSettingWidget::onButtonGroupOrientationClicked);
@@ -47,18 +47,18 @@ DAChartTradingCurveItemSettingWidget::DAChartTradingCurveItemSettingWidget(QWidg
 
 DAChartTradingCurveItemSettingWidget::~DAChartTradingCurveItemSettingWidget()
 {
-	delete ui;
+    delete ui;
 }
 
 void DAChartTradingCurveItemSettingWidget::updateUI(QwtPlotItem* item)
 {
-	if (nullptr == item) {
-		return;
-	}
-	if (item->rtti() != QwtPlotItem::Rtti_PlotTradingCurve) {
-		return;
-	}
-	QwtPlotTradingCurve* curItem = static_cast< QwtPlotTradingCurve* >(item);
+    if (nullptr == item) {
+        return;
+    }
+    if (item->rtti() != QwtPlotItem::Rtti_PlotTradingCurve) {
+        return;
+    }
+    QwtPlotTradingCurve* curItem = static_cast< QwtPlotTradingCurve* >(item);
     DASignalBlockers blockers(ui->penEditWidget,
                               ui->brushEditWidgetDecreasing,
                               ui->brushEditWidgetIncreasing,
@@ -69,7 +69,8 @@ void DAChartTradingCurveItemSettingWidget::updateUI(QwtPlotItem* item)
                               ui->radioButtonBar,
                               ui->radioButtonHorizontal,
                               ui->radioButtonVertical);
-    ui->widgetItemSetting->updateUI(item);
+    // 自动会调用widgetItemSetting的updateUI，这里必须调用setPlotItem，否则widgetItemSetting不会持有item的指针
+    ui->widgetItemSetting->setPlotItem(item);
     // style
     QwtPlotTradingCurve::SymbolStyle s = curItem->symbolStyle();
     ui->radioButtonBar->setChecked(s == QwtPlotTradingCurve::Bar);
@@ -94,7 +95,7 @@ void DAChartTradingCurveItemSettingWidget::updateUI(QwtPlotItem* item)
  */
 void DAChartTradingCurveItemSettingWidget::applySetting(QwtPlotTradingCurve* item)
 {
-	// box item
+    // box item
     ui->widgetItemSetting->applySetting(item);
     // style
     if (ui->radioButtonBar->isChecked()) {
@@ -106,21 +107,22 @@ void DAChartTradingCurveItemSettingWidget::applySetting(QwtPlotTradingCurve* ite
             item->setSymbolStyle(QwtPlotTradingCurve::CandleStick);
         }
     }
-	// pen
+    // pen
     item->setSymbolPen(ui->penEditWidget->getCurrentPen());
-	// fill
+    // fill
     updateSymbolFillBrushFromUI(item);
 
-	// Orientation
+    // Orientation
     updateOrientationFromUI(item);
 }
 
 void DAChartTradingCurveItemSettingWidget::plotItemAttached(QwtPlotItem* plotItem, bool on)
 {
-	if (!on && plotItem == getPlotItem()) {
-		resetUI();
-	}
-	DAAbstractChartItemSettingWidget::plotItemAttached(plotItem, on);
+    if (!on && plotItem == getPlotItem()) {
+        resetUI();
+    }
+    ui->widgetItemSetting->plotItemAttached(plotItem, on);
+    DAAbstractChartItemSettingWidget::plotItemAttached(plotItem, on);
 }
 
 Qt::Orientation DAChartTradingCurveItemSettingWidget::getOrientationFromUI() const
@@ -214,14 +216,14 @@ void DAChartTradingCurveItemSettingWidget::onDecreasingBrushChanged(const QBrush
 void DAChartTradingCurveItemSettingWidget::onButtonGroupOrientationClicked(QAbstractButton* b)
 {
     Q_UNUSED(b);
-	DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
+    DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
     updateOrientationFromUI(s_cast< QwtPlotTradingCurve* >());
 }
 
 void DAChartTradingCurveItemSettingWidget::onCurvePenChanged(const QPen& p)
 {
-	DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
-	QwtPlotTradingCurve* c = s_cast< QwtPlotTradingCurve* >();
+    DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
+    QwtPlotTradingCurve* c = s_cast< QwtPlotTradingCurve* >();
     c->setSymbolPen(p);
 }
 

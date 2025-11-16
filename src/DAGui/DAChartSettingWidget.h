@@ -6,7 +6,7 @@
 #include "DAFigureWidget.h"
 #include "DAChartWidget.h"
 #include "qwt_plot_item.h"
-
+#include "DAFigureElementSelection.h"
 class QScrollArea;
 namespace Ui
 {
@@ -54,6 +54,8 @@ public:
     void showItemSettingWidget();
     // 把chart列表从combobox中移除
     void removeChartFromComboBox(DAChartWidget* chart);
+    // 设置选中内容，设置窗口会根据选中内容进行配置和显示
+    void setSelection(const DAFigureElementSelection& sel);
 
 protected:
     void changeEvent(QEvent* e);

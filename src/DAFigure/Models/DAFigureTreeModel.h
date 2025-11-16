@@ -3,127 +3,128 @@
 #include "DAFigureAPI.h"
 #include <QAbstractItemModel>
 #include <QList>
-#include <qwt_plot_item.h>
+#include <qwt_axis_id.h>
 #include <QStandardItemModel>
-#ifndef DAChartWidgetStandardItem_Type
-#define DAChartWidgetStandardItem_Type QStandardItem::UserType + 1
-#endif
 
-#ifndef DAChartItemStandardItem_Type
-#define DAChartItemStandardItem_Type QStandardItem::UserType + 2
-#endif
 class QwtPlot;
+class QwtFigure;
+class QwtScaleWidget;
+class QwtPlotItem;
 namespace DA
 {
 class DAFigureWidget;
-class DAChartWidget;
 
-/**
- * @brief 针对QwtPlotItem的QStandardItem
- */
-class DAFIGURE_API DAChartItemStandardItem : public QStandardItem
-{
-public:
-    DAChartItemStandardItem(DAChartWidget* c, QwtPlotItem* i, int col = 0);
-    virtual int type() const override
-    {
-        return DAChartItemStandardItem_Type;
-    }
-
-    virtual QVariant data(int role) const override;
-    virtual void setData(const QVariant& value, int role = Qt::UserRole + 1) override;
-
-    DAChartWidget* getChart() const;
-    void setChart(DAChartWidget* c);
-
-    QwtPlotItem* getItem() const;
-    void setItem(QwtPlotItem* i);
-
-    QVariant dataDisplayRole(QwtPlotItem* item, int c) const;
-    void setDataEditRole(const QVariant& value, QwtPlotItem* item, int c);
-    QVariant dataDecorationRole(QwtPlotItem* item, int c) const;
-    // 获取item的名字
-    static QString getItemName(QwtPlotItem* item);
-
-private:
-    DAChartWidget* _chart { nullptr };
-    QwtPlotItem* _item { nullptr };
-};
-
-/**
- * @brief 用于显示DAChartWidget的QStandardItem
- */
-class DAFIGURE_API DAChartWidgetStandardItem : public QStandardItem
-{
-public:
-    DAChartWidgetStandardItem(DAFigureWidget* fig, DAChartWidget* w, int col = 0);
-
-    virtual int type() const override
-    {
-        return DAChartWidgetStandardItem_Type;
-    }
-
-    virtual QVariant data(int role) const override;
-    QVariant dataDisplayRole(int c) const;
-    QVariant dataDecorationRole(int c) const;
-    DAFigureWidget* getFigure() const;
-    void setFigure(DAFigureWidget* getFigure);
-
-    DAChartWidget* getChart() const;
-    void setChart(DAChartWidget* getChart);
-
-    // 添加item
-    void appendChartItem(QwtPlotItem* i);
-    // 获取chart名字
-    static QString getChartTitle(DAFigureWidget* fig, DAChartWidget* c);
-
-private:
-    DAFigureWidget* _figure { nullptr };
-    DAChartWidget* _chart { nullptr };
-};
-
-/**
- * @brief 一共有3列
- *
- * 名字|颜色|可见性
- */
 class DAFIGURE_API DAFigureTreeModel : public QStandardItemModel
 {
     Q_OBJECT
-    DA_DECLARE_PRIVATE(DAFigureTreeModel)
-public:
-    DAFigureTreeModel(QObject* parent = 0);
-    ~DAFigureTreeModel();
-    // 设置fig
-    void setFigure(DAFigureWidget* fig);
-    DAFigureWidget* getFigure() const;
-    // chart的索引
-    int indexOfChart(DAChartWidget* c) const;
-    // 查找和QwtPlotItem相关的QStandardItem,O(n)
-    QList< QStandardItem* > findChartItems(QwtPlotItem* i);
 
 public:
-    // item转icon
-    static QIcon chartItemToIcon(const QwtPlotItem* i);
-    // 通过color获取icon
-    static QIcon colorIcon(const QColor& c, bool drawBorder = true);
-    // 通过QBrush获取icon
-    static QIcon brushIcon(const QBrush& b, bool drawBorder = true);
+    enum NodeType
+    {
+        NodeTypeUnknow = 1001,
+        NodeTypeFigure,
+        NodeTypePlot,        ///< RolePlot有效，可提取QwtPlot指针
+        NodeTypeLayer,       ///< RolePlot有效，可提取QwtPlot指针
+        NodeTypeAxesFolder,  ///< RolePlot有效，可提取QwtPlot指针
+        NodeTypeAxis,  ///< RoleScale有效，可提取QwtScaleWidget指针;RoleAxisId有效，可提取QwtAxisId;RolePlot有效，可提取QwtPlot指针
+        NodeTypeItemsFolder,  ///< RolePlot有效，可提取QwtPlot指针
+        NodeTypePlotItem  ///< RolePlotItem有效，可提取QwtPlotItem指针;RolePlot有效，可提取QwtPlot指针
+    };
+
+    enum CustomRoles
+    {
+        RolePlot     = Qt::UserRole + 1,  // 存储QwtPlot指针
+        RoleScale    = Qt::UserRole + 2,  // 存储QwtScaleWidget指针
+        RolePlotItem = Qt::UserRole + 3,  // 存储QwtPlotItem指针
+        RoleAxisId   = Qt::UserRole + 4,  // 存储QwtAxisId
+        RoleNodeType = Qt::UserRole + 5   // 存储节点类型
+    };
+
+    explicit DAFigureTreeModel(QObject* parent = nullptr);
+    ~DAFigureTreeModel();
+
+    void setFigure(QwtFigure* figure);
+    QwtFigure* figure() const
+    {
+        return m_figure;
+    }
+
+    void refresh();
+
+    // item的类型
+    NodeType itemType(QStandardItem* item) const;
+
+    template< typename T >
+    T* pointerFromItem(const QStandardItem* item, CustomRoles role) const
+    {
+        if (!item) {
+            return nullptr;
+        }
+        QVariant v = item->data(role);
+        return v.isValid() ? reinterpret_cast< T* >(v.value< quintptr >()) : nullptr;
+    }
+
+    template< typename T >
+    T* pointerFromIndex(const QModelIndex& index, CustomRoles role) const
+    {
+        if (!index.isValid())
+            return nullptr;
+        QStandardItem* item = itemFromIndex(index);
+        return pointerFromItem< T >(item, role);
+    }
+    QwtPlot* plotFromItem(const QStandardItem* item) const;
+    QwtPlot* plotFromIndex(const QModelIndex& index) const;
+    QwtScaleWidget* scaleFromItem(const QStandardItem* item) const;
+    QwtScaleWidget* scaleFromIndex(const QModelIndex& index) const;
+    QwtPlotItem* plotItemFromItem(const QStandardItem* item) const;
+    QwtPlotItem* plotItemFromIndex(const QModelIndex& index) const;
+    QwtAxisId axisIdFromItem(const QStandardItem* item) const;
+    QwtAxisId axisIdFromItem(const QModelIndex& index) const;
+
+    // 返回绘图的名字
+    virtual QString plotTitleText(QwtPlot* plot) const;
+    // 返回QwtPlotItem的名字
+    virtual QString plotItemName(QwtPlotItem* item) const;
+    // 返回QwtPlotItem对应的图标
+    virtual QIcon plotItemIcon(QwtPlotItem* item) const;
+    // 创建一个纯颜色图标
+    virtual QIcon brushIcon(const QBrush& b) const;
+
+    // 获取一个默认的绘图名称
+    static QString chartTitle(QwtPlot* plot, QwtFigure* fig);
+    // QwtPlotItem的名字
+    static QString chartItemName(QwtPlotItem* item);
 private slots:
-    // 图表移除触发的槽
-    void onChartRemoved(DA::DAChartWidget* c);
-    // 图表增加触发的槽
-    void onChartAdded(DA::DAChartWidget* c);
-    // 有chartitem加入或移除触发的槽
-    void onChartItemAttached(QwtPlotItem* plotItem, bool on);
-    // chartitem的LegendData改变槽
-    void onLegendDataChanged(const QVariant& itemInfo, const QList< QwtLegendData >& data);
-    // 绘图删除触发的槽
-    void onFigureDestroyed(QObject* c);
+    void onAxesAdded(QwtPlot* plot);
+    void onAxesRemoved(QwtPlot* plot);
+    void onFigureCleared();
+    void onCurrentAxesChanged(QwtPlot* plot);
+    void onItemAttached(QwtPlotItem* item, bool on);
 
 private:
-    void addChartItem(QwtPlotItem* i);
-    void removeChartItem(QwtPlotItem* i);
+    void setupModel();
+    void clearAllConnections();
+    void addPlotToModel(QwtPlot* plot, QStandardItem* parentItem);
+    void addLayerToModel(QwtPlot* plot, QStandardItem* parentItem);
+    void addAxesToLayer(QwtPlot* plot, QStandardItem* layerItem);
+    void addPlotItemsToLayer(QwtPlot* plot, QStandardItem* layerItem);
+    void addPlotItem(QwtPlotItem* item, QStandardItem* parentItem);
+    void removePlotItem(QwtPlotItem* item, QStandardItem* parentItem);
+    void removePlotFromModel(QwtPlot* plot);
+    // 创建一个空item，用于树形节点没有对应的2,3列的情况
+    QStandardItem* createEmptyItem() const;
+
+    QStandardItem* findPlotItem(QwtPlot* plot) const;
+    QStandardItem* findItemsFolderForPlot(QStandardItem* plotItem, QwtPlot* plot) const;
+
+private:
+    QwtFigure* m_figure;
+    QHash< QwtPlot*, QStandardItem* > m_plotItems;
+    QHash< QwtPlotItem*, QStandardItem* > m_plotItemItems;
+
+    // 连接管理
+    QList< QMetaObject::Connection > m_figureConnections;
+    QHash< QwtPlot*, QList< QMetaObject::Connection > > m_plotConnections;
 };
 
 }  // End Of Namespace DA
