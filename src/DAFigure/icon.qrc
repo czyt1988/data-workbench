@@ -23,5 +23,10 @@
         <file>icon/chart-vectorfield.svg</file>
         <file>icon/chartitem-invisible.svg</file>
         <file>icon/chartitem-visible.svg</file>
+        <file>icon/axis-xbottom.svg</file>
+        <file>icon/axis-xtop.svg</file>
+        <file>icon/axis-yleft.svg</file>
+        <file>icon/axis-yright.svg</file>
+        <file>icon/axes.svg</file>
     </qresource>
 </RCC>

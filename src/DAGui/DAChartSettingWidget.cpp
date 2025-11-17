@@ -370,7 +370,7 @@ void DAChartSettingWidget::resetChartsComboBox()
     const int cnt         = chartsList.size();
     for (int i = 0; i < cnt; ++i) {
         DAChartWidget* chart = chartsList[ i ];
-        ui->comboBoxSelectChart->addItem(DAChartWidgetStandardItem::getChartTitle(fig, chart), QVariant::fromValue(chart));
+        ui->comboBoxSelectChart->addItem(DAFigureTreeModel::chartTitle(chart, fig->figure()), QVariant::fromValue(chart));
     }
 }
 
@@ -396,7 +396,7 @@ void DAChartSettingWidget::resetItemsComboBox(DAChartWidget* chart)
         return;
     }
     for (QwtPlotItem* item : items) {
-        ui->comboBoxSelectItem->addItem(DAChartItemStandardItem::getItemName(item), QVariant::fromValue(item));
+        ui->comboBoxSelectItem->addItem(DAFigureTreeModel::chartItemName(item), QVariant::fromValue(item));
     }
 }
 

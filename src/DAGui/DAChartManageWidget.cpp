@@ -3,6 +3,7 @@
 #include <QTreeView>
 #include <QPointer>
 #include <QDebug>
+#include <QHash>
 #include "DAChartOperateWidget.h"
 #include "DAFigureWidget.h"
 #include "DAFigureTreeView.h"
@@ -21,6 +22,8 @@ public:
     QPointer< DAChartOperateWidget > mChartOptWidget;
     bool mSetCurrentChartOnClicked { true };
     bool mSetCurrentChartOnDbClicked { true };
+    QHash< QwtFigure*, DAFigureWidget* > mFigToFigWidget;             ///< 建立figure和figureWidget的关系
+    QHash< DAFigureWidget*, DAFigureTreeView* > mFigureWidgetToTree;  ///< 建立figurewidget和tree的关系
 };
 DAChartManageWidget::PrivateData::PrivateData(DAChartManageWidget* p) : q_ptr(p)
 {
@@ -147,23 +150,23 @@ void DAChartManageWidget::onFigureCreated(DAFigureWidget* fig)
 
     DAFigureTreeView* figTreeview = new DAFigureTreeView(this);
     figTreeview->setFigureWidget(fig);
-
-    connect(treeview, &QTreeView::clicked, this, &DAChartManageWidget::onTreeViewClicked);
-    connect(treeview, &QTreeView::doubleClicked, this, &DAChartManageWidget::onTreeViewDoubleClicked);
-    ui->stackedWidget->insertWidget(index, treeview);
+    d_ptr->mFigToFigWidget[ fig->figure() ] = fig;
+    d_ptr->mFigureWidgetToTree[ fig ]       = figTreeview;
+    connect(figTreeview, &DAFigureTreeView::plotItemClicked, this, &DAChartManageWidget::onPlotItemClicked);
+    connect(figTreeview, &DAFigureTreeView::doubleClicked, this, &DAChartManageWidget::onTreeViewDoubleClicked);
+    ui->stackedWidget->insertWidget(index, figTreeview);
 }
 
 void DAChartManageWidget::onFigureCloseing(DAFigureWidget* fig)
 {
-    int index = d_ptr->mChartOptWidget->getFigureIndex(fig);
-    if (index < 0) {
+    DAFigureTreeView* tree = d_ptr->mFigureWidgetToTree.value(fig, nullptr);
+    if (!tree) {
         qCritical() << tr(
             "get figure close signal,but can not find figure index");  // cn: 获取了绘图关闭的信号，但无法找到绘图的索引
         return;
     }
-    QWidget* w = ui->stackedWidget->widget(index);
-    ui->stackedWidget->removeWidget(w);
-    w->deleteLater();
+    ui->stackedWidget->removeWidget(tree);
+    tree->deleteLater();
 }
 
 void DAChartManageWidget::onCurrentFigureChanged(DAFigureWidget* fig, int index)
@@ -173,24 +176,8 @@ void DAChartManageWidget::onCurrentFigureChanged(DAFigureWidget* fig, int index)
     setCurrentDisplayView(fig);
 }
 
-void DAChartManageWidget::onTreeViewClicked(const QModelIndex& index)
+void DAChartManageWidget::onPlotItemClicked(QwtPlotItem* item, QwtPlot* plot, QStandardItem* treeItem)
 {
-    QTreeView* treeview = qobject_cast< QTreeView* >(sender());
-    if (!treeview) {
-        return;
-    }
-    DAFigureTreeModel* treemodel = qobject_cast< DAFigureTreeModel* >(treeview->model());
-    if (!treemodel) {
-        return;
-    }
-    auto standItem = treemodel->itemFromIndex(index);
-    if (standItem->type() == DAChartWidgetStandardItem_Type) {
-        DAChartWidgetStandardItem* ii = static_cast< DAChartWidgetStandardItem* >(standItem);
-        treeviewChartWidgetClicked(ii);
-    } else if (standItem->type() == DAChartItemStandardItem_Type) {
-        DAChartItemStandardItem* ii = static_cast< DAChartItemStandardItem* >(standItem);
-        treeviewChartItemClicked(ii);
-    }
 }
 
 void DAChartManageWidget::onTreeViewDoubleClicked(const QModelIndex& index)

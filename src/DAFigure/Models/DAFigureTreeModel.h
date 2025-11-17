@@ -81,7 +81,6 @@ public:
     QwtAxisId axisIdFromItem(const QStandardItem* item) const;
     QwtAxisId axisIdFromItem(const QModelIndex& index) const;
 
-protected:
     // 返回绘图的名字
     virtual QString plotTitleText(QwtPlot* plot) const;
     // 返回QwtPlotItem的名字
@@ -90,6 +89,11 @@ protected:
     virtual QIcon plotItemIcon(QwtPlotItem* item) const;
     // 创建一个纯颜色图标
     virtual QIcon brushIcon(const QBrush& b) const;
+
+    // 获取一个默认的绘图名称
+    static QString chartTitle(QwtPlot* plot, QwtFigure* fig);
+    // QwtPlotItem的名字
+    static QString chartItemName(QwtPlotItem* item);
 private slots:
     void onAxesAdded(QwtPlot* plot);
     void onAxesRemoved(QwtPlot* plot);
@@ -107,11 +111,8 @@ private:
     void addPlotItem(QwtPlotItem* item, QStandardItem* parentItem);
     void removePlotItem(QwtPlotItem* item, QStandardItem* parentItem);
     void removePlotFromModel(QwtPlot* plot);
-
-    // 创建可见性列的项目
-    QStandardItem* createVisibilityItem(QwtPlotItem* item = nullptr) const;
-    // 创建颜色列的项目
-    QStandardItem* createColorItem(QwtPlotItem* item = nullptr) const;
+    // 创建一个空item，用于树形节点没有对应的2,3列的情况
+    QStandardItem* createEmptyItem() const;
 
     QStandardItem* findPlotItem(QwtPlot* plot) const;
     QStandardItem* findItemsFolderForPlot(QStandardItem* plotItem, QwtPlot* plot) const;

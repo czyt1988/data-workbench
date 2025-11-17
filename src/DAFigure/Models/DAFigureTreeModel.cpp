@@ -19,6 +19,10 @@
 #include "qwt_graphic.h"
 #include "qwt_symbol.h"
 #include "DAChartUtil.h"
+
+#include "DAStandardItemPlot.h"
+#include "DAStandardItemPlotScale.h"
+#include "DAStandardItemPlotItem.h"
 #define DAFigureTreeModel_Debug_Print 1
 
 namespace DA
@@ -103,29 +107,24 @@ void DAFigureTreeModel::setupModel()
 
 void DAFigureTreeModel::addPlotToModel(QwtPlot* plot, QStandardItem* parentItem)
 {
-    if (!plot || m_plotItems.contains(plot))
+    if (!plot || m_plotItems.contains(plot)) {
         return;
+    }
 
     // 创建绘图节点 - 三列
-    QStandardItem* plotItem = new QStandardItem(plot->title().text());
+    static QIcon s_plot_icon = QIcon(":/DAFigure/icon/chart.svg");
+    QStandardItem* plotItem  = new QStandardItem(tr("chart"));  // cn:绘图
     plotItem->setData(QVariant::fromValue(reinterpret_cast< quintptr >(plot)), RolePlot);
-    // plotItem->setData(QVariant::fromValue(static_cast< QObject* >(plot)), RolePlot);
     plotItem->setData(NodeTypePlot, RoleNodeType);
-    plotItem->setIcon(QIcon(":/icons/plot.png"));
+    plotItem->setIcon(s_plot_icon);
 
     // 可见性列 - 绘图节点不需要可见性控制
-    QStandardItem* visibilityItem = createVisibilityItem();
+    QStandardItem* visibilityItem = createEmptyItem();
 
     // 颜色列 - 绘图节点不需要颜色显示
-    QStandardItem* colorItem = createColorItem();
+    QStandardItem* colorItem = createEmptyItem();
 
     parentItem->appendRow(QList< QStandardItem* >() << plotItem << visibilityItem << colorItem);
-    m_plotItems[ plot ] = plotItem;
-
-    // 连接plot的信号
-    QList< QMetaObject::Connection > plotConnections;
-    plotConnections << connect(plot, &QwtPlot::itemAttached, this, &DAFigureTreeModel::onItemAttached);
-    m_plotConnections[ plot ] = plotConnections;
 
     // 添加宿主图层
     addLayerToModel(plot, plotItem);
@@ -139,70 +138,45 @@ void DAFigureTreeModel::addPlotToModel(QwtPlot* plot, QStandardItem* parentItem)
 
 void DAFigureTreeModel::addLayerToModel(QwtPlot* plot, QStandardItem* parentItem)
 {
-    if (!plot)
+    if (!plot) {
         return;
-    bool isHost       = plot->isHostPlot();
-    QString layerName = isHost ? tr("Layer-1") :                             // cn: 图层-1
-                            tr("Layer-%1").arg(parentItem->rowCount() + 1);  // cn:图层-%1
+    }
 
-    QStandardItem* layerItem = new QStandardItem(layerName);
-    layerItem->setData(QVariant::fromValue(reinterpret_cast< quintptr >(plot)), RolePlot);
-    // layerItem->setData(QVariant::fromValue(static_cast< QObject* >(plot)), RolePlot);
-    layerItem->setData(NodeTypeLayer, RoleNodeType);
-    // layerItem->setIcon(QIcon(":/icons/layer.png"));
-
+    QStandardItem* layerItem = new DAStandardItemPlot(plot, DAStandardItemPlot::PlotText);
     // 可见性列 - 图层节点不需要可见性控制
-    QStandardItem* visibilityItem = createVisibilityItem();
-
+    QStandardItem* visibilityItem = new DAStandardItemPlot(plot, DAStandardItemPlot::PlotVisible);
     // 颜色列 - 图层节点不需要颜色显示
-    QStandardItem* colorItem = createColorItem();
-
-    parentItem->appendRow(QList< QStandardItem* >() << layerItem << visibilityItem << colorItem);
+    QStandardItem* propertyItem = new DAStandardItemPlot(plot, DAStandardItemPlot::PlotProperty);
+    parentItem->appendRow(QList< QStandardItem* >() << layerItem << visibilityItem << propertyItem);
 
     addAxesToLayer(plot, layerItem);
     addPlotItemsToLayer(plot, layerItem);
+
+    // 连接plot的信号
+    QList< QMetaObject::Connection > plotConnections;
+    plotConnections << connect(plot, &QwtPlot::itemAttached, this, &DAFigureTreeModel::onItemAttached);
+    m_plotConnections[ plot ] = plotConnections;
+    m_plotItems[ plot ]       = layerItem;
 }
 
 void DAFigureTreeModel::addAxesToLayer(QwtPlot* plot, QStandardItem* layerItem)
 {
+    static QIcon s_axes_icon  = QIcon(":/DAFigure/icon/axes.svg");
     QStandardItem* axesFolder = new QStandardItem(tr("Axis"));  // cn:坐标轴
     axesFolder->setData(QVariant::fromValue(reinterpret_cast< quintptr >(plot)), RolePlot);
     axesFolder->setData(NodeTypeAxesFolder, RoleNodeType);
-    // axesFolder->setIcon(QIcon(":/icons/axes.png"));
+    axesFolder->setIcon(s_axes_icon);
 
-    // 可见性列 - 坐标轴文件夹不需要可见性控制
-    QStandardItem* visibilityItem = createVisibilityItem();
+    layerItem->appendRow(QList< QStandardItem* >() << axesFolder << createEmptyItem() << createEmptyItem());
 
-    // 颜色列 - 坐标轴文件夹不需要颜色显示
-    QStandardItem* colorItem = createColorItem();
-
-    layerItem->appendRow(QList< QStandardItem* >() << axesFolder << visibilityItem << colorItem);
-
-    // 添加可见的坐标轴
-    auto addAxisIfVisible = [ & ](QwtAxisId axisId, const QString& axisName) {
-        if (plot->isAxisVisible(axisId)) {
-            QStandardItem* axisItem = new QStandardItem(axisName);
-            axisItem->setData(QVariant::fromValue(reinterpret_cast< quintptr >(plot)), RolePlot);
-            axisItem->setData(QVariant::fromValue(reinterpret_cast< quintptr >(plot->axisWidget(axisId))), RoleScale);
-            // axisItem->setData(QVariant::fromValue(static_cast< QObject* >(plot->axisWidget(axisId))), RoleScale);
-            axisItem->setData(QVariant::fromValue(axisId), RoleAxisId);
-            axisItem->setData(NodeTypeAxis, RoleNodeType);
-            // axisItem->setIcon(QIcon(":/icons/axis.png"));
-
-            // 可见性列 - 坐标轴节点不需要可见性控制
-            QStandardItem* axisVisibilityItem = createVisibilityItem();
-
-            // 颜色列 - 坐标轴节点不需要颜色显示
-            QStandardItem* axisColorItem = createColorItem();
-
-            axesFolder->appendRow(QList< QStandardItem* >() << axisItem << axisVisibilityItem << axisColorItem);
-        }
-    };
-
-    addAxisIfVisible(QwtAxis::XBottom, tr("x bottom"));
-    addAxisIfVisible(QwtAxis::XTop, tr("x top"));
-    addAxisIfVisible(QwtAxis::YLeft, tr("y left"));
-    addAxisIfVisible(QwtAxis::YRight, tr("y right"));
+    for (int axis = 0; axis < QwtAxis::AxisPositions; ++axis) {
+        DAStandardItemPlotScale* axisItem = new DAStandardItemPlotScale(plot, axis, DAStandardItemPlotScale::PlotScaleText);
+        DAStandardItemPlotScale* axisVisible =
+            new DAStandardItemPlotScale(plot, axis, DAStandardItemPlotScale::PlotScaleVisible);
+        DAStandardItemPlotScale* axisProperty =
+            new DAStandardItemPlotScale(plot, axis, DAStandardItemPlotScale::PlotScaleProperty);
+        axesFolder->appendRow(QList< QStandardItem* >() << axisItem << axisVisible << axisProperty);
+    }
 }
 
 void DAFigureTreeModel::addPlotItemsToLayer(QwtPlot* plot, QStandardItem* layerItem)
@@ -211,14 +185,7 @@ void DAFigureTreeModel::addPlotItemsToLayer(QwtPlot* plot, QStandardItem* layerI
     itemsFolder->setData(QVariant::fromValue(reinterpret_cast< quintptr >(plot)), RolePlot);
     itemsFolder->setData(NodeTypeItemsFolder, RoleNodeType);
     // itemsFolder->setIcon(QIcon(":/icons/items.png"));
-
-    // 可见性列 - 图元文件夹不需要可见性控制
-    QStandardItem* visibilityItem = createVisibilityItem();
-
-    // 颜色列 - 图元文件夹不需要颜色显示
-    QStandardItem* colorItem = createColorItem();
-
-    layerItem->appendRow(QList< QStandardItem* >() << itemsFolder << visibilityItem << colorItem);
+    layerItem->appendRow(QList< QStandardItem* >() << itemsFolder << createEmptyItem() << createEmptyItem());
 
     // 添加所有图元
     const QwtPlotItemList& items = plot->itemList();
@@ -229,22 +196,18 @@ void DAFigureTreeModel::addPlotItemsToLayer(QwtPlot* plot, QStandardItem* layerI
     }
 }
 
+/**
+ * @brief 添加QwtPlotItem元素
+ * @param item
+ * @param parentItem
+ */
 void DAFigureTreeModel::addPlotItem(QwtPlotItem* item, QStandardItem* parentItem)
 {
-    QStandardItem* itemNode = new QStandardItem(plotItemName(item));
-    // 存储QwtPlotItem指针
-    itemNode->setData(QVariant::fromValue(reinterpret_cast< quintptr >(item->plot())), RolePlot);
-    itemNode->setData(QVariant::fromValue(reinterpret_cast< quintptr >(item)), RolePlotItem);
-    itemNode->setData(NodeTypePlotItem, RoleNodeType);
-
-    // 根据图元类型设置图标
-    itemNode->setIcon(plotItemIcon(item));
-
+    QStandardItem* itemNode = new DAStandardItemPlotItem(item, DAStandardItemPlotItem::PlotItemText);
     // 可见性列 - 图元节点需要可见性控制
-    QStandardItem* itemVisibilityItem = createVisibilityItem(item);
-
+    QStandardItem* itemVisibilityItem = new DAStandardItemPlotItem(item, DAStandardItemPlotItem::PlotItemVisible);
     // 颜色列 - 图元节点需要颜色显示
-    QStandardItem* itemColorItem = createColorItem(item);
+    QStandardItem* itemColorItem = new DAStandardItemPlotItem(item, DAStandardItemPlotItem::PlotItemColor);
     parentItem->appendRow(QList< QStandardItem* >() << itemNode << itemVisibilityItem << itemColorItem);
     m_plotItemItems[ item ] = itemNode;
 }
@@ -258,58 +221,6 @@ void DAFigureTreeModel::removePlotItem(QwtPlotItem* item, QStandardItem* parentI
     }
 }
 
-QStandardItem* DAFigureTreeModel::createVisibilityItem(QwtPlotItem* item) const
-{
-    static QIcon s_icon_not_visible(":/DAFigure/icon/chartitem-invisible.svg");
-    static QIcon s_icon_visible(":/DAFigure/icon/chartitem-visible.svg");
-    QStandardItem* visibilityItem = new QStandardItem();
-
-    if (item) {
-        // 图元节点：显示复选框
-        visibilityItem->setCheckable(true);
-        visibilityItem->setEditable(false);
-        visibilityItem->setData(item->isVisible() ? Qt::Checked : Qt::Unchecked, Qt::CheckStateRole);
-
-        // 存储QwtPlotItem指针
-        visibilityItem->setData(QVariant::fromValue(reinterpret_cast< quintptr >(item)), RolePlotItem);
-        visibilityItem->setData(NodeTypePlotItem, RoleNodeType);
-
-        // 设置图标表示可见性
-        if (item->isVisible()) {
-            visibilityItem->setIcon(s_icon_visible);
-        } else {
-            visibilityItem->setIcon(s_icon_not_visible);
-        }
-    } else {
-        // 非图元节点：显示横线或空白
-        visibilityItem->setText("");
-        visibilityItem->setEditable(false);
-    }
-
-    return visibilityItem;
-}
-
-QStandardItem* DAFigureTreeModel::createColorItem(QwtPlotItem* item) const
-{
-    QStandardItem* colorItem = new QStandardItem();
-
-    if (item) {
-        QBrush brush = DAChartUtil::getPlotItemBrush(item);
-        if (Qt::NoBrush != brush.style()) {
-            colorItem->setIcon(brushIcon(brush));
-        }
-        // 存储QwtPlotItem指针
-        colorItem->setData(QVariant::fromValue(reinterpret_cast< quintptr >(item)), RolePlotItem);
-        colorItem->setData(NodeTypePlotItem, RoleNodeType);
-    } else {
-        // 非图元节点：显示空白
-        colorItem->setText("");
-    }
-
-    colorItem->setEditable(false);
-    return colorItem;
-}
-
 /**
  * @brief 用于生成绘图对应的文字
  *
@@ -320,97 +231,12 @@ QStandardItem* DAFigureTreeModel::createColorItem(QwtPlotItem* item) const
  */
 QString DAFigureTreeModel::plotTitleText(QwtPlot* plot) const
 {
-    if (!plot) {
-        return tr("unknow chart");  // cn:未知绘图
-    }
-    QString str = plot->title().text();
-    if (!str.isEmpty()) {
-        return str;
-    }
-    // 如果没有名字，则以第几个绘图命名
-    QwtFigure* fig = figure();
-    if (!fig) {
-        return tr("untitle-chart");  // cn:绘图-未命名
-    }
-    auto charts = fig->allAxes(true);
-    int index   = charts.indexOf(plot);
-    if (index >= 0) {
-        return QObject::tr("chart-%1").arg(index + 1);
-    }
-    return tr("untitle-chart");  // cn：绘图-未命名
+    return chartTitle(plot, figure());
 }
 
 QString DAFigureTreeModel::plotItemName(QwtPlotItem* item) const
 {
-    QString str  = item->title().text();
-    bool isEmpty = str.isEmpty();
-    if (isEmpty) {
-        auto plot = item->plot();
-        if (plot) {
-            str = QString::number(plot->itemList().indexOf(item) + 1);
-        } else {
-            str = QObject::tr("untitle");  // cn:未命名
-        }
-    }
-    switch (item->rtti()) {
-    //! Unspecific value, that can be used, when it doesn't matter
-    case QwtPlotItem::Rtti_PlotItem:
-        return QObject::tr("item[%1]").arg(item->title().text());  // cn 图元[%1]
-    //! For QwtPlotGrid
-    case QwtPlotItem::Rtti_PlotGrid:
-        return QObject::tr("grid");  // cn:网格
-    //! For QwtPlotScaleItem
-    case QwtPlotItem::Rtti_PlotScale:
-        return (isEmpty ? QObject::tr("scale-%1").arg(str) : str);  // cn:比例图元-%1
-    //! For QwtPlotLegendItem
-    case QwtPlotItem::Rtti_PlotLegend:
-        return QObject::tr("legend-%1").arg(str);  // cn:图例-%1
-    //! For QwtPlotMarker
-    case QwtPlotItem::Rtti_PlotMarker:
-        return QObject::tr("marker-%1").arg(str);  // cn:标记-%1
-    //! For QwtPlotCurve
-    case QwtPlotItem::Rtti_PlotCurve:
-        return (isEmpty ? QObject::tr("curve-%1").arg(str) : str);  // cn:曲线-%1
-    //! For QwtPlotSpectroCurve
-    case QwtPlotItem::Rtti_PlotSpectroCurve:  // Curve that displays 3D points as dots, where the z coordinate is mapped to a color.
-        return (isEmpty ? QObject::tr("spectro-%1").arg(str) : str);  // cn:色谱图-%1
-    //! For QwtPlotIntervalCurve
-    case QwtPlotItem::Rtti_PlotIntervalCurve:  // interval curve represents a series of samples, where each value is associated with an interval
-        return (isEmpty ? QObject::tr("interval curve-%1").arg(str) : str);  // cn:区间图-%1
-    //! For QwtPlotHistogram
-    case QwtPlotItem::Rtti_PlotHistogram:  // histogram represents a series of samples, where an interval is associated with a value
-        return (isEmpty ? QObject::tr("histogram-%1").arg(str) : str);  // cn:直方图-%1
-    //! For QwtPlotSpectrogram
-    case QwtPlotItem::Rtti_PlotSpectrogram:  // A spectrogram displays 3-dimensional data, where the 3rd dimension ( the intensity ) is displayed using colors.
-        return (isEmpty ? QObject::tr("spectrogram-%1").arg(str) : str);  // cn:谱图-%1
-    //! For QwtPlotGraphicItem, QwtPlotSvgItem
-    case QwtPlotItem::Rtti_PlotGraphic:                               // display graphic
-        return (isEmpty ? QObject::tr("graphic-%1").arg(str) : str);  // cn:图像-%1
-    //! For QwtPlotTradingCurve
-    case QwtPlotItem::Rtti_PlotTradingCurve:  // OHLC illustrates movements in the price of a financial instrument over time
-        return (isEmpty ? QObject::tr("OHLC-%1").arg(str) : str);  // cn:OHLC图-%1
-    //! For QwtPlotBarChart
-    case QwtPlotItem::Rtti_PlotBarChart:                          // bar chart displays a series of a values as bars
-        return (isEmpty ? QObject::tr("bar-%1").arg(str) : str);  // cn:柱状图-%1
-    //! For QwtPlotMultiBarChart
-    case QwtPlotItem::Rtti_PlotMultiBarChart:  // multibar chart displays a series of a samples that consist each of a set of values
-        return (isEmpty ? QObject::tr("multibar-%1").arg(str) : str);  // cn:柱状图-%1
-    //! For QwtPlotShapeItem
-    case QwtPlotItem::Rtti_PlotShape:                               // displays any graphical shape
-        return (isEmpty ? QObject::tr("shape-%1").arg(str) : str);  // cn:形状-%1
-    //! For QwtPlotTextLabel
-    case QwtPlotItem::Rtti_PlotTextLabel:                          // displays a text label
-        return (isEmpty ? QObject::tr("text-%1").arg(str) : str);  // cn:文本-%1
-    //! For QwtPlotZoneItem
-    case QwtPlotItem::Rtti_PlotZone:                               // displays a zone
-        return (isEmpty ? QObject::tr("zone-%1").arg(str) : str);  // cn:区间-%1
-    //! For QwtPlotVectorField
-    case QwtPlotItem::Rtti_PlotVectorField:                          // quiver chart represents a vector field
-        return (isEmpty ? QObject::tr("quiver-%1").arg(str) : str);  // cn:流场图-%1
-    default:
-        break;
-    }
-    return QObject::tr("unknow-%1").arg(str);
+    return chartItemName(item);
 }
 
 QIcon DAFigureTreeModel::plotItemIcon(QwtPlotItem* item) const
@@ -526,6 +352,100 @@ QIcon DAFigureTreeModel::brushIcon(const QBrush& b) const
     return QIcon(pixmap);
 }
 
+QString DAFigureTreeModel::chartTitle(QwtPlot* plot, QwtFigure* fig)
+{
+    if (!plot) {
+        return tr("unknow chart");  // cn:未知绘图
+    }
+    QString str = plot->title().text();
+    if (!str.isEmpty()) {
+        return str;
+    }
+    // 如果没有名字，则以第几个绘图命名
+    if (!fig) {
+        return QObject::tr("untitle-chart");  // cn:绘图-未命名
+    }
+    auto charts = fig->allAxes(true);
+    int index   = charts.indexOf(plot);
+    if (index >= 0) {
+        return QObject::tr("chart-%1").arg(index + 1);
+    }
+    return tr("untitle-chart");  // cn：绘图-未命名
+}
+
+QString DAFigureTreeModel::chartItemName(QwtPlotItem* item)
+{
+    QString str  = item->title().text();
+    bool isEmpty = str.isEmpty();
+    if (isEmpty) {
+        auto plot = item->plot();
+        if (plot) {
+            str = QString::number(plot->itemList().indexOf(item) + 1);
+        } else {
+            str = QObject::tr("untitle");  // cn:未命名
+        }
+    }
+    switch (item->rtti()) {
+    //! Unspecific value, that can be used, when it doesn't matter
+    case QwtPlotItem::Rtti_PlotItem:
+        return QObject::tr("item[%1]").arg(item->title().text());  // cn 图元[%1]
+    //! For QwtPlotGrid
+    case QwtPlotItem::Rtti_PlotGrid:
+        return QObject::tr("grid");  // cn:网格
+    //! For QwtPlotScaleItem
+    case QwtPlotItem::Rtti_PlotScale:
+        return (isEmpty ? QObject::tr("scale-%1").arg(str) : str);  // cn:比例图元-%1
+    //! For QwtPlotLegendItem
+    case QwtPlotItem::Rtti_PlotLegend:
+        return QObject::tr("legend-%1").arg(str);  // cn:图例-%1
+    //! For QwtPlotMarker
+    case QwtPlotItem::Rtti_PlotMarker:
+        return QObject::tr("marker-%1").arg(str);  // cn:标记-%1
+    //! For QwtPlotCurve
+    case QwtPlotItem::Rtti_PlotCurve:
+        return (isEmpty ? QObject::tr("curve-%1").arg(str) : str);  // cn:曲线-%1
+    //! For QwtPlotSpectroCurve
+    case QwtPlotItem::Rtti_PlotSpectroCurve:  // Curve that displays 3D points as dots, where the z coordinate is mapped to a color.
+        return (isEmpty ? QObject::tr("spectro-%1").arg(str) : str);  // cn:色谱图-%1
+    //! For QwtPlotIntervalCurve
+    case QwtPlotItem::Rtti_PlotIntervalCurve:  // interval curve represents a series of samples, where each value is associated with an interval
+        return (isEmpty ? QObject::tr("interval curve-%1").arg(str) : str);  // cn:区间图-%1
+    //! For QwtPlotHistogram
+    case QwtPlotItem::Rtti_PlotHistogram:  // histogram represents a series of samples, where an interval is associated with a value
+        return (isEmpty ? QObject::tr("histogram-%1").arg(str) : str);  // cn:直方图-%1
+    //! For QwtPlotSpectrogram
+    case QwtPlotItem::Rtti_PlotSpectrogram:  // A spectrogram displays 3-dimensional data, where the 3rd dimension ( the intensity ) is displayed using colors.
+        return (isEmpty ? QObject::tr("spectrogram-%1").arg(str) : str);  // cn:谱图-%1
+    //! For QwtPlotGraphicItem, QwtPlotSvgItem
+    case QwtPlotItem::Rtti_PlotGraphic:                               // display graphic
+        return (isEmpty ? QObject::tr("graphic-%1").arg(str) : str);  // cn:图像-%1
+    //! For QwtPlotTradingCurve
+    case QwtPlotItem::Rtti_PlotTradingCurve:  // OHLC illustrates movements in the price of a financial instrument over time
+        return (isEmpty ? QObject::tr("OHLC-%1").arg(str) : str);  // cn:OHLC图-%1
+    //! For QwtPlotBarChart
+    case QwtPlotItem::Rtti_PlotBarChart:                          // bar chart displays a series of a values as bars
+        return (isEmpty ? QObject::tr("bar-%1").arg(str) : str);  // cn:柱状图-%1
+    //! For QwtPlotMultiBarChart
+    case QwtPlotItem::Rtti_PlotMultiBarChart:  // multibar chart displays a series of a samples that consist each of a set of values
+        return (isEmpty ? QObject::tr("multibar-%1").arg(str) : str);  // cn:柱状图-%1
+    //! For QwtPlotShapeItem
+    case QwtPlotItem::Rtti_PlotShape:                               // displays any graphical shape
+        return (isEmpty ? QObject::tr("shape-%1").arg(str) : str);  // cn:形状-%1
+    //! For QwtPlotTextLabel
+    case QwtPlotItem::Rtti_PlotTextLabel:                          // displays a text label
+        return (isEmpty ? QObject::tr("text-%1").arg(str) : str);  // cn:文本-%1
+    //! For QwtPlotZoneItem
+    case QwtPlotItem::Rtti_PlotZone:                               // displays a zone
+        return (isEmpty ? QObject::tr("zone-%1").arg(str) : str);  // cn:区间-%1
+    //! For QwtPlotVectorField
+    case QwtPlotItem::Rtti_PlotVectorField:                          // quiver chart represents a vector field
+        return (isEmpty ? QObject::tr("quiver-%1").arg(str) : str);  // cn:流场图-%1
+    default:
+        break;
+    }
+    return QObject::tr("unknow-%1").arg(str);
+}
+
 void DAFigureTreeModel::onAxesAdded(QwtPlot* plot)
 {
     if (plot && !m_plotItems.contains(plot)) {
@@ -606,7 +526,7 @@ void DAFigureTreeModel::removePlotFromModel(QwtPlot* plot)
 
                 // 断开寄生绘图的连接
                 if (m_plotConnections.contains(parasite)) {
-                    for (const QMetaObject::Connection& conn : m_plotConnections[ parasite ]) {
+                    for (const QMetaObject::Connection& conn : qAsConst(m_plotConnections[ parasite ])) {
                         disconnect(conn);
                     }
                     m_plotConnections.remove(parasite);
@@ -617,6 +537,13 @@ void DAFigureTreeModel::removePlotFromModel(QwtPlot* plot)
         invisibleRootItem()->removeRow(plotItem->row());
         m_plotItems.remove(plot);
     }
+}
+
+QStandardItem* DAFigureTreeModel::createEmptyItem() const
+{
+    QStandardItem* item = new QStandardItem();
+    item->setEditable(false);
+    return item;
 }
 
 QwtPlot* DAFigureTreeModel::plotFromItem(const QStandardItem* item) const
@@ -698,19 +625,11 @@ QStandardItem* DAFigureTreeModel::findPlotItem(QwtPlot* plot) const
 
 QStandardItem* DAFigureTreeModel::findItemsFolderForPlot(QStandardItem* plotItem, QwtPlot* plot) const
 {
+    // plotItem 下面挂两个文件夹，一个坐标轴，一个item
     for (int i = 0; i < plotItem->rowCount(); ++i) {
-        QStandardItem* layerItem = plotItem->child(i);
-        if (itemType(layerItem) == NodeTypeLayer) {
-            QwtPlot* layerPlot = plotFromItem(layerItem);
-            if (layerPlot == plot) {
-                for (int j = 0; j < layerItem->rowCount(); ++j) {
-                    QStandardItem* folderItem = layerItem->child(j);
-                    if (itemType(folderItem) == NodeTypeItemsFolder) {
-                        return folderItem;
-                    }
-                }
-                break;
-            }
+        QStandardItem* folderItem = plotItem->child(i);
+        if (itemType(folderItem) == NodeTypeItemsFolder) {
+            return folderItem;
         }
     }
     return nullptr;
