@@ -2451,7 +2451,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAFigureTreeModel</name>
     <message>
-        <location filename="../DAFigure/Models/DAFigureTreeModel.cpp" line="+437"/>
+        <location filename="../DAFigure/Models/DAFigureTreeModel.cpp" line="+448"/>
         <source>receive legend data changed signal,but can not cast sender to qwt plot</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2462,25 +2462,93 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
     <message>
         <location line="+18"/>
-        <location line="+39"/>
+        <location line="+154"/>
         <source>name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-38"/>
-        <location line="+39"/>
+        <location line="-153"/>
+        <location line="+154"/>
+        <location line="+347"/>
         <source>property</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-38"/>
-        <location line="+39"/>
+        <location line="-500"/>
+        <location line="+154"/>
+        <location line="+345"/>
         <source>visible</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-28"/>
+        <location line="-462"/>
+        <location line="+803"/>
+        <source>unknow chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-794"/>
+        <location line="+7"/>
+        <location line="+796"/>
+        <location line="+7"/>
+        <source>untitle-chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-795"/>
         <source>Unable to find the tree node corresponding to the chart widget</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+152"/>
+        <location line="+395"/>
+        <source>Layer-1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-394"/>
+        <location line="+395"/>
+        <source>Layer-%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-388"/>
+        <source>图层</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+277"/>
+        <source>element</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+132"/>
+        <source>Axis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>x bottom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>x top</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>y left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>y right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>plot item</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6520,113 +6588,135 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAFigure/Models/DAFigureTreeModel.cpp" line="-319"/>
+        <location filename="../DAFigure/Models/DAFigureTreeModel.cpp" line="-984"/>
+        <location line="+1184"/>
         <source>untitle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="-1178"/>
+        <location line="+1184"/>
         <source>item[%1]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-1181"/>
+        <location line="+1184"/>
         <source>grid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-1181"/>
+        <location line="+1184"/>
         <source>scale-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-1181"/>
+        <location line="+1184"/>
         <source>legend-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-1181"/>
+        <location line="+1184"/>
         <source>marker-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-1181"/>
+        <location line="+1184"/>
         <source>curve-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-1181"/>
+        <location line="+1184"/>
         <source>spectro-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-1181"/>
+        <location line="+1184"/>
         <source>interval curve-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-1181"/>
+        <location line="+1184"/>
         <source>histogram-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-1181"/>
+        <location line="+1184"/>
         <source>spectrogram-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-1181"/>
+        <location line="+1184"/>
         <source>graphic-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-1181"/>
+        <location line="+1184"/>
         <source>OHLC-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-1181"/>
+        <location line="+1184"/>
         <source>bar-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-1181"/>
+        <location line="+1184"/>
         <source>multibar-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-1181"/>
+        <location line="+1184"/>
         <source>shape-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-1181"/>
+        <location line="+1184"/>
         <source>text-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-1181"/>
+        <location line="+1184"/>
         <source>zone-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-1181"/>
+        <location line="+1184"/>
         <source>quiver-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="-1180"/>
+        <location line="+1184"/>
         <source>unknow-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+50"/>
+        <location line="-1134"/>
         <location line="+7"/>
         <source>untitle-chart</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+3"/>
+        <location line="+246"/>
+        <location line="+803"/>
         <source>chart-%1</source>
         <translation type="unfinished"></translation>
     </message>

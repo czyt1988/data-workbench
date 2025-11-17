@@ -2571,7 +2571,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAFigureTreeModel</name>
     <message>
-        <location filename="../DAFigure/Models/DAFigureTreeModel.cpp" line="+437"/>
+        <location filename="../DAFigure/Models/DAFigureTreeModel.cpp" line="+448"/>
         <source>receive legend data changed signal,but can not cast sender to qwt plot</source>
         <translation>接收到legend data changed信号，但无法把发送方转换为qwt plot</translation>
     </message>
@@ -2581,25 +2581,93 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>无法把信息转换为qwt plot item</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+57"/>
+        <location line="+803"/>
+        <source>unknow chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-794"/>
+        <location line="+7"/>
+        <location line="+796"/>
+        <location line="+7"/>
+        <source>untitle-chart</source>
+        <translation type="unfinished">图-未命名</translation>
+    </message>
+    <message>
+        <location line="-795"/>
         <source>Unable to find the tree node corresponding to the chart widget</source>
         <translation>无法找到绘图窗口对应的树形节点</translation>
     </message>
     <message>
-        <location line="-13"/>
-        <location line="+39"/>
+        <location line="+152"/>
+        <location line="+395"/>
+        <source>Layer-1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-394"/>
+        <location line="+395"/>
+        <source>Layer-%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-388"/>
+        <source>图层</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+277"/>
+        <source>element</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+132"/>
+        <source>Axis</source>
+        <translation type="unfinished">坐标系</translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>x bottom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>x top</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>y left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>y right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>plot item</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-670"/>
+        <location line="+154"/>
         <source>name</source>
         <translation>名称</translation>
     </message>
     <message>
-        <location line="-38"/>
-        <location line="+39"/>
+        <location line="-153"/>
+        <location line="+154"/>
+        <location line="+347"/>
         <source>property</source>
         <translation>属性</translation>
     </message>
     <message>
-        <location line="-38"/>
-        <location line="+39"/>
+        <location line="-500"/>
+        <location line="+154"/>
+        <location line="+345"/>
         <source>visible</source>
         <translation>可见性</translation>
     </message>
@@ -6578,112 +6646,134 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>内核初始化失败</translation>
     </message>
     <message>
-        <location filename="../DAFigure/Models/DAFigureTreeModel.cpp" line="-347"/>
+        <location filename="../DAFigure/Models/DAFigureTreeModel.cpp" line="-815"/>
+        <location line="+1184"/>
         <source>untitle</source>
         <translation>未命名</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="-1178"/>
+        <location line="+1184"/>
         <source>item[%1]</source>
         <translation>图元[%1]</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-1181"/>
+        <location line="+1184"/>
         <source>grid</source>
         <translation>网格</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-1181"/>
+        <location line="+1184"/>
         <source>scale-%1</source>
         <translation>比例图元-%1</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-1181"/>
+        <location line="+1184"/>
         <source>legend-%1</source>
         <translation>图例-%1</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-1181"/>
+        <location line="+1184"/>
         <source>marker-%1</source>
         <translation>标记-%1</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-1181"/>
+        <location line="+1184"/>
         <source>curve-%1</source>
         <translation>曲线-%1</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-1181"/>
+        <location line="+1184"/>
         <source>spectro-%1</source>
         <translation>色谱图-%1</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-1181"/>
+        <location line="+1184"/>
         <source>interval curve-%1</source>
         <translation>区间图-%1</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-1181"/>
+        <location line="+1184"/>
         <source>histogram-%1</source>
         <translation>直方图-%1</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-1181"/>
+        <location line="+1184"/>
         <source>spectrogram-%1</source>
         <translation>谱图-%1</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-1181"/>
+        <location line="+1184"/>
         <source>graphic-%1</source>
         <translation>图像-%1</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-1181"/>
+        <location line="+1184"/>
         <source>OHLC-%1</source>
         <translation>OHLC图-%1</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-1181"/>
+        <location line="+1184"/>
         <source>bar-%1</source>
         <translation>柱状图-%1</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-1181"/>
+        <location line="+1184"/>
         <source>multibar-%1</source>
         <translation>柱状图-%1</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-1181"/>
+        <location line="+1184"/>
         <source>shape-%1</source>
         <translation>形状-%1</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-1181"/>
+        <location line="+1184"/>
         <source>text-%1</source>
         <translation>文本-%1</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-1181"/>
+        <location line="+1184"/>
         <source>zone-%1</source>
         <translation>区间-%1</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-1181"/>
+        <location line="+1184"/>
         <source>quiver-%1</source>
         <translation>流场图-%1</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="-1180"/>
+        <location line="+1184"/>
         <source>unknow-%1</source>
         <translation>未知-%1</translation>
     </message>
     <message>
-        <location line="+60"/>
+        <location line="-1124"/>
+        <location line="+246"/>
+        <location line="+803"/>
         <source>chart-%1</source>
         <translation>图-%1</translation>
     </message>
     <message>
-        <location line="-10"/>
+        <location line="-1059"/>
         <location line="+7"/>
         <source>untitle-chart</source>
         <translation>图-未命名</translation>
