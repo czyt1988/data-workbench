@@ -82,18 +82,14 @@ public:
     QwtAxisId axisIdFromItem(const QModelIndex& index) const;
 
     // 返回绘图的名字
-    virtual QString plotTitleText(QwtPlot* plot) const;
+    virtual QString generatePlotTitleText(QwtPlot* plot) const;
     // 返回QwtPlotItem的名字
-    virtual QString plotItemName(QwtPlotItem* item) const;
+    virtual QString generatePlotItemName(QwtPlotItem* item) const;
     // 返回QwtPlotItem对应的图标
-    virtual QIcon plotItemIcon(QwtPlotItem* item) const;
+    virtual QIcon generatePlotItemIcon(QwtPlotItem* item) const;
     // 创建一个纯颜色图标
-    virtual QIcon brushIcon(const QBrush& b) const;
+    virtual QIcon generateBrushIcon(const QBrush& b) const;
 
-    // 获取一个默认的绘图名称
-    static QString chartTitle(QwtPlot* plot, QwtFigure* fig);
-    // QwtPlotItem的名字
-    static QString chartItemName(QwtPlotItem* item);
 private slots:
     void onAxesAdded(QwtPlot* plot);
     void onAxesRemoved(QwtPlot* plot);

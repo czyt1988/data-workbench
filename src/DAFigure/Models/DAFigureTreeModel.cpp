@@ -229,221 +229,27 @@ void DAFigureTreeModel::removePlotItem(QwtPlotItem* item, QStandardItem* parentI
  * @param fig figure指针
  * @return
  */
-QString DAFigureTreeModel::plotTitleText(QwtPlot* plot) const
+QString DAFigureTreeModel::generatePlotTitleText(QwtPlot* plot) const
 {
-    return chartTitle(plot, figure());
+    return DAChartUtil::plotTitle(plot, figure());
 }
 
-QString DAFigureTreeModel::plotItemName(QwtPlotItem* item) const
+QString DAFigureTreeModel::generatePlotItemName(QwtPlotItem* item) const
 {
-    return chartItemName(item);
+    return DAChartUtil::plotItemName(item);
 }
 
-QIcon DAFigureTreeModel::plotItemIcon(QwtPlotItem* item) const
+QIcon DAFigureTreeModel::generatePlotItemIcon(QwtPlotItem* item) const
 {
-    static QIcon s_default_chart_icon(":/DAFigure/icon/chart-item.svg");
-    switch (item->rtti()) {
-    //! Unspecific value, that can be used, when it doesn't matter
-    case QwtPlotItem::Rtti_PlotItem:
-        break;
-    //! For QwtPlotGrid
-    case QwtPlotItem::Rtti_PlotGrid: {
-        static QIcon s_icon(":/DAFigure/icon/chart-grid.svg");
-        return s_icon;
-    }
-    //! For QwtPlotScaleItem
-    case QwtPlotItem::Rtti_PlotScale: {
-        static QIcon s_icon(":/DAFigure/icon/chart-scale.svg");
-        return s_icon;
-    }
-    //! For QwtPlotLegendItem
-    case QwtPlotItem::Rtti_PlotLegend: {
-        static QIcon s_icon(":/DAFigure/icon/chart-legend.svg");
-        return s_icon;
-    }
-    //! For QwtPlotMarker
-    case QwtPlotItem::Rtti_PlotMarker: {
-        static QIcon s_icon(":/DAFigure/icon/chart-marker.svg");
-        return s_icon;
-    }
-
-    //! For QwtPlotCurve
-    case QwtPlotItem::Rtti_PlotCurve: {
-        static QIcon s_icon(":/DAFigure/icon/chart-curve.svg");
-        return s_icon;
-    }
-    //! For QwtPlotSpectroCurve
-    case QwtPlotItem::Rtti_PlotSpectroCurve: {
-        static QIcon s_icon(":/DAFigure/icon/chart-spectrocurve.svg");
-        return s_icon;
-    }
-    //! For QwtPlotIntervalCurve
-    case QwtPlotItem::Rtti_PlotIntervalCurve: {
-        static QIcon s_icon(":/DAFigure/icon/chart-intervalcurve.svg");
-        return s_icon;
-    }
-
-    //! For QwtPlotHistogram
-    case QwtPlotItem::Rtti_PlotHistogram: {
-        static QIcon s_icon(":/DAFigure/icon/chart-histogram.svg");
-        return s_icon;
-    }
-    //! For QwtPlotSpectrogram
-    case QwtPlotItem::Rtti_PlotSpectrogram: {
-        static QIcon s_icon(":/DAFigure/icon/chart-spectrogram.svg");
-        return s_icon;
-    }
-
-    case QwtPlotItem::Rtti_PlotGraphic: {
-        static QIcon s_icon(":/DAFigure/icon/chart-graphic.svg");
-        return s_icon;
-    }
-
-    //! For QwtPlotTradingCurve
-    case QwtPlotItem::Rtti_PlotTradingCurve: {
-        static QIcon s_icon(":/DAFigure/icon/chart-OHLC.svg");
-        return s_icon;
-    }
-
-    //! For QwtPlotBarChart
-    case QwtPlotItem::Rtti_PlotBarChart: {
-        static QIcon s_icon(":/DAFigure/icon/chart-bar.svg");
-        return s_icon;
-    }
-
-    //! For QwtPlotMultiBarChart
-    case QwtPlotItem::Rtti_PlotMultiBarChart: {
-        static QIcon s_icon(":/DAFigure/icon/chart-multibar.svg");
-        return s_icon;
-    }
-    //! For QwtPlotShapeItem
-    case QwtPlotItem::Rtti_PlotShape: {
-        static QIcon s_icon(":/DAFigure/icon/chart-shapes.svg");
-        return s_icon;
-    }
-
-    //! For QwtPlotTextLabel
-    case QwtPlotItem::Rtti_PlotTextLabel: {
-        static QIcon s_icon(":/DAFigure/icon/chart-textlabel.svg");
-        return s_icon;
-    }
-
-    //! For QwtPlotZoneItem
-    case QwtPlotItem::Rtti_PlotZone: {
-        static QIcon s_icon(":/DAFigure/icon/chart-zone.svg");
-        return s_icon;
-    }
-    //! For QwtPlotVectorField
-    case QwtPlotItem::Rtti_PlotVectorField: {
-        static QIcon s_icon(":/DAFigure/icon/chart-vectorfield.svg");
-        return s_icon;
-    }
-    default:
-        break;
-    }
-    return s_default_chart_icon;
+    return DAChartUtil::plotItemIcon(item);
 }
 
-QIcon DAFigureTreeModel::brushIcon(const QBrush& b) const
+QIcon DAFigureTreeModel::generateBrushIcon(const QBrush& b) const
 {
     QPixmap pixmap(22, 22);
     QPainter p(&pixmap);
     p.fillRect(pixmap.rect(), b);
     return QIcon(pixmap);
-}
-
-QString DAFigureTreeModel::chartTitle(QwtPlot* plot, QwtFigure* fig)
-{
-    if (!plot) {
-        return tr("unknow chart");  // cn:未知绘图
-    }
-    QString str = plot->title().text();
-    if (!str.isEmpty()) {
-        return str;
-    }
-    // 如果没有名字，则以第几个绘图命名
-    if (!fig) {
-        return QObject::tr("untitle-chart");  // cn:绘图-未命名
-    }
-    auto charts = fig->allAxes(true);
-    int index   = charts.indexOf(plot);
-    if (index >= 0) {
-        return QObject::tr("chart-%1").arg(index + 1);
-    }
-    return tr("untitle-chart");  // cn：绘图-未命名
-}
-
-QString DAFigureTreeModel::chartItemName(QwtPlotItem* item)
-{
-    QString str  = item->title().text();
-    bool isEmpty = str.isEmpty();
-    if (isEmpty) {
-        auto plot = item->plot();
-        if (plot) {
-            str = QString::number(plot->itemList().indexOf(item) + 1);
-        } else {
-            str = QObject::tr("untitle");  // cn:未命名
-        }
-    }
-    switch (item->rtti()) {
-    //! Unspecific value, that can be used, when it doesn't matter
-    case QwtPlotItem::Rtti_PlotItem:
-        return QObject::tr("item[%1]").arg(item->title().text());  // cn 图元[%1]
-    //! For QwtPlotGrid
-    case QwtPlotItem::Rtti_PlotGrid:
-        return QObject::tr("grid");  // cn:网格
-    //! For QwtPlotScaleItem
-    case QwtPlotItem::Rtti_PlotScale:
-        return (isEmpty ? QObject::tr("scale-%1").arg(str) : str);  // cn:比例图元-%1
-    //! For QwtPlotLegendItem
-    case QwtPlotItem::Rtti_PlotLegend:
-        return QObject::tr("legend-%1").arg(str);  // cn:图例-%1
-    //! For QwtPlotMarker
-    case QwtPlotItem::Rtti_PlotMarker:
-        return QObject::tr("marker-%1").arg(str);  // cn:标记-%1
-    //! For QwtPlotCurve
-    case QwtPlotItem::Rtti_PlotCurve:
-        return (isEmpty ? QObject::tr("curve-%1").arg(str) : str);  // cn:曲线-%1
-    //! For QwtPlotSpectroCurve
-    case QwtPlotItem::Rtti_PlotSpectroCurve:  // Curve that displays 3D points as dots, where the z coordinate is mapped to a color.
-        return (isEmpty ? QObject::tr("spectro-%1").arg(str) : str);  // cn:色谱图-%1
-    //! For QwtPlotIntervalCurve
-    case QwtPlotItem::Rtti_PlotIntervalCurve:  // interval curve represents a series of samples, where each value is associated with an interval
-        return (isEmpty ? QObject::tr("interval curve-%1").arg(str) : str);  // cn:区间图-%1
-    //! For QwtPlotHistogram
-    case QwtPlotItem::Rtti_PlotHistogram:  // histogram represents a series of samples, where an interval is associated with a value
-        return (isEmpty ? QObject::tr("histogram-%1").arg(str) : str);  // cn:直方图-%1
-    //! For QwtPlotSpectrogram
-    case QwtPlotItem::Rtti_PlotSpectrogram:  // A spectrogram displays 3-dimensional data, where the 3rd dimension ( the intensity ) is displayed using colors.
-        return (isEmpty ? QObject::tr("spectrogram-%1").arg(str) : str);  // cn:谱图-%1
-    //! For QwtPlotGraphicItem, QwtPlotSvgItem
-    case QwtPlotItem::Rtti_PlotGraphic:                               // display graphic
-        return (isEmpty ? QObject::tr("graphic-%1").arg(str) : str);  // cn:图像-%1
-    //! For QwtPlotTradingCurve
-    case QwtPlotItem::Rtti_PlotTradingCurve:  // OHLC illustrates movements in the price of a financial instrument over time
-        return (isEmpty ? QObject::tr("OHLC-%1").arg(str) : str);  // cn:OHLC图-%1
-    //! For QwtPlotBarChart
-    case QwtPlotItem::Rtti_PlotBarChart:                          // bar chart displays a series of a values as bars
-        return (isEmpty ? QObject::tr("bar-%1").arg(str) : str);  // cn:柱状图-%1
-    //! For QwtPlotMultiBarChart
-    case QwtPlotItem::Rtti_PlotMultiBarChart:  // multibar chart displays a series of a samples that consist each of a set of values
-        return (isEmpty ? QObject::tr("multibar-%1").arg(str) : str);  // cn:柱状图-%1
-    //! For QwtPlotShapeItem
-    case QwtPlotItem::Rtti_PlotShape:                               // displays any graphical shape
-        return (isEmpty ? QObject::tr("shape-%1").arg(str) : str);  // cn:形状-%1
-    //! For QwtPlotTextLabel
-    case QwtPlotItem::Rtti_PlotTextLabel:                          // displays a text label
-        return (isEmpty ? QObject::tr("text-%1").arg(str) : str);  // cn:文本-%1
-    //! For QwtPlotZoneItem
-    case QwtPlotItem::Rtti_PlotZone:                               // displays a zone
-        return (isEmpty ? QObject::tr("zone-%1").arg(str) : str);  // cn:区间-%1
-    //! For QwtPlotVectorField
-    case QwtPlotItem::Rtti_PlotVectorField:                          // quiver chart represents a vector field
-        return (isEmpty ? QObject::tr("quiver-%1").arg(str) : str);  // cn:流场图-%1
-    default:
-        break;
-    }
-    return QObject::tr("unknow-%1").arg(str);
 }
 
 void DAFigureTreeModel::onAxesAdded(QwtPlot* plot)

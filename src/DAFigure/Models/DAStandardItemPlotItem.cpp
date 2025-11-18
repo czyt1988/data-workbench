@@ -56,13 +56,13 @@ QVariant DAStandardItemPlotItem::handleItemTextType(int role) const
     switch (role) {
     case Qt::DisplayRole: {
         if (DAFigureTreeModel* m = qobject_cast< DAFigureTreeModel* >(model())) {
-            return m->plotItemName(m_plotItem);
+            return m->generatePlotItemName(m_plotItem);
         }
     } break;
     case Qt::DecorationRole: {
         // 返回类型图标
         if (DAFigureTreeModel* m = qobject_cast< DAFigureTreeModel* >(model())) {
-            return m->plotItemIcon(m_plotItem);
+            return m->generatePlotItemIcon(m_plotItem);
         }
         return QVariant();
     } break;
@@ -121,7 +121,7 @@ QVariant DAStandardItemPlotItem::handleItemColorType(int role) const
         // 返回类型图标
         if (DAFigureTreeModel* m = qobject_cast< DAFigureTreeModel* >(model())) {
             QBrush brush = DAChartUtil::getPlotItemBrush(m_plotItem);
-            return m->brushIcon(brush);
+            return m->generateBrushIcon(brush);
         }
     } break;
     default:
