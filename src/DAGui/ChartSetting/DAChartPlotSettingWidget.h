@@ -4,7 +4,7 @@
 #include <QWidget>
 #include <QPointer>
 #include "DAGuiAPI.h"
-#include "DAChartWidget.h"
+#include "qwt_plot.h"
 namespace Ui
 {
 class DAChartPlotSettingWidget;
@@ -19,11 +19,11 @@ class DAGUI_API DAChartPlotSettingWidget : public QWidget
     Q_OBJECT
 
 public:
-	explicit DAChartPlotSettingWidget(QWidget* parent = nullptr);
-	~DAChartPlotSettingWidget();
-	// 设置chart
-	void setChartWidget(DAChartWidget* w);
-    DAChartWidget* getChartWidget() const;
+    explicit DAChartPlotSettingWidget(QWidget* parent = nullptr);
+    ~DAChartPlotSettingWidget();
+    // 设置chart
+    void setPlot(QwtPlot* w);
+    QwtPlot* getPlot() const;
     // 更新ui
     void updateUI();
 
@@ -38,8 +38,8 @@ private slots:
     void onFooterColorChanged(const QColor& c);
 
 private:
-	Ui::DAChartPlotSettingWidget* ui;
-	QPointer< DAChartWidget > mChartPlot;
+    Ui::DAChartPlotSettingWidget* ui;
+    QPointer< QwtPlot > mChartPlot;
 };
 }  // end DA
 #endif  // DACHARTPLOTSETTINGWIDGET_H

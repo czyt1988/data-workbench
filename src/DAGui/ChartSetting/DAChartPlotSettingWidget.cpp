@@ -9,47 +9,46 @@ namespace DA
 DAChartPlotSettingWidget::DAChartPlotSettingWidget(QWidget* parent)
     : QWidget(parent), ui(new Ui::DAChartPlotSettingWidget)
 {
-	ui->setupUi(this);
+    ui->setupUi(this);
     connect(ui->lineEditTitle, &QLineEdit::textChanged, this, &DAChartPlotSettingWidget::onTitleTextChanged);
     connect(ui->lineEditFooter, &QLineEdit::textChanged, this, &DAChartPlotSettingWidget::onFooterTextChanged);
     connect(ui->widgetTitleFontEditer,
             &DAFontEditPannelWidget::currentFontChanged,
             this,
             &DAChartPlotSettingWidget::onTitleFontChanged);
-	connect(ui->widgetFooterFontEditer,
+    connect(ui->widgetFooterFontEditer,
             &DAFontEditPannelWidget::currentFontChanged,
             this,
             &DAChartPlotSettingWidget::onFooterFontChanged);
-	connect(ui->widgetTitleFontEditer,
+    connect(ui->widgetTitleFontEditer,
             &DAFontEditPannelWidget::currentFontColorChanged,
             this,
             &DAChartPlotSettingWidget::onTitleColorChanged);
-	connect(ui->widgetFooterFontEditer,
+    connect(ui->widgetFooterFontEditer,
             &DAFontEditPannelWidget::currentFontColorChanged,
             this,
             &DAChartPlotSettingWidget::onFooterColorChanged);
-	ui->widgetXBottomAxisSetting->setEnableCheckBoxIcon(QIcon(":/DAGui/ChartSetting/icon/axisXBottom.svg"));
-	ui->widgetXTopAxisSetting->setEnableCheckBoxIcon(QIcon(":/DAGui/ChartSetting/icon/axisXTop.svg"));
-	ui->widgetYLeftAxisSetting->setEnableCheckBoxIcon(QIcon(":/DAGui/ChartSetting/icon/axisYLeft.svg"));
-	ui->widgetYRightAxisSetting->setEnableCheckBoxIcon(QIcon(":/DAGui/ChartSetting/icon/axisYRight.svg"));
 }
 
 DAChartPlotSettingWidget::~DAChartPlotSettingWidget()
 {
-	delete ui;
+    delete ui;
 }
 
 /**
  * @brief 设置chart，可传入空指针
  * @param w
  */
-void DAChartPlotSettingWidget::setChartWidget(DAChartWidget* w)
+void DAChartPlotSettingWidget::setPlot(QwtPlot* w)
 {
-	mChartPlot = w;
+    if (mChartPlot == w) {
+        return;
+    }
+    mChartPlot = w;
     updateUI();
 }
 
-DAChartWidget* DAChartPlotSettingWidget::getChartWidget() const
+QwtPlot* DAChartPlotSettingWidget::getPlot() const
 {
     return mChartPlot.data();
 }
@@ -60,28 +59,19 @@ DAChartWidget* DAChartPlotSettingWidget::getChartWidget() const
 void DAChartPlotSettingWidget::updateUI()
 {
 
-    DAChartWidget* w = getChartWidget();
-    ui->widgetXBottomAxisSetting->setChart(w, QwtPlot::xBottom);
-    ui->widgetXTopAxisSetting->setChart(w, QwtPlot::xTop);
-    ui->widgetYLeftAxisSetting->setChart(w, QwtPlot::yLeft);
-    ui->widgetYRightAxisSetting->setChart(w, QwtPlot::yRight);
-
-    ui->groupBoxXBottom->setCollapsed(!w || !(w->axisEnabled(QwtPlot::xBottom)));
-    ui->groupBoxXTop->setCollapsed(!w || !(w->axisEnabled(QwtPlot::xTop)));
-    ui->groupBoxYLeft->setCollapsed(!w || !(w->axisEnabled(QwtPlot::yLeft)));
-    ui->groupBoxYRight->setCollapsed(!w || !(w->axisEnabled(QwtPlot::yRight)));
+    QwtPlot* plot = getPlot();
 
     QwtText tt;
-    if (w) {
-        tt = w->title();
+    if (plot) {
+        tt = plot->title();
     }
     DASignalBlockers block(ui->lineEditTitle, ui->widgetTitleFontEditer, ui->lineEditFooter, ui->widgetFooterFontEditer);
     ui->lineEditTitle->setText(tt.text());
     ui->widgetTitleFontEditer->setCurrentFont(tt.font());
     ui->widgetTitleFontEditer->setCurrentFontColor(tt.color());
 
-    if (w) {
-        tt = w->footer();
+    if (plot) {
+        tt = plot->footer();
     }
     ui->lineEditFooter->setText(tt.text());
     ui->widgetFooterFontEditer->setCurrentFont(tt.font());
@@ -90,49 +80,49 @@ void DAChartPlotSettingWidget::updateUI()
 
 void DAChartPlotSettingWidget::onTitleTextChanged(const QString& t)
 {
-    DAChartWidget* w = getChartWidget();
-    if (!w) {
+    QwtPlot* plot = getPlot();
+    if (!plot) {
         return;
     }
-    QwtText tt = w->title();
+    QwtText tt = plot->title();
     if (tt.text() == t) {
         return;
     }
-	tt.setText(t);
-    w->setTitle(tt);
+    tt.setText(t);
+    plot->setTitle(tt);
 }
 
 void DAChartPlotSettingWidget::onTitleFontChanged(const QFont& f)
 {
-    DAChartWidget* w = getChartWidget();
-    if (!w) {
+    QwtPlot* plot = getPlot();
+    if (!plot) {
         return;
     }
-    QwtText tt = w->title();
+    QwtText tt = plot->title();
     if (tt.font() == f) {
         return;
     }
-	tt.setFont(f);
-    w->setTitle(tt);
+    tt.setFont(f);
+    plot->setTitle(tt);
 }
 
 void DAChartPlotSettingWidget::onTitleColorChanged(const QColor& c)
 {
-    DAChartWidget* w = getChartWidget();
-    if (!w) {
+    QwtPlot* plot = getPlot();
+    if (!plot) {
         return;
     }
-    QwtText tt = w->title();
+    QwtText tt = plot->title();
     if (tt.color() == c) {
         return;
     }
-	tt.setColor(c);
-    w->setTitle(tt);
+    tt.setColor(c);
+    plot->setTitle(tt);
 }
 
 void DAChartPlotSettingWidget::onFooterTextChanged(const QString& t)
 {
-    DAChartWidget* w = getChartWidget();
+    QwtPlot* w = getPlot();
     if (!w) {
         return;
     }
@@ -140,13 +130,13 @@ void DAChartPlotSettingWidget::onFooterTextChanged(const QString& t)
     if (tt.text() == t) {
         return;
     }
-	tt.setText(t);
+    tt.setText(t);
     w->setFooter(tt);
 }
 
 void DAChartPlotSettingWidget::onFooterFontChanged(const QFont& f)
 {
-    DAChartWidget* w = getChartWidget();
+    QwtPlot* w = getPlot();
     if (!w) {
         return;
     }
@@ -154,13 +144,13 @@ void DAChartPlotSettingWidget::onFooterFontChanged(const QFont& f)
     if (tt.font() == f) {
         return;
     }
-	tt.setFont(f);
+    tt.setFont(f);
     w->setFooter(tt);
 }
 
 void DAChartPlotSettingWidget::onFooterColorChanged(const QColor& c)
 {
-    DAChartWidget* w = getChartWidget();
+    QwtPlot* w = getPlot();
     if (!w) {
         return;
     }
@@ -168,7 +158,7 @@ void DAChartPlotSettingWidget::onFooterColorChanged(const QColor& c)
     if (tt.color() == c) {
         return;
     }
-	tt.setColor(c);
+    tt.setColor(c);
     w->setFooter(tt);
 }
 
