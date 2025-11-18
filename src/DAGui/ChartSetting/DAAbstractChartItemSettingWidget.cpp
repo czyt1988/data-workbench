@@ -20,22 +20,11 @@ DAAbstractChartItemSettingWidget::~DAAbstractChartItemSettingWidget()
  */
 void DAAbstractChartItemSettingWidget::setPlotItem(QwtPlotItem* item)
 {
-	mPlotItem = item;
-	// 如果item有plot，则把plot设置进来，plot可以知道item是否被delete
-	QwtPlot* oldPlot = mPlot.data();
-	QwtPlot* newPlot = nullptr;
-	if (item) {
-		newPlot = mPlotItem->plot();
-		mPlot   = newPlot;
-	}
-	if (oldPlot != newPlot) {
-		if (oldPlot) {
-			disconnect(oldPlot, &QwtPlot::itemAttached, this, &DAAbstractChartItemSettingWidget::plotItemAttached);
-		}
-		if (newPlot) {
-			connect(newPlot, &QwtPlot::itemAttached, this, &DAAbstractChartItemSettingWidget::plotItemAttached);
-		}
-	}
+    mPlotItem = item;
+    // 如果item有plot，则把plot设置进来，plot可以知道item是否被delete
+    if (item) {
+        setPlot(item->plot());
+    }
     updateUI(item);
 }
 
@@ -46,7 +35,7 @@ void DAAbstractChartItemSettingWidget::setPlotItem(QwtPlotItem* item)
  */
 QwtPlotItem* DAAbstractChartItemSettingWidget::getPlotItem() const
 {
-	return mPlotItem;
+    return mPlotItem;
 }
 
 /**
@@ -65,10 +54,28 @@ bool DAAbstractChartItemSettingWidget::isHaveItem() const
  */
 bool DAAbstractChartItemSettingWidget::checkItemRTTI(QwtPlotItem::RttiValues rtti) const
 {
-	if (!mPlotItem) {
-		return false;
-	}
-	return (mPlotItem->rtti() == rtti);
+    if (!mPlotItem) {
+        return false;
+    }
+    return (mPlotItem->rtti() == rtti);
+}
+
+/**
+ * @brief 设置plot是为了能感知item是否消除
+ * @param plot
+ */
+void DAAbstractChartItemSettingWidget::setPlot(QwtPlot* plot)
+{
+    QwtPlot* oldPlot = mPlot.data();
+    if (oldPlot != plot) {
+        if (oldPlot) {
+            disconnect(oldPlot, nullptr, this, nullptr);
+        }
+        if (plot) {
+            connect(plot, &QwtPlot::itemAttached, this, &DAAbstractChartItemSettingWidget::plotItemAttached);
+        }
+        mPlot = plot;
+    }
 }
 
 /**
@@ -82,15 +89,15 @@ QwtPlot* DAAbstractChartItemSettingWidget::getPlot() const
 
 void DAAbstractChartItemSettingWidget::updateUI(QwtPlotItem* item)
 {
-	Q_UNUSED(item);
+    Q_UNUSED(item);
 }
 
 void DAAbstractChartItemSettingWidget::plotItemAttached(QwtPlotItem* plotItem, bool on)
 {
-	if (!on && plotItem == mPlotItem) {
-		// item脱离plot，有可能会被delete
-		setPlotItem(nullptr);
-	}
+    if (!on && plotItem == mPlotItem) {
+        // item脱离plot，有可能会被delete
+        setPlotItem(nullptr);
+    }
 }
 
 }

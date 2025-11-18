@@ -19,8 +19,8 @@ class DAGUI_API DAChartAxisSetWidget : public QWidget
 public:
 	explicit DAChartAxisSetWidget(QWidget* parent = 0);
 	~DAChartAxisSetWidget();
-	QwtPlot* getChart() const;
-	void setChart(QwtPlot* chart, int axisID);
+	QwtPlot* getPlot() const;
+	void setPlot(QwtPlot* chart, int axisID);
 	void updateUI();
 	void resetAxisValue();
 	// axis enable
@@ -67,7 +67,7 @@ private:
 
 private:
 	Ui::DAChartAxisSetWidget* ui;
-	QPointer< QwtPlot > m_chart;
+	QPointer< QwtPlot > m_plot;
 	QButtonGroup* m_buttonGroup;
 	int m_axisID;
 };

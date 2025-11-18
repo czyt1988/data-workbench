@@ -131,9 +131,8 @@ void DAChartManageWidget::onFigureCreated(DAFigureWidget* fig)
     figTreeview->setFigureWidget(fig);
     d_ptr->mFigToFigWidget[ fig->figure() ] = fig;
     d_ptr->mFigureWidgetToTree[ fig ]       = figTreeview;
-    connect(figTreeview, &DAFigureTreeView::plotClicked, this, &DAChartManageWidget::onPlotClicked);
-    connect(figTreeview, &DAFigureTreeView::plotItemClicked, this, &DAChartManageWidget::onPlotItemClicked);
-    connect(figTreeview, &DAFigureTreeView::axisClicked, this, &DAChartManageWidget::onAxisClicked);
+    connect(figTreeview, &DAFigureTreeView::itemCliecked, this, &DAChartManageWidget::figureElementClicked);
+    connect(figTreeview, &DAFigureTreeView::itemDbCliecked, this, &DAChartManageWidget::figureElementDbClicked);
     ui->stackedWidget->insertWidget(index, figTreeview);
 }
 
@@ -164,7 +163,7 @@ void DAChartManageWidget::onPlotClicked(QwtPlot* plot, QStandardItem* treeItem)
         return;
     }
     DAFigureElementSelection sel(figWidget, plot);
-    Q_EMIT figureElementSelected(sel);
+    Q_EMIT figureElementClicked(sel);
 }
 
 void DAChartManageWidget::onPlotItemClicked(QwtPlotItem* item, QwtPlot* plot, QStandardItem* treeItem)
@@ -178,7 +177,7 @@ void DAChartManageWidget::onPlotItemClicked(QwtPlotItem* item, QwtPlot* plot, QS
         return;
     }
     DAFigureElementSelection sel(figWidget, plot, item);
-    Q_EMIT figureElementSelected(sel);
+    Q_EMIT figureElementClicked(sel);
 }
 
 void DAChartManageWidget::onAxisClicked(QwtAxisId axisId, QwtPlot* plot, QStandardItem* treeItem)
@@ -192,7 +191,7 @@ void DAChartManageWidget::onAxisClicked(QwtAxisId axisId, QwtPlot* plot, QStanda
         return;
     }
     DAFigureElementSelection sel(figWidget, plot, plot->axisWidget(axisId), axisId);
-    Q_EMIT figureElementSelected(sel);
+    Q_EMIT figureElementClicked(sel);
 }
 
 }

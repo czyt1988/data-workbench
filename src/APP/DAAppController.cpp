@@ -364,8 +364,8 @@ void DAAppController::initConnection()
     connect(dow, &DADataOperateWidget::dataTableCreated, this, &DAAppController::onDataOperatePageCreated);
     // DAChartManager
     DAChartManageWidget* cmw = mDock->getChartManageWidget();
-    connect(cmw, &DAChartManageWidget::figureElementSelected, this, &DAAppController::onFigureElementSelected);
-
+    connect(cmw, &DAChartManageWidget::figureElementClicked, this, &DAAppController::onFigureElementClicked);
+    connect(cmw, &DAChartManageWidget::figureElementClicked, this, &DAAppController::onFigureElementDbClicked);
     // DAChartOperateWidget
     DAChartOperateWidget* cow = mDock->getChartOperateWidget();
     connect(cow, &DAChartOperateWidget::figureCreated, this, &DAAppController::onFigureCreated);
@@ -706,7 +706,7 @@ void DAAppController::onRecentFileSelected(const QString& filePath)
  * 信号由DAChartManageWidget发出
  * @param selection
  */
-void DAAppController::onFigureElementSelected(const DAFigureElementSelection& selection)
+void DAAppController::onFigureElementClicked(const DAFigureElementSelection& selection)
 {
     // 这里和设置页面同步
     DASettingContainerWidget* setting = getSettingContainerWidget();
@@ -718,6 +718,23 @@ void DAAppController::onFigureElementSelected(const DAFigureElementSelection& se
         return;
     }
     chartSetting->setSelection(selection);
+}
+
+/**
+ * @brief 双击显示绘图和设置对话框
+ * @param selection
+ */
+void DAAppController::onFigureElementDbClicked(const DAFigureElementSelection& selection)
+{
+    // 和单击事件一致
+    onFigureElementClicked(selection);
+    // 同步查看是否设置对话框在前台
+    DASettingContainerWidget* setting = getSettingContainerWidget();
+    if (setting) {
+        setting->showChartSettingWidget();
+    }
+    // 把绘图界面显示在前台
+    mDock->raiseDockingArea(DADockingAreaInterface::DockingAreaChartOperate);
 }
 
 /**

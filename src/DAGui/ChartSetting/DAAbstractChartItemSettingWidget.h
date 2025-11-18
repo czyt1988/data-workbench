@@ -41,7 +41,7 @@ public:
     bool isHaveItem() const;
     // 判断当前item是否是对应的rtti，如果没有item也返回false
     bool checkItemRTTI(QwtPlotItem::RttiValues rtti) const;
-    // 获取plot
+
     QwtPlot* getPlot() const;
     /**
      * @brief 快捷转换为别的item
@@ -64,6 +64,9 @@ public:
     // setPlotItem之后调用的虚函数,通过重写此函数可以执行一些设置item之后的界面更新
     virtual void updateUI(QwtPlotItem* item);
 
+protected:
+    // plot设置,此函数在setPlotItem会调用，避免误操作，设置为protected
+    void setPlot(QwtPlot* plot);
 public Q_SLOTS:
     virtual void plotItemAttached(QwtPlotItem* plotItem, bool on);
 

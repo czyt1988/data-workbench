@@ -823,7 +823,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+825"/>
+        <location filename="../APP/DAAppController.cpp" line="+842"/>
         <location line="+49"/>
         <source>project file(*.%1)</source>
         <translation>工程文件(*.%1)</translation>
@@ -845,7 +845,7 @@ Table Area</source>
         <translation>加载工程文件“%1”失败</translation>
     </message>
     <message>
-        <location line="-407"/>
+        <location line="-424"/>
         <location line="+22"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
@@ -873,12 +873,12 @@ Table Area</source>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+381"/>
+        <location line="+398"/>
         <source>Project saved successfully,path is %1</source>
         <translation>工程保存成功，路径位于:%1</translation>
     </message>
     <message>
-        <location line="-425"/>
+        <location line="-442"/>
         <source>Project Files (*.%1)</source>
         <translation>工程文件(*.%1)</translation>
     </message>
@@ -888,7 +888,7 @@ Table Area</source>
         <translation>请选中数据操作窗口</translation>
     </message>
     <message>
-        <location line="+379"/>
+        <location line="+396"/>
         <source>Project load successfully,path is %1</source>
         <translation>工程加载成功，路径为：%1</translation>
     </message>
@@ -1788,7 +1788,7 @@ Table Area</source>
 <context>
     <name>DA::DAChartCurveItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="+141"/>
+        <location filename="../DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="+142"/>
         <source>Lines</source>
         <translation>折线</translation>
     </message>
@@ -1902,7 +1902,7 @@ Table Area</source>
         <translation>获取了绘图创建的信号，但无法找到绘图的索引</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+18"/>
         <source>get figure close signal,but can not find figure index</source>
         <translation>获取了绘图关闭的信号，但无法找到绘图的索引</translation>
     </message>
@@ -1926,9 +1926,42 @@ Table Area</source>
     </message>
 </context>
 <context>
+    <name>DA::DAChartSettingWidget</name>
+    <message>
+        <location filename="../DAGui/DAChartSettingWidget.cpp" line="+179"/>
+        <source>Chart Area</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Canvas Area</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Y Left Scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>X Bottom Scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Y Right Scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>X Top Scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DA::DAChartSpectrogramItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartSpectrogramItemSettingWidget.cpp" line="+85"/>
+        <location filename="../DAGui/ChartSetting/DAChartSpectrogramItemSettingWidget.cpp" line="+86"/>
         <source>Image Mode</source>
         <translation>云图模式</translation>
     </message>
@@ -2571,17 +2604,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAFigureTreeModel</name>
     <message>
-        <location filename="../DAFigure/Models/DAFigureTreeModel.cpp" line="+358"/>
-        <source>unknow chart</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+15"/>
-        <source>untitle-chart</source>
-        <translation type="unfinished">图-未命名</translation>
-    </message>
-    <message>
-        <location line="-283"/>
+        <location filename="../DAFigure/Models/DAFigureTreeModel.cpp" line="+90"/>
         <source>element</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2591,17 +2614,17 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+49"/>
+        <location line="+50"/>
         <source>Axis</source>
         <translation type="unfinished">坐标系</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+20"/>
         <source>plot item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-92"/>
+        <location line="-94"/>
         <source>property</source>
         <translation>属性</translation>
     </message>
@@ -3456,7 +3479,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-2166"/>
+        <location filename="../APP/DAAppController.cpp" line="-2183"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -3886,6 +3909,14 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
 </context>
 <context>
+    <name>DAChartCanvasSettingWidget</name>
+    <message>
+        <location filename="../DAGui/ChartSetting/DAChartCanvasSettingWidget.ui" line="+16"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DAChartCommonItemsSettingWidget</name>
     <message>
         <location filename="../DAGui/ChartSetting/DAChartCommonItemsSettingWidget.ui" line="+14"/>
@@ -4270,44 +4301,24 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartPlotSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="+20"/>
         <source>Plot Setting</source>
         <translation>绘图设置</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+21"/>
         <source>Title&amp;&amp;Footer</source>
         <translation>标题和脚注</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+13"/>
         <source>Title</source>
         <translation>标题</translation>
     </message>
     <message>
-        <location line="+26"/>
+        <location line="-7"/>
         <source>Footer</source>
         <translation>脚注</translation>
-    </message>
-    <message>
-        <location line="+29"/>
-        <source>X Bottom</source>
-        <translation>X轴底部坐标</translation>
-    </message>
-    <message>
-        <location line="+30"/>
-        <source>X Top</source>
-        <translation>X轴顶部坐标</translation>
-    </message>
-    <message>
-        <location line="+33"/>
-        <source>Y Left</source>
-        <translation>Y轴左坐标</translation>
-    </message>
-    <message>
-        <location line="+30"/>
-        <source>Y Right</source>
-        <translation>Y轴右坐标</translation>
     </message>
 </context>
 <context>
@@ -4316,21 +4327,6 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <location filename="../DAGui/DAChartSettingWidget.ui" line="+14"/>
         <source>Chart Setting</source>
         <translation>绘图设置</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Figure</source>
-        <translation>绘图窗口</translation>
-    </message>
-    <message>
-        <location line="+32"/>
-        <source>Chart</source>
-        <translation>图表</translation>
-    </message>
-    <message>
-        <location line="+29"/>
-        <source>item</source>
-        <translation>图元</translation>
     </message>
 </context>
 <context>
@@ -4381,7 +4377,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartSymbolEditWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartSymbolEditWidget.ui" line="+20"/>
+        <location filename="../DAGui/ChartSetting/DAChartSymbolEditWidget.ui" line="+26"/>
         <source>Chart Symbol Edit</source>
         <translation>符号编辑</translation>
     </message>
@@ -6585,12 +6581,18 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>内核初始化失败</translation>
     </message>
     <message>
-        <location filename="../DAFigure/Models/DAFigureTreeModel.cpp" line="+275"/>
+        <location filename="../DAFigure/DAChartUtil.cpp" line="+41"/>
+        <source>unknow chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <location line="+7"/>
         <source>untitle-chart</source>
         <translation type="unfinished">图-未命名</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+12"/>
         <source>untitle</source>
         <translation>未命名</translation>
     </message>

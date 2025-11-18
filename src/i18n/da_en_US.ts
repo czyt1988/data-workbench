@@ -824,17 +824,17 @@ Config</source>
     </message>
     <message>
         <location line="+12"/>
-        <location line="+381"/>
+        <location line="+398"/>
         <source>Project saved successfully,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-362"/>
+        <location line="-379"/>
         <source>Please select the data operation window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+253"/>
+        <location line="+270"/>
         <source>Question</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1756,7 +1756,7 @@ Config</source>
 <context>
     <name>DA::DAChartCurveItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="+141"/>
+        <location filename="../DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="+142"/>
         <source>Lines</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1870,7 +1870,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+18"/>
         <source>get figure close signal,but can not find figure index</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1894,9 +1894,42 @@ Config</source>
     </message>
 </context>
 <context>
+    <name>DA::DAChartSettingWidget</name>
+    <message>
+        <location filename="../DAGui/DAChartSettingWidget.cpp" line="+179"/>
+        <source>Chart Area</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Canvas Area</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Y Left Scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>X Bottom Scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Y Right Scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>X Top Scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DA::DAChartSpectrogramItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartSpectrogramItemSettingWidget.cpp" line="+85"/>
+        <location filename="../DAGui/ChartSetting/DAChartSpectrogramItemSettingWidget.cpp" line="+86"/>
         <source>Image Mode</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2466,27 +2499,17 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+242"/>
-        <source>unknow chart</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+15"/>
-        <source>untitle-chart</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-283"/>
+        <location line="-26"/>
         <source>element</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+75"/>
+        <location line="+76"/>
         <source>Axis</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+20"/>
         <source>plot item</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3336,7 +3359,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-2166"/>
+        <location filename="../APP/DAAppController.cpp" line="-2183"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3766,6 +3789,14 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
 </context>
 <context>
+    <name>DAChartCanvasSettingWidget</name>
+    <message>
+        <location filename="../DAGui/ChartSetting/DAChartCanvasSettingWidget.ui" line="+16"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DAChartCommonItemsSettingWidget</name>
     <message>
         <location filename="../DAGui/ChartSetting/DAChartCommonItemsSettingWidget.ui" line="+14"/>
@@ -4150,43 +4181,23 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartPlotSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="+20"/>
         <source>Plot Setting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+21"/>
         <source>Title&amp;&amp;Footer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+13"/>
         <source>Title</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+26"/>
+        <location line="-7"/>
         <source>Footer</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+29"/>
-        <source>X Bottom</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+30"/>
-        <source>X Top</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+33"/>
-        <source>Y Left</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+30"/>
-        <source>Y Right</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4195,21 +4206,6 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location filename="../DAGui/DAChartSettingWidget.ui" line="+14"/>
         <source>Chart Setting</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Figure</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+32"/>
-        <source>Chart</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+29"/>
-        <source>item</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4261,7 +4257,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartSymbolEditWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartSymbolEditWidget.ui" line="+20"/>
+        <location filename="../DAGui/ChartSetting/DAChartSymbolEditWidget.ui" line="+26"/>
         <source>Chart Symbol Edit</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6527,12 +6523,18 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAFigure/Models/DAFigureTreeModel.cpp" line="+182"/>
+        <location filename="../DAFigure/DAChartUtil.cpp" line="+41"/>
+        <source>unknow chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <location line="+7"/>
         <source>untitle-chart</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+12"/>
         <source>untitle</source>
         <translation type="unfinished"></translation>
     </message>

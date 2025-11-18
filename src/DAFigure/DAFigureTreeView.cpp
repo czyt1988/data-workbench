@@ -113,24 +113,38 @@ void DAFigureTreeView::handleClicked(const QModelIndex& index, bool doubleClicke
     }
     QStandardItem* item = model->itemFromIndex(index);
 
-    const int nodeType = item->data(DAFigureTreeModel::RoleNodeType).toInt();
-
+    const int nodeType  = item->data(DAFigureTreeModel::RoleNodeType).toInt();
+    DAFigureWidget* fig = getFigureWidget();
+    if (!fig) {
+        return;
+    }
     switch (nodeType) {
+    case DAFigureTreeModel::NodeTypePlotFolder: {
+        QwtPlot* plot = model->plotFromItem(item);
+        DAFigureElementSelection sel(fig, plot);
+        doubleClicked ? Q_EMIT itemDbCliecked(sel) : Q_EMIT itemCliecked(sel);
+        break;
+    }
     case DAFigureTreeModel::NodeTypePlot: {
         QwtPlot* plot = model->plotFromItem(item);
-        emitPlotClick(plot, item, doubleClicked);
+        DAFigureElementSelection sel(fig, plot);
+        doubleClicked ? Q_EMIT itemDbCliecked(sel) : Q_EMIT itemCliecked(sel);
         break;
     }
     case DAFigureTreeModel::NodeTypeAxis: {
         QwtPlot* plot = model->plotFromItem(item);
         int axisId    = model->axisIdFromItem(item);
-        emitAxisClick(axisId, plot, item, doubleClicked);
+        DAFigureElementSelection sel(fig, plot, plot->axisWidget(axisId), axisId);
+        doubleClicked ? Q_EMIT itemDbCliecked(sel) : Q_EMIT itemCliecked(sel);
+        // emitAxisClick(axisId, plot, item, doubleClicked);
         break;
     }
     case DAFigureTreeModel::NodeTypePlotItem: {
         QwtPlot* plot         = model->plotFromItem(item);
         QwtPlotItem* plotItem = model->plotItemFromItem(item);
-        emitPlotItemClick(plotItem, plot, item, doubleClicked);
+        DAFigureElementSelection sel(fig, plot, plotItem);
+        doubleClicked ? Q_EMIT itemDbCliecked(sel) : Q_EMIT itemCliecked(sel);
+        // emitPlotItemClick(plotItem, plot, item, doubleClicked);
 
         /* 颜色列点击 -> 发信号 */
         if (index.column() == 2 && plotItem) {
@@ -141,21 +155,6 @@ void DAFigureTreeView::handleClicked(const QModelIndex& index, bool doubleClicke
     default:
         break;
     }
-}
-
-void DAFigureTreeView::emitPlotClick(QwtPlot* plot, QStandardItem* item, bool db)
-{
-    db ? Q_EMIT plotDoubleClicked(plot, item) : Q_EMIT plotClicked(plot, item);
-}
-
-void DAFigureTreeView::emitAxisClick(int axisId, QwtPlot* plot, QStandardItem* item, bool db)
-{
-    db ? Q_EMIT axisDoubleClicked(axisId, plot, item) : Q_EMIT axisClicked(axisId, plot, item);
-}
-
-void DAFigureTreeView::emitPlotItemClick(QwtPlotItem* item, QwtPlot* plot, QStandardItem* treeItem, bool db)
-{
-    db ? Q_EMIT plotItemDoubleClicked(item, plot, treeItem) : Q_EMIT plotItemClicked(item, plot, treeItem);
 }
 
 }

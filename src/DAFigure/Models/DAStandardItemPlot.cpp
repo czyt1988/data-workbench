@@ -7,7 +7,7 @@ namespace DA
 DAStandardItemPlot::DAStandardItemPlot(QwtPlot* plot, ItemType plotType)
     : QStandardItem(), m_plot(plot), m_itemType(plotType)
 {
-    setData(DAFigureTreeModel::NodeTypeLayer, DAFigureTreeModel::RoleNodeType);
+    setData(DAFigureTreeModel::NodeTypePlot, DAFigureTreeModel::RoleNodeType);
     setData(QVariant::fromValue(reinterpret_cast< quintptr >(plot)), DAFigureTreeModel::RolePlot);
     setEditable(false);
 }

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>302</width>
-    <height>767</height>
+    <height>370</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -249,15 +249,15 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>DA::DAAligmentPositionEditWidget</class>
-   <extends>QWidget</extends>
-   <header>DAAligmentPositionEditWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>DA::DABrushEditWidget</class>
    <extends>QWidget</extends>
    <header>DABrushEditWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DA::DAAligmentPositionEditWidget</class>
+   <extends>QWidget</extends>
+   <header>DAAligmentPositionEditWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

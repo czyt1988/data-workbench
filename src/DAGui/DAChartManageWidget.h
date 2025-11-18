@@ -48,7 +48,8 @@ Q_SIGNALS:
      * @param selection 选中的内容
      * @sa DAFigureElementSelection
      */
-    void figureElementSelected(const DAFigureElementSelection& selection);
+    void figureElementClicked(const DAFigureElementSelection& selection);
+    void figureElementDbClicked(const DAFigureElementSelection& selection);
 
 private:
     // 设置当前显示的fig对应的view

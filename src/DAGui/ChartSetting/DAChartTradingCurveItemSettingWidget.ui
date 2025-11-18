@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>345</width>
-    <height>649</height>
+    <height>463</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -385,6 +385,12 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>DA::DAPenEditWidget</class>
+   <extends>QWidget</extends>
+   <header>DAPenEditWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
    <class>DA::DABrushEditWidget</class>
    <extends>QWidget</extends>
    <header>DABrushEditWidget.h</header>
@@ -394,12 +400,6 @@
    <class>DA::DAChartPlotItemSettingWidget</class>
    <extends>QWidget</extends>
    <header>DAChartPlotItemSettingWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>DA::DAPenEditWidget</class>
-   <extends>QWidget</extends>
-   <header>DAPenEditWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

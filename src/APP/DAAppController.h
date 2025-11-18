@@ -404,7 +404,8 @@ private slots:
     //===================================================
     void onRecentFileSelected(const QString& filePath);
     // 绘图元素选中，信号由DAChartManageWidget发出
-    void onFigureElementSelected(const DAFigureElementSelection& selection);
+    void onFigureElementClicked(const DAFigureElementSelection& selection);
+    void onFigureElementDbClicked(const DAFigureElementSelection& selection);
 
 private:
     // 初始化信号槽
