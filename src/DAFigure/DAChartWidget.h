@@ -122,54 +122,47 @@ public:
     void setupZoomer();
     void setupZoomer(QwtPlotZoomer* z, bool issecondZoom = false);
     QwtPlotZoomer* getZoomerSecond();
-    //==============================================================
-    // 网格
-    //==============================================================
-    QwtPlotGrid* getGrid() const;
-    QwtPlotGrid* setupGrid(const QColor& color = Qt::gray, qreal width = 1.0, Qt::PenStyle style = Qt::DotLine);
-    void setupGrid(QwtPlotGrid* g);
-    //==============================================================
-    // 图例
-    //==============================================================
-    // 获取legend
-    QwtPlotLegendItem* getLegend() const;
+
 public slots:
     // 设置边框
     void setChartBorderColor(const QColor& c);
     // 设置背景
     void setChartBackgroundBrush(const QBrush& b);
 
-    // 缩放和enablePan是互斥关系，enableZoomer(true)会调用enablePan(false)
-    void enableZoomer(bool enable = true);
+    // 设置grid
+    void setGridEnable(bool enabled = true);
+    // 启用或禁用X轴主网格线
+    void setGridXEnabled(bool enabled = true);
+    // 启用或禁用Y轴主网格线
+    void setGridYEnabled(bool enabled = true);
+    // 启用或禁用X轴次要网格线
+    void setGridXMinEnabled(bool enabled = true);
+    // 启用或禁用Y轴次要网格线
+    void setGridYMinEnabled(bool enabled = true);
 
+    // 设置legend开启
+    void setLegendEnable(bool enable = true);
+
+    // 缩放和enablePan是互斥关系，enableZoomer(true)会调用enablePan(false)
+    void setZoomerEnable(bool enable = true);
     // 回到放大的最底栈
     void setZoomBase();
-
     // 重置放大的基准
     void setZoomReset();
-
     // 放大1.6 相当于乘以0.625
     void zoomIn();
-
     // 缩小1.6 相当于乘以1.6
     void zoomOut();
-
     // 缩放到最适合比例，就是可以把所有图都能看清的比例
     void zoomInCompatible();
 
-    void enableCrossPicker(bool enable = true);
-    void enableGrid(bool enable = true);
-    void enableGridX(bool enable = true);
-    void enableGridY(bool enable = true);
-    void enableGridXMin(bool enable = true);
-    void enableGridYMin(bool enable = true);
+    // 十字线
+    void setCrossPickerEnable(bool enable = true);
+
     // 拖动,拖动和缩放是互斥关系，enablePan(true)内部会调用enableZoomer(false)
-    void enablePan(bool enable = true);
-
-    void enableLegend(bool enable = true);
-    void enableLegendPanel(bool enable = true);
-
-    void markYValue(double data, const QString& strLabel, QColor clr = Qt::black);
+    void setPanEnable(bool enable = true);
+    // legend面板
+    void setLegendPanelEnable(bool enable = true);
 
     void showItem(const QVariant& itemInfo, bool on);
 
@@ -181,14 +174,24 @@ public slots:
     void setYLabel(const QString& label);
     // 此函数激活chartPropertyHasChanged信号
     void notifyChartPropertyHasChanged();
-signals:
+Q_SIGNALS:
+    /**
+     * @brief 通过此类设置网格的任何属性（可见性、轴线启用状态等）发生改变时，会发射此信号。
+     *
+     * 观察者可以连接此信号，然后通过调用isGridVisible()、isGridXEnabled()等函数来获取最新的网格状态。
+     *
+     * @note 必须通过DAChartWidget设置网格属性才会触发
+     */
+    void gridSettingsChanged(QwtPlotGrid* grid);
+
+    /**
+     * @brief 当legend的任何属性（可见性、轴线启用状态等）发生改变时，会发射此信号。
+     * @param legned
+     */
+    void legendSettingChanged(QwtPlotLegendItem* legned);
+
     void enableZoomerChanged(bool enable);
     void enableCrossPickerChanged(bool enable);
-    void enableGridChanged(bool enable);
-    void enableGridXChanged(bool enable);
-    void enableGridYChanged(bool enable);
-    void enableGridXMinChanged(bool enable);
-    void enableGridYMinChanged(bool enable);
     void enablePannerChanged(bool enable);
     void enableLegendChanged(bool enable);
     void enableLegendPanelChanged(bool enable);
@@ -206,13 +209,37 @@ public:
 
     // 是否允许十字光标
     bool isEnableCrossPicker() const;
-    bool isEnableGrid() const;
-    bool isEnableGridX() const;
-    bool isEnableGridY() const;
-    bool isEnableGridXMin() const;
-    bool isEnableGridYMin() const;
-    bool isEnablePanner() const;
-    bool isEnableLegend() const;
+    //==============================================================
+    // 网格
+    //==============================================================
+    // 获取grid指针
+    QwtPlotGrid* getPlotGrid() const;
+    // 设置或创建网格，并配置其主要线条的样式
+    void setGridLine(const QColor& color = Qt::gray, qreal width = 1.0, Qt::PenStyle style = Qt::DotLine, bool isMajor = true);
+    // 检查网格是否可见
+    bool isGridVisible() const;
+    // 检查X轴主网格线是否启用
+    bool isGridXEnabled() const;
+    // 检查Y轴主网格线是否启用
+    bool isGridYEnabled() const;
+    // 检查X轴次要网格线是否启用
+    bool isGridXMinEnabled() const;
+    // 检查Y轴次要网格线是否启用
+    bool isGridYMinEnabled() const;
+
+    //==============================================================
+    // 图例
+    //==============================================================
+    // 获取legend
+    QwtPlotLegendItem* getPlotLegend() const;
+    // 检查legend是否可见
+    bool isLegendVisible() const;
+
+    //==============================================================
+    // Panner
+    //==============================================================
+    bool isPannerEnable() const;
+
     bool isEnableLegendPanel() const;
     bool isEnableYDataPicker() const;
     bool isEnableXYDataPicker() const;
@@ -233,7 +260,7 @@ protected:
 protected:
     void deleteGrid();
     void deleteZoomer();
-    void enableZoomer(QwtPlotZoomer* zoomer, bool enable);
+    void setZoomerEnable(QwtPlotZoomer* zoomer, bool enable);
 
     // 建立一个内置的picker(十字)
     void setupCrossPicker();
@@ -241,12 +268,12 @@ protected:
     void setupPanner();
     void deletePanner();
 
-    ///
-    /// \brief 建立一个图例r
-    ///
-    void setupLegend();
     void setuplegendPanel();
     void deletelegendPanel();
+
+private:
+    QwtPlotGrid* getOrCreateGrid();
+    QwtPlotLegendItem* getOrCreateLegend();
 };
 
 }  // End Of Namespace DA

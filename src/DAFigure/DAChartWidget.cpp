@@ -19,7 +19,6 @@
 #include "qwt_plot_spectrocurve.h"
 #include "qwt_plot_spectrogram.h"
 #include "qwt_column_symbol.h"
-#include "DAChartYValueMarker.h"
 #include "DAChartPointMarker.h"
 #include "DAChartCrossTracker.h"
 #include "DAChartCanvas.h"
@@ -43,10 +42,8 @@ public:
 public:
     QScopedPointer< QwtPlotZoomer > mZoomer;
     QScopedPointer< QwtPlotZoomer > mZoomerSecond;
-    QwtPlotGrid* mGrid { nullptr };
     QwtPlotPicker* mPicker { nullptr };
     QwtPlotPanner* mPanner { nullptr };
-    QwtPlotLegendItem* mLegend { nullptr };
     QwtLegend* mLegendPanel { nullptr };
     QwtPlotSeriesDataPicker* mDataPicker { nullptr };
 
@@ -157,15 +154,6 @@ QwtPlotZoomer* DAChartWidget::getZoomerSecond()
     return (d_ptr->mZoomerSecond.data());
 }
 
-/**
- * @brief 获取grid
- * @return
- */
-QwtPlotGrid* DAChartWidget::getGrid() const
-{
-    return (d_ptr->mGrid);
-}
-
 void DAChartWidget::paintEvent(QPaintEvent* e)
 {
     QPainter painter(this);
@@ -179,66 +167,174 @@ void DAChartWidget::paintEvent(QPaintEvent* e)
     QwtPlot::paintEvent(e);
 }
 
-bool DAChartWidget::isEnableGrid() const
+/**
+ * @brief 在当前plot中查找第一个QwtPlotGrid对象。
+ * @return 如果找到，返回指向该对象的指针；否则返回nullptr。
+ */
+QwtPlotGrid* DAChartWidget::getPlotGrid() const
 {
-    if (d_ptr->mGrid) {
-        return (d_ptr->mGrid->isVisible());
+    const QList< QwtPlotItem* > items = itemList(QwtPlotItem::Rtti_PlotGrid);
+    if (!items.isEmpty()) {
+        return static_cast< QwtPlotGrid* >(items.first());
     }
-    return (false);
+    return nullptr;
 }
 
-bool DAChartWidget::isEnableGridX() const
+/**
+ * @brief 设置gird的线条
+ * @param color 颜色
+ * @param width 宽度
+ * @param style 样式
+ * @param isMajor true代表设置主刻度，false代表设置次刻度
+ */
+void DAChartWidget::setGridLine(const QColor& color, qreal width, Qt::PenStyle style, bool isMajor)
 {
-    if (d_ptr->mGrid) {
-        if (d_ptr->mGrid->isVisible()) {
-            return (d_ptr->mGrid->xEnabled());
-        }
+    QwtPlotGrid* grid = getOrCreateGrid();
+    if (isMajor) {
+        grid->setMajorPen(color, width, style);
+    } else {
+        grid->setMinorPen(color, width, style);
     }
-    return (false);
 }
 
-bool DAChartWidget::isEnableGridY() const
+/**
+ * @brief 检查网格是否可用。
+ * @return 如果网格存在且可见，返回true；否则返回false。
+ */
+bool DAChartWidget::isGridVisible() const
 {
-    if (d_ptr->mGrid) {
-        if (d_ptr->mGrid->isVisible()) {
-            return (d_ptr->mGrid->yEnabled());
-        }
-    }
-    return (false);
+    QwtPlotGrid* grid = getPlotGrid();
+    return grid && grid->isVisible();
 }
 
-bool DAChartWidget::isEnableGridXMin() const
+/**
+ * @brief 检查X轴主网格线是否启用。
+ * @return 如果网格存在且X轴主网格线启用，返回true；否则返回false。
+ * @note 此状态独立于网格的整体可见性（isGridVisible）。
+ */
+bool DAChartWidget::isGridXEnabled() const
 {
-    if (d_ptr->mGrid) {
-        if (d_ptr->mGrid->isVisible()) {
-            return (d_ptr->mGrid->xMinEnabled());
-        }
-    }
-    return (false);
+    QwtPlotGrid* grid = getPlotGrid();
+    return grid && grid->xEnabled();
 }
 
-bool DAChartWidget::isEnableGridYMin() const
+/**
+ * @brief 检查Y轴主网格线是否启用。
+ * @return 如果网格存在且Y轴主网格线启用，返回true；否则返回false。
+ * @note 此状态独立于网格的整体可见性（isGridVisible）。
+ */
+bool DAChartWidget::isGridYEnabled() const
 {
-    if (d_ptr->mGrid) {
-        if (d_ptr->mGrid->isVisible()) {
-            return (d_ptr->mGrid->yMinEnabled());
-        }
-    }
-    return (false);
+    QwtPlotGrid* grid = getPlotGrid();
+    return grid && grid->yEnabled();
 }
 
-bool DAChartWidget::isEnablePanner() const
+/**
+ * @brief 检查X轴次要网格线是否启用。
+ * @return 如果网格存在且X轴次要网格线启用，返回true；否则返回false。
+ * @note 此状态独立于网格的整体可见性（isGridVisible）。
+ */
+bool DAChartWidget::isGridXMinEnabled() const
+{
+    QwtPlotGrid* grid = getPlotGrid();
+    return grid && grid->xMinEnabled();
+}
+
+/**
+ * @brief 检查Y轴次要网格线是否启用。
+ * @return 如果网格存在且Y轴次要网格线启用，返回true；否则返回false。
+ * @note 此状态独立于网格的整体可见性（isGridVisible）。
+ */
+bool DAChartWidget::isGridYMinEnabled() const
+{
+    QwtPlotGrid* grid = getPlotGrid();
+    return grid && grid->yMinEnabled();
+}
+
+/**
+ * @brief 设置网格的整体可见性。
+ *
+ *  如果网格不存在，此函数会自动创建一个默认样式的网格，然后根据参数设置其可见性。
+ *  @param enabled true表示显示网格，false表示隐藏网格。
+ */
+void DAChartWidget::setGridEnable(bool enabled)
+{
+    QwtPlotGrid* g = getOrCreateGrid();
+    if (g->isVisible() != enabled) {
+        g->setVisible(enabled);
+        replot();
+        emit gridSettingsChanged(g);
+    }
+}
+
+/**
+ * @brief 启用或禁用X轴主网格线。
+ *
+ * 如果网格不存在，此函数会自动创建一个默认样式的网格。
+ * @param enabled true表示启用X轴主网格线，false表示禁用。
+ */
+void DAChartWidget::setGridXEnabled(bool enabled)
+{
+    QwtPlotGrid* g = getOrCreateGrid();
+    if (g->xEnabled() != enabled) {
+        g->enableX(enabled);
+        replot();
+        emit gridSettingsChanged(g);
+    }
+}
+
+/**
+ * @brief 启用或禁用Y轴主网格线。
+ *
+ * 如果网格不存在，此函数会自动创建一个默认样式的网格。
+ * @param enabled true表示启用Y轴主网格线，false表示禁用。
+ */
+void DAChartWidget::setGridYEnabled(bool enabled)
+{
+    QwtPlotGrid* g = getOrCreateGrid();
+    if (g->yEnabled() != enabled) {
+        g->enableY(enabled);
+        replot();
+        emit gridSettingsChanged(g);
+    }
+}
+
+/**
+ * @brief 启用或禁用X轴次要网格线。
+ *
+ * 如果网格不存在，此函数会自动创建一个默认样式的网格。
+ * @param enabled true表示启用X轴次要网格线，false表示禁用。
+ */
+void DAChartWidget::setGridXMinEnabled(bool enabled)
+{
+    QwtPlotGrid* g = getOrCreateGrid();
+    if (g->xMinEnabled() != enabled) {
+        g->enableXMin(enabled);
+        replot();
+        emit gridSettingsChanged(g);
+    }
+}
+
+/**
+ * @brief 启用或禁用Y轴次要网格线。
+ *
+ * 如果网格不存在，此函数会自动创建一个默认样式的网格。
+ * @param enabled true表示启用Y轴次要网格线，false表示禁用。
+ */
+void DAChartWidget::setGridYMinEnabled(bool enabled)
+{
+    QwtPlotGrid* g = getOrCreateGrid();
+    if (g->yMinEnabled() != enabled) {
+        g->enableYMin(enabled);
+        replot();
+        emit gridSettingsChanged(g);
+    }
+}
+
+bool DAChartWidget::isPannerEnable() const
 {
     if (d_ptr->mPanner) {
         return (d_ptr->mPanner->isEnabled());
-    }
-    return (false);
-}
-
-bool DAChartWidget::isEnableLegend() const
-{
-    if (d_ptr->mLegend) {
-        return (d_ptr->mLegend->isVisible());
     }
     return (false);
 }
@@ -291,47 +387,41 @@ void DAChartWidget::makeIntervalSample(const QVector< double >& value,
     }
 }
 
-//========================================================================================
-// 网格 grid 操作
-//========================================================================================
-
-/**
- * @brief 设置网格
- * @param color 网格的颜色
- * @param width 网格线条的宽度
- * @param style 网格的样式
- * @return
- */
-QwtPlotGrid* DAChartWidget::setupGrid(const QColor& color, qreal width, Qt::PenStyle style)
-{
-    QwtPlotGrid* g = new QwtPlotGrid;
-    g->setMajorPen(color, width, style);
-    g->setMinorPen(color, 0, Qt::DotLine);  // 小刻度的样式
-    setupGrid(g);
-    return g;
-}
-
-/**
- * @brief 添加grid
- * @param g
- */
-void DAChartWidget::setupGrid(QwtPlotGrid* g)
-{
-    if (d_ptr->mGrid && d_ptr->mGrid != g) {
-        d_ptr->mGrid->detach();
-        delete d_ptr->mGrid;
-    }
-    d_ptr->mGrid = g;
-    d_ptr->mGrid->attach(this);
-}
-
 /**
  * @brief 获取图例
  * @return
  */
-QwtPlotLegendItem* DAChartWidget::getLegend() const
+QwtPlotLegendItem* DAChartWidget::getPlotLegend() const
 {
-    return d_ptr->mLegend;
+    const QList< QwtPlotItem* > items = itemList(QwtPlotItem::Rtti_PlotLegend);
+    if (!items.isEmpty()) {
+        return static_cast< QwtPlotLegendItem* >(items.first());
+    }
+    return nullptr;
+}
+
+/**
+ * @brief 显示图例
+ * @param enable
+ */
+void DAChartWidget::setLegendEnable(bool enable)
+{
+    QwtPlotLegendItem* legend = getOrCreateLegend();
+    if (legend->isVisible() != enable) {
+        legend->setVisible(enable);
+        replot();
+        emit legendSettingChanged(legend);
+    }
+}
+
+/**
+ * @brief 图例是否显示
+ * @return
+ */
+bool DAChartWidget::isLegendVisible() const
+{
+    QwtPlotLegendItem* legend = getPlotLegend();
+    return legend && legend->isVisible();
 }
 
 /**
@@ -339,124 +429,12 @@ QwtPlotLegendItem* DAChartWidget::getLegend() const
  */
 void DAChartWidget::deleteGrid()
 {
-    if (nullptr == d_ptr->mGrid) {
-        return;
+    QwtPlotGrid* grid = getPlotGrid();
+    if (grid) {
+        grid->detach();
+        delete (grid);
     }
-    d_ptr->mGrid->detach();
-    delete (d_ptr->mGrid);
-    d_ptr->mGrid = nullptr;
     replot();  // 刷新，否则不显示
-}
-
-/**
- * @brief 显示网格
- * @param enable
- */
-void DAChartWidget::enableGrid(bool enable)
-{
-    if (enable == isEnableGrid()) {
-        return;  // 状态一致不动作
-    }
-    if (enable) {
-        if (nullptr == d_ptr->mGrid) {
-            setupGrid();
-        }
-        d_ptr->mGrid->enableX(true);
-        d_ptr->mGrid->enableY(true);
-        d_ptr->mGrid->show();
-        emit enableGridXChanged(enable);
-        emit enableGridYChanged(enable);
-        emit enableGridChanged(enable);
-        return;
-    } else {
-        if (nullptr == d_ptr->mGrid) {
-            return;
-        }
-        d_ptr->mGrid->hide();
-    }
-    replot();
-    emit enableGridChanged(enable);
-}
-
-void DAChartWidget::enableGridX(bool enable)
-{
-    if (isEnableGridX() == enable) {
-        return;  // 状态一致不动作
-    }
-    if (nullptr == d_ptr->mGrid) {
-        return;
-    }
-    d_ptr->mGrid->enableX(enable);
-    emit enableGridXChanged(enable);
-
-    if (!enable) {
-        emit enableGridXMinChanged(false);
-    }
-    // _grid->show();//刷新
-}
-
-void DAChartWidget::enableGridY(bool enable)
-{
-    if (isEnableGridY() == enable) {
-        return;  // 状态一致不动作
-    }
-    if (nullptr == d_ptr->mGrid) {
-        return;
-    }
-    d_ptr->mGrid->enableY(enable);
-    emit enableGridYChanged(enable);
-
-    if (!enable) {
-        emit enableGridYMinChanged(false);
-    }
-}
-
-void DAChartWidget::enableGridXMin(bool enable)
-{
-    if (isEnableGridXMin() == enable) {
-        return;  // 状态一致不动作
-    }
-    if (nullptr == d_ptr->mGrid) {
-        return;
-    }
-    d_ptr->mGrid->enableXMin(enable);
-    emit enableGridXMinChanged(enable);
-}
-
-void DAChartWidget::enableGridYMin(bool enable)
-{
-    if (isEnableGridYMin() == enable) {
-        return;  // 状态一致不动作
-    }
-    if (nullptr == d_ptr->mGrid) {
-        return;
-    }
-    d_ptr->mGrid->enableYMin(enable);
-    emit enableGridYMinChanged(enable);
-}
-
-//========================================================================================
-// 画线和数据 操作
-//========================================================================================
-
-///
-/// \brief 设置y值横线标记
-/// \param data 值
-/// \param strLabel 描述
-/// \param clr 颜色
-/// \todo type show be use
-///
-void DAChartWidget::markYValue(double data, const QString& strLabel, QColor clr)
-{
-    double x                       = axisXmax();
-    DAChartYValueMarker* valueMark = new DAChartYValueMarker(data);
-
-    valueMark->setXValue(x);
-    valueMark->setLinePen(clr, 1);
-    valueMark->setLabel(strLabel);
-    valueMark->setLabelAlignment(Qt::AlignTop | Qt::AlignRight);
-    valueMark->setSpacing(1);  // 设置文字和mark的间隔
-    valueMark->attach(this);
 }
 
 double DAChartWidget::axisXmin(int axisId) const
@@ -525,13 +503,13 @@ double DAChartWidget::axisYmax(int axisId) const
 void DAChartWidget::setEnableAllEditor(bool enable)
 {
     if (isEnableZoomer() != enable) {
-        enableZoomer(enable);
+        setZoomerEnable(enable);
     }
     if (isEnableCrossPicker() != enable) {
-        enableCrossPicker(enable);
+        setCrossPickerEnable(enable);
     }
-    if (isEnablePanner() != enable) {
-        enablePan(enable);
+    if (isPannerEnable() != enable) {
+        setPanEnable(enable);
     }
     if (isEnableYDataPicker() != enable) {
         enableYDataPicker(enable);
@@ -859,7 +837,7 @@ void DAChartWidget::setupCrossPicker()
     }
 }
 
-void DAChartWidget::enableCrossPicker(bool enable)
+void DAChartWidget::setCrossPickerEnable(bool enable)
 {
     if (!enable && (nullptr == d_ptr->mPicker)) {
         return;
@@ -882,9 +860,9 @@ void DAChartWidget::enableCrossPicker(bool enable)
  * @note 此操作会和zoomer互斥，如果enablePan(true),会调用enableZoomer(false)
  * @param enable
  */
-void DAChartWidget::enablePan(bool enable)
+void DAChartWidget::setPanEnable(bool enable)
 {
-    if (isEnablePanner() == enable) {
+    if (isPannerEnable() == enable) {
         return;  // 状态一致跳出
     }
     if (nullptr == d_ptr->mPanner) {
@@ -897,7 +875,7 @@ void DAChartWidget::enablePan(bool enable)
     if (enable) {
         // pan和zoom互斥
         if (isEnableZoomer()) {
-            enableZoomer(false);
+            setZoomerEnable(false);
         }
     }
     emit enablePannerChanged(enable);
@@ -930,7 +908,7 @@ void DAChartWidget::deletePanner()
  * @param enable
  * @note 此函数会构建缩放器，如果要设置自定义的缩放器，可以使用@sa setupZoomer 函数
  */
-void DAChartWidget::enableZoomer(bool enable)
+void DAChartWidget::setZoomerEnable(bool enable)
 {
     if (isEnableZoomer() == enable) {
         return;  // 状态一致不动作
@@ -943,20 +921,20 @@ void DAChartWidget::enableZoomer(bool enable)
     if (d_ptr->mZoomer.isNull() /*|| nullptr == _zoomerSecond*/) {
         setupZoomer();
     }
-    enableZoomer(d_ptr->mZoomer.data(), enable);
-    enableZoomer(d_ptr->mZoomerSecond.data(), enable);
+    setZoomerEnable(d_ptr->mZoomer.data(), enable);
+    setZoomerEnable(d_ptr->mZoomerSecond.data(), enable);
     if (isEnableCrossPicker()) {
         d_ptr->mZoomer->setTrackerMode((enable ? QwtPicker::AlwaysOff : QwtPicker::ActiveOnly));
     }
     if (enable) {
-        if (isEnablePanner()) {
-            enablePan(false);
+        if (isPannerEnable()) {
+            setPanEnable(false);
         }
     }
     emit enableZoomerChanged(enable);
 }
 
-void DAChartWidget::enableZoomer(QwtPlotZoomer* zoomer, bool enable)
+void DAChartWidget::setZoomerEnable(QwtPlotZoomer* zoomer, bool enable)
 {
     if (nullptr == zoomer) {
         return;
@@ -1188,45 +1166,7 @@ void DAChartWidget::zoomInCompatible()
      */
 }
 
-void DAChartWidget::setupLegend()
-{
-    if (nullptr == d_ptr->mLegend) {
-        d_ptr->mLegend = new QwtPlotLegendItem();
-        d_ptr->mLegend->setRenderHint(QwtPlotItem::RenderAntialiased);
-        QColor color(Qt::white);
-        d_ptr->mLegend->setTextPen(color);
-        d_ptr->mLegend->setBorderPen(color);
-        QColor c(Qt::gray);
-        c.setAlpha(200);
-        d_ptr->mLegend->setBackgroundBrush(c);
-        d_ptr->mLegend->attach(this);
-    }
-}
-
-/**
- * @brief 显示图例
- * @param enable
- */
-void DAChartWidget::enableLegend(bool enable)
-{
-    if (isEnableLegend() == enable) {
-        return;  // 状态一致不动作
-    }
-    if (enable) {
-        if (d_ptr->mLegend) {
-            d_ptr->mLegend->setVisible(true);
-        } else {
-            setupLegend();
-        }
-    } else {
-        if (d_ptr->mLegend) {
-            d_ptr->mLegend->setVisible(false);
-        }
-    }
-    emit enableLegendChanged(enable);
-}
-
-void DAChartWidget::enableLegendPanel(bool enable)
+void DAChartWidget::setLegendPanelEnable(bool enable)
 {
     if (isEnableLegendPanel() == enable) {
         return;  // 状态一致不动作
@@ -1392,6 +1332,47 @@ QwtDateScaleDraw* DAChartWidget::setAxisDateTimeScale(int axisID)
     dateScale = new QwtDateScaleDraw;  // 原来的scaleDraw会再qwt自动delete
     setAxisScaleDraw(axisID, dateScale);
     return (dateScale);
+}
+
+/**
+ * @brief 一个辅助函数，用于安全地获取现有网格或创建一个新的网格。
+ * @return 指向QwtPlotGrid对象的指针，该对象已被附着到当前plot。
+ * @note 此函数不会返回nullptr
+ */
+QwtPlotGrid* DAChartWidget::getOrCreateGrid()
+{
+    QwtPlotGrid* grid = getPlotGrid();
+    if (!grid) {
+        grid = new QwtPlotGrid();
+        grid->setMajorPen(Qt::gray, 1, Qt::DotLine);  // 大刻度的样式
+        grid->setMinorPen(Qt::gray, 0, Qt::DotLine);  // 小刻度的样式
+        grid->setVisible(false);                      // 默认为false
+        grid->attach(this);
+    }
+    return grid;
+}
+
+/**
+ * @brief 一个辅助函数，用于安全地获取现有legend或创建一个新的legend。
+ * @return 指向QwtPlotLegendItem对象的指针，该对象已被附着到当前plot。
+ * @note 此函数不会返回nullptr
+ */
+QwtPlotLegendItem* DAChartWidget::getOrCreateLegend()
+{
+    QwtPlotLegendItem* legend = getPlotLegend();
+    if (!legend) {
+        legend = new QwtPlotLegendItem();
+        legend->setRenderHint(QwtPlotItem::RenderAntialiased);
+        QColor color(Qt::white);
+        legend->setTextPen(color);
+        legend->setBorderPen(color);
+        QColor c(Qt::gray);
+        c.setAlpha(200);
+        legend->setBackgroundBrush(c);
+        legend->setVisible(false);  // 默认为false
+        legend->attach(this);
+    }
+    return legend;
 }
 
 }  // End Of Namespace DA
