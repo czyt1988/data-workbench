@@ -122,12 +122,7 @@ public:
     void setupZoomer();
     void setupZoomer(QwtPlotZoomer* z, bool issecondZoom = false);
     QwtPlotZoomer* getZoomerSecond();
-    //==============================================================
-    // 网格
-    //==============================================================
-    QwtPlotGrid* getGrid() const;
-    QwtPlotGrid* setupGrid(const QColor& color = Qt::gray, qreal width = 1.0, Qt::PenStyle style = Qt::DotLine);
-    void setupGrid(QwtPlotGrid* g);
+
     //==============================================================
     // 图例
     //==============================================================
@@ -206,11 +201,27 @@ public:
 
     // 是否允许十字光标
     bool isEnableCrossPicker() const;
-    bool isEnableGrid() const;
-    bool isEnableGridX() const;
-    bool isEnableGridY() const;
-    bool isEnableGridXMin() const;
-    bool isEnableGridYMin() const;
+    //==============================================================
+    // 网格
+    //==============================================================
+    // 获取grid指针
+    QwtPlotGrid* getPlotGrid() const;
+
+    // 设置或创建网格，并配置其主要线条的样式
+    QwtPlotGrid* setupGrid(const QColor& color = Qt::gray, qreal width = 1.0, Qt::PenStyle style = Qt::DotLine);
+    // 使用一个外部提供的QwtPlotGrid对象
+    void setupGrid(QwtPlotGrid* g);
+    // 检查网格是否可见
+    bool isGridVisible() const;
+    // 检查X轴主网格线是否启用
+    bool isGridXEnabled() const;
+    // 检查Y轴主网格线是否启用
+    bool isGridYEnabled() const;
+    // 检查X轴次要网格线是否启用
+    bool isGridXMinEnabled() const;
+    // 检查Y轴次要网格线是否启用
+    bool isGridYMinEnabled() const;
+
     bool isEnablePanner() const;
     bool isEnableLegend() const;
     bool isEnableLegendPanel() const;
@@ -247,6 +258,9 @@ protected:
     void setupLegend();
     void setuplegendPanel();
     void deletelegendPanel();
+
+private:
+    QwtPlotGrid* getOrCreateGrid();
 };
 
 }  // End Of Namespace DA

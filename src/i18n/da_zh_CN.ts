@@ -2057,7 +2057,7 @@ Table Area</source>
 <context>
     <name>DA::DAChartWidget</name>
     <message>
-        <location filename="../DAFigure/DAChartWidget.cpp" line="+1083"/>
+        <location filename="../DAFigure/DAChartWidget.cpp" line="+1086"/>
         <source>Before zoom in, the chart must setup a zoomer</source>
         <translation>在放大图表之前需要先建立缩放器</translation>
     </message>
@@ -6571,7 +6571,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>节点%1无法找到名字为%2的连接点</translation>
     </message>
     <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="+1212"/>
+        <location filename="../DAGui/DAXmlHelper.cpp" line="+1267"/>
         <source>The attribute %1=%2 under the tag %3 cannot be converted to double </source>
         <translation>%3标签属性%1=%2无法转换为double类型 </translation>
     </message>
@@ -6857,7 +6857,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="-2433"/>
+        <location filename="../DAGui/DAXmlHelper.cpp" line="-2488"/>
         <source>save workflow extern info cost: %1 ms</source>
         <translation></translation>
     </message>

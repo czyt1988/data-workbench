@@ -2025,7 +2025,7 @@ Config</source>
 <context>
     <name>DA::DAChartWidget</name>
     <message>
-        <location filename="../DAFigure/DAChartWidget.cpp" line="+1083"/>
+        <location filename="../DAFigure/DAChartWidget.cpp" line="+1086"/>
         <source>Before zoom in, the chart must setup a zoomer</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6376,7 +6376,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+689"/>
+        <location line="+744"/>
         <source>The attribute %1=%2 under the tag %3 cannot be converted to double </source>
         <translation type="unfinished"></translation>
     </message>
