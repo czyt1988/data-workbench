@@ -153,11 +153,7 @@ public slots:
     void zoomInCompatible();
 
     void enableCrossPicker(bool enable = true);
-    void enableGrid(bool enable = true);
-    void enableGridX(bool enable = true);
-    void enableGridY(bool enable = true);
-    void enableGridXMin(bool enable = true);
-    void enableGridYMin(bool enable = true);
+
     // 拖动,拖动和缩放是互斥关系，enablePan(true)内部会调用enableZoomer(false)
     void enablePan(bool enable = true);
 
@@ -176,14 +172,15 @@ public slots:
     void setYLabel(const QString& label);
     // 此函数激活chartPropertyHasChanged信号
     void notifyChartPropertyHasChanged();
-signals:
+Q_SIGNALS:
+    /**
+     * @brief 当网格的任何属性（可见性、轴线启用状态等）发生改变时，会发射此信号。
+     *
+     * 观察者可以连接此信号，然后通过调用isGridVisible()、isGridXEnabled()等函数来获取最新的网格状态。
+     */
+    void gridSettingsChanged(QwtPlotGrid* grid);
     void enableZoomerChanged(bool enable);
     void enableCrossPickerChanged(bool enable);
-    void enableGridChanged(bool enable);
-    void enableGridXChanged(bool enable);
-    void enableGridYChanged(bool enable);
-    void enableGridXMinChanged(bool enable);
-    void enableGridYMinChanged(bool enable);
     void enablePannerChanged(bool enable);
     void enableLegendChanged(bool enable);
     void enableLegendPanelChanged(bool enable);
@@ -206,11 +203,8 @@ public:
     //==============================================================
     // 获取grid指针
     QwtPlotGrid* getPlotGrid() const;
-
     // 设置或创建网格，并配置其主要线条的样式
-    QwtPlotGrid* setupGrid(const QColor& color = Qt::gray, qreal width = 1.0, Qt::PenStyle style = Qt::DotLine);
-    // 使用一个外部提供的QwtPlotGrid对象
-    void setupGrid(QwtPlotGrid* g);
+    void setGridLine(const QColor& color = Qt::gray, qreal width = 1.0, Qt::PenStyle style = Qt::DotLine, bool isMajor = true);
     // 检查网格是否可见
     bool isGridVisible() const;
     // 检查X轴主网格线是否启用
@@ -221,6 +215,16 @@ public:
     bool isGridXMinEnabled() const;
     // 检查Y轴次要网格线是否启用
     bool isGridYMinEnabled() const;
+    // 设置grid
+    void setGridEnable(bool enabled = true);
+    // 启用或禁用X轴主网格线
+    void setGridXEnabled(bool enabled = true);
+    // 启用或禁用Y轴主网格线
+    void setGridYEnabled(bool enabled = true);
+    // 启用或禁用X轴次要网格线
+    void setGridXMinEnabled(bool enabled = true);
+    // 启用或禁用Y轴次要网格线
+    void setGridYMinEnabled(bool enabled = true);
 
     bool isEnablePanner() const;
     bool isEnableLegend() const;

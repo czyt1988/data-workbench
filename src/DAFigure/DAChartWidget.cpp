@@ -178,6 +178,9 @@ QwtPlotGrid* DAChartWidget::getOrCreateGrid()
     QwtPlotGrid* grid = getPlotGrid();
     if (!grid) {
         grid = new QwtPlotGrid();
+        grid->setMajorPen(Qt::gray, 1, Qt::DotLine);  // 大刻度的样式
+        grid->setMinorPen(Qt::gray, 0, Qt::DotLine);  // 小刻度的样式
+        grid->setVisible(false);
         grid->attach(this);
     }
     return grid;
@@ -197,51 +200,20 @@ QwtPlotGrid* DAChartWidget::getPlotGrid() const
 }
 
 /**
- * @brief 设置或创建网格，并配置其主要线条的样式。
- *
- * 如果当前plot中没有网格，此函数会创建一个新的QwtPlotGrid并附着到plot上。
- * 如果已有网格，则直接修改其样式。
- * 次要网格线会被默认设置为与主要网格线同色的细点线。
- *
- * @param color 网格线的颜色。
- * @param width 网格线的宽度。
- * @param style 网格线的线型（如实线、虚线等）。
- * @return 指向已设置好的QwtPlotGrid对象的指针。
+ * @brief 设置gird的线条
+ * @param color 颜色
+ * @param width 宽度
+ * @param style 样式
+ * @param isMajor true代表设置主刻度，false代表设置次刻度
  */
-QwtPlotGrid* DAChartWidget::setupGrid(const QColor& color, qreal width, Qt::PenStyle style)
+void DAChartWidget::setGridLine(const QColor& color, qreal width, Qt::PenStyle style, bool isMajor)
 {
-    //! 首先要检查是否已经设置过grid，如果已经设置过，则直接返回设置的grid，避免重复设置
-    QwtPlotGrid* g = getPlotGrid();
-    if (!g) {
-        g = new QwtPlotGrid;
+    QwtPlotGrid* grid = getOrCreateGrid();
+    if (isMajor) {
+        grid->setMajorPen(color, width, style);
+    } else {
+        grid->setMinorPen(color, width, style);
     }
-    g->setMajorPen(color, width, style);
-    g->setMinorPen(color, 0, Qt::DotLine);  // 小刻度的样式
-    g->attach(this);
-    return g;
-}
-
-/**
- * @brief 使用一个外部提供的QwtPlotGrid对象。
- *
- * 如果plot中已有网格，此函数会先将其分离（detach）并删除。
- * 然后将传入的网格对象附着（attach）到当前plot上。
- *
- * @param g 一个指向QwtPlotGrid对象的指针。DAChartWidget会接管此对象的生命周期。
- */
-void DAChartWidget::setupGrid(QwtPlotGrid* g)
-{
-    // 只允许一个grid
-    QwtPlotGrid* grid = getPlotGrid();
-    if (grid) {
-        // 说明原来就有gird
-        if (grid == g) {
-            return;
-        }
-        grid->detach();
-        delete grid;
-    }
-    g->attach(this);
 }
 
 /**
@@ -296,6 +268,86 @@ bool DAChartWidget::isGridYMinEnabled() const
 {
     QwtPlotGrid* grid = getPlotGrid();
     return grid && grid->yMinEnabled();
+}
+
+/**
+ * @brief 设置网格的整体可见性。
+ *
+ *  如果网格不存在，此函数会自动创建一个默认样式的网格，然后根据参数设置其可见性。
+ *  @param enabled true表示显示网格，false表示隐藏网格。
+ */
+void DAChartWidget::setGridEnable(bool enabled)
+{
+    QwtPlotGrid* g = getOrCreateGrid();
+    if (g->isVisible() != enabled) {
+        g->setVisible(enabled);
+        replot();
+        emit gridSettingsChanged(g);
+    }
+}
+
+/**
+ * @brief 启用或禁用X轴主网格线。
+ *
+ * 如果网格不存在，此函数会自动创建一个默认样式的网格。
+ * @param enabled true表示启用X轴主网格线，false表示禁用。
+ */
+void DAChartWidget::setGridXEnabled(bool enabled)
+{
+    QwtPlotGrid* g = getOrCreateGrid();
+    if (g->xEnabled() != enabled) {
+        g->enableX(enabled);
+        replot();
+        emit gridSettingsChanged(g);
+    }
+}
+
+/**
+ * @brief 启用或禁用Y轴主网格线。
+ *
+ * 如果网格不存在，此函数会自动创建一个默认样式的网格。
+ * @param enabled true表示启用Y轴主网格线，false表示禁用。
+ */
+void DAChartWidget::setGridYEnabled(bool enabled)
+{
+    QwtPlotGrid* g = getOrCreateGrid();
+    if (g->yEnabled() != enabled) {
+        g->enableY(enabled);
+        replot();
+        emit gridSettingsChanged(g);
+    }
+}
+
+/**
+ * @brief 启用或禁用X轴次要网格线。
+ *
+ * 如果网格不存在，此函数会自动创建一个默认样式的网格。
+ * @param enabled true表示启用X轴次要网格线，false表示禁用。
+ */
+void DAChartWidget::setGridXMinEnabled(bool enabled)
+{
+    QwtPlotGrid* g = getOrCreateGrid();
+    if (g->xMinEnabled() != enabled) {
+        g->enableXMin(enabled);
+        replot();
+        emit gridSettingsChanged(g);
+    }
+}
+
+/**
+ * @brief 启用或禁用Y轴次要网格线。
+ *
+ * 如果网格不存在，此函数会自动创建一个默认样式的网格。
+ * @param enabled true表示启用Y轴次要网格线，false表示禁用。
+ */
+void DAChartWidget::setGridYMinEnabled(bool enabled)
+{
+    QwtPlotGrid* g = getOrCreateGrid();
+    if (g->yMinEnabled() != enabled) {
+        g->enableYMin(enabled);
+        replot();
+        emit gridSettingsChanged(g);
+    }
 }
 
 bool DAChartWidget::isEnablePanner() const
@@ -386,80 +438,6 @@ void DAChartWidget::deleteGrid()
         delete (grid);
     }
     replot();  // 刷新，否则不显示
-}
-
-/**
- * @brief 显示网格
- * @param enable
- */
-void DAChartWidget::enableGrid(bool enable)
-{
-    QwtPlotGrid* grid = getPlotGrid();
-    if (!grid) {
-        grid = new QwtPlotGrid();
-        grid->attach(this);
-    }
-    if (grid->isVisible() && enable) {
-        return;  // 状态一致不动作
-    }
-    grid->setVisible(enable);
-    emit enableGridChanged(enable);
-}
-
-void DAChartWidget::enableGridX(bool enable)
-{
-    QwtPlotGrid* grid = getPlotGrid();
-    if (!grid) {
-        grid = new QwtPlotGrid();
-        grid->attach(this);
-    }
-    if (grid->xEnabled() == enable) {
-        return;  // 状态一致不动作
-    }
-    grid->enableX(enable);
-    emit enableGridXChanged(enable);
-}
-
-void DAChartWidget::enableGridY(bool enable)
-{
-    QwtPlotGrid* grid = getPlotGrid();
-    if (!grid) {
-        grid = new QwtPlotGrid();
-        grid->attach(this);
-    }
-    if (grid->yEnabled() == enable) {
-        return;  // 状态一致不动作
-    }
-    grid->enableY(enable);
-    emit enableGridYChanged(enable);
-}
-
-void DAChartWidget::enableGridXMin(bool enable)
-{
-    QwtPlotGrid* grid = getPlotGrid();
-    if (!grid) {
-        grid = new QwtPlotGrid();
-        grid->attach(this);
-    }
-    if (grid->xMinEnabled() == enable) {
-        return;  // 状态一致不动作
-    }
-    grid->enableXMin(enable);
-    emit enableGridXMinChanged(enable);
-}
-
-void DAChartWidget::enableGridYMin(bool enable)
-{
-    QwtPlotGrid* grid = getPlotGrid();
-    if (!grid) {
-        grid = new QwtPlotGrid();
-        grid->attach(this);
-    }
-    if (grid->yMinEnabled() == enable) {
-        return;
-    }
-    grid->enableYMin(enable);
-    emit enableGridYMinChanged(enable);
 }
 
 //========================================================================================

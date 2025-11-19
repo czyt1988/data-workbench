@@ -2025,7 +2025,7 @@ Config</source>
 <context>
     <name>DA::DAChartWidget</name>
     <message>
-        <location filename="../DAFigure/DAChartWidget.cpp" line="+1086"/>
+        <location filename="../DAFigure/DAChartWidget.cpp" line="+1088"/>
         <source>Before zoom in, the chart must setup a zoomer</source>
         <translation type="unfinished"></translation>
     </message>

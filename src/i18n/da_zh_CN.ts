@@ -2057,7 +2057,7 @@ Table Area</source>
 <context>
     <name>DA::DAChartWidget</name>
     <message>
-        <location filename="../DAFigure/DAChartWidget.cpp" line="+1086"/>
+        <location filename="../DAFigure/DAChartWidget.cpp" line="+1088"/>
         <source>Before zoom in, the chart must setup a zoomer</source>
         <translation>在放大图表之前需要先建立缩放器</translation>
     </message>

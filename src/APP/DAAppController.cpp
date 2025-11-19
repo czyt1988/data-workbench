@@ -1523,7 +1523,7 @@ void DAAppController::onActionFigureNewXYAxisTriggered()
         return;
     }
     DAChartWidget* w = fig->createChart_(QRectF(0.1, 0.1, 0.4, 0.4));
-    w->enableGrid();
+    w->setGridEnable();
     w->enablePan();
     w->enableXYDataPicker();
     //    w->addCurve({ 1, 2, 3, 4, 5 }, { 3, 5, 8, 0, -3 })->setTitle("curve1");
@@ -1602,7 +1602,7 @@ void DAAppController::onActionChartEnableGridTriggered(bool on)
     qDebug() << "onActionChartGridEnableTriggered";
     DAChartWidget* w = getCurrentChart();
     if (w) {
-        w->enableGrid(on);
+        w->setGridEnable(on);
         mRibbon->updateChartGridAboutRibbon(w);
     }
 }
@@ -1615,7 +1615,7 @@ void DAAppController::onActionChartEnableGridXTriggered(bool on)
 {
     DAChartWidget* w = getCurrentChart();
     if (w) {
-        w->enableGridX(on);
+        w->setGridXEnabled(on);
         setDirty();
     }
 }
@@ -1627,7 +1627,7 @@ void DAAppController::onActionChartEnableGridYTriggered(bool on)
 {
     DAChartWidget* w = getCurrentChart();
     if (w) {
-        w->enableGridY(on);
+        w->setGridYEnabled(on);
         setDirty();
     }
 }
@@ -1639,7 +1639,7 @@ void DAAppController::onActionChartEnableGridXMinEnableTriggered(bool on)
 {
     DAChartWidget* w = getCurrentChart();
     if (w) {
-        w->enableGridXMin(on);
+        w->setGridXMinEnabled(on);
         setDirty();
     }
 }
@@ -1651,7 +1651,7 @@ void DAAppController::onActionChartEnableGridYMinTriggered(bool on)
 {
     DAChartWidget* w = getCurrentChart();
     if (w) {
-        w->enableGridYMin(on);
+        w->setGridYMinEnabled(on);
         setDirty();
     }
 }
