@@ -145,8 +145,10 @@ public:
     static QwtScaleDraw* setAxisNormalScale(QwtPlot* chart, int axisID);
 
     // 设置坐标轴为时间坐标
-    static QwtDateScaleDraw*
-    setAxisDateTimeScale(QwtPlot* chart, int axisID, const QString& format, QwtDate::IntervalType type = QwtDate::Second);
+    static QwtDateScaleDraw* setAxisDateTimeScale(QwtPlot* chart, int axisID, const QString& fullDateformat);
+
+    // 给时间坐标轴设置完整的日期格式
+    static void setupSmartDateFormat(QwtDateScaleDraw* scaleDraw, const QString& fullFormat);
 
     // 获取时间坐标轴，若当前不是时间坐标轴，返回nullptr
     static QwtDateScaleDraw* getAxisDateTimeScale(QwtPlot* chart, int axisID);

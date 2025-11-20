@@ -515,30 +515,109 @@ void DAChartUtil::setAxisLabelAlignment(QwtPlot* chart, int axisID, Qt::Alignmen
         ax->setLabelAlignment(v);
     }
 }
-///
-/// \brief 设置坐标轴为时间坐标
-/// \param chart
-/// \param axisID 坐标轴id
-/// \param format 时间格式
-/// \param type 间隔类型
-/// \return
-///
-QwtDateScaleDraw* DAChartUtil::setAxisDateTimeScale(QwtPlot* chart, int axisID, const QString& format, QwtDate::IntervalType type)
+
+/**
+ * @brief 设置坐标轴为时间坐标
+ * @param chart
+ * @param axisID 坐标轴id
+ * @param fullDateformat 完整的日期类型，类似yyyy-MM-dd hh:mm:ss
+ * @return
+ */
+QwtDateScaleDraw* DAChartUtil::setAxisDateTimeScale(QwtPlot* chart, int axisID, const QString& fullDateformat)
 {
     if (nullptr == chart) {
         return nullptr;
     }
     QwtDateScaleDraw* dateScale;
     dateScale = new QwtDateScaleDraw;  // 原来的scaleDraw会再qwt自动delete
-    dateScale->setDateFormat(type, format);
+    setupSmartDateFormat(dateScale, fullDateformat);
     chart->setAxisScaleDraw(axisID, dateScale);
-
-    QwtDateScaleEngine* scaleEngine = dynamic_cast< QwtDateScaleEngine* >(chart->axisScaleEngine(axisID));
-    if (nullptr == scaleEngine) {
-        scaleEngine = new QwtDateScaleEngine;
-        chart->setAxisScaleEngine(axisID, scaleEngine);
-    }
+    /**
+        QwtDateScaleEngine* scaleEngine = dynamic_cast< QwtDateScaleEngine* >(chart->axisScaleEngine(axisID));
+        if (nullptr == scaleEngine) {
+            scaleEngine = new QwtDateScaleEngine;
+            chart->setAxisScaleEngine(axisID, scaleEngine);
+        }
+        **/
     return dateScale;
+}
+
+/**
+ * @brief 给时间坐标轴设置完整的日期格式
+ * @param scaleDraw
+ * @param fullFormat 类似yyyy-MM-dd hh:mm:ss这样的格式
+ */
+void DAChartUtil::setupSmartDateFormat(QwtDateScaleDraw* scaleDraw, const QString& fullFormat)
+{
+    if (!scaleDraw) {
+        return;
+    }
+
+    // 分析格式字符串，确定包含的时间元素
+    bool hasMillisecond = fullFormat.contains("zzz", Qt::CaseInsensitive);
+    bool hasSecond      = fullFormat.contains("s", Qt::CaseInsensitive);
+    bool hasMinute      = fullFormat.contains("m", Qt::CaseInsensitive);
+    bool hasHour        = fullFormat.contains("h", Qt::CaseInsensitive);
+    bool hasDay         = fullFormat.contains("d", Qt::CaseInsensitive);
+    bool hasMonth       = fullFormat.contains("M", Qt::CaseInsensitive);
+    bool hasYear        = fullFormat.contains("y", Qt::CaseInsensitive);
+
+    // 为不同间隔设置格式
+    // 毫秒级别：使用完整格式
+    if (hasMillisecond) {
+        scaleDraw->setDateFormat(QwtDate::Millisecond, fullFormat);
+    } else {
+        scaleDraw->setDateFormat(QwtDate::Millisecond, fullFormat);
+    }
+
+    // 秒级别
+    if (hasSecond) {
+        scaleDraw->setDateFormat(QwtDate::Second, fullFormat);
+    } else {
+        // 如果没有秒，但格式包含时间部分，可以简化
+        QString secondFormat = fullFormat;
+        if (hasHour && hasMinute) {
+            // 保持原格式
+        }
+        scaleDraw->setDateFormat(QwtDate::Second, secondFormat);
+    }
+
+    // 分钟级别
+    scaleDraw->setDateFormat(QwtDate::Minute, fullFormat);
+
+    // 小时级别
+    scaleDraw->setDateFormat(QwtDate::Hour, fullFormat);
+
+    // 天级别 - 如果格式包含日期部分，使用完整格式；否则简化
+    if (hasYear || hasMonth || hasDay) {
+        scaleDraw->setDateFormat(QwtDate::Day, fullFormat);
+    } else {
+        // 只有时间，为天级别显示日期
+        scaleDraw->setDateFormat(QwtDate::Day, "yyyy-MM-dd");
+    }
+
+    // 周级别
+    if (hasYear) {
+        scaleDraw->setDateFormat(QwtDate::Week, "yyyy 'W'WW");
+    } else {
+        scaleDraw->setDateFormat(QwtDate::Week, fullFormat);
+    }
+
+    // 月级别
+    if (hasYear && hasMonth) {
+        scaleDraw->setDateFormat(QwtDate::Month, "yyyy-MM");
+    } else if (hasYear) {
+        scaleDraw->setDateFormat(QwtDate::Month, "yyyy");
+    } else {
+        scaleDraw->setDateFormat(QwtDate::Month, fullFormat);
+    }
+
+    // 年级别
+    if (hasYear) {
+        scaleDraw->setDateFormat(QwtDate::Year, "yyyy");
+    } else {
+        scaleDraw->setDateFormat(QwtDate::Year, fullFormat);
+    }
 }
 ///
 /// \brief 获取时间坐标轴，若当前不是时间坐标轴，返回nullptr,可以用来判断是否为时间坐标轴

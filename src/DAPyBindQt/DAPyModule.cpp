@@ -16,7 +16,7 @@ DAPyModule::DAPyModule() : DAPyObjectWrapper()
 
 DAPyModule::DAPyModule(const char* moduleName) : DAPyObjectWrapper()
 {
-	import(moduleName);
+    import(moduleName);
 }
 
 DAPyModule::DAPyModule(const pybind11::object& obj) : DAPyObjectWrapper(obj)
@@ -33,14 +33,14 @@ DAPyModule::~DAPyModule()
 
 DAPyModule& DAPyModule::operator=(const DAPyObjectWrapper& obj)
 {
-	object() = obj.object();
-	return *this;
+    object() = obj.object();
+    return *this;
 }
 
 DAPyModule& DAPyModule::operator=(const pybind11::object& obj)
 {
-	object() = obj;
-	return *this;
+    object() = obj;
+    return *this;
 }
 
 /**
@@ -49,10 +49,10 @@ DAPyModule& DAPyModule::operator=(const pybind11::object& obj)
  */
 bool DAPyModule::isImport() const
 {
-	if (isNone()) {
-		return false;
-	}
-	return isModule();
+    if (isNone()) {
+        return false;
+    }
+    return isModule();
 }
 
 /**
@@ -61,10 +61,10 @@ bool DAPyModule::isImport() const
  */
 QString DAPyModule::moduleName() const
 {
-	if (!isImport()) {
-		return QString();
-	}
-	return __name__();
+    if (!isImport()) {
+        return QString();
+    }
+    return __name__();
 }
 
 /**
@@ -72,17 +72,17 @@ QString DAPyModule::moduleName() const
  */
 void DAPyModule::reload()
 {
-	if (object().is_none()) {
-		return;
-	}
-	try {
-		pybind11::module m = object();
-		if (!m.is_none()) {
-			m.reload();
-		}
-	} catch (const std::exception& e) {
-		dealException(e);
-	}
+    if (object().is_none()) {
+        return;
+    }
+    try {
+        pybind11::module m = object();
+        if (!m.is_none()) {
+            m.reload();
+        }
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
 }
 
 /**
@@ -92,14 +92,14 @@ void DAPyModule::reload()
  */
 bool DAPyModule::import(const char* module_n) noexcept
 {
-	try {
-		pybind11::module m = pybind11::module::import(module_n);
-		object()           = m;
-		return true;
-	} catch (const std::exception& e) {
-		dealException(e);
-	}
-	return false;
+    try {
+        pybind11::module m = pybind11::module::import(module_n);
+        object()           = m;
+    } catch (const std::exception& e) {
+        dealException(e);
+        return false;
+    }
+    return true;
 }
 
 /**
@@ -109,7 +109,7 @@ bool DAPyModule::import(const char* module_n) noexcept
  */
 DAPyModule DAPyModule::importModule(const char* module_n)
 {
-	// 获取 pandas 模块
-	DAPyModule m(pybind11::module_::import("pandas"));
-	return m;
+    // 获取模块
+    DAPyModule m(pybind11::module_::import(module_n));
+    return m;
 }

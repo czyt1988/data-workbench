@@ -30,6 +30,7 @@ find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
 # 文件加载 #!!!!** 注意变更 **!!!!
 ########################################################
 set(DA_LIB_HEADER_FILES
+    DAGuiAPI.h
     DAAbstractChartAddItemWidget.h
     DAAbstractOperateWidget.h
     DACacheWindowTableView.h
@@ -38,7 +39,6 @@ set(DA_LIB_HEADER_FILES
     DADataOperatePageWidget.h
     DAFigureFactory.h
     DAGraphicsPixmapItemSettingWidget.h
-    DAGuiAPI.h
     DAGlobalColorTheme.h
     DAChartListView.h
     DAChartManageWidget.h
