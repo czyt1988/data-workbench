@@ -26,7 +26,7 @@ endmacro(damacro_set_bin_name)
 # 生成：DA_MIN_QT_VERSION 最低qt版本要求
 macro(damacro_plugin_setting _plugin_name _plugin_description _plugin_ver_major _plugin_ver_minor _plugin_ver_path _daworkbench_intall_dir)
     set(DA_MIN_QT_VERSION 5.14)
-	set(DA_PLUGIN_NAME ${_plugin_name})
+    set(DA_PLUGIN_NAME ${_plugin_name})
     set(DA_PLUGIN_DESCRIPTION ${_plugin_description})
     set(DA_PLUGIN_VERSION_MAJOR ${_plugin_ver_major})
     set(DA_PLUGIN_VERSION_MINOR ${_plugin_ver_minor})

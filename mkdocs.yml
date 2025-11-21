@@ -81,8 +81,10 @@ nav:
             - 插件与接口说明: zh/dev-guide/plugins-interfaces.md
             - 插件模块: zh/dev-guide/plugin-module.md
             - 接口模块: zh/dev-guide/interface-module.md
-        - 主程序:
+        - 主程序开发:
             - action添加方法 : zh/dev-guide/adding-action-methods.md
+        - 插件开发:
+            - 插件项目组织: zh/dev-guide/plugin-project-create.md
     - 使用指南:
         - 程序命令参数 : zh/use-guide/command-line-arguments.md
     - API文档: 
