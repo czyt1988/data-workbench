@@ -61,8 +61,8 @@ void DAFigureWidgetCommandCreateChart::redo()
 	} else {
 		// 第一次执行redo会进入这里
 		mChart = figure()->createChart(mChartSize);
-		mChart->setXLabel("x");
-		mChart->setYLabel("y");
+		mChart->setXLabelText("x");
+		mChart->setYLabelText("y");
 	}
 }
 

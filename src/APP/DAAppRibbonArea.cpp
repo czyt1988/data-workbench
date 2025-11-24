@@ -806,11 +806,11 @@ void DAAppRibbonArea::updateChartGridAboutRibbon(DAChartWidget* chart)
     if (nullptr == chart) {
         return;
     }
-    m_actions->actionChartEnableGrid->setChecked(chart->isGridVisible());
-    m_actions->actionChartEnableGridX->setChecked(chart->isGridXEnabled());
-    m_actions->actionChartEnableGridY->setChecked(chart->isGridYEnabled());
-    m_actions->actionChartEnableGridXMin->setChecked(chart->isGridXMinEnabled());
-    m_actions->actionChartEnableGridYMin->setChecked(chart->isGridYMinEnabled());
+    m_actions->actionChartEnableGrid->setChecked(chart->isGridEnable());
+    m_actions->actionChartEnableGridX->setChecked(chart->isGridXEnable());
+    m_actions->actionChartEnableGridY->setChecked(chart->isGridYEnable());
+    m_actions->actionChartEnableGridXMin->setChecked(chart->isGridXMinEnable());
+    m_actions->actionChartEnableGridYMin->setChecked(chart->isGridYMinEnable());
     bool c = m_actions->actionChartEnableGrid->isChecked();
     m_actions->actionChartEnableGridX->setEnabled(c);
     m_actions->actionChartEnableGridY->setEnabled(c);
@@ -827,7 +827,7 @@ void DAAppRibbonArea::updateChartZoomPanAboutRibbon(DAChartWidget* chart)
     if (nullptr == chart) {
         return;
     }
-    m_actions->actionChartEnableZoom->setChecked(chart->isEnableZoomer());
+    m_actions->actionChartEnableZoom->setChecked(chart->isZoomerEnabled());
     m_actions->actionChartEnablePan->setChecked(chart->isPannerEnable());
 }
 
@@ -840,9 +840,9 @@ void DAAppRibbonArea::updateChartPickerAboutRibbon(DAChartWidget* chart)
     if (nullptr == chart) {
         return;
     }
-    m_actions->actionChartEnablePickerCross->setChecked(chart->isEnableCrossPicker());
-    m_actions->actionChartEnablePickerY->setChecked(chart->isEnableYDataPicker());
-    m_actions->actionChartEnablePickerXY->setChecked(chart->isEnableXYDataPicker());
+    m_actions->actionChartEnablePickerCross->setChecked(chart->isCrossPickerEnable());
+    m_actions->actionChartEnablePickerY->setChecked(chart->isYDataPickerEnable());
+    m_actions->actionChartEnablePickerXY->setChecked(chart->isXYDataPickerEnable());
 }
 
 /**
@@ -854,7 +854,7 @@ void DAAppRibbonArea::updateChartLegendAboutRibbon(DAChartWidget* chart)
     if (nullptr == chart) {
         return;
     }
-    QwtPlotLegendItem* legend = chart->getPlotLegend();
+    QwtPlotLegendItem* legend = chart->getLegend();
     if (nullptr == legend) {
         m_actions->actionChartEnableLegend->setChecked(false);
         return;

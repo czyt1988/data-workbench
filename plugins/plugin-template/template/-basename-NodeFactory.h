@@ -23,6 +23,7 @@ public:
     virtual ~{{plugin-base-name}}NodeFactory() override;
     // 设置core
     void setCore(DA::DACoreInterface* c);
+
 public:
     // 工厂设置了workflow，此函数设置为虚函数，在某些工厂可以通过此函数的重载来绑定DAWorkFlow的信号,以及注册回调
     //  此函数同样可以作为scene创建的回调
@@ -75,12 +76,6 @@ public:
 
     // 节点删除的工厂回调
     virtual void nodeStartRemove(DA::DAAbstractNode::SharedPointer node) override;
-
-    // 节点连接成功的回调
-    virtual void nodeLinkSucceed(DA::DAAbstractNode::SharedPointer outNode,
-                                 const QString& outKey,
-                                 DA::DAAbstractNode::SharedPointer inNode,
-                                 const QString& inkey) override;
     // 节点连线删除的回调
     virtual void nodeLinkDetached(DA::DAAbstractNode::SharedPointer outNode,
                                   const QString& outKey,
@@ -90,12 +85,11 @@ public:
     virtual void saveExternInfoToXml(QDomDocument* doc, QDomElement* factoryExternElement) const override;
     // 从xml加载扩展信息
     virtual void loadExternInfoFromXml(const QDomElement* factoryExternElement) override;
-    // 创建场景事件监听器，如果需要对场景的事件进行监听，需要继承此函数并返回一个事件监听器
-    virtual DA::DANodeGraphicsSceneEventListener* createNodeGraphicsSceneEventListener() override;
 public:
     // 窗口相关操作
     //  获取主体窗口
     QMainWindow* getMainWindow() const;
+
 private:
     DA::DACoreInterface* mCore { nullptr };
     QMap< DA::DANodeMetaData, FpCreate > mPrototypeTpfp;

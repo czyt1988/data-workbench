@@ -314,3 +314,25 @@ damacro_plugin_install()
 ```
 
 通过上面的操作，可以构建一个基于`data-workbench`的插件
+
+## 工程文件生成
+
+插件工程文件可通过`plugins/plugin-template/make-plugin.py`脚本文件生成
+
+只需要配置`plugins/plugin-template/template.json`即可生成工程文件
+
+配置文件格式如下：
+
+```json
+{
+	"plugin-base-name":"My",
+    "plugin-display-name":"My Plugin",
+    "plugin-description":"This is My Plugin",
+    "plugin-iid":"Plugin.MyPlugin",
+    "factory-prototypes":"My.Factory",
+    "factory-name":"My Factory",
+    "factory-description":"My Plugin Node Factory"
+}
+```
+
+配置后，运行`make-plugin.py`脚本，会在上级目录生成插件工程文件

@@ -40,6 +40,9 @@ public:
     void enabelDataPicker(bool on, QwtPlotSeriesDataPicker::PickSeriesMode mode);
 
 public:
+    DAChartWidget::FpCreatePanner mPannerFactory { nullptr };
+    DAChartWidget::FpCreatePicker mPickerFactory { nullptr };
+    DAChartWidget::FpCreateSeriesDataPicker mSeriesDataPickerFactory { nullptr };
     QScopedPointer< QwtPlotZoomer > mZoomer;
     QScopedPointer< QwtPlotZoomer > mZoomerSecond;
     QwtPlotPicker* mPicker { nullptr };
@@ -55,10 +58,9 @@ public:
 
 void DAChartWidget::PrivateData::ensureDataPicker()
 {
-    if (mDataPicker) {
-        return;
+    if (!mDataPicker) {
+        q_ptr->setupSeriesDataPicker();
     }
-    mDataPicker = new QwtPlotSeriesDataPicker(q_ptr->canvas());
 }
 
 bool DAChartWidget::PrivateData::isEnableDataPicker(QwtPlotSeriesDataPicker::PickSeriesMode mode) const
@@ -171,7 +173,7 @@ void DAChartWidget::paintEvent(QPaintEvent* e)
  * @brief 在当前plot中查找第一个QwtPlotGrid对象。
  * @return 如果找到，返回指向该对象的指针；否则返回nullptr。
  */
-QwtPlotGrid* DAChartWidget::getPlotGrid() const
+QwtPlotGrid* DAChartWidget::getGrid() const
 {
     const QList< QwtPlotItem* > items = itemList(QwtPlotItem::Rtti_PlotGrid);
     if (!items.isEmpty()) {
@@ -201,9 +203,9 @@ void DAChartWidget::setGridLine(const QColor& color, qreal width, Qt::PenStyle s
  * @brief 检查网格是否可用。
  * @return 如果网格存在且可见，返回true；否则返回false。
  */
-bool DAChartWidget::isGridVisible() const
+bool DAChartWidget::isGridEnable() const
 {
-    QwtPlotGrid* grid = getPlotGrid();
+    QwtPlotGrid* grid = getGrid();
     return grid && grid->isVisible();
 }
 
@@ -212,9 +214,9 @@ bool DAChartWidget::isGridVisible() const
  * @return 如果网格存在且X轴主网格线启用，返回true；否则返回false。
  * @note 此状态独立于网格的整体可见性（isGridVisible）。
  */
-bool DAChartWidget::isGridXEnabled() const
+bool DAChartWidget::isGridXEnable() const
 {
-    QwtPlotGrid* grid = getPlotGrid();
+    QwtPlotGrid* grid = getGrid();
     return grid && grid->xEnabled();
 }
 
@@ -223,9 +225,9 @@ bool DAChartWidget::isGridXEnabled() const
  * @return 如果网格存在且Y轴主网格线启用，返回true；否则返回false。
  * @note 此状态独立于网格的整体可见性（isGridVisible）。
  */
-bool DAChartWidget::isGridYEnabled() const
+bool DAChartWidget::isGridYEnable() const
 {
-    QwtPlotGrid* grid = getPlotGrid();
+    QwtPlotGrid* grid = getGrid();
     return grid && grid->yEnabled();
 }
 
@@ -234,9 +236,9 @@ bool DAChartWidget::isGridYEnabled() const
  * @return 如果网格存在且X轴次要网格线启用，返回true；否则返回false。
  * @note 此状态独立于网格的整体可见性（isGridVisible）。
  */
-bool DAChartWidget::isGridXMinEnabled() const
+bool DAChartWidget::isGridXMinEnable() const
 {
-    QwtPlotGrid* grid = getPlotGrid();
+    QwtPlotGrid* grid = getGrid();
     return grid && grid->xMinEnabled();
 }
 
@@ -245,9 +247,9 @@ bool DAChartWidget::isGridXMinEnabled() const
  * @return 如果网格存在且Y轴次要网格线启用，返回true；否则返回false。
  * @note 此状态独立于网格的整体可见性（isGridVisible）。
  */
-bool DAChartWidget::isGridYMinEnabled() const
+bool DAChartWidget::isGridYMinEnable() const
 {
-    QwtPlotGrid* grid = getPlotGrid();
+    QwtPlotGrid* grid = getGrid();
     return grid && grid->yMinEnabled();
 }
 
@@ -273,7 +275,7 @@ void DAChartWidget::setGridEnable(bool enabled)
  * 如果网格不存在，此函数会自动创建一个默认样式的网格。
  * @param enabled true表示启用X轴主网格线，false表示禁用。
  */
-void DAChartWidget::setGridXEnabled(bool enabled)
+void DAChartWidget::setGridXEnable(bool enabled)
 {
     QwtPlotGrid* g = getOrCreateGrid();
     if (g->xEnabled() != enabled) {
@@ -289,7 +291,7 @@ void DAChartWidget::setGridXEnabled(bool enabled)
  * 如果网格不存在，此函数会自动创建一个默认样式的网格。
  * @param enabled true表示启用Y轴主网格线，false表示禁用。
  */
-void DAChartWidget::setGridYEnabled(bool enabled)
+void DAChartWidget::setGridYEnable(bool enabled)
 {
     QwtPlotGrid* g = getOrCreateGrid();
     if (g->yEnabled() != enabled) {
@@ -305,7 +307,7 @@ void DAChartWidget::setGridYEnabled(bool enabled)
  * 如果网格不存在，此函数会自动创建一个默认样式的网格。
  * @param enabled true表示启用X轴次要网格线，false表示禁用。
  */
-void DAChartWidget::setGridXMinEnabled(bool enabled)
+void DAChartWidget::setGridXMinEnable(bool enabled)
 {
     QwtPlotGrid* g = getOrCreateGrid();
     if (g->xMinEnabled() != enabled) {
@@ -321,7 +323,7 @@ void DAChartWidget::setGridXMinEnabled(bool enabled)
  * 如果网格不存在，此函数会自动创建一个默认样式的网格。
  * @param enabled true表示启用Y轴次要网格线，false表示禁用。
  */
-void DAChartWidget::setGridYMinEnabled(bool enabled)
+void DAChartWidget::setGridYMinEnable(bool enabled)
 {
     QwtPlotGrid* g = getOrCreateGrid();
     if (g->yMinEnabled() != enabled) {
@@ -331,12 +333,26 @@ void DAChartWidget::setGridYMinEnabled(bool enabled)
     }
 }
 
+/**
+ * @brief 是否允许拖动
+ * @return
+ */
 bool DAChartWidget::isPannerEnable() const
 {
-    if (d_ptr->mPanner) {
-        return (d_ptr->mPanner->isEnabled());
+    DA_DC(d);
+    if (d->mPanner) {
+        return (d->mPanner->isEnabled());
     }
     return (false);
+}
+
+/**
+ * @brief 获取panner
+ * @return
+ */
+QwtPlotPanner* DAChartWidget::getPanner() const
+{
+    return d_ptr->mPanner;
 }
 
 bool DAChartWidget::isEnableLegendPanel() const
@@ -351,7 +367,7 @@ bool DAChartWidget::isEnableLegendPanel() const
  * @brief 是否开启了Y值捕获
  * @return
  */
-bool DAChartWidget::isEnableYDataPicker() const
+bool DAChartWidget::isYDataPickerEnable() const
 {
     DA_DC(d);
     return d->isEnableDataPicker(QwtPlotSeriesDataPicker::PickYValue);
@@ -361,7 +377,7 @@ bool DAChartWidget::isEnableYDataPicker() const
  * @brief 是否开启了XY值捕获
  * @return
  */
-bool DAChartWidget::isEnableXYDataPicker() const
+bool DAChartWidget::isXYDataPickerEnable() const
 {
     DA_DC(d);
     return d->isEnableDataPicker(QwtPlotSeriesDataPicker::PickNearestPoint);
@@ -388,10 +404,33 @@ void DAChartWidget::makeIntervalSample(const QVector< double >& value,
 }
 
 /**
+ * @brief 注册panner工厂
+ * @param fp 可传入nullptr，代表使用默认的panner
+ */
+void DAChartWidget::registerPannerFactory(const FpCreatePanner& fp)
+{
+    d_ptr->mPannerFactory = fp;
+}
+
+/**
+ * @brief 注册picker工厂
+ * @param fp
+ */
+void DAChartWidget::registerPickerFactory(const FpCreatePicker& fp)
+{
+    d_ptr->mPickerFactory = fp;
+}
+
+void DAChartWidget::registerSeriesDataPickerFactory(const DAChartWidget::FpCreateSeriesDataPicker& fp)
+{
+    d_ptr->mSeriesDataPickerFactory = fp;
+}
+
+/**
  * @brief 获取图例
  * @return
  */
-QwtPlotLegendItem* DAChartWidget::getPlotLegend() const
+QwtPlotLegendItem* DAChartWidget::getLegend() const
 {
     const QList< QwtPlotItem* > items = itemList(QwtPlotItem::Rtti_PlotLegend);
     if (!items.isEmpty()) {
@@ -418,9 +457,9 @@ void DAChartWidget::setLegendEnable(bool enable)
  * @brief 图例是否显示
  * @return
  */
-bool DAChartWidget::isLegendVisible() const
+bool DAChartWidget::isLegendEnable() const
 {
-    QwtPlotLegendItem* legend = getPlotLegend();
+    QwtPlotLegendItem* legend = getLegend();
     return legend && legend->isVisible();
 }
 
@@ -429,7 +468,7 @@ bool DAChartWidget::isLegendVisible() const
  */
 void DAChartWidget::deleteGrid()
 {
-    QwtPlotGrid* grid = getPlotGrid();
+    QwtPlotGrid* grid = getGrid();
     if (grid) {
         grid->detach();
         delete (grid);
@@ -502,20 +541,20 @@ double DAChartWidget::axisYmax(int axisId) const
 ///
 void DAChartWidget::setEnableAllEditor(bool enable)
 {
-    if (isEnableZoomer() != enable) {
+    if (isZoomerEnabled() != enable) {
         setZoomerEnable(enable);
     }
-    if (isEnableCrossPicker() != enable) {
+    if (isCrossPickerEnable() != enable) {
         setCrossPickerEnable(enable);
     }
     if (isPannerEnable() != enable) {
         setPanEnable(enable);
     }
-    if (isEnableYDataPicker() != enable) {
-        enableYDataPicker(enable);
+    if (isYDataPickerEnable() != enable) {
+        setYDataPickerEnable(enable);
     }
-    if (isEnableXYDataPicker() != enable) {
-        enableXYDataPicker(enable);
+    if (isXYDataPickerEnable() != enable) {
+        setXYDataPickerEnable(enable);
     }
 }
 
@@ -832,8 +871,16 @@ void DAChartWidget::setChartBackgroundBrush(const QBrush& b)
  */
 void DAChartWidget::setupCrossPicker()
 {
-    if (nullptr == d_ptr->mPicker) {
-        d_ptr->mPicker = new DAChartCrossTracker(this->canvas());
+    DA_D(d);
+    if (d->mPicker) {
+        d->mPicker->setEnabled(false);
+        d->mPicker->deleteLater();
+        d->mPicker = nullptr;
+    }
+    if (d->mPickerFactory) {
+        d->mPicker = d->mPickerFactory(this->canvas());
+    } else {
+        d->mPicker = new DAChartCrossTracker(this->canvas());
     }
 }
 
@@ -847,7 +894,7 @@ void DAChartWidget::setCrossPickerEnable(bool enable)
     }
     d_ptr->mPicker->setEnabled(enable);
     if (d_ptr->mZoomer.isNull()) {
-        if (isEnableZoomer()) {
+        if (isZoomerEnabled()) {
             // 如果缩放开启，缩放的TrackerMode和picker重复，这里就需要把TrackerMode取消
             d_ptr->mZoomer->setTrackerMode((enable ? QwtPicker::AlwaysOff : QwtPicker::AlwaysOn));
         }
@@ -874,7 +921,7 @@ void DAChartWidget::setPanEnable(bool enable)
     d_ptr->mPanner->setEnabled(enable);
     if (enable) {
         // pan和zoom互斥
-        if (isEnableZoomer()) {
+        if (isZoomerEnabled()) {
             setZoomerEnable(false);
         }
     }
@@ -886,12 +933,19 @@ void DAChartWidget::setPanEnable(bool enable)
  */
 void DAChartWidget::setupPanner()
 {
+    DA_D(d);
     // 设置拖动
-    if (nullptr == d_ptr->mPanner) {
-        d_ptr->mPanner = new QwtPlotPanner(canvas());
-        d_ptr->mPanner->setCursor(QCursor(Qt::ClosedHandCursor));
-        d_ptr->mPanner->setMouseButton(Qt::LeftButton);
+    if (d->mPanner) {
+        d->mPanner->setEnabled(false);
+        d->mPanner->deleteLater();
+        d->mPanner = nullptr;
     }
+    if (d->mPannerFactory) {
+        d->mPanner = d->mPannerFactory(canvas());
+    } else {
+        d->mPanner = new QwtPlotPanner(canvas());
+    }
+    d->mPanner->setMouseButton(Qt::MiddleButton);
 }
 
 void DAChartWidget::deletePanner()
@@ -910,7 +964,7 @@ void DAChartWidget::deletePanner()
  */
 void DAChartWidget::setZoomerEnable(bool enable)
 {
-    if (isEnableZoomer() == enable) {
+    if (isZoomerEnabled() == enable) {
         return;  // 状态一致不动作
     }
     if (!enable) {
@@ -923,7 +977,7 @@ void DAChartWidget::setZoomerEnable(bool enable)
     }
     setZoomerEnable(d_ptr->mZoomer.data(), enable);
     setZoomerEnable(d_ptr->mZoomerSecond.data(), enable);
-    if (isEnableCrossPicker()) {
+    if (isCrossPickerEnable()) {
         d_ptr->mZoomer->setTrackerMode((enable ? QwtPicker::AlwaysOff : QwtPicker::ActiveOnly));
     }
     if (enable) {
@@ -943,13 +997,13 @@ void DAChartWidget::setZoomerEnable(QwtPlotZoomer* zoomer, bool enable)
         zoomer->setEnabled(true);
         zoomer->setZoomBase(true);
         zoomer->setRubberBand(QwtPicker::RectRubberBand);
-        zoomer->setTrackerMode((isEnableCrossPicker() ? QwtPicker::AlwaysOff : QwtPicker::ActiveOnly));
+        zoomer->setTrackerMode((isCrossPickerEnable() ? QwtPicker::AlwaysOff : QwtPicker::ActiveOnly));
     } else {
         zoomer->setEnabled(false);
         zoomer->setRubberBand(QwtPicker::NoRubberBand);
         zoomer->setTrackerMode(QwtPicker::AlwaysOff);
     }
-    if (isEnableCrossPicker()) {
+    if (isCrossPickerEnable()) {
         zoomer->setTrackerMode((enable ? QwtPicker::AlwaysOff : QwtPicker::ActiveOnly));
     }
 }
@@ -1207,11 +1261,35 @@ void DAChartWidget::deletelegendPanel()
     d_ptr->mLegendPanel = nullptr;
 }
 
+void DAChartWidget::setupSeriesDataPicker()
+{
+    DA_D(d);
+    if (d->mDataPicker) {
+        d->mDataPicker->setEnabled(false);
+        d->mDataPicker->deleteLater();
+        d->mDataPicker = nullptr;
+    }
+    if (d->mSeriesDataPickerFactory) {
+        d->mDataPicker = d->mSeriesDataPickerFactory(canvas());
+    } else {
+        d->mDataPicker = new QwtPlotSeriesDataPicker(canvas());
+    }
+}
+
+QwtPlotSeriesDataPicker* DAChartWidget::getOrCreateSeriesDataPicker()
+{
+    DA_D(d);
+    if (!d->mDataPicker) {
+        setupSeriesDataPicker();
+    }
+    return d->mDataPicker;
+}
+
 /**
  * @brief 开启y值捕获
  * @param enable
  */
-void DAChartWidget::enableYDataPicker(bool enable)
+void DAChartWidget::setYDataPickerEnable(bool enable)
 {
     DA_D(d);
     d->enabelDataPicker(enable, QwtPlotSeriesDataPicker::PickYValue);
@@ -1222,7 +1300,7 @@ void DAChartWidget::enableYDataPicker(bool enable)
  * @brief 开启xy值捕获
  * @param enable
  */
-void DAChartWidget::enableXYDataPicker(bool enable)
+void DAChartWidget::setXYDataPickerEnable(bool enable)
 {
     DA_D(d);
     d->enabelDataPicker(enable, QwtPlotSeriesDataPicker::PickNearestPoint);
@@ -1233,7 +1311,7 @@ void DAChartWidget::enableXYDataPicker(bool enable)
  * @brief plt.xlabel 设置xbottom轴标题
  * @param label
  */
-void DAChartWidget::setXLabel(const QString& label)
+void DAChartWidget::setXLabelText(const QString& label)
 {
     setAxisTitle(QwtPlot::xBottom, label);
 }
@@ -1242,7 +1320,7 @@ void DAChartWidget::setXLabel(const QString& label)
  * @brief plt.ylabel 设置yLeft轴标题
  * @param label
  */
-void DAChartWidget::setYLabel(const QString& label)
+void DAChartWidget::setYLabelText(const QString& label)
 {
     setAxisTitle(QwtPlot::yLeft, label);
 }
@@ -1259,7 +1337,7 @@ void DAChartWidget::notifyChartPropertyHasChanged()
 /// \brief 是否允许缩放
 /// \return
 ///
-bool DAChartWidget::isEnableZoomer() const
+bool DAChartWidget::isZoomerEnabled() const
 {
     if (d_ptr->mZoomer) {
         return (d_ptr->mZoomer->isEnabled());
@@ -1274,7 +1352,7 @@ bool DAChartWidget::isEnableZoomer() const
 /// \brief 是否允许十字光标
 /// \return
 ///
-bool DAChartWidget::isEnableCrossPicker() const
+bool DAChartWidget::isCrossPickerEnable() const
 {
     if (d_ptr->mPicker) {
         return (d_ptr->mPicker->isEnabled());
@@ -1291,6 +1369,10 @@ void DAChartWidget::showItem(const QVariant& itemInfo, bool on)
     }
 }
 
+/**
+ * @brief getCureList 获取所有曲线
+ * @return
+ */
 QList< QwtPlotCurve* > DAChartWidget::getCurveList()
 {
     QList< QwtPlotCurve* > curves;
@@ -1302,10 +1384,10 @@ QList< QwtPlotCurve* > DAChartWidget::getCurveList()
     return (curves);
 }
 
-///
-/// \brief getMakerList 获取所有标记
-/// \return
-///
+/**
+ * @brief getMakerList 获取所有标记
+ * @return
+ */
 QList< QwtPlotMarker* > DAChartWidget::getMakerList()
 {
     QList< QwtPlotMarker* > list;
@@ -1341,7 +1423,7 @@ QwtDateScaleDraw* DAChartWidget::setAxisDateTimeScale(int axisID)
  */
 QwtPlotGrid* DAChartWidget::getOrCreateGrid()
 {
-    QwtPlotGrid* grid = getPlotGrid();
+    QwtPlotGrid* grid = getGrid();
     if (!grid) {
         grid = new QwtPlotGrid();
         grid->setMajorPen(Qt::gray, 1, Qt::DotLine);  // 大刻度的样式
@@ -1359,7 +1441,7 @@ QwtPlotGrid* DAChartWidget::getOrCreateGrid()
  */
 QwtPlotLegendItem* DAChartWidget::getOrCreateLegend()
 {
-    QwtPlotLegendItem* legend = getPlotLegend();
+    QwtPlotLegendItem* legend = getLegend();
     if (!legend) {
         legend = new QwtPlotLegendItem();
         legend->setRenderHint(QwtPlotItem::RenderAntialiased);

@@ -1489,8 +1489,8 @@ void DAAppController::onActionAddFigureTriggered()
     DAFigureWidget* fig = chartopt->createFigure();
     // 这里不需要回退
     DAChartWidget* chart = fig->createChart();
-    chart->setXLabel("x");
-    chart->setYLabel("y");
+    chart->setXLabelText("x");
+    chart->setYLabelText("y");
     // 把fig的undostack添加
     mCommand->addStack(fig->getUndoStack());
     mRibbon->updateFigureAboutRibbon(fig);
@@ -1525,7 +1525,7 @@ void DAAppController::onActionFigureNewXYAxisTriggered()
     DAChartWidget* w = fig->createChart_(QRectF(0.1, 0.1, 0.4, 0.4));
     w->setGridEnable();
     w->setPanEnable();
-    w->enableXYDataPicker();
+    w->setXYDataPickerEnable();
     //    w->addCurve({ 1, 2, 3, 4, 5 }, { 3, 5, 8, 0, -3 })->setTitle("curve1");
     //    w->addCurve({ 1, 2, 3, 4, 5 }, { 5, 7, 0, -1, 1 })->setTitle("curve2");
     mRibbon->updateChartAboutRibbon(w);
@@ -1615,7 +1615,7 @@ void DAAppController::onActionChartEnableGridXTriggered(bool on)
 {
     DAChartWidget* w = getCurrentChart();
     if (w) {
-        w->setGridXEnabled(on);
+        w->setGridXEnable(on);
         setDirty();
     }
 }
@@ -1627,7 +1627,7 @@ void DAAppController::onActionChartEnableGridYTriggered(bool on)
 {
     DAChartWidget* w = getCurrentChart();
     if (w) {
-        w->setGridYEnabled(on);
+        w->setGridYEnable(on);
         setDirty();
     }
 }
@@ -1639,7 +1639,7 @@ void DAAppController::onActionChartEnableGridXMinEnableTriggered(bool on)
 {
     DAChartWidget* w = getCurrentChart();
     if (w) {
-        w->setGridXMinEnabled(on);
+        w->setGridXMinEnable(on);
         setDirty();
     }
 }
@@ -1651,7 +1651,7 @@ void DAAppController::onActionChartEnableGridYMinTriggered(bool on)
 {
     DAChartWidget* w = getCurrentChart();
     if (w) {
-        w->setGridYMinEnabled(on);
+        w->setGridYMinEnable(on);
         setDirty();
     }
 }
@@ -1675,7 +1675,7 @@ void DAAppController::onActionChartEnableZoomTriggered(bool on)
 void DAAppController::onActionChartZoomInTriggered()
 {
     DAChartWidget* w = getCurrentChart();
-    if (w && w->isEnableZoomer()) {
+    if (w && w->isZoomerEnabled()) {
         w->zoomIn();
     }
 }
@@ -1686,7 +1686,7 @@ void DAAppController::onActionChartZoomInTriggered()
 void DAAppController::onActionChartZoomOutTriggered()
 {
     DAChartWidget* w = getCurrentChart();
-    if (w && w->isEnableZoomer()) {
+    if (w && w->isZoomerEnabled()) {
         w->zoomOut();
     }
 }
@@ -1725,8 +1725,8 @@ void DAAppController::onActionChartEnablePickerCrossTriggered(bool on)
     if (w) {
         w->setCrossPickerEnable(on);
         if (on) {
-            w->enableYDataPicker(false);
-            w->enableXYDataPicker(false);
+            w->setYDataPickerEnable(false);
+            w->setXYDataPickerEnable(false);
         }
     }
 }
@@ -1739,10 +1739,10 @@ void DAAppController::onActionChartEnablePickerYTriggered(bool on)
 {
     DAChartWidget* w = getCurrentChart();
     if (w) {
-        w->enableYDataPicker(on);
+        w->setYDataPickerEnable(on);
         if (on) {
             w->setCrossPickerEnable(false);
-            w->enableXYDataPicker(false);
+            w->setXYDataPickerEnable(false);
         }
     }
 }
@@ -1755,10 +1755,10 @@ void DAAppController::onActionChartEnablePickerXYTriggered(bool on)
 {
     DAChartWidget* w = getCurrentChart();
     if (w) {
-        w->enableXYDataPicker(on);
+        w->setXYDataPickerEnable(on);
         if (on) {
             w->setCrossPickerEnable(false);
-            w->enableYDataPicker(false);
+            w->setYDataPickerEnable(false);
         }
     }
 }

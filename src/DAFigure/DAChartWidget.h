@@ -41,7 +41,7 @@
 
 class QPaintEvent;
 class QwtDateScaleDraw;
-
+class QwtPlotSeriesDataPicker;
 namespace DA
 {
 class DAFigureWidget;
@@ -57,25 +57,18 @@ class DAFIGURE_API DAChartWidget : public QwtPlot
 public:
     DAChartWidget(QWidget* parent = nullptr);
     virtual ~DAChartWidget();
-    ///
-    /// \brief getCureList 获取所有曲线
-    /// \return
-    ///
+    // 获取所有曲线
     QList< QwtPlotCurve* > getCurveList();
-
     // 获取所有标记
     QList< QwtPlotMarker* > getMakerList();
-
     // 设置为时间坐标轴
     QwtDateScaleDraw* setAxisDateTimeScale(const QString& format, int axisID, QwtDate::IntervalType intType = QwtDate::Second);
     QwtDateScaleDraw* setAxisDateTimeScale(int axisID);
-
     // 坐标的极值
     double axisXmin(int axisId = QwtPlot::xBottom) const;
     double axisXmax(int axisId = QwtPlot::xBottom) const;
     double axisYmin(int axisId = QwtPlot::yLeft) const;
     double axisYmax(int axisId = QwtPlot::yLeft) const;
-
     // 清除所有editor，如zoom，panner，cross等
     virtual void setEnableAllEditor(bool enable);
     // 获取背景
@@ -111,11 +104,10 @@ public:
     // title的另外一种方式
     QString getChartTitle() const;
 
-public:
-    // 这里获取绘图窗口里的一些部件
     //==============================================================
-    //  缩放相关
+    // zoomer
     //==============================================================
+    bool isZoomerEnabled() const;
     // 缩放相关
     QwtPlotZoomer* getZoomer() const;
     // 构建默认的缩放器
@@ -123,26 +115,59 @@ public:
     void setupZoomer(QwtPlotZoomer* z, bool issecondZoom = false);
     QwtPlotZoomer* getZoomerSecond();
 
-public slots:
+    //==============================================================
+    // 网格
+    //==============================================================
+    // 获取grid指针
+    QwtPlotGrid* getGrid() const;
+    // 设置或创建网格，并配置其主要线条的样式
+    void setGridLine(const QColor& color = Qt::gray, qreal width = 1.0, Qt::PenStyle style = Qt::DotLine, bool isMajor = true);
+    // 检查网格是否可见
+    bool isGridEnable() const;
+    // 检查X轴主网格线是否启用
+    bool isGridXEnable() const;
+    // 检查Y轴主网格线是否启用
+    bool isGridYEnable() const;
+    // 检查X轴次要网格线是否启用
+    bool isGridXMinEnable() const;
+    // 检查Y轴次要网格线是否启用
+    bool isGridYMinEnable() const;
+
+    //==============================================================
+    // 图例
+    //==============================================================
+    // 获取legend
+    QwtPlotLegendItem* getLegend() const;
+    // 检查legend是否可见
+    bool isLegendEnable() const;
+
+    //==============================================================
+    // Panner
+    //==============================================================
+    bool isPannerEnable() const;
+    // 获取panner
+    QwtPlotPanner* getPanner() const;
+
+    //==============================================================
+    // LegendPanel
+    //==============================================================
+    bool isEnableLegendPanel() const;
+
+    //==============================================================
+    // Picker
+    //==============================================================
+    // 是否允许十字光标
+    bool isCrossPickerEnable() const;
+    bool isYDataPickerEnable() const;
+    bool isXYDataPickerEnable() const;
+public Q_SLOTS:
     // 设置边框
     void setChartBorderColor(const QColor& c);
     // 设置背景
     void setChartBackgroundBrush(const QBrush& b);
-
-    // 设置grid
-    void setGridEnable(bool enabled = true);
-    // 启用或禁用X轴主网格线
-    void setGridXEnabled(bool enabled = true);
-    // 启用或禁用Y轴主网格线
-    void setGridYEnabled(bool enabled = true);
-    // 启用或禁用X轴次要网格线
-    void setGridXMinEnabled(bool enabled = true);
-    // 启用或禁用Y轴次要网格线
-    void setGridYMinEnabled(bool enabled = true);
-
-    // 设置legend开启
-    void setLegendEnable(bool enable = true);
-
+    //==============================================================
+    // zoomer
+    //==============================================================
     // 缩放和enablePan是互斥关系，enableZoomer(true)会调用enablePan(false)
     void setZoomerEnable(bool enable = true);
     // 回到放大的最底栈
@@ -155,23 +180,49 @@ public slots:
     void zoomOut();
     // 缩放到最适合比例，就是可以把所有图都能看清的比例
     void zoomInCompatible();
+    //==============================================================
+    // 网格
+    //==============================================================
+    // 设置grid
+    void setGridEnable(bool enabled = true);
+    // 启用或禁用X轴主网格线
+    void setGridXEnable(bool enabled = true);
+    // 启用或禁用Y轴主网格线
+    void setGridYEnable(bool enabled = true);
+    // 启用或禁用X轴次要网格线
+    void setGridXMinEnable(bool enabled = true);
+    // 启用或禁用Y轴次要网格线
+    void setGridYMinEnable(bool enabled = true);
+    //==============================================================
+    // Panner
+    //==============================================================
+    // 拖动,拖动和缩放是互斥关系，enablePan(true)内部会调用enableZoomer(false)
+    void setPanEnable(bool enable = true);
 
+    //==============================================================
+    // 图例
+    //==============================================================
+    // 设置legend开启
+    void setLegendEnable(bool enable = true);
+
+    //==============================================================
+    // Picker
+    //==============================================================
+    void setYDataPickerEnable(bool enable = true);
+    void setXYDataPickerEnable(bool enable = true);
     // 十字线
     void setCrossPickerEnable(bool enable = true);
 
-    // 拖动,拖动和缩放是互斥关系，enablePan(true)内部会调用enableZoomer(false)
-    void setPanEnable(bool enable = true);
+    //==============================================================
+    // LegendPanel
+    //==============================================================
     // legend面板
     void setLegendPanelEnable(bool enable = true);
 
     void showItem(const QVariant& itemInfo, bool on);
-
-    void enableYDataPicker(bool enable = true);
-
-    void enableXYDataPicker(bool enable = true);
     // 设置xbottom-label
-    void setXLabel(const QString& label);
-    void setYLabel(const QString& label);
+    void setXLabelText(const QString& label);
+    void setYLabelText(const QString& label);
     // 此函数激活chartPropertyHasChanged信号
     void notifyChartPropertyHasChanged();
 Q_SIGNALS:
@@ -205,51 +256,25 @@ Q_SIGNALS:
     void chartPropertyHasChanged(DAChartWidget* chart);
 
 public:
-    bool isEnableZoomer() const;
-
-    // 是否允许十字光标
-    bool isEnableCrossPicker() const;
-    //==============================================================
-    // 网格
-    //==============================================================
-    // 获取grid指针
-    QwtPlotGrid* getPlotGrid() const;
-    // 设置或创建网格，并配置其主要线条的样式
-    void setGridLine(const QColor& color = Qt::gray, qreal width = 1.0, Qt::PenStyle style = Qt::DotLine, bool isMajor = true);
-    // 检查网格是否可见
-    bool isGridVisible() const;
-    // 检查X轴主网格线是否启用
-    bool isGridXEnabled() const;
-    // 检查Y轴主网格线是否启用
-    bool isGridYEnabled() const;
-    // 检查X轴次要网格线是否启用
-    bool isGridXMinEnabled() const;
-    // 检查Y轴次要网格线是否启用
-    bool isGridYMinEnabled() const;
-
-    //==============================================================
-    // 图例
-    //==============================================================
-    // 获取legend
-    QwtPlotLegendItem* getPlotLegend() const;
-    // 检查legend是否可见
-    bool isLegendVisible() const;
-
-    //==============================================================
-    // Panner
-    //==============================================================
-    bool isPannerEnable() const;
-
-    bool isEnableLegendPanel() const;
-    bool isEnableYDataPicker() const;
-    bool isEnableXYDataPicker() const;
-
-public:
     // 把min,max,value的数组转换为QwtIntervalSample数组
     static void makeIntervalSample(const QVector< double >& value,
                                    const QVector< double >& min,
                                    const QVector< double >& max,
                                    QVector< QwtIntervalSample >& invDatas);
+
+public:
+    //==============================================================
+    // 工厂类相关
+    //==============================================================
+    using FpCreatePanner           = std::function< QwtPlotPanner*(QWidget*) >;
+    using FpCreatePicker           = std::function< QwtPlotPicker*(QWidget*) >;
+    using FpCreateSeriesDataPicker = std::function< QwtPlotSeriesDataPicker*(QWidget*) >;
+    // 注册panner的工厂
+    void registerPannerFactory(const FpCreatePanner& fp);
+    // 注册picker工厂
+    void registerPickerFactory(const FpCreatePicker& fp);
+    // 注册QwtPlotSeriesDataPicker工厂
+    void registerSeriesDataPickerFactory(const FpCreateSeriesDataPicker& fp);
 
 protected:
     virtual void resizeEvent(QResizeEvent*) override;
@@ -270,8 +295,11 @@ protected:
 
     void setuplegendPanel();
     void deletelegendPanel();
+    // 创建一个SeriesDataPicker，如果原来已经有，会把原来删除掉，再创建一个
+    void setupSeriesDataPicker();
 
 private:
+    QwtPlotSeriesDataPicker* getOrCreateSeriesDataPicker();
     QwtPlotGrid* getOrCreateGrid();
     QwtPlotLegendItem* getOrCreateLegend();
 };

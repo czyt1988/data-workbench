@@ -117,14 +117,6 @@ void {{plugin-base-name}}NodeFactory::nodeStartRemove(DA::DAAbstractNode::Shared
     DA::DAAbstractNodeFactory::nodeStartRemove(node);
 }
 
-void {{plugin-base-name}}NodeFactory::nodeLinkSucceed(DA::DAAbstractNode::SharedPointer outNode,
-                                              const QString& outKey,
-                                              DA::DAAbstractNode::SharedPointer inNode,
-                                              const QString& inkey)
-{
-    DA::DAAbstractNodeFactory::nodeLinkSucceed(outNode,outKey,inNode,inkey);
-}
-
 void {{plugin-base-name}}NodeFactory::nodeLinkDetached(DA::DAAbstractNode::SharedPointer outNode,
                                                const QString& outKey,
                                                DA::DAAbstractNode::SharedPointer inNode,
@@ -142,12 +134,6 @@ void {{plugin-base-name}}NodeFactory::loadExternInfoFromXml(const QDomElement* f
 {
     DA::DAAbstractNodeFactory::loadExternInfoFromXml(factoryExternElement);
 }
-
-DA::DANodeGraphicsSceneEventListener* {{plugin-base-name}}NodeFactory::createNodeGraphicsSceneEventListener()
-{
-    return nullptr;
-}
-
 
 QMainWindow* {{plugin-base-name}}NodeFactory::getMainWindow() const
 {
