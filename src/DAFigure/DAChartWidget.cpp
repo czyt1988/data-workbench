@@ -43,8 +43,8 @@ public:
     DAChartWidget::FpCreatePanner mPannerFactory { nullptr };
     DAChartWidget::FpCreatePicker mPickerFactory { nullptr };
     DAChartWidget::FpCreateSeriesDataPicker mSeriesDataPickerFactory { nullptr };
-    QScopedPointer< QwtPlotZoomer > mZoomer;
-    QScopedPointer< QwtPlotZoomer > mZoomerSecond;
+    QwtPlotCanvasZoomer* mZoomer { nullptr };
+    QwtPlotMagnifier* mMagnifier { nullptr };
     QwtPlotPicker* mPicker { nullptr };
     QwtPlotPanner* mPanner { nullptr };
     QwtLegend* mLegendPanel { nullptr };
@@ -143,17 +143,9 @@ void DAChartWidget::resizeEvent(QResizeEvent* event)
  * @brief 获取缩放器
  * @return 如果没有返回nullptr
  */
-QwtPlotZoomer* DAChartWidget::getZoomer() const
+QwtPlotCanvasZoomer* DAChartWidget::getZoomer() const
 {
-    return (d_ptr->mZoomer.data());
-}
-/**
- * @brief 获取缩放器2
- * @return 如果没有返回nullptr
- */
-QwtPlotZoomer* DAChartWidget::getZoomerSecond()
-{
-    return (d_ptr->mZoomerSecond.data());
+    return (d_ptr->mZoomer);
 }
 
 void DAChartWidget::paintEvent(QPaintEvent* e)
@@ -381,6 +373,19 @@ bool DAChartWidget::isXYDataPickerEnable() const
 {
     DA_DC(d);
     return d->isEnableDataPicker(QwtPlotSeriesDataPicker::PickNearestPoint);
+}
+
+/**
+ * @brief 是否运行滚轮缩放
+ * @return
+ */
+bool DAChartWidget::isMagnifierEnable() const
+{
+    DA_DC(d);
+    if (d->mMagnifier) {
+        return d->mMagnifier->isEnabled();
+    }
+    return false;
 }
 
 /**
@@ -886,19 +891,16 @@ void DAChartWidget::setupCrossPicker()
 
 void DAChartWidget::setCrossPickerEnable(bool enable)
 {
-    if (!enable && (nullptr == d_ptr->mPicker)) {
+    if (isCrossPickerEnable() == enable) {
         return;
     }
-    if (nullptr == d_ptr->mPicker) {
+    if (!d_ptr->mPicker) {
+        if (!enable) {
+            return;
+        }
         setupCrossPicker();
     }
     d_ptr->mPicker->setEnabled(enable);
-    if (d_ptr->mZoomer.isNull()) {
-        if (isZoomerEnabled()) {
-            // 如果缩放开启，缩放的TrackerMode和picker重复，这里就需要把TrackerMode取消
-            d_ptr->mZoomer->setTrackerMode((enable ? QwtPicker::AlwaysOff : QwtPicker::AlwaysOn));
-        }
-    }
     emit enableCrossPickerChanged(enable);
 }
 
@@ -912,7 +914,7 @@ void DAChartWidget::setPanEnable(bool enable)
     if (isPannerEnable() == enable) {
         return;  // 状态一致跳出
     }
-    if (nullptr == d_ptr->mPanner) {
+    if (!d_ptr->mPanner) {
         if (!enable) {
             return;
         }
@@ -948,13 +950,15 @@ void DAChartWidget::setupPanner()
     d->mPanner->setMouseButton(Qt::MiddleButton);
 }
 
-void DAChartWidget::deletePanner()
+void DAChartWidget::setupMagnifier()
 {
-    if (nullptr != d_ptr->mPanner) {
-        d_ptr->mPanner->setParent(nullptr);  // 断开和canvas()的父子连接
-        delete d_ptr->mPanner;
-        d_ptr->mPanner = nullptr;
+    DA_D(d);
+    if (d->mMagnifier) {
+        d->mMagnifier->setEnabled(false);
+        d->mMagnifier->deleteLater();
+        d->mMagnifier = nullptr;
     }
+    d->mMagnifier = new QwtPlotMagnifier(canvas());
 }
 
 /**
@@ -967,28 +971,15 @@ void DAChartWidget::setZoomerEnable(bool enable)
     if (isZoomerEnabled() == enable) {
         return;  // 状态一致不动作
     }
-    if (!enable) {
-        if (d_ptr->mZoomer.isNull()) {
-            return;
-        }
-    }
-    if (d_ptr->mZoomer.isNull() /*|| nullptr == _zoomerSecond*/) {
+    DA_D(d);
+    if (!d->mZoomer) {
         setupZoomer();
     }
-    setZoomerEnable(d_ptr->mZoomer.data(), enable);
-    setZoomerEnable(d_ptr->mZoomerSecond.data(), enable);
-    if (isCrossPickerEnable()) {
-        d_ptr->mZoomer->setTrackerMode((enable ? QwtPicker::AlwaysOff : QwtPicker::ActiveOnly));
-    }
-    if (enable) {
-        if (isPannerEnable()) {
-            setPanEnable(false);
-        }
-    }
+    d->mZoomer->setEnabled(enable);
     emit enableZoomerChanged(enable);
 }
 
-void DAChartWidget::setZoomerEnable(QwtPlotZoomer* zoomer, bool enable)
+void DAChartWidget::setZoomerEnable(QwtPlotCanvasZoomer* zoomer, bool enable)
 {
     if (nullptr == zoomer) {
         return;
@@ -1008,102 +999,35 @@ void DAChartWidget::setZoomerEnable(QwtPlotZoomer* zoomer, bool enable)
     }
 }
 
-///
-/// \brief 回到放大的最底栈
-///
-void DAChartWidget::setZoomBase()
-{
-    if (!d_ptr->mZoomer.isNull()) {
-        d_ptr->mZoomer->setZoomBase(true);
-    }
-    if (!d_ptr->mZoomerSecond.isNull()) {
-        d_ptr->mZoomerSecond->setZoomBase(true);
-    }
-}
-
 /**
  * @brief 构建默认的缩放器
  */
 void DAChartWidget::setupZoomer()
 {
-    if (d_ptr->mZoomer.isNull()) {
-        qDebug() << "setup zoom";
-#if 0
-        Zoomer_qwt *zoom = new Zoomer_qwt(xBottom, yLeft, canvas());//Zoomer_qwt( QwtPlot::xBottom, QwtPlot::yLeft,canvas() );
+    DA_D(d);
+    if (d->mZoomer) {
+        d->mZoomer->setEnabled(false);
+        d->mZoomer->deleteLater();
+        d->mZoomer = nullptr;
+    }
+    d->mZoomer = new QwtPlotCanvasZoomer(canvas());
+    d->mZoomer->setTrackerMode(QwtPicker::AlwaysOff);
+    d->mZoomer->setMaxStackDepth(30);
 
-        zoom->on_enable_scrollBar(isHaveScroll);
-        zoom->setRubberBand(QwtPicker::RectRubberBand);
-        zoom->setTrackerPen(QColor(Qt::black));
-        zoom->setKeyPattern(QwtEventPattern::KeyRedo, Qt::Key_I, Qt::ShiftModifier);
-        zoom->setKeyPattern(QwtEventPattern::KeyUndo, Qt::Key_O, Qt::ShiftModifier);
-        zoom->setKeyPattern(QwtEventPattern::KeyHome, Qt::Key_Home);
-        zoom->setMousePattern(QwtEventPattern::MouseSelect2,
-            Qt::RightButton, Qt::ControlModifier);
-        zoom->setMousePattern(QwtEventPattern::MouseSelect3,
-            Qt::RightButton);
-        zoom->setTrackerMode(QwtPicker::AlwaysOff);
-        _zoomer = zoom;
-#else
-        d_ptr->mZoomer.reset(new QwtPlotZoomer(xBottom, yLeft, canvas()));
-        d_ptr->mZoomer->setKeyPattern(QwtEventPattern::KeyRedo, Qt::Key_I, Qt::ShiftModifier);
-        d_ptr->mZoomer->setKeyPattern(QwtEventPattern::KeyUndo, Qt::Key_O, Qt::ShiftModifier);
-        d_ptr->mZoomer->setKeyPattern(QwtEventPattern::KeyHome, Qt::Key_Home);
-        d_ptr->mZoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::RightButton, Qt::ControlModifier);
-        d_ptr->mZoomer->setMousePattern(QwtEventPattern::MouseSelect3, Qt::RightButton);
-        d_ptr->mZoomer->setTrackerMode(QwtPicker::AlwaysOff);
-        d_ptr->mZoomer->setZoomBase(false);
-        d_ptr->mZoomer->setMaxStackDepth(20);
-#endif
-    }
-    if (nullptr == d_ptr->mZoomerSecond) {
-        d_ptr->mZoomerSecond.reset(new QwtPlotZoomer(xTop, yRight, canvas()));
-        d_ptr->mZoomerSecond->setKeyPattern(QwtEventPattern::KeyRedo, Qt::Key_I, Qt::ShiftModifier);
-        d_ptr->mZoomerSecond->setKeyPattern(QwtEventPattern::KeyUndo, Qt::Key_O, Qt::ShiftModifier);
-        d_ptr->mZoomerSecond->setKeyPattern(QwtEventPattern::KeyHome, Qt::Key_Home);
-        d_ptr->mZoomerSecond->setMousePattern(QwtEventPattern::MouseSelect2, Qt::RightButton, Qt::ControlModifier);
-        d_ptr->mZoomerSecond->setMousePattern(QwtEventPattern::MouseSelect3, Qt::RightButton);
-        d_ptr->mZoomerSecond->setTrackerMode(QwtPicker::AlwaysOff);
-        d_ptr->mZoomerSecond->setZoomBase(false);
-        d_ptr->mZoomerSecond->setMaxStackDepth(20);
-    }
     QwtPlotMagnifier* magnifier = new QwtPlotMagnifier(canvas());
     magnifier->setMouseButton(Qt::NoButton);
 }
 
 /**
- * @brief 构建自定义的缩放器
- * @param z
+ * @brief DAChartWidget::setZoomReset
  */
-void DAChartWidget::setupZoomer(QwtPlotZoomer* z, bool issecondZoom)
+void DAChartWidget::setZoomBase()
 {
-    if (issecondZoom) {
-        d_ptr->mZoomerSecond.reset(z);
-    } else {
-        d_ptr->mZoomer.reset(z);
+    DA_D(d);
+    if (!d->mZoomer) {
+        return;
     }
-}
-
-void DAChartWidget::deleteZoomer()
-{
-    if (!d_ptr->mZoomer.isNull()) {
-        d_ptr->mZoomer.reset();
-    }
-    if (!d_ptr->mZoomerSecond.isNull()) {
-        d_ptr->mZoomerSecond.reset();
-    }
-}
-
-///
-/// \brief 设置缩放重置
-///
-void DAChartWidget::setZoomReset()
-{
-    if (!d_ptr->mZoomer.isNull()) {
-        d_ptr->mZoomer->zoom(0);
-    }
-    if (!d_ptr->mZoomerSecond.isNull()) {
-        d_ptr->mZoomerSecond->zoom(0);
-    }
+    d->mZoomer->setZoomBase();
 }
 
 /**
@@ -1111,28 +1035,14 @@ void DAChartWidget::setZoomReset()
  */
 void DAChartWidget::zoomIn()
 {
-    if (d_ptr->mZoomer.isNull()) {
-        qWarning() << tr("Before zoom in, the chart must setup a zoomer");  // cn:在放大图表之前需要先建立缩放器
-        return;
+    DA_D(d);
+    if (!d->mMagnifier) {
+        setupMagnifier();
     }
-
-    QRectF rect = d_ptr->mZoomer->zoomRect();
-    double w    = rect.width() * 0.625;
-    double h    = rect.height() * 0.625;
-    double x    = rect.x() + (rect.width() - w) / 2.0;
-    double y    = rect.y() + (rect.height() - h) / 2.0;
-
-    rect.setX(x);
-    rect.setY(y);
-    rect.setWidth(w);
-    rect.setHeight(h);
-    if (rect.isValid()) {
-        qDebug() << "zoom in from " << d_ptr->mZoomer->zoomRect() << " to " << rect;
-        d_ptr->mZoomer->zoom(rect);
-    } else {
-        qDebug() << "zoom in get invalid zoom rect,current zoom rect is " << d_ptr->mZoomer->zoomRect()
-                 << ",will zoom rect is " << rect;
+    if (!d->mMagnifier->isEnabled()) {
+        d->mMagnifier->setEnabled(true);
     }
+    d->mMagnifier->rescale(1.2);
 }
 
 /**
@@ -1140,84 +1050,14 @@ void DAChartWidget::zoomIn()
  */
 void DAChartWidget::zoomOut()
 {
-    if (d_ptr->mZoomer.isNull()) {
-        qWarning() << tr("Before zoom out, the chart must setup a zoomer");  // cn:在缩小图表之前需要先建立缩放器
-        return;
+    DA_D(d);
+    if (!d->mMagnifier) {
+        setupMagnifier();
     }
-
-    QRectF rect = d_ptr->mZoomer->zoomRect();
-    double w    = rect.width() * 1.6;
-    double h    = rect.height() * 1.6;
-    double x    = rect.x() - (w - rect.width()) / 2.0;
-    double y    = rect.y() - (h - rect.height()) / 2.0;
-
-    rect.setX(x);
-    rect.setY(y);
-    rect.setWidth(w);
-    rect.setHeight(h);
-    if (rect.isValid()) {
-        qDebug() << "zoom out from " << d_ptr->mZoomer->zoomRect() << " to " << rect;
-        d_ptr->mZoomer->zoom(rect);
-    } else {
-        qDebug() << "zoom out get invalid zoom rect,current zoom rect is " << d_ptr->mZoomer->zoomRect()
-                 << ",will zoom rect is " << rect;
+    if (!d->mMagnifier->isEnabled()) {
+        d->mMagnifier->setEnabled(true);
     }
-}
-
-///
-/// \brief 缩放到最适合比例，就是可以把所有图都能看清的比例
-///
-void DAChartWidget::zoomInCompatible()
-{
-    QwtInterval intv[ axisCnt ];
-    bool needdelete       = false;
-    QwtPlotZoomer* zoomer = d_ptr->mZoomer.data();
-    if (nullptr == zoomer) {
-        zoomer     = new QwtPlotZoomer(xBottom, yLeft, canvas());
-        needdelete = true;
-    }
-    DAChartUtil::dataRange(this, &intv[ yLeft ], &intv[ yRight ], &intv[ xBottom ], &intv[ xTop ]);
-
-    int axx = zoomer->xAxis();
-    int axy = zoomer->yAxis();
-    QRectF rect1;
-    rect1.setRect(intv[ axx ].minValue(), intv[ axy ].minValue(), intv[ axx ].width(), intv[ axy ].width());
-    if (rect1.isValid()) {
-        qDebug() << "DAChartWidget::zoomInCompatible zoomer1 rect=" << rect1;
-        zoomer->zoom(rect1);
-    }
-    if (needdelete) {
-        delete zoomer;
-    }
-
-    zoomer = d_ptr->mZoomerSecond.data();
-    if (zoomer) {
-
-        int axx = zoomer->xAxis();
-        int axy = zoomer->yAxis();
-        QRectF rect1;
-        rect1.setRect(intv[ axx ].minValue(), intv[ axy ].minValue(), intv[ axx ].width(), intv[ axy ].width());
-        if (rect1.isValid()) {
-            qDebug() << "DAChartWidget::zoomInCompatible zoomer2 rect=" << rect1;
-            zoomer->zoom(rect1);
-        }
-    }
-
-    /* !此方法不行
-     * if(!d->_zoomer.isNull())
-     * {
-     *  int axx = d->_zoomer->xAxis();
-     *  int axy = d->_zoomer->yAxis();
-     *  double xmin = axisScaleEngine(axx)->lowerMargin();
-     *  double xmax = axisScaleEngine(axx)->upperMargin();
-     *  double ymin = axisScaleEngine(axy)->lowerMargin();
-     *  double ymax = axisScaleEngine(axy)->upperMargin();
-     *  QRectF rect1;
-     *  rect1.setRect(xmin,ymin,xmax-xmin,ymax-ymin);
-     *  qDebug()<<rect1;
-     *  d->_zoomer->zoom(rect1);
-     * }
-     */
+    d->mMagnifier->rescale(0.8);
 }
 
 void DAChartWidget::setLegendPanelEnable(bool enable)
@@ -1225,11 +1065,10 @@ void DAChartWidget::setLegendPanelEnable(bool enable)
     if (isEnableLegendPanel() == enable) {
         return;  // 状态一致不动作
     }
-    if (enable) {
+    if (!d_ptr->mLegendPanel) {
         setuplegendPanel();
-    } else {
-        deletelegendPanel();
     }
+    d_ptr->mLegendPanel->setVisible(enable);
     emit enableLegendPanelChanged(enable);
 }
 
@@ -1253,12 +1092,6 @@ void DAChartWidget::setuplegendPanel()
             legendLabel->setChecked(items[ i ]->isVisible());
         }
     }
-}
-
-void DAChartWidget::deletelegendPanel()
-{
-    insertLegend(nullptr);  // 内部会销毁
-    d_ptr->mLegendPanel = nullptr;
 }
 
 void DAChartWidget::setupSeriesDataPicker()
@@ -1341,9 +1174,6 @@ bool DAChartWidget::isZoomerEnabled() const
 {
     if (d_ptr->mZoomer) {
         return (d_ptr->mZoomer->isEnabled());
-    }
-    if (d_ptr->mZoomerSecond) {
-        return (d_ptr->mZoomerSecond->isEnabled());
     }
     return (false);
 }

@@ -26,7 +26,7 @@
 #include "qwt_text.h"
 #include "qwt_symbol.h"
 #include "qwt_plot_grid.h"
-#include "qwt_plot_zoomer.h"
+#include "qwt_plot_canvas_zoomer.h"
 #include "qwt_scale_engine.h"
 #include "qwt_scale_widget.h"
 #include "qwt_plot_layout.h"
@@ -41,7 +41,9 @@
 
 class QPaintEvent;
 class QwtDateScaleDraw;
+class QwtPlotPicker;
 class QwtPlotSeriesDataPicker;
+
 namespace DA
 {
 class DAFigureWidget;
@@ -109,11 +111,9 @@ public:
     //==============================================================
     bool isZoomerEnabled() const;
     // 缩放相关
-    QwtPlotZoomer* getZoomer() const;
+    QwtPlotCanvasZoomer* getZoomer() const;
     // 构建默认的缩放器
     void setupZoomer();
-    void setupZoomer(QwtPlotZoomer* z, bool issecondZoom = false);
-    QwtPlotZoomer* getZoomerSecond();
 
     //==============================================================
     // 网格
@@ -160,6 +160,11 @@ public:
     bool isCrossPickerEnable() const;
     bool isYDataPickerEnable() const;
     bool isXYDataPickerEnable() const;
+
+    //==============================================================
+    // Magnifier
+    //==============================================================
+    bool isMagnifierEnable() const;
 public Q_SLOTS:
     // 设置边框
     void setChartBorderColor(const QColor& c);
@@ -172,14 +177,10 @@ public Q_SLOTS:
     void setZoomerEnable(bool enable = true);
     // 回到放大的最底栈
     void setZoomBase();
-    // 重置放大的基准
-    void setZoomReset();
     // 放大1.6 相当于乘以0.625
     void zoomIn();
     // 缩小1.6 相当于乘以1.6
     void zoomOut();
-    // 缩放到最适合比例，就是可以把所有图都能看清的比例
-    void zoomInCompatible();
     //==============================================================
     // 网格
     //==============================================================
@@ -284,17 +285,16 @@ protected:
 
 protected:
     void deleteGrid();
-    void deleteZoomer();
-    void setZoomerEnable(QwtPlotZoomer* zoomer, bool enable);
+    void setZoomerEnable(QwtPlotCanvasZoomer* zoomer, bool enable);
 
     // 建立一个内置的picker(十字)
     void setupCrossPicker();
     // 建立一个内置的Panner(拖动)，默认使用鼠标中键
     void setupPanner();
-    void deletePanner();
+    // 建立Magnifier
+    void setupMagnifier();
 
     void setuplegendPanel();
-    void deletelegendPanel();
     // 创建一个SeriesDataPicker，如果原来已经有，会把原来删除掉，再创建一个
     void setupSeriesDataPicker();
 

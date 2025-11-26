@@ -2023,19 +2023,6 @@ Config</source>
     </message>
 </context>
 <context>
-    <name>DA::DAChartWidget</name>
-    <message>
-        <location filename="../DAFigure/DAChartWidget.cpp" line="+1115"/>
-        <source>Before zoom in, the chart must setup a zoomer</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+29"/>
-        <source>Before zoom out, the chart must setup a zoomer</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>DA::DADataManageTableView</name>
     <message>
         <location filename="../DAGui/DADataManageTableView.cpp" line="+88"/>

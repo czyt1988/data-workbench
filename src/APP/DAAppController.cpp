@@ -1698,7 +1698,7 @@ void DAAppController::onActionChartZoomAllTriggered()
 {
     DAChartWidget* w = getCurrentChart();
     if (w) {
-        w->zoomInCompatible();
+        w->rescaleAxes();
     }
 }
 
