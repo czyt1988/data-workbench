@@ -1,5 +1,6 @@
 ﻿#ifndef DACHARTWIDGET_H
 #define DACHARTWIDGET_H
+#if 0
 #include "DAFigureAPI.h"
 // qt
 #include <QMap>
@@ -305,4 +306,260 @@ private:
 };
 
 }  // End Of Namespace DA
+
+#else
+
+#include "DAFigureAPI.h"
+#include "DAChartDataInterface.h"
+#include "DAChartStyleInterface.h"
+#include "DAChartInteractionInterface.h"
+
+#include <QWidget>
+#include <memory>
+
+// QWT includes
+#include "qwt_plot.h"
+#include "qwt_plot_curve.h"
+#include "qwt_plot_barchart.h"
+#include "qwt_plot_marker.h"
+#include "qwt_plot_intervalcurve.h"
+#include "qwt_plot_spectrogram.h"
+
+class QwtDateScaleDraw;
+class DAChartWidgetPrivate;
+class DAFigureWidget;
+
+namespace DA
+{
+
+/**
+ * @brief 增强的Qwt图表控件，提供完整的数据绘图、样式设置和交互控制功能
+ *
+ * 通过三个接口分离不同方面的功能：
+ * - DAChartDataInterface: 数据管理和图表添加
+ * - DAChartStyleInterface: 样式设置和显示配置
+ * - DAChartInteractionInterface: 用户交互控制
+ */
+class DAFIGURE_API DAChartWidget : public QwtPlot,
+                                   public DAChartDataInterface,
+                                   public DAChartStyleInterface,
+                                   public DAChartInteractionInterface
+{
+    Q_OBJECT
+    DA_DECLARE_PRIVATE(DAChartWidget)
+public:
+    explicit DAChartWidget(QWidget* parent = nullptr);
+    virtual ~DAChartWidget();
+
+    // ==================== DAChartDataInterface 实现 ====================
+    // 曲线操作
+    QwtPlotCurve* addCurve(const QVector< double >& xData, const QVector< double >& yData, const QString& title = "") override;
+    QwtPlotCurve* addCurve(const QVector< QPointF >& points, const QString& title = "") override;
+    QList< QwtPlotCurve* > getCurves() const override;
+    void removeCurve(QwtPlotCurve* curve) override;
+
+    // 散点图
+    QwtPlotCurve* addScatter(const QVector< double >& xData, const QVector< double >& yData, const QString& title = "") override;
+
+    // 柱状图
+    QwtPlotBarChart* addBarChart(const QVector< double >& values, const QString& title = "") override;
+    QwtPlotBarChart* addBarChart(const QVector< QPointF >& points, const QString& title = "") override;
+
+    // 误差图
+    QwtPlotIntervalCurve* addIntervalCurve(const QVector< double >& values,
+                                           const QVector< double >& mins,
+                                           const QVector< double >& maxs,
+                                           const QString& title = "") override;
+
+    // 标记线
+    QwtPlotMarker* addVerticalLine(double x, const QString& title = "") override;
+    QwtPlotMarker* addHorizontalLine(double y, const QString& title = "") override;
+    QwtPlotMarker* addCrossLine(double x, double y, const QString& title = "") override;
+
+    // 高级图表
+    QwtPlotSpectrogram* addSpectrogram(QwtGridRasterData* gridData, const QString& title = "") override;
+
+    // 通用数据操作
+    QList< QwtPlotItem* > getAllPlotItems() const override;
+    void removePlotItem(QwtPlotItem* item) override;
+    void clearAllData() override;
+
+    // 数据工具函数
+    QRectF getDataBounds() const override;
+    bool hasData() const override;
+
+    // ==================== DAChartStyleInterface 实现 ====================
+    // 图表整体样式
+    void setChartTitle(const QString& title) override;
+    QString getChartTitle() const override;
+
+    void setBackgroundBrush(const QBrush& brush) override;
+    QBrush getBackgroundBrush() const override;
+
+    void setBorderColor(const QColor& color) override;
+    QColor getBorderColor() const override;
+
+    void setCanvasBackground(const QBrush& brush) override;
+    QBrush getCanvasBackground() const override;
+
+    // 坐标轴样式
+    void setAxisLabel(int axisId, const QString& label) override;
+    QString getAxisLabel(int axisId) const override;
+
+    void setAxisFont(int axisId, const QFont& font) override;
+    QFont getAxisFont(int axisId) const override;
+
+    void setAxisColor(int axisId, const QColor& color) override;
+    QColor getAxisColor(int axisId) const override;
+
+    void showAxis(int axisId, bool visible = true) override;
+    bool isAxisVisible(int axisId) const override;
+
+    // 网格样式
+    void enableGrid(bool enable = true) override;
+    bool isGridEnabled() const override;
+
+    void setGridStyle(const QColor& color, qreal width = 1.0, Qt::PenStyle style = Qt::DotLine, bool isMajor = true) override;
+
+    void setGridMajorStyle(const QColor& color, qreal width = 1.0, Qt::PenStyle style = Qt::DotLine) override;
+
+    void setGridMinorStyle(const QColor& color, qreal width = 0.5, Qt::PenStyle style = Qt::DotLine) override;
+
+    // 图例样式
+    void enableLegend(bool enable = true) override;
+    bool isLegendEnabled() const override;
+
+    void setLegendPosition(Qt::Alignment alignment) override;
+    Qt::Alignment getLegendPosition() const override;
+
+    void setLegendBackground(const QBrush& brush) override;
+    QBrush getLegendBackground() const override;
+
+    void setLegendTextColor(const QColor& color) override;
+    QColor getLegendTextColor() const override;
+
+    // 时间坐标轴
+    void setupDateTimeAxis(int axisId, const QString& format = "yyyy-MM-dd hh:mm:ss") override;
+    bool isDateTimeAxis(int axisId) const override;
+
+    // 高级样式设置
+    void setAxesMargin(int margin) override;
+    int getAxesMargin() const override;
+
+    void setAutoReplot(bool autoReplot) override;
+    bool isAutoReplot() const override;
+
+    // ==================== DAChartInteractionInterface 实现 ====================
+    // 缩放控制
+    void enableZoom(bool enable = true) override;
+    bool isZoomEnabled() const override;
+
+    void zoomToOriginal() override;
+    void zoomIn() override;
+    void zoomOut() override;
+    void zoomToRect(const QRectF& rect) override;
+
+    QwtPlotCanvasZoomer* getZoomer() const override;
+
+    // 平移控制
+    void enablePan(bool enable = true) override;
+    bool isPanEnabled() const override;
+
+    QwtPlotPanner* getPanner() const override;
+
+    // 十字线控制
+    void enableCrosshair(bool enable = true) override;
+    bool isCrosshairEnabled() const override;
+
+    QwtPlotPicker* getCrosshair() const override;
+
+    // 数据拾取控制
+    void enableDataPicking(bool enable = true) override;
+    bool isDataPickingEnabled() const override;
+
+    void enableYValuePicking(bool enable = true) override;
+    bool isYValuePickingEnabled() const override;
+
+    void enableXYValuePicking(bool enable = true) override;
+    bool isXYValuePickingEnabled() const override;
+
+    QwtPlotSeriesDataPicker* getDataPicker() const override;
+
+    // 鼠标滚轮控制
+    void enableMouseWheelZoom(bool enable = true) override;
+    bool isMouseWheelZoomEnabled() const override;
+
+    QwtPlotMagnifier* getMagnifier() const override;
+
+    // 图例面板控制
+    void enableLegendPanel(bool enable = true) override;
+    bool isLegendPanelEnabled() const override;
+
+    QwtLegend* getLegendPanel() const override;
+
+    // 批量交互控制
+    void enableAllInteractions(bool enable) override;
+    void disableAllInteractions() override;
+
+    // 工厂函数注册
+    void registerPannerFactory(const PannerFactory& factory) override;
+    void registerPickerFactory(const PickerFactory& factory) override;
+    void registerDataPickerFactory(const DataPickerFactory& factory) override;
+
+    // ==================== 工具函数 ====================
+    DAFigureWidget* getFigure() const;
+    void refresh();
+    void notifyPropertiesChanged();
+
+public Q_SLOTS:
+    void onLegendItemToggled(const QVariant& itemInfo, bool checked);
+
+Q_SIGNALS:
+    // 数据相关信号
+    void dataChanged();
+    void plotItemAdded(QwtPlotItem* item);
+    void plotItemRemoved(QwtPlotItem* item);
+
+    // 样式相关信号
+    void chartTitleChanged(const QString& title);
+    void backgroundChanged();
+    void gridStyleChanged();
+    void legendStyleChanged();
+
+    // 交互相关信号
+    void zoomStateChanged(bool enabled);
+    void panStateChanged(bool enabled);
+    void crosshairStateChanged(bool enabled);
+    void dataPickingStateChanged(bool enabled);
+
+    // 通用信号
+    void chartPropertiesChanged(DAChartWidget* chart);
+
+protected:
+    void resizeEvent(QResizeEvent* event) override;
+    void paintEvent(QPaintEvent* event) override;
+
+private:
+    // 初始化函数
+    void initializeChart();
+    void setupCanvas();
+    void initializeInteractions();
+
+    // 组件管理
+    void setupZoomer();
+    void setupPanner();
+    void setupMagnifier();
+    void setupCrosshair();
+    void setupDataPicker();
+    void setupLegendPanel();
+
+    // 显示元素管理
+    QwtPlotGrid* getOrCreateGrid();
+    QwtPlotLegendItem* getOrCreateLegend();
+};
+
+}  // namespace DA
+
+#endif
+
 #endif  // DACHARTWIDGET_H
