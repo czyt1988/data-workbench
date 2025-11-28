@@ -6,7 +6,7 @@
 <path fill="#BDCDE8" stroke="#497CAD" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="
 	M29.581,32L10.779,53.385 M58.092,53.125L29.581,32"/>
 <circle fill="#CE6043" cx="28.441" cy="32.76" r="5.25"/>
-<text transform="matrix(1 0 0 1 24.7285 17.0625)" fill="#727272" font-family="'TimesNewRomanPSMT'" font-size="24">y</text>
-<line fill="none" stroke="#CE6043" stroke-width="3" stroke-miterlimit="10" stroke-dasharray="4,2" x1="5.344" y1="32.76" x2="62.5" y2="32.76"/>
+<text transform="matrix(1 0 0 1 32 14.0625)" fill="#727272" font-family="'TimesNewRomanPSMT'" font-size="24">y</text>
+<line fill="none" stroke="#CE6043" stroke-width="3" stroke-miterlimit="10" stroke-dasharray="4,2" x1="28.441" y1="2.057" x2="28.441" y2="59.213"/>
 <polygon fill="#727272" points="5.344,58.668 64,58.668 64,64 0,64 0,58.668 0.012,58.668 0.012,0 5.344,0 "/>
 </svg>

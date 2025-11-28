@@ -62,16 +62,17 @@ AlwaysBreakTemplateDeclarations: true
 # clang-format does not handle that.
 AllowShortFunctionsOnASingleLine: false
 AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+AllowShortBlocksOnASingleLine: false
 #
 BinPackParameters: false
 BinPackArguments: false
 AllowAllParametersOfDeclarationOnNextLine: false
 AlwaysBreakAfterReturnType: None
-
 #
-PenaltyReturnTypeOnItsOwnLine: 60
+PenaltyReturnTypeOnItsOwnLine: 200
 PenaltyBreakAssignment: 20
-PenaltyBreakBeforeFirstCallParameter: 19
+PenaltyBreakBeforeFirstCallParameter: 100
 PenaltyBreakString: 1000
 
 # The coding style specifies some include order categories, but also tells to
@@ -97,3 +98,4 @@ SpacesInSquareBrackets: true
 SpacesInAngles: true
 
 KeepEmptyLinesAtTheStartOfBlocks: true
+MaxEmptyLinesToKeep: 2

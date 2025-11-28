@@ -791,7 +791,7 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+484"/>
+        <location filename="../APP/DAAppController.cpp" line="+483"/>
         <location line="+22"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
@@ -923,7 +923,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+373"/>
+        <location line="+369"/>
         <source>%1_Describe</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3346,7 +3346,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-2183"/>
+        <location filename="../APP/DAAppController.cpp" line="-2178"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6140,7 +6140,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="+146"/>
+        <location filename="../DAGui/DAXmlHelper.cpp" line="+149"/>
         <source>save workflow extern info cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>

@@ -42,6 +42,7 @@ private Q_SLOTS:
     void onCheckBoxEnableCliecked(bool on);
     void onLineEditTextChanged(const QString& text);
     void onAxisFontChanged(const QFont& font);
+    void onAxisFontColorChanged(const QColor& color);
     void onAxisLabelAligmentChanged(Qt::Alignment al);
     void onAxisLabelRotationChanged(double v);
     void onAxisMarginValueChanged(int v);

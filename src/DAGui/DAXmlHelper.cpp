@@ -37,6 +37,8 @@
 #include "qwt_date_scale_draw.h"
 #include "qwt_date_scale_engine.h"
 #include "qwt_plot_curve.h"
+#include "qwt_plot_layout.h"
+#include "qwt_scale_widget.h"
 namespace DA
 {
 //==============================================================
@@ -60,8 +62,9 @@ public:
     bool loadFactoryInfo(DAWorkFlow* workflow, const QDomElement& workflowEle);
     // 保存工作流的节点
     void saveNodes(const DAWorkFlowEditWidget* wfe, QDomDocument& doc, QDomElement& workflowEle);
-    QDomElement
-    makeNodesElement(const QList< DAAbstractNode::SharedPointer >& nodes, const QString& tagName, QDomDocument& doc);
+    QDomElement makeNodesElement(const QList< DAAbstractNode::SharedPointer >& nodes,
+                                 const QString& tagName,
+                                 QDomDocument& doc);
     QDomElement makeNodeElement(const DAAbstractNode::SharedPointer& node, const QString& tagName, QDomDocument& doc);
     bool loadNodes(DAWorkFlow* workflow, DAWorkFlowGraphicsScene* workFlowScene, const QDomElement& workflowEle);
     bool loadNodesClipBoard(DAWorkFlowGraphicsScene* scene,
@@ -1928,8 +1931,10 @@ bool DAXmlHelper::loadElement(DAChartOperateWidget* chartOpt,
  * @param doc
  * @return
  */
-QDomElement
-DAXmlHelper::makeElement(const DAFigureWidget* fig, const QString& tagName, QDomDocument* doc, DAChartItemsManager* itemsMgr)
+QDomElement DAXmlHelper::makeElement(const DAFigureWidget* fig,
+                                     const QString& tagName,
+                                     QDomDocument* doc,
+                                     DAChartItemsManager* itemsMgr)
 {
     QDomElement eleFig = doc->createElement(tagName);
     // background
@@ -2162,8 +2167,7 @@ bool DAXmlHelper::loadElement(DAChartWidget* chart,
     return true;
 }
 
-QDomElement
-DAXmlHelper::makeQwtPlotAxisElement(const DAChartWidget* chart, int axisID, const QString& tagName, QDomDocument* doc)
+QDomElement DAXmlHelper::makeQwtPlotAxisElement(const DAChartWidget* chart, int axisID, const QString& tagName, QDomDocument* doc)
 {
     QDomElement axisEle = doc->createElement(tagName);
     axisEle.setAttribute(QStringLiteral("axisID"), axisID);
@@ -2216,8 +2220,8 @@ DAXmlHelper::makeQwtPlotAxisElement(const DAChartWidget* chart, int axisID, cons
         datescaleDrawEle.setAttribute(QStringLiteral("week0Type"), enumToString(dateScaleDraw->week0Type()));
         // 保存时间坐标轴的其它设置
         QDomElement dateformatEle = doc->createElement(QStringLiteral("dateformat"));
-        dateformatEle.appendChild(DAXMLFileInterface::makeElement(
-            dateScaleDraw->dateFormat(QwtDate::Millisecond), QStringLiteral("msec"), doc));
+        dateformatEle.appendChild(
+            DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Millisecond), QStringLiteral("msec"), doc));
         dateformatEle.appendChild(
             DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Second), QStringLiteral("sec"), doc));
         dateformatEle.appendChild(
@@ -2569,8 +2573,7 @@ bool DAXmlHelper::loadElement(QwtText* value, const QDomElement* tag, const QVer
  * @param doc
  * @return
  */
-QDomElement
-DAXmlHelper::makeElement(unsigned int plotitemID, const QwtPlotItem* value, const QString& tagName, QDomDocument* doc)
+QDomElement DAXmlHelper::makeElement(unsigned int plotitemID, const QwtPlotItem* value, const QString& tagName, QDomDocument* doc)
 {
     QDomElement rootEle = doc->createElement(tagName);
     rootEle.setAttribute(QStringLiteral("rtti"), value->rtti());

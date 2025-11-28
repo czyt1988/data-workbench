@@ -89,16 +89,14 @@ public:
     static bool checkIsXYSeriesItem(const QwtPlotItem* item);
 
     // 通过rtti获取所有plot的数据范围，并做并集
-    static void
-    dataRange(const QwtPlot* chart, QwtInterval* yLeft, QwtInterval* yRight, QwtInterval* xBottom, QwtInterval* xTop);
+    static void dataRange(const QwtPlot* chart, QwtInterval* yLeft, QwtInterval* yRight, QwtInterval* xBottom, QwtInterval* xTop);
 
     ////////////////////// 坐标变换相关操作//////////////////////////////
     // 坐标轴数据互转（把坐标轴转换为另外一个坐标轴数据而保持屏幕位置不变）
     static QPointF transformValue(QwtPlot* chart, const QPointF& p, int orgXAxis, int orgYAxis, int otherXAxis, int otherYAxis);
 
     // 坐标轴数据互转（把坐标轴转换为另外一个坐标轴数据而保持屏幕位置不变）
-    static QPainterPath
-    transformPath(QwtPlot* chart, const QPainterPath& p, int orgXAxis, int orgYAxis, int otherXAxis, int otherYAxis);
+    static QPainterPath transformPath(QwtPlot* chart, const QPainterPath& p, int orgXAxis, int orgYAxis, int otherXAxis, int otherYAxis);
 
     // 图中1像素在实际数据的偏移(正向)
     static QPointF calcOnePixelOffset(QwtPlot* chart, int xaxis, int yaxis);
@@ -116,6 +114,9 @@ public:
 
     // 设置坐标轴文字的字体
     static void setAxisFont(QwtPlot* chart, int axisID, const QFont& font);
+
+    // 设置坐标轴文字的字体
+    static void setAxisFontColor(QwtPlot* chart, int axisID, const QColor& color);
 
     // 设置坐标轴文字的旋转
     static void setAxisLabelRotation(QwtPlot* chart, int axisID, double v);
@@ -188,8 +189,10 @@ public:
     static void getXYDatas(const QVector< QPointF >& xys, QVector< double >* xs, QVector< double >* ys);
     static void getXYDatas(QVector< QPointF >& xys, const QwtSeriesStore< QPointF >* cur);
     static void getXYDatas(QVector< double >* xs, QVector< double >* ys, const QwtSeriesStore< QPointF >* cur);
-    static size_t
-    getXYDatas(QVector< QPointF >& xys, QVector< int >* indexs, const QwtSeriesStore< QPointF >* cur, const QRectF& rang);
+    static size_t getXYDatas(QVector< QPointF >& xys,
+                             QVector< int >* indexs,
+                             const QwtSeriesStore< QPointF >* cur,
+                             const QRectF& rang);
     static size_t getXYDatas(QVector< double >* xs,
                              QVector< double >* ys,
                              QVector< int >* indexs,

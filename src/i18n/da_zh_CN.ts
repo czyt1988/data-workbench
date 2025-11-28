@@ -823,7 +823,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+842"/>
+        <location filename="../APP/DAAppController.cpp" line="+841"/>
         <location line="+49"/>
         <source>project file(*.%1)</source>
         <translation>工程文件(*.%1)</translation>
@@ -955,7 +955,7 @@ Table Area</source>
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
     <message>
-        <location line="+373"/>
+        <location line="+369"/>
         <source>%1_Describe</source>
         <translation>%1_Describe</translation>
     </message>
@@ -3466,7 +3466,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-2183"/>
+        <location filename="../APP/DAAppController.cpp" line="-2178"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -6379,7 +6379,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>转换列为索引</translation>
     </message>
     <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="+191"/>
+        <location filename="../DAGui/DAXmlHelper.cpp" line="+194"/>
         <location line="+119"/>
         <source>load nodes occurce error</source>
         <translation>加载节点发生错误</translation>

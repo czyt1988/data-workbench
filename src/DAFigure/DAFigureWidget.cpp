@@ -218,11 +218,13 @@ void DAFigureWidget::addChart(DAChartWidget* chart, qreal xVersatile, qreal yVer
     // 将会发射QwtFigure::axesAdded信号
     fig->addAxes(chart, xVersatile, yVersatile, wVersatile, hVersatile);
     //! 不清楚为何如果不加这句话，坐标轴的轴线不绘制出来
+    /*
     //! TODO:未来需要确认是什么原因导致的
     chart->axisWidget(QwtAxis::XBottom)->setScaleDraw(new QwtScaleDraw());
     chart->axisWidget(QwtAxis::XTop)->setScaleDraw(new QwtScaleDraw());
     chart->axisWidget(QwtAxis::YRight)->setScaleDraw(new QwtScaleDraw());
     chart->axisWidget(QwtAxis::YLeft)->setScaleDraw(new QwtScaleDraw());
+    */
     // 由于使用了layout管理，因此要显示调用show
     chart->show();
 }
@@ -585,7 +587,7 @@ QwtPlotBarChart* DAFigureWidget::addBar_(const QVector< QPointF >& xyDatas)
     if (!chart) {
         return nullptr;
     }
-    QwtPlotBarChart* item = chart->addBar(xyDatas);
+    QwtPlotBarChart* item = chart->addBarChart(xyDatas);
     DAChartUtil::setPlotItemColor(item, getDefaultColor());
     addItem_(chart, item);
     return item;
@@ -596,10 +598,12 @@ QwtPlotBarChart* DAFigureWidget::addBar_(const QVector< QPointF >& xyDatas)
  * @param xyDatas
  * @return 如果添加失败，返回一个nullptr
  */
-QwtPlotIntervalCurve* DAFigureWidget::addErrorBar_(const QVector< QwtIntervalSample >& xyDatas)
+QwtPlotIntervalCurve* DAFigureWidget::addErrorBar_(const QVector< double >& values,
+                                                   const QVector< double >& mins,
+                                                   const QVector< double >& maxs)
 {
     if (DAChartWidget* chart = gca()) {
-        QwtPlotIntervalCurve* item = chart->addIntervalCurve(xyDatas);
+        QwtPlotIntervalCurve* item = chart->addIntervalCurve(values, mins, maxs);
         DAChartUtil::setPlotItemColor(item, getDefaultColor());
         addItem_(chart, item);
         return item;

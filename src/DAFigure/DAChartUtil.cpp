@@ -309,8 +309,7 @@ QPointF DAChartUtil::transformValue(QwtPlot* chart, const QPointF& p, int orgXAx
 /// \param otherYAxis
 /// \return
 ///
-QPainterPath
-DAChartUtil::transformPath(QwtPlot* chart, const QPainterPath& p, int orgXAxis, int orgYAxis, int otherXAxis, int otherYAxis)
+QPainterPath DAChartUtil::transformPath(QwtPlot* chart, const QPainterPath& p, int orgXAxis, int orgYAxis, int otherXAxis, int otherYAxis)
 {
     QPainterPath shape = p;
     const int eleCount = p.elementCount();
@@ -395,6 +394,21 @@ void DAChartUtil::setAxisFont(QwtPlot* chart, int axisID, const QFont& font)
 {
     if (chart) {
         chart->setAxisFont(axisID, font);
+    }
+}
+
+/**
+ * @brief 设置坐标轴的文字颜色
+ * @param chart
+ * @param axisID
+ * @param color
+ */
+void DAChartUtil::setAxisFontColor(QwtPlot* chart, int axisID, const QColor& color)
+{
+    if (chart) {
+        if (QwtScaleWidget* sw = chart->axisWidget(axisID)) {
+            sw->setTextColor(color);
+        }
     }
 }
 ///
@@ -1280,14 +1294,16 @@ void DAChartUtil::getPlotSpectroCurveSample(QwtPlotItem* p, QVector< QwtPoint3D 
 QRectF DAChartUtil::getVisibleRegionRang(QwtPlot* chart)
 {
     QwtPlot::Axis xaxis = QwtPlot::xBottom;
-    if (!chart->axisEnabled(QwtPlot::xBottom))
+    if (!chart->axisEnabled(QwtPlot::xBottom)) {
         xaxis = QwtPlot::xTop;
+    }
     QwtInterval inter   = chart->axisInterval(xaxis);
     double xmin         = inter.minValue();
     double xmax         = inter.maxValue();
     QwtPlot::Axis yaxis = QwtPlot::yLeft;
-    if (!chart->axisEnabled(QwtPlot::yLeft))
+    if (!chart->axisEnabled(QwtPlot::yLeft)) {
         yaxis = QwtPlot::yRight;
+    }
     inter       = chart->axisInterval(yaxis);
     double ymin = inter.minValue();
     double ymax = inter.maxValue();

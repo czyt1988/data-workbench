@@ -479,11 +479,10 @@ void DAAppController::save()
     qDebug() << "Save Project,Path=" << projectFilePath;
     if (projectFilePath.isEmpty()) {
         QString desktop = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
-        projectFilePath = QFileDialog::getSaveFileName(
-            nullptr,
-            tr("Save Project"),  // 保存工程
-            desktop,
-            tr("Project Files (*.%1)").arg(DAAppProject::getProjectFileSuffix())  // 工程文件 (*.%1)
+        projectFilePath = QFileDialog::getSaveFileName(nullptr,
+                                                       tr("Save Project"),  // 保存工程
+                                                       desktop,
+                                                       tr("Project Files (*.%1)").arg(DAAppProject::getProjectFileSuffix())  // 工程文件 (*.%1)
         );
         if (projectFilePath.isEmpty()) {
             // 取消退出
@@ -514,8 +513,8 @@ void DAAppController::saveAs()
     QFileInfo fi(projectPath);
     if (fi.exists()) {
         // 说明是目录
-        QMessageBox::StandardButton btn = QMessageBox::question(
-            nullptr, tr("Warning"), tr("Whether to overwrite the file:%1").arg(fi.absoluteFilePath()));
+        QMessageBox::StandardButton btn =
+            QMessageBox::question(nullptr, tr("Warning"), tr("Whether to overwrite the file:%1").arg(fi.absoluteFilePath()));
         if (btn != QMessageBox::Yes) {
             return;
         }
@@ -814,11 +813,11 @@ bool DAAppController::openCheck()
     if (!project->getProjectDir().isEmpty()) {
         if (project->isDirty()) {
             // TODO 没有保存。先询问是否保存
-            QMessageBox::StandardButton btn = QMessageBox::question(
-                nullptr,
-                tr("Question"),                                                   // 提示
-                tr("Another project already exists. Do you want to replace it?")  // 已存在其他工程，是否要替换？
-            );
+            QMessageBox::StandardButton btn =
+                QMessageBox::question(nullptr,
+                                      tr("Question"),                                                   // 提示
+                                      tr("Another project already exists. Do you want to replace it?")  // 已存在其他工程，是否要替换？
+                );
             if (btn != QMessageBox::Yes) {
                 return false;
             }
@@ -1489,8 +1488,8 @@ void DAAppController::onActionAddFigureTriggered()
     DAFigureWidget* fig = chartopt->createFigure();
     // 这里不需要回退
     DAChartWidget* chart = fig->createChart();
-    chart->setXLabelText("x");
-    chart->setYLabelText("y");
+    chart->setAxisLabel(QwtAxis::XBottom, "x");
+    chart->setAxisLabel(QwtAxis::YLeft, "y");
     // 把fig的undostack添加
     mCommand->addStack(fig->getUndoStack());
     mRibbon->updateFigureAboutRibbon(fig);
@@ -1523,9 +1522,8 @@ void DAAppController::onActionFigureNewXYAxisTriggered()
         return;
     }
     DAChartWidget* w = fig->createChart_(QRectF(0.1, 0.1, 0.4, 0.4));
-    w->setGridEnable();
-    w->setPanEnable();
-    w->setXYDataPickerEnable();
+    w->enableGrid();
+    w->enablePan();
     //    w->addCurve({ 1, 2, 3, 4, 5 }, { 3, 5, 8, 0, -3 })->setTitle("curve1");
     //    w->addCurve({ 1, 2, 3, 4, 5 }, { 5, 7, 0, -1, 1 })->setTitle("curve2");
     mRibbon->updateChartAboutRibbon(w);
@@ -1602,8 +1600,11 @@ void DAAppController::onActionChartEnableGridTriggered(bool on)
     qDebug() << "onActionChartGridEnableTriggered";
     DAChartWidget* w = getCurrentChart();
     if (w) {
-        w->setGridEnable(on);
+        w->enableGrid(on);
+        w->replot();
+        // grid生效与否决定了X，Y以及Xmin,Ymin能否显示
         mRibbon->updateChartGridAboutRibbon(w);
+        setDirty();
     }
 }
 
@@ -1615,7 +1616,8 @@ void DAAppController::onActionChartEnableGridXTriggered(bool on)
 {
     DAChartWidget* w = getCurrentChart();
     if (w) {
-        w->setGridXEnable(on);
+        w->enableGridX(on);
+        w->replot();
         setDirty();
     }
 }
@@ -1627,7 +1629,8 @@ void DAAppController::onActionChartEnableGridYTriggered(bool on)
 {
     DAChartWidget* w = getCurrentChart();
     if (w) {
-        w->setGridYEnable(on);
+        w->enableGridY(on);
+        w->replot();
         setDirty();
     }
 }
@@ -1639,7 +1642,8 @@ void DAAppController::onActionChartEnableGridXMinEnableTriggered(bool on)
 {
     DAChartWidget* w = getCurrentChart();
     if (w) {
-        w->setGridXMinEnable(on);
+        w->enableGridXMin(on);
+        w->replot();
         setDirty();
     }
 }
@@ -1651,7 +1655,8 @@ void DAAppController::onActionChartEnableGridYMinTriggered(bool on)
 {
     DAChartWidget* w = getCurrentChart();
     if (w) {
-        w->setGridYMinEnable(on);
+        w->enableGridYMin(on);
+        w->replot();
         setDirty();
     }
 }
@@ -1664,7 +1669,7 @@ void DAAppController::onActionChartEnableZoomTriggered(bool on)
 {
     DAChartWidget* w = getCurrentChart();
     if (w) {
-        w->setZoomerEnable(on);
+        w->enableZoom(on);
         mRibbon->updateChartZoomPanAboutRibbon(w);
     }
 }
@@ -1675,7 +1680,7 @@ void DAAppController::onActionChartEnableZoomTriggered(bool on)
 void DAAppController::onActionChartZoomInTriggered()
 {
     DAChartWidget* w = getCurrentChart();
-    if (w && w->isZoomerEnabled()) {
+    if (w) {
         w->zoomIn();
     }
 }
@@ -1686,7 +1691,7 @@ void DAAppController::onActionChartZoomInTriggered()
 void DAAppController::onActionChartZoomOutTriggered()
 {
     DAChartWidget* w = getCurrentChart();
-    if (w && w->isZoomerEnabled()) {
+    if (w) {
         w->zoomOut();
     }
 }
@@ -1699,6 +1704,7 @@ void DAAppController::onActionChartZoomAllTriggered()
     DAChartWidget* w = getCurrentChart();
     if (w) {
         w->rescaleAxes();
+        w->replot();
     }
 }
 
@@ -1710,7 +1716,7 @@ void DAAppController::onActionChartEnablePanTriggered(bool on)
 {
     DAChartWidget* w = getCurrentChart();
     if (w) {
-        w->setPanEnable(on);
+        w->enablePan(on);
         mRibbon->updateChartZoomPanAboutRibbon(w);
     }
 }
@@ -1723,11 +1729,7 @@ void DAAppController::onActionChartEnablePickerCrossTriggered(bool on)
 {
     DAChartWidget* w = getCurrentChart();
     if (w) {
-        w->setCrossPickerEnable(on);
-        if (on) {
-            w->setYDataPickerEnable(false);
-            w->setXYDataPickerEnable(false);
-        }
+        w->enableCrosshair(on);
     }
 }
 
@@ -1739,11 +1741,7 @@ void DAAppController::onActionChartEnablePickerYTriggered(bool on)
 {
     DAChartWidget* w = getCurrentChart();
     if (w) {
-        w->setYDataPickerEnable(on);
-        if (on) {
-            w->setCrossPickerEnable(false);
-            w->setXYDataPickerEnable(false);
-        }
+        w->enableYValuePicking(on);
     }
 }
 
@@ -1755,11 +1753,7 @@ void DAAppController::onActionChartEnablePickerXYTriggered(bool on)
 {
     DAChartWidget* w = getCurrentChart();
     if (w) {
-        w->setXYDataPickerEnable(on);
-        if (on) {
-            w->setCrossPickerEnable(false);
-            w->setYDataPickerEnable(false);
-        }
+        w->enableXYValuePicking(on);
     }
 }
 
@@ -1773,7 +1767,8 @@ void DAAppController::onActionChartEnableLegendTriggered(bool on)
     if (!w) {
         return;
     }
-    w->setLegendEnable(on);
+    w->enableLegend(on);
+    w->replot();
     setDirty();
 }
 

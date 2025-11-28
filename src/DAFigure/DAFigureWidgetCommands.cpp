@@ -45,36 +45,36 @@ DAFigureWidgetCommandCreateChart::DAFigureWidgetCommandCreateChart(DAFigureWidge
 
 DAFigureWidgetCommandCreateChart::~DAFigureWidgetCommandCreateChart()
 {
-	if (mNeedDelete) {
-		if (mChart) {
-			mChart->deleteLater();
-		}
-	}
+    if (mNeedDelete) {
+        if (mChart) {
+            mChart->deleteLater();
+        }
+    }
 }
 
 void DAFigureWidgetCommandCreateChart::redo()
 {
-	mNeedDelete = false;
-	if (mChart) {
-		// 这是执行undo后执行redo会进入这个分支
-		figure()->addChart(mChart, mChartSize);
-	} else {
-		// 第一次执行redo会进入这里
-		mChart = figure()->createChart(mChartSize);
-		mChart->setXLabelText("x");
-		mChart->setYLabelText("y");
-	}
+    mNeedDelete = false;
+    if (mChart) {
+        // 这是执行undo后执行redo会进入这个分支
+        figure()->addChart(mChart, mChartSize);
+    } else {
+        // 第一次执行redo会进入这里
+        mChart = figure()->createChart(mChartSize);
+        mChart->setAxisLabel(QwtAxis::XBottom, "x");
+        mChart->setAxisLabel(QwtAxis::YLeft, "y");
+    }
 }
 
 void DAFigureWidgetCommandCreateChart::undo()
 {
-	mNeedDelete = true;
-	figure()->removeChart(mChart);
+    mNeedDelete = true;
+    figure()->removeChart(mChart);
 }
 
 DAChartWidget* DAFigureWidgetCommandCreateChart::getChartWidget()
 {
-	return mChart;
+    return mChart;
 }
 
 //===============================================================
@@ -83,34 +83,34 @@ DAChartWidget* DAFigureWidgetCommandCreateChart::getChartWidget()
 DAFigureWidgetCommandRemoveChart::DAFigureWidgetCommandRemoveChart(DAFigureWidget* fig, DAChartWidget* chart, QUndoCommand* par)
     : DAFigureWidgetCommandBase(fig, par), mChart(chart)
 {
-	setText(QObject::tr("remove chart"));  // cn:创建绘图
-										   // 先要获取尺寸
-	mChartNormRect = fig->axesNormRect(chart);
+    setText(QObject::tr("remove chart"));  // cn:创建绘图
+                                           // 先要获取尺寸
+    mChartNormRect = fig->axesNormRect(chart);
 }
 
 DAFigureWidgetCommandRemoveChart::~DAFigureWidgetCommandRemoveChart()
 {
-	if (mNeedDelete) {
-		if (mChart) {
-			mChart->deleteLater();
-		}
-	}
+    if (mNeedDelete) {
+        if (mChart) {
+            mChart->deleteLater();
+        }
+    }
 }
 
 void DAFigureWidgetCommandRemoveChart::redo()
 {
-	mNeedDelete = true;
-	if (mChart) {
-		figure()->removeChart(mChart);
-	}
+    mNeedDelete = true;
+    if (mChart) {
+        figure()->removeChart(mChart);
+    }
 }
 
 void DAFigureWidgetCommandRemoveChart::undo()
 {
-	mNeedDelete = false;
-	if (mChart) {
-		figure()->addChart(mChart, mChartNormRect);
-	}
+    mNeedDelete = false;
+    if (mChart) {
+        figure()->addChart(mChart, mChartNormRect);
+    }
 }
 
 //----------------------------------------------------
@@ -128,13 +128,13 @@ DAFigureWidgetCommandResizeWidget::DAFigureWidgetCommandResizeWidget(DAFigureWid
 
 void DAFigureWidgetCommandResizeWidget::redo()
 {
-	//= 给qwt_figure增加可以添加任意窗口的方法
-	figure()->setWidgetNormPos(mWidget, mNewNormRect);
+    //= 给qwt_figure增加可以添加任意窗口的方法
+    figure()->setWidgetNormPos(mWidget, mNewNormRect);
 }
 
 void DAFigureWidgetCommandResizeWidget::undo()
 {
-	figure()->setWidgetNormPos(mWidget, mOldNormRect);
+    figure()->setWidgetNormPos(mWidget, mOldNormRect);
 }
 
 //----------------------------------------------------
@@ -152,27 +152,27 @@ DAFigureWidgetCommandAttachItem::DAFigureWidgetCommandAttachItem(DAFigureWidget*
 
 DAFigureWidgetCommandAttachItem::~DAFigureWidgetCommandAttachItem()
 {
-	if (mNeedDelete) {
-		if (mItem) {
-			delete mItem;
-		}
-	}
+    if (mNeedDelete) {
+        if (mItem) {
+            delete mItem;
+        }
+    }
 }
 
 void DAFigureWidgetCommandAttachItem::redo()
 {
-	if (mSkipFirst) {
-		mSkipFirst = false;
-	} else {
-		mItem->attach(mChart);
-		mNeedDelete = false;
-	}
+    if (mSkipFirst) {
+        mSkipFirst = false;
+    } else {
+        mItem->attach(mChart);
+        mNeedDelete = false;
+    }
 }
 
 void DAFigureWidgetCommandAttachItem::undo()
 {
-	mItem->detach();
-	mNeedDelete = true;
+    mItem->detach();
+    mNeedDelete = true;
 }
 
 }

@@ -18,87 +18,99 @@ namespace DA
 {
 
 DAChartAxisSetWidget::DAChartAxisSetWidget(QWidget* parent)
-	: QWidget(parent), ui(new Ui::DAChartAxisSetWidget), m_plot(nullptr), m_axisID(QwtPlot::axisCnt)
+    : QWidget(parent), ui(new Ui::DAChartAxisSetWidget), m_plot(nullptr), m_axisID(QwtPlot::axisCnt)
 {
-	ui->setupUi(this);
-	m_buttonGroup = new QButtonGroup(this);
-	m_buttonGroup->addButton(ui->radioButtonNormal, NormalScale);
-	m_buttonGroup->addButton(ui->radioButtonTimeScale, DateTimeScale);
-	ui->radioButtonNormal->setChecked(true);
-	ui->dateTimeScaleSetWidget->hide();
+    ui->setupUi(this);
+    m_buttonGroup = new QButtonGroup(this);
+    m_buttonGroup->addButton(ui->radioButtonNormal, NormalScale);
+    m_buttonGroup->addButton(ui->radioButtonTimeScale, DateTimeScale);
+    ui->radioButtonNormal->setChecked(true);
+    ui->dateTimeScaleSetWidget->hide();
 
-	connect(ui->lineEditTitle, &QLineEdit::textChanged, this, &DAChartAxisSetWidget::onLineEditTextChanged);
-	connect(ui->fontSetWidget, &DAFontEditPannelWidget::currentFontChanged, this, &DAChartAxisSetWidget::onAxisFontChanged);
-	connect(ui->aligmentSetWidget,
+    connect(ui->lineEditTitle, &QLineEdit::textChanged, this, &DAChartAxisSetWidget::onLineEditTextChanged);
+    connect(ui->fontSetWidget, &DAFontEditPannelWidget::currentFontChanged, this, &DAChartAxisSetWidget::onAxisFontChanged);
+    connect(ui->fontSetWidget,
+            &DAFontEditPannelWidget::currentFontColorChanged,
+            this,
+            &DAChartAxisSetWidget::onAxisFontColorChanged);
+    connect(ui->aligmentSetWidget,
             &DAAligmentEditWidget::alignmentChanged,
             this,
             &DAChartAxisSetWidget::onAxisLabelAligmentChanged);
-	connect(ui->doubleSpinBoxRotation,
+    connect(ui->doubleSpinBoxRotation,
             static_cast< void (QDoubleSpinBox::*)(double v) >(&QDoubleSpinBox::valueChanged),
             this,
             &DAChartAxisSetWidget::onAxisLabelRotationChanged);
-	connect(ui->spinBoxMargin,
+    connect(ui->spinBoxMargin,
             static_cast< void (QSpinBox::*)(int v) >(&QSpinBox::valueChanged),
             this,
             &DAChartAxisSetWidget::onAxisMarginValueChanged);
-	connect(ui->doubleSpinBoxMax,
+    connect(ui->doubleSpinBoxMax,
             static_cast< void (QDoubleSpinBox::*)(double v) >(&QDoubleSpinBox::valueChanged),
             this,
             &DAChartAxisSetWidget::onAxisMaxScaleChanged);
-	connect(ui->doubleSpinBoxMin,
+    connect(ui->doubleSpinBoxMin,
             static_cast< void (QDoubleSpinBox::*)(double v) >(&QDoubleSpinBox::valueChanged),
             this,
             &DAChartAxisSetWidget::onAxisMinScaleChanged);
-	Qt5Qt6Compat_Connect_ButtonGroupClicked_int(m_buttonGroup, DAChartAxisSetWidget::onScaleStyleChanged);
-	connect(ui->checkBoxEnable, &QAbstractButton::clicked, this, &DAChartAxisSetWidget::onCheckBoxEnableCliecked);
+    Qt5Qt6Compat_Connect_ButtonGroupClicked_int(m_buttonGroup, DAChartAxisSetWidget::onScaleStyleChanged);
+    connect(ui->checkBoxEnable, &QAbstractButton::clicked, this, &DAChartAxisSetWidget::onCheckBoxEnableCliecked);
 }
 
 DAChartAxisSetWidget::~DAChartAxisSetWidget()
 {
-	delete ui;
+    delete ui;
 }
 
 void DAChartAxisSetWidget::onCheckBoxEnableCliecked(bool on)
 {
-	enableWidget(on);
-	if (m_plot) {
-		m_plot->enableAxis(m_axisID, on);
-	}
+    enableWidget(on);
+    if (m_plot) {
+        m_plot->enableAxis(m_axisID, on);
+    }
 }
 
 void DAChartAxisSetWidget::onLineEditTextChanged(const QString& text)
 {
-	if (m_plot) {
-		DAChartUtil::setAxisTitle(m_plot, m_axisID, text);
-	}
+    if (m_plot) {
+        DAChartUtil::setAxisTitle(m_plot, m_axisID, text);
+    }
 }
 
 void DAChartAxisSetWidget::onAxisFontChanged(const QFont& font)
 {
-	if (m_plot) {
-		DAChartUtil::setAxisFont(m_plot, m_axisID, font);
-	}
+    if (m_plot) {
+        DAChartUtil::setAxisFont(m_plot, m_axisID, font);
+    }
+}
+
+void DAChartAxisSetWidget::onAxisFontColorChanged(const QColor& color)
+{
+    if (m_plot) {
+        DAChartUtil::setAxisFontColor(m_plot, m_axisID, color);
+    }
 }
 
 void DAChartAxisSetWidget::onAxisLabelAligmentChanged(Qt::Alignment al)
 {
-	if (m_plot) {
-		DAChartUtil::setAxisLabelAlignment(m_plot, m_axisID, al);
-	}
+    if (m_plot) {
+        DAChartUtil::setAxisLabelAlignment(m_plot, m_axisID, al);
+    }
 }
 
 void DAChartAxisSetWidget::onAxisLabelRotationChanged(double v)
 {
-	if (m_plot) {
-		DAChartUtil::setAxisLabelRotation(m_plot, m_axisID, v);
-	}
+    if (m_plot) {
+        DAChartUtil::setAxisLabelRotation(m_plot, m_axisID, v);
+    }
 }
+
 
 void DAChartAxisSetWidget::onAxisMarginValueChanged(int v)
 {
-	if (m_plot) {
-		DAChartUtil::setAxisMargin(m_plot, m_axisID, v);
-	}
+    if (m_plot) {
+        DAChartUtil::setAxisMargin(m_plot, m_axisID, v);
+    }
 }
 
 void DAChartAxisSetWidget::onAxisMaxScaleChanged(double v)
@@ -113,7 +125,7 @@ void DAChartAxisSetWidget::onAxisMaxScaleChanged(double v)
             return;
         }
         m_plot->setAxisScale(m_axisID, inv.minValue(), v);
-	}
+    }
 }
 
 void DAChartAxisSetWidget::onAxisMinScaleChanged(double v)
@@ -128,7 +140,7 @@ void DAChartAxisSetWidget::onAxisMinScaleChanged(double v)
             return;
         }
         m_plot->setAxisScale(m_axisID, v, inv.maxValue());
-	}
+    }
 }
 
 void DAChartAxisSetWidget::onScaleDivChanged()
@@ -136,14 +148,14 @@ void DAChartAxisSetWidget::onScaleDivChanged()
 #if DAChartAxisSetWidget_DEBUG_PRINT
     qDebug() << "DAChartAxisSetWidget::onScaleDivChanged";
 #endif
-	if (nullptr == m_plot) {
-		return;
-	}
-	QwtInterval inv = m_plot->axisInterval(m_axisID);
+    if (nullptr == m_plot) {
+        return;
+    }
+    QwtInterval inv = m_plot->axisInterval(m_axisID);
     // onScaleDivChanged是QwtScaleWidget::scaleDivChanged触发的，这里避免重复设置，把doubleSpinBoxMin，doubleSpinBoxMax的信号触发取消
     DASignalBlockers blocks(ui->doubleSpinBoxMin, ui->doubleSpinBoxMax);
-	ui->doubleSpinBoxMin->setValue(inv.minValue());
-	ui->doubleSpinBoxMax->setValue(inv.maxValue());
+    ui->doubleSpinBoxMin->setValue(inv.minValue());
+    ui->doubleSpinBoxMax->setValue(inv.maxValue());
 }
 
 void DAChartAxisSetWidget::onScaleStyleChanged(int id)
@@ -151,20 +163,20 @@ void DAChartAxisSetWidget::onScaleStyleChanged(int id)
 #if DAChartAxisSetWidget_DEBUG_PRINT
     qDebug() << "DAChartAxisSetWidget::onScaleStyleChanged=" << id;
 #endif
-	if (NormalScale == id) {
-		ui->dateTimeScaleSetWidget->hide();
-		if (m_plot) {
-			DAChartUtil::setAxisNormalScale(m_plot, m_axisID);
-		}
-	} else {
-		if (DateTimeScale == id) {
-			ui->dateTimeScaleSetWidget->show();
-			if (m_plot) {
-				QString format = ui->dateTimeScaleSetWidget->getTimeFormat();
-				DAChartUtil::setAxisDateTimeScale(m_plot, m_axisID, format);
-			}
-		}
-	}
+    if (NormalScale == id) {
+        ui->dateTimeScaleSetWidget->hide();
+        if (m_plot) {
+            DAChartUtil::setAxisNormalScale(m_plot, m_axisID);
+        }
+    } else {
+        if (DateTimeScale == id) {
+            ui->dateTimeScaleSetWidget->show();
+            if (m_plot) {
+                QString format = ui->dateTimeScaleSetWidget->getTimeFormat();
+                DAChartUtil::setAxisDateTimeScale(m_plot, m_axisID, format);
+            }
+        }
+    }
 }
 
 void DAChartAxisSetWidget::updateUI(QwtPlot* chart, int axisID)
@@ -172,11 +184,11 @@ void DAChartAxisSetWidget::updateUI(QwtPlot* chart, int axisID)
 #if DAChartAxisSetWidget_DEBUG_PRINT
     qDebug() << "DAChartAxisSetWidget::updateUI,axisID=" << axisID;
 #endif
-	enableWidget(nullptr != chart);
-	if (nullptr == chart) {
-		resetAxisValue();
-		return;
-	}
+    enableWidget(nullptr != chart);
+    if (nullptr == chart) {
+        resetAxisValue();
+        return;
+    }
     DASignalBlockers block(ui->checkBoxEnable,
                            ui->lineEditTitle,
                            ui->fontSetWidget,
@@ -185,50 +197,50 @@ void DAChartAxisSetWidget::updateUI(QwtPlot* chart, int axisID)
                            ui->spinBoxMargin,
                            ui->radioButtonTimeScale,
                            ui->dateTimeScaleSetWidget);
-	ui->checkBoxEnable->setChecked(chart->axisEnabled(axisID));
-	ui->lineEditTitle->setText(chart->axisTitle(axisID).text());
-	ui->fontSetWidget->setCurrentFont(chart->axisFont(axisID));
+    ui->checkBoxEnable->setChecked(chart->axisEnabled(axisID));
+    ui->lineEditTitle->setText(chart->axisTitle(axisID).text());
+    ui->fontSetWidget->setCurrentFont(chart->axisFont(axisID));
 
-	QwtInterval inv = chart->axisInterval(axisID);
-	ui->doubleSpinBoxMin->setValue(inv.minValue());
-	ui->doubleSpinBoxMax->setValue(inv.maxValue());
-	ui->doubleSpinBoxMin->setDecimals(inv.minValue() < 0.01 ? 5 : 2);  // 显示小数点的位数调整
-	ui->doubleSpinBoxMax->setDecimals(inv.minValue() < 0.01 ? 5 : 2);
+    QwtInterval inv = chart->axisInterval(axisID);
+    ui->doubleSpinBoxMin->setValue(inv.minValue());
+    ui->doubleSpinBoxMax->setValue(inv.maxValue());
+    ui->doubleSpinBoxMin->setDecimals(inv.minValue() < 0.01 ? 5 : 2);  // 显示小数点的位数调整
+    ui->doubleSpinBoxMax->setDecimals(inv.minValue() < 0.01 ? 5 : 2);
 
-	QwtScaleWidget* ax = chart->axisWidget(axisID);
-	if (nullptr == ax) {
-		ui->radioButtonNormal->setChecked(true);
-		return;
-	}
+    QwtScaleWidget* ax = chart->axisWidget(axisID);
+    if (nullptr == ax) {
+        ui->radioButtonNormal->setChecked(true);
+        return;
+    }
 
-	QwtScaleDraw* sd = ax->scaleDraw();
-	if (sd) {
-		ui->doubleSpinBoxRotation->setValue(sd->labelRotation());
-		ui->aligmentSetWidget->setCurrentAlignment(sd->labelAlignment());
-	}
-	ui->spinBoxMargin->setValue(ax->margin());
-	QwtDateScaleDraw* dsd = dynamic_cast< QwtDateScaleDraw* >(sd);
+    QwtScaleDraw* sd = ax->scaleDraw();
+    if (sd) {
+        ui->doubleSpinBoxRotation->setValue(sd->labelRotation());
+        ui->aligmentSetWidget->setCurrentAlignment(sd->labelAlignment());
+    }
+    ui->spinBoxMargin->setValue(ax->margin());
+    QwtDateScaleDraw* dsd = dynamic_cast< QwtDateScaleDraw* >(sd);
 
-	if (dsd) {
-		ui->radioButtonTimeScale->setChecked(true);
-		ui->dateTimeScaleSetWidget->setTimeFormatText(dsd->dateFormat(QwtDate::Second));
-	} else {
-		ui->radioButtonNormal->setChecked(true);
-	}
+    if (dsd) {
+        ui->radioButtonTimeScale->setChecked(true);
+        ui->dateTimeScaleSetWidget->setTimeFormatText(dsd->dateFormat(QwtDate::Second));
+    } else {
+        ui->radioButtonNormal->setChecked(true);
+    }
 }
 
 void DAChartAxisSetWidget::resetAxisValue()
 {
-	ui->lineEditTitle->setText("");
-	ui->fontSetWidget->setCurrentFont(QFont());
-	ui->doubleSpinBoxMin->setValue(0);
-	ui->doubleSpinBoxMax->setValue(0);
-	ui->radioButtonNormal->setChecked(true);
-	ui->doubleSpinBoxRotation->setValue(0);
-	ui->labelAligment->setAlignment(Qt::AlignLeft);
-	ui->spinBoxMargin->setValue(0);
-	ui->radioButtonTimeScale->setChecked(false);
-	ui->dateTimeScaleSetWidget->setTimeFormatText("");
+    ui->lineEditTitle->setText("");
+    ui->fontSetWidget->setCurrentFont(QFont());
+    ui->doubleSpinBoxMin->setValue(0);
+    ui->doubleSpinBoxMax->setValue(0);
+    ui->radioButtonNormal->setChecked(true);
+    ui->doubleSpinBoxRotation->setValue(0);
+    ui->labelAligment->setAlignment(Qt::AlignLeft);
+    ui->spinBoxMargin->setValue(0);
+    ui->radioButtonTimeScale->setChecked(false);
+    ui->dateTimeScaleSetWidget->setTimeFormatText("");
 }
 
 /**
@@ -247,16 +259,16 @@ bool DAChartAxisSetWidget::isEnableAxis() const
 
 void DAChartAxisSetWidget::enableWidget(bool enable)
 {
-	ui->lineEditTitle->setEnabled(enable);
-	ui->fontSetWidget->setEnabled(enable);
-	ui->doubleSpinBoxMin->setEnabled(enable);
-	ui->doubleSpinBoxMax->setEnabled(enable);
-	ui->radioButtonNormal->setEnabled(enable);
-	ui->doubleSpinBoxRotation->setEnabled(enable);
-	ui->labelAligment->setEnabled(enable);
-	ui->spinBoxMargin->setEnabled(enable);
-	ui->radioButtonTimeScale->setEnabled(enable);
-	ui->dateTimeScaleSetWidget->setEnabled(enable);
+    ui->lineEditTitle->setEnabled(enable);
+    ui->fontSetWidget->setEnabled(enable);
+    ui->doubleSpinBoxMin->setEnabled(enable);
+    ui->doubleSpinBoxMax->setEnabled(enable);
+    ui->radioButtonNormal->setEnabled(enable);
+    ui->doubleSpinBoxRotation->setEnabled(enable);
+    ui->labelAligment->setEnabled(enable);
+    ui->spinBoxMargin->setEnabled(enable);
+    ui->radioButtonTimeScale->setEnabled(enable);
+    ui->dateTimeScaleSetWidget->setEnabled(enable);
 }
 
 /**
@@ -275,41 +287,41 @@ QIcon DAChartAxisSetWidget::getEnableCheckBoxIcon() const
 
 void DAChartAxisSetWidget::bindTarget()
 {
-	if (nullptr == m_plot) {
-		return;
-	}
-	QwtScaleWidget* aw = m_plot->axisWidget(m_axisID);
-	if (aw) {
-		connect(aw, &QwtScaleWidget::scaleDivChanged, this, &DAChartAxisSetWidget::onScaleDivChanged);
-	}
+    if (nullptr == m_plot) {
+        return;
+    }
+    QwtScaleWidget* aw = m_plot->axisWidget(m_axisID);
+    if (aw) {
+        connect(aw, &QwtScaleWidget::scaleDivChanged, this, &DAChartAxisSetWidget::onScaleDivChanged);
+    }
 }
 
 void DAChartAxisSetWidget::unbindTarget()
 {
-	if (nullptr == m_plot) {
-		return;
-	}
-	QwtScaleWidget* aw = m_plot->axisWidget(m_axisID);
-	if (aw) {
-		disconnect(aw, &QwtScaleWidget::scaleDivChanged, this, &DAChartAxisSetWidget::onScaleDivChanged);
-	}
+    if (nullptr == m_plot) {
+        return;
+    }
+    QwtScaleWidget* aw = m_plot->axisWidget(m_axisID);
+    if (aw) {
+        disconnect(aw, &QwtScaleWidget::scaleDivChanged, this, &DAChartAxisSetWidget::onScaleDivChanged);
+    }
 }
 
 QwtPlot* DAChartAxisSetWidget::getPlot() const
 {
-	return m_plot;
+    return m_plot;
 }
 
 void DAChartAxisSetWidget::setPlot(QwtPlot* chart, int axisID)
 {
     if (m_plot && m_plot != chart) {
         unbindTarget();
-	}
+    }
 
-	m_plot = nullptr;  // 先设置为null，使得槽函数不动作
-	updateUI(chart, axisID);
-	m_plot  = chart;
-	m_axisID = axisID;
+    m_plot = nullptr;  // 先设置为null，使得槽函数不动作
+    updateUI(chart, axisID);
+    m_plot   = chart;
+    m_axisID = axisID;
     bindTarget();
 }
 
