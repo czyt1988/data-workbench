@@ -75,6 +75,7 @@ nav:
         - 工作流模块:
             - 工作流说明: zh/dev-guide/workflow.md
             - 工作流生命周期: zh/dev-guide/workflow-lifecycle.md
+            - 节点的操作: zh/dev-guide/workflow-item-edit-in-plugin.md
         - 绘图模块:
             - 绘图模块概述: zh/dev-guide/figure-abstract.md
         - 插件与接口模块: 

@@ -11,7 +11,7 @@ DANodeMetaData::DANodeMetaData()
 {
 }
 
-DANodeMetaData::DANodeMetaData(const QString& prototype) : mPrototype(prototype)
+DANodeMetaData::DANodeMetaData(const QString& prototype, const QString& group) : mPrototype(prototype), mGroup(group)
 {
 }
 
@@ -22,7 +22,7 @@ DANodeMetaData::DANodeMetaData(const QString& prototype, const QString& name, co
 
 QString DANodeMetaData::getNodePrototype() const
 {
-	return (mPrototype);
+    return (mPrototype);
 }
 
 void DANodeMetaData::setNodePrototype(const QString& prototype)
@@ -133,6 +133,8 @@ bool DANodeMetaData::operator!=(const DANodeMetaData& other) const
 
 /**
    @brief 获取全名
+
+   全名是group+'/'+NodePrototype
    @param m
    @return
  */
@@ -143,32 +145,32 @@ QString DANodeMetaData::fullName(const DANodeMetaData& m)
 
 QDataStream& operator<<(QDataStream& out, const DANodeMetaData& b)
 {
-	out << b.getNodePrototype() << b.getNodeName() << b.getGroup() << b.getNodeTooltip() << b.getIcon();
-	return out;
+    out << b.getNodePrototype() << b.getNodeName() << b.getGroup() << b.getNodeTooltip() << b.getIcon();
+    return out;
 }
 
 QDataStream& operator>>(QDataStream& in, DANodeMetaData& b)
 {
-	QString s;
-	in >> s;
-	b.setNodePrototype(s);
-	in >> s;
-	b.setNodeName(s);
-	in >> s;
-	b.setGroup(s);
-	in >> s;
-	b.setNodeTooltip(s);
-	QIcon ic;
-	in >> ic;
-	b.setIcon(ic);
-	return in;
+    QString s;
+    in >> s;
+    b.setNodePrototype(s);
+    in >> s;
+    b.setNodeName(s);
+    in >> s;
+    b.setGroup(s);
+    in >> s;
+    b.setNodeTooltip(s);
+    QIcon ic;
+    in >> ic;
+    b.setIcon(ic);
+    return in;
 }
 
 QDebug operator<<(QDebug debug, const DANodeMetaData& c)
 {
-	QDebugStateSaver saver(debug);
-	debug.nospace() << "[" << c.getGroup() << "/" << c.getNodePrototype() << "]" << c.getNodeName();
-	return debug;
+    QDebugStateSaver saver(debug);
+    debug.nospace() << "[" << c.getGroup() << "/" << c.getNodePrototype() << "]" << c.getNodeName();
+    return debug;
 }
 
 }  // end of namespace DA

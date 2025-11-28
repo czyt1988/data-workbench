@@ -15,58 +15,59 @@ namespace DA
 class DAWORKFLOW_API DANodeMetaData
 {
 public:
-	DANodeMetaData();
-	DANodeMetaData(const QString& prototype);
-	DANodeMetaData(const QString& prototype, const QString& name, const QIcon& icon, const QString& group);
-	// ptototype
-	QString getNodePrototype() const;
-	void setNodePrototype(const QString& prototype);
+    DANodeMetaData();
+    DANodeMetaData(const QString& prototype, const QString& group);
+    DANodeMetaData(const QString& prototype, const QString& name, const QIcon& icon, const QString& group);
+    // ptototype
+    QString getNodePrototype() const;
+    void setNodePrototype(const QString& prototype);
 
-	// 节点名
-	QString getNodeName() const;
-	void setNodeName(const QString& name);
+    // 节点名
+    QString getNodeName() const;
+    void setNodeName(const QString& name);
 
-	// 图标
-	QIcon getIcon() const;
-	void setIcon(const QIcon& icon);
+    // 图标
+    QIcon getIcon() const;
+    void setIcon(const QIcon& icon);
 
-	// 所属分组
-	QString getGroup() const;
-	void setGroup(const QString& group);
+    // 所属分组
+    QString getGroup() const;
+    void setGroup(const QString& group);
 
-	// 说明
-	QString getNodeTooltip() const;
-	void setNodeTooltip(const QString& tp);
+    // 说明
+    QString getNodeTooltip() const;
+    void setNodeTooltip(const QString& tp);
 
-	// 判断是否正常
-	bool isValid() const;
-	// 重载bool操作符
-	explicit operator bool() const;
-	// 重载<操作符
-	bool operator<(const DANodeMetaData& other) const;
-	bool operator==(const DANodeMetaData& other) const;
-	bool operator!=(const DANodeMetaData& other) const;
+    // 判断是否正常
+    bool isValid() const;
+    // 重载bool操作符
+    explicit operator bool() const;
+    // 重载<操作符
+    bool operator<(const DANodeMetaData& other) const;
+    bool operator==(const DANodeMetaData& other) const;
+    bool operator!=(const DANodeMetaData& other) const;
 
 public:
-	static QString fullName(const DANodeMetaData& m);
+    // 全名是group+'/'+NodePrototype,全名是作为等于判断的依据
+    static QString fullName(const DANodeMetaData& m);
 
 private:
-	QString mPrototype;
-	QString mNodeName;
-	QString mNodeToolTip;
-	QIcon mNodeIcon;
-	QString mGroup;
+    QString mPrototype;
+    QString mNodeName;
+    QString mNodeToolTip;
+    QIcon mNodeIcon;
+    QString mGroup;
 };
 // qHash
 #if QT_VERSION_MAJOR >= 6
 inline std::size_t qHash(const DANodeMetaData& key, std::size_t seed = 0)
 {
-	return qHash(DANodeMetaData::fullName(key), seed);
+    return qHash(DANodeMetaData::fullName(key), seed);
 }
 #else
 inline uint qHash(const DANodeMetaData& key, uint seed = 0)
 {
-	return qHash(DANodeMetaData::fullName(key), seed);
+    return qHash(DANodeMetaData::fullName(key), seed);
 }
 #endif
 
