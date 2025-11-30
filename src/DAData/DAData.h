@@ -17,84 +17,89 @@ class DADataManager;
  */
 class DADATA_API DAData
 {
-	friend class DADataManager;
+    friend class DADataManager;
 
 public:
-	using Pointer = DAAbstractData::Pointer;
-	using IdType  = DAAbstractData::IdType;
+    using Pointer = DAAbstractData::Pointer;
+    using IdType  = DAAbstractData::IdType;
 
 public:
-	DAData();
-	virtual ~DAData();
-	DAData(const DAData& d);
-	DAData(DAData&& d);
-	DAData(const DAAbstractData::Pointer& d);
-	// 注意这个等于只是判断指针等于，不是对值进行操作
-	bool operator==(const DAData& d) const;
+    DAData();
+    virtual ~DAData();
+    DAData(const DAData& d);
+    DAData(DAData&& d);
+    DAData(const DAAbstractData::Pointer& d);
+    // 注意这个等于只是判断指针等于，不是对值进行操作
+    bool operator==(const DAData& d) const;
     bool operator!=(const DAData& d) const;
-	bool operator<(const DAData& d) const;
-	DAData& operator=(const DAData& d);
-	operator bool() const;
-	// 是否为空
-	bool isNull() const;
+    bool operator<(const DAData& d) const;
+    DAData& operator=(const DAData& d);
+    operator bool() const;
+    // 是否为空
+    bool isNull() const;
 
 public:
 #if DA_ENABLE_PYTHON
-	// 以下操作符是为了实现业务的快速响应，会带来一定的耦合
-	DAData(const DAPyDataFrame& d);
-	DAData& operator=(const DAPyDataFrame& d);
-	DAData(const DAPySeries& d);
-	DAData& operator=(const DAPySeries& d);
+    // 以下操作符是为了实现业务的快速响应，会带来一定的耦合
+    DAData(const DAPyDataFrame& d);
+    DAData(const DAPySeries& d);
+    // 直接从 Python 对象（如 pandas df）构造，这里不允许隐式转换
+    explicit DAData(pybind11::object obj);
+
+    DAData& operator=(const DAPyDataFrame& d);
+    DAData& operator=(const DAPySeries& d);
 #endif
 public:  // DAAbstractData Wrapper
-	DAAbstractData::DataType getDataType() const;
-	// 变量值操作
-	QVariant value() const;
-	bool setValue(const QVariant& v) const;
-	// 变量名操作
-	QString getName() const;
-	void setName(const QString& n);
-	// 变量描述
-	QString getDescribe() const;
-	void setDescribe(const QString& d);
-	// 返回原始指针
-	DAAbstractData* rawPointer();
-	const DAAbstractData* rawPointer() const;
-	// 返回智能指针
-	Pointer getPointer();
-	const Pointer getPointer() const;
-	// 获取id
-	IdType id() const;
-	// 是否为dataframe
-	bool isDataFrame() const;
-	bool isSeries() const;
-	// 是否为datapackage
-	bool isDataPackage() const;
+    DAAbstractData::DataType getDataType() const;
+    // 变量值操作
+    QVariant value() const;
+    bool setValue(const QVariant& v) const;
+    // 变量名操作
+    QString getName() const;
+    void setName(const QString& n);
+    // 变量描述
+    QString getDescribe() const;
+    void setDescribe(const QString& d);
+    // 返回原始指针
+    DAAbstractData* rawPointer();
+    const DAAbstractData* rawPointer() const;
+    // 返回智能指针
+    Pointer getPointer();
+    const Pointer getPointer() const;
+    // 获取id
+    IdType id() const;
+    // 是否为dataframe
+    bool isDataFrame() const;
+    bool isSeries() const;
+    // 是否为datapackage
+    bool isDataPackage() const;
 #if DA_ENABLE_PYTHON
-	// 转换为pyDataframe
-	DAPyDataFrame toDataFrame() const;
-	DAPySeries toSeries() const;
+    // 转换为pyDataframe
+    DAPyDataFrame toDataFrame() const;
+    DAPySeries toSeries() const;
+    // 转换为python对象
+    pybind11::object toPyObject() const;
 #endif
-	// 转换为datapackage
-	DADataPackage::Pointer toDataPackage() const;
-	// 数据类型转换为文字
-	QString typeToString() const;
-	// 获取数据对应的datamanager
-	DADataManager* getDataManager() const;
+    // 转换为datapackage
+    DADataPackage::Pointer toDataPackage() const;
+    // 数据类型转换为文字
+    QString typeToString() const;
+    // 获取数据对应的datamanager
+    DADataManager* getDataManager() const;
 
 public:
     // 把数据写到文件
     static bool writeToFile(const DAData& data, const QString& filePath);
-    //导出数据
+    // 导出数据
     static bool exportToFile(const DAData& data, const QString& filePath, const QString& sep = ",");
 
 protected:
-	// 设置变量管理器，在data添加如变量管理器后，data内部就会维护变量管理器的指针
-	void setDataManager(DADataManager* mgr);
+    // 设置变量管理器，在data添加如变量管理器后，data内部就会维护变量管理器的指针
+    void setDataManager(DADataManager* mgr);
 
 private:
-	DAAbstractData::Pointer mData;
-	DADataManager* mDataMgr;
+    DAAbstractData::Pointer mData;
+    DADataManager* mDataMgr;
 };
 // ADL原则，需要把qHash也放入DA命名空间中
 DADATA_API uint qHash(const DA::DAData& key, uint seed);
