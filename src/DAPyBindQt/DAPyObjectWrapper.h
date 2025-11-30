@@ -53,6 +53,8 @@ public:
     explicit operator bool() const;
     // 统一异常处理函数
     void dealException(const std::exception& e) const;
+    // 深拷贝
+    DAPyObjectWrapper deepCopy() const;
 
 public:
     pybind11::object& object()

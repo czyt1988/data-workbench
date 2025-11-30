@@ -62,6 +62,16 @@ file(GLOB DA_APP_SOURCE_FILES_Dialog "${CMAKE_CURRENT_SOURCE_DIR}/Dialog/*.cpp")
 file(GLOB DA_APP_QT_UI_FILES_Dialog ${CMAKE_CURRENT_SOURCE_DIR}/Dialog/*.ui)
 file(GLOB DA_APP_QT_RC_FILES_Dialog ${CMAKE_CURRENT_SOURCE_DIR}/Dialog/*.qrc)
 
+if(DA_ENABLE_PYTHON)
+    # python开启时才加载
+    list(APPEND DA_APP_HEADER_FILES
+        PythonBinding/DAAppPythonBinding.h
+    )
+    list(APPEND DA_APP_SOURCE_FILES
+        PythonBinding/DAAppPythonBinding.cpp
+    )
+endif()
+
 add_executable(${DA_APP_NAME}
             ${DA_APP_HEADER_FILES}
             ${DA_APP_SOURCE_FILES}
@@ -125,6 +135,8 @@ damacro_import_qwt(${DA_APP_NAME})
 if(DA_ENABLE_PYTHON)
     # -------------link python--------------------------
     damacro_import_Python(${DA_APP_NAME})
+    # -------------link 3rdparty pybind11--------------------------
+    damacro_import_pybind11(${DA_APP_NAME})
 endif()
 
 find_package(${DA_PROJECT_NAME} COMPONENTS

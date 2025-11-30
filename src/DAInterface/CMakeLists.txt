@@ -29,10 +29,43 @@ find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
 ########################################################
 # 文件加载 #!!!!** 注意变更 **!!!!
 ########################################################
-file(GLOB DA_LIB_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
-file(GLOB DA_LIB_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+set(DA_LIB_HEADER_FILES
+    DAActionsInterface.h
+    DABaseInterface.h
+    DACommandInterface.h
+    DACoreInterface.h
+    DADataManagerInterface.h
+    DADockingAreaInterface.h
+    DAInterfaceAPI.h
+    DAProjectInterface.h
+    DARibbonAreaInterface.h
+    DAUIExtendInterface.h
+    DAUIInterface.h
+)
+set(DA_LIB_SOURCE_FILES
+    DAActionsInterface.cpp
+    DABaseInterface.cpp
+    DACommandInterface.cpp
+    DACoreInterface.cpp
+    DADataManagerInterface.cpp
+    DADockingAreaInterface.cpp
+    DAProjectInterface.cpp
+    DARibbonAreaInterface.cpp
+    DAUIExtendInterface.cpp
+    DAUIInterface.cpp
+)
+if(DA_ENABLE_PYTHON)
+    list(APPEND DA_LIB_HEADER_FILES
+        DAInterfacePythonBinding.h
+    )
+    list(APPEND DA_LIB_SOURCE_FILES
+        DAInterfacePythonBinding.cpp
+    )
+endif()
 
 
+message(STATUS "DA_LIB_HEADER_FILES=${DA_LIB_HEADER_FILES}")
+message(STATUS "DA_LIB_SOURCE_FILES=${DA_LIB_SOURCE_FILES}")
 add_library(${DA_LIB_NAME} SHARED
             ${DA_LIB_HEADER_FILES}
             ${DA_LIB_SOURCE_FILES}
@@ -70,6 +103,8 @@ damacro_import_DALiteCtk(${DA_LIB_NAME})
 if(DA_ENABLE_PYTHON)
     # -------------link python--------------------------
     damacro_import_Python(${DA_LIB_NAME})
+    # -------------link 3rdparty pybind11--------------------------
+    damacro_import_pybind11(${DA_LIB_NAME})
 endif()
 
 
@@ -83,12 +118,7 @@ endif()
 target_link_libraries(${DA_LIB_NAME} PUBLIC
     ${DA_PROJECT_NAME}::DAGui
 )
-if(DA_ENABLE_PYTHON)
-    # -------------link python--------------------------
-    damacro_import_Python(${DA_LIB_NAME})
-    # -------------link 3rdparty pybind11--------------------------
-    damacro_import_pybind11(${DA_LIB_NAME})
-endif()
+
 ########################################################
 # 设置通用库属性
 ########################################################

@@ -301,7 +301,7 @@ void DADataOperateOfDataFrameWidget::renameColumns()
 	}
 	//! 通知datamanager
 	if (DADataManager* mgr = mData.getDataManager()) {
-		mgr->callDataChangedSignal(mData, DADataManager::ChangeDataframeColumnName);
+		mgr->notifyDataChangedSignal(mData, DADataManager::ChangeDataframeColumnName);
 	}
 
 	getUndoStack()->push(cmd);

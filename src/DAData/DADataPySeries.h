@@ -15,17 +15,13 @@ class DADATA_API DADataPySeries : public DADataPyObject
 {
 public:
     DADataPySeries(const DAPySeries& d);
-    //变量类型
+    // 变量类型
     DataType getDataType() const override;
-    //变量值
+    // 变量值
     QVariant toVariant() const override;
     bool setValue(const QVariant& v) override;
     //
-    DAPySeries& series();
-    const DAPySeries& series() const;
-
-protected:
-    DAPySeries mSeries;
+    DAPySeries series() const;
 };
 }
 #endif  // DADATAPYSERIES_H

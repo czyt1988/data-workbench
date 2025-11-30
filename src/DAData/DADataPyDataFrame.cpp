@@ -9,10 +9,8 @@ using namespace DA;
 //===================================================
 // DADataPyDataFrame
 //===================================================
-DADataPyDataFrame::DADataPyDataFrame(const DAPyDataFrame& d)
+DADataPyDataFrame::DADataPyDataFrame(const DAPyDataFrame& d) : DADataPyObject(d)
 {
-    mPyObject  = d;
-    mDataframe = d;
 }
 
 DADataPyDataFrame::~DADataPyDataFrame()
@@ -34,19 +32,14 @@ bool DADataPyDataFrame::setValue(const QVariant& v)
     return false;
 }
 
-DAPyDataFrame& DADataPyDataFrame::dataframe()
+DAPyDataFrame DADataPyDataFrame::dataframe() const
 {
-    return mDataframe;
-}
-
-const DAPyDataFrame& DADataPyDataFrame::dataframe() const
-{
-    return mDataframe;
+    return DAPyDataFrame(mPyObject.object());
 }
 
 QList< QString > DADataPyDataFrame::columns() const
 {
-    return mDataframe.columns();
+    return DAPyDataFrame(mPyObject.object()).columns();
 }
 
 /**
@@ -58,7 +51,8 @@ QVector< double > DADataPyDataFrame::getSeriesByVector(const QString& name) cons
 {
     QVector< double > res;
     try {
-        DAPySeries ser = mDataframe[ name ];
+        DAPyDataFrame df = dataframe();
+        DAPySeries ser   = df[ name ];
         if (ser.isNone()) {
             return res;
         }

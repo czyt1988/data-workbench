@@ -61,7 +61,7 @@ public:
 	QUndoStack* getUndoStack() const;
 
 	// 触发dataInfomationChanged信号
-	void callDataChangedSignal(const DAData& d, ChangeType t);
+	void notifyDataChangedSignal(const DAData& d, ChangeType t);
 
 protected:
 	// 设置唯一名称

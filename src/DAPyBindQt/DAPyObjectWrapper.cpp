@@ -106,6 +106,26 @@ void DAPyObjectWrapper::dealException(const std::exception& e) const
     }
 }
 
+/**
+ * @brief 深拷贝
+ * @return
+ */
+DAPyObjectWrapper DAPyObjectWrapper::deepCopy() const
+{
+    if (isNone()) {
+        return DAPyObjectWrapper();
+    }
+
+    try {
+        static pybind11::module s_copy_mod = pybind11::module::import("copy");
+        pybind11::object copied            = s_copy_mod.attr("deepcopy")(_object);
+        return DAPyObjectWrapper(copied);
+    } catch (const std::exception& e) {
+        dealException(e);
+        return DAPyObjectWrapper();
+    }
+}
+
 QVariant DAPyObjectWrapper::toVariant() const
 {
     return DA::PY::toVariant(object());

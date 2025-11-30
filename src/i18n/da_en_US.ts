@@ -956,7 +956,7 @@ Config</source>
 <context>
     <name>DA::DAAppCore</name>
     <message>
-        <location filename="../APP/DAAppCore.cpp" line="+110"/>
+        <location filename="../APP/DAAppCore.cpp" line="+111"/>
         <source>Python interpreter path is %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -980,25 +980,22 @@ Config</source>
     <name>DA::DAAppDataManager</name>
     <message>
         <location filename="../APP/DAAppDataManager.cpp" line="+31"/>
-        <location line="+38"/>
+        <location line="+23"/>
         <source>begin import file:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-35"/>
-        <location line="+38"/>
+        <location line="+3"/>
         <source>file:%1,conver to dataframe</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-34"/>
-        <location line="+38"/>
+        <location line="+4"/>
         <source>The file &apos;%1&apos; has been successfully imported, but no data can be read from the file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-26"/>
-        <location line="+37"/>
+        <location line="+11"/>
         <source>can not import file:%1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5964,7 +5961,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
     <message>
         <location line="+8"/>
-        <location filename="../DAPyScripts/DAPyScriptsIO.cpp" line="+85"/>
+        <location filename="../DAPyScripts/DAPyScriptsIO.cpp" line="+74"/>
         <source>can not import DAWorkBench.io</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5979,7 +5976,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAPyScripts/DAPyScriptsIO.cpp" line="-8"/>
+        <location filename="../DAPyScripts/DAPyScriptsIO.cpp" line="-9"/>
         <source>can not import da_io module</source>
         <translation type="unfinished"></translation>
     </message>

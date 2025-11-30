@@ -230,7 +230,7 @@ QUndoStack* DADataManager::getUndoStack() const
  * @param d
  * @param t
  */
-void DADataManager::callDataChangedSignal(const DAData& d, DADataManager::ChangeType t)
+void DADataManager::notifyDataChangedSignal(const DAData& d, DADataManager::ChangeType t)
 {
 	setDirtyFlag(true);
 	Q_EMIT dataChanged(d, t);

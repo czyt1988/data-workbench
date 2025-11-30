@@ -46,11 +46,13 @@ set(DA_LIB_SOURCE_FILES
 )
 if(DA_ENABLE_PYTHON)
     list(APPEND DA_LIB_HEADER_FILES
+        DADataPythonBinding.h
         DADataPyDataFrame.h
         DADataPyObject.h
         DADataPySeries.h
     )
     list(APPEND DA_LIB_SOURCE_FILES
+        DADataPythonBinding.cpp
         DADataPyDataFrame.cpp
         DADataPyObject.cpp
         DADataPySeries.cpp

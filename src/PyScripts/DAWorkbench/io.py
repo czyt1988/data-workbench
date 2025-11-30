@@ -3,11 +3,14 @@
 import os
 from typing import List,Dict,Optional
 import pandas as pd
+from pathlib import Path
 import inspect
 import numpy as np
 from DAWorkbench.logger import log_function_call  # type: ignore # 引入装饰器
+import DAWorkbench.utils as daUtils
 from loguru import logger
 import chardet
+import da_app,da_interface,da_data
 
 '''
 本文件da_打头的变量和函数属于da系统的默认函数，如果改动会导致da系统异常
@@ -62,19 +65,23 @@ def detect_encoding(file_path, chunk_size=1024):
 def read_csv(path:str,args:Optional[Dict] = None) -> pd.DataFrame:
     '''
     读取csv文件
+    @param path: str   文件路径
+    @param args: dict   读取参数
     '''
     if args is None:
         args = {}
     encoding = detect_encoding(path)
     df = pd.read_csv(path,encoding=encoding,**args)
     # 所有列名转为字符串,（header=None时自动生成的表头是int64或者表头是数字时,索引的时候使用字符串会报错）
-    df.columns = df.columns.astype(str)  
+    df.columns = df.columns.astype(str) 
     return df
 
 @log_function_call
 def read_pkl(path:str,args:Optional[Dict] = None) -> pd.DataFrame:
     '''
     读取pkl文件
+    @param path: str   文件路径
+    @param args: dict   读取参数
     '''
     if args is None:
         args = {}
@@ -82,7 +89,8 @@ def read_pkl(path:str,args:Optional[Dict] = None) -> pd.DataFrame:
 #    df[0] = pd.to_datetime(df[0], unit='ns')
     
     #判断df的表头是否为str以外的类型，如果不是str类型，转换为str类型（header=None时自动生成的表头是int64,索引的时候使用字符串会报错）
-    df.columns = df.columns.astype(str)  
+    df.columns = df.columns.astype(str)
+    
     return df
 
 @log_function_call
@@ -109,6 +117,7 @@ def read_txt(path:str,args:Optional[Dict] = None) -> pd.DataFrame:
 def read_excel(path:str,args:Optional[Dict] = None)-> pd.DataFrame:
     '''
     读取excel文件
+    @param path: str   文件路径
     '''
     if args is None:
         args = {}
@@ -120,6 +129,7 @@ def read_excel(path:str,args:Optional[Dict] = None)-> pd.DataFrame:
 def read_parquet(path:str,args:Optional[Dict] = None)-> pd.DataFrame:
     '''
     读取parquet文件
+    @param path: str   文件路径
     '''
     if args is None:
         args = {}
@@ -131,6 +141,7 @@ def read_parquet(path:str,args:Optional[Dict] = None)-> pd.DataFrame:
 def da_read(path:str,args:Optional[Dict] = None):
     '''
     读取文件
+    @param path: str   文件路径
     '''
     suffix = os.path.splitext(path)[-1][1:]
     fun = da_global_reader_dict.get(suffix,None)
@@ -138,6 +149,17 @@ def da_read(path:str,args:Optional[Dict] = None):
         return None
     return fun(path,args)
 
+@log_function_call
+def da_read_and_add_to_datamanager(path:str,args:Optional[Dict] = None):
+    '''
+    读取文件并添加到数据管理器中
+    @param path: str   文件路径
+    @param args: dict   参数
+    '''
+    df = da_read(path,args)
+    if df is None:
+        return
+    add_to_datamanager(df,use_redo=True,name=Path(path).stem,describe=path)
 
 def da_get_file_read_filters() -> List[str]:
     '''
@@ -165,6 +187,25 @@ da_global_reader_dict = {
     'xlsx':read_excel,
     'parquet':read_parquet
 }
+
+def add_to_datamanager(df:pd.DataFrame,use_redo:bool = True,name:str = None,describe:str = None):
+    '''
+    把数据添加到dataworkbench的数据管理器中
+    @param df: pandas.DataFrame 数据
+    @param use_redo: bool 是否使用redo/undo
+    @param name: str 数据名称
+    @param describe: str 数据描述
+    '''
+    # 把数据添加到dataworkbench的数据管理器中（addData_的下斜杠代表支持redo/undo）
+    data = da_data.DAData(df)
+    # 把文件名称获取作为数据名称
+    data.setName(name)
+    data.setDescribe(describe)
+    datamanager = da_app.getCore().getDataManagerInterface()
+    if use_redo:
+        datamanager.addData_(data)
+    else:
+        datamanager.addData(data)
 
 ##################################################
 
