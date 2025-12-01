@@ -2,10 +2,8 @@
 namespace DA
 {
 
-DADataPySeries::DADataPySeries(const DAPySeries& d)
+DADataPySeries::DADataPySeries(const DAPySeries& d) : DADataPyObject(d)
 {
-    mPyObject = d;
-    mSeries      = d;
 }
 
 DAAbstractData::DataType DADataPySeries::getDataType() const
@@ -23,13 +21,8 @@ bool DADataPySeries::setValue(const QVariant& v)
     return false;
 }
 
-DAPySeries& DADataPySeries::series()
+DAPySeries DADataPySeries::series() const
 {
-    return mSeries;
-}
-
-const DAPySeries& DADataPySeries::series() const
-{
-    return mSeries;
+    return DAPySeries(mPyObject.object());
 }
 }

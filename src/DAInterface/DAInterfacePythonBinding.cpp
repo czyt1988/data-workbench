@@ -15,17 +15,17 @@
 PYBIND11_EMBEDDED_MODULE(da_interface, m)
 {
     pybind11::class_< DA::DADataManagerInterface >(m, "DADataManagerInterface")
-        .def("add_data", &DA::DADataManagerInterface::addData, pybind11::arg("data"), "Add data immediately")
-        .def("add_data_", &DA::DADataManagerInterface::addData_, pybind11::arg("data"), "Add data with undo/redo")
-        .def("remove_data", &DA::DADataManagerInterface::removeData, pybind11::arg("data"))
-        .def("remove_data_", &DA::DADataManagerInterface::removeData_, pybind11::arg("data"))
-        .def("get_count", &DA::DADataManagerInterface::getDataCount)
-        .def("get_data", &DA::DADataManagerInterface::getData, pybind11::arg("index"))
-        .def("get_index", &DA::DADataManagerInterface::getDataIndex, pybind11::arg("data"))
-        .def("get_data_by_id", &DA::DADataManagerInterface::getDataById, pybind11::arg("id"))
+        .def("addData", &DA::DADataManagerInterface::addData, pybind11::arg("data"), "Add data immediately")
+        .def("addData_", &DA::DADataManagerInterface::addData_, pybind11::arg("data"), "Add data with undo/redo")
+        .def("removeData", &DA::DADataManagerInterface::removeData, pybind11::arg("data"))
+        .def("removeData_", &DA::DADataManagerInterface::removeData_, pybind11::arg("data"))
+        .def("getDataCount", &DA::DADataManagerInterface::getDataCount)
+        .def("getData", &DA::DADataManagerInterface::getData, pybind11::arg("index"))
+        .def("getDataIndex", &DA::DADataManagerInterface::getDataIndex, pybind11::arg("data"))
+        .def("getDataById", &DA::DADataManagerInterface::getDataById, pybind11::arg("id"))
         // 快捷：pandas → DAData
         .def(
-            "add_dataframe",
+            "addDataframe",
             [](DA::DADataManagerInterface& self, pybind11::object df, const std::string& name) {
                 DA::DAData data((DA::DAPyDataFrame(df)));
                 data.setName(QString::fromStdString(name));
@@ -34,7 +34,7 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
             pybind11::arg("df"),
             pybind11::arg("name"))
         .def(
-            "add_series",
+            "addSeries",
             [](DA::DADataManagerInterface& self, pybind11::object se, const std::string& name) {
                 DA::DAData data((DA::DAPySeries(se)));
                 data.setName(QString::fromStdString(name));
@@ -45,9 +45,9 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
 
     /* 4. DACoreInterface 补充 */
     pybind11::class_< DA::DACoreInterface >(m, "DACoreInterface")
-        .def("data_manager",
+        .def("getDataManagerInterface",
              &DA::DACoreInterface::getDataManagerInterface,
              pybind11::return_value_policy::reference_internal)  // 返回DADataManagerInterface
-        .def("is_project_dirty", &DA::DACoreInterface::isProjectDirty)
-        .def("set_project_dirty", &DA::DACoreInterface::setProjectDirty, pybind11::arg("on"));
+        .def("isProjectDirty", &DA::DACoreInterface::isProjectDirty)
+        .def("setProjectDirty", &DA::DACoreInterface::setProjectDirty, pybind11::arg("on"));
 }

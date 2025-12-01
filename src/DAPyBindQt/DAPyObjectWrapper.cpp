@@ -37,6 +37,8 @@ DAPyObjectWrapper::DAPyObjectWrapper(pybind11::object&& obj)
 
 DAPyObjectWrapper::~DAPyObjectWrapper()
 {
+    qDebug() << "DAPyObjectWrapper destroyed, ref count:" << (_object.ptr() ? _object.ref_count() : 0)
+             << ", type:" << typeName();
 }
 
 bool DAPyObjectWrapper::isNone() const
@@ -103,6 +105,26 @@ void DAPyObjectWrapper::dealException(const std::exception& e) const
 {
     if (_errcallback) {
         _errcallback(e.what());
+    }
+}
+
+/**
+ * @brief 深拷贝
+ * @return
+ */
+DAPyObjectWrapper DAPyObjectWrapper::deepCopy() const
+{
+    if (isNone()) {
+        return DAPyObjectWrapper();
+    }
+
+    try {
+        static pybind11::module s_copy_mod = pybind11::module::import("copy");
+        pybind11::object copied            = s_copy_mod.attr("deepcopy")(_object);
+        return DAPyObjectWrapper(copied);
+    } catch (const std::exception& e) {
+        dealException(e);
+        return DAPyObjectWrapper();
     }
 }
 

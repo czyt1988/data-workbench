@@ -5,5 +5,5 @@
 PYBIND11_EMBEDDED_MODULE(da_app, m)
 {
     /* 5. 全局入口函数 */
-    m.def("get_core", &DA::getAppCorePtr, "Return the application core interface (singleton)");
+    m.def("getCore", &DA::getAppCorePtr, "Return the application core interface (singleton)");
 }

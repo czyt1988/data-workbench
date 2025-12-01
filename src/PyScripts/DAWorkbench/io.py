@@ -8,7 +8,9 @@ import numpy as np
 from DAWorkbench.logger import log_function_call  # type: ignore # 引入装饰器
 from loguru import logger
 import chardet
-
+import da_app,da_interface,da_data
+core = da_app.getCore()
+data_manager = core.getDataManagerInterface()
 '''
 本文件da_打头的变量和函数属于da系统的默认函数，如果改动会导致da系统异常
 '''

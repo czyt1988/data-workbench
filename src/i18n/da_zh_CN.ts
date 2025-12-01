@@ -6733,13 +6733,13 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>无法导入da_dataframe模块</translation>
     </message>
     <message>
-        <location filename="../DAPyScripts/DAPyScriptsIO.cpp" line="+77"/>
+        <location filename="../DAPyScripts/DAPyScriptsIO.cpp" line="+65"/>
         <source>can not import da_io module</source>
         <translation>无法导入da_io模块</translation>
     </message>
     <message>
         <location filename="../DAPyScripts/DAPyScriptsDataFrame.cpp" line="+8"/>
-        <location filename="../DAPyScripts/DAPyScriptsIO.cpp" line="+8"/>
+        <location filename="../DAPyScripts/DAPyScriptsIO.cpp" line="+9"/>
         <source>can not import DAWorkBench.io</source>
         <translation>无法导入DAWorkBench.io模块</translation>
     </message>

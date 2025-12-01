@@ -33,57 +33,46 @@
  * @endcode
  */
 #define FUNCTION_STR_DICT(returnType, functionName, pyFunctionName)                                                    \
-	returnType DAPyScriptsIO::functionName(const QString& filepath, const QVariantMap& args, QString* err)             \
-	{                                                                                                                  \
-		try {                                                                                                          \
-			pybind11::object fn = attr(#pyFunctionName);                                                               \
-			if (fn.is_none()) {                                                                                        \
-				qDebug() << "da_io.py have no attr " #pyFunctionName;                                                  \
-				return returnType();                                                                                   \
-			}                                                                                                          \
+    returnType DAPyScriptsIO::functionName(const QString& filepath, const QVariantMap& args, QString* err)             \
+    {                                                                                                                  \
+        try {                                                                                                          \
+            pybind11::object fn = attr(#pyFunctionName);                                                               \
+            if (fn.is_none()) {                                                                                        \
+                qDebug() << "da_io.py have no attr " #pyFunctionName;                                                  \
+                return returnType();                                                                                   \
+            }                                                                                                          \
             pybind11::object v = fn(DA::PY::toPyStr(filepath), DA::PY::toPyDict(args));                                \
-			return returnType(std::move(v));                                                                           \
-		} catch (const std::exception& e) {                                                                            \
-			if (err) {                                                                                                 \
-				*err = e.what();                                                                                       \
-			}                                                                                                          \
-			qDebug() << e.what();                                                                                      \
-		}                                                                                                              \
-		return returnType();                                                                                           \
-	}
+            return returnType(v);                                                                                      \
+        } catch (const std::exception& e) {                                                                            \
+            if (err) {                                                                                                 \
+                *err = e.what();                                                                                       \
+            }                                                                                                          \
+            qDebug() << e.what();                                                                                      \
+        }                                                                                                              \
+        return returnType();                                                                                           \
+    }
 
 namespace DA
 {
-class DAPyScriptsIO::PrivateData
-{
-	DA_DECLARE_PUBLIC(DAPyScriptsIO)
-public:
-	PrivateData(DAPyScriptsIO* p);
-};
 
-//===================================================
-// DAPyScriptsIOPrivate
-//===================================================
-DAPyScriptsIO::PrivateData::PrivateData(DAPyScriptsIO* p) : q_ptr(p)
-{
-}
 //===================================================
 // DAPyScriptsIO
 //===================================================
-DAPyScriptsIO::DAPyScriptsIO(bool autoImport) : DAPyModule(), DA_PIMPL_CONSTRUCT
+DAPyScriptsIO::DAPyScriptsIO(bool autoImport) : DAPyModule()
 {
-	if (autoImport) {
-		if (!import()) {
-			qCritical() << QObject::tr("can not import da_io module");
-		}
-	}
+    if (autoImport) {
+        if (!import()) {
+            qCritical() << QObject::tr("can not import da_io module");
+            throw std::runtime_error("Failed to import module: DAWorkbench.io");
+        }
+    }
 }
 
 DAPyScriptsIO::DAPyScriptsIO(const pybind11::object& obj) : DAPyModule(obj)
 {
-	if (isModule()) {
-		qCritical() << QObject::tr("can not import DAWorkBench.io");
-	}
+    if (isModule()) {
+        qCritical() << QObject::tr("can not import DAWorkBench.io");
+    }
 }
 
 DAPyScriptsIO::~DAPyScriptsIO()
@@ -96,27 +85,27 @@ DAPyScriptsIO::~DAPyScriptsIO()
  */
 QList< QString > DAPyScriptsIO::getFileReadFilters() const
 {
-	QList< QString > res;
-	try {
-		pybind11::object da_get_file_read_filters = attr("da_get_file_read_filters");
-		if (da_get_file_read_filters.is_none()) {
-			qDebug() << "da_io.py have no attr da_get_file_read_filters";
-			return res;
-		}
-		pybind11::object f = da_get_file_read_filters();
-		if (f.is_none()) {
-			qDebug() << "da_io.da_get_file_read_filters() = none";
-			return res;
-		}
-		QString err;
-		res = DA::PY::toStringList(f, &err);
-		if (!err.isEmpty()) {
-			qCritical() << err;
-		}
-	} catch (const std::exception& e) {
-		qCritical() << e.what();
-	}
-	return res;
+    QList< QString > res;
+    try {
+        pybind11::object da_get_file_read_filters = attr("da_get_file_read_filters");
+        if (da_get_file_read_filters.is_none()) {
+            qDebug() << "da_io.py have no attr da_get_file_read_filters";
+            return res;
+        }
+        pybind11::object f = da_get_file_read_filters();
+        if (f.is_none()) {
+            qDebug() << "da_io.da_get_file_read_filters() = none";
+            return res;
+        }
+        QString err;
+        res = DA::PY::toStringList(f, &err);
+        if (!err.isEmpty()) {
+            qCritical() << err;
+        }
+    } catch (const std::exception& e) {
+        qCritical() << e.what();
+    }
+    return res;
 }
 
 /**
@@ -171,14 +160,14 @@ FUNCTION_STR_DICT(DAPyDataFrame, read_pkl, read_pkl)
  */
 bool DAPyScriptsIO::import()
 {
-	try {
-		pybind11::module m = pybind11::module::import("DAWorkbench");
-		object()           = m.attr("io");
-	} catch (const std::exception& e) {
-		qCritical() << e.what();
-		return false;
-	}
-	return true;
+    try {
+        pybind11::module m = pybind11::module::import("DAWorkbench");
+        object()           = m.attr("io");
+    } catch (const std::exception& e) {
+        qCritical() << e.what();
+        return false;
+    }
+    return true;
 }
 
 }  // namespace DA

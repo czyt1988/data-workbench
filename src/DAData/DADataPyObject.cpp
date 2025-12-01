@@ -13,9 +13,8 @@ DADataPyObject::DADataPyObject() : DAAbstractData()
 {
 }
 
-DADataPyObject::DADataPyObject(const DAPyObjectWrapper& d)
+DADataPyObject::DADataPyObject(const DAPyObjectWrapper& d) : DAAbstractData(), mPyObject(d)
 {
-    mPyObject = d;
 }
 
 DADataPyObject::~DADataPyObject()
