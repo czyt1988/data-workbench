@@ -25,7 +25,8 @@
 // using DA namespace -- 禁止在头文件using！！
 //===================================================
 
-using namespace DA;
+namespace DA
+{
 
 //===================================================
 // DAAppCore
@@ -177,3 +178,10 @@ QString DAAppCore::getPythonScriptsPath()
     QString appabsPath = QApplication::applicationDirPath();
     return QDir::toNativeSeparators(appabsPath + "/PyScripts");
 }
+
+DACoreInterface* getAppCorePtr()
+{
+    return &(DAAppCore::getInstance());
+}
+
+}  // end namespace DA

@@ -956,7 +956,7 @@ Config</source>
 <context>
     <name>DA::DAAppCore</name>
     <message>
-        <location filename="../APP/DAAppCore.cpp" line="+110"/>
+        <location filename="../APP/DAAppCore.cpp" line="+111"/>
         <source>Python interpreter path is %1</source>
         <translation type="unfinished"></translation>
     </message>

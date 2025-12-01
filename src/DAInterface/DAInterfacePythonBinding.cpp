@@ -1,8 +1,4 @@
 ﻿#include "DAInterfacePythonBinding.h"
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-#include <pybind11/operators.h>
-
 #include "DACoreInterface.h"
 #include "DADataManagerInterface.h"
 #include "DAProjectInterface.h"
@@ -11,10 +7,10 @@
 #include "DAData.h"
 #include "DADataManager.h"
 #if DA_ENABLE_PYTHON
+#include "DAPybind11InQt.h"
 #include "pandas/DAPyDataFrame.h"
 #include "pandas/DAPySeries.h"
 #endif
-
 
 PYBIND11_EMBEDDED_MODULE(da_interface, m)
 {

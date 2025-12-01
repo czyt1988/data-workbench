@@ -103,6 +103,8 @@ damacro_import_DALiteCtk(${DA_LIB_NAME})
 if(DA_ENABLE_PYTHON)
     # -------------link python--------------------------
     damacro_import_Python(${DA_LIB_NAME})
+    # -------------link 3rdparty pybind11--------------------------
+    damacro_import_pybind11(${DA_LIB_NAME})
 endif()
 
 
@@ -116,12 +118,7 @@ endif()
 target_link_libraries(${DA_LIB_NAME} PUBLIC
     ${DA_PROJECT_NAME}::DAGui
 )
-if(DA_ENABLE_PYTHON)
-    # -------------link python--------------------------
-    damacro_import_Python(${DA_LIB_NAME})
-    # -------------link 3rdparty pybind11--------------------------
-    damacro_import_pybind11(${DA_LIB_NAME})
-endif()
+
 ########################################################
 # 设置通用库属性
 ########################################################

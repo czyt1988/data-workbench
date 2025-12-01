@@ -170,7 +170,7 @@ macro(damacro_import_pybind11 __target_name)
     else()
         set(_src_dir ${CMAKE_CURRENT_SOURCE_DIR}/..)
     endif()
-    target_include_directories(${DA_LIB_NAME} PUBLIC
+    target_include_directories(${__target_name} PUBLIC
         $<INSTALL_INTERFACE:include/pybind11>
         $<BUILD_INTERFACE:${_src_dir}/3rdparty/pybind11/include>
     )

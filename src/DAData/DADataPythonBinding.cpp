@@ -1,12 +1,11 @@
 ﻿#include "DADataPythonBinding.h"
 #include "DAData.h"
-#include "pybind11/pybind11.h"
+#include "DAPybind11InQt.h"
 
 DA::DAPyDataFrame pyDataFrameToDAPyDataFrame(pybind11::object df)
 {
     return DA::DAPyDataFrame(df);
 }
-
 
 void addDataFrameFromPy(DA::DADataManager& mgr, pybind11::object df, const std::string& name)
 {
@@ -15,7 +14,6 @@ void addDataFrameFromPy(DA::DADataManager& mgr, pybind11::object df, const std::
     data.setName(QString::fromStdString(name));
     mgr.addData(data);  // 调用 C++ 的 addData
 }
-
 
 PYBIND11_EMBEDDED_MODULE(da_data, m)
 {
