@@ -980,25 +980,22 @@ Config</source>
     <name>DA::DAAppDataManager</name>
     <message>
         <location filename="../APP/DAAppDataManager.cpp" line="+31"/>
-        <location line="+38"/>
+        <location line="+23"/>
         <source>begin import file:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-35"/>
-        <location line="+38"/>
+        <location line="+3"/>
         <source>file:%1,conver to dataframe</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-34"/>
-        <location line="+38"/>
+        <location line="+4"/>
         <source>The file &apos;%1&apos; has been successfully imported, but no data can be read from the file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-26"/>
-        <location line="+37"/>
+        <location line="+11"/>
         <source>can not import file:%1</source>
         <translation type="unfinished"></translation>
     </message>

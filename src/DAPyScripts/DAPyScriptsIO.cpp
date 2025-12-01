@@ -134,6 +134,7 @@ FUNCTION_STR_DICT(DAPyObjectWrapper, read, da_read)
 //     return DAPyObjectWrapper();
 // }
 
+
 /**
  * @brief 读取csv
  * @param filepath
@@ -154,6 +155,30 @@ FUNCTION_STR_DICT(DAPyDataFrame, read_txt, read_txt)
  * @return
  */
 FUNCTION_STR_DICT(DAPyDataFrame, read_pkl, read_pkl)
+
+
+/**
+ * @brief 读取并直接添加到datamanager
+ * @param filepath
+ * @param args
+ * @param err
+ */
+void DAPyScriptsIO::read_and_add_to_datamanager(const QString& filepath, const QVariantMap& args, QString* err)
+{
+    try {
+        pybind11::object fun = attr("da_read_and_add_to_datamanager");
+        if (fun.is_none()) {
+            qDebug() << "da_io.py have no attr da_read";
+            return;
+        }
+        fun(DA::PY::toPyStr(filepath), DA::PY::toPyDict(args));
+    } catch (const std::exception& e) {
+        if (err) {
+            *err = e.what();
+        }
+        qDebug() << e.what();
+    }
+}
 
 /**
  * @brief 导入库

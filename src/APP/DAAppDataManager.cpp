@@ -29,29 +29,14 @@ bool DAAppDataManager::importFromFile(const QString& f, const QVariantMap& args,
 {
 #if DA_ENABLE_PYTHON
     qInfo() << tr("begin import file:%1").arg(f);
-    DAPyObjectWrapper res = DAPyScripts::getInstance().getIO().read(f, args, err);
-    if (DAPyDataFrame::isDataFrame(res.object())) {
-        qInfo() << tr("file:%1,conver to dataframe").arg(f);
-        QFileInfo fi(f);
-        DAPyDataFrame df = res;  // 调用的是DAPyDataFrame(const DAPyObjectWrapper& df)
-        if (df.size() == 0) {
-            qWarning() << tr("The file '%1' has been successfully imported, "
-                             "but no data can be read from the file")  // cn: 导入文件'%1'成功，但无法从文件中读取到数据
-                              .arg(f);
-            return false;
-        }
-        DAData data(df);
-        data.setName(fi.baseName());
-        data.setDescribe(fi.absoluteFilePath());
-        addData_(data);
-        return true;
-    }  // else if() //其他格式
-    else if (res.isNone()) {
-        qWarning() << tr("can not import file:%1").arg(f);
+    try {
+        DAPyScripts::getInstance().getIO().read_and_add_to_datamanager(f, args, err);
+    } catch (const std::exception& e) {
+        qCritical() << e.what();
         return false;
     }
 #endif
-    return false;
+    return true;
 }
 
 /**

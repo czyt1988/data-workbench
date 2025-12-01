@@ -10,4 +10,4 @@ da_log_path = os.getenv('APPDATA') + r'\DAWorkBench\log'
 logger.add(da_log_path+"/da_pyscript.log",rotation="10 MB",level="DEBUG")
 
 # 你还可以导入包中的其他模块，以便它们可以在包加载时立即可用。  
-from . import io, dataframe, data_processing, logger
+from . import io, dataframe, data_processing, logger, utils

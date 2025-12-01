@@ -28,6 +28,8 @@ public:
     DAPyDataFrame read_txt(const QString& filepath, const QVariantMap& args, QString* err = nullptr);
     // 读取pkl
     DAPyDataFrame read_pkl(const QString& filepath, const QVariantMap& args, QString* err = nullptr);
+    // 读取并直接添加到datamanager
+    void read_and_add_to_datamanager(const QString& filepath, const QVariantMap& args, QString* err = nullptr);
     // 引入
     bool import();
 };

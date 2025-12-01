@@ -37,8 +37,6 @@ DAPyObjectWrapper::DAPyObjectWrapper(pybind11::object&& obj)
 
 DAPyObjectWrapper::~DAPyObjectWrapper()
 {
-    qDebug() << "DAPyObjectWrapper destroyed, ref count:" << (_object.ptr() ? _object.ref_count() : 0)
-             << ", type:" << typeName();
 }
 
 bool DAPyObjectWrapper::isNone() const
