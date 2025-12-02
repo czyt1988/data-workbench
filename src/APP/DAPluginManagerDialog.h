@@ -11,12 +11,13 @@ class DAPluginManagerDialog;
 
 namespace DA
 {
+class DAAppPluginManager;
 class DAPluginManagerDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit DAPluginManagerDialog(QWidget* parent = nullptr);
+    explicit DAPluginManagerDialog(DAAppPluginManager* mgr, QWidget* parent = nullptr);
     ~DAPluginManagerDialog();
 
 protected:
@@ -27,6 +28,7 @@ private:
 
 private:
     Ui::DAPluginManagerDialog* ui;
+    DAAppPluginManager* mPluginMgr { nullptr };
 };
 }  // namespace DA
 #endif  // FCPLUGINMANAGERDIALOG_H

@@ -75,7 +75,7 @@
 <context>
     <name>DA::AppMainWindow</name>
     <message>
-        <location filename="../APP/AppMainWindow.cpp" line="+79"/>
+        <location filename="../APP/AppMainWindow.cpp" line="+80"/>
         <source>Restore UI State</source>
         <translation type="unfinished"></translation>
     </message>
@@ -110,7 +110,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+40"/>
+        <location line="+44"/>
         <source>untitle</source>
         <translation type="unfinished"></translation>
     </message>
@@ -131,7 +131,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+141"/>
+        <location line="+150"/>
         <source>restore UI state error:%1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1046,7 +1046,7 @@ Config</source>
 <context>
     <name>DA::DAAppPluginManager</name>
     <message>
-        <location filename="../APP/DAAppPluginManager.cpp" line="+68"/>
+        <location filename="../APP/DAAppPluginManager.cpp" line="+60"/>
         <source>succeed load plugin %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2468,27 +2468,27 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAFigureTreeModel</name>
     <message>
-        <location filename="../DAFigure/Models/DAFigureTreeModel.cpp" line="+92"/>
-        <source>property</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-1"/>
-        <source>visible</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+25"/>
-        <source>chart</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-26"/>
+        <location filename="../DAFigure/Models/DAFigureTreeModel.cpp" line="+90"/>
         <source>element</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+76"/>
+        <location line="+1"/>
+        <source>visible</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>property</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+50"/>
         <source>Axis</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2618,12 +2618,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+70"/>
+        <location line="+64"/>
         <source>plugin dir is:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+21"/>
         <source>ignore plugin %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2638,7 +2638,22 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+76"/>
+        <location line="+60"/>
+        <source>Plugin %1 refused to finalize, unload cancelled.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Failed to unload plugin library for %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Plugin %1 not found for unloading.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+40"/>
         <source>Plugin Manager Info:is loaded=%1,plugin counts=%2</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2646,7 +2661,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAPluginManagerDialog</name>
     <message>
-        <location filename="../APP/DAPluginManagerDialog.cpp" line="+43"/>
+        <location filename="../APP/DAPluginManagerDialog.cpp" line="+44"/>
         <source>name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2666,7 +2681,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+5"/>
         <source>node plugin</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4175,13 +4190,13 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+13"/>
-        <source>Title</source>
+        <location line="+6"/>
+        <source>Footer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-7"/>
-        <source>Footer</source>
+        <location line="+7"/>
+        <source>Title</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6007,16 +6022,26 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
     <message>
         <location line="+7"/>
-        <source>Failed to create plugin instance %1 (Reason: %2)</source>
+        <source>Failed to create plugin instance from %1. Error: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+10"/>
         <source>Failed to cast plugin to DA plugin %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+13"/>
+        <source>Plugin from %1 implements a DA interface but qobject_cast failed. This may indicate a binary compatibility issue (compiler/mismatch).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location line="+5"/>
+        <source>The library %1 does not appear to be a valid DA plugin. It does not implement the required interface.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
         <source>loaded plugin:%1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6486,27 +6511,6 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAFigure/DAFigureWidgetCommands.cpp" line="+35"/>
-        <location line="+8"/>
-        <source>create chart</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+43"/>
-        <source>remove chart</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+40"/>
-        <source>set figure widget size</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+24"/>
-        <source>add item in chart</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../DAFigure/DAChartUtil.cpp" line="+41"/>
         <source>unknow chart</source>
         <translation type="unfinished"></translation>
@@ -6518,7 +6522,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="-2"/>
+        <source>chart-%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+14"/>
         <source>untitle</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6618,8 +6627,74 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-75"/>
-        <source>chart-%1</source>
+        <location filename="../DAFigure/DAFigureWidgetCommands.cpp" line="+35"/>
+        <location line="+8"/>
+        <source>create chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+43"/>
+        <source>remove chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+40"/>
+        <source>set figure widget size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>add item in chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DAFigure/Models/DAStandardItemPlot.cpp" line="+50"/>
+        <source>parasite-%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>plot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+28"/>
+        <source>Parasite Plot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DAFigure/Models/DAStandardItemPlotScale.cpp" line="+137"/>
+        <source>DateTime Scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Log Scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Y Left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Y Right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>X Bottom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>X Top</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Unknow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6829,56 +6904,6 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+6"/>
         <source>config file(%1) loss &lt;configs&gt; tag</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../DAFigure/Models/DAStandardItemPlot.cpp" line="+50"/>
-        <source>parasite-%1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>plot</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+28"/>
-        <source>Parasite Plot</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../DAFigure/Models/DAStandardItemPlotScale.cpp" line="+137"/>
-        <source>DateTime Scale</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Log Scale</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Y Left</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Y Right</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>X Bottom</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>X Top</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Unknow</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

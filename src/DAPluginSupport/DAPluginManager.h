@@ -13,49 +13,56 @@ namespace DA
  */
 class DAPLUGINSUPPORT_API DAPluginManager : public QObject
 {
-	Q_OBJECT
-	DA_DECLARE_PRIVATE(DAPluginManager)
-	DAPluginManager(QObject* p = nullptr);
-
+    Q_OBJECT
+    DA_DECLARE_PRIVATE(DAPluginManager)
 public:
-	~DAPluginManager();
-	// 调用实例函数
-	static DAPluginManager& instance();
+    explicit DAPluginManager(QObject* p = nullptr);
+    ~DAPluginManager();
+    // 设置忽略列表
+    void setIgnoreList(const QStringList ignorePluginsName);
 
-	// 设置忽略列表
-	void setIgnoreList(const QStringList ignorePluginsName);
+    // 加载所有插件
+    virtual void loadAllPlugins(DACoreInterface* c);
 
-	// 加载所有插件
-	void load(DACoreInterface* c);
+    // 是否已经加载
+    bool isLoaded() const;
 
-	// 是否已经加载
-	bool isLoaded() const;
+    // 设置插件路径
+    void setPluginPath(const QString& path);
 
-	// 设置插件路径
-	void setPluginPath(const QString& path);
+    // 插件数
+    int getPluginCount() const;
 
-	// 插件数
-	int getPluginCount() const;
+    // 获取加载的插件名
+    QList< QString > getPluginNames() const;
 
-	// 获取加载的插件名
-	QList< QString > getPluginNames() const;
+    // 获取所有插件信息
+    QList< DAPluginOption > getPluginOptions() const;
 
-	// 获取所有插件信息
-	QList< DAPluginOption > getPluginOptions() const;
+    // 卸载相关
+    bool unloadPlugin(const QString& pluginName);
+    virtual bool unloadAllPlugins();
 
-	// 获取插件路径
-	static QString getPluginDirPath();
 
-	// 忽略文件名
-	static QString getPluginIgnoreFileName();
-signals:
-	/**
-	 * @brief 开始加载插件信号
-	 *
-	 * 此信号可以给到启动画面窗口使用
-	 * @param pluginPath
-	 */
-	void beginLoadPlugin(const QString& pluginPath);
+    // 获取插件路径
+    static QString getPluginDirPath();
+
+    // 忽略文件名
+    static QString getPluginIgnoreFileName();
+Q_SIGNALS:
+    /**
+     * @brief 开始加载插件信号
+     *
+     * 此信号可以给到启动画面窗口使用
+     * @param pluginPath
+     */
+    void beginLoadPlugin(const QString& pluginPath);
+
+    /**
+     * @brief 插件卸载
+     * @param pluginPath
+     */
+    void pluginUnloaded(const QString& pluginPath);
 };
 
 // 格式化输出

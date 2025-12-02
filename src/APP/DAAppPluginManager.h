@@ -9,6 +9,7 @@
 #include <QSet>
 
 #include "DANodeMetaData.h"
+#include "DAPluginManager.h"
 namespace DA
 {
 class _DAPrivateWorkflowNodePluginData;
@@ -19,17 +20,16 @@ class DAAbstractNodeFactory;
  * @brief 此app的插件管理类
  *
  */
-class DAAppPluginManager : public QObject
+class DAAppPluginManager : public DAPluginManager
 {
     Q_OBJECT
+public:
     DAAppPluginManager(QObject* p = nullptr);
     ~DAAppPluginManager();
 
-public:
-    static DAAppPluginManager& instance();
 
     // 初始化加载所有插件
-    void initLoadPlugins(DACoreInterface* c);
+    virtual void loadAllPlugins(DACoreInterface* c) override;
 
     // 获取所有的插件
     QList< DAAbstractPlugin* > getAllPlugins() const;
@@ -42,6 +42,7 @@ public:
 
     // 获取所有的元数据
     QList< DANodeMetaData > getAllNodeMetaDatas() const;
+
 
 private:
     QList< DAAbstractPlugin* > mPlugins;

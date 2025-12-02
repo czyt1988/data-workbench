@@ -13,7 +13,8 @@ using namespace DA;
 //===================================================
 // DAPluginManagerDialog
 //===================================================
-DAPluginManagerDialog::DAPluginManagerDialog(QWidget* parent) : QDialog(parent), ui(new Ui::DAPluginManagerDialog)
+DAPluginManagerDialog::DAPluginManagerDialog(DAAppPluginManager* mgr, QWidget* parent)
+    : QDialog(parent), ui(new Ui::DAPluginManagerDialog), mPluginMgr(mgr)
 {
     ui->setupUi(this);
     init();
@@ -39,13 +40,12 @@ void DAPluginManagerDialog::changeEvent(QEvent* e)
 
 void DAPluginManagerDialog::init()
 {
-    ui->treeWidget->setColumnCount(4);  //插件名称，插件b版本，是否加载
+    ui->treeWidget->setColumnCount(4);  // 插件名称，插件b版本，是否加载
     ui->treeWidget->setHeaderLabels({ tr("name"), tr("version"), tr("is loaded"), tr("description") });
-    DAAppPluginManager& plugin            = DAAppPluginManager::instance();
-    QList< DAAbstractNodePlugin* > nodeplugins = plugin.getNodePlugins();
+    QList< DAAbstractNodePlugin* > nodeplugins = mPluginMgr->getNodePlugins();
     QTreeWidgetItem* rootItem                  = new QTreeWidgetItem(ui->treeWidget);
 
-    //节点插件
+    // 节点插件
     rootItem->setText(0, tr("node plugin"));
     ui->treeWidget->insertTopLevelItem(0, rootItem);
     for (DAAbstractNodePlugin* p : nodeplugins) {

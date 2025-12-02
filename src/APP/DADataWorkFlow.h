@@ -16,7 +16,9 @@ class DADataWorkFlow : public DAWorkFlow
 {
     Q_OBJECT
 public:
-    DADataWorkFlow(QObject* p = nullptr);
+    explicit DADataWorkFlow(QObject* p = nullptr);
+    ~DADataWorkFlow();
+    //
 };
 }  // namespace DA
 #endif  // FCMETHODEDITORNODEFACTORY_H

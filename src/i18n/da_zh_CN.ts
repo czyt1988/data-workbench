@@ -75,7 +75,7 @@
 <context>
     <name>DA::AppMainWindow</name>
     <message>
-        <location filename="../APP/AppMainWindow.cpp" line="+79"/>
+        <location filename="../APP/AppMainWindow.cpp" line="+80"/>
         <source>Restore UI State</source>
         <translation>加载界面状态信息</translation>
     </message>
@@ -110,7 +110,7 @@
         <translation>无法移除ui状态文件%1</translation>
     </message>
     <message>
-        <location line="+40"/>
+        <location line="+44"/>
         <source>untitle</source>
         <translation>未命名</translation>
     </message>
@@ -131,7 +131,7 @@
         <translation>拓扑执行失败</translation>
     </message>
     <message>
-        <location line="+141"/>
+        <location line="+150"/>
         <source>restore UI state error:%1</source>
         <translation>恢复ui状态发生错误：%1</translation>
     </message>
@@ -1078,7 +1078,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppPluginManager</name>
     <message>
-        <location filename="../APP/DAAppPluginManager.cpp" line="+68"/>
+        <location filename="../APP/DAAppPluginManager.cpp" line="+60"/>
         <source>succeed load plugin %1</source>
         <translation>成功加载插件“%1”</translation>
     </message>
@@ -2593,7 +2593,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+26"/>
+        <location line="+2"/>
+        <source>property</source>
+        <translation>属性</translation>
+    </message>
+    <message>
+        <location line="+24"/>
         <source>chart</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2608,12 +2613,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-94"/>
-        <source>property</source>
-        <translation>属性</translation>
-    </message>
-    <message>
-        <location line="-1"/>
+        <location line="-95"/>
         <source>visible</source>
         <translation>可见性</translation>
     </message>
@@ -2738,12 +2738,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>没有插件忽略文件，将自动生成%1</translation>
     </message>
     <message>
-        <location line="+70"/>
+        <location line="+64"/>
         <source>plugin dir is:%1</source>
         <translation>插件路径:%1</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+21"/>
         <source>ignore plugin %1</source>
         <translation>忽略插件%1</translation>
     </message>
@@ -2758,7 +2758,22 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>无法加载插件:%1</translation>
     </message>
     <message>
-        <location line="+76"/>
+        <location line="+60"/>
+        <source>Plugin %1 refused to finalize, unload cancelled.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Failed to unload plugin library for %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Plugin %1 not found for unloading.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+40"/>
         <source>Plugin Manager Info:is loaded=%1,plugin counts=%2</source>
         <translation>Plugin Manager Info:加载情况=%1,插件数量=%2</translation>
     </message>
@@ -2766,7 +2781,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAPluginManagerDialog</name>
     <message>
-        <location filename="../APP/DAPluginManagerDialog.cpp" line="+43"/>
+        <location filename="../APP/DAPluginManagerDialog.cpp" line="+44"/>
         <source>name</source>
         <translation>名称</translation>
     </message>
@@ -2786,7 +2801,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>描述</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+5"/>
         <source>node plugin</source>
         <translation>节点插件</translation>
     </message>
@@ -6095,16 +6110,26 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
     <message>
         <location line="+7"/>
-        <source>Failed to create plugin instance %1 (Reason: %2)</source>
-        <translation>创建插件“%1”实例失败，原因为：%2</translation>
+        <source>Failed to create plugin instance from %1. Error: %2</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+10"/>
         <source>Failed to cast plugin to DA plugin %1</source>
         <translation>无法把加载的插件“%1”转换为DA系列插件</translation>
     </message>
     <message>
+        <location line="+13"/>
+        <source>Plugin from %1 implements a DA interface but qobject_cast failed. This may indicate a binary compatibility issue (compiler/mismatch).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location line="+5"/>
+        <source>The library %1 does not appear to be a valid DA plugin. It does not implement the required interface.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
         <source>loaded plugin:%1</source>
         <translation>加载插件“%1”</translation>
     </message>
@@ -6565,18 +6590,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>内核初始化失败</translation>
     </message>
     <message>
-        <location filename="../DAFigure/DAChartUtil.cpp" line="+41"/>
-        <source>unknow chart</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <location line="+7"/>
-        <source>untitle-chart</source>
-        <translation type="unfinished">图-未命名</translation>
-    </message>
-    <message>
-        <location line="+12"/>
+        <location filename="../DAFigure/DAChartUtil.cpp" line="+68"/>
         <source>untitle</source>
         <translation>未命名</translation>
     </message>
@@ -6679,6 +6693,17 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <location line="-75"/>
         <source>chart-%1</source>
         <translation>图-%1</translation>
+    </message>
+    <message>
+        <location line="-13"/>
+        <source>unknow chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <location line="+7"/>
+        <source>untitle-chart</source>
+        <translation>图-未命名</translation>
     </message>
     <message>
         <location filename="../APP/SettingPages/DAAppConfig.cpp" line="+49"/>

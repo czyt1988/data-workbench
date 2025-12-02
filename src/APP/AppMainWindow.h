@@ -19,6 +19,7 @@ class DAAppRibbonArea;
 class DAAppUI;
 class DAAppDockingArea;
 class DAAppController;
+class DAAppPluginManager;
 class DAAppConfig;
 class DAConfigsManager;
 class DAAppSettingDialog;
@@ -60,6 +61,9 @@ public:
     // 针对import-data命令
     bool importData(const QString& filePath, const QVariantMap& args);
 
+    // 获取插件管理器
+    DAAppPluginManager* getPluginManager() const;
+
 protected:
     void changeEvent(QEvent* e);
     void closeEvent(QCloseEvent* e);
@@ -87,6 +91,7 @@ private:
     DAAppUI* mUI { nullptr };
     DAAppDockingArea* mDockArea { nullptr };
     DAAppController* mController { nullptr };
+    DAAppPluginManager* mPluginMgr { nullptr };
     std::unique_ptr< DAAppConfig > mConfig;
     DAAppSettingDialog* mSettingDialog { nullptr };  ///< 设置窗口,避免过多的中间传递
     bool mIsSaveUIStateOnClose { false };            ///< 是否在退出时记录程序的状态

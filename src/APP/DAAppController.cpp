@@ -743,7 +743,7 @@ void DAAppController::onFigureElementDbClicked(const DAFigureElementSelection& s
 void DAAppController::onActionPluginManagerTriggered(bool on)
 {
     Q_UNUSED(on);
-    DAPluginManagerDialog dlg(app());
+    DAPluginManagerDialog dlg(mMainWindow->getPluginManager(), app());
 
     dlg.exec();
 }
