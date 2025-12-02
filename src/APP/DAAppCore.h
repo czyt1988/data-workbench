@@ -35,8 +35,6 @@ public:
 public:  // python相关
     // 初始化python环境
     bool initializePythonEnv();
-    // 获取python 脚本路径
-    static QString getPythonScriptsPath();
 
 public:
     // 获取DAAppUI，省去qobject_cast

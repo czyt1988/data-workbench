@@ -14,7 +14,7 @@ else:
 from pandas._typing import Axis, Scalar
 import pandas as pd
 import numpy as np
-from DAWorkbench.logger import log_function_call  # type: ignore # 引入装饰器
+from DAWorkbench.DALogger import log_function_call  # type: ignore # 引入装饰器
 import copy
 
 '''

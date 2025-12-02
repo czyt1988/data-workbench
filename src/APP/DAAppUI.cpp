@@ -1,4 +1,5 @@
 ﻿#include "DAAppUI.h"
+#include <QDebug>
 #include "DAAppDockingArea.h"
 #include "DAAppRibbonArea.h"
 #include "DAAppActions.h"
@@ -52,6 +53,21 @@ void DAAppUI::createUi()
     createRibbonArea();
     m_ribbonArea->setDockingArea(m_dockingArea);
     createStatusBar();
+}
+
+void DAAppUI::addInfoLogMessage(const QString& msg)
+{
+    qInfo() << msg;
+}
+
+void DAAppUI::addWarningLogMessage(const QString& msg)
+{
+    qWarning() << msg;
+}
+
+void DAAppUI::addCriticalLogMessage(const QString& msg)
+{
+    qCritical() << msg;
 }
 
 /**

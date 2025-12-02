@@ -27,6 +27,15 @@ public:
     // 获取界面的ribbon区域
     virtual DARibbonAreaInterface* getRibbonArea() override;
 
+    // 添加信息在程序的日志窗口里显示
+    virtual void addInfoLogMessage(const QString& msg) override;
+
+    // 添加信息在程序的日志窗口里显示
+    virtual void addWarningLogMessage(const QString& msg) override;
+
+    // 添加信息在程序的日志窗口里显示
+    virtual void addCriticalLogMessage(const QString& msg) override;
+
     // 创建ui
     void createUi();
 

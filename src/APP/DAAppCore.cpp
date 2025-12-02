@@ -169,15 +169,7 @@ DAAppCommand* DAAppCore::getAppCmd()
     return mAppCmd;
 }
 
-/**
- * @brief 获取python脚本的位置
- * @return
- */
-QString DAAppCore::getPythonScriptsPath()
-{
-    QString appabsPath = QApplication::applicationDirPath();
-    return QDir::toNativeSeparators(appabsPath + "/PyScripts");
-}
+
 
 DACoreInterface* getAppCorePtr()
 {

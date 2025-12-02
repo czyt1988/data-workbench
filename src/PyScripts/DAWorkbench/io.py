@@ -6,7 +6,7 @@ import pandas as pd
 from pathlib import Path
 import inspect
 import numpy as np
-from DAWorkbench.logger import log_function_call  # type: ignore # 引入装饰器
+from DAWorkbench.DALogger import log_function_call  # type: ignore # 引入装饰器
 import DAWorkbench.utils as daUtils
 from loguru import logger
 import chardet

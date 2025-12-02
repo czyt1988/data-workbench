@@ -14,6 +14,7 @@
 
 PYBIND11_EMBEDDED_MODULE(da_interface, m)
 {
+    /*DADataManagerInterface*/
     pybind11::class_< DA::DADataManagerInterface >(m, "DADataManagerInterface")
         .def("addData", &DA::DADataManagerInterface::addData, pybind11::arg("data"), "Add data immediately")
         .def("addData_", &DA::DADataManagerInterface::addData_, pybind11::arg("data"), "Add data with undo/redo")
@@ -43,8 +44,30 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
             pybind11::arg("series"),
             pybind11::arg("name"));
 
+    /*DAUIInterface*/
+    pybind11::class_< DA::DAUIInterface >(m, "DAUIInterface")
+        .def(
+            "addInfoLogMessage",
+            [](DA::DAUIInterface& self, const std::string& msg) { self.addInfoLogMessage(QString::fromStdString(msg)); },
+            pybind11::arg("msg"))
+        .def(
+            "addWarningLogMessage",
+            [](DA::DAUIInterface& self, const std::string& msg) {
+                self.addWarningLogMessage(QString::fromStdString(msg));
+            },
+            pybind11::arg("msg"))
+        .def(
+            "addCriticalLogMessage",
+            [](DA::DAUIInterface& self, const std::string& msg) {
+                self.addCriticalLogMessage(QString::fromStdString(msg));
+            },
+            pybind11::arg("msg"));
+
     /* 4. DACoreInterface 补充 */
     pybind11::class_< DA::DACoreInterface >(m, "DACoreInterface")
+        .def("getUiInterface",
+             &DA::DACoreInterface::getUiInterface,
+             pybind11::return_value_policy::reference_internal)  // 返回getUiInterface
         .def("getDataManagerInterface",
              &DA::DACoreInterface::getDataManagerInterface,
              pybind11::return_value_policy::reference_internal)  // 返回DADataManagerInterface

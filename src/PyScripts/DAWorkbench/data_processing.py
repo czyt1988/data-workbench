@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 import scipy
 import pywt
-from DAWorkbench.logger import log_function_call  # type: ignore # 引入装饰器
+from DAWorkbench.DALogger import log_function_call  # type: ignore # 引入装饰器
 from loguru import logger
 
 @log_function_call
