@@ -17,10 +17,13 @@ class DAINTERFACE_API DAUIExtendInterface : public DABaseInterface
 public:
     DAUIExtendInterface(DAUIInterface* u);
     ~DAUIExtendInterface();
-    //获取DAAppUIInterface
+    // 获取DAAppUIInterface
     DAUIInterface* ui() const;
-    //发生语言变更时会调用此函数
+    // 发生语言变更时会调用此函数
     virtual void retranslateUi() = 0;
+
+private:
+    DAUIInterface* mUI { nullptr };
 };
 }  // namespace DA
 #endif  // DAUIEXTENDINTERFACE_H

@@ -2447,7 +2447,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DADockingAreaInterface</name>
     <message>
-        <location filename="../DAInterface/DADockingAreaInterface.cpp" line="+90"/>
+        <location filename="../DAInterface/DADockingAreaInterface.cpp" line="+88"/>
         <source>dock widget &quot;%1&quot; was closed and hide</source>
         <translation type="unfinished"></translation>
     </message>

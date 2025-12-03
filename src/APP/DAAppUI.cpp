@@ -7,7 +7,7 @@
 #include "DAAppCore.h"
 #include "DAAppDataManager.h"
 #include "AppMainWindow.h"
-#include "DAStatusBar.h"
+#include "DAAppStatusBar.h"
 
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
@@ -44,6 +44,11 @@ DADockingAreaInterface* DAAppUI::getDockingArea()
 DARibbonAreaInterface* DAAppUI::getRibbonArea()
 {
     return m_ribbonArea;
+}
+
+DAStatusBarInterface* DAAppUI::getStatusBar()
+{
+    return m_statusBar;
 }
 
 void DAAppUI::createUi()
@@ -100,6 +105,11 @@ DAAppRibbonArea* DAAppUI::getAppRibbonArea()
     return m_ribbonArea;
 }
 
+DAAppStatusBar* DAAppUI::getAppStatusBar()
+{
+    return m_statusBar;
+}
+
 void DAAppUI::createActions()
 {
     m_actions = new DAAppActions(this);
@@ -127,7 +137,7 @@ void DAAppUI::createRibbonArea()
 
 void DAAppUI::createStatusBar()
 {
-    QMainWindow* m = getMainWindow();
-    mStatusBar     = new DAStatusBar(m);
-    m->setStatusBar(mStatusBar);
+
+    m_statusBar = new DAAppStatusBar(this);
+    registeExtend(m_statusBar);
 }

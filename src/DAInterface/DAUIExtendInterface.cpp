@@ -6,7 +6,7 @@ namespace DA
 //===================================================
 // DAAppUIExtendInterface
 //===================================================
-DAUIExtendInterface::DAUIExtendInterface(DAUIInterface* u) : DABaseInterface(u->core(), u)
+DAUIExtendInterface::DAUIExtendInterface(DAUIInterface* u) : DABaseInterface(u->core(), u), mUI(u)
 {
 }
 
@@ -16,7 +16,8 @@ DAUIExtendInterface::~DAUIExtendInterface()
 
 DAUIInterface* DAUIExtendInterface::ui() const
 {
-    return qobject_cast< DAUIInterface* >(parent());
+    return mUI;
+    // return qobject_cast< DAUIInterface* >(parent());
 }
 
 }

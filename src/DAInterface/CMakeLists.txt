@@ -36,6 +36,7 @@ set(DA_LIB_HEADER_FILES
     DACoreInterface.h
     DADataManagerInterface.h
     DADockingAreaInterface.h
+    DAStatusBarInterface.h
     DAInterfaceAPI.h
     DAProjectInterface.h
     DARibbonAreaInterface.h
@@ -49,6 +50,7 @@ set(DA_LIB_SOURCE_FILES
     DACoreInterface.cpp
     DADataManagerInterface.cpp
     DADockingAreaInterface.cpp
+    DAStatusBarInterface.cpp
     DAProjectInterface.cpp
     DARibbonAreaInterface.cpp
     DAUIExtendInterface.cpp

@@ -14,7 +14,7 @@ class DAActionsInterface;
 class DACommandInterface;
 class DADockingAreaInterface;
 class DARibbonAreaInterface;
-
+class DAStatusBarInterface;
 /**
  * @brief 界面相关的接口
  *
@@ -74,6 +74,9 @@ public:
 
     // 获取界面的ribbon区域
     virtual DARibbonAreaInterface* getRibbonArea() = 0;
+
+    // 获取界面的StatusBar区域
+    virtual DAStatusBarInterface* getStatusBar() = 0;
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;

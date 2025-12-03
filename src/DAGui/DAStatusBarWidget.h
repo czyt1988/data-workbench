@@ -19,22 +19,25 @@ class DAGUI_API DAStatusBarWidget : public QWidget
     DA_DECLARE_PRIVATE(DAStatusBarWidget)
 public:
     explicit DAStatusBarWidget(QWidget* parent = nullptr);
-
+    ~DAStatusBarWidget();
     // 消息窗口相关方法
-    void showMessage(const QString& message, int timeout = 5000);
+    void showMessage(const QString& message, int timeout = 15000);
     void clearMessage();
-    void setMessageTimeout(int milliseconds);
-
     // 进度窗口相关方法
     void showProgressBar();
     void hideProgressBar();
-    void setProgress(int value);  // 0-100
-    void setBusy(bool busy);      // 繁忙状态
-    void resetProgress();         // 重置进度条
-
+    // 设置进度0-100
+    void setProgress(int value);
+    // 繁忙状态
+    void setBusy(bool busy);
+    // 重置进度条
+    void resetProgress();
+    // 进度文本相关方法
+    void setProgressText(const QString& text);
+    void clearProgressText();
+    QString progressText() const;
     // 获取当前状态
     bool isProgressBarVisible() const;
-    bool isBusy() const;
     QString getCurrentMessage() const;
 
 protected:

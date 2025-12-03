@@ -16,15 +16,11 @@ public:
     // 消息窗口组件
     QLabel* m_messageLabel;
     QTimer* m_messageTimer;
-    int m_messageTimeout { 5000 };
     QString m_currentMessage;
 
     // 进度窗口组件
     QProgressBar* m_progressBar;
-    QTimer* m_busyTimer;
-    bool m_isBusy { false };
-    int m_busyStep { 0 };
-
+    QLabel* m_progressTextLabel;  ///< 进度文本组件
     // 布局
     QHBoxLayout* m_layout;
 
@@ -62,16 +58,17 @@ void DAStatusBarWidget::PrivateData::setupUI(DAStatusBarWidget* par)
     m_progressBar->setMaximumWidth(200);
     m_progressBar->setTextVisible(true);
     m_progressBar->setAlignment(Qt::AlignCenter);
+    m_progressBar->setRange(0, 100);
     m_progressBar->hide();  // 默认隐藏
 
-    // 创建繁忙状态定时器
-    m_busyTimer = new QTimer(par);
-    par->connect(m_busyTimer, &QTimer::timeout, par, [ this ]() {
-        if (m_isBusy && m_progressBar->isVisible()) {
-            m_busyStep = (m_busyStep + 1) % 100;
-            m_progressBar->setValue(m_busyStep);
-        }
-    });
+    // 创建进度文本标签（放在进度条右侧）
+    m_progressTextLabel = new QLabel(par);
+    m_progressTextLabel->setMinimumWidth(80);
+    m_progressTextLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    m_progressTextLabel->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+    m_progressTextLabel->setLineWidth(1);
+    m_progressTextLabel->setMidLineWidth(0);
+    m_progressTextLabel->hide();  // 默认隐藏
 
     // 创建淡出动画
     m_fadeAnimation = new QPropertyAnimation(m_messageLabel, "windowOpacity", par);
@@ -83,6 +80,7 @@ void DAStatusBarWidget::PrivateData::setupUI(DAStatusBarWidget* par)
     // 将组件添加到布局
     m_layout->addWidget(m_messageLabel);
     m_layout->addWidget(m_progressBar, 0, Qt::AlignRight);
+    m_layout->addWidget(m_progressTextLabel, 0, Qt::AlignRight);
     m_layout->addStretch();
 
     // 设置widget
@@ -97,6 +95,10 @@ DAStatusBarWidget::DAStatusBarWidget(QWidget* parent) : QWidget(parent), DA_PIMP
 {
     d_ptr->setupUI(this);
     updateWidgetStyle();
+}
+
+DAStatusBarWidget::~DAStatusBarWidget()
+{
 }
 
 void DAStatusBarWidget::updateWidgetStyle()
@@ -169,11 +171,6 @@ void DAStatusBarWidget::clearMessage()
     }
 }
 
-void DAStatusBarWidget::setMessageTimeout(int milliseconds)
-{
-    d_ptr->m_messageTimeout = milliseconds;
-}
-
 void DAStatusBarWidget::startMessageTimer(int timeout)
 {
     d_ptr->m_messageTimer->start(timeout);
@@ -196,11 +193,10 @@ void DAStatusBarWidget::showProgressBar()
 {
     DA_D(d);
     d->m_progressBar->show();
-    d->m_isBusy   = false;
-    d->m_busyStep = 0;
 
-    if (d->m_busyTimer->isActive()) {
-        d->m_busyTimer->stop();
+    // 如果有进度文本，则显示进度文本标签
+    if (!(d->m_progressTextLabel->text().isEmpty())) {
+        d->m_progressTextLabel->show();
     }
 }
 
@@ -208,27 +204,19 @@ void DAStatusBarWidget::hideProgressBar()
 {
     DA_D(d);
     d->m_progressBar->hide();
-    d->m_isBusy = false;
-
-    if (d->m_busyTimer->isActive()) {
-        d->m_busyTimer->stop();
-    }
+    d->m_progressTextLabel->hide();  // 同时隐藏进度文本标签
 }
 
+/**
+ * @brief 默认范围0~100，如果设置超出范围值，进度会变为reset状态
+ * @param value
+ */
 void DAStatusBarWidget::setProgress(int value)
 {
     DA_D(d);
     if (!(d->m_progressBar->isVisible())) {
         showProgressBar();
     }
-
-    // 停止繁忙状态
-    if (d->m_isBusy) {
-        d->m_isBusy = false;
-        d->m_busyTimer->stop();
-        d->m_progressBar->setRange(0, 100);
-    }
-
     // 设置确定进度
     d->m_progressBar->setValue(qBound(0, value, 100));
 }
@@ -236,23 +224,13 @@ void DAStatusBarWidget::setProgress(int value)
 void DAStatusBarWidget::setBusy(bool busy)
 {
     DA_D(d);
-    d->m_isBusy = busy;
-
     if (busy) {
         if (!(d->m_progressBar->isVisible())) {
             showProgressBar();
         }
-
         // 设置为繁忙（不确定进度）模式
         d->m_progressBar->setRange(0, 0);  // 设置为0,0会显示繁忙动画（默认样式）
-
-        // 启动繁忙动画（使用自定义步进动画）
-        d->m_busyStep = 0;
-        d->m_busyTimer->start(100);  // 每100ms更新一次
     } else {
-        if (d->m_busyTimer->isActive()) {
-            d->m_busyTimer->stop();
-        }
         d->m_progressBar->setRange(0, 100);
         d->m_progressBar->setValue(0);
     }
@@ -262,21 +240,36 @@ void DAStatusBarWidget::resetProgress()
 {
     DA_D(d);
     d->m_progressBar->setValue(0);
-    d->m_isBusy = false;
+}
 
-    if (d->m_busyTimer->isActive()) {
-        d->m_busyTimer->stop();
+void DAStatusBarWidget::setProgressText(const QString& text)
+{
+    DA_D(d);
+    if (!text.isEmpty()) {
+        d->m_progressTextLabel->setText(text);
+        if (d->m_progressBar->isVisible() && !d->m_progressTextLabel->isVisible()) {
+            d->m_progressTextLabel->show();
+        }
+    } else {
+        clearProgressText();
     }
+}
+
+void DAStatusBarWidget::clearProgressText()
+{
+    DA_D(d);
+    d->m_progressTextLabel->clear();
+    d->m_progressTextLabel->hide();
+}
+
+QString DAStatusBarWidget::progressText() const
+{
+    return d_ptr->m_progressTextLabel->text();
 }
 
 bool DAStatusBarWidget::isProgressBarVisible() const
 {
     return d_ptr->m_progressBar->isVisible();
-}
-
-bool DAStatusBarWidget::isBusy() const
-{
-    return d_ptr->m_isBusy;
 }
 
 QString DAStatusBarWidget::getCurrentMessage() const

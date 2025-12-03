@@ -3,6 +3,7 @@
 #include "DADataManagerInterface.h"
 #include "DAProjectInterface.h"
 #include "DACommandInterface.h"
+#include "DAStatusBarInterface.h"
 #include "DAUIInterface.h"
 #include "DAData.h"
 #include "DADataManager.h"
@@ -44,8 +45,35 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
             pybind11::arg("series"),
             pybind11::arg("name"));
 
+    /*DAStatusBarInterface*/
+    pybind11::class_< DA::DAStatusBarInterface >(m, "DAStatusBarInterface")
+        .def(
+            "showMessage",
+            [](DA::DAStatusBarInterface& self, const std::string& message, int timeout = 15000) {
+                self.showMessage(QString::fromStdString(message), timeout);
+            },
+            pybind11::arg("message"),
+            pybind11::arg("timeout"))
+        .def("clearMessage", &DA::DAStatusBarInterface::clearMessage)
+        .def("showProgressBar", &DA::DAStatusBarInterface::showProgressBar)
+        .def("hideProgressBar", &DA::DAStatusBarInterface::hideProgressBar)
+        .def("setProgress", &DA::DAStatusBarInterface::setProgress, pybind11::arg("value"))
+        .def(
+            "setProgressText",
+            [](DA::DAStatusBarInterface& self, const std::string& text) {
+                self.setProgressText(QString::fromStdString(text));
+            },
+            pybind11::arg("text"))
+        .def("clearProgressText", &DA::DAStatusBarInterface::clearProgressText)
+        .def("setBusy", &DA::DAStatusBarInterface::setBusy, pybind11::arg("busy"))
+        .def("resetProgress", &DA::DAStatusBarInterface::resetProgress)
+        .def("isProgressBarVisible", &DA::DAStatusBarInterface::isProgressBarVisible);
+
     /*DAUIInterface*/
     pybind11::class_< DA::DAUIInterface >(m, "DAUIInterface")
+        .def("getStatusBar",
+             &DA::DAUIInterface::getStatusBar,
+             pybind11::return_value_policy::reference_internal)  // 返回DAStatusBarInterface
         .def(
             "addInfoLogMessage",
             [](DA::DAUIInterface& self, const std::string& msg) { self.addInfoLogMessage(QString::fromStdString(msg)); },

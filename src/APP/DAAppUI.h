@@ -8,7 +8,7 @@ class DAAppCommand;
 class DAAppActions;
 class DAAppDockingArea;
 class DAAppRibbonArea;
-class DAStatusBar;
+class DAAppStatusBar;
 /**
  * @brief 总体界面接口，负责生成DAAppDockingArea和DAAppRibbonArea
  */
@@ -26,6 +26,9 @@ public:
 
     // 获取界面的ribbon区域
     virtual DARibbonAreaInterface* getRibbonArea() override;
+
+    // 获取界面的StatusBar区域
+    virtual DAStatusBarInterface* getStatusBar() override;
 
     // 添加信息在程序的日志窗口里显示
     virtual void addInfoLogMessage(const QString& msg) override;
@@ -50,6 +53,8 @@ public:
     DAAppDockingArea* getAppDockingArea();
     // 获取ribbon
     DAAppRibbonArea* getAppRibbonArea();
+    // 获取StatusBar
+    DAAppStatusBar* getAppStatusBar();
 
 protected:
     void createActions();
@@ -63,7 +68,7 @@ public:
     DAAppCommand* m_cmd;
     DAAppDockingArea* m_dockingArea;
     DAAppRibbonArea* m_ribbonArea;
-    DAStatusBar* mStatusBar;
+    DAAppStatusBar* m_statusBar;
 };
 }  // namespace DA
 

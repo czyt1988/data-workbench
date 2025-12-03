@@ -75,14 +75,14 @@
 <context>
     <name>DA::AppMainWindow</name>
     <message>
-        <location filename="../APP/AppMainWindow.cpp" line="+79"/>
+        <location filename="../APP/AppMainWindow.cpp" line="+80"/>
         <source>Restore UI State</source>
         <translation>加载界面状态信息</translation>
     </message>
     <message>
-        <location line="+28"/>
+        <location line="+29"/>
         <source>LanguageChange</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+19"/>
@@ -110,7 +110,7 @@
         <translation>无法移除ui状态文件%1</translation>
     </message>
     <message>
-        <location line="+40"/>
+        <location line="+44"/>
         <source>untitle</source>
         <translation>未命名</translation>
     </message>
@@ -131,7 +131,7 @@
         <translation>拓扑执行失败</translation>
     </message>
     <message>
-        <location line="+141"/>
+        <location line="+150"/>
         <source>restore UI state error:%1</source>
         <translation>恢复ui状态发生错误：%1</translation>
     </message>
@@ -536,7 +536,7 @@ Column</source>
         <translation>删除数据中的重复记录</translation>
     </message>
     <message>
-        <location line="+299"/>
+        <location line="+1"/>
         <source>n std 
 filter outlier</source>
         <translation>过滤
@@ -823,7 +823,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+832"/>
+        <location filename="../APP/DAAppController.cpp" line="+841"/>
         <location line="+49"/>
         <source>project file(*.%1)</source>
         <translation>工程文件(*.%1)</translation>
@@ -845,7 +845,7 @@ Table Area</source>
         <translation>加载工程文件“%1”失败</translation>
     </message>
     <message>
-        <location line="-415"/>
+        <location line="-424"/>
         <location line="+22"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
@@ -873,12 +873,12 @@ Table Area</source>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+389"/>
+        <location line="+398"/>
         <source>Project saved successfully,path is %1</source>
         <translation>工程保存成功，路径位于:%1</translation>
     </message>
     <message>
-        <location line="-433"/>
+        <location line="-442"/>
         <source>Project Files (*.%1)</source>
         <translation>工程文件(*.%1)</translation>
     </message>
@@ -888,7 +888,7 @@ Table Area</source>
         <translation>请选中数据操作窗口</translation>
     </message>
     <message>
-        <location line="+387"/>
+        <location line="+396"/>
         <source>Project load successfully,path is %1</source>
         <translation>工程加载成功，路径为：%1</translation>
     </message>
@@ -955,7 +955,7 @@ Table Area</source>
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
     <message>
-        <location line="+373"/>
+        <location line="+369"/>
         <source>%1_Describe</source>
         <translation>%1_Describe</translation>
     </message>
@@ -988,7 +988,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppCore</name>
     <message>
-        <location filename="../APP/DAAppCore.cpp" line="+110"/>
+        <location filename="../APP/DAAppCore.cpp" line="+111"/>
         <source>Python interpreter path is %1</source>
         <translation>Python环境路径为%1</translation>
     </message>
@@ -1012,25 +1012,22 @@ Table Area</source>
     <name>DA::DAAppDataManager</name>
     <message>
         <location filename="../APP/DAAppDataManager.cpp" line="+31"/>
-        <location line="+38"/>
+        <location line="+23"/>
         <source>begin import file:%1</source>
         <translation>开始导入文件“%1”</translation>
     </message>
     <message>
-        <location line="-35"/>
-        <location line="+38"/>
+        <location line="+3"/>
         <source>file:%1,conver to dataframe</source>
         <translation>文件“%1”转换为dataframe</translation>
     </message>
     <message>
-        <location line="-34"/>
-        <location line="+38"/>
+        <location line="+4"/>
         <source>The file &apos;%1&apos; has been successfully imported, but no data can be read from the file</source>
         <translation>导入文件&apos;%1&apos;成功，但无法从文件中读取到数据</translation>
     </message>
     <message>
-        <location line="-26"/>
-        <location line="+37"/>
+        <location line="+11"/>
         <source>can not import file:%1</source>
         <translation>无法导入文件“%1”</translation>
     </message>
@@ -1081,7 +1078,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppPluginManager</name>
     <message>
-        <location filename="../APP/DAAppPluginManager.cpp" line="+68"/>
+        <location filename="../APP/DAAppPluginManager.cpp" line="+60"/>
         <source>succeed load plugin %1</source>
         <translation>成功加载插件“%1”</translation>
     </message>
@@ -1788,7 +1785,7 @@ Table Area</source>
 <context>
     <name>DA::DAChartCurveItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="+138"/>
+        <location filename="../DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="+142"/>
         <source>Lines</source>
         <translation>折线</translation>
     </message>
@@ -1897,7 +1894,7 @@ Table Area</source>
 <context>
     <name>DA::DAChartManageWidget</name>
     <message>
-        <location filename="../DAGui/DAChartManageWidget.cpp" line="+144"/>
+        <location filename="../DAGui/DAChartManageWidget.cpp" line="+125"/>
         <source>get figure create signal,but can not find figure index</source>
         <translation>获取了绘图创建的信号，但无法找到绘图的索引</translation>
     </message>
@@ -1915,12 +1912,7 @@ Table Area</source>
         <translation>图-%1</translation>
     </message>
     <message>
-        <location line="+163"/>
-        <source>chart operate widget&apos;s tab changed,but can not find figure</source>
-        <translation>绘图操作窗口的标签改变信号中，无法通过标签索引找到对应的绘图</translation>
-    </message>
-    <message>
-        <location line="+22"/>
+        <location line="+186"/>
         <source>question</source>
         <translation>疑问</translation>
     </message>
@@ -1931,9 +1923,42 @@ Table Area</source>
     </message>
 </context>
 <context>
+    <name>DA::DAChartSettingWidget</name>
+    <message>
+        <location filename="../DAGui/DAChartSettingWidget.cpp" line="+179"/>
+        <source>Chart Area</source>
+        <translation>图表区</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Canvas Area</source>
+        <translation>绘图区</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Y Left Scale</source>
+        <translation>左Y轴</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>X Bottom Scale</source>
+        <translation>下X轴</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Y Right Scale</source>
+        <translation>右Y轴</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>X Top Scale</source>
+        <translation>上X轴</translation>
+    </message>
+</context>
+<context>
     <name>DA::DAChartSpectrogramItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartSpectrogramItemSettingWidget.cpp" line="+93"/>
+        <location filename="../DAGui/ChartSetting/DAChartSpectrogramItemSettingWidget.cpp" line="+86"/>
         <source>Image Mode</source>
         <translation>云图模式</translation>
     </message>
@@ -2024,19 +2049,6 @@ Table Area</source>
         <location line="+5"/>
         <source>Hexagon</source>
         <translation>六角形</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DAChartWidget</name>
-    <message>
-        <location filename="../DAFigure/DAChartWidget.cpp" line="+1035"/>
-        <source>Before zoom in, the chart must setup a zoomer</source>
-        <translation>在放大图表之前需要先建立缩放器</translation>
-    </message>
-    <message>
-        <location line="+29"/>
-        <source>Before zoom out, the chart must setup a zoomer</source>
-        <translation>在缩小图表之前需要先建立缩放器</translation>
     </message>
 </context>
 <context>
@@ -2555,7 +2567,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DADockingAreaInterface</name>
     <message>
-        <location filename="../DAInterface/DADockingAreaInterface.cpp" line="+90"/>
+        <location filename="../DAInterface/DADockingAreaInterface.cpp" line="+88"/>
         <source>dock widget &quot;%1&quot; was closed and hide</source>
         <translation>停靠窗口“%1”隐藏并关闭</translation>
     </message>
@@ -2576,35 +2588,32 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAFigureTreeModel</name>
     <message>
-        <location filename="../DAFigure/Models/DAFigureTreeModel.cpp" line="+437"/>
-        <source>receive legend data changed signal,but can not cast sender to qwt plot</source>
-        <translation>接收到legend data changed信号，但无法把发送方转换为qwt plot</translation>
+        <location filename="../DAFigure/Models/DAFigureTreeModel.cpp" line="+90"/>
+        <source>element</source>
+        <translation>绘图元素</translation>
     </message>
     <message>
-        <location line="+5"/>
-        <source>can not conver info to qwt plot item</source>
-        <translation>无法把信息转换为qwt plot item</translation>
-    </message>
-    <message>
-        <location line="+31"/>
-        <source>Unable to find the tree node corresponding to the chart widget</source>
-        <translation>无法找到绘图窗口对应的树形节点</translation>
-    </message>
-    <message>
-        <location line="-13"/>
-        <location line="+39"/>
-        <source>name</source>
-        <translation>名称</translation>
-    </message>
-    <message>
-        <location line="-38"/>
-        <location line="+39"/>
+        <location line="+2"/>
         <source>property</source>
         <translation>属性</translation>
     </message>
     <message>
-        <location line="-38"/>
-        <location line="+39"/>
+        <location line="+24"/>
+        <source>chart</source>
+        <translation>绘图</translation>
+    </message>
+    <message>
+        <location line="+50"/>
+        <source>Axis</source>
+        <translation>坐标轴</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>plot item</source>
+        <translation>绘图元素</translation>
+    </message>
+    <message>
+        <location line="-95"/>
         <source>visible</source>
         <translation>可见性</translation>
     </message>
@@ -2729,12 +2738,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>没有插件忽略文件，将自动生成%1</translation>
     </message>
     <message>
-        <location line="+70"/>
+        <location line="+64"/>
         <source>plugin dir is:%1</source>
         <translation>插件路径:%1</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+21"/>
         <source>ignore plugin %1</source>
         <translation>忽略插件%1</translation>
     </message>
@@ -2749,7 +2758,22 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>无法加载插件:%1</translation>
     </message>
     <message>
-        <location line="+76"/>
+        <location line="+60"/>
+        <source>Plugin %1 refused to finalize, unload cancelled.</source>
+        <translation>插件:%1 拒绝完成，卸载已取消。</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Failed to unload plugin library for %1.</source>
+        <translation>无法卸载插件%1。</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Plugin %1 not found for unloading.</source>
+        <translation>未能找到插件%1。</translation>
+    </message>
+    <message>
+        <location line="+40"/>
         <source>Plugin Manager Info:is loaded=%1,plugin counts=%2</source>
         <translation>Plugin Manager Info:加载情况=%1,插件数量=%2</translation>
     </message>
@@ -2757,7 +2781,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAPluginManagerDialog</name>
     <message>
-        <location filename="../APP/DAPluginManagerDialog.cpp" line="+43"/>
+        <location filename="../APP/DAPluginManagerDialog.cpp" line="+44"/>
         <source>name</source>
         <translation>名称</translation>
     </message>
@@ -2777,7 +2801,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>描述</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+5"/>
         <source>node plugin</source>
         <translation>节点插件</translation>
     </message>
@@ -3454,7 +3478,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-2174"/>
+        <location filename="../APP/DAAppController.cpp" line="-2178"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -3884,6 +3908,14 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
 </context>
 <context>
+    <name>DAChartCanvasSettingWidget</name>
+    <message>
+        <location filename="../DAGui/ChartSetting/DAChartCanvasSettingWidget.ui" line="+16"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DAChartCommonItemsSettingWidget</name>
     <message>
         <location filename="../DAGui/ChartSetting/DAChartCommonItemsSettingWidget.ui" line="+14"/>
@@ -4268,44 +4300,24 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartPlotSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="+20"/>
         <source>Plot Setting</source>
         <translation>绘图设置</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+21"/>
         <source>Title&amp;&amp;Footer</source>
         <translation>标题和脚注</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+13"/>
         <source>Title</source>
         <translation>标题</translation>
     </message>
     <message>
-        <location line="+26"/>
+        <location line="-7"/>
         <source>Footer</source>
         <translation>脚注</translation>
-    </message>
-    <message>
-        <location line="+29"/>
-        <source>X Bottom</source>
-        <translation>X轴底部坐标</translation>
-    </message>
-    <message>
-        <location line="+30"/>
-        <source>X Top</source>
-        <translation>X轴顶部坐标</translation>
-    </message>
-    <message>
-        <location line="+33"/>
-        <source>Y Left</source>
-        <translation>Y轴左坐标</translation>
-    </message>
-    <message>
-        <location line="+30"/>
-        <source>Y Right</source>
-        <translation>Y轴右坐标</translation>
     </message>
 </context>
 <context>
@@ -4314,21 +4326,6 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <location filename="../DAGui/DAChartSettingWidget.ui" line="+14"/>
         <source>Chart Setting</source>
         <translation>绘图设置</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Figure</source>
-        <translation>绘图窗口</translation>
-    </message>
-    <message>
-        <location line="+32"/>
-        <source>Chart</source>
-        <translation>图表</translation>
-    </message>
-    <message>
-        <location line="+29"/>
-        <source>item</source>
-        <translation>图元</translation>
     </message>
 </context>
 <context>
@@ -4379,7 +4376,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartSymbolEditWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartSymbolEditWidget.ui" line="+20"/>
+        <location filename="../DAGui/ChartSetting/DAChartSymbolEditWidget.ui" line="+26"/>
         <source>Chart Symbol Edit</source>
         <translation>符号编辑</translation>
     </message>
@@ -5297,7 +5294,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+60"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+57"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
@@ -5305,9 +5302,44 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAFigureWidgetSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAFigureWidgetSettingWidget.ui" line="+16"/>
+        <location filename="../DAGui/ChartSetting/DAFigureWidgetSettingWidget.ui" line="+14"/>
         <source>Form</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source>Size</source>
+        <translation>尺寸</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>max width</source>
+        <translation>最大宽度</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>min width</source>
+        <translation>最小宽度</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>min height</source>
+        <translation>最小高度</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>max height</source>
+        <translation>最大高度</translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>Color</source>
+        <translation>颜色</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>background color</source>
+        <translation>背景颜色</translation>
     </message>
 </context>
 <context>
@@ -5896,7 +5928,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>使用utf-8打开文件“%1”错误，尝试使用ansi编码</translation>
     </message>
     <message>
-        <location filename="../DAPyBindQt/pandas/DAPySeries.cpp" line="+186"/>
+        <location filename="../DAPyBindQt/pandas/DAPySeries.cpp" line="+312"/>
         <source>DAPySeries  get python object type is not pandas.Series</source>
         <translation>python object类型不是pandas.Series</translation>
     </message>
@@ -6078,16 +6110,26 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
     <message>
         <location line="+7"/>
-        <source>Failed to create plugin instance %1 (Reason: %2)</source>
-        <translation>创建插件“%1”实例失败，原因为：%2</translation>
+        <source>Failed to create plugin instance from %1. Error: %2</source>
+        <translation>无法从%1中创建插件实例，错误原因：%2</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+10"/>
         <source>Failed to cast plugin to DA plugin %1</source>
         <translation>无法把加载的插件“%1”转换为DA系列插件</translation>
     </message>
     <message>
+        <location line="+13"/>
+        <source>Plugin from %1 implements a DA interface but qobject_cast failed. This may indicate a binary compatibility issue (compiler/mismatch).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location line="+5"/>
+        <source>The library %1 does not appear to be a valid DA plugin. It does not implement the required interface.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
         <source>loaded plugin:%1</source>
         <translation>加载插件“%1”</translation>
     </message>
@@ -6238,17 +6280,17 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>创建绘图</translation>
     </message>
     <message>
-        <location line="+41"/>
+        <location line="+43"/>
         <source>remove chart</source>
         <translation>移除绘图</translation>
     </message>
     <message>
-        <location line="+41"/>
+        <location line="+40"/>
         <source>set figure widget size</source>
         <translation>设置绘图中窗体的尺寸</translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+24"/>
         <source>add item in chart</source>
         <translation>添加绘图元素</translation>
     </message>
@@ -6359,7 +6401,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>转换列为索引</translation>
     </message>
     <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="+191"/>
+        <location filename="../DAGui/DAXmlHelper.cpp" line="+194"/>
         <location line="+119"/>
         <source>load nodes occurce error</source>
         <translation>加载节点发生错误</translation>
@@ -6538,7 +6580,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>节点%1无法找到名字为%2的连接点</translation>
     </message>
     <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="+1222"/>
+        <location filename="../DAGui/DAXmlHelper.cpp" line="+1267"/>
         <source>The attribute %1=%2 under the tag %3 cannot be converted to double </source>
         <translation>%3标签属性%1=%2无法转换为double类型 </translation>
     </message>
@@ -6548,7 +6590,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>内核初始化失败</translation>
     </message>
     <message>
-        <location filename="../DAFigure/Models/DAFigureTreeModel.cpp" line="-347"/>
+        <location filename="../DAFigure/DAChartUtil.cpp" line="+68"/>
         <source>untitle</source>
         <translation>未命名</translation>
     </message>
@@ -6648,12 +6690,17 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>未知-%1</translation>
     </message>
     <message>
-        <location line="+60"/>
+        <location line="-75"/>
         <source>chart-%1</source>
         <translation>图-%1</translation>
     </message>
     <message>
-        <location line="-10"/>
+        <location line="-13"/>
+        <source>unknow chart</source>
+        <translation>未知绘图</translation>
+    </message>
+    <message>
+        <location line="+8"/>
         <location line="+7"/>
         <source>untitle-chart</source>
         <translation>图-未命名</translation>
@@ -6708,13 +6755,13 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>无法导入da_dataframe模块</translation>
     </message>
     <message>
-        <location filename="../DAPyScripts/DAPyScriptsIO.cpp" line="+77"/>
+        <location filename="../DAPyScripts/DAPyScriptsIO.cpp" line="+65"/>
         <source>can not import da_io module</source>
         <translation>无法导入da_io模块</translation>
     </message>
     <message>
         <location filename="../DAPyScripts/DAPyScriptsDataFrame.cpp" line="+8"/>
-        <location filename="../DAPyScripts/DAPyScriptsIO.cpp" line="+8"/>
+        <location filename="../DAPyScripts/DAPyScriptsIO.cpp" line="+9"/>
         <source>can not import DAWorkBench.io</source>
         <translation>无法导入DAWorkBench.io模块</translation>
     </message>
@@ -6746,80 +6793,80 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location filename="../DAUtils/DATextReadWriter.cpp" line="-34"/>
         <source>No error occurred</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+2"/>
         <source>An error occurred when reading from the file</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+2"/>
         <source>An error occurred when writing to the file</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+2"/>
         <source>A fatal error occurred</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Out of resources (eg, too many open files, out of memory, etc)</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+2"/>
         <source>The file could not be opened</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+2"/>
         <source>The operation was aborted</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+2"/>
         <source>A timeout occurred</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+2"/>
         <source>An unspecified error occurred</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+2"/>
         <source>The file could not be removed</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+2"/>
         <source>The file could not be renamed</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+2"/>
         <source>The position in the file could not be changed</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+2"/>
         <source>The file could not be resized</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+2"/>
         <source>The file could not be accessed</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+2"/>
         <source>The file could not be copied</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="-2443"/>
+        <location filename="../DAGui/DAXmlHelper.cpp" line="-2488"/>
         <source>save workflow extern info cost: %1 ms</source>
         <translation></translation>
     </message>
@@ -6881,62 +6928,112 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location filename="../DAGui/DAZipArchive.cpp" line="-659"/>
         <source>No error</source>
-        <translation type="unfinished"></translation>
+        <translation>无错误</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>End of list of file</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+2"/>
         <source>File I/O error: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>文件I/O错误：%1</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Invalid parameter</source>
-        <translation type="unfinished"></translation>
+        <translation>错误的参数</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Bad zip file</source>
-        <translation type="unfinished"></translation>
+        <translation>异常的zip文件</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Internal error</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+2"/>
         <source>CRC error</source>
-        <translation type="unfinished"></translation>
+        <translation>CRC错误</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Open error</source>
-        <translation type="unfinished"></translation>
+        <translation>打开错误</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Unknown error (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>未知错误（%1）</translation>
     </message>
     <message>
         <location line="+380"/>
         <source>Failed to replace archive file</source>
-        <translation type="unfinished"></translation>
+        <translation>替换存档错误</translation>
     </message>
     <message>
         <location line="+202"/>
         <source>Failed to open archive</source>
-        <translation type="unfinished"></translation>
+        <translation>打开存档错误</translation>
     </message>
     <message>
         <location filename="../DAGui/DAZipArchiveTask_Xml.cpp" line="+56"/>
         <source>can not create archive at &quot;%1&quot;,because %2</source>
-        <translation type="unfinished"></translation>
+        <translation>无法在“%1”中创建存档，原因为：%2</translation>
+    </message>
+    <message>
+        <location filename="../DAFigure/Models/DAStandardItemPlot.cpp" line="+50"/>
+        <source>parasite-%1</source>
+        <translation>寄生绘图-%1</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>plot</source>
+        <translation>绘图</translation>
+    </message>
+    <message>
+        <location line="+28"/>
+        <source>Parasite Plot</source>
+        <translation>寄生绘图</translation>
+    </message>
+    <message>
+        <location filename="../DAFigure/Models/DAStandardItemPlotScale.cpp" line="+137"/>
+        <source>DateTime Scale</source>
+        <translation>时间轴</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Log Scale</source>
+        <translation>对数轴</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Y Left</source>
+        <translation>左Y轴</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Y Right</source>
+        <translation>右Y轴</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>X Bottom</source>
+        <translation>下X轴</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>X Top</source>
+        <translation>上X轴</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Unknow</source>
+        <translation>未知</translation>
     </message>
 </context>
 <context>

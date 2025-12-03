@@ -82,7 +82,7 @@
     <message>
         <location line="+29"/>
         <source>LanguageChange</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+19"/>
@@ -1927,32 +1927,32 @@ Table Area</source>
     <message>
         <location filename="../DAGui/DAChartSettingWidget.cpp" line="+179"/>
         <source>Chart Area</source>
-        <translation type="unfinished"></translation>
+        <translation>图表区</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Canvas Area</source>
-        <translation type="unfinished"></translation>
+        <translation>绘图区</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Y Left Scale</source>
-        <translation type="unfinished"></translation>
+        <translation>左Y轴</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>X Bottom Scale</source>
-        <translation type="unfinished"></translation>
+        <translation>下X轴</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Y Right Scale</source>
-        <translation type="unfinished"></translation>
+        <translation>右Y轴</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>X Top Scale</source>
-        <translation type="unfinished"></translation>
+        <translation>上X轴</translation>
     </message>
 </context>
 <context>
@@ -2567,7 +2567,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DADockingAreaInterface</name>
     <message>
-        <location filename="../DAInterface/DADockingAreaInterface.cpp" line="+90"/>
+        <location filename="../DAInterface/DADockingAreaInterface.cpp" line="+88"/>
         <source>dock widget &quot;%1&quot; was closed and hide</source>
         <translation>停靠窗口“%1”隐藏并关闭</translation>
     </message>
@@ -2590,7 +2590,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location filename="../DAFigure/Models/DAFigureTreeModel.cpp" line="+90"/>
         <source>element</source>
-        <translation type="unfinished"></translation>
+        <translation>绘图元素</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -2600,17 +2600,17 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+24"/>
         <source>chart</source>
-        <translation type="unfinished"></translation>
+        <translation>绘图</translation>
     </message>
     <message>
         <location line="+50"/>
         <source>Axis</source>
-        <translation type="unfinished">坐标系</translation>
+        <translation>坐标轴</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>plot item</source>
-        <translation type="unfinished"></translation>
+        <translation>绘图元素</translation>
     </message>
     <message>
         <location line="-95"/>
@@ -2760,17 +2760,17 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+60"/>
         <source>Plugin %1 refused to finalize, unload cancelled.</source>
-        <translation type="unfinished"></translation>
+        <translation>插件:%1 拒绝完成，卸载已取消。</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Failed to unload plugin library for %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>无法卸载插件%1。</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Plugin %1 not found for unloading.</source>
-        <translation type="unfinished"></translation>
+        <translation>未能找到插件%1。</translation>
     </message>
     <message>
         <location line="+40"/>
@@ -5309,37 +5309,37 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+21"/>
         <source>Size</source>
-        <translation type="unfinished">大小</translation>
+        <translation>尺寸</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>max width</source>
-        <translation type="unfinished"></translation>
+        <translation>最大宽度</translation>
     </message>
     <message>
         <location line="+14"/>
         <source>min width</source>
-        <translation type="unfinished"></translation>
+        <translation>最小宽度</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>min height</source>
-        <translation type="unfinished"></translation>
+        <translation>最小高度</translation>
     </message>
     <message>
         <location line="+14"/>
         <source>max height</source>
-        <translation type="unfinished"></translation>
+        <translation>最大高度</translation>
     </message>
     <message>
         <location line="+24"/>
         <source>Color</source>
-        <translation type="unfinished"></translation>
+        <translation>颜色</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>background color</source>
-        <translation type="unfinished"></translation>
+        <translation>背景颜色</translation>
     </message>
 </context>
 <context>
@@ -6111,7 +6111,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+7"/>
         <source>Failed to create plugin instance from %1. Error: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>无法从%1中创建插件实例，错误原因：%2</translation>
     </message>
     <message>
         <location line="+10"/>
@@ -6697,7 +6697,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="-13"/>
         <source>unknow chart</source>
-        <translation type="unfinished"></translation>
+        <translation>未知绘图</translation>
     </message>
     <message>
         <location line="+8"/>
@@ -6793,77 +6793,77 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location filename="../DAUtils/DATextReadWriter.cpp" line="-34"/>
         <source>No error occurred</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+2"/>
         <source>An error occurred when reading from the file</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+2"/>
         <source>An error occurred when writing to the file</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+2"/>
         <source>A fatal error occurred</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Out of resources (eg, too many open files, out of memory, etc)</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+2"/>
         <source>The file could not be opened</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+2"/>
         <source>The operation was aborted</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+2"/>
         <source>A timeout occurred</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+2"/>
         <source>An unspecified error occurred</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+2"/>
         <source>The file could not be removed</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+2"/>
         <source>The file could not be renamed</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+2"/>
         <source>The position in the file could not be changed</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+2"/>
         <source>The file could not be resized</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+2"/>
         <source>The file could not be accessed</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+2"/>
         <source>The file could not be copied</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../DAGui/DAXmlHelper.cpp" line="-2488"/>
@@ -6928,112 +6928,112 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location filename="../DAGui/DAZipArchive.cpp" line="-659"/>
         <source>No error</source>
-        <translation type="unfinished"></translation>
+        <translation>无错误</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>End of list of file</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+2"/>
         <source>File I/O error: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>文件I/O错误：%1</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Invalid parameter</source>
-        <translation type="unfinished"></translation>
+        <translation>错误的参数</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Bad zip file</source>
-        <translation type="unfinished"></translation>
+        <translation>异常的zip文件</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Internal error</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+2"/>
         <source>CRC error</source>
-        <translation type="unfinished"></translation>
+        <translation>CRC错误</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Open error</source>
-        <translation type="unfinished"></translation>
+        <translation>打开错误</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Unknown error (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>未知错误（%1）</translation>
     </message>
     <message>
         <location line="+380"/>
         <source>Failed to replace archive file</source>
-        <translation type="unfinished"></translation>
+        <translation>替换存档错误</translation>
     </message>
     <message>
         <location line="+202"/>
         <source>Failed to open archive</source>
-        <translation type="unfinished"></translation>
+        <translation>打开存档错误</translation>
     </message>
     <message>
         <location filename="../DAGui/DAZipArchiveTask_Xml.cpp" line="+56"/>
         <source>can not create archive at &quot;%1&quot;,because %2</source>
-        <translation type="unfinished"></translation>
+        <translation>无法在“%1”中创建存档，原因为：%2</translation>
     </message>
     <message>
         <location filename="../DAFigure/Models/DAStandardItemPlot.cpp" line="+50"/>
         <source>parasite-%1</source>
-        <translation type="unfinished"></translation>
+        <translation>寄生绘图-%1</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>plot</source>
-        <translation type="unfinished"></translation>
+        <translation>绘图</translation>
     </message>
     <message>
         <location line="+28"/>
         <source>Parasite Plot</source>
-        <translation type="unfinished"></translation>
+        <translation>寄生绘图</translation>
     </message>
     <message>
         <location filename="../DAFigure/Models/DAStandardItemPlotScale.cpp" line="+137"/>
         <source>DateTime Scale</source>
-        <translation type="unfinished"></translation>
+        <translation>时间轴</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Log Scale</source>
-        <translation type="unfinished"></translation>
+        <translation>对数轴</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Y Left</source>
-        <translation type="unfinished">Y轴左坐标</translation>
+        <translation>左Y轴</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Y Right</source>
-        <translation type="unfinished">Y轴右坐标</translation>
+        <translation>右Y轴</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>X Bottom</source>
-        <translation type="unfinished">X轴底部坐标</translation>
+        <translation>下X轴</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>X Top</source>
-        <translation type="unfinished">X轴顶部坐标</translation>
+        <translation>上X轴</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Unknow</source>
-        <translation type="unfinished"></translation>
+        <translation>未知</translation>
     </message>
 </context>
 <context>
