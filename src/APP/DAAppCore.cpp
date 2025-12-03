@@ -50,6 +50,8 @@ bool DAAppCore::initialized()
     qDebug() << "begin app core initialized";
     initializePythonEnv();
     qDebug() << "core have been initialized Python Env";
+    m_pythonHandler = new DAPythonSignalHandler(this);
+
 #endif
     // 初始化数据
     mDataManager = new DAAppDataManager(this, this);
@@ -96,6 +98,12 @@ DADataManagerInterface* DAAppCore::getDataManagerInterface() const
     return mDataManager;
 }
 
+#if DA_ENABLE_PYTHON
+DAPythonSignalHandler* DAAppCore::getPythonSignalHandler() const
+{
+    return m_pythonHandler;
+}
+
 /**
  * @brief 初始化python环境
  * @return
@@ -103,7 +111,6 @@ DADataManagerInterface* DAAppCore::getDataManagerInterface() const
 bool DAAppCore::initializePythonEnv()
 {
     mIsPythonInterpreterInitialized = false;
-#if DA_ENABLE_PYTHON
     try {
         DA::DAPyInterpreter& python = DA::DAPyInterpreter::getInstance();
         // 初始化python环境
@@ -130,10 +137,10 @@ bool DAAppCore::initializePythonEnv()
         return false;
     }
     mIsPythonInterpreterInitialized = true;
-#endif
     return true;
 }
 
+#endif
 /**
  * @brief 获取DAAppUI，省去qobject_cast
  * @return
@@ -168,8 +175,6 @@ DAAppCommand* DAAppCore::getAppCmd()
 {
     return mAppCmd;
 }
-
-
 
 DACoreInterface* getAppCorePtr()
 {

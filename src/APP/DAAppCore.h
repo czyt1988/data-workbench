@@ -31,10 +31,13 @@ public:
     bool isPythonInterpreterInitialized() const;
     // 获取数据管理接口
     DADataManagerInterface* getDataManagerInterface() const override;
-
-public:  // python相关
+#if DA_ENABLE_PYTHON
+    // python相关
+    // python脚本信号投递器
+    virtual DAPythonSignalHandler* getPythonSignalHandler() const;
     // 初始化python环境
     bool initializePythonEnv();
+#endif
 
 public:
     // 获取DAAppUI，省去qobject_cast
@@ -47,11 +50,14 @@ public:
     DAAppCommand* getAppCmd();
 
 private:
-    DAAppCommand* mAppCmd;
-    DAAppUI* mAppUI;
-    DAAppDataManager* mDataManager;
+    DAAppCommand* mAppCmd { nullptr };
+    DAAppUI* mAppUI { nullptr };
+    DAAppDataManager* mDataManager { nullptr };
     bool mIsPythonInterpreterInitialized;
-    DAAppProject* mProject;
+    DAAppProject* mProject { nullptr };
+#if DA_ENABLE_PYTHON
+    DAPythonSignalHandler* m_pythonHandler { nullptr };
+#endif
 };
 
 DACoreInterface* getAppCorePtr();

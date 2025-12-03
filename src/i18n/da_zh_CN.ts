@@ -988,7 +988,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppCore</name>
     <message>
-        <location filename="../APP/DAAppCore.cpp" line="+111"/>
+        <location filename="../APP/DAAppCore.cpp" line="+118"/>
         <source>Python interpreter path is %1</source>
         <translation>Python环境路径为%1</translation>
     </message>

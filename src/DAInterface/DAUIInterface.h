@@ -64,6 +64,9 @@ public:
     // 添加信息在程序的日志窗口里显示
     virtual void addCriticalLogMessage(const QString& msg) = 0;
 
+    // QApplication::processEvents();的wrapper
+    void processEvents() const;
+
 public:
     // 下面是默认的extend
     // 获取主程序,此函数和getRibbonArea()->app()是一样的返回结果

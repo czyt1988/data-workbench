@@ -4,6 +4,9 @@
 #include <QObject>
 #include <QDir>
 #include <QTemporaryDir>
+#if DA_ENABLE_PYTHON
+#include "DAPythonSignalHandler.h"
+#endif
 
 class SARibbonMainWindow;
 
@@ -33,7 +36,12 @@ public:
     virtual DAProjectInterface* getProjectInterface() const = 0;
     // 获取数据管理接口
     virtual DADataManagerInterface* getDataManagerInterface() const = 0;
-
+#if DA_ENABLE_PYTHON
+    // 获取python信号投递器，通过它可以把python脚本信号里的函数投递到主线程执行
+    virtual DAPythonSignalHandler* getPythonSignalHandler() const = 0;
+    // 获取python 脚本路径
+    static QString getPythonScriptsPath();
+#endif
 public:
     // 工程是否dirty的操作
     bool isProjectDirty() const;
@@ -41,8 +49,6 @@ public:
 
     // 工程的临时目录
     QDir getTempDir() const;
-    // 获取python 脚本路径
-    static QString getPythonScriptsPath();
 
 public:
     // 调用此函数，创建DAAppRibbonAreaInterface，此函数的调用应该发生在SARibbonMainWindow的构造过程

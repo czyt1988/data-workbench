@@ -7,6 +7,7 @@
 #include "DAUIInterface.h"
 #include "DAData.h"
 #include "DADataManager.h"
+#include "DAPythonSignalHandler.h"
 #if DA_ENABLE_PYTHON
 #include "DAPybind11InQt.h"
 #include "pandas/DAPyDataFrame.h"
@@ -15,6 +16,27 @@
 
 PYBIND11_EMBEDDED_MODULE(da_interface, m)
 {
+    // 绑定 DAPythonSignalHandler 类型
+    pybind11::class_< DA::DAPythonSignalHandler >(m, "DAPythonSignalHandler")
+        .def(pybind11::init<>())  // 可以构造，但通常不会在Python中构造
+        .def(
+            "callInMainThread",
+            [](DA::DAPythonSignalHandler& self, pybind11::function pyFunc) {
+                // 将Python函数包装成std::function
+                self.callInMainThread([ pyFunc ]() {
+                    try {
+                        pybind11::gil_scoped_acquire acquire;  // 获取GIL
+                        pyFunc();                              // 调用Python函数
+                    } catch (const pybind11::error_already_set& e) {
+                        qCritical() << "Python error in main thread callback:" << e.what();
+                    } catch (const std::exception& e) {
+                        qCritical() << "C++ error in main thread callback:" << e.what();
+                    }
+                });
+            },
+            pybind11::arg("func"),
+            "Schedule a Python function to be executed in the Qt main thread");
+
     /*DADataManagerInterface*/
     pybind11::class_< DA::DADataManagerInterface >(m, "DADataManagerInterface")
         .def("addData", &DA::DADataManagerInterface::addData, pybind11::arg("data"), "Add data immediately")
@@ -53,7 +75,7 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
                 self.showMessage(QString::fromStdString(message), timeout);
             },
             pybind11::arg("message"),
-            pybind11::arg("timeout"))
+            pybind11::arg("timeout") = 15000)
         .def("clearMessage", &DA::DAStatusBarInterface::clearMessage)
         .def("showProgressBar", &DA::DAStatusBarInterface::showProgressBar)
         .def("hideProgressBar", &DA::DAStatusBarInterface::hideProgressBar)
@@ -74,6 +96,7 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
         .def("getStatusBar",
              &DA::DAUIInterface::getStatusBar,
              pybind11::return_value_policy::reference_internal)  // 返回DAStatusBarInterface
+        .def("processEvents", &DA::DAUIInterface::processEvents)
         .def(
             "addInfoLogMessage",
             [](DA::DAUIInterface& self, const std::string& msg) { self.addInfoLogMessage(QString::fromStdString(msg)); },
@@ -99,6 +122,10 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
         .def("getDataManagerInterface",
              &DA::DACoreInterface::getDataManagerInterface,
              pybind11::return_value_policy::reference_internal)  // 返回DADataManagerInterface
+        .def("getPythonSignalHandler",
+             &DA::DACoreInterface::getPythonSignalHandler,
+             pybind11::return_value_policy::reference_internal,
+             "Get the Python signal handler for cross-thread communication")
         .def("isProjectDirty", &DA::DACoreInterface::isProjectDirty)
         .def("setProjectDirty", &DA::DACoreInterface::setProjectDirty, pybind11::arg("on"));
 }

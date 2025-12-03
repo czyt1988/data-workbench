@@ -40,6 +40,7 @@ QDir DACoreInterface::getTempDir() const
     return QDir(mTempDir.path());
 }
 
+#if DA_ENABLE_PYTHON
 /**
  * @brief 获取python脚本的位置
  *
@@ -51,4 +52,5 @@ QString DACoreInterface::getPythonScriptsPath()
     QString appabsPath = QApplication::applicationDirPath();
     return QDir::toNativeSeparators(appabsPath + "/PyScripts");
 }
+#endif
 }  // namespace DA

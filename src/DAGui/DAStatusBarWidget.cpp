@@ -36,7 +36,7 @@ void DAStatusBarWidget::PrivateData::setupUI(DAStatusBarWidget* par)
 {
     // 创建主布局
     m_layout = new QHBoxLayout(par);
-    m_layout->setContentsMargins(5, 2, 5, 2);
+    m_layout->setContentsMargins(0, 0, 0, 0);
     m_layout->setSpacing(10);
 
     // 创建消息标签
@@ -46,6 +46,7 @@ void DAStatusBarWidget::PrivateData::setupUI(DAStatusBarWidget* par)
     m_messageLabel->setFrameStyle(QFrame::Panel | QFrame::Sunken);
     m_messageLabel->setLineWidth(1);
     m_messageLabel->setMidLineWidth(0);
+    m_messageLabel->hide();
 
     // 创建消息定时器
     m_messageTimer = new QTimer(par);
