@@ -65,6 +65,7 @@ set(DA_LIB_HEADER_FILES
     DAWorkFlowNodeItemSettingWidget.h
     DAWorkFlowOperateWidget.h
     DASettingContainerWidget.h
+    DAStatusBarWidget.h
     DAAbstractArchive.h
     DAAbstractArchiveTask.h
     DAZipArchive.h
@@ -110,6 +111,7 @@ set(DA_LIB_SOURCE_FILES
     DAWorkFlowNodeItemSettingWidget.cpp
     DAWorkFlowOperateWidget.cpp
     DASettingContainerWidget.cpp
+    DAStatusBarWidget.cpp
     DAAbstractArchive.cpp
     DAAbstractArchiveTask.cpp
     DAZipArchive.cpp

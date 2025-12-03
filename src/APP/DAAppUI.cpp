@@ -8,6 +8,7 @@
 #include "DAAppDataManager.h"
 #include "AppMainWindow.h"
 #include "DAStatusBar.h"
+
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
 //===================================================

@@ -6,8 +6,8 @@ import pandas as pd
 import numpy as np
 import scipy
 import pywt
-from DAWorkbench.DALogger import log_function_call  # type: ignore # 引入装饰器
-from loguru import logger
+from DAWorkbench.da_logger import log_function_call  # type: ignore # 引入装饰器
+
 
 @log_function_call
 def spectrum_analysis(waveform, sampling_rate, fftsize=None,phases=False,
