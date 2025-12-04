@@ -12,7 +12,7 @@
 #include "DASignalBlockers.hpp"
 
 #ifndef DAChartAxisSetWidget_DEBUG_PRINT
-#define DAChartAxisSetWidget_DEBUG_PRINT 1
+#define DAChartAxisSetWidget_DEBUG_PRINT 0
 #endif
 namespace DA
 {
@@ -189,6 +189,7 @@ void DAChartAxisSetWidget::updateUI(QwtPlot* chart, int axisID)
         resetAxisValue();
         return;
     }
+    QwtScaleWidget* ax = chart->axisWidget(axisID);
     DASignalBlockers block(ui->checkBoxEnable,
                            ui->lineEditTitle,
                            ui->fontSetWidget,
@@ -200,14 +201,13 @@ void DAChartAxisSetWidget::updateUI(QwtPlot* chart, int axisID)
     ui->checkBoxEnable->setChecked(chart->axisEnabled(axisID));
     ui->lineEditTitle->setText(chart->axisTitle(axisID).text());
     ui->fontSetWidget->setCurrentFont(chart->axisFont(axisID));
-
+    ui->fontSetWidget->setCurrentFontColor(ax->textColor());
     QwtInterval inv = chart->axisInterval(axisID);
     ui->doubleSpinBoxMin->setValue(inv.minValue());
     ui->doubleSpinBoxMax->setValue(inv.maxValue());
     ui->doubleSpinBoxMin->setDecimals(inv.minValue() < 0.01 ? 5 : 2);  // 显示小数点的位数调整
     ui->doubleSpinBoxMax->setDecimals(inv.minValue() < 0.01 ? 5 : 2);
 
-    QwtScaleWidget* ax = chart->axisWidget(axisID);
     if (nullptr == ax) {
         ui->radioButtonNormal->setChecked(true);
         return;
@@ -303,7 +303,7 @@ void DAChartAxisSetWidget::unbindTarget()
     }
     QwtScaleWidget* aw = m_plot->axisWidget(m_axisID);
     if (aw) {
-        disconnect(aw, &QwtScaleWidget::scaleDivChanged, this, &DAChartAxisSetWidget::onScaleDivChanged);
+        disconnect(aw, nullptr, this, nullptr);
     }
 }
 
@@ -314,6 +314,9 @@ QwtPlot* DAChartAxisSetWidget::getPlot() const
 
 void DAChartAxisSetWidget::setPlot(QwtPlot* chart, int axisID)
 {
+    if (m_plot == chart && m_axisID == axisID) {
+        return;
+    }
     if (m_plot && m_plot != chart) {
         unbindTarget();
     }
