@@ -19,6 +19,7 @@ public:
     virtual void setProgressText(const QString& text)                     = 0;
     virtual void clearProgressText()                                      = 0;
     virtual void setBusy(bool busy)                                       = 0;  // 繁忙状态
+    virtual bool isBusy() const                                           = 0;
     virtual void resetProgress()                                          = 0;  // 重置进度条
     // 获取当前状态
     virtual bool isProgressBarVisible() const = 0;

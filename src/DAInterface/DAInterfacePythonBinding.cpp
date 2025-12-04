@@ -88,6 +88,7 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
             pybind11::arg("text"))
         .def("clearProgressText", &DA::DAStatusBarInterface::clearProgressText)
         .def("setBusy", &DA::DAStatusBarInterface::setBusy, pybind11::arg("busy"))
+        .def("isBusy", &DA::DAStatusBarInterface::isBusy)
         .def("resetProgress", &DA::DAStatusBarInterface::resetProgress)
         .def("isProgressBarVisible", &DA::DAStatusBarInterface::isProgressBarVisible);
 

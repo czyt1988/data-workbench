@@ -60,6 +60,11 @@ void DAAppStatusBar::setBusy(bool busy)
     m_statusBarWidget->setBusy(busy);
 }
 
+bool DAAppStatusBar::isBusy() const
+{
+    return m_statusBarWidget->isBusy();
+}
+
 void DAAppStatusBar::resetProgress()
 {
     m_statusBarWidget->resetProgress();

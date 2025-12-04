@@ -22,7 +22,8 @@ public:
     virtual void setProgressText(const QString& text) override;
     virtual void clearProgressText() override;
     virtual void setBusy(bool busy) override;  // 繁忙状态
-    virtual void resetProgress() override;     // 重置进度条
+    virtual bool isBusy() const override;
+    virtual void resetProgress() override;  // 重置进度条
     // 获取当前状态
     virtual bool isProgressBarVisible() const override;
     // 获取app

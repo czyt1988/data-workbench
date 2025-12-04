@@ -30,6 +30,7 @@ public:
     void setProgress(int value);
     // 繁忙状态
     void setBusy(bool busy);
+    bool isBusy() const;
     // 重置进度条
     void resetProgress();
     // 进度文本相关方法

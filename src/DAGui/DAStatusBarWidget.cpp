@@ -237,6 +237,12 @@ void DAStatusBarWidget::setBusy(bool busy)
     }
 }
 
+bool DAStatusBarWidget::isBusy() const
+{
+    DA_DC(d);
+    return (d->m_progressBar->minimum() == 0 && d->m_progressBar->minimum() == d->m_progressBar->maximum());
+}
+
 void DAStatusBarWidget::resetProgress()
 {
     DA_D(d);
