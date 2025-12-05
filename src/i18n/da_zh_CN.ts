@@ -2075,7 +2075,7 @@ Table Area</source>
 <context>
     <name>DA::DADataManager</name>
     <message>
-        <location filename="../DAData/DADataManager.cpp" line="+53"/>
+        <location filename="../DAData/DADataManager.cpp" line="+54"/>
         <source>data:%1 have been added</source>
         <translation>数据%1已经添加</translation>
     </message>
