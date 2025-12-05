@@ -62,9 +62,8 @@ public:
     bool loadFactoryInfo(DAWorkFlow* workflow, const QDomElement& workflowEle);
     // 保存工作流的节点
     void saveNodes(const DAWorkFlowEditWidget* wfe, QDomDocument& doc, QDomElement& workflowEle);
-    QDomElement makeNodesElement(const QList< DAAbstractNode::SharedPointer >& nodes,
-                                 const QString& tagName,
-                                 QDomDocument& doc);
+    QDomElement
+    makeNodesElement(const QList< DAAbstractNode::SharedPointer >& nodes, const QString& tagName, QDomDocument& doc);
     QDomElement makeNodeElement(const DAAbstractNode::SharedPointer& node, const QString& tagName, QDomDocument& doc);
     bool loadNodes(DAWorkFlow* workflow, DAWorkFlowGraphicsScene* workFlowScene, const QDomElement& workflowEle);
     bool loadNodesClipBoard(DAWorkFlowGraphicsScene* scene,
@@ -1931,10 +1930,8 @@ bool DAXmlHelper::loadElement(DAChartOperateWidget* chartOpt,
  * @param doc
  * @return
  */
-QDomElement DAXmlHelper::makeElement(const DAFigureWidget* fig,
-                                     const QString& tagName,
-                                     QDomDocument* doc,
-                                     DAChartItemsManager* itemsMgr)
+QDomElement
+DAXmlHelper::makeElement(const DAFigureWidget* fig, const QString& tagName, QDomDocument* doc, DAChartItemsManager* itemsMgr)
 {
     QDomElement eleFig = doc->createElement(tagName);
     // background
@@ -2167,7 +2164,8 @@ bool DAXmlHelper::loadElement(DAChartWidget* chart,
     return true;
 }
 
-QDomElement DAXmlHelper::makeQwtPlotAxisElement(const DAChartWidget* chart, int axisID, const QString& tagName, QDomDocument* doc)
+QDomElement
+DAXmlHelper::makeQwtPlotAxisElement(const DAChartWidget* chart, int axisID, const QString& tagName, QDomDocument* doc)
 {
     QDomElement axisEle = doc->createElement(tagName);
     axisEle.setAttribute(QStringLiteral("axisID"), axisID);
@@ -2220,8 +2218,8 @@ QDomElement DAXmlHelper::makeQwtPlotAxisElement(const DAChartWidget* chart, int 
         datescaleDrawEle.setAttribute(QStringLiteral("week0Type"), enumToString(dateScaleDraw->week0Type()));
         // 保存时间坐标轴的其它设置
         QDomElement dateformatEle = doc->createElement(QStringLiteral("dateformat"));
-        dateformatEle.appendChild(
-            DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Millisecond), QStringLiteral("msec"), doc));
+        dateformatEle.appendChild(DAXMLFileInterface::makeElement(
+            dateScaleDraw->dateFormat(QwtDate::Millisecond), QStringLiteral("msec"), doc));
         dateformatEle.appendChild(
             DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Second), QStringLiteral("sec"), doc));
         dateformatEle.appendChild(
@@ -2291,6 +2289,8 @@ bool DAXmlHelper::loadQwtPlotAxisElement(DAChartWidget* chart, const QDomElement
                 // 说明需要新建一个datescaleDraw
                 dateScaleDraw = new QwtDateScaleDraw();
                 chart->setAxisScaleDraw(axisID, dateScaleDraw);
+                // 更新scaleDraw
+                scaleDraw = dateScaleDraw;
             }
             QDomElement datescaleDrawEle = scaleDrawEle.firstChildElement(QStringLiteral("datescale"));
             if (!datescaleDrawEle.isNull()) {
@@ -2319,14 +2319,16 @@ bool DAXmlHelper::loadQwtPlotAxisElement(DAChartWidget* chart, const QDomElement
                 }
             }
         } else {
-            // 说明没有scaleDraw
+            // 进入这里说明坐标轴非datetime
+            //  说明没有scaleDraw
             if (!scaleDraw) {
                 scaleDraw = new QwtScaleDraw();
                 chart->setAxisScaleDraw(axisID, scaleDraw);
             }
             // 说明是普通坐标，但原来是时间坐标
             if (dateScaleDraw) {
-                // 说明需要新建一个QwtScaleDraw,还原为普通坐标
+                // 正常不会进入这里
+                //  说明需要新建一个QwtScaleDraw,还原为普通坐标
                 scaleDraw = new QwtScaleDraw();
                 chart->setAxisScaleDraw(axisID, scaleDraw);
             }
@@ -2573,7 +2575,8 @@ bool DAXmlHelper::loadElement(QwtText* value, const QDomElement* tag, const QVer
  * @param doc
  * @return
  */
-QDomElement DAXmlHelper::makeElement(unsigned int plotitemID, const QwtPlotItem* value, const QString& tagName, QDomDocument* doc)
+QDomElement
+DAXmlHelper::makeElement(unsigned int plotitemID, const QwtPlotItem* value, const QString& tagName, QDomDocument* doc)
 {
     QDomElement rootEle = doc->createElement(tagName);
     rootEle.setAttribute(QStringLiteral("rtti"), value->rtti());

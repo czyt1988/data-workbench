@@ -1894,7 +1894,7 @@ Table Area</source>
 <context>
     <name>DA::DAChartManageWidget</name>
     <message>
-        <location filename="../DAGui/DAChartManageWidget.cpp" line="+125"/>
+        <location filename="../DAGui/DAChartManageWidget.cpp" line="+139"/>
         <source>get figure create signal,but can not find figure index</source>
         <translation>获取了绘图创建的信号，但无法找到绘图的索引</translation>
     </message>
@@ -6401,7 +6401,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>转换列为索引</translation>
     </message>
     <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="+194"/>
+        <location filename="../DAGui/DAXmlHelper.cpp" line="+193"/>
         <location line="+119"/>
         <source>load nodes occurce error</source>
         <translation>加载节点发生错误</translation>
@@ -6580,7 +6580,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>节点%1无法找到名字为%2的连接点</translation>
     </message>
     <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="+1267"/>
+        <location filename="../DAGui/DAXmlHelper.cpp" line="+1271"/>
         <source>The attribute %1=%2 under the tag %3 cannot be converted to double </source>
         <translation>%3标签属性%1=%2无法转换为double类型 </translation>
     </message>
@@ -6866,7 +6866,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation></translation>
     </message>
     <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="-2488"/>
+        <location filename="../DAGui/DAXmlHelper.cpp" line="-2492"/>
         <source>save workflow extern info cost: %1 ms</source>
         <translation></translation>
     </message>

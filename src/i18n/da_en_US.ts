@@ -1862,7 +1862,7 @@ Config</source>
 <context>
     <name>DA::DAChartManageWidget</name>
     <message>
-        <location filename="../DAGui/DAChartManageWidget.cpp" line="+125"/>
+        <location filename="../DAGui/DAChartManageWidget.cpp" line="+139"/>
         <source>get figure create signal,but can not find figure index</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6162,7 +6162,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="+149"/>
+        <location filename="../DAGui/DAXmlHelper.cpp" line="+148"/>
         <source>save workflow extern info cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6385,7 +6385,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+744"/>
+        <location line="+748"/>
         <source>The attribute %1=%2 under the tag %3 cannot be converted to double </source>
         <translation type="unfinished"></translation>
     </message>

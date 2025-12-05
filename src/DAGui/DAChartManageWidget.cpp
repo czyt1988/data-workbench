@@ -99,6 +99,20 @@ DAFigureWidget* DAChartManageWidget::plotToFigureWidget(QwtPlot* plot) const
     return d_ptr->mFigToFigWidget.value(fig, nullptr);
 }
 
+void DAChartManageWidget::expandAll()
+{
+    DAFigureTreeView* tree = currentTreeView();
+    if (!tree) {
+        return;
+    }
+    tree->expandAll();
+}
+
+DAFigureTreeView* DAChartManageWidget::currentTreeView() const
+{
+    return qobject_cast< DAFigureTreeView* >(ui->stackedWidget->currentWidget());
+}
+
 void DAChartManageWidget::setCurrentDisplayView(DAFigureWidget* fig)
 {
     DAFigureTreeView* tree = d_ptr->mFigureWidgetToTree.value(fig, nullptr);

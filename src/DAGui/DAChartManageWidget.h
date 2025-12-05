@@ -19,6 +19,7 @@ namespace DA
 {
 class DAChartOperateWidget;
 class DAFigureWidget;
+class DAFigureTreeView;
 class DAChartWidget;
 class DAChartItemStandardItem;
 class DAChartWidgetStandardItem;
@@ -42,6 +43,8 @@ public:
     bool isSetCurrentChartOnItemDoubleClicked() const;
     // 通过plot获取figure
     DAFigureWidget* plotToFigureWidget(QwtPlot* plot) const;
+    // 把管理树展开
+    void expandAll();
 Q_SIGNALS:
     /**
      * @brief 绘图元素选中信号
@@ -50,6 +53,10 @@ Q_SIGNALS:
      */
     void figureElementClicked(const DAFigureElementSelection& selection);
     void figureElementDbClicked(const DAFigureElementSelection& selection);
+
+protected:
+    // 获取当前的tree
+    DAFigureTreeView* currentTreeView() const;
 
 private:
     // 设置当前显示的fig对应的view
