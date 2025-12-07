@@ -2074,20 +2074,32 @@ Config</source>
 <context>
     <name>DA::DADataManagerTreeModel</name>
     <message>
-        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="+411"/>
+        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="+70"/>
         <location line="+2"/>
-        <source>name</source>
+        <location line="+142"/>
+        <location line="+3"/>
+        <location line="+95"/>
+        <location line="+2"/>
+        <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+0"/>
-        <source>property</source>
+        <location line="-242"/>
+        <location line="+145"/>
+        <location line="+97"/>
+        <source>Properties</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+199"/>
-        <location line="+12"/>
-        <source>The data(%1) cannot find its corresponding item in the data management tree during the removal process</source>
+        <location line="+243"/>
+        <source>
+Type: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>
+Description: %1</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6725,6 +6737,11 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+19"/>
         <source>remove data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>rename data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

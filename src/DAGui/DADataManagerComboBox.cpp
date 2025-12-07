@@ -51,7 +51,8 @@ void DADataManagerComboBox::showPopup()
 
 void DADataManagerComboBox::onCurrentIndexChanged(const QString& text)
 {
-    QVariant dvar = currentData(DADATAMANAGERTREEMODEL_ROLE_DATA_ID);
+    QVariant dvar = currentData(DADataManagerTreeModel::RoleDataId);
+
     if (dvar.isNull()) {
         // 说明不是异常
         return;
@@ -73,8 +74,8 @@ void DADataManagerComboBox::onCurrentIndexChanged(const QString& text)
     if (!d.isDataFrame()) {
         return;
     }
+    QVariant dtype = currentData(DADataManagerTreeModel::RoleItemType);
     QString seriesName;
-    QVariant dtype = currentData(DADATAMANAGERTREEMODEL_ROLE_DETAIL_DATA_TYPE);
     if (!dtype.isValid()) {
         return;
     }
@@ -110,7 +111,7 @@ DADataManager* DADataManagerComboBox::getDataManager() const
  */
 DAData DADataManagerComboBox::getCurrentDAData() const
 {
-    QVariant dvar = currentData(DADATAMANAGERTREEMODEL_ROLE_DATA_ID);
+    QVariant dvar = currentData(DADataManagerTreeModel::RoleDataId);
     if (dvar.isNull()) {
         // 说明不是异常
         return DAData();
@@ -122,7 +123,7 @@ DAData DADataManagerComboBox::getCurrentDAData() const
     }
     DAData d = dmgr->getDataById(did);
 
-    QVariant dtype = currentData(DADATAMANAGERTREEMODEL_ROLE_DETAIL_DATA_TYPE);
+    QVariant dtype = currentData(DADataManagerTreeModel::RoleItemType);
     if (dtype.isNull()) {
         // 说明选择的是dataframe这些直接是变量管理器的
         return d;
@@ -146,7 +147,7 @@ DAData DADataManagerComboBox::getCurrentDAData() const
 
 void DADataManagerComboBox::setCurrentDAData(const DAData& d)
 {
-    auto i = d_ptr->_treeDataModel->dataToItem(d);
+    auto i = d_ptr->_treeDataModel->findItemByData(d);
     if (i) {
         int ni = i->index().row();
         if (ni < count()) {

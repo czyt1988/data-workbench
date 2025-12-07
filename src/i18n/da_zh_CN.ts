@@ -2106,21 +2106,33 @@ Table Area</source>
 <context>
     <name>DA::DADataManagerTreeModel</name>
     <message>
-        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="+411"/>
+        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="+70"/>
         <location line="+2"/>
-        <source>name</source>
-        <translation>名称</translation>
+        <location line="+142"/>
+        <location line="+3"/>
+        <location line="+95"/>
+        <location line="+2"/>
+        <source>Name</source>
+        <translation type="unfinished">名称</translation>
     </message>
     <message>
-        <location line="+0"/>
-        <source>property</source>
-        <translation>原型</translation>
+        <location line="-242"/>
+        <location line="+145"/>
+        <location line="+97"/>
+        <source>Properties</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+199"/>
-        <location line="+12"/>
-        <source>The data(%1) cannot find its corresponding item in the data management tree during the removal process</source>
-        <translation>数据(%1)在移除过程中无法找到其对应的数据管理树中的条目</translation>
+        <location line="+243"/>
+        <source>
+Type: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>
+Description: %1</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -6177,6 +6189,11 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <location line="+19"/>
         <source>remove data</source>
         <translation>移除数据</translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>rename data</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../DACommonWidgets/DABrushStyleComboBox.cpp" line="+43"/>

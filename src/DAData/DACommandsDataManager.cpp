@@ -43,3 +43,24 @@ void DACommandDataManagerRemove::undo()
 {
     mDataMgr->addData(mData);
 }
+
+//==============================================================
+// DACommandDataManagerRenameData
+//==============================================================
+DACommandDataManagerRenameData::DACommandDataManagerRenameData(const DAData& d, const QString& newName, QUndoCommand* par)
+    : QUndoCommand(par), mData(d)
+{
+    setText(QObject::tr("rename data"));
+    m_oldNmae = d.getName();
+    m_newName = newName;
+}
+
+void DACommandDataManagerRenameData::redo()
+{
+    mData.setName(m_newName);
+}
+
+void DACommandDataManagerRenameData::undo()
+{
+    mData.setName(m_oldNmae);
+}
