@@ -39,7 +39,7 @@ public:
     DAData findData(const QString& name, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     // 可以使用通配符字符串查找匹配
     QList< DAData > findDatas(const QString& pattern, Qt::CaseSensitivity cs = Qt::CaseInsensitive) const;
-    QList< DAData > findDatas(const QRegularExpression& regex) const;
+    QList< DAData > findDatasReg(const QRegularExpression& regex) const;
     // 获取undo stack
     QUndoStack* getUndoStack() const;
 signals:

@@ -361,9 +361,6 @@ std::vector< double > toVectorDouble(const DAPySeries& ser)
         if (dt.isNone()) {
             return std::vector< double >();
         }
-        if (!dt.isNumeral()) {
-            return std::vector< double >();
-        }
         std::vector< double > res;
         res.reserve(ser.size());
         ser.castTo< double >(std::back_insert_iterator< std::vector< double > >(res));
@@ -384,9 +381,6 @@ QVector< double > toQVectorDouble(const DAPySeries& ser)
     try {
         DAPyDType dt(ser.dtype());
         if (dt.isNone()) {
-            return QVector< double >();
-        }
-        if (!dt.isNumeral()) {
             return QVector< double >();
         }
         QVector< double > res;

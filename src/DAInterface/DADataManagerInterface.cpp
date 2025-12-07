@@ -276,9 +276,9 @@ QList< DAData > DADataManagerInterface::findDatas(const QString& pattern, Qt::Ca
  *
  * @see findDatas(const QString&, Qt::CaseSensitivity)
  */
-QList< DAData > DADataManagerInterface::findDatas(const QRegularExpression& regex) const
+QList< DAData > DADataManagerInterface::findDatasReg(const QRegularExpression& regex) const
 {
-    return dataManager()->findDatas(regex);
+    return dataManager()->findDatasReg(regex);
 }
 
 /**

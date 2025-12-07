@@ -275,38 +275,51 @@ QList< DAData > DADataManager::findDatas(const QString& pattern, Qt::CaseSensiti
 {
     // 将通配符模式转换为正则表达式
     QRegularExpression regex = wildcardToRegex(pattern, cs);
-    return findDatas(regex);
+    return findDatasReg(regex);
 }
 
 QRegularExpression DADataManager::wildcardToRegex(const QString& pattern, Qt::CaseSensitivity cs)
 {
     if (pattern.isEmpty()) {
-        // 空模式匹配所有
-        return QRegularExpression(".*");
+        return QRegularExpression(".*", QRegularExpression::CaseInsensitiveOption);
     }
 
     QString regexPattern;
-
-    // 判断是否为简单通配符模式
-    bool hasWildcard = pattern.contains('*') || pattern.contains('?');
+    bool hasWildcard = pattern.contains(QLatin1Char('*')) || pattern.contains(QLatin1Char('?'));
 
     if (hasWildcard) {
-        // 使用Qt提供的通配符转换函数（Qt 5.12+）
-        // 如果Qt版本较低，可以自己实现转换
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
+        // Qt 5.12+ 使用内置函数（更可靠）
         regexPattern = QRegularExpression::wildcardToRegularExpression(pattern);
+#else
+        // 低版本 Qt 手动实现通配符转换
+        regexPattern = QRegularExpression::escape(pattern);
+        regexPattern.replace(QLatin1Char('*'), QLatin1String(".*"));
+        regexPattern.replace(QLatin1Char('?'), QLatin1String("."));
+#endif
     } else {
-        // 如果没有通配符，使用包含匹配
-        // 转义正则表达式特殊字符
-        QString escapedPattern = QRegularExpression::escape(pattern);
-        regexPattern           = ".*" + escapedPattern + ".*";
+        // 无通配符：转义特殊字符 + 前后拼接 .* 实现“包含匹配”
+        regexPattern = QLatin1String(".*") + QRegularExpression::escape(pattern) + QLatin1String(".*");
     }
 
+    // 构建正则选项
     QRegularExpression::PatternOptions options = QRegularExpression::NoPatternOption;
     if (cs == Qt::CaseInsensitive) {
         options |= QRegularExpression::CaseInsensitiveOption;
     }
+    // 增加优化选项：减少回溯，提升匹配性能
+    options |= QRegularExpression::DontCaptureOption;
 
-    return QRegularExpression(regexPattern, options);
+    QRegularExpression regex(regexPattern, options);
+    // 校验正则有效性（提前报错，避免运行时问题）
+    if (!regex.isValid()) {
+        qWarning() << "[DADataManager::wildcardToRegex] Invalid regex pattern:" << regexPattern
+                   << "Error:" << regex.errorString();
+        // 回退到匹配空（避免返回无效正则导致崩溃）
+        return QRegularExpression();
+    }
+
+    return regex;
 }
 
 /**
@@ -385,7 +398,7 @@ QRegularExpression DADataManager::wildcardToRegex(const QString& pattern, Qt::Ca
  *
  * @see findDatas(const QString&, Qt::CaseSensitivity)
  */
-QList< DAData > DADataManager::findDatas(const QRegularExpression& regex) const
+QList< DAData > DADataManager::findDatasReg(const QRegularExpression& regex) const
 {
     QList< DAData > result;
 
@@ -399,11 +412,13 @@ QList< DAData > DADataManager::findDatas(const QRegularExpression& regex) const
             continue;
         }
 
-        QString dataName              = data.getName();
-        QRegularExpressionMatch match = regex.match(dataName);
-
+        QString dataName = data.getName();
+        qDebug() << "dataName=" << dataName;
+        // 使用 match 并指定匹配范围（0 到末尾，即完全匹配）
+        QRegularExpressionMatch match = regex.match(dataName, 0, QRegularExpression::NormalMatch);
         if (match.hasMatch()) {
             result.append(data);
+            qDebug() << "dataName=" << dataName << " hasMatch";
         }
     }
 

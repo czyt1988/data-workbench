@@ -56,7 +56,7 @@ public:
     DAData findData(const QString& name, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     // 可以通过正则来匹配
     QList< DAData > findDatas(const QString& pattern, Qt::CaseSensitivity cs = Qt::CaseInsensitive) const;
-    QList< DAData > findDatas(const QRegularExpression& regex) const;
+    QList< DAData > findDatasReg(const QRegularExpression& regex) const;
     // 根据id获取数据
     DAData getDataById(DAData::IdType id) const;
     // 判断是否dirty，数据的改变和添加都会把此flag标记为true
