@@ -791,7 +791,7 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+483"/>
+        <location filename="../APP/DAAppController.cpp" line="+486"/>
         <location line="+22"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
@@ -824,17 +824,17 @@ Config</source>
     </message>
     <message>
         <location line="+12"/>
-        <location line="+398"/>
+        <location line="+412"/>
         <source>Project saved successfully,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-379"/>
+        <location line="-393"/>
         <source>Please select the data operation window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+270"/>
+        <location line="+284"/>
         <source>Question</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1862,7 +1862,7 @@ Config</source>
 <context>
     <name>DA::DAChartManageWidget</name>
     <message>
-        <location filename="../DAGui/DAChartManageWidget.cpp" line="+139"/>
+        <location filename="../DAGui/DAChartManageWidget.cpp" line="+155"/>
         <source>get figure create signal,but can not find figure index</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3370,7 +3370,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-2178"/>
+        <location filename="../APP/DAAppController.cpp" line="-2193"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>

@@ -28,5 +28,6 @@
         <file>icon/axis-yleft.svg</file>
         <file>icon/axis-yright.svg</file>
         <file>icon/axes.svg</file>
+        <file>icon/select-current-chart.svg</file>
     </qresource>
 </RCC>

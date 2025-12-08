@@ -123,9 +123,9 @@ void DAFigureTreeModel::addPlotToModel(QwtPlot* plot, QStandardItem* parentItem)
     QStandardItem* visibilityItem = createEmptyItem();
 
     // 颜色列 - 绘图节点不需要颜色显示
-    QStandardItem* colorItem = createEmptyItem();
+    QStandardItem* propertyItem = createAxesPropertyItem(plot);
 
-    parentItem->appendRow(QList< QStandardItem* >() << plotItem << visibilityItem << colorItem);
+    parentItem->appendRow(QList< QStandardItem* >() << plotItem << visibilityItem << propertyItem);
 
     // 添加宿主图层
     addLayerToModel(plot, plotItem);
@@ -274,8 +274,7 @@ void DAFigureTreeModel::onFigureCleared()
 
 void DAFigureTreeModel::onCurrentAxesChanged(QwtPlot* plot)
 {
-    // 可以高亮当前激活的坐标系
-    Q_UNUSED(plot)
+    updateAxesPropertyItem();
 }
 
 void DAFigureTreeModel::onItemAttached(QwtPlotItem* item, bool on)
@@ -353,6 +352,51 @@ QStandardItem* DAFigureTreeModel::createEmptyItem() const
     QStandardItem* item = new QStandardItem();
     item->setEditable(false);
     return item;
+}
+
+QStandardItem* DAFigureTreeModel::createAxesPropertyItem(QwtPlot* plot) const
+{
+    QStandardItem* item = new QStandardItem();
+    item->setEditable(false);
+    if (!m_figure) {
+        return item;
+    }
+    static QIcon iconSelectedCurrentChart = QIcon(":/DAFigure/icon/select-current-chart.svg");
+    if (m_figure->currentAxes() == plot) {
+        item->setIcon(iconSelectedCurrentChart);
+    }
+    // 这里把绘图的指针存入
+    item->setData(QVariant::fromValue(reinterpret_cast< quintptr >(plot)), DAFigureTreeModel::RolePlot);
+    return item;
+}
+
+/**
+ * @brief 更新坐标系的当前属性
+ */
+void DAFigureTreeModel::updateAxesPropertyItem()
+{
+    // 遍历一级节点的第三列
+    const int cnt                         = rowCount();
+    static QIcon iconSelectedCurrentChart = QIcon(":/DAFigure/icon/select-current-chart.svg");
+    for (int r = 0; r < cnt; ++r) {
+        QStandardItem* plotPropertyItem = item(r, 2);
+        if (!plotPropertyItem) {
+            continue;
+        }
+        QwtPlot* plot = plotFromItem(plotPropertyItem);
+        if (!plot) {
+            continue;
+        }
+        if (plot == m_figure->currentAxes()) {
+            if (plotPropertyItem->icon().isNull()) {
+                plotPropertyItem->setIcon(iconSelectedCurrentChart);
+            }
+        } else {
+            if (!plotPropertyItem->icon().isNull()) {
+                plotPropertyItem->setIcon(QIcon());
+            }
+        }
+    }
 }
 
 QwtPlot* DAFigureTreeModel::plotFromItem(const QStandardItem* item) const

@@ -318,7 +318,7 @@ const QBrush& DAFigureWidget::getBackgroundColor() const
  * @return 如果成功设置返回true，如果当前窗口已经是p，则返回true，但不会发射currentWidgetChanged信号
  * @sa currentWidgetChanged
  */
-void DAFigureWidget::setCurrentChart(DAChartWidget* p)
+void DAFigureWidget::setCurrentChart(QwtPlot* p)
 {
     QwtFigure* fig = figure();
     Q_ASSERT(fig);

@@ -20,6 +20,7 @@ class DAChartManageWidget::PrivateData
 public:
     DA_DECLARE_PUBLIC(DAChartManageWidget)
     PrivateData(DAChartManageWidget* p);
+    DAFigureElementSelection::SelectionColumns standardItemToSelectionColumns(QStandardItem* item);
 
 public:
     QPointer< DAChartOperateWidget > mChartOptWidget;
@@ -30,6 +31,21 @@ public:
 };
 DAChartManageWidget::PrivateData::PrivateData(DAChartManageWidget* p) : q_ptr(p)
 {
+}
+
+DAFigureElementSelection::SelectionColumns DAChartManageWidget::PrivateData::standardItemToSelectionColumns(QStandardItem* item)
+{
+    switch (item->column()) {
+    case 0:
+        return DAFigureElementSelection::ColumnName;
+    case 1:
+        return DAFigureElementSelection::ColumnVisible;
+    case 2:
+        return DAFigureElementSelection::ColumnProperty;
+    default:
+        break;
+    }
+    return DAFigureElementSelection::ColumnName;
 }
 //===================================================
 // DAChartManageWidget
@@ -176,7 +192,8 @@ void DAChartManageWidget::onPlotClicked(QwtPlot* plot, QStandardItem* treeItem)
     if (!figWidget) {
         return;
     }
-    DAFigureElementSelection sel(figWidget, plot);
+    DAFigureElementSelection::SelectionColumns col = d_ptr->standardItemToSelectionColumns(treeItem);
+    DAFigureElementSelection sel(figWidget, plot, col);
     Q_EMIT figureElementClicked(sel);
 }
 
@@ -190,7 +207,8 @@ void DAChartManageWidget::onPlotItemClicked(QwtPlotItem* item, QwtPlot* plot, QS
     if (!figWidget) {
         return;
     }
-    DAFigureElementSelection sel(figWidget, plot, item);
+    DAFigureElementSelection::SelectionColumns col = d_ptr->standardItemToSelectionColumns(treeItem);
+    DAFigureElementSelection sel(figWidget, plot, item, col);
     Q_EMIT figureElementClicked(sel);
 }
 
@@ -204,7 +222,8 @@ void DAChartManageWidget::onAxisClicked(QwtAxisId axisId, QwtPlot* plot, QStanda
     if (axisId == QwtAxis::AxisPositions) {
         return;
     }
-    DAFigureElementSelection sel(figWidget, plot, plot->axisWidget(axisId), axisId);
+    DAFigureElementSelection::SelectionColumns col = d_ptr->standardItemToSelectionColumns(treeItem);
+    DAFigureElementSelection sel(figWidget, plot, plot->axisWidget(axisId), axisId, col);
     Q_EMIT figureElementClicked(sel);
 }
 

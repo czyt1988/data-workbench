@@ -21,7 +21,7 @@ public:
     /**
      * @brief 选中类型
      */
-    enum SelectionType
+    enum SelectionTypes
     {
         SelectNone,         ///< 无
         SelectPlot,         ///< plot,此时figureWidget、plot指针有效
@@ -29,17 +29,33 @@ public:
         SelectPlotItem,     ///< plotitem，此时figureWidget、plot、plotItem有效
     };
 
+    /**
+     * @brief 记录选中的列
+     */
+    enum SelectionColumns
+    {
+        ColumnName,     ///< 第一列，名称
+        ColumnVisible,  ///< 第二列，可见性
+        ColumnProperty  ///< 第三列，属性
+    };
+
 public:
     DAFigureElementSelection();
-    DAFigureElementSelection(DAFigureWidget* fig,QwtPlot* p);
-    DAFigureElementSelection(DAFigureWidget* fig,QwtPlot* p,QwtPlotItem* item);
-    DAFigureElementSelection(DAFigureWidget* fig,QwtPlot* p,QwtScaleWidget* sw,int axis);
+    DAFigureElementSelection(DAFigureWidget* fig, QwtPlot* p, SelectionColumns col);
+    DAFigureElementSelection(DAFigureWidget* fig, QwtPlot* p, QwtPlotItem* item, SelectionColumns col);
+    DAFigureElementSelection(DAFigureWidget* fig, QwtPlot* p, QwtScaleWidget* sw, int axis, SelectionColumns col);
+    bool isSelectedPlot() const;
+    bool isSelectedScaleWidget() const;
+    bool isSelectedPlotItem() const;
+
+public:
     DAFigureWidget* figureWidget { nullptr };
     QwtPlot* plot { nullptr };
     QwtPlotItem* plotItem { nullptr };
     QwtScaleWidget* scaleWidget { nullptr };
     int axisId;
-    SelectionType selectionType { SelectNone };
+    SelectionTypes selectionType { SelectNone };
+    SelectionColumns selectionColumn { ColumnName };
 };
 }
 Q_DECLARE_METATYPE(DA::DAFigureElementSelection)

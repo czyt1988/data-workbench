@@ -109,6 +109,10 @@ private:
     void removePlotFromModel(QwtPlot* plot);
     // 创建一个空item，用于树形节点没有对应的2,3列的情况
     QStandardItem* createEmptyItem() const;
+    // 创建绘图属性item
+    QStandardItem* createAxesPropertyItem(QwtPlot* plot) const;
+    // 更新绘图属性，把当前选中的绘图更新掉
+    void updateAxesPropertyItem();
 
     QStandardItem* findPlotItem(QwtPlot* plot) const;
     QStandardItem* findItemsFolderForPlot(QStandardItem* plotItem, QwtPlot* plot) const;

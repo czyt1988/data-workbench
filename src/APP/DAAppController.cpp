@@ -11,6 +11,8 @@
 #include <QMenu>
 #include <QApplication>
 #include <QActionGroup>
+// qwt
+#include "qwt_figure.h"
 // API
 #include "AppMainWindow.h"
 #include "DAAppCore.h"
@@ -479,10 +481,11 @@ void DAAppController::save()
     qDebug() << "Save Project,Path=" << projectFilePath;
     if (projectFilePath.isEmpty()) {
         QString desktop = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
-        projectFilePath = QFileDialog::getSaveFileName(nullptr,
-                                                       tr("Save Project"),  // 保存工程
-                                                       desktop,
-                                                       tr("Project Files (*.%1)").arg(DAAppProject::getProjectFileSuffix())  // 工程文件 (*.%1)
+        projectFilePath = QFileDialog::getSaveFileName(
+            nullptr,
+            tr("Save Project"),  // 保存工程
+            desktop,
+            tr("Project Files (*.%1)").arg(DAAppProject::getProjectFileSuffix())  // 工程文件 (*.%1)
         );
         if (projectFilePath.isEmpty()) {
             // 取消退出
@@ -513,8 +516,8 @@ void DAAppController::saveAs()
     QFileInfo fi(projectPath);
     if (fi.exists()) {
         // 说明是目录
-        QMessageBox::StandardButton btn =
-            QMessageBox::question(nullptr, tr("Warning"), tr("Whether to overwrite the file:%1").arg(fi.absoluteFilePath()));
+        QMessageBox::StandardButton btn = QMessageBox::question(
+            nullptr, tr("Warning"), tr("Whether to overwrite the file:%1").arg(fi.absoluteFilePath()));
         if (btn != QMessageBox::Yes) {
             return;
         }
@@ -717,6 +720,14 @@ void DAAppController::onFigureElementClicked(const DAFigureElementSelection& sel
         return;
     }
     chartSetting->setSelection(selection);
+    if (selection.isSelectedPlot()) {
+        // 单独选中plot，那么把figure的current plot进行切换
+        if (selection.plot->isHostPlot()) {
+            selection.figureWidget->setCurrentChart(selection.plot);
+        } else {
+            selection.figureWidget->setCurrentChart(selection.plot->hostPlot());
+        }
+    }
 }
 
 /**
@@ -734,6 +745,14 @@ void DAAppController::onFigureElementDbClicked(const DAFigureElementSelection& s
     }
     // 把绘图界面显示在前台
     mDock->raiseDockingArea(DADockingAreaInterface::DockingAreaChartOperate);
+    // 如果是visible双击，那么改变item的visible属性
+    if (selection.isSelectedPlotItem()) {
+        if (DAFigureElementSelection::ColumnVisible == selection.selectionColumn) {
+            selection.plotItem->setVisible(!selection.plotItem->isVisible());
+            // 可见性改变后，需要通知刷新
+            selection.plot->replot();
+        }
+    }
 }
 
 /**
@@ -813,11 +832,11 @@ bool DAAppController::openCheck()
     if (!project->getProjectDir().isEmpty()) {
         if (project->isDirty()) {
             // TODO 没有保存。先询问是否保存
-            QMessageBox::StandardButton btn =
-                QMessageBox::question(nullptr,
-                                      tr("Question"),                                                   // 提示
-                                      tr("Another project already exists. Do you want to replace it?")  // 已存在其他工程，是否要替换？
-                );
+            QMessageBox::StandardButton btn = QMessageBox::question(
+                nullptr,
+                tr("Question"),                                                   // 提示
+                tr("Another project already exists. Do you want to replace it?")  // 已存在其他工程，是否要替换？
+            );
             if (btn != QMessageBox::Yes) {
                 return false;
             }

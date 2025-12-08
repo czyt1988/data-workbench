@@ -62,7 +62,7 @@ public:
     DAChartWidget* getCurrentChart() const;
     DAChartWidget* gca() const;
     // 设置当前的2dplot
-    void setCurrentChart(DAChartWidget* p);
+    void setCurrentChart(QwtPlot* p);
     // 获取当前的chart，如果没有current chart，或figure不存在chart，则创建一个新chart，此函数不返回nullptr
     DAChartWidget* currentChart();
     // 返回当前光标下的widget
@@ -127,7 +127,8 @@ public:
     QwtPlotCurve* addScatter_(const QVector< QPointF >& xyDatas);
     // 添加柱状图
     QwtPlotBarChart* addBar_(const QVector< QPointF >& xyDatas);
-    QwtPlotIntervalCurve* addErrorBar_(const QVector<double>& values, const QVector<double>& mins, const QVector<double>& maxs);
+    QwtPlotIntervalCurve*
+    addErrorBar_(const QVector< double >& values, const QVector< double >& mins, const QVector< double >& maxs);
 
 public:
     // 推送一个命令

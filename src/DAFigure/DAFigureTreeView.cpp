@@ -118,23 +118,37 @@ void DAFigureTreeView::handleClicked(const QModelIndex& index, bool doubleClicke
     if (!fig) {
         return;
     }
+    DAFigureElementSelection::SelectionColumns col { DAFigureElementSelection::ColumnName };
+    switch (index.column()) {
+    case 0:
+        col = DAFigureElementSelection::ColumnName;
+        break;
+    case 1:
+        col = DAFigureElementSelection::ColumnVisible;
+        break;
+    case 2:
+        col = DAFigureElementSelection::ColumnProperty;
+        break;
+    default:
+        break;
+    }
     switch (nodeType) {
     case DAFigureTreeModel::NodeTypePlotFolder: {
         QwtPlot* plot = model->plotFromItem(item);
-        DAFigureElementSelection sel(fig, plot);
+        DAFigureElementSelection sel(fig, plot, col);
         doubleClicked ? Q_EMIT itemDbCliecked(sel) : Q_EMIT itemCliecked(sel);
         break;
     }
     case DAFigureTreeModel::NodeTypePlot: {
         QwtPlot* plot = model->plotFromItem(item);
-        DAFigureElementSelection sel(fig, plot);
+        DAFigureElementSelection sel(fig, plot, col);
         doubleClicked ? Q_EMIT itemDbCliecked(sel) : Q_EMIT itemCliecked(sel);
         break;
     }
     case DAFigureTreeModel::NodeTypeAxis: {
         QwtPlot* plot = model->plotFromItem(item);
         int axisId    = model->axisIdFromItem(item);
-        DAFigureElementSelection sel(fig, plot, plot->axisWidget(axisId), axisId);
+        DAFigureElementSelection sel(fig, plot, plot->axisWidget(axisId), axisId, col);
         doubleClicked ? Q_EMIT itemDbCliecked(sel) : Q_EMIT itemCliecked(sel);
         // emitAxisClick(axisId, plot, item, doubleClicked);
         break;
@@ -142,7 +156,7 @@ void DAFigureTreeView::handleClicked(const QModelIndex& index, bool doubleClicke
     case DAFigureTreeModel::NodeTypePlotItem: {
         QwtPlot* plot         = model->plotFromItem(item);
         QwtPlotItem* plotItem = model->plotItemFromItem(item);
-        DAFigureElementSelection sel(fig, plot, plotItem);
+        DAFigureElementSelection sel(fig, plot, plotItem, col);
         doubleClicked ? Q_EMIT itemDbCliecked(sel) : Q_EMIT itemCliecked(sel);
         // emitPlotItemClick(plotItem, plot, item, doubleClicked);
 
