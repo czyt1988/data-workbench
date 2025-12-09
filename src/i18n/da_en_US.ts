@@ -824,17 +824,17 @@ Config</source>
     </message>
     <message>
         <location line="+12"/>
-        <location line="+412"/>
+        <location line="+414"/>
         <source>Project saved successfully,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-393"/>
+        <location line="-395"/>
         <source>Please select the data operation window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+284"/>
+        <location line="+286"/>
         <source>Question</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3370,7 +3370,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-2193"/>
+        <location filename="../APP/DAAppController.cpp" line="-2195"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>

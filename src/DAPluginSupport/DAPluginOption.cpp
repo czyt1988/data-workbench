@@ -108,12 +108,12 @@ bool DAPluginOption::load(const QString& pluginPath, DACoreInterface* c)
     //! 这里必须用dynamic_cast，由于Q_DECLARE_INTERFACE只会识别一层继承，DAAbstractNodePlugin继承DAAbstractPlugin
     //! 继承DAAbstractNodePlugin的插件通过qobject_cast无法转换到DAAbstractPlugin，只能通过dynamic_cast转换
     //! 因此d_ptr->_plugin = qobject_cast< DAAbstractPlugin* >(obj);这样写会导致继承DAAbstractNodePlugin的插件无法加载
-#if 0
-	d_ptr->mPlugin = dynamic_cast< DAAbstractPlugin* >(obj);
-	if (nullptr == d_ptr->mPlugin) {
-		qWarning() << QObject::tr("Failed to cast plugin to DA plugin %1").arg(getFileName());
-		return (false);
-	}
+#if 1
+    d_ptr->mPlugin = dynamic_cast< DAAbstractPlugin* >(obj);
+    if (nullptr == d_ptr->mPlugin) {
+        qWarning() << QObject::tr("Failed to cast plugin to DA plugin %1").arg(getFileName());
+        return (false);
+    }
 #else
     // 首先尝试使用 qobject_cast 进行精确转换
     // 这要求插件对象的元数据中已使用 Q_INTERFACES 声明

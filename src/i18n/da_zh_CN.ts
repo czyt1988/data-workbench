@@ -823,7 +823,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+858"/>
+        <location filename="../APP/DAAppController.cpp" line="+860"/>
         <location line="+49"/>
         <source>project file(*.%1)</source>
         <translation>工程文件(*.%1)</translation>
@@ -845,7 +845,7 @@ Table Area</source>
         <translation>加载工程文件“%1”失败</translation>
     </message>
     <message>
-        <location line="-438"/>
+        <location line="-440"/>
         <location line="+22"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
@@ -873,12 +873,12 @@ Table Area</source>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+412"/>
+        <location line="+414"/>
         <source>Project saved successfully,path is %1</source>
         <translation>工程保存成功，路径位于:%1</translation>
     </message>
     <message>
-        <location line="-456"/>
+        <location line="-458"/>
         <source>Project Files (*.%1)</source>
         <translation>工程文件(*.%1)</translation>
     </message>
@@ -888,7 +888,7 @@ Table Area</source>
         <translation>请选中数据操作窗口</translation>
     </message>
     <message>
-        <location line="+410"/>
+        <location line="+412"/>
         <source>Project load successfully,path is %1</source>
         <translation>工程加载成功，路径为：%1</translation>
     </message>
@@ -3490,7 +3490,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-2193"/>
+        <location filename="../APP/DAAppController.cpp" line="-2195"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
