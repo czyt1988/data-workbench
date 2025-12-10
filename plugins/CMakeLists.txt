@@ -98,7 +98,7 @@ endif()
 # 子工程加载
 ########################################################
 if(DA_ENABLE_PYTHON)
-    add_subdirectory(Base)
+    add_subdirectory(DataAnalysis)
 endif()
 
 

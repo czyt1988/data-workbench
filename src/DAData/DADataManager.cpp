@@ -426,6 +426,15 @@ QList< DAData > DADataManager::findDatasReg(const QRegularExpression& regex) con
 }
 
 /**
+ * @brief 获取所有数据
+ * @return
+ */
+QList< DAData > DADataManager::getAllDatas() const
+{
+    return d_ptr->_dataList;
+}
+
+/**
  * @brief 根据id获取数据
  * @param id
  * @return

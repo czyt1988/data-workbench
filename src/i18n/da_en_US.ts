@@ -180,7 +180,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+223"/>
+        <location filename="../APP/DAAppActions.cpp" line="+189"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
@@ -229,18 +229,6 @@ Data</source>
         <location line="+1"/>
         <source>Remove 
 Data</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Export 
-Individual Data</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Export 
-Multiple Data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -460,154 +448,12 @@ Column</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Data Describe</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>To Index</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Drop None</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Drop rows which contain missing values</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Fill None</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Fill rows which contain missing values</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Fill Interpolate</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location line="+2"/>
-        <source>Fill rows which contain missing values by interpolate</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <location line="+7"/>
-        <source>Drop Duplicates</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-6"/>
-        <source>Forward Fill</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Fill NA/NaN values by propagating the last valid observation to next valid.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Back Fill</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Fill NA/NaN values by using the next valid observation to fill the gap.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Drop duplicate datas</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>n std 
-filter outlier</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Remove the outliers beyond n times the standard deviation</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Clip Outlier</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Replace the outlier values that exceed the specified lower and upper limits with the respective limits.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Eval Datas</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Evaluate a string describing operations on DataFrame columns</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Query Datas</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Filter data outside of the given criteria</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Data Retrieval</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Retrieve data for a certain condition</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Filter by Column</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Sort</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Sort Data</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Pivot Table</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Create Pivot Table</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
         <source>New 
 Workflow</source>
         <translation type="unfinished"></translation>
@@ -791,7 +637,7 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+486"/>
+        <location filename="../APP/DAAppController.cpp" line="+469"/>
         <location line="+22"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
@@ -896,54 +742,12 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+271"/>
-        <location line="+37"/>
-        <source>Export Data</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-35"/>
-        <location line="+37"/>
-        <source>Text Files (*.txt *.csv);;Excel Files (*.xlsx);;Python Files (*.pkl);;All Files(*.*)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-14"/>
-        <source>An exception occurred while serializing the dataframe named %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+39"/>
-        <source>An exception occurred while serializing the dataframe named %1 to %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+51"/>
+        <location line="+304"/>
         <source>Before creating a new coordinate,you need to create a figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+369"/>
-        <source>%1_Describe</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Generate descriptive statistics that summarize the central tendency, dispersion and shape of a [%1]’s distribution, excluding NaN values</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+25"/>
-        <source>%1_PviotTable</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Generate pivot table of %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+331"/>
+        <location line="+498"/>
         <source>new workflow name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -979,7 +783,7 @@ Config</source>
 <context>
     <name>DA::DAAppDataManager</name>
     <message>
-        <location filename="../APP/DAAppDataManager.cpp" line="+31"/>
+        <location filename="../APP/DAAppDataManager.cpp" line="+37"/>
         <location line="+23"/>
         <source>begin import file:%1</source>
         <translation type="unfinished"></translation>
@@ -1200,14 +1004,14 @@ Config</source>
     </message>
     <message>
         <location line="+1"/>
-        <location line="+21"/>
+        <location line="+19"/>
         <location line="+85"/>
-        <location line="+207"/>
+        <location line="+186"/>
         <source>Workflow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-312"/>
+        <location line="-289"/>
         <location line="+2"/>
         <source>Data Operation</source>
         <translation type="unfinished"></translation>
@@ -1219,109 +1023,97 @@ Config</source>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+23"/>
-        <location line="+361"/>
+        <location line="+21"/>
+        <location line="+340"/>
         <source>View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-383"/>
+        <location line="-360"/>
         <source>Display</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+182"/>
+        <location line="+178"/>
         <source>DataFrame</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-181"/>
-        <location line="+183"/>
+        <location line="-177"/>
+        <location line="+179"/>
         <source>Operate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-182"/>
-        <location line="+184"/>
+        <location line="-178"/>
+        <location line="+181"/>
         <source>Axes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-183"/>
+        <location line="-180"/>
         <location line="+2"/>
-        <location line="+193"/>
-        <location line="+5"/>
+        <location line="+191"/>
+        <location line="+6"/>
         <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-196"/>
-        <location line="+207"/>
-        <source>Data Cleaning</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-206"/>
-        <location line="+224"/>
-        <source>Statistic</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-221"/>
+        <location line="-193"/>
         <source>Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+304"/>
+        <location line="+283"/>
         <source>Workflow Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-303"/>
-        <location line="+308"/>
+        <location line="-282"/>
+        <location line="+287"/>
         <source>ClipBoard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-307"/>
-        <location line="+312"/>
+        <location line="-286"/>
+        <location line="+291"/>
         <source>Item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-311"/>
-        <location line="+320"/>
+        <location line="-290"/>
+        <location line="+299"/>
         <source>Text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-319"/>
-        <location line="+324"/>
+        <location line="-298"/>
+        <location line="+303"/>
         <source>Background</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-321"/>
-        <location line="+402"/>
+        <location line="-300"/>
+        <location line="+381"/>
         <source>Workflow Run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-401"/>
-        <location line="+404"/>
+        <location line="-380"/>
+        <location line="+383"/>
         <source>Run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-402"/>
-        <location line="+249"/>
+        <location line="-381"/>
+        <location line="+228"/>
         <source>Figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-248"/>
+        <location line="-227"/>
         <source>Figure Setting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1337,13 +1129,13 @@ Config</source>
     </message>
     <message>
         <location line="+1"/>
-        <location line="+408"/>
+        <location line="+387"/>
         <location line="+2"/>
         <source>Chart Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-408"/>
+        <location line="-387"/>
         <source>theme</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1369,12 +1161,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+185"/>
-        <source>Data Filtering</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+126"/>
+        <location line="+290"/>
         <source>Group</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1391,6 +1178,14 @@ Config</source>
     <message>
         <location line="+71"/>
         <source>Recent Files</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAAppUI</name>
+    <message>
+        <location filename="../APP/DAAppUI.cpp" line="+72"/>
+        <source>Failed to load JSON config for settings dialog</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2020,6 +1815,60 @@ Config</source>
     </message>
 </context>
 <context>
+    <name>DA::DACommonPropertySettingDialog</name>
+    <message>
+        <location filename="../DACommonWidgets/DACommonPropertySettingDialog.cpp" line="+491"/>
+        <source>JSON string is empty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Config json parse error:%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>JSON object is empty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>Properties array is empty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Missing &apos;properties&apos; field in JSON config</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+80"/>
+        <location line="+32"/>
+        <source>Property not found:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Invalid value for property:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Value not found in enum items for property:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Type mismatch for property:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+53"/>
+        <source>Failed to load JSON config for settings dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DA::DADataManageTableView</name>
     <message>
         <location filename="../DAGui/DADataManageTableView.cpp" line="+88"/>
@@ -2106,7 +1955,7 @@ Description: %1</source>
 <context>
     <name>DA::DADataOperateOfDataFrameWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+174"/>
+        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+176"/>
         <source>warning</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2116,26 +1965,26 @@ Description: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+30"/>
+        <location line="+36"/>
         <source>please select valid data cells</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+23"/>
-        <location line="+97"/>
-        <location line="+27"/>
-        <location line="+34"/>
+        <location line="+29"/>
+        <location line="+111"/>
         <location line="+35"/>
+        <location line="+42"/>
+        <location line="+43"/>
         <source>please select valid column</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-169"/>
+        <location line="-202"/>
         <source>please select valid cell</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+33"/>
+        <location line="+42"/>
         <source>table have not column</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2143,13 +1992,21 @@ Description: %1</source>
 <context>
     <name>DA::DADataOperateWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateWidget.cpp" line="+176"/>
+        <location filename="../DAGui/DADataOperateWidget.cpp" line="+185"/>
         <source>removing a widget that does not exist in tab</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+59"/>
         <source>[deleted]</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADataTableView</name>
+    <message>
+        <location filename="../DAGui/DADataTableView.cpp" line="+21"/>
+        <source>DADataTableView must set model first</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2283,18 +2140,9 @@ Description: %1</source>
     </message>
 </context>
 <context>
-    <name>DA::DADialogDataFrameClipOutlier</name>
-    <message>
-        <location filename="../DAGui/Dialog/DADialogDataFrameClipOutlier.cpp" line="+29"/>
-        <location line="+16"/>
-        <source>The current input cannot be converted to a floating-point number.</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>DA::DADialogDataFrameDataSearch</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogDataFrameDataSearch.cpp" line="+40"/>
+        <location filename="../DAGui/Dialog/DADialogDataFrameDataSearch.cpp" line="+41"/>
         <source>can not find item</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2378,32 +2226,6 @@ name.str.contains(&quot;John&quot;)
 ```
 
 This can be used to filter rows where the name contains &quot; John &quot;.</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DA::DADialogDataFrameFillInterpolate</name>
-    <message>
-        <location filename="../DAGui/Dialog/DADialogDataFrameFillInterpolate.cpp" line="+27"/>
-        <source>spline</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>polynomial</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+29"/>
-        <source>The current input cannot be converted to a integer number.</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DA::DADialogDataFrameFillna</name>
-    <message>
-        <location filename="../DAGui/Dialog/DADialogDataFrameFillna.cpp" line="+27"/>
-        <source>The current input cannot be converted to a floating-point number.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3370,7 +3192,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-2195"/>
+        <location filename="../APP/DAAppController.cpp" line="-1868"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4387,6 +4209,14 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
 </context>
 <context>
+    <name>DACommonPropertySettingDialog</name>
+    <message>
+        <location filename="../DACommonWidgets/DACommonPropertySettingDialog.ui" line="+14"/>
+        <source>Dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DADataManageWidget</name>
     <message>
         <location filename="../DAGui/DADataManageWidget.ui" line="+14"/>
@@ -4505,35 +4335,6 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
 </context>
 <context>
-    <name>DADialogDataFrameClipOutlier</name>
-    <message>
-        <location filename="../DAGui/Dialog/DADialogDataFrameClipOutlier.ui" line="+14"/>
-        <location line="+6"/>
-        <source>Clip Outlier</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+20"/>
-        <source>-</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Range</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+38"/>
-        <source>OK</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <source>Cancel</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>DADialogDataFrameDataSearch</name>
     <message>
         <location filename="../DAGui/Dialog/DADialogDataFrameDataSearch.ui" line="+14"/>
@@ -4630,113 +4431,6 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+13"/>
         <source>Explanation：</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DADialogDataFrameFillInterpolate</name>
-    <message>
-        <location filename="../DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="+14"/>
-        <location line="+6"/>
-        <source>Fill Interpolate</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Interpolate order</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>This is the maximum number of consecutive NaN values to forward/backward fill. In other words, if there is a gap with more than this number of consecutive NaNs, it will only be partially filled</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>limit</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Interpolate axis</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>This is the maximum number of entries along the entire axis where NaNs will be filled. Must be greater than 0</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>Interpolate method</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>colume</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+19"/>
-        <source>row</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+40"/>
-        <source>OK</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <source>Cancel</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DADialogDataFrameFillna</name>
-    <message>
-        <location filename="../DAGui/Dialog/DADialogDataFrameFillna.ui" line="+14"/>
-        <source>Fill Nan</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Fill NaN values</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>This is the maximum number of consecutive NaN values to forward/backward fill. In other words, if there is a gap with more than this number of consecutive NaNs, it will only be partially filled</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>limit</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>This is the maximum number of entries along the entire axis where NaNs will be filled. Must be greater than 0</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+16"/>
-        <source>Value to use to fill holes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+38"/>
-        <source>OK</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5799,6 +5493,377 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
 </context>
 <context>
+    <name>DataAnalysisUI</name>
+    <message>
+        <location filename="../../plugins/DataAnalysis/DataAnalysisUI.cpp" line="+69"/>
+        <location line="+83"/>
+        <source>Data Cleaning</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-50"/>
+        <location line="+81"/>
+        <source>Data Filtering</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-60"/>
+        <location line="+75"/>
+        <source>Statistic</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-59"/>
+        <source>Export 
+Individual Data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Export 
+Multiple Data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Export all data from the data management area to a folder, with each dataset saved as an individual data file.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Export 
+To Excel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Export all data from the data management area to an Excel file, with each dataset as a separate sheet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Drop None</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Drop rows which contain missing values</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Drop Duplicates</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Drop duplicate datas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Fill None</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Fill rows which contain missing values</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>IQR Outlier Handling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Z-Score Outlier Handling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Transform skewed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Transform skewed numerical data to improve distribution</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Eval Datas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Evaluate a string describing operations on DataFrame columns</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Query Datas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Filter data outside of the given criteria</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Data Retrieval</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Retrieve data for a certain condition</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Filter by Column</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Sort</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Sort Data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Data Describe</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Pivot Table</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Create Pivot Table</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-35"/>
+        <source>The IQR (Interquartile Range) outlier handling method is a non-parametric approach based on data distribution. It identifies extreme values deviating from the overall distribution using the interquartile range, unaffected by outliers themselves and featuring strong stability.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>The Z-Score outlier replacement method is a parametric approach based on the normal distribution assumption. It identifies outliers by quantifying how many standard deviations a data point deviates from the mean, and replaces outliers with reasonable strategies to preserve data integrity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-14"/>
+        <source>Fill Interpolate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Fill rows which contain missing values by interpolate</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DataFrameExportRangeSelectDialog</name>
+    <message>
+        <location filename="../../plugins/DataAnalysis/Dialogs/DataFrameExportRangeSelectDialog.ui" line="+14"/>
+        <source>Dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Select Export Range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Export All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Export Selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DataframeExportSettingsDialog</name>
+    <message>
+        <location filename="../../plugins/DataAnalysis/Dialogs/DataframeExportSettingsDialog.ui" line="+46"/>
+        <source>Export All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Export Selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+113"/>
+        <source>csv</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-80"/>
+        <source>Comma-separated values - Universal text format. Best for data exchange and basic analysis.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+93"/>
+        <source>xlsx</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-63"/>
+        <source>Microsoft Excel format. Supports multiple sheets and formatting.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+73"/>
+        <source>Parquet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-93"/>
+        <source>Column-oriented binary format. High compression and fast querying. Perfect for big data and analytics.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-85"/>
+        <source>Export Data Setting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Select Folder To Export</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+48"/>
+        <source>Feather</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+66"/>
+        <source>Lightweight binary format. Extremely fast read/write speeds. Great for intermediate data storage and Python/R interoperability.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Pickle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-20"/>
+        <source>Python-specific binary format. Preserves complete object structure. Best for temporary storage within Python applications.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-20"/>
+        <source>JSON</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+93"/>
+        <source>JavaScript Object Notation. Human-readable, web-friendly format. Excellent for web APIs and configuration files.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-43"/>
+        <source>HTML</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+53"/>
+        <source>Web page format. Preserves table styling. Ideal for embedding data in reports or emails.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../plugins/DataAnalysis/Dialogs/DataframeExportSettingsDialog.cpp" line="+51"/>
+        <source>Select Folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Warning</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Please select the folder for exporting data</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DataframeIOWorker</name>
+    <message>
+        <location filename="../../plugins/DataAnalysis/DataframeIOWorker.cpp" line="+56"/>
+        <source>No data is selected. Please select the data to export first.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Export Data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>Successfully exported %1 to %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+115"/>
+        <source>%1 . Elapsed: %2:%3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>%1,Cost %2:%3</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DataframeOperateWorker</name>
+    <message>
+        <location filename="../../plugins/DataAnalysis/DataframeOperateWorker.cpp" line="+37"/>
+        <source>Please first open the data table to be operated on.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>This function only supports data in the pandas DataFrame format.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>%1_Describe</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Generate descriptive statistics that summarize the central tendency, dispersion and shape of a [%1]’s distribution, excluding NaN values</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+29"/>
+        <source>%1_PviotTable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Generate pivot table of %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>QObject</name>
     <message>
         <location filename="../DAWorkFlow/DAAbstractNodeGraphicsItem.cpp" line="+929"/>
@@ -6023,7 +6088,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAPyBindQt/pandas/DAPySeries.cpp" line="+312"/>
+        <location filename="../DAPyBindQt/pandas/DAPySeries.cpp" line="+322"/>
         <source>DAPySeries  get python object type is not pandas.Series</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6068,108 +6133,68 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAGui/Commands/DACommandsDataFrame.cpp" line="+25"/>
+        <location filename="../DAGui/Commands/DACommandsDataFrame.cpp" line="+23"/>
         <source>set dataframe data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+24"/>
         <source>insert row</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+44"/>
-        <location line="+25"/>
+        <location line="+30"/>
         <source>insert column &quot;%1&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+54"/>
+        <location line="+45"/>
         <source>drop dataframe rows</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+26"/>
         <source>drop dataframe columns</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+71"/>
+        <location line="+68"/>
         <source>change column type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+77"/>
-        <source>drop nan</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+47"/>
-        <source>fill nan</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+36"/>
-        <source>interpolate</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+35"/>
-        <source>ffill nan</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+35"/>
-        <source>bfill nan</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+44"/>
-        <source>drop duplicates</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+48"/>
-        <source>nstd filter</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+48"/>
-        <source>clip outlier</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+33"/>
+        <location line="+62"/>
         <source>eval datas</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location line="+26"/>
         <source>query datas</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location line="+32"/>
         <source>data select</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+30"/>
+        <location line="+27"/>
         <source>sort datas</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+30"/>
+        <location line="+27"/>
         <source>cast column to num</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+36"/>
+        <location line="+27"/>
         <source>cast column to datetime</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+36"/>
+        <location line="+24"/>
         <source>set column to index</source>
         <translation type="unfinished"></translation>
     </message>

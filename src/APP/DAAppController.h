@@ -155,10 +155,6 @@ private Q_SLOTS:
     void onActionAddDataTriggered();
     // 移除数据
     void onActionRemoveDataTriggered();
-    // 导出单个数据
-    void onActionExportIndividualDataTriggered();
-    // 导出多个数据
-    void onActionExportMultipleDataTriggered();
     //===================================================
     // 绘图标签 Chart Category
     //===================================================
@@ -230,36 +226,6 @@ private Q_SLOTS:
     void onActionInsertColumnLeftTriggered();
     // dataframe列重命名
     void onActionRenameColumnsTriggered();
-    // 创建数据描述
-    void onActionCreateDataDescribeTriggered();
-    // 创建数据透视表
-    void onActionCreatePivotTableTriggered();
-    // 删除缺失值
-    void onActionDataFrameDropNoneTriggered();
-    // 填充缺失值
-    void onActionDataFrameFillNoneTriggered();
-    // 插值填充缺失值
-    void onActionDataFrameFillInterpolateTriggered();
-    // 前向填充缺失值
-    void onActionDataFrameFFillNoneTriggered();
-    // 后向填充缺失值
-    void onActionDataFrameBFillNoneTriggered();
-    // 删除重复值
-    void onActionDropDuplicatesTriggered();
-    // n倍标准差过滤异常值
-    void onActionNstdFilterOutlierTriggered();
-    // 替换界限外异常值
-    void onActionDataFrameClipOutlierTriggered();
-    // 列运算
-    void onActionDataFrameEvalDatasTriggered();
-    // 过滤给定条件外的数据
-    void onActionDataFrameQueryDatasTriggered();
-    // 检索给定的数据
-    void onActionDataFrameDataRetrievalTriggered();
-    // 列数据过滤
-    void onActionDataFrameFilterByColumnTriggered();
-    // 数据排序
-    void onActionDataFrameSortTriggered();
 #if DA_ENABLE_PYTHON
     // 列数据类型改变
     void onComboxColumnTypesCurrentDTypeChanged(const DA::DAPyDType& dt);
@@ -378,7 +344,6 @@ private slots:
     //===================================================
     // 数据操作窗口添加，需要绑定相关信号槽到ribbon的页面
     void onDataOperatePageCreated(DA::DADataOperatePageWidget* page);
-
     //==========================================
     // Qt-Advanced-Docking-System
     //===================================================

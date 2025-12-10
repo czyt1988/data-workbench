@@ -15,60 +15,60 @@ namespace DA
 class DADATA_API DAAbstractData
 {
 public:
-	using Pointer = std::shared_ptr< DAAbstractData >;
-	using IdType  = uint64_t;  ///< id类型
+    using Pointer = std::shared_ptr< DAAbstractData >;
+    using IdType  = uint64_t;  ///< id类型
 public:
-	enum DataType
-	{
-		TypeNone,             ///< 空
-		TypeDataPackage,      ///< 是一个数据包（类似struct）
-		TypePythonObject,     ///< 说明这个是python object
-		TypePythonDataFrame,  ///< 说明这个是python pandas.dataframe
-		TypePythonSeries,     ///< 说明这个是python pandas.dataframe
-		TypeInnerData
-	};
-
-public:
-	DAAbstractData();
-	virtual ~DAAbstractData();
-
-	// 变量类型
-	virtual DataType getDataType() const = 0;
-
-	// 变量值
-	virtual QVariant toVariant() const       = 0;
-	virtual bool setValue(const QVariant& v) = 0;
-
-	// 变量名
-	QString getName() const;
-	void setName(const QString& n);
-
-	// 变量描述
-	QString getDescribe() const;
-	void setDescribe(const QString& d);
-
-	// 返回其父节点（一般此函数之会对DADataPackage有用）
-	Pointer getParent() const;
-	void setParent(Pointer& p);
-
-	//
-	virtual void write(QDataStream& out);
-	virtual bool read(QDataStream& in);
-	// id操作
-	IdType id() const;
-	void setID(IdType d);
+    enum DataType
+    {
+        TypeNone,             ///< 空
+        TypeDataPackage,      ///< 是一个数据包（类似struct）
+        TypePythonObject,     ///< 说明这个是python object
+        TypePythonDataFrame,  ///< 说明这个是python pandas.dataframe
+        TypePythonSeries,     ///< 说明这个是python pandas.dataframe
+        TypeInnerData
+    };
 
 public:
-	// 类型转换为文字
-	static QString typeToString(DataType d);
-	// 生成一个uint64_t的唯一id
-	static IdType generateID();
+    DAAbstractData();
+    virtual ~DAAbstractData();
+
+    // 变量类型
+    virtual DataType getDataType() const = 0;
+
+    // 变量值
+    virtual QVariant toVariant(std::size_t dim1, std::size_t dim2) const         = 0;
+    virtual bool setValue(std::size_t dim1, std::size_t dim2, const QVariant& v) = 0;
+
+    // 变量名
+    QString getName() const;
+    void setName(const QString& n);
+
+    // 变量描述
+    QString getDescribe() const;
+    void setDescribe(const QString& d);
+
+    // 返回其父节点（一般此函数之会对DADataPackage有用）
+    Pointer getParent() const;
+    void setParent(Pointer& p);
+
+    //
+    virtual void write(QDataStream& out);
+    virtual bool read(QDataStream& in);
+    // id操作
+    IdType id() const;
+    void setID(IdType d);
+
+public:
+    // 类型转换为文字
+    static QString typeToString(DataType d);
+    // 生成一个uint64_t的唯一id
+    static IdType generateID();
 
 private:
-	QString mName;      ///< 名称
-	QString mDescribe;  ///< 描述
-	Pointer mParent;    ///< 记录父级节点
-	IdType mID;         ///< id
+    QString mName;      ///< 名称
+    QString mDescribe;  ///< 描述
+    Pointer mParent;    ///< 记录父级节点
+    IdType mID;         ///< id
 };
 
 }  // namespace DA

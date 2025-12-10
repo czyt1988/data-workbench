@@ -1,0 +1,22 @@
+<RCC>
+    <qresource prefix="/DataAnalysisPluginIcon">
+        <file>icon/exportIndividualData.svg</file>
+        <file>icon/exportMultipleData.svg</file>
+        <file>icon/folder.svg</file>
+        <file>icon/export-to-one-xlsx.svg</file>
+        <file>icon/dataframe-drop-none.svg</file>
+        <file>icon/process-duplicate-data.svg</file>
+        <file>icon/dataframe-fill-none.svg</file>
+        <file>icon/dataframe-bfill-none.svg</file>
+        <file>icon/dataframe-clip-outlier.svg</file>
+        <file>icon/dataframe-ffill-none.svg</file>
+        <file>icon/dataframe-interpolate.svg</file>
+        <file>icon/dataframe-describe.svg</file>
+        <file>icon/dataframe-pivot-table.svg</file>
+        <file>icon/dataframe-data-retrieval.svg</file>
+        <file>icon/dataframe-data-select.svg</file>
+        <file>icon/dataframe-eval-datas.svg</file>
+        <file>icon/dataframe-query-datas.svg</file>
+        <file>icon/dataframe-sort.svg</file>
+    </qresource>
+</RCC>

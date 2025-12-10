@@ -45,7 +45,6 @@
 #include "DAAppSettingDialog.h"
 #include "Dialog/DAExportToPngSettingDialog.h"
 #include "Dialog/DAWorkbenchAboutDialog.h"
-#include "Dialog/DADialogDataFrameFillna.h"
 // DACommonWidgets
 #include "DAFontEditPannelWidget.h"
 #include "DAShapeEditPannelWidget.h"
@@ -228,8 +227,6 @@ void DAAppController::initConnection()
     // Data Category
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionAddData, onActionAddDataTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionRemoveData, onActionRemoveDataTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionExportIndividualData, onActionExportIndividualDataTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionExportMultipleData, onActionExportMultipleDataTriggered);
     // Chart Category
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionAddFigure, onActionAddFigureTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionFigureResizeChart, onActionFigureResizeChartTriggered);
@@ -265,24 +262,10 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionRemoveColumn, onActionRemoveColumnTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionRemoveCell, onActionRemoveCellTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionRenameColumns, onActionRenameColumnsTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameDropNone, onActionDataFrameDropNoneTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameFillNone, onActionDataFrameFillNoneTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameFillInterpolate, onActionDataFrameFillInterpolateTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameFFillNone, onActionDataFrameFFillNoneTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameBFillNone, onActionDataFrameBFillNoneTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionDropDuplicates, onActionDropDuplicatesTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionNstdFilterOutlier, onActionNstdFilterOutlierTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionCreateDataDescribe, onActionCreateDataDescribeTriggered);
+
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToNum, onActionCastToNumTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToString, onActionCastToStringTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToDatetime, onActionCastToDatetimeTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameClipOutlier, onActionDataFrameClipOutlierTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameEvalDatas, onActionDataFrameEvalDatasTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameQueryDatas, onActionDataFrameQueryDatasTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameDataFilterColumn, onActionDataFrameFilterByColumnTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameSort, onActionDataFrameSortTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionDataFrameDataRetrieval, onActionDataFrameDataRetrievalTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionCreatePivotTable, onActionCreatePivotTableTriggered);
 #if DA_ENABLE_PYTHON
     // 不知为何使用函数指针无法关联信号和槽
     //  connect(m_comboxColumnTypes, &DAPyDTypeComboBox::currentDTypeChanged, this,&DAAppRibbonArea::onComboxColumnTypesCurrentDTypeChanged);
@@ -1416,88 +1399,6 @@ void DAAppController::onActionRemoveDataTriggered()
 }
 
 /**
- * @brief 导出单个数据
- */
-void DAAppController::onActionExportIndividualDataTriggered()
-{
-    QString dataPath = QFileDialog::getSaveFileName(
-        app(),
-        tr("Export Data"),  // 导出数据
-        QString(),
-        tr("Text Files (*.txt *.csv);;Excel Files (*.xlsx);;Python Files (*.pkl);;All Files(*.*)")  // 数据文件
-    );
-    if (dataPath.isEmpty()) {
-        // 取消退出
-        return;
-    }
-    DA_WAIT_CURSOR_SCOPED();
-    QFileInfo fi(dataPath);
-    QString dataName   = fi.completeBaseName();
-    QString dataSuffix = fi.suffix();
-    QString baseDir    = fi.absolutePath();
-
-    // 获取当前Data
-    DADataManageWidget* dmw       = mDock->getDataManageWidget();
-    DAData data                   = dmw->getOneSelectData();
-    DAAbstractData::DataType type = data.getDataType();
-
-    QString dataFilePath = QString("%1/%2.%3").arg(baseDir, dataName, dataSuffix);
-
-    switch (type) {
-    case DAAbstractData::TypePythonDataFrame: {
-        // 写文件，对于大文件，这里可能比较耗时，但python的gli机制，无法在线程里面写
-        if (!DAData::exportToFile(data, dataFilePath)) {
-            qCritical() << tr("An exception occurred while serializing the dataframe named %1").arg(dataFilePath);  // cn:把名称为%1的dataframe序列化时出现异常
-        }
-    } break;
-    default:
-        break;
-    }
-}
-
-void DAAppController::onActionExportMultipleDataTriggered()
-{
-    QString dataPath = QFileDialog::getSaveFileName(
-        app(),
-        tr("Export Data"),  // 导出数据
-        QString(),
-        tr("Text Files (*.txt *.csv);;Excel Files (*.xlsx);;Python Files (*.pkl);;All Files(*.*)")  // 数据文件
-    );
-    if (dataPath.isEmpty()) {
-        // 取消退出
-        return;
-    }
-    DA_WAIT_CURSOR_SCOPED();
-    QFileInfo fi(dataPath);
-    QString dataName   = fi.completeBaseName();
-    QString dataSuffix = fi.suffix();
-    QString baseDir    = fi.absolutePath();
-
-    const int datacnt = mDatas->getDataCount();
-    for (int i = 0; i < datacnt; ++i) {
-        // 逐个遍历DAData，把数据文件进行持久化
-        DAData data                   = mDatas->getData(i);
-        DAAbstractData::DataType type = data.getDataType();
-        QString name                  = data.getName();
-
-        QString dataFilePath = QString("%1/%2_%3.%4").arg(baseDir, dataName, name, dataSuffix);
-
-        switch (type) {
-        case DAAbstractData::TypePythonDataFrame: {
-            // 写文件，对于大文件，这里可能比较耗时，但python的gli机制，无法在线程里面写
-            if (!DAData::exportToFile(data, dataFilePath)) {
-                qCritical() << tr("An exception occurred while serializing the dataframe named %1 to %2")
-                                   .arg(name, dataFilePath);  // cn:把名称为%1的dataframe序列化到%2时出现异常
-                continue;
-            }
-        } break;
-        default:
-            break;
-        }
-    }
-}
-
-/**
  * @brief 添加一个figure
  */
 void DAAppController::onActionAddFigureTriggered()
@@ -1889,235 +1790,6 @@ void DAAppController::onActionRenameColumnsTriggered()
     if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
         dfopt->renameColumns();
         setDirty();
-    }
-#endif
-}
-
-/**
- * @brief 创建数据描述
- */
-void DAAppController::onActionCreateDataDescribeTriggered()
-{
-    // TODO 此函数应该移动到dataOperateWidget中
-#if DA_ENABLE_PYTHON
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-        DAPyDataFrame df = dfopt->createDataDescribe();
-        if (df.isNone()) {
-            return;
-        }
-        DAData data = df;
-        data.setName(tr("%1_Describe").arg(dfopt->data().getName()));
-        data.setDescribe(tr("Generate descriptive statistics that summarize the central tendency, dispersion and "
-                            "shape of a [%1]’s distribution, excluding NaN values")
-                             .arg(dfopt->data().getName()));
-        mDatas->addData_(data);
-        // showDataOperate要在m_dataManagerStack.push之后，因为m_dataManagerStack.push可能会导致data的名字改变
-        mDock->showDataOperateWidget(data);
-        setDirty();
-    }
-#endif
-}
-
-/**
- * @brief 创建数据透视表
- */
-void DAAppController::onActionCreatePivotTableTriggered()
-{
-    // TODO 此函数应该移动到dataOperateWidget中
-#if DA_ENABLE_PYTHON
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-        DAPyDataFrame df = dfopt->createPivotTable();
-        if (df.empty()) {
-            return;
-        }
-        DAData originData = dfopt->data();
-        DAData data       = df;
-        data.setName(tr("%1_PviotTable").arg(originData.getName()));
-        data.setDescribe(tr("Generate pivot table of %1").arg(originData.getName()));
-        mDatas->addData_(data);
-        // showDataOperate要在m_dataManagerStack.push之后，因为m_dataManagerStack.push可能会导致data的名字改变
-        mDock->showDataOperateWidget(data);
-        setDirty();
-    }
-#endif
-}
-
-/**
- * @brief 删除缺失值
- */
-void DAAppController::onActionDataFrameDropNoneTriggered()
-{
-#if DA_ENABLE_PYTHON
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-        dfopt->dropna();
-        setDirty();
-    }
-#endif
-}
-
-/**
- * @brief 填充缺失值
- */
-void DAAppController::onActionDataFrameFillNoneTriggered()
-{
-#if DA_ENABLE_PYTHON
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-        if (dfopt->fillna()) {
-            setDirty();
-        }
-    }
-#endif
-}
-
-/**
- * @brief 插值法填充缺失值
- */
-void DAAppController::onActionDataFrameFillInterpolateTriggered()
-{
-#if DA_ENABLE_PYTHON
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-        if (dfopt->interpolate()) {
-            setDirty();
-        }
-    }
-#endif
-}
-
-/**
- * @brief 前向填充缺失值
- */
-void DAAppController::onActionDataFrameFFillNoneTriggered()
-{
-#if DA_ENABLE_PYTHON
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-        if (dfopt->ffillna()) {
-            setDirty();
-        }
-    }
-#endif
-}
-
-/**
- * @brief 后向填充缺失值
- */
-void DAAppController::onActionDataFrameBFillNoneTriggered()
-{
-#if DA_ENABLE_PYTHON
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-        if (dfopt->bfillna()) {
-            setDirty();
-        }
-    }
-#endif
-}
-
-/**
- * @brief 删除重复值
- */
-void DAAppController::onActionDropDuplicatesTriggered()
-{
-#if DA_ENABLE_PYTHON
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-        dfopt->dropduplicates();
-        setDirty();
-    }
-#endif
-}
-
-/**
- * @brief n倍标准差过滤异常值
- */
-void DAAppController::onActionNstdFilterOutlierTriggered()
-{
-#if DA_ENABLE_PYTHON
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-        if (dfopt->nstdfilteroutlier() > 0) {
-            setDirty();
-        }
-    }
-#endif
-}
-
-/**
- * @brief 替换界限外异常值
- */
-void DAAppController::onActionDataFrameClipOutlierTriggered()
-{
-#if DA_ENABLE_PYTHON
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-        if (dfopt->clipoutlier()) {
-            setDirty();
-        }
-    }
-#endif
-}
-
-/**
- * @brief 执行列运算
- */
-void DAAppController::onActionDataFrameEvalDatasTriggered()
-{
-#if DA_ENABLE_PYTHON
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-        if (dfopt->evalDatas()) {
-            setDirty();
-        }
-    }
-#endif
-}
-
-/**
- * @brief 过滤给定条件外的数据
- */
-void DAAppController::onActionDataFrameQueryDatasTriggered()
-{
-#if DA_ENABLE_PYTHON
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-        if (dfopt->queryDatas()) {
-            setDirty();
-        }
-    }
-#endif
-}
-
-/**
- * @brief 检索给定的数据
- */
-void DAAppController::onActionDataFrameDataRetrievalTriggered()
-{
-#if DA_ENABLE_PYTHON
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-        dfopt->searchData();
-        setDirty();
-    }
-#endif
-}
-
-/**
- * @brief 过滤给定条件外的数据
- */
-void DAAppController::onActionDataFrameFilterByColumnTriggered()
-{
-#if DA_ENABLE_PYTHON
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-        if (dfopt->filterByColumn()) {
-            setDirty();
-        }
-    }
-#endif
-}
-
-/**
-
- * @brief 数据排序
- */
-void DAAppController::onActionDataFrameSortTriggered()
-{
-#if DA_ENABLE_PYTHON
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-        if (dfopt->sortDatas()) {
-            setDirty();
-        }
     }
 #endif
 }

@@ -175,6 +175,18 @@ QVariant DAPySeries::iat(std::size_t i) const
     return QVariant();
 }
 
+bool DAPySeries::iat(size_t r, const QVariant& v)
+{
+    try {
+        pybind11::object obj_iat     = object().attr("iat");
+        obj_iat[ pybind11::int_(r) ] = DA::PY::toPyObject(v, dtype());
+        return true;
+    } catch (const std::exception& e) {
+        qCritical().noquote() << e.what();
+    }
+    return false;
+}
+
 bool DAPySeries::isNumeric() const
 {
     if (isNone()) {
@@ -211,9 +223,9 @@ bool DAPySeries::isCategorical() const
     return dtype_str.find("category") != std::string::npos;
 }
 
-pybind11::object DAPySeries::index() const
+DAPyIndex DAPySeries::index() const
 {
-    return object().attr("index");
+    return DAPyIndex(object().attr("index"));
 }
 
 QStringList DAPySeries::indexAsStringList() const
@@ -223,13 +235,12 @@ QStringList DAPySeries::indexAsStringList() const
         return result;
     }
 
-    pybind11::object index_obj = index();
-    std::size_t index_size     = pybind11::len(index_obj);
+    DAPyIndex index_obj    = index();
+    std::size_t index_size = index_obj.size();
     result.reserve(static_cast< int >(index_size));
 
     for (std::size_t i = 0; i < index_size; ++i) {
-        pybind11::object item = index_obj[ pybind11::int_(i) ];
-        result.append(PY::toString(item));
+        result.append(index_obj[ i ].toString());
     }
 
     return result;
@@ -242,16 +253,16 @@ QVector< double > DAPySeries::indexAsDoubleVector() const
         return result;
     }
 
-    pybind11::object index_obj = index();
-    std::size_t index_size     = pybind11::len(index_obj);
+    DAPyIndex index_obj    = index();
+    std::size_t index_size = index_obj.size();
     result.reserve(static_cast< int >(index_size));
 
     for (std::size_t i = 0; i < index_size; ++i) {
-        pybind11::object item = index_obj[ pybind11::int_(i) ];
-        try {
-            double value = item.cast< double >();
+        bool isok;
+        double value = index_obj[ i ].toDouble(&isok);
+        if (isok) {
             result.append(value);
-        } catch (...) {
+        } else {
             result.append(std::numeric_limits< double >::quiet_NaN());
         }
     }
@@ -268,13 +279,12 @@ QVector< QDateTime > DAPySeries::indexAsDateTimeVector() const
 
     // 如果索引是日期时间类型，直接转换
     if (isDateTime()) {
-        pybind11::object index_obj = index();
-        std::size_t index_size     = pybind11::len(index_obj);
+        DAPyIndex index_obj    = index();
+        std::size_t index_size = index_obj.size();
         result.reserve(static_cast< int >(index_size));
 
         for (std::size_t i = 0; i < index_size; ++i) {
-            pybind11::object item = index_obj[ pybind11::int_(i) ];
-            QVariant var          = DA::PY::toVariant(item);
+            QVariant var = index_obj[ i ];
             if (var.canConvert< QDateTime >()) {
                 result.append(var.toDateTime());
             } else {

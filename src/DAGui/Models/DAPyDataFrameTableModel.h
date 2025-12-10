@@ -20,73 +20,58 @@ namespace DA
  */
 class DAGUI_API DAPyDataFrameTableModel : public DAAbstractCacheWindowTableModel
 {
-	Q_OBJECT
-	DA_DECLARE_PRIVATE(DAPyDataFrameTableModel)
+    Q_OBJECT
+    DA_DECLARE_PRIVATE(DAPyDataFrameTableModel)
 public:
-	DAPyDataFrameTableModel(QUndoStack* stack, QObject* parent = nullptr);
-	~DAPyDataFrameTableModel();
+    DAPyDataFrameTableModel(QUndoStack* stack, QObject* parent = nullptr);
+    ~DAPyDataFrameTableModel();
 
 public:
-	virtual int columnCount(const QModelIndex& parent = QModelIndex()) const override;
+    virtual int columnCount(const QModelIndex& parent = QModelIndex()) const override;
 
-	virtual QVariant actualHeaderData(int actualSection, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
-	virtual int actualRowCount() const override;
-	virtual QVariant actualData(int actualRow, int actualColumn, int role = Qt::DisplayRole) const override;
-	// 设置数据
-	virtual bool setActualData(int actualRow, int actualColumn, const QVariant& value, int role = Qt::EditRole) override;
+    virtual QVariant actualHeaderData(int actualSection, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+    virtual int actualRowCount() const override;
+    virtual QVariant actualData(int actualRow, int actualColumn, int role = Qt::DisplayRole) const override;
+    // 设置数据
+    virtual bool setActualData(int actualRow, int actualColumn, const QVariant& value, int role = Qt::EditRole) override;
 
 public:
-	DAPyDataFrame& dataFrame();
-	const DAPyDataFrame& dataFrame() const;
-	// 缓存模式
-	// 设置数据
-	void setDAData(const DAData& d);
-	void setDataFrame(const DAPyDataFrame& d);
-	// 设置使用缓存模式，缓存模式不会频繁调用dataframe，在setdataframe时把常用的参数缓存
-	void setUseCacheMode(bool on = true);
+    DAPyDataFrame& dataFrame();
+    const DAPyDataFrame& dataFrame() const;
+    // 缓存模式
+    // 设置数据
+    void setDAData(const DAData& d);
+    void setDataFrame(const DAPyDataFrame& d);
+    // 设置使用缓存模式，缓存模式不会频繁调用dataframe，在setdataframe时把常用的参数缓存
+    void setUseCacheMode(bool on = true);
     // 滑动窗模式
 
-	// 设置滑动窗模式的起始行
-	virtual void setCacheWindowStartRow(int startRow) override;
+    // 设置滑动窗模式的起始行
+    virtual void setCacheWindowStartRow(int startRow) override;
 
-	// 刷新
-	void refreshData();
-	void notifyRowChanged(int row);
-	void notifyColumnChanged(int col);
-	void notifyDataChanged(int row, int col);
-	void notifyDataChanged(int rowStart, int colStart, int rowEnd, int colEnd);
-	// 行将移除
-	void notifyRowsRemoved(const QList< int >& r);
+    // 刷新
+    void refreshData();
 
-	// 行将插入
-	void notifyRowsInserted(const QList< int >& r);
-
-	// 行将移除
-	void notifyColumnsRemoved(const QList< int >& c);
-
-	// 行将插入
-	void notifyColumnsInserted(const QList< int >& c);
-
-	// 超出模型实际数据行数的额外空行数量
-	void setExtraRowCount(int v);
-	int getExtraRowCount() const;
-	// 超出模型实际数据列数的额外空列数量
-	void setExtraColumnCount(int v);
-	int getExtraColumnCount() const;
-	// 最小显示的行数量
-	void setMinShowRowCount(int v);
-	int getMinShowRowCount() const;
-	// 最小显示的列数量
-	void setMinShowColumnCount(int v);
-	int getMinShowColumnCount() const;
+    // 超出模型实际数据行数的额外空行数量
+    void setExtraRowCount(int v);
+    int getExtraRowCount() const;
+    // 超出模型实际数据列数的额外空列数量
+    void setExtraColumnCount(int v);
+    int getExtraColumnCount() const;
+    // 最小显示的行数量
+    void setMinShowRowCount(int v);
+    int getMinShowRowCount() const;
+    // 最小显示的列数量
+    void setMinShowColumnCount(int v);
+    int getMinShowColumnCount() const;
 
 protected:
-	// 缓存
-	void cacheShape();
-	void cacheRowShape();
-	void cacheColumnShape();
+    // 缓存
+    void cacheShape() override;
+    void cacheRowShape();
+    void cacheColumnShape();
 Q_SIGNALS:
-	void currentPageChanged(int newPage);
+    void currentPageChanged(int newPage);
 };
 }  // end of namespace DA
 #endif  // DAPYDATAFRAMETABLEMODEL_H

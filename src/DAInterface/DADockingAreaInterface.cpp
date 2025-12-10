@@ -127,59 +127,21 @@ void DADockingAreaInterface::resetDefaultSplitterSizes()
 
 QList< DAData > DADockingAreaInterface::getCurrentSelectDatas() const
 {
-    QList< DAData > res;
-    // 获取当前的焦点
-    ads::CDockWidget* currentFource = dockManager()->focusedDockWidget();
-    if (currentFource == nullptr) {
-        // 说明没有焦点的窗口，返回空
-        return res;
-    }
-    // 查看是否是DataOperateWidget
-    auto dow = getDataOperateWidget();
     auto dmw = getDataManageWidget();
-
-    if (currentFource->widget() == dow) {
-        // 数据表窗口，调用getCurrentSelectDatas
-        return dow->getCurrentSelectDatas();
-    } else if (currentFource->widget() == dmw) {
-        // 数据管理窗口，调用getSelectDatas
-        return dmw->getCurrentSelectDatas();
+    if (!dmw) {
+        return QList< DAData >();
     }
-
-    return res;
+    return dmw->getCurrentSelectDatas();
 }
-#if DA_ENABLE_PYTHON
-/**
- * @brief 获取当前选中的dataframe
- *
- * @return pair:first 选中的dataframe，pair:second 选中的列索引，对于当前选中的是DataManageWidget，第二项返回空
- */
-std::pair< DAPyDataFrame, QList< int > > DADockingAreaInterface::getCurrentSelectDataFrame() const
+
+DAData DADockingAreaInterface::getCurrentOperateData() const
 {
-    std::pair< DAPyDataFrame, QList< int > > res;
-    // 获取当前的焦点
-    ads::CDockWidget* currentFource = dockManager()->focusedDockWidget();
-    if (currentFource == nullptr) {
-        // 说明没有焦点的窗口，返回空
-        return res;
-    }
-    // 查看是否是DataOperateWidget
     auto dow = getDataOperateWidget();
-    auto dmw = getDataManageWidget();
-
-    if (currentFource->widget() == dow) {
-        // 数据表窗口，调用getCurrentSelectDatas
-        return dow->getCurrentSelectDataFrame();
-    } else if (currentFource->widget() == dmw) {
-        // 数据管理窗口，调用getSelectDatas
-        auto sd = dmw->getOneSelectData();
-        if (sd.isDataFrame()) {
-            res.first = sd.toDataFrame();
-        }
+    if (!dow) {
+        return DAData();
     }
-    return res;
+    return dow->getCurrentOperateData();
 }
-#endif
 
 bool DADockingAreaInterface::isDataOperateWidgetDockOnFource() const
 {

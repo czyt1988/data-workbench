@@ -180,7 +180,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+223"/>
+        <location filename="../APP/DAAppActions.cpp" line="+189"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
@@ -232,20 +232,6 @@ Data</source>
 Data</source>
         <translation>移除
 数据</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Export 
-Individual Data</source>
-        <translation>导出
-单个数据</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Export 
-Multiple Data</source>
-        <translation>导出
-多个数据</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -460,162 +446,12 @@ Column</source>
         <translation>转换为日期类型</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Data Describe</source>
-        <translation>数据描述</translation>
-    </message>
-    <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>To Index</source>
         <translation>转换为索引</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Drop None</source>
-        <translation>删除
-缺失值</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Drop rows which contain missing values</source>
-        <translation>删除包含缺失值的行</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Fill None</source>
-        <translation>填充
-缺失值</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Fill rows which contain missing values</source>
-        <translation>填充包含缺失值的行</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Fill Interpolate</source>
-        <translation>插值填充</translation>
-    </message>
-    <message>
         <location line="+2"/>
-        <source>Fill rows which contain missing values by interpolate</source>
-        <translation>插值法填充包含缺失值的行</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <location line="+7"/>
-        <source>Drop Duplicates</source>
-        <translation>删除
-重复值</translation>
-    </message>
-    <message>
-        <location line="-6"/>
-        <source>Forward Fill</source>
-        <translation>前向填充
-缺失值</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Fill NA/NaN values by propagating the last valid observation to next valid.</source>
-        <translation>将第一个有效值填充到缺失值。</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Back Fill</source>
-        <translation>反向填充
-缺失值</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Fill NA/NaN values by using the next valid observation to fill the gap.</source>
-        <translation>将最后一个有效值反向填充缺失值。</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Drop duplicate datas</source>
-        <translation>删除数据中的重复记录</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>n std 
-filter outlier</source>
-        <translation>过滤
-异常值</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Remove the outliers beyond n times the standard deviation</source>
-        <translation>删除n倍标准差外的异常值</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Clip Outlier</source>
-        <translation>替换
-异常值</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Replace the outlier values that exceed the specified lower and upper limits with the respective limits.</source>
-        <translation>将超出限定上下限的异常值替换为上下限。</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Eval Datas</source>
-        <translation>数值计算</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Evaluate a string describing operations on DataFrame columns</source>
-        <translation>输入关于列操作的表达式字符串并执行计算</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Query Datas</source>
-        <translation>查询数据</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Sort</source>
-        <translation>排序</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Sort Data</source>
-        <translation>数据排序</translation>
-    </message>
-    <message>
-        <location line="-5"/>
-        <source>Filter data outside of the given criteria</source>
-        <translation>过滤给定条件外的数据</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Data Retrieval</source>
-        <translation>数据检索</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Retrieve data for a certain condition</source>
-        <translation>检索某条件的数据</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Filter by Column</source>
-        <translation>列数据过滤</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Pivot Table</source>
-        <translation>数据
-透视表</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Create Pivot Table</source>
-        <translation>创建数据透视表</translation>
-    </message>
-    <message>
-        <location line="+3"/>
         <source>New 
 Workflow</source>
         <translation>新建
@@ -752,7 +588,7 @@ Config</source>
         <translation>暗色主题</translation>
     </message>
     <message>
-        <location line="-94"/>
+        <location line="-60"/>
         <source>Zoom Out</source>
         <translation>缩小</translation>
     </message>
@@ -762,7 +598,7 @@ Config</source>
         <translation>放大</translation>
     </message>
     <message>
-        <location line="+70"/>
+        <location line="+36"/>
         <source>Run 
 Workflow</source>
         <translation>运行
@@ -823,7 +659,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+860"/>
+        <location filename="../APP/DAAppController.cpp" line="+843"/>
         <location line="+49"/>
         <source>project file(*.%1)</source>
         <translation>工程文件(*.%1)</translation>
@@ -928,54 +764,12 @@ Table Area</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
     <message>
-        <location line="+271"/>
-        <location line="+37"/>
-        <source>Export Data</source>
-        <translation>导出数据</translation>
-    </message>
-    <message>
-        <location line="-35"/>
-        <location line="+37"/>
-        <source>Text Files (*.txt *.csv);;Excel Files (*.xlsx);;Python Files (*.pkl);;All Files(*.*)</source>
-        <translation>文本文件 (*.txt *.csv);;Excel文件 (*.xlsx);;Python二进制文件 (*.pkl);;所有文件(*.*)</translation>
-    </message>
-    <message>
-        <location line="-14"/>
-        <source>An exception occurred while serializing the dataframe named %1</source>
-        <translation>把名称为“%1”的dataframe序列化时出现异常</translation>
-    </message>
-    <message>
-        <location line="+39"/>
-        <source>An exception occurred while serializing the dataframe named %1 to %2</source>
-        <translation>把名称为“%1”的dataframe序列化到“%2”时出现异常</translation>
-    </message>
-    <message>
-        <location line="+51"/>
+        <location line="+304"/>
         <source>Before creating a new coordinate,you need to create a figure</source>
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
     <message>
-        <location line="+369"/>
-        <source>%1_Describe</source>
-        <translation>%1_Describe</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Generate descriptive statistics that summarize the central tendency, dispersion and shape of a [%1]’s distribution, excluding NaN values</source>
-        <translation>生成描述性统计数据，汇总[%1]分布的中心趋势、分散度和结构（不包括NaN值）</translation>
-    </message>
-    <message>
-        <location line="+25"/>
-        <source>%1_PviotTable</source>
-        <translation>%1_透视表</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Generate pivot table of %1</source>
-        <translation>生成“%1”的透视表</translation>
-    </message>
-    <message>
-        <location line="+331"/>
+        <location line="+498"/>
         <source>new workflow name</source>
         <translation>新工作流名称</translation>
     </message>
@@ -1011,7 +805,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppDataManager</name>
     <message>
-        <location filename="../APP/DAAppDataManager.cpp" line="+31"/>
+        <location filename="../APP/DAAppDataManager.cpp" line="+37"/>
         <location line="+23"/>
         <source>begin import file:%1</source>
         <translation>开始导入文件“%1”</translation>
@@ -1227,14 +1021,14 @@ Table Area</source>
     </message>
     <message>
         <location line="+1"/>
-        <location line="+21"/>
+        <location line="+19"/>
         <location line="+85"/>
-        <location line="+207"/>
+        <location line="+186"/>
         <source>Workflow</source>
         <translation>工作流</translation>
     </message>
     <message>
-        <location line="-312"/>
+        <location line="-289"/>
         <location line="+2"/>
         <source>Data Operation</source>
         <translation>数据操作</translation>
@@ -1246,109 +1040,97 @@ Table Area</source>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+23"/>
-        <location line="+361"/>
+        <location line="+21"/>
+        <location line="+340"/>
         <source>View</source>
         <translation>视图</translation>
     </message>
     <message>
-        <location line="-383"/>
+        <location line="-360"/>
         <source>Display</source>
         <translation>视图显示</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+182"/>
+        <location line="+178"/>
         <source>DataFrame</source>
         <translation>DataFrame</translation>
     </message>
     <message>
-        <location line="-181"/>
-        <location line="+183"/>
+        <location line="-177"/>
+        <location line="+179"/>
         <source>Operate</source>
         <translation>操作</translation>
     </message>
     <message>
-        <location line="-182"/>
-        <location line="+184"/>
+        <location line="-178"/>
+        <location line="+181"/>
         <source>Axes</source>
         <translation>Axes</translation>
     </message>
     <message>
-        <location line="-183"/>
+        <location line="-180"/>
         <location line="+2"/>
-        <location line="+193"/>
-        <location line="+5"/>
+        <location line="+191"/>
+        <location line="+6"/>
         <source>Type</source>
         <translation>类型</translation>
     </message>
     <message>
-        <location line="-196"/>
-        <location line="+207"/>
-        <source>Data Cleaning</source>
-        <translation>数据清洗</translation>
-    </message>
-    <message>
-        <location line="-206"/>
-        <location line="+224"/>
-        <source>Statistic</source>
-        <translation>统计</translation>
-    </message>
-    <message>
-        <location line="-221"/>
+        <location line="-193"/>
         <source>Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+304"/>
+        <location line="+283"/>
         <source>Workflow Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
-        <location line="-303"/>
-        <location line="+308"/>
+        <location line="-282"/>
+        <location line="+287"/>
         <source>ClipBoard</source>
         <translation>剪切板</translation>
     </message>
     <message>
-        <location line="-307"/>
-        <location line="+312"/>
+        <location line="-286"/>
+        <location line="+291"/>
         <source>Item</source>
         <translation>图元</translation>
     </message>
     <message>
-        <location line="-311"/>
-        <location line="+320"/>
+        <location line="-290"/>
+        <location line="+299"/>
         <source>Text</source>
         <translation>文本</translation>
     </message>
     <message>
-        <location line="-319"/>
-        <location line="+324"/>
+        <location line="-298"/>
+        <location line="+303"/>
         <source>Background</source>
         <translation>背景</translation>
     </message>
     <message>
-        <location line="-321"/>
-        <location line="+402"/>
+        <location line="-300"/>
+        <location line="+381"/>
         <source>Workflow Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location line="-401"/>
-        <location line="+404"/>
+        <location line="-380"/>
+        <location line="+383"/>
         <source>Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location line="-402"/>
-        <location line="+249"/>
+        <location line="-381"/>
+        <location line="+228"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
     <message>
-        <location line="-248"/>
+        <location line="-227"/>
         <source>Figure Setting</source>
         <translation>绘图设置</translation>
     </message>
@@ -1364,13 +1146,13 @@ Table Area</source>
     </message>
     <message>
         <location line="+1"/>
-        <location line="+408"/>
+        <location line="+387"/>
         <location line="+2"/>
         <source>Chart Edit</source>
         <translation>绘图编辑</translation>
     </message>
     <message>
-        <location line="-408"/>
+        <location line="-387"/>
         <source>theme</source>
         <translation>主题</translation>
     </message>
@@ -1396,17 +1178,12 @@ Table Area</source>
         <translation>把工作流的场景导出为图片</translation>
     </message>
     <message>
-        <location line="+446"/>
+        <location line="+425"/>
         <source>Recent Files</source>
         <translation>最近打开的文件</translation>
     </message>
     <message>
-        <location line="-261"/>
-        <source>Data Filtering</source>
-        <translation>数据过滤</translation>
-    </message>
-    <message>
-        <location line="+126"/>
+        <location line="-135"/>
         <source>Group</source>
         <translation>分组</translation>
     </message>
@@ -1421,9 +1198,17 @@ Table Area</source>
         <translation>导出</translation>
     </message>
     <message>
-        <location line="-427"/>
+        <location line="-404"/>
         <source>File</source>
         <translation>文件</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAAppUI</name>
+    <message>
+        <location filename="../APP/DAAppUI.cpp" line="+72"/>
+        <source>Failed to load JSON config for settings dialog</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2052,6 +1837,60 @@ Table Area</source>
     </message>
 </context>
 <context>
+    <name>DA::DACommonPropertySettingDialog</name>
+    <message>
+        <location filename="../DACommonWidgets/DACommonPropertySettingDialog.cpp" line="+491"/>
+        <source>JSON string is empty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Config json parse error:%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>JSON object is empty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>Properties array is empty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Missing &apos;properties&apos; field in JSON config</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+80"/>
+        <location line="+32"/>
+        <source>Property not found:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Invalid value for property:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Value not found in enum items for property:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Type mismatch for property:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+53"/>
+        <source>Failed to load JSON config for settings dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DA::DADataManageTableView</name>
     <message>
         <location filename="../DAGui/DADataManageTableView.cpp" line="+88"/>
@@ -2113,32 +1952,34 @@ Table Area</source>
         <location line="+95"/>
         <location line="+2"/>
         <source>Name</source>
-        <translation type="unfinished">名称</translation>
+        <translation>名称</translation>
     </message>
     <message>
         <location line="-242"/>
         <location line="+145"/>
         <location line="+97"/>
         <source>Properties</source>
-        <translation type="unfinished"></translation>
+        <translation>属性</translation>
     </message>
     <message>
         <location line="+243"/>
         <source>
 Type: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>
+类型：%1</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>
 Description: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>
+详情：%1</translation>
     </message>
 </context>
 <context>
     <name>DA::DADataOperateOfDataFrameWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+174"/>
+        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+176"/>
         <source>warning</source>
         <translation>警告</translation>
     </message>
@@ -2148,26 +1989,26 @@ Description: %1</source>
         <translation>必须指定列的名字</translation>
     </message>
     <message>
-        <location line="+30"/>
+        <location line="+36"/>
         <source>please select valid data cells</source>
         <translation>请选择正确的行</translation>
     </message>
     <message>
-        <location line="+23"/>
-        <location line="+97"/>
-        <location line="+27"/>
-        <location line="+34"/>
+        <location line="+29"/>
+        <location line="+111"/>
         <location line="+35"/>
+        <location line="+42"/>
+        <location line="+43"/>
         <source>please select valid column</source>
         <translation>请选择正确的列</translation>
     </message>
     <message>
-        <location line="-169"/>
+        <location line="-202"/>
         <source>please select valid cell</source>
         <translation>请选择正确的单元格</translation>
     </message>
     <message>
-        <location line="+33"/>
+        <location line="+42"/>
         <source>table have not column</source>
         <translation>表格没有列</translation>
     </message>
@@ -2175,7 +2016,7 @@ Description: %1</source>
 <context>
     <name>DA::DADataOperateWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateWidget.cpp" line="+176"/>
+        <location filename="../DAGui/DADataOperateWidget.cpp" line="+185"/>
         <source>removing a widget that does not exist in tab</source>
         <translation>正在移除一个不存在的窗口</translation>
     </message>
@@ -2183,6 +2024,14 @@ Description: %1</source>
         <location line="+59"/>
         <source>[deleted]</source>
         <translation>[已删除]</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADataTableView</name>
+    <message>
+        <location filename="../DAGui/DADataTableView.cpp" line="+21"/>
+        <source>DADataTableView must set model first</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2315,18 +2164,9 @@ Description: %1</source>
     </message>
 </context>
 <context>
-    <name>DA::DADialogDataFrameClipOutlier</name>
-    <message>
-        <location filename="../DAGui/Dialog/DADialogDataFrameClipOutlier.cpp" line="+29"/>
-        <location line="+16"/>
-        <source>The current input cannot be converted to a floating-point number.</source>
-        <translation>当前输入内容无法转换为浮点数。</translation>
-    </message>
-</context>
-<context>
     <name>DA::DADialogDataFrameDataSearch</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogDataFrameDataSearch.cpp" line="+40"/>
+        <location filename="../DAGui/Dialog/DADialogDataFrameDataSearch.cpp" line="+41"/>
         <source>can not find item</source>
         <translation>无法找到条目</translation>
     </message>
@@ -2471,32 +2311,6 @@ name.str.contains(&quot;John&quot;)
 ```
 
 可用于筛选名字中包含 &quot;John&quot; 的行。</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DADialogDataFrameFillInterpolate</name>
-    <message>
-        <location filename="../DAGui/Dialog/DADialogDataFrameFillInterpolate.cpp" line="+27"/>
-        <source>spline</source>
-        <translation>样条线</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>polynomial</source>
-        <translation>多项式</translation>
-    </message>
-    <message>
-        <location line="+29"/>
-        <source>The current input cannot be converted to a integer number.</source>
-        <translation>当前输入内容无法转换为整型数。</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DADialogDataFrameFillna</name>
-    <message>
-        <location filename="../DAGui/Dialog/DADialogDataFrameFillna.cpp" line="+27"/>
-        <source>The current input cannot be converted to a floating-point number.</source>
-        <translation>当前输入内容无法转换为浮点数。</translation>
     </message>
 </context>
 <context>
@@ -3490,7 +3304,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-2195"/>
+        <location filename="../APP/DAAppController.cpp" line="-1868"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -4507,6 +4321,14 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
 </context>
 <context>
+    <name>DACommonPropertySettingDialog</name>
+    <message>
+        <location filename="../DACommonWidgets/DACommonPropertySettingDialog.ui" line="+14"/>
+        <source>Dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DADataManageWidget</name>
     <message>
         <location filename="../DAGui/DADataManageWidget.ui" line="+14"/>
@@ -4625,35 +4447,6 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
 </context>
 <context>
-    <name>DADialogDataFrameClipOutlier</name>
-    <message>
-        <location filename="../DAGui/Dialog/DADialogDataFrameClipOutlier.ui" line="+14"/>
-        <location line="+6"/>
-        <source>Clip Outlier</source>
-        <translation>裁剪异常值</translation>
-    </message>
-    <message>
-        <location line="+20"/>
-        <source>-</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Range</source>
-        <translation>范围</translation>
-    </message>
-    <message>
-        <location line="+38"/>
-        <source>OK</source>
-        <translation>确认</translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <source>Cancel</source>
-        <translation>取消</translation>
-    </message>
-</context>
-<context>
     <name>DADialogDataFrameDataSearch</name>
     <message>
         <location filename="../DAGui/Dialog/DADialogDataFrameDataSearch.ui" line="+20"/>
@@ -4755,113 +4548,6 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <location line="+13"/>
         <source>Explanation：</source>
         <translation>说明：</translation>
-    </message>
-</context>
-<context>
-    <name>DADialogDataFrameFillInterpolate</name>
-    <message>
-        <location filename="../DAGui/Dialog/DADialogDataFrameFillInterpolate.ui" line="+14"/>
-        <location line="+6"/>
-        <source>Fill Interpolate</source>
-        <translation>插值填充</translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Interpolate order</source>
-        <translation>阶数</translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>This is the maximum number of consecutive NaN values to forward/backward fill. In other words, if there is a gap with more than this number of consecutive NaNs, it will only be partially filled</source>
-        <translation>这是最大连续向前/向后填充的 NaN 值的数量。换句话说，如果存在一个包含超过此数量的连续 NaN 值的空缺，它将只会被部分填充</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>limit</source>
-        <translation>限制</translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Interpolate axis</source>
-        <translation>插值维度</translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>This is the maximum number of entries along the entire axis where NaNs will be filled. Must be greater than 0</source>
-        <translation>这是沿整个轴方向填充 NaN 的最大条目数。必须大于 0</translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>Interpolate method</source>
-        <translation>插值方法</translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>colume</source>
-        <translation>列方向</translation>
-    </message>
-    <message>
-        <location line="+19"/>
-        <source>row</source>
-        <translation>行方向</translation>
-    </message>
-    <message>
-        <location line="+40"/>
-        <source>OK</source>
-        <translation>确认</translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <source>Cancel</source>
-        <translation>取消</translation>
-    </message>
-</context>
-<context>
-    <name>DADialogDataFrameFillna</name>
-    <message>
-        <location filename="../DAGui/Dialog/DADialogDataFrameFillna.ui" line="+14"/>
-        <source>Fill Nan</source>
-        <translation>填充Nan</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Fill NaN values</source>
-        <translation>填充NA/NaN值</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>This is the maximum number of consecutive NaN values to forward/backward fill. In other words, if there is a gap with more than this number of consecutive NaNs, it will only be partially filled</source>
-        <translation>这是向前/向后填充的连续 NaN 值的最大数量。换句话说，如果存在连续 NaN 值的数量超过此设定值的空缺，则只会进行部分填充</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>limit</source>
-        <translation>限制</translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>This is the maximum number of entries along the entire axis where NaNs will be filled. Must be greater than 0</source>
-        <translation>这是沿整个轴方向将填充 NaN 的最大条目数。必须大于 0</translation>
-    </message>
-    <message>
-        <location line="+16"/>
-        <source>Value to use to fill holes</source>
-        <translation>填充值</translation>
-    </message>
-    <message>
-        <location line="+38"/>
-        <source>OK</source>
-        <translation>确认</translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <source>Cancel</source>
-        <translation>取消</translation>
     </message>
 </context>
 <context>
@@ -5928,6 +5614,384 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
 </context>
 <context>
+    <name>DataAnalysisUI</name>
+    <message>
+        <location filename="../../plugins/DataAnalysis/DataAnalysisUI.cpp" line="+69"/>
+        <location line="+83"/>
+        <source>Data Cleaning</source>
+        <translation>数据清洗</translation>
+    </message>
+    <message>
+        <location line="-50"/>
+        <location line="+81"/>
+        <source>Data Filtering</source>
+        <translation>数据过滤</translation>
+    </message>
+    <message>
+        <location line="-60"/>
+        <location line="+75"/>
+        <source>Statistic</source>
+        <translation>统计</translation>
+    </message>
+    <message>
+        <location line="-59"/>
+        <source>Export 
+Individual Data</source>
+        <translation>导出
+单个数据</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Export 
+Multiple Data</source>
+        <translation>导出
+多个数据</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Export all data from the data management area to a folder, with each dataset saved as an individual data file.</source>
+        <translation>把数据管理区所有数据导出到一个文件夹中，每个数据形成一个数据文件。</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Export 
+To Excel</source>
+        <translation>导出Excel</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Export all data from the data management area to an Excel file, with each dataset as a separate sheet.</source>
+        <translation>把数据管理区所有数据导出到一个excel文件中，每个数据将作为excel的一个sheet。</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Drop None</source>
+        <translation>删除
+缺失值</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Drop rows which contain missing values</source>
+        <translation>删除包含缺失值的行</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Drop Duplicates</source>
+        <translation>删除
+重复值</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Drop duplicate datas</source>
+        <translation>删除数据中的重复记录</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Fill None</source>
+        <translation>填充
+缺失值</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Fill rows which contain missing values</source>
+        <translation>填充包含缺失值的行</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>IQR Outlier Handling</source>
+        <translation>IQR
+异常值处理</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Z-Score Outlier Handling</source>
+        <translation>Z-Score
+异常值处理</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Transform skewed</source>
+        <translation>转换偏态数据</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Transform skewed numerical data to improve distribution</source>
+        <translation>转换偏态数值数据以改善分布</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Eval Datas</source>
+        <translation>数值计算</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Evaluate a string describing operations on DataFrame columns</source>
+        <translation>输入关于列操作的表达式字符串并执行计算</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Query Datas</source>
+        <translation>查询数据</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Filter data outside of the given criteria</source>
+        <translation>过滤给定条件外的数据</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Data Retrieval</source>
+        <translation>数据检索</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Retrieve data for a certain condition</source>
+        <translation>检索某条件的数据</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Filter by Column</source>
+        <translation>列数据过滤</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Sort</source>
+        <translation>排序</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Sort Data</source>
+        <translation>数据排序</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Data Describe</source>
+        <translation>数据描述</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Pivot Table</source>
+        <translation>透视表</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Create Pivot Table</source>
+        <translation>创建数据透视表</translation>
+    </message>
+    <message>
+        <location line="-35"/>
+        <source>The IQR (Interquartile Range) outlier handling method is a non-parametric approach based on data distribution. It identifies extreme values deviating from the overall distribution using the interquartile range, unaffected by outliers themselves and featuring strong stability.</source>
+        <translation>IQR（四分位距）异常值处理是一种基于数据分布的非参数方法，核心逻辑是通过数据的四分位数范围识别偏离整体分布的极端值，不受异常值本身影响，稳定性强。</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>The Z-Score outlier replacement method is a parametric approach based on the normal distribution assumption. It identifies outliers by quantifying how many standard deviations a data point deviates from the mean, and replaces outliers with reasonable strategies to preserve data integrity</source>
+        <translation>Z-Score（标准化分数）异常值替换方法是一种基于正态分布假设的参数化方法，通过量化数据点偏离均值的标准差倍数识别异常值，并采用合理策略替换异常值以保留数据完整性</translation>
+    </message>
+    <message>
+        <location line="-14"/>
+        <source>Fill Interpolate</source>
+        <translation>插值填充</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Fill rows which contain missing values by interpolate</source>
+        <translation>插值法填充包含缺失值的行</translation>
+    </message>
+</context>
+<context>
+    <name>DataFrameExportRangeSelectDialog</name>
+    <message>
+        <location filename="../../plugins/DataAnalysis/Dialogs/DataFrameExportRangeSelectDialog.ui" line="+14"/>
+        <source>Dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Select Export Range</source>
+        <translation>选择导出的范围</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Export All</source>
+        <translation>导出所有</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Export Selected</source>
+        <translation>导出选中</translation>
+    </message>
+</context>
+<context>
+    <name>DataframeExportSettingsDialog</name>
+    <message>
+        <location filename="../../plugins/DataAnalysis/Dialogs/DataframeExportSettingsDialog.ui" line="+46"/>
+        <source>Export All</source>
+        <translation>导出所有</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Export Selected</source>
+        <translation>导出选中</translation>
+    </message>
+    <message>
+        <location line="+113"/>
+        <source>csv</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="-80"/>
+        <source>Comma-separated values - Universal text format. Best for data exchange and basic analysis.</source>
+        <translation>逗号分隔值 - 通用文本格式。最适合数据交换和基本分析。</translation>
+    </message>
+    <message>
+        <location line="+93"/>
+        <source>xlsx</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="-63"/>
+        <source>Microsoft Excel format. Supports multiple sheets and formatting.</source>
+        <translation>Microsoft Excel格式。支持多工作表和格式设置。</translation>
+    </message>
+    <message>
+        <location line="+73"/>
+        <source>Parquet</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="-93"/>
+        <source>Column-oriented binary format. High compression and fast querying. Perfect for big data and analytics.</source>
+        <translation>列式二进制格式。高压缩比和快速查询。最适合大数据和分析场景。</translation>
+    </message>
+    <message>
+        <location line="-85"/>
+        <source>Export Data Setting</source>
+        <translation>导出数据设置</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Select Folder To Export</source>
+        <translation>选择要导出的文件夹</translation>
+    </message>
+    <message>
+        <location line="+48"/>
+        <source>Feather</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+66"/>
+        <source>Lightweight binary format. Extremely fast read/write speeds. Great for intermediate data storage and Python/R interoperability.</source>
+        <translation>轻量级二进制格式。读写速度极快。适合中间数据存储和Python/R跨语言交互。</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Pickle</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="-20"/>
+        <source>Python-specific binary format. Preserves complete object structure. Best for temporary storage within Python applications.</source>
+        <translation>Python专用二进制格式。完整保留对象结构。适合Python应用程序内的临时存储。</translation>
+    </message>
+    <message>
+        <location line="-20"/>
+        <source>JSON</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+93"/>
+        <source>JavaScript Object Notation. Human-readable, web-friendly format. Excellent for web APIs and configuration files.</source>
+        <translation>JavaScript对象表示法。人类可读、Web友好的格式。最适合Web API和配置文件。</translation>
+    </message>
+    <message>
+        <location line="-43"/>
+        <source>HTML</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+53"/>
+        <source>Web page format. Preserves table styling. Ideal for embedding data in reports or emails.</source>
+        <translation>网页格式。保留表格样式。最适合在报告或邮件中嵌入数据。</translation>
+    </message>
+    <message>
+        <location filename="../../plugins/DataAnalysis/Dialogs/DataframeExportSettingsDialog.cpp" line="+51"/>
+        <source>Select Folder</source>
+        <translation>选择文件夹</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Warning</source>
+        <translation>警告</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Please select the folder for exporting data</source>
+        <translation>请选择需要导出数据的文件夹</translation>
+    </message>
+</context>
+<context>
+    <name>DataframeIOWorker</name>
+    <message>
+        <location filename="../../plugins/DataAnalysis/DataframeIOWorker.cpp" line="+56"/>
+        <source>No data is selected. Please select the data to export first.</source>
+        <translation>没有选中任何数据，请先选中要导出的数据。</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Export Data</source>
+        <translation>导出数据</translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>Successfully exported %1 to %2</source>
+        <translation>成功把%1导出到%2</translation>
+    </message>
+    <message>
+        <location line="+115"/>
+        <source>%1 . Elapsed: %2:%3</source>
+        <translation>%1,已用时%2:%3</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>%1,Cost %2:%3</source>
+        <translation>%1,已用时 %2:%3</translation>
+    </message>
+</context>
+<context>
+    <name>DataframeOperateWorker</name>
+    <message>
+        <location filename="../../plugins/DataAnalysis/DataframeOperateWorker.cpp" line="+37"/>
+        <source>Please first open the data table to be operated on.</source>
+        <translation>请先打开要操作的数据表。</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>This function only supports data in the pandas DataFrame format.</source>
+        <translation>只支持dataframe格式数据。</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>%1_Describe</source>
+        <translation>%1_Describe</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Generate descriptive statistics that summarize the central tendency, dispersion and shape of a [%1]’s distribution, excluding NaN values</source>
+        <translation>生成描述性统计数据，汇总[%1]分布的中心趋势、分散度和结构（不包括NaN值）</translation>
+    </message>
+    <message>
+        <location line="+29"/>
+        <source>%1_PviotTable</source>
+        <translation>%1_透视表</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Generate pivot table of %1</source>
+        <translation>生成“%1”的透视表</translation>
+    </message>
+</context>
+<context>
     <name>QObject</name>
     <message>
         <location filename="../DAPyBindQt/pandas/DAPyIndex.cpp" line="+159"/>
@@ -5940,7 +6004,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>使用utf-8打开文件“%1”错误，尝试使用ansi编码</translation>
     </message>
     <message>
-        <location filename="../DAPyBindQt/pandas/DAPySeries.cpp" line="+312"/>
+        <location filename="../DAPyBindQt/pandas/DAPySeries.cpp" line="+322"/>
         <source>DAPySeries  get python object type is not pandas.Series</source>
         <translation>python object类型不是pandas.Series</translation>
     </message>
@@ -6193,7 +6257,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+19"/>
         <source>rename data</source>
-        <translation type="unfinished"></translation>
+        <translation>数据重命名</translation>
     </message>
     <message>
         <location filename="../DACommonWidgets/DABrushStyleComboBox.cpp" line="+43"/>
@@ -6312,108 +6376,68 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>添加绘图元素</translation>
     </message>
     <message>
-        <location filename="../DAGui/Commands/DACommandsDataFrame.cpp" line="+25"/>
+        <location filename="../DAGui/Commands/DACommandsDataFrame.cpp" line="+23"/>
         <source>set dataframe data</source>
         <translation>改变单元格数据</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+24"/>
         <source>insert row</source>
         <translation>插入一行</translation>
     </message>
     <message>
         <location line="+44"/>
-        <location line="+25"/>
+        <location line="+30"/>
         <source>insert column &quot;%1&quot;</source>
         <translation>插入列“%1”</translation>
     </message>
     <message>
-        <location line="+54"/>
+        <location line="+45"/>
         <source>drop dataframe rows</source>
         <translation>移除dataframe行</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+26"/>
         <source>drop dataframe columns</source>
         <translation>移除dataframe列</translation>
     </message>
     <message>
-        <location line="+71"/>
+        <location line="+68"/>
         <source>change column type</source>
         <translation>改变列数据类型</translation>
     </message>
     <message>
-        <location line="+77"/>
-        <source>drop nan</source>
-        <translation>删除nan值</translation>
-    </message>
-    <message>
-        <location line="+47"/>
-        <source>fill nan</source>
-        <translation>填充缺失值</translation>
-    </message>
-    <message>
-        <location line="+36"/>
-        <source>interpolate</source>
-        <translation>插值填充缺失值</translation>
-    </message>
-    <message>
-        <location line="+35"/>
-        <source>ffill nan</source>
-        <translation>前向填充缺失值</translation>
-    </message>
-    <message>
-        <location line="+35"/>
-        <source>bfill nan</source>
-        <translation>后向填充缺失值</translation>
-    </message>
-    <message>
-        <location line="+44"/>
-        <source>drop duplicates</source>
-        <translation>删除重复值</translation>
-    </message>
-    <message>
-        <location line="+48"/>
-        <source>nstd filter</source>
-        <translation>n倍标准差滤波</translation>
-    </message>
-    <message>
-        <location line="+48"/>
-        <source>clip outlier</source>
-        <translation>剔除异常值</translation>
-    </message>
-    <message>
-        <location line="+33"/>
+        <location line="+62"/>
         <source>eval datas</source>
         <translation>列运算</translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location line="+26"/>
         <source>query datas</source>
         <translation>条件查询</translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location line="+32"/>
         <source>data select</source>
         <translation>数据过滤</translation>
     </message>
     <message>
-        <location line="+30"/>
+        <location line="+27"/>
         <source>sort datas</source>
         <translation>对相关数据进行排序</translation>
     </message>
     <message>
-        <location line="+30"/>
+        <location line="+27"/>
         <source>cast column to num</source>
         <translation>改变列数据为数值</translation>
     </message>
     <message>
-        <location line="+36"/>
+        <location line="+27"/>
         <source>cast column to datetime</source>
         <translation>改变列数据为日期</translation>
     </message>
     <message>
-        <location line="+36"/>
+        <location line="+24"/>
         <source>set column to index</source>
         <translation>转换列为索引</translation>
     </message>

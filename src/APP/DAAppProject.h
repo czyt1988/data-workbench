@@ -28,65 +28,65 @@ class DAChartOperateWidget;
  */
 class DAAppProject : public DAProjectInterface
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	DAAppProject(DACoreInterface* c, QObject* p = nullptr);
-	~DAAppProject();
-	// 工作流操作窗口
-	DAWorkFlowOperateWidget* getWorkFlowOperateWidget() const;
-	// 数据操作窗口
-	DADataOperateWidget* getDataOperateWidget() const;
-	// 绘图窗口
-	DAChartOperateWidget* getChartOperateWidget() const;
-	// 追加一个工厂的工作流进入本工程中，注意这个操作不会清空当前的工作流
-	bool appendWorkflowInProject(const QDomDocument& doc, bool skipIndex = false);
-	bool appendWorkflowInProject(const QByteArray& data, bool skipIndex = false);
-	// 把绘图信息添加到工程
-	bool appendChartsInProject(const QDomDocument& doc, DAChartItemsManager* chartmanager);
-	// 繁忙状态判断
-	virtual bool isBusy() const override;
-	// 生成一个数据文件对应的临时文件位置
-	QString makeDataTemporaryFilePath(const QString& dataName);
-	// 把数据名称转换为zip文档中的相对路径位置
-	static QString makeDataArchiveFilePath(const QString& dataName);
+    DAAppProject(DACoreInterface* c, QObject* p = nullptr);
+    ~DAAppProject();
+    // 工作流操作窗口
+    DAWorkFlowOperateWidget* getWorkFlowOperateWidget() const;
+    // 数据操作窗口
+    DADataOperateWidget* getDataOperateWidget() const;
+    // 绘图窗口
+    DAChartOperateWidget* getChartOperateWidget() const;
+    // 追加一个工厂的工作流进入本工程中，注意这个操作不会清空当前的工作流
+    bool appendWorkflowInProject(const QDomDocument& doc, bool skipIndex = false);
+    bool appendWorkflowInProject(const QByteArray& data, bool skipIndex = false);
+    // 把绘图信息添加到工程
+    bool appendChartsInProject(const QDomDocument& doc, DAChartItemsManager* chartmanager);
+    // 繁忙状态判断
+    virtual bool isBusy() const override;
+    // 生成一个数据文件对应的临时文件位置
+    QString makeDataTemporaryFilePath(const QString& dataName);
+    // 把数据名称转换为zip文档中的相对路径位置
+    static QString makeDataArchiveFilePath(const QString& dataName);
 public Q_SLOTS:
-	// 清除工程
-	virtual void clear() override;
-	// 保存工程，保存成功后需要发射projectSaved信号
-	virtual bool save(const QString& path) override;
-	// 加载工程，加载完成后需要发射projectLoaded信号
-	virtual bool load(const QString& path) override;
+    // 清除工程
+    virtual void clear() override;
+    // 保存工程，保存成功后需要发射projectSaved信号
+    virtual bool save(const QString& path) override;
+    // 加载工程，加载完成后需要发射projectLoaded信号
+    virtual bool load(const QString& path) override;
 
 protected:
-	// 保存系统信息
-	void makeSaveSystemInfoTask(DAZipArchiveThreadWrapper* archive);
-	// 保存工作流的任务
-	void makeSaveWorkFlowTask(DAZipArchiveThreadWrapper* archive);
-	// 保存数据的任务
-	void makeSaveDataManagerTask(DAZipArchiveThreadWrapper* archive);
-	// 创建保存绘图的任务
-	void makeSaveChartTask(DAZipArchiveThreadWrapper* archive);
-	// 保存workflow相关内容（以xml形式）
-	QDomDocument createWorkflowUIDomDocument();
-	// 保存charts相关内容（以xml形式）
-	QDomDocument createChartsUIDomDocument(DAChartItemsManager& chartItems);
-	bool loadWorkflowUI(const QByteArray& data);
+    // 保存系统信息
+    void makeSaveSystemInfoTask(DAZipArchiveThreadWrapper* archive);
+    // 保存工作流的任务
+    void makeSaveWorkFlowTask(DAZipArchiveThreadWrapper* archive);
+    // 保存数据的任务
+    void makeSaveDataManagerTask(DAZipArchiveThreadWrapper* archive);
+    // 创建保存绘图的任务
+    void makeSaveChartTask(DAZipArchiveThreadWrapper* archive);
+    // 保存workflow相关内容（以xml形式）
+    QDomDocument createWorkflowUIDomDocument();
+    // 保存charts相关内容（以xml形式）
+    QDomDocument createChartsUIDomDocument(DAChartItemsManager& chartItems);
+    bool loadWorkflowUI(const QByteArray& data);
 
 private Q_SLOTS:
-	void onBeginSave(const QString& path);
-	void onBeginLoad(const QString& path);
-	// 任务进度
-	void onTaskProgress(std::shared_ptr< DA::DAAbstractArchiveTask > t, int mode);
-	// 保存任务结束
-	void onSaveFinish(bool success);
-	// 保存任务结束
-	void onLoadFinish(bool success);
+    void onBeginSave(const QString& path);
+    void onBeginLoad(const QString& path);
+    // 任务进度
+    void onTaskProgress(std::shared_ptr< DA::DAAbstractArchiveTask > t, int mode);
+    // 保存任务结束
+    void onSaveFinish(bool success);
+    // 保存任务结束
+    void onLoadFinish(bool success);
 
 private:
-	DAZipArchiveThreadWrapper* mArchive { nullptr };
-	DAXmlHelper mXml;
-	std::unique_ptr< QTemporaryDir > mTempDir;
-	DAChartItemsManager mChartItemManager;
+    DAZipArchiveThreadWrapper* mArchive { nullptr };
+    DAXmlHelper mXml;
+    std::unique_ptr< QTemporaryDir > mTempDir;
+    DAChartItemsManager mChartItemManager;
 };
 
 }  // namespace DA

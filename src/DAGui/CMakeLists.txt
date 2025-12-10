@@ -37,6 +37,7 @@ set(DA_LIB_HEADER_FILES
     DAChartItemsManager.h
     DADataManagerComboBox.h
     DADataOperatePageWidget.h
+    DADataTableView.h
     DAFigureFactory.h
     DAGraphicsPixmapItemSettingWidget.h
     DAGlobalColorTheme.h
@@ -91,6 +92,7 @@ set(DA_LIB_SOURCE_FILES
     DADataManagerComboBox.cpp
     DADataOperatePageWidget.cpp
     DADataOperateWidget.cpp
+    DADataTableView.cpp
     DAFigureFactory.cpp
     DAGraphicsPixmapItemSettingWidget.cpp
     DAGlobalColorTheme.cpp
@@ -194,6 +196,7 @@ set(DA_LIB_HEADER_FILES_Models
     ${DA_LIB_SUBDIR_Models}/DAAbstractCacheWindowTableModel.h
     ${DA_LIB_SUBDIR_Models}/DADataManagerTreeModel.h
     ${DA_LIB_SUBDIR_Models}/DATreeModel.h
+    ${DA_LIB_SUBDIR_Models}/DADataTableModel.h
     ${DA_LIB_SUBDIR_Models}/DADataManagerTableModel.h
     ${DA_LIB_SUBDIR_Models}/DAMessageLogsModel.h
     ${DA_LIB_SUBDIR_Models}/DAVariantTableModel.h
@@ -202,6 +205,7 @@ set(DA_LIB_SOURCE_FILES_Models
     ${DA_LIB_SUBDIR_Models}/DAAbstractCacheWindowTableModel.cpp
     ${DA_LIB_SUBDIR_Models}/DADataManagerTreeModel.cpp
     ${DA_LIB_SUBDIR_Models}/DATreeModel.cpp
+    ${DA_LIB_SUBDIR_Models}/DADataTableModel.cpp
     ${DA_LIB_SUBDIR_Models}/DADataManagerTableModel.cpp
     ${DA_LIB_SUBDIR_Models}/DAMessageLogsModel.cpp
     ${DA_LIB_SUBDIR_Models}/DAVariantTableModel.cpp
@@ -240,10 +244,7 @@ if(DA_ENABLE_PYTHON)
         ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogPythonArgs.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.h
-        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillna.h
-        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillInterpolate.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameDataSelect.h
-        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameClipOutlier.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameQueryDatas.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameDataSearch.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameEvalDatas.h
@@ -259,10 +260,7 @@ if(DA_ENABLE_PYTHON)
         ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogPythonArgs.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.cpp
-        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillna.cpp
-        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillInterpolate.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameDataSelect.cpp
-        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameClipOutlier.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameQueryDatas.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameDataSearch.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameEvalDatas.cpp
@@ -276,10 +274,7 @@ if(DA_ENABLE_PYTHON)
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToNumeric.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.ui
-        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillna.ui
-        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameFillInterpolate.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameDataSelect.ui
-        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameClipOutlier.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameQueryDatas.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameDataSearch.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameEvalDatas.ui

@@ -26,8 +26,10 @@ DAAbstractData::DataType DADataPyObject::getDataType() const
     return TypePythonObject;
 }
 
-QVariant DADataPyObject::toVariant() const
+QVariant DADataPyObject::toVariant(size_t dim1, size_t dim2) const
 {
+    Q_UNUSED(dim1);
+    Q_UNUSED(dim2);
     return DA::PY::toVariant(mPyObject.object());
 }
 
@@ -36,8 +38,10 @@ QVariant DADataPyObject::toVariant() const
  * @param v
  * @return 永远返回true
  */
-bool DADataPyObject::setValue(const QVariant& v)
+bool DADataPyObject::setValue(std::size_t dim1, std::size_t dim2, const QVariant& v)
 {
+    Q_UNUSED(dim1);
+    Q_UNUSED(dim2);
     pybind11::object obj = DA::PY::toPyObject(v);
     mPyObject.object()   = obj;
     return true;

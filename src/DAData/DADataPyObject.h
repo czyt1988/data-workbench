@@ -16,14 +16,14 @@ public:
     DADataPyObject();
     DADataPyObject(const DAPyObjectWrapper& d);
     ~DADataPyObject();
-    //变量类型
+    // 变量类型
     DataType getDataType() const override;
-    //变量值
-    QVariant toVariant() const override;
-    bool setValue(const QVariant& v) override;
-    //判断是否为null
+    // 变量值
+    QVariant toVariant(std::size_t dim1, std::size_t dim2) const override;
+    bool setValue(std::size_t dim1, std::size_t dim2, const QVariant& v) override;
+    // 判断是否为null
     bool isNull() const;
-    //获取python object
+    // 获取python object
     DAPyObjectWrapper& object();
     const DAPyObjectWrapper& object() const;
 

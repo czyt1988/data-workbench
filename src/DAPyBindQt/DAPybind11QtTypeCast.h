@@ -8,6 +8,8 @@
 
 /**
  * @file 此文件用于qt类型和pybind11类型的转换
+ *
+ * Json相关的转换单独在文件DAPyJsonCast文件中
  */
 
 namespace DA

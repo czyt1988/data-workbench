@@ -58,6 +58,7 @@ find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
     Widgets
     Xml
     Svg
+    PrintSupport
     REQUIRED
 )
 if(Qt5_POSITION_INDEPENDENT_CODE)
@@ -91,7 +92,6 @@ target_link_libraries(${DA_PLUGIN_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Widgets
     Qt${QT_VERSION_MAJOR}::Xml
     Qt${QT_VERSION_MAJOR}::Svg
-    Qt${QT_VERSION_MAJOR}::Concurrent
     Qt${QT_VERSION_MAJOR}::PrintSupport
 )
 
@@ -103,6 +103,8 @@ damacro_import_DALiteCtk(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_DIR})
 damacro_import_QtAdvancedDocking(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_DIR})
 damacro_import_QtPropertyBrowser(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_DIR})
 damacro_import_qwt(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_DIR})
+damacro_import_orderedmap(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_DIR})
+damacro_import_Python(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_DIR})
 # -------------link DAWorkBench--------------------------
 message(STATUS "DAWorkbench_DIR=${DAWorkbench_DIR}")
 # DAInterface
@@ -152,9 +154,9 @@ set_target_properties(${DA_PLUGIN_NAME} PROPERTIES
     DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
     VERSION ${DA_PLUGIN_VERSION}
     EXPORT_NAME ${DA_PLUGIN_NAME}
-    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    RUNTIME_OUTPUT_DIRECTORY "${DAWorkbench_INSTALL_DIR}/bin/plugins"
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/plugins"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/plugins"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/plugins"
 )
 
 ########################################################

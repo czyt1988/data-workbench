@@ -19,6 +19,13 @@ class DAAppCommand : public DACommandInterface
 public:
     DAAppCommand(DAUIInterface* u);
     ~DAAppCommand();
+    // 开始一个数据操作命令，此命令会推入到当前激活的数据操作窗口的回退栈中
+    virtual DADataAbstractUndoCommand* beginDataOperateCommand(const DAData& data,
+                                                               const QString& text,
+                                                               bool isObjectPersist = false,
+                                                               bool isSkipFirstRedo = true) override;
+    // 结束一个数据操作命令，
+    virtual bool endDataOperateCommand(const DAData& data) override;
 
 public:
     // 数据管理的redo/undo栈
@@ -31,6 +38,7 @@ public:
 
 private:
     QPointer< QUndoStack > mDataManagerStack;
+    std::unique_ptr< DADataAbstractUndoCommand > m_dataOperateCommand;  ///< 记录批量操作的DADataAbstractUndoCommand
 };
 }  // namespace DA
 

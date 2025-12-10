@@ -25,10 +25,20 @@ PYBIND11_EMBEDDED_MODULE(da_data, m)
         .def(pybind11::init<>())                    // 默认构造
         .def(pybind11::init< pybind11::object >())  // 直接接受 pandas.DataFrame/Series
         .def("toPyObject", &DA::DAData::toPyObject, "Return the underlying pandas DataFrame as a Python object")
-        .def("getName", [](const DA::DAData& d) { return d.getName().toStdString(); })
-        .def("setName", [](DA::DAData& d, const std::string& n) { d.setName(QString::fromStdString(n)); })
-        .def("getDescribe", [](const DA::DAData& d) { return d.getDescribe().toStdString(); })
-        .def("setDescribe", [](DA::DAData& d, const std::string& n) { d.setDescribe(QString::fromStdString(n)); });
+        .def(
+            "toDataFrame", [](const DA::DAData& self) { return self.toDataFrame().object(); }, "Convert to DataFrame")
+        .def(
+            "toSeries", [](const DA::DAData& self) { return self.toSeries().object(); }, "Convert to Series")
+        .def("getName", [](const DA::DAData& self) { return self.getName().toStdString(); })
+        .def("setName", [](DA::DAData& self, const std::string& n) { self.setName(QString::fromStdString(n)); })
+        .def("getDescribe", [](const DA::DAData& self) { return self.getDescribe().toStdString(); })
+        .def("setDescribe", [](DA::DAData& self, const std::string& n) { self.setDescribe(QString::fromStdString(n)); })
+        .def("isNull", &DA::DAData::isNull, "Check if the data is null")
+        .def("id", &DA::DAData::id, "Return the data id")
+        .def("isDataFrame", &DA::DAData::isDataFrame, "Check if the data type is DataFrame")
+        .def("isSeries", &DA::DAData::isSeries, "Check if the data type is Series")
+        .def("setPyObject", &DA::DAData::setPyObject, pybind11::arg("obj"), "Check if the data type is Series")
+        .def("getDataManager", &DA::DAData::getDataManager, pybind11::return_value_policy::reference, "get the DataManager");
 
     /**
      * 导出da_data.DataChangeType
@@ -53,6 +63,45 @@ PYBIND11_EMBEDDED_MODULE(da_data, m)
         .def("addData_",
              static_cast< void (DA::DADataManager::*)(DA::DAData&) >(&DA::DADataManager::addData_),
              "Add data with undo/redo support")
+        // 添加返回QList<DAData>的函数
+        .def(
+            "getAllDatas",
+            [](DA::DADataManager& self) {
+                QList< DA::DAData > datas = self.getAllDatas();
+                pybind11::list pyList;
+                for (const DA::DAData& data : datas) {
+                    pyList.append(data);
+                }
+                return pyList;
+            },
+            "Get all data objects as a list")
+        .def(
+            "findDatas",
+            [](DA::DADataManager& self, const std::string& pattern, int cs) {
+                QList< DA::DAData > datas =
+                    self.findDatas(QString::fromStdString(pattern), static_cast< Qt::CaseSensitivity >(cs));
+                pybind11::list pyList;
+                for (const DA::DAData& data : datas) {
+                    pyList.append(data);
+                }
+                return pyList;
+            },
+            pybind11::arg("pattern"),
+            pybind11::arg("cs") = static_cast< int >(Qt::CaseInsensitive),
+            "Find datas by name pattern,0:CaseInsensitive,1:CaseSensitive")
+        .def(
+            "findDatasReg",
+            [](DA::DADataManager& self, const std::string& regexPattern) {
+                QRegularExpression regex(QString::fromStdString(regexPattern));
+                QList< DA::DAData > datas = self.findDatasReg(regex);
+                pybind11::list pyList;
+                for (const DA::DAData& data : datas) {
+                    pyList.append(data);
+                }
+                return pyList;
+            },
+            pybind11::arg("regex_pattern"),
+            "Find datas by regular expression")
         // 移除
         .def("removeData", &DA::DADataManager::removeData, pybind11::arg("data"), "Remove data without undo/redo")
         .def("removeData_", &DA::DADataManager::removeData_, pybind11::arg("data"), "Remove data with undo/redo")

@@ -22,13 +22,16 @@ DAAbstractData::DataType DADataPyDataFrame::getDataType() const
     return TypePythonDataFrame;
 }
 
-QVariant DADataPyDataFrame::toVariant() const
+QVariant DADataPyDataFrame::toVariant(std::size_t dim1, std::size_t dim2) const
 {
-    return QVariant();
+    DAPyDataFrame df(mPyObject.object());
+    return df.iat(dim1, dim2);
 }
 
-bool DADataPyDataFrame::setValue(const QVariant& v)
+bool DADataPyDataFrame::setValue(std::size_t dim1, std::size_t dim2, const QVariant& v)
 {
+    DAPyDataFrame df(mPyObject.object());
+    df.iat(dim1, dim2, v);
     return false;
 }
 

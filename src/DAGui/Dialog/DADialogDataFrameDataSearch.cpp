@@ -4,82 +4,83 @@
 #include "DAPyScriptsDataFrame.h"
 #include "DAPyScripts.h"
 #include "DAPyDataFrameTableView.h"
+#include "DADataTableView.h"
 namespace DA
 {
 DADialogDataFrameDataSearch::DADialogDataFrameDataSearch(QWidget* parent)
     : QDialog(parent), ui(new Ui::DADialogDataFrameDataSearch)
 {
-	ui->setupUi(this);
-	connect(ui->lineEditFindItem, &QLineEdit::textChanged, this, &DADialogDataFrameDataSearch::onLineEditTextChanged);
-	connect(ui->pushButtonNext, &QPushButton::clicked, this, &DADialogDataFrameDataSearch::onPushButtonNextClicked);
+    ui->setupUi(this);
+    connect(ui->lineEditFindItem, &QLineEdit::textChanged, this, &DADialogDataFrameDataSearch::onLineEditTextChanged);
+    connect(ui->pushButtonNext, &QPushButton::clicked, this, &DADialogDataFrameDataSearch::onPushButtonNextClicked);
 }
 
 DADialogDataFrameDataSearch::~DADialogDataFrameDataSearch()
 {
-	delete ui;
+    delete ui;
 }
 
 QString DADialogDataFrameDataSearch::getSearchText() const
 {
-	return ui->lineEditFindItem->text();
+    return ui->lineEditFindItem->text();
 }
 
 QList< QPair< int, int > > DADialogDataFrameDataSearch::getItemCoor() const
 {
-	return mMatches;
+    return mMatches;
 }
 
 void DADialogDataFrameDataSearch::onPushButtonNextClicked()
 {
-	// 直接在此函数上操作
-	if (mIsNeedResearch) {
-		searchData();
-		mIsNeedResearch = false;
-	}
-	if (mMatches.empty()) {
-		ui->labelLocation->setText(tr("can not find item"));  // cn:无法找到条目
-		return;
-	}
-	if (mIndex >= mMatches.size()) {
-		mIndex = 0;
-	}
-	QPair< int, int > cellloc = mMatches[ mIndex ];
-	mDataframeTableView->selectActualCell(cellloc.first, cellloc.second);
-	ui->labelLocation->setText(tr("Found at column %1,line %2")
-								   .arg(mDataframeTableView->actualColumnName(cellloc.second))
-								   .arg(mDataframeTableView->actualRowName(cellloc.first)));
-	++mIndex;
+    // 直接在此函数上操作
+    if (mIsNeedResearch) {
+        searchData();
+        mIsNeedResearch = false;
+    }
+    if (mMatches.empty()) {
+        ui->labelLocation->setText(tr("can not find item"));  // cn:无法找到条目
+        return;
+    }
+    if (mIndex >= mMatches.size()) {
+        mIndex = 0;
+    }
+    QPair< int, int > cellloc = mMatches[ mIndex ];
+    mDataTableView->selectActualCell(cellloc.first, cellloc.second);
+    ui->labelLocation->setText(tr("Found at column %1,line %2")
+                                   .arg(mDataTableView->actualColumnName(cellloc.second))
+                                   .arg(mDataTableView->actualRowName(cellloc.first)));
+    ++mIndex;
 }
 
-DAPyDataFrameTableView* DADialogDataFrameDataSearch::getDataframeTableView() const
+DADataTableView* DADialogDataFrameDataSearch::getDataTableView() const
 {
-	return mDataframeTableView;
+    return mDataTableView;
 }
 
-void DADialogDataFrameDataSearch::setDataframeTableView(DAPyDataFrameTableView* v)
+void DADialogDataFrameDataSearch::setDataTableView(DADataTableView* v)
 {
-	if (mDataframeTableView == v) {
-		return;
-	}
-	mDataframeTableView = v;
-	// 搜索内容发生改变时，标记重新搜索
-	mIsNeedResearch = true;
+    if (mDataTableView == v) {
+        return;
+    }
+    mDataTableView = v;
+    // 搜索内容发生改变时，标记重新搜索
+    mIsNeedResearch = true;
 }
 
 void DADialogDataFrameDataSearch::searchData()
 {
-	DA_WAIT_CURSOR_SCOPED();
-	DAPyDataFrame df           = mDataframeTableView->getDataframe();
-	DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
-	mMatches                   = pydf.searchData(df, getSearchText());
-	mIndex                     = 0;
+    DA_WAIT_CURSOR_SCOPED();
+    DAPyDataFrame df           = mDataTableView->getData().toDataFrame();
+    DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+    mMatches                   = pydf.searchData(df, getSearchText());
+    mIndex                     = 0;
 }
 
 void DADialogDataFrameDataSearch::onLineEditTextChanged(const QString& t)
 {
-	Q_UNUSED(t);
-	// 搜索内容发生改变时，标记重新搜索
-	mIsNeedResearch = true;
+    Q_UNUSED(t);
+    // 搜索内容发生改变时，标记重新搜索
+    mIsNeedResearch = true;
 }
 
 }  // end DA

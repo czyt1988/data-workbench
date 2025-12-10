@@ -50,41 +50,24 @@ public:
     //===================================================
     // 数据标签 Data Category
     //===================================================
-    QAction* actionAddData;               ///< 添加数据
-    QAction* actionRemoveData;            ///< 移除数据
-    QAction* actionExportIndividualData;  ///< 导出单个数据
-    QAction* actionExportMultipleData;    ///< 导出多个数据
+    QAction* actionAddData;     ///< 添加数据
+    QAction* actionRemoveData;  ///< 移除数据
 
     //===================================================
     // 数据操作的上下文标签 Data Operate Context Category
     //===================================================
-    QAction* actionRemoveRow;                  ///< 移除 一行
-    QAction* actionRemoveColumn;               ///< 移除 一列
-    QAction* actionRemoveCell;                 ///< 移除单元格（设置为nan）
-    QAction* actionInsertRow;                  ///< 向下插入 一行
-    QAction* actionInsertRowAbove;             ///< 向上插入 一行
-    QAction* actionInsertColumnLeft;           ///< 在左边插入列
-    QAction* actionInsertColumnRight;          ///< 在右边插入列
-    QAction* actionRenameColumns;              ///< 更改列名
-    QAction* actionCastToString;               ///< 数据转换为文本
-    QAction* actionCastToNum;                  ///< 数据转换为数字
-    QAction* actionCastToDatetime;             ///< 转换为日期
-    QAction* actionCreateDataDescribe;         ///< 数据描述
-    QAction* actionChangeToIndex;              ///< 把某列转换为index
-    QAction* actionDataFrameDropNone;          ///< 删除缺失值
-    QAction* actionDropDuplicates;             ///< 重复值处理
-    QAction* actionDataFrameFillNone;          ///< 填充缺失值
-    QAction* actionDataFrameFFillNone;         ///< 前向填充缺失值
-    QAction* actionDataFrameBFillNone;         ///< 后向填充缺失值
-    QAction* actionDataFrameFillInterpolate;   ///< 插值法填充缺失值
-    QAction* actionNstdFilterOutlier;          ///< n倍标准差过滤异常值
-    QAction* actionDataFrameClipOutlier;       ///< 替换界限外异常值
-    QAction* actionDataFrameEvalDatas;         ///< 数值计算
-    QAction* actionDataFrameQueryDatas;        ///< 列数据过滤
-    QAction* actionDataFrameDataRetrieval;     ///< 检索指定数据
-    QAction* actionDataFrameDataFilterColumn;  ///< 过滤范围外的数据
-    QAction* actionDataFrameSort;              ///< 数据排序
-    QAction* actionCreatePivotTable;           ///< 创建数据透视表
+    QAction* actionRemoveRow;          ///< 移除 一行
+    QAction* actionRemoveColumn;       ///< 移除 一列
+    QAction* actionRemoveCell;         ///< 移除单元格（设置为nan）
+    QAction* actionInsertRow;          ///< 向下插入 一行
+    QAction* actionInsertRowAbove;     ///< 向上插入 一行
+    QAction* actionInsertColumnLeft;   ///< 在左边插入列
+    QAction* actionInsertColumnRight;  ///< 在右边插入列
+    QAction* actionRenameColumns;      ///< 更改列名
+    QAction* actionCastToString;       ///< 数据转换为文本
+    QAction* actionCastToNum;          ///< 数据转换为数字
+    QAction* actionCastToDatetime;     ///< 转换为日期
+    QAction* actionChangeToIndex;      ///< 把某列转换为index
 
     //===================================================
     // workflow的上下文标签

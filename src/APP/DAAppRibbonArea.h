@@ -104,6 +104,9 @@ class DAWorkFlowOperateWidget;
  *     运行pannel：da-pannel-context.workflow.run
  *
  * DataFrame上下文标签:da-ribbon-contextcategory-dataframe
+ *   DataFrame操作category:da-ribbon-category-dataframe.operate
+ *      坐标设置pannel:da-pannel-dataframe.operate.axes
+ *      类型设置pannel:da-pannel-dataframe.operate.type
  * Chart上下文标签：da-ribbon-contextcategory-chart
  *  Chart编辑category：da-ribbon-category-chart.edit
  *     绘图窗口设置pannel:da-pannel-context-chartedit.fig_setting
@@ -339,10 +342,7 @@ private:
     SARibbonLineWidgetContainer* m_comboxColumnTypesContainer;  ///< 列类型选择器的container
     DAPyDTypeComboBox* m_comboxColumnTypes;                     ///< 列类型选择器
 #endif
-    SARibbonButtonGroupWidget* m_castActionsButtonGroup;   ///< 管理强制转换的action的工具栏
-    SARibbonPanel* m_pannelDataframeOperateStatistic;      ///< 统计相关操作
-    SARibbonPanel* m_pannelDataframeOperateDataCleaning;   ///< 数据清洗
-    SARibbonPanel* m_pannelDataframeOperateDataFiltering;  ///< 数据过滤
+    SARibbonButtonGroupWidget* m_castActionsButtonGroup;  ///< 管理强制转换的action的工具栏
     //----------------------------------------------------
     // Context - workflow
     //----------------------------------------------------

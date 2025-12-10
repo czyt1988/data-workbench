@@ -100,7 +100,6 @@ DAData& DAData::operator=(const DAData& d)
     return *this;
 }
 
-
 #if DA_ENABLE_PYTHON
 DAData& DAData::operator=(const DAPyDataFrame& d)
 {
@@ -140,12 +139,12 @@ DAAbstractData::DataType DAData::getDataType() const
     return mData->getDataType();
 }
 
-QVariant DAData::value() const
+QVariant DAData::value(size_t dim1, std::size_t dim2) const
 {
     if (!mData) {
         return QVariant();
     }
-    return mData->toVariant();
+    return mData->toVariant(dim1, dim2);
 }
 /**
  * @brief 设置值
@@ -154,12 +153,12 @@ QVariant DAData::value() const
  * @param v
  * @return
  */
-bool DAData::setValue(const QVariant& v) const
+bool DAData::setValue(std::size_t dim1, size_t dim2, const QVariant& v) const
 {
     if (!mData) {
         return false;
     }
-    bool r = mData->setValue(v);
+    bool r = mData->setValue(dim1, dim2, v);
     if (r) {
         if (mDataMgr) {
             mDataMgr->notifyDataChangedSignal(*this, DADataManager::ChangeValue);
@@ -312,20 +311,28 @@ pybind11::object DAData::toPyObject() const
     }
     return pybind11::none();
 }
-#endif
 
-/**
- * @brief 转换为datapackage,如果不是DADataPackage，返回nullptr
- * @return
- */
-DADataPackage::Pointer DAData::toDataPackage() const
+void DA::DAData::setPyObject(const pybind11::object& obj)
 {
-    if (isDataPackage()) {
-        DADataPackage::Pointer d = std::static_pointer_cast< DADataPackage >(mData);
-        return d;
+    switch (getDataType()) {
+    case DAAbstractData::TypePythonDataFrame: {
+        DADataPyDataFrame* df = static_cast< DADataPyDataFrame* >(mData.get());
+        df->object()          = obj;
+
+    } break;
+    case DAAbstractData::TypePythonSeries: {
+        DADataPySeries* ser = static_cast< DADataPySeries* >(mData.get());
+        ser->object()       = obj;
+    } break;
+    case DAAbstractData::TypePythonObject: {
+        DADataPyObject* pyobj = static_cast< DADataPyObject* >(mData.get());
+        pyobj->object()       = obj;
+    } break;
+    default:
+        break;
     }
-    return nullptr;
 }
+#endif
 
 QString DAData::typeToString() const
 {
@@ -342,6 +349,23 @@ QString DAData::typeToString() const
 DADataManager* DAData::getDataManager() const
 {
     return mDataMgr;
+}
+
+std::pair< size_t, size_t > DAData::shape() const
+{
+    switch (getDataType()) {
+    case DAAbstractData::TypePythonDataFrame: {
+        DADataPyDataFrame* df = static_cast< DADataPyDataFrame* >(mData.get());
+        return df->dataframe().shape();
+    } break;
+    case DAAbstractData::TypePythonSeries: {
+        DADataPySeries* ser = static_cast< DADataPySeries* >(mData.get());
+        return std::make_pair(ser->series().size(), 1);
+    } break;
+    default:
+        break;
+    }
+    return std::make_pair(0, 0);
 }
 
 /**

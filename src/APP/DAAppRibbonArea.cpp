@@ -181,8 +181,6 @@ void DAAppRibbonArea::resetText()
 #if DA_ENABLE_PYTHON
     m_comboxColumnTypesContainer->setPrefix(tr("Type"));  // cn:类型
 #endif
-    m_pannelDataframeOperateDataCleaning->setPanelName(tr("Data Cleaning"));  // cn:数据清洗
-    m_pannelDataframeOperateStatistic->setPanelName(tr("Statistic"));         // cn:统计
 
     // 编辑标签
     m_categoryEdit->setCategoryName(tr("Edit"));  // cn:编辑
@@ -305,8 +303,6 @@ void DAAppRibbonArea::buildRibbonDataCategory()
     m_pannelDataOperate->setObjectName(QStringLiteral("da-pannel-data.data-opt"));
     m_pannelDataOperate->addLargeAction(m_actions->actionAddData);
     m_pannelDataOperate->addLargeAction(m_actions->actionRemoveData);
-    m_pannelDataOperate->addLargeAction(m_actions->actionExportIndividualData);
-    m_pannelDataOperate->addLargeAction(m_actions->actionExportMultipleData);
     m_categoryData->addPanel(m_pannelDataOperate);
 
     //----------------------------------------------------------
@@ -359,8 +355,10 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     m_contextDataFrame = ribbonBar()->addContextCategory(tr("DataFrame"));
     m_contextDataFrame->setObjectName(QStringLiteral("da-ribbon-contextcategory-dataframe"));
     m_categoryDataframeOperate = m_contextDataFrame->addCategoryPage(tr("Operate"));
+    m_categoryDataframeOperate->setObjectName(QStringLiteral("da-ribbon-category-dataframe.operate"));
     // Axes pannel
     m_pannelDataframeOperateAxes = m_categoryDataframeOperate->addPanel(tr("Axes"));
+    m_pannelDataframeOperateAxes->setObjectName(QStringLiteral("da-pannel-dataframe.operate.axes"));
     m_actions->actionInsertRow->setMenu(m_menuInsertRow);
     m_pannelDataframeOperateAxes->addLargeAction(m_actions->actionInsertRow, QToolButton::MenuButtonPopup);
     m_actions->actionInsertColumnRight->setMenu(m_menuInsertColumn);
@@ -373,6 +371,7 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     m_pannelDataframeOperateAxes->addLargeAction(m_actions->actionChangeToIndex);
     // Type pannel
     m_pannelDataframeOperateDType = m_categoryDataframeOperate->addPanel(tr("Type"));
+    m_pannelDataframeOperateDType->setObjectName(QStringLiteral("da-pannel-dataframe.operate.type"));
 #if DA_ENABLE_PYTHON
     m_comboxColumnTypesContainer = new SARibbonLineWidgetContainer(m_pannelDataframeOperateDType);
     m_comboxColumnTypes          = new DAPyDTypeComboBox(m_comboxColumnTypesContainer);
@@ -387,28 +386,6 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     m_castActionsButtonGroup->addSeparator();
     m_castActionsButtonGroup->addAction(m_actions->actionCastToDatetime);
     m_pannelDataframeOperateDType->addWidget(m_castActionsButtonGroup, SARibbonPanelItem::Medium);
-    // 数据清洗
-    m_pannelDataframeOperateDataCleaning = m_categoryDataframeOperate->addPanel(tr("Data Cleaning"));  // cn：数据清洗
-    m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDataFrameDropNone);
-    m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDropDuplicates);
-    m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDataFrameFillNone);
-    m_pannelDataframeOperateDataCleaning->addMediumAction(m_actions->actionDataFrameFFillNone);
-    m_pannelDataframeOperateDataCleaning->addMediumAction(m_actions->actionDataFrameBFillNone);
-    m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDataFrameFillInterpolate);
-    m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDataFrameClipOutlier);
-    m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionNstdFilterOutlier);
-    // 数据
-    m_pannelDataframeOperateDataFiltering = m_categoryDataframeOperate->addPanel(tr("Data Filtering"));  // cn :数据过滤
-    m_pannelDataframeOperateDataFiltering->addLargeAction(m_actions->actionDataFrameEvalDatas);
-    m_pannelDataframeOperateDataFiltering->addLargeAction(m_actions->actionDataFrameQueryDatas);
-    m_pannelDataframeOperateDataFiltering->addLargeAction(m_actions->actionDataFrameDataRetrieval);
-    // 数据过滤
-    m_pannelDataframeOperateDataFiltering->addLargeAction(m_actions->actionDataFrameDataFilterColumn);
-    m_pannelDataframeOperateDataFiltering->addLargeAction(m_actions->actionDataFrameSort);
-    //  Statistic Pannel
-    m_pannelDataframeOperateStatistic = m_categoryDataframeOperate->addPanel(tr("Statistic"));  // cn：统计
-    m_pannelDataframeOperateStatistic->addLargeAction(m_actions->actionCreateDataDescribe);
-    m_pannelDataframeOperateStatistic->addLargeAction(m_actions->actionCreatePivotTable);
 }
 
 /**

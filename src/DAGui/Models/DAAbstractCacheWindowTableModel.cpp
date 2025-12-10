@@ -113,4 +113,96 @@ bool DAAbstractCacheWindowTableModel::setActualData(int actualRow, int actualCol
     Q_UNUSED(role);
     return false;
 }
+
+void DAAbstractCacheWindowTableModel::notifyRowChanged(int row)
+{
+    if (row >= rowCount()) {
+        return;
+    }
+    int c = columnCount() - 1;
+    if (c < 0) {
+        c = 0;
+    }
+    cacheShape();
+    Q_EMIT dataChanged(createIndex(row, 0), createIndex(row, c));
+}
+
+void DAAbstractCacheWindowTableModel::notifyColumnChanged(int col)
+{
+    if (col >= columnCount()) {
+        return;
+    }
+    int r = rowCount() - 1;
+    if (r < 0) {
+        r = 0;
+    }
+    cacheShape();
+    Q_EMIT dataChanged(createIndex(0, col), createIndex(r, col));
+}
+
+void DAAbstractCacheWindowTableModel::notifyDataChanged(int row, int col)
+{
+    if (row >= rowCount() || col >= columnCount()) {
+        return;
+    }
+    Q_EMIT dataChanged(createIndex(row, col), createIndex(row, col));
+}
+
+void DAAbstractCacheWindowTableModel::notifyDataChanged(int rowStart, int colStart, int rowEnd, int colEnd)
+{
+    if (rowEnd >= rowCount() || colEnd >= columnCount()) {
+        return;
+    }
+    Q_EMIT dataChanged(createIndex(rowStart, colStart), createIndex(rowEnd, colEnd));
+}
+
+void DAAbstractCacheWindowTableModel::notifyRowsRemoved(const QList< int >& r)
+{
+    if (r.isEmpty()) {
+        return;
+    }
+    // 由于使用了缓存表，删除只需要刷新数据即可
+    cacheShape();
+    // 获取最小和最大行号
+    int minRow = *std::min_element(r.begin(), r.end());
+    Q_EMIT dataChanged(createIndex(minRow, 0), createIndex(rowCount() - 1, columnCount() - 1));
+}
+
+void DAAbstractCacheWindowTableModel::notifyRowsInserted(const QList< int >& r)
+{
+    if (r.isEmpty()) {
+        return;
+    }
+    // 由于使用了缓存表，删除只需要刷新数据即可
+    cacheShape();
+    // 获取最小和最大行号
+    int minRow = *std::min_element(r.begin(), r.end());
+    Q_EMIT dataChanged(createIndex(minRow, 0), createIndex(rowCount() - 1, columnCount() - 1));
+}
+
+void DAAbstractCacheWindowTableModel::notifyColumnsRemoved(const QList< int >& c)
+{
+    if (c.isEmpty()) {
+        return;
+    }
+    // 由于使用了缓存表，删除只需要刷新数据即可
+    cacheShape();
+    int minCol = *std::min_element(c.begin(), c.end());
+    Q_EMIT dataChanged(createIndex(0, minCol), createIndex(rowCount() - 1, columnCount() - 1));
+}
+
+void DAAbstractCacheWindowTableModel::notifyColumnsInserted(const QList< int >& c)
+{
+    if (c.isEmpty()) {
+        return;
+    }
+    // 由于使用了缓存表，删除只需要刷新数据即可
+    cacheShape();
+    int minCol = *std::min_element(c.begin(), c.end());
+    Q_EMIT dataChanged(createIndex(0, minCol), createIndex(rowCount() - 1, columnCount() - 1));
+}
+
+void DAAbstractCacheWindowTableModel::cacheShape()
+{
+}
 }
