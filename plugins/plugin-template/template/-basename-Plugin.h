@@ -5,7 +5,8 @@
 #include <QAction>
 #include "{{plugin-base-name}}Global.h"
 #include "DAAbstractNodePlugin.h"
-
+//
+class {{plugin-base-name}}UI;
 namespace DA
 {
 class DAAbstractNodeFactory;
@@ -65,6 +66,8 @@ private slots:
 
 private:
 	bool loadSetting();
+private:
+	{{plugin-base-name}}UI* m_ui{nullptr};
 };
 
 #endif  // {{PLUGIN-BASE-NAME}}PLUGIN_H

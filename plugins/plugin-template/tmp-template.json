@@ -1,0 +1,9 @@
+{
+	"plugin-base-name":"DataAnalysis",
+    "plugin-display-name":"DA DataAnalysis Plugin",
+    "plugin-description":"This is the fundamental data analysis plugin of the DA project",
+    "plugin-iid":"DA.Plugin.DataAnalysis",
+    "factory-prototypes":"DA.DataAnalysis",
+    "factory-name":"DA DataAnalysis Factory",
+    "factory-description":"This is the fundamental data analysis plugin node factory"
+}

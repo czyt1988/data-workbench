@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/DataAnalysisPluginIcon">
+        <file>icon/exportIndividualData.svg</file>
+        <file>icon/exportMultipleData.svg</file>
+    </qresource>
+</RCC>

@@ -1,7 +1,7 @@
 ﻿#include "{{plugin-base-name}}Plugin.h"
 #include "{{plugin-base-name}}NodeFactory.h"
 #include <QDebug>
-
+#include "{{plugin-base-name}}UI.h"
 {{plugin-base-name}}Plugin::{{plugin-base-name}}Plugin() : DA::DAAbstractNodePlugin()
 {
 }
@@ -13,6 +13,9 @@
 bool {{plugin-base-name}}Plugin::initialize()
 {
 	loadSetting();
+	//构建ui
+	m_ui = new {{plugin-base-name}}UI(this);
+	m_ui->initialize(core());
 	return DA::DAAbstractNodePlugin::initialize();
 }
 
