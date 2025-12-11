@@ -7,6 +7,8 @@
 #include "DAAbstractNodePlugin.h"
 //
 class DataAnalysisUI;
+class DataframeIOWorker;
+
 namespace DA
 {
 class DAAbstractNodeFactory;
@@ -61,6 +63,10 @@ public:
      */
     virtual DA::DAAbstractSettingPage* createSettingPage() override;
 
+    /**
+     * @brief 翻译
+     */
+    virtual void retranslate() override;
 private slots:
     void onFactoryDestroyed(QObject* obj);
 
@@ -69,6 +75,7 @@ private:
 
 private:
     DataAnalysisUI* m_ui { nullptr };
+    DataframeIOWorker* m_ioWorker { nullptr };
 };
 
 #endif  // DATAANALYSISPLUGIN_H

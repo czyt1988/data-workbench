@@ -19,6 +19,7 @@
 #include "DARibbonAreaInterface.h"
 #include "DAActionsInterface.h"
 // DataAnalysisPlugin
+#include "DataframeIOWorker.h"
 DataAnalysisUI::DataAnalysisUI(QObject* par) : QObject(par)
 {
 }
@@ -33,6 +34,7 @@ bool DataAnalysisUI::initialize(DA::DACoreInterface* core)
     m_ui      = core->getUiInterface();
     m_actions = m_ui->getActionInterface();
     buildDataCategory();
+    retranslateUi();
     return true;
 }
 
@@ -43,12 +45,23 @@ void DataAnalysisUI::buildDataCategory()
     if (!dataCategory) {
         return;
     }
+    SARibbonPanel* dataOperatePanel = ribbonArea->getPannelByObjectName(QStringLiteral("da-pannel-data.data-opt"));
     // 导出单个数据
     actionExportIndividualData =
         m_actions->createAction("actionExportIndividualData", ":/DataAnalysisPluginIcon/icon/exportIndividualData.svg");
+    actionExportMultipleData =
+        m_actions->createAction("actionExportMultipleData", ":/DataAnalysisPluginIcon/icon/exportMultipleData.svg");
+    dataOperatePanel->addLargeAction(actionExportIndividualData);
+    dataOperatePanel->addLargeAction(actionExportMultipleData);
 }
 
 void DataAnalysisUI::retranslateUi()
 {
     actionExportIndividualData->setText(tr("Export \nIndividual Data"));  // cn:导出\n单个数据
+    actionExportMultipleData->setText(tr("Export \nMultiple Data"));      // cn:导出\n多个数据
+}
+
+void DataAnalysisUI::bind(DataframeIOWorker* io)
+{
+    connect(actionExportIndividualData, &QAction::triggered, io, &DataframeIOWorker::exportIndividualData);
 }

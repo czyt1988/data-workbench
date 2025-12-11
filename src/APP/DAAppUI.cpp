@@ -61,19 +61,28 @@ void DAAppUI::createUi()
     createStatusBar();
 }
 
-void DAAppUI::addInfoLogMessage(const QString& msg)
+void DAAppUI::addInfoLogMessage(const QString& msg, bool showInStatusBar)
 {
-    qInfo() << msg;
+    qInfo().noquote() << msg;
+    if (showInStatusBar) {
+        m_statusBar->showMessage(msg);
+    }
 }
 
-void DAAppUI::addWarningLogMessage(const QString& msg)
+void DAAppUI::addWarningLogMessage(const QString& msg, bool showInStatusBar)
 {
-    qWarning() << msg;
+    qWarning().noquote() << msg;
+    if (showInStatusBar) {
+        m_statusBar->showMessage(msg);
+    }
 }
 
-void DAAppUI::addCriticalLogMessage(const QString& msg)
+void DAAppUI::addCriticalLogMessage(const QString& msg, bool showInStatusBar)
 {
-    qCritical() << msg;
+    qCritical().noquote() << msg;
+    if (showInStatusBar) {
+        m_statusBar->showMessage(msg);
+    }
 }
 
 /**

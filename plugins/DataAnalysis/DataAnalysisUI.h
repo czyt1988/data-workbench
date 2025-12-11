@@ -9,6 +9,7 @@ class DACoreInterface;
 class DAUIInterface;
 class DAActionsInterface;
 }
+class DataframeIOWorker;
 
 class DataAnalysisUI : public QObject
 {
@@ -20,6 +21,8 @@ public:
     bool initialize(DA::DACoreInterface* core);
     //
     void retranslateUi();
+    // 绑定信号槽
+    void bind(DataframeIOWorker* io);
 
 private:
     QAction* createAction(const char* objname, const char* iconpath);

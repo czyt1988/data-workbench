@@ -180,7 +180,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+223"/>
+        <location filename="../APP/DAAppActions.cpp" line="+207"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
@@ -232,13 +232,6 @@ Data</source>
 Data</source>
         <translation>移除
 数据</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Export 
-Individual Data</source>
-        <translation>导出
-单个数据</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -823,7 +816,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+860"/>
+        <location filename="../APP/DAAppController.cpp" line="+859"/>
         <location line="+49"/>
         <source>project file(*.%1)</source>
         <translation>工程文件(*.%1)</translation>
@@ -928,24 +921,17 @@ Table Area</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
     <message>
-        <location line="+271"/>
-        <location line="+37"/>
+        <location line="+268"/>
         <source>Export Data</source>
         <translation>导出数据</translation>
     </message>
     <message>
-        <location line="-35"/>
-        <location line="+37"/>
+        <location line="+2"/>
         <source>Text Files (*.txt *.csv);;Excel Files (*.xlsx);;Python Files (*.pkl);;All Files(*.*)</source>
         <translation>文本文件 (*.txt *.csv);;Excel文件 (*.xlsx);;Python二进制文件 (*.pkl);;所有文件(*.*)</translation>
     </message>
     <message>
-        <location line="-14"/>
-        <source>An exception occurred while serializing the dataframe named %1</source>
-        <translation>把名称为“%1”的dataframe序列化时出现异常</translation>
-    </message>
-    <message>
-        <location line="+39"/>
+        <location line="+25"/>
         <source>An exception occurred while serializing the dataframe named %1 to %2</source>
         <translation>把名称为“%1”的dataframe序列化到“%2”时出现异常</translation>
     </message>
@@ -1011,7 +997,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppDataManager</name>
     <message>
-        <location filename="../APP/DAAppDataManager.cpp" line="+31"/>
+        <location filename="../APP/DAAppDataManager.cpp" line="+35"/>
         <location line="+23"/>
         <source>begin import file:%1</source>
         <translation>开始导入文件“%1”</translation>
@@ -1229,12 +1215,12 @@ Table Area</source>
         <location line="+1"/>
         <location line="+21"/>
         <location line="+85"/>
-        <location line="+207"/>
+        <location line="+206"/>
         <source>Workflow</source>
         <translation>工作流</translation>
     </message>
     <message>
-        <location line="-312"/>
+        <location line="-311"/>
         <location line="+2"/>
         <source>Data Operation</source>
         <translation>数据操作</translation>
@@ -1247,108 +1233,108 @@ Table Area</source>
     <message>
         <location line="+3"/>
         <location line="+23"/>
-        <location line="+361"/>
+        <location line="+360"/>
         <source>View</source>
         <translation>视图</translation>
     </message>
     <message>
-        <location line="-383"/>
+        <location line="-382"/>
         <source>Display</source>
         <translation>视图显示</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+182"/>
+        <location line="+181"/>
         <source>DataFrame</source>
         <translation>DataFrame</translation>
     </message>
     <message>
-        <location line="-181"/>
-        <location line="+183"/>
+        <location line="-180"/>
+        <location line="+182"/>
         <source>Operate</source>
         <translation>操作</translation>
     </message>
     <message>
-        <location line="-182"/>
-        <location line="+184"/>
+        <location line="-181"/>
+        <location line="+183"/>
         <source>Axes</source>
         <translation>Axes</translation>
     </message>
     <message>
-        <location line="-183"/>
+        <location line="-182"/>
         <location line="+2"/>
-        <location line="+193"/>
+        <location line="+192"/>
         <location line="+5"/>
         <source>Type</source>
         <translation>类型</translation>
     </message>
     <message>
-        <location line="-196"/>
-        <location line="+207"/>
+        <location line="-195"/>
+        <location line="+206"/>
         <source>Data Cleaning</source>
         <translation>数据清洗</translation>
     </message>
     <message>
-        <location line="-206"/>
-        <location line="+224"/>
+        <location line="-205"/>
+        <location line="+223"/>
         <source>Statistic</source>
         <translation>统计</translation>
     </message>
     <message>
-        <location line="-221"/>
+        <location line="-220"/>
         <source>Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+304"/>
+        <location line="+303"/>
         <source>Workflow Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
-        <location line="-303"/>
-        <location line="+308"/>
+        <location line="-302"/>
+        <location line="+307"/>
         <source>ClipBoard</source>
         <translation>剪切板</translation>
     </message>
     <message>
-        <location line="-307"/>
-        <location line="+312"/>
+        <location line="-306"/>
+        <location line="+311"/>
         <source>Item</source>
         <translation>图元</translation>
     </message>
     <message>
-        <location line="-311"/>
-        <location line="+320"/>
+        <location line="-310"/>
+        <location line="+319"/>
         <source>Text</source>
         <translation>文本</translation>
     </message>
     <message>
-        <location line="-319"/>
-        <location line="+324"/>
+        <location line="-318"/>
+        <location line="+323"/>
         <source>Background</source>
         <translation>背景</translation>
     </message>
     <message>
-        <location line="-321"/>
-        <location line="+402"/>
+        <location line="-320"/>
+        <location line="+401"/>
         <source>Workflow Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location line="-401"/>
-        <location line="+404"/>
+        <location line="-400"/>
+        <location line="+403"/>
         <source>Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location line="-402"/>
-        <location line="+249"/>
+        <location line="-401"/>
+        <location line="+248"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
     <message>
-        <location line="-248"/>
+        <location line="-247"/>
         <source>Figure Setting</source>
         <translation>绘图设置</translation>
     </message>
@@ -1364,13 +1350,13 @@ Table Area</source>
     </message>
     <message>
         <location line="+1"/>
-        <location line="+408"/>
+        <location line="+407"/>
         <location line="+2"/>
         <source>Chart Edit</source>
         <translation>绘图编辑</translation>
     </message>
     <message>
-        <location line="-408"/>
+        <location line="-407"/>
         <source>theme</source>
         <translation>主题</translation>
     </message>
@@ -1396,7 +1382,7 @@ Table Area</source>
         <translation>把工作流的场景导出为图片</translation>
     </message>
     <message>
-        <location line="+446"/>
+        <location line="+445"/>
         <source>Recent Files</source>
         <translation>最近打开的文件</translation>
     </message>
@@ -1421,7 +1407,7 @@ Table Area</source>
         <translation>导出</translation>
     </message>
     <message>
-        <location line="-427"/>
+        <location line="-426"/>
         <source>File</source>
         <translation>文件</translation>
     </message>
@@ -3490,7 +3476,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-2195"/>
+        <location filename="../APP/DAAppController.cpp" line="-2154"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>

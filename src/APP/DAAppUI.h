@@ -31,13 +31,13 @@ public:
     virtual DAStatusBarInterface* getStatusBar() override;
 
     // 添加信息在程序的日志窗口里显示
-    virtual void addInfoLogMessage(const QString& msg) override;
+    virtual void addInfoLogMessage(const QString& msg, bool showInStatusBar = true) override;
 
     // 添加信息在程序的日志窗口里显示
-    virtual void addWarningLogMessage(const QString& msg) override;
+    virtual void addWarningLogMessage(const QString& msg, bool showInStatusBar = true) override;
 
     // 添加信息在程序的日志窗口里显示
-    virtual void addCriticalLogMessage(const QString& msg) override;
+    virtual void addCriticalLogMessage(const QString& msg, bool showInStatusBar = true) override;
 
     // 创建ui
     void createUi();

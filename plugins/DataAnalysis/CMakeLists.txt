@@ -154,13 +154,24 @@ set_target_properties(${DA_PLUGIN_NAME} PROPERTIES
     DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
     VERSION ${DA_PLUGIN_VERSION}
     EXPORT_NAME ${DA_PLUGIN_NAME}
-    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    RUNTIME_OUTPUT_DIRECTORY "${DAWorkbench_INSTALL_DIR}/bin/plugins"
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/plugins"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/plugins"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/plugins"
 )
 
 ########################################################
 # 安装插件
 ########################################################
+include(GNUInstallDirs)
+
 damacro_plugin_install()
+
+
+# 把PyScripts文件夹复制过去
+install(DIRECTORY
+    ${CMAKE_CURRENT_LIST_DIR}/PyScripts/DADataAnalysis
+    DESTINATION ${CMAKE_INSTALL_BINDIR}/PyScripts
+)
+# 为了能调试的时候运行，需要把DADataAnalysis文件夹复制到${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/PyScrips下
+file(COPY "${CMAKE_CURRENT_LIST_DIR}/PyScripts/DADataAnalysis" DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/PyScripts)
 

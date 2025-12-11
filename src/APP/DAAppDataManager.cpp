@@ -3,6 +3,10 @@
 #include <QFileInfo>
 #include <QUndoStack>
 #include <QDebug>
+#include "DACoreInterface.h"
+#include "DAUIInterface.h"
+#include "DADockingAreaInterface.h"
+#include "DADataManageWidget.h"
 // DAUtils
 #include "DAStringUtil.h"
 #if DA_ENABLE_PYTHON
@@ -88,6 +92,15 @@ int DAAppDataManager::importFromFiles(const QStringList& fileNames)
     }
     return successCnt;
 #endif
+}
+
+QList< DAData > DAAppDataManager::getSelectDatas() const
+{
+    DA::DADataManageWidget* dmw = core()->getUiInterface()->getDockingArea()->getDataManageWidget();
+    if (!dmw) {
+        return QList< DAData >();
+    }
+    return dmw->getCurrentSelectDatas();
 }
 
 }  // end DA

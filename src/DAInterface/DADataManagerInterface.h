@@ -29,6 +29,8 @@ public:
     virtual void removeData_(DAData& d);
     // 获取数据量
     virtual int getDataCount() const;
+    // 获取当前选中的数据
+    virtual QList< DAData > getSelectDatas() const = 0;
     // 参数的索引
     int getDataIndex(const DAData& d) const;
     // 根据索引获取对应的值
@@ -40,6 +42,7 @@ public:
     // 可以使用通配符字符串查找匹配
     QList< DAData > findDatas(const QString& pattern, Qt::CaseSensitivity cs = Qt::CaseInsensitive) const;
     QList< DAData > findDatasReg(const QRegularExpression& regex) const;
+
     // 获取undo stack
     QUndoStack* getUndoStack() const;
 signals:

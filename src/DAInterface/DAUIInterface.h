@@ -56,13 +56,13 @@ public:
     DAActionsInterface* getActionInterface() const;
 
     // 添加信息在程序的日志窗口里显示
-    virtual void addInfoLogMessage(const QString& msg) = 0;
+    virtual void addInfoLogMessage(const QString& msg, bool showInStatusBar = true) = 0;
 
     // 添加信息在程序的日志窗口里显示
-    virtual void addWarningLogMessage(const QString& msg) = 0;
+    virtual void addWarningLogMessage(const QString& msg, bool showInStatusBar = true) = 0;
 
     // 添加信息在程序的日志窗口里显示
-    virtual void addCriticalLogMessage(const QString& msg) = 0;
+    virtual void addCriticalLogMessage(const QString& msg, bool showInStatusBar = true) = 0;
 
     // QApplication::processEvents();的wrapper
     void processEvents() const;

@@ -17,13 +17,15 @@ class DACoreInterface;
  */
 class DAAppDataManager : public DADataManagerInterface
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	DAAppDataManager(DACoreInterface* c, QObject* p = nullptr);
-	~DAAppDataManager();
-	// 从文件导入数据,带redo/undo
-	bool importFromFile(const QString& f, const QVariantMap& args = QVariantMap(), QString* err = nullptr);
-	int importFromFiles(const QStringList& fileNames);
+    DAAppDataManager(DACoreInterface* c, QObject* p = nullptr);
+    ~DAAppDataManager();
+    // 从文件导入数据,带redo/undo
+    bool importFromFile(const QString& f, const QVariantMap& args = QVariantMap(), QString* err = nullptr);
+    int importFromFiles(const QStringList& fileNames);
+    // 获取当前选中的数据
+    virtual QList< DAData > getSelectDatas() const;
 };
 }  // namespace DA
 

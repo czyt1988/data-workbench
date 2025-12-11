@@ -228,7 +228,6 @@ void DAAppController::initConnection()
     // Data Category
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionAddData, onActionAddDataTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionRemoveData, onActionRemoveDataTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionExportIndividualData, onActionExportIndividualDataTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionExportMultipleData, onActionExportMultipleDataTriggered);
     // Chart Category
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionAddFigure, onActionAddFigureTriggered);
@@ -1413,46 +1412,6 @@ void DAAppController::onActionRemoveDataTriggered()
     DADataManageWidget* dmw = mDock->getDataManageWidget();
     dmw->removeSelectData();
     setDirty();
-}
-
-/**
- * @brief 导出单个数据
- */
-void DAAppController::onActionExportIndividualDataTriggered()
-{
-    QString dataPath = QFileDialog::getSaveFileName(
-        app(),
-        tr("Export Data"),  // 导出数据
-        QString(),
-        tr("Text Files (*.txt *.csv);;Excel Files (*.xlsx);;Python Files (*.pkl);;All Files(*.*)")  // 数据文件
-    );
-    if (dataPath.isEmpty()) {
-        // 取消退出
-        return;
-    }
-    DA_WAIT_CURSOR_SCOPED();
-    QFileInfo fi(dataPath);
-    QString dataName   = fi.completeBaseName();
-    QString dataSuffix = fi.suffix();
-    QString baseDir    = fi.absolutePath();
-
-    // 获取当前Data
-    DADataManageWidget* dmw       = mDock->getDataManageWidget();
-    DAData data                   = dmw->getOneSelectData();
-    DAAbstractData::DataType type = data.getDataType();
-
-    QString dataFilePath = QString("%1/%2.%3").arg(baseDir, dataName, dataSuffix);
-
-    switch (type) {
-    case DAAbstractData::TypePythonDataFrame: {
-        // 写文件，对于大文件，这里可能比较耗时，但python的gli机制，无法在线程里面写
-        if (!DAData::exportToFile(data, dataFilePath)) {
-            qCritical() << tr("An exception occurred while serializing the dataframe named %1").arg(dataFilePath);  // cn:把名称为%1的dataframe序列化时出现异常
-        }
-    } break;
-    default:
-        break;
-    }
 }
 
 void DAAppController::onActionExportMultipleDataTriggered()

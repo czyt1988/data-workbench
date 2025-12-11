@@ -100,20 +100,25 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
         .def("processEvents", &DA::DAUIInterface::processEvents)
         .def(
             "addInfoLogMessage",
-            [](DA::DAUIInterface& self, const std::string& msg) { self.addInfoLogMessage(QString::fromStdString(msg)); },
-            pybind11::arg("msg"))
+            [](DA::DAUIInterface& self, const std::string& msg, bool showInStatusBar) {
+                self.addInfoLogMessage(QString::fromStdString(msg), showInStatusBar);
+            },
+            pybind11::arg("msg"),
+            pybind11::arg("showInStatusBar") = true)
         .def(
             "addWarningLogMessage",
-            [](DA::DAUIInterface& self, const std::string& msg) {
-                self.addWarningLogMessage(QString::fromStdString(msg));
+            [](DA::DAUIInterface& self, const std::string& msg, bool showInStatusBar) {
+                self.addWarningLogMessage(QString::fromStdString(msg), showInStatusBar);
             },
-            pybind11::arg("msg"))
+            pybind11::arg("msg"),
+            pybind11::arg("showInStatusBar") = true)
         .def(
             "addCriticalLogMessage",
-            [](DA::DAUIInterface& self, const std::string& msg) {
-                self.addCriticalLogMessage(QString::fromStdString(msg));
+            [](DA::DAUIInterface& self, const std::string& msg, bool showInStatusBar) {
+                self.addCriticalLogMessage(QString::fromStdString(msg), showInStatusBar);
             },
-            pybind11::arg("msg"));
+            pybind11::arg("msg"),
+            pybind11::arg("showInStatusBar") = true);
 
     /* 4. DACoreInterface 补充 */
     pybind11::class_< DA::DACoreInterface >(m, "DACoreInterface")
