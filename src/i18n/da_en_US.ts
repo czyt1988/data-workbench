@@ -5911,40 +5911,40 @@ To Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../plugins/DataAnalysis/Dialogs/DataframeExportSettingsDialog.cpp" line="+49"/>
+        <location filename="../../plugins/DataAnalysis/Dialogs/DataframeExportSettingsDialog.cpp" line="+51"/>
         <source>Select Folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Warning</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Please select the folder for exporting data</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DataframeIOWorker</name>
     <message>
-        <location filename="../../plugins/DataAnalysis/DataframeIOWorker.cpp" line="+55"/>
+        <location filename="../../plugins/DataAnalysis/DataframeIOWorker.cpp" line="+56"/>
         <source>No data is selected. Please select the data to export first.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+13"/>
         <source>Export Data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Text Files (*.txt *.csv);;Excel Files (*.xlsx);;Python Files (*.pkl);;All Files(*.*)</source>
+        <location line="+18"/>
+        <source>Successfully exported %1 to %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+17"/>
-        <source>An exception occurred while serializing the dataframe named %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Data %1 successfully exported to %2.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+113"/>
+        <location line="+115"/>
         <source>%1 . Elapsed: %2:%3</source>
         <translation type="unfinished"></translation>
     </message>

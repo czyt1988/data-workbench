@@ -67,6 +67,48 @@ def detect_encoding(file_path, chunk_size=1024):
 
     return encoding
 
+def support_file_filters_list() -> List[str]:
+    """
+    返回支持导入的文件后缀列表。
+    可用于QFileDialog的文件过滤器，通过;;拼接即可形成文件过滤器。
+    形如：Csv Files (*.csv);;Excel Files (*.xlsx);;Python Files (*.pkl);;All Files(*.*)
+    """
+    file_filters = ['Csv Files (*.csv)', 'Excel Files (*.xlsx)','Parquet Files(*.parquet)','Feather Files(*.feather)', 'Python Files (*.pkl)', 'HTML Files (*.html)', 'Json Files (*.json)', 'All Files(*.*)']
+    return file_filters
+
+def support_file_filters() -> str:
+    """
+    返回支持导入的文件后缀列表。
+    可用于QFileDialog的文件过滤器，通过;;拼接即可形成文件过滤器。
+    形如：Csv Files (*.csv);;Excel Files (*.xlsx);;Python Files (*.pkl);;All Files(*.*)
+    """
+    return ';;'.join(support_file_filters_list())
+
+def export_data(df: pd.DataFrame, file_path: str, type: str = 'csv'):
+    """
+    导出DataFrame为指定文件
+    参数：
+        df (pd.DataFrame): 要导出的DataFrame。
+        file_path (str): 导出的文件路径。
+        type (str): 导出的文件类型，可支持 csv、xlsx、parquet、feather、pickle、html、json。
+
+    返回：
+        None
+    """
+    if type == 'csv':
+        df.to_csv(file_path, index=False)  # 去掉索引列
+    elif type == 'xlsx' or type == 'excel':
+        df.to_excel(file_path, index=False)
+    elif type == 'parquet':
+        df.to_parquet(file_path, index=False)
+    elif type == 'feather':
+        df.reset_index().to_feather(file_path)
+    elif type == 'pickle' or type == 'pkl':
+        df.to_pickle(file_path)
+    elif type == 'html':
+        df.to_html(file_path, index=False)
+    elif type == 'json':
+        df.to_json(file_path, force_ascii=False)
 
 def export_datamanager_thread(file_path: str, type: str = 'csv',export_all:bool = True)-> str:
     """
@@ -104,20 +146,7 @@ def export_datamanager_thread(file_path: str, type: str = 'csv',export_all:bool 
                 status.update_progress(index / total_count * 100,f"export: {name}.{file_type}")
                 save_file_path = os.path.join(file_path, f"{name}.{file_type}")
                 # 按类型导出
-                if file_type == 'csv':
-                    df.to_csv(save_file_path, index=False)  # 去掉索引列
-                elif file_type == 'xlsx':
-                    df.to_excel(save_file_path, index=False)
-                elif file_type == 'parquet':
-                    df.to_parquet(save_file_path, index=False)
-                elif file_type == 'feather':
-                    df.reset_index().to_feather(save_file_path)
-                elif file_type == 'pickle':
-                    df.to_pickle(save_file_path)
-                elif file_type == 'html':
-                    df.to_html(save_file_path, index=False)
-                elif file_type == 'json':
-                    df.to_json(save_file_path, force_ascii=False)
+                export_data(df, save_file_path, file_type)
             # 写入用户数据
             os.startfile(file_path)  # 直接调用系统默认方式打开文件夹
             status.finish(True,f"export success {total_count} files")

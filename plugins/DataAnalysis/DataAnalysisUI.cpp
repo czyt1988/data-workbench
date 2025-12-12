@@ -42,20 +42,31 @@ void DataAnalysisUI::buildDataCategory()
 {
     DA::DARibbonAreaInterface* ribbonArea = m_ui->getRibbonArea();
     SARibbonCategory* dataCategory = ribbonArea->getCategoryByObjectName(QStringLiteral("da-ribbon-category-data"));
-    if (!dataCategory) {
-        return;
+    if (dataCategory) {
+        SARibbonPanel* dataOperatePanel = ribbonArea->getPannelByObjectName(QStringLiteral("da-pannel-data.data-opt"));
+        // 导出单个数据
+        actionExportIndividualData = m_actions->createAction("actionExportIndividualData",
+                                                             ":/DataAnalysisPluginIcon/icon/exportIndividualData.svg");
+        actionExportMultipleData =
+            m_actions->createAction("actionExportMultipleData", ":/DataAnalysisPluginIcon/icon/exportMultipleData.svg");
+        actionExportToOneExcel =
+            m_actions->createAction("actionExportToOneExcel", ":/DataAnalysisPluginIcon/icon/export-to-one-xlsx.svg");
+        dataOperatePanel->addLargeAction(actionExportIndividualData);
+        dataOperatePanel->addLargeAction(actionExportMultipleData);
+        dataOperatePanel->addLargeAction(actionExportToOneExcel);
     }
-    SARibbonPanel* dataOperatePanel = ribbonArea->getPannelByObjectName(QStringLiteral("da-pannel-data.data-opt"));
-    // 导出单个数据
-    actionExportIndividualData =
-        m_actions->createAction("actionExportIndividualData", ":/DataAnalysisPluginIcon/icon/exportIndividualData.svg");
-    actionExportMultipleData =
-        m_actions->createAction("actionExportMultipleData", ":/DataAnalysisPluginIcon/icon/exportMultipleData.svg");
-    actionExportToOneExcel =
-        m_actions->createAction("actionExportToOneExcel", ":/DataAnalysisPluginIcon/icon/export-to-one-xlsx.svg");
-    dataOperatePanel->addLargeAction(actionExportIndividualData);
-    dataOperatePanel->addLargeAction(actionExportMultipleData);
-    dataOperatePanel->addLargeAction(actionExportToOneExcel);
+
+    // 获取Dataframe Context Category
+    SARibbonCategory* dataframeContextCategory =
+        ribbonArea->getCategoryByObjectName(QStringLiteral("da-ribbon-contextcategory-dataframe"));
+    if (dataframeContextCategory) {
+        // 新建数据清洗panel
+        panelDataCleaner = dataframeContextCategory->addPanel(tr("Data Cleaning"));  // cn：数据清洗
+        actionDataFrameDropNone =
+            m_actions->createAction("actionDataFrameDropNone", ":/DataAnalysisPluginIcon/icon/dataframe-drop-none.svg");
+
+        panelDataCleaner->addLargeAction(actionDataFrameDropNone);
+    }
 }
 
 void DataAnalysisUI::retranslateUi()
@@ -68,6 +79,9 @@ void DataAnalysisUI::retranslateUi()
     actionExportToOneExcel->setText(tr("Export \nTo Excel"));  // cn:导出Excel
     actionExportToOneExcel->setToolTip(
         tr("Export all data from the data management area to an Excel file, with each dataset as a separate sheet."));  // cn:把数据管理区所有数据导出到一个excel文件中，每个数据将作为excel的一个sheet
+    panelDataCleaner->setPanelName(tr("Data Cleaning"));                                // cn：数据清洗
+    actionDataFrameDropNone->setText(tr("Drop None"));                                  // cn:删除\n缺失值
+    actionDataFrameDropNone->setToolTip(tr("Drop rows which contain missing values"));  // cn:删除包含缺失值的行
 }
 
 void DataAnalysisUI::bind(DataframeIOWorker* io)

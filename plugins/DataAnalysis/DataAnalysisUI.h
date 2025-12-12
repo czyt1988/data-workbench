@@ -3,12 +3,17 @@
 #include <QObject>
 #include <QAction>
 
+// SARibbon
+class SARibbonPanel;
+
+// DA
 namespace DA
 {
 class DACoreInterface;
 class DAUIInterface;
 class DAActionsInterface;
 }
+
 class DataframeIOWorker;
 
 class DataAnalysisUI : public QObject
@@ -34,9 +39,17 @@ public:
     //===================================================
     // 数据标签 Data Category
     //===================================================
-    QAction* actionExportIndividualData;  ///< 导出单个数据
-    QAction* actionExportMultipleData;    ///< 导出多个数据
-    QAction* actionExportToOneExcel;      ///< 把数据导出到一个excel中
+    QAction* actionExportIndividualData { nullptr };  ///< 导出单个数据
+    QAction* actionExportMultipleData { nullptr };    ///< 导出多个数据
+    QAction* actionExportToOneExcel { nullptr };      ///< 把数据导出到一个excel中
+
+    //===================================================
+    // 数据标签 Dataframe Context Category
+    //===================================================
+    SARibbonPanel* panelDataCleaner { nullptr };
+    // 数据清洗
+    QAction* actionDataFrameDropNone { nullptr };
+
 private:
     DA::DACoreInterface* m_core { nullptr };
     DA::DAUIInterface* m_ui { nullptr };

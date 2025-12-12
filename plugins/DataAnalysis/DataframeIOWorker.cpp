@@ -12,6 +12,7 @@
 #include "DADataManagerInterface.h"
 #include "DAStatusBarInterface.h"
 #include "DAPyModule.h"
+#include "DAPybind11QtTypeCast.h"
 #include "Dialogs/DataframeExportSettingsDialog.h"
 #include "Dialogs/DataFrameExportRangeSelectDialog.h"
 DataframeIOWorker::DataframeIOWorker(QObject* par) : DataAnalysisBaseWorker(par)
@@ -55,12 +56,19 @@ void DataframeIOWorker::exportIndividualData()
             tr("No data is selected. Please select the data to export first."));  // cn:没有选中任何数据，请先选中要导出的数据
         return;
     }
-    QString dataPath = QFileDialog::getSaveFileName(
-        mainWindow(),
-        tr("Export Data"),  // 导出数据
-        QString(),
-        tr("Text Files (*.txt *.csv);;Excel Files (*.xlsx);;Python Files (*.pkl);;All Files(*.*)")  // 数据文件
-    );
+    QString fileFilter;
+    try {
+        auto support_file_filters = m_dataAnalysisModule->attr("support_file_filters");
+        auto filters              = support_file_filters();
+        fileFilter                = QString::fromStdString(filters.cast< std::string >());
+    } catch (const std::exception& e) {
+        qCritical() << e.what();
+        return;
+    }
+    QString dataPath = QFileDialog::getSaveFileName(mainWindow(),
+                                                    tr("Export Data"),  // 导出数据
+                                                    QString(),
+                                                    fileFilter);
     if (dataPath.isEmpty()) {
         // 取消退出
         return;
@@ -73,14 +81,13 @@ void DataframeIOWorker::exportIndividualData()
     QString baseDir      = fi.absolutePath();
     QString dataFilePath = QString("%1/%2.%3").arg(baseDir, dataName, dataSuffix);
     DA::DAData data      = selDatas.first();
-    if (data.isDataFrame()) {
-        if (!DA::DAData::exportToFile(data, dataFilePath)) {
-            uiInterface()->addInfoLogMessage(
-                tr("An exception occurred while serializing the dataframe named %1").arg(dataFilePath));  // cn:把名称为%1的dataframe序列化时出现异常
-        } else {
-            uiInterface()->addInfoLogMessage(
-                tr("Data %1 successfully exported to %2.").arg(data.getName(), dataFilePath));  // cn:成功导出数据到%1
-        }
+    try {
+        auto export_data = m_dataAnalysisModule->attr("export_data");
+        export_data(data.toPyObject(), DA::PY::toPyStr(dataFilePath), DA::PY::toPyStr(dataSuffix));
+        qInfo() << tr("Successfully exported %1 to %2").arg(data.getName(), dataFilePath);  // cn:成功把%1导出到%2
+    } catch (const std::exception& e) {
+        qCritical() << e.what();
+        return;
     }
 }
 

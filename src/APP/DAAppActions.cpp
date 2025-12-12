@@ -71,7 +71,6 @@ void DAAppActions::buildDataAction()
     actionCastToDatetime     = createAction("actionCastToDatetime", ":/app/bright/Icon/castToDatetime.svg");
     actionCreateDataDescribe = createAction("actionCreateDataDescribe", ":/app/bright/Icon/dataDescribe.svg");
     actionChangeToIndex      = createAction("actionChangeToIndex", ":/app/bright/Icon/changeToIndex.svg");
-    actionDataFrameDropNone  = createAction("actionDataFrameDropNone", ":/app/bright/Icon/dataframe-drop-none.svg");
     actionDropDuplicates     = createAction("actionDropDuplicates", ":/app/bright/Icon/process-duplicate-data.svg");
     actionNstdFilterOutlier  = createAction("actionNstdFilterOutlier", ":/app/bright/Icon/nstd-filter.svg");
     actionDataFrameFillNone  = createAction("actionDataFrameFillNone", ":/app/bright/Icon/dataframe-fill-none.svg");
@@ -258,11 +257,10 @@ void DAAppActions::retranslateUi()
     actionCastToString->setText(tr("to str"));
     actionCastToString->setToolTip(tr("cast to string type"));  // cn:转换为字符串类型
     actionCastToDatetime->setText(tr("to datetime"));
-    actionCastToDatetime->setToolTip(tr("cast to datetime type"));                      // cn:转换为日期类型
-    actionCreateDataDescribe->setText(tr("Data Describe"));                             // cn:数据描述
-    actionChangeToIndex->setText(tr("To Index"));                                       // cn:转换为\n索引
-    actionDataFrameDropNone->setText(tr("Drop None"));                                  // cn:删除\n缺失值
-    actionDataFrameDropNone->setToolTip(tr("Drop rows which contain missing values"));  // cn:删除包含缺失值的行
+    actionCastToDatetime->setToolTip(tr("cast to datetime type"));  // cn:转换为日期类型
+    actionCreateDataDescribe->setText(tr("Data Describe"));         // cn:数据描述
+    actionChangeToIndex->setText(tr("To Index"));                   // cn:转换为\n索引
+
     actionDataFrameFillNone->setText(tr("Fill None"));                                  // cn:填充\n缺失值
     actionDataFrameFillNone->setToolTip(tr("Fill rows which contain missing values"));  // cn:填充包含缺失值的行
     actionDataFrameFillInterpolate->setText(tr("Fill Interpolate"));                    // cn:插值填充

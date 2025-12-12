@@ -6042,40 +6042,40 @@ To Excel</source>
         <translation>网页格式。保留表格样式。最适合在报告或邮件中嵌入数据。</translation>
     </message>
     <message>
-        <location filename="../../plugins/DataAnalysis/Dialogs/DataframeExportSettingsDialog.cpp" line="+49"/>
+        <location filename="../../plugins/DataAnalysis/Dialogs/DataframeExportSettingsDialog.cpp" line="+51"/>
         <source>Select Folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Warning</source>
+        <translation type="unfinished">警告</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Please select the folder for exporting data</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DataframeIOWorker</name>
     <message>
-        <location filename="../../plugins/DataAnalysis/DataframeIOWorker.cpp" line="+55"/>
+        <location filename="../../plugins/DataAnalysis/DataframeIOWorker.cpp" line="+56"/>
         <source>No data is selected. Please select the data to export first.</source>
         <translation>没有选中任何数据，请先选中要导出的数据。</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+13"/>
         <source>Export Data</source>
         <translation>导出数据</translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Text Files (*.txt *.csv);;Excel Files (*.xlsx);;Python Files (*.pkl);;All Files(*.*)</source>
-        <translation>文本文件 (*.txt *.csv);;Excel文件 (*.xlsx);;Python二进制文件 (*.pkl);;所有文件(*.*)</translation>
+        <location line="+18"/>
+        <source>Successfully exported %1 to %2</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+17"/>
-        <source>An exception occurred while serializing the dataframe named %1</source>
-        <translation>把名称为%1的dataframe序列化时出现异常</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Data %1 successfully exported to %2.</source>
-        <translation>成功导出数据%1到%2。</translation>
-    </message>
-    <message>
-        <location line="+113"/>
+        <location line="+115"/>
         <source>%1 . Elapsed: %2:%3</source>
         <translation type="unfinished"></translation>
     </message>

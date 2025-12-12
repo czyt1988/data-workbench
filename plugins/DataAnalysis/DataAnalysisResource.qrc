@@ -4,5 +4,6 @@
         <file>icon/exportMultipleData.svg</file>
         <file>icon/folder.svg</file>
         <file>icon/export-to-one-xlsx.svg</file>
+        <file>icon/dataframe-drop-none.svg</file>
     </qresource>
 </RCC>
