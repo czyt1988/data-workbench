@@ -5896,7 +5896,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DataAnalysisUI</name>
     <message>
-        <location filename="../../plugins/DataAnalysis/DataAnalysisUI.cpp" line="+60"/>
+        <location filename="../../plugins/DataAnalysis/DataAnalysisUI.cpp" line="+63"/>
         <source>Export 
 Individual Data</source>
         <translation>导出
@@ -5908,6 +5908,45 @@ Individual Data</source>
 Multiple Data</source>
         <translation>导出
 多个数据</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Export all data from the data management area to a folder, with each dataset saved as an individual data file.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Export 
+To Excel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Export all data from the data management area to an Excel file, with each dataset as a separate sheet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DataFrameExportRangeSelectDialog</name>
+    <message>
+        <location filename="../../plugins/DataAnalysis/Dialogs/DataFrameExportRangeSelectDialog.ui" line="+14"/>
+        <source>Dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Select Export Range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Export All</source>
+        <translation type="unfinished">导出所有</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Export Selected</source>
+        <translation type="unfinished">导出选中</translation>
     </message>
 </context>
 <context>
@@ -6011,7 +6050,7 @@ Multiple Data</source>
 <context>
     <name>DataframeIOWorker</name>
     <message>
-        <location filename="../../plugins/DataAnalysis/DataframeIOWorker.cpp" line="+54"/>
+        <location filename="../../plugins/DataAnalysis/DataframeIOWorker.cpp" line="+55"/>
         <source>No data is selected. Please select the data to export first.</source>
         <translation>没有选中任何数据，请先选中要导出的数据。</translation>
     </message>
@@ -6036,8 +6075,13 @@ Multiple Data</source>
         <translation>成功导出数据%1到%2。</translation>
     </message>
     <message>
-        <location line="+94"/>
-        <source>Finish Export,Cost %1:%2</source>
+        <location line="+113"/>
+        <source>%1 . Elapsed: %2:%3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>%1,Cost %2:%3</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

@@ -36,6 +36,7 @@ public:
     //===================================================
     QAction* actionExportIndividualData;  ///< 导出单个数据
     QAction* actionExportMultipleData;    ///< 导出多个数据
+    QAction* actionExportToOneExcel;      ///< 把数据导出到一个excel中
 private:
     DA::DACoreInterface* m_core { nullptr };
     DA::DAUIInterface* m_ui { nullptr };

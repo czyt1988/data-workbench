@@ -3,5 +3,6 @@
         <file>icon/exportIndividualData.svg</file>
         <file>icon/exportMultipleData.svg</file>
         <file>icon/folder.svg</file>
+        <file>icon/export-to-one-xlsx.svg</file>
     </qresource>
 </RCC>

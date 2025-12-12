@@ -11,8 +11,9 @@
 #include "DADockingAreaInterface.h"
 #include "DADataManagerInterface.h"
 #include "DAStatusBarInterface.h"
-#include "Dialogs/DataframeExportSettingsDialog.h"
 #include "DAPyModule.h"
+#include "Dialogs/DataframeExportSettingsDialog.h"
+#include "Dialogs/DataFrameExportRangeSelectDialog.h"
 DataframeIOWorker::DataframeIOWorker(QObject* par) : DataAnalysisBaseWorker(par)
 {
     initializePythonEnv();
@@ -103,15 +104,51 @@ void DataframeIOWorker::exportMultipleData()
         if (taskid.is_none()) {
             return;
         }
-        m_exportDatasTaskID = taskid.cast< std::string >();
+        std::string str_taskid = taskid.cast< std::string >();
         // 进行任务进度查询
-        onExportMultipleDataTask();
+        updatePythonThreadStatus(str_taskid);
     } catch (const std::exception& e) {
         qCritical() << e.what();
     }
 }
 
-void DataframeIOWorker::onExportMultipleDataTask()
+void DataframeIOWorker::exportToOneExcelFile()
+{
+    if (!m_dataAnalysisModule) {
+        return;
+    }
+
+    QString savePath = QFileDialog::getSaveFileName(mainWindow(),                    // 父窗口
+                                                    QString(u8"保存为 excel 文件"),  // 标题
+                                                    QString(),  // 默认打开目录（空=上次路径）
+                                                    QString(u8"excel (*.xlsx)")  // 过滤器
+    );
+    if (savePath.isEmpty()) {
+        return;
+    }
+
+    if (!m_exportRangeSelectDialog) {
+        m_exportRangeSelectDialog = new DataFrameExportRangeSelectDialog(mainWindow());
+    }
+    if (QDialog::Accepted != m_exportRangeSelectDialog->exec()) {
+        return;
+    }
+    bool isExportAll = m_exportRangeSelectDialog->isExportAll();
+    try {
+        auto export_datamanager_to_excel_thread = m_dataAnalysisModule->attr("export_datamanager_to_excel_thread");
+        auto taskid = export_datamanager_to_excel_thread(savePath.toStdString(), isExportAll);
+        if (taskid.is_none()) {
+            return;
+        }
+        std::string str_taskid = taskid.cast< std::string >();
+        // 进行任务进度查询
+        updatePythonThreadStatus(str_taskid);
+    } catch (const std::exception& e) {
+        qCritical() << e.what();
+    }
+}
+
+void DataframeIOWorker::updatePythonThreadStatus(const std::string& taskid, int msleep, int evenTime)
 {
     if (!m_threadStatusMgrModule) {
         return;
@@ -122,26 +159,27 @@ void DataframeIOWorker::onExportMultipleDataTask()
             // 在调用Python函数之前释放GIL
             pybind11::gil_scoped_release release;
 
-            // 短暂休眠，让Python线程有机会获得GIL
-            QThread::msleep(500);
+            // 休眠msleep，让Python线程有机会获得GIL
+            QThread::msleep(msleep);
         }
         // 休眠过后开始查询状态，看看python处理的结果
         //  调用Python函数检查状态
         auto get_task_status  = m_threadStatusMgrModule->attr("get_task_status");
-        pybind11::dict status = get_task_status(m_exportDatasTaskID);  // 通过任务id获取线程状态
-                                                                       /*
-                                                                           "task_id": self._task_id,
-                                                                           "task_name": self._task_name,
-                                                                           "is_running": self._is_processing and not self._is_paused and not self._is_canceled,
-                                                                           "is_paused": self._is_paused,
-                                                                           "is_canceled": self._is_canceled,
-                                                                           "is_success": self._is_success,
-                                                                           "current_stage": self._current_stage,
-                                                                           "progress": round(self._progress, 2),
-                                                                           "elapsed_seconds": elapsed,
-                                                                           "message": self._message,
-                                                                           "custom_data": self._custom_data.copy()  # 自定义数据副本
-                                                                        */
+        pybind11::dict status = get_task_status(taskid);  // 通过任务id获取线程状态
+
+        /*
+            "task_id": self._task_id,
+            "task_name": self._task_name,
+            "is_running": self._is_processing and not self._is_paused and not self._is_canceled,
+            "is_paused": self._is_paused,
+            "is_canceled": self._is_canceled,
+            "is_success": self._is_success,
+            "current_stage": self._current_stage,
+            "progress": round(self._progress, 2),
+            "elapsed_seconds": elapsed,
+            "message": self._message,
+            "custom_data": self._custom_data.copy()  # 自定义数据副本
+         */
         DA::DAStatusBarInterface* statusBar = uiInterface()->getStatusBar();
         bool is_running                     = status[ "is_running" ].cast< bool >();
         if (is_running) {
@@ -154,29 +192,32 @@ void DataframeIOWorker::onExportMultipleDataTask()
             int elapsed_min = static_cast< int >(elapsed_seconds / 60);
             int elapsed_sec = static_cast< int >(elapsed_seconds) % 60;
             QString progress_text;
-            progress_text = QString("%1 已用时: %2:%3")
+            progress_text = tr("%1 . Elapsed: %2:%3")
                                 .arg(QString::fromStdString(message))
                                 .arg(elapsed_min, 2, 10, QChar('0'))
-                                .arg(elapsed_sec, 2, 10, QChar('0'));
+                                .arg(elapsed_sec, 2, 10, QChar('0'));  // cn:%1,已用时%2:%3
             statusBar->setProgress(progress);
             statusBar->setProgressText(progress_text);
-            // 关键，在20ms后继续查询
-            QTimer::singleShot(20, this, &DataframeIOWorker::onExportMultipleDataTask);
+            // 关键，在evenTime后继续查询
+            // QTimer::singleShot(20, this, &DataframeIOWorker::onExportMultipleDataTask);
+            QTimer::singleShot(
+                evenTime, [ this, taskid, msleep, evenTime ]() { updatePythonThreadStatus(taskid, msleep, evenTime); });
         } else {
             // 说明线程已经运行完成
-            bool is_success = status[ "is_success" ].cast< bool >();
+            bool is_success     = status[ "is_success" ].cast< bool >();
+            std::string message = status[ "message" ].cast< std::string >();
+            // 获取状态的自定义数据
+            double elapsed_seconds = status[ "elapsed_seconds" ].cast< double >();
+            int elapsed_min        = static_cast< int >(elapsed_seconds / 60);
+            int elapsed_sec        = static_cast< int >(elapsed_seconds) % 60;
+            // 生成日志
+            QString logMessage =
+                QString(tr("%1,Cost %2:%3")).arg(QString::fromStdString(message)).arg(elapsed_min).arg(elapsed_sec);
+            statusBar->showMessage(logMessage);
             if (is_success) {
-                statusBar->showMessage(QString(u8"导入数据完成!"));
-                // 获取状态的自定义数据
-                double elapsed_seconds = status[ "elapsed_seconds" ].cast< double >();
-                int elapsed_min        = static_cast< int >(elapsed_seconds / 60);
-                int elapsed_sec        = static_cast< int >(elapsed_seconds) % 60;
-                // 生成日志
-                QString message = QString(tr("Finish Export,Cost %1:%2")).arg(elapsed_min).arg(elapsed_sec);
-                qInfo() << message;
+                qInfo().noquote() << logMessage;
             } else {
-                statusBar->showMessage(QString(u8"导入数失败!"));
-                qCritical().noquote() << QString(u8"导入数据失败!");
+                qCritical().noquote() << logMessage;
             }
             statusBar->hideProgressBar();
             statusBar->setBusy(false);

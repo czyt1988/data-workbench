@@ -246,22 +246,6 @@
  <connections>
   <connection>
    <sender>buttonBox</sender>
-   <signal>accepted()</signal>
-   <receiver>DataframeExportSettingsDialog</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>301</x>
-     <y>513</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>106</x>
-     <y>505</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>buttonBox</sender>
    <signal>rejected()</signal>
    <receiver>DataframeExportSettingsDialog</receiver>
    <slot>reject()</slot>

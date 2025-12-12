@@ -4,6 +4,7 @@
 #include <string>
 #include "DataAnalysisBaseWorker.h"
 class DataframeExportSettingsDialog;
+class DataFrameExportRangeSelectDialog;
 namespace DA
 {
 class DAPyModule;
@@ -23,15 +24,19 @@ public Q_SLOTS:
     void exportIndividualData();
     // 导出多个数据（将在python线程中进行）
     void exportMultipleData();
+    // 导出到一个excel文件中
+    void exportToOneExcelFile();
 private Q_SLOTS:
-    // 进行exportMultipleData任务进度
-    void onExportMultipleDataTask();
+    // 更新python的线程状态,msleep是给python线程的时间，evenTime是给自身主线程的时间
+    void updatePythonThreadStatus(const std::string& taskid, int msleep = 500, int evenTime = 20);
 
 private:
     std::unique_ptr< DA::DAPyModule > m_dataAnalysisModule;
     std::unique_ptr< DA::DAPyModule > m_threadStatusMgrModule;
+    // 导出多个数据
     DataframeExportSettingsDialog* m_exportSettingDialog { nullptr };
-    std::string m_exportDatasTaskID;  ///< 记录导出数据的任务id
+    // 导出到excel
+    DataFrameExportRangeSelectDialog* m_exportRangeSelectDialog { nullptr };
 };
 
 #endif  // DATAFRAMEIOWORKER_H

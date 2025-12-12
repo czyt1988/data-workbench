@@ -23,6 +23,8 @@ public:
     bool isExportAll() const;
 private Q_SLOTS:
     void onBrowser();
+    //
+    void onAccept();
 
 private:
     Ui::DataframeExportSettingsDialog* ui;

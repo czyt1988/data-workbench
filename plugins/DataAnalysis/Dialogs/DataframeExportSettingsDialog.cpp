@@ -1,10 +1,12 @@
 #include "DataframeExportSettingsDialog.h"
 #include "ui_DataframeExportSettingsDialog.h"
 #include <QFileDialog>
+#include <QMessageBox>
 DataframeExportSettingsDialog::DataframeExportSettingsDialog(QWidget* parent)
     : QDialog(parent), ui(new Ui::DataframeExportSettingsDialog)
 {
     ui->setupUi(this);
+    connect(this, &QDialog::accepted, this, &DataframeExportSettingsDialog::onAccept);
     connect(ui->toolButtonBrowser, &QToolButton::clicked, this, &DataframeExportSettingsDialog::onBrowser);
 }
 
@@ -54,4 +56,17 @@ void DataframeExportSettingsDialog::onBrowser()
         return;
     }
     ui->lineEditFolderPath->setText(folderPath);
+}
+
+void DataframeExportSettingsDialog::onAccept()
+{
+    QString savepath = getSavePath();
+    if (savepath.isEmpty()) {
+        QMessageBox::warning(this,
+                             tr("Warning"),                                     // cn:警告
+                             tr("Please select the folder for exporting data")  // cn:请选择需要导出数据的文件夹
+        );
+        return;
+    }
+    QDialog::accept();
 }

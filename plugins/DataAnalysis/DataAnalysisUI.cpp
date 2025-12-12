@@ -51,18 +51,28 @@ void DataAnalysisUI::buildDataCategory()
         m_actions->createAction("actionExportIndividualData", ":/DataAnalysisPluginIcon/icon/exportIndividualData.svg");
     actionExportMultipleData =
         m_actions->createAction("actionExportMultipleData", ":/DataAnalysisPluginIcon/icon/exportMultipleData.svg");
+    actionExportToOneExcel =
+        m_actions->createAction("actionExportToOneExcel", ":/DataAnalysisPluginIcon/icon/export-to-one-xlsx.svg");
     dataOperatePanel->addLargeAction(actionExportIndividualData);
     dataOperatePanel->addLargeAction(actionExportMultipleData);
+    dataOperatePanel->addLargeAction(actionExportToOneExcel);
 }
 
 void DataAnalysisUI::retranslateUi()
 {
     actionExportIndividualData->setText(tr("Export \nIndividual Data"));  // cn:导出\n单个数据
     actionExportMultipleData->setText(tr("Export \nMultiple Data"));      // cn:导出\n多个数据
+    actionExportMultipleData->setToolTip(tr(
+        "Export all data from the data management area to a folder, with each "
+        "dataset saved as an individual data file."));  // cn:把数据管理区所有数据导出到一个文件夹中，每个数据形成一个数据文件
+    actionExportToOneExcel->setText(tr("Export \nTo Excel"));  // cn:导出Excel
+    actionExportToOneExcel->setToolTip(
+        tr("Export all data from the data management area to an Excel file, with each dataset as a separate sheet."));  // cn:把数据管理区所有数据导出到一个excel文件中，每个数据将作为excel的一个sheet
 }
 
 void DataAnalysisUI::bind(DataframeIOWorker* io)
 {
     connect(actionExportIndividualData, &QAction::triggered, io, &DataframeIOWorker::exportIndividualData);
     connect(actionExportMultipleData, &QAction::triggered, io, &DataframeIOWorker::exportMultipleData);
+    connect(actionExportToOneExcel, &QAction::triggered, io, &DataframeIOWorker::exportToOneExcelFile);
 }
