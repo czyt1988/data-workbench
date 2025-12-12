@@ -50,9 +50,8 @@ public:
     //===================================================
     // 数据标签 Data Category
     //===================================================
-    QAction* actionAddData;             ///< 添加数据
-    QAction* actionRemoveData;          ///< 移除数据
-    QAction* actionExportMultipleData;  ///< 导出多个数据
+    QAction* actionAddData;     ///< 添加数据
+    QAction* actionRemoveData;  ///< 移除数据
 
     //===================================================
     // 数据操作的上下文标签 Data Operate Context Category

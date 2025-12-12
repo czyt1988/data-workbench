@@ -180,7 +180,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+223"/>
+        <location filename="../APP/DAAppActions.cpp" line="+207"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
@@ -232,13 +232,6 @@ Data</source>
 Data</source>
         <translation>移除
 数据</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Export 
-Individual Data</source>
-        <translation>导出
-单个数据</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -823,7 +816,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+841"/>
+        <location filename="../APP/DAAppController.cpp" line="+859"/>
         <location line="+49"/>
         <source>project file(*.%1)</source>
         <translation>工程文件(*.%1)</translation>
@@ -845,7 +838,7 @@ Table Area</source>
         <translation>加载工程文件“%1”失败</translation>
     </message>
     <message>
-        <location line="-424"/>
+        <location line="-440"/>
         <location line="+22"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
@@ -873,12 +866,12 @@ Table Area</source>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+398"/>
+        <location line="+414"/>
         <source>Project saved successfully,path is %1</source>
         <translation>工程保存成功，路径位于:%1</translation>
     </message>
     <message>
-        <location line="-442"/>
+        <location line="-458"/>
         <source>Project Files (*.%1)</source>
         <translation>工程文件(*.%1)</translation>
     </message>
@@ -888,7 +881,7 @@ Table Area</source>
         <translation>请选中数据操作窗口</translation>
     </message>
     <message>
-        <location line="+396"/>
+        <location line="+412"/>
         <source>Project load successfully,path is %1</source>
         <translation>工程加载成功，路径为：%1</translation>
     </message>
@@ -928,24 +921,17 @@ Table Area</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
     <message>
-        <location line="+271"/>
-        <location line="+37"/>
+        <location line="+268"/>
         <source>Export Data</source>
         <translation>导出数据</translation>
     </message>
     <message>
-        <location line="-35"/>
-        <location line="+37"/>
+        <location line="+2"/>
         <source>Text Files (*.txt *.csv);;Excel Files (*.xlsx);;Python Files (*.pkl);;All Files(*.*)</source>
         <translation>文本文件 (*.txt *.csv);;Excel文件 (*.xlsx);;Python二进制文件 (*.pkl);;所有文件(*.*)</translation>
     </message>
     <message>
-        <location line="-14"/>
-        <source>An exception occurred while serializing the dataframe named %1</source>
-        <translation>把名称为“%1”的dataframe序列化时出现异常</translation>
-    </message>
-    <message>
-        <location line="+39"/>
+        <location line="+25"/>
         <source>An exception occurred while serializing the dataframe named %1 to %2</source>
         <translation>把名称为“%1”的dataframe序列化到“%2”时出现异常</translation>
     </message>
@@ -988,7 +974,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppCore</name>
     <message>
-        <location filename="../APP/DAAppCore.cpp" line="+111"/>
+        <location filename="../APP/DAAppCore.cpp" line="+118"/>
         <source>Python interpreter path is %1</source>
         <translation>Python环境路径为%1</translation>
     </message>
@@ -1011,7 +997,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppDataManager</name>
     <message>
-        <location filename="../APP/DAAppDataManager.cpp" line="+31"/>
+        <location filename="../APP/DAAppDataManager.cpp" line="+35"/>
         <location line="+23"/>
         <source>begin import file:%1</source>
         <translation>开始导入文件“%1”</translation>
@@ -1229,12 +1215,12 @@ Table Area</source>
         <location line="+1"/>
         <location line="+21"/>
         <location line="+85"/>
-        <location line="+207"/>
+        <location line="+206"/>
         <source>Workflow</source>
         <translation>工作流</translation>
     </message>
     <message>
-        <location line="-312"/>
+        <location line="-311"/>
         <location line="+2"/>
         <source>Data Operation</source>
         <translation>数据操作</translation>
@@ -1247,108 +1233,108 @@ Table Area</source>
     <message>
         <location line="+3"/>
         <location line="+23"/>
-        <location line="+361"/>
+        <location line="+360"/>
         <source>View</source>
         <translation>视图</translation>
     </message>
     <message>
-        <location line="-383"/>
+        <location line="-382"/>
         <source>Display</source>
         <translation>视图显示</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+182"/>
+        <location line="+181"/>
         <source>DataFrame</source>
         <translation>DataFrame</translation>
     </message>
     <message>
-        <location line="-181"/>
-        <location line="+183"/>
+        <location line="-180"/>
+        <location line="+182"/>
         <source>Operate</source>
         <translation>操作</translation>
     </message>
     <message>
-        <location line="-182"/>
-        <location line="+184"/>
+        <location line="-181"/>
+        <location line="+183"/>
         <source>Axes</source>
         <translation>Axes</translation>
     </message>
     <message>
-        <location line="-183"/>
+        <location line="-182"/>
         <location line="+2"/>
-        <location line="+193"/>
+        <location line="+192"/>
         <location line="+5"/>
         <source>Type</source>
         <translation>类型</translation>
     </message>
     <message>
-        <location line="-196"/>
-        <location line="+207"/>
+        <location line="-195"/>
+        <location line="+206"/>
         <source>Data Cleaning</source>
         <translation>数据清洗</translation>
     </message>
     <message>
-        <location line="-206"/>
-        <location line="+224"/>
+        <location line="-205"/>
+        <location line="+223"/>
         <source>Statistic</source>
         <translation>统计</translation>
     </message>
     <message>
-        <location line="-221"/>
+        <location line="-220"/>
         <source>Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+304"/>
+        <location line="+303"/>
         <source>Workflow Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
-        <location line="-303"/>
-        <location line="+308"/>
+        <location line="-302"/>
+        <location line="+307"/>
         <source>ClipBoard</source>
         <translation>剪切板</translation>
     </message>
     <message>
-        <location line="-307"/>
-        <location line="+312"/>
+        <location line="-306"/>
+        <location line="+311"/>
         <source>Item</source>
         <translation>图元</translation>
     </message>
     <message>
-        <location line="-311"/>
-        <location line="+320"/>
+        <location line="-310"/>
+        <location line="+319"/>
         <source>Text</source>
         <translation>文本</translation>
     </message>
     <message>
-        <location line="-319"/>
-        <location line="+324"/>
+        <location line="-318"/>
+        <location line="+323"/>
         <source>Background</source>
         <translation>背景</translation>
     </message>
     <message>
-        <location line="-321"/>
-        <location line="+402"/>
+        <location line="-320"/>
+        <location line="+401"/>
         <source>Workflow Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location line="-401"/>
-        <location line="+404"/>
+        <location line="-400"/>
+        <location line="+403"/>
         <source>Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location line="-402"/>
-        <location line="+249"/>
+        <location line="-401"/>
+        <location line="+248"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
     <message>
-        <location line="-248"/>
+        <location line="-247"/>
         <source>Figure Setting</source>
         <translation>绘图设置</translation>
     </message>
@@ -1364,13 +1350,13 @@ Table Area</source>
     </message>
     <message>
         <location line="+1"/>
-        <location line="+408"/>
+        <location line="+407"/>
         <location line="+2"/>
         <source>Chart Edit</source>
         <translation>绘图编辑</translation>
     </message>
     <message>
-        <location line="-408"/>
+        <location line="-407"/>
         <source>theme</source>
         <translation>主题</translation>
     </message>
@@ -1396,7 +1382,7 @@ Table Area</source>
         <translation>把工作流的场景导出为图片</translation>
     </message>
     <message>
-        <location line="+446"/>
+        <location line="+445"/>
         <source>Recent Files</source>
         <translation>最近打开的文件</translation>
     </message>
@@ -1421,7 +1407,7 @@ Table Area</source>
         <translation>导出</translation>
     </message>
     <message>
-        <location line="-427"/>
+        <location line="-426"/>
         <source>File</source>
         <translation>文件</translation>
     </message>
@@ -1894,7 +1880,7 @@ Table Area</source>
 <context>
     <name>DA::DAChartManageWidget</name>
     <message>
-        <location filename="../DAGui/DAChartManageWidget.cpp" line="+125"/>
+        <location filename="../DAGui/DAChartManageWidget.cpp" line="+155"/>
         <source>get figure create signal,but can not find figure index</source>
         <translation>获取了绘图创建的信号，但无法找到绘图的索引</translation>
     </message>
@@ -2075,7 +2061,7 @@ Table Area</source>
 <context>
     <name>DA::DADataManager</name>
     <message>
-        <location filename="../DAData/DADataManager.cpp" line="+53"/>
+        <location filename="../DAData/DADataManager.cpp" line="+54"/>
         <source>data:%1 have been added</source>
         <translation>数据%1已经添加</translation>
     </message>
@@ -2106,21 +2092,35 @@ Table Area</source>
 <context>
     <name>DA::DADataManagerTreeModel</name>
     <message>
-        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="+411"/>
+        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="+70"/>
         <location line="+2"/>
-        <source>name</source>
+        <location line="+142"/>
+        <location line="+3"/>
+        <location line="+95"/>
+        <location line="+2"/>
+        <source>Name</source>
         <translation>名称</translation>
     </message>
     <message>
-        <location line="+0"/>
-        <source>property</source>
-        <translation>原型</translation>
+        <location line="-242"/>
+        <location line="+145"/>
+        <location line="+97"/>
+        <source>Properties</source>
+        <translation>属性</translation>
     </message>
     <message>
-        <location line="+199"/>
-        <location line="+12"/>
-        <source>The data(%1) cannot find its corresponding item in the data management tree during the removal process</source>
-        <translation>数据(%1)在移除过程中无法找到其对应的数据管理树中的条目</translation>
+        <location line="+243"/>
+        <source>
+Type: %1</source>
+        <translation>
+类型：%1</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>
+Description: %1</source>
+        <translation>
+详情：%1</translation>
     </message>
 </context>
 <context>
@@ -3478,7 +3478,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-2178"/>
+        <location filename="../APP/DAAppController.cpp" line="-2154"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -5916,6 +5916,159 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
 </context>
 <context>
+    <name>DataAnalysisUI</name>
+    <message>
+        <location filename="../../plugins/DataAnalysis/DataAnalysisUI.cpp" line="+60"/>
+        <source>Export 
+Individual Data</source>
+        <translation>导出
+单个数据</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Export 
+Multiple Data</source>
+        <translation>导出
+多个数据</translation>
+    </message>
+</context>
+<context>
+    <name>DataframeExportSettingsDialog</name>
+    <message>
+        <location filename="../../plugins/DataAnalysis/Dialogs/DataframeExportSettingsDialog.ui" line="+14"/>
+        <source>Dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source>Export All</source>
+        <translation>导出所有</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Export Selected</source>
+        <translation>导出选中</translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>csv</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Comma-separated values - Universal text format. Best for data exchange and basic analysis.</source>
+        <translation>逗号分隔值 - 通用文本格式。最适合数据交换和基本分析。</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>xlsx</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Microsoft Excel format. Supports multiple sheets and formatting.</source>
+        <translation>Microsoft Excel格式。支持多工作表和格式设置。</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Parquet</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Column-oriented binary format. High compression and fast querying. Perfect for big data and analytics.</source>
+        <translation>列式二进制格式。高压缩比和快速查询。最适合大数据和分析场景。</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Feather</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Lightweight binary format. Extremely fast read/write speeds. Great for intermediate data storage and Python/R interoperability.</source>
+        <translation>轻量级二进制格式。读写速度极快。适合中间数据存储和Python/R跨语言交互。</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Pickle</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Python-specific binary format. Preserves complete object structure. Best for temporary storage within Python applications.</source>
+        <translation>Python专用二进制格式。完整保留对象结构。适合Python应用程序内的临时存储。</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>JSON</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>JavaScript Object Notation. Human-readable, web-friendly format. Excellent for web APIs and configuration files.</source>
+        <translation>JavaScript对象表示法。人类可读、Web友好的格式。最适合Web API和配置文件。</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>HTML</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Web page format. Preserves table styling. Ideal for embedding data in reports or emails.</source>
+        <translation>网页格式。保留表格样式。最适合在报告或邮件中嵌入数据。</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>SQL</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Direct database export. Supports relational data and complex queries</source>
+        <translation>直接导出到数据库。支持关系型数据和复杂查询</translation>
+    </message>
+</context>
+<context>
+    <name>DataframeIOWorker</name>
+    <message>
+        <location filename="../../plugins/DataAnalysis/DataframeIOWorker.cpp" line="+29"/>
+        <source>No data is selected. Please select the data to export first.</source>
+        <translation>没有选中任何数据，请先选中要导出的数据。</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Export Data</source>
+        <translation>导出数据</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Text Files (*.txt *.csv);;Excel Files (*.xlsx);;Python Files (*.pkl);;All Files(*.*)</source>
+        <translation>文本文件 (*.txt *.csv);;Excel文件 (*.xlsx);;Python二进制文件 (*.pkl);;所有文件(*.*)</translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>An exception occurred while serializing the dataframe named %1</source>
+        <translation>把名称为%1的dataframe序列化时出现异常</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Data %1 successfully exported to %2.</source>
+        <translation>成功导出数据%1到%2。</translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source>Warning</source>
+        <translation>警告</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>No data available for export</source>
+        <translation>没有数据可导出</translation>
+    </message>
+</context>
+<context>
     <name>QObject</name>
     <message>
         <location filename="../DAPyBindQt/pandas/DAPyIndex.cpp" line="+159"/>
@@ -6179,6 +6332,11 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>移除数据</translation>
     </message>
     <message>
+        <location line="+19"/>
+        <source>rename data</source>
+        <translation>数据重命名</translation>
+    </message>
+    <message>
         <location filename="../DACommonWidgets/DABrushStyleComboBox.cpp" line="+43"/>
         <source>No Brush</source>
         <translation>无</translation>
@@ -6401,7 +6559,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>转换列为索引</translation>
     </message>
     <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="+194"/>
+        <location filename="../DAGui/DAXmlHelper.cpp" line="+193"/>
         <location line="+119"/>
         <source>load nodes occurce error</source>
         <translation>加载节点发生错误</translation>
@@ -6580,7 +6738,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>节点%1无法找到名字为%2的连接点</translation>
     </message>
     <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="+1267"/>
+        <location filename="../DAGui/DAXmlHelper.cpp" line="+1271"/>
         <source>The attribute %1=%2 under the tag %3 cannot be converted to double </source>
         <translation>%3标签属性%1=%2无法转换为double类型 </translation>
     </message>
@@ -6866,7 +7024,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation></translation>
     </message>
     <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="-2488"/>
+        <location filename="../DAGui/DAXmlHelper.cpp" line="-2492"/>
         <source>save workflow extern info cost: %1 ms</source>
         <translation></translation>
     </message>

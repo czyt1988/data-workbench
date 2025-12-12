@@ -2,5 +2,6 @@
     <qresource prefix="/DataAnalysisPluginIcon">
         <file>icon/exportIndividualData.svg</file>
         <file>icon/exportMultipleData.svg</file>
+        <file>icon/folder.svg</file>
     </qresource>
 </RCC>

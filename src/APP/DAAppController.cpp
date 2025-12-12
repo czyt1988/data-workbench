@@ -228,7 +228,6 @@ void DAAppController::initConnection()
     // Data Category
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionAddData, onActionAddDataTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionRemoveData, onActionRemoveDataTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionExportMultipleData, onActionExportMultipleDataTriggered);
     // Chart Category
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionAddFigure, onActionAddFigureTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionFigureResizeChart, onActionFigureResizeChartTriggered);
@@ -1412,48 +1411,6 @@ void DAAppController::onActionRemoveDataTriggered()
     DADataManageWidget* dmw = mDock->getDataManageWidget();
     dmw->removeSelectData();
     setDirty();
-}
-
-void DAAppController::onActionExportMultipleDataTriggered()
-{
-    QString dataPath = QFileDialog::getSaveFileName(
-        app(),
-        tr("Export Data"),  // 导出数据
-        QString(),
-        tr("Text Files (*.txt *.csv);;Excel Files (*.xlsx);;Python Files (*.pkl);;All Files(*.*)")  // 数据文件
-    );
-    if (dataPath.isEmpty()) {
-        // 取消退出
-        return;
-    }
-    DA_WAIT_CURSOR_SCOPED();
-    QFileInfo fi(dataPath);
-    QString dataName   = fi.completeBaseName();
-    QString dataSuffix = fi.suffix();
-    QString baseDir    = fi.absolutePath();
-
-    const int datacnt = mDatas->getDataCount();
-    for (int i = 0; i < datacnt; ++i) {
-        // 逐个遍历DAData，把数据文件进行持久化
-        DAData data                   = mDatas->getData(i);
-        DAAbstractData::DataType type = data.getDataType();
-        QString name                  = data.getName();
-
-        QString dataFilePath = QString("%1/%2_%3.%4").arg(baseDir, dataName, name, dataSuffix);
-
-        switch (type) {
-        case DAAbstractData::TypePythonDataFrame: {
-            // 写文件，对于大文件，这里可能比较耗时，但python的gli机制，无法在线程里面写
-            if (!DAData::exportToFile(data, dataFilePath)) {
-                qCritical() << tr("An exception occurred while serializing the dataframe named %1 to %2")
-                                   .arg(name, dataFilePath);  // cn:把名称为%1的dataframe序列化到%2时出现异常
-                continue;
-            }
-        } break;
-        default:
-            break;
-        }
-    }
 }
 
 /**

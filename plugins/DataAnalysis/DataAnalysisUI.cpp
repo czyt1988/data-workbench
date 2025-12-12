@@ -64,4 +64,5 @@ void DataAnalysisUI::retranslateUi()
 void DataAnalysisUI::bind(DataframeIOWorker* io)
 {
     connect(actionExportIndividualData, &QAction::triggered, io, &DataframeIOWorker::exportIndividualData);
+    connect(actionExportMultipleData, &QAction::triggered, io, &DataframeIOWorker::exportMultipleData);
 }

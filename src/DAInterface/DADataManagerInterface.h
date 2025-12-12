@@ -42,7 +42,8 @@ public:
     // 可以使用通配符字符串查找匹配
     QList< DAData > findDatas(const QString& pattern, Qt::CaseSensitivity cs = Qt::CaseInsensitive) const;
     QList< DAData > findDatasReg(const QRegularExpression& regex) const;
-
+    // 获取所有数据
+    QList< DAData > getAllDatas() const;
     // 获取undo stack
     QUndoStack* getUndoStack() const;
 signals:

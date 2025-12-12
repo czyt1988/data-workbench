@@ -311,6 +311,7 @@ if(DA_ENABLE_AUTO_TRANSLATE)
         ${CMAKE_CURRENT_SOURCE_DIR}/src/DAPyScripts
         ${CMAKE_CURRENT_SOURCE_DIR}/src/DAUtils
         ${CMAKE_CURRENT_SOURCE_DIR}/src/DAWorkFlow
+        ${CMAKE_CURRENT_SOURCE_DIR}/plugins/DataAnalysis
     )
 
     # 自动 update + release → 生成 DA_QM_FILES

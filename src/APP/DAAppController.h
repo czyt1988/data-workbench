@@ -155,8 +155,6 @@ private Q_SLOTS:
     void onActionAddDataTriggered();
     // 移除数据
     void onActionRemoveDataTriggered();
-    // 导出多个数据
-    void onActionExportMultipleDataTriggered();
     //===================================================
     // 绘图标签 Chart Category
     //===================================================

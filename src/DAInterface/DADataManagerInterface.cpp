@@ -282,6 +282,15 @@ QList< DAData > DADataManagerInterface::findDatasReg(const QRegularExpression& r
 }
 
 /**
+ * @brief 获取所有数据
+ * @return
+ */
+QList< DAData > DADataManagerInterface::getAllDatas() const
+{
+    return dataManager()->getAllDatas();
+}
+
+/**
  * @brief 获取undo stack
  * @return
  */

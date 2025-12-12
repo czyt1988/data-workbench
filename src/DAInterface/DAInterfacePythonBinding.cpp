@@ -8,11 +8,8 @@
 #include "DAData.h"
 #include "DADataManager.h"
 #include "DAPythonSignalHandler.h"
-#if DA_ENABLE_PYTHON
 #include "DAPybind11InQt.h"
-#include "pandas/DAPyDataFrame.h"
-#include "pandas/DAPySeries.h"
-#endif
+#include "DAPybind11QtTypeCast.h"
 
 PYBIND11_EMBEDDED_MODULE(da_interface, m)
 {
@@ -47,6 +44,83 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
         .def("getData", &DA::DADataManagerInterface::getData, pybind11::arg("index"))
         .def("getDataIndex", &DA::DADataManagerInterface::getDataIndex, pybind11::arg("data"))
         .def("getDataById", &DA::DADataManagerInterface::getDataById, pybind11::arg("id"))
+        // 添加返回QList<DAData>的函数
+        .def(
+            "getAllDatas",
+            [](DA::DADataManagerInterface& self) {
+                QList< DA::DAData > datas = self.getAllDatas();
+                pybind11::list pyList;
+                for (const DA::DAData& data : datas) {
+                    pyList.append(data);
+                }
+                return pyList;
+            },
+            "Get all data objects as a list")
+        .def(
+            "getAllDataframes",
+            [](DA::DADataManagerInterface& self) {
+                QList< DA::DAData > datas = self.getAllDatas();
+                pybind11::dict pydict;
+                for (const DA::DAData& data : datas) {
+                    if (data.isDataFrame()) {
+                        pydict[ DA::PY::toPyStr(data.getName()) ] = data.toPyObject();
+                    }
+                }
+                return pydict;
+            },
+            "Get all dataframe objects as a dict {dataname,dataframe}")  // 辅助函数获取所有的dataframe
+        .def(
+            "getSelectDatas",
+            [](DA::DADataManagerInterface& self) {
+                QList< DA::DAData > datas = self.getSelectDatas();
+                pybind11::list pyList;
+                for (const DA::DAData& data : datas) {
+                    pyList.append(data);
+                }
+                return pyList;
+            },
+            "Get selected data objects as a list")
+        .def(
+            "getSelectDataframes",
+            [](DA::DADataManagerInterface& self) {
+                QList< DA::DAData > datas = self.getSelectDatas();
+                pybind11::dict pydict;
+                for (const DA::DAData& data : datas) {
+                    if (data.isDataFrame()) {
+                        pydict[ DA::PY::toPyStr(data.getName()) ] = data.toPyObject();
+                    }
+                }
+                return pydict;
+            },
+            "Get selected data objects as a dict {dataname,dataframe}")
+        .def(
+            "findDatas",
+            [](DA::DADataManagerInterface& self, const std::string& pattern, int cs) {
+                QList< DA::DAData > datas =
+                    self.findDatas(QString::fromStdString(pattern), static_cast< Qt::CaseSensitivity >(cs));
+                pybind11::list pyList;
+                for (const DA::DAData& data : datas) {
+                    pyList.append(data);
+                }
+                return pyList;
+            },
+            pybind11::arg("pattern"),
+            pybind11::arg("cs") = static_cast< int >(Qt::CaseInsensitive),
+            "Find datas by name pattern,0:CaseInsensitive,1:CaseSensitive")
+        .def(
+            "findDatasReg",
+            [](DA::DADataManagerInterface& self, const std::string& regexPattern) {
+                QRegularExpression regex(QString::fromStdString(regexPattern));
+                QList< DA::DAData > datas = self.findDatasReg(regex);
+                pybind11::list pyList;
+                for (const DA::DAData& data : datas) {
+                    pyList.append(data);
+                }
+                return pyList;
+            },
+            pybind11::arg("regex_pattern"),
+            "Find datas by regular expression")
+
         // 快捷：pandas → DAData
         .def(
             "addDataframe",
@@ -65,7 +139,8 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
                 self.addData(data);
             },
             pybind11::arg("series"),
-            pybind11::arg("name"));
+            pybind11::arg("name"))  // 添加系列
+        ;
 
     /*DAStatusBarInterface*/
     pybind11::class_< DA::DAStatusBarInterface >(m, "DAStatusBarInterface")
