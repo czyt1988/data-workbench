@@ -9,7 +9,7 @@ damacro_lib_setting(
     "qt wrapper python | https://github.com/czyt1988"
     0
     0
-    1
+    2
 )
 
 ########################################################

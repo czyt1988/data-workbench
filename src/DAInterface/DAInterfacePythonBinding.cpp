@@ -1,4 +1,5 @@
 ﻿#include "DAInterfacePythonBinding.h"
+#include <QMainWindow>
 #include "DACoreInterface.h"
 #include "DADataManagerInterface.h"
 #include "DAProjectInterface.h"
@@ -10,6 +11,7 @@
 #include "DAPythonSignalHandler.h"
 #include "DAPybind11InQt.h"
 #include "DAPybind11QtTypeCast.h"
+#include "DAPyJsonCast.h"
 
 PYBIND11_EMBEDDED_MODULE(da_interface, m)
 {
@@ -80,6 +82,18 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
                 return pyList;
             },
             "Get selected data objects as a list")
+        .def("getOperateData", &DA::DADataManagerInterface::getOperateData, "get current operating data")
+        .def(
+            "getOperateDataSeries",
+            [](DA::DADataManagerInterface& self) {
+                QList< int > colindex = self.getOperateDataSeries();
+                pybind11::list list;
+                for (int v : colindex) {
+                    list.append(v);
+                }
+                return list;
+            },
+            "get current operating data selected series index")
         .def(
             "getSelectDataframes",
             [](DA::DADataManagerInterface& self) {
@@ -193,7 +207,17 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
                 self.addCriticalLogMessage(QString::fromStdString(msg), showInStatusBar);
             },
             pybind11::arg("msg"),
-            pybind11::arg("showInStatusBar") = true);
+            pybind11::arg("showInStatusBar") = true)
+        .def(
+            "getConfigValues",
+            [](DA::DAUIInterface& self, const std::string& jsonConfig, const std::string& cacheKey = std::string()) {
+                QString qjsonConfig = QString::fromStdString(jsonConfig);
+                QString qcacheKey   = QString::fromStdString(cacheKey);
+                QJsonObject jsonObj = self.getConfigValues(qjsonConfig, self.getMainWindow(), qcacheKey);
+                return DA::PY::qjsonObjectToPyDict(jsonObj);
+            },
+            pybind11::arg("jsonConfig"),
+            pybind11::arg("cacheKey") = "");
 
     /* 4. DACoreInterface 补充 */
     pybind11::class_< DA::DACoreInterface >(m, "DACoreInterface")

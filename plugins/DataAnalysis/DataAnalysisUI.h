@@ -15,7 +15,7 @@ class DAActionsInterface;
 }
 
 class DataframeIOWorker;
-
+class DataframeCleanerWorker;
 class DataAnalysisUI : public QObject
 {
     Q_OBJECT
@@ -27,7 +27,8 @@ public:
     //
     void retranslateUi();
     // 绑定信号槽
-    void bind(DataframeIOWorker* io);
+    void bind(DataframeIOWorker* worker);
+    void bind(DataframeCleanerWorker* worker);
 
 private:
     QAction* createAction(const char* objname, const char* iconpath);
@@ -39,6 +40,7 @@ public:
     //===================================================
     // 数据标签 Data Category
     //===================================================
+    SARibbonPanel* panelDataOperate { nullptr };
     QAction* actionExportIndividualData { nullptr };  ///< 导出单个数据
     QAction* actionExportMultipleData { nullptr };    ///< 导出多个数据
     QAction* actionExportToOneExcel { nullptr };      ///< 把数据导出到一个excel中

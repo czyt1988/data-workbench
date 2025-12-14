@@ -357,8 +357,10 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     m_contextDataFrame = ribbonBar()->addContextCategory(tr("DataFrame"));
     m_contextDataFrame->setObjectName(QStringLiteral("da-ribbon-contextcategory-dataframe"));
     m_categoryDataframeOperate = m_contextDataFrame->addCategoryPage(tr("Operate"));
+    m_categoryDataframeOperate->setObjectName(QStringLiteral("da-ribbon-category-dataframe.operate"));
     // Axes pannel
     m_pannelDataframeOperateAxes = m_categoryDataframeOperate->addPanel(tr("Axes"));
+    m_pannelDataframeOperateAxes->setObjectName(QStringLiteral("da-pannel-dataframe.operate.axes"));
     m_actions->actionInsertRow->setMenu(m_menuInsertRow);
     m_pannelDataframeOperateAxes->addLargeAction(m_actions->actionInsertRow, QToolButton::MenuButtonPopup);
     m_actions->actionInsertColumnRight->setMenu(m_menuInsertColumn);
@@ -371,6 +373,7 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     m_pannelDataframeOperateAxes->addLargeAction(m_actions->actionChangeToIndex);
     // Type pannel
     m_pannelDataframeOperateDType = m_categoryDataframeOperate->addPanel(tr("Type"));
+    m_pannelDataframeOperateDType->setObjectName(QStringLiteral("da-pannel-dataframe.operate.type"));
 #if DA_ENABLE_PYTHON
     m_comboxColumnTypesContainer = new SARibbonLineWidgetContainer(m_pannelDataframeOperateDType);
     m_comboxColumnTypes          = new DAPyDTypeComboBox(m_comboxColumnTypesContainer);
@@ -387,7 +390,7 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     m_pannelDataframeOperateDType->addWidget(m_castActionsButtonGroup, SARibbonPanelItem::Medium);
     // 数据清洗
     m_pannelDataframeOperateDataCleaning = m_categoryDataframeOperate->addPanel(tr("Data Cleaning"));  // cn：数据清洗
-    m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDataFrameDropNone);
+
     m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDropDuplicates);
     m_pannelDataframeOperateDataCleaning->addLargeAction(m_actions->actionDataFrameFillNone);
     m_pannelDataframeOperateDataCleaning->addMediumAction(m_actions->actionDataFrameFFillNone);

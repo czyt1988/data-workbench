@@ -1,4 +1,4 @@
-#ifndef DATAFRAMECLEANERWORKER_H
+﻿#ifndef DATAFRAMECLEANERWORKER_H
 #define DATAFRAMECLEANERWORKER_H
 #include "DataAnalysisBaseWorker.h"
 namespace DA
@@ -16,8 +16,10 @@ public:
     ~DataframeCleanerWorker();
     bool initializePythonEnv();
 public Q_SLOTS:
+    void dropna();
+
 private:
-    std::unique_ptr< DA::DAPyModule > m_dataAnalysisModule;
+    std::unique_ptr< DA::DAPyModule > m_dataCleanerModule;
 };
 
 #endif  // DATAFRAMECLEANERWORKER_H

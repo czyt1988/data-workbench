@@ -1,0 +1,72 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR DataAnalysis
+# This file is distributed under the same license as the DADataAnalysis package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: DADataAnalysis 1.0\n"
+"Report-Msgid-Bugs-To: i18n@example.com\n"
+"POT-Creation-Date: 2025-12-14 20:00+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:31
+msgid "DataManager is None"
+msgstr ""
+
+#: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:35
+msgid "No data selected"
+msgstr ""
+
+#: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:39
+msgid "The data is not of DataFrame type"
+msgstr ""
+
+#: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:51
+msgid "Missing Value Removal Parameter Settings"
+msgstr ""
+
+#: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:54
+msgid "Drop Method"
+msgstr ""
+
+#: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:57
+msgid "If all values are NA, drop that row"
+msgstr ""
+
+#: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:57
+msgid "If any NA values are present, drop that row"
+msgstr ""
+
+#: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:57
+msgid "Not Specified"
+msgstr ""
+
+#: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:58
+msgid ""
+"Determine if row or column is removed from DataFrame, when we have at least "
+"one NA or all NA."
+msgstr ""
+
+#: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:62
+msgid "thresh"
+msgstr ""
+
+#: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:66
+msgid "Require that many non-NA values. Cannot be combined with Drop Method."
+msgstr ""
+
+#: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:70
+msgid "Reindex"
+msgstr ""
+
+#: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:72
+msgid "Whether to rebuild the index after drop na values"
+msgstr ""

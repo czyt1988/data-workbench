@@ -7,6 +7,8 @@
 #include "DAUIInterface.h"
 #include "DADockingAreaInterface.h"
 #include "DADataManageWidget.h"
+#include "DADataOperateWidget.h"
+#include "DADataOperateOfDataFrameWidget.h"
 // DAUtils
 #include "DAStringUtil.h"
 #if DA_ENABLE_PYTHON
@@ -94,6 +96,11 @@ int DAAppDataManager::importFromFiles(const QStringList& fileNames)
 #endif
 }
 
+/**
+ * @brief 获取当前选中的数据，此函数要基于界面数据管理器选择的数据返回
+ *  * 当前选中的数据是指数据管理窗口正在选中的数据，如果没有选中任何数据，返回一个空列表
+ * @return
+ */
 QList< DAData > DAAppDataManager::getSelectDatas() const
 {
     DA::DADataManageWidget* dmw = core()->getUiInterface()->getDockingArea()->getDataManageWidget();
@@ -101,6 +108,45 @@ QList< DAData > DAAppDataManager::getSelectDatas() const
         return QList< DAData >();
     }
     return dmw->getCurrentSelectDatas();
+}
+
+/**
+ * @brief 获取当前正在操作的数据，当前正在操作的数据是指当前正在打开的表格所对应的数据
+ *  * 当前正在操作的数据是指数据操作表格正在操作的数据，如果当前没有打开任何数据，此函数返回一个空的DAData
+ * @return
+ */
+DAData DAAppDataManager::getOperateData() const
+{
+    DADataOperateWidget* dataOperateWidget = core()->getUiInterface()->getDockingArea()->getDataOperateWidget();
+    if (!dataOperateWidget) {
+        return DAData();
+    }
+    DADataOperateOfDataFrameWidget* dfWidget = dataOperateWidget->getCurrentDataFrameWidget();
+    if (!dfWidget) {
+        return DAData();
+    }
+    return dfWidget->data();
+}
+
+/**
+ * @brief 获取当前正在操作窗口操作的列名
+ *
+ * 如果用户当前正在操作一个表格，且选中了某几列，那么此函数会返回选中的列名
+ * 结合@ref getOperateData 和此函数，即可获取当前用户正在操作的序列
+ * @sa getOperateData
+ * @return 如果没有选中任何列，返回空列表
+ */
+QList< int > DAAppDataManager::getOperateDataSeries() const
+{
+    DADataOperateWidget* dataOperateWidget = core()->getUiInterface()->getDockingArea()->getDataOperateWidget();
+    if (!dataOperateWidget) {
+        return QList< int >();
+    }
+    DADataOperateOfDataFrameWidget* dfWidget = dataOperateWidget->getCurrentDataFrameWidget();
+    if (!dfWidget) {
+        return QList< int >();
+    }
+    return dfWidget->getSelectedDataframeCoumns();
 }
 
 }  // end DA

@@ -104,6 +104,9 @@ class DAWorkFlowOperateWidget;
  *     运行pannel：da-pannel-context.workflow.run
  *
  * DataFrame上下文标签:da-ribbon-contextcategory-dataframe
+ *   DataFrame操作category:da-ribbon-category-dataframe.operate
+ *      坐标设置pannel:da-pannel-dataframe.operate.axes
+ *      类型设置pannel:da-pannel-dataframe.operate.type
  * Chart上下文标签：da-ribbon-contextcategory-chart
  *  Chart编辑category：da-ribbon-category-chart.edit
  *     绘图窗口设置pannel:da-pannel-context-chartedit.fig_setting

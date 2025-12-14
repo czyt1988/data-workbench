@@ -180,7 +180,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+206"/>
+        <location filename="../APP/DAAppActions.cpp" line="+205"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
@@ -458,17 +458,7 @@ Column</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Drop None</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Drop rows which contain missing values</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Fill None</source>
         <translation type="unfinished"></translation>
     </message>
@@ -779,7 +769,7 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+484"/>
+        <location filename="../APP/DAAppController.cpp" line="+483"/>
         <location line="+22"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
@@ -945,7 +935,7 @@ Config</source>
 <context>
     <name>DA::DAAppDataManager</name>
     <message>
-        <location filename="../APP/DAAppDataManager.cpp" line="+35"/>
+        <location filename="../APP/DAAppDataManager.cpp" line="+37"/>
         <location line="+23"/>
         <source>begin import file:%1</source>
         <translation type="unfinished"></translation>
@@ -1168,12 +1158,12 @@ Config</source>
         <location line="+1"/>
         <location line="+21"/>
         <location line="+85"/>
-        <location line="+205"/>
+        <location line="+208"/>
         <source>Workflow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-310"/>
+        <location line="-313"/>
         <location line="+2"/>
         <source>Data Operation</source>
         <translation type="unfinished"></translation>
@@ -1186,12 +1176,12 @@ Config</source>
     <message>
         <location line="+3"/>
         <location line="+23"/>
-        <location line="+359"/>
+        <location line="+362"/>
         <source>View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-381"/>
+        <location line="-384"/>
         <source>Display</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1209,85 +1199,85 @@ Config</source>
     </message>
     <message>
         <location line="-180"/>
-        <location line="+182"/>
+        <location line="+183"/>
         <source>Axes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-181"/>
+        <location line="-182"/>
         <location line="+2"/>
-        <location line="+191"/>
-        <location line="+5"/>
+        <location line="+193"/>
+        <location line="+6"/>
         <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-194"/>
-        <location line="+205"/>
+        <location line="-197"/>
+        <location line="+208"/>
         <source>Data Cleaning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-204"/>
-        <location line="+222"/>
+        <location line="-207"/>
+        <location line="+225"/>
         <source>Statistic</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-219"/>
+        <location line="-222"/>
         <source>Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+302"/>
+        <location line="+305"/>
         <source>Workflow Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-301"/>
-        <location line="+306"/>
+        <location line="-304"/>
+        <location line="+309"/>
         <source>ClipBoard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-305"/>
-        <location line="+310"/>
+        <location line="-308"/>
+        <location line="+313"/>
         <source>Item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-309"/>
-        <location line="+318"/>
+        <location line="-312"/>
+        <location line="+321"/>
         <source>Text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-317"/>
-        <location line="+322"/>
+        <location line="-320"/>
+        <location line="+325"/>
         <source>Background</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-319"/>
-        <location line="+400"/>
+        <location line="-322"/>
+        <location line="+403"/>
         <source>Workflow Run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-399"/>
-        <location line="+402"/>
+        <location line="-402"/>
+        <location line="+405"/>
         <source>Run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-400"/>
-        <location line="+247"/>
+        <location line="-403"/>
+        <location line="+250"/>
         <source>Figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-246"/>
+        <location line="-249"/>
         <source>Figure Setting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1303,13 +1293,13 @@ Config</source>
     </message>
     <message>
         <location line="+1"/>
-        <location line="+406"/>
+        <location line="+409"/>
         <location line="+2"/>
         <source>Chart Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-406"/>
+        <location line="-409"/>
         <source>theme</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1335,7 +1325,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+183"/>
+        <location line="+186"/>
         <source>Data Filtering</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1982,6 +1972,60 @@ Config</source>
     <message>
         <location line="+5"/>
         <source>Hexagon</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DACommonPropertySettingDialog</name>
+    <message>
+        <location filename="../DACommonWidgets/DACommonPropertySettingDialog.cpp" line="+491"/>
+        <source>JSON string is empty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Config json parse error:%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>JSON object is empty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>Properties array is empty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Missing &apos;properties&apos; field in JSON config</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+80"/>
+        <location line="+32"/>
+        <source>Property not found:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Invalid value for property:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Value not found in enum items for property:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Type mismatch for property:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+53"/>
+        <source>Failed to load JSON config for settings dialog</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3336,7 +3380,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-2111"/>
+        <location filename="../APP/DAAppController.cpp" line="-2110"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4349,6 +4393,14 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+10"/>
         <source>Orientation</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DACommonPropertySettingDialog</name>
+    <message>
+        <location filename="../DACommonWidgets/DACommonPropertySettingDialog.ui" line="+14"/>
+        <source>Dialog</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5767,7 +5819,13 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DataAnalysisUI</name>
     <message>
-        <location filename="../../plugins/DataAnalysis/DataAnalysisUI.cpp" line="+63"/>
+        <location filename="../../plugins/DataAnalysis/DataAnalysisUI.cpp" line="+65"/>
+        <location line="+22"/>
+        <source>Data Cleaning</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-10"/>
         <source>Export 
 Individual Data</source>
         <translation type="unfinished"></translation>
@@ -5790,8 +5848,18 @@ To Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+1"/>
         <source>Export all data from the data management area to an Excel file, with each dataset as a separate sheet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Drop None</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Drop rows which contain missing values</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5815,6 +5883,14 @@ To Excel</source>
     <message>
         <location line="+7"/>
         <source>Export Selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DataframeCleanerWorker</name>
+    <message>
+        <location filename="../../plugins/DataAnalysis/DataframeCleanerWorker.cpp" line="+37"/>
+        <source>Removed %1 rows containing NaN values</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

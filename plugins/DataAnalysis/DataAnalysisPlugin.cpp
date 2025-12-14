@@ -2,8 +2,9 @@
 #include "DataAnalysisNodeFactory.h"
 #include <QDebug>
 #include "DataAnalysisUI.h"
-#include "DataframeIOWorker.h"
 #include "DACoreInterface.h"
+#include "DataframeIOWorker.h"
+#include "DataframeCleanerWorker.h"
 DataAnalysisPlugin::DataAnalysisPlugin() : DA::DAAbstractNodePlugin()
 {
 }
@@ -23,10 +24,13 @@ bool DataAnalysisPlugin::initialize()
     // 创建工作者
     m_ioWorker = new DataframeIOWorker(this);
     m_ioWorker->initialize(c);
+    m_cleanerWorker = new DataframeCleanerWorker(this);
+    m_cleanerWorker->initialize(c);
+    //
 
     // 绑定ui和工作者的信号槽
     m_ui->bind(m_ioWorker);
-
+    m_ui->bind(m_cleanerWorker);
     return DA::DAAbstractNodePlugin::initialize();
 }
 

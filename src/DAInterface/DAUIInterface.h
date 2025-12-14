@@ -1,8 +1,9 @@
-#ifndef DAUIINTERFACE_H
+﻿#ifndef DAUIINTERFACE_H
 #define DAUIINTERFACE_H
 #include "DAInterfaceAPI.h"
 #include "DAGlobals.h"
 #include <QObject>
+#include <QJsonObject>
 #include "DABaseInterface.h"
 class SARibbonMainWindow;
 class QMainWindow;
@@ -80,6 +81,12 @@ public:
 
     // 获取界面的StatusBar区域
     virtual DAStatusBarInterface* getStatusBar() = 0;
+
+    // 执行一个通用的设置窗口，来获取设置信息，传入内容为构建窗口的设置信息，具体json的设置见DACommonPropertySettingDialog
+    virtual QJsonObject getConfigValues(const QString& jsonConfig,
+                                        QWidget* parent = nullptr,
+                                        const QString& cacheKey = QString()  // 缓存关键字，如果存在缓存关键字，这个设置窗口会缓存起来，下次调用会直接exec，不会创建
+                                        ) = 0;
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
