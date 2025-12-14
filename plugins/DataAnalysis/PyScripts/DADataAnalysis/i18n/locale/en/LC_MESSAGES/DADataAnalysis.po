@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: i18n@example.com\n"
-"POT-Creation-Date: 2025-12-14 19:36+0800\n"
+"POT-Creation-Date: 2025-12-14 22:25+0800\n"
 "PO-Revision-Date: 2025-12-14 18:13+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -68,3 +68,55 @@ msgstr "Reindex"
 #: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:72
 msgid "Whether to rebuild the index after drop na values"
 msgstr "Whether to rebuild the index after drop na values"
+
+#: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:126
+#, python-brace-format
+msgid "The specified path is not a valid folder: {file_path}"
+msgstr ""
+
+#: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:139
+msgid "export datamanager files"
+msgstr ""
+
+#: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:148
+#, python-brace-format
+msgid "export: {name}.{file_type}"
+msgstr ""
+
+#: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:154
+#, python-brace-format
+msgid "export success {total_count} files"
+msgstr ""
+
+#: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:158
+#, python-brace-format
+msgid ""
+"Failed To Export dataframe: {err1}\n"
+"{err2}"
+msgstr ""
+
+#: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:165
+#: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:233
+msgid "unknown error"
+msgstr ""
+
+#: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:207
+#, python-brace-format
+msgid "writing sheet: {sheet_name}"
+msgstr ""
+
+#: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:215
+msgid "Failed To Export Excel File"
+msgstr ""
+
+#: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:217
+#, python-brace-format
+msgid "export success {total_count} sheets, file: {file_path}"
+msgstr ""
+
+#: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:219
+#, python-brace-format
+msgid ""
+"Failed To Export Excel File: {err1}\n"
+"{err2}"
+msgstr ""

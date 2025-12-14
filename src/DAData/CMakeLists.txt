@@ -50,12 +50,14 @@ if(DA_ENABLE_PYTHON)
         DADataPyDataFrame.h
         DADataPyObject.h
         DADataPySeries.h
+        DADataUndoCommand.h
     )
     list(APPEND DA_LIB_SOURCE_FILES
         DADataPythonBinding.cpp
         DADataPyDataFrame.cpp
         DADataPyObject.cpp
         DADataPySeries.cpp
+        DADataUndoCommand.cpp
     )
 endif()
 

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DADataAnalysis 1.0\n"
 "Report-Msgid-Bugs-To: i18n@example.com\n"
-"POT-Creation-Date: 2025-12-14 19:36+0800\n"
+"POT-Creation-Date: 2025-12-14 22:25+0800\n"
 "PO-Revision-Date: 2025-12-14 19:36+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -49,9 +49,7 @@ msgid "Not Specified"
 msgstr "不指定"
 
 #: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:58
-msgid ""
-"Determine if row or column is removed from DataFrame, when we have at least "
-"one NA or all NA."
+msgid "Determine if row or column is removed from DataFrame, when we have at least one NA or all NA."
 msgstr "确定在 DataFrame 中存在至少一个缺失值（NA）或全部为缺失值时，需移除的维度是行还是列"
 
 #: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:62
@@ -69,3 +67,58 @@ msgstr "重建索引"
 #: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:72
 msgid "Whether to rebuild the index after drop na values"
 msgstr "删除缺失值后，是否重建索引"
+
+#: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:126
+#, python-brace-format
+msgid "The specified path is not a valid folder: {file_path}"
+msgstr "指定的路径不是有效的文件夹: {file_path}"
+
+#: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:139
+msgid "export datamanager files"
+msgstr "导出数据管理器到文件"
+
+#: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:148
+#, python-brace-format
+msgid "export: {name}.{file_type}"
+msgstr "导出: {name}.{file_type}"
+
+#: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:154
+#, python-brace-format
+msgid "export success {total_count} files"
+msgstr "成功导出 {total_count} 个文件"
+
+#: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:158
+#, python-brace-format
+msgid ""
+"Failed To Export dataframe: {err1}\n"
+"{err2}"
+msgstr "导出dataframe失败: {err1}\n"
+"{err2}"
+
+#: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:165
+#: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:233
+msgid "unknown error"
+msgstr "未知错误"
+
+#: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:207
+#, python-brace-format
+msgid "writing sheet: {sheet_name}"
+msgstr "正在写入工作表: {sheet_name}"
+
+#: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:215
+msgid "Failed To Export Excel File"
+msgstr "导出Excel文件失败"
+
+#: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:217
+#, python-brace-format
+msgid "export success {total_count} sheets, file: {file_path}"
+msgstr "成功导出{total_count}个工作表，文件位于: {file_path}"
+
+#: /c/src/Qt/GreeDataWorkbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:219
+#, python-brace-format
+msgid ""
+"Failed To Export Excel File: {err1}\n"
+"{err2}"
+msgstr ""
+"导出Excel文件失败: {err1}\n"
+"{err2}"

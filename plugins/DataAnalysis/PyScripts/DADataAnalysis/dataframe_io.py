@@ -123,7 +123,9 @@ def export_datamanager_thread(file_path: str, type: str = 'csv',export_all:bool 
     if not os.path.exists(file_path):
         os.makedirs(file_path, exist_ok=True)
     if not os.path.isdir(file_path):
-        raise Exception(f"The specified path is not a valid folder: {file_path}")
+        errstr = _("The specified path is not a valid folder: {file_path}")#cn: 指定的路径不是有效的文件夹: {file_path}
+        errstr.format(file_path=file_path)
+        raise Exception(errstr)
     datamanager = da_app.getCore().getDataManagerInterface()
     if not datamanager:
         raise Exception("DataManagerInterface is not available")
@@ -134,7 +136,7 @@ def export_datamanager_thread(file_path: str, type: str = 'csv',export_all:bool 
     else:
         dataframes_dict = datamanager.getSelectDataframes()
     # 创建一个状态对象
-    taskid,status = tsm.create_task_with_status("export datamanager files")
+    taskid,status = tsm.create_task_with_status(_("export datamanager files"))#cn: 导出数据管理器文件
     file_type = type.strip().lower()
     def save_dataframes_worker():
         """线程工作函数：实际执行数据的保存操作"""
@@ -143,23 +145,24 @@ def export_datamanager_thread(file_path: str, type: str = 'csv',export_all:bool 
         try:
             total_count = len(dataframes_dict)
             for index, (name, df) in enumerate(dataframes_dict.items()):
-                status.update_progress(index / total_count * 100,f"export: {name}.{file_type}")
+                status.update_progress(index / total_count * 100,_("export: {name}.{file_type}").format(name=name,file_type=file_type))#cn: 正在导出: {name}.{file_type}
                 save_file_path = os.path.join(file_path, f"{name}.{file_type}")
                 # 按类型导出
                 export_data(df, save_file_path, file_type)
             # 写入用户数据
             os.startfile(file_path)  # 直接调用系统默认方式打开文件夹
-            status.finish(True,f"export success {total_count} files")
+            info_str = _("export success {total_count} files")
+            info_str = info_str.format(total_count=total_count)
+            status.finish(True,info_str)
         except Exception as e:
-            error_msg = f"error: {str(e)}\n{traceback.format_exc()}"
-            status.finish(False,error_msg)
+            status.finish(False,_("Failed To Export dataframe: {err1}\n{err2}").format(err1=str(e),err2=traceback.format_exc()))
     try:
         # 创建并启动线程
         save_thread = threading.Thread(target=save_dataframes_worker, daemon=True)
         save_thread.start()
         return taskid
     except Exception as e:
-        status.finish(False,"unknown error")
+        status.finish(False,_("unknown error"))#cn: 未知错误
         return None
 
 def export_datamanager_to_excel_thread(file_path: str ,export_all:bool = True) -> str:
@@ -201,17 +204,19 @@ def export_datamanager_to_excel_thread(file_path: str ,export_all:bool = True) -
                 total_count = len(dataframes_dict)
                 for index, (sheet_name, df) in enumerate(dataframes_dict.items()):
                     # 清理sheet名称中的非法字符
-                    status.update_progress(index / total_count * 100,f"writing sheet: {sheet_name}")
+                    str_info = _("writing sheet: {sheet_name}")
+                    str_info = str_info.format(sheet_name=sheet_name)
+                    status.update_progress(index / total_count * 100,str_info)
                     clean_sheet_name = sheet_name.replace('/', '_').replace('\\', '_').replace('*', '_').replace('?', '_').replace('[', '_').replace(']', '_')
                     df.to_excel(writer, sheet_name=clean_sheet_name, index=False)
             
             # 验证文件是否生成成功
             if not os.path.exists(file_path):
-                raise Exception("Failed To Export Excel File")
-            status.finish(True,f'Export Success: {total_count} sheets, file: {file_path}')
+                error_msg = _("Failed To Export Excel File")#cn: 导出Excel文件失败
+                raise Exception(error_msg)
+            status.finish(True,_("export success {total_count} sheets, file: {file_path}").format(total_count=total_count,file_path=file_path))
         except Exception as e:
-            error_msg = f"Failed To Export Excel File: {str(e)}\n{traceback.format_exc()}"
-            status.finish(False,error_msg)
+            status.finish(False,_("Failed To Export Excel File: {err1}\n{err2}").format(err1=str(e),err2=traceback.format_exc()))
             # 清理可能生成的损坏文件
             if os.path.exists(file_path):
                 try:
@@ -225,5 +230,5 @@ def export_datamanager_to_excel_thread(file_path: str ,export_all:bool = True) -
         save_thread.start()
         return taskid
     except Exception as e:
-        status.finish(False,"unknown error")
+        status.finish(False,_("unknown error"))#cn: 未知错误
         return None
