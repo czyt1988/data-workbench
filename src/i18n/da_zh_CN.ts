@@ -2147,7 +2147,7 @@ Description: %1</source>
 <context>
     <name>DA::DADataOperateOfDataFrameWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+174"/>
+        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+179"/>
         <source>warning</source>
         <translation>警告</translation>
     </message>
@@ -2157,26 +2157,26 @@ Description: %1</source>
         <translation>必须指定列的名字</translation>
     </message>
     <message>
-        <location line="+30"/>
+        <location line="+36"/>
         <source>please select valid data cells</source>
         <translation>请选择正确的行</translation>
     </message>
     <message>
-        <location line="+23"/>
-        <location line="+97"/>
-        <location line="+27"/>
-        <location line="+34"/>
+        <location line="+29"/>
+        <location line="+111"/>
         <location line="+35"/>
+        <location line="+42"/>
+        <location line="+43"/>
         <source>please select valid column</source>
         <translation>请选择正确的列</translation>
     </message>
     <message>
-        <location line="-169"/>
+        <location line="-202"/>
         <source>please select valid cell</source>
         <translation>请选择正确的单元格</translation>
     </message>
     <message>
-        <location line="+33"/>
+        <location line="+42"/>
         <source>table have not column</source>
         <translation>表格没有列</translation>
     </message>
@@ -2184,7 +2184,7 @@ Description: %1</source>
 <context>
     <name>DA::DADataOperateWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateWidget.cpp" line="+176"/>
+        <location filename="../DAGui/DADataOperateWidget.cpp" line="+185"/>
         <source>removing a widget that does not exist in tab</source>
         <translation>正在移除一个不存在的窗口</translation>
     </message>
@@ -2192,6 +2192,14 @@ Description: %1</source>
         <location line="+59"/>
         <source>[deleted]</source>
         <translation>[已删除]</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADataTableView</name>
+    <message>
+        <location filename="../DAGui/DADataTableView.cpp" line="+21"/>
+        <source>DADataTableView must set model first</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2335,7 +2343,7 @@ Description: %1</source>
 <context>
     <name>DA::DADialogDataFrameDataSearch</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogDataFrameDataSearch.cpp" line="+40"/>
+        <location filename="../DAGui/Dialog/DADialogDataFrameDataSearch.cpp" line="+41"/>
         <source>can not find item</source>
         <translation>无法找到条目</translation>
     </message>
@@ -6020,7 +6028,7 @@ To Excel</source>
 <context>
     <name>DataframeCleanerWorker</name>
     <message>
-        <location filename="../../plugins/DataAnalysis/DataframeCleanerWorker.cpp" line="+37"/>
+        <location filename="../../plugins/DataAnalysis/DataframeCleanerWorker.cpp" line="+95"/>
         <source>Removed %1 rows containing NaN values</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6174,7 +6182,7 @@ To Excel</source>
         <translation>使用utf-8打开文件“%1”错误，尝试使用ansi编码</translation>
     </message>
     <message>
-        <location filename="../DAPyBindQt/pandas/DAPySeries.cpp" line="+312"/>
+        <location filename="../DAPyBindQt/pandas/DAPySeries.cpp" line="+322"/>
         <source>DAPySeries  get python object type is not pandas.Series</source>
         <translation>python object类型不是pandas.Series</translation>
     </message>
@@ -6546,108 +6554,108 @@ To Excel</source>
         <translation>添加绘图元素</translation>
     </message>
     <message>
-        <location filename="../DAGui/Commands/DACommandsDataFrame.cpp" line="+25"/>
+        <location filename="../DAGui/Commands/DACommandsDataFrame.cpp" line="+23"/>
         <source>set dataframe data</source>
         <translation>改变单元格数据</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+24"/>
         <source>insert row</source>
         <translation>插入一行</translation>
     </message>
     <message>
         <location line="+44"/>
-        <location line="+25"/>
+        <location line="+30"/>
         <source>insert column &quot;%1&quot;</source>
         <translation>插入列“%1”</translation>
     </message>
     <message>
-        <location line="+54"/>
+        <location line="+45"/>
         <source>drop dataframe rows</source>
         <translation>移除dataframe行</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+26"/>
         <source>drop dataframe columns</source>
         <translation>移除dataframe列</translation>
     </message>
     <message>
-        <location line="+71"/>
+        <location line="+68"/>
         <source>change column type</source>
         <translation>改变列数据类型</translation>
     </message>
     <message>
-        <location line="+77"/>
+        <location line="+64"/>
         <source>drop nan</source>
         <translation>删除nan值</translation>
     </message>
     <message>
-        <location line="+47"/>
+        <location line="+33"/>
         <source>fill nan</source>
         <translation>填充缺失值</translation>
     </message>
     <message>
-        <location line="+36"/>
+        <location line="+31"/>
         <source>interpolate</source>
         <translation>插值填充缺失值</translation>
     </message>
     <message>
-        <location line="+35"/>
+        <location line="+27"/>
         <source>ffill nan</source>
         <translation>前向填充缺失值</translation>
     </message>
     <message>
-        <location line="+35"/>
+        <location line="+27"/>
         <source>bfill nan</source>
         <translation>后向填充缺失值</translation>
     </message>
     <message>
-        <location line="+44"/>
+        <location line="+39"/>
         <source>drop duplicates</source>
         <translation>删除重复值</translation>
     </message>
     <message>
-        <location line="+48"/>
+        <location line="+36"/>
         <source>nstd filter</source>
         <translation>n倍标准差滤波</translation>
     </message>
     <message>
-        <location line="+48"/>
+        <location line="+37"/>
         <source>clip outlier</source>
         <translation>剔除异常值</translation>
     </message>
     <message>
-        <location line="+33"/>
+        <location line="+25"/>
         <source>eval datas</source>
         <translation>列运算</translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location line="+26"/>
         <source>query datas</source>
         <translation>条件查询</translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location line="+32"/>
         <source>data select</source>
         <translation>数据过滤</translation>
     </message>
     <message>
-        <location line="+30"/>
+        <location line="+27"/>
         <source>sort datas</source>
         <translation>对相关数据进行排序</translation>
     </message>
     <message>
-        <location line="+30"/>
+        <location line="+27"/>
         <source>cast column to num</source>
         <translation>改变列数据为数值</translation>
     </message>
     <message>
-        <location line="+36"/>
+        <location line="+27"/>
         <source>cast column to datetime</source>
         <translation>改变列数据为日期</translation>
     </message>
     <message>
-        <location line="+36"/>
+        <location line="+24"/>
         <source>set column to index</source>
         <translation>转换列为索引</translation>
     </message>

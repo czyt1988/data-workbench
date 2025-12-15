@@ -20,17 +20,12 @@ import DAWorkbench.property_config_builder as porpCfgBuilder
 import da_app,da_interface,da_data
 
 
-def dropna():
+def dropna(dadata:da_data.DAData, col_selected_index:List[int]):
     """
     删除缺失值
     :return: 删除的行数
     """
     ui = da_app.getCore().getUiInterface()
-    data_manager = da_app.getCore().getDataManagerInterface()
-    if not data_manager:
-        ui.addCriticalLogMessage(_("DataManager is None"))#cn:数据管理器为空
-    # 获取当前选中的数据
-    dadata = data_manager.getOperateData()
     if not dadata:
         ui.addWarningLogMessage(_("No data selected"))#cn:没有选中数据
         return
@@ -40,8 +35,6 @@ def dropna():
         return
     
     df = dadata.toDataFrame()
-    # 获取当前是否选中了一些列，如果选中了列，则只对选中的列进行操作，注意，返回的是列索引，不是列名
-    col_selected_index = data_manager.getOperateDataSeries()
     subset = None
     if col_selected_index and len(col_selected_index) > 0:
         subset = df.columns[col_selected_index]

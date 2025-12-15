@@ -1,30 +1,27 @@
-﻿#ifndef DAPYDATAFRAMETABLEMODEL_H
-#define DAPYDATAFRAMETABLEMODEL_H
+#ifndef DADATATABLEMODEL_H
+#define DADATATABLEMODEL_H
 #include "DAGuiAPI.h"
-#include <QtCore/qglobal.h>
 #include <QAbstractTableModel>
 #include "DAAbstractCacheWindowTableModel.h"
-#include "pandas/DAPyDataFrame.h"
 #include "DAData.h"
-#include <functional>
+
 class QUndoStack;
 namespace DA
 {
-
 /**
- * @brief 针对DAPyDataFrame的table model
+ * @brief 针对DAData的model
  *
- * @note QTableView有个bug，在面对超大规模的数据时，会出现遍历所有行的headerData情况，导致非常耗时，同时QHeaderView也有这个问题，在选中一列时，
- * 要遍历这一列所有行的headerData，调试发现会大量调用columnCount，并不能实现真正的虚拟显示，因此，TableModel的实现，将数据进行缓存，
- * 让数据在一个固定的区间里面刷新，从而解决这个问题。
+ * DAData会共享数据，在外部修改任意一个DAData都会改变所有共享对象的内容
+ *
+ * 如果不希望共享，可以使用DAPyDataFrameTableModel
  */
-class DAGUI_API DAPyDataFrameTableModel : public DAAbstractCacheWindowTableModel
+class DADataTableModel : public DAAbstractCacheWindowTableModel
 {
     Q_OBJECT
-    DA_DECLARE_PRIVATE(DAPyDataFrameTableModel)
+    DA_DECLARE_PRIVATE(DADataTableModel)
 public:
-    DAPyDataFrameTableModel(QUndoStack* stack, QObject* parent = nullptr);
-    ~DAPyDataFrameTableModel();
+    DADataTableModel(QUndoStack* stack, QObject* parent = nullptr);
+    ~DADataTableModel();
 
 public:
     virtual int columnCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -36,22 +33,15 @@ public:
     virtual bool setActualData(int actualRow, int actualColumn, const QVariant& value, int role = Qt::EditRole) override;
 
 public:
-    DAPyDataFrame& dataFrame();
-    const DAPyDataFrame& dataFrame() const;
-    // 缓存模式
     // 设置数据
-    void setDAData(const DAData& d);
-    void setDataFrame(const DAPyDataFrame& d);
+    void setData(const DAData& data);
+    DAData getData() const;
     // 设置使用缓存模式，缓存模式不会频繁调用dataframe，在setdataframe时把常用的参数缓存
     void setUseCacheMode(bool on = true);
-    // 滑动窗模式
-
     // 设置滑动窗模式的起始行
     virtual void setCacheWindowStartRow(int startRow) override;
-
     // 刷新
     void refreshData();
-
     // 超出模型实际数据行数的额外空行数量
     void setExtraRowCount(int v);
     int getExtraRowCount() const;
@@ -68,10 +58,6 @@ public:
 protected:
     // 缓存
     void cacheShape() override;
-    void cacheRowShape();
-    void cacheColumnShape();
-Q_SIGNALS:
-    void currentPageChanged(int newPage);
 };
-}  // end of namespace DA
-#endif  // DAPYDATAFRAMETABLEMODEL_H
+}
+#endif  // DADATATABLEMODEL_H

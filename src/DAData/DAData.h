@@ -6,7 +6,6 @@
 #if DA_ENABLE_PYTHON
 #include "pandas/DAPyDataFrame.h"
 #endif
-#include "DADataPackage.h"
 
 namespace DA
 {
@@ -52,8 +51,8 @@ public:
 public:  // DAAbstractData Wrapper
     DAAbstractData::DataType getDataType() const;
     // 变量值操作
-    QVariant value() const;
-    bool setValue(const QVariant& v) const;
+    QVariant value(std::size_t dim1, std::size_t dim2) const;
+    bool setValue(std::size_t dim1, std::size_t dim2, const QVariant& v) const;
     // 变量名操作
     QString getName() const;
     void setName(const QString& n);
@@ -79,13 +78,15 @@ public:  // DAAbstractData Wrapper
     DAPySeries toSeries() const;
     // 转换为python对象
     pybind11::object toPyObject() const;
+    // 设置python对象，此函数会替换掉数据管理的对象内容
+    void setPyObject(const pybind11::object& obj);
 #endif
-    // 转换为datapackage
-    DADataPackage::Pointer toDataPackage() const;
     // 数据类型转换为文字
     QString typeToString() const;
     // 获取数据对应的datamanager
     DADataManager* getDataManager() const;
+    // 尺寸
+    std::pair< std::size_t, std::size_t > shape() const;
 
 public:
     // 把数据写到文件

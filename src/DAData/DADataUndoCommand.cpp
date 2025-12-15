@@ -7,7 +7,6 @@
 // 全局临时目录
 static QTemporaryDir g_tempDir;
 
-
 namespace DA
 {
 DADataUndoCommand::DADataUndoCommand(QUndoCommand* par) : QUndoCommand(par)
@@ -37,37 +36,42 @@ void DADataUndoCommand::setOldData(const DAData& data)
     m_oldObjectPath = path;
     m_data          = data;
     dumpObj(data.toPyObject(), m_oldObjectPath);
-    m_isValid = true;
 }
 
-/**
- * @brief 在脚本端更新后，设置回的新对象
- * @param obj
- */
-void DADataUndoCommand::setNewObject(const pybind11::object& obj)
+void DADataUndoCommand::setNewData(const DAData& data)
 {
-    m_data.toPyObject() = obj;
+    if (!data.isDataFrame() && !data.isSeries()) {
+        return;
+    }
+    QString path    = g_tempDir.path() + "/obj_new_" + QUuid::createUuid().toString(QUuid::Id128) + ".pkl";
+    m_newObjectPath = path;
+    m_data          = data;
+    dumpObj(data.toPyObject(), m_newObjectPath);
 }
 
 void DADataUndoCommand::undo()
 {
-    // 1. 将当前新对象 pickle 到磁盘（为 redo 准备）
-    if (m_newObjectPath.isEmpty()) {
-        QString newPath = g_tempDir.path() + "/obj_new_" + QUuid::createUuid().toString(QUuid::Id128) + ".pkl";
-        m_newObjectPath = newPath;
-        dumpObj(m_data.toPyObject(), newPath);
-    }
     // 2. 从旧文件加载对象
-    m_data.toPyObject() = loadObj(m_oldObjectPath);
+    if (m_oldObjectPath.isEmpty()) {
+        qDebug() << "m_oldObjectPath is empty";
+        return;
+    }
+    qDebug() << "DADataUndoCommand,undo,load m_oldObjectPath:" << m_oldObjectPath;
+    m_data.setPyObject(loadObj(m_oldObjectPath));
 }
 
 void DADataUndoCommand::redo()
 {
-    if (m_newObjectPath.isEmpty()) {
-        // 说明是首次redo（第一次推入回退栈），这时m_newObjectPath为空，直接跳过
+    if (m_skipFirstRedo) {
+        m_skipFirstRedo = false;
         return;
     }
-    m_data.toPyObject() = loadObj(m_newObjectPath);
+    if (m_newObjectPath.isEmpty()) {
+        qDebug() << "m_newObjectPath is empty";
+        return;
+    }
+    qDebug() << "DADataUndoCommand,redo,load m_newObjectPath:" << m_newObjectPath;
+    m_data.setPyObject(loadObj(m_newObjectPath));
 }
 
 void DADataUndoCommand::dumpObj(const pybind11::object& obj, const QString& path)
@@ -93,8 +97,7 @@ pybind11::object DADataUndoCommand::loadObj(const QString& path)
 
 bool DADataUndoCommand::isValid() const
 {
-    return m_isValid;
+    return (!m_oldObjectPath.isEmpty()) && (!m_newObjectPath.isEmpty());
 }
-
 
 }  // end namspace DA

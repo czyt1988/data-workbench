@@ -37,6 +37,7 @@ set(DA_LIB_HEADER_FILES
     DAChartItemsManager.h
     DADataManagerComboBox.h
     DADataOperatePageWidget.h
+    DADataTableView.h
     DAFigureFactory.h
     DAGraphicsPixmapItemSettingWidget.h
     DAGlobalColorTheme.h
@@ -91,6 +92,7 @@ set(DA_LIB_SOURCE_FILES
     DADataManagerComboBox.cpp
     DADataOperatePageWidget.cpp
     DADataOperateWidget.cpp
+    DADataTableView.cpp
     DAFigureFactory.cpp
     DAGraphicsPixmapItemSettingWidget.cpp
     DAGlobalColorTheme.cpp
@@ -194,6 +196,7 @@ set(DA_LIB_HEADER_FILES_Models
     ${DA_LIB_SUBDIR_Models}/DAAbstractCacheWindowTableModel.h
     ${DA_LIB_SUBDIR_Models}/DADataManagerTreeModel.h
     ${DA_LIB_SUBDIR_Models}/DATreeModel.h
+    ${DA_LIB_SUBDIR_Models}/DADataTableModel.h
     ${DA_LIB_SUBDIR_Models}/DADataManagerTableModel.h
     ${DA_LIB_SUBDIR_Models}/DAMessageLogsModel.h
     ${DA_LIB_SUBDIR_Models}/DAVariantTableModel.h
@@ -202,6 +205,7 @@ set(DA_LIB_SOURCE_FILES_Models
     ${DA_LIB_SUBDIR_Models}/DAAbstractCacheWindowTableModel.cpp
     ${DA_LIB_SUBDIR_Models}/DADataManagerTreeModel.cpp
     ${DA_LIB_SUBDIR_Models}/DATreeModel.cpp
+    ${DA_LIB_SUBDIR_Models}/DADataTableModel.cpp
     ${DA_LIB_SUBDIR_Models}/DADataManagerTableModel.cpp
     ${DA_LIB_SUBDIR_Models}/DAMessageLogsModel.cpp
     ${DA_LIB_SUBDIR_Models}/DAVariantTableModel.cpp

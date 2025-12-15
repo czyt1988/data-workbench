@@ -6,6 +6,12 @@
 #include <QList>
 #include <QVariant>
 #include "DAPybind11InQt.h"
+#include "DAPyIndex.h"
+
+namespace pybind11
+{
+class dtype;
+}
 namespace DA
 {
 /**
@@ -40,7 +46,7 @@ public:
     QString name() const;
     // Series.iat
     QVariant iat(std::size_t i) const;
-
+    bool iat(std::size_t r, const QVariant& v);
     // 类型判断
     bool isNumeric() const;
     bool isDateTime() const;
@@ -48,11 +54,10 @@ public:
     bool isCategorical() const;
 
     // 索引相关
-    pybind11::object index() const;
+    DAPyIndex index() const;
     QStringList indexAsStringList() const;
     QVector< double > indexAsDoubleVector() const;
     QVector< QDateTime > indexAsDateTimeVector() const;
-
     // 数据转换
     DAPySeries astype(const pybind11::dtype& dt) const;
     DAPySeries toDateTime() const;

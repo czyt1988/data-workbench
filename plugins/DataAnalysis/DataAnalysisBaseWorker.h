@@ -8,6 +8,7 @@ class DACoreInterface;
 class DAUIInterface;
 class DADockingAreaInterface;
 class DADataManagerInterface;
+class DACommandInterface;
 }
 
 /**
@@ -25,6 +26,7 @@ public:
     DA::DAUIInterface* uiInterface() const;
     DA::DADockingAreaInterface* dockAreaInterface() const;
     DA::DADataManagerInterface* dataManagerInterface() const;
+    DA::DACommandInterface* commandInterface() const;
     QMainWindow* mainWindow();
 
 private:
@@ -32,6 +34,7 @@ private:
     DA::DAUIInterface* m_ui { nullptr };
     DA::DADockingAreaInterface* m_dockArea { nullptr };
     DA::DADataManagerInterface* m_dataManager { nullptr };
+    DA::DACommandInterface* m_cmd { nullptr };
 };
 
 #endif  // DATAANALYSISBASEWORKER_H

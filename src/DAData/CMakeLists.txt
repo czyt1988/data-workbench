@@ -32,7 +32,6 @@ set(DA_LIB_HEADER_FILES
     DAData.h
     DADataAPI.h
     DADataManager.h
-    DADataPackage.h
     DACommandsDataManager.h
     DADataEnumStringUtils.h
 )
@@ -40,7 +39,6 @@ set(DA_LIB_SOURCE_FILES
     DAAbstractData.cpp
     DAData.cpp
     DADataManager.cpp
-    DADataPackage.cpp
     DACommandsDataManager.cpp
     DADataEnumStringUtils.cpp
 )

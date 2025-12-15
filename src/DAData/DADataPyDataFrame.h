@@ -20,8 +20,8 @@ public:
     // 变量类型
     DataType getDataType() const override;
     // 变量值
-    QVariant toVariant() const override;
-    bool setValue(const QVariant& v) override;
+    QVariant toVariant(std::size_t dim1, std::size_t dim2) const override;
+    bool setValue(std::size_t dim1, std::size_t dim2, const QVariant& v) override;
     // 获取dataframe
     DAPyDataFrame dataframe() const;
     // 以下是一些wrapper

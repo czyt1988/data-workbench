@@ -4,6 +4,7 @@
 #include "DADockingAreaInterface.h"
 #include "DADataManagerInterface.h"
 #include "SARibbonMainWindow.h"
+#include "DACommandInterface.h"
 DataAnalysisBaseWorker::DataAnalysisBaseWorker(QObject* par) : QObject(par)
 {
 }
@@ -18,6 +19,7 @@ void DataAnalysisBaseWorker::initialize(DA::DACoreInterface* core)
     m_ui          = core->getUiInterface();
     m_dataManager = core->getDataManagerInterface();
     m_dockArea    = m_ui->getDockingArea();
+    m_cmd         = m_ui->getCommandInterface();
 }
 
 DA::DACoreInterface* DataAnalysisBaseWorker::core() const
@@ -38,6 +40,11 @@ DA::DADockingAreaInterface* DataAnalysisBaseWorker::dockAreaInterface() const
 DA::DADataManagerInterface* DataAnalysisBaseWorker::dataManagerInterface() const
 {
     return m_dataManager;
+}
+
+DA::DACommandInterface* DataAnalysisBaseWorker::commandInterface() const
+{
+    return m_cmd;
 }
 
 QMainWindow* DataAnalysisBaseWorker::mainWindow()

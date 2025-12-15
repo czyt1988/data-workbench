@@ -2116,7 +2116,7 @@ Description: %1</source>
 <context>
     <name>DA::DADataOperateOfDataFrameWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+174"/>
+        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+179"/>
         <source>warning</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2126,26 +2126,26 @@ Description: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+30"/>
+        <location line="+36"/>
         <source>please select valid data cells</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+23"/>
-        <location line="+97"/>
-        <location line="+27"/>
-        <location line="+34"/>
+        <location line="+29"/>
+        <location line="+111"/>
         <location line="+35"/>
+        <location line="+42"/>
+        <location line="+43"/>
         <source>please select valid column</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-169"/>
+        <location line="-202"/>
         <source>please select valid cell</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+33"/>
+        <location line="+42"/>
         <source>table have not column</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2153,13 +2153,21 @@ Description: %1</source>
 <context>
     <name>DA::DADataOperateWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateWidget.cpp" line="+176"/>
+        <location filename="../DAGui/DADataOperateWidget.cpp" line="+185"/>
         <source>removing a widget that does not exist in tab</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+59"/>
         <source>[deleted]</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADataTableView</name>
+    <message>
+        <location filename="../DAGui/DADataTableView.cpp" line="+21"/>
+        <source>DADataTableView must set model first</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2304,7 +2312,7 @@ Description: %1</source>
 <context>
     <name>DA::DADialogDataFrameDataSearch</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogDataFrameDataSearch.cpp" line="+40"/>
+        <location filename="../DAGui/Dialog/DADialogDataFrameDataSearch.cpp" line="+41"/>
         <source>can not find item</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5889,7 +5897,7 @@ To Excel</source>
 <context>
     <name>DataframeCleanerWorker</name>
     <message>
-        <location filename="../../plugins/DataAnalysis/DataframeCleanerWorker.cpp" line="+37"/>
+        <location filename="../../plugins/DataAnalysis/DataframeCleanerWorker.cpp" line="+95"/>
         <source>Removed %1 rows containing NaN values</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6255,7 +6263,7 @@ To Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAPyBindQt/pandas/DAPySeries.cpp" line="+312"/>
+        <location filename="../DAPyBindQt/pandas/DAPySeries.cpp" line="+322"/>
         <source>DAPySeries  get python object type is not pandas.Series</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6300,108 +6308,108 @@ To Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAGui/Commands/DACommandsDataFrame.cpp" line="+25"/>
+        <location filename="../DAGui/Commands/DACommandsDataFrame.cpp" line="+23"/>
         <source>set dataframe data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+24"/>
         <source>insert row</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+44"/>
-        <location line="+25"/>
+        <location line="+30"/>
         <source>insert column &quot;%1&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+54"/>
+        <location line="+45"/>
         <source>drop dataframe rows</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+26"/>
         <source>drop dataframe columns</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+71"/>
+        <location line="+68"/>
         <source>change column type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+77"/>
+        <location line="+64"/>
         <source>drop nan</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+47"/>
+        <location line="+33"/>
         <source>fill nan</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+36"/>
+        <location line="+31"/>
         <source>interpolate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+35"/>
+        <location line="+27"/>
         <source>ffill nan</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+35"/>
+        <location line="+27"/>
         <source>bfill nan</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+44"/>
+        <location line="+39"/>
         <source>drop duplicates</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+48"/>
+        <location line="+36"/>
         <source>nstd filter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+48"/>
+        <location line="+37"/>
         <source>clip outlier</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+33"/>
+        <location line="+25"/>
         <source>eval datas</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location line="+26"/>
         <source>query datas</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location line="+32"/>
         <source>data select</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+30"/>
+        <location line="+27"/>
         <source>sort datas</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+30"/>
+        <location line="+27"/>
         <source>cast column to num</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+36"/>
+        <location line="+27"/>
         <source>cast column to datetime</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+36"/>
+        <location line="+24"/>
         <source>set column to index</source>
         <translation type="unfinished"></translation>
     </message>
