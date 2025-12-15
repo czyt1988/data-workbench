@@ -5897,7 +5897,7 @@ To Excel</source>
 <context>
     <name>DataframeCleanerWorker</name>
     <message>
-        <location filename="../../plugins/DataAnalysis/DataframeCleanerWorker.cpp" line="+95"/>
+        <location filename="../../plugins/DataAnalysis/DataframeCleanerWorker.cpp" line="+46"/>
         <source>Removed %1 rows containing NaN values</source>
         <translation type="unfinished"></translation>
     </message>

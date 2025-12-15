@@ -20,22 +20,24 @@ import DAWorkbench.property_config_builder as porpCfgBuilder
 import da_app,da_interface,da_data
 
 
-def dropna(dadata:da_data.DAData, col_selected_index:List[int]):
+def dropna():
     """
     删除缺失值
     :return: 删除的行数
     """
     ui = da_app.getCore().getUiInterface()
+    dataManager = da_app.getCore().getDataManagerInterface()
+    command = ui.getCommandInterface()
+    dadata = dataManager.getOperateData()
     if not dadata:
         ui.addWarningLogMessage(_("No data selected"))#cn:没有选中数据
         return
-
     if not dadata.isDataFrame():
         ui.addWarningLogMessage(_("The data is not of DataFrame type"))#cn:数据不是DataFrame类型
         return
-    
     df = dadata.toDataFrame()
     subset = None
+    col_selected_index = dataManager.getOperateDataSeries()
     if col_selected_index and len(col_selected_index) > 0:
         subset = df.columns[col_selected_index]
     # 弹出通用设置界面，进行参数设置
@@ -70,13 +72,21 @@ def dropna(dadata:da_data.DAData, col_selected_index:List[int]):
     how = config.get("how","any")
     thresh = config.get("thresh", 0)
     old_len = len(df)
+    # 先执行beginDataOperateCommand，让程序开启一个命令
+    command.beginDataOperateCommand(data=dadata,text=_("Drop NA Values"),#cn:删除缺失值
+                                    isObjectPersist=False # 不使用持久化保存数据，因此这里操作dataframe不使用inplace
+                                    )
     if thresh > 0:
-        df.dropna(axis=0, subset=subset, thresh=thresh, inplace=True)
+        df = df.dropna(axis=0, subset=subset, thresh=thresh)
     else:
         if how == "none":
             how = None
-        df.dropna(axis=0, subset=subset, how=how, inplace=True)
+        df = df.dropna(axis=0, subset=subset, how=how)
     reindex = config.get("reindex",True)
     if reindex:
-        df.reset_index(drop=True, inplace=True)
+        df = df.reset_index(drop=True)
+    # df已经更新，这时要把新的df设置会DAData中
+    dadata.setPyObject(df)
+    # 结束命令s note: 这里的dadata已经更新了，因此前面beginDataOperateCommand中设置isObjectPersist为False
+    command.endDataOperateCommand(data=dadata)
     return old_len - len(df)

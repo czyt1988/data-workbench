@@ -181,6 +181,32 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
         .def("resetProgress", &DA::DAStatusBarInterface::resetProgress)
         .def("isProgressBarVisible", &DA::DAStatusBarInterface::isProgressBarVisible);
 
+    /*DACommandInterface*/
+    pybind11::class_< DA::DACommandInterface >(m, "DACommandInterface")
+        .def("ui",
+             &DA::DACommandInterface::ui,
+             pybind11::return_value_policy::reference)  // 返回DAUIInterface
+        .def(
+            "beginDataOperateCommand",
+            [](DA::DACommandInterface& self,
+               const DA::DAData& data,
+               const std::string& text,
+               bool isObjectPersist = false,
+               bool isSkipFirstRedo = true) {
+                self.beginDataOperateCommand(data, QString::fromStdString(text), isObjectPersist, isSkipFirstRedo);
+            },
+            pybind11::arg("data"),
+            pybind11::arg("text"),
+            pybind11::arg("isObjectPersist") = true,
+            pybind11::arg("isSkipFirstRedo") = true,
+            "Start a data operation command, which will be pushed onto the undo stack of the currently active data "
+            "operation window")
+        .def("endDataOperateCommand",
+             &DA::DACommandInterface::endDataOperateCommand,
+             pybind11::arg("data"),
+             "A function paired with beginDataOperateCommand, used to end the current command and push it onto the "
+             "command stack.");
+
     /*DAUIInterface*/
     pybind11::class_< DA::DAUIInterface >(m, "DAUIInterface")
         .def("getStatusBar",
@@ -208,6 +234,10 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
             },
             pybind11::arg("msg"),
             pybind11::arg("showInStatusBar") = true)
+        .def("getCommandInterface",
+             &DA::DAUIInterface::getCommandInterface,
+             pybind11::return_value_policy::reference,
+             "Get the command interface")
         .def(
             "getConfigValues",
             [](DA::DAUIInterface& self, const std::string& jsonConfig, const std::string& cacheKey = std::string()) {
@@ -217,7 +247,10 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
                 return DA::PY::qjsonObjectToPyDict(jsonObj);
             },
             pybind11::arg("jsonConfig"),
-            pybind11::arg("cacheKey") = "");
+            pybind11::arg("cacheKey") = "",
+            "Execute a generic settings dialog to retrieve configuration information. The input parameter is the JSON "
+            "data used to construct the dialog. A cache key can be specified to avoid repeated dialog construction. "
+            "This function will launch a modal dialog for users to input parameters.");
 
     /* 4. DACoreInterface 补充 */
     pybind11::class_< DA::DACoreInterface >(m, "DACoreInterface")

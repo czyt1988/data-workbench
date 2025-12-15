@@ -8,6 +8,7 @@ class DACommandInterface::PrivateData
 public:
     PrivateData(DACommandInterface* p);
     QUndoGroup mUndoGroup;
+    DAUIInterface* ui { nullptr };
 };
 
 //===================================================
@@ -21,10 +22,16 @@ DACommandInterface::PrivateData::PrivateData(DACommandInterface* p) : q_ptr(p)
 //===================================================
 DACommandInterface::DACommandInterface(DAUIInterface* u) : DABaseInterface(u->core(), u), DA_PIMPL_CONSTRUCT
 {
+    d_ptr->ui = u;
 }
 
 DACommandInterface::~DACommandInterface()
 {
+}
+
+DAUIInterface* DACommandInterface::ui() const
+{
+    return d_ptr->ui;
 }
 
 /**

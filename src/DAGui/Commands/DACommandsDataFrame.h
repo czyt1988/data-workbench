@@ -5,6 +5,7 @@
 #include <optional>
 #include <functional>
 #include "DAGuiAPI.h"
+#include "DACallBackInterface.h"
 #include "DACommandWithRedoCount.h"
 #include "DACommandWithTemporaryData.h"
 #include "DAData.h"
@@ -14,35 +15,6 @@ class QHeaderView;
 
 namespace DA
 {
-
-class DAGUI_API DACallBackInterface
-{
-public:
-    using CallBack = std::function< void() >;
-    DACallBackInterface()
-    {
-    }
-    virtual ~DACallBackInterface()
-    {
-    }
-    void setCallBack(CallBack fn)
-    {
-        m_callback = fn;
-    }
-    CallBack getCallBack() const
-    {
-        return m_callback;
-    }
-    void callback()
-    {
-        if (m_callback) {
-            m_callback();
-        }
-    }
-
-private:
-    CallBack m_callback;
-};
 
 class DAPyDataFrameTableModel;
 /**

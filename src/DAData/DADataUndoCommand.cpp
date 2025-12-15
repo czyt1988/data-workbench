@@ -3,20 +3,91 @@
 #include <QFile>
 #include <QUuid>
 #include <QDebug>
+#include "DADataManager.h"
 
 // 全局临时目录
 static QTemporaryDir g_tempDir;
 
 namespace DA
 {
-DADataUndoCommand::DADataUndoCommand(QUndoCommand* par) : QUndoCommand(par)
+
+DADataAbstractUndoCommand::DADataAbstractUndoCommand(QUndoCommand* par) : QUndoCommand(par), DACallBackInterface()
+{
+}
+
+DADataAbstractUndoCommand::~DADataAbstractUndoCommand()
+{
+}
+
+void DADataAbstractUndoCommand::setSkipFirstRedo(bool skip)
+{
+    m_skipFirstRedo = skip;
+}
+
+bool DADataAbstractUndoCommand::isSkipFirstRedo() const
+{
+    return m_skipFirstRedo;
+}
+
+void DADataAbstractUndoCommand::skipFirstRedo()
+{
+    m_skipFirstRedo = false;
+}
+
+//----------------------------------------------------
+// DADataUndoCommand
+//----------------------------------------------------
+DADataObjectSwapUndoCommand::DADataObjectSwapUndoCommand(QUndoCommand* par) : DADataAbstractUndoCommand(par)
+{
+}
+
+DADataObjectSwapUndoCommand::~DADataObjectSwapUndoCommand()
+{
+}
+
+void DADataObjectSwapUndoCommand::setOldData(const DAData& data)
+{
+    m_oldObject = data.toPyObject();
+    m_data      = data;
+}
+
+void DADataObjectSwapUndoCommand::setNewData(const DAData& data)
+{
+    m_newObject = data.toPyObject();
+    m_data      = data;
+}
+
+void DADataObjectSwapUndoCommand::undo()
+{
+    m_data.setPyObject(m_oldObject);
+    DADataManager* mgr = m_data.getDataManager();
+    if (mgr) {
+        mgr->notifyDataChangedSignal(m_data, DADataManager::ChangeValue);
+    }
+    callback();
+}
+
+void DADataObjectSwapUndoCommand::redo()
+{
+    m_data.setPyObject(m_newObject);
+    DADataManager* mgr = m_data.getDataManager();
+    if (mgr) {
+        mgr->notifyDataChangedSignal(m_data, DADataManager::ChangeValue);
+    }
+    callback();
+}
+//----------------------------------------------------
+// DADataFileCacheUndoCommand
+//----------------------------------------------------
+
+DADataObjectPersistUndoCommand::DADataObjectPersistUndoCommand(QUndoCommand* par) : DADataAbstractUndoCommand(par)
 {
     if (!g_tempDir.isValid()) {
         qDebug() << "invalid temp dir,can not create temporary dir";
     }
 }
 
-DADataUndoCommand::~DADataUndoCommand()
+DADataObjectPersistUndoCommand::~DADataObjectPersistUndoCommand()
 {
     // 清理临时文件
     if (!m_oldObjectPath.isEmpty() && QFile::exists(m_oldObjectPath)) {
@@ -27,7 +98,7 @@ DADataUndoCommand::~DADataUndoCommand()
     }
 }
 
-void DADataUndoCommand::setOldData(const DAData& data)
+void DADataObjectPersistUndoCommand::setOldData(const DAData& data)
 {
     if (!data.isDataFrame() && !data.isSeries()) {
         return;
@@ -38,7 +109,7 @@ void DADataUndoCommand::setOldData(const DAData& data)
     dumpObj(data.toPyObject(), m_oldObjectPath);
 }
 
-void DADataUndoCommand::setNewData(const DAData& data)
+void DADataObjectPersistUndoCommand::setNewData(const DAData& data)
 {
     if (!data.isDataFrame() && !data.isSeries()) {
         return;
@@ -49,32 +120,40 @@ void DADataUndoCommand::setNewData(const DAData& data)
     dumpObj(data.toPyObject(), m_newObjectPath);
 }
 
-void DADataUndoCommand::undo()
+void DADataObjectPersistUndoCommand::undo()
 {
     // 2. 从旧文件加载对象
     if (m_oldObjectPath.isEmpty()) {
         qDebug() << "m_oldObjectPath is empty";
         return;
     }
-    qDebug() << "DADataUndoCommand,undo,load m_oldObjectPath:" << m_oldObjectPath;
     m_data.setPyObject(loadObj(m_oldObjectPath));
+    DADataManager* mgr = m_data.getDataManager();
+    if (mgr) {
+        mgr->notifyDataChangedSignal(m_data, DADataManager::ChangeValue);
+    }
+    callback();
 }
 
-void DADataUndoCommand::redo()
+void DADataObjectPersistUndoCommand::redo()
 {
-    if (m_skipFirstRedo) {
-        m_skipFirstRedo = false;
+    if (isSkipFirstRedo()) {
+        skipFirstRedo();
         return;
     }
     if (m_newObjectPath.isEmpty()) {
         qDebug() << "m_newObjectPath is empty";
         return;
     }
-    qDebug() << "DADataUndoCommand,redo,load m_newObjectPath:" << m_newObjectPath;
     m_data.setPyObject(loadObj(m_newObjectPath));
+    DADataManager* mgr = m_data.getDataManager();
+    if (mgr) {
+        mgr->notifyDataChangedSignal(m_data, DADataManager::ChangeValue);
+    }
+    callback();
 }
 
-void DADataUndoCommand::dumpObj(const pybind11::object& obj, const QString& path)
+void DADataObjectPersistUndoCommand::dumpObj(const pybind11::object& obj, const QString& path)
 {
     static auto dumps = pybind11::module_::import("pickle").attr("dumps");
     static auto open  = pybind11::module_::import("builtins").attr("open");
@@ -85,7 +164,7 @@ void DADataUndoCommand::dumpObj(const pybind11::object& obj, const QString& path
     io.attr("close")();
 }
 
-pybind11::object DADataUndoCommand::loadObj(const QString& path)
+pybind11::object DADataObjectPersistUndoCommand::loadObj(const QString& path)
 {
     static auto pickle = pybind11::module_::import("pickle");
     static auto open   = pybind11::module_::import("builtins").attr("open");
@@ -95,7 +174,7 @@ pybind11::object DADataUndoCommand::loadObj(const QString& path)
     return pickle.attr("loads")(bytes);
 }
 
-bool DADataUndoCommand::isValid() const
+bool DADataObjectPersistUndoCommand::isValid() const
 {
     return (!m_oldObjectPath.isEmpty()) && (!m_newObjectPath.isEmpty());
 }
