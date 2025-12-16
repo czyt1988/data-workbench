@@ -36,16 +36,47 @@ bool DataframeCleanerWorker::initializePythonEnv()
 
 void DataframeCleanerWorker::dropna()
 {
+    exec("dropna");
+}
+
+void DataframeCleanerWorker::drop_duplicates()
+{
+    exec("drop_duplicates");
+}
+
+void DataframeCleanerWorker::fillna()
+{
+    exec("fillna");
+}
+
+void DataframeCleanerWorker::fill_interpolate()
+{
+    exec("fill_interpolate");
+}
+
+void DataframeCleanerWorker::remove_outliers_iqr()
+{
+    exec("remove_outliers_iqr");
+}
+
+void DataframeCleanerWorker::remove_outliers_zscore()
+{
+    exec("remove_outliers_zscore");
+}
+
+void DataframeCleanerWorker::transform_skewed_data()
+{
+    exec("transform_skewed_data");
+}
+
+bool DataframeCleanerWorker::exec(const char* funname)
+{
     try {
-        auto dropna     = m_dataCleanerModule->attr("dropna");
-        auto drop_count = dropna();
-        if (drop_count.is_none()) {
-            return;
-        }
-        int v = drop_count.cast< int >();
-        uiInterface()->addInfoLogMessage(tr("Removed %1 rows containing NaN values").arg(v));  // cn:删除了%1个含Nan值的行
+        auto fun = m_dataCleanerModule->attr(funname);
+        fun();
     } catch (const std::exception& e) {
         qCritical() << e.what();
-        return;
+        return false;
     }
+    return true;
 }

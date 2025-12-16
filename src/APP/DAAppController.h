@@ -230,22 +230,7 @@ private Q_SLOTS:
     void onActionCreateDataDescribeTriggered();
     // 创建数据透视表
     void onActionCreatePivotTableTriggered();
-    // 删除缺失值
-    void onActionDataFrameDropNoneTriggered();
-    // 填充缺失值
-    void onActionDataFrameFillNoneTriggered();
-    // 插值填充缺失值
-    void onActionDataFrameFillInterpolateTriggered();
-    // 前向填充缺失值
-    void onActionDataFrameFFillNoneTriggered();
-    // 后向填充缺失值
-    void onActionDataFrameBFillNoneTriggered();
-    // 删除重复值
-    void onActionDropDuplicatesTriggered();
-    // n倍标准差过滤异常值
-    void onActionNstdFilterOutlierTriggered();
-    // 替换界限外异常值
-    void onActionDataFrameClipOutlierTriggered();
+
     // 列运算
     void onActionDataFrameEvalDatasTriggered();
     // 过滤给定条件外的数据
@@ -374,7 +359,6 @@ private slots:
     //===================================================
     // 数据操作窗口添加，需要绑定相关信号槽到ribbon的页面
     void onDataOperatePageCreated(DA::DADataOperatePageWidget* page);
-
     //==========================================
     // Qt-Advanced-Docking-System
     //===================================================

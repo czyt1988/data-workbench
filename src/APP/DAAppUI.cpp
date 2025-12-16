@@ -67,7 +67,11 @@ QJsonObject DAAppUI::getConfigValues(const QString& jsonConfig, QWidget* parent,
     if (!cacheKey.isEmpty()) {
         DACommonPropertySettingDialog* dialog = m_cachePropertyDialog.value(cacheKey, nullptr);
         if (!dialog) {
-            dialog                            = new DACommonPropertySettingDialog(parent);
+            dialog = new DACommonPropertySettingDialog(parent);
+            if (!dialog->loadFromJson(jsonConfig)) {
+                qDebug() << tr("Failed to load JSON config for settings dialog");
+                return QJsonObject();
+            }
             m_cachePropertyDialog[ cacheKey ] = dialog;
         }
 

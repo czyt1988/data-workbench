@@ -31,7 +31,6 @@ public:
     void bind(DataframeCleanerWorker* worker);
 
 private:
-    QAction* createAction(const char* objname, const char* iconpath);
     // 构建Data标签页
     void buildDataCategory();
 
@@ -50,8 +49,13 @@ public:
     //===================================================
     SARibbonPanel* panelDataCleaner { nullptr };
     // 数据清洗
-    QAction* actionDataFrameDropNone { nullptr };
-
+    QAction* actionDataFrameDropNone { nullptr };              ///< 删除Nan值
+    QAction* actionDropDuplicates { nullptr };                 ///< 重复值处理
+    QAction* actionDataFrameFillNone { nullptr };              ///< 填充缺失值
+    QAction* actionDataFrameFillInterpolate { nullptr };       ///< 插值法填充缺失值
+    QAction* actionDataFrameRemoveOutlierIQR { nullptr };      ///< 基于IQR方法移除异常值
+    QAction* actionDataFrameRemoveOutliersZScore { nullptr };  ///< 基于Z-score替换异常值
+    QAction* actionDataFrameTransformSkewedData { nullptr };   ///< 转换偏态数值数据以改善分布
 private:
     DA::DACoreInterface* m_core { nullptr };
     DA::DAUIInterface* m_ui { nullptr };

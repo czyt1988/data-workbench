@@ -257,6 +257,7 @@ void DADataOperateWidget::onDataChanged(const DA::DAData& d, DADataManager::Chan
         return;
     }
     int ti = ui->tabWidget->indexOf(ite.value());
+
     if (ti < 0) {
         return;
     }
@@ -267,6 +268,13 @@ void DADataOperateWidget::onDataChanged(const DA::DAData& d, DADataManager::Chan
     case DADataManager::ChangeDescribe:
         ui->tabWidget->setTabToolTip(ti, d.getDescribe());
         break;
+    case DADataManager::ChangeValue: {
+        // 值发生了变化，要刷新界面
+        DADataOperateOfDataFrameWidget* dfWidget = qobject_cast< DADataOperateOfDataFrameWidget* >(ite.value().data());
+        if (dfWidget) {
+            dfWidget->refreshTable();
+        }
+    }
     default:
         break;
     }

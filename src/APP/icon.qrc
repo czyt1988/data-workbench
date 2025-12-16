@@ -81,13 +81,6 @@
         <file>Icon/lock-view.svg</file>
         <file>Icon/link.svg</file>
         <file>Icon/view-marker.svg</file>
-        <file>Icon/dataframe-fill-none.svg</file>
-        <file>Icon/process-duplicate-data.svg</file>
-        <file>Icon/dataframe-interpolate.svg</file>
-        <file>Icon/dataframe-bfill-none.svg</file>
-        <file>Icon/dataframe-ffill-none.svg</file>
-        <file>Icon/nstd-filter.svg</file>
-        <file>Icon/dataframe-clip-outlier.svg</file>
         <file>Icon/pivot-table.svg</file>
         <file>Icon/dataframe-query-datas.svg</file>
         <file>Icon/dataframe-sort.svg</file>

@@ -180,7 +180,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+205"/>
+        <location filename="../APP/DAAppActions.cpp" line="+198"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
@@ -457,84 +457,6 @@ Column</source>
     </message>
     <message>
         <location line="+2"/>
-        <source>Fill None</source>
-        <translation>填充
-缺失值</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Fill rows which contain missing values</source>
-        <translation>填充包含缺失值的行</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Fill Interpolate</source>
-        <translation>插值填充</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Fill rows which contain missing values by interpolate</source>
-        <translation>插值法填充包含缺失值的行</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <location line="+7"/>
-        <source>Drop Duplicates</source>
-        <translation>删除
-重复值</translation>
-    </message>
-    <message>
-        <location line="-6"/>
-        <source>Forward Fill</source>
-        <translation>前向填充
-缺失值</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Fill NA/NaN values by propagating the last valid observation to next valid.</source>
-        <translation>将第一个有效值填充到缺失值。</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Back Fill</source>
-        <translation>反向填充
-缺失值</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Fill NA/NaN values by using the next valid observation to fill the gap.</source>
-        <translation>将最后一个有效值反向填充缺失值。</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Drop duplicate datas</source>
-        <translation>删除数据中的重复记录</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>n std 
-filter outlier</source>
-        <translation>过滤
-异常值</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Remove the outliers beyond n times the standard deviation</source>
-        <translation>删除n倍标准差外的异常值</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Clip Outlier</source>
-        <translation>替换
-异常值</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Replace the outlier values that exceed the specified lower and upper limits with the respective limits.</source>
-        <translation>将超出限定上下限的异常值替换为上下限。</translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>Eval Datas</source>
         <translation>数值计算</translation>
     </message>
@@ -727,7 +649,7 @@ Config</source>
         <translation>暗色主题</translation>
     </message>
     <message>
-        <location line="-93"/>
+        <location line="-74"/>
         <source>Zoom Out</source>
         <translation>缩小</translation>
     </message>
@@ -737,7 +659,7 @@ Config</source>
         <translation>放大</translation>
     </message>
     <message>
-        <location line="+69"/>
+        <location line="+50"/>
         <source>Run 
 Workflow</source>
         <translation>运行
@@ -798,7 +720,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+857"/>
+        <location filename="../APP/DAAppController.cpp" line="+851"/>
         <location line="+49"/>
         <source>project file(*.%1)</source>
         <translation>工程文件(*.%1)</translation>
@@ -928,7 +850,7 @@ Table Area</source>
         <translation>生成“%1”的透视表</translation>
     </message>
     <message>
-        <location line="+331"/>
+        <location line="+221"/>
         <source>new workflow name</source>
         <translation>新工作流名称</translation>
     </message>
@@ -1182,12 +1104,12 @@ Table Area</source>
         <location line="+1"/>
         <location line="+21"/>
         <location line="+85"/>
-        <location line="+208"/>
+        <location line="+201"/>
         <source>Workflow</source>
         <translation>工作流</translation>
     </message>
     <message>
-        <location line="-313"/>
+        <location line="-306"/>
         <location line="+2"/>
         <source>Data Operation</source>
         <translation>数据操作</translation>
@@ -1200,12 +1122,12 @@ Table Area</source>
     <message>
         <location line="+3"/>
         <location line="+23"/>
-        <location line="+362"/>
+        <location line="+355"/>
         <source>View</source>
         <translation>视图</translation>
     </message>
     <message>
-        <location line="-384"/>
+        <location line="-377"/>
         <source>Display</source>
         <translation>视图显示</translation>
     </message>
@@ -1243,65 +1165,65 @@ Table Area</source>
     </message>
     <message>
         <location line="-207"/>
-        <location line="+225"/>
+        <location line="+218"/>
         <source>Statistic</source>
         <translation>统计</translation>
     </message>
     <message>
-        <location line="-222"/>
+        <location line="-215"/>
         <source>Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+305"/>
+        <location line="+298"/>
         <source>Workflow Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
-        <location line="-304"/>
-        <location line="+309"/>
+        <location line="-297"/>
+        <location line="+302"/>
         <source>ClipBoard</source>
         <translation>剪切板</translation>
     </message>
     <message>
-        <location line="-308"/>
-        <location line="+313"/>
+        <location line="-301"/>
+        <location line="+306"/>
         <source>Item</source>
         <translation>图元</translation>
     </message>
     <message>
-        <location line="-312"/>
-        <location line="+321"/>
+        <location line="-305"/>
+        <location line="+314"/>
         <source>Text</source>
         <translation>文本</translation>
     </message>
     <message>
-        <location line="-320"/>
-        <location line="+325"/>
+        <location line="-313"/>
+        <location line="+318"/>
         <source>Background</source>
         <translation>背景</translation>
     </message>
     <message>
-        <location line="-322"/>
-        <location line="+403"/>
+        <location line="-315"/>
+        <location line="+396"/>
         <source>Workflow Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location line="-402"/>
-        <location line="+405"/>
+        <location line="-395"/>
+        <location line="+398"/>
         <source>Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location line="-403"/>
-        <location line="+250"/>
+        <location line="-396"/>
+        <location line="+243"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
     <message>
-        <location line="-249"/>
+        <location line="-242"/>
         <source>Figure Setting</source>
         <translation>绘图设置</translation>
     </message>
@@ -1317,13 +1239,13 @@ Table Area</source>
     </message>
     <message>
         <location line="+1"/>
-        <location line="+409"/>
+        <location line="+402"/>
         <location line="+2"/>
         <source>Chart Edit</source>
         <translation>绘图编辑</translation>
     </message>
     <message>
-        <location line="-409"/>
+        <location line="-402"/>
         <source>theme</source>
         <translation>主题</translation>
     </message>
@@ -1349,7 +1271,7 @@ Table Area</source>
         <translation>把工作流的场景导出为图片</translation>
     </message>
     <message>
-        <location line="+447"/>
+        <location line="+440"/>
         <source>Recent Files</source>
         <translation>最近打开的文件</translation>
     </message>
@@ -1374,9 +1296,17 @@ Table Area</source>
         <translation>导出</translation>
     </message>
     <message>
-        <location line="-428"/>
+        <location line="-421"/>
         <source>File</source>
         <translation>文件</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAAppUI</name>
+    <message>
+        <location filename="../APP/DAAppUI.cpp" line="+72"/>
+        <source>Failed to load JSON config for settings dialog</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -3507,7 +3437,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-2110"/>
+        <location filename="../APP/DAAppController.cpp" line="-1994"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -5956,7 +5886,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <name>DataAnalysisUI</name>
     <message>
         <location filename="../../plugins/DataAnalysis/DataAnalysisUI.cpp" line="+65"/>
-        <location line="+22"/>
+        <location line="+46"/>
         <source>Data Cleaning</source>
         <translation type="unfinished">数据清洗</translation>
     </message>
@@ -6001,6 +5931,68 @@ To Excel</source>
         <source>Drop rows which contain missing values</source>
         <translation type="unfinished">删除包含缺失值的行</translation>
     </message>
+    <message>
+        <location line="+1"/>
+        <source>Drop Duplicates</source>
+        <translation type="unfinished">删除
+重复值</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Drop duplicate datas</source>
+        <translation type="unfinished">删除数据中的重复记录</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Fill None</source>
+        <translation type="unfinished">填充
+缺失值</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Fill rows which contain missing values</source>
+        <translation type="unfinished">填充包含缺失值的行</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>IQR Outlier Handling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Z-Score Outlier Handling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Transform skewed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Transform skewed numerical data to improve distribution</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-13"/>
+        <source>The IQR (Interquartile Range) outlier handling method is a non-parametric approach based on data distribution. It identifies extreme values deviating from the overall distribution using the interquartile range, unaffected by outliers themselves and featuring strong stability.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>The Z-Score outlier replacement method is a parametric approach based on the normal distribution assumption. It identifies outliers by quantifying how many standard deviations a data point deviates from the mean, and replaces outliers with reasonable strategies to preserve data integrity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-14"/>
+        <source>Fill Interpolate</source>
+        <translation type="unfinished">插值填充</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Fill rows which contain missing values by interpolate</source>
+        <translation type="unfinished">插值法填充包含缺失值的行</translation>
+    </message>
 </context>
 <context>
     <name>DataFrameExportRangeSelectDialog</name>
@@ -6023,14 +6015,6 @@ To Excel</source>
         <location line="+7"/>
         <source>Export Selected</source>
         <translation type="unfinished">导出选中</translation>
-    </message>
-</context>
-<context>
-    <name>DataframeCleanerWorker</name>
-    <message>
-        <location filename="../../plugins/DataAnalysis/DataframeCleanerWorker.cpp" line="+46"/>
-        <source>Removed %1 rows containing NaN values</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

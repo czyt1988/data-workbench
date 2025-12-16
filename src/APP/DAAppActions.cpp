@@ -71,14 +71,7 @@ void DAAppActions::buildDataAction()
     actionCastToDatetime     = createAction("actionCastToDatetime", ":/app/bright/Icon/castToDatetime.svg");
     actionCreateDataDescribe = createAction("actionCreateDataDescribe", ":/app/bright/Icon/dataDescribe.svg");
     actionChangeToIndex      = createAction("actionChangeToIndex", ":/app/bright/Icon/changeToIndex.svg");
-    actionDropDuplicates     = createAction("actionDropDuplicates", ":/app/bright/Icon/process-duplicate-data.svg");
-    actionNstdFilterOutlier  = createAction("actionNstdFilterOutlier", ":/app/bright/Icon/nstd-filter.svg");
-    actionDataFrameFillNone  = createAction("actionDataFrameFillNone", ":/app/bright/Icon/dataframe-fill-none.svg");
-    actionDataFrameFillInterpolate =
-        createAction("actionDataFrameInterpolate", ":/app/bright/Icon/dataframe-interpolate.svg");
-    actionDataFrameFFillNone = createAction("actionDataFrameFFillNone", ":/app/bright/Icon/dataframe-ffill-none.svg");
-    actionDataFrameBFillNone = createAction("actionDataFrameBFillNone", ":/app/bright/Icon/dataframe-bfill-none.svg");
-    actionDataFrameClipOutlier = createAction("actionDataFrameClipOutlier", ":/app/bright/Icon/dataframe-clip-outlier.svg");
+
     actionDataFrameEvalDatas = createAction("actionDataFrameEvalDatas", ":/app/bright/Icon/dataframe-eval-datas.svg");
     actionDataFrameQueryDatas = createAction("actionDataFrameQueryDatas", ":/app/bright/Icon/dataframe-query-datas.svg");
     actionDataFrameDataRetrieval =
@@ -261,25 +254,6 @@ void DAAppActions::retranslateUi()
     actionCreateDataDescribe->setText(tr("Data Describe"));         // cn:数据描述
     actionChangeToIndex->setText(tr("To Index"));                   // cn:转换为\n索引
 
-    actionDataFrameFillNone->setText(tr("Fill None"));                                  // cn:填充\n缺失值
-    actionDataFrameFillNone->setToolTip(tr("Fill rows which contain missing values"));  // cn:填充包含缺失值的行
-    actionDataFrameFillInterpolate->setText(tr("Fill Interpolate"));                    // cn:插值填充
-    actionDataFrameFillInterpolate->setToolTip(
-        tr("Fill rows which contain missing values by interpolate"));  // cn:插值法填充包含缺失值的行
-    actionDropDuplicates->setText(tr("Drop Duplicates"));              // cn:删除\n重复值
-    actionDataFrameFFillNone->setText(tr("Forward Fill"));             // cn:前向填充\n缺失值
-    actionDataFrameFFillNone->setToolTip(
-        tr("Fill NA/NaN values by propagating the last valid observation to next valid."));  // cn:将第一个有效值填充到缺失值。
-    actionDataFrameBFillNone->setText(tr("Back Fill"));  // cn:反向填充\n缺失值
-    actionDataFrameBFillNone->setToolTip(
-        tr("Fill NA/NaN values by using the next valid observation to fill the gap."));  // cn:将最后一个有效值反向填充缺失值。
-    actionDropDuplicates->setText(tr("Drop Duplicates"));                                // cn:删除\n重复值
-    actionDropDuplicates->setToolTip(tr("Drop duplicate datas"));    // cn:删除数据中的重复记录
-    actionNstdFilterOutlier->setText(tr("n std \nfilter outlier"));  // cn: 过滤\n异常值
-    actionNstdFilterOutlier->setToolTip(tr("Remove the outliers beyond n times the standard deviation"));  // cn:删除n倍标准差外的异常值
-    actionDataFrameClipOutlier->setText(tr("Clip Outlier"));  // cn: 替换\n异常值
-    actionDataFrameClipOutlier->setToolTip(
-        tr("Replace the outlier values that exceed the specified lower and upper limits with the respective limits."));  // cn:将超出限定上下限的异常值替换为上下限
     actionDataFrameEvalDatas->setText(tr("Eval Datas"));  // cn:数值计算
     actionDataFrameEvalDatas->setToolTip(
         tr("Evaluate a string describing operations on DataFrame columns"));  // cn:输入关于列操作的表达式字符串并执行计算

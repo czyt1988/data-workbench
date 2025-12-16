@@ -70,8 +70,6 @@ public:
     QAction* actionCreateDataDescribe;  ///< 数据描述
     QAction* actionChangeToIndex;       ///< 把某列转换为index
 
-    QAction* actionDropDuplicates;             ///< 重复值处理
-    QAction* actionDataFrameFillNone;          ///< 填充缺失值
     QAction* actionDataFrameFFillNone;         ///< 前向填充缺失值
     QAction* actionDataFrameBFillNone;         ///< 后向填充缺失值
     QAction* actionDataFrameFillInterpolate;   ///< 插值法填充缺失值

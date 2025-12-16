@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
-from typing import List, Dict, Optional, Union
+from typing import List, Dict,Tuple, Optional, Union
 # 根据Python版本动态导入Literal
 if sys.version_info >= (3, 8):
     from typing import Literal

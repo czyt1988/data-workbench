@@ -180,7 +180,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+205"/>
+        <location filename="../APP/DAAppActions.cpp" line="+198"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
@@ -459,78 +459,6 @@ Column</source>
     </message>
     <message>
         <location line="+2"/>
-        <source>Fill None</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Fill rows which contain missing values</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Fill Interpolate</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Fill rows which contain missing values by interpolate</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <location line="+7"/>
-        <source>Drop Duplicates</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-6"/>
-        <source>Forward Fill</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Fill NA/NaN values by propagating the last valid observation to next valid.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Back Fill</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Fill NA/NaN values by using the next valid observation to fill the gap.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Drop duplicate datas</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>n std 
-filter outlier</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Remove the outliers beyond n times the standard deviation</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Clip Outlier</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Replace the outlier values that exceed the specified lower and upper limits with the respective limits.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>Eval Datas</source>
         <translation type="unfinished"></translation>
     </message>
@@ -769,7 +697,7 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+483"/>
+        <location filename="../APP/DAAppController.cpp" line="+477"/>
         <location line="+22"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
@@ -899,7 +827,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+331"/>
+        <location line="+221"/>
         <source>new workflow name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1158,12 +1086,12 @@ Config</source>
         <location line="+1"/>
         <location line="+21"/>
         <location line="+85"/>
-        <location line="+208"/>
+        <location line="+201"/>
         <source>Workflow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-313"/>
+        <location line="-306"/>
         <location line="+2"/>
         <source>Data Operation</source>
         <translation type="unfinished"></translation>
@@ -1176,12 +1104,12 @@ Config</source>
     <message>
         <location line="+3"/>
         <location line="+23"/>
-        <location line="+362"/>
+        <location line="+355"/>
         <source>View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-384"/>
+        <location line="-377"/>
         <source>Display</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1219,65 +1147,65 @@ Config</source>
     </message>
     <message>
         <location line="-207"/>
-        <location line="+225"/>
+        <location line="+218"/>
         <source>Statistic</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-222"/>
+        <location line="-215"/>
         <source>Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+305"/>
+        <location line="+298"/>
         <source>Workflow Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-304"/>
-        <location line="+309"/>
+        <location line="-297"/>
+        <location line="+302"/>
         <source>ClipBoard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-308"/>
-        <location line="+313"/>
+        <location line="-301"/>
+        <location line="+306"/>
         <source>Item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-312"/>
-        <location line="+321"/>
+        <location line="-305"/>
+        <location line="+314"/>
         <source>Text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-320"/>
-        <location line="+325"/>
+        <location line="-313"/>
+        <location line="+318"/>
         <source>Background</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-322"/>
-        <location line="+403"/>
+        <location line="-315"/>
+        <location line="+396"/>
         <source>Workflow Run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-402"/>
-        <location line="+405"/>
+        <location line="-395"/>
+        <location line="+398"/>
         <source>Run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-403"/>
-        <location line="+250"/>
+        <location line="-396"/>
+        <location line="+243"/>
         <source>Figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-249"/>
+        <location line="-242"/>
         <source>Figure Setting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1293,13 +1221,13 @@ Config</source>
     </message>
     <message>
         <location line="+1"/>
-        <location line="+409"/>
+        <location line="+402"/>
         <location line="+2"/>
         <source>Chart Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-409"/>
+        <location line="-402"/>
         <source>theme</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1325,7 +1253,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+186"/>
+        <location line="+179"/>
         <source>Data Filtering</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1347,6 +1275,14 @@ Config</source>
     <message>
         <location line="+71"/>
         <source>Recent Files</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAAppUI</name>
+    <message>
+        <location filename="../APP/DAAppUI.cpp" line="+72"/>
+        <source>Failed to load JSON config for settings dialog</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3388,7 +3324,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-2110"/>
+        <location filename="../APP/DAAppController.cpp" line="-1994"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5828,7 +5764,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <name>DataAnalysisUI</name>
     <message>
         <location filename="../../plugins/DataAnalysis/DataAnalysisUI.cpp" line="+65"/>
-        <location line="+22"/>
+        <location line="+46"/>
         <source>Data Cleaning</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5870,6 +5806,66 @@ To Excel</source>
         <source>Drop rows which contain missing values</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location line="+1"/>
+        <source>Drop Duplicates</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Drop duplicate datas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Fill None</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Fill rows which contain missing values</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>IQR Outlier Handling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Z-Score Outlier Handling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Transform skewed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Transform skewed numerical data to improve distribution</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-13"/>
+        <source>The IQR (Interquartile Range) outlier handling method is a non-parametric approach based on data distribution. It identifies extreme values deviating from the overall distribution using the interquartile range, unaffected by outliers themselves and featuring strong stability.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>The Z-Score outlier replacement method is a parametric approach based on the normal distribution assumption. It identifies outliers by quantifying how many standard deviations a data point deviates from the mean, and replaces outliers with reasonable strategies to preserve data integrity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-14"/>
+        <source>Fill Interpolate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Fill rows which contain missing values by interpolate</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>DataFrameExportRangeSelectDialog</name>
@@ -5891,14 +5887,6 @@ To Excel</source>
     <message>
         <location line="+7"/>
         <source>Export Selected</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DataframeCleanerWorker</name>
-    <message>
-        <location filename="../../plugins/DataAnalysis/DataframeCleanerWorker.cpp" line="+46"/>
-        <source>Removed %1 rows containing NaN values</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
