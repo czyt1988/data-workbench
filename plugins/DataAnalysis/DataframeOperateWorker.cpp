@@ -22,3 +22,7 @@ bool DataframeOperateWorker::initializePythonEnv()
     }
     return false;
 }
+
+void DataframeOperateWorker::createDataframeDescribe()
+{
+}

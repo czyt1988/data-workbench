@@ -5,6 +5,7 @@
 #include "DACoreInterface.h"
 #include "DataframeIOWorker.h"
 #include "DataframeCleanerWorker.h"
+#include "DataframeOperateWorker.h"
 DataAnalysisPlugin::DataAnalysisPlugin() : DA::DAAbstractNodePlugin()
 {
 }
@@ -26,11 +27,14 @@ bool DataAnalysisPlugin::initialize()
     m_ioWorker->initialize(c);
     m_cleanerWorker = new DataframeCleanerWorker(this);
     m_cleanerWorker->initialize(c);
+    m_operateWorker = new DataframeOperateWorker(this);
+    m_operateWorker->initialize(c);
     //
 
     // 绑定ui和工作者的信号槽
     m_ui->bind(m_ioWorker);
     m_ui->bind(m_cleanerWorker);
+    m_ui->bind(m_operateWorker);
     return DA::DAAbstractNodePlugin::initialize();
 }
 

@@ -9,6 +9,7 @@
 class DataAnalysisUI;
 class DataframeIOWorker;
 class DataframeCleanerWorker;
+class DataframeOperateWorker;
 namespace DA
 {
 class DAAbstractNodeFactory;
@@ -77,6 +78,7 @@ private:
     DataAnalysisUI* m_ui { nullptr };
     DataframeIOWorker* m_ioWorker { nullptr };
     DataframeCleanerWorker* m_cleanerWorker { nullptr };
+    DataframeOperateWorker* m_operateWorker { nullptr };
 };
 
 #endif  // DATAANALYSISPLUGIN_H

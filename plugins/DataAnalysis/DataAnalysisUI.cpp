@@ -21,6 +21,7 @@
 // DataAnalysisPlugin
 #include "DataframeIOWorker.h"
 #include "DataframeCleanerWorker.h"
+#include "DataframeOperateWorker.h"
 DataAnalysisUI::DataAnalysisUI(QObject* par) : QObject(par)
 {
 }
@@ -61,6 +62,9 @@ void DataAnalysisUI::buildDataCategory()
     SARibbonCategory* dataframeContextCategory =
         ribbonArea->getCategoryByObjectName(QStringLiteral("da-ribbon-category-dataframe.operate"));
     if (dataframeContextCategory) {
+        //----------------------------------------------------
+        // 数据清洗 panel
+        //----------------------------------------------------
         // 新建数据清洗panel
         panelDataCleaner = dataframeContextCategory->addPanel(tr("Data Cleaning"));  // cn：数据清洗
         panelDataCleaner->setObjectName(QStringLiteral("da-panel-dataframe.operate.datacleaner"));
@@ -92,6 +96,16 @@ void DataAnalysisUI::buildDataCategory()
         panelDataCleaner->addLargeAction(actionDataFrameRemoveOutlierIQR);
         panelDataCleaner->addLargeAction(actionDataFrameRemoveOutliersZScore);
         panelDataCleaner->addLargeAction(actionDataFrameTransformSkewedData);
+
+        //----------------------------------------------------
+        // Statistic Panel 数据统计panel
+        //----------------------------------------------------
+        panelDataStatistic = dataframeContextCategory->addPanel(tr("Statistic"));  // cn：数据统计
+        // 数据描述
+        actionCreateDataDescribe = m_actions->createAction("actionCreateDataDescribe", ":/app/bright/Icon/dataDescribe.svg");
+        // 创建数据透视表
+        actionCreatePivotTable =
+            m_actions->createAction("actionDataFrameCreatePivotTable", ":/app/bright/Icon/pivot-table.svg");
     }
 }
 
@@ -136,6 +150,10 @@ void DataAnalysisUI::retranslateUi()
         actionDataFrameTransformSkewedData->setText(tr("Transform skewed"));  // cn:转换偏态数据
         actionDataFrameTransformSkewedData->setToolTip(
             tr("Transform skewed numerical data to improve distribution"));  // cn:转换偏态数值数据以改善分布
+
+        actionCreateDataDescribe->setText(tr("Data Describe"));        // cn:数据描述
+        actionCreatePivotTable->setText(tr("Pivot Table"));            // cn: 数据\n透视表
+        actionCreatePivotTable->setToolTip(tr("Create Pivot Table"));  // cn: 创建数据透视表
     }
 }
 
@@ -155,4 +173,8 @@ void DataAnalysisUI::bind(DataframeCleanerWorker* worker)
     connect(actionDataFrameRemoveOutlierIQR, &QAction::triggered, worker, &DataframeCleanerWorker::remove_outliers_iqr);
     connect(actionDataFrameRemoveOutliersZScore, &QAction::triggered, worker, &DataframeCleanerWorker::remove_outliers_zscore);
     connect(actionDataFrameTransformSkewedData, &QAction::triggered, worker, &DataframeCleanerWorker::transform_skewed_data);
+}
+
+void DataAnalysisUI::bind(DataframeOperateWorker* worker)
+{
 }

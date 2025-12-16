@@ -58,19 +58,19 @@ void DAAppActions::buildDataAction()
     actionAddData    = createAction("actionAddData", ":/app/bright/Icon/addData.svg");
     actionRemoveData = createAction("actionRemoveData", ":/app/bright/Icon/removeData.svg");
     // 数据操作的上下文标签 Data Operate Context Category
-    actionRemoveRow          = createAction("actionRemoveRow", ":/app/bright/Icon/removeRow.svg");
-    actionRemoveColumn       = createAction("actionRemoveColumn", ":/app/bright/Icon/removeColumn.svg");
-    actionInsertRow          = createAction("actionInsertRow", ":/app/bright/Icon/insertRow.svg");
-    actionInsertRowAbove     = createAction("actionInsertRowAbove", ":/app/bright/Icon/insertRowAbove.svg");
-    actionInsertColumnRight  = createAction("actionInsertColumnRight", ":/app/bright/Icon/insertColumnRight.svg");
-    actionInsertColumnLeft   = createAction("actionInsertColumnLeft", ":/app/bright/Icon/insertColumnLeft.svg");
-    actionRenameColumns      = createAction("actionRenameColumns", ":/app/bright/Icon/renameColumns.svg");
-    actionRemoveCell         = createAction("actionRemoveCell", ":/app/bright/Icon/removeCell.svg");
-    actionCastToNum          = createAction("actionCastToNum", ":/app/bright/Icon/castToNum.svg");
-    actionCastToString       = createAction("actionCastToString", ":/app/bright/Icon/castToString.svg");
-    actionCastToDatetime     = createAction("actionCastToDatetime", ":/app/bright/Icon/castToDatetime.svg");
-    actionCreateDataDescribe = createAction("actionCreateDataDescribe", ":/app/bright/Icon/dataDescribe.svg");
-    actionChangeToIndex      = createAction("actionChangeToIndex", ":/app/bright/Icon/changeToIndex.svg");
+    actionRemoveRow         = createAction("actionRemoveRow", ":/app/bright/Icon/removeRow.svg");
+    actionRemoveColumn      = createAction("actionRemoveColumn", ":/app/bright/Icon/removeColumn.svg");
+    actionInsertRow         = createAction("actionInsertRow", ":/app/bright/Icon/insertRow.svg");
+    actionInsertRowAbove    = createAction("actionInsertRowAbove", ":/app/bright/Icon/insertRowAbove.svg");
+    actionInsertColumnRight = createAction("actionInsertColumnRight", ":/app/bright/Icon/insertColumnRight.svg");
+    actionInsertColumnLeft  = createAction("actionInsertColumnLeft", ":/app/bright/Icon/insertColumnLeft.svg");
+    actionRenameColumns     = createAction("actionRenameColumns", ":/app/bright/Icon/renameColumns.svg");
+    actionRemoveCell        = createAction("actionRemoveCell", ":/app/bright/Icon/removeCell.svg");
+    actionCastToNum         = createAction("actionCastToNum", ":/app/bright/Icon/castToNum.svg");
+    actionCastToString      = createAction("actionCastToString", ":/app/bright/Icon/castToString.svg");
+    actionCastToDatetime    = createAction("actionCastToDatetime", ":/app/bright/Icon/castToDatetime.svg");
+
+    actionChangeToIndex = createAction("actionChangeToIndex", ":/app/bright/Icon/changeToIndex.svg");
 
     actionDataFrameEvalDatas = createAction("actionDataFrameEvalDatas", ":/app/bright/Icon/dataframe-eval-datas.svg");
     actionDataFrameQueryDatas = createAction("actionDataFrameQueryDatas", ":/app/bright/Icon/dataframe-query-datas.svg");
@@ -78,8 +78,7 @@ void DAAppActions::buildDataAction()
         createAction("actionDataFrameDataRetrieval", ":/app/bright/Icon/dataframe-data-retrieval.svg");
     actionDataFrameDataFilterColumn =
         createAction("actionDataFrameDataSelect", ":/app/bright/Icon/dataframe-data-select.svg");
-    actionDataFrameSort    = createAction("actionDataFrameSort", ":/app/bright/Icon/dataframe-sort.svg");
-    actionCreatePivotTable = createAction("actionDataFrameCreatePivotTable", ":/app/bright/Icon/pivot-table.svg");
+    actionDataFrameSort = createAction("actionDataFrameSort", ":/app/bright/Icon/dataframe-sort.svg");
 }
 
 void DAAppActions::buildChartAction()
@@ -251,8 +250,8 @@ void DAAppActions::retranslateUi()
     actionCastToString->setToolTip(tr("cast to string type"));  // cn:转换为字符串类型
     actionCastToDatetime->setText(tr("to datetime"));
     actionCastToDatetime->setToolTip(tr("cast to datetime type"));  // cn:转换为日期类型
-    actionCreateDataDescribe->setText(tr("Data Describe"));         // cn:数据描述
-    actionChangeToIndex->setText(tr("To Index"));                   // cn:转换为\n索引
+
+    actionChangeToIndex->setText(tr("To Index"));  // cn:转换为\n索引
 
     actionDataFrameEvalDatas->setText(tr("Eval Datas"));  // cn:数值计算
     actionDataFrameEvalDatas->setToolTip(
@@ -264,8 +263,6 @@ void DAAppActions::retranslateUi()
     actionDataFrameDataFilterColumn->setText(tr("Filter by Column"));                       // cn:列数据过滤
     actionDataFrameSort->setText(tr("Sort"));                                               // cn:数据排序
     actionDataFrameSort->setToolTip(tr("Sort Data"));                                       // cn:对数据进行排序
-    actionCreatePivotTable->setText(tr("Pivot Table"));                                     // cn: 数据\n透视表
-    actionCreatePivotTable->setToolTip(tr("Create Pivot Table"));                           // cn: 创建数据透视表
 
     // workflow 编辑
     actionWorkflowNew->setText(tr("New \nWorkflow"));                    // cn:新建\n工作流

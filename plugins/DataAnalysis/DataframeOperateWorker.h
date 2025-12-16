@@ -17,6 +17,8 @@ public:
     ~DataframeOperateWorker();
     bool initializePythonEnv();
 public Q_SLOTS:
+    void createDataframeDescribe();
+
 private:
     std::unique_ptr< DA::DAPyModule > m_dataOperateModule;
 };

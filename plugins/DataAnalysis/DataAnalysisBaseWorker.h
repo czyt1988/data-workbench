@@ -20,7 +20,7 @@ class DataAnalysisBaseWorker : public QObject
 public:
     explicit DataAnalysisBaseWorker(QObject* par = nullptr);
     ~DataAnalysisBaseWorker();
-    void initialize(DA::DACoreInterface* core);
+    virtual void initialize(DA::DACoreInterface* core);
     //
     DA::DACoreInterface* core() const;
     DA::DAUIInterface* uiInterface() const;

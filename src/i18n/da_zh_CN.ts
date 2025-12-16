@@ -5885,7 +5885,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DataAnalysisUI</name>
     <message>
-        <location filename="../../plugins/DataAnalysis/DataAnalysisUI.cpp" line="+65"/>
+        <location filename="../../plugins/DataAnalysis/DataAnalysisUI.cpp" line="+66"/>
         <location line="+46"/>
         <source>Data Cleaning</source>
         <translation type="unfinished">数据清洗</translation>

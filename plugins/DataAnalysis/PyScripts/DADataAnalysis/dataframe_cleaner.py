@@ -16,37 +16,9 @@ from loguru import logger
 from DAWorkbench.da_logger import log_function_call  # type: ignore
 import DAWorkbench.thread_status_manager as tsm
 import DAWorkbench.property_config_builder as porpCfgBuilder
+from DADataAnalysis import utils
 import da_app, da_interface, da_data
 
-def get_select_dataframe_and_subset_index(data: da_data.DAData = None) -> Optional[Tuple[da_data.DAData, pd.DataFrame, List[str]]]:
-    """
-    Get the selected dataframe and column indices
-    获取选中的dataframe和选中的列索引
-    """
-    ui = da_app.getCore().getUiInterface()
-    dataManager = da_app.getCore().getDataManagerInterface()
-    
-    if data is not None and isinstance(data, da_data.DAData):
-        dadata = data
-    else:
-        dadata = dataManager.getOperateData()
-    
-    if not dadata:
-        ui.addWarningLogMessage(_("Please select a dataset first"))  # cn: 请先选择一个数据集
-        return None
-    
-    if not dadata.isDataFrame():
-        ui.addWarningLogMessage(_("The selected data must be a table (DataFrame) format"))  # cn: 选中的数据必须是表格（DataFrame）格式
-        return None
-    
-    df = dadata.toDataFrame()
-    subset = None
-    col_selected_index = dataManager.getOperateDataSeries()
-    
-    if col_selected_index and len(col_selected_index) > 0:
-        subset = list(df.columns[col_selected_index])
-    
-    return dadata, df, subset
 
 def _execute_dataframe_operation(dadata: da_data.DAData, 
                                  operation_name: str, 
@@ -104,7 +76,7 @@ def dropna() -> Optional[int]:
     Remove rows with missing (NaN) values
     删除包含缺失值（NaN）的行
     """
-    select_datas_info = get_select_dataframe_and_subset_index()
+    select_datas_info = utils.get_select_dataframe_and_subset_index()
     if not select_datas_info:
         return None
     
@@ -179,7 +151,7 @@ def drop_duplicates() -> Optional[int]:
     Remove duplicate rows from the dataset
     从数据集中删除重复行
     """
-    select_datas_info = get_select_dataframe_and_subset_index()
+    select_datas_info = utils.get_select_dataframe_and_subset_index()
     if not select_datas_info:
         return None
     
@@ -239,7 +211,7 @@ def fillna() -> Optional[int]:
     Fill missing values with various methods
     使用多种方法填充缺失值
     """
-    select_datas_info = get_select_dataframe_and_subset_index()
+    select_datas_info = utils.get_select_dataframe_and_subset_index()
     if not select_datas_info:
         return None
     
@@ -344,7 +316,7 @@ def fill_interpolate() -> Optional[int]:
     插值填充缺失值
     :return: 填充的行数
     """
-    select_datas_info = get_select_dataframe_and_subset_index()
+    select_datas_info = utils.get_select_dataframe_and_subset_index()
     if not select_datas_info:
         return None
     dadata, _df, subset = select_datas_info
@@ -453,7 +425,7 @@ def replace_specific_values() -> Optional[int]:
     Replace specific values in the dataset
     替换数据集中的特定值
     """
-    select_datas_info = get_select_dataframe_and_subset_index()
+    select_datas_info = utils.get_select_dataframe_and_subset_index()
     if not select_datas_info:
         return None
     
@@ -556,7 +528,7 @@ def remove_outliers_iqr() -> Optional[int]:
     Remove or replace outliers using Interquartile Range (IQR) method
     使用四分位距（IQR）方法删除或替换异常值
     """
-    select_datas_info = get_select_dataframe_and_subset_index()
+    select_datas_info = utils.get_select_dataframe_and_subset_index()
     if not select_datas_info:
         return None
     
@@ -754,7 +726,7 @@ def remove_outliers_zscore() -> Optional[int]:
     Remove or replace outliers using Z-score method
     使用Z-score方法删除或替换异常值
     """
-    select_datas_info = get_select_dataframe_and_subset_index()
+    select_datas_info = utils.get_select_dataframe_and_subset_index()
     if not select_datas_info:
         return None
     
@@ -976,6 +948,183 @@ def remove_outliers_zscore() -> Optional[int]:
         operation,
         _("Removed {removed_rows} rows outliers")  # cn: 处理了{removed_rows}行异常值
     )
+
+def threshold_filter() -> Optional[int]:
+    """
+    Filter rows based on value thresholds (remove too high, too low, or in/out of range)
+    基于数值上下限过滤行（删除过高、过低、在范围内或范围外的值）
+    """
+    select_datas_info = utils.get_select_dataframe_and_subset_index()
+    if not select_datas_info:
+        return None
+    
+    dadata, _df, subset = select_datas_info
+    ui = da_app.getCore().getUiInterface()
+    
+    # 获取数值列
+    numeric_cols = _df.select_dtypes(include=[np.number]).columns.tolist()
+    if not numeric_cols:
+        ui.addWarningLogMessage(_("No numeric columns found in selected data. Please select numeric columns for threshold filtering."))  # cn: 所选数据中未找到数值列。请选择数值列进行上下限过滤。
+        return None
+    
+    # 限制只选择数值列
+    subset = [col for col in subset if col in numeric_cols]
+    if not subset:
+        ui.addWarningLogMessage(_("No numeric columns selected. Please select at least one numeric column."))  # cn: 未选择数值列。请至少选择一个数值列。
+        return None
+    
+    cfgBuilder = porpCfgBuilder.PropertyConfigBuilder(_("Threshold Filter"))# cn: 上下限过滤设置
+    
+    cfgBuilder.begin_group(_("Filter Conditions"))  # cn: 过滤条件
+    cfgBuilder.add_enum(
+        name="filter_type",
+        display_name=_("Filter Type"),  # cn: 过滤类型
+        default_value="greater_than",
+        enum_items=["greater_than", "less_than", "in_range", "out_of_range"],
+        enum_descriptions=[
+            _("Remove values GREATER THAN threshold (too high)"),  # cn: 删除大于阈值的值（过高）
+            _("Remove values LESS THAN threshold (too low)"),  # cn: 删除小于阈值的值（过低）
+            _("Remove values WITHIN range (keep outliers)"),  # cn: 删除范围内的值（保留异常值）
+            _("Remove values OUTSIDE range (keep normal range)")  # cn: 删除范围外的值（保留正常范围）
+        ],
+        description=_("Select the type of filtering you want to apply: remove values that are too high, too low, within a specific range, or outside a specific range.")  # cn: 选择要应用的过滤类型：删除过高的值、过低的值、特定范围内的值或特定范围外的值。
+    )
+    
+    cfgBuilder.add_double(
+        name="lower_threshold",
+        display_name=_("Lower Threshold"),  # cn: 下限阈值
+        default_value=0.0,
+        description=_("The minimum acceptable value. Rows with values below this (depending on filter type) will be removed.")  # cn: 可接受的最小值。低于此值的行（根据过滤类型）将被删除。
+    )
+    
+    cfgBuilder.add_double(
+        name="upper_threshold",
+        display_name=_("Upper Threshold"),  # cn: 上限阈值
+        default_value=100.0,
+        description=_("The maximum acceptable value. Rows with values above this (depending on filter type) will be removed.")  # cn: 可接受的最大值。高于此值的行（根据过滤类型）将被删除。
+    )
+    
+    cfgBuilder.add_enum(
+        name="row_removal_logic",
+        display_name=_("Row Removal Logic"),  # cn: 行删除逻辑
+        default_value="any",
+        enum_items=["any", "all"],
+        enum_descriptions=[
+            _("Remove row if ANY selected column meets the condition"),  # cn: 任意选中的列满足条件时删除行
+            _("Remove row only if ALL selected columns meet the condition")  # cn: 所有选中的列都满足条件时才删除行
+        ],
+        description=_("When multiple columns are selected: 'Any' removes the row if any column violates the threshold; 'All' only removes the row if all columns violate the threshold.")  # cn: 当选择多个列时：'任意'表示任意列违反阈值就删除行；'所有'表示所有列都违反阈值才删除行。
+    )
+    cfgBuilder.end_group()
+    
+    cfgBuilder.begin_group(_("Advanced Settings"))  # cn: 高级设置
+    cfgBuilder.add_bool(
+        name="treat_nan_as_violation",
+        display_name=_("Treat NaN as Threshold Violation"),  # cn: 将NaN视为违反阈值
+        default_value=False,
+        description=_("If enabled, rows with NaN (missing) values in selected columns will also be removed. If disabled, NaN values will be ignored.")  # cn: 如果启用，选中的列中包含NaN（缺失）值的行也将被删除。如果禁用，NaN值将被忽略。
+    )
+    
+    cfgBuilder.add_bool(
+        name="reindex",
+        display_name=_("Reset Row Numbers"),  # cn: 重置行号
+        default_value=True,
+        description=_("Renumber rows from 0 after filtering")  # cn: 过滤后从0开始重新编号行
+    )
+    
+    cfgBuilder.end_group()
+    
+    config = ui.getConfigValues(cfgBuilder.to_json(), "dataframecleaner.threshold_filter")
+    if len(config) == 0:
+        return None
+    
+    filter_type = config.get("filter_type", "greater_than")
+    lower_threshold = config.get("lower_threshold", 0.0)
+    upper_threshold = config.get("upper_threshold", 100.0)
+    row_removal_logic = config.get("row_removal_logic", "any")
+    treat_nan_as_violation = config.get("treat_nan_as_violation", False)
+    reindex = config.get("reindex", True)
+    
+    def operation(df):
+        try:
+            # 根据条件类型创建掩码
+            mask = pd.Series([False] * len(df), index=df.index)
+            
+            for col in subset:
+                if col not in df.columns:
+                    continue
+                    
+                col_data = df[col]
+                
+                # 根据过滤类型创建列级掩码
+                if filter_type == "greater_than":
+                    # 删除大于上限的值
+                    col_mask = col_data > upper_threshold
+                elif filter_type == "less_than":
+                    # 删除小于下限的值
+                    col_mask = col_data < lower_threshold
+                elif filter_type == "in_range":
+                    # 删除范围内的值（保留异常值）
+                    col_mask = (col_data >= lower_threshold) & (col_data <= upper_threshold)
+                elif filter_type == "out_of_range":
+                    # 删除范围外的值（保留正常范围）
+                    col_mask = (col_data < lower_threshold) | (col_data > upper_threshold)
+                else:
+                    col_mask = pd.Series([False] * len(df), index=df.index)
+                
+                # 处理NaN值
+                if not treat_nan_as_violation:
+                    # 将NaN替换为False（不删除）
+                    col_mask = col_mask.fillna(False)
+                else:
+                    # 将NaN视为True（删除）
+                    col_mask = col_mask.fillna(True)
+                
+                # 根据逻辑合并掩码
+                if row_removal_logic == "any":
+                    mask = mask | col_mask
+                else:  # "all"
+                    if mask.empty:
+                        mask = col_mask
+                    else:
+                        mask = mask & col_mask
+            
+            # 应用掩码（删除标记为True的行）
+            df_filtered = df[~mask]
+            
+            # 重置索引
+            if reindex:
+                df_filtered.reset_index(drop=True, inplace=True)
+            
+            return df_filtered
+            
+        except Exception as e:
+            ui.addCriticalLogMessage(_("Threshold filtering failed: {error}").format(error=str(e)))  # cn: 上下限过滤失败
+            raise
+    
+    # 根据过滤类型生成成功消息
+    if filter_type == "greater_than":
+        success_msg = _("Removed {removed_rows} rows with values greater than {upper_threshold}")  # cn: 删除了{removed_rows}个值大于{upper_threshold}的行
+        success_msg = success_msg.format(upper_threshold=upper_threshold)
+    elif filter_type == "less_than":
+        success_msg = _("Removed {removed_rows} rows with values less than {lower_threshold}")  # cn: 删除了{removed_rows}个值小于{lower_threshold}的行
+        success_msg = success_msg.format(lower_threshold=lower_threshold)
+    elif filter_type == "in_range":
+        success_msg = _("Removed {removed_rows} rows with values between {lower_threshold} and {upper_threshold}")  # cn: 删除了{removed_rows}个值在{lower_threshold}和{upper_threshold}之间的行
+        success_msg = success_msg.format(lower_threshold=lower_threshold, upper_threshold=upper_threshold)
+    elif filter_type == "out_of_range":
+        success_msg = _("Removed {removed_rows} rows with values outside {lower_threshold} to {upper_threshold} range")  # cn: 删除了{removed_rows}个值在{lower_threshold}到{upper_threshold}范围之外的行
+        success_msg = success_msg.format(lower_threshold=lower_threshold, upper_threshold=upper_threshold)
+    else:
+        success_msg = _("Filtered {removed_rows} rows based on threshold conditions")  # cn: 根据阈值条件过滤了{removed_rows}行
+    
+    return _execute_dataframe_operation(
+        dadata,
+        _("Threshold Filter"),  # cn: 上下限过滤
+        operation,
+        success_msg
+    )
+
 # ============================================================================
 # 数据转换（简化设置）
 # ============================================================================
@@ -985,7 +1134,7 @@ def transform_skewed_data() -> Optional[int]:
     Transform skewed numerical data to improve distribution
     转换偏态数值数据以改善分布
     """
-    select_datas_info = get_select_dataframe_and_subset_index()
+    select_datas_info = utils.get_select_dataframe_and_subset_index()
     if not select_datas_info:
         return None
     
@@ -1086,7 +1235,7 @@ def scale_data() -> Optional[int]:
     数据缩放（标准化/归一化）
     :return: 缩放的列数
     """
-    select_datas_info = get_select_dataframe_and_subset_index()
+    select_datas_info = utils.get_select_dataframe_and_subset_index()
     if not select_datas_info:
         return None
     dadata, _df, subset = select_datas_info
@@ -1263,7 +1412,7 @@ def clean_text_strings() -> Optional[int]:
     Clean and standardize text strings
     清理和标准化文本字符串
     """
-    select_datas_info = get_select_dataframe_and_subset_index()
+    select_datas_info = utils.get_select_dataframe_and_subset_index()
     if not select_datas_info:
         return None
     
@@ -1363,7 +1512,7 @@ def encode_label() -> Optional[int]:
     Convert categorical text to numeric labels (0, 1, 2, ...)
     将分类文本转换为数字标签（0, 1, 2, ...）
     """
-    select_datas_info = get_select_dataframe_and_subset_index()
+    select_datas_info = utils.get_select_dataframe_and_subset_index()
     if not select_datas_info:
         return None
     
