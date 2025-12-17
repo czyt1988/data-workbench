@@ -180,7 +180,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+189"/>
+        <location filename="../APP/DAAppActions.cpp" line="+292"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
@@ -375,6 +375,12 @@ All</source>
         <location line="+1"/>
         <source>legend</source>
         <translation>图例</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Copy To Clipboard</source>
+        <translation>复制到
+剪切板</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -588,7 +594,7 @@ Config</source>
         <translation>暗色主题</translation>
     </message>
     <message>
-        <location line="-60"/>
+        <location line="-61"/>
         <source>Zoom Out</source>
         <translation>缩小</translation>
     </message>
@@ -598,7 +604,7 @@ Config</source>
         <translation>放大</translation>
     </message>
     <message>
-        <location line="+36"/>
+        <location line="+37"/>
         <source>Run 
 Workflow</source>
         <translation>运行
@@ -659,7 +665,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+843"/>
+        <location filename="../APP/DAAppController.cpp" line="+829"/>
         <location line="+49"/>
         <source>project file(*.%1)</source>
         <translation>工程文件(*.%1)</translation>
@@ -681,8 +687,7 @@ Table Area</source>
         <translation>加载工程文件“%1”失败</translation>
     </message>
     <message>
-        <location line="-440"/>
-        <location line="+22"/>
+        <location line="-418"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
@@ -702,8 +707,7 @@ Table Area</source>
         <translation>是否覆盖文件“%1”</translation>
     </message>
     <message>
-        <location line="-23"/>
-        <location line="+32"/>
+        <location line="+9"/>
         <source>Project saved failed!,path is %1</source>
         <translation>工程“%1”保存失败</translation>
     </message>
@@ -714,12 +718,7 @@ Table Area</source>
         <translation>工程保存成功，路径位于:%1</translation>
     </message>
     <message>
-        <location line="-458"/>
-        <source>Project Files (*.%1)</source>
-        <translation>工程文件(*.%1)</translation>
-    </message>
-    <message>
-        <location line="+63"/>
+        <location line="-395"/>
         <source>Please select the data operation window</source>
         <translation>请选中数据操作窗口</translation>
     </message>
@@ -769,7 +768,7 @@ Table Area</source>
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
     <message>
-        <location line="+498"/>
+        <location line="+522"/>
         <source>new workflow name</source>
         <translation>新工作流名称</translation>
     </message>
@@ -880,7 +879,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppProject</name>
     <message>
-        <location filename="../APP/DAAppProject.cpp" line="+371"/>
+        <location filename="../APP/DAAppProject.cpp" line="+377"/>
         <location line="+43"/>
         <source>current project is busy</source>
         <translation>当前工程正繁忙</translation>
@@ -901,7 +900,22 @@ Table Area</source>
         <translation>无法从%1加载存档</translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+13"/>
+        <source>Save Project</source>
+        <translation type="unfinished">保存工程</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Project Files (*.%1)</source>
+        <translation type="unfinished">工程文件(*.%1)</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Project saved failed!,path is %1</source>
+        <translation type="unfinished">工程“%1”保存失败</translation>
+    </message>
+    <message>
+        <location line="+22"/>
         <source>Save System Info</source>
         <translation>保存系统信息</translation>
     </message>
@@ -1005,7 +1019,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppRibbonArea</name>
     <message>
-        <location filename="../APP/DAAppRibbonArea.cpp" line="+166"/>
+        <location filename="../APP/DAAppRibbonArea.cpp" line="+167"/>
         <source>Main</source>
         <translation>主页</translation>
     </message>
@@ -1178,12 +1192,17 @@ Table Area</source>
         <translation>把工作流的场景导出为图片</translation>
     </message>
     <message>
-        <location line="+425"/>
+        <location line="+421"/>
+        <source>Theme</source>
+        <translation>主题</translation>
+    </message>
+    <message>
+        <location line="+17"/>
         <source>Recent Files</source>
         <translation>最近打开的文件</translation>
     </message>
     <message>
-        <location line="-135"/>
+        <location line="-148"/>
         <source>Group</source>
         <translation>分组</translation>
     </message>
@@ -1446,7 +1465,7 @@ Table Area</source>
         <translation>y</translation>
     </message>
     <message>
-        <location line="+169"/>
+        <location line="+178"/>
         <location line="+8"/>
         <location line="+23"/>
         <location line="+9"/>
@@ -1692,12 +1711,12 @@ Table Area</source>
 <context>
     <name>DA::DAChartOperateWidget</name>
     <message>
-        <location filename="../DAGui/DAChartOperateWidget.cpp" line="+93"/>
+        <location filename="../DAGui/DAChartOperateWidget.cpp" line="+95"/>
         <source>figure-%1</source>
         <translation>图-%1</translation>
     </message>
     <message>
-        <location line="+186"/>
+        <location line="+225"/>
         <source>question</source>
         <translation>疑问</translation>
     </message>
@@ -2031,7 +2050,7 @@ Description: %1</source>
     <message>
         <location filename="../DAGui/DADataTableView.cpp" line="+21"/>
         <source>DADataTableView must set model first</source>
-        <translation type="unfinished"></translation>
+        <translation>你需要先设置模型</translation>
     </message>
 </context>
 <context>
@@ -3304,7 +3323,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1868"/>
+        <location filename="../APP/DAAppController.cpp" line="-1877"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -4992,7 +5011,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+57"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+59"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
@@ -5803,7 +5822,7 @@ To Excel</source>
     <name>DataFrameExportRangeSelectDialog</name>
     <message>
         <location filename="../../plugins/DataAnalysis/Dialogs/DataFrameExportRangeSelectDialog.ui" line="+14"/>
-        <source>Dialog</source>
+        <source>Export Setting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

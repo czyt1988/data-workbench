@@ -1,5 +1,5 @@
 ﻿#include "DAFigureWidget.h"
-#include <QtWidgets/QApplication>
+#include <QApplication>
 #include <QMessageBox>
 #include <QGridLayout>
 #include <QKeyEvent>
@@ -16,6 +16,8 @@
 #include <QDebug>
 #include <QScopedPointer>
 #include <QPointer>
+#include <QKeyEvent>
+#include <QClipboard>
 // chart
 #include "DAChartUtil.h"
 #include "DAChartWidget.h"
@@ -47,7 +49,7 @@ public:
     QScopedPointer< DAChartFactory > mFactory;              ///< 绘图创建的工厂
     DAColorTheme mColorTheme;  ///< 主题，注意，这里不要用DAColorTheme mColorTheme { DAColorTheme::ColorTheme_Archambault }这样的初始化，会被当作std::initializer_list< QColor >捕获
 public:
-    PrivateData(DAFigureWidget* p) : q_ptr(p), mColorTheme(DAColorTheme::Style_Archambault)
+    PrivateData(DAFigureWidget* p) : q_ptr(p), mColorTheme(DAColorTheme::Style_Matplotlib_Tab10)
     {
         mFactory.reset(new DAChartFactory());
     }
@@ -449,6 +451,25 @@ QColor DAFigureWidget::getDefaultColor() const
 void DAFigureWidget::setColorTheme(const DAColorTheme& th)
 {
     d_ptr->mColorTheme = th;
+    // 同步应用样式
+    const QList< QwtPlot* > plots = figure()->allAxes();
+    for (QwtPlot* plot : plots) {
+        const QList< QwtPlot* > plotWithparasite = plot->plotList();
+        DAColorTheme theme                       = th;
+        if (theme.size() <= 0) {
+            theme = DAColorTheme(DAColorTheme::Style_Cassatt1);
+        }
+        for (QwtPlot* p : plotWithparasite) {
+            const QwtPlotItemList items = p->itemList();
+            for (QwtPlotItem* item : items) {
+                if (!DAChartUtil::isPlotGraphicsItem(item)) {
+                    continue;
+                }
+                DAChartUtil::setPlotItemColor(item, ++theme);
+            }
+        }
+    }
+    figure()->replotAll();
 }
 
 DAColorTheme DAFigureWidget::getColorTheme() const
@@ -464,6 +485,14 @@ const DAColorTheme& DAFigureWidget::colorTheme() const
 DAColorTheme& DAFigureWidget::colorTheme()
 {
     return d_ptr->mColorTheme;
+}
+
+void DAFigureWidget::copyToClipboard()
+{
+    // 捕获当前窗口的截图
+    QPixmap screenshot = this->grab();
+    // 将截图放到剪贴板
+    QApplication::clipboard()->setPixmap(screenshot);
 }
 
 QRectF DAFigureWidget::axesNormRect(QwtPlot* plot) const
@@ -627,6 +656,18 @@ void DAFigureWidget::push(QUndoCommand* cmd)
 QUndoStack* DAFigureWidget::getUndoStack()
 {
     return &(d_ptr->mUndoStack);
+}
+
+void DAFigureWidget::keyPressEvent(QKeyEvent* e)
+{
+    QKeySequence keySeq(e->key() | e->modifiers());
+    if (keySeq == QKeySequence::Copy) {
+        // 同上
+        copyToClipboard();
+        e->accept();
+        return;
+    }
+    QScrollArea::keyPressEvent(e);
 }
 
 /**

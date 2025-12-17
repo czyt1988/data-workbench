@@ -180,7 +180,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+189"/>
+        <location filename="../APP/DAAppActions.cpp" line="+292"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
@@ -378,6 +378,11 @@ All</source>
     <message>
         <location line="+1"/>
         <source>legend</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Copy To Clipboard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -637,19 +642,12 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+469"/>
-        <location line="+22"/>
+        <location filename="../APP/DAAppController.cpp" line="+477"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-20"/>
-        <source>Project Files (*.%1)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <location line="+32"/>
+        <location line="+21"/>
         <source>Project saved failed!,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -747,7 +745,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+498"/>
+        <location line="+522"/>
         <source>new workflow name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -858,7 +856,7 @@ Config</source>
 <context>
     <name>DA::DAAppProject</name>
     <message>
-        <location filename="../APP/DAAppProject.cpp" line="+371"/>
+        <location filename="../APP/DAAppProject.cpp" line="+377"/>
         <location line="+43"/>
         <source>current project is busy</source>
         <translation type="unfinished"></translation>
@@ -879,7 +877,22 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+13"/>
+        <source>Save Project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Project Files (*.%1)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Project saved failed!,path is %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+22"/>
         <source>Save System Info</source>
         <translation type="unfinished"></translation>
     </message>
@@ -983,7 +996,7 @@ Config</source>
 <context>
     <name>DA::DAAppRibbonArea</name>
     <message>
-        <location filename="../APP/DAAppRibbonArea.cpp" line="+164"/>
+        <location filename="../APP/DAAppRibbonArea.cpp" line="+165"/>
         <source>File</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1176,7 +1189,12 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+71"/>
+        <location line="+67"/>
+        <source>Theme</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+17"/>
         <source>Recent Files</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1424,7 +1442,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+169"/>
+        <location line="+178"/>
         <location line="+8"/>
         <location line="+23"/>
         <location line="+9"/>
@@ -1670,12 +1688,12 @@ Config</source>
 <context>
     <name>DA::DAChartOperateWidget</name>
     <message>
-        <location filename="../DAGui/DAChartOperateWidget.cpp" line="+93"/>
+        <location filename="../DAGui/DAChartOperateWidget.cpp" line="+95"/>
         <source>figure-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+186"/>
+        <location line="+225"/>
         <source>question</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3192,7 +3210,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1868"/>
+        <location filename="../APP/DAAppController.cpp" line="-1877"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4871,7 +4889,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+57"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+59"/>
         <source>Figure</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5675,7 +5693,7 @@ To Excel</source>
     <name>DataFrameExportRangeSelectDialog</name>
     <message>
         <location filename="../../plugins/DataAnalysis/Dialogs/DataFrameExportRangeSelectDialog.ui" line="+14"/>
-        <source>Dialog</source>
+        <source>Export Setting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

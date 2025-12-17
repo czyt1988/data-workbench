@@ -207,6 +207,10 @@ private Q_SLOTS:
     void onActionChartEnablePickerXYTriggered(bool on);
     // 允许绘图图例
     void onActionChartEnableLegendTriggered(bool on);
+    // 绘图样式选择
+    void onActionGroupFigureThemeTriggered(QAction* act);
+    // 复制到剪切板
+    void onActionCopyFigureToClipboardTriggered();
     //===================================================
     // 数据操作的上下文标签 Data Operate Context Category
     //===================================================

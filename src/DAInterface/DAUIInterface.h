@@ -4,6 +4,7 @@
 #include "DAGlobals.h"
 #include <QObject>
 #include <QJsonObject>
+#include "DAColorTheme.h"
 #include "DABaseInterface.h"
 class SARibbonMainWindow;
 class QMainWindow;
@@ -89,6 +90,9 @@ public:
                                         ) = 0;
     // 设置脏标志
     virtual void setDirty(bool on = true) = 0;
+    // 获取/设置程序的主题
+    void setColorTheme(const DAColorTheme& th);
+    virtual DAColorTheme getColorTheme() const;
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;

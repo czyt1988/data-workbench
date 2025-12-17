@@ -36,7 +36,8 @@ public:
     bool isYAutoincrement() const;
     // 根据配置获取数据
     QVector< QPointF > getSeries() const;
-
+    // 获取推荐的名字
+    virtual QString getNameHint() const;
 private slots:
     void onComboBoxXCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
     void onComboBoxYCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);

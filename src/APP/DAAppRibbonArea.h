@@ -44,6 +44,7 @@ class SARibbonContextCategory;
 class SARibbonLineWidgetContainer;
 class SARibbonButtonGroupWidget;
 class SARibbonCtrlContainer;
+class SARibbonGallery;
 namespace DA
 {
 class AppMainWindow;
@@ -325,19 +326,21 @@ private:
     DAShapeEditPannelWidget* m_editShapeEditPannelWidget;  ///< 图框编辑
     SARibbonCategory* m_categoryEdit;                      ///< 编辑标签
     SARibbonPanel* m_pannelEditWorkflow;                   ///< 主要编辑操作
-                                                           //----------------------------------------------------
-                                                           // figure
-                                                           //----------------------------------------------------
-    SARibbonCategory* m_categoryFigure;                    ///< 绘图标签
-    SARibbonPanel* m_pannelFigureSetting;                  ///< 绘图的设置
-    SARibbonPanel* m_pannelChartAdd;                       ///< 添加绘图
-                                                           //----------------------------------------------------
-                                                           // Context - dataframe
-                                                           //----------------------------------------------------
-    SARibbonContextCategory* m_contextDataFrame;           ///< 对应dataframe的上下文
-    SARibbonCategory* m_categoryDataframeOperate;          ///< dataframe对应的category
-    SARibbonPanel* m_pannelDataframeOperateAxes;           ///< 数据信息的编辑
-    SARibbonPanel* m_pannelDataframeOperateDType;          ///< 数据类型的编辑
+
+    //----------------------------------------------------
+    // figure
+    //----------------------------------------------------
+    SARibbonCategory* m_categoryFigure;    ///< 绘图标签
+    SARibbonPanel* m_pannelFigureSetting;  ///< 绘图的设置
+    SARibbonPanel* m_pannelChartAdd;       ///< 添加绘图
+
+    //----------------------------------------------------
+    // Context - dataframe
+    //----------------------------------------------------
+    SARibbonContextCategory* m_contextDataFrame;   ///< 对应dataframe的上下文
+    SARibbonCategory* m_categoryDataframeOperate;  ///< dataframe对应的category
+    SARibbonPanel* m_pannelDataframeOperateAxes;   ///< 数据信息的编辑
+    SARibbonPanel* m_pannelDataframeOperateDType;  ///< 数据类型的编辑
 #if DA_ENABLE_PYTHON
     SARibbonLineWidgetContainer* m_comboxColumnTypesContainer;  ///< 列类型选择器的container
     DAPyDTypeComboBox* m_comboxColumnTypes;                     ///< 列类型选择器
@@ -381,7 +384,8 @@ private:
     SARibbonPanel* m_pannelChartSetting;                          ///< 图表的设置
     SARibbonButtonGroupWidget* m_chartGridDirActionsButtonGroup;  ///< grid的方向
     SARibbonButtonGroupWidget* m_chartGridMinActionsButtonGroup;  ///< grid的min设置
-    QStringList m_fileReadFilters;
+    SARibbonPanel* m_panelFigureTheme;                            ///< 绘图样式
+    SARibbonGallery* m_figureThemeGallery;                        ///< 绘图样式
     // ApplicationMenu
     DAAppRibbonApplicationMenu* mApplicationMenu;        ///< ribbon-app menu
                                                          // 菜单相关

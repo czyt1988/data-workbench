@@ -14,6 +14,7 @@
 #include "SARibbonCtrlContainer.h"
 #include "SARibbonApplicationButton.h"
 #include "SARibbonLineWidgetContainer.h"
+#include "SARibbonGallery.h"
 // stl
 // Qt
 #include <QFileDialog>
@@ -628,6 +629,19 @@ void DAAppRibbonArea::buildContextCategoryChart()
     m_pannelChartSetting->addLargeAction(m_actions->actionChartEnableLegend);
 
     m_categoryChartEdit->addPanel(m_pannelChartSetting);
+
+    m_panelFigureTheme   = new SARibbonPanel(m_categoryChartEdit);
+    m_figureThemeGallery = m_panelFigureTheme->addGallery(true);
+    m_figureThemeGallery->setMinimumWidth(200);
+    SARibbonGalleryGroup* group1 = m_figureThemeGallery->addCategoryActions(tr("Theme"), m_actions->actionListOfColorTheme);
+    group1->setGalleryGroupStyle(SARibbonGalleryGroup::IconWithText);
+    group1->setGridMinimumWidth(80);
+    group1->setIconSize(QSize(120, 50));
+    group1->setGridSize(QSize(120, 60));
+    m_panelFigureTheme->addAction(m_actions->actionCopyFigureInClipboard);
+    // 手动设置才能刷新当前界面的配置
+    m_figureThemeGallery->setCurrentViewGroup(group1);
+    m_categoryChartEdit->addPanel(m_panelFigureTheme);
 }
 
 void DAAppRibbonArea::buildApplicationMenu()

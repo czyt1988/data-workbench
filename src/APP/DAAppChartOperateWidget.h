@@ -16,27 +16,27 @@ class DAEvenFilterDragPlotWithGuide;
  */
 class DAAppChartOperateWidget : public DAChartOperateWidget
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	DAAppChartOperateWidget(QWidget* parent = nullptr);
-	~DAAppChartOperateWidget();
-	// 设置data manager
-	void setDataManager(DADataManager* mgr);
-	// 添加一个Figure
-	virtual DAFigureWidget* createFigure() override;
+    DAAppChartOperateWidget(QWidget* parent = nullptr);
+    ~DAAppChartOperateWidget();
+    // 设置data manager
+    void setDataManager(DADataManager* mgr);
+    // 添加一个Figure
+    virtual DAFigureWidget* createFigure(const QString& name = QString()) override;
 
 public:
-	// 绘制,如果没成功，返回nullptr
-	QwtPlotItem* createPlotItemWithGuideDialog(const DAData& data = DAData(), DA::ChartTypes t = DA::ChartTypes::Curve);
-	// 调用绘图引导窗口进行引导性绘图
-	void plotWithGuideDialog(DA::ChartTypes t = DA::ChartTypes::Curve);
+    // 绘制,如果没成功，返回nullptr
+    QwtPlotItem* createPlotItemWithGuideDialog(const DAData& data = DAData(), DA::ChartTypes t = DA::ChartTypes::Curve);
+    // 调用绘图引导窗口进行引导性绘图
+    void plotWithGuideDialog(DA::ChartTypes t = DA::ChartTypes::Curve);
 
 private:
-	DADataManager* mDataMgr { nullptr };
+    DADataManager* mDataMgr { nullptr };
 #if DA_ENABLE_PYTHON
-	DADialogChartGuide* mChartGuideDlg { nullptr };
+    DADialogChartGuide* mChartGuideDlg { nullptr };
 #endif
-	DAEvenFilterDragPlotWithGuide* mFigEventFilter;  ///< 给DAFigureWidget的eventfilter
+    DAEvenFilterDragPlotWithGuide* mFigEventFilter;  ///< 给DAFigureWidget的eventfilter
 };
 }
 

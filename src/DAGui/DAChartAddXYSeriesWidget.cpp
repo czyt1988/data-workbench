@@ -75,6 +75,15 @@ QVector< QPointF > DAChartAddXYSeriesWidget::getSeries() const
 }
 
 /**
+ * @brief 推荐的名字使用y值的参数名
+ * @return
+ */
+QString DAChartAddXYSeriesWidget::getNameHint() const
+{
+    return ui->comboBoxY->currentText();
+}
+
+/**
  * @brief DAChartAddXYSeriesWidget::onComboBoxXCurrentDataframeSeriesChanged
  * @param data
  * @param seriesName

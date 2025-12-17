@@ -1,6 +1,7 @@
 ﻿#ifndef DAAPPACTIONS_H
 #define DAAPPACTIONS_H
 #include "DAActionsInterface.h"
+#include <QPixmap>
 class QActionGroup;
 namespace DA
 {
@@ -31,6 +32,10 @@ protected:
     void buildWorkflowAction();
     // 建立其他的actions
     void buildOtherActions();
+    // 创建颜色主题actions
+    void buildColorThemeActions();
+    // 根据颜色系列，创建一个pixmap图标
+    QPixmap createColorThemePixmap(const QList< QColor >& clrs, const QSize& size) const;
 
 public:
     //===================================================
@@ -126,6 +131,7 @@ public:
     QAction* actionChartEnablePickerY;      ///< y拾取器
     QAction* actionChartEnablePickerXY;     ///< xy拾取器
     QAction* actionChartEnableLegend;       ///< legend
+    QAction* actionCopyFigureInClipboard;   ///< 把图片复制到剪切板
     //===================================================
     // 视图标签 View Category
     //===================================================
@@ -145,6 +151,11 @@ public:
     QAction* actionRibbonThemeOffice2021Blue;  ///< office2021主题
     QAction* actionRibbonThemeDark;            ///< dark主题
     QActionGroup* actionGroupRibbonTheme;      ///< actionRibbonTheme* 的actionGroup
+
+    //===================================================
+    // 颜色主题
+    //===================================================
+    QList< QAction* > actionListOfColorTheme;
     //===================================================
     // 其他
     //===================================================

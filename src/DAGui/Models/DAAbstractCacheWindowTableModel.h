@@ -59,8 +59,8 @@ protected:
     virtual void cacheShape();
 
 protected:
-    int mCacheWindowSize { 2000 };  // 默认窗口大小
-    int mWindowStartRow { 0 };      // 当前窗口起始行
+    int mCacheWindowSize { 20000 };  // 默认窗口大小，Qt的MVC性能足够，这里主要是避免大表会触发全行遍历表头求表头宽度导致的性能问题
+    int mWindowStartRow { 0 };       // 当前窗口起始行
 };
 }
 

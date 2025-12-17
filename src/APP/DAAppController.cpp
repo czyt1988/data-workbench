@@ -40,6 +40,7 @@
 #include "DASettingContainerWidget.h"
 #include "DARecentFilesManager.h"
 #include "DAChartSettingWidget.h"
+#include "DAColorTheme.h"
 // Dialog
 #include "DAPluginManagerDialog.h"
 #include "DAAppSettingDialog.h"
@@ -252,7 +253,10 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnablePickerY, onActionChartEnablePickerYTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnablePickerXY, onActionChartEnablePickerXYTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableLegend, onActionChartEnableLegendTriggered);
-
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionCopyFigureInClipboard, onActionCopyFigureToClipboardTriggered);
+    for (QAction* act : qAsConst(mActions->actionListOfColorTheme)) {
+        connect(act, &QAction::triggered, this, [ this, act ]() { onActionGroupFigureThemeTriggered(act); });
+    }
     // 数据操作的上下文标签 Data Operate Context Category
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionInsertRow, onActionInsertRowTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionInsertRowAbove, onActionInsertRowAboveTriggered);
@@ -459,26 +463,8 @@ QString DAAppController::makeWindowTitle(DAProjectInterface* proj)
 
 void DAAppController::save()
 {
-    DAAppProject* project   = DA_APP_CORE.getAppProject();
-    QString projectFilePath = project->getProjectFilePath();
-    qDebug() << "Save Project,Path=" << projectFilePath;
-    if (projectFilePath.isEmpty()) {
-        QString desktop = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
-        projectFilePath = QFileDialog::getSaveFileName(
-            nullptr,
-            tr("Save Project"),  // 保存工程
-            desktop,
-            tr("Project Files (*.%1)").arg(DAAppProject::getProjectFileSuffix())  // 工程文件 (*.%1)
-        );
-        if (projectFilePath.isEmpty()) {
-            // 取消退出
-            return;
-        }
-    }
-    bool saveRet = project->save(projectFilePath);
-    if (!saveRet) {
-        qCritical() << tr("Project saved failed!,path is %1").arg(projectFilePath);  // 工程保存失败！路径位于:%1
-    }
+    DAAppProject* project = DA_APP_CORE.getAppProject();
+    project->requestSave();
 }
 
 /**
@@ -1690,6 +1676,30 @@ void DAAppController::onActionChartEnableLegendTriggered(bool on)
     w->enableLegend(on);
     w->replot();
     setDirty();
+}
+
+/**
+ * @brief 绘图样式选择
+ * @param act
+ */
+void DAAppController::onActionGroupFigureThemeTriggered(QAction* act)
+{
+    DAColorTheme::ColorThemeStyle style = static_cast< DAColorTheme::ColorThemeStyle >(act->data().toInt());
+    DAColorTheme theme(style);
+    DAFigureWidget* fig = getCurrentFigure();
+    if (!fig) {
+        return;
+    }
+    fig->setColorTheme(theme);
+}
+
+void DAAppController::onActionCopyFigureToClipboardTriggered()
+{
+    DAFigureWidget* fig = getCurrentFigure();
+    if (!fig) {
+        return;
+    }
+    fig->copyToClipboard();
 }
 
 /**

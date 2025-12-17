@@ -13,10 +13,11 @@ public:
     PrivateData(DAUIInterface* p);
 
 public:
-    SARibbonMainWindow* mMainWindow;
-    DACommandInterface* mCmd { nullptr };
-    DAActionsInterface* mActionMgr { nullptr };
-    QList< DAUIExtendInterface* > mExtends;
+    SARibbonMainWindow* mainWindow;
+    DACommandInterface* commandInterface { nullptr };
+    DAActionsInterface* actionManager { nullptr };
+    QList< DAUIExtendInterface* > extendsList;
+    DAColorTheme colorTheme;
 };
 
 //===================================================
@@ -31,7 +32,7 @@ DAUIInterface::PrivateData::PrivateData(DAUIInterface* p) : q_ptr(p)
 //===================================================
 DAUIInterface::DAUIInterface(SARibbonMainWindow* m, DACoreInterface* c) : DABaseInterface(c, m), DA_PIMPL_CONSTRUCT
 {
-    d_ptr->mMainWindow = m;
+    d_ptr->mainWindow = m;
     if (m) {
         m->installEventFilter(this);
     }
@@ -50,7 +51,7 @@ DAUIInterface::~DAUIInterface()
  */
 SARibbonMainWindow* DAUIInterface::mainWindow() const
 {
-    return (d_ptr->mMainWindow);
+    return (d_ptr->mainWindow);
 }
 
 /**
@@ -64,14 +65,14 @@ void DAUIInterface::retranslateUi()
     for (int i = 0; i < es; ++i) {
         getExtend(i)->retranslateUi();
     }
-    if (d_ptr->mActionMgr) {
-        d_ptr->mActionMgr->retranslateUi();
+    if (d_ptr->actionManager) {
+        d_ptr->actionManager->retranslateUi();
     }
 }
 
 void DAUIInterface::registeAction(DAActionsInterface* ac)
 {
-    d_ptr->mActionMgr = ac;
+    d_ptr->actionManager = ac;
 }
 
 /**
@@ -84,7 +85,7 @@ void DAUIInterface::registeAction(DAActionsInterface* ac)
  */
 void DAUIInterface::registeExtend(DAUIExtendInterface* ex)
 {
-    d_ptr->mExtends.append(ex);
+    d_ptr->extendsList.append(ex);
 }
 
 /**
@@ -93,7 +94,7 @@ void DAUIInterface::registeExtend(DAUIExtendInterface* ex)
  */
 void DAUIInterface::registeCommand(DACommandInterface* cmd)
 {
-    d_ptr->mCmd = cmd;
+    d_ptr->commandInterface = cmd;
 }
 
 /**
@@ -102,7 +103,7 @@ void DAUIInterface::registeCommand(DACommandInterface* cmd)
  */
 int DAUIInterface::getExtendCount() const
 {
-    return d_ptr->mExtends.size();
+    return d_ptr->extendsList.size();
 }
 
 /**
@@ -112,7 +113,7 @@ int DAUIInterface::getExtendCount() const
  */
 DAUIExtendInterface* DAUIInterface::getExtend(int index)
 {
-    return d_ptr->mExtends.value(index, nullptr);
+    return d_ptr->extendsList.value(index, nullptr);
 }
 
 /**
@@ -122,7 +123,7 @@ DAUIExtendInterface* DAUIInterface::getExtend(int index)
  */
 DACommandInterface* DAUIInterface::getCommandInterface() const
 {
-    return d_ptr->mCmd;
+    return d_ptr->commandInterface;
 }
 
 /**
@@ -131,7 +132,7 @@ DACommandInterface* DAUIInterface::getCommandInterface() const
  */
 DAActionsInterface* DAUIInterface::getActionInterface() const
 {
-    return d_ptr->mActionMgr;
+    return d_ptr->actionManager;
 }
 
 /**
@@ -140,6 +141,24 @@ DAActionsInterface* DAUIInterface::getActionInterface() const
 void DAUIInterface::processEvents() const
 {
     QApplication::processEvents();
+}
+
+/**
+ * @brief 设置程序主题
+ * @param th
+ */
+void DAUIInterface::setColorTheme(const DAColorTheme& th)
+{
+    d_ptr->colorTheme = th;
+}
+
+/**
+ * @brief 获取程序主题
+ * @return
+ */
+DAColorTheme DAUIInterface::getColorTheme() const
+{
+    return d_ptr->colorTheme;
 }
 
 bool DAUIInterface::eventFilter(QObject* watched, QEvent* event)

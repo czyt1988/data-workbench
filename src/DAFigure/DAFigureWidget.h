@@ -11,6 +11,7 @@ class QPaintEvent;
 class QFocusEvent;
 class QUndoCommand;
 class QUndoStack;
+class QKeyEvent;
 // qwt
 class QwtPlot;
 class QwtPlotCurve;
@@ -91,6 +92,8 @@ public:
     DAColorTheme getColorTheme() const;
     const DAColorTheme& colorTheme() const;
     DAColorTheme& colorTheme();
+    // 把当前绘图复制到剪切板
+    void copyToClipboard();
 
 public:
     // figure的接口转接
@@ -157,6 +160,9 @@ Q_SIGNALS:
      * @param w
      */
     void currentChartChanged(DA::DAChartWidget* c);
+
+protected:
+    void keyPressEvent(QKeyEvent* e);
 private slots:
     // 窗口的位置发生改变槽
     void onWidgetGeometryChanged(QWidget* w, const QRectF& oldNormGeo, const QRectF& newNormGeo);

@@ -40,7 +40,6 @@ set(DA_LIB_HEADER_FILES
     DADataTableView.h
     DAFigureFactory.h
     DAGraphicsPixmapItemSettingWidget.h
-    DAGlobalColorTheme.h
     DAChartListView.h
     DAChartManageWidget.h
     DAChartOperateWidget.h
@@ -95,7 +94,6 @@ set(DA_LIB_SOURCE_FILES
     DADataTableView.cpp
     DAFigureFactory.cpp
     DAGraphicsPixmapItemSettingWidget.cpp
-    DAGlobalColorTheme.cpp
     DAGuiEnumStringUtils.cpp
     DAMessageLogViewWidget.cpp
     DANodeItemSettingWidget.cpp
