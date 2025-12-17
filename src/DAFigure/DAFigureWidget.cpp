@@ -449,6 +449,17 @@ QColor DAFigureWidget::getDefaultColor() const
 void DAFigureWidget::setColorTheme(const DAColorTheme& th)
 {
     d_ptr->mColorTheme = th;
+    // 同步应用样式
+    const QList< QwtPlot* > plots = figure()->allAxes();
+    for (QwtPlot* plot : plots) {
+        const QList< QwtPlot* > plotWithparasite = plot->plotList();
+        DAColorTheme theme                       = th;
+        for (QwtPlot* p : plotWithparasite) {
+            const QwtPlotItemList items = p->itemList();
+            for (QwtPlotItem* item : items) {
+            }
+        }
+    }
 }
 
 DAColorTheme DAFigureWidget::getColorTheme() const

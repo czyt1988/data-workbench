@@ -180,7 +180,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+289"/>
+        <location filename="../APP/DAAppActions.cpp" line="+293"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
@@ -747,7 +747,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+498"/>
+        <location line="+513"/>
         <source>new workflow name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1176,12 +1176,12 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+66"/>
+        <location line="+67"/>
         <source>Theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="+16"/>
         <source>Recent Files</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3197,7 +3197,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1868"/>
+        <location filename="../APP/DAAppController.cpp" line="-1882"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>

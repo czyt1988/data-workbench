@@ -40,6 +40,7 @@
 #include "DASettingContainerWidget.h"
 #include "DARecentFilesManager.h"
 #include "DAChartSettingWidget.h"
+#include "DAColorTheme.h"
 // Dialog
 #include "DAPluginManagerDialog.h"
 #include "DAAppSettingDialog.h"
@@ -464,11 +465,10 @@ void DAAppController::save()
     qDebug() << "Save Project,Path=" << projectFilePath;
     if (projectFilePath.isEmpty()) {
         QString desktop = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
-        projectFilePath = QFileDialog::getSaveFileName(
-            nullptr,
-            tr("Save Project"),  // 保存工程
-            desktop,
-            tr("Project Files (*.%1)").arg(DAAppProject::getProjectFileSuffix())  // 工程文件 (*.%1)
+        projectFilePath = QFileDialog::getSaveFileName(nullptr,
+                                                       tr("Save Project"),  // 保存工程
+                                                       desktop,
+                                                       tr("Project Files (*.%1)").arg(DAAppProject::getProjectFileSuffix())  // 工程文件 (*.%1)
         );
         if (projectFilePath.isEmpty()) {
             // 取消退出
@@ -499,8 +499,8 @@ void DAAppController::saveAs()
     QFileInfo fi(projectPath);
     if (fi.exists()) {
         // 说明是目录
-        QMessageBox::StandardButton btn = QMessageBox::question(
-            nullptr, tr("Warning"), tr("Whether to overwrite the file:%1").arg(fi.absoluteFilePath()));
+        QMessageBox::StandardButton btn =
+            QMessageBox::question(nullptr, tr("Warning"), tr("Whether to overwrite the file:%1").arg(fi.absoluteFilePath()));
         if (btn != QMessageBox::Yes) {
             return;
         }
@@ -815,11 +815,11 @@ bool DAAppController::openCheck()
     if (!project->getProjectDir().isEmpty()) {
         if (project->isDirty()) {
             // TODO 没有保存。先询问是否保存
-            QMessageBox::StandardButton btn = QMessageBox::question(
-                nullptr,
-                tr("Question"),                                                   // 提示
-                tr("Another project already exists. Do you want to replace it?")  // 已存在其他工程，是否要替换？
-            );
+            QMessageBox::StandardButton btn =
+                QMessageBox::question(nullptr,
+                                      tr("Question"),                                                   // 提示
+                                      tr("Another project already exists. Do you want to replace it?")  // 已存在其他工程，是否要替换？
+                );
             if (btn != QMessageBox::Yes) {
                 return false;
             }
@@ -1690,6 +1690,21 @@ void DAAppController::onActionChartEnableLegendTriggered(bool on)
     w->enableLegend(on);
     w->replot();
     setDirty();
+}
+
+/**
+ * @brief 绘图样式选择
+ * @param act
+ */
+void DAAppController::onActionGroupFigureThemeTriggered(QAction* act)
+{
+    DAColorTheme::ColorThemeStyle style = static_cast< DAColorTheme::ColorThemeStyle >(act->data().toInt());
+    DAColorTheme theme(style);
+    DAFigureWidget* fig = getCurrentFigure();
+    if (!fig) {
+        return;
+    }
+    fig->setColorTheme(theme);
 }
 
 /**

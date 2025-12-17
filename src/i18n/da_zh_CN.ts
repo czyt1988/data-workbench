@@ -180,7 +180,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+289"/>
+        <location filename="../APP/DAAppActions.cpp" line="+293"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
@@ -769,7 +769,7 @@ Table Area</source>
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
     <message>
-        <location line="+498"/>
+        <location line="+513"/>
         <source>new workflow name</source>
         <translation>新工作流名称</translation>
     </message>
@@ -1178,17 +1178,17 @@ Table Area</source>
         <translation>把工作流的场景导出为图片</translation>
     </message>
     <message>
-        <location line="+420"/>
+        <location line="+421"/>
         <source>Theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="+16"/>
         <source>Recent Files</source>
         <translation>最近打开的文件</translation>
     </message>
     <message>
-        <location line="-142"/>
+        <location line="-147"/>
         <source>Group</source>
         <translation>分组</translation>
     </message>
@@ -3309,7 +3309,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1868"/>
+        <location filename="../APP/DAAppController.cpp" line="-1882"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
