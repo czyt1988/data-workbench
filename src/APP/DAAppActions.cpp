@@ -1,5 +1,9 @@
 ﻿#include "DAAppActions.h"
 #include <QActionGroup>
+#include <QPainter>
+#include <QVector>
+#include <cmath>
+#include "DAColorTheme.h"
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
 //===================================================
@@ -33,6 +37,8 @@ void DAAppActions::buildActions()
     buildWorkflowAction();
     //
     buildOtherActions();
+    //
+    buildColorThemeActions();
 }
 
 void DAAppActions::buildMainAction()
@@ -181,6 +187,100 @@ void DAAppActions::buildOtherActions()
     actionRibbonThemeOffice2016Blue = createAction("actionRibbonThemeOffice2016Blue", true, false, actionGroupRibbonTheme);
     actionRibbonThemeOffice2021Blue = createAction("actionRibbonThemeOffice2021Blue", true, false, actionGroupRibbonTheme);
     actionRibbonThemeDark = createAction("actionRibbonThemeDark", true, false, actionGroupRibbonTheme);
+}
+
+void DAAppActions::buildColorThemeActions()
+{
+    actionListOfColorTheme.clear();
+    for (int i = DAColorTheme::BuiltInStyle_Begin; i < DAColorTheme::BuiltInStyle_End; ++i) {
+        DAColorTheme::ColorThemeStyle style = static_cast< DAColorTheme::ColorThemeStyle >(i);
+        DAColorTheme theme                  = DAColorTheme(style);
+        // 创建actions
+        QString themeName = DAColorTheme::colorThemeStyleName(style);
+        QAction* act      = new QAction(themeName);
+        act->setObjectName(QString("actionColorTheme%1").arg(themeName));
+        QPixmap icon = createColorThemePixmap(theme.toColorList(), QSize(50, 80));
+        act->setIcon(QIcon(icon));
+        recordAction(act);
+        actionListOfColorTheme.append(act);
+    }
+}
+
+QPixmap DAAppActions::createColorThemePixmap(const QList< QColor >& clrs, const QSize& size) const
+{
+    // 创建指定大小的pixmap
+    QPixmap pixmap(size);
+    pixmap.fill(Qt::transparent);
+
+    if (clrs.isEmpty()) {
+        // 如果没有颜色，返回透明pixmap
+        return pixmap;
+    }
+
+    QPainter painter(&pixmap);
+    painter.setRenderHint(QPainter::Antialiasing);
+
+    // 设置边距，防止边框被裁剪
+    const int margin          = 2;
+    const int availableWidth  = size.width() - 2 * margin;
+    const int availableHeight = size.height() - 2 * margin;
+
+    // 计算每个柱子的宽度
+    const int barCount = clrs.size();
+    const int barWidth = availableWidth / barCount;
+
+    // 创建从低到高再到低的高度模式
+    // 使用正弦波或抛物线形状
+    QVector< int > barHeights(barCount);
+
+    if (barCount == 1) {
+        // 只有一个颜色时，柱子高度为可用高度的80%
+        barHeights[ 0 ] = availableHeight * 0.8;
+    } else {
+        // 多个颜色时，创建波浪形高度
+        for (int i = 0; i < barCount; i++) {
+            // 使用正弦函数创建从低到高再到低的效果
+            // 将i映射到[0, π]区间
+            const double PI = 3.14159265359;
+            double x        = static_cast< double >(i) / (barCount - 1) * PI;
+            double sinValue = sin(x);
+
+            // 将sin值从[-1,1]映射到[0.3, 1.0]区间
+            double heightRatio = 0.35 + 0.65 * (sinValue + 1) / 2;
+            barHeights[ i ]    = static_cast< int >(availableHeight * heightRatio);
+        }
+    }
+
+    // 绘制柱子
+    for (int i = 0; i < barCount; i++) {
+        int x      = margin + i * barWidth;
+        int height = barHeights[ i ];
+
+        // 计算y坐标（柱子底部对齐）
+        int y = margin + availableHeight - height;
+
+        // 绘制柱子填充
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(clrs[ i ]);
+        painter.drawRect(x, y, barWidth - 1, height);
+
+        // 绘制1像素边框
+        painter.setPen(QPen(Qt::black, 1));
+        painter.setBrush(Qt::NoBrush);
+        painter.drawRect(x, y, barWidth - 1, height);
+
+        // 如果需要，可以添加柱子上方的边框线
+        painter.setPen(QPen(QColor(255, 255, 255, 50), 1));
+        painter.drawLine(x + 1, y + 1, x + barWidth - 2, y + 1);
+        painter.drawLine(x + 1, y + 1, x + 1, y + 3);
+    }
+
+    // 绘制外边框
+    painter.setPen(QPen(QColor(150, 150, 150), 1));
+    painter.setBrush(Qt::NoBrush);
+    painter.drawRect(0, 0, size.width() - 1, size.height() - 1);
+
+    return pixmap;
 }
 
 void DAAppActions::retranslateUi()

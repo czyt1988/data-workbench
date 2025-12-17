@@ -180,7 +180,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+189"/>
+        <location filename="../APP/DAAppActions.cpp" line="+289"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
@@ -983,7 +983,7 @@ Config</source>
 <context>
     <name>DA::DAAppRibbonArea</name>
     <message>
-        <location filename="../APP/DAAppRibbonArea.cpp" line="+164"/>
+        <location filename="../APP/DAAppRibbonArea.cpp" line="+165"/>
         <source>File</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1176,7 +1176,12 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+71"/>
+        <location line="+66"/>
+        <source>Theme</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+12"/>
         <source>Recent Files</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5675,7 +5680,7 @@ To Excel</source>
     <name>DataFrameExportRangeSelectDialog</name>
     <message>
         <location filename="../../plugins/DataAnalysis/Dialogs/DataFrameExportRangeSelectDialog.ui" line="+14"/>
-        <source>Dialog</source>
+        <source>Export Setting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

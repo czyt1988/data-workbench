@@ -180,7 +180,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+189"/>
+        <location filename="../APP/DAAppActions.cpp" line="+289"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
@@ -1005,7 +1005,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppRibbonArea</name>
     <message>
-        <location filename="../APP/DAAppRibbonArea.cpp" line="+166"/>
+        <location filename="../APP/DAAppRibbonArea.cpp" line="+167"/>
         <source>Main</source>
         <translation>主页</translation>
     </message>
@@ -1178,12 +1178,17 @@ Table Area</source>
         <translation>把工作流的场景导出为图片</translation>
     </message>
     <message>
-        <location line="+425"/>
+        <location line="+420"/>
+        <source>Theme</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+12"/>
         <source>Recent Files</source>
         <translation>最近打开的文件</translation>
     </message>
     <message>
-        <location line="-135"/>
+        <location line="-142"/>
         <source>Group</source>
         <translation>分组</translation>
     </message>
@@ -5803,7 +5808,7 @@ To Excel</source>
     <name>DataFrameExportRangeSelectDialog</name>
     <message>
         <location filename="../../plugins/DataAnalysis/Dialogs/DataFrameExportRangeSelectDialog.ui" line="+14"/>
-        <source>Dialog</source>
+        <source>Export Setting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
