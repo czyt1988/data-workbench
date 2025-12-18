@@ -29,8 +29,13 @@ public:
      */
     enum ColorThemeStyle
     {
-        Style_Archambault  = 0,
-        BuiltInStyle_Begin = Style_Archambault,
+        BuiltInStyle_Begin     = 0,
+        Style_Matplotlib_Tab10 = BuiltInStyle_Begin,
+        Style_Matplotlib_Seaborn,
+        Style_Matlab_Modern,
+        Style_R_Viridis,
+        Style_Wong_Nature,
+        Style_Archambault,
         Style_Cassatt1,
         Style_Cassatt2,
         Style_Demuth,

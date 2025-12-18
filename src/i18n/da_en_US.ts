@@ -180,7 +180,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+293"/>
+        <location filename="../APP/DAAppActions.cpp" line="+291"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
@@ -637,7 +637,7 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+469"/>
+        <location filename="../APP/DAAppController.cpp" line="+472"/>
         <location line="+22"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
@@ -3197,7 +3197,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1882"/>
+        <location filename="../APP/DAAppController.cpp" line="-1885"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>

@@ -233,36 +233,89 @@ void DAColorTheme::setUserDefineColorList(const ColorList& cls, ColorThemeStyle 
 
 QString DAColorTheme::colorThemeStyleName(DAColorTheme::ColorThemeStyle style)
 {
-    static QHash< ColorThemeStyle, QString > s_themeStyleToName({ { Style_Archambault, QString("Archambault") },
-                                                                  { Style_Cassatt1, QString("Cassatt1") },
-                                                                  { Style_Cassatt2, QString("Cassatt2") },
-                                                                  { Style_Demuth, QString("Demuth") },
-                                                                  { Style_Derain, QString("Derain") },
-                                                                  { Style_Egypt, QString("Egypt") },
-                                                                  { Style_Greek, QString("Greek") },
-                                                                  { Style_Hiroshige, QString("Hiroshige") },
-                                                                  { Style_Hokusai2, QString("Hokusai2") },
-                                                                  { Style_Hokusai3, QString("Hokusai3") },
-                                                                  { Style_Ingres, QString("Ingres") },
-                                                                  { Style_Isfahan1, QString("Isfahan1") },
-                                                                  { Style_Isfahan2, QString("Isfahan2") },
-                                                                  { Style_Java, QString("Java") },
-                                                                  { Style_Johnson, QString("Johnson") },
-                                                                  { Style_Kandinsky, QString("Kandinsky") },
-                                                                  { Style_Morgenstern, QString("Morgenstern") },
-                                                                  { Style_OKeeffe1, QString("OKeeffe1") },
-                                                                  { Style_OKeeffe2, QString("OKeeffe2") },
-                                                                  { Style_Pillement, QString("Pillement") },
-                                                                  { Style_Tam, QString("Tam") },
-                                                                  { Style_Troy, QString("Troy") },
-                                                                  { Style_VanGogh3, QString("VanGogh3") },
-                                                                  { Style_Veronese, QString("Veronese") } });
+    static QHash< ColorThemeStyle, QString > s_themeStyleToName(
+        { { Style_Matplotlib_Tab10, QString("Matplotlib_Tab10") },
+          { Style_Matplotlib_Seaborn, QString("Matplotlib Seaborn") },
+          { Style_Matlab_Modern, QString("Matlab Modern") },
+          { Style_R_Viridis, QString("R_Viridis") },
+          { Style_Wong_Nature, QString("Wong_Nature") },
+          { Style_Archambault, QString("Archambault") },
+          { Style_Cassatt1, QString("Cassatt1") },
+          { Style_Cassatt2, QString("Cassatt2") },
+          { Style_Demuth, QString("Demuth") },
+          { Style_Derain, QString("Derain") },
+          { Style_Egypt, QString("Egypt") },
+          { Style_Greek, QString("Greek") },
+          { Style_Hiroshige, QString("Hiroshige") },
+          { Style_Hokusai2, QString("Hokusai2") },
+          { Style_Hokusai3, QString("Hokusai3") },
+          { Style_Ingres, QString("Ingres") },
+          { Style_Isfahan1, QString("Isfahan1") },
+          { Style_Isfahan2, QString("Isfahan2") },
+          { Style_Java, QString("Java") },
+          { Style_Johnson, QString("Johnson") },
+          { Style_Kandinsky, QString("Kandinsky") },
+          { Style_Morgenstern, QString("Morgenstern") },
+          { Style_OKeeffe1, QString("OKeeffe1") },
+          { Style_OKeeffe2, QString("OKeeffe2") },
+          { Style_Pillement, QString("Pillement") },
+          { Style_Tam, QString("Tam") },
+          { Style_Troy, QString("Troy") },
+          { Style_VanGogh3, QString("VanGogh3") },
+          { Style_Veronese, QString("Veronese") } });
     return s_themeStyleToName.value(style, QString("UserDefine"));
 }
 
 DAColorTheme::container DAColorTheme::createColorList(const ColorThemeStyle& th)
 {
     switch (th) {
+    case DAColorTheme::Style_Matplotlib_Tab10:
+        return DAColorTheme::container({ QColor("#1f77b4"),
+                                         QColor("#ff7f0e"),
+                                         QColor("#2ca02c"),
+                                         QColor("#d62728"),
+                                         QColor("#9467bd"),
+                                         QColor("#8c564b"),
+                                         QColor("#e377c2"),
+                                         QColor("#7f7f7f"),
+                                         QColor("#bcbd22"),
+                                         QColor("#17becf") });
+    case DAColorTheme::Style_Matplotlib_Seaborn:
+        return DAColorTheme::container({ QColor("#0072b2"),
+                                         QColor("#009e73"),
+                                         QColor("#d55e00"),
+                                         QColor("#cc79a7"),
+                                         QColor("#f0e442"),
+                                         QColor("#56b4e9"),
+                                         QColor("#e69f00") });
+    case DAColorTheme::Style_Matlab_Modern:
+        return DAColorTheme::container({ QColor("#2D708E"),
+                                         QColor("#F08080"),
+                                         QColor("#20B2AA"),
+                                         QColor("#FF6347"),
+                                         QColor("#9370DB"),
+                                         QColor("#98FB98"),
+                                         QColor("#F0E68C") });
+    case DAColorTheme::Style_R_Viridis:
+        return DAColorTheme::container({ QColor("#440154"),
+                                         QColor("#482878"),
+                                         QColor("#3E4A89"),
+                                         QColor("#31688E"),
+                                         QColor("#26828E"),
+                                         QColor("#1F9E89"),
+                                         QColor("#35B779"),
+                                         QColor("#6DCD59"),
+                                         QColor("#B4DD2C"),
+                                         QColor("#FDE725") });
+    case DAColorTheme::Style_Wong_Nature:
+        return DAColorTheme::container({ QColor("#000000"),
+                                         QColor("#E69F00"),
+                                         QColor("#56B4E9"),
+                                         QColor("#009E73"),
+                                         QColor("#F0E442"),
+                                         QColor("#0072B2"),
+                                         QColor("#D55E00"),
+                                         QColor("#CC79A7") });
     case DAColorTheme::Style_Archambault:
         return DAColorTheme::container({ QColor("#ed968c"),
                                          QColor("#88a0dc"),

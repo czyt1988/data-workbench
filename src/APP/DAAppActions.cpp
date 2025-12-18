@@ -119,12 +119,12 @@ void DAAppActions::buildChartAction()
     actionGroupChartPickers = new QActionGroup(this);
     actionGroupChartPickers->setObjectName(QStringLiteral("actionGroupChartPickers"));
     actionGroupChartPickers->setExclusionPolicy(QActionGroup::ExclusionPolicy::ExclusiveOptional);  // 允许都不选中
-    actionChartEnablePickerCross =
-        createAction("actionChartEnablePickerCross", ":/app/bright/Icon/chart-picker.svg", true, false, actionGroupChartPickers);
-    actionChartEnablePickerY =
-        createAction("actionChartEnablePickerY", ":/app/bright/Icon/chart-picker-y.svg", true, false, actionGroupChartPickers);
-    actionChartEnablePickerXY =
-        createAction("actionChartEnablePickerXY", ":/app/bright/Icon/chart-picker-xy.svg", true, false, actionGroupChartPickers);
+    actionChartEnablePickerCross = createAction(
+        "actionChartEnablePickerCross", ":/app/bright/Icon/chart-picker.svg", true, false, actionGroupChartPickers);
+    actionChartEnablePickerY = createAction(
+        "actionChartEnablePickerY", ":/app/bright/Icon/chart-picker-y.svg", true, false, actionGroupChartPickers);
+    actionChartEnablePickerXY = createAction(
+        "actionChartEnablePickerXY", ":/app/bright/Icon/chart-picker-xy.svg", true, false, actionGroupChartPickers);
 
     actionChartEnableLegend = createAction("actionChartEnableLegend", ":/app/bright/Icon/chart-legend.svg", true, false);
 }
@@ -192,7 +192,6 @@ void DAAppActions::buildOtherActions()
 void DAAppActions::buildColorThemeActions()
 {
     actionListOfColorTheme.clear();
-    actionGroupColorTheme = new QActionGroup(this);
     for (int i = DAColorTheme::BuiltInStyle_Begin; i < DAColorTheme::BuiltInStyle_End; ++i) {
         DAColorTheme::ColorThemeStyle style = static_cast< DAColorTheme::ColorThemeStyle >(i);
         DAColorTheme theme                  = DAColorTheme(style);
@@ -206,7 +205,6 @@ void DAAppActions::buildColorThemeActions()
         // 记录枚举值
         act->setData(i);
         actionListOfColorTheme.append(act);
-        actionGroupColorTheme->addAction(act);
     }
 }
 

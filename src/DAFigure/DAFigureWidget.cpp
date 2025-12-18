@@ -454,12 +454,20 @@ void DAFigureWidget::setColorTheme(const DAColorTheme& th)
     for (QwtPlot* plot : plots) {
         const QList< QwtPlot* > plotWithparasite = plot->plotList();
         DAColorTheme theme                       = th;
+        if (theme.size() <= 0) {
+            theme = DAColorTheme(DAColorTheme::Style_Cassatt1);
+        }
         for (QwtPlot* p : plotWithparasite) {
             const QwtPlotItemList items = p->itemList();
             for (QwtPlotItem* item : items) {
+                if (!DAChartUtil::isPlotGraphicsItem(item)) {
+                    continue;
+                }
+                DAChartUtil::setPlotItemColor(item, ++theme);
             }
         }
     }
+    figure()->replotAll();
 }
 
 DAColorTheme DAFigureWidget::getColorTheme() const
