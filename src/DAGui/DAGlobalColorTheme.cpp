@@ -7,28 +7,28 @@ DAGlobalColorTheme::DAGlobalColorTheme(DAColorTheme::ColorThemeStyle t) : QObjec
 
 DAGlobalColorTheme& DAGlobalColorTheme::getInstance()
 {
-	static DAGlobalColorTheme s_value(DAColorTheme::Style_Archambault);
-	return s_value;
+    static DAGlobalColorTheme s_value(DAColorTheme::Style_Matplotlib_Tab10);
+    return s_value;
 }
 
 void DAGlobalColorTheme::setTheme(const DAColorTheme& v)
 {
-	mTheme = v;
+    mTheme = v;
 }
 
 DAColorTheme DAGlobalColorTheme::getTheme() const
 {
-	return mTheme;
+    return mTheme;
 }
 
 DAColorTheme& DAGlobalColorTheme::theme()
 {
-	return mTheme;
+    return mTheme;
 }
 
 const DAColorTheme& DAGlobalColorTheme::theme() const
 {
-	return mTheme;
+    return mTheme;
 }
 
 /**
@@ -37,9 +37,9 @@ const DAColorTheme& DAGlobalColorTheme::theme() const
  */
 QColor DAGlobalColorTheme::color()
 {
-	QColor c = mTheme.current();
-	mTheme.moveToNext();
-	return c;
+    QColor c = mTheme.current();
+    mTheme.moveToNext();
+    return c;
 }
 
 }
