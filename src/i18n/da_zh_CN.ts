@@ -180,7 +180,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+291"/>
+        <location filename="../APP/DAAppActions.cpp" line="+292"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
@@ -375,6 +375,12 @@ All</source>
         <location line="+1"/>
         <source>legend</source>
         <translation>图例</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Copy To Clipboard</source>
+        <translation>复制到
+剪切板</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -588,7 +594,7 @@ Config</source>
         <translation>暗色主题</translation>
     </message>
     <message>
-        <location line="-60"/>
+        <location line="-61"/>
         <source>Zoom Out</source>
         <translation>缩小</translation>
     </message>
@@ -598,7 +604,7 @@ Config</source>
         <translation>放大</translation>
     </message>
     <message>
-        <location line="+36"/>
+        <location line="+37"/>
         <source>Run 
 Workflow</source>
         <translation>运行
@@ -659,7 +665,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+846"/>
+        <location filename="../APP/DAAppController.cpp" line="+847"/>
         <location line="+49"/>
         <source>project file(*.%1)</source>
         <translation>工程文件(*.%1)</translation>
@@ -769,7 +775,7 @@ Table Area</source>
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
     <message>
-        <location line="+513"/>
+        <location line="+522"/>
         <source>new workflow name</source>
         <translation>新工作流名称</translation>
     </message>
@@ -1180,15 +1186,15 @@ Table Area</source>
     <message>
         <location line="+421"/>
         <source>Theme</source>
-        <translation type="unfinished"></translation>
+        <translation>主题</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+17"/>
         <source>Recent Files</source>
         <translation>最近打开的文件</translation>
     </message>
     <message>
-        <location line="-147"/>
+        <location line="-148"/>
         <source>Group</source>
         <translation>分组</translation>
     </message>
@@ -2036,7 +2042,7 @@ Description: %1</source>
     <message>
         <location filename="../DAGui/DADataTableView.cpp" line="+21"/>
         <source>DADataTableView must set model first</source>
-        <translation type="unfinished"></translation>
+        <translation>你需要先设置模型</translation>
     </message>
 </context>
 <context>
@@ -3309,7 +3315,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1885"/>
+        <location filename="../APP/DAAppController.cpp" line="-1895"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -4997,7 +5003,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+57"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+59"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>

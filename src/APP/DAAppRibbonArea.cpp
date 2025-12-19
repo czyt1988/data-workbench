@@ -638,6 +638,7 @@ void DAAppRibbonArea::buildContextCategoryChart()
     group1->setGridMinimumWidth(80);
     group1->setIconSize(QSize(120, 50));
     group1->setGridSize(QSize(120, 60));
+    m_panelFigureTheme->addAction(m_actions->actionCopyFigureInClipboard);
     // 手动设置才能刷新当前界面的配置
     m_figureThemeGallery->setCurrentViewGroup(group1);
     m_categoryChartEdit->addPanel(m_panelFigureTheme);

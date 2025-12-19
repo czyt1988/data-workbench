@@ -1,5 +1,5 @@
 ﻿#include "DAFigureWidget.h"
-#include <QtWidgets/QApplication>
+#include <QApplication>
 #include <QMessageBox>
 #include <QGridLayout>
 #include <QKeyEvent>
@@ -16,6 +16,8 @@
 #include <QDebug>
 #include <QScopedPointer>
 #include <QPointer>
+#include <QKeyEvent>
+#include <QClipboard>
 // chart
 #include "DAChartUtil.h"
 #include "DAChartWidget.h"
@@ -485,6 +487,14 @@ DAColorTheme& DAFigureWidget::colorTheme()
     return d_ptr->mColorTheme;
 }
 
+void DAFigureWidget::copyToClipboard()
+{
+    // 捕获当前窗口的截图
+    QPixmap screenshot = this->grab();
+    // 将截图放到剪贴板
+    QApplication::clipboard()->setPixmap(screenshot);
+}
+
 QRectF DAFigureWidget::axesNormRect(QwtPlot* plot) const
 {
     return figure()->axesNormRect(plot);
@@ -646,6 +656,18 @@ void DAFigureWidget::push(QUndoCommand* cmd)
 QUndoStack* DAFigureWidget::getUndoStack()
 {
     return &(d_ptr->mUndoStack);
+}
+
+void DAFigureWidget::keyPressEvent(QKeyEvent* e)
+{
+    QKeySequence keySeq(e->key() | e->modifiers());
+    if (keySeq == QKeySequence::Copy) {
+        // 同上
+        copyToClipboard();
+        e->accept();
+        return;
+    }
+    QScrollArea::keyPressEvent(e);
 }
 
 /**

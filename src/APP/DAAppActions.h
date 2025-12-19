@@ -131,6 +131,7 @@ public:
     QAction* actionChartEnablePickerY;      ///< y拾取器
     QAction* actionChartEnablePickerXY;     ///< xy拾取器
     QAction* actionChartEnableLegend;       ///< legend
+    QAction* actionCopyFigureInClipboard;   ///< 把图片复制到剪切板
     //===================================================
     // 视图标签 View Category
     //===================================================

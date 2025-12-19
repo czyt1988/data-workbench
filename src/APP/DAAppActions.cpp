@@ -127,6 +127,7 @@ void DAAppActions::buildChartAction()
         "actionChartEnablePickerXY", ":/app/bright/Icon/chart-picker-xy.svg", true, false, actionGroupChartPickers);
 
     actionChartEnableLegend = createAction("actionChartEnableLegend", ":/app/bright/Icon/chart-legend.svg", true, false);
+    actionCopyFigureInClipboard = createAction("actionCopyFigureInClipboard", ":/app/bright/Icon/copy-figure.svg");
 }
 
 void DAAppActions::buildViewAction()
@@ -315,20 +316,21 @@ void DAAppActions::retranslateUi()
     actionChartAddCloudMap->setText(tr("Add \nCloud Map"));        // cn:云图
     actionChartAddVectorfield->setText(tr("Add \nVector Field"));  // cn:向量场图
 
-    actionChartEnableGrid->setText(tr("Enable Grid"));    // cn:网格
-    actionChartEnableGridX->setText(tr("X Grid"));        // cn:横向网格
-    actionChartEnableGridY->setText(tr("Y Grid"));        // cn:纵向网格
-    actionChartEnableGridXMin->setText(tr("Xmin Grid"));  // cn:横向密集网格
-    actionChartEnableGridYMin->setText(tr("Ymin Grid"));  // cn:纵向密集网格
-    actionChartEnableZoom->setText(tr("Zoom"));           // cn:缩放
-    actionChartZoomIn->setText(tr("Zoom In"));            // cn:放大
-    actionChartZoomOut->setText(tr("Zoom Out"));          // cn:缩小
-    actionChartZoomAll->setText(tr("Show \nAll"));        // cn:显示\n全部
-    actionChartEnablePan->setText(tr("Pan"));             // cn:拖动
-    actionChartEnablePickerCross->setText(tr("Cross"));   // cn:十字标记
-    actionChartEnablePickerY->setText(tr("Y Picker"));    // cn:y值拾取
-    actionChartEnablePickerXY->setText(tr("XY Picker"));  // cn:点拾取
-    actionChartEnableLegend->setText(tr("legend"));       // cn:图例
+    actionChartEnableGrid->setText(tr("Enable Grid"));              // cn:网格
+    actionChartEnableGridX->setText(tr("X Grid"));                  // cn:横向网格
+    actionChartEnableGridY->setText(tr("Y Grid"));                  // cn:纵向网格
+    actionChartEnableGridXMin->setText(tr("Xmin Grid"));            // cn:横向密集网格
+    actionChartEnableGridYMin->setText(tr("Ymin Grid"));            // cn:纵向密集网格
+    actionChartEnableZoom->setText(tr("Zoom"));                     // cn:缩放
+    actionChartZoomIn->setText(tr("Zoom In"));                      // cn:放大
+    actionChartZoomOut->setText(tr("Zoom Out"));                    // cn:缩小
+    actionChartZoomAll->setText(tr("Show \nAll"));                  // cn:显示\n全部
+    actionChartEnablePan->setText(tr("Pan"));                       // cn:拖动
+    actionChartEnablePickerCross->setText(tr("Cross"));             // cn:十字标记
+    actionChartEnablePickerY->setText(tr("Y Picker"));              // cn:y值拾取
+    actionChartEnablePickerXY->setText(tr("XY Picker"));            // cn:点拾取
+    actionChartEnableLegend->setText(tr("legend"));                 // cn:图例
+    actionCopyFigureInClipboard->setText(tr("Copy To Clipboard"));  // cn:复制到剪切板
 
     // 数据操作的上下文标签 Data Operate Context Category
     actionRemoveRow->setText(tr("Remove Row"));                  // cn:删除行

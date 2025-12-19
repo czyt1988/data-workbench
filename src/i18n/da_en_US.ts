@@ -180,7 +180,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+291"/>
+        <location filename="../APP/DAAppActions.cpp" line="+292"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
@@ -378,6 +378,11 @@ All</source>
     <message>
         <location line="+1"/>
         <source>legend</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Copy To Clipboard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -637,7 +642,7 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+472"/>
+        <location filename="../APP/DAAppController.cpp" line="+473"/>
         <location line="+22"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
@@ -747,7 +752,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+513"/>
+        <location line="+522"/>
         <source>new workflow name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1181,7 +1186,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+17"/>
         <source>Recent Files</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3197,7 +3202,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1885"/>
+        <location filename="../APP/DAAppController.cpp" line="-1895"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4876,7 +4881,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+57"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+59"/>
         <source>Figure</source>
         <translation type="unfinished"></translation>
     </message>

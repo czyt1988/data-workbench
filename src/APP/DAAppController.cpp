@@ -253,6 +253,7 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnablePickerY, onActionChartEnablePickerYTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnablePickerXY, onActionChartEnablePickerXYTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableLegend, onActionChartEnableLegendTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionCopyFigureInClipboard, onActionCopyFigureToClipboardTriggered);
     for (QAction* act : qAsConst(mActions->actionListOfColorTheme)) {
         connect(act, &QAction::triggered, this, [ this, act ]() { onActionGroupFigureThemeTriggered(act); });
     }
@@ -1708,6 +1709,15 @@ void DAAppController::onActionGroupFigureThemeTriggered(QAction* act)
         return;
     }
     fig->setColorTheme(theme);
+}
+
+void DAAppController::onActionCopyFigureToClipboardTriggered()
+{
+    DAFigureWidget* fig = getCurrentFigure();
+    if (!fig) {
+        return;
+    }
+    fig->copyToClipboard();
 }
 
 /**
