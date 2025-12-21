@@ -2066,7 +2066,7 @@ Description: %1</source>
 <context>
     <name>DA::DADialogChartGuide</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogChartGuide.cpp" line="+70"/>
+        <location filename="../DAGui/Dialog/DADialogChartGuide.cpp" line="+71"/>
         <source>curve</source>
         <translation>曲线图</translation>
     </message>

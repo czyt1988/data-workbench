@@ -125,6 +125,7 @@ void DAChartAxisSetWidget::onAxisMaxScaleChanged(double v)
             return;
         }
         m_plot->setAxisScale(m_axisID, inv.minValue(), v);
+        m_plot->replot();
     }
 }
 
@@ -140,6 +141,7 @@ void DAChartAxisSetWidget::onAxisMinScaleChanged(double v)
             return;
         }
         m_plot->setAxisScale(m_axisID, v, inv.maxValue());
+        m_plot->replot();
     }
 }
 

@@ -7,6 +7,7 @@
 #include <QCoreApplication>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QThread>
 //
 #include "DADir.h"
 namespace DA
@@ -150,7 +151,13 @@ void DAPyInterpreter::shutdown()
 {
     // ===== 第一步：执行 Python 端的预清理 =====
     try {
-        pybind11::gil_scoped_acquire acquire;  // 必须获取 GIL
+        {
+            // 在调用Python函数之前释放GIL
+            pybind11::gil_scoped_release release;
+
+            // 短暂休眠，让Python线程有机会获得GIL
+            QThread::msleep(200);
+        }
         pybind11::module daWorkbench;
         try {
             daWorkbench = pybind11::module::import("DAWorkbench");
@@ -175,7 +182,6 @@ void DAPyInterpreter::shutdown()
     }
     // ===== 第二步：等待非主线程结束 (带超时和更智能的判断) =====
     try {
-        pybind11::gil_scoped_acquire acquire;  // 需要再次获取 GIL
         pybind11::module threading = pybind11::module::import("threading");
         pybind11::list all_threads = threading.attr("enumerate")();
 
