@@ -1716,7 +1716,7 @@ Table Area</source>
         <translation>图-%1</translation>
     </message>
     <message>
-        <location line="+216"/>
+        <location line="+225"/>
         <source>question</source>
         <translation>疑问</translation>
     </message>

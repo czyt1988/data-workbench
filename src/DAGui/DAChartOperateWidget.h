@@ -39,6 +39,8 @@ public:
     // 获取当前的fig，如果没有返回nullptr
     DAFigureWidget* getCurrentFigure() const;
     DAFigureWidget* gcf() const;
+    // 设置当前的figure
+    void setCurrentFigure(int index);
     // 获取figure
     DAFigureWidget* getFigure(int index) const;
     // 获取figure的命名

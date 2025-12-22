@@ -141,6 +141,15 @@ DAFigureWidget* DAChartOperateWidget::gcf() const
 }
 
 /**
+ * @brief 把绘图设置为当前绘图
+ * @param index
+ */
+void DAChartOperateWidget::setCurrentFigure(int index)
+{
+    ui->tabWidget->setCurrentIndex(index);
+}
+
+/**
  * @brief 根据索引获取fig
  * @param index
  * @return
