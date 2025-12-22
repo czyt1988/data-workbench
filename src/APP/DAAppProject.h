@@ -56,6 +56,8 @@ public Q_SLOTS:
     virtual bool save(const QString& path) override;
     // 加载工程，加载完成后需要发射projectLoaded信号
     virtual bool load(const QString& path) override;
+    // 请求保存,会弹出保存对话框让用户选择保存路径保存
+    virtual bool requestSave();
 
 protected:
     // 保存系统信息

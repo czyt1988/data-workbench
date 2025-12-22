@@ -665,7 +665,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+847"/>
+        <location filename="../APP/DAAppController.cpp" line="+829"/>
         <location line="+49"/>
         <source>project file(*.%1)</source>
         <translation>工程文件(*.%1)</translation>
@@ -687,8 +687,7 @@ Table Area</source>
         <translation>加载工程文件“%1”失败</translation>
     </message>
     <message>
-        <location line="-440"/>
-        <location line="+22"/>
+        <location line="-418"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
@@ -708,8 +707,7 @@ Table Area</source>
         <translation>是否覆盖文件“%1”</translation>
     </message>
     <message>
-        <location line="-23"/>
-        <location line="+32"/>
+        <location line="+9"/>
         <source>Project saved failed!,path is %1</source>
         <translation>工程“%1”保存失败</translation>
     </message>
@@ -720,12 +718,7 @@ Table Area</source>
         <translation>工程保存成功，路径位于:%1</translation>
     </message>
     <message>
-        <location line="-458"/>
-        <source>Project Files (*.%1)</source>
-        <translation>工程文件(*.%1)</translation>
-    </message>
-    <message>
-        <location line="+63"/>
+        <location line="-395"/>
         <source>Please select the data operation window</source>
         <translation>请选中数据操作窗口</translation>
     </message>
@@ -886,7 +879,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppProject</name>
     <message>
-        <location filename="../APP/DAAppProject.cpp" line="+371"/>
+        <location filename="../APP/DAAppProject.cpp" line="+377"/>
         <location line="+43"/>
         <source>current project is busy</source>
         <translation>当前工程正繁忙</translation>
@@ -907,7 +900,22 @@ Table Area</source>
         <translation>无法从%1加载存档</translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+13"/>
+        <source>Save Project</source>
+        <translation type="unfinished">保存工程</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Project Files (*.%1)</source>
+        <translation type="unfinished">工程文件(*.%1)</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Project saved failed!,path is %1</source>
+        <translation type="unfinished">工程“%1”保存失败</translation>
+    </message>
+    <message>
+        <location line="+22"/>
         <source>Save System Info</source>
         <translation>保存系统信息</translation>
     </message>
@@ -1703,12 +1711,12 @@ Table Area</source>
 <context>
     <name>DA::DAChartOperateWidget</name>
     <message>
-        <location filename="../DAGui/DAChartOperateWidget.cpp" line="+93"/>
+        <location filename="../DAGui/DAChartOperateWidget.cpp" line="+95"/>
         <source>figure-%1</source>
         <translation>图-%1</translation>
     </message>
     <message>
-        <location line="+186"/>
+        <location line="+216"/>
         <source>question</source>
         <translation>疑问</translation>
     </message>
@@ -3315,7 +3323,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1895"/>
+        <location filename="../APP/DAAppController.cpp" line="-1877"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>

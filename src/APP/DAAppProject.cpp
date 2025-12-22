@@ -10,6 +10,8 @@
 #include <QElapsedTimer>
 #include <QSet>
 #include <QSysInfo>
+#include <QFileDialog>
+#include <QStandardPaths>
 // DA
 #include "DAWorkFlowOperateWidget.h"
 #include "DAXmlHelper.h"
@@ -347,6 +349,10 @@ void DAAppProject::clear()
     DADataOperateWidget* dow = getDataOperateWidget();
     Q_CHECK_PTR(dow);
     dow->clear();
+    //! 清除绘图
+    DAChartOperateWidget* cow = getChartOperateWidget();
+    Q_CHECK_PTR(cow);
+    cow->clear();
     DAProjectInterface::clear();
 }
 
@@ -443,6 +449,29 @@ bool DAAppProject::load(const QString& path)
         return false;
     }
     return true;
+}
+
+bool DAAppProject::requestSave()
+{
+    QString projectFilePath = getProjectFilePath();
+    if (projectFilePath.isEmpty()) {
+        QString desktop = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+        projectFilePath = QFileDialog::getSaveFileName(
+            nullptr,
+            tr("Save Project"),  // 保存工程
+            desktop,
+            tr("Project Files (*.%1)").arg(DAAppProject::getProjectFileSuffix())  // 工程文件 (*.%1)
+        );
+        if (projectFilePath.isEmpty()) {
+            // 取消退出
+            return false;
+        }
+    }
+    bool saveRet = save(projectFilePath);
+    if (!saveRet) {
+        qCritical() << tr("Project saved failed!,path is %1").arg(projectFilePath);  // 工程保存失败！路径位于:%1
+    }
+    return saveRet;
 }
 
 /**

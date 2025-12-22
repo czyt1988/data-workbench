@@ -642,19 +642,12 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+473"/>
-        <location line="+22"/>
+        <location filename="../APP/DAAppController.cpp" line="+477"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-20"/>
-        <source>Project Files (*.%1)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <location line="+32"/>
+        <location line="+21"/>
         <source>Project saved failed!,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -863,7 +856,7 @@ Config</source>
 <context>
     <name>DA::DAAppProject</name>
     <message>
-        <location filename="../APP/DAAppProject.cpp" line="+371"/>
+        <location filename="../APP/DAAppProject.cpp" line="+377"/>
         <location line="+43"/>
         <source>current project is busy</source>
         <translation type="unfinished"></translation>
@@ -884,7 +877,22 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+13"/>
+        <source>Save Project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Project Files (*.%1)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Project saved failed!,path is %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+22"/>
         <source>Save System Info</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1680,12 +1688,12 @@ Config</source>
 <context>
     <name>DA::DAChartOperateWidget</name>
     <message>
-        <location filename="../DAGui/DAChartOperateWidget.cpp" line="+93"/>
+        <location filename="../DAGui/DAChartOperateWidget.cpp" line="+95"/>
         <source>figure-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+186"/>
+        <location line="+216"/>
         <source>question</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3202,7 +3210,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1895"/>
+        <location filename="../APP/DAAppController.cpp" line="-1877"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>
