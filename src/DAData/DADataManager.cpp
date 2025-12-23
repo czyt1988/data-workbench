@@ -413,12 +413,10 @@ QList< DAData > DADataManager::findDatasReg(const QRegularExpression& regex) con
         }
 
         QString dataName = data.getName();
-        qDebug() << "dataName=" << dataName;
         // 使用 match 并指定匹配范围（0 到末尾，即完全匹配）
         QRegularExpressionMatch match = regex.match(dataName, 0, QRegularExpression::NormalMatch);
         if (match.hasMatch()) {
             result.append(data);
-            qDebug() << "dataName=" << dataName << " hasMatch";
         }
     }
 
