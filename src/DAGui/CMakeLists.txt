@@ -47,6 +47,7 @@ set(DA_LIB_HEADER_FILES
     DADataListView.h
     DADataManageTableView.h
     DADataManageWidget.h
+    DADataManagerTreeWidget.h
     DADataOperateWidget.h
     DAGuiEnumStringUtils.h
     DAMessageLogViewWidget.h
@@ -87,6 +88,7 @@ set(DA_LIB_SOURCE_FILES
     DAChartItemsManager.cpp
     DADataListView.cpp
     DADataManageTableView.cpp
+    DADataManagerTreeWidget.cpp
     DADataManageWidget.cpp
     DADataManagerComboBox.cpp
     DADataOperatePageWidget.cpp
@@ -127,6 +129,7 @@ set(DA_LIB_QT_UI_FILES
     DAChartOperateWidget.ui
     DAChartSettingWidget.ui
     DADataManageWidget.ui
+    DADataManagerTreeWidget.ui
     DADataOperateWidget.ui
     DAGraphicsPixmapItemSettingWidget.ui
     DAMessageLogViewWidget.ui

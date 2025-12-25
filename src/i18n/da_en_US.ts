@@ -3414,39 +3414,44 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location line="+18"/>
         <source>X</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+12"/>
-        <location line="+61"/>
+        <location line="+26"/>
+        <location line="+75"/>
         <source>Autoincrement series</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-46"/>
-        <location line="+61"/>
+        <location line="-60"/>
+        <location line="+75"/>
         <source>Initial value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-54"/>
+        <location line="-68"/>
         <location line="+14"/>
-        <location line="+47"/>
+        <location line="+61"/>
         <location line="+14"/>
         <source>1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-68"/>
-        <location line="+61"/>
+        <location line="-82"/>
+        <location line="+75"/>
         <source>Self increasing step size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-41"/>
+        <location line="-55"/>
         <source>Y</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+88"/>
+        <source>Drag the data into the corresponding list</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

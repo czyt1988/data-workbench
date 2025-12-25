@@ -42,6 +42,8 @@
         <file>icon/view-hline-marker.svg</file>
         <file>icon/view-vline-marker.svg</file>
         <file>icon/view-none-marker.svg</file>
+        <file>icon/collapse.svg</file>
+        <file>icon/expand-all.svg</file>
     </qresource>
     <qresource prefix="/DAGui/MessageType">
         <file>icon/messageType/messageTypeDebug.svg</file>
