@@ -19,22 +19,7 @@ using namespace DA;
 DADataManageWidget::DADataManageWidget(QWidget* parent) : QWidget(parent), ui(new Ui::DADataManageWidget)
 {
     ui->setupUi(this);
-
-    // 构建action
-    mActionViewDataListByTable = new QAction(this);
-    mActionViewDataListByTable->setObjectName("actionViewDataListByTable");
-    mActionViewDataListByTable->setCheckable(true);
-    mActionViewDataListByTable->setIcon(QIcon(":/DAGui/icon/showDataInList.svg"));
-
-    mActionGroup = new QActionGroup(this);
-    mActionGroup->addAction(mActionViewDataListByTable);
-    mActionGroup->setExclusive(true);
-
-    ui->toolButtonShowTableView->setDefaultAction(mActionViewDataListByTable);
-
-    mActionViewDataListByTable->setChecked(true);
-    connect(mActionViewDataListByTable, &QAction::triggered, this, &DADataManageWidget::onActionTableViewTriggered);
-    connect(ui->dataMgrTableView, &DADataManageTableView::dataDbClicked, this, &DADataManageWidget::dataDbClicked);
+    connect(ui->dataTreeWidget, &DADataManagerTreeWidget::dataDbClicked, this, &DADataManageWidget::dataDbClicked);
     retranslateUi();
 }
 
@@ -50,50 +35,27 @@ DADataManageWidget::~DADataManageWidget()
 void DADataManageWidget::setDataManager(DADataManager* dmgr)
 {
     mDataManager = dmgr;
-    ui->dataMgrTableView->setDataManager(dmgr);
+    ui->dataTreeWidget->setDataManager(dmgr);
 }
 
 /**
  * @brief 获取一个选中的数据
  * @return
  */
-DAData DADataManageWidget::getOneSelectData() const
+DAData DADataManageWidget::getCurrentSelectData() const
 {
-    if (isTableView()) {
-        return ui->dataMgrTableView->getOneSelectData();
-    }
-    return DAData();
+    return ui->dataTreeWidget->getCurrentSelectData();
 }
 
 /**
  * @brief 获取所有选中的数据
  * @return
  */
-QList< DAData > DADataManageWidget::getCurrentSelectDatas() const
+QList< DAData > DADataManageWidget::getAllSelectDatas() const
 {
-    if (isTableView()) {
-        return ui->dataMgrTableView->getCurrentSelectDatas();
-    }
-    return QList< DAData >();
+    return ui->dataTreeWidget->getAllSelectDatas();
 }
 
-/**
- * @brief 判断当前是否为table模式
- * @return
- */
-bool DADataManageWidget::isTableView() const
-{
-    return (mActionGroup->checkedAction() == mActionViewDataListByTable);
-}
-
-/**
- * @brief 获取当前的显示模式
- * @return
- */
-DADataManageWidget::DataViewMode DADataManageWidget::getCurrentDataViewMode() const
-{
-    return ViewDataInTable;
-}
 
 /**
  * @brief 获取mgr
@@ -109,7 +71,7 @@ DADataManager* DADataManageWidget::getDataManager() const
  */
 void DADataManageWidget::removeSelectData()
 {
-    QList< DAData > d = getCurrentSelectDatas();
+    QList< DAData > d = getAllSelectDatas();
     if (d.size() <= 0) {
         qWarning() << tr("Please select the data item to remove");  // cn:请选择需要删除的数据条目
         return;
@@ -119,7 +81,6 @@ void DADataManageWidget::removeSelectData()
 
 void DADataManageWidget::retranslateUi()
 {
-    mActionViewDataListByTable->setToolTip(tr("show datas in table view"));
 }
 
 void DADataManageWidget::changeEvent(QEvent* e)
@@ -133,15 +94,5 @@ void DADataManageWidget::changeEvent(QEvent* e)
 
     default:
         break;
-    }
-}
-
-void DADataManageWidget::onActionTableViewTriggered(bool on)
-{
-    if (on) {
-        if (ui->stackedWidget->currentWidget() != ui->dataMgrTableView) {
-            ui->stackedWidget->setCurrentWidget(ui->dataMgrTableView);
-            emit dataViewModeChanged(ViewDataInTable);
-        }
     }
 }

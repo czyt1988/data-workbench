@@ -9,7 +9,7 @@ damacro_lib_setting(
     "DA GUI | https://github.com/czyt1988"
     0
     0
-    3
+    4
 )
 
 ########################################################
@@ -47,6 +47,7 @@ set(DA_LIB_HEADER_FILES
     DADataListView.h
     DADataManageTableView.h
     DADataManageWidget.h
+    DADataManagerTreeWidget.h
     DADataOperateWidget.h
     DAGuiEnumStringUtils.h
     DAMessageLogViewWidget.h
@@ -87,6 +88,7 @@ set(DA_LIB_SOURCE_FILES
     DAChartItemsManager.cpp
     DADataListView.cpp
     DADataManageTableView.cpp
+    DADataManagerTreeWidget.cpp
     DADataManageWidget.cpp
     DADataManagerComboBox.cpp
     DADataOperatePageWidget.cpp
@@ -127,6 +129,7 @@ set(DA_LIB_QT_UI_FILES
     DAChartOperateWidget.ui
     DAChartSettingWidget.ui
     DADataManageWidget.ui
+    DADataManagerTreeWidget.ui
     DADataOperateWidget.ui
     DAGraphicsPixmapItemSettingWidget.ui
     DAMessageLogViewWidget.ui
@@ -148,6 +151,7 @@ if(DA_ENABLE_PYTHON)
         DADataOperateOfDataFrameWidget.h
         DAPyDataFrameTableView.h
         DAPySeriesTableView.h
+        DAPySeriesListView.h
         DAChartAddXYSeriesWidget.h
         DAChartAddXYESeriesWidget.h
         DAChartAddOHLCSeriesWidget.h
@@ -163,6 +167,7 @@ if(DA_ENABLE_PYTHON)
         DADataOperateOfDataFrameWidget.cpp
         DAPyDataFrameTableView.cpp
         DAPySeriesTableView.cpp
+        DAPySeriesListView.cpp
         DAChartAddXYSeriesWidget.cpp
         DAChartAddXYESeriesWidget.cpp
         DAChartAddOHLCSeriesWidget.cpp
@@ -193,6 +198,7 @@ set(DA_LIB_SUBDIR_ChartSetting ${CMAKE_CURRENT_SOURCE_DIR}/ChartSetting)
 set(DA_LIB_HEADER_FILES_Models
     ${DA_LIB_SUBDIR_Models}/DAAbstractCacheWindowTableModel.h
     ${DA_LIB_SUBDIR_Models}/DADataManagerTreeModel.h
+    ${DA_LIB_SUBDIR_Models}/DADataManagerTreeFilterProxyModel.h
     ${DA_LIB_SUBDIR_Models}/DATreeModel.h
     ${DA_LIB_SUBDIR_Models}/DADataTableModel.h
     ${DA_LIB_SUBDIR_Models}/DADataManagerTableModel.h
@@ -202,6 +208,7 @@ set(DA_LIB_HEADER_FILES_Models
 set(DA_LIB_SOURCE_FILES_Models
     ${DA_LIB_SUBDIR_Models}/DAAbstractCacheWindowTableModel.cpp
     ${DA_LIB_SUBDIR_Models}/DADataManagerTreeModel.cpp
+    ${DA_LIB_SUBDIR_Models}/DADataManagerTreeFilterProxyModel.cpp
     ${DA_LIB_SUBDIR_Models}/DATreeModel.cpp
     ${DA_LIB_SUBDIR_Models}/DADataTableModel.cpp
     ${DA_LIB_SUBDIR_Models}/DADataManagerTableModel.cpp

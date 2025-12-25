@@ -3,6 +3,7 @@
 #include <QDragMoveEvent>
 #include <QDragLeaveEvent>
 #include <QDropEvent>
+#include <QTimer>
 #include "DAFigureWidget.h"
 #include "DAAppChartOperateWidget.h"
 #include "MimeData/DAMimeDataForData.h"
@@ -23,6 +24,7 @@ void DAEvenFilterDragPlotWithGuide::setChartOptWidget(DAAppChartOperateWidget* c
 {
     mChartOptWidget = c;
 }
+
 
 bool DAEvenFilterDragPlotWithGuide::eventFilter(QObject* obj, QEvent* event)
 {
@@ -66,7 +68,7 @@ bool DAEvenFilterDragPlotWithGuide::dragEnterEvent(QDragEnterEvent* e, DAFigureW
         return false;
     }
     const QMimeData* mimeData = e->mimeData();
-    if (mimeData->hasFormat(DAMIMEDATA_FORMAT_DADATA)) {
+    if (mimeData->hasFormat(DAMIMEDATA_FORMAT_DADATAS)) {
         e->acceptProposedAction();
     } else {
         qDebug() << "DAEvenFilterDragPlotWithGuide::dragEnterEvent get unknow format:" << mimeData->formats();
@@ -83,7 +85,7 @@ bool DAEvenFilterDragPlotWithGuide::dragMoveEvent(QDragMoveEvent* e, DAFigureWid
         return false;
     }
     const QMimeData* mimeData = e->mimeData();
-    if (mimeData->hasFormat(DAMIMEDATA_FORMAT_DADATA)) {
+    if (mimeData->hasFormat(DAMIMEDATA_FORMAT_DADATAS)) {
         // 数据
         QWidget* w = fig->plotUnderPos(DA::compat::eventPos(e));
         if (nullptr == w) {
@@ -120,7 +122,7 @@ bool DAEvenFilterDragPlotWithGuide::dropEvent(QDropEvent* e, DAFigureWidget* fig
     }
 
     const QMimeData* mimeData = e->mimeData();
-    if (mimeData->hasFormat(DAMIMEDATA_FORMAT_DADATA)) {
+    if (mimeData->hasFormat(DAMIMEDATA_FORMAT_DADATAS)) {
         // 数据
         const DAMimeDataForData* datamime = qobject_cast< const DAMimeDataForData* >(mimeData);
         if (nullptr == datamime) {
@@ -130,27 +132,40 @@ bool DAEvenFilterDragPlotWithGuide::dropEvent(QDropEvent* e, DAFigureWidget* fig
         if (nullptr == w) {
             return false;
         }
-        if (DAChartWidget* chart = qobject_cast< DAChartWidget* >(w)) {
-            if (fig->getCurrentChart() != chart) {
-                // 如果当前绘图不是放下的绘图，则把当前绘图设置为放下数据的绘图
-                fig->setCurrentChart(chart);
-            }
-            if (!mChartOptWidget) {
+        if (datamime->isHaveDataframe()) {
+            auto datas = datamime->getDataframes();
+            if (datas.empty()) {
                 return false;
             }
-            QwtPlotItem* pi = mChartOptWidget->createPlotItemWithGuideDialog(datamime->getDAData());
-            if (nullptr == pi) {
-                e->ignore();
-                return false;
-            } else {
-                // 加入
-                fig->addItem_(pi);
-                fig->gca()->rescaleAxes();
-            }
+            DAData data          = datas.first();
+            DAChartWidget* chart = qobject_cast< DAChartWidget* >(w);
             e->acceptProposedAction();
+            // 因为createPlotItemWithGuideDialog里的对话框也涉及拖曳，必须先结束这个拖曳
+            QTimer::singleShot(0, [ this, fig, chart, data ]() { createChartWithDialog(fig, chart, data); });
         }
     }
+
     return true;
+}
+
+void DAEvenFilterDragPlotWithGuide::createChartWithDialog(DAFigureWidget* fig, DAChartWidget* chart, const DAData& data)
+{
+    if (fig->getCurrentChart() != chart) {
+        // 如果当前绘图不是放下的绘图，则把当前绘图设置为放下数据的绘图
+        fig->setCurrentChart(chart);
+    }
+    if (!mChartOptWidget) {
+        return;
+    }
+    QwtPlotItem* pi = mChartOptWidget->createPlotItemWithGuideDialog(data);
+    if (nullptr == pi) {
+        return;
+    }
+    fig->addItem_(pi);
+    if (auto chart = fig->gca()) {
+        chart->rescaleAxes();
+        chart->replot();
+    }
 }
 
 }  // end DA

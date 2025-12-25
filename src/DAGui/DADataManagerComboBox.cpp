@@ -147,7 +147,7 @@ DAData DADataManagerComboBox::getCurrentDAData() const
 
 void DADataManagerComboBox::setCurrentDAData(const DAData& d)
 {
-    auto i = d_ptr->_treeDataModel->findItemByData(d);
+    auto i = d_ptr->_treeDataModel->findFirstDataframeItemByData(d);
     if (i) {
         int ni = i->index().row();
         if (ni < count()) {

@@ -51,8 +51,7 @@ QwtPlotItem* DAAppChartOperateWidget::createPlotItemWithGuideDialog(const DAData
     QwtPlotItem* item { nullptr };
 #if DA_ENABLE_PYTHON
     if (nullptr == mChartGuideDlg) {
-        mChartGuideDlg = new DADialogChartGuide(this);
-        mChartGuideDlg->setDataManager(mDataMgr);
+        initChartGuideDialog();
     }
     if (data) {
         mChartGuideDlg->setCurrentData(data);
@@ -60,6 +59,8 @@ QwtPlotItem* DAAppChartOperateWidget::createPlotItemWithGuideDialog(const DAData
         mChartGuideDlg->updateData();
     }
     mChartGuideDlg->setCurrentChartType(t);
+    QSignalBlocker b(mChartGuideDlg);
+    // 不要发送accept信号
     if (QDialog::Accepted != mChartGuideDlg->exec()) {
         return nullptr;
     }
@@ -68,6 +69,20 @@ QwtPlotItem* DAAppChartOperateWidget::createPlotItemWithGuideDialog(const DAData
     item = mChartGuideDlg->createPlotItem();
 #endif
     return item;
+}
+
+void DAAppChartOperateWidget::createPlotItemWithOpenGuideDialog(const DAData& data, ChartTypes t)
+{
+    if (nullptr == mChartGuideDlg) {
+        initChartGuideDialog();
+    }
+    if (data) {
+        mChartGuideDlg->setCurrentData(data);
+    } else {
+        mChartGuideDlg->updateData();
+    }
+    mChartGuideDlg->setCurrentChartType(t);
+    mChartGuideDlg->open();
 }
 
 /**
@@ -89,6 +104,23 @@ void DAAppChartOperateWidget::plotWithGuideDialog(DA::ChartTypes t)
     }
     DAChartUtil::setPlotItemColor(item, fig->getDefaultColor());
     fig->addItem_(chart, item);
+}
+
+void DAAppChartOperateWidget::onChartGuideAccept()
+{
+    DAWaitCursorScoped wait;
+    Q_UNUSED(wait);
+    QwtPlotItem* item = mChartGuideDlg->createPlotItem();
+    Q_EMIT createItem(item);
+}
+
+void DAAppChartOperateWidget::initChartGuideDialog()
+{
+    if (nullptr == mChartGuideDlg) {
+        mChartGuideDlg = new DADialogChartGuide(this);
+        mChartGuideDlg->setDataManager(mDataMgr);
+        connect(mChartGuideDlg, &DADialogChartGuide::accepted, this, &DAAppChartOperateWidget::onChartGuideAccept);
+    }
 }
 
 }  // end DA

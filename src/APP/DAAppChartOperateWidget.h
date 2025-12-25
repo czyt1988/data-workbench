@@ -24,12 +24,24 @@ public:
     void setDataManager(DADataManager* mgr);
     // 添加一个Figure
     virtual DAFigureWidget* createFigure(const QString& name = QString()) override;
-
-public:
     // 绘制,如果没成功，返回nullptr
     QwtPlotItem* createPlotItemWithGuideDialog(const DAData& data = DAData(), DA::ChartTypes t = DA::ChartTypes::Curve);
+    // 通过open打开引导对话框来创建item，这时将通过createItem信号来接收创建好的item
+    void createPlotItemWithOpenGuideDialog(const DAData& data = DAData(), DA::ChartTypes t = DA::ChartTypes::Curve);
     // 调用绘图引导窗口进行引导性绘图
     void plotWithGuideDialog(DA::ChartTypes t = DA::ChartTypes::Curve);
+Q_SIGNALS:
+    /**
+     * @brief 创建了item
+     * @param item
+     * @note 这个函数的item参数必须处理，如果无用，需要手动delete，否则会内存泄漏
+     */
+    void createItem(QwtPlotItem* item);
+private Q_SLOTS:
+    void onChartGuideAccept();
+
+private:
+    void initChartGuideDialog();
 
 private:
     DADataManager* mDataMgr { nullptr };

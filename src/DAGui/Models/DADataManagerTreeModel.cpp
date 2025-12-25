@@ -8,6 +8,8 @@
 #include "DAData.h"
 #include "DADataManagerTableModel.h"
 #include "DACommandsDataManager.h"
+#include "MimeData/DAMimeDataForData.h"
+#include "MimeData/DAMimeDataFormats.h"
 #if DA_ENABLE_PYTHON
 // Py
 #include "pandas/DAPyDataFrame.h"
@@ -17,6 +19,201 @@
 
 namespace DA
 {
+
+//===============================================================
+// DAStandardItemDataDataframe
+//===============================================================
+DAStandardItemDataDataframe::DAStandardItemDataDataframe(const DAData& data) : QStandardItem(), m_dataframe(data)
+{
+    setEditable(true);
+    setDragEnabled(true);
+    setDropEnabled(false);
+}
+
+DAStandardItemDataDataframe::~DAStandardItemDataDataframe()
+{
+}
+
+QVariant DAStandardItemDataDataframe::data(int role) const
+{
+    static QIcon s_dataframe_icon = QIcon(":/DAGui/DataType/icon/data-type/dataframe.svg");
+    if (!m_dataframe.isDataFrame()) {
+        return QStandardItem::data(role);
+    }
+    switch (role) {
+    case Qt::DisplayRole: {
+        return m_dataframe.getName();
+    } break;
+    case Qt::ToolTipRole: {
+        return m_dataframe.getDescribe();
+    } break;
+    case Qt::DecorationRole: {
+        // 返回类型图标
+        return s_dataframe_icon;
+    } break;
+    default:
+        break;
+    }
+
+    return QStandardItem::data(role);
+}
+
+void DAStandardItemDataDataframe::setData(const QVariant& value, int role)
+{
+    if (role != Qt::EditRole) {
+        return;
+    }
+    QString newName = value.toString().trimmed();
+    if (newName.isEmpty()) {
+        return;
+    }
+    DACommandDataManagerRenameData* cmd = new DACommandDataManagerRenameData(m_dataframe, newName);
+    m_dataframe.getDataManager()->getUndoStack()->push(cmd);
+}
+
+DAData DAStandardItemDataDataframe::getDataframe() const
+{
+    return m_dataframe;
+}
+
+bool DAStandardItemDataDataframe::isDataframeItem(QStandardItem* item)
+{
+    if (!item) {
+        return false;
+    }
+    return (item->type() == DAStandardItemDataDataframe::Type);
+}
+//===============================================================
+// DAStandardItemDataDataframeSeries
+//===============================================================
+
+DAStandardItemDataDataframeSeries::DAStandardItemDataDataframeSeries(const DAData& data, const QString& seriesName)
+    : QStandardItem(), m_dataframe(data), m_name(seriesName)
+{
+    setEditable(true);
+    setDragEnabled(true);
+    setDropEnabled(false);
+}
+
+DAStandardItemDataDataframeSeries::~DAStandardItemDataDataframeSeries()
+{
+}
+
+QVariant DAStandardItemDataDataframeSeries::data(int role) const
+{
+    static QIcon s_dataframe_icon = QIcon(":/DAGui/DataType/icon/data-type/dataframe.svg");
+    if (!m_dataframe.isDataFrame()) {
+        return QStandardItem::data(role);
+    }
+    switch (role) {
+    case Qt::DisplayRole: {
+        return m_name;
+    } break;
+    case Qt::ToolTipRole: {
+        return makeDescribeText(m_dataframe, m_name);
+    } break;
+    case Qt::DecorationRole: {
+        // 返回类型图标
+        return seriesTypeToIcon(m_dataframe, m_name);
+    } break;
+    default:
+        break;
+    }
+
+    return QStandardItem::data(role);
+}
+
+DAData DAStandardItemDataDataframeSeries::getDataframe() const
+{
+    return m_dataframe;
+}
+
+void DAStandardItemDataDataframeSeries::setSeriesName(const QString& name)
+{
+    m_name = name;
+}
+
+QString DAStandardItemDataDataframeSeries::getSeriesName() const
+{
+    return m_name;
+}
+
+bool DAStandardItemDataDataframeSeries::isDataframeSeriesItem(QStandardItem* item)
+{
+    if (!item) {
+        return false;
+    }
+    return (item->type() == DAStandardItemDataDataframeSeries::Type);
+}
+
+QString DAStandardItemDataDataframeSeries::makeDescribeText(const DAData& data, const QString& seriesName)
+{
+    QString t;
+    try {
+        DAPyDataFrame df  = data.toDataFrame();
+        DAPySeries series = df[ seriesName ];
+        std::size_t size  = series.size();
+
+        t = QObject::tr("%1.%2,size:%3").arg(data.getName(), seriesName).arg(size);  // cn:%1.%2,长度:%3
+    } catch (...) {
+    }
+    return t;
+}
+
+/**
+ * @brief 根据series的类型返回图标
+ * @param data
+ * @param seriesName
+ * @return
+ */
+QIcon DAStandardItemDataDataframeSeries::seriesTypeToIcon(const DAData& data, const QString& seriesName)
+{
+    static QIcon s_int_type      = QIcon(":/DAGui/DataType/icon/data-type/int.svg");
+    static QIcon s_float_type    = QIcon(":/DAGui/DataType/icon/data-type/float.svg");
+    static QIcon s_datetime_type = QIcon(":/DAGui/DataType/icon/data-type/datetime.svg");
+    static QIcon s_str_type      = QIcon(":/DAGui/DataType/icon/data-type/str.svg");
+    static QIcon s_obj_type      = QIcon(":/DAGui/DataType/icon/data-type/obj.svg");
+    try {
+        DAPyDataFrame df  = data.toDataFrame();
+        DAPySeries series = df[ seriesName ];
+        auto dtype        = series.dtype();
+        char c            = dtype.char_();
+        switch (c) {
+        case 'd':
+        case 'f':
+        case 'e': {
+            return s_float_type;
+        } break;
+        case 'q':
+        case 'Q':
+        case 'l':
+        case 'L':
+        case 'h':
+        case 'H':
+        case 'b':
+        case 'B': {
+            return s_int_type;
+        } break;
+        case 'U': {
+            return s_str_type;
+        } break;
+        case 'M': {
+            return s_datetime_type;
+        } break;
+        case 'O': {
+            return s_obj_type;
+        } break;
+        default:
+            break;
+        }
+    } catch (...) {
+    }
+    return QIcon();
+}
+//===============================================================
+// DADataManagerTreeModel::PrivateData
+//===============================================================
+
 class DADataManagerTreeModel::PrivateData
 {
     DA_DECLARE_PUBLIC(DADataManagerTreeModel)
@@ -25,9 +222,6 @@ public:
     DADataManager* dataMgr                          = nullptr;
     bool expandDataframeToSeries                    = false;
     DADataManagerTreeModel::ColumnStyle columnStyle = DADataManagerTreeModel::ColumnWithNameOnly;
-
-    // 数据ID到项的映射，提高查找效率
-    QHash< DAData::IdType, QStandardItem* > dataIdToItemMap;
     bool enableEdit { false };
 };
 
@@ -86,73 +280,22 @@ void DADataManagerTreeModel::setupConnections()
     connect(d->dataMgr, &DADataManager::datasCleared, this, &DADataManagerTreeModel::onDatasCleared);
 }
 
-void DADataManagerTreeModel::rebuildDataMap()
-{
-    clearDataMap();
-
-    for (int row = 0; row < rowCount(); ++row) {
-        QStandardItem* item = this->item(row, 0);
-        if (!item) {
-            continue;
-        }
-        QVariant idVar = item->data(RoleDataId);
-        if (idVar.isValid()) {
-            bool ok           = false;
-            DAData::IdType id = idVar.toULongLong(&ok);
-            if (ok) {
-                d_ptr->dataIdToItemMap[ id ] = item;
-            }
-        }
-    }
-}
-
-void DADataManagerTreeModel::clearDataMap()
-{
-    d_ptr->dataIdToItemMap.clear();
-}
 
 QStandardItem* DADataManagerTreeModel::createDataItem(const DAData& data)
 {
     if (data.isNull()) {
         return nullptr;
     }
-
-    QStandardItem* item = new QStandardItem(data.getName());
-
-    // 设置图标
-    item->setIcon(DADataManagerTableModel::dataToIcon(data));
-
-    // 设置角色数据
-    item->setData(static_cast< int >(DataFrameItem), RoleItemType);
-    item->setData(data.id(), RoleDataId);
-
-    // 设置工具提示
-    item->setToolTip(makeDataToolTip(data));
-
-    // 设置为可编辑（只允许重命名）
-    item->setEditable(true);
-    item->setDragEnabled(true);
-    item->setDropEnabled(false);
-
+    QStandardItem* item = new DAStandardItemDataDataframe(data);
     return item;
 }
 
-QStandardItem* DADataManagerTreeModel::createDataFrameSeriesItem(const QString& seriesName, DAData::IdType dataframeId)
+QStandardItem* DADataManagerTreeModel::createDataFrameSeriesItem(const QString& seriesName, const DAData& dataframeData)
 {
-    QStandardItem* item = new QStandardItem(seriesName);
-
-    // 设置角色数据
-    item->setData(static_cast< int >(SeriesInnerDataframe), RoleItemType);
-    item->setData(dataframeId, RoleDataId);
-
-    // 设置工具提示
-    item->setToolTip(QString("Series: %1").arg(seriesName));
-
-    // Series项不可编辑
-    item->setEditable(false);
-    item->setDragEnabled(false);
-    item->setDropEnabled(false);
-
+    if (dataframeData.isNull()) {
+        return nullptr;
+    }
+    QStandardItem* item = new DAStandardItemDataDataframeSeries(dataframeData, seriesName);
     return item;
 }
 
@@ -165,7 +308,6 @@ void DADataManagerTreeModel::setDataManager(DADataManager* dataMgr)
 
     // 清除现有数据
     clear();
-    clearDataMap();
 
     // 设置新管理器
     d_ptr->dataMgr = dataMgr;
@@ -182,9 +324,6 @@ void DADataManagerTreeModel::setDataManager(DADataManager* dataMgr)
 
     // 设置连接
     setupConnections();
-
-    // 构建数据映射
-    rebuildDataMap();
 }
 
 DADataManager* DADataManagerTreeModel::getDataManager() const
@@ -227,69 +366,69 @@ DADataManagerTreeModel::ColumnStyle DADataManagerTreeModel::getColumnStyle() con
     return d_ptr->columnStyle;
 }
 
-QStandardItem* DADataManagerTreeModel::findItemByData(const DAData& data) const
+QStandardItem* DADataManagerTreeModel::findFirstDataframeItemByData(const DAData& data) const
 {
     if (data.isNull()) {
         return nullptr;
     }
-    return d_ptr->dataIdToItemMap.value(data.id(), nullptr);
+    const int rowcnt = rowCount();
+    for (int i = 0; i < rowcnt; ++i) {
+        QStandardItem* it = item(i);
+        if (!DAStandardItemDataDataframe::isDataframeItem(it)) {
+            continue;
+        }
+        DAStandardItemDataDataframe* dfit = static_cast< DAStandardItemDataDataframe* >(it);
+        if (dfit->getDataframe() == data) {
+            return it;
+        }
+    }
+    return nullptr;
 }
 
-QStandardItem* DADataManagerTreeModel::findItemByDataId(DAData::IdType id) const
+/**
+ * @brief 从item获取数据
+ *
+ * 无论dataframe还是dataframe下的series，通过此函数都能获取数据
+ * @param item
+ * @return
+ */
+DAData DADataManagerTreeModel::itemToData(QStandardItem* item)
 {
-    return d_ptr->dataIdToItemMap.value(id, nullptr);
+    if (isDataframeItem(item)) {
+        DAStandardItemDataDataframe* dfitem = static_cast< DAStandardItemDataDataframe* >(item);
+        return dfitem->getDataframe();
+    } else if (isDataframeSeriesItem(item)) {
+        DAStandardItemDataDataframeSeries* seritem = static_cast< DAStandardItemDataDataframeSeries* >(item);
+        return seritem->getDataframe();
+    }
+    return DAData();
 }
 
-DAData DADataManagerTreeModel::itemToData(QStandardItem* item) const
+/**
+ * @brief 是否是dataframe
+ * @param item
+ * @return
+ */
+bool DADataManagerTreeModel::isDataframeItem(QStandardItem* item)
 {
-    if (!item || !d_ptr->dataMgr) {
-        return DAData();
-    }
-
-    QVariant idVar = item->data(RoleDataId);
-    if (!idVar.isValid()) {
-        return DAData();
-    }
-
-    bool ok           = false;
-    DAData::IdType id = idVar.toULongLong(&ok);
-    if (!ok) {
-        return DAData();
-    }
-
-    return d_ptr->dataMgr->getDataById(id);
+    return DAStandardItemDataDataframe::isDataframeItem(item);
 }
 
-bool DADataManagerTreeModel::isDataframeItem(QStandardItem* item) const
+/**
+ * @brief 是否是series
+ * @param item
+ * @return
+ */
+bool DADataManagerTreeModel::isDataframeSeriesItem(QStandardItem* item)
 {
-    if (!item) {
-        return false;
-    }
-
-    QVariant typeVar = item->data(RoleItemType);
-    if (!typeVar.isValid() || typeVar.toInt() != DataFrameItem) {
-        return false;
-    }
-
-#if 1
-    return true;
-#else  // 这是最严格的筛查
-    DAData data = itemToData(item);
-    return data.isDataFrame();
-#endif
+    return DAStandardItemDataDataframeSeries::isDataframeSeriesItem(item);
 }
 
-bool DADataManagerTreeModel::isDataframeSeriesItem(QStandardItem* item) const
-{
-    if (!item) {
-        return false;
-    }
-
-    QVariant typeVar = item->data(RoleItemType);
-    return (typeVar.isValid() && typeVar.toInt() == SeriesInnerDataframe);
-}
-
-QStringList DADataManagerTreeModel::getAllDataNames() const
+/**
+ * @brief 获取所有dataframe的名称
+ * @return
+ */
+QStringList DADataManagerTreeModel::getAllDataframeNames() const
 {
     QStringList names;
 
@@ -302,10 +441,12 @@ QStringList DADataManagerTreeModel::getAllDataNames() const
     return names;
 }
 
+/**
+ * @brief 清空
+ */
 void DADataManagerTreeModel::clear()
 {
     QStandardItemModel::clear();
-    clearDataMap();
 
     // 重置表头
     if (d_ptr->columnStyle == ColumnWithNameOnly) {
@@ -324,7 +465,7 @@ bool DADataManagerTreeModel::isEnableEdit() const
 {
     return d_ptr->enableEdit;
 }
-
+/**
 Qt::ItemFlags DADataManagerTreeModel::flags(const QModelIndex& index) const
 {
     Qt::ItemFlags flags = QStandardItemModel::flags(index);
@@ -335,16 +476,17 @@ Qt::ItemFlags DADataManagerTreeModel::flags(const QModelIndex& index) const
     // 只有第一列可编辑（用于重命名）
     if (index.column() != 0) {
         flags &= ~Qt::ItemIsEditable;
-        flags &= ~Qt::ItemIsDragEnabled;
+        flags |= Qt::ItemIsDragEnabled;
         flags &= ~Qt::ItemIsDropEnabled;
     }
 
-    // DataFrame的Series项不可编辑
+    // DataFrame的Series项不可编辑但可拖曳
     if (index.isValid()) {
         QStandardItem* item = itemFromIndex(index);
         if (item && isDataframeSeriesItem(item)) {
             flags &= ~Qt::ItemIsEditable;
-            flags &= ~Qt::ItemIsDragEnabled;
+            flags |= Qt::ItemIsDragEnabled;  // 启用拖曳
+            flags &= ~Qt::ItemIsDropEnabled;
         }
     }
 
@@ -390,7 +532,7 @@ QVariant DADataManagerTreeModel::data(const QModelIndex& index, int role) const
 
     return QVariant();
 }
-
+**/
 bool DADataManagerTreeModel::setData(const QModelIndex& index, const QVariant& value, int role)
 {
     if (!d_ptr->enableEdit) {
@@ -399,38 +541,75 @@ bool DADataManagerTreeModel::setData(const QModelIndex& index, const QVariant& v
     if (role != Qt::EditRole || index.column() != 0) {
         return false;
     }
-
     QStandardItem* item = itemFromIndex(index);
     if (!item) {
         return false;
     }
-
     // 重命名数据项目
     if (isDataframeItem(item)) {
+        DAStandardItemDataDataframe* dfitem = static_cast< DAStandardItemDataDataframe* >(item);
+
         QString newName = value.toString().trimmed();
         if (newName.isEmpty()) {
             return false;
         }
 
-        DAData data = itemToData(item);
+        DAData data = dfitem->getDataframe();
         if (data.isNull()) {
             return false;
         }
 
         // 检查名称是否已存在
-        QStringList existingNames = getAllDataNames();
+        QStringList existingNames = getAllDataframeNames();
         if (existingNames.contains(newName) && newName != data.getName()) {
             return false;
         }
-        DACommandDataManagerRenameData* cmd = new DACommandDataManagerRenameData(data, newName);
-        d_ptr->dataMgr->getUndoStack()->push(cmd);
-
-        // 无需执行更新项文本，因为设置名字会触发onDataChanged槽，在此槽里会更新文本
-        // item->setText(newName);
-
+        dfitem->setData(value, role);
         return true;
     }
     return false;
+}
+
+Qt::DropActions DADataManagerTreeModel::supportedDragActions() const
+{
+    return Qt::CopyAction;
+}
+
+QStringList DADataManagerTreeModel::mimeTypes() const
+{
+    QStringList types;
+    types << DAMIMEDATA_FORMAT_DADATAS;
+    return types;
+}
+
+QMimeData* DADataManagerTreeModel::mimeData(const QModelIndexList& indexs) const
+{
+    if (indexs.isEmpty()) {
+        return nullptr;
+    }
+    DAMimeDataForData* mime = new DAMimeDataForData();
+    for (const QModelIndex& index : indexs) {
+        QStandardItem* item = itemFromIndex(index);
+        if (!item) {
+            continue;
+        }
+        if (isDataframeSeriesItem(item)) {
+            // 选中的是dataframe
+            DAData data = itemToData(item);
+            if (data.isNull() || !data.isDataFrame()) {
+                continue;
+            }
+            mime->appendDataSeries(data, item->text());
+        } else if (isDataframeItem(item)) {
+            // 选中的是整个dataframe，则添加该dataframe的所有列
+            DAData data = itemToData(item);
+            if (data.isNull() || !data.isDataFrame()) {
+                continue;
+            }
+            mime->appendDataframe(data);
+        }
+    }
+    return mime;
 }
 
 void DADataManagerTreeModel::addDataItem(const DAData& data)
@@ -445,7 +624,6 @@ void DADataManagerTreeModel::addDataItem(const DAData& data)
     }
 
     appendRow(item);
-    d_ptr->dataIdToItemMap[ data.id() ] = item;
 
     // 如果是DataFrame且需要展开，添加Series子项
     if (data.isDataFrame() && d_ptr->expandDataframeToSeries) {
@@ -458,43 +636,33 @@ void DADataManagerTreeModel::removeDataItem(const DAData& data)
     if (data.isNull()) {
         return;
     }
-
-    QStandardItem* item = findItemByData(data);
-    if (!item) {
-        qDebug() << "Cannot find item for data:" << data.getName();
-        return;
+    QStandardItem* item = findFirstDataframeItemByData(data);
+    while (item != nullptr) {
+        removeRow(item->row());
+        item = findFirstDataframeItemByData(data);
     }
-
-    // 从映射中移除
-    d_ptr->dataIdToItemMap.remove(data.id());
-
-    // 从模型中移除
-    removeRow(item->row());
 }
 
 void DADataManagerTreeModel::updateDataItem(const DAData& data, DADataManager::ChangeType changeType)
 {
-    QStandardItem* item = findItemByData(data);
+    QStandardItem* item = findFirstDataframeItemByData(data);
     if (!item) {
         return;
     }
 
     switch (changeType) {
     case DADataManager::ChangeName:
-        item->setText(data.getName());
+        Q_EMIT dataChanged(item->index(), item->index(), { Qt::DisplayRole });
         break;
-
-    case DADataManager::ChangeValue:
     case DADataManager::ChangeDataframeColumnName:
         // 如果是DataFrame，更新展开状态
         if (data.isDataFrame()) {
             updateDataFrameItemExpansion(item, d_ptr->expandDataframeToSeries);
         }
         break;
-
     case DADataManager::ChangeDescribe:
         // 更新工具提示
-        item->setToolTip(data.getDescribe());
+        Q_EMIT dataChanged(item->index(), item->index(), { Qt::ToolTipRole });
         break;
 
     default:
@@ -543,7 +711,7 @@ void DADataManagerTreeModel::updateDataFrameItemExpansion(QStandardItem* datafra
 
     QStringList columns = df.columns();
     for (const QString& column : columns) {
-        QStandardItem* seriesItem = createDataFrameSeriesItem(column, data.id());
+        QStandardItem* seriesItem = createDataFrameSeriesItem(column, data);
         if (seriesItem) {
             dataframeItem->appendRow(seriesItem);
         }
@@ -551,16 +719,6 @@ void DADataManagerTreeModel::updateDataFrameItemExpansion(QStandardItem* datafra
 #endif
 }
 
-QString DADataManagerTreeModel::makeDataToolTip(const DAData& data)
-{
-    QString toolTip = data.getName();
-    toolTip += tr("\nType: %1").arg(data.typeToString());
-    const QString describe = data.getDescribe();
-    if (!describe.isEmpty()) {
-        toolTip += tr("\nDescription: %1").arg(data.getDescribe());
-    }
-    return toolTip;
-}
 
 void DADataManagerTreeModel::onDataAdded(const DAData& data)
 {

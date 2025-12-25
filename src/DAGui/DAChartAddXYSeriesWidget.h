@@ -34,17 +34,24 @@ public:
     bool isXAutoincrement() const;
     // 判断y是否是自增
     bool isYAutoincrement() const;
+    // 设置数据管理器
+    virtual void setDataManager(DADataManager* dmgr) override;
     // 根据配置获取数据
     QVector< QPointF > getSeries() const;
     // 获取推荐的名字
     virtual QString getNameHint() const;
 private slots:
-    void onComboBoxXCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
-    void onComboBoxYCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
     void onGroupBoxXAutoincrementClicked(bool on);
     void onGroupBoxYAutoincrementClicked(bool on);
-    void onDataManagerChanged(DADataManager* dmgr);
-    void onCurrentDataChanged(const DAData& d);
+
+    void onXSeriesChanged();
+    void onYSeriesChanged();
+    void updateTable();
+
+    void onButtonXAddClicked();
+    void onButtonXRemoveClicked();
+    void onButtonYAddClicked();
+    void onButtonYRemoveClicked();
 
 protected:
     // 获取x自增
@@ -56,6 +63,15 @@ protected:
     // 尝试获取x值得自增内容
     bool tryGetXSelfInc(double& base, double& step);
     bool tryGetYSelfInc(double& base, double& step);
+    // 获取
+    QPair< DAData, QString > getY() const;
+    QPair< DAData, QString > getX() const;
+    //
+    DAPySeries getYSeries() const;
+    DAPySeries getXSeries() const;
+
+private:
+    QPair< DAData, QString > getFirstValue(const QList< QPair< DAData, QStringList > >& datas) const;
 
 private:
     Ui::DAChartAddXYSeriesWidget* ui;

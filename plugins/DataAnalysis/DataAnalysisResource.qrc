@@ -18,5 +18,7 @@
         <file>icon/dataframe-eval-datas.svg</file>
         <file>icon/dataframe-query-datas.svg</file>
         <file>icon/dataframe-sort.svg</file>
+        <file>icon/dataframe-IQR.svg</file>
+        <file>icon/dataframe-Z-score.svg</file>
     </qresource>
 </RCC>

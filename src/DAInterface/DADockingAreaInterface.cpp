@@ -131,7 +131,7 @@ QList< DAData > DADockingAreaInterface::getCurrentSelectDatas() const
     if (!dmw) {
         return QList< DAData >();
     }
-    return dmw->getCurrentSelectDatas();
+    return dmw->getAllSelectDatas();
 }
 
 DAData DADockingAreaInterface::getCurrentOperateData() const

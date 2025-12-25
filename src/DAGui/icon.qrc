@@ -42,6 +42,10 @@
         <file>icon/view-hline-marker.svg</file>
         <file>icon/view-vline-marker.svg</file>
         <file>icon/view-none-marker.svg</file>
+        <file>icon/collapse.svg</file>
+        <file>icon/expand-all.svg</file>
+        <file>icon/left-remove.svg</file>
+        <file>icon/right-add.svg</file>
     </qresource>
     <qresource prefix="/DAGui/MessageType">
         <file>icon/messageType/messageTypeDebug.svg</file>
@@ -70,5 +74,13 @@
         <file>icon/axisXTop.svg</file>
         <file>icon/axisYLeft.svg</file>
         <file>icon/axisYRight.svg</file>
+    </qresource>
+    <qresource prefix="/DAGui/DataType">
+        <file>icon/data-type/datetime.svg</file>
+        <file>icon/data-type/float.svg</file>
+        <file>icon/data-type/int.svg</file>
+        <file>icon/data-type/obj.svg</file>
+        <file>icon/data-type/str.svg</file>
+        <file>icon/data-type/dataframe.svg</file>
     </qresource>
 </RCC>

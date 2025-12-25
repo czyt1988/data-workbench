@@ -8,8 +8,11 @@ namespace DA
 {
 class DADataManager;
 
+
 /**
- * @brief DAData的mimeData
+ * @brief 支持多个DAData下DataFrame的多个Series
+ *
+ * 这个主要适用于dataframe展开后的series树的多选拖曳
  */
 class DAGUI_API DAMimeDataForData : public QMimeData
 {
@@ -20,11 +23,21 @@ public:
     virtual QStringList formats() const override;
 
 public:
-    void setDAData(const DAData& d);
-    DAData getDAData() const;
+    // 添加series
+    void appendDataSeries(const DAData& d, const QString& colName);
+    const QList< QPair< DAData, QStringList > >& getDataSeries() const;
+    QList< QPair< DAData, QStringList > >& getDataSeries();
+    bool isHaveDataSeries() const;
+
+    // 添加dataframe
+    void appendDataframe(const DAData& d);
+    const QList< DAData >& getDataframes() const;
+    QList< DAData >& getDataframes();
+    bool isHaveDataframe() const;
 
 private:
-    DAData _data;
+    QList< QPair< DAData, QStringList > > m_dataSeriess;
+    QList< DAData > m_dataframe;
 };
 }
 #endif  // DAMIMEDATAFORDATA_H
