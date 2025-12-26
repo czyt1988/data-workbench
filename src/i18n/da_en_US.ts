@@ -4248,6 +4248,24 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
 </context>
 <context>
+    <name>DADataManagerTreeWidget</name>
+    <message>
+        <location filename="../DAGui/DADataManagerTreeWidget.ui" line="+14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+37"/>
+        <source>-</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Input To Search</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DADataOperateOfDataFrameWidget</name>
     <message>
         <location filename="../DAGui/DADataOperateOfDataFrameWidget.ui" line="+14"/>

@@ -56,6 +56,22 @@ DADataManager* DADataManagerTreeWidget::getDataManager() const
     return d_ptr->model->getDataManager();
 }
 
+void DADataManagerTreeWidget::setExpandDataframeToSeries(bool on)
+{
+}
+
+bool DADataManagerTreeWidget::isExpandDataframeToSeries() const
+{
+}
+
+void DADataManagerTreeWidget::setColumnStyle(DADataManagerTreeModel::ColumnStyle style)
+{
+}
+
+DADataManagerTreeModel::ColumnStyle DADataManagerTreeWidget::getColumnStyle() const
+{
+}
+
 void DADataManagerTreeWidget::changeEvent(QEvent* e)
 {
     QWidget::changeEvent(e);
@@ -90,5 +106,20 @@ void DADataManagerTreeWidget::onComboBoxEditTextChanged(const QString& text)
 {
 }
 
+void DADataManagerTreeWidget::updateCompleterModel()
+{
+}
+
+void DADataManagerTreeWidget::initCompleter()
+{
+}
+
+void DADataManagerTreeWidget::updateFilter(const QString& text)
+{
+}
+
+QStringList DADataManagerTreeWidget::collectAllDataNames() const
+{
+}
 
 }  // end DA

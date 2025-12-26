@@ -196,6 +196,7 @@ set(DA_LIB_SUBDIR_ChartSetting ${CMAKE_CURRENT_SOURCE_DIR}/ChartSetting)
 set(DA_LIB_HEADER_FILES_Models
     ${DA_LIB_SUBDIR_Models}/DAAbstractCacheWindowTableModel.h
     ${DA_LIB_SUBDIR_Models}/DADataManagerTreeModel.h
+    ${DA_LIB_SUBDIR_Models}/DADataManagerTreeFilterProxyModel.h
     ${DA_LIB_SUBDIR_Models}/DATreeModel.h
     ${DA_LIB_SUBDIR_Models}/DADataTableModel.h
     ${DA_LIB_SUBDIR_Models}/DADataManagerTableModel.h
@@ -205,6 +206,7 @@ set(DA_LIB_HEADER_FILES_Models
 set(DA_LIB_SOURCE_FILES_Models
     ${DA_LIB_SUBDIR_Models}/DAAbstractCacheWindowTableModel.cpp
     ${DA_LIB_SUBDIR_Models}/DADataManagerTreeModel.cpp
+    ${DA_LIB_SUBDIR_Models}/DADataManagerTreeFilterProxyModel.cpp
     ${DA_LIB_SUBDIR_Models}/DATreeModel.cpp
     ${DA_LIB_SUBDIR_Models}/DADataTableModel.cpp
     ${DA_LIB_SUBDIR_Models}/DADataManagerTableModel.cpp

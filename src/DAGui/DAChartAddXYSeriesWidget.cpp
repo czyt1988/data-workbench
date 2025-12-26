@@ -27,14 +27,6 @@ DAChartAddXYSeriesWidget::DAChartAddXYSeriesWidget(QWidget* parent)
     ui->tableViewXY->verticalHeader()->setDefaultSectionSize(fm.lineSpacing() * 1.1);
     connect(this, &DAChartAddXYSeriesWidget::dataManagerChanged, this, &DAChartAddXYSeriesWidget::onDataManagerChanged);
     connect(this, &DAChartAddXYSeriesWidget::currentDataChanged, this, &DAChartAddXYSeriesWidget::onCurrentDataChanged);
-    connect(ui->comboBoxX,
-            &DADataManagerComboBox::currentDataframeSeriesChanged,
-            this,
-            &DAChartAddXYSeriesWidget::onComboBoxXCurrentDataframeSeriesChanged);
-    connect(ui->comboBoxY,
-            &DADataManagerComboBox::currentDataframeSeriesChanged,
-            this,
-            &DAChartAddXYSeriesWidget::onComboBoxYCurrentDataframeSeriesChanged);
     connect(ui->groupBoxXAutoincrement, &QGroupBox::clicked, this, &DAChartAddXYSeriesWidget::onGroupBoxXAutoincrementClicked);
     connect(ui->groupBoxYAutoincrement, &QGroupBox::clicked, this, &DAChartAddXYSeriesWidget::onGroupBoxYAutoincrementClicked);
 }
@@ -80,7 +72,7 @@ QVector< QPointF > DAChartAddXYSeriesWidget::getSeries() const
  */
 QString DAChartAddXYSeriesWidget::getNameHint() const
 {
-    return ui->comboBoxY->currentText();
+    return QString();
 }
 
 /**
