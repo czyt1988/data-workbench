@@ -116,22 +116,23 @@ public:
     QAction* actionChartAddCloudMap;      ///< 云图
     QAction* actionChartAddVectorfield;   ///< 向量场图
 
-    QAction* actionChartEnableGrid;         ///< 网格显示总开关
-    QAction* actionChartEnableGridX;        ///< 网格显示X开关
-    QAction* actionChartEnableGridY;        ///< 网格显示Y开关
-    QAction* actionChartEnableGridXMin;     ///< 网格显示Xmin开关
-    QAction* actionChartEnableGridYMin;     ///< 网格显示Ymin开关
-    QAction* actionChartEnableZoom;         ///< 绘图允许缩放
-    QAction* actionChartZoomIn;             ///< 绘图放大
-    QAction* actionChartZoomOut;            ///< 绘图缩小
-    QAction* actionChartZoomAll;            ///< 显示全部
-    QAction* actionChartEnablePan;          ///< 绘图拖动
-    QActionGroup* actionGroupChartPickers;  ///< Chart Picker的actiongroup
-    QAction* actionChartEnablePickerCross;  ///< 十字标记
-    QAction* actionChartEnablePickerY;      ///< y拾取器
-    QAction* actionChartEnablePickerXY;     ///< xy拾取器
-    QAction* actionChartEnableLegend;       ///< legend
-    QAction* actionCopyFigureInClipboard;   ///< 把图片复制到剪切板
+    QAction* actionFigureSettingApplyAllChart;  ///< figure的设置应用到所有chart
+    QAction* actionChartEnableGrid;             ///< 网格显示总开关
+    QAction* actionChartEnableGridX;            ///< 网格显示X开关
+    QAction* actionChartEnableGridY;            ///< 网格显示Y开关
+    QAction* actionChartEnableGridXMin;         ///< 网格显示Xmin开关
+    QAction* actionChartEnableGridYMin;         ///< 网格显示Ymin开关
+    QAction* actionChartEnableZoom;             ///< 绘图允许缩放
+    QAction* actionChartZoomIn;                 ///< 绘图放大
+    QAction* actionChartZoomOut;                ///< 绘图缩小
+    QAction* actionChartZoomAll;                ///< 显示全部
+    QAction* actionChartEnablePan;              ///< 绘图拖动
+    QActionGroup* actionGroupChartPickers;      ///< Chart Picker的actiongroup
+    QAction* actionChartEnablePickerCross;      ///< 十字标记
+    QAction* actionChartEnablePickerY;          ///< y拾取器
+    QAction* actionChartEnablePickerXY;         ///< xy拾取器
+    QAction* actionChartEnableLegend;           ///< legend
+    QAction* actionCopyFigureInClipboard;       ///< 把图片复制到剪切板
     //===================================================
     // 视图标签 View Category
     //===================================================

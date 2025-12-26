@@ -604,6 +604,8 @@ void DAAppRibbonArea::buildContextCategoryChart()
     // chart edit
     m_pannelChartSetting = new SARibbonPanel(m_categoryChartEdit);
     m_pannelChartSetting->setObjectName(QStringLiteral("da-pannel-context-chartedit.chart_setting"));
+    m_pannelChartSetting->addLargeAction(m_actions->actionFigureSettingApplyAllChart);
+    m_pannelChartSetting->addSeparator();
     // grid
     m_pannelChartSetting->addLargeAction(m_actions->actionChartEnableGrid);
     m_chartGridDirActionsButtonGroup = new SARibbonButtonGroupWidget(m_pannelChartSetting);

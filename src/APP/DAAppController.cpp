@@ -461,6 +461,15 @@ QString DAAppController::makeWindowTitle(DAProjectInterface* proj)
     return QString("%1[*]-%2").arg(DAAPPRIBBONAREA_WINDOW_NAME, proj->getProjectBaseName());
 }
 
+/**
+ * @brief 是否应用到所有绘图
+ * @return
+ */
+bool DAAppController::isApplyToAllCharts() const
+{
+    return mActions->actionFigureSettingApplyAllChart->isChecked();
+}
+
 void DAAppController::save()
 {
     DAAppProject* project = DA_APP_CORE.getAppProject();
@@ -581,6 +590,51 @@ DAFigureWidget* DAAppController::gcf()
 DAChartWidget* DAAppController::getCurrentChart() const
 {
     return getChartOperateWidget()->getCurrentChart();
+}
+
+/**
+ * @brief 获取当前的所有图表
+ * @return
+ */
+QList< DAChartWidget* > DAAppController::getCurrentCharts() const
+{
+    return getChartOperateWidget()->getCurrentCharts();
+}
+
+QList< DAChartWidget* > DAAppController::gcas() const
+{
+    return getCurrentCharts();
+}
+
+/**
+ * @brief 给当前绘图应用方法
+ * @param fp
+ * @return 成功应用返回true,没有任何绘图返回false,执行过程出错也返回false
+ */
+bool DAAppController::applyCurrentCharts(const DAAppController::FpChartWidgetApply& fp)
+{
+    const QList< DAChartWidget* > ws = getCurrentCharts();
+    for (DAChartWidget* w : ws) {
+        if (!fp(w)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+/**
+ * @brief 获取需要操作的绘图
+ * @return
+ */
+QList< DAChartWidget* > DAAppController::needOperateCharts() const
+{
+    QList< DAChartWidget* > ws;
+    if (isApplyToAllCharts()) {
+        ws = getCurrentCharts();
+    } else {
+        ws.append(getCurrentChart());
+    }
+    return ws;
 }
 
 DAChartWidget* DAAppController::gca() const
@@ -1503,13 +1557,14 @@ void DAAppController::onActionChartAddCloudMapTriggered()
  */
 void DAAppController::onActionChartEnableGridTriggered(bool on)
 {
-    qDebug() << "onActionChartGridEnableTriggered";
-    DAChartWidget* w = getCurrentChart();
-    if (w) {
+    bool res = applyCurrentCharts([ on ](DAChartWidget* w) -> bool {
         w->enableGrid(on);
         w->replot();
+        return true;
+    });
+    if (res) {
         // grid生效与否决定了X，Y以及Xmin,Ymin能否显示
-        mRibbon->updateChartGridAboutRibbon(w);
+        mRibbon->updateChartGridAboutRibbon(getCurrentChart());
         setDirty();
     }
 }
@@ -1520,10 +1575,12 @@ void DAAppController::onActionChartEnableGridTriggered(bool on)
  */
 void DAAppController::onActionChartEnableGridXTriggered(bool on)
 {
-    DAChartWidget* w = getCurrentChart();
-    if (w) {
+    bool res = applyCurrentCharts([ on ](DAChartWidget* w) -> bool {
         w->enableGridX(on);
         w->replot();
+        return true;
+    });
+    if (res) {
         setDirty();
     }
 }
@@ -1533,10 +1590,12 @@ void DAAppController::onActionChartEnableGridXTriggered(bool on)
  */
 void DAAppController::onActionChartEnableGridYTriggered(bool on)
 {
-    DAChartWidget* w = getCurrentChart();
-    if (w) {
+    bool res = applyCurrentCharts([ on ](DAChartWidget* w) -> bool {
         w->enableGridY(on);
         w->replot();
+        return true;
+    });
+    if (res) {
         setDirty();
     }
 }
@@ -1546,10 +1605,12 @@ void DAAppController::onActionChartEnableGridYTriggered(bool on)
  */
 void DAAppController::onActionChartEnableGridXMinEnableTriggered(bool on)
 {
-    DAChartWidget* w = getCurrentChart();
-    if (w) {
+    bool res = applyCurrentCharts([ on ](DAChartWidget* w) -> bool {
         w->enableGridXMin(on);
         w->replot();
+        return true;
+    });
+    if (res) {
         setDirty();
     }
 }
@@ -1559,10 +1620,12 @@ void DAAppController::onActionChartEnableGridXMinEnableTriggered(bool on)
  */
 void DAAppController::onActionChartEnableGridYMinTriggered(bool on)
 {
-    DAChartWidget* w = getCurrentChart();
-    if (w) {
+    bool res = applyCurrentCharts([ on ](DAChartWidget* w) -> bool {
         w->enableGridYMin(on);
         w->replot();
+        return true;
+    });
+    if (res) {
         setDirty();
     }
 }
@@ -1573,10 +1636,12 @@ void DAAppController::onActionChartEnableGridYMinTriggered(bool on)
  */
 void DAAppController::onActionChartEnableZoomTriggered(bool on)
 {
-    DAChartWidget* w = getCurrentChart();
-    if (w) {
+    bool res = applyCurrentCharts([ on ](DAChartWidget* w) -> bool {
         w->enableZoom(on);
-        mRibbon->updateChartZoomPanAboutRibbon(w);
+        return true;
+    });
+    if (res) {
+        mRibbon->updateChartZoomPanAboutRibbon(getCurrentChart());
     }
 }
 
@@ -1585,10 +1650,10 @@ void DAAppController::onActionChartEnableZoomTriggered(bool on)
  */
 void DAAppController::onActionChartZoomInTriggered()
 {
-    DAChartWidget* w = getCurrentChart();
-    if (w) {
+    applyCurrentCharts([](DAChartWidget* w) -> bool {
         w->zoomIn();
-    }
+        return true;
+    });
 }
 
 /**
@@ -1596,10 +1661,10 @@ void DAAppController::onActionChartZoomInTriggered()
  */
 void DAAppController::onActionChartZoomOutTriggered()
 {
-    DAChartWidget* w = getCurrentChart();
-    if (w) {
+    applyCurrentCharts([](DAChartWidget* w) -> bool {
         w->zoomOut();
-    }
+        return true;
+    });
 }
 
 /**
@@ -1607,10 +1672,13 @@ void DAAppController::onActionChartZoomOutTriggered()
  */
 void DAAppController::onActionChartZoomAllTriggered()
 {
-    DAChartWidget* w = getCurrentChart();
-    if (w) {
+    bool res = applyCurrentCharts([](DAChartWidget* w) -> bool {
         w->rescaleAxes();
         w->replot();
+        return true;
+    });
+    if (res) {
+        setDirty();
     }
 }
 
@@ -1620,10 +1688,12 @@ void DAAppController::onActionChartZoomAllTriggered()
  */
 void DAAppController::onActionChartEnablePanTriggered(bool on)
 {
-    DAChartWidget* w = getCurrentChart();
-    if (w) {
+    bool res = applyCurrentCharts([ on ](DAChartWidget* w) -> bool {
         w->enablePan(on);
-        mRibbon->updateChartZoomPanAboutRibbon(w);
+        return true;
+    });
+    if (res) {
+        mRibbon->updateChartZoomPanAboutRibbon(getCurrentChart());
     }
 }
 
@@ -1633,10 +1703,10 @@ void DAAppController::onActionChartEnablePanTriggered(bool on)
  */
 void DAAppController::onActionChartEnablePickerCrossTriggered(bool on)
 {
-    DAChartWidget* w = getCurrentChart();
-    if (w) {
+    applyCurrentCharts([ on ](DAChartWidget* w) -> bool {
         w->enableCrosshair(on);
-    }
+        return true;
+    });
 }
 
 /**
@@ -1645,10 +1715,10 @@ void DAAppController::onActionChartEnablePickerCrossTriggered(bool on)
  */
 void DAAppController::onActionChartEnablePickerYTriggered(bool on)
 {
-    DAChartWidget* w = getCurrentChart();
-    if (w) {
+    applyCurrentCharts([ on ](DAChartWidget* w) -> bool {
         w->enableYValuePicking(on);
-    }
+        return true;
+    });
 }
 
 /**
@@ -1657,10 +1727,10 @@ void DAAppController::onActionChartEnablePickerYTriggered(bool on)
  */
 void DAAppController::onActionChartEnablePickerXYTriggered(bool on)
 {
-    DAChartWidget* w = getCurrentChart();
-    if (w) {
+    applyCurrentCharts([ on ](DAChartWidget* w) -> bool {
         w->enableXYValuePicking(on);
-    }
+        return true;
+    });
 }
 
 /**
@@ -1669,13 +1739,14 @@ void DAAppController::onActionChartEnablePickerXYTriggered(bool on)
  */
 void DAAppController::onActionChartEnableLegendTriggered(bool on)
 {
-    DAChartWidget* w = getCurrentChart();
-    if (!w) {
-        return;
+    bool res = applyCurrentCharts([ on ](DAChartWidget* w) -> bool {
+        w->enableLegend(on);
+        w->replot();
+        return true;
+    });
+    if (res) {
+        setDirty();
     }
-    w->enableLegend(on);
-    w->replot();
-    setDirty();
 }
 
 /**

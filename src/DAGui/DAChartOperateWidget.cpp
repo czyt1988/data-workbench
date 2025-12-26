@@ -250,6 +250,28 @@ DAChartWidget* DAChartOperateWidget::gca() const
     return getCurrentChart();
 }
 
+/**
+ * @brief 获取当前选中绘图的所有图表
+ * @return
+ */
+QList< DAChartWidget* > DAChartOperateWidget::getCurrentCharts() const
+{
+    DAFigureWidget* fig = getCurrentFigure();
+    if (fig) {
+        return fig->getCharts();
+    }
+    return QList< DAChartWidget* >();
+}
+
+/**
+ * @brief 获取当前选中绘图的所有图表
+ * @return
+ */
+QList< DAChartWidget* > DAChartOperateWidget::gcas() const
+{
+    return getCurrentCharts();
+}
+
 QUndoStack* DAChartOperateWidget::getUndoStack()
 {
     DAFigureWidget* fig = getCurrentFigure();

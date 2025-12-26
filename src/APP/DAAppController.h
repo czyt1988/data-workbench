@@ -1,6 +1,7 @@
 ﻿#ifndef DAAPPCONTROLLER_H
 #define DAAPPCONTROLLER_H
 #include <QObject>
+#include <functional>
 #include <QAction>
 #include <QUndoStack>
 #include <QScopedPointer>
@@ -65,6 +66,13 @@ public:
     };
     Q_DECLARE_FLAGS(LastFocusedOpertateWidgets, LastFocusedOpertateWidget)
     Q_FLAG(LastFocusedOpertateWidget)
+    /**
+     * @brief 批量应用绘图的函数指针
+     *
+     * 返回false，将停止应用
+     */
+    using FpChartWidgetApply = std::function< bool(DAChartWidget*) >;
+
 public:
     DAAppController(QObject* par = nullptr);
     ~DAAppController();
@@ -105,6 +113,11 @@ public:
     // 获取绘图操作窗口,如果没有回返回nullptr
     DAChartWidget* getCurrentChart() const;
     DAChartWidget* gca() const;
+    QList< DAChartWidget* > getCurrentCharts() const;
+    QList< DAChartWidget* > gcas() const;
+    bool applyCurrentCharts(const FpChartWidgetApply& fp);
+    // 获取需要操作的绘图
+    QList< DAChartWidget* > needOperateCharts() const;
     // 获取设置窗口
     DASettingContainerWidget* getSettingContainerWidget() const;
     // 判断当前是否是在绘图操作模式，就算绘图操作不在焦点，但绘图操作在前端，此函数也返回true
@@ -123,6 +136,8 @@ public:
     // 生成窗口标题
     static QString makeWindowTitle();
     static QString makeWindowTitle(DAProjectInterface* proj);
+    // 是否应用到所有绘图
+    bool isApplyToAllCharts() const;
 public Q_SLOTS:
     // 保存
     void save();

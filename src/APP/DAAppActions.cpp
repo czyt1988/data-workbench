@@ -103,6 +103,8 @@ void DAAppActions::buildChartAction()
     actionChartAddVectorfield =
         createAction("actionChartAddVectorfield", ":/app/chart-type/Icon/chart-type/chart-vectorfield.svg");
 
+    actionFigureSettingApplyAllChart =
+        createAction("actionFigureSettingApplyAllChart", ":/app/bright/Icon/apply-to-all-figure.svg", true, true);
     actionChartEnableGrid  = createAction("actionChartEnableGrid", ":/app/bright/Icon/chart-grid.svg", true, false);
     actionChartEnableGridX = createAction("actionChartEnableGridX", ":/app/bright/Icon/chart-grid-x.svg", true, false);
     actionChartEnableGridY = createAction("actionChartEnableGridY", ":/app/bright/Icon/chart-grid-y.svg", true, false);
@@ -316,6 +318,10 @@ void DAAppActions::retranslateUi()
     actionChartAddCloudMap->setText(tr("Add \nCloud Map"));        // cn:云图
     actionChartAddVectorfield->setText(tr("Add \nVector Field"));  // cn:向量场图
 
+    actionFigureSettingApplyAllChart->setText(tr("Apply All Charts"));  // cn:应用到\n所有绘图
+    actionFigureSettingApplyAllChart->setToolTip(tr(
+        "When this feature is selected, operations on the figure will "
+        "apply to all plots, not just the currently selected one"));  // cn:此功能选中后，figure上的操作将应用到所有绘图，而不仅仅是当前选中的绘图
     actionChartEnableGrid->setText(tr("Enable Grid"));              // cn:网格
     actionChartEnableGridX->setText(tr("X Grid"));                  // cn:横向网格
     actionChartEnableGridY->setText(tr("Y Grid"));                  // cn:纵向网格

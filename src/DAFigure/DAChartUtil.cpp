@@ -544,7 +544,7 @@ QwtDateScaleDraw* DAChartUtil::setAxisDateTimeScale(QwtPlot* chart, int axisID, 
         return nullptr;
     }
     QwtDateScaleDraw* dateScale;
-    dateScale = new QwtDateScaleDraw;  // 原来的scaleDraw会再qwt自动delete
+    dateScale = new QwtDateScaleDraw(Qt::LocalTime);  // 原来的scaleDraw会再qwt自动delete
     setupSmartDateFormat(dateScale, fullDateformat);
     chart->setAxisScaleDraw(axisID, dateScale);
     /**

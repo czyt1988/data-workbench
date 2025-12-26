@@ -180,7 +180,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+292"/>
+        <location filename="../APP/DAAppActions.cpp" line="+294"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
@@ -316,6 +316,16 @@ Vector Field</source>
     </message>
     <message>
         <location line="+2"/>
+        <source>Apply All Charts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>When this feature is selected, operations on the figure will apply to all plots, not just the currently selected one</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Enable Grid</source>
         <translation>网格</translation>
     </message>
@@ -665,7 +675,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+829"/>
+        <location filename="../APP/DAAppController.cpp" line="+883"/>
         <location line="+49"/>
         <source>project file(*.%1)</source>
         <translation>工程文件(*.%1)</translation>
@@ -687,7 +697,7 @@ Table Area</source>
         <translation>加载工程文件“%1”失败</translation>
     </message>
     <message>
-        <location line="-418"/>
+        <location line="-463"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
@@ -713,17 +723,17 @@ Table Area</source>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+414"/>
+        <location line="+459"/>
         <source>Project saved successfully,path is %1</source>
         <translation>工程保存成功，路径位于:%1</translation>
     </message>
     <message>
-        <location line="-395"/>
+        <location line="-440"/>
         <source>Please select the data operation window</source>
         <translation>请选中数据操作窗口</translation>
     </message>
     <message>
-        <location line="+412"/>
+        <location line="+457"/>
         <source>Project load successfully,path is %1</source>
         <translation>工程加载成功，路径为：%1</translation>
     </message>
@@ -768,7 +778,7 @@ Table Area</source>
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
     <message>
-        <location line="+522"/>
+        <location line="+539"/>
         <source>new workflow name</source>
         <translation>新工作流名称</translation>
     </message>
@@ -1192,7 +1202,7 @@ Table Area</source>
         <translation>把工作流的场景导出为图片</translation>
     </message>
     <message>
-        <location line="+421"/>
+        <location line="+423"/>
         <source>Theme</source>
         <translation>主题</translation>
     </message>
@@ -1202,7 +1212,7 @@ Table Area</source>
         <translation>最近打开的文件</translation>
     </message>
     <message>
-        <location line="-148"/>
+        <location line="-150"/>
         <source>Group</source>
         <translation>分组</translation>
     </message>
@@ -1716,7 +1726,7 @@ Table Area</source>
         <translation>图-%1</translation>
     </message>
     <message>
-        <location line="+225"/>
+        <location line="+247"/>
         <source>question</source>
         <translation>疑问</translation>
     </message>
@@ -3323,7 +3333,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1877"/>
+        <location filename="../APP/DAAppController.cpp" line="-1948"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>

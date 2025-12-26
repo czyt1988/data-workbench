@@ -180,7 +180,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+292"/>
+        <location filename="../APP/DAAppActions.cpp" line="+294"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
@@ -311,6 +311,16 @@ Vector Field</source>
     </message>
     <message>
         <location line="+2"/>
+        <source>Apply All Charts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>When this feature is selected, operations on the figure will apply to all plots, not just the currently selected one</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Enable Grid</source>
         <translation type="unfinished"></translation>
     </message>
@@ -642,7 +652,7 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+477"/>
+        <location filename="../APP/DAAppController.cpp" line="+486"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
@@ -668,17 +678,17 @@ Config</source>
     </message>
     <message>
         <location line="+12"/>
-        <location line="+414"/>
+        <location line="+459"/>
         <source>Project saved successfully,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-395"/>
+        <location line="-440"/>
         <source>Please select the data operation window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+286"/>
+        <location line="+331"/>
         <source>Question</source>
         <translation type="unfinished"></translation>
     </message>
@@ -745,7 +755,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+522"/>
+        <location line="+539"/>
         <source>new workflow name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1189,7 +1199,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+67"/>
+        <location line="+69"/>
         <source>Theme</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1693,7 +1703,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+225"/>
+        <location line="+247"/>
         <source>question</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3210,7 +3220,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1877"/>
+        <location filename="../APP/DAAppController.cpp" line="-1948"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>

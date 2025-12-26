@@ -56,6 +56,8 @@ public:
     // 获取当前的chart，如果没有返回nullptr
     DAChartWidget* getCurrentChart() const;
     DAChartWidget* gca() const;
+    QList< DAChartWidget* > getCurrentCharts() const;
+    QList< DAChartWidget* > gcas() const;
     // 获取绘图的数量
     int getFigureCount() const;
     // 获取QUndoStack
