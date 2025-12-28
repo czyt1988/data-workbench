@@ -107,7 +107,7 @@ QList< DAData > DAAppDataManager::getSelectDatas() const
     if (!dmw) {
         return QList< DAData >();
     }
-    return dmw->getCurrentSelectDatas();
+    return dmw->getAllSelectDatas();
 }
 
 /**

@@ -9,7 +9,7 @@ class QDropEvent;
 class QDragMoveEvent;
 namespace DA
 {
-class DAMimeDataForMultDataSeries;
+class DAMimeDataForData;
 
 
 class DAGUI_API DAPySeriesListView : public QListView
@@ -53,7 +53,7 @@ protected:
 
 private:
     bool acceptMimeData(const QMimeData* mime) const;
-    bool acceptSeries(const DAMimeDataForMultDataSeries* mime) const;
+    bool acceptSeries(const DAMimeDataForData* mime) const;
 };
 }  // end namespace DA
 

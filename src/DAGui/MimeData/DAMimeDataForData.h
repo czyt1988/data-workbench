@@ -8,8 +8,11 @@ namespace DA
 {
 class DADataManager;
 
+
 /**
- * @brief DAData的mimeData
+ * @brief 支持多个DAData下DataFrame的多个Series
+ *
+ * 这个主要适用于dataframe展开后的series树的多选拖曳
  */
 class DAGUI_API DAMimeDataForData : public QMimeData
 {
@@ -20,60 +23,21 @@ public:
     virtual QStringList formats() const override;
 
 public:
-    void setDAData(const DAData& d);
-    DAData getDAData() const;
-
-private:
-    DAData m_data;
-};
-
-
-/**
- * @brief DAData下DataFrame的Series名字
- *
- * 这个主要适用于dataframe展开后的series
- */
-class DAGUI_API DAMimeDataForDataSeries : public QMimeData
-{
-    Q_OBJECT
-public:
-    DAMimeDataForDataSeries();
-    virtual bool hasFormat(const QString& mimeType) const override;
-    virtual QStringList formats() const override;
-
-public:
-    void setDAData(const DAData& d);
-    DAData getDAData() const;
-    // Series的名字
-    void setSeriesName(const QString& name);
-    QString getSeriesName() const;
-
-private:
-    DAData m_data;
-    QString m_seriesName;
-};
-
-/**
- * @brief 支持多个DAData下DataFrame的多个Series
- *
- * 这个主要适用于dataframe展开后的series树的多选拖曳
- */
-class DAGUI_API DAMimeDataForMultDataSeries : public QMimeData
-{
-    Q_OBJECT
-public:
-    DAMimeDataForMultDataSeries();
-    virtual bool hasFormat(const QString& mimeType) const override;
-    virtual QStringList formats() const override;
-
-public:
+    // 添加series
     void appendDataSeries(const DAData& d, const QString& colName);
-    const QList< QPair< DAData, QStringList > >& getDADatas() const;
-    QList< QPair< DAData, QStringList > >& getDADatas();
-    bool isEmpty() const;
+    const QList< QPair< DAData, QStringList > >& getDataSeries() const;
+    QList< QPair< DAData, QStringList > >& getDataSeries();
+    bool isHaveDataSeries() const;
+
+    // 添加dataframe
+    void appendDataframe(const DAData& d);
+    const QList< DAData >& getDataframes() const;
+    QList< DAData >& getDataframes();
+    bool isHaveDataframe() const;
 
 private:
-    QList< QPair< DAData, QStringList > > m_datas;
+    QList< QPair< DAData, QStringList > > m_dataSeriess;
+    QList< DAData > m_dataframe;
 };
 }
 #endif  // DAMIMEDATAFORDATA_H

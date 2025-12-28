@@ -1881,13 +1881,8 @@ Config</source>
 <context>
     <name>DA::DADataManageWidget</name>
     <message>
-        <location filename="../DAGui/DADataManageWidget.cpp" line="+114"/>
+        <location filename="../DAGui/DADataManageWidget.cpp" line="+76"/>
         <source>Please select the data item to remove</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>show datas in table view</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1945,7 +1940,7 @@ Config</source>
 <context>
     <name>DA::DADataManagerTreeWidget</name>
     <message>
-        <location filename="../DAGui/DADataManagerTreeWidget.cpp" line="+301"/>
+        <location filename="../DAGui/DADataManagerTreeWidget.cpp" line="+354"/>
         <source>Search...</source>
         <translation type="unfinished"></translation>
     </message>

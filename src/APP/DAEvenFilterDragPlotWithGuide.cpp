@@ -68,7 +68,7 @@ bool DAEvenFilterDragPlotWithGuide::dragEnterEvent(QDragEnterEvent* e, DAFigureW
         return false;
     }
     const QMimeData* mimeData = e->mimeData();
-    if (mimeData->hasFormat(DAMIMEDATA_FORMAT_DADATA)) {
+    if (mimeData->hasFormat(DAMIMEDATA_FORMAT_DADATAS)) {
         e->acceptProposedAction();
     } else {
         qDebug() << "DAEvenFilterDragPlotWithGuide::dragEnterEvent get unknow format:" << mimeData->formats();
@@ -85,7 +85,7 @@ bool DAEvenFilterDragPlotWithGuide::dragMoveEvent(QDragMoveEvent* e, DAFigureWid
         return false;
     }
     const QMimeData* mimeData = e->mimeData();
-    if (mimeData->hasFormat(DAMIMEDATA_FORMAT_DADATA)) {
+    if (mimeData->hasFormat(DAMIMEDATA_FORMAT_DADATAS)) {
         // 数据
         QWidget* w = fig->plotUnderPos(DA::compat::eventPos(e));
         if (nullptr == w) {
@@ -122,22 +122,29 @@ bool DAEvenFilterDragPlotWithGuide::dropEvent(QDropEvent* e, DAFigureWidget* fig
     }
 
     const QMimeData* mimeData = e->mimeData();
-    if (mimeData->hasFormat(DAMIMEDATA_FORMAT_DADATA)) {
+    if (mimeData->hasFormat(DAMIMEDATA_FORMAT_DADATAS)) {
+        // 数据
+        const DAMimeDataForData* datamime = qobject_cast< const DAMimeDataForData* >(mimeData);
+        if (nullptr == datamime) {
+            return false;
+        }
+        QwtPlot* w = fig->plotUnderPos(DA::compat::eventPos(e));
+        if (nullptr == w) {
+            return false;
+        }
+        if (datamime->isHaveDataframe()) {
+            auto datas = datamime->getDataframes();
+            if (datas.empty()) {
+                return false;
+            }
+            DAData data          = datas.first();
+            DAChartWidget* chart = qobject_cast< DAChartWidget* >(w);
+            e->acceptProposedAction();
+            // 因为createPlotItemWithGuideDialog里的对话框也涉及拖曳，必须先结束这个拖曳
+            QTimer::singleShot(0, [ this, fig, chart, data ]() { createChartWithDialog(fig, chart, data); });
+        }
     }
-    // 数据
-    const DAMimeDataForData* datamime = qobject_cast< const DAMimeDataForData* >(mimeData);
-    if (nullptr == datamime) {
-        return false;
-    }
-    QwtPlot* w = fig->plotUnderPos(DA::compat::eventPos(e));
-    if (nullptr == w) {
-        return false;
-    }
-    DAData data          = datamime->getDAData();
-    DAChartWidget* chart = qobject_cast< DAChartWidget* >(w);
-    e->acceptProposedAction();
-    // 因为createPlotItemWithGuideDialog里的对话框也涉及拖曳，必须先结束这个拖曳
-    QTimer::singleShot(0, [ this, fig, chart, data ]() { createChartWithDialog(fig, chart, data); });
+
     return true;
 }
 
@@ -155,7 +162,10 @@ void DAEvenFilterDragPlotWithGuide::createChartWithDialog(DAFigureWidget* fig, D
         return;
     }
     fig->addItem_(pi);
-    fig->gca()->rescaleAxes();
+    if (auto chart = fig->gca()) {
+        chart->rescaleAxes();
+        chart->replot();
+    }
 }
 
 }  // end DA

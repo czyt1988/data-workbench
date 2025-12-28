@@ -191,12 +191,12 @@ void DAPySeriesListView::dragMoveEvent(QDragMoveEvent* event)
 void DAPySeriesListView::dropEvent(QDropEvent* event)
 {
     const QMimeData* mime                         = event->mimeData();
-    const DAMimeDataForMultDataSeries* seriesMime = qobject_cast< const DAMimeDataForMultDataSeries* >(mime);
+    const DAMimeDataForData* seriesMime = qobject_cast< const DAMimeDataForData* >(mime);
     if (!seriesMime) {
         event->ignore();
         return;
     }
-    const QList< QPair< DAData, QStringList > >& series = seriesMime->getDADatas();
+    const QList< QPair< DAData, QStringList > >& series = seriesMime->getDataSeries();
     for (const auto& p : series) {
         for (const QString& name : p.second) {
             addSeries(p.first, name);
@@ -207,20 +207,20 @@ void DAPySeriesListView::dropEvent(QDropEvent* event)
 
 bool DAPySeriesListView::acceptMimeData(const QMimeData* mime) const
 {
-    if (!mime->hasFormat(DAMIMEDATA_FORMAT_MULT_DADATAS_SERIES)) {
+    if (!mime->hasFormat(DAMIMEDATA_FORMAT_DADATAS)) {
         return false;
     }
-    const DAMimeDataForMultDataSeries* seriesMime = qobject_cast< const DAMimeDataForMultDataSeries* >(mime);
+    const DAMimeDataForData* seriesMime = qobject_cast< const DAMimeDataForData* >(mime);
     if (!seriesMime) {
         return false;
     }
     return acceptSeries(seriesMime);
 }
 
-bool DAPySeriesListView::acceptSeries(const DAMimeDataForMultDataSeries* mime) const
+bool DAPySeriesListView::acceptSeries(const DAMimeDataForData* mime) const
 {
     DA_DC(d);
-    const QList< QPair< DAData, QStringList > >& datas = mime->getDADatas();
+    const QList< QPair< DAData, QStringList > >& datas = mime->getDataSeries();
     if (datas.empty()) {
         return false;
     }

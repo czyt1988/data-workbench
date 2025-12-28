@@ -5,13 +5,18 @@
 namespace DA
 {
 
+
+//===============================================================
+// DAMimeDataForMultDataSeries
+//===============================================================
+
 DAMimeDataForData::DAMimeDataForData() : QMimeData()
 {
 }
 
 bool DAMimeDataForData::hasFormat(const QString& mimeType) const
 {
-    if (mimeType == DAMIMEDATA_FORMAT_DADATA) {
+    if (mimeType == DAMIMEDATA_FORMAT_DADATAS) {
         return true;
     }
     return false;
@@ -19,85 +24,12 @@ bool DAMimeDataForData::hasFormat(const QString& mimeType) const
 
 QStringList DAMimeDataForData::formats() const
 {
-    return { DAMIMEDATA_FORMAT_DADATA };
+    return { DAMIMEDATA_FORMAT_DADATAS };
 }
 
-void DAMimeDataForData::setDAData(const DAData& d)
+void DAMimeDataForData::appendDataSeries(const DAData& d, const QString& colName)
 {
-    m_data = d;
-}
-
-DAData DAMimeDataForData::getDAData() const
-{
-    return m_data;
-}
-
-
-//===============================================================
-// DAMimeDataForDataSeries
-//===============================================================
-
-DAMimeDataForDataSeries::DAMimeDataForDataSeries() : QMimeData()
-{
-}
-
-bool DAMimeDataForDataSeries::hasFormat(const QString& mimeType) const
-{
-    if (mimeType == DAMIMEDATA_FORMAT_DADATA_DATAFRAME_SERIES) {
-        return true;
-    }
-    return false;
-}
-
-QStringList DAMimeDataForDataSeries::formats() const
-{
-    return { DAMIMEDATA_FORMAT_DADATA_DATAFRAME_SERIES };
-}
-
-void DAMimeDataForDataSeries::setDAData(const DAData& d)
-{
-    m_data = d;
-}
-
-DAData DAMimeDataForDataSeries::getDAData() const
-{
-    return m_data;
-}
-
-void DAMimeDataForDataSeries::setSeriesName(const QString& name)
-{
-    m_seriesName = name;
-}
-
-QString DAMimeDataForDataSeries::getSeriesName() const
-{
-    return m_seriesName;
-}
-
-//===============================================================
-// DAMimeDataForMultDataSeries
-//===============================================================
-
-DAMimeDataForMultDataSeries::DAMimeDataForMultDataSeries() : QMimeData()
-{
-}
-
-bool DAMimeDataForMultDataSeries::hasFormat(const QString& mimeType) const
-{
-    if (mimeType == DAMIMEDATA_FORMAT_MULT_DADATAS_SERIES) {
-        return true;
-    }
-    return false;
-}
-
-QStringList DAMimeDataForMultDataSeries::formats() const
-{
-    return { DAMIMEDATA_FORMAT_MULT_DADATAS_SERIES };
-}
-
-void DAMimeDataForMultDataSeries::appendDataSeries(const DAData& d, const QString& colName)
-{
-    for (auto& p : m_datas) {
+    for (auto& p : m_dataSeriess) {
         if (p.first == d) {
             if (!p.second.contains(colName)) {
                 p.second.append(colName);
@@ -105,22 +37,42 @@ void DAMimeDataForMultDataSeries::appendDataSeries(const DAData& d, const QStrin
             }
         }
     }
-    m_datas.append(qMakePair(d, QStringList() << colName));
+    m_dataSeriess.append(qMakePair(d, QStringList() << colName));
 }
 
-const QList< QPair< DAData, QStringList > >& DAMimeDataForMultDataSeries::getDADatas() const
+const QList< QPair< DAData, QStringList > >& DAMimeDataForData::getDataSeries() const
 {
-    return m_datas;
+    return m_dataSeriess;
 }
 
-QList< QPair< DAData, QStringList > >& DAMimeDataForMultDataSeries::getDADatas()
+QList< QPair< DAData, QStringList > >& DAMimeDataForData::getDataSeries()
 {
-    return m_datas;
+    return m_dataSeriess;
 }
 
-bool DAMimeDataForMultDataSeries::isEmpty() const
+bool DAMimeDataForData::isHaveDataSeries() const
 {
-    return m_datas.isEmpty();
+    return (!m_dataSeriess.isEmpty());
+}
+
+void DAMimeDataForData::appendDataframe(const DAData& d)
+{
+    m_dataframe.append(d);
+}
+
+const QList< DAData >& DAMimeDataForData::getDataframes() const
+{
+    return m_dataframe;
+}
+
+QList< DAData >& DAMimeDataForData::getDataframes()
+{
+    return m_dataframe;
+}
+
+bool DAMimeDataForData::isHaveDataframe() const
+{
+    return (!m_dataframe.isEmpty());
 }
 
 }

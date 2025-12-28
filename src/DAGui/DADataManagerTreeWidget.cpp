@@ -4,6 +4,7 @@
 #include <QTimer>
 #include <QCompleter>
 #include <QStringListModel>
+#include <QItemSelectionModel>
 // stl
 #include <algorithm>
 // DA
@@ -41,6 +42,7 @@ void DADataManagerTreeWidget::PrivateData::init()
     // 创建模型和代理模型
     model = new DADataManagerTreeModel(q_ptr);
     model->setExpandDataframeToSeries(true);
+    model->setEnableEdit(false);
     proxyModel = new DADataManagerTreeFilterProxyModel(q_ptr);
     proxyModel->setSourceModel(model);
     ui->treeView->setModel(proxyModel);
@@ -100,6 +102,8 @@ DADataManagerTreeWidget::DADataManagerTreeWidget(QWidget* parent)
     connect(d_ptr->model, &DADataManagerTreeModel::rowsRemoved, this, &DADataManagerTreeWidget::updateCompleterModel);
     connect(d_ptr->model, &DADataManagerTreeModel::dataChanged, this, &DADataManagerTreeWidget::updateCompleterModel);
     connect(d_ptr->filterTimer, &QTimer::timeout, this, &DADataManagerTreeWidget::applyFilter);
+
+    connect(ui->treeView, &QTreeView::doubleClicked, this, &DADataManagerTreeWidget::onTreeViewDoubleClicked);
 }
 
 DADataManagerTreeWidget::~DADataManagerTreeWidget()
@@ -156,6 +160,38 @@ DAData DADataManagerTreeWidget::getCurrentSelectData() const
         return DAData();
     }
     return d->model->itemToData(item);
+}
+
+/**
+ * @brief 获取所有选择的数据
+ * @return
+ */
+QList< DAData > DADataManagerTreeWidget::getAllSelectDatas() const
+{
+    DA_DC(d);
+    QItemSelectionModel* selectionModel = ui->treeView->selectionModel();
+    if (!selectionModel) {
+        return QList< DAData >();
+    }
+    // 获取所有选中的索引
+    QList< DAData > res;
+    const QModelIndexList selectedIndexes = selectionModel->selectedIndexes();
+    for (const QModelIndex& index : selectedIndexes) {
+        // 只处理第一级（父节点是无效索引的根节点）
+        if (index.parent().isValid()) {
+            // 不是第一级节点
+            continue;
+        }
+
+        // 获取对应的QStandardItem
+        const QModelIndex srcIndex = d->proxyModel->mapToSource(index);
+        QStandardItem* item        = d->model->itemFromIndex(srcIndex);
+        if (item && DADataManagerTreeModel::isDataframeItem(item)) {
+            DAData data = DADataManagerTreeModel::itemToData(item);
+            res.append(data);
+        }
+    }
+    return res;
 }
 
 /**
@@ -271,6 +307,23 @@ void DADataManagerTreeWidget::updateCompleterModel()
 void DADataManagerTreeWidget::applyFilter()
 {
     updateFilter(ui->comboBoxFilter->currentText());
+}
+
+void DADataManagerTreeWidget::onTreeViewDoubleClicked(const QModelIndex& index)
+{
+    if (index.parent().isValid()) {
+        // 非根节点不处理
+        return;
+    }
+    DA_D(d);
+    const QModelIndex srcIndex = d->proxyModel->mapToSource(index);
+    QStandardItem* item        = d->model->itemFromIndex(srcIndex);
+    if (item) {
+        DAData data = DADataManagerTreeModel::itemToData(item);
+        if (!data.isNull()) {
+            Q_EMIT dataDbClicked(data);
+        }
+    }
 }
 
 

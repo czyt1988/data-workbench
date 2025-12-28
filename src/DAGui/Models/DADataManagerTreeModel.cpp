@@ -578,7 +578,7 @@ Qt::DropActions DADataManagerTreeModel::supportedDragActions() const
 QStringList DADataManagerTreeModel::mimeTypes() const
 {
     QStringList types;
-    types << DAMIMEDATA_FORMAT_MULT_DADATAS_SERIES;
+    types << DAMIMEDATA_FORMAT_DADATAS;
     return types;
 }
 
@@ -587,7 +587,7 @@ QMimeData* DADataManagerTreeModel::mimeData(const QModelIndexList& indexs) const
     if (indexs.isEmpty()) {
         return nullptr;
     }
-    DAMimeDataForMultDataSeries* mime = new DAMimeDataForMultDataSeries();
+    DAMimeDataForData* mime = new DAMimeDataForData();
     for (const QModelIndex& index : indexs) {
         QStandardItem* item = itemFromIndex(index);
         if (!item) {
@@ -606,11 +606,7 @@ QMimeData* DADataManagerTreeModel::mimeData(const QModelIndexList& indexs) const
             if (data.isNull() || !data.isDataFrame()) {
                 continue;
             }
-            DAPyDataFrame df = data.toDataFrame();
-            if (df.isNone()) {
-                continue;
-            }
-            mime->appendDataSeries(data, QString());
+            mime->appendDataframe(data);
         }
     }
     return mime;

@@ -36,7 +36,8 @@ public:
 
     // 获取当前选中的Data,如果选中的是series，返回的是series对应dataframe的DAData
     DAData getCurrentSelectData() const;
-
+    // 获取所有选择的数据
+    QList< DAData > getAllSelectDatas() const;
     // 当前是否选中了dataframe，选中了dataframe下面的series会返回false
     bool isSelectDataframe() const;
 
@@ -45,6 +46,13 @@ public:
 
     // 返回当前选中的series的名字
     QString getCurrentSelectSeriesName() const;
+Q_SIGNALS:
+    /**
+     * @brief 数据被双击
+     * @note 此信号只对顶层数据有效，dataframe下的series双击不会触发此信号
+     * @param data
+     */
+    void dataDbClicked(const DAData& data);
 
 protected:
     void changeEvent(QEvent* e);
@@ -54,6 +62,7 @@ private Q_SLOTS:
     void onComboBoxEditTextChanged(const QString& text);
     void updateCompleterModel();
     void applyFilter();
+    void onTreeViewDoubleClicked(const QModelIndex& index);
 
 private:
     // 更新过滤
