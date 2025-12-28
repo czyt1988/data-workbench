@@ -1,4 +1,4 @@
-#include "DADataManagerTreeFilterProxyModel.h"
+﻿#include "DADataManagerTreeFilterProxyModel.h"
 namespace DA
 {
 DADataManagerTreeFilterProxyModel::DADataManagerTreeFilterProxyModel(QObject* par) : QSortFilterProxyModel(par)
@@ -11,6 +11,30 @@ void DADataManagerTreeFilterProxyModel::setFilterText(const QString& text)
     m_filterText = text;
     invalidateFilter();
 }
+
+Qt::ItemFlags DADataManagerTreeFilterProxyModel::flags(const QModelIndex& index) const
+{
+    if (!index.isValid())
+        return Qt::NoItemFlags;
+
+    // 直接返回源模型的flags
+    QModelIndex srcIndex = mapToSource(index);
+    return sourceModel()->flags(srcIndex);
+}
+
+QMimeData* DADataManagerTreeFilterProxyModel::mimeData(const QModelIndexList& indexes) const
+{
+    if (indexes.isEmpty())
+        return nullptr;
+    // 把索引映射回源，再让源模型生成 MIME
+    QModelIndexList srcIndexes;
+    for (const auto& idx : indexes) {
+        srcIndexes << mapToSource(idx);
+    }
+
+    return sourceModel()->mimeData(srcIndexes);
+}
+
 
 bool DADataManagerTreeFilterProxyModel::filterAcceptsRow(int source_row, const QModelIndex& source_parent) const
 {

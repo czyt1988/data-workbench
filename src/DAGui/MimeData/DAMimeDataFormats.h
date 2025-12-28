@@ -11,4 +11,17 @@
 #define DAMIMEDATA_FORMAT_DADATA "da-workbench/DAData"
 #endif
 
+/**
+ * @brief DAData中DataFrame的Series，携带DAData和Series的名字
+ */
+#ifndef DAMIMEDATA_FORMAT_DADATA_DATAFRAME_SERIES
+#define DAMIMEDATA_FORMAT_DADATA_DATAFRAME_SERIES "da-workbench/DAData.DataFrame.Series"
+#endif
+
+/**
+ * @brief 针对选中多个数据的series的情况
+ */
+#ifndef DAMIMEDATA_FORMAT_MULT_DADATAS_SERIES
+#define DAMIMEDATA_FORMAT_MULT_DADATAS_SERIES "da-workbench/mult-DADatas.Series"
+#endif
 #endif  // DAMIMEDATAFORMATS_H

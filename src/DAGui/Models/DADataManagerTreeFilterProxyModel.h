@@ -1,4 +1,4 @@
-#ifndef DADATAMANAGERTREEFILTERPROXYMODEL_H
+﻿#ifndef DADATAMANAGERTREEFILTERPROXYMODEL_H
 #define DADATAMANAGERTREEFILTERPROXYMODEL_H
 #include <QSortFilterProxyModel>
 #include "DAGuiAPI.h"
@@ -14,6 +14,9 @@ public:
     DADataManagerTreeFilterProxyModel(QObject* par = nullptr);
     // 设置过滤文本
     void setFilterText(const QString& text);
+    Qt::ItemFlags flags(const QModelIndex& index) const override;
+    QMimeData* mimeData(const QModelIndexList& indexes) const override;
+
 
 protected:
     bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override;

@@ -78,17 +78,19 @@ void DataAnalysisUI::buildDataCategory()
         actionDataFrameFillNone =
             m_actions->createAction("actionDataFrameFillNone", ":/DataAnalysisPluginIcon/icon/dataframe-fill-none.svg");
         // 插值法填充缺失值
-        actionDataFrameFillInterpolate = m_actions->createAction(
-            "actionDataFrameInterpolate", ":/DataAnalysisPluginIcon/icon/dataframe-interpolate.svg");
+        actionDataFrameFillInterpolate =
+            m_actions->createAction("actionDataFrameInterpolate", ":/DataAnalysisPluginIcon/icon/dataframe-interpolate.svg");
         // 过滤异常值
-        actionDataFrameRemoveOutlierIQR = m_actions->createAction(
-            "actionDataFrameRemoveOutlierIQR", ":/DataAnalysisPluginIcon/icon/dataframe-clip-outlier.svg");
+        actionDataFrameRemoveOutlierIQR = m_actions->createAction("actionDataFrameRemoveOutlierIQR",
+                                                                  ":/DataAnalysisPluginIcon/icon/dataframe-IQR.svg");
         // 基于Z-score替换异常值
-        actionDataFrameRemoveOutliersZScore = m_actions->createAction(
-            "actionDataFrameReplaceOutliersZScore", ":/DataAnalysisPluginIcon/icon/dataframe-clip-outlier.svg");
+        actionDataFrameRemoveOutliersZScore =
+            m_actions->createAction("actionDataFrameReplaceOutliersZScore",
+                                    ":/DataAnalysisPluginIcon/icon/dataframe-Z-score.svg");
         // 转换偏态数值数据以改善分布
-        actionDataFrameTransformSkewedData = m_actions->createAction(
-            "actionDataFrameTransformSkewedData", ":/DataAnalysisPluginIcon/icon/dataframe-clip-outlier.svg");
+        actionDataFrameTransformSkewedData =
+            m_actions->createAction("actionDataFrameTransformSkewedData",
+                                    ":/DataAnalysisPluginIcon/icon/dataframe-clip-outlier.svg");
         panelDataCleaner->addLargeAction(actionDataFrameDropNone);
         panelDataCleaner->addLargeAction(actionDropDuplicates);
         panelDataCleaner->addLargeAction(actionDataFrameFillNone);
@@ -101,14 +103,15 @@ void DataAnalysisUI::buildDataCategory()
         //----------------------------------------------------
         pannelDataFiltering = dataframeContextCategory->addPanel(tr("Data Filtering"));  // cn :数据过滤
         pannelDataFiltering->setObjectName(QStringLiteral("DataAnalysisPlugin.pannelDataFiltering"));
-        actionDataFrameEvalDatas     = m_actions->createAction("actionDataFrameEvalDatas",
+        actionDataFrameEvalDatas  = m_actions->createAction("actionDataFrameEvalDatas",
                                                            ":/DataAnalysisPluginIcon/icon/dataframe-eval-datas.svg");
-        actionDataFrameQueryDatas    = m_actions->createAction("actionDataFrameQueryDatas",
+        actionDataFrameQueryDatas = m_actions->createAction("actionDataFrameQueryDatas",
                                                             ":/DataAnalysisPluginIcon/icon/dataframe-query-datas.svg");
-        actionDataFrameDataRetrieval = m_actions->createAction(
-            "actionDataFrameDataRetrieval", ":/DataAnalysisPluginIcon/icon/dataframe-data-retrieval.svg");
-        actionDataFrameDataFilterColumn = m_actions->createAction(
-            "actionDataFrameDataSelect", ":/DataAnalysisPluginIcon/icon/dataframe-data-select.svg");
+        actionDataFrameDataRetrieval =
+            m_actions->createAction("actionDataFrameDataRetrieval",
+                                    ":/DataAnalysisPluginIcon/icon/dataframe-data-retrieval.svg");
+        actionDataFrameDataFilterColumn =
+            m_actions->createAction("actionDataFrameDataSelect", ":/DataAnalysisPluginIcon/icon/dataframe-data-select.svg");
         actionDataFrameSort =
             m_actions->createAction("actionDataFrameSort", ":/DataAnalysisPluginIcon/icon/dataframe-sort.svg");
         pannelDataFiltering->addLargeAction(actionDataFrameEvalDatas);

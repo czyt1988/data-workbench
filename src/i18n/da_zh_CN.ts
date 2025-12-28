@@ -1465,25 +1465,21 @@ Table Area</source>
         <translation>y</translation>
     </message>
     <message>
-        <location line="+178"/>
+        <location line="+161"/>
         <location line="+8"/>
         <location line="+23"/>
         <location line="+9"/>
         <location line="+23"/>
         <location line="+14"/>
-        <location line="+7"/>
         <location line="+19"/>
         <location line="+14"/>
-        <location line="+8"/>
         <location line="+19"/>
         <location line="+11"/>
-        <location line="+7"/>
-        <location line="+8"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location line="-169"/>
+        <location line="-139"/>
         <source>The initial value of x auto increment series must be a floating-point arithmetic number</source>
         <translation>x自增序列的初始值必须为浮点数</translation>
     </message>
@@ -1508,34 +1504,22 @@ Table Area</source>
         <translation>x和y无法同时设置为自增</translation>
     </message>
     <message>
-        <location line="+21"/>
-        <location line="+41"/>
-        <location line="+45"/>
+        <location line="+14"/>
+        <location line="+33"/>
+        <location line="+30"/>
         <source>The None value cannot be converted to a series</source>
         <translation>None值无法转换为序列</translation>
     </message>
     <message>
-        <location line="-67"/>
-        <location line="+41"/>
+        <location line="-44"/>
+        <location line="+33"/>
         <source>Exception occurred during extracting from pandas.Series to double vector</source>
         <translation>从pandas.Series提取为double vector过程中出现异常</translation>
     </message>
     <message>
-        <location line="-27"/>
-        <location line="+38"/>
-        <source>x must be a series</source>
-        <translation>x必须是序列</translation>
-    </message>
-    <message>
-        <location line="-78"/>
-        <location line="+85"/>
-        <source>y must be a series</source>
-        <translation>y必须是序列</translation>
-    </message>
-    <message>
-        <location line="-64"/>
-        <location line="+41"/>
-        <location line="+50"/>
+        <location line="-38"/>
+        <location line="+33"/>
+        <location line="+35"/>
         <source>Exception occurred during extracting from pandas.Series to double vector:%1</source>
         <translation>从pandas.Series提取为double vector过程中出现异常:%1</translation>
     </message>
@@ -1964,35 +1948,29 @@ Table Area</source>
 <context>
     <name>DA::DADataManagerTreeModel</name>
     <message>
-        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="+70"/>
+        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="+264"/>
         <location line="+2"/>
-        <location line="+142"/>
+        <location line="+87"/>
         <location line="+3"/>
-        <location line="+95"/>
+        <location line="+97"/>
         <location line="+2"/>
         <source>Name</source>
         <translation>名称</translation>
     </message>
     <message>
-        <location line="-242"/>
-        <location line="+145"/>
-        <location line="+97"/>
+        <location line="-189"/>
+        <location line="+90"/>
+        <location line="+99"/>
         <source>Properties</source>
         <translation>属性</translation>
     </message>
+</context>
+<context>
+    <name>DA::DADataManagerTreeWidget</name>
     <message>
-        <location line="+243"/>
-        <source>
-Type: %1</source>
-        <translation>
-类型：%1</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>
-Description: %1</source>
-        <translation>
-详情：%1</translation>
+        <location filename="../DAGui/DADataManagerTreeWidget.cpp" line="+301"/>
+        <source>Search...</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -3532,38 +3510,38 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation></translation>
     </message>
     <message>
-        <location line="+26"/>
-        <location line="+75"/>
+        <location line="+34"/>
+        <location line="+83"/>
         <source>Autoincrement series</source>
         <translation>自增序列</translation>
     </message>
     <message>
-        <location line="-60"/>
-        <location line="+75"/>
+        <location line="-68"/>
+        <location line="+83"/>
         <source>Initial value</source>
         <translation>初始值</translation>
     </message>
     <message>
-        <location line="-68"/>
+        <location line="-76"/>
         <location line="+14"/>
-        <location line="+61"/>
+        <location line="+69"/>
         <location line="+14"/>
         <source>1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-82"/>
-        <location line="+75"/>
+        <location line="-90"/>
+        <location line="+83"/>
         <source>Self increasing step size</source>
         <translation>步长</translation>
     </message>
     <message>
-        <location line="-55"/>
+        <location line="-63"/>
         <source>Y</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+88"/>
+        <location line="+96"/>
         <source>Drag the data into the corresponding list</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4370,11 +4348,6 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+37"/>
         <source>-</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+20"/>
-        <source>Input To Search</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5659,13 +5632,13 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <name>DataAnalysisUI</name>
     <message>
         <location filename="../../plugins/DataAnalysis/DataAnalysisUI.cpp" line="+69"/>
-        <location line="+83"/>
+        <location line="+86"/>
         <source>Data Cleaning</source>
         <translation>数据清洗</translation>
     </message>
     <message>
-        <location line="-50"/>
-        <location line="+81"/>
+        <location line="-51"/>
+        <location line="+82"/>
         <source>Data Filtering</source>
         <translation>数据过滤</translation>
     </message>
@@ -7117,6 +7090,11 @@ To Excel</source>
         <location line="+4"/>
         <source>Unknow</source>
         <translation>未知</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="-298"/>
+        <source>%1.%2,size:%3</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

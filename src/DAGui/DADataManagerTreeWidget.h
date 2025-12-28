@@ -34,6 +34,18 @@ public:
     void setColumnStyle(DADataManagerTreeModel::ColumnStyle style);
     DADataManagerTreeModel::ColumnStyle getColumnStyle() const;
 
+    // 获取当前选中的Data,如果选中的是series，返回的是series对应dataframe的DAData
+    DAData getCurrentSelectData() const;
+
+    // 当前是否选中了dataframe，选中了dataframe下面的series会返回false
+    bool isSelectDataframe() const;
+
+    // 当前是否选中了dataframe下面的series
+    bool isSelectDataframeSeries() const;
+
+    // 返回当前选中的series的名字
+    QString getCurrentSelectSeriesName() const;
+
 protected:
     void changeEvent(QEvent* e);
 private Q_SLOTS:
@@ -41,10 +53,9 @@ private Q_SLOTS:
     void onToolButtonCollapseClicked();
     void onComboBoxEditTextChanged(const QString& text);
     void updateCompleterModel();
+    void applyFilter();
 
 private:
-    // 初始化补全模型
-    void initCompleter();
     // 更新过滤
     void updateFilter(const QString& text);
     // 收集所有数据项名称用于补全

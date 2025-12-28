@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>723</width>
-    <height>594</height>
+    <width>997</width>
+    <height>603</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,8 +23,8 @@
       <property name="orientation">
        <enum>Qt::Orientation::Horizontal</enum>
       </property>
-      <widget class="QTreeView" name="treeView"/>
-      <widget class="QWidget" name="">
+      <widget class="DA::DADataManagerTreeWidget" name="dataManagerWidget" native="true"/>
+      <widget class="QWidget" name="layoutWidget">
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
          <widget class="DA::DACollapsibleGroupBox" name="groupBoxX">
@@ -40,15 +40,23 @@
              <property name="text">
               <string/>
              </property>
+             <property name="icon">
+              <iconset resource="icon.qrc">
+               <normaloff>:/DAGui/icon/right-add.svg</normaloff>:/DAGui/icon/right-add.svg</iconset>
+             </property>
             </widget>
            </item>
            <item row="0" column="1" rowspan="2">
-            <widget class="QListView" name="listView_2"/>
+            <widget class="DA::DAPySeriesListView" name="listViewX"/>
            </item>
            <item row="1" column="0">
             <widget class="QToolButton" name="toolButtonRemoveFromX">
              <property name="text">
               <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="icon.qrc">
+               <normaloff>:/DAGui/icon/left-remove.svg</normaloff>:/DAGui/icon/left-remove.svg</iconset>
              </property>
             </widget>
            </item>
@@ -115,15 +123,23 @@
              <property name="text">
               <string/>
              </property>
+             <property name="icon">
+              <iconset resource="icon.qrc">
+               <normaloff>:/DAGui/icon/right-add.svg</normaloff>:/DAGui/icon/right-add.svg</iconset>
+             </property>
             </widget>
            </item>
            <item row="0" column="1" rowspan="2">
-            <widget class="QListView" name="listView"/>
+            <widget class="DA::DAPySeriesListView" name="listViewY"/>
            </item>
            <item row="1" column="0">
             <widget class="QToolButton" name="toolButtonRemoveFromY">
              <property name="text">
               <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="icon.qrc">
+               <normaloff>:/DAGui/icon/left-remove.svg</normaloff>:/DAGui/icon/left-remove.svg</iconset>
              </property>
             </widget>
            </item>
@@ -216,13 +232,26 @@
    <extends>QTableView</extends>
    <header>DAPySeriesTableView.h</header>
   </customwidget>
+  <customwidget>
+   <class>DA::DAPySeriesListView</class>
+   <extends>QListView</extends>
+   <header>DAPySeriesListView.h</header>
+  </customwidget>
+  <customwidget>
+   <class>DA::DADataManagerTreeWidget</class>
+   <extends>QWidget</extends>
+   <header>DADataManagerTreeWidget.h</header>
+   <container>1</container>
+  </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="icon.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>groupBoxXAutoincrement</sender>
    <signal>clicked(bool)</signal>
-   <receiver>listView_2</receiver>
+   <receiver>listViewX</receiver>
    <slot>setDisabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
@@ -270,7 +299,7 @@
   <connection>
    <sender>groupBoxYAutoincrement</sender>
    <signal>clicked(bool)</signal>
-   <receiver>listView</receiver>
+   <receiver>listViewY</receiver>
    <slot>setDisabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">

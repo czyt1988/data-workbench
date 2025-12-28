@@ -9,7 +9,7 @@ damacro_lib_setting(
     "DA GUI | https://github.com/czyt1988"
     0
     0
-    3
+    4
 )
 
 ########################################################
@@ -151,6 +151,7 @@ if(DA_ENABLE_PYTHON)
         DADataOperateOfDataFrameWidget.h
         DAPyDataFrameTableView.h
         DAPySeriesTableView.h
+        DAPySeriesListView.h
         DAChartAddXYSeriesWidget.h
         DAChartAddXYESeriesWidget.h
         DAChartAddOHLCSeriesWidget.h
@@ -166,6 +167,7 @@ if(DA_ENABLE_PYTHON)
         DADataOperateOfDataFrameWidget.cpp
         DAPyDataFrameTableView.cpp
         DAPySeriesTableView.cpp
+        DAPySeriesListView.cpp
         DAChartAddXYSeriesWidget.cpp
         DAChartAddXYESeriesWidget.cpp
         DAChartAddOHLCSeriesWidget.cpp

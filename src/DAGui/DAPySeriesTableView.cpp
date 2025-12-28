@@ -1,4 +1,4 @@
-#include "DAPySeriesTableView.h"
+﻿#include "DAPySeriesTableView.h"
 #include "Models/DAPySeriesTableModel.h"
 #include <QHeaderView>
 namespace DA
@@ -82,6 +82,14 @@ void DAPySeriesTableView::resizeVerticalHeader()
     if (QHeaderView* vh = verticalHeader()) {
         int w = vh->fontMetrics().horizontalAdvance(QString(" %1 ").arg(r));
         vh->setFixedWidth(w);
+    }
+}
+
+void DAPySeriesTableView::clear()
+{
+    DAPySeriesTableModel* m = getSeriesModel();
+    if (m) {
+        m->clearData();
     }
 }
 }

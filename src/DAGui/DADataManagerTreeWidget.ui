@@ -67,9 +67,6 @@
        <property name="editable">
         <bool>true</bool>
        </property>
-       <property name="placeholderText">
-        <string>Input To Search</string>
-       </property>
       </widget>
      </item>
     </layout>
