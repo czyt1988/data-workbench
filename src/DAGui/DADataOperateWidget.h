@@ -47,6 +47,8 @@ public:
     QUndoStack* getUndoStack() override;
     // 刷新当前操作窗口的表格，这个一般是删除数据或数据变更后调用
     void refreshCurrentOperateTableView();
+    // 确保当前窗口的列名可见，可搭配showData函数后使用
+    void ensureCurrentTableColumnVisible(const QString& colName, bool selectCol = true);
 public Q_SLOTS:
     // 显示一个数据
     void showData(const DA::DAData& d);

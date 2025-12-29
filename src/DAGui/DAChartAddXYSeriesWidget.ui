@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>997</width>
-    <height>603</height>
+    <width>897</width>
+    <height>672</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,205 +15,180 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
-    <widget class="QSplitter" name="splitter_2">
+    <widget class="QSplitter" name="splitter">
      <property name="orientation">
-      <enum>Qt::Orientation::Horizontal</enum>
+      <enum>Qt::Horizontal</enum>
      </property>
-     <widget class="QSplitter" name="splitter">
-      <property name="orientation">
-       <enum>Qt::Orientation::Horizontal</enum>
-      </property>
-      <widget class="DA::DADataManagerTreeWidget" name="dataManagerWidget" native="true"/>
-      <widget class="QWidget" name="layoutWidget">
-       <layout class="QVBoxLayout" name="verticalLayout">
-        <item>
-         <widget class="DA::DACollapsibleGroupBox" name="groupBoxX">
-          <property name="title">
-           <string>X</string>
-          </property>
-          <property name="flat">
-           <bool>true</bool>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_4">
-           <item row="0" column="0">
-            <widget class="QToolButton" name="toolButtonAddToX">
-             <property name="text">
-              <string/>
-             </property>
-             <property name="icon">
-              <iconset resource="icon.qrc">
-               <normaloff>:/DAGui/icon/right-add.svg</normaloff>:/DAGui/icon/right-add.svg</iconset>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1" rowspan="2">
-            <widget class="DA::DAPySeriesListView" name="listViewX"/>
-           </item>
-           <item row="1" column="0">
-            <widget class="QToolButton" name="toolButtonRemoveFromX">
-             <property name="text">
-              <string/>
-             </property>
-             <property name="icon">
-              <iconset resource="icon.qrc">
-               <normaloff>:/DAGui/icon/left-remove.svg</normaloff>:/DAGui/icon/left-remove.svg</iconset>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0" colspan="2">
-            <widget class="QGroupBox" name="groupBoxXAutoincrement">
-             <property name="title">
-              <string>Autoincrement series</string>
-             </property>
-             <property name="flat">
-              <bool>false</bool>
-             </property>
-             <property name="checkable">
-              <bool>true</bool>
-             </property>
-             <property name="checked">
-              <bool>false</bool>
-             </property>
-             <layout class="QGridLayout" name="gridLayout">
-              <item row="0" column="0">
-               <widget class="QLabel" name="labelXInitValue">
-                <property name="text">
-                 <string>Initial value</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="QLineEdit" name="lineEditXInitValue">
-                <property name="text">
-                 <string>1</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="0">
-               <widget class="QLabel" name="labelXStep">
-                <property name="text">
-                 <string>Self increasing step size</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="1">
-               <widget class="QLineEdit" name="lineEditXStepValue">
-                <property name="text">
-                 <string>1</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <widget class="DA::DACollapsibleGroupBox" name="groupBoxY">
-          <property name="title">
-           <string>Y</string>
-          </property>
-          <property name="flat">
-           <bool>true</bool>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_3">
-           <item row="0" column="0">
-            <widget class="QToolButton" name="toolButtonAddToY">
-             <property name="text">
-              <string/>
-             </property>
-             <property name="icon">
-              <iconset resource="icon.qrc">
-               <normaloff>:/DAGui/icon/right-add.svg</normaloff>:/DAGui/icon/right-add.svg</iconset>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1" rowspan="2">
-            <widget class="DA::DAPySeriesListView" name="listViewY"/>
-           </item>
-           <item row="1" column="0">
-            <widget class="QToolButton" name="toolButtonRemoveFromY">
-             <property name="text">
-              <string/>
-             </property>
-             <property name="icon">
-              <iconset resource="icon.qrc">
-               <normaloff>:/DAGui/icon/left-remove.svg</normaloff>:/DAGui/icon/left-remove.svg</iconset>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0" colspan="2">
-            <widget class="QGroupBox" name="groupBoxYAutoincrement">
-             <property name="title">
-              <string>Autoincrement series</string>
-             </property>
-             <property name="flat">
-              <bool>false</bool>
-             </property>
-             <property name="checkable">
-              <bool>true</bool>
-             </property>
-             <property name="checked">
-              <bool>false</bool>
-             </property>
-             <layout class="QGridLayout" name="gridLayout_2">
-              <item row="0" column="0">
-               <widget class="QLabel" name="labelYInitValue">
-                <property name="text">
-                 <string>Initial value</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="QLineEdit" name="lineEditYInitValue">
-                <property name="text">
-                 <string>1</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="0">
-               <widget class="QLabel" name="labelYStep">
-                <property name="text">
-                 <string>Self increasing step size</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="1">
-               <widget class="QLineEdit" name="lineEditYStepValue">
-                <property name="text">
-                 <string>1</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <spacer name="verticalSpacer">
-          <property name="orientation">
-           <enum>Qt::Orientation::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>18</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <widget class="QLabel" name="label">
-          <property name="text">
-           <string>Drag the data into the corresponding list</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
+     <widget class="QWidget" name="layoutWidget">
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="DA::DACollapsibleGroupBox" name="groupBoxX">
+         <property name="title">
+          <string>X</string>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_4">
+          <item row="0" column="1" rowspan="2">
+           <widget class="DA::DAPySeriesListView" name="listViewX"/>
+          </item>
+          <item row="1" column="0">
+           <widget class="QToolButton" name="toolButtonRemoveFromX">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="icon.qrc">
+              <normaloff>:/DAGui/icon/left-remove.svg</normaloff>:/DAGui/icon/left-remove.svg</iconset>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0" colspan="2">
+           <widget class="QGroupBox" name="groupBoxXAutoincrement">
+            <property name="title">
+             <string>Autoincrement series</string>
+            </property>
+            <property name="flat">
+             <bool>false</bool>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+            <layout class="QGridLayout" name="gridLayout">
+             <item row="0" column="0">
+              <widget class="QLabel" name="labelXInitValue">
+               <property name="text">
+                <string>Initial value</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QLineEdit" name="lineEditXInitValue">
+               <property name="text">
+                <string>1</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="labelXStep">
+               <property name="text">
+                <string>Self increasing step size</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QLineEdit" name="lineEditXStepValue">
+               <property name="text">
+                <string>1</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="DA::DACollapsibleGroupBox" name="groupBoxY">
+         <property name="title">
+          <string>Y</string>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_3">
+          <item row="0" column="1" rowspan="2">
+           <widget class="DA::DAPySeriesListView" name="listViewY"/>
+          </item>
+          <item row="1" column="0">
+           <widget class="QToolButton" name="toolButtonRemoveFromY">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="icon.qrc">
+              <normaloff>:/DAGui/icon/left-remove.svg</normaloff>:/DAGui/icon/left-remove.svg</iconset>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0" colspan="2">
+           <widget class="QGroupBox" name="groupBoxYAutoincrement">
+            <property name="title">
+             <string>Autoincrement series</string>
+            </property>
+            <property name="flat">
+             <bool>false</bool>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_2">
+             <item row="0" column="0">
+              <widget class="QLabel" name="labelYInitValue">
+               <property name="text">
+                <string>Initial value</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QLineEdit" name="lineEditYInitValue">
+               <property name="text">
+                <string>1</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="labelYStep">
+               <property name="text">
+                <string>Self increasing step size</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QLineEdit" name="lineEditYStepValue">
+               <property name="text">
+                <string>1</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>18</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Drag the data into the corresponding list</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </widget>
      <widget class="DA::DAPySeriesTableView" name="tableViewXY"/>
     </widget>
@@ -236,12 +211,6 @@
    <class>DA::DAPySeriesListView</class>
    <extends>QListView</extends>
    <header>DAPySeriesListView.h</header>
-  </customwidget>
-  <customwidget>
-   <class>DA::DADataManagerTreeWidget</class>
-   <extends>QWidget</extends>
-   <header>DADataManagerTreeWidget.h</header>
-   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>
@@ -281,22 +250,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>groupBoxXAutoincrement</sender>
-   <signal>clicked(bool)</signal>
-   <receiver>toolButtonAddToX</receiver>
-   <slot>setDisabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>312</x>
-     <y>121</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>255</x>
-     <y>53</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>groupBoxYAutoincrement</sender>
    <signal>clicked(bool)</signal>
    <receiver>listViewY</receiver>
@@ -325,22 +278,6 @@
     <hint type="destinationlabel">
      <x>249</x>
      <y>293</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>groupBoxYAutoincrement</sender>
-   <signal>clicked(bool)</signal>
-   <receiver>toolButtonAddToY</receiver>
-   <slot>setDisabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>281</x>
-     <y>324</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>246</x>
-     <y>265</y>
     </hint>
    </hints>
   </connection>

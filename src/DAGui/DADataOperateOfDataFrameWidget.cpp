@@ -1025,6 +1025,47 @@ void DADataOperateOfDataFrameWidget::refreshTable()
     }
 }
 
+/**
+ * @brief 确保列可见
+ * @param colName
+ */
+void DADataOperateOfDataFrameWidget::ensureColumnVisible(const QString& colName, bool selectCol)
+{
+    if (colName.isEmpty()) {
+        return;
+    }
+    QTableView* tv = ui->tableView;
+    if (!tv || !tv->model()) {
+        return;
+    }
+
+    // 直接找列号
+    int col       = -1;
+    const auto* m = tv->model();
+    for (int c = 0, total = m->columnCount(); c < total; ++c) {
+        if (m->headerData(c, Qt::Horizontal).toString() == colName) {
+            col = c;
+            break;
+        }
+    }
+    if (col < 0)
+        return;
+
+    tv->scrollTo(m->index(0, col), QAbstractItemView::EnsureVisible);
+    if (selectCol) {
+        QItemSelectionModel* sel = tv->selectionModel();
+        if (!sel) {
+            return;
+        }
+        QModelIndex topLeft     = m->index(0, col);
+        QModelIndex bottomRight = m->index(m->rowCount() - 1, col);
+        QItemSelection selection(topLeft, bottomRight);
+
+        sel->clearSelection();  // 去掉旧选区
+        sel->select(selection, QItemSelectionModel::Select | QItemSelectionModel::Columns);
+    }
+}
+
 QList< QPoint > DADataOperateOfDataFrameWidget::getSelectedDataframeCells(bool ensureInDataframe) const
 {
     QList< QPoint > res;

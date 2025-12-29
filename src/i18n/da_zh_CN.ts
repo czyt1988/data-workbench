@@ -768,7 +768,7 @@ Table Area</source>
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
     <message>
-        <location line="+522"/>
+        <location line="+528"/>
         <source>new workflow name</source>
         <translation>新工作流名称</translation>
     </message>
@@ -902,17 +902,17 @@ Table Area</source>
     <message>
         <location line="+13"/>
         <source>Save Project</source>
-        <translation type="unfinished">保存工程</translation>
+        <translation>保存工程</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Project Files (*.%1)</source>
-        <translation type="unfinished">工程文件(*.%1)</translation>
+        <translation>工程文件(*.%1)</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Project saved failed!,path is %1</source>
-        <translation type="unfinished">工程“%1”保存失败</translation>
+        <translation>工程“%1”保存失败</translation>
     </message>
     <message>
         <location line="+22"/>
@@ -1227,7 +1227,7 @@ Table Area</source>
     <message>
         <location filename="../APP/DAAppUI.cpp" line="+72"/>
         <source>Failed to load JSON config for settings dialog</source>
-        <translation type="unfinished"></translation>
+        <translation>从设置对话框加载json文件发生异常</translation>
     </message>
 </context>
 <context>
@@ -1465,7 +1465,7 @@ Table Area</source>
         <translation>y</translation>
     </message>
     <message>
-        <location line="+161"/>
+        <location line="+166"/>
         <location line="+8"/>
         <location line="+23"/>
         <location line="+9"/>
@@ -1844,53 +1844,53 @@ Table Area</source>
     <message>
         <location filename="../DACommonWidgets/DACommonPropertySettingDialog.cpp" line="+491"/>
         <source>JSON string is empty</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Config json parse error:%1</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+17"/>
         <source>JSON object is empty</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+18"/>
         <source>Properties array is empty</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Missing &apos;properties&apos; field in JSON config</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+80"/>
         <location line="+32"/>
         <source>Property not found:</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Invalid value for property:</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Value not found in enum items for property:</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Type mismatch for property:</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+53"/>
         <source>Failed to load JSON config for settings dialog</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -1945,7 +1945,7 @@ Table Area</source>
     <message>
         <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="+264"/>
         <location line="+2"/>
-        <location line="+87"/>
+        <location line="+86"/>
         <location line="+3"/>
         <location line="+97"/>
         <location line="+2"/>
@@ -1953,8 +1953,8 @@ Table Area</source>
         <translation>名称</translation>
     </message>
     <message>
-        <location line="-189"/>
-        <location line="+90"/>
+        <location line="-188"/>
+        <location line="+89"/>
         <location line="+99"/>
         <source>Properties</source>
         <translation>属性</translation>
@@ -1963,9 +1963,9 @@ Table Area</source>
 <context>
     <name>DA::DADataManagerTreeWidget</name>
     <message>
-        <location filename="../DAGui/DADataManagerTreeWidget.cpp" line="+354"/>
+        <location filename="../DAGui/DADataManagerTreeWidget.cpp" line="+371"/>
         <source>Search...</source>
-        <translation type="unfinished"></translation>
+        <translation>搜索...</translation>
     </message>
 </context>
 <context>
@@ -2008,7 +2008,7 @@ Table Area</source>
 <context>
     <name>DA::DADataOperateWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateWidget.cpp" line="+185"/>
+        <location filename="../DAGui/DADataOperateWidget.cpp" line="+200"/>
         <source>removing a widget that does not exist in tab</source>
         <translation>正在移除一个不存在的窗口</translation>
     </message>
@@ -3296,7 +3296,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1877"/>
+        <location filename="../APP/DAAppController.cpp" line="-1883"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -3500,45 +3500,45 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>添加序列</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+13"/>
         <source>X</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+34"/>
-        <location line="+83"/>
+        <location line="+23"/>
+        <location line="+72"/>
         <source>Autoincrement series</source>
         <translation>自增序列</translation>
     </message>
     <message>
-        <location line="-68"/>
-        <location line="+83"/>
+        <location line="-57"/>
+        <location line="+72"/>
         <source>Initial value</source>
         <translation>初始值</translation>
     </message>
     <message>
-        <location line="-76"/>
+        <location line="-65"/>
         <location line="+14"/>
-        <location line="+69"/>
+        <location line="+58"/>
         <location line="+14"/>
         <source>1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-90"/>
-        <location line="+83"/>
+        <location line="-79"/>
+        <location line="+72"/>
         <source>Self increasing step size</source>
         <translation>步长</translation>
     </message>
     <message>
-        <location line="-63"/>
+        <location line="-52"/>
         <source>Y</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+96"/>
+        <location line="+85"/>
         <source>Drag the data into the corresponding list</source>
-        <translation type="unfinished"></translation>
+        <translation>把数据拖曳到对应的数据列表中</translation>
     </message>
 </context>
 <context>
@@ -7087,7 +7087,7 @@ To Excel</source>
         <translation>未知</translation>
     </message>
     <message>
-        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="-298"/>
+        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="-297"/>
         <source>%1.%2,size:%3</source>
         <translation type="unfinished"></translation>
     </message>

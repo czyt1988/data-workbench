@@ -26,11 +26,6 @@ public:
     // 设置datamanager，会触发dataManagerChanged信号
     virtual void setDataManager(DADataManager* dmgr);
     DADataManager* getDataManager() const;
-    // 设置当前的data
-    void setCurrentData(const DAData& d);
-    const DAData& getCurrentData() const;
-    // 更新数据接口
-    virtual void updateData();
 Q_SIGNALS:
     /**
      * @brief dataManager发生改变的信号
@@ -45,7 +40,6 @@ Q_SIGNALS:
 
 private:
     DADataManager* mDataManager { nullptr };
-    DAData mData;
 };
 }  // end DA
 

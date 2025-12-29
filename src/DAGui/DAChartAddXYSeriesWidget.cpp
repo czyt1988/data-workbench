@@ -31,9 +31,7 @@ DAChartAddXYSeriesWidget::DAChartAddXYSeriesWidget(QWidget* parent)
     connect(ui->groupBoxYAutoincrement, &QGroupBox::clicked, this, &DAChartAddXYSeriesWidget::onGroupBoxYAutoincrementClicked);
     connect(ui->listViewX, &DAPySeriesListView::seriesChanged, this, &DAChartAddXYSeriesWidget::onXSeriesChanged);
     connect(ui->listViewY, &DAPySeriesListView::seriesChanged, this, &DAChartAddXYSeriesWidget::onYSeriesChanged);
-    connect(ui->toolButtonAddToX, &QToolButton::clicked, this, &DAChartAddXYSeriesWidget::onButtonXAddClicked);
     connect(ui->toolButtonRemoveFromX, &QToolButton::clicked, this, &DAChartAddXYSeriesWidget::onButtonXRemoveClicked);
-    connect(ui->toolButtonAddToY, &QToolButton::clicked, this, &DAChartAddXYSeriesWidget::onButtonYAddClicked);
     connect(ui->toolButtonRemoveFromY, &QToolButton::clicked, this, &DAChartAddXYSeriesWidget::onButtonYRemoveClicked);
 }
 
@@ -63,7 +61,8 @@ bool DAChartAddXYSeriesWidget::isYAutoincrement() const
 void DAChartAddXYSeriesWidget::setDataManager(DADataManager* dmgr)
 {
     DAAbstractChartAddItemWidget::setDataManager(dmgr);
-    ui->dataManagerWidget->setDataManager(dmgr);
+    ui->listViewX->setDataManager(dmgr);
+    ui->listViewY->setDataManager(dmgr);
 }
 
 /**
@@ -87,6 +86,25 @@ QString DAChartAddXYSeriesWidget::getNameHint() const
     return getY().second;
 }
 
+/**
+ * @brief 设置当前的x到list中
+ * @param data
+ * @param seriesName
+ */
+void DAChartAddXYSeriesWidget::setX(const DAData& dataframeData, const QString& seriesName)
+{
+    ui->listViewX->addSeries(dataframeData, seriesName);
+}
+
+/**
+ * @brief 设置当前的y到list中
+ * @param data
+ * @param seriesName
+ */
+void DAChartAddXYSeriesWidget::setY(const DAData& dataframeData, const QString& seriesName)
+{
+    ui->listViewY->addSeries(dataframeData, seriesName);
+}
 
 /**
  * @brief x值是否使用自增序列
@@ -107,7 +125,6 @@ void DAChartAddXYSeriesWidget::onGroupBoxYAutoincrementClicked(bool on)
     Q_UNUSED(on);
     updateTable();
 }
-
 
 void DAChartAddXYSeriesWidget::onXSeriesChanged()
 {
@@ -146,26 +163,14 @@ void DAChartAddXYSeriesWidget::updateTable()
     }
 }
 
-void DAChartAddXYSeriesWidget::onButtonXAddClicked()
-{
-    if (!ui->dataManagerWidget->isSelectDataframeSeries()) {
-        return;
-    }
-    DAData data  = ui->dataManagerWidget->getCurrentSelectData();
-    QString name = ui->dataManagerWidget->getCurrentSelectSeriesName();
-    ui->listViewX->addSeries(data, name);
-}
-
 void DAChartAddXYSeriesWidget::onButtonXRemoveClicked()
 {
-}
-
-void DAChartAddXYSeriesWidget::onButtonYAddClicked()
-{
+    ui->listViewX->removeCurrentSelect();
 }
 
 void DAChartAddXYSeriesWidget::onButtonYRemoveClicked()
 {
+    ui->listViewY->removeCurrentSelect();
 }
 
 /**

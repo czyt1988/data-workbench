@@ -1443,7 +1443,8 @@ void DAAppController::onActionFigureNewXYAxisTriggered()
 void DAAppController::onActionChartAddCurveTriggered()
 {
     DAAppChartOperateWidget* chartopt = getChartOperateWidget();
-    chartopt->plotWithGuideDialog(DA::ChartTypes::Curve);
+    chartopt->showPlotGuideDialog(DA::DAChartTypes::Curve);
+    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
 }
 
@@ -1453,7 +1454,8 @@ void DAAppController::onActionChartAddCurveTriggered()
 void DAAppController::onActionChartAddScatterTriggered()
 {
     DAAppChartOperateWidget* chartopt = getChartOperateWidget();
-    chartopt->plotWithGuideDialog(DA::ChartTypes::Scatter);
+    chartopt->showPlotGuideDialog(DA::DAChartTypes::Scatter);
+    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
 }
 
@@ -1463,7 +1465,8 @@ void DAAppController::onActionChartAddScatterTriggered()
 void DAAppController::onActionChartAddBarTriggered()
 {
     DAAppChartOperateWidget* chartopt = getChartOperateWidget();
-    chartopt->plotWithGuideDialog(DA::ChartTypes::Bar);
+    chartopt->showPlotGuideDialog(DA::DAChartTypes::Bar);
+    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
 }
 
@@ -1473,7 +1476,8 @@ void DAAppController::onActionChartAddBarTriggered()
 void DAAppController::onActionactionChartAddErrorBarTriggered()
 {
     DAAppChartOperateWidget* chartopt = getChartOperateWidget();
-    chartopt->plotWithGuideDialog(DA::ChartTypes::ErrorBar);
+    chartopt->showPlotGuideDialog(DA::DAChartTypes::ErrorBar);
+    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
 }
 
@@ -1483,7 +1487,8 @@ void DAAppController::onActionactionChartAddErrorBarTriggered()
 void DAAppController::onActionChartAddBoxPlotTriggered()
 {
     DAAppChartOperateWidget* chartopt = getChartOperateWidget();
-    chartopt->plotWithGuideDialog(DA::ChartTypes::Box);
+    chartopt->showPlotGuideDialog(DA::DAChartTypes::Box);
+    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
 }
 
@@ -1493,7 +1498,8 @@ void DAAppController::onActionChartAddBoxPlotTriggered()
 void DAAppController::onActionChartAddCloudMapTriggered()
 {
     DAAppChartOperateWidget* chartopt = getChartOperateWidget();
-    chartopt->plotWithGuideDialog(DA::ChartTypes::Spectrogram);
+    chartopt->showPlotGuideDialog(DA::DAChartTypes::Spectrogram);
+    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
 }
 

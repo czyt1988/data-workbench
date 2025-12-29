@@ -143,6 +143,21 @@ void DADataOperateWidget::refreshCurrentOperateTableView()
 }
 
 /**
+ * @brief 确保当前窗口的列名可见，可搭配showData函数后使用
+ * @param colName
+ */
+void DADataOperateWidget::ensureCurrentTableColumnVisible(const QString& colName, bool selectCol)
+{
+#if DA_ENABLE_PYTHON
+    DADataOperateOfDataFrameWidget* w = getCurrentDataFrameWidget();
+    if (!w) {
+        return;
+    }
+    w->ensureColumnVisible(colName, selectCol);
+#endif
+}
+
+/**
  * @brief 获取当前选中的Dataframe,如果用户在选中了列，返回选中的列索引
  * @return
  */
