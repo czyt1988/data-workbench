@@ -40,6 +40,10 @@ public:
     QVector< QPointF > getSeries() const;
     // 获取推荐的名字
     virtual QString getNameHint() const;
+    // 设置当前的x到list中
+    void setX(const DAData& dataframeData, const QString& seriesName);
+    // 设置当前的y到list中
+    void setY(const DAData& dataframeData, const QString& seriesName);
 private slots:
     void onGroupBoxXAutoincrementClicked(bool on);
     void onGroupBoxYAutoincrementClicked(bool on);
@@ -48,9 +52,7 @@ private slots:
     void onYSeriesChanged();
     void updateTable();
 
-    void onButtonXAddClicked();
     void onButtonXRemoveClicked();
-    void onButtonYAddClicked();
     void onButtonYRemoveClicked();
 
 protected:

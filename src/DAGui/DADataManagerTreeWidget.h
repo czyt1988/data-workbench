@@ -46,6 +46,9 @@ public:
 
     // 返回当前选中的series的名字
     QString getCurrentSelectSeriesName() const;
+    // 展开所有
+    void expandAll();
+
 Q_SIGNALS:
     /**
      * @brief 数据被双击
@@ -53,6 +56,13 @@ Q_SIGNALS:
      * @param data
      */
     void dataDbClicked(const DAData& data);
+
+    /**
+     * @brief dataframe.series双击
+     * @param data
+     * @param seriesName
+     */
+    void dataSeriesDbClicked(const DAData& data, const QString& seriesName);
 
 protected:
     void changeEvent(QEvent* e);

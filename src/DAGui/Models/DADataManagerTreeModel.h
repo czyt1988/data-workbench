@@ -34,7 +34,7 @@ public:
     explicit DAStandardItemDataDataframe(const DAData& data);
     ~DAStandardItemDataDataframe();
     QVariant data(int role = Qt::UserRole + 1) const override;
-    virtual void setData(const QVariant& value, int role = Qt::UserRole + 1) override;
+    //    virtual void setData(const QVariant& value, int role = Qt::UserRole + 1) override;
     // 获取dataframe
     DAData getDataframe() const;
     //
@@ -141,23 +141,18 @@ public:
     // 数据转换
     static DAData itemToData(QStandardItem* item);
 
-
     // 获取所有数据名称
     QStringList getAllDataframeNames() const;
 
     // 模型操作
     void clear();
 
-    // 设置是否可编辑，可编辑则可以改变名字
-    void setEnableEdit(bool on);
-    bool isEnableEdit() const;
-
     // 重写基类方法
     /**
     virtual Qt::ItemFlags flags(const QModelIndex& index) const override;
     virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     **/
-    virtual bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
+
     // drag
     virtual Qt::DropActions supportedDragActions() const override;
     QStringList mimeTypes() const override;
@@ -170,7 +165,6 @@ public:
     static QStandardItem* createDataItem(const DAData& data);
     // 创建DataFrame的Series项
     static QStandardItem* createDataFrameSeriesItem(const QString& seriesName, const DAData& dataframeData);
-
 
 protected:
     // DataFrame展开处理
@@ -198,7 +192,6 @@ private slots:
 bool standardItemIterator(QStandardItem* startItem,
                           std::function< bool(QStandardItem*, QStandardItem*) > fun,
                           bool firstColumnOnly = false);
-
 
 }
 

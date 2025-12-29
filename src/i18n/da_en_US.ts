@@ -755,7 +755,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+539"/>
+        <location line="+528"/>
         <source>new workflow name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1452,7 +1452,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+161"/>
+        <location line="+166"/>
         <location line="+8"/>
         <location line="+23"/>
         <location line="+9"/>
@@ -1932,7 +1932,7 @@ Config</source>
     <message>
         <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="+264"/>
         <location line="+2"/>
-        <location line="+87"/>
+        <location line="+86"/>
         <location line="+3"/>
         <location line="+97"/>
         <location line="+2"/>
@@ -1940,8 +1940,8 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-189"/>
-        <location line="+90"/>
+        <location line="-188"/>
+        <location line="+89"/>
         <location line="+99"/>
         <source>Properties</source>
         <translation type="unfinished"></translation>
@@ -1950,7 +1950,7 @@ Config</source>
 <context>
     <name>DA::DADataManagerTreeWidget</name>
     <message>
-        <location filename="../DAGui/DADataManagerTreeWidget.cpp" line="+354"/>
+        <location filename="../DAGui/DADataManagerTreeWidget.cpp" line="+371"/>
         <source>Search...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1995,7 +1995,7 @@ Config</source>
 <context>
     <name>DA::DADataOperateWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateWidget.cpp" line="+185"/>
+        <location filename="../DAGui/DADataOperateWidget.cpp" line="+200"/>
         <source>removing a widget that does not exist in tab</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3195,7 +3195,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1948"/>
+        <location filename="../APP/DAAppController.cpp" line="-1883"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3399,43 +3399,43 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+13"/>
         <source>X</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+34"/>
-        <location line="+83"/>
+        <location line="+23"/>
+        <location line="+72"/>
         <source>Autoincrement series</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-68"/>
-        <location line="+83"/>
+        <location line="-57"/>
+        <location line="+72"/>
         <source>Initial value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-76"/>
+        <location line="-65"/>
         <location line="+14"/>
-        <location line="+69"/>
+        <location line="+58"/>
         <location line="+14"/>
         <source>1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-90"/>
-        <location line="+83"/>
+        <location line="-79"/>
+        <location line="+72"/>
         <source>Self increasing step size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-63"/>
+        <location line="-52"/>
         <source>Y</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+96"/>
+        <location line="+85"/>
         <source>Drag the data into the corresponding list</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6970,7 +6970,7 @@ To Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="-298"/>
+        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="-297"/>
         <source>%1.%2,size:%3</source>
         <translation type="unfinished"></translation>
     </message>

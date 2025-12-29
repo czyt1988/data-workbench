@@ -146,9 +146,10 @@ DASettingContainerWidget* DAAppDockingArea::getSettingContainerWidget() const
  * @brief 显示数据
  * @param data
  */
-void DAAppDockingArea::showDataOperateWidget(const DA::DAData& data)
+void DAAppDockingArea::showDataOperateWidget(const DA::DAData& data, const QString& name)
 {
     mDataOperateWidget->showData(data);
+    mDataOperateWidget->ensureCurrentTableColumnVisible(name);
     // 把表格窗口唤起
     raiseDockByWidget((QWidget*)getDataOperateWidget());
 }
@@ -292,6 +293,10 @@ void DAAppDockingArea::initConnection()
 {
     // DADataManageWidget的数据双击，在DADataOperateWidget中显示
     connect(mDataManageWidget, &DADataManageWidget::dataDbClicked, this, &DAAppDockingArea::onDataManageWidgetDataDbClicked);
+    connect(mDataManageWidget,
+            &DADataManageWidget::dataSeriesDbClicked,
+            this,
+            &DAAppDockingArea::onDataManageWidgetDataSeriesDbClicked);
     // 设置窗口的绑定
     mSettingContainerWidget->getWorkFlowNodeItemSettingWidget()->setWorkFlowOperateWidget(mWorkFlowOperateWidget);
 }
@@ -299,6 +304,11 @@ void DAAppDockingArea::initConnection()
 void DAAppDockingArea::onDataManageWidgetDataDbClicked(const DA::DAData& data)
 {
     showDataOperateWidget(data);
+}
+
+void DAAppDockingArea::onDataManageWidgetDataSeriesDbClicked(const DAData& data, const QString& name)
+{
+    showDataOperateWidget(data, name);
 }
 
 ads::CDockWidget* DAAppDockingArea::getChartManageDock() const

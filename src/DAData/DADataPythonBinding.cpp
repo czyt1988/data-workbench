@@ -38,6 +38,7 @@ PYBIND11_EMBEDDED_MODULE(da_data, m)
         .def("isDataFrame", &DA::DAData::isDataFrame, "Check if the data type is DataFrame")
         .def("isSeries", &DA::DAData::isSeries, "Check if the data type is Series")
         .def("setPyObject", &DA::DAData::setPyObject, pybind11::arg("obj"), "Check if the data type is Series")
+        .def("isHaveDataManager", &DA::DAData::isHaveDataManager, "Check if the data have datamanager")
         .def("getDataManager", &DA::DAData::getDataManager, pybind11::return_value_policy::reference, "get the DataManager");
 
     /**

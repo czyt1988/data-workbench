@@ -14,15 +14,15 @@ namespace DA
 /**
  * @brief 图表类型
  */
-enum class ChartTypes
+enum class DAChartTypes
 {
-	Curve,        ///< 曲线
-	Scatter,      ///< 散点
-	Bar,          ///< 柱状
-	ErrorBar,     ///< 误差棒
-	Box,          ///< 箱线图
-	Spectrogram,  ///< 谱图
-	Unknow = 1000
+    Curve,        ///< 曲线
+    Scatter,      ///< 散点
+    Bar,          ///< 柱状
+    ErrorBar,     ///< 误差棒
+    Box,          ///< 箱线图
+    Spectrogram,  ///< 谱图
+    Unknow = 1000
 };
 }
 

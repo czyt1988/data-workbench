@@ -25,18 +25,21 @@ public:
     // 添加一个Figure
     virtual DAFigureWidget* createFigure(const QString& name = QString()) override;
     // 绘制,如果没成功，返回nullptr
-    QwtPlotItem* createPlotItemWithGuideDialog(const DAData& data = DAData(), DA::ChartTypes t = DA::ChartTypes::Curve);
+    // int execPlotGuideDialog(DA::DAChartTypes t = DA::DAChartTypes::Curve);
+#if DA_ENABLE_PYTHON
     // 通过open打开引导对话框来创建item，这时将通过createItem信号来接收创建好的item
-    void createPlotItemWithOpenGuideDialog(const DAData& data = DAData(), DA::ChartTypes t = DA::ChartTypes::Curve);
-    // 调用绘图引导窗口进行引导性绘图
-    void plotWithGuideDialog(DA::ChartTypes t = DA::ChartTypes::Curve);
+    void showPlotGuideDialog(DA::DAChartTypes t = DA::DAChartTypes::Curve);
+    // 获取绘图指引对话框
+    DADialogChartGuide* getChartGuideDlg();
+#endif
 Q_SIGNALS:
     /**
-     * @brief 创建了item
+     * @brief createItem
+     * @param fig
+     * @param plot
      * @param item
-     * @note 这个函数的item参数必须处理，如果无用，需要手动delete，否则会内存泄漏
      */
-    void createItem(QwtPlotItem* item);
+    void plotItemCreated(DAFigureWidget* fig, DAChartWidget* plot, QwtPlotItem* item);
 private Q_SLOTS:
     void onChartGuideAccept();
 

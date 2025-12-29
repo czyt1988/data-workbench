@@ -20,6 +20,7 @@ DADataManageWidget::DADataManageWidget(QWidget* parent) : QWidget(parent), ui(ne
 {
     ui->setupUi(this);
     connect(ui->dataTreeWidget, &DADataManagerTreeWidget::dataDbClicked, this, &DADataManageWidget::dataDbClicked);
+    connect(ui->dataTreeWidget, &DADataManagerTreeWidget::dataSeriesDbClicked, this, &DADataManageWidget::dataSeriesDbClicked);
     retranslateUi();
 }
 
@@ -55,7 +56,6 @@ QList< DAData > DADataManageWidget::getAllSelectDatas() const
 {
     return ui->dataTreeWidget->getAllSelectDatas();
 }
-
 
 /**
  * @brief 获取mgr

@@ -68,27 +68,27 @@ void DADialogChartGuide::initListWidget()
     QListWidgetItem* item = nullptr;
     // curve
     item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-curve.svg"), tr("curve"));
-    item->setData(Qt::UserRole, static_cast< int >(DA::ChartTypes::Curve));
+    item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::Curve));
     ui->listWidgetChartType->addItem(item);
     // scatter
     item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-scatter.svg"), tr("scatter"));
-    item->setData(Qt::UserRole, static_cast< int >(DA::ChartTypes::Scatter));
+    item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::Scatter));
     ui->listWidgetChartType->addItem(item);
     // bar
     item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-bar.svg"), tr("bar"));
-    item->setData(Qt::UserRole, static_cast< int >(DA::ChartTypes::Bar));
+    item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::Bar));
     ui->listWidgetChartType->addItem(item);
     // errorbar
     item = new QListWidgetItem(QIcon(":/app/chart-type/Icon/chart-type/chart-intervalcurve.svg"), tr("error bar"));
-    item->setData(Qt::UserRole, static_cast< int >(DA::ChartTypes::ErrorBar));
+    item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::ErrorBar));
     ui->listWidgetChartType->addItem(item);
     // boxplot
     item = new QListWidgetItem(QIcon(":/app/chart-type/Icon/chart-type/chart-OHLC.svg"), tr("box"));
-    item->setData(Qt::UserRole, static_cast< int >(DA::ChartTypes::Box));
+    item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::Box));
     ui->listWidgetChartType->addItem(item);
     // spectrogram
     item = new QListWidgetItem(QIcon(":/app/chart-type/Icon/chart-type/chart-spectrogram.svg"), tr("cloud map"));
-    item->setData(Qt::UserRole, static_cast< int >(DA::ChartTypes::Spectrogram));
+    item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::Spectrogram));
     ui->listWidgetChartType->addItem(item);
     // 初始化
     ui->listWidgetChartType->setCurrentRow(0);
@@ -108,30 +108,16 @@ void DADialogChartGuide::setDataManager(DADataManager* dmgr)
 }
 
 /**
- * @brief 设置当前的数据
- * @param d
- */
-void DADialogChartGuide::setCurrentData(const DAData& d)
-{
-    int c = ui->stackedWidget->count();
-    for (int i = 0; i < c; ++i) {
-        if (DAAbstractChartAddItemWidget* w = qobject_cast< DAAbstractChartAddItemWidget* >(ui->stackedWidget->widget(i))) {
-            w->setCurrentData(d);
-        }
-    }
-}
-
-/**
  * @brief 获取当前的绘图类型
  * @return
  */
-DA::ChartTypes DADialogChartGuide::getCurrentChartType() const
+DA::DAChartTypes DADialogChartGuide::getCurrentChartType() const
 {
     QListWidgetItem* item = ui->listWidgetChartType->currentItem();
     if (item == nullptr) {
-        return DA::ChartTypes::Unknow;
+        return DA::DAChartTypes::Unknow;
     }
-    return static_cast< DA::ChartTypes >(item->data(Qt::UserRole).toInt());
+    return static_cast< DA::DAChartTypes >(item->data(Qt::UserRole).toInt());
 }
 
 /**
@@ -153,22 +139,30 @@ QwtPlotItem* DADialogChartGuide::createPlotItem()
     return item;
 }
 
-/**
- * @brief 更新数据
- */
-void DADialogChartGuide::updateData()
-{
-    int c = ui->stackedWidget->count();
-    for (int i = 0; i < c; ++i) {
-        if (DAAbstractChartAddItemWidget* w = qobject_cast< DAAbstractChartAddItemWidget* >(ui->stackedWidget->widget(i))) {
-            w->updateData();
-        }
-    }
-}
-
 DAAbstractChartAddItemWidget* DADialogChartGuide::getCurrentChartAddItemWidget() const
 {
     return qobject_cast< DAAbstractChartAddItemWidget* >(ui->stackedWidget->currentWidget());
+}
+
+DAAbstractChartAddItemWidget* DADialogChartGuide::getChartAddItemWidget(DAChartTypes chartType) const
+{
+    DA_DC(d);
+    switch (chartType) {
+    case DA::DAChartTypes::Curve:
+    case DA::DAChartTypes::Scatter:
+        return d->mAddCurve;
+    case DA::DAChartTypes::Bar:
+        return d->mAddBar;
+    case DA::DAChartTypes::ErrorBar:
+        return d->mAddIntervalCurve;
+    case DA::DAChartTypes::Box:
+        return d->mAddTradingCurve;
+    case DA::DAChartTypes::Spectrogram:
+        return d->mAddSpectroGram;
+    default:
+        break;
+    }
+    return nullptr;
 }
 
 /**
@@ -177,9 +171,9 @@ DAAbstractChartAddItemWidget* DADialogChartGuide::getCurrentChartAddItemWidget()
  */
 void DADialogChartGuide::initSetPlotItem(QwtPlotItem* item)
 {
-    DA::ChartTypes ct = getCurrentChartType();
+    DA::DAChartTypes ct = getCurrentChartType();
     switch (ct) {
-    case DA::ChartTypes::Scatter: {
+    case DA::DAChartTypes::Scatter: {
         if (item->rtti() == QwtPlotItem::Rtti_PlotCurve) {
             QwtPlotCurve* cur = static_cast< QwtPlotCurve* >(item);
             cur->setStyle(QwtPlotCurve::Dots);
@@ -194,7 +188,7 @@ void DADialogChartGuide::initSetPlotItem(QwtPlotItem* item)
  * @brief 设置当前的绘图类型
  * @param t
  */
-void DADialogChartGuide::setCurrentChartType(DA::ChartTypes t)
+void DADialogChartGuide::setCurrentChartType(DA::DAChartTypes t)
 {
     int c = ui->listWidgetChartType->count();
     for (int i = 0; i < c; ++i) {
@@ -210,27 +204,27 @@ void DADialogChartGuide::onListWidgetCurrentItemChanged(QListWidgetItem* current
 {
     Q_UNUSED(previous);
     DA_D(d);
-    DA::ChartTypes ct = static_cast< DA::ChartTypes >(current->data(Qt::UserRole).toInt());
+    DA::DAChartTypes ct = static_cast< DA::DAChartTypes >(current->data(Qt::UserRole).toInt());
     switch (ct) {
-    case DA::ChartTypes::Curve:
+    case DA::DAChartTypes::Curve:
         ui->stackedWidget->setCurrentWidget(d->mAddCurve);
         break;
-    case DA::ChartTypes::Scatter:
+    case DA::DAChartTypes::Scatter:
         ui->stackedWidget->setCurrentWidget(d->mAddCurve);
         break;
-    case DA::ChartTypes::Bar:
+    case DA::DAChartTypes::Bar:
         ui->stackedWidget->setCurrentWidget(d->mAddBar);
         break;
         break;
-    case DA::ChartTypes::ErrorBar:
+    case DA::DAChartTypes::ErrorBar:
         ui->stackedWidget->setCurrentWidget(d->mAddIntervalCurve);
         break;
         break;
-    case DA::ChartTypes::Box:
+    case DA::DAChartTypes::Box:
         ui->stackedWidget->setCurrentWidget(d->mAddTradingCurve);
         break;
         break;
-    case DA::ChartTypes::Spectrogram:
+    case DA::DAChartTypes::Spectrogram:
         ui->stackedWidget->setCurrentWidget(d->mAddSpectroGram);
         break;
     default:

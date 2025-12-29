@@ -45,6 +45,12 @@ signals:
      * @param data
      */
     void dataDbClicked(const DA::DAData& data);
+    /**
+     * @brief series双击
+     * @param data
+     * @param seriesName
+     */
+    void dataSeriesDbClicked(const DA::DAData& data, const QString& seriesName);
 
 private:
     Ui::DADataManageWidget* ui;

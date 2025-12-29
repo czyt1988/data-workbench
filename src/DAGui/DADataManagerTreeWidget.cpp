@@ -42,7 +42,6 @@ void DADataManagerTreeWidget::PrivateData::init()
     // 创建模型和代理模型
     model = new DADataManagerTreeModel(q_ptr);
     model->setExpandDataframeToSeries(true);
-    model->setEnableEdit(false);
     proxyModel = new DADataManagerTreeFilterProxyModel(q_ptr);
     proxyModel->setSourceModel(model);
     ui->treeView->setModel(proxyModel);
@@ -53,7 +52,7 @@ void DADataManagerTreeWidget::PrivateData::init()
     ui->treeView->setAcceptDrops(false);                         // 树本身不接收拖放
     ui->treeView->setDragDropMode(QAbstractItemView::DragOnly);  // 只允许拖曳，不允许放置
     ui->treeView->setDefaultDropAction(Qt::CopyAction);
-
+    ui->treeView->setHeaderHidden(true);
 
     // 初始化补全器
     // 创建补全器
@@ -239,6 +238,14 @@ QString DADataManagerTreeWidget::getCurrentSelectSeriesName() const
     return item->text();
 }
 
+/**
+ * @brief 展开所有
+ */
+void DADataManagerTreeWidget::expandAll()
+{
+    ui->treeView->expandAll();
+}
+
 void DADataManagerTreeWidget::changeEvent(QEvent* e)
 {
     QWidget::changeEvent(e);
@@ -311,21 +318,31 @@ void DADataManagerTreeWidget::applyFilter()
 
 void DADataManagerTreeWidget::onTreeViewDoubleClicked(const QModelIndex& index)
 {
-    if (index.parent().isValid()) {
-        // 非根节点不处理
-        return;
-    }
+
     DA_D(d);
-    const QModelIndex srcIndex = d->proxyModel->mapToSource(index);
-    QStandardItem* item        = d->model->itemFromIndex(srcIndex);
-    if (item) {
-        DAData data = DADataManagerTreeModel::itemToData(item);
-        if (!data.isNull()) {
-            Q_EMIT dataDbClicked(data);
+    if (index.parent().isValid()) {
+        // 子节点双击
+        const QModelIndex srcIndex = d->proxyModel->mapToSource(index);
+        QStandardItem* item        = d->model->itemFromIndex(srcIndex);
+        if (item) {
+            DAData data = DADataManagerTreeModel::itemToData(item);
+            if (!data.isNull()) {
+                Q_EMIT dataSeriesDbClicked(data, item->text());
+            }
+        }
+        return;
+    } else {
+        // 根节点双击不处理
+        const QModelIndex srcIndex = d->proxyModel->mapToSource(index);
+        QStandardItem* item        = d->model->itemFromIndex(srcIndex);
+        if (item) {
+            DAData data = DADataManagerTreeModel::itemToData(item);
+            if (!data.isNull()) {
+                Q_EMIT dataDbClicked(data);
+            }
         }
     }
 }
-
 
 void DADataManagerTreeWidget::updateFilter(const QString& text)
 {

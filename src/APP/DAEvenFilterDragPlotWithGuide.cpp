@@ -8,6 +8,9 @@
 #include "DAAppChartOperateWidget.h"
 #include "MimeData/DAMimeDataForData.h"
 #include "MimeData/DAMimeDataFormats.h"
+#include "Dialog/DADialogChartGuide.h"
+#include "DAAbstractChartAddItemWidget.h"
+#include "DAChartAddCurveWidget.h"
 #include "DAChartWidget.h"
 #include "da_qt5qt6_compat.hpp"
 namespace DA
@@ -24,7 +27,6 @@ void DAEvenFilterDragPlotWithGuide::setChartOptWidget(DAAppChartOperateWidget* c
 {
     mChartOptWidget = c;
 }
-
 
 bool DAEvenFilterDragPlotWithGuide::eventFilter(QObject* obj, QEvent* event)
 {
@@ -120,52 +122,81 @@ bool DAEvenFilterDragPlotWithGuide::dropEvent(QDropEvent* e, DAFigureWidget* fig
     if (e->source() == this || nullptr == e->source()) {
         return false;
     }
-
+    QwtPlot* w = fig->plotUnderPos(DA::compat::eventPos(e));
+    if (w) {
+        // 先把current设置为当前光标的绘图
+        fig->setCurrentChart(w);
+    }
     const QMimeData* mimeData = e->mimeData();
-    if (mimeData->hasFormat(DAMIMEDATA_FORMAT_DADATAS)) {
-        // 数据
-        const DAMimeDataForData* datamime = qobject_cast< const DAMimeDataForData* >(mimeData);
-        if (nullptr == datamime) {
+    if (!mimeData->hasFormat(DAMIMEDATA_FORMAT_DADATAS)) {
+        return false;
+    }
+    // 数据
+    const DAMimeDataForData* datamime = qobject_cast< const DAMimeDataForData* >(mimeData);
+    if (nullptr == datamime) {
+        return false;
+    }
+
+    if (datamime->isHaveDataframe()) {
+        auto datas = datamime->getDataframes();
+        if (datas.empty()) {
             return false;
         }
-        QwtPlot* w = fig->plotUnderPos(DA::compat::eventPos(e));
-        if (nullptr == w) {
+        DAData data = datas.first();
+        e->acceptProposedAction();
+        mChartOptWidget->showPlotGuideDialog();
+    } else if (datamime->isHaveDataSeries()) {
+        // 存在series
+        const QList< QPair< DAData, QStringList > >& series = datamime->getDataSeries();
+        if (series.isEmpty()) {
             return false;
         }
-        if (datamime->isHaveDataframe()) {
-            auto datas = datamime->getDataframes();
-            if (datas.empty()) {
-                return false;
+        // 情况1：只有1个series
+        if (series.size() == 1) {
+            DAData data            = series.first().first;
+            QStringList serieNames = series.first().second;
+            if (serieNames.size() > 0) {
+                DAChartAddCurveWidget* addCurveWidget = getChartAddCurveWidget();
+                if (addCurveWidget) {
+                    if (serieNames.size() == 1) {
+                        addCurveWidget->setY(data, serieNames.first());
+                    } else {
+                        addCurveWidget->setX(data, serieNames.first());
+                        addCurveWidget->setY(data, serieNames[ 1 ]);
+                    }
+                }
             }
-            DAData data          = datas.first();
-            DAChartWidget* chart = qobject_cast< DAChartWidget* >(w);
-            e->acceptProposedAction();
-            // 因为createPlotItemWithGuideDialog里的对话框也涉及拖曳，必须先结束这个拖曳
-            QTimer::singleShot(0, [ this, fig, chart, data ]() { createChartWithDialog(fig, chart, data); });
+        } else {
+            // 多个数据，各取
+            DAData dataX = series[ 0 ].first;
+            DAData dataY = series[ 1 ].first;
+            if (!series[ 0 ].second.isEmpty() && !series[ 1 ].second.isEmpty()) {
+                DAChartAddCurveWidget* addCurveWidget = getChartAddCurveWidget();
+                if (addCurveWidget) {
+                    addCurveWidget->setX(dataX, series[ 0 ].second.first());
+                    addCurveWidget->setY(dataY, series[ 1 ].second.first());
+                }
+            }
         }
+        mChartOptWidget->showPlotGuideDialog();
     }
 
     return true;
 }
 
-void DAEvenFilterDragPlotWithGuide::createChartWithDialog(DAFigureWidget* fig, DAChartWidget* chart, const DAData& data)
+DAChartAddCurveWidget* DAEvenFilterDragPlotWithGuide::getChartAddCurveWidget()
 {
-    if (fig->getCurrentChart() != chart) {
-        // 如果当前绘图不是放下的绘图，则把当前绘图设置为放下数据的绘图
-        fig->setCurrentChart(chart);
-    }
     if (!mChartOptWidget) {
-        return;
+        return nullptr;
     }
-    QwtPlotItem* pi = mChartOptWidget->createPlotItemWithGuideDialog(data);
-    if (nullptr == pi) {
-        return;
+    DADialogChartGuide* dlg = mChartOptWidget->getChartGuideDlg();
+    if (!dlg) {
+        return nullptr;
     }
-    fig->addItem_(pi);
-    if (auto chart = fig->gca()) {
-        chart->rescaleAxes();
-        chart->replot();
-    }
+    dlg->setCurrentChartType(DAChartTypes::Curve);
+    // 获取curve对话框
+    DAAbstractChartAddItemWidget* chartWidget = dlg->getChartAddItemWidget(DAChartTypes::Curve);
+    return qobject_cast< DAChartAddCurveWidget* >(chartWidget);
 }
 
 }  // end DA
