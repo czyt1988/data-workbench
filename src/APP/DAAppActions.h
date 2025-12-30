@@ -133,6 +133,13 @@ public:
     QAction* actionChartEnablePickerXY;         ///< xy拾取器
     QAction* actionChartEnableLegend;           ///< legend
     QAction* actionCopyFigureInClipboard;       ///< 把图片复制到剪切板
+
+    QActionGroup* actionGroupChartPickerTextRegion;  ///< 设置ypicker时，picker text所在的位置
+    QAction* actionChartPickerTextAtLeftTop;         ///< ypicker的文字在绘图的左上角
+    QAction* actionChartPickerTextAtLeftBottom;      ///< ypicker的文字在绘图的左下角
+    QAction* actionChartPickerTextAtRightTop;        ///< ypicker的文字在绘图的右上角
+    QAction* actionChartPickerTextAtRightBottom;     ///< ypicker的文字在绘图的右下角
+    QAction* actionChartPickerTextFollowMouse;       ///< ypicker的文字跟随鼠标
     //===================================================
     // 视图标签 View Category
     //===================================================

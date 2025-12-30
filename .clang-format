@@ -55,7 +55,6 @@ NamespaceIndentation: None
 # Horizontally align arguments after an open bracket.
 # The coding style does not specify the following, but this is what gives
 # results closest to the existing code.
-AlignAfterOpenBracket: true
 AlwaysBreakTemplateDeclarations: true
 
 # Ideally we should also allow less short function in a single line, but
@@ -65,13 +64,14 @@ AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
 AllowShortBlocksOnASingleLine: false
 #
+AlignAfterOpenBracket: BlockIndent
 BinPackParameters: false
 BinPackArguments: false
-AllowAllParametersOfDeclarationOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: true
 AlwaysBreakAfterReturnType: None
 #
 PenaltyReturnTypeOnItsOwnLine: 200
-PenaltyBreakAssignment: 20
+PenaltyBreakAssignment: 1
 PenaltyBreakBeforeFirstCallParameter: 100
 PenaltyBreakString: 1000
 

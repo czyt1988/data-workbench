@@ -180,7 +180,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+294"/>
+        <location filename="../APP/DAAppActions.cpp" line="+319"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
@@ -382,6 +382,31 @@ All</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>At Canvas Left Top</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>At Canvas Left Bottom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>At Canvas Right Top</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>At Canvas Right Bottom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Follow Mouse</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>XY Picker</source>
         <translation type="unfinished"></translation>
     </message>
@@ -485,7 +510,7 @@ Move</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>grouping</source>
         <translation type="unfinished"></translation>
     </message>
@@ -652,7 +677,7 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+486"/>
+        <location filename="../APP/DAAppController.cpp" line="+476"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
@@ -678,7 +703,7 @@ Config</source>
     </message>
     <message>
         <location line="+12"/>
-        <location line="+459"/>
+        <location line="+458"/>
         <source>Project saved successfully,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -715,7 +740,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+69"/>
+        <location line="+66"/>
         <source>Image files (*.png *.jpg)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -740,7 +765,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+7"/>
         <source>warning</source>
         <translation type="unfinished"></translation>
     </message>
@@ -755,7 +780,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+545"/>
+        <location line="+564"/>
         <source>new workflow name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1006,7 +1031,7 @@ Config</source>
 <context>
     <name>DA::DAAppRibbonArea</name>
     <message>
-        <location filename="../APP/DAAppRibbonArea.cpp" line="+165"/>
+        <location filename="../APP/DAAppRibbonArea.cpp" line="+172"/>
         <source>File</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1047,12 +1072,12 @@ Config</source>
     <message>
         <location line="+3"/>
         <location line="+21"/>
-        <location line="+340"/>
+        <location line="+330"/>
         <source>View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-360"/>
+        <location line="-350"/>
         <source>Display</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1119,18 +1144,18 @@ Config</source>
     </message>
     <message>
         <location line="-300"/>
-        <location line="+381"/>
+        <location line="+371"/>
         <source>Workflow Run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-380"/>
-        <location line="+383"/>
+        <location line="-370"/>
+        <location line="+373"/>
         <source>Run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-381"/>
+        <location line="-371"/>
         <location line="+228"/>
         <source>Figure</source>
         <translation type="unfinished"></translation>
@@ -1152,13 +1177,13 @@ Config</source>
     </message>
     <message>
         <location line="+1"/>
-        <location line="+387"/>
+        <location line="+377"/>
         <location line="+2"/>
         <source>Chart Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-387"/>
+        <location line="-377"/>
         <source>theme</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1189,7 +1214,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+28"/>
+        <location line="+18"/>
         <source>Workflow View</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1199,7 +1224,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+69"/>
+        <location line="+70"/>
         <source>Theme</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1560,7 +1585,7 @@ Config</source>
 <context>
     <name>DA::DAChartCurveItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="+142"/>
+        <location filename="../DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="+143"/>
         <source>Lines</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1733,7 +1758,7 @@ Config</source>
 <context>
     <name>DA::DAChartSpectrogramItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartSpectrogramItemSettingWidget.cpp" line="+86"/>
+        <location filename="../DAGui/ChartSetting/DAChartSpectrogramItemSettingWidget.cpp" line="+87"/>
         <source>Image Mode</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3195,7 +3220,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1954"/>
+        <location filename="../APP/DAAppController.cpp" line="-1959"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>

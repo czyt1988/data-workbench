@@ -97,8 +97,9 @@ public:
 
 public:
     // 获取当前dataframeOperateWidget,如果没有返回nullptr,此函数不返回nullptr的前提是
-    DADataOperateOfDataFrameWidget* getCurrentDataFrameOperateWidget(bool checkDataOperateAreaFocused = true,
-                                                                     bool isShowMessage               = true);
+    DADataOperateOfDataFrameWidget* getCurrentDataFrameOperateWidget(
+        bool checkDataOperateAreaFocused = true, bool isShowMessage = true
+    );
     // 获取工作流操作窗口
     DAWorkFlowOperateWidget* getWorkFlowOperateWidget() const;
     // 获取数据操作窗口
@@ -218,6 +219,8 @@ private Q_SLOTS:
     void onActionChartEnablePickerCrossTriggered(bool on);
     // 允许绘图拾取Y
     void onActionChartEnablePickerYTriggered(bool on);
+    // 绘图样式选择
+    void onActionGroupChartPickerTextRegionTriggered(QAction* act);
     // 允许绘图拾取XY
     void onActionChartEnablePickerXYTriggered(bool on);
     // 允许绘图图例

@@ -4,6 +4,7 @@
 #include <QVector>
 #include <cmath>
 #include "DAColorTheme.h"
+#include "qwt_plot_series_data_picker.h"
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
 //===================================================
@@ -121,13 +122,36 @@ void DAAppActions::buildChartAction()
     actionGroupChartPickers = new QActionGroup(this);
     actionGroupChartPickers->setObjectName(QStringLiteral("actionGroupChartPickers"));
     actionGroupChartPickers->setExclusionPolicy(QActionGroup::ExclusionPolicy::ExclusiveOptional);  // 允许都不选中
-    actionChartEnablePickerCross = createAction(
-        "actionChartEnablePickerCross", ":/app/bright/Icon/chart-picker.svg", true, false, actionGroupChartPickers);
-    actionChartEnablePickerY = createAction(
-        "actionChartEnablePickerY", ":/app/bright/Icon/chart-picker-y.svg", true, false, actionGroupChartPickers);
-    actionChartEnablePickerXY = createAction(
-        "actionChartEnablePickerXY", ":/app/bright/Icon/chart-picker-xy.svg", true, false, actionGroupChartPickers);
+    actionChartEnablePickerCross =
+        createAction("actionChartEnablePickerCross", ":/app/bright/Icon/chart-picker.svg", true, false, actionGroupChartPickers);
+    actionChartEnablePickerXY =
+        createAction("actionChartEnablePickerXY", ":/app/bright/Icon/chart-picker-xy.svg", true, false, actionGroupChartPickers);
+    actionChartEnablePickerY =
+        createAction("actionChartEnablePickerY", ":/app/bright/Icon/chart-picker-y.svg", true, false, actionGroupChartPickers);
 
+    actionGroupChartPickerTextRegion = new QActionGroup(this);
+    actionGroupChartPickerTextRegion->setObjectName(QStringLiteral("actionGroupChartPickerTextRegion"));
+    actionGroupChartPickerTextRegion->setExclusive(true);
+    actionChartPickerTextAtLeftTop = createAction(
+        "actionChartPickerTextAtLeftTop", ":/app/bright/Icon/left-top.svg", true, false, actionGroupChartPickerTextRegion
+    );
+    actionChartPickerTextAtLeftTop->setData(QwtPlotSeriesDataPicker::TextOnCanvasTopLeft);
+    actionChartPickerTextAtLeftBottom = createAction(
+        "actionChartPickerTextAtLeftBottom", ":/app/bright/Icon/left-bottom.svg", true, false, actionGroupChartPickerTextRegion
+    );
+    actionChartPickerTextAtLeftBottom->setData(QwtPlotSeriesDataPicker::TextOnCanvasBottomLeft);
+    actionChartPickerTextAtRightTop = createAction(
+        "actionChartPickerTextAtRightTop", ":/app/bright/Icon/right-top.svg", true, false, actionGroupChartPickerTextRegion
+    );
+    actionChartPickerTextAtRightTop->setData(QwtPlotSeriesDataPicker::TextOnCanvasTopRight);
+    actionChartPickerTextAtRightBottom = createAction(
+        "actionChartPickerTextAtRightBottom", ":/app/bright/Icon/right-bottom.svg", true, false, actionGroupChartPickerTextRegion
+    );
+    actionChartPickerTextAtRightBottom->setData(QwtPlotSeriesDataPicker::TextOnCanvasBottomRight);
+    actionChartPickerTextFollowMouse = createAction(
+        "actionChartPickerTextFollowMouse", ":/app/bright/Icon/follow-mouse.svg", true, true, actionGroupChartPickerTextRegion
+    );
+    actionChartPickerTextFollowMouse->setData(QwtPlotSeriesDataPicker::TextFollowMouse);
     actionChartEnableLegend = createAction("actionChartEnableLegend", ":/app/bright/Icon/chart-legend.svg", true, false);
     actionCopyFigureInClipboard = createAction("actionCopyFigureInClipboard", ":/app/bright/Icon/copy-figure.svg");
 }
@@ -178,7 +202,8 @@ void DAAppActions::buildWorkflowAction()
     actionWorkflowTerminate = createAction("actionWorkflowTerminate", ":/app/bright/Icon/stop.svg");
     actionWorkflowTerminate->setEnabled(false);
     // 导出
-    actionExportWorkflowSceneToImage = createAction("actionExportWorkflowSceneToImage", ":/app/bright/Icon/exportToPic.svg");
+    actionExportWorkflowSceneToImage =
+        createAction("actionExportWorkflowSceneToImage", ":/app/bright/Icon/exportToPic.svg");
     actionExportWorkflowSceneToPNG = createAction("actionExportWorkflowSceneToPNG", ":/app/bright/Icon/exportToPng.svg");
 }
 
@@ -319,24 +344,29 @@ void DAAppActions::retranslateUi()
     actionChartAddVectorfield->setText(tr("Add \nVector Field"));  // cn:向量场图
 
     actionFigureSettingApplyAllChart->setText(tr("Apply All Charts"));  // cn:应用到\n所有绘图
-    actionFigureSettingApplyAllChart->setToolTip(tr(
-        "When this feature is selected, operations on the figure will "
-        "apply to all plots, not just the currently selected one"));  // cn:此功能选中后，figure上的操作将应用到所有绘图，而不仅仅是当前选中的绘图
-    actionChartEnableGrid->setText(tr("Enable Grid"));              // cn:网格
-    actionChartEnableGridX->setText(tr("X Grid"));                  // cn:横向网格
-    actionChartEnableGridY->setText(tr("Y Grid"));                  // cn:纵向网格
-    actionChartEnableGridXMin->setText(tr("Xmin Grid"));            // cn:横向密集网格
-    actionChartEnableGridYMin->setText(tr("Ymin Grid"));            // cn:纵向密集网格
-    actionChartEnableZoom->setText(tr("Zoom"));                     // cn:缩放
-    actionChartZoomIn->setText(tr("Zoom In"));                      // cn:放大
-    actionChartZoomOut->setText(tr("Zoom Out"));                    // cn:缩小
-    actionChartZoomAll->setText(tr("Show \nAll"));                  // cn:显示\n全部
-    actionChartEnablePan->setText(tr("Pan"));                       // cn:拖动
-    actionChartEnablePickerCross->setText(tr("Cross"));             // cn:十字标记
-    actionChartEnablePickerY->setText(tr("Y Picker"));              // cn:y值拾取
-    actionChartEnablePickerXY->setText(tr("XY Picker"));            // cn:点拾取
-    actionChartEnableLegend->setText(tr("legend"));                 // cn:图例
-    actionCopyFigureInClipboard->setText(tr("Copy To Clipboard"));  // cn:复制到剪切板
+    actionFigureSettingApplyAllChart->setToolTip(tr("When this feature is selected, operations on the figure will "
+                                                    "apply to all plots, not just the currently selected one")
+    );  // cn:此功能选中后，figure上的操作将应用到所有绘图，而不仅仅是当前选中的绘图
+    actionChartEnableGrid->setText(tr("Enable Grid"));                          // cn:网格
+    actionChartEnableGridX->setText(tr("X Grid"));                              // cn:横向网格
+    actionChartEnableGridY->setText(tr("Y Grid"));                              // cn:纵向网格
+    actionChartEnableGridXMin->setText(tr("Xmin Grid"));                        // cn:横向密集网格
+    actionChartEnableGridYMin->setText(tr("Ymin Grid"));                        // cn:纵向密集网格
+    actionChartEnableZoom->setText(tr("Zoom"));                                 // cn:缩放
+    actionChartZoomIn->setText(tr("Zoom In"));                                  // cn:放大
+    actionChartZoomOut->setText(tr("Zoom Out"));                                // cn:缩小
+    actionChartZoomAll->setText(tr("Show \nAll"));                              // cn:显示\n全部
+    actionChartEnablePan->setText(tr("Pan"));                                   // cn:拖动
+    actionChartEnablePickerCross->setText(tr("Cross"));                         // cn:十字标记
+    actionChartEnablePickerY->setText(tr("Y Picker"));                          // cn:y值拾取
+    actionChartPickerTextAtLeftTop->setText(tr("At Canvas Left Top"));          // cn:在画布左上
+    actionChartPickerTextAtLeftBottom->setText(tr("At Canvas Left Bottom"));    // cn:在画布左下
+    actionChartPickerTextAtRightTop->setText(tr("At Canvas Right Top"));        // cn:在画布右上
+    actionChartPickerTextAtRightBottom->setText(tr("At Canvas Right Bottom"));  // cn:在画布右下
+    actionChartPickerTextFollowMouse->setText(tr("Follow Mouse"));              // cn:跟随鼠标
+    actionChartEnablePickerXY->setText(tr("XY Picker"));                        // cn:点拾取
+    actionChartEnableLegend->setText(tr("legend"));                             // cn:图例
+    actionCopyFigureInClipboard->setText(tr("Copy To Clipboard"));              // cn:复制到剪切板
 
     // 数据操作的上下文标签 Data Operate Context Category
     actionRemoveRow->setText(tr("Remove Row"));                  // cn:删除行
@@ -358,7 +388,8 @@ void DAAppActions::retranslateUi()
     actionWorkflowNew->setText(tr("New \nWorkflow"));                    // cn:新建\n工作流
     actionWorkflowEnableItemLinkageMove->setText(tr("Linkage \nMove"));  // cn:联动
     actionWorkflowEnableItemLinkageMove->setToolTip(
-        tr("When moving elements, other elements linked to this element follow the movement"));  // cn:允许移动图元时，其它和此图元链接起来的图元跟随移动
+        tr("When moving elements, other elements linked to this element follow the movement")
+    );  // cn:允许移动图元时，其它和此图元链接起来的图元跟随移动
     actionItemGrouping->setText(tr("grouping"));                                      // cn:分组
     actionItemUngroup->setText(tr("ungroup"));                                        // cn:取消分组
     actionWorkflowStartDrawRect->setText(tr("Draw \nRect"));                          // cn:绘制\n矩形

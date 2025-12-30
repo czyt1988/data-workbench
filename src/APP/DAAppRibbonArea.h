@@ -394,6 +394,7 @@ private:
     QMenu* m_menuInsertRow { nullptr };                  ///< 针对insertrow的action menu
     QMenu* m_menuInsertColumn { nullptr };               ///< 这对insertcol的action menu
     QMenu* m_menuTheme { nullptr };                      ///< 主题菜单
+    QMenu* m_menuChartPickSetting { nullptr };           ///< chart的picker设置
 };
 }  // namespace DA
 #endif  // DAAPPRIBBONAREA_H

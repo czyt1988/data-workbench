@@ -82,6 +82,11 @@
         <file>Icon/view-marker.svg</file>
         <file>Icon/copy-figure.svg</file>
         <file>Icon/apply-to-all-figure.svg</file>
+        <file>Icon/left-bottom.svg</file>
+        <file>Icon/left-top.svg</file>
+        <file>Icon/right-bottom.svg</file>
+        <file>Icon/right-top.svg</file>
+        <file>Icon/follow-mouse.svg</file>
     </qresource>
     <qresource prefix="/app/dataType">
         <file>Icon/typeDataframe.svg</file>

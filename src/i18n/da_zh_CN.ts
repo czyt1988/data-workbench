@@ -180,7 +180,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+294"/>
+        <location filename="../APP/DAAppActions.cpp" line="+319"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
@@ -378,6 +378,31 @@ All</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>At Canvas Left Top</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>At Canvas Left Bottom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>At Canvas Right Top</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>At Canvas Right Bottom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Follow Mouse</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>XY Picker</source>
         <translation>点拾取</translation>
     </message>
@@ -485,7 +510,7 @@ Move</source>
         <translation>允许移动图元时，其它和此图元链接起来的图元跟随移动</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>grouping</source>
         <translation>分组</translation>
     </message>
@@ -604,7 +629,7 @@ Config</source>
         <translation>暗色主题</translation>
     </message>
     <message>
-        <location line="-61"/>
+        <location line="-67"/>
         <source>Zoom Out</source>
         <translation>缩小</translation>
     </message>
@@ -614,7 +639,7 @@ Config</source>
         <translation>放大</translation>
     </message>
     <message>
-        <location line="+37"/>
+        <location line="+43"/>
         <source>Run 
 Workflow</source>
         <translation>运行
@@ -675,7 +700,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+883"/>
+        <location filename="../APP/DAAppController.cpp" line="+872"/>
         <location line="+49"/>
         <source>project file(*.%1)</source>
         <translation>工程文件(*.%1)</translation>
@@ -697,7 +722,7 @@ Table Area</source>
         <translation>加载工程文件“%1”失败</translation>
     </message>
     <message>
-        <location line="-463"/>
+        <location line="-462"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
@@ -723,7 +748,7 @@ Table Area</source>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+459"/>
+        <location line="+458"/>
         <source>Project saved successfully,path is %1</source>
         <translation>工程保存成功，路径位于:%1</translation>
     </message>
@@ -738,7 +763,7 @@ Table Area</source>
         <translation>工程加载成功，路径为：%1</translation>
     </message>
     <message>
-        <location line="+69"/>
+        <location line="+66"/>
         <source>Image files (*.png *.jpg)</source>
         <translation>图片文件 (*.png *.jpg)</translation>
     </message>
@@ -763,7 +788,7 @@ Table Area</source>
         <translation>空工程，接口异常</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+7"/>
         <source>warning</source>
         <translation>警告</translation>
     </message>
@@ -778,7 +803,7 @@ Table Area</source>
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
     <message>
-        <location line="+545"/>
+        <location line="+564"/>
         <source>new workflow name</source>
         <translation>新工作流名称</translation>
     </message>
@@ -1029,7 +1054,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppRibbonArea</name>
     <message>
-        <location filename="../APP/DAAppRibbonArea.cpp" line="+167"/>
+        <location filename="../APP/DAAppRibbonArea.cpp" line="+174"/>
         <source>Main</source>
         <translation>主页</translation>
     </message>
@@ -1065,12 +1090,12 @@ Table Area</source>
     <message>
         <location line="+3"/>
         <location line="+21"/>
-        <location line="+340"/>
+        <location line="+330"/>
         <source>View</source>
         <translation>视图</translation>
     </message>
     <message>
-        <location line="-360"/>
+        <location line="-350"/>
         <source>Display</source>
         <translation>视图显示</translation>
     </message>
@@ -1137,18 +1162,18 @@ Table Area</source>
     </message>
     <message>
         <location line="-300"/>
-        <location line="+381"/>
+        <location line="+371"/>
         <source>Workflow Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location line="-380"/>
-        <location line="+383"/>
+        <location line="-370"/>
+        <location line="+373"/>
         <source>Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location line="-381"/>
+        <location line="-371"/>
         <location line="+228"/>
         <source>Figure</source>
         <translation>绘图</translation>
@@ -1170,13 +1195,13 @@ Table Area</source>
     </message>
     <message>
         <location line="+1"/>
-        <location line="+387"/>
+        <location line="+377"/>
         <location line="+2"/>
         <source>Chart Edit</source>
         <translation>绘图编辑</translation>
     </message>
     <message>
-        <location line="-387"/>
+        <location line="-377"/>
         <source>theme</source>
         <translation>主题</translation>
     </message>
@@ -1202,7 +1227,7 @@ Table Area</source>
         <translation>把工作流的场景导出为图片</translation>
     </message>
     <message>
-        <location line="+423"/>
+        <location line="+414"/>
         <source>Theme</source>
         <translation>主题</translation>
     </message>
@@ -1212,12 +1237,12 @@ Table Area</source>
         <translation>最近打开的文件</translation>
     </message>
     <message>
-        <location line="-150"/>
+        <location line="-141"/>
         <source>Group</source>
         <translation>分组</translation>
     </message>
     <message>
-        <location line="+28"/>
+        <location line="+18"/>
         <source>Workflow View</source>
         <translation>显示</translation>
     </message>
@@ -1227,7 +1252,7 @@ Table Area</source>
         <translation>导出</translation>
     </message>
     <message>
-        <location line="-404"/>
+        <location line="-394"/>
         <source>File</source>
         <translation>文件</translation>
     </message>
@@ -1583,7 +1608,7 @@ Table Area</source>
 <context>
     <name>DA::DAChartCurveItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="+142"/>
+        <location filename="../DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="+143"/>
         <source>Lines</source>
         <translation>折线</translation>
     </message>
@@ -1756,7 +1781,7 @@ Table Area</source>
 <context>
     <name>DA::DAChartSpectrogramItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartSpectrogramItemSettingWidget.cpp" line="+86"/>
+        <location filename="../DAGui/ChartSetting/DAChartSpectrogramItemSettingWidget.cpp" line="+87"/>
         <source>Image Mode</source>
         <translation>云图模式</translation>
     </message>
@@ -3306,7 +3331,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1954"/>
+        <location filename="../APP/DAAppController.cpp" line="-1959"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
