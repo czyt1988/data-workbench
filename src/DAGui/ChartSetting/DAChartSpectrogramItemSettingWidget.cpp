@@ -75,6 +75,7 @@ void DAChartSpectrogramItemSettingWidget::applySetting(QwtPlotSpectrogram* item)
     if (ui->comboBoxDisplayMode->currentText() == "ContourMode") {
         item->setDefaultContourPen(getCurvePen());
     }
+    replot();
 }
 
 /**
@@ -233,6 +234,7 @@ void DAChartSpectrogramItemSettingWidget::onCurvePenChanged(const QPen& p)
     DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
     QwtPlotSpectrogram* c = s_cast< QwtPlotSpectrogram* >();
     c->setDefaultContourPen(p);
+    replot();
 }
 
 void DAChartSpectrogramItemSettingWidget::onFromColorChanged(const QPen& p)
@@ -240,6 +242,7 @@ void DAChartSpectrogramItemSettingWidget::onFromColorChanged(const QPen& p)
     DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
     QwtPlotSpectrogram* c = s_cast< QwtPlotSpectrogram* >();
     c->setColorMap(new QwtLinearColorMap(getFromColor(), getToColor()));
+    replot();
 }
 
 void DAChartSpectrogramItemSettingWidget::onToColorChanged(const QPen& p)
@@ -247,5 +250,6 @@ void DAChartSpectrogramItemSettingWidget::onToColorChanged(const QPen& p)
     DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
     QwtPlotSpectrogram* c = s_cast< QwtPlotSpectrogram* >();
     c->setColorMap(new QwtLinearColorMap(getFromColor(), getToColor()));
+    replot();
 }
 }

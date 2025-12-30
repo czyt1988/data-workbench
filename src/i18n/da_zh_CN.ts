@@ -778,7 +778,7 @@ Table Area</source>
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
     <message>
-        <location line="+528"/>
+        <location line="+545"/>
         <source>new workflow name</source>
         <translation>新工作流名称</translation>
     </message>
@@ -3306,7 +3306,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1883"/>
+        <location filename="../APP/DAAppController.cpp" line="-1954"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>

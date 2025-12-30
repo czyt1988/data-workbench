@@ -105,7 +105,6 @@ void DAChartAxisSetWidget::onAxisLabelRotationChanged(double v)
     }
 }
 
-
 void DAChartAxisSetWidget::onAxisMarginValueChanged(int v)
 {
     if (m_plot) {

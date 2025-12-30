@@ -114,6 +114,8 @@ void DAChartTradingCurveItemSettingWidget::applySetting(QwtPlotTradingCurve* ite
 
     // Orientation
     updateOrientationFromUI(item);
+
+    // 上面的函数已经调用replot();，这里不需要再调用
 }
 
 void DAChartTradingCurveItemSettingWidget::plotItemAttached(QwtPlotItem* plotItem, bool on)
@@ -171,6 +173,7 @@ void DAChartTradingCurveItemSettingWidget::updateSymbolFillBrushFromUI(QwtPlotTr
 {
     c->setSymbolBrush(QwtPlotTradingCurve::Increasing, ui->brushEditWidgetIncreasing->getCurrentBrush());
     c->setSymbolBrush(QwtPlotTradingCurve::Decreasing, ui->brushEditWidgetDecreasing->getCurrentBrush());
+    replot();
 }
 
 void DAChartTradingCurveItemSettingWidget::updateOrientationFromUI(QwtPlotTradingCurve* c)
@@ -179,6 +182,7 @@ void DAChartTradingCurveItemSettingWidget::updateOrientationFromUI(QwtPlotTradin
     if (c->orientation() != ori) {
         c->setOrientation(ori);
     }
+    replot();
 }
 
 void DAChartTradingCurveItemSettingWidget::onRadioButtonBarClicked(bool on)
@@ -188,6 +192,7 @@ void DAChartTradingCurveItemSettingWidget::onRadioButtonBarClicked(bool on)
         QwtPlotTradingCurve* item = s_cast< QwtPlotTradingCurve* >();
         item->setSymbolStyle(QwtPlotTradingCurve::Bar);
     }
+    replot();
 }
 
 void DAChartTradingCurveItemSettingWidget::onRadioButtonStickClicked(bool on)
@@ -197,6 +202,7 @@ void DAChartTradingCurveItemSettingWidget::onRadioButtonStickClicked(bool on)
         QwtPlotTradingCurve* item = s_cast< QwtPlotTradingCurve* >();
         item->setSymbolStyle(QwtPlotTradingCurve::CandleStick);
     }
+    replot();
 }
 
 void DAChartTradingCurveItemSettingWidget::onIncreasingBrushChanged(const QBrush& b)
@@ -204,6 +210,7 @@ void DAChartTradingCurveItemSettingWidget::onIncreasingBrushChanged(const QBrush
     DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
     QwtPlotTradingCurve* c = s_cast< QwtPlotTradingCurve* >();
     c->setSymbolBrush(QwtPlotTradingCurve::Increasing, b);
+    replot();
 }
 
 void DAChartTradingCurveItemSettingWidget::onDecreasingBrushChanged(const QBrush& b)
@@ -211,6 +218,7 @@ void DAChartTradingCurveItemSettingWidget::onDecreasingBrushChanged(const QBrush
     DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
     QwtPlotTradingCurve* c = s_cast< QwtPlotTradingCurve* >();
     c->setSymbolBrush(QwtPlotTradingCurve::Decreasing, b);
+    replot();
 }
 
 void DAChartTradingCurveItemSettingWidget::onButtonGroupOrientationClicked(QAbstractButton* b)
@@ -225,6 +233,7 @@ void DAChartTradingCurveItemSettingWidget::onCurvePenChanged(const QPen& p)
     DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
     QwtPlotTradingCurve* c = s_cast< QwtPlotTradingCurve* >();
     c->setSymbolPen(p);
+    replot();
 }
 
 void DAChartTradingCurveItemSettingWidget::onDoubleSpinBoxExternValueChanged(double v)
@@ -232,6 +241,7 @@ void DAChartTradingCurveItemSettingWidget::onDoubleSpinBoxExternValueChanged(dou
     DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
     QwtPlotTradingCurve* item = s_cast< QwtPlotTradingCurve* >();
     item->setSymbolExtent(v);
+    replot();
 }
 
 void DAChartTradingCurveItemSettingWidget::onDoubleSpinBoxMinValueChanged(double v)
@@ -239,6 +249,7 @@ void DAChartTradingCurveItemSettingWidget::onDoubleSpinBoxMinValueChanged(double
     DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
     QwtPlotTradingCurve* item = s_cast< QwtPlotTradingCurve* >();
     item->setMinSymbolWidth(v);
+    replot();
 }
 
 void DAChartTradingCurveItemSettingWidget::onDoubleSpinBoxMaxValueChanged(double v)
@@ -246,5 +257,6 @@ void DAChartTradingCurveItemSettingWidget::onDoubleSpinBoxMaxValueChanged(double
     DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
     QwtPlotTradingCurve* item = s_cast< QwtPlotTradingCurve* >();
     item->setMaxSymbolWidth(v);
+    replot();
 }
 }

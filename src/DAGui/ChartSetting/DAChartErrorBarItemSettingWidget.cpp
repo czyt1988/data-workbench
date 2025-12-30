@@ -101,6 +101,7 @@ void DAChartErrorBarItemSettingWidget::applySetting(QwtPlotIntervalCurve* item)
     if (item->orientation() != ori) {
         item->setOrientation(ori);
     }
+    replot();
 }
 
 /**
@@ -115,6 +116,7 @@ void DAChartErrorBarItemSettingWidget::applySymbolSetting(QwtPlotIntervalCurve* 
     } else {
         item->setSymbol(nullptr);
     }
+    replot();
 }
 
 void DAChartErrorBarItemSettingWidget::plotItemAttached(QwtPlotItem* plotItem, bool on)
@@ -278,6 +280,7 @@ void DAChartErrorBarItemSettingWidget::onGroupBoxErrorBarEnable(bool checked)
     } else {
         c->setSymbol(nullptr);
     }
+    replot();
 }
 
 void DAChartErrorBarItemSettingWidget::onBrushChanged(const QBrush& b)
@@ -285,6 +288,7 @@ void DAChartErrorBarItemSettingWidget::onBrushChanged(const QBrush& b)
     DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
     QwtPlotIntervalCurve* c = s_cast< QwtPlotIntervalCurve* >();
     c->setBrush(b);
+    replot();
 }
 
 void DAChartErrorBarItemSettingWidget::onGroupBoxFillEnable(bool checked)
@@ -296,6 +300,7 @@ void DAChartErrorBarItemSettingWidget::onGroupBoxFillEnable(bool checked)
     } else {
         c->setBrush(Qt::NoBrush);
     }
+    replot();
 }
 
 void DAChartErrorBarItemSettingWidget::onGroupBoxPenEnable(bool checked)
@@ -307,6 +312,7 @@ void DAChartErrorBarItemSettingWidget::onGroupBoxPenEnable(bool checked)
     } else {
         c->setPen(QPen(Qt::NoPen));
     }
+    replot();
 }
 
 void DAChartErrorBarItemSettingWidget::onCurvePenChanged(const QPen& p)
@@ -314,6 +320,7 @@ void DAChartErrorBarItemSettingWidget::onCurvePenChanged(const QPen& p)
     DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
     QwtPlotIntervalCurve* c = s_cast< QwtPlotIntervalCurve* >();
     c->setPen(p);
+    replot();
 }
 
 void DAChartErrorBarItemSettingWidget::onErrorBarPenWidthChanged(int v)

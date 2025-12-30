@@ -177,6 +177,7 @@ void DAChartBarItemSettingWidget::applySetting(QwtPlotBarChart* item)
             item->setBaseline(bl);
         }
     }
+    replot();
 }
 
 void DAChartBarItemSettingWidget::plotItemAttached(QwtPlotItem* plotItem, bool on)
@@ -195,6 +196,7 @@ void DAChartBarItemSettingWidget::plotItemAttached(QwtPlotItem* plotItem, bool o
 void DAChartBarItemSettingWidget::setTitle(const QString& t)
 {
     ui->widgetItemSetting->setItemTitle(t);
+    replot();
 }
 
 /**
@@ -367,6 +369,7 @@ void DAChartBarItemSettingWidget::onCheckBoxLegendModeChartClicked(bool checked)
     if (checked) {
         c->setLegendMode(QwtPlotBarChart::LegendMode::LegendChartTitle);
     }
+    replot();
 }
 
 void DAChartBarItemSettingWidget::onCheckBoxLegendModeBarClicked(bool checked)
@@ -376,6 +379,7 @@ void DAChartBarItemSettingWidget::onCheckBoxLegendModeBarClicked(bool checked)
     if (checked) {
         c->setLegendMode(QwtPlotBarChart::LegendMode::LegendBarTitles);
     }
+    replot();
 }
 
 void DAChartBarItemSettingWidget::onFillBrushChanged(const QBrush& b)
@@ -384,6 +388,7 @@ void DAChartBarItemSettingWidget::onFillBrushChanged(const QBrush& b)
     QwtPlotBarChart* bar = s_cast< QwtPlotBarChart* >();
 
     bar->setBrush(b);
+    replot();
 }
 
 void DAChartBarItemSettingWidget::onEdgePenChanged(const QPen& p)
@@ -392,6 +397,7 @@ void DAChartBarItemSettingWidget::onEdgePenChanged(const QPen& p)
     QwtPlotBarChart* bar = s_cast< QwtPlotBarChart* >();
 
     bar->setPen(p);
+    replot();
 }
 
 void DAChartBarItemSettingWidget::onGroupBoxFillClicked(bool on)
@@ -404,6 +410,7 @@ void DAChartBarItemSettingWidget::onGroupBoxFillClicked(bool on)
     } else {
         bar->setBrush(Qt::NoBrush);
     }
+    replot();
 }
 
 void DAChartBarItemSettingWidget::onGroupBoxEdgeClicked(bool on)
@@ -416,6 +423,7 @@ void DAChartBarItemSettingWidget::onGroupBoxEdgeClicked(bool on)
     } else {
         bar->setPen(Qt::NoPen);
     }
+    replot();
 }
 
 void DAChartBarItemSettingWidget::on_lineEditBaseLine_editingFinished()
@@ -426,6 +434,7 @@ void DAChartBarItemSettingWidget::on_lineEditBaseLine_editingFinished()
     if (!qFuzzyCompare(bl, c->baseline())) {
         c->setBaseline(bl);
     }
+    replot();
 }
 
 // 实现布局策略相关接口
@@ -484,6 +493,7 @@ void DAChartBarItemSettingWidget::onLayoutPolicyChanged(int index)
     QwtPlotBarChart* bar = s_cast< QwtPlotBarChart* >();
     bar->setLayoutPolicy(
         static_cast< QwtPlotAbstractBarChart::LayoutPolicy >(ui->comboBoxLayoutPolicy->currentData().toInt()));
+    replot();
 }
 
 void DAChartBarItemSettingWidget::onSpacingValueChanged(int value)
@@ -491,6 +501,7 @@ void DAChartBarItemSettingWidget::onSpacingValueChanged(int value)
     DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
     QwtPlotBarChart* bar = s_cast< QwtPlotBarChart* >();
     bar->setSpacing(value);
+    replot();
 }
 
 void DAChartBarItemSettingWidget::onMarginValueChanged(int value)
@@ -498,6 +509,7 @@ void DAChartBarItemSettingWidget::onMarginValueChanged(int value)
     DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
     QwtPlotBarChart* bar = s_cast< QwtPlotBarChart* >();
     bar->setMargin(value);
+    replot();
 }
 
 void DAChartBarItemSettingWidget::onLayoutHintValueChanged(double value)
@@ -505,6 +517,7 @@ void DAChartBarItemSettingWidget::onLayoutHintValueChanged(double value)
     DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
     QwtPlotBarChart* bar = s_cast< QwtPlotBarChart* >();
     bar->setLayoutHint(value);
+    replot();
 }
 
 void DAChartBarItemSettingWidget::onButtonGroupFrameStyleClicked(QAbstractButton* button)
@@ -517,5 +530,6 @@ void DAChartBarItemSettingWidget::onButtonGroupFrameStyleClicked(QAbstractButton
     } else if (ui->radioButtonFrameStyleRaised->isChecked()) {
         bar->setFrameStyle(QwtColumnSymbol::Raised);
     }
+    replot();
 }
 }
