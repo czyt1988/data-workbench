@@ -254,4 +254,12 @@ ads::CDockWidget* DADockingAreaInterface::createDockWidgetAsTab(QWidget* w,
     d_ptr->mDockManager->addDockWidgetTabToArea(dockWidget, dockAreaWidget);
     return dockWidget;
 }
+
+ads::CDockWidget* DADockingAreaInterface::createDockWidgetTabAtCenterDockArea(QWidget* w, const QString& widgetName)
+{
+    if (!d_ptr->mCenterArea) {
+        return nullptr;
+    }
+    return createDockWidgetAsTab(w, widgetName, d_ptr->mCenterArea);
+}
 }  // namespace DA

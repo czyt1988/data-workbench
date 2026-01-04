@@ -45,8 +45,7 @@ void DADataManagerTreeWidget::PrivateData::init()
     proxyModel = new DADataManagerTreeFilterProxyModel(q_ptr);
     proxyModel->setSourceModel(model);
     ui->treeView->setModel(proxyModel);
-    ui->treeView->setSortingEnabled(true);
-    // 设置列宽
+    //  设置列宽
     ui->treeView->header()->setStretchLastSection(true);
     ui->treeView->setDragEnabled(true);                          // 启用拖曳
     ui->treeView->setAcceptDrops(false);                         // 树本身不接收拖放

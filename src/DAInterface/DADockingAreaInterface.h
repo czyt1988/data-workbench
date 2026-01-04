@@ -70,14 +70,6 @@ public:
     const ads::CDockManager* dockManager() const;
 
     /**
-     * @brief 创建中央dock窗体
-     * @param w
-     * @param widgetName
-     * @return
-     */
-    ads::CDockWidget* createCenterDockWidget(QWidget* w, const QString& widgetName);
-
-    /**
      * @brief 创建一个dock窗体
      * @param w
      * @param area
@@ -106,6 +98,22 @@ public:
      * @return
      */
     ads::CDockWidget* createDockWidgetAsTab(QWidget* w, const QString& widgetName, ads::CDockAreaWidget* dockAreaWidget);
+
+    /**
+     * @brief 在中央停靠区添加一个dock窗口，作为标签页
+     * @param w
+     * @param widgetName
+     * @return 如果没有中央停靠区，此函数返回nullptr
+     *
+     * 此函数是createDockWidgetAsTab的简单封装
+     * @code
+     * ads::CDockWidget* DADockingAreaInterface::createDockWidgetTabAtCenterDockArea(QWidget* w, const QString& widgetName)
+     * {
+     *    return createDockWidgetAsTab(w,widgetName,d_ptr->mCenterArea);
+     * }
+     * @endcode
+     */
+    ads::CDockWidget* createDockWidgetTabAtCenterDockArea(QWidget* w, const QString& widgetName);
 
     /**
      * @brief 通过窗口查找对应的CDockWidget
@@ -273,6 +281,17 @@ public:
      * @return
      */
     DAWorkFlowGraphicsScene* getCurrentScene() const;
+
+protected:
+    /**
+     * @brief 创建中央dock窗体
+     *
+     * 此函数只能调用一次，正常用户不应该调用
+     * @param w
+     * @param widgetName
+     * @return
+     */
+    ads::CDockWidget* createCenterDockWidget(QWidget* w, const QString& widgetName);
 };
 
 }  // namespace DA
