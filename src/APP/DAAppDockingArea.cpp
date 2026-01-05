@@ -186,14 +186,13 @@ void DAAppDockingArea::buildDockingArea()
     mWorkFlowOperateDock->setIcon(QIcon(":/app/bright/Icon/showWorkFlow.svg"));
     mWorkFlowOperateDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
 
-    mChartOperateDock = createDockWidgetAsTab(
-        mChartOperateWidget, QStringLiteral("da_chartOperateWidgetDock"), mWorkFlowOperateDock->dockAreaWidget());
+    mChartOperateDock =
+        createDockWidgetTabAtCenterDockArea(mChartOperateWidget, QStringLiteral("da_chartOperateWidgetDock"));
     mChartOperateDock->setIcon(QIcon(":/app/bright/Icon/showChart.svg"));
     mChartOperateDock->setToggleViewActionMode(ads::CDockWidget::ActionModeToggle);
     mChartOperateDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
 
-    mDataOperateDock = createDockWidgetAsTab(
-        mDataOperateWidget, QStringLiteral("da_dataOperateWidgetDock"), mWorkFlowOperateDock->dockAreaWidget());
+    mDataOperateDock = createDockWidgetTabAtCenterDockArea(mDataOperateWidget, QStringLiteral("da_dataOperateWidgetDock"));
     mDataOperateDock->setIcon(QIcon(":/app/bright/Icon/showTable.svg"));
     mDataOperateDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
     mDataOperateDock->raise();

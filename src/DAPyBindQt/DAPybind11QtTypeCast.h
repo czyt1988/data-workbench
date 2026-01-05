@@ -41,7 +41,8 @@ DAPYBINDQT_API QList< QString > toStringList(const pybind11::object& obj, QStrin
 // QVariantList转换为pybind11::list
 DAPYBINDQT_API pybind11::list toPyList(const QVariantList& list);
 DAPYBINDQT_API pybind11::list toPyList(const QStringList& list);
-
+// 转换为日期，此函数会抛出异常，保证确保obj是datetime64类型
+DAPYBINDQT_API QDateTime toQDatetime(const pybind11::object& obj);
 /**
  * @brief 转换为列表
  * @param arr

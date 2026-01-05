@@ -1998,7 +1998,7 @@ Table Area</source>
 <context>
     <name>DA::DADataManagerTreeWidget</name>
     <message>
-        <location filename="../DAGui/DADataManagerTreeWidget.cpp" line="+371"/>
+        <location filename="../DAGui/DADataManagerTreeWidget.cpp" line="+370"/>
         <source>Search...</source>
         <translation>搜索...</translation>
     </message>
