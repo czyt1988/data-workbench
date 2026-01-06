@@ -122,17 +122,22 @@ pybind11::object DAPyIndex::operator[](const QSet< std::size_t >& slice) const
 pybind11::dtype DAPyIndex::dtype() const
 {
     try {
-        return object().attr("dtype");
+        return attr("dtype");
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
     }
     return pybind11::none();
 }
 
+pybind11::list DAPyIndex::toList() const
+{
+    return attr("tolist")();
+}
+
 bool DAPyIndex::empty() const
 {
     try {
-        pybind11::bool_ obj = object().attr("empty");
+        pybind11::bool_ obj = attr("empty");
         return obj.cast< bool >();
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
@@ -143,7 +148,7 @@ bool DAPyIndex::empty() const
 std::size_t DAPyIndex::size() const
 {
     try {
-        pybind11::int_ obj = object().attr("size");
+        pybind11::int_ obj = attr("size");
         return std::size_t(obj);
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();

@@ -92,6 +92,11 @@ install(FILES
     COMPONENT headers
 )
 install(FILES
+    ${DA_LIB_HEADERPP_FILES}
+    DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}
+    COMPONENT headers
+)
+install(FILES
     ${DA_DAPYBINDQT_PANDAS_HEADER_FILES}
     DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/pandas
     COMPONENT headers

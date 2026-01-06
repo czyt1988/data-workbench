@@ -35,6 +35,8 @@ public:
     DAPySeries& operator=(DAPySeries&& s);
     DAPySeries& operator=(DAPyObjectWrapper&& obj);
     pybind11::object operator[](std::size_t i) const;
+    // 如果索引是字符串，可以使用此函数
+    pybind11::object operator[](const QString& colName) const;
 
 public:
     // 获取dtype
@@ -147,7 +149,8 @@ void DAPySeries::castTo(VectLikeIte begin) const
             }
 
             // 转换时间戳到本地local
-            auto buf = values.cast< pybind11::array_t< int64_t, pybind11::array::c_style | pybind11::array::forcecast > >();
+            auto buf =
+                values.cast< pybind11::array_t< int64_t, pybind11::array::c_style | pybind11::array::forcecast > >();
 
             std::transform(buf.data(), buf.data() + buf.size(), begin, [](int64_t ns) -> double {
                 qint64 utcMs = ns / 1'000'000;
@@ -164,7 +167,8 @@ void DAPySeries::castTo(VectLikeIte begin) const
             //                                            .attr("tz_convert")(pybind11::str("local"));  // 有 tz 的也转到本地
             //            values = ts_local.attr("astype")("int64").attr("values");
             // 将纳秒转换为秒
-            auto buf = values.cast< pybind11::array_t< int64_t, pybind11::array::c_style | pybind11::array::forcecast > >();
+            auto buf =
+                values.cast< pybind11::array_t< int64_t, pybind11::array::c_style | pybind11::array::forcecast > >();
             std::transform(buf.data(), buf.data() + buf.size(), begin, [](int64_t ns) -> double {
                 return static_cast< double >(ns) / 1e9;  // 纳秒转秒
             });

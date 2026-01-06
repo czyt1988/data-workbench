@@ -43,6 +43,8 @@ public:
     pybind11::object iat(std::size_t i) const;
     // 获取dtype
     pybind11::dtype dtype() const;
+    // 转换为列表
+    pybind11::list toList() const;
     // Index.empty
     bool empty() const;
     // Index.size

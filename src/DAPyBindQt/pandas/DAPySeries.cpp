@@ -1,5 +1,6 @@
 ﻿#include "DAPySeries.h"
 #include "DAPybind11QtTypeCast.h"
+#include "DAPybind11QtCaster.hpp"
 #include "DAPyModulePandas.h"
 #include <QDateTime>
 #include <iterator>
@@ -93,6 +94,15 @@ pybind11::object DAPySeries::operator[](std::size_t i) const
     return iat(i);
 }
 
+/**
+ * @brief 针对索引是字符串的场景
+ * @param colName
+ * @return
+ */
+pybind11::object DAPySeries::operator[](const QString& colName) const
+{
+    return object()[ pybind11::cast(colName) ];
+}
 /**
  * @brief Return the dtype object of the underlying data.
  * @return

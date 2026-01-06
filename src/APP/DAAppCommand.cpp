@@ -23,8 +23,9 @@ DAAppCommand::~DAAppCommand()
 {
 }
 
-DADataAbstractUndoCommand*
-DAAppCommand::beginDataOperateCommand(const DAData& data, const QString& text, bool isObjectPersist, bool isSkipFirstRedo)
+DADataAbstractUndoCommand* DAAppCommand::beginDataOperateCommand(
+    const DAData& data, const QString& text, bool isObjectPersist, bool isSkipFirstRedo
+)
 {
     if (isObjectPersist) {
         m_dataOperateCommand = std::make_unique< DADataObjectPersistUndoCommand >();
@@ -58,6 +59,7 @@ bool DAAppCommand::endDataOperateCommand(const DAData& data)
     if (undoGroup().activeStack() != undoStack) {
         undoGroup().setActiveStack(undoStack);
     }
+    return true;
 }
 
 void DAAppCommand::setDataManagerStack(QUndoStack* s)

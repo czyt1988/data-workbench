@@ -6039,7 +6039,7 @@ To Excel</source>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../DAPyBindQt/pandas/DAPyIndex.cpp" line="+168"/>
+        <location filename="../DAPyBindQt/pandas/DAPyIndex.cpp" line="+204"/>
         <source>DAPyIndex get python object type is not pandas.Index</source>
         <translation>python object类型不是pandas.Index</translation>
     </message>
@@ -6049,7 +6049,7 @@ To Excel</source>
         <translation>使用utf-8打开文件“%1”错误，尝试使用ansi编码</translation>
     </message>
     <message>
-        <location filename="../DAPyBindQt/pandas/DAPySeries.cpp" line="+331"/>
+        <location filename="../DAPyBindQt/pandas/DAPySeries.cpp" line="+341"/>
         <source>DAPySeries  get python object type is not pandas.Series</source>
         <translation>python object类型不是pandas.Series</translation>
     </message>
