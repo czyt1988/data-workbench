@@ -109,7 +109,7 @@ QVariant DAPyDataFrameTableModel::PrivateData::getDataframeIndexName(int i) cons
             // 如果索引为空，就显示序号
             return i;
         }
-        res = dataframe.index()[ i ];
+        res = dataframe.index().value(i);
     } catch (const std::exception& e) {
         qCritical() << e.what();
         return res;

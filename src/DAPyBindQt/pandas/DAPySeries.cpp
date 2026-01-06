@@ -88,7 +88,7 @@ DAPySeries& DAPySeries::operator=(DAPyObjectWrapper&& obj)
     return *this;
 }
 
-QVariant DAPySeries::operator[](std::size_t i) const
+pybind11::object DAPySeries::operator[](std::size_t i) const
 {
     return iat(i);
 }
@@ -163,28 +163,37 @@ QString DAPySeries::name() const
  * @param i
  * @return
  */
-QVariant DAPySeries::iat(std::size_t i) const
+pybind11::object DAPySeries::iat(std::size_t i) const
+{
+    pybind11::object obj_iat = object().attr("iat");
+    return obj_iat[ pybind11::int_(i) ];
+}
+
+void DAPySeries::iat(size_t r, const pybind11::object& v)
+{
+    pybind11::object obj_iat     = object().attr("iat");
+    obj_iat[ pybind11::int_(r) ] = v;
+}
+
+QVariant DAPySeries::value(size_t i) const
 {
     try {
-        pybind11::object obj_iat = object().attr("iat");
-        pybind11::object obj_v   = obj_iat[ pybind11::int_(i) ];
-        return DA::PY::toVariant(obj_v);
+        return DA::PY::toVariant(iat(i));
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
     }
     return QVariant();
 }
 
-bool DAPySeries::iat(size_t r, const QVariant& v)
+bool DAPySeries::setValue(size_t i, const QVariant& v)
 {
     try {
-        pybind11::object obj_iat     = object().attr("iat");
-        obj_iat[ pybind11::int_(r) ] = DA::PY::toPyObject(v, dtype());
-        return true;
+        iat(i, DA::PY::toPyObject(v));
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
+        return false;
     }
-    return false;
+    return true;
 }
 
 bool DAPySeries::isNumeric() const
@@ -240,7 +249,7 @@ QStringList DAPySeries::indexAsStringList() const
     result.reserve(static_cast< int >(index_size));
 
     for (std::size_t i = 0; i < index_size; ++i) {
-        result.append(index_obj[ i ].toString());
+        result.append(index_obj.value(i).toString());
     }
 
     return result;
@@ -259,7 +268,7 @@ QVector< double > DAPySeries::indexAsDoubleVector() const
 
     for (std::size_t i = 0; i < index_size; ++i) {
         bool isok;
-        double value = index_obj[ i ].toDouble(&isok);
+        double value = index_obj.value(i).toDouble(&isok);
         if (isok) {
             result.append(value);
         } else {
@@ -284,7 +293,7 @@ QVector< QDateTime > DAPySeries::indexAsDateTimeVector() const
         result.reserve(static_cast< int >(index_size));
 
         for (std::size_t i = 0; i < index_size; ++i) {
-            QVariant var = index_obj[ i ];
+            QVariant var = index_obj.value(i);
             if (var.canConvert< QDateTime >()) {
                 result.append(var.toDateTime());
             } else {
@@ -337,19 +346,19 @@ QString DAPySeries::toString(std::size_t maxele) const
     if (s > maxele) {
         const std::size_t hc = maxele / 2;
         for (std::size_t i = 0; i < hc; ++i) {
-            str += iat(i).toString();
+            str += value(i).toString();
             str += ",";
         }
         str += "......";
         for (std::size_t i = s - hc; i < s; ++i) {
-            str += iat(i).toString();
+            str += value(i).toString();
             if (i != s - 1) {
                 str += ",";
             }
         }
     } else {
         for (std::size_t i = 0; i < s; ++i) {
-            str += iat(i).toString();
+            str += value(i).toString();
             if (i != s - 1) {
                 str += ",";
             }

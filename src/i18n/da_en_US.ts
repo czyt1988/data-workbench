@@ -6124,7 +6124,7 @@ To Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAPyBindQt/pandas/DAPyIndex.cpp" line="+159"/>
+        <location filename="../DAPyBindQt/pandas/DAPyIndex.cpp" line="+168"/>
         <source>DAPyIndex get python object type is not pandas.Index</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6134,7 +6134,7 @@ To Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAPyBindQt/pandas/DAPySeries.cpp" line="+322"/>
+        <location filename="../DAPyBindQt/pandas/DAPySeries.cpp" line="+331"/>
         <source>DAPySeries  get python object type is not pandas.Series</source>
         <translation type="unfinished"></translation>
     </message>

@@ -34,7 +34,7 @@ public:
     DAPySeries& operator=(pybind11::object&& obj);
     DAPySeries& operator=(DAPySeries&& s);
     DAPySeries& operator=(DAPyObjectWrapper&& obj);
-    QVariant operator[](std::size_t i) const;
+    pybind11::object operator[](std::size_t i) const;
 
 public:
     // 获取dtype
@@ -46,8 +46,11 @@ public:
     // Series.name
     QString name() const;
     // Series.iat
-    QVariant iat(std::size_t i) const;
-    bool iat(std::size_t r, const QVariant& v);
+    pybind11::object iat(std::size_t i) const;
+    void iat(std::size_t r, const pybind11::object& v);
+    //
+    QVariant value(std::size_t i) const;
+    bool setValue(std::size_t i, const QVariant& v);
     // 类型判断
     bool isNumeric() const;
     bool isDateTime() const;

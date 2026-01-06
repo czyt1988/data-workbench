@@ -103,25 +103,21 @@ QVariant toVariant(const pybind11::object& obj)
     }
     if (datetime.isInstanceDateTime(obj)) {
         try {
-            qint64 ns = obj.attr("astype")("int64").cast< qint64 >();
-            return QDateTime::fromMSecsSinceEpoch(ns / 1'000'000);
+            return toQDatetime(obj);
         } catch (...) {
             return QVariant();
         }
     }
     if (datetime.isInstanceTime(obj)) {
         try {
-            return QTime(obj.attr("hour").cast< int >(),
-                         obj.attr("minute").cast< int >(),
-                         obj.attr("second").cast< int >(),
-                         obj.attr("microsecond").cast< int >() / 1000);
+            return toQTime(obj);
         } catch (...) {
             return QVariant();
         }
     }
     if (datetime.isInstanceDate(obj)) {
         try {
-            return QDate(obj.attr("year").cast< int >(), obj.attr("month").cast< int >(), obj.attr("day").cast< int >());
+            return toQDate(obj);
         } catch (...) {
             return QVariant();
         }
@@ -220,32 +216,19 @@ QString toString(const pybind11::object& obj)
         return QString::number(obj.cast< double >());
     } else if (DAPyModuleDatetime::getInstance().isInstanceDateTime(obj)) {
         try {
-            pybind11::int_ y  = obj.attr("year");
-            pybind11::int_ m  = obj.attr("month");
-            pybind11::int_ d  = obj.attr("day");
-            pybind11::int_ h  = obj.attr("hour");
-            pybind11::int_ mm = obj.attr("minute");
-            pybind11::int_ ss = obj.attr("second");
-            return QDateTime(QDate(int(y), int(m), int(d)), QTime(int(h), int(mm), int(ss))).toString();
+            return toQDatetime(obj).toString();
         } catch (...) {
             return QString();
         }
     } else if (DAPyModuleDatetime::getInstance().isInstanceTime(obj)) {
         try {
-            pybind11::int_ h  = obj.attr("hour");
-            pybind11::int_ mm = obj.attr("minute");
-            pybind11::int_ ss = obj.attr("second");
-            pybind11::int_ ms = obj.attr("microsecond");
-            return QTime(int(h), int(mm), int(ss), int(ms)).toString();
+            return toQTime(obj).toString();
         } catch (...) {
             return QString();
         }
     } else if (DAPyModuleDatetime::getInstance().isInstanceDate(obj)) {
         try {
-            pybind11::int_ y = obj.attr("year");
-            pybind11::int_ m = obj.attr("month");
-            pybind11::int_ d = obj.attr("day");
-            return QDate(int(y), int(m), int(d)).toString();
+            return toQDate(obj).toString();
         } catch (...) {
             return QString();
         }
@@ -593,11 +576,66 @@ inline pybind11::list toPyList< QString >(const QSet< QString >& arr)
  * @brief 转换为QDatetime
  * @param obj
  * @return
+ * @note 必须确保obj已经是datetime类型， 否则会抛出异常
  */
 QDateTime toQDatetime(const pybind11::object& obj)
 {
     qint64 ns = obj.attr("astype")("int64").cast< qint64 >();
     return QDateTime::fromMSecsSinceEpoch(ns / 1'000'000);
+}
+
+/**
+ * @brief 转换为QDate
+ * @param obj
+ * @return
+ * @note 必须确保obj已经是date类型， 否则会抛出异常
+ */
+QDate toQDate(const pybind11::object& obj)
+{
+    return QDate(obj.attr("year").cast< int >(), obj.attr("month").cast< int >(), obj.attr("day").cast< int >());
+}
+
+/**
+ * @brief 转换为QTime
+ * @param obj
+ * @return
+ * @note 必须确保obj已经是time类型， 否则会抛出异常
+ */
+QTime toQTime(const pybind11::object& obj)
+{
+    return QTime(obj.attr("hour").cast< int >(),
+                 obj.attr("minute").cast< int >(),
+                 obj.attr("second").cast< int >(),
+                 obj.attr("microsecond").cast< int >() / 1000);
+}
+
+pybind11::object toPyObject(const QDateTime& dt)
+{
+    if (!dt.isValid())
+        return pybind11::none();
+
+    // 转 UTC 毫秒 → system_clock::time_point → py::cast 自动到 datetime
+    auto ms = dt.toMSecsSinceEpoch();
+    std::chrono::system_clock::time_point tp { std::chrono::milliseconds { ms } };
+    return pybind11::cast(tp);  // 生成 timezone-naive datetime
+}
+
+pybind11::object toPyObject(const QDate& d)
+{
+    if (!d.isValid()) {
+        return pybind11::none();
+    }
+
+    return pybind11::module_::import("datetime").attr("date")(d.year(), d.month(), d.day());
+}
+
+pybind11::object toPyObject(const QTime& t)
+{
+    if (!t.isValid()) {
+        return pybind11::none();
+    }
+
+    return pybind11::module_::import("datetime").attr("time")(t.hour(), t.minute(), t.second(), t.msec() * 1000);
 }
 
 }  // namespace PY

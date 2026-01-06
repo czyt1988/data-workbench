@@ -80,9 +80,9 @@ QVariant DADataTableModel::PrivateData::getDataframeIndexName(int i) const
             return i;
         }
         if (data.isDataFrame()) {
-            res = data.toDataFrame().index()[ i ];
+            res = data.toDataFrame().index().value(i);
         } else if (data.isSeries() && 0 == i) {
-            res = data.toSeries().index()[ i ];
+            res = data.toSeries().index().value(i);
         }
     } catch (const std::exception& e) {
         qCritical() << e.what();
@@ -183,7 +183,7 @@ QVariant DADataTableModel::actualData(int actualRow, int actualColumn, int role)
         if (d->data.isDataFrame()) {
             return d->data.toDataFrame().iat(actualRow, actualColumn);
         } else if (d->data.isSeries() && actualColumn == 0) {
-            return d->data.toSeries().iat(actualRow);
+            return d->data.toSeries().value(actualRow);
         }
     }
     default:

@@ -6,23 +6,23 @@ namespace DA
 
 class DAPySeriesTableModel::PrivateData
 {
-	DA_DECLARE_PUBLIC(DAPySeriesTableModel)
+    DA_DECLARE_PUBLIC(DAPySeriesTableModel)
 public:
-	PrivateData(DAPySeriesTableModel* p);
+    PrivateData(DAPySeriesTableModel* p);
 
-	int columnCount() const;
+    int columnCount() const;
 
-	int rowCount() const;
+    int rowCount() const;
 
     // 检查startrow，以防止startrow大于总行数
     void checkStartRow();
 
 public:
-	//! 这里都用map来管理，因为不同列有可能是不同属性，目前还没有做一个抽象能囊括所有序列，因此还是需要每种类型添加一个索引
-	//! 注意，这里要用qmap，不能用qhash，因为取最大索引是通过qmap的自动排序实现的
-	QMap< int, DAPySeries > seriesMap;                                    ///< 序列
-	QMap< int, DAAutoincrementSeries< double > > autoincrementSeriesMap;  ///< 自增序列
-	QMap< int, QString > headerLabelMap;                                  ///< 表头
+    //! 这里都用map来管理，因为不同列有可能是不同属性，目前还没有做一个抽象能囊括所有序列，因此还是需要每种类型添加一个索引
+    //! 注意，这里要用qmap，不能用qhash，因为取最大索引是通过qmap的自动排序实现的
+    QMap< int, DAPySeries > seriesMap;                                    ///< 序列
+    QMap< int, DAAutoincrementSeries< double > > autoincrementSeriesMap;  ///< 自增序列
+    QMap< int, QString > headerLabelMap;                                  ///< 表头
 };
 
 DAPySeriesTableModel::PrivateData::PrivateData(DAPySeriesTableModel* p) : q_ptr(p)
@@ -35,40 +35,40 @@ DAPySeriesTableModel::PrivateData::PrivateData(DAPySeriesTableModel* p) : q_ptr(
  */
 int DAPySeriesTableModel::PrivateData::columnCount() const
 {
-	int col = -1;  // 这样在没有数据的时候可以返回0
-	if (!seriesMap.isEmpty()) {
-		col = seriesMap.lastKey();
-	}
-	if (!autoincrementSeriesMap.isEmpty()) {
-		int v = autoincrementSeriesMap.lastKey();
-		if (v > col) {
-			col = v;
-		}
-	}
-	if (!headerLabelMap.isEmpty()) {
-		int v = headerLabelMap.lastKey();
-		if (v > col) {
-			col = v;
-		}
-	}
-	return col + 1;
+    int col = -1;  // 这样在没有数据的时候可以返回0
+    if (!seriesMap.isEmpty()) {
+        col = seriesMap.lastKey();
+    }
+    if (!autoincrementSeriesMap.isEmpty()) {
+        int v = autoincrementSeriesMap.lastKey();
+        if (v > col) {
+            col = v;
+        }
+    }
+    if (!headerLabelMap.isEmpty()) {
+        int v = headerLabelMap.lastKey();
+        if (v > col) {
+            col = v;
+        }
+    }
+    return col + 1;
 }
 
 int DAPySeriesTableModel::PrivateData::rowCount() const
 {
-	int r = 0;
-	for (auto i = seriesMap.begin(); i != seriesMap.end(); ++i) {
-		const DAPySeries& ser = i.value();
-		if (!ser.isNone()) {
-			int s = static_cast< int >(ser.size());
-			if (r < s) {
-				r = s;
-			}
-		}
-	}
-	if (r < 15) {
-		return 15;
-	}
+    int r = 0;
+    for (auto i = seriesMap.begin(); i != seriesMap.end(); ++i) {
+        const DAPySeries& ser = i.value();
+        if (!ser.isNone()) {
+            int s = static_cast< int >(ser.size());
+            if (r < s) {
+                r = s;
+            }
+        }
+    }
+    if (r < 15) {
+        return 15;
+    }
     return r;
 }
 
@@ -95,8 +95,8 @@ DAPySeriesTableModel::~DAPySeriesTableModel()
 
 int DAPySeriesTableModel::columnCount(const QModelIndex& parent) const
 {
-	Q_UNUSED(parent);
-	return d_ptr->columnCount();
+    Q_UNUSED(parent);
+    return d_ptr->columnCount();
 }
 
 Qt::ItemFlags DAPySeriesTableModel::actualFlags(int actualRow, int actualColumn) const
@@ -113,15 +113,15 @@ Qt::ItemFlags DAPySeriesTableModel::actualFlags(int actualRow, int actualColumn)
 void DAPySeriesTableModel::setSeries(const QList< DAPySeries >& series)
 {
     DA_D(d);
-	beginResetModel();
+    beginResetModel();
     d->seriesMap.clear();
-	int c = 0;
-	for (const DAPySeries& s : series) {
+    int c = 0;
+    for (const DAPySeries& s : series) {
         d->seriesMap[ c ] = s;
-		++c;
-	}
+        ++c;
+    }
     d->checkStartRow();
-	endResetModel();
+    endResetModel();
 }
 
 /**
@@ -196,7 +196,7 @@ QVariant DAPySeriesTableModel::actualData(int actualRow, int actualColumn, int r
                 }
                 int ss = static_cast< int >(ser.size());
                 if (actualRow < ss) {
-                    return ser[ actualRow ];
+                    return ser.value(actualRow);
                 }
                 return QVariant();
             } catch (const std::exception& e) {
@@ -224,11 +224,11 @@ QVariant DAPySeriesTableModel::actualData(int actualRow, int actualColumn, int r
  */
 void DAPySeriesTableModel::appendSeries(const DAPySeries& s)
 {
-	beginResetModel();
-	int c                 = d_ptr->columnCount();
-	d_ptr->seriesMap[ c ] = s;
+    beginResetModel();
+    int c                 = d_ptr->columnCount();
+    d_ptr->seriesMap[ c ] = s;
     d_ptr->checkStartRow();
-	endResetModel();
+    endResetModel();
 }
 
 /**
@@ -237,10 +237,10 @@ void DAPySeriesTableModel::appendSeries(const DAPySeries& s)
  */
 void DAPySeriesTableModel::appendSeries(const DAAutoincrementSeries< double >& s)
 {
-	beginResetModel();
-	int c                              = d_ptr->columnCount();
-	d_ptr->autoincrementSeriesMap[ c ] = s;
-	endResetModel();
+    beginResetModel();
+    int c                              = d_ptr->columnCount();
+    d_ptr->autoincrementSeriesMap[ c ] = s;
+    endResetModel();
 }
 
 /**
@@ -253,17 +253,17 @@ void DAPySeriesTableModel::appendSeries(const DAAutoincrementSeries< double >& s
  */
 void DAPySeriesTableModel::insertSeries(int c, const DAPySeries& s)
 {
-	// 先看看要刷新哪里
+    // 先看看要刷新哪里
     DA_D(d);
-	beginResetModel();
+    beginResetModel();
     d->seriesMap[ c ] = s;
-	// 看看这个位置是否有自增序列
+    // 看看这个位置是否有自增序列
     if (d->autoincrementSeriesMap.contains(c)) {
         d->autoincrementSeriesMap.remove(c);
-	}
+    }
     // 需要刷新CacheWindowStartRow
     d->checkStartRow();
-	endResetModel();
+    endResetModel();
 }
 
 /**
@@ -277,14 +277,14 @@ void DAPySeriesTableModel::insertSeries(int c, const DAPySeries& s)
 void DAPySeriesTableModel::insertSeries(int c, const DAAutoincrementSeries< double >& s)
 {
     DA_D(d);
-	beginResetModel();
+    beginResetModel();
     d->autoincrementSeriesMap[ c ] = s;
-	// 看看这个位置是否有series
+    // 看看这个位置是否有series
     if (d->seriesMap.contains(c)) {
         d->seriesMap.remove(c);
-	}
+    }
     d->checkStartRow();
-	endResetModel();
+    endResetModel();
 }
 
 /**
@@ -314,8 +314,8 @@ void DAPySeriesTableModel::setSeriesAt(int c, const DAAutoincrementSeries< doubl
  */
 void DAPySeriesTableModel::setColumnHeader(int c, const QString& head)
 {
-	d_ptr->headerLabelMap[ c ] = head;
-	emit headerDataChanged(Qt::Horizontal, c, c);
+    d_ptr->headerLabelMap[ c ] = head;
+    emit headerDataChanged(Qt::Horizontal, c, c);
 }
 
 /**
@@ -333,11 +333,11 @@ QString DAPySeriesTableModel::getColumnHeader(int c) const
  */
 void DAPySeriesTableModel::clearData()
 {
-	beginResetModel();
-	d_ptr->seriesMap.clear();
-	d_ptr->autoincrementSeriesMap.clear();
+    beginResetModel();
+    d_ptr->seriesMap.clear();
+    d_ptr->autoincrementSeriesMap.clear();
     setCacheWindowStartRow(0);
-	endResetModel();
+    endResetModel();
 }
 
 /**
@@ -346,10 +346,10 @@ void DAPySeriesTableModel::clearData()
  */
 void DAPySeriesTableModel::setHeaderLabel(const QStringList& head)
 {
-	for (int i = 0; i < head.size(); ++i) {
-		d_ptr->headerLabelMap[ i ] = head[ i ];
-	}
-	emit headerDataChanged(Qt::Horizontal, 0, head.size() - 1);
+    for (int i = 0; i < head.size(); ++i) {
+        d_ptr->headerLabelMap[ i ] = head[ i ];
+    }
+    emit headerDataChanged(Qt::Horizontal, 0, head.size() - 1);
 }
 
 /**
