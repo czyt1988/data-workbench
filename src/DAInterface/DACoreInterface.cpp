@@ -8,6 +8,7 @@ namespace DA
 
 DACoreInterface::DACoreInterface(QObject* parent) : QObject(parent)
 {
+    mTempDir.setAutoRemove(true);
 }
 
 DACoreInterface::~DACoreInterface()

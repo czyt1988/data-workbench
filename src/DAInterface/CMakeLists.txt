@@ -42,6 +42,7 @@ set(DA_LIB_HEADER_FILES
     DARibbonAreaInterface.h
     DAUIExtendInterface.h
     DAUIInterface.h
+    DAInterfaceHelper.h
 )
 set(DA_LIB_SOURCE_FILES
     DAActionsInterface.cpp
@@ -55,6 +56,7 @@ set(DA_LIB_SOURCE_FILES
     DARibbonAreaInterface.cpp
     DAUIExtendInterface.cpp
     DAUIInterface.cpp
+    DAInterfaceHelper.cpp
 )
 if(DA_ENABLE_PYTHON)
     list(APPEND DA_LIB_HEADER_FILES
