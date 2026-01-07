@@ -40,6 +40,7 @@ public:
     DAPyIndex& operator=(DAPyObjectWrapper&& obj);
     pybind11::object operator[](std::size_t i) const;
     pybind11::object operator[](const QSet< std::size_t >& slice) const;
+    // 类似iat的属性，注意，实际index没有iat属性
     pybind11::object iat(std::size_t i) const;
     // 获取dtype
     pybind11::dtype dtype() const;

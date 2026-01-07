@@ -1,6 +1,6 @@
 ﻿#include "DAPyDType.h"
 #include "DAPyModuleNumpy.h"
-#include "DAPybind11QtTypeCast.h"
+#include "DAPybind11QtCaster.hpp"
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
 //===================================================
@@ -12,27 +12,27 @@ using namespace DA;
 //===================================================
 DAPyDType::DAPyDType(const DAPyDType& s) : DAPyObjectWrapper(s)
 {
-	checkObjectValid();
+    checkObjectValid();
 }
 
 DAPyDType::DAPyDType(DAPyDType&& s) : DAPyObjectWrapper(std::move(s))
 {
-	checkObjectValid();
+    checkObjectValid();
 }
 
 DAPyDType::DAPyDType(const pybind11::object& obj) : DAPyObjectWrapper(obj)
 {
-	checkObjectValid();
+    checkObjectValid();
 }
 
 DAPyDType::DAPyDType(pybind11::object&& obj) : DAPyObjectWrapper(std::move(obj))
 {
-	checkObjectValid();
+    checkObjectValid();
 }
 
 DAPyDType::DAPyDType(const pybind11::dtype& obj) : DAPyObjectWrapper()
 {
-	object() = obj;
+    object() = obj;
 }
 
 DAPyDType::DAPyDType(pybind11::dtype&& obj) : DAPyObjectWrapper(std::move(obj))
@@ -41,12 +41,12 @@ DAPyDType::DAPyDType(pybind11::dtype&& obj) : DAPyObjectWrapper(std::move(obj))
 
 DAPyDType::DAPyDType(const QString& dtypename) : DAPyObjectWrapper()
 {
-	try {
-		object() = pybind11::dtype(dtypename.toStdString());
-	} catch (const std::exception& e) {
-		object() = pybind11::none();
-		dealException(e);
-	}
+    try {
+        object() = pybind11::dtype(dtypename.toStdString());
+    } catch (const std::exception& e) {
+        object() = pybind11::none();
+        dealException(e);
+    }
 }
 
 DAPyDType::~DAPyDType()
@@ -55,35 +55,35 @@ DAPyDType::~DAPyDType()
 
 bool DAPyDType::isDtypeObj(const pybind11::object& obj)
 {
-	return DAPyModuleNumpy::getInstance().isInstanceDtype(obj);
+    return DAPyModuleNumpy::getInstance().isInstanceDtype(obj);
 }
 
 DAPyDType& DAPyDType::operator=(const pybind11::dtype& obj)
 {
-	object() = obj;
-	return *this;
+    object() = obj;
+    return *this;
 }
 
 DAPyDType& DAPyDType::operator=(const pybind11::object& obj)
 {
-	if (isDtypeObj(obj)) {
-		object() = obj;
-	}
-	return *this;
+    if (isDtypeObj(obj)) {
+        object() = obj;
+    }
+    return *this;
 }
 
 DAPyDType& DAPyDType::operator=(const DAPyDType& obj)
 {
-	object() = obj.object();
-	return *this;
+    object() = obj.object();
+    return *this;
 }
 
 DAPyDType& DAPyDType::operator=(const DAPyObjectWrapper& obj)
 {
-	if (isDtypeObj(obj.object())) {
-		object() = obj.object();
-	}
-	return *this;
+    if (isDtypeObj(obj.object())) {
+        object() = obj.object();
+    }
+    return *this;
 }
 
 /**
@@ -103,117 +103,117 @@ bool DAPyDType::operator!=(const DAPyDType& other) const
 
 pybind11::object DAPyDType::type(const QVariant& v) const
 {
-	try {
-		object().attr("type")(DA::PY::toPyObject(v));
-	} catch (const std::exception& e) {
-		qCritical() << e.what();
-	}
-	return pybind11::none();
+    try {
+        attr("type")(pybind11::cast(v));
+    } catch (const std::exception& e) {
+        qCritical() << e.what();
+    }
+    return pybind11::none();
 }
 
 QString DAPyDType::name() const
 {
-	try {
-		pybind11::str s = object().attr("name");
-		return DA::PY::toString(s);
-	} catch (const std::exception& e) {
-		qCritical() << e.what();
-	}
-	return QString();
+    try {
+        pybind11::str s = attr("name");
+        return s.cast< QString >();
+    } catch (const std::exception& e) {
+        qCritical() << e.what();
+    }
+    return QString();
 }
 
 char DAPyDType::kind() const
 {
-	try {
-		return object().attr("kind").cast< char >();
-	} catch (const std::exception& e) {
-		qCritical() << e.what();
-	}
-	return 0;
+    try {
+        return attr("kind").cast< char >();
+    } catch (const std::exception& e) {
+        qCritical() << e.what();
+    }
+    return 0;
 }
 
 char DAPyDType::char_() const
 {
-	try {
-		return object().attr("char").cast< char >();
-	} catch (const std::exception& e) {
-		qCritical() << e.what();
-	}
-	return 0;
+    try {
+        return attr("char").cast< char >();
+    } catch (const std::exception& e) {
+        qCritical() << e.what();
+    }
+    return 0;
 }
 
 int DAPyDType::num() const
 {
-	try {
-		return object().attr("num").cast< int >();
-	} catch (const std::exception& e) {
-		qCritical() << e.what();
-	}
-	return -1;
+    try {
+        return attr("num").cast< int >();
+    } catch (const std::exception& e) {
+        qCritical() << e.what();
+    }
+    return -1;
 }
 
 bool DAPyDType::isInt() const
 {
-	if (isNone()) {
-		return false;
-	}
-	return kind() == 'i';
+    if (isNone()) {
+        return false;
+    }
+    return kind() == 'i';
 }
 
 bool DAPyDType::isUInt() const
 {
-	if (isNone()) {
-		return false;
-	}
-	return kind() == 'u';
+    if (isNone()) {
+        return false;
+    }
+    return kind() == 'u';
 }
 
 bool DAPyDType::isFloat() const
 {
-	if (isNone()) {
-		return false;
-	}
-	return kind() == 'f';
+    if (isNone()) {
+        return false;
+    }
+    return kind() == 'f';
 }
 
 bool DAPyDType::isTimedelta() const
 {
-	if (isNone()) {
-		return false;
-	}
-	return kind() == 'm';
+    if (isNone()) {
+        return false;
+    }
+    return kind() == 'm';
 }
 
 bool DAPyDType::isDatetime() const
 {
-	if (isNone()) {
-		return false;
-	}
-	return kind() == 'M';
+    if (isNone()) {
+        return false;
+    }
+    return kind() == 'M';
 }
 
 bool DAPyDType::isComplex() const
 {
-	if (isNone()) {
-		return false;
-	}
-	return kind() == 'c';
+    if (isNone()) {
+        return false;
+    }
+    return kind() == 'c';
 }
 
 bool DAPyDType::isBool() const
 {
-	if (isNone()) {
-		return false;
-	}
-	return kind() == '?';
+    if (isNone()) {
+        return false;
+    }
+    return kind() == '?';
 }
 
 bool DAPyDType::isStr() const
 {
-	if (isNone()) {
-		return false;
-	}
-	return kind() == 'U';
+    if (isNone()) {
+        return false;
+    }
+    return kind() == 'U';
 }
 
 /**
@@ -232,32 +232,32 @@ bool DAPyDType::isNumeral() const
  */
 QStringList DAPyDType::dtypeNames()
 {
-	static QStringList s_dtypeNames({ "bool",
-									  "int8",
-									  "int16",
-									  "int32",
-									  "int64",
-									  "uint8",
-									  "uint16",
-									  "uint32",
-									  "uint64",
-									  "float16",
-									  "float32",
-									  "float64",
-									  "complex64",
-									  "complex128",
-									  "<U0",
-									  "datetime64",
-									  "timedelta64",
-									  "object" });
-	return s_dtypeNames;
+    static QStringList s_dtypeNames({ "bool",
+                                      "int8",
+                                      "int16",
+                                      "int32",
+                                      "int64",
+                                      "uint8",
+                                      "uint16",
+                                      "uint32",
+                                      "uint64",
+                                      "float16",
+                                      "float32",
+                                      "float64",
+                                      "complex64",
+                                      "complex128",
+                                      "<U0",
+                                      "datetime64",
+                                      "timedelta64",
+                                      "object" });
+    return s_dtypeNames;
 }
 
 void DAPyDType::checkObjectValid()
 {
-	if (!isDtypeObj(object())) {
-		object() = pybind11::none();
-	}
+    if (!isDtypeObj(object())) {
+        object() = pybind11::none();
+    }
 }
 
 /**
@@ -268,7 +268,7 @@ void DAPyDType::checkObjectValid()
  */
 QDebug operator<<(QDebug dbg, const DA::DAPyDType& d)
 {
-	QDebugStateSaver saver(dbg);
-	dbg.noquote() << d.name() << "(kind=" << d.kind() << ",char=" << d.char_() << ",num=" << d.num() << ")";
-	return (dbg);
+    QDebugStateSaver saver(dbg);
+    dbg.noquote() << d.name() << "(kind=" << d.kind() << ",char=" << d.char_() << ",num=" << d.num() << ")";
+    return (dbg);
 }

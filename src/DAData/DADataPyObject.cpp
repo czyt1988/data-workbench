@@ -1,5 +1,6 @@
 ﻿#include "DADataPyObject.h"
 #include "DAPybind11QtTypeCast.h"
+#include "DAPybind11QtCaster.hpp"
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
 //===================================================
@@ -42,7 +43,7 @@ bool DADataPyObject::setValue(std::size_t dim1, std::size_t dim2, const QVariant
 {
     Q_UNUSED(dim1);
     Q_UNUSED(dim2);
-    pybind11::object obj = DA::PY::toPyObject(v);
+    pybind11::object obj = pybind11::cast(v);
     mPyObject.object()   = obj;
     return true;
 }

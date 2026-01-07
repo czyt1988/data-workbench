@@ -1,6 +1,6 @@
 ﻿#include "DAPyIndex.h"
 #include "DAPyModulePandas.h"
-#include "DAPybind11QtTypeCast.h"
+#include "DAPybind11QtCaster.hpp"
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
 //===================================================
@@ -102,13 +102,13 @@ pybind11::object DAPyIndex::operator[](std::size_t i) const
 
 pybind11::object DAPyIndex::iat(size_t i) const
 {
-    return attr("iat")[ pybind11::int_(i) ];
+    return object()[ pybind11::int_(i) ];
 }
 
 pybind11::object DAPyIndex::operator[](const QSet< std::size_t >& slice) const
 {
     try {
-        return object()[ DA::PY::toPyList(slice) ];
+        return object()[ DA::PY::toPyObject(slice) ];
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
     }
@@ -159,7 +159,7 @@ std::size_t DAPyIndex::size() const
 QVariant DAPyIndex::value(size_t i) const
 {
     try {
-        return DA::PY::toVariant(iat(i));
+        return iat(i).cast< QVariant >();
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
     }

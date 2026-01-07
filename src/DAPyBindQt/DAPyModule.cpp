@@ -113,3 +113,47 @@ DAPyModule DAPyModule::importModule(const char* module_n)
     DAPyModule m(pybind11::module_::import(module_n));
     return m;
 }
+
+bool DAPyModule::isInstanceTime(const pybind11::handle& obj)
+{
+    try {
+        static pybind11::object time_type = []() { return pybind11::module::import("datetime").attr("time"); }();
+        return pybind11::isinstance(obj, time_type());
+    } catch (const std::exception& e) {
+        return false;
+    }
+    return false;
+}
+
+bool DAPyModule::isInstanceDate(const pybind11::handle& obj)
+{
+    try {
+        static pybind11::object date_type = []() { return pybind11::module::import("datetime").attr("date"); }();
+        return pybind11::isinstance(obj, date_type());
+    } catch (const std::exception& e) {
+        return false;
+    }
+    return false;
+}
+
+bool DAPyModule::isInstanceDateTime(const pybind11::handle& obj)
+{
+    try {
+        static pybind11::object datetime_type = []() { return pybind11::module::import("datetime").attr("datetime"); }();
+        return pybind11::isinstance(obj, datetime_type());
+    } catch (const std::exception& e) {
+        return false;
+    }
+    return false;
+}
+
+bool DAPyModule::isInstanceTimedelta(const pybind11::handle& obj)
+{
+    try {
+        static pybind11::object timedelta_type = []() { return pybind11::module::import("datetime").attr("timedelta"); }();
+        return pybind11::isinstance(obj, timedelta_type());
+    } catch (const std::exception& e) {
+        return false;
+    }
+    return false;
+}

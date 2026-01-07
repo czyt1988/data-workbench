@@ -1,5 +1,4 @@
 ﻿#include "DAPySeries.h"
-#include "DAPybind11QtTypeCast.h"
 #include "DAPybind11QtCaster.hpp"
 #include "DAPyModulePandas.h"
 #include <QDateTime>
@@ -161,7 +160,7 @@ QString DAPySeries::name() const
 {
     try {
         pybind11::str obj = object().attr("name");
-        return DA::PY::toString(obj);
+        return obj.cast< QString >();
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
     }
@@ -198,7 +197,7 @@ QVariant DAPySeries::value(size_t i) const
 bool DAPySeries::setValue(size_t i, const QVariant& v)
 {
     try {
-        iat(i, DA::PY::toPyObject(v));
+        iat(i, pybind11::cast(v));
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
         return false;
