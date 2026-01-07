@@ -9,8 +9,7 @@
 #include "DAData.h"
 #include "DADataManager.h"
 #include "DAPythonSignalHandler.h"
-#include "DAPybind11InQt.h"
-#include "DAPybind11QtTypeCast.h"
+#include "DAPybind11QtCaster.hpp"
 #include "DAPyJsonCast.h"
 
 PYBIND11_EMBEDDED_MODULE(da_interface, m)
@@ -34,7 +33,8 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
                 });
             },
             pybind11::arg("func"),
-            "Schedule a Python function to be executed in the Qt main thread");
+            "Schedule a Python function to be executed in the Qt main thread"
+        );
 
     /*DADataManagerInterface*/
     pybind11::class_< DA::DADataManagerInterface >(m, "DADataManagerInterface")
@@ -57,7 +57,8 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
                 }
                 return pyList;
             },
-            "Get all data objects as a list")
+            "Get all data objects as a list"
+        )
         .def(
             "getAllDataframes",
             [](DA::DADataManagerInterface& self) {
@@ -65,12 +66,13 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
                 pybind11::dict pydict;
                 for (const DA::DAData& data : datas) {
                     if (data.isDataFrame()) {
-                        pydict[ DA::PY::toPyStr(data.getName()) ] = data.toPyObject();
+                        pydict[ DA::PY::toPyObject(data.getName()) ] = data.toPyObject();
                     }
                 }
                 return pydict;
             },
-            "Get all dataframe objects as a dict {dataname,dataframe}")  // 辅助函数获取所有的dataframe
+            "Get all dataframe objects as a dict {dataname,dataframe}"
+        )  // 辅助函数获取所有的dataframe
         .def(
             "getSelectDatas",
             [](DA::DADataManagerInterface& self) {
@@ -81,7 +83,8 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
                 }
                 return pyList;
             },
-            "Get selected data objects as a list")
+            "Get selected data objects as a list"
+        )
         .def("getOperateData", &DA::DADataManagerInterface::getOperateData, "get current operating data")
         .def(
             "getOperateDataSeries",
@@ -93,7 +96,8 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
                 }
                 return list;
             },
-            "get current operating data selected series index")
+            "get current operating data selected series index"
+        )
         .def(
             "getSelectDataframes",
             [](DA::DADataManagerInterface& self) {
@@ -101,12 +105,13 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
                 pybind11::dict pydict;
                 for (const DA::DAData& data : datas) {
                     if (data.isDataFrame()) {
-                        pydict[ DA::PY::toPyStr(data.getName()) ] = data.toPyObject();
+                        pydict[ DA::PY::toPyObject(data.getName()) ] = data.toPyObject();
                     }
                 }
                 return pydict;
             },
-            "Get selected data objects as a dict {dataname,dataframe}")
+            "Get selected data objects as a dict {dataname,dataframe}"
+        )
         .def(
             "findDatas",
             [](DA::DADataManagerInterface& self, const std::string& pattern, int cs) {
@@ -120,7 +125,8 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
             },
             pybind11::arg("pattern"),
             pybind11::arg("cs") = static_cast< int >(Qt::CaseInsensitive),
-            "Find datas by name pattern,0:CaseInsensitive,1:CaseSensitive")
+            "Find datas by name pattern,0:CaseInsensitive,1:CaseSensitive"
+        )
         .def(
             "findDatasReg",
             [](DA::DADataManagerInterface& self, const std::string& regexPattern) {
@@ -133,7 +139,8 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
                 return pyList;
             },
             pybind11::arg("regex_pattern"),
-            "Find datas by regular expression")
+            "Find datas by regular expression"
+        )
 
         // 快捷：pandas → DAData
         .def(
@@ -144,7 +151,8 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
                 self.addData(data);
             },
             pybind11::arg("df"),
-            pybind11::arg("name"))
+            pybind11::arg("name")
+        )
         .def(
             "addSeries",
             [](DA::DADataManagerInterface& self, pybind11::object se, const std::string& name) {
@@ -153,7 +161,8 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
                 self.addData(data);
             },
             pybind11::arg("series"),
-            pybind11::arg("name"))  // 添加系列
+            pybind11::arg("name")
+        )  // 添加系列
         ;
 
     /*DAStatusBarInterface*/
@@ -164,7 +173,8 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
                 self.showMessage(QString::fromStdString(message), timeout);
             },
             pybind11::arg("message"),
-            pybind11::arg("timeout") = 15000)
+            pybind11::arg("timeout") = 15000
+        )
         .def("clearMessage", &DA::DAStatusBarInterface::clearMessage)
         .def("showProgressBar", &DA::DAStatusBarInterface::showProgressBar)
         .def("hideProgressBar", &DA::DAStatusBarInterface::hideProgressBar)
@@ -174,7 +184,8 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
             [](DA::DAStatusBarInterface& self, const std::string& text) {
                 self.setProgressText(QString::fromStdString(text));
             },
-            pybind11::arg("text"))
+            pybind11::arg("text")
+        )
         .def("clearProgressText", &DA::DAStatusBarInterface::clearProgressText)
         .def("setBusy", &DA::DAStatusBarInterface::setBusy, pybind11::arg("busy"))
         .def("isBusy", &DA::DAStatusBarInterface::isBusy)
@@ -183,9 +194,11 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
 
     /*DACommandInterface*/
     pybind11::class_< DA::DACommandInterface >(m, "DACommandInterface")
-        .def("ui",
-             &DA::DACommandInterface::ui,
-             pybind11::return_value_policy::reference)  // 返回DAUIInterface
+        .def(
+            "ui",
+            &DA::DACommandInterface::ui,
+            pybind11::return_value_policy::reference
+        )  // 返回DAUIInterface
         .def(
             "beginDataOperateCommand",
             [](DA::DACommandInterface& self,
@@ -200,18 +213,23 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
             pybind11::arg("isObjectPersist") = true,
             pybind11::arg("isSkipFirstRedo") = true,
             "Start a data operation command, which will be pushed onto the undo stack of the currently active data "
-            "operation window")
-        .def("endDataOperateCommand",
-             &DA::DACommandInterface::endDataOperateCommand,
-             pybind11::arg("data"),
-             "A function paired with beginDataOperateCommand, used to end the current command and push it onto the "
-             "command stack.");
+            "operation window"
+        )
+        .def(
+            "endDataOperateCommand",
+            &DA::DACommandInterface::endDataOperateCommand,
+            pybind11::arg("data"),
+            "A function paired with beginDataOperateCommand, used to end the current command and push it onto the "
+            "command stack."
+        );
 
     /*DAUIInterface*/
     pybind11::class_< DA::DAUIInterface >(m, "DAUIInterface")
-        .def("getStatusBar",
-             &DA::DAUIInterface::getStatusBar,
-             pybind11::return_value_policy::reference_internal)  // 返回DAStatusBarInterface
+        .def(
+            "getStatusBar",
+            &DA::DAUIInterface::getStatusBar,
+            pybind11::return_value_policy::reference_internal
+        )  // 返回DAStatusBarInterface
         .def("processEvents", &DA::DAUIInterface::processEvents)
         .def(
             "addInfoLogMessage",
@@ -219,25 +237,25 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
                 self.addInfoLogMessage(QString::fromStdString(msg), showInStatusBar);
             },
             pybind11::arg("msg"),
-            pybind11::arg("showInStatusBar") = true)
+            pybind11::arg("showInStatusBar") = true
+        )
         .def(
             "addWarningLogMessage",
             [](DA::DAUIInterface& self, const std::string& msg, bool showInStatusBar) {
                 self.addWarningLogMessage(QString::fromStdString(msg), showInStatusBar);
             },
             pybind11::arg("msg"),
-            pybind11::arg("showInStatusBar") = true)
+            pybind11::arg("showInStatusBar") = true
+        )
         .def(
             "addCriticalLogMessage",
             [](DA::DAUIInterface& self, const std::string& msg, bool showInStatusBar) {
                 self.addCriticalLogMessage(QString::fromStdString(msg), showInStatusBar);
             },
             pybind11::arg("msg"),
-            pybind11::arg("showInStatusBar") = true)
-        .def("getCommandInterface",
-             &DA::DAUIInterface::getCommandInterface,
-             pybind11::return_value_policy::reference,
-             "Get the command interface")
+            pybind11::arg("showInStatusBar") = true
+        )
+        .def("getCommandInterface", &DA::DAUIInterface::getCommandInterface, pybind11::return_value_policy::reference, "Get the command interface")
         .def(
             "getConfigValues",
             [](DA::DAUIInterface& self, const std::string& jsonConfig, const std::string& cacheKey = std::string()) {
@@ -250,22 +268,29 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
             pybind11::arg("cacheKey") = "",
             "Execute a generic settings dialog to retrieve configuration information. The input parameter is the JSON "
             "data used to construct the dialog. A cache key can be specified to avoid repeated dialog construction. "
-            "This function will launch a modal dialog for users to input parameters.")
+            "This function will launch a modal dialog for users to input parameters."
+        )
         .def("setDirty", &DA::DAUIInterface::setDirty, pybind11::arg("on") = true)  //
         ;
 
     /* 4. DACoreInterface 补充 */
     pybind11::class_< DA::DACoreInterface >(m, "DACoreInterface")
-        .def("getUiInterface",
-             &DA::DACoreInterface::getUiInterface,
-             pybind11::return_value_policy::reference_internal)  // 返回getUiInterface
-        .def("getDataManagerInterface",
-             &DA::DACoreInterface::getDataManagerInterface,
-             pybind11::return_value_policy::reference_internal)  // 返回DADataManagerInterface
-        .def("getPythonSignalHandler",
-             &DA::DACoreInterface::getPythonSignalHandler,
-             pybind11::return_value_policy::reference_internal,
-             "Get the Python signal handler for cross-thread communication")
+        .def(
+            "getUiInterface",
+            &DA::DACoreInterface::getUiInterface,
+            pybind11::return_value_policy::reference_internal
+        )  // 返回getUiInterface
+        .def(
+            "getDataManagerInterface",
+            &DA::DACoreInterface::getDataManagerInterface,
+            pybind11::return_value_policy::reference_internal
+        )  // 返回DADataManagerInterface
+        .def(
+            "getPythonSignalHandler",
+            &DA::DACoreInterface::getPythonSignalHandler,
+            pybind11::return_value_policy::reference_internal,
+            "Get the Python signal handler for cross-thread communication"
+        )
         .def("isProjectDirty", &DA::DACoreInterface::isProjectDirty)
         .def("setProjectDirty", &DA::DACoreInterface::setProjectDirty, pybind11::arg("on"));
 }

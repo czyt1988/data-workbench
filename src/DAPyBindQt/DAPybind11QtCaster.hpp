@@ -481,7 +481,7 @@ struct type_caster< QSet< T > >
 
     static handle cast(const Native& src, return_value_policy policy, handle parent)
     {
-        set s;
+        pybind11::set s;
 
         for (const T& item : src) {
             auto value_conv = reinterpret_steal< object >(value_conv::cast(item, policy, parent));
@@ -489,7 +489,7 @@ struct type_caster< QSet< T > >
                 return handle();
             }
 
-            if (s.add(value_conv).failed()) {
+            if (!s.add(value_conv)) {
                 return handle();
             }
         }
@@ -651,7 +651,7 @@ struct type_caster< QVariant >
 
             // 获取 shape 和 ndim
             pybind11::tuple shape = np_obj.attr("shape");
-            int ndim              = pybind11::len(shape);
+            std::size_t ndim      = pybind11::len(shape);
 
             // 处理标量（0维数组）
             if (ndim == 0) {
@@ -804,7 +804,7 @@ struct type_caster< QVariant >
             else {
                 // 获取数组大小
                 int total_size = 1;
-                for (int i = 0; i < ndim; ++i) {
+                for (std::size_t i = 0; i < ndim; ++i) {
                     total_size *= shape[ i ].cast< int >();
                 }
                 // 将 numpy 数组转换为 Python 列表
@@ -826,7 +826,7 @@ struct type_caster< QVariant >
                 value = qt_list;
                 return true;
             }
-        } catch (const std::exception& e) {
+        } catch (...) {
             // numpy 转换失败
             return false;
         }
@@ -961,7 +961,6 @@ struct type_caster< QVariant >
                     QVariantList list_val;
                     auto set_obj = reinterpret_borrow< set >(src);
                     for (auto item : set_obj) {
-                        QVariant var_item;
                         type_caster< QVariant > caster;
                         if (caster.load(item, convert)) {
                             list_val.append(caster.value);
@@ -1026,7 +1025,7 @@ struct type_caster< QVariant >
                 }
             }
 
-        } catch (const std::exception& e) {
+        } catch (...) {
             // 捕获异常，但不抛出，只是返回转换失败
             return false;
         }
@@ -1173,7 +1172,7 @@ struct type_caster< QVariant >
                 return pybind11::cast(src.toString()).release();
             }
             }
-        } catch (const std::exception& e) {
+        } catch (...) {
             // 如果转换失败，返回 None
             Py_RETURN_NONE;
         }

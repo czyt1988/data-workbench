@@ -5978,27 +5978,27 @@ To Excel</source>
 <context>
     <name>DataframeIOWorker</name>
     <message>
-        <location filename="../../plugins/DataAnalysis/DataframeIOWorker.cpp" line="+56"/>
+        <location filename="../../plugins/DataAnalysis/DataframeIOWorker.cpp" line="+55"/>
         <source>No data is selected. Please select the data to export first.</source>
         <translation>没有选中任何数据，请先选中要导出的数据。</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+15"/>
         <source>Export Data</source>
         <translation>导出数据</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+19"/>
         <source>Successfully exported %1 to %2</source>
         <translation>成功把%1导出到%2</translation>
     </message>
     <message>
-        <location line="+115"/>
+        <location line="+116"/>
         <source>%1 . Elapsed: %2:%3</source>
         <translation>%1,已用时%2:%3</translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location line="+21"/>
         <source>%1,Cost %2:%3</source>
         <translation>%1,已用时 %2:%3</translation>
     </message>
@@ -7135,7 +7135,7 @@ To Excel</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+8"/>
         <source>The project file to open</source>
         <translation>要打开的工程文件</translation>
     </message>

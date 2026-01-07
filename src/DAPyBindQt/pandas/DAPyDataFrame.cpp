@@ -72,7 +72,7 @@ DAPySeries DAPyDataFrame::operator[](std::size_t n) const
         if (n >= headers.size()) {
             return DAPySeries();
         }
-        QString name = headers[ n ];
+        QString name = headers[ static_cast< int >(n) ];
         return operator[](name);
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
@@ -145,7 +145,7 @@ QList< QString > DAPyDataFrame::columns() const
     try {
         pybind11::list obj_columns = attr("columns");
         const size_t s             = obj_columns.size();
-        res.reserve(s);
+        res.reserve(static_cast< int >(s));
         res = DA::PY::fromPyList< QString >(obj_columns);
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();

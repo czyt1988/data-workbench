@@ -3,7 +3,6 @@
 #include <QUndoGroup>
 #include <QPointer>
 #include "DAPyModule.h"
-#include "DAPybind11QtTypeCast.h"
 #include "DAUIInterface.h"
 #include "DADockingAreaInterface.h"
 #include "DADataOperateWidget.h"
