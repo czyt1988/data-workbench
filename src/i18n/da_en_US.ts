@@ -6974,7 +6974,7 @@ To Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../APP/main.cpp" line="+94"/>
+        <location filename="../APP/main.cpp" line="+93"/>
         <source>Kernel initialization failed</source>
         <translation type="unfinished"></translation>
     </message>

@@ -256,86 +256,139 @@ struct type_caster< QDateTime >
 
     static pybind11::object& get_datetime_type()
     {
-        static pybind11::object datetime_type = []() { return pybind11::module::import("datetime").attr("datetime"); }();
+        static pybind11::object datetime_type = []() -> pybind11::object {
+            try {
+                return pybind11::module::import("datetime").attr("datetime");
+            } catch (...) {
+                return pybind11::none();
+            }
+        }();
         return datetime_type;
     }
-
-    static pybind11::object& get_timezone_utc()
+    static pybind11::object& get_pandas_timestamp_type()
     {
-        static pybind11::object utc_tz = []() {
-            pybind11::module datetime_module = pybind11::module::import("datetime");
-            pybind11::object timezone        = datetime_module.attr("timezone");
-            pybind11::object utc             = datetime_module.attr("utc");
-            return timezone.attr("utc");
+        static pybind11::object pd_Timestamp = []() -> pybind11::object {
+            try {
+                return pybind11::module::import("pandas").attr("Timestamp");
+            } catch (...) {
+                return pybind11::none();
+            }
         }();
-        return utc_tz;
+        return pd_Timestamp;
     }
-
-    bool load(handle src, bool convert)
+    static pybind11::object& get_numpy_timestamp_type()
     {
-        if (!src)
-            return false;
-
-        if (!pybind11::isinstance(src, get_datetime_type())) {
+        static pybind11::object np_datetime64 = []() -> pybind11::object {
+            try {
+                return pybind11::module::import("numpy").attr("datetime64");
+            } catch (...) {
+                return pybind11::none();
+            }
+        }();
+        return np_datetime64;
+    }
+    bool load(pybind11::handle src, bool convert)
+    {
+        if (!src) {
             return false;
         }
-
-        try {
-            // 检查是否有tzinfo属性
-            pybind11::object tzinfo = src.attr("tzinfo");
-            bool has_tzinfo         = !tzinfo.is_none();
-
-            qint64 msecs_since_epoch;
-
-            if (has_tzinfo) {
-                // 有时区信息，转换为UTC时间戳
+        static pybind11::object& datetime_type = get_datetime_type();
+        if (!datetime_type.is_none() && pybind11::isinstance(src, datetime_type)) {
+            try {
+                // 使用 timestamp() 方法，它自动处理时区转换
                 pybind11::object timestamp = src.attr("timestamp");
                 double ts                  = timestamp().cast< double >();
-                msecs_since_epoch          = static_cast< qint64 >(ts * 1000);
-                value                      = QDateTime::fromMSecsSinceEpoch(msecs_since_epoch, Qt::UTC);
-            } else {
-                // naive datetime，假定为本地时间
-                // 使用Python的日历计算避免timestamp()的问题
-                int year        = src.attr("year").cast< int >();
-                int month       = src.attr("month").cast< int >();
-                int day         = src.attr("day").cast< int >();
-                int hour        = src.attr("hour").cast< int >();
-                int minute      = src.attr("minute").cast< int >();
-                int second      = src.attr("second").cast< int >();
-                int microsecond = src.attr("microsecond").cast< int >();
-                int msec        = microsecond / 1000;
+                qint64 msecs_since_epoch   = static_cast< qint64 >(ts * 1000);
 
-                QDate date(year, month, day);
-                QTime time(hour, minute, second, msec);
+                // 检查是否有时区信息
+                pybind11::object tzinfo = src.attr("tzinfo");
+                bool has_tzinfo         = !tzinfo.is_none();
 
-                if (date.isValid() && time.isValid()) {
-                    value = QDateTime(date, time, Qt::LocalTime);
-                    return true;
+                if (has_tzinfo) {
+                    // 有时区信息，使用 timestamp() 方法，它自动处理时区转换
+                    pybind11::object timestamp = src.attr("timestamp");
+                    double ts                  = timestamp().cast< double >();
+                    qint64 msecs_since_epoch   = static_cast< qint64 >(ts * 1000);
+                    value                      = QDateTime::fromMSecsSinceEpoch(msecs_since_epoch, Qt::UTC);
+                } else {
+                    // naive datetime，直接从属性构建 QDateTime（不经过 timestamp 转换）
+                    int year        = src.attr("year").cast< int >();
+                    int month       = src.attr("month").cast< int >();
+                    int day         = src.attr("day").cast< int >();
+                    int hour        = src.attr("hour").cast< int >();
+                    int minute      = src.attr("minute").cast< int >();
+                    int second      = src.attr("second").cast< int >();
+                    int microsecond = src.attr("microsecond").cast< int >();
+                    int msec        = microsecond / 1000;
+
+                    QDate date(year, month, day);
+                    QTime time(hour, minute, second, msec);
+
+                    if (date.isValid() && time.isValid()) {
+                        // 创建本地时间的 QDateTime
+                        value = QDateTime(date, time);
+                        return true;
+                    }
                 }
+                return true;
+            } catch (...) {
                 return false;
             }
-            return true;
-        } catch (...) {
-            // 捕获所有异常，转换失败
-            return false;
         }
+        static pybind11::object& np_timestamp = get_numpy_timestamp_type();
+        if (!np_timestamp.is_none() && pybind11::isinstance(src, np_timestamp)) {
+            // numpy datetime64
+            try {
+                int64_t ns = src.attr("astype")("datetime64[ns]").attr("view")("int64").cast< int64_t >();
+                value      = QDateTime::fromMSecsSinceEpoch(ns / 1000000, Qt::UTC);
+                return true;
+            } catch (...) {
+                return false;
+            }
+        }
+
+        static pybind11::object& pd_timestamp = get_pandas_timestamp_type();
+        if (!pd_timestamp.is_none() && pybind11::isinstance(src, pd_timestamp)) {
+            // pandas Timestamp
+            try {
+                // pandas Timestamp 有自己的 tz 属性
+                pybind11::object tz = src.attr("tz");
+                bool has_tz         = !tz.is_none();
+
+                if (has_tz) {
+                    // 有时区信息，使用 UTC
+                    double ts = src.attr("timestamp")().cast< double >();
+                    value     = QDateTime::fromMSecsSinceEpoch(static_cast< qint64 >(ts * 1000), Qt::UTC);
+                } else {
+                    // 无时区信息，当作本地时间处理
+                    // 对于 pandas Timestamp，我们使用 to_pydatetime() 转换为 python datetime，然后按照上面的逻辑处理
+                    pybind11::object py_dt = src.attr("to_pydatetime")();
+                    return load(py_dt, convert);
+                }
+                return true;
+            } catch (...) {
+                return false;
+            }
+        }
+        // 所有方法都失败
+        return false;
     }
 
-    static handle cast(const QDateTime& src, return_value_policy /* policy */, handle /* parent */)
+    static pybind11::handle
+    cast(const QDateTime& src, pybind11::return_value_policy /* policy */, pybind11::handle /* parent */)
     {
         if (!src.isValid()) {
             Py_RETURN_NONE;
         }
-
-        // 转换为UTC时间进行计算
-        QDateTime utc_dt = src.toUTC();
-        qint64 msecs     = utc_dt.toMSecsSinceEpoch();
-        double seconds   = msecs / 1000.0;
-
-        // 使用fromtimestamp创建带时区的datetime对象
-        pybind11::object py_dt = get_datetime_type().attr("fromtimestamp")(seconds, get_timezone_utc());
-
-        return py_dt.release();
+        /* 直接拿“墙上时间”戳，不再 toUTC() */
+        qint64 ms = src.toMSecsSinceEpoch();
+        double ts = ms / 1000.0;
+        try {
+            object datetime_type = module_::import("datetime").attr("datetime");
+            return datetime_type.attr("fromtimestamp")(ts).release();
+        } catch (...) {
+            Py_RETURN_NONE;
+        }
     }
 };
 

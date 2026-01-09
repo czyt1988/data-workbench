@@ -6671,7 +6671,7 @@ To Excel</source>
         <translation>%3标签属性%1=%2无法转换为double类型 </translation>
     </message>
     <message>
-        <location filename="../APP/main.cpp" line="+94"/>
+        <location filename="../APP/main.cpp" line="+93"/>
         <source>Kernel initialization failed</source>
         <translation>内核初始化失败</translation>
     </message>
