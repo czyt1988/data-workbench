@@ -339,7 +339,8 @@ void DAChartOperateWidget::onTabCloseRequested(int index)
     if (!fig) {
         return;
     }
-    QMessageBox::StandardButton btn = QMessageBox::question(this, tr("question"), tr("Whether to close the figure widget"));
+    QMessageBox::StandardButton btn =
+        QMessageBox::question(this, tr("question"), tr("Whether to close the figure widget"));
     if (QMessageBox::Yes != btn) {
         return;
     }
@@ -359,6 +360,7 @@ void DAChartOperateWidget::onFigureTitleChanged(const QString& t)
         if (i >= 0) {
             ui->tabWidget->setTabText(i, t);
         }
+        Q_EMIT figureTitleChanged(fig, t);
     }
 }
 

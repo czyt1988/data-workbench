@@ -29,6 +29,13 @@ public:
     void refresh();
     // 获取内部模型
     DAFigureTreeModel* getFigureTreeModel() const;
+    // 设置自动适应内容
+    bool isAutoResizeColumnToContents() const;
+    void setAutoResizeColumnToContents(bool on);
+public Q_SLOTS:
+    // 让树形控件的水平头自适应内容
+    void resizeHeaderToContents();
+
 Q_SIGNALS:
     // 请求改变图元颜色的信号
     void requestItemChangeColor(QwtPlotItem* item, QStandardItem* treeItem);
@@ -37,6 +44,8 @@ Q_SIGNALS:
 private Q_SLOTS:
     void onClicked(const QModelIndex& index);
     void onDoubleClicked(const QModelIndex& index);
+    // chartitem attacted
+    void onChartItemAttacted(QwtPlotItem* item, bool on);
 
 private:
     void handleClicked(const QModelIndex& index, bool doubleClicked);

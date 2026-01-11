@@ -89,7 +89,8 @@ public:
     virtual QIcon generatePlotItemIcon(QwtPlotItem* item) const;
     // 创建一个纯颜色图标
     virtual QIcon generateBrushIcon(const QBrush& b) const;
-
+Q_SIGNALS:
+    void chartItemAttached(QwtPlotItem* item, bool on);
 private slots:
     void onAxesAdded(QwtPlot* plot);
     void onAxesRemoved(QwtPlot* plot);

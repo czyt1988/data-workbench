@@ -317,12 +317,13 @@ Vector Field</source>
     <message>
         <location line="+2"/>
         <source>Apply All Charts</source>
-        <translation type="unfinished"></translation>
+        <translation>应用到
+所有绘图</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>When this feature is selected, operations on the figure will apply to all plots, not just the currently selected one</source>
-        <translation type="unfinished"></translation>
+        <translation>此功能选中后，绘图面板上的操作将应用到所有绘图，而不仅仅是当前选中的绘图</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -379,27 +380,27 @@ All</source>
     <message>
         <location line="+1"/>
         <source>At Canvas Left Top</source>
-        <translation type="unfinished"></translation>
+        <translation>在画布左上</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>At Canvas Left Bottom</source>
-        <translation type="unfinished"></translation>
+        <translation>在画布左下</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>At Canvas Right Top</source>
-        <translation type="unfinished"></translation>
+        <translation>在画布右上</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>At Canvas Right Bottom</source>
-        <translation type="unfinished"></translation>
+        <translation>在画布右下</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Follow Mouse</source>
-        <translation type="unfinished"></translation>
+        <translation>跟随鼠标</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -1717,12 +1718,12 @@ Table Area</source>
 <context>
     <name>DA::DAChartManageWidget</name>
     <message>
-        <location filename="../DAGui/DAChartManageWidget.cpp" line="+155"/>
+        <location filename="../DAGui/DAChartManageWidget.cpp" line="+204"/>
         <source>get figure create signal,but can not find figure index</source>
         <translation>获取了绘图创建的信号，但无法找到绘图的索引</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+20"/>
         <source>get figure close signal,but can not find figure index</source>
         <translation>获取了绘图关闭的信号，但无法找到绘图的索引</translation>
     </message>
@@ -1735,7 +1736,7 @@ Table Area</source>
         <translation>图-%1</translation>
     </message>
     <message>
-        <location line="+247"/>
+        <location line="+248"/>
         <source>question</source>
         <translation>疑问</translation>
     </message>
@@ -5849,7 +5850,7 @@ To Excel</source>
     <message>
         <location filename="../../plugins/DataAnalysis/Dialogs/DataFrameExportRangeSelectDialog.ui" line="+14"/>
         <source>Export Setting</source>
-        <translation type="unfinished"></translation>
+        <translation>导出设置</translation>
     </message>
     <message>
         <location line="+6"/>
@@ -6242,12 +6243,12 @@ To Excel</source>
     <message>
         <location line="+13"/>
         <source>Plugin from %1 implements a DA interface but qobject_cast failed. This may indicate a binary compatibility issue (compiler/mismatch).</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+5"/>
         <source>The library %1 does not appear to be a valid DA plugin. It does not implement the required interface.</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+13"/>
@@ -7124,7 +7125,7 @@ To Excel</source>
     <message>
         <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="-297"/>
         <source>%1.%2,size:%3</source>
-        <translation type="unfinished"></translation>
+        <translation>%1.%2,长度:%3</translation>
     </message>
 </context>
 <context>

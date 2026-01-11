@@ -4,6 +4,7 @@
 #include <QPointer>
 #include <QDebug>
 #include <QHash>
+#include <QSet>
 #include "DAChartOperateWidget.h"
 #include "DAFigureWidget.h"
 #include "DAFigureTreeView.h"
@@ -54,6 +55,12 @@ DAChartManageWidget::DAChartManageWidget(QWidget* parent)
     : QWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DAChartManageWidget)
 {
     ui->setupUi(this);
+    connect(ui->toolButtonExpandAll, &QToolButton::clicked, this, &DAChartManageWidget::expandCurrentTree);
+    connect(ui->toolButtonCollapseAll, &QToolButton::clicked, this, &DAChartManageWidget::collapseCurrentTree);
+    connect(ui->toolButtonFigureSetting, &QToolButton::clicked, this, &DAChartManageWidget::onToolButtonFigureSettingClicked);
+    connect(
+        ui->comboBoxFigure, QOverload< int >::of(&QComboBox::currentIndexChanged), this, &DAChartManageWidget::onComboboxCurrentIndexChanged
+    );
 }
 
 DAChartManageWidget::~DAChartManageWidget()
@@ -115,13 +122,30 @@ DAFigureWidget* DAChartManageWidget::plotToFigureWidget(QwtPlot* plot) const
     return d_ptr->mFigToFigWidget.value(fig, nullptr);
 }
 
-void DAChartManageWidget::expandAll()
+DAFigureWidget* DAChartManageWidget::getCurrentFigure() const
+{
+    return reinterpret_cast< DAFigureWidget* >(ui->comboBoxFigure->currentData().value< quintptr >());
+}
+
+void DAChartManageWidget::expandCurrentTree()
 {
     DAFigureTreeView* tree = currentTreeView();
     if (!tree) {
         return;
     }
     tree->expandAll();
+    if (tree->isAutoResizeColumnToContents()) {
+        tree->resizeHeaderToContents();
+    }
+}
+
+void DAChartManageWidget::collapseCurrentTree()
+{
+    DAFigureTreeView* tree = currentTreeView();
+    if (!tree) {
+        return;
+    }
+    tree->collapseAll();
 }
 
 DAFigureTreeView* DAChartManageWidget::currentTreeView() const
@@ -130,6 +154,18 @@ DAFigureTreeView* DAChartManageWidget::currentTreeView() const
 }
 
 void DAChartManageWidget::setCurrentDisplayView(DAFigureWidget* fig)
+{
+    setStackCurrentFigure(fig);
+    QSignalBlocker b(ui->comboBoxFigure);  // 避免触发currentIndexChanged信号导致再次切换stack
+    setComboboxCurrentFigure(fig);
+}
+
+DAFigureWidget* DAChartManageWidget::getComboboxFigure(int index) const
+{
+    return reinterpret_cast< DAFigureWidget* >(ui->comboBoxFigure->itemData(index).value< quintptr >());
+}
+
+void DAChartManageWidget::setStackCurrentFigure(DAFigureWidget* fig)
 {
     DAFigureTreeView* tree = d_ptr->mFigureWidgetToTree.value(fig, nullptr);
     if (!tree) {
@@ -148,12 +184,25 @@ void DAChartManageWidget::setCurrentDisplayView(DAFigureWidget* fig)
     }
 }
 
+void DAChartManageWidget::setComboboxCurrentFigure(DAFigureWidget* fig)
+{
+    int c = ui->comboBoxFigure->count();
+    for (int i = 0; i < c; ++i) {
+        DAFigureWidget* w = getComboboxFigure(i);
+        if (w == fig) {
+            if (i != ui->comboBoxFigure->currentIndex()) {
+                ui->comboBoxFigure->setCurrentIndex(i);
+            }
+        }
+    }
+}
+
 void DAChartManageWidget::onFigureCreated(DAFigureWidget* fig)
 {
     int index = d_ptr->mChartOptWidget->getFigureIndex(fig);
     if (index < 0) {
-        qCritical() << tr(
-            "get figure create signal,but can not find figure index");  // cn: 获取了绘图创建的信号，但无法找到绘图的索引
+        qCritical() << tr("get figure create signal,but can not find figure index"
+        );  // cn: 获取了绘图创建的信号，但无法找到绘图的索引
         return;
     }
 
@@ -164,18 +213,30 @@ void DAChartManageWidget::onFigureCreated(DAFigureWidget* fig)
     connect(figTreeview, &DAFigureTreeView::itemCliecked, this, &DAChartManageWidget::figureElementClicked);
     connect(figTreeview, &DAFigureTreeView::itemDbCliecked, this, &DAChartManageWidget::figureElementDbClicked);
     ui->stackedWidget->insertWidget(index, figTreeview);
+
+    ui->comboBoxFigure->insertItem(index, fig->windowTitle(), reinterpret_cast< quintptr >(fig));
 }
 
 void DAChartManageWidget::onFigureCloseing(DAFigureWidget* fig)
 {
     DAFigureTreeView* tree = d_ptr->mFigureWidgetToTree.value(fig, nullptr);
     if (!tree) {
-        qCritical() << tr(
-            "get figure close signal,but can not find figure index");  // cn: 获取了绘图关闭的信号，但无法找到绘图的索引
+        qCritical() << tr("get figure close signal,but can not find figure index"
+        );  // cn: 获取了绘图关闭的信号，但无法找到绘图的索引
         return;
     }
     ui->stackedWidget->removeWidget(tree);
     tree->deleteLater();
+    // 删除combobox
+    const int comboboxCnt = ui->comboBoxFigure->count();
+    for (int i = 0; i < comboboxCnt; ++i) {
+        quintptr ptr        = ui->comboBoxFigure->itemData(i).value< quintptr >();
+        DAFigureWidget* tmp = reinterpret_cast< DAFigureWidget* >(ptr);
+        if (tmp == fig) {
+            ui->comboBoxFigure->removeItem(i);
+            break;
+        }
+    }
 }
 
 void DAChartManageWidget::onCurrentFigureChanged(DAFigureWidget* fig, int index)
@@ -225,6 +286,24 @@ void DAChartManageWidget::onAxisClicked(QwtAxisId axisId, QwtPlot* plot, QStanda
     DAFigureElementSelection::SelectionColumns col = d_ptr->standardItemToSelectionColumns(treeItem);
     DAFigureElementSelection sel(figWidget, plot, plot->axisWidget(axisId), axisId, col);
     Q_EMIT figureElementClicked(sel);
+}
+
+void DAChartManageWidget::onToolButtonFigureSettingClicked()
+{
+    if (DAFigureWidget* fig = getCurrentFigure()) {
+        Q_EMIT requestFigureSetting(fig);
+    }
+}
+
+void DAChartManageWidget::onComboboxCurrentIndexChanged(int index)
+{
+    // 联动ChartOptWidget,此函数会触发槽onCurrentFigureChanged，调用setCurrentDisplayView，
+    // 但在setCurrentDisplayView中，combobx的currentIndex已经是index，就不会再设置，从而避免递归调用
+    d_ptr->mChartOptWidget->setCurrentFigure(index);
+    if (DAFigureWidget* fig = getCurrentFigure()) {
+        setStackCurrentFigure(fig);
+        Q_EMIT selectFigureChanged(fig);
+    }
 }
 
 }

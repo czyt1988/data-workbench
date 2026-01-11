@@ -1694,12 +1694,12 @@ Config</source>
 <context>
     <name>DA::DAChartManageWidget</name>
     <message>
-        <location filename="../DAGui/DAChartManageWidget.cpp" line="+155"/>
+        <location filename="../DAGui/DAChartManageWidget.cpp" line="+204"/>
         <source>get figure create signal,but can not find figure index</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+20"/>
         <source>get figure close signal,but can not find figure index</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1712,7 +1712,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+247"/>
+        <location line="+248"/>
         <source>question</source>
         <translation type="unfinished"></translation>
     </message>

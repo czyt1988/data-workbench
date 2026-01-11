@@ -87,11 +87,17 @@ Q_SIGNALS:
      * @param f
      */
     void figureCreated(DA::DAFigureWidget* f);
+    /**
+     * @brief 绘图的标题发生了改变
+     * @param f
+     * @param title
+     */
+    void figureTitleChanged(DA::DAFigureWidget* f, const QString& title);
 
     /**
      * @brief 当前的figure改变了
-     * @param f
-     * @param index
+     * @param f 当前激活的figure
+     * @param index 当前激活的figure对应的index
      */
     void currentFigureChanged(DA::DAFigureWidget* f, int index);
     /**
