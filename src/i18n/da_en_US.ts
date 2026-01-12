@@ -6731,7 +6731,7 @@ To Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAFigure/Models/DAStandardItemPlot.cpp" line="+50"/>
+        <location filename="../DAFigure/Models/DAStandardItemPlot.cpp" line="+53"/>
         <source>parasite-%1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6741,7 +6741,7 @@ To Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+28"/>
+        <location line="+31"/>
         <source>Parasite Plot</source>
         <translation type="unfinished"></translation>
     </message>

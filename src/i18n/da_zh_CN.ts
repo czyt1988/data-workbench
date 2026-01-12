@@ -7073,7 +7073,7 @@ To Excel</source>
         <translation>无法在“%1”中创建存档，原因为：%2</translation>
     </message>
     <message>
-        <location filename="../DAFigure/Models/DAStandardItemPlot.cpp" line="+50"/>
+        <location filename="../DAFigure/Models/DAStandardItemPlot.cpp" line="+53"/>
         <source>parasite-%1</source>
         <translation>寄生绘图-%1</translation>
     </message>
@@ -7083,7 +7083,7 @@ To Excel</source>
         <translation>绘图</translation>
     </message>
     <message>
-        <location line="+28"/>
+        <location line="+31"/>
         <source>Parasite Plot</source>
         <translation>寄生绘图</translation>
     </message>

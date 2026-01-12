@@ -1,6 +1,7 @@
 ﻿#include "DAPyModule.h"
 #include <QDebug>
 #include <QObject>
+#include "DAPybind11QtCaster.hpp"
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
 //===================================================
@@ -140,6 +141,28 @@ bool DAPyModule::isInstanceDateTime(const pybind11::handle& obj)
 {
     try {
         static pybind11::object datetime_type = []() { return pybind11::module::import("datetime").attr("datetime"); }();
+        return pybind11::isinstance(obj, datetime_type());
+    } catch (const std::exception& e) {
+        return false;
+    }
+    return false;
+}
+
+bool DAPyModule::isInstancePandasDateTime(const pybind11::handle& obj)
+{
+    try {
+        static pybind11::object datetime_type = []() { return pybind11::module::import("pandas").attr("Timestamp"); }();
+        return pybind11::isinstance(obj, datetime_type());
+    } catch (const std::exception& e) {
+        return false;
+    }
+    return false;
+}
+
+bool DAPyModule::isInstanceNumpyDateTime(const pybind11::handle& obj)
+{
+    try {
+        static pybind11::object datetime_type = []() { return pybind11::module::import("numpy").attr("datetime64"); }();
         return pybind11::isinstance(obj, datetime_type());
     } catch (const std::exception& e) {
         return false;

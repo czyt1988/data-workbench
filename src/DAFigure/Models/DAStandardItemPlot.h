@@ -2,6 +2,7 @@
 #define DASTANDARDITEMPLOT_H
 #include "DAFigureAPI.h"
 #include <QStandardItem>
+#include <QPointer>
 class QwtPlot;
 namespace DA
 {
@@ -34,7 +35,7 @@ public:
     // 获取关联的PlotItem
     QwtPlot* plot() const
     {
-        return m_plot;
+        return m_plot.data();
     }
 
     // 获取Item类型
@@ -45,11 +46,11 @@ public:
 
     bool isValid() const
     {
-        return (m_plot);
+        return !(m_plot.isNull());
     }
 
 private:
-    QwtPlot* m_plot { nullptr };
+    QPointer< QwtPlot > m_plot { nullptr };
     ItemType m_itemType { PlotText };
 };
 }  // end DA

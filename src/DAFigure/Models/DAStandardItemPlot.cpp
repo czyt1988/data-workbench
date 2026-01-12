@@ -44,6 +44,9 @@ QVariant DAStandardItemPlot::handleItemTextType(int role) const
     static QIcon s_plot_icon = QIcon(":/DAFigure/icon/chart.svg");
     switch (role) {
     case Qt::DisplayRole: {
+        if (!m_plot) {
+            return QVariant();
+        }
         QString text;
         if (m_plot->isParasitePlot()) {
             int index = m_plot->hostPlot()->parasitePlotIndex(m_plot);
@@ -78,6 +81,9 @@ QVariant DAStandardItemPlot::handleScalePropertyType(int role) const
     }
     switch (role) {
     case Qt::DisplayRole: {
+        if (!m_plot) {
+            return QVariant();
+        }
         if (m_plot->isParasitePlot()) {
             return QObject::tr("Parasite Plot");  // cn: 寄生绘图
         }

@@ -128,7 +128,8 @@ void DAFigureTreeView::resizeHeaderToContents()
 
 void DAFigureTreeView::onChartItemAttacted(QwtPlotItem* item, bool on)
 {
-    if (isAutoResizeColumnToContents()) {
+    if (on && isAutoResizeColumnToContents()) {
+        // 注意，只有on的时候才触发，否则删除的时候也触发会导致standarditem操作item或者plot导致崩溃
         resizeHeaderToContents();
     }
 }

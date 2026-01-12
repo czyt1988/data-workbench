@@ -1240,6 +1240,7 @@ namespace DA
 {
 namespace PY
 {
+
 // QString 转换函数
 inline QString fromPyString(pybind11::handle py_str)
 {
@@ -1369,6 +1370,74 @@ inline pybind11::object toPyObject(const QVariant& qt_var)
 inline pybind11::object toPyObject(const QVariant& qt_var, const pybind11::dtype& dt)
 {
     return dt.attr("type")(toPyObject(qt_var));
+}
+
+// 能转成 QDateTime 吗？
+// 支持：datetime.datetime / pandas.Timestamp / numpy.datetime64
+inline bool canCastToQDateTime(pybind11::handle src)
+{
+    if (!src)
+        return false;
+
+    try {
+        // 1. datetime.datetime
+        static pybind11::object datetime_type = pybind11::module::import("datetime").attr("datetime");
+        if (pybind11::isinstance(src, datetime_type))
+            return true;
+
+        // 2. pandas.Timestamp
+        static pybind11::object pd_Timestamp = []() -> pybind11::object {
+            try {
+                return pybind11::module::import("pandas").attr("Timestamp");
+            } catch (...) {
+                return pybind11::none();
+            }
+        }();
+        if (!pd_Timestamp.is_none() && pybind11::isinstance(src, pd_Timestamp))
+            return true;
+
+        // 3. numpy.datetime64
+        static pybind11::object np_datetime64 = []() -> pybind11::object {
+            try {
+                return pybind11::module::import("numpy").attr("datetime64");
+            } catch (...) {
+                return pybind11::none();
+            }
+        }();
+        if (!np_datetime64.is_none() && pybind11::isinstance(src, np_datetime64))
+            return true;
+    } catch (...) {
+    }
+    return false;
+}
+
+inline bool canCastToQDate(pybind11::handle src)
+{
+    if (!src)
+        return false;
+    try {
+        static pybind11::object date_type = pybind11::module::import("datetime").attr("date");
+        return pybind11::isinstance(src, date_type);
+    } catch (...) {
+    }
+    return false;
+}
+
+inline bool canCastToQTime(pybind11::handle src)
+{
+    if (!src)
+        return false;
+    try {
+        static pybind11::object time_type = pybind11::module::import("datetime").attr("time");
+        return pybind11::isinstance(src, time_type);
+    } catch (...) {
+    }
+    return false;
+}
+
+inline bool canCastToQString(pybind11::handle src)
+{
+    return src && (PyUnicode_Check(src.ptr()) || PyBytes_Check(src.ptr()));
 }
 
 }  // namespace PY

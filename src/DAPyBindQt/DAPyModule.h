@@ -42,6 +42,8 @@ public:
     static bool isInstanceTime(const pybind11::handle& obj);
     static bool isInstanceDate(const pybind11::handle& obj);
     static bool isInstanceDateTime(const pybind11::handle& obj);
+    static bool isInstancePandasDateTime(const pybind11::handle& obj);
+    static bool isInstanceNumpyDateTime(const pybind11::handle& obj);
     static bool isInstanceTimedelta(const pybind11::handle& obj);
 };
 }  // namespace DA
