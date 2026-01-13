@@ -490,7 +490,7 @@ DAColorTheme& DAFigureWidget::colorTheme()
 void DAFigureWidget::copyToClipboard()
 {
     // 捕获当前窗口的截图
-    QPixmap screenshot = this->grab();
+    QPixmap screenshot = figure()->grab();
     // 将截图放到剪贴板
     QApplication::clipboard()->setPixmap(screenshot);
 }

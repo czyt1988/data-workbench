@@ -35,7 +35,7 @@ public:
     // 获取关联的PlotItem
     QwtPlot* plot() const
     {
-        return m_plot.data();
+        return m_plot;
     }
 
     // 获取Item类型
@@ -46,11 +46,11 @@ public:
 
     bool isValid() const
     {
-        return !(m_plot.isNull());
+        return (m_plot != nullptr);
     }
 
 private:
-    QPointer< QwtPlot > m_plot { nullptr };
+    QwtPlot* m_plot { nullptr };
     ItemType m_itemType { PlotText };
 };
 }  // end DA

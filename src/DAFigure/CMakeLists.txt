@@ -21,7 +21,6 @@ find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
     Core
     Gui
     Widgets
-    Concurrent
     PrintSupport
     REQUIRED
 )

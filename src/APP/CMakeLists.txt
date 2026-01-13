@@ -23,7 +23,6 @@ find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
     Widgets
     Xml
     Svg
-    Concurrent
     PrintSupport
     REQUIRED
 )
