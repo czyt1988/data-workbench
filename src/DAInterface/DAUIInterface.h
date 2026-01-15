@@ -69,6 +69,9 @@ public:
     // QApplication::processEvents();的wrapper
     void processEvents() const;
 
+    // 选择文件夹
+    QString getExistingDirectory(const QString& title = QString(), const QString& dir = QString());
+
 public:
     // 下面是默认的extend
     // 获取主程序,此函数和getRibbonArea()->app()是一样的返回结果

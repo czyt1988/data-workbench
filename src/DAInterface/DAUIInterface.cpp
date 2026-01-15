@@ -4,6 +4,7 @@
 #include <QEvent>
 #include "SARibbonMainWindow.h"
 #include <QApplication>
+#include <QFileDialog>
 namespace DA
 {
 class DAUIInterface::PrivateData
@@ -141,6 +142,11 @@ DAActionsInterface* DAUIInterface::getActionInterface() const
 void DAUIInterface::processEvents() const
 {
     QApplication::processEvents();
+}
+
+QString DAUIInterface::getExistingDirectory(const QString& title, const QString& dir)
+{
+    return QFileDialog::getExistingDirectory(getMainWindow(), title, dir);
 }
 
 /**
