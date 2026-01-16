@@ -442,6 +442,7 @@ struct type_caster< QList< T > >
 // ============================================================================
 // QVector<T> 转换器 (现代版)
 // ============================================================================
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 template< typename T >
 struct type_caster< QVector< T > >
 {
@@ -485,7 +486,7 @@ struct type_caster< QVector< T > >
         return l.release();
     }
 };
-
+#endif
 // ============================================================================
 // QSet<T> 转换器
 // ============================================================================
@@ -1305,11 +1306,13 @@ inline QVector< T > fromPyVector(pybind11::handle py_list)
     return pybind11::cast< QVector< T > >(py_list);
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 template< typename T >
 inline pybind11::object toPyObject(const QVector< T >& qt_vector)
 {
     return pybind11::cast(qt_vector);
 }
+#endif
 
 // 集合转换
 template< typename T >

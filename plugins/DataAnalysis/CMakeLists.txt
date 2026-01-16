@@ -29,7 +29,7 @@ message(STATUS "DAWorkbench_DIR=${DAWorkbench_DIR}")
 
 list(APPEND CMAKE_MODULE_PATH ${DAWorkbench_INSTALL_DIR})
 list(APPEND CMAKE_MODULE_PATH ${DAWorkbench_DIR})
-include(${DAWorkbench_DIR}/daworkbench_plugin_utils.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/../../cmake/daworkbench_plugin_utils.cmake)
 
 set(CMAKE_INSTALL_PREFIX ${DAWorkbench_INSTALL_DIR})
 
