@@ -138,7 +138,11 @@ void DAPySeriesTableModel::setCacheWindowStartRow(int startRow)
     DA_D(d);
     const int rc        = d->rowCount();
     const int cacheSize = getCacheWindowSize();
-    startRow            = qBound(0, startRow, rc - cacheSize);
+    if (rc < cacheSize) {
+        DAAbstractCacheWindowTableModel::setCacheWindowStartRow(0);
+        return;
+    }
+    startRow = qBound(0, startRow, rc - cacheSize);
     if (startRow >= rc) {
         startRow = rc - 1;
     }

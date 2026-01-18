@@ -17,6 +17,7 @@ build*
 tmp
 ~
 
+
 #翻译文件暂时不追踪
 *.qm
 
@@ -90,6 +91,7 @@ Thumbs.db
 .vscode
 .vs
 CMakeSettings.json
+out
 
 # MinGW generated files
 *.Debug

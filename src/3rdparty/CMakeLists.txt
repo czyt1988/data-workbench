@@ -106,3 +106,17 @@ add_subdirectory(quazip)
 ########################################################
 # install
 ########################################################
+# 复制zlib库文件
+if(EXISTS ${ZLIB_LIBRARIES})
+    get_filename_component(ZLIB_LIB_NAME ${ZLIB_LIBRARIES} NAME)
+    install(FILES ${ZLIB_LIBRARIES}
+            DESTINATION ${CMAKE_INSTALL_LIBDIR})
+endif()
+# 复制动态库（Windows）
+if(WIN32 AND EXISTS ${ZLIB_BIN_DIR})
+    file(GLOB ZLIB_DLLS "${ZLIB_BIN_DIR}/*.dll")
+    if(ZLIB_DLLS)
+        install(FILES ${ZLIB_DLLS}
+                DESTINATION ${CMAKE_INSTALL_BINDIR})
+    endif()
+endif()
