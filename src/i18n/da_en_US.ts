@@ -664,7 +664,7 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+476"/>
+        <location filename="../APP/DAAppController.cpp" line="+477"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
@@ -690,17 +690,17 @@ Config</source>
     </message>
     <message>
         <location line="+12"/>
-        <location line="+458"/>
+        <location line="+470"/>
         <source>Project saved successfully,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-440"/>
+        <location line="-452"/>
         <source>Please select the data operation window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+331"/>
+        <location line="+343"/>
         <source>Question</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1712,7 +1712,7 @@ Config</source>
 <context>
     <name>DA::DAChartSettingWidget</name>
     <message>
-        <location filename="../DAGui/DAChartSettingWidget.cpp" line="+179"/>
+        <location filename="../DAGui/DAChartSettingWidget.cpp" line="+177"/>
         <source>Chart Area</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3213,7 +3213,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1959"/>
+        <location filename="../APP/DAAppController.cpp" line="-1971"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6725,12 +6725,12 @@ To Excel</source>
     </message>
     <message>
         <location filename="../DAFigure/Models/DAStandardItemPlot.cpp" line="+53"/>
-        <source>parasite-%1</source>
+        <source>layout-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+4"/>
-        <source>plot</source>
+        <source>layout</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

@@ -50,11 +50,11 @@ QVariant DAStandardItemPlot::handleItemTextType(int role) const
         QString text;
         if (m_plot->isParasitePlot()) {
             int index = m_plot->hostPlot()->parasitePlotIndex(m_plot);
-            text      = QObject::tr("parasite-%1").arg(index + 1);
+            text      = QObject::tr("layout-%1").arg(index + 1);
         } else {
             text = m_plot->title().text();
             if (text.isEmpty()) {
-                text = QObject::tr("plot");
+                text = QObject::tr("layout");
             }
         }
         return text;

@@ -36,6 +36,7 @@
 #include "DAAppChartOperateWidget.h"
 #include "DAFigureWidget.h"
 #include "DAChartWidget.h"
+#include "DAChartAxisSetWidget.h"
 #include "DAAppChartManageWidget.h"
 #include "SettingPages/DASettingPageCommon.h"
 #include "DASettingContainerWidget.h"
@@ -758,11 +759,23 @@ void DAAppController::onFigureElementDbClicked(const DAFigureElementSelection& s
     // 把绘图界面显示在前台
     mDock->raiseDockingArea(DADockingAreaInterface::DockingAreaChartOperate);
     // 如果是visible双击，那么改变item的visible属性
-    if (selection.isSelectedPlotItem()) {
-        if (DAFigureElementSelection::ColumnVisible == selection.selectionColumn) {
+
+    if (DAFigureElementSelection::ColumnVisible == selection.selectionColumn) {
+        if (selection.isSelectedPlotItem()) {
             selection.plotItem->setVisible(!selection.plotItem->isVisible());
-            // 可见性改变后，需要通知刷新
+            // plotitem可见性改变后，需要通知刷新
             selection.plot->replot();
+        } else if (selection.isSelectedScaleWidget()) {
+            bool isAxisVisible = selection.plot->isAxisVisible(selection.axisId);
+            selection.plot->setAxisVisible(selection.axisId, !isAxisVisible);
+            // 对于设置窗口要进行更新
+            if (setting) {
+                if (DAChartSettingWidget* chartSetting = setting->getChartSettingWidget()) {
+                    if (DAChartAxisSetWidget* axisSettingWidget = chartSetting->getChartAxisSetWidget(selection.axisId)) {
+                        axisSettingWidget->updateUI();
+                    }
+                }
+            }
         }
     }
 }

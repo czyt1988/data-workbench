@@ -16,6 +16,10 @@ class DAChartSettingWidget;
 namespace DA
 {
 class DAChartOperateWidget;
+class DAChartPlotSettingWidget;
+class DAChartCanvasSettingWidget;
+class DAChartAxisSetWidget;
+class DAChartCommonItemsSettingWidget;
 /**
  * @brief 绘图设置窗口
  *
@@ -79,6 +83,12 @@ public:
     void showScaleXBottomSetting();
     void showScaleXTopSetting();
     void showPlotItemSetting(QwtPlotItem* item);
+
+    // 获取设置窗口
+    DAChartPlotSettingWidget* getChartPlotSettingWidget() const;
+    DAChartCanvasSettingWidget* getChartCanvasSettingWidget() const;
+    DAChartAxisSetWidget* getChartAxisSetWidget(int axisId) const;
+    DAChartCommonItemsSettingWidget* getChartCommonItemsSettingWidget() const;
 
 protected:
     void changeEvent(QEvent* e);

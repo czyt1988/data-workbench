@@ -688,7 +688,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+872"/>
+        <location filename="../APP/DAAppController.cpp" line="+885"/>
         <location line="+49"/>
         <source>project file(*.%1)</source>
         <translation>工程文件(*.%1)</translation>
@@ -710,7 +710,7 @@ Table Area</source>
         <translation>加载工程文件“%1”失败</translation>
     </message>
     <message>
-        <location line="-462"/>
+        <location line="-474"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
@@ -736,17 +736,17 @@ Table Area</source>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+458"/>
+        <location line="+470"/>
         <source>Project saved successfully,path is %1</source>
         <translation>工程保存成功，路径位于:%1</translation>
     </message>
     <message>
-        <location line="-440"/>
+        <location line="-452"/>
         <source>Please select the data operation window</source>
         <translation>请选中数据操作窗口</translation>
     </message>
     <message>
-        <location line="+457"/>
+        <location line="+469"/>
         <source>Project load successfully,path is %1</source>
         <translation>工程加载成功，路径为：%1</translation>
     </message>
@@ -1736,7 +1736,7 @@ Table Area</source>
 <context>
     <name>DA::DAChartSettingWidget</name>
     <message>
-        <location filename="../DAGui/DAChartSettingWidget.cpp" line="+179"/>
+        <location filename="../DAGui/DAChartSettingWidget.cpp" line="+177"/>
         <source>Chart Area</source>
         <translation>图表区</translation>
     </message>
@@ -3325,7 +3325,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1959"/>
+        <location filename="../APP/DAAppController.cpp" line="-1971"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -7067,13 +7067,13 @@ To Excel</source>
     </message>
     <message>
         <location filename="../DAFigure/Models/DAStandardItemPlot.cpp" line="+53"/>
-        <source>parasite-%1</source>
-        <translation>寄生绘图-%1</translation>
+        <source>layout-%1</source>
+        <translation>图层-%1</translation>
     </message>
     <message>
         <location line="+4"/>
-        <source>plot</source>
-        <translation>绘图</translation>
+        <source>layout</source>
+        <translation>图层</translation>
     </message>
     <message>
         <location line="+31"/>
