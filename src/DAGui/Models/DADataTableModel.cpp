@@ -265,9 +265,13 @@ void DADataTableModel::setCacheWindowStartRow(int startRow)
     // startRow限制在指定的最小值和最大值之间。它能够确保startRow不会超出给定的范围
     const int dr        = d->getDataRowCount();
     const int cacheSize = getCacheWindowSize();
-    startRow            = qBound(0, startRow, dr - cacheSize + d->extraRow);
-    if (startRow >= dr) {
-        startRow = dr - 1;
+    if (dr <= cacheSize) {
+        startRow = 0;
+    } else {
+        startRow = qBound(0, startRow, dr - cacheSize + d->extraRow);
+        if (startRow >= dr) {
+            startRow = dr - 1;
+        }
     }
     DAAbstractCacheWindowTableModel::setCacheWindowStartRow(startRow);
 }
