@@ -1079,6 +1079,9 @@ struct type_caster< QVariant >
                 }
             }
 
+            // 给一个无效的variant
+            value = QVariant();
+            return true;
         } catch (...) {
             // 捕获异常，但不抛出，只是返回转换失败
             return false;

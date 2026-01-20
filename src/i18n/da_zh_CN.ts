@@ -1865,7 +1865,7 @@ Table Area</source>
 <context>
     <name>DA::DACommonPropertySettingDialog</name>
     <message>
-        <location filename="../DACommonWidgets/DACommonPropertySettingDialog.cpp" line="+491"/>
+        <location filename="../DACommonWidgets/DACommonPropertySettingDialog.cpp" line="+512"/>
         <source>JSON string is empty</source>
         <translation></translation>
     </message>

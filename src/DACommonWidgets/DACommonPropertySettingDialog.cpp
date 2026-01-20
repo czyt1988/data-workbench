@@ -464,6 +464,27 @@ DACommonPropertySettingDialog::DACommonPropertySettingDialog(QWidget* parent)
 
 DACommonPropertySettingDialog::~DACommonPropertySettingDialog()
 {
+	// 先断开所有信号连接
+	if (d_ptr->m_variantManager) {
+		disconnect(d_ptr->m_variantManager, nullptr, this, nullptr);
+	}
+
+	// 清理属性管理器
+	if (d_ptr->m_variantManager) {
+		// 清理所有属性
+		d_ptr->m_variantManager->clear();
+	}
+	// 清理属性浏览器
+	if (ui->propertyBrowser) {
+		// 阻塞浏览器信号
+		ui->propertyBrowser->blockSignals(true);
+
+		// 移除所有属性
+		QList< QtProperty* > properties = ui->propertyBrowser->properties();
+		for (QtProperty* prop : properties) {
+			ui->propertyBrowser->removeProperty(prop);
+		}
+	}
     delete ui;
 }
 
