@@ -41,7 +41,7 @@ QVariant DAStandardItemPlot::handleItemTextType(int role) const
     if (!isValid()) {
         return QVariant();
     }
-    static QIcon s_plot_icon = QIcon(":/DAFigure/icon/chart.svg");
+    static QIcon s_plot_icon = QIcon(":/DAFigure/icon/layout.svg");
     switch (role) {
     case Qt::DisplayRole: {
         if (!m_plot) {
