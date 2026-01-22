@@ -44,7 +44,7 @@ void DAToolBox::addItems(const QList< DANodeMetaData >& datas)
     // 先提取分组，确认分组都建立
     QList< QString > orderGroup;
     QHash< QString, QList< DANodeMetaData > > groupOrderNodes;
-    for (const DANodeMetaData& md : qAsConst(datas)) {
+    for (const DANodeMetaData& md : std::as_const(datas)) {
         // 每个md的分组按顺序去重归集
         if (!orderGroup.contains(md.getGroup())) {
             orderGroup.append(md.getGroup());
@@ -52,7 +52,7 @@ void DAToolBox::addItems(const QList< DANodeMetaData >& datas)
         groupOrderNodes[ md.getGroup() ].append(md);
     }
     // 创建分组的topitem
-    for (const QString& g : qAsConst(orderGroup)) {
+    for (const QString& g : std::as_const(orderGroup)) {
         DANodeListWidget* gitem = new DANodeListWidget(this);
         _toolBox->addItem(gitem, g);
         gitem->addItems(groupOrderNodes[ g ]);
@@ -158,7 +158,7 @@ void DAToolBox::adjustMinItemHight(int minHeight)
     QIcon icon          = _toolBox->itemIcon(_toolBox->currentIndex());
     if (!icon.isNull()) {
         QList< QSize > avas = icon.availableSizes();
-        for (const QSize& s : qAsConst(avas)) {
+        for (const QSize& s : std::as_const(avas)) {
             if (s.height() * 1.1 > itemTitleHeight) {
                 itemTitleHeight = s.height() * 1.1;
             }

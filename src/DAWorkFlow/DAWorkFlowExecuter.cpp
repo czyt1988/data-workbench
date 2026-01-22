@@ -62,7 +62,7 @@ void DAWorkFlowExecuter::PrivateData::prepareStartExec()
     // 查找孤立节点和0入度节点
     QList< DAAbstractNode::SharedPointer > nodes = mWorkflow->nodes();
     QSet< std::shared_ptr< DAAbstractNodeFactory > > factorys;
-    for (const DAAbstractNode::SharedPointer& n : qAsConst(nodes)) {
+    for (const DAAbstractNode::SharedPointer& n : std::as_const(nodes)) {
         factorys.insert(n->factory());
         if (DAAbstractNode::GlobalNode == n->nodeType()) {
             mGlobalNodes.append(n);
@@ -82,7 +82,7 @@ void DAWorkFlowExecuter::PrivateData::prepareStartExec()
         }
     }
     // 记录工厂
-    for (auto f : qAsConst(factorys)) {
+    for (auto f : std::as_const(factorys)) {
         mNodeFactorys.append(f);
     }
 }
@@ -110,9 +110,9 @@ void DAWorkFlowExecuter::PrivateData::clear()
 void DAWorkFlowExecuter::PrivateData::sendParam(DAAbstractNode::SharedPointer& n,
                                                 const QList< DAAbstractNode::LinkInfo >& outInfo)
 {
-    for (const DAAbstractNode::LinkInfo& li : qAsConst(outInfo)) {
+    for (const DAAbstractNode::LinkInfo& li : std::as_const(outInfo)) {
         QVariant v = n->getOutputData(li.key);
-        for (const QPair< QString, DAAbstractNode::SharedPointer >& pair : qAsConst(li.nodes)) {
+        for (const QPair< QString, DAAbstractNode::SharedPointer >& pair : std::as_const(li.nodes)) {
             pair.second->setInputData(pair.first, v);
             auto ite = mNodeIndegreeSetCount.find(pair.second);
             if (ite == mNodeIndegreeSetCount.end()) {
@@ -130,8 +130,8 @@ void DAWorkFlowExecuter::PrivateData::sendParam(DAAbstractNode::SharedPointer& n
  */
 void DAWorkFlowExecuter::PrivateData::transmit(const QList< DAAbstractNode::LinkInfo >& outInfo)
 {
-    for (const DAAbstractNode::LinkInfo& li : qAsConst(outInfo)) {
-        for (const QPair< QString, DAAbstractNode::SharedPointer >& pair : qAsConst(li.nodes)) {
+    for (const DAAbstractNode::LinkInfo& li : std::as_const(outInfo)) {
+        for (const QPair< QString, DAAbstractNode::SharedPointer >& pair : std::as_const(li.nodes)) {
             if (pair.second->getInputNodesCount() == mNodeIndegreeSetCount[ pair.second ]) {
                 // 达成执行条件
                 q_ptr->executeNode(pair.second);
@@ -232,7 +232,7 @@ void DAWorkFlowExecuter::startExecute()
     } else {
         // 否则自动查找节点开始执行
         // 执行全局节点，全局节点只执行不传递，也就是说执行节点后，节点的连线并不会执行
-        for (const DAAbstractNode::SharedPointer& n : qAsConst(d_ptr->mGlobalNodes)) {
+        for (const DAAbstractNode::SharedPointer& n : std::as_const(d_ptr->mGlobalNodes)) {
             if (isTerminateRequest()) {
                 emit finished(false);
                 return;
@@ -240,7 +240,7 @@ void DAWorkFlowExecuter::startExecute()
             executeNodeNotTransmit(n);
         }
         // 开始执行孤立节点
-        for (const DAAbstractNode::SharedPointer& n : qAsConst(d_ptr->mIsolatedNodes)) {
+        for (const DAAbstractNode::SharedPointer& n : std::as_const(d_ptr->mIsolatedNodes)) {
             if (isTerminateRequest()) {
                 emit finished(false);
                 return;
@@ -248,7 +248,7 @@ void DAWorkFlowExecuter::startExecute()
             executeNode(n);
         }
         // 开始执行开始节点
-        for (const DAAbstractNode::SharedPointer& n : qAsConst(d_ptr->mBeginNodes)) {
+        for (const DAAbstractNode::SharedPointer& n : std::as_const(d_ptr->mBeginNodes)) {
             if (isTerminateRequest()) {
                 emit finished(false);
                 return;

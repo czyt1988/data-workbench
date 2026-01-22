@@ -107,7 +107,7 @@ DACommandsForGraphicsItemsMoved* DAGraphicsCommandsFactory::createItemsMoved()
 	}
 	if (d->movingItemsEndPos.empty()) {
 		// 特殊情况，说明触发了鼠标点击和移动，但没有触发鼠标释放，一般是鼠标点击item，然后鼠标移出scene范围再释放导致的，这时补全末端位置
-		for (const auto& pair : qAsConst(d->movingItemsStartPos)) {
+        for (const auto& pair : std::as_const(d->movingItemsStartPos)) {
 			d->movingItemsEndPos.append(std::make_pair(pair.first, pair.first->pos()));
 		}
 	}
@@ -197,7 +197,7 @@ void DAGraphicsCommandsFactory::sceneMousePressEvent(QGraphicsSceneMouseEvent* m
 			return;
 		}
 		QList< QGraphicsItem* > mits = d->scene->getSelectedMovableItems();
-		for (QGraphicsItem* its : qAsConst(mits)) {
+        for (QGraphicsItem* its : std::as_const(mits)) {
 			d->movingItemsStartPos.append(std::make_pair(its, its->pos()));
 		}
 		// 只要mits不为空，说明开始移动
@@ -238,7 +238,7 @@ void DAGraphicsCommandsFactory::sceneMouseReleaseEvent(QGraphicsSceneMouseEvent*
 		}
 		// 说明有位移，开始记录结束的位置信息
 		d->movingItemsEndPos.clear();
-		for (const auto& pair : qAsConst(d->movingItemsStartPos)) {
+        for (const auto& pair : std::as_const(d->movingItemsStartPos)) {
 			d->movingItemsEndPos.push_back(std::make_pair(pair.first, pair.first->pos()));
 		}
 		d->isMouseMovementCycleComplete = true;

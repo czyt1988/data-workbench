@@ -114,7 +114,7 @@ QList< DAData > DADataManageTableView::getCurrentSelectDatas() const
         // 说明没有任何选中
         return res;
     }
-    for (const QModelIndex& index : qAsConst(sels)) {
+    for (const QModelIndex& index : std::as_const(sels)) {
 
         QVariant v = index.data(DA_ROLE_DADATAMANAGERTABLEMODEL_DATA);
         if (!v.isValid()) {

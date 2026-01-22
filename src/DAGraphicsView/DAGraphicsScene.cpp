@@ -98,7 +98,7 @@ void _DAGraphicsSceneItemMoveingInfos::appendStartPos(QGraphicsItem* item)
 
 void _DAGraphicsSceneItemMoveingInfos::updateEndPos()
 {
-	for (QGraphicsItem* i : qAsConst(items)) {
+	for (QGraphicsItem* i : std::as_const(items)) {
 		endsPos.append(i->pos());
 	}
 }
@@ -229,7 +229,7 @@ QList< QGraphicsItem* > DAGraphicsScene::getSelectedMovableItems()
 {
 	QList< QGraphicsItem* > res;
 	QList< QGraphicsItem* > its = selectedItems();
-	for (QGraphicsItem* it : qAsConst(its)) {
+	for (QGraphicsItem* it : std::as_const(its)) {
 		if (it->flags().testFlag(QGraphicsItem::ItemIsMovable)) {
 			res.append(it);
 		}
@@ -487,7 +487,7 @@ void DAGraphicsScene::groupingSelectItems_()
 void DAGraphicsScene::removeSelectItemGroup_()
 {
 	QList< QGraphicsItem* > si = selectedItems();
-	for (QGraphicsItem* i : qAsConst(si)) {
+	for (QGraphicsItem* i : std::as_const(si)) {
 		QGraphicsItemGroup* g = dynamic_cast< QGraphicsItemGroup* >(i);
 		if (g) {
 			auto cmd = commandsFactory()->createItemUngrouping(g);
@@ -983,7 +983,7 @@ void DAGraphicsScene::addItemToGroup(QGraphicsItemGroup* group, const QList< QGr
 	group->setParentItem(commonAncestor);
 	qreal minZ = std::numeric_limits< qreal >::max();
 	// Create a new group at that level
-	for (QGraphicsItem* item : qAsConst(willGroupItems)) {
+	for (QGraphicsItem* item : std::as_const(willGroupItems)) {
 		group->addToGroup(item);
 		if (item->zValue() < minZ) {
 			minZ = item->zValue();
@@ -1131,7 +1131,7 @@ void DAGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 			return;
 		}
 		// todo.如果点击的是链接和control point，不属于移动
-		for (QGraphicsItem* its : qAsConst(mits)) {
+		for (QGraphicsItem* its : std::as_const(mits)) {
 			DAGraphicsResizeableItem* ri = dynamic_cast< DAGraphicsResizeableItem* >(its);
 			if (ri) {
 				if (DAGraphicsResizeableItem::NotUnderAnyControlType
@@ -1238,7 +1238,7 @@ void DAGraphicsScene::checkSelectItem(QGraphicsItem* item)
 	} else if (DAGraphicsItemGroup* gi = dynamic_cast< DAGraphicsItemGroup* >(item)) {
 		// 选中的分组，要检查点击的是哪个
 		QList< QGraphicsItem* > gites = gi->childItems();
-		for (QGraphicsItem* i : qAsConst(gites)) {
+		for (QGraphicsItem* i : std::as_const(gites)) {
 			if (i->isUnderMouse() && i != item) {
 				checkSelectItem(i);
 			}

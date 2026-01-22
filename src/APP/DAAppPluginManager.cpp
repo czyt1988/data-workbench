@@ -101,7 +101,7 @@ QList< std::shared_ptr< DAAbstractNodeFactory > > DAAppPluginManager::createNode
 {
     QList< std::shared_ptr< DAAbstractNodeFactory > > res;
 
-    for (DAAbstractNodePlugin* d : qAsConst(mNodePlugins)) {
+    for (DAAbstractNodePlugin* d : std::as_const(mNodePlugins)) {
         res.append(std::shared_ptr< DAAbstractNodeFactory >(d->createNodeFactory()));
     }
     return (res);

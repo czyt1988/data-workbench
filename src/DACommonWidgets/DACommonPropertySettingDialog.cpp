@@ -349,20 +349,20 @@ QtVariantProperty* DACommonPropertySettingDialog::PrivateData::createVariantProp
         variantType = QMetaType::QString;
         value       = propConfig[ "value" ].toString("");
     } else if (type == "int") {
-        variantType = QVariant::Int;
+        variantType = QMetaType::Int;
         value       = propConfig[ "value" ].toInt(0);
     } else if (type == "double") {
-        variantType = QVariant::Double;
+        variantType = QMetaType::Double;
         value       = propConfig[ "value" ].toDouble(0.0);
     } else if (type == "bool") {
-        variantType = QVariant::Bool;
+        variantType = QMetaType::Bool;
         value       = propConfig[ "value" ].toBool(false);
     } else if (type == "color") {
-        variantType      = QVariant::Color;
+        variantType      =QMetaType::QColor;
         QString colorStr = propConfig[ "value" ].toString("#000000");
         value            = QColor(colorStr);
     } else if (type == "font") {
-        variantType     = QVariant::Font;
+        variantType     = QMetaType::QFont;
         QString fontStr = propConfig[ "value" ].toString("Arial,12,-1,5,50,0,0,0,0,0");
         QFont font;
         font.fromString(fontStr);
@@ -410,7 +410,7 @@ QtVariantProperty* DACommonPropertySettingDialog::PrivateData::createVariantProp
         variantType = QMetaType::QString;
         value       = propConfig[ "value" ].toString("");
     } else if (type == "stringlist") {
-        variantType      = QVariant::StringList;
+        variantType      = QMetaType::QStringList;
         QJsonArray array = propConfig[ "value" ].toArray();
         QStringList stringList;
         for (const QJsonValue& item : array) {
@@ -603,7 +603,7 @@ QJsonObject DACommonPropertySettingDialog::getCurrentValues() const
             }
         } else {
             // 处理其他类型
-            int type = value.type();
+            int type = value.typeId();
             if (type == QMetaType::QColor) {
                 result[ propertyName ] = value.value< QColor >().name();
             } else if (type == QMetaType::QFont) {
@@ -698,8 +698,14 @@ bool DACommonPropertySettingDialog::setValue(const QString& propertyName, const 
 
     // 检查类型是否匹配
     QVariant currentValue = d->m_variantManager->value(property);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     if (currentValue.type() != value.type()
-        && !(currentValue.canConvert(value.type()) || value.canConvert(currentValue.type()))) {
+        && !(currentValue.canConvert(value.type()) || value.canConvert(currentValue.type())))
+#else
+    if (currentValue.metaType() != value.metaType()
+        && !(currentValue.canConvert(value.metaType()) || value.canConvert(currentValue.metaType())))
+#endif
+    {
         qDebug() << tr("Type mismatch for property:") << propertyName << "expected:" << currentValue.typeName()
                  << "got:" << value.typeName();
         return false;

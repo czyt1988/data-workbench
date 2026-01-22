@@ -61,7 +61,7 @@ DACommandsForGraphicsItemsAdd::DACommandsForGraphicsItemsAdd(const QList< QGraph
 DACommandsForGraphicsItemsAdd::~DACommandsForGraphicsItemsAdd()
 {
 	if (mNeedDelete) {
-		for (QGraphicsItem* i : qAsConst(mItems)) {
+		for (QGraphicsItem* i : std::as_const(mItems)) {
 			delete i;
 		}
 	}
@@ -70,7 +70,7 @@ DACommandsForGraphicsItemsAdd::~DACommandsForGraphicsItemsAdd()
 void DACommandsForGraphicsItemsAdd::redo()
 {
 	QUndoCommand::redo();
-	for (QGraphicsItem* item : qAsConst(mItems)) {
+	for (QGraphicsItem* item : std::as_const(mItems)) {
 		if (item->scene() != mScene) {
 			mScene->addItem(item);
 		}
@@ -81,7 +81,7 @@ void DACommandsForGraphicsItemsAdd::redo()
 void DACommandsForGraphicsItemsAdd::undo()
 {
 	QUndoCommand::undo();
-	for (QGraphicsItem* item : qAsConst(mItems)) {
+	for (QGraphicsItem* item : std::as_const(mItems)) {
 		mScene->removeItem(item);
 	}
 
@@ -133,7 +133,7 @@ DACommandsForGraphicsItemsRemove::DACommandsForGraphicsItemsRemove(const QList< 
 DACommandsForGraphicsItemsRemove::~DACommandsForGraphicsItemsRemove()
 {
 	if (mNeedDelete) {
-		for (QGraphicsItem* i : qAsConst(mItems)) {
+		for (QGraphicsItem* i : std::as_const(mItems)) {
 			delete i;
 		}
 	}
@@ -142,7 +142,7 @@ DACommandsForGraphicsItemsRemove::~DACommandsForGraphicsItemsRemove()
 void DACommandsForGraphicsItemsRemove::redo()
 {
 	QUndoCommand::redo();
-	for (QGraphicsItem* item : qAsConst(mItems)) {
+	for (QGraphicsItem* item : std::as_const(mItems)) {
 		if (item->scene() != mScene) {
 			mScene->removeItem(item);
 		}
@@ -153,7 +153,7 @@ void DACommandsForGraphicsItemsRemove::redo()
 void DACommandsForGraphicsItemsRemove::undo()
 {
 	QUndoCommand::undo();
-	for (QGraphicsItem* item : qAsConst(mItems)) {
+	for (QGraphicsItem* item : std::as_const(mItems)) {
 		mScene->addItem(item);
 	}
 
@@ -632,7 +632,7 @@ DACommandsForGraphicsItemUngrouping::~DACommandsForGraphicsItemUngrouping()
 
 void DACommandsForGraphicsItemUngrouping::redo()
 {
-	for (QGraphicsItem* item : qAsConst(mItems)) {
+	for (QGraphicsItem* item : std::as_const(mItems)) {
 		mGroupItem->removeFromGroup(item);
 		item->setSelected(false);
 	}

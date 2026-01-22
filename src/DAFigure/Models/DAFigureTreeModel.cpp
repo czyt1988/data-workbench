@@ -335,7 +335,7 @@ void DAFigureTreeModel::removePlotFromModel(QwtPlot* plot)
 
                 // 断开寄生绘图的连接
                 if (m_plotConnections.contains(parasite)) {
-                    for (const QMetaObject::Connection& conn : qAsConst(m_plotConnections[ parasite ])) {
+                    for (const QMetaObject::Connection& conn : std::as_const(m_plotConnections[ parasite ])) {
                         disconnect(conn);
                     }
                     m_plotConnections.remove(parasite);

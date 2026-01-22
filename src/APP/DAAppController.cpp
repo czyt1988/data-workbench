@@ -263,7 +263,7 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnablePickerXY, onActionChartEnablePickerXYTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableLegend, onActionChartEnableLegendTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionCopyFigureInClipboard, onActionCopyFigureToClipboardTriggered);
-    for (QAction* act : qAsConst(mActions->actionListOfColorTheme)) {
+    for (QAction* act : std::as_const(mActions->actionListOfColorTheme)) {
         connect(act, &QAction::triggered, this, [ this, act ]() { onActionGroupFigureThemeTriggered(act); });
     }
     // 数据操作的上下文标签 Data Operate Context Category

@@ -19,7 +19,7 @@ class QwtPlotItem;
 class QwtFigure;
 namespace DA
 {
-
+class DAChartAxisRangeBinder;
 class DAFigureWidgetOverlay;
 /**
  * @brief 绘图窗口
@@ -38,6 +38,9 @@ public:
     ~DAFigureWidget();
     // 获取绘图窗口
     QwtFigure* figure() const;
+    // id
+    QString getFigureId() const;
+    void setFigureId(const QString& id);
     // 获取DAChartFactory
     DAChartFactory* getChartFactory() const;
     // 设置ChartFactory
@@ -87,6 +90,17 @@ public:
     int getChartCount() const;
     // 获取默认的绘图颜色
     virtual QColor getDefaultColor() const;
+    // 是否存在这个绘图
+    bool hasPlot(QwtPlot* chart, bool includeParasite = true) const;
+    // 绑定坐标轴范围,让follower的坐标轴范围跟随source
+    bool bindAxisRange(QwtPlot* source, QwtPlot* follower, QwtAxisId axisid);
+    bool bindAxisRange(QwtPlot* source, QwtAxisId sourceAxisid, QwtPlot* follower, QwtAxisId followerAxisid);
+    bool unbindAxisRange(QwtPlot* source, QwtPlot* follower, QwtAxisId axisid);
+    bool unbindAxisRange(QwtPlot* source, QwtAxisId sourceAxisid, QwtPlot* follower, QwtAxisId followerAxisid);
+    // 获取坐标轴绑定信息
+    QList< DAChartAxisRangeBinder* > getBindAxisRangeInfos() const;
+    // 通过id查找qwtplot
+    QwtPlot* findPlotById(const QString& id, bool findParasite = true) const;
     // 设置颜色主题
     void setColorTheme(const DAColorTheme& th);
     DAColorTheme getColorTheme() const;

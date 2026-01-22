@@ -358,7 +358,7 @@ bool DADataOperateOfDataFrameWidget::changeSelectColumnType(const DAPyDType& dt)
     DADataTableModel* modle = mModel;
     cmd->setCallBack([ modle, selColumns ]() {
         if (modle) {
-            for (int c : qAsConst(selColumns)) {
+            for (int c : std::as_const(selColumns)) {
                 modle->notifyColumnChanged(c);
             }
         }
@@ -400,7 +400,7 @@ void DADataOperateOfDataFrameWidget::castSelectToNum()
     DADataTableModel* modle = mModel;
     cmd->setCallBack([ modle, colsIndex ]() {
         if (modle) {
-            for (int c : qAsConst(colsIndex)) {
+            for (int c : std::as_const(colsIndex)) {
                 modle->notifyColumnChanged(c);
             }
         }
@@ -442,7 +442,7 @@ void DADataOperateOfDataFrameWidget::castSelectToDatetime()
     DADataTableModel* modle = mModel;
     cmd->setCallBack([ modle, colsIndex ]() {
         if (modle) {
-            for (int c : qAsConst(colsIndex)) {
+            for (int c : std::as_const(colsIndex)) {
                 modle->notifyColumnChanged(c);
             }
         }

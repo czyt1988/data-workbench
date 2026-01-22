@@ -60,19 +60,6 @@
     </message>
 </context>
 <context>
-    <name>DA</name>
-    <message>
-        <location filename="../DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="+37"/>
-        <source>Exception in get selected column:%1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+16"/>
-        <source>Exception in get selected series:%1</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>DA::AppMainWindow</name>
     <message>
         <location filename="../APP/AppMainWindow.cpp" line="+80"/>
@@ -1895,7 +1882,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="+17"/>
         <source>Type mismatch for property:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2667,7 +2654,13 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAPyDataframeColumnsListWidget</name>
     <message>
-        <location filename="../DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="+20"/>
+        <location filename="../DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="+37"/>
+        <source>Exception in get selected column:%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <location line="+20"/>
         <source>Exception in get selected series:%1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2901,7 +2894,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAWorkFlowGraphicsView</name>
     <message>
-        <location filename="../DAGui/DAWorkFlowGraphicsView.cpp" line="+221"/>
+        <location filename="../DAGui/DAWorkFlowGraphicsView.cpp" line="+222"/>
         <source>cut</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4917,7 +4910,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+59"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+66"/>
         <source>Figure</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6245,7 +6238,7 @@ To Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="+148"/>
+        <location filename="../DAGui/DAXmlHelper.cpp" line="+150"/>
         <source>save workflow extern info cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6468,7 +6461,7 @@ To Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+748"/>
+        <location line="+867"/>
         <source>The attribute %1=%2 under the tag %3 cannot be converted to double </source>
         <translation type="unfinished"></translation>
     </message>

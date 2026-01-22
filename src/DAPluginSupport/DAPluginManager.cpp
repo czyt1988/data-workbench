@@ -211,7 +211,7 @@ QList< QString > DAPluginManager::getPluginNames() const
 {
     QList< QString > res;
 
-    for (const DAPluginOption& opt : qAsConst(d_ptr->mPluginOptions)) {
+    for (const DAPluginOption& opt : std::as_const(d_ptr->mPluginOptions)) {
         res.append(opt.getPluginName());
     }
     return (res);
@@ -297,7 +297,7 @@ QDebug operator<<(QDebug debug, const DAPluginManager& fmg)
 #endif
     QList< DAPluginOption > opts = fmg.getPluginOptions();
 
-    for (const DAPluginOption& opt : qAsConst(opts)) {
+    for (const DAPluginOption& opt : std::as_const(opts)) {
         debug.nospace() << opt;
     }
     return (debug);

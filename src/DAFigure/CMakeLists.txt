@@ -94,4 +94,3 @@ install(FILES
     DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/MarkSymbol
     COMPONENT headers
 )
-

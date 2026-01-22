@@ -94,7 +94,7 @@ DAAbstractNodeGraphicsItem::PrivateData::PrivateData(DAAbstractNode* n, DAAbstra
 QList< DANodeLinkPoint > DAAbstractNodeGraphicsItem::PrivateData::getLinkPoints() const
 {
 	QList< DANodeLinkPoint > res;
-	for (const LinkInfo& d : qAsConst(mLinkInfos)) {
+    for (const LinkInfo& d : std::as_const(mLinkInfos)) {
 		res.append(d.point);
 	}
 	return res;
@@ -103,7 +103,7 @@ QList< DANodeLinkPoint > DAAbstractNodeGraphicsItem::PrivateData::getLinkPoints(
 QList< DANodeLinkPoint > DAAbstractNodeGraphicsItem::PrivateData::getOutputLinkPoints() const
 {
 	QList< DANodeLinkPoint > res;
-	for (const LinkInfo& d : qAsConst(mLinkInfos)) {
+    for (const LinkInfo& d : std::as_const(mLinkInfos)) {
 		if (d.point.way == DANodeLinkPoint::Output) {
 			res.append(d.point);
 		}
@@ -114,7 +114,7 @@ QList< DANodeLinkPoint > DAAbstractNodeGraphicsItem::PrivateData::getOutputLinkP
 QList< DANodeLinkPoint > DAAbstractNodeGraphicsItem::PrivateData::getInputLinkPoints() const
 {
 	QList< DANodeLinkPoint > res;
-	for (const LinkInfo& d : qAsConst(mLinkInfos)) {
+    for (const LinkInfo& d : std::as_const(mLinkInfos)) {
 		if (d.point.way == DANodeLinkPoint::Input) {
 			res.append(d.point);
 		}
@@ -124,7 +124,7 @@ QList< DANodeLinkPoint > DAAbstractNodeGraphicsItem::PrivateData::getInputLinkPo
 
 DANodeLinkPoint DAAbstractNodeGraphicsItem::PrivateData::getLinkPoints(const QString& n) const
 {
-	for (const LinkInfo& d : qAsConst(mLinkInfos)) {
+    for (const LinkInfo& d : std::as_const(mLinkInfos)) {
 		if (d.point.name == n) {
 			return d.point;
 		}
@@ -135,7 +135,7 @@ DANodeLinkPoint DAAbstractNodeGraphicsItem::PrivateData::getLinkPoints(const QSt
 
 DANodeLinkPoint DAAbstractNodeGraphicsItem::PrivateData::getInputLinkPoint(const QString& name) const
 {
-	for (const LinkInfo& d : qAsConst(mLinkInfos)) {
+    for (const LinkInfo& d : std::as_const(mLinkInfos)) {
 		if (d.point.way == DANodeLinkPoint::Input && d.point.name == name) {
 			return d.point;
 		}
@@ -145,7 +145,7 @@ DANodeLinkPoint DAAbstractNodeGraphicsItem::PrivateData::getInputLinkPoint(const
 
 DANodeLinkPoint DAAbstractNodeGraphicsItem::PrivateData::getOutputLinkPoint(const QString& name) const
 {
-	for (const LinkInfo& d : qAsConst(mLinkInfos)) {
+    for (const LinkInfo& d : std::as_const(mLinkInfos)) {
 		if (d.point.way == DANodeLinkPoint::Output && d.point.name == name) {
 			return d.point;
 		}
@@ -362,7 +362,7 @@ bool DAAbstractNodeGraphicsItem::setLinkPointDirection(const QString& name, Aspe
 			dp.point.direction = d;
 			// 对应的link也要跟着变换
 			//  已经连接到的link信息也要变更
-			for (auto link : qAsConst(dp.linkitems)) {
+            for (auto link : std::as_const(dp.linkitems)) {
 				if (oldlp == link->fromNodeLinkPoint()) {
 					link->updateFromLinkPointInfo(dp.point);
 				} else if (oldlp == link->toNodeLinkPoint()) {
@@ -382,7 +382,7 @@ bool DAAbstractNodeGraphicsItem::setLinkPointDirection(const QString& name, Aspe
  */
 bool DAAbstractNodeGraphicsItem::isHaveLinkPoint(const DANodeLinkPoint& pl) const
 {
-	for (const DAAbstractNodeGraphicsItem::PrivateData::LinkInfo& ld : qAsConst(d_ptr->mLinkInfos)) {
+    for (const DAAbstractNodeGraphicsItem::PrivateData::LinkInfo& ld : std::as_const(d_ptr->mLinkInfos)) {
 		if (ld.point.isEqualWayName(pl)) {
 			return (true);
 		}
@@ -397,7 +397,7 @@ bool DAAbstractNodeGraphicsItem::isHaveLinkPoint(const DANodeLinkPoint& pl) cons
  */
 bool DAAbstractNodeGraphicsItem::isLinkPointLinked(const DANodeLinkPoint& pl)
 {
-	for (const DAAbstractNodeGraphicsItem::PrivateData::LinkInfo& ld : qAsConst(d_ptr->mLinkInfos)) {
+    for (const DAAbstractNodeGraphicsItem::PrivateData::LinkInfo& ld : std::as_const(d_ptr->mLinkInfos)) {
 		if (ld.point.isEqualWayName(pl)) {
 			return !(ld.linkitems.isEmpty());
 		}
@@ -440,7 +440,7 @@ void DAAbstractNodeGraphicsItem::resetLinkPoint()
 {
 	QList< DANodeLinkPoint > linkPoints = generateLinkPoint();
 	clearLinkData();
-	for (const DANodeLinkPoint& d : qAsConst(linkPoints)) {
+    for (const DANodeLinkPoint& d : std::as_const(linkPoints)) {
 		addLinkPoint(d);
 	}
 }
@@ -612,7 +612,7 @@ DANodeLinkPoint DAAbstractNodeGraphicsItem::getLinkPointByPos(const QPointF& p, 
 	} else {
 		lps = getInputLinkPoints();
 	}
-	for (const DANodeLinkPoint& lp : qAsConst(lps)) {
+    for (const DANodeLinkPoint& lp : std::as_const(lps)) {
 		if (delegate->getlinkPointPainterRegion(lp).contains(p)) {
 			return lp;
 		}
@@ -770,7 +770,7 @@ QList< DANodeLinkPoint > DAAbstractNodeGraphicsItem::generateLinkPoint() const
 	// 生成输入点
 	QList< QString > ks = n->getInputKeys();
 	// 避免除0
-	for (const QString& k : qAsConst(ks)) {
+    for (const QString& k : std::as_const(ks)) {
 		DANodeLinkPoint lp;
 		lp.direction = AspectDirection::West;
 		lp.way       = DANodeLinkPoint::Input;
@@ -780,7 +780,7 @@ QList< DANodeLinkPoint > DAAbstractNodeGraphicsItem::generateLinkPoint() const
 
 	// 生成输出点
 	ks = n->getOutputKeys();
-	for (const QString& k : qAsConst(ks)) {
+    for (const QString& k : std::as_const(ks)) {
 		DANodeLinkPoint lp;
 		lp.direction = AspectDirection::East;
 		lp.way       = DANodeLinkPoint::Output;
@@ -817,7 +817,7 @@ void DAAbstractNodeGraphicsItem::setLinkPoint(const QString& name, const DANodeL
 		DANodeLinkPoint oldLp = v.point;
 		v.point               = newLinkpoint;
 		// 已经连接到的link信息也要变更
-		for (auto link : qAsConst(v.linkitems)) {
+        for (auto link : std::as_const(v.linkitems)) {
 			if (oldLp == link->fromNodeLinkPoint()) {
 				link->updateFromLinkPointInfo(newLinkpoint);
 			} else if (oldLp == link->toNodeLinkPoint()) {
@@ -835,7 +835,7 @@ bool DAAbstractNodeGraphicsItem::saveToXml(QDomDocument* doc, QDomElement* paren
 	lpEle.setAttribute("input-loc", enumToString(getLinkPointLocation(DANodeLinkPoint::Input)));
 	lpEle.setAttribute("output-loc", enumToString(getLinkPointLocation(DANodeLinkPoint::Output)));
 	QList< DANodeLinkPoint > lps = getLinkPoints();
-	for (const DANodeLinkPoint& p : qAsConst(lps)) {
+    for (const DANodeLinkPoint& p : std::as_const(lps)) {
 		QDomElement pEle = doc->createElement("lp");
 		pEle.setAttribute("name", p.name);
 		pEle.setAttribute("direction", enumToString(p.direction));
@@ -992,7 +992,7 @@ void DAAbstractNodeGraphicsItem::setBodySize(const QSizeF& s)
 void DAAbstractNodeGraphicsItem::clearLinkData()
 {
 	for (DAAbstractNodeGraphicsItem::PrivateData::LinkInfo& d : d_ptr->mLinkInfos) {
-		for (DAAbstractNodeLinkGraphicsItem* li : qAsConst(d.linkitems)) {
+        for (DAAbstractNodeLinkGraphicsItem* li : std::as_const(d.linkitems)) {
 			li->callItemIsDestroying(this, d.point);
 		}
 	}
@@ -1011,7 +1011,7 @@ int DAAbstractNodeGraphicsItem::getLinkChainRecursion(DAAbstractNodeGraphicsItem
 
 	// 找出口
 	QList< DAAbstractNodeGraphicsItem* > items = item->getOutputItems();
-	for (DAAbstractNodeGraphicsItem* d : qAsConst(items)) {
+    for (DAAbstractNodeGraphicsItem* d : std::as_const(items)) {
 		if (res.contains(d)) {
 			continue;
 		}
@@ -1023,7 +1023,7 @@ int DAAbstractNodeGraphicsItem::getLinkChainRecursion(DAAbstractNodeGraphicsItem
 
 	// 找进口
 	items = item->getInputItems();
-	for (DAAbstractNodeGraphicsItem* d : qAsConst(items)) {
+    for (DAAbstractNodeGraphicsItem* d : std::as_const(items)) {
 		if (res.contains(d)) {
 			continue;
 		}
@@ -1045,7 +1045,7 @@ void DAAbstractNodeGraphicsItem::getOutLinkChainRecursion(DAAbstractNodeGraphics
 {
 	// 找出口
 	QList< DAAbstractNodeGraphicsItem* > items = item->getOutputItems();
-	for (DAAbstractNodeGraphicsItem* d : qAsConst(items)) {
+    for (DAAbstractNodeGraphicsItem* d : std::as_const(items)) {
 		if (res.contains(d)) {
 			continue;
 		}
@@ -1065,7 +1065,7 @@ void DAAbstractNodeGraphicsItem::getInLinkChainRecursion(DAAbstractNodeGraphicsI
 {
 	// 找进口
 	QList< DAAbstractNodeGraphicsItem* > items = item->getInputItems();
-	for (DAAbstractNodeGraphicsItem* d : qAsConst(items)) {
+    for (DAAbstractNodeGraphicsItem* d : std::as_const(items)) {
 		if (res.contains(d)) {
 			continue;
 		}
@@ -1090,7 +1090,7 @@ void DAAbstractNodeGraphicsItem::updateLinkPointPos()
 	for (int i = 0; i < s; ++i) {
 		// 把更新过后的linkpoint info设置回去
 		d_ptr->mLinkInfos[ i ].point = lps[ i ];
-		for (DAAbstractNodeLinkGraphicsItem* item : qAsConst(d_ptr->mLinkInfos[ i ].linkitems)) {
+        for (DAAbstractNodeLinkGraphicsItem* item : std::as_const(d_ptr->mLinkInfos[ i ].linkitems)) {
 			if (lps[ i ].isInput()) {
 				item->updateToLinkPointInfo(lps[ i ]);
 			} else {
@@ -1105,7 +1105,7 @@ void DAAbstractNodeGraphicsItem::updateLinkPointPos()
  */
 void DAAbstractNodeGraphicsItem::updateLinkItems()
 {
-	for (const DAAbstractNodeGraphicsItem::PrivateData::LinkInfo& ld : qAsConst(d_ptr->mLinkInfos)) {
+    for (const DAAbstractNodeGraphicsItem::PrivateData::LinkInfo& ld : std::as_const(d_ptr->mLinkInfos)) {
 		for (DAAbstractNodeLinkGraphicsItem* li : ld.linkitems) {
 			li->updatePos();
 		}
@@ -1139,7 +1139,7 @@ QList< DAAbstractNodeLinkGraphicsItem* > DAAbstractNodeGraphicsItem::getLinkItem
 {
 	QSet< DAAbstractNodeLinkGraphicsItem* > res;
 	for (DAAbstractNodeGraphicsItem::PrivateData::LinkInfo& d : d_ptr->mLinkInfos) {
-		for (DAAbstractNodeLinkGraphicsItem* li : qAsConst(d.linkitems)) {
+        for (DAAbstractNodeLinkGraphicsItem* li : std::as_const(d.linkitems)) {
 			res.insert(li);
 		}
 	}
@@ -1158,7 +1158,7 @@ QList< DAAbstractNodeLinkGraphicsItem* > DAAbstractNodeGraphicsItem::getInputLin
 			// 不是输出节点就跳过
 			continue;
 		}
-		for (DAAbstractNodeLinkGraphicsItem* li : qAsConst(d.linkitems)) {
+        for (DAAbstractNodeLinkGraphicsItem* li : std::as_const(d.linkitems)) {
 			res.insert(li);
 		}
 	}
@@ -1177,7 +1177,7 @@ QList< DAAbstractNodeLinkGraphicsItem* > DAAbstractNodeGraphicsItem::getOutputLi
 			// 不是输出节点就跳过
 			continue;
 		}
-		for (DAAbstractNodeLinkGraphicsItem* li : qAsConst(d.linkitems)) {
+        for (DAAbstractNodeLinkGraphicsItem* li : std::as_const(d.linkitems)) {
 			res.insert(li);
 		}
 	}
@@ -1192,7 +1192,7 @@ QList< DAAbstractNodeGraphicsItem* > DAAbstractNodeGraphicsItem::getInputItems()
 {
 	QSet< DAAbstractNodeGraphicsItem* > res;
 	QList< DAAbstractNodeLinkGraphicsItem* > inputLinks = getInputLinkItems();
-	for (DAAbstractNodeLinkGraphicsItem* li : qAsConst(inputLinks)) {
+    for (DAAbstractNodeLinkGraphicsItem* li : std::as_const(inputLinks)) {
 		if (DAAbstractNodeGraphicsItem* fi = li->fromNodeItem()) {
 			res.insert(fi);
 		}
@@ -1208,7 +1208,7 @@ QList< DAAbstractNodeGraphicsItem* > DAAbstractNodeGraphicsItem::getOutputItems(
 {
 	QSet< DAAbstractNodeGraphicsItem* > res;
 	QList< DAAbstractNodeLinkGraphicsItem* > outputLinks = getOutputLinkItems();
-	for (DAAbstractNodeLinkGraphicsItem* li : qAsConst(outputLinks)) {
+    for (DAAbstractNodeLinkGraphicsItem* li : std::as_const(outputLinks)) {
 		if (DAAbstractNodeGraphicsItem* ti = li->toNodeItem()) {
 			res.insert(ti);
 		}
@@ -1301,7 +1301,7 @@ QList< DAAbstractNodeGraphicsItem* > DAAbstractNodeGraphicsItem::getOutPutLinkCh
 	// 先插入一个，避免回环
 	res.insert(const_cast< DAAbstractNodeGraphicsItem* >(this));
 	QList< DAAbstractNodeGraphicsItem* > items = getOutputItems();
-	for (DAAbstractNodeGraphicsItem* d : qAsConst(items)) {
+    for (DAAbstractNodeGraphicsItem* d : std::as_const(items)) {
 		if (res.contains(d)) {
 			continue;
 		}
@@ -1332,7 +1332,7 @@ QList< DAAbstractNodeGraphicsItem* > DAAbstractNodeGraphicsItem::getInPutLinkCha
 	// 先插入一个，避免回环
 	res.insert(const_cast< DAAbstractNodeGraphicsItem* >(this));
 	QList< DAAbstractNodeGraphicsItem* > items = getInputItems();
-	for (DAAbstractNodeGraphicsItem* d : qAsConst(items)) {
+    for (DAAbstractNodeGraphicsItem* d : std::as_const(items)) {
 		if (res.contains(d)) {
 			continue;
 		}

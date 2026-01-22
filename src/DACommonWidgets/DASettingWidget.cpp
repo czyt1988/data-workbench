@@ -64,7 +64,7 @@ void DASettingWidget::applyAll()
  */
 void DASettingWidget::applyChanged()
 {
-    for (DAAbstractSettingPage* p : qAsConst(mChangedPages)) {
+    for (DAAbstractSettingPage* p : std::as_const(mChangedPages)) {
         p->apply();
     }
     mChangedPages.clear();

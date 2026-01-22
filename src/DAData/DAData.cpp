@@ -450,8 +450,11 @@ void DAData::setDataManager(DADataManager* mgr)
 {
     mDataMgr = mgr;
 }
-
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 uint qHash(const DAData& key, uint seed)
+#else
+std::size_t qHash(const DAData& key, std::size_t seed)
+#endif
 {
     return ::qHash(key.rawPointer(), seed);
 }

@@ -115,7 +115,7 @@ DAWorkFlow* DANodeGraphicsScene::getWorkflow()
 DAAbstractNodeGraphicsItem* DANodeGraphicsScene::findItemByNode(DAAbstractNode* n)
 {
 	QList< QGraphicsItem* > its = items();
-	for (QGraphicsItem* i : qAsConst(its)) {
+	for (QGraphicsItem* i : std::as_const(its)) {
 		DAAbstractNodeGraphicsItem* ni = dynamic_cast< DAAbstractNodeGraphicsItem* >(i);
 		if (ni) {
 			if (ni->rawNode() == n) {
@@ -133,7 +133,7 @@ DAAbstractNodeGraphicsItem* DANodeGraphicsScene::findItemByNode(DAAbstractNode* 
 DAAbstractNodeGraphicsItem* DANodeGraphicsScene::getSelectedNodeGraphicsItem() const
 {
 	QList< QGraphicsItem* > sits = selectedItems();
-	for (QGraphicsItem* i : qAsConst(sits)) {
+	for (QGraphicsItem* i : std::as_const(sits)) {
 		if (DAAbstractNodeGraphicsItem* gi = dynamic_cast< DAAbstractNodeGraphicsItem* >(i)) {
 			return gi;
 		}
@@ -149,7 +149,7 @@ QList< DAAbstractNodeGraphicsItem* > DANodeGraphicsScene::getNodeGraphicsItems()
 {
 	QList< DAAbstractNodeGraphicsItem* > res;
 	QList< QGraphicsItem* > its = topItems();
-	for (QGraphicsItem* i : qAsConst(its)) {
+	for (QGraphicsItem* i : std::as_const(its)) {
 		DAAbstractNodeGraphicsItem* ni = dynamic_cast< DAAbstractNodeGraphicsItem* >(i);
 		if (ni) {
 			res.append(ni);
@@ -167,7 +167,7 @@ QList< DAGraphicsStandardTextItem* > DANodeGraphicsScene::getTextGraphicsItems()
 {
 	QList< DAGraphicsStandardTextItem* > res;
 	QList< QGraphicsItem* > its = topItems();
-	for (QGraphicsItem* i : qAsConst(its)) {
+	for (QGraphicsItem* i : std::as_const(its)) {
 		DAGraphicsStandardTextItem* ni = dynamic_cast< DAGraphicsStandardTextItem* >(i);
 		if (ni) {
 			res.append(ni);
@@ -184,7 +184,7 @@ QList< DAAbstractNodeGraphicsItem* > DANodeGraphicsScene::getSelectedNodeGraphic
 {
 	QList< DAAbstractNodeGraphicsItem* > res;
 	QList< QGraphicsItem* > sits = selectedItems();
-	for (QGraphicsItem* i : qAsConst(sits)) {
+	for (QGraphicsItem* i : std::as_const(sits)) {
 		if (DAAbstractNodeGraphicsItem* gi = dynamic_cast< DAAbstractNodeGraphicsItem* >(i)) {
 			res.append(gi);
 		}
@@ -198,7 +198,7 @@ QList< DAAbstractNodeGraphicsItem* > DANodeGraphicsScene::getSelectedNodeGraphic
 DAAbstractNodeLinkGraphicsItem* DANodeGraphicsScene::getSelectedNodeLinkGraphicsItem() const
 {
 	QList< QGraphicsItem* > sits = selectedItems();
-	for (QGraphicsItem* i : qAsConst(sits)) {
+	for (QGraphicsItem* i : std::as_const(sits)) {
 		if (DAAbstractNodeLinkGraphicsItem* gi = dynamic_cast< DAAbstractNodeLinkGraphicsItem* >(i)) {
 			return gi;
 		}
@@ -214,7 +214,7 @@ QList< QGraphicsItem* > DANodeGraphicsScene::getGraphicsItemsWithoutLink() const
 {
 	QList< QGraphicsItem* > res;
 	QList< QGraphicsItem* > ites = topItems();
-	for (QGraphicsItem* i : qAsConst(ites)) {
+	for (QGraphicsItem* i : std::as_const(ites)) {
 		if (nullptr == dynamic_cast< DAAbstractNodeLinkGraphicsItem* >(i)) {
 			res.append(i);
 		}
@@ -401,7 +401,7 @@ void DANodeGraphicsScene::classifyItems(const QList< QGraphicsItem* >& sourceIte
 	if (sourceItems.size() <= 0) {
 		return;
 	}
-	for (QGraphicsItem* i : qAsConst(sourceItems)) {
+	for (QGraphicsItem* i : std::as_const(sourceItems)) {
 		if (DAAbstractNodeGraphicsItem* ni = dynamic_cast< DAAbstractNodeGraphicsItem* >(i)) {
 			nodeItems.append(ni);
 		} else if (DAAbstractNodeLinkGraphicsItem* li = dynamic_cast< DAAbstractNodeLinkGraphicsItem* >(i)) {
@@ -421,7 +421,7 @@ QList< DAAbstractNodeLinkGraphicsItem* >
 DANodeGraphicsScene::getNodesAllLinkItems(const QList< DAAbstractNodeGraphicsItem* >& nodeItems)
 {
 	QList< DAAbstractNodeLinkGraphicsItem* > res;
-	for (DAAbstractNodeGraphicsItem* n : qAsConst(nodeItems)) {
+	for (DAAbstractNodeGraphicsItem* n : std::as_const(nodeItems)) {
 		res += n->getLinkItems();
 	}
 	return unique_qlist(res);
