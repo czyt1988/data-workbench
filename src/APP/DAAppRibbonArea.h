@@ -204,7 +204,7 @@ private:
     // 构建workflow-运行的上下文标签
     void buildContextCategoryWorkflowRun_();
     // 构建chart上下文
-    void buildContextCategoryChart();
+    void buildContextCategoryChartEdit();
     // 构建ApplicationMenu
     void buildApplicationMenu();
     // 构建右工具栏

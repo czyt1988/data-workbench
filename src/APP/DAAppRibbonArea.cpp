@@ -209,8 +209,11 @@ void DAAppRibbonArea::resetText()
     m_pannelFigureSetting->setPanelName(tr("Figure Setting"));   // cn:绘图设置
     m_pannelChartAdd->setPanelName(tr("Add Chart"));             // cn:添加绘图
     // 绘图上下文标签
-    m_contextChart->setContextTitle(tr("Chart"));            // cn:绘图
-    m_categoryChartEdit->setCategoryName(tr("Chart Edit"));  // cn:绘图编辑
+    m_contextChart->setContextTitle(tr("Chart"));                         // cn:绘图
+    m_categoryChartEdit->setCategoryName(tr("Chart Edit"));               // cn:绘图编辑
+    m_pannelFigureSettingForContext->setPanelName(tr("Figure Setting"));  // cn:绘图窗口设置
+    m_pannelChartSetting->setPanelName(tr("Chart Setting"));              // cn:图表设置
+    m_panelFigureTheme->setPanelName(tr("Figure Theme"));                 // cn:绘图主题
     // 其他
     m_menuTheme->setTitle(tr("theme"));               // cn:主题
     m_menuTheme->setToolTip(tr("set ribbon theme"));  // cn:设置主题
@@ -237,7 +240,7 @@ void DAAppRibbonArea::buildRibbon()
     // 上下文标签
     buildContextCategoryDataFrame();
     buildContextCategoryWorkflow();
-    buildContextCategoryChart();
+    buildContextCategoryChartEdit();
     //
     buildApplicationMenu();
     //
@@ -585,7 +588,7 @@ void DAAppRibbonArea::buildContextCategoryWorkflowRun_()
 /**
  * @brief 构建chart上下文
  */
-void DAAppRibbonArea::buildContextCategoryChart()
+void DAAppRibbonArea::buildContextCategoryChartEdit()
 {
     m_contextChart = ribbonBar()->addContextCategory(tr("Chart Edit"));  // cn:绘图编辑
     m_contextChart->setObjectName(QStringLiteral("da-ribbon-contextcategory-chart"));
@@ -625,6 +628,7 @@ void DAAppRibbonArea::buildContextCategoryChart()
     m_pannelChartSetting->addLargeAction(m_actions->actionChartEnablePickerXY);
     m_actions->actionChartEnablePickerY->setMenu(m_menuChartPickSetting);
     m_pannelChartSetting->addLargeAction(m_actions->actionChartEnablePickerY, QToolButton::MenuButtonPopup);
+    m_pannelChartSetting->addLargeAction(m_actions->actionLinkAllPicker);
     // legend
     m_pannelChartSetting->addLargeAction(m_actions->actionChartEnableLegend);
 

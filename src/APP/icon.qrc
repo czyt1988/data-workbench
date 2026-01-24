@@ -87,6 +87,7 @@
         <file>Icon/right-bottom.svg</file>
         <file>Icon/right-top.svg</file>
         <file>Icon/follow-mouse.svg</file>
+        <file>Icon/link-pick.svg</file>
     </qresource>
     <qresource prefix="/app/dataType">
         <file>Icon/typeDataframe.svg</file>

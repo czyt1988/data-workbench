@@ -46,7 +46,7 @@ public:
     QPointer< DAFigureWidgetOverlay > mChartEditorOverlay;  ///< 编辑模式
     QBrush mBackgroundBrush;                                ///< 背景
     QUndoStack mUndoStack;                                  ///<
-    QScopedPointer< DAChartFactory > mFactory;              ///< 绘图创建的工厂
+    std::unique_ptr< DAChartFactory > mFactory;             ///< 绘图创建的工厂
     DAColorTheme mColorTheme;  ///< 主题，注意，这里不要用DAColorTheme mColorTheme { DAColorTheme::ColorTheme_Archambault }这样的初始化，会被当作std::initializer_list< QColor >捕获
 public:
     PrivateData(DAFigureWidget* p) : q_ptr(p), mColorTheme(DAColorTheme::Style_Matplotlib_Tab10)
@@ -377,14 +377,12 @@ void DAFigureWidget::setSubChartEditorEnable(bool enable)
     if (enable) {
         if (nullptr == d_ptr->mChartEditorOverlay) {
             d_ptr->mChartEditorOverlay = new DAFigureWidgetOverlay(figure());
-            connect(d_ptr->mChartEditorOverlay,
-                    &DAFigureWidgetOverlay::widgetNormGeometryChanged,
-                    this,
-                    &DAFigureWidget::onWidgetGeometryChanged);
-            connect(d_ptr->mChartEditorOverlay,
-                    &DAFigureWidgetOverlay::activeWidgetChanged,
-                    this,
-                    &DAFigureWidget::onOverlayActiveWidgetChanged);
+            connect(
+                d_ptr->mChartEditorOverlay, &DAFigureWidgetOverlay::widgetNormGeometryChanged, this, &DAFigureWidget::onWidgetGeometryChanged
+            );
+            connect(
+                d_ptr->mChartEditorOverlay, &DAFigureWidgetOverlay::activeWidgetChanged, this, &DAFigureWidget::onOverlayActiveWidgetChanged
+            );
             d_ptr->mChartEditorOverlay->show();
             d_ptr->mChartEditorOverlay->raise();  // 同时提升最前
         } else {
@@ -510,7 +508,9 @@ void DAFigureWidget::addWidget(QWidget* widget, qreal left, qreal top, qreal wid
     figure()->addWidget(widget, left, top, width, height);
 }
 
-void DAFigureWidget::addWidget(QWidget* widget, int rowCnt, int colCnt, int row, int col, int rowSpan, int colSpan, qreal wspace, qreal hspace)
+void DAFigureWidget::addWidget(
+    QWidget* widget, int rowCnt, int colCnt, int row, int col, int rowSpan, int colSpan, qreal wspace, qreal hspace
+)
 {
     figure()->addWidget(widget, rowCnt, colCnt, row, col, rowSpan, colSpan, wspace, hspace);
 }
@@ -627,9 +627,9 @@ QwtPlotBarChart* DAFigureWidget::addBar_(const QVector< QPointF >& xyDatas)
  * @param xyDatas
  * @return 如果添加失败，返回一个nullptr
  */
-QwtPlotIntervalCurve* DAFigureWidget::addErrorBar_(const QVector< double >& values,
-                                                   const QVector< double >& mins,
-                                                   const QVector< double >& maxs)
+QwtPlotIntervalCurve* DAFigureWidget::addErrorBar_(
+    const QVector< double >& values, const QVector< double >& mins, const QVector< double >& maxs
+)
 {
     if (DAChartWidget* chart = gca()) {
         QwtPlotIntervalCurve* item = chart->addIntervalCurve(values, mins, maxs);
