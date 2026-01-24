@@ -34,6 +34,7 @@ class DAChartOperateWidget;
 class DAFigureWidget;
 class DAChartWidget;
 class DAChartItemsManager;
+class DAChartAxisRangeBinder;
 
 /**
  * @brief DAProjectInterface::getProjectVersion的版本号会通过setVersionNumber设置进DAXmlHelper
@@ -109,6 +110,10 @@ public:
                             const QDomElement* tag,
                             const DAChartItemsManager* itemsMgr,
                             const QVersionNumber& v = QVersionNumber());
+    // DAChartAxisRangeBinder
+    static QDomElement makeElement(const DAChartAxisRangeBinder* axisBinder, const QString& tagName, QDomDocument* doc);
+    static bool
+    loadChartAxisRangeElement(DAFigureWidget* fig, const QDomElement* tag, const QVersionNumber& v = QVersionNumber());
     // DAChartWidget
     static QDomElement
     makeQwtPlotAxisElement(const DAChartWidget* chart, int axisID, const QString& tagName, QDomDocument* doc);

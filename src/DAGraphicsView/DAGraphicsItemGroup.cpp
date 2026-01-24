@@ -170,7 +170,7 @@ QList< DAGraphicsItemGroup* > DAGraphicsItemGroup::childGroups() const
 {
 	QList< DAGraphicsItemGroup* > res;
 	QList< QGraphicsItem* > ci = childItems();
-	for (auto i : qAsConst(ci)) {
+	for (auto i : std::as_const(ci)) {
 		if (i->type() == ItemType_DAGraphicsItemGroup) {
 			res.append(static_cast< DAGraphicsItemGroup* >(i));
 		}
@@ -186,7 +186,7 @@ QList< QGraphicsItem* > DAGraphicsItemGroup::childItemsExcludingGrouping() const
 {
 	QList< QGraphicsItem* > res;
 	QList< QGraphicsItem* > ci = childItems();
-	for (auto i : qAsConst(ci)) {
+	for (auto i : std::as_const(ci)) {
 		if (i->type() != ItemType_DAGraphicsItemGroup) {
 			res.append(i);
 		}

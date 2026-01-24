@@ -67,7 +67,7 @@ DAGraphicsPixmapItem* DAWorkFlowGraphicsScene::getBackgroundPixmapItem() const
 	//        return nullptr;
 	//    }
 	//    QList< QGraphicsItem* > its = items();
-	//    for (const QGraphicsItem* i : qAsConst(its)) {
+	//    for (const QGraphicsItem* i : std::as_const(its)) {
 	//        if (i == _backgroundPixmapItem) {
 	//            return _backgroundPixmapItem;
 	//        }
@@ -251,7 +251,7 @@ void DAWorkFlowGraphicsScene::backgroundPixmapItemXChanged()
 	//
 	QList< QGraphicsItem* > itemsWithoutLink = getGraphicsItemsWithoutLink();
 
-	for (QGraphicsItem* item : qAsConst(itemsWithoutLink)) {
+	for (QGraphicsItem* item : std::as_const(itemsWithoutLink)) {
 		if (item == getBackgroundPixmapItem()) {
 			// PixmapItem 也会获取到，避免递归
 			continue;
@@ -277,7 +277,7 @@ void DAWorkFlowGraphicsScene::backgroundPixmapItemYChanged()
 	QPointF sub(newPos - mBackgroundPixmapItemLastPos);
 	QList< QGraphicsItem* > itemsWithoutLink = getGraphicsItemsWithoutLink();
 
-	for (QGraphicsItem* item : qAsConst(itemsWithoutLink)) {
+	for (QGraphicsItem* item : std::as_const(itemsWithoutLink)) {
 		if (item == getBackgroundPixmapItem()) {
 			// PixmapItem 也会获取到，避免递归
 			continue;
@@ -318,7 +318,7 @@ void DAWorkFlowGraphicsScene::onItemsPositionChanged(const QList< QGraphicsItem*
 	QSet< DAAbstractNodeGraphicsItem* > linkedItems;
 	{
 		QSet< DAAbstractNodeGraphicsItem* > willRemove;
-		for (QGraphicsItem* i : qAsConst(items)) {
+		for (QGraphicsItem* i : std::as_const(items)) {
 			DAAbstractNodeGraphicsItem* nitem = dynamic_cast< DAAbstractNodeGraphicsItem* >(i);
 			if (!nitem) {
 				continue;
@@ -334,7 +334,7 @@ void DAWorkFlowGraphicsScene::onItemsPositionChanged(const QList< QGraphicsItem*
 	QList< QPointF > startPos;
 	QList< QPointF > endPos;
 	QList< QGraphicsItem* > willMoveItems;
-	for (DAAbstractNodeGraphicsItem* i : qAsConst(linkedItems)) {
+	for (DAAbstractNodeGraphicsItem* i : std::as_const(linkedItems)) {
 		willMoveItems.append(i);
 		startPos.push_back(i->pos());
 		endPos.push_back(i->pos() + offset);

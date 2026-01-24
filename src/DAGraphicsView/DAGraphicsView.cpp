@@ -146,7 +146,7 @@ void DAGraphicsView::zoomFit()
 	if (items.isEmpty()) {
 		return;
 	}
-	for (const auto& item : qAsConst(items)) {
+	for (const auto& item : std::as_const(items)) {
 		QRectF boundingRect = item->boundingRect();
 		boundingRect.moveTo(item->scenePos());
 		rect = rect.united(boundingRect);

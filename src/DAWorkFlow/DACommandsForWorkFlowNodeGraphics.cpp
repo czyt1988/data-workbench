@@ -102,7 +102,7 @@ DACommandsForWorkFlowRemoveNodes::~DACommandsForWorkFlowRemoveNodes()
 void DACommandsForWorkFlowRemoveNodes::redo()
 {
 	if (mWorkflow) {
-		for (const auto& n : qAsConst(mNodes)) {
+        for (const auto& n : std::as_const(mNodes)) {
 			mWorkflow->removeNode(n);
 		}
 	}
@@ -111,7 +111,7 @@ void DACommandsForWorkFlowRemoveNodes::redo()
 void DACommandsForWorkFlowRemoveNodes::undo()
 {
 	if (mWorkflow) {
-		for (const auto& n : qAsConst(mNodes)) {
+        for (const auto& n : std::as_const(mNodes)) {
 			mWorkflow->addNode(n);
 		}
 	}
@@ -182,7 +182,7 @@ DACommandsForWorkFlowRemoveNodeItem::DACommandsForWorkFlowRemoveNodeItem(DANodeG
 	mNeedDelete = false;
 
 	mWillRemoveLink = item->getLinkItems();
-	for (DAAbstractNodeLinkGraphicsItem* lk : qAsConst(mWillRemoveLink)) {
+    for (DAAbstractNodeLinkGraphicsItem* lk : std::as_const(mWillRemoveLink)) {
 		new DACommandsForWorkFlowRemoveLink(lk, scene, this);
 	}
 }
@@ -249,7 +249,7 @@ DACommandsForWorkFlowRemoveSelectNodes::DACommandsForWorkFlowRemoveSelectNodes(D
 	// 也要做一次去重
 	mWillRemoveLink = nodeLinks + mWillRemoveLink;
 	mWillRemoveLink = unique_qlist(mWillRemoveLink);
-	for (DAAbstractNodeLinkGraphicsItem* lk : qAsConst(mWillRemoveLink)) {
+    for (DAAbstractNodeLinkGraphicsItem* lk : std::as_const(mWillRemoveLink)) {
 		new DACommandsForWorkFlowRemoveLink(lk, scene, this);
 	}
 	mIsvalid = (nodeLinks.size() > 0) || (mWillRemoveLink.size() > 0) || mSelectNodeItems.size() > 0
@@ -259,10 +259,10 @@ DACommandsForWorkFlowRemoveSelectNodes::DACommandsForWorkFlowRemoveSelectNodes(D
 DACommandsForWorkFlowRemoveSelectNodes::~DACommandsForWorkFlowRemoveSelectNodes()
 {
 	if (mNeedDelete) {
-		for (DAAbstractNodeGraphicsItem* item : qAsConst(mSelectNodeItems)) {
+        for (DAAbstractNodeGraphicsItem* item : std::as_const(mSelectNodeItems)) {
 			delete item;
 		}
-		for (QGraphicsItem* item : qAsConst(mWillRemoveNormal)) {
+        for (QGraphicsItem* item : std::as_const(mWillRemoveNormal)) {
 			delete item;
 		}
 	}
@@ -283,7 +283,7 @@ void DACommandsForWorkFlowRemoveSelectNodes::classifyItems(DANodeGraphicsScene* 
 		return;
 	}
 	bool isStartLink = scene->isStartLink();
-	for (QGraphicsItem* i : qAsConst(its)) {
+    for (QGraphicsItem* i : std::as_const(its)) {
 		if (DAAbstractNodeGraphicsItem* ni = dynamic_cast< DAAbstractNodeGraphicsItem* >(i)) {
 			nodeItems.append(ni);
 		} else if (DAAbstractNodeLinkGraphicsItem* li = dynamic_cast< DAAbstractNodeLinkGraphicsItem* >(i)) {
@@ -305,7 +305,7 @@ QList< DAAbstractNodeLinkGraphicsItem* >
 DACommandsForWorkFlowRemoveSelectNodes::getNodesLinks(const QList< DAAbstractNodeGraphicsItem* >& nodeItems)
 {
 	QList< DAAbstractNodeLinkGraphicsItem* > res;
-	for (DAAbstractNodeGraphicsItem* n : qAsConst(nodeItems)) {
+    for (DAAbstractNodeGraphicsItem* n : std::as_const(nodeItems)) {
 		res += n->getLinkItems();
 	}
 	return unique_qlist(res);
@@ -347,10 +347,10 @@ QList< DAAbstractNodeLinkGraphicsItem* > DACommandsForWorkFlowRemoveSelectNodes:
 QList< QGraphicsItem* > DACommandsForWorkFlowRemoveSelectNodes::getAllRemovedItems() const
 {
 	QList< QGraphicsItem* > res = mWillRemoveNormal;
-	for (DAAbstractNodeGraphicsItem* i : qAsConst(mSelectNodeItems)) {
+    for (DAAbstractNodeGraphicsItem* i : std::as_const(mSelectNodeItems)) {
 		res.append(i);
 	}
-	for (DAAbstractNodeLinkGraphicsItem* i : qAsConst(mWillRemoveLink)) {
+    for (DAAbstractNodeLinkGraphicsItem* i : std::as_const(mWillRemoveLink)) {
 		res.append(i);
 	}
 	return res;
@@ -362,7 +362,7 @@ void DACommandsForWorkFlowRemoveSelectNodes::redo()
 	mNeedDelete = true;
 	QUndoCommand::redo();  // 此函数会执行子内容的redo/undo,也就是先删除link
 	DAWorkFlow* wf = mScene->getWorkflow();
-	for (DAAbstractNodeGraphicsItem* item : qAsConst(mSelectNodeItems)) {
+    for (DAAbstractNodeGraphicsItem* item : std::as_const(mSelectNodeItems)) {
 		mScene->removeItem(item);
 		if (wf) {
 			//! 这里要把node保存下来，node是智能指针，如果用户正常操作添加，addNode_，node的智能指针是有其它地方的实例不会析构
@@ -373,7 +373,7 @@ void DACommandsForWorkFlowRemoveSelectNodes::redo()
 			wf->removeNode(n);
 		}
 	}
-	for (QGraphicsItem* item : qAsConst(mWillRemoveNormal)) {
+    for (QGraphicsItem* item : std::as_const(mWillRemoveNormal)) {
 		mScene->removeItem(item);
 	}
 }
@@ -382,14 +382,14 @@ void DACommandsForWorkFlowRemoveSelectNodes::undo()
 {
 	mNeedDelete    = false;
 	DAWorkFlow* wf = mScene->getWorkflow();
-	for (DAAbstractNodeGraphicsItem* item : qAsConst(mSelectNodeItems)) {
+    for (DAAbstractNodeGraphicsItem* item : std::as_const(mSelectNodeItems)) {
 		mScene->addItem(item);
 		if (wf) {
 			// 因为mWillRemoveNodes保留了节点，item里的weakpoint能获取到智能指针
 			wf->addNode(item->node());
 		}
 	}
-	for (QGraphicsItem* item : qAsConst(mWillRemoveNormal)) {
+    for (QGraphicsItem* item : std::as_const(mWillRemoveNormal)) {
 		mScene->addItem(item);
 	}
 	mWillRemoveNodes.clear();

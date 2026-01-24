@@ -112,8 +112,11 @@ private:
     DADataManager* mDataMgr;
 };
 // ADL原则，需要把qHash也放入DA命名空间中
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 DADATA_API uint qHash(const DA::DAData& key, uint seed);
-
+#else
+DADATA_API std::size_t qHash(const DA::DAData& key, std::size_t seed);
+#endif
 }  // namespace DA
 
 Q_DECLARE_METATYPE(DA::DAData)

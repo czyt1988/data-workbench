@@ -21,8 +21,9 @@
 #include "DAAbstractNodeGraphicsItem.h"
 #include "DAAbstractNodeLinkGraphicsItem.h"
 #include "DAGraphicsItemGroup.h"
-#include "DAGraphicsPixmapItem.h"
 #include "DAXmlHelper.h"
+#include "DAGraphicsPixmapItem.h"
+#include "da_qt5qt6_compat.hpp"
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
 //===================================================
@@ -219,7 +220,7 @@ void DAWorkFlowGraphicsView::cutSelectItems()
 	// 复制完成后要删除
 	auto scene = getWorkFlowGraphicsScene();
 	getUndoStack()->beginMacro(tr("cut"));
-	for (DAGraphicsItem* i : qAsConst(its)) {
+	for (DAGraphicsItem* i : std::as_const(its)) {
 		if (DAAbstractNodeGraphicsItem* ni = dynamic_cast< DAAbstractNodeGraphicsItem* >(i)) {
 			scene->removeNodeItem_(ni);
 		} else {
@@ -271,7 +272,7 @@ QList< QGraphicsItem* > DAWorkFlowGraphicsView::paste()
 		if (image.isNull()) {
 			return res;
 		}
-		auto pixmapItem = sc->addPixmapItem_(image);
+        DAGraphicsPixmapItem* pixmapItem = sc->addPixmapItem_(image);
 		if (pixmapItem) {
 			res.append(pixmapItem);
 		}
@@ -394,6 +395,7 @@ void DAWorkFlowGraphicsView::offsetItems(const QList< QGraphicsItem* >& its, con
 	// 进行偏移让所有item回到视图中心
 	for (QGraphicsItem* i : its) {
 		if (DAGraphicsLinkItem* link = dynamic_cast< DAGraphicsLinkItem* >(i)) {
+            Q_UNUSED(link);
 			// 连接线不进行偏移，自动调整
 			continue;
 		}
@@ -523,7 +525,7 @@ void DAWorkFlowGraphicsView::dragMoveEvent(QDragMoveEvent* event)
 		if (!sc) {
 			break;
 		}
-		auto viewPos      = event->pos();
+        auto viewPos = DA::compat::eventPos(event);
 		QGraphicsItem* it = itemAt(viewPos);
 		if (!it) {
 			break;
@@ -573,12 +575,13 @@ void DAWorkFlowGraphicsView::dropEvent(QDropEvent* event)
 		}
 		DANodeMetaData nodemeta = nodemime->getNodeMetaData();
 		// 两种情况，一种是节点托入到另外一个节点上面放下，这个会触发节点的drag函数
+        auto evpos = DA::compat::eventPos(event);
 		if (d_ptr->mDragInNodeItem) {
-			d_ptr->mDragInNodeItem->drop(nodemeta, mapToScene(event->pos()));
+            d_ptr->mDragInNodeItem->drop(nodemeta, mapToScene(evpos));
 		} else {
 			// 正常的拖入操作
 			clearSelection();
-			createNode_(nodemeta, event->pos());
+            createNode_(nodemeta,evpos);
 		}
 	}
 	DAGraphicsView::dropEvent(event);

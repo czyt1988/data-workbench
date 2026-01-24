@@ -1064,7 +1064,7 @@ void DAGraphicsResizeableItem::paintResizeControlPoints(QPainter* painter,
 	pen.setStyle(Qt::SolidLine);
 	painter->save();
 	painter->setBrush(palette.resizeControlPointBrush);
-	for (const DAGraphicsResizeableItemControlPointInfo& r : qAsConst(d_ptr->mControlPointInfos)) {
+	for (const DAGraphicsResizeableItemControlPointInfo& r : std::as_const(d_ptr->mControlPointInfos)) {
 		switch (r.controlPointType) {
 		case ControlPointTopLeft:
 		case ControlPointTopMid:
@@ -1206,7 +1206,7 @@ void DAGraphicsResizeableItem::prepareControlInfoChange()
  */
 DAGraphicsResizeableItem::ControlType DAGraphicsResizeableItem::getControlPointByPos(const QPointF& pos) const
 {
-	for (const DAGraphicsResizeableItemControlPointInfo& r : qAsConst(d_ptr->mControlPointInfos)) {
+	for (const DAGraphicsResizeableItemControlPointInfo& r : std::as_const(d_ptr->mControlPointInfos)) {
 		if (r.rect.contains(pos)) {
 			// 如果位置在某个控制点里面
 			return r.controlPointType;

@@ -91,7 +91,7 @@ bool DAAbstractNode::PrivateData::LinkData::operator==(const DAAbstractNode::Pri
 QList< DAAbstractNode::PrivateData::LinkData > DAAbstractNode::PrivateData::getOutputLinkData(const QString& k)
 {
 	QList< DAAbstractNode::PrivateData::LinkData > res;
-	for (const LinkData& d : qAsConst(mLinksInfo)) {
+    for (const LinkData& d : std::as_const(mLinksInfo)) {
 		if (d.outputNode.lock().get() == q_ptr && d.outputKey == k) {
 			res.append(d);
 		}
@@ -107,7 +107,7 @@ QList< DAAbstractNode::PrivateData::LinkData > DAAbstractNode::PrivateData::getO
 QList< DAAbstractNode::PrivateData::LinkData > DAAbstractNode::PrivateData::getInputLinkData(const QString& k)
 {
 	QList< DAAbstractNode::PrivateData::LinkData > res;
-	for (const LinkData& d : qAsConst(mLinksInfo)) {
+    for (const LinkData& d : std::as_const(mLinksInfo)) {
 		if (d.inputNode.lock().get() == q_ptr && d.inputKey == k) {
 			res.append(d);
 		}
@@ -430,7 +430,7 @@ int DAAbstractNode::getInputKeysConut() const
 QList< QString > DAAbstractNode::getLinkedInputKeys() const
 {
 	QSet< QString > res;
-	for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(d_ptr->mLinksInfo)) {
+    for (const DAAbstractNode::PrivateData::LinkData& d : std::as_const(d_ptr->mLinksInfo)) {
 		SharedPointer toNode = d.inputNode.lock();
 		if (toNode.get() == this) {
 			// 说明这个是其他节点连接到自身的item
@@ -465,7 +465,7 @@ int DAAbstractNode::getOutputKeysConut() const
 QList< QString > DAAbstractNode::getLinkedOutputKeys() const
 {
 	QSet< QString > res;
-	for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(d_ptr->mLinksInfo)) {
+    for (const DAAbstractNode::PrivateData::LinkData& d : std::as_const(d_ptr->mLinksInfo)) {
 		SharedPointer fromNode = d.outputNode.lock();
 		if (fromNode.get() == this) {
 			// 说明这个是其他节点连接到自身的item
@@ -537,7 +537,7 @@ bool DAAbstractNode::detachLink(const QString& key)
 bool DAAbstractNode::detachInputLinks(const QString& key)
 {
 	QList< DAAbstractNode::PrivateData::LinkData > ins = d_ptr->getInputLinkData(key);
-	for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(ins)) {
+    for (const DAAbstractNode::PrivateData::LinkData& d : std::as_const(ins)) {
 		d_ptr->mLinksInfo.removeAll(d);
 		SharedPointer outputNode = d.outputNode.lock();
 		if (outputNode && outputNode.get() != this) {
@@ -557,7 +557,7 @@ bool DAAbstractNode::detachInputLinks(const QString& key)
 bool DAAbstractNode::detachOutputLinks(const QString& key)
 {
 	QList< DAAbstractNode::PrivateData::LinkData > outs = d_ptr->getOutputLinkData(key);
-	for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(outs)) {
+    for (const DAAbstractNode::PrivateData::LinkData& d : std::as_const(outs)) {
 		d_ptr->mLinksInfo.removeAll(d);
 		SharedPointer inputNode = d.inputNode.lock();
 		if (inputNode && inputNode.get() != this) {
@@ -583,7 +583,7 @@ void DAAbstractNode::detachAll()
 	qDebug() << "---------------------------";
 	qDebug() << "-start detachAll" << "\n- node name:" << getNodeName()
              << ",prototype:" << metaData().getNodePrototype() << "\n- link infos:";
-	for (const DAAbstractNodePrivate::LinkData& d : qAsConst(d_ptr->_linksInfo)) {
+    for (const DAAbstractNodePrivate::LinkData& d : std::as_const(d_ptr->_linksInfo)) {
 		SharedPointer from = d.outputNode.lock();
 		SharedPointer to   = d.inputNode.lock();
 		if (from && to) {
@@ -600,7 +600,7 @@ void DAAbstractNode::detachAll()
 #endif
 	//! 不能直接迭代_toNode过程调用detachToLink，会导致迭代器失效
 	// 清空关系
-	for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(d_ptr->mLinksInfo)) {
+    for (const DAAbstractNode::PrivateData::LinkData& d : std::as_const(d_ptr->mLinksInfo)) {
 		SharedPointer toItem = d.inputNode.lock();
 		if (toItem && toItem.get() != this) {
 			// 说明这个是从本身连接到其他，则其他节点也需要删除这个链接
@@ -634,7 +634,7 @@ void DAAbstractNode::detachAll()
 QList< DAAbstractNode::SharedPointer > DAAbstractNode::getInputNodes() const
 {
 	QSet< DAAbstractNode::SharedPointer > res;
-	for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(d_ptr->mLinksInfo)) {
+    for (const DAAbstractNode::PrivateData::LinkData& d : std::as_const(d_ptr->mLinksInfo)) {
 		SharedPointer toNode = d.inputNode.lock();
 		if (toNode.get() == this) {
 			// 说明这个是其他节点连接到自身的item
@@ -660,7 +660,7 @@ QList< DAAbstractNode::SharedPointer > DAAbstractNode::getInputNodes() const
 QList< DAAbstractNode::SharedPointer > DAAbstractNode::getInputNodes(const QString inputkey) const
 {
 	QSet< DAAbstractNode::SharedPointer > res;
-	for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(d_ptr->mLinksInfo)) {
+    for (const DAAbstractNode::PrivateData::LinkData& d : std::as_const(d_ptr->mLinksInfo)) {
 		if (d.inputKey != inputkey) {
 			continue;
 		}
@@ -691,7 +691,7 @@ QList< DAAbstractNode::SharedPointer > DAAbstractNode::getInputNodes(const QStri
 QList< DAAbstractNode::SharedPointer > DAAbstractNode::getOutputNodes() const
 {
 	QSet< DAAbstractNode::SharedPointer > res;
-	for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(d_ptr->mLinksInfo)) {
+    for (const DAAbstractNode::PrivateData::LinkData& d : std::as_const(d_ptr->mLinksInfo)) {
 		SharedPointer fromNode = d.outputNode.lock();
 		if (fromNode.get() == this) {
 			// 说明这个是此节点连接到其他的node
@@ -718,7 +718,7 @@ QList< DAAbstractNode::SharedPointer > DAAbstractNode::getOutputNodes() const
 QList< DAAbstractNode::SharedPointer > DAAbstractNode::getOutputNodes(const QString outputkey) const
 {
 	QSet< DAAbstractNode::SharedPointer > res;
-	for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(d_ptr->mLinksInfo)) {
+    for (const DAAbstractNode::PrivateData::LinkData& d : std::as_const(d_ptr->mLinksInfo)) {
 		if (d.outputKey != outputkey) {
 			continue;
 		}
@@ -746,7 +746,7 @@ int DAAbstractNode::getInputNodesCount() const
              << "-> getInputNodesCount()\n"
                 "    _linksInfo:";
 #endif
-	for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(d_ptr->mLinksInfo)) {
+    for (const DAAbstractNode::PrivateData::LinkData& d : std::as_const(d_ptr->mLinksInfo)) {
 #if DA_DAABSTRACTNODE_DEBUG_PRINT
 		qDebug() << "    outputKey=" << d.outputKey << "(" << d.outputNode.lock()->getNodeName()
                  << ")--->inputKey=" << d.inputKey << "(" << d.inputNode.lock()->getNodeName() << ")";
@@ -767,7 +767,7 @@ int DAAbstractNode::getInputNodesCount() const
 int DAAbstractNode::getOutputNodesCount() const
 {
 	int res = 0;
-	for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(d_ptr->mLinksInfo)) {
+    for (const DAAbstractNode::PrivateData::LinkData& d : std::as_const(d_ptr->mLinksInfo)) {
 		SharedPointer fromNode = d.outputNode.lock();
 		if (fromNode.get() == this) {
 			// 说明这个是此节点连接到其他的node
@@ -812,7 +812,7 @@ QVariant DAAbstractNode::getOutputData(const QString& key) const
 QList< DAAbstractNode::LinkInfo > DAAbstractNode::getAllInputLinkInfo() const
 {
 	QHash< QString, DAAbstractNode::LinkInfo > res;
-	for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(d_ptr->mLinksInfo)) {
+    for (const DAAbstractNode::PrivateData::LinkData& d : std::as_const(d_ptr->mLinksInfo)) {
 		SharedPointer n = d.inputNode.lock();
 		if (n.get() == this) {
 			// 说明输出节点是自己
@@ -838,7 +838,7 @@ QList< DAAbstractNode::LinkInfo > DAAbstractNode::getAllInputLinkInfo() const
 QList< DAAbstractNode::LinkInfo > DAAbstractNode::getAllOutputLinkInfo() const
 {
 	QHash< QString, DAAbstractNode::LinkInfo > res;
-	for (const DAAbstractNode::PrivateData::LinkData& d : qAsConst(d_ptr->mLinksInfo)) {
+    for (const DAAbstractNode::PrivateData::LinkData& d : std::as_const(d_ptr->mLinksInfo)) {
 		SharedPointer n = d.outputNode.lock();
 		if (n.get() == this) {  // 说明输出节点是自己
 			// 首先找到输出节点对应的节点
@@ -968,7 +968,7 @@ void DAAbstractNode::removeInputKey(const QString& key)
  */
 void DAAbstractNode::removeAllInputKeys()
 {
-	for (const QString& key : qAsConst(d_ptr->mInputKeys)) {
+    for (const QString& key : std::as_const(d_ptr->mInputKeys)) {
 		d_ptr->mInputData.remove(key);
 	}
 	d_ptr->mInputKeys.clear();
@@ -988,7 +988,7 @@ void DAAbstractNode::removeOutputKey(const QString& key)
  */
 void DAAbstractNode::removeAllOutputKeys()
 {
-	for (const QString& key : qAsConst(d_ptr->mOutputKeys)) {
+    for (const QString& key : std::as_const(d_ptr->mOutputKeys)) {
 		d_ptr->mOutputData.remove(key);
 	}
 	d_ptr->mOutputKeys.clear();
@@ -1002,8 +1002,11 @@ void DAAbstractNode::registFactory(const std::shared_ptr< DAAbstractNodeFactory 
 {
     d_ptr->mFactory = fc;
 }
-
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 uint qHash(const std::shared_ptr< DA::DAAbstractNode >& ptr, uint seed) noexcept
+#else
+std::size_t qHash(const std::shared_ptr< DAAbstractNode >& ptr, std::size_t seed) noexcept
+#endif
 {
     // 用::qHash指定全局命名空间，匹配Qt提供的指针哈希函数
     return ::qHash(ptr.get(), seed);

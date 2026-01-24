@@ -177,7 +177,7 @@ bool DAZipArchiveTask_ChartItem::readChartItems(DAZipArchive* zip, DAChartItemsM
         return true;
     }
     // 不空，加载item
-    for (const QPair< QString, int >& item : qAsConst(keyToRTTI)) {
+    for (const QPair< QString, int >& item : std::as_const(keyToRTTI)) {
         const QString itemPath = QString("%1/%2").arg(mZipRelateFolderPath, item.first);
         QByteArray byte        = zip->read(itemPath);
         if (byte.isEmpty()) {

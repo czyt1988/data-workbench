@@ -199,7 +199,7 @@ void AppMainWindow::initWorkflowNodes()
 
     // 执行一些必要的回调
     QList< DAAbstractNodePlugin* > nodeplugins = mPluginMgr->getNodePlugins();
-    for (DAAbstractNodePlugin* plugin : qAsConst(nodeplugins)) {
+    for (DAAbstractNodePlugin* plugin : std::as_const(nodeplugins)) {
         plugin->afterLoadedNodes();
     }
 }
@@ -310,7 +310,7 @@ void AppMainWindow::showSettingDialog()
         mSettingDialog->buildUI(getAppConfig());
 
         QList< DAAbstractPlugin* > plugins = mPluginMgr->getAllPlugins();
-        for (DAAbstractPlugin* p : qAsConst(plugins)) {
+        for (DAAbstractPlugin* p : std::as_const(plugins)) {
             DAAbstractSettingPage* page = p->createSettingPage();
             if (page) {
                 mSettingDialog->settingWidget()->addPage(page);

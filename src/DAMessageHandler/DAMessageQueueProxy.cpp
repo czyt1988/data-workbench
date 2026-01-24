@@ -97,11 +97,11 @@ public:
         {
             QMutexLocker lc(&mMutexNotifys);
             if (needNotifySizeChanged) {
-                for (DAMessageQueueProxy::PrivateData* p : qAsConst(mNotifys)) {
+                for (DAMessageQueueProxy::PrivateData* p : std::as_const(mNotifys)) {
                     p->queueSizeChanged();
                 }
             }
-            for (DAMessageQueueProxy::PrivateData* p : qAsConst(mNotifys)) {
+            for (DAMessageQueueProxy::PrivateData* p : std::as_const(mNotifys)) {
                 p->queueAppended();
             }
         }
@@ -139,7 +139,7 @@ public:
 
         if (oldsize != 0) {
             QMutexLocker lcNotifys(&mMutexNotifys);
-            for (DAMessageQueueProxy::PrivateData* p : qAsConst(mNotifys)) {
+            for (DAMessageQueueProxy::PrivateData* p : std::as_const(mNotifys)) {
                 p->queueSizeChanged();
             }
         }
