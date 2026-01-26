@@ -7,7 +7,7 @@
 #include <QtGui/QWheelEvent>
 #include <QtGui/QFontMetrics>
 #include <QtGui/QFontMetricsF>
-
+#include <QtGui/QColor>
 namespace DA
 {
 
@@ -17,6 +17,23 @@ namespace DA
  */
 namespace compat
 {
+
+
+/**
+ * @brief 获取事件的位置（QPoint）
+ * @tparam EventType 事件类型（需支持pos()或position()方法）
+ * @param event 事件指针
+ * @return 事件位置的QPoint表示
+ */
+template< typename EventType >
+inline QPoint eventGlobalPos(EventType* event)
+{
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    return event->globalPos();
+#else
+    return event->globalPosition().toPoint();
+#endif
+}
 
 /**
  * @brief 获取事件的位置（QPoint）
@@ -119,6 +136,21 @@ inline int wheelEventDelta(QWheelEvent* e)
     return e->delta();
 #else
     return e->angleDelta().y();
+#endif
+}
+
+inline void setNamedColor(QColor& c,const char* colorName){
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    c.setNamedColor(colorName);
+#else
+    c = QColor::fromString(colorName);
+#endif
+}
+inline void setNamedColor(QColor& c,const QString& colorName){
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    c.setNamedColor(colorName);
+#else
+    c = QColor::fromString(colorName);
 #endif
 }
 }  // namespace   DA

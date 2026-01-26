@@ -6660,7 +6660,7 @@ To Excel</source>
         <translation>节点%1无法找到名字为%2的连接点</translation>
     </message>
     <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="+1390"/>
+        <location filename="../DAGui/DAXmlHelper.cpp" line="+1391"/>
         <source>The attribute %1=%2 under the tag %3 cannot be converted to double </source>
         <translation>%3标签属性%1=%2无法转换为double类型 </translation>
     </message>
@@ -6946,7 +6946,7 @@ To Excel</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="-2611"/>
+        <location filename="../DAGui/DAXmlHelper.cpp" line="-2612"/>
         <source>save workflow extern info cost: %1 ms</source>
         <translation></translation>
     </message>

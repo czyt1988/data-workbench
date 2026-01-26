@@ -1991,6 +1991,7 @@ DAXmlHelper::makeElement(const DAFigureWidget* fig, const QString& tagName, QDom
             }
             axisAlimentEle.appendChild(alimentInfoEle);
         }
+        eleFig.appendChild(axisAlimentEle);
     }
     return eleFig;
 }
