@@ -50,7 +50,7 @@ public:
     QPointer< DAFigureWidgetOverlay > m_chartEditorOverlay;  ///< 编辑模式
     QBrush m_backgroundBrush;                                ///< 背景
     QUndoStack m_undoStack;                                  ///<
-    QScopedPointer< DAChartFactory > m_factory;              ///< 绘图创建的工厂
+    std::unique_ptr< DAChartFactory > m_factory;             ///< 绘图创建的工厂
     DAColorTheme m_colorTheme;  ///< 主题，注意，这里不要用DAColorTheme mColorTheme { DAColorTheme::ColorTheme_Archambault }这样的初始化，会被当作std::initializer_list< QColor >捕获
     QList< std::shared_ptr< DAChartAxisRangeBinder > > m_axisRangeBinders;
 
@@ -66,8 +66,9 @@ public:
         q_ptr->setWindowTitle(QApplication::translate("DAFigureWidget", "Figure", 0));
     }
 
-    std::shared_ptr< DAChartAxisRangeBinder >
-    findAxisRangeBinder(QwtPlot* source, QwtAxisId sourceAxisid, QwtPlot* follower, QwtAxisId followerAxisid)
+    std::shared_ptr< DAChartAxisRangeBinder > findAxisRangeBinder(
+        QwtPlot* source, QwtAxisId sourceAxisid, QwtPlot* follower, QwtAxisId followerAxisid
+    )
     {
         for (const auto& b : std::as_const(m_axisRangeBinders)) {
             if (b->isSame(source, sourceAxisid, follower, followerAxisid)) {
@@ -405,14 +406,12 @@ void DAFigureWidget::setSubChartEditorEnable(bool enable)
     if (enable) {
         if (nullptr == d_ptr->m_chartEditorOverlay) {
             d_ptr->m_chartEditorOverlay = new DAFigureWidgetOverlay(figure());
-            connect(d_ptr->m_chartEditorOverlay,
-                    &DAFigureWidgetOverlay::widgetNormGeometryChanged,
-                    this,
-                    &DAFigureWidget::onWidgetGeometryChanged);
-            connect(d_ptr->m_chartEditorOverlay,
-                    &DAFigureWidgetOverlay::activeWidgetChanged,
-                    this,
-                    &DAFigureWidget::onOverlayActiveWidgetChanged);
+            connect(
+                d_ptr->m_chartEditorOverlay, &DAFigureWidgetOverlay::widgetNormGeometryChanged, this, &DAFigureWidget::onWidgetGeometryChanged
+            );
+            connect(
+                d_ptr->m_chartEditorOverlay, &DAFigureWidgetOverlay::activeWidgetChanged, this, &DAFigureWidget::onOverlayActiveWidgetChanged
+            );
             d_ptr->m_chartEditorOverlay->show();
             d_ptr->m_chartEditorOverlay->raise();  // 同时提升最前
         } else {
@@ -653,7 +652,9 @@ void DAFigureWidget::addWidget(QWidget* widget, qreal left, qreal top, qreal wid
     figure()->addWidget(widget, left, top, width, height);
 }
 
-void DAFigureWidget::addWidget(QWidget* widget, int rowCnt, int colCnt, int row, int col, int rowSpan, int colSpan, qreal wspace, qreal hspace)
+void DAFigureWidget::addWidget(
+    QWidget* widget, int rowCnt, int colCnt, int row, int col, int rowSpan, int colSpan, qreal wspace, qreal hspace
+)
 {
     figure()->addWidget(widget, rowCnt, colCnt, row, col, rowSpan, colSpan, wspace, hspace);
 }
@@ -770,9 +771,9 @@ QwtPlotBarChart* DAFigureWidget::addBar_(const QVector< QPointF >& xyDatas)
  * @param xyDatas
  * @return 如果添加失败，返回一个nullptr
  */
-QwtPlotIntervalCurve* DAFigureWidget::addErrorBar_(const QVector< double >& values,
-                                                   const QVector< double >& mins,
-                                                   const QVector< double >& maxs)
+QwtPlotIntervalCurve* DAFigureWidget::addErrorBar_(
+    const QVector< double >& values, const QVector< double >& mins, const QVector< double >& maxs
+)
 {
     if (DAChartWidget* chart = gca()) {
         QwtPlotIntervalCurve* item = chart->addIntervalCurve(values, mins, maxs);

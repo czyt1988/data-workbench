@@ -167,7 +167,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+319"/>
+        <location filename="../APP/DAAppActions.cpp" line="+320"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
@@ -396,6 +396,11 @@ All</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Link All Picker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>legend</source>
         <translation>图例</translation>
     </message>
@@ -617,7 +622,7 @@ Config</source>
         <translation>暗色主题</translation>
     </message>
     <message>
-        <location line="-67"/>
+        <location line="-68"/>
         <source>Zoom Out</source>
         <translation>缩小</translation>
     </message>
@@ -627,7 +632,7 @@ Config</source>
         <translation>放大</translation>
     </message>
     <message>
-        <location line="+43"/>
+        <location line="+44"/>
         <source>Run 
 Workflow</source>
         <translation>运行
@@ -688,7 +693,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+885"/>
+        <location filename="../APP/DAAppController.cpp" line="+886"/>
         <location line="+49"/>
         <source>project file(*.%1)</source>
         <translation>工程文件(*.%1)</translation>
@@ -791,7 +796,7 @@ Table Area</source>
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
     <message>
-        <location line="+564"/>
+        <location line="+572"/>
         <source>new workflow name</source>
         <translation>新工作流名称</translation>
     </message>
@@ -1059,13 +1064,13 @@ Table Area</source>
     <message>
         <location line="+1"/>
         <location line="+19"/>
-        <location line="+85"/>
+        <location line="+88"/>
         <location line="+186"/>
         <source>Workflow</source>
         <translation>工作流</translation>
     </message>
     <message>
-        <location line="-289"/>
+        <location line="-292"/>
         <location line="+2"/>
         <source>Data Operation</source>
         <translation>数据操作</translation>
@@ -1078,101 +1083,102 @@ Table Area</source>
     <message>
         <location line="+3"/>
         <location line="+21"/>
-        <location line="+330"/>
+        <location line="+333"/>
         <source>View</source>
         <translation>视图</translation>
     </message>
     <message>
-        <location line="-350"/>
+        <location line="-353"/>
         <source>Display</source>
         <translation>视图显示</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+178"/>
+        <location line="+181"/>
         <source>DataFrame</source>
         <translation>DataFrame</translation>
     </message>
     <message>
-        <location line="-177"/>
-        <location line="+179"/>
+        <location line="-180"/>
+        <location line="+182"/>
         <source>Operate</source>
         <translation>操作</translation>
     </message>
     <message>
-        <location line="-178"/>
-        <location line="+181"/>
+        <location line="-181"/>
+        <location line="+184"/>
         <source>Axes</source>
         <translation>Axes</translation>
     </message>
     <message>
-        <location line="-180"/>
+        <location line="-183"/>
         <location line="+2"/>
-        <location line="+191"/>
+        <location line="+194"/>
         <location line="+6"/>
         <source>Type</source>
         <translation>类型</translation>
     </message>
     <message>
-        <location line="-193"/>
+        <location line="-196"/>
         <source>Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+283"/>
+        <location line="+286"/>
         <source>Workflow Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
-        <location line="-282"/>
-        <location line="+287"/>
+        <location line="-285"/>
+        <location line="+290"/>
         <source>ClipBoard</source>
         <translation>剪切板</translation>
     </message>
     <message>
-        <location line="-286"/>
-        <location line="+291"/>
+        <location line="-289"/>
+        <location line="+294"/>
         <source>Item</source>
         <translation>图元</translation>
     </message>
     <message>
-        <location line="-290"/>
-        <location line="+299"/>
+        <location line="-293"/>
+        <location line="+302"/>
         <source>Text</source>
         <translation>文本</translation>
     </message>
     <message>
-        <location line="-298"/>
-        <location line="+303"/>
+        <location line="-301"/>
+        <location line="+306"/>
         <source>Background</source>
         <translation>背景</translation>
     </message>
     <message>
-        <location line="-300"/>
-        <location line="+371"/>
+        <location line="-303"/>
+        <location line="+374"/>
         <source>Workflow Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location line="-370"/>
-        <location line="+373"/>
+        <location line="-373"/>
+        <location line="+376"/>
         <source>Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location line="-371"/>
-        <location line="+228"/>
+        <location line="-374"/>
+        <location line="+231"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
     <message>
-        <location line="-227"/>
+        <location line="-230"/>
+        <location line="+5"/>
         <source>Figure Setting</source>
         <translation>绘图设置</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="-4"/>
         <source>Add Chart</source>
         <translation>添加绘图</translation>
     </message>
@@ -1183,13 +1189,23 @@ Table Area</source>
     </message>
     <message>
         <location line="+1"/>
-        <location line="+377"/>
+        <location line="+380"/>
         <location line="+2"/>
         <source>Chart Edit</source>
         <translation>绘图编辑</translation>
     </message>
     <message>
-        <location line="-377"/>
+        <location line="-380"/>
+        <source>Chart Setting</source>
+        <translation type="unfinished">绘图设置</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Figure Theme</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>theme</source>
         <translation>主题</translation>
     </message>
@@ -1215,7 +1231,7 @@ Table Area</source>
         <translation>把工作流的场景导出为图片</translation>
     </message>
     <message>
-        <location line="+414"/>
+        <location line="+415"/>
         <source>Theme</source>
         <translation>主题</translation>
     </message>
@@ -1225,7 +1241,7 @@ Table Area</source>
         <translation>最近打开的文件</translation>
     </message>
     <message>
-        <location line="-141"/>
+        <location line="-142"/>
         <source>Group</source>
         <translation>分组</translation>
     </message>
@@ -1240,7 +1256,7 @@ Table Area</source>
         <translation>导出</translation>
     </message>
     <message>
-        <location line="-394"/>
+        <location line="-397"/>
         <source>File</source>
         <translation>文件</translation>
     </message>
@@ -1865,7 +1881,7 @@ Table Area</source>
 <context>
     <name>DA::DACommonPropertySettingDialog</name>
     <message>
-        <location filename="../DACommonWidgets/DACommonPropertySettingDialog.cpp" line="+512"/>
+        <location filename="../DACommonWidgets/DACommonPropertySettingDialog.cpp" line="+509"/>
         <source>JSON string is empty</source>
         <translation></translation>
     </message>
@@ -1890,7 +1906,7 @@ Table Area</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+80"/>
+        <location line="+84"/>
         <location line="+32"/>
         <source>Property not found:</source>
         <translation></translation>
@@ -3325,7 +3341,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1971"/>
+        <location filename="../APP/DAAppController.cpp" line="-1980"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>

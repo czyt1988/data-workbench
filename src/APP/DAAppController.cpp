@@ -261,6 +261,7 @@ void DAAppController::initConnection()
     );
 
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnablePickerXY, onActionChartEnablePickerXYTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionLinkAllPicker, onActionLinkAllPickerTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableLegend, onActionChartEnableLegendTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionCopyFigureInClipboard, onActionCopyFigureToClipboardTriggered);
     for (QAction* act : std::as_const(mActions->actionListOfColorTheme)) {
@@ -1755,6 +1756,14 @@ void DAAppController::onActionChartEnablePickerXYTriggered(bool on)
         w->enableXYValuePicking(on);
         return true;
     });
+}
+
+/**
+ * @brief 连接所有picker
+ * @param on
+ */
+void DAAppController::onActionLinkAllPickerTriggered(bool on)
+{
 }
 
 /**

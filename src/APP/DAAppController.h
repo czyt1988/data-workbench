@@ -223,6 +223,8 @@ private Q_SLOTS:
     void onActionGroupChartPickerTextRegionTriggered(QAction* act);
     // 允许绘图拾取XY
     void onActionChartEnablePickerXYTriggered(bool on);
+    // 连接所有picker
+    void onActionLinkAllPickerTriggered(bool on);
     // 允许绘图图例
     void onActionChartEnableLegendTriggered(bool on);
     // 绘图样式选择

@@ -128,6 +128,7 @@ void DAAppActions::buildChartAction()
         createAction("actionChartEnablePickerXY", ":/app/bright/Icon/chart-picker-xy.svg", true, false, actionGroupChartPickers);
     actionChartEnablePickerY =
         createAction("actionChartEnablePickerY", ":/app/bright/Icon/chart-picker-y.svg", true, false, actionGroupChartPickers);
+    actionLinkAllPicker = createAction("actionLinkAllPicker", ":/app/bright/Icon/link-pick.svg", true, false);
 
     actionGroupChartPickerTextRegion = new QActionGroup(this);
     actionGroupChartPickerTextRegion->setObjectName(QStringLiteral("actionGroupChartPickerTextRegion"));
@@ -365,6 +366,7 @@ void DAAppActions::retranslateUi()
     actionChartPickerTextAtRightBottom->setText(tr("At Canvas Right Bottom"));  // cn:在画布右下
     actionChartPickerTextFollowMouse->setText(tr("Follow Mouse"));              // cn:跟随鼠标
     actionChartEnablePickerXY->setText(tr("XY Picker"));                        // cn:点拾取
+    actionLinkAllPicker->setText(tr("Link All Picker"));                        // cn:联动\n拾取
     actionChartEnableLegend->setText(tr("legend"));                             // cn:图例
     actionCopyFigureInClipboard->setText(tr("Copy To Clipboard"));              // cn:复制到剪切板
 
