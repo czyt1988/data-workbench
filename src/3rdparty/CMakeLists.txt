@@ -42,6 +42,8 @@ set(BUILD_EXAMPLES OFF CACHE BOOL "force set BUILD_EXAMPLES OFF" FORCE)
 #QWT
 set(QWT_CONFIG_BUILD_EXAMPLE OFF CACHE BOOL "force set QWT_CONFIG_BUILD_EXAMPLE OFF" FORCE)
 set(QWT_CONFIG_BUILD_PLAYGROUND OFF CACHE BOOL "force set QWT_CONFIG_BUILD_PLAYGROUND OFF" FORCE)
+#QIM
+set(QIM_BUILD_EXAMPLES OFF CACHE BOOL "force set QIM_BUILD_EXAMPLES OFF" FORCE)
 #QtPropertyBrowser
 set(QtPropertyBrowser_BUILD_EXAMPLES OFF CACHE BOOL "force set QtPropertyBrowser_BUILD_EXAMPLES OFF" FORCE)
 #SARibbon
@@ -77,9 +79,9 @@ endif()
 ########################################################
 include(GNUInstallDirs)
 
-# 这是用于高效绘图的库，原版 不支持cmake，这里进行了cmake化
 add_subdirectory(qwt)
-
+# qim
+add_subdirectory(qim)
 # 这是ribbon界面的支持库
 add_subdirectory(SARibbon)
 

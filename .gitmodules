@@ -25,3 +25,6 @@
 [submodule "src/3rdparty/zlib"]
 	path = src/3rdparty/zlib
 	url = https://gitee.com/czyt1988/zlib
+[submodule "src/3rdparty/qim"]
+	path = src/3rdparty/qim
+	url = https://gitee.com/czyt1988/qim

@@ -107,7 +107,7 @@ data-workbench
 2. 导出能被其它工程 `cmake` 正确导入的 `cmake` 文件，一般是4个cmake文件：`{库名}Config.cmake`、`{库名}ConfigVersion.cmake`、`{库名}Targets.cmake`、`{库名}Targets-debug.cmake`
 3. 能给当前这个构件树下其他的模块提供依赖支持
 
-另外 `cmake` 有一个很重要的功能，可以区分构建环境和安装环境进行不同的依赖引用和头文件寻址，这样就可以区分当前的构建环境亦或是未来第三方用户，进行二次开发时候的安装环境，这两个环境的头文件寻址路径以及依赖的寻址路径是不一样的
+另外现代 `cmake` 有一个很重要的功能，可以区分构建环境和安装环境进行不同的依赖引用和头文件寻址（这就是为什么要用`target_xx`开头的命令），这样就可以区分当前的构建环境亦或是未来第三方用户，进行二次开发时候的安装环境，这两个环境的头文件寻址路径以及依赖的寻址路径是不一样的
 
 `cmake`的`install`用法是比较固定的，按照一个例子或者模板非常简单的就能实现自己的安装和部署，针对大型系统一个多组件的安装是必须的，类似于QT的包引入，能进行模块的划分，不需要整个QT所有库都一起引进工程里面，针对自己的大型系统也应该实现类似的引入，因此，下面将着重介绍如何进行模块化的`install`
 
@@ -200,6 +200,24 @@ install(TARGETS ${LIB_NAME}
 install(EXPORT ${LIB_NAME}Targets
     FILE ${LIB_NAME}Targets.cmake
     DESTINATION lib/cmake/${LIB_NAME}
+)
+```
+
+上面的写法其实不标准，主要是目标地址中的include和lib这两个属于标准文件夹命名，在cmake中可以引入`GNUInstallDirs`，获取常量位置，标准写法应该这样：
+
+```cmake
+include(GNUInstallDirs)
+install(TARGETS ${LIB_NAME}
+    EXPORT ${LIB_NAME}Targets
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${LIB_NAME}
+)
+
+install(EXPORT ${LIB_NAME}Targets
+    FILE ${LIB_NAME}Targets.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${LIB_NAME}
 )
 ```
 
@@ -322,6 +340,8 @@ install(EXPORT ${YOUR_LIB_NAME}Targets
 )
 ```
 
+上面这两个是导出cmake文件的关键，它会生成两个文件，一个叫`${LIB_NAME}Targets.cmake`，一个叫`${LIB_NAME}Config.cmake`，是通过find_package函数加载的关键，因此，这个文件需要放在lib/cmake/${LIB_NAME}目录下，这个目录是cmake的安装目录
+
 5. 生成config文件
 
 ```cmake
@@ -381,6 +401,8 @@ find_package(QT NAMES Qt6 Qt5 COMPONENTS
 
 多模块的`install`必须先有单模块的`install`，其实多模块的`install`就是遍历了所有单模块所生成的config文件，多模块的`install` 也是需要一个类似单模块的config文件，只是这个config文件和单模块不太一样，它会遍历所有子模块的Target，把这些子模块需要的头文件引用路径以及依赖的库加载进来，这样只需要调用findPackage函数就可以把这个子模块所有需要的内容加载进来
 
+多模块的核心就是每个子模块需要导出到同一个导出集，就是`install(TARGETS `命令的`EXPORT`对象是一个导出集
+
 对于多模块，你的工程目录可能是这样的
 
 ```
@@ -393,128 +415,84 @@ root
 │...
 │├─module-n
 ││  └─CMakeLists.txt
-│├─CMakeLists.txt
-│└─LibConfig.cmake.in
+│└─CMakeLists.txt
 │CMakeLists.txt
 └PackageConfig.cmake.in
 ```
+顶层cmake文件最好定义一个统一的导出集，例如：
 
-这里有两个cmake.in文件，一个是`LibConfig.cmake.in`这个是给各个独自模块公用的，名字不固定，如果每个模块有特殊处理，可以用自己的，这个非必须，有个通用的方便一点，写法和单一模块的config文件写法一致
+set(MyProject_TARGET_NAME "MyProjectTargets") # 这是所有模块统一的导出集，所有的子模块在`install(TARGETS xx EXPORT `时都应该`EXPORT`到这个总的导出集
 
-但这个单一模块在构建时，应该加入命名空间，避免冲突，这时候，你的库在定义过程中应该如下：
+例如我一个项目总体名称为QIm，这个项目里有几个模块，分别为Core、Widgets
 
-```cmake
-add_library(${YOUR_LIB_NAME} SHARED
-        ${YOUR_LIB_HEADER_FILES}
-        ${YOUR_LIB_SOURCE_FILES}
-)
-# 定义别名让YourNameSpace::${DA_LIB_NAME}也能获取到
-add_library(YourNameSpace::${YOUR_LIB_NAME} ALIAS ${YOUR_LIB_NAME})
-```
-
-在安装过程中，生成的XXTargets.cmake也可以加个前缀也可以不加，只要能保证不重命名即可
-
-
-要实现模块化，最重要的是`PackageConfig.cmake.in`这个文件，这个文件作用是组织所有的模块，此cmake.in名字不固定，方便记忆即可
-
-此文件用来生成整个模块包的Config.cmake文件，效果和单一模块写法类似，但它是遍历加载所有模块的{LibName}Targets.cmake文件,cmake的find_package原理就是找到对应的xxConfig.cmake文件并加载，如果是下面这段命令
+我希望使用这个库的时候这样导入
 
 ```cmake
-find_package(Qt5 COMPONENTS 
-    Core
-    Gui
-    Widgets
+find_package(QIm REQUIRED)
+target_link_libraries(myapp 
+    QIm::Core 
+    QIm::Widgets
 )
 ```
 
-它加载的是Qt5Config.cmake,因此，看看Qt5Config.cmake是如何实现的，就知道如何写package相关的Config.cmake文件
+那么，就需要把所有子模块的Target都导出到`QImTargets`这个总的导出集，这样，当find_package(QIm)的时候，就会自动加载所有子模块的Target，并把所有子模块的引用路径加载进来
 
-Qt5Config.cmake的主要工作代码段是：
+一般在顶层项目就订好总导出集的名称，例如：MyProjectTargets
 
 ```cmake
-foreach(module ${Qt5_FIND_COMPONENTS})
-    find_package(Qt5${module}
-        ${_Qt5_FIND_PARTS_QUIET}
-        ${_Qt5_FIND_PARTS_REQUIRED}
-        PATHS ${_qt5_module_paths} NO_DEFAULT_PATH
-    )
-    if (NOT Qt5${module}_FOUND)
-        string(CONFIGURE ${_qt5_module_location_template} _expected_module_location @ONLY)
-
-        if (Qt5_FIND_REQUIRED_${module})
-            set(_Qt5_NOTFOUND_MESSAGE "${_Qt5_NOTFOUND_MESSAGE}Failed to find Qt5 component \"${module}\" config file at \"${_expected_module_location}\"\n")
-        elseif(NOT Qt5_FIND_QUIETLY)
-            message(WARNING "Failed to find Qt5 component \"${module}\" config file at \"${_expected_module_location}\"")
-        endif()
-
-        unset(_expected_module_location)
-    endif()
-endforeach()
+set(QIM_TARGET_NAME "QImTargets") # 这是所有模块统一的导出集
 ```
 
-Qt5_FIND_COMPONENTS是调用`find_package(Qt5 COMPONENTS Core Gui Widgets)`命令COMPONENTS后面的内容列表
+子模块的install写法和之前单一模块略有不同（更简单点）
 
-其实就是遍历这些components，逐个find_package
+首先`write_basic_package_version_file`、`configure_package_config_file`这两个不在需要，由顶层统一处理
 
-`find_package(Qt5 COMPONENTS Core Gui Widgets)`这段最后相当于执行了
+其次子模块要导出到统一导出集，以上面讲的QIm模块为例，子模块Core的install如下
 
 ```cmake
-find_package(Qt5Core)
-find_package(Qt5Gui)
-find_package(Qt5Widgets)
+set(QIMCORE_PROJECT_NAME "Core")
+add_library(${QIMCORE_PROJECT_NAME} SHARED)
+# 创建别名是为了本地项目能通过QIm::Core访问，例如同级项目的example能通过QIm::Core访问Core模块,这样就和真实用户调用一样
+add_library(${QIM_PROJECT_NAME}::Core ALIAS ${QIMCORE_PROJECT_NAME})
+...
+# 添加Core到导出集
+install(TARGETS ${QIMCORE_PROJECT_NAME} # Core
+    EXPORT ${QIM_TARGET_NAME}           # 统一导出集QImTargets
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${QIM_PROJECT_NAME}/core
+)
 ```
 
-一般没有哪个库有Qt如此大的规模，因此我们可以适当简化，这里给出一个简单的模块化cmake写法
+这里子模块名称为`QImCore`,在`CMake 3.15+` 允许导出时重命名(`RENAME`参数) target。如果 CMake 版本较低，必须将 target 名称直接改为 Core
 
-对于模块化的cmake，首先要有个总的进入文件，以YourPackage命名，像Qt5就叫Qt5Config.cmake，自己模块就叫{YourPackageName}Config.cmake
-
-一般{YourPackageName}Config.cmake会通过{YourPackageName}Config.cmake.in模板生成，一个相对通用的写法如下：
+Widgets模块同理：
 
 ```cmake
-@PACKAGE_INIT@
-
-include(CMakeFindDependencyMacro)
-# 这里PROJECT_NAME就作为包名
-set(_package_name @PROJECT_NAME@)
-
-# 这里要修改为所支持的模块名
-set(_${_package_name}_supported_components Module1 Module2 Module3 ... ModuleN)
-
-# 遍历所有要导入的模块
-foreach(_component ${${_package_name}_FIND_COMPONENTS})
-    # 首先判断是否在所支持列表中
-    if(_component IN_LIST _${_package_name}_supported_components)
-        set(__target ${_package_name}::${_component})
-        if(TARGET ${__target})
-            # 避免重复加载
-            continue()
-        else()
-            find_package(${_component} 
-                REQUIRED 
-                PATHS ${CMAKE_CURRENT_LIST_DIR}
-            )
-        endif()
-    else()
-        set(${_package_name}_FOUND FALSE)
-        set(${_package_name}_NOT_FOUND_MESSAGE "Unknown component: ${__target}.")
-        break()
-    endif()
-endforeach()
+set(QIMWIDGETS_PROJECT_NAME "Widgets")
+add_library(${QIMWIDGETS_PROJECT_NAME} ${LIB_TYPE})
+# 创建别名是为了本地项目能通过QIm::Widgets访问，例如同级项目的example能通过QIm::Widgets访问Widgets模块,这样就和真实用户调用一样
+add_library(${QIM_PROJECT_NAME}::Widgets ALIAS ${QIMWIDGETS_PROJECT_NAME})
+...
+# 添加Widgets到导出集
+install(TARGETS ${QIMWIDGETS_PROJECT_NAME}   # Widgets
+    EXPORT ${QIM_TARGET_NAME}                # 统一导出集QImTargets
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
 ```
 
-在你的工程的顶层目录的CMakeLists里，对此config文件进行生成即可
-
-因此，对于多模块的install写法，总结步骤如下
-
-1. 各自单一模块实现各自的install，参考单一模块install写法，各个子模块的安装路径为lib/cmake/${TOP_PROJECT_NAME}目录
-
-${TOP_PROJECT_NAME}是顶层CMakeLists文件的project名称，按实际工程需求传递到子模块的CMakeLists中，可以通过变量或者固定
-
-2. 编写{YourPackageName}Config.cmake.in模板，模板内容参考上文描述
-
-3. 在工程的顶层目录的CMakeLists里，生成模块的{YourPackageName}Config.cmake文件：
+顶层 `CMakeLists.txt`是关键，它负责整个项目的统一导出
 
 ```cmake
+########################################################
+# 总安装
+########################################################
+include(GNUInstallDirs)
+# 生成统一的 QImConfig.cmake
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
     "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
@@ -522,26 +500,46 @@ write_basic_package_version_file(
     COMPATIBILITY AnyNewerVersion
 )
 configure_package_config_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}Config.cmake.in"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/${PROJECT_NAME}Config.cmake.in"
     "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
-    INSTALL_DESTINATION lib/cmake/${PROJECT_NAME}
-    NO_CHECK_REQUIRED_COMPONENTS_MACRO
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
 )
-```
-
-这里${PROJECT_NAME}是工程名称，也可以使用自定义的名字
-
-4. 把生成的{YourPackageName}Config.cmake文件复制到lib/cmake/${PROJECT_NAME}目录下，和子模块的路径一致
-
-```cmake
+# 统一导出所有模块的 target
+install(EXPORT ${QIM_TARGET_NAME}
+    FILE ${QIM_TARGET_NAME}.cmake
+    NAMESPACE ${QIM_PROJECT_NAME}::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${QIM_PROJECT_NAME}
+)
 install(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
-    DESTINATION lib/cmake/${PROJECT_NAME}
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
 )
 ```
 
+这里${PROJECT_NAME}=QIm,导出时需要QImConfig.cmake.in文件，习惯性把这个文件放在工程的cmake目录下，这里${CMAKE_CURRENT_SOURCE_DIR}/cmake/${PROJECT_NAME}Config.cmake.in对应的目录就是`./cmake/QImConfig.cmake.in`目录
+
+QImConfig.cmake.in文件内容如下：
+
+```cmake
+@PACKAGE_INIT@
+
+# 包含所有导出的 targets（Core + Widgets）
+include("${CMAKE_CURRENT_LIST_DIR}/QImTargets.cmake")
+
+# 设置包级变量
+set_and_check(QIM_INCLUDE_DIR "${PACKAGE_PREFIX_DIR}/@CMAKE_INSTALL_INCLUDEDIR@")
+set_and_check(QIM_LIBRARY_DIR "${PACKAGE_PREFIX_DIR}/@CMAKE_INSTALL_LIBDIR@")
+
+check_required_components(QIm)
+```
+
 最终子模块的Config.cmake和包的Config.cmake都在lib/cmake/${PROJECT_NAME}
+
+具体cmake的写法，可以看QIm项目,这是一个基于OpenGL的高性能的Qt绘图库：
+
+[https://gitee.com/czyt1988/qim](https://gitee.com/czyt1988/qim)
+[https://github.com/czyt1988/QIm](https://github.com/czyt1988/QIm)
 
 ## 工程的组织
 

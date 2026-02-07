@@ -123,6 +123,11 @@ macro(damacro_import_qwt __target_name)
     damacro_import_x(qwt ${__target_name})
 endmacro(damacro_import_qwt)
 
+macro(damacro_import_qim __target_name)
+    damacro_import_xxx(QIm QIm Core ${__target_name})
+    damacro_import_xxx(QIm QIm Widgets ${__target_name})
+endmacro(damacro_import_qim)
+
 macro(damacro_import_QtPropertyBrowser __target_name)
     damacro_import_x(QtPropertyBrowser ${__target_name})
 endmacro(damacro_import_QtPropertyBrowser)

@@ -22,9 +22,16 @@ find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
     Gui
     Widgets
     PrintSupport
+    OpenGL
     REQUIRED
 )
-
+# Qt6要单独加载OpenGLWidgets模块
+if(${QT_VERSION_MAJOR} EQUAL 6)
+    find_package(Qt${QT_VERSION_MAJOR} ${MIN_QT_VERSION} COMPONENTS
+        OpenGLWidgets
+        REQUIRED
+    )
+endif()
 
 ########################################################
 # 文件加载 #!!!!** 注意变更 **!!!!
@@ -62,7 +69,13 @@ target_link_libraries(${DA_LIB_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Widgets
     Qt${QT_VERSION_MAJOR}::PrintSupport
+    Qt${QT_VERSION_MAJOR}::OpenGL
 )
+if(${QT_VERSION_MAJOR} EQUAL 6)
+    target_link_libraries(${DA_LIB_NAME} PRIVATE
+        Qt${QT_VERSION_MAJOR}::OpenGLWidgets
+    )
+endif()
 
 find_package(${DA_PROJECT_NAME} COMPONENTS DAUtils)
 if(${DA_PROJECT_NAME}_FOUND)
@@ -73,7 +86,7 @@ target_link_libraries(${DA_LIB_NAME} PUBLIC
 )
 # -------------link 3rdparty qwt--------------------------
 damacro_import_qwt(${DA_LIB_NAME})
-
+damacro_import_qim(${DA_LIB_NAME})
 ########################################################
 # 设置通用库属性
 ########################################################
